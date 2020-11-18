@@ -1,0 +1,13 @@
+@import 'tailwindcss/base';
+
+@import 'tailwindcss/components';
+
+@import 'tailwindcss/utilities';
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+body {
+  font-family: Century Gothic, Futura, sans-serif;
+}

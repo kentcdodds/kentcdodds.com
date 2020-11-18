@@ -1,0 +1,21 @@
+.vscode/
+.DS_Store
+node_modules/
+
+/.cache
+/server-build
+/public/build
+/coverage
+/cypress/videos
+/cypress/screenshots
+
+# styles are in the styles/ directory and compiled to the app directory
+app/**/*.css
+
+storybook/storybook-static
+
+# these are copied from the root dir
+storybook/tailwind.config.js
+storybook/postcss.config.js
+
+/other/google-app-creds.json

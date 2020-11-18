@@ -1,0 +1,2 @@
+type Temp = {}
+export {Temp}

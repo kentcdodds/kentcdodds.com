@@ -1,0 +1,8 @@
+.vscode/
+.DS_Store
+node_modules/
+
+/.cache
+/build
+/public/build
+/coverage

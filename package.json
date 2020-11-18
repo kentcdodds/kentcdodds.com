@@ -1,0 +1,97 @@
+{
+  "name": "kentcdodds.com",
+  "version": "1.0.0",
+  "engines": {
+    "node": "14"
+  },
+  "description": "A remix version of kentcdodds.com",
+  "main": "remix.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kentcdodds/remix-kentcdodds.com.git"
+  },
+  "keywords": [],
+  "author": "Kent C. Dodds <me@kentcdodds.com> (https://kentcdodds.com/)",
+  "license": "GPL-3.0-only",
+  "bugs": {
+    "url": "https://github.com/kentcdodds/remix-kentcdodds.com/issues"
+  },
+  "homepage": "https://github.com/kentcdodds/remix-kentcdodds.com#readme",
+  "scripts": {
+    "prebuild": "npm run css:build",
+    "build": "cross-env NODE_ENV=production concurrently --names \"remix-build,tsc\" --prefix-colors \"magenta,blue\" \"remix build\" \"tsc --build server\"",
+    "dev": "cross-env NODE_ENV=development concurrently --names \"remix-run,css,server\" --prefix-colors \"magenta,cyan,green\" \"remix run > /dev/null\" \"npm run css:watch\" \"node-dev --ignore=.cache --notify=false start.js\"",
+    "start": "cross-env NODE_ENV=production node start.js",
+    "css:build": "postcss styles --base styles --dir app/ --env production",
+    "css:watch": "postcss styles --base styles --dir app/ -w",
+    "cy:run": "cypress run",
+    "cy:open": "cypress open",
+    "test:e2e": "start-server-and-test dev http://localhost:3000 cy:open",
+    "test:e2e:run": "cross-env PORT=8811 start-server-and-test start http://localhost:8811 cy:run",
+    "test": "kcd-scripts test",
+    "lint": "kcd-scripts lint",
+    "format": "kcd-scripts format",
+    "typecheck": "concurrently --names \"server,app,cypress\" --prefix-colors \"red,green,blue\" \"tsc --project server --noEmit\" \"tsc --project app --noEmit\" \"tsc --project cypress --noEmit\"",
+    "validate": "kcd-scripts validate",
+    "setup": "npm install && npm run validate"
+  },
+  "dependencies": {
+    "@remix-run/cli": "^0.7.0",
+    "@remix-run/express": "^0.7.0",
+    "@remix-run/loader": "^0.7.0",
+    "@remix-run/react": "^0.7.0",
+    "@sindresorhus/slugify": "^1.1.0",
+    "express": "^4.17.1",
+    "express-async-errors": "^3.1.1",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
+    "react-router": "^6.0.0-beta.0",
+    "react-router-dom": "^6.0.0-beta.0",
+    "rehype-stringify": "^8.0.0",
+    "remark-parse": "^9.0.0",
+    "remark-rehype": "^8.0.0",
+    "tailwindcss": "^2.0.1",
+    "unified": "^9.2.0",
+    "wait-on": "^5.2.0"
+  },
+  "devDependencies": {
+    "@mdx-js/react": "^1.6.21",
+    "@tailwindcss/typography": "^0.3.1",
+    "@testing-library/cypress": "^7.0.1",
+    "@testing-library/jest-dom": "^5.11.6",
+    "@testing-library/react": "^11.2.0",
+    "@testing-library/user-event": "^12.2.2",
+    "@types/estree": "0.0.45",
+    "@types/express": "^4.17.9",
+    "@types/react": "^16.9.56",
+    "@types/react-dom": "^16.9.9",
+    "autoprefixer": "^10.0.2",
+    "concurrently": "^5.3.0",
+    "cross-env": "^7.0.2",
+    "cypress": "^5.6.0",
+    "eslint-import-resolver-jest": "^3.0.0",
+    "gray-matter": "^4.0.2",
+    "kcd-scripts": "^7.0.3",
+    "kill-port": "^1.6.1",
+    "node-dev": "^6.2.0",
+    "postcss": "^8.1.7",
+    "postcss-cli": "^8.3.0",
+    "start-server-and-test": "^1.11.5",
+    "ts-node": "^9.0.0",
+    "type-fest": "^0.19.0",
+    "typescript": "^4.0.5"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "kcd-scripts pre-commit"
+    }
+  },
+  "eslintIgnore": [
+    "node_modules",
+    "coverage",
+    "server-build",
+    "build/public",
+    "*.d.ts",
+    "storybook-static"
+  ]
+}
