@@ -9,6 +9,7 @@ app.use(express.static('public'))
 app.get(
   '*',
   createRequestHandler({
+    enableSessions: false,
     getLoadContext() {
       return {}
     },
