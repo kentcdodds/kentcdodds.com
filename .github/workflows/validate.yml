@@ -34,7 +34,6 @@ jobs:
           wait-on: 'http://localhost:8811'
         env:
           PORT: 8811
-          ELABORATE_GOOGLE_APP_CREDS: ${{ secrets.ELABORATE_GOOGLE_APP_CREDS }}
 
       - name: 🚀 Deploy
         # only deploy main branch on pushes
@@ -49,8 +48,6 @@ jobs:
           # > github actions etc) which you probably don't want sitting
           # > in your heroku app's config vars.
           HD_REMIX_REGISTRY_TOKEN: ${{ secrets.REMIX_REGISTRY_TOKEN }}
-          HD_ELABORATE_GOOGLE_APP_CREDS:
-            ${{ secrets.ELABORATE_GOOGLE_APP_CREDS }}
           HD_CYPRESS_INSTALL_BINARY: '0'
           HD_HUSKY_SKIP_INSTALL: '1'
         with:

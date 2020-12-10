@@ -5,7 +5,9 @@
     "moduleResolution": "node",
     "target": "es2019",
     "strict": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "typeRoots": ["../types", "../node_modules/@types"]
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "../types"]
 }
