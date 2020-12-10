@@ -52,5 +52,5 @@ jobs:
           HD_HUSKY_SKIP_INSTALL: '1'
         with:
           heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: elaborate
+          heroku_app_name: kentcdodds-remix
           heroku_email: me@kentcdodds.com

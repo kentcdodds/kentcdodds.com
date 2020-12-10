@@ -1,4 +1,4 @@
-# Elaborate
+# Kent C. Dodds blog (rewritten with Remix)
 
 [![Build Status][build-badge]][build]
 [![GPL 3.0 License][license-badge]][license]
