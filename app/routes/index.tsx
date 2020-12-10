@@ -20,7 +20,7 @@ export default function Index() {
   return (
     <div>
       <header>
-        <h1>My Neglected Blog</h1>
+        <h1>Kent C. Dodds</h1>
       </header>
       <main>
         {posts.map(post => (
