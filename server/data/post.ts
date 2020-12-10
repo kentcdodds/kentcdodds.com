@@ -7,7 +7,7 @@ import html from 'remark-html'
 import visit from 'unist-util-visit'
 import remarkPrism from 'remark-prism'
 import type {Post} from 'types'
-import config from '../../blog.config.json'
+import config from '../blog.config.json'
 
 async function getPost(name: string): Promise<Post> {
   const contents =

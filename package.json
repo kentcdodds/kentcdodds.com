@@ -21,7 +21,7 @@
     "build": "concurrently --names \"css,server\" --prefix-colors \"cyan,green\" \"npm run css:build\" \"npm run server:build\" && cross-env NODE_ENV=production remix build",
     "dev": "concurrently --names \"remix-run,css,server\" --prefix-colors \"magenta,cyan,green\" \"remix run > /dev/null\" \"npm run css:watch\" \"npm run server:watch\"",
     "server:watch": "cross-env NODE_ENV=development nodemon -w app -w server -e js,jsx,ts,tsx,md,mdx start.js",
-    "server:build": "tsc --build server",
+    "server:build": "tsc --project server",
     "start": "cross-env NODE_ENV=production node start.js",
     "css:build": "postcss styles --base styles --dir app/ --env production",
     "css:watch": "postcss styles --base styles --dir app/ -w",

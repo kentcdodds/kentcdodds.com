@@ -2,7 +2,7 @@ import path from 'path'
 import express from 'express'
 import 'express-async-errors'
 import {createRequestHandler} from '@remix-run/express'
-import config from '../blog.config.json'
+import config from './blog.config.json'
 import {getPosts} from './data/post'
 
 const app = express()

@@ -4,7 +4,7 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
-    "outDir": "../server-build",
+    "outDir": "../server-build/",
     "module": "commonjs"
   }
 }
