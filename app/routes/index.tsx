@@ -25,7 +25,7 @@ export default function Index() {
       <main>
         {posts.map(post => (
           <p key={post.name}>
-            <Link to={post.name}>{post.attributes.title}</Link>
+            <Link to={`/blog/${post.name}`}>{post.attributes.title}</Link>
             <br />
             <small>{post.attributes.description}</small>
           </p>

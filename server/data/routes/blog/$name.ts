@@ -1,9 +1,9 @@
 import type {Loader} from '@remix-run/data'
 import {json} from '@remix-run/data'
-import {getPost} from '../post'
+import {getPost} from '../../post'
 
 const loader: Loader = async ({params}) => {
-  const post = await getPost(params.post)
+  const post = await getPost(params.name)
 
   const oneDay = 86400
   const secondsSincePublished =
