@@ -1,3 +1,4 @@
+import path from 'path'
 import express from 'express'
 import 'express-async-errors'
 import {createRequestHandler} from '@remix-run/express'
@@ -11,6 +12,10 @@ app.use(express.static('public'))
 // This is here for start-server-and-run which makes a HEAD
 // request to "/" for it to know that the server is ready.
 app.head('/', (req, res) => res.sendStatus(200))
+
+app.get('/__img/content/blog/*', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', req.path.replace('/__img', '')))
+})
 
 app.get('/feed.xml', async (req, res) => {
   const posts = await getPosts()

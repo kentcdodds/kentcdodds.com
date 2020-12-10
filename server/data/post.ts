@@ -4,7 +4,8 @@ import sortBy from 'sort-by'
 import parseFrontMatter from 'front-matter'
 import remark from 'remark'
 import html from 'remark-html'
-import gatsbyPrism from 'gatsby-remark-prismjs'
+import visit from 'unist-util-visit'
+import remarkPrism from 'remark-prism'
 import type {Post} from 'types'
 import config from '../../blog.config.json'
 
@@ -16,11 +17,14 @@ async function getPost(name: string): Promise<Post> {
 
   const {body, attributes} = parseFrontMatter<Post['attributes']>(contents)
   const result = await remark()
-    .use(() => markdownAST => {
-      gatsbyPrism({markdownAST}, {showLineNumbers: true})
-      return markdownAST
-    })
+    .use(remarkPrism)
     .use(html)
+    .use(() => markdownAst => {
+      visit(markdownAst, 'image', node => {
+        const url = (node.url as string).replace('./', '')
+        node.url = `/__img/content/blog/${name}/${url}`
+      })
+    })
     .process(body)
 
   return {

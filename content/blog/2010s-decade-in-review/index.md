@@ -1,14 +1,11 @@
 ---
-slug: '2010s-decade-in-review'
 title: '2010s Decade in Review'
-date: '2019-12-31'
-author: 'Kent C. Dodds'
+date: 2019-12-31
 description: '_The 2010s are over, time to think back, then forward_'
 categories:
   - 'review'
 keywords:
   - 'career'
-banner: './images/banner.jpg'
 bannerCredit: 'Photo by [Joshua Earle](https://unsplash.com/photos/ICE__bo2Vws)'
 ---
 
