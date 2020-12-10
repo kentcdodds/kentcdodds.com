@@ -10,19 +10,24 @@ export function headers({loaderHeaders}: {loaderHeaders: Headers}) {
 
 export function meta({data: post}: {data: Post}) {
   return {
-    title: post.attributes.title,
+    title: post.frontmatter.title,
   }
 }
 
 function PostScreen() {
-  const post = useRouteData<Post>()
+  const {js, frontmatter} = useRouteData<Post>()
+  // eslint-disable-next-line
+  const fn = new Function('React', js)
+  const Component = fn(React)
   return (
     <>
       <header>
-        <h1>{post.attributes.title}</h1>
-        <p>{post.attributes.description}</p>
+        <h1>{frontmatter.title}</h1>
+        <p>{frontmatter.description}</p>
       </header>
-      <main dangerouslySetInnerHTML={{__html: post.html ?? ''}} />
+      <main>
+        <Component />
+      </main>
     </>
   )
 }

@@ -1,13 +1,16 @@
-declare module 'sort-by'
+declare module '@mdx-js/mdx'
 
-type Post = {
+type PostListing = {
   name: string
-  html?: string
-  attributes: {
+  frontmatter: {
     title: string
     description: string
-    updated: number
     published: number
   }
 }
-export {Post}
+
+type Post = PostListing & {
+  js: string
+}
+
+export {Post, PostListing}

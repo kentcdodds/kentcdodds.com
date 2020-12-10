@@ -1,6 +1,6 @@
 import React from 'react'
 import {useRouteData, Link} from '@remix-run/react'
-import type {Post} from 'types'
+import type {PostListing} from 'types'
 
 export function headers() {
   return {
@@ -16,7 +16,8 @@ export function meta() {
 }
 
 export default function Index() {
-  const posts = useRouteData<Array<Post>>()
+  const posts = useRouteData<Array<PostListing>>()
+  console.log(posts)
   return (
     <div>
       <header>
@@ -25,9 +26,9 @@ export default function Index() {
       <main>
         {posts.map(post => (
           <p key={post.name}>
-            <Link to={`/blog/${post.name}`}>{post.attributes.title}</Link>
+            <Link to={`/blog/${post.name}`}>{post.frontmatter.title}</Link>
             <br />
-            <small>{post.attributes.description}</small>
+            <small>{post.frontmatter.description}</small>
           </p>
         ))}
       </main>

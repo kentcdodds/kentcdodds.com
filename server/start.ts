@@ -25,13 +25,11 @@ app.get('/feed.xml', async (req, res) => {
       const href = `${config.url}/${post.name}`
       return `
         <entry>
-          <title>${post.attributes.title}</title>
+          <title>${post.frontmatter.title}</title>
           <link href="${href}"/>
           <id>${href}</id>
-          <updated>${
-            post.attributes.updated || post.attributes.published
-          }</updated>
-          <summary>${post.attributes.description}</summary>
+          <updated>${post.frontmatter.published}</updated>
+          <summary>${post.frontmatter.description}</summary>
         </entry>
     `
     })

@@ -7,7 +7,7 @@ const loader: Loader = async ({params}) => {
 
   const oneDay = 86400
   const secondsSincePublished =
-    (new Date().getTime() - post.attributes.published) / 1000
+    (new Date().getTime() - post.frontmatter.published) / 1000
   const barelyPublished = secondsSincePublished < oneDay
 
   // If this was barely published then only cache it for one minute, giving you
