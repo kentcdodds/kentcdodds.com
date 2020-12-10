@@ -45,19 +45,31 @@ async function getPosts(): Promise<Array<Post>> {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-async function getPostsFromFS() {
-  const dir = path.join(__dirname, '..', '..', 'app', 'posts')
-  const files = (await fs.readdir(dir)).filter(file => !file.startsWith('.'))
-  return Promise.all(
-    files.map(async name => {
-      const contents = await fs.readFile(path.join(dir, name))
-      return {name, contents: contents.toString()}
-    }),
-  )
+const isDir = async (d: string) => (await fs.lstat(d)).isDirectory()
+
+function typedBoolean<T>(
+  value: T,
+): value is Exclude<T, false | null | undefined | '' | 0> {
+  return Boolean(value)
 }
 
+async function getPostsFromFS() {
+  const dir = path.join(__dirname, '../../content/blog')
+  const dirList = await fs.readdir(dir)
+  const promises = dirList.map(async name => {
+    const fullPath = path.join(dir, name)
+    if (name.startsWith('.') || !(await isDir(fullPath))) return null
+
+    const contents = await fs.readFile(path.join(fullPath, 'index.md'))
+    return {name, contents: contents.toString()}
+  })
+  const posts = (await Promise.all(promises)).filter(typedBoolean)
+  return posts
+}
+
+// TODO: make this work
 async function getPostsFromGitHub() {
-  const url = `https://api.github.com/repos/${config.repo}/contents/app/posts?ref=${config.branch}`
+  const url = `https://api.github.com/repos/${config.repo}/contents/content/blog?ref=${config.branch}`
   const res = await fetch(url, {
     headers: {
       authorization: `token ${process.env.GH_TOKEN}`,
@@ -74,8 +86,8 @@ async function getPostsFromGitHub() {
 }
 
 async function getPostFromFS(param: string) {
-  const dir = path.join(__dirname, '..', '..', 'app', 'posts')
-  const file = await fs.readFile(path.join(dir, `${param}.md`))
+  const dir = path.join(__dirname, '../../content/blog')
+  const file = await fs.readFile(path.join(dir, `${param}/index.md`))
   return file.toString()
 }
 
