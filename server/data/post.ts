@@ -3,16 +3,14 @@ import path from 'path'
 import sortBy from 'sort-by'
 import visit from 'unist-util-visit'
 import remarkPrism from 'remark-prism'
+import {remarkEmbedder} from 'remark-embedder'
+import matter from 'gray-matter'
 import {rollup} from 'rollup'
 import {babel as rollupBabel} from '@rollup/plugin-babel'
 import {terser} from 'rollup-plugin-terser'
 import type {Node} from 'unist'
-import type {VFile} from 'vfile'
 // @ts-expect-error no types and can't declare for some reason?
 import {createCompiler} from '@mdx-js/mdx'
-import setFrontmatter from 'remark-frontmatter'
-import remove from 'unist-util-remove'
-import yaml from 'yaml'
 import type {Post, PostListing} from 'types'
 
 async function getPost(name: string): Promise<Post> {
@@ -34,8 +32,10 @@ async function getPosts(): Promise<Array<PostListing>> {
     const fullPath = path.join(dir, name)
     if (name.startsWith('.') || !(await isDir(fullPath))) return null
 
-    const compiledMdx = await compileMdx(name)
-    const frontmatter = compiledMdx.data.frontmatter
+    const mdxFilePath = path.join(fullPath, 'index.mdx')
+    const mdxContents = await fs.readFile(mdxFilePath)
+    const matterResult = matter(mdxContents)
+    const frontmatter = matterResult.data as PostListing['frontmatter']
     return {name, frontmatter}
   })
   const posts = (await Promise.all(promises)).filter(typedBoolean)
@@ -46,38 +46,13 @@ async function getPosts(): Promise<Array<PostListing>> {
 ////////////////////////////////////////////////////////////////////////////////
 async function compilePost(name: string) {
   const dir = path.join(__dirname, '../../content/blog')
-  const compiledMdx = await compileMdx(name)
-  const entryCode = compiledMdx.contents
-  const frontmatter = compiledMdx.data.frontmatter
-  const entryPath = path.join(dir, name, './index.mdx.js')
-  const code = await bundleCode(entryCode, entryPath)
-
-  return {
-    js: `
-${code}
-Component.frontmatter = ${JSON.stringify(frontmatter ?? {})}
-return Component;
-  `.trim(),
-    frontmatter,
-  }
-}
-
-async function compileMdx(name: string) {
-  const dir = path.join(__dirname, '../../content/blog')
-  const mdxContents = await fs.readFile(path.join(dir, `${name}/index.mdx`))
+  const mdxFilePath = path.join(dir, `${name}/index.mdx`)
+  const fileContents = await fs.readFile(mdxFilePath)
+  const {data, content: mdx} = matter(fileContents)
+  const frontmatter = data as Post['frontmatter']
 
   const mdxCompiler = createCompiler({
     remarkPlugins: [
-      [setFrontmatter, ['yaml']],
-      function extractFrontmatter() {
-        return function transformer(tree: Node, file: VFile) {
-          visit(tree, 'yaml', function visitor(node) {
-            const data = file.data as Record<string, unknown>
-            data.frontmatter = yaml.parse(node.value as string)
-          })
-          remove(tree, 'yaml')
-        }
-      },
       remarkPrism,
       function remapImageUrls() {
         return function transformer(tree: Node) {
@@ -87,10 +62,19 @@ async function compileMdx(name: string) {
           })
         }
       },
+      remarkEmbedder,
     ],
   })
 
-  return mdxCompiler.process(mdxContents)
+  const {contents: entryCode} = await mdxCompiler.process(mdx)
+
+  const entryPath = path.join(dir, name, './index.mdx.js')
+  const code = await bundleCode(entryCode, entryPath)
+
+  return {
+    js: `${code};return Component;`,
+    frontmatter,
+  }
 }
 
 async function bundleCode(code: string, entry: string) {

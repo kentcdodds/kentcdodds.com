@@ -17,7 +17,6 @@ export function meta() {
 
 export default function Index() {
   const posts = useRouteData<Array<PostListing>>()
-  console.log(posts)
   return (
     <div>
       <header>
