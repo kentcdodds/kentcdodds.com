@@ -1,4 +1,15 @@
-declare module '@mdx-js/mdx'
+declare module '@mdx-js/mdx' {}
+declare module '@mdx-js/react' {}
+
+declare global {
+  interface Window {
+    twttr: {
+      widgets: {
+        load: (node?: Element) => Promise<void>
+      }
+    }
+  }
+}
 
 type PostListing = {
   name: string

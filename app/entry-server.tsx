@@ -2,6 +2,7 @@ import * as React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import type {EntryContext} from '@remix-run/core'
 import Remix from '@remix-run/react/server'
+import {ThemeProvider} from './theme-provider'
 
 import App from './app'
 
@@ -13,7 +14,9 @@ export default function handleRequest(
 ) {
   const markup = ReactDOMServer.renderToString(
     <Remix context={remixContext} url={request.url}>
-      <App />
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
     </Remix>,
   )
 

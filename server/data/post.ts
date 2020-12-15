@@ -102,7 +102,7 @@ async function bundleCode(code: string, entry: string) {
         exclude: /node_modules/,
         extensions: ['.js', '.ts', '.tsx', '.md', '.mdx'],
         presets: [
-          '@babel/preset-react',
+          ['@babel/preset-react', {pragma: 'mdx'}],
           ['@babel/preset-env', {targets: {node: '12'}}],
           ['@babel/preset-typescript', {allExtensions: true, isTSX: true}],
         ],

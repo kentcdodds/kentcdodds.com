@@ -1,6 +1,7 @@
 import * as React from 'react'
 import ReactDOM from 'react-dom'
 import Remix from '@remix-run/react/browser'
+import {ThemeProvider} from './theme-provider'
 
 import App from './app'
 
@@ -10,7 +11,9 @@ ReactDOM.hydrate(
   // `document` object as well. This is a bug in @types/react-dom that we can
   // safely ignore for now.
   <Remix>
-    <App />
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
   </Remix>,
   document,
 )

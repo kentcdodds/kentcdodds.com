@@ -1,15 +1,23 @@
 import * as React from 'react'
-import {Meta, Styles, Routes} from '@remix-run/react'
+import {Meta, Styles, Routes, Scripts} from '@remix-run/react'
+import {useLocation} from 'react-router-dom'
+import {useTheme} from './theme-provider'
 
-export default function App() {
+const noScriptPaths = new Set(['/'])
+
+function App() {
+  const [theme] = useTheme()
+  const location = useLocation()
+  const includeScripts = !noScriptPaths.has(location.pathname)
   return (
-    <html lang="en">
+    <html lang="en" className={theme}>
       <head>
         <meta charSet="utf-8" />
         <meta
           name="viewport"
           content="width=device-width,initial-scale=1,viewport-fit=cover"
         />
+        <meta name="twitter:widgets:autoload" content="off" />
         <Meta />
 
         <link
@@ -42,8 +50,19 @@ export default function App() {
       <body className="text-green-900 bg-gray-100 dark:bg-gray-800 dark:text-green-300">
         <Routes />
         {/* there's little reason to include JS on a markdown blog */}
-        {/* <Scripts /> */}
+        {includeScripts ? (
+          <>
+            <Scripts />
+            <script
+              async
+              src="https://platform.twitter.com/widgets.js"
+              charSet="utf-8"
+            />
+          </>
+        ) : null}
       </body>
     </html>
   )
 }
+
+export default App

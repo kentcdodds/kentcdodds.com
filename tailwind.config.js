@@ -11,7 +11,7 @@ const dir = __dirname.endsWith('storybook')
 const fromRoot = p => path.join(dir, p)
 
 module.exports = {
-  darkMode: 'media',
+  darkMode: 'class',
   variants: {
     opacity: ['responsive', 'hover', 'focus', 'dark'],
     boxShadow: ['responsive', 'hover', 'focus', 'dark'],
