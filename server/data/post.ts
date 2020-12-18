@@ -1,15 +1,19 @@
-import fs from 'fs/promises'
 import path from 'path'
+import fs from 'fs-extra'
 import sortBy from 'sort-by'
 import visit from 'unist-util-visit'
 import remarkPrism from 'remark-prism'
-import {remarkEmbedder} from 'remark-embedder'
+import cacheManager from 'cache-manager'
+import type {Cache as CMCache} from 'cache-manager'
+import fsStore from 'cache-manager-fs'
+import remarkEmbedder from '@remark-embedder/core'
+import oembedTransformer from '@remark-embedder/transformer-oembed'
+import type {Config as OEmbedConfig} from '@remark-embedder/transformer-oembed'
 import matter from 'gray-matter'
 import {rollup} from 'rollup'
 import {babel as rollupBabel} from '@rollup/plugin-babel'
 import {terser} from 'rollup-plugin-terser'
 import type {Node} from 'unist'
-// @ts-expect-error no types and can't declare for some reason?
 import {createCompiler} from '@mdx-js/mdx'
 import type {Post, PostListing} from 'types'
 
@@ -44,6 +48,62 @@ async function getPosts(): Promise<Array<PostListing>> {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+const getOEmbedConfig: OEmbedConfig = ({provider}) => {
+  if (provider.provider_name === 'Twitter') {
+    return {
+      params: {
+        dnt: true,
+        theme: 'dark',
+        omit_script: true,
+      },
+    }
+  }
+  return null
+}
+
+const TTL = Number.MAX_SAFE_INTEGER
+
+class Cache {
+  public cache?: CMCache
+
+  constructor() {
+    const directory = path.join(
+      process.cwd(),
+      'node_modules/.cache/@remark-embedder',
+    )
+    fs.ensureDirSync(directory)
+    this.cache = cacheManager.caching({
+      store: fsStore,
+      ttl: TTL,
+      options: {
+        ttl: TTL,
+        path: directory,
+      },
+    })
+  }
+
+  get(key: string): Promise<string | undefined> {
+    return new Promise(resolve => {
+      if (!this.cache) throw new Error('Cache not initialized')
+      this.cache.get(key, (err: Error | undefined, res: string) => {
+        resolve(err ? undefined : res)
+      })
+    })
+  }
+
+  set(key: string, value: string): Promise<string | undefined> {
+    return new Promise(resolve => {
+      if (!this.cache) throw new Error('Cache not initialized')
+
+      this.cache.set(key, value, {ttl: TTL}, (err: Error | undefined) => {
+        resolve(err ? undefined : value)
+      })
+    })
+  }
+}
+
+const cache = new Cache()
+
 async function compilePost(name: string) {
   const dir = path.join(__dirname, '../../content/blog')
   const mdxFilePath = path.join(dir, `${name}/index.mdx`)
@@ -62,7 +122,10 @@ async function compilePost(name: string) {
           })
         }
       },
-      remarkEmbedder,
+      [
+        remarkEmbedder,
+        {cache, transformers: [[oembedTransformer, getOEmbedConfig]]},
+      ],
     ],
   })
 

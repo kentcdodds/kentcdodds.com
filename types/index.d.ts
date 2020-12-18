@@ -1,6 +1,3 @@
-declare module '@mdx-js/mdx' {}
-declare module '@mdx-js/react' {}
-
 declare global {
   interface Window {
     twttr: {
