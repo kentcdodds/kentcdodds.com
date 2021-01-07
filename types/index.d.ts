@@ -1,6 +1,6 @@
 declare global {
   interface Window {
-    twttr: {
+    twttr?: {
       widgets: {
         load: (node?: Element) => Promise<void>
       }

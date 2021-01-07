@@ -1,13 +1,13 @@
 import * as React from 'react'
 import {Outlet} from 'react-router'
 
-function IndexRoute() {
+function BlogRoute() {
   return (
     <div>
-      INDEX
+      BLOG
       <Outlet />
     </div>
   )
 }
 
-export default IndexRoute
+export default BlogRoute

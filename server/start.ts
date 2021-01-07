@@ -2,12 +2,20 @@ import path from 'path'
 import express from 'express'
 import 'express-async-errors'
 import {createRequestHandler} from '@remix-run/express'
+import cookieSession from 'cookie-session'
 import config from './blog.config.json'
 import {getPosts} from './data/post'
 
 const app = express()
 
 app.use(express.static('public'))
+
+app.use(
+  cookieSession({
+    name: 'kcd:yo',
+    secret: 'the secret yo', // TODO: make this an env var
+  }),
+)
 
 // This is here for start-server-and-run which makes a HEAD
 // request to "/" for it to know that the server is ready.
@@ -51,7 +59,6 @@ app.get('/feed.xml', async (req, res) => {
 app.get(
   '*',
   createRequestHandler({
-    enableSessions: false,
     getLoadContext() {
       return {}
     },
@@ -63,3 +70,8 @@ const port = process.env.PORT ?? 3000
 app.listen(port, () => {
   console.log(`Express server started on http://localhost:${port}`)
 })
+
+/*
+eslint
+  @typescript-eslint/no-misused-promises: "off",
+*/

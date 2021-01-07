@@ -50,16 +50,12 @@ function App() {
       <body className="text-green-900 bg-gray-100 dark:bg-gray-800 dark:text-green-300">
         <Routes />
         {/* there's little reason to include JS on a markdown blog */}
-        {includeScripts ? (
-          <>
-            <Scripts />
-            <script
-              async
-              src="https://platform.twitter.com/widgets.js"
-              charSet="utf-8"
-            />
-          </>
-        ) : null}
+        {includeScripts ? <Scripts /> : null}
+        <script
+          async
+          src="https://platform.twitter.com/widgets.js"
+          charSet="utf-8"
+        />
       </body>
     </html>
   )

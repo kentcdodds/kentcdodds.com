@@ -24,7 +24,7 @@ function loadTweet(event: MouseEvent) {
     '.twitter-tweet',
   )
   if (tweetNode) {
-    void window.twttr.widgets.load(tweetNode)
+    void window.twttr?.widgets.load(tweetNode)
   }
 }
 
@@ -45,7 +45,7 @@ function useEmbeddedTweets() {
       }
     }
     if (!reducedData) {
-      void window.twttr.widgets.load()
+      void window.twttr?.widgets.load()
     }
   }, [])
 }

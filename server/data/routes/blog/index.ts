@@ -1,6 +1,6 @@
 import type {Loader} from '@remix-run/data'
 import {json} from '@remix-run/data'
-import {getPosts} from '../post'
+import {getPosts} from '../../post'
 
 const loader: Loader = async () => {
   return json(await getPosts(), {
