@@ -9,7 +9,7 @@ module.exports = {
       settings: {
         'import/resolver': {
           jest: {
-            jestConfigFile: './config/jest.config.client.js',
+            jestConfigFile: './jest.config.js',
           },
         },
       },
