@@ -1,6 +1,17 @@
 import React from 'react'
 import {useRouteData, Link} from '@remix-run/react'
 import type {PostListing} from 'types'
+import type {Loader} from '@remix-run/data'
+import {json} from '@remix-run/data'
+import {getPosts} from '../../utils/post'
+
+export const loader: Loader = async () => {
+  return json(await getPosts(), {
+    headers: {
+      'cache-control': 'public, max-age=300, stale-while-revalidate=86400',
+    },
+  })
+}
 
 export function headers() {
   return {

@@ -18,7 +18,7 @@ function typedBoolean<T>(
 }
 
 async function getPosts(): Promise<Array<PostListing>> {
-  const dir = path.join(__dirname, '../../content/blog')
+  const dir = path.join(__dirname, '../../../content/blog')
   const dirList = await fs.readdir(dir)
   const promises = dirList.map(async name => {
     const fullPath = path.join(dir, name)

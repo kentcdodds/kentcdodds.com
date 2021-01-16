@@ -1,11 +1,22 @@
 import * as React from 'react'
 import {useRouteData, usePendingFormSubmit} from '@remix-run/react'
+import type {Loader, Action} from '@remix-run/data'
+import {json, redirect} from '@remix-run/data'
 
-function ContactRoute() {
+export const action: Action = ({session}) => {
+  session.set('success', 'true')
+  return redirect('/contact')
+}
+
+export const loader: Loader = ({session}) => {
+  return json({success: session.get('success') === 'true'})
+}
+
+export default function ContactRoute() {
   console.log(useRouteData())
   console.log(usePendingFormSubmit())
   return (
-    <form method="post" action="/contact">
+    <form method="post">
       <fieldset>
         <div>
           <label htmlFor="contact-name">Name</label>
@@ -30,5 +41,3 @@ function ContactRoute() {
     </form>
   )
 }
-
-export default ContactRoute

@@ -31,7 +31,7 @@ const getOEmbedConfig: OEmbedConfig = ({provider}) => {
 const cache = new Cache()
 
 async function compilePost(name: string) {
-  const dir = path.join(__dirname, '../../content/blog')
+  const dir = path.join(__dirname, '../../../content/blog')
   const mdxFilePath = path.join(dir, `${name}/index.mdx`)
   const fileContents = await fs.readFile(mdxFilePath)
   const {data, content: mdx} = matter(fileContents)
