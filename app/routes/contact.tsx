@@ -39,7 +39,8 @@ export default function ContactRoute() {
   const data = useRouteData()
   console.log('route', data)
   return (
-    <>
+    <div>
+      <h1>Contact Kent</h1>
       <form method="post">
         <fieldset>
           <div>
@@ -63,12 +64,6 @@ export default function ContactRoute() {
           </div>
         </fieldset>
       </form>
-      <form method="post">
-        <div>Clear thing</div>
-        <button name={clearKey} value="true">
-          submit
-        </button>
-      </form>
-    </>
+    </div>
   )
 }

@@ -20,7 +20,7 @@
   "scripts": {
     "build": "npm run css:build && remix build",
     "dev": "pm2-dev pm2.config.js",
-    "start": "node server.js",
+    "start": "node start.js",
     "css:build": "postcss styles --base styles --dir app/ --env production",
     "css:watch": "postcss styles --base styles --dir app/ -w",
     "cy:run": "cypress run",

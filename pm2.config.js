@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'Express',
-      script: 'server.js',
+      script: 'start.js',
       watch: ['remix.config.js', 'app'],
       watch_options: {
         followSymlinks: false,
