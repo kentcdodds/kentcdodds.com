@@ -1,9 +1,21 @@
 import * as React from 'react'
-import {Meta, Styles, Routes, Scripts} from '@remix-run/react'
-import {useLocation} from 'react-router-dom'
-import {useTheme} from './theme-provider'
+import {Meta, Styles, Scripts} from '@remix-run/react'
+import {useLocation, Outlet} from 'react-router-dom'
+import {useTheme, ThemeProvider} from './theme-provider'
 
 const noScriptPaths = new Set(['/'])
+
+export function meta() {
+  return {
+    title: 'Kent C. Dodds',
+    description:
+      'Come check out how Kent C. Dodds can help you level up your career as a software engineer.',
+    viewport: 'width=device-width,initial-scale=1,viewport-fit=cover',
+    charSet: 'utf-8',
+    'color-scheme': 'dark light',
+    'twitter:widgets:autoload': 'off',
+  }
+}
 
 function App() {
   const [theme] = useTheme()
@@ -12,12 +24,6 @@ function App() {
   return (
     <html lang="en" className={theme}>
       <head>
-        <meta charSet="utf-8" />
-        <meta
-          name="viewport"
-          content="width=device-width,initial-scale=1,viewport-fit=cover"
-        />
-        <meta name="twitter:widgets:autoload" content="off" />
         <Meta />
 
         <link
@@ -48,7 +54,7 @@ function App() {
         <Styles />
       </head>
       <body className="text-green-900 bg-gray-100 dark:bg-gray-800 dark:text-green-300">
-        <Routes />
+        <Outlet />
         {/* there's little reason to include JS on a markdown blog */}
         {includeScripts ? <Scripts /> : null}
         <script
@@ -61,4 +67,10 @@ function App() {
   )
 }
 
-export default App
+export default function AppWithProviders() {
+  return (
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
+  )
+}

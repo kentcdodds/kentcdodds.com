@@ -12,6 +12,9 @@ module.exports = {
     'react/no-adjacent-inline-elements': 'off',
     'no-console': 'off',
 
+    // meh...
+    '@typescript-eslint/unbound-method': 'off',
+
     // this didn't seem to work 🤔
     '@typescript-eslint/restrict-template-expressions': 'off',
     // I can't figure these out:

@@ -13,8 +13,17 @@ module.exports = {
     },
     {
       name: 'Remix',
-      script: 'remix run',
+      // ignoring the error output because of circular deps with the compile-mdx stuff
+      script: 'remix run 2> /dev/null',
       ignore_watch: ['.'],
+      env: {
+        NODE_ENV: 'development',
+      },
+    },
+    {
+      name: 'PostCSS',
+      script: 'postcss styles --base styles --dir app/ -w',
+      watch: ['styles'],
       env: {
         NODE_ENV: 'development',
       },
