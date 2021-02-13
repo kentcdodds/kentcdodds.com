@@ -71,7 +71,8 @@ const sendContactEmail: Action = async ({request}) => {
 
   const acceptable =
     (url.hostname === 'localhost' && username === 'kentcdodds') ||
-    url.hostname === 'kentcdodds.com'
+    url.hostname === 'kentcdodds.com' ||
+    url.hostname === 'kentcdodds-remix.herokuapp.com'
 
   if (!acceptable) {
     session.flash('error', 'Unacceptable request')
