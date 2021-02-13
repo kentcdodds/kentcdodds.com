@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'Express',
-      script: 'start.js',
+      script: 'node start.js --inspect-brk',
       watch: ['remix.config.js', 'app'],
       watch_options: {
         followSymlinks: false,

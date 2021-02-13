@@ -19,3 +19,5 @@ storybook/tailwind.config.js
 storybook/postcss.config.js
 
 /other/google-app-creds.json
+
+.env
