@@ -61,13 +61,14 @@ const ThemeContext = React.createContext<ThemeContextType | undefined>(
   undefined,
 )
 
+const preferDarkQuery = '(prefers-color-scheme: dark)'
+
 function ThemeProvider(props: React.PropsWithChildren<{}>) {
   const [theme, setTheme] = React.useState<ThemeIds>(() => {
     const darkMode =
       typeof window === 'undefined' ||
       localStorage.theme === 'dark' ||
-      (!('theme' in localStorage) &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches)
+      (!('theme' in localStorage) && window.matchMedia(preferDarkQuery).matches)
     return darkMode ? 'dark' : 'light'
   })
 
@@ -77,6 +78,15 @@ function ThemeProvider(props: React.PropsWithChildren<{}>) {
       document.documentElement.style.setProperty(key, value)
     }
   }, [theme])
+
+  React.useEffect(() => {
+    const mediaQuery = window.matchMedia(preferDarkQuery)
+    const handleChange = () => {
+      setTheme(mediaQuery.matches ? 'dark' : 'light')
+    }
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
 
   const value = React.useMemo<ThemeContextType>(() => [theme, setTheme], [
     theme,

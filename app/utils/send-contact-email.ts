@@ -64,7 +64,6 @@ const transporter = nodemailer.createTransport({
 const sendContactEmail: Action = async ({request}) => {
   const url = new URL(request.url)
   const runId = Date.now().toString().slice(-5)
-  // eslint-disable-next-line no-console
   const log = (...args: Array<unknown>) => console.log(runId, ...args)
 
   const session = await getSession(request.headers.get('Cookie') ?? undefined)
@@ -164,6 +163,7 @@ const sendContactEmail: Action = async ({request}) => {
     })
   }
 
+  session.unset('fields')
   session.flash('result', {name, email, subject})
   return redirect('/contact/success', {
     headers: {

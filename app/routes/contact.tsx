@@ -1,20 +1,14 @@
-import * as React from 'react'
-import type {Loader, Action} from '@remix-run/data'
-import {json} from '@remix-run/data'
+import type {Action, Loader} from '@remix-run/data'
 import {useRouteData} from '@remix-run/react'
+import * as React from 'react'
+import {sendSessionValue} from '../utils/load-session'
 import {sendContactEmail} from '../utils/send-contact-email'
-import {getSession} from '../session-storage'
 
 export const action: Action = sendContactEmail
-
-export const loader: Loader = async ({request}) => {
-  const session = await getSession(request.headers.get('Cookie') ?? undefined)
-  return json({error: session.get('error')})
-}
+export const loader: Loader = sendSessionValue({error: null})
 
 export default function ContactRoute() {
   const data = useRouteData()
-  console.log('route', data)
   return (
     <div>
       <h1>Contact Kent</h1>
@@ -34,7 +28,7 @@ export default function ContactRoute() {
           </div>
           <div>
             <label htmlFor="contact-body">Body</label>
-            <input name="body" id="contact-body" />
+            <textarea name="body" id="contact-body" />
           </div>
           <div>
             <input type="submit" />

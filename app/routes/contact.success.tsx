@@ -1,12 +1,9 @@
-import {json, Loader} from '@remix-run/data'
+import type {Loader} from '@remix-run/data'
 import {useRouteData} from '@remix-run/react'
 import * as React from 'react'
-import {getSession} from '../session-storage'
+import {sendSessionValue} from '../utils/load-session'
 
-export const loader: Loader = async ({request}) => {
-  const session = await getSession(request.headers.get('Cookie') ?? undefined)
-  return json({result: session.get('result')})
-}
+export const loader: Loader = sendSessionValue({result: null})
 
 function ContactSuccess() {
   const data = useRouteData()
