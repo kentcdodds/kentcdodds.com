@@ -6,6 +6,8 @@ on:
     branches-ignore: ['all-contributors/**']
 env:
   REMIX_REGISTRY_TOKEN: ${{ secrets.REMIX_REGISTRY_TOKEN }}
+  EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+  EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
 jobs:
   main:
     runs-on: ubuntu-latest
@@ -50,6 +52,8 @@ jobs:
           HD_REMIX_REGISTRY_TOKEN: ${{ secrets.REMIX_REGISTRY_TOKEN }}
           HD_CYPRESS_INSTALL_BINARY: '0'
           HD_HUSKY_SKIP_INSTALL: '1'
+          HD_EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+          HD_EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
         with:
           heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
           heroku_app_name: kentcdodds-remix
