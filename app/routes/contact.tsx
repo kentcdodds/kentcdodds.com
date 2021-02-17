@@ -2,7 +2,7 @@ import type {Action, Loader} from '@remix-run/data'
 import {useRouteData} from '@remix-run/react'
 import * as React from 'react'
 import {sendSessionValue} from '../utils/load-session'
-import {sendContactEmail} from '../utils/send-contact-email'
+import {sendContactEmail} from '../utils/send-contact-email.server'
 
 export const action: Action = sendContactEmail
 export const loader: Loader = sendSessionValue({error: null})

@@ -9,7 +9,7 @@ declare global {
 }
 
 type PostListing = {
-  name: string
+  slug: string
   frontmatter: {
     title: string
     description: string
@@ -18,7 +18,7 @@ type PostListing = {
 }
 
 type Post = PostListing & {
-  js: string
+  code: string
 }
 
 export {Post, PostListing}

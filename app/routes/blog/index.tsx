@@ -3,7 +3,7 @@ import {useRouteData, Link} from '@remix-run/react'
 import type {PostListing} from 'types'
 import type {Loader} from '@remix-run/data'
 import {json} from '@remix-run/data'
-import {getPosts} from '../../utils/post'
+import {getPosts} from '../../utils/post.server'
 
 export const loader: Loader = async () => {
   return json(await getPosts(), {
@@ -35,8 +35,8 @@ function BlogHome() {
       </header>
       <main>
         {posts.map(post => (
-          <p key={post.name}>
-            <Link to={`/blog/${post.name}`}>{post.frontmatter.title}</Link>
+          <p key={post.slug}>
+            <Link to={`/blog/${post.slug}`}>{post.frontmatter.title}</Link>
             <br />
             <small>{post.frontmatter.description}</small>
           </p>

@@ -3,15 +3,15 @@ import type {Loader} from '@remix-run/data'
 import {json} from '@remix-run/data'
 import {useRouteData} from '@remix-run/react'
 import {Link} from 'react-router-dom'
-// @ts-expect-error no types and can't declare for some reason?
-import {MDXProvider, mdx} from '@mdx-js/react'
+import {MDXProvider} from '@mdx-js/react'
+import {getMDXComponent} from 'mdx-bundler/dist/client'
 import type {Post} from 'types'
 import {useSSRLayoutEffect} from '../../shared'
 import {useTheme} from '../../theme-provider'
-import {getPost} from '../../utils/post'
+import {getPost} from '../../utils/post.server'
 
 export const loader: Loader = async ({params}) => {
-  const post = await getPost(params.name)
+  const post = await getPost(params.slug)
 
   const oneDay = 86400
   const secondsSincePublished =
@@ -98,11 +98,8 @@ function AnchorOrLink({href = '', ...rest}: AnchorProps) {
 
 function PostScreen() {
   useEmbeddedTweets()
-  const {js, frontmatter} = useRouteData<Post>()
-  const scope = {React, Link, mdx}
-  // eslint-disable-next-line
-  const fn = new Function(...Object.keys(scope), js)
-  const Component = fn(...Object.values(scope))
+  const {code, frontmatter} = useRouteData<Post>()
+  const Component = React.useMemo(() => getMDXComponent(code), [code])
 
   return (
     <MDXProvider components={{a: AnchorOrLink}}>

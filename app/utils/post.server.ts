@@ -3,11 +3,11 @@ import fs from 'fs/promises'
 import sortBy from 'sort-by'
 import matter from 'gray-matter'
 import type {Post, PostListing} from 'types'
-import {compilePost} from './compile-mdx'
+import {compilePost} from './compile-mdx.server'
 
-async function getPost(name: string): Promise<Post> {
-  const {js, frontmatter} = await compilePost(name)
-  return {name, js, frontmatter}
+async function getPost(slug: string): Promise<Post> {
+  const {code, frontmatter} = await compilePost(slug)
+  return {slug, code, frontmatter: frontmatter as Post['frontmatter']}
 }
 
 const isDir = async (d: string) => (await fs.lstat(d)).isDirectory()
@@ -20,15 +20,15 @@ function typedBoolean<T>(
 async function getPosts(): Promise<Array<PostListing>> {
   const dir = path.join(__dirname, '../../../content/blog')
   const dirList = await fs.readdir(dir)
-  const promises = dirList.map(async name => {
-    const fullPath = path.join(dir, name)
-    if (name.startsWith('.') || !(await isDir(fullPath))) return null
+  const promises = dirList.map(async slug => {
+    const fullPath = path.join(dir, slug)
+    if (slug.startsWith('.') || !(await isDir(fullPath))) return null
 
     const mdxFilePath = path.join(fullPath, 'index.mdx')
     const mdxContents = await fs.readFile(mdxFilePath)
     const matterResult = matter(mdxContents)
     const frontmatter = matterResult.data as PostListing['frontmatter']
-    return {name, frontmatter}
+    return {slug, frontmatter}
   })
   const posts = (await Promise.all(promises)).filter(typedBoolean)
 
