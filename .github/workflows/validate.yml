@@ -29,14 +29,13 @@ jobs:
       - name: ⬆️ Upload coverage report
         uses: codecov/codecov-action@v1
 
-      # TODO: re-enable this sometime...
-      # - name: 🌳 Cypress run
-      #   uses: cypress-io/github-action@v2
-      #   with:
-      #     start: npm start
-      #     wait-on: 'http://localhost:8811'
-      #   env:
-      #     PORT: 8811
+      - name: 🌳 Cypress run
+        uses: cypress-io/github-action@v2
+        with:
+          start: npm start
+          wait-on: 'http://localhost:8811'
+        env:
+          PORT: 8811
 
       - name: 🚀 Deploy
         # only deploy main branch on pushes
