@@ -1,17 +1,17 @@
 import React from 'react'
-import type {Loader} from '@remix-run/data'
 import {json} from '@remix-run/data'
 import {useRouteData} from '@remix-run/react'
 import {Link} from 'react-router-dom'
 import {MDXProvider} from '@mdx-js/react'
 import {getMDXComponent} from 'mdx-bundler/client'
-import type {Post} from 'types'
+import type {Post, KCDLoader} from 'types'
 import {useSSRLayoutEffect} from '../../shared'
 import {useTheme} from '../../theme-provider'
 import {getPost} from '../../utils/post.server'
 
-export const loader: Loader = async ({params}) => {
-  const post = await getPost(params.slug)
+export const loader: KCDLoader = async ({params, context}) => {
+  const post = await getPost(params.slug, context.octokit)
+  // context.octokit.repos.content
 
   const oneDay = 86400
   const secondsSincePublished =

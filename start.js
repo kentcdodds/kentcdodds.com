@@ -3,6 +3,11 @@ const path = require('path')
 const express = require('express')
 require('express-async-errors')
 const {createRequestHandler} = require('@remix-run/express')
+const {Octokit} = require('@octokit/rest')
+
+const octokit = new Octokit({
+  auth: process.env.BOT_GITHUB_TOKEN,
+})
 
 const app = express()
 
@@ -24,8 +29,8 @@ app.get('/__img/content/blog/*', (req, res) => {
 app.all(
   '*',
   createRequestHandler({
-    getLoadContext() {
-      return {}
+    getLoadContext(req, res) {
+      return {req, res, octokit}
     },
   }),
 )

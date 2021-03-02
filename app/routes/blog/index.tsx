@@ -1,12 +1,11 @@
 import React from 'react'
 import {useRouteData, Link} from '@remix-run/react'
-import type {PostListing} from 'types'
-import type {Loader} from '@remix-run/data'
+import type {KCDLoader, PostListing} from 'types'
 import {json} from '@remix-run/data'
 import {getPosts} from '../../utils/post.server'
 
-export const loader: Loader = async () => {
-  return json(await getPosts(), {
+export const loader: KCDLoader = async ({context}) => {
+  return json(await getPosts(context.octokit), {
     headers: {
       'cache-control': 'public, max-age=300, stale-while-revalidate=86400',
     },
