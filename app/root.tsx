@@ -2,7 +2,8 @@ import * as React from 'react'
 import {Links, Meta, Scripts} from '@remix-run/react'
 import type {LinksFunction} from '@remix-run/react'
 import {useLocation, Outlet} from 'react-router-dom'
-import styles from 'url:./global.css'
+import styles from 'css:./styles/app.css'
+import tailwind from 'css:./styles/tailwind.css'
 import {useTheme, ThemeProvider} from './theme-provider'
 
 export function meta() {
@@ -20,6 +21,7 @@ export function meta() {
 export const links: LinksFunction = () => {
   return [
     {rel: 'icon', href: '/favicon.ico'},
+    {rel: 'stylesheet', href: tailwind},
     {rel: 'stylesheet', href: styles},
     {
       rel: 'stylesheet',

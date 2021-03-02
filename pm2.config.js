@@ -21,13 +21,5 @@ module.exports = {
         NODE_ENV: 'development',
       },
     },
-    {
-      name: 'PostCSS',
-      script: 'postcss styles --base styles --dir app/ -w',
-      watch: ['styles'],
-      env: {
-        NODE_ENV: 'development',
-      },
-    },
   ],
 }

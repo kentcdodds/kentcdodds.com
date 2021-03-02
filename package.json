@@ -18,11 +18,10 @@
   },
   "homepage": "https://github.com/kentcdodds/remix-kentcdodds.com#readme",
   "scripts": {
-    "build": "npm run css:build && remix build",
+    "build": "remix build",
     "dev": "pm2-dev pm2.config.js",
     "start": "node start.js",
-    "css:build": "postcss styles --base styles --dir app/ --env production",
-    "css:watch": "postcss styles --base styles --dir app/ -w",
+    "start:prod": "cross-env NODE_ENV=production npm run start",
     "cy:run": "cypress run",
     "cy:open": "cypress open",
     "test:e2e": "start-server-and-test dev http://localhost:3000 cy:open",
@@ -93,8 +92,6 @@
     "cypress": "^6.6.0",
     "eslint-import-resolver-jest": "^3.0.0",
     "kcd-scripts": "^8.0.2",
-    "postcss": "^8.2.6",
-    "postcss-cli": "^8.3.1",
     "start-server-and-test": "^1.12.0",
     "typescript": "^4.2.2"
   },
