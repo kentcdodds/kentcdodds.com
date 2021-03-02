@@ -2,7 +2,7 @@ import * as React from 'react'
 import {Links, Meta, Scripts} from '@remix-run/react'
 import type {LinksFunction} from '@remix-run/react'
 import {useLocation, Outlet} from 'react-router-dom'
-import styles from 'url:./root.css'
+import styles from 'url:./global.css'
 import {useTheme, ThemeProvider} from './theme-provider'
 
 export function meta() {
