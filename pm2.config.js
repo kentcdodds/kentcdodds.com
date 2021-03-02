@@ -2,8 +2,8 @@ module.exports = {
   apps: [
     {
       name: 'Express',
-      script: 'node start.js',
-      watch: ['remix.config.js', 'app'],
+      script: 'ts-node -r ./mocks/index.ts start.js',
+      watch: ['remix.config.js', 'app', 'mocks'],
       watch_options: {
         followSymlinks: false,
       },

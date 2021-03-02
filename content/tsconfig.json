@@ -1,16 +1,7 @@
 {
-  "exclude": ["node_modules", "../types"],
+  "extends": "../shared-tsconfig.json",
+  "include": ["./**/*"],
   "compilerOptions": {
-    "baseUrl": ".",
-    "isolatedModules": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "jsx": "react",
-    "moduleResolution": "node",
-    "target": "es2019",
-    "strict": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "typeRoots": ["../types", "../node_modules/@types"]
+    "baseUrl": "."
   }
 }

@@ -1,13 +1,12 @@
 {
   "files": [],
   "exclude": ["node_modules"],
-  "compilerOptions": {
-    "noEmit": true
-  },
+  "extends": "./shared-tsconfig.json",
   "references": [
     {"path": "app"},
     {"path": "content"},
     {"path": "tests"},
+    {"path": "mocks"},
     {"path": "cypress"}
   ]
 }
