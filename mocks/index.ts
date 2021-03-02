@@ -1,19 +1,9 @@
-import * as childProcess from 'child_process'
 import * as nodePath from 'path'
 import * as fs from 'fs/promises'
 import {rest} from 'msw'
 import {setupServer} from 'msw/node'
 
 const isDirectory = async (d: string) => (await fs.lstat(d)).isDirectory()
-
-function exec(command: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    childProcess.exec(command, (error, stdout, stderr) => {
-      if (error || stderr) reject(stderr)
-      else resolve(stdout)
-    })
-  })
-}
 
 type GHContentsDescription = {
   name: string
@@ -54,8 +44,10 @@ const handlers = [
         dirList.map(
           async (name): Promise<GHContentsDescription> => {
             const relativePath = nodePath.join(path, name)
+            // NOTE: this is a cheat-code so we don't have to determine the sha of the file
+            // and our sha endpoint handler doesn't have to do a reverse-lookup.
+            const sha = relativePath
             const fullPath = nodePath.join(dir, name)
-            const sha = await exec(`git rev-parse HEAD:"${relativePath}"`)
             const isDir = await isDirectory(fullPath)
             const size = isDir ? 0 : (await fs.stat(fullPath)).size
             return {
@@ -86,10 +78,8 @@ const handlers = [
     async (req, res, ctx) => {
       const {owner, repo} = req.params
       const sha = decodeURIComponent(req.params.sha).trim()
-      const relativePath = (await exec(`git rev-list --objects --all`))
-        .split('\n')
-        .find(line => line.startsWith(sha))
-        ?.split(' ')[1]
+      // NOTE: we cheat a bit and in the contents/:path handler, we set the sha to the relativePath
+      const relativePath = sha
 
       if (!relativePath) {
         throw new Error(`Unable to find the file for the sha ${sha}`)
