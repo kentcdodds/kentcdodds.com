@@ -11,7 +11,6 @@ import {getPost} from '../../utils/post.server'
 
 export const loader: KCDLoader = async ({params, context}) => {
   const post = await getPost(params.slug, context.octokit)
-  // context.octokit.repos.content
 
   const oneDay = 86400
   const secondsSincePublished =

@@ -29,7 +29,7 @@
     "test": "kcd-scripts test",
     "lint": "kcd-scripts lint",
     "format": "kcd-scripts format",
-    "typecheck": "concurrently --names \"app,cypress\" --prefix-colors \"red,green,blue\" \"tsc --project app --noEmit\" \"tsc --project cypress --noEmit\"",
+    "typecheck": "tsc -b",
     "validate": "kcd-scripts validate",
     "setup": "npm install && npm run validate"
   },
@@ -92,6 +92,7 @@
     "cypress": "^6.6.0",
     "eslint-import-resolver-jest": "^3.0.0",
     "kcd-scripts": "^8.0.2",
+    "msw": "^0.27.0",
     "start-server-and-test": "^1.12.0",
     "typescript": "^4.2.2"
   },

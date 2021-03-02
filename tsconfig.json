@@ -1,4 +1,13 @@
 {
   "files": [],
-  "references": [{"path": "app"}, {"path": "content"}, {"path": "cypress"}]
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "references": [
+    {"path": "app"},
+    {"path": "content"},
+    {"path": "tests"},
+    {"path": "cypress"}
+  ]
 }

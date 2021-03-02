@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "isolatedModules": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "jsx": "react",
+    "moduleResolution": "node",
+    "target": "es2020",
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "typeRoots": ["./types", "./node_modules/@types"]
+  }
+}
