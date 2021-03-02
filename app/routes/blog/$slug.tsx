@@ -9,7 +9,7 @@ import {useSSRLayoutEffect} from '../../shared'
 import {useTheme} from '../../theme-provider'
 import {getPost} from '../../utils/post.server'
 
-export const loader: KCDLoader = async ({params, context}) => {
+export const loader: KCDLoader<{slug: string}> = async ({params, context}) => {
   const post = await getPost(params.slug, context.octokit)
 
   const oneDay = 86400

@@ -12,6 +12,9 @@ module.exports = {
     'react/no-adjacent-inline-elements': 'off',
     'no-console': 'off',
 
+    // this rule is quite slow...
+    'import/no-cycle': 'off',
+
     // meh...
     '@typescript-eslint/unbound-method': 'off',
 

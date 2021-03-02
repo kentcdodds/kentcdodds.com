@@ -3,6 +3,7 @@
   "exclude": ["node_modules"],
   "extends": "./shared-tsconfig.json",
   "references": [
+    {"path": "types"},
     {"path": "app"},
     {"path": "content"},
     {"path": "tests"},

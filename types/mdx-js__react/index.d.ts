@@ -27,7 +27,7 @@ declare module '@mdx-js/react' {
     | 'tr'
     | 'ul'
   export type Components = {
-    [key in ComponentType]?: React.ComponentType<any>
+    [key in ComponentType]?: React.ComponentType<unknown>
   }
   export interface MDXProviderProps {
     children: React.ReactNode

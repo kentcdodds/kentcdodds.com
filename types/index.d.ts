@@ -31,13 +31,21 @@ type LoaderContext = {
   octokit: Octokit
 }
 
-type lp = Parameters<Loader>
-
-type KCDLoader = (
-  args: Omit<Parameters<Loader>['0'], 'context'> & {context: LoaderContext},
+type KCDLoader<
+  Params extends Record<string, string> = Record<string, string>
+> = (
+  args: Omit<Parameters<Loader>['0'], 'context' | 'params'> & {
+    context: LoaderContext
+    params: Params
+  },
 ) => ReturnType<Loader>
-type KCDLoader = (
-  args: Omit<Parameters<Action>['0'], 'context'> & {context: LoaderContext},
+type KCDLoader<
+  Params extends Record<string, string> = Record<string, string>
+> = (
+  args: Omit<Parameters<Action>['0'], 'context' | 'params'> & {
+    context: LoaderContext
+    params: Params
+  },
 ) => ReturnType<Action>
 
 type PostFile = {path: string; content: string}
