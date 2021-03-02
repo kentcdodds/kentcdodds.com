@@ -9,7 +9,7 @@ import doc from 'rehype-document'
 import format from 'rehype-format'
 import html from 'rehype-stringify'
 import {redirect} from '@remix-run/data'
-import type {Action} from '@remix-run/data'
+import type {KCDAction} from 'types'
 import {commitSession, getSession} from '../session-storage'
 
 const {username} = userInfo()
@@ -61,7 +61,7 @@ const transporter = nodemailer.createTransport({
   },
 })
 
-const sendContactEmail: Action = async ({request}) => {
+const sendContactEmail: KCDAction = async ({request}) => {
   const url = new URL(request.url)
   const runId = Date.now().toString().slice(-5)
   const log = (...args: Array<unknown>) => console.log(runId, ...args)

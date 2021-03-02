@@ -39,7 +39,8 @@ type KCDLoader<
     params: Params
   },
 ) => ReturnType<Loader>
-type KCDLoader<
+
+type KCDAction<
   Params extends Record<string, string> = Record<string, string>
 > = (
   args: Omit<Parameters<Action>['0'], 'context' | 'params'> & {

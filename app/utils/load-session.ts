@@ -1,8 +1,9 @@
-import {json, Loader} from '@remix-run/data'
+import {json} from '@remix-run/data'
+import {KCDLoader} from 'types'
 import {commitSession, getSession} from '../session-storage'
 
 function sendSessionValue(valuesAndDefaults: Record<string, unknown>) {
-  const loadSession: Loader = async ({request}) => {
+  const loadSession: KCDLoader = async ({request}) => {
     const session = await getSession(request.headers.get('Cookie') ?? undefined)
     const values: Record<string, unknown> = {}
     for (const [name, defaultValue] of Object.entries(valuesAndDefaults)) {

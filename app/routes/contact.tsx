@@ -1,11 +1,12 @@
-import type {Action, Loader} from '@remix-run/data'
 import {useRouteData} from '@remix-run/react'
 import * as React from 'react'
+import {KCDLoader, KCDAction} from 'types'
 import {sendSessionValue} from '../utils/load-session'
 import {sendContactEmail} from '../utils/send-contact-email.server'
 
-export const action: Action = sendContactEmail
-export const loader: Loader = sendSessionValue({error: null})
+export const action: KCDAction = sendContactEmail
+export const loader: KCDLoader = (...args) =>
+  sendSessionValue({error: null})(...args)
 
 export default function ContactRoute() {
   const data = useRouteData()
