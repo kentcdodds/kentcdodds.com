@@ -37,7 +37,7 @@ async function compilePost(slug: string, postFiles: Array<PostFile>) {
     keyName: 'path',
     valueName: 'content',
   })
-  console.log(files)
+
   const {frontmatter, code} = await bundleMDX(indexFile.content, {
     files,
     remarkPlugins: [

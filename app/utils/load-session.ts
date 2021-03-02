@@ -9,7 +9,6 @@ function sendSessionValue(valuesAndDefaults: Record<string, unknown>) {
       const sessionValue = session.get(name)
       values[name] = sessionValue ?? defaultValue
     }
-    console.log(values)
     return json(values, {
       headers: {
         'Set-Cookie': await commitSession(session),

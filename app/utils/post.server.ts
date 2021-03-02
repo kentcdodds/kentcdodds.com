@@ -29,11 +29,13 @@ async function getPosts(octokit: Octokit): Promise<Array<PostListing>> {
       : await getPostsFromFS()
 
   const posts = await Promise.all(
-    files.map(async ({path, slug, content}) => {
-      const matterResult = matter(content)
-      const frontmatter = matterResult.data as PostListing['frontmatter']
-      return {path, slug, frontmatter}
-    }),
+    files.map(
+      async ({slug, content}): Promise<PostListing> => {
+        const matterResult = matter(content)
+        const frontmatter = matterResult.data as PostListing['frontmatter']
+        return {slug, frontmatter}
+      },
+    ),
   )
 
   return posts.sort(sortBy('-frontmatter.published'))
@@ -85,7 +87,7 @@ async function getPostsFromGH(octokit: Octokit) {
             return null
           }
           const postFile = await downloadFile(octokit, file.path, file.sha)
-          return {...postFile, slug: fileDir}
+          return {...postFile, slug: fileDir.replace('content/blog/', '')}
         },
       ),
   )
