@@ -7,6 +7,17 @@ More info coming soon...
 
 ## Contributing
 
+### Content
+
+All content for the blog is hosted in
+[a separate repo](https://github.com/kentcdodds/kentcdodds.com). Contributions
+should be made there.
+
+If you want to work on the content while running it locally in the app, then put
+the files in `mocks/content` and it will be pulled from there.
+
+### Code
+
 If you have a remix license, then make sure you run install with
 `REMIX_REGISTRY_TOKEN` env variable set.
 

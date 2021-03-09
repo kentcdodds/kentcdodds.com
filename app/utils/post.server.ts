@@ -2,6 +2,7 @@ import sortBy from 'sort-by'
 import matter from 'gray-matter'
 import type {Octokit} from '@octokit/rest'
 import type {Post, PostListing, PostFile, PostIndexFile} from 'types'
+import config from '../../config'
 import {compilePost} from './compile-mdx.server'
 
 async function getPost(slug: string, octokit: Octokit): Promise<Post> {
@@ -19,9 +20,9 @@ function typedBoolean<T>(
 
 async function getPosts(octokit: Octokit): Promise<Array<PostListing>> {
   const {data} = await octokit.repos.getContent({
-    owner: 'kentcdodds',
-    repo: 'remix-kentcdodds',
-    path: 'content/blog',
+    owner: config.contentSrc.owner,
+    repo: config.contentSrc.repo,
+    path: config.contentSrc.path,
   })
   if (!Array.isArray(data)) throw new Error('Wut github?')
 
@@ -31,8 +32,8 @@ async function getPosts(octokit: Octokit): Promise<Array<PostListing>> {
       .map(
         async ({path: fileDir}): Promise<PostIndexFile | null> => {
           const {data: fileData} = await octokit.repos.getContent({
-            owner: 'kentcdodds',
-            repo: 'remix-kentcdodds',
+            owner: config.contentSrc.owner,
+            repo: config.contentSrc.repo,
             path: fileDir,
           })
           if (!Array.isArray(fileData)) throw new Error('Wut github?')
@@ -68,8 +69,8 @@ async function downloadDirectory(
   dir: string,
 ): Promise<Array<PostFile>> {
   const {data} = await octokit.repos.getContent({
-    owner: 'kentcdodds',
-    repo: 'remix-kentcdodds',
+    owner: config.contentSrc.owner,
+    repo: config.contentSrc.repo,
     path: dir,
   })
   if (!Array.isArray(data)) throw new Error('Wut github?')
@@ -100,8 +101,8 @@ async function downloadFile(
   const {data} = await octokit.request(
     'GET /repos/{owner}/{repo}/git/blobs/{file_sha}',
     {
-      owner: 'kentcdodds',
-      repo: 'remix-kentcdodds',
+      owner: config.contentSrc.owner,
+      repo: config.contentSrc.repo,
       file_sha: sha,
     },
   )

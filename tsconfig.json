@@ -5,9 +5,9 @@
   "references": [
     {"path": "types"},
     {"path": "app"},
-    {"path": "content"},
     {"path": "tests"},
     {"path": "mocks"},
+    {"path": "mocks/content"},
     {"path": "cypress"}
   ]
 }

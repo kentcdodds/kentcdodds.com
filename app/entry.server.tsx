@@ -13,6 +13,10 @@ export default function handleRequest(
     <Remix context={remixContext} url={request.url} />,
   )
 
+  if (process.env.NODE_ENV !== 'production') {
+    responseHeaders.set('Cache-Control', 'no-store')
+  }
+
   return new Response(`<!DOCTYPE html>${markup}`, {
     status: responseStatusCode,
     headers: {

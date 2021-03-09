@@ -2,6 +2,7 @@
   "compilerOptions": {
     "isolatedModules": true,
     "noEmit": true,
+    "allowJs": true,
     "esModuleInterop": true,
     "jsx": "react",
     "moduleResolution": "node",
