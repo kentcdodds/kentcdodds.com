@@ -1,7 +1,8 @@
 module.exports = {
   appDirectory: './app',
-  serverBuildDirectory: './server-build/remix',
+  serverBuildDirectory: './build',
   browserBuildDirectory: './public/build',
   publicPath: '/build/',
+  cacheDirectory: './node_modules/.cache/remix',
   devServerPort: 8002,
 }

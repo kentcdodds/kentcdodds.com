@@ -5,8 +5,16 @@ import {Link} from 'react-router-dom'
 function IndexRoute() {
   return (
     <div>
-      INDEX
-      <Link to="/contact">Contact Kent</Link>
+      <nav>
+        <ul>
+          <li>
+            <Link to="/blog">Blog</Link>
+          </li>
+          <li>
+            <Link to="/contact">Contact Kent</Link>
+          </li>
+        </ul>
+      </nav>
       <Outlet />
     </div>
   )

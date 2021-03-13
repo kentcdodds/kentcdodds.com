@@ -29,6 +29,7 @@ app.get('/__img/content/blog/*', (req, res) => {
 app.all(
   '*',
   createRequestHandler({
+    build: require('./build'),
     getLoadContext(req, res) {
       return {req, res, octokit}
     },
