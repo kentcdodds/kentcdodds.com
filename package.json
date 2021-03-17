@@ -35,7 +35,7 @@
     "lint": "kcd-scripts lint",
     "format": "kcd-scripts format",
     "typecheck": "tsc -b",
-    "validate": "kcd-scripts typecheck"
+    "validate": "npm run typecheck"
   },
   "dependencies": {
     "@octokit/rest": "^18.3.5",
