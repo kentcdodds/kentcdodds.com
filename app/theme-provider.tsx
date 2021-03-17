@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {useSSRLayoutEffect} from './shared'
 
-type NestedObj = {[key: string]: string | NestedObj}
+type NestedObj = {[key: string]: NestedObj | string}
 type StringObj = {[key: string]: string}
 const themes = {
   light: {

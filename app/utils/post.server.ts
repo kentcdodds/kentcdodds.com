@@ -14,7 +14,7 @@ async function getPost(slug: string, octokit: Octokit): Promise<Post> {
 
 function typedBoolean<T>(
   value: T,
-): value is Exclude<T, false | null | undefined | '' | 0> {
+): value is Exclude<T, '' | 0 | false | null | undefined> {
   return Boolean(value)
 }
 

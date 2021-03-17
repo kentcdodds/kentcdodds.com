@@ -85,10 +85,10 @@ const sendContactEmail: KCDAction = async ({request}) => {
   const requestText = await request.text()
   const reqFormBody = new URLSearchParams(requestText)
   // our validation logic below confirms these are all strings
-  const name = reqFormBody.get('name') as string
-  const email = reqFormBody.get('email') as string
-  const subject = reqFormBody.get('subject') as string
-  const body = reqFormBody.get('body') as string
+  const name = reqFormBody.get('name')!
+  const email = reqFormBody.get('email')!
+  const subject = reqFormBody.get('subject')!
+  const body = reqFormBody.get('body')!
 
   try {
     log('> Validating input', ' name: ', name, ' email:', email)

@@ -12,12 +12,14 @@ module.exports = {
     'react/no-adjacent-inline-elements': 'off',
     'no-console': 'off',
     'react/jsx-filename-extension': 'off',
+    'jest/unbound-method': 'off',
 
     // this rule is quite slow...
     'import/no-cycle': 'off',
 
     // meh...
     '@typescript-eslint/unbound-method': 'off',
+    '@typescript-eslint/no-non-null-assertion': 'off',
 
     // this didn't seem to work 🤔
     '@typescript-eslint/restrict-template-expressions': 'off',
