@@ -24,6 +24,7 @@
     "build": "npm run css:build && remix build",
     "clean": "rimraf ./node_modules/.cache ./build ./public/build \"./app/styles/**/*.css\"",
     "postinstall": "npm run build",
+    "predev": "npm run build",
     "dev": "pm2-dev pm2.config.js",
     "start": "node start.js",
     "start:mocks": "ts-node -r ./mocks start.js",

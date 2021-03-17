@@ -47,8 +47,11 @@ async function compilePost(slug: string, postFiles: Array<PostFile>) {
         function remapImageUrls() {
           return function transformer(tree: Node) {
             visit(tree, 'image', function visitor(node) {
-              const url = (node.url as string).replace('./', '')
-              node.url = `/__img/content/blog/${slug}/${url}`
+              let url = String(node.url)
+              if (url.startsWith('./')) {
+                url = url.replace('./', '')
+                node.url = `/__img/content/blog/${slug}/${url}`
+              }
             })
           }
         },
