@@ -1,9 +1,9 @@
 import * as React from 'react'
-import {Links, Meta, Scripts} from '@remix-run/react'
+import {Links, Meta, Scripts, usePendingLocation} from '@remix-run/react'
 import type {LinksFunction} from '@remix-run/react'
 import {useLocation, Outlet} from 'react-router-dom'
-import styles from 'css:./styles/app.css'
-import tailwind from 'css:./styles/tailwind.css'
+import styles from 'url:./styles/app.css'
+import tailwind from 'url:./styles/tailwind.css'
 import {useTheme, ThemeProvider} from './theme-provider'
 
 export function meta() {
@@ -43,6 +43,7 @@ export const links: LinksFunction = () => {
 function App() {
   const [theme] = useTheme()
   const location = useLocation()
+  const pendingLocation = usePendingLocation()
   const includeTweets = location.pathname.includes('/blog/')
   return (
     <html lang="en" className={theme}>
@@ -50,7 +51,11 @@ function App() {
         <Meta />
         <Links />
       </head>
-      <body className="text-green-900 bg-gray-100 dark:bg-gray-800 dark:text-green-300">
+      <body
+        className={`text-green-900 bg-gray-100 dark:bg-gray-800 dark:text-green-300 ${
+          pendingLocation ? 'opacity-50' : ''
+        }`}
+      >
         <Outlet />
         <Scripts />
         {includeTweets ? (

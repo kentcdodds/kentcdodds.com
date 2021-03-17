@@ -38,6 +38,8 @@ type GHContent = {
   encoding: 'base64'
 }
 
+const hitNetwork = process.env.NODE_ENV !== 'test' && !process.env.MOCK_NETWORK
+
 const handlers = [
   rest.get(
     `https://api.github.com/repos/:owner/:repo/contents/:path`,
@@ -53,7 +55,7 @@ const handlers = [
       //   - requesting all available posts
       //   - requesting a path for a specific post that doesn't exist locally
       const shouldMakeRealRequest =
-        process.env.NODE_ENV !== 'test' && (isRootContentDir || !isLocalDir)
+        hitNetwork && (isRootContentDir || !isLocalDir)
       let originalResponse: Array<GHContentsDescription> = []
       if (shouldMakeRealRequest) {
         try {
@@ -159,65 +161,59 @@ const handlers = [
     },
   ),
   rest.get('https://oembed.com/providers.json', async (req, res, ctx) => {
-    if (process.env.NODE_ENV === 'test') {
-      return res(
-        ctx.json([
-          {
-            provider_name: 'Twitter',
-            provider_url: 'http://www.twitter.com/',
-            endpoints: [
-              {
-                schemes: [
-                  'https://twitter.com/*/status/*',
-                  'https://*.twitter.com/*/status/*',
-                  'https://twitter.com/*/moments/*',
-                  'https://*.twitter.com/*/moments/*',
-                ],
-                url: 'https://publish.twitter.com/oembed',
-              },
-            ],
-          },
-        ]),
-      )
-    } else {
-      return res(ctx.json(await (await ctx.fetch(req)).json()))
-    }
+    if (hitNetwork) return
+
+    return res(
+      ctx.json([
+        {
+          provider_name: 'Twitter',
+          provider_url: 'http://www.twitter.com/',
+          endpoints: [
+            {
+              schemes: [
+                'https://twitter.com/*/status/*',
+                'https://*.twitter.com/*/status/*',
+                'https://twitter.com/*/moments/*',
+                'https://*.twitter.com/*/moments/*',
+              ],
+              url: 'https://publish.twitter.com/oembed',
+            },
+          ],
+        },
+      ]),
+    )
   }),
   rest.get('https://publish.twitter.com/oembed', async (req, res, ctx) => {
-    if (process.env.NODE_ENV === 'test') {
-      return res(
-        ctx.json({
-          html:
-            '<blockquote class="twitter-tweet" data-dnt="true" data-theme="dark"><p lang="en" dir="ltr">I spent a few minutes working on this, just for you all. I promise, it wont disappoint. Though it may surprise 🎉<br><br>🙏 <a href="https://t.co/wgTJYYHOzD">https://t.co/wgTJYYHOzD</a></p>— Kent C. Dodds (@kentcdodds) <a href="https://twitter.com/kentcdodds/status/783161196945944580?ref_src=twsrc%5Etfw">October 4, 2016</a></blockquote>',
-        }),
-      )
-    } else {
-      return res(ctx.json(await (await ctx.fetch(req)).json()))
-    }
+    if (hitNetwork) return
+
+    return res(
+      ctx.json({
+        html:
+          '<blockquote class="twitter-tweet" data-dnt="true" data-theme="dark"><p lang="en" dir="ltr">I spent a few minutes working on this, just for you all. I promise, it wont disappoint. Though it may surprise 🎉<br><br>🙏 <a href="https://t.co/wgTJYYHOzD">https://t.co/wgTJYYHOzD</a></p>— Kent C. Dodds (@kentcdodds) <a href="https://twitter.com/kentcdodds/status/783161196945944580?ref_src=twsrc%5Etfw">October 4, 2016</a></blockquote>',
+      }),
+    )
   }),
   rest.get('https://www.youtube.com/oembed', async (req, res, ctx) => {
-    if (process.env.NODE_ENV === 'test') {
-      return res(
-        ctx.json({
-          title: "🚨 Announcement! I'm Going Full-Time Educator 👨‍🏫",
-          author_name: 'Kent C. Dodds',
-          author_url: 'https://www.youtube.com/user/kentdoddsfamily',
-          type: 'video',
-          height: 113,
-          width: 200,
-          version: '1.0',
-          provider_name: 'YouTube',
-          provider_url: 'https://www.youtube.com/',
-          thumbnail_height: 360,
-          thumbnail_width: 480,
-          thumbnail_url: 'https://i.ytimg.com/vi/ticz3T7xSWI/hqdefault.jpg',
-          html:
-            '<iframe width="200" height="113" src="https://www.youtube.com/embed/ticz3T7xSWI?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
-        }),
-      )
-    } else {
-      return res(ctx.json(await (await ctx.fetch(req)).json()))
-    }
+    if (hitNetwork) return
+
+    return res(
+      ctx.json({
+        title: "🚨 Announcement! I'm Going Full-Time Educator 👨‍🏫",
+        author_name: 'Kent C. Dodds',
+        author_url: 'https://www.youtube.com/user/kentdoddsfamily',
+        type: 'video',
+        height: 113,
+        width: 200,
+        version: '1.0',
+        provider_name: 'YouTube',
+        provider_url: 'https://www.youtube.com/',
+        thumbnail_height: 360,
+        thumbnail_width: 480,
+        thumbnail_url: 'https://i.ytimg.com/vi/ticz3T7xSWI/hqdefault.jpg',
+        html:
+          '<iframe width="200" height="113" src="https://www.youtube.com/embed/ticz3T7xSWI?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
+      }),
+    )
   }),
 ]
 const server = setupServer(...handlers)
@@ -225,5 +221,10 @@ const server = setupServer(...handlers)
 server.listen({onUnhandledRequest: 'error'})
 console.log('🔶 Mock server installed')
 
-process.once('SIGINT', server.close)
-process.once('SIGTERM', server.close)
+process.once('SIGINT', () => server.close())
+process.once('SIGTERM', () => server.close())
+
+/*
+eslint
+  consistent-return: "off",
+*/

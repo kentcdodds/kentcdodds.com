@@ -40,21 +40,25 @@ async function compilePost(slug: string, postFiles: Array<PostFile>) {
 
   const {frontmatter, code} = await bundleMDX(indexFile.content, {
     files,
-    remarkPlugins: [
-      remarkPrism,
-      function remapImageUrls() {
-        return function transformer(tree: Node) {
-          visit(tree, 'image', function visitor(node) {
-            const url = (node.url as string).replace('./', '')
-            node.url = `/__img/content/blog/${slug}/${url}`
-          })
-        }
-      },
-      [
-        remarkEmbedder,
-        {cache, transformers: [[oembedTransformer, getOEmbedConfig]]},
-      ],
-    ],
+    xdmOptions(input, options) {
+      options.remarkPlugins = [
+        ...(options.remarkPlugins ?? []),
+        remarkPrism,
+        function remapImageUrls() {
+          return function transformer(tree: Node) {
+            visit(tree, 'image', function visitor(node) {
+              const url = (node.url as string).replace('./', '')
+              node.url = `/__img/content/blog/${slug}/${url}`
+            })
+          }
+        },
+        [
+          remarkEmbedder,
+          {cache, transformers: [[oembedTransformer, getOEmbedConfig]]},
+        ],
+      ]
+      return options
+    },
   })
 
   return {

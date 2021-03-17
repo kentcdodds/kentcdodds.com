@@ -11,7 +11,16 @@ const octokit = new Octokit({
 
 const app = express()
 
-app.use(express.static('public'))
+app.use(
+  express.static('public', {
+    setHeaders: (res, filepath) => {
+      // build assets are hashed, so mark files ending with hash as immutable
+      if (/.*-[0-9a-f]{8}\..*/.test(filepath)) {
+        res.setHeader('Cache-Control', 'max-age=31536000, immutable')
+      }
+    },
+  }),
+)
 
 // This is here for start-server-and-run which makes a HEAD
 // request to "/" for it to know that the server is ready.

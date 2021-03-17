@@ -2,7 +2,6 @@ import React from 'react'
 import {json} from '@remix-run/data'
 import {useRouteData} from '@remix-run/react'
 import {Link} from 'react-router-dom'
-import {MDXProvider} from '@mdx-js/react'
 import {getMDXComponent} from 'mdx-bundler/client'
 import type {Post, KCDLoader} from 'types'
 import {useSSRLayoutEffect} from '../../shared'
@@ -101,15 +100,15 @@ function PostScreen() {
   const Component = React.useMemo(() => getMDXComponent(code), [code])
 
   return (
-    <MDXProvider components={{a: AnchorOrLink}}>
+    <>
       <header>
         <h1>{frontmatter.title}</h1>
         <p>{frontmatter.description}</p>
       </header>
       <main>
-        <Component />
+        <Component components={{a: AnchorOrLink}} />
       </main>
-    </MDXProvider>
+    </>
   )
 }
 

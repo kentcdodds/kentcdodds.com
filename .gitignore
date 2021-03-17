@@ -6,6 +6,9 @@ node_modules/
 /build
 /public/build
 /coverage
+
+/app/styles/**/*.css
+
 /cypress/videos
 /cypress/screenshots
 

@@ -11,6 +11,7 @@ module.exports = {
     'react/prop-types': 'off',
     'react/no-adjacent-inline-elements': 'off',
     'no-console': 'off',
+    'react/jsx-filename-extension': 'off',
 
     // this rule is quite slow...
     'import/no-cycle': 'off',

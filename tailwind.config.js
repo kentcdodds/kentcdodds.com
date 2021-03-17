@@ -18,14 +18,7 @@ module.exports = {
   },
   purge: {
     mode: 'layers',
-    content: [
-      fromRoot('./app/**/*.js'),
-      fromRoot('./app/**/*.ts'),
-      fromRoot('./app/**/*.tsx'),
-      fromRoot('./app/**/*.mdx'),
-      fromRoot('./app/**/*.md'),
-      fromRoot('./remix.config.js'),
-    ],
+    content: [fromRoot('./app/**/*.+(js|ts|tsx|mdx|md)')],
   },
   plugins: [require('@tailwindcss/typography')],
 }
