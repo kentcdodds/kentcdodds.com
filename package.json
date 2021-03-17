@@ -18,10 +18,10 @@
   },
   "homepage": "https://github.com/kentcdodds/remix-kentcdodds.com#readme",
   "scripts": {
-    "prebuild": "npm run clean",
     "css:watch": "postcss styles/**/*.css --base styles --dir app/styles --w",
     "css:build": "postcss styles/**/*.css --base styles --dir app/styles --env production",
-    "build": "remix build",
+    "prebuild": "npm run clean",
+    "build": "npm run css:build && remix build",
     "clean": "rm -rf ./node_modules/.cache ./build ./public/build",
     "postinstall": "npm run build",
     "dev": "pm2-dev pm2.config.js",
