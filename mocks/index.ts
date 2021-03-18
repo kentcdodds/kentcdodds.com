@@ -53,7 +53,7 @@ const handlers = [
 
       if (!isMockable) return
 
-      const localDir = nodePath.join(__dirname, path)
+      const localDir = nodePath.join(__dirname, '..', path)
       const isLocalDir = await isDirectory(localDir)
 
       const shouldMakeRealRequest = !isLocalDir && hitNetwork
@@ -122,20 +122,17 @@ const handlers = [
         throw new Error(`Unable to find the file for the sha ${sha}`)
       }
 
-      const fullPath = nodePath.join(__dirname, relativePath)
+      const fullPath = nodePath.join(__dirname, '..', relativePath)
       const encoding = 'base64' as const
       const size = (await fs.stat(fullPath)).size
-      const actualContent = await fs.readFile(fullPath, {encoding: 'utf-8'})
-      const localIndicatorContent = actualContent.replace(
-        /title: ('|"|)/,
-        '$&(LOCAL) ',
-      )
+      const content = await fs.readFile(fullPath, {encoding: 'utf-8'})
+
       const resource: GHContent = {
         sha,
         node_id: `${sha}_node_id`,
         size,
         url: `https://api.github.com/repos/${owner}/${repo}/git/blobs/${sha}`,
-        content: Buffer.from(localIndicatorContent, 'utf-8').toString(encoding),
+        content: Buffer.from(content, 'utf-8').toString(encoding),
         encoding,
       }
 

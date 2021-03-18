@@ -32,7 +32,7 @@ app.get('/__img/content/blog/*', (req, res) => {
     res.sendStatus(404)
     return
   }
-  res.sendFile(path.join(__dirname, req.path.replace('/__img', '/mocks')))
+  res.sendFile(path.join(__dirname, req.path.replace('/__img', '')))
 })
 
 app.all(

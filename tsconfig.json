@@ -7,7 +7,7 @@
     {"path": "app"},
     {"path": "tests"},
     {"path": "mocks"},
-    {"path": "mocks/content"},
+    {"path": "content"},
     {"path": "cypress"}
   ]
 }

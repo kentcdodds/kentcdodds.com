@@ -1,7 +1,7 @@
 module.exports = {
   contentSrc: {
     owner: 'kentcdodds',
-    repo: 'kentcdodds.com',
+    repo: 'remix-kentcdodds',
     path: 'content',
   },
 }
