@@ -6,7 +6,7 @@ import oembedTransformer from '@remark-embedder/transformer-oembed'
 import type {Config as OEmbedConfig} from '@remark-embedder/transformer-oembed'
 import Cache from '@remark-embedder/cache'
 import type {Node} from 'unist'
-import type {PostFile} from 'types'
+import type {GitHubFile} from 'types'
 
 const getOEmbedConfig: OEmbedConfig = ({provider}) => {
   if (provider.provider_name === 'Twitter') {
@@ -23,16 +23,18 @@ const getOEmbedConfig: OEmbedConfig = ({provider}) => {
 
 const cache = new Cache()
 
-async function compilePost(slug: string, postFiles: Array<PostFile>) {
+async function compileMdx(slug: string, githubFiles: Array<GitHubFile>) {
   const indexRegex = new RegExp(`${slug}\\/index.mdx?$`)
-  const indexFile = postFiles.find(({path}) => indexRegex.test(path))
+  const indexFile = githubFiles.find(({path}) => indexRegex.test(path))
   if (!indexFile) throw new Error(`${slug} has no index.md(x) file.`)
 
   const rootDir = indexFile.path.replace(/index.mdx?$/, '')
-  const relativeFiles: Array<PostFile> = postFiles.map(({path, content}) => ({
-    path: path.replace(rootDir, './'),
-    content,
-  }))
+  const relativeFiles: Array<GitHubFile> = githubFiles.map(
+    ({path, content}) => ({
+      path: path.replace(rootDir, './'),
+      content,
+    }),
+  )
   const files = arrayToObj(relativeFiles, {
     keyName: 'path',
     valueName: 'content',
@@ -86,7 +88,7 @@ function arrayToObj<ItemType extends Record<string, unknown>>(
   return obj
 }
 
-export {compilePost}
+export {compileMdx}
 
 /*
 eslint

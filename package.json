@@ -96,6 +96,8 @@
     "cross-env": "^7.0.3",
     "cypress": "^6.7.1",
     "eslint-import-resolver-jest": "^3.0.0",
+    "glob": "^7.1.6",
+    "glob-promise": "^4.1.0",
     "kcd-scripts": "^8.1.1",
     "msw": "^0.27.1",
     "postcss-cli": "^8.3.1",

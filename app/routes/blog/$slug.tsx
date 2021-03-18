@@ -1,10 +1,9 @@
 import React from 'react'
 import {json} from '@remix-run/data'
 import {useRouteData} from '@remix-run/react'
-import {Link} from 'react-router-dom'
 import {getMDXComponent} from 'mdx-bundler/client'
 import type {Post, KCDLoader} from 'types'
-import {useSSRLayoutEffect} from '../../shared'
+import {AnchorOrLink, useSSRLayoutEffect} from '../../shared'
 import {useTheme} from '../../theme-provider'
 import {getPost} from '../../utils/post.server'
 
@@ -77,21 +76,6 @@ function useEmbeddedTweets() {
       void window.twttr?.widgets.load()
     }
   }, [])
-}
-
-type AnchorProps = React.DetailedHTMLProps<
-  React.AnchorHTMLAttributes<HTMLAnchorElement>,
-  HTMLAnchorElement
->
-
-function AnchorOrLink({href = '', ...rest}: AnchorProps) {
-  if (href.startsWith('http')) {
-    // eslint-disable-next-line jsx-a11y/anchor-has-content
-    return <a {...rest} />
-  } else {
-    // @ts-expect-error I'm not sure what to do about extra props other than to forward them
-    return <Link to={href} {...rest} />
-  }
 }
 
 function PostScreen() {

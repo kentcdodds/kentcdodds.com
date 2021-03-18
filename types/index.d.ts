@@ -12,6 +12,15 @@ declare global {
   }
 }
 
+type MdxPage = {
+  slug: string
+  code: string
+  frontmatter: {
+    title: string
+    description: string
+  }
+}
+
 type PostListing = {
   slug: string
   frontmatter: {
@@ -49,7 +58,15 @@ type KCDAction<
   },
 ) => ReturnType<Action>
 
-type PostFile = {path: string; content: string}
-type PostIndexFile = PostFile & {slug: string}
+type GitHubFile = {path: string; content: string}
+type PostIndexFile = GitHubFile & {slug: string}
 
-export {Post, PostListing, KCDLoader, KCDAction, PostFile, PostIndexFile}
+export {
+  MdxPage,
+  Post,
+  PostListing,
+  KCDLoader,
+  KCDAction,
+  GitHubFile,
+  PostIndexFile,
+}

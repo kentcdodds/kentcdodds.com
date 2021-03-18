@@ -29,10 +29,10 @@ app.head('/', (req, res) => res.sendStatus(200))
 app.get('/__img/content/blog/*', (req, res) => {
   if (req.path.includes('..')) {
     // lol, nice try...
-    res.sendStatus(400)
+    res.sendStatus(404)
     return
   }
-  res.sendFile(path.join(__dirname, req.path.replace('/__img', '')))
+  res.sendFile(path.join(__dirname, req.path.replace('/__img', '/mocks')))
 })
 
 app.all(
