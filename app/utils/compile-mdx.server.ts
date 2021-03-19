@@ -74,7 +74,7 @@ async function compileMdx(slug: string, githubFiles: Array<GitHubFile>) {
             }
             // don't add transforms if they're already included
             if (transforms) return
-            const defaultTransforms = 'f_auto,q_auto'
+            const defaultTransforms = 'f_auto,q_auto,dpr_2.0'
             node.url = [
               `https://res.cloudinary.com/${cloudName}/image/upload`,
               defaultTransforms,
