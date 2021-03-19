@@ -6,6 +6,7 @@ import remarkEmbedder from '@remark-embedder/core'
 import oembedTransformer from '@remark-embedder/transformer-oembed'
 import type {Config as OEmbedConfig} from '@remark-embedder/transformer-oembed'
 import Cache from '@remark-embedder/cache'
+import gfm from 'remark-gfm'
 import type {Node} from 'unist'
 import type {GitHubFile} from 'types'
 
@@ -45,6 +46,7 @@ async function compileMdx(slug: string, githubFiles: Array<GitHubFile>) {
   })
 
   const remarkPlugins: PluggableList = [
+    gfm,
     remarkPrism,
     function remapImageUrls() {
       return function transformer(tree: Node) {
