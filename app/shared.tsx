@@ -9,10 +9,11 @@ type AnchorProps = React.DetailedHTMLProps<
   HTMLAnchorElement
 >
 
-function AnchorOrLink({href = '', ...rest}: AnchorProps) {
+function AnchorOrLink(props: AnchorProps) {
+  const {href = '', ...rest} = props
   if (href.startsWith('http')) {
     // eslint-disable-next-line jsx-a11y/anchor-has-content
-    return <a {...rest} />
+    return <a {...props} />
   } else {
     // @ts-expect-error I'm not sure what to do about extra props other than to forward them
     return <Link to={href} {...rest} />
