@@ -12,27 +12,32 @@ declare global {
   }
 }
 
-type MdxPage = {
+type MdxListItem = {
   slug: string
-  code: string
   frontmatter: {
-    title: string
-    description: string
+    meta: {
+      title: string
+      description: string
+      [key as string]: string
+    }
   }
 }
 
-type PostListing = {
-  slug: string
-  frontmatter: {
-    title: string
-    description: string
-    published: number
-  }
-}
-
-type Post = PostListing & {
+type MdxPage = MdxListItem & {
   code: string
 }
+
+type PostListItem = MdxListItem & {
+  frontmatter: {published: number}
+}
+
+type Post = PostListItem & {code: string}
+
+type WorkshopListItem = MdxListItem & {
+  frontmatter: {tech: string; convertKitTag: string}
+}
+
+type WorkshopPage = WorkshopListItem & {code: string}
 
 type LoaderContext = {
   req: Request
@@ -59,14 +64,15 @@ type KCDAction<
 ) => ReturnType<Action>
 
 type GitHubFile = {path: string; content: string}
-type PostIndexFile = GitHubFile & {slug: string}
 
 export {
+  MdxListItem,
   MdxPage,
+  PostListItem,
   Post,
-  PostListing,
+  WroskhopListItem,
+  WorkshopPage,
   KCDLoader,
   KCDAction,
   GitHubFile,
-  PostIndexFile,
 }

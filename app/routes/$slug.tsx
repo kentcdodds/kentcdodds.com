@@ -1,63 +1,65 @@
 import React from 'react'
-import type {RequestError} from '@octokit/types'
 import {json} from '@remix-run/data'
 import {useRouteData} from '@remix-run/react'
 import {getMDXComponent} from 'mdx-bundler/client'
 import type {MdxPage, KCDLoader} from 'types'
 import {AnchorOrLink} from '../shared'
-import {getMdx} from '../utils/mdx.server'
+import {compileMdx} from '../utils/compile-mdx.server'
+import {downloadMdxFileOrDirectory} from '../utils/github.server'
+
+type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
+type LoaderBody = PartialBy<MdxPage, 'code' | 'frontmatter'>
 
 export const loader: KCDLoader<{slug: string}> = async ({params, context}) => {
-  try {
-    const mdxPage = await getMdx(params.slug, context.octokit)
-    return json(mdxPage)
-  } catch (error: unknown) {
-    if ('request' in (error as Object)) {
-      // RequestError doesn't have "headers" but it actually does so...
-      const requestError = error as RequestError & {
-        headers: Record<string, string>
-      }
-      const {documentation_url, errors, name, status, headers} = requestError
-      return new Response(
-        JSON.stringify({name, status, documentation_url, errors}),
-        {status, headers},
-      )
+  const {slug} = params
+  const pageFiles = await downloadMdxFileOrDirectory(
+    context.octokit,
+    `pages/${slug}`,
+  )
+
+  const result = await compileMdx<MdxPage['frontmatter']>(slug, pageFiles)
+  const {code, frontmatter} = result ?? {}
+  return json({slug, code, frontmatter}, {status: code ? 200 : 404})
+}
+
+export function meta({data}: {data: LoaderBody}) {
+  if (data.frontmatter) {
+    return data.frontmatter.meta
+  } else {
+    return {
+      title: 'Not found',
+      description:
+        'You landed on a page that Kody the Coding Koala could not find 🐨😢',
     }
-    throw error
   }
 }
 
-export function meta({data}: {data: MdxPage | RequestError | null}) {
-  if (!data) {
-    return {
-      title: 'Unknown error',
-      description: 'Something went wrong with this page',
-    }
-  }
-  if ('status' in data) {
-    return {
-      title: `${data.name} – ${data.status}`,
-      description: 'There was an error loading this page.',
-    }
-  }
-  if ('frontmatter' in data) {
-    return {
-      title: data.frontmatter.title,
-      description: data.frontmatter.description,
-    }
-  }
-  return {}
+export default function MdxScreenBase() {
+  const mdxPage = useRouteData<LoaderBody>()
+
+  if (mdxPage.code) return <MdxScreen mdxPage={mdxPage as MdxPage} />
+
+  return (
+    <>
+      <header>
+        <h1>404 oh no</h1>
+      </header>
+      <main>
+        {`Oh no, you found a page that's missing stuff... ${mdxPage.slug} is not a page on kentcdodds.com. So sorry...`}
+      </main>
+    </>
+  )
 }
 
-export default function MdxScreen() {
-  const {code, frontmatter} = useRouteData<MdxPage>()
+function MdxScreen({mdxPage}: {mdxPage: MdxPage}) {
+  const {code, frontmatter} = mdxPage
   const Component = React.useMemo(() => getMDXComponent(code), [code])
 
   return (
     <>
       <header>
-        <h1>{frontmatter.title}</h1>
-        <p>{frontmatter.description}</p>
+        <h1>{frontmatter.meta.title}</h1>
+        <p>{frontmatter.meta.description}</p>
       </header>
       <main>
         <Component components={{a: AnchorOrLink}} />
@@ -65,17 +67,3 @@ export default function MdxScreen() {
     </>
   )
 }
-
-export function ErrorBoundary({error}: {error: Error}) {
-  return (
-    <div>
-      Oh no
-      <pre>{error.message}</pre>
-    </div>
-  )
-}
-
-/*
-eslint
-  no-void: "off",
-*/

@@ -28,10 +28,13 @@ const cache = new Cache()
 // yes, I did write this myself 😬
 const cloudinaryUrlRegex = /^https?:\/\/res\.cloudinary\.com\/(?<cloudName>.+?)\/image\/upload(\/(?<transforms>(?!v\d+).+?))?(\/(?<version>v\d+))?\/(?<publicId>.+$)/
 
-async function compileMdx(slug: string, githubFiles: Array<GitHubFile>) {
+async function compileMdx<FrontmatterType extends Record<string, unknown>>(
+  slug: string,
+  githubFiles: Array<GitHubFile>,
+) {
   const indexRegex = new RegExp(`${slug}\\/index.mdx?$`)
   const indexFile = githubFiles.find(({path}) => indexRegex.test(path))
-  if (!indexFile) throw new Error(`${slug} has no index.md(x) file.`)
+  if (!indexFile) return null
 
   const rootDir = indexFile.path.replace(/index.mdx?$/, '')
   const relativeFiles: Array<GitHubFile> = githubFiles.map(
@@ -106,7 +109,7 @@ async function compileMdx(slug: string, githubFiles: Array<GitHubFile>) {
 
   return {
     code,
-    frontmatter,
+    frontmatter: frontmatter as FrontmatterType,
   }
 }
 

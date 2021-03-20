@@ -5,10 +5,18 @@ import {getMDXComponent} from 'mdx-bundler/client'
 import type {Post, KCDLoader} from 'types'
 import {AnchorOrLink, useSSRLayoutEffect} from '../../shared'
 import {useTheme} from '../../theme-provider'
-import {getPost} from '../../utils/post.server'
+import {downloadMdxFileOrDirectory} from '../../utils/github.server'
+import {compileMdx} from '../../utils/compile-mdx.server'
 
 export const loader: KCDLoader<{slug: string}> = async ({params, context}) => {
-  const post = await getPost(params.slug, context.octokit)
+  const {slug} = params
+  const postFiles = await downloadMdxFileOrDirectory(
+    context.octokit,
+    `blog/${slug}`,
+  )
+
+  const {code, frontmatter} = await compileMdx(slug, postFiles)
+  const post = {slug, code, frontmatter: frontmatter as Post['frontmatter']}
 
   const oneDay = 86400
   const secondsSincePublished =
@@ -42,9 +50,7 @@ export function headers({loaderHeaders}: {loaderHeaders: Headers}) {
 }
 
 export function meta({data: post}: {data: Post}) {
-  return {
-    title: post.frontmatter.title,
-  }
+  return post.frontmatter.meta
 }
 
 function loadTweet(event: MouseEvent) {
@@ -86,8 +92,8 @@ function PostScreen() {
   return (
     <>
       <header>
-        <h1>{frontmatter.title}</h1>
-        <p>{frontmatter.description}</p>
+        <h1>{frontmatter.meta.title}</h1>
+        <p>{frontmatter.meta.description}</p>
       </header>
       <main>
         <Component components={{a: AnchorOrLink}} />

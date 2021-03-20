@@ -1,15 +1,16 @@
-import React from 'react'
+import * as React from 'react'
+import sortBy from 'sort-by'
 import {useRouteData, Link} from '@remix-run/react'
-import type {KCDLoader, PostListing} from 'types'
+import type {KCDLoader, PostListItem} from 'types'
 import {json} from '@remix-run/data'
-import {getPosts} from '../../utils/post.server'
+import {downloadMdxListItemsInDir} from '../../utils/github.server'
 
 export const loader: KCDLoader = async ({context}) => {
-  return json(await getPosts(context.octokit), {
-    headers: {
-      'cache-control': 'public, max-age=300, stale-while-revalidate=86400',
-    },
-  })
+  const posts = (await downloadMdxListItemsInDir(context.octokit, 'blog')).sort(
+    sortBy('-frontmatter.published'),
+  )
+
+  return json(posts)
 }
 
 export function headers() {
@@ -26,7 +27,7 @@ export function meta() {
 }
 
 function BlogHome() {
-  const posts = useRouteData<Array<PostListing>>()
+  const posts = useRouteData<Array<PostListItem>>()
   return (
     <div>
       <header>
@@ -35,9 +36,9 @@ function BlogHome() {
       <main>
         {posts.map(post => (
           <p key={post.slug}>
-            <Link to={`/blog/${post.slug}`}>{post.frontmatter.title}</Link>
+            <Link to={`/blog/${post.slug}`}>{post.frontmatter.meta.title}</Link>
             <br />
-            <small>{post.frontmatter.description}</small>
+            <small>{post.frontmatter.meta.description}</small>
           </p>
         ))}
       </main>

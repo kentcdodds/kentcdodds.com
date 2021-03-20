@@ -16,6 +16,9 @@ function IndexRoute() {
           <li>
             <Link to="/contact">Contact Kent</Link>
           </li>
+          <li>
+            <Link to="/workshops">Workshops</Link>
+          </li>
         </ul>
       </nav>
       <Outlet />
