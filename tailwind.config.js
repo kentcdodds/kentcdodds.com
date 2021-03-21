@@ -18,6 +18,7 @@ module.exports = {
   },
   purge: {
     mode: 'layers',
+    enabled: process.env.NODE_ENV === 'production',
     content: [fromRoot('./app/**/*.+(js|ts|tsx|mdx|md)')],
   },
   plugins: [require('@tailwindcss/typography')],
