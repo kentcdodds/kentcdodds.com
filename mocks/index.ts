@@ -194,6 +194,17 @@ const handlers = [
       }),
     )
   }),
+
+  rest.post(
+    'https://api.mailgun.net/v3/:domain/messages',
+    async (req, res, ctx) => {
+      if (hitNetwork) return
+
+      const randomId = '20210321210543.1.E01B8B612C44B41B'
+      const id = `<${randomId}>@${req.params.domain}`
+      return res(ctx.json({id, message: 'Queued. Thank you.'}))
+    },
+  ),
 ]
 const server = setupServer(...handlers)
 

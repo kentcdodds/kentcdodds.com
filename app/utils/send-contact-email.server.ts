@@ -1,5 +1,6 @@
 import {userInfo} from 'os'
 import nodemailer from 'nodemailer'
+import getMailgunTransport from 'nodemailer-mailgun-transport'
 import ow from 'ow'
 import type {BasePredicate} from 'ow'
 import unified from 'unified'
@@ -41,25 +42,24 @@ function owWithMessage(
 }
 
 owWithMessage(
-  process.env.EMAIL_PASSWORD,
-  'EMAIL_PASSWORD environment variable is not set',
+  process.env.MAILGUN_API_KEY,
+  'MAILGUN_API_KEY environment variable is not set',
   ow.string.minLength(1),
 )
 owWithMessage(
-  process.env.EMAIL_USERNAME,
-  'EMAIL_USERNAME environment variable is not set to an email',
-  isEmail,
+  process.env.MAILGUN_DOMAIN,
+  'MAILGUN_DOMAIN environment variable is not set',
+  ow.string.minLength(1),
 )
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.mailgun.org',
-  port: 587,
-  secure: false,
+const auth = {
   auth: {
-    user: process.env.EMAIL_USERNAME,
-    pass: process.env.EMAIL_PASSWORD,
+    api_key: process.env.MAILGUN_API_KEY,
+    domain: process.env.MAILGUN_DOMAIN,
   },
-})
+}
+
+const transporter = nodemailer.createTransport(getMailgunTransport(auth))
 
 const sendContactEmail: KCDAction = async ({request}) => {
   const url = new URL(request.url)
