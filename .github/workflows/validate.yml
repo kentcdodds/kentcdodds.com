@@ -6,8 +6,8 @@ on:
     branches-ignore: ['all-contributors/**']
 env:
   REMIX_REGISTRY_TOKEN: ${{ secrets.REMIX_REGISTRY_TOKEN }}
-  EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
-  EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+  MAILGUN_API_KEY: ${{ secrets.MAILGUN_API_KEY }}
+  MAILGUN_DOMAIN: ${{ secrets.MAILGUN_DOMAIN }}
   BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
 jobs:
   main:
@@ -53,8 +53,8 @@ jobs:
           HD_REMIX_REGISTRY_TOKEN: ${{ secrets.REMIX_REGISTRY_TOKEN }}
           HD_CYPRESS_INSTALL_BINARY: '0'
           HD_HUSKY_SKIP_INSTALL: '1'
-          HD_EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
-          HD_EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          HD_MAILGUN_API_KEY: ${{ secrets.MAILGUN_API_KEY }}
+          HD_MAILGUN_DOMAIN: ${{ secrets.MAILGUN_DOMAIN }}
           HD_BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
         with:
           heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
