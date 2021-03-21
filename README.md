@@ -21,6 +21,9 @@ the files in `mocks/content` and it will be pulled from there.
 If you have a remix license, then make sure you run install with
 `REMIX_REGISTRY_TOKEN` env variable set.
 
+There is an `.env.example` file located in the root of this project. Rename it
+to `.env`, and adjust the values before you start the app.
+
 If you do not have a remix license, you will not be able to install dependencies
 and run the project locally. However, you _can_ work on the frontend components
 in the `storybook` directory. See `storybook/README.md` for more information.
