@@ -1,7 +1,7 @@
 import nodePath from 'path'
 import type {Octokit} from '@octokit/rest'
 import matter from 'gray-matter'
-import type {GitHubFile} from 'types'
+import type {GitHubFile, MdxListItem} from 'types'
 import config from '../../config'
 
 async function downloadFirstMdxFile(
@@ -20,14 +20,15 @@ async function downloadFirstMdxFile(
  *
  * @param octokit the octokit client
  * @param mdxFileOrDirectory the path to the content. For example:
- * /workshops/react-fundamentals.mdx (pass "workshops/react-fudnamentals")
- * /workshops/react-hooks/index.mdx (pass "workshops/react-hooks")
+ * content/workshops/react-fundamentals.mdx (pass "workshops/react-fudnamentals")
+ * content/workshops/react-hooks/index.mdx (pass "workshops/react-hooks")
  * @returns A promise that resolves to an Array of GitHubFiles for the necessary files
  */
 async function downloadMdxFileOrDirectory(
   octokit: Octokit,
-  mdxFileOrDirectory: string,
+  relativeMdxFileOrDirectory: string,
 ): Promise<Array<GitHubFile>> {
+  const mdxFileOrDirectory = `${config.contentSrc.path}/${relativeMdxFileOrDirectory}`
   const parentDir = nodePath.dirname(mdxFileOrDirectory)
   const dirList = await downloadDirList(octokit, parentDir)
 
@@ -142,7 +143,7 @@ async function downloadFileBySha(octokit: Octokit, sha: string) {
  * @param path the full path to list
  * @returns a promise that resolves to a file ListItem of the files/directories in the given directory (not recursive)
  */
-async function downloadDirListFullPath(octokit: Octokit, path: string) {
+async function downloadDirList(octokit: Octokit, path: string) {
   const {data} = await octokit.repos.getContent({
     owner: config.contentSrc.owner,
     repo: config.contentSrc.repo,
@@ -151,23 +152,11 @@ async function downloadDirListFullPath(octokit: Octokit, path: string) {
 
   if (!Array.isArray(data)) {
     throw new Error(
-      `Tried to download content from ${JSON.stringify(
-        config.contentSrc,
-      )} at ${path}. GitHub did not return an array of files. This should never happen...`,
+      `Tried to download content from ${path}. GitHub did not return an array of files. This should never happen...`,
     )
   }
 
   return data
-}
-
-/**
- *
- * @param octokit the octokit client
- * @param dir the path relative to the contentSrc.path
- * @returns a promise that resolves to a file ListItem of the files/directories in the given directory (not recursive)
- */
-function downloadDirList(octokit: Octokit, dir: string) {
-  return downloadDirListFullPath(octokit, `${config.contentSrc.path}/${dir}`)
 }
 
 /**
@@ -180,42 +169,41 @@ async function downloadMdxListItemsInDir(
   octokit: Octokit,
   relativePath: string,
 ) {
-  const data = await downloadDirList(octokit, relativePath)
+  const data = await downloadDirList(
+    octokit,
+    `${config.contentSrc.path}/${relativePath}`,
+  )
 
   const result = await Promise.all(
-    data.map(async ({path: fileDir}) => {
-      const content = await downloadMdxFileOrIndex(
-        octokit,
-        fileDir.replace(`${config.contentSrc.path}/`, ''),
-      )
-      if (!content) {
-        console.warn(`Could not find mdx content at path: ${fileDir}`)
-        return null
-      }
-      return {path: fileDir, content}
-    }),
+    data
+      .filter(({name}) => name !== 'README.md')
+      .map(
+        async ({path: fileDir}): Promise<(GitHubFile & MdxListItem) | null> => {
+          const content = await downloadMdxFileOrIndex(octokit, fileDir)
+          if (!content) {
+            console.warn(`Could not find mdx content at path: ${fileDir}`)
+            return null
+          }
+          const matterResult = matter(content)
+          if (!Object.keys(matterResult.data).length) {
+            console.warn(`Could not parse frontmatter at path: ${fileDir}`)
+            return null
+          }
+          return {
+            path: fileDir,
+            content,
+            slug: fileDir.replace(
+              `${config.contentSrc.path}/${relativePath}`,
+              '',
+            ),
+            frontmatter: matterResult.data as MdxListItem['frontmatter'],
+          }
+        },
+      ),
   )
-  const files = result.filter(typedBoolean)
 
-  const filesWithFrontmatter = await Promise.all(
-    files.map(
-      async ({
-        path,
-        content,
-      }): Promise<
-        GitHubFile & {slug: string; frontmatter: Record<string, unknown>}
-      > => {
-        const matterResult = matter(content)
-        return {
-          path,
-          content,
-          slug: path.replace(`${config.contentSrc.path}/${relativePath}`, ''),
-          frontmatter: matterResult.data,
-        }
-      },
-    ),
-  )
-  return filesWithFrontmatter
+  const files = result.filter(typedBoolean)
+  return files
 }
 
 function typedBoolean<T>(
@@ -224,10 +212,4 @@ function typedBoolean<T>(
   return Boolean(value)
 }
 
-export {
-  downloadMdxFileOrDirectory,
-  downloadDirectory,
-  downloadDirList,
-  downloadMdxFileOrIndex,
-  downloadMdxListItemsInDir,
-}
+export {downloadMdxFileOrDirectory, downloadMdxListItemsInDir}

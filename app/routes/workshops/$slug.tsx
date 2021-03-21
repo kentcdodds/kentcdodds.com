@@ -1,30 +1,33 @@
 import React from 'react'
-import {json} from '@remix-run/data'
 import {useRouteData} from '@remix-run/react'
-import {getMDXComponent} from 'mdx-bundler/client'
-import type {WorkshopPage, KCDLoader} from 'types'
-import {AnchorOrLink} from '../../shared'
-import {downloadMdxFileOrDirectory} from '../../utils/github.server'
-import {compileMdx} from '../../utils/compile-mdx.server'
+import type {MdxPage, KCDLoader} from 'types'
+import {
+  FourOhFour,
+  loadMdxPage,
+  mdxPageMeta,
+  getMdxComponent,
+} from '../../utils/mdx'
 
 export const loader: KCDLoader<{slug: string}> = async ({params, context}) => {
-  const {slug} = params
-  const workshopFiles = await downloadMdxFileOrDirectory(
-    context.octokit,
-    `workshops/${slug}`,
-  )
-
-  const {code, frontmatter} = await compileMdx(slug, workshopFiles)
-  return json({slug, code, frontmatter})
+  return loadMdxPage({
+    rootDir: 'workshops',
+    octokit: context.octokit,
+    slug: params.slug,
+  })
 }
 
-export function meta({data}: {data: WorkshopPage | null}) {
-  return data?.frontmatter.meta
+export const meta = mdxPageMeta
+
+export default function MdxScreenBase() {
+  const mdxPage = useRouteData<MdxPage | null>()
+
+  if (mdxPage) return <MdxScreen mdxPage={mdxPage} />
+  else return <FourOhFour />
 }
 
-export default function MdxScreen() {
-  const {code, frontmatter} = useRouteData<WorkshopPage>()
-  const Component = React.useMemo(() => getMDXComponent(code), [code])
+function MdxScreen({mdxPage}: {mdxPage: MdxPage}) {
+  const {code, frontmatter} = mdxPage
+  const Component = React.useMemo(() => getMdxComponent(code), [code])
 
   return (
     <>
@@ -33,7 +36,7 @@ export default function MdxScreen() {
         <p>{frontmatter.meta.description}</p>
       </header>
       <main>
-        <Component components={{a: AnchorOrLink}} />
+        <Component />
       </main>
     </>
   )

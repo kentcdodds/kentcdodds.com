@@ -21,8 +21,8 @@ export function headers() {
 
 export function meta() {
   return {
-    title: 'Blog Template',
-    description: 'This is a blog template, enjoy!',
+    title: 'Blog | Kent C. Dodds',
+    description: 'This is the Kent C. Dodds blog',
   }
 }
 
