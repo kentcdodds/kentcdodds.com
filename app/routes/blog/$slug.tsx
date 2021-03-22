@@ -1,27 +1,31 @@
 import React from 'react'
+import {json} from '@remix-run/data'
 import {useRouteData} from '@remix-run/react'
 import type {KCDLoader, Post} from 'types'
 import {
   FourOhFour,
-  loadMdxPage,
+  getMdxPage,
   mdxPageMeta,
   getMdxComponent,
 } from '../../utils/mdx'
 
 export const loader: KCDLoader<{slug: string}> = async ({params, context}) => {
-  return loadMdxPage({
+  const page = await getMdxPage({
     rootDir: 'blog',
     octokit: context.octokit,
     slug: params.slug,
   })
+
+  if (!page) return json(null, {status: 404})
+  return json({page})
 }
 
 export const meta = mdxPageMeta
 
 export default function MdxScreenBase() {
-  const post = useRouteData<Post | null>()
+  const data = useRouteData<{page: Post} | null>()
 
-  if (post) return <MdxScreen post={post} />
+  if (data) return <MdxScreen post={data.page} />
   else return <FourOhFour />
 }
 

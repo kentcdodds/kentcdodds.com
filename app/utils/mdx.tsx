@@ -1,6 +1,5 @@
 import * as React from 'react'
 import {Octokit} from '@octokit/rest'
-import {json} from '@remix-run/data'
 import {useMatches} from '@remix-run/react'
 import {MdxPage} from 'types'
 import * as mdxBundler from 'mdx-bundler/client'
@@ -8,7 +7,7 @@ import {compileMdx} from '../utils/compile-mdx.server'
 import {downloadMdxFileOrDirectory} from '../utils/github.server'
 import {AnchorOrLink} from '../shared'
 
-async function loadMdxPage({
+async function getMdxPage({
   octokit,
   rootDir,
   slug,
@@ -22,15 +21,12 @@ async function loadMdxPage({
     `${rootDir}/${slug}`,
   )
 
-  const result = await compileMdx(slug, pageFiles)
-  if (!result) return json(null, {status: 404})
-  const {code, frontmatter} = result
-  return json({slug, code, frontmatter})
+  return compileMdx(slug, pageFiles)
 }
 
-function mdxPageMeta({data}: {data: MdxPage | null}) {
+function mdxPageMeta({data}: {data: {page: MdxPage} | null}) {
   if (data) {
-    return data.frontmatter.meta
+    return data.page.frontmatter.meta
   } else {
     return {
       title: 'Not found',
@@ -73,4 +69,4 @@ function FourOhFour() {
   )
 }
 
-export {loadMdxPage, mdxPageMeta, FourOhFour, getMdxComponent}
+export {getMdxPage, mdxPageMeta, FourOhFour, getMdxComponent}

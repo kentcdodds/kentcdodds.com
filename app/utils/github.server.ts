@@ -192,10 +192,9 @@ async function downloadMdxListItemsInDir(
           return {
             path: fileDir,
             content,
-            slug: fileDir.replace(
-              `${config.contentSrc.path}/${relativePath}`,
-              '',
-            ),
+            slug: fileDir
+              .replace(`${config.contentSrc.path}/${relativePath}`, '')
+              .replace(/\.mdx?$/, ''),
             frontmatter: matterResult.data as MdxListItem['frontmatter'],
           }
         },
