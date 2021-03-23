@@ -21,4 +21,3 @@ storybook/postcss.config.js
 /other/google-app-creds.json
 
 .env
-config/firebase-service-account-key.json

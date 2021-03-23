@@ -1,11 +1,10 @@
 import type {Request, Loader} from '@remix-run/data'
 import {redirect} from '@remix-run/data'
-import {admin, db} from './firebase.server'
+import {admin, getDb} from './firebase.server'
 import {rootStorage} from './sessions'
 
-const usersRef = db.collection('users')
-
 export async function getCustomer(request: Request) {
+  const usersRef = getDb().collection('users')
   const sessionUser = await getUserSession(request)
   if (!sessionUser) {
     return null
@@ -25,6 +24,7 @@ export function requireCustomer(request: Request) {
       user: {uid: string}
     }) => ReturnType<Loader>,
   ) => {
+    const usersRef = getDb().collection('users')
     const sessionUser = await getUserSession(request)
     if (!sessionUser) return redirect('/login')
 
