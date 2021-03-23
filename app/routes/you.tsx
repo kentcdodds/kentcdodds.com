@@ -13,10 +13,10 @@ export const loader: Loader = ({request}) => {
 
 function YouScreen() {
   const data = useRouteData()
-  console.log(data)
   return (
     <div>
-      YOU!
+      <h1>User: {data.sessionUser.email}</h1>
+      <div>Team: {data.user.team}</div>
       <Outlet />
     </div>
   )
