@@ -4,6 +4,9 @@ import type {Action, Loader} from '@remix-run/data'
 
 declare global {
   interface Window {
+    ENV: {
+      firebase: Object
+    }
     twttr?: {
       widgets: {
         load: (node?: Element) => Promise<void>

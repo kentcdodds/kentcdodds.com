@@ -20,6 +20,8 @@ module.exports = {
     // meh...
     '@typescript-eslint/unbound-method': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/return-await': 'off',
+    'max-lines-per-function': 'off',
 
     // this didn't seem to work 🤔
     '@typescript-eslint/restrict-template-expressions': 'off',

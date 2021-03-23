@@ -53,6 +53,8 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-async-errors": "^3.1.1",
+    "firebase": "^8.3.1",
+    "firebase-admin": "^9.5.0",
     "gray-matter": "^4.0.2",
     "mdx-bundler": "^3.1.2",
     "node-fetch": "^2.6.1",
