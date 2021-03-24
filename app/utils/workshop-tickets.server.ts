@@ -50,16 +50,19 @@ type WorkshopEvent = Pick<
     endTime: TiToActivity['end_at']
   }
 
+const titoSecret = process.env.TITO_API_SECRET
+if (process.env.NODE_ENV === 'production') {
+  console.error(
+    `TITO_API_SECRET is not set. Can't get tickets from the ti.to API!`,
+  )
+}
+
 async function getTito<JsonResponse extends Record<string, unknown>>(
   endpoint: string,
 ): Promise<JsonResponse> {
   const response = await fetch(
     `https://api.tito.io/v3/kent-c-dodds/${endpoint}`,
-    {
-      headers: {
-        Authorization: `Bearer ${process.env.TITO_API_SECRET}`,
-      },
-    },
+    {headers: {Authorization: `Bearer ${titoSecret}`}},
   )
   return response.json()
 }
@@ -81,6 +84,8 @@ function getDiscounts(codes: Array<TiToDiscount>) {
 }
 
 async function getScheduledEvents() {
+  if (!titoSecret) return []
+
   const {events: allEvents} = await getTito<{events: Array<TiToEvent>}>(
     'events',
   )

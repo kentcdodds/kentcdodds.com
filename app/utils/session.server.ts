@@ -4,11 +4,11 @@ import {admin, getDb} from './firebase.server'
 import {rootStorage} from './sessions'
 
 export async function getCustomer(request: Request) {
-  const usersRef = getDb().collection('users')
   const sessionUser = await getUserSession(request)
   if (!sessionUser) {
     return null
   }
+  const usersRef = getDb().collection('users')
   const userDoc = await usersRef.doc(sessionUser.uid).get()
   if (!userDoc.exists) {
     return null
@@ -24,10 +24,10 @@ export function requireCustomer(request: Request) {
       user: {uid: string}
     }) => ReturnType<Loader>,
   ) => {
-    const usersRef = getDb().collection('users')
     const sessionUser = await getUserSession(request)
     if (!sessionUser) return redirect('/login')
 
+    const usersRef = getDb().collection('users')
     const userDoc = await usersRef.doc(sessionUser.uid).get()
     // weird to have a session but not a user doc, should be impossible but who
     // knows, just being extra careful, send them to the buy page!
