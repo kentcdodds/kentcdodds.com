@@ -10,7 +10,7 @@ env:
   MAILGUN_DOMAIN: ${{ secrets.MAILGUN_DOMAIN }}
   BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
   FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
-  SESSION_SECRET: ${{ secret.SESSION_SECRET }}
+  SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
 jobs:
   main:
     runs-on: ubuntu-latest
