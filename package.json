@@ -24,7 +24,6 @@
     "build": "npm run css:build && remix build",
     "clean": "rimraf ./node_modules/.cache ./build ./public/build \"./app/styles/**/*.css\"",
     "postinstall": "npm run build",
-    "predev": "npm run build",
     "dev": "pm2-dev pm2.config.js",
     "start": "node start.js",
     "start:mocks": "ts-node -r ./mocks start.js",
@@ -79,7 +78,6 @@
     "tailwindcss": "^2.0.4",
     "unified": "^9.2.1",
     "unist-util-visit": "^2.0.3",
-    "wait-on": "^5.3.0",
     "xstate": "^4.17.0"
   },
   "devDependencies": {
@@ -96,6 +94,7 @@
     "@types/react": "^17.0.3",
     "@types/react-dom": "^17.0.3",
     "autoprefixer": "^10.2.5",
+    "chalk": "^4.1.0",
     "concurrently": "^6.0.0",
     "cross-env": "^7.0.3",
     "cypress": "^6.8.0",
