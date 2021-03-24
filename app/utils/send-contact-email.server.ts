@@ -1,5 +1,6 @@
 import {userInfo} from 'os'
 import nodemailer from 'nodemailer'
+import type Mail from 'nodemailer/lib/mailer'
 import getMailgunTransport from 'nodemailer-mailgun-transport'
 import ow from 'ow'
 import type {BasePredicate} from 'ow'
@@ -41,25 +42,35 @@ function owWithMessage(
   }
 }
 
-owWithMessage(
-  process.env.MAILGUN_API_KEY,
-  'MAILGUN_API_KEY environment variable is not set',
-  ow.string.minLength(1),
-)
-owWithMessage(
-  process.env.MAILGUN_DOMAIN,
-  'MAILGUN_DOMAIN environment variable is not set',
-  ow.string.minLength(1),
-)
+let lazyTransporter: Mail
+async function getTransporter(): Promise<Mail> {
+  // eslint is confused about this...
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (!lazyTransporter) {
+    owWithMessage(
+      process.env.MAILGUN_API_KEY,
+      'MAILGUN_API_KEY environment variable is not set',
+      ow.string.minLength(1),
+    )
+    owWithMessage(
+      process.env.MAILGUN_DOMAIN,
+      'MAILGUN_DOMAIN environment variable is not set',
+      ow.string.minLength(1),
+    )
 
-const auth = {
-  auth: {
-    api_key: process.env.MAILGUN_API_KEY,
-    domain: process.env.MAILGUN_DOMAIN,
-  },
+    const auth = {
+      auth: {
+        api_key: process.env.MAILGUN_API_KEY,
+        domain: process.env.MAILGUN_DOMAIN,
+      },
+    }
+
+    lazyTransporter = nodemailer.createTransport(getMailgunTransport(auth))
+    await lazyTransporter.verify()
+  }
+
+  return lazyTransporter
 }
-
-const transporter = nodemailer.createTransport(getMailgunTransport(auth))
 
 const sendContactEmail: KCDAction = async ({request}) => {
   const url = new URL(request.url)
@@ -145,7 +156,7 @@ const sendContactEmail: KCDAction = async ({request}) => {
 
   try {
     log('> Sending...')
-    await transporter.verify()
+    const transporter = await getTransporter()
     await transporter.sendMail(message)
     log('> Send success!')
   } catch (error: unknown) {

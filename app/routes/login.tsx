@@ -12,7 +12,7 @@ import {getCustomer} from '../utils/session.server'
 
 export const loader: LoaderFunction = async ({request}) => {
   const customer = await getCustomer(request)
-  if (customer) return redirect('/you')
+  if (customer) return redirect('/me')
 
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
   const cookie = await rootStorage.destroySession(session)

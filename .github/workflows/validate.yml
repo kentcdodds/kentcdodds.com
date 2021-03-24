@@ -10,6 +10,7 @@ env:
   MAILGUN_DOMAIN: ${{ secrets.MAILGUN_DOMAIN }}
   BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
   FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+  SESSION_SECRET: ${{ secret.SESSION_SECRET }}
 jobs:
   main:
     runs-on: ubuntu-latest
@@ -59,6 +60,7 @@ jobs:
           HD_BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
           HD_FIREBASE_SERVICE_ACCOUNT_KEY:
             ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+          HD_SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
         with:
           heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
           heroku_app_name: kentcdodds-remix
