@@ -1,10 +1,10 @@
 import {json} from '@remix-run/data'
 import {KCDLoader} from 'types'
-import {commitSession, getSession} from '../session-storage'
+import {rootStorage} from '../utils/session.server'
 
 function sendSessionValue(valuesAndDefaults: Record<string, unknown>) {
   const loadSession: KCDLoader = async ({request}) => {
-    const session = await getSession(request.headers.get('Cookie') ?? undefined)
+    const session = await rootStorage.getSession(request.headers.get('Cookie'))
     const values: Record<string, unknown> = {}
     for (const [name, defaultValue] of Object.entries(valuesAndDefaults)) {
       const sessionValue = session.get(name)
@@ -12,7 +12,7 @@ function sendSessionValue(valuesAndDefaults: Record<string, unknown>) {
     }
     return json(values, {
       headers: {
-        'Set-Cookie': await commitSession(session),
+        'Set-Cookie': await rootStorage.commitSession(session),
       },
     })
   }

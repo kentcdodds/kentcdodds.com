@@ -1,9 +1,35 @@
 import type {Request, Loader} from '@remix-run/data'
-import {redirect} from '@remix-run/data'
-import {admin, getDb} from './firebase.server'
-import {rootStorage} from './sessions'
+import {createCookieSessionStorage, redirect} from '@remix-run/data'
+import {admin, getDb, getSessionToken} from './firebase.server'
 
-export async function getCustomer(request: Request) {
+let secret = 'not-at-all-secret'
+if (process.env.SESSION_SECRET) {
+  secret = process.env.SESSION_SECRET
+} else if (process.env.NODE_ENV === 'production') {
+  throw new Error('Must set SESSION_SECRET')
+}
+
+const rootStorage = createCookieSessionStorage({
+  cookie: {
+    name: '__session',
+    secrets: [secret],
+    sameSite: 'lax',
+    path: '/',
+  },
+})
+
+async function createUserSession(idToken: string) {
+  const {getSession, commitSession} = rootStorage
+  const token = await getSessionToken(idToken)
+  const session = await getSession()
+  session.set('token', token)
+  const cookie = await commitSession(session, {maxAge: 604_800})
+  return redirect('/me', {
+    headers: {'Set-Cookie': cookie},
+  })
+}
+
+async function getCustomer(request: Request) {
   const sessionUser = await getUserSession(request)
   if (!sessionUser) {
     return null
@@ -17,7 +43,7 @@ export async function getCustomer(request: Request) {
   return {sessionUser, user}
 }
 
-export function requireCustomer(request: Request) {
+function requireCustomer(request: Request) {
   return async (
     loader: (data: {
       sessionUser: admin.auth.DecodedIdToken | null
@@ -51,4 +77,12 @@ async function getUserSession(request: Request) {
   } catch {
     return null
   }
+}
+
+export {
+  rootStorage,
+  createUserSession,
+  requireCustomer,
+  getUserSession,
+  getCustomer,
 }

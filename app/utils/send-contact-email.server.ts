@@ -12,7 +12,7 @@ import format from 'rehype-format'
 import html from 'rehype-stringify'
 import {redirect} from '@remix-run/data'
 import type {KCDAction} from 'types'
-import {commitSession, getSession} from '../session-storage'
+import {rootStorage} from '../utils/session.server'
 
 const {username} = userInfo()
 
@@ -77,7 +77,9 @@ const sendContactEmail: KCDAction = async ({request}) => {
   const runId = Date.now().toString().slice(-5)
   const log = (...args: Array<unknown>) => console.log(runId, ...args)
 
-  const session = await getSession(request.headers.get('Cookie') ?? undefined)
+  const session = await rootStorage.getSession(
+    request.headers.get('Cookie') ?? undefined,
+  )
 
   const acceptable =
     (url.hostname === 'localhost' && username === 'kentcdodds') ||
@@ -88,7 +90,7 @@ const sendContactEmail: KCDAction = async ({request}) => {
     session.flash('error', 'Unacceptable request')
     return redirect('/contact', {
       headers: {
-        'Set-Cookie': await commitSession(session),
+        'Set-Cookie': await rootStorage.commitSession(session),
       },
     })
   }
@@ -139,7 +141,7 @@ const sendContactEmail: KCDAction = async ({request}) => {
     session.flash('error', errorMessage)
     return redirect('/contact', {
       headers: {
-        'Set-Cookie': await commitSession(session),
+        'Set-Cookie': await rootStorage.commitSession(session),
       },
     })
   }
@@ -169,7 +171,7 @@ const sendContactEmail: KCDAction = async ({request}) => {
     session.flash('error', errorMessage)
     return redirect('/contact', {
       headers: {
-        'Set-Cookie': await commitSession(session),
+        'Set-Cookie': await rootStorage.commitSession(session),
       },
     })
   }
@@ -178,7 +180,7 @@ const sendContactEmail: KCDAction = async ({request}) => {
   session.flash('result', {name, email, subject})
   return redirect('/contact/success', {
     headers: {
-      'Set-Cookie': await commitSession(session),
+      'Set-Cookie': await rootStorage.commitSession(session),
     },
   })
 }

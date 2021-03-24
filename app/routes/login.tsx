@@ -2,13 +2,16 @@ import React, {useEffect, useRef, useState} from 'react'
 import {useRouteData, useSubmit} from '@remix-run/react'
 import {json, redirect} from '@remix-run/data'
 import type {ActionFunction, LoaderFunction} from '@remix-run/data'
-import {rootStorage, createUserSession} from '../utils/sessions'
 import {
   getIdToken,
   signInWithEmail,
   signInWithGitHub,
 } from '../utils/firebase.client'
-import {getCustomer} from '../utils/session.server'
+import {
+  getCustomer,
+  rootStorage,
+  createUserSession,
+} from '../utils/session.server'
 
 export const loader: LoaderFunction = async ({request}) => {
   const customer = await getCustomer(request)
