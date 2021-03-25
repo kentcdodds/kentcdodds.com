@@ -18,11 +18,20 @@ the files in `mocks/content` and it will be pulled from there.
 
 ### Code
 
-If you have a remix license, then make sure you run install with
-`REMIX_REGISTRY_TOKEN` env variable set.
+#### You have a Remix license
+
+You'll need to have your Remix key set to be able to install the dependencies.
+
+There is an `.npmrc.example` file located in the root of this project. If you
+have not set your Remix key in your main npm config (`~/.npmrc`), you might want
+to rename this file to `.npmrc` and either replace `${REMIX_REGISTRY_TOKEN}`
+with your key, or set the `REMIX_REGISTRY_TOKEN` env variable before running
+`npm install`.
 
 There is an `.env.example` file located in the root of this project. Rename it
 to `.env`, and adjust the values before you start the app.
+
+#### You do not have a Remix license
 
 If you do not have a remix license, you will not be able to install dependencies
 and run the project locally. However, you _can_ work on the frontend components
