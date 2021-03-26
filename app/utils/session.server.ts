@@ -54,10 +54,12 @@ function requireCustomer(request: Request) {
     if (!sessionUser) return redirect('/login')
 
     const usersRef = getDb().collection('users')
-    const userDoc = await usersRef.doc(sessionUser.uid).get()
-    // weird to have a session but not a user doc, should be impossible but who
-    // knows, just being extra careful, send them to the buy page!
-    if (!userDoc.exists) return redirect('/buy')
+    let userDoc = await usersRef.doc(sessionUser.uid).get()
+
+    if (!userDoc.exists) {
+      await usersRef.doc(sessionUser.uid).set({team: null})
+      userDoc = await usersRef.doc(sessionUser.uid).get()
+    }
 
     const user = {uid: userDoc.id, ...userDoc.data()}
     const data = {sessionUser, user}

@@ -23,6 +23,7 @@ module.exports = {
     '@typescript-eslint/return-await': 'off',
     'max-lines-per-function': 'off',
     '@typescript-eslint/sort-type-union-intersection-members': 'off',
+    'one-var': 'off',
 
     // this didn't seem to work 🤔
     '@typescript-eslint/restrict-template-expressions': 'off',

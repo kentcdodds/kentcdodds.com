@@ -1,18 +1,13 @@
 import * as React from 'react'
-import {useRouteData, useSubmit} from '@remix-run/react'
+import {useRouteData} from '@remix-run/react'
 import {json, redirect} from '@remix-run/data'
 import type {ActionFunction, LoaderFunction} from '@remix-run/data'
-import {
-  getIdToken,
-  signInWithEmail,
-  signInWithGitHub,
-} from '../utils/firebase.client'
+import {createEmailUser, signInWithEmail} from '../utils/firebase.server'
 import {
   getCustomer,
   rootStorage,
   createUserSession,
 } from '../utils/session.server'
-import {useAsync} from '../shared'
 
 export const loader: LoaderFunction = async ({request}) => {
   const customer = await getCustomer(request)
@@ -29,16 +24,27 @@ export const loader: LoaderFunction = async ({request}) => {
 
 export const action: ActionFunction = async ({request}) => {
   const params = new URLSearchParams(await request.text())
-  const idToken = params.get('idToken')
-  if (!idToken) {
-    console.error('No idToken param!')
-    return redirect('/error')
+  const email = params.get('email')
+  const password = params.get('password')
+  const create = params.get('type') === 'register'
+  const session = await rootStorage.getSession(request.headers.get('Cookie'))
+  if (!email || !password) {
+    session.set('error', 'Email and password are required')
+    const cookie = await rootStorage.commitSession(session)
+    return redirect(`/login`, {headers: {'Set-Cookie': cookie}})
   }
-
+  let user
   try {
-    return createUserSession(idToken)
+    const data = create
+      ? await createEmailUser(email, password)
+      : await signInWithEmail(email, password)
+    user = data.user
+    if (!user) {
+      session.set('error', 'Email and password are required')
+      const cookie = await rootStorage.commitSession(session)
+      return redirect(`/login`, {headers: {'Set-Cookie': cookie}})
+    }
   } catch (e: unknown) {
-    const session = await rootStorage.getSession(request.headers.get('Cookie'))
     let message = 'Unknown error'
     if (e instanceof Error) {
       message = e.message
@@ -48,18 +54,12 @@ export const action: ActionFunction = async ({request}) => {
 
     return redirect(`/login`, {headers: {'Set-Cookie': cookie}})
   }
+  const token = await user.getIdToken()
+  return createUserSession(token)
 }
 
 function LoginForm() {
   const data = useRouteData()
-  const submit = useSubmit()
-
-  const passwordAsync = useAsync({
-    status: data.errorMessage ? 'rejected' : 'idle',
-    error: data.errorMessage ? new Error(data.errorMessage) : null,
-  })
-
-  const githubAsync = useAsync()
 
   const [formValues, setFormValues] = React.useState({
     email: '',
@@ -69,30 +69,6 @@ function LoginForm() {
 
   const formIsValid =
     formValues.email.match(/.+@.+/) && formValues.password.length >= 6
-
-  React.useEffect(() => {
-    // auto-focus the password input on error if they entered a password
-    if (passwordAsync.isError && emailRef.current && emailRef.current.value) {
-      emailRef.current.select()
-    }
-  }, [passwordAsync.isError])
-
-  async function submitIdToken() {
-    const idToken = await getIdToken()
-    if (!idToken) {
-      console.error('Could not get an ID token')
-      return
-    }
-    submit(
-      {idToken},
-      {
-        // Remix has a bug in useSubmit requiring location.origin
-        action: `${window.location.origin}/login`,
-        replace: true,
-        method: 'post',
-      },
-    )
-  }
 
   return (
     <div className="mt-8">
@@ -105,16 +81,8 @@ function LoginForm() {
             password: form.password.value,
           })
         }}
-        onSubmit={event => {
-          event.preventDefault()
-          void passwordAsync.run(
-            Promise.resolve()
-              .then(() =>
-                signInWithEmail(formValues.email, formValues.password),
-              )
-              .then(submitIdToken),
-          )
-        }}
+        action="/login"
+        method="post"
       >
         <div className="-space-y-px rounded-md shadow-sm">
           <div>
@@ -124,9 +92,7 @@ function LoginForm() {
             <input
               ref={emailRef}
               autoFocus
-              aria-describedby={
-                passwordAsync.isError ? 'error-message' : 'message'
-              }
+              aria-describedby={data.error ? 'error-message' : 'message'}
               id="email-address"
               name="email"
               type="email"
@@ -156,17 +122,30 @@ function LoginForm() {
         <div>
           <button
             type="submit"
+            name="type"
+            value="register"
             disabled={!formIsValid}
-            className={`w-full py-2 px-4 border-2 border-transparent text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:border-yellow-500 ${
+            className={`w-50 py-2 px-4 border-2 border-transparent text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:border-yellow-500 ${
               formIsValid ? '' : 'opacity-50'
             }`}
           >
-            Sign in {passwordAsync.isLoading ? '...' : null}
+            Register
+          </button>
+          <button
+            type="submit"
+            name="type"
+            value="sign in"
+            disabled={!formIsValid}
+            className={`w-50 py-2 px-4 border-2 border-transparent text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:border-yellow-500 ${
+              formIsValid ? '' : 'opacity-50'
+            }`}
+          >
+            Sign in
           </button>
         </div>
-        {passwordAsync.isError && passwordAsync.error ? (
+        {data.error ? (
           <p id="error-message" className="text-center text-red-600">
-            {passwordAsync.error.message}
+            {data.error}
           </p>
         ) : null}
         <div className="sr-only" aria-live="polite">
@@ -175,26 +154,6 @@ function LoginForm() {
             : 'Sign in form is now invalid.'}
         </div>
       </form>
-      <div className="relative my-8">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-700" />
-        </div>
-        <div className="relative flex justify-center text-sm leading-5">
-          <span className="px-2 text-gray-300 bg-gray-900">Or you can</span>
-        </div>
-      </div>
-      <div>
-        <button
-          onClick={() => {
-            void githubAsync.run(
-              Promise.resolve().then(signInWithGitHub).then(submitIdToken),
-            )
-          }}
-          className="w-full px-4 py-2 text-sm font-medium text-white bg-gray-800 border-2 border-transparent rounded-md hover:bg-gray-700 focus:outline-none focus:border-yellow-500"
-        >
-          Sign in with GitHub {githubAsync.isLoading ? '...' : null}
-        </button>
-      </div>
     </div>
   )
 }

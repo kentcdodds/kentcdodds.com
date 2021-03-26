@@ -3,7 +3,6 @@ import {json, redirect} from '@remix-run/data'
 import {Form, useRouteData} from '@remix-run/react'
 import * as React from 'react'
 import {Outlet} from 'react-router'
-import {signOut} from '../utils/firebase.client'
 import {requireCustomer, rootStorage} from '../utils/session.server'
 
 export const loader: Loader = ({request}) => {
@@ -26,7 +25,7 @@ function YouScreen() {
       <h1>User: {data.sessionUser.email}</h1>
       <div>Team: {data.user.team}</div>
       <div>
-        <Form method="post" action="/me" onSubmit={() => signOut()}>
+        <Form method="post" action="/me">
           <button type="submit">Logout</button>
         </Form>
       </div>
