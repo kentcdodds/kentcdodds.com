@@ -3,15 +3,11 @@ import {useRouteData} from '@remix-run/react'
 import {json, redirect} from '@remix-run/data'
 import type {ActionFunction, LoaderFunction} from '@remix-run/data'
 import {createEmailUser, signInWithEmail} from '../utils/firebase.server'
-import {
-  getCustomer,
-  rootStorage,
-  createUserSession,
-} from '../utils/session.server'
+import {getUser, rootStorage, createUserSession} from '../utils/session.server'
 
 export const loader: LoaderFunction = async ({request}) => {
-  const customer = await getCustomer(request)
-  if (customer) return redirect('/me')
+  const userInfo = await getUser(request)
+  if (userInfo) return redirect('/me')
 
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
   const cookie = await rootStorage.destroySession(session)
@@ -123,17 +119,6 @@ function LoginForm() {
           <button
             type="submit"
             name="type"
-            value="register"
-            disabled={!formIsValid}
-            className={`w-50 py-2 px-4 border-2 border-transparent text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:border-yellow-500 ${
-              formIsValid ? '' : 'opacity-50'
-            }`}
-          >
-            Register
-          </button>
-          <button
-            type="submit"
-            name="type"
             value="sign in"
             disabled={!formIsValid}
             className={`w-50 py-2 px-4 border-2 border-transparent text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:border-yellow-500 ${
@@ -141,6 +126,17 @@ function LoginForm() {
             }`}
           >
             Sign in
+          </button>
+          <button
+            type="submit"
+            name="type"
+            value="register"
+            disabled={!formIsValid}
+            className={`w-50 py-2 px-4 border-2 border-transparent text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:border-yellow-500 ${
+              formIsValid ? '' : 'opacity-50'
+            }`}
+          >
+            Register
           </button>
         </div>
         {data.error ? (

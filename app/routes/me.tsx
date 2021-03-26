@@ -3,11 +3,11 @@ import {json, redirect} from '@remix-run/data'
 import {Form, useRouteData} from '@remix-run/react'
 import * as React from 'react'
 import {Outlet} from 'react-router'
-import {requireCustomer, rootStorage} from '../utils/session.server'
+import {requireUser, rootStorage} from '../utils/session.server'
 
 export const loader: Loader = ({request}) => {
-  return requireCustomer(request)(customer => {
-    return json(customer)
+  return requireUser(request)(({sessionUser, user}) => {
+    return json({sessionUser, user})
   })
 }
 
@@ -24,6 +24,7 @@ function YouScreen() {
     <div>
       <h1>User: {data.sessionUser.email}</h1>
       <div>Team: {data.user.team}</div>
+      <div>Email verified: {String(data.sessionUser.email_verified)}</div>
       <div>
         <Form method="post" action="/me">
           <button type="submit">Logout</button>

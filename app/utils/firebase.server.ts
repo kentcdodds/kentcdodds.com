@@ -27,7 +27,19 @@ async function createEmailUser(email: string, password: string) {
   }
 
   try {
-    return firebase.auth().createUserWithEmailAndPassword(email, password)
+    const userCred = await firebase
+      .auth()
+      .createUserWithEmailAndPassword(email, password)
+    const usersRef = getDb().collection('users')
+    const user = userCred.user
+    if (!user) {
+      throw new Error(
+        'Failed to create a new user for you. Please contact team@kentcdodds.com.',
+      )
+    }
+    await user.sendEmailVerification()
+    await usersRef.doc(user.uid).set({team: null})
+    return userCred
   } catch (error: unknown) {
     if (isFirebaseAuthError(error)) {
       error.message = messages[error.code] ?? error.message
@@ -36,8 +48,12 @@ async function createEmailUser(email: string, password: string) {
   }
 }
 
+async function confirmUser(code: string) {
+  await firebase.auth().applyActionCode(code)
+}
+
 async function signInWithEmail(email: string, password: string) {
-  return firebase.auth().signInWithEmailAndPassword(email, password)
+  return await firebase.auth().signInWithEmailAndPassword(email, password)
 }
 
 let lazyDb: FirebaseFirestore.Firestore | undefined
@@ -80,4 +96,11 @@ async function getSessionToken(idToken: string) {
   return auth.createSessionCookie(idToken, {expiresIn: twoWeeks})
 }
 
-export {admin, getSessionToken, getDb, createEmailUser, signInWithEmail}
+export {
+  admin,
+  getSessionToken,
+  getDb,
+  createEmailUser,
+  signInWithEmail,
+  confirmUser,
+}

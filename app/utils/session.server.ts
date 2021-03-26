@@ -29,7 +29,7 @@ async function createUserSession(idToken: string) {
   })
 }
 
-async function getCustomer(request: Request) {
+async function getUser(request: Request) {
   const sessionUser = await getUserSession(request)
   if (!sessionUser) {
     return null
@@ -37,33 +37,31 @@ async function getCustomer(request: Request) {
   const usersRef = getDb().collection('users')
   const userDoc = await usersRef.doc(sessionUser.uid).get()
   if (!userDoc.exists) {
+    // this should never happen, log the user out
+    console.error(`No user doc for this session: ${sessionUser.uid}`)
     return null
   }
-  const user = userDoc.data()
-  return {sessionUser, user}
+  const user = {uid: userDoc.id, ...userDoc.data()}
+  return {sessionUser, user, userDoc}
 }
 
-function requireCustomer(request: Request) {
+function requireUser(request: Request) {
   return async (
     loader: (data: {
       sessionUser: admin.auth.DecodedIdToken | null
       user: {uid: string}
+      userDoc: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>
     }) => ReturnType<Loader>,
   ) => {
-    const sessionUser = await getUserSession(request)
-    if (!sessionUser) return redirect('/login')
-
-    const usersRef = getDb().collection('users')
-    let userDoc = await usersRef.doc(sessionUser.uid).get()
-
-    if (!userDoc.exists) {
-      await usersRef.doc(sessionUser.uid).set({team: null})
-      userDoc = await usersRef.doc(sessionUser.uid).get()
+    const userInfo = await getUser(request)
+    if (!userInfo) {
+      const session = await rootStorage.getSession(
+        request.headers.get('Cookie'),
+      )
+      const cookie = await rootStorage.destroySession(session)
+      return redirect('/login', {headers: {'Set-Cookie': cookie}})
     }
-
-    const user = {uid: userDoc.id, ...userDoc.data()}
-    const data = {sessionUser, user}
-    return loader(data)
+    return loader(userInfo)
   }
 }
 
@@ -81,10 +79,4 @@ async function getUserSession(request: Request) {
   }
 }
 
-export {
-  rootStorage,
-  createUserSession,
-  requireCustomer,
-  getUserSession,
-  getCustomer,
-}
+export {rootStorage, createUserSession, requireUser, getUserSession, getUser}
