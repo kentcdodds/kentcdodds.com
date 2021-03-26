@@ -22,6 +22,7 @@ module.exports = {
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/return-await': 'off',
     'max-lines-per-function': 'off',
+    '@typescript-eslint/sort-type-union-intersection-members': 'off',
 
     // this didn't seem to work 🤔
     '@typescript-eslint/restrict-template-expressions': 'off',

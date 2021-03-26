@@ -37,6 +37,10 @@ export function createEmailUser(email: string, password: string) {
   }
 }
 
+export async function signOut() {
+  return firebase.auth().signOut()
+}
+
 export async function signInWithEmail(email: string, password: string) {
   return firebase.auth().signInWithEmailAndPassword(email, password)
 }

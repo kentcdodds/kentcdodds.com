@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react'
+import * as React from 'react'
 import {useRouteData, useSubmit} from '@remix-run/react'
 import {json, redirect} from '@remix-run/data'
 import type {ActionFunction, LoaderFunction} from '@remix-run/data'
@@ -12,6 +12,7 @@ import {
   rootStorage,
   createUserSession,
 } from '../utils/session.server'
+import {useAsync} from '../shared'
 
 export const loader: LoaderFunction = async ({request}) => {
   const customer = await getCustomer(request)
@@ -49,98 +50,49 @@ export const action: ActionFunction = async ({request}) => {
   }
 }
 
-enum State {
-  Idle = 'idle',
-  GettingIdToken = 'getting id token',
-  CreatingServerSession = 'creating server session',
-  Error = 'error',
-}
-
 function LoginForm() {
-  const [state, setState] = useState<State>(State.Idle)
-  const [authMethod, setAuthMethod] = useState<'github' | 'password' | null>(
-    null,
-  )
-  const [error, setError] = useState<Error | null>(null)
-  const [formValues, setFormValues] = useState({
+  const data = useRouteData()
+  const submit = useSubmit()
+
+  const passwordAsync = useAsync({
+    status: data.errorMessage ? 'rejected' : 'idle',
+    error: data.errorMessage ? new Error(data.errorMessage) : null,
+  })
+
+  const githubAsync = useAsync()
+
+  const [formValues, setFormValues] = React.useState({
     email: '',
     password: '',
   })
-  const submit = useSubmit()
-  const data = useRouteData()
-  const emailRef = useRef<HTMLInputElement>(null)
+  const emailRef = React.useRef<HTMLInputElement>(null)
 
   const formIsValid =
     formValues.email.match(/.+@.+/) && formValues.password.length >= 6
 
-  async function transition() {
-    switch (state) {
-      case State.GettingIdToken: {
-        try {
-          if (authMethod === 'github') {
-            await signInWithGitHub()
-          } else {
-            await signInWithEmail(formValues.email, formValues.password)
-          }
-          setState(State.CreatingServerSession)
-        } catch (e: unknown) {
-          if (e instanceof Error) {
-            setError(e)
-          } else {
-            setError(new Error(e as string))
-          }
-          setState(State.Error)
-        }
-        break
-      }
-      case State.CreatingServerSession: {
-        // do the rest server-side with Remix
-        const idToken = await getIdToken()
-        if (!idToken) {
-          console.error('Could not get an ID token')
-          return
-        }
-        submit(
-          {idToken},
-          {
-            // Remix has a bug in useSubmit requiring location.origin
-            action: `${window.location.origin}/login`,
-            replace: true,
-            method: 'post',
-          },
-        )
-        break
-      }
-      case State.Error: {
-        if (authMethod === 'password') emailRef.current?.select()
-        setTimeout(() => {
-          setState(State.Idle)
-        }, 3000)
-        break
-      }
-      case State.Idle: {
-        // do nothing
-        break
-      }
-      default: {
-        throw new Error(`Unhandled state ${state}`)
-      }
+  React.useEffect(() => {
+    // auto-focus the password input on error if they entered a password
+    if (passwordAsync.isError && emailRef.current && emailRef.current.value) {
+      emailRef.current.select()
     }
+  }, [passwordAsync.isError])
+
+  async function submitIdToken() {
+    const idToken = await getIdToken()
+    if (!idToken) {
+      console.error('Could not get an ID token')
+      return
+    }
+    submit(
+      {idToken},
+      {
+        // Remix has a bug in useSubmit requiring location.origin
+        action: `${window.location.origin}/login`,
+        replace: true,
+        method: 'post',
+      },
+    )
   }
-
-  useEffect(() => {
-    void transition()
-    // hmmm... Ryan?
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state])
-
-  useEffect(() => {
-    // remix action returned an error, move the client side machine along
-    if (state === State.CreatingServerSession && data.error) {
-      setError(new Error(data.errorMessage))
-      setState(State.Error)
-    }
-  }, [state, data])
 
   return (
     <div className="mt-8">
@@ -155,8 +107,13 @@ function LoginForm() {
         }}
         onSubmit={event => {
           event.preventDefault()
-          setAuthMethod('password')
-          setState(State.GettingIdToken)
+          void passwordAsync.run(
+            Promise.resolve()
+              .then(() =>
+                signInWithEmail(formValues.email, formValues.password),
+              )
+              .then(submitIdToken),
+          )
         }}
       >
         <div className="-space-y-px rounded-md shadow-sm">
@@ -168,7 +125,7 @@ function LoginForm() {
               ref={emailRef}
               autoFocus
               aria-describedby={
-                state === State.Error ? 'error-message' : 'message'
+                passwordAsync.isError ? 'error-message' : 'message'
               }
               id="email-address"
               name="email"
@@ -204,14 +161,14 @@ function LoginForm() {
               formIsValid ? '' : 'opacity-50'
             }`}
           >
-            Sign in
+            Sign in {passwordAsync.isLoading ? '...' : null}
           </button>
         </div>
-        {error && (
+        {passwordAsync.isError && passwordAsync.error ? (
           <p id="error-message" className="text-center text-red-600">
-            {error.message}
+            {passwordAsync.error.message}
           </p>
-        )}
+        ) : null}
         <div className="sr-only" aria-live="polite">
           {formIsValid
             ? 'Sign in form is now valid and ready to submit'
@@ -229,12 +186,13 @@ function LoginForm() {
       <div>
         <button
           onClick={() => {
-            setAuthMethod('github')
-            setState(State.GettingIdToken)
+            void githubAsync.run(
+              Promise.resolve().then(signInWithGitHub).then(submitIdToken),
+            )
           }}
           className="w-full px-4 py-2 text-sm font-medium text-white bg-gray-800 border-2 border-transparent rounded-md hover:bg-gray-700 focus:outline-none focus:border-yellow-500"
         >
-          Sign in with GitHub
+          Sign in with GitHub {githubAsync.isLoading ? '...' : null}
         </button>
       </div>
     </div>
@@ -246,7 +204,7 @@ function Login() {
   return (
     <div className="flex items-center justify-center min-h-screen px-4 pt-0 pb-12 bg-gray-900 sm:px-6 lg:px-8">
       <div className="w-full max-w-md -mt-24 space-y-8">
-        {data.loggedOut && <LoggedOutMessage />}
+        {data.loggedOut ? <LoggedOutMessage /> : null}
         <LoginForm />
       </div>
     </div>
