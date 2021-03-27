@@ -8,6 +8,7 @@ import {
   getUser,
   rootStorage,
   createUserSession,
+  sendPasswordResetEmail,
 } from '../utils/session.server'
 
 export const loader: LoaderFunction = async ({request}) => {
@@ -28,20 +29,40 @@ export const loader: LoaderFunction = async ({request}) => {
 
 export const action: ActionFunction = async ({request}) => {
   const params = new URLSearchParams(await request.text())
+  const session = await rootStorage.getSession(request.headers.get('Cookie'))
   const email = params.get('email')
   const password = params.get('password')
-  const create = params.get('type') === 'register'
-  const session = await rootStorage.getSession(request.headers.get('Cookie'))
-  if (!email || !password) {
-    session.flash('error', 'Email and password are required')
+  const actionId = params.get('actionId')
+  if (!email?.match(/.+@.+/)) {
+    session.flash('error', 'A valid email is required')
+    const cookie = await rootStorage.commitSession(session)
+    return redirect(`/login`, {headers: {'Set-Cookie': cookie}})
+  }
+
+  if (actionId === 'reset password') {
+    session.flash(
+      'message',
+      `Password reset email will be sent if an account exists for ${email}`,
+    )
+    const cookie = await rootStorage.commitSession(session)
+    await sendPasswordResetEmail(email)
+    return redirect('/login', {headers: {'Set-Cookie': cookie}})
+  }
+
+  if (!password || password.length < 6) {
+    session.flash(
+      'error',
+      'Password is required and must be at least 6 characters',
+    )
     const cookie = await rootStorage.commitSession(session)
     return redirect(`/login`, {headers: {'Set-Cookie': cookie}})
   }
   let user
   try {
-    const data = create
-      ? await createEmailUser(email, password)
-      : await signInWithEmail(email, password)
+    const data =
+      actionId === 'register'
+        ? await createEmailUser(email, password)
+        : await signInWithEmail(email, password)
     user = data.user
     if (!user) {
       session.flash('error', 'Email and password are required')
@@ -71,8 +92,9 @@ function LoginForm() {
   })
   const emailRef = React.useRef<HTMLInputElement>(null)
 
-  const formIsValid =
-    formValues.email.match(/.+@.+/) && formValues.password.length >= 6
+  const emailIsValid = formValues.email.match(/.+@.+/)
+  const passwordIsValid = formValues.password.length >= 6
+  const formIsValid = emailIsValid && passwordIsValid
 
   return (
     <div className="mt-8">
@@ -117,8 +139,6 @@ function LoginForm() {
               name="password"
               type="password"
               autoComplete="off"
-              required
-              minLength={6}
               className="relative block w-full px-3 py-2 -mt-1 text-gray-200 placeholder-gray-500 bg-gray-800 border-2 border-gray-700 rounded-none appearance-none rounded-b-md focus:outline-none focus:border-yellow-500 focus:z-10 sm:text-sm"
               placeholder="Password"
             />
@@ -127,7 +147,7 @@ function LoginForm() {
         <div>
           <button
             type="submit"
-            name="type"
+            name="actionId"
             value="sign in"
             disabled={!formIsValid}
             className={`w-50 py-2 px-4 border-2 border-transparent text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:border-yellow-500 ${
@@ -138,7 +158,7 @@ function LoginForm() {
           </button>
           <button
             type="submit"
-            name="type"
+            name="actionId"
             value="register"
             disabled={!formIsValid}
             className={`w-50 py-2 px-4 border-2 border-transparent text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:border-yellow-500 ${
@@ -146,6 +166,17 @@ function LoginForm() {
             }`}
           >
             Register
+          </button>
+          <button
+            type="submit"
+            name="actionId"
+            value="reset password"
+            disabled={!emailIsValid}
+            className={`w-50 py-2 px-4 border-2 border-transparent text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:border-yellow-500 ${
+              emailIsValid ? '' : 'opacity-50'
+            }`}
+          >
+            Request Password Reset
           </button>
         </div>
         {data.error ? (

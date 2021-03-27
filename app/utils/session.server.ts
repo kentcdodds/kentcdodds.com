@@ -5,7 +5,15 @@ import admin from 'firebase-admin'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/firestore'
-import {sendConfirmationEmail} from './send-email'
+import * as sendEmail from './send-email'
+
+type UserData = {
+  uid: string
+  firstName: string
+  team: string
+}
+
+type SessionUser = admin.auth.DecodedIdToken & {email: string}
 
 firebase.initializeApp({
   apiKey: 'AIzaSyBTILXfzRTTFa2RaENww2Vra3W5Cb95i5k',
@@ -69,7 +77,10 @@ async function createEmailUser(email: string, password: string) {
     const confirmationLink = await getAdmin()
       .auth()
       .generateEmailVerificationLink(user.email)
-    await sendConfirmationEmail({emailAddress: user.email, confirmationLink})
+    await sendEmail.sendConfirmationEmail({
+      emailAddress: user.email,
+      confirmationLink,
+    })
     const usersRef = getDb().collection('users')
     await usersRef.doc(user.uid).set({team: null})
     return userCred
@@ -83,6 +94,15 @@ async function createEmailUser(email: string, password: string) {
 
 async function confirmUser(code: string) {
   await firebase.auth().applyActionCode(code)
+}
+
+async function getEmailAddressForPasswordResetCode(code: string) {
+  const email = await firebase.auth().verifyPasswordResetCode(code)
+  return email
+}
+
+async function resetUsersPassword(code: string, newPassword: string) {
+  await firebase.auth().confirmPasswordReset(code, newPassword)
 }
 
 async function signInWithEmail(email: string, password: string) {
@@ -125,10 +145,11 @@ async function sendCurrentUserConfirmationEmail(request: Request) {
   if (!sessionUser) {
     return redirect('/login')
   }
-  const firebaseUser = await getAdmin().auth().getUser(sessionUser.uid)
+  const firebaseUser = await getAdmin()
+    .auth()
+    .getUser(sessionUser.uid)
+    .catch(() => null)
 
-  // pretty sure the firebaseUser could be undefined or null...
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const email = firebaseUser?.email
 
   if (!email) {
@@ -140,7 +161,7 @@ async function sendCurrentUserConfirmationEmail(request: Request) {
   const confirmationLink = await getAdmin()
     .auth()
     .generateEmailVerificationLink(email)
-  await sendConfirmationEmail({emailAddress: email, confirmationLink})
+  await sendEmail.sendConfirmationEmail({emailAddress: email, confirmationLink})
 
   session.flash(
     'message',
@@ -148,6 +169,52 @@ async function sendCurrentUserConfirmationEmail(request: Request) {
   )
   const cookie = await rootStorage.commitSession(session)
   return redirect(`/me`, {headers: {'Set-Cookie': cookie}})
+}
+
+async function sendPasswordResetEmail(emailAddress: string) {
+  const auth = getAdmin().auth()
+  const user = await auth.getUserByEmail(emailAddress).catch(() => null)
+  if (!user) return
+  const passwordRestLink = await auth.generatePasswordResetLink(emailAddress)
+  await sendEmail.sendPasswordResetEmail({emailAddress, passwordRestLink})
+}
+
+async function changeEmail({
+  sessionUser,
+  newEmail,
+  password,
+}: {
+  sessionUser: SessionUser
+  newEmail: string
+  password: string
+}) {
+  const userCredential = await firebase
+    .auth()
+    .signInWithEmailAndPassword(sessionUser.email, password)
+  if (!userCredential.user) {
+    throw new Error(
+      `Unable to get the user information for ${sessionUser.email}`,
+    )
+  }
+
+  const auth = getAdmin().auth()
+
+  await auth.updateUser(sessionUser.uid, {
+    email: newEmail,
+  })
+
+  // TODO: support account recovery
+  // await sendEmail.sendEmailRecoverEmail({
+  //   oldEmailAddress: sessionUser.email,
+  //   newEmailAddress: newEmail,
+  //   restoreEmailLink: await auth,
+  // })
+
+  const confirmationLink = await auth.generateEmailVerificationLink(newEmail)
+  await sendEmail.sendConfirmationEmail({
+    emailAddress: newEmail,
+    confirmationLink,
+  })
 }
 
 async function getSessionToken(idToken: string) {
@@ -172,15 +239,15 @@ async function getUser(request: Request) {
     console.error(`No user doc for this session: ${sessionUser.uid}`)
     return null
   }
-  const user = {uid: userDoc.id, ...userDoc.data()}
+  const user = {uid: userDoc.id, ...userDoc.data()} as UserData
   return {sessionUser, user, userDoc}
 }
 
 function requireUser(request: Request) {
   return async (
     loader: (data: {
-      sessionUser: admin.auth.DecodedIdToken | null
-      user: {uid: string}
+      sessionUser: SessionUser
+      user: UserData
       userDoc: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>
     }) => ReturnType<Loader>,
   ) => {
@@ -207,7 +274,7 @@ async function getUserSession(request: Request) {
     const tokenUser = await getAdmin()
       .auth()
       .verifySessionCookie(token, checkForRevocation)
-    return tokenUser
+    return tokenUser as SessionUser
   } catch {
     return null
   }
@@ -222,4 +289,8 @@ export {
   signInWithEmail,
   confirmUser,
   sendCurrentUserConfirmationEmail,
+  sendPasswordResetEmail,
+  getEmailAddressForPasswordResetCode,
+  resetUsersPassword,
+  changeEmail,
 }
