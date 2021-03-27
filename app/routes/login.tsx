@@ -2,19 +2,27 @@ import * as React from 'react'
 import {useRouteData} from '@remix-run/react'
 import {json, redirect} from '@remix-run/data'
 import type {ActionFunction, LoaderFunction} from '@remix-run/data'
-import {createEmailUser, signInWithEmail} from '../utils/firebase.server'
-import {getUser, rootStorage, createUserSession} from '../utils/session.server'
+import {
+  createEmailUser,
+  signInWithEmail,
+  getUser,
+  rootStorage,
+  createUserSession,
+} from '../utils/session.server'
 
 export const loader: LoaderFunction = async ({request}) => {
   const userInfo = await getUser(request)
   if (userInfo) return redirect('/me')
 
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
-  const cookie = await rootStorage.destroySession(session)
 
   return json(
-    {error: session.get('error'), loggedOut: session.get('loggedOut')},
-    {headers: {'Set-Cookie': cookie}},
+    {
+      error: session.get('error'),
+      loggedOut: session.get('loggedOut'),
+      message: session.get('message'),
+    },
+    {headers: {'Set-Cookie': await rootStorage.destroySession(session)}},
   )
 }
 
@@ -25,7 +33,7 @@ export const action: ActionFunction = async ({request}) => {
   const create = params.get('type') === 'register'
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
   if (!email || !password) {
-    session.set('error', 'Email and password are required')
+    session.flash('error', 'Email and password are required')
     const cookie = await rootStorage.commitSession(session)
     return redirect(`/login`, {headers: {'Set-Cookie': cookie}})
   }
@@ -36,7 +44,7 @@ export const action: ActionFunction = async ({request}) => {
       : await signInWithEmail(email, password)
     user = data.user
     if (!user) {
-      session.set('error', 'Email and password are required')
+      session.flash('error', 'Email and password are required')
       const cookie = await rootStorage.commitSession(session)
       return redirect(`/login`, {headers: {'Set-Cookie': cookie}})
     }
@@ -45,7 +53,7 @@ export const action: ActionFunction = async ({request}) => {
     if (e instanceof Error) {
       message = e.message
     }
-    session.set('error', message)
+    session.flash('error', message)
     const cookie = await rootStorage.commitSession(session)
 
     return redirect(`/login`, {headers: {'Set-Cookie': cookie}})
@@ -68,6 +76,7 @@ function LoginForm() {
 
   return (
     <div className="mt-8">
+      {data.message ? <div>{data.message}</div> : null}
       <form
         className="space-y-6"
         onChange={event => {

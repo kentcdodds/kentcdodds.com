@@ -1,32 +1,12 @@
 import {userInfo} from 'os'
-import nodemailer from 'nodemailer'
-import type Mail from 'nodemailer/lib/mailer'
-import getMailgunTransport from 'nodemailer-mailgun-transport'
 import ow from 'ow'
 import type {BasePredicate} from 'ow'
-import unified from 'unified'
-import markdown from 'remark-parse'
-import remark2rehype from 'remark-rehype'
-import doc from 'rehype-document'
-import format from 'rehype-format'
-import html from 'rehype-stringify'
 import {redirect} from '@remix-run/data'
 import type {KCDAction} from 'types'
 import {rootStorage} from '../utils/session.server'
+import {sendEmail} from './send-email'
 
 const {username} = userInfo()
-
-async function markdownToHtml(markdownString: string) {
-  const {contents} = await unified()
-    .use(markdown)
-    .use(remark2rehype)
-    .use(doc)
-    .use(format)
-    .use(html)
-    .process(markdownString)
-
-  return contents.toString()
-}
 
 const isEmail = ow.string.is((e: string) => /^.+@.+\..+$/.test(e))
 
@@ -40,36 +20,6 @@ function owWithMessage(
   } catch (error: unknown) {
     throw new Error(message)
   }
-}
-
-let lazyTransporter: Mail
-async function getTransporter(): Promise<Mail> {
-  // eslint is confused about this...
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (!lazyTransporter) {
-    owWithMessage(
-      process.env.MAILGUN_API_KEY,
-      'MAILGUN_API_KEY environment variable is not set',
-      ow.string.minLength(1),
-    )
-    owWithMessage(
-      process.env.MAILGUN_DOMAIN,
-      'MAILGUN_DOMAIN environment variable is not set',
-      ow.string.minLength(1),
-    )
-
-    const auth = {
-      auth: {
-        api_key: process.env.MAILGUN_API_KEY,
-        domain: process.env.MAILGUN_DOMAIN,
-      },
-    }
-
-    lazyTransporter = nodemailer.createTransport(getMailgunTransport(auth))
-    await lazyTransporter.verify()
-  }
-
-  return lazyTransporter
 }
 
 const sendContactEmail: KCDAction = async ({request}) => {
@@ -148,26 +98,19 @@ const sendContactEmail: KCDAction = async ({request}) => {
 
   const sender = `"${name}" <${email}>`
 
-  const message = {
-    from: sender,
-    to: `"Kent C. Dodds" <me@kentcdodds.com>`,
-    subject,
-    text: body,
-    html: await markdownToHtml(body),
-  }
-
   try {
-    log('> Sending...')
-    const transporter = await getTransporter()
-    await transporter.sendMail(message)
-    log('> Send success!')
+    await sendEmail({
+      from: sender,
+      to: `"Kent C. Dodds" <me@kentcdodds.com>`,
+      subject,
+      text: body,
+    })
   } catch (error: unknown) {
     let errorMessage = 'Unknown error'
     if (error instanceof Error) {
       errorMessage = error.message
     }
 
-    log('> Send failure!', errorMessage)
     session.flash('error', errorMessage)
     return redirect('/contact', {
       headers: {
