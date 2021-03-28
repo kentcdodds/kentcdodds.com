@@ -203,13 +203,6 @@ async function changeEmail({
     email: newEmail,
   })
 
-  // TODO: support account recovery
-  // await sendEmail.sendEmailRecoverEmail({
-  //   oldEmailAddress: sessionUser.email,
-  //   newEmailAddress: newEmail,
-  //   restoreEmailLink: await auth,
-  // })
-
   const confirmationLink = await auth.generateEmailVerificationLink(newEmail)
   await sendEmail.sendConfirmationEmail({
     emailAddress: newEmail,

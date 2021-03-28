@@ -78,42 +78,6 @@ P.S. If you did not sign up for an account on kentcdodds.com you can ignore this
   await sendEmail(message)
 }
 
-async function sendEmailRecoverEmail({
-  newEmailAddress,
-  oldEmailAddress,
-  restoreEmailLink,
-}: {
-  newEmailAddress: string
-  oldEmailAddress: string
-  restoreEmailLink: string
-}) {
-  const sender = `"Kent C. Dodds Team" <team@kentcdodds.com>`
-
-  const body = `
-Just want to let you know that your kentcdodds.com account email address has been changed from ${oldEmailAddress}. It is now set to ${newEmailAddress}.
-
-If you made this request, then you can safely ignore this email.
-
-If you **did not** request this, then click this link to change your account email back to ${oldEmailAddress}:
-
-${restoreEmailLink}
-
-Thanks!
-
-–The KCD Team
-  `.trim()
-
-  const message = {
-    from: sender,
-    to: oldEmailAddress,
-    subject: 'Email address changed',
-    text: body,
-    html: await markdownToHtml(body),
-  }
-
-  await sendEmail(message)
-}
-
 async function sendPasswordResetEmail({
   emailAddress,
   passwordRestLink,
@@ -154,12 +118,7 @@ async function sendEmail(message: Mail.Options) {
   })
 }
 
-export {
-  sendEmail,
-  sendConfirmationEmail,
-  sendPasswordResetEmail,
-  sendEmailRecoverEmail,
-}
+export {sendEmail, sendConfirmationEmail, sendPasswordResetEmail}
 
 /*
 eslint

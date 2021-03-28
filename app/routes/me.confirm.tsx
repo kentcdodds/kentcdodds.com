@@ -40,17 +40,6 @@ export const loader: LoaderFunction = async ({request}) => {
       const cookie = await rootStorage.commitSession(session)
 
       return redirect(continueUrl, {headers: {'Set-Cookie': cookie}})
-    } else if (mode === 'recoverEmail') {
-      await confirmUser(code)
-
-      session.unset('token')
-      session.flash(
-        'message',
-        `Your email has been recovered. You may want to change your password. Please login to continue`,
-      )
-      const cookie = await rootStorage.commitSession(session)
-
-      return redirect(continueUrl, {headers: {'Set-Cookie': cookie}})
     } else if (!responseData.error) {
       responseData.error = 'Invalid link'
     }

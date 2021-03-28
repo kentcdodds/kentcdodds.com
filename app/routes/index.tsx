@@ -19,6 +19,9 @@ function IndexRoute() {
           <li>
             <Link to="/workshops">Workshops</Link>
           </li>
+          <li>
+            <Link to="/login">Login</Link>
+          </li>
         </ul>
       </nav>
       <Outlet />
