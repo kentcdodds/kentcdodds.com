@@ -1,14 +1,6 @@
 const path = require('path')
 
-// this file gets copied to the storybook directory
-// so to make sure we're pointing to the right files
-// we use this to do full path references based on
-// the project root.
-const dir = __dirname.endsWith('storybook')
-  ? path.dirname(__dirname)
-  : __dirname
-
-const fromRoot = p => path.join(dir, p)
+const fromRoot = p => path.join(__dirname, p)
 
 module.exports = {
   darkMode: 'class',
