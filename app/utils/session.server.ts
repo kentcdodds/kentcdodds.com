@@ -1,4 +1,4 @@
-import type {Request, Loader} from '@remix-run/data'
+import type {Request, LoaderFunction} from '@remix-run/data'
 import type * as TFA from '@firebase/auth-types'
 import {createCookieSessionStorage, redirect} from '@remix-run/data'
 import admin from 'firebase-admin'
@@ -242,7 +242,7 @@ function requireUser(request: Request) {
       sessionUser: SessionUser
       user: UserData
       userDoc: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>
-    }) => ReturnType<Loader>,
+    }) => ReturnType<LoaderFunction>,
   ) => {
     const userInfo = await getUser(request)
     if (!userInfo) {
