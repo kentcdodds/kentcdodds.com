@@ -1,6 +1,6 @@
 import {Request, Response} from 'node-fetch'
 import type {Octokit} from '@octokit/rest'
-import type {Action, Loader} from '@remix-run/data'
+import type {Action, Loader} from '@remix-run/node'
 
 declare global {
   interface Window {

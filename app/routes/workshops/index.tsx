@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {useRouteData, Link} from '@remix-run/react'
 import type {KCDLoader, MdxListItem} from 'types'
-import {json} from '@remix-run/data'
+import {json} from '@remix-run/node'
 import {downloadMdxListItemsInDir} from '../../utils/github.server'
 
 export const loader: KCDLoader = async ({context}) => {

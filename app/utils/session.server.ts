@@ -1,6 +1,6 @@
-import type {Request, LoaderFunction} from '@remix-run/data'
+import type {Request, LoaderFunction} from '@remix-run/node'
 import type * as TFA from '@firebase/auth-types'
-import {createCookieSessionStorage, redirect} from '@remix-run/data'
+import {createCookieSessionStorage, redirect} from '@remix-run/node'
 import admin from 'firebase-admin'
 import firebase from 'firebase/app'
 import 'firebase/auth'

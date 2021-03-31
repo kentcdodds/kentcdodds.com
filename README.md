@@ -25,8 +25,7 @@ There is an `.env.example` file located in the root of this project. Rename it
 to `.env`, and adjust the values before you start the app.
 
 If you do not have a remix license, you will not be able to install dependencies
-and run the project locally. However, you _can_ work on the frontend components
-in the `storybook` directory. See `storybook/README.md` for more information.
+and run the project locally.
 
 <!-- prettier-ignore-start -->
 [build-badge]: https://img.shields.io/github/workflow/status/kentcdodds/elaborate/validate/main?logo=github&style=flat-square

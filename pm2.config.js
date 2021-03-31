@@ -2,7 +2,8 @@ module.exports = {
   apps: [
     {
       name: 'Express',
-      script: 'ts-node-transpile-only -r ./mocks/index.ts start.js',
+      script:
+        'ts-node-transpile-only --ignore "/app|node_modules/" -r ./mocks/index.ts start.js',
       // uncomment this if you want to skip the local mocks
       // script: 'node start.js',
       watch: ['build/assets.json', 'mocks'],

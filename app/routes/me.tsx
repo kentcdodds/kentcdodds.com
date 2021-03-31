@@ -1,5 +1,5 @@
-import type {Loader, Action} from '@remix-run/data'
-import {json, redirect} from '@remix-run/data'
+import type {LoaderFunction, ActionFunction} from '@remix-run/node'
+import {json, redirect} from '@remix-run/node'
 import {useRouteData} from '@remix-run/react'
 import * as React from 'react'
 import {Outlet} from 'react-router'
@@ -11,7 +11,7 @@ import {
   sendPasswordResetEmail,
 } from '../utils/session.server'
 
-export const loader: Loader = ({request}) => {
+export const loader: LoaderFunction = ({request}) => {
   return requireUser(request)(async ({sessionUser, user}) => {
     const session = await rootStorage.getSession(request.headers.get('Cookie'))
     const message = session.get('message')
@@ -21,7 +21,7 @@ export const loader: Loader = ({request}) => {
   })
 }
 
-export const action: Action = async ({request}) => {
+export const action: ActionFunction = async ({request}) => {
   return requireUser(request)(async ({sessionUser, user, userDoc}) => {
     const session = await rootStorage.getSession(request.headers.get('Cookie'))
     const params = new URLSearchParams(await request.text())

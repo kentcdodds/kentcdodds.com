@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {useRouteData} from '@remix-run/react'
-import {json, redirect} from '@remix-run/data'
-import type {ActionFunction, LoaderFunction} from '@remix-run/data'
+import {json, redirect} from '@remix-run/node'
+import type {ActionFunction, LoaderFunction} from '@remix-run/node'
 import {
   createEmailUser,
   signInWithEmail,
