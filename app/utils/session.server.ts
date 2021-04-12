@@ -1,7 +1,7 @@
 import type {Request, LoaderFunction} from '@remix-run/node'
 import type * as TFA from '@firebase/auth-types'
 import {createCookieSessionStorage, redirect} from '@remix-run/node'
-import admin from 'firebase-admin'
+import admin, {ServiceAccount} from 'firebase-admin'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/firestore'
@@ -15,14 +15,16 @@ type UserData = {
 
 type SessionUser = admin.auth.DecodedIdToken & {email: string}
 
-firebase.initializeApp({
-  apiKey: 'AIzaSyBTILXfzRTTFa2RaENww2Vra3W5Cb95i5k',
-  authDomain: 'kentcdodds-com.firebaseapp.com',
-  projectId: 'kentcdodds-com',
-  storageBucket: 'kentcdodds-com.appspot.com',
-  messagingSenderId: '474697802893',
-  appId: '1:474697802893:web:d8d3733fc5728bc1e3aec4',
-})
+if (!firebase.apps.length) {
+  firebase.initializeApp({
+    apiKey: 'AIzaSyBTILXfzRTTFa2RaENww2Vra3W5Cb95i5k',
+    authDomain: 'kentcdodds-com.firebaseapp.com',
+    projectId: 'kentcdodds-com',
+    storageBucket: 'kentcdodds-com.appspot.com',
+    messagingSenderId: '474697802893',
+    appId: '1:474697802893:web:d8d3733fc5728bc1e3aec4',
+  })
+}
 
 let secret = 'not-at-all-secret'
 if (process.env.SESSION_SECRET) {
@@ -121,6 +123,9 @@ function getDb(): FirebaseFirestore.Firestore {
 // a FIREBASE_SERVICE_ACCOUNT_KEY configured
 let lazyAdmin: typeof admin | undefined
 function getAdmin() {
+  if (admin.apps.length) {
+    lazyAdmin = admin
+  }
   if (!lazyAdmin) {
     const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
     if (!serviceAccountKey) {
@@ -128,7 +133,7 @@ function getAdmin() {
         'FIREBASE_SERVICE_ACCOUNT_KEY environment variable is required to do auth',
       )
     }
-    const serviceAccount = JSON.parse(serviceAccountKey)
+    const serviceAccount = JSON.parse(serviceAccountKey) as ServiceAccount
 
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
@@ -260,7 +265,7 @@ async function getUserSession(request: Request) {
   const cookieSession = await rootStorage.getSession(
     request.headers.get('Cookie'),
   )
-  const token = cookieSession.get('token')
+  const token = cookieSession.get('token') as string | undefined
   if (!token) return null
   try {
     const checkForRevocation = true

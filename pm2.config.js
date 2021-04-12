@@ -6,7 +6,7 @@ module.exports = {
         'ts-node-transpile-only --ignore "/app|node_modules/" -r ./mocks/index.ts start.js',
       // uncomment this if you want to skip the local mocks
       // script: 'node start.js',
-      watch: ['build/assets.json', 'mocks'],
+      watch: ['start.js'],
       watch_options: {
         followSymlinks: false,
       },
@@ -25,6 +25,14 @@ module.exports = {
     {
       name: 'Postcss',
       script: 'npm run css:watch',
+      ignore_watch: ['.'],
+      env: {
+        NODE_ENV: 'development',
+      },
+    },
+    {
+      name: 'LiveReload',
+      script: 'livereload --wait 500 --exclusions css',
       ignore_watch: ['.'],
       env: {
         NODE_ENV: 'development',

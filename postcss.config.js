@@ -1,3 +1,3 @@
 module.exports = {
-  plugins: [require('@tailwindcss/jit'), require('autoprefixer')],
+  plugins: [require('tailwindcss'), require('autoprefixer')],
 }

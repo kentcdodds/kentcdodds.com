@@ -35,15 +35,36 @@ app.get('/__img/content/blog/*', (req, res) => {
   res.sendFile(path.join(__dirname, req.path.replace('/__img', '')))
 })
 
-app.all(
-  '*',
-  createRequestHandler({
-    build: require('./build'),
-    getLoadContext(req, res) {
-      return {req, res, octokit}
-    },
-  }),
-)
+if (process.env.NODE_ENV === 'production') {
+  app.all(
+    '*',
+    createRequestHandler({
+      build: require('./build'),
+      getLoadContext(req, res) {
+        return {req, res, octokit}
+      },
+    }),
+  )
+} else {
+  const cwd = process.cwd()
+  app.all('*', (req, res, next) => {
+    for (const key in require.cache) {
+      if (
+        key.startsWith(path.join(cwd, 'build')) ||
+        key.startsWith(path.join(cwd, 'mocks'))
+      ) {
+        delete require.cache[key]
+        if (process.env.DEBUG) console.warn('deleted', key)
+      }
+    }
+    return createRequestHandler({
+      build: require('./build'),
+      getLoadContext() {
+        return {req, res, octokit}
+      },
+    })(req, res, next)
+  })
+}
 
 const port = process.env.PORT ?? 3000
 

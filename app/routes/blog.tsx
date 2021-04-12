@@ -4,7 +4,7 @@ import {Outlet} from 'react-router'
 function BlogRoute() {
   return (
     <div>
-      BLOG
+      BLOG WOOT
       <Outlet />
     </div>
   )

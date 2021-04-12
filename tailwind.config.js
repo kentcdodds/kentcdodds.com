@@ -3,6 +3,7 @@ const path = require('path')
 const fromRoot = p => path.join(__dirname, p)
 
 module.exports = {
+  mode: 'jit',
   darkMode: 'class',
   variants: {
     opacity: ['responsive', 'hover', 'focus', 'dark'],
