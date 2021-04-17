@@ -36,6 +36,7 @@ module.exports = {
     'testing-library/render-result-naming-convention': 'off',
     'testing-library/await-async-query': 'off',
     '@typescript-eslint/no-unsafe-argument': 'off',
+    'testing-library/prefer-explicit-assert': 'off',
   },
   overrides: [
     {
