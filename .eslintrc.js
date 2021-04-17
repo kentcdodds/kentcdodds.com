@@ -31,6 +31,11 @@ module.exports = {
     '@typescript-eslint/no-unsafe-call': 'off',
     '@typescript-eslint/no-unsafe-assignment': 'off',
     '@typescript-eslint/no-unsafe-member-access': 'off',
+
+    // enable these again someday:
+    'testing-library/render-result-naming-convention': 'off',
+    'testing-library/await-async-query': 'off',
+    '@typescript-eslint/no-unsafe-argument': 'off',
   },
   overrides: [
     {
