@@ -2,8 +2,8 @@ import * as React from 'react'
 import {Links, Meta, Scripts, usePendingLocation} from '@remix-run/react'
 import type {LinksFunction} from '@remix-run/react'
 import {useLocation, Outlet} from 'react-router-dom'
-import styles from 'url:./styles/app.css'
-import tailwind from 'url:./styles/tailwind.css'
+import styles from './styles/app.css'
+import tailwind from './styles/tailwind.css'
 import {useTheme, ThemeProvider} from './theme-provider'
 
 export function meta() {
