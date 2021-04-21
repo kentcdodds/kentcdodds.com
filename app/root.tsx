@@ -1,5 +1,11 @@
 import * as React from 'react'
-import {Links, Meta, Scripts, usePendingLocation} from '@remix-run/react'
+import {
+  Links,
+  Meta,
+  Scripts,
+  useLiveReload,
+  usePendingLocation,
+} from '@remix-run/react'
 import type {LinksFunction} from '@remix-run/react'
 import {useLocation, Outlet} from 'react-router-dom'
 import styles from './styles/app.css'
@@ -41,6 +47,7 @@ export const links: LinksFunction = () => {
 }
 
 function App() {
+  useLiveReload()
   const [theme] = useTheme()
   const location = useLocation()
   const pendingLocation = usePendingLocation()
@@ -58,9 +65,6 @@ function App() {
       >
         <Outlet />
         <Scripts />
-        {process.env.NODE_ENV === 'development' ? (
-          <script src="http://localhost:35729/livereload.js?snipver=1" />
-        ) : null}
         {includeTweets ? (
           <script
             async
