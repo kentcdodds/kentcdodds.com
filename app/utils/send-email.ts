@@ -57,9 +57,11 @@ async function sendEmail(message: Mail.Options) {
 async function sendMagicLinkEmail({
   emailAddress,
   confirmationLink,
+  userExists,
 }: {
   emailAddress: string
   confirmationLink: string
+  userExists: boolean
 }) {
   const sender = `"Kent C. Dodds Team" <team@kentcdodds.com>`
 
@@ -67,6 +69,15 @@ async function sendMagicLinkEmail({
 Here's your sign-in link for kentcdodds.com:
 
 ${confirmationLink}
+
+${
+  userExists
+    ? `
+Clicking the link above will create a *new* account on kentcdodds.com with the email ${emailAddress}. Welcome!
+If you'd instead like to change your email address for an existing account, please send an email to team+email-change@kentcdodds.com from the original email address.
+      `.trim()
+    : `Welcome back ${emailAddress}!`
+}
 
 Thanks!
 

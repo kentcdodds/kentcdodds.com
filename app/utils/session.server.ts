@@ -52,7 +52,17 @@ async function sendToken(emailAddress: string) {
     {handleCodeInApp: true, url: 'https://kentcdodds.com/me'},
   )
 
-  await sendMagicLinkEmail({emailAddress, confirmationLink})
+  const user = await getAuth()
+    .getUserByEmail(emailAddress)
+    .catch(() => {
+      /* ignore... */
+    })
+
+  await sendMagicLinkEmail({
+    emailAddress,
+    confirmationLink,
+    userExists: Boolean(user),
+  })
 }
 
 async function getSessionToken(idToken: string) {
