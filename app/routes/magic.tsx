@@ -17,21 +17,31 @@ export const loader: LoaderFunction = async ({request}) => {
   const email = session.get('email') as string | null
 
   if (!email || !code || mode !== 'signIn') {
+    console.log({email, code, mode})
     session.flash('error', 'Sign in link invalid. Please request a new one.')
     return redirect('/login', {
       headers: {'Set-Cookie': await rootStorage.commitSession(session)},
     })
   }
 
-  const idToken = await verifySignInLink({
-    emailAddress: email,
-    link: request.url,
-  })
-  signInSession(session, await getSessionToken(idToken))
-  const cookie = await rootStorage.commitSession(session, {maxAge: 604_800})
-  return redirect(continueUrl ?? '/me', {
-    headers: {'Set-Cookie': cookie},
-  })
+  try {
+    const idToken = await verifySignInLink({
+      emailAddress: email,
+      link: request.url,
+    })
+    signInSession(session, await getSessionToken(idToken))
+    const cookie = await rootStorage.commitSession(session, {maxAge: 604_800})
+    return redirect(continueUrl ?? '/me', {
+      headers: {'Set-Cookie': cookie},
+    })
+  } catch (error: unknown) {
+    if (error instanceof Error) console.error(error.message)
+
+    session.flash('error', 'Sign in link invalid. Please request a new one.')
+    return redirect('/login', {
+      headers: {'Set-Cookie': await rootStorage.commitSession(session)},
+    })
+  }
 }
 
 export default function Magic() {
