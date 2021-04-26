@@ -72,11 +72,11 @@ ${confirmationLink}
 
 ${
   userExists
-    ? `
+    ? `Welcome back ${emailAddress}!`
+    : `
 Clicking the link above will create a *new* account on kentcdodds.com with the email ${emailAddress}. Welcome!
 If you'd instead like to change your email address for an existing account, please send an email to team+email-change@kentcdodds.com from the original email address.
       `.trim()
-    : `Welcome back ${emailAddress}!`
 }
 
 Thanks!
