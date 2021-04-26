@@ -1,11 +1,11 @@
-import type {Request, LoaderFunction} from '@remix-run/node'
-import type * as TFA from '@firebase/auth-types'
+import type {Request, LoaderFunction, Session} from '@remix-run/node'
 import {createCookieSessionStorage, redirect} from '@remix-run/node'
-import admin, {ServiceAccount} from 'firebase-admin'
+import type {ServiceAccount} from 'firebase-admin'
+import admin from 'firebase-admin'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/firestore'
-import * as sendEmail from './send-email'
+import {sendMagicLinkEmail} from './send-email'
 
 type UserData = {
   uid: string
@@ -15,6 +15,17 @@ type UserData = {
 
 type SessionUser = admin.auth.DecodedIdToken & {email: string}
 
+let secret = 'not-at-all-secret'
+if (process.env.SESSION_SECRET) {
+  secret = process.env.SESSION_SECRET
+} else if (process.env.NODE_ENV === 'production') {
+  throw new Error('Must set SESSION_SECRET')
+}
+
+// if the require cache for this file is deleted (as in development), then this
+// code will run again which could result in re-initializing firebase. So we
+// just double check that there's not already an initialized firebase app
+// before initializing.
 if (!firebase.apps.length) {
   firebase.initializeApp({
     apiKey: 'AIzaSyBTILXfzRTTFa2RaENww2Vra3W5Cb95i5k',
@@ -26,13 +37,6 @@ if (!firebase.apps.length) {
   })
 }
 
-let secret = 'not-at-all-secret'
-if (process.env.SESSION_SECRET) {
-  secret = process.env.SESSION_SECRET
-} else if (process.env.NODE_ENV === 'production') {
-  throw new Error('Must set SESSION_SECRET')
-}
-
 const rootStorage = createCookieSessionStorage({
   cookie: {
     name: '__session',
@@ -42,181 +46,17 @@ const rootStorage = createCookieSessionStorage({
   },
 })
 
-async function createUserSession(idToken: string) {
-  const {getSession, commitSession} = rootStorage
-  const token = await getSessionToken(idToken)
-  const session = await getSession()
-  session.set('token', token)
-  const cookie = await commitSession(session, {maxAge: 604_800})
-  return redirect('/me', {
-    headers: {'Set-Cookie': cookie},
-  })
-}
-
-function isFirebaseAuthError(error: unknown): error is TFA.Error {
-  return typeof error === 'object' && error !== null && 'code' in error
-}
-
-// https://firebase.google.com/docs/auth/web/password-auth
-// https://firebase.google.com/docs/reference/js/firebase.auth.Auth#createUserWithEmailAndPassword
-async function createEmailUser(email: string, password: string) {
-  const messages: Record<string, string> = {
-    'auth/weak-password': 'Password must be at least 6 characters',
-    'auth/email-already-exists': 'The email address is already in use',
-    'auth/invalid-email': "The email address provided doesn't seem valid",
-  }
-
-  try {
-    const userCred = await firebase
-      .auth()
-      .createUserWithEmailAndPassword(email, password)
-    const user = userCred.user
-    if (!user || !user.email) {
-      throw new Error(
-        'Failed to create a new user for you. Please contact team@kentcdodds.com.',
-      )
-    }
-    const confirmationLink = await getAdmin()
-      .auth()
-      .generateEmailVerificationLink(user.email)
-    await sendEmail.sendConfirmationEmail({
-      emailAddress: user.email,
-      confirmationLink,
-    })
-    const usersRef = getDb().collection('users')
-    await usersRef.doc(user.uid).set({team: null})
-    return userCred
-  } catch (error: unknown) {
-    if (isFirebaseAuthError(error)) {
-      error.message = messages[error.code] ?? error.message
-    }
-    throw error
-  }
-}
-
-async function confirmUser(code: string) {
-  await firebase.auth().applyActionCode(code)
-}
-
-async function getEmailAddressForPasswordResetCode(code: string) {
-  const email = await firebase.auth().verifyPasswordResetCode(code)
-  return email
-}
-
-async function resetUsersPassword(code: string, newPassword: string) {
-  await firebase.auth().confirmPasswordReset(code, newPassword)
-}
-
-async function signInWithEmail(email: string, password: string) {
-  return await firebase.auth().signInWithEmailAndPassword(email, password)
-}
-
-let lazyDb: FirebaseFirestore.Firestore | undefined
-function getDb(): FirebaseFirestore.Firestore {
-  if (!lazyDb) {
-    lazyDb = getAdmin().firestore()
-  }
-  return lazyDb
-}
-
-// we do lazy initialization so folks can work on the website without having
-// a FIREBASE_SERVICE_ACCOUNT_KEY configured
-let lazyAdmin: typeof admin | undefined
-function getAdmin() {
-  if (admin.apps.length) {
-    lazyAdmin = admin
-  }
-  if (!lazyAdmin) {
-    const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
-    if (!serviceAccountKey) {
-      throw new Error(
-        'FIREBASE_SERVICE_ACCOUNT_KEY environment variable is required to do auth',
-      )
-    }
-    const serviceAccount = JSON.parse(serviceAccountKey) as ServiceAccount
-
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-    })
-    lazyAdmin = admin
-  }
-
-  return lazyAdmin
-}
-
-async function sendCurrentUserConfirmationEmail(request: Request) {
-  const session = await rootStorage.getSession(request.headers.get('Cookie'))
-  const sessionUser = await getUserSession(request)
-  if (!sessionUser) {
-    return redirect('/login')
-  }
-  const firebaseUser = await getAdmin()
-    .auth()
-    .getUser(sessionUser.uid)
-    .catch(() => null)
-
-  const email = firebaseUser?.email
-
-  if (!email) {
-    session.flash('message', 'Could not find an email address for this user.')
-    const cookie = await rootStorage.commitSession(session)
-    return redirect(`/me`, {headers: {'Set-Cookie': cookie}})
-  }
-
-  const confirmationLink = await getAdmin()
-    .auth()
-    .generateEmailVerificationLink(email)
-  await sendEmail.sendConfirmationEmail({emailAddress: email, confirmationLink})
-
-  session.flash(
-    'message',
-    `Email sent. Please check ${email} and click the confirmation link.`,
+async function sendToken(emailAddress: string) {
+  const confirmationLink = await getAuth().generateSignInWithEmailLink(
+    emailAddress,
+    {handleCodeInApp: true, url: 'https://kentcdodds.com/me'},
   )
-  const cookie = await rootStorage.commitSession(session)
-  return redirect(`/me`, {headers: {'Set-Cookie': cookie}})
-}
 
-async function sendPasswordResetEmail(emailAddress: string) {
-  const auth = getAdmin().auth()
-  const user = await auth.getUserByEmail(emailAddress).catch(() => null)
-  if (!user) return
-  const passwordRestLink = await auth.generatePasswordResetLink(emailAddress)
-  await sendEmail.sendPasswordResetEmail({emailAddress, passwordRestLink})
-}
-
-async function changeEmail({
-  sessionUser,
-  newEmail,
-  password,
-}: {
-  sessionUser: SessionUser
-  newEmail: string
-  password: string
-}) {
-  const userCredential = await firebase
-    .auth()
-    .signInWithEmailAndPassword(sessionUser.email, password)
-  if (!userCredential.user) {
-    throw new Error(
-      `Unable to get the user information for ${sessionUser.email}`,
-    )
-  }
-
-  const auth = getAdmin().auth()
-
-  await auth.updateUser(sessionUser.uid, {
-    email: newEmail,
-  })
-
-  const confirmationLink = await auth.generateEmailVerificationLink(newEmail)
-  await sendEmail.sendConfirmationEmail({
-    emailAddress: newEmail,
-    confirmationLink,
-  })
+  await sendMagicLinkEmail({emailAddress, confirmationLink})
 }
 
 async function getSessionToken(idToken: string) {
-  const auth = getAdmin().auth()
+  const auth = getAuth()
   const decodedToken = await auth.verifyIdToken(idToken)
   if (new Date().getTime() / 1000 - decodedToken.auth_time > 5 * 60) {
     throw new Error('Recent sign in required')
@@ -239,6 +79,28 @@ async function getUser(request: Request) {
   }
   const user = {uid: userDoc.id, ...userDoc.data()} as UserData
   return {sessionUser, user, userDoc}
+}
+
+async function verifySignInLink({
+  emailAddress,
+  link,
+}: {
+  emailAddress: string
+  link: string
+}) {
+  const result = await firebase.auth().signInWithEmailLink(emailAddress, link)
+  if (!result.user) {
+    throw new Error('Link validation failed')
+  }
+  return result.user.getIdToken()
+}
+
+function signOutSession(session: Session) {
+  session.unset('token')
+}
+
+function signInSession(session: Session, token: string) {
+  session.set('token', token)
 }
 
 function requireUser(request: Request) {
@@ -269,26 +131,64 @@ async function getUserSession(request: Request) {
   if (!token) return null
   try {
     const checkForRevocation = true
-    const tokenUser = await getAdmin()
-      .auth()
-      .verifySessionCookie(token, checkForRevocation)
+    const tokenUser = await getAuth().verifySessionCookie(
+      token,
+      checkForRevocation,
+    )
     return tokenUser as SessionUser
   } catch {
     return null
   }
 }
 
+let lazyDb: FirebaseFirestore.Firestore | undefined
+function getDb(): FirebaseFirestore.Firestore {
+  if (!lazyDb) {
+    lazyDb = getAdmin().firestore()
+  }
+  return lazyDb
+}
+
+let lazyAuth: admin.auth.Auth | undefined
+function getAuth(): admin.auth.Auth {
+  if (!lazyAuth) {
+    lazyAuth = getAdmin().auth()
+  }
+  return lazyAuth
+}
+
+// we do lazy initialization so folks can work on the website without having
+// a FIREBASE_SERVICE_ACCOUNT_KEY configured
+let lazyAdmin: typeof admin | undefined
+function getAdmin() {
+  if (admin.apps.length) {
+    lazyAdmin = admin
+  }
+  if (!lazyAdmin) {
+    const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
+    if (!serviceAccountKey) {
+      throw new Error(
+        'FIREBASE_SERVICE_ACCOUNT_KEY environment variable is required to do auth',
+      )
+    }
+    const serviceAccount = JSON.parse(serviceAccountKey) as ServiceAccount
+
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    })
+    lazyAdmin = admin
+  }
+
+  return lazyAdmin
+}
+
 export {
   rootStorage,
-  createUserSession,
   requireUser,
   getUser,
-  createEmailUser,
-  signInWithEmail,
-  confirmUser,
-  sendCurrentUserConfirmationEmail,
-  sendPasswordResetEmail,
-  getEmailAddressForPasswordResetCode,
-  resetUsersPassword,
-  changeEmail,
+  sendToken,
+  verifySignInLink,
+  getSessionToken,
+  signOutSession,
+  signInSession,
 }

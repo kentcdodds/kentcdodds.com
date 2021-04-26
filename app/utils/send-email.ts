@@ -46,7 +46,15 @@ async function getTransporter(): Promise<Mail> {
   return lazyTransporter
 }
 
-async function sendConfirmationEmail({
+async function sendEmail(message: Mail.Options) {
+  const transporter = await getTransporter()
+  await transporter.sendMail({
+    html: message.html ?? (await markdownToHtml(String(message.text))),
+    ...message,
+  })
+}
+
+async function sendMagicLinkEmail({
   emailAddress,
   confirmationLink,
 }: {
@@ -56,13 +64,13 @@ async function sendConfirmationEmail({
   const sender = `"Kent C. Dodds Team" <team@kentcdodds.com>`
 
   const body = `
-Thanks for signing up for an account on kentcdodds.com! Please confirm your email address by opening the following link:
+Here's your sign-in link for kentcdodds.com:
 
 ${confirmationLink}
 
 Thanks!
 
-–The KCD Team
+– The KCD Team
 
 P.S. If you did not sign up for an account on kentcdodds.com you can ignore this email.
   `.trim()
@@ -70,7 +78,7 @@ P.S. If you did not sign up for an account on kentcdodds.com you can ignore this
   const message = {
     from: sender,
     to: emailAddress,
-    subject: 'Confirm your email address',
+    subject: `Here's your Magic ✨ sign-in link for kentcdodds.com`,
     text: body,
     html: await markdownToHtml(body),
   }
@@ -78,47 +86,7 @@ P.S. If you did not sign up for an account on kentcdodds.com you can ignore this
   await sendEmail(message)
 }
 
-async function sendPasswordResetEmail({
-  emailAddress,
-  passwordRestLink,
-}: {
-  emailAddress: string
-  passwordRestLink: string
-}) {
-  const sender = `"Kent C. Dodds Team" <team@kentcdodds.com>`
-
-  const body = `
-A request was made to reset your kentcdodds.com account password. Click this link to reset your password:
-
-${passwordRestLink}
-
-Thanks!
-
-–The KCD Team
-
-P.S. If you did not request this email, you can safely ignore it.
-  `.trim()
-
-  const message = {
-    from: sender,
-    to: emailAddress,
-    subject: 'Reset your password',
-    text: body,
-    html: await markdownToHtml(body),
-  }
-
-  await sendEmail(message)
-}
-
-async function sendEmail(message: Mail.Options) {
-  const transporter = await getTransporter()
-  await transporter.sendMail({
-    html: message.html ?? (await markdownToHtml(String(message.text))),
-    ...message,
-  })
-}
-
-export {sendEmail, sendConfirmationEmail, sendPasswordResetEmail}
+export {sendEmail, sendMagicLinkEmail}
 
 /*
 eslint
