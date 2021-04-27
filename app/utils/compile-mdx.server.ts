@@ -25,6 +25,10 @@ const getOEmbedConfig: OEmbedConfig = ({provider}) => {
 
 const cache = new Cache()
 
+function handleEmbedderError({url}: {url: string}) {
+  return `<p>Error embedding <a href="${url}">the URL</a>.`
+}
+
 // yes, I did write this myself 😬
 const cloudinaryUrlRegex = /^https?:\/\/res\.cloudinary\.com\/(?<cloudName>.+?)\/image\/upload(\/(?<transforms>(?!v\d+).+?))?(\/(?<version>v\d+))?\/(?<publicId>.+$)/
 
@@ -81,7 +85,11 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
     },
     [
       remarkEmbedder,
-      {cache, transformers: [[oembedTransformer, getOEmbedConfig]]},
+      {
+        cache,
+        handleError: handleEmbedderError,
+        transformers: [[oembedTransformer, getOEmbedConfig]],
+      },
     ],
   ]
 
