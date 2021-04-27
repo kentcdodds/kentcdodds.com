@@ -18,8 +18,8 @@ the files in `mocks/content` and it will be pulled from there.
 
 ### Code
 
-If you have a remix license, then make sure you run install with
-`REMIX_REGISTRY_TOKEN` env variable set.
+If you have a remix license, then make sure you run install with `REMIX_TOKEN`
+env variable set.
 
 There is an `.env.example` file located in the root of this project. Rename it
 to `.env`, and adjust the values before you start the app.

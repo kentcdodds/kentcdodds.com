@@ -51,17 +51,6 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
   const remarkPlugins: PluggableList = [
     gfm,
     remarkPrism,
-    function remapImageUrls() {
-      return function transformer(tree: Node) {
-        visit(tree, 'image', function visitor(node) {
-          let url = String(node.url)
-          if (url.startsWith('./')) {
-            url = url.replace('./', '')
-            node.url = `/__img/content/blog/${slug}/${url}`
-          }
-        })
-      }
-    },
     function optimizeCloudinaryImages() {
       return function transformer(tree: Node) {
         visit(tree, 'image', function visitor(node) {

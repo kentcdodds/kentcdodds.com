@@ -9,10 +9,9 @@ import {
   getMdxComponent,
 } from '../utils/mdx'
 
-export const loader: KCDLoader<{slug: string}> = async ({params, context}) => {
+export const loader: KCDLoader<{slug: string}> = async ({params}) => {
   const page = await getMdxPage({
     rootDir: 'pages',
-    octokit: context.octokit,
     slug: params.slug,
   })
   if (!page) return json(null, {status: 404})

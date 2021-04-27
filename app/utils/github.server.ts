@@ -1,41 +1,42 @@
 import nodePath from 'path'
-import type {Octokit} from '@octokit/rest'
+import {Octokit} from '@octokit/rest'
 import matter from 'gray-matter'
 import type {GitHubFile, MdxListItem} from 'types'
 import config from '../../config'
 
+const octokit = new Octokit({
+  auth: process.env.BOT_GITHUB_TOKEN,
+})
+
 async function downloadFirstMdxFile(
-  octokit: Octokit,
   list: Array<{name: string; type: string; path: string; sha: string}>,
 ) {
   const filesOnly = list.filter(({type}) => type === 'file')
   for (const extension of ['.mdx', '.md']) {
     const file = filesOnly.find(({name}) => name.endsWith(extension))
-    if (file) return downloadFileBySha(octokit, file.sha)
+    if (file) return downloadFileBySha(file.sha)
   }
   return null
 }
 
 /**
  *
- * @param octokit the octokit client
  * @param mdxFileOrDirectory the path to the content. For example:
  * content/workshops/react-fundamentals.mdx (pass "workshops/react-fudnamentals")
  * content/workshops/react-hooks/index.mdx (pass "workshops/react-hooks")
  * @returns A promise that resolves to an Array of GitHubFiles for the necessary files
  */
 async function downloadMdxFileOrDirectory(
-  octokit: Octokit,
   relativeMdxFileOrDirectory: string,
 ): Promise<Array<GitHubFile>> {
   const mdxFileOrDirectory = `${config.contentSrc.path}/${relativeMdxFileOrDirectory}`
   const parentDir = nodePath.dirname(mdxFileOrDirectory)
-  const dirList = await downloadDirList(octokit, parentDir)
+  const dirList = await downloadDirList(parentDir)
 
   const basename = nodePath.basename(mdxFileOrDirectory)
   const potentials = dirList.filter(({name}) => name.startsWith(basename))
 
-  const content = await downloadFirstMdxFile(octokit, potentials)
+  const content = await downloadFirstMdxFile(potentials)
   // /content/about.mdx => entry is about.mdx, but compileMdx needs
   // the entry to be called "/content/index.mdx" so we'll set it to that
   // because this is the entry for this path
@@ -46,28 +47,24 @@ async function downloadMdxFileOrDirectory(
   const directory = potentials.find(({type}) => type === 'dir')
   if (!directory) return []
 
-  return downloadDirectory(octokit, mdxFileOrDirectory)
+  return downloadDirectory(mdxFileOrDirectory)
 }
 
 /**
  *
- * @param octokit The octokit client
  * @param mdxFileOrDirectory the path to content. For example:
  * /workshops/react-fundamentals.mdx (pass "workshops/react-fudnamentals")
  * /workshops/react-hooks/index.mdx (pass "workshops/react-hooks")
  * @returns The content of the searched for mdx file
  */
-async function downloadMdxFileOrIndex(
-  octokit: Octokit,
-  mdxFileOrDirectory: string,
-) {
+async function downloadMdxFileOrIndex(mdxFileOrDirectory: string) {
   const parentDir = nodePath.dirname(mdxFileOrDirectory)
-  const dirList = await downloadDirList(octokit, parentDir)
+  const dirList = await downloadDirList(parentDir)
 
   const basename = nodePath.basename(mdxFileOrDirectory)
   const potentials = dirList.filter(({name}) => name.startsWith(basename))
 
-  let content = await downloadFirstMdxFile(octokit, potentials)
+  let content = await downloadFirstMdxFile(potentials)
   if (content) return content
 
   const directory = potentials.find(({type}) => type === 'dir')
@@ -76,9 +73,9 @@ async function downloadMdxFileOrIndex(
   if (!directory) return null
 
   // download the directory list to find and index.mdx? file
-  const mdxDirList = await downloadDirList(octokit, directory.path)
+  const mdxDirList = await downloadDirList(directory.path)
   const indexes = mdxDirList.filter(({name}) => name.startsWith('index'))
-  content = await downloadFirstMdxFile(octokit, indexes)
+  content = await downloadFirstMdxFile(indexes)
   if (content) return content
 
   return null
@@ -86,26 +83,22 @@ async function downloadMdxFileOrIndex(
 
 /**
  *
- * @param octokit the octokit clinet
  * @param dir the directory to download.
  * This will recursively download all content at the given path.
  * @returns An array of file paths with their content
  */
-async function downloadDirectory(
-  octokit: Octokit,
-  dir: string,
-): Promise<Array<GitHubFile>> {
-  const dirList = await downloadDirList(octokit, dir)
+async function downloadDirectory(dir: string): Promise<Array<GitHubFile>> {
+  const dirList = await downloadDirList(dir)
 
   const result = await Promise.all(
     dirList.map(async ({path: fileDir, type, sha}) => {
       switch (type) {
         case 'file': {
-          const content = await downloadFileBySha(octokit, sha)
+          const content = await downloadFileBySha(sha)
           return {path: fileDir, content}
         }
         case 'dir': {
-          return downloadDirectory(octokit, fileDir)
+          return downloadDirectory(fileDir)
         }
         default: {
           throw new Error(`Unexpected repo file type: ${type}`)
@@ -119,11 +112,10 @@ async function downloadDirectory(
 
 /**
  *
- * @param octokit the octokit client
  * @param sha the hash for the file (retrieved via `downloadDirList`)
  * @returns a promise that resolves to a string of the contents of the file
  */
-async function downloadFileBySha(octokit: Octokit, sha: string) {
+async function downloadFileBySha(sha: string) {
   const {data} = await octokit.request(
     'GET /repos/{owner}/{repo}/git/blobs/{file_sha}',
     {
@@ -139,11 +131,10 @@ async function downloadFileBySha(octokit: Octokit, sha: string) {
 
 /**
  *
- * @param octokit the octokit client
  * @param path the full path to list
  * @returns a promise that resolves to a file ListItem of the files/directories in the given directory (not recursive)
  */
-async function downloadDirList(octokit: Octokit, path: string) {
+async function downloadDirList(path: string) {
   const {data} = await octokit.repos.getContent({
     owner: config.contentSrc.owner,
     repo: config.contentSrc.repo,
@@ -161,16 +152,11 @@ async function downloadDirList(octokit: Octokit, path: string) {
 
 /**
  *
- * @param octokit the octokit client
  * @param relativePath the directory to download mdx frontmatter for
  * @returns the files with frontmatter attached
  */
-async function downloadMdxListItemsInDir(
-  octokit: Octokit,
-  relativePath: string,
-) {
+async function downloadMdxListItemsInDir(relativePath: string) {
   const data = await downloadDirList(
-    octokit,
     `${config.contentSrc.path}/${relativePath}`,
   )
 
@@ -179,7 +165,7 @@ async function downloadMdxListItemsInDir(
       .filter(({name}) => name !== 'README.md')
       .map(
         async ({path: fileDir}): Promise<(GitHubFile & MdxListItem) | null> => {
-          const content = await downloadMdxFileOrIndex(octokit, fileDir)
+          const content = await downloadMdxFileOrIndex(fileDir)
           if (!content) {
             console.warn(`Could not find mdx content at path: ${fileDir}`)
             return null

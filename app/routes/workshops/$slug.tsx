@@ -10,10 +10,9 @@ import {
 import {getScheduledEvents} from '../../utils/workshop-tickets.server'
 import type {WorkshopEvent} from '../../utils/workshop-tickets.server'
 
-export const loader: KCDLoader<{slug: string}> = async ({params, context}) => {
+export const loader: KCDLoader<{slug: string}> = async ({params}) => {
   const page = await getMdxPage({
     rootDir: 'workshops',
-    octokit: context.octokit,
     slug: params.slug,
   })
   const events = await getScheduledEvents()

@@ -4,11 +4,8 @@ import type {KCDLoader, MdxListItem} from 'types'
 import {json} from '@remix-run/node'
 import {downloadMdxListItemsInDir} from '../../utils/github.server'
 
-export const loader: KCDLoader = async ({context}) => {
-  const workshops = await downloadMdxListItemsInDir(
-    context.octokit,
-    'workshops',
-  )
+export const loader: KCDLoader = async () => {
+  const workshops = await downloadMdxListItemsInDir('workshops')
 
   return json(workshops)
 }

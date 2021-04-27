@@ -1,27 +1,25 @@
 import * as React from 'react'
-import {Octokit} from '@octokit/rest'
 import {useMatches} from '@remix-run/react'
 import {MdxPage} from 'types'
 import * as mdxBundler from 'mdx-bundler/client'
 import {compileMdx} from '../utils/compile-mdx.server'
 import {downloadMdxFileOrDirectory} from '../utils/github.server'
 import {AnchorOrLink} from '../shared'
+import cache from './mdx-cache.server'
 
-async function getMdxPage({
-  octokit,
-  rootDir,
-  slug,
-}: {
-  octokit: Octokit
-  rootDir: string
-  slug: string
-}) {
-  const pageFiles = await downloadMdxFileOrDirectory(
-    octokit,
-    `${rootDir}/${slug}`,
-  )
+async function getMdxPage({rootDir, slug}: {rootDir: string; slug: string}) {
+  const key = `${rootDir}/${slug}`
+  const pageString = await cache.get(key)
+  let page
+  if (pageString) {
+    page = JSON.parse(pageString)
+  } else {
+    const pageFiles = await downloadMdxFileOrDirectory(key)
+    page = await compileMdx(slug, pageFiles)
+    await cache.set(key, JSON.stringify(page))
+  }
 
-  return compileMdx(slug, pageFiles)
+  return page
 }
 
 function mdxPageMeta({data}: {data: {page: MdxPage} | null}) {

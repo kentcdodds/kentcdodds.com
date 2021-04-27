@@ -1,5 +1,4 @@
 import {Request, Response} from 'node-fetch'
-import type {Octokit} from '@octokit/rest'
 import type {Action, Loader} from '@remix-run/node'
 
 declare global {
@@ -45,7 +44,6 @@ type WorkshopPage = WorkshopListItem & {code: string}
 type LoaderContext = {
   req: Request
   res: Response
-  octokit: Octokit
 }
 
 type KCDLoader<

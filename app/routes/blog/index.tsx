@@ -5,8 +5,8 @@ import type {KCDLoader, PostListItem} from 'types'
 import {json} from '@remix-run/node'
 import {downloadMdxListItemsInDir} from '../../utils/github.server'
 
-export const loader: KCDLoader = async ({context}) => {
-  const posts = (await downloadMdxListItemsInDir(context.octokit, 'blog')).sort(
+export const loader: KCDLoader = async () => {
+  const posts = (await downloadMdxListItemsInDir('blog')).sort(
     sortBy('-frontmatter.published'),
   )
 
