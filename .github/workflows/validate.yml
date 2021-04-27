@@ -5,7 +5,7 @@ on:
   pull_request:
     branches-ignore: ['all-contributors/**']
 env:
-  REMIX_REGISTRY_TOKEN: ${{ secrets.REMIX_REGISTRY_TOKEN }}
+  REMIX_TOKEN: ${{ secrets.REMIX_TOKEN }}
   MAILGUN_API_KEY: ${{ secrets.MAILGUN_API_KEY }}
   MAILGUN_DOMAIN: ${{ secrets.MAILGUN_DOMAIN }}
   BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
@@ -52,7 +52,7 @@ jobs:
           # > from multiple other variables (passed by your language,
           # > github actions etc) which you probably don't want sitting
           # > in your heroku app's config vars.
-          HD_REMIX_REGISTRY_TOKEN: ${{ secrets.REMIX_REGISTRY_TOKEN }}
+          HD_REMIX_TOKEN: ${{ secrets.REMIX_TOKEN }}
           HD_CYPRESS_INSTALL_BINARY: '0'
           HD_HUSKY_SKIP_INSTALL: '1'
           HD_MAILGUN_API_KEY: ${{ secrets.MAILGUN_API_KEY }}
