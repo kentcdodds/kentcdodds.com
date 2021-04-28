@@ -9,6 +9,7 @@ env:
   MAILGUN_API_KEY: ${{ secrets.MAILGUN_API_KEY }}
   MAILGUN_DOMAIN: ${{ secrets.MAILGUN_DOMAIN }}
   BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+  TITO_API_SECRET: ${{ secrets.TITO_API_SECRET }}
   FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
   SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
 jobs:
@@ -58,6 +59,7 @@ jobs:
           HD_MAILGUN_API_KEY: ${{ secrets.MAILGUN_API_KEY }}
           HD_MAILGUN_DOMAIN: ${{ secrets.MAILGUN_DOMAIN }}
           HD_BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+          HD_TITO_API_SECRET: ${{ secrets.TITO_API_SECRET }}
           HD_FIREBASE_SERVICE_ACCOUNT_KEY:
             ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
           HD_SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
