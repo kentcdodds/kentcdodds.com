@@ -1,7 +1,6 @@
 import * as React from 'react'
-import {useRouteData} from '@remix-run/react'
-import {json, redirect} from '@remix-run/node'
-import type {ActionFunction, LoaderFunction} from '@remix-run/node'
+import type {ActionFunction, LoaderFunction} from 'remix'
+import {useRouteData, json, redirect} from 'remix'
 import {
   sendToken,
   getUser,

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {useMatches} from '@remix-run/react'
+import {useMatches} from 'remix'
 import {MdxPage} from 'types'
 import * as mdxBundler from 'mdx-bundler/client'
 import {compileMdx} from '../utils/compile-mdx.server'

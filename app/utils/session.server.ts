@@ -1,5 +1,5 @@
-import type {Request, LoaderFunction, Session} from '@remix-run/node'
-import {createCookieSessionStorage, redirect} from '@remix-run/node'
+import type {Request, LoaderFunction, Session} from 'remix'
+import {createCookieSessionStorage, redirect} from 'remix'
 import type {ServiceAccount} from 'firebase-admin'
 import admin from 'firebase-admin'
 import firebase from 'firebase/app'

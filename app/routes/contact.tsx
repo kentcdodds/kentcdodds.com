@@ -1,4 +1,4 @@
-import {useRouteData} from '@remix-run/react'
+import {useRouteData} from 'remix'
 import * as React from 'react'
 import {KCDLoader, KCDAction} from 'types'
 import {sendSessionValue} from '../utils/load-session'

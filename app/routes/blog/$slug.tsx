@@ -1,6 +1,5 @@
 import React from 'react'
-import {json} from '@remix-run/node'
-import {useRouteData} from '@remix-run/react'
+import {useRouteData, json} from 'remix'
 import type {KCDLoader, Post} from 'types'
 import {
   FourOhFour,

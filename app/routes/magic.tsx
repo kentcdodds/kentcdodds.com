@@ -1,5 +1,5 @@
-import type {LoaderFunction} from '@remix-run/node'
-import {redirect} from '@remix-run/node'
+import type {LoaderFunction} from 'remix'
+import {redirect} from 'remix'
 import * as React from 'react'
 import {
   getSessionToken,

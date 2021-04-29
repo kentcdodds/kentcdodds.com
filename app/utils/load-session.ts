@@ -1,4 +1,4 @@
-import {json} from '@remix-run/node'
+import {json} from 'remix'
 import {KCDLoader} from 'types'
 import {rootStorage} from '../utils/session.server'
 

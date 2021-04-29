@@ -1,5 +1,5 @@
 import React from 'react'
-import {useRouteData} from '@remix-run/react'
+import {useRouteData} from 'remix'
 import type {MdxPage, KCDLoader} from 'types'
 import {
   FourOhFour,

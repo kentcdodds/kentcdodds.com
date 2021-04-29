@@ -1,7 +1,7 @@
 import {userInfo} from 'os'
 import ow from 'ow'
 import type {BasePredicate} from 'ow'
-import {redirect} from '@remix-run/node'
+import {redirect} from 'remix'
 import type {KCDAction} from 'types'
 import {rootStorage} from '../utils/session.server'
 import {sendEmail} from './send-email'

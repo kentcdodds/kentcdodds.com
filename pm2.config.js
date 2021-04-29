@@ -6,7 +6,7 @@ module.exports = {
         'node',
         '--require ./node_modules/dotenv/config',
         '--require ./mocks',
-        './node_modules/.bin/remix run3',
+        './node_modules/.bin/remix run',
       ].join(' '),
       watch: ['./mocks/**/*.*'],
       env: {

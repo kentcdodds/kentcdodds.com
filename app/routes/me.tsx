@@ -1,7 +1,6 @@
-import type {LoaderFunction, ActionFunction} from '@remix-run/node'
-import {json, redirect} from '@remix-run/node'
-import {useRouteData} from '@remix-run/react'
 import * as React from 'react'
+import type {LoaderFunction, ActionFunction} from 'remix'
+import {useRouteData, json, redirect} from 'remix'
 import {requireUser, rootStorage, signOutSession} from '../utils/session.server'
 
 export const loader: LoaderFunction = ({request}) => {

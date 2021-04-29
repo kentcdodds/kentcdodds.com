@@ -1,12 +1,6 @@
 import * as React from 'react'
-import {
-  Links,
-  Meta,
-  Scripts,
-  useLiveReload,
-  usePendingLocation,
-} from '@remix-run/react'
-import type {LinksFunction} from '@remix-run/react'
+import {Links, Meta, Scripts, LiveReload, usePendingLocation} from 'remix'
+import type {LinksFunction} from 'remix'
 import {useLocation, Outlet} from 'react-router-dom'
 import styles from './styles/app.css'
 import tailwind from './styles/tailwind.css'
@@ -47,7 +41,6 @@ export const links: LinksFunction = () => {
 }
 
 function App() {
-  useLiveReload()
   const [theme] = useTheme()
   const location = useLocation()
   const pendingLocation = usePendingLocation()
@@ -72,6 +65,7 @@ function App() {
             charSet="utf-8"
           />
         ) : null}
+        {process.env.NODE_ENV === 'development' && <LiveReload />}
       </body>
     </html>
   )

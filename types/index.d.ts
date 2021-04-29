@@ -1,5 +1,5 @@
 import {Request, Response} from 'node-fetch'
-import type {Action, Loader} from '@remix-run/node'
+import type {Action, Loader} from 'remix'
 
 declare global {
   interface Window {

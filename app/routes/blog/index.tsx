@@ -1,8 +1,7 @@
 import * as React from 'react'
 import sortBy from 'sort-by'
-import {useRouteData, Link} from '@remix-run/react'
+import {useRouteData, Link, json} from 'remix'
 import type {KCDLoader, PostListItem} from 'types'
-import {json} from '@remix-run/node'
 import {downloadMdxListItemsInDir} from '../../utils/github.server'
 
 export const loader: KCDLoader = async () => {
