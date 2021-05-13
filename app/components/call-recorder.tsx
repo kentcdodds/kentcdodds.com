@@ -11,7 +11,7 @@ interface RecorderContext {
 
 const recorderMachine = createMachine<RecorderContext>(
   {
-    id: 'my machine',
+    id: 'recorder',
     initial: 'startup',
     context: {
       mediaStream: undefined,
@@ -125,7 +125,11 @@ const recorderMachine = createMachine<RecorderContext>(
   },
 )
 
-function CallRecorder() {
+function CallRecorder({
+  onRecordingComplete,
+}: {
+  onRecordingComplete: (audio: Blob) => void
+}) {
   const [state, send] = useMachine(recorderMachine, {devTools: true})
 
   React.useEffect(() => {
@@ -142,12 +146,22 @@ function CallRecorder() {
     )
   }, [send])
 
+  React.useEffect(() => {
+    if (state.matches('stopped')) {
+      onRecordingComplete(
+        new Blob(state.context.chunks, {
+          type: 'audio/ogg; codecs=opus',
+        }),
+      )
+    }
+  }, [onRecordingComplete, state])
+
   return (
     <div>
       Record here!
-      {state.context.mediaStream ? (
+      {state.matches('ready') && state.context.mediaStream ? (
         <StreamVis stream={state.context.mediaStream} />
-      ) : (
+      ) : state.context.mediaStream ? null : (
         'waiting for stream'
       )}
       {state.matches('startup') ? (
@@ -161,11 +175,13 @@ function CallRecorder() {
           <button onClick={() => send('STOP')}>Stop</button>
           <button onClick={() => send('PAUSE')}>Pause</button>
         </>
-      ) : state.value === 'stopping' ? (
+      ) : state.matches('stopping') ? (
         <div>Processing...</div>
-      ) : (
+      ) : state.matches('stopped') ? (
         // eslint-disable-next-line jsx-a11y/media-has-caption
         <audio src={state.context.audioURL} controls />
+      ) : (
+        `unhandled state: ${JSON.stringify(state.value)}`
       )}
     </div>
   )
