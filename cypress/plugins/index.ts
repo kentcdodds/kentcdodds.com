@@ -9,5 +9,18 @@ module.exports = (
     integrationFolder: 'cypress/e2e',
   })
 
+  on('before:browser:launch', (browser, options) => {
+    if (browser.name === 'chrome') {
+      options.args.push(
+        '--no-sandbox',
+        '--allow-file-access-from-files',
+        '--use-fake-ui-for-media-stream',
+        '--use-fake-device-for-media-stream',
+        '--use-file-for-fake-audio-capture=cypress/fixtures/sample.wav',
+      )
+    }
+    return options
+  })
+
   return config
 }

@@ -14,6 +14,9 @@ function IndexRoute() {
             <Link to="/about">About Kent</Link>
           </li>
           <li>
+            <Link to="/call">Call Kent</Link>
+          </li>
+          <li>
             <Link to="/contact">Contact Kent</Link>
           </li>
           <li>

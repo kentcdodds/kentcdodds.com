@@ -125,7 +125,7 @@ const recorderMachine = createMachine<RecorderContext>(
   },
 )
 
-export default function RecordScreen() {
+function CallRecorder() {
   const [state, send] = useMachine(recorderMachine, {devTools: true})
 
   React.useEffect(() => {
@@ -242,3 +242,5 @@ function StreamVis({stream}: {stream: MediaStream}) {
   }, [stream])
   return <canvas ref={canvasRef} />
 }
+
+export {CallRecorder}
