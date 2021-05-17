@@ -116,7 +116,7 @@ const recorderMachine = createMachine<RecorderContext>(
       generateAudioContext: assign({
         audioURL(context) {
           const blob = new Blob(context.chunks, {
-            type: 'audio/ogg; codecs=opus',
+            type: 'audio/mp3',
           })
           return window.URL.createObjectURL(blob)
         },
@@ -130,7 +130,7 @@ function CallRecorder({
 }: {
   onRecordingComplete: (audio: Blob) => void
 }) {
-  const [state, send] = useMachine(recorderMachine, {devTools: true})
+  const [state, send] = useMachine(recorderMachine)
 
   React.useEffect(() => {
     window.navigator.mediaDevices.getUserMedia({audio: true}).then(
@@ -150,7 +150,7 @@ function CallRecorder({
     if (state.matches('stopped')) {
       onRecordingComplete(
         new Blob(state.context.chunks, {
-          type: 'audio/ogg; codecs=opus',
+          type: 'audio/mp3',
         }),
       )
     }
@@ -158,7 +158,6 @@ function CallRecorder({
 
   return (
     <div>
-      Record here!
       {state.matches('ready') && state.context.mediaStream ? (
         <StreamVis stream={state.context.mediaStream} />
       ) : state.context.mediaStream ? null : (
@@ -178,7 +177,6 @@ function CallRecorder({
       ) : state.matches('stopping') ? (
         <div>Processing...</div>
       ) : state.matches('stopped') ? (
-        // eslint-disable-next-line jsx-a11y/media-has-caption
         <audio src={state.context.audioURL} controls />
       ) : (
         `unhandled state: ${JSON.stringify(state.value)}`
@@ -207,7 +205,7 @@ function visualize(canvas: HTMLCanvasElement, stream: MediaStream) {
 
     analyser.getByteTimeDomainData(dataArray)
 
-    canvasCtx.fillStyle = 'rgb(200, 200, 200)'
+    canvasCtx.fillStyle = 'rgb(180, 180, 180)'
     canvasCtx.fillRect(0, 0, WIDTH, HEIGHT)
 
     canvasCtx.lineWidth = 2
@@ -249,6 +247,7 @@ function StreamVis({stream}: {stream: MediaStream}) {
       lastReq = requestAnimationFrame(() => {
         draw()
         reqDraw()
+        // TODO: this happens too frequently...
       })
     }
     reqDraw()

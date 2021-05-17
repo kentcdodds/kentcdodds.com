@@ -24,6 +24,7 @@ module.exports = {
     'max-lines-per-function': 'off',
     '@typescript-eslint/sort-type-union-intersection-members': 'off',
     'one-var': 'off',
+    'jsx-a11y/media-has-caption': 'off',
 
     // this didn't seem to work 🤔
     '@typescript-eslint/restrict-template-expressions': 'off',
