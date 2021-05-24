@@ -1,12 +1,7 @@
 import type {LoaderFunction} from 'remix'
 import {redirect} from 'remix'
 import * as React from 'react'
-import {
-  getSessionToken,
-  rootStorage,
-  verifySignInLink,
-  signInSession,
-} from '../utils/session.server'
+import {rootStorage, loginSessionWithMagicLink} from '../utils/session.server'
 
 export const loader: LoaderFunction = async ({request}) => {
   const params = new URL(request.url).searchParams
@@ -25,11 +20,10 @@ export const loader: LoaderFunction = async ({request}) => {
   }
 
   try {
-    const idToken = await verifySignInLink({
+    await loginSessionWithMagicLink(session, {
       emailAddress: email,
       link: request.url,
     })
-    signInSession(session, await getSessionToken(idToken))
     const cookie = await rootStorage.commitSession(session, {maxAge: 604_800})
     return redirect(continueUrl ?? '/me', {
       headers: {'Set-Cookie': cookie},

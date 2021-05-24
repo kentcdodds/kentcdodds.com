@@ -4,7 +4,7 @@ import {MdxPage} from 'types'
 import * as mdxBundler from 'mdx-bundler/client'
 import {compileMdx} from '../utils/compile-mdx.server'
 import {downloadMdxFileOrDirectory} from '../utils/github.server'
-import {AnchorOrLink} from '../shared'
+import {AnchorOrLink} from '../utils/misc'
 import cache from './mdx-cache.server'
 
 async function getMdxPage({rootDir, slug}: {rootDir: string; slug: string}) {

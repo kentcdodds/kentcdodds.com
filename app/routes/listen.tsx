@@ -1,16 +1,13 @@
 import * as React from 'react'
 
 import {LoaderFunction, useRouteData} from 'remix'
-import {getDb} from '../utils/firebase.server'
+import {getCallsByUser} from '../utils/firebase.server'
 import {requireUser} from '../utils/session.server'
 
 export const loader: LoaderFunction = async ({request}) => {
-  return requireUser(request)(async ({userDoc}) => {
-    const callsRef = getDb().collection('calls')
-    const calls = await callsRef
-      .where('userId', '==', `/users/${userDoc.id}`)
-      .get()
-    return {calls: calls.docs.map(c => ({id: c.id, ...c.data()}))}
+  return requireUser(request)(async user => {
+    const calls = await getCallsByUser(user.id)
+    return {calls}
   })
 }
 

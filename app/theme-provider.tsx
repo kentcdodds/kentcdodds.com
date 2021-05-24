@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {useSSRLayoutEffect} from './shared'
+import {useSSRLayoutEffect} from './utils/misc'
 
 type NestedObj = {[key: string]: NestedObj | string}
 type StringObj = {[key: string]: string}

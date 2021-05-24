@@ -14,6 +14,8 @@ declare global {
   }
 }
 
+type NonNullProperties<Type> = {[Key in keyof Type]: Exclude<Type[Key], null>}
+
 type MdxListItem = {
   slug: string
   frontmatter: {
@@ -66,7 +68,24 @@ type KCDAction<
 
 type GitHubFile = {path: string; content: string}
 
+type UserData = {
+  id: string
+  firstName: string
+  team: string
+  email: string
+}
+
+type Call = {
+  title: string
+  description: string
+  userId: string
+  base64: string
+}
+
 export {
+  NonNullProperties,
+  UserData,
+  Call,
   MdxListItem,
   MdxPage,
   PostListItem,

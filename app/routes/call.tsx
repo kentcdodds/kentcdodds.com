@@ -2,7 +2,7 @@ import * as React from 'react'
 import {useSubmit, redirect, Form, json, useRouteData} from 'remix'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import {CallRecorder} from '../components/call-recorder'
-import {getDb} from '../utils/firebase.server'
+import {addCall} from '../utils/firebase.server'
 import {requireUser, rootStorage} from '../utils/session.server'
 
 function validateDescription(description: string | null) {
@@ -41,7 +41,7 @@ function assertNonNull<ValueType>(
 }
 
 export const action: ActionFunction = async ({request}) => {
-  return requireUser(request)(async ({userDoc}) => {
+  return requireUser(request)(async user => {
     const session = await rootStorage.getSession(request.headers.get('Cookie'))
     const requestText = await request.text()
     const body = new URLSearchParams(requestText)
@@ -71,11 +71,10 @@ export const action: ActionFunction = async ({request}) => {
     const call = {
       title,
       description,
-      userId: `/users/${userDoc.id}`,
+      userId: user.id,
       base64: audio,
     }
-    const callsRef = getDb().collection('calls')
-    await callsRef.add(call)
+    await addCall(call)
     return redirect('/listen')
   })
 }

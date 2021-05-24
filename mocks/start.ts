@@ -11,6 +11,7 @@ const miscHandlers = [
     'https://api.mailgun.net/v3/:domain/messages',
     async (req, res, ctx) => {
       if (hitNetwork) return hitNetwork(req)
+      console.log('SENDING MOCK EMAIL', req.body)
 
       const randomId = '20210321210543.1.E01B8B612C44B41B'
       const id = `<${randomId}>@${req.params.domain}`

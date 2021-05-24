@@ -1,14 +1,15 @@
 import type {Request, LoaderFunction, Session} from 'remix'
 import {createCookieSessionStorage, redirect} from 'remix'
-import {getDb, getAuth, firebase} from './firebase.server'
-import type {SessionUser} from './firebase.server'
-import {sendMagicLinkEmail} from './send-email'
+import {UserData} from 'types'
+import {
+  getMagicLink,
+  getUserByEmail,
+  getUserFromToken,
+  getSessionTokenFromMagicLink,
+} from './firebase.server'
+import {sendMagicLinkEmail} from './send-email.server'
 
-type UserData = {
-  uid: string
-  firstName: string
-  team: string
-}
+const sessionTokenKey = 'token'
 
 let secret = 'not-at-all-secret'
 if (process.env.SESSION_SECRET) {
@@ -27,16 +28,11 @@ const rootStorage = createCookieSessionStorage({
 })
 
 async function sendToken(emailAddress: string) {
-  const confirmationLink = await getAuth().generateSignInWithEmailLink(
-    emailAddress,
-    {handleCodeInApp: true, url: 'https://kentcdodds.com/me'},
-  )
+  const confirmationLink = await getMagicLink(emailAddress)
 
-  const user = await getAuth()
-    .getUserByEmail(emailAddress)
-    .catch(() => {
-      /* ignore... */
-    })
+  const user = await getUserByEmail(emailAddress).catch(() => {
+    /* ignore... */
+  })
 
   await sendMagicLinkEmail({
     emailAddress,
@@ -45,62 +41,34 @@ async function sendToken(emailAddress: string) {
   })
 }
 
-async function getSessionToken(idToken: string) {
-  const auth = getAuth()
-  const decodedToken = await auth.verifyIdToken(idToken)
-  if (new Date().getTime() / 1000 - decodedToken.auth_time > 5 * 60) {
-    throw new Error('Recent sign in required')
-  }
-  const twoWeeks = 60 * 60 * 24 * 14 * 1000
-  return auth.createSessionCookie(idToken, {expiresIn: twoWeeks})
-}
-
 async function getUser(request: Request) {
-  const sessionUser = await getUserSession(request)
-  if (!sessionUser) {
-    return null
-  }
-  const usersRef = getDb().collection('users')
-  const userDoc = await usersRef.doc(sessionUser.uid).get()
-  if (!userDoc.exists) {
-    // this should never happen, log the user out
-    console.error(`No user doc for this session: ${sessionUser.uid}`)
-    return null
-  }
-  const user = {uid: userDoc.id, ...userDoc.data()} as UserData
-  return {sessionUser, user, userDoc}
-}
+  const session = await rootStorage.getSession(request.headers.get('Cookie'))
 
-async function verifySignInLink({
-  emailAddress,
-  link,
-}: {
-  emailAddress: string
-  link: string
-}) {
-  const result = await firebase.auth().signInWithEmailLink(emailAddress, link)
-  if (!result.user) {
-    throw new Error('Link validation failed')
-  }
-  return result.user.getIdToken()
+  const token = session.get(sessionTokenKey) as string | undefined
+  if (!token) return null
+
+  return getUserFromToken(token).catch(() => {
+    return null
+  })
 }
 
 function signOutSession(session: Session) {
-  session.unset('token')
+  session.unset(sessionTokenKey)
 }
 
-function signInSession(session: Session, token: string) {
-  session.set('token', token)
+async function loginSessionWithMagicLink(
+  session: Session,
+  {emailAddress, link}: {emailAddress: string; link: string},
+) {
+  const sessionToken = await getSessionTokenFromMagicLink({
+    emailAddress,
+    link,
+  })
+  session.set(sessionTokenKey, sessionToken)
 }
 
 function requireUser(request: Request) {
-  return async (
-    loader: (data: {
-      sessionUser: SessionUser
-      user: UserData
-      userDoc: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>
-    }) => ReturnType<LoaderFunction>,
-  ) => {
+  return async (loader: (data: UserData) => ReturnType<LoaderFunction>) => {
     const userInfo = await getUser(request)
     if (!userInfo) {
       const session = await rootStorage.getSession(
@@ -113,31 +81,11 @@ function requireUser(request: Request) {
   }
 }
 
-async function getUserSession(request: Request) {
-  const cookieSession = await rootStorage.getSession(
-    request.headers.get('Cookie'),
-  )
-  const token = cookieSession.get('token') as string | undefined
-  if (!token) return null
-  try {
-    const checkForRevocation = true
-    const tokenUser = await getAuth().verifySessionCookie(
-      token,
-      checkForRevocation,
-    )
-    return tokenUser as SessionUser
-  } catch {
-    return null
-  }
-}
-
 export {
   rootStorage,
   requireUser,
   getUser,
   sendToken,
-  verifySignInLink,
-  getSessionToken,
+  loginSessionWithMagicLink,
   signOutSession,
-  signInSession,
 }
