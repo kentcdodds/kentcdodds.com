@@ -2,8 +2,8 @@ import * as React from 'react'
 import {useSubmit, redirect, Form, json, useRouteData} from 'remix'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import {CallRecorder} from '../components/call-recorder'
-import {addCall} from '../utils/firebase.server'
 import {requireUser, rootStorage} from '../utils/session.server'
+import {addCall} from '../utils/prisma.server'
 
 function validateDescription(description: string | null) {
   if (!description) return `Description is required`
@@ -94,7 +94,6 @@ export const loader: LoaderFunction = async ({request}) => {
 }
 
 export default function CallInPodcastScreen() {
-  console.log('rendering screen')
   const [audio, setAudio] = React.useState<Blob | null>(null)
   return (
     <div>
@@ -111,7 +110,6 @@ export default function CallInPodcastScreen() {
 
 function SubmitRecordingForm({audio}: {audio: Blob}) {
   const data = useRouteData()
-  console.log(data)
   const [audioURL, setAudioURL] = React.useState<string | null>(null)
   React.useEffect(() => {
     setAudioURL(window.URL.createObjectURL(audio))

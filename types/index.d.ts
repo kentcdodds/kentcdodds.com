@@ -1,5 +1,6 @@
 import {Request, Response} from 'node-fetch'
 import type {Action, Loader} from 'remix'
+import type {User, Call} from '@prisma/client'
 
 declare global {
   interface Window {
@@ -68,23 +69,9 @@ type KCDAction<
 
 type GitHubFile = {path: string; content: string}
 
-type UserData = {
-  id: string
-  firstName: string
-  team: string
-  email: string
-}
-
-type Call = {
-  title: string
-  description: string
-  userId: string
-  base64: string
-}
-
 export {
   NonNullProperties,
-  UserData,
+  User,
   Call,
   MdxListItem,
   MdxPage,

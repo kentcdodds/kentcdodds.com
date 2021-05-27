@@ -1,9 +1,8 @@
 import admin from 'firebase-admin'
 import firebase from 'firebase/app'
 import 'firebase/auth'
-import 'firebase/firestore'
 import type {ServiceAccount} from 'firebase-admin'
-import {Call, UserData} from 'types'
+import {createNewUser, getUserById} from './prisma.server'
 
 // if the require cache for this file is deleted (as in development), then this
 // code will run again which could result in re-initializing firebase. So we
@@ -18,14 +17,6 @@ if (!firebase.apps.length) {
     messagingSenderId: '474697802893',
     appId: '1:474697802893:web:d8d3733fc5728bc1e3aec4',
   })
-}
-
-let lazyDb: FirebaseFirestore.Firestore | undefined
-function getDb(): FirebaseFirestore.Firestore {
-  if (!lazyDb) {
-    lazyDb = getAdmin().firestore()
-  }
-  return lazyDb
 }
 
 let lazyAuth: admin.auth.Auth | undefined
@@ -94,11 +85,6 @@ async function getSessionTokenFromMagicLink({
   return sessionToken
 }
 
-async function getUserByEmail(emailAddress: string) {
-  const user = await getAuth().getUserByEmail(emailAddress)
-  return user
-}
-
 async function getUserFromToken(token: string) {
   const checkForRevocation = true
   const sessionUser = await getAuth().verifySessionCookie(
@@ -109,52 +95,11 @@ async function getUserFromToken(token: string) {
   const email = sessionUser.email
   if (!email) return null
 
-  const userId = sessionUser.uid
+  const authId = sessionUser.uid
 
-  const usersRef = getDb().collection('users')
-  const userDoc = await usersRef.doc(userId).get()
-  if (!userDoc.exists) {
-    // this should never happen, log the user out
-    console.error(`No user doc for this session: ${userId}`)
-    return null
-  }
-  const userData = userDoc.data() as Omit<UserData, 'email' | 'id'>
-  const user: UserData = {id: userDoc.id, email, ...userData}
+  const user =
+    (await getUserById(authId)) ?? (await createNewUser({authId, email}))
   return user
 }
 
-async function updateUser(userId: string, userUpdates: Partial<UserData>) {
-  const usersRef = getDb().collection('users')
-  const userDoc = await usersRef.doc(userId).get()
-  if (userDoc.exists) {
-    await userDoc.ref.set(userUpdates, {merge: true})
-  } else {
-    console.error(`No user with this ID exists: ${userId}`)
-  }
-}
-
-async function addCall(call: Call) {
-  const callsRef = getDb().collection('calls')
-  await callsRef.add({
-    ...call,
-    userId: `/users/${call.userId}`,
-  })
-}
-
-async function getCallsByUser(userId: string) {
-  const callsCollectionRef = getDb().collection('calls')
-  const callRefs = await callsCollectionRef
-    .where('userId', '==', `/users/${userId}`)
-    .get()
-  return callRefs.docs.map(c => ({id: c.id, ...c.data()}))
-}
-
-export {
-  getMagicLink,
-  getUserByEmail,
-  getUserFromToken,
-  getSessionTokenFromMagicLink,
-  updateUser,
-  addCall,
-  getCallsByUser,
-}
+export {getMagicLink, getUserFromToken, getSessionTokenFromMagicLink}

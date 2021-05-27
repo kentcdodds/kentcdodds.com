@@ -2,6 +2,8 @@ import {json, redirect, useRouteData} from 'remix'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import * as React from 'react'
 import type {NonNullProperties} from '../types'
+import {contactDataSessionKey} from '../utils/contact'
+import type {ContactData} from '../utils/contact'
 import {getErrorMessage} from '../utils/misc'
 import {rootStorage} from '../utils/session.server'
 import {sendEmail} from '../utils/send-email.server'
@@ -89,7 +91,8 @@ export const action: ActionFunction = async ({request}) => {
     })
 
     session.unset(fieldsSessionKey)
-    session.flash('result', {name, email, subject})
+    const contactData: ContactData = {name, email, subject}
+    session.flash(contactDataSessionKey, contactData)
     return redirect('/contact/success', {
       headers: {
         'Set-Cookie': await rootStorage.commitSession(session),

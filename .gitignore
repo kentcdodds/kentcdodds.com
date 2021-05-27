@@ -12,6 +12,5 @@ node_modules/
 /cypress/videos
 /cypress/screenshots
 
-/other/google-app-creds.json
-
 .env
+prisma/migrations

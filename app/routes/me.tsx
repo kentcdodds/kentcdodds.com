@@ -1,11 +1,11 @@
 import * as React from 'react'
-import type {LoaderFunction, ActionFunction} from 'remix'
+import type {ActionFunction, LoaderFunction} from 'remix'
 import {useRouteData, json, redirect} from 'remix'
-import {UserData} from 'types'
-import {updateUser} from '../utils/firebase.server'
+import type {User} from 'types'
+import {updateUser} from '../utils/prisma.server'
 import {requireUser, rootStorage, signOutSession} from '../utils/session.server'
 
-type LoaderData = {user: UserData; message?: string}
+type LoaderData = {user: User; message?: string}
 export const loader: LoaderFunction = ({request}) => {
   return requireUser(request)(async user => {
     const session = await rootStorage.getSession(request.headers.get('Cookie'))
@@ -62,7 +62,7 @@ function YouScreen() {
             <input
               id="firstName"
               name="firstName"
-              defaultValue={data.user.firstName}
+              defaultValue={data.user.firstName ?? ''}
             />
           </div>
           <button type="submit" name="actionId" value="change details">

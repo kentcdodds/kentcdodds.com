@@ -38,6 +38,9 @@ module.exports = {
     'testing-library/await-async-query': 'off',
     '@typescript-eslint/no-unsafe-argument': 'off',
     'testing-library/prefer-explicit-assert': 'off',
+
+    // I think this is busted?
+    'import/no-extraneous-dependencies': 'off',
   },
   overrides: [
     {

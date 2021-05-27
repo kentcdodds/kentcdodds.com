@@ -12,7 +12,6 @@ export const loader: LoaderFunction = async ({request}) => {
   const email = session.get('email') as string | null
 
   if (!email || !code || mode !== 'signIn') {
-    console.log({email, code, mode})
     session.flash('error', 'Sign in link invalid. Please request a new one.')
     return redirect('/login', {
       headers: {'Set-Cookie': await rootStorage.commitSession(session)},

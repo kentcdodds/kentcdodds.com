@@ -1,7 +1,7 @@
 import * as React from 'react'
 
 import {LoaderFunction, useRouteData} from 'remix'
-import {getCallsByUser} from '../utils/firebase.server'
+import {getCallsByUser} from '../utils/prisma.server'
 import {requireUser} from '../utils/session.server'
 
 export const loader: LoaderFunction = async ({request}) => {

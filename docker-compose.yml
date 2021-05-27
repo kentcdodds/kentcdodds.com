@@ -1,0 +1,10 @@
+version: '3'
+services:
+  database:
+    image: 'postgres:13'
+    environment:
+      - POSTGRES_USER=kody
+      - POSTGRES_PASSWORD=the_koala
+      - POSTGRES_DB=kentcdodds_db
+    ports:
+      - '5432:5432'

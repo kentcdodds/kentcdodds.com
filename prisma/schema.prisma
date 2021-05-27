@@ -1,0 +1,36 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Team {
+  UNDECIDED
+  BLUE
+  RED
+  YELLOW
+}
+
+model User {
+  id        Int     @id @default(autoincrement())
+  authId    String  @unique
+  email     String  @unique
+  firstName String?
+  team      Team?   @default(UNDECIDED)
+  Call      Call[]
+}
+
+model Call {
+  id          Int    @id @default(autoincrement())
+  title       String
+  description String
+  user        User   @relation(fields: [userId], references: [id])
+  userId      Int
+  base64      String
+}

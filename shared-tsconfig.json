@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "isolatedModules": true,
+    "importsNotUsedAsValues": "error",
     "noEmit": true,
     "allowJs": true,
     "esModuleInterop": true,

@@ -1,13 +1,13 @@
 import type {Request, LoaderFunction, Session} from 'remix'
 import {createCookieSessionStorage, redirect} from 'remix'
-import {UserData} from 'types'
+import type {User} from '@prisma/client'
 import {
   getMagicLink,
-  getUserByEmail,
   getUserFromToken,
   getSessionTokenFromMagicLink,
 } from './firebase.server'
 import {sendMagicLinkEmail} from './send-email.server'
+import {getUserByEmail} from './prisma.server'
 
 const sessionTokenKey = 'token'
 
@@ -68,7 +68,7 @@ async function loginSessionWithMagicLink(
 }
 
 function requireUser(request: Request) {
-  return async (loader: (data: UserData) => ReturnType<LoaderFunction>) => {
+  return async (loader: (data: User) => ReturnType<LoaderFunction>) => {
     const userInfo = await getUser(request)
     if (!userInfo) {
       const session = await rootStorage.getSession(
