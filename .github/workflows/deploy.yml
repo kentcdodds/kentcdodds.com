@@ -1,0 +1,46 @@
+name: validate
+on:
+  push:
+    branches: ['main', '!all-contributors/**']
+  pull_request:
+    branches-ignore: ['all-contributors/**']
+env:
+  REMIX_TOKEN: ${{ secrets.REMIX_TOKEN }}
+  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v2
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+
+      - name: 📥 Download deps
+        uses: bahmutov/npm-install@v1
+
+      - name: ▶️ Run validate script
+        run: npx kcd-scripts validate test,lint,typecheck
+
+      - name: ⬆️ Upload coverage report
+        uses: codecov/codecov-action@v1
+
+      - name: 🌳 Cypress run
+        uses: cypress-io/github-action@v2
+        with:
+          start: npm start
+          wait-on: 'http://localhost:8811'
+        env:
+          PORT: 8811
+
+      - name: 🚀 Deploy
+        # only deploy main branch on pushes
+        if:
+          ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+        uses: superfly/flyctl-actions@1.1
+        with:
+          args: 'deploy --build-arg REMIX_TOKEN=${{ secrets.REMIX_TOKEN }}'
