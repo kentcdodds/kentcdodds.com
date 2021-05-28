@@ -51,7 +51,7 @@ type WorkshopEvent = Pick<
   }
 
 const titoSecret = process.env.TITO_API_SECRET
-if (process.env.NODE_ENV === 'production') {
+if (!titoSecret && process.env.NODE_ENV === 'production') {
   console.error(
     `TITO_API_SECRET is not set. Can't get tickets from the ti.to API!`,
   )
