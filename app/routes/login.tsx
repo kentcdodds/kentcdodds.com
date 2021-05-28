@@ -13,7 +13,7 @@ export const loader: LoaderFunction = async ({request}) => {
   if (userInfo) return redirect('/me')
 
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
-  signOutSession(session)
+  await signOutSession(session)
 
   return json(
     {

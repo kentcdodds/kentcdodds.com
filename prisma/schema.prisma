@@ -18,19 +18,26 @@ enum Team {
 }
 
 model User {
-  id        Int     @id @default(autoincrement())
-  authId    String  @unique
-  email     String  @unique
+  id        String    @id @default(uuid())
+  email     String    @unique
   firstName String?
-  team      Team?   @default(UNDECIDED)
+  team      Team?     @default(UNDECIDED)
   Call      Call[]
+  Session   Session[]
+}
+
+model Session {
+  id     String @id @default(uuid())
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+  expirationDate DateTime
 }
 
 model Call {
-  id          Int    @id @default(autoincrement())
+  id          String @id @default(uuid())
   title       String
   description String
   user        User   @relation(fields: [userId], references: [id])
-  userId      Int
+  userId      String
   base64      String
 }

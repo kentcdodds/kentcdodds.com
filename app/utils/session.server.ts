@@ -1,15 +1,16 @@
 import type {Request, LoaderFunction, Session} from 'remix'
 import {createCookieSessionStorage, redirect} from 'remix'
 import type {User} from '@prisma/client'
-import {
-  getMagicLink,
-  getUserFromToken,
-  getSessionTokenFromMagicLink,
-} from './firebase.server'
 import {sendMagicLinkEmail} from './send-email.server'
-import {getUserByEmail} from './prisma.server'
+import {
+  getUserByEmail,
+  getMagicLink,
+  getSessionIdFromMagicLink,
+  getUserFromSessionId,
+  deleteUserSession,
+} from './prisma.server'
 
-const sessionTokenKey = 'token'
+const sessionIdKey = '__session_id__'
 
 let secret = 'not-at-all-secret'
 if (process.env.SESSION_SECRET) {
@@ -28,7 +29,7 @@ const rootStorage = createCookieSessionStorage({
 })
 
 async function sendToken(emailAddress: string) {
-  const confirmationLink = await getMagicLink(emailAddress)
+  const confirmationLink = getMagicLink(emailAddress)
 
   const user = await getUserByEmail(emailAddress).catch(() => {
     /* ignore... */
@@ -44,40 +45,42 @@ async function sendToken(emailAddress: string) {
 async function getUser(request: Request) {
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
 
-  const token = session.get(sessionTokenKey) as string | undefined
+  const token = session.get(sessionIdKey) as string | undefined
   if (!token) return null
 
-  return getUserFromToken(token).catch(() => {
+  return getUserFromSessionId(token).catch((error: unknown) => {
+    console.error(error)
     return null
   })
 }
 
-function signOutSession(session: Session) {
-  session.unset(sessionTokenKey)
+async function signOutSession(session: Session) {
+  const sessionId = session.get(sessionIdKey)
+  session.unset(sessionIdKey)
+  if (sessionId) {
+    await deleteUserSession(sessionId)
+  }
 }
 
 async function loginSessionWithMagicLink(
   session: Session,
   {emailAddress, link}: {emailAddress: string; link: string},
 ) {
-  const sessionToken = await getSessionTokenFromMagicLink({
-    emailAddress,
-    link,
-  })
-  session.set(sessionTokenKey, sessionToken)
+  const sessionId = await getSessionIdFromMagicLink(emailAddress, link)
+  session.set(sessionIdKey, sessionId)
 }
 
 function requireUser(request: Request) {
   return async (loader: (data: User) => ReturnType<LoaderFunction>) => {
-    const userInfo = await getUser(request)
-    if (!userInfo) {
+    const user = await getUser(request)
+    if (!user) {
       const session = await rootStorage.getSession(
         request.headers.get('Cookie'),
       )
       const cookie = await rootStorage.destroySession(session)
       return redirect('/login', {headers: {'Set-Cookie': cookie}})
     }
-    return loader(userInfo)
+    return loader(user)
   }
 }
 

@@ -23,7 +23,7 @@ export const action: ActionFunction = async ({request}) => {
     const params = new URLSearchParams(await request.text())
     const actionId = params.get('actionId')
     if (actionId === 'logout') {
-      signOutSession(session)
+      await signOutSession(session)
 
       return redirect('/', {
         headers: {'Set-Cookie': await rootStorage.commitSession(session)},
