@@ -1,4 +1,4 @@
-name: validate
+name: deploy
 on:
   push:
     branches: ['main', '!all-contributors/**']
