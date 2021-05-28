@@ -127,8 +127,3 @@ function arrayToObj<ItemType extends Record<string, unknown>>(
 }
 
 export {compileMdx}
-
-/*
-eslint
-  babel/camelcase: "off",
-*/

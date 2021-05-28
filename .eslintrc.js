@@ -5,7 +5,6 @@ module.exports = {
     project: './tsconfig.json',
   },
   rules: {
-    'babel/camelcase': 'off',
     'no-undef': 'off',
     'import/no-unresolved': 'off',
     'react/prop-types': 'off',
