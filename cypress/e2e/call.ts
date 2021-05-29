@@ -1,5 +1,6 @@
 describe('call in', () => {
   it('should allow a typical user flow', () => {
+    cy.visit('/__tests/login?email=test@example.com')
     cy.visit('/')
     cy.findByRole('link', {name: /call kent/i}).click()
     cy.findByRole('heading', {name: /Call Kent Podcast/i})
@@ -9,8 +10,6 @@ describe('call in', () => {
     cy.findByRole('button', {name: /resume/i}).click()
     cy.wait(500)
     cy.findByRole('button', {name: /stop/i}).click()
-    // cy.findByRole('button', {name: /submit/i}).click()
-
-    // cy.visit('/listen')
+    cy.findByRole('button', {name: /submit/i}).click()
   })
 })

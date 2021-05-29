@@ -80,16 +80,18 @@ export const action: ActionFunction = async ({request}) => {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  const session = await rootStorage.getSession(request.headers.get('Cookie'))
-  const data = {
-    audioError: session.get('audioError'),
-    titleError: session.get('titleError'),
-    descriptionError: session.get('descriptionError'),
-  }
-  return json(data, {
-    headers: {
-      'Set-Cookie': await rootStorage.commitSession(session),
-    },
+  return requireUser(request)(async () => {
+    const session = await rootStorage.getSession(request.headers.get('Cookie'))
+    const data = {
+      audioError: session.get('audioError'),
+      titleError: session.get('titleError'),
+      descriptionError: session.get('descriptionError'),
+    }
+    return json(data, {
+      headers: {
+        'Set-Cookie': await rootStorage.commitSession(session),
+      },
+    })
   })
 }
 
