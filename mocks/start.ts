@@ -28,7 +28,7 @@ const server = setupServer(
   ...miscHandlers,
 )
 
-// server.listen({onUnhandledRequest: 'error'})
+server.listen({onUnhandledRequest: 'error'})
 console.log('🔶 Mock server installed')
 
 process.once('SIGINT', () => server.close())

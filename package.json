@@ -54,8 +54,6 @@
     "gray-matter": "^4.0.3",
     "mdx-bundler": "^4.0.0",
     "node-fetch": "^2.6.1",
-    "nodemailer": "^6.6.1",
-    "nodemailer-mailgun-transport": "2.0.3",
     "pm2": "^4.5.6",
     "prismjs": "^1.23.0",
     "react": "^17.0.2",

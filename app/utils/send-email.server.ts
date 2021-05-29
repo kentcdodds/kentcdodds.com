@@ -1,12 +1,22 @@
-import nodemailer from 'nodemailer'
-import type Mail from 'nodemailer/lib/mailer'
-import getMailgunTransport from 'nodemailer-mailgun-transport'
 import unified from 'unified'
 import markdown from 'remark-parse'
 import remark2rehype from 'remark-rehype'
 import doc from 'rehype-document'
 import format from 'rehype-format'
-import html from 'rehype-stringify'
+import rehypStringify from 'rehype-stringify'
+
+let mailgunDomain = 'mg.example.com'
+if (process.env.MAILGUN_DOMAIN) {
+  mailgunDomain = process.env.MAILGUN_DOMAIN
+} else if (process.env.NODE_ENV === 'production') {
+  throw new Error('MAILGUN_DOMAIN is required')
+}
+let mailgunSendingKey = 'example_send_key'
+if (process.env.MAILGUN_SENDING_KEY) {
+  mailgunSendingKey = process.env.MAILGUN_SENDING_KEY
+} else if (process.env.NODE_ENV === 'production') {
+  throw new Error('MAILGUN_SENDING_KEY is required')
+}
 
 async function markdownToHtml(markdownString: string) {
   const {contents} = await unified()
@@ -14,43 +24,44 @@ async function markdownToHtml(markdownString: string) {
     .use(remark2rehype)
     .use(doc)
     .use(format)
-    .use(html)
+    .use(rehypStringify)
     .process(markdownString)
 
   return contents.toString()
 }
 
-let lazyTransporter: Mail
-async function getTransporter(): Promise<Mail> {
-  // eslint is confused about this...
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (!lazyTransporter) {
-    if (!process.env.MAILGUN_API_KEY) {
-      throw new Error('MAILGUN_API_KEY environment variable is not set')
-    }
-    if (!process.env.MAILGUN_DOMAIN) {
-      throw new Error('MAILGUN_DOMAIN environment variable is not set')
-    }
-
-    const auth = {
-      auth: {
-        api_key: process.env.MAILGUN_API_KEY,
-        domain: process.env.MAILGUN_DOMAIN,
-      },
-    }
-
-    lazyTransporter = nodemailer.createTransport(getMailgunTransport(auth))
-    await lazyTransporter.verify()
-  }
-
-  return lazyTransporter
+type MailgunMessage = {
+  to: string
+  from: string
+  subject: string
+  text: string
+  html?: string | null
 }
 
-async function sendEmail(message: Mail.Options) {
-  const transporter = await getTransporter()
-  await transporter.sendMail({
-    html: message.html ?? (await markdownToHtml(String(message.text))),
-    ...message,
+async function sendEmail({to, from, subject, text, html}: MailgunMessage) {
+  const auth = `${Buffer.from(`api:${mailgunSendingKey}`).toString('base64')}`
+
+  // if they didn't specify it and it's not
+  if (html === undefined) {
+    html = await markdownToHtml(text)
+  } else if (html === null) {
+    html = text
+  }
+
+  const body = new URLSearchParams({
+    to,
+    from,
+    subject,
+    text,
+    html,
+  })
+
+  await fetch(`https://api.mailgun.net/v3/${mailgunDomain}/messages`, {
+    method: 'post',
+    body,
+    headers: {
+      Authorization: `Basic ${auth}`,
+    },
   })
 }
 

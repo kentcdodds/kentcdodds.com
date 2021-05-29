@@ -49,7 +49,7 @@ async function getUser(request: Request) {
   if (!token) return null
 
   return getUserFromSessionId(token).catch((error: unknown) => {
-    console.error(error)
+    console.error(`Failure getting user from session ID:`, error)
     return null
   })
 }
@@ -58,7 +58,10 @@ async function signOutSession(session: Session) {
   const sessionId = session.get(sessionIdKey)
   session.unset(sessionIdKey)
   if (sessionId) {
-    await deleteUserSession(sessionId)
+    deleteUserSession(sessionId).catch((error: unknown) => {
+      console.error(`Failure deleting user session: `, error)
+      return null
+    })
   }
 }
 
