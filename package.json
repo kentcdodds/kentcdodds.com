@@ -24,7 +24,7 @@
     "build": "npm run css:build && remix build",
     "clean": "rimraf ./node_modules/.cache ./build ./public/build \"./app/styles/**/*.css\"",
     "dev": "pm2-dev pm2.config.js",
-    "start": "remix-serve build",
+    "start": "corss-env NODE_ENV=production remix-serve build",
     "start:mocks": "node --require ./mocks ./node_modules/.bin/remix-serve build",
     "cy:run": "cypress run",
     "cy:open": "cypress open",
