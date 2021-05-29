@@ -8,10 +8,29 @@ const linkExpirationTime = 1000 * 60 * 30
 const sessionExpirationTime = 1000 * 60 * 60 * 24 * 30
 
 let domainURL = 'http://localhost:3000'
+const isProd = process.env.NODE_ENV === 'production'
 if (process.env.DOMAIN_URL) {
   domainURL = process.env.DOMAIN_URL
-} else if (process.env.NODE_ENV === 'production') {
+} else if (isProd) {
   throw new Error('Must set DOMAIN_URL')
+}
+
+const {DATABASE_URL} = process.env
+if (!isProd && DATABASE_URL && !DATABASE_URL.includes('localhost')) {
+  // if we're connected to a non-localhost db, let's make
+  // sure we know it.
+  const domain = new URL(DATABASE_URL)
+  if (domain.password) {
+    domain.password = '**************'
+  }
+  console.warn(
+    `
+⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️
+Connected to non-localhost DB in dev mode:
+  ${domain.toString()}
+⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️
+    `.trim(),
+  )
 }
 
 const magicLinkSearchParam = 'kodyKey'
