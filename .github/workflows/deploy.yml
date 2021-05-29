@@ -24,7 +24,7 @@ jobs:
         uses: bahmutov/npm-install@v1
 
       - name: ▶️ Run validate script
-        run: npx kcd-scripts validate test,lint,typecheck
+        run: npx kcd-scripts validate
 
       - name: ⬆️ Upload coverage report
         uses: codecov/codecov-action@v1
