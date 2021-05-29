@@ -3,7 +3,6 @@ import {promises as fs} from 'fs'
 import type {DefaultRequestBody, MockedRequest, RestHandler} from 'msw'
 import {rest} from 'msw'
 import * as config from '../config'
-import {hitNetwork} from './utils'
 
 const isDirectory = async (d: string) => {
   try {
@@ -55,7 +54,7 @@ const githubHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
       const localDir = nodePath.join(__dirname, '..', path)
       const isLocalDir = await isDirectory(localDir)
 
-      const shouldMakeRealRequest = !isLocalDir && hitNetwork
+      const shouldMakeRealRequest = !isLocalDir
       if (shouldMakeRealRequest) return
 
       if (!isLocalDir) {

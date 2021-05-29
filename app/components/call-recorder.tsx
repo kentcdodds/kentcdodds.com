@@ -141,7 +141,7 @@ function CallRecorder({
         })
       },
       error => {
-        console.log('error getting the media device', error)
+        console.error('error getting the media device', error)
       },
     )
   }, [send])

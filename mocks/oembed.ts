@@ -1,11 +1,8 @@
 import type {DefaultRequestBody, MockedRequest, RestHandler} from 'msw'
 import {rest} from 'msw'
-import {hitNetwork} from './utils'
 
 const oembedHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
   rest.get('https://oembed.com/providers.json', async (req, res, ctx) => {
-    if (hitNetwork) return hitNetwork(req)
-
     return res(
       ctx.json([
         {
@@ -28,8 +25,6 @@ const oembedHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
   }),
 
   rest.get('https://publish.twitter.com/oembed', async (req, res, ctx) => {
-    if (hitNetwork) return hitNetwork(req)
-
     return res(
       ctx.json({
         html:
@@ -39,8 +34,6 @@ const oembedHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
   }),
 
   rest.get('https://www.youtube.com/oembed', async (req, res, ctx) => {
-    if (hitNetwork) return hitNetwork(req)
-
     return res(
       ctx.json({
         title: "🚨 Announcement! I'm Going Full-Time Educator 👨‍🏫",

@@ -7,7 +7,7 @@ const prisma = new PrismaClient()
 const linkExpirationTime = 1000 * 60 * 30
 const sessionExpirationTime = 1000 * 60 * 60 * 24 * 30
 
-let domainURL = 'http://localhost:3000'
+let domainURL = `http://localhost:${process.env.PORT ?? '3000'}`
 const isProd = process.env.NODE_ENV === 'production'
 if (process.env.DOMAIN_URL) {
   domainURL = process.env.DOMAIN_URL

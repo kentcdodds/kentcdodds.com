@@ -11,6 +11,7 @@ module.exports = {
       watch: ['./mocks/**/*.*'],
       env: {
         NODE_ENV: 'development',
+        RUNNING_E2E: process.env.RUNNING_E2E,
       },
     },
     {

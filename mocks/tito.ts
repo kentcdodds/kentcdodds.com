@@ -1,13 +1,10 @@
 import type {DefaultRequestBody, MockedRequest, RestHandler} from 'msw'
 import {rest} from 'msw'
-import {hitNetwork} from './utils'
 
 const tiToHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
   rest.get(
     'https://api.tito.io/v3/kent-c-dodds/events',
     async (req, res, ctx) => {
-      if (hitNetwork) return hitNetwork(req)
-
       const slug = 'testing-this-isn-t-a-real-event'
       return res(
         ctx.json({
@@ -31,8 +28,6 @@ const tiToHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
   rest.get(
     'https://api.tito.io/v3/kent-c-dodds/:eventSlug',
     async (req, res, ctx) => {
-      if (hitNetwork) return hitNetwork(req)
-
       return res(
         ctx.json({
           event: {
@@ -53,8 +48,6 @@ const tiToHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
   rest.get(
     'https://api.tito.io/v3/kent-c-dodds/:eventSlug/discount_codes',
     async (req, res, ctx) => {
-      if (hitNetwork) return hitNetwork(req)
-
       const code = 'early'
       return res(
         ctx.json({
@@ -77,8 +70,6 @@ const tiToHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
   rest.get(
     'https://api.tito.io/v3/kent-c-dodds/:eventSlug/activities',
     async (req, res, ctx) => {
-      if (hitNetwork) return hitNetwork(req)
-
       return res(
         ctx.json({
           activities: [

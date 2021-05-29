@@ -3,17 +3,23 @@ import {setupServer} from 'msw/node'
 import {githubHandlers} from './github'
 import {tiToHandlers} from './tito'
 import {oembedHandlers} from './oembed'
-import {hitNetwork} from './utils'
+import {isE2E, updateFixture} from './utils'
 
 // put one-off handlers that don't really need an entire file to themselves here
 const miscHandlers = [
   rest.post(
     'https://api.mailgun.net/v3/:domain/messages',
     async (req, res, ctx) => {
-      if (hitNetwork) return hitNetwork(req)
       const body = new URLSearchParams(req.body?.toString())
-      console.log('SENDING MOCK EMAIL', body.get('text'))
+      const text = body.get('text')
+      console.info('🔶 mocked email contents:', text)
 
+      if (isE2E && text) {
+        const magicLink = text.match(/(http.+magic.+)\n/)?.[1]
+        if (magicLink) {
+          await updateFixture({magicLink})
+        }
+      }
       const randomId = '20210321210543.1.E01B8B612C44B41B'
       const id = `<${randomId}>@${req.params.domain}`
       return res(ctx.json({id, message: 'Queued. Thank you.'}))
@@ -29,7 +35,7 @@ const server = setupServer(
 )
 
 server.listen({onUnhandledRequest: 'error'})
-console.log('🔶 Mock server installed')
+console.info('🔶 Mock server installed')
 
 process.once('SIGINT', () => server.close())
 process.once('SIGTERM', () => server.close())
