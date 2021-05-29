@@ -5,6 +5,9 @@ on:
   pull_request:
     branches-ignore: ['all-contributors/**']
 
+env:
+  REMIX_TOKEN: ${{ secrets.REMIX_TOKEN }}
+
 jobs:
   main:
     runs-on: ubuntu-latest
@@ -19,13 +22,9 @@ jobs:
 
       - name: 📥 Download deps
         uses: bahmutov/npm-install@v1
-        env:
-          REMIX_TOKEN: ${{ secrets.REMIX_TOKEN }}
 
       - name: ▶️ Run validate script
         run: npx kcd-scripts validate test,lint,typecheck
-        env:
-          REMIX_TOKEN: ${{ secrets.REMIX_TOKEN }}
 
       - name: ⬆️ Upload coverage report
         uses: codecov/codecov-action@v1
@@ -47,4 +46,3 @@ jobs:
           args: 'deploy --build-arg REMIX_TOKEN=${{ secrets.REMIX_TOKEN }}'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-          REMIX_TOKEN: ${{ secrets.REMIX_TOKEN }}
