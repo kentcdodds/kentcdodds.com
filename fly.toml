@@ -12,6 +12,7 @@ kill_timeout = 5
   PORT = "8080"
   CYPRESS_INSTALL_BINARY = "0"
   HUSKY_SKIP_INSTALL = "1"
+  NODE_ENV = "production"
 
 [deploy]
   release_command = "npx prisma migrate deploy"
