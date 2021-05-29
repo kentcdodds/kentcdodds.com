@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "incremental": true,
     "isolatedModules": true,
     "importsNotUsedAsValues": "error",
     "noEmit": true,
