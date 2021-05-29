@@ -8,6 +8,7 @@
     {"path": "tests"},
     {"path": "mocks"},
     {"path": "content"},
+    {"path": "prisma"},
     {"path": "cypress"}
   ]
 }

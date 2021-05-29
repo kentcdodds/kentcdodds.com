@@ -1,4 +1,3 @@
-docker-compose down -v
-docker-compose up -d
+docker-compose up --renew-anon-volumes
 sleep 3
-npx prisma migrate deploy
+prisma migrate reset
