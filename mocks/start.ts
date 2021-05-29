@@ -17,7 +17,10 @@ const miscHandlers = [
       if (isE2E && text) {
         const magicLink = text.match(/(http.+magic.+)\n/)?.[1]
         if (magicLink) {
+          console.log('updating fixture with magic link')
           await updateFixture({magicLink})
+        } else {
+          console.log('no magic link found')
         }
       }
       const randomId = '20210321210543.1.E01B8B612C44B41B'
@@ -36,6 +39,7 @@ const server = setupServer(
 
 server.listen({onUnhandledRequest: 'error'})
 console.info('🔶 Mock server installed')
+if (isE2E) console.info('running in E2E mode')
 
 process.once('SIGINT', () => server.close())
 process.once('SIGTERM', () => server.close())
