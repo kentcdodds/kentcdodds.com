@@ -25,6 +25,8 @@ jobs:
 
       - name: ▶️ Run validate script
         run: npx kcd-scripts validate
+        env:
+          ENABLE_TEST_ROUTES: 'true'
 
       - name: 🐳 Docker compose
         run: docker-compose up -d && sleep 3 && npx prisma migrate reset --force
