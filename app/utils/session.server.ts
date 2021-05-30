@@ -80,7 +80,8 @@ function requireUser(request: Request) {
       const session = await rootStorage.getSession(
         request.headers.get('Cookie'),
       )
-      const cookie = await rootStorage.destroySession(session)
+      await signOutSession(session)
+      const cookie = await rootStorage.commitSession(session)
       return redirect('/login', {headers: {'Set-Cookie': cookie}})
     }
     return loader(user)
