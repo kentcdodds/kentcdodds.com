@@ -9,6 +9,9 @@ export const loader: LoaderFunction = async ({request}) => {
   if (!email) {
     throw new Error('email required for login page')
   }
+  if (!email.endsWith('example.com')) {
+    throw new Error('All test emails must end in example.com')
+  }
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
   session.set('email', email)
   return redirect(getMagicLink(email), {
