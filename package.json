@@ -21,7 +21,7 @@
     "css:watch": "postcss styles/**/*.css --base styles --dir app/styles --w",
     "css:build": "postcss styles/**/*.css --base styles --dir app/styles --env production",
     "prebuild": "npm run clean",
-    "build": "npm run css:build && remix build",
+    "build": "npm run css:build && cross-env NODE_ENV=production remix build",
     "clean": "rimraf ./node_modules/.cache ./build ./public/build \"./app/styles/**/*.css\"",
     "dev": "pm2-dev pm2.config.js",
     "start": "cross-env NODE_ENV=production remix-serve build",
