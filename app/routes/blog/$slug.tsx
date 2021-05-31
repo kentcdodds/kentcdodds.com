@@ -1,5 +1,6 @@
 import React from 'react'
 import {useRouteData, json} from 'remix'
+import type {HeadersFunction} from 'remix'
 import type {KCDLoader, Post} from 'types'
 import {
   FourOhFour,
@@ -8,6 +9,12 @@ import {
   getMdxComponent,
 } from '../../utils/mdx'
 
+export const headers: HeadersFunction = ({loaderHeaders}) => {
+  return {
+    'Cache-Control': loaderHeaders.get('Cache-Control') ?? 'no-cache',
+  }
+}
+
 export const loader: KCDLoader<{slug: string}> = async ({params}) => {
   const page = await getMdxPage({
     rootDir: 'blog',
@@ -15,7 +22,14 @@ export const loader: KCDLoader<{slug: string}> = async ({params}) => {
   })
 
   if (!page) return json(null, {status: 404})
-  return json({page})
+  return json(
+    {page},
+    {
+      headers: {
+        'Cache-Control': 'public, max-age=60 s-maxage=3600',
+      },
+    },
+  )
 }
 
 export const meta = mdxPageMeta

@@ -1,5 +1,6 @@
 import React from 'react'
-import {useRouteData} from 'remix'
+import {useRouteData, json} from 'remix'
+import type {HeadersFunction} from 'remix'
 import type {MdxPage, KCDLoader} from 'types'
 import {
   FourOhFour,
@@ -10,6 +11,12 @@ import {
 import {getScheduledEvents} from '../../utils/workshop-tickets.server'
 import type {WorkshopEvent} from '../../utils/workshop-tickets.server'
 
+export const headers: HeadersFunction = ({loaderHeaders}) => {
+  return {
+    'Cache-Control': loaderHeaders.get('Cache-Control') ?? 'no-cache',
+  }
+}
+
 export const loader: KCDLoader<{slug: string}> = async ({params}) => {
   const page = await getMdxPage({
     rootDir: 'workshops',
@@ -19,7 +26,14 @@ export const loader: KCDLoader<{slug: string}> = async ({params}) => {
   const workshop = events.find(
     ({metadata}) => metadata.workshopSlug === params.slug,
   )
-  return {page, workshop}
+  return json(
+    {page, workshop},
+    {
+      headers: {
+        'Cache-Control': 'public, max-age=60 s-maxage=3600',
+      },
+    },
+  )
 }
 
 export const meta = mdxPageMeta

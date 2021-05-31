@@ -1,21 +1,26 @@
 import * as React from 'react'
 import sortBy from 'sort-by'
 import {useRouteData, Link, json} from 'remix'
+import type {HeadersFunction} from 'remix'
 import type {KCDLoader, PostListItem} from 'types'
 import {downloadMdxListItemsInDir} from '../../utils/github.server'
+
+export const headers: HeadersFunction = ({loaderHeaders}) => {
+  return {
+    'Cache-Control': loaderHeaders.get('Cache-Control') ?? 'no-cache',
+  }
+}
 
 export const loader: KCDLoader = async () => {
   const posts = (await downloadMdxListItemsInDir('blog')).sort(
     sortBy('-frontmatter.published'),
   )
 
-  return json(posts)
-}
-
-export function headers() {
-  return {
-    'cache-control': 'public, max-age=10',
-  }
+  return json(posts, {
+    headers: {
+      'Cache-Control': 'public, max-age=60 s-maxage=3600',
+    },
+  })
 }
 
 export function meta() {

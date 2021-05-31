@@ -1,17 +1,22 @@
 import * as React from 'react'
 import {useRouteData, Link, json} from 'remix'
+import type {HeadersFunction} from 'remix'
 import type {KCDLoader, MdxListItem} from 'types'
 import {downloadMdxListItemsInDir} from '../../utils/github.server'
 
 export const loader: KCDLoader = async () => {
   const workshops = await downloadMdxListItemsInDir('workshops')
 
-  return json(workshops)
+  return json(workshops, {
+    headers: {
+      'Cache-Control': 'public, max-age=60 s-maxage=3600',
+    },
+  })
 }
 
-export function headers() {
+export const headers: HeadersFunction = ({loaderHeaders}) => {
   return {
-    'cache-control': 'public, max-age=10',
+    'Cache-Control': loaderHeaders.get('Cache-Control') ?? 'no-cache',
   }
 }
 
