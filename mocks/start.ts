@@ -10,15 +10,11 @@ const miscHandlers = [
   rest.post(
     'https://api.mailgun.net/v3/:domain/messages',
     async (req, res, ctx) => {
-      const body = new URLSearchParams(req.body?.toString())
-      const text = body.get('text')
-      console.info('🔶 mocked email contents:', text)
+      const body = Object.fromEntries(new URLSearchParams(req.body?.toString()))
+      console.info('🔶 mocked email contents:', body)
 
-      if (isE2E && text) {
-        const magicLink = text.match(/(http.+magic.+)\n/)?.[1]
-        if (magicLink) {
-          await updateFixture({magicLink})
-        }
+      if (isE2E && body.text) {
+        await updateFixture({email: body})
       }
       const randomId = '20210321210543.1.E01B8B612C44B41B'
       const id = `<${randomId}>@${req.params.domain}`

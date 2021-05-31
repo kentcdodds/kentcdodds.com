@@ -1,4 +1,5 @@
 import faker from 'faker'
+import type {User} from '../../types'
 
 declare global {
   namespace Cypress {
@@ -9,20 +10,28 @@ declare global {
        * @returns {typeof login}
        * @memberof Chainable
        * @example
-       *    cy.login().then(email => ...)
+       *    cy.login().then(user => ...)
        */
       login: typeof login
     }
   }
 }
 
-function login(
-  email: string = faker.internet.email(undefined, undefined, 'example.com'),
-) {
-  return cy
-    .visit(`/__tests/login?email=${email}`)
-    .then(() => email)
-    .as('email')
+function login({
+  firstName = faker.name.firstName(),
+  email = faker.internet.email(
+    firstName ?? undefined,
+    undefined,
+    'example.com',
+  ),
+  team = 'UNDECIDED',
+}: Partial<Omit<User, 'id'>> = {}) {
+  const query = new URLSearchParams()
+  query.set('email', email)
+  if (firstName) query.set('firstName', firstName)
+  if (team) query.set('team', team)
+  cy.then(() => ({email, firstName, team})).as('user')
+  return cy.visit(`/__tests/login?${query.toString()}`)
 }
 
 Cypress.Commands.add('login', login)
