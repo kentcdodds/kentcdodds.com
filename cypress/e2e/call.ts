@@ -1,6 +1,6 @@
 describe('call in', () => {
   it('should allow a typical user flow', () => {
-    cy.visit('/__tests/login?email=test@example.com')
+    cy.login()
     cy.visit('/')
     cy.findByRole('link', {name: /call kent/i}).click()
     cy.findByRole('heading', {name: /Call Kent Podcast/i})

@@ -88,9 +88,16 @@ function requireUser(request: Request) {
   }
 }
 
+function optionalUser(request: Request) {
+  return async (loader: (data: User | null) => ReturnType<LoaderFunction>) => {
+    return loader(await getUser(request))
+  }
+}
+
 export {
   rootStorage,
   requireUser,
+  optionalUser,
   getUser,
   sendToken,
   loginSessionWithMagicLink,

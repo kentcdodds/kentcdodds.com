@@ -1,11 +1,11 @@
 import {json, redirect, useRouteData} from 'remix'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import * as React from 'react'
-import type {NonNullProperties} from '../types'
+import type {NonNullProperties, User} from '../types'
 import {contactDataSessionKey} from '../utils/contact'
 import type {ContactData} from '../utils/contact'
 import {getErrorMessage} from '../utils/misc'
-import {rootStorage} from '../utils/session.server'
+import {optionalUser, rootStorage} from '../utils/session.server'
 import {sendEmail} from '../utils/send-email.server'
 
 const errorSessionKey = 'contact_error'
@@ -109,6 +109,7 @@ export const action: ActionFunction = async ({request}) => {
 }
 
 type LoaderData = {
+  user: User | null
   fields?: {
     name: string | null
     email: string | null
@@ -125,15 +126,18 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  const session = await rootStorage.getSession(request.headers.get('Cookie'))
-  const values: LoaderData = {
-    fields: session.get(fieldsSessionKey),
-    errors: session.get(errorSessionKey),
-  }
-  return json(values, {
-    headers: {
-      'Set-Cookie': await rootStorage.commitSession(session),
-    },
+  return optionalUser(request)(async (user: User | null) => {
+    const session = await rootStorage.getSession(request.headers.get('Cookie'))
+    const values: LoaderData = {
+      user,
+      fields: session.get(fieldsSessionKey),
+      errors: session.get(errorSessionKey),
+    }
+    return json(values, {
+      headers: {
+        'Set-Cookie': await rootStorage.commitSession(session),
+      },
+    })
   })
 }
 
@@ -149,7 +153,7 @@ export default function ContactRoute() {
             name="name"
             id="contact-name"
             aria-describedby="name-error"
-            defaultValue={data.fields?.name ?? ''}
+            defaultValue={data.fields?.name ?? data.user?.firstName ?? ''}
           />
           {data.errors?.name ? (
             <div
@@ -168,7 +172,7 @@ export default function ContactRoute() {
             id="contact-email"
             type="email"
             aria-describedby="email-error"
-            defaultValue={data.fields?.email ?? ''}
+            defaultValue={data.fields?.email ?? data.user?.email ?? ''}
           />
           {data.errors?.email ? (
             <div
