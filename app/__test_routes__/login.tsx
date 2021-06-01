@@ -21,17 +21,30 @@ export const loader: LoaderFunction = async ({request}) => {
   }
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
   session.set('email', email)
-  const user = (await getUserByEmail(email)) ?? (await createNewUser(email))
-  if (firstName) {
-    await updateUser(user.id, {firstName})
-  }
   if (
-    team === 'UNDECIDED' ||
-    team === 'BLUE' ||
-    team === 'YELLOW' ||
-    team === 'RED'
+    typeof team === 'string' &&
+    !(team === 'BLUE' || team === 'YELLOW' || team === 'RED')
   ) {
-    await updateUser(user.id, {team})
+    throw new Error('a valid team is required')
+  }
+
+  const user = await getUserByEmail(email)
+  if (user) {
+    if (firstName) {
+      await updateUser(user.id, {firstName})
+    }
+    if (team === 'BLUE' || team === 'YELLOW' || team === 'RED') {
+      await updateUser(user.id, {team})
+    }
+  } else {
+    if (!team) {
+      throw new Error('team required when creating a new user')
+    }
+    if (!firstName) {
+      throw new Error('firstName required when creating a new user')
+    }
+
+    await createNewUser({email, team, firstName})
   }
   return redirect(getMagicLink(email), {
     headers: {'Set-Cookie': await rootStorage.commitSession(session)},

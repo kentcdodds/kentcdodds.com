@@ -62,7 +62,7 @@ function YouScreen() {
             <input
               id="firstName"
               name="firstName"
-              defaultValue={data.user.firstName ?? ''}
+              defaultValue={data.user.firstName}
             />
           </div>
           <button type="submit" name="actionId" value="change details">

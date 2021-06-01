@@ -1,26 +1,15 @@
 import {json, redirect, useRouteData} from 'remix'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import * as React from 'react'
-import type {NonNullProperties, User} from '../types'
+import type {User} from 'types'
 import {contactDataSessionKey} from '../utils/contact'
 import type {ContactData} from '../utils/contact'
-import {getErrorMessage} from '../utils/misc'
+import {getErrorMessage, getNonNull} from '../utils/misc'
 import {optionalUser, rootStorage} from '../utils/session.server'
 import {sendEmail} from '../utils/send-email.server'
 
 const errorSessionKey = 'contact_error'
 const fieldsSessionKey = 'contact_fields'
-
-function getNonNull<Type extends Record<string, null | unknown>>(
-  obj: Type,
-): NonNullProperties<Type> {
-  for (const [key, val] of Object.entries(obj)) {
-    if (val === null) {
-      throw new Error(`The value of ${key} is null but it should not be.`)
-    }
-  }
-  return obj as NonNullProperties<Type>
-}
 
 function getErrorForName(name: string | null) {
   if (!name) return `Name is required`

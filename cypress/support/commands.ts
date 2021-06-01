@@ -1,5 +1,5 @@
 import faker from 'faker'
-import type {User} from '../../types'
+import type {Team} from '../../types'
 
 declare global {
   namespace Cypress {
@@ -24,8 +24,8 @@ function login({
     undefined,
     'example.com',
   ),
-  team = 'UNDECIDED',
-}: Partial<Omit<User, 'id'>> = {}) {
+  team = 'BLUE',
+}: {firstName?: string | null; email?: string; team?: Team | null} = {}) {
   const query = new URLSearchParams()
   query.set('email', email)
   if (firstName) query.set('firstName', firstName)

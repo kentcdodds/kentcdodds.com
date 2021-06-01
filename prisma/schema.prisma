@@ -11,7 +11,6 @@ generator client {
 }
 
 enum Team {
-  UNDECIDED
   BLUE
   RED
   YELLOW
@@ -20,8 +19,8 @@ enum Team {
 model User {
   id        String    @id @default(uuid())
   email     String    @unique
-  firstName String?
-  team      Team?     @default(UNDECIDED)
+  firstName String
+  team      Team
   Call      Call[]
   Session   Session[]
 }

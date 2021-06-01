@@ -1,5 +1,6 @@
 import * as React from 'react'
 import {Link} from 'react-router-dom'
+import type {NonNullProperties} from 'types'
 
 const useSSRLayoutEffect =
   typeof window === 'undefined' ? () => {} : React.useLayoutEffect
@@ -115,7 +116,18 @@ function getErrorMessage(error: unknown) {
   return 'Unknown Error'
 }
 
-export {useSSRLayoutEffect, AnchorOrLink, useAsync, getErrorMessage}
+function getNonNull<Type extends Record<string, null | unknown>>(
+  obj: Type,
+): NonNullProperties<Type> {
+  for (const [key, val] of Object.entries(obj)) {
+    if (val === null) {
+      throw new Error(`The value of ${key} is null but it should not be.`)
+    }
+  }
+  return obj as NonNullProperties<Type>
+}
+
+export {useSSRLayoutEffect, AnchorOrLink, useAsync, getErrorMessage, getNonNull}
 
 /*
 eslint

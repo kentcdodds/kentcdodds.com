@@ -1,6 +1,6 @@
 import {Request, Response} from 'node-fetch'
 import type {Action, Loader} from 'remix'
-import type {User, Call} from '@prisma/client'
+import type {User, Call, Session, Team} from '@prisma/client'
 
 declare global {
   interface Window {
@@ -73,6 +73,8 @@ export {
   NonNullProperties,
   User,
   Call,
+  Session,
+  Team,
   MdxListItem,
   MdxPage,
   PostListItem,

@@ -5,7 +5,6 @@ import {sendMagicLinkEmail} from './send-email.server'
 import {
   getUserByEmail,
   getMagicLink,
-  getSessionIdFromMagicLink,
   getUserFromSessionId,
   deleteUserSession,
 } from './prisma.server'
@@ -65,11 +64,7 @@ async function signOutSession(session: Session) {
   }
 }
 
-async function loginSessionWithMagicLink(
-  session: Session,
-  {emailAddress, link}: {emailAddress: string; link: string},
-) {
-  const sessionId = await getSessionIdFromMagicLink(emailAddress, link)
+async function signInSession(session: Session, sessionId: string) {
   session.set(sessionIdKey, sessionId)
 }
 
@@ -100,6 +95,6 @@ export {
   optionalUser,
   getUser,
   sendToken,
-  loginSessionWithMagicLink,
+  signInSession,
   signOutSession,
 }

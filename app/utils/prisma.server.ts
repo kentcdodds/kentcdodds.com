@@ -1,5 +1,5 @@
-import {PrismaClient} from '@prisma/client'
-import type {User, Call} from '@prisma/client'
+import {PrismaClient, Team} from '@prisma/client'
+import type {User, Call, Session} from 'types'
 import {encrypt, decrypt} from './encryption.server'
 
 const prisma = new PrismaClient()
@@ -45,10 +45,7 @@ function getMagicLink(email: string) {
   return url.toString()
 }
 
-async function getSessionIdFromMagicLink(
-  validationEmailAddress: string,
-  link: string,
-) {
+async function validateMagicLink(validationEmailAddress: string, link: string) {
   let email, linkExpirationString
   try {
     const url = new URL(link)
@@ -71,16 +68,17 @@ async function getSessionIdFromMagicLink(
   if (Date.now() > linkExpirationDate.getTime()) {
     throw new Error('Magic link expired. Please request a new one.')
   }
+}
 
-  const sessionExpirationDate = new Date(Date.now() + sessionExpirationTime)
-  const user = (await getUserByEmail(email)) ?? (await createNewUser(email))
-  const session = await prisma.session.create({
+async function createSession(
+  sessionData: Omit<Session, 'id' | 'expirationDate'>,
+) {
+  return prisma.session.create({
     data: {
-      expirationDate: sessionExpirationDate,
-      userId: user.id,
+      ...sessionData,
+      expirationDate: new Date(Date.now() + sessionExpirationTime),
     },
   })
-  return session.id
 }
 
 async function getUserFromSessionId(sessionId: string) {
@@ -107,13 +105,13 @@ function getUserByEmail(email: string) {
   return prisma.user.findUnique({where: {email}})
 }
 
-function createNewUser(email: string) {
-  return prisma.user.create({data: {email}})
+function createNewUser(data: Omit<User, 'id'>) {
+  return prisma.user.create({data})
 }
 
 function updateUser(
   userId: string,
-  updatedInfo: Omit<Partial<User>, 'id' | 'authId' | 'email'>,
+  updatedInfo: Omit<Partial<User>, 'id' | 'email'>,
 ) {
   return prisma.user.update({where: {id: userId}, data: updatedInfo})
 }
@@ -126,10 +124,14 @@ function getCallsByUser(userId: string) {
   return prisma.call.findMany({where: {userId}})
 }
 
+const teams: Array<Team> = Object.values(Team)
+
 export {
   getMagicLink,
-  getSessionIdFromMagicLink,
+  validateMagicLink,
+  createSession,
   getUserFromSessionId,
+  teams,
   deleteUserSession,
   getUserByEmail,
   createNewUser,
