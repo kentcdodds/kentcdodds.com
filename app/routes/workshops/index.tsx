@@ -4,8 +4,11 @@ import type {HeadersFunction} from 'remix'
 import type {KCDLoader, MdxListItem} from 'types'
 import {downloadMdxListItemsInDir} from '../../utils/github.server'
 
-export const loader: KCDLoader = async () => {
-  const workshops = await downloadMdxListItemsInDir('workshops')
+export const loader: KCDLoader = async ({request}) => {
+  const workshops = await downloadMdxListItemsInDir(
+    'workshops',
+    new URL(request.url).searchParams.get('bust-cache') === 'true',
+  )
 
   return json(workshops, {
     headers: {

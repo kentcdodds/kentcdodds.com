@@ -1,8 +1,17 @@
 import nodePath from 'path'
 import {Octokit} from '@octokit/rest'
 import matter from 'gray-matter'
+import Cache from '@remark-embedder/cache'
 import type {GitHubFile, MdxListItem} from 'types'
 import config from '../../config'
+import {getErrorMessage} from './misc'
+
+const cache = new Cache(
+  nodePath.join(
+    process.cwd(),
+    'node_modules/.cache/kentcdodds.com/github-cache',
+  ),
+)
 
 const octokit = new Octokit({
   auth: process.env.BOT_GITHUB_TOKEN,
@@ -21,15 +30,29 @@ async function downloadFirstMdxFile(
 
 /**
  *
- * @param mdxFileOrDirectory the path to the content. For example:
+ * @param relativeMdxFileOrDirectory the path to the content. For example:
  * content/workshops/react-fundamentals.mdx (pass "workshops/react-fudnamentals")
  * content/workshops/react-hooks/index.mdx (pass "workshops/react-hooks")
+ * @param bustCache deletes any value in the cache for this item before retrieving the value
  * @returns A promise that resolves to an Array of GitHubFiles for the necessary files
  */
 async function downloadMdxFileOrDirectory(
   relativeMdxFileOrDirectory: string,
+  bustCache: boolean = false,
 ): Promise<Array<GitHubFile>> {
   const mdxFileOrDirectory = `${config.contentSrc.path}/${relativeMdxFileOrDirectory}`
+  const key = `mdx-file-or-dir:${mdxFileOrDirectory}`
+  if (bustCache) {
+    await cache.cache.del(key)
+  } else {
+    try {
+      const cached = await cache.get(key)
+      if (cached) return JSON.parse(cached)
+    } catch (error: unknown) {
+      console.error(getErrorMessage(error))
+    }
+  }
+
   const parentDir = nodePath.dirname(mdxFileOrDirectory)
   const dirList = await downloadDirList(parentDir)
 
@@ -37,17 +60,22 @@ async function downloadMdxFileOrDirectory(
   const potentials = dirList.filter(({name}) => name.startsWith(basename))
 
   const content = await downloadFirstMdxFile(potentials)
+  let downloaded: Array<GitHubFile>
   // /content/about.mdx => entry is about.mdx, but compileMdx needs
   // the entry to be called "/content/index.mdx" so we'll set it to that
   // because this is the entry for this path
   if (content) {
-    return [{path: nodePath.join(mdxFileOrDirectory, 'index.mdx'), content}]
+    downloaded = [
+      {path: nodePath.join(mdxFileOrDirectory, 'index.mdx'), content},
+    ]
+  } else if (potentials.find(({type}) => type === 'dir')) {
+    downloaded = await downloadDirectory(mdxFileOrDirectory)
+  } else {
+    downloaded = []
   }
 
-  const directory = potentials.find(({type}) => type === 'dir')
-  if (!directory) return []
-
-  return downloadDirectory(mdxFileOrDirectory)
+  await cache.set(key, JSON.stringify(downloaded))
+  return downloaded
 }
 
 /**
@@ -153,9 +181,25 @@ async function downloadDirList(path: string) {
 /**
  *
  * @param relativePath the directory to download mdx frontmatter for
+ * @param bustCache delete any existing entry in the cache before retriving the value
  * @returns the files with frontmatter attached
  */
-async function downloadMdxListItemsInDir(relativePath: string) {
+async function downloadMdxListItemsInDir(
+  relativePath: string,
+  bustCache: boolean = false,
+) {
+  const key = `mdx-list-in-dir:${relativePath}`
+  if (bustCache) {
+    await cache.cache.del(key)
+  } else {
+    try {
+      const cached = await cache.get(key)
+      if (cached) return JSON.parse(cached)
+    } catch (error: unknown) {
+      console.error(getErrorMessage(error))
+    }
+  }
+
   const data = await downloadDirList(
     `${config.contentSrc.path}/${relativePath}`,
   )
@@ -188,6 +232,7 @@ async function downloadMdxListItemsInDir(relativePath: string) {
   )
 
   const files = result.filter(typedBoolean)
+  await cache.set(key, JSON.stringify(files))
   return files
 }
 
@@ -197,4 +242,8 @@ function typedBoolean<T>(
   return Boolean(value)
 }
 
-export {downloadMdxFileOrDirectory, downloadMdxListItemsInDir}
+async function resetCache() {
+  return cache.cache.reset()
+}
+
+export {downloadMdxFileOrDirectory, downloadMdxListItemsInDir, resetCache}

@@ -4,20 +4,33 @@ import type {MdxPage} from 'types'
 import * as mdxBundler from 'mdx-bundler/client'
 import {compileMdx} from '../utils/compile-mdx.server'
 import {downloadMdxFileOrDirectory} from '../utils/github.server'
-import {AnchorOrLink} from '../utils/misc'
+import {AnchorOrLink, getErrorMessage} from '../utils/misc'
 import cache from './mdx-cache.server'
 
-async function getMdxPage({rootDir, slug}: {rootDir: string; slug: string}) {
+async function getMdxPage({
+  rootDir,
+  slug,
+  bustCache,
+}: {
+  rootDir: string
+  slug: string
+  bustCache: boolean
+}) {
   const key = `${rootDir}/${slug}`
-  const pageString = await cache.get(key)
-  let page
-  if (pageString) {
-    page = JSON.parse(pageString)
+  if (bustCache) {
+    await cache.cache.del(key)
   } else {
-    const pageFiles = await downloadMdxFileOrDirectory(key)
-    page = await compileMdx(slug, pageFiles)
-    await cache.set(key, JSON.stringify(page))
+    try {
+      const cached = await cache.get(key)
+      if (cached) return JSON.parse(cached)
+    } catch (error: unknown) {
+      console.error(getErrorMessage(error))
+    }
   }
+
+  const pageFiles = await downloadMdxFileOrDirectory(key, bustCache)
+  const page = await compileMdx(slug, pageFiles)
+  await cache.set(key, JSON.stringify(page))
 
   return page
 }

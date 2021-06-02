@@ -11,10 +11,13 @@ export const headers: HeadersFunction = ({loaderHeaders}) => {
   }
 }
 
-export const loader: KCDLoader = async () => {
-  const posts = (await downloadMdxListItemsInDir('blog')).sort(
-    sortBy('-frontmatter.published'),
-  )
+export const loader: KCDLoader = async ({request}) => {
+  const posts = (
+    await downloadMdxListItemsInDir(
+      'blog',
+      new URL(request.url).searchParams.get('bust-cache') === 'true',
+    )
+  ).sort(sortBy('-frontmatter.published'))
 
   return json(posts, {
     headers: {

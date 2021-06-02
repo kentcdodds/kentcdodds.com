@@ -17,10 +17,11 @@ export const headers: HeadersFunction = ({loaderHeaders}) => {
   }
 }
 
-export const loader: KCDLoader<{slug: string}> = async ({params}) => {
+export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
   const page = await getMdxPage({
     rootDir: 'workshops',
     slug: params.slug,
+    bustCache: new URL(request.url).searchParams.get('bust-cache') === 'true',
   })
   const events = await getScheduledEvents()
   const workshop = events.find(
