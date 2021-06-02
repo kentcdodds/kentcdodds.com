@@ -37,11 +37,7 @@ function App() {
         <Meta />
         <Links />
       </head>
-      <body
-        className={`text-green-900 bg-gray-100 dark:bg-gray-800 dark:text-green-300 ${
-          pendingLocation ? 'opacity-50' : ''
-        }`}
-      >
+      <body className={`${pendingLocation ? 'opacity-50' : ''}`}>
         <Outlet />
         <Scripts />
         {includeTweets ? (
