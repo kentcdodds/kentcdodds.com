@@ -4,7 +4,7 @@ import matter from 'gray-matter'
 import Cache from '@remark-embedder/cache'
 import type {GitHubFile, MdxListItem} from 'types'
 import config from '../../config'
-// import {getErrorMessage} from './misc'
+import {getErrorMessage} from './misc'
 
 const cache = new Cache(
   nodePath.join(
@@ -43,16 +43,14 @@ async function downloadMdxFileOrDirectory(
   const mdxFileOrDirectory = `${config.contentSrc.path}/${relativeMdxFileOrDirectory}`
   const key = `mdx-file-or-dir:${mdxFileOrDirectory}`
   if (bustCache) {
-    console.log(`would delete ${key} from cache`)
-    // await cache.cache.del(key)
+    await cache.cache.del(key)
   } else {
-    console.log(`would try to get ${key} from cache`)
-    // try {
-    //   const cached = await cache.get(key)
-    //   if (cached) return JSON.parse(cached)
-    // } catch (error: unknown) {
-    //   console.error(getErrorMessage(error))
-    // }
+    try {
+      const cached = await cache.get(key)
+      if (cached) return JSON.parse(cached)
+    } catch (error: unknown) {
+      console.error(getErrorMessage(error))
+    }
   }
 
   const parentDir = nodePath.dirname(mdxFileOrDirectory)
@@ -76,8 +74,7 @@ async function downloadMdxFileOrDirectory(
     downloaded = []
   }
 
-  console.log(`would try to set ${key} in cache`)
-  // await cache.set(key, JSON.stringify(downloaded))
+  await cache.set(key, JSON.stringify(downloaded))
   return downloaded
 }
 
@@ -193,16 +190,14 @@ async function downloadMdxListItemsInDir(
 ) {
   const key = `mdx-list-in-dir:${relativePath}`
   if (bustCache) {
-    console.log(`would try to delete ${key} from cache`)
-    // await cache.cache.del(key)
+    await cache.cache.del(key)
   } else {
-    console.log(`would try to get ${key} from cache`)
-    // try {
-    //   const cached = await cache.get(key)
-    //   if (cached) return JSON.parse(cached)
-    // } catch (error: unknown) {
-    //   console.error(getErrorMessage(error))
-    // }
+    try {
+      const cached = await cache.get(key)
+      if (cached) return JSON.parse(cached)
+    } catch (error: unknown) {
+      console.error(getErrorMessage(error))
+    }
   }
 
   const data = await downloadDirList(
@@ -237,8 +232,7 @@ async function downloadMdxListItemsInDir(
   )
 
   const files = result.filter(typedBoolean)
-  console.log(`would try to set ${key} in cache`)
-  // await cache.set(key, JSON.stringify(files))
+  await cache.set(key, JSON.stringify(files))
   return files
 }
 
