@@ -24,7 +24,7 @@
     "build": "npm run css:build && cross-env NODE_ENV=production dotenv -e .env remix build",
     "clean": "rimraf ./node_modules/.cache ./build ./public/build \"./app/styles/**/*.css\"",
     "dev": "pm2-dev pm2.config.js",
-    "start": "cross-env NODE_ENV=production NODE_OPTIONS=--max-old-space-size=200 remix-serve build",
+    "start": "cross-env NODE_ENV=production remix-serve build",
     "start:mocks": "node --require ./mocks ./node_modules/.bin/remix-serve build",
     "cy:run": "cypress run",
     "cy:open": "cypress open",
