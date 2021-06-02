@@ -23,20 +23,6 @@ export const links: LinksFunction = () => {
     {rel: 'icon', href: '/favicon.ico'},
     {rel: 'stylesheet', href: tailwind},
     {rel: 'stylesheet', href: styles},
-    {
-      rel: 'stylesheet',
-      type: 'text/css',
-      href:
-        'https://unpkg.com/syntax-highlighting@1.0.0/assets/css/prism/prism-base16-tomorrow.light.css',
-      media: '(prefers-color-scheme: light)',
-    },
-    {
-      rel: 'stylesheet',
-      type: 'text/css',
-      href:
-        'https://unpkg.com/prism-themes@1.5.0/themes/prism-vsc-dark-plus.css',
-      media: '(prefers-color-scheme: dark)',
-    },
   ]
 }
 

@@ -18,3 +18,19 @@ This is just an example...
 <NestedDemo>Wahoo!</NestedDemo>
 
 <NestedNestedDemo>Wut up</NestedNestedDemo>
+
+## And code
+
+```tsx [2..3]
+function Counter({
+  initialCount = 0,
+  step = 1,
+}: {
+  initialCount: number
+  step: number
+}) {
+  const [count, setCount] = React.useState(initialCount)
+  const increment = () => setCount(c => c + step)
+  return <button onClick={increment}>{count}</button>
+}
+```
