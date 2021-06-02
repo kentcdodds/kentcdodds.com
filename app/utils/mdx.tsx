@@ -4,7 +4,10 @@ import type {MdxPage} from 'types'
 import * as mdxBundler from 'mdx-bundler/client'
 import {compileMdx} from '../utils/compile-mdx.server'
 import {downloadMdxFileOrDirectory} from '../utils/github.server'
-import {AnchorOrLink, getErrorMessage} from '../utils/misc'
+import {
+  AnchorOrLink,
+  // getErrorMessage
+} from '../utils/misc'
 import cache from './mdx-cache.server'
 
 async function getMdxPage({
@@ -18,21 +21,28 @@ async function getMdxPage({
 }) {
   const key = `${rootDir}/${slug}`
   if (bustCache) {
-    await cache.cache.del(key)
+    console.log(`would delete ${key} from cache`)
+    // await cache.cache.del(key)
   } else {
-    try {
-      const cached = await cache.get(key)
-      if (cached) return JSON.parse(cached)
-    } catch (error: unknown) {
-      console.error(getErrorMessage(error))
-    }
+    console.log(`would try to get ${key} from cache`)
+    // try {
+    //   const cached = await cache.get(key)
+    //   if (cached) return JSON.parse(cached)
+    // } catch (error: unknown) {
+    //   console.error(getErrorMessage(error))
+    // }
   }
 
   const pageFiles = await downloadMdxFileOrDirectory(key, bustCache)
   const page = await compileMdx(slug, pageFiles)
-  await cache.set(key, JSON.stringify(page))
+  console.log(`would try to set ${key} in cache`)
+  // await cache.set(key, JSON.stringify(page))
 
   return page
+}
+
+async function resetCache() {
+  return cache.cache.reset()
 }
 
 function mdxPageMeta({data}: {data: {page: MdxPage} | null}) {
@@ -80,4 +90,4 @@ function FourOhFour() {
   )
 }
 
-export {getMdxPage, mdxPageMeta, FourOhFour, getMdxComponent}
+export {getMdxPage, mdxPageMeta, FourOhFour, getMdxComponent, resetCache}
