@@ -3,7 +3,4 @@ module.exports = {
     tsconfigRootDir: __dirname,
     project: './tsconfig.json',
   },
-  rules: {
-    'consistent-return': 'off',
-  },
 }
