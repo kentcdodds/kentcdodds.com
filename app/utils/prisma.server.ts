@@ -71,7 +71,7 @@ async function validateMagicLink(validationEmailAddress: string, link: string) {
 }
 
 async function createSession(
-  sessionData: Omit<Session, 'id' | 'expirationDate'>,
+  sessionData: Omit<Session, 'id' | 'expirationDate' | 'createdAt'>,
 ) {
   return prisma.session.create({
     data: {
@@ -105,23 +105,46 @@ function getUserByEmail(email: string) {
   return prisma.user.findUnique({where: {email}})
 }
 
-function createNewUser(data: Omit<User, 'id'>) {
+function createNewUser(data: Omit<User, 'id' | 'createdAt' | 'updatedAt'>) {
   return prisma.user.create({data})
 }
 
 function updateUser(
   userId: string,
-  updatedInfo: Omit<Partial<User>, 'id' | 'email'>,
+  updatedInfo: Omit<
+    Partial<User>,
+    'id' | 'email' | 'team' | 'createdAt' | 'updatedAt'
+  >,
 ) {
   return prisma.user.update({where: {id: userId}, data: updatedInfo})
 }
 
-function addCall(call: Omit<Call, 'id'>) {
+function addCall(call: Omit<Call, 'id' | 'createdAt' | 'updatedAt'>) {
   return prisma.call.create({data: call})
 }
 
 function getCallsByUser(userId: string) {
   return prisma.call.findMany({where: {userId}})
+}
+
+async function addPostRead({slug, userId}: {slug: string; userId: string}) {
+  const readInLast24Hours = await prisma.postRead.findFirst({
+    select: {id: true},
+    where: {
+      userId,
+      postSlug: slug,
+      createdAt: {gt: new Date(Date.now() - 1000 * 60 * 60 * 24)},
+    },
+  })
+  if (readInLast24Hours) {
+    return null
+  } else {
+    const postRead = await prisma.postRead.create({
+      data: {postSlug: slug, userId},
+      select: {id: true},
+    })
+    return postRead
+  }
 }
 
 const teams: Array<Team> = Object.values(Team)
@@ -138,4 +161,5 @@ export {
   updateUser,
   addCall,
   getCallsByUser,
+  addPostRead,
 }

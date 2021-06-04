@@ -1,4 +1,4 @@
-import {json, redirect, useRouteData} from 'remix'
+import {Form, json, redirect, useRouteData} from 'remix'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import * as React from 'react'
 import type {User} from 'types'
@@ -135,7 +135,7 @@ export default function ContactRoute() {
   return (
     <div>
       <h1>Contact Kent</h1>
-      <form method="post" noValidate>
+      <Form method="post" noValidate>
         <div>
           <label htmlFor="contact-name">Name</label>
           <input
@@ -217,7 +217,7 @@ export default function ContactRoute() {
             {data.errors.generalError}
           </div>
         ) : null}
-      </form>
+      </Form>
     </div>
   )
 }

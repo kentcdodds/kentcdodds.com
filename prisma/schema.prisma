@@ -17,26 +17,40 @@ enum Team {
 }
 
 model User {
-  id        String    @id @default(uuid())
-  email     String    @unique
+  id        String      @id @default(uuid())
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  email     String      @unique
   firstName String
   team      Team
-  Call      Call[]
-  Session   Session[]
+  calls     Call[]
+  sessions  Session[]
+  postReads PostRead[]
 }
 
 model Session {
   id             String   @id @default(uuid())
+  createdAt      DateTime @default(now())
   user           User     @relation(fields: [userId], references: [id])
   userId         String
   expirationDate DateTime
 }
 
 model Call {
-  id          String @id @default(uuid())
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   title       String
   description String
-  user        User   @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
   userId      String
   base64      String
+}
+
+model PostRead {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  postSlug  String
 }

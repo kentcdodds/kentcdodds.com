@@ -21,27 +21,18 @@ export const loader: LoaderFunction = async ({request}) => {
   }
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
   session.set('email', email)
-  if (
-    typeof team === 'string' &&
-    !(team === 'BLUE' || team === 'YELLOW' || team === 'RED')
-  ) {
-    throw new Error('a valid team is required')
-  }
 
   const user = await getUserByEmail(email)
   if (user) {
     if (firstName) {
       await updateUser(user.id, {firstName})
     }
-    if (team === 'BLUE' || team === 'YELLOW' || team === 'RED') {
-      await updateUser(user.id, {team})
-    }
   } else {
-    if (!team) {
-      throw new Error('team required when creating a new user')
-    }
     if (!firstName) {
       throw new Error('firstName required when creating a new user')
+    }
+    if (team !== 'BLUE' && team !== 'YELLOW' && team !== 'RED') {
+      throw new Error('a valid team is required')
     }
 
     await createNewUser({email, team, firstName})

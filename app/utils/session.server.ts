@@ -8,22 +8,40 @@ import {
   getUserFromSessionId,
   deleteUserSession,
 } from './prisma.server'
+import {encrypt, decrypt} from './encryption.server'
+import {getErrorMessage} from './misc'
 
 const sessionIdKey = '__session_id__'
 
-let secret = 'not-at-all-secret'
+let rootSessionSecret = 'not-at-all-secret'
 if (process.env.SESSION_SECRET) {
-  secret = process.env.SESSION_SECRET
+  rootSessionSecret = process.env.SESSION_SECRET
 } else if (process.env.NODE_ENV === 'production') {
   throw new Error('Must set SESSION_SECRET')
+}
+
+let actionSessionSecret = 'super-unsecret'
+if (process.env.ACTION_SESSION_SECRET) {
+  actionSessionSecret = process.env.ACTION_SESSION_SECRET
+} else if (process.env.NODE_ENV === 'production') {
+  throw new Error('Must set ACTION_SESSION_SECRET')
 }
 
 const rootStorage = createCookieSessionStorage({
   cookie: {
     name: '__session',
-    secrets: [secret],
+    secrets: [rootSessionSecret],
     sameSite: 'lax',
     path: '/',
+  },
+})
+
+const actionStorage = createCookieSessionStorage({
+  cookie: {
+    name: '__action_session',
+    secrets: [actionSessionSecret],
+    sameSite: 'lax',
+    path: '/action',
   },
 })
 
@@ -39,6 +57,20 @@ async function sendToken(emailAddress: string) {
     confirmationLink,
     userExists: Boolean(user),
   })
+}
+
+async function getUserRequestToken(userId: string) {
+  return encrypt(JSON.stringify({type: 'request', userId}))
+}
+
+async function validateUserRequestToken(token: string, userId: string) {
+  try {
+    const tokenObj = JSON.parse(decrypt(token))
+    return tokenObj.type === 'request' && tokenObj.userId === userId
+  } catch (error: unknown) {
+    console.error(getErrorMessage(error))
+    return false
+  }
 }
 
 async function getUser(request: Request) {
@@ -91,8 +123,11 @@ function optionalUser(request: Request) {
 
 export {
   rootStorage,
+  actionStorage,
   requireUser,
   optionalUser,
+  getUserRequestToken,
+  validateUserRequestToken,
   getUser,
   sendToken,
   signInSession,

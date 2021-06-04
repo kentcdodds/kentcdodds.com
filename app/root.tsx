@@ -30,6 +30,11 @@ function App() {
   const [theme] = useTheme()
   const location = useLocation()
   const pendingLocation = usePendingLocation()
+  const showPendingState =
+    pendingLocation &&
+    new URLSearchParams(pendingLocation.search).get(
+      'supressPendingIndicator',
+    ) === 'true'
   const includeTweets = location.pathname.includes('/blog/')
   return (
     <html lang="en" className={theme}>
@@ -37,7 +42,7 @@ function App() {
         <Meta />
         <Links />
       </head>
-      <body className={`${pendingLocation ? 'opacity-50' : ''}`}>
+      <body className={`${showPendingState ? 'opacity-50' : ''}`}>
         <Outlet />
         <Scripts />
         {includeTweets ? (

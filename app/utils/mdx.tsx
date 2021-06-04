@@ -15,7 +15,7 @@ async function getMdxPage({
   rootDir: string
   slug: string
   bustCache: boolean
-}) {
+}): Promise<MdxPage | null> {
   const key = `${rootDir}/${slug}`
   if (bustCache) {
     await cache.cache.del(key)
@@ -29,10 +29,13 @@ async function getMdxPage({
   }
 
   const pageFiles = await downloadMdxFileOrDirectory(key, bustCache)
-  const page = await compileMdx(slug, pageFiles)
-  await cache.set(key, JSON.stringify(page))
-
-  return page
+  const page = await compileMdx<MdxPage['frontmatter']>(slug, pageFiles)
+  if (page) {
+    await cache.set(key, JSON.stringify(page))
+    return {...page, slug}
+  } else {
+    return null
+  }
 }
 
 function mdxPageMeta({data}: {data: {page: MdxPage} | null}) {
