@@ -128,15 +128,15 @@ function getCallsByUser(userId: string) {
 }
 
 async function addPostRead({slug, userId}: {slug: string; userId: string}) {
-  const readInLast24Hours = await prisma.postRead.findFirst({
+  const readInLastWeek = await prisma.postRead.findFirst({
     select: {id: true},
     where: {
       userId,
       postSlug: slug,
-      createdAt: {gt: new Date(Date.now() - 1000 * 60 * 60 * 24)},
+      createdAt: {gt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7)},
     },
   })
-  if (readInLast24Hours) {
+  if (readInLastWeek) {
     return null
   } else {
     const postRead = await prisma.postRead.create({

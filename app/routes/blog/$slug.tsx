@@ -83,7 +83,7 @@ function useOnRead(
     })
 
     let startTime = new Date().getTime()
-    let timeoutTime = readingTime.time * 0.7
+    let timeoutTime = readingTime.time * 0.6
     let timerId: ReturnType<typeof setTimeout>
     let timerFinished = false
     function startTimer() {
