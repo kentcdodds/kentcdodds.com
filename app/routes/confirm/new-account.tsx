@@ -78,7 +78,6 @@ export const action: ActionFunction = async ({request}) => {
     team: getErrorForTeam(formData.team),
   }
 
-  console.log({errors})
   if (errors.firstName || errors.team) {
     session.flash(errorSessionKey, errors)
     return redirect('/confirm/new-account', {
@@ -91,12 +90,10 @@ export const action: ActionFunction = async ({request}) => {
   const {firstName, team} = getNonNull(formData)
 
   try {
-    console.log('creating user', {email, firstName, team})
     const user = await createNewUser({email, firstName, team})
     const userSession = await createSession({userId: user.id})
     await signInSession(session, userSession.id)
 
-    console.log('woo')
     const cookie = await rootStorage.commitSession(session, {maxAge: 604_800})
     return redirect('/me', {
       headers: {'Set-Cookie': cookie},
@@ -155,18 +152,18 @@ export default function NewAccount() {
           ) : null}
         </div>
         <div>
-          <label htmlFor="team">Team: </label>
-          <select
-            name="team"
-            id="team"
-            required
-            defaultValue={data.fields?.team ?? ''}
-          >
-            <option>Select one</option>
-            <option value="BLUE">Blue</option>
-            <option value="RED">Red</option>
-            <option value="YELLOW">Yellow</option>
-          </select>
+          <fieldset>
+            <legend>Team</legend>
+            <label>
+              <input type="radio" name="team" value="BLUE" /> Blue
+            </label>
+            <label>
+              <input type="radio" name="team" value="RED" /> Red
+            </label>
+            <label>
+              <input type="radio" name="team" value="YELLOW" /> Yellow
+            </label>
+          </fieldset>
           {data.errors?.team ? (
             <div
               role="alert"

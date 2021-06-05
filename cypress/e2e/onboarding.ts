@@ -20,7 +20,9 @@ describe('onboarding', () => {
     })
 
     cy.findByRole('textbox', {name: /name/i}).type(firstName)
-    cy.findByRole('combobox', {name: /team/i}).select('BLUE')
+    cy.findByRole('group', {name: /team/i}).within(() => {
+      cy.findByRole('radio', {name: /blue/i}).click()
+    })
     cy.findByRole('button', {name: /join KCD/i}).click()
 
     cy.findByRole('button', {name: /logout/i}).click()
