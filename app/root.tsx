@@ -1,10 +1,22 @@
 import * as React from 'react'
-import {Links, Meta, Scripts, LiveReload, usePendingLocation} from 'remix'
+import {
+  Links,
+  Meta,
+  Scripts,
+  LiveReload,
+  usePendingLocation,
+  LoaderFunction,
+  json,
+  useRouteData,
+} from 'remix'
 import type {LinksFunction} from 'remix'
 import {useLocation, Outlet} from 'react-router-dom'
+import type {User} from 'types'
 import styles from './styles/app.css'
 import tailwind from './styles/tailwind.css'
 import {useTheme, ThemeProvider} from './theme-provider'
+import {optionalUser} from './utils/session.server'
+import {UserProvider} from './utils/misc'
 
 export function meta() {
   return {
@@ -24,6 +36,17 @@ export const links: LinksFunction = () => {
     {rel: 'stylesheet', href: tailwind},
     {rel: 'stylesheet', href: styles},
   ]
+}
+
+type LoaderData = {
+  user: User | null
+}
+
+export const loader: LoaderFunction = async ({request}) => {
+  return optionalUser(request)(async user => {
+    const data: LoaderData = {user}
+    return json(data)
+  })
 }
 
 function App() {
@@ -59,9 +82,12 @@ function App() {
 }
 
 export default function AppWithProviders() {
+  const data = useRouteData<LoaderData>()
   return (
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
+    <UserProvider user={data.user}>
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
+    </UserProvider>
   )
 }

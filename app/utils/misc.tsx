@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {Link} from 'react-router-dom'
-import type {NonNullProperties} from 'types'
+import type {NonNullProperties, User} from 'types'
 
 const useSSRLayoutEffect =
   typeof window === 'undefined' ? () => {} : React.useLayoutEffect
@@ -54,9 +54,10 @@ function useAsync<Data>(
     (error: Error) => safeSetState({error, status: 'rejected'}),
     [safeSetState],
   )
-  const reset = React.useCallback(() => safeSetState(initialStateRef.current), [
-    safeSetState,
-  ])
+  const reset = React.useCallback(
+    () => safeSetState(initialStateRef.current),
+    [safeSetState],
+  )
 
   const run = React.useCallback(
     (promise: Promise<Data>) => {
@@ -127,7 +128,49 @@ function getNonNull<Type extends Record<string, null | unknown>>(
   return obj as NonNullProperties<Type>
 }
 
-export {useSSRLayoutEffect, AnchorOrLink, useAsync, getErrorMessage, getNonNull}
+const UserContext = React.createContext<User | null | undefined>(undefined)
+
+function UserProvider({
+  user,
+  children,
+}: {
+  user: User | null
+  children: React.ReactNode
+}) {
+  return <UserContext.Provider value={user} children={children} />
+}
+
+function useUser() {
+  const user = React.useContext(UserContext)
+  if (user === undefined) {
+    throw new Error('useUser must be used within UserProvider')
+  }
+  if (!user) {
+    throw new Error(
+      'No user value in UserProvider context. If the user is optional in this situation, use useOptionalUser instead of useUser',
+    )
+  }
+  return user
+}
+
+function useOptionalUser() {
+  const user = React.useContext(UserContext)
+  if (user === undefined) {
+    throw new Error('useOptionalUser must be used within UserProvider')
+  }
+  return user
+}
+
+export {
+  useSSRLayoutEffect,
+  AnchorOrLink,
+  useAsync,
+  getErrorMessage,
+  getNonNull,
+  UserProvider,
+  useUser,
+  useOptionalUser,
+}
 
 /*
 eslint

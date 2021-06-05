@@ -2,15 +2,15 @@ import React from 'react'
 import {useRouteData, json} from 'remix'
 import type {HeadersFunction} from 'remix'
 import {useParams} from 'react-router-dom'
-import type {KCDLoader, Post, User} from 'types'
+import type {KCDLoader, Post} from 'types'
 import calculateReadingTime from 'reading-time'
-import {optionalUser} from '../../utils/session.server'
 import {
   FourOhFour,
   getMdxPage,
   mdxPageMeta,
   getMdxComponent,
 } from '../../utils/mdx'
+import {useOptionalUser} from '../../utils/misc'
 
 export const headers: HeadersFunction = ({loaderHeaders}) => {
   return {
@@ -20,32 +20,29 @@ export const headers: HeadersFunction = ({loaderHeaders}) => {
 
 type LoaderData = {
   page: Post | null
-  user: User | null
 }
 
 export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
-  return optionalUser(request)(async user => {
-    const page = (await getMdxPage({
-      rootDir: 'blog',
-      slug: params.slug,
-      bustCache: new URL(request.url).searchParams.get('bust-cache') === 'true',
-    })) as Post | null
+  const page = (await getMdxPage({
+    rootDir: 'blog',
+    slug: params.slug,
+    bustCache: new URL(request.url).searchParams.get('bust-cache') === 'true',
+  })) as Post | null
 
-    let data: LoaderData
+  let data: LoaderData
 
-    if (page) {
-      data = {page, user}
+  if (page) {
+    data = {page}
 
-      return json(data, {
-        headers: {
-          'Cache-Control': 'public, max-age=60 s-maxage=3600',
-        },
-      })
-    } else {
-      data = {page: null, user}
-      return json(data, {status: 404})
-    }
-  })
+    return json(data, {
+      headers: {
+        'Cache-Control': 'public, max-age=60 s-maxage=3600',
+      },
+    })
+  } else {
+    data = {page: null}
+    return json(data, {status: 404})
+  }
 }
 
 export const meta = mdxPageMeta
@@ -57,13 +54,18 @@ export default function MdxScreenBase() {
   else return <FourOhFour />
 }
 
-function useOnRead(
-  parentElRef: React.RefObject<HTMLElement>,
-  onRead: () => void,
-) {
+function useOnRead({
+  parentElRef,
+  onRead,
+  enabled = true,
+}: {
+  parentElRef: React.RefObject<HTMLElement>
+  onRead: () => void
+  enabled: boolean
+}) {
   React.useEffect(() => {
     const parentEl = parentElRef.current
-    if (!parentEl || !parentEl.textContent) return
+    if (!enabled || !parentEl || !parentEl.textContent) return
 
     const readingTime = calculateReadingTime(parentEl.textContent)
 
@@ -125,7 +127,7 @@ function useOnRead(
       visibilityEl.remove()
     }
     return cleanup
-  }, [onRead, parentElRef])
+  }, [enabled, onRead, parentElRef])
 }
 
 function MdxScreen() {
@@ -135,15 +137,16 @@ function MdxScreen() {
       'This should be impossible because we only render the MdxScreen if there is a data.page object.',
     )
   }
+  const user = useOptionalUser()
   const {code, frontmatter} = data.page
   const params = useParams()
   const {slug} = params
   const Component = React.useMemo(() => getMdxComponent(code), [code])
 
   const mainRef = React.useRef<HTMLDivElement>(null)
-  useOnRead(
-    mainRef,
-    React.useCallback(() => {
+  useOnRead({
+    parentElRef: mainRef,
+    onRead: React.useCallback(() => {
       const searchParams = new URLSearchParams([
         ['_data', 'routes/_action/mark-read'],
       ])
@@ -152,7 +155,8 @@ function MdxScreen() {
         body: JSON.stringify({articleSlug: slug}),
       })
     }, [slug]),
-  )
+    enabled: Boolean(user),
+  })
 
   return (
     <>
