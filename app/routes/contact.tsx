@@ -49,7 +49,7 @@ export const action: ActionFunction = async ({request}) => {
       subject: form.get('subject'),
       body: form.get('body'),
     }
-    session.set(fieldsSessionKey, formData)
+    session.flash(fieldsSessionKey, formData)
 
     const errors = {
       name: getErrorForName(formData.name),

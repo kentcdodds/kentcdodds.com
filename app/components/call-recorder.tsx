@@ -111,7 +111,14 @@ const recorderMachine = createMachine<RecorderContext>(
         context.mediaRecorder?.resume()
       },
       'mediaRecorder.stop'(context) {
-        context.mediaRecorder?.stop()
+        const {mediaRecorder} = context
+        if (!mediaRecorder) return
+
+        mediaRecorder.stop()
+
+        for (const track of mediaRecorder.stream.getAudioTracks()) {
+          track.stop()
+        }
       },
       generateAudioContext: assign({
         audioURL(context) {

@@ -1,3 +1,4 @@
+import type {Role} from '@prisma/client'
 import type {LoaderFunction} from 'remix'
 import {redirect} from 'remix'
 import {rootStorage} from '../utils/session.server'
@@ -13,12 +14,14 @@ export const loader: LoaderFunction = async ({request}) => {
   const email = query.searchParams.get('email')
   const firstName = query.searchParams.get('firstName')
   const team = query.searchParams.get('team')
+  const role = (query.searchParams.get('role') ?? 'MEMBER') as Role
   if (!email) {
     throw new Error('email required for login page')
   }
   if (!email.endsWith('example.com')) {
     throw new Error('All test emails must end in example.com')
   }
+
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
   session.set('email', email)
 
@@ -35,7 +38,7 @@ export const loader: LoaderFunction = async ({request}) => {
       throw new Error('a valid team is required')
     }
 
-    await createNewUser({email, team, firstName})
+    await createNewUser({email, team, firstName, role})
   }
   return redirect(getMagicLink(email), {
     headers: {'Set-Cookie': await rootStorage.commitSession(session)},

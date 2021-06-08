@@ -15,7 +15,7 @@ import type {User} from 'types'
 import styles from './styles/app.css'
 import tailwind from './styles/tailwind.css'
 import {useTheme, ThemeProvider} from './theme-provider'
-import {optionalUser} from './utils/session.server'
+import {getUser} from './utils/session.server'
 import {UserProvider} from './utils/misc'
 
 export function meta() {
@@ -43,10 +43,9 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  return optionalUser(request)(async user => {
-    const data: LoaderData = {user}
-    return json(data)
-  })
+  const user = await getUser(request)
+  const data: LoaderData = {user}
+  return json(data)
 }
 
 function App() {

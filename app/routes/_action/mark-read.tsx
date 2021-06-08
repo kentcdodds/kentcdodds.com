@@ -11,7 +11,7 @@ export const action: ActionFunction = async ({request}) => {
       slug: params.articleSlug,
       userId: user.id,
     })
-    return redirect(request.url)
+    return redirect(new URL(request.url).pathname)
   })
 }
 

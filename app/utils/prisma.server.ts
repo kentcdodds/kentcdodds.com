@@ -127,6 +127,10 @@ function getCallsByUser(userId: string) {
   return prisma.call.findMany({where: {userId}})
 }
 
+function getAllCalls() {
+  return prisma.call.findMany()
+}
+
 async function addPostRead({slug, userId}: {slug: string; userId: string}) {
   const readInLastWeek = await prisma.postRead.findFirst({
     select: {id: true},
@@ -150,6 +154,7 @@ async function addPostRead({slug, userId}: {slug: string; userId: string}) {
 const teams: Array<Team> = Object.values(Team)
 
 export {
+  prisma,
   getMagicLink,
   validateMagicLink,
   createSession,
@@ -161,5 +166,6 @@ export {
   updateUser,
   addCall,
   getCallsByUser,
+  getAllCalls,
   addPostRead,
 }

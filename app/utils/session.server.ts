@@ -100,6 +100,24 @@ async function signInSession(session: Session, sessionId: string) {
   session.set(sessionIdKey, sessionId)
 }
 
+function requireAdminUser(request: Request) {
+  return async (loader: (data: User) => ReturnType<LoaderFunction>) => {
+    const user = await getUser(request)
+    if (!user) {
+      const session = await rootStorage.getSession(
+        request.headers.get('Cookie'),
+      )
+      await signOutSession(session)
+      const cookie = await rootStorage.commitSession(session)
+      return redirect('/login', {headers: {'Set-Cookie': cookie}})
+    }
+    if (user.role !== 'ADMIN') {
+      return redirect('/')
+    }
+    return loader(user)
+  }
+}
+
 function requireUser(request: Request) {
   return async (loader: (data: User) => ReturnType<LoaderFunction>) => {
     const user = await getUser(request)
@@ -115,17 +133,11 @@ function requireUser(request: Request) {
   }
 }
 
-function optionalUser(request: Request) {
-  return async (loader: (data: User | null) => ReturnType<LoaderFunction>) => {
-    return loader(await getUser(request))
-  }
-}
-
 export {
   rootStorage,
   actionStorage,
   requireUser,
-  optionalUser,
+  requireAdminUser,
   getUserRequestToken,
   validateUserRequestToken,
   getUser,

@@ -71,7 +71,7 @@ export const action: ActionFunction = async ({request}) => {
     firstName: form.get('firstName'),
     team: form.get('team') as Team | null,
   }
-  session.set(fieldsSessionKey, formData)
+  session.flash(fieldsSessionKey, formData)
 
   const errors: LoaderData['errors'] = {
     firstName: getErrorForFirstName(formData.firstName),
@@ -90,7 +90,7 @@ export const action: ActionFunction = async ({request}) => {
   const {firstName, team} = getNonNull(formData)
 
   try {
-    const user = await createNewUser({email, firstName, team})
+    const user = await createNewUser({email, firstName, team, role: 'MEMBER'})
     const userSession = await createSession({userId: user.id})
     await signInSession(session, userSession.id)
 
