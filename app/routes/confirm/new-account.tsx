@@ -4,8 +4,8 @@ import type {ActionFunction, LoaderFunction} from 'remix'
 import type {Team} from 'types'
 import {rootStorage, signInSession} from '../../utils/session.server'
 import {
-  createNewUser,
   createSession,
+  prisma,
   teams,
   validateMagicLink,
 } from '../../utils/prisma.server'
@@ -90,7 +90,7 @@ export const action: ActionFunction = async ({request}) => {
   const {firstName, team} = getNonNull(formData)
 
   try {
-    const user = await createNewUser({email, firstName, team, role: 'MEMBER'})
+    const user = await prisma.user.create({data: {email, firstName, team}})
     const userSession = await createSession({userId: user.id})
     await signInSession(session, userSession.id)
 

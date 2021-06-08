@@ -6,7 +6,7 @@ import {
   getUserByEmail,
   getMagicLink,
   getUserFromSessionId,
-  deleteUserSession,
+  prisma,
 } from './prisma.server'
 import {encrypt, decrypt} from './encryption.server'
 import {getErrorMessage} from './misc'
@@ -89,7 +89,7 @@ async function signOutSession(session: Session) {
   const sessionId = session.get(sessionIdKey)
   session.unset(sessionIdKey)
   if (sessionId) {
-    deleteUserSession(sessionId).catch((error: unknown) => {
+    prisma.session.delete({where: {id: sessionId}}).catch((error: unknown) => {
       console.error(`Failure deleting user session: `, error)
       return null
     })

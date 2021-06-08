@@ -8,7 +8,7 @@ import {
 } from 'remix'
 import type {Call} from 'types'
 import {requireAdminUser} from '../../utils/session.server'
-import {getAllCalls, prisma} from '../../utils/prisma.server'
+import {prisma} from '../../utils/prisma.server'
 
 type LoaderData = {
   calls: Array<Call>
@@ -41,7 +41,7 @@ export const action: ActionFunction = async ({request}) => {
 
 export const loader: LoaderFunction = async ({request}) => {
   return requireAdminUser(request)(async () => {
-    const calls = await getAllCalls()
+    const calls = await prisma.call.findMany()
     return {calls}
   })
 }

@@ -5,8 +5,8 @@ import {rootStorage} from '../utils/session.server'
 import {
   getMagicLink,
   updateUser,
-  createNewUser,
   getUserByEmail,
+  prisma,
 } from '../utils/prisma.server'
 
 export const loader: LoaderFunction = async ({request}) => {
@@ -38,7 +38,7 @@ export const loader: LoaderFunction = async ({request}) => {
       throw new Error('a valid team is required')
     }
 
-    await createNewUser({email, team, firstName, role})
+    await prisma.user.create({data: {email, team, firstName, role}})
   }
   return redirect(getMagicLink(email), {
     headers: {'Set-Cookie': await rootStorage.commitSession(session)},

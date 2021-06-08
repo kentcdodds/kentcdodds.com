@@ -1,5 +1,5 @@
 import {PrismaClient, Team} from '@prisma/client'
-import type {User, Call, Session} from 'types'
+import type {User, Session} from 'types'
 import {encrypt, decrypt} from './encryption.server'
 
 const prisma = new PrismaClient()
@@ -97,16 +97,8 @@ async function getUserFromSessionId(sessionId: string) {
   return session.user
 }
 
-function deleteUserSession(sessionId: string) {
-  return prisma.session.delete({where: {id: sessionId}})
-}
-
 function getUserByEmail(email: string) {
   return prisma.user.findUnique({where: {email}})
-}
-
-function createNewUser(data: Omit<User, 'id' | 'createdAt' | 'updatedAt'>) {
-  return prisma.user.create({data})
 }
 
 function updateUser(
@@ -117,18 +109,6 @@ function updateUser(
   >,
 ) {
   return prisma.user.update({where: {id: userId}, data: updatedInfo})
-}
-
-function addCall(call: Omit<Call, 'id' | 'createdAt' | 'updatedAt'>) {
-  return prisma.call.create({data: call})
-}
-
-function getCallsByUser(userId: string) {
-  return prisma.call.findMany({where: {userId}})
-}
-
-function getAllCalls() {
-  return prisma.call.findMany()
 }
 
 async function addPostRead({slug, userId}: {slug: string; userId: string}) {
@@ -160,12 +140,7 @@ export {
   createSession,
   getUserFromSessionId,
   teams,
-  deleteUserSession,
   getUserByEmail,
-  createNewUser,
   updateUser,
-  addCall,
-  getCallsByUser,
-  getAllCalls,
   addPostRead,
 }

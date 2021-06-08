@@ -4,7 +4,7 @@ import type {ActionFunction, LoaderFunction} from 'remix'
 import type {Call} from 'types'
 import {CallRecorder} from '../../components/call-recorder'
 import {getUser, requireUser, rootStorage} from '../../utils/session.server'
-import {addCall, getCallsByUser} from '../../utils/prisma.server'
+import {prisma} from '../../utils/prisma.server'
 import {getErrorMessage, getNonNull} from '../../utils/misc'
 
 const errorSessionKey = 'call_error'
@@ -84,7 +84,7 @@ export const action: ActionFunction = async ({request}) => {
         userId: user.id,
         base64: audio,
       }
-      await addCall(call)
+      await prisma.call.create({data: call})
       return redirect('/call')
     } catch (error: unknown) {
       session.flash(errorSessionKey, {generalError: getErrorMessage(error)})
@@ -119,7 +119,7 @@ export const loader: LoaderFunction = async ({request}) => {
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
   let calls: Array<Call> = []
   if (user) {
-    calls = await getCallsByUser(user.id)
+    calls = await prisma.call.findMany({where: {userId: user.id}})
   }
   const data: LoaderData = {
     calls,
