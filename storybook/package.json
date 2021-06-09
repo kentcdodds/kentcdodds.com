@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "start-storybook -p 6006 --no-version-updates --no-release-notes --quiet",
+    "dev": "node ../node_modules/.bin/pm2-dev pm2.config.js",
     "build": "build-storybook --quiet"
   },
   "keywords": [],

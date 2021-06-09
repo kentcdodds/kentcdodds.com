@@ -12,6 +12,8 @@ module.exports = {
     '../stories/**/*.stories.@(js|jsx|ts|tsx)',
   ],
   addons: ['@storybook/addon-links', '@storybook/addon-essentials'],
+
+  // this just wasn't working. Not sure why. Would be cool probably.
   typescript: {
     reactDocgen: 'none',
   },
