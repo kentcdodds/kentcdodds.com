@@ -1,0 +1,22 @@
+{
+  "name": "storybook",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "start-storybook -p 6006 --no-version-updates --no-release-notes --quiet",
+    "build": "build-storybook --quiet"
+  },
+  "keywords": [],
+  "author": "Kent C. Dodds <me@kentcdodds.com> (https://kentcdodds.com/)",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.14.3",
+    "@storybook/addon-actions": "^6.3.0-rc.0",
+    "@storybook/addon-essentials": "^6.3.0-rc.0",
+    "@storybook/addon-links": "^6.3.0-rc.0",
+    "@storybook/react": "^6.3.0-rc.0",
+    "babel-loader": "^8.2.2"
+  },
+  "dependencies": {}
+}

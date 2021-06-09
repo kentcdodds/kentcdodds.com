@@ -1,0 +1,11 @@
+{
+  "extends": "../shared-tsconfig.json",
+  "include": ["./**/*"],
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "baseUrl": "..",
+    "paths": {
+      "@kcd/*": ["./app/*"]
+    }
+  }
+}
