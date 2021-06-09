@@ -57,9 +57,8 @@ type ThemeContextType = [
   React.Dispatch<React.SetStateAction<ThemeIds>>,
 ]
 
-const ThemeContext = React.createContext<ThemeContextType | undefined>(
-  undefined,
-)
+const ThemeContext =
+  React.createContext<ThemeContextType | undefined>(undefined)
 
 const preferDarkQuery = '(prefers-color-scheme: dark)'
 
@@ -88,9 +87,10 @@ function ThemeProvider(props: React.PropsWithChildren<{}>) {
     return () => mediaQuery.removeEventListener('change', handleChange)
   }, [])
 
-  const value = React.useMemo<ThemeContextType>(() => [theme, setTheme], [
-    theme,
-  ])
+  const value = React.useMemo<ThemeContextType>(
+    () => [theme, setTheme],
+    [theme],
+  )
 
   return <ThemeContext.Provider value={value} {...props} />
 }

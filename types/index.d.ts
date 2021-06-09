@@ -49,23 +49,21 @@ type LoaderContext = {
   res: Response
 }
 
-type KCDLoader<
-  Params extends Record<string, string> = Record<string, string>
-> = (
-  args: Omit<Parameters<Loader>['0'], 'context' | 'params'> & {
-    context: LoaderContext
-    params: Params
-  },
-) => ReturnType<Loader>
+type KCDLoader<Params extends Record<string, string> = Record<string, string>> =
+  (
+    args: Omit<Parameters<Loader>['0'], 'context' | 'params'> & {
+      context: LoaderContext
+      params: Params
+    },
+  ) => ReturnType<Loader>
 
-type KCDAction<
-  Params extends Record<string, string> = Record<string, string>
-> = (
-  args: Omit<Parameters<Action>['0'], 'context' | 'params'> & {
-    context: LoaderContext
-    params: Params
-  },
-) => ReturnType<Action>
+type KCDAction<Params extends Record<string, string> = Record<string, string>> =
+  (
+    args: Omit<Parameters<Action>['0'], 'context' | 'params'> & {
+      context: LoaderContext
+      params: Params
+    },
+  ) => ReturnType<Action>
 
 type GitHubFile = {path: string; content: string}
 

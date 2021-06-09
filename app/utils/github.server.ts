@@ -207,28 +207,28 @@ async function downloadMdxListItemsInDir(
   const result = await Promise.all(
     data
       .filter(({name}) => name !== 'README.md')
-      .map(
-        async ({path: fileDir}): Promise<(GitHubFile & MdxListItem) | null> => {
-          const content = await downloadMdxFileOrIndex(fileDir)
-          if (!content) {
-            console.warn(`Could not find mdx content at path: ${fileDir}`)
-            return null
-          }
-          const matterResult = matter(content)
-          if (!Object.keys(matterResult.data).length) {
-            console.warn(`Could not parse frontmatter at path: ${fileDir}`)
-            return null
-          }
-          return {
-            path: fileDir,
-            content,
-            slug: fileDir
-              .replace(`${config.contentSrc.path}/${relativePath}`, '')
-              .replace(/\.mdx?$/, ''),
-            frontmatter: matterResult.data as MdxListItem['frontmatter'],
-          }
-        },
-      ),
+      .map(async ({path: fileDir}): Promise<
+        (GitHubFile & MdxListItem) | null
+      > => {
+        const content = await downloadMdxFileOrIndex(fileDir)
+        if (!content) {
+          console.warn(`Could not find mdx content at path: ${fileDir}`)
+          return null
+        }
+        const matterResult = matter(content)
+        if (!Object.keys(matterResult.data).length) {
+          console.warn(`Could not parse frontmatter at path: ${fileDir}`)
+          return null
+        }
+        return {
+          path: fileDir,
+          content,
+          slug: fileDir
+            .replace(`${config.contentSrc.path}/${relativePath}`, '')
+            .replace(/\.mdx?$/, ''),
+          frontmatter: matterResult.data as MdxListItem['frontmatter'],
+        }
+      }),
   )
 
   const files = result.filter(typedBoolean)

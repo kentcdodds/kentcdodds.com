@@ -144,7 +144,7 @@ export default function NewAccount() {
           {data.errors?.firstName ? (
             <div
               role="alert"
-              className="text-red-800 dark:text-red-300"
+              className="dark:text-red-300 text-red-800"
               id="body-error"
             >
               {data.errors.firstName}
@@ -167,7 +167,7 @@ export default function NewAccount() {
           {data.errors?.team ? (
             <div
               role="alert"
-              className="text-red-800 dark:text-red-300"
+              className="dark:text-red-300 text-red-800"
               id="body-error"
             >
               {data.errors.team}

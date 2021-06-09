@@ -71,33 +71,31 @@ const githubHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
       const dirList = await fs.readdir(localDir)
 
       const contentDescriptions = await Promise.all(
-        dirList.map(
-          async (name): Promise<GHContentsDescription> => {
-            const relativePath = nodePath.join(path, name)
-            // NOTE: this is a cheat-code so we don't have to determine the sha of the file
-            // and our sha endpoint handler doesn't have to do a reverse-lookup.
-            const sha = relativePath
-            const fullPath = nodePath.join(localDir, name)
-            const isDir = await isDirectory(fullPath)
-            const size = isDir ? 0 : (await fs.stat(fullPath)).size
-            return {
-              name,
-              path: relativePath,
-              sha,
-              size,
-              url: `https://api.github.com/repos/${owner}/${repo}/contents/${path}?${req.url.searchParams}`,
-              html_url: `https://github.com/${owner}/${repo}/tree/main/${path}`,
-              git_url: `https://api.github.com/repos/${owner}/${repo}/git/trees/${sha}`,
-              download_url: null,
-              type: isDir ? 'dir' : 'file',
-              _links: {
-                self: `https://api.github.com/repos/${owner}/${repo}/contents/${path}${req.url.searchParams}`,
-                git: `https://api.github.com/repos/${owner}/${repo}/git/trees/${sha}`,
-                html: `https://github.com/${owner}/${repo}/tree/main/${path}`,
-              },
-            }
-          },
-        ),
+        dirList.map(async (name): Promise<GHContentsDescription> => {
+          const relativePath = nodePath.join(path, name)
+          // NOTE: this is a cheat-code so we don't have to determine the sha of the file
+          // and our sha endpoint handler doesn't have to do a reverse-lookup.
+          const sha = relativePath
+          const fullPath = nodePath.join(localDir, name)
+          const isDir = await isDirectory(fullPath)
+          const size = isDir ? 0 : (await fs.stat(fullPath)).size
+          return {
+            name,
+            path: relativePath,
+            sha,
+            size,
+            url: `https://api.github.com/repos/${owner}/${repo}/contents/${path}?${req.url.searchParams}`,
+            html_url: `https://github.com/${owner}/${repo}/tree/main/${path}`,
+            git_url: `https://api.github.com/repos/${owner}/${repo}/git/trees/${sha}`,
+            download_url: null,
+            type: isDir ? 'dir' : 'file',
+            _links: {
+              self: `https://api.github.com/repos/${owner}/${repo}/contents/${path}${req.url.searchParams}`,
+              git: `https://api.github.com/repos/${owner}/${repo}/git/trees/${sha}`,
+              html: `https://github.com/${owner}/${repo}/tree/main/${path}`,
+            },
+          }
+        }),
       )
 
       return res(ctx.json(contentDescriptions))

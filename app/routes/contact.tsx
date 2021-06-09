@@ -143,7 +143,7 @@ export default function ContactRoute() {
           {data.errors?.name ? (
             <div
               role="alert"
-              className="text-red-800 dark:text-red-300"
+              className="dark:text-red-300 text-red-800"
               id="name-error"
             >
               {data.errors.name}
@@ -162,7 +162,7 @@ export default function ContactRoute() {
           {data.errors?.email ? (
             <div
               role="alert"
-              className="text-red-800 dark:text-red-300"
+              className="dark:text-red-300 text-red-800"
               id="email-error"
             >
               {data.errors.email}
@@ -180,7 +180,7 @@ export default function ContactRoute() {
           {data.errors?.subject ? (
             <div
               role="alert"
-              className="text-red-800 dark:text-red-300"
+              className="dark:text-red-300 text-red-800"
               id="subject-error"
             >
               {data.errors.subject}
@@ -198,7 +198,7 @@ export default function ContactRoute() {
           {data.errors?.body ? (
             <div
               role="alert"
-              className="text-red-800 dark:text-red-300"
+              className="dark:text-red-300 text-red-800"
               id="body-error"
             >
               {data.errors.body}
@@ -209,7 +209,7 @@ export default function ContactRoute() {
           <input type="submit" />
         </div>
         {data.errors?.generalError ? (
-          <div role="alert" className="text-red-800 dark:text-red-300">
+          <div role="alert" className="dark:text-red-300 text-red-800">
             {data.errors.generalError}
           </div>
         ) : null}

@@ -63,8 +63,8 @@ function Login() {
   const formIsValid = emailIsValid
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4 pt-0 pb-12 bg-gray-900 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md -mt-24 space-y-8">
+    <div className="flex items-center justify-center pb-12 pt-0 px-4 min-h-screen bg-gray-900 sm:px-6 lg:px-8">
+      <div className="-mt-24 w-full max-w-md space-y-8">
         <div className="mt-8">
           <div>Sign in (or sign up) to KCD</div>
           {data.message ? <div>{data.message}</div> : null}
@@ -77,7 +77,7 @@ function Login() {
             action="/login"
             method="post"
           >
-            <div className="-space-y-px rounded-md shadow-sm">
+            <div className="rounded-md shadow-sm -space-y-px">
               <div>
                 <label htmlFor="email-address" className="sr-only">
                   Email address
@@ -91,7 +91,7 @@ function Login() {
                   autoComplete="email"
                   defaultValue={data.email}
                   required
-                  className="relative block w-full px-3 py-2 text-gray-200 placeholder-gray-500 bg-gray-800 border-2 border-gray-700 rounded-none appearance-none rounded-t-md focus:outline-none focus:border-yellow-500 focus:z-10 sm:text-sm"
+                  className="placeholder-gray-500 relative focus:z-10 block px-3 py-2 w-full text-gray-200 bg-gray-800 border-2 border-gray-700 focus:border-yellow-500 rounded-none rounded-t-md focus:outline-none appearance-none sm:text-sm"
                   placeholder="Email address"
                 />
               </div>

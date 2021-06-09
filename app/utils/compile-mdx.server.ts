@@ -15,9 +15,11 @@ import type {Node} from 'unist'
 import type {GitHubFile} from 'types'
 
 // here's a hack because I didn't want to vendor Ryan's code...
-const ryansHighlighter = (getRyansProcessor().attachers as Array<
-  PluginTuple<unknown[], UnifiedSettings>
->).find(([pluginFn]) => {
+const ryansHighlighter = (
+  getRyansProcessor().attachers as Array<
+    PluginTuple<unknown[], UnifiedSettings>
+  >
+).find(([pluginFn]) => {
   return /shiki/i.test(pluginFn.name)
 })
 
@@ -41,7 +43,8 @@ function handleEmbedderError({url}: {url: string}) {
 }
 
 // yes, I did write this myself 😬
-const cloudinaryUrlRegex = /^https?:\/\/res\.cloudinary\.com\/(?<cloudName>.+?)\/image\/upload(\/(?<transforms>(?!v\d+).+?))?(\/(?<version>v\d+))?\/(?<publicId>.+$)/
+const cloudinaryUrlRegex =
+  /^https?:\/\/res\.cloudinary\.com\/(?<cloudName>.+?)\/image\/upload(\/(?<transforms>(?!v\d+).+?))?(\/(?<version>v\d+))?\/(?<publicId>.+$)/
 
 async function compileMdx<FrontmatterType extends Record<string, unknown>>(
   slug: string,
