@@ -16,7 +16,7 @@
     "@storybook/addon-essentials": "^6.3.0-rc.0",
     "@storybook/addon-links": "^6.3.0-rc.0",
     "@storybook/react": "^6.3.0-rc.0",
-    "babel-loader": "^8.2.2"
-  },
-  "dependencies": {}
+    "babel-loader": "^8.2.2",
+    "storybook-dark-mode": "^1.0.8"
+  }
 }
