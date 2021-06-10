@@ -140,17 +140,28 @@ function CallRecorder({
   const [state, send] = useMachine(recorderMachine)
 
   React.useEffect(() => {
+    let mediaStream: MediaStream | undefined,
+      mediaRecorder: MediaRecorder | undefined
     window.navigator.mediaDevices.getUserMedia({audio: true}).then(
-      mediaStream => {
-        send('READY', {
-          mediaStream,
-          mediaRecorder: new MediaRecorder(mediaStream),
-        })
+      ms => {
+        mediaStream = ms
+        mediaRecorder = new MediaRecorder(mediaStream)
+        send('READY', {mediaStream, mediaRecorder})
       },
       error => {
         console.error('error getting the media device', error)
       },
     )
+    return () => {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop()
+      }
+      if (mediaStream) {
+        for (const track of mediaStream.getAudioTracks()) {
+          track.stop()
+        }
+      }
+    }
   }, [send])
 
   React.useEffect(() => {

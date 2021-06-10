@@ -55,6 +55,7 @@
     "bcrypt": "^5.0.1",
     "dotenv": "^10.0.0",
     "gray-matter": "^4.0.3",
+    "md5-hash": "^1.0.1",
     "mdx-bundler": "^4.1.0",
     "node-fetch": "^2.6.1",
     "pm2": "^5.1.0",

@@ -1,9 +1,13 @@
 import * as React from 'react'
 import {Link} from 'react-router-dom'
 import type {NonNullProperties, User} from 'types'
+import md5 from 'md5-hash'
 
 const useSSRLayoutEffect =
   typeof window === 'undefined' ? () => {} : React.useLayoutEffect
+
+const getAvatar = (email: string, {size = 128}: {size?: number} = {}) =>
+  `https://www.gravatar.com/avatar/${md5(email)}?s=${size}`
 
 type AnchorProps = React.DetailedHTMLProps<
   React.AnchorHTMLAttributes<HTMLAnchorElement>,
@@ -162,6 +166,7 @@ function useOptionalUser() {
 }
 
 export {
+  getAvatar,
   useSSRLayoutEffect,
   AnchorOrLink,
   useAsync,

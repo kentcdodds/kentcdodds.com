@@ -16,6 +16,7 @@ declare global {
 }
 
 type NonNullProperties<Type> = {[Key in keyof Type]: Exclude<Type[Key], null>}
+type Await<Type> = Type extends Promise<infer Value> ? Await<Value> : Type
 
 type MdxListItem = {
   slug: string
@@ -69,6 +70,7 @@ type GitHubFile = {path: string; content: string}
 
 export {
   NonNullProperties,
+  Await,
   User,
   Call,
   Session,

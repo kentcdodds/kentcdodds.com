@@ -1,18 +1,16 @@
 import * as React from 'react'
 import {
   ActionFunction,
-  Form,
+  Link,
   LoaderFunction,
   redirect,
   useRouteData,
 } from 'remix'
-import type {Call} from 'types'
+import {Outlet} from 'react-router-dom'
+import type {Await} from 'types'
 import {requireAdminUser} from '../../utils/session.server'
 import {prisma} from '../../utils/prisma.server'
-
-type LoaderData = {
-  calls: Array<Call>
-}
+import {getAvatar} from '../../utils/misc'
 
 export const action: ActionFunction = async ({request}) => {
   return requireAdminUser(request)(async () => {
@@ -39,31 +37,29 @@ export const action: ActionFunction = async ({request}) => {
   })
 }
 
-export const loader: LoaderFunction = async ({request}) => {
-  return requireAdminUser(request)(async () => {
-    const calls = await prisma.call.findMany()
-    return {calls}
+async function getAllCalls() {
+  const calls = await prisma.call.findMany({
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      updatedAt: true,
+      user: {select: {firstName: true, team: true, email: true}},
+    },
+    orderBy: {updatedAt: 'desc'},
   })
+  return calls
 }
 
-function CallListing({call}: {call: Call}) {
-  const [audioURL, setAudioURL] = React.useState<string | null>(null)
-  React.useEffect(() => {
-    const audio = new Audio(call.base64)
-    setAudioURL(audio.src)
-  }, [call.base64])
+type LoaderData = {
+  calls: Await<ReturnType<typeof getAllCalls>>
+}
 
-  return (
-    <section>
-      <strong>{call.title}</strong>
-      <p>{call.description}</p>
-      <div>{audioURL ? <audio src={audioURL} controls /> : null}</div>
-      <Form method="post">
-        <input type="hidden" name="callId" value={call.id} />
-        <button type="submit">Delete</button>
-      </Form>
-    </section>
-  )
+export const loader: LoaderFunction = async ({request}) => {
+  return requireAdminUser(request)(async () => {
+    const data: LoaderData = {calls: await getAllCalls()}
+    return data
+  })
 }
 
 export default function CallListScreen() {
@@ -72,9 +68,26 @@ export default function CallListScreen() {
     <div>
       <h1>All the calls</h1>
       <hr />
-      {data.calls.map(call => {
-        return <CallListing key={call.id} call={call} />
-      })}
+      <ul>
+        {data.calls.map(call => (
+          <li key={call.id}>
+            <img
+              alt={`${call.user.firstName} avatar`}
+              src={getAvatar(call.user.email)}
+              style={{
+                height: 64,
+                borderColor: call.user.team.toLowerCase(),
+                borderWidth: 2,
+                borderStyle: 'solid',
+              }}
+            />
+            <Link to={call.id}>{call.title}</Link>
+            <small>{call.description}</small>
+          </li>
+        ))}
+      </ul>
+      <hr />
+      <Outlet />
     </div>
   )
 }
