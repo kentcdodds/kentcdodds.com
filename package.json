@@ -2,7 +2,8 @@
   "name": "kentcdodds.com",
   "version": "1.0.0",
   "engines": {
-    "node": "16"
+    "node": "16",
+    "npm": "7"
   },
   "description": "A remix version of kentcdodds.com",
   "main": "remix.config.js",
@@ -56,7 +57,7 @@
     "gray-matter": "^4.0.3",
     "mdx-bundler": "^4.1.0",
     "node-fetch": "^2.6.1",
-    "pm2": "^5.0.4",
+    "pm2": "^5.1.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-router": "^6.0.0-beta.0",
@@ -101,6 +102,7 @@
     "kcd-scripts": "^11.1.0",
     "lodash": "^4.17.21",
     "msw": "^0.29.0",
+    "postcss": "^8.3.1",
     "postcss-cli": "^8.3.1",
     "prettier-plugin-tailwind": "^2.2.10",
     "prisma": "^2.24.1",

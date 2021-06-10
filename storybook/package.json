@@ -11,7 +11,7 @@
   "author": "Kent C. Dodds <me@kentcdodds.com> (https://kentcdodds.com/)",
   "license": "MIT",
   "devDependencies": {
-    "@babel/core": "^7.14.3",
+    "@babel/core": "^7.14.5",
     "@storybook/addon-actions": "^6.3.0-rc.0",
     "@storybook/addon-essentials": "^6.3.0-rc.0",
     "@storybook/addon-links": "^6.3.0-rc.0",
