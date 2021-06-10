@@ -5,7 +5,7 @@ module.exports = {
     {
       name: 'Storybook',
       script:
-        'start-storybook -p 6006 --no-version-updates --no-release-notes --quiet',
+        'start-storybook -p 6006 --no-version-updates --no-release-notes --quiet -s ../public',
       ignore_watch: ['.'], // watch mode is managed by storybook
       cwd: __dirname,
       env: {
