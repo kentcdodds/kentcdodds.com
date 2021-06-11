@@ -125,9 +125,7 @@ function getNonNull<Type extends Record<string, null | unknown>>(
   obj: Type,
 ): NonNullProperties<Type> {
   for (const [key, val] of Object.entries(obj)) {
-    if (val === null) {
-      throw new Error(`The value of ${key} is null but it should not be.`)
-    }
+    assertNonNull(val, `The value of ${key} is null but it should not be.`)
   }
   return obj as NonNullProperties<Type>
 }
@@ -165,6 +163,13 @@ function useOptionalUser() {
   return user
 }
 
+function assertNonNull<PossibleNullType>(
+  possibleNull: PossibleNullType,
+  errorMessage: string,
+): asserts possibleNull is Exclude<PossibleNullType, null> {
+  if (possibleNull === null) throw new Error(errorMessage)
+}
+
 export {
   getAvatar,
   useSSRLayoutEffect,
@@ -172,6 +177,7 @@ export {
   useAsync,
   getErrorMessage,
   getNonNull,
+  assertNonNull,
   UserProvider,
   useUser,
   useOptionalUser,

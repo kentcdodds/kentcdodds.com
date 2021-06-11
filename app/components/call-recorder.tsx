@@ -1,103 +1,179 @@
 import * as React from 'react'
 import {createMachine, assign} from 'xstate'
 import {useMachine} from '@xstate/react'
+import {inspect} from '@xstate/inspect'
+import {assertNonNull} from '../utils/misc'
+
+const devTools = false
+
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+if (devTools && typeof window !== 'undefined') {
+  inspect({iframe: false})
+}
+
+function stopMediaRecorder(mediaRecorder: MediaRecorder) {
+  if (mediaRecorder.state !== 'inactive') mediaRecorder.stop()
+
+  for (const track of mediaRecorder.stream.getAudioTracks()) {
+    if (track.enabled) track.stop()
+  }
+}
 
 interface RecorderContext {
-  mediaStream?: MediaStream
-  mediaRecorder?: MediaRecorder
+  audioDevices: Array<MediaDeviceInfo>
+  selectedAudioDevice: MediaDeviceInfo | null
+  mediaStream: MediaStream | null
+  mediaRecorder: MediaRecorder | null
   chunks: Array<BlobPart>
-  audioURL?: string
+  audioBlob: Blob | null
 }
 
 const recorderMachine = createMachine<RecorderContext>(
   {
     id: 'recorder',
-    initial: 'startup',
+    initial: 'gettingMediaStream',
+    invoke: {
+      src: 'cleanup',
+    },
     context: {
-      mediaStream: undefined,
-      mediaRecorder: undefined,
+      audioDevices: [],
+      selectedAudioDevice: null,
+      mediaStream: null,
+      mediaRecorder: null,
       chunks: [],
-      audioURL: undefined,
+      audioBlob: null,
     },
     states: {
-      startup: {
+      gettingDevices: {
+        invoke: {
+          src: 'getDevices',
+          // TODO: add onError
+        },
         on: {
-          READY: {
+          DEVICES_GOTTEN: {
+            target: 'deviceSelection',
+            actions: ['setAudioDevices'],
+          },
+        },
+      },
+      deviceSelection: {
+        on: {
+          DEVICE_SELECTED: {
+            target: 'gettingMediaStream',
+            actions: ['setSelectedAudioDevice'],
+          },
+        },
+      },
+      gettingMediaStream: {
+        invoke: {
+          src: 'getMediaStream',
+          // TODO: add onError
+        },
+        on: {
+          MEDIA_STREAM_GOTTEN: {
             target: 'ready',
-            actions: assign({
-              mediaStream: (context, event) => event.mediaStream,
-              mediaRecorder: (context, event) => event.mediaRecorder,
-            }),
+            actions: ['setMediaStream', 'setMediaRecorder'],
           },
         },
       },
       ready: {
-        initial: 'idle',
-        invoke: {
-          src: 'mediaRecorder.consumeData',
+        on: {
+          START_RECORDING: {
+            target: 'recording',
+            actions: ['mediaRecorder.start'],
+          },
+          CHANGE_AUDIO_DEVICE: {
+            target: 'gettingDevices',
+          },
         },
-        states: {
-          idle: {
-            on: {
-              START: {
-                target: 'recording',
-                actions: ['mediaRecorder.start'],
-              },
-            },
+      },
+      recording: {
+        on: {
+          PAUSE: {
+            target: 'paused',
+            actions: ['mediaRecorder.pause'],
           },
-          recording: {
-            on: {
-              PAUSE: {
-                target: 'paused',
-                actions: ['mediaRecorder.pause'],
-              },
-              STOP: {
-                target: 'stopping',
-                actions: ['mediaRecorder.stop'],
-              },
-              DATA_RECEIVED: {
-                actions: ['chunks.push'],
-              },
-            },
+          STOP: {
+            target: 'stopping',
+            actions: ['mediaRecorder.stop'],
           },
-          paused: {
-            on: {
-              RESUME: {
-                target: 'recording',
-                actions: ['mediaRecorder.resume'],
-              },
-              STOP: {
-                target: 'stopping',
-                actions: ['mediaRecorder.stop'],
-              },
-            },
+          DATA_RECEIVED: {
+            actions: ['chunks.push'],
           },
-          stopping: {
-            on: {
-              DATA_RECEIVED: {
-                target: '#stopped',
-                actions: ['chunks.push'],
-              },
-            },
+        },
+      },
+      paused: {
+        on: {
+          RESUME: {
+            target: 'recording',
+            actions: ['mediaRecorder.resume'],
+          },
+          STOP: {
+            target: 'stopping',
+            actions: ['mediaRecorder.stop'],
+          },
+        },
+      },
+      stopping: {
+        on: {
+          DATA_RECEIVED: {
+            target: 'stopped',
+            actions: ['chunks.push'],
           },
         },
       },
       stopped: {
-        id: 'stopped',
         entry: ['generateAudioContext'],
+        on: {
+          RE_RECORD: {
+            target: 'ready',
+          },
+        },
       },
     },
   },
   {
     services: {
-      'mediaRecorder.consumeData': context => send => {
-        if (!context.mediaRecorder) return
-        context.mediaRecorder.ondataavailable = event => {
+      cleanup: context => () => {
+        return () => {
+          const {mediaRecorder} = context
+          if (mediaRecorder) {
+            mediaRecorder.ondataavailable = null
+            stopMediaRecorder(mediaRecorder)
+          }
+        }
+      },
+      getDevices: () => async send => {
+        const devices = await navigator.mediaDevices.enumerateDevices()
+        const audioDevices = devices.filter(({kind}) => kind === 'audioinput')
+        send({type: 'DEVICES_GOTTEN', audioDevices})
+      },
+      getMediaStream: context => async send => {
+        const deviceId = context.selectedAudioDevice?.deviceId
+        const audio = deviceId ? {deviceId: {exact: deviceId}} : true
+        const mediaStream = await window.navigator.mediaDevices.getUserMedia({
+          audio,
+        })
+        const mediaRecorder = new MediaRecorder(mediaStream)
+        mediaRecorder.ondataavailable = event => {
           send({type: 'DATA_RECEIVED', data: event.data})
         }
+        send({type: 'MEDIA_STREAM_GOTTEN', mediaStream, mediaRecorder})
       },
     },
     actions: {
+      setAudioDevices: assign({
+        audioDevices: (context, event) => event.audioDevices,
+      }),
+      setSelectedAudioDevice: assign({
+        selectedAudioDevice: (context, event) => event.selectedAudioDevice,
+      }),
+      setMediaStream: assign({
+        mediaStream: (context, event) => event.mediaStream,
+      }),
+      setMediaRecorder: assign({
+        mediaRecorder: (context, event) => event.mediaRecorder,
+      }),
       'chunks.push': assign({
         chunks: (context, event) => [...context.chunks, event.data],
       }),
@@ -111,22 +187,13 @@ const recorderMachine = createMachine<RecorderContext>(
         context.mediaRecorder?.resume()
       },
       'mediaRecorder.stop'(context) {
-        const {mediaRecorder} = context
-        if (!mediaRecorder) return
-
-        mediaRecorder.stop()
-
-        for (const track of mediaRecorder.stream.getAudioTracks()) {
-          track.stop()
-        }
+        context.mediaRecorder?.stop()
       },
       generateAudioContext: assign({
-        audioURL(context) {
-          const blob = new Blob(context.chunks, {
+        audioBlob: context =>
+          new Blob(context.chunks, {
             type: 'audio/mp3',
-          })
-          return window.URL.createObjectURL(blob)
-        },
+          }),
       }),
     },
   },
@@ -137,68 +204,98 @@ function CallRecorder({
 }: {
   onRecordingComplete: (audio: Blob) => void
 }) {
-  const [state, send] = useMachine(recorderMachine)
+  const [state, send] = useMachine(recorderMachine, {devTools})
+  const {audioBlob} = state.context
 
-  React.useEffect(() => {
-    let mediaStream: MediaStream | undefined,
-      mediaRecorder: MediaRecorder | undefined
-    window.navigator.mediaDevices.getUserMedia({audio: true}).then(
-      ms => {
-        mediaStream = ms
-        mediaRecorder = new MediaRecorder(mediaStream)
-        send('READY', {mediaStream, mediaRecorder})
-      },
-      error => {
-        console.error('error getting the media device', error)
-      },
+  const audioURL = React.useMemo(() => {
+    if (audioBlob) {
+      return window.URL.createObjectURL(audioBlob)
+    } else {
+      return null
+    }
+  }, [audioBlob])
+
+  let deviceSelection = null
+  if (state.matches('gettingDevices')) {
+    deviceSelection = <div>Loading devices</div>
+  }
+
+  if (state.matches('deviceSelection')) {
+    deviceSelection = (
+      <div>
+        Select your device:
+        <ul>
+          {state.context.audioDevices.length
+            ? state.context.audioDevices.map(device => (
+                <li key={device.deviceId}>
+                  <button
+                    onClick={() => {
+                      send({
+                        type: 'DEVICE_SELECTED',
+                        selectedAudioDevice: device,
+                      })
+                    }}
+                    style={{
+                      fontWeight:
+                        state.context.selectedAudioDevice === device
+                          ? 'bold'
+                          : 'normal',
+                    }}
+                  >
+                    {device.label}
+                  </button>
+                </li>
+              ))
+            : 'No audio devices found'}
+        </ul>
+      </div>
     )
-    return () => {
-      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-        mediaRecorder.stop()
-      }
-      if (mediaStream) {
-        for (const track of mediaStream.getAudioTracks()) {
-          track.stop()
-        }
-      }
-    }
-  }, [send])
+  }
 
-  React.useEffect(() => {
-    if (state.matches('stopped')) {
-      onRecordingComplete(
-        new Blob(state.context.chunks, {
-          type: 'audio/mp3',
-        }),
-      )
-    }
-  }, [onRecordingComplete, state])
+  let audioPreview = null
+  if (state.matches('stopped')) {
+    assertNonNull(
+      audioURL,
+      `The state machine is in "stopped" state but there's no audioURL. This should be impossible.`,
+    )
+    assertNonNull(
+      audioBlob,
+      `The state machine is in "stopped" state but there's no audioBlob. This should be impossible.`,
+    )
+    audioPreview = (
+      <div>
+        <audio src={audioURL} controls />
+        <button onClick={() => onRecordingComplete(audioBlob)}>Accept</button>
+        <button onClick={() => send({type: 'RE_RECORD'})}>Re-record</button>
+      </div>
+    )
+  }
 
   return (
     <div>
-      {state.matches('ready') && state.context.mediaStream ? (
+      {state.matches('ready') ? (
+        <button onClick={() => send({type: 'CHANGE_AUDIO_DEVICE'})}>
+          Change audio device from{' '}
+          {state.context.selectedAudioDevice?.label ?? 'default'}
+        </button>
+      ) : null}
+      {deviceSelection}
+      {!state.matches('stopped') && state.context.mediaStream ? (
         <StreamVis stream={state.context.mediaStream} />
-      ) : state.context.mediaStream ? null : (
-        'waiting for stream'
-      )}
-      {state.matches('startup') ? (
-        <div>loading...</div>
-      ) : state.matches('ready.idle') ? (
-        <button onClick={() => send('START')}>Start</button>
-      ) : state.matches('ready.paused') ? (
-        <button onClick={() => send('RESUME')}>Resume</button>
-      ) : state.matches('ready.recording') ? (
+      ) : null}
+      {state.matches('ready') ? (
+        <button onClick={() => send({type: 'START_RECORDING'})}>Start</button>
+      ) : state.matches('paused') ? (
+        <button onClick={() => send({type: 'RESUME'})}>Resume</button>
+      ) : state.matches('recording') ? (
         <>
-          <button onClick={() => send('STOP')}>Stop</button>
-          <button onClick={() => send('PAUSE')}>Pause</button>
+          <button onClick={() => send({type: 'STOP'})}>Stop</button>
+          <button onClick={() => send({type: 'PAUSE'})}>Pause</button>
         </>
       ) : state.matches('stopping') ? (
         <div>Processing...</div>
-      ) : state.matches('stopped') ? (
-        <audio src={state.context.audioURL} controls />
-      ) : (
-        `unhandled state: ${JSON.stringify(state.value)}`
-      )}
+      ) : null}
+      {audioPreview}
     </div>
   )
 }
