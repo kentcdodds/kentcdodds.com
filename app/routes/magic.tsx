@@ -34,7 +34,7 @@ export const loader: LoaderFunction = async ({request}) => {
       })
     } else {
       session.set('magicLink', request.url)
-      return redirect('/confirm/new-account', {
+      return redirect('/signup', {
         headers: {'Set-Cookie': await rootStorage.commitSession(session)},
       })
     }

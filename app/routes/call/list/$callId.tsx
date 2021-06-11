@@ -125,9 +125,14 @@ export const loader: KCDLoader<{callId: string}> = async ({
   return requireAdminUser(request)(async () => {
     const call = await prisma.call.findFirst({where: {id: params.callId}})
     const session = await rootStorage.getSession(request.headers.get('Cookie'))
+    const fields: LoaderData['fields'] = {
+      title: call?.title,
+      description: call?.description,
+      ...session.get(fieldsSessionKey),
+    }
     const data: LoaderData = {
       call,
-      fields: session.get(fieldsSessionKey),
+      fields,
       errors: session.get(errorSessionKey),
     }
     return json(data, {

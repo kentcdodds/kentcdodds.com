@@ -2,7 +2,26 @@ import {PrismaClient, Team} from '@prisma/client'
 import type {User, Session} from 'types'
 import {encrypt, decrypt} from './encryption.server'
 
-const prisma = new PrismaClient()
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace NodeJS {
+    interface Global {
+      prisma?: PrismaClient
+    }
+  }
+}
+
+// this is to prevent us from making multiple connectsion during dev:
+const prisma = getPrismaClient()
+
+function getPrismaClient() {
+  if (process.env.NODE_ENV === 'production') {
+    return new PrismaClient()
+  }
+  if (global.prisma) return global.prisma
+  global.prisma = new PrismaClient()
+  return global.prisma
+}
 
 const linkExpirationTime = 1000 * 60 * 30
 const sessionExpirationTime = 1000 * 60 * 60 * 24 * 30

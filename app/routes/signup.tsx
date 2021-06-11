@@ -2,14 +2,14 @@ import * as React from 'react'
 import {json, redirect, useRouteData} from 'remix'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import type {Team} from 'types'
-import {rootStorage, signInSession} from '../../utils/session.server'
+import {rootStorage, signInSession} from '../utils/session.server'
 import {
   createSession,
   prisma,
   teams,
   validateMagicLink,
-} from '../../utils/prisma.server'
-import {getErrorMessage, getNonNull} from '../../utils/misc'
+} from '../utils/prisma.server'
+import {getErrorMessage, getNonNull} from '../utils/misc'
 
 type LoaderData = {
   email: string
@@ -80,7 +80,7 @@ export const action: ActionFunction = async ({request}) => {
 
   if (errors.firstName || errors.team) {
     session.flash(errorSessionKey, errors)
-    return redirect('/confirm/new-account', {
+    return redirect(new URL(request.url).pathname, {
       headers: {
         'Set-Cookie': await rootStorage.commitSession(session),
       },

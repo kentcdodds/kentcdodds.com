@@ -8,8 +8,8 @@ async function main() {
     update: {},
     create: {
       email: `me@kentcdodds.com`,
-      firstName: 'Kody',
-      team: 'YELLOW',
+      firstName: 'Kent',
+      team: 'BLUE',
       role: 'ADMIN',
     },
   })
