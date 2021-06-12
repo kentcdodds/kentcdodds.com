@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {createMachine, assign} from 'xstate'
+import {createMachine, assign, send as sendUtil} from 'xstate'
 import {useMachine} from '@xstate/react'
 import {inspect} from '@xstate/inspect'
 import {assertNonNull} from '../utils/misc'
@@ -11,191 +11,154 @@ if (devTools && typeof window !== 'undefined') {
   inspect({iframe: false})
 }
 
-function stopMediaRecorder(mediaRecorder: MediaRecorder | null) {
-  if (!mediaRecorder) return
-
-  if (mediaRecorder.state !== 'inactive') {
-    mediaRecorder.stop()
-  }
+function stopMediaRecorder(mediaRecorder: MediaRecorder) {
+  if (mediaRecorder.state !== 'inactive') mediaRecorder.stop()
 
   for (const track of mediaRecorder.stream.getAudioTracks()) {
-    if (track.enabled) {
-      track.stop()
-    }
+    if (track.enabled) track.stop()
   }
   mediaRecorder.ondataavailable = null
 }
 
 interface RecorderContext {
+  mediaRecorder: MediaRecorder | null
   audioDevices: Array<MediaDeviceInfo>
   selectedAudioDevice: MediaDeviceInfo | null
-  mediaStream: MediaStream | null
-  mediaRecorder: MediaRecorder | null
-  chunks: Array<BlobPart>
   audioBlob: Blob | null
 }
 
 const recorderMachine = createMachine<RecorderContext>(
   {
     id: 'recorder',
-    initial: 'gettingMediaStream',
     context: {
+      mediaRecorder: null,
       audioDevices: [],
       selectedAudioDevice: null,
-      mediaStream: null,
-      mediaRecorder: null,
-      chunks: [],
       audioBlob: null,
     },
+    initial: 'gettingDevices',
     states: {
       gettingDevices: {
         invoke: {
           src: 'getDevices',
-          // TODO: add onError
-        },
-        on: {
-          DEVICES_GOTTEN: {
-            target: 'deviceSelection',
-            actions: ['setAudioDevices'],
-          },
+          onDone: {target: 'ready', actions: 'assignAudioDevices'},
+          onError: '', // TODO
         },
       },
-      deviceSelection: {
+      selecting: {
         on: {
-          DEVICE_SELECTED: {
-            target: 'gettingMediaStream',
-            actions: ['setSelectedAudioDevice'],
-          },
-        },
-      },
-      gettingMediaStream: {
-        invoke: {
-          src: 'getMediaStream',
-          // TODO: add onError
-        },
-        on: {
-          MEDIA_STREAM_GOTTEN: {
-            target: 'ready',
-            actions: ['setMediaStream', 'setMediaRecorder'],
-          },
+          selection: {target: 'ready', actions: 'assignSelectedAudioDevice'},
         },
       },
       ready: {
         on: {
-          START_RECORDING: {
-            target: 'recording',
-            actions: ['mediaRecorder.start'],
-          },
-          CHANGE_AUDIO_DEVICE: {
-            target: 'gettingDevices',
-          },
+          changeDevice: 'selecting',
+          start: 'recording',
         },
       },
       recording: {
-        on: {
-          PAUSE: {
-            target: 'paused',
-            actions: ['mediaRecorder.pause'],
+        invoke: {src: 'mediaRecorder'},
+        initial: 'playing',
+        states: {
+          playing: {
+            on: {
+              mediaRecorderCreated: {
+                actions: ['assignMediaRecorder'],
+              },
+              pause: {
+                target: 'paused',
+                actions: sendUtil('pause', {to: 'mediaRecorder'}),
+              },
+              stop: 'stopping',
+            },
           },
-          STOP: {
-            target: 'stopping',
-            actions: ['mediaRecorder.stop'],
+          paused: {
+            on: {
+              resume: {
+                target: 'playing',
+                actions: sendUtil('resume', {to: 'mediaRecorder'}),
+              },
+              stop: 'stopping',
+            },
           },
-          DATA_RECEIVED: {
-            actions: ['chunks.push'],
-          },
-        },
-      },
-      paused: {
-        on: {
-          RESUME: {
-            target: 'recording',
-            actions: ['mediaRecorder.resume'],
-          },
-          STOP: {
-            target: 'stopping',
-            actions: ['mediaRecorder.stop'],
-          },
-        },
-      },
-      stopping: {
-        on: {
-          DATA_RECEIVED: {
-            target: 'stopped',
-            actions: ['chunks.push'],
+          stopping: {
+            entry: sendUtil('stop', {to: 'mediaRecorder'}),
+            on: {
+              chunks: {target: '#recorder.done', actions: 'assignAudioBlob'},
+            },
           },
         },
       },
-      stopped: {
-        entry: ['generateAudioContext', 'stopMediaRecorder'],
+      done: {
         on: {
-          RE_RECORD: {
-            target: 'gettingMediaStream',
-            actions: ['chunks.clear'],
-          },
+          restart: 'ready',
         },
       },
     },
   },
   {
     services: {
-      getDevices: () => async send => {
+      getDevices: async () => {
         const devices = await navigator.mediaDevices.enumerateDevices()
-        const audioDevices = devices.filter(({kind}) => kind === 'audioinput')
-        send({type: 'DEVICES_GOTTEN', audioDevices})
+        return devices.filter(({kind}) => kind === 'audioinput')
       },
-      getMediaStream: context => async send => {
-        const deviceId = context.selectedAudioDevice?.deviceId
-        const audio = deviceId ? {deviceId: {exact: deviceId}} : true
-        const mediaStream = await window.navigator.mediaDevices.getUserMedia({
-          audio,
-        })
-        const mediaRecorder = new MediaRecorder(mediaStream)
-        mediaRecorder.ondataavailable = event => {
-          send({type: 'DATA_RECEIVED', data: event.data})
+      mediaRecorder: context => (sendBack, receive) => {
+        let mediaRecorder: MediaRecorder
+
+        async function go() {
+          const chunks: Array<BlobPart> = []
+          const deviceId = context.selectedAudioDevice?.deviceId
+          const audio = deviceId ? {deviceId: {exact: deviceId}} : true
+          const mediaStream = await window.navigator.mediaDevices.getUserMedia({
+            audio,
+          })
+          mediaRecorder = new MediaRecorder(mediaStream)
+          sendBack({type: 'mediaRecorderCreated', mediaRecorder})
+
+          mediaRecorder.ondataavailable = event => {
+            chunks.push(event.data)
+            if (mediaRecorder.state === 'inactive') {
+              sendBack({
+                type: 'chunks',
+                blob: new Blob(chunks, {
+                  type: 'audio/mp3',
+                }),
+              })
+            }
+          }
+
+          mediaRecorder.start()
+
+          receive(event => {
+            if (event.type === 'pause') {
+              mediaRecorder.pause()
+            } else if (event.type === 'resume') {
+              mediaRecorder.resume()
+            } else if (event.type === 'stop') {
+              mediaRecorder.stop()
+            }
+          })
         }
-        send({type: 'MEDIA_STREAM_GOTTEN', mediaStream, mediaRecorder})
+
+        void go()
+
+        return () => {
+          stopMediaRecorder(mediaRecorder)
+        }
       },
     },
     actions: {
-      setAudioDevices: assign({
-        audioDevices: (context, event) => event.audioDevices,
+      assignAudioDevices: assign({
+        audioDevices: (context, event) => event.data,
       }),
-      setSelectedAudioDevice: assign({
+      assignSelectedAudioDevice: assign({
         selectedAudioDevice: (context, event) => event.selectedAudioDevice,
       }),
-      setMediaStream: assign({
-        mediaStream: (context, event) => event.mediaStream,
-      }),
-      setMediaRecorder: assign({
+      assignMediaRecorder: assign({
         mediaRecorder: (context, event) => event.mediaRecorder,
       }),
-      'chunks.push': assign({
-        chunks: (context, event) => [...context.chunks, event.data],
-      }),
-      'chunks.clear': assign({
-        chunks: _context => [],
-      }),
-      stopMediaRecorder(context) {
-        stopMediaRecorder(context.mediaRecorder)
-      },
-      'mediaRecorder.start'(context) {
-        context.mediaRecorder?.start()
-      },
-      'mediaRecorder.pause'(context) {
-        context.mediaRecorder?.pause()
-      },
-      'mediaRecorder.resume'(context) {
-        context.mediaRecorder?.resume()
-      },
-      'mediaRecorder.stop'(context) {
-        context.mediaRecorder?.stop()
-      },
-      generateAudioContext: assign({
-        audioBlob: context =>
-          new Blob(context.chunks, {
-            type: 'audio/mp3',
-          }),
+      assignAudioBlob: assign({
+        audioBlob: (context, event) => event.blob,
       }),
     },
   },
@@ -208,17 +171,6 @@ function CallRecorder({
 }) {
   const [state, send] = useMachine(recorderMachine, {devTools})
   const {audioBlob} = state.context
-
-  // TODO: figure out how to make the state machine do this cleanup for us
-  const latestStateRef = React.useRef(state)
-  React.useEffect(() => {
-    latestStateRef.current = state
-  }, [state])
-  React.useEffect(() => {
-    return () => {
-      stopMediaRecorder(latestStateRef.current.context.mediaRecorder)
-    }
-  }, [])
 
   const audioURL = React.useMemo(() => {
     if (audioBlob) {
@@ -233,7 +185,7 @@ function CallRecorder({
     deviceSelection = <div>Loading devices</div>
   }
 
-  if (state.matches('deviceSelection')) {
+  if (state.matches('selecting')) {
     deviceSelection = (
       <div>
         Select your device:
@@ -244,7 +196,7 @@ function CallRecorder({
                   <button
                     onClick={() => {
                       send({
-                        type: 'DEVICE_SELECTED',
+                        type: 'selection',
                         selectedAudioDevice: device,
                       })
                     }}
@@ -266,7 +218,7 @@ function CallRecorder({
   }
 
   let audioPreview = null
-  if (state.matches('stopped')) {
+  if (state.matches('done')) {
     assertNonNull(
       audioURL,
       `The state machine is in "stopped" state but there's no audioURL. This should be impossible.`,
@@ -279,7 +231,7 @@ function CallRecorder({
       <div>
         <audio src={audioURL} controls />
         <button onClick={() => onRecordingComplete(audioBlob)}>Accept</button>
-        <button onClick={() => send({type: 'RE_RECORD'})}>Re-record</button>
+        <button onClick={() => send({type: 'restart'})}>Re-record</button>
       </div>
     )
   }
@@ -287,25 +239,29 @@ function CallRecorder({
   return (
     <div>
       {state.matches('ready') ? (
-        <button onClick={() => send({type: 'CHANGE_AUDIO_DEVICE'})}>
+        <button onClick={() => send({type: 'changeDevice'})}>
           Change audio device from{' '}
           {state.context.selectedAudioDevice?.label ?? 'default'}
         </button>
       ) : null}
       {deviceSelection}
-      {!state.matches('stopped') && state.context.mediaStream ? (
-        <StreamVis stream={state.context.mediaStream} />
-      ) : null}
       {state.matches('ready') ? (
-        <button onClick={() => send({type: 'START_RECORDING'})}>Start</button>
-      ) : state.matches('paused') ? (
-        <button onClick={() => send({type: 'RESUME'})}>Resume</button>
-      ) : state.matches('recording') ? (
+        <button onClick={() => send({type: 'start'})}>Start</button>
+      ) : null}
+      {state.matches('recording') && state.context.mediaRecorder ? (
+        <StreamVis stream={state.context.mediaRecorder.stream} />
+      ) : null}
+      {state.matches('recording.playing') ? (
         <>
-          <button onClick={() => send({type: 'STOP'})}>Stop</button>
-          <button onClick={() => send({type: 'PAUSE'})}>Pause</button>
+          <button onClick={() => send({type: 'stop'})}>Stop</button>
+          <button onClick={() => send({type: 'pause'})}>Pause</button>
         </>
-      ) : state.matches('stopping') ? (
+      ) : state.matches('recording.paused') ? (
+        <>
+          <button onClick={() => send({type: 'stop'})}>Stop</button>
+          <button onClick={() => send({type: 'resume'})}>Resume</button>
+        </>
+      ) : state.matches('recording.stopping') ? (
         <div>Processing...</div>
       ) : null}
       {audioPreview}
