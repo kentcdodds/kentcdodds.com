@@ -11,6 +11,7 @@ module.exports = {
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/sort-type-union-intersection-members': 'off',
     'jsx-a11y/media-has-caption': 'off',
+    '@babel/new-cap': 'off',
 
     // I can't figure these out:
     '@typescript-eslint/no-unsafe-call': 'off',

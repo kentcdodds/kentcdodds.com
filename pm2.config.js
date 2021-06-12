@@ -4,6 +4,7 @@ module.exports = {
       name: 'Remix',
       script: [
         'node',
+        '--experimental-wasm-threads',
         '--require ./node_modules/dotenv/config',
         '--require ./mocks',
         './node_modules/.bin/remix run',

@@ -11,12 +11,19 @@ if (devTools && typeof window !== 'undefined') {
   inspect({iframe: false})
 }
 
-function stopMediaRecorder(mediaRecorder: MediaRecorder) {
-  if (mediaRecorder.state !== 'inactive') mediaRecorder.stop()
+function stopMediaRecorder(mediaRecorder: MediaRecorder | null) {
+  if (!mediaRecorder) return
+
+  if (mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop()
+  }
 
   for (const track of mediaRecorder.stream.getAudioTracks()) {
-    if (track.enabled) track.stop()
+    if (track.enabled) {
+      track.stop()
+    }
   }
+  mediaRecorder.ondataavailable = null
 }
 
 interface RecorderContext {
@@ -32,9 +39,6 @@ const recorderMachine = createMachine<RecorderContext>(
   {
     id: 'recorder',
     initial: 'gettingMediaStream',
-    invoke: {
-      src: 'cleanup',
-    },
     context: {
       audioDevices: [],
       selectedAudioDevice: null,
@@ -123,10 +127,11 @@ const recorderMachine = createMachine<RecorderContext>(
         },
       },
       stopped: {
-        entry: ['generateAudioContext'],
+        entry: ['generateAudioContext', 'stopMediaRecorder'],
         on: {
           RE_RECORD: {
-            target: 'ready',
+            target: 'gettingMediaStream',
+            actions: ['chunks.clear'],
           },
         },
       },
@@ -134,15 +139,6 @@ const recorderMachine = createMachine<RecorderContext>(
   },
   {
     services: {
-      cleanup: context => () => {
-        return () => {
-          const {mediaRecorder} = context
-          if (mediaRecorder) {
-            mediaRecorder.ondataavailable = null
-            stopMediaRecorder(mediaRecorder)
-          }
-        }
-      },
       getDevices: () => async send => {
         const devices = await navigator.mediaDevices.enumerateDevices()
         const audioDevices = devices.filter(({kind}) => kind === 'audioinput')
@@ -177,6 +173,12 @@ const recorderMachine = createMachine<RecorderContext>(
       'chunks.push': assign({
         chunks: (context, event) => [...context.chunks, event.data],
       }),
+      'chunks.clear': assign({
+        chunks: _context => [],
+      }),
+      stopMediaRecorder(context) {
+        stopMediaRecorder(context.mediaRecorder)
+      },
       'mediaRecorder.start'(context) {
         context.mediaRecorder?.start()
       },
@@ -206,6 +208,17 @@ function CallRecorder({
 }) {
   const [state, send] = useMachine(recorderMachine, {devTools})
   const {audioBlob} = state.context
+
+  // TODO: figure out how to make the state machine do this cleanup for us
+  const latestStateRef = React.useRef(state)
+  React.useEffect(() => {
+    latestStateRef.current = state
+  }, [state])
+  React.useEffect(() => {
+    return () => {
+      stopMediaRecorder(latestStateRef.current.context.mediaRecorder)
+    }
+  }, [])
 
   const audioURL = React.useMemo(() => {
     if (audioBlob) {

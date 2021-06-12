@@ -26,7 +26,7 @@
     "clean": "rimraf ./node_modules/.cache ./build ./public/build \"./app/styles/**/*.css\"",
     "dev": "pm2-dev pm2.config.js",
     "dev:storybook": "cd storybook && npm run dev",
-    "start": "cross-env NODE_ENV=production remix-serve build",
+    "start": "cross-env NODE_ENV=production node --experimental-wasm-threads ./node_modules/.bin/remix-serve build",
     "start:mocks": "node --require ./mocks ./node_modules/.bin/remix-serve build",
     "cy:run": "cypress run",
     "cy:open": "cypress open",
@@ -39,6 +39,8 @@
     "validate": "kcd-scripts validate"
   },
   "dependencies": {
+    "@ffmpeg/core": "^0.10.0",
+    "@ffmpeg/ffmpeg": "^0.10.0",
     "@octokit/rest": "^18.5.6",
     "@prisma/client": "^2.24.1",
     "@remark-embedder/cache": "^1.0.0",

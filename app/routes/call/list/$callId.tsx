@@ -1,15 +1,12 @@
 import * as React from 'react'
 import {useSubmit, redirect, Form, json, useRouteData, Link} from 'remix'
-import type {ActionFunction} from 'remix'
-import type {Call, KCDLoader} from 'types'
+import type {Call, KCDAction, KCDLoader} from 'types'
 import {CallRecorder} from '../../../components/call-recorder'
-import {
-  requireAdminUser,
-  requireUser,
-  rootStorage,
-} from '../../../utils/session.server'
+import {requireAdminUser, rootStorage} from '../../../utils/session.server'
 import {prisma} from '../../../utils/prisma.server'
 import {getErrorMessage, getNonNull} from '../../../utils/misc'
+import {createEpisodeAudio} from '../../../utils/ffmpeg.server'
+import {createEpisode} from '../../../utils/transitor.server'
 
 const errorSessionKey = 'call_error'
 const fieldsSessionKey = 'call_fields'
@@ -47,9 +44,15 @@ function getErrorForAudio(audio: string | null) {
   return null
 }
 
-export const action: ActionFunction = async ({request}) => {
-  return requireUser(request)(async user => {
+export const action: KCDAction<{callId: string}> = async ({
+  request,
+  params,
+}) => {
+  return requireAdminUser(request)(async () => {
     const session = await rootStorage.getSession(request.headers.get('Cookie'))
+    const maybeNullCall = await prisma.call.findFirst({
+      where: {id: params.callId},
+    })
     try {
       const requestText = await request.text()
       const form = new URLSearchParams(requestText)
@@ -66,6 +69,9 @@ export const action: ActionFunction = async ({request}) => {
       session.flash(fieldsSessionKey, fields)
 
       const errors = {
+        generalError: maybeNullCall
+          ? undefined
+          : `No call with the ID ${params.callId} found.`,
         audio: getErrorForAudio(formData.audio),
         title: getErrorForTitle(formData.title),
         description: getErrorForDescription(formData.description),
@@ -80,19 +86,28 @@ export const action: ActionFunction = async ({request}) => {
         })
       }
 
-      const {audio, title, description} = getNonNull(formData)
-
-      const call = {
+      const {
+        audio: response,
         title,
         description,
-        userId: user.id,
-        base64: audio,
-      }
-      await prisma.call.create({data: call})
-      return redirect('/call')
+        call,
+      } = getNonNull({
+        ...formData,
+        call: maybeNullCall,
+      })
+
+      const episodeAudio = await createEpisodeAudio(call.base64, response)
+      await createEpisode({audio: episodeAudio, title, description})
+
+      console.log({title, description})
+      // await prisma.call.create({data: call})
+
+      return redirect(new URL(request.url).pathname)
     } catch (error: unknown) {
-      session.flash(errorSessionKey, {generalError: getErrorMessage(error)})
-      return redirect('/contact', {
+      const generalError = getErrorMessage(error)
+      console.error(generalError)
+      session.flash(errorSessionKey, {generalError})
+      return redirect(new URL(request.url).pathname, {
         headers: {
           'Set-Cookie': await rootStorage.commitSession(session),
         },
@@ -143,19 +158,20 @@ export const loader: KCDLoader<{callId: string}> = async ({
   })
 }
 
-function SubmitRecordingForm({audio}: {audio: Blob}) {
+function SubmitRecordingForm({response}: {response: Blob}) {
   const data = useRouteData<LoaderData>()
-  const [audioURL, setAudioURL] = React.useState<string | null>(null)
-  React.useEffect(() => {
-    setAudioURL(window.URL.createObjectURL(audio))
-  }, [audio])
+
+  const audioURL = React.useMemo(() => {
+    return window.URL.createObjectURL(response)
+  }, [response])
+
   const submit = useSubmit()
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const form = new FormData(event.currentTarget)
     const reader = new FileReader()
-    reader.readAsDataURL(audio)
+    reader.readAsDataURL(response)
     reader.addEventListener(
       'loadend',
       () => {
@@ -168,9 +184,18 @@ function SubmitRecordingForm({audio}: {audio: Blob}) {
     )
   }
 
-  return audioURL ? (
+  return (
     <div>
-      <audio src={audioURL} controls aria-describedby="audio-error-message" />
+      {data.errors?.generalError ? (
+        <p id="audio-error-message" className="text-center text-red-600">
+          {data.errors.generalError}
+        </p>
+      ) : null}
+      {audioURL ? (
+        <audio src={audioURL} controls aria-describedby="audio-error-message" />
+      ) : (
+        'loading...'
+      )}
       {data.errors?.audio ? (
         <p id="audio-error-message" className="text-center text-red-600">
           {data.errors.audio}
@@ -210,7 +235,7 @@ function SubmitRecordingForm({audio}: {audio: Blob}) {
         <button type="submit">Submit Recording</button>
       </Form>
     </div>
-  ) : null
+  )
 }
 
 function CallListing({call}: {call: Call}) {
@@ -234,8 +259,9 @@ function CallListing({call}: {call: Call}) {
 }
 
 export default function RecordingDetailScreen() {
-  const [audio, setAudio] = React.useState<Blob | null>(null)
+  const [responseAudio, setResponseAudio] = React.useState<Blob | null>(null)
   const data = useRouteData<LoaderData>()
+
   if (!data.call) {
     return (
       <div>
@@ -247,11 +273,18 @@ export default function RecordingDetailScreen() {
     <div>
       <CallListing call={data.call} />
       <strong>Record your response:</strong>
-      {audio ? (
-        <SubmitRecordingForm audio={audio} />
+      {responseAudio ? (
+        <SubmitRecordingForm response={responseAudio} />
       ) : (
-        <CallRecorder onRecordingComplete={recording => setAudio(recording)} />
+        <CallRecorder
+          onRecordingComplete={recording => setResponseAudio(recording)}
+        />
       )}
     </div>
   )
 }
+
+/*
+eslint
+  @babel/new-cap: "off",
+*/
