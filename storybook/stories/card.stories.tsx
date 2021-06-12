@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {Card} from '@kcd/kcd-react'
+import {Card} from '@kcd/components'
 
 export default {
   title: 'Card',
