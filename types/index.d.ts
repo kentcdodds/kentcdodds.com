@@ -4,9 +4,6 @@ import type {User, Call, Session, Team} from '@prisma/client'
 
 declare global {
   interface Window {
-    ENV: {
-      firebase: Object
-    }
     twttr?: {
       widgets: {
         load: (node?: Element) => Promise<void>

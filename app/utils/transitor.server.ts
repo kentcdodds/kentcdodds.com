@@ -1,33 +1,41 @@
 import uuid from 'uuid'
+import {getRequiredEnvVar} from './misc'
 
-let transistorApiSecret = 'example_transistor_secret'
-if (process.env.TRANSISTOR_API_SECRET) {
-  transistorApiSecret = process.env.TRANSISTOR_API_SECRET
-} else if (process.env.NODE_ENV === 'production') {
-  throw new Error('TRANSISTOR_API_SECRET is required')
-}
+const transistorApiSecret = getRequiredEnvVar(
+  'TRANSISTOR_API_SECRET',
+  'example_transistor_secret',
+)
+const podcastId = getRequiredEnvVar('CALL_KENT_PODCAST_ID', '67890')
 
 type ErrorResponse = {errors: Array<{title: string}>}
 
 async function fetchTransitor<JsonResponse>({
   endpoint,
   method = 'GET',
-  query,
+  query = {},
+  data,
 }: {
   endpoint: string
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
-  query: Record<string, string>
+  query?: Record<string, string>
+  data?: Record<string, unknown>
 }) {
   const url = new URL(endpoint, 'https://api.transistor.fm')
   for (const [key, value] of Object.entries(query)) {
     url.searchParams.set(key, value)
   }
-  const res = await fetch(url.toString(), {
+  const config: RequestInit = {
     method,
     headers: {
       'x-api-key': transistorApiSecret,
     },
-  })
+  }
+  if (data) {
+    config.body = JSON.stringify(data)
+    Object.assign(config.headers, {'Content-Type': 'application/json'})
+  }
+  console.log(url.toString(), config)
+  const res = await fetch(url.toString(), config)
   const json = await res.json()
   if (json.errors) {
     throw new Error((json as ErrorResponse).errors.map(e => e.title).join('\n'))
@@ -87,23 +95,29 @@ async function createEpisode({
   const created = await fetchTransitor<CreatedJson>({
     endpoint: 'v1/episodes',
     method: 'POST',
-    query: {
-      'episode[show_id]': id,
-      'episode[audio_url]': audio_url,
-      'episode[title]': title,
-      'episode[description]': description,
+    data: {
+      episode: {
+        show_id: podcastId,
+        season: '1',
+        audio_url,
+        title,
+        summary: description,
+        description,
+      },
     },
   })
+
   console.log({created})
 
   const published = await fetchTransitor<PublishedJson>({
     endpoint: `/v1/episodes/${encodeURIComponent(created.data.id)}/publish`,
     method: 'PATCH',
-    query: {
-      'episode[status]': 'published',
+    data: {
+      episode: {
+        status: 'published',
+      },
     },
   })
-  console.log({published})
   return published
 }
 

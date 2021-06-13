@@ -170,6 +170,17 @@ function assertNonNull<PossibleNullType>(
   if (possibleNull === null) throw new Error(errorMessage)
 }
 
+function getRequiredEnvVar(key: string, devValue: string) {
+  let value = devValue
+  const envVal = process.env[key]
+  if (envVal) {
+    value = envVal
+  } else if (process.env.NODE_ENV === 'production') {
+    throw new Error(`${key} is a required env variable`)
+  }
+  return value
+}
+
 export {
   getAvatar,
   useSSRLayoutEffect,
@@ -178,6 +189,7 @@ export {
   getErrorMessage,
   getNonNull,
   assertNonNull,
+  getRequiredEnvVar,
   UserProvider,
   useUser,
   useOptionalUser,

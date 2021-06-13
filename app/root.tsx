@@ -17,6 +17,7 @@ import tailwind from './styles/tailwind.css'
 import {useTheme, ThemeProvider} from './theme-provider'
 import {getUser} from './utils/session.server'
 import {UserProvider} from './utils/misc'
+import {getEnv} from './utils/env'
 
 export function meta() {
   return {
@@ -40,15 +41,20 @@ export const links: LinksFunction = () => {
 
 type LoaderData = {
   user: User | null
+  ENV: typeof global.ENV
 }
 
 export const loader: LoaderFunction = async ({request}) => {
   const user = await getUser(request)
-  const data: LoaderData = {user}
+  const data: LoaderData = {
+    user,
+    ENV: getEnv(),
+  }
   return json(data)
 }
 
 function App() {
+  const data = useRouteData<LoaderData>()
   const [theme] = useTheme()
   const location = useLocation()
   const pendingLocation = usePendingLocation()
@@ -67,6 +73,11 @@ function App() {
       <body className={`${showPendingState ? 'opacity-50' : ''}`}>
         <Outlet />
         <Scripts />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.ENV = ${JSON.stringify(data.ENV)};`,
+          }}
+        />
         {includeTweets ? (
           <script
             async

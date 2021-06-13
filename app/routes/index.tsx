@@ -23,6 +23,9 @@ function IndexRoute() {
             <Link to="/workshops">Workshops</Link>
           </li>
           <li>
+            <Link to="/discord">Discord</Link>
+          </li>
+          <li>
             <Link to="/login">Login</Link>
           </li>
         </ul>
