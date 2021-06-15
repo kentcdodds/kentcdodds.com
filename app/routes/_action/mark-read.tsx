@@ -15,7 +15,7 @@ export const action: ActionFunction = async ({request}) => {
   })
 }
 
-export const loader = () => redirect('/')
+export const loader = () => redirect('/', {status: 404})
 
 export default function MarkRead() {
   return <div>Oops... You should not see this.</div>

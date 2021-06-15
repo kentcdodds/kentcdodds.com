@@ -44,6 +44,7 @@ function YouScreen() {
   const data = useRouteData<LoaderData>()
   return (
     <div>
+      {data.message ? <div>{data.message}</div> : null}
       <h1>User: {data.user.email}</h1>
       <div>Team: {data.user.team}</div>
       <div>

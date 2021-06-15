@@ -27,6 +27,7 @@ model User {
   updatedAt DateTime   @updatedAt
   email     String     @unique
   firstName String
+  discordId String?
   role      Role       @default(MEMBER)
   team      Team
   calls     Call[]

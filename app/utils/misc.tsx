@@ -2,6 +2,7 @@ import * as React from 'react'
 import {Link} from 'react-router-dom'
 import type {NonNullProperties, User} from 'types'
 import md5 from 'md5-hash'
+import type {getEnv} from './env'
 
 const useSSRLayoutEffect =
   typeof window === 'undefined' ? () => {} : React.useLayoutEffect
@@ -170,15 +171,30 @@ function assertNonNull<PossibleNullType>(
   if (possibleNull === null) throw new Error(errorMessage)
 }
 
-function getRequiredEnvVar(key: string, devValue: string) {
+function getRequiredEnvVarFromObj(
+  obj: Record<string, string | undefined>,
+  key: string,
+  devValue: string = `${key}-dev-value`,
+) {
   let value = devValue
-  const envVal = process.env[key]
+  const envVal = obj[key]
   if (envVal) {
     value = envVal
-  } else if (process.env.NODE_ENV === 'production') {
+  } else if (obj.NODE_ENV === 'production') {
     throw new Error(`${key} is a required env variable`)
   }
   return value
+}
+
+function getRequiredServerEnvVar(key: string, devValue?: string) {
+  return getRequiredEnvVarFromObj(process.env, key, devValue)
+}
+
+function getRequiredGlobalEnvVar(
+  key: keyof ReturnType<typeof getEnv>,
+  devValue?: string,
+) {
+  return getRequiredEnvVarFromObj(ENV, key, devValue)
 }
 
 export {
@@ -189,7 +205,8 @@ export {
   getErrorMessage,
   getNonNull,
   assertNonNull,
-  getRequiredEnvVar,
+  getRequiredServerEnvVar,
+  getRequiredGlobalEnvVar,
   UserProvider,
   useUser,
   useOptionalUser,

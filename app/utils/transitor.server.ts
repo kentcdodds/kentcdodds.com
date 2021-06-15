@@ -1,11 +1,8 @@
 import uuid from 'uuid'
-import {getRequiredEnvVar} from './misc'
+import {getRequiredServerEnvVar} from './misc'
 
-const transistorApiSecret = getRequiredEnvVar(
-  'TRANSISTOR_API_SECRET',
-  'example_transistor_secret',
-)
-const podcastId = getRequiredEnvVar('CALL_KENT_PODCAST_ID', '67890')
+const transistorApiSecret = getRequiredServerEnvVar('TRANSISTOR_API_SECRET')
+const podcastId = getRequiredServerEnvVar('CALL_KENT_PODCAST_ID', '67890')
 
 type ErrorResponse = {errors: Array<{title: string}>}
 
@@ -34,7 +31,6 @@ async function fetchTransitor<JsonResponse>({
     config.body = JSON.stringify(data)
     Object.assign(config.headers, {'Content-Type': 'application/json'})
   }
-  console.log(url.toString(), config)
   const res = await fetch(url.toString(), config)
   const json = await res.json()
   if (json.errors) {
@@ -106,8 +102,6 @@ async function createEpisode({
       },
     },
   })
-
-  console.log({created})
 
   const published = await fetchTransitor<PublishedJson>({
     endpoint: `/v1/episodes/${encodeURIComponent(created.data.id)}/publish`,

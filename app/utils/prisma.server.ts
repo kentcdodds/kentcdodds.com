@@ -71,15 +71,25 @@ async function validateMagicLink(validationEmailAddress: string, link: string) {
     const encryptedString = url.searchParams.get(magicLinkSearchParam) ?? '[]'
     const decryptedString = decrypt(encryptedString)
     ;[email, linkExpirationString] = JSON.parse(decryptedString)
-  } catch {
+  } catch (error: unknown) {
+    console.error(error)
     throw new Error('Invalid magic link.')
   }
 
-  if (
-    typeof email !== 'string' ||
-    typeof linkExpirationString !== 'string' ||
-    email !== validationEmailAddress
-  ) {
+  if (typeof email !== 'string') {
+    console.error(`Email is not a string. Maybe wasn't set in the session?`)
+    throw new Error('Invalid magic link.')
+  }
+
+  if (typeof linkExpirationString !== 'string') {
+    console.error('Link expiration is not a string.')
+    throw new Error('Invalid magic link.')
+  }
+
+  if (email !== validationEmailAddress) {
+    console.error(
+      `The email for a magic link doesn't match the one in the session.`,
+    )
     throw new Error('Invalid magic link.')
   }
 
