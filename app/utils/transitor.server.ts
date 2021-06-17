@@ -115,4 +115,22 @@ async function createEpisode({
   return published
 }
 
-export {createEpisode}
+type EpisodeJson = {
+  data: {
+    id: string
+    type: 'episode'
+    attributes: {
+      title: string
+      media_url: string
+      share_url: string
+    }
+  }
+}
+
+function getEpisode(id: string) {
+  return fetchTransitor<EpisodeJson>({
+    endpoint: `/v1/episodes/${id}`,
+  })
+}
+
+export {createEpisode, getEpisode}

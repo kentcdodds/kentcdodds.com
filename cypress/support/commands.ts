@@ -1,5 +1,5 @@
 import faker from 'faker'
-import type {Team} from '../../types'
+import type {Team, Role} from '../../types'
 
 declare global {
   namespace Cypress {
@@ -25,11 +25,18 @@ function login({
     'example.com',
   ),
   team = 'BLUE',
-}: {firstName?: string | null; email?: string; team?: Team | null} = {}) {
+  role = 'MEMBER',
+}: {
+  firstName?: string | null
+  email?: string
+  team?: Team | null
+  role?: Role | null
+} = {}) {
   const query = new URLSearchParams()
   query.set('email', email)
   if (firstName) query.set('firstName', firstName)
   if (team) query.set('team', team)
+  if (role) query.set('role', role)
   cy.then(() => ({email, firstName, team})).as('user')
   return cy.visit(`/__tests/login?${query.toString()}`)
 }

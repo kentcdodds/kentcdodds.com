@@ -1,12 +1,12 @@
 import * as React from 'react'
 import {useSubmit, redirect, Form, json, useRouteData, Link} from 'remix'
-import type {Call, KCDAction, KCDLoader} from 'types'
+import type {Await, Call, KCDAction, KCDLoader} from 'types'
 import {CallRecorder} from '../../../components/call-recorder'
 import {requireAdminUser, rootStorage} from '../../../utils/session.server'
 import {prisma} from '../../../utils/prisma.server'
 import {getErrorMessage, getNonNull} from '../../../utils/misc'
 import {createEpisodeAudio} from '../../../utils/ffmpeg.server'
-import {createEpisode} from '../../../utils/transitor.server'
+import {createEpisode, getEpisode} from '../../../utils/transitor.server'
 
 const errorSessionKey = 'call_error'
 const fieldsSessionKey = 'call_fields'
@@ -97,10 +97,15 @@ export const action: KCDAction<{callId: string}> = async ({
       })
 
       const episodeAudio = await createEpisodeAudio(call.base64, response)
-      await createEpisode({audio: episodeAudio, title, description})
-
-      console.log({title, description})
-      // await prisma.call.create({data: call})
+      const published = await createEpisode({
+        audio: episodeAudio,
+        title,
+        description,
+      })
+      await prisma.call.update({
+        where: {id: call.id},
+        data: {episodeId: published.data.id},
+      })
 
       return redirect(new URL(request.url).pathname)
     } catch (error: unknown) {
@@ -118,6 +123,7 @@ export const action: KCDAction<{callId: string}> = async ({
 
 type LoaderData = {
   call: Call | null
+  episode: Await<ReturnType<typeof getEpisode>> | null
   fields?: {
     // audio is too big to include in the session
     // hopefully it won't matter with fully client-side interactions though
@@ -147,6 +153,7 @@ export const loader: KCDLoader<{callId: string}> = async ({
     }
     const data: LoaderData = {
       call,
+      episode: call?.episodeId ? await getEpisode(call.episodeId) : null,
       fields,
       errors: session.get(errorSessionKey),
     }
@@ -266,6 +273,17 @@ export default function RecordingDetailScreen() {
     return (
       <div>
         Oh no... No call by that ID. Too bad. <Link to="..">See all calls</Link>
+      </div>
+    )
+  }
+  if (data.episode) {
+    return (
+      <div>
+        <p>This call has already been responded to:</p>
+        <a href={data.episode.data.attributes.share_url}>
+          {data.episode.data.attributes.title}
+        </a>
+        <audio src={data.episode.data.attributes.media_url} />
       </div>
     )
   }
