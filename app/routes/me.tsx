@@ -2,6 +2,7 @@ import * as React from 'react'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import {useRouteData, json, redirect} from 'remix'
 import type {User} from 'types'
+import {getDiscordAuthorizeURL} from '../utils/misc'
 import {updateUser} from '../utils/prisma.server'
 import {requireUser, rootStorage, signOutSession} from '../utils/session.server'
 
@@ -42,6 +43,7 @@ export const action: ActionFunction = async ({request}) => {
 
 function YouScreen() {
   const data = useRouteData<LoaderData>()
+  const authorizeURL = getDiscordAuthorizeURL()
   return (
     <div>
       {data.message ? <div>{data.message}</div> : null}
@@ -71,6 +73,16 @@ function YouScreen() {
           </button>
         </form>
       </details>
+      <div>
+        {data.user.discordId ? (
+          <div>Connected to discord account ID: {data.user.discordId}</div>
+        ) : (
+          <>
+            <div>You wanna connect your account to discord?</div>
+            <a href={authorizeURL}>Connect my KCD account to Discord</a>
+          </>
+        )}
+      </div>
     </div>
   )
 }

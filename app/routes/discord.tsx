@@ -1,37 +1,11 @@
 import * as React from 'react'
-import type {LoaderFunction} from 'remix'
-import {json, useRouteData} from 'remix'
-import {getRequiredGlobalEnvVar, useOptionalUser} from '../utils/misc'
-
-type LoaderData = {}
-
-export const loader: LoaderFunction = async () => {
-  const data: LoaderData = {}
-  return json(data)
-}
-
-function getAuthorizeURL() {
-  const url = new URL('https://discord.com/api/oauth2/authorize')
-  url.searchParams.set(
-    'client_id',
-    getRequiredGlobalEnvVar('DISCORD_CLIENT_ID'),
-  )
-  url.searchParams.set(
-    'redirect_uri',
-    getRequiredGlobalEnvVar('DISCORD_REDIRECT_URI'),
-  )
-  url.searchParams.set('response_type', 'code')
-  url.searchParams.set('scope', 'identify guilds.join email guilds')
-  return url.toString()
-}
+import {getDiscordAuthorizeURL, useOptionalUser} from '../utils/misc'
 
 export default function Discord() {
-  const data = useRouteData<LoaderData>()
   const user = useOptionalUser()
-  const authorizeURL = user ? getAuthorizeURL() : null
+  const authorizeURL = user ? getDiscordAuthorizeURL() : null
   return (
     <div>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
       {user && authorizeURL ? (
         <>
           <div>

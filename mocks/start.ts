@@ -4,6 +4,7 @@ import {githubHandlers} from './github'
 import {tiToHandlers} from './tito'
 import {oembedHandlers} from './oembed'
 import {transistorHandlers} from './transistor'
+import {discordHandlers} from './discord'
 import {isE2E, updateFixture} from './utils'
 
 // put one-off handlers that don't really need an entire file to themselves here
@@ -29,6 +30,7 @@ const server = setupServer(
   ...oembedHandlers,
   ...tiToHandlers,
   ...transistorHandlers,
+  ...discordHandlers,
   ...miscHandlers,
 )
 
