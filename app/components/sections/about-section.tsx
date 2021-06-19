@@ -19,7 +19,7 @@ function AboutSection() {
           <img className="w-auto h-48" src="/placeholders/snowboard.png" />
         </div>
 
-        <H2>Big extreme sports enthousiast. </H2>
+        <H2>Big extreme sports enthusiast.</H2>
         <H2 variant="secondary">With a big heart for helping people. </H2>
 
         <Paragraph>
