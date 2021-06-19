@@ -15,7 +15,7 @@ function BlogSection({articles}: BlogSectionProps) {
       <div className="flex flex-col col-span-full mb-10 space-y-10 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
         <div className="space-y-2 lg:space-y-0">
           <H2>Most popular from the blog.</H2>
-          <H2 variant="secondary">Probably the most helpful aswell.</H2>
+          <H2 variant="secondary">Probably the most helpful as well.</H2>
         </div>
 
         <ArrowButton direction="right">See the full blog</ArrowButton>
