@@ -1,5 +1,6 @@
 import type {DefaultRequestBody, MockedRequest, RestHandler} from 'msw'
 import {rest} from 'msw'
+import {requiredParam, requiredProperty} from './utils'
 
 const transistorHandlers: Array<
   RestHandler<MockedRequest<DefaultRequestBody>>
@@ -7,7 +8,7 @@ const transistorHandlers: Array<
   rest.get(
     'https://api.transistor.fm/v1/episodes/authorize_upload',
     async (req, res, ctx) => {
-      console.log(req.url, req.body)
+      requiredParam(req.url.searchParams, 'filename')
       return res(
         ctx.json({
           data: {
@@ -30,7 +31,9 @@ const transistorHandlers: Array<
   rest.put(
     'https://transistorupload.s3.amazonaws.com/uploads/api/:bucketId/:fileId',
     async (req, res, ctx) => {
-      console.log(req.url, req.body)
+      if (!req.body) {
+        throw new Error('req.body is required')
+      }
       return res(
         ctx.json({
           // TODO: we don't use the response so no need to put something real here.
@@ -40,7 +43,16 @@ const transistorHandlers: Array<
   ),
 
   rest.post('https://api.transistor.fm/v1/episodes', async (req, res, ctx) => {
-    console.log(req.url, req.body)
+    if (typeof req.body !== 'object') {
+      throw new Error('req.body must be an object')
+    }
+    requiredProperty(req.body, 'episode')
+    requiredProperty(req.body.episode, 'show_id')
+    requiredProperty(req.body.episode, 'season')
+    requiredProperty(req.body.episode, 'audio_url')
+    requiredProperty(req.body.episode, 'title')
+    requiredProperty(req.body.episode, 'summary')
+    requiredProperty(req.body.episode, 'description')
     return res(
       ctx.json({
         data: {
@@ -53,7 +65,15 @@ const transistorHandlers: Array<
   rest.patch(
     'https://api.transistor.fm/v1/episodes/:episodeId/publish',
     async (req, res, ctx) => {
-      console.log(req.url, req.body)
+      if (typeof req.body !== 'object') {
+        throw new Error('req.body must be an object')
+      }
+      requiredProperty(req.body, 'episode')
+      if (req.body.episode.status !== 'published') {
+        throw new Error(
+          `req.body.episode.status must be published. Was "${req.body.episode.status}"`,
+        )
+      }
       return res(
         ctx.json({
           data: {
@@ -67,7 +87,7 @@ const transistorHandlers: Array<
   rest.get(
     'https://api.transistor.fm/v1/episodes/:episodeId',
     async (req, res, ctx) => {
-      console.log(req.url, req.body)
+      requiredProperty(req.params, 'episodeId')
       return res(
         ctx.json({
           data: {

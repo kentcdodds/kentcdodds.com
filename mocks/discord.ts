@@ -1,31 +1,6 @@
 import type {DefaultRequestBody, MockedRequest, RestHandler} from 'msw'
 import {rest} from 'msw'
-
-function requiredParam(params: URLSearchParams, param: string) {
-  if (!params.get(param)) {
-    const paramsString = JSON.stringify(
-      Object.fromEntries(params.entries()),
-      null,
-      2,
-    )
-    throw new Error(
-      `Param "${param}" required, but not found in ${paramsString}`,
-    )
-  }
-}
-
-function requiredHeader(headers: Headers, header: string) {
-  if (!headers.get(header)) {
-    const headersString = JSON.stringify(
-      Object.fromEntries(headers.entries()),
-      null,
-      2,
-    )
-    throw new Error(
-      `Header "${header}" required, but not found in ${headersString}`,
-    )
-  }
-}
+import {requiredHeader, requiredParam} from './utils'
 
 const discordHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
   rest.post('https://discord.com/api/oauth2/token', async (req, res, ctx) => {

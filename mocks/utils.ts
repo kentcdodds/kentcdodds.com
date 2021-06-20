@@ -21,4 +21,39 @@ async function updateFixture(updates: Record<string, unknown>) {
   )
 }
 
-export {isE2E, updateFixture}
+function requiredParam(params: URLSearchParams, param: string) {
+  if (!params.get(param)) {
+    const paramsString = JSON.stringify(
+      Object.fromEntries(params.entries()),
+      null,
+      2,
+    )
+    throw new Error(
+      `Param "${param}" required, but not found in ${paramsString}`,
+    )
+  }
+}
+
+function requiredHeader(headers: Headers, header: string) {
+  if (!headers.get(header)) {
+    const headersString = JSON.stringify(
+      Object.fromEntries(headers.entries()),
+      null,
+      2,
+    )
+    throw new Error(
+      `Header "${header}" required, but not found in ${headersString}`,
+    )
+  }
+}
+
+function requiredProperty(object: {[key: string]: unknown}, property: string) {
+  if (!object[property]) {
+    const objectString = JSON.stringify(object)
+    throw new Error(
+      `Property "${property}" required, but not found in ${objectString}`,
+    )
+  }
+}
+
+export {isE2E, updateFixture, requiredParam, requiredHeader, requiredProperty}

@@ -2,7 +2,7 @@ import * as React from 'react'
 import {Link} from 'react-router-dom'
 import type {NonNullProperties, User} from 'types'
 import md5 from 'md5-hash'
-import type {getEnv} from './env'
+import type {getEnv} from './env.server'
 
 const useSSRLayoutEffect =
   typeof window === 'undefined' ? () => {} : React.useLayoutEffect

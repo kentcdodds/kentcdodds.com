@@ -17,7 +17,7 @@ import tailwind from './styles/tailwind.css'
 import {useTheme, ThemeProvider} from './theme-provider'
 import {getUser} from './utils/session.server'
 import {UserProvider} from './utils/misc'
-import {getEnv} from './utils/env'
+import {getEnv} from './utils/env.server'
 
 export function meta() {
   return {
