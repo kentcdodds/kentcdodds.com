@@ -20,28 +20,12 @@ if (process.env.SESSION_SECRET) {
   throw new Error('Must set SESSION_SECRET')
 }
 
-let actionSessionSecret = 'super-unsecret'
-if (process.env.ACTION_SESSION_SECRET) {
-  actionSessionSecret = process.env.ACTION_SESSION_SECRET
-} else if (process.env.NODE_ENV === 'production') {
-  throw new Error('Must set ACTION_SESSION_SECRET')
-}
-
 const rootStorage = createCookieSessionStorage({
   cookie: {
     name: '__session',
     secrets: [rootSessionSecret],
     sameSite: 'lax',
     path: '/',
-  },
-})
-
-const actionStorage = createCookieSessionStorage({
-  cookie: {
-    name: '__action_session',
-    secrets: [actionSessionSecret],
-    sameSite: 'lax',
-    path: '/action',
   },
 })
 
@@ -135,7 +119,6 @@ function requireUser(request: Request) {
 
 export {
   rootStorage,
-  actionStorage,
   requireUser,
   requireAdminUser,
   getUserRequestToken,
