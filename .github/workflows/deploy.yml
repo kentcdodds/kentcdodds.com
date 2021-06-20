@@ -26,6 +26,13 @@ jobs:
       - name: 📥 Download deps
         uses: bahmutov/npm-install@v1
 
+      # TODO: figure out how to not have to do this or something
+      # because it's annoying to have this slow down releases
+      - name: 📥📚 Download storybook deps
+        uses: bahmutov/npm-install@v1
+        with:
+          working-directory: storybook
+
       - name: ▶️ Run validate script
         run: npx kcd-scripts validate
         env:
