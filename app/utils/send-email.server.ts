@@ -94,7 +94,7 @@ Thanks!
 
 – The KCD Team
 
-P.S. If you did not sign up for an account on kentcdodds.com you can ignore this email.
+P.S. If you did not request this email, you can safely ignore it.
   `.trim()
 
   const message = {
