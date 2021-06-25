@@ -9,7 +9,7 @@ import {
   json,
   useRouteData,
 } from 'remix'
-import type {LinksFunction} from 'remix'
+import type {LinksFunction, MetaFunction} from 'remix'
 import {useLocation, Outlet} from 'react-router-dom'
 import type {User} from 'types'
 import styles from './styles/app.css'
@@ -18,20 +18,29 @@ import {
   useTheme,
   ThemeProvider,
   getClientThemeCode,
+  getThemeFromMedia,
   sessionKey,
 } from './theme-provider'
 import {getUser, rootStorage} from './utils/session.server'
 import {UserProvider} from './utils/misc'
 import {getEnv} from './utils/env.server'
 
-export function meta() {
+export const meta: MetaFunction = ({data}: {data: LoaderData}) => {
+  const theme = getThemeFromMedia(data.theme)
+
   return {
     title: 'Kent C. Dodds',
     description:
       'Come check out how Kent C. Dodds can help you level up your career as a software engineer.',
     viewport: 'width=device-width,initial-scale=1,viewport-fit=cover',
     charSet: 'utf-8',
-    'color-scheme': 'dark light',
+    'theme-color': '#A9ADC1',
+    'color-scheme':
+      theme === 'dark'
+        ? 'dark light'
+        : theme === 'light'
+        ? 'light dark'
+        : 'normal',
     'twitter:widgets:autoload': 'off',
   }
 }

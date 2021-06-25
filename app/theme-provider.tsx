@@ -18,17 +18,9 @@ function ThemeProvider({
   children: React.ReactNode
   specifiedTheme: ThemeIds | null
 }) {
-  const [theme, setTheme] = React.useState<ThemeIds | null>(() => {
-    // on the server, if we don't have a specified theme then we should
-    // return null and the getClientThemeCode will set the theme for us
-    // before hydration. Then (during hydration), this code will get the same
-    // value that getClientThemeCode got so hydration is happy.
-    return specifiedTheme ?? typeof window === 'object'
-      ? window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light'
-      : null
-  })
+  const [theme, setTheme] = React.useState<ThemeIds | null>(() =>
+    getThemeFromMedia(specifiedTheme),
+  )
 
   React.useEffect(() => {
     const mediaQuery = window.matchMedia(preferDarkQuery)
@@ -53,8 +45,33 @@ const theme =
     ? 'dark'
     : 'light';
 
-if (theme) document.body.classList.add(theme);
+if (theme) {
+  document.body.classList.add(theme);
+  const meta = document.querySelector('meta[name=color-scheme]');
+  if (meta) {
+    if (theme === 'dark') {
+      meta.content = 'dark light';
+    } else if (theme === 'light') {
+      meta.content = 'light dark';
+    } else {
+      meta.content = 'normal';
+    }
+  }
+}
 `
+/**
+ * On the server, if we don't have a specified theme then we should
+ * return null and the getClientThemeCode will set the theme for us
+ * before hydration. Then (during hydration), this code will get the same
+ * value that getClientThemeCode got so hydration is happy.
+ */
+function getThemeFromMedia(theme: ThemeIds | null) {
+  return theme ?? typeof window === 'object'
+    ? window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light'
+    : null
+}
 
 function useTheme() {
   const context = React.useContext(ThemeContext)
@@ -66,4 +83,10 @@ function useTheme() {
 
 const sessionKey = 'theme'
 
-export {ThemeProvider, useTheme, getClientThemeCode, sessionKey}
+export {
+  ThemeProvider,
+  useTheme,
+  getThemeFromMedia,
+  getClientThemeCode,
+  sessionKey,
+}
