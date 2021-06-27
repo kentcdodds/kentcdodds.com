@@ -2,18 +2,29 @@ import * as React from 'react'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import {useRouteData, json, redirect} from 'remix'
 import type {User} from 'types'
-import {getDiscordAuthorizeURL, useRequestInfo} from '../utils/misc'
-import {updateUser} from '../utils/prisma.server'
+import {getQrCodeDataURL} from '../utils/qrcode.server'
+import {
+  getDiscordAuthorizeURL,
+  getDomainUrl,
+  useRequestInfo,
+} from '../utils/misc'
+import {getMagicLink, updateUser} from '../utils/prisma.server'
 import {requireUser, rootStorage, signOutSession} from '../utils/session.server'
 
-type LoaderData = {user: User; message?: string}
+type LoaderData = {user: User; message?: string; qrLoginCode: string}
 export const loader: LoaderFunction = ({request}) => {
   return requireUser(request)(async user => {
     const session = await rootStorage.getSession(request.headers.get('Cookie'))
     const message = session.get('message')
     const cookie = await rootStorage.commitSession(session)
 
-    const loaderData: LoaderData = {user, message}
+    const qrLoginCode = await getQrCodeDataURL(
+      getMagicLink({
+        emailAddress: user.email,
+        domainUrl: getDomainUrl(request),
+      }),
+    )
+    const loaderData: LoaderData = {user, message, qrLoginCode}
     return json(loaderData, {headers: {'Set-Cookie': cookie}})
   })
 }
@@ -83,6 +94,15 @@ function YouScreen() {
             <a href={authorizeURL}>Connect my KCD account to Discord</a>
           </>
         )}
+      </div>
+      <div>
+        <details>
+          <summary>Login on another device:</summary>
+          <div>
+            Scan this QR code on the other device:
+            <img src={data.qrLoginCode} alt="Login QR Code" />
+          </div>
+        </details>
       </div>
     </div>
   )
