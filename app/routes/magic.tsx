@@ -11,17 +11,10 @@ import {getErrorMessage} from '../utils/misc'
 
 export const loader: LoaderFunction = async ({request}) => {
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
-  const email = session.get('email') as string | null
-
-  if (!email) {
-    session.flash('error', 'Sign in link invalid. Please request a new one.')
-    return redirect('/login', {
-      headers: {'Set-Cookie': await rootStorage.commitSession(session)},
-    })
-  }
+  const validationEmail = session.get('email') as string | null
 
   try {
-    await validateMagicLink(email, request.url)
+    const email = await validateMagicLink(validationEmail, request.url)
 
     const user = await getUserByEmail(email)
     if (user) {

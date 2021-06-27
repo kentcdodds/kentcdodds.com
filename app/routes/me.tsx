@@ -22,6 +22,12 @@ export const loader: LoaderFunction = ({request}) => {
       getMagicLink({
         emailAddress: user.email,
         domainUrl: getDomainUrl(request),
+        validationRequired: false,
+        // make a very short expiration time because it should be scanned
+        // right away anyway.
+        // TODO: make sure that it's generated on-demand rather than as
+        // part of the page initial request.
+        expirationDate: new Date(Date.now() + 1000 * 30).toISOString(),
       }),
     )
     const loaderData: LoaderData = {user, message, qrLoginCode}

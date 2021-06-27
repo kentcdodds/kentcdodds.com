@@ -48,15 +48,41 @@ Connected to non-localhost DB in dev mode:
 
 const magicLinkSearchParam = 'kodyKey'
 
+type MagicLinkPayload = {
+  emailAddress: string
+  expirationDate: string
+  validationRequired: boolean
+}
+
 function getMagicLink({
   emailAddress,
   domainUrl,
+  validationRequired = true,
+  expirationDate = new Date(Date.now() + linkExpirationTime).toISOString(),
 }: {
   emailAddress: string
   domainUrl: string
+  /**
+   * This determines whether validating the magic link requires a validation
+   * email address that matches the email address in the magic link code.
+   * When true (the default), then calling "validateMagicLink" with this link
+   * will check the email address in the magic link code matches the one given.
+   * It's an extra layer of security to make certain that someone else doesn't
+   * intercept a magic link.
+   *
+   * The QR Code is one situation where validation cannot work because by
+   * definition the device requests the magic link is different from the one
+   * that uses it.
+   */
+  validationRequired?: boolean
+  expirationDate?: string
 }) {
-  const expirationDate = new Date(Date.now() + linkExpirationTime).toISOString()
-  const stringToEncrypt = JSON.stringify([emailAddress, expirationDate])
+  const payload: MagicLinkPayload = {
+    emailAddress,
+    expirationDate,
+    validationRequired,
+  }
+  const stringToEncrypt = JSON.stringify(payload)
   const encryptedString = encrypt(stringToEncrypt)
   const url = new URL(domainUrl)
   url.pathname = 'magic'
@@ -64,19 +90,25 @@ function getMagicLink({
   return url.toString()
 }
 
-async function validateMagicLink(validationEmailAddress: string, link: string) {
-  let email, linkExpirationString
+async function validateMagicLink(
+  validationEmailAddress: string | null,
+  link: string,
+) {
+  let emailAddress, linkExpirationString, validationRequired
   try {
     const url = new URL(link)
     const encryptedString = url.searchParams.get(magicLinkSearchParam) ?? '[]'
     const decryptedString = decrypt(encryptedString)
-    ;[email, linkExpirationString] = JSON.parse(decryptedString)
+    const payload = JSON.parse(decryptedString) as MagicLinkPayload
+    emailAddress = payload.emailAddress
+    linkExpirationString = payload.expirationDate
+    validationRequired = payload.validationRequired
   } catch (error: unknown) {
     console.error(error)
     throw new Error('Invalid magic link.')
   }
 
-  if (typeof email !== 'string') {
+  if (typeof emailAddress !== 'string') {
     console.error(`Email is not a string. Maybe wasn't set in the session?`)
     throw new Error('Invalid magic link.')
   }
@@ -86,7 +118,7 @@ async function validateMagicLink(validationEmailAddress: string, link: string) {
     throw new Error('Invalid magic link.')
   }
 
-  if (email !== validationEmailAddress) {
+  if (validationRequired && emailAddress !== validationEmailAddress) {
     console.error(
       `The email for a magic link doesn't match the one in the session.`,
     )
@@ -97,6 +129,7 @@ async function validateMagicLink(validationEmailAddress: string, link: string) {
   if (Date.now() > linkExpirationDate.getTime()) {
     throw new Error('Magic link expired. Please request a new one.')
   }
+  return emailAddress
 }
 
 async function createSession(
