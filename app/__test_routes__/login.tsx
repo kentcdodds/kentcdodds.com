@@ -8,6 +8,7 @@ import {
   getUserByEmail,
   prisma,
 } from '../utils/prisma.server'
+import {getDomainUrl} from '../utils/misc'
 
 export const loader: LoaderFunction = async ({request}) => {
   const query = new URL(request.url)
@@ -40,9 +41,12 @@ export const loader: LoaderFunction = async ({request}) => {
 
     await prisma.user.create({data: {email, team, firstName, role}})
   }
-  return redirect(getMagicLink(email), {
-    headers: {'Set-Cookie': await rootStorage.commitSession(session)},
-  })
+  return redirect(
+    getMagicLink({emailAddress: email, domainUrl: getDomainUrl(request)}),
+    {
+      headers: {'Set-Cookie': await rootStorage.commitSession(session)},
+    },
+  )
 }
 
 export default () => null

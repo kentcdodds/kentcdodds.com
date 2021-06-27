@@ -1,10 +1,9 @@
 import type {User, Team} from 'types'
 import {prisma} from './prisma.server'
-import {getRequiredServerEnvVar} from './misc'
+import {getDiscordAuthorizeURL, getRequiredServerEnvVar} from './misc'
 
 const DISCORD_CLIENT_ID = getRequiredServerEnvVar('DISCORD_CLIENT_ID')
 const DISCORD_CLIENT_SECRET = getRequiredServerEnvVar('DISCORD_CLIENT_SECRET')
-const DISCORD_REDIRECT_URI = getRequiredServerEnvVar('DISCORD_REDIRECT_URI')
 const DISCORD_SCOPES = getRequiredServerEnvVar('DISCORD_SCOPES')
 const DISCORD_BOT_TOKEN = getRequiredServerEnvVar('DISCORD_BOT_TOKEN')
 const DISCORD_GUILD_ID = getRequiredServerEnvVar('DISCORD_GUILD_ID')
@@ -42,14 +41,20 @@ async function fetchAsDiscordBot<JsonType = unknown>(
   return json as JsonType
 }
 
-async function loadDiscordUser(code: string) {
+async function loadDiscordUser({
+  code,
+  domainUrl,
+}: {
+  code: string
+  domainUrl: string
+}) {
   const tokenUrl = new URL('https://discord.com/api/oauth2/token')
   const params = new URLSearchParams({
     client_id: DISCORD_CLIENT_ID,
     client_secret: DISCORD_CLIENT_SECRET,
     grant_type: 'authorization_code',
     code,
-    redirect_uri: DISCORD_REDIRECT_URI,
+    redirect_uri: getDiscordAuthorizeURL(domainUrl),
     scope: DISCORD_SCOPES,
   })
 
@@ -122,8 +127,16 @@ async function fetchOrInviteDiscordMember(
   return discordMember
 }
 
-async function connectDiscord(user: User, code: string) {
-  const {discordUser, discordToken} = await loadDiscordUser(code)
+async function connectDiscord({
+  user,
+  code,
+  domainUrl,
+}: {
+  user: User
+  code: string
+  domainUrl: string
+}) {
+  const {discordUser, discordToken} = await loadDiscordUser({code, domainUrl})
 
   const discordMember = await fetchOrInviteDiscordMember(
     discordUser,

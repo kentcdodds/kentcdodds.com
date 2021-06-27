@@ -26,11 +26,18 @@ const rootStorage = createCookieSessionStorage({
     secrets: [rootSessionSecret],
     sameSite: 'lax',
     path: '/',
+    expires: new Date('2088-10-19'),
   },
 })
 
-async function sendToken(emailAddress: string) {
-  const confirmationLink = getMagicLink(emailAddress)
+async function sendToken({
+  emailAddress,
+  domainUrl,
+}: {
+  emailAddress: string
+  domainUrl: string
+}) {
+  const confirmationLink = getMagicLink({emailAddress, domainUrl})
 
   const user = await getUserByEmail(emailAddress).catch(() => {
     /* ignore... */

@@ -22,17 +22,18 @@ enum Team {
 }
 
 model User {
-  id        String     @id @default(uuid())
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  email     String     @unique
-  firstName String
-  discordId String?
-  role      Role       @default(MEMBER)
-  team      Team
-  calls     Call[]
-  sessions  Session[]
-  postReads PostRead[]
+  id           String     @id @default(uuid())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  email        String     @unique
+  firstName    String
+  discordId    String?
+  convertKitId String?
+  role         Role       @default(MEMBER)
+  team         Team
+  calls        Call[]
+  sessions     Session[]
+  postReads    PostRead[]
 }
 
 model Session {

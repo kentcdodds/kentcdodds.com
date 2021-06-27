@@ -2,7 +2,7 @@ import type {LoaderFunction} from 'remix'
 import {redirect} from 'remix'
 import * as React from 'react'
 import {requireUser, rootStorage} from '../../utils/session.server'
-import {getErrorMessage} from '../../utils/misc'
+import {getDomainUrl, getErrorMessage} from '../../utils/misc'
 import {connectDiscord} from '../../utils/discord.server'
 
 export const loader: LoaderFunction = async ({request}) => {
@@ -14,7 +14,8 @@ export const loader: LoaderFunction = async ({request}) => {
       if (!code) {
         throw new Error('Discord code required')
       }
-      const discordMember = await connectDiscord(user, code)
+      const domainUrl = getDomainUrl(request)
+      const discordMember = await connectDiscord({user, code, domainUrl})
       session.flash(
         'message',
         `Sucessfully connected your KCD account with ${discordMember.user.username} on discord.`,

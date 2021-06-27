@@ -26,13 +26,7 @@ function getPrismaClient() {
 const linkExpirationTime = 1000 * 60 * 30
 const sessionExpirationTime = 1000 * 60 * 60 * 24 * 30
 
-let domainURL = `http://localhost:${process.env.PORT ?? '3000'}`
 const isProd = process.env.NODE_ENV === 'production'
-if (process.env.DOMAIN_URL) {
-  domainURL = process.env.DOMAIN_URL
-} else if (isProd) {
-  throw new Error('Must set DOMAIN_URL')
-}
 
 const {DATABASE_URL} = process.env
 if (!isProd && DATABASE_URL && !DATABASE_URL.includes('localhost')) {
@@ -54,11 +48,17 @@ Connected to non-localhost DB in dev mode:
 
 const magicLinkSearchParam = 'kodyKey'
 
-function getMagicLink(email: string) {
+function getMagicLink({
+  emailAddress,
+  domainUrl,
+}: {
+  emailAddress: string
+  domainUrl: string
+}) {
   const expirationDate = new Date(Date.now() + linkExpirationTime).toISOString()
-  const stringToEncrypt = JSON.stringify([email, expirationDate])
+  const stringToEncrypt = JSON.stringify([emailAddress, expirationDate])
   const encryptedString = encrypt(stringToEncrypt)
-  const url = new URL(domainURL)
+  const url = new URL(domainUrl)
   url.pathname = 'magic'
   url.searchParams.set(magicLinkSearchParam, encryptedString)
   return url.toString()

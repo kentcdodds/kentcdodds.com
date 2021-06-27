@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {Link} from 'react-router-dom'
-import type {NonNullProperties, User} from 'types'
+import type {NonNullProperties, User, Request} from 'types'
 import md5 from 'md5-hash'
 import type {getEnv} from './env.server'
 
@@ -131,6 +131,29 @@ function getNonNull<Type extends Record<string, null | unknown>>(
   return obj as NonNullProperties<Type>
 }
 
+type RequestInfo = {
+  origin: string
+}
+const RequestContext = React.createContext<RequestInfo | undefined>(undefined)
+
+function RequestInfoProvider({
+  info,
+  children,
+}: {
+  info: RequestInfo
+  children: React.ReactNode
+}) {
+  return <RequestContext.Provider value={info} children={children} />
+}
+
+function useRequestInfo() {
+  const user = React.useContext(RequestContext)
+  if (!user) {
+    throw new Error('useRequestInfo must be used within RequestInfoProvider')
+  }
+  return user
+}
+
 const UserContext = React.createContext<User | null | undefined>(undefined)
 
 function UserProvider({
@@ -197,19 +220,26 @@ function getRequiredGlobalEnvVar(
   return getRequiredEnvVarFromObj(ENV, key, devValue)
 }
 
-function getDiscordAuthorizeURL() {
+function getDiscordAuthorizeURL(domainUrl: string) {
   const url = new URL('https://discord.com/api/oauth2/authorize')
   url.searchParams.set(
     'client_id',
     getRequiredGlobalEnvVar('DISCORD_CLIENT_ID'),
   )
-  url.searchParams.set(
-    'redirect_uri',
-    getRequiredGlobalEnvVar('DISCORD_REDIRECT_URI'),
-  )
+  url.searchParams.set('redirect_uri', `${domainUrl}/discord/callback`)
   url.searchParams.set('response_type', 'code')
   url.searchParams.set('scope', 'identify guilds.join email guilds')
   return url.toString()
+}
+
+function getDomainUrl(request: Request) {
+  const host =
+    request.headers.get('X-Forwarded-Host') ?? request.headers.get('host')
+  if (!host) {
+    throw new Error('Could not determine domain URL.')
+  }
+  const protocol = host.includes('localhost') ? 'http' : 'https'
+  return `${protocol}://${host}`
 }
 
 export {
@@ -223,11 +253,15 @@ export {
   getRequiredServerEnvVar,
   getRequiredGlobalEnvVar,
   getDiscordAuthorizeURL,
+  getDomainUrl,
+  RequestInfoProvider,
+  useRequestInfo,
   UserProvider,
   useUser,
   useOptionalUser,
 }
 
+export type {RequestInfo}
 /*
 eslint
   @typescript-eslint/no-shadow: "off",

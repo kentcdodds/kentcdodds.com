@@ -2,7 +2,7 @@ import * as React from 'react'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import {useRouteData, json, redirect} from 'remix'
 import type {User} from 'types'
-import {getDiscordAuthorizeURL} from '../utils/misc'
+import {getDiscordAuthorizeURL, useRequestInfo} from '../utils/misc'
 import {updateUser} from '../utils/prisma.server'
 import {requireUser, rootStorage, signOutSession} from '../utils/session.server'
 
@@ -43,7 +43,8 @@ export const action: ActionFunction = async ({request}) => {
 
 function YouScreen() {
   const data = useRouteData<LoaderData>()
-  const authorizeURL = getDiscordAuthorizeURL()
+  const requestInfo = useRequestInfo()
+  const authorizeURL = getDiscordAuthorizeURL(requestInfo.origin)
   return (
     <div>
       {data.message ? <div>{data.message}</div> : null}

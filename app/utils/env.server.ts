@@ -1,14 +1,7 @@
-process.env.DOMAIN_URL =
-  process.env.DOMAIN_URL ?? `http://localhost:${process.env.PORT}`
-
-process.env.DISCORD_REDIRECT_URI = `${process.env.DOMAIN_URL}/discord/callback`
-
 function getEnv() {
   return {
     NODE_ENV: process.env.NODE_ENV,
-    DOMAIN_URL: process.env.DOMAIN_URL,
     DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
-    DISCORD_REDIRECT_URI: process.env.DISCORD_REDIRECT_URI,
   }
 }
 

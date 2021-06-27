@@ -10,6 +10,7 @@ import {
   validateMagicLink,
 } from '../utils/prisma.server'
 import {getErrorMessage, getNonNull} from '../utils/misc'
+import {tagKCDSiteSubscriber} from '../utils/convertkit.server'
 
 type LoaderData = {
   email: string
@@ -91,6 +92,14 @@ export const action: ActionFunction = async ({request}) => {
 
   try {
     const user = await prisma.user.create({data: {email, firstName, team}})
+
+    // add user to mailing list
+    const sub = await tagKCDSiteSubscriber(user)
+    await prisma.user.update({
+      data: {convertKitId: String(sub.id)},
+      where: {id: user.id},
+    })
+
     const userSession = await createSession({userId: user.id})
     await signInSession(session, userSession.id)
 

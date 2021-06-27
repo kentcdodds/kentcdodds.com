@@ -1,4 +1,4 @@
-import {Request, Response} from 'node-fetch'
+import type {Request, Response} from 'node-fetch'
 import type {Action, Loader} from 'remix'
 import type {User, Call, Session, Team, Role} from '@prisma/client'
 
@@ -66,6 +66,8 @@ type KCDAction<Params extends Record<string, string> = Record<string, string>> =
 type GitHubFile = {path: string; content: string}
 
 export {
+  Request,
+  Response,
   NonNullProperties,
   Await,
   User,

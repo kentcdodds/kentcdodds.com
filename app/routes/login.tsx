@@ -1,6 +1,7 @@
 import * as React from 'react'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import {useRouteData, json, redirect} from 'remix'
+import {getDomainUrl} from '../utils/misc'
 import {
   sendToken,
   getUser,
@@ -27,17 +28,18 @@ export const loader: LoaderFunction = async ({request}) => {
 export const action: ActionFunction = async ({request}) => {
   const params = new URLSearchParams(await request.text())
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
-  const email = params.get('email')
-  if (!email?.match(/.+@.+/)) {
+  const emailAddress = params.get('email')
+  if (!emailAddress?.match(/.+@.+/)) {
     session.flash('error', 'A valid email is required')
     const cookie = await rootStorage.commitSession(session)
     return redirect(`/login`, {headers: {'Set-Cookie': cookie}})
   }
 
   try {
-    await sendToken(email)
+    const domainUrl = getDomainUrl(request)
+    await sendToken({emailAddress, domainUrl})
     session.flash('message', 'Email sent.')
-    session.set('email', email)
+    session.set('email', emailAddress)
     const cookie = await rootStorage.commitSession(session)
     return redirect(`/login`, {headers: {'Set-Cookie': cookie}})
   } catch (e: unknown) {

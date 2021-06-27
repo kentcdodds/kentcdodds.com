@@ -22,7 +22,8 @@ import {
   sessionKey,
 } from './theme-provider'
 import {getUser, rootStorage} from './utils/session.server'
-import {UserProvider} from './utils/misc'
+import type {RequestInfo} from './utils/misc'
+import {UserProvider, getDomainUrl, RequestInfoProvider} from './utils/misc'
 import {getEnv} from './utils/env.server'
 
 export const meta: MetaFunction = ({data}: {data: LoaderData}) => {
@@ -57,6 +58,7 @@ type LoaderData = {
   user: User | null
   theme: 'dark' | 'light' | null
   ENV: typeof global.ENV
+  requestInfo: RequestInfo
 }
 
 export const loader: LoaderFunction = async ({request}) => {
@@ -66,6 +68,7 @@ export const loader: LoaderFunction = async ({request}) => {
     user,
     theme: session.get(sessionKey),
     ENV: getEnv(),
+    requestInfo: {origin: getDomainUrl(request)},
   }
   return json(data)
 }
@@ -117,10 +120,12 @@ function App() {
 export default function AppWithProviders() {
   const data = useRouteData<LoaderData>()
   return (
-    <UserProvider user={data.user}>
-      <ThemeProvider specifiedTheme={data.theme}>
-        <App />
-      </ThemeProvider>
-    </UserProvider>
+    <RequestInfoProvider info={data.requestInfo}>
+      <UserProvider user={data.user}>
+        <ThemeProvider specifiedTheme={data.theme}>
+          <App />
+        </ThemeProvider>
+      </UserProvider>
+    </RequestInfoProvider>
   )
 }
