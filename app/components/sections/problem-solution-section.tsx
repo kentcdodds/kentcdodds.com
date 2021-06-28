@@ -24,7 +24,7 @@ function ProblemSolutionSection() {
               </H2>
             </div>
             <div className="col-span-full lg:col-span-5 lg:col-start-7">
-              <H2 variant="secondary">
+              <H2 variant="secondary" as="p">
                 You’re in the right place, my website is your one stop shop for
                 everything JavaScript related.
               </H2>

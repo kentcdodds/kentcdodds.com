@@ -10,7 +10,9 @@ function CourseSection() {
       <div className="flex flex-col col-span-full mb-10 space-y-10 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
         <div className="space-y-2 lg:space-y-0">
           <H2>Have a look at some of the courses.</H2>
-          <H2 variant="secondary">Level up your development skills.</H2>
+          <H2 variant="secondary" as="p">
+            Level up your development skills.
+          </H2>
         </div>
 
         <ArrowButton direction="right">See the all courses</ArrowButton>

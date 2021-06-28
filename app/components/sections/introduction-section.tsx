@@ -10,6 +10,7 @@ function IntroductionSection() {
       <div className="col-span-full lg:col-span-4">
         <VideoCard
           imageUrl="/placeholders/video.png"
+          imageAlt="person riding a one-wheel"
           videoUrl="/video.mp4"
           title="Hi, I'm Kent C. Dodds"
           description="Introduction video 1:42"
@@ -20,7 +21,7 @@ function IntroductionSection() {
           Hi, I'm Kent C. Dodds, I’m a full time educator teaching people
           development.
         </H2>
-        <H2 variant="secondary">
+        <H2 variant="secondary" as="p">
           I'm a big extreme sports enthousiast. I’m an avid snowboarder and
           rollerskater. When i’m not at the computer you can find me cruizing
           around on my one wheel.

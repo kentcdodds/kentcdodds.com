@@ -4,7 +4,17 @@ import * as React from 'react'
 
 interface TitleProps {
   variant?: 'primary' | 'secondary'
+  as?: React.ElementType
   children: ReactNode
+}
+
+const fontSize = {
+  h1: 'leading-[42px] md:leading-[60px] text-4xl md:text-5xl',
+  h2: 'leading-[38px] md:leading-[50px] text-3xl md:text-4xl',
+  h3: 'text-2xl font-medium md:text-3xl',
+  h4: 'text-xl font-medium md:text-2xl',
+  h5: 'text-lg font-medium md:text-xl',
+  h6: 'text-lg font-medium',
 }
 
 const titleColors = {
@@ -12,67 +22,40 @@ const titleColors = {
   secondary: 'text-gray-400 dark:text-blueGray-500',
 }
 
-function H1({variant = 'primary', children}: TitleProps) {
+function Title({
+  variant = 'primary',
+  size,
+  as,
+  children,
+}: TitleProps & {size: keyof typeof fontSize}) {
+  const Tag = as ?? size
   return (
-    <h1
-      className={clsx(
-        'leading-[42px] md:leading-[60px] text-4xl md:text-5xl',
-        titleColors[variant],
-      )}
-    >
-      {children}
-    </h1>
+    <Tag className={clsx(fontSize[size], titleColors[variant])}>{children}</Tag>
   )
 }
 
-function H2({variant = 'primary', children}: TitleProps) {
-  return (
-    <h2
-      className={clsx(
-        'leading-[38px] md:leading-[50px] text-3xl md:text-4xl',
-        titleColors[variant],
-      )}
-    >
-      {children}
-    </h2>
-  )
+function H1(props: TitleProps) {
+  return <Title {...props} size="h1" />
 }
 
-function H3({variant = 'primary', children}: TitleProps) {
-  return (
-    <h3
-      className={clsx('text-2xl font-medium md:text-3xl', titleColors[variant])}
-    >
-      {children}
-    </h3>
-  )
+function H2(props: TitleProps) {
+  return <Title {...props} size="h2" />
 }
 
-function H4({variant = 'primary', children}: TitleProps) {
-  return (
-    <h4
-      className={clsx('text-xl font-medium md:text-2xl', titleColors[variant])}
-    >
-      {children}
-    </h4>
-  )
+function H3(props: TitleProps) {
+  return <Title {...props} size="h3" />
 }
 
-function H5({variant = 'primary', children}: TitleProps) {
-  return (
-    <h5
-      className={clsx('text-lg font-medium md:text-xl', titleColors[variant])}
-    >
-      {children}
-    </h5>
-  )
+function H4(props: TitleProps) {
+  return <Title {...props} size="h4" />
 }
 
-function H6({variant = 'primary', children}: TitleProps) {
-  return (
-    <h6 className={clsx('text-lg font-medium', titleColors[variant])}>
-      {children}
-    </h6>
-  )
+function H5(props: TitleProps) {
+  return <Title {...props} size="h5" />
 }
+
+function H6(props: TitleProps) {
+  return <Title {...props} size="h6" />
+}
+
 export {H1, H2, H3, H4, H5, H6}

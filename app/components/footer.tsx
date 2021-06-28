@@ -94,7 +94,7 @@ function SitemapSection() {
 function AboutSection() {
   return (
     <div>
-      <H4>Kent C. Dodds</H4>
+      <H4 as="h6">Kent C. Dodds</H4>
 
       <p className="mt-6 max-w-md dark:text-blueGray-500 text-gray-500 text-2xl">
         Full time educator teaching people development

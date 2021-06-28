@@ -20,7 +20,9 @@ function AboutSection() {
         </div>
 
         <H2>Big extreme sports enthusiast.</H2>
-        <H2 variant="secondary">With a big heart for helping people. </H2>
+        <H2 variant="secondary" as="p">
+          With a big heart for helping people.{' '}
+        </H2>
 
         <Paragraph>
           Vestibulum in cursus est, sit amet rhoncus sapien. Fusce nec quam

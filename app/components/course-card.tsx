@@ -24,19 +24,17 @@ function CourseCard({
         className="group relative block pb-10 pt-36 px-8 w-full h-full dark:bg-gray-800 rounded-lg md:pb-20 md:px-16"
         href={courseUrl}
       >
-        <div>
-          <H2>{title}</H2>
-        </div>
+        <H2>{title}</H2>
         <div className="mt-4 max-w-sm">
-          <H2 variant="secondary">{description}</H2>
+          <H2 variant="secondary" as="p">
+            {description}
+          </H2>
         </div>
 
         <div className="mt-16">
           <Button>
-            <div className="inline-flex items-center space-x-5">
-              <span>Visit course</span>
-              <ArrowIcon direction="top-right" size={24} />
-            </div>
+            <span>Visit course</span>
+            <ArrowIcon direction="top-right" size={24} />
           </Button>
         </div>
       </a>

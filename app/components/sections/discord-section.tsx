@@ -15,7 +15,7 @@ function DiscordSection() {
         <H2>
           Do you want to meet like minded people that face the same challenges?
         </H2>
-        <H2 variant="secondary">
+        <H2 variant="secondary" as="p">
           Join the discord and learn to get better at react together.
         </H2>
 
