@@ -1,8 +1,4 @@
 import * as React from 'react'
-import {Grid} from '../grid'
-import {H2, H3, Paragraph} from '../typography'
-import {ArrowButton} from '../arrow-button'
-import {ArrowIcon} from '../icons/arrow-icon'
 import {
   Tabs,
   Tab as ReachTab,
@@ -12,21 +8,36 @@ import {
   TabPanel,
 } from '@reach/tabs'
 import clsx from 'clsx'
+import {motion, AnimatePresence} from 'framer-motion'
+import {Grid} from '../grid'
+import {H2, H3, Paragraph} from '../typography'
+import {ArrowButton} from '../arrow-button'
+import {ArrowIcon} from '../icons/arrow-icon'
 
 function Tab({isSelected, children}: TabProps & {isSelected?: boolean}) {
   return (
     <ReachTab
-      className={clsx('inline-flex items-center w-full lowercase space-x-8', {
-        'text-black dark:text-white': isSelected,
-        'dark:text-blueGray-500 text-gray-400': !isSelected,
-      })}
+      className={clsx(
+        'inline-flex items-center w-full lowercase space-x-8 transition',
+        {
+          'text-black dark:text-white': isSelected,
+          'dark:text-blueGray-500 text-gray-400': !isSelected,
+        },
+      )}
     >
       <span>{children}</span>
-      {isSelected ? (
-        <span className="h-[50px] hidden items-center mt-4 lg:flex">
-          <ArrowIcon size={76} direction="right" />
-        </span>
-      ) : null}
+      <AnimatePresence>
+        {isSelected ? (
+          <motion.span
+            className="h-[50px] hidden items-center mt-4 lg:flex"
+            initial={{x: -20, opacity: 0}}
+            animate={{x: 0, opacity: 1, transition: {duration: 0.15}}}
+            exit={{x: 20, opacity: 0, transition: {duration: 0.15}}}
+          >
+            <ArrowIcon size={76} direction="right" />
+          </motion.span>
+        ) : null}
+      </AnimatePresence>
     </ReachTab>
   )
 }
