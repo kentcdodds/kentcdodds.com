@@ -64,6 +64,7 @@
     "mdx-bundler": "^4.1.0",
     "node-fetch": "^2.6.1",
     "pm2": "^5.1.0",
+    "postcss-import": "^14.0.2",
     "qrcode": "^1.4.4",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",

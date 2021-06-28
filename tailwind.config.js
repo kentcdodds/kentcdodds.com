@@ -31,6 +31,8 @@ module.exports = {
         500: '#A9ADC1',
       },
       team: {
+        // TODO: decide if this is a good color
+        unknown: '#818890',
         yellow: '#FFD644',
         blue: '#36A3FF',
         red: '#FF4545',

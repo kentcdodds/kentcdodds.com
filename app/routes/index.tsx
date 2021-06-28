@@ -1,35 +1,30 @@
 import * as React from 'react'
 import {Outlet} from 'react-router'
-import {Link} from 'react-router-dom'
+import {AboutSection} from '../components/sections/about-section'
+import {BlogSection} from '../components/sections/blog-section'
+import {CourseSection} from '../components/sections/course-section'
+import {DiscordSection} from '../components/sections/discord-section'
+import {HeroSection} from '../components/sections/hero-section'
+import {IntroductionSection} from '../components/sections/introduction-section'
+import {ProblemSolutionSection} from '../components/sections/problem-solution-section'
+import {Spacer} from '../components/spacer'
 
 function IndexRoute() {
   return (
     <div>
-      <nav>
-        <ul>
-          <li>
-            <Link to="/blog">Blog</Link>
-          </li>
-          <li>
-            <Link to="/about">About Kent</Link>
-          </li>
-          <li>
-            <Link to="/call">Call Kent</Link>
-          </li>
-          <li>
-            <Link to="/contact">Contact Kent</Link>
-          </li>
-          <li>
-            <Link to="/workshops">Workshops</Link>
-          </li>
-          <li>
-            <Link to="/discord">Discord</Link>
-          </li>
-          <li>
-            <Link to="/login">Login</Link>
-          </li>
-        </ul>
-      </nav>
+      <HeroSection />
+      <Spacer size="large" />
+      <IntroductionSection />
+      <Spacer size="large" />
+      <ProblemSolutionSection />
+      <Spacer size="medium" />
+      <BlogSection articles={[]} />
+      <Spacer size="large" />
+      <CourseSection />
+      <Spacer size="large" />
+      <DiscordSection />
+      <Spacer size="large" />
+      <AboutSection />
       <Outlet />
     </div>
   )

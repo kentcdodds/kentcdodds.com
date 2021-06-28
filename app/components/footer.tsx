@@ -1,4 +1,6 @@
 import * as React from 'react'
+import {Form} from 'remix'
+import {useOptionalUser} from '../utils/misc'
 import {H4, H6, Paragraph} from './typography'
 import {Grid} from './grid'
 import {ArrowButton} from './arrow-button'
@@ -12,6 +14,7 @@ interface FooterLinkProps {
 }
 
 function NewsletterSection() {
+  const user = useOptionalUser()
   return (
     <div>
       <H6>Stay up to date</H6>
@@ -22,17 +25,23 @@ function NewsletterSection() {
         </Paragraph>
       </div>
 
-      <form className="mt-8 space-y-4">
+      <Form
+        className="mt-8 space-y-4"
+        method="post"
+        action="TODO: set up action for newsletter"
+      >
         <input
-          name="name"
+          name="firstName"
+          defaultValue={user?.firstName}
           autoComplete="name"
           type="text"
-          placeholder="name"
-          aria-label="name"
+          placeholder="First name"
+          aria-label="First name"
           className="dark:focus:bg-gray-800 px-8 py-6 w-full dark:text-white focus:bg-gray-100 bg-transparent border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none"
         />
         <input
           name="email"
+          defaultValue={user?.email}
           type="email"
           autoComplete="email"
           placeholder="email"
@@ -40,10 +49,10 @@ function NewsletterSection() {
           className="dark:focus:bg-gray-800 px-8 py-6 w-full dark:text-white focus:bg-gray-100 bg-transparent border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none"
         />
 
-        <div className="pt-4">
+        <button className="pt-4" type="submit">
           <ArrowButton direction="right">Sign me up</ArrowButton>
-        </div>
-      </form>
+        </button>
+      </Form>
     </div>
   )
 }

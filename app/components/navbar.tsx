@@ -1,7 +1,10 @@
 import * as React from 'react'
+import {useTheme} from '../theme-provider'
+import {getAvatar, useOptionalUser} from '../utils/misc'
 import {SunIcon} from './icons/sun-icon'
 import {MoonIcon} from './icons/moon-icon'
 import {MenuIcon} from './icons/menu-icon'
+import {Link} from 'react-router-dom'
 
 interface NavLinkProps {
   href: string
@@ -23,20 +26,21 @@ function NavLink({href, children}: NavLinkProps) {
 }
 
 function DarkModeToggle() {
-  const [mode, setMode] = React.useState<'light' | 'dark'>('dark')
-
-  React.useEffect(() => {
-    const classList = document.body.classList
-    classList.remove('light', 'dark')
-    classList.add(mode)
-  }, [mode])
+  const [, setTheme] = useTheme()
 
   return (
     <button
-      onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
+      onClick={() =>
+        setTheme(previousTheme => (previousTheme === 'dark' ? 'light' : 'dark'))
+      }
       className="inline-flex items-center justify-center p-1 w-14 h-14 text-black dark:text-white border-2 border-gray-200 dark:border-gray-600 rounded-full transition"
     >
-      {mode === 'dark' ? <SunIcon /> : <MoonIcon />}
+      <span className="block dark:hidden">
+        <SunIcon />
+      </span>
+      <span className="dark:block hidden">
+        <MoonIcon />
+      </span>
     </button>
   )
 }
@@ -49,7 +53,16 @@ function MenuButton() {
   )
 }
 
+const userBorderClassNames = {
+  UNKNOWN: 'border-team-unknown',
+  YELLOW: 'border-team-yellow',
+  RED: 'border-team-red',
+  BLUE: 'border-team-blue',
+}
+
 function Navbar() {
+  const user = useOptionalUser()
+
   return (
     <nav className="flex items-center justify-between p-9 dark:text-white lg:px-16 lg:py-12">
       <a
@@ -78,14 +91,18 @@ function Navbar() {
           <DarkModeToggle />
         </div>
 
-        <button className="inline-flex items-center justify-center ml-4 w-14 h-14 text-white border-2 border-team-yellow rounded-full">
-          {/*TODO: replace the image*/}
+        <Link
+          to={user ? '/me' : '/login'}
+          className={`${
+            userBorderClassNames[user?.team ?? 'UNKNOWN']
+          } inline-flex items-center justify-center ml-4 w-14 h-14 text-white border-2 rounded-full`}
+        >
           <img
             className="inline w-10 h-10 bg-white rounded-full object-cover"
-            src="https://kentcdodds.com/static/kent-985f8a0db8a37e47da2c07080cffa865.png"
-            alt="TODO: give a real alt"
+            src={user ? getAvatar(user.email) : '/todo.png'}
+            alt={user ? user.firstName : 'Login'}
           />
-        </button>
+        </Link>
       </div>
     </nav>
   )

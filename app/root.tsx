@@ -25,6 +25,9 @@ import {getUser, rootStorage} from './utils/session.server'
 import type {RequestInfo} from './utils/misc'
 import {UserProvider, getDomainUrl, RequestInfoProvider} from './utils/misc'
 import {getEnv} from './utils/env.server'
+import {Navbar} from './components/navbar'
+import {Spacer} from './components/spacer'
+import {Footer} from './components/footer'
 
 export const meta: MetaFunction = ({data}: {data: LoaderData}) => {
   const theme = getThemeFromMedia(data.theme)
@@ -97,7 +100,10 @@ function App() {
           // consistent between the client and the server.
           dangerouslySetInnerHTML={{__html: getClientThemeCode(data.theme)}}
         />
+        <Navbar />
         <Outlet />
+        <Spacer size="medium" />
+        <Footer />
         <Scripts />
         <script
           dangerouslySetInnerHTML={{

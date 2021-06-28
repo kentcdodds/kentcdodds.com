@@ -69,6 +69,10 @@ function Login() {
       <div className="-mt-24 w-full max-w-md space-y-8">
         <div className="mt-8">
           <div>Sign in (or sign up) to KCD</div>
+          <div className="text-red-500">
+            NOTICE: Any and all of your data may get deleted at any time during
+            development of the new site.
+          </div>
           {data.message ? <div>{data.message}</div> : null}
           <form
             className="space-y-6"
