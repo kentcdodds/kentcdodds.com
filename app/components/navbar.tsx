@@ -23,9 +23,9 @@ function DarkModeToggle() {
 
   return (
     <button
-      onClick={() =>
+      onClick={() => {
         setTheme(previousTheme => (previousTheme === 'dark' ? 'light' : 'dark'))
-      }
+      }}
       className="inline-flex items-center justify-center p-1 w-14 h-14 text-black dark:text-white border-2 border-gray-200 dark:border-gray-600 rounded-full transition"
     >
       <span className="block dark:hidden">

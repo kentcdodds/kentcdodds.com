@@ -19,7 +19,7 @@ import styles from './styles/app.css'
 import {
   useTheme,
   ThemeProvider,
-  getClientThemeCode,
+  clientThemeCode,
   getThemeFromMedia,
   sessionKey,
 } from './theme-provider'
@@ -97,11 +97,13 @@ function App() {
           'opacity-50': showPendingState,
         })}
       >
-        <script
-          // NOTE: this *has* to be set to the data.theme for the JS to be
-          // consistent between the client and the server.
-          dangerouslySetInnerHTML={{__html: getClientThemeCode(data.theme)}}
-        />
+        {/*
+          If we know what the theme is from the server then we don't need
+          to do fancy tricks prior to hydration to make things match.
+        */}
+        {data.theme ? null : (
+          <script dangerouslySetInnerHTML={{__html: clientThemeCode}} />
+        )}
         <Navbar />
         <main>
           <Outlet />
