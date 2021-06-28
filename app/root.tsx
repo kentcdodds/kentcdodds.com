@@ -85,21 +85,15 @@ function App() {
   const showPendingState = pendingLocation
   const includeTweets = location.pathname.includes('/blog/')
   return (
-    <html lang="en">
+    <html lang="en" className={theme ?? ''}>
       <head>
         <Meta />
         <Links />
       </head>
       <body
-        className={clsx(
-          'transition',
-          {
-            'opacity-50': showPendingState,
-            'bg-gray-900': theme === 'dark',
-            'bg-white': theme === 'light',
-          },
-          theme,
-        )}
+        className={clsx('dark:bg-gray-900 bg-white transition', {
+          'opacity-50': showPendingState,
+        })}
       >
         <script
           // NOTE: this *has* to be set to the data.theme for the JS to be

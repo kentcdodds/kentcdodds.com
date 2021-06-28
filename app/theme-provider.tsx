@@ -46,7 +46,7 @@ const theme =
     : 'light';
 
 if (theme) {
-  document.body.classList.add(theme);
+  document.documentElement.classList.add(theme);
   const meta = document.querySelector('meta[name=color-scheme]');
   if (meta) {
     if (theme === 'dark') {
