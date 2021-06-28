@@ -19,15 +19,8 @@ import {Spacer} from '../spacer'
 export function HomePage() {
   return (
     <div>
-      <div className="flex flex-col lg:h-screen">
-        <div className="flex-none">
-          <Navbar />
-        </div>
-
-        <div className="flex-auto pb-12">
-          <HeroSection />
-        </div>
-      </div>
+      <Navbar />
+      <HeroSection />
       <Spacer size="large" />
       <IntroductionSection />
       <Spacer size="large" />

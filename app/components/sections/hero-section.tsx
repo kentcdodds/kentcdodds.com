@@ -8,10 +8,12 @@ import {Button} from '../button'
 // Note that the image overlaps the right edge of the grid by `8vw`. This `8vw`
 // needs to stay in sync with the `10vw` margins of the grid component.
 function HeroSection() {
+  // The grid has a computed height on the large breakpoint, to make the Hero
+  // span the height of the screens, minus 10rem for the navbar (h-40).
   return (
-    <Grid className="h-full">
+    <Grid className="lg:h-[calc(100vh-10rem)] lg:pb-12">
       <div className="relative col-span-full px-4 lg:col-span-6 lg:col-start-7 lg:px-0 lg:h-full">
-        <div className="bottom-0 left-0 right-0 top-0 flex items-center justify-center lg:absolute lg:-right-8vw">
+        <div className="bottom-0 left-0 right-0 top-0 flex items-center justify-center pointer-events-none lg:absolute lg:-right-8vw">
           <img
             alt={images.alexHero.alt}
             className="w-full h-auto max-h-screen object-contain"

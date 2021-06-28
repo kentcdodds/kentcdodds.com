@@ -28,6 +28,7 @@ import {getEnv} from './utils/env.server'
 import {Navbar} from './components/navbar'
 import {Spacer} from './components/spacer'
 import {Footer} from './components/footer'
+import clsx from 'clsx'
 
 export const meta: MetaFunction = ({data}: {data: LoaderData}) => {
   const theme = getThemeFromMedia(data.theme)
@@ -52,8 +53,8 @@ export const meta: MetaFunction = ({data}: {data: LoaderData}) => {
 export const links: LinksFunction = () => {
   return [
     {rel: 'icon', href: '/favicon.ico'},
-    {rel: 'stylesheet', href: tailwind},
     {rel: 'stylesheet', href: styles},
+    {rel: 'stylesheet', href: tailwind},
   ]
 }
 
@@ -90,10 +91,15 @@ function App() {
         <Links />
       </head>
       <body
-        // TODO: switch this to clsx when Stephan's PR that adds it is merged
-        className={[showPendingState ? 'opacity-50' : null, theme]
-          .filter(Boolean)
-          .join(' ')}
+        className={clsx(
+          'transition',
+          {
+            'opacity-50': showPendingState,
+            'bg-gray-900': theme === 'dark',
+            'bg-white': theme === 'light',
+          },
+          theme,
+        )}
       >
         <script
           // NOTE: this *has* to be set to the data.theme for the JS to be
