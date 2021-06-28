@@ -11,9 +11,11 @@ import {
 } from 'remix'
 import type {LinksFunction, MetaFunction} from 'remix'
 import {useLocation, Outlet} from 'react-router-dom'
+import clsx from 'clsx'
 import type {User} from 'types'
-import styles from './styles/app.css'
 import tailwind from './styles/tailwind.css'
+import vendors from './styles/vendors.css'
+import styles from './styles/app.css'
 import {
   useTheme,
   ThemeProvider,
@@ -28,7 +30,6 @@ import {getEnv} from './utils/env.server'
 import {Navbar} from './components/navbar'
 import {Spacer} from './components/spacer'
 import {Footer} from './components/footer'
-import clsx from 'clsx'
 
 export const meta: MetaFunction = ({data}: {data: LoaderData}) => {
   const theme = getThemeFromMedia(data.theme)
@@ -53,8 +54,9 @@ export const meta: MetaFunction = ({data}: {data: LoaderData}) => {
 export const links: LinksFunction = () => {
   return [
     {rel: 'icon', href: '/favicon.ico'},
-    {rel: 'stylesheet', href: styles},
     {rel: 'stylesheet', href: tailwind},
+    {rel: 'stylesheet', href: vendors},
+    {rel: 'stylesheet', href: styles},
   ]
 }
 

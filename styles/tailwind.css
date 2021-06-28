@@ -6,6 +6,7 @@
 @tailwind utilities;
 @tailwind screens;
 
+/* tailwind is configured to prefer this font */
 @font-face {
   font-family: 'Matter';
   src: url('/fonts/Matter-Medium.woff2') format('woff2'),
