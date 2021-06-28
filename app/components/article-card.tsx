@@ -6,6 +6,7 @@ export interface ArticleCardProps {
   date: Date | number | string
   readTime: string
   imageUrl: string
+  imageAlt: string
   articleUrl: string
 }
 
@@ -14,6 +15,7 @@ function ArticleCard({
   date,
   readTime,
   imageUrl,
+  imageAlt,
   articleUrl,
 }: ArticleCardProps) {
   const dateString = new Date(date).toLocaleDateString('en-US', {
@@ -27,7 +29,11 @@ function ArticleCard({
       </button>
 
       <div className="aspect-w-3 aspect-h-4 w-full">
-        <img className="rounded-lg object-cover" src={imageUrl} />
+        <img
+          alt={imageAlt}
+          className="rounded-lg object-cover"
+          src={imageUrl}
+        />
       </div>
 
       <div className="mt-8 text-blueGray-500 text-xl font-medium">

@@ -8,12 +8,14 @@ export interface CourseCardProps {
   description: string
   imageUrl: string
   courseUrl: string
+  imageAlt: string
 }
 
 function CourseCard({
   title,
   description,
   imageUrl,
+  imageAlt,
   courseUrl,
 }: CourseCardProps) {
   return (
@@ -40,7 +42,11 @@ function CourseCard({
       </a>
 
       <div className="absolute left-16 top-0">
-        <img alt="" className="w-auto h-32 object-cover" src={imageUrl} />
+        <img
+          alt={imageAlt}
+          className="w-auto h-32 object-cover"
+          src={imageUrl}
+        />
       </div>
     </div>
   )

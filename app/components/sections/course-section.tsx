@@ -17,19 +17,23 @@ function CourseSection() {
       </div>
 
       <div className="col-span-full lg:col-span-6">
+        {/* TODO: set correct imageUrl and courseUrl */}
         <CourseCard
           title="Epic React"
           description="The most comprehensive guide for pro’s."
-          imageUrl="/placeholders/epic-react.png"
+          imageUrl="https://epicreact.dev/static/e9e50b43a9526373f48a11340fdfdbdc/6ba37/01-react-fundamentals.png"
+          imageAlt="Epic React logo"
           courseUrl="/"
         />
       </div>
 
       <div className="col-span-full mt-12 lg:col-span-6 lg:mt-0">
+        {/* TODO: set correct imageUrl and courseUrl */}
         <CourseCard
           title="Testing Javascript"
           description="Learn smart, efficient testing methods."
-          imageUrl="/placeholders/testing-javascript.png"
+          imageUrl="https://testingjavascript.com/static/Pricing_Trophy_Gold-c7bda50071dab490179a098b4b6b4886.png"
+          imageAlt="Testing Javascript logo"
           courseUrl="/"
         />
       </div>
