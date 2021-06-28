@@ -1,5 +1,6 @@
 import * as React from 'react'
 import {Link} from 'remix'
+import * as images from '../images'
 import {useTheme} from '../theme-provider'
 import {getAvatar, useOptionalUser} from '../utils/misc'
 import {SunIcon} from './icons/sun-icon'
@@ -89,7 +90,7 @@ function Navbar() {
         >
           <img
             className="inline w-10 h-10 bg-white rounded-full object-cover"
-            src={user ? getAvatar(user.email) : '/todo.png'}
+            src={user ? getAvatar(user.email) : images.alexProfile.src}
             alt={user ? user.firstName : 'Login'}
           />
         </Link>

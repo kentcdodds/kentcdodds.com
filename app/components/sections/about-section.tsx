@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as images from '../../images'
 import {H2, Paragraph} from '../typography'
 import {ArrowButton} from '../arrow-button'
 import {Grid} from '../grid'
@@ -22,8 +23,8 @@ function AboutSection() {
       <div className="flex flex-col col-span-full justify-center space-y-12 lg:col-span-5 lg:col-start-8 lg:mt-0">
         <img
           className="self-start w-auto h-48"
-          src="/placeholders/snowboard.png"
-          alt="TODO: give a real alt"
+          src={images.snowboard.src}
+          alt={images.snowboard.alt}
         />
 
         <H2>Big extreme sports enthusiast.</H2>
