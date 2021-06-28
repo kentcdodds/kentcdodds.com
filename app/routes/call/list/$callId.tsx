@@ -194,7 +194,7 @@ function SubmitRecordingForm({response}: {response: Blob}) {
   return (
     <div>
       {data.errors?.generalError ? (
-        <p id="audio-error-message" className="text-center text-red-600">
+        <p id="audio-error-message" className="text-red-600 text-center">
           {data.errors.generalError}
         </p>
       ) : null}
@@ -204,7 +204,7 @@ function SubmitRecordingForm({response}: {response: Blob}) {
         'loading...'
       )}
       {data.errors?.audio ? (
-        <p id="audio-error-message" className="text-center text-red-600">
+        <p id="audio-error-message" className="text-red-600 text-center">
           {data.errors.audio}
         </p>
       ) : null}
@@ -218,7 +218,7 @@ function SubmitRecordingForm({response}: {response: Blob}) {
             defaultValue={data.fields?.title ?? ''}
           />
           {data.errors?.title ? (
-            <p id="title-error-message" className="text-center text-red-600">
+            <p id="title-error-message" className="text-red-600 text-center">
               {data.errors.title}
             </p>
           ) : null}
@@ -233,7 +233,7 @@ function SubmitRecordingForm({response}: {response: Blob}) {
           {data.errors?.description ? (
             <p
               id="description-error-message"
-              className="text-center text-red-600"
+              className="text-red-600 text-center"
             >
               {data.errors.description}
             </p>
