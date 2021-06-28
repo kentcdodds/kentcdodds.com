@@ -19,13 +19,10 @@ function IntroductionSection() {
       </div>
       <div className="col-span-full mt-12 space-y-12 lg:col-span-5 lg:col-start-7 lg:mt-0">
         <H2>
-          Hi, I'm Kent C. Dodds, I’m a full time educator teaching people
-          development.
+          {`Hi, I'm Kent C. Dodds, I’m a full time educator teaching people development.`}
         </H2>
         <H2 variant="secondary" as="p">
-          I'm a big extreme sports enthousiast. I’m an avid snowboarder and
-          rollerskater. When i’m not at the computer you can find me cruizing
-          around on my one wheel.
+          {`I'm a big extreme sports enthousiast. I’m an avid snowboarder and rollerskater. When i’m not at the computer you can find me cruizing around on my one wheel.`}
         </H2>
         <ArrowButton direction="right">Learn more about me</ArrowButton>
       </div>

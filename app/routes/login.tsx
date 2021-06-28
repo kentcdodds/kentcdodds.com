@@ -93,7 +93,7 @@ function Login() {
                   autoComplete="email"
                   defaultValue={data.email}
                   required
-                  className="placeholder-gray-500 relative focus:z-10 block px-3 py-2 w-full text-gray-200 bg-gray-800 border-2 border-gray-700 focus:border-yellow-500 rounded-none rounded-t-md focus:outline-none appearance-none sm:text-sm"
+                  className="placeholder-gray-500 border-gray-700 relative focus:z-10 block px-3 py-2 w-full text-gray-200 bg-gray-800 border-2 focus:border-yellow-500 rounded-none rounded-t-md focus:outline-none appearance-none sm:text-sm"
                   placeholder="Email address"
                 />
               </div>
@@ -110,7 +110,7 @@ function Login() {
               </button>
             </div>
             {data.error ? (
-              <p id="error-message" className="text-center text-red-600">
+              <p id="error-message" className="text-red-600 text-center">
                 {data.error}
               </p>
             ) : null}

@@ -83,6 +83,7 @@ function Navbar() {
           <img
             className="inline w-10 h-10 bg-white rounded-full object-cover"
             src="https://kentcdodds.com/static/kent-985f8a0db8a37e47da2c07080cffa865.png"
+            alt="TODO: give a real alt"
           />
         </button>
       </div>

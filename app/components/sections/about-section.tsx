@@ -13,6 +13,7 @@ function AboutSection() {
             <img
               className="rounded-lg object-cover"
               src="https://images.unsplash.com/photo-1565857725478-54d38420aaa6?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218fHx8fHx8fHwxNjI0ODg2NjMx&ixlib=rb-1.2.1&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=600"
+              alt="TODO: give a real alt"
             />
           </div>
         </div>
@@ -22,6 +23,7 @@ function AboutSection() {
         <img
           className="self-start w-auto h-48"
           src="/placeholders/snowboard.png"
+          alt="TODO: give a real alt"
         />
 
         <H2>Big extreme sports enthusiast.</H2>
