@@ -1,13 +1,16 @@
 import * as React from 'react'
 import {redirect} from 'remix'
 import type {ActionFunction} from 'remix'
-import {sessionKey} from '../../theme-provider'
+import {sessionKey, themes} from '../../theme-provider'
 import {rootStorage} from '../../utils/session.server'
 
 export const action: ActionFunction = async ({request}) => {
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
   const params = await request.json()
-  session.set(sessionKey, params.theme)
+  const theme = params.theme
+  if (!themes.includes(theme)) return redirect(new URL(request.url).pathname)
+
+  session.set(sessionKey, theme)
   return redirect(new URL(request.url).pathname, {
     headers: {'Set-Cookie': await rootStorage.commitSession(session)},
   })

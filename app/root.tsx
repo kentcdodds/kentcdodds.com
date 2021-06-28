@@ -22,6 +22,7 @@ import {
   clientThemeCode,
   getThemeFromMedia,
   sessionKey,
+  Theme,
 } from './theme-provider'
 import {getUser, rootStorage} from './utils/session.server'
 import type {RequestInfo} from './utils/misc'
@@ -62,7 +63,7 @@ export const links: LinksFunction = () => {
 
 type LoaderData = {
   user: User | null
-  theme: 'dark' | 'light' | null
+  theme: Theme | null
   ENV: typeof global.ENV
   requestInfo: RequestInfo
 }

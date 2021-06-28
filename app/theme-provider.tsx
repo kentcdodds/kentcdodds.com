@@ -1,9 +1,13 @@
 import * as React from 'react'
 
-type ThemeId = 'dark' | 'light'
+enum Theme {
+  DARK = 'dark',
+  LIGHT = 'light',
+}
+const themes: Array<Theme> = Object.values(Theme)
 type ThemeContextType = [
-  ThemeId | null,
-  React.Dispatch<React.SetStateAction<ThemeId | null>>,
+  Theme | null,
+  React.Dispatch<React.SetStateAction<Theme | null>>,
 ]
 
 const ThemeContext =
@@ -16,9 +20,9 @@ function ThemeProvider({
   specifiedTheme,
 }: {
   children: React.ReactNode
-  specifiedTheme: ThemeId | null
+  specifiedTheme: Theme | null
 }) {
-  const [theme, setTheme] = React.useState<ThemeId | null>(() =>
+  const [theme, setTheme] = React.useState<Theme | null>(() =>
     getThemeFromMedia(specifiedTheme),
   )
 
@@ -42,7 +46,7 @@ function ThemeProvider({
   React.useEffect(() => {
     const mediaQuery = window.matchMedia(preferDarkQuery)
     const handleChange = () => {
-      setTheme(mediaQuery.matches ? 'dark' : 'light')
+      setTheme(mediaQuery.matches ? Theme.DARK : Theme.LIGHT)
     }
     mediaQuery.addEventListener('change', handleChange)
     return () => mediaQuery.removeEventListener('change', handleChange)
@@ -82,16 +86,19 @@ if (meta) {
  * before hydration. Then (during hydration), this code will get the same
  * value that clientThemeCode got so hydration is happy.
  */
-function getThemeFromMedia(theme: ThemeId | null) {
-  if (theme) return theme
+function getThemeFromMedia(theme: Theme | null): Theme | null {
+  if (theme) {
+    if (themes.includes(theme)) return theme
+    else return null
+  }
 
   // there's no way for us to know what the theme should be in this context
   // the client will have to figure it out before hydration.
   if (typeof window !== 'object') return null
 
   return window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light'
+    ? Theme.DARK
+    : Theme.LIGHT
 }
 
 function useTheme() {
@@ -104,4 +111,12 @@ function useTheme() {
 
 const sessionKey = 'theme'
 
-export {ThemeProvider, useTheme, getThemeFromMedia, clientThemeCode, sessionKey}
+export {
+  ThemeProvider,
+  useTheme,
+  getThemeFromMedia,
+  clientThemeCode,
+  sessionKey,
+  themes,
+  Theme,
+}

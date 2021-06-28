@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {Link} from 'remix'
 import * as images from '../images'
-import {useTheme} from '../theme-provider'
+import {Theme, useTheme} from '../theme-provider'
 import {getAvatar, useOptionalUser} from '../utils/misc'
 import {SunIcon} from './icons/sun-icon'
 import {MoonIcon} from './icons/moon-icon'
@@ -24,7 +24,9 @@ function DarkModeToggle() {
   return (
     <button
       onClick={() => {
-        setTheme(previousTheme => (previousTheme === 'dark' ? 'light' : 'dark'))
+        setTheme(previousTheme =>
+          previousTheme === Theme.DARK ? Theme.LIGHT : Theme.DARK,
+        )
       }}
       className="inline-flex items-center justify-center p-1 w-14 h-14 text-black dark:text-white border-2 border-gray-200 dark:border-gray-600 rounded-full transition"
     >
