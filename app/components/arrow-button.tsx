@@ -1,10 +1,9 @@
 import * as React from 'react'
-import type {ReactNode} from 'react'
 import clsx from 'clsx'
 import {ArrowIcon, ArrowIconProps} from './icons/arrow-icon'
 
 interface ArrowButtonProps {
-  children: ReactNode
+  children: React.ReactNode
   direction?: ArrowIconProps['direction']
   textSize?: 'small' | 'medium'
 }

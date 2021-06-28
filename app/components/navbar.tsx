@@ -1,5 +1,4 @@
 import * as React from 'react'
-import type {ReactNode} from 'react'
 import {SunIcon} from './icons/sun-icon'
 import {MoonIcon} from './icons/moon-icon'
 import {MenuIcon} from './icons/menu-icon'
@@ -7,7 +6,7 @@ import {MenuIcon} from './icons/menu-icon'
 interface NavLinkProps {
   href: string
   active?: boolean
-  children?: ReactNode
+  children?: React.ReactNode
 }
 
 function NavLink({href, children}: NavLinkProps) {

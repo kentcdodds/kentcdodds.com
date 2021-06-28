@@ -1,11 +1,10 @@
-import type {ReactNode} from 'react'
 import * as React from 'react'
 import clsx from 'clsx'
 
 interface TitleProps {
   variant?: 'primary' | 'secondary'
   as?: React.ElementType
-  children: ReactNode
+  children: React.ReactNode
 }
 
 const fontSize = {

@@ -1,9 +1,8 @@
 import * as React from 'react'
 import clsx from 'clsx'
-import type {ReactNode} from 'react'
 
 interface GridProps {
-  children: ReactNode
+  children: React.ReactNode
   overflow?: boolean
   className?: string
 }

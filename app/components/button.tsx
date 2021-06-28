@@ -1,10 +1,9 @@
-import type {ReactNode} from 'react'
 import clsx from 'clsx'
 import * as React from 'react'
 
 interface ButtonProps {
   variant?: 'primary' | 'secondary'
-  children: ReactNode
+  children: React.ReactNode
 }
 
 function Button({children, variant = 'primary'}: ButtonProps) {
