@@ -74,7 +74,7 @@ function FourOhFour() {
   return (
     <>
       <header>
-        <h1>404 oh no</h1>
+        <h2>404 oh no</h2>
       </header>
       <main>
         {`Oh no, you found a page that's missing stuff... "${pathname}" is not a page on kentcdodds.com. So sorry...`}

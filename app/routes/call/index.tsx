@@ -70,7 +70,7 @@ export default function CallHomeScreen() {
   const data = useRouteData<{calls: Array<Call>}>()
   return (
     <div>
-      <h1>Your calls with Kent</h1>
+      <h2>Your calls with Kent</h2>
       <hr />
       <Link to="./record">Record a new call</Link>
       <hr />

@@ -17,28 +17,34 @@ describe('contact', () => {
     const bodyPart2 = emailData.body.slice(30)
     cy.login({email: emailData.email, firstName: emailData.firstName})
     cy.visit('/contact')
-    cy.findByRole('textbox', {name: /name/i}).should(
-      'have.value',
-      emailData.firstName,
-    )
-    cy.findByRole('textbox', {name: /email/i}).should(
-      'have.value',
-      emailData.email,
-    )
-    cy.findByRole('textbox', {name: /subject/i}).type(emailData.subject)
-    cy.findByRole('textbox', {name: /body/i}).type(bodyPart1)
 
-    cy.findByRole('button', {name: /submit/i}).click()
+    cy.findByRole('main').within(() => {
+      cy.findByRole('textbox', {name: /name/i}).should(
+        'have.value',
+        emailData.firstName,
+      )
+      cy.findByRole('textbox', {name: /email/i}).should(
+        'have.value',
+        emailData.email,
+      )
+      cy.findByRole('textbox', {name: /subject/i}).type(emailData.subject)
+      cy.findByRole('textbox', {name: /body/i}).type(bodyPart1)
 
-    cy.findByRole('textbox', {name: /body/i}).then(textbox => {
-      cy.get(`#${textbox.attr('aria-describedby') ?? 'no-described-by-found'}`)
-        .then(el => el.text())
-        .should('match', /too short/i)
+      cy.findByRole('button', {name: /submit/i}).click()
+
+      cy.findByRole('textbox', {name: /body/i}).then(textbox => {
+        cy.get(
+          `#${textbox.attr('aria-describedby') ?? 'no-described-by-found'}`,
+        )
+          .then(el => el.text())
+          .should('match', /too short/i)
+      })
+
+      cy.findByRole('textbox', {name: /body/i}).type(bodyPart2)
+
+      cy.findByRole('button', {name: /submit/i}).click()
     })
 
-    cy.findByRole('textbox', {name: /body/i}).type(bodyPart2)
-
-    cy.findByRole('button', {name: /submit/i}).click()
     cy.fixture('msw.local.json').then((data: {email: {html: string}}) => {
       expect(data.email).to.include({
         from: `"${emailData.firstName}" <${emailData.email}>`,

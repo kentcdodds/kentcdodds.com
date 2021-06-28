@@ -35,7 +35,7 @@ function WorkshopsHome() {
   return (
     <div>
       <header>
-        <h1>Kent C. Dodds</h1>
+        <h2>Kent C. Dodds</h2>
       </header>
       <main>
         {workshops.map(workshop => (

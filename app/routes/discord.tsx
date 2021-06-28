@@ -26,7 +26,7 @@ export default function Discord() {
 export function ErrorBoundary({error}: {error: Error}) {
   return (
     <div>
-      <h1>Error</h1>
+      <h2>Error</h2>
       <pre>{error.stack}</pre>
     </div>
   )

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {json, redirect, useRouteData} from 'remix'
+import {Form, json, redirect, useRouteData} from 'remix'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import type {Team} from 'types'
 import {rootStorage, signInSession} from '../utils/session.server'
@@ -139,9 +139,9 @@ export default function NewAccount() {
   const data = useRouteData<LoaderData>()
   return (
     <div>
-      <h1>Welcome to kentcdodds.com</h1>
+      <h2>Welcome to kentcdodds.com</h2>
       <p>To create your account for {data.email}, choose your team:</p>
-      <form method="post" noValidate>
+      <Form method="post" noValidate>
         <div>
           <label htmlFor="firstName">First Name: </label>
           <input
@@ -186,7 +186,7 @@ export default function NewAccount() {
         <div>
           <button type="submit">Join KCD</button>
         </div>
-      </form>
+      </Form>
       <small>
         Or <a href="/">return to the home page</a>
       </small>

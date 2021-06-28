@@ -1,6 +1,6 @@
 import * as React from 'react'
 import type {ActionFunction, LoaderFunction} from 'remix'
-import {useRouteData, json, redirect} from 'remix'
+import {Form, useRouteData, json, redirect} from 'remix'
 import type {User} from 'types'
 import {getQrCodeDataURL} from '../utils/qrcode.server'
 import {
@@ -40,6 +40,7 @@ export const action: ActionFunction = async ({request}) => {
     const session = await rootStorage.getSession(request.headers.get('Cookie'))
     const params = new URLSearchParams(await request.text())
     const actionId = params.get('actionId')
+
     if (actionId === 'logout') {
       await signOutSession(session)
 
@@ -65,19 +66,19 @@ function YouScreen() {
   return (
     <div>
       {data.message ? <div>{data.message}</div> : null}
-      <h1>User: {data.user.email}</h1>
+      <h2>User: {data.user.email}</h2>
       <div>Team: {data.user.team}</div>
       <div>
-        <form method="post" action="/me">
-          <button name="actionId" value="logout" type="submit">
-            Logout
-          </button>
-        </form>
+        <Form method="post" action="/me">
+          <input type="hidden" name="actionId" value="logout" />
+          <button type="submit">Logout</button>
+        </Form>
       </div>
       <details>
         <summary>Change account details</summary>
 
-        <form method="post" action="/me">
+        <Form method="post" action="/me">
+          <input type="hidden" name="actionId" value="change details" />
           <div>
             <label htmlFor="firstName">First Name</label>
             <input
@@ -86,10 +87,8 @@ function YouScreen() {
               defaultValue={data.user.firstName}
             />
           </div>
-          <button type="submit" name="actionId" value="change details">
-            Submit
-          </button>
-        </form>
+          <button type="submit">Submit</button>
+        </Form>
       </details>
       <div>
         {data.user.discordId ? (

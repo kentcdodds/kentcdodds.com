@@ -101,7 +101,9 @@ function App() {
           dangerouslySetInnerHTML={{__html: getClientThemeCode(data.theme)}}
         />
         <Navbar />
-        <Outlet />
+        <main>
+          <Outlet />
+        </main>
         <Spacer size="medium" />
         <Footer />
         <Scripts />

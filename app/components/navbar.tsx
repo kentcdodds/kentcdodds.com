@@ -1,26 +1,18 @@
 import * as React from 'react'
+import {Link} from 'remix'
 import {useTheme} from '../theme-provider'
 import {getAvatar, useOptionalUser} from '../utils/misc'
 import {SunIcon} from './icons/sun-icon'
 import {MoonIcon} from './icons/moon-icon'
 import {MenuIcon} from './icons/menu-icon'
-import {Link} from 'react-router-dom'
 
-interface NavLinkProps {
-  href: string
-  active?: boolean
-  children?: React.ReactNode
-}
-
-function NavLink({href, children}: NavLinkProps) {
+function NavLink({className, ...rest}: Parameters<typeof Link>['0']) {
   return (
     <li>
-      <a
-        href={href}
-        className="block px-5 py-2 hover:underline whitespace-nowrap text-lg font-medium"
-      >
-        {children}
-      </a>
+      <Link
+        className={`block px-5 py-2 hover:underline whitespace-nowrap text-lg font-medium ${className}`}
+        {...rest}
+      />
     </li>
   )
 }
@@ -65,22 +57,20 @@ function Navbar() {
 
   return (
     <nav className="flex items-center justify-between p-9 dark:text-white lg:px-16 lg:py-12">
-      <a
-        href="/"
+      <Link
+        to="/"
         className="block hover:underline whitespace-nowrap text-2xl font-medium transition"
       >
-        Kent C. Dodds
-      </a>
+        <h1>Kent C. Dodds</h1>
+      </Link>
 
       <ul className="hidden lg:flex">
-        <NavLink href="/blog">Blog</NavLink>
-        <NavLink href="/courses" active>
-          Courses
-        </NavLink>
-        <NavLink href="/discord">Discord</NavLink>
-        <NavLink href="/podcast">Podcast</NavLink>
-        <NavLink href="/workshops">Workshops</NavLink>
-        <NavLink href="/about">About</NavLink>
+        <NavLink to="/blog">Blog</NavLink>
+        <NavLink to="/courses">Courses</NavLink>
+        <NavLink to="/discord">Discord</NavLink>
+        <NavLink to="/podcast">Podcast</NavLink>
+        <NavLink to="/workshops">Workshops</NavLink>
+        <NavLink to="/about">About</NavLink>
       </ul>
 
       <div className="flex items-center justify-center">

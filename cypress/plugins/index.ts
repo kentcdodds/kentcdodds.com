@@ -4,10 +4,13 @@ module.exports = (
 ) => {
   const isDev = config.watchForFileChanges
   const port = process.env.PORT ?? (isDev ? '3000' : '8811')
-  config.baseUrl = `http://localhost:${port}`
-  Object.assign(config, {
+  const configOverrides: Partial<Cypress.PluginConfigOptions> = {
+    baseUrl: `http://localhost:${port}`,
+    viewportWidth: 1030,
+    viewportHeight: 800,
     integrationFolder: 'cypress/e2e',
-  })
+  }
+  Object.assign(config, configOverrides)
 
   on('before:browser:launch', (browser, options) => {
     if (browser.name === 'chrome') {

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import type {ActionFunction, LoaderFunction} from 'remix'
-import {useRouteData, json, redirect} from 'remix'
+import {Form, useRouteData, json, redirect} from 'remix'
 import {getDomainUrl} from '../utils/misc'
 import {
   sendToken,
@@ -74,7 +74,7 @@ function Login() {
             development of the new site.
           </div>
           {data.message ? <div>{data.message}</div> : null}
-          <form
+          <Form
             className="space-y-6"
             onChange={event => {
               const form = event.currentTarget
@@ -123,7 +123,7 @@ function Login() {
                 ? 'Sign in form is now valid and ready to submit'
                 : 'Sign in form is now invalid.'}
             </div>
-          </form>
+          </Form>
         </div>
       </div>
     </div>

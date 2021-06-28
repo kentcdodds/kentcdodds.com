@@ -130,7 +130,7 @@ export default function ContactRoute() {
   const user = useOptionalUser()
   return (
     <div>
-      <h1>Contact Kent</h1>
+      <h2>Contact Kent</h2>
       <Form method="post" noValidate>
         <div>
           <label htmlFor="contact-name">Name</label>

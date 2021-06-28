@@ -66,7 +66,7 @@ export default function CallListScreen() {
   const data = useRouteData<LoaderData>()
   return (
     <div>
-      <h1>All the calls</h1>
+      <h2>All the calls</h2>
       <hr />
       <ul>
         {data.calls.map(call => (

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {ArrowButton} from '../arrow-button'
 import {Grid} from '../grid'
-import {H1} from '../typography'
+import {H2} from '../typography'
 import {Button} from '../button'
 
 // Note that the image overlaps the right edge of the grid by `8vw`. This `8vw`
@@ -21,10 +21,10 @@ function HeroSection() {
 
       <div className="col-span-full lg:flex lg:flex-col lg:col-span-6 lg:col-start-1 lg:row-start-1 lg:justify-center lg:h-full">
         <div className="flex flex-auto flex-col justify-center">
-          <H1>
+          <H2>
             Helping people make the world a better place through quality
             software.
-          </H1>
+          </H2>
           <div className="flex flex-col mt-14 space-y-4 lg:flex-row lg:space-x-4 lg:space-y-0">
             <Button variant="primary">Read the blog</Button>
             <Button variant="secondary">Take a course</Button>

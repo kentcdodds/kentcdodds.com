@@ -59,7 +59,7 @@ function MdxScreen({
   return (
     <>
       <header>
-        <h1>{frontmatter.meta.title}</h1>
+        <h2>{frontmatter.meta.title}</h2>
         <p>{frontmatter.meta.description}</p>
       </header>
       {workshop ? (

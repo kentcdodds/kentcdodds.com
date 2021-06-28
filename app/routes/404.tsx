@@ -7,7 +7,7 @@ export function meta() {
 export default function FourOhFour() {
   return (
     <div>
-      <h1>404</h1>
+      <h2>404</h2>
     </div>
   )
 }
