@@ -11,7 +11,7 @@ function Grid({children, className}: GridProps) {
   return (
     <div
       className={clsx(
-        'gap-[18px] mx-[10vw] md:gap-[17px] lg:gap-[23px] grid grid-cols-4 md:grid-cols-8 lg:grid-cols-12',
+        'grid gap-4 grid-cols-4 mx-10vw md:grid-cols-8 lg:gap-6 lg:grid-cols-12',
         className,
       )}
     >
@@ -34,7 +34,7 @@ function GridLines() {
         {Array.from({length: 12}).map((_, idx) => (
           <div
             key={idx}
-            className="bg-opacity-[0.025] dark:bg-opacity-[0.025] flex items-start h-screen text-black dark:text-white bg-black dark:bg-white"
+            className="flex items-start h-screen text-black dark:text-white bg-black dark:bg-white bg-opacity-5 dark:bg-opacity-5"
           >
             <div className="pt-4 w-full text-center text-black dark:text-white text-lg opacity-10">
               {idx + 1}

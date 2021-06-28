@@ -11,7 +11,7 @@ const rotationMap = {
   right: '-rotate-90',
   down: 'rotate-0',
   left: 'rotate-90',
-  'top-right': 'rotate-[-135deg]',
+  'top-right': '-rotate-135',
 }
 
 function ArrowIcon({direction, size = 32}: ArrowIconProps) {

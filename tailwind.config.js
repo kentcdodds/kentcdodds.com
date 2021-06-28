@@ -61,17 +61,16 @@ module.exports = {
         '6xl': '3.75rem', // 60px
         '7xl': '4.375rem', // 70px
       },
-      maxWidth: {
-        '8xl': '88rem',
-        'grid-sm': '314px',
-        'grid-md': '647px',
-        'grid-lg': '1150px',
-      },
-      gridTemplateColumns: {
-        hero: 'calc((100% - 1150px) / 2) 1fr 1fr calc((100% - 1150px) / 2)',
-      },
       gridTemplateRows: {
         'max-content': 'max-content',
+      },
+      spacing: {
+        '8vw': '8vw', // positions hero img inside the margin
+        '10vw': '10vw', // page margin
+      },
+      rotate: {
+        '-135': '-135deg',
+        135: '135deg',
       },
     },
   },

@@ -29,7 +29,7 @@ function Tab({isSelected, children}: TabProps & {isSelected?: boolean}) {
       <AnimatePresence>
         {isSelected ? (
           <motion.span
-            className="h-[50px] hidden items-center mt-4 lg:flex"
+            className="hidden items-center mt-4 h-12 lg:flex"
             initial={{x: -20, opacity: 0}}
             animate={{x: 0, opacity: 1, transition: {duration: 0.15}}}
             exit={{x: 20, opacity: 0, transition: {duration: 0.15}}}
