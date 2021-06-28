@@ -28,7 +28,7 @@ function ArrowButton({
         <span className="mr-8">{children}</span>
       ) : null}
 
-      <div className="inline-flex items-center justify-center p-1 w-14 h-14 border-2 border-gray-200 dark:border-gray-600 rounded-full transition">
+      <div className="inline-flex flex-none items-center justify-center p-1 w-14 h-14 border-2 border-gray-200 dark:border-gray-600 rounded-full transition">
         <ArrowIcon direction={direction} />
       </div>
 

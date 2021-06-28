@@ -3,19 +3,40 @@ import {Grid} from '../grid'
 import {H2, H3, Paragraph} from '../typography'
 import {ArrowButton} from '../arrow-button'
 import {ArrowIcon} from '../icons/arrow-icon'
+import {
+  Tabs,
+  Tab as ReachTab,
+  TabProps,
+  TabList,
+  TabPanels,
+  TabPanel,
+} from '@reach/tabs'
+import clsx from 'clsx'
+
+function Tab({isSelected, children}: TabProps & {isSelected?: boolean}) {
+  return (
+    <ReachTab
+      className={clsx('inline-flex items-center w-full lowercase space-x-8', {
+        'text-black dark:text-white': isSelected,
+        'dark:text-blueGray-500 text-gray-400': !isSelected,
+      })}
+    >
+      <span>{children}</span>
+      {isSelected ? (
+        <span className="h-[50px] hidden items-center mt-4 lg:flex">
+          <ArrowIcon size={76} direction="right" />
+        </span>
+      ) : null}
+    </ReachTab>
+  )
+}
 
 function ProblemSolutionSection() {
-  const arrow = (
-    <span className="h-[50px] hidden items-center mt-4 lg:flex">
-      <ArrowIcon size={76} direction="right" />
-    </span>
-  )
-
   return (
     <div className="px-8 w-full">
       <div className="pb-16 pt-24 w-full bg-gray-100 dark:bg-gray-800 rounded-lg lg:pb-40 lg:pt-36">
         <div className="-mx-8">
-          <Grid>
+          <Tabs as={Grid}>
             <div className="col-span-full lg:col-span-5">
               <H2>
                 The JavaScript landscape is incredibly confusing to keep up with
@@ -31,61 +52,88 @@ function ProblemSolutionSection() {
 
             <hr className="col-span-full mb-16 mt-20 border-gray-200 dark:border-gray-600" />
 
-            <div className="col-span-full order-2 mt-16 lg:col-span-5 lg:col-start-7 lg:mt-0">
-              <img className="-ml-10 w-48" src="/placeholders/skis.png" />
-            </div>
+            {/*
+              Note that we use two TabPanels for a single TabList, so that we can
+              align the elements on a single grid.
+
+              TODO: replace placeholders with right assets
+            */}
+            <TabPanels className="col-span-full order-2 mt-16 lg:col-span-5 lg:col-start-7 lg:mt-0">
+              <TabPanel>
+                <img
+                  className="-ml-10 w-48"
+                  src="https://epicreact.dev/static/e9e50b43a9526373f48a11340fdfdbdc/e4e36/01-react-fundamentals.webp"
+                />
+              </TabPanel>
+              <TabPanel>
+                <img
+                  className="-ml-10 w-48"
+                  src="https://epicreact.dev/static/95d39c3e657a365235dca267cb95e852/e4e36/02-react-hooks.webp"
+                />
+              </TabPanel>
+              <TabPanel>
+                <img
+                  className="-ml-10 w-48"
+                  src="https://epicreact.dev/static/2eec163c81b5805ff089fc59813197f8/35871/03-advanced-react-hooks.webp"
+                />
+              </TabPanel>
+            </TabPanels>
 
             <div className="col-span-full col-start-1 order-1 lg:col-span-5 lg:order-3">
-              <ul className="flex flex-row text-white text-xl space-x-8 lg:flex-col lg:text-7xl lg:space-x-0 lg:space-y-7">
-                <li>
-                  <a
-                    href="/blog"
-                    className="inline-flex items-center w-full text-black dark:text-white space-x-8"
-                  >
-                    <span>blog</span>
-                    {arrow}
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="/courses"
-                    className="block inline-flex dark:text-blueGray-500 text-gray-400 space-x-8"
-                  >
-                    courses
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="/podcast"
-                    className="block inline-flex dark:text-blueGray-500 text-gray-400 space-x-8"
-                  >
-                    podcast
-                  </a>
-                </li>
-              </ul>
+              <TabList className="inline-flex flex-row text-white text-xl space-x-8 lg:flex-col lg:text-7xl lg:space-x-0 lg:space-y-7">
+                <Tab>Blog</Tab>
+                <Tab>Courses</Tab>
+                <Tab>Podcast</Tab>
+              </TabList>
             </div>
 
-            <div className="col-span-full order-4 mt-6 space-y-7 lg:col-span-5 lg:col-start-7">
-              <H3>Educational blog</H3>
+            <TabPanels className="col-span-full order-4 mt-6 space-y-7 lg:col-span-5 lg:col-start-7">
+              <TabPanel>
+                <H3>Educational blog</H3>
 
-              <Paragraph>
-                Vestibulum in cursus est, sit amet rhoncus sapien. Fusce nec
-                quam euismod, aliquet nulla at, gravida nunc. Nulla vitae
-                hendrerit velit. Duis nisi felis, porta eu convallis sit amet,
-                vulputate non mi. Mauris vel pellentesque mauris vivamus.
-              </Paragraph>
+                <Paragraph>
+                  Vestibulum in cursus est, sit amet rhoncus sapien. Fusce nec
+                  quam euismod, aliquet nulla at, gravida nunc. Nulla vitae
+                  hendrerit velit. Duis nisi felis, porta eu convallis sit amet,
+                  vulputate non mi. Mauris vel pellentesque mauris vivamus.
+                </Paragraph>
 
-              <Paragraph>
-                Mauris felis orci, suscipit ut feugiat sit amet, tristique non
-                odio. Nam a elit non erat posuere ultricies quisque aliquam
-                aliquam turpis.
-              </Paragraph>
+                <div className="pt-7">
+                  <ArrowButton>Start reading the blog</ArrowButton>
+                </div>
+              </TabPanel>
 
-              <div className="pt-7">
-                <ArrowButton>Start reading the blog</ArrowButton>
-              </div>
-            </div>
-          </Grid>
+              <TabPanel>
+                <H3>Courses</H3>
+
+                <Paragraph>
+                  Duis nisi felis, porta eu convallis sit amet, vulputate non
+                  mi. Mauris vel pellentesque mauris vivamus. Vestibulum in
+                  cursus est, sit amet rhoncus sapien. Fusce nec quam euismod,
+                  aliquet nulla at, gravida nunc. Nulla vitae hendrerit velit.
+                </Paragraph>
+
+                <div className="pt-7">
+                  <ArrowButton>Explore the courses</ArrowButton>
+                </div>
+              </TabPanel>
+
+              <TabPanel>
+                <H3>Podcast</H3>
+
+                <Paragraph>
+                  Mauris vel pellentesque mauris vivamus. Vestibulum in cursus
+                  est, sit amet rhoncus sapien. Fusce nec quam euismod, aliquet
+                  nulla at, gravida nunc. Nulla vitae hendrerit velit. Duis nisi
+                  felis, porta eu convallis sit amet, vulputate non mi.
+                </Paragraph>
+
+                <div className="pt-7">
+                  <ArrowButton>Start listening to the podcasts</ArrowButton>
+                </div>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
         </div>
       </div>
     </div>
