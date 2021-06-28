@@ -54,8 +54,8 @@ export const meta: MetaFunction = ({data}: {data: LoaderData}) => {
 export const links: LinksFunction = () => {
   return [
     {rel: 'icon', href: '/favicon.ico'},
-    {rel: 'stylesheet', href: tailwind},
     {rel: 'stylesheet', href: vendors},
+    {rel: 'stylesheet', href: tailwind},
     {rel: 'stylesheet', href: styles},
   ]
 }
