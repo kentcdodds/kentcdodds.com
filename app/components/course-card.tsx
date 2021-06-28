@@ -21,7 +21,7 @@ function CourseCard({
   return (
     <div className="relative pt-12 w-full h-full">
       <a
-        className="group relative block pb-10 pt-36 px-8 w-full h-full dark:bg-gray-800 rounded-lg md:pb-20 md:px-16"
+        className="group relative block pb-10 pt-36 px-8 w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg md:pb-20 md:px-16"
         href={courseUrl}
       >
         <H2>{title}</H2>
