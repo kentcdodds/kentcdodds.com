@@ -1,7 +1,6 @@
 import * as React from 'react'
-import {H4, H6} from './title'
+import {H4, H6, Paragraph} from './typography'
 import {Grid} from './grid'
-import {Paragraph} from './paragraph'
 import {ArrowButton} from './arrow-button'
 import {GithubIcon} from './icons/github-icon'
 import {TwitterIcon} from './icons/twitter-icon'

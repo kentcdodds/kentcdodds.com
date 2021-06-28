@@ -1,8 +1,7 @@
 import * as React from 'react'
-import {H2} from '../title'
+import {H2, Paragraph} from '../typography'
 import {ArrowButton} from '../arrow-button'
 import {Grid} from '../grid'
-import {Paragraph} from '../paragraph'
 
 function AboutSection() {
   return (

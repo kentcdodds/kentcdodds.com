@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {H3} from './title'
+import {H3} from './typography'
 
 export interface ArticleCardProps {
   title: string

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {ArrowIcon} from './icons/arrow-icon'
-import {H2} from './title'
+import {H2} from './typography'
 import {Button} from './button'
 
 export interface CourseCardProps {

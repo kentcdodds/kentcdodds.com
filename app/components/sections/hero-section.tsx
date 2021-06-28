@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {ArrowButton} from '../arrow-button'
 import {Grid} from '../grid'
-import {H1} from '../title'
+import {H1} from '../typography'
 import {Button} from '../button'
 
 // Note that the image overlaps the right edge of the grid by `8vw`. This `8vw`

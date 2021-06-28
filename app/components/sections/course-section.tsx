@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {H2} from '../title'
+import {H2} from '../typography'
 import {ArrowButton} from '../arrow-button'
 import {Grid} from '../grid'
 import {CourseCard} from '../course-card'

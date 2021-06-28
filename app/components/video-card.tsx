@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {PlayIcon} from './icons/play-icon'
-import {H5} from './title'
+import {H5} from './typography'
 
 export interface VideoCardProps {
   title: string

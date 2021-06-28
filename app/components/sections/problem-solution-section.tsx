@@ -1,9 +1,8 @@
 import * as React from 'react'
 import {Grid} from '../grid'
-import {H2, H3} from '../title'
+import {H2, H3, Paragraph} from '../typography'
 import {ArrowButton} from '../arrow-button'
 import {ArrowIcon} from '../icons/arrow-icon'
-import {Paragraph} from '../paragraph'
 
 function ProblemSolutionSection() {
   const arrow = (

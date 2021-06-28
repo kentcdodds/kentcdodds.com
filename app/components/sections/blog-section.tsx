@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import * as React from 'react'
-import {H2} from '../title'
+import {H2} from '../typography'
 import {ArrowButton} from '../arrow-button'
 import {Grid} from '../grid'
 import {ArticleCard, ArticleCardProps} from '../article-card'

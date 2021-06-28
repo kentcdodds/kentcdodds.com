@@ -1,6 +1,6 @@
 import type {ReactNode} from 'react'
-import clsx from 'clsx'
 import * as React from 'react'
+import clsx from 'clsx'
 
 interface TitleProps {
   variant?: 'primary' | 'secondary'
@@ -58,4 +58,14 @@ function H6(props: TitleProps) {
   return <Title {...props} size="h6" />
 }
 
-export {H1, H2, H3, H4, H5, H6}
+interface ParagraphProps {
+  children: string
+}
+
+function Paragraph({children}: ParagraphProps) {
+  return (
+    <p className="dark:text-blueGray-500 text-gray-500 text-lg">{children}</p>
+  )
+}
+
+export {H1, H2, H3, H4, H5, H6, Paragraph}
