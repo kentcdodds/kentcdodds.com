@@ -10,15 +10,11 @@ import {CourseSection} from '../sections/course-section'
 import {DiscordSection} from '../sections/discord-section'
 import {AboutSection} from '../sections/about-section'
 import {Footer} from '../footer'
+import {Spacer} from '../spacer'
 
 // NOTE: The `pages` folder is only temporary. I've placed this here, because
 //   tailwind doesn't extract css from .storybook.tsx files. Which is fine, but I
 //   needed a quick fix.
-
-// TODO: I'm not sure if we should add the "spacer elements", or add the spacing
-//  inside the sections. There is a slight variation between element paddings,
-//  which might make it tricky to get it right when embedding inside sections,
-//  when sections turn out to be reused. Let's decide later what to do with this.
 
 export function HomePage() {
   return (
@@ -32,20 +28,19 @@ export function HomePage() {
           <HeroSection />
         </div>
       </div>
-
-      <div className="h-64" />
+      <Spacer size="large" />
       <IntroductionSection />
-      <div className="h-64" />
+      <Spacer size="large" />
       <ProblemSolutionSection />
-      <div className="h-48" />
+      <Spacer size="medium" />
       <BlogSection articles={fixtures.articles} />
-      <div className="h-64" />
+      <Spacer size="large" />
       <CourseSection />
-      <div className="h-64" />
+      <Spacer size="large" />
       <DiscordSection />
-      <div className="h-64" />
+      <Spacer size="large" />
       <AboutSection />
-      <div className="h-48" />
+      <Spacer size="medium" />
       <Footer />
     </div>
   )
