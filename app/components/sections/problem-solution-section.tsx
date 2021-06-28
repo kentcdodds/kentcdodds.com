@@ -9,6 +9,7 @@ import {
 } from '@reach/tabs'
 import clsx from 'clsx'
 import {motion, AnimatePresence} from 'framer-motion'
+import * as images from '../../images'
 import {Grid} from '../grid'
 import {H2, H3, Paragraph} from '../typography'
 import {ArrowButton} from '../arrow-button'
@@ -73,8 +74,8 @@ function ProblemSolutionSection() {
               <TabPanel>
                 <img
                   className="-ml-10 w-48"
-                  src="/placeholders/skis.png"
-                  alt="TODO: give a real alt"
+                  src={images.skis.src}
+                  alt={images.skis.alt}
                 />
               </TabPanel>
               <TabPanel>
