@@ -6,17 +6,23 @@ import {Grid} from '../grid'
 function AboutSection() {
   return (
     <Grid>
-      <div className="col-span-full lg:col-span-6">
-        <img
-          className="max-h-[80vh] lg:max-h-[none] w-full h-full rounded-lg object-cover"
-          src="/placeholders/about-picture.png"
-        />
+      <div className="table col-span-full lg:col-span-6">
+        <div className="table-cell align-middle text-center">
+          <div className="aspect-h-4 aspect-w-3">
+            {/* TODO: replace placeholder image */}
+            <img
+              className="rounded-lg object-cover"
+              src="https://images.unsplash.com/photo-1565857725478-54d38420aaa6?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218fHx8fHx8fHwxNjI0ODg2NjMx&ixlib=rb-1.2.1&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=600"
+            />
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-col col-span-full justify-center space-y-12 lg:col-span-5 lg:col-start-8 lg:mt-0">
-        <div>
-          <img className="w-auto h-48" src="/placeholders/snowboard.png" />
-        </div>
+        <img
+          className="self-start w-auto h-48"
+          src="/placeholders/snowboard.png"
+        />
 
         <H2>Big extreme sports enthusiast.</H2>
         <H2 variant="secondary" as="p">

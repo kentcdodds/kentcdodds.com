@@ -30,7 +30,8 @@ VideoCard.args = {
 CourseCard.args = {
   title: `Epic React`,
   description: 'The most comprehensive guide for pro’s.',
-  imageUrl: '/placeholders/epic-react.png',
+  imageUrl:
+    'https://epicreact.dev/static/e9e50b43a9526373f48a11340fdfdbdc/6ba37/01-react-fundamentals.png',
   courseUrl: '#',
 }
 

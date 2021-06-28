@@ -71,15 +71,12 @@ function ProblemSolutionSection() {
             */}
             <TabPanels className="col-span-full order-2 mt-16 lg:col-span-5 lg:col-start-7 lg:mt-0">
               <TabPanel>
-                <img
-                  className="-ml-10 w-48"
-                  src="https://epicreact.dev/static/e9e50b43a9526373f48a11340fdfdbdc/e4e36/01-react-fundamentals.webp"
-                />
+                <img className="-ml-10 w-48" src="/placeholders/skis.png" />
               </TabPanel>
               <TabPanel>
                 <img
                   className="-ml-10 w-48"
-                  src="https://epicreact.dev/static/95d39c3e657a365235dca267cb95e852/e4e36/02-react-hooks.webp"
+                  src="https://epicreact.dev/static/e9e50b43a9526373f48a11340fdfdbdc/e4e36/01-react-fundamentals.webp"
                 />
               </TabPanel>
               <TabPanel>
