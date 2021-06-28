@@ -30,8 +30,6 @@ module.exports = {
       blueGray: {
         500: '#A9ADC1',
       },
-      // I'm not sure if I'm a fan of `team-x`, but team-blue is close to `blue-500`. Adding
-      // this to blue-400 or blue-600, leads to confusion
       team: {
         yellow: '#FFD644',
         blue: '#36A3FF',

@@ -23,7 +23,6 @@ function BlogSection({articles}: BlogSectionProps) {
         <ArrowButton direction="right">See the full blog</ArrowButton>
       </div>
 
-      {/*This should be a horizontal scroller */}
       {articles.slice(0, 3).map((article, idx) => (
         <div
           key={article.articleUrl}
