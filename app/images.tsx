@@ -38,7 +38,7 @@ const images = createOperations({
     alt: 'Illustration of skis',
   },
   kayak: {
-    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0/v1624985232/kentcdodds.com/illustrations/rowing.png',
+    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0,c_crop,w_1200,h_900/v1624985232/kentcdodds.com/illustrations/rowing.png',
     alt: 'Illustration of a kayak',
   },
   onewheel: {
