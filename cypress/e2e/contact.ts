@@ -10,7 +10,7 @@ describe('contact', () => {
         'example.com',
       ),
       firstName,
-      subject: faker.lorem.words(3),
+      subject: `CONTACT: ${faker.lorem.words(3)}`,
       body: faker.lorem.paragraphs(1).slice(0, 60),
     }
     const bodyPart1 = emailData.body.slice(0, 30)
@@ -45,14 +45,18 @@ describe('contact', () => {
       cy.findByRole('button', {name: /submit/i}).click()
     })
 
-    cy.fixture('msw.local.json').then((data: {email: {html: string}}) => {
-      expect(data.email).to.include({
-        from: `"${emailData.firstName}" <${emailData.email}>`,
-        subject: emailData.subject,
-        text: emailData.body,
-      })
-      expect(data.email.html).to.match(/<html/)
-      expect(data.email.html).to.have.length.greaterThan(emailData.body.length)
-    })
+    cy.fixture('msw-contact.local.json').then(
+      (data: {email: {html: string}}) => {
+        expect(data.email).to.include({
+          from: `"${emailData.firstName}" <${emailData.email}>`,
+          subject: emailData.subject,
+          text: emailData.body,
+        })
+        expect(data.email.html).to.match(/<html/)
+        expect(data.email.html).to.have.length.greaterThan(
+          emailData.body.length,
+        )
+      },
+    )
   })
 })

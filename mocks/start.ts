@@ -17,7 +17,11 @@ const miscHandlers = [
       console.info('🔶 mocked email contents:', body)
 
       if (isE2E && body.text) {
-        await updateFixture({email: body})
+        if (body.subject?.includes('Magic')) {
+          await updateFixture('magic', {email: body})
+        } else if (body.subject?.startsWith('CONTACT:')) {
+          await updateFixture('contact', {email: body})
+        }
       }
       const randomId = '20210321210543.1.E01B8B612C44B41B'
       const id = `<${randomId}>@${req.params.domain}`

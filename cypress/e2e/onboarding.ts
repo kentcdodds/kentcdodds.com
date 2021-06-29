@@ -16,14 +16,15 @@ describe('onboarding', () => {
 
     cy.findByRole('main').within(() => {
       cy.findByRole('textbox', {name: /email/i}).type(`${email}{enter}`)
-      cy.wait(100) // sometimes it takes a bit for the email to get set
-      cy.fixture('msw.local.json').then((data: {email: {text: string}}) => {
-        const magicLink = data.email.text.match(/(http.+magic.+)\n/)?.[1]
-        if (magicLink) {
-          return cy.visit(magicLink)
-        }
-        throw new Error('Could not find magic link email')
-      })
+      cy.fixture('msw-magic.local.json').then(
+        (data: {email: {text: string}}) => {
+          const magicLink = data.email.text.match(/(http.+magic.+)\n/)?.[1]
+          if (magicLink) {
+            return cy.visit(magicLink)
+          }
+          throw new Error('Could not find magic link email')
+        },
+      )
     })
 
     cy.findByRole('main').within(() => {

@@ -28,18 +28,42 @@ const discordHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
     )
   }),
 
-  rest.get('https://discord.com/api/users/@me', async (req, res, ctx) => {
+  rest.get('https://discord.com/api/users/:userId', async (req, res, ctx) => {
     requiredHeader(req.headers, 'Authorization')
     return res(
-      ctx.json({id: 'test_discord_id', username: 'test_discord_username'}),
+      ctx.json({
+        id: 'test_discord_id',
+        username: 'test_discord_username',
+        discriminator: '0000',
+      }),
     )
   }),
+
+  rest.get(
+    'https://discord.com/api/guilds/:guildId/members/:userId',
+    async (req, res, ctx) => {
+      requiredHeader(req.headers, 'Authorization')
+      const user = {
+        id: req.params.userId,
+        username: `${req.params.userId}username`,
+        discriminator: '0000',
+      }
+      return res(
+        ctx.json({
+          user,
+          roles: [],
+          ...user,
+        }),
+      )
+    },
+  ),
 
   rest.put(
     'https://discord.com/api/guilds/:guildId/members/:userId',
     async (req, res, ctx) => {
       requiredHeader(req.headers, 'Authorization')
       if (typeof req.body !== 'object') {
+        console.error('Request body:', req.body)
         throw new Error('Request body must be a JSON object')
       }
       if (!req.body.access_token) {

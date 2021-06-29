@@ -140,6 +140,7 @@ async function addUserToDiscordServer(
     {
       method: 'PUT',
       body: JSON.stringify({access_token: discordToken.access_token}),
+      headers: {'Content-Type': 'application/json'},
     },
   )
 }

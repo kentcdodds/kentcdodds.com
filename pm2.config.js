@@ -1,5 +1,3 @@
-const noMocks = Boolean(process.env.NO_MOCKS)
-
 module.exports = {
   apps: [
     {
@@ -8,13 +6,12 @@ module.exports = {
         'node',
         '--experimental-wasm-threads',
         '--require ./node_modules/dotenv/config',
-        noMocks ? null : '--require ./mocks',
+        '--require ./mocks',
         './node_modules/.bin/remix run',
       ]
         .filter(Boolean)
         .join(' '),
-      watch: [noMocks ? null : './mocks/**/*.*'].filter(Boolean),
-      ignore_watch: ['.'],
+      watch: ['./mocks/**/*.*'],
       env: {
         NODE_ENV: 'development',
         RUNNING_E2E: process.env.RUNNING_E2E,

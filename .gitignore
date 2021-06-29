@@ -12,7 +12,7 @@ tsconfig.tsbuildinfo
 
 /cypress/videos
 /cypress/screenshots
-/cypress/fixtures/msw.local.json
+*.local.*
 
 .env
 .env.production
