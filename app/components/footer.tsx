@@ -49,9 +49,9 @@ function NewsletterSection() {
           className="dark:focus:bg-gray-800 px-8 py-6 w-full dark:text-white focus:bg-gray-100 bg-transparent border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none"
         />
 
-        <button className="pt-4" type="submit">
-          <ArrowButton direction="right">Sign me up</ArrowButton>
-        </button>
+        <ArrowButton className="pt-4" type="submit" direction="right">
+          Sign me up
+        </ArrowButton>
       </Form>
     </div>
   )

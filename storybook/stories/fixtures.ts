@@ -26,4 +26,32 @@ export const articles = [
     date: '2021-03-05',
     articleUrl: '/blog-3',
   },
-]
+  {
+    title: 'Using fetch with TypeScript',
+    imageUrl:
+      'https://kentcdodds.com/static/f878ee6f4866c43770b2284a34b0649f/09a9d/banner.webp',
+    imageAlt: 'placeholder',
+    readTime: '4 min',
+    date: '2021-03-02',
+    articleUrl: '/blog-4',
+  },
+] as const
+
+export const tags = [
+  'career',
+  'css',
+  'javascript',
+  'learning',
+  'node',
+  'opensource',
+  'performance',
+  'personal',
+  'productivity',
+  'programming',
+  'react',
+  'review',
+  'state',
+  'teaching',
+  'testing',
+  'typescript',
+] as const

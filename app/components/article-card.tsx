@@ -1,5 +1,7 @@
 import * as React from 'react'
+import formatDate from 'date-fns/format'
 import {H3} from './typography'
+import {CopyIcon} from './icons/copy-icon'
 
 export interface ArticleCardProps {
   title: string
@@ -18,14 +20,13 @@ function ArticleCard({
   imageAlt,
   articleUrl,
 }: ArticleCardProps) {
-  const dateString = new Date(date).toLocaleDateString('en-US', {
-    dateStyle: 'long',
-  })
-
   return (
     <a className="group relative w-full" href={articleUrl}>
-      <button className="absolute z-10 left-6 top-6 px-8 py-4 text-black whitespace-nowrap text-lg font-medium bg-white rounded-lg opacity-0 group-hover:opacity-100 transition">
-        Click to copy url
+      <button className="absolute z-10 left-6 top-6 p-4 text-black whitespace-nowrap text-lg font-medium bg-white rounded-lg group-hover:opacity-100 transition lg:px-8 lg:py-4 lg:opacity-0">
+        <span className="hidden lg:inline">Click to copy url</span>
+        <span className="inline lg:hidden">
+          <CopyIcon />
+        </span>
       </button>
 
       <div className="aspect-w-3 aspect-h-4 w-full">
@@ -37,9 +38,9 @@ function ArticleCard({
       </div>
 
       <div className="mt-8 text-blueGray-500 text-xl font-medium">
-        {dateString} — {readTime} read
+        {formatDate(new Date(date), 'PPP')} — {readTime} read
       </div>
-      <div className="mt-4 text-black dark:text-white group-hover:underline">
+      <div className="mt-4 group-hover:underline">
         <H3>{title}</H3>
       </div>
     </a>
