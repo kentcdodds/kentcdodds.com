@@ -4,10 +4,11 @@ import {json} from 'remix'
 import type {HeadersFunction} from 'remix'
 import type {KCDLoader} from 'types'
 import {useSearchParams} from 'react-router-dom'
+import type {ChangeEventHandler} from 'react'
 import {downloadMdxListItemsInDir} from '../../utils/github.server'
 import {Grid} from '../../components/grid'
 import {images} from '../../images'
-import {H2, H6} from '../../components/typography'
+import {H2, H3, H6} from '../../components/typography'
 import {SearchIcon} from '../../components/icons/search-icon'
 import {Spacer} from '../../components/spacer'
 import {articles, tags} from '../../../storybook/stories/fixtures'
@@ -16,7 +17,6 @@ import {ArrowLink} from '../../components/arrow-button'
 import {FeaturedArticleSection} from '../../components/sections/featured-article-section'
 import {LoadMoreButton} from '../../components/load-more-button'
 import {Tag} from '../../components/tag'
-import type {ChangeEventHandler} from 'react'
 
 export const headers: HeadersFunction = ({loaderHeaders}) => {
   return {
@@ -55,6 +55,7 @@ function BlogHome() {
 
   // TODO: use data from server
   const totalPostCount = 173
+  const hasMorePosts = true
 
   // TODO: use the real data. I used fixtures here, because real data was missing readTime, imageAlt, and only had 2 entries.
   const allPosts = fakePostListItems // useRouteData<Array<PostListItem>>()
@@ -160,6 +161,20 @@ function BlogHome() {
           </div>
         ) : null}
 
+        {posts.length === 0 ? (
+          <div className="flex flex-col col-span-full items-center">
+            {/* TODO: replace with 404 image */}
+            <img
+              src={images.onewheel.src}
+              alt={images.onewheel.alt}
+              className="mt-24 w-full max-w-lg h-auto"
+            />
+            <H3 variant="secondary" className="mt-24 max-w-lg">
+              Looks like there are no articles for this topic. Use the tags
+              above to find articles.
+            </H3>
+          </div>
+        ) : null}
         {posts.map(article => (
           <div key={article.articleUrl} className="col-span-4 mb-10">
             <ArticleCard {...article} />
@@ -167,10 +182,17 @@ function BlogHome() {
         ))}
       </Grid>
 
-      <Spacer size="large" />
-      <div className="flex justify-center w-full">
-        <LoadMoreButton />
-      </div>
+      {/* TODO: remove this eslint-disable, it's needed because this prop does not yet come from the loader */}
+      {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
+      {hasMorePosts ? (
+        <>
+          <Spacer size="large" />
+          <div className="flex justify-center w-full">
+            <LoadMoreButton />
+          </div>
+        </>
+      ) : null}
+
       <Spacer size="large" />
 
       <Grid>
