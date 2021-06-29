@@ -3,6 +3,7 @@ import sortBy from 'sort-by'
 import {json} from 'remix'
 import type {HeadersFunction} from 'remix'
 import type {KCDLoader} from 'types'
+import {useSearchParams} from 'react-router-dom'
 import {downloadMdxListItemsInDir} from '../../utils/github.server'
 import {Grid} from '../../components/grid'
 import {images} from '../../images'
@@ -15,6 +16,7 @@ import {ArrowLink} from '../../components/arrow-button'
 import {FeaturedArticleSection} from '../../components/sections/featured-article-section'
 import {LoadMoreButton} from '../../components/load-more-button'
 import {Tag} from '../../components/tag'
+import type {ChangeEventHandler} from 'react'
 
 export const headers: HeadersFunction = ({loaderHeaders}) => {
   return {
@@ -49,8 +51,40 @@ const fakePostListItems = Array.from({length: 3})
   .map((article, idx) => ({...article, articleUrl: `/blog-${idx}`}))
 
 function BlogHome() {
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  // TODO: use data from server
+  const totalPostCount = 173
+
   // TODO: use the real data. I used fixtures here, because real data was missing readTime, imageAlt, and only had 2 entries.
-  const [featured, ...posts] = fakePostListItems // useRouteData<Array<PostListItem>>()
+  const allPosts = fakePostListItems // useRouteData<Array<PostListItem>>()
+
+  // TODO: this search method triggers usePendingLocation, which flashes the page loader
+  const onSearch: ChangeEventHandler<HTMLInputElement> = event => {
+    searchParams.set('q', event.target.value.toLowerCase())
+    setSearchParams(searchParams, {replace: true})
+  }
+
+  const query = searchParams.get('q')?.toLowerCase() ?? ''
+  // split the query string into words, to select matching category tags
+  const queryParts = new Set(query.split(' '))
+
+  const toggleTag = (tag: string) => {
+    const currentParts = Array.from(queryParts)
+
+    const nextParts = queryParts.has(tag)
+      ? currentParts.filter(t => t !== tag)
+      : [...currentParts, tag]
+
+    searchParams.set('q', nextParts.join(' '))
+    setSearchParams(searchParams)
+  }
+
+  const isSearching = query.trim().length > 0
+
+  // feature the most recent post, unless we're searching
+  const featured = isSearching ? null : allPosts[0]
+  const posts = isSearching ? allPosts : allPosts.slice(1)
 
   return (
     <div>
@@ -72,46 +106,60 @@ function BlogHome() {
           </div>
         </div>
 
-        <form className="col-span-4 mt-6 lg:row-start-2">
+        <div className="col-span-4 mt-6 lg:row-start-2">
           <div className="relative">
             <div className="absolute left-8 top-0 flex items-center justify-center h-full text-blueGray-500">
               <SearchIcon />
             </div>
             <input
+              onChange={onSearch}
+              value={query}
               placeholder="Search blog"
               aria-label="Search blog"
               className="dark:focus:bg-gray-800 placeholder-black dark:placeholder-white px-16 py-6 w-full text-black dark:text-white text-lg font-medium focus:bg-gray-100 bg-transparent border border-gray-200 dark:border-gray-600 rounded-full focus:outline-none"
             />
             <div className="absolute right-8 top-0 flex items-center justify-center h-full text-blueGray-500 text-lg font-medium">
-              {/* TODO: replace count */}
-              173
+              {totalPostCount}
             </div>
           </div>
-        </form>
+        </div>
       </Grid>
 
       <Spacer size="small" />
 
       <Grid>
         <div className="col-span-full">
-          <H6 as="p">Search blog by topics</H6>
+          <H6>Search blog by topics</H6>
         </div>
         <div className="flex flex-wrap col-span-full -ml-4 -mt-4 lg:col-span-10">
-          {/* TODO: get tags from database, and connect `selected` to something */}
-          {tags.map((tag, idx) => (
-            <Tag key={tag} tag={tag} selected={idx === 3} />
+          {/* TODO: get tags from database */}
+          {tags.map(tag => (
+            <Tag
+              key={tag}
+              tag={tag}
+              selected={queryParts.has(tag)}
+              onClick={() => toggleTag(tag)}
+            />
           ))}
         </div>
       </Grid>
 
-      {/* TODO: this should be `smallest`, but `medium` looks better? */}
-      <Spacer size="medium" />
-
-      {featured ? <FeaturedArticleSection {...featured} /> : null}
-
-      <Spacer size="smallest" />
+      {featured ? (
+        <>
+          <Spacer size="medium" />
+          <FeaturedArticleSection {...featured} />
+          <Spacer size="smallest" />
+        </>
+      ) : null}
 
       <Grid>
+        {isSearching ? (
+          <div className="col-span-full">
+            <Spacer size="smaller" />
+            <H6>{totalPostCount} articles found</H6>
+          </div>
+        ) : null}
+
         {posts.map(article => (
           <div key={article.articleUrl} className="col-span-4 mb-10">
             <ArticleCard {...article} />
