@@ -1,8 +1,13 @@
 import type {User} from 'types'
 // import {getConvertKitSubscriber} from './convertkit.server'
 import * as discord from './discord.server'
+import {getAvatarForUser} from './misc'
 
 type UserInfo = {
+  avatar: {
+    src: string
+    alt: string
+  }
   convertKit?: {
     subscribedToNewsletter: boolean
   }
@@ -12,7 +17,9 @@ type UserInfo = {
 }
 
 async function getUserInfo(user: User) {
-  const userInfo: UserInfo = {}
+  const userInfo: UserInfo = {
+    avatar: getAvatarForUser(user),
+  }
   if (user.convertKitId) {
     // const subscriber = await getConvertKitSubscriber(user.email)
     userInfo.convertKit = {

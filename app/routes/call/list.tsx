@@ -10,7 +10,7 @@ import {Outlet} from 'react-router-dom'
 import type {Await} from 'types'
 import {requireAdminUser} from '../../utils/session.server'
 import {prisma} from '../../utils/prisma.server'
-import {getAvatar} from '../../utils/misc'
+import {getAvatarForUser} from '../../utils/misc'
 
 export const action: ActionFunction = async ({request}) => {
   return requireAdminUser(request)(async () => {
@@ -69,22 +69,25 @@ export default function CallListScreen() {
       <h2>All the calls</h2>
       <hr />
       <ul>
-        {data.calls.map(call => (
-          <li key={call.id}>
-            <img
-              alt={`${call.user.firstName} avatar`}
-              src={getAvatar(call.user.email)}
-              style={{
-                height: 64,
-                borderColor: call.user.team.toLowerCase(),
-                borderWidth: 2,
-                borderStyle: 'solid',
-              }}
-            />
-            <Link to={call.id}>{call.title}</Link>
-            <small>{call.description}</small>
-          </li>
-        ))}
+        {data.calls.map(call => {
+          const avatar = getAvatarForUser(call.user)
+          return (
+            <li key={call.id}>
+              <img
+                alt={avatar.alt}
+                src={avatar.src}
+                style={{
+                  height: 64,
+                  borderColor: call.user.team.toLowerCase(),
+                  borderWidth: 2,
+                  borderStyle: 'solid',
+                }}
+              />
+              <Link to={call.id}>{call.title}</Link>
+              <small>{call.description}</small>
+            </li>
+          )
+        })}
       </ul>
       <hr />
       <Outlet />

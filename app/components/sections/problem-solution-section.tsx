@@ -9,7 +9,7 @@ import {
 } from '@reach/tabs'
 import clsx from 'clsx'
 import {motion, AnimatePresence} from 'framer-motion'
-import * as images from '../../images'
+import {images} from '../../images'
 import {Grid} from '../grid'
 import {H2, H3, Paragraph} from '../typography'
 import {ArrowButton} from '../arrow-button'

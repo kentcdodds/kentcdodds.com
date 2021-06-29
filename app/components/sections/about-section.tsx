@@ -1,5 +1,5 @@
 import * as React from 'react'
-import * as images from '../../images'
+import {images} from '../../images'
 import {H2, Paragraph} from '../typography'
 import {ArrowButton} from '../arrow-button'
 import {Grid} from '../grid'

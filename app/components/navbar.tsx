@@ -1,8 +1,8 @@
 import * as React from 'react'
 import {Link} from 'remix'
-import * as images from '../images'
+import {images} from '../images'
 import {Theme, useTheme} from '../theme-provider'
-import {getAvatar, useOptionalUser} from '../utils/misc'
+import {useOptionalUser, useOptionalUserInfo} from '../utils/misc'
 import {SunIcon} from './icons/sun-icon'
 import {MoonIcon} from './icons/moon-icon'
 import {MenuIcon} from './icons/menu-icon'
@@ -57,6 +57,7 @@ const userBorderClassNames = {
 
 function Navbar() {
   const user = useOptionalUser()
+  const userInfo = useOptionalUserInfo()
 
   return (
     <nav className="flex items-center justify-between p-9 dark:text-white lg:px-16 lg:py-12">
@@ -86,14 +87,15 @@ function Navbar() {
 
         <Link
           to={user ? '/me' : '/login'}
+          title={user ? 'My Account' : 'Login'}
           className={`${
             userBorderClassNames[user?.team ?? 'UNKNOWN']
           } inline-flex items-center justify-center ml-4 w-14 h-14 text-white border-2 rounded-full`}
         >
           <img
             className="inline w-10 h-10 bg-white rounded-full object-cover"
-            src={user ? getAvatar(user.email) : images.alexProfile.src}
-            alt={user ? user.firstName : 'Login'}
+            src={userInfo ? userInfo.avatar.src : images.alexProfileGray.src}
+            alt={userInfo ? userInfo.avatar.alt : images.alexProfileGray.alt}
           />
         </Link>
       </div>

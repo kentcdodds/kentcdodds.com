@@ -1,15 +1,44 @@
 import * as React from 'react'
 import {Link} from 'remix'
-import type {NonNullProperties, User, Request, Await} from 'types'
+import type {NonNullProperties, User, Request, Await, Team} from 'types'
 import md5 from 'md5-hash'
+import {images} from '../images'
 import type {getUserInfo} from './user-info.server'
 import type {getEnv} from './env.server'
 
 const useSSRLayoutEffect =
   typeof window === 'undefined' ? () => {} : React.useLayoutEffect
 
-const getAvatar = (email: string, {size = 128}: {size?: number} = {}) =>
-  `https://www.gravatar.com/avatar/${md5(email)}?s=${size}`
+function getAvatar(
+  email: string,
+  {
+    size = 128,
+    fallback = images.alexProfileGray.src,
+  }: {size?: number; fallback?: string} = {},
+) {
+  const hash = md5(email)
+  const url = new URL(`https://www.gravatar.com/avatar/${hash}`)
+  url.searchParams.set('size', String(size))
+  url.searchParams.set('default', fallback)
+  return url.toString()
+}
+
+const avatarFallbacks: Record<Team, string> = {
+  BLUE: images.alexProfileBlue.src,
+  RED: images.alexProfileRed.src,
+  YELLOW: images.alexProfileYellow.src,
+}
+
+function getAvatarForUser({
+  email,
+  team,
+  firstName,
+}: Pick<User, 'email' | 'team' | 'firstName'>) {
+  return {
+    src: getAvatar(email, {fallback: avatarFallbacks[team]}),
+    alt: firstName,
+  }
+}
 
 type AnchorProps = React.DetailedHTMLProps<
   React.AnchorHTMLAttributes<HTMLAnchorElement>,
@@ -236,6 +265,7 @@ function getDomainUrl(request: Request) {
 
 export {
   getAvatar,
+  getAvatarForUser,
   useSSRLayoutEffect,
   AnchorOrLink,
   useAsync,
