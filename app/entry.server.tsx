@@ -26,6 +26,7 @@ export default function handleRequest(
       // TODO: remove this when we go to production
       'X-Robots-Tag': 'none',
       ...Object.fromEntries(responseHeaders),
+      'X-Powered-By': 'Kody the Koala',
       'Content-Type': 'text/html',
     },
   })

@@ -19,10 +19,9 @@ import styles from './styles/app.css'
 import {
   useTheme,
   ThemeProvider,
-  clientThemeCode,
-  getThemeFromMedia,
   sessionKey,
   Theme,
+  NonFlashOfWrongThemeEls,
 } from './theme-provider'
 import {getUser, rootStorage} from './utils/session.server'
 import {
@@ -38,9 +37,7 @@ import {Navbar} from './components/navbar'
 import {Spacer} from './components/spacer'
 import {Footer} from './components/footer'
 
-export const meta: MetaFunction = ({data}: {data: LoaderData}) => {
-  const theme = getThemeFromMedia(data.theme)
-
+export const meta: MetaFunction = () => {
   return {
     // TODO: remove this when we're ready to launch
     robots: 'noindex',
@@ -50,12 +47,6 @@ export const meta: MetaFunction = ({data}: {data: LoaderData}) => {
     viewport: 'width=device-width,initial-scale=1,viewport-fit=cover',
     charSet: 'utf-8',
     'theme-color': '#A9ADC1',
-    'color-scheme':
-      theme === 'dark'
-        ? 'dark light'
-        : theme === 'light'
-        ? 'light dark'
-        : 'normal',
     'twitter:widgets:autoload': 'off',
   }
 }
@@ -97,24 +88,19 @@ function App() {
   const pendingLocation = usePendingLocation()
   const showPendingState = pendingLocation
   const includeTweets = location.pathname.includes('/blog/')
+
   return (
     <html lang="en" className={theme ?? ''}>
       <head>
         <Meta />
         <Links />
+        <NonFlashOfWrongThemeEls ssrTheme={Boolean(data.theme)} />
       </head>
       <body
         className={clsx('dark:bg-gray-900 bg-white transition', {
           'opacity-50': showPendingState,
         })}
       >
-        {/*
-          If we know what the theme is from the server then we don't need
-          to do fancy tricks prior to hydration to make things match.
-        */}
-        {data.theme ? null : (
-          <script dangerouslySetInnerHTML={{__html: clientThemeCode}} />
-        )}
         <Navbar />
         <main>
           <Outlet />
