@@ -9,8 +9,8 @@ interface TagProps {
 }
 
 function Tag({tag, selected, onClick}: TagProps) {
-  // TODO: didn't know the behavior of these tags, and thereby if they should be a <button>, <Link> or @reach/checkbox
-  // TODO: add aria-checked || aria-selected ?
+  // TODO: make this accessible, aria-checked and aria-selected aren't allowed on buttons
+  //   should we make it a checkbox with @reach/checkbox?
   return (
     <button
       key={tag}
