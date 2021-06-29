@@ -42,6 +42,8 @@ export const meta: MetaFunction = ({data}: {data: LoaderData}) => {
   const theme = getThemeFromMedia(data.theme)
 
   return {
+    // TODO: remove this when we're ready to launch
+    robots: 'noindex',
     title: 'Kent C. Dodds',
     description:
       'Come check out how Kent C. Dodds can help you level up your career as a software engineer.',

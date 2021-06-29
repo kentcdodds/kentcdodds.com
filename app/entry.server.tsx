@@ -23,6 +23,8 @@ export default function handleRequest(
   return new Response(`<!DOCTYPE html>${markup}`, {
     status: responseStatusCode,
     headers: {
+      // TODO: remove this when we go to production
+      'X-Robots-Tag': 'none',
       ...Object.fromEntries(responseHeaders),
       'Content-Type': 'text/html',
     },
