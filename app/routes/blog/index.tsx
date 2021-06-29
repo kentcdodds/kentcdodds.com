@@ -5,7 +5,7 @@ import type {HeadersFunction} from 'remix'
 import type {KCDLoader} from 'types'
 import {downloadMdxListItemsInDir} from '../../utils/github.server'
 import {Grid} from '../../components/grid'
-import {skis} from '../../images'
+import {images} from '../../images'
 import {H2, H6} from '../../components/typography'
 import {SearchIcon} from '../../components/icons/search-icon'
 import {Spacer} from '../../components/spacer'
@@ -58,8 +58,8 @@ function BlogHome() {
         <div className="col-span-full lg:col-span-6 lg:col-start-7 lg:row-span-2">
           <img
             className="max-h-[50vh] mx-auto lg:max-w-md"
-            src={skis.src}
-            alt={skis.alt}
+            src={images.skis.src}
+            alt={images.skis.alt}
           />
         </div>
 
@@ -127,8 +127,7 @@ function BlogHome() {
 
       <Grid>
         <div className="col-span-full lg:col-span-5">
-          {/* TODO: replace image with canoe */}
-          <img src={skis.src} alt={skis.alt} />
+          <img src={images.kayak.src} alt={images.kayak.alt} />
         </div>
 
         <div className="col-span-full mt-4 space-y-4 lg:col-span-6 lg:col-start-7 lg:mt-0">
