@@ -50,8 +50,8 @@ export const action: ActionFunction = async ({request}) => {
       })
     }
     if (actionId === 'change details') {
-      const newFirstName = params.get('firstName')!
-      if (user.firstName !== newFirstName) {
+      const newFirstName = params.get('firstName')
+      if (newFirstName && user.firstName !== newFirstName) {
         await updateUser(user.id, {firstName: newFirstName})
       }
     }

@@ -167,7 +167,7 @@ function typedBoolean<T>(
   return Boolean(value)
 }
 
-function createSimpleContext<ContextType>({name}: {name: string}) {
+function createSimpleContext<ContextType>(name: string) {
   const defaultValue = Symbol(`Default ${name} context value`)
   const Context =
     React.createContext<ContextType | null | typeof defaultValue>(defaultValue)
@@ -199,20 +199,20 @@ function createSimpleContext<ContextType>({name}: {name: string}) {
 
 type RequestInfo = {origin: string}
 const {Provider: RequestInfoProvider, useValue: useRequestInfo} =
-  createSimpleContext<{origin: string}>({name: 'RequestInfo'})
+  createSimpleContext<{origin: string}>('RequestInfo')
 
 type UserInfo = Await<ReturnType<typeof getUserInfo>>
 const {
   Provider: UserInfoProvider,
   useValue: useUserInfo,
   useOptionalValue: useOptionalUserInfo,
-} = createSimpleContext<UserInfo>({name: 'UserInfo'})
+} = createSimpleContext<UserInfo>('UserInfo')
 
 const {
   Provider: UserProvider,
   useValue: useUser,
   useOptionalValue: useOptionalUser,
-} = createSimpleContext<User>({name: 'User'})
+} = createSimpleContext<User>('User')
 
 function assertNonNull<PossibleNullType>(
   possibleNull: PossibleNullType,
