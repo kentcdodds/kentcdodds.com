@@ -1,6 +1,6 @@
 import type {User, Team} from 'types'
 import {prisma} from './prisma.server'
-import {getDiscordAuthorizeURL, getRequiredServerEnvVar} from './misc'
+import {getRequiredServerEnvVar} from './misc'
 
 const DISCORD_CLIENT_ID = getRequiredServerEnvVar('DISCORD_CLIENT_ID')
 const DISCORD_CLIENT_SECRET = getRequiredServerEnvVar('DISCORD_CLIENT_SECRET')
@@ -18,17 +18,14 @@ const discordRoleTeams: {
   YELLOW: DISCORD_YELLOW_ROLE,
   BLUE: DISCORD_BLUE_ROLE,
 }
-type DiscordUser = {id: string; username: string}
+type DiscordUser = {id: string; username: string; discriminator: string}
 type DiscordMember = {user: DiscordUser; roles: Array<string>}
 type DiscordToken = {
   token_type: string
   access_token: string
 }
 
-async function fetchAsDiscordBot<JsonType = unknown>(
-  endpoint: string,
-  config?: RequestInit,
-) {
+async function fetchAsDiscordBot(endpoint: string, config?: RequestInit) {
   const url = new URL(`https://discord.com/api/${endpoint}`)
   const res = await fetch(url.toString(), {
     ...config,
@@ -37,11 +34,25 @@ async function fetchAsDiscordBot<JsonType = unknown>(
       ...config?.headers,
     },
   })
-  const json = await res.json()
-  return json as JsonType
+  return res
 }
 
-async function loadDiscordUser({
+async function fetchJsonAsDiscordBot<JsonType = unknown>(
+  endpoint: string,
+  config?: RequestInit,
+) {
+  const res = await fetchAsDiscordBot(endpoint, {
+    ...config,
+    headers: {
+      'Content-Type': 'application/json',
+      ...config?.headers,
+    },
+  })
+  const json = (await res.json()) as JsonType
+  return json
+}
+
+async function getUserToken({
   code,
   domainUrl,
 }: {
@@ -54,7 +65,7 @@ async function loadDiscordUser({
     client_secret: DISCORD_CLIENT_SECRET,
     grant_type: 'authorization_code',
     code,
-    redirect_uri: getDiscordAuthorizeURL(domainUrl),
+    redirect_uri: `${domainUrl}/discord/callback`,
     scope: DISCORD_SCOPES,
   })
 
@@ -74,10 +85,23 @@ async function loadDiscordUser({
       authorization: `${discordToken.token_type} ${discordToken.access_token}`,
     },
   })
-  // log(`got the discord user. It's ${discordUser.id}, ${discordUser.username}`)
   const discordUser = (await userRes.json()) as DiscordUser
 
   return {discordUser, discordToken}
+}
+
+async function getUser(discordUserId: string) {
+  const user = await fetchJsonAsDiscordBot<DiscordUser>(
+    `users/${discordUserId}`,
+  )
+  return user
+}
+
+async function getMember(discordUserId: string) {
+  const member = await fetchJsonAsDiscordBot<DiscordMember>(
+    `guilds/${DISCORD_GUILD_ID}/members/${discordUserId}`,
+  )
+  return member
 }
 
 async function updateDiscordRolesForUser(
@@ -92,39 +116,32 @@ async function updateDiscordRolesForUser(
   const teamRole = discordRoleTeams[user.team]
 
   if (!discordMember.roles.includes(teamRole)) {
-    await fetchAsDiscordBot(
+    await fetchJsonAsDiscordBot(
       `guilds/${DISCORD_GUILD_ID}/members/${discordMember.user.id}`,
       {
         method: 'PATCH',
         body: JSON.stringify({
           roles: Array.from(new Set([...discordMember.roles, teamRole])),
         }),
-        headers: {'Content-Type': 'application/json'},
       },
     )
   }
 }
 
-async function fetchOrInviteDiscordMember(
+async function addUserToDiscordServer(
   discordUser: DiscordUser,
   discordToken: DiscordToken,
 ) {
-  const memberEndpoint = `guilds/${DISCORD_GUILD_ID}/members/${discordUser.id}`
   // there's no harm inviting someone who's already in the server,
   // so we invite them without bothering to check whether they're in the
   // server already
-  await fetchAsDiscordBot(memberEndpoint, {
-    method: 'PUT',
-    body: JSON.stringify({
-      access_token: discordToken.access_token,
-    }),
-    headers: {
-      'Content-Type': 'application/json',
+  await fetchAsDiscordBot(
+    `guilds/${DISCORD_GUILD_ID}/members/${discordUser.id}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify({access_token: discordToken.access_token}),
     },
-  })
-  const discordMember = await fetchAsDiscordBot<DiscordMember>(memberEndpoint)
-
-  return discordMember
+  )
 }
 
 async function connectDiscord({
@@ -136,16 +153,20 @@ async function connectDiscord({
   code: string
   domainUrl: string
 }) {
-  const {discordUser, discordToken} = await loadDiscordUser({code, domainUrl})
+  const {discordUser, discordToken} = await getUserToken({code, domainUrl})
 
-  const discordMember = await fetchOrInviteDiscordMember(
-    discordUser,
-    discordToken,
-  )
+  await addUserToDiscordServer(discordUser, discordToken)
 
+  // give the server bot a little time to handle the new user
+  // it's not a disaster if the bot doesn't manage to handle it
+  // faster, but it's better if the bot adds the right roles etc
+  // before we retrieve the member.
+  await new Promise(resolve => setTimeout(resolve, 300))
+
+  const discordMember = await getMember(discordUser.id)
   await updateDiscordRolesForUser(discordMember, user)
 
   return discordMember
 }
 
-export {connectDiscord}
+export {connectDiscord, getUser, getMember}

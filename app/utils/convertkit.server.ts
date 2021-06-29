@@ -18,8 +18,10 @@ async function getConvertKitSubscriber(email: string) {
   url.searchParams.set('email_address', email)
 
   const resp = await fetch(url.toString())
-  const {subscribers: [subscriber = {state: 'inactive'}] = []} =
-    (await resp.json()) as {subscribers?: Array<ConvertKitSubscriber>}
+  const json = await resp.json()
+  const {subscribers: [subscriber = {state: 'inactive'}] = []} = json as {
+    subscribers?: Array<ConvertKitSubscriber>
+  }
 
   return subscriber.state === 'active' ? subscriber : null
 }
@@ -63,4 +65,4 @@ async function tagKCDSiteSubscriber({
   return updatedJson.subscription.subscriber
 }
 
-export {tagKCDSiteSubscriber}
+export {tagKCDSiteSubscriber, getConvertKitSubscriber}

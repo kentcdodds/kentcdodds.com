@@ -25,10 +25,14 @@ export const loader: LoaderFunction = async ({request}) => {
       })
     } catch (error: unknown) {
       const errorMessage = getErrorMessage(error)
-      console.error(errorMessage)
+      if (error instanceof Error) {
+        console.error(error.stack)
+      } else {
+        console.error(errorMessage)
+      }
 
       session.flash('error', errorMessage)
-      return redirect('/discord', {
+      return redirect('/me', {
         headers: {'Set-Cookie': await rootStorage.commitSession(session)},
       })
     }

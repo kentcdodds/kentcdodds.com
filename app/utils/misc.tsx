@@ -1,7 +1,8 @@
 import * as React from 'react'
 import {Link} from 'remix'
-import type {NonNullProperties, User, Request} from 'types'
+import type {NonNullProperties, User, Request, Await} from 'types'
 import md5 from 'md5-hash'
+import type {getUserInfo} from './user-info.server'
 import type {getEnv} from './env.server'
 
 const useSSRLayoutEffect =
@@ -131,61 +132,52 @@ function getNonNull<Type extends Record<string, null | unknown>>(
   return obj as NonNullProperties<Type>
 }
 
-type RequestInfo = {
-  origin: string
-}
-const RequestContext = React.createContext<RequestInfo | undefined>(undefined)
+function createSimpleContext<ContextType>({name}: {name: string}) {
+  const defaultValue = Symbol(`Default ${name} context value`)
+  const Context =
+    React.createContext<ContextType | null | typeof defaultValue>(defaultValue)
+  Context.displayName = name
 
-function RequestInfoProvider({
-  info,
-  children,
-}: {
-  info: RequestInfo
-  children: React.ReactNode
-}) {
-  return <RequestContext.Provider value={info} children={children} />
-}
-
-function useRequestInfo() {
-  const user = React.useContext(RequestContext)
-  if (!user) {
-    throw new Error('useRequestInfo must be used within RequestInfoProvider')
+  function useValue() {
+    const user = React.useContext(Context)
+    if (user === defaultValue) {
+      throw new Error(`use${name} must be used within ${name}Provider`)
+    }
+    if (!user) {
+      throw new Error(
+        `No value in ${name}Provider context. If the value is optional in this situation, try useOptional${name} instead of use${name}`,
+      )
+    }
+    return user
   }
-  return user
-}
 
-const UserContext = React.createContext<User | null | undefined>(undefined)
-
-function UserProvider({
-  user,
-  children,
-}: {
-  user: User | null
-  children: React.ReactNode
-}) {
-  return <UserContext.Provider value={user} children={children} />
-}
-
-function useUser() {
-  const user = React.useContext(UserContext)
-  if (user === undefined) {
-    throw new Error('useUser must be used within UserProvider')
+  function useOptionalValue() {
+    const user = React.useContext(Context)
+    if (user === defaultValue) {
+      throw new Error(`useOptional${name} must be used within ${name}Provider`)
+    }
+    return user
   }
-  if (!user) {
-    throw new Error(
-      'No user value in UserProvider context. If the user is optional in this situation, use useOptionalUser instead of useUser',
-    )
-  }
-  return user
+
+  return {Provider: Context.Provider, useValue, useOptionalValue}
 }
 
-function useOptionalUser() {
-  const user = React.useContext(UserContext)
-  if (user === undefined) {
-    throw new Error('useOptionalUser must be used within UserProvider')
-  }
-  return user
-}
+type RequestInfo = {origin: string}
+const {Provider: RequestInfoProvider, useValue: useRequestInfo} =
+  createSimpleContext<{origin: string}>({name: 'RequestInfo'})
+
+type UserInfo = Await<ReturnType<typeof getUserInfo>>
+const {
+  Provider: UserInfoProvider,
+  useValue: useUserInfo,
+  useOptionalValue: useOptionalUserInfo,
+} = createSimpleContext<UserInfo>({name: 'UserInfo'})
+
+const {
+  Provider: UserProvider,
+  useValue: useUser,
+  useOptionalValue: useOptionalUser,
+} = createSimpleContext<User>({name: 'User'})
 
 function assertNonNull<PossibleNullType>(
   possibleNull: PossibleNullType,
@@ -256,6 +248,9 @@ export {
   getDomainUrl,
   RequestInfoProvider,
   useRequestInfo,
+  UserInfoProvider,
+  useUserInfo,
+  useOptionalUserInfo,
   UserProvider,
   useUser,
   useOptionalUser,

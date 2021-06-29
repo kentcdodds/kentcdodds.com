@@ -12,8 +12,7 @@ type ThemeContextType = [
 
 const ThemeContext =
   React.createContext<ThemeContextType | undefined>(undefined)
-
-const preferDarkQuery = '(prefers-color-scheme: dark)'
+ThemeContext.displayName = 'ThemeContext'
 
 function ThemeProvider({
   children,
@@ -44,9 +43,9 @@ function ThemeProvider({
   }, [theme])
 
   React.useEffect(() => {
-    const mediaQuery = window.matchMedia(preferDarkQuery)
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: light)')
     const handleChange = () => {
-      setTheme(mediaQuery.matches ? Theme.DARK : Theme.LIGHT)
+      setTheme(mediaQuery.matches ? Theme.LIGHT : Theme.DARK)
     }
     mediaQuery.addEventListener('change', handleChange)
     return () => mediaQuery.removeEventListener('change', handleChange)

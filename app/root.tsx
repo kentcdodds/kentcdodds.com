@@ -12,7 +12,7 @@ import {
 import type {LinksFunction, MetaFunction} from 'remix'
 import {useLocation, Outlet} from 'react-router-dom'
 import clsx from 'clsx'
-import type {User} from 'types'
+import type {Await, User} from 'types'
 import tailwind from './styles/tailwind.css'
 import vendors from './styles/vendors.css'
 import styles from './styles/app.css'
@@ -25,9 +25,15 @@ import {
   Theme,
 } from './theme-provider'
 import {getUser, rootStorage} from './utils/session.server'
-import type {RequestInfo} from './utils/misc'
-import {UserProvider, getDomainUrl, RequestInfoProvider} from './utils/misc'
+import {
+  RequestInfo,
+  UserInfoProvider,
+  UserProvider,
+  getDomainUrl,
+  RequestInfoProvider,
+} from './utils/misc'
 import {getEnv} from './utils/env.server'
+import {getUserInfo} from './utils/user-info.server'
 import {Navbar} from './components/navbar'
 import {Spacer} from './components/spacer'
 import {Footer} from './components/footer'
@@ -63,6 +69,7 @@ export const links: LinksFunction = () => {
 
 type LoaderData = {
   user: User | null
+  userInfo: Await<ReturnType<typeof getUserInfo>> | null
   theme: Theme | null
   ENV: typeof global.ENV
   requestInfo: RequestInfo
@@ -73,6 +80,7 @@ export const loader: LoaderFunction = async ({request}) => {
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
   const data: LoaderData = {
     user,
+    userInfo: user ? await getUserInfo(user) : null,
     theme: session.get(sessionKey),
     ENV: getEnv(),
     requestInfo: {origin: getDomainUrl(request)},
@@ -133,11 +141,13 @@ function App() {
 export default function AppWithProviders() {
   const data = useRouteData<LoaderData>()
   return (
-    <RequestInfoProvider info={data.requestInfo}>
-      <UserProvider user={data.user}>
-        <ThemeProvider specifiedTheme={data.theme}>
-          <App />
-        </ThemeProvider>
+    <RequestInfoProvider value={data.requestInfo}>
+      <UserProvider value={data.user}>
+        <UserInfoProvider value={data.userInfo}>
+          <ThemeProvider specifiedTheme={data.theme}>
+            <App />
+          </ThemeProvider>
+        </UserInfoProvider>
       </UserProvider>
     </RequestInfoProvider>
   )

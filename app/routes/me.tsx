@@ -1,17 +1,18 @@
 import * as React from 'react'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import {Form, useRouteData, json, redirect} from 'remix'
-import type {User} from 'types'
 import {getQrCodeDataURL} from '../utils/qrcode.server'
 import {
   getDiscordAuthorizeURL,
   getDomainUrl,
   useRequestInfo,
+  useUser,
+  useUserInfo,
 } from '../utils/misc'
 import {getMagicLink, updateUser} from '../utils/prisma.server'
 import {requireUser, rootStorage, signOutSession} from '../utils/session.server'
 
-type LoaderData = {user: User; message?: string; qrLoginCode: string}
+type LoaderData = {message?: string; qrLoginCode: string}
 export const loader: LoaderFunction = ({request}) => {
   return requireUser(request)(async user => {
     const session = await rootStorage.getSession(request.headers.get('Cookie'))
@@ -30,7 +31,7 @@ export const loader: LoaderFunction = ({request}) => {
         expirationDate: new Date(Date.now() + 1000 * 30).toISOString(),
       }),
     )
-    const loaderData: LoaderData = {user, message, qrLoginCode}
+    const loaderData: LoaderData = {message, qrLoginCode}
     return json(loaderData, {headers: {'Set-Cookie': cookie}})
   })
 }
@@ -61,13 +62,15 @@ export const action: ActionFunction = async ({request}) => {
 
 function YouScreen() {
   const data = useRouteData<LoaderData>()
+  const user = useUser()
+  const userInfo = useUserInfo()
   const requestInfo = useRequestInfo()
   const authorizeURL = getDiscordAuthorizeURL(requestInfo.origin)
   return (
     <div>
       {data.message ? <div>{data.message}</div> : null}
-      <h2>User: {data.user.email}</h2>
-      <div>Team: {data.user.team}</div>
+      <h2>User: {user.email}</h2>
+      <div>Team: {user.team}</div>
       <div>
         <Form method="post" action="/me">
           <input type="hidden" name="actionId" value="logout" />
@@ -84,15 +87,20 @@ function YouScreen() {
             <input
               id="firstName"
               name="firstName"
-              defaultValue={data.user.firstName}
+              defaultValue={user.firstName}
             />
           </div>
           <button type="submit">Submit</button>
         </Form>
       </details>
       <div>
-        {data.user.discordId ? (
-          <div>Connected to discord account ID: {data.user.discordId}</div>
+        {user.discordId ? (
+          <div>
+            Connected to discord account:{' '}
+            <a href={`https://discord.com/users/${user.discordId}`}>
+              {userInfo.discord?.username ?? user.discordId}
+            </a>
+          </div>
         ) : (
           <>
             <div>You wanna connect your account to discord?</div>
