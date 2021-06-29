@@ -76,7 +76,7 @@ function Navbar() {
   const userInfo = useOptionalUserInfo()
 
   return (
-    <nav className="flex items-center justify-between p-9 dark:text-white lg:px-16 lg:py-12">
+    <nav className="flex items-center justify-between px-5vw py-9 dark:text-white lg:py-12">
       <Link
         to="/"
         className="block hover:underline whitespace-nowrap text-2xl font-medium transition"
