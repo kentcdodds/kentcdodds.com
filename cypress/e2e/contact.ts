@@ -45,7 +45,7 @@ describe('contact', () => {
       cy.findByRole('button', {name: /submit/i}).click()
     })
 
-    cy.fixture('msw-contact.local.json').then(
+    cy.readFile('mocks/msw.local.json').then(
       (data: {email: {html: string}}) => {
         expect(data.email).to.include({
           from: `"${emailData.firstName}" <${emailData.email}>`,

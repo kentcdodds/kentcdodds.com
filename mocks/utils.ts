@@ -3,11 +3,8 @@ import path from 'path'
 
 const isE2E = process.env.RUNNING_E2E === 'true'
 
-async function updateFixture(name: string, updates: Record<string, unknown>) {
-  const mswDataPath = path.join(
-    __dirname,
-    `../cypress/fixtures/msw-${name}.local.json`,
-  )
+async function updateFixture(updates: Record<string, unknown>) {
+  const mswDataPath = path.join(__dirname, `./msw.local.json`)
   let mswData = {}
   try {
     const contents = await fs.promises.readFile(mswDataPath)

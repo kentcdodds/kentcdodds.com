@@ -11,7 +11,7 @@ module.exports = {
       ]
         .filter(Boolean)
         .join(' '),
-      watch: ['./mocks/**/*.*'],
+      watch: ['./mocks/**/*.ts'],
       env: {
         NODE_ENV: 'development',
         RUNNING_E2E: process.env.RUNNING_E2E,

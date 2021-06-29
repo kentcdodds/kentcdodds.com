@@ -16,7 +16,7 @@ describe('onboarding', () => {
 
     cy.findByRole('main').within(() => {
       cy.findByRole('textbox', {name: /email/i}).type(`${email}{enter}`)
-      cy.fixture('msw-magic.local.json').then(
+      cy.readFile('mocks/msw.local.json').then(
         (data: {email: {text: string}}) => {
           const magicLink = data.email.text.match(/(http.+magic.+)\n/)?.[1]
           if (magicLink) {
