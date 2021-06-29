@@ -1,5 +1,7 @@
 import * as React from 'react'
 import {Link} from 'remix'
+import {useLocation} from 'react-router'
+import clsx from 'clsx'
 import {images} from '../images'
 import {Theme, useTheme} from '../theme-provider'
 import {useOptionalUser, useOptionalUserInfo} from '../utils/misc'
@@ -7,11 +9,25 @@ import {SunIcon} from './icons/sun-icon'
 import {MoonIcon} from './icons/moon-icon'
 import {MenuIcon} from './icons/menu-icon'
 
-function NavLink({className, ...rest}: Parameters<typeof Link>['0']) {
+function NavLink({
+  to,
+  ...rest
+}: Omit<Parameters<typeof Link>['0'], 'to'> & {to: string}) {
+  const location = useLocation()
+  const isSelected =
+    to === location.pathname || location.pathname.startsWith(`${to}/`)
+
   return (
     <li>
       <Link
-        className={`block px-5 py-2 hover:underline whitespace-nowrap text-lg font-medium ${className}`}
+        className={clsx(
+          'block px-5 py-2 hover:underline whitespace-nowrap text-lg font-medium',
+          {
+            'text-black dark:text-white': isSelected,
+            'text-blueGray-500': !isSelected,
+          },
+        )}
+        to={to}
         {...rest}
       />
     </li>
