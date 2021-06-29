@@ -35,7 +35,7 @@ export const articles = [
     date: '2021-03-02',
     articleUrl: '/blog-4',
   },
-] as const
+]
 
 export const tags = [
   'career',
@@ -54,4 +54,4 @@ export const tags = [
   'teaching',
   'testing',
   'typescript',
-] as const
+]
