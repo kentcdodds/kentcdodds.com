@@ -45,9 +45,9 @@ function Tab({isSelected, children}: TabProps & {isSelected?: boolean}) {
 
 function ProblemSolutionSection() {
   return (
-    <div className="px-8 w-full">
+    <div className="px-5vw w-full">
       <div className="pb-16 pt-24 w-full bg-gray-100 dark:bg-gray-800 rounded-lg lg:pb-40 lg:pt-36">
-        <div className="-mx-8">
+        <div className="-mx-5vw">
           <Tabs as={Grid}>
             <div className="col-span-full lg:col-span-5">
               <H2>

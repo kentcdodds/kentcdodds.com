@@ -1,3 +1,4 @@
+import calculateReadingTime from 'reading-time'
 import type {Request, Response} from 'node-fetch'
 import type {Action, Loader} from 'remix'
 import type {User, Call, Session, Team, Role} from '@prisma/client'
@@ -17,50 +18,47 @@ type Await<Type> = Type extends Promise<infer Value> ? Await<Value> : Type
 
 type MdxListItem = {
   slug: string
+  readTime?: ReturnType<typeof calculateReadingTime>
+  /**
+   * It's annoying that all these are set to optional I know, but there's
+   * no great way to ensure that the MDX files have these properties,
+   * especially when a common use case will be to edit them without running
+   * the app or build. So we're going to force you to handle situations when
+   * these values are missing to avoid runtime errors.
+   */
   frontmatter: {
-    meta: {
-      title: string
-      description: string
+    title?: string
+    description?: string
+
+    // Post meta
+    date?: number
+    bannerUrl?: string
+    bannerCredit?: string
+    bannerAlt?: string
+
+    // Workshop meta
+    tech?: string
+    convertKitTag?: string
+    meta?: {
       [key as string]: string
     }
   }
 }
 
-type MdxPage = MdxListItem & {
-  code: string
-}
-
-type PostListItem = MdxListItem & {
-  frontmatter: {published: number}
-}
-
-type Post = PostListItem & {code: string}
-
-type WorkshopListItem = MdxListItem & {
-  frontmatter: {tech: string; convertKitTag: string}
-}
-
-type WorkshopPage = WorkshopListItem & {code: string}
-
-type LoaderContext = {
-  req: Request
-  res: Response
-}
+/**
+ * This is a separate type from MdxListItem because the code string is often
+ * pretty big and the pages that simply list the pages shouldn't include the code.
+ */
+type MdxPage = MdxListItem & {code: string}
 
 type KCDLoader<Params extends Record<string, string> = Record<string, string>> =
   (
-    args: Omit<Parameters<Loader>['0'], 'context' | 'params'> & {
-      context: LoaderContext
-      params: Params
-    },
+    args: Omit<Parameters<Loader>['0'], 'params'> & {params: Params},
   ) => ReturnType<Loader>
 
 type KCDAction<Params extends Record<string, string> = Record<string, string>> =
   (
-    args: Omit<Parameters<Action>['0'], 'context' | 'params'> & {
-      context: LoaderContext
-      params: Params
-    },
+    args: Omit<Parameters<Action>['0'], 'params'> & {params: Params},
   ) => ReturnType<Action>
 
 type GitHubFile = {path: string; content: string}
@@ -75,12 +73,8 @@ export {
   Session,
   Team,
   Role,
-  MdxListItem,
   MdxPage,
-  PostListItem,
-  Post,
-  WroskhopListItem,
-  WorkshopPage,
+  MdxListItem,
   KCDLoader,
   KCDAction,
   GitHubFile,

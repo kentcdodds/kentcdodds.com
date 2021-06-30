@@ -1,45 +1,41 @@
 import * as React from 'react'
+import formatDate from 'date-fns/format'
+import type {MdxListItem} from 'types'
 import {H3} from './typography'
-
-export interface ArticleCardProps {
-  title: string
-  date: Date | number | string
-  readTime: string
-  imageUrl: string
-  imageAlt: string
-  articleUrl: string
-}
+import {CopyIcon} from './icons/copy-icon'
 
 function ArticleCard({
-  title,
-  date,
   readTime,
-  imageUrl,
-  imageAlt,
-  articleUrl,
-}: ArticleCardProps) {
-  const dateString = new Date(date).toLocaleDateString('en-US', {
-    dateStyle: 'long',
-  })
-
+  slug,
+  frontmatter: {
+    date = new Date().getTime(),
+    title = 'Untitled Post',
+    // TODO: add a default banner and alt for unbannered articles
+    bannerAlt,
+    bannerUrl,
+  },
+}: MdxListItem) {
   return (
-    <a className="group relative w-full" href={articleUrl}>
-      <button className="absolute z-10 left-6 top-6 px-8 py-4 text-black whitespace-nowrap text-lg font-medium bg-white rounded-lg opacity-0 group-hover:opacity-100 transition">
-        Click to copy url
+    <a className="group relative w-full" href={`/blog/${slug}`}>
+      <button className="absolute z-10 left-6 top-6 p-4 text-black whitespace-nowrap text-lg font-medium bg-white rounded-lg group-hover:opacity-100 transition lg:px-8 lg:py-4 lg:opacity-0">
+        <span className="hidden lg:inline">Click to copy url</span>
+        <span className="inline lg:hidden">
+          <CopyIcon />
+        </span>
       </button>
 
       <div className="aspect-w-3 aspect-h-4 w-full">
         <img
-          alt={imageAlt}
+          alt={bannerAlt}
           className="rounded-lg object-cover"
-          src={imageUrl}
+          src={bannerUrl}
         />
       </div>
 
       <div className="mt-8 text-blueGray-500 text-xl font-medium">
-        {dateString} — {readTime} read
+        {formatDate(new Date(date), 'PPP')} — {readTime?.text ?? 'quick read'}
       </div>
-      <div className="mt-4 text-black dark:text-white group-hover:underline">
+      <div className="mt-4 group-hover:underline">
         <H3>{title}</H3>
       </div>
     </a>

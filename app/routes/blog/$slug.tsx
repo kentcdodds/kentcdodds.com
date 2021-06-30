@@ -2,8 +2,7 @@ import React from 'react'
 import {useRouteData, json} from 'remix'
 import type {HeadersFunction} from 'remix'
 import {useParams} from 'react-router-dom'
-import type {KCDLoader, Post} from 'types'
-import calculateReadingTime from 'reading-time'
+import type {KCDLoader, MdxPage} from 'types'
 import {
   FourOhFour,
   getMdxPage,
@@ -19,15 +18,15 @@ export const headers: HeadersFunction = ({loaderHeaders}) => {
 }
 
 type LoaderData = {
-  page: Post | null
+  page: MdxPage | null
 }
 
 export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
-  const page = (await getMdxPage({
-    rootDir: 'blog',
+  const page = await getMdxPage({
+    contentDir: 'blog',
     slug: params.slug,
     bustCache: new URL(request.url).searchParams.get('bust-cache') === 'true',
-  })) as Post | null
+  })
 
   let data: LoaderData
 
@@ -56,18 +55,18 @@ export default function MdxScreenBase() {
 
 function useOnRead({
   parentElRef,
+  readTime,
   onRead,
   enabled = true,
 }: {
   parentElRef: React.RefObject<HTMLElement>
+  readTime: MdxPage['readTime']
   onRead: () => void
   enabled: boolean
 }) {
   React.useEffect(() => {
     const parentEl = parentElRef.current
     if (!enabled || !parentEl || !parentEl.textContent) return
-
-    const readingTime = calculateReadingTime(parentEl.textContent)
 
     const visibilityEl = document.createElement('div')
 
@@ -85,7 +84,7 @@ function useOnRead({
     })
 
     let startTime = new Date().getTime()
-    let timeoutTime = readingTime.time * 0.6
+    let timeoutTime = (readTime?.time ?? Infinity) * 0.6
     let timerId: ReturnType<typeof setTimeout>
     let timerFinished = false
     function startTimer() {
@@ -127,7 +126,7 @@ function useOnRead({
       visibilityEl.remove()
     }
     return cleanup
-  }, [enabled, onRead, parentElRef])
+  }, [enabled, readTime, onRead, parentElRef])
 }
 
 function MdxScreen() {
@@ -146,6 +145,7 @@ function MdxScreen() {
   const mainRef = React.useRef<HTMLDivElement>(null)
   useOnRead({
     parentElRef: mainRef,
+    readTime: data.page.readTime,
     onRead: React.useCallback(() => {
       const searchParams = new URLSearchParams([
         ['_data', 'routes/_action/mark-read'],
@@ -161,8 +161,8 @@ function MdxScreen() {
   return (
     <>
       <header>
-        <h2>{frontmatter.meta.title}</h2>
-        <p>{frontmatter.meta.description}</p>
+        <h2>{frontmatter.title}</h2>
+        <p>{frontmatter.description}</p>
       </header>
       <main ref={mainRef}>
         <Component />

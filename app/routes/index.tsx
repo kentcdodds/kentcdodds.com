@@ -1,5 +1,6 @@
 import * as React from 'react'
 import {Outlet} from 'react-router'
+import {articles} from '../../storybook/stories/fixtures'
 import {AboutSection} from '../components/sections/about-section'
 import {BlogSection} from '../components/sections/blog-section'
 import {CourseSection} from '../components/sections/course-section'
@@ -18,7 +19,8 @@ function IndexRoute() {
       <Spacer size="large" />
       <ProblemSolutionSection />
       <Spacer size="medium" />
-      <BlogSection articles={[]} />
+      {/*  TODO: replace fixtures */}
+      <BlogSection articles={articles} />
       <Spacer size="large" />
       <CourseSection />
       <Spacer size="large" />

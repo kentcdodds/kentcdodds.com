@@ -5,6 +5,7 @@ interface TitleProps {
   variant?: 'primary' | 'secondary'
   as?: React.ElementType
   children: React.ReactNode
+  className?: string
 }
 
 const fontSize = {
@@ -26,10 +27,13 @@ function Title({
   size,
   as,
   children,
+  className,
 }: TitleProps & {size: keyof typeof fontSize}) {
   const Tag = as ?? size
   return (
-    <Tag className={clsx(fontSize[size], titleColors[variant])}>{children}</Tag>
+    <Tag className={clsx(fontSize[size], titleColors[variant], className)}>
+      {children}
+    </Tag>
   )
 }
 

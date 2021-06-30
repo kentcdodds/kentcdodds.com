@@ -1,22 +1,26 @@
 import * as React from 'react'
 import {useMatches} from 'remix'
-import type {MdxPage} from 'types'
+import type {MdxListItem, MdxPage} from 'types'
 import * as mdxBundler from 'mdx-bundler/client'
+import config from '../../config'
 import {compileMdx} from '../utils/compile-mdx.server'
-import {downloadMdxFileOrDirectory} from '../utils/github.server'
-import {AnchorOrLink, getErrorMessage} from '../utils/misc'
+import {
+  downloadDirList,
+  downloadMdxFileOrDirectory,
+} from '../utils/github.server'
+import {AnchorOrLink, getErrorMessage, typedBoolean} from '../utils/misc'
 import cache from './mdx-cache.server'
 
 async function getMdxPage({
-  rootDir,
+  contentDir,
   slug,
   bustCache,
 }: {
-  rootDir: string
+  contentDir: string
   slug: string
   bustCache: boolean
 }): Promise<MdxPage | null> {
-  const key = `${rootDir}/${slug}`
+  const key = `${contentDir}/${slug}`
   if (bustCache) {
     await cache.cache.del(key)
   } else {
@@ -31,16 +35,56 @@ async function getMdxPage({
   const pageFiles = await downloadMdxFileOrDirectory(key, bustCache)
   const page = await compileMdx<MdxPage['frontmatter']>(slug, pageFiles)
   if (page) {
-    await cache.set(key, JSON.stringify(page))
-    return {...page, slug}
+    const mdxPage = {...page, slug}
+    await cache.set(key, JSON.stringify(mdxPage))
+    return mdxPage
   } else {
     return null
   }
 }
 
+async function getMdxPagesInDirectory(contentDir: string, bustCache: boolean) {
+  const key = `dir-list:${contentDir}`
+  let dirList: Array<{name: string; slug: string}> | undefined
+  if (bustCache) {
+    await cache.cache.del(key)
+  } else {
+    try {
+      const cached = await cache.get(key)
+      if (cached) dirList = JSON.parse(cached)
+    } catch (error: unknown) {
+      console.error(getErrorMessage(error))
+    }
+  }
+  const fullContentDirPath = `${config.contentSrc.path}/${contentDir}`
+  if (!dirList) {
+    dirList = (await downloadDirList(fullContentDirPath)).map(
+      ({name, path}) => ({
+        name,
+        slug: path.replace(`${fullContentDirPath}/`, ''),
+      }),
+    )
+  }
+  await cache.set(key, JSON.stringify(dirList))
+
+  const pages = await Promise.all(
+    dirList
+      .filter(({name}) => name !== 'README.md')
+      .map(
+        async ({slug}): Promise<MdxPage | null> =>
+          getMdxPage({contentDir, slug, bustCache}),
+      ),
+  )
+  return pages.filter(typedBoolean)
+}
+
 function mdxPageMeta({data}: {data: {page: MdxPage} | null}) {
   if (data) {
-    return data.page.frontmatter.meta
+    return {
+      title: data.page.frontmatter.title,
+      description: data.page.frontmatter.description,
+      ...data.page.frontmatter.meta,
+    }
   } else {
     return {
       title: 'Not found',
@@ -48,6 +92,14 @@ function mdxPageMeta({data}: {data: {page: MdxPage} | null}) {
         'You landed on a page that Kody the Coding Koala could not find 🐨😢',
     }
   }
+}
+
+/**
+ * This is useful for when you don't want to send all the code for a page to the client.
+ */
+function mapFromMdxPageToMdxListItem(page: MdxPage): MdxListItem {
+  const {code, ...mdxListItem} = page
+  return mdxListItem
 }
 
 /**
@@ -83,4 +135,11 @@ function FourOhFour() {
   )
 }
 
-export {getMdxPage, mdxPageMeta, FourOhFour, getMdxComponent}
+export {
+  getMdxPage,
+  getMdxPagesInDirectory,
+  mapFromMdxPageToMdxListItem,
+  mdxPageMeta,
+  FourOhFour,
+  getMdxComponent,
+}

@@ -1,4 +1,7 @@
+import * as React from 'react'
+import ReactDOMServer from 'react-dom/server'
 import {bundleMDX} from 'mdx-bundler'
+import {getMDXComponent} from 'mdx-bundler/client'
 import visit from 'unist-util-visit'
 import type {
   PluggableList,
@@ -13,6 +16,7 @@ import Cache from '@remark-embedder/cache'
 import gfm from 'remark-gfm'
 import type {Node} from 'unist'
 import type {GitHubFile} from 'types'
+import calculateReadingTime from 'reading-time'
 
 // here's a hack because I didn't want to vendor Ryan's code...
 const ryansHighlighter = (
@@ -122,8 +126,14 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
     },
   })
 
+  // calculate the reading time for the markup:
+  const readTime = calculateReadingTime(
+    ReactDOMServer.renderToString(React.createElement(getMDXComponent(code))),
+  )
+
   return {
     code,
+    readTime,
     frontmatter: frontmatter as FrontmatterType,
   }
 }

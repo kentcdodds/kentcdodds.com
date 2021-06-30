@@ -2,6 +2,7 @@ import * as React from 'react'
 import {VideoCard} from '@kcd/components/video-card'
 import {CourseCard} from '@kcd/components/course-card'
 import {ArticleCard} from '@kcd/components/article-card'
+import {articles} from './fixtures'
 import type {Meta} from '@storybook/react'
 
 // TODO: I'm not really a fan of how the cards render in 'story mode', but
@@ -36,12 +37,6 @@ CourseCard.args = {
 }
 
 // @ts-expect-error `args` is a storybook thing
-ArticleCard.args = {
-  title: `Hi, I'm Kent C. Dodds`,
-  imageUrl: 'https://source.unsplash.com/350x400?skateboard',
-  readTime: '12 mins',
-  articleUrl: '#',
-  date: new Date('2021-06-18'),
-}
+ArticleCard.args = articles[0]
 
 export {VideoCard, CourseCard, ArticleCard}
