@@ -1,0 +1,679 @@
+---
+title: Lessons Learned From Four Major Projects With Shirley Wu
+date: null
+description:
+  Shirley Wu discusses what she learned from her four most influential projects.
+meta:
+  keywords:
+simpleCastId: e8df0f56-1daf-45d6-ad98-f81c81fc25cb
+---
+
+import Transcript from 'components/podcast/transcript'
+import Resources from 'components/podcast/resources'
+import Guest from 'components/podcast/guest'
+
+Shirley Wu has been freelancer since 2016, creating data visualizations for her
+clients. In this episode, Shirley talks about the four projects that had the
+most significant impact on her.
+
+In 2017 Shirley created an interactive visualization of the musical, Hamilton.
+It blew up on the internet. It was the first time a project of her's had a
+significant response. It made her realize that code could be beautiful,
+colorful, and inspiring. The audience might not remember the figures or the
+writeup, but they will remember the emotional response they had.
+
+Her next project was less fun and a lot more serious. She worked with The
+Guardian on an investigative journalism piece called Bussed Out. The project was
+meaningful to her. In the past, she shied away from more serious projects due to
+a fear of the backlash she'd receive if she didn't do it right. She got to work
+with a very talented team of journalists who taught her what she was capable of
+if she teamed up with the right people on important topics.
+
+On a less serious note, Shirley had the privilege of having a visualization be
+commissioned by the San Francisco Museum of Modern Art. The project was to do
+something with the data from Send Me SFMOMA. This project caused her to
+reconnect with making art for its own sake.
+
+The most recent influential project was Legends. It was a personal project on
+the fifty-one female Nobel Prize winners since 1901. With her other digital
+projects, she is lucky only to get a few minutes of someone's time, but she
+wanted more than that, she wanted people to linger and be present. So Shirley is
+now pushing herself to break the boundaries of digital and make moving her
+visualization into physical space a reality.
+
+---
+
+<div style={{display: 'grid', gridGap: 10, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'}}>
+
+<Resources>
+
+- [Hamilton](https://pudding.cool/2017/03/hamilton/)
+- [The Guardian - Bussed Out](https://www.theguardian.com/us-news/ng-interactive/2017/dec/20/bussed-out-america-moves-homeless-people-country-study)
+- [Journal - Send Me Love](http://www.datasketch.es/february/)
+- [Legends](https://christmasexperiments.com/2018/23/legends)
+
+</Resources>
+
+<Guest name="Shirley Wu" image="https://res.cloudinary.com/kentcdodds-com/image/upload/v1625034114/kentcdodds.com/content/podcast/01/14-shirley-wu/shirley-wu.png">
+
+- [Website](http://sxywu.com/)
+- [Blog](https://medium.com/@sxywu)
+- [Twitch](https://www.twitch.tv/sxywu)
+- [Twitter](https://twitter.com/sxywu?lang=en)
+- [Github](https://github.com/sxywu)
+- [Instagram](https://www.instagram.com/shirleyxueyangwu/?hl=en)
+
+</Guest>
+
+</div>
+
+---
+
+## Transcript
+
+<Transcript>
+
+**Kent C. Dodds:** Hello everybody. This is your friend Kent C. Dodds. And I am
+joined by my friend Shirley Wu. Say hi Shirley.
+
+**Shirley Wu:** Hi. Everyone.
+
+**Kent C. Dodds:** Shirley, is just a fabulous person. I know that. And if you
+don't know her yet, then by the end of this podcast you will know that also. And
+Shirley, I'm going to give you a chance really quick to just introduce yourself.
+And we get to know you a little bit, and then we can talk about whatever it is
+that we're going to talk about today.
+
+**Shirley Wu:** Thank you so much Kent. I actually really love your intro. I
+love that you say, "Hi, I'm your friend Kent. I love that intro very much. Hi,
+I'm Shirley. I am an independent creator of data visualizations. That's the
+formal title I've given myself because I'm a freelancer and I can call myself
+whatever I want. And basically all that means is that I work with a bunch of
+different clients across mostly the tech media and journalism industries. And I
+work with them and with their data to design visualizations that help either
+explore the data for the questions that they might have or to communicate
+something insights or patterns that they've learned with the data. That's my day
+job.
+
+**Kent C. Dodds:** Cool. You have the freedom of being a freelancer.
+
+**Shirley Wu:** Yes.
+
+**Kent C. Dodds:** How long have you been doing that?
+
+**Shirley Wu:** I've been doing this since memorial. Well, since the Summer
+of 2016. It's, I'm coming on three years. I've learned a lot from the last three
+years.
+
+**Kent C. Dodds:** Yeah, I bet. What's your least favorite part of being a
+freelancer? Then we can get into the good stuff. We hit that out of the way.
+
+**Shirley Wu:** Yeah. Oh, my God. Yes. My least favorite part is that I'm
+always, always thinking about money. I feel such a horrible person that every
+single day, I think about money at least once a day. Where will my next client
+come from and where does paycheck will come from. And I especially hate it when
+because I make myself an annual goal of how much to make. That sometimes I think
+of clients as just a number and I hate that because I like to choose clients
+that I really enjoy working with. There are people that I really enjoy working
+with. And when I'm talking to a potential client and all I can think of them is
+the potential budget number. I really hate when I do that. That's the thing I
+hate the most.
+
+**Kent C. Dodds:** Yeah. That's interesting. You're talking with this person and
+you're like oh, man I'm spending so much time with this person, but they are x
+number of dollars and I could be spending my time with this person who is x much
+more number of dollars or something.
+
+**Shirley Wu:** It's not as much a comparison because if I'm talking to them it
+means that I'm already very much interested in their project. And I want it to
+happen. It's more like, how big will this project be and will I need to get
+another project while I'm working? Do I need to, can I just spend all my time on
+this for a few months, or do I need to supplement it with another client? That
+has to be smaller in scope so that I can juggle both. That sort of scheduling
+and logistics is that thing that I disliked the most because it just feels so
+cold and I really don't like it. But it's an unfortunate necessity that no
+matter how much I enjoy working with them, I have to think about the reality of
+making that quota I've set for myself.
+
+**Kent C. Dodds:** Yeah. That makes a lot of sense. And at the end of the day we
+live in a capitalist society for better or worse.
+
+**Shirley Wu:** Yeah.
+
+**Kent C. Dodds:** You've got to take care of yourself. But I can understand how
+that could be frustrating.
+
+**Shirley Wu:** And I live in San Francisco or a south San Francisco.
+
+**Kent C. Dodds:** Where money is tight for everybody.
+
+**Shirley Wu:** Yeah, except for those people who are about to IPO.
+
+**Kent C. Dodds:** Yeah, exactly.
+
+**Shirley Wu:** Yeah.
+
+**Kent C. Dodds:** Yeah. Very true. I'm actually curious about freelancing and
+having clients and things like that. And that's something I've never really
+done. I'm just, one thing that I've always been curious about is when you get a
+new client do you have to get yourself all set up with their equipment, or with
+their on their network, and now you're working in their projects, their repos,
+and you have to set up they monolithic project on your laptop, or how does that
+work to you? Are you typically working kind of on your own, on your own thing
+and then you give them the code when you're done? Is that, how does that work?
+
+**Shirley Wu:** Yeah. Think fully it really depends on the client, but for most
+clients on the project that they come to me for is either an external marketing.
+It's either journalism which is a one off article. And I get to mostly develop
+in my own repo and then maybe toward the end. I might hand over that code so
+that they can deploy it. Or it might be for a company's external marketing which
+also means I don't need to work within their particular copies. I don't think
+I've yet had a client come to me to work on something that's integrated into
+their product. And I think that makes a lot of sense because it would probably
+be a lot of time and effort to ramp up someone into their product just for them
+to leave after let's say three months. And it doesn't make business sense for a
+company to do that. And I'm perfectly happy with that also because I don't want
+to ramp up for a company because that knowledge is not transferable in any way.
+
+**Kent C. Dodds:** Yeah. And neither is that like oh, I have to install this
+version of the Java Runtime Environment. All right. Don't want to deal with
+that.
+
+**Shirley Wu:** No.
+
+**Kent C. Dodds:** Well, cool. You've had as a freelancer for the last three
+years, you've had the opportunity to work on some really interesting projects
+many different projects. But I think you have some specific ones that we talked
+about before that you'd like to share with folks. And I'd love to hear about
+what these projects are and in particular what you have learned from that. And
+then maybe we as an audience can pull out some specific things that we can learn
+and apply in our day to day development. What's the first one you'd like to chat
+about?
+
+**Shirley Wu:** Yeah, definitely. I started freelancing back in 2016 and
+throughout the years I've had a few different projects that have been really,
+really meaningful to me. And this year in particular in 2019, I've kind of made
+a few goals about what I want to do with my career and with my projects going
+forward. And those goals were very much informed by these few projects that had
+been really meaningful to me. The very first one is back in 2016. December 2016,
+I published a project for a project site. A project called an Interactive
+Visualization of Every Line in Hamilton. And this was basically a labor of love
+for I think four months on and off. And aware because I was so obsessed with the
+musical Hamilton, and I just kept on. I have a very obsessive personality and a
+very addictive personality.
+
+**Kent C. Dodds:** You're latched on to the specific things that you like.
+
+**Shirley Wu:** Yeah. I'm, I have a personality of I'm either 100% and all in or
+0% and not in at all. And it's mostly good because it means that whenever I
+decided to focus on something I'm all in. But it's also not so good because it
+means that if I get addicted to a TV show that's all I'm going to do for days.
+It's really not good when I go out. And if I have a few shots too many, I'm like
+go big or go home. It's really bad, but good in a career sense. Anyway, sorry. I
+was really addicted and I had this like on repeat and [Allan pipe 00:08:35] my
+fiance was like, "I think you should just make a visualization out of this." And
+that's how that idea whole idea happen. And it's this kind of we call it in the
+data visualization world, we called it a Scrollytelling because it's a project,
+it's a piece, it's kind of an article where say that as you scroll I review more
+and more of the data and more and more of the insights to you. And then at the
+very end I give you the exploratory tool to do the same, to do the analysis that
+I did or do different kinds of analysis. And that was really unexpectedly
+successful. Though I suppose in retrospect because it's Hamilton, I probably
+should have expected the success of it. It was really unexpected. My [inaudible
+00:09:45] Miranda actually tweeted it and I think I lost. I think I stopped
+breathing for a few minutes, and then he actually, when I saw the notification
+that he followed me back I was like, what just happen. And then I had to calm
+myself down and be like, he's just a person, just another human being. He's in a
+really awesome talented human being. But he's just another human being.
+Otherwise, I think because of him and had really great success as well. But I
+think the two main things that I really took away from that is the first being
+that was the first time when I have made a project where the response was
+extremely meaningful to me. And by that I had a lot of people tweeting me that
+was just starting their computer science classes in school. And there were like,
+this is so cool. I didn't know that you could do this with code. And it was
+really colorful. There were, I had a lot of women, a lot of girls telling me
+like oh, I didn't know you could do these kinds of things by coding. I'm taking
+a CS class right now, or I now I want to take a CS class. Or the moment that
+made me the happiest was when a woman tweeted me that she and her son we're just
+starting to learn CS see us together or to learn to code together, and that they
+also love visualizations, and they also love Hamilton. And she was like, I can't
+wait until my son gets home, so I can share this with him. And I just absolutely
+love that because not only-
+
+**Kent C. Dodds:** It's adorable.
+
+**Shirley Wu:** Isn't that amazing? I'm because I have, I'm such a sucker for
+parent kids. Whenever that goes really well, family stuff I'm just such a sucker
+for it. And then just was so happy that not only are they, coding and this
+inspired them, but also that this brought this mother and son hopefully closer.
+And that was just so amazing.
+
+**Kent C. Dodds:** That's wonderful.
+
+**Shirley Wu:** Thank you. And I think that was the first project I was like,
+wow. I can, what I do I can actually inspire people. And especially to show them
+that coding can be beautiful and colorful. And matrix is cool, but it doesn't
+have to look like green [inaudible 00:12:39].
+
+**Kent C. Dodds:** Yeah. It's not all just the terminal.
+
+**Shirley Wu:** Yeah. And that was the first moment I realized that. And that's
+one of the reasons why that project is so special to me. And the other one was
+kind of just realizing that before that project I've always thought of data
+visualization as having to be really precise numbers and the visualizations I'm
+showing you has to be very accurate. And it does because data visualization like
+statistics. It's very easy to misinform people or it's even if you have the best
+of intentions because we all have our biases, it's pretty easy to subconsciously
+or unconsciously bake our own biases into our data visualization. And if we want
+to be really malicious, it's very easy to mislead with the chart.
+
+**Kent C. Dodds:** Okay.
+
+**Shirley Wu:** And so while is really true that you should be very accurate and
+precise. That was the project in which I learned at that the most powerful is
+actually to connect with my audience on an emotional level. They won't remember
+that the, I don't know the statistics that I might have quoted them. But they
+will remember what I wrote about what I learned from the data that gave them an
+emotional response. And I think precision and numbers is important, but emotion
+and giving my reader delight and letting them, giving them that sort of an
+emotional part is very important also. That was the.
+
+**Kent C. Dodds:** I think that can be applied to even products people who
+aren't building art visualizations. We should be as a novelist a amateur
+novelist. One of the things that we talk about a lot in the writing world is the
+emotions that we want to elicit out of the reader. That's what we should be
+focused on. And I think the same applies to your product. Whether you're
+building a bank dashboard, or a social media platform, or whatever it is to be
+mindful of the emotions that you're eliciting out of the viewer. And maybe if
+you are a bank dashboard some of those emotions might be negative, but finding a
+way to present it in a way that just makes peoples lives better. Is something
+that we could all probably be more mindful of.
+
+**Shirley Wu:** Yeah, definitely. And I would love to talk about you're a novel
+offline.
+
+**Kent C. Dodds:** Yeah.
+
+**Shirley Wu:** I also-
+
+**Kent C. Dodds:** Oh, go ahead.
+
+**Shirley Wu:** I was just going to say, I also really love those designs that
+we're seeing more and more of that are just a little bit kooky and it has to be
+on brand. But small ones were, I can't remember who it was, but was it a Yeti
+that as you were out there and as you type your password it just looks at the
+password or something. Those little touches in design are so great I feel like.
+
+**Kent C. Dodds:** Yeah. It gives you a little bit of I don't know, delight like
+you said. What's this next project about?
+
+**Shirley Wu:** Yeah. The next project is a lot less fun and a lot more serious.
+The next one is one that I did with The Guardian back in the fall of 2017. And
+that one is with The Guardian US team and it's called Bussed Out and it's called
+how America moves it's homeless. And that article is all about the homeless
+relocation programs that certain American cities have. And it was an incredible
+project of it's the Guardian. It was so much journalistic integrity. They spent
+about a year and a half collecting data from about 16 cities. And they I think
+were able to collect about 20,000 data points of homeless people who were given
+a bus ticket, a city had purchased the bus tickets for them. To be Bussed Out of
+that city. And there was this whole kind of long form investigative journalism
+into kind of why cities might do that. If that's effective at all. How do these
+individuals, these homeless people that do get a bussed ticket, how did they
+feel, how did they fair? And this was an extremely meaningful project to me
+because it's a very important topic. And I've always before this topic, before
+this fall of 2017. I've always kind of shied away from very serious topics,
+because serious topics are very controversial. And if I don't do it right I will
+bet get backlash and rightfully so because I didn't do it right. And I want to
+treat serious meaningful topics with a level of respect, and with the level of
+care that I wouldn't have been, I wouldn't be able to do individually. Because
+my area of expertise is in data visualization. It's not in homeless bussing
+across countries, or it's not in whatever other topics that I could choose
+from.  
+ And this was the first time I got to work with a team of super talented journalist
+that have done all of their research and have talked to experts. And I got to kind
+of lend what I could to the project. And it was also very well received. I know that
+there was some talks that I think this trigger some policy talks. And this one was
+super meaningful to me because it kind of taught me again, what I could do if I worked
+with the, I don't want to say the right people, but if I could just team up with
+people who are working on these super important topics the kind of things that I
+could help with. And these are kind of the topics that I've always, there's always
+been topics that I've being wanting to do that are really important to me. That I've
+never had the courage to do because I would be scared that I would mess it up. I
+would not do it justice. And this is the project that really gave me the courage
+to kind of go forth and try my hand. Especially now that I have a little bit more
+experience and more of a portfolio. I think it's a little bit easier for me to reach
+out to experts in that field and be, would you like to collaborate on this topic?
+
+**Kent C. Dodds:** And I get the help that you need to make sure that you do
+justice.
+
+**Shirley Wu:** Yeah, definitely.
+
+**Kent C. Dodds:** Well, it's an amazing project. All of these projects that
+will be linked in the short notice, and I strongly recommend people look at
+these because I'm looking at them and they're pretty cool.
+
+**Shirley Wu:** Thank you.
+
+**Kent C. Dodds:** Using the things that you can accomplish with code.
+
+**Shirley Wu:** Yeah, definitely.
+
+**Kent C. Dodds:** There's your next one that you sent me here is this send me
+love thing. Can you tell us about that one?
+
+**Shirley Wu:** Yeah. That was for SFMOMA. This was last spring, spring 2018.
+And SFMOMA had approached me they had a project called Send Me SFMOMA back in
+2017, where you could text the number, and you can text the things like send me
+art, or sending San Francisco, or send me love, or send me hearts, or and
+they'll take that keyword and match it to like an art piece of their collection.
+And they'll send you back that art piece. They do the best that they can to
+match it and send you back an art piece. And the idea was really fascinating
+because the basic premise is that they have something 30,000 pieces in their
+collection and they can only show like 5% of it at any given time in their
+actual physical Brick and Mortar Museum. And this was an idea of how about, how
+can we give people access to the rest of the collection? And they ended up
+receiving five million texts.
+
+**Kent C. Dodds:** Oh, wow.
+
+**Shirley Wu:** Yeah. Across I think in a span of a few months, I think.
+
+**Kent C. Dodds:** It's crazy.
+
+**Shirley Wu:** Right? And then they contacted me and another local studio
+separately to do projects. And what they wanted from me was something that was
+more artistic. And this was the thing I ended up choosing to do is instead of
+focusing on the big big 5 million texts, I decided to focus on individuals. I
+chose five individuals that I thought had really interesting interactions with
+the service. And then I just looked at a week of their interactions and this is
+complete. I don't know why. I think it's because I was in Japan at the time.
+There was a lot of flowers and cherry blossoms and I just made them, I ended up
+representing each day of their interactions as flowers and trees. But this one
+was really fun to do. And I think you might have been the first time a client
+had been like, has been like go forth and do art. [inaudible 00:22:45] had
+because all of my clients have when I work with clients it's for visualizations
+and they must tell a story correctly or they it has there's a lot of back and
+forth between my clients and I to make sure that the visualizations we're
+building fits their specific needs. And I've definitely also had clients that
+are this is the data set or this is the API do whatever you want with the data.
+But tell a story with it. And this is the very first time that a client was make
+art and we'll pay you for it.
+
+**Kent C. Dodds:** That's pretty cool.
+
+**Shirley Wu:** And I was like, what is his freedom that I'm getting. What is
+this creative freedom? But this one was just personally really important. Just
+to realize how much I love art. I grew up painting and drawing for 14 years of
+my life, and I gave it up when I went to university. And this really made me
+realize I want to do more art again.
+
+**Kent C. Dodds:** Kind of made you introspective a little bit. And think
+through what I really want to do in life.
+
+**Shirley Wu:** Yeah. It even made me introspect in the sense that, I realize
+that the biggest reason why I gravitated towards data visualization is that,
+it's the most art sort of thing I can do that tech companies will still pay me
+for. Sounds like. I didn't realize this for years, but this project made me
+realize that's the biggest reason why I did data visualization because it was
+basically the closest to art I can get.
+
+**Kent C. Dodds:** That makes a lot of sense. And you do create really cool
+things. This one's very interesting. It's very cool.
+
+**Shirley Wu:** It's so out there.
+
+**Kent C. Dodds:** I like hovering over the tree and seeing all the random
+pictures and things that people got when they. Yeah. [inaudible 00:24:50]
+
+**Shirley Wu:** Right. [inaudible 00:24:51]. And I first, I love the random
+keywords that they ask for.
+
+**Kent C. Dodds:** Someone said, show me eyeballs and oh my goodness. That will
+hunt my dreams.
+
+**Shirley Wu:** Yeah. And they will because it's a modern art museum. Not
+everything that they get is, some things are just kind of really weird that they
+get.
+
+**Kent C. Dodds:** Yeah.
+
+**Shirley Wu:** And that one was just kind of a really fun in a, I'm getting as
+close to an anonymous individual it's really weird because I feel after working
+on that project, I knew so much about these individuals for the span of a week
+by know in terms of what might have been going on in their lives to be asking
+for those sorts of things. Because some of these people will ask throughout the
+day, some of them will text few hundred times in that week.
+
+**Kent C. Dodds:** Oh, my goodness.
+
+**Shirley Wu:** And might know absolutely nothing about them.
+
+**Kent C. Dodds:** Yeah, that's right. Show me breakfast, show me toothbrushes,
+show me like.
+
+**Shirley Wu:** Yeah. And you can even tell the blocks of time that they were
+probably at work, or at school, or because they'll wrap the fire text and then
+they'll disappear for a few hours and then they'll wrap the fire text.
+
+**Kent C. Dodds:** Oh, that's fascinating. Cool. This next one is called
+Legends. Can you tell us about that one?
+
+**Shirley Wu:** Yeah. That one was actually a personal project. And there was
+two main motivations for it. And one was going back to kind of what I learned
+from Bussed Out, wanting to do more topics are important to me. This one is the
+51 female Noble Laureates since 1901. And I think this one was I just wanted to
+work with a data set of just women that I felt were legendary. And I don't know
+how, but one night I was like, Nobel prize winners there are legendary.And
+that's the first motivation. And the second motivation is that for the last few
+years I've kind of been, I've being thinking about, one of the things I've being
+thinking about a lot is that I spent so many, so much time and I spend months
+and months working on these projects and I throw all of my love and tears and
+sweat into it. And I probably get 30 seconds of someone's time. I'll be really
+lucky if I get a few minutes of their time. And that just makes me really,
+really sad. Especially because and they might be reading this, but then they
+might read half a page and then get distracted by a million other things on
+their screen, and then maybe they'll forget about it. And I think this is kind
+of a selfish ego thing. But I just really want to make work that people will
+linger in for longer. And for the last few years I've been kind of really
+interested in physical installations. Installations that are immersive that
+people have to walk into the space and that the whole thing just hits you. And
+you can't be distracted. You can still be distracted by your phone, but
+hopefully you're not. And you just have to be there and you have to be present.
+And I think there's something really powerful to that. And I've being kind of
+obsessed with this idea of how can I bring my work, and how can I bring what
+I've learned about creating data visualizations and data driven narratives and
+stories into the physical world that people can kind of walk through and learn
+from and take something away from. And that was another motivator behind this
+Legends project. One of the things I realized while thinking through this is
+that the reason why I can't imagine any of my work in three dimensional space,
+is because on the day to day I work in two dimensional space. And every time I
+thought about a room, I can only think about like projectors and screens which
+is completely it's very sad to then because then I'm still missing that third
+dimension. And then when I realized that I was like wait, I should just learn
+how to code in 3D. And I taught myself D3.js.
+
+**Kent C. Dodds:** Sound simple enough.
+
+**Shirley Wu:** Well, and then I taught myself D3.js. And I got a lot of help
+from Matt Diesel on Twitter. He's amazing. And I made this. It's not perfect, it
+was like a three, i taught myself the D3.js and made this in three weeks. Which
+is.
+
+**Kent C. Dodds:** It's pretty. I think it's pretty cool.
+
+**Shirley Wu:** Thank you. It's I knew you know how when you work on your own
+projects you know all of the things that are wrong with them.
+
+**Kent C. Dodds:** Yeah.
+
+**Shirley Wu:** I knew all the things are wrong with it, but this one really
+kind of gave me the courage to go forward for my 2019 goal. Which is I want to
+start doing physical things.
+
+**Kent C. Dodds:** What are you working on with in the physical realm then?
+
+**Shirley Wu:** Nothing as of yet. I guess my biggest project for the last few
+months have been renovating this condo with my fiance. It's kind of physical.
+
+**Kent C. Dodds:** Yeah.
+
+**Shirley Wu:** But once we moved in and settled in I think we're, I'm going to
+start trying to put a prototype. The first goal I have is to just take this
+legends project and make it physical. Maybe try prototyping starting with just
+paper of how the crystal shapes could look in the physical world. And then
+trying to experiment with different materials and different needs to because I
+had no experience or background in this. I need to start from zero. But that's
+the long term multi year goal of hopefully building something that people can
+walk through and be surrounded by. And the biggest thing is that hopefully they
+can learn something and take something away from it. And I'm hoping that what I
+build in the physical I always want them to have a digital counterpart, because
+I'm very much aware of the fact that physical has its limitations of it biases
+towards people that live nearby. It biases towards people that if I decided to
+charge for tickets people that can afford the tickets. And I always want a
+digital version, but the most important for me is that I hope that I'll build
+these with narratives and stories about kind of the topics that I've come to
+find very important for myself. Those are, thanks for listening to the rambling
+Kent.
+
+**Kent C. Dodds:** That's wonderful. And I feel the world is getting closer to a
+place where you could really thrive as a digital or a data visualization digital
+world, physical world mesh where we going to have augmented reality, and you
+could walk into this room with these glasses on and you interact with these
+things and or in VR or something like that. I feel you would really thrive in
+that kind of an environment. And then actually making physical representations
+of this art. The drawback of physical is I can click on something and i can
+expand, and I can drill down. But you can't really do that quite so well in the
+physical world and i need this to be creative. But if you could put that into a
+VR type of situation than it is an immersive experience but also something that
+you could do some pretty cool effects and whatever to give some insights into
+that data. Exciting things I had.
+
+**Shirley Wu:** Yeah. And I think what you just said as challenges I hope that
+one day I get good enough with the physical and I keep saying the physical
+because it's a big question mark for me is still. I'm not quite sure how I'm
+going to achieve it. I hope that one day I get good enough with that I can be
+oh, we can't click on something in spam, but maybe we can do something that's
+similar in the physical world. How can we use this challenge and go get around
+it to make it into our advantage. And I think that'd be really cool.
+
+**Kent C. Dodds:** Yeah. That's very interesting. I look forward to perusing the
+museums. Where your physical manifestations are displaced.
+
+**Shirley Wu:** I don't know, I hope so. That's my a big dream. Although side
+tangents, I've been having a little bit of thought of where do I actually want
+my work to be? For the longest time I thought I would want it to be in a museum,
+because I feel as an artist that's the big goal. But then I'm like, museums are
+actually very, it's actually very excluding also. You have to, I said, SFMOMA
+costs \$25 per entry. That's a lot of money. And what does it mean to create art
+for kind of that sort of... I'm this is kind of hypocritical because I can
+afford to go to Send Me Love SFMOMA. What does it mean to create art of in the
+audience.
+
+**Kent C. Dodds:** For everyone.
+
+**Shirley Wu:** And I feel this is probably some, I'm probably just going into a
+territory that I'm unfamiliar with and probably artists all around the world
+have already thought about this, and now I'm just starting to think about it.
+What does it mean to create one for everyone versus create one for just an
+audience that can afford it.
+
+**Kent C. Dodds:** Well, you see those videos of people who make stairs that are
+actually like piano keys, or there is different that just happen in the streets
+and whatever. And I love those kinds of things I think. That are quite
+interesting.
+
+**Shirley Wu:** Yeah. I think it's the physical versus digital attention from me
+again. Something that everybody around the world has access to versus something
+that only people there has access to.
+
+**Kent C. Dodds:** Yes. That's tricky.
+
+**Shirley Wu:** That's the thing.
+
+**Kent C. Dodds:** I guess that's where VR comes in handy too. It can be that
+almost physical not quite.
+
+**Shirley Wu:** But VR, I also have opinions about that. It's still not very
+affordable. Hopefully in a few years time it becomes a little bit more
+affordable, but it's still hundreds of dollars for a headset. That's a very
+limiting market too. That's my opinion.
+
+**Kent C. Dodds:** Yeah. We all need to live in star trek where there's no
+[inaudible 00:36:11]. And we're all just working hard to do as much as we can
+and enjoy life.
+
+**Shirley Wu:** Yeah. Sounds good.
+
+**Kent C. Dodds:** Sure. I really enjoyed chatting with you about these projects
+and kind of your experience and learning and growing through this. What would
+you say is something that and people can go home and take away, and something
+specific that they can do out of the learnings of your personal experience?
+
+**Shirley Wu:** Yeah, I think one of the biggest things is, I don't want to be
+this is what you should do. I think one of the things that have really benefited
+me the most is I actually have a elementary school teacher that said that she,
+"Every day at the end of the day she reflects on her day. What she did well and
+what she didn't do well. What she learned, what she wants to do, she wants to
+learn going forward or wants to do going forward." And I've applied that since
+every day in my life. And I try to everyday reflects on what I've done well or
+not well. And what I want to do going forward. And I think I have to do this a
+lot just because I'm a freelancer. And I have to think a lot about my future and
+where money's coming from. But even if you're not a freelancer, I think it's
+very beneficial to just kind of take a moment to reflect and think about where
+you might want to head towards next.
+
+**Kent C. Dodds:** Yeah. Be mindful and intentional about the direction you're
+going.
+
+**Shirley Wu:** Yeah.
+
+**Kent C. Dodds:** I guess there are people who can jump in the canoe and just
+go with the flow, or they can grab a paddle and be intentional about the
+direction where they're going.
+
+**Shirley Wu:** Yeah.
+
+**Kent C. Dodds:** That's fantastic advice. Thank you for sharing that. As we
+wrap up here, surely is there anything else that you'd like to talk about or
+mention before we close up?
+
+**Shirley Wu:** No, I don't think so. I'm really grateful that I got to talk to
+you about all of this Kent. Thank you so much for letting me just, this is
+probably the most self absorbed interview slash podcast I've ever done. Where I
+just talk about myself.
+
+**Kent C. Dodds:** No. I hope that you don't really feel that way. And I hope
+that people who listen to their skin pull apart the pieces where or the insights
+that you presented to us. Because I really do feel these projects have taught
+you something valuable and we can pull out some specific insights to apply into
+our own lives. And that's what this podcast is all about is to hear about
+people's personal life experience and then pick away at the pieces that that can
+be self applied. I appreciate that.
+
+**Shirley Wu:** Hope so. Thank you for making us a part of you.
+
+**Kent C. Dodds:** Truly, if people want to keep up with you, how do they
+connect with you?
+
+**Shirley Wu:** I'm on Twitter at S-X-Y-W-U GitHub. Actually, I'm on everything
+at that handle and GitHub a twitch that I will hopefully restart soon YouTube
+channel and with all of my archives, life codes. I just recently started an
+Instagram because I hear that when you do art, Instagram is where it's at. There
+that and my website is the same as sxywu.com.
+
+**Kent C. Dodds:** Fantastic. All right. We'll get links to those too for
+people. But surely it's been a wonderful chat with you. Thank you so much for
+chatting with me.
+
+**Shirley Wu:** Definitely. Thank you so much for having me. It's been super
+fun.
+
+**Kent C. Dodds:** Good, good. What people don't know is that we got to spend an
+hour discussing [inaudible 00:40:08]. It's been awesome. Thanks everybody. I
+hope that this was helpful and interesting to you. It was certainly interesting
+to me, and we will be in your ears next time. Good bye.
+
+**Shirley Wu:** Good bye.
+
+</Transcript>

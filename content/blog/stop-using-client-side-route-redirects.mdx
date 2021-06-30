@@ -1,0 +1,205 @@
+---
+title: Stop using client-side route redirects
+date: 2020-04-13
+description:
+  Why you should stop using client-side route redirects (like the `from` prop on
+  React Router's Redirect component) and what you should do instead.
+categories:
+  - react
+meta:
+  keywords:
+    - javascript
+    - react router
+    - react
+    - url redirect
+    - netlify
+    - server
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033359/kentcdodds.com/content/blog/stop-using-client-side-route-redirects/banner.jpg
+bannerCredit: Photo by [Lance Grandahl](https://unsplash.com/photos/hF6TtT-xz80)
+---
+
+First, let's make sure we're talking about the same thing:
+
+```jsx
+function App() {
+  return (
+    <BrowserRouter>
+      <Redirect from="/old-route" to="/new-route" />
+      {/* ... more routes etc... */}
+    </BrowserRouter>
+  )
+}
+```
+
+(Or however else you might accomplish the same thing in your own framework).
+
+I'm _NOT_ talking about this kind of usage (example borrowed from the docs):
+
+```jsx
+<Route exact path="/">
+  {loggedIn ? <Redirect to="/dashboard" /> : <PublicHomePage />}
+</Route>
+```
+
+That's technically fine, though there may be a better way to handle this in your
+app. Read my post
+[Authentication in React Applications](/blog/authentication-in-react-applications)
+for more about this.
+
+Ok, so now that we're clear on that, let me explain why and then what you should
+be doing instead.
+
+First, the goal of using a client-side redirect (like with Redirect's `from`
+prop or similar) is to ensure the user doesn't land on a URL that you expect
+they could land on and instead redirects them to a different one. A great
+example of this is when you change the URL scheme of your app. Or perhaps you
+sent an email out to your users with the wrong URL and now you're stuck
+redirecting users for all eternity.
+
+Whatever the case may be... If you know the URL you want to redirect users
+_from_, then you're better off redirecting them on the server. Let's talk about
+why client-side redirects are such a problem.
+
+## The 149.3 kilobyte redirect 😱
+
+Let's say a user comes to your app and hits the `/old-route`. Before the browser
+knows it's on a bad route, they have to download your app. Regardless of how
+good you are at code splitting, they're going to need at _least_ `react`,
+`react-dom`, and `react-router-dom`. That's some bytes!
+
+- react@16.13.1 - 6.3kB
+- react-dom@16.13.1 - 114.6kB
+- react-router-dom@5.1.2 - 28.4kB
+
+> These sizes are minified but uncompressed, because compression depends on too
+> many variables for accurate comparisons. Also, I realize that react-router v6
+> is coming soon and will reduce the bundle size significantly, but hear me out!
+
+And that doesn't even include your own code!
+
+Now, let's not be disingenuous! `<Redirect />` only supports redirecting within
+the same app, so the user's going to need to download all of that stuff anyway.
+But the concept still applies: Don't do a client-side redirect from a known
+route to another known route. If it's from one app to another, then the user
+just downloaded and ran a bunch of code they didn't need. Also, even if it's
+within-app, then depending on how you have things configured with
+code-splitting, it's definitely possible that this resulted in the user
+downloading too much or kicking off a waterfall effect (resulting in suboptimal
+performance).
+
+As for using `<Redirect />` when it _is_ within your own app, the user will have
+to wait until the app finishes loading and is actually run before the URL in
+their address bar is updated to the correct URL. Maybe not reason enough by
+itself to avoid `<Redirect />` with the `from` prop, but keep reading.
+
+## HTTP Status Codes
+
+This is definitely reason enough on its own to avoid client-side redirects (like
+`<Redirect />` with the `from` prop). When a user is redirect via JavaScript,
+there's no way to inform the browser (or search engines) that the URL they were
+on before is no longer correct and the new one is correct. This has implications
+on [search engines](https://moz.com/learn/seo/redirection) and
+[the browser cache](https://stackoverflow.com/a/21396547/971592)
+([also interesting cache handling for error status codes](https://twitter.com/iamakulov/status/1249728638221783047)).
+
+## Server side redirects
+
+I'll show you three server-side redirects that I implemented for
+[bookshelf.lol](https://bookshelf.lol). In the bookshelf app, I don't have
+anything at the home route of `/` (note that the bookshelf app is purely for
+educational purposes, so semi-contrived decisions like this are not to be
+questioned. Please and thank you).
+
+So instead, every request to `/` should be redirected to `/list`. And I want to
+redirect with a `302` because it's quite possible that at some point in the
+future I'll change my mind and I don't want to have to deal with busting the
+browser or search engine cache of this particular redirect.
+
+### Netlify (production)
+
+With Netlify, you can configure redirects in
+[a `netlify.toml` file](https://docs.netlify.com/configure-builds/file-based-configuration/),
+but I chose the [`_redirects` file](https://docs.netlify.com/routing/redirects/)
+option. Here's what that file needs to get that redirect in place:
+
+```
+/  /list  302!
+```
+
+You can check out this file as it stands today
+[right here](https://github.com/kentcdodds/bookshelf/blob/f87266c4cc215865be6453e114f954df7172e0e6/public/_redirects).
+
+If I wanted to use the `netlify.toml` file, then it would be more like this:
+
+```
+[[redirects]]
+  from = "/"
+  to = "/list"
+  status = 302
+  force = true
+```
+
+### Locally built file
+
+Once I've built the bookshelf app, if I want to run it locally, I use
+[`serve`](https://npm.im/serve) to do so. This CLI uses
+[`serve-handler`](https://npm.im/serve-handler) which can be configured with
+`serve.json` like so:
+
+```json
+{
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/list",
+      "type": 302
+    }
+  ]
+}
+```
+
+You can check out this file as it stands today
+[right here](https://github.com/kentcdodds/bookshelf/blob/f87266c4cc215865be6453e114f954df7172e0e6/public/serve.json).
+
+### Locally during development
+
+The bookshelf app is built with
+[Create React App](https://create-react-app.dev/) (and it uses `react-scripts`).
+This means that the dev server is completely handled for me behind the scenes.
+Luckily, `react-scripts` does allow for customization of the server for proxy
+purposes and I can use this for the redirect by creating a file at
+`src/setupProxy.js`. This simply exports a function which accepts the
+[express app](https://expressjs.com/en/4x/api.html#app) and then I can use
+[`res.redirect`](https://expressjs.com/en/4x/api.html#res.redirect) when the `/`
+route is requested:
+
+```javascript
+function proxy(app) {
+  app.get(/^\/$/, (req, res) => res.redirect('/list'))
+}
+
+module.exports = proxy
+```
+
+You can check out this file as it stands today
+[right here](https://github.com/kentcdodds/bookshelf/blob/f87266c4cc215865be6453e114f954df7172e0e6/src/setupProxy.js).
+
+## Conclusion
+
+Whatever host you end up publishing your app to probably has some way to
+configure redirects (if it doesn't that's super weird of them). It may feel like
+a lot of work to avoid a simple:
+
+```jsx
+<Redirect from="/" to="/list" />
+```
+
+But really the cost is pretty small (set it up once and forget about it) and the
+benefits of being semantically correct about this outweighs those costs.
+
+In general, following semantics of the web is better for existing tools (just
+like how using semantic markup is better for accessibility). **If the web
+standards satisfy the use case, then use the web standard.**
+
+Thank you to [Ryan Florence](https://twitter.com/ryanflorence) (creator of React
+Router) who convinced me of this idea.

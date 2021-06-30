@@ -1,0 +1,274 @@
+---
+title: Wrapping React.useState with TypeScript
+date: 2021-01-19
+description:
+  How to make a custom hook that wraps useState with TypeScript properly
+categories:
+  - react
+meta:
+  keywords:
+    - typescript
+    - useState
+    - as const
+    - as expression
+    - type casting
+    - tuples
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033541/kentcdodds.com/content/blog/wrapping-react-use-state-with-type-script/banner.jpg
+bannerCredit: Photo by [Daiga Ellaby](https://unsplash.com/photos/-oaGhEPVy0o)
+---
+
+I made a `useDarkMode` hook that looks like this:
+
+```typescript
+type DarkModeState = 'dark' | 'light'
+type SetDarkModeState = React.Dispatch<React.SetStateAction<DarkModeState>>
+
+function useDarkMode() {
+  const preferDarkQuery = '(prefers-color-scheme: dark)'
+  const [mode, setMode] = React.useState<DarkModeState>(() => {
+    const lsVal = window.localStorage.getItem('colorMode')
+    if (lsVal) {
+      return lsVal === 'dark' ? 'dark' : 'light'
+    } else {
+      return window.matchMedia(preferDarkQuery).matches ? 'dark' : 'light'
+    }
+  })
+
+  React.useEffect(() => {
+    const mediaQuery = window.matchMedia(preferDarkQuery)
+    const handleChange = () => {
+      setMode(mediaQuery.matches ? 'dark' : 'light')
+    }
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
+
+  React.useEffect(() => {
+    window.localStorage.setItem('colorMode', mode)
+  }, [mode])
+
+  // we're doing it this way instead of as an effect so we only
+  // set the localStorage value if they explicitly change the default
+  return [mode, setMode] as const
+}
+```
+
+Then it is used like this:
+
+```typescript
+function App() {
+  const [mode, setMode] = useDarkMode()
+  return (
+    <>
+      {/* ... */}
+      <Home mode={mode} setMode={setMode} />
+      {/* ... */}
+      <Page mode={mode} setMode={setMode} />
+      {/* ... */}
+    </>
+  )
+}
+
+function Home({
+  mode,
+  setMode,
+}: {
+  mode: DarkModeState
+  setMode: SetDarkModeState
+}) {
+  return (
+    <>
+      {/* ... */}
+      <Navigation mode={mode} setMode={setMode} />
+      {/* ... */}
+    </>
+  )
+}
+
+function Page({
+  mode,
+  setMode,
+}: {
+  mode: DarkModeState
+  setMode: SetDarkModeState
+}) {
+  return (
+    <>
+      {/* ... */}
+      <Navigation mode={mode} setMode={setMode} />
+      {/* ... */}
+    </>
+  )
+}
+
+function Navigation({
+  mode,
+  setMode,
+}: {
+  mode: DarkModeState
+  setMode: SetDarkModeState
+}) {
+  return (
+    <>
+      {/* ... */}
+      <button onClick={() => setMode(mode === 'light' ? 'dark' : 'light')}>
+        {mode === 'light' ? <RiMoonClearLine /> : <RiSunLine />}
+      </button>
+      {/* ... */}
+    </>
+  )
+}
+```
+
+This works great, and powers the "dark mode" support for all the
+[Epic React](https://epicreact.dev) workshop apps (for example
+[React Fundamentals](https://react-fundamentals.netlify.app)).
+
+## A closer look
+
+I want to call out a few things about the hook itself that made things work well
+from a TypeScript perspective. First, let's clear out all the extra stuff and
+just look at the important bits. We'll even clear out the TypeScript and add it
+iteratively:
+
+```typescript
+function useDarkMode() {
+  const [mode, setMode] = React.useState(() => {
+    // ...
+    return 'light'
+  })
+
+  // ...
+
+  return [mode, setMode]
+}
+
+function App() {
+  const [mode, setMode] = useDarkMode()
+  return (
+    <button onClick={() => setMode(mode === 'light' ? 'dark' : 'light')}>
+      Toggle from {mode}
+    </button>
+  )
+}
+```
+
+From the get-go, we've got an error when calling `setMode`:
+
+```
+This expression is not callable.
+  Not all constituents of type 'string | React.Dispatch<SetStateAction<string>>' are callable.
+    Type 'string' has no call signatures.(2349)
+```
+
+You can read each addition of indentation as "because", so let's read that
+again:
+
+> This expression is not callable. **Because** not all constituents of type
+> `'string | React.Dispatch<SetStateAction<string>>'` are callable. **Because**
+> type `'string'` has no call signatures.(2349)
+
+The "expression" it's referring to is the call to `setMode`, so it's saying that
+`setMode` isn't callable because it can be either
+`React.Dispatch<SetStateAction<string>>` (which is a callable function) or
+`string` (which is not callable).
+
+For us reading the code we know that `setMode` is a callable function, so the
+question is: why is the `setMode` type both a function _and_ a string?
+
+Let me rewrite something and we'll see if the reason jumps out at you:
+
+```javascript
+const array = useDarkMode()
+const mode = array[0]
+const setMode = array[1]
+```
+
+The `array` in this case has the following type:
+
+```
+Array<string | React.Dispatch<React.SetStateAction<string>>>
+```
+
+So the array that's being returned from `useDarkMode` is an `Array` with
+elements that are either a `string` or a `React.Dispatch` type. As far as
+TypeScript is concerned, it has no idea that the first element of the array is
+the string and the second element is the function. All it knows for sure is that
+the array has elements of those two types. So when we pull any values out of
+this array, those values have to be one of the two types.
+
+But React's `useState` hook manages to ensure when we extract values out of it.
+Let's take a quick look at their type definition for `useState`:
+
+```typescript
+function useState<S>(
+  initialState: S | (() => S),
+): [S, Dispatch<SetStateAction<S>>]
+```
+
+Ah, so they have a return type that is an array with explicit types. So rather
+than an array of elements that can be one of two types, it's explicitly an array
+with two elements where the first is the type of state and the second is a
+Dispatch SetStateAction for that type of state.
+
+So we need to tell TypeScript that we intend to ensure our array values don't
+ever change. There are a few ways to do this, we could set the return type for
+our function:
+
+```ts
+function useDarkMode(): [string, React.Dispatch<React.SetStateAction<string>>] {
+  // ...
+  return [mode, setMode]
+}
+```
+
+Or we could make a specific type for a variable:
+
+```ts
+function useDarkMode() {
+  // ...
+  const returnValue: [string, React.Dispatch<React.SetStateAction<string>>] = [
+    mode,
+    setMode,
+  ]
+  return returnValue
+}
+```
+
+Or, even better, TypeScript has this capability built-in. Because TypeScript
+already knows the types in our array, so we can just tell TypeScript: "the type
+for this value is constant" so we can cast our value as a `const`:
+
+```ts
+function useDarkMode() {
+  // ...
+  return [mode, setMode] as const
+}
+```
+
+And that makes everything happy without having to spend a ton of time typing out
+our types 😉
+
+And we can take it a step further because with our Dark Mode functionality, the
+string can be either `dark` or `light` so we can do better than TypeScript's
+inference and pass the possible values explicitly:
+
+```typescript
+function useDarkMode() {
+  const [mode, setMode] = React.useState<'dark' | 'light'>(() => {
+    // ...
+    return 'light'
+  })
+
+  // ...
+
+  return [mode, setMode] as const
+}
+```
+
+This will help us when we call `setMode` to ensure we not only call it with a
+string, but the _right_ type of string. I also created type aliases for this and
+the dispatch function to make the prop types easier as I pass these values
+around my app.
+
+Hope that was interesting and helpful to you! Enjoy 🎉

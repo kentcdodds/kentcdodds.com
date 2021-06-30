@@ -1,0 +1,140 @@
+---
+title: When I follow TDD
+date: 2020-06-29
+description:
+  Test-Driven Development doesn't always make sense, here's when it does for me.
+categories:
+  - testing
+meta:
+  keywords:
+    - testing
+    - javascript
+    - tdd
+    - test driven development
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033508/kentcdodds.com/content/blog/when-i-follow-tdd/banner.jpg
+bannerCredit: Photo by [Robin Vet](https://unsplash.com/photos/VU4y5JRD-zo)
+---
+
+Test-driven development (aka TDD) is a three-step process. It's often referred
+to as the "red, green, refactor cycle"
+
+![TDD Cycle](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033508/kentcdodds.com/content/blog/when-i-follow-tdd/0.jpg)
+
+Here's the way it works:
+
+- 🚨 **Red**: Write a test for the function/module you're going to create before
+  it exists/supports the feature you're adding. This gives you a test that fails
+  (you get a "red" error message).
+- ✅ **Green**: Implement just enough code to get that test passing (you get a
+  "green" success message).
+- 🌀 **Refactor**: Look over the code you have written and refactor it to ensure
+  it's well-written, as easy as possible to read/understand, and well-designed.
+  (The cool thing with this step is that you now have a test in place that will
+  tell you if you break something as you refactor).
+- 🔁 **Repeat**: It's a cycle, after all 😉 Keep going until you've finished
+  implementing everything you need to.
+
+There's a bunch of nuance to this approach and some people can get down-right
+religious about the whole thing. I try to take a practical approach to TDD and
+only apply it in situations where I feel it could be actually beneficial.
+
+https://twitter.com/kentcdodds/status/1276673772251017216
+
+But that's the big question: "when does TDD make sense?" It's really an
+intuition you develop and frankly has a lot to do with your comfort and
+experience with TDD, but here are a few examples of situations where I follow
+the red-green-refactor cycle of TDD.
+
+## Fixing a bug
+
+When I've got a bug to fix, I _love_ reproducing that bug with a test before
+fixing it. Doing this gives me a huge amount of confidence that I understand the
+cause of the bug in the first place and when I get the test to green, I know
+that I've actually fixed the bug and not just tested around the problem.
+
+I'd say that I follow this approach 90% of the time in software I care about
+(and therefore have tests for). Especially in my open source libraries.
+[Here's an example of such a test](https://github.com/testing-library/user-event/blob/e5db332c3f0ed3f6743d400f25b3cbf91a697f32/src/__tests__/type.js#L595-L601).
+
+Fixing a bug? Try TDD.
+
+## Pure functions
+
+I don't test all my [pure](https://en.wikipedia.org/wiki/Pure_function) utility
+functions ([I cover most of those with integration tests](/blog/write-tests)),
+but if I've got a utility function of sufficient complexity to need isolated
+unit tests, then that's another great situation that's well suited for TDD. With
+these kinds of functions, you often have a pretty well-defined set of inputs and
+outputs based on the requirements you have for the code.
+
+I think most of us have experienced situations like this (and you will soon if
+you haven't yet). When I was at PayPal, I needed to format the amount input
+field as the user typed in the amount of money they wanted to send. The logic
+for that was surprisingly more complex that you might think thanks to currency
+precision (some currencies don't have a concept of a decimal amount). Formatting
+a currency amount like this was a perfect situation for TDD because the possible
+inputs and required outputs were easy to come up with.
+
+Another good set of examples of this (that's also open source), are
+[the tests for my project rtl-css-js](https://github.com/kentcdodds/rtl-css-js/blob/master/src/__tests__/index.js).
+
+Writing a pure utility function? Try TDD.
+
+## Well defined user interfaces
+
+It's only since I created [Testing Library](https://testing-library.com) that I
+thought TDD of user interfaces was really reasonably possible on the web. This
+is because:
+
+**It's pointless to TDD when you test
+[implementation details](/blog/testing-implementation-details).**
+
+Honestly, it's pointless to test at all if you're testing implementation details
+(they're just slowing you down). Part of the point of using TDD is to help you
+think about the thing you're building from the outside, without thought for the
+implementation, so when you get to implementing things you don't get lost in the
+details of the code and can keep the high-level goal in mind. It helps you when
+you only know _what_ you're building, but not _how_ you're going to build it.
+
+The most popular tools before Testing Library (in all it's varieties), allowed
+(and encouraged) you to test implementation details. So to use TDD, that
+required that you knew (for example) you were going to create a private method
+called `makeDonation` and that it would be called with `amount` and `currency`
+(and not the other way around). So TDD always felt like a pointless waste of
+time. Just going through the motions.
+
+However, since Testing Library allows you to focus on
+[the user's](/blog/avoid-the-test-user) experience, rather than the
+implementation, you can follow TDD when building UIs that have a well-defined
+design and user experience.
+
+For an example,
+[here's a video I made a few years ago](https://www.youtube.com/watch?v=kCR3JAR7CHE)
+to demonstrate this with a login component. It is a few years old, so things are
+even easier these days. If you're looking for something like this, just more
+polished and up to date, then grab a license to
+[TestingJavaScript.com](https://testingjavascript.com) and you can watch me
+teach you TDD in 8 high value-to-minute videos (in addition to TONS more stuff).
+
+Building a well-defined UI? Try TDD.
+
+## Conclusions
+
+That's pretty much it for me. I'm sure other people have valid situations where
+they apply TDD practices and that's fine.
+
+If I'm just doing some exploratory coding (which I do a lot) or messing around
+then I won't bother following TDD and I'll only add tests when I'm pleased with
+the direction things have taken. Incidentally, this is the same approach I
+follow any time I've used a type system (like Flow or TypeScript). This is also
+the approach I follow with [making abstractions](/blog/aha-programming).
+
+Writing tests, adding types, and making abstractions for your code are
+investments in what you've built. Making those investments is pointless if you
+aren't certain that what you're building is going to be around in the long-term.
+Those investments can also be ill-advised if you're uncertain what form what
+you're building will take by the time you're finished. And to take things
+further, the sunk cost falacy of these investments can influence you in a way
+that results in a sub-optimal solution.
+
+Good luck!

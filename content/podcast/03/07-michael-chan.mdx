@@ -1,0 +1,601 @@
+---
+title: Michael Chan Teaches You How To Break Into The Industry
+date: null
+description:
+  Michael Chan chats with Kent about how he broke into the tech industry after
+  the 2008 recession.
+meta:
+  keywords:
+    - react
+simpleCastId: e50e9cff-bbaf-43ef-a121-7ecd213df180
+---
+
+import Transcript from 'components/podcast/transcript'
+import Resources from 'components/podcast/resources'
+import Homeworks from 'components/podcast/homeworks'
+import Guest from 'components/podcast/guest'
+
+It was around 2008-2010 when Michael's family's business went under due to the
+recession. From that point, Michael spent every spare second he had reading
+whatever he could. He'd be reading Ruby and JavaScript documentation while he
+pushed his son on the swing.
+
+In this episode, Michael talks about what it takes to break into the tech
+industry. He explains how interviews are a hackable skill and the importance of
+building relationships in the industry.
+
+<Homeworks>
+
+Sit down for 5 minutes and think about what you really want to do with your life
+and figure out how you can sell that. Get **one customer**.
+
+</Homeworks>
+
+<div style={{display: 'grid', gridGap: 10, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'}}>
+<Resources>
+
+- [How to get experience as a software engineer](https://kentcdodds.com/blog/how-to-get-experience-as-a-software-engineer)
+
+</Resources>
+<Guest name="Michael Chan" image="https://res.cloudinary.com/kentcdodds-com/image/upload/v1625034151/kentcdodds.com/content/podcast/03/07-michael-chan/michael-chan.png">
+
+- [Twitter](https://twitter.com/chantastic)
+
+</Guest>
+</div>
+
+---
+
+## Transcript
+
+<Transcript>
+
+**Kent C. Dodds:**  
+Hello friends, this is your friend Kent C. Dodds, and I am joined by my friend
+Michael Chan. Say hi, Michael.
+
+**Michael Chan:**  
+Hey, how's it going?
+
+**Kent C. Dodds:**  
+Good, good. So happy to have you here, Michael. I feel like you should have been
+one of the first people I reached out to because I just feel a strong kinship to
+you, and so I'm excited for my friends who are listening to get to know my
+friend Michael. So Michael, can you tell us about yourself? It can be
+tech-related or anything else that you want to say.
+
+**Michael Chan:**  
+Yeah, yeah. So first I'm excited to be here. I'm excited to be on your show.
+We've had a few with you on the React Podcast and it was super fun. I love
+chatting with you. I'm actually nervous, which is hilarious, since I do this
+like twice a week, but it's good. It's good nervous.
+
+**Kent C. Dodds:**  
+You're surrounded by friends here.
+
+**Michael Chan:**  
+So yeah. So I'm Michael Chan. I go by Chantastic all over the internet, and I
+hosted React Podcast, and I work as a front-end architect just kind of doing
+front end things and CSS and JavaScript and I don't know, whatever else I'm
+supposed to know at the given at a given time. But yeah, that's what I do. And
+yeah. And then I'm trying more and more to follow your lead and some of the
+great educators of our time to just share what I know and help other developers
+be the best that they can be and be happy, not just in the short term but in the
+long term.
+
+**Kent C. Dodds:**  
+Oh, that's excellent. And, and you do a great job of it. I just want to make
+sure everybody understands the scope of this. So Michael, you teach on
+egghead.io. You've got tons of stuff on there. You have that React holiday. Is
+that what it is, React holiday?
+
+**Michael Chan:**  
+Oh yeah. Every December. I do a kind of advent calendar-style thing where I do
+these two-minute videos on... I think last year it was just general React, the
+year before it was suspense, which all got blown away the year after.
+
+**Kent C. Dodds:**  
+That tends to happen. But yeah, by the way, it was just a Twitter thread of all
+these videos, and so engaging. Oh my goodness. If I could have a sliver of the
+engagement that you have in front of a camera, I would be really happy with
+myself.
+
+**Michael Chan:**  
+Well, thanks. I blame that on my, my drama and show choir teachers. They
+extracted more out of me than I was willing to give. And now I guess maybe it
+feels easier.
+
+**Kent C. Dodds:**  
+Actually, I didn't realize you were in show choir. Show choir was a huge part of
+my growing up.
+
+**Michael Chan:**  
+Oh, really?
+
+**Kent C. Dodds:**  
+Yeah, yeah. In high school, our show choir competed in the Northwest and won
+competitions. We went to Disneyland one year and won a big competition there.
+
+**Michael Chan:**  
+Awesome.
+
+**Kent C. Dodds:**  
+Yeah, yeah. It was a huge part of my high school experience. So
+
+**Michael Chan:**  
+Were you baritone? Tenor? Where were you?
+
+**Kent C. Dodds:**  
+Yeah, so let's see. I was baritone/tenor. I think that half of it I was
+baritone, and then the second half I was tenor, and then I went to men's chorus
+at BYU, and in men's chorus I started as 10 or tenor two and then the tenor one.
+So I mostly have been on the higher end of that spectrum.
+
+**Michael Chan:**  
+Nice, nice. Singing in a choir is so fun. I have this dream, I think, when I
+have a little bit more free time in my life to just find people who sing
+barbershop and learn all those songs, because there's something about doing
+something in unison with other people, being so in sync and being that much of a
+team, that just thrills me. It literally gets my heart going. And now that we're
+talking about it, I feel like those moments, the unison that I experienced in
+choir, is something that I'm always chasing, and not quite getting in software
+development.
+
+**Kent C. Dodds:**  
+Totally. Yeah, absolutely. I certainly wasn't thinking about talking about this
+now, but just thinking about the experiences that I had in high school and in
+college when I was singing more... I absolutely know the feelings that you're
+talking about, and I have not felt those feelings in a long time.
+
+**Michael Chan:**  
+Yeah. It's, it's tricky because so much of at least modern software development,
+and I can't speak to I guess earlier than 10 years 10 years in the past, but it
+feels like so much of it is about self-expression and self-validation these
+days. I mean, even to the point that I know that the last stack overflow report
+or whatever, the thing that was most important to developers looking for a job
+was the stack. And then it's so wild to me because, and maybe this is our choir
+coming out, but for me, what I want more than anything is unison. I want
+everyone to just be working as one, to depend on each other, and understand each
+other. This conversation is already making it clear to me what I'm missing from
+software development.
+
+**Kent C. Dodds:**  
+Yeah. I definitely feel something missing. It's one of those things where you
+didn't realize that you were missing this until something reveals that to you.
+Because I'm absolutely thinking about that. There's absolutely stuff that I miss
+from being a part of a group like that.
+
+**Michael Chan:**  
+Yeah. This is something that I've been on the last maybe six months or
+something, is this idea of teamwork being the only thing that matters. And I
+think that we put so much focus on being the best, and it's automatically
+exclusionary. Because to be the best, you have to be better than everyone else.
+And so it's comparative by default. And I wish that we had a better way to think
+of being our best, and think about it being more collaborative. Who have you
+collaborated with today? How was that co-collaboration? Did both of you feel
+listened to and empowered? And so much of the metrics that we have just are not
+set up for that.
+
+**Kent C. Dodds:**  
+Totally.
+
+**Michael Chan:**  
+Look, we have a 10x developers, the rock stars, and the all stars, and I wish we
+borrowed more from team dynamics, whether it be sports or choir or anything that
+you have to do together.
+
+**Kent C. Dodds:**  
+Yeah, absolutely. And I think that our social media amplifies that because when
+you get likes on a tweet, it's not your team getting likes on a tweet. You're
+the one getting those accolades. With educational material that I create, I
+create lots of that, but there's a lot of collaboration involved. But I'm the
+one who gets all the accolades for that because it's my voice. It's my hands on
+the keyboard. But there's so much that goes into that. And we've got open source
+libraries I'm using, and there's so much, but just the way that things are set
+up, the accolades go to the last person in the production line.
+
+**Michael Chan:**  
+Yeah. And especially in our attention economy, it's so hard to... If you spent
+the first 10 minutes of a one-minute video, like one minute of content, just
+thanking everybody your work touches, no one would watch that. So it is kind of
+tricky.
+
+**Kent C. Dodds:**  
+Yeah. That's something interesting to think about. But let's go ahead and
+transition into something else that's also very interesting and wanted to talk
+about here. And that is... So I'm not exactly sure when this podcast will be
+released, but it should be when we're still going through or have very un-fond
+memories of the current time. And so this is being recorded on April 7th, and
+March was just a total nightmare with the coronavirus thing, and I expect that
+the economy will be in an even worse state. There will be even more people who
+have died from this thing, which is just so awful. And so Michael, one of the
+things that you wanted to talk about today I think is just really applicable to
+the current situation and maybe in the future situation for people, and that is
+how to transition careers in maybe not industries, but your specific niche in a
+career, during a bad economy or when things are not optimal for you to do so.
+
+**Kent C. Dodds:**  
+And so the first thing I want to ask you about this is because we got started
+just chatting before we hit record, and you were telling me about the last
+recession that we went through in the United States, and some of your experience
+in there. Do you want to kick this off by telling us about your experience in
+that time.
+
+**Michael Chan:**  
+Yeah, absolutely. So I just want to preface this with just a privilege
+disclosure, because it's impossible for me to know all of the tailwinds that I
+had in this process. And so I don't want to be at all dismissive about how much
+more difficult this transition is depending on what degrees of privilege you
+have on that matrix. And I know that's something that's important to you, but at
+the same time, my story is my story, and wherever you're at on that, if it's
+helpful to you, great.
+
+**Kent C. Dodds:**  
+That's great. Thank you.
+
+**Michael Chan:**  
+Yeah. Yeah, yeah. So I was working with my dad, and I was doing accounting for a
+small business and we were importing furniture. And my dad was this very
+fascinating kind of international man. He was born in Vietnam during the Vietnam
+war, and then they fled to Brazil because at the time they had a ton of money
+and then they had no money and then they made their way up to America. And so he
+was just full of grit. He was just an iron person. And, yeah. He built this
+business that I was taking part in and working together, and I had had a little
+bit of fascination with the web, just as a child of the eighties, I guess,
+coming up with the web and really being excited about it.
+
+**Michael Chan:**  
+And so I'd built our websites and all that stuff, but right around, I can't
+remember exactly when it was, it was 2008, 2009, 2010, our business just
+collapsed because we had that recession, and all of the jobs that we had planned
+on were falling apart. There was no work on the horizon. And so the business
+just went under and I was four months or something about that time on
+unemployment. And it was a really tough time, and it's wild too see it 10 years
+later, right? Because I feel a little bit divorced from that feeling. But it is
+really sobering to have a lot of empathy for what people are going through right
+now because this is incredibly real for people. what was the statistic that you
+said before we started recording?
+
+**Kent C. Dodds:**  
+Yeah, so two weeks ago they'd said there had been 3.3 million accepted
+applications to unemployment in just that previous week, and then last week that
+said it was another 6.6 million for that that week. So a total of over 10.10
+Million, and that was almost a week ago. So I can't even imagine. And that's
+just the people who were able to get on unemployment. You're not counting the
+people who probably need it but couldn't, or the people who couldn't get through
+because the phone lines are jammed.
+
+**Michael Chan:**  
+Yeah, yeah. And that's a very real thing. I remember I after my three or four
+months of being on unemployment, the thing that stopped me wasn't that I had a
+job, it was I didn't get the return stub sent in in time, and I couldn't get
+ahold of anybody on the phone.
+
+**Kent C. Dodds:**  
+And we all know how good government programs are at getting the people things
+that they need.
+
+**Michael Chan:**  
+So my heart just deeply, deeply goes out to people. But I'm really excited to
+see things like the free code camp numbers just skyrocketing right now because I
+see myself in those numbers. I see that was the moment that I decided to
+transition, because I knew there was no way I was going to be able to get a job
+in the things that I knew, which was handling money and a little bit of small
+business management, because that wasn't going to recover for another, I don't
+know, 6 to 12 months. But yeah. So just spending literally every spare second of
+my life, just reading what I could. I remember I'd go to the park with son who
+was, I don't know, maybe one at the time, and then if I was standing behind him
+pushing him on the swing, I'd be reading docs for Ruby or JavaScript or whatever
+thing I was trying to be able to use in my career.
+
+**Kent C. Dodds:**  
+Hardcore hustling there, man.
+
+**Michael Chan:**  
+Yeah. So I definitely empathize with where people are at right now, and I really
+love the opportunity to talk about I guess what's demanded of people in that
+time because I want to say it's really maybe unfair. I know that I cut years off
+of my life by only sleeping three hours a night during that time because I was
+actively putting in applications for jobs that I knew I wasn't going to be able
+to get, and then trying to find anything on Craigslist that I could find that
+would pay me even a little bit to do the thing that I wanted to transition into.
+I think that's one thing that's so unmotivating to a lot of people is they see
+all the jobs, right? And these jobs are inflated wildly. And you and I both know
+that. When someone puts a job posting, it's like they're asking for 20 things,
+and they would accept two of them.
+
+**Kent C. Dodds:**  
+Yeah, absolutely. This is like, these are suggestions for the type of person
+that we want because we know that there are three people in the world who have
+all of these qualifications, and we couldn't afford them anyway.
+
+**Michael Chan:**  
+Yeah. And that's such a big thing to navigate, but it's so intimidating when you
+start in... Tech is just one place where that happens. But any place where you
+to start to transition into a new industry or field, it's so intimidating to
+think, "Wow, that's who I have to be to get this job? I'm never going to be
+that." And yeah, starting small is so important, and just trusting the process
+that if you keep pressing into it, you'll get there. Have you been on hiring at
+all?
+
+**Kent C. Dodds:**  
+Are you talking about a specific site or just like hiring people?
+
+**Michael Chan:**  
+Oh, like hiring people at all?
+
+**Kent C. Dodds:**  
+Yeah. Yeah, I have done that at my last two companies. I hired a couple people.
+
+**Michael Chan:**  
+How did you feel about that process.
+
+**Kent C. Dodds:**  
+Oh my goodness. So the first one was a really small company, and I was hiring
+the second front end engineer to work with me, and so that one was not as
+difficult because we didn't have as many applications. It was actually people I
+reached out to and stuff. But you hate saying no because I reached out to you,
+and now I wasted all your time. That's the way I felt.
+
+**Kent C. Dodds:**  
+But yeah, my second experience at PayPal, I interviewed an infinity people and
+yeah, it was really hard. We had a pretty well-structured process and stuff, and
+so you'd have a couple of people interview and you'd say yes, you'd say no, you
+say maybe, and whatever. And I felt a little more disconnected to that because
+sometimes I wasn't hiring for my team, somebody working for me. I'm not saying
+this is a good thing, but the way I felt about it was just pretty disconnected
+because I didn't have to be as invested in this person, which is a personal
+feeling, for sure.
+
+**Michael Chan:**  
+Yeah. It's interesting because I think I always want people as soon as they can
+to get to a place where they can at least start reviewing applicants. I mean,
+definitely in tech, but Rachel Nabors, I had a conversation with her, she is
+part of the React core team and does a lot of the docs community stuff. We had a
+chat, and she was saying interviewing in tech is a skill that is totally
+separate from the skill of being able to do your job. And once you realize that,
+you realize just anything else, it's totally hackable. And I get asked a lot,
+like, "Oh man, I have all this imposter syndrome around going out for interviews
+and trying to land a job." I feel like I just don't know enough. And I always
+tell people, "Make your goal to fail 10 interviews, because what you'll learn
+from failing those interviews is what you need to know to nail the 11th." And
+for most people, I doubt that you'd even get through all 10.
+
+**Kent C. Dodds:**  
+Yeah, yeah. That's awesome. I love that mindset. And correct me if I'm wrong,
+but I feel like the mindset isn't so much dejected and like, "Oh, I'm going to
+fail 10 interviews," but it's more like, "I'm going to at least get through 10
+interviews, and I'm going to learn as much as I can through this process. And if
+I get picked up, then that's great. But my goal is just to get through these
+10." And that's something that you can control, right? I can control that. And
+so I'm the master of my own destiny.
+
+**Michael Chan:**  
+Yeah. I think that's the most important thing because at the end of the day,
+it's a mental hack. You're going to do 10 interviews either way. So it's really
+framing, but it really does give you that control over your life where it's like
+my value is not defined by what someone says I can or cannot do. It's I came
+here expecting to fail this. This is just episode 1 of my 10 episode course on
+the interview pipeline.
+
+**Kent C. Dodds:**  
+Yeah, nice.
+
+**Michael Chan:**  
+But yeah, it's so tricky, and there's so much emotion tied into all of this, and
+those little mental hacks are so valuable in getting yourself past the emotional
+part of it. You're already in a vulnerable spot anytime you're switching careers
+or are forced to rethink your career. In a time like this, you're already so
+emotionally drained, the idea of failing anything and putting all of that effort
+in sucks. And I definitely admit that. And it's easy to say in retrospect, but
+is extremely emotional at the time, just feeling totally dejected from all that.
+
+**Kent C. Dodds:**  
+Yeah. Yeah, yeah. How do you pull through that emotional drain? In your
+experience, when you were making this transition, what were some of the things
+that you did to take care of yourself mentally and to really pull yourself out
+of the situation you were in and actually make the transition?
+
+**Michael Chan:**  
+I don't think I handled it well, to be honest. I think I have a personality that
+thrives on pressure, and I know that that's not where a lot of people are, but I
+think that the fact that I had just bought a house and was pretty recently
+married... I was still like a young married, we just had a kid. I had to make it
+work, right? And I think for me that was fine. I know for a lot of people that
+could be enough to really drive them into a deep, deep depression where they're
+incapable of working. And so I definitely empathize with that. But I think for
+people who are driven by pressure, it kind of worked.
+
+**Michael Chan:**  
+But I do think that insulating yourself from outcomes is a really important life
+skill. And I think that that time really set me up for success throughout the
+rest of my career where it's like now I don't feel as tied emotionally to
+outcomes anymore. The idea is you do your thing, you do it to the best that you
+can, and you know what happens, happens. And businesses have to make decisions
+that businesses have to make, and sometimes that hurts emotionally because you
+felt really smart for coming up with this thing that didn't get accepted and it
+would have been awesome, and you have to let that go. And such is life.
+
+**Kent C. Dodds:**  
+Yeah, yeah, absolutely. Yeah. So let's envision this person, Cheryl, Cheryl's
+like, "Hey, I was laid off by some company. I've been tinkering around with
+building websites and I kind of want to get into this tech thing, but I'm seeing
+all these jobs listings for the impossible engineer. How do I break into this?
+Especially in a such an uncertain economy right now."
+
+**Michael Chan:**  
+Yeah. Man, that's tough. I think, to be totally honest, I could not have done it
+without friends. And I think that going to meet ups, just talking with the
+people in my life who were already in the industry that I wanted to transition
+into, like tech. I got my first job post all of the PSD to HTML and HTML
+signatures that I did on Craigslist for \$15 a shot. But beyond that, the first
+actual job I got in tech was just from a friend, right? And they, they were in a
+position where they were looking for people, asked if I could learn enough to
+actually get through the interview process. And that's how I transitioned in.
+Having those relationships is invaluable, and finding them wherever you can, and
+I guess exploiting them.
+
+**Kent C. Dodds:**  
+Yeah. You're taking advantage of something that someone's offering, right? That
+relationship, yeah.
+
+**Michael Chan:**  
+Yeah.
+
+**Kent C. Dodds:**  
+Exploiting has a negative connotation, but I think we know what you mean.
+
+**Michael Chan:**  
+Yeah. And to be fair, this particular friend, I started that specific
+conversation by offering up answers to questions that he had. Because he was in
+this new role where he was managing a tech team, and he had things that he
+didn't know. And I said, "Hey, I'm happy to answer anything that I know that you
+might need to know in managing these people." And I think that's where it
+started because I was able to help him look good. And so in turn he wanted to
+return the flavor.
+
+**Kent C. Dodds:**  
+Nice. Return the flavor.
+
+**Michael Chan:**  
+But yeah, I think relationships are so important, and I think we undervalue
+relationships I think across a career trajectory. I think as we were talking
+before, we want to be this hero, but accepting help and then also providing help
+is so critical to any meaningful career in this industry.
+
+**Kent C. Dodds:**  
+Yeah. And I just think that's so true. And there was another thing that you
+mentioned as you were saying that that I think is a pretty good takeaway for
+people as well. And that's that you were working on PSD to HTML Craigslist
+opportunities. And there's one thing... People ask me this a lot, and they say,
+how do I get experience as a software engineer? And so I wrote a blog post about
+it, of course. But the TLDR of that is you get experience from having
+experiences. And it seems so obvious, but you can make yourself have
+experiences, right?
+
+**Michael Chan:**  
+Yeah.
+
+**Kent C. Dodds:**  
+It sounds like that's what you did, is you said, "Hey, I'm willing to take this
+$15 job that's going to take me three hours to do, $5 an hour job, but I don't
+just get \$5 an hour. I'm also getting experience from that."
+
+**Michael Chan:**  
+Yeah. If you open your eyes to it, or even just ask around, there's so many
+people in your local community that are entrepreneurs or small business owners
+that need work in a lot of different fields but can't afford the high paid
+person to do it. And so if you open your eyes to it, there's so much stuff that
+people need to do, and like you said, an opportunity for you to gain that
+experience. And yeah, you're going to eat crap for a while with all the stuff
+that nobody else wants to take. But that's how you get the experience.
+
+**Kent C. Dodds:**  
+Yeah, absolutely. That can't be overstated, I think. It's stuff that other
+people don't want to take, but that's because they've already had those
+experiences. They don't need those experiences like you do. I mean, maybe it's
+not super fun work, but for you, as a new entry into this, it can be pretty
+rewarding work. Like manually copy pasting text into this other text field or
+whatever, you can turn that into an opportunity to learn something new. Like
+figure out how to script that so you can get yourself out of that. That's how I
+got into programming was scripting my job, and yeah. I think that can't be
+overstated as a useful thing to do is there's no shame or even lack of dignity I
+guess in doing these lower jobs, because you're not just getting the low pay,
+you're also getting the experience. That's what you're looking for.
+
+**Michael Chan:**  
+Yeah. And there's so much to be said about real work experience just as being a
+high value. Because I mean, I still think back to the lessons that I learned
+about the differences in email clients and the way they render markup and all
+that kind of stuff from literally just making email signatures for people. I
+learned so much about semantic markup and rendering engines in that time, that
+has paid dividends throughout my entire career because I don't have to relearn
+these small lessons anymore. If you're open to it, you can learn something
+powerful from any project.
+
+**Kent C. Dodds:**  
+Absolutely. I feel we could go on and talk about this forever, but as we wrapped
+up and come down to the end of our time here, the homework assignment that we
+want to give people. Start thinking about what it is that you want to do. You
+may be listening to this thinking, "Well this sounds a really great thing that I
+can share with my friend Fred who is interested in transitioning out of plumbing
+into tech or vice versa," whatever the case may be. But maybe there's something
+that you would rather be doing than your day-to-day job.
+
+**Kent C. Dodds:**  
+And so the challenge applies to everyone here, but our homework for you is to
+sit down for five minutes and just think about what you really want to do with
+your life. What you really want to do, and because we live in a capitalist
+world, you have to get paid to do that. So think about how you can get paid to
+do the thing that you want to do. So figure out how you can sell that thing that
+you want to do, and then get one customer. Get one person to pay you just any
+amount of money to do that one thing. And yeah, then that can be the first step
+in making this transition for you. You have anything else to add to that,
+Michael?
+
+**Michael Chan:**  
+Yeah, no, I think that that's perfect. And I think it's a really good way to
+wrap up. One analogy that I to make is with a dial. A dial, once it's in place,
+is really easy to turn up, but it's really hard to make the dial, right? So
+blogging, if you want to write, you need to find the least amount of friction,
+and sometimes setting up the blog and making all of those decisions is really
+the hard work, but you want to get to that point where you have something, you
+have a post out there, you know exactly what to do when you sit down, and then
+just crank it up. Like, "Okay, I got one customer, now I need to find another
+customer, or charge five more dollars an hour," or whatever it is. Just keep
+cranking that dial up. Once you have it, it's easy from there.
+
+**Kent C. Dodds:**  
+Yeah. Oh my goodness. So I hope people don't mind me mentioning this last other
+thing and going over time a little bit. But my oldest sister is a very skilled
+violinist, and she knows a lot of very skilled musicians, and right now they're
+really hard on work because nobody can go to performances. And so she was asking
+me how...
+
+**Kent C. Dodds:**  
+Because I do a lot of online training, she was like, "How can I help these
+musicians do online training?" And she had this big idea of... She wants to hire
+some software engineer to come and basically build Zoom and Tito and Google
+calendar all in one thing, and I was telling her, "Hey, listen, I really don't
+think that's probably the best course of action for you. Here's what I
+recommend." And I said, "Start doing everything manually. Get the pieces of
+software that you need work, put them together, and that's the value that you
+can provide to these musicians who are your instructors is do all of the work
+for them, and tell them all you need to do is show up and teach some people for
+an hour, and you'll get money. And I'll do everything else." And everything else
+when you're just getting started is just a ton of manual work. If you try to
+automate all of this stuff before you've done any of the manual work, you will
+automate the wrong staff. Or you'll automate it in the wrong way.
+
+**Kent C. Dodds:**  
+And so I think she's taking my advice, but that would be maybe another related
+takeaway to all of this is just don't try to build the solution before you've
+experienced the problem.
+
+**Michael Chan:**  
+Yeah. The best advice. Hot takes.
+
+**Kent C. Dodds:**  
+Yeah, it's hot in here. All right, let's wrap this up. Michael, thank you so
+much for coming on and chatting. It's been a pleasure. Hopefully my friends have
+gotten to know you, and we're all friends now. And yeah. Sometimes, Michael, I
+end my podcast by saying we'll be in your ears next week, which I shamelessly
+borrow from you. But yeah, I guess I don't the weekly shows so we'll be in your
+ears next time. Oh, actually really quick, Michael, what's the best way for
+people to get ahold of you if they want?
+
+**Michael Chan:**  
+Yeah, yeah, yeah. So, I'm Chantastic on Twitter, or React Podcast if you don't
+necessarily want to hear from me, but you want to hear from me and other people,
+and yeah, that's probably the best way.
+
+**Kent C. Dodds:**  
+All right. Awesome. Thanks so much, Michael.
+
+**Michael Chan:**  
+Thank you.
+
+**Kent C. Dodds:**  
+Bye everyone.
+
+</Transcript>

@@ -1,0 +1,455 @@
+---
+title: Stop using isLoading booleans
+date: 2020-03-02
+description:
+  'Why using a status enum (or even better: a **state machine**) will help your
+  app stay bug free'
+categories:
+  - javascript
+meta:
+  keywords:
+    - react
+    - hooks
+    - javascript
+    - status
+    - boolean
+    - state machines
+    - state
+    - isLoading
+    - isRejected
+    - isResolved
+    - isIdle
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033365/kentcdodds.com/content/blog/stop-using-isloading-booleans/banner.jpg
+bannerCredit:
+  Photo by [Christophe Hautier](https://unsplash.com/photos/902vnYeoWS4)
+---
+
+**[Watch "Use a status enum instead of booleans" on egghead.io](https://egghead.io/lessons/javascript-use-a-status-enum-instead-of-booleans?pl=kent-s-blog-posts-as-screencasts-eefa540c)**
+
+https://egghead.io/lessons/javascript-use-a-status-enum-instead-of-booleans?pl=kent-s-blog-posts-as-screencasts-eefa540c
+
+**[Watch "Handle HTTP Errors with React" on egghead.io](https://egghead.io/lessons/react-handle-http-errors-with-react)**
+(part of [The Beginner's Guide to ReactJS](https://kcd.im/beginner-react))
+
+https://egghead.io/lessons/react-handle-http-errors-with-react
+
+Let's play around with
+[the Geolocation API](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API)
+a bit and learn about the perils of `isLoading` booleans (and similar booleans
+like: `isRejected`, `isIdle`, or `isResolved`) while we're at it. I'll be using
+React to demonstrate this, but the concepts apply generally to any framework or
+language.
+
+```javascript
+function geoPositionReducer(state, action) {
+  switch (action.type) {
+    case 'error': {
+      return {
+        ...state,
+        isLoading: false,
+        error: action.error,
+      }
+    }
+    case 'success': {
+      return {
+        ...state,
+        isLoading: false,
+        position: action.position,
+      }
+    }
+    default: {
+      throw new Error(`Unhandled action type: ${action.type}`)
+    }
+  }
+}
+
+function useGeoPosition() {
+  const [state, dispatch] = React.useReducer(geoPositionReducer, {
+    isLoading: true,
+    position: null,
+    error: null,
+  })
+
+  React.useEffect(() => {
+    if (!navigator.geolocation) {
+      dispatch({
+        type: 'error',
+        error: new Error('Geolocation is not supported'),
+      })
+      return
+    }
+    const geoWatch = navigator.geolocation.watchPosition(
+      position => dispatch({type: 'success', position}),
+      error => dispatch({type: 'error', error}),
+    )
+    return () => navigator.geolocation.clearWatch(geoWatch)
+  }, [])
+
+  return state
+}
+```
+
+This is pretty standard stuff for code like this. I've seen this in both
+applications and open source libraries all over (React or not). However, there
+are some problems with this approach. Can you think of what those might be? Let
+me show you how a developer might use this particular hook:
+
+```jsx
+function YourPosition() {
+  const {isLoading, position, error} = useGeoPosition()
+
+  if (isLoading) {
+    return <div>Loading your position...</div>
+  }
+
+  if (position) {
+    return (
+      <div>
+        Lat: {position.coords.latitude}, Long: {position.coords.longitude}
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div>
+        <div>Oh no, there was a problem getting your position:</div>
+        <pre>{error.message}</pre>
+      </div>
+    )
+  }
+}
+```
+
+Can you identify the problem yet? Yes? Awesome! No? No problem, let me help with
+a little real-world scenario.
+
+Imagine what would happen if the user were to hop into a car, started driving
+around, and the device failed with a
+`GeolocationPositionError.POSITION_UNAVAILABLE` or
+`GeolocationPositionError.TIMEOUT` or even if the user decided to disable the
+geoposition permission for your app and you got a
+`GeolocationPositionError.PERMISSION_DENIED`. What would happen then? With the
+way the component above is written, we'd always show the last recorded position
+and never show the user the error message!
+
+If we swapped things around and only show the position if there's no error, then
+we'd have the opposite problem: we'd only show an error, even if subsequent
+requests for the position succeeded.
+
+There are a few ways we could change this to avoid that problem:
+
+1. Ensure users of the hook always show the position AND error if they're
+   available.
+2. Clear the `error` when getting the position is successful, and clear the
+   `position` if there's an error.
+3. Return an additional property indicating the current status of the
+   geoposition information.
+
+As a creator of something reusable, it's always easier to make it so people
+_can't_ do the wrong thing even if they _want_ to. Or at least it's more natural
+to do the right thing than the wrong thing (pit of success and all that). So
+option #1 is out.
+
+For option #2, there may be some people who want to show the most recent
+position even if there was an error (and display the error message as well in
+that case), so that won't work.
+
+So let's go with option #3:
+
+```javascript [6,13,17-22,31,44]
+function geoPositionReducer(state, action) {
+  switch (action.type) {
+    case 'error': {
+      return {
+        ...state,
+        status: 'rejected',
+        error: action.error,
+      }
+    }
+    case 'success': {
+      return {
+        ...state,
+        status: 'resolved',
+        position: action.position,
+      }
+    }
+    case 'started': {
+      return {
+        ...state,
+        status: 'pending',
+      }
+    }
+    default: {
+      throw new Error(`Unhandled action type: ${action.type}`)
+    }
+  }
+}
+
+function useGeoPosition() {
+  const [state, dispatch] = React.useReducer(geoPositionReducer, {
+    status: 'idle',
+    position: null,
+    error: null,
+  })
+
+  React.useEffect(() => {
+    if (!navigator.geolocation) {
+      dispatch({
+        type: 'error',
+        error: new Error('Geolocation is not supported'),
+      })
+      return
+    }
+    dispatch({type: 'started'})
+    const geoWatch = navigator.geolocation.watchPosition(
+      position => dispatch({type: 'success', position}),
+      error => dispatch({type: 'error', error}),
+    )
+    return () => navigator.geolocation.clearWatch(geoWatch)
+  }, [])
+
+  return state
+}
+```
+
+You'll notice that we added another dispatch so we could differentiate from
+`idle` and `pending` states. In this particular case, there's not really a
+difference between the two (before we just started with `isLoading` as true
+which is effectively what this means), but there are cases where distinguishing
+between these two finite states is important and I worry that if I don't include
+them someone's going to copy/paste this and miss that important nuance.
+
+Awesome, now users can use the `status` to render instead:
+
+```jsx
+function YourPosition() {
+  const {status, position, error} = useGeoPosition()
+
+  if (status === 'idle' || status === 'pending') {
+    return <div>Loading your position...</div>
+  }
+
+  if (status === 'resolved') {
+    return (
+      <div>
+        Lat: {position.coords.latitude}, Long: {position.coords.longitude}
+      </div>
+    )
+  }
+
+  if (status === 'rejected') {
+    return (
+      <div>
+        <div>Oh no, there was a problem getting your position:</div>
+        <pre>{error.message}</pre>
+      </div>
+    )
+  }
+
+  // could also use a switch or nested ternary if that's your jam...
+}
+```
+
+[Play with this on codesandbox here](https://codesandbox.io/s/dark-lake-r07lr)
+
+By using a `status` variable rather than a simple `isLoading` indicator we
+enable our users to know exactly what the state is at any given point in time.
+
+Now, if you'd like to ditch those `variable === 'string'` expressions in those
+`if` statements because you like how terse a `isBoolean` is, have no fear,
+that's simple enough:
+
+```javascript
+const {status, position, error} = useGeoPosition()
+const isLoading = status === 'idle' || status === 'pending'
+const isResolved = status === 'resolved'
+const isRejected = status === 'rejected'
+```
+
+And one might argue that you could store those variables in your reducer's state
+rather than [derive their values](/blog/dont-sync-state-derive-it). But that
+leaves you vulnerable to
+[impossible states](/blog/make-impossible-states-impossible)! But, if you really
+want your users to not have to use the `variable === 'string'`, then just make
+sure you stick with the `status` in your state to ensure you only have one
+possible finite state value and then you can derive boolean states as a
+convenience if you want to:
+
+```javascript
+function useGeoPosition() {
+  // ... clipped out for brevity ...
+  return {
+    isLoading: status === 'idle' || status === 'pending',
+    isIdle: status === 'idle',
+    isPending: status === 'pending',
+    isResolved: status === 'resolved',
+    isRejected: status === 'rejected',
+    ...state,
+  }
+}
+```
+
+## State machines
+
+Everything is a state machine, and this one is particularly noticeable.
+[XState](https://xstate.js.org) is an awesome library for representing state
+machines in code, so I thought I'd show you what that could be like:
+
+```javascript
+import {Machine, assign} from 'xstate'
+import {useMachine} from '@xstate/react'
+
+const context = {position: null, error: null}
+const RESOLVE = {
+  target: 'resolved',
+  actions: 'setPosition',
+}
+const REJECT = {
+  target: 'rejected',
+  actions: 'setError',
+}
+const geoPositionMachine = Machine(
+  {
+    id: 'geoposition',
+    initial: 'idle',
+    context,
+    states: {
+      idle: {
+        on: {
+          START: 'pending',
+          REJECT_NOT_SUPPORTED: 'rejectedNotSupported',
+        },
+      },
+      pending: {
+        on: {RESOLVE, REJECT},
+      },
+      resolved: {
+        on: {RESOLVE, REJECT},
+      },
+      rejected: {
+        on: {RESOLVE, REJECT},
+      },
+      rejectedNotSupported: {},
+    },
+  },
+  {
+    actions: {
+      setPosition: assign({
+        position: (context, event) => event.position,
+      }),
+      setError: assign({
+        error: (context, event) => event.error,
+      }),
+    },
+  },
+)
+
+function useGeoPosition() {
+  const [state, send] = useMachine(geoPositionMachine)
+
+  React.useEffect(() => {
+    if (!navigator.geolocation) {
+      send('REJECT_NOT_SUPPORTED')
+      return
+    }
+    send('START')
+    const geoWatch = navigator.geolocation.watchPosition(
+      position => send({type: 'RESOLVE', position}),
+      error => send({type: 'REJECT', error}),
+    )
+    return () => navigator.geolocation.clearWatch(geoWatch)
+  }, [send])
+
+  return state
+}
+```
+
+[Play with this on codesandbox here](https://codesandbox.io/s/youthful-hofstadter-4kunj)
+
+[Watch me build this in my livestream](https://www.youtube.com/watch?v=NrIeWzCUsnE&list=PLV5CVI1eNcJgJCEkMlsqXea6OIF_uV_ub)
+
+Firstly, if you're unfamiliar with state machines or xstate, be careful of
+familiarity bias against this code. It may not be straightforward to you today,
+but just like every abstraction, it becomes more straightforward the more time
+you spend with it.
+
+You'll notice several things about this example. I added a special state for
+when geolocation is not supported. This state doesn't have any "event handlers"
+attached to it and is therefore called a "terminal state." That makes sense for
+our use case because if it's not supported then it's impossible to transition to
+any other state and our state machine ensures that will never happen.
+
+But more than this, I want you to notice that there is no longer a `status`
+state we have to maintain. The `status` state is now just part of the machine's
+finite state value. So the `status` is _built into_ the machine, rather than
+managed separately.
+
+Here's how we would use that (with as minimal changes as possible):
+
+```jsx
+function YourPosition() {
+  const state = useGeoPosition()
+  const status = state.value
+  const {position, error} = state.context
+
+  if (status === 'rejectedNotSupported') {
+    return <div>This browser does not support Geolocation</div>
+  }
+
+  if (status === 'idle' || status === 'pending') {
+    return <div>Loading your position...</div>
+  }
+
+  if (status === 'resolved') {
+    return (
+      <div>
+        Lat: {position.coords.latitude}, Long: {position.coords.longitude}
+      </div>
+    )
+  }
+
+  if (status === 'rejected') {
+    return (
+      <div>
+        <div>Oh no, there was a problem getting your position:</div>
+        <pre>{error.message}</pre>
+      </div>
+    )
+  }
+}
+```
+
+And if we liked the previous API, we could preserve that API:
+
+```javascript
+function useGeoPosition() {
+  const [state, send] = useMachine(geoPositionMachine)
+  // ... clipped out for brevity ...
+  return {status: state.value, ...state.context}
+}
+```
+
+You may personally find the reducer example simpler or more understandable than
+the state machine. If you're unfamiliar with state machines or xstate then
+that's understandable. I'm not going to get into the merits of state machines in
+this post, but I have written about them a bit before:
+[Implementing a simple state machine library in JavaScript](/blog/implementing-a-simple-state-machine-library-in-javascript).
+
+Oh, and take a look at
+[this implementation](https://codesandbox.io/s/ancient-pond-y498q) from
+[David Khourshid](https://twitter.com/DavidKPiano) (author of xstate) in which
+he completely removes the need for `useEffect` and instead puts the subscription
+logic within the machine itself!!! This is cool because it means that our
+machine is totally framework agnostic and can work regardless of which UI
+framework you're using (or even if you've built your own). He even built in a
+timeout (just for fun). Very cool stuff here.
+
+## Conclusion
+
+At the end of all of this, I hope that you appreciate the value of defining the
+finite states that you have in your code and avoid bugs by doing so. This isn't
+a pitch for finite state machines as much as it is a plea for reducing our
+reliance on booleans that cannot represent all of the actual states our code can
+be in at any given time. Use a state machine or an enum. Not a boolean. Thank
+you, and good luck!

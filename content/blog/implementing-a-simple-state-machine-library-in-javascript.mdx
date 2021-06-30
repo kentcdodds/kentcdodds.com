@@ -1,0 +1,634 @@
+---
+title: Implementing a simple state machine library in JavaScript
+date: 2020-01-20
+description:
+  Let's write a state machine abstraction together to understand it better
+categories:
+  - state
+meta:
+  keywords:
+    - javascript
+    - algorithms
+    - data structures
+    - state management
+    - state machine
+    - state
+    - library
+    - abstraction
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032921/kentcdodds.com/content/blog/implementing-a-simple-state-machine-library-in-javascript/banner.jpg
+bannerCredit:
+  Photo by [Paweł Czerwiński](https://unsplash.com/photos/0-hXSg0oRjg)
+---
+
+**[Watch "Implement a simple Finite State Machine library in JavaScript" on egghead.io](https://egghead.io/lessons/javascript-implement-a-simple-finite-state-machine-library-in-javascript?pl=kent-s-blog-posts-as-screencasts-eefa540c)**
+
+https://egghead.io/lessons/javascript-implement-a-simple-finite-state-machine-library-in-javascript?pl=kent-s-blog-posts-as-screencasts-eefa540c
+
+If you're like me, the first time you heard the words "state machine" you were a
+little intrigued and as you dove in deeper, you were more confused than when you
+started. I find that when I hit that situation, writing my own implementation of
+the concept helps solidify the concept for me. So that's what we're going to do
+together.
+
+I'm not going to take time to try and explain state machines or their use cases,
+so you'll need to find
+[other resources](https://www.youtube.com/watch?v=RqTxtOXcv8Y) for that. Here
+I'm just going to go through what a simple state machine implementation _might_
+look like. I **wouldn't recommend using this implementation in production.** For
+that, check out [xstate](https://xstate.js.org/).
+
+There's a brilliant website
+([statecharts.github.io](https://statecharts.github.io/) by
+[Erik Mogensen](https://twitter.com/mogsie)) where you can learn a lot about
+this concept called "State Charts." (A state chart is basically a state machine
+with a few additional characteristics and it's another thing I'd recommend
+learning about.) On that website, there's a page titled
+[What is a state machine?](https://statecharts.github.io/what-is-a-state-machine.html)
+where you can learn the fundamentals of what a state machine is and that's where
+we're going to gather the parameters (or requirements) for our own state machine
+implementation. Here are some of those (borrowed from the site):
+
+> - One state is defined as the _initial_ state. When a machine starts to
+>   execute, it automatically enters this state.
+> - Each state can define _actions_ that occur when a machine enters or exits
+>   that state. Actions will typically have side effects.
+> - Each state can define events that trigger a _transition_.
+> - A transition defines how a machine would react to the event, by exiting one
+>   state and entering another state.
+> - A transition can define _actions_ that occur when the transition happens.
+>   Actions will typically have side effects.
+
+Also, "When an event happens:"
+
+> - The event is checked against the _current state’s_ transitions.
+> - If a transition matches the event, that transition “happens”.
+> - By virtue of a transition “happening”, states are exited, and entered and
+>   the relevant actions are performed
+> - The machine immediately _is in_ the new state, ready to process the next
+>   event.
+
+Ok, so let's get started. Let's start with something simple. A toggle! Here's
+our initial code:
+
+```javascript
+function createMachine(stateMachineDefinition) {
+  const machine = {
+    // machine object
+  }
+  return machine
+}
+
+// here's how we'll create the state machine
+const machine = createMachine({
+  // state machine definition object here...
+})
+
+// here's how we use the state machine
+// comments are what we _want_ to have logged
+let state = machine.value
+console.log(`current state: ${state}`) // current state: off
+
+state = machine.transition(state, 'switch')
+console.log(`current state: ${state}`) // current state: on
+
+state = machine.transition(state, 'switch')
+console.log(`current state: ${state}`) // current state: off
+```
+
+## The state machine definition object
+
+We'll start by filling out our state machine definition object and then we can
+figure out how to make the state machine do what we want it to with that
+information (ADD: API Driven Development).
+
+> **One state is defined as the _initial_ state. When a machine starts to
+> execute, it automatically enters this state.**
+
+Simple enough, we'll have the user provide us with what that `initialState`
+value should be:
+
+```javascript [2]
+const machine = createMachine({
+  initialState: 'off',
+})
+```
+
+And we'll probably want to have a definition for our states as well:
+
+```javascript [3,4]
+const machine = createMachine({
+  initialState: 'off',
+  off: {},
+  on: {},
+})
+```
+
+Ok, great. Onto the next:
+
+> **Each state can define _actions_ that occur when a machine enters or exits
+> that state. Actions will typically have side effects.**
+
+So we need to allow the user to provide a function that will be called when on
+enter and on exit for a given state:
+
+```javascript [4-7,10-13]
+const machine = createMachine({
+  initialState: 'off',
+  off: {
+    actions: {
+      onEnter() {},
+      onExit() {},
+    },
+  },
+  on: {
+    actions: {
+      onEnter() {},
+      onExit() {},
+    },
+  },
+})
+```
+
+And we'll add console.logs so we can check our work later.
+
+```javascript [6,9,16,19]
+const machine = createMachine({
+  initialState: 'off',
+  off: {
+    actions: {
+      onEnter() {
+        console.log('off: onEnter')
+      },
+      onExit() {
+        console.log('off: onExit')
+      },
+    },
+  },
+  on: {
+    actions: {
+      onEnter() {
+        console.log('on: onEnter')
+      },
+      onExit() {
+        console.log('on: onExit')
+      },
+    },
+  },
+})
+```
+
+Ok, so now what's next?
+
+> **Each state can define events that trigger a _transition_.**
+
+Alrighty, let's add a `transitions` property to our state definitions:
+
+```javascript [12,23]
+const machine = createMachine({
+  initialState: 'off',
+  off: {
+    actions: {
+      onEnter() {
+        console.log('off: onEnter')
+      },
+      onExit() {
+        console.log('off: onExit')
+      },
+    },
+    transitions: {},
+  },
+  on: {
+    actions: {
+      onEnter() {
+        console.log('on: onEnter')
+      },
+      onExit() {
+        console.log('on: onExit')
+      },
+    },
+    transitions: {},
+  },
+})
+```
+
+The `off` state should be able to transition to the `on` state and we'll call
+that event "switch". Then the `on` state should be able to transition to the
+`off` state as well and it makes sense to call that "switch" as well, so let's
+add a `switch` property to our `transitions` object:
+
+```javascript [13,26]
+const machine = createMachine({
+  initialState: 'off',
+  off: {
+    actions: {
+      onEnter() {
+        console.log('off: onEnter')
+      },
+      onExit() {
+        console.log('off: onExit')
+      },
+    },
+    transitions: {
+      switch: {},
+    },
+  },
+  on: {
+    actions: {
+      onEnter() {
+        console.log('on: onEnter')
+      },
+      onExit() {
+        console.log('on: onExit')
+      },
+    },
+    transitions: {
+      switch: {},
+    },
+  },
+})
+```
+
+Sweet. And the next one:
+
+> **A transition defines how a machine would react to the event, by exiting one
+> state and entering another state.**
+
+Ok, so I think that we can specify a `target` for our transition event and when
+that event comes around, our machine will transition us from the current state
+to the target state:
+
+```javascript [14,29]
+const machine = createMachine({
+  initialState: 'off',
+  off: {
+    actions: {
+      onEnter() {
+        console.log('off: onEnter')
+      },
+      onExit() {
+        console.log('off: onExit')
+      },
+    },
+    transitions: {
+      switch: {
+        target: 'on',
+      },
+    },
+  },
+  on: {
+    actions: {
+      onEnter() {
+        console.log('on: onEnter')
+      },
+      onExit() {
+        console.log('on: onExit')
+      },
+    },
+    transitions: {
+      switch: {
+        target: 'off',
+      },
+    },
+  },
+})
+```
+
+Cool, so when our state machine is in the `off` state and we call
+`machine.transition(state, 'switch')` then it should transition from the `off`
+state to the `on` state. We'll implement that logic when we get to it, but so
+far our definition has everything we need for that to happen.
+
+Alright, let's check out the last one for the definition:
+
+> **A transition can define _actions_ that occur when the transition happens.
+> Actions will typically have side effects.**
+
+Based on that, our state enter/exit can have actions, and our transitions can
+have actions too. At first when I read this, I was confused because it felt like
+two ways to do the same thing, but if you remember that in more real-world state
+machines, there can be many ways to enter a state and maybe we want some
+side-effect to happen only when transitioning to state A from a specific state B
+but not from state C. So let's add an `action` to our `transition` objects (and
+we'll put a console.log in there to keep track of it later).
+
+```javascript [15-17,33-35]
+const machine = createMachine({
+  initialState: 'off',
+  off: {
+    actions: {
+      onEnter() {
+        console.log('off: onEnter')
+      },
+      onExit() {
+        console.log('off: onExit')
+      },
+    },
+    transitions: {
+      switch: {
+        target: 'on',
+        action() {
+          console.log('transition action for "switch" in "off" state')
+        },
+      },
+    },
+  },
+  on: {
+    actions: {
+      onEnter() {
+        console.log('on: onEnter')
+      },
+      onExit() {
+        console.log('on: onExit')
+      },
+    },
+    transitions: {
+      switch: {
+        target: 'off',
+        action() {
+          console.log('transition action for "switch" in "on" state')
+        },
+      },
+    },
+  },
+})
+```
+
+Excellent. We've fleshed out the API for the state definition object. Now let's
+implement what happens when `transition` is called.
+
+## Handling transitions
+
+When a user wants to create a machine, we've already specified this as the API:
+
+```javascript
+const machine = createMachine({
+  // state machine definition object
+})
+
+machine.value // current state
+machine.transition(currentState, eventName)
+```
+
+Technically, we could make our state machine default the current state to
+`machine.value`, but I like the idea of `transition` accepting the current state
+from the user (and this is what xstate does) so that's what we'll go with.
+
+So here's what we need for our initial implementation of `createMachine`:
+
+```javascript
+function createMachine(stateMachineDefinition) {
+  const machine = {
+    // machine object
+  }
+  return machine
+}
+```
+
+Let's go ahead and add the `value` and `transition` properties:
+
+```javascript [3-6]
+function createMachine(stateMachineDefinition) {
+  const machine = {
+    value: stateMachineDefinition.initialState,
+    transition(currentState, event) {
+      return machine.value
+    },
+  }
+  return machine
+}
+```
+
+Remember, `currentState` would be something like `'off'` or `'on'` in our case
+and `event` would be `'switch'` for our toggle example.
+
+Great, now let's go down the list and implement things one by one:
+
+> **The event is checked against the _current state’s_ transitions.**
+
+Alright, let's grab the transitions object and determine the destination
+transition.
+
+```javascript [5-6]
+function createMachine(stateMachineDefinition) {
+  const machine = {
+    value: stateMachineDefinition.initialState,
+    transition(currentState, event) {
+      const currentStateDefinition = stateMachineDefinition[currentState]
+      const destinationTransition = currentStateDefinition.transitions[event]
+
+      return machine.value
+    },
+  }
+  return machine
+}
+```
+
+To be clear, the `destinationTransition` at this point for our `off` -> `on`
+transition would be:
+
+```javascript
+{
+  target: 'on',
+  action() {
+    console.log('transition action for "switch" in "off" state')
+  },
+}
+```
+
+So here we've successfully accessed the transition information for this
+currentState + event combo.
+
+> **If a transition matches the event, that transition “happens”.**
+
+Ok, so if the user defined a transition from the current state with this event,
+then we'll continue, otherwise, we'll exit early:
+
+```javascript [7-9]
+function createMachine(stateMachineDefinition) {
+  const machine = {
+    value: stateMachineDefinition.initialState,
+    transition(currentState, event) {
+      const currentStateDefinition = stateMachineDefinition[currentState]
+      const destinationTransition = currentStateDefinition.transitions[event]
+      if (!destinationTransition) {
+        return
+      }
+
+      return machine.value
+    },
+  }
+  return machine
+}
+```
+
+> **By virtue of a transition “happening”, states are exited, and entered and
+> the relevant actions are performed**
+
+Ok, so we'll need to call the `action` for the transition, the `onExit` for the
+current state and the `onEnter` for the next state. To do that, we'll also need
+to get the destination state definition as well. Let's do all of that:
+
+```javascript [10-16]
+function createMachine(stateMachineDefinition) {
+  const machine = {
+    value: stateMachineDefinition.initialState,
+    transition(currentState, event) {
+      const currentStateDefinition = stateMachineDefinition[currentState]
+      const destinationTransition = currentStateDefinition.transitions[event]
+      if (!destinationTransition) {
+        return
+      }
+      const destinationState = destinationTransition.target
+      const destinationStateDefinition =
+        stateMachineDefinition[destinationState]
+
+      destinationTransition.action()
+      currentStateDefinition.actions.onExit()
+      destinationStateDefinition.actions.onEnter()
+
+      return machine.value
+    },
+  }
+  return machine
+}
+```
+
+And finally:
+
+> **The machine immediately _is in_ the new state, ready to process the next
+> event.**
+
+We've got to update the machine's value which is the `target` for the transition
+(which we've assigned to the `destinationState` variable):
+
+```javascript [18]
+function createMachine(stateMachineDefinition) {
+  const machine = {
+    value: stateMachineDefinition.initialState,
+    transition(currentState, event) {
+      const currentStateDefinition = stateMachineDefinition[currentState]
+      const destinationTransition = currentStateDefinition.transitions[event]
+      if (!destinationTransition) {
+        return
+      }
+      const destinationState = destinationTransition.target
+      const destinationStateDefinition =
+        stateMachineDefinition[destinationState]
+
+      destinationTransition.action()
+      currentStateDefinition.actions.onExit()
+      destinationStateDefinition.actions.onEnter()
+
+      machine.value = destinationState
+
+      return machine.value
+    },
+  }
+  return machine
+}
+```
+
+## All together
+
+Alright, so here's the whole thing:
+
+```javascript
+function createMachine(stateMachineDefinition) {
+  const machine = {
+    value: stateMachineDefinition.initialState,
+    transition(currentState, event) {
+      const currentStateDefinition = stateMachineDefinition[currentState]
+      const destinationTransition = currentStateDefinition.transitions[event]
+      if (!destinationTransition) {
+        return
+      }
+      const destinationState = destinationTransition.target
+      const destinationStateDefinition =
+        stateMachineDefinition[destinationState]
+
+      destinationTransition.action()
+      currentStateDefinition.actions.onExit()
+      destinationStateDefinition.actions.onEnter()
+
+      machine.value = destinationState
+
+      return machine.value
+    },
+  }
+  return machine
+}
+
+const machine = createMachine({
+  initialState: 'off',
+  off: {
+    actions: {
+      onEnter() {
+        console.log('off: onEnter')
+      },
+      onExit() {
+        console.log('off: onExit')
+      },
+    },
+    transitions: {
+      switch: {
+        target: 'on',
+        action() {
+          console.log('transition action for "switch" in "off" state')
+        },
+      },
+    },
+  },
+  on: {
+    actions: {
+      onEnter() {
+        console.log('on: onEnter')
+      },
+      onExit() {
+        console.log('on: onExit')
+      },
+    },
+    transitions: {
+      switch: {
+        target: 'off',
+        action() {
+          console.log('transition action for "switch" in "on" state')
+        },
+      },
+    },
+  },
+})
+
+let state = machine.value
+console.log(`current state: ${state}`)
+state = machine.transition(state, 'switch')
+console.log(`current state: ${state}`)
+state = machine.transition(state, 'switch')
+console.log(`current state: ${state}`)
+```
+
+And if you were to pop that up in your Chrome DevTools, here are the logs you'd
+get:
+
+```
+current state: off
+transition action for "switch" in "off" state
+off: onExit
+on: onEnter
+current state: on
+transition action for "switch" in "on" state
+on: onExit
+off: onEnter
+current state: off
+```
+
+And you can play around with this
+[in codesandbox](https://codesandbox.io/s/example-state-machine-implementation-vnz6c).
+
+I hope you found that interesting, informative, and entertaining. If you're
+really like to dive into this stuff further, then definitely give
+[statecharts.github.io](https://statecharts.github.io/) a look and give
+[David Khourshid](https://twitter.com/DavidKPiano) a follow. He's on a personal
+mission to make state machines more approachable and is responsible for my own
+interest in the concept.
+
+Good luck!

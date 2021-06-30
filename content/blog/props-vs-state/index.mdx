@@ -1,0 +1,244 @@
+---
+title: 'React Fundamentals: Props vs State'
+date: 2019-07-08
+description: What's the difference between props and state in React?
+categories:
+  - react
+meta:
+  keywords:
+    - react
+    - javascript
+    - props
+    - state
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033229/kentcdodds.com/content/blog/props-vs-state/banner.jpg
+bannerCredit: Photo by [Jason Leung](https://unsplash.com/photos/Xaanw0s0pMk)
+---
+
+import {Rendered, Add, AddWithInput} from './components'
+
+Let's compare props and state. Here's a definition of each:
+
+- "props" (short for "properties") is an object of arbitrary inputs a React
+  function component accepts as the first argument.
+- "state" is data that changes over the lifetime of a specific instance of a
+  React component.
+
+Let's dive into each.
+
+## Props
+
+Think of props as arguments to a function. React components are functions which
+return JSX (or more generally something that's renderable like React elements,
+`null`, a string, etc.). Typically when you have a piece of code that you would
+like to reuse, you can place that code into a function and any dynamic values
+that code used before can be accepted as arguments (for example
+`const five = 2 + 3` could be extracted to a function and accept arguments like
+so `const five = add(2, 3)`).
+
+The same is true of a piece of JSX, except instead of calling it like a normal
+function (`add(2, 3)`) you use JSX syntax (`<Add n1={2} n2={3} />`). The
+"attributes" supplied in the JSX are what are called `props` and they are placed
+together in a single object and passed to the `Add` component function as the
+first argument like so:
+
+```jsx [1]
+function Add(props) {
+  return (
+    <div>
+      {props.n1} + {props.n2} = {props.n1 + props.n2}
+    </div>
+  )
+}
+```
+
+If I were to use this like so:
+
+```jsx
+<Add n1={2} n2={3} />
+```
+
+Here's how that would be rendered:
+
+<Rendered>
+  <Add n1={2} n2={3} />
+</Rendered>
+
+> NOTE: Props can be anything. In our example they're numbers, but they can also
+> be (and often are) strings, arrays, objects, functions, etc.
+
+Let's say we want to default the `n2` to `0` in the event someone doesn't
+provide it (like `<Add n1={2} />`). **One limit to props is that you're not
+allowed to change them.** So you couldn't do something like this:
+
+```jsx
+function Add(props) {
+  if (typeof props.n2 === 'undefined') {
+    props.n2 = 0
+  }
+  return (
+    <div>
+      {props.n1} + {props.n2} = {props.n1 + props.n2}
+    </div>
+  )
+}
+```
+
+If we try to do this, we'll get the following error:
+
+```
+TypeError: Cannot add property n2, object is not extensible
+```
+
+This is simple enough to solve though:
+
+```jsx
+function Add(props) {
+  let n2 = props.n2
+  if (typeof n2 === 'undefined') {
+    n2 = 0
+  }
+  return (
+    <div>
+      {props.n1} + {n2} = {props.n1 + n2}
+    </div>
+  )
+}
+```
+
+Or, often, you'll find people use destructuring syntax with default values as
+well (this is my personal preference):
+
+```jsx
+function Add({n1, n2 = 0}) {
+  return (
+    <div>
+      {n1} + {n2} = {n1 + n2}
+    </div>
+  )
+}
+```
+
+This is awesome, but what if I want to dynamically change the props value? Let's
+say I wanted to build something like this:
+
+<Rendered>
+  <AddWithInput n1={2} />
+</Rendered>
+
+Without state, here's how I might try to accomplish that:
+
+```jsx [5]
+function AddWithInput(props) {
+  function handleInputChange(event) {
+    const input = event.target
+    const newN2 = Number(input.value)
+    props.n2 = newN2
+  }
+  return (
+    <div>
+      {props.n1} +{' '}
+      <input type="number" value={props.n2} onChange={handleInputChange} /> ={' '}
+      {props.n1 + props.n2}
+    </div>
+  )
+}
+```
+
+However, this will not work for two reasons:
+
+1. React doesn't know that we've updated the `n2` value of our `props` object,
+   so it wont update the DOM when we change `props.n2`, so we wont see our
+   changes anyway
+2. We'll get the `TypeError` warning as before
+
+This is where state comes in.
+
+## State
+
+State is data that changes over time, and that's perfect for our situation:
+
+```jsx [2, 7]
+function AddWithInput(props) {
+  const [n2, setN2] = React.useState(0)
+
+  function handleInputChange(event) {
+    const input = event.target
+    const newN2 = Number(input.value)
+    setN2(newN2)
+  }
+
+  return (
+    <div>
+      {props.n1} +{' '}
+      <input type="number" value={n2} onChange={handleInputChange} /> ={' '}
+      {props.n1 + n2}
+    </div>
+  )
+}
+```
+
+That will work, and this is precisely what React state is intended to be used
+for. It's intended to track data values over the lifetime of the component (so
+long as the component exists on the page).
+
+However, users of the `AddWithInput` component can no longer set the initial
+value of `n2` anymore. With the way that component is implemented currently,
+it's not referencing `props.n2` at all. But we can make this work by using props
+when we initialize our state:
+
+```jsx
+function AddWithInput(props) {
+  const [n2, setN2] = React.useState(props.n2)
+
+  // ... etc...
+}
+```
+
+Now if someone were to do this: `<AddWithInput n1={2} n2={3} />` then the result
+would look like this (notice that the initial input value is `3`):
+
+<Rendered>
+  <AddWithInput n1={2} initialN2={3} />
+</Rendered>
+
+So our props are "arguments" or "inputs" that we can pass to a component, and
+state is something that is managed within the component and can change over
+time.
+
+Let me just clean this component up a little bit and I'll explain my changes:
+
+```jsx [1, 2]
+function AddWithInput({n1, initialN2 = 0}) {
+  const [n2, setN2] = React.useState(initialN2)
+
+  function handleInputChange(event) {
+    const input = event.target
+    const newN2 = Number(input.value)
+    setN2(newN2)
+  }
+
+  return (
+    <div>
+      {n1} + <input type="number" value={n2} onChange={handleInputChange} /> ={' '}
+      {n1 + n2}
+    </div>
+  )
+}
+```
+
+I changed to destructuring with defaults for the props, and I changed the prop
+from `n2` to `initialN2`. When I'm using a prop value to initialize a state
+value, I typically like to give it the prefix `initial` to communicate that
+changes in that prop will not be taken into account. If that's what you want,
+then you'll want to
+[Lift State Up](https://reactjs.org/docs/lifting-state-up.html).
+
+## Conclusion
+
+I hope this helps clear up the difference between props and state in React for
+you. It's a foundational concept. Go ahead and test yourself on this little app
+below. Where's the state, where are the props?
+
+https://codesandbox.io/s/react-codesandbox-oov7o?view=editor
+
+I hope that's helpful! Good luck!

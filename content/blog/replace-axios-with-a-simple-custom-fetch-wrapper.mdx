@@ -1,0 +1,293 @@
+---
+title: Replace axios with a simple custom fetch wrapper
+date: 2020-03-30
+description:
+  Axios can do a ton of stuff, but here's a simpler solution that can handle
+  most use cases
+categories:
+  - javascript
+meta:
+  keywords:
+    - http
+    - axios
+    - fetch
+    - javascript
+    - dom
+    - browsers
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033317/kentcdodds.com/content/blog/replace-axios-with-a-simple-custom-fetch-wrapper/banner.jpg
+bannerCredit: Photo by [K. Mitch Hodge](https://unsplash.com/photos/kqPlrOrir5g)
+---
+
+I remember being with [Matt Zabriskie](https://twitter.com/mzabriskie) when he
+hatched the idea of a vanilla JavaScript version of AngularJS's `$http` service.
+It seemed like a brilliant idea and that night in his hotel room at MidwestJS,
+he put together the first iteration.
+
+It was awesome because working with raw
+[XMLHttpRequest](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest)
+to make HTTP requests was not very fun. His library, which he later called
+[`axios`](https://github.com/axios/axios) is a brilliant work and functioned
+both in NodeJS and the Browser which I remember him being really excited about
+(and I was too).
+
+It's been almost six years now and if you're reading this chances are you've at
+least heard of it and very likely used it in the past or are using it now. It
+has an enormous and growing number of
+[downloads on npm](https://www.npmtrends.com/axios). And while Matt's long moved
+on from the project, it is still actively maintained.
+
+Since it was released, the browser standard has evolved to add a new,
+promise-based API for making HTTP requests that provided a much nicer developer
+experience. This API is called
+[fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) and if you
+haven't used it yet, you really ought to check it out. It's widely supported and
+easily polyfillable (my favorite is
+[unfetch](https://github.com/developit/unfetch) because the dog mascot is cute
+🐶).
+
+Here are a few reasons you might consider swapping `axios` for a simple custom
+wrapper around `fetch`:
+
+1. Less API to learn
+2. Smaller bundle size
+3. Reduced trouble when updating packages/managing breaking changes
+4. Immediate bug fixes/releases
+5. Conceptually simpler
+
+I have a fetch wrapper for
+[my bookshelf app](https://github.com/kentcdodds/bookshelf) which has served me
+well. Let's build it together:
+
+```javascript
+function client(endpoint, customConfig) {
+  const config = {
+    method: 'GET',
+    ...customConfig,
+  }
+
+  return window
+    .fetch(`${process.env.REACT_APP_API_URL}/${endpoint}`, config)
+    .then(response => response.json())
+}
+```
+
+This `client` function allows me to make calls to my app's API like so:
+
+```javascript
+client(`books?query=${encodeURIComponent(query)}`).then(
+  data => {
+    console.log('here are the books', data.books)
+  },
+  error => {
+    console.error('oh no, an error happened', error)
+  },
+)
+```
+
+However, the built-in `window.fetch` API doesn't handle errors in the same way
+`axios` does. By default, `window.fetch` will only reject a promise if the
+actual request itself failed (network error), not if it returned a "Client error
+response". Luckily, the `Response` object has
+[an `ok`](https://developer.mozilla.org/en-US/docs/Web/API/Response/ok) property
+which we can use to reject the promise in our wrapper:
+
+```javascript [9-16]
+function client(endpoint, customConfig = {}) {
+  const config = {
+    method: 'GET',
+    ...customConfig,
+  }
+
+  return window
+    .fetch(`${process.env.REACT_APP_API_URL}/${endpoint}`, config)
+    .then(async response => {
+      if (response.ok) {
+        return await response.json()
+      } else {
+        const errorMessage = await response.text()
+        return Promise.reject(new Error(errorMessage))
+      }
+    })
+}
+```
+
+Great, now our promise chain will reject if the response is not ok.
+
+The next thing we want to do is be able to send data to the backend. We _can_ do
+this with our current API, but let's make it easier:
+
+```javascript [2-13]
+function client(endpoint, {body, ...customConfig} = {}) {
+  const headers = {'Content-Type': 'application/json'}
+  const config = {
+    method: body ? 'POST' : 'GET',
+    ...customConfig,
+    headers: {
+      ...headers,
+      ...customConfig.headers,
+    },
+  }
+  if (body) {
+    config.body = JSON.stringify(body)
+  }
+
+  return window
+    .fetch(`${process.env.REACT_APP_API_URL}/${endpoint}`, config)
+    .then(async response => {
+      if (response.ok) {
+        return await response.json()
+      } else {
+        const errorMessage = await response.text()
+        return Promise.reject(new Error(errorMessage))
+      }
+    })
+}
+```
+
+Sweet, so now we can do stuff like this:
+
+```javascript
+client('login', {body: {username, password}}).then(
+  data => {
+    console.log('here the logged in user data', data)
+  },
+  error => {
+    console.error('oh no, login failed', error)
+  },
+)
+```
+
+Next we want to be able to make authenticated requests. There are various
+approaches for doing this, but here's how I do it in the bookshelf app:
+
+```javascript [1,4-8]
+const localStorageKey = '__bookshelf_token__'
+
+function client(endpoint, {body, ...customConfig} = {}) {
+  const token = window.localStorage.getItem(localStorageKey)
+  const headers = {'Content-Type': 'application/json'}
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+  const config = {
+    method: body ? 'POST' : 'GET',
+    ...customConfig,
+    headers: {
+      ...headers,
+      ...customConfig.headers,
+    },
+  }
+  if (body) {
+    config.body = JSON.stringify(body)
+  }
+
+  return window
+    .fetch(`${process.env.REACT_APP_API_URL}/${endpoint}`, config)
+    .then(async response => {
+      if (response.ok) {
+        return await response.json()
+      } else {
+        const errorMessage = await response.text()
+        return Promise.reject(new Error(errorMessage))
+      }
+    })
+}
+```
+
+So basically if we have a token in `localStorage` by that key, then we add the
+`Authorization` header (per [the JWT spec](https://jwt.io/)) which our server
+can then use to determine whether the user is authorized. Very common practice
+there.
+
+Another handy thing that we can do is if the `response.status` is `401`, that
+means the user's token is invalid (maybe it expired or something) so we can
+automatically log the user out and refresh the page for them:
+
+```javascript [24-28,38-40]
+const localStorageKey = '__bookshelf_token__'
+
+function client(endpoint, {body, ...customConfig} = {}) {
+  const token = window.localStorage.getItem(localStorageKey)
+  const headers = {'content-type': 'application/json'}
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+  const config = {
+    method: body ? 'POST' : 'GET',
+    ...customConfig,
+    headers: {
+      ...headers,
+      ...customConfig.headers,
+    },
+  }
+  if (body) {
+    config.body = JSON.stringify(body)
+  }
+
+  return window
+    .fetch(`${process.env.REACT_APP_API_URL}/${endpoint}`, config)
+    .then(async response => {
+      if (response.status === 401) {
+        logout()
+        window.location.assign(window.location)
+        return
+      }
+      if (response.ok) {
+        return await response.json()
+      } else {
+        const errorMessage = await response.text()
+        return Promise.reject(new Error(errorMessage))
+      }
+    })
+}
+
+function logout() {
+  window.localStorage.removeItem(localStorageKey)
+}
+```
+
+Depending on your situation, maybe you'd re-route them to the login screen
+instead.
+
+On top of this, the bookshelf app has a few other wrappers for making requests.
+Like the `list-items-client.js`:
+
+```javascript
+import {client} from './api-client'
+
+function create(listItemData) {
+  return client('list-items', {body: listItemData})
+}
+
+function read() {
+  return client('list-items')
+}
+
+function update(listItemId, updates) {
+  return client(`list-items/${listItemId}`, {
+    method: 'PUT',
+    body: updates,
+  })
+}
+
+function remove(listItemId) {
+  return client(`list-items/${listItemId}`, {method: 'DELETE'})
+}
+
+export {create, read, remove, update}
+```
+
+## Conclusion
+
+Axios does a LOT for you and if you're happy with it then feel free to keep
+using it (I use it for node projects because it's just great and I haven't been
+motivated to investigate the alternatives that I'm sure you're dying to tell me
+all about right now). But for the browser, I think that you'll often be better
+off making your own simple wrapper around `fetch` that does exactly what you
+need it to do and no more. Anything you can think of for an axios interceptor or
+transform to do, you can make your wrapper do it. If you don't want it applied
+to all requests, then you can make a wrapper for your wrapper.
+
+https://twitter.com/kentcdodds/status/1244820744564965376
+
+Good luck!

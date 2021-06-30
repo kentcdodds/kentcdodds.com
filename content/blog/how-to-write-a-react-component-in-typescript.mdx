@@ -1,0 +1,297 @@
+---
+title: How to write a React Component in TypeScript
+date: 2021-03-04
+description:
+  There are plenty of ways to do it, here's how I recommend typing React
+  Components
+categories:
+  - react
+  - typescript
+meta:
+  keywords:
+    - typescript
+    - react
+    - javascript
+    - props
+    - react element
+    - children
+    - testing
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032911/kentcdodds.com/content/blog/how-to-write-a-react-component-in-typescript/banner.jpg
+bannerCredit: Photo by [Jonny Gios](https://unsplash.com/photos/prqTBbgDkec)
+---
+
+Here's our component without types:
+
+```tsx
+const operations = {
+  '+': (left, right) => left + right,
+  '-': (left, right) => left - right,
+  '*': (left, right) => left * right,
+  '/': (left, right) => left / right,
+}
+
+function Calculator({left, operator, right}) {
+  const result = operations[operator](left, right)
+  return (
+    <div>
+      <code>
+        {left} {operator} {right} = <output>{result}</output>
+      </code>
+    </div>
+  )
+}
+
+const examples = (
+  <>
+    <Calculator left={1} operator="+" right={2} />
+    <Calculator left={1} operator="-" right={2} />
+    <Calculator left={1} operator="*" right={2} />
+    <Calculator left={1} operator="/" right={2} />
+  </>
+)
+```
+
+Right there you may notice we do things a little differently. Maybe you prefer
+this instead:
+
+```tsx
+const Calculator = ({left, operator, right}) => (
+  <div>
+    <code>
+      {left} {operator} {right} ={' '}
+      <output>{operations[operator](left, right)}</output>
+    </code>
+  </div>
+)
+```
+
+I don't like the implicit return there. It means you can't reasonably declare
+variables or use hooks. So even for simple components, I never go with this
+approach.
+
+Ok, so maybe you do this:
+
+```tsx
+const Calculator = ({left, operator, right}) => {
+  const result = operations[operator](left, right)
+  return (
+    <div>
+      <code>
+        {left} {operator} {right} = <output>{result}</output>
+      </code>
+    </div>
+  )
+}
+```
+
+Honestly, that's fine most of the time. I personally like the hoisting
+characteristics of function declarations rather than function expressions like
+that ([learn more](/blog/function-forms)).
+
+Alright, let's add some types to this. For functions, you need to consider the
+types coming in and the types going out. Let's start with the input: props. To
+start, let's go with a simple type for the props (we'll improve it later):
+
+```tsx
+type CalculatorProps = {
+  left: number
+  operator: string
+  right: number
+}
+```
+
+With that, let's try some options for applying that type to the props object in
+our React Component.
+
+A common method to typing a React component is to use one of the generics that
+are built-into `@types/react` (I mean, it's built-in right? So what could go
+wrong?). Interestingly, you cannot type a function declaration this way, so
+we'll have to use a function expression:
+
+```tsx
+const Calculator: React.FC<CalculatorProps> = ({left, right, operator}) => {
+  // implementation clipped for brevity
+}
+```
+
+This works pretty well, but there are three major problems with this:
+
+1. Our `Calculator` function now accepts a `children` prop, even though we don't
+   do anything with it 🙃 (So, this compiles:
+   `<Calculator left={1} operator="+" right={2}>What?</Calculator>`).
+2. You can't use generics. Not super common, but definitely a downside.
+3. We have to use a function expression and can't use a function declaration.
+
+Ok ok, so maybe #3 isn't a _major_ problem, but #1 is pretty significant. There
+are a few other smaller issues laid out in
+[this excellent GitHub issue](https://github.com/facebook/create-react-app/pull/8177)
+if you want to dive deeper (also check
+[the React TypeScript Cheatsheet](https://github.com/typescript-cheatsheets/react#function-components)).
+Suffice it to say, don't use `React.FC` (or its longer alias
+`React.FunctionComponent`).
+
+One of the things I love about React components is that they aren't all that
+special. Here's the definition of a React component:
+
+> A React component is a function that returns something React can render.
+
+Now, according to `@types/react`, we're limited to `null` and `JSX.Element`s,
+but React can actually render strings, numbers, and booleans as well. In any
+case, because a React component is simply a function that returns something
+React can render, typing it can be just as straightforward as typing functions.
+You don't have to do anything special just because it's React.
+
+So here's how I'd type the props for this component:
+
+```tsx
+function Calculator({left, operator, right}: CalculatorProps) {
+  // implementation clipped for brevity
+}
+```
+
+This doesn't have any of the shortcomings of `React.FC` and it's no more
+complicated than typing the arguments to a regular function.
+
+Ok, so what about the return value? Well, we could type it as
+`React.ReactElement` or even wider as a `JSX.Element`. But honestly, I side with
+my friend [Nick McCurdy](https://twitter.com/nickemccurdy) when
+[he says](https://twitter.com/nickemccurdy/status/1365384372908621833) that
+mistakes can easily be made causing the return type to be too wide. So even
+outside a react context, I default to not specifying the return type (rely on
+inference) unless necessary. And that's the case here.
+
+## Improving the `CalculatorProps` type
+
+Ok, now this next bit doesn't have a lot to do with typing React components, but
+I thought you'd find it interesting anyway, so skip ahead if you don't. Let's
+improve the `CalculatorProps` type. As a reminder, here's what we have so far:
+
+```tsx
+// I took the liberty of typing each of these functions as well:
+const operations = {
+  '+': (left: number, right: number): number => left + right,
+  '-': (left: number, right: number): number => left - right,
+  '*': (left: number, right: number): number => left * right,
+  '/': (left: number, right: number): number => left / right,
+}
+
+type CalculatorProps = {
+  left: number
+  operator: string
+  right: number
+}
+function Calculator({left, operator, right}: CalculatorProps) {
+  const result = operations[operator](left, right)
+  return (
+    <div>
+      <code>
+        {left} {operator} {right} = <output>{result}</output>
+      </code>
+    </div>
+  )
+}
+```
+
+I think the `left` and `right` types are fine. It's the `operator` that I'm
+unhappy with. Using `string` is too wide. There are specific operations that are
+allowed. For example, what would happen if we tried:
+
+```tsx
+const element = <Calculator left={1} operator="wut" right={2} />
+```
+
+That right there is what we call a runtime exception my friends. That is...
+unless you have `strict` mode on, in which case you'd have a compilation error
+on `operations[operator]`. In strict mode, TypeScript will correctly know that
+accessing any string from the `operations` object will not _necessarily_ return
+a callable function.
+
+There are plenty of ways to solve this problem. Basically, we want to limit the
+`operator` to only the supported operators. We can do that with a simple union
+type:
+
+```tsx
+type CalculatorProps = {
+  left: number
+  operator: '+' | '-' | '*' | '/'
+  right: number
+}
+```
+
+But if we decided to add the
+[Exponentiation Operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Exponentiation)
+(`**`), then we'd have to update not only the `operations` object, but also the
+`operator` type which would be annoying. Maybe there's a way we can derive the
+type for the `operator` based on the `operations` object? Why, yes there is!
+
+```tsx
+type CalculatorProps = {
+  left: number
+  operator: keyof typeof operations
+  right: number
+}
+```
+
+`typeof operations` is going to get us a type that describes the `operations`
+object, which is roughly equal to:
+
+```tsx
+type operations = {
+  '+': (left: number, right: number) => number
+  '-': (left: number, right: number) => number
+  '*': (left: number, right: number) => number
+  '/': (left: number, right: number) => number
+}
+```
+
+The `keyof` part will take all the keys of that type, resulting in
+`'+' | '-' | '*' | '/'` 🎉
+
+## Conclusion
+
+Here's the finished version (I typed the operations functions as well):
+
+```tsx
+const operations = {
+  '+': (left: number, right: number): number => left + right,
+  '-': (left: number, right: number): number => left - right,
+  '*': (left: number, right: number): number => left * right,
+  '/': (left: number, right: number): number => left / right,
+}
+
+type CalculatorProps = {
+  left: number
+  operator: keyof typeof operations
+  right: number
+}
+
+function Calculator({left, operator, right}: CalculatorProps) {
+  const result = operations[operator](left, right)
+  return (
+    <div>
+      <code>
+        {left} {operator} {right} = <output>{result}</output>
+      </code>
+    </div>
+  )
+}
+
+const examples = (
+  <>
+    <Calculator left={1} operator="+" right={2} />
+    <Calculator left={1} operator="-" right={2} />
+    <Calculator left={1} operator="*" right={2} />
+    <Calculator left={1} operator="/" right={2} />
+  </>
+)
+```
+
+I hope that gives you an idea of a good way to type your React components. Good
+luck and take care!
+
+P.S. One thing I don't like at all about our solution is we have to type each of
+the `operations` functions. Interestingly, this is a bit of a rabbit hole, but
+at the other end of it, the types are definitely better and you learn a few
+tricks along the way. Originally that was part of this blog post, but I decided
+to move it to its own post. Read all about it here:
+[How to write a Constrained Identity Function (CIF) in TypeScript](/blog/how-to-write-a-constrained-identity-function-in-typescript).

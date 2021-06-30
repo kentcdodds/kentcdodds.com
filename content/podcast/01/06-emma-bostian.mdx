@@ -1,0 +1,547 @@
+---
+title: Creating Successful Mentor Relationships With Emma Bostian
+date: null
+description:
+  Emma Bostian discusses mentorship and all the benefits of being a mentor.
+meta:
+  keywords:
+simpleCastId: e90a120e-f552-49d3-ac39-8b9e1bd79d8f
+---
+
+import Transcript from 'components/podcast/transcript'
+import Resources from 'components/podcast/resources'
+import Guest from 'components/podcast/guest'
+
+Emma Bostian launched **codingcoach.io**, a free, open-source project that
+connects mentees with mentors. Emma discusses how she launched Coding Coach
+before she had a real database. It's better to have your product out there than
+to sit on it until it's perfect, you can always iterate.
+
+Mentoring doesn't just help others, you improve your teaching skills, and it
+also just looks good to be a mentor.
+
+Mentees should respect a mentor's time since they are doing it for free. When
+asking someone to be your mentor briefly describe where you're currently at, and
+some tangible goals that you want to work towards.
+
+Mentorship doesn't strictly have to be a one-on-one relationship with someone.
+You can mentor people through content creation as well. Blogging, recording
+videos, writing books, and giving talks all teach people.
+
+Often people's goal with their mentor is to be ready for the technical
+interview. Many companies are wising up to the fact that someone's ability to
+write algorithms doesn't correlate with their expertise as a front-end
+developer. Kent advises to keep your HTML, CSS, and JavaScript skills sharp,
+learn the abstractions you are using so you can talk about them intelligently,
+and remember that you are interviewing the company as well!
+
+---
+
+<div style={{display: 'grid', gridGap: 10, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'}}>
+
+<Resources>
+
+- [Coding Coach](https://codingcoach.io/)
+- [Emma Bostian - Decoding the Front-end Interview Process](https://dev.to/emmawedekind/decoding-the-front-end-interview-process-14dl)
+- [Kent C. Dodds - Solidifying What You Learn](https://kentcdodds.com/blog/solidifying-what-you-learn)
+- [HackerRank](https://www.hackerrank.com/)
+
+</Resources>
+
+<Guest name="Emma Bostian" image="https://res.cloudinary.com/kentcdodds-com/image/upload/v1625034098/kentcdodds.com/content/podcast/01/06-emma-bostian/emma-bostian.png">
+
+- [Twitter](https://twitter.com/EmmaWedekind?ref_src=twsrc%5Egoogle%7Ctwcamp%5Eserp%7Ctwgr%5Eauthor)
+- [Website](https://emmawedekind.com/)
+- [Dev.to Blog](https://dev.to/emmawedekind)
+- [Github](https://github.com/emmawedekind)
+
+</Guest>
+
+</div>
+
+---
+
+## Transcript
+
+<Transcript>
+
+**Kent C. Dodds:** Hey everybody. It's your friend, Kent C. Dodds, and I am here
+joined by my friend. Oh, Emma, I actually forgot to ask you how you say your
+last name.
+
+**Emma Bostian:** You don't want to give it a go? Come on.
+
+**Kent C. Dodds:** Okay. It's Emma Bostian.
+
+**Emma Bostian:** Oh, that's how I would've said it before I moved here, but
+it's actually Wedekind.
+
+**Kent C. Dodds:** Wedekind. Okay.
+
+**Emma Bostian:** Yeah, it's very German. It's very German.
+
+**Kent C. Dodds:** I should've known. I knew that German Ws were pronounced like
+a V. My bad.
+
+**Emma Bostian:** Yeah. Now you know and now you can spread the word.
+
+**Kent C. Dodds:** Okay. Well, we'll do that in this podcast. Everybody
+listening, it's Wedekind. So, cool. So, if you haven't heard of Emma, she's just
+a fabulous person. I'm actually going to give her an opportunity to introduce
+herself. So, Emma, can you tell us a little bit about yourself? You don't have
+to specifically talk about what you're doing technologically wise or career
+wise. You can tell us a little bit about your interests or whatever you want to
+say about yourself.
+
+**Emma Bostian:** Yeah. For sure. Okay, cool. So, hi, I'm Emma, and thank you
+for having me on, I appreciate it. So, I'm a UX Engineer currently which is a
+fun new role that's kind of like a hybrid between an engineer and a designer.
+Who am I as a person though? Let's see. I'm an American who moved to Germany
+about a year ago, which is a lot of fun. I am a proud mother to two cats.
+They're horribly behaved but I still love them. I thoroughly enjoy reading as
+many books as I can possibly digest. So, yeah.
+
+**Kent C. Dodds:** Nice. I'll try to get my fantasy novel finished for you.
+
+**Emma Bostian:** Yeah, I can't wait to read it. I'm chomping at the bit for
+this.
+
+**Kent C. Dodds:** That's so nice. It makes me feel good. It encourages me to
+get it finished. Cool. So, Emma, there are a silly amount of things that we
+could talk about together. You have a very active dev.to blog and your Twitter
+is just on fire all the time. But, I wanted to talk a little bit about this
+mentoring app that you are working on. I think it's a really cool idea, and
+mentoring is actually a subject that I have mixed feelings about. So, I'd love
+to chat with you about that a little bit. Along with the fact that this is an
+open source app and all of the nuances that come with managing open source
+projects. So, why don't you tell us about this project and kind of the why
+behind the project and what you're trying to accomplish here.
+
+**Emma Bostian:** Sure. So, this actually starts several years ago when I was
+working at IBM as an engineer and I was working on a design team. I was working
+with the IBM Quantum Design Team as the only front-end developer on the team. I
+had so many questions for technology staff and all of that. I was still, I would
+say, pretty new. I had a steady job all throughout college, so switching to a
+team where now I had the authority to kind of choose my tech staff, and I chose
+VJS, which is so much fun, but I was so new to the industry. I had so many
+questions and I had no one to ask. Because as a developer on a design team, you
+don't have anyone you work with in person day to day. So, I had this idea of,
+well, we should have a mentorship program and so, we actually had held a
+workshop with several women executives within IBM. We had a full day workshop
+and we had some tangible outputs and I had a small team together. It was like a
+cross functional team. We had some designers and Jason Lengstorff was actually
+there. He was there from the beginning. He was trying to help.
+
+**Kent C. Dodds:** [inaudible 00:03:36]
+
+**Emma Bostian:** Yeah, he's so great. But unfortunately, it just wasn't the
+right timing. It went dormant for a few years and then, in September of last
+year, I was in the Berlin airport, and I don't know, I think I maybe had a
+thousand followers if I was lucky at that point. I was like, "It seems like
+there is a real need for mentorship, and maybe this is the time." I don't know.
+I just felt like it was the time. So, I tweeted out and was like, "Hey, is
+anyone interested in creating an open source membership app?" and the response
+is overwhelmingly positive. So, I bought a domain name and you would not believe
+how hard it is to find domain names that aren't taken. So, I bought
+codingcoach.io, and I was a little on the fence about it because coach can kind
+of mean several things, right? But I was like, "You know what? It still means
+kind of someone who guides you to a certain extent." So, I bought the domain
+name, I opened a Slack organization, and people just started flowing in. It was
+a little overwhelming because I had no idea how to manage anything. I had never
+managed something to this extent before. Originally, I thought I was going to
+develop it. Kai, my husband, was like, "You can't develop this app. Because if
+you develop it, it's going to fail because no one will be pushing this project
+along." So, I was like, "All right, you're right." The other thing I had to get
+used to was delegating. I'm a control freak, believe it or not, and so, to find
+talented developers that I could trust to groom the backlog in Github and to
+kind of push this thing forward and choose the tech stock, it was kind of
+nerveracking. But, I found two really great front-end engineers who one of them,
+Chris Bell, works for Envision as a senior dev, and the other one, Mosh, who was
+the force behind this, [inaudible 00:05:28] site that you see up today,
+mentors.codingcoach.io, he works at Wix as an engineers. So, I got super lucky
+on the front-end side, and I have a great back-end guy too. I don't know as much
+about back-end, so I can't praise it to the same extent. [crosstalk 00:05:44].
+So, yeah, I think it's grown. We have over a few thousand people in our Slack
+[inaudible 00:05:51] we have, I don't know, like over 7,000 followers now on
+Twitter and for something that's just as simple as like a database that's
+pulling in data from a package.json file, for our first release I think that's
+pretty incredible. So, yeah.
+
+**Kent C. Dodds:** It's pulling data from a package.json file? What is that?
+
+**Emma Bostian:** So, we have a CLI tool right now. So, the first iterations you
+had to actually like clone the repository and add your data in and it had to be
+like the same exact structure of course or our code would fail on it and you'd
+open like a pull request and there would be like a ton of merge conflicts, but
+they created a CLI tool where now you just say like add mentor or create new
+mentor, I can't remember and it guides you through the information you need to
+add and it's super easy now. Yeah, but it's all just sitting in a package JSON
+right now, there's no back end.
+
+**Kent C. Dodds:** Okay, cool. Interesting. So, if I were to go to the coding
+coach project on GitHub, I would just see this massive package JSON file in
+there?
+
+**Emma Bostian:** Yeah. It's not optimal, and we're in the process of, I think
+the word is obfuscating all of our email addresses. I don't know how people that
+don't speak native English can pronounce that, because I can't pronounce it.
+Yeah, we're in the process of like building a fully fledged site, but I think
+the short term goal was like, hey, we need something out there, right? Just get
+something out there that people can reference and in the meantime, we'll build
+our full stack application where we'll have a proper database and whatnot.
+
+**Kent C. Dodds:** Yeah, that's great. The reason that I asked that was just to
+call out the fact that if you had waited until you had like the perfect
+solution, then you wouldn't have something shipped already. I mean, maybe it's
+not optimal, but it's shipped and shipped is way better than not shipped most of
+the time. I think that's an important good takeaway for people is to get as
+close to, or yeah, ship as fast as possible and then you can iterate to a better
+solution.
+
+**Emma Bostian:** There is two pieces to that though, because I personally am a
+proponent of like getting something out because defining done is like nearly
+impossible, right? Nothing is ever fully done. So, at some point, you just have
+to be like, okay, these are the MVP or like the Minimum Viable Product, just
+ship it. So, there's that. And then, I was reading this book, I think it was
+called The Originals and they discussed the fact that occasionally with products
+you see, they're not always first to market, right? The most successful aren't
+necessarily first to market which I found very interesting, because you would
+assume that whoever's first wins the whole thing, but it's kind of a balance of
+like making sure that it's completed enough to provide enough value to the
+community, but not waiting too long.
+
+**Kent C. Dodds:** Yeah, that's an interesting point. That makes me think of
+what happens if you ship too early and it's a bit of a disaster, right? Then
+people are going to say, oh, I used that last year and it was just not good, so
+I'm not gonna [crosstalk 00:08:49]. That makes me think of the jest testing
+framework which a couple years ago was like really bad, like everybody ... it
+was kind of a joke, but then, over time, they iterated to just the most amazing
+testing platform and then they were able to win people back. So, yeah, there is
+a delicate balance there I think.
+
+**Emma Bostian:** I feel like I've only ever seen one product though like
+actually ship something that was like utterly beautiful it's first go-around. I
+think it's called CB compiler. It's like the coolest site. They have an amazing
+site, you go check it out. Basically you upload your resume and it like uses
+artificial intelligence to like deduce how effective of a resume it will be and
+their first launch, I was like, oh my god, they built that and that's their
+first release? That's incredible. But yeah, normally you would see like all the
+products, if you go back in time to like Google and Twitter and Facebook, like
+the first releases, I mean, they weren't beautiful. So, don't push yourself too
+hard.
+
+**Kent C. Dodds:** Yeah. So, I want to talk a little bit about mentoring just
+like the topic in general. I was wondering when you created the Slack group and
+released everything, my impression would be that like 99% of the people who
+joined would be people seeking a mentor and then you'd have one mentor for 200
+people or something. So, how has that played out in reality and what do you
+think ... if that is a problem, what do you think a good solution to that
+problem could be?
+
+**Emma Bostian:** Yeah. So, I think that's a safe assumption that like the
+majority of people coming to this site are looking for a mentor, but I was
+pleasantly surprised by how many people avidly wanted to sign up, because I
+think mentorship is such a positive thing that people want to promote the fact
+that they are a mentor. I think it ... I mean, selfishly, I think it looks good
+to say I'm a mentor to people, but yeah, I think there are so many good-hearted
+people in the community that they want to help people, they want to help
+beginners, because we all know how it feels to be beginner. I will say as much
+as I do love mentorship, it's kind of a double edged sword in a sense, because
+... I get a lot of messages and I know a lot of people in the community get a
+lot messages saying, hey, will you be my mentor? And that's it, that's like the
+end of the message. I think part of that is they don't know how to start this
+conversation. So, that's why I wanted to create these mentorship guidelines.
+It's on Google Drive, for anyone to go look at, but how do you start this
+conversation? Because, just sending a message saying, hey, will you be my
+mentor? That doesn't tell the mentor anything about yourself, like who are you,
+what are your career goals? What kind of things are you looking for to get out
+of this mentorship, right? Is this a career mentorship? Is it a technical
+mentorship? In all honesty, these mentors are giving up their free time. So,
+this platform is free. That was one of the things I really had wanted, because
+many people can't afford a high-quality mentor in terms of money. So, these
+mentors are giving up their free time and what that means is, as a mentee, you
+need to do the bulk of the work. So, have a clear plan, have three to five
+tangible goals laid out that you can send them and be like, these are the things
+I want to work on. At that point, that's where you can begin to like sketch out
+like a learning plan and then you can measure your results against those, but if
+you just come to someone and say, hey, will you be my mentor? It doesn't really
+tell them anything about yourself. So, you're just going to make sure that you
+are the one doing the majority of the work.
+
+**Kent C. Dodds:** Yeah and sometimes ... so, this happens to me a lot. I get a
+request to be a mentor about once a week and it's pretty exhausting honestly as
+an individual responding to these people and I pretty much always say no because
+I don't have the bandwidth for it, and I feel bad about that, but sometimes I'll
+get the one-liner, will you be my mentor? Other times I'll get this like, this
+giant story of like life story and I never have time to read that. So, what
+would you say is a ... I guess you have the mentorship guidelines and we'll link
+over to that, but if you can quickly describe some good specific tips about the
+type of message that somebody would send to someone.
+
+**Emma Bostian:** Yeah. So, on our platform, we want to make sure that our
+mentors are able to, I don't know what the right word is, politely decline,
+right? Because that's kind of a weird situation. You don't want to hurt anyone's
+feelings. You don't want to like shut them down and make them feel bad about
+themselves, because they haven't done anything wrong. It's just simply that the
+more busy you are, the less capacity you have. So, one thing we'll be doing is
+adding like capacity indicators to our cards, like our mentor cards, so you can
+quickly see like, hey, this person's like full, they don't have any time, so I
+won't even bother reaching out to them right now. So, that's one phase of it,
+but if you're a mentor and you receive a message and it says will you be my
+mentor? And you just don't have the capacity or maybe, this happened to me
+today, there was a woman who was looking for a back end, like a node js mentor
+and I'm like, hey, I'm sorry, I'm just not the right person for you. I don't
+have the skill set to be able to effectively mentor you. In those instances, you
+can be honest if you want. Say, hey, I'm unfortunately just too busy, I'm happy
+to pass your name along to other people I know who might be looking to take on
+new mentees, or you could say, my skill set isn't the right fit and I want you
+to be successful. Right? But, I think being authentic and being honest about the
+reason, you don't have to give your whole life story or all of these excuses
+necessarily, but just make them feel like there is someone out there who will
+mentor them and who is a better fit maybe.
+
+**Kent C. Dodds:** I think that's good. So, we've talked a little bit about some
+of the things that the mentees can do or people looking for mentors. Why would
+an experienced engineer be interested or even an inexperienced engineer, why
+would a person be interested in mentoring other people, like from the outside
+looking in, you might think, well, I mean, this is not serving me in any way,
+what do I stand to gain by donating my time to mentor other people? So, what
+should motivate people to desire to be the mentor?
+
+**Emma Bostian:** There are a couple of things. So, one is, you just genuinely
+want to make the community a better place and by shaping the future of the
+engineers that are joining this industry, I think that's one way to do so.
+Secondly is, there are a lot of professionals who need to be a mentor in order
+to get a promotion. When I was at IBM, once you hit a certain level or a certain
+tier, you needed to be a mentor to someone and prove that you had been a mentor
+to actually get a promotion. So, it's kind of twofold, right? I think we need to
+stop thinking, yes, I would say in general, there's a hierarchy, like a mentor's
+typically the person instilling knowledge in the mentee, but you should remember
+that it's a two sided relationship. So, actually the mentor can gain knowledge
+from the mentee as well, right? Perhaps, I'm a mentor and I'm looking to get
+into teaching, right? So, I love writing blogs, I love creating courses, I like
+to teach and mentorship is one way for me to kind of like shape my skill set and
+figure out where I can improve as well as a teacher.
+
+**Kent C. Dodds:** Yeah. I think that makes a lot of sense. I feel like when
+people ask me to be a mentor, neither one of us have any idea what that even
+looks like and half the time they say that. I don't know what I want you to do
+or what you want me to do, but I just want you to be my mentor and it seems kind
+of like ambiguous, but I feel like the most successful mentorship relationships
+that I've been involved in are the ones where you don't even really think of the
+relationship as an official mentor, mentee type of situation, but it's more
+just, on occasion I do something and receive feedback. Most of my experience,
+being mentored has been, I contribute to an open source project and they give me
+feedback on my contribution and that is like a really strong mentorship
+situation there and it's actually something that I've started doing when people
+ask me to be a mentor, I say, well, I have these issues open on some projects,
+you go ahead and try to implement those things and I'll give you feedback on
+your code. And then, not only is it serving me as a mentor because I get those
+things finished, but it also serves the mentee because they get that feedback on
+their code. Have you seen that work in your situations? Does that seem like a
+pretty good type of mentor-mentee relationship there?
+
+**Emma Bostian:** Yeah, absolutely. So, as you had mentioned earlier, I get a
+lot of messages asking if I could be someone's mentor. My typical answer is, I
+am happy to answer any questions that you have any direct questions or give you
+advice or give you resources, but I just don't have the time to get on Zoom all
+the time and have 30 minute conversations. So, there's this kind of like
+asynchronous type of mentorship where if I have a question I just cannot find
+the answer to, I can ask this person, right? So, that's a nice easier type of
+mentorship. When I was at IBM, I did have a mentor. He now works at Google and
+he was someone that I had looked up to in the industry. So, I asked him if he
+would be my mentor and he said I'm not really sure where to go from here. I
+think our first meeting was him kind of giving me like a fake technical
+interview and seeing like where my gaps were. So, like if I was interviewing
+with him, where would I need to improve? So, that was one aspect of it. And then
+the second was taking a project. So, I needed to rebuild my portfolio. So, he
+was like, all right, so you want to build your portfolio, these are the
+technologies you want to learn, because learning [inaudible 00:18:57] at the
+time and he said, all right, so, each week you're gonna have like a set of
+checklist items that you need to meet and what we'll do is, we'll review your
+code in person together and by the end of it, I had a fully fledged portfolio.
+So, I got something out of it and we had like tangible items to go through each
+week or every other week. So, I think those types of mentorships are honestly
+the best when there's something tangible that you can look at together and as
+the mentor, you can walk them through, like okay, well, this works, right? But,
+it's maybe you can optimize the performance a little bit by not doing a nested
+for loop or something similar like that. I think those are the best types,
+right? Unless you're looking for just general career advice. If you're looking
+for a technical mentorship, I think hands-on is definitely the way to go.
+
+**Kent C. Dodds:** Yeah, that makes a lot of sense. You mentioned that this
+mentor helped you with the interview process and we talked about earlier that
+you kind of wanted to talk about that a little bit. What are some things and
+often like these mentees, they're kind of hoping to land a job through this
+relationship or like getting some feedback and stuff. So, what are some things
+that people can do to prepare for a job interview and to eventually land a job
+where they want to go?
+
+**Emma Bostian:** Yeah. So, every time I have a technical interview, I cry a
+little bit on the inside, because as outgoing and confident as I seem, I still
+have impostor syndrome and I think everyone, most people will to some extent.
+So, I will say there's kind of [inaudible 00:20:30]. Do you need computer
+science principles in web development specifically? I don't want to fully get
+into that now, but I think just as a caveat, like I have a computer science
+degree and I don't feel like it put me in an advantage in terms of technical
+interviews, because I didn't digest the information during my degree and so,
+every time I have an interview, it makes me extremely nervous and I spend so
+many hours preparing. I have written a blog post called decoding the front end
+technical interview I believe it's called, which kind of lays out the general
+process, right? I think the majority of us are terrified of the technical white
+boarding interviews and that's kind of where we trip up, but we also need to
+remember that like the HR interview and like the cultural fit interview are just
+as important because we kind of forget that as engineers we need to ... we need
+to work on our soft skills. So, yeah, I mean, from like a technical side, I
+don't know what kind of tools that you use to prepare, but I personally love
+hacker ink, I think for algorithmic coding, I think gives me great ideas to
+practice with, although, like I said, that's hard to get feedback on. So, this
+would maybe be a great activity, if you had a mentor that you could take to them
+and be like, hey, this is my solution, how can I optimize it? Or what would you
+say if a candidate submitted this? But, yeah, I think as a whole, I feel like
+the industry is a little bit flawed in the sense that like you can apply to ten
+jobs and you'll have ten completely different interviews. You don't really know
+exactly what to prep for, but if you ... if you were preparing for an interview,
+what would you ... how would you study?
+
+**Kent C. Dodds:** Oh, I remember especially early on in my career, I was going
+through all the hack the interview books and blog posts and everything that I
+could think of and when I interviewed it at Facebook and interviewed at PayPal,
+I was really surprised to find that the interviews were very practical. So, I
+think unless you're going to Google, I think a lot of companies are starting to
+come around and realize that, hey, these trick questions are just not helping us
+hire the kind of talent that we're looking for. So, I recommend to people to
+study the things that they do on the day to day job just like ... so, maybe
+solidify the fundamentals a little bit, think about the abstractions you're
+using and try to figure out how those things work so that you can talk about
+them intelligently. Especially for front-end engineers, really solidify your
+understanding of the fundamentals of HTML, CSS and JavaScript and then go into
+the interview as confidently as you possibly can and don't feel like ...
+remember that you are also interviewing them and keeping that in mind can maybe
+help relieve a little bit of the nerves, because you're not the only one on
+trial in this situation.
+
+**Emma Bostian:** It's so true. I see this a lot too with recruiters, where I'll
+notice people will bend over backwards to accommodate a recruiter, especially if
+they're from like one of the fortune 500 companies, right? The recruiter will
+reach out and be like, hey, we want to interview you and do you have time at
+like 6:00 in the morning or like 10:00 at night and like most people will say
+yes, because there's like a stigma around these big companies and like you want
+to impress them, but they're also ... you're interviewing them too, right? They
+want you. You're talented. They wouldn't be interviewing you if you weren't. So,
+we need to be more like forthright with being confident about those kind of
+things.
+
+**Kent C. Dodds:** Yeah, absolutely. So, we're coming down close on our time,
+but one thing that I wanted to talk with you about as well is ... so, kind of
+back to the mentoring aspect, as a mentor, the reason that I don't have as much
+bandwidth to be a one-on-one mentor for people is because I spend my ... when I
+was at a company, it was my free time, now I'm at my own company, so all time is
+company time I guess. I don't know. But, I spend that time that I'm not actually
+working making content, producing videos or blog posts or this podcast,
+whatever, to give out to the world and that's kind of how I see myself as a
+mentor now where I'm mentoring anybody who is consuming my content and I
+increase the value of the impact by creating that content that's consumed by a
+lot of people, and you do this yourself quite a bit. What are your thoughts
+around creating content as a form of mentorship?
+
+**Emma Bostian:** I have never actually seen myself [inaudible 00:25:24] I
+produce as mentorship and it's so funny because you're not the first person to
+tell me that that's like mass mentorship, but it makes sense, right? I don't
+make ... this sounds terrible and I don't want this to come off terribly, but I
+don't make content for other people. I make content for myself that I would want
+to read or ingest and it just happens ... I feel like that's the best way to
+produce content, because if you're interested in it and you want to read it and
+you can learn from it, then more people can do that than just you. When you try
+to produce content for people, I feel like you can get bogged down with
+producing content that you're not passionate about and at that point, if you're
+not passionate about it, your audience will be able to tell. So, I think
+producing content that you're passionate about is a great form of mentorship.
+It's a lot easier to reach many people. I struggle though personally with like
+prioritizing my time and not getting overextended and this has happened to me
+recently and I realized I can focus on two, max three things at a time, whether
+[inaudible 00:26:24] courses or creating like conference talks or writing blogs.
+So, I would say if you're nervous about producing content, just go for it. Just
+make sure that you enjoy the content that you produce.
+
+**Kent C. Dodds:** Yeah. I think that's fantastic advice. If you're not
+interested in it, then you're probably not going to produce super useful content
+for other people anyway. That lack of interest will show in the, I don't know,
+the value of the content that you create. So, I think that's super great advice.
+So, what would you say to people who are like, well, yeah, sure, I'm interested
+in writing blog posts or I want to make a screen cast, but a bunch of people
+have already done this before. I don't even know how many blog posts there are
+about how this works in JavaScript, but there are probably many. So, especially
+people who are kind of beginners, they're like, I mean, I'm not inventing any
+new patterns or there's certainly nothing new under the sun that other people
+haven't seen that I can create. So, I guess I'll just wait until I'm a super
+experienced engineer, making up new programming languages or something before I
+start producing content. What would you say to people with that fear?
+
+**Emma Bostian:** Firstly, you don't need to be an expert in something. I
+started blogging ... I still don't feel like I fully understand the scope of
+everything that I write about, but just start whether that's writing, blogging
+or making videos or whatever your medium is. Secondly, yes, there might be a
+plethora of information out there, but no content is bad content unless it's
+just like blatantly wrong, like don't go preaching that you should just use
+[inaudible 00:28:14] for everything because like the standards say otherwise.
+But, if you're producing content that's like legitimate and you enjoy it, go for
+it and if it reaches one person and it helps one person, then you have instilled
+value into the community. So, it doesn't matter how many blog posts there are,
+you have a unique vantage point and if you enjoy doing it, go for it.
+
+**Kent C. Dodds:** Absolutely. I would say that even if that one person that it
+reaches is yourself in the future, then that ... it almost [inaudible 00:28:46]
+journal in that sense, but often, it's going to reach more people and in fact,
+especially if you're talking about like a meet-up talk or something like that,
+then all the people in the room, many of them may not have read that particular
+blog post that inspired you to create this meetup talk. So, you're able to reach
+those people in a way that that blog post wasn't able to reach them. So, there's
+definitely opportunity there. So, I wrote this blog post a while back called
+solidifying what you learn and in it, I mentioned the ... have you ever seen a
+Burger King next to a McDonald's or across the street or something?
+
+**Emma Bostian:** Yeah.
+
+**Kent C. Dodds:** [inaudible 00:29:30] the same purpose, but people still go to
+both of them, because they have a different take on the burger or whatever.
+There's actually even some place where they have three Starbucks on one corner
+in Seattle. It's crazy. People go to all three of them, right? So, just because
+it exists, doesn't mean that you don't have an opportunity to share there.
+
+**Emma Bostian:** Right. I love that. I think that's great advice.
+
+**Kent C. Dodds:** Cool. So, Emma, it's been awesome chatting with you. Just to
+wrap us up, what would you give people as a call to action something that they
+can do to either improve themselves personally or professionally?
+
+**Emma Bostian:** Okay. I would encourage people to be open to feedback and also
+to actively ask for feedback. I am a huge proponent of learning about myself and
+how I work with others, especially now that I've switched into a new culture
+where people communicate differently. So, if you're looking to improve, the best
+way to do that is to ask for feedback. What are the things that you're doing
+well and where can you improve? Because often, we don't see these things about
+ourself. So, go find a colleague or even someone in your personal life and ask
+them for feedback, right? What areas can I improve upon? Make an effort to work
+on those things and you'll see over time that your skills are getting better
+slowly but surely.
+
+**Kent C. Dodds:** That's fantastic advice. Thank you so much for that. When we
+finish here, I'm gonna ask you for feedback.
+
+**Emma Bostian:** Oh good.
+
+**Kent C. Dodds:** Cool. Thank you so much Emma, it's been awesome having you on
+here and chatting with you. I've wanted to have a chat with you for a while, so
+that's what this podcast is just an excuse to-
+
+**Emma Bostian:** Thank you for having me.
+
+**Kent C. Dodds:** chat with people.
+
+**Emma Bostian:** Yeah, it was really a pleasure to talk to you.
+
+**Kent C. Dodds:** Yeah, thank you. All right. We'll see everybody next time.
+Goodbye.
+
+</Transcript>

@@ -1,0 +1,236 @@
+---
+title: useState lazy initialization and function updates
+date: 2020-08-03
+description: When to pass a function to useState and setState
+categories:
+  - react
+meta:
+  keywords:
+    - react
+    - useState
+    - hooks
+    - javascript
+    - function components
+    - function updates
+    - lazy initialization
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033480/kentcdodds.com/content/blog/use-state-lazy-initialization-and-function-updates/banner.jpg
+bannerCredit:
+  Photo by [Michael Dziedzic](https://unsplash.com/photos/dSyhpTGhNHg)
+---
+
+import {Rendered, DelayedCounterBug, DelayedCounterWorking} from './components'
+
+If you've been working with React for a while, you've probably used `useState`.
+Here's a quick example of the API:
+
+```jsx
+function Counter() {
+  const [count, setCount] = React.useState(0)
+  const increment = () => setCount(count + 1)
+  return <button onClick={increment}>{count}</button>
+}
+```
+
+So, you call `useState` with the initial state value, and it returns an array
+with the value of that state and a mechanism for updating it (which is called
+the "state `dispatch` function"). When you call the state dispatch function, you
+pass the new value for the state and that triggers a re-render of the component
+which leads to useState getting called again to retrieve the new state value and
+the dispatch function again.
+
+This is one of the first things you learn about state when you're getting into
+React (at least, it is if you
+[learn from my free course](https://kcd.im/beginner-react)). But there's a
+lesser known feature of both the `useState` call and the `dispatch` function
+that can be useful at times:
+
+```jsx
+function Counter() {
+  const [count, setCount] = React.useState(() => 0)
+  const increment = () => setCount(previousCount => previousCount + 1)
+  return <button onClick={increment}>{count}</button>
+}
+```
+
+The difference is that `useState` in this example is called with a _function
+that returns_ the initial state (rather than simply passing the initial state)
+and `setCount` (dispatch) is called with a function that accepts the previous
+state value and returns the new one. This functions exactly the same as the
+previous example, but there are subtle differences that we'll get into in this
+post. I teach about this in
+[my free React course](https://kcd.im/beginner-react) as well, but I get asked
+about it enough that I thought I'd write about it as well.
+
+## useState Lazy initialization
+
+If you were to add a `console.log` to the function body of the Counter function,
+you would find that the function is run every time you click the button. This
+makes sense because your Counter function is run during every render phase and
+clicking the button triggers the state update which triggers the re-render. One
+thing you need to keep in mind is that if the function body runs, that means all
+the code inside it runs as well. Which means any variables you create or
+arguments you pass are created and evaluated every render. This is normally not
+a big deal because JavaScript engines are very fast and can optimize for this
+kind of thing. So something like this would be no problem:
+
+```javascript
+const initialState = 0
+const [count, setCount] = React.useState(initialState)
+```
+
+However, what if the initial value for your state is computationally expensive?
+
+```javascript
+const initialState = calculateSomethingExpensive(props)
+const [count, setCount] = React.useState(initialState)
+```
+
+Or, more practically, what if you need to read into `localStorage` which is an
+IO operation?
+
+```javascript
+const initialState = Number(window.localStorage.getItem('count'))
+const [count, setCount] = React.useState(initialState)
+```
+
+Remember that the only time React needs the _initial_ state is _initially_ 😉
+Meaning, it only really needs the initial state on the first render. But because
+our function body runs every time there's a re-render of our component, we end
+up running that code on every render, even if its value is not used or needed.
+
+This is what the lazy initialization is all about. It allows you to put that
+code in a function:
+
+```javascript
+const getInitialState = () => Number(window.localStorage.getItem('count'))
+const [count, setCount] = React.useState(getInitialState)
+```
+
+Creating a function is fast. Even if what the function does is computationally
+expensive. So you only pay the performance penalty when you _call_ the function.
+So if you pass a function to `useState`, React will only call the function when
+it needs the initial value (which is when the component is initially rendered).
+
+This is called "lazy initialization." It's a performance optimization. You
+shouldn't have to use it a whole lot, but it can be useful in some situations,
+so it's good to know that it's a feature that exists and you can use it when
+needed. I would say I use this only 2% of the time. It's not really a feature I
+use often.
+
+## `dispatch` function updates
+
+This one's a little bit more complicated. The easiest way to explain what it's
+for is by showing an example. Let's say that before we can update our count
+state, we need to do something async:
+
+```jsx
+function DelayedCounter() {
+  const [count, setCount] = React.useState(0)
+  const increment = async () => {
+    await doSomethingAsync()
+    setCount(count + 1)
+  }
+  return <button onClick={increment}>{count}</button>
+}
+```
+
+Let's say that async thing takes 500ms. That's rendered here, click this button
+three times really fast:
+
+<Rendered>
+  <DelayedCounterBug />
+</Rendered>
+
+If you clicked it fast enough, you'll notice that the count was only incremented
+to 1. But that's weird, because if you added a `console.log` to the `increment`
+function, you'll find that it's called three times (once for every click), so
+why is the count state not updated three times?
+
+Well, this is where things get tricky. The fact is that the state _is_ updated
+three times (once for every click), but if you added a `console.log(count)`
+right above the `setCount` call, you'd notice that `count` is `0` every time! So
+we're calling `setCount(0 + 1)` for every click, even though we actually want to
+increment the count.
+
+So why is the count `0` every time? It's because the `increment` function that
+we've given to React through the `onClick` prop on that `button` "closes over"
+the value of `count` at the time it's created. You can
+[learn more about closures from whatthefork.is/closure](https://whatthefork.is/closure),
+but in short, when a function is created, it has access to the variables defined
+outside of it and even if what those variables are assigned to changes.
+
+The problem is that we're actually calling the exact same `increment` function
+which has closed over the value of `0` for the `count` before it has a chance to
+update based on the previous click and it stays that way until React re-renders.
+
+So you might think we could solve this problem if we could just trigger a
+re-render before the async operation, but that won't do it for us either. The
+problem with that approach is that while `increment` has access to `count` for
+_this_ render, it won't have access to the `count` variable for the next render.
+In fact, on the next render, we'll have a completely different `increment`
+function which has access to a completely different `count` variable. So we'll
+effectively have two copies of all our variables each render. (Garbage
+collection typically cleans up the copies and we only need to worry about the
+here-and-now.) But because the `count` hasn't been updated yet, when the new
+copy of `increment` is created, the value of `count` is still `0` and that's why
+it's `0` when we click the button the second time as well as the first.
+
+You'll notice that if you wait for the count value to update before you click
+the button again, everything works fine, this is because we've waited long
+enough for the re-render to occur and a new `increment` function has been
+created with the latest value for `count`.
+
+But obviously, this is a little confusing and it's also a little problematic. So
+what's the solution? Function updates! What we really need is some way to
+determine the previous value of `count` when we're making our update so we can
+determine it based on the previous value of count.
+
+**Any time I need to compute new state based on previous state, I use a function
+update**.
+
+So here's the solution:
+
+```jsx
+function DelayedCounter() {
+  const [count, setCount] = React.useState(0)
+  const increment = async () => {
+    await doSomethingAsync()
+    setCount(previousCount => previousCount + 1)
+  }
+  return <button onClick={increment}>{count}</button>
+}
+```
+
+Try that here:
+
+<Rendered>
+  <DelayedCounterWorking />
+</Rendered>
+
+You can click that as frequently as you like and it'll manage updating the count
+for every click. This works because we no longer worry about accessing a value
+that may be "stale" but instead we get access to the latest value of the
+variable we need. So even though the `increment` function we're running in has
+an older version of `count`, our function updater receives the most up-to-date
+version of the state.
+
+I should add that you won't have this same problem if you're using `useReducer`
+because that will always receive the most recent version of the `state` (as the
+first argument to your reducer), so you don't need to worry about stale state
+values. Though an exception to this would be if your state update is determined
+by props or some external state, in which case you might need a `useRef` to help
+ensure you've got the most current version of that prop or external state. But
+that's a subject for another blog post...
+
+## Conclusion
+
+I hope that helps explain the what/why/how of `useState` lazy initializers and
+`dispatch` function updates. Lazy initializers are useful to improve performance
+issues in some scenarios, the dispatch function updates help you avoid issues
+with stale values.
+
+If you enjoyed this post, you might also like
+[How to implement useState with useReducer](/blog/how-to-implement-usestate-with-usereducer)
+and [Should I useState or useReducer](/blog/should-i-usestate-or-usereducer).
+
+Good luck!

@@ -1,0 +1,136 @@
+---
+title: Super Simple Start to ESModules in Node.js
+date: 2021-04-08
+description:
+  All supported versions of Node.js support ESModules now. Here's how to get
+  started using them.
+categories:
+  - javascript
+meta:
+  keywords:
+    - javascript
+    - native esm
+    - native esmodules
+    - commonjs
+    - modules
+    - ecmascript modules
+    - node.js
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033378/kentcdodds.com/content/blog/super-simple-start-to-es-modules-in-node-js/banner.jpg
+bannerCredit: Photo by [Solen Feyissa](https://unsplash.com/photos/kzBL8rd3EoI)
+---
+
+On April 30th 2021, Node v10 will officially reach it's "end of life" (learn
+more on the [Node Releases](https://nodejs.org/en/about/releases/) page). This
+is exciting because it means that every supported version of the Node.js
+JavaScript runtime will support Node's official EcmaScript Modules! There are
+mixed feelings on this change (some would have preferred we stick with CommonJS
+in the Node ecosystem), but whatever your opinion on the matter the fact is that
+ESModules are here and they are the future. So let's learn how to use them in a
+Node.js environment.
+
+Note: You might be interested in my companion post
+[Super Simple Start to ESModules in the Browser](/blog/super-simple-start-to-es-modules-in-the-browser)
+
+First, we need the JavaScript we want to run:
+
+```javascript
+// get-files.js
+import path from 'path'
+import fs from 'fs/promises'
+
+const isDir = async d => (await fs.lstat(d)).isDirectory()
+
+async function getFiles(dir) {
+  const list = await fs.readdir(dir)
+  const filePromises = list.map(async filename => {
+    const filepath = path.join(dir, filename)
+    if (await isDir(filepath)) {
+      return {type: 'dir', filepath}
+    } else {
+      const content = String(await fs.readFile(filepath))
+      return {type: 'file', filepath, content}
+    }
+  })
+  return Promise.all(filePromises)
+}
+
+export {getFiles}
+```
+
+Next, let's make a JavaScript file that imports this and runs it:
+
+```javascript
+// index.js
+import {getFiles} from './get-files.js'
+
+console.log(await getFiles('.'))
+```
+
+Great, now let's try to run it:
+
+```
+node .
+(node:5369) Warning: To load an ES module, set "type": "module" in the package.json or use the .mjs extension.
+(Use `node --trace-warnings ...` to show where the warning was created)
+/Users/kentcdodds/Desktop/super-simple-start-to-esm-in-node/index.js:1
+import {getFiles} from './get-files.js'
+^^^^^^
+
+SyntaxError: Cannot use import statement outside a module
+    at wrapSafe (internal/modules/cjs/loader.js:979:16)
+    at Module._compile (internal/modules/cjs/loader.js:1027:27)
+    at Object.Module._extensions..js (internal/modules/cjs/loader.js:1092:10)
+    at Module.load (internal/modules/cjs/loader.js:928:32)
+    at Function.Module._load (internal/modules/cjs/loader.js:769:14)
+    at Function.executeUserEntryPoint [as runMain] (internal/modules/run_main.js:72:12)
+    at internal/main/run_main_module.js:17:47
+```
+
+Here's the thing. The Node.js project will sometimes experience breaking changes
+and that's reasonable, but breaking the module system is just a non-starter. So
+using ESM is an opt-in. You can either opt-in a single file by changing from
+`.js` to `.mjs`, or you can opt-in an entire directory by adding a
+`package.json` with `"type": "module"`.
+
+Let's go with the second option so we don't have to rename all our files. Put
+this in a `package.json`:
+
+```json
+{
+  "type": "module"
+}
+```
+
+Now let's run it:
+
+```
+node .
+[
+  {
+    type: 'file',
+    filepath: 'get-files.js',
+    content: "import path from 'path'\n" +
+      // clipped for brevity
+      'export {getFiles}\n'
+  },
+  {
+    type: 'file',
+    filepath: 'index.js',
+    content: "import {getFiles} from './get-files.js'\n" +
+      '\n' +
+      "console.log(await getFiles('.'))\n"
+  },
+  {
+    type: 'file',
+    filepath: 'package.json',
+    content: '{\n  "type": "module"\n}\n'
+  }
+]
+```
+
+That's it. We've got native ESM running in Node.js.
+
+There's plenty more to talk about here but this should get you started. You may
+be interested in reading
+[the official initial announcement of ESM support](https://nodejs.medium.com/announcing-core-node-js-support-for-ecmascript-modules-c5d6dc29b663).
+Good luck!

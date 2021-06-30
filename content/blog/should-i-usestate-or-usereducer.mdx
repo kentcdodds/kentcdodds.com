@@ -1,0 +1,615 @@
+---
+title: Should I useState or useReducer?
+date: 2020-03-09
+description:
+  Two built-in React hooks that handle state, which one should you use?
+categories:
+  - react
+meta:
+  keywords:
+    - react
+    - javascript
+    - hooks
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033326/kentcdodds.com/content/blog/should-i-usestate-or-usereducer/banner.png
+bannerCredit:
+  Photo by [Kyle Glenn](https://unsplash.com/photos/IFLgWYlT2fI) on
+  [Unsplash](https://unsplash.com/search/photos/uncertain)
+---
+
+**[Watch "When to useState instead of useReducer" on egghead.io](https://egghead.io/lessons/react-when-to-usestate-instead-of-usereducer?pl=kent-s-blog-posts-as-screencasts-eefa540c)**
+
+https://egghead.io/lessons/react-when-to-usestate-instead-of-usereducer?pl=kent-s-blog-posts-as-screencasts-eefa540c
+
+**[Watch "When to useReducer instead of useState" on egghead.io](https://egghead.io/lessons/egghead-when-to-usereducer-instead-of-usestate?pl=kent-s-blog-posts-as-screencasts-eefa540c)**
+
+https://egghead.io/lessons/egghead-when-to-usereducer-instead-of-usestate?pl=kent-s-blog-posts-as-screencasts-eefa540c
+
+Whenever there are two things to do the same thing, people inevitably ask: "When
+do I use one over the other?" There are two possible reasons for having multiple
+ways of doing the same thing:
+
+1. One is the "old way" and the other is the "new (and improved) way". Typically
+   the old way is kept around for backward compatibility reasons and the new way
+   is the path forward for new code. For example: class components (old way) vs
+   function components (new way).
+2. They come with different trade-offs that should be considered and therefore
+   should be applied in situations that suit them better (sometimes meaning
+   you'll use more than one in a given application). For example:
+   [`useEffect` vs `useLayoutEffect`](/blog/useeffect-vs-uselayouteffect) or
+   [Static vs Unit vs Integration vs E2E tests](/blog/unit-vs-integration-vs-e2e-tests)
+   or
+   ["Control Props" vs "State Reducers"](/blog/control-props-vs-state-reducers)
+
+`useState` and `useReducer` fall into the second category here. So let's talk
+about the trade-offs.
+
+(and no, it's not a
+[trick question](https://twitter.com/ryanflorence/status/1234534306707456000)
+😂).
+
+## Examples
+
+I think the best way to discuss these trade-offs is through the lens of
+examples. We'll look at two examples. One which suits `useState` better, and one
+which suits `useReducer` better. This won't be enough to cover all of the
+trade-offs, but hopefully can be a good starting point for us.
+
+### Custom `useDarkMode` hook
+
+I recently wrote this for my workshop projects
+([for example](https://react-fundamentals.netlify.com)). It's pretty
+interesting, so let's compare `useState` and `useReducer` implementations for
+that:
+
+#### `useState` implementation
+
+I'll highlight the areas where we're interacting with the state:
+
+```javascript [2-7,11]
+function useDarkMode() {
+  const preferDarkQuery = '(prefers-color-scheme: dark)'
+  const [mode, setMode] = React.useState(
+    () =>
+      window.localStorage.getItem('colorMode') ||
+      (window.matchMedia(preferDarkQuery).matches ? 'dark' : 'light'),
+  )
+
+  React.useEffect(() => {
+    const mediaQuery = window.matchMedia(preferDarkQuery)
+    const handleChange = () => setMode(mediaQuery.matches ? 'dark' : 'light')
+    mediaQuery.addListener(handleChange)
+    return () => mediaQuery.removeListener(handleChange)
+  }, [])
+
+  React.useEffect(() => {
+    window.localStorage.setItem('colorMode', mode)
+  }, [mode])
+
+  return [mode, setMode]
+}
+```
+
+Hopefully that makes sense. Basically we're saying, if the user's set their
+preferences to dark mode, then we'll initialize our mode to `dark`, otherwise
+we'll initialize to `light` and then return the `mode` and `setMode` and as the
+mode changes (whether by calling `setMode` directly or as the user changes their
+system preferences) we'll keep that value set in `localStorage` for future use.
+
+#### `useReducer` implementation:
+
+There are several ways you could write this with `useReducer`. I'll start out
+with the typical way most people write reducers:
+
+```javascript [3-17,21-27,30-35,40-43,56-59]
+const preferDarkQuery = '(prefers-color-scheme: dark)'
+
+function darkModeReducer(state, action) {
+  switch (action.type) {
+    case 'MEDIA_CHANGE': {
+      return {...state, mode: action.mode}
+    }
+    case 'SET_MODE': {
+      // make sure to spread that state just in case!
+      return {...state, mode: action.mode}
+    }
+    default: {
+      // helps us avoid typos!
+      throw new Error(`Unhandled action type: ${action.type}`)
+    }
+  }
+}
+
+// use the init function to lazily initialize state so we don't read into
+// localstorage or call matchMedia every render
+function init() {
+  return {
+    mode:
+      window.localStorage.getItem('colorMode') ||
+      (window.matchMedia(preferDarkQuery).matches ? 'dark' : 'light'),
+  }
+}
+
+function useDarkMode() {
+  const [state, dispatch] = React.useReducer(
+    darkModeReducer,
+    {mode: 'light'},
+    init,
+  )
+  const {mode} = state
+
+  React.useEffect(() => {
+    const mediaQuery = window.matchMedia(preferDarkQuery)
+    const handleChange = () =>
+      dispatch({
+        type: 'MEDIA_CHANGE',
+        mode: mediaQuery.matches ? 'dark' : 'light',
+      })
+    mediaQuery.addListener(handleChange)
+    return () => mediaQuery.removeListener(handleChange)
+  }, [])
+
+  React.useEffect(() => {
+    window.localStorage.setItem('colorMode', mode)
+  }, [mode])
+
+  // We like the API the way it is, so instead of returning the state object
+  // and the dispatch function, we'll return the `mode` property and we'll
+  // create a setMode helper (which we have to memoize in case someone wants
+  // to use it in a dependency list):
+  const setMode = React.useCallback(
+    newMode => dispatch({type: 'SET_MODE', mode: newMode}),
+    [],
+  )
+
+  return [mode, setMode]
+}
+```
+
+Wow, I think we can both agree that the `useState` version was WAY simpler! But
+wait! We can drastically simplify the `useReducer` version by going against the
+"grain" and not writing your typical redux-style reducer. Let's try that:
+
+```javascript [3-10,14]
+function useDarkMode() {
+  const preferDarkQuery = '(prefers-color-scheme: dark)'
+  const [mode, setMode] = React.useReducer(
+    (prevMode, nextMode) =>
+      typeof nextMode === 'function' ? nextMode(prevMode) : nextMode,
+    'light',
+    () =>
+      window.localStorage.getItem('colorMode') ||
+      (window.matchMedia(preferDarkQuery).matches ? 'dark' : 'light'),
+  )
+
+  React.useEffect(() => {
+    const mediaQuery = window.matchMedia(preferDarkQuery)
+    const handleChange = () => setMode(mediaQuery.matches ? 'dark' : 'light')
+    mediaQuery.addListener(handleChange)
+    return () => mediaQuery.removeListener(handleChange)
+  }, [])
+
+  React.useEffect(() => {
+    window.localStorage.setItem('colorMode', mode)
+  }, [mode])
+
+  return [mode, setMode]
+}
+```
+
+That's a lot better than our other try with `useReducer`. But we basically
+[implemented `useState` with `useReducer`](/blog/how-to-implement-usestate-with-usereducer).
+And even then, it's still less clear than our `useState` version. So at the end
+of the day, `useState` was a much better solution in this case.
+
+> **When it's just an independent element of state you're managing: `useState`**
+
+### Custom `useUndo` hook
+
+There's a great
+[`useUndo` hook on GitHub](https://github.com/xxhomey19/use-undo). I took
+inspiration from that for this example. Thank you
+[Homer Chen](https://twitter.com/xxhomey19)!
+
+(For these, almost everything is interacting with state, so... no highlights...)
+
+#### `useState` implementation
+
+```javascript
+function useUndo(initialPresent) {
+  const [past, setPast] = React.useState([])
+  const [present, setPresent] = React.useState(initialPresent)
+  const [future, setFuture] = React.useState([])
+
+  const canUndo = past.length !== 0
+  const canRedo = future.length !== 0
+
+  const undo = React.useCallback(() => {
+    if (!canUndo) return
+
+    const previous = past[past.length - 1]
+    const newPast = past.slice(0, past.length - 1)
+
+    setPast(newPast)
+    setPresent(previous)
+    setFuture([present, ...future])
+  }, [canUndo, future, past, present])
+
+  const redo = React.useCallback(() => {
+    if (!canRedo) return
+
+    const next = future[0]
+    const newFuture = future.slice(1)
+
+    setPast([...past, present])
+    setPresent(next)
+    setFuture(newFuture)
+  }, [canRedo, future, past, present])
+
+  const set = React.useCallback(
+    newPresent => {
+      if (newPresent === present) {
+        return
+      }
+      setPast([...past, present])
+      setPresent(newPresent)
+      setFuture([])
+    },
+    [past, present],
+  )
+
+  const reset = React.useCallback(newPresent => {
+    setPast([])
+    setPresent(newPresent)
+    setFuture([])
+  }, [])
+
+  return [
+    {past, present, future},
+    {set, reset, undo, redo, canUndo, canRedo},
+  ]
+}
+```
+
+Looks pretty ok right? It probably is, but there's actually a situation where
+this could be pretty buggy. But first, I want to address a common misconception
+people have about calling multiple state updaters in sequence (like we're doing
+in each of those functions).
+
+Often people think this means that you'll trigger a re-render for each call (so,
+they're suggesting that calling `reset` would trigger three rerenders). First,
+remember to focus on
+[Fixing the slow render before you fix the re-render](/blog/fix-the-slow-render-before-you-fix-the-re-render),
+but secondly, remember that React has a batch system so if you were to call
+`reset` from an event handler or in a `useEffect` callback, it would trigger
+only one re-render.
+
+That said, if we were to call `reset` in an async function (like after making an
+HTTP request), then that _would_ result in three re-renders. However, in the
+future with concurrent mode those will be batched as well. So my main concern
+isn't the re-renders.
+
+My concern is with the insidious stale closure bugs in our code! Can you spot
+them? There are three! I'll give you a hint, there's one in each of `undo`,
+`redo`, and `set`, but there's not one in `reset`.
+
+Here's a contrived example that would reveal this bug:
+
+```jsx
+function Example() {
+  const [state, {set}] = useUndo('first')
+
+  React.useEffect(() => {
+    set('second')
+  }, [])
+
+  React.useEffect(() => {
+    set('third')
+  }, [])
+
+  return <pre>{JSON.stringify(state, null, 2)}</pre>
+}
+```
+
+The printed result here would be:
+
+```json
+{
+  "past": ["first"],
+  "present": "third",
+  "future": []
+}
+```
+
+It should be:
+
+```json
+{
+  "past": ["first", "second"],
+  "present": "third",
+  "future": []
+}
+```
+
+So what happened to `"second"` in our situation? Ah! Turns out we're missing our
+dependency on `set` in the effect dependency array. Silly goose. Let's add
+those:
+
+```jsx [6,10]
+function Example() {
+  const [state, {set}] = useUndo('first')
+
+  React.useEffect(() => {
+    set('second')
+  }, [set])
+
+  React.useEffect(() => {
+    set('third')
+  }, [set])
+
+  return <pre>{JSON.stringify(state, null, 2)}</pre>
+}
+```
+
+Great, save, reload... Wait wut? Oh no! Here's what happened when I added those:
+
+```json
+{
+  "past": [
+    "first",
+    "second",
+    "third",
+    "second",
+    "third",
+    "second",
+    "third",
+    "second",
+    "third",
+    "second",
+    "third",
+    "second",
+    "third",
+    "second",
+    "third",
+    "second",
+    "third",
+    "second",
+    "third",
+    "second",
+    "third",
+    "second",
+    "third",
+    "second",
+    "third",
+    "second",
+    "third",
+    "... this goes on forever..."
+  ],
+  "present": "third",
+  "future": []
+}
+```
+
+But wait! Aren't we memoizing the `set` function? It shouldn't change unless its
+dependencies change... Wait... That includes the `past` and `present` values...
+And whoops! When we call `set` those values are changed, which leads to our
+infinite loop!
+
+Now, this may seem contrived, but a similar bug could come up if you were
+updating the state based on network events and they came back in a different
+order from when they were sent out. Either way, you just don't want to have to
+think about this kind of thing right? Right.
+
+So we can fix this problem with `useReducer`, but we can actually change our
+`useState` implementation and side-step this issue and I thought you'd enjoy
+that, so here it is:
+
+```javascript
+function useUndo(initialPresent) {
+  const [state, setState] = React.useState({
+    past: [],
+    present: initialPresent,
+    future: [],
+  })
+
+  const canUndo = state.past.length !== 0
+  const canRedo = state.future.length !== 0
+
+  const undo = React.useCallback(() => {
+    setState(currentState => {
+      const {past, present, future} = currentState
+
+      if (past.length === 0) return currentState
+
+      const previous = past[past.length - 1]
+      const newPast = past.slice(0, past.length - 1)
+
+      return {
+        past: newPast,
+        present: previous,
+        future: [present, ...future],
+      }
+    })
+  }, [])
+
+  const redo = React.useCallback(() => {
+    setState(currentState => {
+      const {past, present, future} = currentState
+
+      if (future.length === 0) return currentState
+
+      const next = future[0]
+      const newFuture = future.slice(1)
+
+      return {
+        past: [...past, present],
+        present: next,
+        future: newFuture,
+      }
+    })
+  }, [])
+
+  const set = React.useCallback(newPresent => {
+    setState(currentState => {
+      const {present, past} = currentState
+      if (newPresent === present) return currentState
+
+      return {
+        past: [...past, present],
+        present: newPresent,
+        future: [],
+      }
+    })
+  }, [])
+
+  const reset = React.useCallback(newPresent => {
+    setState(() => ({
+      past: [],
+      present: newPresent,
+      future: [],
+    }))
+  }, [])
+
+  return [state, {set, reset, undo, redo, canUndo, canRedo}]
+}
+```
+
+There are a few things I did to fix this issue:
+
+1. I used state updater callbacks in when calling the state updater functions so
+   I could receive the `currentState` as an argument. This meant that I didn't
+   need to list the state as a dependency.
+2. I combined all the state into a single object. I had to do this because there
+   are situations where you need one value to determine another. For example, in
+   `redo`, I need the value of `present` to update `past` and the value of
+   `future` to update `present`.
+3. I did the calculations for `canUndo` and `canRedo` within the state updater
+   callbacks based on the `currentState` I receive from the arguments so I
+   didn't need to list those in the dependency array.
+
+That solves the issue we were having and it does so pretty well, but let's try
+this same thing with `useReducer` to compare.
+
+#### `useReducer` implementation
+
+```javascript
+const UNDO = 'UNDO'
+const REDO = 'REDO'
+const SET = 'SET'
+const RESET = 'RESET'
+
+function undoReducer(state, action) {
+  const {past, present, future} = state
+  const {type, newPresent} = action
+
+  switch (action.type) {
+    case UNDO: {
+      if (past.length === 0) return state
+
+      const previous = past[past.length - 1]
+      const newPast = past.slice(0, past.length - 1)
+
+      return {
+        past: newPast,
+        present: previous,
+        future: [present, ...future],
+      }
+    }
+
+    case REDO: {
+      if (future.length === 0) return state
+
+      const next = future[0]
+      const newFuture = future.slice(1)
+
+      return {
+        past: [...past, present],
+        present: next,
+        future: newFuture,
+      }
+    }
+
+    case SET: {
+      if (newPresent === present) return state
+
+      return {
+        past: [...past, present],
+        present: newPresent,
+        future: [],
+      }
+    }
+
+    case RESET: {
+      return {
+        past: [],
+        present: newPresent,
+        future: [],
+      }
+    }
+  }
+}
+
+function useUndo(initialPresent) {
+  const [state, dispatch] = React.useReducer(undoReducer, {
+    past: [],
+    present: initialPresent,
+    future: [],
+  })
+
+  const canUndo = state.past.length !== 0
+  const canRedo = state.future.length !== 0
+  const undo = React.useCallback(() => dispatch({type: UNDO}), [])
+  const redo = React.useCallback(() => dispatch({type: REDO}), [])
+  const set = React.useCallback(
+    newPresent => dispatch({type: SET, newPresent}),
+    [],
+  )
+  const reset = React.useCallback(
+    newPresent => dispatch({type: RESET, newPresent}),
+    [],
+  )
+
+  return [state, {set, reset, undo, redo, canUndo, canRedo}]
+}
+```
+
+Wow, the `useUndo` thing itself is actually very simple now. If we had started
+with `useReducer` from the get-go, we wouldn't have even considered adding
+anything to our dependency array because those functions are so simple they
+don't need anything. All the logic lives in our reducer. That helps us avoid the
+issue naturally.
+
+You may find it interesting that the switch cases in our reducer are basically
+exactly what the contents of our functions were before we made the change.
+
+> **When one element of your state relies on the value of another element of
+> your state in order to update: `useReducer`**
+
+## Conclusion
+
+So if you want some "rules" (NOT ESLINT RULES), here they are:
+
+- **When it's just an independent element of state you're managing: `useState`**
+- **When one element of your state relies on the value of another element of
+  your state in order to update: `useReducer`**
+
+Outside of these "rules," everything else is really subjective. Honestly, even
+the "rules" are subjective because as I demonstrated, you can do everything you
+want with either one.
+
+Also, please note that this applies on a case-by-case basis. You can absolutely
+use `useState` in the same component or hook that's using `useReducer`. And you
+can have multiple `useState`s and multiple `useReducer`s in a single hook or
+component. That's no problem. Separate state logically by domain. If it changes
+together, it's likely better to keep together in a reducer. If something is
+pretty independent from other elements of state in that hook/component, then
+putting it with other elements of state is just adding unnecessary complexity
+and noise to that reducer and you'd be better off leaving it out on its own.
+
+So it's not just "when I have more than X number of `useState`s I switch to
+`useReducer`." It's more nuanced than that. But hopefully this post helps you
+understand those nuances and reach for the tool that has the trade-offs that
+work best for your situation. In general, I suggest starting with `useState`,
+and moving to `useReducer` when you notice elements of state need to change
+together.
+
+Good luck!

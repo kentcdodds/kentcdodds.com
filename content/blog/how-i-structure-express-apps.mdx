@@ -1,0 +1,386 @@
+---
+title: How I structure Express apps
+date: 2020-07-13
+description: The build/dev tools and scripts I use for Node backends.
+categories:
+  - node
+meta:
+  keywords:
+    - javascript
+    - node.js
+    - express
+    - express.js
+    - node
+    - file structure
+    - architecture
+    - testing
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032802/kentcdodds.com/content/blog/how-i-structure-express-apps/banner.jpg
+bannerCredit: Photo by [JJ Ying](https://unsplash.com/photos/DYHx6h3lMdY)
+---
+
+[TL;DR–Explore the example repository](https://github.com/kentcdodds/express-app-example)
+
+This is the typical structure I use for my medium-sized Node backends. For small
+backends, I'd probably just put everything in one file and I might not bother
+with build tooling.
+
+## package.json
+
+Let's start in the `package.json`. Here are the relevant bits:
+
+```json
+{
+  "main": "index.js",
+  "engines": {
+    "node": "12.18.2"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "express-async-errors": "^3.1.1",
+    "loglevel": "^1.6.8"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.10.4",
+    "@babel/core": "^7.10.4",
+    "@babel/preset-env": "^7.10.4",
+    "@babel/register": "^7.10.4",
+    "nodemon": "^2.0.4"
+  },
+  "scripts": {
+    "start": "node .",
+    "build": "babel --delete-dir-on-start --out-dir dist --copy-files --ignore \"**/__tests__/**,**/__mocks__/**\" --no-copy-ignored src"
+  }
+}
+```
+
+### main
+
+This is the entry for our server. So when we run `node .` in this directory,
+this is the file that will be run.
+
+### engines
+
+This indicates to tools we use which version of node we intend the project to
+run with.
+
+### dependencies
+
+`express` is a given (there are plenty of alternatives and if you use one of
+them that's great, you may still be able to get something out of this blog post
+regardless). For every Express.js app I have, I also use `express-async-errors`
+because it allows me to write my middleware using `async/await` which is
+basically a necessity for me. Much less error prone because it ensures that any
+async errors will be propagated to your error handling middleware.
+
+I like `loglevel` personally, there are lots of other tools for logging, but
+`loglevel` is a good start.
+
+### devDependencies
+
+I compile all my stuff with Babel. This allows us to use syntax that's not quite
+supported in our environment yet (mostly just ESModules) as well as handy
+plugins like
+[`babel-plugin-macros`](https://github.com/kentcdodds/babel-plugin-macros).
+Hence all the `@babel` packages:
+
+- `@babel/core` is the core babel dependency. Everything else needs it.
+- `@babel/cli` is for the `build` script to compile our source code to the
+  output code that Node can run.
+- `@babel/preset-env` makes it really easy to include all the typical language
+  plugins and transforms we'll need for the environment we're building for.
+- `@babel/register` is used during development.
+
+If you're using TypeScript, then you may also want to add
+`@babel/preset-typescript`.
+
+I also use `nodemon` for watch mode (restarts the server when files are
+changed).
+
+### scripts
+
+The `start` script simply runs `node .` which will run the `main` file (which we
+have set to `index.js`).
+
+The `build` script takes all of the files in `src` directory (short for
+"source") and compiles them with babel to the `dist` directory (short for
+distribution). Here's an explanation for all the options:
+
+- `--delete-dir-on-start` ensures that we don't have old files hanging around
+  between builds
+- `--out-dir dist` indicates where we want the compiled version of the files to
+  be saved
+- `--copy-files` indicates that files that are not compiled should be copied
+  instead (useful for `.json` files for example)
+- `--ignore \"**/__tests__/**,**/__mocks__/**\"` is necessary so we don't bother
+  compiling any test-related files because we don't need those in production
+  anyway
+- `--no-copy-ignored` since we're not compiling the ignored files, we want to
+  indicate that we'd also like to not bother copying them either (so this
+  disables `--copy-files` for the ignored files).
+
+If you're using TypeScript, make sure to add `--extensions ".ts,.tsx,.js"` to
+the `build` script.
+
+## .babelrc.js
+
+Here's what the `.babelrc.js` looks like:
+
+```javascript
+const pkg = require('./package.json')
+
+module.exports = {
+  presets: [
+    [
+      '@babel/preset-env',
+      {
+        targets: {
+          node: pkg.engines.node,
+        },
+      },
+    ],
+  ],
+}
+```
+
+It's pretty simple. We compile all the code down to the version of JavaScript
+syntax that supported by the `engines.node` value specified in our
+`package.json`.
+
+If we were using TypeScript (recommended for teams), then we'd also include
+`@babel/preset-typescript` as well.
+
+## index.js
+
+Here's our entry file for the module (this is the `main` from `package.json`):
+
+```javascript
+if (process.env.NODE_ENV === 'production') {
+  require('./dist')
+} else {
+  require('nodemon')({script: 'dev.js'})
+}
+```
+
+When we run our app in production, it's running on a server which has been
+configured to set the `NODE_ENV` environment variable to `'production'`. So with
+our `index.js` set up the way it is, in production, it will start the server
+with the compiled version of our code.
+
+However, when running the project locally, instead we'll require `nodemon` and
+pass it the options `{script: 'dev.js'}` which will tell nodemon to run the
+`dev.js` script, and re-run it when we make changes. This will improve our
+feedback loop as we make changes to the server. There are a lot more options for
+`nodemon`, and someone mentioned to me that
+[`node-dev`](https://npm.im/node-dev) is another good project to look into so
+you might give that a look as well.
+
+## dev.js
+
+This one's pretty simple:
+
+```js
+require('@babel/register')
+require('./src')
+```
+
+The `@babel/register` sets up babel to compile our files "on the fly" meaning as
+they're required, Babel will first compile the file before Node gets a chance to
+run it. Then the `require('./src')` will require our `src/index.js` file which
+is where things really start happening.
+
+## src/index.js
+
+This file is pretty simple:
+
+```javascript
+import logger from 'loglevel'
+import {startServer} from './start'
+
+logger.setLevel('info')
+
+startServer()
+```
+
+All it does is configure the logger and starts the server. Most projects I've
+seen actually kick off the server in the `src/index.js` file, but I prefer to
+take the logic for starting the server and put it in a function because it makes
+it easier for testing.
+
+## src/start.js
+
+Ok, here's where things really start getting "expressy". For this one, I'll
+explain things in code comments.
+
+```javascript
+import express from 'express'
+
+// this is all it takes to enable async/await for express middleware
+import 'express-async-errors'
+
+import logger from 'loglevel'
+
+// all the routes for my app are retrieved from the src/routes/index.js module
+import {getRoutes} from './routes'
+
+function startServer({port = process.env.PORT} = {}) {
+  const app = express()
+
+  // I mount my entire app to the /api route (or you could just do "/" if you want)
+  app.use('/api', getRoutes())
+
+  // add the generic error handler just in case errors are missed by middleware
+  app.use(errorMiddleware)
+
+  // I prefer dealing with promises. It makes testing easier, among other things.
+  // So this block of code allows me to start the express app and resolve the
+  // promise with the express server
+  return new Promise(resolve => {
+    const server = app.listen(port, () => {
+      logger.info(`Listening on port ${server.address().port}`)
+
+      // this block of code turns `server.close` into a promise API
+      const originalClose = server.close.bind(server)
+      server.close = () => {
+        return new Promise(resolveClose => {
+          originalClose(resolveClose)
+        })
+      }
+
+      // this ensures that we properly close the server when the program exists
+      setupCloseOnExit(server)
+
+      // resolve the whole promise with the express server
+      resolve(server)
+    })
+  })
+}
+
+// here's our generic error handler for situations where we didn't handle
+// errors properly
+function errorMiddleware(error, req, res, next) {
+  if (res.headersSent) {
+    next(error)
+  } else {
+    logger.error(error)
+    res.status(500)
+    res.json({
+      message: error.message,
+      // we only add a `stack` property in non-production environments
+      ...(process.env.NODE_ENV === 'production' ? null : {stack: error.stack}),
+    })
+  }
+}
+
+// ensures we close the server in the event of an error.
+function setupCloseOnExit(server) {
+  // thank you stack overflow
+  // https://stackoverflow.com/a/14032965/971592
+  async function exitHandler(options = {}) {
+    await server
+      .close()
+      .then(() => {
+        logger.info('Server successfully closed')
+      })
+      .catch(e => {
+        logger.warn('Something went wrong closing the server', e.stack)
+      })
+
+    if (options.exit) process.exit()
+  }
+
+  // do something when app is closing
+  process.on('exit', exitHandler)
+
+  // catches ctrl+c event
+  process.on('SIGINT', exitHandler.bind(null, {exit: true}))
+
+  // catches "kill pid" (for example: nodemon restart)
+  process.on('SIGUSR1', exitHandler.bind(null, {exit: true}))
+  process.on('SIGUSR2', exitHandler.bind(null, {exit: true}))
+
+  // catches uncaught exceptions
+  process.on('uncaughtException', exitHandler.bind(null, {exit: true}))
+}
+
+export {startServer}
+```
+
+Doing things this way makes it easier to test. For example, an integration test
+could simply do this:
+
+```javascript
+import {startServer} from '../start'
+
+let server, baseURL
+beforeAll(async () => {
+  server = await startServer()
+  baseURL = `http://localhost:${server.address().port}/api`
+})
+
+afterAll(() => server.close())
+
+// make requests to the baseURL
+```
+
+**If this sounds interesting to you, then let me teach you on
+[TestingJavaScript.com 🏆](https://testingjavascript.com)**
+
+## src/routes/index.js
+
+This is where all the routes for my app come together:
+
+```javascript
+import express from 'express'
+// any other routes imports would go here
+import {getMathRoutes} from './math'
+
+function getRoutes() {
+  // create a router for all the routes of our app
+  const router = express.Router()
+
+  router.use('/math', getMathRoutes())
+  // any additional routes would go here
+
+  return router
+}
+
+export {getRoutes}
+```
+
+## src/routes/math.js
+
+This is just a contrived example of some routes/middleware/express controllers.
+
+```javascript
+import express from 'express'
+
+// A function to get the routes.
+// That way all the route definitions are in one place which I like.
+// This is the only thing that's exported
+function getMathRoutes() {
+  const router = express.Router()
+  router.get('/add', add)
+  router.get('/subtract', subtract)
+  return router
+}
+
+// all the controller and utility functions here:
+async function add(req, res) {
+  const sum = Number(req.query.a) + Number(req.query.c)
+  res.send(sum.toString())
+}
+
+async function subtract(req, res) {
+  const difference = Number(req.query.a) - Number(req.query.b)
+  res.send(difference.toString())
+}
+
+export {getMathRoutes}
+```
+
+## Conclusion
+
+And that's it. Hopefully that's interesting and useful! If you want to learn
+about the testing side of this stuff, don't miss the
+[Test Node.js Backends](https://testingjavascript.com/courses/test-node-js-backends)
+module on [TestingJavaScript.com](https://testingjavascript.com).

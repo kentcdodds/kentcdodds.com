@@ -1,0 +1,120 @@
+---
+title: Why I avoid nesting closures
+date: 2019-12-13
+description:
+  A little tendency I have to reduce cognitive load for readers of my code.
+categories:
+  - programming
+meta:
+  keywords:
+    - programming coding software functions closures nesting
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033521/kentcdodds.com/content/blog/why-i-avoid-nesting-closures/banner.jpg
+bannerCredit: Photo by [Anna Sjöblom](https://unsplash.com/photos/35FfwGHXsqU)
+---
+
+**[Watch "Reduce cognitive load for readers of your code by avoiding nesting of closures" on egghead.io](https://egghead.io/lessons/javascript-reduce-cognitive-load-for-readers-of-your-code-by-avoiding-nesting-of-closures?pl=kent-s-blog-posts-as-screencasts-eefa540c)**
+
+https://egghead.io/lessons/javascript-reduce-cognitive-load-for-readers-of-your-code-by-avoiding-nesting-of-closures?pl=kent-s-blog-posts-as-screencasts-eefa540c
+
+If I come across code like this:
+
+```javascript
+function getDisplayName({firstName, lastName}) {
+  const upperFirstCharacter = string =>
+    string.slice(0, 1).toUpperCase() + string.slice(1)
+
+  return `${upperFirstCharacter(firstName)} ${upperFirstCharacter(lastName)}`
+}
+```
+
+Chances are, I'll refactor it to this:
+
+```javascript
+const upperFirstCharacter = string =>
+  string.slice(0, 1).toUpperCase() + string.slice(1)
+
+function getDisplayName({firstName, lastName}) {
+  return `${upperFirstCharacter(firstName)} ${upperFirstCharacter(lastName)}`
+}
+```
+
+I tend to **put functions as close to the left side of the screen as reasonably
+possible.** By that I mean, I like to reduce nesting of closures. A closure is
+what is created when a function is created. It allows the function to access all
+variables defined external to itself. And that's actually the reason I like to
+avoid nesting closures: So I don't have to think about as many variables when
+I'm working in a single function.
+
+In our first code sample (where `upperFirstCharacter` is nested in
+`getDisplayName`), it's possible for my function to access the `firstName` and
+`lastName` variables. This means that while I'm working with it, I'm uncertain
+whether I need to keep their values in mind. In addition to that, I have to
+consider that it could access module-level definitions as well
+(imports/variables/functions).
+
+However, when I move it out (in the second example), I don't have to worry about
+those variables because it's impossible to access them anyway (I'll probably not
+even give it a moment's notice or thought). The only thing that function can
+access is what's defined within it as well as what is defined at the
+module-level (imports/variables/functions).
+
+In this simple example, it's not a big deal because it's such a small function,
+but in more complex scenarios the cognitive load can be a problem (and sometimes
+you even have trouble with
+[variable shadowing](https://en.wikipedia.org/wiki/Variable_shadowing) which can
+increase cognitive load as well).
+
+There are other arguments for doing this kind of thing as well:
+
+1. Performance: not having to re-create the closure every time `getDisplayName`
+   is called. This argument doesn't really hold water in typical scenarios.
+   Unless you're calling that one billions of times then you're probably fine.
+2. Testing: we could export `upperFirstCharacter` and test it in isolation. In
+   this situation I wouldn't bother and I'd test `getDisplayName` instead. But
+   sometimes if the code is complicated this can be useful.
+
+In general, I'm interested in reducing the amount of trivial things my brain has
+to think about so I can reserve my brain space for more important things and
+that's my biggest argument for avoiding nesting of closures. That said, I'm not
+religious about it and don't feel super strongly about this. It's just a
+tendency I have.
+
+Also, sometimes it's just unavoidable because you really need access to those
+variables. For example:
+
+```javascript
+function addThings(additive, ...numbers) {
+  const add = n => n + additive
+  return numbers.map(add)
+}
+
+addThings(3, 1, 2, 3, 4)
+// ↳ [4, 5, 6, 7]
+```
+
+In this case we can't move `add` out of `addThings` because it depends on the
+`additive` parameter. We could extract `add` and accept an additional argument
+and sometimes that can be useful for more complicated functions, but like I
+said, I'm not religious about the "avoid nesting closures" rule so I think this
+code is simpler the way that it is now and I'll probably leave it as-is.
+
+I've had some conversations about this on twitter that have been interesting and
+I think the most interesting insight so far has been from a thread where
+[Lily Scott](https://twitter.com/suchipi) described
+[a side-effect](https://twitter.com/suchipi/status/1206061075587682304) which
+[Jed Fox](https://twitter.com/jed_fox1) summed up well in this tweet:
+
+https://twitter.com/jed_fox1/status/1206061752737320960
+
+So yes, this concept has nuance and there are trade-offs. I think I still prefer
+extracting things because most of the time my files are only a few hundred lines
+at most, so pulling something out does not increase the number of things that
+can depend on it and I also feel like it's easier to think about "what can
+depend on this thing" than "what can affect this thing." But again, it's too
+nuanced to make a rule for.
+
+Finding ways to offload thinking of trivial things is one skill that I'm always
+trying to develop (automation plays a big role in that). I really don't want
+anyone to make an ESLint rule about this idea (please don't do that), but it's
+something to think about when you're trying to simplify some complicated code.
+Try pulling things over to the left of the screen a bit. Good luck!

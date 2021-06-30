@@ -1,0 +1,610 @@
+---
+title: Fix the "not wrapped in act(...)" warning
+date: 2020-02-03
+description:
+  There are a few reasons you're getting this warning. Here's how you fix it.
+categories:
+  - testing
+meta:
+  keywords:
+    - react
+    - javascript
+    - async
+    - act
+    - testing
+    - react testing library
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032709/kentcdodds.com/content/blog/fix-the-not-wrapped-in-act-warning/banner.jpg
+bannerCredit: Photo by [Lubo Minar](https://unsplash.com/photos/HUnKka6VtZc)
+---
+
+**[Watch "Fix the "not wrapped in act(...)" warning" on egghead.io](https://egghead.io/lessons/react-fix-the-not-wrapped-in-act-warning?pl=kent-s-blog-posts-as-screencasts-eefa540c)**
+
+https://egghead.io/lessons/react-fix-the-not-wrapped-in-act-warning?pl=kent-s-blog-posts-as-screencasts-eefa540c
+
+**[Watch "Fix the "not wrapped in act(...)" warning with Jest fake timers" on egghead.io](https://egghead.io/lessons/react-fix-the-not-wrapped-in-act-warning-with-jest-fake-timers?pl=kent-s-blog-posts-as-screencasts-eefa540c)**
+
+https://egghead.io/lessons/react-fix-the-not-wrapped-in-act-warning-with-jest-fake-timers?pl=kent-s-blog-posts-as-screencasts-eefa540c
+
+**[Watch "Fix the "not wrapped in act(...)" warning when testing Custom Hooks" on egghead.io](https://egghead.io/lessons/react-fix-the-not-wrapped-in-act-warning-when-testing-custom-hooks?pl=kent-s-blog-posts-as-screencasts-eefa540c)**
+
+https://egghead.io/lessons/react-fix-the-not-wrapped-in-act-warning-when-testing-custom-hooks?pl=kent-s-blog-posts-as-screencasts-eefa540c
+
+**[Watch "Fix the "not wrapped in act(...)" warning when testing the useImperativeHandle Hook" on egghead.io](https://egghead.io/lessons/react-fix-the-not-wrapped-in-act-warning-when-testing-the-useimperativehandle-hook?pl=kent-s-blog-posts-as-screencasts-eefa540c)**
+
+https://egghead.io/lessons/react-fix-the-not-wrapped-in-act-warning-when-testing-the-useimperativehandle-hook?pl=kent-s-blog-posts-as-screencasts-eefa540c
+
+import {
+  Rendered,
+  UsernameForm,
+  UsernameFormClass,
+  UsernameFormClassWithBug,
+} from './components'
+
+Imagine you have a component like this:
+
+<Rendered>
+  <UsernameFormClass
+    updateUsername={u =>
+      new Promise(resolve => {
+        alert(`You typed ${u}! Updating the database...`)
+        setTimeout(() => resolve(), 2000)
+      })
+    }
+  />
+</Rendered>
+
+Here's the code for that (if you were to do it with class components, don't
+worry a function version is coming later in the post):
+
+```jsx
+class UsernameFormClass extends React.Component {
+  state = {status: 'idle', error: null}
+  handleSubmit = async event => {
+    event.preventDefault()
+    const newUsername = event.target.elements.username.value
+    this.setState({status: 'pending'})
+    try {
+      await this.props.updateUsername(newUsername)
+      this.setState({status: 'fulfilled'})
+    } catch (e) {
+      this.setState({status: 'rejected', error: e})
+    }
+  }
+  render() {
+    const {error, status} = this.state
+
+    return (
+      <form onSubmit={this.handleSubmit}>
+        <label htmlFor="username">Username</label>
+        <input id="username" />
+        <button type="submit">Submit</button>
+        <span>{status === 'pending' ? 'Saving...' : null}</span>
+        <span>{status === 'rejected' ? error.message : null}</span>
+      </form>
+    )
+  }
+}
+```
+
+So, let's imagine we want to write a test for this. Here's what you might write
+to verify that the component is working properly:
+
+```jsx
+import * as React from 'react'
+import user from '@testing-library/user-event'
+import {render, screen} from '@testing-library/react'
+
+test('calls updateUsername with the new username', async () => {
+  const handleUpdateUsername = jest.fn()
+  const fakeUsername = 'sonicthehedgehog'
+
+  render(<UsernameForm updateUsername={handleUpdateUsername} />)
+
+  const usernameInput = screen.getByLabelText(/username/i)
+  await user.type(usernameInput, fakeUsername)
+  user.click(screen.getByText(/submit/i))
+
+  expect(handleUpdateUsername).toHaveBeenCalledWith(fakeUsername)
+})
+```
+
+Great! So now, if we make some sort of typo and not call the `updateUsername`
+function or we forget to call it with the new username then our test will fail
+and it provides us value.
+
+But, what if we rewrite this to a function component with hooks? Let's try that:
+
+```jsx
+function UsernameForm({updateUsername}) {
+  const [{status, error}, setState] = React.useState({
+    status: 'idle',
+    error: null,
+  })
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+    const newUsername = event.target.elements.username.value
+    setState({status: 'pending'})
+    try {
+      await updateUsername(newUsername)
+      setState({status: 'fulfilled'})
+    } catch (e) {
+      setState({status: 'rejected', error: e})
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label htmlFor="username">Username</label>
+      <input id="username" />
+      <button type="submit">Submit</button>
+      <span>{status === 'pending' ? 'Saving...' : null}</span>
+      <span>{status === 'rejected' ? error.message : null}</span>
+    </form>
+  )
+}
+```
+
+And the cool thing about React Testing Library is because it's free of
+implementation details we can run those exact same tests with this refactored
+version of our component.
+
+## The dreaded `act(...)` warning
+
+Unfortunately, if we try that, we'll get this really annoying warning in the
+console that looks like this:
+
+```
+console.error node_modules/react-dom/cjs/react-dom.development.js:530
+  Warning: An update to UsernameForm inside a test was not wrapped in act(...).
+
+  When testing, code that causes React state updates should be wrapped into act(...):
+
+  act(() => {
+    /* fire events that update state */
+  });
+  /* assert on the output */
+
+  This ensures that you're testing the behavior the user would see in the browser. Learn more at https://fb.me/react-wrap-tests-with-act
+      in UsernameForm
+```
+
+What the!? So what's going on here? Well, you might not have noticed, but our
+test didn't test our component's happy-path fully and left one important aspect
+vulnerable to regressions. Let's go back to the class version and comment out an
+important line of code:
+
+```jsx [9]
+class UsernameFormClass extends React.Component {
+  state = {status: 'idle', error: null}
+  handleSubmit = async event => {
+    event.preventDefault()
+    const newUsername = event.target.elements.username.value
+    this.setState({status: 'pending'})
+    try {
+      await this.props.updateUsername(newUsername)
+      // this.setState({status: 'fulfilled'})
+    } catch (e) {
+      this.setState({status: 'rejected', error: e})
+    }
+  }
+  render() {
+    const {error, status} = this.state
+
+    return (
+      <form onSubmit={this.handleSubmit}>
+        <label htmlFor="username">Username</label>
+        <input id="username" />
+        <button type="submit">Submit</button>
+        <span>{status === 'pending' ? 'Saving...' : null}</span>
+        <span>{status === 'rejected' ? error.message : null}</span>
+      </form>
+    )
+  }
+}
+```
+
+Guess what! Our tests still pass! But, the `Saving...` loading indicator next to
+our submit button never goes away:
+
+<Rendered>
+  <UsernameFormClassWithBug
+    updateUsername={u =>
+      new Promise(resolve => {
+        alert(`You typed ${u}! Updating the database...`)
+        setTimeout(() => resolve(), 2000)
+      })
+    }
+  />
+</Rendered>
+
+Oh no! It sure would've been nice if we'd had some warning that we weren't
+testing all that our component was doing so we could've written a good test from
+the start. Wait... Is that what `act` was yelling at us about? YES IT WAS!
+
+So the `act` warning from React is there to tell us that something happened to
+our component when we weren't expecting anything to happen. So you're supposed
+to wrap every interaction you make with your component in `act` to let React
+know that we expect our component to perform some updates and when you don't do
+that and there are updates, React will warn us that unexpected updates happened.
+This helps us avoid bugs like the one described above.
+
+Luckily for you and me, React automatically handles this for any of your code
+that's running within the React callstack (like click events where React calls
+into your event handler code which updates the component), but it cannot handle
+this for any code running outside of it's own callstack (like asynchronous code
+that runs as a result of a resolved promise you are managing or if you're using
+jest fake timers). With those kinds of situations you typically need to wrap
+that in `act(...)` or `async act(...)` yourself. BUT, React Testing Library has
+async utilities that are wrapped in `act` automatically!
+
+## How to fix the `act(...)` warning
+
+So, let's first thank the React team for letting us know that we didn't test
+everything that's happening in our component (thanks React team! 🙏) and then
+let's add an assertion to our test to cover the use case we forgot the first
+time around:
+
+```jsx [12]
+test('calls updateUsername with the new username', async () => {
+  const handleUpdateUsername = jest.fn()
+  const fakeUsername = 'sonicthehedgehog'
+
+  render(<UsernameForm updateUsername={handleUpdateUsername} />)
+
+  const usernameInput = screen.getByLabelText(/username/i)
+  await user.type(usernameInput, fakeUsername)
+  user.click(screen.getByText(/submit/i))
+
+  expect(handleUpdateUsername).toHaveBeenCalledWith(fakeUsername)
+  await waitForElementToBeRemoved(() => screen.getByText(/saving/i))
+})
+```
+
+Great, so now we're waiting for the saving text to be removed and that ensures
+that the saving text appears in the first place _and_ is removed when saving is
+complete.
+
+You'll notice that this test passes whether we're using class components or
+function components (+1 point for avoiding
+[Testing Implementation Details](/blog/testing-implementation-details)), but
+without that extra line we only get the warning with function components not
+class components. The reason for this is because the React team couldn't
+reasonably add this warning for class components without creating a TON of new
+warnings for people and their existing tests. So while the warning would
+probably help people find and fix bugs like this, the decision was made to only
+apply it to hooks so people would get the warning as they develop and test new
+components (+1 point for using function components over class components).
+
+You can read more about React's `act` utility
+[here](https://reactjs.org/docs/test-utils.html#act), but again, you shouldn't
+have to use it very often. It's built-into React Testing Library. There are very
+few times you should have to use it directly if you're using
+[React Testing Library's async utilities](https://testing-library.com/docs/react-testing-library/cheatsheet#async).
+
+If you're still experiencing the `act` warning, then the most likely reason is
+something is happening **after your test completes** for which you should be
+waiting (like in our earlier examples).
+
+## An Alternative: waiting for the mocked promise
+
+There's one alternative I want to show you that isn't quite as good for this use
+case, but could be useful, especially if there's no visual indication of the
+async task completing.
+
+Because our code waits for the `updateUsername` promise to resolve before
+continuing, we could return a promise from our fake version and use an async act
+to await that promise resolution:
+
+```jsx [2,3,13]
+test('calls updateUsername with the new username', async () => {
+  const promise = Promise.resolve()
+  const handleUpdateUsername = jest.fn(() => promise)
+  const fakeUsername = 'sonicthehedgehog'
+
+  render(<UsernameForm updateUsername={handleUpdateUsername} />)
+
+  const usernameInput = screen.getByLabelText(/username/i)
+  await user.type(usernameInput, fakeUsername)
+  user.click(screen.getByText(/submit/i))
+
+  expect(handleUpdateUsername).toHaveBeenCalledWith(fakeUsername)
+  await act(() => promise)
+})
+```
+
+Note that we're manually calling `act` here and you can get that from
+`react-dom/test-utils` or React Testing Library re-exports it so you can get
+grab it from the import you already have. You're welcome.
+
+This isn't preferable because it's still not going to catch the bug we
+demonstrated earlier by commenting out that `setState` call, but it does make
+the warning go away properly. I'd just recommend making additional assertions
+about the way things look after the async action has completed.
+
+## Other use cases for manually calling `act(...)`
+
+If you're using all the React Testing Library async utilities and are waiting
+for your component to settle before finishing your test and you're _still_
+getting act warnings, then you may need to use `act` manually. Here are a few
+examples:
+
+### 1. When using `jest.useFakeTimers()`
+
+Let's say you have a component that's checking against an API on an interval:
+
+```jsx
+function OrderStatus({orderId}) {
+  const [{status, data, error}, setState] = React.useReducer(
+    (s, a) => ({...s, ...a}),
+    {status: 'idle', data: null, error: null},
+  )
+
+  React.useEffect(() => {
+    let current = true
+    function tick() {
+      setState({status: 'pending'})
+      checkStatus(orderId).then(
+        d => {
+          if (current) setState({status: 'fulfilled', data: d})
+        },
+        e => {
+          if (current) setState({status: 'rejected', error: e})
+        },
+      )
+    }
+    const id = setInterval(tick, 1000)
+    return () => {
+      current = false
+      clearInterval(id)
+    }
+  }, [orderId])
+
+  return (
+    <div>
+      Order Status:{' '}
+      <span>
+        {status === 'idle' || status === 'pending'
+          ? '...'
+          : status === 'error'
+          ? error.message
+          : status === 'fulfilled'
+          ? data.orderStatus
+          : null}
+      </span>
+    </div>
+  )
+}
+```
+
+So we've handled all the edge cases and cleaned up after ourselves nicely, but
+when we write our test for it, we're going to get the `act` warning again:
+
+```jsx
+import * as React from 'react'
+import {render, screen} from '@testing-library/react'
+import {checkStatus} from '../api'
+
+jest.mock('../api')
+
+beforeAll(() => {
+  // we're using fake timers because we don't want to
+  // wait a full second for this test to run.
+  jest.useFakeTimers()
+})
+
+afterAll(() => {
+  jest.useRealTimers()
+})
+
+test('polling backend on an interval', async () => {
+  const orderId = 'abc123'
+  const orderStatus = 'Order Received'
+  checkStatus.mockResolvedValue({orderStatus})
+
+  render(<OrderStatus orderId={orderId} />)
+
+  expect(screen.getByText(/\.\.\./i)).toBeInTheDocument()
+  expect(checkStatus).toHaveBeenCalledTimes(0)
+
+  // advance the timers by a second to kick off the first request
+  jest.advanceTimersByTime(1000)
+
+  expect(await screen.findByText(orderStatus)).toBeInTheDocument()
+
+  expect(checkStatus).toHaveBeenCalledWith(orderId)
+  expect(checkStatus).toHaveBeenCalledTimes(1)
+})
+```
+
+The `act` warning here is happening because of this line:
+
+```jsx [4]
+// ...
+let current = true
+function tick() {
+  setState({status: 'pending'})
+  checkStatus(orderId).then(
+    d => {
+// ...
+```
+
+The `tick` function is happening outside of React's callstack, so it's unsure
+whether this interaction with the component is properly tested. React Testing
+Library does not have a utility for jest fake timers and so we need to wrap the
+timer advancement in `act` ourselves, like this:
+
+```jsx [2,18]
+import * as React from 'react'
+import {render, screen, act} from '@testing-library/react'
+import {checkStatus} from '../api'
+
+jest.mock('../api')
+
+test('polling backend on an interval', async () => {
+  const orderId = 'abc123'
+  const orderStatus = 'Order Received'
+  checkStatus.mockResolvedValue({orderStatus})
+
+  render(<OrderStatus orderId={orderId} />)
+
+  expect(screen.getByText(/\.\.\./i)).toBeInTheDocument()
+  expect(checkStatus).toHaveBeenCalledTimes(0)
+
+  // advance the timers by a second to kick off the first request
+  act(() => jest.advanceTimersByTime(1000))
+
+  expect(await screen.findByText(orderStatus)).toBeInTheDocument()
+
+  expect(checkStatus).toHaveBeenCalledWith(orderId)
+  expect(checkStatus).toHaveBeenCalledTimes(1)
+})
+```
+
+And now the React `act(...)` warning goes away!
+
+Notice, that we can pull React DOM's `act` testing utility directly from
+`@testing-library/react` because it's simply re-exported by
+`@testing-library/react` (cool right!?).
+
+### 2. When testing custom hooks
+
+You'll get an `act(...)` warning with custom hooks when you call functions that
+are returned from your custom hook which result in state updates. Here's a
+simple example of that:
+
+```javascript
+import * as React from 'react'
+
+function useCount() {
+  const [count, setCount] = React.useState(0)
+  const increment = () => setCount(c => c + 1)
+  const decrement = () => setCount(c => c - 1)
+  return {count, increment, decrement}
+}
+
+export default useCount
+```
+
+Here, we'll use `@testing-library/react-hooks` to validate our hook works:
+
+```javascript
+import * as React from 'react'
+import {renderHook} from '@testing-library/react-hooks'
+import useCount from '../use-count'
+
+test('increment and decrement updates the count', () => {
+  const {result} = renderHook(() => useCount())
+  expect(result.current.count).toBe(0)
+
+  result.current.increment()
+  expect(result.current.count).toBe(1)
+
+  result.current.decrement()
+  expect(result.current.count).toBe(0)
+})
+```
+
+When we call the `increment` and `decrement` functions from our hook, that
+triggers a state update and because we're not in the React callstack we're going
+to get an `act(...)` warning. So, let's wrap that in `act(...)`!
+
+```javascript [2,9,12]
+import * as React from 'react'
+import {renderHook, act} from '@testing-library/react-hooks'
+import useCount from '../use-count'
+
+test('increment and decrement updates the count', () => {
+  const {result} = renderHook(() => useCount())
+  expect(result.current.count).toBe(0)
+
+  act(() => result.current.increment())
+  expect(result.current.count).toBe(1)
+
+  act(() => result.current.decrement())
+  expect(result.current.count).toBe(0)
+})
+```
+
+You'll notice that we're pulling `act` from `@testing-library/react-hooks` and
+that's because it simply re-exports the `act` function from
+`react-test-renderer` so you don't need to add an additional export. Nice
+right!?
+
+### 3. When using `useImperativeHandle`
+
+You may not have even heard of this hook, and if you have you may not have run
+into this problem. That's because you only run into this if you're calling
+methods directly on a component which do internal state updates and you're
+outside of React's callstack. Let's read through an example of act warnings
+popping up when testing components that use this hook.
+
+So here's a pretty contrived example, but you should be double-thinking your
+decisions any time you use this hook anyway:
+
+```jsx
+function ImperativeCounter(props, ref) {
+  const [count, setCount] = React.useState(0)
+  React.useImperativeHandle(ref, () => ({
+    increment: () => setCount(c => c + 1),
+    decrement: () => setCount(c => c - 1),
+  }))
+  return <div>The count is: {count}</div>
+}
+ImperativeCounter = React.forwardRef(ImperativeCounter)
+```
+
+Here's how you might test this:
+
+```jsx
+import * as React from 'react'
+import {render, screen, act} from '@testing-library/react'
+import ImperativeCounter from '../imperative-counter'
+
+test('can call imperative methods on counter component', () => {
+  const counterRef = React.createRef()
+  render(<ImperativeCounter ref={counterRef} />)
+  expect(screen.getByText('The count is: 0')).toBeInTheDocument()
+
+  counterRef.current.increment()
+  expect(screen.getByText('The count is: 1')).toBeInTheDocument()
+
+  counterRef.current.decrement()
+  expect(screen.getByText('The count is: 0')).toBeInTheDocument()
+})
+```
+
+You'll get an `act` warning on those `increment` and `decrement` calls because
+they're happening outside the React callstack. So, let's wrap them in `act`:
+
+```jsx [2,10,13]
+import * as React from 'react'
+import {render, screen, act} from '@testing-library/react'
+import ImperativeCounter from '../imperative-counter'
+
+test('can call imperative methods on counter component', () => {
+  const counterRef = React.createRef()
+  render(<ImperativeCounter ref={counterRef} />)
+  expect(screen.getByText('The count is: 0')).toBeInTheDocument()
+
+  act(() => counterRef.current.increment())
+  expect(screen.getByText('The count is: 1')).toBeInTheDocument()
+
+  act(() => counterRef.current.decrement())
+  expect(screen.getByText('The count is: 0')).toBeInTheDocument()
+})
+```
+
+## Conclusion
+
+Hopefully you have a better understanding (and appreciation) for React's
+(sometimes annoying but always right) `act(...)` testing utility and the next
+time you get a warning you're able to identify the source of the problem and fix
+it more quickly.
+
+Again, most of the time you shouldn't actually have to use `act` directly
+(thanks to
+[React Testing Library's async utilities](https://testing-library.com/docs/dom-testing-library/api-async)),
+but when you do, you'll know why it's needed and fixes the problem.
+
+Good luck!

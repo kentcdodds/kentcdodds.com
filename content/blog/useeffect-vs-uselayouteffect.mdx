@@ -1,0 +1,84 @@
+---
+title: useEffect vs useLayoutEffect
+date: 2020-12-01
+description: The simple rules for when to use each.
+meta:
+  keywords:
+    - react
+    - javascript
+    - react hooks
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033487/kentcdodds.com/content/blog/useeffect-vs-uselayouteffect/banner.jpg
+bannerCredit:
+  Photo by [Mohamed Nohassi](https://unsplash.com/photos/sNYSV3t2w58) on
+  [Unsplash](https://unsplash.com/search/photos/special-effects)
+---
+
+Both of these can be used to do basically the same thing, but they have slightly
+different use cases. So here are some rules for you to consider when deciding
+which [React Hook](https://reactjs.org/hooks) to use.
+
+## [useEffect](https://reactjs.org/docs/hooks-reference.html#useeffect)
+
+99% of the time this is what you want to use. When hooks are stable and if you
+refactor any of your class components to use hooks, you'll likely move any code
+from `componentDidMount`, `componentDidUpdate`, and `componentWillUnmount` to
+`useEffect`.
+
+**The one catch** is that this runs _after_ react renders your component and
+ensures that your effect callback does not block browser painting. This differs
+from the behavior in class components where `componentDidMount` and
+`componentDidUpdate` run synchronously after rendering. It's more performant
+this way and most of the time this is what you want.
+
+However, if your effect is mutating the DOM (via a DOM node ref) **_and_** the
+DOM mutation will change the appearance of the DOM node between the time that it
+is rendered and your effect mutates it, then you **don't** want to use
+`useEffect`. You'll want to use `useLayoutEffect`. Otherwise the user could see
+a flicker when your DOM mutations take effect. **This is pretty much the only
+time you want to avoid `useEffect` and use `useLayoutEffect` instead.**
+
+## [useLayoutEffect](https://reactjs.org/docs/hooks-reference.html#uselayouteffect)
+
+This runs synchronously immediately after React has performed all DOM mutations.
+This can be useful if you need to make DOM measurements (like getting the scroll
+position or other styles for an element) and then make DOM mutations **or**
+trigger a synchronous re-render by updating state.
+
+As far as scheduling, this works the same way as `componentDidMount` and
+`componentDidUpdate`. Your code runs immediately after the DOM has been updated,
+but before the browser has had a chance to "paint" those changes (the user
+doesn't actually see the updates until after the browser has repainted).
+
+## Summary
+
+- **useLayoutEffect:** If you need to mutate the DOM and/or **do need** to
+  perform measurements
+- **useEffect:** If you don't need to interact with the DOM at all or your DOM
+  changes are unobservable (seriously, most of the time you should use this).
+
+## One special case
+
+One other situation you might want to use `useLayoutEffect` instead of
+`useEffect` is if you're updating a value (like a `ref`) and you want to make
+sure it's up-to-date before any other code runs. For example:
+
+```javascript
+const ref = React.useRef()
+React.useEffect(() => {
+  ref.value = 'some value'
+})
+
+// then, later in another hook or something
+React.useLayoutEffect(() => {
+  console.log(ref.value) // <-- this logs an old value because this runs first!
+})
+```
+
+So in situations like that, the solution is `useLayoutEffect`.
+
+## Conclusion
+
+It's all about defaults. The default behavior is to let the browser re-paint
+based on DOM updates before React runs your code. This means your code won't
+block the browser and the user sees updates to the DOM sooner. So stick with
+`useEffect` most of the time.

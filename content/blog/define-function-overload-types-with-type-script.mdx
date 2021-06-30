@@ -1,0 +1,204 @@
+---
+title: Define function overload types with TypeScript
+date: 2021-01-12
+description: Have your JS expressiveness and type it too.
+categories:
+  - typescript
+meta:
+  keywords:
+    - typescript
+    - javascript
+    - functions
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032659/kentcdodds.com/content/blog/define-function-overload-types-with-type-script/banner.jpg
+bannerCredit:
+  Photo by [Nick Scheerbart](https://unsplash.com/photos/8DMuvdp-vso)
+---
+
+Allow me to quickly answer to the "normal" use case of "How to define function
+overload types with TypeScript" with an example:
+
+I want a function that accepts a callback or returns a promise if none is
+provided:
+
+```typescript
+const logResult = result => console.log(`result: ${result}`)
+asyncAdd(1, 2).then(logResult) // logs "result: 3"
+asyncAdd(3, 6, logResult) // logs "result: 9"
+```
+
+Here's how you'd implement this API using regular JavaScript:
+
+```javascript
+function asyncAdd(a, b, cb) {
+  const result = a + b
+  if (cb) return cb(result)
+  else return Promise.resolve(result)
+}
+```
+
+With this implementation, what we want is to have TypeScript catch this bad
+usage:
+
+```javascript
+// @ts-expect-error because when the cb is provided, void is returned so you can't use ".then"!
+asyncAdd(1, 2, logResult).then(logResult) // this would throw an error when trying to use ".then" (except we're using TypeScript so it won't even compile 😉)
+```
+
+So, here's how you'd type this kind of overloading:
+
+```typescript
+type asyncAddCb = (result: number) => void
+// define all valid function signatures
+function asyncAdd(a: number, b: number): Promise<number>
+function asyncAdd(a: number, b: number, cb: asyncAddCb): void
+
+// define the actual implementation
+// notice cb is optional
+// also notice that the return type is inferred, but it could be specified as `void | Promise<number>`
+function asyncAdd(a: number, b: number, cb?: asyncAddCb) {
+  const result = a + b
+  if (cb) return cb(result)
+  else return Promise.resolve(result)
+}
+```
+
+And then you're off to the races!
+
+## Dig deeper
+
+The real inspiration for this blog post is a bit more complicated though and
+requires some background information:
+
+I have a package called
+[`babel-plugin-codegen`](https://github.com/kentcdodds/babel-plugin-codegen)
+that allows you to generate code at compile time. For example, assume you have a
+file with the following code:
+
+```javascript
+// @codegen
+const fs = require('fs')
+const fruits = fs.readFileSync('./fruit.txt', 'utf8').toString().split('\n')
+module.exports = fruits
+  .map(fruit => `export const ${fruit} = '${fruit}';`)
+  .join('')
+```
+
+Assuming `fruit.txt` contains a list of fruits, this is what that'll compile to:
+
+```javascript
+export const apple = 'apple'
+export const orange = 'orange'
+export const pear = 'pear'
+```
+
+So, you generate a string of code, and codegen turns that to actual code that's
+fed into your output. This unlocks a lot of really cool things.
+
+But the specifics of this babel plugin doesn't matter. What does matter is that
+you can also use this with
+[`babel-plugin-macros`](https://github.com/kentcdodds/babel-plugin-macros) which
+is basically importable babel transforms. So instead of configuring
+babel-plugin-codegen, you can just configure `babel-plugin-macros` and then
+install [`codegen.macro`](https://github.com/kentcdodds/codegen.macro) and you
+can import and use it like so:
+
+```javascript
+import codegen from 'codegen.macro'
+
+// using as a tagged template literal:
+codegen`
+  module.exports = "const tag = 'this is an example'"
+`
+
+// using as a function
+codegen(`
+  module.exports = "const fn = 'this is another example'"
+`)
+
+// codegen-ing an external module (and pass an argument):
+const jpgs = codegen.require('./get-files-list', '**/*.jpg')
+
+const ui = <Codegen>{`module.exports = require('./some-jsx-code')`}</Codegen>
+```
+
+Then that could compile to something like this:
+
+```javascript
+// using as a tagged template literal:
+const tag = 'this is an example'
+
+// using as a function
+const fn = 'this is another example'
+
+// codegen-ing an external module (and pass an argument):
+const jpgs = ['kody.jpg', 'olivia.jpg', 'marty.jpg']
+
+const ui = <div>This is some example JSX code</div>
+```
+
+Anyway, `codegen` is pretty sweet. But you'll notice there's some hard-core
+overloading going here, so I thought I'd share how I typed this function
+overloading with TypeScript.
+
+## Function Overloading with TypeScript
+
+Something really important to keep in mind is that the actual `codegen` function
+implementation is actually a babel macro, so it looks nothing like the way that
+these functions appear to work. It's called during the compilation process and
+the arguments it's called with is ASTs.
+
+That said, at the end of the day, the consumer's experience is all that matters,
+so we need a version of the `codegen` function that works the way it's expected.
+So we'll define our types and then make sure that we cast the macro function
+like a regular function.
+
+```typescript
+import {createMacro} from 'babel-plugin-macros'
+import type {MacroHandler} from 'babel-plugin-macros'
+
+const codegenMacro: MacroHandler = function codegenMacro(/* some args */) {
+  // the implementation here is irrelevant
+}
+
+// use the `createMacro` utility to turn the codegenMacro into a babel macro
+const macro = createMacro(codegenMacro)
+```
+
+Ok, so keep in mind that the `macro` function is _not_ actually ever called by
+user code. This function will be called by `babel-plugin-macros`, and it'll be
+called with the `MacroHandler` arguments. However, as far as TypeScript is
+concerned, the developer _will_ be calling it, so we need to give it the right
+type definitions and everyone will be happy. So let's define those:
+
+```typescript
+// This handles the tagged template literal API:
+declare function codegen(
+  literals: TemplateStringsArray,
+  ...interpolations: Array<unknown>
+): any
+
+// this handles the function call API:
+declare function codegen(code: string): any
+
+// this handles the `codegen.require` API:
+declare namespace codegen {
+  function require(modulePath: string, ...args: Array<unknown>): any
+}
+
+// Unfortunately I couldn't figure out how to add TS support for the JSX form
+// Something about the overload not being supported because codegen can't be all the things or whatever
+// PRs welcome!
+```
+
+With those overloads defined, now we just need to force TypeScript to treat our
+`macro` file like the `codegen` function we've defined. We also need to make
+this the default export of our macro file, so we'll do all that at once:
+
+```typescript
+export default macro as typeof codegen
+```
+
+You can peruse it all together in
+[babel-plugin-codegen `src/macro.ts` file](https://github.com/kentcdodds/babel-plugin-codegen/blob/master/src/macro.ts).
+
+I hope that's useful! Good luck to yah!

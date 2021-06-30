@@ -1,0 +1,559 @@
+---
+title: How to test custom React hooks
+date: 2020-03-22
+description:
+  Get confidence your custom React hooks work properly with solid tests.
+categories:
+  - testing
+meta:
+  keywords:
+    - react
+    - javascript
+    - testing
+    - hooks
+    - react hooks testing library
+    - react testing library
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032886/kentcdodds.com/content/blog/how-to-test-custom-react-hooks/banner.jpg
+bannerCredit: Photo by [Grant Durr](https://unsplash.com/photos/21ztbENjzeI)
+---
+
+import * as Comps from './components'
+import {UseUndoExample} from './use-undo.example'
+
+If you're using `react@>=16.8`, then you can use hooks and you've probably
+written several custom ones yourself. You may have wondered how to be confident
+that your hook continues to work over the lifetime of your application. And I'm
+not talking about the one-off custom hook you pull out just to make your
+component body smaller and organize your code (those should be covered by your
+component tests), I'm talking about that reusable hook you've published to
+github/npm (or you've been talking with your legal department about it).
+
+Let's say we've got this custom hook called `useUndo` (inspired by
+[`useUndo`](https://github.com/xxhomey19/use-undo) by
+[Homer Chen](https://twitter.com/xxhomey19)):
+
+(Note, it's not super important that you understand what it does, but you can
+expand this if you're curious):
+
+<details>
+  <summary>useUndo implementation</summary>
+
+```javascript
+import * as React from 'react'
+
+const UNDO = 'UNDO'
+const REDO = 'REDO'
+const SET = 'SET'
+const RESET = 'RESET'
+
+function undoReducer(state, action) {
+  const {past, present, future} = state
+  const {type, newPresent} = action
+
+  switch (action.type) {
+    case UNDO: {
+      if (past.length === 0) return state
+
+      const previous = past[past.length - 1]
+      const newPast = past.slice(0, past.length - 1)
+
+      return {
+        past: newPast,
+        present: previous,
+        future: [present, ...future],
+      }
+    }
+
+    case REDO: {
+      if (future.length === 0) return state
+
+      const next = future[0]
+      const newFuture = future.slice(1)
+
+      return {
+        past: [...past, present],
+        present: next,
+        future: newFuture,
+      }
+    }
+
+    case SET: {
+      if (newPresent === present) return state
+
+      return {
+        past: [...past, present],
+        present: newPresent,
+        future: [],
+      }
+    }
+
+    case RESET: {
+      return {
+        past: [],
+        present: newPresent,
+        future: [],
+      }
+    }
+    default: {
+      throw new Error(`Unhandled action type: ${type}`)
+    }
+  }
+}
+
+function useUndo(initialPresent) {
+  const [state, dispatch] = React.useReducer(undoReducer, {
+    past: [],
+    present: initialPresent,
+    future: [],
+  })
+
+  const canUndo = state.past.length !== 0
+  const canRedo = state.future.length !== 0
+  const undo = React.useCallback(() => dispatch({type: UNDO}), [])
+  const redo = React.useCallback(() => dispatch({type: REDO}), [])
+  const set = React.useCallback(
+    newPresent => dispatch({type: SET, newPresent}),
+    [],
+  )
+  const reset = React.useCallback(
+    newPresent => dispatch({type: RESET, newPresent}),
+    [],
+  )
+
+  return {...state, set, reset, undo, redo, canUndo, canRedo}
+}
+
+export default useUndo
+```
+
+</details>
+
+Let's say we want to write a test for this so we can maintain confidence that as
+we make changes and bug fixes we don't break existing functionality. To get the
+maximum confidence we need, we should ensure that our tests
+[resemble the way the software will be used](https://twitter.com/kentcdodds/status/977018512689455106).
+Remember that software is all about automating things that we don't want to or
+cannot do manually. Tests are no different, so consider how you would test this
+manually, then write your test to do the same thing.
+
+A mistake that I see a lot of people make is thinking "well, it's just a
+function right, that's what we love about hooks. So can't I just call the
+function and assert on the output? Unit tests FTW!" They're not wrong. It _is_
+just a function, but technically speaking, it's not a
+[_pure_ function](https://en.wikipedia.org/wiki/Pure_function) (your hooks are
+supposed to be [idempotent](https://en.wikipedia.org/wiki/Idempotence) though).
+If the function were _pure_, then it would be a simple task of calling it and
+asserting on the output.
+
+If you try simply calling the function in a test, you're breaking
+[the rules of hooks](https://reactjs.org/docs/hooks-rules.html) and you'll get
+this error:
+
+```
+Error: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+  1. You might have mismatching versions of React and the renderer (such as React DOM)
+  2. You might be breaking the Rules of Hooks
+  3. You might have more than one copy of React in the same app
+  See https://fb.me/react-invalid-hook-call for tips about how to debug and fix this problem.
+```
+
+(I've gotten that error for all three reasons mentioned 🙈)
+
+Now, you _might_ start to think: "Hey, if I just mock the built-in React hooks
+I'm using like `useState` and `useEffect` then I could still test it like a
+function." But for the love of all things pure, please don't do that. You throw
+away a LOT of confidence in doing so.
+
+But don't fret, if you were to test this manually, rather simply calling the
+function, you'd probably write a component that uses the hook, and then interact
+with that component rendered to the page (perhaps using
+[storybook](https://storybook.js.org/)). So let's do that instead:
+
+```javascript
+import * as React from 'react'
+import useUndo from '../use-undo'
+
+function UseUndoExample() {
+  const {present, past, future, set, undo, redo, canUndo, canRedo} =
+    useUndo('one')
+  function handleSubmit(event) {
+    event.preventDefault()
+    const input = event.target.elements.newValue
+    set(input.value)
+    input.value = ''
+  }
+
+  return (
+    <div>
+      <div>
+        <button onClick={undo} disabled={!canUndo}>
+          undo
+        </button>
+        <button onClick={redo} disabled={!canRedo}>
+          redo
+        </button>
+      </div>
+      <form onSubmit={handleSubmit}>
+        <label htmlFor="newValue">New value</label>
+        <input type="text" id="newValue" />
+        <div>
+          <button type="submit">Submit</button>
+        </div>
+      </form>
+      <div>Present: {present}</div>
+      <div>Past: {past.join(', ')}</div>
+      <div>Future: {future.join(', ')}</div>
+    </div>
+  )
+}
+
+export {UseUndoExample}
+```
+
+Here's that rendered:
+
+<Comps.Rendered>
+  <UseUndoExample />
+</Comps.Rendered>
+
+Great, so now we can test that hook manually using the example component that's
+using the hook, so to use software to automate our manual process, we need to
+write a test that does the same thing we're doing manually. Here's what that is
+like:
+
+```javascript
+import {render, screen} from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import * as React from 'react'
+
+import {UseUndoExample} from '../use-undo.example'
+
+test('allows you to undo and redo', () => {
+  render(<UseUndoExample />)
+  const present = screen.getByText(/present/i)
+  const past = screen.getByText(/past/i)
+  const future = screen.getByText(/future/i)
+  const input = screen.getByLabelText(/new value/i)
+  const submit = screen.getByText(/submit/i)
+  const undo = screen.getByText(/undo/i)
+  const redo = screen.getByText(/redo/i)
+
+  // assert initial state
+  expect(undo).toBeDisabled()
+  expect(redo).toBeDisabled()
+  expect(past).toHaveTextContent(`Past:`)
+  expect(present).toHaveTextContent(`Present: one`)
+  expect(future).toHaveTextContent(`Future:`)
+
+  // add second value
+  input.value = 'two'
+  userEvent.click(submit)
+
+  // assert new state
+  expect(undo).not.toBeDisabled()
+  expect(redo).toBeDisabled()
+  expect(past).toHaveTextContent(`Past: one`)
+  expect(present).toHaveTextContent(`Present: two`)
+  expect(future).toHaveTextContent(`Future:`)
+
+  // add third value
+  input.value = 'three'
+  userEvent.click(submit)
+
+  // assert new state
+  expect(undo).not.toBeDisabled()
+  expect(redo).toBeDisabled()
+  expect(past).toHaveTextContent(`Past: one, two`)
+  expect(present).toHaveTextContent(`Present: three`)
+  expect(future).toHaveTextContent(`Future:`)
+
+  // undo
+  userEvent.click(undo)
+
+  // assert "undone" state
+  expect(undo).not.toBeDisabled()
+  expect(redo).not.toBeDisabled()
+  expect(past).toHaveTextContent(`Past: one`)
+  expect(present).toHaveTextContent(`Present: two`)
+  expect(future).toHaveTextContent(`Future: three`)
+
+  // undo again
+  userEvent.click(undo)
+
+  // assert "double-undone" state
+  expect(undo).toBeDisabled()
+  expect(redo).not.toBeDisabled()
+  expect(past).toHaveTextContent(`Past:`)
+  expect(present).toHaveTextContent(`Present: one`)
+  expect(future).toHaveTextContent(`Future: two, three`)
+
+  // redo
+  userEvent.click(redo)
+
+  // assert undo + undo + redo state
+  expect(undo).not.toBeDisabled()
+  expect(redo).not.toBeDisabled()
+  expect(past).toHaveTextContent(`Past: one`)
+  expect(present).toHaveTextContent(`Present: two`)
+  expect(future).toHaveTextContent(`Future: three`)
+
+  // add fourth value
+  input.value = 'four'
+  userEvent.click(submit)
+
+  // assert final state (note the lack of "third")
+  expect(undo).not.toBeDisabled()
+  expect(redo).toBeDisabled()
+  expect(past).toHaveTextContent(`Past: one, two`)
+  expect(present).toHaveTextContent(`Present: four`)
+  expect(future).toHaveTextContent(`Future:`)
+})
+```
+
+I like this kind of approach because the test is relatively easy to follow and
+understand. In most situations, this is how I would recommend testing this kind
+of a hook.
+
+However, sometimes the component that you need to write is pretty complicated
+and you end up getting test failures not because the hook is broken, but because
+the example you wrote is which is pretty frustrating.
+
+That problem is compounded by another one. In some scenarios sometimes you have
+a hook that can be difficult to create a single example for all the use cases it
+supports so you wind up making a bunch of different example components to test.
+
+Now, having those example components is probably a good idea anyway (they're
+great for [storybook](https://storybook.js.org/) for example), but sometimes it
+can be nice to create a little helper that doesn't actually have any UI
+associated with it and you interact with the hook return value directly.
+
+Here's an example of what that would be like for our `useUndo` hook:
+
+```javascript
+import * as React from 'react'
+import {render, act} from '@testing-library/react'
+import useUndo from '../use-undo'
+
+function setup(...args) {
+  const returnVal = {}
+  function TestComponent() {
+    Object.assign(returnVal, useUndo(...args))
+    return null
+  }
+  render(<TestComponent />)
+  return returnVal
+}
+
+test('allows you to undo and redo', () => {
+  const undoData = setup('one')
+
+  // assert initial state
+  expect(undoData.canUndo).toBe(false)
+  expect(undoData.canRedo).toBe(false)
+  expect(undoData.past).toEqual([])
+  expect(undoData.present).toEqual('one')
+  expect(undoData.future).toEqual([])
+
+  // add second value
+  act(() => {
+    undoData.set('two')
+  })
+
+  // assert new state
+  expect(undoData.canUndo).toBe(true)
+  expect(undoData.canRedo).toBe(false)
+  expect(undoData.past).toEqual(['one'])
+  expect(undoData.present).toEqual('two')
+  expect(undoData.future).toEqual([])
+
+  // add third value
+  act(() => {
+    undoData.set('three')
+  })
+
+  // assert new state
+  expect(undoData.canUndo).toBe(true)
+  expect(undoData.canRedo).toBe(false)
+  expect(undoData.past).toEqual(['one', 'two'])
+  expect(undoData.present).toEqual('three')
+  expect(undoData.future).toEqual([])
+
+  // undo
+  act(() => {
+    undoData.undo()
+  })
+
+  // assert "undone" state
+  expect(undoData.canUndo).toBe(true)
+  expect(undoData.canRedo).toBe(true)
+  expect(undoData.past).toEqual(['one'])
+  expect(undoData.present).toEqual('two')
+  expect(undoData.future).toEqual(['three'])
+
+  // undo again
+  act(() => {
+    undoData.undo()
+  })
+
+  // assert "double-undone" state
+  expect(undoData.canUndo).toBe(false)
+  expect(undoData.canRedo).toBe(true)
+  expect(undoData.past).toEqual([])
+  expect(undoData.present).toEqual('one')
+  expect(undoData.future).toEqual(['two', 'three'])
+
+  // redo
+  act(() => {
+    undoData.redo()
+  })
+
+  // assert undo + undo + redo state
+  expect(undoData.canUndo).toBe(true)
+  expect(undoData.canRedo).toBe(true)
+  expect(undoData.past).toEqual(['one'])
+  expect(undoData.present).toEqual('two')
+  expect(undoData.future).toEqual(['three'])
+
+  // add fourth value
+  act(() => {
+    undoData.set('four')
+  })
+
+  // assert final state (note the lack of "third")
+  expect(undoData.canUndo).toBe(true)
+  expect(undoData.canRedo).toBe(false)
+  expect(undoData.past).toEqual(['one', 'two'])
+  expect(undoData.present).toEqual('four')
+  expect(undoData.future).toEqual([])
+})
+```
+
+I feel like this test allows us to interact more directly with the hook (which
+is why the `act` is required), and that allows us to cover more cases that may
+be difficult to write component examples for.
+
+Now, sometimes you have more complicated hooks where you need to wait for mocked
+HTTP requests to finish, or you want to "rerender" the component that's using
+the hook with different props etc. Each of these use cases complicates your
+`setup` function or your real world example which will make it even more
+domain-specific and difficult to follow.
+
+This is why
+[`@testing-library/react-hooks`](https://github.com/testing-library/react-hooks-testing-library)
+exists. Here's what this test would be like if we use
+`@testing-library/react-hooks`:
+
+```javascript
+import {renderHook, act} from '@testing-library/react-hooks'
+import useUndo from '../use-undo'
+
+test('allows you to undo and redo', () => {
+  const {result} = renderHook(() => useUndo('one'))
+
+  // assert initial state
+  expect(result.current.canUndo).toBe(false)
+  expect(result.current.canRedo).toBe(false)
+  expect(result.current.past).toEqual([])
+  expect(result.current.present).toEqual('one')
+  expect(result.current.future).toEqual([])
+
+  // add second value
+  act(() => {
+    result.current.set('two')
+  })
+
+  // assert new state
+  expect(result.current.canUndo).toBe(true)
+  expect(result.current.canRedo).toBe(false)
+  expect(result.current.past).toEqual(['one'])
+  expect(result.current.present).toEqual('two')
+  expect(result.current.future).toEqual([])
+
+  // add third value
+  act(() => {
+    result.current.set('three')
+  })
+
+  // assert new state
+  expect(result.current.canUndo).toBe(true)
+  expect(result.current.canRedo).toBe(false)
+  expect(result.current.past).toEqual(['one', 'two'])
+  expect(result.current.present).toEqual('three')
+  expect(result.current.future).toEqual([])
+
+  // undo
+  act(() => {
+    result.current.undo()
+  })
+
+  // assert "undone" state
+  expect(result.current.canUndo).toBe(true)
+  expect(result.current.canRedo).toBe(true)
+  expect(result.current.past).toEqual(['one'])
+  expect(result.current.present).toEqual('two')
+  expect(result.current.future).toEqual(['three'])
+
+  // undo again
+  act(() => {
+    result.current.undo()
+  })
+
+  // assert "double-undone" state
+  expect(result.current.canUndo).toBe(false)
+  expect(result.current.canRedo).toBe(true)
+  expect(result.current.past).toEqual([])
+  expect(result.current.present).toEqual('one')
+  expect(result.current.future).toEqual(['two', 'three'])
+
+  // redo
+  act(() => {
+    result.current.redo()
+  })
+
+  // assert undo + undo + redo state
+  expect(result.current.canUndo).toBe(true)
+  expect(result.current.canRedo).toBe(true)
+  expect(result.current.past).toEqual(['one'])
+  expect(result.current.present).toEqual('two')
+  expect(result.current.future).toEqual(['three'])
+
+  // add fourth value
+  act(() => {
+    result.current.set('four')
+  })
+
+  // assert final state (note the lack of "third")
+  expect(result.current.canUndo).toBe(true)
+  expect(result.current.canRedo).toBe(false)
+  expect(result.current.past).toEqual(['one', 'two'])
+  expect(result.current.present).toEqual('four')
+  expect(result.current.future).toEqual([])
+})
+```
+
+You'll notice it's very similar to our custom `setup` function. Under the hood,
+`@testing-library/react-hooks` is doing something very similar to our original
+`setup` function above. A few other things we get from
+`@testing-library/react-hooks` are:
+
+- Utility to "rerender" the component that's rendering the hook (to test effect
+  dependency changes for example)
+- Utility to "unmount" the component that's rendering the hook (to test effect
+  cleanup functions for example)
+- Several async utilities to wait an unspecified amount of time (to test async
+  logic)
+
+> Note, you _can_ test more than a single hook by simply calling all the hooks
+> you want in the callback function you pass to `renderHook`.
+
+Writing a "test-only" component to support some of these requires a fair amount
+of error-prone boilerplate and you can wind up spending more time writing and
+testing your test components than the hook you're trying to test.
+
+## Conclusion
+
+To be clear, if I were writing and testing the specific `useUndo` hook, I would
+go with the real-world example usage. I think it makes the best trade-off
+between understandability and coverage of our use cases. But there are
+definitely more complicated hooks where using `@testing-library/react-hooks` is
+more useful.

@@ -1,0 +1,514 @@
+---
+title: Funding Open-Source Maintainers Using Ethical Advertising With Eric Berry
+date: null
+description:
+  Eric Berry talks about CodeFund and what it does to help the open source
+  community.
+meta:
+  keywords:
+simpleCastId: a7d3aafb-6be2-4edf-85e1-d6281ad63b57
+---
+
+import Transcript from 'components/podcast/transcript'
+import Resources from 'components/podcast/resources'
+import Guest from 'components/podcast/guest'
+
+It's challenging to sustain open source projects, a lot of time and energy is
+poured in without any compensation in return. Eric Berry created CodeFund to
+give developers who are finding it difficult to justify putting their time into
+open source projects a means to get compensated.
+
+Open source today is not the same as it was five years ago. Ninety-six percent
+of all web apps are using open source. The web relies on it. Sixty-five percent
+of all projects have only one or two maintainers, and their work is providing
+value to a lot of companies and people. Maintainers having the option to be
+compensated benefits not only the maintainer but also everyone who relies on the
+project.
+
+Advertising is a scary word these days with big advertisers tracking people
+across the web and gathering their data. CodeFund doesn't use third-party
+trackers and doesn't collect data from the developer's audience. Advertising
+doesn't have to be evil, it can serve a good purpose if it's used correctly.
+
+---
+
+<div style={{display: 'grid', gridGap: 10, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'}}>
+
+<Resources>
+
+- [CodeFund](https://codefund.io/)
+
+</Resources>
+
+<Guest name="Eric Berry" image="https://res.cloudinary.com/kentcdodds-com/image/upload/v1625034100/kentcdodds.com/content/podcast/01/07-eric-berry/eric-berry.png">
+
+- [Twitter](https://twitter.com/coderberry?lang=en)
+- [Github](https://github.com/coderberry)
+
+</Guest>
+
+</div>
+
+---
+
+## Transcript
+
+<Transcript>
+
+**Kent C Dodds:** Hey hey everyone, it is your friend Kent C Dodds. I am here
+joined by my friend, Eric Berry, and we're going to be talking about funding
+open source, among other things. I'm really excited. Eric and I have been
+friends for a couple of years now. We meet at Costa Vida for lunch about once a
+month or so and it's been great. Yeah, just love talking with Eric about the
+things that he's working on in making open source sustainable. This enormous
+problem that many people have worked on, and it's been a real challenge to to
+find solutions, but I'm really intrigued by Eric's solution and some of the
+things that he's done have just been phenomenal these last couple years. So I'm
+excited to chat with Eric. So yeah, Eric, can you give us a little intro to
+yourself? You can tell us, you know, who you are, what things you're interested
+in, they can be software related or not, just to get to know you a little bit.
+
+**Eric Berry:** Yeah, absolutely. First off, thanks for letting me come on.
+It's, it's always a pleasure to see you once a month. It's definitely the
+highlight of the month for me to get to hang out with you and kind of get some
+wisdom from you and, you know, talk about all sorts of life stuff. A little bit
+about myself. I am a software developer. I've been programming for about 20
+years. I'm an old guy. I've got gray. So yeah, I'm learning that the older I
+get, the hair just kinda gravitates downward. Not Fun. Yeah. So yeah. My
+favorite programming language is Ruby on Rails. I've been doing that for almost
+10 years now, I think right around 10 years. And you know, I'm just passionate
+about programming. I'm passionate about programmers. I have a family, I've got
+three beautiful kids and a wife, and I live in Utah. And so yeah, life is pretty
+good over at the Berry house.
+
+**Kent C Dodds:** That's good. Cool. So Eric, it was ... was it two years ago
+that we met? Something like that. I feel like it was just yesterday, but time
+flies when you're having fun. It was a while ago, but you sent me an email a
+while ago about this thing called Code Sponsor and I think that I said something
+like, "I don't know, I'm not really into that." But then Tanner Linsley, Linsley
+I think-
+
+**Eric Berry:** Tanner Linsley, yes.
+
+**Kent C Dodds:** Yeah. I think he connected us again and said, "Hey, let's do
+lunch," and we did, and we hit it off great. The rest is history there.
+
+**Eric Berry:** What really happened is that I knew ... So Tanner told me that
+you're the person to say get in contact with, because you would validate the
+idea or you would negate the idea. So this is way back in, I think, August of of
+2017 and you are making a trip somewhere. So you were in your car, and you
+announced to everybody that you're just going to have an open discussion and
+anybody can ask ... You were going to have an AMA in the car. And so I thought,
+"Okay, this is perfect." I'm going to get his attention where he cannot leave.
+So that's what we did.
+
+**Kent C Dodds:** That's right, yeah.
+
+**Eric Berry:** Then I called you up and we were talking and that really was the
+biggest kick starter to not only our friendship but Code Sponsor in general. I
+mean, you were involved from the ground floor. So yeah, that was pretty
+exciting.
+
+**Kent C Dodds:** Yeah, that was a lot of fun. I am actually maybe going to be
+making another trip like that later this year when I bring that same car back
+from St. Louis, back to Utah. So for those who never heard about this, a couple
+of years ... Well, back August of 2017, my brother was moving out to St/ Louis.
+He had a couple of cars and family that he needed to take over, so I drove his
+car for him. And you know, I was in the car by myself, so I did a conference
+call. Anybody could call and we'd just talk to keep me awake. And yeah, that I
+might be doing that to bring his car back now that he's moving back to Utah. He
+finished up with school. But yeah, so I do remember that. That was great. So
+Code Sponsor kind of went through some experiences and had a brand name change
+to CodeFund. Why don't we get a high level overview of what this idea of
+sponsored open source projects, how that really works in the CodeFund world and
+what is the reason that we would even want to have that? You can just go on and
+give us all of your thoughts about sustaining open source from this perspective.
+
+**Eric Berry:** Okay. All right. So I think to start off, I got to say, back in
+August the whole idea ... I worked for a company at the time. I was a
+programmer. Every single day I used open source software. I'm always on GitHub.
+It was the place where everybody, in my view, everybody kind of goes to. There
+was recently the sustain report that came out in 2017, talked about all of the
+issues around open source sustainability and how funding is a core part of that.
+Well, I thought to myself, "Why don't we have advertising involved?" And the
+reason I thought of advertising, one, I've worked for advertising companies in
+the past, and I understand advertisers are very interested in one thing, getting
+a return on that ad spend. So as long as they could see a positive return on the
+ad spend, their budget will expand as much as it needs to be. So at the time, in
+my view, most everybody who was trying to get funding for open source was doing
+it through either buttons that say "please pay me" or trying to raise funds on
+Open Collective. But all in all, it required the developer to who they were as a
+developer. For some of them, at that time, to really get substantial funding on
+a recurring level, they'd have to basically campaign for it. So I thought that
+was ridiculous when there's money already there on the table. So what I did was
+I thought, "Okay, well let's do this. Let's create a simple platform that allows
+developers to tap in, connect their GitHub account, and then place a single line
+of code in their readme, and then a dynamic sponsorship would be displayed. Any
+time a developer clicks on that sponsorship, the project would get money." And
+that ran for a good five months before GitHub shut it down.
+
+**Kent C Dodds:** Yeah. And as a user it was awesome, because before, any
+efforts that I made to make money on my open source was actually time taken away
+from the time I could be dedicating to open source. And so there was a conflict
+there where I want to make this open source stuff sustainable, but I only have
+so much time to work on open source, and if I take all of that time working on
+sustaining myself in open source and I don't have time to work on it, right? So
+it's a catch 22 kind of situation. And so with Code Sponsor it was just so easy
+to just, you know, stick that. You sign up, set that up, that was really quick
+and easy thanks to you, and then we go to the readme, stick that one line of
+code in there, and that dynamic sponsorship gets added in there and it just,
+magic. Magic happened, and it was awesome. So yeah, that was a really good run
+of five months there.
+
+**Eric Berry:** Yeah. Well, we've continued on. In January, we actually
+rebranded completely to CodeFund, so our website is codefund.io. We now focus
+more on the documentation websites and websites for what we ... What we call it
+is, we fund bloggers, builders and maintainers to open source. So we try and
+help anybody who is providing value to the open source ecosystem and the
+developer ecosystem with a way to continue doing what you're doing. There's no
+reason that you should have to go out and find funding if it's there, readily
+available through advertising. Now, advertising is such a scary word nowadays
+and I've learned a lot now. As you know, I'm a developer. I'm not a marketer.
+I'm not an advertiser. I don't have a formal education at all beyond high
+school. So I approach things from very common sense points of view where I
+think, "Well, it makes sense that we should show ads but not do any type of
+tracking. We shouldn't abuse the audience of the developer." And so that's the
+approach that I took. CodeFund, you know, for all time and to this day we still
+don't do any tracking or allow any third party scripts. We don't collect any
+data on people. The only thing that we look at is the IP address when a visitor
+comes and then we know exactly what location they're in. However, beyond that,
+we don't collect anything. So even if we were to get hacked, there's nothing to
+collect. And that's what we're seeing nowadays so often, is that companies like
+Facebook and Google, there's so many scandals around advertising, which is
+really making digital advertising look terrible. The reason is, is because
+they're abusing the data that they have. Well, it's impossible to abuse data
+that you don't have. That's why we do what we do, and we're open source as well.
+So our goal is to get money into the pockets of developers and designers,
+maintainers, bloggers, and builders, without them having to sacrifice the trust
+that they've worked so hard to build with their audience. I compare us to
+another ad company, Carbon Ads. We're the non tracking version of Carbon Ads, if
+anybody listening knows Carbon Ads.
+
+**Kent C Dodds:** Yeah, yeah, absolutely. That element of the advertising
+platform that CodeFund is by itself is the number one draw for me, because I'm
+sure many of the people listening have ad blockers because they don't like to be
+tracked. That makes a lot of sense to me. I'm one of those people, I have ad
+blockers, because I don't like to be tracked around the Internet. I don't want
+to have, you know, these companies know more than I explicitly ask them to know
+or want them to know. On the other hand also, or in the same frame of mind, I
+also don't want their scripts to slow down my browser and eat up my resources
+and whatever either. So it just makes a lot of sense to me. But if you're not
+doing that, and all it is is a simple asset that loads on the page and it's just
+displayed and I can click on it if it's interesting, I just ignore it. If it's
+not, then ... and that's our entire engagement, then I'm more than happy to. The
+fact that you're so targeted toward open source and developers makes it so that
+often the advertisements are very relevant to me, which is good for both me and
+the advertisers, I imagine. So I just think that that's a wonderful thing. It
+also speaks to the mission of CodeFund to be, you know, we're really just about
+making open source sustainable. What place does tracking users have in that
+mission? It has no place in that mission. And so [crosstalk 00:11:52] the fact
+that you aren't doing that just kind of holds up even further the idea that no,
+we're really just interested in making open source sustainable. So what success
+have you had in the last few years as you've been working on this? Can you tell
+us a little bit about the, you know, the challenges and the successes of
+CodeFund as a sustainable option for open source developers?
+
+**Eric Berry:** Yeah, absolutely. We've had a lot of challenges and growth. You
+know, coming from a non advertising or marketing background, we're having to
+learn a lot of lessons that I think other people probably learned long ago. But
+it's a good thing, you know, it allows us to really approach things from a point
+of view of, "Does it make sense for me? Does this concept follow our ethical
+standards that we have written in stone, and if it does, let's think about it."
+It also makes choices often easy because you pre decide on who you are as a
+company and who you are as a person, and that decision will inform some things
+that might be questionable for some people. We can look at it and immediately
+say, "No, that's not us." If you don't like it, go to the other guys. You might
+make it a tiny bit more money with somebody else, but you know, you're making
+money off of your users and all that. So it's just a different way that we
+approach things.
+
+**Kent C Dodds:** Actually, I love that, Eric. I think that's really applicable
+to life in general. When you intentionally decide what kind of person you're
+going to be, what kind of company you're going to be, it makes many questions
+answered on delivery. Right? As soon as you hear the question, you know what the
+answer is going to be because you've already decided what kind of person you are
+or what kind of company, what your values are. They become more than just the
+words that you write down, because that's what companies do, but it becomes ...
+Or what, you know ... Actually, that's not what people do, but maybe we should.
+But it becomes an integral part of yourself. I just think that's an awesome
+thing. A really great takeaway for people listening is, maybe it's a good idea
+once in a while to be intentional about the type of person you want to be, and
+consider those things, so that when you're in the heat of the moment, when
+opportunities arise and somebody says, "Hey, I want you to come help me do this
+thing." You know, if it doesn't match your priorities as a person. And it
+doesn't have to be like that thing is an ethically immoral thing to do, it just
+could be out of line with your goals as a developer. The things that you want to
+learn to do, the direction you want to take your career, whatever. So being
+intentional about that, I think, is a really great idea, and I'm glad that
+that's worked out for you so far.
+
+**Eric Berry:** It has. In fact, that's kind of been our guiding post. It's a
+hard sell, to be honest. It's somewhat hard to sell to advertisers. Advertisers
+are used to being given all the data. They're used to be able to say, "I only
+want to target people who have visited these websites in the past month, and
+who's, you know, who has black hair and is a male." You know, these crazy points
+that they can get to. You ask yourself, "Why do you need this?" So for us, the
+biggest part for them is that they can't do any remarketing. And for listeners
+who don't know what that is, it's basically when an ad haunts you or website
+haunts as you go around the Internet. So let's say you go to a certain website
+and look at something, and then you start browsing around, and all of a sudden
+you see ads for that website for the next week. That's called remarketing.
+
+**Kent C Dodds:** Super annoying.
+
+**Eric Berry:** Super, super annoying-
+
+**Kent C Dodds:** And creepy.
+
+**Eric Berry:** Yes. And so we don't allow any third party scripting or third
+party tracking because of that. Our advertisers, it's been a hard pill to
+swallow for them, but I mean, the ones that have stuck with us are truly
+understanding of the developer community and truly understanding that we as
+developers don't want to be tracked, and to be honest, there's no reason to. For
+example, let's say somebody visits your website, one of your JavaScript
+websites. You know for a fact that they're probably a JavaScript developer,
+they're probably a React developer and for your audience or probably anywhere
+... Well, I guess you would have all ranges, but still. As an advertiser, if I
+knew that my product is geared towards JavaScript developers, why would I need
+to have any additional information beyond that? So that's what we tell our
+advertisers and we say, "This is what we charge, this is what we share with our
+developers, our publisher network, and take it or leave it." And that's worked
+really well for us. This month, we're on target to bring in probably about
+$15,000 and we're sending out well over I think $11,000, we're sending all over
+the world to developers.
+
+**Kent C Dodds:** No, that's remarkable. That's so awesome. The bulk of the
+money that comes in goes to the developer's pockets, which I think is great.
+
+**Eric Berry:** Yeah. We, we, we pay the developers on a gross margin, not a net
+margin, meaning we pay them immediately with the actual money that comes in and
+we don't take out our expenses before we do that split. We typically pay out
+anywhere between 60 to 70% of the money to, to the developers.
+
+**Kent C Dodds:** And that really motivates you to figure out how to keep your
+costs down because you only get the money after the [crosstalk 00:17:56] happen.
+Yeah. That makes a lot of sense. Or after the ... Yeah. Well, cool. So what
+about for software developers who are working on open source? I know lots of
+them kind of feel like maybe they don't don't deserve to be be funded or they
+feel like funding open source changes the game a little bit. You know, some
+people have kind of embraced this idea and and gone full time with it and stuff.
+You've got Vue.js and Babel with Henry. Some people have just kind of embraced
+this, but for lots of people, they feel like once you put money into open
+source, it totally changes how open source works. They're worried it's going to
+change who they are as a developer or change the project. And I'm sure that
+you've had these questions before. So what do you say to people with those kinds
+of questions?
+
+**Eric Berry:** First off, I think that open source today is not the same as
+open source 10 years ago or even five years ago. Not too long ago, there was a
+study done. I have leaks to all of these, but they found that 96% of all
+applications, all web applications are using open source. And of those of those
+projects, on average 50% of the total code base was open source. So if you think
+about that, 57% of almost every company out there, their code is open source.
+It's crazy to think about. And when you also think about how many developers are
+actually maintainers of projects ... We talk a lot about a bus factor. There was
+a truck factor study done a while ago and that truck factor basically determined
+that 65% of all open source projects are being maintained by one or two people.
+Now when I say maintainer, the maintainer is the person who actually is the
+person who makes the decisions, who's really in charge of doing the dirty work,
+the cleanup work. There's going to be a bunch of contributors on most open
+source projects. But as far as maintainers go ... I mean, you look at even your
+stuff-
+
+**Kent C Dodds:** Yeah, most of my stuff, I'm the sole maintainer.
+
+**Eric Berry:** You're the sole maintainer, right. What happens, you know, God
+forbid, if you get hit by a truck?
+
+**Kent C Dodds:** It would be sad.
+
+**Eric Berry:** It would be very sad. I would have a hard time, yes. So
+developers, I think, tend to devalue who they are and their role even as a
+passive maintainer on projects, because one, I don't think they understand how
+much their code is being used, but two, I think that we have a mindset of
+saying, if we're not actively working on something, we shouldn't be paid. Or if
+we are actively working on something we shouldn't be paid. So that's one of the
+issues that I deal with often with people. The other issue is that sometimes
+they think that getting paid for open source actually devalues working on open
+source. Like it's more of a thing that people ... The purity of open source goes
+away if there's money involved. For those people, I say, "I understand, that's
+okay, don't get paid for it. Just keep doing what you're doing if you can." If
+you get to a point where you can't do it and you actually have to decide whether
+the project dies or not because you can't afford to do it, then the viewpoint
+might change a little bit. But on the question of, does money change open
+source? I would say yeah, it probably does a little bit, but I think that that's
+an inevitability. Open source now is being used so heavily in so much that
+people are working nights and weekends and their own free time, not getting
+paid, to do something that, in all reality, that was not their intention when
+they started. So why is that okay?
+
+**Kent C Dodds:** It's interesting, because they're doing this to make other
+companies money., right? So the thing is that it took you maybe two hours to
+work on that bug fix for your library or whatever, and it was not a huge deal to
+you,. You know, that was two hours that you didn't spend with your family ,or
+you know, going skiing, or whatever it is that you do for enjoyment. Maybe it
+was an enjoyable experience for you. But then those two hours you spent on
+there, you multiply that across the number of companies that benefit from those
+lines of code that you wrote, and the value that you're providing. It becomes,
+it can be a ton of money. I feel like, you know, we can talk about the merits
+and the demerits of the capitalist society that we live in, but the fact is that
+we do live in a capitalist society and you should be compensated for the value
+you create in the world and in that kind of society anyway. And so, yeah, if you
+create some value that's worth hundreds of thousands of dollars for companies, I
+don't think that there's anything to sneeze at to get some compensation for some
+of that.
+
+**Eric Berry:** Yeah, I agree. I might make one slight change in that that they
+shouldn't necessarily be given the money, but they should be given the
+opportunity to make money off of their work. But if your intention for working
+on opensource is to get rich or is to make money, then you probably shouldn't be
+building open source
+
+**Kent C Dodds:** You'll probably fail as well.
+
+**Eric Berry:** Yeah, I mean, open source is something that we do for ourselves
+first, I believe, for the companies that we work for but also we give back to
+the common good. Your career, my career, all of my peers' careers are all built
+on open source. I don't think I could build anything close to what I'm building
+today if it wasn't for open source.
+
+**Kent C Dodds:** Absolutely.
+
+**Eric Berry:** I'm trying to give back in my way, but I don't think that any of
+those people who built those libraries that I use did it with the intention of
+getting money for it. But I think that they should be given the opportunity and
+the array of choices to make money so that those projects can continue to
+thrive, be maintained, be relevant to our community.
+
+**Kent C Dodds:** Absolutely. And you know, another thing that I think some
+people might be thinking is, "Well, you know what, my job pays me really well
+for my work and I do open source for fun. If I got the money, that's great. I
+can buy an extra sandwich at lunch or whatever, or potentially that ..." You can
+tell us the numbers, but CodeFund can actually finance more than a lunch. But
+for lots of people, they're like, "Well, I don't need that money. I'm doing
+fine." So why don't you tell us about some of the other things that we can do
+with this money, and somewhat broaden our vision of what is possible when we
+start making money from that open source work.
+
+**Eric Berry:** Sure. So there are a bunch of options that people have when they
+make money. So to answer your question about how much can people make, my
+payments that I make are typically anywhere between \$20 a month to a 2500 a
+month, maybe? And it's going up, I mean ,we have some large properties, but we
+just signed on a new one that you know, has a potential of making actually
+100,000 a month. So wwe'll see. That's a big order to fill.
+
+**Kent C Dodds:** [inaudible 00:26:01] The whole CodeFund ecosystem-
+
+**Eric Berry:** That's literally for one publisher.
+
+**Kent C Dodds:** For one publisher, holy-
+
+**Eric Berry:** For one publisher, yeah. So again, the amount of money that you
+can make varies based on where your audience is, what's the context of your
+content, and how many, how much demand is there for that with our advertisers.
+But at the end of the day, we want to be able to reward those people who are
+providing value to the developer community by creating passive, recurring,
+consistent revenue month over month that they can just count on. To answer your
+other question, what to do with that money. A lot of us are privileged. I
+consider myself privileged. I'm a white male living in America and right out of
+the gate, there's a lot of privilege that comes with that and I acknowledge
+that. A lot of my peers are not as privileged, where they might, you know, money
+might not be as easily accessed. So depending on your situation, a lot of
+people, what they do is they take the money that they generate and they put it
+right into their Open Collective. We have a strong relationship with Open
+Collective, which is a way for companies and ... or, not companies, but projects
+to be able to collect money on a donation basis that's tax free. Oftentimes
+,people put money into that open collective, and then that money's used for
+traveling to meetups, or sponsoring education, or paying for tee shirts and
+stickers and stuff like that, to help build the brand of the library or what
+they're working on. So, you know, that money can be donated. The money can be
+used for car payments. My idea behind CodeFund, Code Sponsor originally is, I
+want to be making tens of thousands of car payments every month for people.
+
+**Kent C Dodds:** That's great.
+
+**Eric Berry:** No, I don't know what kind of car we're talking about but still.
+
+**Kent C Dodds:** Can you pay off my Tesla for me?
+
+**Eric Berry:** Right. [inaudible 00:28:18] But still, I think that, yeah. I
+hope I answered the question-
+
+**Kent C Dodds:** No, that's perfect. I think the real thing that I wanted to
+make sure we take away here is that if you, as you know, dear listener, if you
+have an open source project and you're struggling to justify your time working
+on it, consider using something like CodeFund to to give that justification. You
+do deserve it, and it is like something that, there are platforms like CodeFund
+that enable that for you. If you are one of these people who are in a privileged
+position, you have a really nice paying job and whatever and money's not hard to
+come by, consider the fact that your open source work could benefit not only the
+people who are using the project, but also whatever organization you choose to
+donate your funds to. Your time spent in open source can be even more altruistic
+than it is already, which I think is a wonderful thing and is really encouraging
+that it can provide that. You raise this money in a way that benefits. There's
+all upside and no downside, right? Maybe people don't want to have their pixels
+on their screen dedicated to an ad, but that's the worst case scenario. That's
+as bad as it gets. There's no tracking of users, and the only real, the real
+thing that happens is you're connecting developers with real services that have
+been vetted and are actually interesting and probably useful to most of the
+people who are going to be looking at it anyway. You're not going to be seeing
+weird advertisements for, I don't even want to say some of those things on this
+podcast. You're not going to see stuff like that. These are gonna be useful and
+interesting things for the audience that's going to be consuming them. And so
+all upside, no downside to using something like code fund.
+
+**Eric Berry:** So the way I view it is that companies that ... For example, if
+you've ever used Heroku, they have a Heroku add ons list with probably 150, 200
+companies. Now, these companies all provide high value to developers on their
+system, but also most of them are providing high value to developers outside of
+Heroku. So each one of these companies could be spending tens of thousands of
+dollars a month on Google and Facebook and Twitter ads. What I want to do is get
+that money out of Google's hands, out of Facebook hands, out of Twitter's hands,
+and put it into the developer's hands. That's our goal. We think that we have a
+product that is good enough to compete with those guys and we believe that the
+money is better served by giving it back to the community.
+
+**Kent C Dodds:** I love that Eric. It's been a pleasure to chat with you today.
+We got to wrap things up. Before we do, do you have any last words for our
+community?
+
+**Eric Berry:** I got to say, I'm a huge Kent C Dodds fan. I love him. I think
+you're a great guy. Your family's incredible. I'm just very excited to be here.
+I suppose my last thing would be ... When you think of advertising, try and
+approach it from a new perspective, whereas maybe advertising isn't the evil
+part. Maybe it's the misuse and collection of private data that is the evil
+part, and maybe advertising can serve a good purpose if it's used correctly.
+
+**Kent C Dodds:** That's great final words. I almost hate to ask you this next
+question, because it'd be great to end on that, but my last question is just
+pretty general. If people want to connect with you and connect with CodeFund and
+get started with CodeFund or whatever. Yeah, let's start with that. So can you
+tell us, how do people get started with CodeFund, and then how do people connect
+with you if they have questions?
+
+**Eric Berry:** Sure. To get started with code, just go to codefund.app and just
+fill out the form under the publisher tab. I will be there to be able to check
+out the website. We do have a certain criteria that we follow. Basically we
+require that a publisher's website, a publisher meaning whoever, like a
+developer, their website needs to generate right around 5,000 impressions per
+month and it has to be relevant to the ... it has to be something that
+contributes back to the developer community. We get a lot of requests that are
+very unrelated to the developer community. We get some requests to meet
+publishers, but they're actually a paid app. We won't do that. We only provide
+funding for projects that are serving the community. To contact me, you can
+reach me on Twitter anytime. I'm Coder Berry, C, O, D, E, R, B, E, R, R, Y. or
+you can connect with me on the chat on our website. So again, codefund.app.
+
+**Kent C Dodds:** Very good. All right. Hey, thanks so much, Eric. It was always
+a pleasure to chat with you. I'm excited to get this audio into the ears of
+listeners soon and yeah, we'll see everyone next time. Actually we won't see
+everyone next time, but you'll hear us next time. Goodbye.
+
+**Eric Berry:** Take care.
+
+</Transcript>

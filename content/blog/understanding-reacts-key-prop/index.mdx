@@ -1,0 +1,226 @@
+---
+title: Understanding React's key prop
+date: 2019-11-11
+description: The key prop is a mechanism for controlling component instances.
+categories:
+  - react
+meta:
+  keywords:
+    - react
+    - key prop
+    - javascript
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033463/kentcdodds.com/content/blog/understanding-reacts-key-prop/banner.jpg
+bannerCredit: Photo by [Florian Berger](https://unsplash.com/photos/SzG0ncGBOeo)
+---
+
+**[Watch "Use the key prop when Rendering a List with React" on egghead.io](https://egghead.io/lessons/react-use-the-key-prop-when-rendering-a-list-with-react-3a0661b6)**
+(part of [The Beginner's Guide to ReactJS](https://kcd.im/beginner-react)).
+
+https://egghead.io/lessons/react-use-the-key-prop-when-rendering-a-list-with-react-3a0661b6
+
+import {
+  WorkingContact,
+  BrokenContact,
+  CounterParent,
+  Rendered,
+} from './components'
+
+Play around with this form:
+
+<Rendered>
+  <BrokenContact />
+</Rendered>
+
+Specifically, try changing the subject, then switch the topic and notice that
+the value in the input field doesn't change to a more sensible subject. Even if
+you type something like "My company needs training" and then changing the topic
+from "Training" to "Question" it would make more sense to have it reset the
+subject to a better default.
+
+Now try this one:
+
+<Rendered>
+  <WorkingContact />
+</Rendered>
+
+That's working as expected now. Here's the implementation, and I'll highlight
+the difference:
+
+```jsx [21]
+const defaultValuesByTopic = {
+  training: 'I would like some training',
+  consulting: 'I have consulting needs',
+  question: 'I have some questions',
+}
+
+function Contact() {
+  const [topic, setTopic] = React.useState('training')
+
+  return (
+    <form>
+      <label htmlFor="topic">Topic</label>
+      <select id="topic" value={topic} onChange={e => setTopic(e.target.value)}>
+        <option value="training">Training</option>
+        <option value="consulting">Consulting</option>
+        <option value="question">Question</option>
+      </select>
+      <label htmlFor="subject">Email Subject</label>
+      <input
+        id="subject"
+        key={topic}
+        defaultValue={defaultValuesByTopic[topic]}
+      />
+      <label htmlFor="body">Email body</label>
+      <textarea id="body" />
+    </form>
+  )
+}
+```
+
+The only difference between these implementations is that the working one has a
+`key` prop and the other does not.
+
+I want to share a little trick with you, not because I use this a lot (though
+this is exactly what I do on [my contact page](/contact)), but because
+understanding this principle will help you understand React a bit better. It has
+to do with React component "instances" and how React treats the `key` prop.
+
+---
+
+What I'm about to show you has a lot to do with element/component instances and
+applies just as much to `<input />`s like above as it does to the components you
+write and render. It may be a bit easier to understand with component state, so
+that's the angle we're going to approach this from.
+
+Imagine you've got a React component that manages internal state. That state is
+attached to the component instance. This is why you can render that component
+twice on the page and they will operate completely independently. For our
+demonstration, let's use something really simple:
+
+```jsx
+function Counter() {
+  const [count, setCount] = React.useState(0)
+  const increment = () => setCount(c => c + 1)
+  return <button onClick={increment}>{count}</button>
+}
+```
+
+We could render this many times on the page and each would be completely
+independent. React will store the state with each individual instance. When one
+component is removed from the page, it won't affect others. If you render a new
+one, it doesn't affect existing components.
+
+You may know that React's `key` prop is something you need to put on elements
+when you map over an array (otherwise React will get mad at you).
+
+> Side note: If you'd like to know why this is necessary and what can happen if
+> you ignore it or simply put the `index` as the key, watch
+> ["Use the key prop when Rendering a List with React"](https://egghead.io/lessons/react-use-the-key-prop-when-rendering-a-list-with-react)
+
+React's `key` prop gives you the ability to control component instances. Each
+time React renders your components, it's calling your functions to retrieve the
+new React elements that it uses to update the DOM. If you return the same
+element types, it keeps those components/DOM nodes around, even if all\* the
+props changed.
+
+> For more on this, read
+> [One simple trick to optimize React re-renders](/blog/optimize-react-re-renders)
+
+That asterisk on the word "all" above is what I want to talk about here. The
+exception to this is the `key` prop. This allows you to return the exact same
+element type, but force React to unmount the previous instance, and mount a new
+one. This means that all state that had existed in the component at the time is
+completely removed and the component is "reinitialized" for all intents and
+purposes. For components, this means that React will run cleanup on effects (or
+`componentWillUnmount`), then it will run state initializers (or the
+`constructor`) and effect callbacks (or `componentDidMount`).
+
+> NOTE: effect cleanup actually happens _after_ the new component has been
+> mounted, but before the next effect callback is run.
+
+Here's a simple example of this working in a counter:
+
+```jsx
+function Counter() {
+  console.log('Counter called')
+
+  const [count, setCount] = React.useState(() => {
+    console.log('Counter useState initializer')
+    return 0
+  })
+  const increment = () => setCount(c => c + 1)
+
+  React.useEffect(() => {
+    console.log('Counter useEffect callback')
+    return () => {
+      console.log('Counter useEffect cleanup')
+    }
+  }, [])
+
+  console.log('Counter returning react elements')
+  return <button onClick={increment}>{count}</button>
+}
+
+function CounterParent() {
+  // using useReducer this way basically ensures that any time you call
+  // setCounterKey, the `counterKey` is set to a new object which will
+  // make the `key` different resulting in React unmounting the previous
+  // component and mounting a new one.
+  const [counterKey, setCounterKey] = React.useReducer(c => c + 1, 0)
+  return (
+    <div>
+      <button onClick={setCounterKey}>reset</button>
+      <Counter key={counterKey} />
+    </div>
+  )
+}
+```
+
+And here's that rendered out:
+
+<Rendered>
+  <CounterParent />
+</Rendered>
+
+Here's an annotated example of what would be logged if I click the counter
+button, then click reset:
+
+```javascript
+// getting mounted
+Counter called
+Counter useState initializer
+Counter returning react elements
+// now it's mounted
+Counter useEffect callback
+
+// click the counter button
+Counter called
+Counter returning react elements
+// notice the initializer and effect callback are not called this time
+
+// click the reset button in the parent
+// these next logs are happening for our new instance
+Counter called
+Counter useState initializer
+Counter returning react elements
+
+// cleanup old instance
+Counter useEffect cleanup
+
+// new instance is now mounted
+Counter useEffect callback
+```
+
+## Conclusion
+
+Again, this happens just as much for the state of native form elements (for
+things like `value` and even focus). The `key` prop isn't just for getting rid
+of that annoying React console error when you try to render an array of elements
+(all "annoying" errors from React are awesome and help you avoid bugs, so please
+do not ignore them). The `key` prop can also be a useful mechanism for
+controlling React component and element instances.
+
+I hope that was interesting/enlightening. If you want to play around with any of
+this code,
+[I have a codesandbox for it here](https://codesandbox.io/s/concerning-react-keys-onb2g).
+Have fun!

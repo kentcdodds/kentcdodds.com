@@ -1,0 +1,612 @@
+---
+title: Dr. Michaela Greiler Makes Code Reviews Your Team's Superpower
+date: null
+description:
+  Dr. Michaela Greiler chats with Kent about code reviews, non-violent
+  communication, data-driven research, and starting a business
+meta:
+  keywords:
+    - code review
+    - career
+    - web development
+simpleCastId: 034890ba-6da1-4bd2-bfd9-3143647848b2
+---
+
+import Transcript from 'components/podcast/transcript'
+import Resources from 'components/podcast/resources'
+import Homeworks from 'components/podcast/homeworks'
+import Guest from 'components/podcast/guest'
+
+Dr. Michaela Greiler is focused on helping teams make code reviews their
+superpower!
+
+During Dr. Michaela's time at Microsoft, they found that developers were
+spending six hours a week doing code review. You have to ask yourself if that
+time is really being well spent.
+
+How do you ensure that code reviews are worth the time? There is this huge
+variety of experiences with code-review. It can be really good, and it can be
+really, really horrible as well. There is not a lot of formal training around
+it.
+
+Formal training would improve the consistency and value of code reviews, and it
+would be especially helpful for Junior Developers. It would give them such a
+self-esteem and confidence boost if they would know, "This is what we're
+actually looking for, this is how we give code review feedback"
+
+<Homeworks>
+
+Watch
+[10 Tips for Respectful and Constructive Code Review Feedback](https://www.youtube.com/watch?v=NNXk_WJzyMI)
+then take a previous code review you gave and critique your own review.
+
+</Homeworks>
+
+<div style={{display: 'grid', gridGap: 10, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'}}>
+<Resources>
+
+- [Code Review Workshops](https://michaelagreiler.com/workshops)
+
+</Resources>
+<Guest name="Dr. Michaela Greiler" image="https://res.cloudinary.com/kentcdodds-com/image/upload/v1625034145/kentcdodds.com/content/podcast/03/04-dr-michaela-greiler/michaela-greiler.png">
+
+- [Twitter](https://twitter.com/mgreiler)
+- [Website](https://michaelagreiler.com)
+
+</Guest>
+</div>
+
+---
+
+## Transcript
+
+<Transcript>
+
+**Kent C. Dodds:**  
+Hey friends, this is your friend, Kent C. Dodds and I'm joined by my friend, Dr.
+Michaela Greiler. I said it wrong. Can you pronounce it right for us?
+
+**Michaela Greiler:**  
+Yeah, my name is Michaela Greiler, and because it's very complicated I'm also
+known as Dr. Michaela, which is a little bit easier.
+
+**Kent C. Dodds:**  
+Yeah. Well, Dr. Michaela, I've developed a good relationship with her over
+Twitter over the last few months, and it's just been such a pleasure to get to
+know you and become your friend, and I'm excited for all my friends to get to
+know you. So could you introduce yourself to us so we can get to know you a
+little bit?
+
+**Michaela Greiler:**  
+Yeah, sure. I'm also really happy that I'm here. I've been in IT for quite some
+time now, and just recently started my own company. I think that's also how we
+met a little bit more closely. I'm focusing right now on helping teams to make
+code reviews their super power, that's what I call it. At the end of last year I
+started to do that full time. Before that I was working as a software engineer
+and as a researcher at Microsoft, and before that I was working as a researcher
+in the Netherlands, also in the software engineering area.
+
+**Kent C. Dodds:**  
+Yeah, and that's where you got your doctor title, right? Can you tell us a
+little bit about what it's like to become a doctor of software?
+
+**Michaela Greiler:**  
+Um ... a bad idea. It took me around four or five years to do that, from 2008
+until the beginning of 2013. I was doing that in The Netherlands, I was at the
+Delft University of Technology, and I was studying static and dynamic analysis
+techniques to help people understand software systems, in particular test
+systems.
+
+**Michaela Greiler:**  
+What does it mean? It means that you have to get used to a very specific
+culture, people are writing papers, you have to understand how to write papers,
+how to conduct research. I think it was a little bit different from what I
+anticipated, a little bit less free, I actually thought that a researcher has a
+little bit more freedom.
+
+**Michaela Greiler:**  
+So that's probably also why I left academia at the end, because I didn't feel
+that you have enough freedom to do whatever you want. I feel that, now that I'm
+on my own, or even at companies, you can deviate a little bit from the
+structured ways of doing things, the right or the wrong way. But in general, I
+enjoyed my time doing a PhD.
+
+**Kent C. Dodds:**  
+Well, now you get to put "doctor" in front of your name, which is awesome. I
+have a master's degree in information systems, and I wish it was more socially
+accepted to put "master" in front of my name, so it's Master Kent C. Dodds. But
+it's not really a culturally accepted thing.
+
+**Michaela Greiler:**  
+Yeah, I didn't do it for a long time, put the "doctor" in front of it. But at
+one point it was so painful to get that, I put it everywhere.
+
+**Kent C. Dodds:**  
+You know what? I think that it's awesome. You worked outrageously hard, you
+absolutely deserve to have that there. Great, very cool.
+
+**Kent C. Dodds:**  
+It's such a pleasure to chat with you. The things that you've been doing with
+your own business recently is lots of training around code review, which is
+interesting because I've never seen or heard of anyone giving training on
+something that might be considered kind of a niche topic, very specific. So I'm
+really curious to know what got you interested in code review, and what is it
+about code review that keeps you busy.
+
+**Michaela Greiler:**  
+Yeah. It's not something that I really set out to do, it's more something that I
+grew into, I would say. So until now, I don't know if it's really a business
+right now. It pays the bills, but I'm really at the start, and as you said, it's
+a niche thing.
+
+**Michaela Greiler:**  
+So how did the whole thing start? Even during my PhD, I was working on dev tools
+and developer practices. What are developers doing, how can we help developers
+understand code, for example, or use, as I said, static analysis or dynamic
+analysis to understand the software system? A lot of the things that I did were
+about code comprehension, how can you actually understand your code. Which links
+to code reviews, right? Because there you have to do the same, you have to look
+at some piece of code, and understand it, and ask questions about it.
+
+**Michaela Greiler:**  
+A lot of the things were about communicating about code. When I joined
+Microsoft, I was in the Tools for Software Engineering team, that was an
+internal team that was helping all the other product teams to be better at what
+they were doing. For example, I worked with Office, I worked with Windows, I
+worked with Visual Studio, with all the larger product teams. We helped them
+with their testing, for example.
+
+**Michaela Greiler:**  
+One of the things that we did was we analyzed Office and Windows testing suites
+and help them to make them faster. For example, test reduction, which techniques
+could you have there, how can you still make sure that you're not slipping any
+error through or any defects through?
+
+**Michaela Greiler:**  
+And part of that was also code review. Our team owned the code review tool
+called CodeFlow, and so we were running studies because people were spending a
+lot of time on code reviews. Within Microsoft we have 40 thousand developers, so
+it's a valid question to ask, are the people spending their time right? If every
+developer only spends six hours ... and this is an old survey, right? But one of
+the questions that we asked was, "How long are you spending?" And they were
+like, "Over six hours." Each developer was spending six hours doing code
+reviews. So you ask, is that actually time worth spent? And so we were running-
+
+**Kent C. Dodds:**  
+And that was six hours a week?
+
+**Michaela Greiler:**  
+A week, yes, sorry. Yeah, six hours a week. So we were running studies to really
+understand, is it a good practice? In which cases is it a good practice? Because
+we had very diverse code review practices at Microsoft. So somebody who had
+Office, even within Office, would do it completely different from somebody who
+had Windows, and so on.
+
+**Michaela Greiler:**  
+So we were trying to understand what makes code reviews really a good practice?
+What are the teams doing that are successfully doing code reviews, and what are
+the teams doing that say, "Code reviews actually suck, we're not doing them," or
+something like that? So we tried to really distill that. We did a couple of
+studies, and from what we learned we were improving our own code review tool.
+And I think it was a really cool tool at that time, CodeFlow. So this is how I
+got started.
+
+**Michaela Greiler:**  
+And then when I wanted to somehow run my own business, which came because I had
+kids and things like that and I wanted more freedom, to be honest, I was
+thinking, "What did I really enjoy the most?" And code reviews was definitely
+something that I tremendously enjoyed, working with people. It's very
+sociotechnical, this means that you have the social aspect of it, but you also
+have the technical aspect, and it's very intertwined.
+
+**Michaela Greiler:**  
+Then I started just blogging about it and writing what I did at Microsoft,
+because most of the things I didn't talk about much when I was at Microsoft. So
+later on I started talking about that, and then this somehow developed into what
+I'm doing right now.
+
+**Kent C. Dodds:**  
+I love how you spent ...How long were you at Microsoft doing that work?
+
+**Michaela Greiler:**  
+I joined in 2013 and I left last year.
+
+**Kent C. Dodds:**  
+Yeah, so you were there for almost seven years, six or seven years.
+
+**Michaela Greiler:**  
+Six years, yeah.
+
+**Kent C. Dodds:**  
+And then the amount of stuff and experience that you had there just accumulated
+in an enormous amount of experience and knowledge around this idea of code
+reviews. You saw lots of situations where things worked really well, and things
+where it could have been better. And you're now able to take that experience and
+give that as kind of a gift. You're getting paid for it, but a gift that you're
+offering to other people so they don't have to go through the whole trial and
+error process where the errors can be pretty bad.
+
+**Michaela Greiler:**  
+Yeah, that's true.
+
+**Kent C. Dodds:**  
+So that's very awesome, and you know what? I think that it's really cool that
+we're at a time where people like you can specialize in that kind of thing and
+make a really positive impact on the rest of us who are working on our
+day-to-day products or whatever it is. We really don't have the time, or even
+want to take the time, to experiment with different things and see how different
+things work. So we can learn a lot from you as you teach from your wealth of
+experience and knowledge.
+
+**Michaela Greiler:**  
+I think that, in general, niching down, it's something that I read about
+probably one and a half years ago, when I thought about what should I do with my
+business and things like that. I understood the theoretical concept of what it
+means, niching down, but I always felt like, "Oh, I need to do more. I need to
+do more, I need to know more," things like that.
+
+**Michaela Greiler:**  
+But the funny thing is that, for example with these code reviews, first of all,
+I gravitated towards it again and again, over and over again. It was one of
+those things that I wrote an article, and I could write another one. And then I
+wrote the other article, and I could write yet another one, there was so much
+more. Over the years that I worked with code reviews, there's still tons that I
+can learn more about, and I can dive deeper into it.
+
+**Michaela Greiler:**  
+Which is very, very interesting because I also was a little bit skeptical. Could
+I even make a business out of that? Could I help people enough? Is it not enough
+if you just go and read one blog post about code reviews? And the funny thing is
+that that's somehow also how code reviews work right now, people are just
+expected to know everything about it. I mean, how hard can it be? You're opening
+some editor, you're looking at some code, you're making some comments, and
+that's it, right?
+
+**Michaela Greiler:**  
+And I think that's exactly why there is this huge variety of experiences with
+it. It's either really good, and it can be really, really horrible as well.
+There is not a lot of formal training around it. So yeah, I think there is tons
+that you can learn. It's about how do we communicate with each other, how do we
+learn, how do we resolve conflicts. Even those topics alone, you could again
+write a PhD out of it, right? Or do several PhDs there.
+
+**Michaela Greiler:**  
+And there are also the technical aspects, what do you focus on, things like
+that. The policies, I think policies are also really interesting. How would you
+design your code review policies to actually really meet your goals that you
+have with code reviews? Things like that.
+
+**Kent C. Dodds:**  
+Absolutely. I was actually going to ask you about that because I imagine some
+people look at this and think, "How could you possibly make a business out of
+this? I don't even see how you would need training, it's just open up the
+editor, type a couple of comments on the code, and then move on with your day."
+But it's a lot more than that, obviously. So what would you say are some of the
+things that people are missing when they just automatically assume that people
+know how to talk about code in a code review setting?
+
+**Michaela Greiler:**  
+For example, what I see in my workshops is that junior drafts often don't even
+know what they really should" look at. "What should I say? What should I focus
+at? Sometimes it has to do with the fact that they don't feel in a position to
+give feedback to somebody that seems ahead of them, something like that.
+Sometimes it has just to do with the fact that they are not taught to do it
+right. It would give them such a self-esteem boost and confidence boost if they
+would know, "This is what we're actually looking for, this is how we give code
+review of feedback, this is how I phrase it."
+
+**Michaela Greiler:**  
+But it's not only the junior devs, it's also how should we resolve conflicts. A
+lot of things are unconscious, so they are not aware of how this feedback can
+actually come across to the other side. I think also a lot of people ... If
+developers, companies, teams are doing code reviews, they're really spending a
+lot of time doing code reviews. And the question always becomes, "Is it really
+helpful?"
+
+**Michaela Greiler:**  
+And I think a lot of people take the status quo, this is how code reviews are,
+this is how it is. It's just taking a week, and they're not thinking that it can
+actually change something. There are many ways that you could investigate what's
+actually happening in your code reviews.
+
+**Michaela Greiler:**  
+It could be data driven, I did a lot of data driven studies at Microsoft where
+we really looked at millions of comments that we analyzed using AI or machine
+learning, things like that, and then we ran correlations, right? So for example,
+one study that I did was we were looking at code review comments.
+
+**Michaela Greiler:**  
+And first of all, we interviewed developers, so we were just sitting with them,
+getting data on what is a valuable comment and what's not valuable. So we were
+sitting with developer over developer and manually marking what are they saying.
+Then you could use that information to build a decision tree, some classifier,
+and you can run that over millions of comments, and then you know, millions of
+comments, whether or not they are valuable or not valuable.
+
+**Michaela Greiler:**  
+And then you can look, for example, for characteristics. So what's happened if a
+review has more than 1,000 lines of code, or 500 lines of code? You can fine
+tune that and see how that, for example, changes. So we had graphs where you
+could see the number of lines of code, or the number of files in a review, and
+on the other hand the density of valuable comments. And we could see that that's
+definitely going down, so you could see that there's a very clear correlation.
+
+**Michaela Greiler:**  
+So, with those insights, you can actually do something about your code review
+practice, right? You open up and you see how many files are actually in my
+reviews. And if, let's say, there are 30 files, then it's not only a drag for
+yourself, but it also means that you're not in a position to give valuable
+feedback. It's just as easy as that.
+
+**Michaela Greiler:**  
+Or if you are a dev and you're on a different team, and you're getting sent over
+code from somebody else, it's really hard for you to make any comments. We have
+so much data on that. People that previously looked at comments or are familiar
+with the code base, they have a very different ability to give valuable
+comments. So I wouldn't say that you should not include, for example, cross-team
+reviews, but you should have a very clear understanding of what is your goal
+with that, what should they look at? Maybe they should not look at the
+readability of your code base right now, maybe they should just look at the API.
+And you could also guide them.
+
+**Michaela Greiler:**  
+So I think there are many, many things. As you said, if you're spending a lot of
+time thinking about how code reviews can be improved, and also looking at data,
+I think this is very important as well, then there are many things that you can
+do. It's just like many other things, you have to know it, to be curious about
+it, learn it. That was a very long answer, right?
+
+**Kent C. Dodds:**  
+No, that was fascinating. I'm imagining the things that you could create with
+that kind of machine-learned algorithm. As I'm preparing my pull request, I
+could get a little editor notification like, "This PR is starting to get kind of
+big, you might start thinking about chunking this up or something. Or somebody
+invites me to review their pull request, and I get a little thing that says,
+"This one's a little bit bigger or more complicated, you might want to stop what
+you're doing, prepare yourself to review this well." Yeah, it's fascinating. Or
+maybe as I'm making the comment a little thing pops up and says, "Hey, that's a
+little bit maybe aggressive, maybe change the way that you're saying that." It's
+fascinating.
+
+**Kent C. Dodds:**  
+I'm learning some of the things that you learned. You must have so much
+knowledge in your brain about how to go about making good code reviews. What
+would you say are some of the biggest dangers for a team that is not intentional
+about having good, positive code review experiences?
+
+**Michaela Greiler:**  
+I think there are three levels that I always look at. One is the level of
+communication. I think you can really burn a lot of bridges, and you can really
+hurt people with the code review comments, be it intentionally or
+unintentionally. Even if you're not aware and you're just carefree, you can
+still hurt the feelings of people and leave negative marks on their lives. I
+think that's one of the things that I would like to stress, having better
+communication skills, being more compassionate about the other person. It's
+something that you can learn, compassion, empathy, all of those things, you can
+learn.
+
+**Michaela Greiler:**  
+For example, nonviolent communication is something that I teach in my code
+review workshops, and it's really a wonderful tool. It's something also for, I
+would now say, people like us, this is very generalizing, as engineers, it's
+like an algorithm, it's something that you can learn. It gives you some recipe
+where you decipher messages and be more conscious about expressing your own
+feelings, your own needs, but also understanding the needs and feelings of
+others. So I'm a big fan of that.
+
+**Michaela Greiler:**  
+There are other things like having small reviews, small reviews are really,
+really important. A large review, it's not possible for a person to look at the
+large review and give you valuable feedback. That's it. You can argue as much as
+you want. For example, in one of my workshops, or in some of my workshops,
+people would say, "But I cannot break it up," I have that over and over, "This
+is the unit, it cannot be any smaller." And you're looking at it, maybe 5,000
+lines of code, and yes, you can make that smaller. I'm definitely telling you,
+you can make that smaller.
+
+**Michaela Greiler:**  
+And I think it has a lot to do with ... It's the same as learning how to make a
+good software design. It's not easy at the beginning, but it's not hard, right?
+It's something that you have to train and to learn to understand where's the
+right abstraction layer, what am I telling you right now? The same you can do
+with code reviews. You can have smaller code reviews, and the purpose is
+probably different, and then you can compose those code reviews together into a
+larger review.
+
+**Michaela Greiler:**  
+But then what you're looking through, the focus of your review, will be very
+different. Also, maybe the person that you are asking to review that code. So
+yeah, this is definitely something that I would like people to take away, make
+small code reviews. They are much easier to review for everybody, and you get
+better feedback from it.
+
+**Kent C. Dodds:**  
+You know, when I was at PayPal, or pretty much wherever, if I was going to
+create a really big review and I knew I was making a big change that would
+impact many files, refactoring the API for something that's just used
+everywhere, one thing that I would do to help with that is I would make multiple
+commits. Here's the commit where I do this thing, and then here's the commit
+where I apply what I did to everything. And so it all looks very similar, it's
+just updating this code to change what the name of that parameter is, or
+something. Have you seen strategies like that work, do you have other strategies
+or good ways to break down big PRS?
+
+**Michaela Greiler:**  
+Yeah, so one of the things that I advertise ... Maybe advertise is not the right
+word, advocate I think is the right word ... advocate for are stacked commits. I
+don't know if you've heard of that.
+
+**Kent C. Dodds:**  
+No, I haven't.
+
+**Michaela Greiler:**  
+I should write a blog post about it, I have a really long list of blog posts
+that I should write. Stack commits, so instead of just making the commits that
+you have in one PR, you would have several PRS, and each of those PRS is on
+their own feature branch. So you branch out each of those commits and make its
+own pull request.
+
+**Michaela Greiler:**  
+And what's easier with that, it depends on your tool, but if you, for example,
+have GitHub or GitLab, then it's easier to review that because the stacked pull
+requests, you would start at the very end rather than work your way forward. You
+just see those diffs from that. So it's very similar to what you just said, but
+it's a little bit easier to even go about the review process itself. So if you
+can do that, I would do that.
+
+**Michaela Greiler:**  
+Also, get familiar with Git, because in Git itself you can then just add parts
+of your changes and add them, for example, Git Patch it's called, you can patch
+parts of your changes in separate commits. I don't know if that makes sense, how
+I described it. Probably it's a bit better if you have something visual to see
+it. But it's a very powerful tool within Git. You can then, for example, mark
+each line that you would like to go into a certain commit, and redo those
+things.
+
+**Michaela Greiler:**  
+For example, as you said, the refactorings, they should go into one specific
+thing, they shouldn't be merged with something else. Because it's much easier,
+if you have this mental model of, "Well, now it's about refactorings," then this
+shouldn't be mixed with any changes to the functionality and things like that.
+With parts of Git, you can redo them, let's put it that way. And there are other
+tricks, I should definitely write a blog post about it.
+
+**Michaela Greiler:**  
+But yeah, this is something that I do some exercises on them as well, so that
+people know how to break those up. For example, at Microsoft there was a
+colleague of mine who was doing a study, and they were automatically detaching
+the commits and the reviews into coherent packages, and they were experimenting
+very with it. So it's very important, coherent commits.
+
+**Kent C. Dodds:**  
+Good, good. Let's talk about the other side of the coin. So let's say that I am
+a developer, and I make a pull request, and the person who is reviewing my pull
+request is not being super nice about their review. What's something that I can
+do to maybe encourage better reviews, or how do I deal with people who just
+aren't interested in improving how good they are at doing code reviews?
+
+**Michaela Greiler:**  
+I think it really depends on how bad it is, right? Sometimes I think, especially
+with written communication, there's a lot of research on that as well, written
+communication is difficult because the receiver has to interpret the message
+completely. There's no tone, there is no facial expression, there is no body
+language that you can read. So whatever the person says, you have to interpret.
+And there are studies that show that we are always on the negative side, people
+tend to negatively interpret that. So if there are two worlds, two truths or
+something like that, we tend to be on the negative interpretation side if you're
+reading something, much more negative than if we are hearing something.
+
+**Michaela Greiler:**  
+For example, there was a study by Kruger, it was about two people. It was the
+same email, an email that was sent to a group of people, and it was coming from
+two different senders. They had no information about the sender, just a picture.
+One was a punk, something like that, a wild person, and then the other was a
+nicely dressed businessman, or something like that.
+
+**Michaela Greiler:**  
+They're sending those messages, and the receiver had to rate their perceived
+intelligence of that person. So they had a Likert scale or something where they
+could say, "Do you think the person is intelligent or not?" Zero is no, that
+person isn't intelligent, and let's say four is they are very intelligent. It
+was an identical email, it was just the picture that was different. The punk
+guy, I think it was around zero-point-something perceived intelligence points.
+And the businessman was around 3.9, or something like that.
+
+**Michaela Greiler:**  
+And then they had that person, who was the same person, call. No facial, right,
+they didn't see each other, but calling, so you had the voice. Then the people
+had to rate again and it was leveling out. So just by having the person talk to
+you and listening to them, the perceived intelligence almost leveled out for the
+two people.
+
+**Michaela Greiler:**  
+This is just to say that written communication is really tricky. So what would I
+say? First is I would err on the side of caution, I would say maybe could you
+interpret it differently. Some people are very, very focused when they are
+working, so they forget all the niceties that you can do, right? Like saying hi,
+or thank you, or could you, or please. Maybe it wasn't meant that way.
+
+**Michaela Greiler:**  
+Then you could make an attempt to express what you need. So I would probably go
+back to really nonviolent communication and thinking, "Well, what's the need
+that I have that isn't met here?" That would be I don't feel that they are
+valuing me, for example, or I don't feel respected, or whatever is going on
+here. So really thinking about what's wrong with this message, why are you
+triggered by it.
+
+**Michaela Greiler:**  
+And then thinking what you would need, and thinking if you, in a very
+actionable, positive request, can make that. Say, "I would really appreciate if
+you could formulate your feedback in a more friendly way. For example, could you
+say please." You can be very concrete, it really depends on what's going on with
+that message, what's happening.
+
+**Michaela Greiler:**  
+But if in the end you think, "There's something going on, this is really toxic
+behavior," then I think you can also ask somebody to help you, maybe having a
+mediator. This becomes a more tricky situation, I think there is no one answer
+to it. You would have to see what's going on there, and why it's going on there.
+But what I also see is that communities are formed by the behavior that we
+allow. So if you just let it slip through, then you will get more of it.
+
+**Kent C. Dodds:**  
+Yeah, that's a very good insight right there. It sounds like, in general, first
+check your own bias against the assumptions that you're making on the message
+that they're trying to communicate, or the way they're trying to communicate it.
+But then especially a good takeaway for the project maintainers is that last
+thing that you said, the types of behavior that you allow are the types of
+behavior that will continue, and usually even grow. Yeah, that's a great
+takeaway.
+
+**Kent C. Dodds:**  
+Well, Michaela, it's been such a pleasure to talk with you about code review,
+and as we wrap up here I wanted to just ask if there was anything else that you
+wanted to bring up that I just didn't ask a good enough question about, or if
+there's anything else you wanted to mention right as we wrap up.
+
+**Michaela Greiler:**  
+Maybe just adding to the last thing, one of the things that I do recommend is to
+have a code of conduct for your code reviews. I think it's a good way to have
+that part of your policy, and really make clear what behavior is allowed and
+isn't allowed, and what will happen if you're breaching that. I think it's good,
+and I would advise that. Other than that, no, it was really fun talking to you.
+The time flew by, I didn't think it was 30 minutes already.
+
+**Kent C. Dodds:**  
+Yeah, it's been a good time. Thank you so much for sharing all of your
+knowledge, it's just amazing the amount of stuff that you know about this, and
+just thinking about the amount of experience that you've had working with teams
+and improving code reviews is awesome. You actually do have a talk for people
+who want to dive in deeper into some specific tips. It's called 10 Tips for
+Respectful and Constructive Code Review Feedback. It's on YouTube, totally free.
+
+**Kent C. Dodds:**  
+So our homework for everybody is to go and watch that, it's not super long, and
+then take a previous code review that you gave and critique your own review. See
+if there's anything that you could do to change that, and then maybe apply some
+of those learnings to your next one. Anything you want to add to that?
+
+**Michaela Greiler:**  
+No, I think that's perfect. And if you can make that a habit in your team, to
+just review your reviews and see how it can improve, I think that goes a long
+way.
+
+**Kent C. Dodds:**  
+Very good. Awesome, well thanks so much for coming. Just one last thing, what is
+the best way for people to reach out to you and maybe hire you to give them some
+training on it?
+
+**Michaela Greiler:**  
+Okay. Well, the best way, you can find me always on Twitter. You will probably
+link that there because it's not an easy handle, it's "mgreiler" again. I should
+maybe change that as well. Also via my website, all my workshops are on there
+for corporate trainings. Just send me an email and ... Yeah, sounds good.
+
+**Kent C. Dodds:**  
+Great. Awesome, thank you so much, it's been such a pleasure, and we'll chat
+with everybody next time. See ya.
+
+**Michaela Greiler:**  
+Sounds good, bye bye.
+
+</Transcript>

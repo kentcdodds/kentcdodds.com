@@ -1,0 +1,533 @@
+---
+title: Lindsey Kopacz Chats With Kent About A11y
+date: null
+description:
+  Lindsey talks about how she learned about a11y, why you should be making your
+  site accessible, and how you can start making your site accessible.
+meta:
+  keywords:
+    - a11y
+    - accessibility
+    - growth
+    - teaching
+    - career
+    - web development
+    - dev
+    - software
+    - education
+    - javascript
+    - mentorship
+simpleCastId: 1856a52b-1731-44ff-8790-e56f2b5f50a9
+---
+
+import Transcript from 'components/podcast/transcript'
+import Resources from 'components/podcast/resources'
+import Homeworks from 'components/podcast/homeworks'
+import Guest from 'components/podcast/guest'
+
+When Lindsey started, she didn't know what accessibility even meant. She would
+see that there was an "accessibility error" and fix it, but she didn't
+understand why she was fixing it. A11y clicked for her when she realized that
+the point of accessibility was to make the web usable for people with
+disabilities.
+
+Code, at its core, is about people, and it allows people to use and purchase
+products. Ultimately we code to make people's lives better, and if you aren't
+making your site accessible, then you are discriminating against the one in four
+people living with a disability. Accessibility is not an edge case.
+
+<div style={{display: 'grid', gridGap: 10, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'}}>
+<Homeworks>
+
+Install and use the AXE Chrome extension
+
+</Homeworks>
+<div>
+
+Doing the following will take you far!
+
+- Make sure you have form labels
+- Use alt text in your images
+- Don't leave buttons and links empty
+- Use buttons and links appropriately
+- Test your site with a screenreader
+- Navigate your website with the tab key
+
+</div>
+</div>
+
+<div style={{display: 'grid', gridGap: 10, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'}}>
+<Resources>
+
+- [AXE Chrome Extension](https://chrome.google.com/webstore/detail/axe/lhdoppojpmngadmnindnejefpokejbdd)
+- [Writing alternative text that matters](https://dev.to/lkopacz/writing-alternative-text-that-matters-3f1p)
+
+</Resources>
+<Guest name="Lindsey Kopacz" image="https://res.cloudinary.com/kentcdodds-com/image/upload/v1625034115/kentcdodds.com/content/podcast/02/01-lindsey-kopacz/lindsey-kopacz.png">
+
+- [Twitter](https://twitter.com/LittleKope?ref_src=twsrc%5Egoogle%7Ctwcamp%5Eserp%7Ctwgr%5Eauthor)
+- [Github](https://github.com/lkopacz)
+- [Dev.to](https://dev.to/lkopacz)
+- [Website](https://www.a11ywithlindsey.com/)
+- [egghead.io](https://egghead.io/instructors/lindsey-kopacz)
+- [LinkedIn](https://www.linkedin.com/in/lindsey-kopacz-70a09033/)
+
+</Guest>
+</div>
+
+---
+
+## Transcript
+
+<Transcript>
+
+**Kent C. Dodds:** Hello friends, this is your friend, Kent C. Dodds, and I'm
+joined by my friend, Lindsey Kopacz. So Lindsey coached me on how to say her
+name and I, I think I sort of said it right, but kind of wrong.
+
+**Lindsey Kopacz:** It's okay.
+
+**Kent C. Dodds:** Okay. Lindsey, I'm super excited to be joined with you today.
+I have been friends with Lindsey for, I don't know, like a year, maybe longer?
+
+**Lindsey Kopacz:** Probably about that.
+
+**Kent C. Dodds:** It's been a while and I don't even know how it started- just
+on Twitter probably- but it's been a good, good friendship. We chat all the time
+on egghead psych and stuff too. It's a total pleasure to be friends with Lindsey
+and I want you to be a friend with Lindsey, too. So Lindsey, can you introduce
+yourself to our audience?
+
+**Lindsey Kopacz:** Sure. So my name is Lindsey Kopacz. Kent got it almost
+right. And I am a front end developer and I blog about accessibility and I'm
+really passionate about the intersection of JavaScript and accessibility in
+particular. Yeah, that's a very, very quick overview of me. But my main passion,
+if you don't know who I am, is accessibility. I hope that's obvious to the
+people who do know, but yeah. Any followup questions, or...?
+
+**Kent C. Dodds:** Yes. I think we're going to dive quite a bit into your
+accessibility background and that kind of thing. You also have a cat. Can you
+tell us a little bit about your cat?
+
+**Lindsey Kopacz:** Sure. Well, my cat's name is Bella. I actually got her about
+two years ago. She's eight, actually. So one of my best friends got a dog and
+owned Bella and Bella did not like the dog, so I ended up...at the time I wanted
+a cat, so I ended up being like, hey, I can take your cat. And she's super
+sweet, super snugly. When I got back from React Rally, she was very upset
+because she had not any days of cuddling.
+
+**Kent C. Dodds:** Aw.
+
+**Lindsey Kopacz:** So she has, she's pretty cute. She like likes to come up
+into like my armpit nook when I wake up in the morning, which is kind of
+uncomfortable but super adorable at the same time. But she's sweet and she keeps
+me company when I'm working from home, which is, I mean, I think for a lot of
+people working from home, having an animal is super helpful. Or even just like
+anybody like your partner or like a kid or something. But my partner works not
+at home, so I don't get that pleasure, so I get my cat instead. She hangs out
+with me.
+
+**Kent C. Dodds:** Mm.
+
+**Lindsey Kopacz:** Yeah.
+
+**Kent C. Dodds:** Yeah. But definitely working from home can be kind of
+lonesome. So having some living, breathing organism around can be really
+helpful.
+
+**Lindsey Kopacz:** Totally. Totally.
+
+**Kent C. Dodds:** Cool. Well Lindsey, you are super into accessibility. You
+write blog posts about it and Egghead stuff about it and you do have Egghead
+stuff, right?
+
+**Lindsey Kopacz:** Yeah, I have- I don't have any courses, just lessons at this
+point. I probably have like 10 lessons on it. Not a ton, but it's definitely a
+decent amount compared to some.
+
+**Kent C. Dodds:** That's 10 worthwhile lessons to watch for sure.
+
+**Lindsey Kopacz:** Yeah.
+
+**Kent C. Dodds:** So, awesome. So what is it that got you into accessibility?
+Like, why do you care so much and why should I care?
+
+**Lindsey Kopacz:** So I actually started working in accessibility kind of by
+accident. I was actually a technical project manager at the time, but I was
+still trying to get my hands into code, like I went from being a coder to a
+technical project manager and missing it. So trying to get into the code as much
+as possible. So whenever I had extra tickets I would try to jump in and help
+with them. So one of the tickets that I had was accessibility errors that were
+happening and needing to fix them. And quite frankly, it's embarrassing to admit
+now that I didn't even know what accessibility meant. I just knew it was an
+error, kind of like how you have like responsive errors or like browser errors
+on different browser views. So I kind of thought of it like that, but didn't
+actually know why I was fixing it.  
+And that's important and I'll get back to that later. But I started fixing them
+and didn't actually know what I was doing, so I would go to other developers and
+be like, I got this error. I literally have no idea what it means. And I would
+figure out what it meant through them, but they still wouldn't tell me what
+accessibility was. They're just like, Oh, you need a slap this like four on this
+label and put that ID on an input and then you'll be good. And I was like, okay,
+cool. I guess that's good. But I just always have that natural curiosity. So I
+started realizing it was for people with disabilities and that made me really
+start liking it because I've always had, I know it's really corny to say I'm a
+people person, but I've always had this...my hardest part about being in tech is
+I love people and tech can be isolating sometimes when you're not around
+people.  
+So for me, it just gave me a deeper connection once I learned a lot about what
+it is. So I decided to learn more about it. I was like, I'm going to give a talk
+on it. And that is the best way to force yourself to learn something is to give
+a talk on it.
+
+**Kent C. Dodds:** Absolutely.
+
+**Lindsey Kopacz:** You have a deadline. So I got accepted for an intro to
+accessibility talk and I think it was for the Tech Lady Hackathon in 2016 and
+now it's called Tech Rebalance, but it's basically a little mini-conf we have
+here in D.C. And it's really incredible...I don't want to call it a conference
+because they called it a hackathon, but it's basically a very mini conference
+and it was really fun and I learned a lot in the process and after that it just
+sort of started really, really snowballing into my learning and learning more
+about it. And three years later, here I am.
+
+**Kent C. Dodds:** Wow. Yeah, that's, that's quite interesting. I know lots of
+people who are super into accessibility have some connection, whether it be
+themselves, like Johnny...oh shoot. What's Johnny's last name? He just spoke at
+React Rally.
+
+**Lindsey Kopacz:** Johnny Bell?
+
+**Kent C. Dodds:** Yeah. Yeah. Johnny Bell. Yeah. He doesn't have a, let's see,
+is it his left hand?
+
+**Lindsey Kopacz:** Yeah.
+
+**Kent C. Dodds:** He was born without a left hand. And so he clearly has a
+strong connection to that. And Marcy Sutton, I think, has a close friend who has
+a disability. Ryan Florence worked next to a blind to developer for years and
+developed that strong connection. And it sounds like you just really like and
+care about people and that's a wonderful reason to get into this.
+
+**Lindsey Kopacz:** Yeah, totally. Actually, a little bit of a sidebar story is
+after I started learning more about it, at the time I actually had a blind
+roommate and it's one of those things I kind of realized at the time and how
+that actually aligns with that time of my life because she was actually really,
+really functional. And I think for me, it made me realize that...it kind of
+helped me stop othering people and start thinking about, it's a little
+embarrassing to admit that I've ever done that, but you know, she was so human
+and sweet and awesome.  
+And then when I heard her on a screen reader ordering things, I'm like, how do
+you do that? And she's like, "oh, you'll get used to it". And I'm like, oh my
+God, it sounds awful when things are messed up. And you know, I think about that
+a lot and I'm kind of embarrassed I didn't include that as the first part of my
+story. But it's actually kind of important because when it comes down to it,
+accessibility is about people, you know? And it's, you know, there's code
+solutions and testing and stuff, but it's about people and people being able to
+use products. And ultimately when it comes down to it, what are we even coding
+for? We're coding to make people's lives better.
+
+**Kent C. Dodds:** Yeah, exactly. So this actually makes me think of something
+that has happened pretty recently. I think it's actually still going on where
+Domino's, as delicious as their pizza is, their website is not very delicious if
+you need to use a screen reader because it's, like, totally inaccessible. And so
+you can't order a pizza like a seeing person can, for example.
+
+**Lindsey Kopacz:** Totally.
+
+**Kent C. Dodds:** And the fascinating thing about all of this is that they did
+some analysis and it's like they decided it was millions of dollars to fix all
+of these problems and they're just not going to do it. So they're pushing back
+on this lawsuit and taking it, I think to the Supreme court, and that's just,
+like, bonkers to me. But I am curious what your take on this is. In particular,
+why do you think that it's not just acceptable for somebody to say, you know
+what, I'm going to make a pizza place that's only for people who can see and can
+actually order on this, you know, through this medium of my website. Like why is
+it unacceptable? I almost said inacceptable and then it's like \[inaudible
+00:10:06\] . Why is it not acceptable for a company to just say, you know, I
+know that I'm limiting my customer base and I'm okay with taking that customer
+base hit, I guess.
+
+**Lindsey Kopacz:** Yeah. Well, I mean for me it's just like the literal, I
+don't like to say the legality of it because it sounds so sterile and clinical,
+but it's discrimination. You're literally like withholding somebody from your
+service for no reason other than you're being cheap. And the ironic part in my
+head, if you're even thinking about money, is you probably would make that money
+back because who needs the apps or who needs to order online the most are people
+who might not be able to drive. I mean that's, for me, the part where I'm like,
+there's so many reasons why you would want to use an app versus the phone or
+driving. And you know, for me, I get a lot of telephone anxiety, so if there is
+an app to use, I will most likely use that.  
+And I think about other people. I'm like, what's saying that somebody who is
+blind doesn't have phone anxiety? You know, they're human. People are humans.
+Some people have phone anxiety. Some people don't want to call them. Some
+people, you know, I don't know. For me, it doesn't make a lot of sense because
+one, from the financial aspect, you will probably make that money back. Second
+of all, I know for a fact that most accessibility issues aren't that expensive
+unless it was so poorly designed that, I don't know, I just, I get so angry
+about it so I'm trying really hard to \[inaudible 00:11:52\] myself.
+
+**Kent C. Dodds:** Yeah.
+
+**Lindsey Kopacz:** But the very short version is: it might cost money, but
+Domino's is a multi-million, I'm sure, dollar company that can afford it and
+they're literally just taking a stance to be a jerk. Like that's kind of what my
+read on it is, like, why don't you just settle for it and then make your site
+accessible? I think that would even be way cheaper than pushing it to Supreme
+Court or, I don't know. I think about that, even if you're going to take 'be a
+good person' part of out of it, it just doesn't make a lot of logical sense.  
+I mean, I have a lot of trouble with the legal reasons and the business reasons
+of why you should do something, because for me, the motivation has always been
+very empathy driven. But I get so ranty when I'm like, it literally doesn't make
+sense. Like, eCommerce businesses have so many problems in this space and
+they're the ones who can financially benefit from it the most. And from a
+logical standpoint, it confuses me. I don't know.
+
+**Kent C. Dodds:** Yeah.
+
+**Lindsey Kopacz:** That was a very ranty answer to your question.
+
+**Kent C. Dodds:** No, no, it's fine. On top of that, I saw Ryan Florence was
+like, "hey, Domino's, you give me, like, \$500,000 and I'll get this done in
+three months". It's not that hard. It really is not. And that actually is a
+great transition into the next thing that I want to talk about is I think that
+there's been a lot of focus on, you know, accessibility, focusing on
+accessibility and fixing those problems can be a huge help financially and just
+to be a good person. And there are all these reasons to do it, but people still
+don't.  
+And so I'm trying to think of, like, why is it that people don't do this? And
+I'm guessing it must be because they don't know how. And so, I'm still learning
+about accessibility, but I certainly have that low hanging fruit down. Like,
+it's just a natural part of my coding now. So it's actually not that hard. So
+why is it that people just haven't learned how, and I guess that's the question
+that I'd like to pose to you. What do you think is holding back some people from
+investing some time into learning how to do this?
+
+**Lindsey Kopacz:** So I think personally, something I'm pretty opinionated
+about is I think there's a lot of tutorials out there for people who are
+self-taught coders. So a lot of online materials, a lot of coding boot camps. So
+a lot of people who are coming from nontraditional educational backgrounds in
+tech and a lot of the front end stuff, like the HTML and CSS, it either gets
+taught really quickly or it doesn't get taught in depth. And you know, a lot of
+times, that's 80% of the problem is just improper HTML and CSS. Because at the
+end of the day, what do these front end frameworks render? HTML. So I think, you
+know, I see that and I think it's mostly just an ignorance problem and not
+knowing it's a thing. And I don't think ignorance is necessarily the enemy of
+accessibility. I think willful lack of empathy is the enemy.  
+And when you know, you're like, oh this is an edge case or not that many people.
+I mean, we were just at React Rally and we heard Johnny's talk and, you know,
+it's like one in four people, at least in America, that have a disability and
+that's not trivial. So I think about that a lot and I think a lot of it is
+ignorance, but I don't think that's necessarily the enemy because ignorance can
+be fixed. So I didn't learn about it until I had been doing web development for
+at least two years. And being in this industry for two years, I had no idea. And
+you know, a lot of times we kind of just start going into HTML and because HTML
+is syntactically easier than Java script. A lot of people take it for granted
+and just kind of skip over a lot of the attributes that... just small attributes
+that make things better.  
+And there's things that I still don't even know. I mean, I think I know a decent
+amount, let's hope. But there are things that I learn every day about
+accessibility in HTML and things that I've done or I've approached that could be
+improved and, and even new HTMLs coming out to make the browser better and
+there's better ways of doing things. So it's constantly learning, but I think
+it's just like the knowledge isn't built in from the start so people don't think
+about it from the start. So whenever I teach anything, like any intro to coding,
+you better believe accessibility gets thrown in there like very heavily. And
+people are like, well what is alt text? And I'm like, well have you ever thought
+about what this image would be announced as if you couldn't see? Like what would
+you need for this image to get the context of that picture? And sometimes the
+context is, it's decorative.  
+And for me, I remember realizing you could have empty alt text and when you
+could have empty alt text, that means it doesn't add any value. It's just
+decorative. Like on a bio page or something. And if you're on the bio page of
+your team and you haven an image, you have the empty alt text because all of the
+context of that page for Kent C. Dodds, like your bio page, you don't
+necessarily need your alt text on your photo or you don't need a non empty
+value. You still need an empty alt tag. But that's because all of the
+information about Kent C. Dodds is there. Or wait, what is it, Ken C. Dots? Is
+that your new name?
+
+**Kent C. Dodds:** Yeah.
+
+**Lindsey Kopacz:** Sorry, I thought I saw that change.
+
+**Kent C. Dodds:** \[inaudible 00:18:17\] For the listeners, David Khourshid
+gave a talk at React Rally and in the talk, he had a bunch of dots on the screen
+that were creating a model, a state machine. And he gave it a bunch of different
+names and he said you can call whatever you want. You could even call it Ken C.
+Dots. So I changed my Twitter name for a day. \[inaudible 00:18:38\]. You know,
+something occurred to me while you were talking and I wonder if one of the
+reasons why that people don't learn accessibility is because they don't use the
+tools of accessibility like the people who need those accessibility features do.
+For example, of course your website works with a mouse because like pretty much
+everybody who's building the website is using a mouse.  
+And so, if it doesn't work with the mouse then they can see that, oh very
+clearly, this is a bag because it's not working with a mouse. And lots of dope
+developers like to be on the keyboard a lot. And so typically, lots of the time,
+the keyboard will work pretty well, at least sometimes. At least in sections of
+the app where the developers are iterating a lot or something. And so I wonder
+if people listening, if they want to get good at accessibility, maybe finding
+the tools of blind people or otherwise would be a good exercise for them.
+
+**Lindsey Kopacz:** Totally. And the same thing like with motor disabilities or
+even screen readers. So something that I actually learned, well, not recently
+but relatively recently, is that a lot of people with dyslexia actually use
+screen readers, so it's not just for people who have visual impairments, but
+it's also for people who have cognitive disorders who may have trouble reading,
+people who have maybe a lower reading level. It's super helpful to them as well.
+So it's not just about visual impairment. I know we hear about screen readers
+and we always think somebody who's blind or somebody maybe has low vision or
+something. But a lot of times, actually that's how I edit most of my blog posts
+is with a screen reader because I have ADHD and until I started using a screen
+reader, I would read through halfway, get distracted, forget where I was, start
+over.  
+And then you think about it and it would happen over and over and it would take
+me, like, three days to edit a blog post. And just by using a screen reader,
+I've shortened that so much because you can hear when something sounds off
+because the screen reader will tell you. It reads it exactly how it says it. And
+it's also a lot more foolproof that way because you don't accidentally miss over
+something. And for me, I have high anxiety and also ADHD. So those are like not
+exactly the best siblings of cognitive disorders. But yeah. I think with, with
+that being said, this is a little bit of a tangent, but when I think back to
+just testing and thinking through things, it's actually really helpful for
+everyone.  
+You were saying with developers- I use a lot of keyboard shortcuts, especially
+when I'm typing. So if I'm deleting words, I usually use option shift in the
+arrows and stuff for deleting words. And I was on Evernote, not their desktop
+app, their web app. And I actually think all of those were disabled. It was
+super frustrating.
+
+**Kent C. Dodds:** Boo.
+
+**Lindsey Kopacz:** Huh?
+
+**Kent C. Dodds:** I just said boo.
+
+**Lindsey Kopacz:** I know, I was really upset about it. But I mean it was fine.
+Like out of all times for me to complain, I think that's a little trivial, but
+you know, who knows? Maybe it's not trivial. Maybe that's a super important
+feature for somebody. But you know, I think with what you were saying about
+testing before I got into my very long tangent, I think testing really helps you
+understand why things are important.  
+So even just like the manual testing, even if you go into automated testing or
+you go into writing your own tests, it's really important to understand the why.
+And that's what I like a lot about AX and WebAIM or the WAVE tool with WebAIM
+and even just a keyboard is you're like, oh, that's why that stinks. You know?
+It gives you that 'why' in that context of why you have to fix. And hopefully I
+like to think that most of us are good people and you're like, oh, I don't want
+to exclude my users. I feel like a lot of us in front end development care a lot
+about our users. And so we're like, okay, well we don't want our user to be
+literally unable to use something.  
+So manual testing is how I started getting much better at JavaScript is because
+I was to fix a lot of the problems that weren't just HTML and CSS stuff, but,
+like, focus management. And focus management is how I started learning more
+about JavaScript. It's kind of fascinating, because I hear a lot of times where
+JavaScript and accessibility get juxtaposed against each other, but I literally
+started getting better at JavaScript because I needed to solve accessibility
+things and I just kind of continued going on that path and getting better at
+JavaScript and understanding a little bit more about JavaScript. I find it
+fascinating to me how people in the JavaScript realm are a little more
+intimidated by it because I think there's so many cool opportunities to learn
+and get better at JavaScript through it.
+
+**Kent C. Dodds:** Yeah. That's wonderful, thanks for saying all those things.
+I'm trying to think of which of those, I want to \[crosstalk 00:24:44\].
+
+**Lindsey Kopacz:** Sorry, I'm a chatty Cathy sometimes.
+
+**Kent C. Dodds:** No, no, it's wonderful. So I wonder if part of the struggle
+to getting into accessibility...the thing is, that we know, clearly, that there
+are many people who have just not even taken those first steps into getting
+things accessible because things as simple as labels not being associated to
+input fields on a form is not happening. And lots of these things are just like,
+that's such low hanging fruit that there's really no good reason for those
+things to not be taken care of. And so what would you say are some of the things
+that people can do, just as we're kind of wrapping up here, that people can do
+to get into learning accessibility and just turn it into a habit?
+
+**Lindsey Kopacz:** Awesome. So the first thing, if you're just getting started,
+is I would not worry about ARIA, which seems to intimidate a lot of people. I
+would just start going into, like you said, labels for form inputs. The other
+one is making sure that alt text is proper and I have actually a blog post all
+about that, that I could explain in more depth. And a few other things that I
+think are super important is making sure you're using links and buttons properly
+and not leaving either of them empty. And so what I mean by that is remembering
+that links go places and buttons are usually interactive functionality. I think,
+a lot of times, people don't like the default styling of a button. So they'll
+either make it a link and change the role and then make the HREF like a pound
+sign, when really all they really need is a little bit of CSS to reduce the
+styling. And the even worse part is when they a Div instead. Because then you
+don't get all this stuff that's built in.
+
+**Kent C. Dodds:** Yeah, yeah. There's so much that's just built in for free.
+And you're intentionally going off of the path.
+
+**Lindsey Kopacz:** Yeah.
+
+**Kent C. Dodds:** Like, you're making it worse and working hard at it, too.
+
+**Lindsey Kopacz:** Yeah, totally. For me, because they're not thinking past
+just the mouse, they're like, oh, this works with the mouse, I have to write a
+click event. But they don't realize what they're missing out on. So the other
+part is just learn your semantic HTML. The semantic HTML will get you 80% of the
+way there. And so those are probably my four biggest HTML takeaways. And the
+other thing with getting started with accessibility is don't be afraid to turn
+on your screen reader and don't be afraid to try to navigate something with your
+keyboard. And the only thing that you really need to do to navigate with your
+keyboard is just press the tab key and make sure you know exactly where you are
+on the page. It should be very obvious. So those I think are the...I said four
+takeaways, but I guess I added two more with the screen reader and the the
+keyboard.  
+So just making sure you have form labels, making sure you have proper
+alternative text, making sure you don't leave your buttons or links empty and
+making sure that you are using links and buttons appropriately. And then not
+being afraid to turn on your screen reader. If you use a Mac, it is command,
+F, 5. You don't even have to go all the way into your settings. You can
+literally just use that shortcut and then making sure you go through it with a
+keyboard by using the tab key. So those are like my six things. That's a lot.
+But I think if you go through that you are, like, 90% of the way there. And you
+will get so much done and learn so much just by doing those six things. I wanted
+to make it as actionable of a takeaway as I could because when it comes down to
+it, I can talk about it, but if you don't have action items, it defeats the
+purpose.
+
+**Kent C. Dodds:** Yeah, absolutely. And there are tools that exist that people
+can use, like it's built into the browser, the accessibility audit, so you can
+do an accessibility audit. And then if you want to take it a step further, and
+this is our homework for folks, is go in and install the AX Chrome extension.
+And I'll have a link in our show notes. But if you install that, then it will
+give you pretty much everything you get from the audit but a little bit more and
+in more detail.  
+And I think a lot of it has to do with, as you were saying, Lindsey, earlier,
+ignorance. And it's not necessarily the enemy, but it definitely feeds into the
+problems that we have today. And here's the cool thing: if you get really good
+at accessibility, which Lindsey just said, it doesn't take a lot of work and I
+can tell you that as well. I mean it's not an easy thing. Nothing in programming
+is easy. But if you were to dedicate some time into learning it and being good
+at it, then you can go off and be a consultant and maybe make 3 million dollars
+from Domino's. \[crosstalk 00:30:11\]. But yeah, in all seriousness, this is
+definitely something that's worthwhile learning and it makes things better for
+everybody, not just those using assistive technologies. And even if it were just
+for those using assistive technologies would be worth the while.
+
+**Lindsey Kopacz:** Agreed. Agreed. Yeah. But accessibility is for everyone.
+True.
+
+**Kent C. Dodds:** Well, that was awesome, Lindsey. Before we wrap things up, is
+there a best way to contact you, connect with you online?
+
+**Lindsey Kopacz:** Sure. So best way to get in touch with me is always going to
+be Twitter because I don't check LinkedIn or my email. I'm so bad at email. So
+if you want to get in touch with me, either send me a DM on Twitter. My handle
+is @LittleKope. So that is K.O.P.E. It's actually a shortening of my last name.
+So yeah. That's the easiest way to get in contact with me.
+
+**Kent C. Dodds:** Sweet. Cool. Thank you so much, Lindsey. It's been a
+pleasure. I hope that you have a wonderful rest of your day and week and that
+those listening also have a great day and that we can make good connections and
+improve the world through accessibility. So with that, we'll say goodbye. See
+ya!
+
+**Lindsey Kopacz:** Bye Kent!
+
+</Transcript>

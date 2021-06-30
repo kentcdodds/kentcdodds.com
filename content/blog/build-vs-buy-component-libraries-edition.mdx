@@ -1,0 +1,112 @@
+---
+title: 'Build vs Buy: Component Libraries edition'
+date: 2021-02-04
+description:
+  Some things to think about before you decide to create your own component
+  library.
+categories:
+  - open source
+meta:
+  keywords:
+    - components
+    - react
+    - angular
+    - vue
+    - business
+    - oss
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032553/kentcdodds.com/content/blog/build-vs-buy-component-libraries-edition/banner.jpg
+bannerCredit: Photo by [George Bakos](https://unsplash.com/photos/VDAzcZyjun8)
+---
+
+When you started your last software project, did you write your own programming
+language first? Did you build your computer from scratch? Of course not. That
+would be ludicrous. It would be a waste of time (and in sustainable business
+that means money). It's not your core competency. It's not your value
+proposition. You'd run out of money before you finished.
+
+When you started working on that user preferences page of your app (or whatever
+the latest feature you implemented was), did you just grab something off the
+shelf? It's very possible your database of choice has a pre-built UI interface
+for simple CRUD actions. Why didn't you just use that? Probably because your
+customers expect a professional, modern, and consistent design and experience
+throughout the app and that pre-built UI couldn't do that for your customers.
+
+Those are examples of the extremes of build vs buy in the software business.
+There's gonna be a middle-ground between those two lines of thinking that's
+optimal for the success of your project (and your career/the business).
+
+The open source world is filled with amazing libraries and frameworks that can
+help us get our software built and delivered to users quickly. Libraries like
+[ReachUI](https://reach.tech/), [MaterialUI](https://material-ui.com/), and even
+some company-built component libraries like
+[Adobe's React Spectrum](https://react-spectrum.adobe.com/) are mature and
+battle-tested (and importantly: accessibility-tested). Encouragingly in the UI
+space, there are even paid options that are becoming available (for example
+[TailwindUI](https://tailwindui.com/) and [Remix](https://remix.run/)). For many
+things you'll find yourself engaged in as a UI developer, there are existing
+solutions for the problems you'll face.
+
+What I love about this is that it means there are fewer things I have to spend
+my time doing that aren't my core competency as a developer. Just like it would
+be ludicrous for me to build my own programming language, it would be just as
+foolish for me to build my own modal implementation when such great ones exist
+already.
+
+I can hear some of you complaining already, so let me address the elephant in
+the room. Sometimes you'll find that you just don't like the way a component was
+implemented and you're bending over backward to fit your use case into their
+API. I would suggest that when what you're dealing with is a mature and
+established solution for the kind of UI you're trying to build, that you pause a
+moment. Consider whether what bothers you about the implementation is really a
+legitimate issue (performance and/or accessibility problems for example), or if
+it's just a matter of familiarity. Often we can have knee-jerk reactions to APIs
+that are different from what we're used to and it would be a mistake to let
+those first impressions control whether we embraced the new (React + JSX comes
+to mind for me).
+
+Please keep in mind that I'm not saying you should never build a component
+library for your company. Most companies _should_ do that (heck, where do you
+think most of the existing solutions came from?). But for goodness sake, if
+you're thinking about building your own accordion, tabs, or combobox, _please_
+reconsider. These are nontrivial to do well. Personally I blame the web platform
+for this problem (style-able versions of these common components should be
+baked-into the platform), but that's irrelevant to this discussion. Find a
+mature and battle-tested version of these kinds of low-level components and use
+that instead. Your company is not as much of a unique snowflake as you might
+like to think.
+
+The kinds of components that _should_ be included in your company's component
+library are the ones that wrap the lower-level primitive components for the
+common use cases in your application. And no, I'm not saying: "make a wrapper,
+then you can swap out the implementation" (this rarely works in practice). What
+I'm saying is you take the capabilities of the components you've chosen and you
+limit what people can do to promote consistency in your UI and codebase as much
+as is practical. Additionally, there are probably UI elements in your
+application that are pretty unique to your application, but are a composition of
+several other lower-level components. Those are also good candidates for a
+component library of your own.
+
+So sure, you can have a component library that includes things like buttons,
+layout, typography, form elements, etc. But you don't have to build every one of
+these things from scratch. The other day, I saw a button component with
+_thousands_ of lines of code. I mean, these things can get surprisingly complex
+if you let them, but for goodness sake, please just focus on your business.
+
+I know it can be a lot of fun to build everything yourself. When I was at
+PayPal, I worked on a React component library and I built the button from
+scratch (but I also wrapped some open source stuff for other components). So
+I've been there. But not all companies have the resources to dedicate an
+engineer or two solely on building UI components. At some point, you've gotta
+put those components into something useful to the people who pay the bills. And
+those people don't pay for your internal component library doc's site (even if
+it _does_ have runnable in-browser code examples).
+
+I really don't want to make it sound like having a component library of some
+kind is a waste of time. It is not a waste of time. But you've just got to
+balance your excitement for building the perfect abstraction for a `<Divider />`
+with the practicality of the sustainability of your business. Keep in mind the
+core-competency of your business and don't just go for the "build" option
+because it's a fun technical challenge, but because it's actually necessary for
+your business to succeed.
+
+Whatever mix of build and buy you go for, I wish you the best of luck. 👍

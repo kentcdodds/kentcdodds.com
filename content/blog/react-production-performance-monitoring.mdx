@@ -1,0 +1,179 @@
+---
+title: React Production Performance Monitoring
+date: 2020-03-16
+description:
+  How to set up performance monitoring for production React applications.
+categories:
+  - react
+meta:
+  keywords:
+    - performance
+    - javascript
+    - monitoring
+    - react
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033295/kentcdodds.com/content/blog/react-production-performance-monitoring/banner.jpg
+bannerCredit: Photo by [Luke Chesser](https://unsplash.com/photos/JKUTrJ4vK00)
+---
+
+We should always ship fast experiences to our users, but sometimes something
+slips through our PR review process and our users start having a slow
+experience. Unless they complain to us, we often have no way of knowing that
+things are going so slow for them. User complaints is not a great policy for
+quality control.
+
+Because we can't make every user install the React DevTools and profile the app
+for us as they interact with it, it would be nice if we could somehow track some
+of the render times and get that information sent to our servers for us to
+monitor.
+
+There are existing solutions for monitoring and measuring the performance of
+your app regardless of what framework you're using
+([Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) is especially
+interesting). That said, the React team has created an API specifically for
+measuring the performance of your React components in production. It doesn't
+give us quite as much information as the React DevTools do, but it does give us
+some useful information that will help you determine where performance issues
+lie.
+
+> NOTE: for any of this to work in production, you need to enable React's
+> profiler build. There's a small performance cost for doing this, so
+> facebook.com only serves the profiler build of their app to a subset of users.
+> Learn more about how to enable the profiler build from
+> [Profile a React App for Performance](/blog/profile-a-react-app-for-performance).
+
+Here's a basic usage example of React's
+[`<Profiler />`](https://reactjs.org/docs/profiler.html) component:
+
+```jsx
+<App>
+  <Profiler id="Navigation" onRender={onRenderCallback}>
+    <Navigation />
+  </Profiler>
+  <Main />
+</App>
+```
+
+The `onRenderCallback` function is called with the following arguments:
+
+```javascript
+function onRenderCallback(
+  id, // the "id" prop of the Profiler tree that has just committed
+  phase, // either "mount" (if the tree just mounted) or "update" (if it re-rendered)
+  actualDuration, // time spent rendering the committed update
+  baseDuration, // estimated time to render the entire subtree without memoization
+  startTime, // when React began rendering this update
+  commitTime, // when React committed this update
+  interactions, // the Set of interactions belonging to this update
+) {
+  // Aggregate or log render timings...
+}
+```
+
+**It's important to note** that unless you build your app using
+`react-dom/profiling` and `scheduler/tracing-profiling` this component wont do
+anything. You can learn how to set that up from my blog post
+[Profile a React App for Performance](/blog/profile-a-react-app-for-performance).
+
+From here, you'll want to send the `onRenderCallback` data to a monitoring tool
+(like [Grafana](https://grafana.com/) for example). Because re-renders can
+happen a LOT, I'd personally suggest batching them up and sending them together
+every 5 seconds or so. For example:
+
+```javascript
+let queue = []
+
+// sendProfileQueue every 5 seconds
+setInterval(sendProfileQueue, 5000)
+
+function onRenderCallback(
+  id,
+  phase,
+  actualDuration,
+  baseDuration,
+  startTime,
+  commitTime,
+  interactions,
+) {
+  queue.push({
+    id,
+    phase,
+    actualDuration,
+    baseDuration,
+    startTime,
+    commitTime,
+    interactions,
+  })
+}
+
+function sendProfileQueue() {
+  if (!queue.length) {
+    return Promise.resolve()
+  }
+  const queueToSend = [...queue]
+  queue = []
+  // here's where we'd actually make the server call to send the queueToSend
+  // data to our backend...
+  console.info('sending profile queue', queueToSend)
+  return Promise.resolve()
+}
+```
+
+Something to keep in mind is that because this is running in production, React
+does it's best to not hurt performance in the measuring of it (which is pretty
+sensible). Because of this, we're limited in the information we can receive. So
+you'll probably want to strategically place `<Profiler />` components in your
+app with sensible `id` props so you can determine the source of the performance
+issue more easily.
+
+Note also that you _can_ nest these:
+
+```javascript
+<App>
+  <Profiler id="Navigation" onRender={onRenderCallback}>
+    <Navigation />
+  </Profiler>
+  <Profiler id="Main" onRender={onRenderCallback}>
+    <Main>
+      <LeftNav />
+      <Profiler id="Content" onRender={onRenderCallback}>
+        <Content />
+      </Profiler>
+      <RightNav />
+    </Main>
+  </Profiler>
+</App>
+```
+
+In this case, if `<Content />` were to get a rerender, the `Content` and `Main`
+profiler `onRenderCallback`s would get called (not the `Navigation` one). If
+`<LeftNav />` got a rerender, then `Main` would get called, but not `Content` or
+`Navigation`.
+
+Here's an example of what the data looks like:
+
+```javascript
+{
+  id: "Navigation",
+  phase: "update",
+  actualDuration: 0.09999994654208422,
+  baseDuration: 0.3799999540206045,
+  startTime: 104988.11499998556,
+  commitTime: 104988.45000000438,
+  interactions: [ // this is actually a Set, not an array
+    {
+      __count: 0
+      id: 3,
+      name: "menu click",
+      timestamp: 104978.33499999251,
+    }
+  ],
+}
+```
+
+You can learn more about that (experimental) interactions thing from
+[this gist](https://gist.github.com/bvaughn/8de925562903afd2e7a12554adcdda16)
+
+Throwing this data into monitoring software could help you find some interesting
+trends and spot performance regressions (spikes).
+
+Good luck! Happy profiling.

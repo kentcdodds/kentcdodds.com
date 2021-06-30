@@ -1,0 +1,529 @@
+---
+title: Inversion of Control
+date: 2019-11-18
+description: A simple principle that can drastically improve your reusable code
+categories:
+  - javascript
+meta:
+  keywords:
+    - abstractions
+    - react
+    - javascript
+    - state reducer
+    - control props
+    - react hooks
+    - render props
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033042/kentcdodds.com/content/blog/inversion-of-control/banner.jpg
+bannerCredit: Photo by [Jasper Garratt](https://unsplash.com/photos/CL96u03iK_Y)
+---
+
+**[Watch "Implement Inversion of Control" on egghead.io](https://egghead.io/lessons/egghead-implement-inversion-of-control?pl=kent-s-blog-posts-as-screencasts-eefa540c)**
+
+https://egghead.io/lessons/egghead-implement-inversion-of-control?pl=kent-s-blog-posts-as-screencasts-eefa540c
+
+Current Available Translations:
+
+- [Russian](https://habr.com/ru/post/485012/)
+
+If you've ever built code that was used in more than one place before, then
+you're likely familiar with this story:
+
+1. You build a reusable bit of code (function, React component, or React hook,
+   etc.) and share it (to co-workers or publish it as OSS).
+2. Someone approaches you with a new use case that your code doesn't _quite_
+   support, but could with a little tweak.
+3. You add an argument/prop/option to your reusable code and associated logic
+   for that use case to be supported.
+4. Repeat steps 2 and 3 a few times (or many times 😬).
+5. The reusable code is now a nightmare to use and maintain 😭
+
+And what is it exactly that makes the code a nightmare to use and maintain?
+There are a few things that can be the problem:
+
+1. 😵 **Bundle size and/or performance:** There's just more code for devices to
+   run and that can impact performance in negative ways. Sometimes it can be bad
+   enough that people decide to not even investigate using your code at all
+   because of these problems.
+2. 😖 **Maintenance Overhead:** Before, your reusable code only had a few
+   options and it was focused on doing one thing well, but now it can do a bunch
+   of different things and you need documentation for those features. In
+   addition, you'll get a lot of people asking you questions about how to use it
+   for their specific use cases which may or may not map well to the use cases
+   you've already added support for. You may even have two features that
+   basically allow for the same thing, but slightly differently so you'll be
+   answering questions about which is the better approach.
+3. 🐛 **Implementation complexity:** It's _never_ "just an `if` statement." Each
+   branch of logic in your code compounds with the existing branches of logic.
+   In fact, there are situations where you could be supporting a combination of
+   arguments/options/props that nobody is using, but you have to make sure to
+   not break as you add new features because you don't know whether someone's
+   using that combination or not.
+4. 😕 **API complexity:** Each new argument/option/prop you add to your reusable
+   code makes it harder for end users to use because you now have a huge
+   README/docs site that documents all of the available features and people have
+   to learn everything available to use them effectively. It's less of a joy to
+   use because often the complexity of your API leaks into the app developer's
+   code in a way that makes their code more complex as well.
+
+So now everyone's sad about this. There's something to be said for shipping
+being of paramount importance when we're developing apps. But I think it'd be
+cool if we could be thoughtful of our abstractions (read
+[AHA Programming](/blog/aha-programming)) _and_ get our apps shipped. If there's
+something we could do to reduce the problems with reusable code while still
+reaping the benefits of those abstractions.
+
+## Enter: Inversion of Control
+
+One of the principles that I've learned that's a really effective mechanism for
+abstraction simplicity is "Inversion of Control." Here's what
+[Wikipedia's Inversion of control page](https://en.wikipedia.org/wiki/Inversion_of_control)
+says about it:
+
+> ...in traditional programming, the custom code that expresses the purpose of
+> the program calls into reusable libraries to take care of generic tasks, but
+> with inversion of control, it is the framework that calls into the custom, or
+> task-specific, code.
+
+You can think of it as this: "Make your abstraction do less stuff, and make your
+users do that instead." This may seem counter-intuitive because part of what
+makes abstractions so great is that we can handle all the complex and repetitive
+tasks within the abstraction so the rest of our code can be "simple", "neat", or
+"clean". But as we've already experienced, traditional abstractions sometimes
+don't work out like that.
+
+## What is Inversion of Control in code?
+
+First, here's a super contrived example:
+
+```javascript
+// let's pretend that Array.prototype.filter does not exist
+function filter(array) {
+  let newArray = []
+  for (let index = 0; index < array.length; index++) {
+    const element = array[index]
+    if (element !== null && element !== undefined) {
+      newArray[newArray.length] = element
+    }
+  }
+  return newArray
+}
+
+// use case:
+
+filter([0, 1, undefined, 2, null, 3, 'four', ''])
+// [0, 1, 2, 3, 'four', '']
+```
+
+Now let's play out the typical "lifecycle of an abstraction" by throwing a bunch
+of new related use cases at this abstraction and "thoughtlessly enhance" it to
+support those new use cases:
+
+```javascript
+// let's pretend that Array.prototype.filter does not exist
+function filter(
+  array,
+  {
+    filterNull = true,
+    filterUndefined = true,
+    filterZero = false,
+    filterEmptyString = false,
+  } = {},
+) {
+  let newArray = []
+  for (let index = 0; index < array.length; index++) {
+    const element = array[index]
+    if (
+      (filterNull && element === null) ||
+      (filterUndefined && element === undefined) ||
+      (filterZero && element === 0) ||
+      (filterEmptyString && element === '')
+    ) {
+      continue
+    }
+
+    newArray[newArray.length] = element
+  }
+  return newArray
+}
+
+filter([0, 1, undefined, 2, null, 3, 'four', ''])
+// [0, 1, 2, 3, 'four', '']
+
+filter([0, 1, undefined, 2, null, 3, 'four', ''], {filterNull: false})
+// [0, 1, 2, null, 3, 'four', '']
+
+filter([0, 1, undefined, 2, null, 3, 'four', ''], {filterUndefined: false})
+// [0, 1, 2, undefined, 3, 'four', '']
+
+filter([0, 1, undefined, 2, null, 3, 'four', ''], {filterZero: true})
+// [1, 2, 3, 'four', '']
+
+filter([0, 1, undefined, 2, null, 3, 'four', ''], {filterEmptyString: true})
+// [0, 1, 2, 3, 'four']
+```
+
+Alright, so we literally only have six use cases that our app cares about, but
+we actually support any combination of these features which is 25 (if I did my
+math right).
+
+And this is a pretty simple abstraction in general. I'm sure it could be
+simplified. But often when you come back to an abstraction after the wheel of
+time has spun on it for a while, you find that it could be drastically
+simplified for the use cases that it's actually supporting. Unfortunately, as
+soon as an abstraction supports something (like doing
+`{filterZero: true, filterUndefined: false}`), we're afraid to remove that
+functionality for fear of breaking an app developer using our abstraction.
+
+We'll even write tests for use cases that we don't actually have, just because
+our abstraction supports it and we "might" need to do that in the future. And
+then when use cases are no longer needed, we don't remove support for them
+because we just forget, we think we may need them in the future, or we're afraid
+to touch the code.
+
+Alright, so now, let's apply some thoughtful abstraction on this function and
+apply inversion of control to support all these use cases:
+
+```javascript
+// let's pretend that Array.prototype.filter does not exist
+function filter(array, filterFn) {
+  let newArray = []
+  for (let index = 0; index < array.length; index++) {
+    const element = array[index]
+    if (filterFn(element)) {
+      newArray[newArray.length] = element
+    }
+  }
+  return newArray
+}
+
+filter(
+  [0, 1, undefined, 2, null, 3, 'four', ''],
+  el => el !== null && el !== undefined,
+)
+// [0, 1, 2, 3, 'four', '']
+
+filter([0, 1, undefined, 2, null, 3, 'four', ''], el => el !== undefined)
+// [0, 1, 2, null, 3, 'four', '']
+
+filter([0, 1, undefined, 2, null, 3, 'four', ''], el => el !== null)
+// [0, 1, 2, undefined, 3, 'four', '']
+
+filter(
+  [0, 1, undefined, 2, null, 3, 'four', ''],
+  el => el !== undefined && el !== null && el !== 0,
+)
+// [1, 2, 3, 'four', '']
+
+filter(
+  [0, 1, undefined, 2, null, 3, 'four', ''],
+  el => el !== undefined && el !== null && el !== '',
+)
+// [0, 1, 2, 3, 'four']
+```
+
+Nice! That's _way_ simpler. What we've done is we inverted control! We changed
+the responsibility of deciding which element gets in the new array from the
+`filter` function to the one calling the `filter` function. Note that the
+`filter` function itself is still a useful abstraction in its own right, but
+it's much more capable.
+
+But was the previous version of this abstraction all that bad? Maybe not. But
+because we've inverted control, we can now support much more unique use cases:
+
+```javascript
+filter(
+  [
+    {name: 'dog', legs: 4, mammal: true},
+    {name: 'dolphin', legs: 0, mammal: true},
+    {name: 'eagle', legs: 2, mammal: false},
+    {name: 'elephant', legs: 4, mammal: true},
+    {name: 'robin', legs: 2, mammal: false},
+    {name: 'cat', legs: 4, mammal: true},
+    {name: 'salmon', legs: 0, mammal: false},
+  ],
+  animal => animal.legs === 0,
+)
+// [
+//   {name: 'dolphin', legs: 0, mammal: true},
+//   {name: 'salmon', legs: 0, mammal: false},
+// ]
+```
+
+Imagine having to add support for this before inverting control? That'd just be
+silly...
+
+## A worse API?
+
+One of the common complaints that I hear from people about control-inverted APIs
+that I've built is: "Yeah, but now it's harder to use than before." Take this
+example:
+
+```javascript
+// before
+filter([0, 1, undefined, 2, null, 3, 'four', ''])
+
+// after
+filter(
+  [0, 1, undefined, 2, null, 3, 'four', ''],
+  el => el !== null && el !== undefined,
+)
+```
+
+Yeah, one of those is clearly easier to use than the other. But here's the thing
+about control-inverted APIs, you can use them to re-implement the former API and
+it's typically pretty trivial to do so. For example:
+
+```javascript
+function filterWithOptions(
+  array,
+  {
+    filterNull = true,
+    filterUndefined = true,
+    filterZero = false,
+    filterEmptyString = false,
+  } = {},
+) {
+  return filter(
+    array,
+    element =>
+      !(
+        (filterNull && element === null) ||
+        (filterUndefined && element === undefined) ||
+        (filterZero && element === 0) ||
+        (filterEmptyString && element === '')
+      ),
+  )
+}
+```
+
+Cool right!? So we can build abstractions on top of the control-inverted API
+that give the simpler API that people are looking for. And what's more, if our
+"simpler" API isn't sufficient for their use case, then they can use the same
+building-blocks we used to build our higher-level API to accomplish their more
+complex task. They don't need to ask us to add a new feature to
+`filterWithOptions` and wait for that to be finished. They have the
+building-blocks they need to get their stuff shipped themselves because we've
+given them the tools to do so.
+
+Oh, and just for fun:
+
+```javascript
+function filterByLegCount(array, legCount) {
+  return filter(array, animal => animal.legs === legCount)
+}
+
+filterByLegCount(
+  [
+    {name: 'dog', legs: 4, mammal: true},
+    {name: 'dolphin', legs: 0, mammal: true},
+    {name: 'eagle', legs: 2, mammal: false},
+    {name: 'elephant', legs: 4, mammal: true},
+    {name: 'robin', legs: 2, mammal: false},
+    {name: 'cat', legs: 4, mammal: true},
+    {name: 'salmon', legs: 0, mammal: false},
+  ],
+  0,
+)
+// [
+//   {name: 'dolphin', legs: 0, mammal: true},
+//   {name: 'salmon', legs: 0, mammal: false},
+// ]
+```
+
+You can compose this stuff however you'd like to address the common use cases
+you have.
+
+## Ok, but for real now?
+
+So that works for the simple use case, but what good is this concept in the real
+world? Well, you likely use inverted control APIs all the time without noticing.
+For example, the _actual_ `Array.prototype.filter` function inverts control. As
+does the `Array.prototype.map` function.
+
+There's also patterns that you may be familiar with that are basically a form of
+inversion of control.
+
+My two favorite patterns for this are
+["Compound Components"](/blog/compound-components-with-react-hooks) and
+["State Reducers"](/blog/the-state-reducer-pattern). Here's a quick example of
+how these patterns might be used.
+
+### Compound Components
+
+Let's say you want to build a `Menu` component that has a button for opening the
+menu and a list of menu items to display when it's clicked. Then when an item is
+selected, it will perform some action. A common approach to this kind of
+component is to create props for each of these things:
+
+```jsx
+function App() {
+  return (
+    <Menu
+      buttonContents={
+        <>
+          Actions <span aria-hidden>▾</span>
+        </>
+      }
+      items={[
+        {contents: 'Download', onSelect: () => alert('Download')},
+        {contents: 'Create a Copy', onSelect: () => alert('Create a Copy')},
+        {contents: 'Delete', onSelect: () => alert('Delete')},
+      ]}
+    />
+  )
+}
+```
+
+This allows us to customize a lot about our Menu item. But what if we wanted to
+insert a line before the Delete menu item? Would we have to add an option to the
+items objects? Like, I don't know: `precedeWithLine`? Yikes. Maybe we'd have a
+special kind of menu item that's a `{contents: <hr />}`. I guess that would
+work, but then we'd have to handle the case where no `onSelect` is provided. And
+it's honestly an awkward API.
+
+When you're thinking about how to create a nice API for people who are trying to
+do things slightly differently, instead of reaching for `if` statements and
+ternaries, consider the possibility of inverting control. In this case, what if
+we just gave rendering responsibility to the user of our menu? Let's use one of
+React's greatest strengths of composibility:
+
+```jsx
+function App() {
+  return (
+    <Menu>
+      <MenuButton>
+        Actions <span aria-hidden>▾</span>
+      </MenuButton>
+      <MenuList>
+        <MenuItem onSelect={() => alert('Download')}>Download</MenuItem>
+        <MenuItem onSelect={() => alert('Copy')}>Create a Copy</MenuItem>
+        <MenuItem onSelect={() => alert('Delete')}>Delete</MenuItem>
+      </MenuList>
+    </Menu>
+  )
+}
+```
+
+The key thing to notice here is that there's no state visible to the user of the
+components. The state is implicitly shared between these components. That's the
+primary value of the compound components pattern. By using that capability,
+we've given some rendering control over to the user of our components and now
+adding an extra line in there (or anything else for that matter) is pretty
+trivial and intuitive. No API docs to look up, and no extra features, code, or
+tests to add. Big win for everyone.
+
+You can read more about this pattern
+[on my blog](/blog/compound-components-with-react-hooks). Hat tip to
+[Ryan Florence](https://twitter.com/ryanflorence) who taught me this pattern.
+
+### State Reducer
+
+This is a pattern that I came up with to solve a problem of component logic
+customization. You can read more about the specific situation in my blog post
+["The State Reducer Pattern"](/blog/the-state-reducer-pattern), but the basic
+gist is I had an input search/typeahead/autocomplete library called `Downshift`
+and someone was building a multiple selection version of the component, so they
+wanted the menu to remain open even after an element was selected.
+
+In `Downshift` we had logic that said it should close when a selection is made.
+The person needing the feature suggested adding a prop called
+`closeOnSelection`. I pushed back on that because I've been down this
+[apropcalypse](https://twitter.com/gurlcode/status/1002110517094371328) road
+before and I wanted to avoid that.
+
+So instead, I came up with an API for folks to control how the state change
+happened. Think of a state reducer as a function which gets called any time the
+state of a component changes and gives the app developer a chance to modify the
+state change that's about to take place.
+
+Here's an example of what you would do if you wanted to make Downshift not close
+the menu after the user selects an item:
+
+```javascript
+function stateReducer(state, changes) {
+  switch (changes.type) {
+    case Downshift.stateChangeTypes.keyDownEnter:
+    case Downshift.stateChangeTypes.clickItem:
+      return {
+        ...changes,
+        // we're fine with any changes Downshift wants to make
+        // except we're going to leave isOpen and highlightedIndex as-is.
+        isOpen: state.isOpen,
+        highlightedIndex: state.highlightedIndex,
+      }
+    default:
+      return changes
+  }
+}
+
+// then when you render the component
+// <Downshift stateReducer={stateReducer} {...restOfTheProps} />
+```
+
+Once we added this prop, we got WAY fewer requests for customization of the
+component. It became WAY more capable and a lot simpler for people to make it do
+whatever they wanted to do.
+
+### Render Props
+
+Just giving a quick shout-out to the
+[render props](https://reactjs.org/docs/render-props.html) pattern which is a
+perfect example of inversion of control, but we don't need them as often
+anymore, so I'm not going to talk about them.
+
+[Read why we don't need Render Props as much anymore](/blog/react-hooks-whats-going-to-happen-to-render-props)
+
+## A word of caution
+
+Inversion of control is a fantastic way to side-step the issue of making an
+incorrect assumption about the future use cases of our reusable code. But before
+you go, I just want to give you some advice. Let's go back to our contrived
+example really quick:
+
+```javascript
+// let's pretend that Array.prototype.filter does not exist
+function filter(array) {
+  let newArray = []
+  for (let index = 0; index < array.length; index++) {
+    const element = array[index]
+    if (element !== null && element !== undefined) {
+      newArray[newArray.length] = element
+    }
+  }
+  return newArray
+}
+
+// use case:
+
+filter([0, 1, undefined, 2, null, 3, 'four', ''])
+// [0, 1, 2, 3, 'four', '']
+```
+
+What if that's all we ever needed `filter` to do and we never ran into a
+situation where we needed to filter on anything but `null` and `undefined`? In
+that case, adding inversion of control for a single use case would just make the
+code more complicated and not provide much value.
+
+As with all abstraction, please be thoughtful about it and apply the principle
+of [AHA Programming](/blog/aha-programming) and avoid hasty abstractions!
+
+## Conclusion
+
+I hope this is helpful to you. I've shown you a few patterns in the React
+community that take advantage of the Inversion of Control concept. There are
+more out there, and the concept applies to more than just React (as we saw with
+the `filter` example). Next time you find yourself adding another `if` statement
+to the `coreBusinessLogic` function of your app, consider how you can invert
+control and move the logic to where it's being used (or if it's being used in
+multiple places, then you can build a more custom-made abstraction for that
+specific use case).
+
+If you'd like to play around with the example in this blog post, feel free:
+
+[![Edit Inversion of Control](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/inversion-of-control-qunm8?fontsize=14&hidenavigation=1&theme=dark)
+
+Good luck!
+
+P.S. If you liked this blog post, then you'll probably like this talk:
+
+https://www.youtube.com/watch?v=AiJ8tRRH0f8&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf

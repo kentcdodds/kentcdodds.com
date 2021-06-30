@@ -1,0 +1,598 @@
+---
+title: There Aren't Any Shortcuts To Expertise With Sara Vieira
+date: null
+description: Sara Vieira talks about the road to expertise.
+meta:
+  keywords:
+simpleCastId: fd13f437-7227-4f9d-a2af-7890cda19a26
+---
+
+import Transcript from 'components/podcast/transcript'
+import Resources from 'components/podcast/resources'
+import Guest from 'components/podcast/guest'
+
+When something is easy for us, it more than likely is just familiar to us. It's
+easy to forget how challenging it was to learn what we know. When we tell
+someone who is still learning that something is easy, it diminishes the
+accomplishment of learning something new.
+
+People who are good at things put in the time and the practice to get where they
+are, there isn't a shortcut to experience. We can gain experience by _building
+things._ But what do you build?
+
+In this episode, Sara Vieira talks about how to find ideas for your side
+projects, and what you can do to make them fun and sustainable.
+
+---
+
+<div style={{display: 'grid', gridGap: 10, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'}}>
+
+<Resources>
+
+- [Is There Uber In?](https://isthereuber.in)
+- [Public APIs](https://github.com/public-apis/public-apis)
+
+</Resources>
+
+<Guest name="Sara Vieira" image="https://res.cloudinary.com/kentcdodds-com/image/upload/v1625034106/kentcdodds.com/content/podcast/01/10-sara-vieira/sara-vieira.png">
+
+- [Twitter](https://twitter.com/NikkitaFTW)
+- [Website](https://iamsaravieira.com/)
+- [Meme Website](https://meme.iamsaravieira.com/)
+- [Github](https://github.com/SaraVieira)
+
+</Guest>
+
+</div>
+
+---
+
+## Transcript
+
+<Transcript>
+
+**Kent C. Dodds:** Hello friends, this is your friend, Kent C. Dodds and I am
+joined by my friend Sara Vieira. Say hi Sara.
+
+**Sara Vieira:** Hi everyone.
+
+**Kent C. Dodds:** So Sara's coming at us from Portugal. Super excited to chat
+with her. She is a fabulous person to interact with, whether- actually have we,
+we haven't met in person, have we?
+
+**Sara Vieira:** No, I was a [inaudible 00:00:21] . The only time you came to
+Europe.
+
+**Kent C. Dodds:** Yeah, that's, yeah, that was a bummer. I did come to Europe
+actually it was Amsterdam again like four years ago for an Angular JS
+conference. That was cool. But yeah, so I've only been in Europe twice. But
+anyway, hopefully one day we'll meet in person.
+
+**Sara Vieira:** Yeah.
+
+**Kent C. Dodds:** But interacting online it has been a pleasure and so I'm
+excited to chat with you today. One of the things that I really like about Sara
+is how she is very down to earth and practical and not willing to put up with
+fake people, I guess. It just really, I dunno, really enjoyable and yeah, down
+to earth I guess is a way to say that. So anyway, Sara, I'd like you to
+introduce yourself a little bit for people who don't know you. You don't have to
+tell us all about your developer career. If you don't want to, you can give us a
+little more who you are as a person, who you see yourself as. So can you give us
+a little intro to yourself?
+
+**Sara Vieira:** Sure. So my name is Sara, as you said, I am a developer, a code
+sandbox. I live in Berlin for the past six months. I come from Portugal. There's
+only 10 million of us, so we got to enjoy every single one of this that we have.
+Yeah. What are those weird people that when we meet someone else from Portugal
+industry, we're like, oh my God. Oh my God. It's like there's like 10 of us.
+It's adorable. First of all, stuff I am really into horrible movies. I really
+like them for some godforsaken reason. I think it's because I've always liked
+horror and thriller movies, but most of them aren't crap. So I've watched so
+many crap movies that now I actually enjoyed them because of trying to watch
+good like thriller movies. I also play drums. And I don't know.
+
+**Kent C. Dodds:** That's awesome.
+
+**Sara Vieira:** Yeah. Thank you.
+
+**Kent C. Dodds:** Yeah. So all cool stuff. So how long have you been into the
+drums? Is that like a recent thing or have you always been into drums?
+
+**Sara Vieira:** Well, actually I started learning when I was about, I think I
+was 16 and then when I moved to London about two years ago, I stopped and then
+bought a drum kit when I settled back here again. Yeah, I started learning when
+I was 16. I remember that I had to because my mom was like, that's not a girl
+thing, only boys play drums. And she was like, you have to tell me three girl
+drum players and to this day, do you remember Mika, that songwriter?
+
+**Kent C. Dodds:** Yeah, yeah, I think so.
+
+**Sara Vieira:** Yeah. So like his songs were not really my style, but his
+drummer was a girl. So to this day, I thank Mika because he was the third, and
+my mom allowed me to play the drums.
+
+**Kent C. Dodds:** You could have just said, you know what mom, I will be the
+third.
+
+**Sara Vieira:** That didn't work for her.
+
+**Kent C. Dodds:** No, no.
+
+**Sara Vieira:** I was already in football and stuff like that and she was just
+like going down a slippery slope there Sara.
+
+**Kent C. Dodds:** Well, I'm glad that you, you do what you want and I find that
+it's actually interesting, like lots of developers have some connection to music
+and there's gotta be something there between music and software programming
+because yeah, lots of people that I talked to have some like tangential
+connection to creating music, which is cool.
+
+**Sara Vieira:** Yeah, I've actually heard of a lot of people that say that
+developers are usually just failed musicians. Jason Lengstorf, the developer of
+the [inaudible 00:03:58] Gatsby actually had an emo band back in the day. Which
+is honestly not bad because I-
+
+**Kent C. Dodds:** That does not surprise me at all.
+
+**Sara Vieira:** At all. But you need to look at this. I forgot the name. I will
+look it up on Spotify as I speak, but, and I have a friend of mine who used to
+be a hip hop artist. She's spoken React Amsterdam even. Elizabeth. She used to,
+she was actually signed by Sony or something. She actually used to be like...
+
+**Kent C. Dodds:** She performed on stage at React Amsterdam. Her talk was
+awesome. It was very, very cool. She did like this a freestyle thing. It was
+very cool.
+
+**Sara Vieira:** Yeah, but it was in Portuguese, I think it was, Ryan. Was it in
+English.
+
+**Kent C. Dodds:** I'm pretty sure it was Portuguese. Yeah. So it was pretty
+cool. Cool. So I, I'm excited to chat with you about a couple of things we
+talked about in before the show started, what we want to kind of communicate to
+the audience. And one of those things that we kind of talked about a little bit
+was how easy it is to build software. Like so easy, like I don't know why people
+have a hard time and complain. Is that accurate, Sara?
+
+**Sara Vieira:** Yes. I feel like you just really just need to install, create
+reactor and everything is fixed for you. I think this is mostly the people who
+grew up in harder times of software, who now... they can't, for their sake they
+can't understand that things may be hard for other people. And so we get a lot
+of people being like, you should just use Gatsby. It's super easy to do things
+with Gatsby. But it's not. Like it is easy if you have experience with React and
+Graph QL and I'm really like configs and it's just a bunch of stuff that you
+need to know beforehand, before Gatsby's easy. And I feel like there's this huge
+problem in like at the front end community, I'm not sure about the rest of the
+communities, where we diminish things and like we take the accomplishment out of
+learning something of people because that thing was always supposed to be easy.
+So people aren't actually as proud as they used to be to actually learn
+something because people are like, oh, you only learnt this now. Oh, I've known
+this for three years and I'm like, okay, cool. That's cool for you. Can you shut
+up now? That'd be great. Can you stop being.
+
+**Kent C. Dodds:** Yeah-
+
+**Sara Vieira:** Damn it, I was like trying to look for a word, but I couldn't
+find any. That wasn't a curse word, Kent.
+
+**Kent C. Dodds:** You're good. I totally agree with you. I think that it's like
+especially for these people who were working in software when things were
+legitimately like quite hard. I think that it's pretty, I guess easy for them to
+think that, oh wow. Like we've got it so easy now. Can you imagine like
+implementing code splitting before Webpack? Like are you kidding me? But like
+it's not easy to learn software at all. Like from the very beginning you have a
+lot of things and knowledge that you have to accumulate before you even could
+even have code splitting explained to you effectively. As, just as an example.
+And I love what you said about how like calling something easy kind of
+diminishes people's accomplishment at learning something new, which is not a
+nice thing. And it also, it demotivates people from learning the things that
+they want to learn. So I appreciate that you shared that.
+
+**Sara Vieira:** There's also one thing they said about code splitting actually
+when we think that sometimes the analogies that people make don't really make a
+lot of sense because someone can come to us and be like, oh, imagine how hard it
+would be to implement code splitting 10 years ago. And you'd be like, you would
+all of you have JQuery 10 years ago, you would not need code splitting. Your
+entire app would have been PHP or Java. It will not have been... Java script. I
+mean you could have tried, but there was no point to it. But it's so much easier
+now. Just exists now because of necessity. And I feel like that is, I like, I've
+worked through the JQuery slums and I honestly, to this day I love JQuery
+because when JQuery said he would do something, you would just do it. It
+wouldn't lie to me. It wouldn't be, it wouldn't be weird about things. He would
+slide down and the thing would slide down and that would be it. It would install
+a plugin and it would work, sometimes. But I think the main issue is just that,
+is that we make assumptions that are not good. And we also sometimes make
+assumptions, for example, that if you know, React or Redox, which is just an
+example, but it's very, they're very coupled together. And if you put me in
+front of a Redox app right now, I haven't touched Redox in a long time. I won't
+know it, probably. I know how to use that and we should just try it and see
+where people have limitations or don't have limitations instead of sometimes
+assuming that if you know one thing, you will probably know the other. hDoes
+that make sense?
+
+**Kent C. Dodds:** Yeah, absolutely. And I think there's something to be said
+too, for like sometimes people will say, hey, I released this new library and
+it's super easy to use. What they mean instead of easy is actually familiar and
+so maybe it's easy for you because you've used libraries like this in the past,
+but it's not easy for me because I know nothing about observables or generators
+or whatever it is that this thing is. And so like, no, it's not easy. It's just
+familiar.
+
+**Sara Vieira:** Yeah. One of the examples that I have is that I've never done a
+lot of animations that have not been with CSS, and now I'm doing the animation
+for the new front, for the new homepage of code sandbox, and I'm using G SAP,
+Yay. And G SAP is supposed to be the easiest one and I'm still staring at my
+computer like, what the hell am I doing? I have no idea what's going on. It
+doesn't mean that that one is hard, but I don't know any other ones. So to me
+it's all new and I'm just like, what?
+
+**Kent C. Dodds:** Yeah.
+
+**Sara Vieira:** I do not understand what this means.
+
+**Kent C. Dodds:** Yeah, for real animations for me is like something that's way
+like I really struggle with.
+
+**Sara Vieira:** Oh yeah.
+
+**Kent C. Dodds:** Good luck with that.
+
+**Sara Vieira:** Where is Sara Drasner when we need Sara Drasner?
+
+**Kent C. Dodds:** Yeah, for real. Like she doesn't meet your new website and
+that animation on the homepage. I think it's Sara.Dov. Yeah, like for real and
+it is outrageously cool.
+
+**Sara Vieira:** Let me see. I haven't seen that.
+
+**Kent C. Dodds:** She's an amazing person, and her animations they're just out
+of this world. Very cool.
+
+**Sara Vieira:** See. I would not, I didn't... I don't even know how to start
+with this.
+
+**Kent C. Dodds:** I know. It's crazy.
+
+**Sara Vieira:** It's just one of those things that I'm like, that looks so
+cool. If I were to do this, I would do it. I don't know how. Yeah. Yeah. Is this
+actual text? Oh my God. If you, oh my God. This is so cool.
+
+**Kent C. Dodds:** Yeah.
+
+**Sara Vieira:** I have no idea.
+
+**Kent C. Dodds:** You hover over it and it like blasts out. It's outrageously
+cool. So yeah, like, and for Sara, like I'm going to guess that for Sara, that
+that took a fair amount of time. I'll just say that because it makes me feel
+better. But she's been doing this for a long time. And so I imagine that like it
+was relatively easy. Like, if I were to try that, it would be impossible. But I
+think that if I put as much. Actually this kind of works for me as an analogy.
+Like I remember hearing this story of this really famous piano player who was
+just like super, super good, been playing, you know, traveling and stuff. And
+somebody came to them and said, you know what, I would give like my life, like
+10 years of my life or 20 years of my life to play as good as you play at the
+piano. And the piano player said, well, I did do that. I did give 20 years of my
+life so that I could be good at this. And I think that's the same for, like lots
+of people are really good at things is they just put in the time. And so like
+whether for musicians they're practicing a lot, for software developers who are
+really like build awesome animations or are able to create really cool APIs or
+whatever it is. It's because they've just, they've done it a lot. I don't think
+that there's anybody who just gets a special gene and they magically are super
+good at software development. I think everybody has to put in the time and build
+stuff.
+
+**Sara Vieira:** I don't think there's a talent for software developments. I
+feel like most of it is like if you asked me to do something simple, I'm doing
+quotes but there's no video with a podcast, like a simple React app, I could
+maybe take 30 minutes and that's not because I have a talent because I have made
+a lot of React apps and if you tell me you need to make this Angular app, I
+would probably take the same app. I would take like three hours, because I've
+never used it because I put a long time on trying to learn the APIs of React and
+not a long time into learning the APIs of Angular. Think if you would stand
+right there in the middle, it took me like an hour. This also reminds me of a
+thing which is a, that you hire like an electrician to come to your house or
+something because something is broken and they charge you like a hundred dollars
+to fix, to just unplug a cable or something, and you ask them, "why are you
+changing me $100 to unplug a cable?" And you're like, okay, so $5 just for the
+cable and 95 is for all of the time that I had to spend to know which cable to
+unplug and I feel like it's the exact same thing. I think most of the biggest
+issues that I fixed over my life in code, I've been one line of code. One line
+of code makes everything work and it's not a talent, it's just staring at it, a
+lot of computers for a long time.
+
+**Kent C. Dodds:** Yeah. For real. I think there is really no shortcut to
+experience. It just comes naturally as you, yeah, as you work on it a lot. And
+actually your electrician story kind of reminds me of my talk at React
+Amsterdam. I told a story about how we had a faucet that was not working
+properly. Like the head would come out of the neck so that you could like direct
+the water where you want it to go and then it would automatically go back into
+the head. You're just like, oh it goes back into then. Well it stops going back
+into the head automatically and that was super annoying. You had to like help it
+go back up and we called a plumber, cause this was a brand faucet it, we'd never
+had this faucet before, we called a plumber in. And they were going to come and
+the day that they were going to come I was like, why is this not working? So I
+looked under the under the hood and there's this a hose that goes, you know,
+from the neck into like, you know, our plumbing or whatever and the hose has a
+weight on it and that weight pulls the head back into the neck. And it was, the
+hose was just twisted up and so the weight couldn't pull it down and so I just
+untwisted it and then boom, everything's working again and I saved myself like
+50 bucks or something and, and like a crazy amount of embarrassment cause it was
+really easy to fix. But the reason I bring that up is because I think the things
+that we look at and we think they are really hard. Yes, it might take you a lot
+of time and some patience to get into it, but when you dig into it and take the
+time, you find out that it's not magic, it's just code. And when you dive into
+it and start to work with the abstractions that you're using, then it becomes
+more natural to you in it and it becomes familiar. And so you're able to use
+those kinds of abstractions more effectively.
+
+**Sara Vieira:** That was, I think literally what happened to me when I started
+working on code sandbox as into me was completely magic. It was like the visual
+studio code part is still magic to me. But all of the fact that that app
+entirely existed was magic. And then I started looking at it and I was just
+like, oh, it's just one big eval. Everything is a form. And that's about it. And
+it's just a bunch of state, like every single app, but it's just bigger. And I
+think it's important that we look behind the magic. Yeah.
+
+**Kent C. Dodds:** So one of the things that I like about kind of where our
+conversation has gone is how like building things is where you're going to get
+that experience. Like taking the time to dig into code sandbox or you know,
+spending the time so that you know what the one line of code change needs to be.
+And you build a lot of really interesting things kind of just for fun as well as
+like, you know, now you're working on code sandbox, so legit app that has
+changed my life in wonderful ways. So like not everybody can can just wake up in
+the morning and say, hey, I want to build code sandbox. Lots of the things that
+we get lots of pleasure and value out of are these kind of silly apps that we
+can build or simple things that we can create to make our lives a little easier.
+So one question that I get a lot cause I tell people, you know, build things.
+That's how you get your experience a lot. But I always get this question, how do
+I know what to build? And so as a purveyor of building many things, Sara, what
+advice would you give to people who want to just build stuff but they don't like
+they have a hard time finding ideas of what to build?
+
+**Sara Vieira:** One of the things that I used a lot was this public list by
+Todd Motto, the our Anglo God. He has a list of public APIs, which most of them
+don't actually require authentication. And a good thing is that you will get, if
+you're just like public API get hub. I think you'll be the first one that shows
+up. So huge list of public APIs. Most of them don't require authentication. And
+the good thing about this, is that you'll get experienced with async javascript,
+which let's be honest, most javascript will continue to go into the direction of
+being async. So it's good that you get experienced with that and you also build
+something and there's always, one thing that I've realized, there's always some
+little thing that annoys you about something about just general life that you
+can probably fix in a weekend. Also build small things. One thing that before I
+started really making a lot of stuff, I would actually start making a lot of
+stuff, but I would never finish it. So I told myself that I only build things
+that would take a max of a weekend, not including nights. So it would be a Max
+of like 10 to 12 hours. So that way I could sit down and build the thing and get
+it, get it done with, instead of trying to build a huge thing, then never
+actually getting it accomplished. So I actually learned a lot by just making
+small things. Also just things that, for example, a really random thing about
+Portugal that is actually always, doesn't make it, and I will tell you the thing
+and you'll be like, that doesn't make any sense. And I'll be like, yes. So the
+open website is blocked, the app is not, but the website is, and Uber is legal.
+So there is Uber, it's completely legal, but the app is not blocked. But on
+Vodafone, which is a very common operator in Europe, the west side is blocked,
+which doesn't make any sense. Yeah. But the thing is, this was last year when I
+still lived in Port- this is still blocked. If I tried to access it on my mobile
+data, it still doesn't work. But last year when I traveled a lot, I kept
+searching if there's Uber somewhere and I couldn't check the website because it
+was blocked, which was just very frustrating. So once I went to, I don't even
+know where, I crawled the Uber website and I downloaded a JSON file and put it
+on the Internet and made a website called is there Uber in? And then you type of
+city. And you will tell you if there's Uber in that city without having to go to
+the API of, they have no API for this without having to go to Uber because I
+couldn't do it because the Uber website was blocked. So now we also had like
+Cabify and Lyft and a lot of others. But I also, that's how I learned how to
+scrape websites.
+
+**Kent C. Dodds:** Hmm.
+
+**Sara Vieira:** So that's good. Yeah. And like there's also always small things
+that you can go around it. I mean don't break the law. In this case, I'm not
+accessing the Uber website. In this case it's also stupid, but like don't find a
+way to watch illegal TV shows. But if there's something that you're like, I
+could fix this with just two hours. Try and fix that, because you will get a way
+huger boost out of doing that because it will also help yourself. And then just
+tell some friends, try to make it better over time. Posted on product hunt and
+weirdly enough, you don't have to have a huge app to put some product on. That
+app was on product hunt and it was like number three or four of the day, you can
+actually post small things on product hunt. Yeah. And you get like really good
+feedback from that, which is really nice.
+
+**Kent C. Dodds:** Yeah. You know the interesting thing about like cool products
+is how successful a product is, has nothing to do with how big that particular
+solution is and has everything to do with the amount of value that solution
+provides to the world. And the amount of value does not necessarily only
+correlate to the size of the solution.
+
+**Sara Vieira:** And the money of the solution. I never made any money from
+this. But if you think about it, it's hosted on Netlify. I also don't pay
+anything for this.
+
+**Kent C. Dodds:** Yeah. Thank you. Netlify.
+
+**Sara Vieira:** Thank you Netlify gods.
+
+**Kent C. Dodds:** I love Netlify.
+
+**Sara Vieira:** They're amazing.
+
+**Kent C. Dodds:** Yeah. So I think that's great advice, especially in the build
+small things. Cause I often find myself having ambitious ideas and exciting, you
+know, ideas for products that I want to build. And I, yeah, I definitely lose
+motivation after a little while, when it takes a long time to build and I got to
+move on to other stuff. But especially like if somebody wanted to learn green
+sock or something like that, then to do animations and they could do, I don't
+dunno, you could make a simple app that is like an index of you know, MDN
+articles or something, you know, something that's just totally not the, it's not
+technically hard to build and you just over-complicate one aspect of it for the
+purpose of learning that thing.
+
+**Sara Vieira:** Also I think one good idea-
+
+**Kent C. Dodds:** So I'm going to-
+
+**Sara Vieira:** Sorry. I think one thing that I've started doing is to get huge
+tables out of Wikepedia. You get that you're stable, you make it into a JSON and
+you provided an offensive form to people and people get amazed by that. So I got
+a huge table at a competed that was just all the TLDs that exist in the world,
+made it into a website and made it like way nicer than Wikipedia for example.
+And you learn a lot by doing it. You just overcomplicate that JSON File, I think
+is honestly a good way of learning things is you get a JSON file and you're
+like, how can I make this super hard?
+
+**Kent C. Dodds:** Yeah. And especially like it'd be... the nice thing about
+that too is you don't have to worry about a whole bunch of, you know, like giant
+architectural decisions for how am I going to build the app? How am I gonna
+structure the files?
+
+**Sara Vieira:** What data am I going to use?
+
+**Kent C. Dodds:** How am I gonna you know, whatever. I was like, what babble
+plugins do I need to include? Yeah, just take something really simple and then
+think about what is the thing I want to learn and over-complicate apart of
+simple thing so that you can learn that. Yeah.
+
+**Sara Vieira:** Also, if you want to use a database, and if you want to be real
+fast, I will suggest a table.
+
+**Kent C. Dodds:** Oh yeah, yeah. I used it. I tried to use it for something,
+didn't really work out, but I was very impressed. It's very, very cool.
+
+**Sara Vieira:** Yeah. It's actually a pretty, their API is pretty decent. You
+can also do it by just [inaudible 00:24:04] instead of using their actual
+javascript API which is still callback based, so you can just use like normal
+axes or [inaudible 00:24:11] and you can just put things and get things and if
+you want a simple database just want to list of stuff and you want people to be
+able to add to that list of stuff. It's actually way nicer than having to set up
+your own database. I think. That's my opinion of what I used. For example, we
+use air table on [inaudible 00:24:32] but we use air table for the feedback form
+that we have, and there was a time when we only supported site one that we
+weren't sure how many people actually use. Site two we had a thing that said
+like for now we only support sites one. If you would like us to support site two
+please with the button below and that would basically just put your username or
+the timestamp, if you were not signed in, into an air table, it would count the
+number of records and tell you 271 people one side two. And when he reached like
+300 I was like, okay, I guess I need to do this now. But it's also a nice way to
+get feedback from people is just to use an air table to do that.
+
+**Kent C. Dodds:** Yeah, for sure.
+
+**Sara Vieira:** You're looking confusion.
+
+**Kent C. Dodds:** No, no, that makes total sense. Yeah. Air Table is is nice
+and definitely anything is better than setting up your own database. So for
+real, I mean maybe we've got some people-
+
+**Sara Vieira:** Because you can't employ that on Netlify yet.
+
+**Kent C. Dodds:** That is so true. Maybe that's why, you know what, I actually
+was using Hasura the other day to set up my own graph QL database and I was very
+impressed, really easy to set it up on Heroku. Just click a couple buttons and
+boom, I'm there and I've got this graph QL endpoints.
+
+**Sara Vieira:** Super Nice.
+
+**Kent C. Dodds:** Yeah, it was, I was pretty pleased with that. So anyway.
+
+**Sara Vieira:** It's like the web is moving towards the button directly. There
+was like a long time where it was like, we made a CLI, and now it's moving
+towards let's just make a button.
+
+**Kent C. Dodds:** Yeah. For real.
+
+**Sara Vieira:** And I'm like, oh my God, God bless. It's great.
+
+**Kent C. Dodds:** Yeah. For real. I think that that's maybe part of the
+familiar easy thing too is like people are like, oh yeah, I use the gets CLI all
+the time and it's way easy. I don't know why people don't `use that. Well yeah,
+maybe it's easy because you've been using it for like multiple years, but some
+people really want to have a UI because they don't even know what's possible.
+And, and the man page isn't isn't enough for them to, to figure out like what's
+the difference between fetch and pole and you know, and rebates and all of that
+stuff where if you just have a UI just simplifies things a lot. Which actually,
+like quite honestly, most of our jobs as software developers is a spreadsheet
+into a UI to make things easier.
+
+**Sara Vieira:** Get that JSON file and make it real fancy.
+
+**Kent C. Dodds:** Yeah.
+
+**Sara Vieira:** I had this guy in one of my workshops that it was doing good
+pole and good fetch like without touching the command line and it said like, I
+just don't need the command line. I NPM install and everything out of my the
+other windows computer. And I was just amazed by that. I was like, I sat down, I
+was like, I want to see how you do this because I feel forced to use the
+terminal sign on. I have anything against the terminal but it never uses it. And
+I find that amazing how people like... he was about my age. How people of the
+same age actually turned out in a completely different paths and end up doing
+the same thing.
+
+**Kent C. Dodds:** Yeah. For real. So as we come down on our time here, Sara, I
+just want to bring up a couple other things and then we can wrap up. So on every
+episode we like to have a call to action for folks to improve themselves
+personally or professionally. So we talked about this and our call to action for
+you all audience is build something new, using something new. So Sara, you
+mentioned using spelt three, which is kind of an interesting kind of newer
+framework as a compiler type thing. It's pretty cool. And actually we had a
+double dose here. Also remove the word easy from your vocabulary. Do you wanna
+say anything about either of those?
+
+**Sara Vieira:** I want to say something that I think is very important is that
+if you think something is easy to try to teach it to a junior developer. If they
+say it's easy, like by junior I mean someone who just finished the bootcamp or
+college, something like that, try and teach them that and you will get.
+
+**Kent C. Dodds:** Yeah, that's a good-
+
+**Sara Vieira:** Make sense?
+
+**Kent C. Dodds:** Yeah. That's a good test for whether it's easy. If it's truly
+easy than it should be something that somebody can pick up really quickly, who's
+not at all familiar. And if it doesn't make sense to them, then it's familiar.
+
+**Sara Vieira:** So stop trying to push the [inaudible 00:28:45]
+
+**Kent C. Dodds:** Very good.
+
+**Sara Vieira:** People into thinking that something is easy unless you've
+actually battled to us the fact that it's easy. Unless it's a button. If it's a
+button and you just click the button, then it's good.
+
+**Kent C. Dodds:** Absolutely. Yeah. Cool. All Right Sara. So before we wrap up,
+is there anything else that we didn't talk about that you want to bring up and
+tell our audience to do or not to do in the world?
+
+**Sara Vieira:** No, it's just be good humans. Be good humans, help the other
+human trying to understand things when the other human doesn't really understand
+the thing. Do not judge the other human. The other human is trying as hard as
+you are.
+
+**Kent C. Dodds:** Yep. Absolutely. That's good advice. So Sara, how do people
+connect with you online if they want to follow up and keep up with what you're
+doing?
+
+**Sara Vieira:** So I used Twitter a lot. Good amount. I don't know what a lot
+means, but a good amount. I am NikkitaFTW on Twitter with two k's. The first one
+was taken by the TV show, so that's something also, that's because my parents
+wanted to call me Nikita, but you can't name Portuguese children from names that
+are Portuguese, so that never turned out. And now my name's Sara. So you can
+follow me on Twitter at NikkitaFTW, and that's about it. I have all my links on
+Twitter so you can go from there.
+
+**Kent C. Dodds:** Awesome. Sounds good. Thanks everybody. I hope that this was
+as fun for you as it was for me, and thank you, Sara for giving us some of your
+evening and I hope you enjoy the rest of it.
+
+**Sara Vieira:** I'm going to watch the Avengers. It's going to be great.
+
+**Kent C. Dodds:** Oh yeah, have fun.
+
+**Sara Vieira:** Thank you so much for having me Kent.
+
+**Kent C. Dodds:** All right. Yeah, you're welcome.
+
+**Sara Vieira:** Bye.
+
+**Kent C. Dodds:** Thank you. See everybody.
+
+</Transcript>

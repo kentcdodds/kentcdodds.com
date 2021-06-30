@@ -1,0 +1,397 @@
+---
+title: How to write a Constrained Identity Function (CIF) in TypeScript
+date: 2021-03-09
+description: A handy advanced TypeScript pattern to increase your productivity.
+categories:
+  - typescript
+meta:
+  keywords:
+    - typescript
+    - types
+    - type narrowing
+    - type widening
+    - type constrained
+    - advanced patterns
+    - react
+    - testing
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032897/kentcdodds.com/content/blog/how-to-write-a-constrained-identity-function-in-typescript/banner.jpg
+bannerCredit: Photo by [Sabri Tuzcu](https://unsplash.com/photos/Kr8oDwBK_HY)
+---
+
+In
+[How to write a React Component in TypeScript](/blog/how-to-write-a-react-component-in-typescript),
+I typed an example React component. Here's where we left off:
+
+```tsx
+const operations = {
+  '+': (left: number, right: number): number => left + right,
+  '-': (left: number, right: number): number => left - right,
+  '*': (left: number, right: number): number => left * right,
+  '/': (left: number, right: number): number => left / right,
+}
+
+type CalculatorProps = {
+  left: number
+  operator: keyof typeof operations
+  right: number
+}
+
+function Calculator({left, operator, right}: CalculatorProps) {
+  const result = operations[operator](left, right)
+  return (
+    <div>
+      <code>
+        {left} {operator} {right} = <output>{result}</output>
+      </code>
+    </div>
+  )
+}
+
+const examples = (
+  <>
+    <Calculator left={1} operator="+" right={2} />
+    <Calculator left={1} operator="-" right={2} />
+    <Calculator left={1} operator="*" right={2} />
+    <Calculator left={1} operator="/" right={2} />
+  </>
+)
+```
+
+I'm not satisfied with the `operations` function though. I know that _every_
+function in that object is going to have the exact same type (by necessity due
+to the use case):
+
+```tsx
+type OperationFn = (left: number, right: number) => number
+```
+
+The `operations` object is really just a record of operation strings mapped to a
+function that operates on two numbers. So if we add a type annotation on our
+`operations` variable, then we don't have to type each function individually.
+Let's try that:
+
+```tsx
+type OperationFn = (left: number, right: number) => number
+const operations: Record<string, OperationFn> = {
+  '+': (left, right) => left + right,
+  '-': (left, right) => left - right,
+  '*': (left, right) => left * right,
+  '/': (left, right) => left / right,
+}
+
+type CalculatorProps = {
+  left: number
+  operator: keyof typeof operations
+  right: number
+}
+```
+
+Sweet, so we don't have to type every function individually, but oh no... now
+the `typeof operations` is `Record<string, OperationFn>` and the `keyof` of that
+is going to be `string` which means our `CalculatorProps['operator']` type will
+be `string`. Ugh 😩
+
+Here's what we could do to fix this:
+
+```tsx [2-3]
+type OperationFn = (left: number, right: number) => number
+type Operator = '+' | '-' | '/' | '*'
+const operations: Record<Operator, OperationFn> = {
+  '+': (left, right) => left + right,
+  '-': (left, right) => left - right,
+  '*': (left, right) => left * right,
+  '/': (left, right) => left / right,
+}
+
+type CalculatorProps = {
+  left: number
+  operator: keyof typeof operations
+  right: number
+}
+```
+
+But now we're back to having to add `**` in two places if we decide to add the
+Exponentiation operator. However, in this case, TypeScript will give us a
+compiler error if we add it in one and not the other, so that's a step up.
+
+This is where I left this when I first wrote this component, but then
+[@AlekseyL13 suggested](https://twitter.com/AlekseyL13/status/1368796045547888644)
+that I try a properly typed identity function.
+
+## The constrained identity function
+
+First, let's keep in mind, we have 2 goals:
+
+1. Enforce that the type of each property is the same (in this simple example,
+   it's just a number, but in our actual example, it's a function type)
+2. Ensure that `keyof typeof` for our object results in a finite union of the
+   keys
+
+With TypeScript, it's a challenge to have both of these. By default, we get the
+second goal. The problem is that when you try to accomplish the first goal with
+a type annotation like `const operations: Record<string, OperationFn> = ...`,
+you end up widening the `key` so `keyof typeof` results in `string`. Ugh, how
+annoying.
+
+So here's where the constrained identity function comes in. By the way,
+"constrained" describes a situation where you have a function that accepts a
+narrower version of an input than it's passed.Here's a simple example:
+
+```tsx
+type NamedObject = {name: string}
+function getUserName<User extends NamedObject>(user: User) {
+  return user.name
+}
+
+const obj = {name: 'Hannah', age: 3}
+getUserName(obj)
+```
+
+So the object that's passed to `getUserName` must satisfy all the types in the
+`NamedObject`. The `getUserName` constrains the input to at least match that
+type.
+
+And an "identity function" is a function that accepts a value and returns that
+value. I sometimes use these kinds of functions as the default value for
+callbacks:
+
+```tsx [1]
+const identity = <Type extends unknown>(item: Type) => item
+
+type ModifyConfigFn = (config: ConfigType) => ConfigType
+function buildProject(modifyConfig: ModifyConfigFn = identity) {
+  const config: ConfigType = {
+    /* some config */
+  }
+  const modifiedConfig = modifyConfig(config)
+  // more stuff...
+}
+```
+
+So with those definitions out of the way, a "constrained identity function" is a
+function which returns what it is given and also helps TypeScript constrain its
+type. This is exactly what we want to do.
+
+We can call it a **CIF** (pronounced "see eye eff"). Sure, let's go with that.
+
+Let me show you a simple example first, then I'll explain what's going on, then
+we can apply it more usefully to our more complicated example:
+
+```tsx
+type Value = number
+const createNumbers = <ObjectType extends Record<string, Value>>(
+  obj: ObjectType,
+) => obj
+
+const numbers = createNumbers({one: 1, two: 2, three: 3, four: 4})
+
+// @ts-expect-error we don't have 'five' yet
+numbers['five']
+```
+
+So the `createNumbers` is the constrained identity function. It returns the
+`obj` it's given, hopefully that's clear. But how does it enforce our input and
+constrain the type?
+
+Let me explain it this way. If we start with:
+
+```tsx
+const numbers = {one: 1, two: 2, three: 3, four: 4}
+// typeof numbers:
+// {
+//   one: number;
+//   two: number;
+//   three: number;
+//   four: number;
+// }
+```
+
+But in the future, someone could come to this code and change it like this:
+
+```tsx
+const numbers = {one: 1, two: 2, three: 3, four: 4, five: '5'}
+// typeof numbers:
+// {
+//   one: number;
+//   two: number;
+//   three: number;
+//   four: number;
+//   five: string; // 😱
+// }
+```
+
+Yikes! Nah, we can't have that! (And, more importantly, in our `Calculator`
+example, some auto-typing on the functions is the goal here).
+
+So, let's enforce our value types with a type annotation:
+
+```tsx
+// @ts-expect-error HA! We gotcha! No strings in this object!
+const numbers: Record<string, number> = {
+  one: 1,
+  two: 2,
+  three: 3,
+  four: 4,
+  five: '5',
+}
+```
+
+But now by typing our values explicitly, we've told TypeScript that our `key`
+can be a string. Unfortunately, there's no way to tell TypeScript: "This thing
+has the keys it has, but the values are this specific type." IMO, this is a
+missing feature of TypeScript. Our `createNumbers` constrained identity function
+(er... "CIF") is a workaround.
+
+So here's what that workaround is:
+
+**Constrained identity functions allow us to _not_ explicitly annotate our
+variable while _still_ getting to enforce the values.**
+
+So we create the object, get the best type that TypeScript can offer us (which
+includes the narrow keys and wide values), then we pass it to a function which
+accepts wide keys and narrow values. TypeScript combines that to give us a
+`Record` with a `key` and `value` which are both narrow!
+
+Alrighty, so let's apply a CIF to our original situation:
+
+```tsx
+type OperationFn = (left: number, right: number) => number
+const createOperations = <OperationsType extends Record<string, OperationFn>>(
+  operations: OperationsType,
+) => operations
+
+const operations = createOperations({
+  '+': (left, right) => left + right,
+  '-': (left, right) => left - right,
+  '*': (left, right) => left * right,
+  '/': (left, right) => left / right,
+})
+
+type CalculatorProps = {
+  left: number
+  operator: keyof typeof operations
+  right: number
+}
+
+// @ts-expect-error we haven't added support
+// for the exponentiation operator yet
+operations['**'](1, 2)
+```
+
+Wahoo! So with this solution we don't have to explicitly type all the operation
+functions the exact same way and we can still get a union type of all available
+operations.
+
+## A generic CIF?
+
+You may have noticed that we had two CIFs in the previous section:
+
+```tsx
+type Value = number
+const createNumbers = <ObjectType extends Record<string, Value>>(
+  obj: ObjectType,
+) => obj
+
+type OperationFn = (left: number, right: number) => number
+const createOperations = <OperationsType extends Record<string, OperationFn>>(
+  operations: OperationsType,
+) => operations
+```
+
+Wouldn't it be neat if we could combine those? Sure would. But you're not going
+to like it... Here's what I tried first:
+
+```tsx
+const constrain = <Given, Inferred extends Given>(item: Inferred) => item
+
+// @ts-expect-error Expected 2 type arguments, but got 1.(2558)
+const numbers = constrain<Record<string, number>>({one: 1 /* etc. */})
+```
+
+Sad day. Unfortunately this is just not possible with TypeScript today. But
+here's a workaround:
+
+```tsx
+const constrain =
+  <Given extends unknown>() =>
+  <Inferred extends Given>(item: Inferred) =>
+    item
+
+const numbers = constrain<Record<string, number>>()({one: 1 /* etc. */})
+```
+
+... yeah, I told you you wouldn't like it. It's marginally better like this:
+
+```tsx
+const createNumbers = constrain<Record<string, number>>()
+const numbers = createNumbers({one: 1 /* etc. */})
+```
+
+But like, huh. Bummer.
+
+Luckily, I don't find myself making CIFs very often anyway and they aren't
+difficult to write so I don't need an abstraction for them. Thought it'd be
+interesting to share with you though 😄
+
+## Conclusion
+
+Here's the final version of our calculator component with everything typed with
+our CIF:
+
+```tsx [2-4]
+type OperationFn = (left: number, right: number) => number
+const createOperations = <OperationsType extends Record<string, OperationFn>>(
+  opts: OperationsType,
+) => opts
+
+const operations = createOperations({
+  '+': (left, right) => left + right,
+  '-': (left, right) => left - right,
+  '*': (left, right) => left * right,
+  '/': (left, right) => left / right,
+})
+
+type CalculatorProps = {
+  left: number
+  operator: keyof typeof operations
+  right: number
+}
+function Calculator({left, operator, right}: CalculatorProps) {
+  const result = operations[operator](left, right)
+  return (
+    <div>
+      <code>
+        {left} {operator} {right} = <output>{result}</output>
+      </code>
+    </div>
+  )
+}
+
+const examples = (
+  <>
+    <Calculator left={1} operator="+" right={2} />
+    <Calculator left={1} operator="-" right={2} />
+    <Calculator left={1} operator="*" right={2} />
+    <Calculator left={1} operator="/" right={2} />
+  </>
+)
+```
+
+Yup, this entire blog post was written just to explain those 3 lines of code to
+you. So yeah, there you go.
+
+Some folks may finish reading this post and scoff, saying things like: "Why
+would you ever want to use TypeScript if it requires you to do weird things like
+this?"
+
+First, I'd say that just because a tool like TypeScript requires workarounds for
+some stuff like this doesn't mean it's not worthwhile. The cost here is minimal
+and the benefit is significant. I'm not here to convince you to use TypeScript.
+I can't do as good a job convincing you as your runtime bugs do I'm sure 😜
+Secondly, this is definitely something that could improve with TypeScript in the
+future. In fact,
+[this may be a nice step to improving things](https://github.com/microsoft/TypeScript/issues/26242).
+Finally, like I said, this isn't something that we're doing all the time. Most
+of my time with TypeScript is delightful.
+
+Take care!

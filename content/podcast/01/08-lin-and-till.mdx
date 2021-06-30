@@ -1,0 +1,555 @@
+---
+title: The State Of WebAssembly With Lin Clark and Till Schneidereit
+date: null
+description:
+  Lin Clark and Till Schneidereit from Mozilla discuss the current state of
+  WebAssembly and WASI.
+meta:
+  keywords:
+simpleCastId: f59a8446-5253-4e72-9993-89a485b70c1d
+---
+
+import Transcript from 'components/podcast/transcript'
+import Resources from 'components/podcast/resources'
+import Guest from 'components/podcast/guest'
+
+Lin Clark and Till Schneidereit from Mozilla discuss where WebAssembly came from
+and where it's going. WebAssembly was inspired by asm.js, a subset of JavaScript
+that could be compiled from a language such as C++. WebAssembly can take the
+idea further since it doesn't have the same limitations that JavaScript does.
+
+Lin and Till talk about why even a front-end developer would use WebAssembly,
+which leads to a discussion on one of the primary use cases of WebAssembly,
+performance optimization. They also get into the nitty-gritty of WASI, or the
+WebAssembly System Interface, which allows WebAssembly to be used outside of the
+browser.
+
+---
+
+<div style={{display: 'grid', gridGap: 10, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'}}>
+
+<Resources>
+
+- [Lin Clark - Standardizing WASI: a system interface to run WebAssembly outside the web](https://hacks.mozilla.org/2019/03/standardizing-wasi-a-webassembly-system-interface/)
+- [Lin Clark - A cartoon intro to WebAssembly](https://hacks.mozilla.org/2017/02/a-cartoon-intro-to-webassembly/)
+- [Rust and WebAssembly Book](https://rustwasm.github.io/docs/book/)
+
+</Resources>
+
+<div>
+
+<Guest name="Lin Clark" image="https://res.cloudinary.com/kentcdodds-com/image/upload/v1625034102/kentcdodds.com/content/podcast/01/08-lin-and-till/lin-clark-and-till-schneidereit.png">
+
+- [Twitter](https://twitter.com/linclark?lang=en)
+- [Code Cartoons](https://code-cartoons.com/)
+- [Github](https://github.com/linclark)
+- [Mozilla Hacks](https://hacks.mozilla.org/author/lclarkmozilla-com/)
+
+<Guest name="Till Schneidereit">
+
+- [Twitter](https://twitter.com/tschneidereit?lang=en)
+- [Github](https://github.com/tschneidereit)
+
+</Guest>
+</Guest>
+</div>
+</div>
+
+---
+
+## Transcript
+
+<Transcript>
+
+**Kent C. Dodds:** All right. Hey everybody, this is Kent C. Dodds, your friend.
+I am joined by two friends, actually. Lynne Clark, and Till... I actually didn't
+ask your last name. I'm so sorry. What is your last name Till?
+
+**Till Schneidereit:** It's Schneidereit.
+
+**Kent C. Dodds:** Oh, well I'm glad that I didn't try to pronounce that anyway.
+Lynn was actually on one of my podcasts in the past to JavaScript to air and she
+knows that I am notorious for mispronouncing people's names, so cool. Well,
+thank you for joining us, both of you. I'm really excited to chat about
+WebAssembly, and this new exciting thing, "WASI". Is that how you pronounce
+that?
+
+**Lin Clark:** Yes.
+
+**Till Schneidereit:** Yes.
+
+**Kent C. Dodds:** "WASI", yes. Web Assembly System Interface, right?
+
+**Lin Clark:** Correct.
+
+**Kent C. Dodds:** We're going to chat about that, and get some ideas there, but
+I want to get to know you, each of you, first, a little bit, especially if our
+listeners haven't heard of you yet. So, Till, why don't we have you go first?
+Can you introduce yourself to us?
+
+**Till Schneidereit:** Sure. I work at Mozilla, where I'm the Manager of the
+Developer Technologies team. My team is working on Rust, the language and the
+compiler, and WebAssembly tooling. So, not the WebAssembly execution environment
+in Firefox, but the tools for compiling to WebAssembly, for example, and also
+WebAssembly web times outside the [inaudible 00:01:35], and this WASI initiative
+that we just announced last week. Our part of that is developed by my team.
+
+**Kent C. Dodds:** Very cool. We're definitely looking forward to hearing more
+about WebAssembly outside the browser because it's like, wait, what? So, it's
+going to be great. I'm looking forward to chatting about that. Lynne, why don't
+you introduce yourself?
+
+**Lin Clark:** Sure. I'm Lynne Clark, and I make code cartoons.
+
+**Kent C. Dodds:** Yes!
+
+**Lin Clark:** Thank you. I also work at Mozilla. We actually work in the same
+team, Advanced Development, and so I work closely with the WebAssembly folks,
+and the Rust folks, and basically have been focusing on WebAssembly for about
+the last two years, since it's been on by defaulting browsers.
+
+**Kent C. Dodds:** Thank you for that. You failed to mention one really
+important fact about yourself, and that is your unique skills at karaoke, and
+getting everybody to join you.
+
+**Lin Clark:** That is on my resume. I'm glad that you reminded me to point that
+out.
+
+**Kent C. Dodds:** Code cartoons is fantastic. It's such a great way to teach
+people new concepts. I love that as you've made this transition more to a
+systems-type stuff that you've carried that with you, because it helps people
+like me, who I really know much about that, to really at least understand at a
+high level what these things are doing. So, thank you for all of that. So,
+great! Let's talk about WebAssembly a little bit. I think it would be really
+useful for people to get kind of a history of what WebAssembly even is, and
+especially the "why" behind WebAssembly. Why does this matter? It's typically
+really helpful for people to understand what this thing really is, and how it
+works, and what role it plays in their lives. Can one of you give us kind of a
+brief history of WebAssembly?
+
+**Lin Clark:** Sure. The idea behind WebAssembly came about ... it came from
+asm.js. The idea behind asm.js was that you could compile languages like C, and
+C++, to run the Web, and not only do it in a way that it made it possible to run
+those languages, but also made it possible for those languages to run
+efficiently on the Web. So, WebAssembly was a way of taking that idea even
+further, because there's only so much you can do when you're compiling a
+language to JavaScript. WebAssembly took that further, and became a compile
+target that was separate from any other language, that a bunch of different
+languages could compile to, and it could run even more efficiently than asm.js
+on the web.
+
+**Kent C. Dodds:** Hmm. Okay. Cool. Yes. So, why do I, as a full-time JavaScript
+engineer, that's like the only language that I really can say that I know, why
+would I care about this? Is this something that I would use in my day to day, or
+do I run into the problems that WebAssembly solves regularly? In what scenario
+does WebAssembly make sense for me as a front-end web developer?
+
+**Lin Clark:** I think there are a whole variety of different instances, or
+different cases, where you could benefit from WebAssembly. So, one example that
+one of our engineers at Mozilla figured out how to rewrite the source maps
+parser. The source maps library, it's used in Webpack, it's used in our
+developer tools. It has a parser that was rewritten in Rust compiled to
+WebAssembly, and that parser is now, I think, 11 times faster after rewriting
+it. The WordPress projects rewrote their parser that runs in their online editor
+in WebAssembly, and I think that's 86 times faster on average? So, in these
+cases, where you have things where the code gets called a lot, it's not maybe as
+fast as it could be. You're getting some problems with the execution speed, a
+lot of times that makes sense to write to WebAssembly. There are a whole bunch
+of other cases too, but that's the one that I think most web developers are
+interested in, and acquainted with.
+
+**Kent C. Dodds:** Hmm. Yes. So, like, solving performance problems, and our web
+applications.
+
+**Lin Clark:** Yes. There is one other case though, and Till, you might be able
+to speak to this.
+
+**Till Schneidereit:** Yes. I think the performance-use case is the one that is
+most important for content developers, where really in a lot of cases, you have
+specific performance hotspots where your application, overall, really suffers
+from this one part of your code being slow. It used to be that you had to jump
+through hoops, and really to perform all kinds of work acts to get your
+JavaScript to be fast enough. With WebAssembly, we see in a lot of cases, that
+instead using a language like C++ or Rust, and using just writing, just straight
+forward normal code in those languages, makes the performance hotspot just go
+away. So, one really interesting use case is to just take a piece of your
+overall application, and replace the JavaScript implementing that piece with
+West-Code, for example, and otherwise leave your application unchanged. But, the
+other big use-case is porting existing code to the Web, be it individual modules
+where maybe [inaudible 00:07:34] inevitably, you want to use in your web
+application exists as C++, or Rust, or Go Code, and you want to make use of it,
+instead of having to be wedded in JavaScript. Or, you want to have a whole
+application running on the web. As an extreme example, Autodesk took their
+AutoCAD application that they developed over the last ... I don't actually know
+... 30 plus years, and compiled it to WebAssembly, and now it works on the Web.
+
+**Kent C. Dodds:** That's bonkers to me. I actually had a question about that,
+that I've been wondering for a long time. What's the story of WebAssembly, and
+its interaction with the "Dom"? In a scenario like that, where we're taking an
+entire application and compiling it to work with the Web, I imagine that the
+tools that that application used natively before don't really work quite as well
+on the Web. Like, we have a different API for the UI side of things. So, what's
+that story like with WebAssembly?
+
+**Till Schneidereit:** There are different answers to that, but I think that the
+best way to view this is to say you want to have a native user interface for
+each platform that your application is running on. You want to have a native
+Mech O/S interface, if you have a mech part, and a Windows interface if you have
+a Windows part, same for [ent-wide[inaudible 00:09:12] and iOS. That's normal,
+and that's often most commonly what people do. They have a shared part of their
+application that works on all of these platforms, and then a native user
+interface for each of these. Now with WebAssembly, we can add the Web to these
+other platforms, but that doesn't mean that you don't still need a native UI for
+the Web. The native UI for the Web means one written in HTML CSS and JavaScript.
+So you wouldn't ... people are trying to make it possible to just use some other
+framework behind the scenes, and automatically generate anything without even
+having to worry about the Web. We don't really believe that that is the right
+approach. That will not lead to good usability. It'll lead to really bad
+accessibility, normally, and in general, it'll feel alien to the Web. And so,
+you should treat the Web the way you treat these other platforms, and give it a
+first-class, new web native user interface.
+
+**Kent C. Dodds:** Great. I'm actually thrilled to hear that, as from a job
+security standpoint, as a front end developer. But I'm also like, it makes a lot
+of sense to me that that would be the case, that the Web just turns into another
+user interface, specific implementation detail of your application. But the
+interesting idea of being able to take all of the core logic, the business logic
+of your application, and share that across all these platforms, is very
+interesting and appealing to me. I think that's pretty cool. One question that I
+had about the performance aspect, and I think a lot of people are kind of
+interested about this as well, is once you add an abstraction like a WebAssembly
+into an application, before I had this complex code that existed in this
+function, and I'd just call that, and it all exists in the same memory space,
+and all of that stuff, and now I'm taking that same function and that
+functionality, and putting it into WebAssembly, and I have to have some sort of
+communication between JavaScript and WebAssembly which is going to add some
+overhead. Are there situations where you have to make sure that the code you're
+porting is very performance-intensive to make up for the difference in
+performance overhead, or am I overstating that performance issue?
+
+**Lin Clark:** Well, the performance issue has been changing over time, and is
+continuing to change. Originally, there were two performance issues. The actual
+call between JavaScript and WebAssembly, and WebAssembly back to JavaScript.
+Those calls actually took a lot of time in and of themselves, because engines
+hadn't optimized them yet.
+
+**Kent C. Dodds:** Right.
+
+**Lin Clark:** Then, there's also the exchanging data. So you know, even without
+the cost of the call, just us sending data from one to the other, because you
+have to take the object that's in JavaScript, and write it out into what's
+called linear memory. So basically, turn it into numbers, and then put it in
+this part of memory that WebAssembly has access to. So, those were the two
+costs. The actual call, and then the data marshaling. The actual call, we've
+been able to optimize that in Firefox. We actually now have those calls, in some
+cases, working even better. They're even faster than JavaScript to JavaScript
+calls, if they're not in-lined.
+
+**Kent C. Dodds:** What?
+
+**Lin Clark:** Yes.
+
+**Kent C. Dodds:** That makes me think maybe we could optimize the JavaScript of
+JavaScript a little bit? That's amazing.
+
+**Lin Clark:** Well, there's some properties of WebAssembly that actually make
+it easy to optimize. We have, in some ways, solved that problem. There's still a
+little bit of tweaking that can happen to make it even faster, but that's no
+longer really holding people back from doing a lot of calls between JavaScript
+and WebAssembly. The one thing that is still remaining, though, is that data
+marshaling cost. I think that Till can probably speak to that, because he's
+working on some of the standardization that will help with that.
+
+**Till Schneidereit:** Yes. One of the biggest issues there is to get strings
+from WebAssembly to JavaScript, and the other way around, because in JavaScript
+engines, strings are some under the hood, not what you're intact with as a
+JavaScript developer, but what engine implementers have to do. Strings are some
+of the most complicated and most highest optimized data structures that you
+could possibly imagine, because you think of a string as just this array of
+characters. That's not even close to how engines, internally, represent most
+strings. So, if you take a sub-string, then that is, for example, represented as
+a pointer into the original string, and a length. If you then combine that with
+another sub-string where you are using the Plus operator, then that is
+represented as there are these two things that we now join into one string, but
+really, we still keep these two pointers in two different strings. So, all of
+this representation, you as a developer normally don't have to care about, but
+engine implementers have to, and that means you can't just straight forward say,
+"Here! I have this string on the WebAssembly side," because the language running
+in WebAssembly, C++ or Rust, they have their own representation of strings. You
+have to encode and decode between these. There's some fundamental overhead to
+that, but we're not really close to having fully optimized even what we can do
+in the engine side. In fact, just last week, I talked to someone at Google. I
+was at the TC39 meeting, and we talked about one aspect of this that showed up
+in profiling some code that did a lot of this string translation, and agreed on
+a change to the HTML standard for [Dom-build [inaudible 00:16:19]instead, that
+will take some of that overhead back away. Engines can do quite a bit of
+optimizations, but none of this changes that there is some fundamental overhead
+and you are, in the end, [inaudible 00:16:36] that it's always a trade-off. Is
+it worth it to cross this [bond way[inaudible 00:16:45] to do the computation in
+a language where it's faster, or do you get more overhead by doing that?
+
+**Kent C. Dodds:** Right, yes. It's not just the performance question either,
+but also the tooling around that, and all that stuff. So yes, I think ... and
+now, analyzing the actual costs is, you know, that's kind of a programming
+thing. We're always ... cost benefit analysis on everything that we do,
+hopefully. Hopefully, we're doing that, and not just falling the next shiny
+object.
+
+**Till Schneidereit:** There are some use-cases where it's just very obviously
+the case that either the performance won't matter, because the data you are
+upgrading on is so small that whether you have this string [inaudible 00:17:33]
+cost or not, or the computation costs, it really doesn't matter. Or, if it
+becomes relevant, then doing it in WebAssembly is obviously the right choice.
+
+**Kent C. Dodds:** Mm-hmm (affirmative).
+
+**Till Schneidereit:** So, in those use-cases, like the parts are, as Lynne
+mentioned earlier, going with the WebAssembly route just takes the headache away
+of [inaudible 00:17:53] it.
+
+**Kent C. Dodds:** Yes, yes. That makes a lot of sense. So, WebAssembly, as
+we've recently been hearing about, it's not just limited to the Web. It's
+actually ... you know, we can take WebAssembly out of the browser, which makes
+WebAssembly kind of seem like a misnomer of a name, now, at this point. But,
+this is how the Web eats the world. It's the technology and the Web just, it's
+everywhere now. You can run node on anywhere now.
+
+**Lin Clark:** Exactly.
+
+**Kent C. Dodds:** Let's talk about WebAssembly outside of the Web. First, a
+little bit about the "why would you care to do this?" and then, I've got a
+couple of other questions to understand its' place in the Web. Can we talk a
+little bit about what this WASI thing is all about?
+
+**Lin Clark:** Sure. WASI is the web assembly system interface. It's an effort
+that we are leading to standardize a system interface for web assembling. I will
+explain a little bit about what a system interface is. When you are running code
+on a machine, you don't want to let applications just rewrite files Willy Nilly,
+and just access memory, and so, the operating system sits in between, and when
+your application wants to do something, it has to ask the operating system
+instead of just doing it itself. The way that the operating system makes these
+services available, the functions that it gives your application in order to be
+able to do these things, that's the system interface. But, WebAssembly ... so,
+when you're compiling your code, you'll say what kind of machine you're
+targeting, what operating system you're targeting, so that your code knows which
+of these implementations of the system interface to use based on what platform
+you're targeting.
+
+**Kent C. Dodds:** Now, we're talking about the chips that the hardware is using
+and things like that?
+
+**Lin Clark:** More like the operating ... so like actually saying that you're
+targeting a Mac, or you're targeting a Linux machine. The problem here for
+WebAssembly is that when you're compiling your code, you don't yet know what
+operating system you want to run on. You know, that's this portability thing
+that we have with WebAssembly. We want this WebAssembly file to be run across
+all different kinds of operating systems, so we need to not just target a single
+system interface. We need a conceptual system interface. Something, just as
+WebAssembly is an assembly for a conceptual machine, you know? It can run across
+all these different chips that you were talking about, all of these different
+machine architectures, because it's this conceptual assembly that sits on top.
+We need a conceptual operating system and we need a system interface to target
+that conceptual operating system. And so, that's what WASI is. One of the nice
+things about it is that, because we're developing it now, instead of 40 years
+ago when a lot of the other system interfaces started being developed, we can
+bring some of the most up to date concepts from systems into the design of this
+system interface. So, it actually takes a new approach to security, which has
+been studied in academia for the past four years, but only has recently gained
+any kind of traction in industry. We can bring that to the system interface, so
+that we can have really fine grains sandboxing and security controls.
+
+**Kent C. Dodds:** Oh, very good. Yes, that makes a lot of sense. So, this WASI
+kind of ... or these implementations, are these basically like a virtual machine
+like the JVM, and that kind of thing? Is that kind of what it's basically like?
+
+**Lin Clark:** Yes. Runtimes can use WASI, and then we can have a lot of the
+same properties of the JVM. I think Til probably can speak to that.
+
+**Till Schneidereit:** Yes. There clearly are some commonalities with something
+like the JVM, or Microsoft.net common language, runtime, or also scripting
+languages like Python or Ruby, which also bring this virtualized environment
+with them. But what these all have in common is that they're, let's say, highly
+opinionated. They are optimized for a specific language, or a specific set of
+languages, in the case of the JVM or the CLR, and have fairly high-level memory
+models, for example. The byte code is just for, in the JVM case for example, how
+you optimize for Java. With WebAssembly, we have something that's much more much
+closer to other ... to actual CPU architectures, and thus allow you to target
+this runtime using a wide range of different languages, and also allows it to
+scale to use-cases from tiny embedded sensors, up to large server farms with the
+same kinds of [inaudible 00:23:30]. Perhaps when using a different runtime,
+because different runtimes can be optimized for these different use-cases, but
+you can target them with the same tool chains, and with the tool chains you are
+used to, because you're using them for other things. For example, as of today,
+using a nightly compiler, you can use target WASI with Rust, without anything
+special at all, just by telling the compiler, "Compile this to WASI," instead of
+as a Meco [inaudible 00:24:02]. Our big goal is to enable people to target this
+environment with the tools they're already using, and still cover this wide
+array of use-cases. Really opening up new worlds for people, without them having
+to learn a whole new language, or a whole new runtime system.
+
+**Kent C. Dodds:** Hmm. Yes, that's a really interesting. As a primarily
+front-end engineer, I do plenty of Node as well, but it seems like this WASI
+side of things is more targeted to people writing native code that's going to
+run on servers, or on IoT devices. The idea is I want to be able to choose my
+language of choice, and then have the one ... you know, the build artifact be
+able to run on any platform. Is that kind of the goal of WASI, then?
+
+**Lin Clark:** Well, you know, I think that WASI can actually help a bunch of
+different use-cases. It can help a bunch of different run times. You will have
+run times that are meant for those kinds of people who aren't really involved in
+the Node ecosystem at all. But, we're also talking to the folks in the Node
+project about how they can use WASI. I don't know if you've ever had to do
+native module development? I'm sure you've had to use a native module at the
+very least.
+
+**Kent C. Dodds:** Yes.
+
+**Lin Clark:** With native modules, the reason why you have to compile, when you
+have no GYP running, when you're installing an application with the native
+module ...
+
+**Kent C. Dodds:** Yes. Half the time, it doesn't work and you're like, "Oh!
+Duh!"
+
+**Lin Clark:** Yes, exactly. If the developer doesn't have you run Node GYP,
+then they have to compile a whole bunch of different binaries that you then
+download this whole binary over the wire. That is just really inconvenient for
+users, and it also is inconvenient for people like NPM, who end up getting all
+of the issues filed against their issue tracker, when Node GYP doesn't work,
+even though they're not involved at all, and have to actually deliver these
+different binaries and store them. Having these native modules that aren't
+portable actually causes problems for the ecosystem. If we were going to run
+those native modules in something like WebAssembly instead, you could solve that
+portability problem. Just as you can run your JavaScript modules across any
+runtime that's using Node, you'd be able to run your WebAssembly modules against
+any runtime using Node. The Node folks are really excited about this, and I do
+think that there's a very likely a future where Node native modules are written
+in WebAssembly using WASI.
+
+**Kent C. Dodds:** Yes. That makes a lot of sense. So, is that future ...
+clearly, we need to have the WASI implementation installed on my computer to run
+WASM files. Am I understanding that right?
+
+**Lin Clark:** Actually, no. Node would have it baked in, basically.
+
+**Kent C. Dodds:** Right.
+
+**Lin Clark:** So when you install Node, you'd have it already there for you.
+
+**Kent C. Dodds:** Cool, yes. That's exactly what I was going to ask. Awesome!
+And so what that means is, if a language like Ruby were to compile to a WASM
+file, and then that gets published to NPM, as a WASM file, then I could actually
+run it on my machine, even if I didn't have Ruby installed, because it's
+actually running within a WASM. Is that correct?
+
+**Till Schneidereit:** Yes, it is correct, but it is a bit more complicated
+because the language like Ruby ...
+
+**Kent C. Dodds:** Maybe that was a bad example?
+
+**Till Schneidereit:** For a language like C, C++, Rust, the answer would be
+just absolutely, unequivocally yes. For languages like Ruby, Python or Go, also
+... so, Go targets WebAssembly. And in fact, a day after we announced WASI,
+someone had a work in progress, a working patch for Go to target, not just
+WebAssembly, but WASI specifically, and use that as the system interface for Go,
+which is really exciting. But to make that work, they have to bundle the Go
+runtime, because Go has a very sophisticated garbage collection system, and at
+runtime, that is sophisticated but also fairly large. And so, a WebAssembly
+module, a WebAssembly / WASI module, written in one of these languages, has to
+bundle that entire runtime, or have that runtime available, perhaps as an
+external module, at least. For a Ruby application or a script, that would mean
+having the Ruby interpreter essentially bundled with it. In fact, for Python, we
+have that. Another team at Mozilla taken the Python interpreter, and compiled it
+to WebAssembly, and that now runs on the client side for doing scientific
+computing tasks, which so far, only worked in service side installations. They
+compiled the entirety of the Python interpreter, and so, it's not Python code
+compiled to WebAssembly. It's Python itself compiled to WebAssembly executing
+Python code, unmodified path and code, and that's how this work would work for
+us [inaudible 00:30:15].
+
+**Kent C. Dodds:** I see. Okay. Very interesting. So, that seems like
+potentially problematic from the size standpoint. This is the same thing with
+... I remember when I was doing Java stuff, and I wanted to provide my users an
+executable that where they didn't have to have Java installed, like the runtime
+installed. I had to bundle the whole runtime into that dot exe that I sent to
+them. Okay. Yes, that's-
+
+**Till Schneidereit:** One additional point on that. What is interesting here is
+you're right. People have to have these different runtimes installed. If you get
+some Python code groups on one, you have to have the Python interpreter
+installed, and potentially even multiple, different versions of it, because
+there is this Python Two versus present Three conversion that's been going on
+for a decade. Installing these can be a headache, and that is part of why this
+other Mozilla team took the Python interpreter compiler to WebAssembly. With
+WASI, you can imagine a future where these kinds of interpreters are compiled to
+WebAssembly, and really, the only requirement you have is for ... and so, to a
+new operating system, to compile or to run Python code on a new operating
+system, requires you to have it available on that system. One interesting thing
+there is you could imagine a future where the Python interpreter or the would-be
+interpreter, would be compiled to WebAssembly. Porting them to a new operating
+system, would be, well, your port the WASI runtime, and you don't have to port
+all software to these new operating systems. What really just ... you need the
+WASI at one time, and then these other interpreters for other languages just
+work by being compiled to WASI. Then maybe later on, you do a specific port
+because you want to have no overhead at all, but at least this would just work
+[inaudible 00:32:37] where wherever WASI is available.
+
+**Kent C. Dodds:** Right. That makes a lot of sense. Cool. So, we're coming down
+on our time here. I want to encourage people to kind of get into some of this
+stuff. What resources do you have for people who are interested in learning
+about WASM and WASI, and trying to find places where they can actually implement
+this, or play around with it?
+
+**Lin Clark:** For learning about WebAssembly, I have a series of code cartoons
+on the hacks.mozilla.org blog. I think that that gives a good intro to some of
+the concepts around WebAssembly. If you're looking to play around with
+WebAssembly, I really recommend the Rust to WebAssembly's working groups.
+They've done some documentation on how to compile Rust to WebAssembly that I
+think is really, really good. This is actually, I think, a lot of people are
+saying that the Rust user experience for compiling to WebAssembly is the best
+language, so far. So, I think that for people really just wanting to get started
+with it, that's a great starting place.
+
+**Kent C. Dodds:** Perfect. Also, I am going to add a link to this, as well. The
+blog post announcing this standardization of WASI by you, Lynne, I thought it
+was really informative, especially the little demo video that you had there. So,
+I'll add links to those as well-
+
+**Lin Clark:** Great.
+
+**Kent C. Dodds:** ... and invite people to check those out.
+
+**Lin Clark:** Thank you. I appreciate hearing that, too. I'm glad it helped
+people understand these concepts.
+
+**Kent C. Dodds:** Mm-hmm (affirmative). Yes. Cool. So, is there any last things
+that you want to share with the audience before we wrap this up?
+
+**Till Schneidereit:** Maybe one thing is we are just starting out with WASI,
+and if this is something that is interesting to you, then we have WASI.def that
+has more information. But, we are also starting the standardization process for
+this. In an online call tomorrow for the W3C working group, or community group
+Brand WebAssembly, we will [shadow[inaudible 00:34:51] a subgroup. If you think
+this is something where contributing to this effort would be interesting to you,
+then I'd encourage you to join that. Join us for the call. Join the subgroup,
+and get involved with that.
+
+**Kent C. Dodds:** Awesome. Cool. Well, thank you both. Really quick, where can
+people find you on the Internet? Lynne, why don't you go first?
+
+**Lin Clark:** Sure. So I am Lin Clark, L-I-N-C-L-A-R-K, on Twitter, and that's
+the best way to follow what I'm doing.
+
+**Kent C. Dodds:** Cool.
+
+**Till Schneidereit:** Twitter's also the best way to follow me, and I'm
+Tscheniderpride on Twitter. Maybe you can do the link to it?
+
+**Kent C. Dodds:** Yes, we'll get a link. That's our show this time around, so
+thanks for joining me for this. This is pretty interesting, especially the WASI
+thing, is really interesting. I just love how the Web is eating the world, even
+outside of the Web, and I feel like WASI is a good step in the right direction.
+Especially if I can avoid Node GYP problems in the future. That would just be
+spectacular. So, thanks everybody, and we will catch you all next time. Goodbye!
+
+</Transcript>

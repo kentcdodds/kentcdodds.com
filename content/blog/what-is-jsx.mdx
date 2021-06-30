@@ -1,0 +1,171 @@
+---
+title: What is JSX?
+date: 2018-07-09
+description:
+  You may use it every day, but have you seen what happens after Babel compiles
+  it?
+meta:
+  keywords:
+    - react
+    - javascript
+    - Jsx
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033499/kentcdodds.com/content/blog/what-is-jsx/banner.jpg
+bannerCredit:
+  Photo by [Matt Bowden](https://unsplash.com/photos/Er3WYEslTBk) on
+  [Unsplash](https://unsplash.com) (plus the react_logo)
+---
+
+The first few videos of the (free)
+[Beginner's Guide to ReactJS](https://kcd.im/beginner-react) are all about React
+elements and JSX. So here they are for you to watch along with this blog post.
+Enjoy!
+
+https://egghead.io/lessons/react-create-a-user-interface-with-vanilla-javascript-and-dom
+
+https://egghead.io/lessons/react-create-a-user-interface-with-react-s-createelement-api
+
+https://egghead.io/lessons/react-create-a-user-interface-with-react-s-jsx-syntax
+
+https://egghead.io/lessons/react-use-jsx-effectively-with-react
+
+https://egghead.io/lessons/react-render-two-elements-side-by-side-with-react-fragments
+
+https://egghead.io/lessons/react-create-a-simple-reusable-react-component-50d59130
+
+Now on to the blog post!
+
+Current Available Translations:
+
+- [Português (do Brasil)](https://medium.com/p/1399d9dd80b3)
+
+I think a critical part of understanding how to use React effectively is
+understanding JavaScript and JavaScript expressions. So I'm going to show you a
+few examples of JSX and it's compiled version to help give you an idea of how
+this all works. As soon as you can compile JSX in your head, you can use the
+abstraction more powerfully.
+
+Here's our simplest example:
+
+> Note, all examples assign to a variable `ui` just to illustrate that these are
+> regular JavaScript expressions that you can assign to a variable.
+
+```jsx
+ui = <div id="root">Hello world</div>
+ui = React.createElement('div', {id: 'root'}, 'Hello world')
+```
+
+As shown above, the JSX is compiled to `React.createElement`. The API to
+`React.createElement` is:
+
+```js
+function createElement(elementType, props, ...children) {}
+```
+
+- `elementType` can be a string or a function (class) for the type of element to
+  be created
+- `props` is an object for the props we want applied to the element (or `null`
+  if we specify no props)
+- `...children` is all the children we want applied to the element too. This is
+  just a convenience and we could write an equivalent to above with:
+
+```js
+ui = React.createElement('div', {id: 'root', children: 'Hello world'})
+```
+
+If you have more than one child then you use an array:
+
+```jsx
+ui = (
+  <div>
+    <span>Hello</span> <span>World</span>
+  </div>
+)
+ui = React.createElement('div', {
+  children: [
+    React.createElement('span', null, 'Hello'),
+    ' ',
+    React.createElement('span', null, 'World'),
+  ],
+})
+
+// Note: babel uses the third argument for children:
+ui = React.createElement(
+  'div', // type
+  null, // props
+  // children are the rest:
+  React.createElement('span', null, 'Hello'),
+  ' ',
+  React.createElement('span', null, 'World'),
+)
+```
+
+What you get back from a `React.createElement` call is actually a simple object:
+
+```js
+// <div id="root">Hello world</div>
+{
+  type: "div",
+  key: null,
+  ref: null,
+  props: { id: "root", children: "Hello world" },
+  _owner: null,
+  _store: {}
+};
+```
+
+When you pass an object like that to `ReactDOM.render` or any other renderer,
+it's the renderer's job to interpret that element object and create DOM nodes or
+whatever else out of it. Neat right?!
+
+Here are a few more examples for you:
+
+```jsx
+ui = <div>Hello {subject}</div>
+ui = React.createElement('div', null, 'Hello ', subject)
+
+ui = (
+  <div>
+    {greeting} {subject}
+  </div>
+)
+ui = React.createElement('div', null, greeting, ' ', subject)
+
+ui = <button onClick={() => {}}>click me</button>
+ui = React.createElement('button', {onClick: () => {}}, 'click me')
+
+ui = <div>{error ? <span>{error}</span> : <span>good to go</span>}</div>
+ui = React.createElement(
+  'div',
+  null,
+  error
+    ? React.createElement('span', null, error)
+    : React.createElement('span', null, 'good to go'),
+)
+
+ui = (
+  <div>
+    {items.map(i => (
+      <span key={i.id}>{i.content}</span>
+    ))}
+  </div>
+)
+ui = React.createElement(
+  'div',
+  null,
+  items.map(i => React.createElement('span', {key: i.id}, i.content)),
+)
+```
+
+Notice that whatever you put inside `{` and `}` is left alone. This is called an
+interpolation and allows you to dynamically inject variables into the values of
+props and children. Because of the way this works, the contents of an
+interpolation must be JavaScript expressions because they're essentially the
+right hand of an object assignment or used as an argument to a function call.
+
+### Conclusion
+
+If you'd like to play around with this some more, you can try online with
+Babel's online REPL.
+[Start here](https://babeljs.io/repl#?browsers=&build=&builtIns=false&spec=false&loose=false&code_lz=DwEwlgbgfAEgpgGwQewAQHdkCcEmAenGgG4g&debug=false&forceAllTransforms=false&shippedProposals=false&circleciRepo=&evaluate=true&fileSize=false&timeTravel=false&sourceType=module&lineWrap=false&presets=react&prettier=true&targets=&version=7.9.0&externalPlugins=).
+Hopefully this helps you understand a little more about how JSX works and how
+you can use it more effectively. Good luck!

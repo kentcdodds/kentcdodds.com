@@ -1,0 +1,548 @@
+---
+title: Talia Nassi on Testing in Production
+date: null
+description:
+  Talia Nassi chats with Kent about knowing the product as a tester, testing in
+  production, and tools for testing.
+meta:
+  keywords:
+    - testing
+    - feature flagging
+simpleCastId: 57f85019-6cdb-421f-9576-d890387662c9
+---
+
+import Transcript from 'components/podcast/transcript'
+import Resources from 'components/podcast/resources'
+import Homeworks from 'components/podcast/homeworks'
+import Guest from 'components/podcast/guest'
+
+What does it mean to test in production? Simply put, testing in production means
+testing your features in the environment where your features will live. So what
+if a feature works in staging, that's great, but you should care if the feature
+works in production, that's what matters.
+
+An excellent tool for testing in production is feature flagging. Feature
+flagging allows you to separate your code deployment from your feature release.
+So, when you use a tool like future flagging, you're able to target specific
+users to see your feature, and you can test your feature and make sure it works
+and fix any bugs.
+
+<Homeworks>
+
+Watch Talia's talk:
+[Nordic.js 2019 • Talia Nassi - Testing in Production](https://www.youtube.com/watch?v=adPQCuotAr4)
+
+Read Talia's blog post:
+[Set Up Feature Flags with React in 10 Minutes](https://www.split.io/blog/react-feature-flags-10-minutes/)
+
+</Homeworks>
+
+<div style={{display: 'grid', gridGap: 10, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'}}>
+<Resources>
+
+- [Split Feature Flags](https://www.split.io/product/feature-flags/)
+- [Launch Darkly](https://launchdarkly.com/)
+- [Robot Framework](https://robotframework.org/)
+
+</Resources>
+<Guest name="Talia Nassi" image="https://res.cloudinary.com/kentcdodds-com/image/upload/v1625034147/kentcdodds.com/content/podcast/03/05-talia-nassi/talia-nassi.png">
+
+- [Twitter](https://twitter.com/talia_nassi)
+
+</Guest>
+</div>
+
+---
+
+## Transcript
+
+<Transcript>
+
+**Kent C. Dodds:** Hello, friends, this is your friend Kent C. Dodds, and I am
+super excited to be here with my friend, Talia Nassi. Say Hi, Talia.
+
+**Talia Nassi:** Hi, guys.
+
+**Kent C. Dodds:** So Talia and I are new friends, just in the last few months,
+I met Talia on Twitter through some, I think it was tweets about the talk that
+we're going to talk about a little bit, but I was just really interested in some
+of the things that Talia has to say and I'm super excited for her to share those
+things with you. But before we get to that, I want you to get to know Talia. So
+Talia, could you just introduce yourself to everybody and let's get to know you
+a little bit?
+
+**Talia Nassi:** Yeah, absolutely. So I'm Talia, I'm a Dev Advocate at Split,
+and my background is mostly in testing, in software testing. I started out in QA
+and I've worked in automation and QA in places like Visa, and then Forbes, and
+then WeWork. So I have a really strong testing background and that's where I
+kind of found this passion of testing and production. My favorite language is
+Python, and I'm also an office prankster, so if you've seen me in the office
+wrapping things, or playing with people's desks, I definitely like pulling
+pranks on people. So, if I haven't gotten you, then I will, don't worry, but
+it's kind of a crazy time right now and no one can get into the office, so.
+
+**Kent C. Dodds:** Yeah.
+
+**Talia Nassi:** Yeah.
+
+**Kent C. Dodds:** Well, when the office is back open again, then you can sneak
+in early before anybody else and just like saran wrap everybody's desk or
+something.
+
+**Talia Nassi:** Yeah. Yeah, yeah, for someone's birthday, a couple of years ago
+I wrapped his entire desk in newspaper. It was fantastic. It took me so long
+though.
+
+**Kent C. Dodds:** That's super fun. It sounds like you'd be a fun person to
+work with.
+
+**Talia Nassi:** I am.
+
+**Kent C. Dodds:** Very cool.
+
+**Talia Nassi:** I am [inaudible 00:01:56] your tech starts working again.
+
+**Kent C. Dodds:** I definitely learned valuable lessons about locking my
+machine anytime I left my desk. You learn that pretty quick on the job you get
+desktop backgrounds of My Little Pony and whatever else.
+
+**Talia Nassi:** Yeah, exactly.
+
+**Kent C. Dodds:** Well good stuff. So Talia, so you actually started in the QA
+engineer side. Did you start with manual testing or did you start with automated
+testing on the QA side?
+
+**Talia Nassi:** So I started with manual testing and that was at Visa and the
+reason was because they have a lot of audits and you have to document all of
+your test cases and you have to document all of your findings and there's a
+really kind of strict process of which test cases that you ran and which test
+cases passed. So it's a really vigorous manual process, but you get to learn a
+lot about the testing documentation that's expected for you to know. So because
+of that I can write a really great test strategy document and I can write a
+really great test report because of that foundation. And after that I was able
+to have that foundation to be able to do more automated testing. So I started
+with manual and then after Visa it was basically just automation.
+
+**Kent C. Dodds:** Hm, yeah. So the reason I ask is I almost got my start into
+QA when I got into things, because one of my first internships I got, I barely
+slipped in. This guy was like, "I can't give you a job but I want you here so
+I'll find you something." And they found me a QA position and then just through
+certain happenstance I ended up being a business intelligence engineer that
+didn't work out either. But so, I remember working with other QA manual testers
+and they knew the product upside down backwards. They knew so much more than
+anybody else about the product and I found that to be really interesting just
+through their experience of testing literally every case. Well you kind of
+alluded to this, but your experience as a manual tester has impacted your
+empathy with the user or your ability to understand what is important in the
+process of testing in an automated way?
+
+**Talia Nassi:** I think just being a tester in general and being responsible
+for executing the test cases, you are the person who should know the product
+inside and out because when you're a developer and you're implementing the code
+for the functionality, I feel like that's just a little part of a big puzzle.
+But when you're writing end to end test cases or you're running integration
+tests or whatever the tests are, you have a more big picture kind of outlook. So
+you are expected to know what's supposed to work how, because, in my opinion, I
+think the tester and the product person should be best friends. You should know
+the requirements from the product person and if you have questions you should
+talk to them. I always think that QA and product should be sitting right next to
+each other, they should be talking the most, they should have the most meetings
+together. They need to be in sync the most because you're testing someone else's
+product requirements.
+
+**Kent C. Dodds:** Yeah, that makes a lot of sense. And you mentioned something
+that just made me think about this. And so with developers, lots of us are
+really proud of the unit tests that we write and we're like sweet, this button
+is so well tested, but then the QA are like, "I don't care how well tested
+button is, the page isn't working. I can't check out. This is a problem." Have
+you ever noticed a difference in the way that you view testing from other
+developers and just the way that you've done it?
+
+**Talia Nassi:** Yeah, absolutely. Some developers I've worked with will
+absolutely hate testing and they'll just tell me, "I don't want to write a test.
+I'm not writing for this." So I think it's just about having them understand you
+don't want things to come up in the future. You want to know that your product
+and your features are working right now and you don't want to be reactive rather
+than being like proactive and just testing whatever you need to test now. But
+yeah, there's definitely so many personalities. There's developers that I've
+worked with who write tests for everything. They write a million unit tests and
+a million integration tests and end to end test. And then there's developers who
+refuse to write any tests. It's a little hard, but they learn. After working
+with me, they learn.
+
+**Kent C. Dodds:** You end up wrapping their desks in newspaper and whatever
+else.
+
+**Talia Nassi:** Yeah, yeah.
+
+**Kent C. Dodds:** Very good. I'm actually curious, so I have some opinions on
+where you get the most value for the time that you put into when we're testing
+and so we have that traditional testing pyramid where it's like ETE top
+whatever, and I kind of throw that away. I don't buy into that idea. And so I
+created what's called a testing trophy. And I don't know if you've noticed that
+or seen that before, but end to end tests are a little more valuable than you'd
+see in the pyramid. A unit tests are still useful, but they're not the biggest
+part of the trophy. The biggest part is the integration tests. And I'm curious
+since you mentioned there some developers will write thousands of units and
+integration and where do you see the most value for the effort when we're
+talking about these different layers of tests?
+
+**Talia Nassi:** Yeah, I think you get the most value from end to end test and
+that's because you're thinking like the user, like how would your end user
+interact with your product? How is the end user going to go through your website
+or your app? So you're putting yourself in the position of your customer and
+when you do these end to end tests, you're thinking in a different persona. So I
+think that's what gives me the most value. And I generally would spend more time
+on end to end tests then unit tests or integration tests, but they're all
+important. I just think end to end tests give you the most value.
+
+**Kent C. Dodds:** Yeah, I definitely agree with you there that a single end to
+end test provides you with way more useful information than a single of any
+other type. So yeah, I totally buy into that. So I'm curious, before we get to
+the tools, I want to bring up this other unique aspect, which is kind of the
+thing that turned me on to this idea in the first place, and this was your talk
+that you gave at Nordic JS 2019, and I think maybe you've given it a couple of
+times, but it's a testing in production and this is marvelous and I don't want
+to mess it up so I'll go ahead and let you explain what this is. What does it
+mean to test in production and why should people care about this?
+
+**Talia Nassi:** Yeah. Okay, great. So testing in production means testing your
+features in the environment that your features will live in. It means testing
+your features where your users will use those features. So it means not using a
+dummy environment, staging and not using a test environment. It means you're
+testing your code in production and you're doing it safely. And the reason that
+you should do this is because I don't care if my feature works in staging,
+that's great, but I care if my feature works in production, and that's what
+really matters. So I think a lot of people are scared and hesitant when it comes
+to this topic. But if you do it correctly and safely and you use the right
+tools, it really is super beneficial.
+
+**Kent C. Dodds:** Absolutely, and I think this is brilliant. So one of my
+biggest guiding philosophies for everything that I do with testing is this
+concept that the more that your test resemble the way your software is used, the
+more confidence they can give you.
+
+**Talia Nassi:** Absolutely.
+
+**Kent C. Dodds:** And the way that your test would resemble the way software is
+used is like you're a manual tester actually filling out the form, but we don't
+do that. I mean people do that, but we want to automate this because it scales
+better. We can't just run every permutation on every change. I worked at a
+company where we did that. Development was shut down for two days. It was not
+fun for anyone. And humans are notoriously bad at that, especially developers
+who just want to get back to their regular jobs.
+
+**Kent C. Dodds:** So then we automated, but as soon as we automate, we take a
+step away from that as the closer your test resemble the way software is used,
+but it's worthwhile. And so every step that we take away from that, we're kind
+of trading off confidence for some sort of ease or ... what's the word I'm
+looking for? Convenience.
+
+**Talia Nassi:** Yes.
+
+**Kent C. Dodds:** But when hearing about your idea of let's run our tests in
+production, that's like, "Yeah, sure. Why not?" There's no real value in
+actually running it in staging. So long as you are using the proper tools and
+you're testing safely. And so I want to dig into that a little bit, but that
+gets us one step closer to the way our software is used, which [crosstalk
+00:11:58] confidence.
+
+**Talia Nassi:** Exactly. Yeah. Because your users and your customers, they
+don't go into your staging environment and use your product staging, they use
+your product in production. So it just makes so much more sense to me to test in
+production. I didn't know about testing in production. I didn't use it. I only
+tested in staging up until I had an interview at a company a couple years ago
+and they told me that they test in production and that's how I got into it
+because I started working at that company, but I was just like everyone else who
+didn't know about this thing and was so freaked out about it at first and now
+I'm talking about it.
+
+**Kent C. Dodds:** Yeah. Yeah. It's one of those things where it's like, well
+this is just the way that we do it. You don't know that it could be better.
+
+**Talia Nassi:** Exactly.
+
+**Kent C. Dodds:** Now this is just life. So I'm really interested to dig into
+some of the methods to this and hopefully we've established for the people
+listening why this is beneficial. It should make total sense that if you test in
+production that's more realistic. The first thing that I want to ask though is
+how do you know it's safe to deploy code if you don't wait to test it until
+after it's deployed? I think that's probably the biggest question that I have
+about this.
+
+**Talia Nassi:** Yeah. So there is a magic little thing that's called feature
+flagging, and feature flagging allows you to separate your code deployment from
+your feature release. So if you think about a bubble and you think about the
+specific people being put into that bubble and having your feature also being
+put in that bubble, only the people who are in that bubble can see that feature.
+So when you use a tool like future flagging, you're able to target specific
+users to see your feature and you can test your feature and make sure it works
+and fix any bugs. And then once you know that it's working in production, then
+you pop the bubble or you turn on the feature flag, so that the entire world can
+see this feature.
+
+**Talia Nassi:** It really provides a safe way to test your code in production
+because if there's a bug or something's wrong, your real end users aren't going
+to see that issue because they're not targeted in the flag. So this is kind of a
+layer of protection that says I'm going to give you a little bit of production
+space and in that space you can do whatever you want and you're not going to
+affect anyone.
+
+**Kent C. Dodds:** Yeah, that makes so much sense. So none of this testing and
+production would be a really feasible thing without feature flags. But of course
+this isn't the only benefit to feature flags, there are so many benefits. Do you
+want to talk about why feature flags are such a good idea?
+
+**Talia Nassi:** Yeah. Feature flags allow you to do so many different things.
+Some of the things that I've used feature flags for are just to have a kill
+switch in case something goes wrong. So if I release something and I don't know,
+two weeks later there's a huge bug and I need to kill that feature, I can use
+feature flags to turn that feature off. I've also used it for AB testing. So if
+I'm working with a product owner and he decides, "I don't know if I want this
+product to work in this way or in that way." So we do an experiment and we test
+both ways and we see which one gives us a higher conversion rate. You can also
+use feature flags to migrate your monolith to microservices, do it safely in a
+controlled manner.
+
+**Talia Nassi:** There's so many things, but obviously I have a testing
+background, I'm passionate about the testing side of it.
+
+**Kent C. Dodds:** Yeah, absolutely. So you have a blog post about this specific
+for React and I think that it is for anybody who's not already used to feature
+flags. I think for lots of companies, feature flags are just a fact of life. But
+there's probably plenty of companies that haven't done any feature flags before
+or maybe some people who aren't really happy with the way they're doing it.
+There's a quick blog post that we'll add to the show notes for people to take a
+look at to learn about feature flags.
+
+**Kent C. Dodds:** So you have the feature flags in place and for the test. You
+just enable it for the test and the test can run with the feature enabled and
+then eventually the feature flag goes away and you just continue to test in
+production.
+
+**Talia Nassi:** Right, so something that I generally recommend to do is to
+create test users that will be in production and you can target them inside of
+your flag. So if you have whatever automation framework that you use, you can
+automate so that your test user that's in the flag, gets the same treatment as a
+normal user would. And then once you're done testing, once you turn the feature
+flag on, then your test will continue running in the same way because your user
+was already targeted in that flag. So you don't have to make any changes, you
+don't have to update the test because you used the same test user that was
+targeted inside of the future flag.
+
+**Kent C. Dodds:** Yeah. Perfect. That's awesome. So another question that I
+have about testing and production is so I talk about this, the better your test
+resembles the way software is used, whatever, but at some point you do have to
+mock things out. When we're doing these integration tests or end to end tests,
+we want to have some sort of mocking so that if I am testing the checkout flow,
+I'm adding products to my cart, I've got like \$2,000 worth of stuff in my cart
+and I go to checkout, I don't want my credit card to be the one that we're
+entering into that credit card information because those are very expensive
+tests. So what is the solution for that kind of scenario? Because in a staging
+environment you can have it point to a different Stripe thing or whatever for
+your testing, but in production it should be hitting the production Stripe or
+whatever credit card processing you do. So how do you work around that when
+you're testing in production?
+
+**Talia Nassi:** Yeah. Yeah. Great. Okay. So there's a couple of things. So the
+first thing is when you're working with third parties, I would say work with a
+third party and let them know, "Hey, we're going to test. We're going to start
+testing in production, so if you get any requests from these users, these are
+test users, don't actually process the transaction or use another card or
+whatever." You can work with the third parties. You can also set up a header on
+the API request that you send to them and say, "Hey, if you get anything with
+this specific, holler if you see this, just mark this as a test or do whatever.
+You can work with them to make something that works for you. I would also say if
+it's something that you absolutely can not test in production, you can use a
+Canary release and just release it to a very, very small population and you can
+gain confidence in that and then slowly roll it out to everyone.
+
+**Kent C. Dodds:** Hm.
+
+**Talia Nassi:** Yeah.
+
+**Kent C. Dodds:** Yeah, that makes sense. So at some point, if you really can't
+make anything else work, then just releasing to a very small set of people, they
+can be your guinea pigs. It's the best you can do in that scenario.
+
+**Talia Nassi:** Right. So then you would still use staging and test as much as
+you can and then release it to production, but only to a very small population.
+
+**Kent C. Dodds:** Sure. Yeah, that makes a lot of sense. Cool. And actually, I
+hadn't ever considered actually just talking to the third party and being like,
+"Hey, we want to test."
+
+**Talia Nassi:** Yeah, when you're doing business with them, you guys should
+work together.
+
+**Kent C. Dodds:** Yeah. Yeah. That makes a lot of sense. Very cool. So great.
+So we've got our tests running in production. What are some of the tools that
+you have used to do these tests in production or getting down to the specific
+tools that we're using?
+
+**Talia Nassi:** Cool. So for feature flagging, I've used Split and
+LaunchDarkly. For automation, I mean you definitely need to have an automation
+framework in place when you're testing in production. It's just the test. You're
+in a really high risk environment. You don't want to have to test everything
+manually. So I've used Robot Framework, Puppeteer with Jest and also Protractor.
+And then you also need a job scheduler. So like Jenkins or CircleCI or Travis
+and then some sort of alerting system that will alert you when a test fails, so
+PagerDuty or even just like a Slack message. Yeah, those are the main tools that
+you need.
+
+**Kent C. Dodds:** Well what is your preferred tool for authoring these end to
+end tests?
+
+**Talia Nassi:** So for automation, just specifically for the test, I love Robot
+Framework. That's my favorite testing framework ever. It's just so easy to use.
+They have a keyword driven testing approach. So even if you're not a developer,
+even if you don't know specifics of syntax or you're not a developer full time
+or whatever it is, Robot Framework is so easy to learn and it just makes the
+most sense because you can work with product people and designers and they don't
+have to understand code to understand your tests, so that's my favorite. I love
+Robot. Shout out to Robot Framework.
+
+**Kent C. Dodds:** And it helps that it's implemented in Python, which happens
+to be your favorite language.
+
+**Talia Nassi:** How cool is that?
+
+**Kent C. Dodds:** Cool. Another thing that just popped into my mind is a
+challenge that I've had when I'm testing, as I closed the gap between my test
+and the reality of the world, is registration. So when I register, typically
+there's going to be an email flow before I get an activated account or
+something. Have you ever come across that particular scenario and how do you
+solve for that?
+
+**Talia Nassi:** Yeah, so in that case, I would not automate those flows. I
+would test those manually, but I would still create test users to use. I just
+wouldn't automate those.
+
+**Kent C. Dodds:** I see. Okay. Yeah, that makes sense. Cool. Yeah. In the past
+I typically took a couple of different approaches like either just automatically
+enable those users or activate those users or have the email and go to some
+other service that automatically clicks the link or something.
+
+**Talia Nassi:** Yeah, that would work.
+
+**Kent C. Dodds:** But it's so much work.
+
+**Talia Nassi:** We've done similar things where if we're testing in production
+and it's supposed to send a confirmation email or something, something is
+supposed to get sent to the end user, we'll just write a little thing in our
+code that says if the request comes from this user, don't send the email. Or
+once we test it manually a few times and we know that it's working, we'll put
+that little thing in there.
+
+**Kent C. Dodds:** Yeah. Yeah. I think that sometimes people want to have a rule
+that's always applies and it's perfect and we're in a perfect world and as great
+as that would be, it's just all a big bucket of trade offs. Either a ton of work
+and maybe it's pretty flaky versus maybe taking a small shortcut to make it more
+practical.
+
+**Talia Nassi:** Yeah. Yeah. Now that you said flaky, I hate the word flaky
+tests. I think either a test works and it does what it's supposed to do or
+there's something wrong with the code or there's something with the test.
+
+**Kent C. Dodds:** Hm.
+
+**Talia Nassi:** I don't like it.
+
+**Kent C. Dodds:** Let's dig into that a lot because I know that a lot of people
+when they think ETE, they think flake. And I have a similar feeling around that
+as you described, but what are some of the strategies that you've implemented to
+make tests less flaky?
+
+**Talia Nassi:** Yeah, I think the most important thing is to just make sure
+that your test runs continuously and it doesn't fail. So like if I'm a tester
+and I'm writing a test and it's failing for me, I'm not going to upload that to
+Jenkins so that it can fail for everyone else. I'm going to make sure it works
+for me and it works consistently. And after I watch the test run and pass 20, 50
+times, then I'll upload it to Jenkins and it'll run with the rest of the build
+pipeline. But if a test fails, it should be because there's something wrong. It
+should be because there's a bug or there's something going on. It shouldn't be
+the case where a test fails and everyone thinks, "Oh, there's something wrong
+with the test." So yeah, that's my 2 cents.
+
+**Kent C. Dodds:** People end up ignoring the tests and turning them off, which
+is not what we want either. That makes a lot of sense. All right, well, Talia, I
+feel like there was one other thing that was just in the back of my mind that I
+really wanted to ask you and talking about flakiness just got me. Oh, oh
+actually, it was I think that part of the problem with flakiness is the tools
+that people have been using in the past. I've never used Robot Framework before,
+but I transitioned from Selenium to Cypress and that was a night and day
+difference.
+
+**Talia Nassi:** Good. Yeah. [inaudible 00:25:36].
+
+**Kent C. Dodds:** I don't know how many people are fans of Selenium at this
+point. So yeah, improve testing frameworks can help with that flakiness too. And
+another thing that occurs to me, is that when I was doing lots of end to end
+tests in staging, I don't have a product anymore, so I don't do a whole lot of
+end to end tests on products anymore, but half of the time when the test was
+being flaky, it wasn't the test, it was the environment that I was working in.
+We were always just like, "Well, it's staging, so who cares?" But if you're
+testing in production, then that actually is really important information that
+the test can tell you that you've got a flaky environment.
+
+**Talia Nassi:** Exactly. Yeah. One of the things I talk about in my
+presentation also is that because the environments are different and because the
+data is different in both places, the test results will most likely be
+different. So if a test passes in staging, it doesn't mean that it's going to
+pass in production and vice versa. The load also in production doesn't match
+staging. There's just so many differences and it's just better to know that your
+feature is working in the place that your users are going to use it.
+
+**Kent C. Dodds:** Yeah, absolutely. And you probably have more resources
+dedicated to keeping production up and so your tests are probably going faster
+and then if they ever go slow, then you're like, "Oh, that actually means
+something to me." It's not just like, "Oh, we have a really slow staging
+environment." It actually like, "Oh wow, something happened in production. Let's
+go fix that."
+
+**Talia Nassi:** Exactly.
+
+**Kent C. Dodds:** Just so much confidence. I love that. That's awesome. All
+right, well, Talia, as we get down to the end of our time here, is there
+anything else that you wanted to mention that we haven't gotten to hear yet?
+
+**Talia Nassi:** The biggest thing is I would say just don't be scared of
+testing in production. If you do it correctly and safely, it's really
+beneficial. And obviously, I'm here for questions and yeah, just don't be
+scared. Just try it.
+
+**Kent C. Dodds:** Another thing that occurs to me about testing in production,
+or let's pretend you're a developer today and you're like, "I have no end to end
+tests. How am I ever going to do this?" That's always the biggest challenge is
+how do I get started with this? It's just such a huge thing. But if you have got
+an app in production, then that is the easiest thing to start testing because
+you don't need to worry about provisioning some weird extra environment or
+getting some extra CI thing or whatever else. It's all just you've got an app
+and it's up and running and just start hitting that app for tests.
+
+**Talia Nassi:** Yeah, exactly. And if you have to set up an automation
+framework, like Robot Framework, and I know Cypress also is just really easy
+setup, so you don't have to worry about extra time for setup and then training
+people. It's just super intuitive.
+
+**Kent C. Dodds:** Yeah. Yeah, it's a good world that we live in now. All right,
+so for the homework for everybody as we just wrap things up here, we have two
+items of homework. The first is to watch Talia's talk, testing in production. It
+is a great talk. You'll enjoy that. And then the second one is to read the blog
+post about how to set up feature flags with React in 10 minutes. That's on the
+split.io/blog and the link will be in the notes here. So those are your pieces
+of homework. It shouldn't take you a whole lot of time and I think that you'll
+enjoy doing that. Talia, what's the best place for people to reach out to you if
+they want to ask you any questions or anything?
+
+**Talia Nassi:** Yeah, if you want to reach out to me on Twitter, you can do
+that. It's just my first name, underscore, last name, Talia_Nassi and also email
+me Talia.Nassi@split.io.
+
+**Kent C. Dodds:** Awesome. Cool. Thank you so much. This has been such a good
+time. Hope everybody's doing awesome and we will catch you all later. Thanks,
+Talia.
+
+**Talia Nassi:** Bye. Thank you.
+
+</Transcript>

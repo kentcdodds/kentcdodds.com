@@ -1,0 +1,391 @@
+---
+title: Stop mocking fetch
+date: 2020-06-03
+description:
+  Why you shouldn't mock fetch or your API Client in your tests and what to do
+  instead.
+categories:
+  - testing
+meta:
+  keywords:
+    - javascript
+    - testing
+    - http
+    - fetch
+    - integration
+    - unit
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033354/kentcdodds.com/content/blog/stop-mocking-fetch/banner.jpg
+bannerCredit:
+  Photo by [Zdeněk Macháček](https://unsplash.com/photos/4SOEj44KvHA)
+---
+
+What's wrong with this test?
+
+```jsx
+// __tests__/checkout.js
+import * as React from 'react'
+import {render, screen} from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import {client} from '../../utils/api-client'
+
+jest.mock('../../utils/api-client')
+
+test('clicking "confirm" submits payment', async () => {
+  const shoppingCart = buildShoppingCart()
+  render(<Checkout shoppingCart={shoppingCart} />)
+
+  client.mockResolvedValueOnce(() => ({success: true}))
+
+  userEvent.click(screen.getByRole('button', {name: /confirm/i}))
+
+  expect(client).toHaveBeenCalledWith('checkout', {data: shoppingCart})
+  expect(client).toHaveBeenCalledTimes(1)
+  expect(await screen.findByText(/success/i)).toBeInTheDocument()
+})
+```
+
+This is a bit of a trick question. Without knowing the actual API and
+requirements of `Checkout` as well as the `/checkout` endpoint, you can't really
+answer. So, sorry about that. But, one issue with this is because you're mocking
+out the `client`, how do you really know the client is being used correctly in
+this case? Sure, the `client` could be unit tested to make sure it's calling
+`window.fetch` properly, but how do you know that `client` didn't just recently
+change its API to accept a `body` instead of `data`? Oh, you're using TypeScript
+so
+[you've eliminated a category of bugs](/blog/eliminate-an-entire-category-of-bugs-with-a-few-simple-tools).
+Good! But there are definitely some business logic bugs that can slip in because
+we're mocking the `client` here. Sure you could lean on your
+[E2E tests](/blog/unit-vs-integration-vs-e2e-tests) to give you that confidence,
+but wouldn't it be better to just call into the `client` and get that confidence
+here at this lower level where you have a tighter feedback loop? If it's not
+much more difficult then sure!
+
+But we don't want to _actually_ make `fetch` requests right? So let's mock out
+`window.fetch`:
+
+```jsx
+// __tests__/checkout.js
+import * as React from 'react'
+import {render, screen} from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+
+beforeAll(() => jest.spyOn(window, 'fetch'))
+// assuming jest's resetMocks is configured to "true" so
+// we don't need to worry about cleanup
+// this also assumes that you've loaded a fetch polyfill like `whatwg-fetch`
+
+test('clicking "confirm" submits payment', async () => {
+  const shoppingCart = buildShoppingCart()
+  render(<Checkout shoppingCart={shoppingCart} />)
+
+  window.fetch.mockResolvedValueOnce({
+    ok: true,
+    json: async () => ({success: true}),
+  })
+
+  userEvent.click(screen.getByRole('button', {name: /confirm/i}))
+
+  expect(window.fetch).toHaveBeenCalledWith(
+    '/checkout',
+    expect.objectContaining({
+      method: 'POST',
+      body: JSON.stringify(shoppingCart),
+    }),
+  )
+  expect(window.fetch).toHaveBeenCalledTimes(1)
+  expect(await screen.findByText(/success/i)).toBeInTheDocument()
+})
+```
+
+This will give you a bit more confidence that a request is actually being
+issued, but another thing that this test is lacking is an assertion that the
+`headers` has a `Content-Type` of `application/json`. Without that, how can you
+be certain that the server is going to recognize that request you're making? Oh,
+and how do you ensure that the correct authentication information is being sent
+along as well?
+
+I hear you, "but we've verified that in our `client` unit tests, Kent. What more
+do you want from me!? I don't want to copy/paste assertions everywhere!" I
+definitely feel you there. But what if there were a way to avoid all the extra
+work on assertions everywhere, but also get that confidence in every test? Keep
+reading.
+
+One thing that really bothers me about mocking things like `fetch` is that you
+end up re-implementing your entire backend... everywhere in your tests. Often in
+multiple tests. It's super annoying, especially when it's like: "in this test,
+we just assume the normal backend responses," but you have to mock those out all
+over the place. In those cases it's really just setup noise that gets between
+you and the thing you're actually trying to test.
+
+What inevitably happens is one of these scenarios:
+
+1. We mock out the client (like in our first test) and rely on the some E2E
+   tests to give us a little confidence that at least the most important parts
+   are using the `client` correctly. This results in reimplementing our backend
+   anywhere we test things that touch the backend. Often duplicating work.
+2. We mock out `window.fetch` (like in our second test). This is a little
+   better, but it suffers from some of the same problems as #1.
+3. We put all of our stuff in small functions and unit test it all in isolation
+   (not really a bad thing by itself) and not bother testing them in integration
+   (not a great thing).
+
+Ultimately, we have less confidence, a slower feedback loop, lots of duplicate
+code, or any combination of those.
+
+One thing that ended up working pretty well for me for a long time is to mock
+fetch in one function which is basically a re-implementation of all the parts of
+my backend I have tested. I did a form of this at PayPal and it worked really
+well. You can think of it like this:
+
+```javascript
+// add this to your setupFilesAfterEnv config in jest so it's imported for every test file
+import * as users from './users'
+
+async function mockFetch(url, config) {
+  switch (url) {
+    case '/login': {
+      const user = await users.login(JSON.parse(config.body))
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({user}),
+      }
+    }
+    case '/checkout': {
+      const isAuthorized = user.authorize(config.headers.Authorization)
+      if (!isAuthorized) {
+        return Promise.reject({
+          ok: false,
+          status: 401,
+          json: async () => ({message: 'Not authorized'}),
+        })
+      }
+      const shoppingCart = JSON.parse(config.body)
+      // do whatever other things you need to do with this shopping cart
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({success: true}),
+      }
+    }
+    default: {
+      throw new Error(`Unhandled request: ${url}`)
+    }
+  }
+}
+
+beforeAll(() => jest.spyOn(window, 'fetch'))
+beforeEach(() => window.fetch.mockImplementation(mockFetch))
+```
+
+Now my test can look like this:
+
+```jsx
+// __tests__/checkout.js
+import * as React from 'react'
+import {render, screen} from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+
+test('clicking "confirm" submits payment', async () => {
+  const shoppingCart = buildShoppingCart()
+  render(<Checkout shoppingCart={shoppingCart} />)
+
+  userEvent.click(screen.getByRole('button', {name: /confirm/i}))
+
+  expect(await screen.findByText(/success/i)).toBeInTheDocument()
+})
+```
+
+My happy-path test doesn't need to do anything special. Maybe I would add a
+fetch mock for a failure case, but I was pretty happy with this.
+
+What's great about this is I only increase in my confidence and I have even less
+test code to write for the majority of cases.
+
+## Then I discovered `msw`
+
+[msw](https://github.com/mswjs/msw) is short for "Mock Service Worker". Now,
+service workers don't work in Node, they're a browser feature. However, `msw`
+supports Node anyway for testing purposes.
+
+The basic idea is this: create a mock server that intercepts all requests and
+handle it just like you would if it were a real server. In my own
+implementation, this means I make a "database" either out of `json` files to
+"seed" the database, or "builders" using something like
+[faker](https://www.npmjs.com/package/faker) or
+[test-data-bot](https://www.npmjs.com/package/@jackfranklin/test-data-bot). Then
+I make server handlers (similar to the express API) and interact with that mock
+database. This makes my tests fast and easy to write (once you have things set
+up).
+
+You may have used something like [`nock`](https://github.com/nock/nock) to do
+this sort of thing before. But the cool thing about `msw` (and something I may
+write about later), is that you can also use all the exact same "server
+handlers" in the browser during development as well. This has a few great
+benefits:
+
+1. If the endpoint isn't ready
+2. If the endpoint is broken
+3. If your internet connection is slow or non-existent
+
+You might have heard of [Mirage](https://miragejs.com/) which does much of the
+same thing. However (currently) mirage does not use a service worker in the
+client and I really like that the network tab works the same whether I have msw
+installed or not.
+[Learn more about their differences](https://miragejs.com/docs/comparison-with-other-tools/#msw).
+
+## Example
+
+So with that intro, here's how we'd do our above example with `msw` backing our
+mock server:
+
+```javascript
+// server-handlers.js
+// this is put into here so I can share these same handlers between my tests
+// as well as my development in the browser. Pretty sweet!
+import {rest} from 'msw' // msw supports graphql too!
+import * as users from './users'
+
+const handlers = [
+  rest.get('/login', async (req, res, ctx) => {
+    const user = await users.login(JSON.parse(req.body))
+    return res(ctx.json({user}))
+  }),
+  rest.post('/checkout', async (req, res, ctx) => {
+    const user = await users.login(JSON.parse(req.body))
+    const isAuthorized = user.authorize(req.headers.Authorization)
+    if (!isAuthorized) {
+      return res(ctx.status(401), ctx.json({message: 'Not authorized'}))
+    }
+    const shoppingCart = JSON.parse(req.body)
+    // do whatever other things you need to do with this shopping cart
+    return res(ctx.json({success: true}))
+  }),
+]
+
+export {handlers}
+```
+
+```javascript
+// test/server.js
+import {rest} from 'msw'
+import {setupServer} from 'msw/node'
+import {handlers} from './server-handlers'
+
+const server = setupServer(...handlers)
+export {server, rest}
+```
+
+```javascript
+// test/setup-env.js
+// add this to your setupFilesAfterEnv config in jest so it's imported for every test file
+import {server} from './server.js'
+
+beforeAll(() => server.listen())
+// if you need to add a handler after calling setupServer for some specific test
+// this will remove that handler for the rest of them
+// (which is important for test isolation):
+afterEach(() => server.resetHandlers())
+afterAll(() => server.close())
+```
+
+Now my test can look like this:
+
+```jsx
+// __tests__/checkout.js
+import * as React from 'react'
+import {render, screen} from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+
+test('clicking "confirm" submits payment', async () => {
+  const shoppingCart = buildShoppingCart()
+  render(<Checkout shoppingCart={shoppingCart} />)
+
+  userEvent.click(screen.getByRole('button', {name: /confirm/i}))
+
+  expect(await screen.findByText(/success/i)).toBeInTheDocument()
+})
+```
+
+I'm happier with this solution than mocking fetch because:
+
+1. I don't have to worry about the implementation details of fetch response
+   properties and headers.
+2. If I get something wrong with the way I call `fetch`, then my server handler
+   won't be called and my test (correctly) fails, which would save me from
+   shipping broken code.
+3. I can reuse these exact same server handlers in my development!
+
+## Colocation and error/edge case testing
+
+One reasonable concern about this approach is that you end up putting all of
+your server handlers in one place and then the tests that rely on those server
+handlers end up in entirely different files, so you lose the benefits of
+[colocation](/blog/colocation).
+
+First off, I'd say that you want to only colocate the things that are _important
+and unique_ to your test. You wouldn't want to have to duplicate all the setup
+in every test. Only the parts that are unique. So the "happy path" stuff is
+typically better to just include in your setup file, removed from the test
+itself. Otherwise you have too much noise and it's hard to isolate what's
+actually being tested.
+
+But what about edge cases and errors? For those, MSW has the ability for you to
+add additional server handlers at runtime (within a test) and then reset the
+server to the original handlers (effectively removing the runtime handlers) to
+preserve test isolation. Here's an example:
+
+```jsx
+// __tests__/checkout.js
+import * as React from 'react'
+import {server, rest} from 'test/server'
+import {render, screen} from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+
+// happy path test, no special server stuff
+test('clicking "confirm" submits payment', async () => {
+  const shoppingCart = buildShoppingCart()
+  render(<Checkout shoppingCart={shoppingCart} />)
+
+  userEvent.click(screen.getByRole('button', {name: /confirm/i}))
+
+  expect(await screen.findByText(/success/i)).toBeInTheDocument()
+})
+
+// edge/error case, special server stuff
+// note that the afterEach(() => server.resetHandlers()) we have in our
+// setup file will ensure that the special handler is removed for other tests
+test('shows server error if the request fails', async () => {
+  const testErrorMessage = 'THIS IS A TEST FAILURE'
+  server.use(
+    rest.post('/checkout', async (req, res, ctx) => {
+      return res(ctx.status(500), ctx.json({message: testErrorMessage}))
+    }),
+  )
+  const shoppingCart = buildShoppingCart()
+  render(<Checkout shoppingCart={shoppingCart} />)
+
+  userEvent.click(screen.getByRole('button', {name: /confirm/i}))
+
+  expect(await screen.findByRole('alert')).toHaveTextContent(testErrorMessage)
+})
+```
+
+So you can have colocation where it's needed, and abstraction where abstraction
+is sensible.
+
+## Conclusion
+
+There's definitely more to do with `msw`, but let's just wrap up for now. If you
+want to see `msw` in action, my 4 part workshop "Build React Apps" (included in
+[EpicReact.Dev](https://epicreact.dev)) uses it and you can
+[find all the material on GitHub](https://github.com/kentcdodds/bookshelf).
+
+One really cool aspect of this method of testing is that because you're so far
+away from implementation details, you can make significant refactorings and your
+tests can give you confidence that you didn't break the user experience. That's
+what tests are for!! Love it when this happens:
+
+https://twitter.com/kentcdodds/status/1269442973525094400
+
+Good luck!

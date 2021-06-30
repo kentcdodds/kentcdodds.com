@@ -1,0 +1,197 @@
+---
+title: Favor Progress Over Pride in Open Source
+date: 2020-08-24
+description:
+  How I deprecated my most popular open source project in favor of a better
+  library
+categories:
+  - open source
+meta:
+  keywords:
+    - javascript
+    - css-in-js
+    - glamorous
+    - open source
+    - oss
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032701/kentcdodds.com/content/blog/favor-progress-over-pride-in-open-source/banner.jpg
+bannerCredit: Photo by [Morning Brew](https://unsplash.com/photos/X8-ogEgk338)
+---
+
+I have published [a lot of open source packages](http://npm.im/~kentcdodds).
+Most of them are not that popular, but I want to tell you a story about one that
+got really popular really quickly and then experienced a rapid decline in
+popularity because I deprecated it in favor of an alternative library.
+
+[![download graph for glamorous](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032701/kentcdodds.com/content/blog/favor-progress-over-pride-in-open-source/glamorous-downloads.png)](https://www.npmtrends.com/glamorous)
+
+When CSS-in-JS was growing in popularity, I was inspired by existing solutions,
+but I thought I could do some things better than other solutions out there (the
+biggest player in the space was
+[styled-components](https://styled-components.com/)), so I created
+[glamorous](https://github.com/paypal/glamorous) and published it to the world.
+
+Whenever I release a new open source package and other people start using it, it
+strokes my ego in a big way. It's extremely validating. In the case of
+glamorous, it picked up steam really quickly. It even surpassed downloads of
+styled-components (though download stats aren't a very good metric of
+popularity, they're really the only metric we have).
+
+In any case, it was my most visible and popular open source project by far. But
+when an alternative solution came around that was **objectively better** and we
+had a **reasonable migration path** (that's important), I deprecated it without
+any hesitation. The alternative was [emotion](https://emotion.sh). Here's what I
+said about this when
+[I asked the community](https://github.com/paypal/glamorous/issues/419) what
+they thought:
+
+> **Here's my reasoning:**
+>
+> 1. Emotion can do everything glamorous can do
+> 2. Emotion can do more than glamorous can do
+> 3. Emotion is faster than glamorous
+> 4. Emotion is smaller than glamorous
+> 5. It's good for the community to consolidate and rally around using and
+>    improving a single solution
+
+This is only one of a variety of examples of projects I've either deprecated or
+handed off. In either case, the core is the same: **I solved a problem, and then
+handed the torch to someone else.**
+
+## But my pride!?
+
+A common theme I see in open source is people being upset or frustrated when
+someone else comes up with the solution to a problem first. Whether it be as big
+as a library or as small as a pull request. I can understand this feeling, but
+let me explain how I think about it and hopefully this will help you cope with
+these situations and see them for the heavenly blessing they really are 👼
+
+Let's put it in a generic storyline (with fictional characters):
+
+1. Brad identifies a problem
+2. Brad solves the problem and is willing to maintain it long-term
+3. Mary identifies the same problem
+4. Mary solves the problem better than Brad with a reasonable migration path and
+   is also willing to maintain it long-term
+
+What should Brad do in this situation? Every specific situation will be a bit
+different, but here are a few options I think would be reasonable:
+
+1. Mary and Brad collaborate and bring Mary's solution into Brad's package and
+   they're now co-maintainers of the original package, only with Mary's improved
+   solution under the hood. Publish a major version and a migration guide.
+2. Brad deprecates his solution and directs people to a migration guide to move
+   to Mary's solution instead.
+
+Let me tell you what would _not_ be a reasonable thing to do:
+
+- Brad gets upset at Mary and works hard to make his solution better until it's
+  as good as Mary's
+
+This means we now have two solutions for the same problem. It fragments the
+community and gives developers yet another choice in the myriad of choices
+people need to make just so they can get to building the apps they want to make.
+It also fragments the efforts of the community. People are often putting in the
+same work to solve the same problem in two places.
+
+To be clear, I can appreciate different takes at solving the same problem with
+different trade-offs. But only when those trade-offs are different enough to
+justify the double-work and forcing everyone in the community to take the time
+deciding between the two. Unfortunately, we have far too many packages that
+aren't nearly differentiated enough to justify continued use and work on them.
+
+Also, to reiterate, I think it's important that we support people who have
+invested in tools and technologies. So if a migration is very difficult, then
+that could justify continued work on the package as well. Also, if a migration
+is difficult, then it's also likely the trade-offs made are significant enough
+for the decision anyway. Unfortunately again, we have far too many packages that
+aren't all that difficult to migrate to a better solution.
+
+Another thing to keep in mind is that migration is only really needed in the
+event of a _relevant_ security vulnerability or desire for bug fixes and
+features. So deprecating a inferior solution in favor of a better one will only
+impact people who would be interested in migrating for the improved solution
+anyway. Things don't suddenly stop working when they're deprecated.
+
+## The sunk costs of pride in OSS
+
+So when you've got two or more packages that don't make sufficiently different
+trade-offs and aren't difficult to migrate from, you're making the community
+incur a cost. This is a real issue (anyone building apps has experienced the
+frustration of deciding between similar solutions to a problem). The solution is
+to look at the situation objectively and ignore
+[the sunk cost](https://en.wikipedia.org/wiki/Sunk_cost) of all the effort
+contributors have put into the inferior solution. Continuing to work on yours
+(and inviting the work of others) when an objectively superior solution could
+reasonably be used instead is (frankly) selfish and prideful.
+
+## Deprecation is a gift
+
+The people who created emotion were actually active contributors to glamorous.
+When I learned that they were working on a completely new solution, I was a
+little bummed that we couldn't just make glamorous better. But on the other side
+of things, I was thrilled. It meant that someone else was going to work on
+solving the problem I had experienced and I could move on to something else. I
+knew the problem was in good hands. There are too many problems to be solved to
+throw a fit over something like this. Move on to the next problem!
+
+## Nuance
+
+I'm not sure how else to organize some of these thoughts, but I need to include
+them, otherwise people will think I'm suggesting that Angular should be
+deprecated in favor of React (it should not).
+
+### What if we don't agree one is superior?
+
+You each likely have a list of reasons why your solution is superior. Put that
+list in your docs in a prominent place to help people make the decision you're
+forcing them to make.
+
+If you can't come up with a list, then are you sure it's not just your prideful
+knee-jerk reaction? No shame, spend a few minutes comforting yourself a bit, and
+move on.
+
+### What if it's hard to migrate to the better solution?
+
+This question is only mentioned because I'm sure people will miss the fact that
+I mention this several times in the post above. Is that you? If it's hard to
+migrate, then keep working on it. But I'd suggest adding a note to the docs that
+a superior solution exists so new folks start with the better solution. And you
+might also work on finding ways to make a migration less painful.
+
+### What if we can't collaborate?
+
+As long as the solution solves your problem, then who cares? If they're working
+on the solution, then that leaves you to be free to work on the other stuff you
+want to work on!
+
+### What if I just want to work on it?
+
+Then heck, work on it, but please mention in the docs that a better and
+recommended solution exists if one does and save people the time.
+
+### What if this is a product I sell?
+
+Well, that's pretty different. In that case we're talking competition and you
+actually _do_ want to win people over to your solution so you can make money. If
+someone else legitimately has an objectively better solution, you'd better find
+a way to differentiate yourself fast or you'll be looking for a new problem to
+solve whether you want to or not 🙈
+
+## Conclusion
+
+Just remember that having multiple solutions to the same problem has a cost on
+the community. Sometimes that cost is worth it, but so often it's not. When
+emotion was released, I saw that the implementation was objectively better, it
+would be well maintained, and
+[thanks to my friend Tejas Kumar](https://github.com/paypal/glamorous/issues/419#issuecomment-397847413),
+we had an automated way to migrate people's codebases.
+
+It would have been selfish of me to ask people to continue investing their time
+into glamorous. Deprecating it was one of the best decisions I made. I freed
+everyone up to move on to the next problem, and I think the world is a little
+bit of a better place because that.
+
+Do you have an open source library? Are there better alternatives? Save yourself
+and everyone else some time by adding a note and a link in your docs (and
+possibly even deprecating the package in the registry). It'll make things easier
+for everyone. Good luck!

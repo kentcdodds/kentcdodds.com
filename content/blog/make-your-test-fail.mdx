@@ -1,0 +1,185 @@
+---
+title: Make Your Test Fail
+date: 2020-02-24
+description:
+  If you're not careful you can write a test that's worse than having no tests
+  at all
+categories:
+  - testing
+meta:
+  keywords:
+    - testing
+    - javascript
+    - best practices
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033127/kentcdodds.com/content/blog/make-your-test-fail/banner.jpg
+bannerCredit: Photo by [chuttersnap](https://unsplash.com/photos/cGXdjyP6-NU)
+---
+
+**[Watch "Make Your Test Fail" on egghead.io](https://egghead.io/lessons/jest-make-your-test-fail?pl=kent-s-blog-posts-as-screencasts-eefa540c)**
+
+https://egghead.io/lessons/jest-make-your-test-fail?pl=kent-s-blog-posts-as-screencasts-eefa540c
+
+Have you ever seen a test go green and be surprised? You expect it to fail, but
+it somehow passes and you don't know why. When that happens, do you:
+
+1. Thank the testing gods for their blessing and move on?
+2. Figure out what's going on?
+
+If you answered `#1` then you're not alone! But I want to tell you why it's
+important that you figure out what's going on because it's very possible that
+you've written a test that cannot fail.
+
+Consider the following tests:
+
+```javascript
+// __tests__/utils.js
+import {isPasswordAllowed} from '../utils'
+
+test('allows passwords that are good', () => {
+  expect(isPasswordAllowed('Ab3.efgh')).toBe(true)
+})
+
+test('disallows passwords less than 7 characters', () => {
+  expect(isPasswordAllowed('Ab3.ef')).toBe(false)
+})
+
+test('disallows passwords that do not contain a non-alphanumeric character', () => {
+  expect(isPasswordAllowed('Ab3')).toBe(false)
+})
+
+test('disallows passwords that do not contain a digit', () => {
+  expect(isPasswordAllowed('Ab.')).toBe(false)
+})
+
+test('disallows passwords that do not contain an uppercase letter', () => {
+  expect(isPasswordAllowed('b3.')).toBe(false)
+})
+
+test('disallows passwords that do not contain a lowercase letter', () => {
+  expect(isPasswordAllowed('A3.')).toBe(false)
+})
+```
+
+Those look like pretty solid tests right? We've got a function called
+`isPasswordAllowed` and it disallows passwords that are missing key
+characteristics. These tests are all passing, but they're actually not
+protecting us from our function breaking! Here, let me show you what I mean by
+showing you the implementation of our function:
+
+```javascript
+// utils.js
+function isPasswordAllowed(password) {
+  return (
+    password.length > 6 &&
+    // non-alphanumeric
+    /\W/.test(password) &&
+    // digit
+    /\d/.test(password) &&
+    // uppercase letter
+    /[A-Z]/.test(password) &&
+    // lowercase letter
+    /[a-z]/.test(password)
+  )
+}
+
+export {isPasswordAllowed}
+```
+
+Can you tell what's wrong now? The problem is that for all these tests, the
+reason the function returns `false` is because they aren't long enough, not
+because they're missing characters. So, if I were to comment out one of these
+lines, my tests would continue to pass anyway:
+
+```javascript [8]
+// utils.js
+function isPasswordAllowed(password) {
+  return (
+    password.length > 6 &&
+    // non-alphanumeric
+    /\W/.test(password) &&
+    // digit
+    // /\d/.test(password) &&
+    // uppercase letter
+    /[A-Z]/.test(password) &&
+    // lowercase letter
+    /[a-z]/.test(password)
+  )
+}
+
+export {isPasswordAllowed}
+```
+
+✅ All green! ✅
+
+And this is why it's so important that once your test is passing, you go to the
+source and ensure that if you break the functionality you're testing, that your
+test will fail. Otherwise, someone could inadvertently break your code and the
+tests wouldn't catch that. Those kinds of tests are worse than worthless because
+not only do they not give you confidence, but they give you a false sense of
+security which means you won't think to write good tests either.
+
+Sometimes, code coverage can help you find places that you're missing, but in
+our example above, those lines are covered by the first test that verifies the
+function returns `true` for a valid password (under close scrutiny you might
+notice the line hit count isn't high enough, but it's unlikely you'd notice
+that).
+
+Two other related issues I've see pretty often (and have fallen prey myself):
+
+```javascript
+expect(thing) // expectation with no assertion
+expect(thing).toMatchSnapshot() // snapshot: empty...
+```
+
+You can avoid these common mistakes with
+[`eslint-plugin-jest`](https://github.com/jest-community/eslint-plugin-jest)'s
+rules:
+
+- [`valid-expect`](https://github.com/jest-community/eslint-plugin-jest/blob/master/docs/rules/valid-expect.md)
+- [`prefer-inline-snapshots`](https://github.com/jest-community/eslint-plugin-jest/blob/master/docs/rules/prefer-inline-snapshots.md)
+
+Also, in general, if you can find a better assertion than snapshots:
+[use it](https://kentcdodds.com/blog/effective-snapshot-testing).
+
+## Conclusion
+
+Here's what a good test for that `isPasswordAllowed` function would be like:
+
+```javascript
+// __tests__/utils.js
+import {isPasswordAllowed} from '../utils'
+
+test('allows passwords that are good', () => {
+  expect(isPasswordAllowed('Ab3.efgh')).toBe(true)
+})
+
+test('disallows passwords less than 7 characters', () => {
+  expect(isPasswordAllowed('Ab3.ef')).toBe(false)
+})
+
+test('disallows passwords that do not contain a non-alphanumeric character', () => {
+  expect(isPasswordAllowed('Ab3efgh')).toBe(false)
+})
+
+test('disallows passwords that do not contain a digit', () => {
+  expect(isPasswordAllowed('Ab.efgh')).toBe(false)
+})
+
+test('disallows passwords that do not contain an uppercase letter', () => {
+  expect(isPasswordAllowed('b3.efgh')).toBe(false)
+})
+
+test('disallows passwords that do not contain a lowercase letter', () => {
+  expect(isPasswordAllowed('A3.EFGH')).toBe(false)
+})
+```
+
+With each of these, if I comment out the code that the test is specifically
+testing for, the test will fail. So now I know that these tests are actually
+providing me value rather than giving me a false sense of security and generally
+being in the way of shipping.
+
+Good luck!
+
+P.S.
+[Here's a codesandbox of those tests](https://codesandbox.io/s/make-your-tests-fail-gifj8).

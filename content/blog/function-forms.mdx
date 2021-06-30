@@ -1,0 +1,120 @@
+---
+title: Function forms
+date: 2020-04-05
+description:
+  When I prefer to use function declarations instead of arrow functions
+categories:
+  - javascript
+meta:
+  keywords:
+    - function declarations
+    - arrow functions
+    - hoisting
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032732/kentcdodds.com/content/blog/function-forms/banner.jpg
+bannerCredit: Photo by [Zoltan Tasi](https://unsplash.com/photos/b3PuuRU8IPc)
+---
+
+Here's how I write typical React components:
+
+```jsx
+function Counter() {
+  const [count, setCount] = React.useState(0)
+  const increment = () => setCount(c => c + 1)
+  return <button onClick={increment}>{count}</button>
+}
+```
+
+Notice how I mix arrow functions and function declarations. The number of
+questions I get from people about this might surprise you. When I get a lot of
+questions about a subject, I blog about it, so here we go with that.
+
+To be totally clear, there are four types of functions I'll discuss in this
+post:
+
+1. Function declarations
+2. Function expressions
+3. Arrow functions
+4. Object methods
+
+```javascript
+function functionDeclaration() {
+  // do stuff
+  // return stuff
+}
+
+// using var because I'm feeling retro
+var functionExpression = function () {
+  // do stuff
+  // return stuff
+}
+
+var functionExpressionWithName = function someName() {
+  // do stuff
+  // return stuff
+}
+
+const arrowFunction = () => {
+  // do stuff
+  // return stuff
+}
+
+const arrowFunctionWithImplicitReturn = () => 'return stuff'
+
+const obj = {
+  functionExpressionProperty: function () {},
+  arrowFunctionProperty: () => {},
+  objectMethodFunction() {},
+}
+```
+
+Each has slightly different semantics which I will not belabor in this post.
+
+I started coding JavaScript before arrow functions were a real thing. So I got
+used to using function declarations and function expressions. I developed some
+loose "rules" for myself for when to use one over the other. Here they are:
+
+1. I use a function expression if I'm passing the function as a callback.
+2. I use a function expression if I'm setting it to the property of an object.
+3. I use a function declaration every other time.
+
+The reason I preferred function declarations is because of a simple feature of
+declarations over expressions: **hoisting of the function definition.**
+
+```javascript
+thisWorks()
+
+function thisWorks() {}
+
+thisThrowsAnError()
+
+var thisThrowsAnError = function () {}
+```
+
+The error thrown was our favorite
+`Uncaught TypeError: undefined is not a function` (though these days it would be
+`Uncaught TypeError: thisThrowsAnError is not a function` because JS engines
+have gotten better at this kind of thing).
+
+Remember, these are loose rules and I didn't always follow them, nor do I think
+they're worth enforcing via an ESLint rule or anything.
+
+When arrow functions and object methods came around, my loose rules changed
+slightly:
+
+1. I use an arrow function if I'm passing the function as a callback.
+2. I use object methods when the function is multiple lines or I don't want to
+   return anything, otherwise I use an arrow function
+3. I use an arrow function if I want to leverage the implicit return or lexical
+   scope feature (`this` works the way you normally want it to).
+4. I use a function declaration every other time.
+
+And sometimes I'll make single-line, returning functions a function declaration
+anyway, just because it's easier to stick in a debugger statement or
+`console.log`.
+
+These aren't really hard and fast rules or anything. There are more reasons to
+use different forms of functions. In fact, it's arguably better to use function
+expressions for callbacks because then you can give the function a name which
+will help debugging (so I'll do that sometimes for that reason).
+
+Anyway, I hope that was interesting!

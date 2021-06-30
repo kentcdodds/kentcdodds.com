@@ -1,0 +1,175 @@
+---
+title: The Testing Trophy and Testing Classifications
+date: 2021-06-03
+description: How to interpret the testing trophy for optimal clarity
+categories:
+  - testing
+meta:
+  keywords:
+    - testing
+    - testing trophy
+    - integration tests
+    - unit tests
+    - e2e tests
+    - end-to-end tests
+    - react
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0/v1622744114/kentcdodds.com/blog/the-testing-trophy-and-testing-classifications/banner_b3ihjh.jpg
+bannerCredit: Photo by [Fauzan Saari](https://unsplash.com/photos/Y_upPEyxXN8)
+---
+
+Allow me to indulge in a little personal history. If you're unfamiliar with the
+testing trophy, here it is:
+
+![Illustration of a trophy separated into 4 sections labeled from top to bottom: End to End, Integration, Unit, Static](https://res.cloudinary.com/kentcdodds-com/image/upload/v1622744540/kentcdodds.com/blog/the-testing-trophy-and-testing-classifications/trophy_wx9aen.png)
+
+I initially introduced this in a tweet with a quick drawing I made with Google
+Drive:
+
+https://twitter.com/kentcdodds/status/960723172591992832
+
+I came up with this idea after publishing a blog post titled
+["Write tests. Not too many. Mostly integration."](/blog/write-tests):
+
+https://twitter.com/kentcdodds/status/919931474828181505
+
+Which was my take on [Guillermo Rauch's](https://twitter.com/rauchg) tweet from
+about a year earlier:
+
+https://twitter.com/rauchg/status/807626710350839808
+
+I can't speak for Guillermo, but I agreed so strongly with what he said because
+of my experience as a UI engineer and how I personally had come to understand
+the term "integration" in this context.
+
+Especially at that time in my career, almost all the code I wrote either ran
+directly in a browser or was intended for a tool that would help me run code in
+a browser. So for me naturally the terms "unit", "integration", and "end-to-end"
+would be viewed through the lens of that experience. In fact, I added "static"
+to the trophy because in the world of JavaScript that's not a given like it is
+in the predominant languages when
+[the testing pyramid](https://martinfowler.com/bliki/TestPyramid.html) was
+introduced.
+
+The reason I explain this background is to help you understand the way the
+Testing Trophy is intended to be interpreted. I never considered whether it
+applied to microservices or even backend services at all. I considered my
+codebase in isolation and attempted to categorize the types of tests I could
+write within the confines of my own code ownership. I always thought of
+end-to-end tests as the place where you attempt to validate that things work
+without any (or more practically "as little as possible") mocking in place.
+
+So that left me with categorizing tests on my own code into either "unit" or
+"integration". I consider a "unit" to be a single function, class, or object
+that contains logic. So here's how I decided to (loosely) categorize them:
+
+- Unit tests are those which test units which either have no dependencies
+  (collaborators) or which have those mocked for the test.
+- Integration tests are those which test multiple units integrating with one
+  another.
+
+Eventually, I created [Testing Library](https://testing-library.com) to
+encourage the kinds of testing practices that worked best for me:
+
+https://twitter.com/kentcdodds/status/980799621080391680
+
+By my own definition, Testing Library can be used to test individual React
+components (unit tests), entire pages with HTTP requests mocked
+[via MSW](/blog/stop-mocking-fetch) (integration tests), the full app with very
+few mocks (end-to-end tests), and even
+[individual React hooks](/blog/how-to-test-custom-react-hooks) if necessary
+(lower level unit tests). And Testing Library is now the most popular and de
+facto standard... er... testing library for React apps and increasingly the same
+is happening wherever the DOM can be found. In May 2020,
+[Testing Library received the "Adopt" distinction on the ThoughtWorks Technology Radar](https://www.thoughtworks.com/radar/languages-and-frameworks/react-testing-library).
+
+I expect some will reply to this blog post with: "Why did you have to make up
+your own definitions in the first place? Just use the ones that exist." So I'll
+respond before you ask: "Which of the two dozen different definitions would you
+like me to have chosen for my own definition?" 😂 😭 In his post about
+[test shapes](https://martinfowler.com/articles/2021-test-shapes.html),
+[Martin Fowler](https://twitter.com/martinfowler) approximates a quote of a
+"test expert" who was asked in the 1990s how they define "unit test":
+
+> “in the first morning of my training course I cover 24 different definitions
+> of unit test”.
+
+This is a sad state of affairs, and it's been that way since the 90s
+unfortunately. It is what it is. I had to choose something that made sense for
+me and as an educator, I had to choose something that would make the most sense
+for the people I'm teaching. Judging by the response from people who have
+implemented my recommendations, my decision was a good one.
+
+When discussing whether you can prove that testing is effective,
+[Tim Bray](https://twitter.com/timbray) (in his article
+[Testing in the Twenties](https://www.tbray.org/ongoing/When/202x/2021/05/15/Testing-in-2021)),
+correctly says:
+
+> let’s not kid ourselves that our software-testing tenets constitute scientific
+> knowledge.
+
+I would say this applies to everything about testing–not just whether it's
+effective (it can be). Any attempt to come to a single definition for all these
+terms is a futile endeavor. I remember speaking at Assert(JS) (where I gave my
+talk
+[Write Tests. Not too many. Mostly Integration.](https://www.youtube.com/watch?v=Fha2bVoC8SE&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf))
+and I observed how wildly different each talk was with regards to their
+recommendations on testing. But as I think about it now, I think lots of the
+difference could be attributed to our definitions of the terms of testing and
+less on how we strive to achieve confidence.
+
+[Justin Searls](https://twitter.com/searls) (who incidentally also
+[spoke at Assert(JS)](https://www.youtube.com/watch?v=Af4M8GMoxi4) that year)
+said it best when he tweeted:
+
+https://twitter.com/searls/status/1393385209089990659
+
+Classification is important so we can have conversations about this. It's
+unfortunate that you pretty much need to come to a consensus on how you define
+these terms before having a productive conversation. But ultimately it really
+doesn't matter. As Justin says, it's a distraction. Especially when so many
+codebases are living life on the edge without an automated way to have
+confidence their changes are safe to deploy.
+
+## Conclusion
+
+Anyway, hopefully this helps to clear things up a bit. To sum up: When trying to
+apply the testing trophy to your situation, think of it within the code of an
+individual codebase. It definitely has applicability in backends, but I've only
+considered it for monoliths not microservices or even serverless functions (and
+[I agree with Tim](https://www.tbray.org/ongoing/When/202x/2021/05/15/Testing-in-2021),
+most of us should probably be writing monoliths if we can).
+
+The testing trophy (when understood) has given me (and countless other) clarity
+on where to focus testing efforts. When properly interpreted, it helps me keep
+this critical principle in mind:
+
+https://twitter.com/kentcdodds/status/977018512689455106
+
+This is the guiding principle for Testing Library and it's how I think about
+every testing problem I face.
+
+**Remember,** it's all about getting a good return on your investment where
+"return" is "confidence" and "investment" is "time." If we had unlimited time,
+then trying to classify things wouldn't be necessary, we'd just write tests
+forever! But we don't, so I hope this helps you when trying to decide where to
+put your efforts.
+
+P.S. If you'd like more of my thoughts on testing, I have
+[a lot of posts on the subject on my blog](/blog?q=test). Here are a few
+specific articles I recommend you read next:
+
+- [Confidently Shipping Code](/blog/confidently-shipping-code): Why I care about
+  testing.
+- [Static vs Unit vs Integration vs E2E Testing for Frontend Apps](/blog/static-vs-unit-vs-integration-vs-e2e-tests):
+  What these mean, why they matter, and why they don't. ⭐️ This one has code
+  examples you might find instructive if you'd like more concrete examples of
+  how I think about these different classifications of tests.
+- [Testing Implementation Details](/blog/testing-implementation-details):
+  Testing implementation details is a recipe for disaster. Why is that? And what
+  does it even mean?
+- [Avoid the Test User](/blog/avoid-the-test-user): How your UI code has only
+  two users, but the wrong tests can add a third.
+- [Should I write a test or fix a bug](/blog/should-i-write-a-test-or-fix-a-bug):
+  How to prioritize tests relative to everything else.
+- [How to know what to test](/blog/how-to-know-what-to-test): Practical advice
+  to help you determine what to test.

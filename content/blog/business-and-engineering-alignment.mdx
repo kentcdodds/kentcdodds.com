@@ -1,0 +1,252 @@
+---
+title: Business and Engineering alignment
+date: 2020-12-10
+description: How to convince "the business folks" to let you do what you want.
+categories:
+  - career
+meta:
+  keywords:
+    - business
+    - mission
+    - migrating
+    - tech debt
+    - react
+    - testing
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032573/kentcdodds.com/content/blog/business-and-engineering-alignment/banner.jpg
+bannerCredit: Photo by [Pedro Lastra](https://unsplash.com/photos/Nyvq2juw4_o)
+---
+
+I've participated in a framework migration at every company I've worked:
+
+- Domo: Backbone -> Angular.js
+- AtTask (now Workfront): JSPs / VanillaJS -> Angular.js
+- Alianza: Angular.js -> React\*
+- PayPal: Backbone.js -> React
+
+\*Alianza is a special case because that migration never actually started and
+that's part of what I want to talk about today. We'll come back to this later.
+
+Luckily, every framework migration I've participated in was ultimately a
+success. They each had their own level of challenge and impact on development
+productivity (and
+[ultimately the user](/blog/why-users-care-about-how-you-write-code)), but
+ultimately, the migration was a success.
+
+But I don't want to limit my thoughts to things as big as framework migrations.
+What I want to talk about is more general. It's truly:
+
+> How to convince "the business folks" to let you do what you want.
+
+## The mission of the company
+
+In a functional company, the company's mission is paramount. Everything that
+happens should push that mission forward. The mission could be something boring
+like "make us all rich" (it seems that many companies have this as the primary
+mission even if it's unstated), interesting like "democratize financial
+services," or inspiring like "accelerate the world's transition to sustainable
+energy."
+
+Before you're even hired on at the company, you should ensure that you
+personally are aligned with the mission of the company. If you aren't (and the
+company is a functional one), then you'll struggle with this next part and
+you'll not enjoy your time at the company very much. (And if the company is not
+a functional one then you'll probably not be happy either).
+
+For the rest of the blog post, we'll assume that the company and its employees
+are focused on the mission of the company. If they aren't, then you have bigger
+problems... I do address this below though, so continue reading.
+
+Also, I'm going to assume that the person who decides your task priorities (and
+therefore the person to convince) is the product manager. Feel free to swap this
+for whoever the person (or people) in your situation has that responsibility.
+
+## Investment time
+
+Let's assume you want to make an investment into your codebase. This could be
+anything:
+
+- Paying off ["Tech Debt"](https://en.wikipedia.org/wiki/Technical_debt)
+- Adding tests
+- Improving build/deploy times/processes
+- Migrating to a new framework or library
+- Rewriting a feature that's outgrown its original implementation
+
+You probably come up with these possibilities on a daily basis. It's unlikely
+that the product managers will bring these things to your sprint planning
+meetings. Why is that?
+
+The thing those investments share is that they have an _indirect_ impact on the
+mission of the company. Product managers are focused on the product itself and
+how it's accomplishing the mission. This is normally seen from the outside with
+a look at capabilities, features, and customer requests. They will occasionally
+notice the side-effects of some of these needs: slow dev velocity, frequent
+bugs, performance issues. But in my experience, more often they assume that
+"this is just the way it is" and they'll focus on giving you "user stories"
+which are focused on features that will directly further the mission of the
+company.
+
+In your mind, you see these platform deficiencies and recognize how they are
+detracting from your company's ability to accomplish its mission. However, you
+may struggle to bring it up because you feel like you're swimming in custom
+requests and can't ever get around to these investments. Maybe you feel like
+deciding what to do with your time is not "your job."
+
+But your job isn't to turn user stories into code. **The company's mission is
+your job.** The company has a mission. Everyone at the company is hired to push
+that mission forward, whether they be in Quality Assurance, Sales, Custodial,
+Marketing, Finance, Engineering, or Management. You're not a software engineer
+hired to code. You're a human hired to push their mission forward. It just so
+happens that you are a human with coding skills and during the hiring process,
+they recognized that those coding skills could help them in their mission.
+
+## Ok, so the mission is important, so what?
+
+Do you feel like these problems make an impact on your ability (or the ability
+of others) to push the mission forward? Do you really feel like these things
+you're thinking of are more important to the success of the company mission than
+the features you're building? How can you be sure? They make an indirect impact
+at best (and no impact at worst).
+
+Take the top feature you're supposed to work on right now and weigh it against
+the top investment you want to make. Compare the benefit-to-effort ratio. Keep
+in mind the long-term impact as well. Some features and investments have a
+compounding effect over time. And don't forget that your long-term
+horizon/vision should factor in the mortality of your company... you gotta keep
+the business afloat for long enough to realize these benefits.
+
+Another thing to keep in mind that you may not have enough information to
+perform this analysis. You may need to ask the product manager questions about
+the features and how they tie into the mission of the company. Go into the
+conversation with an open mind and a desire to understand. Your goal should be
+to push the mission of the company forward, and that _might_ mean you don't get
+to work on these investments any time soon.
+
+## My investments are mission-critical
+
+Ok, so you've done the analysis and you have convinced yourself that your
+investments have a higher long-term benefit-to-effort ratio on the mission of
+the company than the things the product manager is bringing you. Time to talk to
+them.
+
+First, your product manager should not be surprised about this conversation.
+This should _not_ be the first time they hear about these investments you'd like
+to make. Keep them in the loop about some of the investments you're considering.
+Let them know that you're conducting an analysis on their value to the mission.
+That way, when you come to have this conversation, it's just you reporting the
+results of your analysis.
+
+**Your job is to help them understand that your investments are
+mission-critical.**
+
+How you accomplish this depends on the investment, but in principle it's all the
+same. In fact, it's the same for user features too: Start with why (the
+problem). If the decision makers don't have a clear understanding of the
+problem, then it doesn't matter how good the solution is. You need to
+internalize this problem and have them begging you for the solution. The problem
+_must_ be related to the mission. It needs to be _their_ problem. If it's just
+your problem, then they won't be convinced. Keep in mind that when you're
+communicating the problem you'll want to make sure they understand the cost of
+doing nothing to address the problem in the long term.
+
+Once they've been able to associate the problem with the mission of the company,
+then you can communicate the solution: your investment. Remember that the
+product manager is going to try to conduct the same analysis that you have about
+the long-term benefit-to-effort ratio and weigh that against everything else
+when they prioritize your work. You need to make sure they have all the
+information. In communicating the problem, you've hopefully given them an idea
+of the benefit of a solution. When communicating the solution, you'll want to
+make sure they have a clear understanding of the effort involved.
+
+## What next?
+
+Ultimately, the company hired the product manager to help prioritize work in the
+optimal way to push the mission forward. You should trust them to do their job
+well and recognize that they may have context that you're missing. So long as
+you effectively expressed all the information you can about the long-term
+benefit-to-effort ratio of your ideas then you've done all you can there.
+
+If you experience cognitive dissonance when you hear their decision to forego
+your suggestions or de-prioritize them, then there's been a misunderstanding.
+Either you misunderstand the problem/solution that you yourself presented, you
+misunderstand the importance of the other things the product manager
+prioritized, or they misunderstood those things.
+
+Wherever the misunderstanding lies, you can put forth an honest, good-faith
+effort to bring things to light. Express your thoughts on the matter and ask
+them to help you understand their perspective. In that discussion you might gain
+new insight to help you be more comfortable with the decision they have made.
+You may also uncover and correct their misunderstanding and get a more favorable
+outcome for your idea.
+
+## What if my company is not functional or I don't care about the mission?
+
+Get out. Or find out what motivates the decision makers and ensure they see the
+connection between what you're trying to do so they can prioritize it properly.
+
+The mission of the company is one thing, but what actually matters is the true
+outcome of the work of the people working there. If you can be comfortable with
+that outcome (and helping put that "unstated mission" forward) then fine, adapt
+to that. Keep in mind that if an unstated mission exists, then it can be changed
+or even hidden/misunderstood. A dysfunctional company is often infested by
+in-fighting/political games that are not fun at all. You'll find unexpected and
+ridiculous road-blocks. I suggest you start looking for a better place to work
+that has a motivating mission.
+
+## What if my goals are misaligned with what's good for the mission?
+
+Finally, we get to the Alianza story. I had been working at Alianza for almost a
+year when I started thinking I'd like to switch from Angular.js to React
+personally. I was getting fed up with Angular.js and Angular 2 was "on the
+horizon."
+
+After investigating it, I realized that "upgrading" Angular 2 wasn't much of an
+upgrade at all but more of a migration to a completely new framework. Angular 2
+didn't seem to address the issues I had with Angular.js anyway, so I thought:
+"Well, it'll be just as easy to migrate to React as it would be to migrate to
+Angular 2 and I'd rather work with React anyway."
+
+So, I went to the ultimate decision maker and brought up the topic. In
+retrospect, I was unsurprised (but still disappointed) when he said that they
+just didn't have the budget to migrate to any new framework. We were a small
+company (only two of us on the frontend) and benefit-to-effort ratio just didn't
+make sense. We needed a lot of features and migrating to a new framework was not
+nearly enough of a benefit for us to justify the effort within that time
+horizon.
+
+All the other companies that had conducted this kind of a migration needed to
+move forward and had compelling and mission-based reasons to conduct the
+migrations.
+
+Now, I just want to make sure that it's clear that at this company they had let
+me do a LOT of investments in the platform. They were super responsible and had
+treated me very well. Like I said, I wasn't surprised. It just didn't make
+sense.
+
+But my personal career goals involved me moving from the Angular.js community to
+the React community (that decision played out extremely well for me), so I
+started looking for a new job.
+
+It wasn't that I was unhappy with the mission. I was happy to get behind the
+mission and push, but my personal career goals and the good of the mission were
+at odds. So I changed to a new company where my goals and the mission were
+well-aligned.
+
+## Conclusion
+
+To sum up, the way you convince the decision makers to do what you want is to
+first convince yourself that your idea has **an appropriate benefit-to-effort
+ratio within a relevant time-horizon that is grounded in the company mission.**
+Once you've convinced yourself of this, then you communicate that to the people
+who prioritize your tasks.
+
+Let me say that again. It all comes down to this:
+
+> You need to determine and communicate the benefit-to-effort ratio within a
+> relevant time-horizon that is grounded in the company mission.
+
+The business and engineering alignment comes down to both being focused on
+furthering the company mission. If you're both truly working toward that goal,
+then alignment becomes a matter of proper communication, mutual respect, and
+understanding.
+
+Good luck!

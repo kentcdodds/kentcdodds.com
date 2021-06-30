@@ -1,0 +1,485 @@
+---
+title: Erik Rasmussen Chats With Kent About Maintaining Open-Source Libraries
+date: null
+description:
+  Erik Rasmussen chats with Kent about maintaining a popular open-source library
+  and the key things that need to happen in order for a library to take off.
+meta:
+  keywords:
+    - react
+    - teaching
+    - career
+    - web development
+    - dev
+    - software
+    - education
+    - javascript
+    - mentorship
+simpleCastId: 25dbbf35-1e3f-47c4-a1f6-352cb999e177
+---
+
+import Transcript from 'components/podcast/transcript'
+import Resources from 'components/podcast/resources'
+import Homeworks from 'components/podcast/homeworks'
+import Guest from 'components/podcast/guest'
+
+Erik built the Redux Form library to help manage form states in Redux. He
+decided to open-source Redux Form, and it exploded and became very, very
+popular.
+
+People kept coming up to Erik with additional use cases, and the form library
+itself kept growing to the point where the bundle size got out of hand and
+saying yes to all the requests for features created a monster.
+
+So Erik came up with his second form library "final-form." This time he created
+a plugin architecture to reduce the maintenance and make the library more
+capable of handling unconsidered use cases.
+
+Erik talks about the key things that need to happen for a library to take off.
+First, it has to documented well, and the motivation has to get explained
+clearly. Second, someone who has a following needs to love it and share it with
+people. Third, you've got to be there on the ground, ready to make quick fixes
+as people give them to you.
+
+<Homeworks>
+
+Release some open-source software!
+
+</Homeworks>
+
+<div style={{display: 'grid', gridGap: 10, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'}}>
+
+<Resources>
+
+- [Final Form](https://final-form.org)
+- [Redux Form](https://redux-form.com)
+- [How to Write an Open Source JavaScript Library](https://egghead.io/courses/how-to-write-an-open-source-javascript-library)
+- [How to Contribute to an Open Source Project on GitHub](https://egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github)
+- [OSCON 2014: How Instagram.com Works; Pete Hunt](https://www.youtube.com/watch?v=VkTCL6Nqm6Y)
+
+</Resources>
+
+<Guest name="Erik Rasmussen" image="https://res.cloudinary.com/kentcdodds-com/image/upload/v1625034132/kentcdodds.com/content/podcast/02/09-erik-rasmussen/erik-rasmussen.png">
+
+- [Twitter](https://twitter.com/erikras?ref_src=twsrc%5Egoogle%7Ctwcamp%5Eserp%7Ctwgr%5Eauthor)
+- [Github](https://github.com/erikras)
+- [Keybase](https://keybase.io/erikras)
+
+</Guest>
+
+</div>
+
+---
+
+## Transcript
+
+<Transcript>
+
+**Kent C. Dodds:** Hello friends, this is your friend Kent C. Dodds, and I'm
+joined by my friend Erik Rasmussen. Say hi Erik.
+
+**Erik Rasmussen:** Hello Kent, it's good to be with you.
+
+**Kent C. Dodds:** It's good to be with you too. So Erik is a maintainer of
+open-source, and that's what we're going to be talking about today is the
+open-source maintenance and authoring open-source libraries, managing
+open-source communities, that kind of thing. But I want the audience to get to
+know Erik a little bit. So Erik, could you just introduce yourself and tell us
+about you before we get into our chat?
+
+**Erik Rasmussen:** Sure. I'm an American from North Carolina who has been
+living in Spain for the past 14 years because I married a Spanish woman, and my
+day job is working with Java applications. But on the side, I love playing
+around with JavaScript and increasingly TypeScript and the React Community. I've
+been involved with React since the day it was released by Facebook, building
+little side projects and things. And at one point, for some reason, I decided to
+open-source a form library that I found useful to manage form states in Redux,
+and it sort of exploded and became very, very popular.  
+And over the course of that time, I have learned an awful lot about the
+different use cases that different corporations all over the world have with
+forms. Things that never would have occurred to me when I was solving my own
+little problem with forms. And so I don't know, I find it very rewarding to help
+people with their problems in the open-source community. I can't really explain
+it because there's no money in it for sure. But it's nice to give back, I guess,
+is the way to say it.
+
+**Kent C. Dodds:** Yeah, absolutely. I know what you mean. And people who are
+listening who haven't really experienced that, they can maybe get a little taste
+by remembering building a good abstraction in your work projects. That's other
+people start using this function that you made, and it's saving them time and
+just multiply that by thousands. Because building an abstraction that so many
+people can use and save them time and improve the maintenance of their app is
+really rewarding. It's super cool. So you wrote the Redux final form, right? You
+have two form libraries. One that's the Redux thing and then one that's just
+kind of standalone. Can you talk about those a little bit?
+
+**Erik Rasmussen:** Yes. Redux form is the big one. It's by far the most used
+form library in React still. And it was sort of my first attempt at managing
+form states at a higher level because the React docs only ever show you how to
+manage pretty much the form state of one input. And if you think about it,
+what's the company that makes React? How many inputs do they have in their form?
+Facebook really only has one form input in any particular form. Right?
+
+**Kent C. Dodds:** Yeah.
+
+**Erik Rasmussen:** It's your status update, or it's your reply to the comment
+thread. So they haven't published a lot of thought about how to manage a form
+with 25 inputs. And so it was clear that the form state had to live up higher
+above in the parent of the forms of the inputs. And at the time, Redux was just
+becoming popular as a way to manage states even higher than the application
+level. And so I wrote a reducer to manage form states, and it worked pretty
+well. But what happened, and we can get into this with open-source maintenance,
+is people kept coming to me with additional use cases and, "What if it did
+this?" And, "I need this many, I need to make it dynamic where I don't know all
+the inputs that I'm going to have when I first mount the form," or "I need an
+array of fields," and things like this.  
+And so the form library itself kept growing and growing and growing to the point
+where the bundle size sort of got out of hand and saying yes to all the requests
+for features created this sort of monster. So that's the first one. And I having
+seen all of these use cases and problems with form UI that people needed
+solving, I took a step back and looked at how ... "Is there a better way?" And
+that's when I came up with my second form library called final-form or
+react-final-form is the React version of it, where rather than holding states in
+Redux or even in component states, final-form is a standalone form states
+container that it gives you a way to add fields, and it will manage the values
+of those fields, and it will do run validation and will manage the errors of
+validation, and the submit errors and things like that.  
+All the stuff that you need with managing form state and it's in the
+self-contained zero dependency pure JavaScript library. And then, once I had
+that, I was able to build this little thin veneer over it for React to hook it
+into React with connecting onMount to register the form and put the form in the
+context and allow the field components to register themselves. And so my two
+form libraries are Redux form and react-final-form.
+
+**Kent C. Dodds:** And, which one has your heart right now?
+
+**Erik Rasmussen:** Oh for sure the newer one, react-final-form. I pretty
+actively recommend that people migrate. And in fact, just this week, I published
+a migration guide, and it turns out that because both were written by the same
+person, the API is really quite similar. It's so easy to migrate. So many people
+have told me that they migrated, and it was just trivial to do. And it's way
+better on your bundle size. It's like from 26K down to 8K so.
+
+**Kent C. Dodds:** Oh wow. Nice. Cool. So sounds like a really interesting
+learning process for you as getting into open-source and having a wildly popular
+library, I don't know if you know, but in the AngularJS days, I published and
+maintained the angular-formly library. It's probably still the most widely used
+forms library in angular JS as much whatever that means. But yeah, so I know the
+pains of forms and people's constant requests, and it's just so easy to say yes
+because you know, especially as you're the maintainer, how to accomplish what it
+is that they're trying to do. And maybe there's a workaround for it, but it's
+like really hacky, and so you're just like, "Oh, I'll just make that easier."
+And you start adding specific use cases or support for very specific use cases
+in the library, and it just grows and grows, grows.  
+You have a lot of if statements in the library to handle all of these different
+options and things, and it can become a bit of a weight on your shoulders. Did
+you ever feel like you were burned out on these libraries and maintaining this
+and then responding to all of the people's requests? And often, it's not just
+like a, "Hey, I need this new feature." But it's like, "How do you use your
+library?" And, "I obviously didn't read the manual." So like it can get easy to
+get worn out. Did you ever feel that way?
+
+**Erik Rasmussen:** I had sometimes when, yes, there were a bunch of issues and
+a bunch of people who saying, "Plus one on the issue." Which was always helpful.
+But I don't know I think I managed the burnout fairly well. There've been times
+when I take a whole week, and I don't even look at the open-source stuff because
+otherwise, you're just ... If you get up every morning and look at all the
+issues and look at all the stack overflow questions, it can become as stressful
+as a job and a job that pays zero. So that's not healthy. And for sure, you get
+to a point where you can no longer look at every issue or stay up to date with
+your GitHub notifications, for goodness sake. If you have a library that's at
+all popular, your GitHub notifications are just worthless noise, but I do check
+on the issues.  
+Really GitHub needs a better way to vote on issues like some of the bug tracking
+software out there like Jira and whatnot that have voting on issues. It would be
+helpful for library maintainers if there was a way to see that this particular
+issue, in the list, had so many upvotes or whatever, but alas, we can't do that.
+We just have to look through the issues and see where the most comments are or
+something. But no. There were times where I had to just step away and go for a
+walk and just do something else. But I feel like I've maintained a fairly sane
+level of open-source communication \[inaudible 00:11:31\]
+
+**Kent C. Dodds:** Yeah. I feel that pretty strongly as well with my open-source
+projects that I have. It can be a bit of a pain. Well, one thing that I've found
+that can be really useful is building a community around the project and finding
+people who can help maintain and triage issues and also finding a place where
+you can just move support requests off of GitHub. And so the community learns
+that, "Oh, GitHub is not the place to do support. That's where I file issues or
+request features. And so like that's where I have spectrum." And so if somebody
+does ask a question, typically I or one of the other maintainers will redirect
+them to spectrum. And that's been really helpful. Do you find, in your
+maintenance of your projects, that lots of the issues are actually just support
+requests?
+
+**Erik Rasmussen:** Yeah. And I think in my contributing document, I try and
+point people towards stack overflow first because, especially with Redux form,
+there's so many people that use it. And so many times I will get to a stack
+overflow question and it will already be answered. It'll already have the
+checkmark of there's someone that just correctly answered it. So the community
+comes with popularity, and it's great that some people want to help each other
+out when using your library. I haven't really jumped into spectrum all that
+much. It's I don't know. I've been sending people to stack overflow mostly, but
+then people will also answer each other's issues on GitHub. So I don't know
+which is better. There's still no solid solution on a good way, in my opinion. I
+haven't seen a great way to manage an open-source community around a library.
+
+**Kent C. Dodds:** So, what makes you do it then? I'm curious. If it's such a
+challenge, is it worth the effort, and why is it worth the effort for you?
+
+**Erik Rasmussen:** Well, it's very rewarding to have someone say, "Oh, thank
+you. My entire team was blocked on this. We couldn't fulfill our requirements
+for this project." In my experience, the library consumers, the other
+developers, are very grateful for a library. They understand that you're saving
+them a whole bunch of time by releasing this code. And they're very just
+grateful. And it's nice to ... I don't know; it just feels good to help other
+people. You can't really put it anymore more succinctly than that.
+
+**Kent C. Dodds:** Yeah. There's like intrinsic reward for being somebody who
+basically your code is running in way more apps than you could possibly build
+yourself.
+
+**Erik Rasmussen:** Oh, yeah. That's another kind of cool thing that will blow
+your mind is when you have a million monthly downloads, you know that so many
+projects out there are using your code and it's always kind of fun where
+sometimes I'll be using a website, and I'll be like, "Oh this forum works pretty
+nice." And I'll view the source, and it turns out, "Oh, it's using my library."
+So that's always fun. Just to spot your work in the world. But I've heard,
+especially when you go to a conference or something, people will come up to you
+and be like, "Oh yeah, this multinational bank that I work for has been using
+your library for a couple of years now." And that just kind of blows your mind
+that so many people out there are running code that you wrote, which again, it
+doesn't pay the bills, but it's neat to know that you've helped.
+
+**Kent C. Dodds:** Yeah. Well, then there's also the added benefit of having
+more experience, right? You're certainly a better React's developer having been
+exposed to so many different use cases, and recognizing, "Oh." Maybe at your
+job, you're exposed to different use cases, but then somebody else has a
+particular way that they're using forms, and they're trying to retrofit your
+library to fit their use case, and it just doesn't work. And so they open an
+issue and now you've been exposed to a totally different way of building forms
+or using forms on the web. And so if you hadn't open-sourced it, then you
+wouldn't have been exposed to that kind of thing. And now because you are,
+you're more capable.
+
+**Erik Rasmussen:** Yes. It certainly broadens your horizons or your
+understanding of what people might need React component to do. One of the
+reasons that we really love what we do is that we love the problem-solving part
+of, "Can we get this to do this and how can we figure out a way to accomplish
+this?" And that's just fun. I mean, sometimes someone will come with an issue
+and say, "Hey, how can I get my form to do this?" And I will, without even
+trying, I'll come up with a solution. And then it's hard because then it's like
+this person can't see the answer, but you with your experience have, and now you
+have to take the time to explain it to them or implement it or whatever. But
+it's, I don't know, the reason I love programming is problem-solving and the
+creative ways that we can make code the best it can be.
+
+**Kent C. Dodds:** Yeah. And it is kind of fun to take there. And this is
+something that I did a lot with angular-formly is our website was basically just
+a ton of examples. And all of those examples came from when I would answer
+somebody's question, I'd given this example and then I'd put it on the website
+and instead of sending them a link to the JS Bin, which is what we were using
+back then, I would put it on the website and then send them a link to the
+website. And so after a while, you had tons of examples, and it was kind of a
+fun challenge every single time. How do I demonstrate this feature in a way that
+balances the line between contrived and real-world so that people can see the
+forest through the trees or whatever, and understand what is the key element
+that I'm trying to demonstrate here, but also how does this apply in a
+real-world scenario? And it is challenging, but it's challenging in a good way.
+
+**Erik Rasmussen:** Yeah. And that was one of the ways that I built
+react-final-form. Was that I had a list in my head of all these different ways
+that people needed forms to be built. And so I built. There are dozens of
+examples in the react-final-form docs of doing exactly what you said. Of course,
+nowadays, we use \[codes and box 00:00:19:51\], but it's, "I need a wizard
+form." Okay. "How do you build a wizard form?" Or, "I need a way to have some
+fields disappear when another field is a certain value." Things like this where,
+because even though in my Javi job, I never really had some of these
+requirements, I knew that those requirements existed out there because I had
+maintained Redux form for so long.  
+And so, I was able to go and build all of these examples, and I found bugs in my
+library, and I made sure that my library could support all of these examples.
+And that's such a great way to teach people how to use your library. I always
+say I like to refer to Nuxt.js. One of the things I love about their repo is you
+can go to the examples directory, and there's 50 examples of how to use
+different other libraries with all the CSS and JS libraries. There's an example
+of how to use other libraries in Nuxt. And that gives me the confidence that,
+whatever future libraries, I'm going to need, the people at Zeit are going to
+work out how to use that with their system. And it's just nice to see so many
+examples. And whenever your use case comes up, and there's a whole bunch of
+examples, you can often times find a pretty close match to what it is you're
+trying to do and pull that example in and learn how to do it. It's way easier
+than; I don't know, trying to read long pros in documentation, I think.
+
+**Kent C. Dodds:** Yeah, I agree. You talked about with Redux form that people
+kept on bringing their use cases, and it would just bloat the library, and there
+are some problems with that where it's like the bundle size but also the
+cognitive load on anybody who's trying to learn this library. There's just such
+a huge API. But then you kind of reimplemented all those use cases in
+final-form, but the bundle size is lower, and I'm assuming that the API surface
+layer area is probably lower as well. So can you talk a little bit about how do
+I take a use case that somebody has and ensure that I can support it without
+increasing the bundle size or the surface area of the library? Do you have any
+tips for that?
+
+**Erik Rasmussen:** Well, one of the design goals of final-form from the
+beginning, was to keep the bundle size minimal. And so the way I did that was I
+created this sort of plugin architecture where you could apply, you could
+install this other library that worked well with final-form that gave you, for
+example, the ability to handle arrays of fields, whereas your defaults install
+of final-form and react-final-form isn't going to handle arrays of fields, but
+there's this other thing you can install that will allow that. And I really
+liked that's architecture because it's like you're building your own form
+library with these lego bricks every time to fit whatever your use case is. And
+especially now with code splitting and things, you can use a smaller version of
+a final-form for your login page, but then when you have to actually go to edit
+your account, or whatever, you can have the extra code that makes that possible.
+So from the very beginning, I wanted to make it flexible so that additional
+functionality could be added on like that.
+
+**Kent C. Dodds:** Yeah. Plugin architecture is really kind of a challenge, but
+it obviously is a really great way to make a library extensible is by kind of
+inverting control a little bit and giving people the ability to extend the
+capabilities of the core library. It's kind of actually what Babel went through
+when they switched from everything built into Babel 5, where everything was a
+plugin. I can't even imagine going back from that and saying, "Okay. Every Babel
+plugin is now built into Babel." That would just be a total nightmare. So it
+eases the maintenance chore for you, and when somebody comes to you with the use
+case that you just had never thought of before, you can say, "Well, you can
+build a plugin, and you don't have to make any changes to the library." So it
+just reduces the maintenance and also makes the library more capable to handle
+use cases that were never really considered or are frankly not really popular or
+frequently used use cases.
+
+**Erik Rasmussen:** Right. Because with Redux form, for example, your user has
+to download all of the code to manage complex arrays of fields. Even if you just
+have two fields on the page and that just seems dumb. If you can, you should
+just have them download the core thing that they need to manage your minimal
+form states. And then, if you need the additional functionality, you can add
+extra code to your bundle.
+
+**Kent C. Dodds:** Yeah. And so cool. So if I'm thinking I've got a utility in
+mind that I want to open-source, what's the process of getting that code
+open-source? I want to increase the impact of this code, and I want other people
+to use this. How do I go about effectively open sourcing this code in a way that
+will make that positive impact that I want?
+
+**Erik Rasmussen:** Right. Well, I mean, you make it public on GitHub and you
+npm-publish with a good README. Your README should explain your motivation, why
+this is useful, and show a quick bit of code that makes it clear how this is
+used. And then sometimes people ask me, "Hey, I've opened source this thing that
+I think is really useful. How do I get people to use it?" And that's a hard
+question to answer because you just ... The other day someone asked me that on
+Twitter, and the best response I could come up with is, "I guess just do a
+Twitter search for people discussing the kind of problem that your library
+solves. And then maybe sort of bud in and as humbly as possible say, 'Oh, I had
+that problem, and I wrote this little thing. You can use it if you want'."  
+It's kind of rude to any mention of a competitor and say, "Hey, why don't you
+use my thing that I wrote?" I'm sure you've seen plenty of that, and again, if
+people use your thing or they don't. You're not losing anything if someone
+switches from your library to someone else's library; if anything, you're losing
+the having to maintain another user. Right? But on the other hand, it's
+gratifying to have people use your stuff. So it's complicated. If it's really
+useful, people will use it. I don't have anything else.
+
+**Kent C. Dodds:** Yeah. Typically, it happens kind of organically. When you
+have really good documentation, really good examples, and you're solving a
+problem that people really are experiencing, then typically it's going to be
+used. Often, it does take having somebody who has some sort of following to use
+it, really like it, and share it with people. That can be really helpful.
+Eventually, if it is actually solving people's problems, then that will likely
+happen. Now that actually happened to the Webpack project, when Pete Hunt
+decided it was a good idea.
+
+**Erik Rasmussen:** I love that talk. That was a world-changing talk when he met
+... maybe you should link to that. That's great. Yeah.
+
+**Kent C. Dodds:** Yeah. For your library to really take off, it often does need
+some sort of help in that direction. But I typically don't find libraries that
+are not well documented, get to take off like that. That's kind of a barricade.
+
+**Erik Rasmussen:** Sure. Yes. Segmentation is key. And like I said, explaining
+the motivation. At the very top of your README should be, "Why I built this and
+what problem it solves." I've seen so many libraries where I look around, and
+it's like, "What does this even do?" And you're right; if you can get someone
+like Kent C. Dodds to retweet you, then you'll be off to the races.
+
+**Kent C. Dodds:** Well, yeah, I just want to be careful because people keep
+asking me to retweet their Redux state management middleware, or their Redux
+killer or whatever. I'm not interested in that. I don't use that stuff. So you
+need to find somebody who is experiencing the problem that you're solving and
+who is just entrenched in this kind of problem. Yeah. Because if they're not,
+then yeah, maybe they can retweet it, but they can't really say anything about
+it. And especially people who have a big following, don't want to share
+something with everybody that follows them that they don't really know about,
+that they haven't vetted. And they often don't have time to vet the project
+anyway.  
+So that's why having really great documentation is key because I do sometimes
+feel comfortable when I go through the documentation, and I've only got 60
+seconds to do this, so I get a really clear picture of what it does, and it
+looks like a pretty smart idea, then I'm fine tweeting that and saying, "Hey,
+this looks like it could be a good idea." And then it's your job, as the
+maintainer of the library, to take those eyeballs that I've given you, and
+turning those into users of the project and hopefully contributors of the
+project as well. So yeah, if I'm-
+
+**Erik Rasmussen:** And as soon as you-
+
+**Kent C. Dodds:** Sorry, go ahead.
+
+**Erik Rasmussen:** As soon as you launch your thing, you need to be willing to
+put in time to look at issues and fix bugs and add features. Because if you do
+get some eyeballs, you're going to get people saying, "Hey, can it do this in
+this case?" And you're going to get requests where people find bugs and the more
+on top of that you can be, the better chance you're going to have to actually
+get your thing off the ground. If you open-source something and then don't look
+at it for a couple months and people come and complain, and nothing happens,
+you're going to lose those people. You've got to be there on the ground, ready
+to make those quick fixes as people give them to you.
+
+**Kent C. Dodds:** Yeah. Great. So Erik, as we're wrapping up here, I think that
+our call to action for people, for this episode, should be to release some
+open-source software and it doesn't have to be the solution to date pickers on
+the web or something like that might be a little ambitious for your first
+open-source project. It could be just a little utility function that you found
+to be really useful for yourself. If this is your first time, it's less about
+getting a lot of users and more about learning the process of open sourcing some
+software. Which I think will help you develop some empathy for open-source
+maintainers, help you understand what the process of releasing software is like,
+which I think everybody should really learn about.  
+And I can give people one resource that I've made and then maybe Erik, if you
+have some resources and ideas then that can be helpful. But I have this free
+course on egghead called how to write an open-source JavaScript library where I
+show you the process of open sourcing a library on npm, and so you can watch
+that course, and that could help you get something open-sourced. Do you have any
+other tips or ideas of how to help people get their utility open-sourced?
+
+**Erik Rasmussen:** I've lost track of the number of times when I've Googled how
+to do something, and I come up with a Kent C. Dodd's video explaining exactly
+how to do the one thing that I'm trying to do. Really, you've been so helpful.
+No, your video is probably a great place to start. The other thing I wanted to
+add was, right now we're at a time with React hooks. You can release a really
+useful hook that composes of a couple of React things, and there's a lot of
+useful things that can be released as a hook these days, because hooks are so
+relatively young, there's still a bunch of cool stuff that we're going to
+discover of a common hook use case, if you can think of something clever that
+solves some particular problem with hooks, that's a good place to start.
+
+**Kent C. Dodds:** Yeah. Absolutely. It's still like a pretty young ecosystem
+there. So there's a lot of opportunity. Very cool. Erik, it's been a pleasure to
+chat with you. I hope that people learn to create some open-source software and
+what management of open-source is like; it is super rewarding. It's also super
+challenging, which is, I guess, maybe part of the reason why it's so rewarding.
+Kind of go hand in hand, but yeah, as we wrap up, Erik, what are the best ways
+for people to get in touch with you if they have any questions or anything?
+
+**Erik Rasmussen:** Well, I'm @erikras on Twitter. E-R-I-K-R-A-S. And my
+final-form library is @final-form.org and any of those places. And Twitter is
+the most direct route to get in contact with me, and I would love to hear
+feedback from everybody. So
+
+**Kent C. Dodds:** Great. Thank you so much. And with that, we'll say goodbye,
+and we'll see you all later. Bye.
+
+**Erik Rasmussen:** Bye.
+
+</Transcript>

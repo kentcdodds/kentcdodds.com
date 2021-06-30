@@ -1,0 +1,238 @@
+---
+title: Don't Solve Problems, Eliminate Them
+date: 2021-05-11
+description:
+  How eliminating problems can drastically simplify your codebases and life
+categories:
+  - productivity
+meta:
+  keywords:
+    - react
+    - remix
+    - javascript
+    - coding
+    - tesla
+    - life
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0/v1620771700/kentcdodds.com/blog/don-t-solve-problems-eliminate-them/banner_qzwcgj.jpg
+bannerCredit: Photo by [Jordan Whitt](https://unsplash.com/photos/EerxztHCjM8)
+---
+
+Humans are natural problem solvers. The fact that we've survived as long as a
+species as we have is evidence of that.
+
+Humans are also natural problem seekers. Let that one sink in. You know it's
+true. And I'm not talking about _those people_. I'm talking about you and me
+too. It's tough and takes intentionality to avoid. We just spend so much time
+solving problems, that we naturally seek problems to solve, even if we don't
+have those problems right now.
+
+![Photo of a Violin by Providence Doucet](https://res.cloudinary.com/kentcdodds-com/image/upload/v1620774892/kentcdodds.com/blog/don-t-solve-problems-eliminate-them/violin_pdtl8b.jpg)
+
+As an example, one of my sisters reached out to me asking if I could help her
+build an app that basically combined the capabilities of Zoom, Tito, and Google
+Calendar to enable out-of-work musicians (due to the pandemic) to teach their
+skills remotely. She was seeking problems to solve before having the problems
+first.
+
+Instead of helping her build solutions to problems she didn't have yet, I
+encouraged her to simply _use_ Zoom, Tito, and Google Calendar to get this idea
+off the ground, and then when those tools fell short, that would be a problem
+which she would be more equipped to solve because she would have actual
+experience with the problem and therefore have more context with which to solve
+the problem.
+
+Ultimately she didn't pursue the idea. It's good that she didn't decide to solve
+the problems she didn't have before she decided to move on from the idea. I wish
+I could say I've never made that mistake myself. How many times have I written a
+test for code I ended up deleting before it even got committed 🤦‍♂️
+
+**Avoiding problems is better than solving them.** Don't try to solve problems
+you don't have yet. I'm not saying don't plan ahead. You can avoid solving
+problems you don't have without painting yourself in a corner.
+
+## Unavoidable problems
+
+Even though avoiding a problem is best, sometimes you can't avoid a problem.
+What then?
+
+Humans **should** be problem eliminators. This is unnatural and takes extra
+effort. When faced with a problem, humans naturally start thinking of solutions
+to the problem. And when we solve it, we feel good about ourselves, but we've
+unwittingly made ourselves **captive to the maintenance of our solution.** ⛓
+
+However, if someone can take a step back and eliminate the problem instead of
+solving it, they'll find themselves in an excellent position and freed up to
+focus on tasks other than maintaining solutions. And often problems are
+eliminated for folks who use what they produce as well.
+
+At first glance, problem solving and problem eliminating seem like the same
+thing. So to be clear, here's the difference: **When you solve a problem, you
+have a solution you have to maintain. When you eliminate a problem you don't
+even have to think about it because the problem no longer exists.**
+
+Let's consider a few examples.
+
+## Real life problem elimination
+
+[![Tesla Model S driving fast with mountains in the background](https://res.cloudinary.com/kentcdodds-com/image/upload/v1620774548/kentcdodds.com/blog/don-t-solve-problems-eliminate-them/tesla_model_s_mbupt9.jpg)](https://tesla.com/s)
+
+Tesla is a great example of this. By going all electric, they've eliminated
+countless parts and processes that have been industry norm over hundreds of
+years. This has freed them to focus on other problems that they introduced with
+their alternative approach.
+
+And as an EV owner, switching from gas to electric allows me to eliminate
+problems like "where do I get an oil change" or worries that the transmission
+will blow and only very rarely (if ever) that I'll need new brake pads, etc etc
+etc. (EVs require very little maintenance because there are just so fewer parts
+that can wear out and break).
+
+[![Screenshot of a tesla livestream showing the model y giga casting machine with the words "40% rear underbody cost savings" and "-79 parts per car"](https://res.cloudinary.com/kentcdodds-com/image/upload/v1620835374/kentcdodds.com/blog/don-t-solve-problems-eliminate-them/giga_casting_dymoig.png)](https://youtu.be/l6T9xIeZTds?t=4767)
+
+A more recent innovation of Tesla is the use of the "Gigapress" which allows
+them to make a single-piece casting of the entire back and front of the vehicle.
+This eliminates the need for dozens of robots to bolt and weld dozens of parts
+together.
+
+Tesla is a fantastic example of problem elimination. Very interesting case study
+for anyone interested in manufacturing at a huge scale. Problem elimination is
+key to their success.
+
+## Coding problem elimination
+
+Most of you reading probably don't manufacture at scale. You're building apps.
+So what are some code-related examples of problem elimination?
+
+[![React logo](https://res.cloudinary.com/kentcdodds-com/image/upload/v1620775101/kentcdodds.com/blog/don-t-solve-problems-eliminate-them/react_nlj9aq.png)](https://reactjs.org)
+
+Years ago, to create a React component, we created a class that
+`extends React.Component`. We would add methods for different lifecycle events
+we wanted to handle. This worked well for years, but a big sticking point was
+code reuse. A given "concern" (or feature) could have code spread across any or
+all of `constructor`, `componentDidMount`, `componentDidUpdate`,
+`componentWillUnmount`, and `render`. Creating reusable abstractions that
+required code in each of those lifecycles was a challenge.
+
+The React team and community came up with ideas like "Higher Order Components"
+and "Render Props" to solve these problems. For a long time this seemed like a
+pretty good solution. There were rough edges (nesting and false hierarchy issues
+with render props or terrible typing support and prop indirection/clashes for
+HOCs), but we'd pretty much gotten used to these problems as a community and the
+solution worked pretty well.
+
+Then the React team changed the game entirely and introduced hooks. With hooks,
+code reuse is trivial and obvious. You share code with React hooks the same way
+you share regular JavaScript code: make a function. They completely eliminated
+the problem and we no longer feel the pain that led us to HOCs or render props
+except for very specific scenarios.
+
+As another quick example: early in the React world, the only officially
+supported way to get state and functions from one place to another in React is
+to pass props. This led to "prop drilling" where you have to pipe props through
+components all over your app. This was a huge pain. There was a note in the docs
+about a "context" API that existed, but its use was strongly discouraged
+directly in the docs.
+
+Then redux came on the scene and solved prop drilling (among other things) and
+people jumped on it quick. Redux actually _used_ the context API, but because it
+was hidden behind a library people weren't worried about the warning in the docs
+(most didn't even know they were indirectly using context).
+
+However, when context became official, and when hooks made it much easier to
+use, many people found that the primary problem for which they were using redux
+(getting state around their app) had been eliminated with a built-in approach,
+and dropped redux in favor of the new approach.
+
+(To be clear, there are other reasons people use redux, but in days before
+official context, this was the primary pain that drove people to redux).
+
+[![Remix logo](https://res.cloudinary.com/kentcdodds-com/image/upload/v1620776599/kentcdodds.com/blog/don-t-solve-problems-eliminate-them/remix-on-light_har5s6.png)](https://remix.run)
+
+Remix is another great example of a problem eliminator. They've taken a
+completely different approach to building applications with React and eliminated
+a bunch of problems in the process.
+
+People coming from other metaframeworks very quickly fall in love with the
+built-in support for nested routing. Among other things, this eliminates the
+problem of shared layout components. If you know the frustration, you understand
+what I mean. If you don't... lucky you.
+
+Because Remix exposes a direct API to the response cache headers, you can have
+all the primary benefits of static site generators with no need to do
+"intelligent" incremental rebuilds (which is an enormously complex solution to a
+real problem faced by the SSG approach).
+
+Because of the way Remix allows you to load your data in a `loader` function in
+the same file as your component, the problem of data over fetching is eliminated
+(you just filter out what you don't need in the `loader` so you only send what's
+needed over the wire) and a big problem that drives people to graphql clients is
+eliminated (to be clear, Remix works with graphql, you just don't have to use a
+complex client-side graphql client with Remix to avoid over fetching). Remix
+also only fetches the data for the _changed layouts_ on a page transition
+(something you can only really do with nested routing), further eliminating the
+over fetching problem.
+
+Because Remix supports `<form>` directly, you don't have to worry about the
+song-and-dance of form state management and submission. And to get the same
+benefits with client-side routing, it exposes a `<Form>` component that emulates
+the same experience without a full-page refresh.
+
+Because Remix automatically re-calls your loaders on mutations, you don't need
+to worry about cache invalidation.
+
+Because Remix allows you to specify the `link` tags included on a route-by-route
+basis, you don't need to worry about changes of CSS on one page impacting those
+on another page. That problem has been completely eliminated and now maybe
+you'll think twice before reaching to a CSS-in-JS library to solve that problem.
+Because it just doesn't exist when using Remix.
+
+Because Remix is a progressive-enhancement focused framework, you don't need to
+worry about whether your app will work on an unreliable network where the JS
+fails to load for some reason.
+
+Because Remix is built on top of web-based APIs primarily, they've eliminated
+over half of the documentation they would otherwise need to write because they
+can just point you to [MDN](https://developer.mozilla.org/). And they've
+eliminated the problem of transferrable skills for us as users because the
+better we get at Remix, the better we get at building websites without it too.
+
+## Trade-offs
+
+By now you've probably had this thought at least once: "But Kent... They may
+have eliminated some problems, but they introduced some new ones!" Yes, this is
+what we call trade-offs and they're impossible to avoid. Even inaction (the most
+efficient problem elimination technique) has trade-offs.
+
+EVs may not have the maintenance headaches of traditional ICE vehicles, but they
+also don't charge as quickly as you can gas up a traditional car and you can't
+just carry a gas can around with you just in case.
+
+React hooks drastically simplified code reuse, but now you've got to learn about
+value identity and memoization is when building those abstractions (though,
+often
+[by putting things inside the `useEffect`](https://epicreact.dev/memoization-and-react/),
+we can eliminate that problem).
+
+The ultimate goal is that the new problems you have to face are easier/cheaper
+to solve than the ones you had before.
+
+**Eliminate big problems in exchange for smaller problems.**
+
+## Conclusion
+
+There are countless examples of problem elimination throughout history and in
+every industry that have taken our world to new heights.
+
+I want to encourage us all to embrace the problem solving of humanity. I also
+want us to be mindful, take a step back, and ask ourselves whether we're solving
+the right problems. Are we just solving problems we created from the solution to
+other problems? Is it possible to eliminate those first problems so we don't
+have to solve the problems our solution created?
+
+**Start by not seeking problems. If you really do have a problem, first try to
+eliminate it if you can, and only solve it if you're sure you can't.**
+
+The biggest challenge is making sure that our elimination of problems don't
+create bigger problems. But when you can do that, you can drastically improve
+things for yourself and everyone who enjoys what you've created as well. Take
+chances, make mistakes, and eliminate problems!

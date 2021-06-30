@@ -1,0 +1,727 @@
+---
+title: Justin McMurdie Breaks Apps Into Micro-Services
+date: null
+description:
+  Justin McMurdie chats with Kent about breaking your app into micro-services.
+meta:
+  keywords:
+    - microservices
+    - monorepo
+    - developer experience
+simpleCastId: a95abdc2-4273-423b-b86b-7b358218b786
+---
+
+import Transcript from 'components/podcast/transcript'
+import Resources from 'components/podcast/resources'
+import Homeworks from 'components/podcast/homeworks'
+import Guest from 'components/podcast/guest'
+
+Most applications on the backend and the front end get built as a monolith, but
+you could improve your developer experience and performance if you broke your
+applications out into microservices.
+
+The pros and cons are the same for monorepos and microservices. Microservices is
+a different paradigm. And so, there's a lot of training that goes involved for
+different people to understand the various deployment processes. The
+microservices system is slightly more complex in some ways, but on the pro side,
+you gain some performance benefits where you can scale up services by
+themselves.
+
+A part of the improved developer experience is you get a better context of what
+you're working on. So say you need to fix a bug in the e-mail service. You don't
+have to dig through a mountain of code to find it. It's in the e-mail service.
+
+<Homeworks>
+
+Watch the [single-spa intro video](https://www.youtube.com/watch?v=L4jqow7NTVg)
+
+</Homeworks>
+
+<div style={{display: 'grid', gridGap: 10, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'}}>
+<Resources>
+
+- [single-spa intro video](https://www.youtube.com/watch?v=L4jqow7NTVg)
+- [single-spa](https://single-spa.js.org/)
+- [Building Microservices: Designing Fine-Grained Systems](https://www.amazon.com/dp/1491950358)
+
+</Resources>
+<Guest name="Justing McMurdie" image="https://res.cloudinary.com/kentcdodds-com/image/upload/v1625034149/kentcdodds.com/content/podcast/03/06-justin-mcmurdie/justin-mcmurdie.png">
+
+- [Twitter](https://twitter.com/justinmcmurdie)
+
+</Guest>
+</div>
+
+---
+
+## Transcript
+
+<Transcript>
+
+**Kent C. Dodds:**  
+Hello friends. This is your friend, Kent C. Dodds, and I'm super excited to be
+joined by my friend, Justin McMurdie. Say hi, Justin.
+
+**Justin McMurdie:**  
+Hey.
+
+**Kent C. Dodds:**  
+Justin and I are actually one of the longer time friends that I've had in the
+tech community. Let's see, we go back to 2014-2015 ish? We went, not to school
+together, but in the same program. Yeah, I remember you in the program, so it
+was probably 2013 or somewhere around there.
+
+**Justin McMurdie:**  
+Yeah, something like that. It's been a long time that we've known each other.
+
+**Kent C. Dodds:**  
+Yeah, good times. And I convinced you to come work with me at Alianza three
+years ago, that was a good time.
+
+**Justin McMurdie:**  
+It was great.
+
+**Kent C. Dodds:**  
+Yeah. Really enjoyed that. Learned so much. It was such a cool place to work.
+But yeah, we've both been a couple other places since then. So it's been awhile.
+We've been keeping up and stuff, but the people listening don't know you at all,
+and that's such a shame. So Justin, can you tell us about yourself?
+
+**Justin McMurdie:**  
+Yeah, of course. My name's Justin McMurdie. That is my Twitter handle. It's very
+original. I love Star Wars. I am a father, a spouse and open source software
+maintainer. Oh, I love technology. I love what we can do with it. I love the
+possibilities that it gives us.
+
+**Justin McMurdie:**  
+Talking about myself is a little bit weird sometimes, but yeah, I think I'll
+lead with, I love Star Wars, and end with, I love Star Wars.
+
+**Kent C. Dodds:**  
+Very good, yeah. What did you think of the most recent reincarnations of Star...
+Well, not reincarnations, but the most recent Star Wars movies?
+
+**Justin McMurdie:**  
+I liked things about all of them. I really, I go against the grain here. I
+really loved The Last Jedi, Episode Eight, and I really did not enjoy the final
+movie, but I found things that I enjoyed about all of them.
+
+**Justin McMurdie:**  
+And one of the things I love about Star Wars is that no matter... Excuse me.
+It's very widely open to interpretation. Everyone can find something about it
+they enjoy, and there's strong opinions out there, and the fandom can get a
+little bit toxic.
+
+**Justin McMurdie:**  
+But if you just respect other people's opinions and enjoy the talk about the
+parts you both enjoy, you can have a really good conversation with people, even
+if they liked a movie you hated, and vice versa.
+
+**Kent C. Dodds:**  
+Hmm. Yeah, yeah, very. Yeah. So I actually haven't seen the most recent Star
+Wars. I know it's terrible of me, but I do think that-
+
+**Justin McMurdie:**  
+Actually, I think that's fine.
+
+**Kent C. Dodds:**  
+I did hear that there was one scene where they're riding horses on the, out in
+space on the ship. Is that a thing? Is that real?
+
+**Justin McMurdie:**  
+Yeah, it was. It was interesting.
+
+**Kent C. Dodds:**  
+We don't have to get into that, but that was surprising to me. Anyway, we are
+not here to talk about Star Wars, although that would be an enjoyable subject.
+We're actually talking on Zoom, and we both have some Star Wars-related
+backgrounds, or space-related backgrounds, anyway, in our current quarantined
+circumstance.
+
+**Kent C. Dodds:**  
+But yeah, so I wanted to talk with you about microservices for the front end. So
+what does that even... Just to give us a quick intro to maybe microservices in
+general, just the concept, and then, how does that even make sense for the front
+end? How, where does that apply?
+
+**Justin McMurdie:**  
+Yeah, microservices is, I think, is really cool, but let's take it, just like
+you're saying, let's take a step back and discuss it as a topic. Most
+applications on the backend and on the front end are built as a monolith, so
+it's all in one project.
+
+**Justin McMurdie:**  
+There's one, maybe it's a Web pack, maybe it's a rollout, maybe it's like
+MooTools, I don't know. There's one build, and at the end you have one bundle.
+And you might have code splits in there, and you deploy that one bundle to a CDN
+or an Artifactory, or however you host your website, and on the front end, and
+that is your application. And so, there's usually one git-repo that represents
+your entire application.
+
+**Justin McMurdie:**  
+And the same is true on the backend. And that's where the term services comes
+from, because unlike the front end, we're not, they're not shipping code to the
+client, usually. They're running code on the backend that has to be available
+all the time.
+
+**Justin McMurdie:**  
+The idea is to pay, excuse me, to pair down scope. So instead of having one
+service, one backend service that handles every request and does every single
+thing, you just break off chunks like, "Oh, this one handles updating users, and
+this one handles updating tasks, and this one handles sending e-mails." So,
+instead of having one service or a giant monolith, you have four or five, six,
+20, a hundred microservices.
+
+**Kent C. Dodds:**  
+And so, what's the benefit of splitting it up? I guess, let's talk about the
+costs and the benefits. Because nothing comes without tradeoffs, of course.
+
+**Justin McMurdie:**  
+Absolutely.
+
+**Kent C. Dodds:**  
+So what would, what are the trade offs that we need to consider, when we're
+thinking about splitting up our application into these microservices?
+
+**Justin McMurdie:**  
+Yeah, so I traditionally have worked on the front end most of my career. And so,
+most of my perspective is going to be frontend-based, but I do have some
+experience on the backend. So I'll talk about mostly frontend, but backend as
+well.
+
+**Justin McMurdie:**  
+So the pros and cons are the same on both sides. It's a different paradigm. And
+so, there's a lot of training that goes involved for different people to
+understand the different deployment processes. Their system is actually slightly
+more complex in some ways, but on the pro side, you gain some performance
+benefits where you can scale up services by themselves.
+
+**Justin McMurdie:**  
+So for example, I mentioned like an e-mail service, let's say that was just a
+really heavy service. It had to do a lot of work. If everything was in one
+service, then I have to scale up to the, for the e-mail service, the entire
+thing.
+
+**Justin McMurdie:**  
+So what if I actually don't need all those resources for everything else, but
+the e-mail service could be using up a lot of bandwidth or CPU cycles? If you,
+if I split that off into its own service, then I can scale it up independently,
+and you can actually lower your organization's overall costs, because you have a
+bunch of small services that consume smaller amounts of total power, smaller
+boxes in the Cloud, or even smaller physical hardware. And then my favorite
+benefit is actually nothing to do with cost. It's developer experience.
+
+**Justin McMurdie:**  
+You have a better context of what you're working on. So hey, I need to make a,
+fix a bug in the e-mail service. I don't have to dig through a mountain of code
+to find it. It's in the e-mail service, I pull up the e-mail service, I need to
+start digging through it, fix the bug there.
+
+**Justin McMurdie:**  
+I can deploy that, without deploying everything else. And so, I can get a fix
+out to production much faster, and depending on how your organization is set up
+for, continuous deployment or delivery and integration tests, those sorts of
+things.
+
+**Kent C. Dodds:**  
+Yeah, that makes sense. And you download the code for a monolith, and you're
+like, "I don't even know where to start." But you download a, a singular
+serverless function or something, and it takes you 20 minutes to get through the
+entire code base, if that.
+
+**Justin McMurdie:**  
+Yeah.
+
+**Kent C. Dodds:**  
+So yeah, I can see how that could be really beneficial. What are some of the
+costs, from a maintainability standpoint, of the serverless... Or not
+serverless, but microservices? I use the term interchangeably by mistake, but
+they are often tied together pretty closely. But yeah, so, a microservices
+architecture. What are some of those, the costs associated to that kind of
+architecture?
+
+**Justin McMurdie:**  
+Yeah, like I mentioned, very briefly earlier... In my mind, the biggest cost is
+training. It's a whole new design system. It's a different paradigm. And it
+comes with its own advantages and disadvantages. Monoliths are easier to
+understand in some ways. You have a single code base. I don't have messages
+firing somewhere that get responded to by a different service.
+
+**Justin McMurdie:**  
+I'm trying to remember what it's called in the book that I just read about it.
+It's very much like a conductor, right? There's one system upfront. The same,
+this, "All right, now this, now this, now this, now this."
+
+**Justin McMurdie:**  
+With microservices, I feel like the biggest con has to do with the maintenance
+of the design system. It's more complex. It's a different paradigm. You have to
+consider events being going, being responded to by another service. Or a
+monolith is actually in some ways simpler.
+
+**Justin McMurdie:**  
+Your model that says, "Hey, I have, I have a conductor, like an orchestra,
+somebody upfront that's saying, 'Now do this, now do this, now do this.' And
+it's all visible to you, once you understand the code base."
+
+**Justin McMurdie:**  
+With microservices, it's more like choreography. You have every individual
+piece, every person in the performance, knows what they need to do. They know
+when to respond to certain actions, and you don't need that person upfront
+saying, "Okay, now do this, now do this, now do this." So it's essentially, it's
+a choreography versus a conductor, is a simple way to break it down.
+
+**Kent C. Dodds:**  
+Right? Yeah. And it's just like everything, nothing comes without tradeoffs, and
+it depends on what types of tradeoffs that you want to make. And I find it,
+concerning may not be the right word, but that's the word I'm going to use, when
+people just write something off because of a familiarity issue.
+
+**Kent C. Dodds:**  
+And so, like they say, "Well, I don't, I don't want to do this thing because the
+training costs, it's going to be hard, because nobody's familiar with this."
+Well, yeah. Okay. But we're constantly training people all the time. And you can
+train them in the old way of doing things or you can train them in the new way
+of doing things. You're going to train them either way. And so, let's set that
+aside as an equal cost either way.
+
+**Justin McMurdie:**  
+Sure.
+
+**Kent C. Dodds:**  
+And not to brush that off cause like familiarity does... If you need to get
+moving fast, then sure, go with what you're familiar with. But yeah, I guess I
+have more thoughts about that, but I want to move on. So yeah, so we talk about
+this in terms of backend, and it makes a lot of sense.
+
+**Justin McMurdie:**  
+I understand it. It does get more complex on backend too. I mean, most of the
+time, in a modern tech stack, it's not just, I have 10 different servers
+running, it's, I have 10 different Docker images, and you have Kubernetes
+involved. And that's where I love having people who know way more about that
+than I do, and work with them, so I can get help. But-
+
+**Kent C. Dodds:**  
+Yeah, is there really any such thing as a full stack developer anymore? Because
+nobody knows the whole thing, at least not at scale.
+
+**Justin McMurdie:**  
+Yeah, I totally agree.
+
+**Kent C. Dodds:**  
+Yeah. It's remarkable how complex things have gotten. And also, at the same time
+how easy it is, relative to what it used to be, to build something of value and
+useful in the world today. Like, I could build a full app on my own, and because
+the platform as a service and different services that I could use, to fill in
+the gaps of my own knowledge, which I think is really quite cool.
+
+**Kent C. Dodds:**  
+So talking about the frontend, because that's where I spend most of my time as,
+well. How does this microservice architecture apply to the frontend?
+
+**Justin McMurdie:**  
+Yeah. Microservices in the frontend is a relatively new concept. This is where I
+think we as frontend engineers haven't done a great job of learning from our
+peers. And we're, I mean, at the end of the day we're just solving problems. And
+we have peers who are doing it on servers, and we're doing it in browsers. We're
+working together to solve the problem, to build in a Web application or
+something else.
+
+**Justin McMurdie:**  
+And I think overall we haven't done a great job at watching how the industry has
+moved to micro front ends. And there's a pendulum swing both ways. Some people
+are pushing microphones, or sorry, microservices, and some people are pushing
+monoliths. And there's pros and cons.
+
+**Justin McMurdie:**  
+In the frontend, It's really new. Probably months ago, there was a disagreement
+on Twitter, massive Twitter thread about micro frontends. And I felt pretty
+great. I got a famous person to like one of my tweets.
+
+**Justin McMurdie:**  
+But ultimately, it's all about trying to make things better in development, in
+shipping code, in maintaining code. And sometimes that requires a paradigm
+shift. So if your backend at your company is already on microservices, you sort
+of have this disconnect, right? Where I've got this community e-mail service,
+and I want to deploy a change in the frontend for e-mail code. Well, I have to
+deploy the whole frontend. Oh, I can't, because there's a bug that hasn't been
+fixed since our last build over in the contact area.
+
+**Justin McMurdie:**  
+You can end up locked, and you are blocked by deployments. Where, with
+microservices in the frontend, you can create these whole silos. Like, I have an
+e-mail frontend, I have a e-mail backend, and I can deploy things as needed.
+Maybe I rewrite a whole frontend from one framework to another. As long as the
+API with the backend doesn't change, that's fine.
+
+**Kent C. Dodds:**  
+Yeah. How does... So I'm thinking about this in the context of a large
+application, like the one I worked on at PayPal. And at PayPal, we had, I owned
+one app. And then there was another team that owned another app, and we linked
+between each other, but we were totally separate, completely different entirely.
+Like, the user clicks on this link, and it's a full page refresh to get them
+over to this other app.
+
+**Justin McMurdie:**  
+Sure.
+
+**Kent C. Dodds:**  
+They're downloading. Maybe they're downloading React, but it's a different
+version. Or even if it's the same version, they're just downloading it again,
+kind of covertly, because we're all totally different. And I can see how that
+could probably be improved. So is that the kind of thing that that can be solved
+by using it, like being intentional?
+
+**Kent C. Dodds:**  
+So I guess what I'm saying is, we sort of had a microservice frontend
+architecture, but it wasn't implemented well. Because we had these different
+parts of the overall PayPal.com app that were, each route was handled by a
+completely different app. But because it wasn't intentionally designed as a
+microservice frontend, we ended up giving the user a less positive experience.
+And so, I guess that, my question's building up to an assumption that this is
+the type of problem that microservices in the front end is intended to solve.
+
+**Justin McMurdie:**  
+Yeah, absolutely. What you're talking about is essentially an integration layer.
+So you need a little bit of client side code that's like, "Hey, when I'm at this
+route, show this application, when I'm at that route, show that application."
+And I actually work on an open source project that that provides a lot of that
+for the people for free. But I want to talk about it generally before I plug.
+
+**Kent C. Dodds:**  
+Yeah, yeah, yeah, fair enough. No worries.
+
+**Justin McMurdie:**  
+But yeah, it's an integration layer is what you're missing there. And that could
+prevent those full page reloads, and give your users a better experience.
+
+**Kent C. Dodds:**  
+Right.
+
+**Justin McMurdie:**  
+And you can have lazy loading within the applications, which I assume you
+already had. You could say, "Hey, only load React once and it's the same
+version." You could, "Hey, only load my design system, my CSS, my shared
+component library, once." And it's the same for both applications.
+
+**Justin McMurdie:**  
+So it does, that's why, when I talk about additional complexity, that's exactly
+the sort of thing I'm talking about. You have different teams that have to
+coordinate at a higher level, but the end result is a better experience for
+users, a better experience for developers, and a better experience for DevOps,
+or even just deployments in general, and QA.
+
+**Kent C. Dodds:**  
+Right, yeah. And that makes sense. So if we wanted to, if, saying at PayPal,
+we've got these two apps and we're like, "Users are going back and forth between
+our apps, we've got to solve this, so let's just make, we've got to make it so
+they're not downloading React twice. They're not downloading our component
+library and all this stuff twice. So let's just put all of our stuff together
+and we'll just, all in one repo, we'll deploy it together and everything."
+
+**Kent C. Dodds:**  
+And so, then our developer experience is shortchanged big time, in favor of the
+user experience. And so what you're saying is, we can solve that same problem,
+without losing that improved developer experience by saying, "Okay, well we're
+going to trade a little bit of our developer experience by saying, 'Now we have
+to coordinate what versions of stuff we're using, but we'll be able to keep
+ourselves in our separate repositories.'"
+
+**Kent C. Dodds:**  
+Or I suppose this could probably even work in a monorepo, but in any case, that
+we'd be able to just work in our own section of the app without causing the
+problems for our users. So actually that question, or that thought process, made
+me think of a question.
+
+**Kent C. Dodds:**  
+Is part of the goal of this microservices intended to make it possible for you
+to have separate repos? Or is that a separate goal?
+
+**Justin McMurdie:**  
+That's a separate goal. We offer, me and the rest of the maintainers of the
+single spot of projects that I work on, get that question a lot. Like, "Can I do
+this in a monorepo, can I do this in individual repos?" And what we found is
+that most people actually prefer having dozens of small repos than a monorepo,
+but it'll work either way.
+
+**Justin McMurdie:**  
+I mean, the end goal is independent deployability. I want to make a change in
+one area and deploy it, and not have to coordinate with anyone else. I don't
+want to have to deploy everything just to make a small change.
+
+**Kent C. Dodds:**  
+Got you. Yeah, very cool. And that also means that, yeah, I guess that that's
+the ultimate goal. And then how you want to implement where the repo is. Where
+the code lives for each one of these is irrelevant. Very cool.
+
+**Justin McMurdie:**  
+Yeah, I would agree.
+
+**Kent C. Dodds:**  
+Yeah, that's interesting. So does this mean that, at single-spa, since we're
+kind of getting into that here, or any implementation of a microservice frontend
+architecture, like any library, is basically like a router. And that's pretty
+much all it does? Or is there more to it than just being a router?
+
+**Justin McMurdie:**  
+Conceptually, I think it's easiest to think of single-spa and other frontend in
+the browser integration layers as a simple router, or a higher level router. I
+don't want to confuse that with higher level components, but I'm routing between
+applications, rather than I'm routing between components. And I know that an
+application is really just a component. So in the end, it's not that much
+different.
+
+**Kent C. Dodds:**  
+Sure.
+
+**Justin McMurdie:**  
+But you can, you could even take that a step further, which is originally why
+single-spa was developed, saying... Hey, we let me back up there.
+
+**Justin McMurdie:**  
+We had a problem at Canopy, where single-spa was developed. We had an Angular JS
+monolithic application. And that application did everything, and we needed to
+migrate it to React. So there's lots of different ways we could have
+accomplished that.
+
+**Justin McMurdie:**  
+We could have used NgReact to let Angular render React components, but
+ultimately then, Angular still controls the routes. And at that point it becomes
+very difficult to get rid of Angular JS entirely without a larger scale rewrite.
+
+**Justin McMurdie:**  
+So you get some of that developer experience, but not all of it. And honestly,
+adapters are pretty big, like bundle size.
+
+**Kent C. Dodds:**  
+Right.
+
+**Justin McMurdie:**  
+And you have to rewrite anything anyways. So instead of saying, "Oh, I'll
+migrate this as a whole," which I've personally never seen work really well.
+
+**Kent C. Dodds:**  
+Yeah.
+
+**Justin McMurdie:**  
+You just sort of take a hammer to your existing thing and break it up into
+chunks. And then you carve section, or you carve boxes around that chunks, based
+on routes, and you say, "Hey, this is this application, this application, that
+application." And you migrate those applications without routers, and you just
+said, or without... Sorry, not without routers, without an adapter.
+
+**Justin McMurdie:**  
+You migrate those applications without an adapter. And then they're small
+enough, you can migrate them, sort of that, not a big bang, but a big bang
+migration, but a small bang migration.
+
+**Kent C. Dodds:**  
+Yeah. Bigger than a one day bang, normally.
+
+**Justin McMurdie:**  
+Yeah, \[crosstalk 00:21:56\].
+
+**Kent C. Dodds:**  
+Okay. Yeah, that makes sense. So, I'm just trying to think how this is much
+different from if I were deciding, "Hey, I want to switch from Angular JS to
+React. I'm going to build my own router with the history module. And then I'll
+just use code splitting for everything, and then load this bundle or that
+bundle." Is that basically what single-spa does? Or does it offer more than just
+doing that?
+
+**Justin McMurdie:**  
+Yeah. It's basically what it does. I think it offers more than that, because
+we've done it in production for five, or four and a half, five years now. So
+we've developed best practices to help accomplish those things.
+
+**Justin McMurdie:**  
+So one of the tools that we use is a tool called SystemJS. And that's an open
+source polyfill for a proposed browser specification, which is a mouthful. But
+that lets you asynchronously load modules, and you can combine that with
+single-spa, which is that top level router, just like you said.
+
+**Justin McMurdie:**  
+And you could load whole applications at runtime in the browser dynamically. So
+I could just define, "Hey, here's a list of all the possible applications," and
+load them when you need to, and they know everything they need to know. And
+these are the routes that they should be active. And that's all I have to tell
+single-spa.
+
+**Justin McMurdie:**  
+And then I have the supercharging power of SystemJS to load those bundles. So
+yes, that's the long, that's a long way for me to say yes. That's essentially
+what it is.
+
+**Kent C. Dodds:**  
+Got you. So I'm curious about the ability to share versions of React, and share
+other modules like that. So say we have a design system, a CSS library, or even
+a React component library. How do I instruct single-spa and my applications that
+these two applications use the same version of a given dependency? What do I
+need to change in my apps? And what do I need to tell single-spa about that? Or
+do I?
+
+**Justin McMurdie:**  
+Yeah, that's where, that's actually where SystemJS comes in. Because SystemJS is
+that asynchronous module loader, it also has a module registry, so that when you
+load a module, you can get it from the module registry. It just caches it. And
+that offer, it's like a Singleton module, so there will only ever be one version
+of React.
+
+**Justin McMurdie:**  
+And so, you have, you load React with SystemJS. And then you, when you build
+your projects, whether you're using Webpack or MooTools or roll up, you say,
+"Hey, don't include React."
+
+**Kent C. Dodds:**  
+Got it.
+
+**Justin McMurdie:**  
+And then, when SystemJS loads your bundle, it will give your bundle React.
+
+**Kent C. Dodds:**  
+That makes total sense. Total sense. So here in the last few minutes, I want to
+give you a chance to convince me to not build my own single-spa, and why should
+people... It sounds to me like this is something worthy of investigating for it,
+especially for any team that has multiple projects, and especially companies
+like PayPal, where you're doing a full page redirect over two to one separate
+app, where it'd be a lot nicer for users to be able to just link directly to it,
+and a client side routing kind of thing. So why, for people in that situation,
+why should they give single-spa any attention?
+
+**Justin McMurdie:**  
+Yeah, versus building it themselves, is that correct?
+
+**Kent C. Dodds:**  
+Yeah, yeah, versus building themselves.
+
+**Justin McMurdie:**  
+I think that's a really great question too. It's hard for me to say, "Don't
+build it yourself," because we built it ourselves. But my argument for why you
+shouldn't is that right now, you have a battle tested, been in production for
+five years applicant framework, essentially, that lets you build micro
+frontends. There's a large community behind it, there's several thousand stars
+on GitHub, and that alone should sell you.
+
+**Justin McMurdie:**  
+It has an active community and maintainers. It Has a bunch of dev tools we've
+built for it. We even built a CLI to help you get started, so you could just
+say, create single-spa React. And you're going to create a React app, a
+single-spa application, which is really just a React application with a slightly
+different Webpack config.
+
+**Justin McMurdie:**  
+And so for me, I say, don't build it yourself because we've already done so much
+of the hard work. How do you do, handle hash routing versus browser HTML5
+pushState routing? How do you prevent applications from being active? How do you
+unmount applications? What if applications are written in different frameworks?
+
+**Justin McMurdie:**  
+We've solved all of those problems multiple times. And we have a battle tested
+library with good unit tests, and that, with an active community behind it. I
+think it'd be equivalent saying, "Why shouldn't I build my own Webpack?" Maybe
+not quite as big, definitely not quite as big, but don't build your own Webpack,
+because it's hard to build, and it takes a lot of time and energy and resources.
+
+**Justin McMurdie:**  
+Don't build your own single-spa. There's already one out there, and we would
+love for you to come help us make it even better. We're looking for open source
+contributors all the time. We get people from the community jumping in to help
+solve issues, add features.
+
+**Justin McMurdie:**  
+Yeah, don't build your own. Use ours and help us make ours better, and then
+everyone get... The rising tide can lift everyone's applications.
+
+**Kent C. Dodds:**  
+Yeah, very good. Yeah, I think that's a compelling argument for sure.
+
+**Kent C. Dodds:**  
+So yeah, Justin, you also, just in this last little bit, you also co-organize a
+conference that's near and dear to my heart. It's also near and dear to my home,
+so I liked it especially much.
+
+**Kent C. Dodds:**  
+It's Utah JS Conf. It's actually, I don't know if you know this, but this is,
+the first conference I ever spoke at was Utah JS Conf, and yeah, just awesome.
+And actually Utah JS also has meetups and stuff. That was the first place I ever
+spoke, period, was at a Utah JS meetup.
+
+**Kent C. Dodds:**  
+So why don't you tell us about Utah Jazz Conf 2020? And yeah, what are your
+plans here?
+
+**Justin McMurdie:**  
+Yeah, Utah JS 2020 is shaping up to be a really awesome conference. We actually
+have our call for papers open now, and that's going to stay open, oh, until the
+end of April, I believe. But the conference itself was on Friday, September
+18th. We're really excited about it. We're holding it at The Jordan Commons
+Movie Theater again. It's worked out really well.
+
+**Kent C. Dodds:**  
+That's an awesome venue. I actually really liked that venue, it's kind of fun.
+
+**Justin McMurdie:**  
+Yeah. Honestly, the week, you get the tumblers, you have free soda and
+everyone's just hyped up on caffeine and jittery the whole time. It's great. But
+I've had a lot of fun working on Utah JS Conference. It's a nonprofit.
+
+**Justin McMurdie:**  
+So our tickets relative to other conferences are much cheaper. And we get a lot
+of awesome speakers who are willing to, some cases, even waive their speaking
+fees because we're a nonprofit. And the revenue that we make, which isn't much
+from the conference itself, we turn around to use for the meetups. And so that's
+where the funding from the meetups comes from.
+
+**Justin McMurdie:**  
+We don't have our final ticket price this year yet, but when we open up our
+ticket sales in the, probably sometime after CFP closes, when we know a little
+bit more about what social distancing looks like in September, we're really
+excited about it. It's been fun to work on, and I'm excited to see what cool
+proposals come up this year.
+
+**Kent C. Dodds:**  
+Yeah, I'm excited to go. And I hope that I don't have to stand six feet away
+from you, because I always like giving me a big hug. But yeah, Justin, is there
+anything else that you want to bring up, before we wrap things up here?
+
+**Justin McMurdie:**  
+Microservices has pros and cons, just like everything. I think the cons of
+microservices are way outweighed by the pros. That's a weird way to say that,
+but I think that the pros of microservices give you more than the cons cost you.
+
+**Justin McMurdie:**  
+I encourage everyone to check out microservices, generally, on the backend and
+on the front end. Recognize that at not every organization it's going to be a
+great fit for. It really depends on your team structure, or your application
+structure, and the cost that you're willing to absorb to get those great
+experiences.
+
+**Justin McMurdie:**  
+So consider microservices, check out some documentation, generally there's books
+available. Check out single-spa specifically. The website is single-spa.js.org.
+We've got an intro video there that's pretty great, should give you a high level
+overview. It even has some amazing animations, so...
+
+**Kent C. Dodds:**  
+Sweet. Awesome. Hey, thank you so much, and that is our call to action. Our
+homework for you all listening, to check out that single-spa intro video. It is
+only one minute and 56 seconds long. So if you don't do it, then you are super
+lazy. No, just kidding.
+
+**Kent C. Dodds:**  
+But everybody should have enough time to take a look at that and enjoy those
+cool animations Justin's talking about. And yeah, thanks so much for coming on,
+Justin. It's always a pleasure to catch up with you and chat.
+
+**Kent C. Dodds:**  
+And I hope everything goes well with you these next few months in getting ready
+for Utah JS. And yeah, hope to see people around at the conference in a few
+months.
+
+**Justin McMurdie:**  
+Yeah, I'm excited for the conference. It's always good, it's always fun to
+watch, and I'm excited to see you there.
+
+**Kent C. Dodds:**  
+Awesome. Thanks so much, Justin. We'll see you all later.
+
+</Transcript>

@@ -1,0 +1,195 @@
+---
+title: Fix the slow render before you fix the re-render
+date: 2019-09-09
+description: How to start optimizing your React app renders
+categories:
+  - react
+meta:
+  keywords:
+    - react
+    - performance
+    - javascript
+    - renders
+    - rerenders
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032717/kentcdodds.com/content/blog/fix-the-slow-render-before-you-fix-the-re-render/banner.jpg
+bannerCredit:
+  Photo by [Pascal van de Vendel](https://unsplash.com/photos/J3pkJFnpDkM)
+---
+
+Current Available Translations:
+
+- [Korean](https://goongoguma.github.io/2021/05/15/Fix-the-slow-render-before-you-fix-the-re-render/)
+
+import {Counter, Layout} from './components'
+
+Performance is a serious issue and we should make our apps as fast as possible.
+How we go about doing that will make a big impact on not only the effectiveness
+of our optimizations but also the complexity of our code (how quickly we can
+make improvements and changes in the future).
+
+When we're talking about React optimizations, one of the things that people
+bring up a lot is optimizing "re-renders." Let's make sure we're talking about
+the same thing:
+
+```jsx
+function Counter() {
+  const [count, setCount] = React.useState(0)
+  const increment = () => setCount(c => c + 1)
+  return <button onClick={increment}>{count}</button>
+}
+```
+
+<Layout>
+  <Counter />
+</Layout>
+
+Every time we click on that button, we're triggering a re-render. But what is a
+"re-render"?
+
+## What is a re-render?
+
+When React was first released, a lot of people focused on the performance
+improvements over existing UI libraries thanks to React's "Virtual DOM". Most
+popular existing UI libraries at the time would either leave you to update the
+DOM yourself, or would update the DOM for you, but do so sequentially for every
+"component" (or directive) that needed updating. Basically it comes down to
+this:
+
+1. Given that it's slow to update the DOM (like when calling
+   `element.appendChild(childElement)` for example).
+2. And that performance issue is compounded the more times you do it.
+3. And can side-step some perf issues by doing all necessary updates at once
+4. If we batch all DOM updates, then we can reduce the performance issues of
+   updating the DOM multiple times in rapid succession.
+
+So the React team decided to batch DOM updates, so if there was a state change
+that resulted in thirty DOM updates, they would all happen at once, rather than
+running them one after another. To do this batching though, they would have to
+take ownership over updating the DOM, so we have `React.createElement` (which is
+[what JSX is](/blog/what-is-jsx)) to describe what we want the DOM to look like,
+and when there's a state change, React calls our function again to get the React
+elements we need rendered to the DOM. It then compares those new React elements
+with the ones we gave it last time we rendered. From that it can tell what DOM
+updates to make, and then makes those updates for us in the most performant way
+possible. The process of updating the DOM is called "committing" because we're
+taking the React elements that you "rendered" and "commit" those updates to the
+DOM.
+
+This is a really important distinction and I don't want you to miss it (and the
+names are a tiny bit misleading, so I want to make it clear). A "render" is when
+React calls your function to get React elements. "Reconciliation" is when React
+compares those React elements with the previously rendered elements. A "commit"
+is when React takes those differences and makes the DOM updates.
+
+```
+render → reconciliation → commit
+      ↖                   ↙
+           state change
+```
+
+To be clear:
+
+- The "render" phase: create React elements `React.createElement`
+  ([learn more](/blog/what-is-jsx))
+- The "reconciliation" phase: compare previous elements with the new ones
+  ([learn more](https://reactjs.org/docs/reconciliation.html))
+- The "commit" phase: update the DOM (if needed).
+
+Typically, the slowest part of this is the "commit" phase when the DOM is
+updated. But not all DOM updates are slow. In fact, it's probably a bit
+misleading to state simply that "the DOM is slow" because it's more nuanced than
+that. DOM updates like adding/removing event listeners are really fast. The slow
+part of the DOM is "layout"
+([learn more about slow layout here](https://www.youtube.com/watch?v=3bc71-xzoWA)).
+
+Thanks to React's batching and optimized code, we can avoid a lot of the
+pitfalls without having to worry ourselves about this problem, but it can
+definitely bite us on occasion.
+
+## Unnecessary re-renders
+
+Just because a component is re-rendered, doesn't mean that will result in a DOM
+update. Here's a quick contrived example of that:
+
+```javascript
+function Foo() {
+  return <div>FOO!</div>
+}
+
+function Counter() {
+  const [count, setCount] = React.useState(0)
+  const increment = () => setCount(c => c + 1)
+  return (
+    <>
+      <Foo />
+      <button onClick={increment}>{count}</button>
+    </>
+  )
+}
+```
+
+Every time you click on the button, the `Foo` function is called, but the DOM
+that it represents is not re-rendered. Because of that, there's no DOM update
+for that component at all. This is commonly referred to as an "unnecessary
+re-render."
+
+Unfortunately, there's been a fair amount of confusion around the difference
+between "renders" and "commits." Many people know (or at least they've heard)
+that "the DOM is slow," but plenty don't realize that just because a component
+is re-rendered, doesn't mean the DOM will be updated. Because of this
+misunderstanding, they believe it is a performance bottleneck that a component
+renders when it doesn't actually need to update the DOM.
+
+This can definitely be a problem in some cases, but in general even mobile
+browsers on low-end devices are very fast at creating objects (render phase) and
+comparing them (reconciliation phase). So what's the problem with re-renders?
+
+## Slow renders
+
+Given that JavaScript is really fast at handling the render and reconciliation
+phases, then why is my app freezing up when I'm getting unnecessary re-renders?
+In that situation, I'd suggest that your problem _might_ be unnecessary
+re-renders, but it's more likely a problem with slow renders in general. There's
+something that your code is doing during the render phase that's making things
+slow. You should diagnose and fix _that_ first. Once you've fixed that problem,
+then you can profile your app again and see if you still have issues with
+unnecessary re-renders.
+
+In fact, if you leave in a slow render and just reduce re-renders instead, then
+you could wind up with a worse situation, and you'll likely wind up with more
+complicated code.
+
+Maybe this will drive my point home. Let's say that you have to punch yourself
+in the face every time you blink 😉🤛 🥴. Maybe you'd think: "oh gee, I guess
+I'd better not blink as much!" You know what I say? I say you should stop
+punching yourself in the face every time you blink! So instead of just reducing
+how often a bad thing happens (_slow_ renders), maybe you could eliminate the
+bad thing and feel free to blink (render) as much as your eyes need you to 😉
+
+![stop hitting yourself](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032718/kentcdodds.com/content/blog/fix-the-slow-render-before-you-fix-the-re-render/stop-hitting-yourself.gif)
+
+## How to fix slow renders
+
+So we've concluded we want to fix slow renders first. Then we can determine
+whether re-renders are still a problem. So how do we fix the slow render. Often
+you already know which interaction is causing a "janky" experience for the user.
+Often it's when you open a tab, click a button, or type in a text field.
+
+Here's what you do: Using your browser's profiling tools, start profiling your
+app, do the interaction, then stop profiling it again. For example:
+
+https://twitter.com/kentcdodds/status/1171158009277403136
+
+Once you figure out what part of you (or your dependencies) is taking the
+longest and fix those problems, then try again with the profiler and observe the
+improvements (or regressions). Don't miss the React DevTools profiler as well,
+it's really great!
+
+https://twitter.com/brian_d_vaughn/status/1126950967201546240
+
+## Conclusion
+
+It doesn't matter if 100% of your renders are necessary, if those renders are
+slow, it will still produce a bad experience for the user. Stop punching
+yourself in the face every time you blink. Fix your slow renders first. Then
+deal with the "unnecessary re-renders" (if you still need to). Good luck!

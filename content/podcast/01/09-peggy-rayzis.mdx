@@ -1,0 +1,531 @@
+---
+title:
+  A Few Excellent Reasons For Why You Should Give GraphQL A Try With Peggy
+  Rayzis
+date: null
+description: Peggy Rayzis discusses GraphQLs excellent developer experience.
+meta:
+  keywords:
+simpleCastId: 63fc78d1-6fd7-495a-96ce-3d58c0009633
+---
+
+import Transcript from 'components/podcast/transcript'
+import Resources from 'components/podcast/resources'
+import Guest from 'components/podcast/guest'
+
+Peggy Rayzis is the engineering manager at Apollo, where she leads the developer
+experience team.
+
+Peggy talks about how Apollo touches every layer of development. There are a lot
+of ways that you can implement GraphQL in your application. It's incredibly
+flexible. You can even have GraphQL running entirely on the front-end! Peggy
+recommends that you implement it in your existing application by creating a
+GraphQL layer that sits between your front-end and underlying services.
+
+Why would it be worth all of the effort to refactor your application from a REST
+architecture to a GraphQL one? There are performance benefits from switching to
+GraphQL, but the main draw is the developer experience. GraphQL is much nicer to
+work with than REST, no more firing up Postman or console logging to get a peek
+at what's going on.
+
+To get started with GraphQL, Peggy recommends taking a single endpoint in your
+application and beginning with a schema, then move on to writindg your
+resolvers, get your server running, and then connect your front-end. If you want
+to learn on something that isn't your product, then Apollo has excellent
+documentation that is linked bellow.
+
+---
+
+<div style={{display: 'grid', gridGap: 10, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'}}>
+
+<Resources>
+
+- [Apollo Docs](https://www.apollographql.com/docs/)
+
+</Resources>
+
+<Guest name="Peggy Rayzis" image="https://res.cloudinary.com/kentcdodds-com/image/upload/v1625034104/kentcdodds.com/content/podcast/01/09-peggy-rayzis/peggy-rayzis.png">
+
+- [Twitter](https://twitter.com/peggyrayzis?lang=en)
+- [Github](https://github.com/peggyrayzis)
+- [Medium](https://medium.com/@peggyrayzis)
+
+</Guest>
+
+</div>
+
+---
+
+## Transcript
+
+<Transcript>
+
+**Kent C. Dodds:** Hello friends, this is your friend Kent C. Dodds and I'm
+joined by my friend, Peggy. Say, "Hi" Peggy.
+
+**Peggy Rayzis:** Hey everyone. I'm so excited to be on the podcast today.
+
+**Kent C. Dodds:** Thank you so much for joining us. So Peggy, your last name is
+pronounced Rayzis?
+
+**Peggy Rayzis:** Rayzis, yes. I've had people pronounce it many different ways.
+Racist, razor. Yeah, but it's ... I know, it's terrible. Rayzis is the correct
+pronunciation.
+
+**Kent C. Dodds:** Yeah. Well cool. I'm so happy to have you Peggy. You and I
+have been buddies since, like, I don't know, for the last three years or more.
+Time flies.
+
+**Peggy Rayzis:** Yeah, something like that. I know, right? Like, it doesn't
+feel like it's been that long. I think the first time we met each other was like
+lunch in New York City with a bunch of New York City Java script people. It was
+a fun time.
+
+**Kent C. Dodds:** Yeah. Good times. And so, I guess last we saw each other, was
+it at React Amsterdam? That was fun.
+
+**Peggy Rayzis:** Yes, it was.
+
+**Kent C. Dodds:** Good times. Cool. So, Peggy, you have been, like, as long as
+I have known you, you've been really interested in GraphQL and now it's kind of
+your full time thing as it revolves around this GraphQL thing. So I'm excited to
+talk with you about that, and specifically Apollo and the cool things that
+you're all doing there. But before we get into that, I think it would be cool
+for people to get to know you a little bit. So if you could share with us, just
+whatever you want to share about yourself. Your technical interest as well
+personal interests or whatever you want to share with us. Yeah. I'd love to get
+to know you a little bit.
+
+**Peggy Rayzis:** Yeah, totally. So hey everyone. My name is Peggy and I am an
+Engineering Manager at Apollo where I lead the Developer Experience team. So my
+role is kind of a very interesting mix of engineering, marketing and product. I
+lead a team of Developer Advocates. We're actually hiring right now, so get in
+touch if you're interested. Also Technical Writers, Docs, Infrastructure
+Engineers and a Designer. And it's a lot of fun. We ... pretty much our primary
+goal is to make sure that everyone is successful and happy and productive with
+GraphQL and Apollo. So, in a given week I could be speaking at a conference and
+interacting with developers in person. I could be suggesting a way to improve
+the documentation, perhaps with interactive components and even tutorials. And
+really just kind of listening to the feedback that our community members give us
+on Spectrum and Twitter and online, so ... It's a really, really fun job. I get
+to meet a lot of interesting people, and I get to spread the good word about
+GraphQL, which I think is something that's pretty much revolutionizing how we're
+building apps today. So I'm super excited to talk with you about it.
+
+**Kent C. Dodds:** Yeah, totally. I had this workshop recently, Build React JS
+Applications where I just take little, like, we have a real world [inaudible
+00:03:03] application and we build little parts of it as we go. And preparing
+that I wanted to go with Graph QL, but I got a lot of feedback from people that,
+there's just so many who are not in the wonderful world of GraphQL yet that,
+like, the goal of the workshop was, let's learn React, but considering there a
+lot of people who aren't familiar with GraphQL yet, if I used Graph QL a lot of
+people felt like it would actually be a Learn GraphQL workshop, because it's
+pretty fundamentally different from what a lot of people are experienced with.
+Is that a challenge that you find? Like, that it's a revolutionary chance and it
+really is an amazing thing, but has it been a challenge for lots of companies to
+adopt and if so, what makes it challenging?
+
+**Peggy Rayzis:** Yeah, so I think there's definitely a learning curve with
+GraphQL. Like, I'll totally give you that. There was even a learning curve for
+myself when I first started. I was in major league soccer and we were kind of
+converting everything over from [Res 00:04:04] to GraphQL, and it took me like a
+couple weeks to wrap my head around it. And I think it's because it's kind of
+truly full stack, right? Like you have client portion that you kind of have to
+understand, which, if you have experience with React you can wrap your head
+around it, but then, also building the GraphQL layer itself. You have to stand
+up a GraphQL server, you have to learn, what is a schema? Like, how should I
+model my data? How do I write resolvers? Then if you're implementing in the
+production environment you have to consider things like Auth and caching,
+security, all of that. So when I teach it to people, we used to do the workshop,
+it was one day. But we've since expanded it to two days because it's just a lot
+to kind of fit it all and get people really comfortable with running it in
+production. That's to say, I think the benefits are huge. The developer
+experience benefits are really ... the ones that won me over from the start and
+the ones that keep continuing to get better and better, and we haven't really
+seen too much in terms of push back with adoption. There's lots of companies out
+there, Airbnb, Expedia, Audi, TicketMaster, GateHub. Like, the list goes on and
+on, everyone's starting to adopt it, but it definitely takes a lot. And I think
+you made the right call with your React workshop, not trying to cram in GraphQL,
+too, because it could definitely get overwhelming for people that are just
+starting to learn React.
+
+**Kent C. Dodds:** Yeah, it sounds like GraphQL is kind of ... it's such a
+revolutionary thing that it touches every side of development. All the way,
+really far back ... in some cases there are providers who even take care of the
+database side for you. Like, you get very far in the back, and then all the way
+in the front, as well, with now you're doing estate management and caching and
+all of that. And authentication. And so, it touches so many places that it can
+be a pretty impactful change. It's not something that you can iterate to super
+easily. And so, I'm finding that quick path to get something implemented so that
+you can iterate toward making the bigger impact. That can be a little bit of a
+challenge. One thing I want to ask you about is a couple years ago I was on ...
+I was running the Java script error podcast, and we had Lee Byron, creator of
+GraphQL, on the show, and he mentioned something to me that I thought was kind
+of interesting. I want to get your take on it, was you can actually implement
+GraphQL on the front end and have the entire thing just running in the front
+end. And like most of your code, it's treating it like a regular GraphQL server,
+but all your resolvers and everything are hitting the rest end points that you
+have today.
+
+**Peggy Rayzis:** Yeah.
+
+**Kent C. Dodds:** Have you ever seen anybody do something like that, and would
+that make sense, as a maybe more iterative, like, less company-wide impactful
+way to start adopting GraphQL?
+
+**Peggy Rayzis:** Yeah so there's maybe like two ways you could approach this. I
+do think, you know, it is an interesting way to kind of get your feet wet, but
+not necessarily something that we would recommend most people doing in
+production. So, the first way is, you could literally run a GraphQL server on
+the client, but the caveat with that is the GraphQL JS modules, in order for
+validation and all of that, they're extremely large and would inflate your
+bundle size. So that's kind of why we keep that complexity on the server instead
+of on the client.
+
+**Kent C. Dodds:** Right.
+
+**Peggy Rayzis:** But, I have seen actually teams running GraphQL on low memory
+devices actually include the server on the client side, as a way to kind of just
+save bytes over the wire, which I thought was kind of interesting. But the
+second way that you could do this would actually be with Apollo Local State.
+Apollo actually gives you the ability to specify client side resolvers. So, in
+those resolvers you can literally do whatever you want. You could hit a rest end
+point, you could query a device API, you could augment some server data with
+Local State, for example. And that could also be a way for you to get the hang
+of what is a resolver? How do I make queries? Connect them to components? That
+sort of thing. And people do that extremely successfully. I've seen ... I think
+I was talking to someone who built the Microsoft Teams app, and they've actually
+just completely ran GraphQL on the client using Apollo local state. I know
+people at Sony do that, as well. So yeah, it's definitly possible, but I do
+think you lose some of the benefits of GraphQL. For example, if you have
+multiple clients querying the same API it kind of makes sense to shift that to
+the server so that way you're not duplicating code across your clients. You also
+lose some of the benefits with smaller payloads, fewer round trips if you're
+doing it that way as well. But it's still ... I think it just speaks to the
+flexibility of GraphQL that you can kind of use it in all these very interesting
+ways. And I think we're kind of only just scratching the surface on what you can
+do with it, and that's what really make it such an exciting space to work in.
+Is, it's so flexible you can really mold it and shape into however your
+organization needs it, which is pretty cool.
+
+**Kent C. Dodds:** Absolutely. I know when I was at PayPal we wrote ... at
+PayPal you have the front end, and then there's this like, middle tier sort of
+thing, that serves the front end. They kind of consider it the front end, but
+it's actually a node server that kind of hits the end points and stuff. And then
+we have a technical mid tier, and then we have lower downstream CE and Java
+services and stuff. And when we were trying to implement GraphQL we had just
+implemented it in our node layer and the resolvers were all just hitting rest
+end points. But because it was running on the server, it was not much worse than
+hitting the regular rest end points and having one off end points. In fact, it
+was much better. And so I agree with you, I think are lots of different ways to
+implement this. And I think one of the struggles that I have witnesses in trying
+to get companies to implement GraphQL myself, is the backend engineers are
+typically like, "Ah, I'm pretty happy with Res. We have all of these frameworks
+already that I've been using for years. I know how to do Res-full stuff". And
+so, it's been difficult to convince them, but if you can stand up like a nodes
+server that hits their end points ... and then eventually they come around
+because they're like, "Oh, you mean I don't have to version my end points
+anymore?" Or, "Oh, I don't have to make a one-off end point for every single
+little thing that you need? Yeah, that sounds great." They come around
+eventually.
+
+**Peggy Rayzis:** Yeah, that's actually our recommended architecture, is really
+just like, a layer over your existing end points. An Apollo server makes this
+pretty easy. We have this thing that's called a rest data source, and it very
+easily Hooks into the rest end points you already have. It even stands up a
+resource cache for you, so that way your backend engineers aren't worried about
+increased traffic or possibly taking down one of the end points. So, yeah, I
+think that's a totally valid path and really kind of how we see most teams
+implementing GraphQL. It's like, this layer in between their front end and their
+underlying services.
+
+**Kent C. Dodds:** Is that mostly because that's the [inaudible 00:11:42]
+architecture? Or is there something about that ... like, I would ... my
+assumption would be that the best architecture would be the back end services
+are all written just with exposing GraphQL end points, and then you have
+multiple services, whatever you can pose those GraphQL end points in is magic
+and it's awesome. Or is there something to be said for downstream services, they
+expose just regular cred end points and then we have this thing in the middle to
+put it all together. Yeah, I'm mostly interested, why is that the recommended
+architecture?
+
+**Peggy Rayzis:** Yeah, totally. So GraphQL native, kind of like GraphQL's
+native services, I think there's a lot of people doing really interesting stuff
+in this space right now. A lot of the database providers, like Prisma and
+[Thesaura 00:12:33]. But, we're kind of not really taking a stance on those.
+We're kind of more focusing on the GraphQL layer as opposed to GraphQL native
+services, because, like you said, a lot of back end teams don't want to rewrite
+all their services to GraphQL and if they do they certainly don't want to use
+Java script-
+
+**Kent C. Dodds:** That's fair.
+
+**Peggy Rayzis:** Yeah, so that's kind of really what we see a lot of times. But
+I definitly think there's still a place in the ecosystem for those. But ... so
+as part of that kind of GraphQL layer, you touched upon this a little bit, what
+we really recommend is not like a monolithic GraphQL layer. We actually
+recommend that teams stand up a lot of ... kind of take responsibility for their
+own domain schema, and that way they have multiple sub-schemas that then they've
+federated into a single layer. So, we're actually launching this ... oh, I don't
+know if I'm allowed to say exactly when, but within the next couple weeks. It's
+this essentially new programming model. It's on top of GraphQL. It's completely
+spec compliant, but it's just a really interesting way to essentially compose
+multiple sub-schemas into a single graph where the execution is actually
+distributed. So you know, at PayPal, for example, I'm trying to think of
+separate teams. Maybe one team has- [crosstalk 00:13:56] yeah what are some, I
+guess, schemas or teams at PayPal that had GraphQL services?
+
+**Kent C. Dodds:** Yeah, so the Merchant Team has a lot of GraphQL stuff, so
+their payment methods, their credit card or bank, or whatever, and then you have
+your contacts on the consumer side where the people that I send money to
+regularly ... so is that helpful?
+
+**Peggy Rayzis:** Yeah, yeah, exactly. So maybe you have this user query, for
+example, and you have the contacts coming from one service, and you have, you
+know, the payment methods coming from one. I'm trying to think of a type where
+both of those would be combined, but for example you want to just be able to
+seamlessly query the graph, and you don't want to have to think about which
+services these queries are pulling from. You just want to write a query and have
+that data come back to you on the client. And that's kind of really what this,
+the federation solves, is implementing GraphQL, specifically in a micro-services
+architecture. So that way, it's opaque on the client. You're just requesting the
+data that you want, and then the distributed execution will kind of take care of
+sending that parts of the query to the different services that request it.
+
+**Kent C. Dodds:** Oh that's awesome. Yeah, that's ... so, that was something
+actually that we were trying to implement before I left. I wasn't super involved
+in the GraphQL stuff, but I was sort of involved. And that was something that
+was kind of the goal, was every one of these services ... we not wanted to have
+some sort of wrapper that exposed a GraphQL end point for that, and then we'd
+have just one end point that was like Paypal.com/GraphQL and you could just
+compose them all together in a beautiful way. I'm not sure how far they've
+gotten on that so far, but I like that idea a lot. That makes a lot of sense.
+So, kinda cool. So if I wanted to ... I don't know, like ... one thing that
+might be useful, and I don't want to get too deep into this because there are
+about a million of these types of ... lots of content on why GraphQL is so
+great, why we should top using Res, all this. But maybe like a high level, why
+is it worth all of the trouble to go through this and to make this pretty
+fundamental shift from our Res stuff to GraphQL?
+
+**Peggy Rayzis:** Yeah, totally. So this is kind of the major thesis of my React
+Amsterdam talk, because I think when a lot of people talk, like, why GraphQL?
+They talk about some of the technical benefits. They say, "Oh, you know, it
+prevents over fetching and fewer round trips and smaller payloads." And while
+that's all well and good and I think that's great and it's awesome that GraphQL
+gives us these benefits, the actual main benefit that you get from switching to
+GraphQL is really the developer experience. And I think, with that come
+increased productivity. Teams can ship products faster. They can, you know, hire
+the best engineers to their teams. They can retain them once they're there
+because they're happy and they're productive. It's really just, I think, the
+amazing developer experience that it gives you. So some of the things that I
+kind of covered in my talk and the demos, because of GraphQL is static typing,
+it really unlocks the door to a lot of really cool stuff. So, we have a VS code
+extension, for example, and right inside your editor, as you're typing queries
+you auto-complete, you can peek inside your schema, you have, if you connect it
+to our cloud services you have inline performance metrics of how long it takes
+each field to resolve, right inside your editor. Which is pretty amazing,
+because if you're working with Res for example, and you want to know, okay what
+data's available to me? What's the shape of my data? You're either console
+logging, you're opening up Post Man, or you're tapping the back end engineer on
+the shoulder and asking them. To just really have all of this at our fingertips
+within our editor is truly, to me, an amazing thing. So that's one of them.
+Also, the integration with typescript. Like, I'm super passionate, I guess? I
+don't know. I think typescript is really the future. I think maybe for smaller
+things people say it could be overkill, and I think there's definitly a learning
+curve there, but in a production environment typescript is definitly the way to
+go. And the Apollo CLI, it will literally read your schema and automatically
+output type definitions for you that change as you're writing your queries. So
+now, like, wow! You have fully typed React components automatically, just by
+running a single command, which is pretty dope.
+
+**Kent C. Dodds:** Yeah.
+
+**Peggy Rayzis:** Yeah, and then, like, the local state management experience to
+me is also something that's super cool, because when you write your React
+components, they're made up of a lot of different types of data, right? You have
+some remote data coming from somewhere. You might have some local data. Maybe
+information about the device. Whether or not it's connected. Information about
+maybe ... you're building an e-commerce app and you have products, whether or
+not they're in a cart. And being able to seamlessly mix your remote and your
+local state in one query is pretty amazing. And even your local state will be
+automatically typed. You'll have all the same benefits in your editor that you
+do with your remote date. So yeah. So I think the developer experience to me is
+the reason why you should do this. It's definitly a shift for a lot of
+organizations, but it's one that we've seen time and time again, has just been
+dividends in the companies that have chosen to adopt it.
+
+**Kent C. Dodds:** Yeah. It sounds so great. And so much of this stuff that I'm
+doing on a regular basis on my own is ... I'm trying to make a little workshop
+app, and I don't want to bring in typescript or all of this other stuff, because
+then no only do they have to learn what we're talking about in the workshop, but
+also they have to learn typescript. And so I don't get to spend so much time in
+those technologies, and it makes me super envious to have those sweet editor
+plugins and things. But it sounds like a really awesome enhancement to your
+productivity. Eventually we're just not going to code anymore and the computers
+will just code for us because it's all [inaudible 00:20:26] so perfect. So
+Peggy, one other question that I wanted to ask about is, most of my audience are
+probably React developers, but I think a lot of people who follow me online are
+either React developers and something else, or maybe something else entirely.
+And I'm kind of curious, I talk a lot about React and it's my love at the
+moment, but what about people who are not using React? Can they use Apollo or
+something like it with GraphQL to get some of these same benefits? And if that's
+the case, how has that changed the story for them, whether they're using View or
+Angular or something like that?
+
+**Peggy Rayzis:** Yeah, absolutely. So the really cool thing about Apollo Client
+is it's totally view layer agnostic. So the core Apollo Client is just Java
+script. Literally, even if you're not using any view layer whatsoever, you can
+still make queries and get all the same caching benefits. On top of that are the
+view layer integration. So React Apollo would be how you use Apollo Client with
+React. We also have tons of community maintained view layer integrations. So
+Apollo Angular is awesome. I have not used Angular since Angular One, so can't
+say too much about the experience there, but the maintainer, Camille, has done a
+really excellent job kind of integrating Angular into the Apollo stack. And then
+also, View Apollo, as well is super popular. The maintainer of that, [Geyom
+00:21:57] he is on the View Core team, and he's done some just really amazing
+work with the View CLIUI. How you can kind of just create ... I guess it's like
+a GUI for a ... a [gewy 00:22:10] for creating View projects, but it has all
+these really amazing integrations with that as well, and just the developer
+experience is phenomenal there, so ... I'm not an Angular or View developer, but
+I've just heard from so many people how it's helped their team. I know they use
+View Apollo at GitLab, for example. I think one of the engineers there, she just
+wrote a really great post on how they were able to completely do away with View
+X after switching to Apollo Client in the local state management feature. So I
+think it's working just as well for View and Angular and Vanilla Java script
+developers, just as well as it for React developers. And I think it's really
+awesome that we've kind of been able to create something that, you know, every
+developer can take advantage of. Not just the ones who are on the trendy React
+stack, or whatever.
+
+**Kent C. Dodds:** Yeah, yeah, right. Yeah, speaking of that trendy React stack,
+there are some really cool things that have recently happened in React world and
+also are going to happen. Do you want to talk a little bit about React Hooks
+with Apollo and then Suspense? My intuition is that, sure we can do some really
+cool things with React Hooks, but once Suspense lands and is official, blessed
+for data fetching, then that's when really cool things can start happening. But
+yeah, do you want to speak to that at all?
+
+**Peggy Rayzis:** Yeah, totally. So, we actually just released our beta of the
+new Hooks API for Apollo Client last week. So, I haven't spent too much time
+with it yet. I literally just converted my demo app to Hooks and it was only two
+Hooks. But people tell me it's really great, because the API was actually based
+on a community plugin that we had that became really popular, so we borrowed a
+lot of the ideas and kind of merged them into Core. And you know, it's just
+amazing. I think it's really going to solve the problem of multiple mutations.
+So like, we had a render prop API. Well, we still have a render prop API, it's
+still there. But in order to do multiple mutations in a single component you
+would start to have the classic render prop pyramid of doom. So, now with Hooks
+you won't have that anymore, which I think will be really great. And people can
+kind of abstract away ... you know, perhaps you have a complicated login flow
+that has multiple mutations. Well now you can abstract that away into a Hook,
+which I think is pretty dope. So I'm super excited about that and I can't wait
+to get it the communities hands and just see what everyone's going to build with
+it. I think that's going to be pretty transformative. And then Suspense. So
+we've actually done a couple demos with Suspense and Apollo Client, and it works
+pretty well, actually. We haven't built anything officially into Core. Actually
+last week we had a Apollo day at NYC and Jared Palmer gave a really cool talk
+about Suspense and Apollo Client. He has a demo that he shared. So, for all
+intents and purposes it works. Although, you know, I don't know what changed the
+React team is going to have to Suspense like a couple months from now. And
+that's kind of why we haven't built anything into the Core. It's like, if the
+React team says it's not ready then, you know, we don't want to build something
+and have people adopt it and then it all has to change in a couple months. We
+definitly want to make sure that whatever API's we are releasing are stable. So
+I'm excited about the possibilities, because now, you know, instead of handling
+your loading state from every Hook you can just put those Suspense boundaries
+in. And almost like your boundaries just kind of handle them in a more top level
+of the React tree. I think it's going to be great. I'm excited for all the new
+developments with server-side rendering and, you know, being able to stream and
+not having to do that double pass render like we do now. I think that's going to
+be really great for companies that use that, use server side rendering. It'll
+definitly improve performance and user experience there, so ... I'm excited
+about the future, but you know, obviously Suspense I think is still kind of
+under wraps and there's a lot of new developments there. So, as soon as it comes
+out we'll be ready. It just ... we're kind of like eagerly anticipating the
+release of that just lik everybody else.
+
+**Kent C. Dodds:** Yeah, it's definitly going to be ... just like Hooks, it'll
+be another transformative improvement to the framework. And honestly remarkable
+that it's totally backward compatible and all that, too. Pretty cool stuff. And
+I think that in particular with something like Apollo, it's very applicable in
+changing the way that you're going to be using things in a wonderful way. So, as
+we kind of come to the close of our time here, Peggy, I want to ask, what would
+... if somebody is sitting here and they're like, "Yeah, cool, I've heard about
+GraphQL, I want to give it a try. I love that DX developer experience stuff."
+What would you give them as some advice of how to get started using GraphQL in
+their application?
+
+**Peggy Rayzis:** Yeah, so I think that the first piece of advice that I give
+everybody is just to start small. Like, literally take one end point in your
+application, maybe not a mission critical one, maybe something super small,
+isolated feature, and just start with the schema. So think about the data that
+you're requesting from the end point on the client. What kind of data do you
+need to expose? And that's the data that you'll start your schema out with. And
+don't worry about ... I think a lot of teams start with GraphQL and they want to
+dump everything into their schema all at once. Don't do that. It should be
+totally demand driven and only the fields that you're using should be what is
+represented in your schema. But start there. So you start with your schema. Then
+next build your resolvers. We have the Apollo Data source package that makes it
+really easy to kind of hook up a rest end point to your resolvers. You could
+start with that, or you could even start with plain fetch. Like, that's totally
+cool, too. And then once you have your GraphQL server up and running, then just
+connect it to the front end. Hopefully with Apollo. You know, integrate that use
+query Hook and end query that your new API and ... just starting small with that
+one isolated feature and building it from the front end to the back end will
+kind of give you a taste of what it's like to work with GraphQL at all levels of
+the stack. And it'll allow you to evaluate whether or not it's truly for you.
+Some people ... you know, I think most people, they kind of see it come full
+circle and they really ... the light bulb clicks, and they're like, "Okay, now I
+understand why this is so awesome and we want to roll it out across our entire
+org." But yeah, just start small. One isolated feature. Build out the backend
+first, then connect it to the front end and ... yeah. Hopefully from there
+you'll want to connect a lot more end points, but I think just starting small
+and keeping it super scoped is how I would recommend most teams to get started.
+
+**Kent C. Dodds:** Yeah. That makes a lot of sense. Now if there's something
+that, like, maybe somebody is worried about, like ... often when we're learning
+new things, I find that it can be valuable to learn those things somewhere else.
+Not in the product, so that I can make all my mistakes in a place that I can
+throw away. Are there any resources that you can give our listeners for how they
+can get started with GraphQL in a place that's not their product, so they can
+make all their mistakes first and then take all their learnings to their
+product?
+
+**Peggy Rayzis:** Yeah, absolutely. So we have a tutorial in our Docs. If you go
+to Apollographql.com/docs it's like the first one on the left hand side. But,
+yeah, that really just walks you through building a full stack app with Apollo.
+I will give a caveat that it's a bit beyond Hello World. So, this is something
+that kind of is more ... we built it in order to get people up to speed with
+like, say they want to create a GraphQL POC at their company. This tutorial is
+going to gave them the skills they need to do that. So, it goes over things like
+authentication. It goes over pagination. Local state management. Queries,
+mutations, pretty much every thing you need to know to get that first POC going.
+So, it'll probably take you about two hours to complete it, but once you do, it
+kind of sets you up for success and teaches you the best practices and the
+things that you need to know to get going. Building more tutorials is something
+that my team is going to be working on in the next couple months. I really want
+to build a type script tutorial. We've been getting requests for that one a lot.
+So expect to see kind of more developments in that space and more targeted
+tutorials as we start to build out the team. But for now that one should kind of
+teach you everything you need to know to get started.
+
+**Kent C. Dodds:** Very cool. Awesome. All right. So, with that, I think that's
+pretty much it. So just to wrap things up, Peggy, what is the best place for
+people to connect with you and keep up with what you are up to?
+
+**Peggy Rayzis:** Yeah, definitly Twitter is the best place. I'm pretty bad
+about answering my email. Yeah. I'm @PeggyRayzis on Twitter. Just feel free. My
+DM's are open to DM me. Also, posting on Apollo Spectrum is a really great way
+to get answers because I get a lot of DM's and sometimes I can't get to all of
+them, so posting your question in the Apollo Spectrum channel is a really great
+way for community members to help you and hopefully, you know, have a link that
+can be used by other members in the community who might have the same questions.
+So yeah, definitly find me either on Twitter or find me there as well.
+
+**Kent C. Dodds:** Perfect. All right, thank you so much Peggy for all that you
+do and thank you for giving us a half hour of your time. And with that we will
+say goodbye. See ya.
+
+**Peggy Rayzis:** See ya. Thanks for having me.
+
+</Transcript>

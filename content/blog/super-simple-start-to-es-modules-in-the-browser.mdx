@@ -1,0 +1,173 @@
+---
+title: Super Simple Start to ESModules in the Browser
+date: 2020-01-22
+description:
+  All major browsers support ESModules now. Here's how to get started using
+  them.
+categories:
+  - javascript
+meta:
+  keywords:
+    - javascript
+    - browsers
+    - esmodules
+    - ecmascript
+    - modules
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033381/kentcdodds.com/content/blog/super-simple-start-to-es-modules-in-the-browser/banner.jpg
+bannerCredit: Photo by [JOSE LARRAZOLO](https://unsplash.com/photos/S8bde3hkBR8)
+---
+
+Current Available Translations:
+
+- [Português (do Brasil)](https://mjfneto.medium.com/uma-introdu%C3%A7%C3%A3o-super-simples-aos-es-modules-no-browser-39fda8aa0da3)
+
+**[Watch "Use JavaScript Modules in the browser" on egghead.io](https://egghead.io/lessons/egghead-use-javascript-modules-in-the-browser?pl=kent-s-blog-posts-as-screencasts-eefa540c)**
+
+https://egghead.io/lessons/egghead-use-javascript-modules-in-the-browser?pl=kent-s-blog-posts-as-screencasts-eefa540c
+
+I've been writing JavaScript since before JavaScript had modules. When the
+EcmaScript specification added support for modules I was thrilled, but I was
+disappointed to learn that it would be a while before this feature was actually
+implemented and supported.
+
+Well, it's been a while and now all major browsers support ES Modules. So I'd
+like to show you the super simple start to ES Modules!
+
+Note: You might be interested in my companion post
+[Super Simple Start to ESModules in Node.js](/blog/super-simple-start-to-es-modules-in-node-js)
+
+First, we need a JavaScript file that we want to load into our site:
+
+```javascript
+// append-div.js
+function appendDiv(message) {
+  const div = document.createElement('div')
+  div.textContent = message
+  document.body.appendChild(div)
+}
+
+export {appendDiv}
+```
+
+Next, let's make an HTML file to load that file:
+
+```html
+<!-- index.html -->
+<script type="module">
+  import {appendDiv} from './append-div.js'
+  appendDiv('Hello from inline script')
+</script>
+```
+
+Notice the `type="module"` attribute there. That's all we need to do to inform
+the browser that the JavaScript code is a "module" rather than a "script". There
+are
+[several differences](https://usefulangle.com/post/256/script-type-module-vs-script-javascript)
+in how the runtime environment handles the JavaScript file based on whether it's
+a script or a module, but suffice-it to say that one of those differences is
+when it's a "module" you're allowed to use modules!
+
+Ok, so in our inline script above, we're importing the `appendDiv` function from
+the `append-div.js` file. Unfortunately, to load the module, we can't just open
+the HTML file in our browser. We have to be using a local server and open the
+file from that. If you have [node.js](https://nodejs.org/en/) installed, then
+you can open your terminal to the directory where you have these files and run
+this to get a server going:
+
+```
+npx serve
+```
+
+That will output information for where the server is being run and you can open
+it up (I think the default location is [localhost:5000](http://localhost:5000)).
+With that, "Hello from inline script" should appear on the screen. Tada! We've
+loaded a real EcmaScript Module! Hooray 🎉
+
+Normally we don't write our JavaScript in an inline script in our HTML file, so
+let's load a module from a file:
+
+```javascript
+// script-src.js
+import {appendDiv} from './append-div.js'
+
+appendDiv('Hello from external script')
+```
+
+To load that up, we just add another script tag to our HTML:
+
+```html [6]
+<!-- index.html -->
+<script type="module">
+  import {appendDiv} from './append-div.js'
+  appendDiv('Hello from inline script')
+</script>
+<script type="module" src="./script-src.js"></script>
+```
+
+And now if we pull that up on our server, we'll also have "Hello from external
+script" appear on the screen.
+
+One thing that's important to note here is the inclusion of the `.js` in our
+`import` statement. We may be spoiled by NodeJS and Babel, but in the modules
+specification we really do have to provide the extension.
+
+One last thing I want to show is that dynamic imports work well too. So if we
+add another file:
+
+```javascript
+// async-script.js
+import {appendDiv} from './append-div.js'
+
+function go() {
+  appendDiv('Hello from async script')
+}
+
+export {go}
+```
+
+Then we can load that using a dynamic import statement:
+
+```javascript [6-14]
+// script-src.js
+import {appendDiv} from './append-div.js'
+
+appendDiv('Hello from external script')
+
+import('./async-script.js').then(
+  moduleExports => {
+    moduleExports.go()
+  },
+  error => {
+    console.error('there was an error loading the script')
+    throw error
+  },
+)
+```
+
+The dynamic import likewise also must point directly to a JavaScript file (with
+the extension). And to be clear, what's important is not the extension, but the
+fact that when the browser makes a request to that URL, it receives back a text
+file which it can execute as JavaScript.
+
+This means that if you happen to have a URL that returns a JavaScript file but
+doesn't end in `.js` you are fine omitting that.
+
+```javascript
+import * as d3 from 'https://unpkg.com/d3?module'
+```
+
+The point is, the thing you put in the quotes in your import statements has to
+point to a JavaScript resource on some server somewhere.
+[Learn more about unpkg.com](https://unpkg.com/).
+
+## Conclusion
+
+I hope that was helpful/interesting to you! I've put
+[the code for this](https://gist.github.com/kentcdodds/48c069462a9ab4223eb93b5e19acee31)
+up on GitHub and you can play around with it yourself. Enjoy!
+
+P.S. A few other resources you might find helpful on this topic:
+
+- [v8.dev/features/modules](https://v8.dev/features/modules)
+- [Using ES Modules in the Browser Today](https://www.sitepoint.com/using-es-modules/)
+  by [Mark Brown](https://twitter.com/markbrown4)

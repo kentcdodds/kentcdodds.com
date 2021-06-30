@@ -1,0 +1,175 @@
+---
+title: How I Record Educational Videos
+date: 2020-06-22
+description: My process for making high value-to-minute content.
+categories:
+  - teaching
+meta:
+  keywords:
+    - learning
+    - teaching
+    - videos
+    - egghead
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032794/kentcdodds.com/content/blog/how-i-record-educational-videos/banner.jpg
+---
+
+Before we begin. Let's make sure we're all talking about the same thing. When I
+say "high value-to-minute video content" I'm talking about stuff like this:
+
+[Create a User Interface with Vanilla JavaScript and DOM](https://egghead.io/lessons/react-create-a-user-interface-with-vanilla-javascript-and-dom):
+
+https://egghead.io/lessons/react-create-a-user-interface-with-vanilla-javascript-and-dom
+
+Notice that I don't waste any time saying what we're going to learn (that's what
+the title/description are for) or how we're going to approach it. I just start
+into the content. When I finish I don't ask you to subscribe or smash the like
+button. I review the material to make sure we're all on the same page, and then
+that's it.
+
+I'm not here to waste your time.
+
+So, how do I record those kinds of things? Well, if you're interested in the
+hardware/software I use, then check out [my uses page](/uses). I want to tell
+you about my process.
+
+First off, I need to learn about what I'm going to teach. Normally I already
+know _something_ about what it is I'm going to teach. Normally the stuff I teach
+is something I have a lot of experience with, but sometimes only a little bit.
+Whatever the case may be, I at least have an idea of the kind of thing I expect
+people to do with the idea I'm trying to get across, and that's where I start:
+The example.
+
+## The finished example
+
+I'll often already have an example of the thing that I want to teach based on
+something I did in a real-world app for work etc. So I'll take that and try and
+isolate/simplify as much as I can so we can focus on the thing I'm trying to
+teach. That way there are as few distractions/unrelated concepts as possible.
+
+The process of striping down the example to the fundamentals of what I'm trying
+to teach is very instructive for me. It helps me answer any questions I have and
+sometimes corrects my assumptions about the material. With that example, I also
+want to make sure that I don't remove anything that people would typically come
+up against, or I at least make a mental note to mention it when I'm giving the
+instruction.
+
+## The starting point
+
+I don't think about the "starting point" until I have the finished version of
+what I'm going to teach. Once I have that, I take away all the important stuff
+and leave in the irrelevant stuff. For example, if this isn't an introduction to
+an abstraction/module, I'll often leave `import` statements in place so they
+don't have to watch me type it.
+
+My highest quality material is included in
+[my workshops](https://kentcdodds.com/workshops) and the starting point for all
+of those is in an "exercise" version of the file which has little emoji (🐨) to
+help along the way for people going through the workshop material. So as I'm
+removing the stuff that we're going to be learning about, I leave emoji in place
+for people to know what to do.
+
+Here's an example of
+[the exercise version](https://github.com/kentcdodds/react-fundamentals/blob/master/src/exercise/01.html)
+and
+[the final version](https://github.com/kentcdodds/react-fundamentals/blob/master/src/final/01.html)
+of an exercise. In the workshops, there's also
+[an accompanying markdown file](https://github.com/kentcdodds/react-fundamentals/blob/master/src/exercise/01.md)
+that gives a bunch of details and links to resources to help prepare people for
+the exercise.
+
+## Extra Lessons
+
+My goal is to keep each video focused on one core concept that I'm trying to
+teach, so I'll look at the finished version and determine how many things are
+only tangentially related to what I'm teaching. If there are things like that,
+then they get their own video (in a workshop that means they're an
+["extra credit"](https://github.com/kentcdodds/react-fundamentals/blob/master/src/final/01.extra-1.html)).
+I also try to determine how "heavy" the concept is. If there's a lot in there,
+then I try to break it down so I can keep the video short. If a video is longer
+than 6 minutes or so, then you're probably teaching too many things at once and
+could break things down to smaller bits (which in a workshop is also "extra
+credit").
+
+... Here's a little side-note about workshops and "extra credit"...
+
+A note on the meaning of "extra credit" for workshops. Sometimes really
+important lessons are contained in the extra credit portions of the workshops,
+which makes it feel like they're not "extra" after-all but rather crucial parts
+of the learning process. The only reason I call them "extra credit" is because
+in a workshop context I actually don't need the student to get through the extra
+stuff on their own to accomplish my purpose of the workshop exercise. The
+purpose is to get their mind engaged with the problem, which they can do in the
+first few minutes of the exercise. They don't have to get through all the
+material on their own to learn what they need to learn. And they can always go
+through it later.
+
+... Ok, back to recording videos...
+
+## Before recording
+
+Most of the things I record, I've taught multiple times to people in one form or
+another. It could be in a workshop, a blog post, or a talk. The point is that I
+_know_ this stuff. Really well. And I can explain it really well without
+fumbling over my explanation.
+
+That said, _sometimes_ the video I'm recording is the first time I've explained
+the concept at all and that's fine too. It just means that I'll have to try
+several times before I come up with an explanation that I'm happy with.
+
+So, before recording, I'll set my screen resolution to 1280x720 (1080p) with
+HiDPI (which means it's basically 2560x1440, just with big controls). I update
+my editor settings to make sure the font is easily legible (even on a mobile
+device) and there's no empty space on the screen (often this means the editor
+and preview are both in screen, which is optimal anyway). Then I pull up some
+notes on another screen if needed. Often I don't really need anything, but even
+more often all I need is a diff between the final version and the starting
+version. (`git diff --no-index before.js after.js`)
+
+Sometimes I'll make little notes to myself, but I never write down what I'm
+going to say.
+
+## The recording
+
+I hit the record button, make sure my mouse or cursor aren't in a weird spot
+(oh, and I disable blinking on my cursor too), then I start talking and typing.
+**I do not record the video and audio separately. I record them together. This
+takes practice, but sounds more natural.** (in bold because this is a very
+common question). If at any point I'm not happy with what I just did, I take my
+finger off my trackpad and my hands off the keyboard, I think back where the
+mouse/cursor were at the point I want to start over, I restore everything to
+that point, and then I start again from that point. I can clean it up after the
+fact.
+
+Things get challenging if you've scrolled around a little bit, so sometimes I
+need to be creative to make cleanup easier and occasionally I'll start all over
+again. If I'm happy with what I typed, but I'm not happy with how I said it,
+I'll just say it over and over again until I get a good take and then I'll
+overlay them later. Then I continue.
+
+I pretty much follow [John Lindquist's](https://twitter.com/johnlindquist)
+[course on Egghead about recording screencasts](https://egghead.io/courses/record-badass-screencasts-for-egghead-io)
+(which is full of TONS of great ideas). (And don't miss
+[the cheat sheet](https://howtoegghead.com/instructor/recording-cheatsheet))
+
+## Editing
+
+I use [Screenflow](https://www.telestream.net/screenflow/overview.htm) to record
+and edit. I don't know of anything better for what I do. I'm happy with it. To
+be honest, I don't edit most of my videos these days (egghead.io takes care of
+it for me now), but I always set my audio to mono (who needs stereo on a single
+person's voice?) and I use the "Smooth Volume Levels" feature which normalizes
+volume and does a few other things to help improve the sound. It does a pretty
+good job for a checkbox.
+
+I export the video file as 2560x1440 MPEG-4 at 30 FPS.
+
+## One last thing
+
+There's a lot more to all of this, but the above should answer most questions
+people ask me about this so I'm going to stop here. But I do want to share a
+super useful resource:
+[How to egghead: egghead instructor guide](https://howtoegghead.com/instructor/).
+Lots of great resources and ideas in there. Even if you don't want to publish on
+egghead.
+
+I hope this was helpful to you! Good luck!

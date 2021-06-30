@@ -1,0 +1,228 @@
+---
+title: Listify a JavaScript Array
+date: 2021-02-18
+description: Make a human readable list from an array in JavaScript.
+categories:
+  - javascript
+meta:
+  keywords:
+    - javascript
+    - typescript
+    - nice list
+    - comma delineated list
+    - Intl
+    - Intl.FormatList
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033090/kentcdodds.com/content/blog/listify-a-java-script-array/banner.jpg
+bannerCredit: Photo by [Kelly Sikkema](https://unsplash.com/photos/-1_RZL8BGBM)
+---
+
+When you want to display a list of items to a user, I'm afraid `.join(', ')`
+just won't cut it:
+
+```javascript
+console.log(['apple'].join(', ')) // apple
+// looks good
+console.log(['apple', 'grape'].join(', ')) // apple, grape
+// nah, I want "apple and grape"
+console.log(['apple', 'grape', 'pear'].join(', ')) // apple, grape, pear
+// wut?
+```
+
+Ok, so bust out your string concat skills right? That's what I did... but
+holdup, there's a better way:
+
+Have you heard of
+[`Intl.ListFormat`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/ListFormat)?
+Well, it's likely that this can do all you need and more. Let's take a look:
+
+```typescript
+const items = [
+  'Sojourner',
+  'Opportunity',
+  'Spirit',
+  'Curiosity',
+  'Perseverance',
+]
+
+const formatter = new Intl.ListFormat('en', {
+  style: 'long',
+  type: 'conjunction',
+})
+console.log(formatter.format(items))
+// logs: "Sojourner, Opportunity, Spirit, Curiosity, and Perseverance"
+```
+
+The cool thing about this is that because it's coming from the `Intl` standard,
+a TON of locales are supported, so you can get internationalization for "free".
+
+The first argument to the ListFormat constructor is the locale (we're using
+`'en'` above for "English"). The second argument is the options of `style` and
+`type`. The `style` option can be one of `'long'`,` 'short'`, or `'narrow'`. The
+`type` can be one of `'conjunction'`, `'disjunction'`, or `'unit'`.
+
+With the list above, here's all the combination of those (with `en` as the
+locale):
+
+|                   | **`long`**                                                  |
+| ----------------- | ----------------------------------------------------------- |
+| **`conjunction`** | Sojourner, Opportunity, Spirit, Curiosity, and Perseverance |
+| **`disjunction`** | Sojourner, Opportunity, Spirit, Curiosity, or Perseverance  |
+| **`unit`**        | Sojourner, Opportunity, Spirit, Curiosity, Perseverance     |
+
+|                   | **`short`**                                                |
+| ----------------- | ---------------------------------------------------------- |
+| **`conjunction`** | Sojourner, Opportunity, Spirit, Curiosity, & Perseverance  |
+| **`disjunction`** | Sojourner, Opportunity, Spirit, Curiosity, or Perseverance |
+| **`unit`**        | Sojourner, Opportunity, Spirit, Curiosity, Perseverance    |
+
+|                   | **`narrow`**                                               |
+| ----------------- | ---------------------------------------------------------- |
+| **`conjunction`** | Sojourner, Opportunity, Spirit, Curiosity, Perseverance    |
+| **`disjunction`** | Sojourner, Opportunity, Spirit, Curiosity, or Perseverance |
+| **`unit`**        | Sojourner Opportunity Spirit Curiosity Perseverance        |
+
+Interestingly, if we play around with the locale, things behave unexpectedly:
+
+```javascript
+new Intl.ListFormat('en', {style: 'narrow', type: 'unit'}).format(items)
+// Sojourner Opportunity Spirit Curiosity Perseverance
+
+new Intl.ListFormat('es', {style: 'narrow', type: 'unit'}).format(items)
+// Sojourner Opportunity Spirit Curiosity Perseverance
+
+new Intl.ListFormat('de', {style: 'narrow', type: 'unit'}).format(items)
+// Sojourner, Opportunity, Spirit, Curiosity und Perseverance
+```
+
+Perhaps German speakers can clear up for us why the combo of `narrow` and `unit`
+for `de` behaves more like `long` and `conjunction` because I have no idea.
+
+There's also a lesser-known `localeMatcher` option which can be configured to
+either `'lookup'` or `'best fit'` (defaults to `'best fit'`). As far as I can
+tell from
+[mdn](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl#locale_negotiation),
+its purpose is to tell the browser how to determine which locale to use based on
+the one given in the constructor. In my own testing I was unable to determine a
+difference in functionality switching between these options 🤷‍♂️
+
+Frankly, I think it's typically better to trust the browser on stuff like this
+rather than write what the browser offers. This is because the longer I spend
+time writing software, the more I find that things are rarely as simple as we
+think they'll be (especially when it comes to internationalization). But there
+are definitely times where the platform comes up short and you can't quite do
+what you're looking to do. That's when it makes sense to do it yourself.
+
+So I put together a little function that suited my use case pretty well, and I
+want to share it with you. Before I do, I want to be clear that I _did_ try this
+without reduce (using a for loop) and I think the reduce method was considerably
+simpler. Feel free to take a whack at the for loop version though if you want.
+
+```js
+function listify(
+  array,
+  {conjunction = 'and ', stringify = item => item.toString()} = {},
+) {
+  return array.reduce((list, item, index) => {
+    if (index === 0) return stringify(item)
+    if (index === array.length - 1) {
+      if (index === 1) return `${list} ${conjunction}${stringify(item)}`
+      else return `${list}, ${conjunction}${stringify(item)}`
+    }
+    return `${list}, ${stringify(item)}`
+  }, '')
+}
+```
+
+In my codebase, is used like so:
+
+```js
+const to = `To: ${listify(mentionedMembersNicknames)}`
+// and
+const didYouMean = `Did you mean ${listify(closeMatches, {
+  conjunction: 'or ',
+})}?`
+```
+
+I'd take the time to walk through this code with you, but actually **as I was
+writing this post,** I realized that my use case wasn't as special as I thought
+it was and I tried rewriting this to use `Intl.ListFormat` and wouldn't you know
+it, with a small change to the API, I was able to make a simpler implementation
+on top of the standard:
+
+```js
+function listify(
+  array,
+  {
+    type = 'conjunction',
+    style = 'long',
+    stringify = item => item.toString(),
+  } = {},
+) {
+  const stringified = array.map(item => stringify(item))
+  const formatter = new Intl.ListFormat('en', {style, type})
+  return formatter.format(stringified)
+}
+```
+
+With that, now I do this:
+
+```js
+// no change for the default case
+const to = `To: ${listify(mentionedMembersNicknames)}`
+// switch to using the "type" option rather than overloading/abusing the term "conjunction"
+const didYouMean = `Did you mean ${listify(closeMatches, {
+  type: 'disjunction',
+})}?`
+```
+
+## Conclusion
+
+So it just goes to show you that you _might_ be doing some extra work that you
+might not need to be doing. The platform probably does this for you
+automatically! Oh, and just for fun, here's a TypeScript version of that
+finished code (I'm in the process of migrating this project to TypeScript).
+
+```ts
+// unfortunately TypeScript doesn't have Intl.ListFormat yet 😢
+// so we'll just add it ourselves:
+type ListFormatOptions = {
+  type?: 'conjunction' | 'disjunction' | 'unit'
+  style?: 'long' | 'short' | 'narrow'
+  localeMatcher?: 'lookup' | 'best fit'
+}
+declare namespace Intl {
+  class ListFormat {
+    constructor(locale: string, options: ListFormatOptions)
+    public format: (items: Array<string>) => string
+  }
+}
+
+type ListifyOptions<ItemType> = {
+  type?: ListFormatOptions['type']
+  style?: ListFormatOptions['style']
+  stringify?: (item: ItemType) => string
+}
+function listify<ItemType>(
+  array: Array<ItemType>,
+  {
+    type = 'conjunction',
+    style = 'long',
+    stringify = (thing: {toString(): string}) => thing.toString(),
+  }: ListifyOptions<ItemType> = {},
+) {
+  const stringified = array.map(item => stringify(item))
+  const formatter = new Intl.ListFormat('en', {style, type})
+  return formatter.format(stringified)
+}
+```
+
+And now we get sweet autocomplete for those options and type checking on that
+stringify method. Nice!
+
+Oh, by the way, you'll always want to double-check browser support for whatever
+you're using. There's [caniuse.com](https://caniuse.com/?search=listformat) and
+[the MDN article on Intl.ListFormat](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/ListFormat)
+also has
+[a chart](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/ListFormat#browser_compatibility).
+
+I hope that was interesting and useful to you!

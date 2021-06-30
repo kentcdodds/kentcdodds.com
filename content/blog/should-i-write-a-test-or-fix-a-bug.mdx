@@ -1,0 +1,77 @@
+---
+title: Should I write a test or fix a bug?
+date: 2020-06-15
+description: How to prioritize tests relative to everything else.
+categories:
+  - testing
+meta:
+  keywords:
+    - software development
+    - testing
+    - javascript
+    - practically testing
+    - practical testing
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033332/kentcdodds.com/content/blog/should-i-write-a-test-or-fix-a-bug/banner.jpg
+bannerCredit:
+  Photo by [Krzysztof Niewolny](https://unsplash.com/photos/HmKIoGSRj7A)
+---
+
+Automated tests are no different from any other software we write. They play on
+the same playing field of priorities as anything else. You have features to spec
+out, designs to make, bugs to fix, requirements gathering meetings to have,
+feature flags to configure, etc. etc. etc. To be able to prioritize these
+activities, you need to know the cost of doing nothing and the benefit of
+getting it done. And when it comes to prioritizing, you're not saying you
+"won't" do something, you're just saying you'll do one thing first. So it can
+also help to know the relative cost/benefit of doing it _later_ vs the
+cost/benefit of doing it _now_.
+
+Let's take a few different scenarios.
+
+1. A bug prevents the user from changing their bio if they don't have an avatar
+   first.
+2. Your product checkout flow is not covered by tests.
+
+For the bug, the cost is an unreliable UI for the handful of users who don't
+have their avatar uploaded out but want to change their bio. Not a great
+experience.
+
+For the checkout flow, that's pretty serious. Any change to the code that
+touches that flow could break the checkout flow (potentially costing real money
+for the seller and valuable time for the buyer).
+
+I think for that, let's prioritize adding a test first, and then fix the bug.
+
+Ok, another scenario.
+
+1. You're a startup and you haven't actually started selling your product yet
+   because it's not quite feature complete enough to be useful. You're running
+   out of money.
+2. You just wrote a small function to calculate the distance your scrollable
+   list needs to scroll as the user presses the ArrowDown key and you're trying
+   to decide whether to test it.
+
+For goodness sakes! Skip the test, get your product shipped and sell that thing!
+Your money is burning away 🔥💵🔥
+
+That said, you might find that your demos to potential clients aren't going well
+because your engineers constantly ship broken code. In that case, write one or
+two quick and simple E2E tests for the common flows your demos take and run that
+before you merge any code.
+
+Let's try one last scenario. Just for kicks.
+
+1. You just finished implementing a new feature allowing the user to create a
+   playlist of their favorite songs. You're wondering whether to add tests.
+2. You saw an amazing font and editor theme in a live stream from your favorite
+   dev and you want to ask them what it is so you can try it out.
+
+😐
+
+---
+
+What I'm trying to get across in this post is that testing is no different from
+any other thing you can do with your time. Consider the costs and benefits, and
+act accordingly. Keep in mind that tests are the gift that keeps giving.
+
+Good luck!

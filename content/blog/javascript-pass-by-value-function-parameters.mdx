@@ -1,0 +1,173 @@
+---
+title: JavaScript Pass By Value Function Parameters
+date: 2021-03-23
+description: How it works and how to work with it... and around it
+categories:
+  - javascript
+meta:
+  keywords:
+    - function
+    - values
+    - variable
+    - reassignment
+bannerUrl: https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033067/kentcdodds.com/content/blog/javascript-pass-by-value-function-parameters/banner.jpg
+bannerCredit: Photo by [Jeffrey F Lin](https://unsplash.com/photos/T4cXypPgN3w)
+---
+
+Why doesn't this work?
+
+```javascript
+function getLogger(arg) {
+  function logger() {
+    console.log(arg)
+  }
+  return logger
+}
+
+let fruit = 'raspberry'
+const logFruit = getLogger(fruit)
+
+logFruit() // "raspberry"
+fruit = 'peach'
+logFruit() // "raspberry" Wait what!? Why is this not "peach"?
+```
+
+So, to talk through what's happening here, I'm creating a variable called
+`fruit` and assigning it to a string `'raspberry'`, then I pass `fruit` to a
+function which creates and returns a function called `logger` which should log
+the `fruit` when called. When I call that function, I get a `console.log` output
+of `'raspberry'` as expected.
+
+But then I reassign `fruit` to `'peach'` and call the `logger` again. But
+instead of getting a `console.log` of the new value of `fruit`, I get the old
+value of `fruit`!
+
+I can side-step this by calling `getLogger` again to get a new logger:
+
+```javascript
+const logFruit2 = getLogger(fruit)
+logFruit2() // "peach" what a relief...
+```
+
+But why can't I just change the value of the variable and get the `logger` to
+log the latest value?
+
+The answer is the fact that in JavaScript, when you call a function with
+arguments, the arguments you're passing are passed by value, not by reference.
+Let me briefly describe what's going on here:
+
+```javascript
+function getLogger(arg) {
+  function logger() {
+    console.log(arg)
+  }
+  return logger
+}
+
+// side-note, this could be written like this too
+// and it wouldn't make any difference whatsoever:
+// const getLogger = arg => () => console.log(arg)
+// I just decided to go more verbose to keep it simple
+```
+
+When `getLogger` is called, the `logger` function is created. It's a brand new
+function. When a brand new function is created, it looks around for all the
+variables it has access to and "closes over" them to form what's called a
+"closure". This means that so long as this `logger` function exists, it will
+have access to the variables in its parent's function and other module-level
+variables.
+
+So what variables does `logger` have access to when it's created? Looking at the
+example again, it'll have access to `fruit`, `getLogger`, `arg`, and `logger`
+(itself). Read that list again, because it's critical to why the code works the
+way it does. Did you notice something? Both `fruit` and `arg` are listed, even
+though they're the exact same value!
+
+Just because two variables are assigned the same value doesn't mean they are the
+same variable. Here's a simplified example of that concept:
+
+```javascript
+let a = 1
+let b = a
+
+console.log(a, b) // 1, 1
+
+a = 2
+console.log(a, b) // 2, 1 ‼️
+```
+
+Notice that even though we make `b` point to the value of variable `a`, we were
+able to change the variable `a` and the value `b` pointed to is unchanged. This
+is because we didn't point `b` to `a` per se. We pointed `b` to the value `a`
+was pointing to at the time!
+
+I like to think of variables as little arrows that point to places in the
+computer's memory. So when we say `let a = 1`, we're saying: "Hey JavaScript
+engine, I want you to create a place in memory with the value of `1` and then
+create an arrow (variable) called `a` that points to that place in memory."
+
+Then when we say: `let b = a`, we're saying "Hey JavaScript engine, I want you
+to create an arrow (variable) called `b` that points to the same place that `a`
+points to at the moment."
+
+In the same way, when you call a function, the JavaScript engine creates a new
+variable for the function arguments. In our case, we called `getLogger(fruit)`
+and the JavaScript engine basically did this:
+
+```javascript
+let arg = fruit
+```
+
+So then, when we later do `fruit = 'peach'`, it has no impact on `arg` because
+they're completely different variables.
+
+Whether you think of this as a limitation or a feature, the fact is that this is
+the way it works. If you want to keep two variables up-to-date with each other,
+there is a way to do that! Well, sorta. The idea is this: instead of changing
+where the arrows (variables) point, you can change what they're pointing to! For
+example:
+
+```javascript
+let a = {current: 1}
+let b = a
+
+console.log(a.current, b.current) // 1, 1
+
+a.current = 2
+console.log(a.current, b.current) // 2, 2 🎉
+```
+
+In this case, we're not reassigning a, but rather changing the value that `a` is
+pointing to. And because `b` happens to be pointed at the same thing, they both
+get the update.
+
+So, let's apply this solution to our `logger` problem:
+
+```javascript
+function getLatestLogger(argRef) {
+  function logger() {
+    console.log(argRef.current)
+  }
+  return logger
+}
+
+const fruitRef = {current: 'raspberry'}
+
+const latestLogger = getLatestLogger(fruitRef)
+
+latestLogger() // "raspberry"
+fruitRef.current = 'peach'
+latestLogger() // "peach" 🎉
+```
+
+The `Ref` suffix is short for "reference" which is to say that the value the
+variable points to is simply used to reference another value (which in our case
+is the `current` property of an object).
+
+## Conclusion
+
+There are naturally trade-offs with this, but I'm glad that the JavaScript
+specification calls for function arguments to be passed by value rather than
+reference. And the workaround isn't too much trouble when you have the need
+(which is pretty rare because mutability makes programs harder to understand
+normally). Hope that helps! Good luck!
