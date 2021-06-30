@@ -31,6 +31,7 @@ type MdxListItem = {
     description?: string
 
     // Post meta
+    categories?: Array<string>
     date?: number
     bannerUrl?: string
     bannerCredit?: string
@@ -40,6 +41,7 @@ type MdxListItem = {
     tech?: string
     convertKitTag?: string
     meta?: {
+      keywords?: Array<string>
       [key as string]: string
     }
   }

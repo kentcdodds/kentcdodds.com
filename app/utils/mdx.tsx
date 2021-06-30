@@ -58,7 +58,7 @@ async function getMdxPagesInDirectory(contentDir: string, bustCache: boolean) {
   }
   const fullContentDirPath = `${config.contentSrc.path}/${contentDir}`
   if (!dirList) {
-    dirList = (await downloadDirList(fullContentDirPath)).map(
+    dirList = (await downloadDirList(fullContentDirPath, bustCache)).map(
       ({name, path}) => ({
         name,
         slug: path.replace(`${fullContentDirPath}/`, ''),

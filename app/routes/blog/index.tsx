@@ -1,5 +1,4 @@
 import * as React from 'react'
-import sortBy from 'sort-by'
 import {json, useRouteData} from 'remix'
 import type {KCDLoader, MdxListItem} from 'types'
 import {useSearchParams} from 'react-router-dom'
@@ -8,7 +7,6 @@ import {images} from '../../images'
 import {H2, H3, H6} from '../../components/typography'
 import {SearchIcon} from '../../components/icons/search-icon'
 import {Spacer} from '../../components/spacer'
-import {tags} from '../../../storybook/stories/fixtures'
 import {ArticleCard} from '../../components/article-card'
 import {ArrowLink} from '../../components/arrow-button'
 import {FeaturedArticleSection} from '../../components/sections/featured-article-section'
@@ -20,18 +18,47 @@ import {
 } from '../../utils/mdx'
 
 type LoaderData = {
+  totalPosts: number
+  matchingPosts: number
   posts: Array<MdxListItem>
+  tags: Array<string>
 }
 
 export const loader: KCDLoader = async ({request}) => {
-  const pages = (
-    await getMdxPagesInDirectory(
-      'blog',
-      new URL(request.url).searchParams.get('bust-cache') === 'true',
-    )
-  ).sort(sortBy('-frontmatter.published'))
+  const url = new URL(request.url)
+  let pages = await getMdxPagesInDirectory(
+    'blog',
+    url.searchParams.get('bust-cache') === 'true',
+  )
+  const totalPosts = pages.length
+  let matchingPosts = totalPosts
 
-  const data: LoaderData = {posts: pages.map(mapFromMdxPageToMdxListItem)}
+  const query = url.searchParams.get('q')
+  if (query) {
+    pages = pages.filter(page => {
+      return page.frontmatter.title?.toLowerCase().includes(query.toLowerCase())
+    })
+    matchingPosts = pages.length
+  }
+  pages = pages.sort((a, z) => {
+    const aTime = new Date(a.frontmatter.date ?? '').getTime()
+    const zTime = new Date(z.frontmatter.date ?? '').getTime()
+    return aTime > zTime ? -1 : aTime === zTime ? 0 : 1
+  })
+
+  const tags = new Set<string>()
+  for (const page of pages) {
+    for (const category of page.frontmatter.categories ?? []) {
+      tags.add(category)
+    }
+  }
+
+  const data: LoaderData = {
+    totalPosts,
+    matchingPosts,
+    posts: pages.slice(0, 13).map(mapFromMdxPageToMdxListItem),
+    tags: Array.from(tags),
+  }
   return json(data)
 }
 
@@ -90,25 +117,31 @@ function useIsMounted() {
 function BlogHome() {
   const [searchParams, setSearchParams] = useSearchParams()
   const searchParamsRef = useLatest(searchParams)
+  const [query, setQuery] = React.useState<string>(searchParams.get('q') ?? '')
 
   const isMountedRef = useIsMounted()
-  const updateSearchParams = useDebounce((query: string) => {
+  const updateSearchParams = useDebounce((newQuery: string) => {
     if (!isMountedRef.current) return
+    const oldQuery = searchParamsRef.current.get('q')
+    if (newQuery === oldQuery) return
+
     const newSearchParams = new URLSearchParams(searchParamsRef.current)
-    newSearchParams.set('q', query)
+    newSearchParams.set('q', newQuery)
     setSearchParams(newSearchParams, {replace: true})
   }, 200)
+
+  React.useEffect(() => {
+    updateSearchParams(query)
+  }, [query, updateSearchParams])
 
   const data = useRouteData<LoaderData>()
   const allPosts = data.posts
 
-  const totalPostCount = allPosts.length
   // TODO: use local state to determine how many to show...
   // because we'll just send the whole thing to the client
   // maybe... still thinking about this actually...
   const hasMorePosts = true
 
-  const query = searchParams.get('q')?.toLowerCase() ?? ''
   // split the query string into words, to select matching category tags
   const queryParts = new Set(query.split(' '))
 
@@ -119,8 +152,10 @@ function BlogHome() {
       ? currentParts.filter(t => t !== tag)
       : [...currentParts, tag]
 
-    searchParams.set('q', nextParts.join(' '))
+    const newQuery = nextParts.join(' ')
+    searchParams.set('q', newQuery)
     setSearchParams(searchParams)
+    setQuery(newQuery)
   }
 
   const isSearching = query.trim().length > 0
@@ -157,16 +192,16 @@ function BlogHome() {
               <SearchIcon />
             </div>
             <input
-              onChange={event =>
-                updateSearchParams(event.currentTarget.value.toLowerCase())
-              }
               value={query}
+              onChange={event =>
+                setQuery(event.currentTarget.value.toLowerCase())
+              }
               placeholder="Search blog"
               aria-label="Search blog"
               className="dark:focus:bg-gray-800 placeholder-black dark:placeholder-white px-16 py-6 w-full text-black dark:text-white text-lg font-medium focus:bg-gray-100 bg-transparent border border-gray-200 dark:border-gray-600 rounded-full focus:outline-none"
             />
             <div className="absolute right-8 top-0 flex items-center justify-center h-full text-blueGray-500 text-lg font-medium">
-              {totalPostCount}
+              {data.totalPosts}
             </div>
           </div>
         </div>
@@ -179,8 +214,7 @@ function BlogHome() {
           <H6>Search blog by topics</H6>
         </div>
         <div className="flex flex-wrap col-span-full -ml-4 -mt-4 lg:col-span-10">
-          {/* TODO: get tags from database */}
-          {tags.map(tag => (
+          {data.tags.map(tag => (
             <Tag
               key={tag}
               tag={tag}
@@ -203,7 +237,7 @@ function BlogHome() {
         {isSearching ? (
           <div className="col-span-full">
             <Spacer size="smaller" />
-            <H6>{totalPostCount} articles found</H6>
+            <H6>{data.matchingPosts} articles found</H6>
           </div>
         ) : null}
 

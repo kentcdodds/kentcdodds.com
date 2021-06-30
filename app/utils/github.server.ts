@@ -2,7 +2,7 @@ import nodePath from 'path'
 import {Octokit as createOctokit} from '@octokit/rest'
 import {throttling} from '@octokit/plugin-throttling'
 import Cache from '@remark-embedder/cache'
-import type {GitHubFile} from 'types'
+import type {Await, GitHubFile} from 'types'
 import config from '../../config'
 import {getErrorMessage} from './misc'
 
@@ -76,7 +76,7 @@ async function downloadMdxFileOrDirectory(
   }
 
   const parentDir = nodePath.dirname(mdxFileOrDirectory)
-  const dirList = await downloadDirList(parentDir)
+  const dirList = await downloadDirList(parentDir, bustCache)
 
   const basename = nodePath.basename(mdxFileOrDirectory)
   const potentials = dirList.filter(({name}) => name.startsWith(basename))
@@ -91,7 +91,7 @@ async function downloadMdxFileOrDirectory(
       {path: nodePath.join(mdxFileOrDirectory, 'index.mdx'), content},
     ]
   } else if (potentials.find(({type}) => type === 'dir')) {
-    downloaded = await downloadDirectory(mdxFileOrDirectory)
+    downloaded = await downloadDirectory(mdxFileOrDirectory, bustCache)
   } else {
     downloaded = []
   }
@@ -106,8 +106,11 @@ async function downloadMdxFileOrDirectory(
  * This will recursively download all content at the given path.
  * @returns An array of file paths with their content
  */
-async function downloadDirectory(dir: string): Promise<Array<GitHubFile>> {
-  const dirList = await downloadDirList(dir)
+async function downloadDirectory(
+  dir: string,
+  bustCache: boolean,
+): Promise<Array<GitHubFile>> {
+  const dirList = await downloadDirList(dir, bustCache)
 
   const result = await Promise.all(
     dirList.map(async ({path: fileDir, type, sha}) => {
@@ -117,7 +120,7 @@ async function downloadDirectory(dir: string): Promise<Array<GitHubFile>> {
           return {path: fileDir, content}
         }
         case 'dir': {
-          return downloadDirectory(fileDir)
+          return downloadDirectory(fileDir, bustCache)
         }
         default: {
           throw new Error(`Unexpected repo file type: ${type}`)
@@ -153,17 +156,42 @@ async function downloadFileBySha(sha: string) {
  * @param path the full path to list
  * @returns a promise that resolves to a file ListItem of the files/directories in the given directory (not recursive)
  */
-async function downloadDirList(path: string) {
-  const {data} = await octokit.repos.getContent({
-    owner: config.contentSrc.owner,
-    repo: config.contentSrc.repo,
-    path,
-  })
+async function downloadDirList(path: string, bustCache: boolean) {
+  const key = `dir-list:${path}`
+  type DirList = Await<ReturnType<typeof octokit.repos.getContent>>['data']
+  let data: DirList | null = null
+  let isCached = false
+  if (bustCache) {
+    await cache.cache.del(key)
+  } else {
+    try {
+      const cached = await cache.get(key)
+      if (cached) {
+        data = JSON.parse(cached)
+        isCached = true
+      }
+    } catch (error: unknown) {
+      console.error(getErrorMessage(error))
+    }
+  }
+
+  if (!data) {
+    const resp = await octokit.repos.getContent({
+      owner: config.contentSrc.owner,
+      repo: config.contentSrc.repo,
+      path,
+    })
+    data = resp.data
+  }
 
   if (!Array.isArray(data)) {
     throw new Error(
       `Tried to download content from ${path}. GitHub did not return an array of files. This should never happen...`,
     )
+  }
+
+  if (!isCached) {
+    await cache.set(key, JSON.stringify(data))
   }
 
   return data
