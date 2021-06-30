@@ -19,7 +19,18 @@ cd ./remix-kentcdodds
 cp .env.example .env
 
 # make sure you have a REMIX_TOKEN environment variable set
+npm run setup
+```
+
+That should do everything for you... If it doesn't work, here's basically what
+it does, go ahead and try each of these commands one at a time:
+
+```sh
+# make sure you have a REMIX_TOKEN environment variable set
 npm install
+
+# setup the storybook repo
+npm --prefix ./storybook run setup
 
 # make sure you have docker installed
 # The `-d` tells docker to run this in the background
@@ -28,8 +39,14 @@ docker compose up -d
 # get the postgres DB initialized to match our prisma schema.
 npx prisma migrate reset --force
 
-# build the app for the first time
-npm run build
+# Run type checking, linting, and unit tests
+npm run validate
+
+# Prime the cache with the mock data
+npm run prime-cache:mocks
+
+# Run the E2E tests
+npm run test:e2e:run
 ```
 
 If that all worked without trouble, you should be able to start development

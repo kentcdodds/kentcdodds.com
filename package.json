@@ -40,7 +40,7 @@
     "format": "kcd-scripts format",
     "typecheck": "tsc -b",
     "validate": "kcd-scripts validate",
-    "setup": "npm install && npm --prefix ./storybook run setup && docker compose up -d && npm run validate && npm run prime-cache:mocks && npm run test:e2e:run"
+    "setup": "npm install && npm --prefix ./storybook run setup && docker compose up -d && prisma migrate reset --force && npm run validate && npm run prime-cache:mocks && npm run test:e2e:run"
   },
   "dependencies": {
     "@ffmpeg/core": "^0.10.0",
