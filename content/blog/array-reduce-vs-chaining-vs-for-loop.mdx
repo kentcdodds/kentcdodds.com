@@ -1,0 +1,152 @@
+---
+title: 'Array reduce vs chaining vs for loop'
+date: 2021-05-24
+description: A comparison of different approaches to operating on an array
+categories:
+  - 'javascript'
+meta:
+  keywords:
+    - 'arrays'
+    - 'reduce'
+    - 'filter'
+    - 'map'
+    - 'for loop'
+bannerUrl: 'https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032137/kentcdodds.com/content/blog/array-reduce-vs-chaining-vs-for-loop/banner.jpg'
+bannerCredit: 'Photo by [Tine Ivanič](https://unsplash.com/photos/u2d0BPZFXOY)'
+---
+
+**[Watch "Array reduce vs chaining vs for loop" on egghead.io](https://egghead.io/lessons/javascript-array-reduce-vs-chaining-vs-for-loop?pl=kent-s-blog-posts-as-screencasts-eefa540c)**
+
+https://egghead.io/lessons/javascript-array-reduce-vs-chaining-vs-for-loop?pl=kent-s-blog-posts-as-screencasts-eefa540c
+
+I've been in the process of moving some of my digital life around and one thing
+that I've had to do is download all of my photos from Google Photos. Thanks to
+the way those are organized, I found the need to rearrange them, so I wrote a
+little node script to do it. What the script does is not entirely relevant for
+this post so I'm not going to go into detail, (but
+[here's the whole thing](https://gist.github.com/kentcdodds/59daa81d46ba51b926a6a2f044aa5ad6)
+if you wanna give it a read-through). Here's the bit I want to talk about
+(edited slightly for clarity):
+
+```javascript
+const lines = execSync(`find "${searchPath}" -type f`).toString().split('\n')
+
+const commands = lines
+  .map(f => f.trim())
+  .filter(Boolean)
+  .map(file => {
+    const destFile = getDestFile(file)
+    const destFileDir = path.dirname(destFile)
+    return `mkdir -p "${destFileDir}" && mv "${file}" "${destFile}"`
+  })
+
+commands.forEach(command => execSync(command))
+```
+
+Basically all this does is uses the linux `find` command to find a list of files
+in a directory, then separate the results of that script into lines, trim them
+to get rid of whitespace, remove empty lines, then map those to commands to move
+those files, and then run those commands.
+
+I shared the script
+[on twitter](https://twitter.com/kentcdodds/status/1215785900413599744) and had
+several people critiquing the script and suggest that I could have used `reduce`
+instead. I'm pretty sure both of them were suggesting it as a performance
+optimization because you can reduce (no pun intended) the number of times
+JavaScript has to loop over the array.
+
+Now, to be clear, there were about 50 thousand items in this array, so
+definitely more than a few dozen you deal with in typical UI development, but I
+want to first make a point that in a situation like one-off scripts that you run
+once and then you're done, performance should basically be the last thing to
+worry about (unless what you're doing really is super expensive). In my case, it
+ran plenty fast. The slow part wasn't iterating over the array of elements
+multiple times, but
+[running the commands](https://twitter.com/kentcdodds/status/1215810104261369856).
+
+A few other people suggested that I use Node APIs or even open source modules
+from npm to help run these scripts because it would "probably be faster and work
+cross platform." Again, they're probably not wrong, but for one-off scripts that
+are "fast enough", those things don't matter. This is a classic example of
+applying irrelevant constraints on a problem resulting in a more complicated
+solution.
+
+In any case, I did want to address the idea of using `reduce` instead of the
+`map`, `filter`, then `map` I have going on there.
+
+## With `reduce`
+
+Here's what that same code would be like if we use `reduce`
+
+```javascript
+const commands = lines.reduce((accumulator, line) => {
+  let file = line.trim()
+  if (file) {
+    const destFile = getDestFile(file)
+    const destFileDir = path.dirname(destFile)
+    accumulator.push(`mkdir -p "${destFileDir}" && mv "${file}" "${destFile}"`)
+  }
+  return accumulator
+}, [])
+```
+
+Now, I'm not one of those people who think that
+[`reduce` is the spawn of the evil one](https://twitter.com/jaffathecake/status/1213077702300852224)
+(checkout that thread for interesting examples of reduce), but I do feel like I
+can recognize when code is actually simpler/more complex and I'd say that the
+reduce example here is definitely more complex than the chaining example.
+
+## With `loop`
+
+Honestly, I've been using array methods so long, I'll need a second to rewrite
+this as a for loop. So... one sec...
+
+Ok, here you go:
+
+```javascript
+const commands = []
+for (let index = 0; index < lines.length; index++) {
+  const line = lines[index]
+  const file = line.trim()
+  if (file) {
+    const destFile = getDestFile(file)
+    const destFileDir = path.dirname(destFile)
+    commands.push(`mkdir -p "${destFileDir}" && mv "${file}" "${destFile}"`)
+  }
+}
+```
+
+That's not much simpler either.
+
+**EDIT:** BUT WAIT! We can simplify this thanks to `for..of`!
+
+```javascript
+const commands = []
+for (const line of lines) {
+  const file = line.trim()
+  if (!file) continue
+
+  const destFile = getDestFile(file)
+  const destFileDir = path.dirname(destFile)
+  commands.push(`mkdir -p "${destFileDir}" && mv "${file}" "${destFile}"`)
+}
+```
+
+Honestly I do think that's not a whole lot better than the traditional loop, but
+I do think it's pretty simple. I think some people discount for loops because
+they're "imperative", when they're actually pretty useful.
+
+## My take
+
+Often, I'm going to be choosing between chaining and `for..of` loops. If I have
+a performance concern with iterating over the array multiple times, then
+`for..of` will definitely be my selection of choice.
+
+I don't often use `reduce`, but sometimes I'll try it out and compare it to
+other options and go with that. I realize how subjective that sounds, but so
+much of coding is subjective so 🤷‍♂️
+
+I'd be interested to hear what you think. Reply to the tweet below and let me
+know. And feel free to retweet if that's something you're into.
+
+https://twitter.com/kentcdodds/status/1217088865212649477
