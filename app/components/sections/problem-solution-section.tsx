@@ -62,7 +62,7 @@ function ProblemSolutionSection() {
               </H2>
             </div>
 
-            <hr className="col-span-full mb-16 mt-20 border-gray-200 dark:border-gray-600" />
+            <hr className="col-span-full mb-20 mt-24 border-gray-200 dark:border-gray-600" />
 
             {/*
               Note that we use two TabPanels for a single TabList, so that we can
@@ -94,7 +94,7 @@ function ProblemSolutionSection() {
               </TabPanel>
             </TabPanels>
 
-            <div className="col-span-full col-start-1 order-1 lg:col-span-5 lg:order-3">
+            <div className="col-span-full col-start-1 order-1 lg:col-span-5 lg:order-3 lg:mt-5">
               <TabList className="inline-flex flex-row text-white text-xl bg-transparent space-x-8 lg:flex-col lg:text-7xl lg:space-x-0 lg:space-y-7">
                 <Tab>Blog</Tab>
                 <Tab>Courses</Tab>
@@ -102,7 +102,7 @@ function ProblemSolutionSection() {
               </TabList>
             </div>
 
-            <TabPanels className="col-span-full order-4 mt-6 space-y-7 lg:col-span-5 lg:col-start-7">
+            <TabPanels className="col-span-full order-4 mt-14 space-y-7 lg:col-span-5 lg:col-start-7">
               <TabPanel>
                 <H3>Educational blog</H3>
 

@@ -155,7 +155,7 @@ function Footer() {
           <ContactSection />
         </div>
 
-        <div className="col-span-2 mt-20 md:col-start-7 md:row-start-1 md:mt-0 lg:col-start-5 lg:row-start-2 lg:mt-10">
+        <div className="col-span-2 mt-20 md:col-start-7 md:row-start-1 md:mt-0 lg:col-start-5 lg:row-start-2 lg:mt-16">
           <GeneralSection />
         </div>
 
@@ -173,7 +173,7 @@ function Footer() {
           </div>
         )}
 
-        <div className="col-span-full mt-20 dark:text-blueGray-500 text-gray-500 text-lg md:mt-36">
+        <div className="col-span-full mt-24 dark:text-blueGray-500 text-gray-500 text-lg md:mt-44">
           <span>All rights reserved</span>{' '}
           <span className="block md:inline">{`© Kent C. Dodds ${new Date().getFullYear()}`}</span>
         </div>

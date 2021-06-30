@@ -7,7 +7,7 @@ import {CourseCard} from '../course-card'
 function CourseSection() {
   return (
     <Grid>
-      <div className="flex flex-col col-span-full mb-10 space-y-10 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+      <div className="flex flex-col col-span-full mb-20 space-y-10 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
         <div className="space-y-2 lg:space-y-0">
           <H2>Have a look at some of the courses.</H2>
           <H2 variant="secondary" as="p">

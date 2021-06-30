@@ -192,7 +192,7 @@ function BlogHome() {
           </div>
         </div>
 
-        <div className="col-span-4 mt-6 lg:row-start-2">
+        <div className="col-span-4 mt-12 lg:row-start-2">
           <div className="relative">
             <div className="absolute left-8 top-0 flex items-center justify-center h-full text-blueGray-500">
               <SearchIcon />

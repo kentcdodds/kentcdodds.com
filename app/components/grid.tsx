@@ -12,7 +12,7 @@ function Grid({children, className}: GridProps) {
     <div className="mx-10vw">
       <div
         className={clsx(
-          'grid gap-4 grid-cols-4 mx-auto max-w-7xl md:grid-cols-8 lg:gap-6 lg:grid-cols-12',
+          'grid gap-x-4 grid-cols-4 mx-auto max-w-7xl md:grid-cols-8 lg:gap-x-6 lg:grid-cols-12',
           className,
         )}
       >
