@@ -161,6 +161,12 @@ function getNonNull<Type extends Record<string, null | unknown>>(
   return obj as NonNullProperties<Type>
 }
 
+function typedBoolean<T>(
+  value: T,
+): value is Exclude<T, '' | 0 | false | null | undefined> {
+  return Boolean(value)
+}
+
 function createSimpleContext<ContextType>({name}: {name: string}) {
   const defaultValue = Symbol(`Default ${name} context value`)
   const Context =
@@ -272,6 +278,7 @@ export {
   getErrorMessage,
   getNonNull,
   assertNonNull,
+  typedBoolean,
   getRequiredServerEnvVar,
   getRequiredGlobalEnvVar,
   getDiscordAuthorizeURL,

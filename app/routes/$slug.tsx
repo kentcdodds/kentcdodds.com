@@ -17,7 +17,7 @@ export const headers: HeadersFunction = ({loaderHeaders}) => {
 
 export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
   const page = await getMdxPage({
-    rootDir: 'pages',
+    contentDir: 'pages',
     slug: params.slug,
     bustCache: new URL(request.url).searchParams.get('bust-cache') === 'true',
   })
@@ -46,8 +46,8 @@ function MdxScreen({mdxPage}: {mdxPage: MdxPage}) {
   return (
     <>
       <header>
-        <h2>{frontmatter.meta.title}</h2>
-        <p>{frontmatter.meta.description}</p>
+        <h2>{frontmatter.title}</h2>
+        <p>{frontmatter.description}</p>
       </header>
       <main>
         <Component />

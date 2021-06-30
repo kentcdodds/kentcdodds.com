@@ -1,8 +1,7 @@
 import nodePath from 'path'
 import {Octokit} from '@octokit/rest'
-import matter from 'gray-matter'
 import Cache from '@remark-embedder/cache'
-import type {GitHubFile, MdxListItem} from 'types'
+import type {GitHubFile} from 'types'
 import config from '../../config'
 import {getErrorMessage} from './misc'
 
@@ -80,37 +79,6 @@ async function downloadMdxFileOrDirectory(
 
 /**
  *
- * @param mdxFileOrDirectory the path to content. For example:
- * /workshops/react-fundamentals.mdx (pass "workshops/react-fudnamentals")
- * /workshops/react-hooks/index.mdx (pass "workshops/react-hooks")
- * @returns The content of the searched for mdx file
- */
-async function downloadMdxFileOrIndex(mdxFileOrDirectory: string) {
-  const parentDir = nodePath.dirname(mdxFileOrDirectory)
-  const dirList = await downloadDirList(parentDir)
-
-  const basename = nodePath.basename(mdxFileOrDirectory)
-  const potentials = dirList.filter(({name}) => name.startsWith(basename))
-
-  let content = await downloadFirstMdxFile(potentials)
-  if (content) return content
-
-  const directory = potentials.find(({type}) => type === 'dir')
-  // if no mdx? or directory by this name exists,
-  // then we won't be getting any content here...
-  if (!directory) return null
-
-  // download the directory list to find and index.mdx? file
-  const mdxDirList = await downloadDirList(directory.path)
-  const indexes = mdxDirList.filter(({name}) => name.startsWith('index'))
-  content = await downloadFirstMdxFile(indexes)
-  if (content) return content
-
-  return null
-}
-
-/**
- *
  * @param dir the directory to download.
  * This will recursively download all content at the given path.
  * @returns An array of file paths with their content
@@ -178,72 +146,8 @@ async function downloadDirList(path: string) {
   return data
 }
 
-/**
- *
- * @param relativePath the directory to download mdx frontmatter for
- * @param bustCache delete any existing entry in the cache before retriving the value
- * @returns the files with frontmatter attached
- */
-async function downloadMdxListItemsInDir(
-  relativePath: string,
-  bustCache: boolean = false,
-) {
-  const key = `mdx-list-in-dir:${relativePath}`
-  if (bustCache) {
-    await cache.cache.del(key)
-  } else {
-    try {
-      const cached = await cache.get(key)
-      if (cached) return JSON.parse(cached)
-    } catch (error: unknown) {
-      console.error(getErrorMessage(error))
-    }
-  }
-
-  const data = await downloadDirList(
-    `${config.contentSrc.path}/${relativePath}`,
-  )
-
-  const result = await Promise.all(
-    data
-      .filter(({name}) => name !== 'README.md')
-      .map(async ({path: fileDir}): Promise<
-        (GitHubFile & MdxListItem) | null
-      > => {
-        const content = await downloadMdxFileOrIndex(fileDir)
-        if (!content) {
-          console.warn(`Could not find mdx content at path: ${fileDir}`)
-          return null
-        }
-        const matterResult = matter(content)
-        if (!Object.keys(matterResult.data).length) {
-          console.warn(`Could not parse frontmatter at path: ${fileDir}`)
-          return null
-        }
-        return {
-          path: fileDir,
-          content,
-          slug: fileDir
-            .replace(`${config.contentSrc.path}/${relativePath}`, '')
-            .replace(/\.mdx?$/, ''),
-          frontmatter: matterResult.data as MdxListItem['frontmatter'],
-        }
-      }),
-  )
-
-  const files = result.filter(typedBoolean)
-  await cache.set(key, JSON.stringify(files))
-  return files
-}
-
-function typedBoolean<T>(
-  value: T,
-): value is Exclude<T, '' | 0 | false | null | undefined> {
-  return Boolean(value)
-}
-
 async function resetCache() {
   return cache.cache.reset()
 }
 
-export {downloadMdxFileOrDirectory, downloadMdxListItemsInDir, resetCache}
+export {downloadMdxFileOrDirectory, downloadDirList, resetCache}

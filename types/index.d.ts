@@ -1,3 +1,4 @@
+import calculateReadingTime from 'reading-time'
 import type {Request, Response} from 'node-fetch'
 import type {Action, Loader} from 'remix'
 import type {User, Call, Session, Team, Role} from '@prisma/client'
@@ -17,10 +18,21 @@ type Await<Type> = Type extends Promise<infer Value> ? Await<Value> : Type
 
 type MdxListItem = {
   slug: string
+  readTime?: ReturnType<typeof calculateReadingTime>
   frontmatter: {
-    meta: {
-      title: string
-      description: string
+    title?: string
+    description?: string
+
+    // Post meta
+    date?: number
+    bannerUrl?: string
+    bannerCredit?: string
+    bannerAlt?: string
+
+    // Workshop meta
+    tech?: string
+    convertKitTag?: string
+    meta?: {
       [key as string]: string
     }
   }
@@ -29,18 +41,6 @@ type MdxListItem = {
 type MdxPage = MdxListItem & {
   code: string
 }
-
-type PostListItem = MdxListItem & {
-  frontmatter: {published: number}
-}
-
-type Post = PostListItem & {code: string}
-
-type WorkshopListItem = MdxListItem & {
-  frontmatter: {tech: string; convertKitTag: string}
-}
-
-type WorkshopPage = WorkshopListItem & {code: string}
 
 type LoaderContext = {
   req: Request
@@ -75,12 +75,8 @@ export {
   Session,
   Team,
   Role,
-  MdxListItem,
   MdxPage,
-  PostListItem,
-  Post,
-  WroskhopListItem,
-  WorkshopPage,
+  MdxListItem,
   KCDLoader,
   KCDAction,
   GitHubFile,

@@ -2,15 +2,23 @@ import * as React from 'react'
 import {useRouteData, Link, json} from 'remix'
 import type {HeadersFunction} from 'remix'
 import type {KCDLoader, MdxListItem} from 'types'
-import {downloadMdxListItemsInDir} from '../../utils/github.server'
+import {
+  getMdxPagesInDirectory,
+  mapFromMdxPageToMdxListItem,
+} from '../../utils/mdx'
+
+type LoaderData = {
+  workshops: Array<MdxListItem>
+}
 
 export const loader: KCDLoader = async ({request}) => {
-  const workshops = await downloadMdxListItemsInDir(
+  const pages = await getMdxPagesInDirectory(
     'workshops',
     new URL(request.url).searchParams.get('bust-cache') === 'true',
   )
 
-  return json(workshops, {
+  const data: LoaderData = {workshops: pages.map(mapFromMdxPageToMdxListItem)}
+  return json(data, {
     headers: {
       'Cache-Control': 'public, max-age=60 s-maxage=3600',
     },
@@ -31,20 +39,22 @@ export function meta() {
 }
 
 function WorkshopsHome() {
-  const workshops = useRouteData<Array<MdxListItem>>()
+  const data = useRouteData<LoaderData>()
   return (
     <div>
       <header>
         <h2>Kent C. Dodds</h2>
       </header>
       <main>
-        {workshops.map(workshop => (
+        {data.workshops.map(workshop => (
           <p key={workshop.slug}>
             <Link to={`/workshops/${workshop.slug}`}>
-              {workshop.frontmatter.meta.title}
+              {workshop.frontmatter.title ?? 'Untitled Workshop'}
             </Link>
             <br />
-            <small>{workshop.frontmatter.meta.description}</small>
+            <small>
+              {workshop.frontmatter.description ?? 'Description TBA'}
+            </small>
           </p>
         ))}
       </main>

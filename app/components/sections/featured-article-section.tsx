@@ -1,27 +1,22 @@
 import * as React from 'react'
 import formatDate from 'date-fns/format'
+import type {MdxListItem} from 'types'
 import {Grid} from '../grid'
 import {H2, H6} from '../typography'
 import {ArrowLink} from '../arrow-button'
 import {CopyIcon} from '../icons/copy-icon'
 
-interface FeaturedArticleSectionProps {
-  title: string
-  date: Date | number | string
-  readTime: string
-  imageUrl: string
-  imageAlt: string
-  articleUrl: string
-}
-
 function FeaturedArticleSection({
-  title,
-  date,
   readTime,
-  articleUrl,
-  imageUrl,
-  imageAlt,
-}: FeaturedArticleSectionProps) {
+  slug,
+  frontmatter: {
+    date = new Date().getTime(),
+    title = 'Untitled Post',
+    // TODO: add a default banner and alt for unbannered articles
+    bannerAlt,
+    bannerUrl,
+  },
+}: MdxListItem) {
   return (
     <div className="px-8 w-full lg:px-0">
       <div className="lg:dark:bg-transparent bg-gray-100 dark:bg-gray-800 rounded-lg lg:bg-transparent">
@@ -34,12 +29,12 @@ function FeaturedArticleSection({
                 <H2 className="mt-12">{title}</H2>
 
                 <div className="mt-6 text-blueGray-500 text-xl font-medium">
-                  {formatDate(new Date(date), 'PPP')} — {readTime} read
+                  {formatDate(new Date(date), 'PPP')} — {readTime?.text}
                 </div>
               </div>
 
               <div className="flex items-center justify-between mt-12">
-                <ArrowLink to={articleUrl}>Read full article</ArrowLink>
+                <ArrowLink to={`./${slug}`}>Read full article</ArrowLink>
                 <button className="flex items-center justify-center w-12 h-12 text-gray-800 whitespace-nowrap bg-white rounded-lg lg:hidden">
                   <CopyIcon />
                 </button>
@@ -50,8 +45,8 @@ function FeaturedArticleSection({
               <div className="aspect-w-3 aspect-h-4 w-full">
                 <img
                   className="rounded-lg object-cover"
-                  src={imageUrl}
-                  alt={imageAlt}
+                  src={bannerUrl}
+                  alt={bannerAlt}
                 />
               </div>
             </div>

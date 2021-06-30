@@ -102,7 +102,7 @@ function App() {
         <Links />
       </head>
       <body
-        className={clsx('dark:bg-gray-900 bg-white transition', {
+        className={clsx('dark:bg-gray-900 bg-white transition delay-200', {
           'opacity-50': showPendingState,
         })}
       >

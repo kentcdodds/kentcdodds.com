@@ -1,22 +1,24 @@
 import * as React from 'react'
 import sortBy from 'sort-by'
-import {json} from 'remix'
+import {json, useRouteData} from 'remix'
 import type {HeadersFunction} from 'remix'
-import type {KCDLoader} from 'types'
+import type {KCDLoader, MdxListItem} from 'types'
 import {useSearchParams} from 'react-router-dom'
-import type {ChangeEventHandler} from 'react'
-import {downloadMdxListItemsInDir} from '../../utils/github.server'
 import {Grid} from '../../components/grid'
 import {images} from '../../images'
 import {H2, H3, H6} from '../../components/typography'
 import {SearchIcon} from '../../components/icons/search-icon'
 import {Spacer} from '../../components/spacer'
-import {articles, tags} from '../../../storybook/stories/fixtures'
+import {tags} from '../../../storybook/stories/fixtures'
 import {ArticleCard} from '../../components/article-card'
 import {ArrowLink} from '../../components/arrow-button'
 import {FeaturedArticleSection} from '../../components/sections/featured-article-section'
 import {LoadMoreButton} from '../../components/load-more-button'
 import {Tag} from '../../components/tag'
+import {
+  getMdxPagesInDirectory,
+  mapFromMdxPageToMdxListItem,
+} from '../../utils/mdx'
 
 export const headers: HeadersFunction = ({loaderHeaders}) => {
   return {
@@ -24,15 +26,20 @@ export const headers: HeadersFunction = ({loaderHeaders}) => {
   }
 }
 
+type LoaderData = {
+  posts: Array<MdxListItem>
+}
+
 export const loader: KCDLoader = async ({request}) => {
-  const posts = (
-    await downloadMdxListItemsInDir(
+  const pages = (
+    await getMdxPagesInDirectory(
       'blog',
       new URL(request.url).searchParams.get('bust-cache') === 'true',
     )
   ).sort(sortBy('-frontmatter.published'))
 
-  return json(posts, {
+  const data: LoaderData = {posts: pages.map(mapFromMdxPageToMdxListItem)}
+  return json(data, {
     headers: {
       'Cache-Control': 'public, max-age=60 s-maxage=3600',
     },
@@ -46,25 +53,71 @@ export function meta() {
   }
 }
 
-const fakePostListItems = Array.from({length: 3})
-  .flatMap(() => articles)
-  .map((article, idx) => ({...article, articleUrl: `/blog-${idx}`}))
+function debounce<ArgsType extends Array<unknown>, CBReturnType>(
+  callback: (...args: ArgsType) => CBReturnType,
+  delay: number,
+) {
+  let timeout: ReturnType<typeof setTimeout>
+  return (...args: Parameters<typeof callback>) => {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => callback(...args), delay)
+  }
+}
+
+function useLatest<ValueType>(value: ValueType) {
+  const ref = React.useRef(value)
+  React.useEffect(() => {
+    ref.current = value
+  })
+  return ref
+}
+
+function useLatestCallback<ArgsType extends Array<unknown>, CBReturnType>(
+  callback: (...args: ArgsType) => CBReturnType,
+) {
+  const ref = useLatest(callback)
+  return React.useCallback((...args: ArgsType) => ref.current(...args), [ref])
+}
+
+function useDebounce<ArgsType extends Array<unknown>, CBReturnType>(
+  callback: (...args: ArgsType) => CBReturnType,
+  delay: number,
+) {
+  const _callback = useLatestCallback(callback)
+  return React.useMemo(() => debounce(_callback, delay), [delay, _callback])
+}
+
+function useIsMounted() {
+  const mounted = React.useRef(false)
+  React.useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+    }
+  })
+  return mounted
+}
 
 function BlogHome() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const searchParamsRef = useLatest(searchParams)
 
-  // TODO: use data from server
-  const totalPostCount = 173
+  const isMountedRef = useIsMounted()
+  const updateSearchParams = useDebounce((query: string) => {
+    if (!isMountedRef.current) return
+    const newSearchParams = new URLSearchParams(searchParamsRef.current)
+    newSearchParams.set('q', query)
+    setSearchParams(newSearchParams, {replace: true})
+  }, 200)
+
+  const data = useRouteData<LoaderData>()
+  const allPosts = data.posts
+
+  const totalPostCount = allPosts.length
+  // TODO: use local state to determine how many to show...
+  // because we'll just send the whole thing to the client
+  // maybe... still thinking about this actually...
   const hasMorePosts = true
-
-  // TODO: use the real data. I used fixtures here, because real data was missing readTime, imageAlt, and only had 2 entries.
-  const allPosts = fakePostListItems // useRouteData<Array<PostListItem>>()
-
-  // TODO: this search method triggers usePendingLocation, which flashes the page loader
-  const onSearch: ChangeEventHandler<HTMLInputElement> = event => {
-    searchParams.set('q', event.target.value.toLowerCase())
-    setSearchParams(searchParams, {replace: true})
-  }
 
   const query = searchParams.get('q')?.toLowerCase() ?? ''
   // split the query string into words, to select matching category tags
@@ -84,6 +137,8 @@ function BlogHome() {
   const isSearching = query.trim().length > 0
 
   // feature the most recent post, unless we're searching
+  // TODO: determine featured posts using some smarts on the backend
+  // based on the user's read posts etc.
   const featured = isSearching ? null : allPosts[0]
   const posts = isSearching ? allPosts : allPosts.slice(1)
 
@@ -113,7 +168,9 @@ function BlogHome() {
               <SearchIcon />
             </div>
             <input
-              onChange={onSearch}
+              onChange={event =>
+                updateSearchParams(event.currentTarget.value.toLowerCase())
+              }
               value={query}
               placeholder="Search blog"
               aria-label="Search blog"
@@ -176,7 +233,7 @@ function BlogHome() {
           </div>
         ) : null}
         {posts.map(article => (
-          <div key={article.articleUrl} className="col-span-4 mb-10">
+          <div key={article.slug} className="col-span-4 mb-10">
             <ArticleCard {...article} />
           </div>
         ))}
