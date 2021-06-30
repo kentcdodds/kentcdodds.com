@@ -3,6 +3,7 @@ import {useRouteData, json} from 'remix'
 import {Link, useParams} from 'react-router-dom'
 import type {KCDLoader, MdxPage} from 'types'
 import formatDate from 'date-fns/format'
+import type {ComponentMap} from 'mdx-bundler/client'
 import {
   FourOhFour,
   getMdxPage,
@@ -185,6 +186,12 @@ function ArticleFooter() {
   )
 }
 
+const MdxComponentMap: ComponentMap = {
+  // remove extra wrapping div from elements like <div> (TheSpectrumOfAbstraction) and <pre> (code blocks)
+  // eslint-disable-next-line react/display-name
+  div: ({children}) => <>{children}</>,
+}
+
 function MdxScreen() {
   const data = useRouteData<LoaderData>()
   if (!data.page) {
@@ -252,7 +259,7 @@ function MdxScreen() {
       <div ref={readMarker} />
 
       <Grid as="main" className="prose prose-light dark:prose-dark">
-        <Component />
+        <Component components={MdxComponentMap} />
       </Grid>
 
       <Spacer size="small" />

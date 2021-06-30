@@ -77,6 +77,12 @@ module.exports = {
       },
 
       typography: theme => {
+        // some fontSizes return [size, props], others just size :/
+        const fontSize = size => {
+          const result = theme(`fontSize.${size}`)
+          return Array.isArray(result) ? result[0] : result
+        }
+
         return {
           DEFAULT: {
             css: [
@@ -92,7 +98,12 @@ module.exports = {
                 p: {
                   marginTop: theme('spacing.10'),
                   marginBottom: 0,
-                  fontSize: theme('fontSize.lg.0'),
+                  fontSize: fontSize('lg'),
+                },
+                '> div': {
+                  marginTop: theme('spacing.10'),
+                  marginBottom: 0,
+                  fontSize: fontSize('lg'),
                 },
                 a: {
                   color: theme('colors.black'),
@@ -101,6 +112,25 @@ module.exports = {
                 strong: {
                   color: theme('colors.black'),
                   fontWeight: theme('fontWeight.medium'),
+                },
+                hr: {
+                  marginTop: theme('spacing.10'),
+                  marginBottom: theme('spacing.10'),
+                  borderColor: theme('colors.gray.200'),
+                },
+                pre: {
+                  // TODO: remove important
+                  backgroundColor: `${theme('colors.gray.100')} !important`,
+                  color: `${theme('colors.gray.800')} !important`,
+                  padding: theme('spacing.8'),
+                  borderRadius: theme('borderRadius.lg'),
+
+                  [`@media (min-width: ${theme('screens.lg')})`]: {
+                    gridColumn: '2 / span 10',
+                  },
+                },
+                'pre code': {
+                  color: `${theme('colors.gray.800')} !important`,
                 },
                 code: {
                   color: theme('colors.gray.800'),
@@ -123,24 +153,24 @@ module.exports = {
                 },
                 // tailwind doesn't stick to this property order, so we can't make 'h3' overrule 'h2, h3, h4'
                 'h1, h2': {
-                  fontSize: theme('fontSize.2xl.0'),
+                  fontSize: fontSize('2xl'),
                   marginTop: theme('spacing.32'),
                   [`@media (min-width: ${theme('screens.lg')})`]: {
-                    fontSize: theme('fontSize.3xl.0'),
+                    fontSize: fontSize('3xl'),
                   },
                 },
                 h3: {
-                  fontSize: theme('fontSize.xl.0'),
+                  fontSize: fontSize('xl'),
                   marginTop: theme('spacing.24'),
                   [`@media (min-width: ${theme('screens.lg')})`]: {
-                    fontSize: theme('fontSize.2xl.0'),
+                    fontSize: fontSize('2xl'),
                   },
                 },
                 'h4, h5, h6': {
-                  fontSize: theme('fontSize.lg.0'),
+                  fontSize: fontSize('lg'),
                   marginTop: theme('spacing.10'),
                   [`@media (min-width: ${theme('screens.lg')})`]: {
-                    fontSize: theme('fontSize.xl.0'),
+                    fontSize: fontSize('xl'),
                   },
                 },
                 img: {
@@ -150,10 +180,14 @@ module.exports = {
                   marginBottom: 0,
                 },
                 blockquote: {
-                  color: theme('colors.gray.800'),
+                  color: theme('colors.gray.500'),
+                  backgroundColor: theme('colors.gray.100'),
                   fontWeight: theme('fontWeight.normal'),
+                  border: 'none',
+                  borderRadius: theme('borderRadius.lg'),
+                  padding: theme('spacing.8'),
                 },
-                'blockquote > p:first-child': {
+                'blockquote > :first-child': {
                   marginTop: 0,
                 },
               },
@@ -163,12 +197,22 @@ module.exports = {
             css: [
               {
                 color: theme('colors.blueGray.500'),
-
                 a: {
                   color: theme('colors.white'),
                 },
                 strong: {
                   color: theme('colors.white'),
+                },
+                hr: {
+                  borderColor: theme('colors.gray.600'),
+                },
+                pre: {
+                  // TODO: remove !important
+                  backgroundColor: `${theme('colors.gray.800')} !important`,
+                  color: `${theme('colors.gray.200')} !important`,
+                },
+                'pre code': {
+                  color: `${theme('colors.gray.200')} !important`,
                 },
                 code: {
                   color: theme('colors.gray.100'),
@@ -178,6 +222,7 @@ module.exports = {
                 },
                 blockquote: {
                   color: theme('colors.blueGray.500'),
+                  backgroundColor: theme('colors.gray.800'),
                 },
               },
             ],
