@@ -1,7 +1,4 @@
-import * as React from 'react'
-import ReactDOMServer from 'react-dom/server'
 import {bundleMDX} from 'mdx-bundler'
-import {getMDXComponent} from 'mdx-bundler/client'
 import visit from 'unist-util-visit'
 import type {
   PluggableList,
@@ -126,10 +123,7 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
     },
   })
 
-  // calculate the reading time for the markup:
-  const readTime = calculateReadingTime(
-    ReactDOMServer.renderToString(React.createElement(getMDXComponent(code))),
-  )
+  const readTime = calculateReadingTime(indexFile.content)
 
   return {
     code,
