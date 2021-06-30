@@ -1,7 +1,6 @@
 import * as React from 'react'
 import sortBy from 'sort-by'
 import {json, useRouteData} from 'remix'
-import type {HeadersFunction} from 'remix'
 import type {KCDLoader, MdxListItem} from 'types'
 import {useSearchParams} from 'react-router-dom'
 import {Grid} from '../../components/grid'
@@ -20,12 +19,6 @@ import {
   mapFromMdxPageToMdxListItem,
 } from '../../utils/mdx'
 
-export const headers: HeadersFunction = ({loaderHeaders}) => {
-  return {
-    'Cache-Control': loaderHeaders.get('Cache-Control') ?? 'no-cache',
-  }
-}
-
 type LoaderData = {
   posts: Array<MdxListItem>
 }
@@ -39,11 +32,7 @@ export const loader: KCDLoader = async ({request}) => {
   ).sort(sortBy('-frontmatter.published'))
 
   const data: LoaderData = {posts: pages.map(mapFromMdxPageToMdxListItem)}
-  return json(data, {
-    headers: {
-      'Cache-Control': 'public, max-age=60 s-maxage=3600',
-    },
-  })
+  return json(data)
 }
 
 export function meta() {

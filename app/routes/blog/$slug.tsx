@@ -11,12 +11,6 @@ import {
 } from '../../utils/mdx'
 import {useOptionalUser} from '../../utils/misc'
 
-export const headers: HeadersFunction = ({loaderHeaders}) => {
-  return {
-    'Cache-Control': loaderHeaders.get('Cache-Control') ?? 'no-cache',
-  }
-}
-
 type LoaderData = {
   page: MdxPage | null
 }
@@ -33,11 +27,7 @@ export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
   if (page) {
     data = {page}
 
-    return json(data, {
-      headers: {
-        'Cache-Control': 'public, max-age=60 s-maxage=3600',
-      },
-    })
+    return json(data)
   } else {
     data = {page: null}
     return json(data, {status: 404})

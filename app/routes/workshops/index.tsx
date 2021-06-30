@@ -18,17 +18,7 @@ export const loader: KCDLoader = async ({request}) => {
   )
 
   const data: LoaderData = {workshops: pages.map(mapFromMdxPageToMdxListItem)}
-  return json(data, {
-    headers: {
-      'Cache-Control': 'public, max-age=60 s-maxage=3600',
-    },
-  })
-}
-
-export const headers: HeadersFunction = ({loaderHeaders}) => {
-  return {
-    'Cache-Control': loaderHeaders.get('Cache-Control') ?? 'no-cache',
-  }
+  return json(data)
 }
 
 export function meta() {
