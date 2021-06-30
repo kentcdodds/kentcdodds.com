@@ -1,9 +1,9 @@
-import type {Meta} from '@storybook/react'
 import * as React from 'react'
 import {VideoCard} from '@kcd/components/video-card'
 import {CourseCard} from '@kcd/components/course-card'
 import {ArticleCard} from '@kcd/components/article-card'
 import {articles} from './fixtures'
+import type {Meta} from '@storybook/react'
 
 // TODO: I'm not really a fan of how the cards render in 'story mode', but
 //   included on the page, they look fine.
