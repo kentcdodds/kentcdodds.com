@@ -62,12 +62,20 @@ function H6(props: TitleProps) {
 }
 
 interface ParagraphProps {
-  children: string
+  children: React.ReactNode
+  className?: string
 }
 
-function Paragraph({children}: ParagraphProps) {
+function Paragraph({children, className}: ParagraphProps) {
   return (
-    <p className="dark:text-blueGray-500 text-gray-500 text-lg">{children}</p>
+    <p
+      className={clsx(
+        'dark:text-blueGray-500 text-gray-500 text-lg',
+        className,
+      )}
+    >
+      {children}
+    </p>
   )
 }
 

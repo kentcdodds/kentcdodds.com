@@ -75,6 +75,115 @@ module.exports = {
         '-135': '-135deg',
         135: '135deg',
       },
+
+      typography: theme => {
+        return {
+          DEFAULT: {
+            css: [
+              {
+                color: theme('colors.gray.500'),
+                '> *': {
+                  gridColumn: '1 / -1',
+
+                  [`@media (min-width: ${theme('screens.lg')})`]: {
+                    gridColumn: '3 / span 8',
+                  },
+                },
+                p: {
+                  marginTop: theme('spacing.10'),
+                  marginBottom: 0,
+                  fontSize: theme('fontSize.lg.0'),
+                },
+                a: {
+                  color: theme('colors.black'),
+                  textDecoration: 'none',
+                },
+                strong: {
+                  color: theme('colors.black'),
+                  fontWeight: theme('fontWeight.medium'),
+                },
+                code: {
+                  color: theme('colors.gray.800'),
+                },
+                ul: {
+                  marginTop: theme('spacing.10'),
+                  marginBottom: 0,
+                },
+                'h1, h2, h3, h4, h5, h6': {
+                  color: theme('colors.black'),
+                  marginBottom: 0,
+                  fontWeight: theme('fontWeight.normal'),
+
+                  [`@media (min-width: ${theme('screens.lg')})`]: {
+                    fontWeight: theme('fontWeight.medium'),
+                  },
+                },
+                'h1 + *, h2 + *, h3 + *, h4 + *, h5 + *, h6 + *': {
+                  marginTop: theme('spacing.10'),
+                },
+                // tailwind doesn't stick to this property order, so we can't make 'h3' overrule 'h2, h3, h4'
+                'h1, h2': {
+                  fontSize: theme('fontSize.2xl.0'),
+                  marginTop: theme('spacing.32'),
+                  [`@media (min-width: ${theme('screens.lg')})`]: {
+                    fontSize: theme('fontSize.3xl.0'),
+                  },
+                },
+                h3: {
+                  fontSize: theme('fontSize.xl.0'),
+                  marginTop: theme('spacing.24'),
+                  [`@media (min-width: ${theme('screens.lg')})`]: {
+                    fontSize: theme('fontSize.2xl.0'),
+                  },
+                },
+                'h4, h5, h6': {
+                  fontSize: theme('fontSize.lg.0'),
+                  marginTop: theme('spacing.10'),
+                  [`@media (min-width: ${theme('screens.lg')})`]: {
+                    fontSize: theme('fontSize.xl.0'),
+                  },
+                },
+                img: {
+                  borderRadius: theme('borderRadius.lg'),
+                  // images are wrapped in <p>, which already has margin
+                  marginTop: 0,
+                  marginBottom: 0,
+                },
+                blockquote: {
+                  color: theme('colors.gray.800'),
+                  fontWeight: theme('fontWeight.normal'),
+                },
+                'blockquote > p:first-child': {
+                  marginTop: 0,
+                },
+              },
+            ],
+          },
+          dark: {
+            css: [
+              {
+                color: theme('colors.blueGray.500'),
+
+                a: {
+                  color: theme('colors.white'),
+                },
+                strong: {
+                  color: theme('colors.white'),
+                },
+                code: {
+                  color: theme('colors.gray.100'),
+                },
+                'h1, h2, h3, h4, h5, h6': {
+                  color: theme('colors.white'),
+                },
+                blockquote: {
+                  color: theme('colors.blueGray.500'),
+                },
+              },
+            ],
+          },
+        }
+      },
     },
   },
   purge: {

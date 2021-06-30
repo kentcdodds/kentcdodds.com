@@ -6,18 +6,32 @@ import {ArrowButton} from '../arrow-button'
 import {Grid} from '../grid'
 import {ArticleCard} from '../article-card'
 
-function BlogSection({articles}: {articles: Array<MdxListItem>}) {
+interface BlogSectionProps {
+  articles: Array<MdxListItem>
+  title: string
+  description: string
+  showArrowButton?: boolean
+}
+
+function BlogSection({
+  articles,
+  title,
+  description,
+  showArrowButton,
+}: BlogSectionProps) {
   return (
     <Grid>
-      <div className="flex flex-col col-span-full mb-10 space-y-10 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+      <div className="flex flex-col col-span-full mb-20 space-y-10 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
         <div className="space-y-2 lg:space-y-0">
-          <H2>Most popular from the blog.</H2>
+          <H2>{title}</H2>
           <H2 variant="secondary" as="p">
-            Probably the most helpful as well.
+            {description}
           </H2>
         </div>
 
-        <ArrowButton direction="right">See the full blog</ArrowButton>
+        {showArrowButton === false ? null : (
+          <ArrowButton direction="right">See the full blog</ArrowButton>
+        )}
       </div>
 
       {articles.slice(0, 3).map((article, idx) => (

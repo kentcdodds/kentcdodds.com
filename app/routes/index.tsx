@@ -20,7 +20,12 @@ function IndexRoute() {
       <ProblemSolutionSection />
       <Spacer size="medium" />
       {/*  TODO: replace fixtures */}
-      <BlogSection articles={articles} />
+      <BlogSection
+        articles={articles}
+        title="Most popular from the blog."
+        description="
+            Probably the most helpful as well."
+      />
       <Spacer size="large" />
       <CourseSection />
       <Spacer size="large" />

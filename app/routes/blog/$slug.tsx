@@ -1,7 +1,8 @@
 import React from 'react'
 import {useRouteData, json} from 'remix'
-import {useParams} from 'react-router-dom'
+import {Link, useParams} from 'react-router-dom'
 import type {KCDLoader, MdxPage} from 'types'
+import formatDate from 'date-fns/format'
 import {
   FourOhFour,
   getMdxPage,
@@ -9,6 +10,13 @@ import {
   getMdxComponent,
 } from '../../utils/mdx'
 import {useOptionalUser} from '../../utils/misc'
+import {H2, H6, Paragraph} from '../../components/typography'
+import {Grid} from '../../components/grid'
+import {ArrowIcon} from '../../components/icons/arrow-icon'
+import {Spacer} from '../../components/spacer'
+import {ArrowLink} from '../../components/arrow-button'
+import {BlogSection} from '../../components/sections/blog-section'
+import {articles} from '../../../storybook/stories/fixtures'
 
 type LoaderData = {
   page: MdxPage | null
@@ -118,6 +126,65 @@ function useOnRead({
   }, [enabled, readTime, onRead, parentElRef])
 }
 
+function ArticleFooter() {
+  return (
+    <Grid>
+      <div className="flex flex-col col-span-full justify-between mb-12 pb-12 text-blueGray-500 text-lg font-medium border-b border-gray-600 lg:flex-row lg:col-span-8 lg:col-start-3 lg:pb-6">
+        <div className="flex space-x-5">
+          <H6>Share article</H6>
+          {/* TODO: fix links */}
+          <Link
+            className="dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
+            to="/"
+          >
+            Facebook
+          </Link>
+          <Link
+            className="dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
+            to="/"
+          >
+            Twitter
+          </Link>
+        </div>
+
+        <div className="flex items-center">
+          <Link
+            className="dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
+            to="/"
+          >
+            Discuss on Twitter
+          </Link>
+          <span className="mx-3 text-xs">•</span>
+          <Link
+            className="dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
+            to="/"
+          >
+            Edit on GitHub
+          </Link>
+        </div>
+      </div>
+      <div className="col-span-full lg:col-span-2 lg:col-start-3">
+        {/* TODO: replace with correct profile photo */}
+        <img
+          src="https://kentcdodds.com/static/kent-985f8a0db8a37e47da2c07080cffa865.png"
+          alt="Kent C. Dodds"
+          className="mb-8 w-32 rounded-lg"
+        />
+      </div>
+      <div className="lg:col-start:5 col-span-full lg:col-span-6">
+        <H6>Written by Kent C. Dodds</H6>
+        <Paragraph className="mb-12 mt-3">
+          Kent C. Dodds is a JavaScript software engineer and teacher. He's
+          taught hundreds of thousands of people how to make the world a better
+          place with quality software development tools and practices. He lives
+          with his wife and four kids in Utah.
+        </Paragraph>
+        <ArrowLink to="/about">Learn more about Kent</ArrowLink>
+      </div>
+    </Grid>
+  )
+}
+
 function MdxScreen() {
   const data = useRouteData<LoaderData>()
   if (!data.page) {
@@ -131,9 +198,9 @@ function MdxScreen() {
   const {slug} = params
   const Component = React.useMemo(() => getMdxComponent(code), [code])
 
-  const mainRef = React.useRef<HTMLDivElement>(null)
+  const readMarker = React.useRef<HTMLDivElement>(null)
   useOnRead({
-    parentElRef: mainRef,
+    parentElRef: readMarker,
     readTime: data.page.readTime,
     onRead: React.useCallback(() => {
       const searchParams = new URLSearchParams([
@@ -149,13 +216,57 @@ function MdxScreen() {
 
   return (
     <>
-      <header>
-        <h2>{frontmatter.title}</h2>
-        <p>{frontmatter.description}</p>
-      </header>
-      <main ref={mainRef}>
+      <Spacer size="smaller" />
+
+      <Grid>
+        <Link
+          to="/"
+          className="flex col-span-full text-black dark:text-white space-x-4 lg:col-span-8 lg:col-start-3"
+        >
+          <ArrowIcon direction="left" />
+          <H6 as="span">Back to overview</H6>
+        </Link>
+      </Grid>
+
+      <Spacer size="smaller" />
+
+      <Grid as="header">
+        <div className="col-span-full lg:col-span-8 lg:col-start-3">
+          <H2>{frontmatter.title}</H2>
+          {/* TODO: add readTime */}
+          <H6 as="p" variant="secondary" className="mt-2 lowercase">
+            {frontmatter.date
+              ? formatDate(new Date(frontmatter.date), 'PPP')
+              : 'some day in the past'}{' '}
+            — quick read
+          </H6>
+        </div>
+        <img
+          className="col-span-full mt-10 rounded-lg lg:col-span-10 lg:col-start-2"
+          src={frontmatter.bannerUrl}
+          alt={frontmatter.bannerAlt}
+        />
+      </Grid>
+
+      <Spacer size="smallest" />
+      <div ref={readMarker} />
+
+      <Grid as="main" className="prose prose-light dark:prose-dark">
         <Component />
-      </main>
+      </Grid>
+
+      <Spacer size="small" />
+      <ArticleFooter />
+
+      <Spacer size="large" />
+      {/* TODO: replace `articles` with something smart from the backend */}
+      <BlogSection
+        articles={articles}
+        title="If you found this article helpful."
+        description="
+            You will love these ones as well."
+        showArrowButton={false}
+      />
     </>
   )
 }
