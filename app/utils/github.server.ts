@@ -1,9 +1,12 @@
 import nodePath from 'path'
-import {Octokit} from '@octokit/rest'
+import {Octokit as createOctokit} from '@octokit/rest'
+import {throttling} from '@octokit/plugin-throttling'
 import Cache from '@remark-embedder/cache'
 import type {GitHubFile} from 'types'
 import config from '../../config'
 import {getErrorMessage} from './misc'
+
+const Octokit = createOctokit.plugin(throttling)
 
 const cache = new Cache(
   nodePath.join(
@@ -12,8 +15,28 @@ const cache = new Cache(
   ),
 )
 
+type ThrottleOptions = {
+  method: string
+  url: string
+  request: {retryCount: number}
+}
 const octokit = new Octokit({
   auth: process.env.BOT_GITHUB_TOKEN,
+  throttle: {
+    onRateLimit: (retryAfter: number, options: ThrottleOptions) => {
+      console.warn(
+        `Request quota exhausted for request ${options.method} ${options.url}. Retrying after ${retryAfter} seconds.`,
+      )
+
+      return true
+    },
+    onAbuseLimit: (retryAfter: number, options: ThrottleOptions) => {
+      // does not retry, only logs a warning
+      octokit.log.warn(
+        `Abuse detected for request ${options.method} ${options.url}`,
+      )
+    },
+  },
 })
 
 async function downloadFirstMdxFile(

@@ -1,6 +1,5 @@
 import * as React from 'react'
 import {useRouteData, Link, json} from 'remix'
-import type {HeadersFunction} from 'remix'
 import type {KCDLoader, MdxListItem} from 'types'
 import {
   getMdxPagesInDirectory,

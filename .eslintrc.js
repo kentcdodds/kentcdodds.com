@@ -13,6 +13,7 @@ module.exports = {
     'jsx-a11y/media-has-caption': 'off',
     '@babel/new-cap': 'off',
     'react/jsx-filename-extension': 'off',
+    '@typescript-eslint/no-namespace': 'off',
 
     // I can't figure these out:
     '@typescript-eslint/no-unsafe-call': 'off',

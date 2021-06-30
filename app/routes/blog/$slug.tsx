@@ -1,6 +1,5 @@
 import React from 'react'
 import {useRouteData, json} from 'remix'
-import type {HeadersFunction} from 'remix'
 import {useParams} from 'react-router-dom'
 import type {KCDLoader, MdxPage} from 'types'
 import {

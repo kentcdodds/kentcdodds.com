@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "node ../node_modules/.bin/pm2-dev pm2.config.js",
-    "build": "build-storybook --quiet"
+    "build": "build-storybook --quiet",
+    "setup": "npm install && npm run build"
   },
   "keywords": [],
   "author": "Kent C. Dodds <me@kentcdodds.com> (https://kentcdodds.com/)",
