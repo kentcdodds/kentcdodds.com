@@ -1,7 +1,6 @@
 import * as React from 'react'
 import formatDate from 'date-fns/format'
 import type {MdxListItem} from 'types'
-import {Link} from 'remix'
 import {H3} from './typography'
 import {CopyIcon} from './icons/copy-icon'
 
@@ -17,7 +16,7 @@ function ArticleCard({
   },
 }: MdxListItem) {
   return (
-    <Link className="group relative w-full" to={`/blog/${slug}`}>
+    <a className="group relative w-full" href={`/blog/${slug}`}>
       <button className="absolute z-10 left-6 top-6 p-4 text-black whitespace-nowrap text-lg font-medium bg-white rounded-lg group-hover:opacity-100 transition lg:px-8 lg:py-4 lg:opacity-0">
         <span className="hidden lg:inline">Click to copy url</span>
         <span className="inline lg:hidden">
@@ -39,7 +38,7 @@ function ArticleCard({
       <div className="mt-4 group-hover:underline">
         <H3>{title}</H3>
       </div>
-    </Link>
+    </a>
   )
 }
 
