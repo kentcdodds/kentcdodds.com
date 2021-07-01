@@ -8,6 +8,11 @@ import {
   rootStorage,
   signOutSession,
 } from '../utils/session.server'
+import {Grid} from '../components/grid'
+import {images} from '../images'
+import {H2, Paragraph} from '../components/typography'
+import {Button} from '../components/button'
+import {Input, InputError, Label} from '../components/form-elements'
 
 export const loader: LoaderFunction = async ({request}) => {
   const userInfo = await getUser(request)
@@ -25,6 +30,8 @@ export const loader: LoaderFunction = async ({request}) => {
   )
 }
 
+const EMAIL_SENT_MESSAGE = 'Email sent.'
+
 export const action: ActionFunction = async ({request}) => {
   const params = new URLSearchParams(await request.text())
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
@@ -38,7 +45,7 @@ export const action: ActionFunction = async ({request}) => {
   try {
     const domainUrl = getDomainUrl(request)
     await sendToken({emailAddress, domainUrl})
-    session.flash('message', 'Email sent.')
+    session.flash('message', EMAIL_SENT_MESSAGE)
     session.set('email', emailAddress)
     const cookie = await rootStorage.commitSession(session)
     return redirect(`/login`, {headers: {'Set-Cookie': cookie}})
@@ -54,79 +61,99 @@ export const action: ActionFunction = async ({request}) => {
   }
 }
 
-function Login() {
+function LoginForm() {
   const data = useRouteData()
 
   const [formValues, setFormValues] = React.useState({
     email: '',
   })
 
-  const emailIsValid = formValues.email.match(/.+@.+/)
-  const formIsValid = emailIsValid
+  const formIsValid = formValues.email.match(/.+@.+/)
 
   return (
-    <div className="flex items-center justify-center pb-12 pt-0 px-4 min-h-screen bg-gray-900 sm:px-6 lg:px-8">
-      <div className="-mt-24 w-full max-w-md space-y-8">
-        <div className="mt-8">
-          <div>Sign in (or sign up) to KCD</div>
-          <div className="text-red-500">
-            NOTICE: Any and all of your data may get deleted at any time during
-            development of the new site.
+    <div>
+      <Form
+        onChange={event => {
+          const form = event.currentTarget
+          setFormValues({email: form.email.value})
+        }}
+        action="/login"
+        method="post"
+        className="mb-10 lg:mb-12"
+      >
+        <div className="mb-6">
+          <div className="flex items-baseline justify-between mb-4">
+            <Label htmlFor="email-address">Email address</Label>
+            <InputError id="error-message">{data.error}</InputError>
           </div>
-          {data.message ? <div>{data.message}</div> : null}
-          <Form
-            className="space-y-6"
-            onChange={event => {
-              const form = event.currentTarget
-              setFormValues({email: form.email.value})
-            }}
-            action="/login"
-            method="post"
-          >
-            <div className="rounded-md shadow-sm -space-y-px">
-              <div>
-                <label htmlFor="email-address" className="sr-only">
-                  Email address
-                </label>
-                <input
-                  autoFocus
-                  aria-describedby={data.error ? 'error-message' : 'message'}
-                  id="email-address"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  defaultValue={data.email}
-                  required
-                  className="placeholder-gray-500 border-gray-700 relative focus:z-10 block px-3 py-2 w-full text-gray-200 bg-gray-800 border-2 focus:border-yellow-500 rounded-none rounded-t-md focus:outline-none appearance-none sm:text-sm"
-                  placeholder="Email address"
-                />
-              </div>
-            </div>
-            <div>
-              <button
-                type="submit"
-                disabled={!formIsValid}
-                className={`w-50 py-2 px-4 border-2 border-transparent text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:border-yellow-500 ${
-                  formIsValid ? '' : 'opacity-50'
-                }`}
-              >
-                Email a login link
-              </button>
-            </div>
-            {data.error ? (
-              <p id="error-message" className="text-red-600 text-center">
-                {data.error}
-              </p>
-            ) : null}
-            <div className="sr-only" aria-live="polite">
-              {formIsValid
-                ? 'Sign in form is now valid and ready to submit'
-                : 'Sign in form is now invalid.'}
-            </div>
-          </Form>
+
+          <Input
+            autoFocus
+            aria-describedby={data.error ? 'error-message' : undefined}
+            id="email-address"
+            name="email"
+            type="email"
+            autoComplete="email"
+            defaultValue={data.email}
+            required
+            placeholder="Email address"
+          />
         </div>
-      </div>
+
+        <Button type="submit" disabled={!formIsValid}>
+          Email a login link
+        </Button>
+
+        <div className="sr-only" aria-live="polite">
+          {formIsValid
+            ? 'Sign in form is now valid and ready to submit'
+            : 'Sign in form is now invalid.'}
+        </div>
+      </Form>
+
+      <Paragraph className="mb-10">
+        To sign in to your account or to create a new one fill in your email
+        above and we’ll send you an email with a magic link to get you started.
+      </Paragraph>
+      {/* TODO: remove notice */}
+      <p className="text-red-500 text-xs font-medium tracking-wider">
+        NOTICE: Any and all of your data may get deleted at any time during
+        development of the new site.
+      </p>
     </div>
+  )
+}
+
+function Login() {
+  const data = useRouteData()
+  const emailSent = data.message === EMAIL_SENT_MESSAGE
+
+  return (
+    <Grid className="mt-12">
+      <div className="col-span-full items-start overflow-visible lg:col-span-6 lg:col-start-7">
+        <img
+          src={images.skis.src}
+          alt={images.skis.alt}
+          className="mb-10 lg:mb-0"
+        />
+      </div>
+
+      <div className="flex flex-col col-span-full lg:col-span-5 lg:row-start-1">
+        <H2 className="mb-2">Log in to your account.</H2>
+        <H2 className="mb-12 lg:mb-20" variant="secondary" as="p">
+          Or sign up for an account.
+        </H2>
+
+        {emailSent ? (
+          <Paragraph>
+            Thanks! We’ve sent you an email with a magic link to get you
+            started.
+          </Paragraph>
+        ) : (
+          <LoginForm />
+        )}
+      </div>
+    </Grid>
   )
 }
 

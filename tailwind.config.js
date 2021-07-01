@@ -44,6 +44,10 @@ module.exports = {
         500: '#4B96FF',
         100: '#E8F2FF',
       },
+      red: {
+        // TODO: decide if this is a good color, I just took team-red
+        500: '#FF4545',
+      },
       green: {
         500: '#30C85E',
         100: '#E7F9ED',
