@@ -1,3 +1,57 @@
+:root {
+  --color-black: #000;
+  --color-white: #fff;
+
+  --color-blue-100: #e8f2ff;
+  --color-blue-500: #4b96ff;
+  --color-blueGray-500: #a9adc1;
+  --color-gray-100: #f7f7f7;
+  --color-gray-200: #e6e9ee;
+  --color-gray-300: #dde0e4;
+  --color-gray-400: #818890;
+  --color-gray-500: #535661;
+  --color-gray-600: #4b4c53;
+  --color-gray-800: #2e3039;
+  --color-gray-900: #1f2028;
+  --color-green-100: #e7f9ed;
+  --color-green-500: #30c85e;
+  --color-red-500: #ff4545;
+  --color-yellow-500: #ffd644;
+
+  /*TODO: decide if this is a good color*/
+  --color-team-unknown: #818890;
+  --color-team-blue: #36a3ff;
+  --color-team-red: #ff4545;
+  --color-team-yellow: #ffd644;
+}
+
 :focus:not(:focus-visible) {
   outline: none;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: black !important;
+  -webkit-box-shadow: 0 0 0 999px var(--color-gray-200) inset !important; /* gray-200 */
+  background-clip: content-box !important;
+}
+
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
+.dark input:-webkit-autofill:active {
+  -webkit-text-fill-color: white !important;
+  -webkit-box-shadow: 0 0 0 999px var(--color-gray-800) inset !important; /* gray-800 */
+  background-clip: content-box !important;
+}
+
+input:-webkit-autofill::first-line {
+  font-size: 1.125rem;
+  font-weight: 500;
+  font-family: Matter, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
 }

@@ -11,9 +11,6 @@ interface TagProps {
 
 function Tag({tag, selected, onClick}: TagProps) {
   return (
-    // Ignore the a11y error, as CustomCheckboxInput renders the <input> inside
-    // this <label>, which the linter doesn't see.
-    // eslint-disable-next-line jsx-a11y/label-has-associated-control
     <label>
       <CustomCheckboxContainer
         checked={selected}

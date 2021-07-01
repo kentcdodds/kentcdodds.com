@@ -12,41 +12,44 @@ module.exports = {
   },
   theme: {
     colors: {
+      // color scheme is defined in /app.css
       transparent: 'transparent',
       current: 'currentColor',
-      white: '#fff',
-      black: '#000',
+      white: 'var(--color-white)',
+      black: 'var(--color-black)',
 
       gray: {
-        900: '#1F2028',
-        800: '#2E3039',
-        600: '#4B4C53',
-        500: '#535661',
-        400: '#818890',
-        300: '#DDE0E4',
-        200: '#E6E9EE',
-        100: '#F7F7F7',
+        100: 'var(--color-gray-100)',
+        200: 'var(--color-gray-200)',
+        300: 'var(--color-gray-300)',
+        400: 'var(--color-gray-400)',
+        500: 'var(--color-gray-500)',
+        600: 'var(--color-gray-600)',
+        800: 'var(--color-gray-800)',
+        900: 'var(--color-gray-900)',
       },
       blueGray: {
-        500: '#A9ADC1',
+        500: 'var(--color-blueGray-500)',
       },
       team: {
-        // TODO: decide if this is a good color
-        unknown: '#818890',
-        yellow: '#FFD644',
-        blue: '#36A3FF',
-        red: '#FF4545',
+        unknown: 'var(--color-team-unknown)',
+        yellow: 'var(--color-team-yellow)',
+        blue: 'var(--color-team-blue)',
+        red: 'var(--color-team-red)',
       },
       yellow: {
-        500: '#FFD644',
+        500: 'var(--color-yellow-500)',
       },
       blue: {
-        500: '#4B96FF',
-        100: '#E8F2FF',
+        500: 'var(--color-blue-500)',
+        100: 'var(--color-blue-100)',
+      },
+      red: {
+        500: 'var(--color-red-500)',
       },
       green: {
-        500: '#30C85E',
-        100: '#E7F9ED',
+        500: 'var(--color-green-500)',
+        100: 'var(--color-green-100)',
       },
     },
 
