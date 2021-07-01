@@ -14,7 +14,6 @@ import {useOptionalUser} from '../../utils/misc'
 import {H2, H6, Paragraph} from '../../components/typography'
 import {Grid} from '../../components/grid'
 import {ArrowIcon} from '../../components/icons/arrow-icon'
-import {Spacer} from '../../components/spacer'
 import {ArrowLink} from '../../components/arrow-button'
 import {BlogSection} from '../../components/sections/blog-section'
 import {articles} from '../../../storybook/stories/fixtures'
@@ -223,9 +222,7 @@ function MdxScreen() {
 
   return (
     <>
-      <Spacer size="smaller" />
-
-      <Grid>
+      <Grid className="mb-24 mt-24">
         <Link
           to="/"
           className="flex col-span-full text-black dark:text-white space-x-4 lg:col-span-8 lg:col-start-3"
@@ -235,9 +232,7 @@ function MdxScreen() {
         </Link>
       </Grid>
 
-      <Spacer size="smaller" />
-
-      <Grid as="header">
+      <Grid as="header" className="mb-12">
         <div className="col-span-full lg:col-span-8 lg:col-start-3">
           <H2>{frontmatter.title}</H2>
           {/* TODO: add readTime */}
@@ -255,17 +250,16 @@ function MdxScreen() {
         />
       </Grid>
 
-      <Spacer size="smallest" />
       <div ref={readMarker} />
 
-      <Grid as="main" className="prose prose-light dark:prose-dark">
+      <Grid as="main" className="prose prose-light dark:prose-dark mb-24">
         <Component components={MdxComponentMap} />
       </Grid>
 
-      <Spacer size="small" />
-      <ArticleFooter />
+      <div className="mb-64">
+        <ArticleFooter />
+      </div>
 
-      <Spacer size="large" />
       {/* TODO: replace `articles` with something smart from the backend */}
       <BlogSection
         articles={articles}
