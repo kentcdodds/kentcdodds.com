@@ -63,7 +63,7 @@ simple way to side-step the issue.
 Some people find this annoying/overly verbose:
 
 ```javascript
-const state = useCount()
+const state = useCountState()
 const dispatch = useCountDispatch()
 ```
 
@@ -77,7 +77,7 @@ Sure you can:
 
 ```javascript
 function useCount() {
-  return [useCount(), useCountDispatch()]
+  return [useCountState(), useCountDispatch()]
 }
 ```
 
