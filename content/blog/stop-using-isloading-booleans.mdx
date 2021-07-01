@@ -94,7 +94,7 @@ applications and open source libraries all over (React or not). However, there
 are some problems with this approach. Can you think of what those might be? Let
 me show you how a developer might use this particular hook:
 
-```jsx
+```tsx
 function YourPosition() {
   const {isLoading, position, error} = useGeoPosition()
 
@@ -222,7 +222,7 @@ them someone's going to copy/paste this and miss that important nuance.
 
 Awesome, now users can use the `status` to render instead:
 
-```jsx
+```tsx
 function YourPosition() {
   const {status, position, error} = useGeoPosition()
 
@@ -387,7 +387,7 @@ managed separately.
 
 Here's how we would use that (with as minimal changes as possible):
 
-```jsx
+```tsx
 function YourPosition() {
   const state = useGeoPosition()
   const status = state.value

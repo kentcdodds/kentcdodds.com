@@ -227,7 +227,7 @@ on the screen.
 Let's start by filling in the `root.jsx` with something. This is the root
 element Remix will render:
 
-```jsx
+```tsx
 import * as React from 'react'
 
 function App() {
@@ -253,7 +253,7 @@ than you think it is I promise you.
 
 Ok, next, let's fill in the `entry.client.jsx`:
 
-```jsx
+```tsx
 import ReactDOM from 'react-dom'
 import {RemixBrowser} from 'remix'
 
@@ -264,7 +264,7 @@ What's that? We're... HYDRATING the `document`?! How neat is that?!
 
 And finally, let's fill in the `entry.server.jsx`:
 
-```jsx
+```tsx
 import ReactDOMServer from 'react-dom/server'
 import {RemixServer} from 'remix'
 
@@ -390,7 +390,7 @@ starting from `<html>`? Cool right? So let's update our `app/root.jsx` to
 include the the script tag. Remix conveniently gives us a component we can
 render to render that script tag:
 
-```jsx [3,15]
+```tsx [3,15]
 // app/root.jsx
 import * as React from 'react'
 import {Scripts} from 'remix'

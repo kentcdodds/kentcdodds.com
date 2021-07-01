@@ -21,7 +21,7 @@ One of the most common questions I hear about the upcoming React Hooks feature
 is regarding testing. And I can understand the concern when your tests look like
 this:
 
-```jsx
+```tsx
 // borrowed from a previous blog post:
 // https://kcd.im/implementation-details
 test('setOpenIndex sets the open index state properly', () => {
@@ -48,7 +48,7 @@ instance like the test above. You can read more about this in
 Let's look at a simpler example of a class component. My favorite example is a
 `<Counter />` component:
 
-```jsx
+```tsx
 // counter.js
 import * as React from 'react'
 
@@ -66,7 +66,7 @@ export default Counter
 Now let's see how we could test it in a way that's ready for refactoring it to
 use hooks:
 
-```jsx
+```tsx
 // __tests__/counter.js
 import {render, screen} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -84,7 +84,7 @@ test('counter increments the count', () => {
 That test will pass. Now, let's refactor this to a hooks version of the same
 component:
 
-```jsx
+```tsx
 // counter.js
 import * as React from 'react'
 
@@ -157,7 +157,7 @@ behavior." Now, this change is desirable, but it is a change.
 So what does all this have to do with `useEffect`? Let's look at another example
 of our counter component as a class with a new feature:
 
-```jsx
+```tsx
 class Counter extends React.Component {
   state = {
     count: Number(window.localStorage.getItem('count') || 0),
@@ -181,7 +181,7 @@ Ok, so we're saving the value of `count` in `localStorage` using
 `componentDidMount` and `componentDidUpdate`. Here's what our
 implementation-details-free test would look like:
 
-```jsx
+```tsx
 // __tests__/counter.js
 import {render, screen} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -215,7 +215,7 @@ test('reads and updates localStorage', () => {
 That test passes! Woo! Now let's "refactor" this to hooks again with these new
 features:
 
-```jsx
+```tsx
 import React, {useState, useEffect} from 'react'
 
 function Counter() {
@@ -289,7 +289,7 @@ class Counter extends React.Component {
 
 Here's how I would test this:
 
-```jsx
+```tsx
 // __tests__/counter.js
 import * as React from 'react'
 import {render} from '@testing-library/react'

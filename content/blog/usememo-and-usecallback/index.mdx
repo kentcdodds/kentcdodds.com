@@ -42,7 +42,7 @@ Here's a candy dispenser:
 
 Here's how it's implemented:
 
-```jsx
+```tsx
 function CandyDispenser() {
   const initialCandies = ['snickers', 'skittles', 'twix', 'milky way']
   const [candies, setCandies] = React.useState(initialCandies)
@@ -273,7 +273,7 @@ Let's review an example.
 > Warning, you're about to see some seriously contrived code. Please don't
 > nit-pick that and just focus on the concepts please, thank you.
 
-```jsx
+```tsx
 function Foo({bar, baz}) {
   const options = {bar, baz}
   React.useEffect(() => {
@@ -296,7 +296,7 @@ only when `bar` and `baz` change.
 
 There are two things we can do to fix this:
 
-```jsx
+```tsx
 // option 1
 function Foo({bar, baz}) {
   React.useEffect(() => {
@@ -312,7 +312,7 @@ That's a great option and if this were a real thing that's how I'd fix this.
 But there's one situation when this isn't a practical solution: If `bar` or
 `baz` are (non-primitive) objects/arrays/functions/etc:
 
-```jsx
+```tsx
 function Blub() {
   const bar = () => {}
   const baz = [1, 2, 3]
@@ -323,7 +323,7 @@ function Blub() {
 This is precisely the reason why `useCallback` and `useMemo` exist. So here's
 how you'd fix that (all together now):
 
-```jsx
+```tsx
 function Foo({bar, baz}) {
   React.useEffect(() => {
     const options = {bar, baz}
@@ -349,7 +349,7 @@ function Blub() {
 
 Check this out:
 
-```jsx
+```tsx
 function CountButton({onClick, count}) {
   return <button onClick={onClick}>{count}</button>
 }
@@ -387,7 +387,7 @@ However, there are situations when rendering can take a substantial amount of
 time (think highly interactive Graphs/Charts/Animations/etc.). Thanks to the
 pragmatistic nature of React, there's an escape hatch:
 
-```jsx
+```tsx
 const CountButton = React.memo(function CountButton({onClick, count}) {
   return <button onClick={onClick}>{count}</button>
 })
@@ -402,7 +402,7 @@ of the `CountButton`s anyway.
 
 So this is the other situation where `useCallback` and `useMemo` can be of help:
 
-```jsx {7, 10}
+```tsx {7, 10}
 const CountButton = React.memo(function CountButton({onClick, count}) {
   return <button onClick={onClick}>{count}</button>
 })
@@ -455,7 +455,7 @@ expensive to calculate (I mean how many apps actually need to
 [calculate prime numbers like this](https://developer.mozilla.org/en-US/docs/Tools/Performance/Scenarios/Intensive_JavaScript)
 ever, but that's an example):
 
-```jsx
+```tsx
 function RenderPrimes({iterations, multiplier}) {
   const primes = calculatePrimes(iterations, multiplier)
   return <div>Primes! {primes}</div>
@@ -468,7 +468,7 @@ make your user's hardware faster. But you _can_ make it so you never have to
 calculate the same value twice in a row, which is what `useMemo` will do for
 you:
 
-```jsx
+```tsx
 function RenderPrimes({iterations, multiplier}) {
   const primes = React.useMemo(
     () => calculatePrimes(iterations, multiplier),
@@ -512,7 +512,7 @@ define functions as methods on our classes, I would invite you to consider the
 fact that we've been defining methods in the render phase of our components
 since day one... For example:
 
-```jsx
+```tsx
 class FavoriteNumbers extends React.Component {
   render() {
     return (

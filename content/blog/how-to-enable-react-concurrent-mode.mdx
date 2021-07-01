@@ -71,7 +71,7 @@ general I'd say 😉
 In the entry file of your project, you probably have something that looks like
 this:
 
-```jsx
+```tsx
 import * as React from 'react'
 import ReactDOM from 'react-dom'
 import App from './app'
@@ -84,7 +84,7 @@ To enable Concurrent Mode, you'll use a new
 [`createRoot`](https://reactjs.org/docs/concurrent-mode-reference.html#createroot)
 API (NOTE the `unstable_` prefix):
 
-```jsx [6-8]
+```tsx [6-8]
 import * as React from 'react'
 import ReactDOM from 'react-dom'
 import App from './app'
@@ -132,7 +132,7 @@ above for more about this).
 You can try refactoring one of your asynchronous interactions to suspense, or
 just try adding this to somewhere in your app:
 
-```jsx
+```tsx
 function SuspenseDemo() {
   const [greetingResource, setGreetingResource] = React.useState(null)
   const [startTransition, isPending] = React.unstable_useTransition()

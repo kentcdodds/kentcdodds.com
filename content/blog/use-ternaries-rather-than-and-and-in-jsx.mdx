@@ -19,7 +19,7 @@ bannerCredit: Photo by [Burst](https://unsplash.com/photos/aoN3HWLbhdI)
 
 What's wrong with this code?
 
-```jsx
+```tsx
 function ContactList({contacts}) {
   return (
     <div>
@@ -55,7 +55,7 @@ doesn't evaluate the right side of the `&&`.
 The solution? Use a ternary to be explicit about what you want rendered in the
 falsy case. In our case, it was nothing (so using `null` is perfect):
 
-```jsx
+```tsx
 function ContactList({contacts}) {
   return (
     <div>
@@ -75,7 +75,7 @@ function ContactList({contacts}) {
 
 What about this code? What's wrong here?
 
-```jsx
+```tsx
 function Error({error}) {
   return error && <div className="fancy-error">{error.message}</div>
 }
@@ -147,7 +147,7 @@ the future, maybe even
 I'm personally a fan of ternaries, but if you'd prefer `if` statements, that's
 cool too. Here's how I'd do the contacts thing with `if` statements:
 
-```jsx
+```tsx
 function ContactList({contacts}) {
   let contactsElements = null
   if (contacts.length) {
@@ -184,7 +184,7 @@ AND operator for rendering. I prefer being explicit by using a ternary.
 To finish strong, if I had to write both of these components today, here's how
 I'd write them:
 
-```jsx
+```tsx
 function ContactList({contacts}) {
   return (
     <div>
@@ -202,7 +202,7 @@ function ContactList({contacts}) {
 }
 ```
 
-```jsx
+```tsx
 function Error({error}) {
   return error ? <div className="fancy-error">{error.message}</div> : null
 }

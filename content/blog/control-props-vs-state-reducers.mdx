@@ -16,7 +16,7 @@ bannerCredit: unknown
 You’ve probably used components or elements that implement the control props
 pattern. For example:
 
-```jsx
+```tsx
 <input value={this.state.inputValue} onChange={this.handleInputChange} />
 ```
 
@@ -31,7 +31,7 @@ reason-react does). My library
 Here’s an example of using it to prevent the menu from closing after an item is
 selected:
 
-```jsx
+```tsx
 function stateReducer(state, changes) {
   if (changes.type === Downshift.stateChangeTypes.clickItem) {
     // when the user clicks an item, prevent
@@ -59,7 +59,7 @@ Control Props are objectively more powerful because they allow complete control
 over state from outside the component. Let’s take my favorite Toggle component
 as an example:
 
-```jsx
+```tsx
 class Example extends React.Component {
   state = {on: false, inputValue: 'off'}
   handleToggle = on => {
@@ -110,7 +110,7 @@ State reducers do not have to manage the component’s state themselves (though
 they can manage some of their own state as needed). Here’s an example of using a
 state reducer:
 
-```jsx
+```tsx
 class Example extends React.Component {
   initialState = {timesClicked: 0}
   state = this.initialState

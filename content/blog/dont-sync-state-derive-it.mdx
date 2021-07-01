@@ -39,7 +39,7 @@ them.
 
 Let's start with `useState`:
 
-```jsx
+```tsx
 function Board() {
   const [squares, setSquares] = React.useState(Array(9).fill(null))
   const [nextValue, setNextValue] = React.useState(calculateNextValue(squares))
@@ -69,7 +69,7 @@ So that's not all that bad. Where it becomes a real problem is what if we added
 a feature to our tic-tac-toe game where you could select two squares at once?
 What would we have to do to make that happen?
 
-```jsx [23-38]
+```tsx [23-38]
 function Board() {
   const [squares, setSquares] = React.useState(Array(9).fill(null))
   const [nextValue, setNextValue] = React.useState(calculateNextValue(squares))
@@ -122,7 +122,7 @@ It's no fun to have things fall out of sync.
 One thing that _can_ help is to reduce duplication so that all relevant state
 updates happen in one place:
 
-```jsx [7-15,23,33]
+```tsx [7-15,23,33]
 function Board() {
   const [squares, setSquares] = React.useState(Array(9).fill(null))
   const [nextValue, setNextValue] = React.useState(calculateNextValue(squares))
@@ -174,7 +174,7 @@ What if I told you there's something better? If you've already read through the
 codesandbox implementation above, you know what that solution is, but let's put
 it right here now:
 
-```jsx
+```tsx
 function Board() {
   const [squares, setSquares] = React.useState(Array(9).fill(null))
   const nextValue = calculateNextValue(squares)
@@ -198,7 +198,7 @@ Nice! We don't need to worry about updating the derived state values because
 they're simply calculated every render. Cool. Let's add that two squares at a
 time feature:
 
-```jsx [16-24]
+```tsx [16-24]
 function Board() {
   const [squares, setSquares] = React.useState(Array(9).fill(null))
   const nextValue = calculateNextValue(squares)
@@ -239,7 +239,7 @@ the fly.
 `useReducer` doesn't suffer as badly from these problems. Here's how I might
 implement this using `useReducer`:
 
-```jsx
+```tsx
 function calculateDerivedState(squares) {
   const winner = calculateWinner(squares)
   const nextValue = calculateNextValue(squares)
@@ -287,7 +287,7 @@ State doesn't have to be managed internally to suffer from the state
 synchronization problems. What if we had the `squares` state coming from a
 parent component? How would we synchronize that state?
 
-```jsx
+```tsx
 function Board({squares, onSelectSquare}) {
   const [nextValue, setNextValue] = React.useState(calculateNextValue(squares))
   const [winner, setWinner] = React.useState(calculateWinner(squares))
@@ -348,7 +348,7 @@ you).
 That said, if you _do_ happen to have a function which _is_ computationally
 expensive, then that's what `useMemo` is for!
 
-```jsx [3-8]
+```tsx [3-8]
 function Board() {
   const [squares, setSquares] = React.useState(Array(9).fill(null))
   const nextValue = React.useMemo(() => calculateNextValue(squares), [squares])
@@ -388,7 +388,7 @@ it's accessed.
 
 For (contrived) example:
 
-```jsx [4]
+```tsx [4]
 function FavoriteNumber() {
   const [name, setName] = React.useState('')
   const [number, setNumber] = React.useState(0)
@@ -427,7 +427,7 @@ If you're experiencing this a lot in your app, then I suggest you just jump into
 using MobX (MobX folks will tell you there are a lot of other reasons to use it
 as well), but we can solve this specific situation pretty easily ourselves:
 
-```jsx [4-7,25,26]
+```tsx [4-7,25,26]
 function FavoriteNumber() {
   const [name, setName] = React.useState('')
   const [number, setNumber] = React.useState(0)
@@ -469,7 +469,7 @@ https://codesandbox.io/s/usecomputedvalue-custom-hook-mo5b4
 
 It's sufficient to say that the custom hook allows us to do this:
 
-```jsx [4-6,24,25]
+```tsx [4-6,24,25]
 function FavoriteNumber() {
   const [name, setName] = React.useState('')
   const [number, setNumber] = React.useState(0)

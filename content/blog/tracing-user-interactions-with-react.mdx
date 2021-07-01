@@ -47,7 +47,7 @@ the APIs to instrument your components for interaction tracing.
 
 Let's say you have a simple greeting component:
 
-```jsx
+```tsx
 function Greeting() {
   const [greeting, setGreeting] = React.useState('')
 
@@ -116,7 +116,7 @@ would! Luckily there's support for that!
 Say we have to fetch the greeting from a server. Let's rewrite this for that use
 case:
 
-```jsx
+```tsx
 function Greeting() {
   const [greeting, setGreeting] = React.useState('')
 
@@ -151,7 +151,7 @@ function Greeting() {
 
 To support tracing this, we'll use `unstable_wrap`:
 
-```jsx [2,15-18]
+```tsx [2,15-18]
 // your other imports
 import {unstable_trace as trace, unstable_wrap as wrap} from 'scheduler/tracing'
 

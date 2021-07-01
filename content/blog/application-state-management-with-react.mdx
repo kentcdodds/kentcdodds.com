@@ -94,7 +94,7 @@ location. Instead, you let each individual component manage that and it ends up
 being a really effective way to build your UI. You can do this with your state
 as well, and it's very likely that you do today:
 
-```jsx {2}
+```tsx {2}
 function Counter() {
   const [count, setCount] = React.useState(0)
   const increment = () => setCount(c => c + 1)
@@ -112,7 +112,7 @@ Note that everything I'm talking about here works with class components as well.
 Hooks just make things a bit easier (especially context which we'll get into in
 a minute).
 
-```jsx {2}
+```tsx {2}
 class Counter extends React.Component {
   state = {count: 0}
   increment = () => this.setState(({count}) => ({count: count + 1}))
@@ -126,7 +126,7 @@ class Counter extends React.Component {
 is easy, but what do you do when I need to share that state across components?
 For example, what if I wanted to do this:"
 
-```jsx {3}
+```tsx {3}
 function CountDisplay() {
   // where does `count` come from?
   return <div>The current counter count is {count}</div>
@@ -153,7 +153,7 @@ the docs for as long as I can remember:
 "Lifting State Up" is legitimately the answer to the state management problem in
 React and it's a rock solid one. Here's how you apply it to this situation:
 
-```jsx
+```tsx
 function Counter({count, onIncrementClick}) {
   return <button onClick={onIncrementClick}>{count}</button>
 }
@@ -188,7 +188,7 @@ you're structuring your components. Take advantage of
 [component composition](https://reactjs.org/docs/context.html#before-you-use-context).
 Maybe instead of:
 
-```jsx
+```tsx
 function App() {
   const [someState, setSomeState] = React.useState('some state')
   return (
@@ -203,7 +203,7 @@ function App() {
 
 You could do this instead:
 
-```jsx
+```tsx
 function App() {
   const [someState, setSomeState] = React.useState('some state')
   return (
@@ -239,7 +239,7 @@ mechanism I'm referring to without them having to be worried about the warning
 that was in the React docs. But now that `context` is an officially supported
 part of the React API, we can use this directly without any problem:
 
-```jsx
+```tsx
 // src/count/count-context.js
 import * as React from 'react'
 
@@ -299,7 +299,7 @@ function CountPage() {
 And what's cool about this approach is that we could put all the logic for
 common ways to update the state in our `useCount` hook:
 
-```jsx
+```tsx
 function useCount() {
   const context = React.useContext(CountContext)
   if (!context) {
@@ -320,7 +320,7 @@ function useCount() {
 
 And you could easily change this to `useReducer` rather than `useState` as well:
 
-```jsx
+```tsx
 function countReducer(state, action) {
   switch (action.type) {
     case 'INCREMENT': {
@@ -369,7 +369,7 @@ way:
 
 More on that second point. Your app tree could look something like this:
 
-```jsx
+```tsx
 function App() {
   return (
     <ThemeProvider>

@@ -46,7 +46,7 @@ Now try this one:
 That's working as expected now. Here's the implementation, and I'll highlight
 the difference:
 
-```jsx [21]
+```tsx [21]
 const defaultValuesByTopic = {
   training: 'I would like some training',
   consulting: 'I have consulting needs',
@@ -97,7 +97,7 @@ attached to the component instance. This is why you can render that component
 twice on the page and they will operate completely independently. For our
 demonstration, let's use something really simple:
 
-```jsx
+```tsx
 function Counter() {
   const [count, setCount] = React.useState(0)
   const increment = () => setCount(c => c + 1)
@@ -140,7 +140,7 @@ purposes. For components, this means that React will run cleanup on effects (or
 
 Here's a simple example of this working in a counter:
 
-```jsx
+```tsx
 function Counter() {
   console.log('Counter called')
 

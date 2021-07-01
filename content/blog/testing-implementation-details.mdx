@@ -48,7 +48,7 @@ implementation details. Tests which test implementation details:
 Let's take a look at each of these in turn, using the following simple accordion
 component as an example:
 
-```jsx
+```tsx
 // accordion.js
 import * as React from 'react'
 import AccordionContents from './accordion-contents'
@@ -85,7 +85,7 @@ already be expecting).
 
 And here's a test that tests implementation details:
 
-```jsx
+```tsx
 // __tests__/accordion.enzyme.js
 import * as React from 'react'
 // if you're wondering why not shallow,
@@ -137,7 +137,7 @@ Let's say that we're working on adding the ability for multiple accordion
 elements to be opened at once, so we're changing our internal state from
 `openIndex` to `openIndexes`:
 
-```jsx remove=2-3,7,16 add=4-5,8,17
+```tsx remove=2-3,7,16 add=4-5,8,17
 class Accordion extends React.Component {
   state = {openIndex: 0}
   setOpenIndex = openIndex => this.setState({openIndex})
@@ -189,7 +189,7 @@ but it was because of a broken test, not broken app code. I honestly cannot
 think of a more annoying test failure situation. Oh well, let's go ahead and fix
 our test:
 
-```jsx remove=3,6 add=4,7
+```tsx remove=3,6 add=4,7
 test('setOpenIndex sets the open index state properly', () => {
   const wrapper = mount(<Accordion items={[]} />)
   expect(wrapper.state('openIndex')).toEqual(0)
@@ -209,7 +209,7 @@ tests that seem to break anytime you so much as look at the code.**
 Ok, so now let's say your co-worker is working in the Accordion and they see
 this code:
 
-```jsx
+```tsx
 <button onClick={() => this.setOpenIndex(index)}>{item.title}</button>
 ```
 
@@ -219,7 +219,7 @@ say to themselves, "hey! inline arrow functions in `render` are
 so I'll just clean that up! I think this should work, I'll just change it really
 quick and run tests."
 
-```jsx
+```tsx
 <button onClick={this.setOpenIndex}>{item.title}</button>
 ```
 
@@ -259,7 +259,7 @@ are free of implementation details, but instead, I'm just going to use
 which will make it very difficult to include implementation details in my tests.
 Let's check that out now!
 
-```jsx
+```tsx
 // __tests__/accordion.rtl.js
 import '@testing-library/jest-dom/extend-expect'
 import * as React from 'react'

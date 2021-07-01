@@ -32,7 +32,7 @@ I got a great question from [Taranveer Bains](https://github.com/tearingItUp786)
 
 Here's a simple reproduction of that error
 
-```jsx
+```tsx
 import * as React from 'react'
 
 function Counter() {
@@ -79,7 +79,7 @@ So what's going on here? Let's dig in.
 
 First off, I'll just tell you the solution:
 
-```jsx remove=1 add=2
+```tsx remove=1 add=2
 <div>{items.map(Counter)}</div>
 <div>{items.map(i => <Counter key={i.id} />)}</div>
 ```
@@ -91,7 +91,7 @@ First off, I'll just tell you the solution:
 
 Here's another way to make this same kind of error happen:
 
-```jsx
+```tsx
 function Example() {
   const [count, setCount] = React.useState(0)
   let otherState
@@ -119,7 +119,7 @@ why is this causing a problem for us in this case?
 
 Well, let's rewrite our original example slightly:
 
-```jsx [14-16]
+```tsx [14-16]
 function Counter() {
   const [count, setCount] = React.useState(0)
   const increment = () => setCount(c => c + 1)
@@ -145,7 +145,7 @@ function App() {
 And you'll notice that we're making a function that's just calling another
 function so let's inline that:
 
-```jsx [8-12]
+```tsx [8-12]
 function App() {
   const [items, setItems] = React.useState([])
   const addItem = () => setItems(i => [...i, {id: i.length}])
@@ -186,7 +186,7 @@ React creates.
 Oh, and it's notable to mention that _sometimes_ it will "work" to call function
 components. Like so:
 
-```jsx
+```tsx
 function Counter() {
   const [count, setCount] = React.useState(0)
   const increment = () => setCount(c => c + 1)

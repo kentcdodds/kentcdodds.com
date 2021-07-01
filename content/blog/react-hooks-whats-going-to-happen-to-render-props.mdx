@@ -47,7 +47,7 @@ If you're interested,
 
 Here's a typical usage of `react-toggled`:
 
-```jsx
+```tsx
 function App() {
   return (
     <Toggle>
@@ -69,7 +69,7 @@ function useToggle(initialOn = false) {
 
 Then people could use that like so:
 
-```jsx
+```tsx
 function App() {
   const {on, toggle} = useToggle()
   return <button onClick={toggle}>{on ? 'on' : 'off'}</button>
@@ -107,7 +107,7 @@ function useToggle(initialOn = false) {
 
 And now our `useToggle` hook can use the `getTogglerProps`:
 
-```jsx
+```tsx
 function App() {
   const {on, getTogglerProps} = useToggle()
   return <button {...getTogglerProps()}>{on ? 'on' : 'off'}</button>
@@ -182,7 +182,7 @@ YES! Observe! Here's
 [an example of using downshift with react-virtualized](https://github.com/downshift-js/downshift/blob/9b3467dce2be59832765277570857de5679d8392/stories/examples/windowing-with-react-virtualized.js).
 Here's the relevant bit:
 
-```jsx
+```tsx
 <List
   // ... some props
   rowRenderer={({key, index, style}) => (

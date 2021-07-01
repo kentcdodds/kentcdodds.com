@@ -41,7 +41,7 @@ application and/or libraries.
 First, let's create a file at `src/count-context.js` and we'll create our
 context there:
 
-```jsx
+```tsx
 // src/count-context.js
 import * as React from 'react'
 
@@ -53,7 +53,7 @@ initial value, I would call `React.createContext({count: 0})`. But I don't
 include a default value and that's intentional. The `defaultValue` is only
 useful in a situation like this:
 
-```jsx [2]
+```tsx [2]
 function CountDisplay() {
   const {count} = React.useContext(CountContext)
   return <div>{count}</div>
@@ -97,7 +97,7 @@ Ok, let's continue. For this context module to be useful _at all_ we need to use
 the Provider and expose a component that provides a value. Our component will be
 used like this:
 
-```jsx [3,6]
+```tsx [3,6]
 function App() {
   return (
     <CountProvider>
@@ -112,7 +112,7 @@ ReactDOM.render(<App />, document.getElementById('⚛️'))
 
 So let's make a component that can be used like that:
 
-```jsx
+```tsx
 // src/count-context.js
 import * as React from 'react'
 
@@ -155,7 +155,7 @@ export {CountProvider}
 Most of the APIs for context usages I've seen in the wild look something like
 this:
 
-```jsx
+```tsx
 import * as React from 'react'
 import {SomethingContext} from 'some-context-package'
 
@@ -167,7 +167,7 @@ function YourComponent() {
 But I think that's a missed opportunity at providing a better user experience.
 Instead, I think it should be like this:
 
-```jsx
+```tsx
 import * as React from 'react'
 import {useSomething} from 'some-context-package'
 
@@ -179,7 +179,7 @@ function YourComponent() {
 This has the benefit of you being able to do a few things which I'll show you in
 the implementation now:
 
-```jsx [28-34,36]
+```tsx [28-34,36]
 // src/count-context.js
 import * as React from 'react'
 
@@ -232,7 +232,7 @@ to support React `<` 16.8.0, or you think the Context needs to be consumed by
 class components, then here's how you could do something similar with the
 render-prop based API for context consumers:
 
-```jsx
+```tsx
 function CountConsumer({children}) {
   return (
     <CountContext.Consumer>
@@ -249,7 +249,7 @@ function CountConsumer({children}) {
 
 And here's how class components would use it:
 
-```jsx
+```tsx
 class CounterThing extends React.Component {
   render() {
     return (
@@ -409,7 +409,7 @@ time I host the workshop)!
 
 So here's the final version of the code:
 
-```jsx
+```tsx
 // src/count-context.js
 import * as React from 'react'
 

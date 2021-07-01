@@ -41,7 +41,7 @@ can determine how it can be more practically applicable in your own app.
 
 Here's the code for that
 
-```jsx
+```tsx
 function sleep(time) {
   const done = Date.now() + time
   while (done > Date.now()) {
@@ -105,7 +105,7 @@ used by every component in the App, which is why it was
 the `dog` state is only used by one component, so let's move that state to be
 colocated (updated lines are highlighted):
 
-```jsx [1,2,7,18]
+```tsx [1,2,7,18]
 function DogName({time}) {
   const [dog, setDog] = React.useState('')
   return (
@@ -196,7 +196,7 @@ If you'd like to play around with a slightly less contrived example,
 
 So, to accomplish this, we had our `dog` state _inside_ the `DogName` component:
 
-```jsx
+```tsx
 function DogName({time}) {
   const [dog, setDog] = React.useState('')
   return (
@@ -215,7 +215,7 @@ the same: "as close to where it's relevant as possible." That would be the
 **closest common parent.** As an example, let's break the `DogName` component up
 so the `input` and the `p` show up in different components:
 
-```jsx
+```tsx
 function DogName({time}) {
   const [dog, setDog] = React.useState('')
   return (

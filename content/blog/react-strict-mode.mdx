@@ -16,7 +16,7 @@ In January 2018, [Brian Vaughn](https://twitter.com/brian_d_vaughn)
 [added `<React.StrictMode />`](https://github.com/facebook/react/pull/12083).
 Here's how to start using it in your app today:
 
-```jsx remove=2 add=3-5
+```tsx remove=2 add=3-5
 ReactDOM.render(
   <App />,
   <React.StrictMode>
@@ -79,7 +79,7 @@ https://fb.me/react-strict-mode-find-node
 
 And here's the code that I used to generate those warnings:
 
-```jsx
+```tsx
 import * as React from 'react'
 import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
@@ -242,7 +242,7 @@ One approach that I think many teams are adopting (and I recommend) is to start
 by wrapping parts of your app in `<React.StrictMode />` instead of the entire
 app:
 
-```jsx
+```tsx
 function App() {
   return (
     <div>

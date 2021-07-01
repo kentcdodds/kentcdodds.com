@@ -56,7 +56,7 @@ Imagine you have a component like this:
 Here's the code for that (if you were to do it with class components, don't
 worry a function version is coming later in the post):
 
-```jsx
+```tsx
 class UsernameFormClass extends React.Component {
   state = {status: 'idle', error: null}
   handleSubmit = async event => {
@@ -89,7 +89,7 @@ class UsernameFormClass extends React.Component {
 So, let's imagine we want to write a test for this. Here's what you might write
 to verify that the component is working properly:
 
-```jsx
+```tsx
 import * as React from 'react'
 import user from '@testing-library/user-event'
 import {render, screen} from '@testing-library/react'
@@ -114,7 +114,7 @@ and it provides us value.
 
 But, what if we rewrite this to a function component with hooks? Let's try that:
 
-```jsx
+```tsx
 function UsernameForm({updateUsername}) {
   const [{status, error}, setState] = React.useState({
     status: 'idle',
@@ -174,7 +174,7 @@ test didn't test our component's happy-path fully and left one important aspect
 vulnerable to regressions. Let's go back to the class version and comment out an
 important line of code:
 
-```jsx [9]
+```tsx [9]
 class UsernameFormClass extends React.Component {
   state = {status: 'idle', error: null}
   handleSubmit = async event => {
@@ -245,7 +245,7 @@ everything that's happening in our component (thanks React team! 🙏) and then
 let's add an assertion to our test to cover the use case we forgot the first
 time around:
 
-```jsx [12]
+```tsx [12]
 test('calls updateUsername with the new username', async () => {
   const handleUpdateUsername = jest.fn()
   const fakeUsername = 'sonicthehedgehog'
@@ -296,7 +296,7 @@ Because our code waits for the `updateUsername` promise to resolve before
 continuing, we could return a promise from our fake version and use an async act
 to await that promise resolution:
 
-```jsx [2,3,13]
+```tsx [2,3,13]
 test('calls updateUsername with the new username', async () => {
   const promise = Promise.resolve()
   const handleUpdateUsername = jest.fn(() => promise)
@@ -333,7 +333,7 @@ examples:
 
 Let's say you have a component that's checking against an API on an interval:
 
-```jsx
+```tsx
 function OrderStatus({orderId}) {
   const [{status, data, error}, setState] = React.useReducer(
     (s, a) => ({...s, ...a}),
@@ -380,7 +380,7 @@ function OrderStatus({orderId}) {
 So we've handled all the edge cases and cleaned up after ourselves nicely, but
 when we write our test for it, we're going to get the `act` warning again:
 
-```jsx
+```tsx
 import * as React from 'react'
 import {render, screen} from '@testing-library/react'
 import {checkStatus} from '../api'
@@ -419,7 +419,7 @@ test('polling backend on an interval', async () => {
 
 The `act` warning here is happening because of this line:
 
-```jsx [4]
+```tsx [4]
 // ...
 let current = true
 function tick() {
@@ -434,7 +434,7 @@ whether this interaction with the component is properly tested. React Testing
 Library does not have a utility for jest fake timers and so we need to wrap the
 timer advancement in `act` ourselves, like this:
 
-```jsx [2,18]
+```tsx [2,18]
 import * as React from 'react'
 import {render, screen, act} from '@testing-library/react'
 import {checkStatus} from '../api'
@@ -542,7 +542,7 @@ popping up when testing components that use this hook.
 So here's a pretty contrived example, but you should be double-thinking your
 decisions any time you use this hook anyway:
 
-```jsx
+```tsx
 function ImperativeCounter(props, ref) {
   const [count, setCount] = React.useState(0)
   React.useImperativeHandle(ref, () => ({
@@ -556,7 +556,7 @@ ImperativeCounter = React.forwardRef(ImperativeCounter)
 
 Here's how you might test this:
 
-```jsx
+```tsx
 import * as React from 'react'
 import {render, screen, act} from '@testing-library/react'
 import ImperativeCounter from '../imperative-counter'
@@ -577,7 +577,7 @@ test('can call imperative methods on counter component', () => {
 You'll get an `act` warning on those `increment` and `decrement` calls because
 they're happening outside the React callstack. So, let's wrap them in `act`:
 
-```jsx [2,10,13]
+```tsx [2,10,13]
 import * as React from 'react'
 import {render, screen, act} from '@testing-library/react'
 import ImperativeCounter from '../imperative-counter'

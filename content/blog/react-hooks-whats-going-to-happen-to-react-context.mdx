@@ -27,7 +27,7 @@ other render-prop based APIs as well (for logic reuse). So I addressed that in
 the blog post by suggesting that you could combine all of the render-prop based
 APIs into a single function component and consume that:
 
-```jsx
+```tsx
 const ThemeContext = React.createContext('light')
 class ThemeProvider extends React.Component {
   /* code */
@@ -89,7 +89,7 @@ I've used this convenience API and I love it. But I'm even more excited about
 the implications that React Hooks have for the future of React context. Let's
 rewrite what we have above with the upcoming (ALPHA!) `useContext` hook:
 
-```jsx
+```tsx
 const ThemeContext = React.createContext('light')
 class ThemeProvider extends React.Component {
   /* code */

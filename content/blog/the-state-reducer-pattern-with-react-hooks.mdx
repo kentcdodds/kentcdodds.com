@@ -82,7 +82,7 @@ but I don't want you to get distracted by a complicated example as I teach you
 how to use this pattern with hooks. Just know that this pattern works best when
 it's applied to complex hooks and components (like downshift).
 
-```jsx
+```tsx
 function useToggle() {
   const [on, setOnState] = React.useState(false)
 
@@ -116,7 +116,7 @@ Now, let's say we wanted to adjust the `<Toggle />` component so the user
 couldn't click the `<Switch />` more than 4 times in a row unless they click a
 "Reset" button:
 
-```jsx [2-3,7-10,16-19]
+```tsx [2-3,7-10,16-19]
 function Toggle() {
   const [clicksSinceReset, setClicksSinceReset] = React.useState(0)
   const tooManyClicks = clicksSinceReset >= 4
@@ -150,7 +150,7 @@ Let's think about the API first, then the implementation second. As a user, it'd
 be cool if I could hook into every state update before it actually happens and
 modify it, like so:
 
-```jsx [6-14]
+```tsx [6-14]
 function Toggle() {
   const [clicksSinceReset, setClicksSinceReset] = React.useState(0)
   const tooManyClicks = clicksSinceReset >= 4
@@ -195,7 +195,7 @@ accepts an `action` as the second argument? Then the `action` could have a
 `changes` from the `toggleReducer` which would be exported by our `useToggle`
 hook. We'll just say that the `type` for clicking the switch is `TOGGLE`.
 
-```jsx [6-8]
+```tsx [6-8]
 function Toggle() {
   const [clicksSinceReset, setClicksSinceReset] = React.useState(0)
   const tooManyClicks = clicksSinceReset >= 4
@@ -236,7 +236,7 @@ the string `'TOGGLE'` for the type. Instead we'll have an object of all the
 change types that people can reference instead. This'll help avoid typos and
 improve editor autocompletion (for folks not using TypeScript):
 
-```jsx [8]
+```tsx [8]
 function Toggle() {
   const [clicksSinceReset, setClicksSinceReset] = React.useState(0)
   const tooManyClicks = clicksSinceReset >= 4
@@ -278,7 +278,7 @@ Alright, I'm happy with the API we're exposing here. Let's take a look at how we
 could implement this with our `useToggle` hook. In case you forgot, here's the
 code for that:
 
-```jsx
+```tsx
 function useToggle() {
   const [on, setOnState] = React.useState(false)
 
@@ -295,7 +295,7 @@ to skip ahead and tell you that this would be really annoying, even in this
 simple hook. Instead, we're going to rewrite this from `useState` to
 `useReducer` and that'll make our implementation a LOT easier:
 
-```jsx
+```tsx
 function toggleReducer(state, action) {
   switch (action.type) {
     case 'TOGGLE': {
@@ -328,7 +328,7 @@ Ok, cool. Really quick, let's add that `types` property to our `useToggle` to
 avoid the strings thing. And we'll export that so users of our hook can
 reference them:
 
-```jsx [1-5,8,11,14,26-28,33]
+```tsx [1-5,8,11,14,26-28,33]
 const actionTypes = {
   toggle: 'TOGGLE',
   on: 'ON',
@@ -367,7 +367,7 @@ export {useToggle, actionTypes}
 Cool, so now, users are going to pass `reducer` as a configuration object to our
 `useToggle` function, so let's accept that:
 
-```jsx [1]
+```tsx [1]
 function useToggle({reducer}) {
   const [{on}, dispatch] = React.useReducer(toggleReducer, {on: false})
 
@@ -385,7 +385,7 @@ our hook, we don't want to call our own `reducer`. Instead, let's expose our own
 reducer and they can use it themselves if they want to, so let's export it, and
 then we'll use the `reducer` they give us instead of our own:
 
-```jsx [2, 11]
+```tsx [2, 11]
 function useToggle({reducer}) {
   const [{on}, dispatch] = React.useReducer(reducer, {on: false})
 
@@ -404,7 +404,7 @@ not really what we want. We want to enable inversion of control for people who
 _do_ want control, but for the more common case, they shouldn't have to do
 anything special, so let's add some defaults:
 
-```jsx [1]
+```tsx [1]
 function useToggle({reducer = toggleReducer} = {}) {
   const [{on}, dispatch] = React.useReducer(reducer, {on: false})
 
@@ -425,7 +425,7 @@ can use it with the built-in one. Either way works just as well.
 
 Here's the final version:
 
-```jsx
+```tsx
 import * as React from 'react'
 import ReactDOM from 'react-dom'
 import Switch from './switch'

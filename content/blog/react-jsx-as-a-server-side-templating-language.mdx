@@ -83,13 +83,13 @@ simple. Just add `${polyfill.headHTML}` in the right place and you're set. In
 React though, that's kinda tricky. Let's try it out. Let's assume that
 `polyfill.headHTML` is `<script src="hello.js"></script>`. So if we do this:
 
-```jsx
+```tsx
 <head>{polyfill.headHTML}</head>
 ```
 
 This will result in HTML that looks like this:
 
-```jsx
+```tsx
 <head>&lt;script src=&quot;hello.js&quot;&gt;&lt;/script&gt;</head>
 ```
 
@@ -101,7 +101,7 @@ does this. However, there are situations where it causes problems (like this
 one). So React gives you an escape hatch where you can opt-out of this
 protection. Let's use that:
 
-```jsx
+```tsx
 <head>
   <div dangerouslySetInnerHTML={{__html: polyfill.headHTML}} />
 </head>
@@ -109,7 +109,7 @@ protection. Let's use that:
 
 So this would result in:
 
-```jsx
+```tsx
 <head>
   <div>
     <script src="hello.js" />
@@ -124,7 +124,7 @@ want to bust SEO or functionality of older, less-forgiving browsers for this.
 
 So here's the solution I came up with that I don't hate:
 
-```jsx
+```tsx
 <head>
   <RawText>{polyfill.headHTML}</RawText>
 </head>
@@ -132,7 +132,7 @@ So here's the solution I came up with that I don't hate:
 
 The implementation of that `RawText` component is pretty simple:
 
-```jsx
+```tsx
 function RawText({children}) {
   return <raw-text dangerouslySetInnerHTML={{__html: children}} />
 }
@@ -151,7 +151,7 @@ So this will result in:
 This doesn't solve the problem by itself. Here's what we do when we render the
 page to HTML:
 
-```jsx
+```tsx
 const htmlOutput = ReactDOMServer.renderToStaticMarkup(<Page {...options} />)
 const rendered = `  
   <!DOCTYPE html>  
@@ -203,7 +203,7 @@ though. So I built a simple React Context consumer and provider which made it
 easier to get messages using this same abstraction without the singleton. I'm
 not going to share the code for it, but here's how you can use it:
 
-```jsx
+```tsx
 <Message msgKey="marketing_pages/new_landing.title" />
 ```
 

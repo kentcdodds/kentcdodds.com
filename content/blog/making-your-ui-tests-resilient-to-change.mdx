@@ -25,7 +25,7 @@ you're writing some tests to make sure you don't. Let's get a quick look at
 
 ![Login form from the Bookshelf App](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033134/kentcdodds.com/content/blog/making-your-ui-tests-resilient-to-change/login.png)
 
-```jsx
+```tsx
 const form = (
   <form onSubmit={handleSubmit}>
     <div>
@@ -59,7 +59,7 @@ const submitButton = rootNode.querySelector('.btn')
 And here's where the problem comes in. What happens when we add another button?
 What if we added a "Sign up" button before the "Login" button?
 
-```jsx [12-14]
+```tsx [12-14]
 const form = (
   <form onSubmit={handleSubmit}>
     <div>
@@ -168,7 +168,7 @@ If we could add some metadata to the element we're trying to select that would
 solve the problem. Well guess what! There's actually an existing API for this!
 It's `data-` attributes! For example:
 
-```jsx
+```tsx
 function UsernameDisplay({user}) {
   return <strong data-testid="username">{user.username}</strong>
 }

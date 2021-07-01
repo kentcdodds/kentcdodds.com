@@ -29,7 +29,7 @@ through to get data to parts of the React Component tree. Let's look at a very
 simple example of a stateful component (yes, it's my favorite component
 example):
 
-```jsx
+```tsx
 function Toggle() {
   const [on, setOn] = React.useState(false)
   const toggle = () => setOn(o => !o)
@@ -44,7 +44,7 @@ function Toggle() {
 
 Let's refactor this into two components now:
 
-```jsx
+```tsx
 function Toggle() {
   const [on, setOn] = React.useState(false)
   const toggle = () => setOn(o => !o)
@@ -65,7 +65,7 @@ Simple enough, the `Switch` needs a reference to the `toggle` and `on` state, so
 we're sending some props there. Let's refactor it once more to add another layer
 in our component tree:
 
-```jsx
+```tsx
 function Toggle() {
   const [on, setOn] = React.useState(false)
   const toggle = () => setOn(o => !o)

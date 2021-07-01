@@ -23,7 +23,7 @@ import {Rendered, DelayedCounterBug, DelayedCounterWorking} from './components'
 If you've been working with React for a while, you've probably used `useState`.
 Here's a quick example of the API:
 
-```jsx
+```tsx
 function Counter() {
   const [count, setCount] = React.useState(0)
   const increment = () => setCount(count + 1)
@@ -44,7 +44,7 @@ React (at least, it is if you
 lesser known feature of both the `useState` call and the `dispatch` function
 that can be useful at times:
 
-```jsx
+```tsx
 function Counter() {
   const [count, setCount] = React.useState(() => 0)
   const increment = () => setCount(previousCount => previousCount + 1)
@@ -123,7 +123,7 @@ This one's a little bit more complicated. The easiest way to explain what it's
 for is by showing an example. Let's say that before we can update our count
 state, we need to do something async:
 
-```jsx
+```tsx
 function DelayedCounter() {
   const [count, setCount] = React.useState(0)
   const increment = async () => {
@@ -190,7 +190,7 @@ update**.
 
 So here's the solution:
 
-```jsx
+```tsx
 function DelayedCounter() {
   const [count, setCount] = React.useState(0)
   const increment = async () => {

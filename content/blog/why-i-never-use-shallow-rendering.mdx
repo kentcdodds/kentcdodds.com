@@ -41,7 +41,7 @@ better ways to do that than shallow rendering.**
 For the purposes of this article, let's use this example as our subject under
 test:
 
-```jsx
+```tsx
 import * as React from 'react'
 import {CSSTransition} from 'react-transition-group'
 
@@ -76,7 +76,7 @@ export {HiddenMessage}
 
 Here's an example of a test that uses shallow rendering with enzyme:
 
-```jsx
+```tsx
 import * as React from 'react'
 import Enzyme, {shallow} from 'enzyme'
 import Adapter from 'enzyme-adapter-react-16'
@@ -101,7 +101,7 @@ test('shallow', () => {
 To understand shallow rendering, let's add a `console.log(wrapper.debug())`
 which will log out the structure of what enzyme has rendered for us:
 
-```jsx
+```tsx
 <div>
   <button onClick={[Function]}>Toggle</button>
   <Fade in={true}>
@@ -176,7 +176,7 @@ rendering. Let's address each of these:
 
 Have you ever seen or written a test that looks like this?
 
-```jsx
+```tsx
 test('toggle toggles the state of show', () => {
   const wrapper = shallow(<HiddenMessage initialShow={true} />)
   expect(wrapper.state().show).toBe(true) // initialized properly
@@ -301,7 +301,7 @@ component which resembles the way a user would use your component much more
 closely. In addition, it can verify that you're using `<CSSTransition />`
 properly (something the shallow rendering example was _incapable_ of doing).
 
-```jsx
+```tsx
 import {render, screen} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import * as React from 'react'

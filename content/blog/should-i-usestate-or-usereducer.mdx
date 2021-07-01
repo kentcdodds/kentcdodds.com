@@ -294,7 +294,7 @@ them? There are three! I'll give you a hint, there's one in each of `undo`,
 
 Here's a contrived example that would reveal this bug:
 
-```jsx
+```tsx
 function Example() {
   const [state, {set}] = useUndo('first')
 
@@ -334,7 +334,7 @@ So what happened to `"second"` in our situation? Ah! Turns out we're missing our
 dependency on `set` in the effect dependency array. Silly goose. Let's add
 those:
 
-```jsx [6,10]
+```tsx [6,10]
 function Example() {
   const [state, {set}] = useUndo('first')
 

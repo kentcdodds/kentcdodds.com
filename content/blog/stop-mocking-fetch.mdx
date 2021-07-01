@@ -21,7 +21,7 @@ bannerCredit:
 
 What's wrong with this test?
 
-```jsx
+```tsx
 // __tests__/checkout.js
 import * as React from 'react'
 import {render, screen} from '@testing-library/react'
@@ -63,7 +63,7 @@ much more difficult then sure!
 But we don't want to _actually_ make `fetch` requests right? So let's mock out
 `window.fetch`:
 
-```jsx
+```tsx
 // __tests__/checkout.js
 import * as React from 'react'
 import {render, screen} from '@testing-library/react'
@@ -180,7 +180,7 @@ beforeEach(() => window.fetch.mockImplementation(mockFetch))
 
 Now my test can look like this:
 
-```jsx
+```tsx
 // __tests__/checkout.js
 import * as React from 'react'
 import {render, screen} from '@testing-library/react'
@@ -291,7 +291,7 @@ afterAll(() => server.close())
 
 Now my test can look like this:
 
-```jsx
+```tsx
 // __tests__/checkout.js
 import * as React from 'react'
 import {render, screen} from '@testing-library/react'
@@ -335,7 +335,7 @@ add additional server handlers at runtime (within a test) and then reset the
 server to the original handlers (effectively removing the runtime handlers) to
 preserve test isolation. Here's an example:
 
-```jsx
+```tsx
 // __tests__/checkout.js
 import * as React from 'react'
 import {server, rest} from 'test/server'

@@ -57,7 +57,7 @@ post! Read
 I should add one thing. If you're _really_ concerned about inlining your render
 prop function and perf implications of that, then don't inline the function! :)
 
-```jsx
+```tsx
 class MyComp extends React.Component {
   renderDownshift = downshift => <div>{/* Your UI stuff here */}</div>
   render() {
@@ -88,7 +88,7 @@ with arguments, you can do whatever you like with them. So I made
 [these two examples](https://codesandbox.io/s/ry4qwpnzqp) for Mark. Here's a
 smaller version of the concept:
 
-```jsx
+```tsx
 function JustARegularFunctionComponent(props) {
   // do whatever you want in here
   return <div>{/* your stuff */}</div>
@@ -133,7 +133,7 @@ above. Notice that thanks to React's composability, we can create a separate
 component, and simply forward the arguments to the props of our component.
 [Like this](https://codesandbox.io/s/6437r9qqk):
 
-```jsx
+```tsx
 class RegularClassComponent extends React.Component {
   componentDidUpdate() {
     // here you are :)
@@ -154,7 +154,7 @@ up his preferred pattern of
 [Component Injection](http://americanexpress.io/faccs-are-an-antipattern). With
 component injection you could do this even more cleanly:
 
-```jsx
+```tsx
 class RegularClassComponent extends React.Component {
   componentDidUpdate() {
     // here you are :)

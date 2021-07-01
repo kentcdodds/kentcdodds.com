@@ -49,7 +49,7 @@ Here's our simplest example:
 > Note, all examples assign to a variable `ui` just to illustrate that these are
 > regular JavaScript expressions that you can assign to a variable.
 
-```jsx
+```tsx
 ui = <div id="root">Hello world</div>
 ui = React.createElement('div', {id: 'root'}, 'Hello world')
 ```
@@ -74,7 +74,7 @@ ui = React.createElement('div', {id: 'root', children: 'Hello world'})
 
 If you have more than one child then you use an array:
 
-```jsx
+```tsx
 ui = (
   <div>
     <span>Hello</span> <span>World</span>
@@ -119,7 +119,7 @@ whatever else out of it. Neat right?!
 
 Here are a few more examples for you:
 
-```jsx
+```tsx
 ui = <div>Hello {subject}</div>
 ui = React.createElement('div', null, 'Hello ', subject)
 

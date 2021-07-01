@@ -34,7 +34,7 @@ totally works and you can give it a look if you want more details :) In that
 repo, we have a component called `FruitAutocomplete` which is (basically)
 implemented like so:
 
-```jsx
+```tsx
 import * as React from 'react'
 import {render} from 'react-dom'
 import Downshift from 'downshift'
@@ -115,7 +115,7 @@ the component. Here are the integration tests from the repo. You'll notice that
 there's no indication that the `FruitAutocomplete` component is implemented with
 a render prop component (an implementation detail):
 
-```jsx
+```tsx
 import * as React from 'react'
 import {mount} from 'enzyme'
 import FruitAutocomplete from '../fruit-autocomplete'
@@ -170,7 +170,7 @@ passing to the render prop. There are a few ways to do this.
 The first and most obvious way to do this is to extract the `render`prop
 function and export that:
 
-```jsx
+```tsx
 function FruitAutocomplete({onChange}) {
   return <Downshift onChange={onChange} render={fruitAutocompleteRender} />
 }
@@ -236,7 +236,7 @@ Those second points bother me a fair amount. There's another way to get at the
 render prop without extracting and exporting it though. Here's that last test
 implemented as if we didn't export the render prop function:
 
-```jsx
+```tsx
 import * as React from 'react'
 import {mount, render} from 'enzyme'
 import Downshift from 'downshift'

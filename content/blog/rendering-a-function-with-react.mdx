@@ -70,7 +70,7 @@ getContent('pages')('home.nav')('about')
 
 So thinking about this in the context of React:
 
-```jsx
+```tsx
 const getHomeContent = getContent('pages.home')
 const ui = (
   <a href="/about">
@@ -85,7 +85,7 @@ So far so good. But, **what if you mess up and have a typo**?
 
 Before this week, here's what happened:
 
-```jsx
+```tsx
 const ui = (
   <a href="/about">
     {getContent('pages.typo.nav.about')}
@@ -106,7 +106,7 @@ string and that'll give you an error that would crash the app. Error boundaries
 could help with this, though sometimes we call `getContent` outside of a React
 context, so that wouldn't help in every case. Anyway, this will break the app:
 
-```jsx
+```tsx
 const getHomeContent = getContent('pages.typo')
 const ui = <a href="/about">{getHomeContent('nav.about')}</a>
 // 💥 error 💥
@@ -128,7 +128,7 @@ long if you want. No problem.
 So now this wont throw an error, but we lose rendering the path if there's no
 content!
 
-```jsx
+```tsx
 const getHomeContent = getContent('pages.typo')
 const ui = (
   <a href="/about">
@@ -147,7 +147,7 @@ button to say `{pages.transfer.sendMoney}` than to say nothing at all.
 So here's where the challenge comes in. Let's rewrite the above to make this
 more clear:
 
-```jsx
+```tsx
 const getHomeContent = getContent('pages.typo')
 const aboutContent = getHomeContent('nav.about')
 const ui = <a href="/about">{aboutContent}</a>

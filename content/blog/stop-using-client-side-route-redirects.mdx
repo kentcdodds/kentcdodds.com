@@ -20,7 +20,7 @@ bannerCredit: Photo by [Lance Grandahl](https://unsplash.com/photos/hF6TtT-xz80)
 
 First, let's make sure we're talking about the same thing:
 
-```jsx
+```tsx
 function App() {
   return (
     <BrowserRouter>
@@ -35,7 +35,7 @@ function App() {
 
 I'm _NOT_ talking about this kind of usage (example borrowed from the docs):
 
-```jsx
+```tsx
 <Route exact path="/">
   {loggedIn ? <Redirect to="/dashboard" /> : <PublicHomePage />}
 </Route>
@@ -190,7 +190,7 @@ Whatever host you end up publishing your app to probably has some way to
 configure redirects (if it doesn't that's super weird of them). It may feel like
 a lot of work to avoid a simple:
 
-```jsx
+```tsx
 <Redirect from="/" to="/list" />
 ```
 

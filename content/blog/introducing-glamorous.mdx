@@ -18,7 +18,7 @@ bannerCredit:
 I was building something for my product at PayPal (blog post maybe forthcoming)
 and got tired of writing components like this:
 
-```jsx
+```tsx
 const styles = glamor.css({
   fontSize: 20,
   textAlign: 'center',
@@ -74,7 +74,7 @@ https://twitter.com/kentcdodds/status/842881773180731392
 
 Let's get a quick look at what a glamorous component looks like:
 
-```jsx
+```tsx
 // Create a <Title> react component that renders an <h1> which is
 // centered, palevioletred and sized at 1.5em
 const Title = glamorous.h1({
@@ -118,7 +118,7 @@ const MyLink = glamorous.a({
 [**child-selectors**](https://github.com/threepointone/glamor/blob/5e7d988211330b8e2fca5bb8da78e35051444efd/docs/howto.md#child-selectors)
 (the escape hatch you should rarely use, but is nice to have)
 
-```jsx
+```tsx
 const MyDiv = glamorous.div({
   display: 'block',
   '& .bold': {fontWeight: 'bold'},
@@ -173,7 +173,7 @@ With the new `ThemeProvider` (recently added by
 [Alessandro Arnodo](https://twitter.com/vesparny)), glamorous also supports
 theming:
 
-```jsx
+```tsx
 const Title = glamorous.h1(
   {
     fontSize: '10px',
@@ -224,7 +224,7 @@ this stuff, you wind up with names like `Container` and `Wrapper` and who knows
 which is which!? So, if you find that something doesn’t really need a name, then
 don’t give it one!
 
-```jsx
+```tsx
 const {Div, A} = glamorous
 
 function App() {
@@ -251,7 +251,7 @@ function App() {
 Oh, and just for fun, all this excitement around CSS Grid got you salivating?
 It’s trivially supported by glamorous:
 
-```jsx
+```tsx
 // Example inspired by
 // [http://gridbyexample.com/examples/example12/](http://gridbyexample.com/examples/example12)
 const MyGrid = glamorous.div({

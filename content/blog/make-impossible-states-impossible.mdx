@@ -23,7 +23,7 @@ Googling around it looks like it's a pretty popular phrase in the
 To illustrate what this means, let's checkout at
 [a very simple example](https://codesandbox.io/s/j71ljpvvww):
 
-```jsx
+```tsx
 <Alert>Just FYI</Alert>
 <Alert success>It worked!</Alert>
 <Alert warning>Head's up</Alert>
@@ -39,7 +39,7 @@ the same as assigning it to the value "true", so `success` is the same as
 
 Here's where this kind of API falls over. What should I render with this?
 
-```jsx
+```tsx
 <Alert success warning>
   It worked!
 </Alert>
@@ -58,7 +58,7 @@ So what do we do with our simple example? Whelp, all these different props
 represent is the _type_ of alert that should be rendered. So what if instead of
 simply accepting the prop itself, we accept a `type` prop?
 
-```jsx
+```tsx
 <AlertBetter>Just FYI</AlertBetter>
 <AlertBetter type="success">It worked!</AlertBetter>
 <AlertBetter type="warning">Head's up</AlertBetter>

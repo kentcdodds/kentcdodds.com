@@ -24,7 +24,7 @@ https://egghead.io/lessons/egghead-organization-of-authentication-state-in-react
 
 Here's the secret to this blog post in one short code example:
 
-```jsx
+```tsx
 import * as React from 'react'
 import {useUser} from './context/auth'
 import AuthenticatedApp from './authenticated-app'
@@ -45,7 +45,7 @@ little trick. Rather than trying to do something fancy to redirect the user when
 they happen to land on a page that they're not supposed to, instead you don't
 render that stuff at all. Things get even cooler when you do this:
 
-```jsx
+```tsx
 import * as React from 'react'
 import {useUser} from './context/auth'
 
@@ -79,7 +79,7 @@ the app or the other if there is no user.
 Ok, so what do you do to get to this point? Let's start by looking at where
 we're actually rendering the app:
 
-```jsx
+```tsx
 import * as React from 'react'
 import ReactDOM from 'react-dom'
 import App from './app'
@@ -95,7 +95,7 @@ ReactDOM.render(
 
 And here's that `<AppProviders />` component:
 
-```jsx
+```tsx
 import * as React from 'react'
 import {AuthProvider} from './auth-context'
 import {UserProvider} from './user-context'
@@ -123,7 +123,7 @@ email address/bio/etc.).
 has some stuff in it that's outside the scope of this blog post/domain specific,
 so I'm only going to show a slimmed down/modified version of it:
 
-```jsx
+```tsx
 import * as React from 'react'
 import {FullPageSpinner} from '../components/lib'
 

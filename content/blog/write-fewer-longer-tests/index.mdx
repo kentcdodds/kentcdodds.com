@@ -18,7 +18,7 @@ bannerCredit: Photo by [Bailey Zindel](https://unsplash.com/photos/NRQV-hBF10M)
 Imagine we have this UI that renders a loading spinner until some data is
 loaded:
 
-```jsx
+```tsx
 import * as React from 'react'
 import * as api from './api'
 
@@ -95,7 +95,7 @@ Many people read that list of requirements for a component and turn those into
 individual test cases. Maybe you've read about a so-called "only one assertion
 per test best practice." Let's give that a try:
 
-```jsx
+```tsx
 // 🛑 THIS IS AN EXAMPLE OF WHAT NOT TO DO...
 import * as React from 'react'
 import {render, wait, cleanup} from '@testing-library/react/pure'
@@ -200,7 +200,7 @@ problems with it:
 
 Instead, I suggest that we combine the tests like so:
 
-```jsx
+```tsx
 // ✅ This is an example of what to do
 import {render, screen, wait} from '@testing-library/react'
 import * as React from 'react'
@@ -373,7 +373,7 @@ happening **after your test completes** for which you should be waiting.
 Here's an example of a test (using the same example as above) suffering from
 this problem:
 
-```jsx
+```tsx
 // 🛑 THIS IS AN EXAMPLE OF WHAT NOT TO DO...
 test('course shows loading screen', () => {
   getCourseInfo.mockResolvedValueOnce(buildCourse())
@@ -397,7 +397,7 @@ There are three ways to fix this.
 2. Use React Testing Library's `wait` utility
 3. Put this assertion in another test (the premise of this article)
 
-```jsx
+```tsx
 // 1. Wait for the promise to resolve
 // ⚠️ this is an ok way to solve this problem, but there's a better way, read on
 test('course shows loading screen', async () => {
@@ -416,7 +416,7 @@ I had implemented an optimistic update (meaning the DOM update happened before
 the request finished) and therefore had no way to wait for/assert on changes in
 the DOM.
 
-```jsx
+```tsx
 // 2. Use React Testing Library's `wait` utility
 test('course shows loading screen', async () => {
   getCourseInfo.mockResolvedValueOnce(buildCourse())

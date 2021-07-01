@@ -90,7 +90,7 @@ https://codesandbox.io/s/n4r0qq898j
 
 Here's an even simpler version so you don't have to open the codesandbox:
 
-```jsx
+```tsx
 const ThemeContext = React.createContext('light')
 class ThemeProvider extends React.Component {
   state = {theme: 'light'}
@@ -162,7 +162,7 @@ So what can we do to avoid this? If it bothers you, then you can solve it the
 same way you solve the problem in regular JavaScript: utility
 functions/components. Here's an example:
 
-```jsx
+```tsx
 const ThemeContext = React.createContext('light')
 class ThemeProvider extends React.Component {
   /* code */

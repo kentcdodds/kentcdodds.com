@@ -41,7 +41,7 @@ function (`add(2, 3)`) you use JSX syntax (`<Add n1={2} n2={3} />`). The
 together in a single object and passed to the `Add` component function as the
 first argument like so:
 
-```jsx [1]
+```tsx [1]
 function Add(props) {
   return (
     <div>
@@ -53,7 +53,7 @@ function Add(props) {
 
 If I were to use this like so:
 
-```jsx
+```tsx
 <Add n1={2} n2={3} />
 ```
 
@@ -70,7 +70,7 @@ Let's say we want to default the `n2` to `0` in the event someone doesn't
 provide it (like `<Add n1={2} />`). **One limit to props is that you're not
 allowed to change them.** So you couldn't do something like this:
 
-```jsx
+```tsx
 function Add(props) {
   if (typeof props.n2 === 'undefined') {
     props.n2 = 0
@@ -91,7 +91,7 @@ TypeError: Cannot add property n2, object is not extensible
 
 This is simple enough to solve though:
 
-```jsx
+```tsx
 function Add(props) {
   let n2 = props.n2
   if (typeof n2 === 'undefined') {
@@ -108,7 +108,7 @@ function Add(props) {
 Or, often, you'll find people use destructuring syntax with default values as
 well (this is my personal preference):
 
-```jsx
+```tsx
 function Add({n1, n2 = 0}) {
   return (
     <div>
@@ -127,7 +127,7 @@ say I wanted to build something like this:
 
 Without state, here's how I might try to accomplish that:
 
-```jsx [5]
+```tsx [5]
 function AddWithInput(props) {
   function handleInputChange(event) {
     const input = event.target
@@ -157,7 +157,7 @@ This is where state comes in.
 
 State is data that changes over time, and that's perfect for our situation:
 
-```jsx [2, 7]
+```tsx [2, 7]
 function AddWithInput(props) {
   const [n2, setN2] = React.useState(0)
 
@@ -186,7 +186,7 @@ value of `n2` anymore. With the way that component is implemented currently,
 it's not referencing `props.n2` at all. But we can make this work by using props
 when we initialize our state:
 
-```jsx
+```tsx
 function AddWithInput(props) {
   const [n2, setN2] = React.useState(props.n2)
 
@@ -207,7 +207,7 @@ time.
 
 Let me just clean this component up a little bit and I'll explain my changes:
 
-```jsx [1, 2]
+```tsx [1, 2]
 function AddWithInput({n1, initialN2 = 0}) {
   const [n2, setN2] = React.useState(initialN2)
 

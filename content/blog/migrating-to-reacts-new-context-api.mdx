@@ -32,7 +32,7 @@ In my course, I have a section that shows how to write
 Here's the usage example of the Toggle component that exposes a compound
 components API:
 
-```jsx
+```tsx
 function Usage(props) {
   return (
     <Toggle onToggle={props.onToggle}>
@@ -57,7 +57,7 @@ tree.
 
 Here's the version of the implementation with the old context API:
 
-```jsx
+```tsx
 const TOGGLE_CONTEXT = '__toggle__'
 function ToggleOn({children}, context) {
   const {on} = context[TOGGLE_CONTEXT]
@@ -129,7 +129,7 @@ other lesson to demonstrate how to work around that issue:
 The new API doesn't have these problems, which is some of the reason I'm so
 excited about it. Here's my new version of this same exercise:
 
-```jsx
+```tsx
 const ToggleContext = React.createContext({
   on: false,
   toggle: () => {},

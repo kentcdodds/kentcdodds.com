@@ -65,7 +65,7 @@ component to understand these principles further. Here's an example of
 [the `<Menu />` component from Reach UI](https://ui.reach.tech/menu-button) that
 exposes a compound components API:
 
-```jsx
+```tsx
 function App() {
   return (
     <Menu>
@@ -99,7 +99,7 @@ use my favorite `<Toggle>` component example for this.
 
 Here's how our `<Toggle>` compound components are going to be used:
 
-```jsx
+```tsx
 function App() {
   return (
     <Toggle onToggle={on => console.log(on)}>
@@ -120,7 +120,7 @@ communicate the relationship.
 Ok, the moment you've all been waiting for, the actual full implementation of
 compound components with context and hooks:
 
-```jsx
+```tsx
 import * as React from 'react'
 // this switch implements a checkbox input and is not relevant for this example
 import {Switch} from '../switch'

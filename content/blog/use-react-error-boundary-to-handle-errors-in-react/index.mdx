@@ -28,7 +28,7 @@ import {
 
 What's wrong with this code?
 
-```jsx
+```tsx
 import * as React from 'react'
 import ReactDOM from 'react-dom'
 
@@ -72,7 +72,7 @@ for us to handle runtime errors like this.
 
 The naive approach to handling this kind of error would be to add a `try/catch`:
 
-```jsx [4-11,14-18,22-26]
+```tsx [4-11,14-18,22-26]
 import * as React from 'react'
 import ReactDOM from 'react-dom'
 
@@ -124,7 +124,7 @@ component in my app in a `try/catch` block? In regular JavaScript, you can
 simply wrap the calling function in a `try/catch` and it'll catch any errors in
 the functions it calls. Let's try that here:
 
-```jsx [22-31]
+```tsx [22-31]
 import * as React from 'react'
 import ReactDOM from 'react-dom'
 
@@ -189,7 +189,7 @@ React apps.
 So let's add [`react-error-boundary`](https://npm.im/react-error-boundary) and
 render the `ErrorBoundary` component:
 
-```jsx [25-28]
+```tsx [25-28]
 import * as React from 'react'
 import ReactDOM from 'react-dom'
 import {ErrorBoundary} from 'react-error-boundary'
@@ -242,7 +242,7 @@ tools we need to manage this as well.
 
 Here's a more complex example:
 
-```jsx [6,36-40]
+```tsx [6,36-40]
 function ErrorFallback({error, resetErrorBoundary}) {
   return (
     <div role="alert">
@@ -321,7 +321,7 @@ Error Boundary. To quote
 Most of the time, folks will manage some `error` state and render something
 different in the event of an error, like so:
 
-```jsx
+```tsx
 function Greeting() {
   const [{status, greeting, error}, setState] = React.useState({
     status: 'idle',
@@ -365,7 +365,7 @@ Luckily, [`react-error-boundary`](https://npm.im/react-error-boundary) also
 exposes a simple hook to help with these situations as well. Here's how you
 could use that to side-step this entirely:
 
-```jsx [6,14]
+```tsx [6,14]
 function Greeting() {
   const [{status, greeting}, setState] = React.useState({
     status: 'idle',
@@ -403,7 +403,7 @@ nearest error boundary like usual.
 
 Alternatively, let's say you're using a hook that gives you the error:
 
-```jsx
+```tsx
 function Greeting() {
   const [name, setName] = React.useState('')
   const {status, greeting, error} = useGreeting(name)
@@ -434,7 +434,7 @@ propagated to the nearest error boundary.
 
 In either case, you could handle those errors like this:
 
-```jsx
+```tsx
 const ui = (
   <ErrorBoundary FallbackComponent={ErrorFallback}>
     <Greeting />
