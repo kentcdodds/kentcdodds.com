@@ -1,11 +1,7 @@
 import {bundleMDX} from 'mdx-bundler'
 import visit from 'unist-util-visit'
-import type {
-  PluggableList,
-  PluginTuple,
-  Settings as UnifiedSettings,
-} from 'unified'
-import {getProcessor as getRyansProcessor} from '@ryanflorence/md'
+import type {PluggableList} from 'unified'
+import {remarkCodeBlocksShiki} from '@kentcdodds/md-temp'
 import remarkEmbedder from '@remark-embedder/core'
 import oembedTransformer from '@remark-embedder/transformer-oembed'
 import type {Config as OEmbedConfig} from '@remark-embedder/transformer-oembed'
@@ -13,15 +9,6 @@ import gfm from 'remark-gfm'
 import type {Node} from 'unist'
 import type {GitHubFile} from 'types'
 import calculateReadingTime from 'reading-time'
-
-// here's a hack because I didn't want to vendor Ryan's code...
-const ryansHighlighter = (
-  getRyansProcessor().attachers as Array<
-    PluginTuple<unknown[], UnifiedSettings>
-  >
-).find(([pluginFn]) => {
-  return /shiki/i.test(pluginFn.name)
-})
 
 const getOEmbedConfig: OEmbedConfig = ({provider}) => {
   if (provider.provider_name === 'Twitter') {
@@ -48,10 +35,6 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
   slug: string,
   githubFiles: Array<GitHubFile>,
 ) {
-  if (!ryansHighlighter) {
-    throw new Error(`Couldn't find Ryan's Highlighter`)
-  }
-
   const indexRegex = new RegExp(`${slug}\\/index.mdx?$`)
   const indexFile = githubFiles.find(({path}) => indexRegex.test(path))
   if (!indexFile) return null
@@ -70,7 +53,7 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
 
   const remarkPlugins: PluggableList = [
     gfm,
-    ryansHighlighter,
+    remarkCodeBlocksShiki,
     function optimizeCloudinaryImages() {
       return function transformer(tree: Node) {
         visit(tree, 'image', function visitor(node) {

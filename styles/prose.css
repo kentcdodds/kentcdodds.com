@@ -55,10 +55,26 @@ pre {
   margin-right: 1.5rem;
 }
 
+.prose pre[data-add]:not([data-lang='sh']) [data-diff-line-number]:before,
+.prose pre[data-remove]:not([data-lang='sh']) [data-diff-line-number]:before {
+  content: attr(data-diff-line-number);
+}
+
 .codeblock-line {
   display: block;
   position: relative;
   padding-right: 1rem;
+}
+
+.codeblock-line[data-highlight='true']:after,
+.prose pre[data-remove] .codeblock-line[data-remove='true']:after,
+.prose pre[data-add] .codeblock-line[data-add='true']:after {
+  content: ' ';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  opacity: 0.15;
 }
 
 .codeblock-line[data-highlight='true']:before {
@@ -66,15 +82,23 @@ pre {
 }
 
 .codeblock-line[data-highlight='true']:after {
-  content: ' ';
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
   background: var(--base0E);
-  opacity: 0.15;
 }
 
-/* TODO: support [data-remove] and [data-add] */
+.prose pre[data-remove] .codeblock-line[data-remove='true']:before {
+  content: '-';
+}
+
+.prose pre[data-remove] .codeblock-line[data-remove='true']:after {
+  background: var(--color-red-500);
+}
+
+.prose pre[data-add] .codeblock-line[data-add='true']:before {
+  content: '+';
+}
+
+.prose pre[data-add] .codeblock-line[data-add='true']:after {
+  background: var(--color-green-500);
+}
 
 /* TODO: support callout-info, callout-warning, and callout-error */
