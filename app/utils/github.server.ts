@@ -1,19 +1,12 @@
 import nodePath from 'path'
 import {Octokit as createOctokit} from '@octokit/rest'
 import {throttling} from '@octokit/plugin-throttling'
-import Cache from '@remark-embedder/cache'
 import type {Await, GitHubFile} from 'types'
 import config from '../../config'
+import * as redis from './redis.server'
 import {getErrorMessage} from './misc'
 
 const Octokit = createOctokit.plugin(throttling)
-
-const cache = new Cache(
-  nodePath.join(
-    process.cwd(),
-    'node_modules/.cache/kentcdodds.com/github-cache',
-  ),
-)
 
 type ThrottleOptions = {
   method: string
@@ -65,10 +58,10 @@ async function downloadMdxFileOrDirectory(
   const mdxFileOrDirectory = `${config.contentSrc.path}/${relativeMdxFileOrDirectory}`
   const key = `mdx-file-or-dir:${mdxFileOrDirectory}`
   if (bustCache) {
-    await cache.cache.del(key)
+    await redis.del(key)
   } else {
     try {
-      const cached = await cache.get(key)
+      const cached = await redis.get(key)
       if (cached) return JSON.parse(cached)
     } catch (error: unknown) {
       console.error(getErrorMessage(error))
@@ -96,7 +89,7 @@ async function downloadMdxFileOrDirectory(
     downloaded = []
   }
 
-  await cache.set(key, JSON.stringify(downloaded))
+  await redis.set(key, JSON.stringify(downloaded))
   return downloaded
 }
 
@@ -162,10 +155,10 @@ async function downloadDirList(path: string, bustCache: boolean) {
   let data: DirList | null = null
   let isCached = false
   if (bustCache) {
-    await cache.cache.del(key)
+    await redis.del(key)
   } else {
     try {
-      const cached = await cache.get(key)
+      const cached = await redis.get(key)
       if (cached) {
         data = JSON.parse(cached)
         isCached = true
@@ -191,14 +184,10 @@ async function downloadDirList(path: string, bustCache: boolean) {
   }
 
   if (!isCached) {
-    await cache.set(key, JSON.stringify(data))
+    await redis.set(key, JSON.stringify(data))
   }
 
   return data
 }
 
-async function resetCache() {
-  return cache.cache.reset()
-}
-
-export {downloadMdxFileOrDirectory, downloadDirList, resetCache}
+export {downloadMdxFileOrDirectory, downloadDirList}

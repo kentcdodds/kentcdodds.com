@@ -9,7 +9,6 @@ import {getProcessor as getRyansProcessor} from '@ryanflorence/md'
 import remarkEmbedder from '@remark-embedder/core'
 import oembedTransformer from '@remark-embedder/transformer-oembed'
 import type {Config as OEmbedConfig} from '@remark-embedder/transformer-oembed'
-import Cache from '@remark-embedder/cache'
 import gfm from 'remark-gfm'
 import type {Node} from 'unist'
 import type {GitHubFile} from 'types'
@@ -36,8 +35,6 @@ const getOEmbedConfig: OEmbedConfig = ({provider}) => {
   }
   return null
 }
-
-const cache = new Cache()
 
 function handleEmbedderError({url}: {url: string}) {
   return `<p>Error embedding <a href="${url}">the URL</a>.`
@@ -105,7 +102,6 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
     [
       remarkEmbedder,
       {
-        cache,
         handleError: handleEmbedderError,
         transformers: [[oembedTransformer, getOEmbedConfig]],
       },

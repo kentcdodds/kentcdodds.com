@@ -9,7 +9,7 @@ import {
   downloadMdxFileOrDirectory,
 } from '../utils/github.server'
 import {AnchorOrLink, getErrorMessage, typedBoolean} from '../utils/misc'
-import cache from './mdx-cache.server'
+import * as redis from './redis.server'
 
 async function getMdxPage({
   contentDir,
@@ -22,10 +22,10 @@ async function getMdxPage({
 }): Promise<MdxPage | null> {
   const key = `${contentDir}/${slug}`
   if (bustCache) {
-    await cache.cache.del(key)
+    await redis.del(key)
   } else {
     try {
-      const cached = await cache.get(key)
+      const cached = await redis.get(key)
       if (cached) return JSON.parse(cached)
     } catch (error: unknown) {
       console.error(getErrorMessage(error))
@@ -36,7 +36,7 @@ async function getMdxPage({
   const page = await compileMdx<MdxPage['frontmatter']>(slug, pageFiles)
   if (page) {
     const mdxPage = {...page, slug}
-    await cache.set(key, JSON.stringify(mdxPage))
+    await redis.set(key, JSON.stringify(mdxPage))
     return mdxPage
   } else {
     return null
@@ -47,10 +47,10 @@ async function getMdxPagesInDirectory(contentDir: string, bustCache: boolean) {
   const key = `dir-list:${contentDir}`
   let dirList: Array<{name: string; slug: string}> | undefined
   if (bustCache) {
-    await cache.cache.del(key)
+    await redis.del(key)
   } else {
     try {
-      const cached = await cache.get(key)
+      const cached = await redis.get(key)
       if (cached) dirList = JSON.parse(cached)
     } catch (error: unknown) {
       console.error(getErrorMessage(error))
@@ -61,11 +61,11 @@ async function getMdxPagesInDirectory(contentDir: string, bustCache: boolean) {
     dirList = (await downloadDirList(fullContentDirPath, bustCache)).map(
       ({name, path}) => ({
         name,
-        slug: path.replace(`${fullContentDirPath}/`, ''),
+        slug: path.replace(`${fullContentDirPath}/`, '').replace(/\.mdx$/, ''),
       }),
     )
   }
-  await cache.set(key, JSON.stringify(dirList))
+  await redis.set(key, JSON.stringify(dirList))
 
   const pages = await Promise.all(
     dirList

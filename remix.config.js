@@ -1,5 +1,5 @@
 module.exports = {
-  cacheDirectory: './node_modules/.cache/remix',
+  cacheDirectory: './.cache/remix',
   routes(defineRoutes) {
     return defineRoutes(route => {
       if (process.env.ENABLE_TEST_ROUTES === 'true') {
