@@ -6,7 +6,6 @@ import {Grid} from '../../components/grid'
 import {images} from '../../images'
 import {H2, H3, H6} from '../../components/typography'
 import {SearchIcon} from '../../components/icons/search-icon'
-import {Spacer} from '../../components/spacer'
 import {ArticleCard} from '../../components/article-card'
 import {ArrowLink} from '../../components/arrow-button'
 import {FeaturedArticleSection} from '../../components/sections/featured-article-section'
@@ -174,7 +173,7 @@ function BlogHome() {
 
   return (
     <div>
-      <Grid className="grid-rows-max-content mt-16">
+      <Grid className="grid-rows-max-content mb-36 mt-16">
         <div className="col-span-full lg:col-span-6 lg:col-start-7 lg:row-span-2">
           <img
             className="max-h-[50vh] mx-auto lg:max-w-md"
@@ -213,38 +212,33 @@ function BlogHome() {
         </div>
       </Grid>
 
-      <Spacer size="small" />
-
-      <Grid>
-        <div className="col-span-full">
-          <H6>Search blog by topics</H6>
-        </div>
-        <div className="flex flex-wrap col-span-full -ml-4 -mt-4 lg:col-span-10">
-          {data.tags.map(tag => (
-            <Tag
-              key={tag}
-              tag={tag}
-              selected={queryParts.has(tag)}
-              onClick={() => toggleTag(tag)}
-            />
-          ))}
-        </div>
-      </Grid>
-
-      {featured ? (
-        <>
-          <Spacer size="medium" />
-          <FeaturedArticleSection {...featured} />
-          <Spacer size="smallest" />
-        </>
+      {data.tags.length > 0 ? (
+        <Grid className="mb-14">
+          <H6 className="col-span-full mb-6">Search blog by topics</H6>
+          <div className="flex flex-wrap col-span-full -mb-4 -mr-4 lg:col-span-10">
+            {data.tags.map(tag => (
+              <Tag
+                key={tag}
+                tag={tag}
+                selected={queryParts.has(tag)}
+                onClick={() => toggleTag(tag)}
+              />
+            ))}
+          </div>
+        </Grid>
       ) : null}
 
-      <Grid>
+      {featured ? (
+        <div className="mb-10">
+          <FeaturedArticleSection {...featured} />
+        </div>
+      ) : null}
+
+      <Grid className="mb-64">
         {isSearching ? (
-          <div className="col-span-full">
-            <Spacer size="smaller" />
-            <H6>{data.matchingPosts} articles found</H6>
-          </div>
+          <H6 className="col-span-full mb-6">
+            {data.matchingPosts} articles found
+          </H6>
         ) : null}
 
         {posts.length === 0 ? (
@@ -271,15 +265,10 @@ function BlogHome() {
       {/* TODO: remove this eslint-disable, it's needed because this prop does not yet come from the loader */}
       {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
       {hasMorePosts ? (
-        <>
-          <Spacer size="large" />
-          <div className="flex justify-center w-full">
-            <LoadMoreButton />
-          </div>
-        </>
+        <div className="flex justify-center mb-64 w-full">
+          <LoadMoreButton />
+        </div>
       ) : null}
-
-      <Spacer size="large" />
 
       <Grid>
         <div className="col-span-full lg:col-span-5">
