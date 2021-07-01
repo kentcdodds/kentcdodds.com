@@ -99,6 +99,11 @@ We use Tailwind for our styles. That's all configured in the
 `styles` and they build to the `app/styles` directory where our app picks them
 up from there.
 
+### Database
+
+We've got PostgreSQL and Prisma set up. Learn about the schema and learn more
+about what commands you can run in `./prisma/schema.prisma`.
+
 <!-- prettier-ignore-start -->
 [build-badge]: https://img.shields.io/github/workflow/status/kentcdodds/elaborate/validate/main?logo=github&style=flat-square
 [build]: https://github.com/kentcdodds/elaborate/actions?query=workflow%3Avalidate
