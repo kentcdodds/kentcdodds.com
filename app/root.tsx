@@ -13,9 +13,10 @@ import type {LinksFunction, MetaFunction} from 'remix'
 import {useLocation, Outlet} from 'react-router-dom'
 import clsx from 'clsx'
 import type {Await, User} from 'types'
-import tailwind from './styles/tailwind.css'
-import vendors from './styles/vendors.css'
-import styles from './styles/app.css'
+import tailwindStyles from './styles/tailwind.css'
+import vendorStyles from './styles/vendors.css'
+import appStyles from './styles/app.css'
+import proseStyles from './styles/prose.css'
 import {
   useTheme,
   ThemeProvider,
@@ -54,9 +55,10 @@ export const meta: MetaFunction = () => {
 export const links: LinksFunction = () => {
   return [
     {rel: 'icon', href: '/favicon.ico'},
-    {rel: 'stylesheet', href: vendors},
-    {rel: 'stylesheet', href: tailwind},
-    {rel: 'stylesheet', href: styles},
+    {rel: 'stylesheet', href: vendorStyles},
+    {rel: 'stylesheet', href: tailwindStyles},
+    {rel: 'stylesheet', href: proseStyles},
+    {rel: 'stylesheet', href: appStyles},
   ]
 }
 

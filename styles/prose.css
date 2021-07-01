@@ -1,0 +1,80 @@
+/* code syntax highlighting */
+/* dark is default: */
+pre {
+  --base00: #011627; /* editor background */
+  --base01: #2d2d2d; /* unused (currently) */
+  --base02: #424242; /* unused (currently) */
+  --base03: #637777; /* code comments */
+  --base04: #555555; /* unused (currently) */
+  --base05: #d6deeb; /* fallback font color */
+  --base06: #c8c8c8; /* unused (currently) */
+  --base07: #fafafa; /* unused (currently) */
+  --base08: #d7dbe0; /* variable references */
+  --base09: #f78c6c; /* numbers */
+  --base0A: #c792ea; /* keywords */
+  --base0B: #ecc48d; /* strings */
+  --base0C: #f78c6c; /* escape characters in strings */
+  --base0D: #82aaff; /* function calls */
+  --base0E: #c792ea; /* operators */
+  --base0F: #d3423e; /* "Embedded" (whatever that means) */
+}
+
+.light pre {
+  --base00: #fbfbfb; /* editor background */
+  --base01: #e0e0e0; /* unused (currently) */
+  --base02: #d6d6d6; /* unused (currently) */
+  --base03: #989fb1; /* code comments */
+  --base04: #969896; /* unused (currently) */
+  --base05: #2e3039; /* fallback font color */
+  --base06: #282a2e; /* unused (currently) */
+  --base07: #1d1f21; /* unused (currently) */
+  --base08: #403f53; /* variable references */
+  --base09: #aa0982; /* numbers */
+  --base0A: #994cc3; /* keywords */
+  --base0B: #c96765; /* strings */
+  --base0C: #aa0982; /* escape characters in strings */
+  --base0D: #4876d6; /* function calls */
+  --base0E: #994cc3; /* operators */
+  --base0F: #d3423e; /* "Embedded" (whatever that means) */
+}
+
+.prose pre[data-line-numbers='true']:not([data-lang='sh']) {
+  padding-left: 0rem;
+  padding-right: 0rem;
+}
+
+.prose
+  pre[data-line-numbers='true']:not([data-lang='sh'])
+  [data-line-number]:before {
+  padding-left: 0rem;
+  content: attr(data-line-number);
+  text-align: right;
+  display: inline-block;
+  width: 2rem;
+  color: var(--base03);
+  margin-right: 1.5rem;
+}
+
+.codeblock-line {
+  display: block;
+  position: relative;
+  padding-right: 1rem;
+}
+
+.codeblock-line[data-highlight='true']:before {
+  border-left: 6px solid var(--base0E);
+}
+
+.codeblock-line[data-highlight='true']:after {
+  content: ' ';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  background: var(--base0E);
+  opacity: 0.15;
+}
+
+/* TODO: support [data-remove] and [data-add] */
+
+/* TODO: support callout-info, callout-warning, and callout-error */
