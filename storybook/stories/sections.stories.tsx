@@ -31,7 +31,14 @@ function HeroSection() {
   )
 }
 
-const BlogSection = () => <BlogSectionComponent articles={fixtures.articles} />
+const BlogSection = () => (
+  <BlogSectionComponent
+    articles={fixtures.articles}
+    title="Most popular from the blog."
+    description="
+            Probably the most helpful as well."
+  />
+)
 
 export {
   AboutSection,

@@ -113,7 +113,7 @@ function getMdxComponent(code: string) {
     components,
     ...rest
   }: Parameters<typeof Component>['0']) {
-    return <Component component={{a: AnchorOrLink, ...components}} {...rest} />
+    return <Component components={{a: AnchorOrLink, ...components}} {...rest} />
   }
   return KCDMdxComponent
 }

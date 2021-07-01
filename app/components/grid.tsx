@@ -5,20 +5,23 @@ interface GridProps {
   children: React.ReactNode
   overflow?: boolean
   className?: string
+  as?: React.ElementType
 }
 
-function Grid({children, className}: GridProps) {
+function Grid({children, className, as = 'div'}: GridProps) {
+  const Tag = as
+
   return (
-    <div className="mx-10vw">
+    <Tag className="mx-10vw">
       <div
         className={clsx(
-          'grid gap-4 grid-cols-4 mx-auto max-w-7xl md:grid-cols-8 lg:gap-6 lg:grid-cols-12',
+          'grid gap-x-4 grid-cols-4 mx-auto max-w-7xl md:grid-cols-8 lg:gap-x-6 lg:grid-cols-12',
           className,
         )}
       >
         {children}
       </div>
-    </div>
+    </Tag>
   )
 }
 
