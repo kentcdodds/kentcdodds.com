@@ -122,11 +122,17 @@ function BlogHome() {
   const isMountedRef = useIsMounted()
   const updateSearchParams = useDebounce((newQuery: string) => {
     if (!isMountedRef.current) return
-    const oldQuery = searchParamsRef.current.get('q')
+    const oldQuery = searchParamsRef.current.get('q') ?? ''
     if (newQuery === oldQuery) return
 
     const newSearchParams = new URLSearchParams(searchParamsRef.current)
-    newSearchParams.set('q', newQuery)
+    if (newQuery) {
+      newSearchParams.set('q', newQuery)
+    } else {
+      // this leaves me with a dangling "/?" which is annoying...
+      // do I need to use navigate instead? If so, how?
+      newSearchParams.delete('q')
+    }
     setSearchParams(newSearchParams, {replace: true})
   }, 200)
 
