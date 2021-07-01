@@ -97,9 +97,16 @@ function App() {
         <NonFlashOfWrongThemeEls ssrTheme={Boolean(data.theme)} />
       </head>
       <body
-        className={clsx('dark:bg-gray-900 bg-white transition delay-200', {
+        className={clsx('dark:bg-gray-900 bg-white transition ', {
           'opacity-50': showPendingState,
         })}
+        style={{
+          // we want a transition delay, but only on the opacity transition
+          // I'm unaware of any easy way to do this with tailwind
+          // so we'll just do this with inline styles 🙃
+          // TODO: maybe come up with a better way to show the pending state
+          transition: 'opacity 0.5s linear 0.5s',
+        }}
       >
         <Navbar />
         <main>

@@ -117,6 +117,8 @@ module.exports = {
                   marginBottom: theme('spacing.16'),
                 },
                 pre: {
+                  color: 'var(--base05)',
+                  backgroundColor: 'var(--base00)',
                   marginTop: 0,
                   marginBottom: theme('spacing.8'),
                   padding: theme('spacing.8'),
@@ -200,14 +202,6 @@ module.exports = {
                 hr: {
                   borderColor: theme('colors.gray.200'),
                 },
-                pre: {
-                  // TODO: remove important
-                  backgroundColor: `${theme('colors.gray.100')} !important`,
-                  color: `${theme('colors.gray.800')} !important`,
-                },
-                'pre code': {
-                  color: `${theme('colors.gray.800')} !important`,
-                },
                 code: {
                   color: theme('colors.gray.800'),
                 },
@@ -236,14 +230,6 @@ module.exports = {
                 },
                 hr: {
                   borderColor: theme('colors.gray.600'),
-                },
-                pre: {
-                  // TODO: remove !important
-                  backgroundColor: `${theme('colors.gray.800')} !important`,
-                  color: `${theme('colors.gray.200')} !important`,
-                },
-                'pre code': {
-                  color: `${theme('colors.gray.200')} !important`,
                 },
                 code: {
                   color: theme('colors.gray.100'),
