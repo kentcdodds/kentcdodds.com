@@ -16,7 +16,7 @@ kill_timeout = 5
   FLY = "true"
 
 [deploy]
-  release_command = "npx prisma migrate deploy && npm run prime-cache:prod"
+  release_command = "npx prisma migrate deploy"
 
 [experimental]
   allowed_public_ports = []
