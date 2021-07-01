@@ -11,6 +11,7 @@ module.exports = {
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/sort-type-union-intersection-members': 'off',
     'jsx-a11y/media-has-caption': 'off',
+    'jsx-a11y/label-has-associated-control': 'off',
     '@babel/new-cap': 'off',
     'react/jsx-filename-extension': 'off',
     '@typescript-eslint/no-namespace': 'off',

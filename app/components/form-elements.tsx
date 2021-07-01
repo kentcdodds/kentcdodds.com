@@ -2,7 +2,6 @@ import * as React from 'react'
 
 function Label(props: JSX.IntrinsicElements['label']) {
   return (
-    // eslint-disable-next-line jsx-a11y/label-has-associated-control
     <label
       {...props}
       className="inline-block dark:text-blueGray-500 text-gray-500 text-lg"
