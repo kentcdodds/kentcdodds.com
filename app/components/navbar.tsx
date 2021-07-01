@@ -8,7 +8,6 @@ import {useOptionalUser, useOptionalUserInfo} from '../utils/misc'
 import {SunIcon} from './icons/sun-icon'
 import {MoonIcon} from './icons/moon-icon'
 import {MenuIcon} from './icons/menu-icon'
-import {UserIcon} from './icons/user-icon'
 
 function NavLink({
   to,
@@ -75,7 +74,6 @@ const userBorderClassNames = {
 function Navbar() {
   const user = useOptionalUser()
   const userInfo = useOptionalUserInfo()
-  const avatar = userInfo ? userInfo.avatar : images.alexProfileGray
 
   return (
     <nav className="flex items-center justify-between px-5vw py-9 dark:text-white lg:py-12">
@@ -103,32 +101,19 @@ function Navbar() {
           <DarkModeToggle />
         </div>
 
-        {user ? (
-          <Link
-            to="/me"
-            title="My Account"
-            className={clsx(
-              'inline-flex items-center justify-center ml-4 w-14 h-14 text-white border-2 rounded-full',
-              // TODO: fix the user type, team should be optional?
-              // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-              userBorderClassNames[user.team ?? 'UNKNOWN'],
-            )}
-          >
-            <img
-              className="inline w-10 h-10 bg-white rounded-full object-cover"
-              src={avatar.src}
-              alt={avatar.alt}
-            />
-          </Link>
-        ) : (
-          <Link
-            to="/login"
-            title="Login"
-            className="inline-flex items-center justify-center ml-4 w-14 h-14 text-black dark:text-white border-2 border-gray-200 dark:border-gray-600 rounded-full"
-          >
-            <UserIcon />
-          </Link>
-        )}
+        <Link
+          to={user ? '/me' : '/login'}
+          title={user ? 'My Account' : 'Login'}
+          className={`${
+            userBorderClassNames[user?.team ?? 'UNKNOWN']
+          } inline-flex items-center justify-center ml-4 w-14 h-14 text-white border-2 rounded-full`}
+        >
+          <img
+            className="inline w-10 h-10 bg-white rounded-full object-cover"
+            src={userInfo ? userInfo.avatar.src : images.alexProfileGray.src}
+            alt={userInfo ? userInfo.avatar.alt : images.alexProfileGray.alt}
+          />
+        </Link>
       </div>
     </nav>
   )
