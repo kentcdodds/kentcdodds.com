@@ -72,9 +72,15 @@ async function downloadMdxFileOrDirectory(
   const dirList = await downloadDirList(parentDir, bustCache)
 
   const basename = nodePath.basename(mdxFileOrDirectory)
+  const mdxFileWithoutExt = nodePath.parse(mdxFileOrDirectory).name
   const potentials = dirList.filter(({name}) => name.startsWith(basename))
+  const exactMatch = potentials.find(
+    ({name}) => nodePath.parse(name).name === mdxFileWithoutExt,
+  )
 
-  const content = await downloadFirstMdxFile(potentials)
+  const content = await downloadFirstMdxFile(
+    exactMatch ? [exactMatch] : potentials,
+  )
   let downloaded: Array<GitHubFile>
   // /content/about.mdx => entry is about.mdx, but compileMdx needs
   // the entry to be called "/content/index.mdx" so we'll set it to that
