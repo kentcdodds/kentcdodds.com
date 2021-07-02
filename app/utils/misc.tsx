@@ -1,6 +1,7 @@
 import * as React from 'react'
 import {Link} from 'remix'
-import type {NonNullProperties, User, Request, Await, Team} from 'types'
+import type {NonNullProperties, User, Request, Await} from 'types'
+import {Team} from '@prisma/client'
 import md5 from 'md5-hash'
 import {images} from '../images'
 import type {getUserInfo} from './user-info.server'
@@ -8,6 +9,8 @@ import type {getEnv} from './env.server'
 
 const useSSRLayoutEffect =
   typeof window === 'undefined' ? () => {} : React.useLayoutEffect
+
+const teams: Array<Team> = Object.values(Team)
 
 function getAvatar(
   email: string,
@@ -291,6 +294,7 @@ export {
   UserProvider,
   useUser,
   useOptionalUser,
+  teams,
 }
 
 export type {RequestInfo}

@@ -1,4 +1,4 @@
-import {PrismaClient, Team} from '@prisma/client'
+import {PrismaClient} from '@prisma/client'
 import type {User, Session} from 'types'
 import {encrypt, decrypt} from './encryption.server'
 
@@ -193,15 +193,12 @@ async function addPostRead({slug, userId}: {slug: string; userId: string}) {
   }
 }
 
-const teams: Array<Team> = Object.values(Team)
-
 export {
   prisma,
   getMagicLink,
   validateMagicLink,
   createSession,
   getUserFromSessionId,
-  teams,
   getUserByEmail,
   updateUser,
   addPostRead,

@@ -3,13 +3,8 @@ import {Form, json, redirect, useRouteData} from 'remix'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import type {Team} from 'types'
 import {rootStorage, signInSession} from '../utils/session.server'
-import {
-  createSession,
-  prisma,
-  teams,
-  validateMagicLink,
-} from '../utils/prisma.server'
-import {getErrorMessage, getNonNull} from '../utils/misc'
+import {createSession, prisma, validateMagicLink} from '../utils/prisma.server'
+import {getErrorMessage, getNonNull, teams} from '../utils/misc'
 import {tagKCDSiteSubscriber} from '../utils/convertkit.server'
 
 type LoaderData = {
