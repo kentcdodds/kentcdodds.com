@@ -1,19 +1,26 @@
 import * as React from 'react'
+import clsx from 'clsx'
 
-function Label(props: JSX.IntrinsicElements['label']) {
+function Label({className, ...labelProps}: JSX.IntrinsicElements['label']) {
   return (
     <label
-      {...props}
-      className="inline-block dark:text-blueGray-500 text-gray-500 text-lg"
+      {...labelProps}
+      className={clsx(
+        'inline-block dark:text-blueGray-500 text-gray-500 text-lg',
+        className,
+      )}
     />
   )
 }
 
-function Input(props: JSX.IntrinsicElements['input']) {
+function Input({className, ...inputProps}: JSX.IntrinsicElements['input']) {
   return (
     <input
-      {...props}
-      className="placeholder-gray-500 dark:disabled:text-blueGray-500 focus-ring px-11 py-8 w-full text-black disabled:text-gray-400 dark:text-white text-lg font-medium bg-gray-200 dark:bg-gray-800 rounded-lg"
+      {...inputProps}
+      className={clsx(
+        'placeholder-gray-500 dark:disabled:text-blueGray-500 focus-ring px-11 py-8 w-full text-black disabled:text-gray-400 dark:text-white text-lg font-medium bg-gray-200 dark:bg-gray-800 rounded-lg',
+        className,
+      )}
     />
   )
 }

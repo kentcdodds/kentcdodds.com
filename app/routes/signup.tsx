@@ -151,7 +151,7 @@ export const loader: LoaderFunction = async ({request}) => {
   })
 }
 
-const TEAM_MAP: Record<
+export const TEAM_MAP: Record<
   Team,
   {image: {src: string; alt: string}; label: string; focusClassName: string}
 > = {
