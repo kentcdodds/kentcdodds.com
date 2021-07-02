@@ -33,9 +33,10 @@ describe('onboarding', () => {
         // checkbox is covered with a <label>
         cy.findByRole('radio', {name: /blue/i}).click({force: true})
       })
-      cy.findByRole('button', {name: /join KCD/i}).click()
+      cy.findByRole('button', {name: /create account/i}).click()
 
-      cy.findByRole('button', {name: /logout/i}).click()
+      // TODO: find a new home for the logout button?
+      // cy.findByRole('button', {name: /logout/i}).click()
     })
 
     cy.findByRole('navigation').within(() => {
