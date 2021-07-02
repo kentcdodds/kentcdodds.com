@@ -23,7 +23,7 @@
     "css:build": "postcss styles/**/*.css --base styles --dir app/styles --env production",
     "prebuild": "npm run clean && echo All clean ✨",
     "build": "npm run css:build && cross-env NODE_ENV=production dotenv -e .env remix build",
-    "clean": "rimraf ./.cache/remix/**/* ./.cache/redis/**/* ./node_modules/.cache ./build ./public/build \"./app/styles/**/*.css\"",
+    "clean": "rimraf ./.cache/remix/**/* ./node_modules/.cache ./build ./public/build \"./app/styles/**/*.css\"",
     "dev": "pm2-dev pm2.config.js",
     "dev:storybook": "cd storybook && npm run dev",
     "start": "cross-env NODE_ENV=production node --require ./node_modules/dotenv/config --experimental-wasm-threads ./node_modules/.bin/remix-serve build",
