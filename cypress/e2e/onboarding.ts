@@ -34,9 +34,6 @@ describe('onboarding', () => {
         cy.findByRole('radio', {name: /blue/i}).click({force: true})
       })
       cy.findByRole('button', {name: /create account/i}).click()
-
-      // TODO: find a new home for the logout button?
-      // cy.findByRole('button', {name: /logout/i}).click()
     })
 
     cy.findByRole('navigation').within(() => {
