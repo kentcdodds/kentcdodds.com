@@ -60,6 +60,11 @@ pre {
   content: attr(data-diff-line-number);
 }
 
+.prose pre > code {
+  display: inline-block;
+  min-width: 100%;
+}
+
 .codeblock-line {
   display: block;
   position: relative;
