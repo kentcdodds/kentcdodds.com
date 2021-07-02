@@ -181,7 +181,7 @@ function TeamOption({team: value, error, selected}: TeamOptionProps) {
         </span>
       ) : null}
 
-      <label className="block pb-12 pt-20 px-12 text-center">
+      <label className="block pb-12 pt-20 px-12 text-center cursor-pointer">
         <input
           className="sr-only"
           type="radio"
