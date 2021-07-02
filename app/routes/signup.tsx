@@ -201,21 +201,24 @@ function TeamOption({team: value, error, selected}: TeamOptionProps) {
 
 export default function NewAccount() {
   const data = useRouteData<LoaderData>()
-  const [formValues, setFormValues] = React.useState({
+  const [formValues, setFormValues] = React.useState<{
+    firstName: string
+    team?: Team
+  }>({
     firstName: '',
-    team: '',
+    team: undefined,
   })
 
   const formIsValid =
     formValues.firstName.trim().length > 0 &&
-    Object.keys(TEAM_MAP).includes(formValues.team)
+    teams.includes(formValues.team as Team)
 
   return (
     <div className="mt-12">
       <style>{`
           :root {
             --color-team-current: var(--color-team-${(
-              formValues.team || 'UNKNOWN'
+              formValues.team ?? 'UNKNOWN'
             ).toLowerCase()}); 
           }
         `}</style>
