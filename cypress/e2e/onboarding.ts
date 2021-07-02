@@ -30,7 +30,8 @@ describe('onboarding', () => {
     cy.findByRole('main').within(() => {
       cy.findByRole('textbox', {name: /name/i}).type(firstName)
       cy.findByRole('group', {name: /team/i}).within(() => {
-        cy.findByRole('radio', {name: /blue/i}).click()
+        // checkbox is covered with a <label>
+        cy.findByRole('radio', {name: /blue/i}).click({force: true})
       })
       cy.findByRole('button', {name: /join KCD/i}).click()
 
