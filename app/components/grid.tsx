@@ -39,9 +39,9 @@ function GridLines() {
         {Array.from({length: 12}).map((_, idx) => (
           <div
             key={idx}
-            className="flex items-start h-screen text-black dark:text-white bg-black dark:bg-white bg-opacity-5 dark:bg-opacity-5"
+            className="flex items-start h-screen text-black dark:text-white bg-black dark:bg-white opacity-10"
           >
-            <div className="pt-4 w-full text-center text-black dark:text-white text-lg opacity-10">
+            <div className="pt-4 w-full text-center text-black dark:text-white text-lg">
               {idx + 1}
             </div>
           </div>
