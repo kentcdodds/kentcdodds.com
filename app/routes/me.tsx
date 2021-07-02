@@ -1,6 +1,7 @@
 import * as React from 'react'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import {Form, json, redirect} from 'remix'
+import {Link} from 'react-router-dom'
 import {getQrCodeDataURL} from '../utils/qrcode.server'
 import {getDiscordAuthorizeURL, getDomainUrl} from '../utils/misc'
 import {useRequestInfo, useUser, useUserInfo} from '../utils/providers'
@@ -11,9 +12,8 @@ import {Grid} from '../components/grid'
 import {Input, Label} from '../components/form-elements'
 import {Button} from '../components/button'
 import {CheckIcon} from '../components/icons/check-icon'
-import {TEAM_MAP} from './signup'
-import {Link} from 'react-router-dom'
 import {LogoutIcon} from '../components/icons/logout-icon'
+import {TEAM_MAP} from '../utils/onboarding'
 
 type LoaderData = {message?: string; qrLoginCode: string}
 export const loader: LoaderFunction = ({request}) => {
