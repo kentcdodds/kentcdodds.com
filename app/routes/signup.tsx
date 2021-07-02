@@ -167,7 +167,7 @@ function TeamOption({team: value, error, selected}: TeamOptionProps) {
   return (
     <div
       className={clsx(
-        'relative col-span-full mb-3 bg-gray-100 dark:bg-gray-800 rounded-lg focus-within:outline-none ring-team-current ring-offset-4 focus-within:ring-2 lg:col-span-4 lg:mb-0',
+        'ring-team-current relative col-span-full mb-3 bg-gray-100 dark:bg-gray-800 rounded-lg focus-within:outline-none ring-offset-4 focus-within:ring-2 lg:col-span-4 lg:mb-0',
         team.focusClassName,
         {
           'ring-2 ring-offset-team-current': selected,
@@ -176,12 +176,12 @@ function TeamOption({team: value, error, selected}: TeamOptionProps) {
       )}
     >
       {selected ? (
-        <span className={clsx('absolute left-9 top-9 text-team-current')}>
+        <span className="text-team-current absolute left-9 top-9">
           <CheckIcon />
         </span>
       ) : null}
 
-      <label className={clsx('block pb-12 pt-20 px-12 text-center')}>
+      <label className="block pb-12 pt-20 px-12 text-center">
         <input
           className="sr-only"
           type="radio"
