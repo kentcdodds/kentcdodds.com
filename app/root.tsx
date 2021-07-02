@@ -78,7 +78,10 @@ export const loader: LoaderFunction = async ({request}) => {
     userInfo: user ? await getUserInfo(user) : null,
     theme: session.get(sessionKey),
     ENV: getEnv(),
-    requestInfo: {origin: getDomainUrl(request)},
+    requestInfo: {
+      origin: getDomainUrl(request),
+      searchParams: new URL(request.url).searchParams.toString(),
+    },
   }
   return json(data)
 }

@@ -65,6 +65,7 @@
     "date-fns": "^2.22.1",
     "dotenv": "^10.0.0",
     "framer-motion": "^4.1.17",
+    "match-sorter": "^6.3.0",
     "md5-hash": "^1.0.1",
     "mdx-bundler": "^4.1.0",
     "node-fetch": "^2.6.1",

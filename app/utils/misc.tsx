@@ -200,9 +200,9 @@ function createSimpleContext<ContextType>(name: string) {
   return {Provider: Context.Provider, useValue, useOptionalValue}
 }
 
-type RequestInfo = {origin: string}
+type RequestInfo = {origin: string; searchParams: string}
 const {Provider: RequestInfoProvider, useValue: useRequestInfo} =
-  createSimpleContext<{origin: string}>('RequestInfo')
+  createSimpleContext<RequestInfo>('RequestInfo')
 
 type UserInfo = Await<ReturnType<typeof getUserInfo>>
 const {

@@ -1,7 +1,8 @@
 import * as React from 'react'
+import type {LoaderFunction, HeadersFunction, MetaFunction} from 'remix'
 import {json, useRouteData} from 'remix'
-import type {KCDLoader, MdxListItem} from 'types'
-import {useSearchParams} from 'react-router-dom'
+import type {MdxListItem} from 'types'
+import {matchSorter, rankings as matchSorterRankings} from 'match-sorter'
 import {Grid} from '../../components/grid'
 import {images} from '../../images'
 import {H2, H3, H6} from '../../components/typography'
@@ -9,36 +10,25 @@ import {SearchIcon} from '../../components/icons/search-icon'
 import {ArticleCard} from '../../components/article-card'
 import {ArrowLink} from '../../components/arrow-button'
 import {FeaturedArticleSection} from '../../components/sections/featured-article-section'
-import {LoadMoreButton} from '../../components/load-more-button'
 import {Tag} from '../../components/tag'
 import {
   getMdxPagesInDirectory,
   mapFromMdxPageToMdxListItem,
 } from '../../utils/mdx'
+import {useRequestInfo} from '../../utils/misc'
 
 type LoaderData = {
-  totalPosts: number
-  matchingPosts: number
   posts: Array<MdxListItem>
   tags: Array<string>
 }
 
-export const loader: KCDLoader = async ({request}) => {
+export const loader: LoaderFunction = async ({request}) => {
   const url = new URL(request.url)
   let pages = await getMdxPagesInDirectory(
     'blog',
     url.searchParams.get('bust-cache') === 'true',
   )
-  const totalPosts = pages.length
-  let matchingPosts = totalPosts
 
-  const query = url.searchParams.get('q')
-  if (query) {
-    pages = pages.filter(page => {
-      return page.frontmatter.title?.toLowerCase().includes(query.toLowerCase())
-    })
-    matchingPosts = pages.length
-  }
   pages = pages.sort((a, z) => {
     const aTime = new Date(a.frontmatter.date ?? '').getTime()
     const zTime = new Date(z.frontmatter.date ?? '').getTime()
@@ -53,123 +43,100 @@ export const loader: KCDLoader = async ({request}) => {
   }
 
   const data: LoaderData = {
-    totalPosts,
-    matchingPosts,
-    posts: pages.slice(0, 13).map(mapFromMdxPageToMdxListItem),
+    posts: pages.map(mapFromMdxPageToMdxListItem),
     tags: Array.from(tags),
   }
-  return json(data)
+
+  return json(data, {
+    headers: {
+      'Cache-Control': 'public, max-age=60',
+    },
+  })
 }
 
-export function meta() {
+export const headers: HeadersFunction = ({loaderHeaders}) => {
+  return {
+    'Cache-Control': loaderHeaders.get('Cache-Control') ?? 'no-cache',
+  }
+}
+
+export const meta: MetaFunction = () => {
   return {
     title: 'Blog | Kent C. Dodds',
     description: 'This is the Kent C. Dodds blog',
   }
 }
 
-function debounce<ArgsType extends Array<unknown>, CBReturnType>(
-  callback: (...args: ArgsType) => CBReturnType,
-  delay: number,
-) {
-  let timeout: ReturnType<typeof setTimeout>
-  return (...args: Parameters<typeof callback>) => {
-    clearTimeout(timeout)
-    timeout = setTimeout(() => callback(...args), delay)
-  }
-}
-
-function useLatest<ValueType>(value: ValueType) {
-  const ref = React.useRef(value)
-  React.useEffect(() => {
-    ref.current = value
-  })
-  return ref
-}
-
-function useLatestCallback<ArgsType extends Array<unknown>, CBReturnType>(
-  callback: (...args: ArgsType) => CBReturnType,
-) {
-  const ref = useLatest(callback)
-  return React.useCallback((...args: ArgsType) => ref.current(...args), [ref])
-}
-
-function useDebounce<ArgsType extends Array<unknown>, CBReturnType>(
-  callback: (...args: ArgsType) => CBReturnType,
-  delay: number,
-) {
-  const _callback = useLatestCallback(callback)
-  return React.useMemo(() => debounce(_callback, delay), [delay, _callback])
-}
-
-function useIsMounted() {
-  const mounted = React.useRef(false)
-  React.useEffect(() => {
-    mounted.current = true
-    return () => {
-      mounted.current = false
-    }
-  })
-  return mounted
-}
-
 function BlogHome() {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const searchParamsRef = useLatest(searchParams)
-  const [query, setQuery] = React.useState<string>(searchParams.get('q') ?? '')
+  const requestInfo = useRequestInfo()
 
-  const isMountedRef = useIsMounted()
-  const updateSearchParams = useDebounce((newQuery: string) => {
-    if (!isMountedRef.current) return
-    const oldQuery = searchParamsRef.current.get('q') ?? ''
-    if (newQuery === oldQuery) return
-
-    const newSearchParams = new URLSearchParams(searchParamsRef.current)
-    if (newQuery) {
-      newSearchParams.set('q', newQuery)
-    } else {
-      // this leaves me with a dangling "/?" which is annoying...
-      // do I need to use navigate instead? If so, how?
-      newSearchParams.delete('q')
-    }
-    setSearchParams(newSearchParams, {replace: true})
-  }, 200)
+  // alright, let's talk about the query params...
+  // Normally with remix, you'd useSearchParams from react-router-dom
+  // and updating the search params will trigger the search to update for you.
+  // However, it also triggers a navigation to the new url, which will trigger
+  // the loader to run which we do not want because all our data is already
+  // on the client and we're just doing client-side filtering of data we
+  // already have. So we manually call `window.history.pushState` to avoid
+  // the router from triggering the loader.
+  const [queryValue, setQuery] = React.useState<string>(() => {
+    const initialSearchParams = requestInfo.searchParams
+    return new URLSearchParams(initialSearchParams).get('q') ?? ''
+  })
+  const query = queryValue.trim()
 
   React.useEffect(() => {
-    updateSearchParams(query)
-  }, [query, updateSearchParams])
+    const searchParams = new URLSearchParams(window.location.search)
+    const oldQuery = searchParams.get('q') ?? ''
+    if (query === oldQuery) return
+
+    if (query) {
+      searchParams.set('q', query)
+    } else {
+      searchParams.delete('q')
+    }
+    const newUrl = [window.location.pathname, searchParams.toString()]
+      .filter(Boolean)
+      .join('?')
+    window.history.pushState(null, '', newUrl)
+  }, [query])
 
   const data = useRouteData<LoaderData>()
   const allPosts = data.posts
+  const matchingPosts = React.useMemo(() => {
+    return filterPosts(allPosts, query)
+  }, [allPosts, query])
 
-  // TODO: use local state to determine how many to show...
-  // because we'll just send the whole thing to the client
-  // maybe... still thinking about this actually...
-  const hasMorePosts = true
+  const initialIndexToShow = 14
+  const [indexToShow, setIndexToShow] = React.useState(initialIndexToShow)
+  // when the query changes, we want to reset the index
+  React.useEffect(() => {
+    setIndexToShow(initialIndexToShow)
+  }, [query])
+  const postsToShow = matchingPosts.slice(0, indexToShow)
 
-  // split the query string into words, to select matching category tags
-  const queryParts = new Set(query.split(' '))
+  const hasMorePosts = indexToShow < matchingPosts.length
 
-  const toggleTag = (tag: string) => {
-    const currentParts = Array.from(queryParts)
-
-    const nextParts = queryParts.has(tag)
-      ? currentParts.filter(t => t !== tag)
-      : [...currentParts, tag]
-
-    const newQuery = nextParts.join(' ')
-    searchParams.set('q', newQuery)
-    setSearchParams(searchParams)
-    setQuery(newQuery)
+  function toggleTag(tag: string) {
+    setQuery(q => {
+      const newQuery = q.includes(tag)
+        ? q
+            .split(' ')
+            .filter(s => s !== tag)
+            .join(' ')
+        : `${q} ${tag}`
+      return newQuery.trim()
+    })
   }
 
-  const isSearching = query.trim().length > 0
+  const isSearching = query.length > 0
 
   // feature the most recent post, unless we're searching
   // TODO: determine featured posts using some smarts on the backend
   // based on the user's read posts etc.
-  const featured = isSearching ? null : allPosts[0]
-  const posts = isSearching ? allPosts : allPosts.slice(1)
+  const featured = isSearching ? null : matchingPosts[0]
+  const posts = isSearching
+    ? matchingPosts.slice(0, indexToShow)
+    : postsToShow.slice(1, indexToShow)
 
   return (
     <div>
@@ -196,17 +163,24 @@ function BlogHome() {
             <div className="absolute left-8 top-0 flex items-center justify-center h-full text-blueGray-500">
               <SearchIcon />
             </div>
-            <input
-              value={query}
-              onChange={event =>
-                setQuery(event.currentTarget.value.toLowerCase())
-              }
-              placeholder="Search blog"
-              aria-label="Search blog"
-              className="dark:focus:bg-gray-800 placeholder-black dark:placeholder-white px-16 py-6 w-full text-black dark:text-white text-lg font-medium focus:bg-gray-100 bg-transparent border border-gray-200 dark:border-gray-600 rounded-full focus:outline-none"
-            />
+            <form
+              action="/blog"
+              method="GET"
+              onSubmit={e => e.preventDefault()}
+            >
+              <input
+                value={queryValue}
+                onChange={event =>
+                  setQuery(event.currentTarget.value.toLowerCase())
+                }
+                name="q"
+                placeholder="Search blog"
+                aria-label="Search blog"
+                className="dark:focus:bg-gray-800 placeholder-black dark:placeholder-white px-16 py-6 w-full text-black dark:text-white text-lg font-medium focus:bg-gray-100 bg-transparent border border-gray-200 dark:border-gray-600 rounded-full focus:outline-none"
+              />
+            </form>
             <div className="absolute right-8 top-0 flex items-center justify-center h-full text-blueGray-500 text-lg font-medium">
-              {data.totalPosts}
+              {matchingPosts.length}
             </div>
           </div>
         </div>
@@ -220,7 +194,7 @@ function BlogHome() {
               <Tag
                 key={tag}
                 tag={tag}
-                selected={queryParts.has(tag)}
+                selected={query.includes(tag)}
                 onClick={() => toggleTag(tag)}
               />
             ))}
@@ -235,12 +209,6 @@ function BlogHome() {
       ) : null}
 
       <Grid className="mb-64">
-        {isSearching ? (
-          <H6 className="col-span-full mb-6">
-            {data.matchingPosts} articles found
-          </H6>
-        ) : null}
-
         {posts.length === 0 ? (
           <div className="flex flex-col col-span-full items-center">
             {/* TODO: replace with 404 image */}
@@ -254,19 +222,24 @@ function BlogHome() {
               above to find articles.
             </H3>
           </div>
-        ) : null}
-        {posts.map(article => (
-          <div key={article.slug} className="col-span-4 mb-10">
-            <ArticleCard {...article} />
-          </div>
-        ))}
+        ) : (
+          posts.map(article => (
+            <div key={article.slug} className="col-span-4 mb-10">
+              <ArticleCard {...article} />
+            </div>
+          ))
+        )}
       </Grid>
 
-      {/* TODO: remove this eslint-disable, it's needed because this prop does not yet come from the loader */}
-      {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
       {hasMorePosts ? (
         <div className="flex justify-center mb-64 w-full">
-          <LoadMoreButton />
+          <button
+            onClick={() => setIndexToShow(i => i + 16)}
+            className="dark:focus:bg-gray-800 flex items-center px-8 py-6 dark:text-white focus:bg-gray-100 bg-transparent border border-gray-200 dark:border-gray-600 rounded-full focus:outline-none"
+          >
+            {/* TODO: an svg plus often looks better. */}
+            Load more articles +
+          </button>
         </div>
       ) : null}
 
@@ -286,6 +259,76 @@ function BlogHome() {
       </Grid>
     </div>
   )
+}
+
+export function filterPosts(posts: Array<MdxListItem>, searchString: string) {
+  if (!searchString) return posts
+
+  const options = {
+    keys: [
+      {
+        key: 'frontmatter.title',
+        threshold: matchSorterRankings.CONTAINS,
+      },
+      {
+        key: 'frontmatter.categories',
+        threshold: matchSorterRankings.CONTAINS,
+        maxRanking: matchSorterRankings.CONTAINS,
+      },
+      {
+        key: 'frontmatter.meta.keywords',
+        threshold: matchSorterRankings.CONTAINS,
+        maxRanking: matchSorterRankings.CONTAINS,
+      },
+      {
+        key: 'frontmatter.description',
+        threshold: matchSorterRankings.CONTAINS,
+        maxRanking: matchSorterRankings.CONTAINS,
+      },
+    ],
+  }
+
+  const allResults = matchSorter(posts, searchString, options)
+  const searches = new Set(searchString.split(' '))
+  if (searches.size < 2) {
+    // if there's only one word then we're done
+    return allResults
+  }
+
+  // if there are multiple words, we'll conduct an individual search for each word
+  const [firstWord, ...restWords] = searches.values()
+  if (!firstWord) {
+    // this should be impossible, but if it does happen, we'll just return an empty array
+    return []
+  }
+  const individualWordOptions = {
+    ...options,
+    keys: options.keys.map(key => {
+      return {
+        ...key,
+        maxRanking: matchSorterRankings.CASE_SENSITIVE_EQUAL,
+        threshold: matchSorterRankings.WORD_STARTS_WITH,
+      }
+    }),
+  }
+
+  // go through each word and further filter the results
+  let individualWordResults = matchSorter(
+    posts,
+    firstWord,
+    individualWordOptions,
+  )
+  for (const word of restWords) {
+    const searchResult = matchSorter(
+      individualWordResults,
+      word,
+      individualWordOptions,
+    )
+    individualWordResults = individualWordResults.filter(r =>
+      searchResult.includes(r),
+    )
+  }
+  return Array.from(new Set([...allResults, ...individualWordResults]))
 }
 
 export default BlogHome
