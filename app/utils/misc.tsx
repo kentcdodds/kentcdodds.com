@@ -174,24 +174,24 @@ function createSimpleContext<ContextType>(name: string) {
   Context.displayName = name
 
   function useValue() {
-    const user = React.useContext(Context)
-    if (user === defaultValue) {
+    const value = React.useContext(Context)
+    if (value === defaultValue) {
       throw new Error(`use${name} must be used within ${name}Provider`)
     }
-    if (!user) {
+    if (!value) {
       throw new Error(
         `No value in ${name}Provider context. If the value is optional in this situation, try useOptional${name} instead of use${name}`,
       )
     }
-    return user
+    return value
   }
 
   function useOptionalValue() {
-    const user = React.useContext(Context)
-    if (user === defaultValue) {
+    const value = React.useContext(Context)
+    if (value === defaultValue) {
       throw new Error(`useOptional${name} must be used within ${name}Provider`)
     }
-    return user
+    return value
   }
 
   return {Provider: Context.Provider, useValue, useOptionalValue}
