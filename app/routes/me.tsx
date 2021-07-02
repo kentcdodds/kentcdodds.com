@@ -2,13 +2,8 @@ import * as React from 'react'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import {Form, useRouteData, json, redirect} from 'remix'
 import {getQrCodeDataURL} from '../utils/qrcode.server'
-import {
-  getDiscordAuthorizeURL,
-  getDomainUrl,
-  useRequestInfo,
-  useUser,
-  useUserInfo,
-} from '../utils/misc'
+import {getDiscordAuthorizeURL, getDomainUrl} from '../utils/misc'
+import {useRequestInfo, useUser, useUserInfo} from '../utils/providers'
 import {getMagicLink, updateUser} from '../utils/prisma.server'
 import {requireUser, rootStorage, signOutSession} from '../utils/session.server'
 

@@ -124,6 +124,11 @@ function requireUser(request: Request) {
   }
 }
 
+export const sessionKeys = {
+  magicLink: 'magicLink',
+  email: 'email',
+}
+
 export {
   rootStorage,
   requireUser,

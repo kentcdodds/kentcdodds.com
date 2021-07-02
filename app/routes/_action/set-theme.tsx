@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {redirect} from 'remix'
 import type {ActionFunction} from 'remix'
-import {sessionKey, themes} from '../../theme-provider'
+import {sessionKey, themes} from '../../utils/theme-provider'
 import {rootStorage} from '../../utils/session.server'
 
 export const action: ActionFunction = async ({request}) => {

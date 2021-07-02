@@ -3,10 +3,11 @@ import {Form, json, redirect, useRouteData} from 'remix'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import type {Team} from 'types'
 import clsx from 'clsx'
-import {rootStorage, signInSession} from '../utils/session.server'
+import {rootStorage, sessionKeys, signInSession} from '../utils/session.server'
 import {createSession, prisma, validateMagicLink} from '../utils/prisma.server'
 import {getErrorMessage, getNonNull, teams} from '../utils/misc'
 import {tagKCDSiteSubscriber} from '../utils/convertkit.server'
+import {useTeam} from '../utils/providers'
 import {Grid} from '../components/grid'
 import {images} from '../images'
 import {H2, H6, Paragraph} from '../components/typography'
@@ -44,8 +45,8 @@ function getErrorForTeam(team: string | null) {
 
 export const action: ActionFunction = async ({request}) => {
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
-  const email = session.get('email')
-  const magicLink = session.get('magicLink')
+  const email = session.get(sessionKeys.email)
+  const magicLink = session.get(sessionKeys.magicLink)
   try {
     if (typeof email !== 'string' || typeof magicLink !== 'string') {
       throw new Error('email and magicLink required.')
@@ -103,6 +104,8 @@ export const action: ActionFunction = async ({request}) => {
     })
 
     const userSession = await createSession({userId: user.id})
+    session.unset('email')
+    session.unset('magicLink')
     await signInSession(session, userSession.id)
 
     const cookie = await rootStorage.commitSession(session, {maxAge: 604_800})
@@ -125,8 +128,19 @@ export const action: ActionFunction = async ({request}) => {
 
 export const loader: LoaderFunction = async ({request}) => {
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
+  const email = session.get(sessionKeys.email)
+  if (!email) {
+    session.unset(sessionKeys.email)
+    session.unset(sessionKeys.magicLink)
+    session.flash('error', 'Invalid magic link. Try again.')
+    return redirect('/login', {
+      headers: {
+        'Set-Cookie': await rootStorage.commitSession(session),
+      },
+    })
+  }
   const values: LoaderData = {
-    email: session.get('email'),
+    email: session.get(sessionKeys.email),
     errors: session.get(errorSessionKey),
     fields: session.get(fieldsSessionKey),
   }
@@ -201,6 +215,7 @@ function TeamOption({team: value, error, selected}: TeamOptionProps) {
 
 export default function NewAccount() {
   const data = useRouteData<LoaderData>()
+  const [, setTeam] = useTeam()
   const [formValues, setFormValues] = React.useState<{
     firstName: string
     team?: Team
@@ -213,15 +228,13 @@ export default function NewAccount() {
     formValues.firstName.trim().length > 0 &&
     teams.includes(formValues.team as Team)
 
+  const team = formValues.team
+  React.useEffect(() => {
+    if (team && teams.includes(team)) setTeam(team)
+  }, [team, setTeam])
+
   return (
     <div className="mt-12">
-      <style>{`
-          :root {
-            --color-team-current: var(--color-team-${(
-              formValues.team ?? 'UNKNOWN'
-            ).toLowerCase()}); 
-          }
-        `}</style>
       <Form
         className="mb-64"
         method="post"
@@ -235,7 +248,12 @@ export default function NewAccount() {
       >
         <Grid>
           <div className="col-span-full">
-            <H2 className="mb-2">Let’s start with choosing a team.</H2>
+            {/* TODO: get Gil's eye on this... */}
+            <H2 className="mb-2">
+              Hi {data.email},
+              <br />
+              Let’s start with choosing a team.
+            </H2>
             <H2 className="mb-12 lg:mb-20" variant="secondary" as="p">
               You can’t change this later.
             </H2>

@@ -9,10 +9,10 @@ import {
   json,
   useRouteData,
 } from 'remix'
-import type {LinksFunction, MetaFunction} from 'remix'
+import type {LinksFunction, MetaFunction, Session} from 'remix'
 import {useLocation, Outlet} from 'react-router-dom'
 import clsx from 'clsx'
-import type {Await, User} from 'types'
+import type {Await, User, Request} from 'types'
 import tailwindStyles from './styles/tailwind.css'
 import vendorStyles from './styles/vendors.css'
 import appStyles from './styles/app.css'
@@ -23,17 +23,20 @@ import {
   sessionKey,
   Theme,
   NonFlashOfWrongThemeEls,
-} from './theme-provider'
-import {getUser, rootStorage} from './utils/session.server'
+} from './utils/theme-provider'
+import {getUser, rootStorage, sessionKeys} from './utils/session.server'
+import {getDomainUrl} from './utils/misc'
 import {
   RequestInfo,
   UserInfoProvider,
   UserProvider,
-  getDomainUrl,
   RequestInfoProvider,
-} from './utils/misc'
+  TeamProvider,
+  useTeam,
+} from './utils/providers'
 import {getEnv} from './utils/env.server'
 import {getUserInfo} from './utils/user-info.server'
+import {validateMagicLink} from './utils/prisma.server'
 import {Navbar} from './components/navbar'
 import {Spacer} from './components/spacer'
 import {Footer} from './components/footer'
@@ -70,9 +73,27 @@ type LoaderData = {
   requestInfo: RequestInfo
 }
 
+async function getSessionInfo(request: Request, session: Session) {
+  const email = session.get(sessionKeys.email)
+  const magicLink = session.get(sessionKeys.magicLink)
+  if (email && magicLink) {
+    try {
+      await validateMagicLink(email, magicLink)
+    } catch {
+      // the link is not active
+      session.unset(sessionKeys.email)
+      session.unset(sessionKeys.magicLink)
+      return {email: null, hasActiveMagicLink: false}
+    }
+  }
+  return {email, hasActiveMagicLink: true}
+}
+
 export const loader: LoaderFunction = async ({request}) => {
   const user = await getUser(request)
+
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
+
   const data: LoaderData = {
     user,
     userInfo: user ? await getUserInfo(user) : null,
@@ -81,13 +102,18 @@ export const loader: LoaderFunction = async ({request}) => {
     requestInfo: {
       origin: getDomainUrl(request),
       searchParams: new URL(request.url).searchParams.toString(),
+      session: await getSessionInfo(request, session),
     },
   }
-  return json(data)
+
+  return json(data, {
+    headers: {'Set-Cookie': await rootStorage.commitSession(session)},
+  })
 }
 
 function App() {
   const data = useRouteData<LoaderData>()
+  const [team] = useTeam()
   const [theme] = useTheme()
   const location = useLocation()
   const pendingLocation = usePendingLocation()
@@ -101,9 +127,7 @@ function App() {
         <Links />
         <style>{`
           :root {
-            --color-team-current: var(--color-team-${(
-              data.user?.team ?? 'UNKNOWN'
-            ).toLowerCase()}); 
+            --color-team-current: var(--color-team-${team.toLowerCase()}); 
           }
         `}</style>
         <NonFlashOfWrongThemeEls ssrTheme={Boolean(data.theme)} />
@@ -151,9 +175,11 @@ export default function AppWithProviders() {
     <RequestInfoProvider value={data.requestInfo}>
       <UserProvider value={data.user}>
         <UserInfoProvider value={data.userInfo}>
-          <ThemeProvider specifiedTheme={data.theme}>
-            <App />
-          </ThemeProvider>
+          <TeamProvider>
+            <ThemeProvider specifiedTheme={data.theme}>
+              <App />
+            </ThemeProvider>
+          </TeamProvider>
         </UserInfoProvider>
       </UserProvider>
     </RequestInfoProvider>

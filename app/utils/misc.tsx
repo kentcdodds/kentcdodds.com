@@ -1,14 +1,10 @@
 import * as React from 'react'
 import {Link} from 'remix'
-import type {NonNullProperties, User, Request, Await} from 'types'
+import type {NonNullProperties, User, Request} from 'types'
 import {Team} from '@prisma/client'
 import md5 from 'md5-hash'
 import {images} from '../images'
-import type {getUserInfo} from './user-info.server'
 import type {getEnv} from './env.server'
-
-const useSSRLayoutEffect =
-  typeof window === 'undefined' ? () => {} : React.useLayoutEffect
 
 const teams: Array<Team> = Object.values(Team)
 
@@ -59,96 +55,6 @@ function AnchorOrLink(props: AnchorProps) {
   }
 }
 
-type Status = 'idle' | 'pending' | 'rejected' | 'resolved'
-function useAsync<Data>(
-  initialState: {
-    status?: Status
-    data?: Data | null
-    error?: Error | null
-  } = {},
-) {
-  type AsyncState = Required<typeof initialState>
-  type Action = Partial<AsyncState>
-
-  const latestRef = React.useRef<number>(1)
-  const initialStateRef = React.useRef<AsyncState>({
-    status: 'idle',
-    data: null,
-    error: null,
-    ...initialState,
-  })
-  const [{status, data, error}, setState] = React.useReducer(
-    (s: AsyncState, a: Action) => ({...s, ...a}),
-    initialStateRef.current,
-  )
-
-  const safeSetState = useSafeDispatch(setState)
-
-  const setData = React.useCallback(
-    (data: Data) => safeSetState({data, status: 'resolved'}),
-    [safeSetState],
-  )
-  const setError = React.useCallback(
-    (error: Error) => safeSetState({error, status: 'rejected'}),
-    [safeSetState],
-  )
-  const reset = React.useCallback(
-    () => safeSetState(initialStateRef.current),
-    [safeSetState],
-  )
-
-  const run = React.useCallback(
-    (promise: Promise<Data>) => {
-      const id = latestRef.current++
-      safeSetState({status: 'pending'})
-      return promise.then(
-        data => {
-          if (id === latestRef.current) setData(data)
-          return data
-        },
-        (error: Error) => {
-          if (id === latestRef.current) setError(error)
-          return Promise.reject(error)
-        },
-      )
-    },
-    [safeSetState, setData, setError],
-  )
-
-  return {
-    isIdle: status === 'idle',
-    isLoading: status === 'pending',
-    isError: status === 'rejected',
-    isSuccess: status === 'resolved',
-
-    setData,
-    setError,
-    error,
-    status,
-    data,
-    run,
-    reset,
-  }
-}
-
-function useSafeDispatch<Action>(
-  dispatch: (action: Action) => void,
-): typeof dispatch {
-  const mounted = React.useRef(false)
-  useSSRLayoutEffect(() => {
-    mounted.current = true
-    return () => {
-      mounted.current = false
-    }
-  }, [])
-  return React.useCallback(
-    action => {
-      if (mounted.current) dispatch(action)
-    },
-    [dispatch],
-  )
-}
-
 function getErrorMessage(error: unknown) {
   if (typeof error === 'string') return error
   if (error instanceof Error) return error.message
@@ -169,53 +75,6 @@ function typedBoolean<T>(
 ): value is Exclude<T, '' | 0 | false | null | undefined> {
   return Boolean(value)
 }
-
-function createSimpleContext<ContextType>(name: string) {
-  const defaultValue = Symbol(`Default ${name} context value`)
-  const Context =
-    React.createContext<ContextType | null | typeof defaultValue>(defaultValue)
-  Context.displayName = name
-
-  function useValue() {
-    const value = React.useContext(Context)
-    if (value === defaultValue) {
-      throw new Error(`use${name} must be used within ${name}Provider`)
-    }
-    if (!value) {
-      throw new Error(
-        `No value in ${name}Provider context. If the value is optional in this situation, try useOptional${name} instead of use${name}`,
-      )
-    }
-    return value
-  }
-
-  function useOptionalValue() {
-    const value = React.useContext(Context)
-    if (value === defaultValue) {
-      throw new Error(`useOptional${name} must be used within ${name}Provider`)
-    }
-    return value
-  }
-
-  return {Provider: Context.Provider, useValue, useOptionalValue}
-}
-
-type RequestInfo = {origin: string; searchParams: string}
-const {Provider: RequestInfoProvider, useValue: useRequestInfo} =
-  createSimpleContext<RequestInfo>('RequestInfo')
-
-type UserInfo = Await<ReturnType<typeof getUserInfo>>
-const {
-  Provider: UserInfoProvider,
-  useValue: useUserInfo,
-  useOptionalValue: useOptionalUserInfo,
-} = createSimpleContext<UserInfo>('UserInfo')
-
-const {
-  Provider: UserProvider,
-  useValue: useUser,
-  useOptionalValue: useOptionalUser,
-} = createSimpleContext<User>('User')
 
 function assertNonNull<PossibleNullType>(
   possibleNull: PossibleNullType,
@@ -275,9 +134,7 @@ function getDomainUrl(request: Request) {
 export {
   getAvatar,
   getAvatarForUser,
-  useSSRLayoutEffect,
   AnchorOrLink,
-  useAsync,
   getErrorMessage,
   getNonNull,
   assertNonNull,
@@ -286,19 +143,5 @@ export {
   getRequiredGlobalEnvVar,
   getDiscordAuthorizeURL,
   getDomainUrl,
-  RequestInfoProvider,
-  useRequestInfo,
-  UserInfoProvider,
-  useUserInfo,
-  useOptionalUserInfo,
-  UserProvider,
-  useUser,
-  useOptionalUser,
   teams,
 }
-
-export type {RequestInfo}
-/*
-eslint
-  @typescript-eslint/no-shadow: "off",
-*/

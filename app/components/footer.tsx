@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {Form} from 'remix'
-import {useOptionalUser, useOptionalUserInfo} from '../utils/misc'
+import {useOptionalUser, useOptionalUserInfo} from '../utils/providers'
 import {H4, H6, Paragraph} from './typography'
 import {Grid} from './grid'
 import {ArrowButton} from './arrow-button'

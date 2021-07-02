@@ -1,7 +1,7 @@
 import type {Role} from '@prisma/client'
 import type {LoaderFunction} from 'remix'
 import {redirect} from 'remix'
-import {rootStorage} from '../utils/session.server'
+import {rootStorage, sessionKeys} from '../utils/session.server'
 import {
   getMagicLink,
   updateUser,
@@ -24,7 +24,7 @@ export const loader: LoaderFunction = async ({request}) => {
   }
 
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
-  session.set('email', email)
+  session.set(sessionKeys.email, email)
 
   const user = await getUserByEmail(email)
   if (user) {

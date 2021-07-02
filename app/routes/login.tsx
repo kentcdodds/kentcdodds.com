@@ -7,6 +7,7 @@ import {
   getUser,
   rootStorage,
   signOutSession,
+  sessionKeys,
 } from '../utils/session.server'
 import {Grid} from '../components/grid'
 import {images} from '../images'
@@ -15,8 +16,8 @@ import {Button} from '../components/button'
 import {Input, InputError, Label} from '../components/form-elements'
 
 export const loader: LoaderFunction = async ({request}) => {
-  const userInfo = await getUser(request)
-  if (userInfo) return redirect('/me')
+  const user = await getUser(request)
+  if (user) return redirect('/me')
 
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
   await signOutSession(session)
@@ -46,7 +47,7 @@ export const action: ActionFunction = async ({request}) => {
     const domainUrl = getDomainUrl(request)
     await sendToken({emailAddress, domainUrl})
     session.flash('message', EMAIL_SENT_MESSAGE)
-    session.set('email', emailAddress)
+    session.set(sessionKeys.email, emailAddress)
     const cookie = await rootStorage.commitSession(session)
     return redirect(`/login`, {headers: {'Set-Cookie': cookie}})
   } catch (e: unknown) {

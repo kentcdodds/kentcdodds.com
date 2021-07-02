@@ -1,9 +1,6 @@
 import * as React from 'react'
-import {
-  getDiscordAuthorizeURL,
-  useOptionalUser,
-  useRequestInfo,
-} from '../utils/misc'
+import {getDiscordAuthorizeURL} from '../utils/misc'
+import {useOptionalUser, useRequestInfo} from '../utils/providers'
 
 export default function Discord() {
   const user = useOptionalUser()

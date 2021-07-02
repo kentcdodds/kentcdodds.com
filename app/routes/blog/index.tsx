@@ -15,7 +15,7 @@ import {
   getMdxPagesInDirectory,
   mapFromMdxPageToMdxListItem,
 } from '../../utils/mdx'
-import {useRequestInfo} from '../../utils/misc'
+import {useRequestInfo} from '../../utils/providers'
 
 type LoaderData = {
   posts: Array<MdxListItem>

@@ -3,8 +3,15 @@ import {Link} from 'remix'
 import {useLocation} from 'react-router'
 import clsx from 'clsx'
 import {images} from '../images'
-import {Theme, useTheme} from '../theme-provider'
-import {useOptionalUser, useOptionalUserInfo} from '../utils/misc'
+import {Theme, useTheme} from '../utils/theme-provider'
+import type {OptionalTeam} from '../utils/providers'
+import {
+  useOptionalUser,
+  useOptionalUserInfo,
+  useTeam,
+  useRequestInfo,
+} from '../utils/providers'
+import {getAvatar} from '../utils/misc'
 import {SunIcon} from './icons/sun-icon'
 import {MoonIcon} from './icons/moon-icon'
 import {MenuIcon} from './icons/menu-icon'
@@ -64,16 +71,28 @@ function MenuButton() {
   )
 }
 
-const userBorderClassNames = {
-  UNKNOWN: 'border-team-unknown',
-  YELLOW: 'border-team-yellow',
-  RED: 'border-team-red',
-  BLUE: 'border-team-blue',
+const alexProfiles: Record<OptionalTeam, typeof images['alexProfileGray']> = {
+  RED: images.alexProfileRed,
+  BLUE: images.alexProfileBlue,
+  YELLOW: images.alexProfileYellow,
+  UNKNOWN: images.alexProfileGray,
 }
 
 function Navbar() {
+  const [team] = useTeam()
   const user = useOptionalUser()
   const userInfo = useOptionalUserInfo()
+  const requestInfo = useRequestInfo()
+  const avatar = userInfo
+    ? userInfo.avatar
+    : requestInfo.session.email
+    ? {
+        src: getAvatar(requestInfo.session.email, {
+          fallback: alexProfiles[team].src,
+        }),
+        alt: 'Profile',
+      }
+    : alexProfiles[team]
 
   return (
     <nav className="flex items-center justify-between px-5vw py-9 dark:text-white lg:py-12">
@@ -102,16 +121,26 @@ function Navbar() {
         </div>
 
         <Link
-          to={user ? '/me' : '/login'}
-          title={user ? 'My Account' : 'Login'}
-          className={`${
-            userBorderClassNames[user?.team ?? 'UNKNOWN']
-          } inline-flex items-center justify-center ml-4 w-14 h-14 text-white border-2 rounded-full`}
+          to={
+            user
+              ? '/me'
+              : requestInfo.session.hasActiveMagicLink
+              ? '/signup'
+              : '/login'
+          }
+          title={
+            user
+              ? 'My Account'
+              : requestInfo.session.hasActiveMagicLink
+              ? 'Finish signing up'
+              : 'Login'
+          }
+          className="inline-flex items-center justify-center ml-4 w-14 h-14 text-white border-2 border-team-current rounded-full"
         >
           <img
             className="inline w-10 h-10 bg-white rounded-full object-cover"
-            src={userInfo ? userInfo.avatar.src : images.alexProfileGray.src}
-            alt={userInfo ? userInfo.avatar.alt : images.alexProfileGray.alt}
+            src={avatar.src}
+            alt={avatar.alt}
           />
         </Link>
       </div>

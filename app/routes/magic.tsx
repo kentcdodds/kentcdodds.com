@@ -1,7 +1,7 @@
 import type {LoaderFunction} from 'remix'
 import {redirect} from 'remix'
 import * as React from 'react'
-import {rootStorage, signInSession} from '../utils/session.server'
+import {rootStorage, sessionKeys, signInSession} from '../utils/session.server'
 import {
   createSession,
   getUserByEmail,
@@ -11,7 +11,7 @@ import {getErrorMessage} from '../utils/misc'
 
 export const loader: LoaderFunction = async ({request}) => {
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
-  const validationEmail = session.get('email') as string | null
+  const validationEmail = session.get(sessionKeys.email) as string | null
 
   try {
     const email = await validateMagicLink(validationEmail, request.url)
@@ -26,7 +26,7 @@ export const loader: LoaderFunction = async ({request}) => {
         headers: {'Set-Cookie': cookie},
       })
     } else {
-      session.set('magicLink', request.url)
+      session.set(sessionKeys.magicLink, request.url)
       return redirect('/signup', {
         headers: {'Set-Cookie': await rootStorage.commitSession(session)},
       })

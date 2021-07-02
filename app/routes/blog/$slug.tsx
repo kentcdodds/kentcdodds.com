@@ -10,7 +10,7 @@ import {
   mdxPageMeta,
   getMdxComponent,
 } from '../../utils/mdx'
-import {useOptionalUser} from '../../utils/misc'
+import {useOptionalUser} from '../../utils/providers'
 import {H2, H6, Paragraph} from '../../components/typography'
 import {Grid} from '../../components/grid'
 import {ArrowIcon} from '../../components/icons/arrow-icon'
