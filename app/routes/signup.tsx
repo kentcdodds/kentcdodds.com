@@ -137,7 +137,10 @@ export const loader: LoaderFunction = async ({request}) => {
   })
 }
 
-const TEAM_MAP = {
+const TEAM_MAP: Record<
+  Team,
+  {image: {src: string; alt: string}; label: string; focusClassName: string}
+> = {
   BLUE: {
     image: images.alexBlue,
     label: 'Blue Team',
@@ -156,7 +159,7 @@ const TEAM_MAP = {
 }
 
 interface TeamOptionProps {
-  team: keyof typeof TEAM_MAP
+  team: Team
   error?: string | null
   selected: boolean
 }
