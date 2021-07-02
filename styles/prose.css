@@ -50,14 +50,29 @@ pre {
   content: attr(data-line-number);
   text-align: right;
   display: inline-block;
-  width: 2rem;
+  width: 3.5rem;
   color: var(--base03);
-  margin-right: 1.5rem;
+  padding-right: 1.5rem;
+  position: sticky;
+  left: 0;
+  background-color: var(--base00);
+}
+
+.prose
+  pre[data-line-numbers='true']:not([data-lang='sh'])
+  [data-line-number]:before
+  .codeblock-line[data-highlight='true']:before {
+  background: var(--base0E);
 }
 
 .prose pre[data-add]:not([data-lang='sh']) [data-diff-line-number]:before,
 .prose pre[data-remove]:not([data-lang='sh']) [data-diff-line-number]:before {
   content: attr(data-diff-line-number);
+}
+
+.prose pre > code {
+  display: inline-block;
+  min-width: 100%;
 }
 
 .codeblock-line {
