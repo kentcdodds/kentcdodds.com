@@ -96,6 +96,13 @@ function App() {
       <head>
         <Meta />
         <Links />
+        <style>{`
+          :root {
+            --color-team-current: var(--color-team-${(
+              data.user?.team ?? 'UNKNOWN'
+            ).toLowerCase()}); 
+          }
+        `}</style>
         <NonFlashOfWrongThemeEls ssrTheme={Boolean(data.theme)} />
       </head>
       <body

@@ -13,14 +13,14 @@ function Input(props: JSX.IntrinsicElements['input']) {
   return (
     <input
       {...props}
-      className="placeholder-gray-500 px-11 py-8 w-full text-black dark:text-white text-lg font-medium bg-gray-200 dark:bg-gray-800 rounded-lg focus:outline-none ring-yellow-500 dark:ring-offset-gray-900 ring-offset-white ring-offset-4 focus:ring-2"
+      className="placeholder-gray-500 dark:disabled:text-blueGray-500 px-11 py-8 w-full text-black disabled:text-gray-400 dark:text-white text-lg font-medium bg-gray-200 dark:bg-gray-800 rounded-lg focus:outline-none ring-team-current dark:ring-offset-gray-900 ring-offset-white ring-offset-4 focus:ring-2"
     />
   )
 }
 
 interface InputErrorProps {
   id: string
-  children?: string
+  children?: string | null
 }
 
 function InputError({children, id}: InputErrorProps) {
@@ -29,7 +29,7 @@ function InputError({children, id}: InputErrorProps) {
   }
 
   return (
-    <p id={id} className="text-red-500 text-sm">
+    <p role="alert" id={id} className="text-red-500 text-sm">
       {children}
     </p>
   )

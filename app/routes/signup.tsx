@@ -2,10 +2,17 @@ import * as React from 'react'
 import {Form, json, redirect, useRouteData} from 'remix'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import type {Team} from 'types'
+import clsx from 'clsx'
 import {rootStorage, signInSession} from '../utils/session.server'
 import {createSession, prisma, validateMagicLink} from '../utils/prisma.server'
 import {getErrorMessage, getNonNull, teams} from '../utils/misc'
 import {tagKCDSiteSubscriber} from '../utils/convertkit.server'
+import {Grid} from '../components/grid'
+import {images} from '../images'
+import {H2, H6, Paragraph} from '../components/typography'
+import {Input, InputError, Label} from '../components/form-elements'
+import {Button} from '../components/button'
+import {CheckIcon} from '../components/icons/check-icon'
 
 type LoaderData = {
   email: string
@@ -130,61 +137,204 @@ export const loader: LoaderFunction = async ({request}) => {
   })
 }
 
+const TEAM_MAP: Record<
+  Team,
+  {image: {src: string; alt: string}; label: string; focusClassName: string}
+> = {
+  BLUE: {
+    image: images.alexBlue,
+    label: 'Blue Team',
+    focusClassName: 'ring-team-blue',
+  },
+  RED: {
+    image: images.alexRed,
+    label: 'Red Team',
+    focusClassName: 'ring-team-red',
+  },
+  YELLOW: {
+    image: images.alexYellow,
+    label: 'Yellow Team',
+    focusClassName: 'ring-team-yellow',
+  },
+}
+
+interface TeamOptionProps {
+  team: Team
+  error?: string | null
+  selected: boolean
+}
+
+function TeamOption({team: value, error, selected}: TeamOptionProps) {
+  const team = TEAM_MAP[value]
+
+  return (
+    <div
+      className={clsx(
+        'relative col-span-full mb-3 bg-gray-100 dark:bg-gray-800 rounded-lg focus-within:outline-none ring-team-current ring-offset-4 focus-within:ring-2 lg:col-span-4 lg:mb-0',
+        team.focusClassName,
+        {
+          'ring-2 ring-offset-team-current': selected,
+          'dark:ring-offset-gray-900 ring-offset-white': !selected,
+        },
+      )}
+    >
+      {selected ? (
+        <span className="absolute left-9 top-9 text-team-current">
+          <CheckIcon />
+        </span>
+      ) : null}
+
+      <label className="block pb-12 pt-20 px-12 text-center cursor-pointer">
+        <input
+          className="sr-only"
+          type="radio"
+          name="team"
+          value={value}
+          aria-describedby={error ? 'team-error' : undefined}
+        />
+        <img className="block mb-16" src={team.image.src} alt="" />
+        <H6>{team.label}</H6>
+      </label>
+    </div>
+  )
+}
+
 export default function NewAccount() {
   const data = useRouteData<LoaderData>()
+  const [formValues, setFormValues] = React.useState<{
+    firstName: string
+    team?: Team
+  }>({
+    firstName: '',
+    team: undefined,
+  })
+
+  const formIsValid =
+    formValues.firstName.trim().length > 0 &&
+    teams.includes(formValues.team as Team)
+
   return (
-    <div>
-      <h2>Welcome to kentcdodds.com</h2>
-      <p>To create your account for {data.email}, choose your team:</p>
-      <Form method="post" noValidate>
-        <div>
-          <label htmlFor="firstName">First Name: </label>
-          <input
-            name="firstName"
-            id="firstName"
-            required
-            defaultValue={data.fields?.firstName ?? ''}
-          />
-          {data.errors?.firstName ? (
-            <div
-              role="alert"
-              className="dark:text-red-300 text-red-800"
-              id="body-error"
-            >
-              {data.errors.firstName}
-            </div>
-          ) : null}
-        </div>
-        <div>
-          <fieldset>
-            <legend>Team</legend>
-            <label>
-              <input type="radio" name="team" value="BLUE" /> Blue
-            </label>
-            <label>
-              <input type="radio" name="team" value="RED" /> Red
-            </label>
-            <label>
-              <input type="radio" name="team" value="YELLOW" /> Yellow
-            </label>
-          </fieldset>
+    <div className="mt-12">
+      <style>{`
+          :root {
+            --color-team-current: var(--color-team-${(
+              formValues.team ?? 'UNKNOWN'
+            ).toLowerCase()}); 
+          }
+        `}</style>
+      <Form
+        className="mb-64"
+        method="post"
+        onChange={event => {
+          const form = event.currentTarget
+          setFormValues({
+            firstName: form.firstName.value,
+            team: form.team.value,
+          })
+        }}
+      >
+        <Grid>
+          <div className="col-span-full">
+            <H2 className="mb-2">Let’s start with choosing a team.</H2>
+            <H2 className="mb-12 lg:mb-20" variant="secondary" as="p">
+              You can’t change this later.
+            </H2>
+          </div>
+
           {data.errors?.team ? (
-            <div
-              role="alert"
-              className="dark:text-red-300 text-red-800"
-              id="body-error"
-            >
-              {data.errors.team}
+            <div className="col-span-full mb-4 text-right">
+              <InputError id="team-error">{data.errors.team}</InputError>
             </div>
           ) : null}
-        </div>
-        <div>
-          <button type="submit">Join KCD</button>
-        </div>
+
+          <fieldset className="contents">
+            <legend className="sr-only">Team</legend>
+            <TeamOption
+              team="BLUE"
+              error={data.errors?.team}
+              selected={formValues.team === 'BLUE'}
+            />
+            <TeamOption
+              team="RED"
+              error={data.errors?.team}
+              selected={formValues.team === 'RED'}
+            />
+            <TeamOption
+              team="YELLOW"
+              error={data.errors?.team}
+              selected={formValues.team === 'YELLOW'}
+            />
+          </fieldset>
+
+          <div className="col-span-full h-20 lg:h-24" />
+
+          <div className="col-span-full mb-12">
+            <H2 className="mb-2">Some basic info to remember you.</H2>
+            <H2 className="mb-12 lg:mb-20" variant="secondary" as="p">
+              You can change these later.
+            </H2>
+          </div>
+
+          <div className="col-span-full mb-12 lg:col-span-4 lg:mb-20">
+            <div className="flex items-baseline justify-between mb-4">
+              <Label htmlFor="firstName">First name</Label>
+              <InputError id="firstName-error">
+                {data.errors?.firstName}
+              </InputError>
+            </div>
+
+            <Input
+              name="firstName"
+              id="firstName"
+              autoComplete="firstName"
+              required
+              defaultValue={data.fields?.firstName ?? ''}
+              aria-describedby={data.errors ? 'firstName-error' : undefined}
+            />
+          </div>
+
+          <div className="col-span-full">
+            <Button type="submit" disabled={!formIsValid}>
+              Create account
+            </Button>
+          </div>
+        </Grid>
       </Form>
-      <small>
-        Or <a href="/">return to the home page</a>
-      </small>
+
+      <Grid>
+        <div className="col-span-full lg:col-span-5 lg:col-start-8">
+          <H2 className="mb-32">You might be thinking, why pick a team?</H2>
+
+          <H6 className="mb-4">Gamify your learning.</H6>
+          <Paragraph className="mb-12">
+            Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
+            nunc, dictum quis condimentum in, impe rdiet at arcu.{' '}
+          </Paragraph>
+          <H6 className="mb-4">Here will go the second title.</H6>
+          <Paragraph className="mb-12">
+            Mauris auctor nulla at felis placerat, ut elementum urna commodo.
+            Aenean et rutrum quam. Etiam odio massa, congue in orci nec, ornare
+            suscipit sem aenean turpis.
+          </Paragraph>
+          <H6 className="mb-4">Here will go the third title.</H6>
+          <Paragraph className="mb-12">
+            Mauris auctor nulla at felis placerat, ut elementum urna commodo.
+            Aenean et rutrum quam. Etiam odio massa, congue in orci nec, ornare
+            suscipit sem aenean turpis.
+          </Paragraph>
+        </div>
+
+        <div className="col-span-full lg:col-span-6 lg:col-start-1 lg:row-start-1">
+          {/* TODO: replace placeholder image */}
+          <div className="aspect-h-6 aspect-w-4">
+            <img
+              className="rounded-lg object-cover"
+              src="https://images.unsplash.com/photo-1570993492881-25240ce854f4?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218fHx8fHx8fHwxNjI0ODg2NzM1&ixlib=rb-1.2.1&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=500"
+              alt="person sitting at their desk, chatting"
+            />
+          </div>
+        </div>
+      </Grid>
     </div>
   )
 }
