@@ -167,7 +167,7 @@ function TeamOption({team: value, error, selected}: TeamOptionProps) {
   return (
     <div
       className={clsx(
-        'ring-team-current relative col-span-full mb-3 bg-gray-100 dark:bg-gray-800 rounded-lg focus-within:outline-none ring-offset-4 focus-within:ring-2 lg:col-span-4 lg:mb-0',
+        'relative col-span-full mb-3 bg-gray-100 dark:bg-gray-800 rounded-lg focus-within:outline-none ring-team-current ring-offset-4 focus-within:ring-2 lg:col-span-4 lg:mb-0',
         team.focusClassName,
         {
           'ring-2 ring-offset-team-current': selected,
@@ -176,7 +176,7 @@ function TeamOption({team: value, error, selected}: TeamOptionProps) {
       )}
     >
       {selected ? (
-        <span className="text-team-current absolute left-9 top-9">
+        <span className="absolute left-9 top-9 text-team-current">
           <CheckIcon />
         </span>
       ) : null}
@@ -189,11 +189,7 @@ function TeamOption({team: value, error, selected}: TeamOptionProps) {
           value={value}
           aria-describedby={error ? 'team-error' : undefined}
         />
-        <img
-          className="block mb-16"
-          src={team.image.src}
-          alt={team.image.alt}
-        />
+        <img className="block mb-16" src={team.image.src} alt="" />
         <H6>{team.label}</H6>
       </label>
     </div>
@@ -245,21 +241,24 @@ export default function NewAccount() {
             </div>
           ) : null}
 
-          <TeamOption
-            team="BLUE"
-            error={data.errors?.team}
-            selected={formValues.team === 'BLUE'}
-          />
-          <TeamOption
-            team="RED"
-            error={data.errors?.team}
-            selected={formValues.team === 'RED'}
-          />
-          <TeamOption
-            team="YELLOW"
-            error={data.errors?.team}
-            selected={formValues.team === 'YELLOW'}
-          />
+          <fieldset className="contents">
+            <legend className="sr-only">Team</legend>
+            <TeamOption
+              team="BLUE"
+              error={data.errors?.team}
+              selected={formValues.team === 'BLUE'}
+            />
+            <TeamOption
+              team="RED"
+              error={data.errors?.team}
+              selected={formValues.team === 'RED'}
+            />
+            <TeamOption
+              team="YELLOW"
+              error={data.errors?.team}
+              selected={formValues.team === 'YELLOW'}
+            />
+          </fieldset>
 
           <div className="col-span-full h-20 lg:h-24" />
 
