@@ -124,10 +124,15 @@ module.exports = {
                   backgroundColor: 'var(--base00)',
                   marginTop: 0,
                   marginBottom: theme('spacing.8'),
+                  marginLeft: `-${theme('spacing.10vw')}`,
+                  marginRight: `-${theme('spacing.10vw')}`,
                   padding: theme('spacing.8'),
-                  borderRadius: theme('borderRadius.lg'),
+                  borderRadius: 0,
 
                   [`@media (min-width: ${theme('screens.lg')})`]: {
+                    marginLeft: 0,
+                    marginRight: 0,
+                    borderRadius: theme('borderRadius.lg'),
                     gridColumn: '2 / span 10',
                   },
                 },
