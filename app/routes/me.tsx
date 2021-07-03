@@ -73,7 +73,7 @@ function YouScreen() {
     <Form action="/me" method="post" className="mt-12">
       <Grid>
         <div className="col-span-full mb-12 lg:mb-20">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
             <div>
               <H2 className="mb-2">Here’s your profile.</H2>
               <H2 variant="secondary" as="p">
@@ -82,7 +82,7 @@ function YouScreen() {
             </div>
             <Link
               to="/logout"
-              className="flex col-span-full items-center px-11 py-6 text-black dark:text-white border-2 border-gray-600 rounded-full space-x-4 lg:col-span-8 lg:col-start-3"
+              className="flex col-span-full items-center self-end mb-12 px-11 py-6 text-black dark:text-white border-2 border-gray-600 rounded-full space-x-4 lg:col-span-8 lg:col-start-3 lg:self-auto lg:mb-0"
             >
               <LogoutIcon />
               <H6 as="span">logout</H6>
