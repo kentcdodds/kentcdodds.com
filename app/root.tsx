@@ -12,7 +12,7 @@ import {
 import type {LinksFunction, MetaFunction, Session} from 'remix'
 import {useLocation, Outlet} from 'react-router-dom'
 import clsx from 'clsx'
-import type {Await, User, Request} from 'types'
+import type {Await, User} from 'types'
 import tailwindStyles from './styles/tailwind.css'
 import vendorStyles from './styles/vendors.css'
 import appStyles from './styles/app.css'
@@ -73,20 +73,21 @@ type LoaderData = {
   requestInfo: RequestInfo
 }
 
-async function getSessionInfo(request: Request, session: Session) {
+async function getSessionInfo(session: Session) {
   const email = session.get(sessionKeys.email)
   const magicLink = session.get(sessionKeys.magicLink)
+  let hasActiveMagicLink = false
   if (email && magicLink) {
     try {
       await validateMagicLink(email, magicLink)
+      hasActiveMagicLink = true
     } catch {
       // the link is not active
       session.unset(sessionKeys.email)
       session.unset(sessionKeys.magicLink)
-      return {email: null, hasActiveMagicLink: false}
     }
   }
-  return {email, hasActiveMagicLink: true}
+  return {email, hasActiveMagicLink}
 }
 
 export const loader: LoaderFunction = async ({request}) => {
@@ -102,7 +103,7 @@ export const loader: LoaderFunction = async ({request}) => {
     requestInfo: {
       origin: getDomainUrl(request),
       searchParams: new URL(request.url).searchParams.toString(),
-      session: await getSessionInfo(request, session),
+      session: await getSessionInfo(session),
     },
   }
 
