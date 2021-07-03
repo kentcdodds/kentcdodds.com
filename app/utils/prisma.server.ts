@@ -11,17 +11,7 @@ declare global {
   }
 }
 
-// this is to prevent us from making multiple connectsion during dev:
-const prisma = getPrismaClient()
-
-function getPrismaClient() {
-  if (process.env.NODE_ENV === 'production') {
-    return new PrismaClient()
-  }
-  if (global.prisma) return global.prisma
-  global.prisma = new PrismaClient()
-  return global.prisma
-}
+const prisma = new PrismaClient()
 
 const linkExpirationTime = 1000 * 60 * 30
 const sessionExpirationTime = 1000 * 60 * 60 * 24 * 30

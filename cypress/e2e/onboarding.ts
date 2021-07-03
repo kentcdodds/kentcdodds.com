@@ -36,7 +36,7 @@ describe('onboarding', () => {
       cy.findByRole('button', {name: /create account/i}).click()
     })
 
-    cy.findByRole('main').within(() => {
+    cy.findByRole('navigation').within(() => {
       cy.findByRole('link', {name: /my account/i})
     })
   })

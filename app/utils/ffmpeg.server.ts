@@ -1,28 +1,10 @@
 import path from 'path'
-import type {FFmpeg} from '@ffmpeg/ffmpeg'
 import {createFFmpeg, fetchFile} from '@ffmpeg/ffmpeg'
 
 const asset = (...p: Array<string>) =>
   path.join(process.cwd(), 'app/assets', ...p)
 
-declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace NodeJS {
-    interface Global {
-      ffmpeg?: FFmpeg
-    }
-  }
-}
-const ffmpeg = getFFmpeg()
-
-function getFFmpeg() {
-  if (process.env.NODE_ENV === 'production') {
-    return createFFmpeg()
-  }
-  if (global.ffmpeg) return global.ffmpeg
-  global.ffmpeg = createFFmpeg({log: true})
-  return global.ffmpeg
-}
+const ffmpeg = createFFmpeg({log: true})
 
 async function createEpisodeAudio(callBase64: string, responseBase64: string) {
   if (!ffmpeg.isLoaded()) {

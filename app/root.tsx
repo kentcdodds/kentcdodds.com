@@ -69,7 +69,7 @@ type LoaderData = {
   user: User | null
   userInfo: Await<ReturnType<typeof getUserInfo>> | null
   theme: Theme | null
-  ENV: typeof global.ENV
+  ENV: ReturnType<typeof getEnv>
   requestInfo: RequestInfo
 }
 
@@ -134,7 +134,7 @@ function App() {
         <NonFlashOfWrongThemeEls ssrTheme={Boolean(data.theme)} />
       </head>
       <body
-        className={clsx('dark:bg-gray-900 bg-white transition ', {
+        className={clsx('dark:bg-gray-900 bg-white ', {
           'opacity-50': showPendingState,
         })}
         style={{

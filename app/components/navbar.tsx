@@ -83,7 +83,6 @@ function Navbar() {
   const user = useOptionalUser()
   const userInfo = useOptionalUserInfo()
   const requestInfo = useRequestInfo()
-  console.log({userInfo, requestInfo})
   const avatar = userInfo
     ? userInfo.avatar
     : requestInfo.session.email && requestInfo.session.hasActiveMagicLink

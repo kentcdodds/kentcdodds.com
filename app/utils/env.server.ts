@@ -9,8 +9,8 @@ type ENV = ReturnType<typeof getEnv>
 
 // App puts these on
 declare global {
+  // TODO: This doesn't appear to add type safety to global.ENV 🤷‍♂️
   const ENV: ENV
-  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace NodeJS {
     interface Global {
       ENV: ENV
