@@ -63,6 +63,8 @@ jobs:
           ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         uses: superfly/flyctl-actions@1.1
         with:
-          args: 'deploy --build-arg REMIX_TOKEN=${{ secrets.REMIX_TOKEN }}'
+          args:
+            'deploy --remote-only --build-arg REMIX_TOKEN=${{
+            secrets.REMIX_TOKEN }}'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
