@@ -43,8 +43,9 @@ jobs:
         env:
           DATABASE_URL: 'postgresql://kody:the_koala@localhost:5432/kentcdodds_db?schema=public'
 
-      - name: ⚡️ Prime cache
-        run: npm run prime-cache:mocks
+      # TODO: what?
+      # - name: ⚡️ Prime cache
+      #   run: npm run prime-cache:mocks
 
       - name: 🌳 Cypress run
         uses: cypress-io/github-action@v2
