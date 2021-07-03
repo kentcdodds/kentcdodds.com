@@ -1,6 +1,6 @@
 import * as React from 'react'
 import type {ActionFunction, LoaderFunction} from 'remix'
-import {Form, json, redirect} from 'remix'
+import {Form, json, redirect, useRouteData} from 'remix'
 import {Link} from 'react-router-dom'
 import {getQrCodeDataURL} from '../utils/qrcode.server'
 import {getDiscordAuthorizeURL, getDomainUrl} from '../utils/misc'
@@ -64,133 +64,145 @@ export const action: ActionFunction = async ({request}) => {
 }
 
 function YouScreen() {
+  const data = useRouteData<LoaderData>()
   const user = useUser()
   const userInfo = useUserInfo()
   const requestInfo = useRequestInfo()
   const authorizeURL = getDiscordAuthorizeURL(requestInfo.origin)
 
   return (
-    <Form action="/me" method="post" className="mt-12">
+    <div>
+      <Form action="/me" method="post" className="mb-64 mt-12">
+        <Grid>
+          <div className="col-span-full mb-12 lg:mb-20">
+            <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
+              <div>
+                <H2 className="mb-2">Here’s your profile.</H2>
+                <H2 variant="secondary" as="p">
+                  Edit as you wish.
+                </H2>
+              </div>
+              <Link
+                to="/logout"
+                className="flex col-span-full items-center self-end mb-12 px-11 py-6 text-black dark:text-white border-2 border-gray-600 rounded-full space-x-4 lg:col-span-8 lg:col-start-3 lg:self-auto lg:mb-0"
+              >
+                <LogoutIcon />
+                <H6 as="span">logout</H6>
+              </Link>
+            </div>
+          </div>
+
+          <div className="col-span-full mb-24 lg:col-span-5 lg:mb-0">
+            <Label className="mb-4" htmlFor="firstName">
+              First name
+            </Label>
+
+            <Input
+              className="mb-8"
+              name="firstName"
+              id="firstName"
+              autoComplete="firstName"
+              defaultValue={user.firstName}
+              required
+            />
+
+            <Label className="mb-4" htmlFor="email-address">
+              Email address
+            </Label>
+
+            <Input
+              name="email"
+              id="email-address"
+              autoComplete="email"
+              required
+              defaultValue={user.email}
+              className="mb-8"
+            />
+
+            <div className="flex flex-wrap items-baseline justify-between mb-4">
+              <Label htmlFor="discord-id">Discord</Label>
+              <p
+                id="discord-message"
+                className="dark:text-blueGray-500 text-gray-500 text-lg"
+              >
+                {user.discordId ? (
+                  <a
+                    className="text-black dark:text-white"
+                    href={`https://discord.com/users/${user.discordId}`}
+                  >
+                    connected
+                  </a>
+                ) : (
+                  <a className="text-black dark:text-white" href={authorizeURL}>
+                    Connect to Discord
+                  </a>
+                )}
+              </p>
+            </div>
+
+            <Input
+              id="discord-id"
+              name="discord"
+              value={userInfo.discord?.username ?? user.discordId ?? ''}
+              placeholder="n/a"
+              readOnly
+              className="mb-12 lg:mb-20"
+              aria-describedby="discord-message"
+            />
+
+            <Button type="submit">Save changes</Button>
+          </div>
+
+          <div className="col-span-full lg:col-span-4 lg:col-start-8">
+            <Label className="mb-4" htmlFor="chosen-team">
+              Chosen team
+            </Label>
+
+            <input
+              className="sr-only"
+              type="radio"
+              name="team"
+              value={user.team}
+              checked
+              readOnly
+            />
+
+            <div className="relative col-span-full mb-3 bg-gray-100 dark:bg-gray-800 rounded-lg focus-within:outline-none ring-team-current ring-offset-team-current ring-offset-team-current ring-offset-4 ring-2 focus-within:ring-2 lg:col-span-4 lg:mb-0">
+              <span className="absolute left-9 top-9 text-team-current">
+                <CheckIcon />
+              </span>
+
+              <div className="block pb-12 pt-20 px-12 text-center">
+                <img
+                  className="block mb-16"
+                  src={TEAM_MAP[user.team].image.src}
+                  alt={TEAM_MAP[user.team].image.alt}
+                />
+                <H6>{TEAM_MAP[user.team].label}</H6>
+              </div>
+            </div>
+          </div>
+        </Grid>
+      </Form>
+
       <Grid>
-        <div className="col-span-full mb-12 lg:mb-20">
-          <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
-            <div>
-              <H2 className="mb-2">Here’s your profile.</H2>
-              <H2 variant="secondary" as="p">
-                Edit as you wish.
-              </H2>
-            </div>
-            <Link
-              to="/logout"
-              className="flex col-span-full items-center self-end mb-12 px-11 py-6 text-black dark:text-white border-2 border-gray-600 rounded-full space-x-4 lg:col-span-8 lg:col-start-3 lg:self-auto lg:mb-0"
-            >
-              <LogoutIcon />
-              <H6 as="span">logout</H6>
-            </Link>
-          </div>
+        <div className="col-span-full mb-12 lg:col-span-5 lg:col-start-8 lg:mb-0">
+          <H2 className="mb-2">Need to login somewhere else?</H2>
+          <H2 variant="secondary" as="p">
+            Scan this QR code on the other device.
+          </H2>
         </div>
 
-        <div className="col-span-full mb-24 lg:col-span-5 lg:mb-0">
-          <Label className="mb-4" htmlFor="firstName">
-            First name
-          </Label>
-
-          <Input
-            className="mb-8"
-            name="firstName"
-            id="firstName"
-            autoComplete="firstName"
-            defaultValue={user.firstName}
-            required
+        <div className="col-span-full lg:col-span-5 lg:col-start-1 lg:row-start-1">
+          <img
+            src={data.qrLoginCode}
+            alt="Login QR Code"
+            className="w-full rounded-lg object-contain"
           />
-
-          <Label className="mb-4" htmlFor="email-address">
-            Email address
-          </Label>
-
-          <Input
-            name="email"
-            id="email-address"
-            autoComplete="email"
-            required
-            defaultValue={user.email}
-            className="mb-8"
-          />
-
-          <div className="flex flex-wrap items-baseline justify-between mb-4">
-            <Label htmlFor="discord-id">Discord</Label>
-            <p
-              id="discord-message"
-              className="dark:text-blueGray-500 text-gray-500 text-lg"
-            >
-              {user.discordId ? (
-                <a
-                  className="text-black dark:text-white"
-                  href={`https://discord.com/users/${user.discordId}`}
-                >
-                  connected
-                </a>
-              ) : (
-                <a className="text-black dark:text-white" href={authorizeURL}>
-                  Connect to Discord
-                </a>
-              )}
-            </p>
-          </div>
-
-          <Input
-            id="discord-id"
-            name="discord"
-            value={userInfo.discord?.username ?? user.discordId ?? ''}
-            placeholder="n/a"
-            readOnly
-            className="mb-12 lg:mb-20"
-            aria-describedby="discord-message"
-          />
-
-          <Button type="submit">Save changes</Button>
-        </div>
-
-        <div className="col-span-full lg:col-span-4 lg:col-start-8">
-          <Label className="mb-4" htmlFor="chosen-team">
-            Chosen team
-          </Label>
-
-          <input
-            className="sr-only"
-            type="radio"
-            name="team"
-            value={user.team}
-            checked
-            readOnly
-          />
-
-          <div className="relative col-span-full mb-3 bg-gray-100 dark:bg-gray-800 rounded-lg focus-within:outline-none ring-team-current ring-offset-team-current ring-offset-team-current ring-offset-4 ring-2 focus-within:ring-2 lg:col-span-4 lg:mb-0">
-            <span className="absolute left-9 top-9 text-team-current">
-              <CheckIcon />
-            </span>
-
-            <div className="block pb-12 pt-20 px-12 text-center">
-              <img
-                className="block mb-16"
-                src={TEAM_MAP[user.team].image.src}
-                alt={TEAM_MAP[user.team].image.alt}
-              />
-              <H6>{TEAM_MAP[user.team].label}</H6>
-            </div>
-          </div>
         </div>
       </Grid>
-    </Form>
+    </div>
   )
-
-  // TODO: something... I'm not sure how to fit these into the design
-  //  <Form method="post" action="/me">
-  //    <input type="hidden" name="actionId" value="logout" />
-  //    <button type="submit">Logout</button>
-  //  </Form>
-  //  Scan this QR code on the other device:
-  //  <img src={data.qrLoginCode} alt="Login QR Code" />
 }
 
 export default YouScreen
