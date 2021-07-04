@@ -118,13 +118,15 @@ function BlogHome() {
 
   function toggleTag(tag: string) {
     setQuery(q => {
-      const newQuery = q.includes(tag)
-        ? q
-            .split(' ')
-            .filter(s => s !== tag)
-            .join(' ')
+      // create a regexp so that we can replace multiple occurrences (`react node react`)
+      const expression = new RegExp(tag, 'ig')
+
+      const newQuery = expression.test(q)
+        ? q.replace(expression, '')
         : `${q} ${tag}`
-      return newQuery.trim()
+
+      // trim and remove subsequent spaces (`react   node ` => `react node`)
+      return newQuery.replace(/\s+/g, ' ').trim()
     })
   }
 
