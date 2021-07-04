@@ -184,11 +184,10 @@ function TeamOption({team: value, error, selected}: TeamOptionProps) {
   return (
     <div
       className={clsx(
-        'relative col-span-full mb-3 bg-gray-100 dark:bg-gray-800 rounded-lg focus-within:outline-none ring-team-current ring-offset-4 focus-within:ring-2 lg:col-span-4 lg:mb-0',
+        'focus-ring relative col-span-full mb-3 bg-gray-100 dark:bg-gray-800 rounded-lg lg:col-span-4 lg:mb-0',
         team.focusClassName,
         {
-          'ring-2 ring-offset-team-current': selected,
-          'dark:ring-offset-gray-900 ring-offset-white': !selected,
+          'ring-2': selected,
         },
       )}
     >

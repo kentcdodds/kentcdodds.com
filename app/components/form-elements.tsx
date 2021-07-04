@@ -13,7 +13,7 @@ function Input(props: JSX.IntrinsicElements['input']) {
   return (
     <input
       {...props}
-      className="placeholder-gray-500 dark:disabled:text-blueGray-500 px-11 py-8 w-full text-black disabled:text-gray-400 dark:text-white text-lg font-medium bg-gray-200 dark:bg-gray-800 rounded-lg focus:outline-none ring-team-current dark:ring-offset-gray-900 ring-offset-white ring-offset-4 focus:ring-2"
+      className="placeholder-gray-500 dark:disabled:text-blueGray-500 focus-ring px-11 py-8 w-full text-black disabled:text-gray-400 dark:text-white text-lg font-medium bg-gray-200 dark:bg-gray-800 rounded-lg"
     />
   )
 }

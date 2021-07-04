@@ -16,7 +16,7 @@ function Tag({tag, selected, onClick}: TagProps) {
         checked={selected}
         onChange={onClick}
         className={clsx(
-          'relative block mb-4 mr-4 px-6 py-3 w-auto h-auto rounded-full focus-within:outline-none transition hover:ring-2 focus-within:ring-2 ring-team-current ring-offset-4 dark:ring-offset-gray-900 ring-offset-white',
+          'focus-ring relative block mb-4 mr-4 px-6 py-3 w-auto h-auto rounded-full',
           {
             'text-black dark:text-white bg-gray-100 dark:bg-gray-800':
               !selected,
