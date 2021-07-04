@@ -42,15 +42,16 @@ module.exports = {
         500: 'var(--color-yellow-500)',
       },
       blue: {
-        500: 'var(--color-blue-500)',
         100: 'var(--color-blue-100)',
+        500: 'var(--color-blue-500)',
       },
       red: {
         500: 'var(--color-red-500)',
       },
       green: {
-        500: 'var(--color-green-500)',
         100: 'var(--color-green-100)',
+        500: 'var(--color-green-500)',
+        600: 'var(--color-green-600)',
       },
     },
 
@@ -268,5 +269,6 @@ module.exports = {
   plugins: [
     require('@tailwindcss/typography'),
     require('@tailwindcss/aspect-ratio'),
+    require('@tailwindcss/line-clamp'),
   ],
 }
