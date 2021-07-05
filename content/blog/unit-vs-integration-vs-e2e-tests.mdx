@@ -122,7 +122,7 @@ integration tests is to mock as little as possible. I pretty much only mock:
 2. Components responsible for animation (because who wants to wait for that in
    your tests?)
 
-```js filename=todo.spec.js
+```js
 import * as React from 'react'
 import {render, screen, waitForElementToBeRemoved} from 'test/app-test-utils'
 import userEvent from '@testing-library/user-event'
@@ -173,7 +173,7 @@ Learn how to setup a test-utils file like the one above in the
 
 ### Unit
 
-```js filename=todo.spec.js
+```js
 import '@testing-library/jest-dom/extend-expect'
 import * as React from 'react'
 // if you have a test utils module like in the integration test example above
@@ -204,7 +204,7 @@ test('renders the items in a list', () => {
 
 Everyone calls this a unit test and they're right:
 
-```js filename=todo.spec.js
+```js
 // pure functions are the BEST for unit testing and I LOVE using jest-in-case for them!
 import cases from 'jest-in-case'
 import fizzbuzz from '../fizzbuzz'
@@ -226,7 +226,7 @@ cases(
 
 ### Static
 
-```js filename=todo.spec.js
+```js
 // can you spot the bug?
 // I'll bet ESLint's for-direction rule could
 // catch it faster than you in a code review 😉

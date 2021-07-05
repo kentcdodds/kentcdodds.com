@@ -1,6 +1,7 @@
 import * as React from 'react'
 import {useMatches} from 'remix'
 import type {MdxListItem, MdxPage} from 'types'
+import pLimit from 'p-limit'
 import * as mdxBundler from 'mdx-bundler/client'
 import config from '../../config'
 import {compileMdx} from '../utils/compile-mdx.server'
@@ -67,12 +68,14 @@ async function getMdxPagesInDirectory(contentDir: string, bustCache: boolean) {
   }
   await redis.set(key, JSON.stringify(dirList))
 
+  const limit = pLimit(20)
+
   const pages = await Promise.all(
     dirList
       .filter(({name}) => name !== 'README.md')
       .map(
         async ({slug}): Promise<MdxPage | null> =>
-          getMdxPage({contentDir, slug, bustCache}),
+          limit(() => getMdxPage({contentDir, slug, bustCache})),
       ),
   )
   return pages.filter(typedBoolean)

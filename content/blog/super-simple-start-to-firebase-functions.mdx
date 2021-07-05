@@ -69,7 +69,7 @@ For firebase to recognize your project as a firebase project, it needs to have a
 here, but no config is needed for this super simple start, so just put in an
 empty object:
 
-```json
+```json filename=firebase.json
 {}
 ```
 
@@ -81,7 +81,7 @@ project to deploy your code to).
 
 Here's all you need in that file:
 
-```json
+```json filename=.firebaserc
 {
   "projects": {
     "default": "{your-project-id}"
@@ -99,7 +99,7 @@ mentioned above. You can also get it from your project's settings page:
 
 Here's what you need in there:
 
-```json
+```json filename=functions/package.json
 {
   "engines": {
     "node": "12"
@@ -133,7 +133,7 @@ node_modules
 
 ### Step 6: Install function dependencies
 
-```sh line-numbers=false
+```sh
 cd functions && npm install
 ```
 
@@ -147,7 +147,7 @@ Now that you have dependencies installed, you can create your first function.
 
 Here's what you'll put in there:
 
-```js
+```js filename=functions/index.js
 const functions = require('firebase-functions')
 
 module.exports = {
@@ -163,7 +163,7 @@ So with this, we have a single function called `hello`.
 
 You might notice other folks use this syntax:
 
-```js
+```js filename=functions/index.js
 exports.hello = functions.https.onRequest((req, res) => {})
 ```
 
@@ -179,13 +179,13 @@ something else, then you'll need to set that in the `main` field in your
 To deploy locally, you'll need to have `firebase-tools` installed so you can use
 the `firebase` CLI:
 
-```sh line-numbers=false
+```sh
 npm install --global firebase-tools
 ```
 
 Now you can login:
 
-```sh line-numbers=false
+```sh
 firebase login
 ```
 
@@ -203,13 +203,13 @@ pretty sweet.
 
 From within your project directory, run the following command:
 
-```sh line-numbers=false
+```sh
 firebase emulators:start
 ```
 
 That does a bunch of stuff, but here's the important output:
 
-```sh line-numbers=false
+```sh
 i  emulators: Starting emulators: functions
 ... some irrelevant stuff here ...
 ✔  functions[hello]: http function initialized (http://localhost:5001/{your-project-id}/us-central1/hello).
@@ -246,13 +246,13 @@ Awesome! So the function is working! On to the next step.
 Now you're ready to deploy your function to the world wide web. From within your
 project directory, run the following command:
 
-```sh line-numbers=false
+```sh
 firebase deploy
 ```
 
 This will trigger your function to be deployed.... But wait! What's this I see?
 
-```sh line-numbers=false
+```sh
 Error: HTTP Error: 400, Billing account for project '189225252738' is not found.
 Billing must be enabled for activation of service(s)
 'cloudbuild.googleapis.com,containerregistry.googleapis.com' to proceed.
@@ -287,14 +287,14 @@ function.
 
 Now that your account is configured for billing, you can try to deploy again:
 
-```sh line-numbers=false
+```sh
 firebase deploy
 ```
 
 It will take a little bit of time, but when it's finally finished, you should
 get output like this:
 
-```sh line-numbers=false
+```sh
 === Deploying to '{your-project-id}'...
 
 i  deploying functions
@@ -329,7 +329,7 @@ is part of a GitHub repo and we can use GitHub actions to do this for us.
 
 First, create a `.github/workflows/deploy.yml` file and put this in it:
 
-```yaml line-numbers=false
+```yaml nonumber filename=.github/workflows/deploy.yml
 name: deploy
 on:
   push:
@@ -377,14 +377,14 @@ Let's get that firebase token set up.
 
 Run this:
 
-```sh line-numbers=false
+```sh
 firebase login:ci
 ```
 
 This will take you through the login process once again, when you've finished,
 it will give you the token in the terminal output:
 
-```sh line-numbers=false
+```sh
 ✔  Success! Use this token to login on a CI server:
 
 1//06SeHVPB6AOF9CgYIARAAGAYSNwF-L9IrcdTvBfmn_ako1m3iJXRNpyV6tROQ193ZTGUtwLB95aoCC1l45ES40dRYfa5YjNCRxRc
@@ -394,7 +394,7 @@ Example: firebase deploy --token "$FIREBASE_TOKEN"
 
 And don't even try using that token, I've already revoked it 😜 Get your own!
 
-```sh line-numbers=false
+```sh
 firebase logout --token 1//06SeHVPB6AOF9CgYIARAAGAYSNwF-L9IrcdTvBfmn_ako1m3iJXRNpyV6tROQ193ZTGUtwLB95aoCC1l45ES40dRYfa5YjNCRxRc
 ✔  Logged out token "1//06SeHVPB6AOF9CgYIARAAGAYSNwF-L9IrcdTvBfmn_ako1m3iJXRNpyV6tROQ193ZTGUtwLB95aoCC1l45ES40dRYfa5YjNCRxRc"
 ```
@@ -413,7 +413,7 @@ With that added, you're ready to deploy!
 
 Now commit and push all of your changes:
 
-```sh line-numbers=false
+```sh
 git add -A
 git commit -m "firebase functions rock"
 git push

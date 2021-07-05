@@ -69,6 +69,7 @@
     "md5-hash": "^1.0.1",
     "mdx-bundler": "^4.1.1",
     "node-fetch": "^2.6.1",
+    "p-limit": "^2.3.0",
     "pm2": "^5.1.0",
     "postcss-import": "^14.0.2",
     "qrcode": "^1.4.4",

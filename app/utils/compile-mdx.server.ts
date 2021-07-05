@@ -56,7 +56,11 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
     remarkCodeBlocksShiki,
     function optimizeCloudinaryImages() {
       return function transformer(tree: Node) {
-        visit(tree, 'image', function visitor(node) {
+        visit(tree, 'image', function visitor(node: Node & {url?: string}) {
+          if (!node.url) {
+            console.error('image without url?', node)
+            return
+          }
           const urlString = String(node.url)
           const match = urlString.match(cloudinaryUrlRegex)
           const groups = match?.groups
