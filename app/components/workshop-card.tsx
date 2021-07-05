@@ -44,7 +44,7 @@ function WorkshopCard({
         </div>
       </div>
       <H3 className="flex-none mb-3">{title}</H3>
-      {/*TODO: line-clamp has a browser support of 90%, is that enough?*/}
+
       <div className="flex-auto mb-10">
         <Paragraph className="line-clamp-3">
           {/*
@@ -56,10 +56,6 @@ function WorkshopCard({
           {truncate(description, 120)}
         </Paragraph>
       </div>
-      {/*
-        TODO: design shows different date format, but that wraps really quickly.
-         I think we can move the time with timezone to the details page?
-      */}
       <H6 className="flex flex-wrap">
         {date ? formatDate(new Date(date), 'PPP') : 'To be announced'}
       </H6>
