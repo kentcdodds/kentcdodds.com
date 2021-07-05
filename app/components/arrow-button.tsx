@@ -4,7 +4,7 @@ import {Link, LinkProps} from 'react-router-dom'
 import {ArrowIcon, ArrowIconProps} from './icons/arrow-icon'
 
 interface ArrowButtonProps {
-  children: React.ReactNode
+  children?: React.ReactNode
   direction?: ArrowIconProps['direction']
   textSize?: 'small' | 'medium'
   className?: string
@@ -29,7 +29,7 @@ function ArrowButton({
       )}
       {...buttonProps}
     >
-      {direction === 'right' || direction === 'up' ? (
+      {children && (direction === 'right' || direction === 'up') ? (
         <span className="mr-8">{children}</span>
       ) : null}
 
@@ -37,7 +37,7 @@ function ArrowButton({
         <ArrowIcon direction={direction} />
       </span>
 
-      {direction === 'left' || direction === 'down' ? (
+      {children && (direction === 'left' || direction === 'down') ? (
         <span className="ml-8">{children}</span>
       ) : null}
     </button>

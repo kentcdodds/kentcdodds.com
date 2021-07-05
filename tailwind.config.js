@@ -76,6 +76,9 @@ module.exports = {
         '8vw': '8vw', // positions hero img inside the margin
         '10vw': '10vw', // page margin
       },
+      height: {
+        hero: 'calc(100vh - 10rem)', // screen - navbar height (lg: only)
+      },
       rotate: {
         '-135': '-135deg',
         135: '135deg',
