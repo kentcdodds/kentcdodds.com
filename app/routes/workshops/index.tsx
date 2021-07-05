@@ -1,17 +1,17 @@
 import * as React from 'react'
-import {useRouteData, Link, json} from 'remix'
+import {useRouteData, json} from 'remix'
 import type {KCDLoader, MdxListItem} from 'types'
+import {useState} from 'react'
 import {
   getMdxPagesInDirectory,
   mapFromMdxPageToMdxListItem,
 } from '../../utils/mdx'
 import {Grid} from '../../components/grid'
 import {images} from '../../images'
-import {H2, H3, H6, Paragraph} from '../../components/typography'
+import {H2, H6} from '../../components/typography'
 import {Tag} from '../../components/tag'
 import {CourseSection} from '../../components/sections/course-section'
-import {useState} from 'react'
-import formatDate from 'date-fns/format'
+import {WorkshopCard} from '../../components/workshop-card'
 
 type LoaderData = {
   workshops: Array<MdxListItem>
@@ -32,68 +32,6 @@ export function meta() {
     title: 'Workshops with Kent C. Dodds',
     description: 'Get really good at making software with Kent C. Dodds',
   }
-}
-
-function truncate(text: string, length: number) {
-  if (!text || text.length <= length) {
-    return text
-  }
-
-  return `${text.substr(0, length).trim()}…`
-}
-
-function WorkshopCard({
-  slug,
-  frontmatter: {
-    date,
-    title = 'Untitled Workshop',
-    description = 'Description TBA',
-    tech,
-  },
-}: MdxListItem) {
-  return (
-    <Link
-      to={slug}
-      className="focus-ring block flex flex-col p-16 pr-24 w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg"
-    >
-      <div className="flex-none h-36">
-        {/* TODO: how to determine if it's open or not? */}
-        {Math.random() * 10 < 5 ? (
-          <div className="inline-flex items-baseline">
-            <div className="block flex-none w-3 h-3 bg-green-600 rounded-full" />
-            <H6 as="p" className="pl-4">
-              Open for registration
-            </H6>
-          </div>
-        ) : null}
-      </div>
-      <div className="flex-none">
-        <div className="inline-block mb-4 px-8 py-4 text-black dark:text-white text-lg dark:bg-gray-600 bg-white rounded-full">
-          {tech}
-        </div>
-      </div>
-      <H3 className="flex-none mb-3">{title}</H3>
-      {/*TODO: line-clamp has a browser support of 90%, is that enough?*/}
-      <div className="flex-auto mb-10">
-        <Paragraph className="line-clamp-3">
-          {/*
-            We do use css line-clamp, this is for the 10% of the browsers that
-            don't support that. Don't focus too much at perfection. It's important
-            that the truncated string remains longer than the line-clamp, so that
-            line-clamp precedes for the 90% supporting that.
-          */}
-          {truncate(description, 120)}
-        </Paragraph>
-      </div>
-      {/*
-        TODO: design shows different date format, but that wraps really quickly.
-         I think we can move the time with timezone to the details page?
-      */}
-      <H6 className="flex flex-wrap">
-        {date ? formatDate(new Date(date), 'PPP') : 'To be announced'}
-      </H6>
-    </Link>
-  )
 }
 
 const ALL_TECHS = ['javascript', 'react', 'testing']
