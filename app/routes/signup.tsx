@@ -3,7 +3,12 @@ import {Form, json, redirect, useRouteData} from 'remix'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import type {Team} from 'types'
 import clsx from 'clsx'
-import {rootStorage, sessionKeys, signInSession} from '../utils/session.server'
+import {
+  getUser,
+  rootStorage,
+  sessionKeys,
+  signInSession,
+} from '../utils/session.server'
 import {createSession, prisma, validateMagicLink} from '../utils/prisma.server'
 import {getErrorMessage, getNonNull, teams} from '../utils/misc'
 import {tagKCDSiteSubscriber} from '../utils/convertkit.server'
@@ -127,6 +132,9 @@ export const action: ActionFunction = async ({request}) => {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
+  const user = await getUser(request)
+  if (user) return redirect('/me')
+
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
   const email = session.get(sessionKeys.email)
   if (!email) {
