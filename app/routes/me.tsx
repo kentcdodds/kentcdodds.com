@@ -117,6 +117,8 @@ function YouScreen() {
               required
               defaultValue={user.email}
               className="mb-8"
+              readOnly
+              disabled
             />
 
             <div className="flex flex-wrap items-baseline justify-between mb-4">
@@ -133,7 +135,10 @@ function YouScreen() {
                     connected
                   </a>
                 ) : (
-                  <a className="text-black dark:text-white" href={authorizeURL}>
+                  <a
+                    className="focus-ring text-black dark:text-white rounded-lg"
+                    href={authorizeURL}
+                  >
                     Connect to Discord
                   </a>
                 )}
@@ -145,9 +150,10 @@ function YouScreen() {
               name="discord"
               value={userInfo.discord?.username ?? user.discordId ?? ''}
               placeholder="n/a"
-              readOnly
               className="mb-12 lg:mb-20"
               aria-describedby="discord-message"
+              readOnly
+              disabled
             />
 
             <Button type="submit">Save changes</Button>
@@ -167,7 +173,7 @@ function YouScreen() {
               readOnly
             />
 
-            <div className="relative col-span-full mb-3 bg-gray-100 dark:bg-gray-800 rounded-lg focus-within:outline-none ring-team-current ring-offset-team-current ring-offset-team-current ring-offset-4 ring-2 focus-within:ring-2 lg:col-span-4 lg:mb-0">
+            <div className="relative col-span-full mb-3 bg-gray-100 dark:bg-gray-800 rounded-lg focus-within:outline-none ring-2 focus-within:ring-2 ring-team-current ring-offset-4 ring-offset-team-current ring-offset-team-current lg:col-span-4 lg:mb-0">
               <span className="absolute left-9 top-9 text-team-current">
                 <CheckIcon />
               </span>
