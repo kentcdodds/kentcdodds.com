@@ -14,11 +14,11 @@ import {getErrorMessage, getNonNull, teams} from '../utils/misc'
 import {tagKCDSiteSubscriber} from '../utils/convertkit.server'
 import {useTeam} from '../utils/providers'
 import {Grid} from '../components/grid'
-import {images} from '../images'
 import {H2, H6, Paragraph} from '../components/typography'
 import {Input, InputError, Label} from '../components/form-elements'
 import {Button} from '../components/button'
 import {CheckIcon} from '../components/icons/check-icon'
+import {TEAM_MAP} from '../utils/onboarding'
 
 type LoaderData = {
   email: string
@@ -157,27 +157,6 @@ export const loader: LoaderFunction = async ({request}) => {
       'Set-Cookie': await rootStorage.commitSession(session),
     },
   })
-}
-
-const TEAM_MAP: Record<
-  Team,
-  {image: {src: string; alt: string}; label: string; focusClassName: string}
-> = {
-  BLUE: {
-    image: images.alexBlue,
-    label: 'Blue Team',
-    focusClassName: 'ring-team-blue',
-  },
-  RED: {
-    image: images.alexRed,
-    label: 'Red Team',
-    focusClassName: 'ring-team-red',
-  },
-  YELLOW: {
-    image: images.alexYellow,
-    label: 'Yellow Team',
-    focusClassName: 'ring-team-yellow',
-  },
 }
 
 interface TeamOptionProps {

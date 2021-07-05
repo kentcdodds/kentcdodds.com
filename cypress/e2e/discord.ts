@@ -23,7 +23,7 @@ describe('discord', () => {
     cy.findByRole('main').within(() => {
       // eventually this should probably be improved but it's ok for now.
       // using hard coded IDs like this is not awesome.
-      cy.findByText(/test_discord_id/i)
+      cy.findByDisplayValue(/test_discord_username/i)
     })
   })
 })
