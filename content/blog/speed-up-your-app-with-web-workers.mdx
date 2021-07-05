@@ -34,7 +34,7 @@ One of the most significant of these drawbacks comes in the form of user
 experience. To illustrate my point, go ahead and open a new tab to twitter.com
 and open your browser DevTools console. Then copy/paste this and hit enter:
 
-```javascript
+```js
 while (true) {}
 ```
 
@@ -74,7 +74,7 @@ Here you go:
 <script src="main.js"></script>
 ```
 
-```javascript
+```js
 // main.js
 const worker = new Worker('worker.js')
 worker.postMessage('Hello Worker')
@@ -85,7 +85,7 @@ worker.onmessage = e => {
 // worker.terminate()
 ```
 
-```javascript
+```js
 // worker.js
 this.onmessage = e => {
   console.log('worker.js: Message received from main script', e.data)
@@ -138,7 +138,7 @@ matching cities.
 That workshop material uses `react-scripts` (create-react-app). Here's some of
 the code from my material:
 
-```javascript
+```js
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import makeFilterCitiesWorker from 'workerize!./filter-cities'
 

@@ -116,4 +116,26 @@ pre {
   background: var(--color-green-500);
 }
 
+.prose pre {
+  position: relative;
+}
+
+.prose pre[data-filename]:before {
+  content: attr(data-filename);
+  position: absolute;
+  left: 8px;
+  top: 4px;
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+.prose pre[data-lang]:after {
+  content: attr(data-lang);
+  position: absolute;
+  right: 8px;
+  top: 4px;
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
 /* TODO: support callout-info, callout-warning, and callout-error */

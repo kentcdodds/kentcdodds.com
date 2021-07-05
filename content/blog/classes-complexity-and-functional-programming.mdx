@@ -21,7 +21,7 @@ objects, and classes fitting into that discussion.
 Let's take a look at an example of a class implementation to illustrate my
 point:
 
-```javascript
+```js
 class Person {
   constructor(name) {
     // common convention is to prefix properties with `_`
@@ -113,7 +113,7 @@ classes and `this` most of the time.
 
 Here's a (contrived) example of where things can break down with `this`.
 
-```javascript
+```js
 const person = new Person('Jane Doe')
 const getGreeting = person.getGreeting
 // later...
@@ -163,7 +163,7 @@ object-oriented approach of classes, we try a more functional approach? This is
 how things would look if we used
 [pure functions](https://en.wikipedia.org/wiki/Pure_function):
 
-```javascript
+```js
 function setName(person, strName) {
   return Object.assign({}, person, {name: strName})
 }
@@ -254,7 +254,7 @@ book which is available to read for free
 Here’s an implementation of our `person` class based on Addy’s
 “[Revealing Module Pattern](https://addyosmani.com/resources/essentialjsdesignpatterns/book/#revealingmodulepatternjavascript)”:
 
-```javascript
+```js
 function getPerson(initialName) {
   let name = initialName
   const person = {
@@ -295,7 +295,7 @@ Just an object with a few properties.
 One of the flaws of the module pattern above is that every `person` has its very
 own copy of each property and function For example:
 
-```javascript
+```js
 const person1 = getPerson('Jane Doe')
 const person2 = getPerson('Jane Doe')
 person1.getGreetingCallback === person2.getGreetingCallback // false
@@ -308,7 +308,7 @@ these, or you want creating these to be more than fast, this can be a bit of a
 problem. With our `Person` class, every instance we create will have a reference
 to the exact same method `getGreetingCallback`:
 
-```javascript
+```js
 const person1 = new Person('Jane Doe')
 const person2 = new Person('Jane Doe')
 person1.getGreetingCallback === person2.getGreetingCallback // true
@@ -320,7 +320,7 @@ person2.getGreetingCallback === Person.prototype.getGreetingCallback
 The nice thing with the module pattern is that it avoids the issues with the
 callsite we saw above.
 
-```javascript
+```js
 const person = getPerson('Jane Doe')
 const getGreeting = person.getGreeting
 // later...
@@ -339,7 +339,7 @@ then you may be interested in
 [stage-2](https://github.com/tc39/proposals), but unfortunately no babel support
 [yet](https://github.com/babel/babel/issues/4408)):
 
-```javascript
+```js
 class Person {
   #name
   greeting = 'hey there'

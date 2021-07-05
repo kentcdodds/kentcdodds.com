@@ -113,7 +113,7 @@ and their relationship to JSX.
 When React calls the counter function, it gets back something that looks a bit
 like this:
 
-```javascript
+```js
 // some things removed for clarity
 const counterElement = {
   type: 'div',
@@ -141,7 +141,7 @@ These are called UI descriptor objects. They describe the UI that React should
 create in the DOM (or via native components for react native). Let's click the
 button and take a look at the changes:
 
-```javascript [8,9]
+```js [8,9]
 const counterElement = {
   type: 'div',
   props: {
@@ -174,7 +174,7 @@ It may actually be easier to investigate at the parts of this tree of React
 elements is the same between renders, so here are the things that did NOT change
 between those two renders:
 
-```javascript [2,6,13,15]
+```js [2,6,13,15]
 const counterElement = {
   type: 'div',
   props: {
@@ -254,7 +254,7 @@ ReactDOM.render(
 
 So let's checkout the _things that are the same_ between renders:
 
-```javascript [2,6,12-17]
+```js [2,6,12-17]
 const counterElement = {
   type: 'div',
   props: {

@@ -73,14 +73,14 @@ arguments you pass are created and evaluated every render. This is normally not
 a big deal because JavaScript engines are very fast and can optimize for this
 kind of thing. So something like this would be no problem:
 
-```javascript
+```js
 const initialState = 0
 const [count, setCount] = React.useState(initialState)
 ```
 
 However, what if the initial value for your state is computationally expensive?
 
-```javascript
+```js
 const initialState = calculateSomethingExpensive(props)
 const [count, setCount] = React.useState(initialState)
 ```
@@ -88,7 +88,7 @@ const [count, setCount] = React.useState(initialState)
 Or, more practically, what if you need to read into `localStorage` which is an
 IO operation?
 
-```javascript
+```js
 const initialState = Number(window.localStorage.getItem('count'))
 const [count, setCount] = React.useState(initialState)
 ```
@@ -101,7 +101,7 @@ up running that code on every render, even if its value is not used or needed.
 This is what the lazy initialization is all about. It allows you to put that
 code in a function:
 
-```javascript
+```js
 const getInitialState = () => Number(window.localStorage.getItem('count'))
 const [count, setCount] = React.useState(getInitialState)
 ```

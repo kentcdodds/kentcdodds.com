@@ -18,7 +18,7 @@ https://egghead.io/lessons/javascript-reduce-cognitive-load-for-readers-of-your-
 
 If I come across code like this:
 
-```javascript
+```js
 function getDisplayName({firstName, lastName}) {
   const upperFirstCharacter = string =>
     string.slice(0, 1).toUpperCase() + string.slice(1)
@@ -29,7 +29,7 @@ function getDisplayName({firstName, lastName}) {
 
 Chances are, I'll refactor it to this:
 
-```javascript
+```js
 const upperFirstCharacter = string =>
   string.slice(0, 1).toUpperCase() + string.slice(1)
 
@@ -82,7 +82,7 @@ tendency I have.
 Also, sometimes it's just unavoidable because you really need access to those
 variables. For example:
 
-```javascript
+```js
 function addThings(additive, ...numbers) {
   const add = n => n + additive
   return numbers.map(add)

@@ -165,7 +165,7 @@ function UserGitHubImg({username = 'ghost', ...props}) {
 > Definitely read that MDN article. You are certain to learn something new. When
 > you're done, try to refactor this to use a single line of destructuring:
 
-```javascript
+```js
 function nestedArrayAndObject() {
   // refactor this to a single line of destructuring...
   const info = {
@@ -298,7 +298,7 @@ it's a good idea to learn how the syntax works because any application of even
 trivial size will likely need to make use of modules for code reuse and
 organization.
 
-```javascript [30]
+```js [30]
 export default function add(a, b) {
   return a + b
 }
@@ -497,7 +497,7 @@ function RepositoryList({repositories, owner}) {
 If a value is `null` or `undefined`, then you may want to fallback to some
 default value:
 
-```javascript
+```js
 // here's what we often did for this:
 x = x || 'some default'
 
@@ -534,7 +534,7 @@ Also known as the "Elvis Operator," this allows you to safely access properties
 and call functions that may or may not exist. Before optional chaining, we used
 a hacky-workaround that relied on falsy/truthy-ness.
 
-```javascript
+```js
 // what we did before optional chaining:
 const streetName = user && user.address && user.address.street.name
 

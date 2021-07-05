@@ -38,7 +38,7 @@ Note: You might be interested in my companion post
 
 First, we need a JavaScript file that we want to load into our site:
 
-```javascript
+```js
 // append-div.js
 function appendDiv(message) {
   const div = document.createElement('div')
@@ -86,7 +86,7 @@ loaded a real EcmaScript Module! Hooray 🎉
 Normally we don't write our JavaScript in an inline script in our HTML file, so
 let's load a module from a file:
 
-```javascript
+```js
 // script-src.js
 import {appendDiv} from './append-div.js'
 
@@ -114,7 +114,7 @@ specification we really do have to provide the extension.
 One last thing I want to show is that dynamic imports work well too. So if we
 add another file:
 
-```javascript
+```js
 // async-script.js
 import {appendDiv} from './append-div.js'
 
@@ -127,7 +127,7 @@ export {go}
 
 Then we can load that using a dynamic import statement:
 
-```javascript [6-14]
+```js [6-14]
 // script-src.js
 import {appendDiv} from './append-div.js'
 
@@ -152,7 +152,7 @@ file which it can execute as JavaScript.
 This means that if you happen to have a URL that returns a JavaScript file but
 doesn't end in `.js` you are fine omitting that.
 
-```javascript
+```js
 import * as d3 from 'https://unpkg.com/d3?module'
 ```
 

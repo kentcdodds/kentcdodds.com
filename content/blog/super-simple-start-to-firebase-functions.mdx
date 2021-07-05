@@ -147,7 +147,7 @@ Now that you have dependencies installed, you can create your first function.
 
 Here's what you'll put in there:
 
-```javascript
+```js
 const functions = require('firebase-functions')
 
 module.exports = {
@@ -163,7 +163,7 @@ So with this, we have a single function called `hello`.
 
 You might notice other folks use this syntax:
 
-```javascript
+```js
 exports.hello = functions.https.onRequest((req, res) => {})
 ```
 
@@ -329,7 +329,7 @@ is part of a GitHub repo and we can use GitHub actions to do this for us.
 
 First, create a `.github/workflows/deploy.yml` file and put this in it:
 
-```sh line-numbers=false
+```yaml line-numbers=false
 name: deploy
 on:
   push:

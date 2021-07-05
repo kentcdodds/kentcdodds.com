@@ -16,7 +16,7 @@ bannerCredit: Photo by [Jeffrey F Lin](https://unsplash.com/photos/T4cXypPgN3w)
 
 Why doesn't this work?
 
-```javascript
+```js
 function getLogger(arg) {
   function logger() {
     console.log(arg)
@@ -44,7 +44,7 @@ value of `fruit`!
 
 I can side-step this by calling `getLogger` again to get a new logger:
 
-```javascript
+```js
 const logFruit2 = getLogger(fruit)
 logFruit2() // "peach" what a relief...
 ```
@@ -56,7 +56,7 @@ The answer is the fact that in JavaScript, when you call a function with
 arguments, the arguments you're passing are passed by value, not by reference.
 Let me briefly describe what's going on here:
 
-```javascript
+```js
 function getLogger(arg) {
   function logger() {
     console.log(arg)
@@ -86,7 +86,7 @@ though they're the exact same value!
 Just because two variables are assigned the same value doesn't mean they are the
 same variable. Here's a simplified example of that concept:
 
-```javascript
+```js
 let a = 1
 let b = a
 
@@ -114,7 +114,7 @@ In the same way, when you call a function, the JavaScript engine creates a new
 variable for the function arguments. In our case, we called `getLogger(fruit)`
 and the JavaScript engine basically did this:
 
-```javascript
+```js
 let arg = fruit
 ```
 
@@ -127,7 +127,7 @@ there is a way to do that! Well, sorta. The idea is this: instead of changing
 where the arrows (variables) point, you can change what they're pointing to! For
 example:
 
-```javascript
+```js
 let a = {current: 1}
 let b = a
 
@@ -143,7 +143,7 @@ get the update.
 
 So, let's apply this solution to our `logger` problem:
 
-```javascript
+```js
 function getLatestLogger(argRef) {
   function logger() {
     console.log(argRef.current)

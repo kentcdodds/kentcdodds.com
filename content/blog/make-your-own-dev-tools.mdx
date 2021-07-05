@@ -57,7 +57,7 @@ https://twitter.com/kentcdodds/status/1229781024604708865
 
 Here's the basic idea:
 
-```javascript
+```js
 // src/index.js
 import loadDevTools from './dev-tools/load'
 import * as React from 'react'
@@ -77,7 +77,7 @@ loadDevTools(() => {
 
 And then:
 
-```javascript
+```js
 // src/dev-tools/load.js
 function loadDevTools(callback) {
   // this allows you to explicitly disable it in development for example
@@ -130,7 +130,7 @@ Once you get into the `dev-tools.js` file, you have free reign to do whatever
 you want (even async stuff). Just export an `install` function and you're off to
 the races:
 
-```javascript
+```js
 // src/dev-tools/dev-tools.js
 
 import * as React from 'react'
@@ -161,7 +161,7 @@ things or maybe you're in the middle of working on them. Whatever the case may
 be, having a script you can have run for you and you alone in your app can be
 really helpful. So in the App DevTools script we have something like this:
 
-```javascript
+```js
 // load local dev tools if it's there
 // NOTE: this is using some webpack-sepecific features.
 // if you're not using webpack, you might consider using

@@ -70,7 +70,7 @@ Also, "When an event happens:"
 Ok, so let's get started. Let's start with something simple. A toggle! Here's
 our initial code:
 
-```javascript
+```js
 function createMachine(stateMachineDefinition) {
   const machine = {
     // machine object
@@ -107,7 +107,7 @@ information (ADD: API Driven Development).
 Simple enough, we'll have the user provide us with what that `initialState`
 value should be:
 
-```javascript [2]
+```js [2]
 const machine = createMachine({
   initialState: 'off',
 })
@@ -115,7 +115,7 @@ const machine = createMachine({
 
 And we'll probably want to have a definition for our states as well:
 
-```javascript [3,4]
+```js [3,4]
 const machine = createMachine({
   initialState: 'off',
   off: {},
@@ -131,7 +131,7 @@ Ok, great. Onto the next:
 So we need to allow the user to provide a function that will be called when on
 enter and on exit for a given state:
 
-```javascript [4-7,10-13]
+```js [4-7,10-13]
 const machine = createMachine({
   initialState: 'off',
   off: {
@@ -151,7 +151,7 @@ const machine = createMachine({
 
 And we'll add console.logs so we can check our work later.
 
-```javascript [6,9,16,19]
+```js [6,9,16,19]
 const machine = createMachine({
   initialState: 'off',
   off: {
@@ -183,7 +183,7 @@ Ok, so now what's next?
 
 Alrighty, let's add a `transitions` property to our state definitions:
 
-```javascript [12,23]
+```js [12,23]
 const machine = createMachine({
   initialState: 'off',
   off: {
@@ -216,7 +216,7 @@ that event "switch". Then the `on` state should be able to transition to the
 `off` state as well and it makes sense to call that "switch" as well, so let's
 add a `switch` property to our `transitions` object:
 
-```javascript [13,26]
+```js [13,26]
 const machine = createMachine({
   initialState: 'off',
   off: {
@@ -257,7 +257,7 @@ Ok, so I think that we can specify a `target` for our transition event and when
 that event comes around, our machine will transition us from the current state
 to the target state:
 
-```javascript [14,29]
+```js [14,29]
 const machine = createMachine({
   initialState: 'off',
   off: {
@@ -311,7 +311,7 @@ side-effect to happen only when transitioning to state A from a specific state B
 but not from state C. So let's add an `action` to our `transition` objects (and
 we'll put a console.log in there to keep track of it later).
 
-```javascript [15-17,33-35]
+```js [15-17,33-35]
 const machine = createMachine({
   initialState: 'off',
   off: {
@@ -360,7 +360,7 @@ implement what happens when `transition` is called.
 
 When a user wants to create a machine, we've already specified this as the API:
 
-```javascript
+```js
 const machine = createMachine({
   // state machine definition object
 })
@@ -375,7 +375,7 @@ from the user (and this is what xstate does) so that's what we'll go with.
 
 So here's what we need for our initial implementation of `createMachine`:
 
-```javascript
+```js
 function createMachine(stateMachineDefinition) {
   const machine = {
     // machine object
@@ -386,7 +386,7 @@ function createMachine(stateMachineDefinition) {
 
 Let's go ahead and add the `value` and `transition` properties:
 
-```javascript [3-6]
+```js [3-6]
 function createMachine(stateMachineDefinition) {
   const machine = {
     value: stateMachineDefinition.initialState,
@@ -408,7 +408,7 @@ Great, now let's go down the list and implement things one by one:
 Alright, let's grab the transitions object and determine the destination
 transition.
 
-```javascript [5-6]
+```js [5-6]
 function createMachine(stateMachineDefinition) {
   const machine = {
     value: stateMachineDefinition.initialState,
@@ -426,7 +426,7 @@ function createMachine(stateMachineDefinition) {
 To be clear, the `destinationTransition` at this point for our `off` -> `on`
 transition would be:
 
-```javascript
+```js
 {
   target: 'on',
   action() {
@@ -443,7 +443,7 @@ currentState + event combo.
 Ok, so if the user defined a transition from the current state with this event,
 then we'll continue, otherwise, we'll exit early:
 
-```javascript [7-9]
+```js [7-9]
 function createMachine(stateMachineDefinition) {
   const machine = {
     value: stateMachineDefinition.initialState,
@@ -468,7 +468,7 @@ Ok, so we'll need to call the `action` for the transition, the `onExit` for the
 current state and the `onEnter` for the next state. To do that, we'll also need
 to get the destination state definition as well. Let's do all of that:
 
-```javascript [10-16]
+```js [10-16]
 function createMachine(stateMachineDefinition) {
   const machine = {
     value: stateMachineDefinition.initialState,
@@ -501,7 +501,7 @@ And finally:
 We've got to update the machine's value which is the `target` for the transition
 (which we've assigned to the `destinationState` variable):
 
-```javascript [18]
+```js [18]
 function createMachine(stateMachineDefinition) {
   const machine = {
     value: stateMachineDefinition.initialState,
@@ -532,7 +532,7 @@ function createMachine(stateMachineDefinition) {
 
 Alright, so here's the whole thing:
 
-```javascript
+```js
 function createMachine(stateMachineDefinition) {
   const machine = {
     value: stateMachineDefinition.initialState,

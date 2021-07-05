@@ -204,7 +204,7 @@ thousands of lines of tests and wind up nesting even further.
 
 What makes it so complex? Take this bit for example:
 
-```javascript
+```js
 it('should call onSubmit with the username and password', () => {
   expect(handleSubmit).toHaveBeenCalledTimes(1)
   expect(handleSubmit).toHaveBeenCalledWith(user)
@@ -214,7 +214,7 @@ it('should call onSubmit with the username and password', () => {
 Where is `handleSubmit` coming from and what's its value? Where is `user` coming
 from? What's _its_ value? Oh sure, you can go find where it's defined:
 
-```javascript [3-4]
+```js [3-4]
 describe('Login', () => {
   let utils,
     handleSubmit,
@@ -228,7 +228,7 @@ describe('Login', () => {
 
 But then you _also_ have to figure out where it's assigned:
 
-```javascript [2-3]
+```js [2-3]
 beforeEach(() => {
   handleSubmit = jest.fn()
   user = {username: 'michelle', password: 'smith'}
@@ -565,7 +565,7 @@ In addition, sometimes there are definitely good use cases for `before*`, but
 they're normally matched with a cleanup that's necessary in an `after*`. Like
 starting and stopping a server:
 
-```javascript
+```js
 let server
 beforeAll(async () => {
   server = await startServer()
@@ -576,7 +576,7 @@ afterAll(() => server.close())
 There's not really any other reliable way to do this. Another use case I can
 think of that I've used these hooks is for testing `console.error` calls:
 
-```javascript
+```js
 beforeAll(() => {
   jest.spyOn(console, 'error').mockImplementation(() => {})
 })

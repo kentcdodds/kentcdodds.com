@@ -22,7 +22,7 @@ https://egghead.io/lessons/react-implement-usestate-with-usereducer?pl=kent-s-bl
 
 Here's the TL;DR:
 
-```javascript
+```js
 const useStateReducer = (prevState, newState) =>
   typeof newState === 'function' ? newState(prevState) : newState
 
@@ -61,7 +61,7 @@ Let's start off by looking at the API that `useState` exposes to us:
 
 You can call `useState` three different ways:
 
-```javascript
+```js
 useState() // no initial value
 useState(initialValue) // a literal initial value
 useState(() => initialValue) // a lazy initial value
@@ -80,7 +80,7 @@ with the new state or a function which accepts the previous state and returns
 the new state. So our new `useReducer`-based `useState` will need to support
 both of these variations.
 
-```javascript
+```js
 const [state, setState] = useState()
 setState(newState)
 setState(previousState => newState)
@@ -95,7 +95,7 @@ reducer.
 
 So here's the `useReducer` API:
 
-```javascript
+```js
 const [state, dispatch] = React.useReducer(reducerFn, initialValue)
 ```
 
@@ -104,7 +104,7 @@ a third argument which is your initialization function and the second argument
 serves as an argument to that initialization function, so you can rename that to
 something like `initialArg`.
 
-```javascript
+```js
 const initializationFn = initialArg => initialArg
 
 const [state, dispatch] = useReducer(reducerFn, initialArg, initializationFn)
@@ -115,7 +115,7 @@ does. So if you want to control how the state is updated by the `dispatch`
 function, you can do that via the `reducerFn` which is called with whatever
 `dispatch` is called with.
 
-```javascript
+```js
 const reducerFn = (prevState, dispatchArg) => newState
 ```
 
@@ -125,7 +125,7 @@ With that, we can implement all the features of `useState`.
 
 Here's our starting point:
 
-```javascript
+```js
 const useStateReducer = () => {}
 
 function useState() {
@@ -137,7 +137,7 @@ function useState() {
 
 Let's start by trying to implement this use case for the state update function:
 
-```javascript
+```js
 const [count, setCount] = useState(0)
 setCount(count + 1)
 ```
@@ -145,7 +145,7 @@ setCount(count + 1)
 So we need to make the `dispatch` function actually update the state value. To
 do that, we make our reducer take the `dispatchArg` and return that.
 
-```javascript [1]
+```js [1]
 const useStateReducer = (prevState, dispatchArg) => dispatchArg
 
 function useState() {
@@ -155,7 +155,7 @@ function useState() {
 
 With that it actually makes more sense to call `dispatchArg` `newState` instead:
 
-```javascript [1]
+```js [1]
 const useStateReducer = (prevState, newState) => newState
 
 function useState() {
@@ -167,7 +167,7 @@ function useState() {
 
 Great! Next, let's support the function update version of the `useState` API:
 
-```javascript
+```js
 const [count, setCount] = useState(0)
 setCount(previousCount => previousCount + 1)
 ```
@@ -177,7 +177,7 @@ If we want to continue to support the previous API, we'll need to do some
 it with the previous state. Otherwise we'll just return it. Ternaries to the
 rescue!
 
-```javascript [1-2]
+```js [1-2]
 const useStateReducer = (prevState, newState) =>
   typeof newState === 'function' ? newState(prevState) : newState
 
@@ -191,7 +191,7 @@ function useState() {
 Nice! Now let's move on to that initial value! For the simple `useState(0)`
 case, it's actually really straightforward:
 
-```javascript [4,5]
+```js [4,5]
 const useStateReducer = (prevState, newState) =>
   typeof newState === 'function' ? newState(prevState) : newState
 
@@ -205,7 +205,7 @@ little more tricky because the `useReducer` API is slightly different here.
 Let's iterate to that first. Here's another way we could implement the non-lazy
 `useState(0)` use case:
 
-```javascript [4,7]
+```js [4,7]
 const useStateReducer = (prevState, newState) =>
   typeof newState === 'function' ? newState(prevState) : newState
 
@@ -222,7 +222,7 @@ easier to support the lazy initializer version of the API. We simply need to
 determine whether the `initialArg` is a function and if it is, we'll call it,
 otherwise we'll return it.
 
-```javascript [5]
+```js [5]
 const useStateReducer = (prevState, newState) =>
   typeof newState === 'function' ? newState(prevState) : newState
 

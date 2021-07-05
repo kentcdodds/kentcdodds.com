@@ -62,20 +62,20 @@ simple way to side-step the issue.
 
 Some people find this annoying/overly verbose:
 
-```javascript
+```js
 const state = useCountState()
 const dispatch = useCountDispatch()
 ```
 
 They say "can't we just do this?":
 
-```javascript
+```js
 const [state, dispatch] = useCount()
 ```
 
 Sure you can:
 
-```javascript
+```js
 function useCount() {
   return [useCountState(), useCountDispatch()]
 }

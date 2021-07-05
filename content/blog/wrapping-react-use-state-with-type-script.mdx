@@ -19,7 +19,7 @@ bannerCredit: Photo by [Daiga Ellaby](https://unsplash.com/photos/-oaGhEPVy0o)
 
 I made a `useDarkMode` hook that looks like this:
 
-```typescript
+```ts
 type DarkModeState = 'dark' | 'light'
 type SetDarkModeState = React.Dispatch<React.SetStateAction<DarkModeState>>
 
@@ -55,7 +55,7 @@ function useDarkMode() {
 
 Then it is used like this:
 
-```typescript
+```ts
 function App() {
   const [mode, setMode] = useDarkMode()
   return (
@@ -131,7 +131,7 @@ from a TypeScript perspective. First, let's clear out all the extra stuff and
 just look at the important bits. We'll even clear out the TypeScript and add it
 iteratively:
 
-```typescript
+```ts
 function useDarkMode() {
   const [mode, setMode] = React.useState(() => {
     // ...
@@ -178,7 +178,7 @@ question is: why is the `setMode` type both a function _and_ a string?
 
 Let me rewrite something and we'll see if the reason jumps out at you:
 
-```javascript
+```js
 const array = useDarkMode()
 const mode = array[0]
 const setMode = array[1]
@@ -200,7 +200,7 @@ this array, those values have to be one of the two types.
 But React's `useState` hook manages to ensure when we extract values out of it.
 Let's take a quick look at their type definition for `useState`:
 
-```typescript
+```ts
 function useState<S>(
   initialState: S | (() => S),
 ): [S, Dispatch<SetStateAction<S>>]
@@ -253,7 +253,7 @@ And we can take it a step further because with our Dark Mode functionality, the
 string can be either `dark` or `light` so we can do better than TypeScript's
 inference and pass the possible values explicitly:
 
-```typescript
+```ts
 function useDarkMode() {
   const [mode, setMode] = React.useState<'dark' | 'light'>(() => {
     // ...

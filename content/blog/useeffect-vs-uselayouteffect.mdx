@@ -62,7 +62,7 @@ One other situation you might want to use `useLayoutEffect` instead of
 `useEffect` is if you're updating a value (like a `ref`) and you want to make
 sure it's up-to-date before any other code runs. For example:
 
-```javascript
+```js
 const ref = React.useRef()
 React.useEffect(() => {
   ref.value = 'some value'

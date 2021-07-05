@@ -19,7 +19,7 @@ bannerCredit: Photo by [Kelly Sikkema](https://unsplash.com/photos/-1_RZL8BGBM)
 When you want to display a list of items to a user, I'm afraid `.join(', ')`
 just won't cut it:
 
-```javascript
+```js
 console.log(['apple'].join(', ')) // apple
 // looks good
 console.log(['apple', 'grape'].join(', ')) // apple, grape
@@ -35,7 +35,7 @@ Have you heard of
 [`Intl.ListFormat`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/ListFormat)?
 Well, it's likely that this can do all you need and more. Let's take a look:
 
-```typescript
+```ts
 const items = [
   'Sojourner',
   'Opportunity',
@@ -83,7 +83,7 @@ locale):
 
 Interestingly, if we play around with the locale, things behave unexpectedly:
 
-```javascript
+```js
 new Intl.ListFormat('en', {style: 'narrow', type: 'unit'}).format(items)
 // Sojourner Opportunity Spirit Curiosity Perseverance
 

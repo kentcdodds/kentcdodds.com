@@ -24,7 +24,7 @@ Current Available Translations:
 
 This is the first example on the https://reactjs.org/hooks documentation:
 
-```javascript
+```js
 import {useState} from 'react'
 
 function Example() {
@@ -95,7 +95,7 @@ more familiar with). So my next step is to go to
 [the online babel REPL](https://babeljs.io/repl) and paste in the code. Here's
 what the result looks like:
 
-```javascript
+```js
 'use strict'
 
 var _slicedToArray = (function () {
@@ -150,7 +150,7 @@ compliant to the specification, but also can make the code a little harder to
 understand. Luckily, there's an option on the Babel Repl's "Env Preset" called
 "Loose" which will simplify this output considerably:
 
-```javascript
+```js
 // const [count, setCount] = useState(0);
 var _useState = useState(0),
   count = _useState[0],
@@ -167,7 +167,7 @@ Let's play around with this a little bit to explore the syntax:
 
 Can I call the values whatever I want?
 
-```javascript
+```js
 // const [whateverIWant, reallyICanChooseWhatItIsCalled] = useState(0);
 var _useState = useState(0),
   whateverIWant = _useState[0],
@@ -176,7 +176,7 @@ var _useState = useState(0),
 
 Can I add more elements?
 
-```javascript
+```js
 // const [count, setCount, somethingElse] = useState(0);
 var _useState = useState(0),
   count = _useState[0],
@@ -186,7 +186,7 @@ var _useState = useState(0),
 
 Can I pull out fewer?
 
-```javascript
+```js
 // const [count] = useState(0);
 var _useState = useState(0),
   count = _useState[0]
@@ -194,7 +194,7 @@ var _useState = useState(0),
 
 Can I skip one?
 
-```javascript
+```js
 // const [, setCount] = useState(0);
 var _useState = useState(0),
   setCount = _useState[1]
@@ -202,7 +202,7 @@ var _useState = useState(0),
 
 Can I skip more?
 
-```javascript
+```js
 // const [,,, wow,, neat] = useState(0);
 var _useState = useState(0),
   wow = _useState[3],
@@ -211,7 +211,7 @@ var _useState = useState(0),
 
 I saw someone put a weird `=` sign in there, what does that do?
 
-```javascript
+```js
 // const [count = 3, setCount] = useState(0);
 var _useState = useState(0),
   _useState$ = _useState[0],
@@ -244,7 +244,7 @@ the current renderer (which is `react-dom` in our situation here). In fact,
 Another interesting thing about `useState` is that the implementation in
 `react-dom` is just a few lines:
 
-```javascript
+```js
 function useState(initialState) {
   return useReducer(
     basicStateReducer,
@@ -257,7 +257,7 @@ function useState(initialState) {
 😱 it's actually just a hook that's using the `useReducer` hook! Ok, but what is
 that `basicStateReducer` thing huh?
 
-```javascript
+```js
 function basicStateReducer(state, action) {
   return typeof action === 'function' ? action(state) : action
 }
@@ -268,7 +268,7 @@ Ok, interesting, so `useReducer` is actually
 so let's just look at what `useReducer`
 [returns](https://github.com/facebook/react/blob/f1bf281605444b342f4c37718092accbe3f98702/packages/react-reconciler/src/ReactFiberHooks.js#L383):
 
-```javascript
+```js
 return [newState, dispatch]
 ```
 
@@ -276,7 +276,7 @@ See! It's an array! So when we call `useState`, it returns a call to
 `useReducer` which will return an array of two values. This allows us to do the
 array destructuring that we want so instead of writing:
 
-```javascript
+```js
 const stateAndUpdater = useState(0)
 const count = stateAndUpdater[0]
 const setCount = stateAndUpdater[1]
@@ -284,7 +284,7 @@ const setCount = stateAndUpdater[1]
 
 We can write:
 
-```javascript
+```js
 const [count, setCount] = useState(0)
 ```
 

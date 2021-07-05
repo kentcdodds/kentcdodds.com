@@ -152,7 +152,7 @@ can open the webpack config here:
 
 Then locate the code that looks like this and add the noted lines:
 
-```javascript [8-9]
+```js [8-9]
 // ... config ...
 resolve: {
   // ... config ...
@@ -192,7 +192,7 @@ components is the culprit of our performance problems.
 React knows what to call your components based on the `name` property of the
 component:
 
-```javascript
+```js
 function AwesomeAppComponent() {
   return <div>Awesome</div>
 }
@@ -211,7 +211,7 @@ changes those names in a way that makes our code work the same as it did before,
 but reduce the filesize of our production JavaScript file which improves
 performance:
 
-```javascript
+```js
 function a() {
   return <div>Awesome</div>
 }
@@ -236,7 +236,7 @@ preserve the function and class names.
 So in that same webpack configuration file, scroll down to where the plugin is
 configured and modify it like this:
 
-```javascript [8-9]
+```js [8-9]
 // ... some config ...
 new TerserPlugin({
   terserOptions: {

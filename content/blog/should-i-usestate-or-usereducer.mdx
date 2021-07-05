@@ -65,7 +65,7 @@ that:
 
 I'll highlight the areas where we're interacting with the state:
 
-```javascript [2-7,11]
+```js [2-7,11]
 function useDarkMode() {
   const preferDarkQuery = '(prefers-color-scheme: dark)'
   const [mode, setMode] = React.useState(
@@ -100,7 +100,7 @@ system preferences) we'll keep that value set in `localStorage` for future use.
 There are several ways you could write this with `useReducer`. I'll start out
 with the typical way most people write reducers:
 
-```javascript [3-17,21-27,30-35,40-43,56-59]
+```js [3-17,21-27,30-35,40-43,56-59]
 const preferDarkQuery = '(prefers-color-scheme: dark)'
 
 function darkModeReducer(state, action) {
@@ -169,7 +169,7 @@ Wow, I think we can both agree that the `useState` version was WAY simpler! But
 wait! We can drastically simplify the `useReducer` version by going against the
 "grain" and not writing your typical redux-style reducer. Let's try that:
 
-```javascript [3-10,14]
+```js [3-10,14]
 function useDarkMode() {
   const preferDarkQuery = '(prefers-color-scheme: dark)'
   const [mode, setMode] = React.useReducer(
@@ -214,7 +214,7 @@ inspiration from that for this example. Thank you
 
 #### `useState` implementation
 
-```javascript
+```js
 function useUndo(initialPresent) {
   const [past, setPast] = React.useState([])
   const [present, setPresent] = React.useState(initialPresent)
@@ -403,7 +403,7 @@ So we can fix this problem with `useReducer`, but we can actually change our
 `useState` implementation and side-step this issue and I thought you'd enjoy
 that, so here it is:
 
-```javascript
+```js
 function useUndo(initialPresent) {
   const [state, setState] = React.useState({
     past: [],
@@ -491,7 +491,7 @@ this same thing with `useReducer` to compare.
 
 #### `useReducer` implementation
 
-```javascript
+```js
 const UNDO = 'UNDO'
 const REDO = 'REDO'
 const SET = 'SET'

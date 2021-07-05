@@ -220,14 +220,14 @@ Also, remember that nobody’s perfect and we’re all learning here :-) See you
 
 Before the change with Babel, a require statement was similar to:
 
-```javascript
+```js
 import add from './add'
 const three = add(1, 2)
 ```
 
 But after the change in Babel, the require statement now becomes more like:
 
-```javascript
+```js
 import * as add from './add'
 const three = add.default(1, 2)
 ```
@@ -244,7 +244,7 @@ import statement (**warning, despite what it looks like it’s not actually
 destructing due to the static analysis reasons mentioned earlier**). So you
 could do:
 
-```javascript
+```js
 // math.js
 const add = (x, y) => x + y
 const subtract = (x, y) => x - y

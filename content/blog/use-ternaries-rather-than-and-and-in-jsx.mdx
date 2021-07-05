@@ -105,7 +105,7 @@ passing. Remember,
 [JSX is a simple syntactic abstraction over calling `React.createElement`](/blog/what-is-jsx).
 So it'd be like trying to write this:
 
-```javascript
+```js
 function throwTheCandy(candyNames) {
   for (const candyName of candyNames) {
     throwCandy(candyName)
@@ -129,7 +129,7 @@ otherwise don't. Unfortunately for our use-case, the `&&` operator also has this
 "feature" where if both values aren't truthy, it returns the value of the falsy
 one:
 
-```javascript
+```js
 0 && true // 0
 true && 0 // 0
 false && true // false

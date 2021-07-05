@@ -58,7 +58,7 @@ I have a fetch wrapper for
 [my bookshelf app](https://github.com/kentcdodds/bookshelf) which has served me
 well. Let's build it together:
 
-```javascript
+```js
 function client(endpoint, customConfig) {
   const config = {
     method: 'GET',
@@ -73,7 +73,7 @@ function client(endpoint, customConfig) {
 
 This `client` function allows me to make calls to my app's API like so:
 
-```javascript
+```js
 client(`books?query=${encodeURIComponent(query)}`).then(
   data => {
     console.log('here are the books', data.books)
@@ -91,7 +91,7 @@ response". Luckily, the `Response` object has
 [an `ok`](https://developer.mozilla.org/en-US/docs/Web/API/Response/ok) property
 which we can use to reject the promise in our wrapper:
 
-```javascript [9-16]
+```js [9-16]
 function client(endpoint, customConfig = {}) {
   const config = {
     method: 'GET',
@@ -116,7 +116,7 @@ Great, now our promise chain will reject if the response is not ok.
 The next thing we want to do is be able to send data to the backend. We _can_ do
 this with our current API, but let's make it easier:
 
-```javascript [2-13]
+```js [2-13]
 function client(endpoint, {body, ...customConfig} = {}) {
   const headers = {'Content-Type': 'application/json'}
   const config = {
@@ -146,7 +146,7 @@ function client(endpoint, {body, ...customConfig} = {}) {
 
 Sweet, so now we can do stuff like this:
 
-```javascript
+```js
 client('login', {body: {username, password}}).then(
   data => {
     console.log('here the logged in user data', data)
@@ -160,7 +160,7 @@ client('login', {body: {username, password}}).then(
 Next we want to be able to make authenticated requests. There are various
 approaches for doing this, but here's how I do it in the bookshelf app:
 
-```javascript [1,4-8]
+```js [1,4-8]
 const localStorageKey = '__bookshelf_token__'
 
 function client(endpoint, {body, ...customConfig} = {}) {
@@ -203,7 +203,7 @@ Another handy thing that we can do is if the `response.status` is `401`, that
 means the user's token is invalid (maybe it expired or something) so we can
 automatically log the user out and refresh the page for them:
 
-```javascript [24-28,38-40]
+```js [24-28,38-40]
 const localStorageKey = '__bookshelf_token__'
 
 function client(endpoint, {body, ...customConfig} = {}) {
@@ -252,7 +252,7 @@ instead.
 On top of this, the bookshelf app has a few other wrappers for making requests.
 Like the `list-items-client.js`:
 
-```javascript
+```js
 import {client} from './api-client'
 
 function create(listItemData) {

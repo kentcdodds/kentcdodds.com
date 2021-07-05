@@ -31,7 +31,7 @@ you've written a test that cannot fail.
 
 Consider the following tests:
 
-```javascript
+```js
 // __tests__/utils.js
 import {isPasswordAllowed} from '../utils'
 
@@ -66,7 +66,7 @@ characteristics. These tests are all passing, but they're actually not
 protecting us from our function breaking! Here, let me show you what I mean by
 showing you the implementation of our function:
 
-```javascript
+```js
 // utils.js
 function isPasswordAllowed(password) {
   return (
@@ -90,7 +90,7 @@ reason the function returns `false` is because they aren't long enough, not
 because they're missing characters. So, if I were to comment out one of these
 lines, my tests would continue to pass anyway:
 
-```javascript [8]
+```js [8]
 // utils.js
 function isPasswordAllowed(password) {
   return (
@@ -126,7 +126,7 @@ that).
 
 Two other related issues I've see pretty often (and have fallen prey myself):
 
-```javascript
+```js
 expect(thing) // expectation with no assertion
 expect(thing).toMatchSnapshot() // snapshot: empty...
 ```
@@ -145,7 +145,7 @@ Also, in general, if you can find a better assertion than snapshots:
 
 Here's what a good test for that `isPasswordAllowed` function would be like:
 
-```javascript
+```js
 // __tests__/utils.js
 import {isPasswordAllowed} from '../utils'
 

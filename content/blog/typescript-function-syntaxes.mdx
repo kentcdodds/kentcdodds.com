@@ -32,7 +32,7 @@ put the return type. When do I use `:` and when do I use `=>`. Here are a few
 quick examples that might help speed you up if you're using this post as a quick
 reference:
 
-```typescript
+```ts
 // Simple type for a function, use =>
 type FnType = (arg: ArgType) => ReturnType
 
@@ -58,14 +58,14 @@ examples.
 
 ## Function declarations
 
-```typescript
+```ts
 // inferred return type
 function sum(a: number, b: number) {
   return a + b
 }
 ```
 
-```typescript
+```ts
 // defined return type
 function sum(a: number, b: number): number {
   return a + b
@@ -77,33 +77,33 @@ don't have to specify this.
 
 ## Function Expression
 
-```typescript
+```ts
 // named function expression
 const sum = function sum(a: number, b: number): number {
   return a + b
 }
 ```
 
-```typescript
+```ts
 // annonymous function expression
 const sum = function (a: number, b: number): number {
   return a + b
 }
 ```
 
-```typescript
+```ts
 // arrow function
 const sum = (a: number, b: number): number => {
   return a + b
 }
 ```
 
-```typescript
+```ts
 // implicit return
 const sum = (a: number, b: number): number => a + b
 ```
 
-```typescript
+```ts
 // implicit return of an object requires parentheses to disambiguate the curly braces
 const sum = (a: number, b: number): {result: number} => ({result: a + b})
 ```
@@ -111,20 +111,20 @@ const sum = (a: number, b: number): {result: number} => ({result: a + b})
 You can also add a type annotation next to the variable, and then the function
 itself will assume those types:
 
-```typescript
+```ts
 const sum: (a: number, b: number) => number = (a, b) => a + b
 ```
 
 And you can extract that type:
 
-```typescript
+```ts
 type MathFn = (a: number, b: number) => number
 const sum: MathFn = (a, b) => a + b
 ```
 
 Or you can use the object type syntax:
 
-```typescript
+```ts
 type MathFn = {
   (a: number, b: number): number
 }
@@ -133,7 +133,7 @@ const sum: MathFn = (a, b) => a + b
 
 Which can be useful if you want to add a typed property to the function:
 
-```typescript
+```ts
 type MathFn = {
   (a: number, b: number): number
   operator: string
@@ -144,7 +144,7 @@ sum.operator = '+'
 
 This can also be done with an interface:
 
-```typescript
+```ts
 interface MathFn {
   (a: number, b: number): number
   operator: string
@@ -159,7 +159,7 @@ to create the type and then use `typeof` to assign that type to our function.
 You'll often find `declare` used in `.d.ts` files to declare types for
 libraries.
 
-```typescript
+```ts
 declare function MathFn(a: number, b: number): number
 declare namespace MathFn {
   let operator: '+'
@@ -177,7 +177,7 @@ compiler about something that it doesn't already know about (like a library).
 
 Optional parameter:
 
-```typescript
+```ts
 const sum = (a: number, b?: number): number => a + (b ?? 0)
 ```
 
@@ -187,7 +187,7 @@ parameters need to be optional as well. This is because it's possible to call
 `sum(undefined, 2)` and if that's what you want to enable, then you can do that
 too:
 
-```typescript
+```ts
 const sum = (a: number | undefined, b: number): number => (a ?? 0) + b
 ```
 
@@ -197,7 +197,7 @@ When I was writing this, I thought it would be useless to use default params
 without making that param optional, but it turns out that when you have a
 default value, TypeScript treats it like an optional param. So this works:
 
-```typescript
+```ts
 const sum = (a: number, b: number = 0): number => a + b
 sum(1) // results in 1
 sum(2, undefined) // results in 2
@@ -205,7 +205,7 @@ sum(2, undefined) // results in 2
 
 So that example is functionally equivalent to:
 
-```typescript
+```ts
 const sum = (a: number, b: number | undefined = 0): number => a + b
 ```
 
@@ -215,7 +215,7 @@ Interestingly, this also means that if you want the first argument to be
 optional but the second to be required, you can do that without using
 `| undefined`:
 
-```typescript
+```ts
 const sum = (a: number = 0, b: number): number => a + b
 sum(undefined, 3) // results in 3
 ```
@@ -223,7 +223,7 @@ sum(undefined, 3) // results in 3
 However, when you extract the type, you will need to add the `| undefined`
 manually, because `= 0` is a JavaScript expression, not a type.
 
-```typescript
+```ts
 type MathFn = (a: number | undefined, b: number) => number
 const sum: MathFn = (a = 0, b) => a + b
 ```
@@ -235,7 +235,7 @@ arguments of a function call into an array. You can use them at any parameter
 position (first, second, third, etc.). The only requirement is that it's the
 _last_ parameter.
 
-```typescript
+```ts
 const sum = (a: number = 0, ...rest: Array<number>): number => {
   return rest.reduce((acc, n) => acc + n, a)
 }
@@ -243,7 +243,7 @@ const sum = (a: number = 0, ...rest: Array<number>): number => {
 
 And you can extract the type:
 
-```typescript
+```ts
 type MathFn = (a?: number, ...rest: Array<number>) => number
 const sum: MathFn = (a = 0, ...rest) => rest.reduce((acc, n) => acc + n, a)
 ```
@@ -252,7 +252,7 @@ const sum: MathFn = (a = 0, ...rest) => rest.reduce((acc, n) => acc + n, a)
 
 Object method:
 
-```typescript
+```ts
 const math = {
   sum(a: number, b: number): number {
     return a + b
@@ -262,7 +262,7 @@ const math = {
 
 Property as function expression:
 
-```typescript
+```ts
 const math = {
   sum: function sum(a: number, b: number): number {
     return a + b
@@ -272,7 +272,7 @@ const math = {
 
 Property as arrow function expression (with implicit return):
 
-```typescript
+```ts
 const math = {
   sum: (a: number, b: number): number => a + b,
 }
@@ -282,7 +282,7 @@ Unfortunately, to extract the type you can't type the function itself, you have
 to type the enclosing object. You can't annotate the function with a type by
 itself when it's defined within the object literal:
 
-```typescript
+```ts
 type MathFn = (a: number, b: number) => number
 
 const math: {sum: MathFn} = {
@@ -294,7 +294,7 @@ Furthermore, if you want to add a property on it like some of the above
 examples, that is impossible to do within the object literal. You have to
 extract the function definition completely:
 
-```typescript
+```ts
 type MathFn = {
   (a: number, b: number): number
   operator: string
@@ -317,7 +317,7 @@ class body.
 
 Here's a regular method, the most common form of a function in a class body:
 
-```typescript
+```ts
 class MathUtils {
   sum(a: number, b: number): number {
     return a + b
@@ -331,7 +331,7 @@ math.sum(1, 2)
 You can also use a class field if you want the function to be bound to the
 specific instance of the class:
 
-```typescript
+```ts
 class MathUtils {
   sum = (a: number, b: number): number => {
     return a + b
@@ -350,7 +350,7 @@ sum(1, 2)
 And then, you can extract these types. Here's what it looks like for the method
 version in the first example:
 
-```typescript
+```ts
 interface MathUtilsInterface {
   sum(a: number, b: number): number
 }
@@ -379,14 +379,14 @@ anything else. Where things get unique for TypeScript is if you want to write a
 `.d.ts` file with a module declaration. Let's take our `sum` function for
 example:
 
-```typescript
+```ts
 const sum = (a: number, b: number): number => a + b
 sum.operator = '+'
 ```
 
 Here's what we'd do assuming we export it as the default:
 
-```typescript
+```ts
 declare const sum: {
   (a: number, b: number): number
   operator: string
@@ -396,7 +396,7 @@ export default sum
 
 And if we want it to be a named export:
 
-```typescript
+```ts
 declare const sum: {
   (a: number, b: number): number
   operator: string
@@ -410,7 +410,7 @@ I've written about this especially and you can read that:
 [Define function overload types with TypeScript](/blog/define-function-overload-types-with-type-script).
 Here's the example from that post:
 
-```typescript
+```ts
 type asyncSumCb = (result: number) => void
 // define all valid function signatures
 function asyncSum(a: number, b: number): Promise<number>
@@ -436,7 +436,7 @@ I've not once used a generator in production code... But when I played around
 with it a bit in the TypeScript playground there wasn't much to it for the
 simple case:
 
-```typescript
+```ts
 function* generator(start: number) {
   yield start + 1
   yield start + 2
@@ -451,7 +451,7 @@ console.log(iterator.next()) // { value: undefined, done: true }
 TypeScript correctly infers that `iterator.next()` returns an object with the
 following type:
 
-```typescript
+```ts
 type IteratorNextType = {
   value: number | void
   done: boolean
@@ -461,7 +461,7 @@ type IteratorNextType = {
 If you want type safety for the `yield` expression completion value, add a type
 annotation to the variable you assign it to:
 
-```typescript [2]
+```ts [2]
 function* generator(start: number) {
   const newStart: number = yield start + 1
   yield newStart + 2
@@ -482,11 +482,11 @@ And now if you try to call `iterator.next('3')` instead of the
 JavaScript and the _only_ difference in typing them is the return type will
 _always_ be a `Promise` generic.
 
-```typescript
+```ts
 const sum = async (a: number, b: number): Promise<number> => a + b
 ```
 
-```typescript
+```ts
 async function sum(a: number, b: number): Promise<number> {
   return a + b
 }
@@ -496,7 +496,7 @@ async function sum(a: number, b: number): Promise<number> {
 
 With a function declaration:
 
-```typescript
+```ts
 function arrayify2<Type>(a: Type): Array<Type> {
   return [a]
 }
@@ -508,7 +508,7 @@ syntax? Or is that JSX?" So you have to add a little something to help it
 disambiguate it. I think the most straightforward thing to do is to have it
 `extends unknown`:
 
-```typescript
+```ts
 const arrayify = <Type extends unknown>(a: Type): Array<Type> => [a]
 ```
 
@@ -526,14 +526,14 @@ to me):
 
 You have an array with some falsy values and you want those gone:
 
-```typescript
+```ts
 // Array<number | undefined>
 const arrayWithFalsyValues = [1, undefined, 0, 2]
 ```
 
 In regular JavaScript you can do:
 
-```typescript
+```ts
 // Array<number | undefined>
 const arrayWithoutFalsyValues = arrayWithFalsyValues.filter(Boolean)
 ```
@@ -546,7 +546,7 @@ true/false for whether the given argument is a specific type. For us, we'll say
 that our function returns true if the given argument's type is not included in
 one of the falsy value types.
 
-```typescript
+```ts
 type FalsyType = false | null | undefined | '' | 0
 function typedBoolean<ValueType>(
   value: ValueType,
@@ -557,7 +557,7 @@ function typedBoolean<ValueType>(
 
 And with that we can do this:
 
-```typescript
+```ts
 // Array<number>
 const arrayWithoutFalsyValues = arrayWithFalsyValues.filter(typedBoolean)
 ```
@@ -571,7 +571,7 @@ Like, when an object can have a property with a value or `null` you want to
 check if it's `null` and maybe throw an error if it is `null`. Here's how you
 might do something like that:
 
-```typescript
+```ts
 type User = {
   name: string
   displayName: string | null
@@ -587,7 +587,7 @@ TypeScript is fine with `user.displayName.toUpperCase()` because the `if`
 statement is a type guard that it understands. Now, let's say you want to take
 that `if` check and put it in a function:
 
-```typescript
+```ts
 type User = {
   name: string
   displayName: string | null
@@ -608,7 +608,7 @@ a sufficient type guard. I'd argue this is a limitation on TypeScript's part.
 Hey, no tech is perfect. Anyway, we can help TypeScript out a bit by telling it
 that our function makes an assertion:
 
-```typescript [8]
+```ts [8]
 type User = {
   name: string
   displayName: string | null

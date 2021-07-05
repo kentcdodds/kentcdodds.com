@@ -173,7 +173,7 @@ purposes and I can use this for the redirect by creating a file at
 [`res.redirect`](https://expressjs.com/en/4x/api.html#res.redirect) when the `/`
 route is requested:
 
-```javascript
+```js
 function proxy(app) {
   app.get(/^\/$/, (req, res) => res.redirect('/list'))
 }

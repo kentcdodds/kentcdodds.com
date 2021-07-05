@@ -28,7 +28,7 @@ this post so I'm not going to go into detail, (but
 if you wanna give it a read-through). Here's the bit I want to talk about
 (edited slightly for clarity):
 
-```javascript
+```js
 const lines = execSync(`find "${searchPath}" -type f`).toString().split('\n')
 
 const commands = lines
@@ -78,7 +78,7 @@ In any case, I did want to address the idea of using `reduce` instead of the
 
 Here's what that same code would be like if we use `reduce`
 
-```javascript
+```js
 const commands = lines.reduce((accumulator, line) => {
   let file = line.trim()
   if (file) {
@@ -103,7 +103,7 @@ this as a for loop. So... one sec...
 
 Ok, here you go:
 
-```javascript
+```js
 const commands = []
 for (let index = 0; index < lines.length; index++) {
   const line = lines[index]
@@ -120,7 +120,7 @@ That's not much simpler either.
 
 **EDIT:** BUT WAIT! We can simplify this thanks to `for..of`!
 
-```javascript
+```js
 const commands = []
 for (const line of lines) {
   const file = line.trim()

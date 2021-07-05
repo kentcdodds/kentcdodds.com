@@ -23,7 +23,7 @@ In [EpicReact.dev](https://epicreact.dev) workshops, when I'm teaching how to
 make HTTP requests, I use the GraphQL Pokemon API. Here's how we make that
 request:
 
-```typescript
+```ts
 const formatDate = date =>
   `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')} ${String(
     date.getSeconds(),
@@ -80,7 +80,7 @@ async function fetchPokemon(name) {
 
 Here's an example usage/output:
 
-```typescript
+```ts
 fetchPokemon('pikachu').then(data => console.log(data))
 ```
 
@@ -117,7 +117,7 @@ this logs:
 
 And for the error case:
 
-```typescript
+```ts
 fetchPokemon('not-a-pokemon').catch(error => console.error(error))
 // Logs: No pokemon with the name "not-a-pokemon"
 ```
@@ -154,7 +154,7 @@ going to be a cinch right? lol.
 
 So we fix all of those:
 
-```typescript [1,5,13]
+```ts [1,5,13]
 const formatDate = (date: Date) => {
   // ...
 }
@@ -180,7 +180,7 @@ And now the errors are all gone!
 
 Sweet, so let's use this thing:
 
-```typescript
+```ts
 async function pikachuIChooseYou() {
   const pikachu = await fetchPokemon('pikachu')
   console.log(pikachu.attacks.special.name)
@@ -193,7 +193,7 @@ error 😱 `special` is an array! So that should be
 `Promise<any>`. Looks like we're not quite done after all. So, let's type the
 expected `PokemonData` return value:
 
-```typescript
+```ts
 type PokemonData = {
   id: string
   number: string
@@ -212,7 +212,7 @@ type PokemonData = {
 
 Cool, so with that, now we can be more explicit about our return value:
 
-```typescript
+```ts
 async function fetchPokemon(name: string): Promise<PokemonData> {
   // ...
 }
@@ -229,7 +229,7 @@ typed.
 
 A quick review will show that both `data` and `errors` is `any`:
 
-```typescript
+```ts
 const {data, errors} = await response.json()
 ```
 
@@ -239,7 +239,7 @@ realized that I don't know what else it could be! How could TypeScript know what
 data my `fetch` call will return? So let's help the TypeScript compiler out with
 a little type annotation:
 
-```typescript
+```ts
 type JSONResponse = {
   data?: {
     pokemon: Omit<PokemonData, 'fetchedAt'>
@@ -251,7 +251,7 @@ const {data, errors}: JSONResponse = await response.json()
 
 And now we can remove the explicit type on the `errors.map` which is great!
 
-```typescript
+```ts
 const error = new Error(errors?.map(e => e.message).join('\n') ?? 'unknown')
 ```
 
@@ -263,7 +263,7 @@ lying to TypeScript and future readers of the code (which we should avoid).
 
 With that in place, we'll now get two new errors:
 
-```typescript
+```ts
 // add fetchedAt helper (used in the UI to help differentiate requests)
 pokemon.fetchedAt = formatDate(new Date())
 return pokemon
@@ -291,7 +291,7 @@ up your mind! 😩
 We could always tell TypeScript to pipe down and use a type assertion to cast
 `pokemon` as a full `PokemonData`. But I found an easier solution:
 
-```typescript
+```ts
 // add fetchedAt helper (used in the UI to help differentiate requests)
 return Object.assign(pokemon, {fetchedAt: formatDate(new Date())})
 ```
@@ -303,7 +303,7 @@ without `fetchedAt` and come out with `fetchedAt`.
 
 In case you're curious, here's the type definition for `Object.assign`:
 
-```typescript
+```ts
 assign<T, U>(target: T, source: U): T & U;
 ```
 
@@ -314,13 +314,13 @@ And that's it! We've now successfully typed `fetch` for a particular request. �
 One last learning here. Unfortunately, the `Promise` type generic only accepts
 the `resolved` value and not the `rejected` value. So I can't do:
 
-```typescript
+```ts
 async function fetchPokemon(name: string): Promise<PokemonData, Error> {}
 ```
 
 Turns out this is related to another frustration of mine:
 
-```typescript
+```ts
 try {
   throw new Error('oh no')
 } catch (error: Error) {
@@ -340,7 +340,7 @@ This is a bit of a bummer, but it's understandable.
 
 Alrighty, so here's the final version:
 
-```typescript
+```ts
 const formatDate = (date: Date) =>
   `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')} ${String(
     date.getSeconds(),

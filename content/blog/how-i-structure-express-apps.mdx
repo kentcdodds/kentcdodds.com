@@ -125,7 +125,7 @@ the `build` script.
 
 Here's what the `.babelrc.js` looks like:
 
-```javascript
+```js
 const pkg = require('./package.json')
 
 module.exports = {
@@ -153,7 +153,7 @@ If we were using TypeScript (recommended for teams), then we'd also include
 
 Here's our entry file for the module (this is the `main` from `package.json`):
 
-```javascript
+```js
 if (process.env.NODE_ENV === 'production') {
   require('./dist')
 } else {
@@ -192,7 +192,7 @@ is where things really start happening.
 
 This file is pretty simple:
 
-```javascript
+```js
 import logger from 'loglevel'
 import {startServer} from './start'
 
@@ -211,7 +211,7 @@ it easier for testing.
 Ok, here's where things really start getting "expressy". For this one, I'll
 explain things in code comments.
 
-```javascript
+```js
 import express from 'express'
 
 // this is all it takes to enable async/await for express middleware
@@ -308,7 +308,7 @@ export {startServer}
 Doing things this way makes it easier to test. For example, an integration test
 could simply do this:
 
-```javascript
+```js
 import {startServer} from '../start'
 
 let server, baseURL
@@ -329,7 +329,7 @@ afterAll(() => server.close())
 
 This is where all the routes for my app come together:
 
-```javascript
+```js
 import express from 'express'
 // any other routes imports would go here
 import {getMathRoutes} from './math'
@@ -351,7 +351,7 @@ export {getRoutes}
 
 This is just a contrived example of some routes/middleware/express controllers.
 
-```javascript
+```js
 import express from 'express'
 
 // A function to get the routes.

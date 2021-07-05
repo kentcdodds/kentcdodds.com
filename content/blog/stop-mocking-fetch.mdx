@@ -137,7 +137,7 @@ fetch in one function which is basically a re-implementation of all the parts of
 my backend I have tested. I did a form of this at PayPal and it worked really
 well. You can think of it like this:
 
-```javascript
+```js
 // add this to your setupFilesAfterEnv config in jest so it's imported for every test file
 import * as users from './users'
 
@@ -239,7 +239,7 @@ installed or not.
 So with that intro, here's how we'd do our above example with `msw` backing our
 mock server:
 
-```javascript
+```js
 // server-handlers.js
 // this is put into here so I can share these same handlers between my tests
 // as well as my development in the browser. Pretty sweet!
@@ -266,7 +266,7 @@ const handlers = [
 export {handlers}
 ```
 
-```javascript
+```js
 // test/server.js
 import {rest} from 'msw'
 import {setupServer} from 'msw/node'
@@ -276,7 +276,7 @@ const server = setupServer(...handlers)
 export {server, rest}
 ```
 
-```javascript
+```js
 // test/setup-env.js
 // add this to your setupFilesAfterEnv config in jest so it's imported for every test file
 import {server} from './server.js'

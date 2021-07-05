@@ -38,7 +38,7 @@ expand this if you're curious):
 <details>
   <summary>useUndo implementation</summary>
 
-```javascript
+```js
 import * as React from 'react'
 
 const UNDO = 'UNDO'
@@ -169,7 +169,7 @@ function, you'd probably write a component that uses the hook, and then interact
 with that component rendered to the page (perhaps using
 [storybook](https://storybook.js.org/)). So let's do that instead:
 
-```javascript
+```js
 import * as React from 'react'
 import useUndo from '../use-undo'
 
@@ -221,7 +221,7 @@ using the hook, so to use software to automate our manual process, we need to
 write a test that does the same thing we're doing manually. Here's what that is
 like:
 
-```javascript
+```js
 import {render, screen} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import * as React from 'react'
@@ -329,7 +329,7 @@ associated with it and you interact with the hook return value directly.
 
 Here's an example of what that would be like for our `useUndo` hook:
 
-```javascript
+```js
 import * as React from 'react'
 import {render, act} from '@testing-library/react'
 import useUndo from '../use-undo'
@@ -443,7 +443,7 @@ This is why
 exists. Here's what this test would be like if we use
 `@testing-library/react-hooks`:
 
-```javascript
+```js
 import {renderHook, act} from '@testing-library/react-hooks'
 import useUndo from '../use-undo'
 

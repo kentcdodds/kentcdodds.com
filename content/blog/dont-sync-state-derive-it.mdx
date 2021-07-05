@@ -313,7 +313,7 @@ function Board({squares, onSelectSquare}) {
 
 The better way to do this is just to calculate it on the fly:
 
-```javascript
+```js
 function Board({squares, onSelectSquare}) {
   const nextValue = calculateNextValue(squares)
   const winner = calculateWinner(squares)

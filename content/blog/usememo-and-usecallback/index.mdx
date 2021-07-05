@@ -78,7 +78,7 @@ which will have the better performance characteristics.
 The only thing I'm going to change is wrap the `dispense` function inside
 `React.useCallback`:
 
-```javascript
+```js
 const dispense = React.useCallback(candy => {
   setCandies(allCandies => allCandies.filter(c => c !== candy))
 }, [])
@@ -86,7 +86,7 @@ const dispense = React.useCallback(candy => {
 
 Here's the original again:
 
-```javascript
+```js
 const dispense = candy => {
   setCandies(allCandies => allCandies.filter(c => c !== candy))
 }
@@ -118,7 +118,7 @@ consider this: **Every line of code which is executed comes with a cost.** Let
 me refactor the `useCallback` example a bit (no actual changes, just moving
 things around) to illustrate things more clearly:
 
-```javascript
+```js
 const dispense = candy => {
   setCandies(allCandies => allCandies.filter(c => c !== candy))
 }
@@ -127,7 +127,7 @@ const dispenseCallback = React.useCallback(dispense, [])
 
 And here's the original again:
 
-```javascript
+```js
 const dispense = candy => {
   setCandies(allCandies => allCandies.filter(c => c !== candy))
 }
@@ -242,7 +242,7 @@ There are specific reasons both of these hooks are built-into React:
 If you're new to JavaScript/programming, it wont take long before you learn why
 this is the case:
 
-```javascript
+```js
 true === true // true
 false === false // true
 1 === 1 // true
@@ -439,13 +439,13 @@ This is the other reason that `useMemo` is a built-in hook for React (note that
 this one does not apply to `useCallback`). The benefit to `useMemo` is that you
 can take a value like:
 
-```javascript
+```js
 const a = {b: props.b}
 ```
 
 And get it lazily:
 
-```javascript
+```js
 const a = React.useMemo(() => ({b: props.b}), [props.b])
 ```
 

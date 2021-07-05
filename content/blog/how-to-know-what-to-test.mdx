@@ -54,7 +54,7 @@ https://twitter.com/kentcdodds/status/977018512689455106
 Code coverage is a metric that shows us what lines of our code is being run
 during the tests. Let's use this code as an example:
 
-```javascript
+```js
 function arrayify(maybeArray) {
   if (Array.isArray(maybeArray)) {
     return maybeArray
@@ -94,7 +94,7 @@ So if we read at the code and consider it for a minute, we can identify our
 first use case to support: "it returns an array if given an array." This use
 case statement is actually a great title for our test.
 
-```javascript
+```js
 test('returns an array if given an array', () => {
   expect(arrayify(['Elephant', 'Giraffe'])).toEqual(['Elephant', 'Giraffe'])
 })
@@ -103,7 +103,7 @@ test('returns an array if given an array', () => {
 And with that test in place, our coverage report looks something like this
 (highlighted lines are covered):
 
-```javascript [1-3]
+```js [1-3]
 function arrayify(maybeArray) {
   if (Array.isArray(maybeArray)) {
     return maybeArray
@@ -123,13 +123,13 @@ use cases that our tests don't support yet:
 
 Let's add tests for those use cases and see how it effects the code coverage.
 
-```javascript
+```js
 test('returns an empty array if given a falsy value', () => {
   expect(arrayify()).toEqual([])
 })
 ```
 
-```javascript [1-5]
+```js [1-5]
 function arrayify(maybeArray) {
   if (Array.isArray(maybeArray)) {
     return maybeArray
@@ -143,13 +143,13 @@ function arrayify(maybeArray) {
 
 Nice, almost there!
 
-```javascript
+```js
 test(`returns an array with the given argument if it's not an array and not falsy`, () => {
   expect(arrayify('Leopard')).toEqual(['Leopard'])
 })
 ```
 
-```javascript [1-9]
+```js [1-9]
 function arrayify(maybeArray) {
   if (Array.isArray(maybeArray)) {
     return maybeArray
@@ -176,7 +176,7 @@ before I even start writing the tests.
 For example, let's imagine that the `arrayify` function had been implemented
 like this instead:
 
-```javascript
+```js
 function arrayify(maybeArray) {
   if (Array.isArray(maybeArray)) {
     return maybeArray

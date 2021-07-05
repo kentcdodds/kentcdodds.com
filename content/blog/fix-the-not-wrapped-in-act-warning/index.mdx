@@ -473,7 +473,7 @@ You'll get an `act(...)` warning with custom hooks when you call functions that
 are returned from your custom hook which result in state updates. Here's a
 simple example of that:
 
-```javascript
+```js
 import * as React from 'react'
 
 function useCount() {
@@ -488,7 +488,7 @@ export default useCount
 
 Here, we'll use `@testing-library/react-hooks` to validate our hook works:
 
-```javascript
+```js
 import * as React from 'react'
 import {renderHook} from '@testing-library/react-hooks'
 import useCount from '../use-count'
@@ -509,7 +509,7 @@ When we call the `increment` and `decrement` functions from our hook, that
 triggers a state update and because we're not in the React callstack we're going
 to get an `act(...)` warning. So, let's wrap that in `act(...)`!
 
-```javascript [2,9,12]
+```js [2,9,12]
 import * as React from 'react'
 import {renderHook, act} from '@testing-library/react-hooks'
 import useCount from '../use-count'

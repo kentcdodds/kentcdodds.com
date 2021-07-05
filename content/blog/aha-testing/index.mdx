@@ -46,7 +46,7 @@ Try to read this test and understand the one nuance between the two of them.
 
 > Don't spend too long on this...
 
-```javascript
+```js
 import * as blogPostController from '../blog-post'
 
 // load the application-wide mock for the database.
@@ -229,7 +229,7 @@ That first test is absolutely screaming for abstraction (which is the guiding
 principle for AHA programming). So let's write a thoughtful abstraction for that
 test. Now try to figure out what makes the difference in these tests:
 
-```javascript
+```js
 import * as blogPostController from '../blog-post'
 
 // load the application-wide mock for the database.
@@ -388,7 +388,7 @@ simple abstraction that calls out VERY clearly the outputs and inputs.
 
 For (contrived) example:
 
-```javascript
+```js
 import add from '../add'
 
 test('adds one and two to equal three', () => {
@@ -406,7 +406,7 @@ test('adds one hundred and two to equal one hundred two', () => {
 
 That's pretty simple to follow, but it can be improved with `jest-in-case`:
 
-```javascript
+```js
 import cases from 'jest-in-case'
 import add from '../add'
 

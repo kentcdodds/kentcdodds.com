@@ -40,7 +40,7 @@ like: `isRejected`, `isIdle`, or `isResolved`) while we're at it. I'll be using
 React to demonstrate this, but the concepts apply generally to any framework or
 language.
 
-```javascript
+```js
 function geoPositionReducer(state, action) {
   switch (action.type) {
     case 'error': {
@@ -157,7 +157,7 @@ that case), so that won't work.
 
 So let's go with option #3:
 
-```javascript [6,13,17-22,31,44]
+```js [6,13,17-22,31,44]
 function geoPositionReducer(state, action) {
   switch (action.type) {
     case 'error': {
@@ -260,7 +260,7 @@ Now, if you'd like to ditch those `variable === 'string'` expressions in those
 `if` statements because you like how terse a `isBoolean` is, have no fear,
 that's simple enough:
 
-```javascript
+```js
 const {status, position, error} = useGeoPosition()
 const isLoading = status === 'idle' || status === 'pending'
 const isResolved = status === 'resolved'
@@ -276,7 +276,7 @@ sure you stick with the `status` in your state to ensure you only have one
 possible finite state value and then you can derive boolean states as a
 convenience if you want to:
 
-```javascript
+```js
 function useGeoPosition() {
   // ... clipped out for brevity ...
   return {
@@ -296,7 +296,7 @@ Everything is a state machine, and this one is particularly noticeable.
 [XState](https://xstate.js.org) is an awesome library for representing state
 machines in code, so I thought I'd show you what that could be like:
 
-```javascript
+```js
 import {Machine, assign} from 'xstate'
 import {useMachine} from '@xstate/react'
 
@@ -422,7 +422,7 @@ function YourPosition() {
 
 And if we liked the previous API, we could preserve that API:
 
-```javascript
+```js
 function useGeoPosition() {
   const [state, send] = useMachine(geoPositionMachine)
   // ... clipped out for brevity ...

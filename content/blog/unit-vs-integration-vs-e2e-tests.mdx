@@ -40,7 +40,10 @@ Since then [Maggie Appleton](https://twitter.com/Mappletons) (the mastermind
 behind [egghead.io](https://egghead.io)'s masterful art/design) created this for
 [TestingJavaScript.com](https://testingjavascript.com):
 
-[![The Testing Trophy](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033466/kentcdodds.com/content/blog/unit-vs-integration-vs-e2e-tests/testing-trophy.png)](https://testingjavascript.com)
+<div style={{backgroundColor: 'white', padding: 30, borderRadius: '0.5rem'}}>
+  [![The Testing
+  Trophy](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033466/kentcdodds.com/content/blog/unit-vs-integration-vs-e2e-tests/testing-trophy.png)](https://testingjavascript.com)
+</div>
 
 In the Testing Trophy, there are 4 types of tests. It shows this text above, but
 for the sake of those using assistive technologies (and in case the image fails
@@ -70,7 +73,7 @@ Typically these will run the entire application (both frontend and backend) and
 your test will interact with the app just like a typical user would. These tests
 are written with [cypress](https://cypress.io).
 
-```javascript
+```js
 import {generate} from 'todo-test-utils'
 
 describe('todo app', () => {
@@ -119,7 +122,7 @@ integration tests is to mock as little as possible. I pretty much only mock:
 2. Components responsible for animation (because who wants to wait for that in
    your tests?)
 
-```javascript
+```js filename=todo.spec.js
 import * as React from 'react'
 import {render, screen, waitForElementToBeRemoved} from 'test/app-test-utils'
 import userEvent from '@testing-library/user-event'
@@ -170,7 +173,7 @@ Learn how to setup a test-utils file like the one above in the
 
 ### Unit
 
-```javascript
+```js filename=todo.spec.js
 import '@testing-library/jest-dom/extend-expect'
 import * as React from 'react'
 // if you have a test utils module like in the integration test example above
@@ -201,7 +204,7 @@ test('renders the items in a list', () => {
 
 Everyone calls this a unit test and they're right:
 
-```javascript
+```js filename=todo.spec.js
 // pure functions are the BEST for unit testing and I LOVE using jest-in-case for them!
 import cases from 'jest-in-case'
 import fizzbuzz from '../fizzbuzz'
@@ -223,7 +226,7 @@ cases(
 
 ### Static
 
-```javascript
+```js filename=todo.spec.js
 // can you spot the bug?
 // I'll bet ESLint's for-direction rule could
 // catch it faster than you in a code review 😉

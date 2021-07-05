@@ -95,7 +95,7 @@ don't work out like that.
 
 First, here's a super contrived example:
 
-```javascript
+```js
 // let's pretend that Array.prototype.filter does not exist
 function filter(array) {
   let newArray = []
@@ -118,7 +118,7 @@ Now let's play out the typical "lifecycle of an abstraction" by throwing a bunch
 of new related use cases at this abstraction and "thoughtlessly enhance" it to
 support those new use cases:
 
-```javascript
+```js
 // let's pretend that Array.prototype.filter does not exist
 function filter(
   array,
@@ -183,7 +183,7 @@ to touch the code.
 Alright, so now, let's apply some thoughtful abstraction on this function and
 apply inversion of control to support all these use cases:
 
-```javascript
+```js
 // let's pretend that Array.prototype.filter does not exist
 function filter(array, filterFn) {
   let newArray = []
@@ -230,7 +230,7 @@ it's much more capable.
 But was the previous version of this abstraction all that bad? Maybe not. But
 because we've inverted control, we can now support much more unique use cases:
 
-```javascript
+```js
 filter(
   [
     {name: 'dog', legs: 4, mammal: true},
@@ -258,7 +258,7 @@ One of the common complaints that I hear from people about control-inverted APIs
 that I've built is: "Yeah, but now it's harder to use than before." Take this
 example:
 
-```javascript
+```js
 // before
 filter([0, 1, undefined, 2, null, 3, 'four', ''])
 
@@ -273,7 +273,7 @@ Yeah, one of those is clearly easier to use than the other. But here's the thing
 about control-inverted APIs, you can use them to re-implement the former API and
 it's typically pretty trivial to do so. For example:
 
-```javascript
+```js
 function filterWithOptions(
   array,
   {
@@ -307,7 +307,7 @@ given them the tools to do so.
 
 Oh, and just for fun:
 
-```javascript
+```js
 function filterByLegCount(array, legCount) {
   return filter(array, animal => animal.legs === legCount)
 }
@@ -439,7 +439,7 @@ state change that's about to take place.
 Here's an example of what you would do if you wanted to make Downshift not close
 the menu after the user selects an item:
 
-```javascript
+```js
 function stateReducer(state, changes) {
   switch (changes.type) {
     case Downshift.stateChangeTypes.keyDownEnter:
@@ -480,7 +480,7 @@ incorrect assumption about the future use cases of our reusable code. But before
 you go, I just want to give you some advice. Let's go back to our contrived
 example really quick:
 
-```javascript
+```js
 // let's pretend that Array.prototype.filter does not exist
 function filter(array) {
   let newArray = []

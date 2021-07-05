@@ -78,7 +78,7 @@ steps:
 This file configures some stuff about our repository for netlify. Here's all you
 need for this to work:
 
-```
+```toml
 [build]
   functions = "./functions"
 ```
@@ -90,7 +90,7 @@ located in the "functions" directory.
 
 Now that we've told Netlify where to find our functions files, let's make one:
 
-```javascript
+```js
 // functions/hello.js
 exports.handler = async event => {
   const subject = event.queryStringParameters.name || 'World'

@@ -55,7 +55,7 @@ Here's a basic usage example of React's
 
 The `onRenderCallback` function is called with the following arguments:
 
-```javascript
+```js
 function onRenderCallback(
   id, // the "id" prop of the Profiler tree that has just committed
   phase, // either "mount" (if the tree just mounted) or "update" (if it re-rendered)
@@ -79,7 +79,7 @@ From here, you'll want to send the `onRenderCallback` data to a monitoring tool
 happen a LOT, I'd personally suggest batching them up and sending them together
 every 5 seconds or so. For example:
 
-```javascript
+```js
 let queue = []
 
 // sendProfileQueue every 5 seconds
@@ -127,7 +127,7 @@ issue more easily.
 
 Note also that you _can_ nest these:
 
-```javascript
+```js
 <App>
   <Profiler id="Navigation" onRender={onRenderCallback}>
     <Navigation />
@@ -151,7 +151,7 @@ profiler `onRenderCallback`s would get called (not the `Navigation` one). If
 
 Here's an example of what the data looks like:
 
-```javascript
+```js
 {
   id: "Navigation",
   phase: "update",
