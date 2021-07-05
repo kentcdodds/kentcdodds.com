@@ -22,19 +22,19 @@ const images = createOperations({
     alt: 'Mascot Profile in Gray',
   },
   teslaX: {
-    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0/v1624985242/kentcdodds.com/illustrations/tesla.png',
+    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/v1625515891/kentcdodds.com/illustrations/tesla_zphbjp.png',
     alt: 'Illustration of a Tesla Model X',
   },
   solarPanels: {
-    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0/v1624985238/kentcdodds.com/illustrations/solar_panels_2.png',
+    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/v1625515816/kentcdodds.com/illustrations/solar_panels_2_ftbwvb.png',
     alt: 'Illustration of Solar Panels',
   },
   snowboard: {
-    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0/v1624985237/kentcdodds.com/illustrations/snowboard.png',
+    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/v1625515780/kentcdodds.com/illustrations/snowboard_nqqlyr.png',
     alt: 'Illustration of a snowboard',
   },
   skis: {
-    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0/v1624985234/kentcdodds.com/illustrations/skis.png',
+    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/v1625515722/kentcdodds.com/illustrations/skis_z5lkc3.png',
     alt: 'Illustration of skis',
   },
   kayak: {
@@ -50,11 +50,11 @@ const images = createOperations({
     alt: 'Illistration of a mascot standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, a recycle logo, and a cable.',
   },
   alexSnowboarding: {
-    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0/v1624985193/kentcdodds.com/illustrations/m14.png',
+    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/v1625515648/kentcdodds.com/illustrations/m14_s8mwg1.png',
     alt: 'Illistration of a mascot standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
   },
   alexSnowboardingWithHandOut: {
-    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0/v1624985190/kentcdodds.com/illustrations/image.png',
+    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/v1625515593/kentcdodds.com/illustrations/image_yzvt1w.png',
     alt: 'Illistration of a mascot standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
   },
   helmet: {
@@ -72,6 +72,10 @@ const images = createOperations({
   alexBlue: {
     src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0/v1624985177/kentcdodds.com/illustrations/character_b.png',
     alt: 'Illustration of snowboarder in blue',
+  },
+  bustedOnewheel: {
+    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/v1625515170/kentcdodds.com/illustrations/404_2_sprold.png',
+    alt: 'Broken onewheel',
   },
 })
 
