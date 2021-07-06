@@ -1,7 +1,7 @@
 import * as React from 'react'
 import formatDate from 'date-fns/format'
-import parseISO from 'date-fns/parseISO'
 import type {MdxListItem} from 'types'
+import parseISO from 'date-fns/parseISO'
 import {Grid} from '../grid'
 import {H2, H6} from '../typography'
 import {ArrowLink} from '../arrow-button'
@@ -9,15 +9,28 @@ import {CopyIcon} from '../icons/copy-icon'
 
 function FeaturedArticleSection({
   readTime,
+  duration,
   slug,
   frontmatter: {
     date = formatDate(new Date(), 'yyyy-MM-ii'),
+    season,
+    episode,
     title = 'Untitled Post',
     // TODO: add a default banner and alt for unbannered articles
     bannerAlt,
     bannerUrl,
   },
 }: MdxListItem) {
+  const isPodcast = Boolean(season && episode)
+
+  const caption = isPodcast ? 'Latest episode' : 'Featured article'
+
+  const subTitle = isPodcast
+    ? `Season ${season}, Episode ${episode} — ${duration}`
+    : `${formatDate(parseISO(date), 'PPP')}  — ${readTime?.text}`
+
+  const cta = isPodcast ? 'Listen to this episode' : 'Read full article'
+
   return (
     <div className="px-8 w-full lg:px-0">
       <div className="lg:dark:bg-transparent bg-gray-100 dark:bg-gray-800 rounded-lg lg:bg-transparent">
@@ -25,17 +38,16 @@ function FeaturedArticleSection({
           <Grid className="lg:dark:bg-gray-800 pb-6 pt-14 rounded-lg md:pb-12 lg:bg-gray-100">
             <div className="col-span-full lg:flex lg:flex-col lg:col-span-5 lg:col-start-2 lg:justify-between">
               <div>
-                <H6>featured article</H6>
-
+                <H6>{caption}</H6>
                 <H2 className="mt-12">{title}</H2>
 
                 <div className="mt-6 text-blueGray-500 text-xl font-medium">
-                  {formatDate(parseISO(date), 'PPP')} — {readTime?.text}
+                  {subTitle}
                 </div>
               </div>
 
               <div className="flex items-center justify-between mt-12">
-                <ArrowLink to={`./${slug}`}>Read full article</ArrowLink>
+                <ArrowLink to={`./${slug}`}>{cta}</ArrowLink>
                 <button className="flex items-center justify-center w-12 h-12 text-gray-800 whitespace-nowrap bg-white rounded-lg lg:hidden">
                   <CopyIcon />
                 </button>

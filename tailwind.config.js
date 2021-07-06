@@ -56,6 +56,9 @@ module.exports = {
     },
 
     extend: {
+      zIndex: {
+        '-10': '-10',
+      },
       fontFamily: {
         sans: ['Matter', ...defaultTheme.fontFamily.sans],
       },

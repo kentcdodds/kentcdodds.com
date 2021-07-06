@@ -19,6 +19,8 @@ type Await<Type> = Type extends Promise<infer Value> ? Await<Value> : Type
 type MdxListItem = {
   slug: string
   readTime?: ReturnType<typeof calculateReadingTime>
+  duration?: string
+
   /**
    * It's annoying that all these are set to optional I know, but there's
    * no great way to ensure that the MDX files have these properties,
@@ -44,6 +46,10 @@ type MdxListItem = {
       keywords?: Array<string>
       [key as string]: string
     }
+
+    // Podcast meta
+    season?: number
+    episode?: number
   }
 }
 

@@ -37,4 +37,8 @@
   .bg-secondary {
     @apply bg-gray-100 dark:bg-gray-800;
   }
+
+  .text-primary {
+    @apply text-black dark:text-white;
+  }
 }
