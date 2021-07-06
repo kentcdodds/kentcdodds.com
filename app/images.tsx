@@ -5,6 +5,14 @@ const createOperations = <
 ) => images
 
 const images = createOperations({
+  kentTransparentProfile: {
+    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/v1616120215/kentcdodds.com/photo-transparent.png',
+    alt: 'Kent C. Dodds',
+  },
+  kentProfile: {
+    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/v1616120218/kentcdodds.com/photo.png',
+    alt: 'Kent C. Dodds',
+  },
   alexProfileYellow: {
     src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0/v1624985244/kentcdodds.com/illustrations/yellow-head.png',
     alt: 'Mascot Profile in Yellow',

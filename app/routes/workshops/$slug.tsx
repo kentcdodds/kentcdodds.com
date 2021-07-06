@@ -1,4 +1,4 @@
-import React from 'react'
+import * as React from 'react'
 import {useRouteData, json} from 'remix'
 import type {MdxPage, KCDLoader} from 'types'
 import {Link} from 'react-router-dom'

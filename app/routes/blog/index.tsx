@@ -213,10 +213,9 @@ function BlogHome() {
       <Grid className="mb-64">
         {posts.length === 0 ? (
           <div className="flex flex-col col-span-full items-center">
-            {/* TODO: replace with 404 image */}
             <img
-              src={images.onewheel.src}
-              alt={images.onewheel.alt}
+              src={images.bustedOnewheel.src}
+              alt={images.bustedOnewheel.alt}
               className="mt-24 w-full max-w-lg h-auto"
             />
             <H3 variant="secondary" className="mt-24 max-w-lg">

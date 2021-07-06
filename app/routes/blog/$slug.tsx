@@ -1,9 +1,10 @@
-import React from 'react'
+import * as React from 'react'
 import {useRouteData, json} from 'remix'
 import {Link, useParams} from 'react-router-dom'
-import type {KCDLoader, MdxPage} from 'types'
+import type {KCDLoader, MdxListItem, MdxPage} from 'types'
 import formatDate from 'date-fns/format'
 import type {ComponentMap} from 'mdx-bundler/client'
+import {images} from '../../images'
 import {
   FourOhFour,
   getMdxPage,
@@ -16,10 +17,11 @@ import {Grid} from '../../components/grid'
 import {ArrowIcon} from '../../components/icons/arrow-icon'
 import {ArrowLink} from '../../components/arrow-button'
 import {BlogSection} from '../../components/sections/blog-section'
-import {articles} from '../../../storybook/stories/fixtures'
+import {getBlogRecommendations} from '../../utils/blog.server'
 
 type LoaderData = {
   page: MdxPage | null
+  recommendations: Array<MdxListItem>
 }
 
 export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
@@ -28,15 +30,18 @@ export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
     slug: params.slug,
     bustCache: new URL(request.url).searchParams.get('bust-cache') === 'true',
   })
+  const blogRecommendations = (await getBlogRecommendations(request))
+    .filter(b => b.slug !== params.slug)
+    .slice(0, 3)
 
   let data: LoaderData
 
   if (page) {
-    data = {page}
+    data = {page, recommendations: blogRecommendations}
 
     return json(data)
   } else {
-    data = {page: null}
+    data = {page: null, recommendations: blogRecommendations}
     return json(data, {status: 404})
   }
 }
@@ -164,20 +169,21 @@ function ArticleFooter() {
         </div>
       </div>
       <div className="col-span-full lg:col-span-2 lg:col-start-3">
-        {/* TODO: replace with correct profile photo */}
         <img
-          src="https://kentcdodds.com/static/kent-985f8a0db8a37e47da2c07080cffa865.png"
-          alt="Kent C. Dodds"
+          src={images.kentTransparentProfile.src}
+          alt={images.kentTransparentProfile.alt}
           className="mb-8 w-32 rounded-lg"
         />
       </div>
       <div className="lg:col-start:5 col-span-full lg:col-span-6">
         <H6>Written by Kent C. Dodds</H6>
         <Paragraph className="mb-12 mt-3">
-          Kent C. Dodds is a JavaScript software engineer and teacher. He's
-          taught hundreds of thousands of people how to make the world a better
-          place with quality software development tools and practices. He lives
-          with his wife and four kids in Utah.
+          {`
+Kent C. Dodds is a JavaScript software engineer and teacher. He's taught
+hundreds of thousands of people how to make the world a better place with
+quality software development tools and practices. He lives with his wife and
+four kids in Utah.
+          `.trim()}
         </Paragraph>
         <ArrowLink to="/about">Learn more about Kent</ArrowLink>
       </div>
@@ -185,10 +191,17 @@ function ArticleFooter() {
   )
 }
 
+// remove extra wrapping div from elements like <div> (TheSpectrumOfAbstraction) and <pre> (code blocks)
+function Unwrap({
+  children,
+}: {
+  children?: React.ReactNode | Array<React.ReactNode>
+}) {
+  // eslint-disable-next-line react/jsx-no-useless-fragment
+  return <>{children}</>
+}
 const MdxComponentMap: ComponentMap = {
-  // remove extra wrapping div from elements like <div> (TheSpectrumOfAbstraction) and <pre> (code blocks)
-  // eslint-disable-next-line react/display-name
-  div: ({children}) => <>{children}</>,
+  div: Unwrap,
 }
 
 function MdxScreen() {
@@ -235,12 +248,11 @@ function MdxScreen() {
       <Grid as="header" className="mb-12">
         <div className="col-span-full lg:col-span-8 lg:col-start-3">
           <H2>{frontmatter.title}</H2>
-          {/* TODO: add readTime */}
           <H6 as="p" variant="secondary" className="mt-2 lowercase">
             {frontmatter.date
               ? formatDate(new Date(frontmatter.date), 'PPP')
               : 'some day in the past'}{' '}
-            — quick read
+            — {data.page.readTime?.text ?? 'a quick read'}
           </H6>
         </div>
         <img
@@ -260,12 +272,10 @@ function MdxScreen() {
         <ArticleFooter />
       </div>
 
-      {/* TODO: replace `articles` with something smart from the backend */}
       <BlogSection
-        articles={articles}
+        articles={data.recommendations}
         title="If you found this article helpful."
-        description="
-            You will love these ones as well."
+        description="You will love these ones as well."
         showArrowButton={false}
       />
     </>

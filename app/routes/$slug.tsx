@@ -1,4 +1,4 @@
-import React from 'react'
+import * as React from 'react'
 import {useRouteData, json} from 'remix'
 import type {MdxPage, KCDLoader} from 'types'
 import {
@@ -15,7 +15,7 @@ export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
     bustCache: new URL(request.url).searchParams.get('bust-cache') === 'true',
   })
   if (!page) return json(null, {status: 404})
-  return json({ page, })
+  return json({page})
 }
 
 export const meta = mdxPageMeta
