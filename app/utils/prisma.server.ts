@@ -143,6 +143,7 @@ async function getUserFromSessionId(sessionId: string) {
   }
 
   if (Date.now() > session.expirationDate.getTime()) {
+    await prisma.session.delete({where: {id: sessionId}})
     throw new Error('Session expired. Please request a new magic link.')
   }
 
