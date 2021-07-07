@@ -49,13 +49,14 @@ const githubHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
         config.contentSrc.repo === repo &&
         path.startsWith(config.contentSrc.path)
 
-      if (!isMockable) return
+      if (!isMockable) {
+        const message = `Attempting to get content description for unmockable resource: ${owner}/${repo}/${path}`
+        console.error(message)
+        throw new Error(message)
+      }
 
       const localDir = nodePath.join(__dirname, '..', path)
       const isLocalDir = await isDirectory(localDir)
-
-      const shouldMakeRealRequest = !isLocalDir
-      if (shouldMakeRealRequest) return
 
       if (!isLocalDir) {
         return res(
@@ -109,15 +110,14 @@ const githubHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
       // if the sha includes a "/" that means it's not a sha but a relativePath
       // and therefore the client is getting content it got from the local
       // mock environment, not the actual github API.
-      if (!sha.includes('/')) return
+      if (!sha.includes('/')) {
+        const message = `Attempting to get content for sha, but no sha exists locally: ${sha}`
+        console.error(message)
+        throw new Error(message)
+      }
 
       // NOTE: we cheat a bit and in the contents/:path handler, we set the sha to the relativePath
       const relativePath = sha
-
-      if (!relativePath) {
-        throw new Error(`Unable to find the file for the sha ${sha}`)
-      }
-
       const fullPath = nodePath.join(__dirname, '..', relativePath)
       const encoding = 'base64' as const
       const size = (await fs.stat(fullPath)).size

@@ -1,6 +1,7 @@
 import * as React from 'react'
+import type {LoaderFunction} from 'remix'
 import {useRouteData, json} from 'remix'
-import type {KCDLoader, MdxListItem} from 'types'
+import type {MdxListItem} from 'types'
 import {useState} from 'react'
 import {
   getMdxPagesInDirectory,
@@ -17,11 +18,8 @@ type LoaderData = {
   workshops: Array<MdxListItem>
 }
 
-export const loader: KCDLoader = async ({request}) => {
-  const pages = await getMdxPagesInDirectory(
-    'workshops',
-    new URL(request.url).searchParams.get('bust-cache') === 'true',
-  )
+export const loader: LoaderFunction = async () => {
+  const pages = await getMdxPagesInDirectory('workshops')
 
   const data: LoaderData = {workshops: pages.map(mapFromMdxPageToMdxListItem)}
   return json(data)

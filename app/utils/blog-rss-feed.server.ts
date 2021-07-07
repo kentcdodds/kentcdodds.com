@@ -5,9 +5,7 @@ import {getBlogMdxListItems} from './mdx'
 import {getDomainUrl} from './misc'
 
 async function getRssFeedXml(request: Request) {
-  const posts = await getBlogMdxListItems(
-    new URL(request.url).searchParams.get('bust-cache') === 'true',
-  )
+  const posts = await getBlogMdxListItems()
 
   const blogUrl = `${getDomainUrl(request)}/blog`
 

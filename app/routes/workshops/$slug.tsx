@@ -13,11 +13,10 @@ import {Button} from '../../components/button'
 import {ArrowButton} from '../../components/arrow-button'
 import {WorkshopCard} from '../../components/workshop-card'
 
-export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
+export const loader: KCDLoader<{slug: string}> = async ({params}) => {
   const page = await getMdxPage({
     contentDir: 'workshops',
     slug: params.slug,
-    bustCache: new URL(request.url).searchParams.get('bust-cache') === 'true',
   })
   const events = await getScheduledEvents()
   const workshop = events.find(

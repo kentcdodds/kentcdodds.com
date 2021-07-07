@@ -10,6 +10,7 @@ import {
   getMdxPage,
   mdxPageMeta,
   getMdxComponent,
+  refreshCacheForMdx,
 } from '../../utils/mdx'
 import {useOptionalUser} from '../../utils/providers'
 import {H2, H6, Paragraph} from '../../components/typography'
@@ -18,6 +19,7 @@ import {ArrowIcon} from '../../components/icons/arrow-icon'
 import {ArrowLink} from '../../components/arrow-button'
 import {BlogSection} from '../../components/sections/blog-section'
 import {getBlogRecommendations} from '../../utils/blog.server'
+import {getUser} from '../../utils/session.server'
 
 type LoaderData = {
   page: MdxPage | null
@@ -25,12 +27,18 @@ type LoaderData = {
 }
 
 export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
+  if (new URL(request.url).searchParams.has('fresh')) {
+    const user = await getUser(request)
+    if (user?.role === 'ADMIN') {
+      await refreshCacheForMdx({contentDir: 'blog', slug: params.slug})
+    }
+  }
+
   const page = await getMdxPage({
     contentDir: 'blog',
     slug: params.slug,
-    bustCache: new URL(request.url).searchParams.get('bust-cache') === 'true',
   })
-  const blogRecommendations = (await getBlogRecommendations(request))
+  const blogRecommendations = (await getBlogRecommendations())
     .filter(b => b.slug !== params.slug)
     .slice(0, 3)
 

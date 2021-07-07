@@ -11,8 +11,9 @@ import {ArticleCard} from '../../components/article-card'
 import {ArrowLink} from '../../components/arrow-button'
 import {FeaturedArticleSection} from '../../components/sections/featured-article-section'
 import {Tag} from '../../components/tag'
-import {getBlogMdxListItems} from '../../utils/mdx'
+import {getBlogMdxListItems, refreshDirListForMdx} from '../../utils/mdx'
 import {useRequestInfo} from '../../utils/providers'
+import {getUser} from '../../utils/session.server'
 
 type LoaderData = {
   posts: Array<MdxListItem>
@@ -20,10 +21,14 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  const url = new URL(request.url)
-  const posts = await getBlogMdxListItems(
-    url.searchParams.get('bust-cache') === 'true',
-  )
+  if (new URL(request.url).searchParams.has('fresh')) {
+    const user = await getUser(request)
+    if (user?.role === 'ADMIN') {
+      await refreshDirListForMdx('blog')
+    }
+  }
+
+  const posts = await getBlogMdxListItems()
 
   const tags = new Set<string>()
   for (const post of posts) {

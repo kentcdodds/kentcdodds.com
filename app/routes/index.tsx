@@ -17,11 +17,8 @@ type LoaderData = {
   blogRecommendations: Array<MdxListItem>
 }
 
-export const loader: LoaderFunction = async ({request}) => {
-  const blogRecommendations = (await getBlogRecommendations(request)).slice(
-    0,
-    3,
-  )
+export const loader: LoaderFunction = async () => {
+  const blogRecommendations = (await getBlogRecommendations()).slice(0, 3)
 
   const data: LoaderData = {blogRecommendations}
   return json(data)

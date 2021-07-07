@@ -8,11 +8,10 @@ import {
   getMdxComponent,
 } from '../utils/mdx'
 
-export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
+export const loader: KCDLoader<{slug: string}> = async ({params}) => {
   const page = await getMdxPage({
     contentDir: 'pages',
     slug: params.slug,
-    bustCache: new URL(request.url).searchParams.get('bust-cache') === 'true',
   })
   if (!page) return json(null, {status: 404})
   return json({page})
