@@ -18,6 +18,7 @@ import {H2, H6, Paragraph} from '../components/typography'
 import {Input, InputError, Label} from '../components/form-elements'
 import {Button} from '../components/button'
 import {CheckIcon} from '../components/icons/check-icon'
+import {images} from '../images'
 import {TEAM_MAP} from '../utils/onboarding'
 
 type LoaderData = {
@@ -329,12 +330,11 @@ export default function NewAccount() {
         </div>
 
         <div className="col-span-full lg:col-span-6 lg:col-start-1 lg:row-start-1">
-          {/* TODO: replace placeholder image */}
           <div className="aspect-h-6 aspect-w-4">
             <img
               className="rounded-lg object-cover"
-              src="https://images.unsplash.com/photo-1570993492881-25240ce854f4?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218fHx8fHx8fHwxNjI0ODg2NzM1&ixlib=rb-1.2.1&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=500"
-              alt="person sitting at their desk, chatting"
+              src={images.kentPalmingSoccerBall.src}
+              alt={images.kentPalmingSoccerBall.alt}
             />
           </div>
         </div>

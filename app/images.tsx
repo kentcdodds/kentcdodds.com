@@ -1,10 +1,10 @@
-const createOperations = <
+const createImages = <
   ImageType extends Record<string, {src: string; alt: string}>,
 >(
   images: ImageType,
 ) => images
 
-const images = createOperations({
+const images = createImages({
   kentTransparentProfile: {
     src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/v1616120215/kentcdodds.com/photo-transparent.png',
     alt: 'Kent C. Dodds',
@@ -13,6 +13,27 @@ const images = createOperations({
     src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/v1616120218/kentcdodds.com/photo.png',
     alt: 'Kent C. Dodds',
   },
+  kentSnowSports: {
+    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/v1625696827/kentcdodds.com/pages/home/kent-snow-sports.jpg',
+    alt: 'Kent wearing snow clothes with skis and a snowboard',
+  },
+  kentCodingWithKody: {
+    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/v1625697305/kentcdodds.com/pages/home/kent-coding-with-kody.jpg',
+    alt: 'Kent sitting with his laptop on a bench next to Kody the Koala',
+  },
+  kentRidingOnewheelOutdoors: {
+    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/v1625697530/kentcdodds.com/pages/home/kent-riding-onewheel-outdoors.jpg',
+    alt: 'Kent riding a onewheel outdoors',
+  },
+  kentRidingOnewheelOutdoorsFast: {
+    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/v1625697660/kentcdodds.com/pages/home/kent-riding-onewheel-outdoors-fast.jpg',
+    alt: 'Kent riding a onewheel outdoors fast',
+  },
+  kentPalmingSoccerBall: {
+    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/v1625698000/kentcdodds.com/pages/home/kent-palming-soccer-ball.jpg',
+    alt: 'Kent holding a soccer ball',
+  },
+
   alexProfileYellow: {
     src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0/v1624985244/kentcdodds.com/illustrations/yellow-head.png',
     alt: 'Mascot Profile in Yellow',

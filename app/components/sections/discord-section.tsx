@@ -1,4 +1,5 @@
 import * as React from 'react'
+import {images} from '../../images'
 import {H2} from '../typography'
 import {ArrowButton} from '../arrow-button'
 import {Grid} from '../grid'
@@ -26,11 +27,10 @@ function DiscordSection() {
 
       <div className="relative hidden lg:block lg:col-span-6">
         <div className="aspect-w-3 aspect-h-4 w-full h-full">
-          {/* TODO: replace placeholder image */}
           <img
-            alt=""
             className="w-full h-full rounded-lg object-cover"
-            src="https://images.unsplash.com/photo-1570993492881-25240ce854f4?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218fHx8fHx8fHwxNjI0ODg2NzM1&ixlib=rb-1.2.1&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=500"
+            src={images.kentCodingWithKody.src}
+            alt={images.kentCodingWithKody.alt}
           />
         </div>
         <div className="absolute -left-12 -top-6 flex flex-col space-y-1">

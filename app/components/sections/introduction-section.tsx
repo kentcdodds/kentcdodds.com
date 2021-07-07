@@ -1,4 +1,5 @@
 import * as React from 'react'
+import {images} from '../../images'
 import {H2} from '../typography'
 import {ArrowButton} from '../arrow-button'
 import {Grid} from '../grid'
@@ -8,10 +9,9 @@ function IntroductionSection() {
   return (
     <Grid>
       <div className="col-span-full lg:col-span-4">
-        {/* TODO: replace imageUrl placeholder */}
         <VideoCard
-          imageUrl="https://images.unsplash.com/photo-1624736712422-70e8302f6c39?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1525&q=80"
-          imageAlt="person riding a one-wheel"
+          imageUrl={images.kentRidingOnewheelOutdoorsFast.src}
+          imageAlt={images.kentRidingOnewheelOutdoorsFast.alt}
           videoUrl="/video.mp4"
           title="Hi, I'm Kent C. Dodds"
           description="Introduction video 1:42"
