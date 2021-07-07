@@ -1,5 +1,6 @@
 import * as React from 'react'
 import formatDate from 'date-fns/format'
+import parseISO from 'date-fns/parseISO'
 import type {MdxListItem} from 'types'
 import {Grid} from '../grid'
 import {H2, H6} from '../typography'
@@ -10,7 +11,7 @@ function FeaturedArticleSection({
   readTime,
   slug,
   frontmatter: {
-    date = new Date().getTime(),
+    date = formatDate(new Date(), 'yyyy-MM-ii'),
     title = 'Untitled Post',
     // TODO: add a default banner and alt for unbannered articles
     bannerAlt,
@@ -29,7 +30,7 @@ function FeaturedArticleSection({
                 <H2 className="mt-12">{title}</H2>
 
                 <div className="mt-6 text-blueGray-500 text-xl font-medium">
-                  {formatDate(new Date(date), 'PPP')} — {readTime?.text}
+                  {formatDate(parseISO(date), 'PPP')} — {readTime?.text}
                 </div>
               </div>
 

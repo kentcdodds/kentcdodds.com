@@ -11,10 +11,7 @@ import {ArticleCard} from '../../components/article-card'
 import {ArrowLink} from '../../components/arrow-button'
 import {FeaturedArticleSection} from '../../components/sections/featured-article-section'
 import {Tag} from '../../components/tag'
-import {
-  getMdxPagesInDirectory,
-  mapFromMdxPageToMdxListItem,
-} from '../../utils/mdx'
+import {getBlogMdxListItems} from '../../utils/mdx'
 import {useRequestInfo} from '../../utils/providers'
 
 type LoaderData = {
@@ -24,26 +21,19 @@ type LoaderData = {
 
 export const loader: LoaderFunction = async ({request}) => {
   const url = new URL(request.url)
-  let pages = await getMdxPagesInDirectory(
-    'blog',
+  const posts = await getBlogMdxListItems(
     url.searchParams.get('bust-cache') === 'true',
   )
 
-  pages = pages.sort((a, z) => {
-    const aTime = new Date(a.frontmatter.date ?? '').getTime()
-    const zTime = new Date(z.frontmatter.date ?? '').getTime()
-    return aTime > zTime ? -1 : aTime === zTime ? 0 : 1
-  })
-
   const tags = new Set<string>()
-  for (const page of pages) {
-    for (const category of page.frontmatter.categories ?? []) {
+  for (const post of posts) {
+    for (const category of post.frontmatter.categories ?? []) {
       tags.add(category)
     }
   }
 
   const data: LoaderData = {
-    posts: pages.map(mapFromMdxPageToMdxListItem),
+    posts,
     tags: Array.from(tags),
   }
 

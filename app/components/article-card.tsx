@@ -1,5 +1,6 @@
 import * as React from 'react'
 import formatDate from 'date-fns/format'
+import parseISO from 'date-fns/parseISO'
 import type {MdxListItem} from 'types'
 import {H3} from './typography'
 import {CopyIcon} from './icons/copy-icon'
@@ -8,7 +9,7 @@ function ArticleCard({
   readTime,
   slug,
   frontmatter: {
-    date = new Date().getTime(),
+    date = formatDate(new Date(), 'yyyy-MM-ii'),
     title = 'Untitled Post',
     // TODO: add a default banner and alt for unbannered articles
     bannerAlt,
@@ -33,7 +34,7 @@ function ArticleCard({
       </div>
 
       <div className="mt-8 text-blueGray-500 text-xl font-medium">
-        {formatDate(new Date(date), 'PPP')} — {readTime?.text ?? 'quick read'}
+        {formatDate(parseISO(date), 'PPP')} — {readTime?.text ?? 'quick read'}
       </div>
       <div className="mt-4 group-hover:underline">
         <H3>{title}</H3>

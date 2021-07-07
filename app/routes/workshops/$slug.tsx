@@ -354,7 +354,7 @@ function MdxScreen({mdxPage}: {mdxPage: MdxPage; workshop?: WorkshopEvent}) {
                 description:
                   'Donec posuere orci turpis, amet condimentum libero porttitor at in ultrices.',
                 tech: 'javascript',
-                date: Date.now(),
+                date: formatDate(new Date(), 'yyyy-MM-ii'),
               }}
               open={idx === 1}
               slug="/workshops/advanced-react-hooks"

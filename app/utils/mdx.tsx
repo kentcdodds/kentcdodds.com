@@ -81,6 +81,18 @@ async function getMdxPagesInDirectory(contentDir: string, bustCache: boolean) {
   return pages.filter(typedBoolean)
 }
 
+async function getBlogMdxListItems(bustCache: boolean) {
+  let pages = await getMdxPagesInDirectory('blog', bustCache)
+
+  pages = pages.sort((a, z) => {
+    const aTime = new Date(a.frontmatter.date ?? '').getTime()
+    const zTime = new Date(z.frontmatter.date ?? '').getTime()
+    return aTime > zTime ? -1 : aTime === zTime ? 0 : 1
+  })
+
+  return pages.map(mapFromMdxPageToMdxListItem)
+}
+
 function mdxPageMeta({data}: {data: {page: MdxPage} | null}) {
   if (data) {
     return {
@@ -142,6 +154,7 @@ export {
   getMdxPage,
   getMdxPagesInDirectory,
   mapFromMdxPageToMdxListItem,
+  getBlogMdxListItems,
   mdxPageMeta,
   FourOhFour,
   getMdxComponent,

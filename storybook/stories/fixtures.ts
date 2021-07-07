@@ -14,7 +14,7 @@ export const articles: Array<MdxListItem> = [
       bannerUrl:
         'https://kentcdodds.com/static/7ada1615181833135eadad3efd73ff3e/09a9d/banner.webp',
       bannerAlt: 'placeholder',
-      date: new Date('2021-04-05').getTime(),
+      date: '2021-04-05',
     },
   },
   {
@@ -30,7 +30,7 @@ export const articles: Array<MdxListItem> = [
       bannerUrl:
         'https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0/v1620771700/kentcdodds.com/blog/don-t-solve-problems-eliminate-them/banner_qzwcgj.jpg',
       bannerAlt: 'placeholder',
-      date: new Date('2021-03-22').getTime(),
+      date: '2021-03-22',
     },
   },
   {
@@ -46,7 +46,7 @@ export const articles: Array<MdxListItem> = [
       bannerUrl:
         'https://kentcdodds.com/static/bf0fd6f22a7cb75817cb938eeba2e42c/09a9d/banner.webp',
       bannerAlt: 'placeholder',
-      date: new Date('2021-03-05').getTime(),
+      date: '2021-03-05',
     },
   },
   {
@@ -62,7 +62,7 @@ export const articles: Array<MdxListItem> = [
       bannerUrl:
         'https://kentcdodds.com/static/f878ee6f4866c43770b2284a34b0649f/09a9d/banner.webp',
       bannerAlt: 'placeholder',
-      date: new Date('2021-03-02').getTime(),
+      date: '2021-03-02',
     },
   },
 ]

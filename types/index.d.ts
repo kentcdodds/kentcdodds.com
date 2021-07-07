@@ -32,7 +32,7 @@ type MdxListItem = {
 
     // Post meta
     categories?: Array<string>
-    date?: number
+    date?: string
     bannerUrl?: string
     bannerCredit?: string
     bannerAlt?: string
