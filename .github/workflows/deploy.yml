@@ -65,6 +65,6 @@ jobs:
         with:
           args:
             'deploy --build-arg REMIX_TOKEN=${{secrets.REMIX_TOKEN }}
-            --build-arg COMMIT_SHA=${{ GITHUB_SHA }}'
+            --build-arg COMMIT_SHA=${{ github.sha }}'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
