@@ -1,13 +1,20 @@
 import * as React from 'react'
 
-function CheckIcon() {
+function CheckIcon({
+  size = 36,
+  className,
+}: {
+  size?: number
+  className?: string
+}) {
   return (
     <svg
-      width="36"
-      height="36"
+      width={size}
+      height={size}
       viewBox="0 0 36 36"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      className={className}
     >
       <circle cx="18" cy="18" r="18" fill="currentColor" />
       <path

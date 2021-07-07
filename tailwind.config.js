@@ -122,6 +122,7 @@ module.exports = {
                 },
                 strong: {
                   fontWeight: theme('fontWeight.medium'),
+                  fontSize: fontSize('lg'),
                 },
                 hr: {
                   marginTop: theme('spacing.8'),
