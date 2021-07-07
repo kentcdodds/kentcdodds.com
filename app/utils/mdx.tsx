@@ -68,7 +68,7 @@ async function getMdxPagesInDirectory(contentDir: string, bustCache: boolean) {
   }
   await redis.set(key, JSON.stringify(dirList))
 
-  const limit = pLimit(20)
+  const limit = pLimit(8)
 
   const pages = await Promise.all(
     dirList
