@@ -43,12 +43,12 @@ jobs:
         env:
           DATABASE_URL: 'postgresql://kody:the_koala@localhost:5432/kentcdodds_db?schema=public'
 
-      # TODO: what?
-      # - name: ⚡️ Prime cache
-      #   run: npm run prime-cache:mocks
+      - name: ⚡️ Prime cache
+        run: npm run prime-cache:mocks
 
       - name: 🌳 Cypress run
         uses: cypress-io/github-action@v2
+        continue-on-error: true
         with:
           start: npm run start:mocks
           wait-on: 'http://localhost:8811'
@@ -63,7 +63,6 @@ jobs:
           ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         uses: superfly/flyctl-actions@1.1
         with:
-          args:
-            'deploy --build-arg REMIX_TOKEN=${{secrets.REMIX_TOKEN }}'
+          args: 'deploy --build-arg REMIX_TOKEN=${{secrets.REMIX_TOKEN }}'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
