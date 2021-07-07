@@ -9,6 +9,8 @@ module.exports = (
     viewportWidth: 1030,
     viewportHeight: 800,
     integrationFolder: 'cypress/e2e',
+    video: !process.env.CI,
+    screenshotOnRunFailure: !process.env.CI,
   }
   Object.assign(config, configOverrides)
 
