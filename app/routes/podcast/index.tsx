@@ -3,6 +3,7 @@ import {json, useRouteData} from 'remix'
 
 import clsx from 'clsx'
 import {Tab, TabList, TabPanel, TabPanels, Tabs} from '@reach/tabs'
+import {Link} from 'react-router-dom'
 import {Grid} from '../../components/grid'
 import {images} from '../../images'
 import {H2, H6} from '../../components/typography'
@@ -12,31 +13,31 @@ import {externalLinks} from '../../external-links'
 import {RssIcon} from '../../components/icons/rss-icon'
 import {SpotifyIcon} from '../../components/icons/spotify-icon'
 import {GoogleIcon} from '../../components/icons/google-icon'
-import {FeaturedArticleSection} from '../../components/sections/featured-article-section'
 import {ChevronDownIcon} from '../../components/icons/chevron-down-icon'
 import {BlogSection} from '../../components/sections/blog-section'
 import {articles} from '../../../storybook/stories/fixtures'
-import {Link} from 'react-router-dom'
+import {
+  getMdxPagesInDirectory,
+  mapFromMdxPageToMdxListItem,
+} from '../../utils/mdx'
+import {FeaturedSection} from '../../components/sections/featured-section'
 
 type LoaderData = {
   podcasts: Array<MdxListItem>
+  seasons: Array<number>
 }
 
-export const loader: KCDLoader = async () => {
+export const loader: KCDLoader = async ({request}) => {
+  const url = new URL(request.url)
+  // TODO: this should support the season dirs
+  const pages = await getMdxPagesInDirectory(
+    'podcast-next/01',
+    url.searchParams.get('bust-cache') === 'true',
+  )
+
   const data: LoaderData = {
-    podcasts: Array.from({length: 12}).map((_, idx) => ({
-      frontmatter: {
-        bannerUrl:
-          'https://res.cloudinary.com/kentcdodds-com/image/upload/v1625034139/kentcdodds.com/content/podcast/03/01-alex-anderson/alex-anderson.png',
-        bannerAlt: 'Alex Anderson Creates Web-Based Spaceship Controls',
-        title: 'Alex Anderson Creates Web-Based Spaceship Controls',
-        date: Date.now(),
-        season: 3,
-        episode: idx + 1,
-      },
-      duration: formatTime(Math.floor(Math.random() * 3000)),
-      slug: `/podcast/${idx}`,
-    })),
+    podcasts: pages.map(mapFromMdxPageToMdxListItem),
+    seasons: [3, 2, 1],
   }
 
   return json(data)
@@ -47,14 +48,6 @@ export function meta() {
     title: 'Podcasts by Kent C. Dodds',
     description: 'Get really good at making software with Kent C. Dodds',
   }
-}
-
-function formatTime(seconds: number) {
-  const [h, m, s] = new Date(seconds * 1000)
-    .toISOString()
-    .substr(11, 8)
-    .split(':')
-  return h === '00' ? `${m}:${s}` : `${h}:${m}:${s}`
 }
 
 function PodcastAppLink({
@@ -75,6 +68,7 @@ function PodcastAppLink({
 
 function PodcastHome() {
   const data = useRouteData<LoaderData>()
+  console.dir({data})
   // TODO: save state in url, like the filters on the blog?
 
   const featured = data.podcasts[0]
@@ -127,27 +121,36 @@ function PodcastHome() {
         </div>
       </Grid>
 
+      {/* TODO: find a place to take season, episode and duration from */}
       {featured ? (
         <div className="mb-48">
-          <FeaturedArticleSection {...featured} />
+          <FeaturedSection
+            cta="Listen to this episode"
+            caption="Latest episode"
+            subTitle="Season 03, Episode 01 — 48:12"
+            title={featured.frontmatter.title}
+            slug={featured.slug}
+            imageUrl={featured.frontmatter.guest!.image}
+            imageAlt={featured.frontmatter.guest!.name}
+          />
         </div>
       ) : null}
 
       <Tabs as={Grid} className="mb-24 lg:mb-64">
         <TabList className="flex flex-col col-span-full items-start mb-20 bg-transparent lg:flex-row lg:space-x-12">
-          {/* TODO: make data driven, probably connect to url? */}
-          {Array.from({length: 3}).map((_, idx) => (
+          {/* TODO: connect to state */}
+          {data.seasons.map(season => (
             <Tab
-              key={idx}
+              key={season}
               className={clsx(
                 'p-0 text-4xl leading-tight focus:bg-transparent border-none',
                 {
-                  'text-primary': idx === 0,
-                  'text-blueGray-500': idx !== 0,
+                  'text-primary': season === 3,
+                  'text-blueGray-500': season !== 3,
                 },
               )}
             >
-              {`Season ${3 - idx}`}
+              {`Season ${season}`}
             </Tab>
           ))}
         </TabList>
@@ -158,6 +161,7 @@ function PodcastHome() {
             <span>{`Season 3 — ${data.podcasts.length} episodes`}</span>
           </H6>
 
+          {/* TODO: add sorting */}
           <button className="text-primary inline-flex items-center text-lg font-medium">
             Showing newest first
             <ChevronDownIcon className="ml-2 text-gray-400" />
@@ -165,12 +169,14 @@ function PodcastHome() {
         </div>
 
         <TabPanels className="col-span-full">
-          {Array.from({length: 3}).map((_, idx) => (
+          {/* TODO: support other seasons*/}
+          {data.seasons.map(season => (
             <TabPanel
-              key={idx}
+              key={season}
               className="border-t border-gray-200 dark:border-gray-600"
             >
-              {data.podcasts.map(podcast => (
+              {/* TODO: support seasons */}
+              {data.podcasts.map((podcast, idx) => (
                 <Link key={podcast.slug} to={podcast.slug}>
                   <Grid
                     nested
@@ -180,14 +186,15 @@ function PodcastHome() {
 
                     <img
                       className="relative flex-none col-span-1 rounded-lg"
-                      src={podcast.frontmatter.bannerUrl}
-                      alt={podcast.frontmatter.bannerAlt}
+                      src={podcast.frontmatter.guest?.image}
+                      alt={podcast.frontmatter.guest?.name}
                     />
                     <div className="text-primary relative flex flex-col col-span-3 md:col-span-7 lg:flex-row lg:col-span-11 lg:items-center lg:justify-between">
                       <h4 className="mb-3 text-xl font-medium lg:mb-0">
                         <span className="inline-block w-10 lg:text-lg">
-                          {`${podcast.frontmatter.episode
-                            ?.toString()
+                          {/* TODO: support episode, remove this idx fallback */}
+                          {`${(podcast.frontmatter.episode ?? idx + 1)
+                            .toString()
                             .padStart(2, '0')}.`}
                         </span>
                         {podcast.frontmatter.title}

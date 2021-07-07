@@ -48,8 +48,22 @@ type MdxListItem = {
     }
 
     // Podcast meta
+    summary?: string
     season?: number
     episode?: number
+    homework?: Array<string>
+    resources?: Array<{
+      name: string
+      url: string
+    }>
+    guest?: {
+      name: string
+      image: string
+      company?: string
+      github?: string
+      twitter?: string
+    }
+    simpleCastId?: string
   }
 }
 

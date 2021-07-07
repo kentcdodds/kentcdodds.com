@@ -7,7 +7,7 @@ import oembedTransformer from '@remark-embedder/transformer-oembed'
 import type {Config as OEmbedConfig} from '@remark-embedder/transformer-oembed'
 import gfm from 'remark-gfm'
 import type {Node} from 'unist'
-import type {GitHubFile} from 'types'
+import type {GitHubFile, MdxListItem} from 'types'
 import calculateReadingTime from 'reading-time'
 
 const getOEmbedConfig: OEmbedConfig = ({provider}) => {
@@ -95,7 +95,63 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
     ],
   ]
 
-  const {frontmatter, code} = await bundleMDX(indexFile.content, {
+  // TODO: this is a bit hacky, and needs to be moved / argument controlled
+  let content = indexFile.content
+  const extracted: Pick<
+    MdxListItem['frontmatter'],
+    'episode' | 'homework' | 'resources' | 'summary'
+  > = {}
+
+  const isPodcast = indexFile.path.startsWith('content/podcast-next')
+  if (isPodcast) {
+    const lines = content.split('\n')
+    if (lines[0]?.startsWith('---')) {
+      lines.shift()
+    }
+
+    const sections: {[key: string]: string[]} = {
+      frontmatter: [],
+      description: [],
+    }
+
+    let section = 'frontmatter'
+
+    for (const line of lines) {
+      if (section === 'frontmatter' && line.startsWith('---')) {
+        section = 'description'
+        continue
+      }
+
+      if (line.startsWith('## ')) {
+        section = line.replace('## ', '').trim().toLowerCase()
+        sections[section] = []
+        continue
+      }
+
+      sections[section]!.push(line)
+    }
+
+    // TODO: parse markdown / paragraphs in summary ?
+    extracted.summary = sections.description?.join('\n').trim()
+    extracted.homework = sections.homework?.filter(Boolean) ?? []
+
+    extracted.resources = sections.resources
+      ?.map((resource: string) => resource.match(/\[([^[]+)\](\((.*)\))/))
+      .filter(Boolean)
+      .map(match => ({
+        name: match![1] as string,
+        url: match![3] as string,
+      })) as {name: string; url: string}[]
+
+    content = [
+      '---',
+      ...(sections.frontmatter as string[]),
+      '---',
+      ...(sections.transcript ?? []),
+    ].join('\n')
+  }
+
+  const {frontmatter, code} = await bundleMDX(content, {
     files,
     xdmOptions(options) {
       options.remarkPlugins = [
@@ -110,8 +166,8 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
 
   return {
     code,
-    readTime,
-    frontmatter: frontmatter as FrontmatterType,
+    summary: readTime,
+    frontmatter: {...extracted, ...frontmatter} as FrontmatterType,
   }
 }
 

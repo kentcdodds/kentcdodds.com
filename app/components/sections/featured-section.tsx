@@ -1,36 +1,28 @@
 import * as React from 'react'
-import formatDate from 'date-fns/format'
-import type {MdxListItem} from 'types'
-import parseISO from 'date-fns/parseISO'
 import {Grid} from '../grid'
 import {H2, H6} from '../typography'
 import {ArrowLink} from '../arrow-button'
 import {CopyIcon} from '../icons/copy-icon'
 
-function FeaturedArticleSection({
-  readTime,
-  duration,
+interface FeaturedSectionProps {
+  slug?: string
+  caption?: string
+  cta?: string
+  subTitle?: string
+  title?: string
+  imageUrl?: string
+  imageAlt?: string
+}
+
+function FeaturedSection({
   slug,
-  frontmatter: {
-    date = formatDate(new Date(), 'yyyy-MM-ii'),
-    season,
-    episode,
-    title = 'Untitled Post',
-    // TODO: add a default banner and alt for unbannered articles
-    bannerAlt,
-    bannerUrl,
-  },
-}: MdxListItem) {
-  const isPodcast = Boolean(season && episode)
-
-  const caption = isPodcast ? 'Latest episode' : 'Featured article'
-
-  const subTitle = isPodcast
-    ? `Season ${season}, Episode ${episode} — ${duration}`
-    : `${formatDate(parseISO(date), 'PPP')}  — ${readTime?.text}`
-
-  const cta = isPodcast ? 'Listen to this episode' : 'Read full article'
-
+  caption = 'Featured article',
+  cta = 'Read full article',
+  imageUrl,
+  imageAlt,
+  title = 'Untitled Post',
+  subTitle,
+}: FeaturedSectionProps) {
   return (
     <div className="px-8 w-full lg:px-0">
       <div className="lg:dark:bg-transparent bg-gray-100 dark:bg-gray-800 rounded-lg lg:bg-transparent">
@@ -58,8 +50,8 @@ function FeaturedArticleSection({
               <div className="aspect-w-3 aspect-h-4 w-full">
                 <img
                   className="rounded-lg object-cover"
-                  src={bannerUrl}
-                  alt={bannerAlt}
+                  src={imageUrl}
+                  alt={imageAlt}
                 />
               </div>
             </div>
@@ -70,4 +62,4 @@ function FeaturedArticleSection({
   )
 }
 
-export {FeaturedArticleSection}
+export {FeaturedSection}
