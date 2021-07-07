@@ -146,6 +146,16 @@ async function getUserFromSessionId(sessionId: string) {
     throw new Error('Session expired. Please request a new magic link.')
   }
 
+  // if there's less than two weeks left, extend the session
+  const twoWeeks = 2 * 7 * 24 * 60 * 60 * 1000
+  if (Date.now() + twoWeeks > session.expirationDate.getTime()) {
+    const newExpirationDate = new Date(Date.now() + sessionExpirationTime)
+    await prisma.session.update({
+      data: {expirationDate: newExpirationDate},
+      where: {id: sessionId},
+    })
+  }
+
   return session.user
 }
 
