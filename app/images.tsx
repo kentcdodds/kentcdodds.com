@@ -6,11 +6,11 @@ const createImages = <
 
 const images = createImages({
   kentTransparentProfile: {
-    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/v1616120215/kentcdodds.com/photo-transparent.png',
+    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/v1625699254/kentcdodds.com/profile-transparent.png',
     alt: 'Kent C. Dodds',
   },
   kentProfile: {
-    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/v1616120218/kentcdodds.com/photo.png',
+    src: 'https://res.cloudinary.com/kentcdodds-com/image/upload/v1625699252/kentcdodds.com/profile.jpg',
     alt: 'Kent C. Dodds',
   },
   kentSnowSports: {
