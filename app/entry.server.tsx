@@ -7,6 +7,8 @@ import {getEnv} from './utils/env.server'
 
 global.ENV = getEnv()
 
+const startTime = Date.now()
+
 export default async function handleRequest(
   request: Request,
   responseStatusCode: number,
@@ -14,10 +16,26 @@ export default async function handleRequest(
   remixContext: EntryContext,
 ) {
   const {pathname} = new URL(request.url)
+  if (pathname === '/build-info') {
+    const buildInfo = {
+      commit: ENV.COMMIT_SHA,
+      startTime,
+    }
+    const json = JSON.stringify(buildInfo)
+    return new Response(json, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': String(Buffer.byteLength(json)),
+      },
+    })
+  }
   if (pathname === '/blog/rss.xml') {
-    return new Response(await getRssFeedXml(request), {
+    const rss = await getRssFeedXml(request)
+    return new Response(rss, {
       headers: {
         'Content-Type': 'application/xml',
+        'Content-Length': String(Buffer.byteLength(rss)),
       },
     })
   }
@@ -30,7 +48,9 @@ export default async function handleRequest(
     responseHeaders.set('Cache-Control', 'no-store')
   }
 
-  return new Response(`<!DOCTYPE html>${markup}`, {
+  const html = `<!DOCTYPE html>${markup}`
+
+  return new Response(html, {
     status: responseStatusCode,
     headers: {
       // TODO: remove this when we go to production
@@ -38,6 +58,7 @@ export default async function handleRequest(
       ...Object.fromEntries(responseHeaders),
       'X-Powered-By': 'Kody the Koala',
       'Content-Type': 'text/html',
+      'Content-Length': String(Buffer.byteLength(html)),
     },
   })
 }

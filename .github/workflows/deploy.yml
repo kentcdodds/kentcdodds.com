@@ -64,7 +64,7 @@ jobs:
         uses: superfly/flyctl-actions@1.1
         with:
           args:
-            'deploy --build-arg REMIX_TOKEN=${{secrets.REMIX_TOKEN }}
+            'deploy --build-arg REMIX_TOKEN=${{ secrets.REMIX_TOKEN }}
             --build-arg COMMIT_SHA=${{ github.sha }}'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
