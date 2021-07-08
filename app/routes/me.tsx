@@ -195,7 +195,11 @@ function YouScreen() {
               </span>
 
               <div className="block pb-12 pt-20 px-12 text-center">
-                <img className="block mb-16" {...TEAM_MAP[user.team].image()} />
+                <img
+                  className="block mb-16"
+                  src={TEAM_MAP[user.team].image()}
+                  alt={TEAM_MAP[user.team].image.alt}
+                />
                 <H6>{TEAM_MAP[user.team].label}</H6>
               </div>
             </div>

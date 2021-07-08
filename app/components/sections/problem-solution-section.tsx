@@ -72,7 +72,11 @@ function ProblemSolutionSection() {
             */}
             <TabPanels className="col-span-full order-2 mt-16 lg:col-span-5 lg:col-start-7 lg:mt-0">
               <TabPanel>
-                <img className="-ml-10 w-48" {...images.skis()} />
+                <img
+                  className="-ml-10 w-48"
+                  src={images.skis()}
+                  alt={images.skis.alt}
+                />
               </TabPanel>
               <TabPanel>
                 <img

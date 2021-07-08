@@ -16,7 +16,8 @@ function HeroSection() {
         <div className="bottom-0 left-0 right-0 top-0 flex items-center justify-center pointer-events-none lg:absolute lg:-right-8vw">
           <img
             className="w-full h-auto max-h-screen object-contain"
-            {...images.alexSnowboarding()}
+            src={images.alexSnowboarding()}
+            alt={images.alexSnowboarding.alt}
           />
         </div>
       </div>

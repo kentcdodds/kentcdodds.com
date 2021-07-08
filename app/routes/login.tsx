@@ -75,7 +75,11 @@ function Login() {
   return (
     <Grid className="mt-12">
       <div className="col-span-full items-start overflow-visible lg:col-span-6 lg:col-start-7">
-        <img className="mb-10 lg:mb-0" {...images.skis()} />
+        <img
+          className="mb-10 lg:mb-0"
+          src={images.skis()}
+          alt={images.skis.alt}
+        />
       </div>
 
       <div className="flex flex-col col-span-full lg:col-span-5 lg:row-start-1">

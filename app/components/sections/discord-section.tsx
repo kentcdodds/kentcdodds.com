@@ -29,7 +29,8 @@ function DiscordSection() {
         <div className="aspect-w-3 aspect-h-4 w-full h-full">
           <img
             className="w-full h-full rounded-lg object-cover"
-            {...images.kentCodingWithKody()}
+            src={images.kentCodingWithKody()}
+            alt={images.kentCodingWithKody.alt}
           />
         </div>
         <div className="absolute -left-12 -top-6 flex flex-col space-y-1">

@@ -23,8 +23,5 @@ module.exports = {
 
     // enable these again someday:
     '@typescript-eslint/no-unsafe-argument': 'off',
-
-    // this rule isn't smart enough to handle our spread :(
-    'jsx-a11y/alt-text': 'off',
   },
 }
