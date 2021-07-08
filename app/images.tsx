@@ -10,18 +10,16 @@ const createImages = <
 >(
   images: ImageType,
 ) => {
-  type Builder = (transformations?: TransformerOption) => {
-    src: string
+  type Builder = {
+    (transformations?: TransformerOption): string
     alt: string
   }
   const imageBuilders: Record<string, Builder> = {}
   for (const [name, {id, alt}] of Object.entries(images)) {
-    imageBuilders[name] = transformations => {
-      return {
-        src: buildImageUrl(id, {transformations}),
-        alt,
-      }
-    }
+    const builder: Builder = transformations =>
+      buildImageUrl(id, {transformations})
+    builder.alt = alt
+    imageBuilders[name] = builder
   }
   return imageBuilders as {[Name in keyof ImageType]: Builder}
 }

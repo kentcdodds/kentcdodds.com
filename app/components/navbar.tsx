@@ -72,10 +72,10 @@ function MenuButton() {
 }
 
 const alexProfiles: Record<OptionalTeam, {src: string; alt: string}> = {
-  RED: images.alexProfileRed(),
-  BLUE: images.alexProfileBlue(),
-  YELLOW: images.alexProfileYellow(),
-  UNKNOWN: images.alexProfileGray(),
+  RED: {src: images.alexProfileRed(), alt: images.alexProfileRed.alt},
+  BLUE: {src: images.alexProfileBlue(), alt: images.alexProfileBlue.alt},
+  YELLOW: {src: images.alexProfileYellow(), alt: images.alexProfileYellow.alt},
+  UNKNOWN: {src: images.alexProfileGray(), alt: images.alexProfileGray.alt},
 }
 
 function Navbar() {

@@ -13,7 +13,7 @@ function getAvatar(
   email: string,
   {
     size = defaultAvatarSize,
-    fallback = images.alexProfileGray({resize: {width: size}}).src,
+    fallback = images.alexProfileGray({resize: {width: size}}),
   }: {size?: number; fallback?: string} = {},
 ) {
   const hash = md5(email)
@@ -24,9 +24,9 @@ function getAvatar(
 }
 
 const avatarFallbacks: Record<Team, string> = {
-  BLUE: images.alexProfileBlue({resize: {width: defaultAvatarSize}}).src,
-  RED: images.alexProfileRed({resize: {width: defaultAvatarSize}}).src,
-  YELLOW: images.alexProfileYellow({resize: {width: defaultAvatarSize}}).src,
+  BLUE: images.alexProfileBlue({resize: {width: defaultAvatarSize}}),
+  RED: images.alexProfileRed({resize: {width: defaultAvatarSize}}),
+  YELLOW: images.alexProfileYellow({resize: {width: defaultAvatarSize}}),
 }
 
 function getAvatarForUser({
