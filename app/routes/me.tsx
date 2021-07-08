@@ -1,7 +1,6 @@
 import * as React from 'react'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import {Form, json, redirect, useRouteData} from 'remix'
-import {Link} from 'react-router-dom'
 import {getQrCodeDataURL} from '../utils/qrcode.server'
 import {getDiscordAuthorizeURL, getDomainUrl} from '../utils/misc'
 import {useRequestInfo, useUser, useUserInfo} from '../utils/providers'
@@ -39,20 +38,25 @@ export const loader: LoaderFunction = ({request}) => {
   })
 }
 
+const actionIds = {
+  changeDetails: 'change details',
+  logout: 'logout',
+}
+
 export const action: ActionFunction = async ({request}) => {
   return requireUser(request)(async user => {
     const session = await rootStorage.getSession(request.headers.get('Cookie'))
     const params = new URLSearchParams(await request.text())
     const actionId = params.get('actionId')
 
-    if (actionId === 'logout') {
+    if (actionId === actionIds.logout) {
       await signOutSession(session)
 
       return redirect('/', {
         headers: {'Set-Cookie': await rootStorage.commitSession(session)},
       })
     }
-    if (actionId === 'change details') {
+    if (actionId === actionIds.changeDetails) {
       const newFirstName = params.get('firstName')
       if (newFirstName && user.firstName !== newFirstName) {
         await updateUser(user.id, {firstName: newFirstName})
@@ -72,7 +76,7 @@ function YouScreen() {
 
   return (
     <div>
-      <Form action="/me" method="post" className="mb-64 mt-12">
+      <div className="mb-64 mt-12">
         <Grid>
           <div className="col-span-full mb-12 lg:mb-20">
             <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
@@ -82,17 +86,29 @@ function YouScreen() {
                   Edit as you wish.
                 </H2>
               </div>
-              <Link
-                to="/logout"
-                className="flex col-span-full items-center self-end mb-12 px-11 py-6 text-black dark:text-white border-2 border-gray-600 rounded-full space-x-4 lg:col-span-8 lg:col-start-3 lg:self-auto lg:mb-0"
-              >
-                <LogoutIcon />
-                <H6 as="span">logout</H6>
-              </Link>
+              <Form action="/me" method="post">
+                <input type="hidden" name="actionId" value={actionIds.logout} />
+                <button
+                  type="submit"
+                  className="flex col-span-full items-center self-end mb-12 px-11 py-6 text-black dark:text-white border-2 border-gray-600 rounded-full space-x-4 lg:col-span-8 lg:col-start-3 lg:self-auto lg:mb-0"
+                >
+                  <LogoutIcon />
+                  <H6 as="span">logout</H6>
+                </button>
+              </Form>
             </div>
           </div>
 
-          <div className="col-span-full mb-24 lg:col-span-5 lg:mb-0">
+          <Form
+            action="/me"
+            method="post"
+            className="col-span-full mb-24 lg:col-span-5 lg:mb-0"
+          >
+            <input
+              type="hidden"
+              name="actionId"
+              value={actionIds.changeDetails}
+            />
             <Label className="mb-4" htmlFor="firstName">
               First name
             </Label>
@@ -157,7 +173,7 @@ function YouScreen() {
             />
 
             <Button type="submit">Save changes</Button>
-          </div>
+          </Form>
 
           <div className="col-span-full lg:col-span-4 lg:col-start-8">
             <Label className="mb-4" htmlFor="chosen-team">
@@ -189,7 +205,7 @@ function YouScreen() {
             </div>
           </div>
         </Grid>
-      </Form>
+      </div>
 
       <Grid>
         <div className="col-span-full mb-12 lg:col-span-5 lg:col-start-8 lg:mb-0">
