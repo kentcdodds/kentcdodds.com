@@ -1,6 +1,7 @@
 import * as React from 'react'
 import clsx from 'clsx'
 import {Link, LinkProps} from 'react-router-dom'
+import {motion} from 'framer-motion'
 import {ArrowIcon, ArrowIconProps} from './icons/arrow-icon'
 
 interface ArrowButtonProps {
@@ -44,35 +45,55 @@ function ArrowButton({
   )
 }
 
+const arrowVariants = {
+  initial: {
+    x: 0,
+  },
+  hover: {
+    x: 8,
+  },
+  tap: {
+    x: 24,
+  },
+}
+
+const MotionLink = motion(Link)
+
 function ArrowLink({
   children,
   direction = 'right',
   textSize = 'medium',
-  ...linkProps
-}: ArrowButtonProps & LinkProps) {
+  to,
+}: ArrowButtonProps & Pick<LinkProps, 'to'>) {
   return (
-    <Link
+    <MotionLink
       className={clsx(
-        'inline-flex items-center text-black dark:text-white font-medium transition',
+        'text-primary inline-flex items-center font-medium cursor-pointer transition',
         {
           'text-xl': textSize === 'medium',
           'text-lg': textSize === 'small',
         },
       )}
-      {...linkProps}
+      to={to}
+      initial="initial"
+      whileHover="hover"
+      whileTap="tap"
+      animate="initial"
     >
       {direction === 'right' || direction === 'up' ? (
         <span className="mr-8">{children}</span>
       ) : null}
 
       <span className="inline-flex flex-none items-center justify-center p-1 w-14 h-14 border-2 border-gray-200 dark:border-gray-600 rounded-full transition">
-        <ArrowIcon direction={direction} />
+        <motion.span variants={arrowVariants}>
+          <ArrowIcon direction={direction} />
+        </motion.span>
       </span>
 
       {direction === 'left' || direction === 'down' ? (
         <span className="ml-8">{children}</span>
       ) : null}
-    </Link>
+    </MotionLink>
   )
 }
 

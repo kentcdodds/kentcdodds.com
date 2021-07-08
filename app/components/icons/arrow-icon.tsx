@@ -6,7 +6,7 @@ export interface ArrowIconProps {
   size?: number
 }
 
-const rotationMap = {
+export const rotationMap = {
   up: 'rotate-180',
   right: '-rotate-90',
   down: 'rotate-0',

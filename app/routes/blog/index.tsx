@@ -209,7 +209,7 @@ function BlogHome() {
                 ? `${formatDate(
                     parseISO(featured.frontmatter.date),
                     'PPP',
-                  )}  — ${featured.readTime?.text}`
+                  )}  — ${featured.readTime?.text ?? 'quick read'}`
                 : 'TBA'
             }
             title={featured.frontmatter.title}

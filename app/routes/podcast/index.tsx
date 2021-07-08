@@ -27,13 +27,9 @@ type LoaderData = {
   seasons: Array<number>
 }
 
-export const loader: KCDLoader = async ({request}) => {
-  const url = new URL(request.url)
+export const loader: KCDLoader = async () => {
   // TODO: this should support the season dirs
-  const pages = await getMdxPagesInDirectory(
-    'podcast-next/01',
-    url.searchParams.get('bust-cache') === 'true',
-  )
+  const pages = await getMdxPagesInDirectory('podcast-next/01')
 
   const data: LoaderData = {
     podcasts: pages.map(mapFromMdxPageToMdxListItem),

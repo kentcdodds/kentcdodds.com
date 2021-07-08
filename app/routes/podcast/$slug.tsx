@@ -1,8 +1,9 @@
-import React, {useEffect, useRef, useState} from 'react'
+import React, {useState} from 'react'
 import {useRouteData, json} from 'remix'
 import {Link} from 'react-router-dom'
 import type {KCDLoader, MdxPage} from 'types'
 import clsx from 'clsx'
+import {motion} from 'framer-motion'
 import {
   getMdxPage,
   getMdxComponent,
@@ -19,31 +20,33 @@ import {TwitterIcon} from '../../components/icons/twitter-icon'
 import {PlusIcon} from '../../components/icons/plus-icon'
 import {FeaturedSection} from '../../components/sections/featured-section'
 import {ArrowLink} from '../../components/arrow-button'
+import {ChevronRightIcon} from '../../components/icons/chevron-right-icon'
+import {ChevronLeftIcon} from '../../components/icons/chevron-left-icon'
 
 type LoaderData = {
-  pages: Array<MdxPage>
+  prevPage: MdxPage
+  nextPage: MdxPage
   page: MdxPage
 }
 
-export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
-  const url = new URL(request.url)
-
+export const loader: KCDLoader<{slug: string}> = async ({params}) => {
   // TODO: this should support the season dirs
-  const pages = (
-    await getMdxPagesInDirectory(
-      'podcast-next/01',
-      url.searchParams.get('bust-cache') === 'true',
-    )
-  ).map(mapFromMdxPageToMdxListItem)
+  // TODO: sort pages descending
+  const pages = (await getMdxPagesInDirectory('podcast-next/01')).map(
+    mapFromMdxPageToMdxListItem,
+  )
 
   const page = await getMdxPage({
     contentDir: 'podcast-next/01',
     slug: params.slug,
-    bustCache: new URL(request.url).searchParams.get('bust-cache') === 'true',
   })
 
+  const index = pages.findIndex(current => current.slug === page?.slug)
+  const prevPage = pages[index + 1] ?? null
+  const nextPage = pages[index - 1] ?? null
+
   // TODO: add 404 handling
-  return json({pages, page})
+  return json({prevPage, nextPage, page})
 }
 
 interface HomeworkProps {
@@ -177,22 +180,93 @@ function Transcript({children}: {children: React.ReactNode}) {
   )
 }
 
+const imageVariants = {
+  initial: {
+    opacity: 1,
+  },
+  hover: {
+    opacity: 0.2,
+  },
+}
+const arrowVariants = {
+  initial: {
+    opacity: 0,
+  },
+  hover: {
+    scale: 2,
+    opacity: 1,
+  },
+  tapLeft: {
+    x: -5,
+    opacity: 0,
+  },
+  tapRight: {
+    x: 5,
+    opacity: 1,
+  },
+}
+
+interface PrevNextButtonProps {
+  podcast?: MdxPage
+  direction: 'prev' | 'next'
+}
+
+const MotionLink = motion(Link)
+
+function PrevNextButton({podcast, direction}: PrevNextButtonProps) {
+  if (!podcast) {
+    return <div /> // return empty div for easy alignment
+  }
+
+  const {guest} = podcast.frontmatter
+
+  return (
+    <MotionLink
+      initial="initial"
+      whileHover="hover"
+      whileFocus="hover"
+      whileTap={direction === 'next' ? 'tapRight' : 'tapLeft'}
+      animate="initial"
+      to={`/podcast/${podcast.slug}`}
+      className={clsx('flex items-center focus:outline-none', {
+        'flex-row-reverse': direction === 'next',
+      })}
+    >
+      <div className="relative rounded-lg overflow-hidden">
+        <motion.img
+          variants={imageVariants}
+          transition={{duration: 0.2}}
+          className="w-12 h-12"
+          src={guest?.image}
+          alt={guest?.name}
+        />
+        <motion.div
+          variants={arrowVariants}
+          className="text-primary absolute inset-0 flex items-center justify-center origin-center"
+        >
+          {direction === 'next' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+        </motion.div>
+      </div>
+      <div
+        className={clsx('flex flex-col', {
+          'ml-4 items-start': direction === 'prev',
+          'mr-4 items-end': direction === 'next',
+        })}
+      >
+        <p className="text-primary text-lg font-medium">{guest?.name}</p>
+        {/* TODO: get episode from somewhere */}
+        <h6 className="text-secondary text-lg font-medium">
+          {direction === 'next' ? 'Episode 12' : 'Episode 10'}
+        </h6>
+      </div>
+    </MotionLink>
+  )
+}
+
 function PodcastDetail() {
   const data = useRouteData<LoaderData>()
   const {frontmatter, code} = data.page
   const TranscriptContent = React.useMemo(() => getMdxComponent(code), [code])
-  const selectedPodcastsRef = useRef<HTMLDivElement>(null)
-  const selectedPodcastRef = useRef<HTMLAnchorElement>(null)
-  const [selectedOffset, setSelectedOffset] = useState(0)
-
-  useEffect(() => {
-    if (!selectedPodcastRef.current || !selectedPodcastsRef.current) return
-    const nextOffset =
-      selectedPodcastRef.current.getBoundingClientRect().x -
-      selectedPodcastsRef.current.getBoundingClientRect().x
-
-    setSelectedOffset(nextOffset)
-  }, [data.page.slug, selectedPodcastRef.current, selectedPodcastsRef.current])
 
   return (
     <>
@@ -206,40 +280,6 @@ function PodcastDetail() {
         </Link>
       </Grid>
 
-      <div className="hidden col-span-full mb-24 overflow-x-hidden lg:block">
-        <Grid>
-          <div
-            ref={selectedPodcastsRef}
-            className="relative flex overflow-visible transition lg:col-start-3"
-            style={{transform: `translateX(-${selectedOffset}px)`}}
-          >
-            {data.pages.map(({slug, frontmatter: {guest}}) => (
-              <Link
-                key={slug}
-                to={`/podcast/${slug}`}
-                className={clsx(
-                  'focus-ring inline-flex flex-none items-center mr-4 p-3 pr-8 text-lg font-medium rounded-full space-x-3 transition',
-                  {
-                    'text-inverse bg-inverse': slug === data.page.slug,
-                    'text-secondary bg-secondary': slug !== data.page.slug,
-                  },
-                )}
-                ref={slug === data.page.slug ? selectedPodcastRef : undefined}
-              >
-                <img
-                  className="w-10 h-10 rounded-full"
-                  src={guest?.image}
-                  alt={guest?.name}
-                />
-                <span className="whitespace-nowrap">{guest?.name}</span>
-                {/* TODO: connect episode to backend */}
-                <span className="text-blueGray-500">S3 E11</span>
-              </Link>
-            ))}
-          </div>
-        </Grid>
-      </div>
-
       <Grid as="header" className="mb-12">
         <H2 className="col-span-full lg:col-span-8 lg:col-span-8 lg:col-start-3">
           {frontmatter.title}
@@ -249,6 +289,7 @@ function PodcastDetail() {
       <Grid as="main" className="mb-24 lg:mb-96">
         <div className="col-span-full mb-16 lg:col-span-8 lg:col-start-3">
           <iframe
+            className="mb-4"
             title="player"
             height="200px"
             width="100%"
@@ -257,6 +298,11 @@ function PodcastDetail() {
             seamless
             src={`https://player.simplecast.com/${frontmatter.simpleCastId}?dark=false`}
           />
+
+          <div className="flex justify-between">
+            <PrevNextButton podcast={data.prevPage} direction="prev" />
+            <PrevNextButton podcast={data.nextPage} direction="next" />
+          </div>
         </div>
 
         <H3 className="col-span-full mb-6 lg:col-span-8 lg:col-start-3">
