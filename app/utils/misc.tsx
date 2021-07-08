@@ -8,11 +8,12 @@ import type {getEnv} from './env.server'
 
 const teams: Array<Team> = Object.values(Team)
 
+const defaultAvatarSize = 128
 function getAvatar(
   email: string,
   {
-    size = 128,
-    fallback = images.alexProfileGray.src,
+    size = defaultAvatarSize,
+    fallback = images.alexProfileGray({resize: {width: size}}).src,
   }: {size?: number; fallback?: string} = {},
 ) {
   const hash = md5(email)
@@ -23,9 +24,9 @@ function getAvatar(
 }
 
 const avatarFallbacks: Record<Team, string> = {
-  BLUE: images.alexProfileBlue.src,
-  RED: images.alexProfileRed.src,
-  YELLOW: images.alexProfileYellow.src,
+  BLUE: images.alexProfileBlue({resize: {width: defaultAvatarSize}}).src,
+  RED: images.alexProfileRed({resize: {width: defaultAvatarSize}}).src,
+  YELLOW: images.alexProfileYellow({resize: {width: defaultAvatarSize}}).src,
 }
 
 function getAvatarForUser({

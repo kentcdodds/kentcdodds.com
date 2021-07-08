@@ -141,8 +141,7 @@ function BlogHome() {
         <div className="col-span-full lg:col-span-6 lg:col-start-7 lg:row-span-2">
           <img
             className="max-h-[50vh] mx-auto lg:max-w-md"
-            src={images.skis.src}
-            alt={images.skis.alt}
+            {...images.skis()}
           />
         </div>
 
@@ -209,9 +208,8 @@ function BlogHome() {
         {posts.length === 0 ? (
           <div className="flex flex-col col-span-full items-center">
             <img
-              src={images.bustedOnewheel.src}
-              alt={images.bustedOnewheel.alt}
               className="mt-24 w-full max-w-lg h-auto"
+              {...images.bustedOnewheel()}
             />
             <H3 variant="secondary" className="mt-24 max-w-lg">
               Looks like there are no articles for this topic. Use the tags
@@ -241,7 +239,7 @@ function BlogHome() {
 
       <Grid>
         <div className="col-span-full lg:col-span-5">
-          <img src={images.kayak.src} alt={images.kayak.alt} />
+          <img {...images.kayak()} />
         </div>
 
         <div className="col-span-full mt-4 space-y-4 lg:col-span-6 lg:col-start-7 lg:mt-0">

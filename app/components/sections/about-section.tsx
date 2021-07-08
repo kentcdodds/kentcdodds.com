@@ -12,19 +12,14 @@ function AboutSection() {
           <div className="aspect-h-4 aspect-w-3">
             <img
               className="rounded-lg object-cover"
-              src={images.kentSnowSports.src}
-              alt={images.kentSnowSports.alt}
+              {...images.kentSnowSports()}
             />
           </div>
         </div>
       </div>
 
       <div className="flex flex-col col-span-full justify-center space-y-12 lg:col-span-5 lg:col-start-8 lg:mt-0">
-        <img
-          className="self-start w-auto h-48"
-          src={images.snowboard.src}
-          alt={images.snowboard.alt}
-        />
+        <img className="self-start w-auto h-48" {...images.snowboard()} />
 
         <H2>Big extreme sports enthusiast.</H2>
         <H2 variant="secondary" as="p">

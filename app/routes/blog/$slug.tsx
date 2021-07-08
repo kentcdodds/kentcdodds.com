@@ -178,9 +178,8 @@ function ArticleFooter() {
       </div>
       <div className="col-span-full lg:col-span-2 lg:col-start-3">
         <img
-          src={images.kentTransparentProfile.src}
-          alt={images.kentTransparentProfile.alt}
           className="mb-8 w-32 rounded-lg"
+          {...images.kentTransparentProfile()}
         />
       </div>
       <div className="lg:col-start:5 col-span-full lg:col-span-6">

@@ -193,7 +193,7 @@ function TeamOption({team: value, error, selected}: TeamOptionProps) {
           value={value}
           aria-describedby={error ? 'team-error' : undefined}
         />
-        <img className="block mb-16" src={team.image.src} alt="" />
+        <img className="block mb-16" {...team.image()} />
         <H6>{team.label}</H6>
       </label>
     </div>
@@ -333,8 +333,7 @@ export default function NewAccount() {
           <div className="aspect-h-6 aspect-w-4">
             <img
               className="rounded-lg object-cover"
-              src={images.kentPalmingSoccerBall.src}
-              alt={images.kentPalmingSoccerBall.alt}
+              {...images.kentPalmingSoccerBall()}
             />
           </div>
         </div>

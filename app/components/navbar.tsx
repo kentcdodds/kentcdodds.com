@@ -71,11 +71,11 @@ function MenuButton() {
   )
 }
 
-const alexProfiles: Record<OptionalTeam, typeof images['alexProfileGray']> = {
-  RED: images.alexProfileRed,
-  BLUE: images.alexProfileBlue,
-  YELLOW: images.alexProfileYellow,
-  UNKNOWN: images.alexProfileGray,
+const alexProfiles: Record<OptionalTeam, {src: string; alt: string}> = {
+  RED: images.alexProfileRed(),
+  BLUE: images.alexProfileBlue(),
+  YELLOW: images.alexProfileYellow(),
+  UNKNOWN: images.alexProfileGray(),
 }
 
 function Navbar() {

@@ -6,12 +6,13 @@ import {Grid} from '../grid'
 import {VideoCard} from '../video-card'
 
 function IntroductionSection() {
+  const {src: imageUrl, alt: imageAlt} = images.kentRidingOnewheelOutdoorsFast()
   return (
     <Grid>
       <div className="col-span-full lg:col-span-4">
         <VideoCard
-          imageUrl={images.kentRidingOnewheelOutdoorsFast.src}
-          imageAlt={images.kentRidingOnewheelOutdoorsFast.alt}
+          imageUrl={imageUrl}
+          imageAlt={imageAlt}
           videoUrl="/video.mp4"
           title="Hi, I'm Kent C. Dodds"
           description="Introduction video 1:42"
