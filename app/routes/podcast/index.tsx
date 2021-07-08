@@ -73,7 +73,11 @@ function PodcastHome() {
     <div>
       <Grid className="grid-rows-max-content mb-36 mt-16">
         <div className="col-span-full mb-12 lg:col-span-6 lg:col-start-7 lg:row-span-2 lg:mb-0">
-          <img className="object-contain" {...images.kayak()} />
+          <img
+            className="object-contain"
+            src={images.kayak()}
+            alt={images.kayak.alt}
+          />
         </div>
 
         <div className="col-span-full lg:col-span-6 lg:row-start-1">
