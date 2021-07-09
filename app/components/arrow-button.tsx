@@ -64,7 +64,8 @@ function ArrowLink({
   direction = 'right',
   textSize = 'medium',
   to,
-}: ArrowButtonProps & Pick<LinkProps, 'to'>) {
+  className,
+}: ArrowButtonProps & Pick<LinkProps, 'to' | 'className'>) {
   return (
     <MotionLink
       className={clsx(
@@ -73,6 +74,7 @@ function ArrowLink({
           'text-xl': textSize === 'medium',
           'text-lg': textSize === 'small',
         },
+        className,
       )}
       to={to}
       initial="initial"
