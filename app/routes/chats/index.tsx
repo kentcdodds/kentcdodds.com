@@ -1,13 +1,12 @@
 import * as React from 'react'
 import {json, useRouteData} from 'remix'
-
 import clsx from 'clsx'
 import {Tab, TabList, TabPanel, TabPanels, Tabs} from '@reach/tabs'
-import {Link} from 'react-router-dom'
+import {Outlet} from 'react-router-dom'
+import type {KCDLoader, MdxListItem} from 'types'
 import {Grid} from '../../components/grid'
 import {images} from '../../images'
 import {H2, H6} from '../../components/typography'
-import type {KCDLoader, MdxListItem} from '../../../types'
 import {AppleIcon} from '../../components/icons/apple-icon'
 import {externalLinks} from '../../external-links'
 import {RssIcon} from '../../components/icons/rss-icon'
@@ -15,25 +14,20 @@ import {SpotifyIcon} from '../../components/icons/spotify-icon'
 import {GoogleIcon} from '../../components/icons/google-icon'
 import {ChevronDownIcon} from '../../components/icons/chevron-down-icon'
 import {BlogSection} from '../../components/sections/blog-section'
-import {articles} from '../../../storybook/stories/fixtures'
-import {
-  getMdxPagesInDirectory,
-  mapFromMdxPageToMdxListItem,
-} from '../../utils/mdx'
-import {FeaturedSection} from '../../components/sections/featured-section'
+import {getBlogRecommendations} from '../../utils/blog.server'
+// import {FeaturedSection} from '../../components/sections/featured-section'
 
 type LoaderData = {
-  podcasts: Array<MdxListItem>
   seasons: Array<number>
+  blogRecommendations: Array<MdxListItem>
 }
 
 export const loader: KCDLoader = async () => {
+  const blogRecommendations = (await getBlogRecommendations()).slice(0, 3)
   // TODO: this should support the season dirs
-  const pages = await getMdxPagesInDirectory('podcast-next/01')
-
   const data: LoaderData = {
-    podcasts: pages.map(mapFromMdxPageToMdxListItem),
     seasons: [3, 2, 1],
+    blogRecommendations,
   }
 
   return json(data)
@@ -64,10 +58,9 @@ function PodcastAppLink({
 
 function PodcastHome() {
   const data = useRouteData<LoaderData>()
-  console.dir({data})
-  // TODO: save state in url, like the filters on the blog?
 
-  const featured = data.podcasts[0]
+  // TODO: load the latest podcast episode:
+  const featured = null
 
   return (
     <div>
@@ -118,7 +111,8 @@ function PodcastHome() {
       </Grid>
 
       {/* TODO: find a place to take season, episode and duration from */}
-      {featured ? (
+      {/* TODO: fix this */}
+      {/* {featured ? (
         <div className="mb-48">
           <FeaturedSection
             cta="Listen to this episode"
@@ -130,7 +124,7 @@ function PodcastHome() {
             imageAlt={featured.frontmatter.guest!.name}
           />
         </div>
-      ) : null}
+      ) : null} */}
 
       <Tabs as={Grid} className="mb-24 lg:mb-64">
         <TabList className="flex flex-col col-span-full items-start mb-20 bg-transparent lg:flex-row lg:space-x-12">
@@ -171,44 +165,14 @@ function PodcastHome() {
               key={season}
               className="border-t border-gray-200 dark:border-gray-600"
             >
-              {/* TODO: support seasons */}
-              {data.podcasts.map((podcast, idx) => (
-                <Link key={podcast.slug} to={podcast.slug}>
-                  <Grid
-                    nested
-                    className="group relative py-10 border-b border-gray-200 dark:border-gray-600 lg:py-5"
-                  >
-                    <div className="bg-secondary absolute -inset-px group-hover:block hidden -mx-6 rounded-lg" />
-
-                    <img
-                      className="relative flex-none col-span-1 rounded-lg"
-                      src={podcast.frontmatter.guest?.image}
-                      alt={podcast.frontmatter.guest?.name}
-                    />
-                    <div className="text-primary relative flex flex-col col-span-3 md:col-span-7 lg:flex-row lg:col-span-11 lg:items-center lg:justify-between">
-                      <h4 className="mb-3 text-xl font-medium lg:mb-0">
-                        <span className="inline-block w-10 lg:text-lg">
-                          {/* TODO: support episode, remove this idx fallback */}
-                          {`${(podcast.frontmatter.episode ?? idx + 1)
-                            .toString()
-                            .padStart(2, '0')}.`}
-                        </span>
-                        {podcast.frontmatter.title}
-                      </h4>
-                      <div className="text-gray-400 text-lg font-medium">
-                        {podcast.duration}
-                      </div>
-                    </div>
-                  </Grid>
-                </Link>
-              ))}
+              <Outlet />
             </TabPanel>
           ))}
         </TabPanels>
       </Tabs>
 
       <BlogSection
-        articles={articles}
+        articles={data.blogRecommendations}
         title="Looking for more content?"
         description="Have a look at these articles."
       />

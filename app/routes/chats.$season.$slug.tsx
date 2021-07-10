@@ -1,59 +1,56 @@
 import React, {useState} from 'react'
 import {useRouteData, json} from 'remix'
 import {Link} from 'react-router-dom'
-import type {KCDLoader, MdxPage} from 'types'
+import type {KCDLoader, CWKEpisode, CWKListItem} from 'types'
 import clsx from 'clsx'
 import {motion} from 'framer-motion'
-import {
-  getMdxPage,
-  getMdxComponent,
-  getMdxPagesInDirectory,
-  mapFromMdxPageToMdxListItem,
-} from '../../utils/mdx'
-import {H2, H3, H6, Paragraph} from '../../components/typography'
-import {Grid} from '../../components/grid'
-import {ArrowIcon} from '../../components/icons/arrow-icon'
-import {ClipboardIcon} from '../../components/icons/clipboard-icon'
-import {CheckIcon} from '../../components/icons/check-icon'
-import {GithubIcon} from '../../components/icons/github-icon'
-import {TwitterIcon} from '../../components/icons/twitter-icon'
-import {PlusIcon} from '../../components/icons/plus-icon'
-import {FeaturedSection} from '../../components/sections/featured-section'
-import {ArrowLink} from '../../components/arrow-button'
-import {ChevronRightIcon} from '../../components/icons/chevron-right-icon'
-import {ChevronLeftIcon} from '../../components/icons/chevron-left-icon'
+import {getSeasons} from '../utils/simplecast.server'
+import {H2, H3, H6, Paragraph} from '../components/typography'
+import {Grid} from '../components/grid'
+import {ArrowIcon} from '../components/icons/arrow-icon'
+import {ClipboardIcon} from '../components/icons/clipboard-icon'
+import {CheckIcon} from '../components/icons/check-icon'
+import {GithubIcon} from '../components/icons/github-icon'
+import {TwitterIcon} from '../components/icons/twitter-icon'
+import {PlusIcon} from '../components/icons/plus-icon'
+import {FeaturedSection} from '../components/sections/featured-section'
+import {ArrowLink} from '../components/arrow-button'
+import {ChevronRightIcon} from '../components/icons/chevron-right-icon'
+import {ChevronLeftIcon} from '../components/icons/chevron-left-icon'
+import {listify} from '../utils/misc'
 
 type LoaderData = {
-  prevPage: MdxPage
-  nextPage: MdxPage
-  page: MdxPage
+  prevEpisode: CWKListItem | null
+  nextEpisode: CWKListItem | null
+  episode: CWKEpisode
 }
 
-export const loader: KCDLoader<{slug: string}> = async ({params}) => {
-  // TODO: this should support the season dirs
-  // TODO: sort pages descending
-  const pages = (await getMdxPagesInDirectory('podcast-next/01')).map(
-    mapFromMdxPageToMdxListItem,
-  )
+export const loader: KCDLoader<{slug: string; season: string}> = async ({
+  params,
+}) => {
+  const episodeNumber = Number(params.slug.match(/(\d+)-/)?.[1])
+  const seasonNumber = Number(params.season)
 
-  const page = await getMdxPage({
-    contentDir: 'podcast-next/01',
-    slug: params.slug,
-  })
+  const seasons = await getSeasons()
+  const season = seasons.find(s => s.seasonNumber === seasonNumber)
+  const episode = season?.episodes.find(e => e.episodeNumber === episodeNumber)
+  if (!episode) {
+    throw new Error(
+      `oh no. no episode for ${seasonNumber}-${episodeNumber}-${params.slug}`,
+    )
+  }
 
-  const index = pages.findIndex(current => current.slug === page?.slug)
-  const prevPage = pages[index + 1] ?? null
-  const nextPage = pages[index - 1] ?? null
+  const data: LoaderData = {prevEpisode: null, nextEpisode: null, episode}
 
   // TODO: add 404 handling
-  return json({prevPage, nextPage, page})
+  return json(data)
 }
 
-interface HomeworkProps {
-  todos: string[]
-}
-
-function Homework({todos = []}: HomeworkProps) {
+function Homework({
+  homeworkHTMLs = [],
+}: {
+  homeworkHTMLs: CWKEpisode['homeworkHTMLs']
+}) {
   return (
     <div className="bg-secondary p-10 pb-16 w-full rounded-lg">
       <H6 className="inline-flex items-center mb-8 space-x-4">
@@ -62,9 +59,9 @@ function Homework({todos = []}: HomeworkProps) {
       </H6>
 
       <ul className="text-primary">
-        {todos.map(todo => (
+        {homeworkHTMLs.map(homeworkHTML => (
           <li
-            key={todo}
+            key={homeworkHTML}
             className="flex pb-12 pt-8 border-t border-gray-200 dark:border-gray-600"
           >
             <CheckIcon
@@ -72,7 +69,10 @@ function Homework({todos = []}: HomeworkProps) {
               size={24}
             />
 
-            <p className="text-lg font-medium">{todo}</p>
+            <div
+              className="text-lg font-medium"
+              dangerouslySetInnerHTML={{__html: homeworkHTML}}
+            />
           </li>
         ))}
       </ul>
@@ -80,11 +80,7 @@ function Homework({todos = []}: HomeworkProps) {
   )
 }
 
-interface ResourcesProps {
-  resources: {url: string; name: string}[]
-}
-
-function Resources({resources = []}: ResourcesProps) {
+function Resources({resources = []}: {resources: CWKEpisode['resources']}) {
   return (
     <div className="bg-secondary p-10 pb-16 rounded-lg">
       <h6 className="text-primary inline-flex items-center mb-8 text-xl font-medium">
@@ -107,42 +103,49 @@ function Resources({resources = []}: ResourcesProps) {
   )
 }
 
-interface GuestProps {
-  guest: Exclude<MdxPage['frontmatter']['guest'], undefined>
-}
-
-function Guest({guest}: GuestProps) {
+function Guests({episode}: {episode: CWKEpisode}) {
   return (
-    <div className="text-secondary bg-secondary flex flex-col p-10 pb-16 rounded-lg md:flex-row md:items-center md:pb-12">
-      <img
-        src={guest.image}
-        alt={guest.name}
-        className="flex-none mb-6 mr-8 w-20 h-20 rounded-lg object-cover md:mb-0"
-      />
-      <div className="mb-6 w-full md:flex-auto md:mb-0">
-        <h6 className="text-primary mb-2 text-xl font-medium leading-none">
-          {guest.name}
-        </h6>
-        <p className="text-xl leading-none">{guest.company}</p>
-      </div>
-      <div className="flex flex-none space-x-4">
-        {guest.twitter ? (
-          <a href={guest.twitter} aria-label="twitter profile">
-            <TwitterIcon />
-          </a>
-        ) : null}
+    <>
+      {episode.guests.map(guest => (
+        <div
+          key={guest.name}
+          className="text-secondary bg-secondary flex flex-col p-10 pb-16 rounded-lg md:flex-row md:items-center md:pb-12"
+        >
+          <img
+            src={episode.image}
+            alt={guest.name}
+            className="flex-none mb-6 mr-8 w-20 h-20 rounded-lg object-cover md:mb-0"
+          />
+          <div className="mb-6 w-full md:flex-auto md:mb-0">
+            <h6 className="text-primary mb-2 text-xl font-medium leading-none">
+              {guest.name}
+            </h6>
+            <p className="text-xl leading-none">{guest.company}</p>
+          </div>
+          <div className="flex flex-none space-x-4">
+            {guest.twitter ? (
+              <a href={guest.twitter} aria-label="twitter profile">
+                <TwitterIcon />
+              </a>
+            ) : null}
 
-        {guest.github ? (
-          <a href={guest.github} aria-label="github profile">
-            <GithubIcon />
-          </a>
-        ) : null}
-      </div>
-    </div>
+            {guest.github ? (
+              <a href={guest.github} aria-label="github profile">
+                <GithubIcon />
+              </a>
+            ) : null}
+          </div>
+        </div>
+      ))}
+    </>
   )
 }
 
-function Transcript({children}: {children: React.ReactNode}) {
+function Transcript({
+  transcriptHTML,
+}: {
+  transcriptHTML: CWKEpisode['transcriptHTML']
+}) {
   const [collapsed, setCollapsed] = useState(true)
 
   return (
@@ -159,7 +162,7 @@ function Transcript({children}: {children: React.ReactNode}) {
           },
         )}
       >
-        {children}
+        <div dangerouslySetInnerHTML={{__html: transcriptHTML}} />
 
         {collapsed ? (
           <div className="absolute bottom-0 w-full h-48 bg-gradient-to-b from-transparent dark:to-gray-800 to-white" />
@@ -206,19 +209,18 @@ const arrowVariants = {
   },
 }
 
-interface PrevNextButtonProps {
-  podcast?: MdxPage
-  direction: 'prev' | 'next'
-}
-
 const MotionLink = motion(Link)
 
-function PrevNextButton({podcast, direction}: PrevNextButtonProps) {
-  if (!podcast) {
+function PrevNextButton({
+  episodeListItem,
+  direction,
+}: {
+  episodeListItem?: CWKListItem | null
+  direction: 'prev' | 'next'
+}) {
+  if (!episodeListItem) {
     return <div /> // return empty div for easy alignment
   }
-
-  const {guest} = podcast.frontmatter
 
   return (
     <MotionLink
@@ -227,7 +229,7 @@ function PrevNextButton({podcast, direction}: PrevNextButtonProps) {
       whileFocus="hover"
       whileTap={direction === 'next' ? 'tapRight' : 'tapLeft'}
       animate="initial"
-      to={`/podcast/${podcast.slug}`}
+      to={`/podcast/${episodeListItem.slug}`}
       className={clsx('flex items-center focus:outline-none', {
         'flex-row-reverse': direction === 'next',
       })}
@@ -237,8 +239,8 @@ function PrevNextButton({podcast, direction}: PrevNextButtonProps) {
           variants={imageVariants}
           transition={{duration: 0.2}}
           className="w-12 h-12"
-          src={guest?.image}
-          alt={guest?.name}
+          src={episodeListItem.image}
+          alt={episodeListItem.title}
         />
         <motion.div
           variants={arrowVariants}
@@ -253,10 +255,11 @@ function PrevNextButton({podcast, direction}: PrevNextButtonProps) {
           'mr-4 items-end': direction === 'next',
         })}
       >
-        <p className="text-primary text-lg font-medium">{guest?.name}</p>
-        {/* TODO: get episode from somewhere */}
+        <p className="text-primary text-lg font-medium">
+          {episodeListItem.guests[0]?.name}
+        </p>
         <h6 className="text-secondary text-lg font-medium">
-          {direction === 'next' ? 'Episode 12' : 'Episode 10'}
+          Episode {episodeListItem.title}
         </h6>
       </div>
     </MotionLink>
@@ -264,9 +267,7 @@ function PrevNextButton({podcast, direction}: PrevNextButtonProps) {
 }
 
 function PodcastDetail() {
-  const data = useRouteData<LoaderData>()
-  const {frontmatter, code} = data.page
-  const TranscriptContent = React.useMemo(() => getMdxComponent(code), [code])
+  const {episode, nextEpisode, prevEpisode} = useRouteData<LoaderData>()
 
   return (
     <>
@@ -281,8 +282,8 @@ function PodcastDetail() {
       </Grid>
 
       <Grid as="header" className="mb-12">
-        <H2 className="col-span-full lg:col-span-8 lg:col-span-8 lg:col-start-3">
-          {frontmatter.title}
+        <H2 className="col-span-full lg:col-span-8 lg:col-start-3">
+          {episode.title}
         </H2>
       </Grid>
 
@@ -296,34 +297,35 @@ function PodcastDetail() {
             frameBorder="no"
             scrolling="no"
             seamless
-            src={`https://player.simplecast.com/${frontmatter.simpleCastId}?dark=false`}
+            src={`https://player.simplecast.com/${episode.simpleCastId}?dark=false`}
           />
 
           <div className="flex justify-between">
-            <PrevNextButton podcast={data.prevPage} direction="prev" />
-            <PrevNextButton podcast={data.nextPage} direction="next" />
+            <PrevNextButton episodeListItem={prevEpisode} direction="prev" />
+            <PrevNextButton episodeListItem={nextEpisode} direction="next" />
           </div>
         </div>
 
-        <H3 className="col-span-full mb-6 lg:col-span-8 lg:col-start-3">
-          {frontmatter.description}
-        </H3>
+        <H3
+          className="col-span-full mb-6 lg:col-span-8 lg:col-start-3"
+          dangerouslySetInnerHTML={{__html: episode.descriptionHTML}}
+        />
 
-        <Paragraph className="col-span-full mb-10 space-y-6 lg:col-span-8 lg:col-start-3">
-          {frontmatter.summary}
-        </Paragraph>
+        <Paragraph
+          as="div"
+          className="col-span-full mb-10 space-y-6 lg:col-span-8 lg:col-start-3"
+          dangerouslySetInnerHTML={{__html: episode.summaryHTML}}
+        />
 
         <div className="col-span-full space-y-4 lg:col-span-8 lg:col-start-3">
-          {frontmatter.homework && frontmatter.homework.length > 0 ? (
-            <Homework todos={frontmatter.homework} />
+          {episode.homeworkHTMLs.length > 0 ? (
+            <Homework homeworkHTMLs={episode.homeworkHTMLs} />
           ) : null}
-          {frontmatter.resources && frontmatter.resources.length > 0 ? (
-            <Resources resources={frontmatter.resources} />
+          {episode.resources.length > 0 ? (
+            <Resources resources={episode.resources} />
           ) : null}
-          {frontmatter.guest ? <Guest guest={frontmatter.guest} /> : null}
-          <Transcript>
-            <TranscriptContent />
-          </Transcript>
+          <Guests episode={episode} />
+          <Transcript transcriptHTML={episode.transcriptHTML} />
         </div>
       </Grid>
 
@@ -344,10 +346,10 @@ function PodcastDetail() {
 
       {/* TODO: get a related episode from the backend */}
       <FeaturedSection
-        imageAlt={frontmatter.guest?.name}
-        imageUrl={frontmatter.guest?.image}
-        title={frontmatter.title}
-        slug={data.page.slug}
+        imageAlt={listify(episode.guests.map(g => g.name))}
+        imageUrl={episode.image}
+        title={episode.title}
+        slug={episode.slug}
         subTitle="Season 3, Episode 2 — 36:01"
         caption="Related episode"
         cta="Listen to this episode"

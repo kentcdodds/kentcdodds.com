@@ -43,6 +43,7 @@
     "setup": "npm install && npm --prefix ./storybook run setup && docker compose up -d && prisma migrate reset --force && npm run validate && npm run prime-cache:mocks && npm run test:e2e:run"
   },
   "dependencies": {
+    "@cloudinary/base": "^1.0.0-beta.3",
     "@ffmpeg/core": "^0.10.0",
     "@ffmpeg/ffmpeg": "^0.10.1",
     "@kentcdodds/md-temp": "^1.1.0",
@@ -66,8 +67,10 @@
     "date-fns": "^2.22.1",
     "dotenv": "^10.0.0",
     "framer-motion": "^4.1.17",
+    "hast-util-to-html": "^7.1.3",
     "match-sorter": "^6.3.0",
     "md5-hash": "^1.0.1",
+    "mdast-util-to-hast": "^10.2.0",
     "mdx-bundler": "^4.1.1",
     "node-fetch": "^2.6.1",
     "p-limit": "^2.3.0",
@@ -83,6 +86,8 @@
     "redis": "^3.1.2",
     "rehype-document": "^5.1.0",
     "rehype-format": "^3.1.0",
+    "rehype-parse": "^7.0.1",
+    "rehype-remark": "^8.1.1",
     "rehype-stringify": "^8.0.0",
     "remark-gfm": "^1.0.0",
     "remark-parse": "^9.0.0",
@@ -93,7 +98,8 @@
     "unified": "^9.2.1",
     "unist-util-visit": "2.0.3",
     "uuid": "^8.3.2",
-    "xstate": "^4.20.2"
+    "xstate": "^4.20.2",
+    "yaml": "^1.10.2"
   },
   "devDependencies": {
     "@cld-apis/types": "^0.1.3",
@@ -115,6 +121,7 @@
     "@types/react-dom": "^17.0.8",
     "@types/redis": "^2.8.30",
     "@types/uuid": "^8.3.1",
+    "@types/yaml": "^1.9.7",
     "autoprefixer": "^10.2.6",
     "cross-env": "^7.0.3",
     "cypress": "^7.6.0",

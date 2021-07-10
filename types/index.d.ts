@@ -16,7 +16,7 @@ declare global {
 type NonNullProperties<Type> = {[Key in keyof Type]: Exclude<Type[Key], null>}
 type Await<Type> = Type extends Promise<infer Value> ? Await<Value> : Type
 
-type MdxListItem = {
+type MdxPage = {
   slug: string
   readTime?: ReturnType<typeof calculateReadingTime>
   duration?: string
@@ -46,32 +46,59 @@ type MdxListItem = {
       keywords?: Array<string>
       [key as string]: string
     }
-
-    // Podcast meta
-    summary?: string
-    season?: number
-    episode?: number
-    homework?: Array<string>
-    resources?: Array<{
-      name: string
-      url: string
-    }>
-    guest?: {
-      name: string
-      image: string
-      company?: string
-      github?: string
-      twitter?: string
-    }
-    simpleCastId?: string
   }
 }
 
 /**
- * This is a separate type from MdxListItem because the code string is often
+ * This is a separate type from MdxPage because the code string is often
  * pretty big and the pages that simply list the pages shouldn't include the code.
  */
-type MdxPage = MdxListItem & {code: string}
+type MdxListItem = Omit<MdxPage, 'code'>
+
+type Link = {
+  name: string
+  url: string
+}
+/**
+ * Chats with Kent Podcast Episode
+ */
+type CWKEpisode = {
+  slug: string
+  title: string
+  meta?: {
+    keywords?: Array<string>
+    [key as string]: string
+  }
+  descriptionHTML: string
+  summaryHTML: string
+  seasonNumber: number
+  episodeNumber: number
+  homeworkHTMLs: Array<string>
+  resources: Array<Link>
+  image: string
+  guests: Array<{
+    name: string
+    company?: string
+    github?: string
+    twitter?: string
+  }>
+  duration: number
+  transcriptHTML: string
+  simpleCastId: string
+}
+
+/**
+ * Chats with Kent Podcast List Item
+ */
+type CWKListItem = Omit<
+  CWKEpisode,
+  'homeworkHTMLs' | 'resources' | 'summaryHTML' | 'transcriptHTML' | 'meta'
+>
+
+type CWKSeason = {
+  seasonNumber: number
+  episodes: Array<CWKListItem>
+}
 
 type KCDLoader<Params extends Record<string, string> = Record<string, string>> =
   (
@@ -97,6 +124,9 @@ export {
   Role,
   MdxPage,
   MdxListItem,
+  CWKEpisode,
+  CWKListItem,
+  CWKSeason,
   KCDLoader,
   KCDAction,
   GitHubFile,

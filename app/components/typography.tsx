@@ -1,12 +1,18 @@
 import * as React from 'react'
 import clsx from 'clsx'
 
-interface TitleProps {
+type TitleProps = {
   variant?: 'primary' | 'secondary'
   as?: React.ElementType
-  children: React.ReactNode
   className?: string
-}
+} & (
+  | {children: React.ReactNode}
+  | {
+      dangerouslySetInnerHTML: {
+        __html: string
+      }
+    }
+)
 
 const fontSize = {
   h1: 'leading-tight text-4xl md:text-5xl',
@@ -26,14 +32,15 @@ function Title({
   variant = 'primary',
   size,
   as,
-  children,
   className,
+  ...rest
 }: TitleProps & {size: keyof typeof fontSize}) {
   const Tag = as ?? size
   return (
-    <Tag className={clsx(fontSize[size], titleColors[variant], className)}>
-      {children}
-    </Tag>
+    <Tag
+      className={clsx(fontSize[size], titleColors[variant], className)}
+      {...rest}
+    />
   )
 }
 
@@ -61,22 +68,16 @@ function H6(props: TitleProps) {
   return <Title {...props} size="h6" />
 }
 
-interface ParagraphProps {
-  children: React.ReactNode
+type ParagraphProps = {
   className?: string
-}
+  as?: React.ElementType
+} & ({children: React.ReactNode} | {dangerouslySetInnerHTML: {__html: string}})
 
-function Paragraph({children, className}: ParagraphProps) {
-  return (
-    <p
-      className={clsx(
-        'dark:text-blueGray-500 text-gray-500 text-lg',
-        className,
-      )}
-    >
-      {children}
-    </p>
-  )
+function Paragraph({className, as = 'p', ...rest}: ParagraphProps) {
+  return React.createElement(as, {
+    className: clsx('dark:text-blueGray-500 text-gray-500 text-lg', className),
+    ...rest,
+  })
 }
 
 export {H1, H2, H3, H4, H5, H6, Paragraph}

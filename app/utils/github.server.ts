@@ -113,6 +113,22 @@ async function downloadDirectory(dir: string): Promise<Array<GitHubFile>> {
 }
 
 /**
+ * Download file by it's path
+ */
+async function downloadFileByPath(path: string) {
+  const {data} = (await octokit.request(
+    'GET /repos/{owner}/{repo}/contents/{path}',
+    {
+      owner: config.contentSrc.owner,
+      repo: config.contentSrc.repo,
+      path,
+    },
+  )) as {data: {encoding: Parameters<typeof Buffer.from>['1']; content: string}}
+  const encoding = data.encoding
+  return Buffer.from(data.content, encoding).toString()
+}
+
+/**
  *
  * @param sha the hash for the file (retrieved via `downloadDirList`)
  * @returns a promise that resolves to a string of the contents of the file
@@ -153,4 +169,4 @@ async function downloadDirList(path: string) {
   return data
 }
 
-export {downloadMdxFileOrDirectory, downloadDirList}
+export {downloadMdxFileOrDirectory, downloadDirList, downloadFileByPath}

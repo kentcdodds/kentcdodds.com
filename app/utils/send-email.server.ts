@@ -1,9 +1,4 @@
-import unified from 'unified'
-import markdown from 'remark-parse'
-import remark2rehype from 'remark-rehype'
-import doc from 'rehype-document'
-import format from 'rehype-format'
-import rehypStringify from 'rehype-stringify'
+import {markdownToHtmlDocument} from './markdown.server'
 
 let mailgunDomain = 'mg.example.com'
 if (process.env.MAILGUN_DOMAIN) {
@@ -16,18 +11,6 @@ if (process.env.MAILGUN_SENDING_KEY) {
   mailgunSendingKey = process.env.MAILGUN_SENDING_KEY
 } else if (process.env.NODE_ENV === 'production') {
   throw new Error('MAILGUN_SENDING_KEY is required')
-}
-
-async function markdownToHtml(markdownString: string) {
-  const {contents} = await unified()
-    .use(markdown)
-    .use(remark2rehype)
-    .use(doc)
-    .use(format)
-    .use(rehypStringify)
-    .process(markdownString)
-
-  return contents.toString()
 }
 
 type MailgunMessage = {
@@ -43,7 +26,7 @@ async function sendEmail({to, from, subject, text, html}: MailgunMessage) {
 
   // if they didn't specify it and it's not
   if (html === undefined) {
-    html = await markdownToHtml(text)
+    html = await markdownToHtmlDocument(text)
   } else if (html === null) {
     html = text
   }
@@ -102,7 +85,7 @@ P.S. If you did not request this email, you can safely ignore it.
     to: emailAddress,
     subject: `Here's your Magic ✨ sign-in link for kentcdodds.com`,
     text: body,
-    html: await markdownToHtml(body),
+    html: await markdownToHtmlDocument(body),
   }
 
   await sendEmail(message)
