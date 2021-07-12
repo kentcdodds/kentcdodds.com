@@ -83,6 +83,9 @@ module.exports = {
       height: {
         hero: 'calc(100vh - 10rem)', // screen - navbar height (lg: only)
       },
+      maxHeight: {
+        '50vh': '50vh', // max height for (non large) hero images
+      },
       rotate: {
         '-135': '-135deg',
         135: '135deg',

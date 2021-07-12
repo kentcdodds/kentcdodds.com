@@ -9,10 +9,11 @@ import {
 } from '../../utils/mdx'
 import {Grid} from '../../components/grid'
 import {images} from '../../images'
-import {H2, H6} from '../../components/typography'
+import {H6} from '../../components/typography'
 import {Tag} from '../../components/tag'
 import {CourseSection} from '../../components/sections/course-section'
 import {WorkshopCard} from '../../components/workshop-card'
+import {HeroSection} from '../../components/sections/hero-section'
 
 type LoaderData = {
   workshops: Array<MdxListItem>
@@ -43,25 +44,14 @@ function WorkshopsHome() {
     : data.workshops
 
   return (
-    <div>
-      <Grid className="grid-rows-max-content mb-36 mt-16">
-        <div className="col-span-full lg:col-span-6 lg:col-start-7 lg:row-span-2">
-          <img
-            className="object-cover"
-            src={images.teslaX()}
-            alt={images.teslaX.alt}
-          />
-        </div>
-
-        <div className="col-span-full lg:col-span-6 lg:row-start-1">
-          <div className="space-y-2 lg:max-w-sm">
-            <H2>Check out these remote workshops.</H2>
-            <H2 variant="secondary" as="p">
-              See our upcoming events below.
-            </H2>
-          </div>
-        </div>
-      </Grid>
+    <>
+      <HeroSection
+        title="Check out these remote workshops."
+        subtitle="See our upcoming events below."
+        imageUrl={images.teslaX()}
+        imageAlt={images.teslaX.alt}
+        imageSize="large"
+      />
 
       <Grid className="mb-14">
         <div className="flex flex-wrap col-span-full -mb-4 -mr-4 lg:col-span-10">
@@ -98,7 +88,7 @@ function WorkshopsHome() {
       </Grid>
 
       <CourseSection />
-    </div>
+    </>
   )
 }
 

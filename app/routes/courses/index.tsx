@@ -7,6 +7,7 @@ import {H2, H6, Paragraph} from '../../components/typography'
 import type {KCDLoader} from '../../../types'
 import {ArrowButton, ArrowLink} from '../../components/arrow-button'
 import {CourseCard, SmallCourseCard} from '../../components/course-card'
+import {HeroSection} from '../../components/sections/hero-section'
 
 export const loader: KCDLoader = async () => {
   return json({})
@@ -43,27 +44,15 @@ const courses = courseTitles.map((title, idx) => ({
   courseUrl: `/${title.toLowerCase().replace(/ /g, '-')}`,
 }))
 
-function PodcastHome() {
+function CoursesHome() {
   return (
-    <div>
-      <Grid className="grid-rows-max-content mb-24 mt-16 lg:mb-36">
-        <div className="col-span-full mb-12 px-10 lg:col-span-5 lg:col-start-7 lg:mb-0">
-          <img
-            className="object-contain"
-            src={images.onewheel()}
-            alt={images.onewheel.alt}
-          />
-        </div>
-
-        <div className="flex col-span-full items-center lg:col-span-6 lg:row-start-1">
-          <div className="space-y-3 lg:max-w-sm lg:space-y-6">
-            <H2>Increase your value as a developer.</H2>
-            <H2 variant="secondary" as="p">
-              Invest in yourself with a dev course.
-            </H2>
-          </div>
-        </div>
-      </Grid>
+    <>
+      <HeroSection
+        title="Increase your value as a developer."
+        subtitle="Invest in yourself with a dev course."
+        imageUrl={images.onewheel()}
+        imageAlt={images.onewheel.alt}
+      />
 
       <Grid as="main" className="mb-48">
         <div className="hidden col-span-full mb-12 lg:block lg:col-span-4 lg:mb-0">
@@ -141,8 +130,8 @@ function PodcastHome() {
           <ArrowLink to="/discord">Learn more about the discord</ArrowLink>
         </div>
       </Grid>
-    </div>
+    </>
   )
 }
 
-export default PodcastHome
+export default CoursesHome

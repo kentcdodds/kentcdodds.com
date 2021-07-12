@@ -45,15 +45,34 @@ function ArrowButton({
   )
 }
 
-const arrowVariants = {
-  initial: {
-    x: 0,
+const arrowVariants: Record<
+  ArrowIconProps['direction'],
+  Record<string, {x?: number; y?: number}>
+> = {
+  down: {
+    initial: {y: 0},
+    hover: {y: 8},
+    tap: {y: 24},
   },
-  hover: {
-    x: 8,
+  up: {
+    initial: {y: 0},
+    hover: {y: -8},
+    tap: {y: -24},
   },
-  tap: {
-    x: 24,
+  left: {
+    initial: {x: 0},
+    hover: {x: -8},
+    tap: {x: -24},
+  },
+  right: {
+    initial: {x: 0},
+    hover: {x: 8},
+    tap: {x: 24},
+  },
+  'top-right': {
+    initial: {x: 0, y: 0},
+    hover: {x: 8, y: -8},
+    tap: {x: 24, y: -24},
   },
 }
 
@@ -87,7 +106,7 @@ function ArrowLink({
       ) : null}
 
       <span className="inline-flex flex-none items-center justify-center p-1 w-14 h-14 border-2 border-gray-200 dark:border-gray-600 rounded-full transition">
-        <motion.span variants={arrowVariants}>
+        <motion.span variants={arrowVariants[direction]}>
           <ArrowIcon direction={direction} />
         </motion.span>
       </span>

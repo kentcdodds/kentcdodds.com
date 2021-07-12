@@ -2,43 +2,25 @@ import formatDate from 'date-fns/format'
 import * as React from 'react'
 import {images} from '../images'
 import {H2, H3, H6, Paragraph} from '../components/typography'
-import {ArrowButton, ArrowLink} from '../components/arrow-button'
+import {ArrowLink} from '../components/arrow-button'
 import {Grid} from '../components/grid'
 import {HeaderSection} from '../components/header-section'
 import {FeatureCard} from '../components/feature-card'
 import {UsersIcon} from '../components/icons/users-icon'
 import {BlogSection} from '../components/sections/blog-section'
 import {articles} from '../../storybook/stories/fixtures'
+import {HeroSection} from '../components/sections/hero-section'
 
 function AboutIndex() {
   return (
     <>
-      <Grid className="mb-24 mt-16 lg:mb-48">
-        <div className="col-span-full mb-12 px-10 px-10 lg:col-span-5 lg:col-start-7 lg:mb-0">
-          <img
-            className="w-full h-auto object-contain"
-            src={images.snowboard()}
-            alt={images.helmet.alt}
-          />
-        </div>
-        <div className="col-span-full lg:flex lg:flex-col lg:col-span-5 lg:col-start-1 lg:row-start-1 lg:justify-center lg:h-full">
-          <div className="flex flex-auto flex-col justify-center">
-            <H2 className="mb-3 lg:mt-6">
-              Hi, I'm Kent C. Dodds, I’m a full time educator.
-            </H2>
-            <H2 as="p" variant="secondary" className="lg:mb-16">
-              I’m an extreme sports fan. I’m an avid snowboarder and roller
-              skater.
-            </H2>
-
-            <div className="hidden lg:block">
-              <ArrowButton direction="down" textSize="small">
-                Get to know more about me
-              </ArrowButton>
-            </div>
-          </div>
-        </div>
-      </Grid>
+      <HeroSection
+        title="Hi, I'm Kent C. Dodds, I’m a full time educator."
+        subtitle="I’m an extreme sports fan. I’m an avid snowboarder and roller skater."
+        imageUrl={images.snowboard()}
+        imageAlt={images.snowboard.alt}
+        arrowLabel="Get to know more about me"
+      />
 
       <Grid className="mb-24 mt-16 lg:mb-48">
         <div className="col-span-full">

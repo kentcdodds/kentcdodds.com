@@ -9,7 +9,7 @@ import {
 } from '@reach/accordion'
 import {getDiscordAuthorizeURL} from '../utils/misc'
 import {useOptionalUser, useRequestInfo} from '../utils/providers'
-import {ArrowButton, ArrowLink} from '../components/arrow-button'
+import {ArrowLink} from '../components/arrow-button'
 import {ButtonLink} from '../components/button'
 import {H2, H5, H6, Paragraph} from '../components/typography'
 import {images} from '../images'
@@ -22,6 +22,7 @@ import {NumberedPanel} from '../components/numbered-panel'
 import {TestimonialSection} from '../components/sections/testimonial-section'
 import {CourseSection} from '../components/sections/course-section'
 import {FeatureCard} from '../components/feature-card'
+import {HeroSection} from '../components/sections/hero-section'
 
 export interface CategoryCardProps {
   title: string
@@ -128,38 +129,15 @@ export default function Discord() {
 
   return (
     <>
-      <Grid className="mb-24 mt-16 lg:mb-64">
-        <div className="col-span-full mb-12 px-10 px-10 lg:col-span-5 lg:col-start-7 lg:mb-0">
-          <img
-            className="w-full h-auto object-contain"
-            src={images.helmet({
-              resize: {type: 'crop', width: 2000, height: 2100},
-            })}
-            alt={images.helmet.alt}
-          />
-        </div>
-        <div className="col-span-full lg:flex lg:flex-col lg:col-span-5 lg:col-start-1 lg:row-start-1 lg:justify-center lg:h-full">
-          <div className="flex flex-auto flex-col justify-center">
-            <H2 className="mb-3 lg:mt-6">
-              Meet like minded people on our discord server.
-            </H2>
-            <H2 as="p" variant="secondary" className="mb-14">
-              Learn to become better developers together.
-            </H2>
-            <div className="mb-44">
-              <ButtonLink variant="primary" to={authorizeURL}>
-                Join Discord
-              </ButtonLink>
-            </div>
-
-            <div className="hidden lg:block">
-              <ArrowButton direction="down" textSize="small">
-                Is this something for me?
-              </ArrowButton>
-            </div>
-          </div>
-        </div>
-      </Grid>
+      <HeroSection
+        title="Meet like minded people on our discord server."
+        subtitle="Learn to become better developers together."
+        imageUrl={images.helmet({
+          resize: {type: 'crop', width: 2000, height: 2100},
+        })}
+        imageAlt={images.helmet.alt}
+        arrowLabel="Is this something for me?"
+      />
 
       <Grid className="mb-24 lg:mb-64">
         <div className="col-span-full lg:col-span-6 lg:col-start-1">
