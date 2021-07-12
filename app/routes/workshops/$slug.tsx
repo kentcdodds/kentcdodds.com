@@ -8,10 +8,12 @@ import {getScheduledEvents} from '../../utils/workshop-tickets.server'
 import type {WorkshopEvent} from '../../utils/workshop-tickets.server'
 import {Grid} from '../../components/grid'
 import {ArrowIcon} from '../../components/icons/arrow-icon'
-import {H2, H4, H5, H6, Paragraph} from '../../components/typography'
+import {H2, H5, H6, Paragraph} from '../../components/typography'
 import {Button} from '../../components/button'
 import {ArrowButton} from '../../components/arrow-button'
 import {WorkshopCard} from '../../components/workshop-card'
+import {NumberedPanel} from '../../components/numbered-panel'
+import {TestimonialSection} from '../../components/sections/testimonial-section'
 
 export const loader: KCDLoader<{slug: string}> = async ({params}) => {
   const page = await getMdxPage({
@@ -32,27 +34,6 @@ export default function MdxScreenBase() {
 
   if (data) return <MdxScreen mdxPage={data.page} workshop={data.workshop} />
   else return <FourOhFour />
-}
-
-interface NumberedPanelProps {
-  number: number
-  caption: string
-  description: string
-}
-
-function NumberedPanel({number, caption, description}: NumberedPanelProps) {
-  // Note, we can move the counters to pure css if needed, but I'm not sure if it adds anything
-  return (
-    <li>
-      <H6 className="relative mb-6 lg:mb-8">
-        <span className="block mb-4 lg:absolute lg:-left-16 lg:mb-0">
-          {number.toString().padStart(2, '0')}.
-        </span>
-        {caption}
-      </H6>
-      <Paragraph>{description}</Paragraph>
-    </li>
-  )
 }
 
 interface TopicRowProps {
@@ -101,43 +82,6 @@ function RegistrationPanel({
 
       <Button className="flex-none">Register here</Button>
     </div>
-  )
-}
-
-interface TestimonialProps {
-  imageUrl: string
-  imageAlt: string
-  author: string
-  company: string
-  testimonial: string
-}
-
-function Testimonial({
-  imageUrl,
-  imageAlt,
-  author,
-  company,
-  testimonial,
-}: TestimonialProps) {
-  return (
-    <li className="flex-none mr-4 w-full md:mr-2 md:pr-2 lg:mr-3 lg:pr-3 lg:w-1/2">
-      <div className="bg-secondary flex flex-col justify-between p-16 w-full h-full rounded-lg">
-        <H4 className="mb-24">“{testimonial}”</H4>
-        <div className="flex items-center">
-          <img
-            src={imageUrl}
-            className="flex-none mr-8 w-16 h-16 rounded-full object-cover"
-            alt={imageAlt}
-          />
-          <div>
-            <p className="mb-2 text-white text-xl font-medium leading-none">
-              {author}
-            </p>
-            <p className="text-blueGray-500 text-xl leading-none">{company}</p>
-          </div>
-        </div>
-      </div>
-    </li>
   )
 }
 
@@ -216,7 +160,7 @@ function MdxScreen({mdxPage}: {mdxPage: MdxPage; workshop?: WorkshopEvent}) {
       </Grid>
 
       <div className="mb-24 px-5vw w-full lg:mb-48">
-        <div className="py-24 w-full bg-gray-100 dark:bg-gray-800 rounded-lg lg:pb-40 lg:pt-36">
+        <div className="bg-secondary py-24 w-full rounded-lg lg:pb-40 lg:pt-36">
           <div className="-mx-5vw">
             <Grid>
               <div className="flex flex-col col-span-full items-stretch mb-40 lg:col-span-5 lg:items-start lg:mb-0">
@@ -280,35 +224,7 @@ function MdxScreen({mdxPage}: {mdxPage: MdxPage; workshop?: WorkshopEvent}) {
         </div>
       </Grid>
 
-      <Grid>
-        <div className="col-span-full mb-12 lg:col-span-8 lg:mb-16">
-          <H2 className="mb-2">Don’t just take my word for it.</H2>
-          <H2 variant="secondary" as="p">
-            What participants have to say.
-          </H2>
-        </div>
-        {/*
-          TODO: connect these buttons to make the testimonials scroll,
-           I think we need to use some js to get the testimonials width,
-           and then apply a transformX using framer.motion
-         */}
-        <div className="hidden col-span-2 col-start-11 items-end justify-end mb-16 space-x-3 lg:flex">
-          <ArrowButton direction="left" />
-          <ArrowButton direction="right" />
-        </div>
-      </Grid>
-
-      <div className="mb-10 w-full overflow-hidden lg:mb-64">
-        <Grid>
-          <div className="col-span-full">
-            <ul className="flex overflow-visible">
-              {testimonials.map(testimonial => (
-                <Testimonial key={testimonial.imageUrl} {...testimonial} />
-              ))}
-            </ul>
-          </div>
-        </Grid>
-      </div>
+      <TestimonialSection testimonials={testimonials} className="mb-10" />
 
       <Grid className="mb-24 lg:hidden">
         <div className="flex col-span-full items-center justify-between">

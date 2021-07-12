@@ -33,8 +33,9 @@ function Button({
 function ButtonLink({
   children,
   variant = 'primary',
+  className,
   to,
-}: ButtonProps & Pick<LinkProps, 'to'>) {
+}: ButtonProps & Pick<LinkProps, 'to' | 'className'>) {
   return (
     <Link
       to={to}
@@ -46,6 +47,7 @@ function ButtonLink({
           'bg-black text-white dark:bg-white dark:text-black':
             variant === 'primary',
         },
+        className,
       )}
     >
       {children}
