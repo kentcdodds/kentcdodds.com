@@ -73,6 +73,7 @@ type ParagraphProps = {
   as?: React.ElementType
 } & ({children: React.ReactNode} | {dangerouslySetInnerHTML: {__html: string}})
 
+
 function Paragraph({className, as = 'p', ...rest}: ParagraphProps) {
   return React.createElement(as, {
     className: clsx('dark:text-blueGray-500 text-gray-500 text-lg', className),

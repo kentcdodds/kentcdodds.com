@@ -1,5 +1,12 @@
 import * as React from 'react'
 import {motion} from 'framer-motion'
+import {
+  Accordion,
+  AccordionItem,
+  AccordionButton,
+  AccordionPanel,
+  useAccordionItemContext,
+} from '@reach/accordion'
 import {getDiscordAuthorizeURL} from '../utils/misc'
 import {useOptionalUser, useRequestInfo} from '../utils/providers'
 import {ArrowButton, ArrowLink} from '../components/arrow-button'
@@ -14,31 +21,7 @@ import {CodeIcon} from '../components/icons/code-icon'
 import {NumberedPanel} from '../components/numbered-panel'
 import {TestimonialSection} from '../components/sections/testimonial-section'
 import {CourseSection} from '../components/sections/course-section'
-import {
-  Accordion,
-  AccordionItem,
-  AccordionButton,
-  AccordionPanel,
-  useAccordionItemContext,
-} from '@reach/accordion'
-
-export interface FeatureCardProps {
-  title: string
-  description: string
-  icon: React.ReactNode
-}
-
-function FeatureCard({title, description, icon}: FeatureCardProps) {
-  return (
-    <div className="bg-secondary relative flex flex-col col-span-full items-start px-8 py-12 w-full h-full rounded-lg lg:col-span-4 lg:px-12">
-      <div className="text-primary mb-8">{icon}</div>
-      <div className="text-primary flex flex-none items-end mb-4 text-xl font-medium">
-        {title}
-      </div>
-      <p className="text-secondary flex-auto max-w-sm text-xl">{description}</p>
-    </div>
-  )
-}
+import {FeatureCard} from '../components/feature-card'
 
 export interface CategoryCardProps {
   title: string
@@ -230,21 +213,27 @@ export default function Discord() {
           <Grid rowGap nested>
             {Array.from({length: 3}).map((_, idx) => (
               <React.Fragment key={idx}>
-                <FeatureCard
-                  title="Learning clubs"
-                  description="Form study groups and learn together."
-                  icon={<UsersIcon size={48} />}
-                />
-                <FeatureCard
-                  title="Free forever"
-                  description="You will never have to pay for the discord."
-                  icon={<DollarIcon size={48} />}
-                />
-                <FeatureCard
-                  title="Livestreams"
-                  description="Be the first to know when livestreams are."
-                  icon={<CodeIcon size={48} />}
-                />
+                <div className="col-span-full lg:col-span-4">
+                  <FeatureCard
+                    title="Learning clubs"
+                    description="Form study groups and learn together."
+                    icon={<UsersIcon size={48} />}
+                  />
+                </div>
+                <div className="col-span-full lg:col-span-4">
+                  <FeatureCard
+                    title="Free forever"
+                    description="You will never have to pay for the discord."
+                    icon={<DollarIcon size={48} />}
+                  />
+                </div>
+                <div className="col-span-full lg:col-span-4">
+                  <FeatureCard
+                    title="Livestreams"
+                    description="Be the first to know when livestreams are."
+                    icon={<CodeIcon size={48} />}
+                  />
+                </div>
               </React.Fragment>
             ))}
           </Grid>

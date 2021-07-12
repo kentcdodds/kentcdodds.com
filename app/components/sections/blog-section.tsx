@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import * as React from 'react'
 import type {MdxListItem} from 'types'
 import {H2} from '../typography'
-import {ArrowButton} from '../arrow-button'
+import {ArrowLink} from '../arrow-button'
 import {Grid} from '../grid'
 import {ArticleCard} from '../article-card'
 
@@ -30,7 +30,9 @@ function BlogSection({
         </div>
 
         {showArrowButton === false ? null : (
-          <ArrowButton direction="right">See the full blog</ArrowButton>
+          <ArrowLink direction="right" to="/blog">
+            See the full blog
+          </ArrowLink>
         )}
       </div>
 

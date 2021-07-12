@@ -5,7 +5,7 @@ import {motion} from 'framer-motion'
 import {ArrowIcon, ArrowIconProps} from './icons/arrow-icon'
 
 interface ArrowButtonProps {
-  children?: React.ReactNode
+  children?: React.ReactNode | React.ReactNode[]
   direction?: ArrowIconProps['direction']
   textSize?: 'small' | 'medium'
   className?: string
