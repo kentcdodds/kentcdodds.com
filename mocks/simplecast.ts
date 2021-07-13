@@ -33,7 +33,7 @@ for (const seasonListItem of seasonListItems) {
   const seasonId = seasonListItem.href.split('/').slice(-1)[0]
   if (!seasonId) throw new Error(`no id for ${seasonListItem.href}`)
   const episodes: Array<SimplecastEpisode> = Array.from(
-    {length: 1},
+    {length: faker.datatype.number({min: 10, max: 24})},
     (v, index) => {
       const id = faker.datatype.uuid()
       const title = faker.lorem.words()
@@ -78,7 +78,7 @@ for (const seasonListItem of seasonListItems) {
         transcription: faker.lorem.paragraphs(30),
         status: 'published',
         is_published: true,
-        image_url: faker.image.cats(),
+        image_url: faker.internet.avatar(),
         audio_file_url:
           'TODO... set audio_file_url to a real file if we ever use this',
         slug: title.split(' ').join('-'),

@@ -93,7 +93,12 @@ type CWKEpisode = {
  */
 type CWKListItem = Omit<
   CWKEpisode,
-  'homeworkHTMLs' | 'resources' | 'summaryHTML' | 'transcriptHTML' | 'meta'
+  | 'homeworkHTMLs'
+  | 'resources'
+  | 'summaryHTML'
+  | 'transcriptHTML'
+  | 'meta'
+  | 'descriptionHTML'
 >
 
 type CWKSeason = {

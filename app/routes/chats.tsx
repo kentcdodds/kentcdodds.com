@@ -1,27 +1,29 @@
 import * as React from 'react'
-import {json, useRouteData} from 'remix'
-import type {LoaderFunction} from 'remix'
+import {json, useRouteData, useMatches} from 'remix'
+import type {LoaderFunction, HeadersFunction} from 'remix'
 import clsx from 'clsx'
 import {Tab, TabList, TabPanel, TabPanels, Tabs} from '@reach/tabs'
-import {Outlet} from 'react-router-dom'
+import {Outlet, useNavigate} from 'react-router-dom'
+import differenceInWeeks from 'date-fns/differenceInWeeks'
 import type {Await} from 'types'
-import {Grid} from '../../components/grid'
-import {images} from '../../images'
-import {H2, H6} from '../../components/typography'
-import {AppleIcon} from '../../components/icons/apple-icon'
-import {externalLinks} from '../../external-links'
-import {RssIcon} from '../../components/icons/rss-icon'
-import {SpotifyIcon} from '../../components/icons/spotify-icon'
-import {GoogleIcon} from '../../components/icons/google-icon'
-import {ChevronDownIcon} from '../../components/icons/chevron-down-icon'
-import {BlogSection} from '../../components/sections/blog-section'
-import {getBlogRecommendations} from '../../utils/blog.server'
-import {refreshSeasons} from '../../utils/simplecast.server'
-import {getUser} from '../../utils/session.server'
-// import {FeaturedSection} from '../../components/sections/featured-section'
+import {Grid} from '../components/grid'
+import {images} from '../images'
+import {H2, H6} from '../components/typography'
+import {AppleIcon} from '../components/icons/apple-icon'
+import {externalLinks} from '../external-links'
+import {RssIcon} from '../components/icons/rss-icon'
+import {SpotifyIcon} from '../components/icons/spotify-icon'
+import {GoogleIcon} from '../components/icons/google-icon'
+import {ChevronDownIcon} from '../components/icons/chevron-down-icon'
+import {BlogSection} from '../components/sections/blog-section'
+import {getBlogRecommendations} from '../utils/blog.server'
+import {getSeasonListItems, refreshSeasons} from '../utils/simplecast.server'
+import {getUser} from '../utils/session.server'
+import {FeaturedSection} from '../components/sections/featured-section'
+import {listify, formatTime} from '../utils/misc'
 
 type LoaderData = {
-  seasons: Array<number>
+  seasons: Await<ReturnType<typeof getSeasonListItems>>
   blogRecommendations: Await<ReturnType<typeof getBlogRecommendations>>
 }
 
@@ -34,13 +36,22 @@ export const loader: LoaderFunction = async ({request}) => {
   }
 
   const blogRecommendations = (await getBlogRecommendations()).slice(0, 3)
-  // TODO: this should support the season dirs
   const data: LoaderData = {
-    seasons: [3, 2, 1],
+    seasons: await getSeasonListItems(),
     blogRecommendations,
   }
 
-  return json(data)
+  return json(data, {
+    headers: {
+      'Cache-Control': 'public, max-age=600',
+    },
+  })
+}
+
+export const headers: HeadersFunction = ({loaderHeaders}) => {
+  return {
+    'Cache-Control': loaderHeaders.get('Cache-Control') ?? 'no-cache',
+  }
 }
 
 export function meta() {
@@ -67,10 +78,27 @@ function PodcastAppLink({
 }
 
 function PodcastHome() {
+  const navigate = useNavigate()
   const data = useRouteData<LoaderData>()
+  const matches = useMatches()
+  const last = matches[matches.length - 1]
 
-  // TODO: load the latest podcast episode:
-  // const featured = null
+  const seasonNumber = last?.params.season
+    ? Number(last.params.season)
+    : data.seasons[data.seasons.length - 1]?.seasonNumber ?? 1
+
+  const currentSeason = data.seasons.find(s => s.seasonNumber === seasonNumber)
+
+  function handleTabChange(index: number) {
+    navigate(String(index + 1).padStart(2, '0'))
+  }
+
+  const weeksSinceMyBirthday = differenceInWeeks(
+    new Date(),
+    new Date('1988-10-18'),
+  )
+  const allEpisodes = data.seasons.flatMap(s => s.episodes)
+  const featured = allEpisodes[weeksSinceMyBirthday % allEpisodes.length]
 
   return (
     <div>
@@ -120,60 +148,65 @@ function PodcastHome() {
         </div>
       </Grid>
 
-      {/* TODO: find a place to take season, episode and duration from */}
-      {/* TODO: fix this */}
-      {/* {featured ? (
+      {featured ? (
         <div className="mb-48">
           <FeaturedSection
             cta="Listen to this episode"
             caption="Latest episode"
-            subTitle="Season 03, Episode 01 — 48:12"
-            title={featured.frontmatter.title}
+            subTitle={`Season ${featured.seasonNumber} Episode ${
+              featured.episodeNumber
+            } — ${formatTime(featured.duration)}`}
+            title={featured.title}
             slug={featured.slug}
-            imageUrl={featured.frontmatter.guest!.image}
-            imageAlt={featured.frontmatter.guest!.name}
+            imageUrl={featured.image}
+            imageAlt={listify(featured.guests.map(g => g.name))}
           />
         </div>
-      ) : null} */}
+      ) : null}
 
-      <Tabs as={Grid} className="mb-24 lg:mb-64">
+      <Tabs
+        as={Grid}
+        className="mb-24 lg:mb-64"
+        index={seasonNumber - 1}
+        onChange={handleTabChange}
+      >
         <TabList className="flex flex-col col-span-full items-start mb-20 bg-transparent lg:flex-row lg:space-x-12">
-          {/* TODO: connect to state */}
           {data.seasons.map(season => (
             <Tab
-              key={season}
+              key={season.seasonNumber}
               className={clsx(
                 'p-0 text-4xl leading-tight focus:bg-transparent border-none',
                 {
-                  'text-primary': season === 3,
-                  'text-blueGray-500': season !== 3,
+                  'text-primary': season.seasonNumber === seasonNumber,
+                  'text-blueGray-500': season.seasonNumber !== seasonNumber,
                 },
               )}
             >
-              {`Season ${season}`}
+              {`Season ${season.seasonNumber}`}
             </Tab>
           ))}
         </TabList>
 
-        <div className="flex flex-col col-span-full mb-6 lg:flex-row lg:justify-between lg:mb-12">
-          <H6 className="flex flex-col col-span-full mb-10 lg:flex-row lg:mb-0">
-            <span>Chats with Kent C. Dodds</span>{' '}
-            {/* TODO: set this to a real number */}
-            <span>{`Season 3 — 14 episodes`}</span>
-          </H6>
+        {currentSeason ? (
+          <div className="flex flex-col col-span-full mb-6 lg:flex-row lg:justify-between lg:mb-12">
+            <H6 className="flex flex-col col-span-full mb-10 lg:flex-row lg:mb-0">
+              <span>Chats with Kent C. Dodds</span>
+              &nbsp;
+              <span>{`Season ${currentSeason.seasonNumber} — ${currentSeason.episodes.length} episodes`}</span>
+            </H6>
 
-          {/* TODO: add sorting */}
-          <button className="text-primary inline-flex items-center text-lg font-medium">
-            Showing newest first
-            <ChevronDownIcon className="ml-2 text-gray-400" />
-          </button>
-        </div>
+            {/* TODO: add sorting */}
+            <button className="text-primary inline-flex items-center text-lg font-medium">
+              Showing newest first
+              <ChevronDownIcon className="ml-2 text-gray-400" />
+            </button>
+          </div>
+        ) : null}
 
         <TabPanels className="col-span-full">
-          {/* TODO: support other seasons*/}
           {data.seasons.map(season => (
             <TabPanel
-              key={season}
+              key={season.seasonNumber}
               className="border-t border-gray-200 dark:border-gray-600"
             >
               <Outlet />

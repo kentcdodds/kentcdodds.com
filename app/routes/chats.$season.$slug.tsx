@@ -1,5 +1,6 @@
 import React, {useState} from 'react'
 import {useRouteData, json} from 'remix'
+import type {HeadersFunction} from 'remix'
 import {Link} from 'react-router-dom'
 import type {KCDLoader, CWKEpisode, CWKListItem} from 'types'
 import clsx from 'clsx'
@@ -52,7 +53,17 @@ export const loader: KCDLoader<{slug: string; season: string}> = async ({
   const data: LoaderData = {prevEpisode: null, nextEpisode: null, episode}
 
   // TODO: add 404 handling
-  return json(data)
+  return json(data, {
+    headers: {
+      'Cache-Control': 'public, max-age=600',
+    },
+  })
+}
+
+export const headers: HeadersFunction = ({loaderHeaders}) => {
+  return {
+    'Cache-Control': loaderHeaders.get('Cache-Control') ?? 'no-cache',
+  }
 }
 
 function Homework({

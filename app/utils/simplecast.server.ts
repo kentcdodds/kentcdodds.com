@@ -5,7 +5,9 @@ import type {
   SimplecastEpisodeListItem,
   CWKEpisode,
   Await,
+  CWKSeason,
 } from 'types'
+import {omit} from 'lodash'
 import unified from 'unified'
 import parseHtml from 'rehype-parse'
 import parseMarkdown from 'remark-parse'
@@ -329,4 +331,26 @@ async function refreshSeasons() {
   await getSeasons()
 }
 
-export {getCachedSeasons as getSeasons, refreshSeasons}
+async function getSeasonListItems() {
+  const seasons = await getSeasons()
+  const listItemSeasons: Array<CWKSeason> = []
+  for (const season of seasons) {
+    listItemSeasons.push({
+      seasonNumber: season.seasonNumber,
+      episodes: season.episodes.map(episode => {
+        return omit(
+          episode,
+          'homeworkHTMLs',
+          'resources',
+          'summaryHTML',
+          'transcriptHTML',
+          'meta',
+          'descriptionHTML',
+        )
+      }),
+    })
+  }
+  return listItemSeasons
+}
+
+export {getCachedSeasons as getSeasons, getSeasonListItems, refreshSeasons}

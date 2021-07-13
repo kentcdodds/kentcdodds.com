@@ -1,8 +1,10 @@
 import * as React from 'react'
 import {json, useRouteData, Link} from 'remix'
+import type {HeadersFunction} from 'remix'
 import type {CWKSeason, KCDLoader} from 'types'
-import {getSeasons} from '../../utils/simplecast.server'
 import {Grid} from '../../components/grid'
+import {getSeasonListItems} from '../../utils/simplecast.server'
+import {formatTime} from '../../utils/misc'
 
 type LoaderData = {
   season: CWKSeason
@@ -11,14 +13,24 @@ type LoaderData = {
 export const loader: KCDLoader<{season: string}> = async ({params}) => {
   const seasonNumber = Number(params.season)
 
-  const seasons = await getSeasons()
+  const seasons = await getSeasonListItems()
   const season = seasons.find(s => s.seasonNumber === seasonNumber)
   if (!season) {
     throw new Error(`oh no. season for ${seasonNumber}: ${params.season}`)
   }
 
   const data: LoaderData = {season}
-  return json(data)
+  return json(data, {
+    headers: {
+      'Cache-Control': 'public, max-age=600',
+    },
+  })
+}
+
+export const headers: HeadersFunction = ({loaderHeaders}) => {
+  return {
+    'Cache-Control': loaderHeaders.get('Cache-Control') ?? 'no-cache',
+  }
 }
 
 export default function Screen() {
@@ -44,7 +56,7 @@ export default function Screen() {
             {episode.title}
           </h4>
           <div className="text-gray-400 text-lg font-medium">
-            {episode.duration}
+            {formatTime(episode.duration)}
           </div>
         </div>
       </Grid>

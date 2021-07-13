@@ -2,6 +2,7 @@ import * as React from 'react'
 import {Link} from 'remix'
 import type {NonNullProperties, User, Request} from 'types'
 import {Team} from '@prisma/client'
+import * as dateFns from 'date-fns'
 import md5 from 'md5-hash'
 import {images} from '../images'
 import type {getEnv} from './env.server'
@@ -86,6 +87,10 @@ function listify<ItemType>(
   const stringified = array.map(item => stringify(item))
   const formatter = new Intl.ListFormat('en', {style, type})
   return formatter.format(stringified)
+}
+
+function formatTime(seconds: number) {
+  return dateFns.format(dateFns.addSeconds(new Date(0), seconds), 'mm:ss')
 }
 
 function getErrorMessage(error: unknown) {
@@ -178,4 +183,5 @@ export {
   getDiscordAuthorizeURL,
   getDomainUrl,
   teams,
+  formatTime,
 }
