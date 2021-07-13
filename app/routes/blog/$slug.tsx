@@ -262,7 +262,7 @@ function MdxScreen() {
           </H6>
         </div>
         <img
-          className="col-span-full mt-10 rounded-lg lg:col-span-10 lg:col-start-2"
+          className="col-span-full mt-10 mx-auto rounded-lg lg:col-span-10 lg:col-start-2"
           src={frontmatter.bannerUrl}
           alt={frontmatter.bannerAlt}
         />
