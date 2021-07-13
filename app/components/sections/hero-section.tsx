@@ -27,7 +27,7 @@ function HeroSection({
 }: HeroSectionProps) {
   return (
     <Grid
-      className={clsx('mb-24 pt-24 lg:pb-12 lg:h-hero', {
+      className={clsx('lg:min-h-[40rem] mb-24 pt-24 lg:pb-12 lg:h-hero', {
         'lg:mb-64': arrowLabel,
         'lg:-mb-24': !arrowLabel,
       })}
