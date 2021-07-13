@@ -5,6 +5,7 @@ import clsx from 'clsx'
 import {
   Menu,
   MenuButton,
+  MenuItems,
   MenuLink,
   MenuPopover,
   useMenuButtonContext,
@@ -70,7 +71,7 @@ function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
         )
       }}
       className={clsx(
-        'inline-flex items-center justify-center p-1 h-14 text-black dark:text-white border-2 border-gray-200 dark:border-gray-600 rounded-full transition',
+        'focus:bg-secondary hover:bg-secondary inline-flex items-center justify-center p-1 h-14 text-black dark:text-white border-2 border-gray-200 dark:border-gray-600 rounded-full focus:outline-none',
         {
           'w-14': variant === 'icon',
           'px-8': variant === 'labelled',
@@ -87,7 +88,6 @@ function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
 
 function MobileMenuList() {
   const {isExpanded} = useMenuButtonContext()
-  // const isExpanded = true
 
   useEffect(() => {
     if (isExpanded) {
@@ -122,19 +122,21 @@ function MobileMenuList() {
             transition={{duration: 0.15, ease: 'linear'}}
             className="bg-primary flex flex-col pb-12 h-full border-t border-gray-200 dark:border-gray-600 overflow-y-scroll"
           >
-            {MOBILE_LINKS.map(link => (
-              <MenuLink
-                className="text-primary hover:bg-secondary hover:text-primary px-5vw py-9 border-b border-gray-200 dark:border-gray-600"
-                key={link.to}
-                as={Link}
-                to={link.to}
-              >
-                {link.name}
-              </MenuLink>
-            ))}
-            <div className="py-9 text-center">
-              <DarkModeToggle variant="labelled" />
-            </div>
+            <MenuItems className="p-0 bg-transparent">
+              {MOBILE_LINKS.map(link => (
+                <MenuLink
+                  className="text-primary hover:bg-secondary focus:bg-secondary hover:text-primary px-5vw py-9 border-b border-gray-200 dark:border-gray-600"
+                  key={link.to}
+                  as={Link}
+                  to={link.to}
+                >
+                  {link.name}
+                </MenuLink>
+              ))}
+              <div className="py-9 text-center">
+                <DarkModeToggle variant="labelled" />
+              </div>
+            </MenuItems>
           </motion.div>
         </MenuPopover>
       ) : null}
@@ -164,7 +166,7 @@ function MobileMenu() {
         const state = isExpanded ? 'open' : 'closed'
         return (
           <>
-            <MenuButton className="text-primary inline-flex items-center justify-center p-1 w-14 h-14 border-2 border-gray-200 dark:border-gray-600 rounded-full transition">
+            <MenuButton className="focus:bg-secondary hover:bg-secondary text-primary inline-flex items-center justify-center p-1 w-14 h-14 border-2 border-gray-200 dark:border-gray-600 rounded-full focus:outline-none transition">
               <svg
                 width="32"
                 height="32"
@@ -276,7 +278,7 @@ function Navbar() {
               ? 'Finish signing up'
               : 'Login'
           }
-          className="inline-flex items-center justify-center ml-4 w-14 h-14 text-white border-2 border-team-current rounded-full"
+          className="focus:bg-secondary hover:bg-secondary inline-flex items-center justify-center ml-4 w-14 h-14 text-white border-2 border-team-current rounded-full focus:outline-none"
         >
           <img
             className="inline w-10 h-10 bg-white rounded-full object-cover"
