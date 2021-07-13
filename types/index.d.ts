@@ -17,6 +17,7 @@ type NonNullProperties<Type> = {[Key in keyof Type]: Exclude<Type[Key], null>}
 type Await<Type> = Type extends Promise<infer Value> ? Await<Value> : Type
 
 type MdxPage = {
+  code: string
   slug: string
   readTime?: ReturnType<typeof calculateReadingTime>
   duration?: string
@@ -131,3 +132,5 @@ export {
   KCDAction,
   GitHubFile,
 }
+
+export * from './simplecast'

@@ -60,7 +60,7 @@ function PodcastHome() {
   const data = useRouteData<LoaderData>()
 
   // TODO: load the latest podcast episode:
-  const featured = null
+  // const featured = null
 
   return (
     <div>
@@ -148,7 +148,8 @@ function PodcastHome() {
         <div className="flex flex-col col-span-full mb-6 lg:flex-row lg:justify-between lg:mb-12">
           <H6 className="flex flex-col col-span-full mb-10 lg:flex-row lg:mb-0">
             <span>Chats with Kent C. Dodds</span>{' '}
-            <span>{`Season 3 — ${data.podcasts.length} episodes`}</span>
+            {/* TODO: set this to a real number */}
+            <span>{`Season 3 — 14 episodes`}</span>
           </H6>
 
           {/* TODO: add sorting */}

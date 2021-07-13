@@ -1,4 +1,10 @@
-import type {CWKEpisode} from 'types'
+import type {
+  SimplecastCollectionResponse,
+  SimpelcastSeasonListItem,
+  SimplecastEpisode,
+  SimplecastEpisodeListItem,
+  CWKEpisode,
+} from 'types'
 import unified from 'unified'
 import parseHtml from 'rehype-parse'
 import parseMarkdown from 'remark-parse'
@@ -29,9 +35,8 @@ async function getSeasons() {
     `https://api.simplecast.com/podcasts/${CHATS_WITH_KENT_PODCAST_ID}/seasons`,
     {headers},
   )
-  const {collection} = (await res.json()) as {
-    collection: Array<{href: string; number: number}>
-  }
+  const {collection} =
+    (await res.json()) as SimplecastCollectionResponse<SimpelcastSeasonListItem>
 
   return Promise.all(
     collection.map(async ({href, number}) => {
@@ -46,47 +51,18 @@ async function getSeasons() {
   )
 }
 
-type SimplcastEpisode = {
-  is_hidden: boolean
-  id: string
-  duration: number
-  number: number
-  transcription: string
-  status: 'draft' | 'published'
-  is_published: boolean
-  image_url: string
-  audio_file_url: string
-  slug: string
-  description: string
-  season: {
-    href: string
-    number: number
-  }
-  long_description: string
-  title: string
-  keywords: {
-    href: string
-    collection: Array<{
-      value: string
-    }>
-  }
-}
-
-type SimplecastEpisodeListItem = Pick<
-  SimplcastEpisode,
-  'status' | 'is_hidden' | 'id'
->
-
 async function getEpisodes(seasonId: string) {
   const url = new URL(`https://api.simplecast.com/seasons/${seasonId}/episodes`)
   url.searchParams.set('limit', '300')
   const res = await fetch(url.toString(), {headers})
-  const {collection} = (await res.json()) as {
-    collection: Array<SimplecastEpisodeListItem>
-  }
+  const {collection} =
+    (await res.json()) as SimplecastCollectionResponse<SimplecastEpisodeListItem>
   return Promise.all(
     collection
-      .filter(({status, is_hidden}) => status === 'published' && !is_hidden)
+      .filter(
+        ({status, is_hidden, is_published}) =>
+          status === 'published' && !is_hidden && is_published,
+      )
       .map(({id}) => getEpisode(id)),
   )
 }
@@ -96,6 +72,7 @@ async function getEpisode(episodeId: string) {
     headers,
   })
   const {
+    id,
     slug,
     transcription: transcriptMarkdown,
     long_description: summaryMarkdown,
@@ -106,7 +83,7 @@ async function getEpisode(episodeId: string) {
     title,
     season: {number: seasonNumber},
     keywords: keywordsData,
-  } = (await res.json()) as SimplcastEpisode
+  } = (await res.json()) as SimplecastEpisode
 
   const keywords = keywordsData.collection.map(({value}) => value)
   const [
@@ -116,7 +93,7 @@ async function getEpisode(episodeId: string) {
   ] = await Promise.all([
     markdownToHtml(transcriptMarkdown),
     markdownToHtml(descriptionMarkdown),
-    parseSummaryMarkdown(summaryMarkdown),
+    parseSummaryMarkdown(summaryMarkdown, `${id}-${slug}`),
   ])
 
   const cwkEpisode: CWKEpisode = {
@@ -146,6 +123,7 @@ function removeEls<ItemType>(array: Array<ItemType>, ...els: Array<ItemType>) {
 
 async function parseSummaryMarkdown(
   summaryInput: string,
+  errorKey: string,
 ): Promise<
   Pick<CWKEpisode, 'summaryHTML' | 'resources' | 'guests' | 'homeworkHTMLs'>
 > {
@@ -163,7 +141,7 @@ async function parseSummaryMarkdown(
       return function transformer(treeArg) {
         if (treeArg.type !== 'root') {
           throw new Error(
-            `summary markdown root element is a ${treeArg.type} not a "root".`,
+            `${errorKey}: summary markdown root element is a ${treeArg.type} not a "root".`,
           )
         }
         const tree = treeArg as M.Root
@@ -186,7 +164,10 @@ async function parseSummaryMarkdown(
           const headingChildren = parent.children.slice(index + 1, endOfSection)
           const sectionTitle = (heading.children[0] as M.Text | undefined)
             ?.value
-          if (!sectionTitle) throw new Error('Section with no title')
+          if (!sectionTitle) {
+            console.error(heading)
+            throw new Error(`${errorKey}: Section with no title`)
+          }
           sections[sectionTitle] = {
             children: headingChildren,
             remove() {
@@ -245,30 +226,33 @@ async function parseSummaryMarkdown(
                 // this error handling makes me laugh and cry
                 // definitely better error messages than we'd get
                 // if we just pretended this could never happen...
+                // ... and you know what... they did happen and I'm glad I added
+                // this error handling 😂
                 const paragraph = listItem.children[0]
                 if (paragraph?.type !== 'paragraph') {
+                  console.error(child)
                   throw new Error(
-                    'guest listItem first child is not a paragraph',
+                    `${errorKey}: guest listItem first child is not a paragraph`,
                   )
                 }
                 const [text, link] = paragraph.children
                 if (text?.type !== 'text') {
-                  console.error(paragraph)
+                  console.error(child)
                   throw new Error(
-                    `guest listItem first child's first child is not a text node`,
+                    `${errorKey}: guest listItem first child's first child is not a text node`,
                   )
                 }
                 if (link?.type !== 'link') {
-                  console.error(paragraph)
+                  console.error(child)
                   throw new Error(
-                    `guest listItem first child's second child is not a link node`,
+                    `${errorKey}: guest listItem first child's second child is not a link node`,
                   )
                 }
                 const linkText = link.children[0]
                 if (linkText?.type !== 'text') {
-                  console.error(link)
+                  console.error(child)
                   throw new Error(
-                    `guest listItem first child's second child's first child is not a text node`,
+                    `${errorKey}: guest listItem first child's second child's first child is not a text node`,
                   )
                 }
                 const {value: type} = text
