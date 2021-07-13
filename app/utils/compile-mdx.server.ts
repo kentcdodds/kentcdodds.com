@@ -110,7 +110,7 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
 
   return {
     code,
-    summary: readTime,
+    readTime,
     frontmatter: frontmatter as FrontmatterType,
   }
 }
