@@ -9,11 +9,11 @@ import {
   signOutSession,
   sessionKeys,
 } from '../utils/session.server'
-import {Grid} from '../components/grid'
 import {images} from '../images'
-import {H2, Paragraph} from '../components/typography'
+import {Paragraph} from '../components/typography'
 import {Button} from '../components/button'
 import {Input, InputError, Label} from '../components/form-elements'
+import {HeroSection} from '../components/sections/hero-section'
 
 export const loader: LoaderFunction = async ({request}) => {
   const user = await getUser(request)
@@ -73,21 +73,13 @@ function Login() {
   const formIsValid = formValues.email.match(/.+@.+/)
 
   return (
-    <Grid className="mt-12">
-      <div className="col-span-full items-start overflow-visible lg:col-span-6 lg:col-start-7">
-        <img
-          className="mb-10 lg:mb-0"
-          src={images.skis()}
-          alt={images.skis.alt}
-        />
-      </div>
-
-      <div className="flex flex-col col-span-full lg:col-span-5 lg:row-start-1">
-        <H2 className="mb-2">Log in to your account.</H2>
-        <H2 className="mb-12 lg:mb-20" variant="secondary" as="p">
-          Or sign up for an account.
-        </H2>
-
+    <HeroSection
+      imageUrl={images.skis()}
+      imageAlt={images.skis.alt}
+      imageSize="giant"
+      title="Log in to your account."
+      subtitle="Or sign up for an account."
+      action={
         <div>
           <Form
             onChange={event => {
@@ -153,8 +145,8 @@ function Login() {
             development of the new site.
           </p>
         </div>
-      </div>
-    </Grid>
+      }
+    />
   )
 }
 
