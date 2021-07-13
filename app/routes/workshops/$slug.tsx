@@ -224,7 +224,10 @@ function MdxScreen({mdxPage}: {mdxPage: MdxPage; workshop?: WorkshopEvent}) {
         </div>
       </Grid>
 
-      <TestimonialSection testimonials={testimonials} className="mb-10" />
+      <TestimonialSection
+        testimonials={testimonials}
+        className="mb-10 lg:mb-64"
+      />
 
       <Grid className="mb-24 lg:hidden">
         <div className="flex col-span-full items-center justify-between">
