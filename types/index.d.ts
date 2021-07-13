@@ -105,15 +105,17 @@ type CWKSeason = {
   episodes: Array<CWKListItem>
 }
 
-type KCDLoader<Params extends Record<string, string> = Record<string, string>> =
-  (
-    args: Omit<Parameters<Loader>['0'], 'params'> & {params: Params},
-  ) => ReturnType<Loader>
+type KCDLoader<
+  Params extends Record<string, unknown> = Record<string, unknown>,
+> = (
+  args: Omit<Parameters<Loader>['0'], 'params'> & {params: Params},
+) => ReturnType<Loader>
 
-type KCDAction<Params extends Record<string, string> = Record<string, string>> =
-  (
-    args: Omit<Parameters<Action>['0'], 'params'> & {params: Params},
-  ) => ReturnType<Action>
+type KCDAction<
+  Params extends Record<string, unknown> = Record<string, unknown>,
+> = (
+  args: Omit<Parameters<Action>['0'], 'params'> & {params: Params},
+) => ReturnType<Action>
 
 type GitHubFile = {path: string; content: string}
 

@@ -6,16 +6,21 @@ import {orderBy} from 'lodash'
 import {Grid} from '../../components/grid'
 import {getSeasonListItems} from '../../utils/simplecast.server'
 import {useChatsEpisodeUIState} from '../../utils/providers'
-import {formatTime} from '../../utils/misc'
+import {formatTime, getCWKEpisodePath} from '../../utils/misc'
 
 type LoaderData = {
   season: CWKSeason
 }
 
-export const loader: KCDLoader<{season: string}> = async ({params}) => {
-  const seasonNumber = Number(params.season)
-
+// NOTE: we have to handle the case where there is no param because index.tsx
+// re-exports this file.
+export const loader: KCDLoader<{season: string | undefined}> = async ({
+  params,
+}) => {
   const seasons = await getSeasonListItems()
+  const seasonNumber = params.season
+    ? Number(params.season)
+    : seasons[seasons.length - 1]?.seasonNumber ?? 1
   const season = seasons.find(s => s.seasonNumber === seasonNumber)
   if (!season) {
     throw new Error(`oh no. season for ${seasonNumber}: ${params.season}`)
@@ -40,7 +45,7 @@ export default function Screen() {
   const {sortOrder} = useChatsEpisodeUIState()
   const episodes = orderBy(season.episodes, 'episodeNumber', sortOrder)
   return episodes.map(episode => (
-    <Link key={episode.slug} to={episode.slug}>
+    <Link key={episode.slug} to={getCWKEpisodePath(episode)}>
       <Grid
         nested
         className="group relative py-10 border-b border-gray-200 dark:border-gray-600 lg:py-5"

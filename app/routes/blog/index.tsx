@@ -267,7 +267,7 @@ function BlogHome() {
             Check out my podcast Chats with Kent and learn about development and
             more.
           </H2>
-          <ArrowLink to="/podcast">Check out the podcast</ArrowLink>
+          <ArrowLink to="/chats">Check out the podcast</ArrowLink>
         </div>
       </Grid>
     </div>

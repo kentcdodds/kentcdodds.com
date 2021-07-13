@@ -18,19 +18,21 @@ import {FeaturedSection} from '../components/sections/featured-section'
 import {ArrowLink} from '../components/arrow-button'
 import {ChevronRightIcon} from '../components/icons/chevron-right-icon'
 import {ChevronLeftIcon} from '../components/icons/chevron-left-icon'
-import {listify} from '../utils/misc'
+import {formatTime, getCWKEpisodePath, listify} from '../utils/misc'
 import {getUser} from '../utils/session.server'
 
 type LoaderData = {
   prevEpisode: CWKListItem | null
   nextEpisode: CWKListItem | null
+  featured: CWKListItem | null
   episode: CWKEpisode
 }
 
-export const loader: KCDLoader<{slug: string; season: string}> = async ({
-  request,
-  params,
-}) => {
+export const loader: KCDLoader<{
+  slug: string
+  season: string
+  episode: string
+}> = async ({request, params}) => {
   if (new URL(request.url).searchParams.has('fresh')) {
     const user = await getUser(request)
     if (user?.role === 'ADMIN') {
@@ -38,7 +40,7 @@ export const loader: KCDLoader<{slug: string; season: string}> = async ({
     }
   }
 
-  const episodeNumber = Number(params.slug.match(/(\d+)-/)?.[1])
+  const episodeNumber = Number(params.episode)
   const seasonNumber = Number(params.season)
 
   const seasons = await getSeasons()
@@ -46,11 +48,17 @@ export const loader: KCDLoader<{slug: string; season: string}> = async ({
   const episode = season?.episodes.find(e => e.episodeNumber === episodeNumber)
   if (!episode) {
     throw new Error(
-      `oh no. no episode for ${seasonNumber}-${episodeNumber}-${params.slug}`,
+      `oh no. no episode for ${params.season}-${params.episode}-${params.slug}`,
     )
   }
 
-  const data: LoaderData = {prevEpisode: null, nextEpisode: null, episode}
+  // TODO: fill in these values:
+  const data: LoaderData = {
+    prevEpisode: null,
+    nextEpisode: null,
+    featured: null,
+    episode,
+  }
 
   // TODO: add 404 handling
   return json(data, {
@@ -249,7 +257,7 @@ function PrevNextButton({
       whileFocus="hover"
       whileTap={direction === 'next' ? 'tapRight' : 'tapLeft'}
       animate="initial"
-      to={`/podcast/${episodeListItem.slug}`}
+      to={getCWKEpisodePath(episodeListItem)}
       className={clsx('flex items-center focus:outline-none', {
         'flex-row-reverse': direction === 'next',
       })}
@@ -287,13 +295,14 @@ function PrevNextButton({
 }
 
 function PodcastDetail() {
-  const {episode, nextEpisode, prevEpisode} = useRouteData<LoaderData>()
+  const {episode, featured, nextEpisode, prevEpisode} =
+    useRouteData<LoaderData>()
 
   return (
     <>
       <Grid className="mb-24 mt-24 lg:mb-12">
         <Link
-          to="/"
+          to="../.."
           className="flex col-span-full text-black dark:text-white space-x-4 lg:col-span-8 lg:col-start-3"
         >
           <ArrowIcon direction="left" />
@@ -345,7 +354,9 @@ function PodcastDetail() {
             <Resources resources={episode.resources} />
           ) : null}
           <Guests episode={episode} />
-          <Transcript transcriptHTML={episode.transcriptHTML} />
+          {episode.transcriptHTML ? (
+            <Transcript transcriptHTML={episode.transcriptHTML} />
+          ) : null}
         </div>
       </Grid>
 
@@ -358,22 +369,25 @@ function PodcastDetail() {
             </H2>
           </div>
 
-          <ArrowLink to="/podcasts" direction="right">
+          <ArrowLink to="/chats" direction="right">
             See all episodes
           </ArrowLink>
         </div>
       </Grid>
 
-      {/* TODO: get a related episode from the backend */}
-      <FeaturedSection
-        imageAlt={listify(episode.guests.map(g => g.name))}
-        imageUrl={episode.image}
-        title={episode.title}
-        slug={episode.slug}
-        subTitle="Season 3, Episode 2 — 36:01"
-        caption="Related episode"
-        cta="Listen to this episode"
-      />
+      {featured ? (
+        <FeaturedSection
+          cta="Listen to this episode"
+          caption="Latest episode"
+          subTitle={`Season ${featured.seasonNumber} Episode ${
+            featured.episodeNumber
+          } — ${formatTime(featured.duration)}`}
+          title={featured.title}
+          href={getCWKEpisodePath(featured)}
+          imageUrl={featured.image}
+          imageAlt={listify(featured.guests.map(g => g.name))}
+        />
+      ) : null}
     </>
   )
 }

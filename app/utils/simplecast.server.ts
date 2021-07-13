@@ -83,14 +83,12 @@ async function getEpisodes(seasonId: string) {
   const res = await fetch(url.toString(), {headers})
   const {collection} =
     (await res.json()) as SimplecastCollectionResponse<SimplecastEpisodeListItem>
-  return Promise.all(
+  const episodes = await Promise.all(
     collection
-      .filter(
-        ({status, is_hidden, is_published}) =>
-          status === 'published' && !is_hidden && is_published,
-      )
+      .filter(({status, is_hidden}) => status === 'published' && !is_hidden)
       .map(({id}) => getEpisode(id)),
   )
+  return episodes.filter(typedBoolean)
 }
 
 async function getEpisode(episodeId: string) {
@@ -99,6 +97,7 @@ async function getEpisode(episodeId: string) {
   })
   const {
     id,
+    is_published,
     slug,
     transcription: transcriptMarkdown,
     long_description: summaryMarkdown,
@@ -110,6 +109,9 @@ async function getEpisode(episodeId: string) {
     season: {number: seasonNumber},
     keywords: keywordsData,
   } = (await res.json()) as SimplecastEpisode
+  if (!is_published) {
+    return null
+  }
 
   const keywords = keywordsData.collection.map(({value}) => value)
   const [

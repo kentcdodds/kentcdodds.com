@@ -4,18 +4,18 @@ import {H2, H6} from '../typography'
 import {ArrowLink} from '../arrow-button'
 import {CopyIcon} from '../icons/copy-icon'
 
-interface FeaturedSectionProps {
-  slug?: string
+type FeaturedSectionProps = {
   caption?: string
   cta?: string
   subTitle?: string
   title?: string
   imageUrl?: string
   imageAlt?: string
-}
+} & ({href?: never; slug: string} | {href: string; slug?: never})
 
 function FeaturedSection({
   slug,
+  href,
   caption = 'Featured article',
   cta = 'Read full article',
   imageUrl,
@@ -39,7 +39,7 @@ function FeaturedSection({
               </div>
 
               <div className="flex items-center justify-between mt-12">
-                <ArrowLink to={`./${slug}`}>{cta}</ArrowLink>
+                <ArrowLink to={slug ?? href ?? '/'}>{cta}</ArrowLink>
                 <button className="flex items-center justify-center w-12 h-12 text-gray-800 whitespace-nowrap bg-white rounded-lg lg:hidden">
                   <CopyIcon />
                 </button>

@@ -23,7 +23,7 @@ type SimplecastEpisode = {
 
 type SimplecastEpisodeListItem = Pick<
   SimplecastEpisode,
-  'status' | 'is_hidden' | 'id' | 'is_published'
+  'status' | 'is_hidden' | 'id'
 >
 
 export {

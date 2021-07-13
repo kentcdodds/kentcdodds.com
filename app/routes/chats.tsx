@@ -22,7 +22,7 @@ import {getBlogRecommendations} from '../utils/blog.server'
 import {getSeasonListItems, refreshSeasons} from '../utils/simplecast.server'
 import {getUser} from '../utils/session.server'
 import {FeaturedSection} from '../components/sections/featured-section'
-import {listify, formatTime} from '../utils/misc'
+import {listify, formatTime, getCWKEpisodePath} from '../utils/misc'
 
 type LoaderData = {
   seasons: Await<ReturnType<typeof getSeasonListItems>>
@@ -39,7 +39,8 @@ export const loader: LoaderFunction = async ({request}) => {
 
   const blogRecommendations = (await getBlogRecommendations()).slice(0, 3)
   const data: LoaderData = {
-    seasons: await getSeasonListItems(),
+    // we show the seasons in reverse order
+    seasons: (await getSeasonListItems()).reverse(),
     blogRecommendations,
   }
 
@@ -81,16 +82,25 @@ function PodcastAppLink({
 
 function PodcastHome() {
   const [sortOrder, setSortOrder] = React.useState<'desc' | 'asc'>('asc')
+  const navigate = useNavigate()
   const data = useRouteData<LoaderData>()
   const matches = useMatches()
   const last = matches[matches.length - 1]
 
   const seasonNumber = last?.params.season
     ? Number(last.params.season)
-    : data.seasons[data.seasons.length - 1]?.seasonNumber ?? 1
+    : // we use the first one because the seasons are in reverse order
+      data.seasons[0]?.seasonNumber ?? 1
 
   const currentSeason = data.seasons.find(s => s.seasonNumber === seasonNumber)
   const tabIndex = currentSeason ? data.seasons.indexOf(currentSeason) : 0
+
+  function handleTabChange(index: number) {
+    const chosenSeason = data.seasons[index]
+    if (chosenSeason) {
+      navigate(String(chosenSeason.seasonNumber).padStart(2, '0'))
+    }
+  }
 
   const weeksSinceMyBirthday = differenceInWeeks(
     new Date(),
@@ -156,7 +166,7 @@ function PodcastHome() {
               featured.episodeNumber
             } — ${formatTime(featured.duration)}`}
             title={featured.title}
-            slug={featured.slug}
+            href={getCWKEpisodePath(featured)}
             imageUrl={featured.image}
             imageAlt={listify(featured.guests.map(g => g.name))}
           />
@@ -167,12 +177,10 @@ function PodcastHome() {
         as={Grid}
         className="mb-24 lg:mb-64"
         index={tabIndex}
-        onChange={() => {
-          // we ignore the change here and rely on the link to trigger the navigation
-        }}
+        onChange={handleTabChange}
       >
         <TabList className="flex flex-col col-span-full items-start mb-20 bg-transparent lg:flex-row lg:space-x-12">
-          {data.seasons.reverse().map(season => (
+          {data.seasons.map(season => (
             <Tab
               key={season.seasonNumber}
               className={clsx(
@@ -183,7 +191,22 @@ function PodcastHome() {
                 },
               )}
             >
-              <Link to={String(season.seasonNumber).padStart(2, '0')}>
+              {/*
+                The link is here for progressive enhancement. Even though this
+                is a tab, it's actually navigating to a route, so semantically
+                it should be a link. By making it a link, it'll work with JS
+                off, but more importantly it'll allow people to meta-click it.
+              */}
+              <Link
+                to={String(season.seasonNumber).padStart(2, '0')}
+                onClick={e => {
+                  if (e.metaKey) {
+                    e.stopPropagation()
+                  } else {
+                    e.preventDefault()
+                  }
+                }}
+              >
                 {`Season ${season.seasonNumber}`}
               </Link>
             </Tab>
@@ -219,7 +242,7 @@ function PodcastHome() {
         ) : null}
 
         <TabPanels className="col-span-full">
-          {data.seasons.reverse().map(season => (
+          {data.seasons.map(season => (
             <TabPanel
               key={season.seasonNumber}
               className="border-t border-gray-200 dark:border-gray-600"

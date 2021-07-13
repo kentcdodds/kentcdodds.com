@@ -107,7 +107,7 @@ function Navbar() {
         <NavLink to="/blog">Blog</NavLink>
         <NavLink to="/courses">Courses</NavLink>
         <NavLink to="/discord">Discord</NavLink>
-        <NavLink to="/podcast">Podcast</NavLink>
+        <NavLink to="/chats">Podcast</NavLink>
         <NavLink to="/workshops">Workshops</NavLink>
         <NavLink to="/about">About</NavLink>
       </ul>

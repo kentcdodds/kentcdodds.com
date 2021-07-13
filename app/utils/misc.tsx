@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {Link} from 'remix'
-import type {NonNullProperties, User, Request} from 'types'
+import type {NonNullProperties, User, Request, CWKEpisode} from 'types'
 import {Team} from '@prisma/client'
 import * as dateFns from 'date-fns'
 import md5 from 'md5-hash'
@@ -169,6 +169,15 @@ function getDomainUrl(request: Request) {
   return `${protocol}://${host}`
 }
 
+function getCWKEpisodePath({
+  seasonNumber,
+  episodeNumber,
+  slug,
+}: Pick<CWKEpisode, 'seasonNumber' | 'episodeNumber' | 'slug'>) {
+  const pad = (num: number) => String(num).padStart(2, '0')
+  return `/chats/${pad(seasonNumber)}/${pad(episodeNumber)}/${slug}`
+}
+
 export {
   getAvatar,
   getAvatarForUser,
@@ -184,4 +193,5 @@ export {
   getDomainUrl,
   teams,
   formatTime,
+  getCWKEpisodePath,
 }
