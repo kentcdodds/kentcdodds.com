@@ -20,7 +20,6 @@ type MdxPage = {
   code: string
   slug: string
   readTime?: ReturnType<typeof calculateReadingTime>
-  duration?: string
 
   /**
    * It's annoying that all these are set to optional I know, but there's
