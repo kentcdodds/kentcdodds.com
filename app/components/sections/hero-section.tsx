@@ -27,9 +27,9 @@ function HeroSection({
 }: HeroSectionProps) {
   return (
     <Grid
-      className={clsx('pt-24 lg:pb-12 lg:h-hero', {
-        'mb-24 lg:mb-64': arrowLabel,
-        '-mb-24': !arrowLabel,
+      className={clsx('mb-24 pt-24 lg:pb-12 lg:h-hero', {
+        'lg:mb-64': arrowLabel,
+        'lg:-mb-24': !arrowLabel,
       })}
     >
       {imageUrl ? (
@@ -45,6 +45,7 @@ function HeroSection({
           <img
             className={clsx('w-full h-auto object-contain', {
               'max-h-50vh': imageSize === 'medium',
+              'max-h-75vh': imageSize === 'giant',
             })}
             src={imageUrl}
             alt={imageAlt}

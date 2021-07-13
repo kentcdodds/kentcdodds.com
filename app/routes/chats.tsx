@@ -116,7 +116,6 @@ function PodcastHome() {
         })}
         imageAlt={images.kayak.alt}
         imageSize="large"
-        arrowLabel="Is this something for me?"
       />
 
       <Grid className="mb-14">
