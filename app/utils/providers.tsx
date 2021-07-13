@@ -82,6 +82,14 @@ function TeamProvider({
   )
 }
 
+type ChatsEpisodeUIState = {
+  sortOrder: 'desc' | 'asc'
+}
+const {
+  Provider: ChatsEpisodeUIStateProvider,
+  useValue: useChatsEpisodeUIState,
+} = createSimpleContext<ChatsEpisodeUIState>('ChatsEpisodeUIState')
+
 export {
   RequestInfoProvider,
   useRequestInfo,
@@ -94,5 +102,7 @@ export {
   TeamProvider,
   useTeam,
   optionalTeams,
+  ChatsEpisodeUIStateProvider,
+  useChatsEpisodeUIState,
 }
 export type {RequestInfo, OptionalTeam}

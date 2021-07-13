@@ -2,8 +2,10 @@ import * as React from 'react'
 import {json, useRouteData, Link} from 'remix'
 import type {HeadersFunction} from 'remix'
 import type {CWKSeason, KCDLoader} from 'types'
+import {orderBy} from 'lodash'
 import {Grid} from '../../components/grid'
 import {getSeasonListItems} from '../../utils/simplecast.server'
+import {useChatsEpisodeUIState} from '../../utils/providers'
 import {formatTime} from '../../utils/misc'
 
 type LoaderData = {
@@ -35,7 +37,9 @@ export const headers: HeadersFunction = ({loaderHeaders}) => {
 
 export default function Screen() {
   const {season} = useRouteData<LoaderData>()
-  return season.episodes.map(episode => (
+  const {sortOrder} = useChatsEpisodeUIState()
+  const episodes = orderBy(season.episodes, 'episodeNumber', sortOrder)
+  return episodes.map(episode => (
     <Link key={episode.slug} to={episode.slug}>
       <Grid
         nested

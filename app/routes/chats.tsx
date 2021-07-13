@@ -6,6 +6,7 @@ import {Tab, TabList, TabPanel, TabPanels, Tabs} from '@reach/tabs'
 import {Outlet, useNavigate} from 'react-router-dom'
 import differenceInWeeks from 'date-fns/differenceInWeeks'
 import type {Await} from 'types'
+import {ChatsEpisodeUIStateProvider} from '../utils/providers'
 import {Grid} from '../components/grid'
 import {images} from '../images'
 import {H2, H6} from '../components/typography'
@@ -15,6 +16,7 @@ import {RssIcon} from '../components/icons/rss-icon'
 import {SpotifyIcon} from '../components/icons/spotify-icon'
 import {GoogleIcon} from '../components/icons/google-icon'
 import {ChevronDownIcon} from '../components/icons/chevron-down-icon'
+import {ChevronUpIcon} from '../components/icons/chevron-up-icon'
 import {BlogSection} from '../components/sections/blog-section'
 import {getBlogRecommendations} from '../utils/blog.server'
 import {getSeasonListItems, refreshSeasons} from '../utils/simplecast.server'
@@ -78,6 +80,7 @@ function PodcastAppLink({
 }
 
 function PodcastHome() {
+  const [sortOrder, setSortOrder] = React.useState<'desc' | 'asc'>('asc')
   const navigate = useNavigate()
   const data = useRouteData<LoaderData>()
   const matches = useMatches()
@@ -195,10 +198,22 @@ function PodcastHome() {
               <span>{`Season ${currentSeason.seasonNumber} — ${currentSeason.episodes.length} episodes`}</span>
             </H6>
 
-            {/* TODO: add sorting */}
-            <button className="text-primary inline-flex items-center text-lg font-medium">
-              Showing newest first
-              <ChevronDownIcon className="ml-2 text-gray-400" />
+            <button
+              className="text-primary inline-flex items-center text-lg font-medium"
+              onClick={() => setSortOrder(o => (o === 'asc' ? 'desc' : 'asc'))}
+            >
+              {sortOrder === 'asc' ? (
+                <>
+                  Showing oldest first
+                  <ChevronUpIcon className="ml-2 text-gray-400" />
+                </>
+              ) : null}
+              {sortOrder === 'desc' ? (
+                <>
+                  Showing newest first
+                  <ChevronDownIcon className="ml-2 text-gray-400" />
+                </>
+              ) : null}
             </button>
           </div>
         ) : null}
@@ -209,7 +224,9 @@ function PodcastHome() {
               key={season.seasonNumber}
               className="border-t border-gray-200 dark:border-gray-600"
             >
-              <Outlet />
+              <ChatsEpisodeUIStateProvider value={{sortOrder}}>
+                <Outlet />
+              </ChatsEpisodeUIStateProvider>
             </TabPanel>
           ))}
         </TabPanels>
