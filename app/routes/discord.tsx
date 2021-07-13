@@ -31,8 +31,8 @@ export interface CategoryCardProps {
 }
 
 function CategoryCardContent({title, description, number}: CategoryCardProps) {
-  const {isExpanded, index} = useAccordionItemContext()
-  console.log('is exp', number, isExpanded, index)
+  const {isExpanded} = useAccordionItemContext()
+
   return (
     <>
       <H5 className="w-full">

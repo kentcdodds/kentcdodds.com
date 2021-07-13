@@ -1,8 +1,8 @@
 import * as React from 'react'
 import clsx from 'clsx'
-import {H2} from './typography'
-import {ArrowLink} from './arrow-button'
-import {Grid} from './grid'
+import {H2} from '../typography'
+import {ArrowLink} from '../arrow-button'
+import {Grid} from '../grid'
 
 interface HeaderSectionProps {
   ctaUrl?: string

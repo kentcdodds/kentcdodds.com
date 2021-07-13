@@ -8,8 +8,8 @@ interface HeroSectionProps {
   title: string
   subtitle?: string
   action?: React.ReactNode
-  imageUrl: string
-  imageAlt: string
+  imageUrl?: string
+  imageAlt?: string
   arrowUrl?: string
   arrowLabel?: string
   imageSize?: 'medium' | 'large' | 'giant'
@@ -32,24 +32,35 @@ function HeroSection({
         '-mb-24': !arrowLabel,
       })}
     >
-      <div
-        className={clsx('col-span-full mb-12 lg:mb-0', {
-          'lg:col-start-7 lg:col-span-5 px-10': imageSize === 'medium',
-          'lg:col-start-6 lg:col-span-6 pl-10 flex items-start justify-end':
-            imageSize === 'large',
-          'lg:col-start-6 lg:col-span-7 lg:px-0 lg:-mt-24 lg:-mr-5vw flex items-center justify-center':
-            imageSize === 'giant',
-        })}
-      >
-        <img
-          className={clsx('w-full h-auto object-contain', {
-            'max-h-50vh': imageSize === 'medium',
+      {imageUrl ? (
+        <div
+          className={clsx('col-span-full mb-12 lg:mb-0', {
+            'lg:col-start-7 lg:col-span-5 px-10': imageSize === 'medium',
+            'lg:col-start-6 lg:col-span-6 pl-10 flex items-start justify-end':
+              imageSize === 'large',
+            'lg:col-start-6 lg:col-span-7 lg:px-0 lg:-mt-24 lg:-mr-5vw flex items-center justify-center':
+              imageSize === 'giant',
           })}
-          src={imageUrl}
-          alt={imageAlt}
-        />
-      </div>
-      <div className="col-span-full pt-6 lg:flex lg:flex-col lg:col-span-5 lg:col-start-1 lg:row-start-1 lg:h-full">
+        >
+          <img
+            className={clsx('w-full h-auto object-contain', {
+              'max-h-50vh': imageSize === 'medium',
+            })}
+            src={imageUrl}
+            alt={imageAlt}
+          />
+        </div>
+      ) : null}
+
+      <div
+        className={clsx(
+          'col-span-full pt-6 lg:flex lg:flex-col lg:col-start-1 lg:row-start-1 lg:h-full',
+          {
+            'lg:col-span-5': imageUrl,
+            'lg:col-span-7': !imageUrl,
+          },
+        )}
+      >
         <div className="flex flex-auto flex-col">
           <H2>{title}</H2>
           {subtitle ? (
