@@ -74,9 +74,10 @@ function ArrowButtonContent({
 }: Pick<ArrowButtonBaseProps, 'children' | 'direction'>) {
   return (
     <>
-      {direction === 'right' ||
-      direction === 'up' ||
-      direction === 'top-right' ? (
+      {children &&
+      (direction === 'right' ||
+        direction === 'up' ||
+        direction === 'top-right') ? (
         <span className="mr-8">{children}</span>
       ) : null}
 
@@ -86,7 +87,7 @@ function ArrowButtonContent({
         </motion.span>
       </span>
 
-      {direction === 'left' || direction === 'down' ? (
+      {children && (direction === 'left' || direction === 'down') ? (
         <span className="ml-8">{children}</span>
       ) : null}
     </>
