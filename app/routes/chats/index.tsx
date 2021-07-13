@@ -1,9 +1,10 @@
 import * as React from 'react'
 import {json, useRouteData} from 'remix'
+import type {LoaderFunction} from 'remix'
 import clsx from 'clsx'
 import {Tab, TabList, TabPanel, TabPanels, Tabs} from '@reach/tabs'
 import {Outlet} from 'react-router-dom'
-import type {KCDLoader, MdxListItem} from 'types'
+import type {Await} from 'types'
 import {Grid} from '../../components/grid'
 import {images} from '../../images'
 import {H2, H6} from '../../components/typography'
@@ -15,14 +16,23 @@ import {GoogleIcon} from '../../components/icons/google-icon'
 import {ChevronDownIcon} from '../../components/icons/chevron-down-icon'
 import {BlogSection} from '../../components/sections/blog-section'
 import {getBlogRecommendations} from '../../utils/blog.server'
+import {refreshSeasons} from '../../utils/simplecast.server'
+import {getUser} from '../../utils/session.server'
 // import {FeaturedSection} from '../../components/sections/featured-section'
 
 type LoaderData = {
   seasons: Array<number>
-  blogRecommendations: Array<MdxListItem>
+  blogRecommendations: Await<ReturnType<typeof getBlogRecommendations>>
 }
 
-export const loader: KCDLoader = async () => {
+export const loader: LoaderFunction = async ({request}) => {
+  if (new URL(request.url).searchParams.has('fresh')) {
+    const user = await getUser(request)
+    if (user?.role === 'ADMIN') {
+      await refreshSeasons()
+    }
+  }
+
   const blogRecommendations = (await getBlogRecommendations()).slice(0, 3)
   // TODO: this should support the season dirs
   const data: LoaderData = {

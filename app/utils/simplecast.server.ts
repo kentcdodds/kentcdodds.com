@@ -4,6 +4,7 @@ import type {
   SimplecastEpisode,
   SimplecastEpisodeListItem,
   CWKEpisode,
+  Await,
 } from 'types'
 import unified from 'unified'
 import parseHtml from 'rehype-parse'
@@ -16,10 +17,9 @@ import hastToHtml from 'hast-util-to-html'
 import type * as U from 'unist'
 import type * as M from 'mdast'
 import visit from 'unist-util-visit'
-import {getRequiredServerEnvVar, typedBoolean} from './misc'
+import {getErrorMessage, getRequiredServerEnvVar, typedBoolean} from './misc'
 import {markdownToHtml} from './markdown.server'
-
-// TODO: add redis caching?
+import * as redis from './redis.server'
 
 const SIMPLECAST_KEY = getRequiredServerEnvVar('SIMPLECAST_KEY')
 const CHATS_WITH_KENT_PODCAST_ID = getRequiredServerEnvVar(
@@ -28,6 +28,27 @@ const CHATS_WITH_KENT_PODCAST_ID = getRequiredServerEnvVar(
 
 const headers = {
   authorization: `Bearer ${SIMPLECAST_KEY}`,
+}
+
+const seasonsCacheKey = `simplecast:seasons:${CHATS_WITH_KENT_PODCAST_ID}`
+
+async function getCachedSeasons() {
+  try {
+    const cached = await redis.get(seasonsCacheKey)
+    if (cached)
+      return JSON.parse(cached) as Await<ReturnType<typeof getSeasons>>
+  } catch (error: unknown) {
+    console.error(
+      `error with cache at ${seasonsCacheKey}`,
+      getErrorMessage(error),
+    )
+  }
+
+  const seasons = await getSeasons()
+
+  await redis.set(seasonsCacheKey, JSON.stringify(seasons))
+
+  return seasons
 }
 
 async function getSeasons() {
@@ -49,7 +70,7 @@ async function getSeasons() {
       }
       return {seasonNumber: number, episodes: await getEpisodes(seasonId)}
     }),
-  ).then(seasons => seasons.filter(typedBoolean))
+  ).then(s => s.filter(typedBoolean))
 }
 
 async function getEpisodes(seasonId: string) {
@@ -128,8 +149,6 @@ async function parseSummaryMarkdown(
 ): Promise<
   Pick<CWKEpisode, 'summaryHTML' | 'resources' | 'guests' | 'homeworkHTMLs'>
 > {
-  // TODO: remark to get stuff out of the description
-
   const isHTMLInput = summaryInput.trim().startsWith('<')
   const resources: CWKEpisode['resources'] = []
   const guests: CWKEpisode['guests'] = []
@@ -305,4 +324,9 @@ async function parseSummaryMarkdown(
   }
 }
 
-export {getSeasons}
+async function refreshSeasons() {
+  await redis.del(seasonsCacheKey)
+  await getSeasons()
+}
+
+export {getCachedSeasons as getSeasons, refreshSeasons}

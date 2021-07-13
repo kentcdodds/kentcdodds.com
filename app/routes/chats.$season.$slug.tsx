@@ -4,7 +4,7 @@ import {Link} from 'react-router-dom'
 import type {KCDLoader, CWKEpisode, CWKListItem} from 'types'
 import clsx from 'clsx'
 import {motion} from 'framer-motion'
-import {getSeasons} from '../utils/simplecast.server'
+import {getSeasons, refreshSeasons} from '../utils/simplecast.server'
 import {H2, H3, H6, Paragraph} from '../components/typography'
 import {Grid} from '../components/grid'
 import {ArrowIcon} from '../components/icons/arrow-icon'
@@ -18,6 +18,7 @@ import {ArrowLink} from '../components/arrow-button'
 import {ChevronRightIcon} from '../components/icons/chevron-right-icon'
 import {ChevronLeftIcon} from '../components/icons/chevron-left-icon'
 import {listify} from '../utils/misc'
+import {getUser} from '../utils/session.server'
 
 type LoaderData = {
   prevEpisode: CWKListItem | null
@@ -26,8 +27,16 @@ type LoaderData = {
 }
 
 export const loader: KCDLoader<{slug: string; season: string}> = async ({
+  request,
   params,
 }) => {
+  if (new URL(request.url).searchParams.has('fresh')) {
+    const user = await getUser(request)
+    if (user?.role === 'ADMIN') {
+      await refreshSeasons()
+    }
+  }
+
   const episodeNumber = Number(params.slug.match(/(\d+)-/)?.[1])
   const seasonNumber = Number(params.season)
 
