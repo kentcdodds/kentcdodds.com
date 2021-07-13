@@ -122,7 +122,7 @@ function MobileMenuList() {
             transition={{duration: 0.15, ease: 'linear'}}
             className="bg-primary flex flex-col pb-12 h-full border-t border-gray-200 dark:border-gray-600 overflow-y-scroll"
           >
-            <MenuItems className="p-0 bg-transparent">
+            <MenuItems className="p-0 bg-transparent border-none">
               {MOBILE_LINKS.map(link => (
                 <MenuLink
                   className="text-primary hover:bg-secondary focus:bg-secondary hover:text-primary px-5vw py-9 border-b border-gray-200 dark:border-gray-600"
