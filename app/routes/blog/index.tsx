@@ -3,13 +3,15 @@ import type {LoaderFunction, HeadersFunction, MetaFunction} from 'remix'
 import {json, useRouteData} from 'remix'
 import type {MdxListItem} from 'types'
 import {matchSorter, rankings as matchSorterRankings} from 'match-sorter'
+import formatDate from 'date-fns/format'
+import parseISO from 'date-fns/parseISO'
 import {Grid} from '../../components/grid'
 import {images} from '../../images'
 import {H2, H3, H6} from '../../components/typography'
 import {SearchIcon} from '../../components/icons/search-icon'
 import {ArticleCard} from '../../components/article-card'
 import {ArrowLink} from '../../components/arrow-button'
-import {FeaturedArticleSection} from '../../components/sections/featured-article-section'
+import {FeaturedSection} from '../../components/sections/featured-section'
 import {Tag} from '../../components/tag'
 import {getBlogMdxListItems, refreshDirListForMdx} from '../../utils/mdx'
 import {useRequestInfo} from '../../utils/providers'
@@ -201,7 +203,22 @@ function BlogHome() {
 
       {featured ? (
         <div className="mb-10">
-          <FeaturedArticleSection {...featured} />
+          <FeaturedSection
+            subTitle={
+              featured.frontmatter.date
+                ? `${formatDate(
+                    parseISO(featured.frontmatter.date),
+                    'PPP',
+                  )}  — ${featured.readTime?.text ?? 'quick read'}`
+                : 'TBA'
+            }
+            title={featured.frontmatter.title}
+            imageUrl={featured.frontmatter.bannerUrl}
+            imageAlt={featured.frontmatter.bannerAlt}
+            caption="Featured article"
+            cta="Read full article"
+            slug={featured.slug}
+          />
         </div>
       ) : null}
 

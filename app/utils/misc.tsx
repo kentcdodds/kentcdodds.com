@@ -2,6 +2,7 @@ import * as React from 'react'
 import {Link} from 'remix'
 import type {NonNullProperties, User, Request} from 'types'
 import {Team} from '@prisma/client'
+import * as dateFns from 'date-fns'
 import md5 from 'md5-hash'
 import {images} from '../images'
 import type {getEnv} from './env.server'
@@ -54,6 +55,42 @@ function AnchorOrLink(props: AnchorProps) {
     // @ts-expect-error I'm not sure what to do about extra props other than to forward them
     return <Link to={href} {...rest} />
   }
+}
+
+// unfortunately TypeScript doesn't have Intl.ListFormat yet 😢
+// so we'll just add it ourselves:
+type ListFormatOptions = {
+  type?: 'conjunction' | 'disjunction' | 'unit'
+  style?: 'long' | 'short' | 'narrow'
+  localeMatcher?: 'lookup' | 'best fit'
+}
+declare namespace Intl {
+  class ListFormat {
+    constructor(locale: string, options: ListFormatOptions)
+    public format: (items: Array<string>) => string
+  }
+}
+
+type ListifyOptions<ItemType> = {
+  type?: ListFormatOptions['type']
+  style?: ListFormatOptions['style']
+  stringify?: (item: ItemType) => string
+}
+function listify<ItemType>(
+  array: Array<ItemType>,
+  {
+    type = 'conjunction',
+    style = 'long',
+    stringify = (thing: {toString(): string}) => thing.toString(),
+  }: ListifyOptions<ItemType> = {},
+) {
+  const stringified = array.map(item => stringify(item))
+  const formatter = new Intl.ListFormat('en', {style, type})
+  return formatter.format(stringified)
+}
+
+function formatTime(seconds: number) {
+  return dateFns.format(dateFns.addSeconds(new Date(0), seconds), 'mm:ss')
 }
 
 function getErrorMessage(error: unknown) {
@@ -139,10 +176,12 @@ export {
   getErrorMessage,
   getNonNull,
   assertNonNull,
+  listify,
   typedBoolean,
   getRequiredServerEnvVar,
   getRequiredGlobalEnvVar,
   getDiscordAuthorizeURL,
   getDomainUrl,
   teams,
+  formatTime,
 }

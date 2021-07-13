@@ -6,6 +6,7 @@ import {oembedHandlers} from './oembed'
 import {transistorHandlers} from './transistor'
 import {discordHandlers} from './discord'
 import {convertKitHandlers} from './convert-kit'
+import {simplecastHandlers} from './simplecast'
 import {isE2E, updateFixture} from './utils'
 
 // put one-off handlers that don't really need an entire file to themselves here
@@ -33,6 +34,7 @@ const server = setupServer(
   ...transistorHandlers,
   ...discordHandlers,
   ...convertKitHandlers,
+  ...simplecastHandlers,
   ...miscHandlers,
 )
 

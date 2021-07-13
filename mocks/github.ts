@@ -4,9 +4,16 @@ import type {DefaultRequestBody, MockedRequest, RestHandler} from 'msw'
 import {rest} from 'msw'
 import * as config from '../config'
 
-const isDirectory = async (d: string) => {
+async function isDirectory(d: string) {
   try {
     return (await fs.lstat(d)).isDirectory()
+  } catch {
+    return false
+  }
+}
+async function isFile(d: string) {
+  try {
+    return (await fs.lstat(d)).isFile()
   } catch {
     return false
   }
@@ -55,10 +62,11 @@ const githubHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
         throw new Error(message)
       }
 
-      const localDir = nodePath.join(__dirname, '..', path)
-      const isLocalDir = await isDirectory(localDir)
+      const localPath = nodePath.join(__dirname, '..', path)
+      const isLocalDir = await isDirectory(localPath)
+      const isLocalFile = await isFile(localPath)
 
-      if (!isLocalDir) {
+      if (!isLocalDir && !isLocalFile) {
         return res(
           ctx.status(404),
           ctx.json({
@@ -69,7 +77,19 @@ const githubHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
         )
       }
 
-      const dirList = await fs.readdir(localDir)
+      if (isLocalFile) {
+        const encoding = 'base64' as const
+        const content = await fs.readFile(localPath, {encoding: 'utf-8'})
+        return res(
+          ctx.status(200),
+          ctx.json({
+            content: Buffer.from(content, 'utf-8').toString(encoding),
+            encoding,
+          }),
+        )
+      }
+
+      const dirList = await fs.readdir(localPath)
 
       const contentDescriptions = await Promise.all(
         dirList.map(async (name): Promise<GHContentsDescription> => {
@@ -77,7 +97,7 @@ const githubHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
           // NOTE: this is a cheat-code so we don't have to determine the sha of the file
           // and our sha endpoint handler doesn't have to do a reverse-lookup.
           const sha = relativePath
-          const fullPath = nodePath.join(localDir, name)
+          const fullPath = nodePath.join(localPath, name)
           const isDir = await isDirectory(fullPath)
           const size = isDir ? 0 : (await fs.stat(fullPath)).size
           return {

@@ -6,16 +6,20 @@ interface GridProps {
   overflow?: boolean
   className?: string
   as?: React.ElementType
+  nested?: boolean
 }
 
-function Grid({children, className, as = 'div'}: GridProps) {
+function Grid({children, className, as = 'div', nested}: GridProps) {
   const Tag = as
 
   return (
-    <Tag className="mx-10vw">
+    <Tag className={clsx({'mx-10vw': !nested, 'w-full': nested})}>
       <div
         className={clsx(
-          'grid gap-x-4 grid-cols-4 mx-auto max-w-7xl md:grid-cols-8 lg:gap-x-6 lg:grid-cols-12',
+          'grid gap-x-4 grid-cols-4 md:grid-cols-8 lg:gap-x-6 lg:grid-cols-12',
+          {
+            'mx-auto max-w-7xl': !nested,
+          },
           className,
         )}
       >
@@ -34,7 +38,7 @@ function GridLines() {
   }
 
   return (
-    <div className="-z-10 fixed inset-0 pointer-events-none select-none">
+    <div className="fixed -z-10 inset-0 pointer-events-none select-none">
       <Grid>
         {Array.from({length: 12}).map((_, idx) => (
           <div

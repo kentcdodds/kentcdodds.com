@@ -56,6 +56,9 @@ module.exports = {
     },
 
     extend: {
+      zIndex: {
+        '-10': '-10',
+      },
       fontFamily: {
         sans: ['Matter', ...defaultTheme.fontFamily.sans],
       },
@@ -119,6 +122,7 @@ module.exports = {
                 },
                 strong: {
                   fontWeight: theme('fontWeight.medium'),
+                  fontSize: fontSize('lg'),
                 },
                 hr: {
                   marginTop: theme('spacing.8'),

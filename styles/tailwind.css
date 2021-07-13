@@ -37,4 +37,20 @@
   .bg-secondary {
     @apply bg-gray-100 dark:bg-gray-800;
   }
+
+  .bg-inverse {
+    @apply bg-black dark:bg-white;
+  }
+
+  .text-primary {
+    @apply text-black dark:text-white;
+  }
+
+  .text-secondary {
+    @apply dark:text-blueGray-500 text-gray-500;
+  }
+
+  .text-inverse {
+    @apply dark:text-black text-white;
+  }
 }
