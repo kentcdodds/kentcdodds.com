@@ -3,6 +3,7 @@ import clsx from 'clsx'
 import {Link, LinkProps} from 'react-router-dom'
 import {motion} from 'framer-motion'
 import {ArrowIcon, ArrowIconProps} from './icons/arrow-icon'
+import {H6} from './typography'
 
 const arrowVariants: Record<
   ArrowIconProps['direction'],
@@ -111,4 +112,26 @@ function ArrowLink({to, ...props}: ArrowLinkProps) {
   )
 }
 
-export {ArrowButton, ArrowLink}
+function BackLink({
+  to,
+  className,
+  children,
+}: Pick<ArrowLinkProps, 'to' | 'className' | 'children'>) {
+  return (
+    <MotionLink
+      to={to}
+      className={clsx('flex text-black dark:text-white space-x-4', className)}
+      initial="initial"
+      whileHover="hover"
+      whileTap="tap"
+      animate="initial"
+    >
+      <motion.span variants={arrowVariants.left}>
+        <ArrowIcon direction="left" />
+      </motion.span>
+      <H6 as="span">{children}</H6>
+    </MotionLink>
+  )
+}
+
+export {ArrowButton, ArrowLink, BackLink}

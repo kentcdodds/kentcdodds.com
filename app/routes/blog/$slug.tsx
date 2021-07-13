@@ -15,8 +15,7 @@ import {
 import {useOptionalUser} from '../../utils/providers'
 import {H2, H6, Paragraph} from '../../components/typography'
 import {Grid} from '../../components/grid'
-import {ArrowIcon} from '../../components/icons/arrow-icon'
-import {ArrowLink} from '../../components/arrow-button'
+import {ArrowLink, BackLink} from '../../components/arrow-button'
 import {BlogSection} from '../../components/sections/blog-section'
 import {getBlogRecommendations} from '../../utils/blog.server'
 import {getUser} from '../../utils/session.server'
@@ -243,14 +242,13 @@ function MdxScreen() {
 
   return (
     <>
-      <Grid className="mb-24 mt-24">
-        <Link
-          to="/"
-          className="flex col-span-full text-black dark:text-white space-x-4 lg:col-span-8 lg:col-start-3"
+      <Grid className="mb-10 mt-24 lg:mb-24">
+        <BackLink
+          to="/blog"
+          className="lg-col-span-8 col-span-full lg:col-start-3"
         >
-          <ArrowIcon direction="left" />
-          <H6 as="span">Back to overview</H6>
-        </Link>
+          Back to overview
+        </BackLink>
       </Grid>
 
       <Grid as="header" className="mb-12">

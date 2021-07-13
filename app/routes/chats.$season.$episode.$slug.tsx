@@ -15,7 +15,7 @@ import {GithubIcon} from '../components/icons/github-icon'
 import {TwitterIcon} from '../components/icons/twitter-icon'
 import {PlusIcon} from '../components/icons/plus-icon'
 import {FeaturedSection} from '../components/sections/featured-section'
-import {ArrowLink} from '../components/arrow-button'
+import {ArrowLink, BackLink} from '../components/arrow-button'
 import {ChevronRightIcon} from '../components/icons/chevron-right-icon'
 import {ChevronLeftIcon} from '../components/icons/chevron-left-icon'
 import {formatTime, listify} from '../utils/misc'
@@ -305,14 +305,13 @@ function PodcastDetail() {
 
   return (
     <>
-      <Grid className="mb-24 mt-24 lg:mb-12">
-        <Link
-          to="../.."
-          className="flex col-span-full text-black dark:text-white space-x-4 lg:col-span-8 lg:col-start-3"
+      <Grid className="mb-10 mt-24 lg:mb-24">
+        <BackLink
+          to="/podcast"
+          className="lg-col-span-8 col-span-full lg:col-start-3"
         >
-          <ArrowIcon direction="left" />
-          <H6 as="span">Back to overview</H6>
-        </Link>
+          Back to overview
+        </BackLink>
       </Grid>
 
       <Grid as="header" className="mb-12">

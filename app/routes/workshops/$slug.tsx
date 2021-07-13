@@ -1,16 +1,14 @@
 import * as React from 'react'
 import {useRouteData, json} from 'remix'
 import type {MdxPage, KCDLoader} from 'types'
-import {Link} from 'react-router-dom'
 import formatDate from 'date-fns/format'
 import {FourOhFour, getMdxPage, mdxPageMeta} from '../../utils/mdx'
 import {getScheduledEvents} from '../../utils/workshop-tickets.server'
 import type {WorkshopEvent} from '../../utils/workshop-tickets.server'
 import {Grid} from '../../components/grid'
-import {ArrowIcon} from '../../components/icons/arrow-icon'
 import {H2, H5, H6, Paragraph} from '../../components/typography'
 import {Button} from '../../components/button'
-import {ArrowButton} from '../../components/arrow-button'
+import {ArrowButton, BackLink} from '../../components/arrow-button'
 import {WorkshopCard} from '../../components/workshop-card'
 import {NumberedPanel} from '../../components/numbered-panel'
 import {TestimonialSection} from '../../components/sections/testimonial-section'
@@ -102,14 +100,9 @@ function MdxScreen({mdxPage}: {mdxPage: MdxPage; workshop?: WorkshopEvent}) {
     <>
       <Grid as="header" className="mb-24 mt-20 lg:mb-80 lg:mt-24">
         <div className="col-span-full lg:col-span-8">
-          <Link
-            to="/"
-            className="flex mb-10 text-black dark:text-white space-x-4 lg:mb-24"
-          >
-            <ArrowIcon direction="left" />
-            <H6 as="span">Back to overview</H6>
-          </Link>
-
+          <BackLink to="/workshops" className="mb-10 lg:mb-24">
+            Back to overview
+          </BackLink>
           <H2 className="mb-2">{`Learn ${frontmatter.title} in this workshop with Kent C. Dodds.`}</H2>
 
           <H6 as="p" className="mb-16 lowercase lg:mb-44">
