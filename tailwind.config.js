@@ -11,6 +11,10 @@ module.exports = {
     boxShadow: ['responsive', 'hover', 'focus', 'dark'],
   },
   theme: {
+    screens: {
+      md: '640px',
+      lg: '1024px',
+    },
     colors: {
       // color scheme is defined in /app.css
       transparent: 'transparent',
