@@ -16,7 +16,7 @@ import hastToHtml from 'hast-util-to-html'
 import type * as U from 'unist'
 import type * as M from 'mdast'
 import visit from 'unist-util-visit'
-import {getRequiredServerEnvVar} from './misc'
+import {getRequiredServerEnvVar, typedBoolean} from './misc'
 import {markdownToHtml} from './markdown.server'
 
 // TODO: add redis caching?
@@ -42,13 +42,14 @@ async function getSeasons() {
     collection.map(async ({href, number}) => {
       const seasonId = new URL(href).pathname.split('/').slice(-1)[0]
       if (!seasonId) {
-        throw new Error(
+        console.error(
           `Could not determine seasonId from ${href} for season ${number}`,
         )
+        return
       }
       return {seasonNumber: number, episodes: await getEpisodes(seasonId)}
     }),
-  )
+  ).then(seasons => seasons.filter(typedBoolean))
 }
 
 async function getEpisodes(seasonId: string) {
@@ -140,9 +141,10 @@ async function parseSummaryMarkdown(
     .use(function extractMetaData() {
       return function transformer(treeArg) {
         if (treeArg.type !== 'root') {
-          throw new Error(
+          console.error(
             `${errorKey}: summary markdown root element is a ${treeArg.type} not a "root".`,
           )
+          return
         }
         const tree = treeArg as M.Root
         type Section = {
@@ -151,7 +153,10 @@ async function parseSummaryMarkdown(
         }
         const sections: Record<string, Section> = {}
         visit(tree, 'heading', (heading: M.Heading, index, parent) => {
-          if (!parent) throw new Error('heading without a parent')
+          if (!parent) {
+            console.error(heading, `${errorKey} heading without a parent`)
+            return
+          }
           if (heading.depth !== 3) return
 
           const nextHeading = parent.children
@@ -165,8 +170,8 @@ async function parseSummaryMarkdown(
           const sectionTitle = (heading.children[0] as M.Text | undefined)
             ?.value
           if (!sectionTitle) {
-            console.error(heading)
-            throw new Error(`${errorKey}: Section with no title`)
+            console.error(`${errorKey}: Section with no title`, heading)
+            return
           }
           sections[sectionTitle] = {
             children: headingChildren,
@@ -230,30 +235,34 @@ async function parseSummaryMarkdown(
                 // this error handling 😂
                 const paragraph = listItem.children[0]
                 if (paragraph?.type !== 'paragraph') {
-                  console.error(child)
-                  throw new Error(
+                  console.error(
                     `${errorKey}: guest listItem first child is not a paragraph`,
+                    child,
                   )
+                  return
                 }
                 const [text, link] = paragraph.children
                 if (text?.type !== 'text') {
-                  console.error(child)
-                  throw new Error(
+                  console.error(
                     `${errorKey}: guest listItem first child's first child is not a text node`,
+                    child,
                   )
+                  return
                 }
                 if (link?.type !== 'link') {
-                  console.error(child)
-                  throw new Error(
+                  console.error(
                     `${errorKey}: guest listItem first child's second child is not a link node`,
+                    child,
                   )
+                  return
                 }
                 const linkText = link.children[0]
                 if (linkText?.type !== 'text') {
-                  console.error(child)
-                  throw new Error(
+                  console.error(
                     `${errorKey}: guest listItem first child's second child's first child is not a text node`,
+                    child,
                   )
+                  return
                 }
                 const {value: type} = text
                 const {value: name} = linkText
