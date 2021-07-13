@@ -12,7 +12,7 @@ export const articles: Array<MdxListItem> = [
     frontmatter: {
       title: 'How to Enable React Concurrent Mode',
       bannerUrl:
-        'https://kentcdodds.com/static/7ada1615181833135eadad3efd73ff3e/09a9d/banner.webp',
+        'https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032821/kentcdodds.com/content/blog/how-to-enable-react-concurrent-mode/banner.jpg',
       bannerAlt: 'placeholder',
       date: '2021-04-05',
     },
@@ -44,7 +44,7 @@ export const articles: Array<MdxListItem> = [
     frontmatter: {
       title: 'Business and Engineering alignment',
       bannerUrl:
-        'https://kentcdodds.com/static/bf0fd6f22a7cb75817cb938eeba2e42c/09a9d/banner.webp',
+        'https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032573/kentcdodds.com/content/blog/business-and-engineering-alignment/banner.jpg',
       bannerAlt: 'placeholder',
       date: '2021-03-05',
     },
@@ -60,7 +60,7 @@ export const articles: Array<MdxListItem> = [
     frontmatter: {
       title: 'Using fetch with TypeScript',
       bannerUrl:
-        'https://kentcdodds.com/static/f878ee6f4866c43770b2284a34b0649f/09a9d/banner.webp',
+        'https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033492/kentcdodds.com/content/blog/using-fetch-with-type-script/banner.jpg',
       bannerAlt: 'placeholder',
       date: '2021-03-02',
     },
