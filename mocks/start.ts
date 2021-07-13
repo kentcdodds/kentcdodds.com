@@ -34,11 +34,11 @@ const server = setupServer(
   ...transistorHandlers,
   ...discordHandlers,
   ...convertKitHandlers,
-  ...simplecastHandlers,
+  // ...simplecastHandlers,
   ...miscHandlers,
 )
 
-server.listen({onUnhandledRequest: 'error'})
+// server.listen({onUnhandledRequest: 'error'})
 console.info('🔶 Mock server installed')
 if (isE2E) console.info('running in E2E mode')
 

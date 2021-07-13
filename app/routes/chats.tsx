@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {json, useRouteData, useMatches} from 'remix'
+import {json, useRouteData, useMatches, Link} from 'remix'
 import type {LoaderFunction, HeadersFunction} from 'remix'
 import clsx from 'clsx'
 import {Tab, TabList, TabPanel, TabPanels, Tabs} from '@reach/tabs'
@@ -81,7 +81,6 @@ function PodcastAppLink({
 
 function PodcastHome() {
   const [sortOrder, setSortOrder] = React.useState<'desc' | 'asc'>('asc')
-  const navigate = useNavigate()
   const data = useRouteData<LoaderData>()
   const matches = useMatches()
   const last = matches[matches.length - 1]
@@ -91,10 +90,7 @@ function PodcastHome() {
     : data.seasons[data.seasons.length - 1]?.seasonNumber ?? 1
 
   const currentSeason = data.seasons.find(s => s.seasonNumber === seasonNumber)
-
-  function handleTabChange(index: number) {
-    navigate(String(index + 1).padStart(2, '0'))
-  }
+  const tabIndex = currentSeason ? data.seasons.indexOf(currentSeason) : 0
 
   const weeksSinceMyBirthday = differenceInWeeks(
     new Date(),
@@ -170,11 +166,13 @@ function PodcastHome() {
       <Tabs
         as={Grid}
         className="mb-24 lg:mb-64"
-        index={seasonNumber - 1}
-        onChange={handleTabChange}
+        index={tabIndex}
+        onChange={() => {
+          // we ignore the change here and rely on the link to trigger the navigation
+        }}
       >
         <TabList className="flex flex-col col-span-full items-start mb-20 bg-transparent lg:flex-row lg:space-x-12">
-          {data.seasons.map(season => (
+          {data.seasons.reverse().map(season => (
             <Tab
               key={season.seasonNumber}
               className={clsx(
@@ -185,7 +183,9 @@ function PodcastHome() {
                 },
               )}
             >
-              {`Season ${season.seasonNumber}`}
+              <Link to={String(season.seasonNumber).padStart(2, '0')}>
+                {`Season ${season.seasonNumber}`}
+              </Link>
             </Tab>
           ))}
         </TabList>
@@ -219,7 +219,7 @@ function PodcastHome() {
         ) : null}
 
         <TabPanels className="col-span-full">
-          {data.seasons.map(season => (
+          {data.seasons.reverse().map(season => (
             <TabPanel
               key={season.seasonNumber}
               className="border-t border-gray-200 dark:border-gray-600"

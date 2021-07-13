@@ -7,7 +7,7 @@ import type {
   Await,
   CWKSeason,
 } from 'types'
-import {omit} from 'lodash'
+import {omit, sortBy} from 'lodash'
 import unified from 'unified'
 import parseHtml from 'rehype-parse'
 import parseMarkdown from 'remark-parse'
@@ -61,7 +61,7 @@ async function getSeasons() {
   const {collection} =
     (await res.json()) as SimplecastCollectionResponse<SimpelcastSeasonListItem>
 
-  return Promise.all(
+  const seasons = await Promise.all(
     collection.map(async ({href, number}) => {
       const seasonId = new URL(href).pathname.split('/').slice(-1)[0]
       if (!seasonId) {
@@ -73,6 +73,8 @@ async function getSeasons() {
       return {seasonNumber: number, episodes: await getEpisodes(seasonId)}
     }),
   ).then(s => s.filter(typedBoolean))
+
+  return sortBy(seasons, s => Number(s.seasonNumber))
 }
 
 async function getEpisodes(seasonId: string) {
@@ -332,7 +334,7 @@ async function refreshSeasons() {
 }
 
 async function getSeasonListItems() {
-  const seasons = await getSeasons()
+  const seasons = await getCachedSeasons()
   const listItemSeasons: Array<CWKSeason> = []
   for (const season of seasons) {
     listItemSeasons.push({
