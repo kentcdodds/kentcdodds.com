@@ -13,15 +13,9 @@ type LoaderData = {
   season: CWKSeason
 }
 
-// NOTE: we have to handle the case where there is no param because index.tsx
-// re-exports this file.
-export const loader: KCDLoader<{season: string | undefined}> = async ({
-  params,
-}) => {
+export const loader: KCDLoader<{season: string}> = async ({params}) => {
   const seasons = await getSeasonListItems()
-  const seasonNumber = params.season
-    ? Number(params.season)
-    : seasons[seasons.length - 1]?.seasonNumber ?? 1
+  const seasonNumber = Number(params.season)
   const season = seasons.find(s => s.seasonNumber === seasonNumber)
   if (!season) {
     throw new Error(`oh no. season for ${seasonNumber}: ${params.season}`)
