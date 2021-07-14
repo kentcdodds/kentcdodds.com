@@ -1,6 +1,8 @@
 import * as React from 'react'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import {Form, json, redirect, useRouteData} from 'remix'
+import clsx from 'clsx'
+import {useEffect, useState} from 'react'
 import {getQrCodeDataURL} from '../utils/qrcode.server'
 import {getDiscordAuthorizeURL, getDomainUrl} from '../utils/misc'
 import {useRequestInfo, useUser, useUserInfo} from '../utils/providers'
@@ -13,8 +15,6 @@ import {Button} from '../components/button'
 import {CheckIcon} from '../components/icons/check-icon'
 import {LogoutIcon} from '../components/icons/logout-icon'
 import {TEAM_MAP} from '../utils/onboarding'
-import {useEffect, useState} from 'react'
-import {motion} from 'framer-motion'
 import {EyeIcon} from '../components/icons/eye-icon'
 
 type LoaderData = {message?: string; qrLoginCode: string}
@@ -237,15 +237,19 @@ function YouScreen() {
             alt="Login QR Code"
             className="w-full rounded-lg object-contain"
           />
-          <motion.button
+          <button
             onClick={() => setQrIsVisible(true)}
-            className="bg-primary text-secondary absolute inset-0 block flex flex-col items-center justify-center w-full h-full text-xl font-medium border-8 dark:border-blueGray-500 border-gray-500 rounded-lg"
-            initial={false}
-            animate={{opacity: qrIsVisible ? 0 : 1}}
+            className={clsx(
+              'focus-ring text-primary bg-secondary absolute inset-0 flex flex-col items-center justify-center w-full h-full text-lg font-medium rounded-lg transition duration-200',
+              {
+                'opacity-100': !qrIsVisible,
+                'opacity-0': qrIsVisible,
+              },
+            )}
           >
-            <EyeIcon size={48} />
+            <EyeIcon size={36} />
             <span>click to reveal</span>
-          </motion.button>
+          </button>
         </div>
       </Grid>
     </div>
