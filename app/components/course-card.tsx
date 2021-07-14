@@ -48,30 +48,4 @@ function CourseCard({
   )
 }
 
-function SmallCourseCard({
-  title,
-  description,
-  imageUrl,
-  imageAlt,
-  courseUrl,
-}: CourseCardProps) {
-  return (
-    <div className="bg-secondary relative flex flex-col items-start px-8 py-12 w-full h-full rounded-lg lg:px-12">
-      <img
-        alt={imageAlt}
-        className="flex-none w-auto h-32 object-contain"
-        src={imageUrl}
-      />
-      <div className="flex flex-none items-end mb-4 h-48">
-        <H3>{title}</H3>
-      </div>
-      <Paragraph className="flex-auto mb-16 max-w-sm">{description}</Paragraph>
-
-      <ArrowLink to={courseUrl} className="flex-none">
-        Visit course
-      </ArrowLink>
-    </div>
-  )
-}
-
-export {CourseCard, SmallCourseCard}
+export {CourseCard}
