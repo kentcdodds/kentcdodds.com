@@ -143,7 +143,7 @@ function ArticleFooter() {
     <Grid>
       <div className="flex flex-col col-span-full justify-between mb-12 pb-12 text-blueGray-500 text-lg font-medium border-b border-gray-600 lg:flex-row lg:col-span-8 lg:col-start-3 lg:pb-6">
         <div className="flex space-x-5">
-          <H6>Share article</H6>
+          <H6 as="h2">Share article</H6>
           {/* TODO: fix links */}
           <Link
             className="dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
@@ -183,7 +183,7 @@ function ArticleFooter() {
         />
       </div>
       <div className="lg:col-start:5 col-span-full lg:col-span-6">
-        <H6>Written by Kent C. Dodds</H6>
+        <H6 as="div">Written by Kent C. Dodds</H6>
         <Paragraph className="mb-12 mt-3">
           {`
 Kent C. Dodds is a JavaScript software engineer and teacher. He's taught

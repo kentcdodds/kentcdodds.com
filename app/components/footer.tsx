@@ -17,7 +17,7 @@ function NewsletterSection() {
   const user = useOptionalUser()
   return (
     <div>
-      <H6>Stay up to date</H6>
+      <H6 as="div">Stay up to date</H6>
       <div className="mt-4 max-w-md">
         <Paragraph>
           Subscribe to the newsletter to stay up to date with articles, courses
@@ -59,7 +59,7 @@ function NewsletterSection() {
 function ContactSection() {
   return (
     <div>
-      <H6>Contact</H6>
+      <H6 as="div">Contact</H6>
       <ul className="mt-4">
         <FooterLink name="contact page" href="/contact" />
         <FooterLink name="office hours" href="/office-hours" />
@@ -71,7 +71,7 @@ function ContactSection() {
 function GeneralSection() {
   return (
     <div>
-      <H6>General</H6>
+      <H6 as="div">General</H6>
       <ul className="mt-4">
         <FooterLink name="privacy policy" href="/privacy" />
         <FooterLink name="terms of use" href="/terms" />
@@ -84,7 +84,7 @@ function GeneralSection() {
 function SitemapSection() {
   return (
     <div>
-      <H6>Sitemap</H6>
+      <H6 as="div">Sitemap</H6>
       <ul className="mt-4">
         <FooterLink name="home" href="/legal/terms" />
         <FooterLink name="blog" href="/legal/privacy" />
@@ -102,7 +102,7 @@ function SitemapSection() {
 function AboutSection() {
   return (
     <div>
-      <H4 as="h6">Kent C. Dodds</H4>
+      <H4 as="div">Kent C. Dodds</H4>
 
       <p className="mt-6 max-w-md dark:text-blueGray-500 text-gray-500 text-2xl">
         Full time educator teaching people development

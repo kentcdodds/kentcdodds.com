@@ -172,7 +172,9 @@ function BlogHome() {
 
       {data.tags.length > 0 ? (
         <Grid className="mb-14">
-          <H6 className="col-span-full mb-6">Search blog by topics</H6>
+          <H6 as="div" className="col-span-full mb-6">
+            Search blog by topics
+          </H6>
           <div className="flex flex-wrap col-span-full -mb-4 -mr-4 lg:col-span-10">
             {data.tags.map(tag => (
               <Tag

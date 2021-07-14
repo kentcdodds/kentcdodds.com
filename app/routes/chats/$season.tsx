@@ -53,12 +53,12 @@ export default function Screen() {
           alt={episode.title}
         />
         <div className="text-primary relative flex flex-col col-span-3 md:col-span-7 lg:flex-row lg:col-span-11 lg:items-center lg:justify-between">
-          <h4 className="mb-3 text-xl font-medium lg:mb-0">
+          <div className="mb-3 text-xl font-medium lg:mb-0">
             <span className="inline-block w-10 lg:text-lg">
               {`${episode.episodeNumber.toString().padStart(2, '0')}.`}
             </span>
             {episode.title}
-          </h4>
+          </div>
           <div className="text-gray-400 text-lg font-medium">
             {formatTime(episode.duration)}
           </div>

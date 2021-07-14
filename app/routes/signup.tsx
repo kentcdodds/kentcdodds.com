@@ -194,7 +194,7 @@ function TeamOption({team: value, error, selected}: TeamOptionProps) {
           aria-describedby={error ? 'team-error' : undefined}
         />
         <img className="block mb-16" src={team.image()} alt={team.image.alt} />
-        <H6>{team.label}</H6>
+        <H6 as="span">{team.label}</H6>
       </label>
     </div>
   )
@@ -310,18 +310,24 @@ export default function NewAccount() {
         <div className="col-span-full lg:col-span-5 lg:col-start-8">
           <H2 className="mb-32">You might be thinking, why pick a team?</H2>
 
-          <H6 className="mb-4">Gamify your learning.</H6>
+          <H6 as="h3" className="mb-4">
+            Gamify your learning.
+          </H6>
           <Paragraph className="mb-12">
             Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
             nunc, dictum quis condimentum in, impe rdiet at arcu.{' '}
           </Paragraph>
-          <H6 className="mb-4">Here will go the second title.</H6>
+          <H6 as="h3" className="mb-4">
+            Here will go the second title.
+          </H6>
           <Paragraph className="mb-12">
             Mauris auctor nulla at felis placerat, ut elementum urna commodo.
             Aenean et rutrum quam. Etiam odio massa, congue in orci nec, ornare
             suscipit sem aenean turpis.
           </Paragraph>
-          <H6 className="mb-4">Here will go the third title.</H6>
+          <H6 as="h3" className="mb-4">
+            Here will go the third title.
+          </H6>
           <Paragraph className="mb-12">
             Mauris auctor nulla at felis placerat, ut elementum urna commodo.
             Aenean et rutrum quam. Etiam odio massa, congue in orci nec, ornare

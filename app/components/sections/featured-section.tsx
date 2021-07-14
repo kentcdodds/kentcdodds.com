@@ -30,8 +30,10 @@ function FeaturedSection({
           <Grid className="lg:dark:bg-gray-800 pb-6 pt-14 rounded-lg md:pb-12 lg:bg-gray-100">
             <div className="col-span-full lg:flex lg:flex-col lg:col-span-5 lg:col-start-2 lg:justify-between">
               <div>
-                <H6>{caption}</H6>
-                <H2 className="mt-12">{title}</H2>
+                <H6 as="h2">{caption}</H6>
+                <H2 as="h3" className="mt-12">
+                  {title}
+                </H2>
 
                 <div className="mt-6 text-blueGray-500 text-xl font-medium">
                   {subTitle}

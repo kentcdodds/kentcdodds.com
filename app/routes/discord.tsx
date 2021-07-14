@@ -35,7 +35,7 @@ function CategoryCardContent({title, description, number}: CategoryCardProps) {
 
   return (
     <>
-      <H5 className="w-full">
+      <H5 as="div" className="w-full">
         <AccordionButton className="relative w-full text-left">
           <span className="absolute -left-16 top-0 flex hidden text-lg lg:block">
             {number.toString().padStart(2, '0')}.
@@ -160,18 +160,24 @@ export default function Discord() {
             Join Discord
           </ButtonLink>
 
-          <H6 className="mb-4">Here will go the first title..</H6>
+          <H6 as="h3" className="mb-4">
+            Here will go the first title..
+          </H6>
           <Paragraph className="mb-12">
             Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
             nunc, dictum quis condimentum in, impe rdiet at arcu.{' '}
           </Paragraph>
-          <H6 className="mb-4">Here will go the second title..</H6>
+          <H6 as="h3" className="mb-4">
+            Here will go the second title..
+          </H6>
           <Paragraph className="mb-12">
             Mauris auctor nulla at felis placerat, ut elementum urna commodo.
             Aenean et rutrum quam. Etiam odio massa, congue in orci nec, ornare
             suscipit sem aenean turpis.
           </Paragraph>
-          <H6 className="mb-4">Here will go the third title.</H6>
+          <H6 as="h3" className="mb-4">
+            Here will go the third title.
+          </H6>
           <Paragraph className="mb-12">
             Mauris auctor nulla at felis placerat, ut elementum urna commodo.
             Aenean et rutrum quam. Etiam odio massa, congue in orci nec, ornare
@@ -223,10 +229,10 @@ export default function Discord() {
 
       <Grid className="mb-24 lg:mb-64">
         <div className="hidden col-span-full mb-12 lg:block lg:col-span-4 lg:mb-0">
-          <H6>Set up your own learning club.</H6>
+          <H6 as="h2">Set up your own learning club.</H6>
         </div>
         <div className="col-span-full mb-20 lg:col-span-8 lg:mb-28">
-          <H2 className="mb-3">
+          <H2 as="p" className="mb-3">
             Learning clubs in the discord are like study groups you put together
             yourself.
           </H2>
@@ -236,7 +242,7 @@ export default function Discord() {
           </H2>
         </div>
         <div className="col-span-full mb-8 lg:col-span-4 lg:col-start-5 lg:mb-0 lg:pr-12">
-          <H6 className="mb-4">
+          <H6 as="h3" className="mb-4">
             When we learn together, we learn better, and that's the idea.
           </H6>
           <Paragraph className="mb-16">
@@ -244,7 +250,7 @@ export default function Discord() {
             nunc, dictum quis condimentum in, imp erdiet at arcu.
           </Paragraph>
 
-          <H6 className="mb-4">
+          <H6 as="h3" className="mb-4">
             Develop friendships with other nice learners in the community.
           </H6>
           <Paragraph>
@@ -253,7 +259,7 @@ export default function Discord() {
           </Paragraph>
         </div>
         <div className="col-span-full lg:col-span-4 lg:col-start-9 lg:pr-12">
-          <H6 className="mb-4">
+          <H6 as="h3" className="mb-4">
             You have access to me (Kent) during twice-weekly office hours.
           </H6>
           <Paragraph className="mb-16">
@@ -261,7 +267,7 @@ export default function Discord() {
             nunc, dictum quis condimentum in, imp erdiet at arcu.
           </Paragraph>
 
-          <H6 className="mb-4">
+          <H6 as="h3" className="mb-4">
             You can chat with members of the KCD Community on Discord.
           </H6>
           <Paragraph>

@@ -86,7 +86,7 @@ function Homework({
 }) {
   return (
     <div className="bg-secondary p-10 pb-16 w-full rounded-lg">
-      <H6 className="inline-flex items-center mb-8 space-x-4">
+      <H6 as="h4" className="inline-flex items-center mb-8 space-x-4">
         <ClipboardIcon />
         <span>Homework</span>
       </H6>
@@ -116,9 +116,9 @@ function Homework({
 function Resources({resources = []}: {resources: CWKEpisode['resources']}) {
   return (
     <div className="bg-secondary p-10 pb-16 rounded-lg">
-      <h6 className="text-primary inline-flex items-center mb-8 text-xl font-medium">
+      <h4 className="text-primary inline-flex items-center mb-8 text-xl font-medium">
         Resources
-      </h6>
+      </h4>
 
       <ul className="text-primary space-y-8">
         {resources.map(resource => (
@@ -139,6 +139,8 @@ function Resources({resources = []}: {resources: CWKEpisode['resources']}) {
 function Guests({episode}: {episode: CWKEpisode}) {
   return (
     <>
+      <h4 className="sr-only">Guests</h4>
+
       {episode.guests.map(guest => (
         <div
           key={guest.name}
@@ -150,9 +152,9 @@ function Guests({episode}: {episode: CWKEpisode}) {
             className="flex-none mb-6 mr-8 w-20 h-20 rounded-lg object-cover md:mb-0"
           />
           <div className="mb-6 w-full md:flex-auto md:mb-0">
-            <h6 className="text-primary mb-2 text-xl font-medium leading-none">
+            <div className="text-primary mb-2 text-xl font-medium leading-none">
               {guest.name}
-            </h6>
+            </div>
             <p className="text-xl leading-none">{guest.company}</p>
           </div>
           <div className="flex flex-none space-x-4">
@@ -183,9 +185,9 @@ function Transcript({
 
   return (
     <div className="bg-secondary col-span-full p-10 pb-16 rounded-lg">
-      <h6 className="text-primary inline-flex items-center mb-8 text-xl font-medium">
+      <h4 className="text-primary inline-flex items-center mb-8 text-xl font-medium">
         Transcript
-      </h6>
+      </h4>
 
       <div
         className={clsx(

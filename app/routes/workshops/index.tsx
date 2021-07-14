@@ -71,7 +71,7 @@ function WorkshopsHome() {
       </Grid>
 
       <Grid className="mb-64">
-        <H6 className="col-span-full mb-6">
+        <H6 as="h2" className="col-span-full mb-6">
           {selectedTech
             ? `${workshops.length} workshops found`
             : 'Showing all workshops'}

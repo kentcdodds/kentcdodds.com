@@ -58,16 +58,20 @@ function CoursesHome() {
 
       <Grid as="main" className="mb-48">
         <div className="hidden col-span-full mb-12 lg:block lg:col-span-4 lg:mb-0">
-          <H6>Reasons to invest in your career.</H6>
+          <H6 as="h2">Reasons to invest in your career.</H6>
         </div>
         <div className="col-span-full mb-8 lg:col-span-4 lg:mb-20">
-          <H6 className="mb-4">Become a more confident developer</H6>
+          <H6 as="h3" className="mb-4">
+            Become a more confident developer
+          </H6>
           <Paragraph className="mb-20">
             Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
             nunc, dictum quis condimentum in, impe rdiet at arcu. Donec et nunc
             vel mas sa fringilla fermentum. Donec in orn are est doler sit amet.
           </Paragraph>
-          <H6 className="mb-4">Earn more money as a developer</H6>
+          <H6 as="h3" className="mb-4">
+            Earn more money as a developer
+          </H6>
           <Paragraph>
             Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
             nunc, dictum quis condimentum in, imp erdiet at arcu.
@@ -77,6 +81,8 @@ function CoursesHome() {
           <ArrowButton direction="down" />
         </div>
       </Grid>
+
+      <h2 className="sr-only">Courses</h2>
 
       <Grid className="gap-y-4 mb-24 lg:mb-96">
         <div className="col-span-full lg:col-span-6">
@@ -180,7 +186,7 @@ function CoursesHome() {
         </div>
 
         <div className="col-span-full mt-4 lg:col-span-6 lg:col-start-7 lg:mt-0">
-          <H2 className="mb-8">
+          <H2 as="p" className="mb-8">
             Do you want to work trough one of these courses with peers?
           </H2>
           <H2 variant="secondary" as="p" className="mb-16">

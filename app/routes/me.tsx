@@ -216,7 +216,7 @@ function YouScreen() {
                   src={TEAM_MAP[user.team].image()}
                   alt={TEAM_MAP[user.team].image.alt}
                 />
-                <H6>{TEAM_MAP[user.team].label}</H6>
+                <H6 as="span">{TEAM_MAP[user.team].label}</H6>
               </div>
             </div>
           </div>

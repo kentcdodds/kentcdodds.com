@@ -24,9 +24,9 @@ function VideoCard({title, description, imageAlt, imageUrl}: VideoCardProps) {
           <PlayIcon />
         </div>
       </div>
-      <div className="mt-8">
-        <H5>{title}</H5>
-      </div>
+      <H5 as="h3" className="mt-8">
+        {title}
+      </H5>
       <p className="text-blueGray-500 text-xl">{description}</p>
     </div>
   )

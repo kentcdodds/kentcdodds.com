@@ -121,7 +121,9 @@ function PodcastHome() {
       />
 
       <Grid className="mb-14">
-        <H6 className="col-span-full mb-6">Listen to the podcasts here</H6>
+        <H6 as="div" className="col-span-full mb-6">
+          Listen to the podcasts here
+        </H6>
 
         <div className="flex flex-wrap col-span-full items-start justify-start -mb-4 -mr-4 lg:col-span-10">
           <PodcastAppLink
@@ -203,7 +205,10 @@ function PodcastHome() {
 
         {currentSeason ? (
           <div className="flex flex-col col-span-full mb-6 lg:flex-row lg:justify-between lg:mb-12">
-            <H6 className="flex flex-col col-span-full mb-10 lg:flex-row lg:mb-0">
+            <H6
+              as="h2"
+              className="flex flex-col col-span-full mb-10 lg:flex-row lg:mb-0"
+            >
               <span>Chats with Kent C. Dodds</span>
               &nbsp;
               <span>{`Season ${currentSeason.seasonNumber} — ${currentSeason.episodes.length} episodes`}</span>
