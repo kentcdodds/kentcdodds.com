@@ -126,6 +126,50 @@ const images = createImages({
     id: 'kentcdodds.com/illustrations/404_2_sprold',
     alt: 'Broken onewheel',
   },
+  courseAdvancedReactComponentPatterns: {
+    id: 'kentcdodds.com/courses/advanced-react-component-patterns',
+    alt: 'Illustration for React Class Component Patterns',
+  },
+  courseAsts: {
+    id: 'kentcdodds.com/courses/asts',
+    alt: 'Illustration for Code Transformation and Linting with ASTs',
+  },
+  courseEpicReact: {
+    id: 'kentcdodds.com/courses/epic-react',
+    alt: 'Illustration of a Rocket',
+  },
+  courseHowToContributeToAnOpenSourceProjectOnGitHub: {
+    id: 'kentcdodds.com/courses/how-to-contribute-to-an-open-source-project-on-github',
+    alt: 'Illustration for How to Contribute to an Open Source Project on GitHub',
+  },
+  courseHowToWriteAnOpenSourceJavaScriptLibrary: {
+    id: 'kentcdodds.com/courses/how-to-write-an-open-source-javascript-library',
+    alt: 'Illustration for How to Write an Open Source JavaScript Library',
+  },
+  courseSimplifyReactAppsWithReactHooks: {
+    id: 'kentcdodds.com/courses/simplify-react-apps-with-react-hooks',
+    alt: 'Illustration for Simplify React Apps with React Hooks',
+  },
+  courseTestingJS: {
+    id: 'kentcdodds.com/courses/testing-js',
+    alt: 'Illustration of a trophy',
+  },
+  courseTestingPrinciples: {
+    id: 'kentcdodds.com/courses/testing-principles',
+    alt: 'Illustration for JavaScript Testing Practices and Principles',
+  },
+  courseTestingReact: {
+    id: 'kentcdodds.com/courses/testing-react',
+    alt: 'Illustration for Testing React Applications, v2',
+  },
+  courseTheBeginnersGuideToReact: {
+    id: 'kentcdodds.com/courses/the-beginners-guide-to-react',
+    alt: `Illustration for The Beginner's Guide to React`,
+  },
+  courseUseSuspenseToSimplifyYourAsyncUI: {
+    id: 'kentcdodds.com/courses/use-suspense-to-simplify-your-async-ui',
+    alt: 'Illustration for Use Suspense to Simplify Your Async UI',
+  },
 })
 
 export {images}
