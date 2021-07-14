@@ -73,21 +73,21 @@ function ProblemSolutionSection() {
             <TabPanels className="col-span-full order-2 mt-16 lg:col-span-5 lg:col-start-7 lg:mt-0">
               <TabPanel>
                 <img
-                  className="-ml-10 w-48"
+                  className="w-48"
                   src={images.skis()}
                   alt={images.skis.alt}
                 />
               </TabPanel>
               <TabPanel>
                 <img
-                  className="-ml-10 w-48"
+                  className="w-48"
                   src="https://epicreact.dev/static/e9e50b43a9526373f48a11340fdfdbdc/e4e36/01-react-fundamentals.webp"
                   alt="TODO: give a real alt"
                 />
               </TabPanel>
               <TabPanel>
                 <img
-                  className="-ml-10 w-48"
+                  className="w-48"
                   src="https://epicreact.dev/static/2eec163c81b5805ff089fc59813197f8/35871/03-advanced-react-hooks.webp"
                   alt="TODO: give a real alt"
                 />

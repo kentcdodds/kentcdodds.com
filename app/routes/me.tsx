@@ -13,6 +13,9 @@ import {Button} from '../components/button'
 import {CheckIcon} from '../components/icons/check-icon'
 import {LogoutIcon} from '../components/icons/logout-icon'
 import {TEAM_MAP} from '../utils/onboarding'
+import {useEffect, useState} from 'react'
+import {motion} from 'framer-motion'
+import {EyeIcon} from '../components/icons/eye-icon'
 
 type LoaderData = {message?: string; qrLoginCode: string}
 export const loader: LoaderFunction = ({request}) => {
@@ -67,16 +70,29 @@ export const action: ActionFunction = async ({request}) => {
   })
 }
 
+const SHOW_QR_DURATION = 15_000
+
 function YouScreen() {
   const data = useRouteData<LoaderData>()
   const user = useUser()
   const userInfo = useUserInfo()
   const requestInfo = useRequestInfo()
   const authorizeURL = getDiscordAuthorizeURL(requestInfo.origin)
+  const [qrIsVisible, setQrIsVisible] = useState(false)
+
+  useEffect(() => {
+    if (!qrIsVisible) return
+
+    const timeout = setTimeout(() => {
+      setQrIsVisible(false)
+    }, SHOW_QR_DURATION)
+
+    return () => clearTimeout(timeout)
+  }, [qrIsVisible, setQrIsVisible])
 
   return (
     <div>
-      <div className="mb-64 mt-12">
+      <div className="mb-64 mt-24 pt-6">
         <Grid>
           <div className="col-span-full mb-12 lg:mb-20">
             <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
@@ -215,12 +231,21 @@ function YouScreen() {
           </H2>
         </div>
 
-        <div className="col-span-full lg:col-span-5 lg:col-start-1 lg:row-start-1">
+        <div className="relative col-span-full lg:col-span-5 lg:col-start-1 lg:row-start-1">
           <img
             src={data.qrLoginCode}
             alt="Login QR Code"
             className="w-full rounded-lg object-contain"
           />
+          <motion.button
+            onClick={() => setQrIsVisible(true)}
+            className="bg-primary text-secondary absolute inset-0 block flex flex-col items-center justify-center w-full h-full text-xl font-medium border-8 dark:border-blueGray-500 border-gray-500 rounded-lg"
+            initial={false}
+            animate={{opacity: qrIsVisible ? 0 : 1}}
+          >
+            <EyeIcon size={48} />
+            <span>click to reveal</span>
+          </motion.button>
         </div>
       </Grid>
     </div>

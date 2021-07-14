@@ -6,10 +6,10 @@ export interface SpacerProps {
 
 const spacerSizes = {
   smallest: 'h-12',
-  smaller: 'h-24',
-  small: 'h-36',
-  medium: 'h-48',
-  large: 'h-64',
+  smaller: 'h-24', // 96
+  small: 'h-36', // 144
+  medium: 'h-48', // 200
+  large: 'h-64', // 250
 }
 
 function Spacer({size}: SpacerProps) {

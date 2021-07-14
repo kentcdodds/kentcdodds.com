@@ -8,10 +8,12 @@ import {AboutSection} from '../components/sections/about-section'
 import {BlogSection} from '../components/sections/blog-section'
 import {CourseSection} from '../components/sections/course-section'
 import {DiscordSection} from '../components/sections/discord-section'
-import {HeroSection} from '../components/sections/hero-section'
 import {IntroductionSection} from '../components/sections/introduction-section'
 import {ProblemSolutionSection} from '../components/sections/problem-solution-section'
 import {Spacer} from '../components/spacer'
+import {HeroSection} from '../components/sections/hero-section'
+import {images} from '../images'
+import {ButtonLink} from '../components/button'
 
 type LoaderData = {
   blogRecommendations: Array<MdxListItem>
@@ -28,8 +30,25 @@ function IndexRoute() {
   const data = useRouteData<LoaderData>()
   return (
     <div>
-      <HeroSection />
-      <Spacer size="large" />
+      <HeroSection
+        title="Helping people make the world a better place through quality software."
+        imageUrl={images.alexSnowboarding()}
+        imageAlt={images.alexSnowboarding.alt}
+        imageSize="giant"
+        arrowUrl="#intro"
+        arrowLabel="Learn more about Kent"
+        action={
+          <>
+            <ButtonLink to="/blog" variant="primary">
+              Read the blog
+            </ButtonLink>
+            <ButtonLink to="/courses" variant="secondary">
+              Take a course
+            </ButtonLink>
+          </>
+        }
+      />
+
       <IntroductionSection />
       <Spacer size="large" />
       <ProblemSolutionSection />

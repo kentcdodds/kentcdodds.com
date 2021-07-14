@@ -8,7 +8,7 @@ import type {Await} from 'types'
 import {ChatsEpisodeUIStateProvider} from '../utils/providers'
 import {Grid} from '../components/grid'
 import {images} from '../images'
-import {H2, H6} from '../components/typography'
+import {H6} from '../components/typography'
 import {AppleIcon} from '../components/icons/apple-icon'
 import {externalLinks} from '../external-links'
 import {RssIcon} from '../components/icons/rss-icon'
@@ -23,6 +23,7 @@ import {getUser} from '../utils/session.server'
 import {FeaturedSection} from '../components/sections/featured-section'
 import {listify, formatTime} from '../utils/misc'
 import {getCWKEpisodePath, getFeaturedEpisode} from '../utils/chats-with-kent'
+import {HeroSection} from '../components/sections/hero-section'
 
 type LoaderData = {
   seasons: Await<ReturnType<typeof getSeasonListItems>>
@@ -108,25 +109,16 @@ function PodcastHome() {
   const featured = getFeaturedEpisode(allEpisodes)
 
   return (
-    <div>
-      <Grid className="grid-rows-max-content mb-36 mt-16">
-        <div className="col-span-full mb-12 lg:col-span-6 lg:col-start-7 lg:row-span-2 lg:mb-0">
-          <img
-            className="object-contain"
-            src={images.kayak()}
-            alt={images.kayak.alt}
-          />
-        </div>
-
-        <div className="col-span-full lg:col-span-6 lg:row-start-1">
-          <div className="space-y-2 lg:max-w-sm">
-            <H2>Listen to chats with Kent C. Dodds here.</H2>
-            <H2 variant="secondary" as="p">
-              Find all episodes of my podcast below.
-            </H2>
-          </div>
-        </div>
-      </Grid>
+    <>
+      <HeroSection
+        title="Listen to chats with Kent C. Dodds here."
+        subtitle="Find all episodes of my podcast below."
+        imageUrl={images.kayak({
+          resize: {type: 'crop', width: 2600, height: 1800},
+        })}
+        imageAlt={images.kayak.alt}
+        imageSize="large"
+      />
 
       <Grid className="mb-14">
         <H6 className="col-span-full mb-6">Listen to the podcasts here</H6>
@@ -256,7 +248,7 @@ function PodcastHome() {
         title="Looking for more content?"
         description="Have a look at these articles."
       />
-    </div>
+    </>
   )
 }
 

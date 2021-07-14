@@ -221,7 +221,7 @@ export default function NewAccount() {
   }, [team, setTeam])
 
   return (
-    <div className="mt-12">
+    <div className="mt-24 pt-6">
       <Form
         className="mb-64"
         method="post"

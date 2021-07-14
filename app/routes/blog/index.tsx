@@ -16,6 +16,8 @@ import {Tag} from '../../components/tag'
 import {getBlogMdxListItems, refreshDirListForMdx} from '../../utils/mdx'
 import {useRequestInfo} from '../../utils/providers'
 import {getUser} from '../../utils/session.server'
+import {HeroSection} from '../../components/sections/hero-section'
+import {PlusIcon} from '../../components/icons/plus-icon'
 
 type LoaderData = {
   posts: Array<MdxListItem>
@@ -138,35 +140,18 @@ function BlogHome() {
     : postsToShow.slice(1, indexToShow)
 
   return (
-    <div>
-      <Grid className="grid-rows-max-content mb-36 mt-16">
-        <div className="col-span-full lg:col-span-6 lg:col-start-7 lg:row-span-2">
-          <img
-            className="max-h-[50vh] mx-auto lg:max-w-md"
-            src={images.skis()}
-            alt={images.skis.alt}
-          />
-        </div>
-
-        <div className="col-span-full lg:col-span-6 lg:row-start-1">
-          <div className="space-y-2 lg:max-w-sm">
-            <H2>Learn development with great articles.</H2>
-            <H2 variant="secondary" as="p">
-              Find the latest of my writing here.
-            </H2>
-          </div>
-        </div>
-
-        <div className="col-span-4 mt-12 lg:row-start-2">
-          <div className="relative">
-            <div className="absolute left-8 top-0 flex items-center justify-center h-full text-blueGray-500">
-              <SearchIcon />
-            </div>
-            <form
-              action="/blog"
-              method="GET"
-              onSubmit={e => e.preventDefault()}
-            >
+    <>
+      <HeroSection
+        title="Learn development with great articles."
+        subtitle="Find the latest of my writing here."
+        imageUrl={images.skis()}
+        imageAlt={images.skis.alt}
+        action={
+          <form action="/blog" method="GET" onSubmit={e => e.preventDefault()}>
+            <div className="relative">
+              <div className="absolute left-8 top-0 flex items-center justify-center h-full text-blueGray-500">
+                <SearchIcon />
+              </div>
               <input
                 value={queryValue}
                 onChange={event =>
@@ -177,13 +162,13 @@ function BlogHome() {
                 aria-label="Search blog"
                 className="dark:focus:bg-gray-800 placeholder-black dark:placeholder-white px-16 py-6 w-full text-black dark:text-white text-lg font-medium focus:bg-gray-100 bg-transparent border border-gray-200 dark:border-gray-600 rounded-full focus:outline-none"
               />
-            </form>
-            <div className="absolute right-8 top-0 flex items-center justify-center h-full text-blueGray-500 text-lg font-medium">
-              {matchingPosts.length}
+              <div className="absolute right-8 top-0 flex items-center justify-center h-full text-blueGray-500 text-lg font-medium">
+                {matchingPosts.length}
+              </div>
             </div>
-          </div>
-        </div>
-      </Grid>
+          </form>
+        }
+      />
 
       {data.tags.length > 0 ? (
         <Grid className="mb-14">
@@ -248,10 +233,9 @@ function BlogHome() {
         <div className="flex justify-center mb-64 w-full">
           <button
             onClick={() => setIndexToShow(i => i + 16)}
-            className="dark:focus:bg-gray-800 flex items-center px-8 py-6 dark:text-white focus:bg-gray-100 bg-transparent border border-gray-200 dark:border-gray-600 rounded-full focus:outline-none"
+            className="dark:focus:bg-gray-800 text-primary flex items-center px-8 py-6 focus:bg-gray-100 bg-transparent border border-gray-200 dark:border-gray-600 rounded-full focus:outline-none"
           >
-            {/* TODO: an svg plus often looks better. */}
-            Load more articles +
+            <span className="mr-4">Load more articles</span> <PlusIcon />
           </button>
         </div>
       ) : null}
@@ -261,16 +245,18 @@ function BlogHome() {
           <img src={images.kayak()} alt={images.kayak.alt} />
         </div>
 
-        <div className="col-span-full mt-4 space-y-4 lg:col-span-6 lg:col-start-7 lg:mt-0">
-          <H2>More of a listener when it comes to learning development?</H2>
-          <H2 variant="secondary" as="p">
+        <div className="col-span-full mt-4 lg:col-span-6 lg:col-start-7 lg:mt-0">
+          <H2 className="mb-8">
+            More of a listener when it comes to learning development?
+          </H2>
+          <H2 className="mb-16" variant="secondary" as="p">
             Check out my podcast Chats with Kent and learn about development and
             more.
           </H2>
           <ArrowLink to="/chats">Check out the podcast</ArrowLink>
         </div>
       </Grid>
-    </div>
+    </>
   )
 }
 

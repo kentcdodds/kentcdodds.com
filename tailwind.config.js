@@ -11,6 +11,10 @@ module.exports = {
     boxShadow: ['responsive', 'hover', 'focus', 'dark'],
   },
   theme: {
+    screens: {
+      md: '640px',
+      lg: '1024px',
+    },
     colors: {
       // color scheme is defined in /app.css
       transparent: 'transparent',
@@ -25,6 +29,7 @@ module.exports = {
         400: 'var(--color-gray-400)',
         500: 'var(--color-gray-500)',
         600: 'var(--color-gray-600)',
+        700: 'var(--color-gray-700)',
         800: 'var(--color-gray-800)',
         900: 'var(--color-gray-900)',
       },
@@ -81,6 +86,10 @@ module.exports = {
       },
       height: {
         hero: 'calc(100vh - 10rem)', // screen - navbar height (lg: only)
+      },
+      maxHeight: {
+        '50vh': '50vh', // max height for medium size hero images
+        '75vh': '75vh', // max height for giant size hero images
       },
       rotate: {
         '-135': '-135deg',

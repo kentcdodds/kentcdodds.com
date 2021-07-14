@@ -5,6 +5,7 @@ type TitleProps = {
   variant?: 'primary' | 'secondary'
   as?: React.ElementType
   className?: string
+  id?: string
 } & (
   | {children: React.ReactNode}
   | {

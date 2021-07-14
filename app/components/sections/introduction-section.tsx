@@ -18,7 +18,7 @@ function IntroductionSection() {
         />
       </div>
       <div className="col-span-full mt-12 space-y-12 lg:col-span-5 lg:col-start-7 lg:mt-0">
-        <H2>
+        <H2 id="intro">
           {`Hi, I'm Kent C. Dodds, I’m a full time educator teaching people development.`}
         </H2>
         <H2 variant="secondary" as="p">
