@@ -135,7 +135,7 @@ const images = createImages({
     alt: 'Illustration for Code Transformation and Linting with ASTs',
   },
   courseEpicReact: {
-    id: 'kentcdodds.com/pages/courses/epic-react',
+    id: 'kentcdodds.com/pages/courses/rocket',
     alt: 'Illustration of a Rocket',
   },
   courseHowToContributeToAnOpenSourceProjectOnGitHub: {
@@ -151,7 +151,7 @@ const images = createImages({
     alt: 'Illustration for Simplify React Apps with React Hooks',
   },
   courseTestingJS: {
-    id: 'kentcdodds.com/pages/courses/testing-js',
+    id: 'kentcdodds.com/pages/courses/testing-trophy',
     alt: 'Illustration of a trophy',
   },
   courseTestingPrinciples: {
