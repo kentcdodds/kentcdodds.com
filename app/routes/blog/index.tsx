@@ -17,6 +17,7 @@ import {getBlogMdxListItems, refreshDirListForMdx} from '../../utils/mdx'
 import {useRequestInfo} from '../../utils/providers'
 import {getUser} from '../../utils/session.server'
 import {HeroSection} from '../../components/sections/hero-section'
+import {PlusIcon} from '../../components/icons/plus-icon'
 
 type LoaderData = {
   posts: Array<MdxListItem>
@@ -232,10 +233,9 @@ function BlogHome() {
         <div className="flex justify-center mb-64 w-full">
           <button
             onClick={() => setIndexToShow(i => i + 16)}
-            className="dark:focus:bg-gray-800 flex items-center px-8 py-6 dark:text-white focus:bg-gray-100 bg-transparent border border-gray-200 dark:border-gray-600 rounded-full focus:outline-none"
+            className="dark:focus:bg-gray-800 text-primary flex items-center px-8 py-6 focus:bg-gray-100 bg-transparent border border-gray-200 dark:border-gray-600 rounded-full focus:outline-none"
           >
-            {/* TODO: an svg plus often looks better. */}
-            Load more articles +
+            <span className="mr-4">Load more articles</span> <PlusIcon />
           </button>
         </div>
       ) : null}
