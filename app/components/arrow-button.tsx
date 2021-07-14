@@ -110,7 +110,7 @@ function ArrowButton({onClick, type, ...props}: ArrowButtonProps) {
 const MotionLink = motion(Link)
 
 function ArrowLink({to, ...props}: ArrowLinkProps) {
-  if (typeof to === 'string' && to.startsWith('http')) {
+  if (typeof to === 'string' && (to.startsWith('http') || to.startsWith('#'))) {
     return (
       <motion.a href={to} {...getBaseProps(props)}>
         <ArrowButtonContent {...props} />

@@ -76,12 +76,13 @@ function CreditsIndex() {
       <HeroSection
         title="Curious to see all the people who helped out making this website?"
         subtitle="Start scrolling to learn more about everyone involved."
+        arrowUrl="#intro"
         arrowLabel="Get to know more here"
       />
 
       <Grid className="mb-24 lg:mb-64">
         <div className="col-span-full mb-12 lg:col-span-4 lg:mb-0">
-          <H6>Small intro for this page</H6>
+          <H6 id="intro">Small intro for this page</H6>
         </div>
         <div className="col-span-full mb-8 lg:col-span-8 lg:mb-20">
           <H2 className="mb-8">

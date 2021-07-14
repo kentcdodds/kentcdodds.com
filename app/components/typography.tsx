@@ -5,6 +5,7 @@ type TitleProps = {
   variant?: 'primary' | 'secondary'
   as?: React.ElementType
   className?: string
+  id?: string
 } & (
   | {children: React.ReactNode}
   | {
@@ -72,7 +73,6 @@ type ParagraphProps = {
   className?: string
   as?: React.ElementType
 } & ({children: React.ReactNode} | {dangerouslySetInnerHTML: {__html: string}})
-
 
 function Paragraph({className, as = 'p', ...rest}: ParagraphProps) {
   return React.createElement(as, {

@@ -212,24 +212,24 @@ function FourOhFour() {
   const pathname = last?.pathname
 
   return (
-    <>
-      <main>
-        <HeroSection
-          title="404 - Oh no, you found a page that's missing stuff."
-          subtitle={`"${pathname}" is not a page on kentcdodds.com. So sorry.`}
-          imageUrl={images.bustedOnewheel()}
-          imageAlt={images.bustedOnewheel.alt}
-          arrowLabel="But wait, there is more!"
-        />
+    <main>
+      <HeroSection
+        title="404 - Oh no, you found a page that's missing stuff."
+        subtitle={`"${pathname}" is not a page on kentcdodds.com. So sorry.`}
+        imageUrl={images.bustedOnewheel()}
+        imageAlt={images.bustedOnewheel.alt}
+        arrowUrl="#articles"
+        arrowLabel="But wait, there is more!"
+      />
 
-        {/* TODO: remove fixtures, do something smart */}
-        <BlogSection
-          articles={articles}
-          title="Looking for something to read?"
-          description="Have a look at these articles."
-        />
-      </main>
-    </>
+      {/* TODO: remove fixtures, do something smart */}
+      <div id="articles" />
+      <BlogSection
+        articles={articles}
+        title="Looking for something to read?"
+        description="Have a look at these articles."
+      />
+    </main>
   )
 }
 

@@ -136,6 +136,7 @@ export default function Discord() {
           resize: {type: 'crop', width: 2000, height: 2100},
         })}
         imageAlt={images.helmet.alt}
+        arrowUrl="#reasons-to-join"
         arrowLabel="Is this something for me?"
       />
 
@@ -151,7 +152,9 @@ export default function Discord() {
         </div>
 
         <div className="col-span-full lg:col-span-5 lg:col-start-8 lg:row-start-1">
-          <H2 className="mb-10">Here’s why you should join the server.</H2>
+          <H2 id="reasons-to-join" className="mb-10">
+            Here’s why you should join the server.
+          </H2>
 
           <ButtonLink className="mb-32" variant="primary" to={authorizeURL}>
             Join Discord

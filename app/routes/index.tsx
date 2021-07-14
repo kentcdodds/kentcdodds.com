@@ -35,6 +35,7 @@ function IndexRoute() {
         imageUrl={images.alexSnowboarding()}
         imageAlt={images.alexSnowboarding.alt}
         imageSize="giant"
+        arrowUrl="#intro"
         arrowLabel="Learn more about Kent"
         action={
           <>

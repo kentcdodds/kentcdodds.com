@@ -4,26 +4,42 @@ import {H2} from '../typography'
 import {ArrowLink} from '../arrow-button'
 import {Grid} from '../grid'
 
-interface HeroSectionProps {
+type HeroSectionProps = {
   title: string
   subtitle?: string
   action?: React.ReactNode
-  imageUrl?: string
-  imageAlt?: string
-  arrowUrl?: string
-  arrowLabel?: string
-  imageSize?: 'medium' | 'large' | 'giant'
-}
+} & (
+  | {
+      imageUrl: string
+      imageAlt: string
+      imageSize?: 'medium' | 'large' | 'giant'
+    }
+  | {
+      imageUrl?: never
+      imageAlt?: never
+      imageSize?: never
+    }
+) &
+  (
+    | {
+        arrowUrl: string
+        arrowLabel: string
+      }
+    | {
+        arrowUrl?: never
+        arrowLabel?: never
+      }
+  )
 
 function HeroSection({
-  imageUrl,
-  imageAlt,
-  imageSize = 'medium',
   action,
   title,
   subtitle,
-  arrowUrl = '#',
+  arrowUrl,
   arrowLabel,
+  imageUrl,
+  imageAlt,
+  imageSize = 'medium',
 }: HeroSectionProps) {
   return (
     <Grid
@@ -75,7 +91,7 @@ function HeroSection({
             </div>
           ) : null}
         </div>
-        {arrowLabel ? (
+        {arrowUrl ? (
           <div className="hidden pt-12 lg:block">
             <ArrowLink to={arrowUrl} direction="down" textSize="small">
               {arrowLabel}

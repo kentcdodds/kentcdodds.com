@@ -19,12 +19,14 @@ function AboutIndex() {
         subtitle="I’m an extreme sports fan. I’m an avid snowboarder and roller skater."
         imageUrl={images.snowboard()}
         imageAlt={images.snowboard.alt}
+        arrowUrl="#about-me"
         arrowLabel="Get to know more about me"
       />
 
       <Grid className="mb-24 mt-16 lg:mb-48">
         <div className="col-span-full">
           <img
+            id="about-me"
             className="rounded-lg object-cover"
             src={images.kentRidingOnewheelOutdoorsFast()}
             alt={images.kentRidingOnewheelOutdoorsFast.alt}
