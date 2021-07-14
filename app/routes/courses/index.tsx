@@ -80,7 +80,6 @@ function CoursesHome() {
 
       <Grid className="gap-y-4 mb-24 lg:mb-96">
         <div className="col-span-full lg:col-span-6">
-          {/* TODO: set correct imageUrl */}
           <CourseCard
             title="Epic React"
             description="The most comprehensive guide for pro’s."
@@ -100,7 +99,6 @@ function CoursesHome() {
           />
         </div>
 
-        {/* TODO: replace images */}
         <SmallCourseCard
           title="The Beginner's Guide to React"
           description="This course is for React newbies and anyone looking to build a solid foundation. It’s designed to teach you everything you need to start building web applications in React right away."
