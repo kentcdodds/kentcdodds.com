@@ -46,7 +46,9 @@ function TestimonialSection({
             },
           )}
         >
-          <H4 className="mb-24">“{testimonial.testimonial}”</H4>
+          <H4 as="p" className="mb-24">
+            “{testimonial.testimonial}”
+          </H4>
           <div className="flex items-center">
             <img
               src={testimonial.imageUrl}

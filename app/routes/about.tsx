@@ -36,10 +36,10 @@ function AboutIndex() {
 
       <Grid className="mb-24 mt-16 lg:mb-48">
         <div className="col-span-full mb-12 lg:col-span-4 lg:mb-0">
-          <H6>How I got where we are now.</H6>
+          <H6 as="h2">How I got where we are now.</H6>
         </div>
         <div className="col-span-full mb-8 lg:col-span-8 lg:mb-20">
-          <H2 className="mb-8">
+          <H2 as="p" className="mb-8">
             I'm a software engineer and teacher. I was born in 1988 (you can do
             the math) and grew up in Idaho.
           </H2>
@@ -92,18 +92,24 @@ function AboutIndex() {
         <div className="col-span-full lg:col-span-5 lg:col-start-1 lg:row-start-1">
           <H2 className="mb-10">Here are some of the values I live by.</H2>
 
-          <H6 className="mb-4">Here will go the first value</H6>
+          <H6 as="h3" className="mb-4">
+            Here will go the first value
+          </H6>
           <Paragraph className="mb-12">
             Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
             nunc, dictum quis condimentum in, impe rdiet at arcu.
           </Paragraph>
-          <H6 className="mb-4">Here will go the second value.</H6>
+          <H6 as="h3" className="mb-4">
+            Here will go the second value.
+          </H6>
           <Paragraph className="mb-12">
             Mauris auctor nulla at felis placerat, ut elementum urna commodo.
             Aenean et rutrum quam. Etiam odio massa, congue in orci nec, ornare
             suscipit sem aenean turpis.
           </Paragraph>
-          <H6 className="mb-4">Here will go the third value</H6>
+          <H6 as="h3" className="mb-4">
+            Here will go the third value
+          </H6>
           <Paragraph className="mb-12">
             Mauris auctor nulla at felis placerat, ut elementum urna commodo.
             Aenean et rutrum quam. Etiam odio massa, congue in orci nec, ornare

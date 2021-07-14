@@ -33,9 +33,9 @@ function ArticleCard({
         <div className="mt-8 text-blueGray-500 text-xl font-medium">
           {formatDate(parseISO(date), 'PPP')} — {readTime?.text ?? 'quick read'}
         </div>
-        <div className="mt-4">
-          <H3>{title}</H3>
-        </div>
+        <H3 as="div" className="mt-4">
+          {title}
+        </H3>
       </a>
 
       <button className="absolute left-6 top-6 p-4 text-black whitespace-nowrap text-lg font-medium hover:bg-gray-200 focus:bg-gray-200 bg-white rounded-lg focus:outline-none shadow hover:shadow-lg focus:shadow-lg peer-hover:opacity-100 hover:opacity-100 peer-focus:opacity-100 focus:opacity-100 transition lg:px-8 lg:py-4 lg:opacity-0">
