@@ -135,14 +135,11 @@ const dispense = candy => {
 
 Notice anything about these? Let's look at the diff:
 
-TODO: add "diff" back to this code block. esbuild didn't like it for some
-reason. Not sure why...
-
-```
-  const dispense = candy => {
-    setCandies(allCandies => allCandies.filter(c => c !== candy))
-  }
-+ const dispenseCallback = React.useCallback(dispense, [])
+```tsx add=4
+const dispense = candy => {
+  setCandies(allCandies => allCandies.filter(c => c !== candy))
+}
+const dispenseCallback = React.useCallback(dispense, [])
 ```
 
 Yeah, they're _exactly_ the same except the `useCallback` version is doing
@@ -186,15 +183,12 @@ element in the dependencies array changes between renders).
 So, if I didn't want to initialize that array of `initialCandies` every render,
 I could make this change:
 
-TODO: add "diff" back to this code block. esbuild didn't like it for some
-reason. Not sure why...
-
-```
-- const initialCandies = ['snickers', 'skittles', 'twix', 'milky way']
-+ const initialCandies = React.useMemo(
-+  () => ['snickers', 'skittles', 'twix', 'milky way'],
-+  [],
-+ )
+```tsx remove=1 add=2-5
+const initialCandies = ['snickers', 'skittles', 'twix', 'milky way']
+const initialCandies = React.useMemo(
+  () => ['snickers', 'skittles', 'twix', 'milky way'],
+  [],
+)
 ```
 
 And I would avoid that problem, but the savings would be so minimal that the
@@ -204,14 +198,11 @@ call and that code is doing property assignments etc.
 
 In this particular scenario, what would be even better is to make this change:
 
-TODO: add "diff" back to this code block. esbuild didn't like it for some
-reason. Not sure why...
-
-```
-+ const initialCandies = ['snickers', 'skittles', 'twix', 'milky way']
-  function CandyDispenser() {
--   const initialCandies = ['snickers', 'skittles', 'twix', 'milky way']
-    const [candies, setCandies] = React.useState(initialCandies)
+```tsx add=1 remove=3
+const initialCandies = ['snickers', 'skittles', 'twix', 'milky way']
+function CandyDispenser() {
+  const initialCandies = ['snickers', 'skittles', 'twix', 'milky way']
+  const [candies, setCandies] = React.useState(initialCandies)
 ```
 
 But sometimes you don't have that luxury because the value is either derived
@@ -402,7 +393,7 @@ of the `CountButton`s anyway.
 
 So this is the other situation where `useCallback` and `useMemo` can be of help:
 
-```tsx {7, 10}
+```tsx [7, 10]
 const CountButton = React.memo(function CountButton({onClick, count}) {
   return <button onClick={onClick}>{count}</button>
 })
@@ -445,7 +436,7 @@ const a = {b: props.b}
 
 And get it lazily:
 
-```js
+```tsx
 const a = React.useMemo(() => ({b: props.b}), [props.b])
 ```
 
