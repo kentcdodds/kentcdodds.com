@@ -6,7 +6,8 @@ import {orderBy} from 'lodash'
 import {Grid} from '../../components/grid'
 import {getSeasonListItems} from '../../utils/simplecast.server'
 import {useChatsEpisodeUIState} from '../../utils/providers'
-import {formatTime, getCWKEpisodePath} from '../../utils/misc'
+import {formatTime} from '../../utils/misc'
+import {getCWKEpisodePath} from '../../utils/chats-with-kent'
 
 type LoaderData = {
   season: CWKSeason

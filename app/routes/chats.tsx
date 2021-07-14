@@ -4,7 +4,6 @@ import type {LoaderFunction, HeadersFunction} from 'remix'
 import clsx from 'clsx'
 import {Tab, TabList, TabPanel, TabPanels, Tabs} from '@reach/tabs'
 import {Outlet, useNavigate} from 'react-router-dom'
-import differenceInWeeks from 'date-fns/differenceInWeeks'
 import type {Await} from 'types'
 import {ChatsEpisodeUIStateProvider} from '../utils/providers'
 import {Grid} from '../components/grid'
@@ -22,7 +21,8 @@ import {getBlogRecommendations} from '../utils/blog.server'
 import {getSeasonListItems, refreshSeasons} from '../utils/simplecast.server'
 import {getUser} from '../utils/session.server'
 import {FeaturedSection} from '../components/sections/featured-section'
-import {listify, formatTime, getCWKEpisodePath} from '../utils/misc'
+import {listify, formatTime} from '../utils/misc'
+import {getCWKEpisodePath, getFeaturedEpisode} from '../utils/chats-with-kent'
 
 type LoaderData = {
   seasons: Await<ReturnType<typeof getSeasonListItems>>
@@ -102,12 +102,8 @@ function PodcastHome() {
     }
   }
 
-  const weeksSinceMyBirthday = differenceInWeeks(
-    new Date(),
-    new Date('1988-10-18'),
-  )
   const allEpisodes = data.seasons.flatMap(s => s.episodes)
-  const featured = allEpisodes[weeksSinceMyBirthday % allEpisodes.length]
+  const featured = getFeaturedEpisode(allEpisodes)
 
   return (
     <div>
@@ -157,21 +153,19 @@ function PodcastHome() {
         </div>
       </Grid>
 
-      {featured ? (
-        <div className="mb-48">
-          <FeaturedSection
-            cta="Listen to this episode"
-            caption="Latest episode"
-            subTitle={`Season ${featured.seasonNumber} Episode ${
-              featured.episodeNumber
-            } — ${formatTime(featured.duration)}`}
-            title={featured.title}
-            href={getCWKEpisodePath(featured)}
-            imageUrl={featured.image}
-            imageAlt={listify(featured.guests.map(g => g.name))}
-          />
-        </div>
-      ) : null}
+      <div className="mb-48">
+        <FeaturedSection
+          cta="Listen to this episode"
+          caption="Featured episode"
+          subTitle={`Season ${featured.seasonNumber} Episode ${
+            featured.episodeNumber
+          } — ${formatTime(featured.duration)}`}
+          title={featured.title}
+          href={getCWKEpisodePath(featured)}
+          imageUrl={featured.image}
+          imageAlt={listify(featured.guests.map(g => g.name))}
+        />
+      </div>
 
       <Tabs
         as={Grid}

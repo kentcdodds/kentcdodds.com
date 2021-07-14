@@ -18,7 +18,8 @@ import {FeaturedSection} from '../components/sections/featured-section'
 import {ArrowLink} from '../components/arrow-button'
 import {ChevronRightIcon} from '../components/icons/chevron-right-icon'
 import {ChevronLeftIcon} from '../components/icons/chevron-left-icon'
-import {formatTime, getCWKEpisodePath, listify} from '../utils/misc'
+import {formatTime, listify} from '../utils/misc'
+import {getCWKEpisodePath, getFeaturedEpisode} from '../utils/chats-with-kent'
 import {getUser} from '../utils/session.server'
 
 type LoaderData = {
@@ -45,18 +46,22 @@ export const loader: KCDLoader<{
 
   const seasons = await getSeasons()
   const season = seasons.find(s => s.seasonNumber === seasonNumber)
-  const episode = season?.episodes.find(e => e.episodeNumber === episodeNumber)
+  if (!season) {
+    throw new Error(`oh no. season for season number: ${params.season}`)
+  }
+  const episode = season.episodes.find(e => e.episodeNumber === episodeNumber)
   if (!episode) {
     throw new Error(
-      `oh no. no episode for ${params.season}-${params.episode}-${params.slug}`,
+      `oh no. no episode for ${params.season}/${params.episode}/${params.slug}`,
     )
   }
 
-  // TODO: fill in these values:
   const data: LoaderData = {
-    prevEpisode: null,
-    nextEpisode: null,
-    featured: null,
+    prevEpisode:
+      season.episodes.find(e => e.episodeNumber === episodeNumber - 1) ?? null,
+    nextEpisode:
+      season.episodes.find(e => e.episodeNumber === episodeNumber + 1) ?? null,
+    featured: getFeaturedEpisode(season.episodes.filter(e => episode !== e)),
     episode,
   }
 
@@ -280,14 +285,14 @@ function PrevNextButton({
       <div
         className={clsx('flex flex-col', {
           'ml-4 items-start': direction === 'prev',
-          'mr-4 items-end': direction === 'next',
+          'mr-4 items-end text-right': direction === 'next',
         })}
       >
         <p className="text-primary text-lg font-medium">
           {episodeListItem.guests[0]?.name}
         </p>
         <h6 className="text-secondary text-lg font-medium">
-          Episode {episodeListItem.title}
+          {episodeListItem.title}
         </h6>
       </div>
     </MotionLink>
@@ -378,7 +383,7 @@ function PodcastDetail() {
       {featured ? (
         <FeaturedSection
           cta="Listen to this episode"
-          caption="Latest episode"
+          caption="Featured episode"
           subTitle={`Season ${featured.seasonNumber} Episode ${
             featured.episodeNumber
           } — ${formatTime(featured.duration)}`}
