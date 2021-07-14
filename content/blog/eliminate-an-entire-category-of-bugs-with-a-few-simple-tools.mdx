@@ -45,12 +45,13 @@ write it, and reformat it in a way that's consistent and legible every time.
 People often give me quizzical looks when I refer to Prettier as a testing tool.
 But check this out:
 
+{/** prettier-ignore **/}
+
 ```js
 const a = false
 const b = false
 const c = true
-// prettier-ignore
-const d = a && b || c
+const d = (a && b) || c
 ```
 
 What's the value of `d` here? Do you know the order of operations of those
