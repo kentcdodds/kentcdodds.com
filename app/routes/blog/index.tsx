@@ -145,7 +145,7 @@ function BlogHome() {
         title="Learn development with great articles."
         subtitle="Find the latest of my writing here."
         imageUrl={images.skis()}
-        imageAlt={images.helmet.alt}
+        imageAlt={images.skis.alt}
         action={
           <form action="/blog" method="GET" onSubmit={e => e.preventDefault()}>
             <div className="relative">
