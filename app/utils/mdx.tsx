@@ -9,11 +9,11 @@ import {
   downloadMdxFileOrDirectory,
 } from '../utils/github.server'
 import {AnchorOrLink, getErrorMessage} from '../utils/misc'
-import * as redis from './redis.server'
 import {HeroSection} from '../components/sections/hero-section'
 import {images} from '../images'
 import {BlogSection} from '../components/sections/blog-section'
 import {articles} from '../../storybook/stories/fixtures'
+import * as redis from './redis.server'
 
 async function getMdxPage({
   contentDir,
@@ -233,6 +233,33 @@ function FourOhFour() {
   )
 }
 
+function ServerError() {
+  const matches = useMatches()
+  const last = matches[matches.length - 1]
+  const pathname = last?.pathname
+
+  return (
+    <main>
+      <HeroSection
+        title="500 - Oh no, something did not go that well."
+        subtitle={`"${pathname}" is currently not working. So sorry.`}
+        imageUrl={images.bustedOnewheel()}
+        imageAlt={images.bustedOnewheel.alt}
+        arrowUrl="#articles"
+        arrowLabel="But wait, there is more!"
+      />
+
+      {/* TODO: remove fixtures, do something smart */}
+      <div id="articles" />
+      <BlogSection
+        articles={articles}
+        title="Looking for something to read?"
+        description="Have a look at these articles."
+      />
+    </main>
+  )
+}
+
 export {
   getMdxPage,
   getMdxPagesInDirectory,
@@ -240,6 +267,7 @@ export {
   getBlogMdxListItems,
   mdxPageMeta,
   FourOhFour,
+  ServerError,
   getMdxComponent,
   refreshCacheForMdx,
   refreshDirListForMdx,
