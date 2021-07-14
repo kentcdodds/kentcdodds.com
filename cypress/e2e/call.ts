@@ -28,6 +28,10 @@ describe('call in', () => {
         faker.lorem.paragraph(),
         {delay: 0},
       )
+      cy.findByRole('textbox', {name: /keywords/i}).type(
+        faker.lorem.words(3).split(' ').join(','),
+        {delay: 0},
+      )
       cy.findByRole('button', {name: /submit/i}).click()
     })
 

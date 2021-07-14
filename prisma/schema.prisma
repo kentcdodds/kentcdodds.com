@@ -55,9 +55,9 @@ model Call {
   id          String   @id @default(uuid())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  episodeId   String?
   title       String
   description String
+  keywords    String
   user        User     @relation(fields: [userId], references: [id])
   userId      String
   base64      String

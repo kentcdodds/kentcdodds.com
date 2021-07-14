@@ -1,48 +1,27 @@
 import * as React from 'react'
-import {useSubmit, redirect, Form, json, useRouteData, Link} from 'remix'
-import type {Await, Call, KCDAction, KCDLoader} from 'types'
-import {CallRecorder} from '../../../components/call-recorder'
+import {redirect, Form, json, useRouteData, Link} from 'remix'
+import type {Call, KCDAction, KCDLoader} from 'types'
+import {CallRecorder} from '../../../components/call/recorder'
 import {requireAdminUser, rootStorage} from '../../../utils/session.server'
 import {prisma} from '../../../utils/prisma.server'
-import {getErrorMessage, getNonNull} from '../../../utils/misc'
+import {
+  getAvatarForUser,
+  getErrorMessage,
+  getNonNull,
+} from '../../../utils/misc'
 import {createEpisodeAudio} from '../../../utils/ffmpeg.server'
-import {createEpisode, getEpisode} from '../../../utils/transitor.server'
+import {createEpisode} from '../../../utils/transistor.server'
+import type {RecordingFormData} from '../../../components/call/submit-recording-form'
+import {RecordingForm} from '../../../components/call/submit-recording-form'
+import {
+  getErrorForAudio,
+  getErrorForTitle,
+  getErrorForDescription,
+  getErrorForKeywords,
+} from '../../../utils/call-kent'
 
 const errorSessionKey = 'call_error'
 const fieldsSessionKey = 'call_fields'
-
-function getErrorForDescription(description: string | null) {
-  if (!description) return `Description is required`
-
-  const minLength = 20
-  const maxLength = 1000
-  if (description.length < minLength) {
-    return `Description must be at least ${minLength} characters`
-  }
-  if (description.length > maxLength) {
-    return `Description must be no longer than ${maxLength} characters`
-  }
-  return null
-}
-
-function getErrorForTitle(title: string | null) {
-  if (!title) return `Title is required`
-
-  const minLength = 5
-  const maxLength = 100
-  if (title.length < minLength) {
-    return `Title must be at least ${minLength} characters`
-  }
-  if (title.length > maxLength) {
-    return `Title must be no longer than ${maxLength} characters`
-  }
-  return null
-}
-
-function getErrorForAudio(audio: string | null) {
-  if (!audio) return 'Audio file is required'
-  return null
-}
 
 export const action: KCDAction<{callId: string}> = async ({
   request,
@@ -52,7 +31,12 @@ export const action: KCDAction<{callId: string}> = async ({
     const session = await rootStorage.getSession(request.headers.get('Cookie'))
     const maybeNullCall = await prisma.call.findFirst({
       where: {id: params.callId},
+      include: {user: true},
     })
+    if (!maybeNullCall) {
+      // TODO: display an error message or something...
+      return redirect('/call')
+    }
     try {
       const requestText = await request.text()
       const form = new URLSearchParams(requestText)
@@ -61,23 +45,23 @@ export const action: KCDAction<{callId: string}> = async ({
         audio: form.get('audio'),
         title: form.get('title'),
         description: form.get('description'),
+        keywords: form.get('keywords'),
       }
       const fields: LoaderData['fields'] = {
         title: formData.title,
         description: formData.description,
+        keywords: formData.keywords,
       }
       session.flash(fieldsSessionKey, fields)
 
       const errors = {
-        generalError: maybeNullCall
-          ? undefined
-          : `No call with the ID ${params.callId} found.`,
         audio: getErrorForAudio(formData.audio),
         title: getErrorForTitle(formData.title),
         description: getErrorForDescription(formData.description),
+        keywords: getErrorForKeywords(formData.keywords),
       }
 
-      if (errors.title || errors.description || errors.audio) {
+      if (Object.values(errors).some(err => err !== null)) {
         session.flash(errorSessionKey, errors)
         return redirect(new URL(request.url).pathname, {
           headers: {
@@ -91,23 +75,25 @@ export const action: KCDAction<{callId: string}> = async ({
         title,
         description,
         call,
+        keywords,
       } = getNonNull({
         ...formData,
         call: maybeNullCall,
       })
 
       const episodeAudio = await createEpisodeAudio(call.base64, response)
-      const published = await createEpisode({
+      await createEpisode({
         audio: episodeAudio,
         title,
         description,
+        imageUrl: getAvatarForUser(call.user).src,
+        keywords,
       })
-      await prisma.call.update({
+      await prisma.call.delete({
         where: {id: call.id},
-        data: {episodeId: published.data.id},
       })
 
-      return redirect(new URL(request.url).pathname)
+      return redirect('/call')
     } catch (error: unknown) {
       const generalError = getErrorMessage(error)
       console.error(generalError)
@@ -123,21 +109,7 @@ export const action: KCDAction<{callId: string}> = async ({
 
 type LoaderData = {
   call: Call | null
-  episode: Await<ReturnType<typeof getEpisode>> | null
-  fields?: {
-    // audio is too big to include in the session
-    // hopefully it won't matter with fully client-side interactions though
-    audio?: never
-    title: string | null
-    description: string | null
-  }
-  errors?: {
-    generalError?: string
-    audio: string | null
-    title: string | null
-    description: string | null
-  }
-}
+} & RecordingFormData
 
 export const loader: KCDLoader<{callId: string}> = async ({
   request,
@@ -145,15 +117,20 @@ export const loader: KCDLoader<{callId: string}> = async ({
 }) => {
   return requireAdminUser(request)(async () => {
     const call = await prisma.call.findFirst({where: {id: params.callId}})
+    if (!call) {
+      console.error(`No call found at ${params.callId}`)
+      // TODO: add message
+      return redirect('/call')
+    }
     const session = await rootStorage.getSession(request.headers.get('Cookie'))
     const fields: LoaderData['fields'] = {
-      title: call?.title,
-      description: call?.description,
+      title: call.title,
+      description: call.description,
+      keywords: call.keywords,
       ...session.get(fieldsSessionKey),
     }
     const data: LoaderData = {
       call,
-      episode: call?.episodeId ? await getEpisode(call.episodeId) : null,
       fields,
       errors: session.get(errorSessionKey),
     }
@@ -163,86 +140,6 @@ export const loader: KCDLoader<{callId: string}> = async ({
       },
     })
   })
-}
-
-function SubmitRecordingForm({response}: {response: Blob}) {
-  const data = useRouteData<LoaderData>()
-
-  const audioURL = React.useMemo(() => {
-    return window.URL.createObjectURL(response)
-  }, [response])
-
-  const submit = useSubmit()
-
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const form = new FormData(event.currentTarget)
-    const reader = new FileReader()
-    reader.readAsDataURL(response)
-    reader.addEventListener(
-      'loadend',
-      () => {
-        if (typeof reader.result === 'string') {
-          form.append('audio', reader.result)
-          submit(form, {method: 'post'})
-        }
-      },
-      {once: true},
-    )
-  }
-
-  return (
-    <div>
-      {data.errors?.generalError ? (
-        <p id="audio-error-message" className="text-red-600 text-center">
-          {data.errors.generalError}
-        </p>
-      ) : null}
-      {audioURL ? (
-        <audio src={audioURL} controls aria-describedby="audio-error-message" />
-      ) : (
-        'loading...'
-      )}
-      {data.errors?.audio ? (
-        <p id="audio-error-message" className="text-red-600 text-center">
-          {data.errors.audio}
-        </p>
-      ) : null}
-      <Form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="title">Title</label>
-          <input
-            id="title"
-            name="title"
-            aria-describedby="title-error-message"
-            defaultValue={data.fields?.title ?? ''}
-          />
-          {data.errors?.title ? (
-            <p id="title-error-message" className="text-red-600 text-center">
-              {data.errors.title}
-            </p>
-          ) : null}
-        </div>
-        <div>
-          <label htmlFor="description">Description</label>
-          <textarea
-            id="description"
-            name="description"
-            defaultValue={data.fields?.description ?? ''}
-          />
-          {data.errors?.description ? (
-            <p
-              id="description-error-message"
-              className="text-red-600 text-center"
-            >
-              {data.errors.description}
-            </p>
-          ) : null}
-        </div>
-        <button type="submit">Submit Recording</button>
-      </Form>
-    </div>
-  )
 }
 
 function CallListing({call}: {call: Call}) {
@@ -276,23 +173,12 @@ export default function RecordingDetailScreen() {
       </div>
     )
   }
-  if (data.episode) {
-    return (
-      <div>
-        <p>This call has already been responded to:</p>
-        <a href={data.episode.data.attributes.share_url}>
-          {data.episode.data.attributes.title}
-        </a>
-        <audio src={data.episode.data.attributes.media_url} />
-      </div>
-    )
-  }
   return (
     <div>
       <CallListing call={data.call} />
       <strong>Record your response:</strong>
       {responseAudio ? (
-        <SubmitRecordingForm response={responseAudio} />
+        <RecordingForm audio={responseAudio} data={data} />
       ) : (
         <CallRecorder
           onRecordingComplete={recording => setResponseAudio(recording)}

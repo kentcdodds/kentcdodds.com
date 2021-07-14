@@ -66,14 +66,31 @@ type PublishedJson = {
   }
 }
 
+type CreateEpisodeData = {
+  show_id: string
+  season: string
+  audio_url: string
+  title: string
+  summary: string
+  description: string
+  image_url: string
+  /** comma separated list of keywords **/
+  keywords: string
+  // TODO: add alternate_url when we've got things listed on the site nicely
+}
+
 async function createEpisode({
   audio,
   title,
   description,
+  keywords,
+  imageUrl,
 }: {
   audio: Buffer
   title: string
   description: string
+  keywords: string
+  imageUrl: string
 }) {
   const id = uuid.v4()
   const authorized = await fetchTransitor<AuthorizedJson>({
@@ -88,18 +105,22 @@ async function createEpisode({
     headers: {'Content-Type': content_type},
   })
 
+  const episode: CreateEpisodeData = {
+    show_id: podcastId,
+    season: '1',
+    audio_url,
+    title,
+    summary: description,
+    description,
+    keywords,
+    image_url: imageUrl,
+  }
+
   const created = await fetchTransitor<CreatedJson>({
     endpoint: 'v1/episodes',
     method: 'POST',
     data: {
-      episode: {
-        show_id: podcastId,
-        season: '1',
-        audio_url,
-        title,
-        summary: description,
-        description,
-      },
+      episode,
     },
   })
 

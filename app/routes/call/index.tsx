@@ -1,16 +1,10 @@
 import * as React from 'react'
 
-import {
-  ActionFunction,
-  Form,
-  Link,
-  LoaderFunction,
-  redirect,
-  useRouteData,
-} from 'remix'
+import {json, Form, Link, redirect, useRouteData} from 'remix'
+import type {ActionFunction, LoaderFunction} from 'remix'
 import type {Call} from 'types'
 import {prisma} from '../../utils/prisma.server'
-import {requireUser} from '../../utils/session.server'
+import {requireUser, getUser} from '../../utils/session.server'
 
 export const action: ActionFunction = async ({request}) => {
   return requireUser(request)(async user => {
@@ -39,11 +33,18 @@ export const action: ActionFunction = async ({request}) => {
   })
 }
 
+type LoaderData = {
+  calls: Array<Call>
+}
+
 export const loader: LoaderFunction = async ({request}) => {
-  return requireUser(request)(async user => {
-    const calls = await prisma.call.findMany({where: {userId: user.id}})
-    return {calls}
-  })
+  const user = await getUser(request)
+  let calls: Array<Call> = []
+  if (user) {
+    calls = await prisma.call.findMany({where: {userId: user.id}})
+  }
+  const data: LoaderData = {calls}
+  return json(data)
 }
 
 function CallListing({call}: {call: Call}) {
@@ -67,7 +68,7 @@ function CallListing({call}: {call: Call}) {
 }
 
 export default function CallHomeScreen() {
-  const data = useRouteData<{calls: Array<Call>}>()
+  const data = useRouteData<LoaderData>()
   return (
     <div>
       <h2>Your calls with Kent</h2>

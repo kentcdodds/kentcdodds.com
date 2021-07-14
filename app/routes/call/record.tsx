@@ -2,46 +2,20 @@ import * as React from 'react'
 import {useSubmit, redirect, Form, json, useRouteData} from 'remix'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import type {Call} from 'types'
-import {CallRecorder} from '../../components/call-recorder'
+import {CallRecorder} from '../../components/call/recorder'
+import type {RecordingFormData} from '../../components/call/submit-recording-form'
 import {getUser, requireUser, rootStorage} from '../../utils/session.server'
 import {prisma} from '../../utils/prisma.server'
 import {getErrorMessage, getNonNull} from '../../utils/misc'
+import {
+  getErrorForAudio,
+  getErrorForTitle,
+  getErrorForDescription,
+  getErrorForKeywords,
+} from '../../utils/call-kent'
 
 const errorSessionKey = 'call_error'
 const fieldsSessionKey = 'call_fields'
-
-function getErrorForDescription(description: string | null) {
-  if (!description) return `Description is required`
-
-  const minLength = 20
-  const maxLength = 1000
-  if (description.length < minLength) {
-    return `Description must be at least ${minLength} characters`
-  }
-  if (description.length > maxLength) {
-    return `Description must be no longer than ${maxLength} characters`
-  }
-  return null
-}
-
-function getErrorForTitle(title: string | null) {
-  if (!title) return `Title is required`
-
-  const minLength = 5
-  const maxLength = 100
-  if (title.length < minLength) {
-    return `Title must be at least ${minLength} characters`
-  }
-  if (title.length > maxLength) {
-    return `Title must be no longer than ${maxLength} characters`
-  }
-  return null
-}
-
-function getErrorForAudio(audio: string | null) {
-  if (!audio) return 'Audio file is required'
-  return null
-}
 
 export const action: ActionFunction = async ({request}) => {
   return requireUser(request)(async user => {
@@ -54,10 +28,12 @@ export const action: ActionFunction = async ({request}) => {
         audio: form.get('audio'),
         title: form.get('title'),
         description: form.get('description'),
+        keywords: form.get('keywords'),
       }
       const fields: LoaderData['fields'] = {
         title: formData.title,
         description: formData.description,
+        keywords: formData.keywords,
       }
       session.flash(fieldsSessionKey, fields)
 
@@ -65,9 +41,10 @@ export const action: ActionFunction = async ({request}) => {
         audio: getErrorForAudio(formData.audio),
         title: getErrorForTitle(formData.title),
         description: getErrorForDescription(formData.description),
+        keywords: getErrorForKeywords(formData.keywords),
       }
 
-      if (errors.title || errors.description || errors.audio) {
+      if (Object.values(errors).some(err => err !== null)) {
         session.flash(errorSessionKey, errors)
         return redirect(new URL(request.url).pathname, {
           headers: {
@@ -76,11 +53,12 @@ export const action: ActionFunction = async ({request}) => {
         })
       }
 
-      const {audio, title, description} = getNonNull(formData)
+      const {audio, title, description, keywords} = getNonNull(formData)
 
       const call = {
         title,
         description,
+        keywords,
         userId: user.id,
         base64: audio,
       }
@@ -99,20 +77,7 @@ export const action: ActionFunction = async ({request}) => {
 
 type LoaderData = {
   calls?: Array<Call>
-  fields?: {
-    // audio is too big to include in the session
-    // hopefully it won't matter with fully client-side interactions though
-    audio?: never
-    title: string | null
-    description: string | null
-  }
-  errors?: {
-    generalError?: string
-    audio: string | null
-    title: string | null
-    description: string | null
-  }
-}
+} & RecordingFormData
 
 export const loader: LoaderFunction = async ({request}) => {
   const user = await getUser(request)
@@ -194,6 +159,19 @@ function SubmitRecordingForm({audio}: {audio: Blob}) {
               className="text-red-600 text-center"
             >
               {data.errors.description}
+            </p>
+          ) : null}
+        </div>
+        <div>
+          <label htmlFor="keywords">Keywords</label>
+          <textarea
+            id="keywords"
+            name="keywords"
+            defaultValue={data.fields?.keywords ?? ''}
+          />
+          {data.errors?.keywords ? (
+            <p id="keywords-error-message" className="text-red-600 text-center">
+              {data.errors.keywords}
             </p>
           ) : null}
         </div>

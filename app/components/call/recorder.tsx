@@ -2,7 +2,7 @@ import * as React from 'react'
 import {createMachine, assign, send as sendUtil} from 'xstate'
 import {useMachine} from '@xstate/react'
 import {inspect} from '@xstate/inspect'
-import {assertNonNull} from '../utils/misc'
+import {assertNonNull} from '../../utils/misc'
 
 const devTools = false
 
