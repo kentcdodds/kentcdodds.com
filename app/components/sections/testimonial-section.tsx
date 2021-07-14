@@ -54,10 +54,10 @@ function TestimonialSection({
               alt={testimonial.imageAlt}
             />
             <div>
-              <p className="mb-2 text-white text-xl font-medium leading-none">
+              <p className="text-primary mb-2 text-xl font-medium leading-none">
                 {testimonial.author}
               </p>
-              <p className="text-blueGray-500 text-xl leading-none">
+              <p className="text-secondary text-xl leading-none">
                 {testimonial.company}
               </p>
             </div>

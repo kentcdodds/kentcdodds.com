@@ -245,9 +245,11 @@ function BlogHome() {
           <img src={images.kayak()} alt={images.kayak.alt} />
         </div>
 
-        <div className="col-span-full mt-4 space-y-4 lg:col-span-6 lg:col-start-7 lg:mt-0">
-          <H2>More of a listener when it comes to learning development?</H2>
-          <H2 variant="secondary" as="p">
+        <div className="col-span-full mt-4 lg:col-span-6 lg:col-start-7 lg:mt-0">
+          <H2 className="mb-8">
+            More of a listener when it comes to learning development?
+          </H2>
+          <H2 className="mb-16" variant="secondary" as="p">
             Check out my podcast Chats with Kent and learn about development and
             more.
           </H2>

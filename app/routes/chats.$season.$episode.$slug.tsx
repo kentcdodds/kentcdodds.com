@@ -198,7 +198,7 @@ function Transcript({
         <div dangerouslySetInnerHTML={{__html: transcriptHTML}} />
 
         {collapsed ? (
-          <div className="absolute bottom-0 w-full h-48 bg-gradient-to-b from-transparent dark:to-gray-800 to-white" />
+          <div className="absolute bottom-0 w-full h-48 bg-gradient-to-b from-transparent to-gray-100 dark:to-gray-800" />
         ) : null}
       </div>
       {collapsed ? (

@@ -21,7 +21,7 @@ function AboutSection() {
 
       <div className="flex flex-col col-span-full justify-center space-y-12 lg:col-span-5 lg:col-start-8 lg:mt-0">
         <img
-          className="self-start w-auto h-48"
+          className="self-start mt-20 w-auto h-48 lg:mt-0"
           src={images.snowboard()}
           alt={images.snowboard.alt}
         />
