@@ -127,47 +127,47 @@ const images = createImages({
     alt: 'Broken onewheel',
   },
   courseAdvancedReactComponentPatterns: {
-    id: 'kentcdodds.com/courses/advanced-react-component-patterns',
+    id: 'kentcdodds.com/pages/courses/advanced-react-component-patterns',
     alt: 'Illustration for React Class Component Patterns',
   },
   courseAsts: {
-    id: 'kentcdodds.com/courses/asts',
+    id: 'kentcdodds.com/pages/courses/asts',
     alt: 'Illustration for Code Transformation and Linting with ASTs',
   },
   courseEpicReact: {
-    id: 'kentcdodds.com/courses/epic-react',
+    id: 'kentcdodds.com/pages/courses/epic-react',
     alt: 'Illustration of a Rocket',
   },
   courseHowToContributeToAnOpenSourceProjectOnGitHub: {
-    id: 'kentcdodds.com/courses/how-to-contribute-to-an-open-source-project-on-github',
+    id: 'kentcdodds.com/pages/courses/how-to-contribute-to-an-open-source-project-on-github',
     alt: 'Illustration for How to Contribute to an Open Source Project on GitHub',
   },
   courseHowToWriteAnOpenSourceJavaScriptLibrary: {
-    id: 'kentcdodds.com/courses/how-to-write-an-open-source-javascript-library',
+    id: 'kentcdodds.com/pages/courses/how-to-write-an-open-source-javascript-library',
     alt: 'Illustration for How to Write an Open Source JavaScript Library',
   },
   courseSimplifyReactAppsWithReactHooks: {
-    id: 'kentcdodds.com/courses/simplify-react-apps-with-react-hooks',
+    id: 'kentcdodds.com/pages/courses/simplify-react-apps-with-react-hooks',
     alt: 'Illustration for Simplify React Apps with React Hooks',
   },
   courseTestingJS: {
-    id: 'kentcdodds.com/courses/testing-js',
+    id: 'kentcdodds.com/pages/courses/testing-js',
     alt: 'Illustration of a trophy',
   },
   courseTestingPrinciples: {
-    id: 'kentcdodds.com/courses/testing-principles',
+    id: 'kentcdodds.com/pages/courses/testing-principles',
     alt: 'Illustration for JavaScript Testing Practices and Principles',
   },
   courseTestingReact: {
-    id: 'kentcdodds.com/courses/testing-react',
+    id: 'kentcdodds.com/pages/courses/testing-react',
     alt: 'Illustration for Testing React Applications, v2',
   },
   courseTheBeginnersGuideToReact: {
-    id: 'kentcdodds.com/courses/the-beginners-guide-to-react',
+    id: 'kentcdodds.com/pages/courses/the-beginners-guide-to-react',
     alt: `Illustration for The Beginner's Guide to React`,
   },
   courseUseSuspenseToSimplifyYourAsyncUI: {
-    id: 'kentcdodds.com/courses/use-suspense-to-simplify-your-async-ui',
+    id: 'kentcdodds.com/pages/courses/use-suspense-to-simplify-your-async-ui',
     alt: 'Illustration for Use Suspense to Simplify Your Async UI',
   },
 })
