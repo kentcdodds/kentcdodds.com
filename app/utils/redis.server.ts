@@ -2,11 +2,14 @@ import redis from 'redis'
 import {getRequiredServerEnvVar} from './misc'
 
 const REDIS_URL = getRequiredServerEnvVar('REDIS_URL')
-const PRIMARY_REGION = getRequiredServerEnvVar('PRIMARY_REGION', 'dfw')
-const FLY_REGION = getRequiredServerEnvVar('FLY_REGION', 'dfw')
-
 const replica = new URL(REDIS_URL)
 const isLocalHost = replica.hostname === 'localhost'
+
+const PRIMARY_REGION = isLocalHost
+  ? null
+  : getRequiredServerEnvVar('PRIMARY_REGION')
+const FLY_REGION = isLocalHost ? null : getRequiredServerEnvVar('FLY_REGION')
+
 if (!isLocalHost) {
   replica.host = `${FLY_REGION}.${replica.host}`
 }

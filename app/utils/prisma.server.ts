@@ -14,10 +14,12 @@ declare global {
 
 const DATABASE_URL = getRequiredServerEnvVar('DATABASE_URL')
 const regionalDB = new URL(DATABASE_URL)
-const PRIMARY_REGION = getRequiredServerEnvVar('PRIMARY_REGION', 'dfw')
-const FLY_REGION = getRequiredServerEnvVar('FLY_REGION', 'dfw')
-
 const isLocalHost = regionalDB.hostname === 'localhost'
+
+const PRIMARY_REGION = isLocalHost
+  ? null
+  : getRequiredServerEnvVar('PRIMARY_REGION')
+const FLY_REGION = isLocalHost ? null : getRequiredServerEnvVar('FLY_REGION')
 
 if (!isLocalHost) {
   if (PRIMARY_REGION !== FLY_REGION) {
