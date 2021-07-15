@@ -1,6 +1,7 @@
 import {PrismaClient} from '@prisma/client'
 import type {User, Session} from 'types'
 import {encrypt, decrypt} from './encryption.server'
+import {getRequiredServerEnvVar} from './misc'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -11,14 +12,34 @@ declare global {
   }
 }
 
-const prisma = new PrismaClient()
+const DATABASE_URL = getRequiredServerEnvVar('DATABASE_URL')
+const regionalDB = new URL(DATABASE_URL)
+const PRIMARY_REGION = getRequiredServerEnvVar('PRIMARY_REGION', 'dfw')
+const FLY_REGION = getRequiredServerEnvVar('FLY_REGION', 'dfw')
+
+const isLocalHost = regionalDB.hostname === 'localhost'
+
+if (!isLocalHost) {
+  if (PRIMARY_REGION !== FLY_REGION) {
+    // 5433 is the read-replica port
+    regionalDB.port = '5433'
+  }
+  regionalDB.host = `${PRIMARY_REGION}.${regionalDB.host}`
+}
+
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: regionalDB.toString(),
+    },
+  },
+})
 
 const linkExpirationTime = 1000 * 60 * 30
 const sessionExpirationTime = 1000 * 60 * 60 * 24 * 30
 
 const isProd = process.env.NODE_ENV === 'production'
 
-const {DATABASE_URL} = process.env
 if (!isProd && DATABASE_URL && !DATABASE_URL.includes('localhost')) {
   // if we're connected to a non-localhost db, let's make
   // sure we know it.

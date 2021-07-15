@@ -2,12 +2,29 @@ import redis from 'redis'
 import {getRequiredServerEnvVar} from './misc'
 
 const REDIS_URL = getRequiredServerEnvVar('REDIS_URL')
+const PRIMARY_REGION = getRequiredServerEnvVar('PRIMARY_REGION', 'dfw')
+const FLY_REGION = getRequiredServerEnvVar('FLY_REGION', 'dfw')
 
-const client = redis.createClient({url: REDIS_URL})
+const replica = new URL(REDIS_URL)
+const isLocalHost = replica.hostname === 'localhost'
+if (!isLocalHost) {
+  replica.host = `${FLY_REGION}.${replica.host}`
+}
+
+const replicaClient = redis.createClient({url: replica.toString()})
+
+let primaryClient: ReturnType<typeof redis.createClient> | null = null
+if (FLY_REGION !== PRIMARY_REGION) {
+  const primary = new URL(REDIS_URL)
+  if (!isLocalHost) {
+    primary.host = `${PRIMARY_REGION}.${primary.host}`
+  }
+  primaryClient = redis.createClient({url: primary.toString()})
+}
 
 function get(key: string): Promise<string | null> {
   return new Promise((resolve, reject) => {
-    client.get(key, (err: Error | null, result: string | null) => {
+    replicaClient.get(key, (err: Error | null, result: string | null) => {
       if (err) return reject(err)
       resolve(result)
     })
@@ -16,7 +33,7 @@ function get(key: string): Promise<string | null> {
 
 function set(key: string, value: string): Promise<'OK'> {
   return new Promise((resolve, reject) => {
-    client.set(key, value, (err: Error | null, reply: 'OK') => {
+    replicaClient.set(key, value, (err: Error | null, reply: 'OK') => {
       if (err) return reject(err)
       resolve(reply)
     })
@@ -25,15 +42,25 @@ function set(key: string, value: string): Promise<'OK'> {
 
 function del(key: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    client.del(key, (err: Error | null, result: number | null) => {
+    // fire and forget on primary, we only care about replica
+    primaryClient?.del(key, (err: Error | null) => {
+      if (err) {
+        console.error('Primary delete error', err)
+      }
+    })
+    replicaClient.del(key, (err: Error | null, result: number | null) => {
       if (err) return reject(err)
       resolve(`${key} deleted: ${result}`)
     })
   })
 }
 
-client.on('error', (error: string) => {
-  console.error('REDIS ERROR:', error)
+primaryClient?.on('error', (error: string) => {
+  console.error(`REDIS PRIMARY (${PRIMARY_REGION})  ERROR:`, error)
+})
+
+replicaClient.on('error', (error: string) => {
+  console.error(`REDIS REPLICA (${FLY_REGION}) ERROR:`, error)
 })
 
 export {get, set, del}
