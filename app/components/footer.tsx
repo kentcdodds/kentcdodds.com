@@ -63,7 +63,7 @@ function ContactSection() {
       <ul className="mt-4">
         <FooterLink name="contact page" href="/contact" />
         <FooterLink name="office hours" href="/office-hours" />
-        <FooterLink name="Join discord" href="https://kcd.im/discord" />
+        <FooterLink name="Call Kent" href="/call" />
       </ul>
     </div>
   )
@@ -86,14 +86,15 @@ function SitemapSection() {
     <div>
       <H6 as="div">Sitemap</H6>
       <ul className="mt-4">
-        <FooterLink name="home" href="/legal/terms" />
-        <FooterLink name="blog" href="/legal/privacy" />
-        <FooterLink name="courses" href="/contact" />
-        <FooterLink name="discord" href="/contact" />
-        <FooterLink name="podcast" href="/contact" />
-        <FooterLink name="workshops" href="/contact" />
-        <FooterLink name="about" href="/contact" />
-        <FooterLink name="all pages" href="/contact" />
+        <FooterLink name="home" href="/" />
+        <FooterLink name="blog" href="/blog" />
+        <FooterLink name="courses" href="/courses" />
+        <FooterLink name="discord" href="/discord" />
+        <FooterLink name="podcast" href="/chats" />
+        <FooterLink name="workshops" href="/workshops" />
+        <FooterLink name="about" href="/about" />
+        <FooterLink name="credits" href="/credits" />
+        <FooterLink name="all pages" href="/sitemap" />
       </ul>
     </div>
   )
