@@ -6,7 +6,6 @@ import formatDate from 'date-fns/format'
 import type {ComponentMap} from 'mdx-bundler/client'
 import {images} from '../../images'
 import {
-  FourOhFour,
   getMdxPage,
   mdxPageMeta,
   getMdxComponent,
@@ -19,6 +18,7 @@ import {ArrowLink, BackLink} from '../../components/arrow-button'
 import {BlogSection} from '../../components/sections/blog-section'
 import {getBlogRecommendations} from '../../utils/blog.server'
 import {getUser} from '../../utils/session.server'
+import {FourOhFour} from '../../components/errors'
 
 type LoaderData = {
   page: MdxPage | null

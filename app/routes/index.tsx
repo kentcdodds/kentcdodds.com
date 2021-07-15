@@ -14,7 +14,7 @@ import {Spacer} from '../components/spacer'
 import {HeroSection} from '../components/sections/hero-section'
 import {images} from '../images'
 import {ButtonLink} from '../components/button'
-import {ServerError} from '../utils/mdx'
+import {ServerError} from '../components/errors'
 
 type LoaderData = {
   blogRecommendations: Array<MdxListItem>
