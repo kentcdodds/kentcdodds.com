@@ -14,7 +14,10 @@ if (!isLocalHost) {
   replica.host = `${FLY_REGION}.${replica.host}`
 }
 
-const replicaClient = redis.createClient({url: replica.toString()})
+const replicaClient = redis.createClient({
+  url: replica.toString(),
+  family: 'IPv6',
+})
 
 let primaryClient: ReturnType<typeof redis.createClient> | null = null
 if (FLY_REGION !== PRIMARY_REGION) {
