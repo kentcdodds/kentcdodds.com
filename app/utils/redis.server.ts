@@ -1,7 +1,7 @@
 import redis from 'redis'
 import {getRequiredServerEnvVar} from './misc'
 
-const REDIS_URL = getRequiredServerEnvVar('REDIS_URL')
+const REDIS_URL = 'redis://:alex_rocks@localhost:6379' // getRequiredServerEnvVar('REDIS_URL')
 const replica = new URL(REDIS_URL)
 const isLocalHost = replica.hostname === 'localhost'
 

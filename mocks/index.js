@@ -1,9 +1,2 @@
-const path = require('path')
-
-require('ts-node').register({
-  transpileOnly: true,
-  files: true,
-  project: path.join(__dirname, './tsconfig.json'),
-})
-
+require('esbuild-register/dist/node').register()
 require('./start')

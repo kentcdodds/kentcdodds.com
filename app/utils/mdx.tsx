@@ -71,7 +71,11 @@ async function getMdxDirListCached(contentDir: string) {
         slug: path.replace(`${fullContentDirPath}/`, '').replace(/\.mdx$/, ''),
       }))
       .filter(({name}) => name !== 'README.md')
-    await redis.set(key, JSON.stringify(dirList))
+    if (dirList.length) {
+      void redis.set(key, JSON.stringify(dirList)).catch(error => {
+        console.error(`error setting redis.${key}`, getErrorMessage(error))
+      })
+    }
   }
   return dirList
 }
@@ -94,7 +98,11 @@ async function downloadMdxFilesCached(
   }
   if (!files) {
     files = await downloadMdxFileOrDirectory(contentPath)
-    await redis.set(key, JSON.stringify(files))
+    if (files.length) {
+      void redis.set(key, JSON.stringify(files)).catch(error => {
+        console.error(`error setting redis.${key}`, getErrorMessage(error))
+      })
+    }
   }
   return files
 }
@@ -117,7 +125,11 @@ async function compileMdxCached(
   }
   if (!page) {
     page = await compileMdx<MdxPage['frontmatter']>(slug, files)
-    if (page) await redis.set(key, JSON.stringify(page))
+    if (page) {
+      void redis.set(key, JSON.stringify(page)).catch(error => {
+        console.error(`error setting redis.${key}`, getErrorMessage(error))
+      })
+    }
   }
   if (!page) return null
   return {slug, ...page}

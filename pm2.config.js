@@ -1,21 +1,26 @@
 module.exports = {
   apps: [
     {
-      name: 'Remix',
+      name: 'Server',
       script: [
         'node',
         '--experimental-wasm-threads',
         '--require ./node_modules/dotenv/config',
         '--require ./mocks',
-        './node_modules/.bin/remix run',
+        './index.js',
       ]
         .filter(Boolean)
         .join(' '),
-      watch: ['./mocks/**/*.ts'],
+      watch: ['./mocks/**/*.ts', './index.js', './.env'],
       env: {
         NODE_ENV: 'development',
         RUNNING_E2E: process.env.RUNNING_E2E,
       },
+    },
+    {
+      name: 'Remix',
+      script: 'remix dev',
+      ignore_watch: ['.'],
     },
     {
       name: 'Postcss',
