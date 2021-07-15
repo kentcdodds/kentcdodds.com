@@ -54,4 +54,4 @@ function ServerError() {
   )
 }
 
-export {ServerError, FourOhFour}
+export {ErrorPage, ServerError, FourOhFour}
