@@ -63,7 +63,7 @@ function ContactSection() {
       <ul className="mt-4">
         <FooterLink name="contact page" href="/contact" />
         <FooterLink name="office hours" href="/office-hours" />
-        <FooterLink name="Join discord" href="/discord" />
+        <FooterLink name="Call Kent" href="/call" />
       </ul>
     </div>
   )
