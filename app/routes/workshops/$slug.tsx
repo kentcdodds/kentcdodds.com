@@ -2,7 +2,7 @@ import * as React from 'react'
 import {useRouteData, json} from 'remix'
 import type {MdxPage, KCDLoader} from 'types'
 import formatDate from 'date-fns/format'
-import {FourOhFour, getMdxPage, mdxPageMeta} from '../../utils/mdx'
+import {getMdxPage, mdxPageMeta} from '../../utils/mdx'
 import {getScheduledEvents} from '../../utils/workshop-tickets.server'
 import type {WorkshopEvent} from '../../utils/workshop-tickets.server'
 import {Grid} from '../../components/grid'
@@ -12,6 +12,7 @@ import {ArrowButton, BackLink} from '../../components/arrow-button'
 import {WorkshopCard} from '../../components/workshop-card'
 import {NumberedPanel} from '../../components/numbered-panel'
 import {TestimonialSection} from '../../components/sections/testimonial-section'
+import {FourOhFour} from '../../components/errors'
 
 export const loader: KCDLoader<{slug: string}> = async ({params}) => {
   const page = await getMdxPage({

@@ -79,7 +79,7 @@ function HeroSection({
         )}
       >
         <div className="flex flex-auto flex-col">
-          <H2 as="p">{title}</H2>
+          <H2 as="h2">{title}</H2>
           {subtitle ? (
             <H2 as="p" variant="secondary" className="mt-3">
               {subtitle}

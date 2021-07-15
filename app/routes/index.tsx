@@ -14,6 +14,7 @@ import {Spacer} from '../components/spacer'
 import {HeroSection} from '../components/sections/hero-section'
 import {images} from '../images'
 import {ButtonLink} from '../components/button'
+import {ServerError} from '../components/errors'
 
 type LoaderData = {
   blogRecommendations: Array<MdxListItem>
@@ -24,6 +25,11 @@ export const loader: LoaderFunction = async () => {
 
   const data: LoaderData = {blogRecommendations}
   return json(data)
+}
+
+export function ErrorBoundary({error}: {error: Error}) {
+  console.error(error)
+  return <ServerError />
 }
 
 function IndexRoute() {

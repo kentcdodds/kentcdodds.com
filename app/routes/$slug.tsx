@@ -1,12 +1,8 @@
 import * as React from 'react'
 import {useRouteData, json} from 'remix'
 import type {MdxPage, KCDLoader} from 'types'
-import {
-  FourOhFour,
-  getMdxPage,
-  mdxPageMeta,
-  getMdxComponent,
-} from '../utils/mdx'
+import {getMdxPage, mdxPageMeta, getMdxComponent} from '../utils/mdx'
+import {FourOhFour} from '../components/errors'
 
 export const loader: KCDLoader<{slug: string}> = async ({params}) => {
   const page = await getMdxPage({

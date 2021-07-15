@@ -1,5 +1,4 @@
 import * as React from 'react'
-import {useMatches} from 'remix'
 import type {GitHubFile, MdxListItem, MdxPage} from 'types'
 import * as mdxBundler from 'mdx-bundler/client'
 import config from '../../config'
@@ -10,10 +9,6 @@ import {
 } from '../utils/github.server'
 import {AnchorOrLink, getErrorMessage} from '../utils/misc'
 import * as redis from './redis.server'
-import {HeroSection} from '../components/sections/hero-section'
-import {images} from '../images'
-import {BlogSection} from '../components/sections/blog-section'
-import {articles} from '../../storybook/stories/fixtures'
 
 async function getMdxPage({
   contentDir,
@@ -206,40 +201,12 @@ function getMdxComponent(code: string) {
   return KCDMdxComponent
 }
 
-function FourOhFour() {
-  const matches = useMatches()
-  const last = matches[matches.length - 1]
-  const pathname = last?.pathname
-
-  return (
-    <main>
-      <HeroSection
-        title="404 - Oh no, you found a page that's missing stuff."
-        subtitle={`"${pathname}" is not a page on kentcdodds.com. So sorry.`}
-        imageUrl={images.bustedOnewheel()}
-        imageAlt={images.bustedOnewheel.alt}
-        arrowUrl="#articles"
-        arrowLabel="But wait, there is more!"
-      />
-
-      {/* TODO: remove fixtures, do something smart */}
-      <div id="articles" />
-      <BlogSection
-        articles={articles}
-        title="Looking for something to read?"
-        description="Have a look at these articles."
-      />
-    </main>
-  )
-}
-
 export {
   getMdxPage,
   getMdxPagesInDirectory,
   mapFromMdxPageToMdxListItem,
   getBlogMdxListItems,
   mdxPageMeta,
-  FourOhFour,
   getMdxComponent,
   refreshCacheForMdx,
   refreshDirListForMdx,
