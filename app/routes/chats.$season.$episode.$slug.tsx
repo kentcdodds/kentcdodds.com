@@ -265,15 +265,15 @@ function PrevNextButton({
       whileTap={direction === 'next' ? 'tapRight' : 'tapLeft'}
       animate="initial"
       to={getCWKEpisodePath(episodeListItem)}
-      className={clsx('flex items-center focus:outline-none', {
+      className={clsx('flex items-start focus:outline-none', {
         'flex-row-reverse': direction === 'next',
       })}
     >
-      <div className="relative rounded-lg overflow-hidden">
+      <div className="relative flex-none mt-1 w-12 h-12 rounded-lg overflow-hidden">
         <motion.img
           variants={imageVariants}
           transition={{duration: 0.2}}
-          className="w-12 h-12"
+          className="w-full h-full object-cover"
           src={episodeListItem.image}
           alt={episodeListItem.title}
         />
