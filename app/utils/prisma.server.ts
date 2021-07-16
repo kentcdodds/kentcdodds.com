@@ -29,8 +29,8 @@ if (!isLocalHost) {
   if (!isPrimaryRegion) {
     // 5433 is the read-replica port
     regionalDB.port = '5433'
+    regionalDB.host = `${FLY_REGION}.${regionalDB.host}`
   }
-  regionalDB.host = `${PRIMARY_REGION}.${regionalDB.host}`
 }
 
 const prisma = new PrismaClient({

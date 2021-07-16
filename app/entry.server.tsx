@@ -57,6 +57,7 @@ export default async function handleRequest(
       'X-Robots-Tag': 'none',
       ...Object.fromEntries(responseHeaders),
       'X-Powered-By': 'Kody the Koala',
+      'X-Fly-Region': process.env.FLY_REGION ?? 'unknown',
       'Content-Type': 'text/html',
       'Content-Length': String(Buffer.byteLength(html)),
     },
