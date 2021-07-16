@@ -38,17 +38,15 @@ function Button({
   )
 }
 
-function ButtonLink({
-  children,
-  variant = 'primary',
-  className,
-  to,
-}: ButtonProps & Pick<LinkProps, 'to' | 'className'>) {
+const ButtonLink = React.forwardRef<
+  HTMLAnchorElement,
+  ButtonProps & Pick<LinkProps, 'to' | 'className'>
+>(function ButtonLink({children, variant = 'primary', className, to}, ref) {
   return (
-    <Link to={to} className={getClassName({variant, className})}>
+    <Link ref={ref} to={to} className={getClassName({variant, className})}>
       {children}
     </Link>
   )
-}
+})
 
 export {Button, ButtonLink}
