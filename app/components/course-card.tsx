@@ -1,8 +1,16 @@
 import * as React from 'react'
+import {motion, Variants} from 'framer-motion'
 import {ArrowIcon} from './icons/arrow-icon'
 import {H2} from './typography'
 import {ButtonLink} from './button'
 
+const MotionButtonLink = motion(ButtonLink)
+
+const arrowVariants: Variants = {
+  initial: {x: 0, y: 0},
+  hover: {x: 8, y: -8},
+  tap: {x: 24, y: -24},
+}
 export interface CourseCardProps {
   title: string
   description: string
@@ -29,10 +37,18 @@ function CourseCard({
         </div>
 
         <div className="mt-16">
-          <ButtonLink to={courseUrl}>
+          <MotionButtonLink
+            initial="initial"
+            whileHover="hover"
+            whileTap="tap"
+            animate="initial"
+            to={courseUrl}
+          >
             <span>Visit course</span>
-            <ArrowIcon direction="top-right" size={24} />
-          </ButtonLink>
+            <motion.span variants={arrowVariants}>
+              <ArrowIcon direction="top-right" size={24} />
+            </motion.span>
+          </MotionButtonLink>
         </div>
       </div>
 
