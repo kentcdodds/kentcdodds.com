@@ -1,4 +1,4 @@
-import type {Request, Response, LoaderFunction, Session} from 'remix'
+import type {Request, Response, Session} from 'remix'
 import {createCookieSessionStorage, redirect} from 'remix'
 import type {User} from '@prisma/client'
 import {sendMagicLinkEmail} from './send-email.server'
@@ -7,6 +7,7 @@ import {
   getMagicLink,
   getUserFromSessionId,
   prisma,
+  replayable,
 } from './prisma.server'
 import {encrypt, decrypt} from './encryption.server'
 import {getErrorMessage} from './misc'
@@ -95,31 +96,39 @@ async function requireAdminUser(
   request: Request,
   callback: (data: User) => Response | Promise<Response>,
 ): Promise<Response> {
-  const user = await getUser(request)
-  if (!user) {
-    const session = await rootStorage.getSession(request.headers.get('Cookie'))
-    await signOutSession(session)
-    const cookie = await rootStorage.commitSession(session)
-    return redirect('/login', {headers: {'Set-Cookie': cookie}})
-  }
-  if (user.role !== 'ADMIN') {
-    return redirect('/')
-  }
-  return callback(user)
+  return replayable(request, async () => {
+    const user = await getUser(request)
+    if (!user) {
+      const session = await rootStorage.getSession(
+        request.headers.get('Cookie'),
+      )
+      await signOutSession(session)
+      const cookie = await rootStorage.commitSession(session)
+      return redirect('/login', {headers: {'Set-Cookie': cookie}})
+    }
+    if (user.role !== 'ADMIN') {
+      return redirect('/')
+    }
+    return callback(user)
+  })
 }
 
 async function requireUser(
   request: Request,
   callback: (data: User) => Response | Promise<Response>,
 ): Promise<Response> {
-  const user = await getUser(request)
-  if (!user) {
-    const session = await rootStorage.getSession(request.headers.get('Cookie'))
-    await signOutSession(session)
-    const cookie = await rootStorage.commitSession(session)
-    return redirect('/login', {headers: {'Set-Cookie': cookie}})
-  }
-  return callback(user)
+  return replayable(request, async () => {
+    const user = await getUser(request)
+    if (!user) {
+      const session = await rootStorage.getSession(
+        request.headers.get('Cookie'),
+      )
+      await signOutSession(session)
+      const cookie = await rootStorage.commitSession(session)
+      return redirect('/login', {headers: {'Set-Cookie': cookie}})
+    }
+    return callback(user)
+  })
 }
 
 export const sessionKeys = {

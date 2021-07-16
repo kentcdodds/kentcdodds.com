@@ -3,7 +3,7 @@ import {redirect, Form, json, useRouteData, Link} from 'remix'
 import type {Call, KCDAction, KCDLoader} from 'types'
 import {CallRecorder} from '../../../components/call/recorder'
 import {requireAdminUser, rootStorage} from '../../../utils/session.server'
-import {prisma} from '../../../utils/prisma.server'
+import {prisma, replayable} from '../../../utils/prisma.server'
 import {
   getAvatarForUser,
   getErrorMessage,
@@ -28,82 +28,89 @@ export const action: KCDAction<{callId: string}> = async ({
   params,
 }) => {
   return requireAdminUser(request, async () => {
-    const session = await rootStorage.getSession(request.headers.get('Cookie'))
-    const maybeNullCall = await prisma.call.findFirst({
-      where: {id: params.callId},
-      include: {user: true},
-    })
-    if (!maybeNullCall) {
-      // TODO: display an error message or something...
-      return redirect('/call')
-    }
-    try {
-      const requestText = await request.text()
-      const form = new URLSearchParams(requestText)
-
-      const formData = {
-        audio: form.get('audio'),
-        title: form.get('title'),
-        description: form.get('description'),
-        keywords: form.get('keywords'),
+    return replayable(request, async checkIfReplayable => {
+      const session = await rootStorage.getSession(
+        request.headers.get('Cookie'),
+      )
+      const maybeNullCall = await prisma.call.findFirst({
+        where: {id: params.callId},
+        include: {user: true},
+      })
+      if (!maybeNullCall) {
+        // TODO: display an error message or something...
+        return redirect('/call')
       }
-      const fields: LoaderData['fields'] = {
-        title: formData.title,
-        description: formData.description,
-        keywords: formData.keywords,
-      }
-      session.flash(fieldsSessionKey, fields)
+      try {
+        const requestText = await request.text()
+        const form = new URLSearchParams(requestText)
 
-      const errors = {
-        audio: getErrorForAudio(formData.audio),
-        title: getErrorForTitle(formData.title),
-        description: getErrorForDescription(formData.description),
-        keywords: getErrorForKeywords(formData.keywords),
-      }
+        const formData = {
+          audio: form.get('audio'),
+          title: form.get('title'),
+          description: form.get('description'),
+          keywords: form.get('keywords'),
+        }
+        const fields: LoaderData['fields'] = {
+          title: formData.title,
+          description: formData.description,
+          keywords: formData.keywords,
+        }
+        session.flash(fieldsSessionKey, fields)
 
-      if (Object.values(errors).some(err => err !== null)) {
-        session.flash(errorSessionKey, errors)
+        const errors = {
+          audio: getErrorForAudio(formData.audio),
+          title: getErrorForTitle(formData.title),
+          description: getErrorForDescription(formData.description),
+          keywords: getErrorForKeywords(formData.keywords),
+        }
+
+        if (Object.values(errors).some(err => err !== null)) {
+          session.flash(errorSessionKey, errors)
+          return redirect(new URL(request.url).pathname, {
+            headers: {
+              'Set-Cookie': await rootStorage.commitSession(session),
+            },
+          })
+        }
+
+        const {
+          audio: response,
+          title,
+          description,
+          call,
+          keywords,
+        } = getNonNull({
+          ...formData,
+          call: maybeNullCall,
+        })
+
+        const episodeAudio = await createEpisodeAudio(call.base64, response)
+        await createEpisode({
+          audio: episodeAudio,
+          title,
+          description,
+          imageUrl: getAvatarForUser(call.user).src,
+          keywords,
+        })
+        await prisma.call.delete({
+          where: {id: call.id},
+        })
+
+        return redirect('/call')
+      } catch (error: unknown) {
+        const replay = checkIfReplayable(error)
+        if (replay) return replay
+
+        const generalError = getErrorMessage(error)
+        console.error(generalError)
+        session.flash(errorSessionKey, {generalError})
         return redirect(new URL(request.url).pathname, {
           headers: {
             'Set-Cookie': await rootStorage.commitSession(session),
           },
         })
       }
-
-      const {
-        audio: response,
-        title,
-        description,
-        call,
-        keywords,
-      } = getNonNull({
-        ...formData,
-        call: maybeNullCall,
-      })
-
-      const episodeAudio = await createEpisodeAudio(call.base64, response)
-      await createEpisode({
-        audio: episodeAudio,
-        title,
-        description,
-        imageUrl: getAvatarForUser(call.user).src,
-        keywords,
-      })
-      await prisma.call.delete({
-        where: {id: call.id},
-      })
-
-      return redirect('/call')
-    } catch (error: unknown) {
-      const generalError = getErrorMessage(error)
-      console.error(generalError)
-      session.flash(errorSessionKey, {generalError})
-      return redirect(new URL(request.url).pathname, {
-        headers: {
-          'Set-Cookie': await rootStorage.commitSession(session),
-        },
-      })
-    }
+    })
   })
 }
 

@@ -1,7 +1,9 @@
 import {PrismaClient} from '@prisma/client'
+import {redirect} from 'remix'
+import type {Request, Response} from 'remix'
 import type {User, Session} from 'types'
 import {encrypt, decrypt} from './encryption.server'
-import {getRequiredServerEnvVar} from './misc'
+import {getErrorMessage, getRequiredServerEnvVar} from './misc'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -21,8 +23,10 @@ const PRIMARY_REGION = isLocalHost
   : getRequiredServerEnvVar('PRIMARY_REGION')
 const FLY_REGION = isLocalHost ? null : getRequiredServerEnvVar('FLY_REGION')
 
+const isPrimaryRegion = PRIMARY_REGION === FLY_REGION
+
 if (!isLocalHost) {
-  if (PRIMARY_REGION !== FLY_REGION) {
+  if (!isPrimaryRegion) {
     // 5433 is the read-replica port
     regionalDB.port = '5433'
   }
@@ -217,6 +221,42 @@ async function addPostRead({slug, userId}: {slug: string; userId: string}) {
   }
 }
 
+/**
+ * If a write request fails due to read-only and the fly region is not the primary
+ * then we can replay it to the primary via fly.
+ *
+ * This will be required around any server code that writes to the database until
+ * we get this: https://github.com/remix-run/remix/issues/217
+ */
+async function replayable(
+  request: Request,
+  callback: (
+    checkIfReplayable: (error: unknown) => Response | null,
+  ) => Response | Promise<Response>,
+): Promise<Response> {
+  function checkIfReplayable(error: unknown) {
+    const errorMessage = getErrorMessage(error)
+    const isReadOnlyError = errorMessage.includes('SqlState("25006")')
+    if (isReadOnlyError) {
+      return redirect(new URL(request.url).pathname, {
+        status: 409,
+        headers: {'fly-replay': `region=${PRIMARY_REGION}`},
+      })
+    }
+    return null
+  }
+  if (isPrimaryRegion) return callback(checkIfReplayable)
+
+  try {
+    const response = await callback(checkIfReplayable)
+    return response
+  } catch (error: unknown) {
+    const response = checkIfReplayable(error)
+    if (response) return response
+    throw error
+  }
+}
+
 export {
   prisma,
   getMagicLink,
@@ -226,4 +266,5 @@ export {
   getUserByEmail,
   updateUser,
   addPostRead,
+  replayable,
 }

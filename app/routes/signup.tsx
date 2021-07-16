@@ -9,7 +9,12 @@ import {
   sessionKeys,
   signInSession,
 } from '../utils/session.server'
-import {createSession, prisma, validateMagicLink} from '../utils/prisma.server'
+import {
+  createSession,
+  prisma,
+  replayable,
+  validateMagicLink,
+} from '../utils/prisma.server'
 import {getErrorMessage, getNonNull, teams} from '../utils/misc'
 import {tagKCDSiteSubscriber} from '../utils/convertkit.server'
 import {useTeam} from '../utils/providers'
@@ -50,86 +55,94 @@ function getErrorForTeam(team: string | null) {
 }
 
 export const action: ActionFunction = async ({request}) => {
-  const session = await rootStorage.getSession(request.headers.get('Cookie'))
-  const email = session.get(sessionKeys.email)
-  const magicLink = session.get(sessionKeys.magicLink)
-  try {
-    if (typeof email !== 'string' || typeof magicLink !== 'string') {
-      throw new Error('email and magicLink required.')
+  return replayable(request, async checkIfReplayable => {
+    const session = await rootStorage.getSession(request.headers.get('Cookie'))
+    const email = session.get(sessionKeys.email)
+    const magicLink = session.get(sessionKeys.magicLink)
+    try {
+      if (typeof email !== 'string' || typeof magicLink !== 'string') {
+        throw new Error('email and magicLink required.')
+      }
+
+      // The user should only be able to get to this page after we've already
+      // validated the magic link. But we'll validate it again anyway because
+      // otherwise a user could request a link to an email address they don't
+      // own to get that email address in their session and then come to this
+      // page directly and create an account for that address. So we put the
+      // magicLink in their session and validate it again before creating an
+      // account for them.
+      await validateMagicLink(email, magicLink)
+    } catch (error: unknown) {
+      const replay = checkIfReplayable(error)
+      if (replay) return replay
+
+      console.error(getErrorMessage(error))
+
+      session.flash('error', 'Sign in link invalid. Please request a new one.')
+      return redirect('/login', {
+        headers: {'Set-Cookie': await rootStorage.commitSession(session)},
+      })
     }
 
-    // The user should only be able to get to this page after we've already
-    // validated the magic link. But we'll validate it again anyway because
-    // otherwise a user could request a link to an email address they don't
-    // own to get that email address in their session and then come to this
-    // page directly and create an account for that address. So we put the
-    // magicLink in their session and validate it again before creating an
-    // account for them.
-    await validateMagicLink(email, magicLink)
-  } catch (error: unknown) {
-    console.error(getErrorMessage(error))
+    const requestText = await request.text()
+    const form = new URLSearchParams(requestText)
+    const formData: LoaderData['fields'] = {
+      firstName: form.get('firstName'),
+      team: form.get('team') as Team | null,
+    }
+    session.flash(fieldsSessionKey, formData)
 
-    session.flash('error', 'Sign in link invalid. Please request a new one.')
-    return redirect('/login', {
-      headers: {'Set-Cookie': await rootStorage.commitSession(session)},
-    })
-  }
+    const errors: LoaderData['errors'] = {
+      firstName: getErrorForFirstName(formData.firstName),
+      team: getErrorForTeam(formData.team),
+    }
 
-  const requestText = await request.text()
-  const form = new URLSearchParams(requestText)
-  const formData: LoaderData['fields'] = {
-    firstName: form.get('firstName'),
-    team: form.get('team') as Team | null,
-  }
-  session.flash(fieldsSessionKey, formData)
+    if (errors.firstName || errors.team) {
+      session.flash(errorSessionKey, errors)
+      return redirect(new URL(request.url).pathname, {
+        headers: {
+          'Set-Cookie': await rootStorage.commitSession(session),
+        },
+      })
+    }
 
-  const errors: LoaderData['errors'] = {
-    firstName: getErrorForFirstName(formData.firstName),
-    team: getErrorForTeam(formData.team),
-  }
+    const {firstName, team} = getNonNull(formData)
 
-  if (errors.firstName || errors.team) {
-    session.flash(errorSessionKey, errors)
-    return redirect(new URL(request.url).pathname, {
-      headers: {
-        'Set-Cookie': await rootStorage.commitSession(session),
-      },
-    })
-  }
+    try {
+      const user = await prisma.user.create({data: {email, firstName, team}})
 
-  const {firstName, team} = getNonNull(formData)
+      // add user to mailing list
+      const sub = await tagKCDSiteSubscriber(user)
+      await prisma.user.update({
+        data: {convertKitId: String(sub.id)},
+        where: {id: user.id},
+      })
 
-  try {
-    const user = await prisma.user.create({data: {email, firstName, team}})
+      const userSession = await createSession({userId: user.id})
+      session.unset('email')
+      session.unset('magicLink')
+      await signInSession(session, userSession.id)
 
-    // add user to mailing list
-    const sub = await tagKCDSiteSubscriber(user)
-    await prisma.user.update({
-      data: {convertKitId: String(sub.id)},
-      where: {id: user.id},
-    })
+      const cookie = await rootStorage.commitSession(session, {maxAge: 604_800})
+      return redirect('/me', {
+        headers: {'Set-Cookie': cookie},
+      })
+    } catch (error: unknown) {
+      const replay = checkIfReplayable(error)
+      if (replay) return replay
 
-    const userSession = await createSession({userId: user.id})
-    session.unset('email')
-    session.unset('magicLink')
-    await signInSession(session, userSession.id)
+      const message = getErrorMessage(error)
+      console.error(message)
 
-    const cookie = await rootStorage.commitSession(session, {maxAge: 604_800})
-    return redirect('/me', {
-      headers: {'Set-Cookie': cookie},
-    })
-  } catch (error: unknown) {
-    const message = getErrorMessage(error)
-    console.error(message)
-
-    session.flash(
-      'error',
-      'There was a problem creating your account. Please try again.',
-    )
-    return redirect('/login', {
-      headers: {'Set-Cookie': await rootStorage.commitSession(session)},
-    })
-  }
+      session.flash(
+        'error',
+        'There was a problem creating your account. Please try again.',
+      )
+      return redirect('/login', {
+        headers: {'Set-Cookie': await rootStorage.commitSession(session)},
+      })
+    }
+  })
 }
 
 export const loader: LoaderFunction = async ({request}) => {

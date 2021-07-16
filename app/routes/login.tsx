@@ -14,21 +14,24 @@ import {Paragraph} from '../components/typography'
 import {Button} from '../components/button'
 import {Input, InputError, Label} from '../components/form-elements'
 import {HeroSection} from '../components/sections/hero-section'
+import {replayable} from '../utils/prisma.server'
 
 export const loader: LoaderFunction = async ({request}) => {
-  const user = await getUser(request)
-  if (user) return redirect('/me')
+  return replayable(request, async () => {
+    const user = await getUser(request)
+    if (user) return redirect('/me')
 
-  const session = await rootStorage.getSession(request.headers.get('Cookie'))
-  await signOutSession(session)
+    const session = await rootStorage.getSession(request.headers.get('Cookie'))
+    await signOutSession(session)
 
-  return json(
-    {
-      error: session.get('error'),
-      message: session.get('message'),
-    },
-    {headers: {'Set-Cookie': await rootStorage.commitSession(session)}},
-  )
+    return json(
+      {
+        error: session.get('error'),
+        message: session.get('message'),
+      },
+      {headers: {'Set-Cookie': await rootStorage.commitSession(session)}},
+    )
+  })
 }
 
 const EMAIL_SENT_MESSAGE = 'Email sent.'

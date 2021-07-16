@@ -17,4 +17,3 @@ tsconfig.tsbuildinfo
 .env
 .env.production
 
-storybook-static/
