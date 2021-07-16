@@ -7,7 +7,7 @@ import {prisma} from '../../utils/prisma.server'
 import {requireUser, getUser} from '../../utils/session.server'
 
 export const action: ActionFunction = async ({request}) => {
-  return requireUser(request)(async user => {
+  return requireUser(request, async user => {
     const requestText = await request.text()
     const form = new URLSearchParams(requestText)
     const callId = form.get('callId')

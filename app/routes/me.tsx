@@ -19,7 +19,7 @@ import {EyeIcon} from '../components/icons/eye-icon'
 
 type LoaderData = {message?: string; qrLoginCode: string}
 export const loader: LoaderFunction = ({request}) => {
-  return requireUser(request)(async user => {
+  return requireUser(request, async user => {
     const session = await rootStorage.getSession(request.headers.get('Cookie'))
     const message = session.get('message')
     const cookie = await rootStorage.commitSession(session)
@@ -47,7 +47,7 @@ const actionIds = {
 }
 
 export const action: ActionFunction = async ({request}) => {
-  return requireUser(request)(async user => {
+  return requireUser(request, async user => {
     const session = await rootStorage.getSession(request.headers.get('Cookie'))
     const params = new URLSearchParams(await request.text())
     const actionId = params.get('actionId')

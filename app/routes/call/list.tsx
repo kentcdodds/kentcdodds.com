@@ -5,6 +5,7 @@ import {
   LoaderFunction,
   redirect,
   useRouteData,
+  json,
 } from 'remix'
 import {Outlet} from 'react-router-dom'
 import type {Await} from 'types'
@@ -13,7 +14,7 @@ import {prisma} from '../../utils/prisma.server'
 import {getAvatarForUser} from '../../utils/misc'
 
 export const action: ActionFunction = async ({request}) => {
-  return requireAdminUser(request)(async () => {
+  return requireAdminUser(request, async () => {
     const requestText = await request.text()
     const form = new URLSearchParams(requestText)
     const callId = form.get('callId')
@@ -56,9 +57,9 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  return requireAdminUser(request)(async () => {
+  return requireAdminUser(request, async () => {
     const data: LoaderData = {calls: await getAllCalls()}
-    return data
+    return json(data)
   })
 }
 

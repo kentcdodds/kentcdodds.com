@@ -27,7 +27,7 @@ export const action: KCDAction<{callId: string}> = async ({
   request,
   params,
 }) => {
-  return requireAdminUser(request)(async () => {
+  return requireAdminUser(request, async () => {
     const session = await rootStorage.getSession(request.headers.get('Cookie'))
     const maybeNullCall = await prisma.call.findFirst({
       where: {id: params.callId},
@@ -115,7 +115,7 @@ export const loader: KCDLoader<{callId: string}> = async ({
   request,
   params,
 }) => {
-  return requireAdminUser(request)(async () => {
+  return requireAdminUser(request, async () => {
     const call = await prisma.call.findFirst({where: {id: params.callId}})
     if (!call) {
       console.error(`No call found at ${params.callId}`)

@@ -5,7 +5,7 @@ import {addPostRead} from '../../utils/prisma.server'
 import {requireUser} from '../../utils/session.server'
 
 export const action: ActionFunction = async ({request}) => {
-  return requireUser(request)(async user => {
+  return requireUser(request, async user => {
     const params = await request.json()
     await addPostRead({
       slug: params.articleSlug,

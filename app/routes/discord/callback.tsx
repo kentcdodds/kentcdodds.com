@@ -6,7 +6,7 @@ import {getDomainUrl, getErrorMessage} from '../../utils/misc'
 import {connectDiscord} from '../../utils/discord.server'
 
 export const loader: LoaderFunction = async ({request}) => {
-  return requireUser(request)(async user => {
+  return requireUser(request, async user => {
     const session = await rootStorage.getSession(request.headers.get('Cookie'))
 
     try {

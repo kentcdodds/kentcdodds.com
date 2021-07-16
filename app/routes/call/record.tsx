@@ -18,7 +18,7 @@ const errorSessionKey = 'call_error'
 const fieldsSessionKey = 'call_fields'
 
 export const action: ActionFunction = async ({request}) => {
-  return requireUser(request)(async user => {
+  return requireUser(request, async user => {
     const session = await rootStorage.getSession(request.headers.get('Cookie'))
     try {
       const requestText = await request.text()
