@@ -7,7 +7,6 @@ import {
   getUserByEmail,
   validateMagicLink,
 } from '../utils/prisma.server'
-import {getErrorMessage} from '../utils/misc'
 
 export const loader: LoaderFunction = async ({request}) => {
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
@@ -32,7 +31,7 @@ export const loader: LoaderFunction = async ({request}) => {
       })
     }
   } catch (error: unknown) {
-    console.error(getErrorMessage(error))
+    console.error(error)
 
     session.flash('error', 'Sign in link invalid. Please request a new one.')
     return redirect('/login', {

@@ -62,7 +62,18 @@ export const action: ActionFunction = async ({request}) => {
     if (actionId === actionIds.changeDetails) {
       const newFirstName = params.get('firstName')
       if (newFirstName && user.firstName !== newFirstName) {
-        await updateUser(user.id, {firstName: newFirstName})
+        try {
+          await updateUser(user.id, {firstName: newFirstName})
+        } catch (error: unknown) {
+          console.error(error)
+          throw error
+          // return redirect(new URL(request.url).pathname, {
+          //   status: 409,
+          //   headers: {
+          //     'fly-replay': `region=${process.env.PRIMARY_REGION}`,
+          //   },
+          // })
+        }
       }
     }
 
