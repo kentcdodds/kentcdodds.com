@@ -29,9 +29,6 @@ it does, go ahead and try each of these commands one at a time:
 # make sure you have a REMIX_TOKEN environment variable set
 npm install
 
-# setup the storybook repo
-npm --prefix ./storybook run setup
-
 # make sure you have docker installed
 # The `-d` tells docker to run this in the background
 docker compose up -d

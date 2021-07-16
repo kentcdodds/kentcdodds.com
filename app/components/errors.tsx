@@ -1,7 +1,7 @@
 import {useMatches} from 'remix'
 import * as React from 'react'
 import {images} from '../images'
-import {articles} from '../../storybook/stories/fixtures'
+import {articles} from '../utils/temp.fixtures'
 import {HeroSection} from './sections/hero-section'
 import {BlogSection} from './sections/blog-section'
 

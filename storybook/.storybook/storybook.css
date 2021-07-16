@@ -1,9 +1,0 @@
-body {
-  background: #fff;
-  transition: background 0.25s ease;
-  padding: 0 !important;
-}
-
-body.dark {
-  background: #1f2028;
-}

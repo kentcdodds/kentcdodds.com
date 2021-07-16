@@ -8,7 +8,7 @@ import {HeaderSection} from '../components/sections/header-section'
 import {FeatureCard} from '../components/feature-card'
 import {UsersIcon} from '../components/icons/users-icon'
 import {BlogSection} from '../components/sections/blog-section'
-import {articles} from '../../storybook/stories/fixtures'
+import {articles} from '../utils/temp.fixtures'
 import {HeroSection} from '../components/sections/hero-section'
 
 function AboutIndex() {

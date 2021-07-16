@@ -26,7 +26,6 @@
     "build:remix": "cross-env NODE_ENV=production dotenv -e .env remix build",
     "build": "npm run build:css && npm run build:remix",
     "dev": "pm2-dev pm2.config.js",
-    "dev:storybook": "cd storybook && npm run dev",
     "start": "cross-env NODE_ENV=production node --require ./node_modules/dotenv/config --experimental-wasm-threads ./index.js",
     "start:mocks": "cross-env NODE_ENV=production node --require ./mocks --require ./node_modules/dotenv/config --experimental-wasm-threads ./index.js",
     "curl:blog": "curl --silent http://localhost:$PORT/blog > /dev/null",
@@ -41,7 +40,7 @@
     "format": "kcd-scripts format",
     "typecheck": "tsc -b",
     "validate": "kcd-scripts validate",
-    "setup": "npm install && npm --prefix ./storybook run setup && docker compose up -d && prisma migrate reset --force && npm run validate && npm run prime-cache:mocks && npm run test:e2e:run"
+    "setup": "npm install && docker compose up -d && prisma migrate reset --force && npm run validate && npm run prime-cache:mocks && npm run test:e2e:run"
   },
   "dependencies": {
     "@ffmpeg/core": "^0.10.0",
@@ -156,7 +155,6 @@
     "coverage",
     "build",
     "public/build",
-    "*.ignored.*",
-    "storybook/storybook-static"
+    "*.ignored.*"
   ]
 }

@@ -9,7 +9,6 @@
     {"path": "mocks"},
     {"path": "content"},
     {"path": "prisma"},
-    {"path": "cypress"},
-    {"path": "storybook"}
+    {"path": "cypress"}
   ]
 }
