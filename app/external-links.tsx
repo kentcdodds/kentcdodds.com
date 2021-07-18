@@ -6,6 +6,8 @@ const externalLinks = {
   spotify: 'https://open.spotify.com/show/7GkO2poedjbltWT5lduL5w',
   simpleCast: 'https://feeds.simplecast.com/X_wS_WYh',
   discord: 'https://kcd.im/discord',
+  translationContributions:
+    'https://github.com/kentcdodds/remix-kentcdodds/blob/main/CONTRIBUTING.md#translation-contributions',
 }
 
 export {externalLinks}
