@@ -29,14 +29,18 @@ export const action: KCDAction<{callId: string}> = async ({
 }) => {
   return requireAdminUser(request, async () => {
     return replayable(request, async checkIfReplayable => {
+      if (request.method === 'DELETE') {
+        await prisma.call.delete({where: {id: params.callId}})
+        return redirect('/call/list')
+      }
       const session = await rootStorage.getSession(
         request.headers.get('Cookie'),
       )
-      const maybeNullCall = await prisma.call.findFirst({
+      const call = await prisma.call.findFirst({
         where: {id: params.callId},
         include: {user: true},
       })
-      if (!maybeNullCall) {
+      if (!call) {
         // TODO: display an error message or something...
         return redirect('/call')
       }
@@ -77,12 +81,8 @@ export const action: KCDAction<{callId: string}> = async ({
           audio: response,
           title,
           description,
-          call,
           keywords,
-        } = getNonNull({
-          ...formData,
-          call: maybeNullCall,
-        })
+        } = getNonNull(formData)
 
         const episodeAudio = await createEpisodeAudio(call.base64, response)
         await createEpisode({
@@ -161,7 +161,7 @@ function CallListing({call}: {call: Call}) {
       <strong>{call.title}</strong>
       <p>{call.description}</p>
       <div>{audioURL ? <audio src={audioURL} controls /> : null}</div>
-      <Form method="post">
+      <Form method="delete">
         <input type="hidden" name="callId" value={call.id} />
         <button type="submit">Delete</button>
       </Form>

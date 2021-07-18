@@ -1,6 +1,6 @@
 import calculateReadingTime from 'reading-time'
 import type {Request, Response} from 'node-fetch'
-import type {Action, Loader} from 'remix'
+import type {ActionFunction, LoaderFunction} from 'remix'
 import type {User, Call, Session, Team, Role} from '@prisma/client'
 
 declare global {
@@ -108,14 +108,14 @@ type CWKSeason = {
 type KCDLoader<
   Params extends Record<string, unknown> = Record<string, unknown>,
 > = (
-  args: Omit<Parameters<Loader>['0'], 'params'> & {params: Params},
-) => ReturnType<Loader>
+  args: Omit<Parameters<LoaderFunction>['0'], 'params'> & {params: Params},
+) => ReturnType<LoaderFunction>
 
 type KCDAction<
   Params extends Record<string, unknown> = Record<string, unknown>,
 > = (
-  args: Omit<Parameters<Action>['0'], 'params'> & {params: Params},
-) => ReturnType<Action>
+  args: Omit<Parameters<ActionFunction>['0'], 'params'> & {params: Params},
+) => ReturnType<ActionFunction>
 
 type GitHubFile = {path: string; content: string}
 
