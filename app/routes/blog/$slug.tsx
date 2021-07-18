@@ -20,6 +20,7 @@ import {getBlogRecommendations} from '../../utils/blog.server'
 import {getUser} from '../../utils/session.server'
 import {FourOhFour} from '../../components/errors'
 import {getDomainUrl} from '../../utils/misc'
+import {externalLinks} from '../../external-links'
 
 type LoaderData = {
   page: MdxPage | null
@@ -273,37 +274,47 @@ function MdxScreen() {
 
       <div ref={readMarker} />
 
-      <Grid as="main" className="prose prose-light dark:prose-dark mb-24">
-        {frontmatter.translations?.length ? (
-          <div>
-            <strong className="inline">Translations: </strong>
-            <ul className="flex flex-wrap list-none">
-              {frontmatter.translations.map(({language, link, author}) => (
-                <li key={`${language}:${link}`}>
-                  <a href={link}>{language}</a>
-                  {author ? (
-                    <>
-                      {'by '}
-                      {author.link ? (
-                        <a
-                          target="_blank"
-                          href={author.link}
-                          rel="noreferrer noopener"
-                        >
-                          {author.name}
-                        </a>
-                      ) : (
-                        author.name
-                      )}
-                    </>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
+      <main>
+        <Grid className="mb-24">
+          <div className="col-span-full lg:col-start-3">
+            <H6 as="div" className="mb-2">
+              Translations
+            </H6>
+
+            <a
+              href={externalLinks.translationContributions}
+              className="text-secondary block mb-6 hover:underline"
+            >
+              <H6 as="span" variant="secondary">
+                Add translation
+              </H6>
+            </a>
+
+            {frontmatter.translations?.length ? (
+              <ul className="flex flex-wrap col-span-full -mb-4 -mr-4 lg:col-span-10 lg:col-start-3">
+                {frontmatter.translations.map(({language, link}) => (
+                  <li key={`${language}:${link}`}>
+                    <a
+                      href={link}
+                      className="focus-ring bg-secondary text-primary relative block mb-4 mr-4 px-6 py-3 w-auto h-auto whitespace-nowrap rounded-full"
+                    >
+                      {language}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <span className="text-secondary text-lg italic">
+                No translations available.
+              </span>
+            )}
           </div>
-        ) : null}
-        <Component components={MdxComponentMap} />
-      </Grid>
+        </Grid>
+
+        <Grid className="prose prose-light dark:prose-dark mb-24">
+          <Component components={MdxComponentMap} />
+        </Grid>
+      </main>
 
       <div className="mb-64">
         <ArticleFooter />
