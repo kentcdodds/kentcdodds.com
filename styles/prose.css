@@ -38,6 +38,17 @@ pre {
   --base0F: #d3423e; /* "Embedded" (whatever that means) */
 }
 
+/*
+* This un-sets some styles in tailwind/typography for when I really don't want
+* list items to display like list items. (Like for the list of translations)
+*/
+.prose ul.list-none > li {
+  padding-left: unset;
+}
+.prose ul.list-none > li::before {
+  content: unset;
+}
+
 .prose pre[data-line-numbers='true']:not([data-lang='sh']) {
   padding-left: 0rem;
   padding-right: 0rem;

@@ -19,6 +19,7 @@ import {BlogSection} from '../../components/sections/blog-section'
 import {getBlogRecommendations} from '../../utils/blog.server'
 import {getUser} from '../../utils/session.server'
 import {FourOhFour} from '../../components/errors'
+import {getDomainUrl} from '../../utils/misc'
 
 type LoaderData = {
   page: MdxPage | null
@@ -26,17 +27,19 @@ type LoaderData = {
 }
 
 export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
+  const pageMeta = {
+    permalink: `${getDomainUrl(request)}/blog/${params.slug}`,
+    contentDir: 'blog',
+    slug: params.slug,
+  }
   if (new URL(request.url).searchParams.has('fresh')) {
     const user = await getUser(request)
     if (user?.role === 'ADMIN') {
-      await refreshCacheForMdx({contentDir: 'blog', slug: params.slug})
+      await refreshCacheForMdx(pageMeta)
     }
   }
 
-  const page = await getMdxPage({
-    contentDir: 'blog',
-    slug: params.slug,
-  })
+  const page = await getMdxPage(pageMeta)
   const blogRecommendations = (await getBlogRecommendations())
     .filter(b => b.slug !== params.slug)
     .slice(0, 3)
@@ -271,6 +274,34 @@ function MdxScreen() {
       <div ref={readMarker} />
 
       <Grid as="main" className="prose prose-light dark:prose-dark mb-24">
+        {frontmatter.translations?.length ? (
+          <div>
+            <strong className="inline">Translations: </strong>
+            <ul className="flex flex-wrap list-none">
+              {frontmatter.translations.map(({language, link, author}) => (
+                <li key={`${language}:${link}`}>
+                  <a href={link}>{language}</a>
+                  {author ? (
+                    <>
+                      {'by '}
+                      {author.link ? (
+                        <a
+                          target="_blank"
+                          href={author.link}
+                          rel="noreferrer noopener"
+                        >
+                          {author.name}
+                        </a>
+                      ) : (
+                        author.name
+                      )}
+                    </>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
         <Component components={MdxComponentMap} />
       </Grid>
 

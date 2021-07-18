@@ -38,6 +38,14 @@ type MdxPage = {
     bannerUrl?: string
     bannerCredit?: string
     bannerAlt?: string
+    translations?: Array<{
+      language: string
+      link: string
+      author?: {
+        name: string
+        link?: string
+      }
+    }>
 
     // Workshop meta
     tech?: string

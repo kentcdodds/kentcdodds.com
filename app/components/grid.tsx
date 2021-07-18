@@ -14,13 +14,11 @@ interface GridProps {
 function Grid({
   children,
   className,
-  as = 'div',
+  as: Tag = 'div',
   featured,
   nested,
   rowGap,
 }: GridProps) {
-  const Tag = as
-
   return (
     <Tag
       className={clsx('relative', {
