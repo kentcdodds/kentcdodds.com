@@ -4,6 +4,7 @@ import parseISO from 'date-fns/parseISO'
 import type {MdxListItem} from 'types'
 import {H3} from './typography'
 import {ClipboardCopyButton} from './clipboard-copy-button'
+import {useRequestInfo} from '../utils/providers'
 
 function ArticleCard({
   readTime,
@@ -16,11 +17,8 @@ function ArticleCard({
     bannerUrl,
   },
 }: MdxListItem) {
-  // TODO: fix this. We need to retrieve the origin at the server as well. Add an ROOT_URL env variable? Make full url part of front matter?
-  const articleUrl = new URL(
-    `/blog/${slug}`,
-    typeof location === 'undefined' ? 'http://example.com' : location.origin,
-  ).toString()
+  const requestInfo = useRequestInfo()
+  const permalink = `${requestInfo.origin}/blog/${slug}`
 
   return (
     <div className="relative w-full">
@@ -45,7 +43,7 @@ function ArticleCard({
       </a>
 
       <ClipboardCopyButton
-        value={articleUrl}
+        value={permalink}
         className="absolute left-6 top-6"
       />
     </div>

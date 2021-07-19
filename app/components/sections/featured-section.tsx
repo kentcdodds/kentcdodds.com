@@ -11,7 +11,7 @@ type FeaturedSectionProps = {
   title?: string
   imageUrl?: string
   imageAlt?: string
-  showCopyButton?: boolean
+  permalink?: string
 } & ({href?: never; slug: string} | {href: string; slug?: never})
 
 function FeaturedSection({
@@ -23,7 +23,7 @@ function FeaturedSection({
   imageAlt,
   title = 'Untitled Post',
   subTitle,
-  showCopyButton,
+  permalink,
 }: FeaturedSectionProps) {
   return (
     <div className="px-8 w-full lg:px-0">
@@ -55,12 +55,10 @@ function FeaturedSection({
                   alt={imageAlt}
                 />
               </div>
-              {showCopyButton ? (
+              {permalink ? (
                 <ClipboardCopyButton
                   className="absolute left-6 top-6"
-                  value={
-                    '/* TODO: fix me, slug & href do not hold full urls */'
-                  }
+                  value={permalink}
                 />
               ) : null}
             </div>
