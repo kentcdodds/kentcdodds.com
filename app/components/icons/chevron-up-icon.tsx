@@ -14,7 +14,7 @@ function ChevronUpIcon({className}: {className?: string}) {
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth="1.5"
-        d="M15.25 10.75L12 14.25L8.75 10.75"
+        d="M15.25 14.25L12 10.75L8.75 14.25"
       />
     </svg>
   )

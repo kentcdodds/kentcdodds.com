@@ -8,6 +8,7 @@ import {getSeasonListItems} from '../../utils/simplecast.server'
 import {useChatsEpisodeUIState} from '../../utils/providers'
 import {formatTime} from '../../utils/misc'
 import {getCWKEpisodePath} from '../../utils/chats-with-kent'
+import {TriangleIcon} from '../../components/icons/triangle-icon'
 
 type LoaderData = {
   season: CWKSeason
@@ -47,11 +48,18 @@ export default function Screen() {
       >
         <div className="bg-secondary absolute -inset-px group-hover:block hidden -mx-6 rounded-lg" />
 
-        <img
-          className="relative flex-none col-span-1 rounded-lg"
-          src={episode.image}
-          alt={episode.title}
-        />
+        <div className="relative flex-none col-span-1">
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transform scale-0 group-hover:scale-100 transition">
+            <div className="flex-none p-4 text-gray-800 bg-white rounded-full">
+              <TriangleIcon size={12} />
+            </div>
+          </div>
+          <img
+            className="w-full rounded-lg object-cover"
+            src={episode.image}
+            alt={episode.title}
+          />
+        </div>
         <div className="text-primary relative flex flex-col col-span-3 md:col-span-7 lg:flex-row lg:col-span-11 lg:items-center lg:justify-between">
           <div className="mb-3 text-xl font-medium lg:mb-0">
             <span className="inline-block w-10 lg:text-lg">
