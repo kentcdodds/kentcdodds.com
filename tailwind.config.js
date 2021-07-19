@@ -85,7 +85,7 @@ module.exports = {
         '10vw': '10vw', // page margin
       },
       height: {
-        hero: 'calc(100vh - 10rem)', // screen - navbar height (lg: only)
+        hero: 'min(60rem, calc(100vh - 10rem))', // screen - navbar height (lg: only)
       },
       maxHeight: {
         '50vh': '50vh', // max height for medium size hero images
