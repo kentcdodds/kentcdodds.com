@@ -6,25 +6,21 @@ import {encrypt, decrypt} from './encryption.server'
 import {getErrorMessage, getRequiredServerEnvVar} from './misc'
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace NodeJS {
-    interface Global {
-      prisma?: PrismaClient
-    }
-  }
+  // This prevents us from making multiple connections to the db when the
+  // require cache is cleared.
+  // eslint-disable-next-line
+  var prisma: PrismaClient | undefined
 }
 
 const DATABASE_URL = getRequiredServerEnvVar('DATABASE_URL')
 const regionalDB = new URL(DATABASE_URL)
 const isLocalHost = regionalDB.hostname === 'localhost'
-
 const PRIMARY_REGION = isLocalHost
   ? null
   : getRequiredServerEnvVar('PRIMARY_REGION')
+
 const FLY_REGION = isLocalHost ? null : getRequiredServerEnvVar('FLY_REGION')
-
 const isPrimaryRegion = PRIMARY_REGION === FLY_REGION
-
 if (!isLocalHost) {
   if (!isPrimaryRegion) {
     // 5433 is the read-replica port
@@ -33,13 +29,25 @@ if (!isLocalHost) {
   }
 }
 
-const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: regionalDB.toString(),
-    },
-  },
-})
+const prisma = getClient(
+  () =>
+    new PrismaClient({
+      datasources: {
+        db: {
+          url: regionalDB.toString(),
+        },
+      },
+    }),
+)
+
+function getClient(createClient: () => PrismaClient): PrismaClient {
+  let client = global.prisma
+  if (!client) {
+    // eslint-disable-next-line no-multi-assign
+    client = global.prisma = createClient()
+  }
+  return client
+}
 
 const linkExpirationTime = 1000 * 60 * 30
 const sessionExpirationTime = 1000 * 60 * 60 * 24 * 30

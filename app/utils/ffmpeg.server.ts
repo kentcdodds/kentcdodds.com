@@ -1,10 +1,19 @@
 import path from 'path'
 import {createFFmpeg, fetchFile} from '@ffmpeg/ffmpeg'
 
+type FFMpeg = ReturnType<typeof createFFmpeg>
+
 const asset = (...p: Array<string>) =>
   path.join(process.cwd(), 'app/assets', ...p)
 
-const ffmpeg = createFFmpeg({log: true})
+declare global {
+  // This prevents us from making multiple connections to the db when the
+  // require cache is cleared.
+  // eslint-disable-next-line
+  var ffmpeg: FFMpeg | undefined
+}
+
+const ffmpeg = global.ffmpeg ?? (global.ffmpeg = createFFmpeg({log: true}))
 
 async function createEpisodeAudio(callBase64: string, responseBase64: string) {
   if (!ffmpeg.isLoaded()) {

@@ -1,6 +1,14 @@
 import redis from 'redis'
 import {getRequiredServerEnvVar} from './misc'
 
+declare global {
+  // This prevents us from making multiple connections to the db when the
+  // require cache is cleared.
+  // eslint-disable-next-line
+  var replicaClient: redis.RedisClient | undefined,
+    primaryClient: redis.RedisClient | undefined
+}
+
 const REDIS_URL = getRequiredServerEnvVar('REDIS_URL')
 const replica = new URL(REDIS_URL)
 const isLocalHost = replica.hostname === 'localhost'
@@ -14,18 +22,37 @@ if (!isLocalHost) {
   replica.host = `${FLY_REGION}.${replica.host}`
 }
 
-const replicaClient = redis.createClient({
+const replicaClient = createClient('replicaClient', {
   url: replica.toString(),
   family: 'IPv6',
 })
 
-let primaryClient: ReturnType<typeof redis.createClient> | null = null
+let primaryClient: redis.RedisClient | null = null
 if (FLY_REGION !== PRIMARY_REGION) {
   const primary = new URL(REDIS_URL)
   if (!isLocalHost) {
     primary.host = `${PRIMARY_REGION}.${primary.host}`
   }
-  primaryClient = redis.createClient({url: primary.toString(), family: 'IPv6'})
+  primaryClient = createClient('primaryClient', {
+    url: primary.toString(),
+    family: 'IPv6',
+  })
+}
+
+function createClient(
+  name: 'replicaClient' | 'primaryClient',
+  options: redis.ClientOpts,
+): redis.RedisClient {
+  let client = global[name]
+  if (!client) {
+    // eslint-disable-next-line no-multi-assign
+    client = global[name] = redis.createClient(options)
+
+    client.on('error', (error: string) => {
+      console.error(`REDIS ${name} (${PRIMARY_REGION}) ERROR:`, error)
+    })
+  }
+  return client
 }
 
 function get(key: string): Promise<string | null> {
@@ -60,13 +87,5 @@ function del(key: string): Promise<string> {
     })
   })
 }
-
-primaryClient?.on('error', (error: string) => {
-  console.error(`REDIS PRIMARY (${PRIMARY_REGION})  ERROR:`, error)
-})
-
-replicaClient.on('error', (error: string) => {
-  console.error(`REDIS REPLICA (${FLY_REGION}) ERROR:`, error)
-})
 
 export {get, set, del}
