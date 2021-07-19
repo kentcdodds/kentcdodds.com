@@ -3,6 +3,7 @@ import {Form, json, redirect, useRouteData} from 'remix'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import type {Team} from 'types'
 import clsx from 'clsx'
+import {shuffle} from 'lodash'
 import {
   getUser,
   rootStorage,
@@ -28,6 +29,7 @@ import {TEAM_MAP} from '../utils/onboarding'
 
 type LoaderData = {
   email: string
+  teamsInOrder: Array<Team>
   errors?: {
     generalError?: string
     firstName: string | null
@@ -163,6 +165,8 @@ export const loader: LoaderFunction = async ({request}) => {
   }
   const values: LoaderData = {
     email: session.get(sessionKeys.email),
+    // have to put this in the loader to ensure server render is the same as the client one.
+    teamsInOrder: shuffle(teams),
     errors: session.get(errorSessionKey),
     fields: session.get(fieldsSessionKey),
   }
@@ -267,21 +271,14 @@ export default function NewAccount() {
 
           <fieldset className="contents">
             <legend className="sr-only">Team</legend>
-            <TeamOption
-              team="BLUE"
-              error={data.errors?.team}
-              selected={formValues.team === 'BLUE'}
-            />
-            <TeamOption
-              team="RED"
-              error={data.errors?.team}
-              selected={formValues.team === 'RED'}
-            />
-            <TeamOption
-              team="YELLOW"
-              error={data.errors?.team}
-              selected={formValues.team === 'YELLOW'}
-            />
+            {data.teamsInOrder.map(teamOption => (
+              <TeamOption
+                key={teamOption}
+                team={teamOption}
+                error={data.errors?.team}
+                selected={formValues.team === teamOption}
+              />
+            ))}
           </fieldset>
 
           <div className="col-span-full h-20 lg:h-24" />
