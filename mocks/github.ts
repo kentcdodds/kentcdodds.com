@@ -2,7 +2,6 @@ import * as nodePath from 'path'
 import {promises as fs} from 'fs'
 import type {DefaultRequestBody, MockedRequest, RestHandler} from 'msw'
 import {rest} from 'msw'
-import * as config from '../config'
 
 async function isDirectory(d: string) {
   try {
