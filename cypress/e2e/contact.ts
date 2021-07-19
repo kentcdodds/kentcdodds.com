@@ -45,6 +45,7 @@ describe('contact', () => {
       cy.findByRole('button', {name: /submit/i}).click()
     })
 
+    cy.wait(200)
     cy.readFile('mocks/msw.local.json').then(
       (data: {email: {html: string}}) => {
         expect(data.email).to.include({

@@ -14,6 +14,7 @@ module.exports = {
       watch: ['./mocks/**/*.ts', './index.js', './.env'],
       env: {
         NODE_ENV: 'development',
+        ENABLE_TEST_ROUTES: true,
         RUNNING_E2E: process.env.RUNNING_E2E,
       },
     },
@@ -21,6 +22,11 @@ module.exports = {
       name: 'Remix',
       script: 'remix dev',
       ignore_watch: ['.'],
+      env: {
+        NODE_ENV: 'development',
+        ENABLE_TEST_ROUTES: true,
+        RUNNING_E2E: process.env.RUNNING_E2E,
+      },
     },
     {
       name: 'Postcss',
