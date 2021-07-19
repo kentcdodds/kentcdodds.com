@@ -252,6 +252,11 @@ async function replayable(
         status: 409,
         headers: {'fly-replay': `region=${PRIMARY_REGION}`},
       })
+    } else {
+      console.error(
+        `There was an error, but we're not replaying because it wasn't a readOnly error. Here's what it was:`,
+        error,
+      )
     }
     return null
   }
