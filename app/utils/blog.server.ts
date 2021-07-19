@@ -11,14 +11,10 @@ async function getBlogRecommendations() {
 }
 
 async function getBlogReadRankings(slug: string) {
-  type RankingData = {
-    totalReads: number
-    ranking: number
-  }
-  const entries = await Promise.all(
+  const rawRankingData = await Promise.all(
     teams.map(async function getRankingsForTeam(
       team,
-    ): Promise<readonly [Team, RankingData]> {
+    ): Promise<{team: Team; totalReads: number; ranking: number}> {
       const totalReads = await prisma.postRead.count({
         where: {
           postSlug: slug,
@@ -29,15 +25,27 @@ async function getBlogReadRankings(slug: string) {
       const recentReads = await getRecentReads(slug, team)
       let ranking = 0
       if (activeMembers) {
-        ranking = Number((recentReads / activeMembers).toFixed(0))
+        ranking = Number(recentReads / activeMembers)
       }
-      return [team, {totalReads, ranking}] as const
+      return {team, totalReads, ranking}
     }),
   )
+  const rankings = rawRankingData.map(r => r.ranking)
+  const maxRanking = Math.max(...rankings)
+  const minRanking = Math.min(...rankings)
+  const rankPercentages = rawRankingData
+    .map(({team, totalReads, ranking}) => {
+      return {
+        team,
+        totalReads,
+        percent: Number(
+          ((ranking - minRanking) / (maxRanking - minRanking)).toFixed(2),
+        ),
+      }
+    })
+    .sort(({percent: a}, {percent: b}) => b - a)
 
-  // TypeScript isn't very smart with Object.fromEntries (or something),
-  // so we have to cast the type explicitly
-  return Object.fromEntries(entries) as Record<Team, RankingData>
+  return rankPercentages
 }
 
 async function getRecentReads(slug: string, team: Team) {
