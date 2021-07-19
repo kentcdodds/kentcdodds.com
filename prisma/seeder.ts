@@ -1,9 +1,10 @@
+import {subMonths} from 'date-fns'
 import {PrismaClient} from '@prisma/client'
 
 const prisma = new PrismaClient()
 
 async function main() {
-  await prisma.user.upsert({
+  const kent = await prisma.user.upsert({
     where: {email: 'me@kentcdodds.com'},
     update: {},
     create: {
@@ -14,12 +15,32 @@ async function main() {
     },
   })
 
+  const hannah = await prisma.user.upsert({
+    where: {email: 'me+hannah@kentcdodds.com'},
+    update: {},
+    create: {
+      email: `me+hannah@kentcdodds.com`,
+      firstName: 'Hannah',
+      team: 'RED',
+    },
+  })
+
   const kody = await prisma.user.upsert({
     where: {email: 'me+kody@kentcdodds.com'},
     update: {},
     create: {
       email: `me+kody@kentcdodds.com`,
       firstName: 'Kody',
+      team: 'YELLOW',
+    },
+  })
+
+  const peter = await prisma.user.upsert({
+    where: {email: 'me+peter@kentcdodds.com'},
+    update: {},
+    create: {
+      email: `me+peter@kentcdodds.com`,
+      firstName: 'Peter',
       team: 'YELLOW',
     },
   })
@@ -34,6 +55,38 @@ async function main() {
       keywords: 'bears,koalas',
     },
   })
+
+  // we'll stick one really old read in for peter to make sure he doesn't
+  // show up in the rankings as an active user, but the read *should* show up in the total reads.
+  const postReads = [
+    prisma.postRead.create({
+      data: {
+        postSlug: 'super-simple-start-to-remix',
+        userId: peter.id,
+        createdAt: subMonths(new Date(), 13),
+      },
+    }),
+  ]
+
+  for (const [user, reads] of [
+    [kent, 6],
+    [hannah, 4],
+    [kody, 2],
+  ] as const) {
+    // user.firstName.length is just an easy way to make these different
+    for (let index = 0; index < reads; index++) {
+      postReads.push(
+        prisma.postRead.create({
+          data: {
+            postSlug: 'super-simple-start-to-remix',
+            userId: user.id,
+          },
+        }),
+      )
+    }
+  }
+
+  await Promise.all(postReads)
 
   console.log('created')
 }

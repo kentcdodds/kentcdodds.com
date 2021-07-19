@@ -72,6 +72,7 @@ async function getUser(request: Request) {
   if (!token) return null
 
   return getUserFromSessionId(token).catch((error: unknown) => {
+    session.unset(sessionIdKey)
     console.error(`Failure getting user from session ID:`, error)
     return null
   })

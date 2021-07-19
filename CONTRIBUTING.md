@@ -184,6 +184,15 @@ up from there.
 We've got PostgreSQL and Prisma set up. Learn about the schema and learn more
 about what commands you can run in `./prisma/schema.prisma`.
 
+One common command you might need to run is to re-seed the database:
+
+```sh
+npx prisma migrate reset --force
+```
+
+In addition to resetting your database to the latest schema, it'll also run the
+seed script which will populate the database with some example data.
+
 ## Help needed
 
 Please checkout [the open issues][issues]

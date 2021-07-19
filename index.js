@@ -121,7 +121,7 @@ function getRedirectsMiddleware() {
             toUrl.searchParams.append(key, value)
           }
           toUrl.pathname = redirect.toPathname(params)
-          res.redirect(308, toUrl.toString())
+          res.redirect(307, toUrl.toString())
           return
         }
       } catch (error) {
