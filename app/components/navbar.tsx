@@ -12,9 +12,8 @@ import {
 } from '@reach/menu-button'
 import {useEffect} from 'react'
 import {AnimatePresence, motion} from 'framer-motion'
-import {images} from '../images'
+import {alexProfiles} from '../images'
 import {Theme, useTheme} from '../utils/theme-provider'
-import type {OptionalTeam} from '../utils/providers'
 import {
   useOptionalUser,
   useOptionalUserInfo,
@@ -213,13 +212,6 @@ function MobileMenu() {
       }}
     </Menu>
   )
-}
-
-const alexProfiles: Record<OptionalTeam, {src: string; alt: string}> = {
-  RED: {src: images.alexProfileRed(), alt: images.alexProfileRed.alt},
-  BLUE: {src: images.alexProfileBlue(), alt: images.alexProfileBlue.alt},
-  YELLOW: {src: images.alexProfileYellow(), alt: images.alexProfileYellow.alt},
-  UNKNOWN: {src: images.alexProfileGray(), alt: images.alexProfileGray.alt},
 }
 
 function Navbar() {

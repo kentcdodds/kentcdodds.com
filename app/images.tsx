@@ -1,5 +1,6 @@
 import type {TransformerOption} from '@cld-apis/types'
 import {setConfig, buildImageUrl} from 'cloudinary-build-url'
+import type {OptionalTeam} from './utils/providers'
 
 setConfig({
   cloudName: 'kentcdodds-com',
@@ -172,4 +173,11 @@ const images = createImages({
   },
 })
 
-export {images}
+const alexProfiles: Record<OptionalTeam, {src: string; alt: string}> = {
+  RED: {src: images.alexProfileRed(), alt: images.alexProfileRed.alt},
+  BLUE: {src: images.alexProfileBlue(), alt: images.alexProfileBlue.alt},
+  YELLOW: {src: images.alexProfileYellow(), alt: images.alexProfileYellow.alt},
+  UNKNOWN: {src: images.alexProfileGray(), alt: images.alexProfileGray.alt},
+}
+
+export {images, alexProfiles}
