@@ -135,6 +135,10 @@ function BlogHome() {
   // TODO: determine featured posts using some smarts on the backend
   // based on the user's read posts etc.
   const featured = isSearching ? null : matchingPosts[0]
+  const featuredPermalink = featured
+    ? `${requestInfo.origin}/blog/${featured.slug}`
+    : undefined
+
   const posts = isSearching
     ? matchingPosts.slice(0, indexToShow)
     : postsToShow.slice(1, indexToShow)
@@ -205,6 +209,7 @@ function BlogHome() {
             caption="Featured article"
             cta="Read full article"
             slug={featured.slug}
+            permalink={featuredPermalink}
           />
         </div>
       ) : null}

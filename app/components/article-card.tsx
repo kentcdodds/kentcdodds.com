@@ -3,7 +3,8 @@ import formatDate from 'date-fns/format'
 import parseISO from 'date-fns/parseISO'
 import type {MdxListItem} from 'types'
 import {H3} from './typography'
-import {CopyIcon} from './icons/copy-icon'
+import {ClipboardCopyButton} from './clipboard-copy-button'
+import {useRequestInfo} from '../utils/providers'
 
 function ArticleCard({
   readTime,
@@ -16,6 +17,9 @@ function ArticleCard({
     bannerUrl,
   },
 }: MdxListItem) {
+  const requestInfo = useRequestInfo()
+  const permalink = `${requestInfo.origin}/blog/${slug}`
+
   return (
     <div className="relative w-full">
       <a
@@ -38,12 +42,10 @@ function ArticleCard({
         </H3>
       </a>
 
-      <button className="absolute left-6 top-6 p-4 text-black whitespace-nowrap text-lg font-medium hover:bg-gray-200 focus:bg-gray-200 bg-white rounded-lg focus:outline-none shadow hover:shadow-lg focus:shadow-lg peer-hover:opacity-100 hover:opacity-100 peer-focus:opacity-100 focus:opacity-100 transition lg:px-8 lg:py-4 lg:opacity-0">
-        <span className="hidden lg:inline">Click to copy url</span>
-        <span className="inline lg:hidden">
-          <CopyIcon />
-        </span>
-      </button>
+      <ClipboardCopyButton
+        value={permalink}
+        className="absolute left-6 top-6"
+      />
     </div>
   )
 }

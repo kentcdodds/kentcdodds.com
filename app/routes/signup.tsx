@@ -23,7 +23,7 @@ import {Grid} from '../components/grid'
 import {H2, H6, Paragraph} from '../components/typography'
 import {Input, InputError, Label} from '../components/form-elements'
 import {Button} from '../components/button'
-import {CheckIcon} from '../components/icons/check-icon'
+import {CheckCircledIcon} from '../components/icons/check-circled-icon'
 import {images} from '../images'
 import {TEAM_MAP} from '../utils/onboarding'
 
@@ -198,7 +198,7 @@ function TeamOption({team: value, error, selected}: TeamOptionProps) {
     >
       {selected ? (
         <span className="absolute left-9 top-9 text-team-current">
-          <CheckIcon />
+          <CheckCircledIcon />
         </span>
       ) : null}
 

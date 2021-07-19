@@ -1,5 +1,6 @@
 import * as React from 'react'
-import {ErrorPage} from '../components/errors'
+import {HeroSection} from '../components/sections/hero-section'
+import {images} from '../images'
 
 export function meta() {
   return {title: "Ain't nothing here"}
@@ -7,9 +8,13 @@ export function meta() {
 
 export default function NotFoundPage() {
   return (
-    <ErrorPage
-      title="404 - Oh no, how did you get here?"
-      subtitle="This is not a page on kentcdodds.com. So sorry."
-    />
+    <main>
+      <HeroSection
+        title="404 - Oh no, you found a page that's missing stuff."
+        subtitle="This is not a page on kentcdodds.com. So sorry."
+        imageUrl={images.bustedOnewheel()}
+        imageAlt={images.bustedOnewheel.alt}
+      />
+    </main>
   )
 }
