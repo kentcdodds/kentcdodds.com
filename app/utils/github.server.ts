@@ -2,7 +2,6 @@ import nodePath from 'path'
 import {Octokit as createOctokit} from '@octokit/rest'
 import {throttling} from '@octokit/plugin-throttling'
 import type {GitHubFile} from 'types'
-import config from '../../config'
 
 const Octokit = createOctokit.plugin(throttling)
 
@@ -51,7 +50,7 @@ async function downloadFirstMdxFile(
 async function downloadMdxFileOrDirectory(
   relativeMdxFileOrDirectory: string,
 ): Promise<Array<GitHubFile>> {
-  const mdxFileOrDirectory = `${config.contentSrc.path}/${relativeMdxFileOrDirectory}`
+  const mdxFileOrDirectory = `content/${relativeMdxFileOrDirectory}`
 
   const parentDir = nodePath.dirname(mdxFileOrDirectory)
   const dirList = await downloadDirList(parentDir)
@@ -121,8 +120,8 @@ async function downloadFileBySha(sha: string) {
   const {data} = await octokit.request(
     'GET /repos/{owner}/{repo}/git/blobs/{file_sha}',
     {
-      owner: config.contentSrc.owner,
-      repo: config.contentSrc.repo,
+      owner: 'kentcdodds',
+      repo: 'remix-kentcdodds',
       file_sha: sha,
     },
   )
@@ -138,8 +137,8 @@ async function downloadFileBySha(sha: string) {
  */
 async function downloadDirList(path: string) {
   const resp = await octokit.repos.getContent({
-    owner: config.contentSrc.owner,
-    repo: config.contentSrc.repo,
+    owner: 'kentcdodds',
+    repo: 'remix-kentcdodds',
     path,
   })
   const data = resp.data

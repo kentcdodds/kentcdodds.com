@@ -52,9 +52,9 @@ const githubHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
       const {owner, repo} = req.params
       const path = decodeURIComponent(req.params.path).trim()
       const isMockable =
-        config.contentSrc.owner === owner &&
-        config.contentSrc.repo === repo &&
-        path.startsWith(config.contentSrc.path)
+        owner === 'kentcdodds' &&
+        repo === 'remix-kentcdodds' &&
+        path.startsWith('content')
 
       if (!isMockable) {
         const message = `Attempting to get content description for unmockable resource: ${owner}/${repo}/${path}`

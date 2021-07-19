@@ -1,7 +1,6 @@
 import * as React from 'react'
 import type {GitHubFile, MdxListItem, MdxPage} from 'types'
 import * as mdxBundler from 'mdx-bundler/client'
-import config from '../../config'
 import {compileMdx} from '../utils/compile-mdx.server'
 import {
   downloadDirList,
@@ -63,7 +62,7 @@ async function getMdxDirListCached(contentDir: string) {
   } catch (error: unknown) {
     console.error(`error with cache at ${key}`, getErrorMessage(error))
   }
-  const fullContentDirPath = `${config.contentSrc.path}/${contentDir}`
+  const fullContentDirPath = `content/${contentDir}`
   if (!dirList) {
     dirList = (await downloadDirList(fullContentDirPath))
       .map(({name, path}) => ({
