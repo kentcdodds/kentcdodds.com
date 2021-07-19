@@ -12,50 +12,9 @@ const MODE = process.env.NODE_ENV
 const BUILD_DIR = path.join(process.cwd(), 'build')
 
 const app = express()
-const redirects = getRedirects()
-app.all('*', (req, res, next) => {
-  for (const redirect of redirects) {
-    try {
-      const match = req.path.match(redirect.from)
-      if (match) {
-        const params = {}
-        const paramValues = match.slice(1)
-        for (
-          let paramIndex = 0;
-          paramIndex < paramValues.length;
-          paramIndex++
-        ) {
-          const paramValue = paramValues[paramIndex]
-          params[redirect.keys[paramIndex].name] = paramValue
-        }
-        const toUrl = redirect.toUrl
-        const host = req.header('X-Forwarded-Host') ?? req.header('host')
-        const protocol = host.includes('localhost') ? 'http' : 'https'
-        const reqUrl = new URL(`${protocol}://${host}${req.url}`)
-
-        toUrl.protocol = protocol
-        if (toUrl.host === 'same_host') toUrl.host = reqUrl.host
-
-        for (const [key, value] of reqUrl.searchParams.entries()) {
-          toUrl.searchParams.append(key, value)
-        }
-        toUrl.pathname = redirect.toPathname(params)
-        res.redirect(308, toUrl.toString())
-        return
-      }
-    } catch (error) {
-      // an error in the redirect shouldn't stop the request from going through
-      console.error(`Error processing redirects:`, {
-        error,
-        redirect,
-        'req.url': req.url,
-      })
-    }
-  }
-  next()
-})
-app.use(compression())
 app.use(morgan('tiny'))
+app.all('*', getRedirectsMiddleware())
+app.use(compression())
 
 // You may want to be more aggressive with this caching
 app.use(express.static('public', {maxAge: '1h'}))
@@ -97,9 +56,9 @@ function purgeRequireCache() {
   }
 }
 
-function getRedirects() {
+function getRedirectsMiddleware() {
   const redirectsString = fs.readFileSync('./_redirects', 'utf8')
-  const allRedirects = []
+  const redirects = []
   const lines = redirectsString.split('\n')
   for (let lineNumber = 0; lineNumber < lines.length; lineNumber++) {
     let line = lines[lineNumber]
@@ -121,7 +80,7 @@ function getRedirects() {
       ? new URL(to)
       : new URL(`https://same_host${to}`)
     try {
-      allRedirects.push({
+      redirects.push({
         from: pathToRegexp(from, keys),
         keys,
         toPathname: compileRedirectPath(toUrl.pathname, {
@@ -134,5 +93,46 @@ function getRedirects() {
       console.error(`Failed to parse redirect on line ${lineNumber}: "${line}"`)
     }
   }
-  return allRedirects
+
+  return function redirectsMiddleware(req, res, next) {
+    for (const redirect of redirects) {
+      try {
+        const match = req.path.match(redirect.from)
+        if (match) {
+          const params = {}
+          const paramValues = match.slice(1)
+          for (
+            let paramIndex = 0;
+            paramIndex < paramValues.length;
+            paramIndex++
+          ) {
+            const paramValue = paramValues[paramIndex]
+            params[redirect.keys[paramIndex].name] = paramValue
+          }
+          const toUrl = redirect.toUrl
+          const host = req.header('X-Forwarded-Host') ?? req.header('host')
+          const protocol = host.includes('localhost') ? 'http' : 'https'
+          const reqUrl = new URL(`${protocol}://${host}${req.url}`)
+
+          toUrl.protocol = protocol
+          if (toUrl.host === 'same_host') toUrl.host = reqUrl.host
+
+          for (const [key, value] of reqUrl.searchParams.entries()) {
+            toUrl.searchParams.append(key, value)
+          }
+          toUrl.pathname = redirect.toPathname(params)
+          res.redirect(308, toUrl.toString())
+          return
+        }
+      } catch (error) {
+        // an error in the redirect shouldn't stop the request from going through
+        console.error(`Error processing redirects:`, {
+          error,
+          redirect,
+          'req.url': req.url,
+        })
+      }
+    }
+    next()
+  }
 }
