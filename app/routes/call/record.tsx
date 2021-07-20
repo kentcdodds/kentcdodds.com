@@ -4,7 +4,7 @@ import type {ActionFunction, LoaderFunction} from 'remix'
 import type {Call} from 'types'
 import {CallRecorder} from '../../components/call/recorder'
 import type {RecordingFormData} from '../../components/call/submit-recording-form'
-import {getUser, requireUser, rootStorage} from '../../utils/session.server'
+import {getUser, requireUser} from '../../utils/session.server'
 import {prisma, replayable} from '../../utils/prisma.server'
 import {getErrorMessage, getNonNull} from '../../utils/misc'
 import {
@@ -13,60 +13,92 @@ import {
   getErrorForDescription,
   getErrorForKeywords,
 } from '../../utils/call-kent'
+import {callKentStorage} from '../../utils/call-kent.server'
 
 const errorSessionKey = 'call_error'
 const fieldsSessionKey = 'call_fields'
 
+const actionTypes = {
+  SUBMIT_RECORDING: 'submit recording',
+  DELETE_RECORDING: 'delete recording',
+}
+
 export const action: ActionFunction = async ({request}) => {
   return requireUser(request, async user => {
     return replayable(request, async checkIfReplayable => {
-      const session = await rootStorage.getSession(
+      const session = await callKentStorage.getSession(
         request.headers.get('Cookie'),
       )
       try {
         const requestText = await request.text()
         const form = new URLSearchParams(requestText)
 
-        const formData = {
-          audio: form.get('audio'),
-          title: form.get('title'),
-          description: form.get('description'),
-          keywords: form.get('keywords'),
-        }
-        const fields: LoaderData['fields'] = {
-          title: formData.title,
-          description: formData.description,
-          keywords: formData.keywords,
-        }
-        session.flash(fieldsSessionKey, fields)
+        const actionType = form.get('actionType')
+        if (actionType === actionTypes.SUBMIT_RECORDING) {
+          const formData = {
+            audio: form.get('audio'),
+            title: form.get('title'),
+            description: form.get('description'),
+            keywords: form.get('keywords'),
+          }
+          const fields: LoaderData['fields'] = {
+            title: formData.title,
+            description: formData.description,
+            keywords: formData.keywords,
+          }
+          session.flash(fieldsSessionKey, fields)
 
-        const errors = {
-          audio: getErrorForAudio(formData.audio),
-          title: getErrorForTitle(formData.title),
-          description: getErrorForDescription(formData.description),
-          keywords: getErrorForKeywords(formData.keywords),
-        }
+          const errors = {
+            audio: getErrorForAudio(formData.audio),
+            title: getErrorForTitle(formData.title),
+            description: getErrorForDescription(formData.description),
+            keywords: getErrorForKeywords(formData.keywords),
+          }
 
-        if (Object.values(errors).some(err => err !== null)) {
-          session.flash(errorSessionKey, errors)
-          return redirect(new URL(request.url).pathname, {
-            headers: {
-              'Set-Cookie': await rootStorage.commitSession(session),
-            },
+          if (Object.values(errors).some(err => err !== null)) {
+            session.flash(errorSessionKey, errors)
+            return redirect(new URL(request.url).pathname, {
+              headers: {
+                'Set-Cookie': await callKentStorage.commitSession(session),
+              },
+            })
+          }
+
+          const {audio, title, description, keywords} = getNonNull(formData)
+
+          const call = {
+            title,
+            description,
+            keywords,
+            userId: user.id,
+            base64: audio,
+          }
+          await prisma.call.create({data: call})
+          return redirect(new URL(request.url).pathname)
+        } else if (actionType === actionTypes.DELETE_RECORDING) {
+          const callId = form.get('callId')
+          if (!callId) {
+            // this should be impossible
+            console.warn(`No callId provided to call delete action.`)
+            return redirect(new URL(request.url).pathname)
+          }
+          const call = await prisma.call.findFirst({
+            // NOTE: this is how we ensure the user is the owner of the call
+            // and is therefore authorized to delete it.
+            where: {userId: user.id, id: callId},
           })
+          if (!call) {
+            // Maybe they tried to delete a call they don't own?
+            console.warn(
+              `Failed to get a call to delete by userId: ${user.id} and callId: ${callId}`,
+            )
+            return redirect(new URL(request.url).pathname)
+          }
+          await prisma.call.delete({where: {id: callId}})
+          return redirect(new URL(request.url).pathname)
+        } else {
+          throw new Error('Unknown action')
         }
-
-        const {audio, title, description, keywords} = getNonNull(formData)
-
-        const call = {
-          title,
-          description,
-          keywords,
-          userId: user.id,
-          base64: audio,
-        }
-        await prisma.call.create({data: call})
-        return redirect('/call')
       } catch (error: unknown) {
         const replay = checkIfReplayable(error)
         if (replay) return replay
@@ -74,7 +106,7 @@ export const action: ActionFunction = async ({request}) => {
         session.flash(errorSessionKey, {generalError: getErrorMessage(error)})
         return redirect('/contact', {
           headers: {
-            'Set-Cookie': await rootStorage.commitSession(session),
+            'Set-Cookie': await callKentStorage.commitSession(session),
           },
         })
       }
@@ -83,12 +115,14 @@ export const action: ActionFunction = async ({request}) => {
 }
 
 type LoaderData = {
-  calls?: Array<Call>
+  calls: Array<Call>
 } & RecordingFormData
 
 export const loader: LoaderFunction = async ({request}) => {
   const user = await getUser(request)
-  const session = await rootStorage.getSession(request.headers.get('Cookie'))
+  const session = await callKentStorage.getSession(
+    request.headers.get('Cookie'),
+  )
   let calls: Array<Call> = []
   if (user) {
     calls = await prisma.call.findMany({where: {userId: user.id}})
@@ -100,7 +134,7 @@ export const loader: LoaderFunction = async ({request}) => {
   }
   return json(data, {
     headers: {
-      'Set-Cookie': await rootStorage.commitSession(session),
+      'Set-Cookie': await callKentStorage.commitSession(session),
     },
   })
 }
@@ -139,6 +173,11 @@ function SubmitRecordingForm({audio}: {audio: Blob}) {
         </p>
       ) : null}
       <Form onSubmit={handleSubmit}>
+        <input
+          type="hidden"
+          name="actionType"
+          value={actionTypes.SUBMIT_RECORDING}
+        />
         <div>
           <label htmlFor="title">Title</label>
           <input
@@ -188,10 +227,47 @@ function SubmitRecordingForm({audio}: {audio: Blob}) {
   ) : null
 }
 
+function CallListing({call}: {call: Call}) {
+  const [audioURL, setAudioURL] = React.useState<string | null>(null)
+  React.useEffect(() => {
+    const audio = new Audio(call.base64)
+    setAudioURL(audio.src)
+  }, [call.base64])
+
+  return (
+    <section>
+      <strong>{call.title}</strong>
+      <p>{call.description}</p>
+      <div>{audioURL ? <audio src={audioURL} controls /> : null}</div>
+      <Form method="post">
+        <input
+          type="hidden"
+          name="actionType"
+          value={actionTypes.DELETE_RECORDING}
+        />
+        <input type="hidden" name="callId" value={call.id} />
+        <button type="submit">Delete</button>
+      </Form>
+    </section>
+  )
+}
+
 export default function RecordScreen() {
+  const data = useRouteData<LoaderData>()
   const [audio, setAudio] = React.useState<Blob | null>(null)
   return (
     <div>
+      {data.calls.length ? (
+        <>
+          <h2>Your calls with Kent</h2>
+          <hr />
+          {data.calls.map(call => {
+            return <CallListing key={call.id} call={call} />
+          })}
+        </>
+      ) : (
+        <h2>You have no calls with Kent yet...</h2>
+      )}
       {audio ? (
         <SubmitRecordingForm audio={audio} />
       ) : (

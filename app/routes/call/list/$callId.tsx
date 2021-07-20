@@ -1,6 +1,7 @@
 import * as React from 'react'
 import {redirect, Form, json, useRouteData, Link} from 'remix'
 import type {Call, KCDAction, KCDLoader} from 'types'
+import {format} from 'date-fns'
 import {CallRecorder} from '../../../components/call/recorder'
 import {requireAdminUser, rootStorage} from '../../../utils/session.server'
 import {prisma, replayable} from '../../../utils/prisma.server'
@@ -88,6 +89,10 @@ export const action: KCDAction<{callId: string}> = async ({
         await createEpisode({
           audio: episodeAudio,
           title,
+          summary: `${call.user.firstName} asked this on ${format(
+            call.createdAt,
+            'yyyy-MM-dd',
+          )}`,
           description,
           imageUrl: getAvatarForUser(call.user).src,
           keywords,

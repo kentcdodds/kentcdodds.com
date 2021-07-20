@@ -13,7 +13,7 @@ const contactStorage = createCookieSessionStorage({
     secrets: [contactSessionSecret],
     sameSite: 'lax',
     path: '/contact',
-    expires: new Date('2088-10-18'),
+    maxAge: 1000 * 60 * 60 * 24 * 7 * 2,
   },
 })
 

@@ -82,12 +82,14 @@ type CreateEpisodeData = {
 async function createEpisode({
   audio,
   title,
+  summary,
   description,
   keywords,
   imageUrl,
 }: {
   audio: Buffer
   title: string
+  summary: string
   description: string
   keywords: string
   imageUrl: string
@@ -110,7 +112,7 @@ async function createEpisode({
     season: '1',
     audio_url,
     title,
-    summary: description,
+    summary,
     description,
     keywords,
     image_url: imageUrl,
@@ -136,16 +138,27 @@ async function createEpisode({
   return published
 }
 
-type EpisodeJson = {
-  data: {
-    id: string
-    type: 'episode'
-    attributes: {
-      title: string
-      media_url: string
-      share_url: string
-    }
+type EpisodeData = {
+  id: string
+  type: 'episode'
+  attributes: {
+    number: number
+    title: string
+    summary: string
+    description: string
+    keywords: string
+    duration: number
+    status: 'published' | 'scheduled' | 'draft'
+    image_url: string
+    media_url: string
+    share_url: string
+    embed_html: string
+    embed_html_dark: string
+    published_at: string
   }
+}
+type EpisodeJson = {
+  data: EpisodeData
 }
 
 function getEpisode(id: string) {
@@ -154,4 +167,10 @@ function getEpisode(id: string) {
   })
 }
 
-export {createEpisode, getEpisode}
+function getEpisodes() {
+  return fetchTransitor<{data: Array<EpisodeData>}>({
+    endpoint: `/v1/episodes`,
+  })
+}
+
+export {createEpisode, getEpisode, getEpisodes}
