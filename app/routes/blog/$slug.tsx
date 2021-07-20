@@ -283,39 +283,53 @@ function MdxScreen() {
       <main ref={readMarker}>
         <TeamStats rankings={data.readRankings} />
 
-        <Grid className="mb-24">
+        <Grid className="mb-16">
           <div className="col-span-full lg:col-start-3">
-            <H6 as="div" className="mb-2">
-              Translations
-            </H6>
+            <div className="flex flex-wrap">
+              {frontmatter.translations?.length ? (
+                <>
+                  <ul className="flex flex-wrap col-span-full -mb-4 -mr-4 lg:col-span-10 lg:col-start-3">
+                    {frontmatter.translations.map(({language, link}) => (
+                      <li key={`${language}:${link}`}>
+                        <a
+                          href={link}
+                          className="focus-ring bg-secondary text-primary relative block mb-4 mr-4 px-6 py-3 w-auto h-auto whitespace-nowrap rounded-full"
+                        >
+                          {language}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                  <a
+                    href={externalLinks.translationContributions}
+                    className="text-secondary block mb-6 ml-5 my-3 hover:underline"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                  >
+                    <H6 as="span" variant="secondary">
+                      Add translation
+                    </H6>
+                  </a>
+                </>
+              ) : (
+                <>
+                  <span className="text-secondary text-lg italic">
+                    No translations available.
+                  </span>
 
-            <a
-              href={externalLinks.translationContributions}
-              className="text-secondary block mb-6 hover:underline"
-            >
-              <H6 as="span" variant="secondary">
-                Add translation
-              </H6>
-            </a>
-
-            {frontmatter.translations?.length ? (
-              <ul className="flex flex-wrap col-span-full -mb-4 -mr-4 lg:col-span-10 lg:col-start-3">
-                {frontmatter.translations.map(({language, link}) => (
-                  <li key={`${language}:${link}`}>
-                    <a
-                      href={link}
-                      className="focus-ring bg-secondary text-primary relative block mb-4 mr-4 px-6 py-3 w-auto h-auto whitespace-nowrap rounded-full"
-                    >
-                      {language}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <span className="text-secondary text-lg italic">
-                No translations available.
-              </span>
-            )}
+                  <a
+                    href={externalLinks.translationContributions}
+                    className="text-secondary block ml-5 hover:underline"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                  >
+                    <H6 as="span" variant="secondary">
+                      Add translation
+                    </H6>
+                  </a>
+                </>
+              )}
+            </div>
           </div>
         </Grid>
 
