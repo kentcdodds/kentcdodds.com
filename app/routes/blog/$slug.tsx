@@ -282,8 +282,7 @@ function MdxScreen() {
       <div ref={readMarker} />
 
       <main>
-        {/* TODO: connect to backend */}
-        <TeamStats red={4839} blue={6173} yellow={2342} />
+        <TeamStats rankings={data.readRankings} />
 
         <Grid className="mb-24">
           <div className="col-span-full lg:col-start-3">

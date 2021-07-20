@@ -1,9 +1,9 @@
 import * as React from 'react'
 import {motion} from 'framer-motion'
-import {Team} from '@prisma/client'
 import clsx from 'clsx'
 import {useOptionalUserInfo, useTeam} from '../utils/providers'
 import {alexProfiles} from '../images'
+import type {Team} from '@prisma/client'
 
 const dotColors: Record<Team, string> = {
   RED: 'bg-team-red',
@@ -11,11 +11,17 @@ const dotColors: Record<Team, string> = {
   BLUE: 'bg-team-blue',
 }
 
-function Stat({count, color}: {count: number; color: Team}) {
+type ReadRanking = {
+  totalReads: number
+  team: Team
+  percent: number
+}
+
+function Stat({totalReads, team}: ReadRanking) {
   const info = useOptionalUserInfo()
-  const [team] = useTeam()
+  const [currentTeam] = useTeam()
   const avatar = info ? info.avatar : alexProfiles[team]
-  const isUsersTeam = team === color
+  const isUsersTeam = team === currentTeam
 
   const dotSize = isUsersTeam ? 28 : 16
 
@@ -44,7 +50,7 @@ function Stat({count, color}: {count: number; color: Team}) {
         }}
         className="text-primary bg-primary px-8 py-3 text-lg font-medium border-2 border-gray-200 dark:border-gray-600 rounded-full"
       >
-        {new Intl.NumberFormat().format(count)}
+        {new Intl.NumberFormat().format(totalReads)}
       </motion.div>
 
       <motion.div
@@ -54,7 +60,7 @@ function Stat({count, color}: {count: number; color: Team}) {
         }}
         className={clsx(
           'z-10 flex items-center justify-center bg-black rounded-full origin-right',
-          dotColors[color],
+          dotColors[team],
         )}
       >
         {isUsersTeam ? (
@@ -73,20 +79,14 @@ function Stat({count, color}: {count: number; color: Team}) {
   )
 }
 
-function TeamStats({
-  red,
-  blue,
-  yellow,
-}: {
-  red: number
-  blue: number
-  yellow: number
-}) {
+function TeamStats({rankings}: {rankings: Array<ReadRanking>}) {
+  const resorted = [rankings[1], rankings[0], rankings[2]] as Array<ReadRanking>
+
   return (
     <ul className="fixed z-50 right-4 top-1/2 transform -translate-y-1/2 md:right-8">
-      <Stat count={blue} color={Team.BLUE} />
-      <Stat count={yellow} color={Team.YELLOW} />
-      <Stat count={red} color={Team.RED} />
+      {resorted.map(ranking => (
+        <Stat key={ranking.team} {...ranking} />
+      ))}
     </ul>
   )
 }
