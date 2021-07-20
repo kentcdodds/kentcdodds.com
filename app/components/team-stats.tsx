@@ -3,7 +3,7 @@ import {motion} from 'framer-motion'
 import clsx from 'clsx'
 import type {Team} from '@prisma/client'
 
-const dotColors: Record<Team, string> = {
+const rankingColors: Record<Team, string> = {
   RED: 'bg-team-red',
   YELLOW: 'bg-team-yellow',
   BLUE: 'bg-team-blue',
@@ -35,7 +35,7 @@ function Stat({totalReads, team, percent}: ReadRanking) {
         }}
         className={clsx(
           'z-10 flex items-center justify-end px-2 bg-black rounded-l-md origin-right',
-          dotColors[team],
+          rankingColors[team],
         )}
       >
         <motion.span
