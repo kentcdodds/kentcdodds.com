@@ -170,14 +170,14 @@ function ArticleFooter() {
           </Link>
         </div>
 
-        <div className="flex items-center">
+        <div className="flex">
           <Link
             className="dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
             to="/"
           >
             Discuss on Twitter
           </Link>
-          <span className="mx-3 text-xs">•</span>
+          <span className="self-center mx-3 text-xs">•</span>
           <Link
             className="dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
             to="/"
@@ -255,12 +255,10 @@ function MdxScreen() {
   return (
     <>
       <Grid className="mb-10 mt-24 lg:mb-24">
-        <BackLink
-          to="/blog"
-          className="lg-col-span-8 col-span-full lg:col-start-3"
-        >
-          Back to overview
-        </BackLink>
+        <div className="flex col-span-full justify-between lg:col-span-8 lg:col-start-3">
+          <BackLink to="/blog">Back to overview</BackLink>
+          <TeamStats rankings={data.readRankings} direction="down" />
+        </div>
       </Grid>
 
       <Grid as="header" className="mb-12">
@@ -281,9 +279,7 @@ function MdxScreen() {
       </Grid>
 
       <main ref={readMarker}>
-        <TeamStats rankings={data.readRankings} />
-
-        <Grid className="mb-16">
+        <Grid className="mb-24">
           <div className="col-span-full lg:col-start-3">
             <div className="flex flex-wrap">
               {frontmatter.translations?.length ? (
@@ -337,6 +333,12 @@ function MdxScreen() {
           <Component components={MdxComponentMap} />
         </Grid>
       </main>
+
+      <Grid className="mb-24">
+        <div className="flex col-span-full justify-end lg:col-span-8 lg:col-start-3">
+          <TeamStats rankings={data.readRankings} direction="up" />
+        </div>
+      </Grid>
 
       <div className="mb-64">
         <ArticleFooter />
