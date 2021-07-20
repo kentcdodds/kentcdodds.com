@@ -1,15 +1,14 @@
 import {Form, json, redirect, useRouteData} from 'remix'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import * as React from 'react'
-import {contactDataSessionKey} from '../utils/contact'
-import type {ContactData} from '../utils/contact'
 import {getErrorMessage, getNonNull} from '../utils/misc'
 import {useOptionalUser} from '../utils/providers'
-import {rootStorage} from '../utils/session.server'
 import {sendEmail} from '../utils/send-email.server'
+import {contactStorage} from '../utils/contact.server'
 
 const errorSessionKey = 'contact_error'
 const fieldsSessionKey = 'contact_fields'
+const stateSessionKey = 'contact_state'
 
 function getErrorForName(name: string | null) {
   if (!name) return `Name is required`
@@ -38,7 +37,7 @@ function getErrorForBody(body: string | null) {
 }
 
 export const action: ActionFunction = async ({request}) => {
-  const session = await rootStorage.getSession(request.headers.get('Cookie'))
+  const session = await contactStorage.getSession(request.headers.get('Cookie'))
 
   try {
     const requestText = await request.text()
@@ -63,7 +62,7 @@ export const action: ActionFunction = async ({request}) => {
       session.flash(errorSessionKey, errors)
       return redirect('/contact', {
         headers: {
-          'Set-Cookie': await rootStorage.commitSession(session),
+          'Set-Cookie': await contactStorage.commitSession(session),
         },
       })
     }
@@ -80,24 +79,25 @@ export const action: ActionFunction = async ({request}) => {
     })
 
     session.unset(fieldsSessionKey)
-    const contactData: ContactData = {name, email, subject}
-    session.flash(contactDataSessionKey, contactData)
-    return redirect('/contact/success', {
+    session.unset(errorSessionKey)
+    session.flash(stateSessionKey, 'success')
+    return redirect('/contact', {
       headers: {
-        'Set-Cookie': await rootStorage.commitSession(session),
+        'Set-Cookie': await contactStorage.commitSession(session),
       },
     })
   } catch (error: unknown) {
     session.flash(errorSessionKey, {generalError: getErrorMessage(error)})
     return redirect('/contact', {
       headers: {
-        'Set-Cookie': await rootStorage.commitSession(session),
+        'Set-Cookie': await contactStorage.commitSession(session),
       },
     })
   }
 }
 
 type LoaderData = {
+  state: 'success' | null
   fields?: {
     name: string | null
     email: string | null
@@ -114,14 +114,15 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  const session = await rootStorage.getSession(request.headers.get('Cookie'))
+  const session = await contactStorage.getSession(request.headers.get('Cookie'))
   const values: LoaderData = {
+    state: session.get(stateSessionKey),
     fields: session.get(fieldsSessionKey),
     errors: session.get(errorSessionKey),
   }
   return json(values, {
     headers: {
-      'Set-Cookie': await rootStorage.commitSession(session),
+      'Set-Cookie': await contactStorage.commitSession(session),
     },
   })
 }
@@ -132,7 +133,8 @@ export default function ContactRoute() {
   return (
     <div>
       <h2>Contact Kent</h2>
-      <Form method="post" noValidate>
+      {data.state === 'success' ? <div>Hooray, email sent</div> : null}
+      <Form method="post" noValidate key={String(data.state === 'success')}>
         <div>
           <label htmlFor="contact-name">Name</label>
           <input

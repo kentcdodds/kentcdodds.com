@@ -23,11 +23,11 @@ if (process.env.SESSION_SECRET) {
 
 const rootStorage = createCookieSessionStorage({
   cookie: {
-    name: '__session',
+    name: '__root_session',
     secrets: [rootSessionSecret],
     sameSite: 'lax',
     path: '/',
-    expires: new Date('2088-10-19'),
+    expires: new Date('2088-10-18'),
   },
 })
 
