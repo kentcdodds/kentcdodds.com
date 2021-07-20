@@ -94,7 +94,6 @@ function useOnRead({
       const isVisible = entries.some(entry => {
         return entry.target === visibilityEl && entry.isIntersecting
       })
-      console.log('intercection', isVisible)
       if (isVisible) {
         scrolledTheMain = true
         maybeMarkAsRead()
