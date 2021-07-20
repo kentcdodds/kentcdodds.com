@@ -50,6 +50,9 @@ jobs:
           RUNNING_E2E: 'true'
           DATABASE_URL: 'postgresql://kody:the_koala@localhost:5432/kentcdodds_db?schema=public'
 
+      - name: 🐳 Docker build
+        run: docker build . -t kcd-remixx
+
       - name: 🚀 Deploy
         # only deploy main branch on pushes
         if:
