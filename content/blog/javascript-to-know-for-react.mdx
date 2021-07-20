@@ -613,7 +613,7 @@ function asyncAwaits() {
 
   async function failedAsyncAwait() {
     const result = await timeout(200, true)
-    return `failed: ${result}`
+    return `failed: ${result}` // this would not be executed
   }
 
   async function recoveredAsyncAwait() {
