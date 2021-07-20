@@ -15,6 +15,19 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v2
 
+      - name: ⚡️ Cache Docker layers
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-docker-layers
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: /var/lib/docker
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('Dockerfile') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
       - name: 🏄 Copy test env vars
         run: cp .env.example .env
 
