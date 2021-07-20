@@ -6,8 +6,9 @@ ENV REMIX_TOKEN=${REMIX_TOKEN}
 
 RUN mkdir /app/
 WORKDIR /app/
+
 ADD package.json package-lock.json .npmrc ./
-RUN npm install
+RUN npm install --production=false
 
 # setup production node_modules
 FROM node:14-slim as production-deps
@@ -18,9 +19,8 @@ ENV REMIX_TOKEN=${REMIX_TOKEN}
 RUN mkdir /app/
 WORKDIR /app/
 
-COPY --from=deps /app/node_modules /app/
-COPY --from=deps /usr/local /usr/
-ADD package.json package-lock.json .npmrc ./
+COPY --from=deps /app/node_modules /app/node_modules
+ADD package.json package-lock.json .npmrc /app/
 RUN npm prune --production
 
 # build app
@@ -32,10 +32,9 @@ ENV REMIX_TOKEN=${REMIX_TOKEN}
 RUN mkdir /app/
 WORKDIR /app/
 
-ADD . .
 COPY --from=deps /app/node_modules /app/node_modules
 
-RUN ls -la /app/node_modules/
+ADD . .
 
 RUN npm run build
 
@@ -44,6 +43,7 @@ FROM node:14-slim
 
 ARG REMIX_TOKEN
 ENV REMIX_TOKEN=${REMIX_TOKEN}
+ENV NODE_ENV=production
 
 RUN mkdir /app/
 WORKDIR /app/
