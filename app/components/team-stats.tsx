@@ -2,6 +2,8 @@ import * as React from 'react'
 import {motion} from 'framer-motion'
 import clsx from 'clsx'
 import type {Team} from '@prisma/client'
+import {useOptionalUserInfo, useTeam} from '../utils/providers'
+import {alexProfiles} from '../images'
 
 const barColors: Record<Team, string> = {
   RED: 'bg-team-red',
@@ -16,6 +18,11 @@ type ReadRanking = {
 }
 
 function Stat({totalReads, team, percent}: ReadRanking) {
+  const info = useOptionalUserInfo()
+  const [currentTeam] = useTeam()
+  const avatar = info ? info.avatar : alexProfiles[team]
+  const isUsersTeam = team === currentTeam
+
   return (
     <motion.button
       initial="initial"
@@ -48,6 +55,40 @@ function Stat({totalReads, team, percent}: ReadRanking) {
           {new Intl.NumberFormat().format(totalReads)}
         </motion.span>
       </motion.div>
+
+      {isUsersTeam ? (
+        <motion.div
+          className="absolute top-1/2 hidden bg-team-current rounded-md lg:block"
+          variants={{
+            initial: {
+              width: 22,
+              height: 22,
+              y: '-50%',
+              x: 40,
+              padding: 2,
+              borderRadius: 4,
+            },
+            hover: {
+              width: 36,
+              height: 36,
+              y: '-50%',
+              x: 84,
+              padding: 3,
+              borderRadius: 8,
+            },
+          }}
+        >
+          <motion.img
+            variants={{
+              initial: {borderWidth: 2, borderRadius: 4 - 2},
+              hover: {borderWidth: 4, borderRadius: 8 - 3},
+            }}
+            className="w-full h-full border-2 dark:border-gray-900 border-white object-cover"
+            src={avatar.src}
+            alt={avatar.alt}
+          />
+        </motion.div>
+      ) : null}
     </motion.button>
   )
 }
@@ -59,8 +100,8 @@ function TeamStats({rankings}: {rankings: Array<ReadRanking>}) {
   const resorted = [rankings[2], rankings[0], rankings[1]] as Array<ReadRanking>
 
   return (
-    <div className="fixed z-40 right-2 top-1/2 transform -translate-y-1/2 md:right-8">
-      <ul className="py-4 border-r border-team-current">
+    <div className="fixed z-40 left-1/2 top-1/2 mx-auto w-full max-w-8xl transform -translate-x-1/2 -translate-y-1/2">
+      <ul className="absolute right-1 top-0 py-4 border-r border-team-current transform -translate-y-1/2 md:right-4">
         {resorted.map(ranking => (
           <li key={ranking.team} className="flex items-center justify-end">
             <Stat {...ranking} />
