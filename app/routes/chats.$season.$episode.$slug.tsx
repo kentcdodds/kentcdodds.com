@@ -1,5 +1,5 @@
 import React, {useState} from 'react'
-import {useRouteData, json} from 'remix'
+import {useRouteData, json, redirect} from 'remix'
 import type {HeadersFunction} from 'remix'
 import {Link} from 'react-router-dom'
 import type {KCDLoader, CWKEpisode, CWKListItem} from 'types'
@@ -41,8 +41,8 @@ export const loader: KCDLoader<{
     }
   }
 
-  const episodeNumber = Number(params.episode)
   const seasonNumber = Number(params.season)
+  const episodeNumber = Number(params.episode)
 
   const seasons = await getSeasons()
   const season = seasons.find(s => s.seasonNumber === seasonNumber)
@@ -54,6 +54,12 @@ export const loader: KCDLoader<{
     throw new Error(
       `oh no. no episode for ${params.season}/${params.episode}/${params.slug}`,
     )
+  }
+
+  // we don't actually need the slug, but we'll redirect them to the place
+  // with the slug so the URL looks correct.
+  if (episode.slug !== params.slug) {
+    return redirect(`/chats/${params.season}/${params.episode}/${episode.slug}`)
   }
 
   const data: LoaderData = {
