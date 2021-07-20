@@ -6,6 +6,7 @@ ENV REMIX_TOKEN=${REMIX_TOKEN}
 
 RUN mkdir /app/
 WORKDIR /app/
+
 ADD package.json package-lock.json .npmrc ./
 RUN npm install
 
@@ -18,7 +19,7 @@ ENV REMIX_TOKEN=${REMIX_TOKEN}
 RUN mkdir /app/
 WORKDIR /app/
 
-COPY --from=deps /app/node_modules /app/
+COPY --from=deps /app/node_modules /app/node_modules
 COPY --from=deps /usr/local /usr/
 ADD package.json package-lock.json .npmrc ./
 RUN npm prune --production
