@@ -24,6 +24,7 @@ import {getUser} from '../../utils/session.server'
 import {FourOhFour} from '../../components/errors'
 import {getDomainUrl} from '../../utils/misc'
 import {externalLinks} from '../../external-links'
+import {TeamStats} from '../../components/team-stats'
 
 type LoaderData = {
   page: MdxPage | null
@@ -281,6 +282,8 @@ function MdxScreen() {
       <div ref={readMarker} />
 
       <main>
+        <TeamStats rankings={data.readRankings} />
+
         <Grid className="mb-24">
           <div className="col-span-full lg:col-start-3">
             <H6 as="div" className="mb-2">

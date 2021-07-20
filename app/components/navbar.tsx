@@ -12,9 +12,8 @@ import {
 } from '@reach/menu-button'
 import {useEffect} from 'react'
 import {AnimatePresence, motion} from 'framer-motion'
-import {images} from '../images'
+import {alexProfiles} from '../images'
 import {Theme, useTheme} from '../utils/theme-provider'
-import type {OptionalTeam} from '../utils/providers'
 import {
   useOptionalUser,
   useOptionalUserInfo,
@@ -120,7 +119,7 @@ function MobileMenuList() {
             animate={{y: 0, opacity: 1}}
             exit={{y: -50, opacity: 0}}
             transition={{duration: 0.15, ease: 'linear'}}
-            className="bg-primary flex flex-col pb-12 h-full border-t border-gray-200 dark:border-gray-600 overflow-y-scroll"
+            className="bg-primary z-50 flex flex-col pb-12 h-full border-t border-gray-200 dark:border-gray-600 overflow-y-scroll"
           >
             <MenuItems className="p-0 bg-transparent border-none">
               {MOBILE_LINKS.map(link => (
@@ -213,13 +212,6 @@ function MobileMenu() {
       }}
     </Menu>
   )
-}
-
-const alexProfiles: Record<OptionalTeam, {src: string; alt: string}> = {
-  RED: {src: images.alexProfileRed(), alt: images.alexProfileRed.alt},
-  BLUE: {src: images.alexProfileBlue(), alt: images.alexProfileBlue.alt},
-  YELLOW: {src: images.alexProfileYellow(), alt: images.alexProfileYellow.alt},
-  UNKNOWN: {src: images.alexProfileGray(), alt: images.alexProfileGray.alt},
 }
 
 function Navbar() {
