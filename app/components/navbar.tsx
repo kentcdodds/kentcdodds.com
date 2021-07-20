@@ -119,7 +119,7 @@ function MobileMenuList() {
             animate={{y: 0, opacity: 1}}
             exit={{y: -50, opacity: 0}}
             transition={{duration: 0.15, ease: 'linear'}}
-            className="bg-primary flex flex-col pb-12 h-full border-t border-gray-200 dark:border-gray-600 overflow-y-scroll"
+            className="bg-primary z-50 flex flex-col pb-12 h-full border-t border-gray-200 dark:border-gray-600 overflow-y-scroll"
           >
             <MenuItems className="p-0 bg-transparent border-none">
               {MOBILE_LINKS.map(link => (
