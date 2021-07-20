@@ -3,7 +3,7 @@ import {motion} from 'framer-motion'
 import clsx from 'clsx'
 import type {Team} from '@prisma/client'
 
-const rankingColors: Record<Team, string> = {
+const barColors: Record<Team, string> = {
   RED: 'bg-team-red',
   YELLOW: 'bg-team-yellow',
   BLUE: 'bg-team-blue',
@@ -30,12 +30,12 @@ function Stat({totalReads, team, percent}: ReadRanking) {
     >
       <motion.div
         variants={{
-          initial: {width: 16 + 12 * percent, height: 16},
-          hover: {width: 72, height: 36},
+          initial: {width: 8 + 24 * percent, height: 16, padding: 0},
+          hover: {width: 72, height: 36, padding: '0 .5rem'},
         }}
         className={clsx(
-          'z-10 flex items-center justify-end px-2 bg-black rounded-l-md origin-right',
-          rankingColors[team],
+          'z-10 flex items-center justify-end bg-black rounded-l-md origin-right',
+          barColors[team],
         )}
       >
         <motion.span
