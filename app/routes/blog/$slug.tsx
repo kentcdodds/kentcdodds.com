@@ -85,7 +85,8 @@ function useOnRead({
 }) {
   React.useEffect(() => {
     const parentEl = parentElRef.current
-    if (!enabled || !parentEl) return
+    const time = readTime?.time
+    if (!enabled || !parentEl || !time) return
 
     const visibilityEl = document.createElement('div')
 
@@ -103,7 +104,7 @@ function useOnRead({
     })
 
     let startTime = new Date().getTime()
-    let timeoutTime = (readTime?.time ?? Infinity) * 0.6
+    let timeoutTime = time * 0.6
     let timerId: ReturnType<typeof setTimeout>
     let timerFinished = false
     function startTimer() {
