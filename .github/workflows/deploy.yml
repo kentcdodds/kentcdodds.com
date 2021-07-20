@@ -15,43 +15,43 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v2
 
-      - name: 🏄 Copy test env vars
-        run: cp .env.example .env
+      # - name: 🏄 Copy test env vars
+      #   run: cp .env.example .env
 
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v1
-        with:
-          node-version: 16
+      # - name: ⎔ Setup node
+      #   uses: actions/setup-node@v1
+      #   with:
+      #     node-version: 16
 
-      - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
+      # - name: 📥 Download deps
+      #   uses: bahmutov/npm-install@v1
 
-      - name: ▶️ Run validate script
-        run: npx kcd-scripts validate
-        env:
-          ENABLE_TEST_ROUTES: 'true'
+      # - name: ▶️ Run validate script
+      #   run: npx kcd-scripts validate
+      #   env:
+      #     ENABLE_TEST_ROUTES: 'true'
 
-      - name: 🐳 Docker compose
-        run: docker-compose up -d && sleep 3 && npx prisma migrate reset --force
-        env:
-          DATABASE_URL: 'postgresql://kody:the_koala@localhost:5432/kentcdodds_db?schema=public'
+      # - name: 🐳 Docker compose
+      #   run: docker-compose up -d && sleep 3 && npx prisma migrate reset --force
+      #   env:
+      #     DATABASE_URL: 'postgresql://kody:the_koala@localhost:5432/kentcdodds_db?schema=public'
 
-      - name: ⚡️ Prime cache
-        run: npm run prime-cache:mocks
+      # - name: ⚡️ Prime cache
+      #   run: npm run prime-cache:mocks
 
-      - name: 🌳 Cypress run
-        uses: cypress-io/github-action@v2
-        continue-on-error: true
-        with:
-          start: npm run start:mocks
-          wait-on: 'http://localhost:8811'
-        env:
-          PORT: '8811'
-          RUNNING_E2E: 'true'
-          DATABASE_URL: 'postgresql://kody:the_koala@localhost:5432/kentcdodds_db?schema=public'
+      # - name: 🌳 Cypress run
+      #   uses: cypress-io/github-action@v2
+      #   continue-on-error: true
+      #   with:
+      #     start: npm run start:mocks
+      #     wait-on: 'http://localhost:8811'
+      #   env:
+      #     PORT: '8811'
+      #     RUNNING_E2E: 'true'
+      #     DATABASE_URL: 'postgresql://kody:the_koala@localhost:5432/kentcdodds_db?schema=public'
 
       - name: 🐳 Docker build
-        run: docker build . -t kcd-remixx
+        run: docker build . -t kcd-remix
 
       - name: 🚀 Deploy
         # only deploy main branch on pushes
