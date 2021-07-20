@@ -85,7 +85,7 @@ function useOnRead({
 }) {
   React.useEffect(() => {
     const parentEl = parentElRef.current
-    if (!enabled || !parentEl || !parentEl.textContent) return
+    if (!enabled || !parentEl) return
 
     const visibilityEl = document.createElement('div')
 
@@ -94,6 +94,7 @@ function useOnRead({
       const isVisible = entries.some(entry => {
         return entry.target === visibilityEl && entry.isIntersecting
       })
+      console.log('intercection', isVisible)
       if (isVisible) {
         scrolledTheMain = true
         maybeMarkAsRead()
@@ -279,9 +280,7 @@ function MdxScreen() {
         />
       </Grid>
 
-      <div ref={readMarker} />
-
-      <main>
+      <main ref={readMarker}>
         <TeamStats rankings={data.readRankings} />
 
         <Grid className="mb-24">
