@@ -29,14 +29,16 @@ consumers effectively so you avoid some problems and improve the developer
 experience and maintainability of the context objects you create for your
 application and/or libraries.
 
-> Note, please do read
-> [Application State Management with React](/blog/application-state-management-with-react)
-> and follow the advice that you shouldn't be reaching for context to solve
-> every state sharing problem that crosses your desk. But when you do need to
-> reach for context, hopefully this blog post will help you know how to do so
-> effectively. Also, remember that context does NOT have to be global to the
-> whole app, but can be applied to one part of your tree and you can (and
-> probably should) have multiple logically separated contexts in your app.
+<callout-danger>
+  Please do read [Application State Management with
+  React](/blog/application-state-management-with-react) and follow the advice
+  that you shouldn't be reaching for context to solve every state sharing
+  problem that crosses your desk. But when you do need to reach for context,
+  hopefully this blog post will help you know how to do so effectively. Also,
+  remember that context does NOT have to be global to the whole app, but can be
+  applied to one part of your tree and you can (and probably should) have
+  multiple logically separated contexts in your app.
+</callout-danger>
 
 First, let's create a file at `src/count-context.js` and we'll create our
 context there:
@@ -75,8 +77,10 @@ going to be creating and using context in your application, you want your
 context consumers (those using `useContext`) to be rendered within a provider
 which can provide a useful value.
 
-> Note, there are situations where default values are useful, but most of the
-> time they're not necessary or useful.
+<callout-info>
+  There are situations where default values are useful, but most of the time
+  they're not necessary or useful.
+</callout-info>
 
 [The React docs](https://reactjs.org/docs/context.html#reactcreatecontext)
 suggest that providing a default value "can be helpful in testing components in
@@ -87,9 +91,11 @@ do in your application, you reduce the amount of confidence that test can give
 you. [There are reasons to do this](/blog/the-merits-of-mocking), but that's not
 one of them.
 
-> Note: If you're using TypeScript, not providing a default value can be really
-> annoying for people who are using `React.useContext`, but I'll show you how to
-> avoid that problem altogether below. Keep reading!
+<callout-warning>
+  If you're using TypeScript, not providing a default value can be really
+  annoying for people who are using `React.useContext`, but I'll show you how to
+  avoid that problem altogether below. Keep reading!
+</callout-warning>
 
 ## The Custom Provider Component
 
@@ -143,12 +149,13 @@ function CountProvider({children}) {
 export {CountProvider}
 ```
 
-> NOTE: this is a contrived example that I'm intentionally over-engineering to
-> show you what a more real-world scenario would be like. **This does not mean
-> it has to be this complicated every time!** Feel free to use `useState` if
-> that suits your scenario. In addition, some providers are going to be short
-> and simple like this, and others are going to be MUCH more involved with many
-> hooks.
+<callout-success>
+  This is a contrived example that I'm intentionally over-engineering to show
+  you what a more real-world scenario would be like. **This does not mean it has
+  to be this complicated every time!** Feel free to use `useState` if that suits
+  your scenario. In addition, some providers are going to be short and simple
+  like this, and others are going to be MUCH more involved with many hooks.
+</callout-success>
 
 ## The Custom Consumer Hook
 
@@ -290,8 +297,9 @@ type Dispatch = (action: Action) => void
 type State = {count: number}
 type CountProviderProps = {children: React.ReactNode}
 
-const CountStateContext =
-  React.createContext<{state: State; dispatch: Dispatch} | undefined>(undefined)
+const CountStateContext = React.createContext<
+  {state: State; dispatch: Dispatch} | undefined
+>(undefined)
 
 function countReducer(state: State, action: Action) {
   switch (action.type) {

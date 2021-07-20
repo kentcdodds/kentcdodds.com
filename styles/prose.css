@@ -149,4 +149,72 @@ pre {
   opacity: 0.7;
 }
 
-/* TODO: support callout-info, callout-warning, and callout-error */
+.prose callout-info p,
+.prose callout-warning p,
+.prose callout-danger p,
+.prose callout-success p {
+  margin-bottom: 0;
+}
+
+.prose callout-info,
+.prose callout-warning,
+.prose callout-danger,
+.prose callout-success {
+  margin-top: 0;
+  margin-bottom: 2rem;
+}
+
+.prose callout-info,
+.prose callout-warning,
+.prose callout-danger,
+.prose callout-success {
+  display: block;
+  border-left: solid 4px;
+  padding: 0.5rem 1rem;
+  position: relative;
+  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.prose callout-info:before,
+.prose callout-warning:before,
+.prose callout-danger:before,
+.prose callout-success:before {
+  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+/* TODO: check back in on these colors to make sure they're accessibile in dark and light mode */
+.prose callout-warning {
+  color: var(--color-yellow-500);
+}
+.prose callout-warning:before {
+  background: var(--color-yellow-500);
+}
+
+.prose callout-info {
+  color: var(--color-blue-500);
+}
+.prose callout-info:before {
+  background: var(--color-blue-500);
+}
+
+.prose callout-danger {
+  color: var(--color-red-500);
+}
+.prose callout-danger:before {
+  background: var(--color-red-500);
+}
+
+.prose callout-success {
+  color: var(--color-green-500);
+}
+.prose callout-success:before {
+  background: var(--color-green-500);
+}
