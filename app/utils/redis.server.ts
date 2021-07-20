@@ -45,36 +45,48 @@ function createClient(
 ): redis.RedisClient {
   let client = global[name]
   if (!client) {
+    const url = new URL(options.url ?? 'http://no-redis-url.example.com?weird')
     // eslint-disable-next-line no-multi-assign
     client = global[name] = redis.createClient(options)
 
     client.on('error', (error: string) => {
-      console.error(`REDIS ${name} (${PRIMARY_REGION}) ERROR:`, error)
+      console.error(`REDIS ${name} (${url.host}) ERROR:`, error)
     })
   }
   return client
 }
 
+// NOTE: Caching should never crash the app, so instead of rejecting all these
+// promises, we'll just resolve things with null and log the error.
+
 function get(key: string): Promise<string | null> {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     replicaClient.get(key, (err: Error | null, result: string | null) => {
-      if (err) return reject(err)
+      if (err)
+        console.error(
+          `REDIS replicaClient (${FLY_REGION}) ERROR with .get:`,
+          err,
+        )
       resolve(result)
     })
   })
 }
 
 function set(key: string, value: string): Promise<'OK'> {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     replicaClient.set(key, value, (err: Error | null, reply: 'OK') => {
-      if (err) return reject(err)
+      if (err)
+        console.error(
+          `REDIS replicaClient (${FLY_REGION}) ERROR with .set:`,
+          err,
+        )
       resolve(reply)
     })
   })
 }
 
 function del(key: string): Promise<string> {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     // fire and forget on primary, we only care about replica
     primaryClient?.del(key, (err: Error | null) => {
       if (err) {
@@ -82,8 +94,15 @@ function del(key: string): Promise<string> {
       }
     })
     replicaClient.del(key, (err: Error | null, result: number | null) => {
-      if (err) return reject(err)
-      resolve(`${key} deleted: ${result}`)
+      if (err) {
+        console.error(
+          `REDIS replicaClient (${FLY_REGION}) ERROR with .del:`,
+          err,
+        )
+        resolve('error')
+      } else {
+        resolve(`${key} deleted: ${result}`)
+      }
     })
   })
 }
