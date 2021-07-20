@@ -121,7 +121,8 @@ async function validateMagicLink(link: string) {
   }
 
   const linkCreationDate = new Date(linkCreationDateString)
-  if (Date.now() + linkExpirationTime > linkCreationDate.getTime()) {
+  const expirationTime = linkCreationDate.getTime() + linkExpirationTime
+  if (Date.now() > expirationTime) {
     throw new Error('Magic link expired. Please request a new one.')
   }
   return emailAddress
