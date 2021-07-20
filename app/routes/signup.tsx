@@ -59,21 +59,14 @@ function getErrorForTeam(team: string | null) {
 export const action: ActionFunction = async ({request}) => {
   return replayable(request, async checkIfReplayable => {
     const session = await rootStorage.getSession(request.headers.get('Cookie'))
-    const email = session.get(sessionKeys.email)
     const magicLink = session.get(sessionKeys.magicLink)
+    let email
     try {
-      if (typeof email !== 'string' || typeof magicLink !== 'string') {
+      if (typeof magicLink !== 'string') {
         throw new Error('email and magicLink required.')
       }
 
-      // The user should only be able to get to this page after we've already
-      // validated the magic link. But we'll validate it again anyway because
-      // otherwise a user could request a link to an email address they don't
-      // own to get that email address in their session and then come to this
-      // page directly and create an account for that address. So we put the
-      // magicLink in their session and validate it again before creating an
-      // account for them.
-      await validateMagicLink(email, magicLink)
+      email = await validateMagicLink(magicLink)
     } catch (error: unknown) {
       const replay = checkIfReplayable(error)
       if (replay) return replay
