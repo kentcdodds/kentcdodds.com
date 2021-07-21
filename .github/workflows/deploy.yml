@@ -67,6 +67,7 @@ jobs:
         with:
           context: .
           push: false
+          load: true
           tags: kcd-remix
           build-args: REMIX_TOKEN=${{secrets.REMIX_TOKEN}}
           cache-from: type=local,src=/tmp/.buildx-cache
@@ -79,9 +80,7 @@ jobs:
           ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         uses: superfly/flyctl-actions@1.1
         with:
-          args:
-            'deploy -i kcd-remix --build-arg REMIX_TOKEN=${{ secrets.REMIX_TOKEN
-            }} --build-arg COMMIT_SHA="${{ github.sha }}"'
+          args: 'deploy -i kcd-remix'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
