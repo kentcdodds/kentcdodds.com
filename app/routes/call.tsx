@@ -154,11 +154,12 @@ export default function CallHomeScreen() {
                     to={
                       activeSlug === episode.slug ? './' : `./${episode.slug}`
                     }
+                    className="group focus:outline-none"
                   >
-                    <Grid nested className="group relative py-10 lg:py-5">
-                      <div className="bg-secondary absolute -inset-px group-hover:block hidden -mx-6 rounded-lg" />
+                    <Grid nested className="relative py-10 lg:py-5">
+                      <div className="bg-secondary absolute -inset-px group-hover:block group-focus:block hidden -mx-6 rounded-lg" />
                       <div className="relative flex-none col-span-1">
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transform scale-0 group-hover:scale-100 transition">
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-focus:opacity-100 group-hover:opacity-100 transform scale-0 group-focus:scale-100 group-hover:scale-100 transition">
                           <div className="flex-none p-4 text-gray-800 bg-white rounded-full">
                             <TriangleIcon size={12} />
                           </div>
