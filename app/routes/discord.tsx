@@ -138,6 +138,11 @@ export default function Discord() {
         imageAlt={images.helmet.alt}
         arrowUrl="#reasons-to-join"
         arrowLabel="Is this something for me?"
+        action={
+          <ButtonLink variant="primary" to={authorizeURL}>
+            Join Discord
+          </ButtonLink>
+        }
       />
 
       <Grid className="mb-24 lg:mb-64">
