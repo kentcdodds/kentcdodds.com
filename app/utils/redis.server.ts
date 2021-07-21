@@ -1,5 +1,5 @@
 import redis from 'redis'
-import {getRequiredServerEnvVar} from './misc'
+import {getErrorMessage, getRequiredServerEnvVar} from './misc'
 
 declare global {
   // This prevents us from making multiple connections to the db when the
@@ -107,4 +107,46 @@ function del(key: string): Promise<string> {
   })
 }
 
-export {get, set, del}
+async function cachified<ReturnValue>({
+  key,
+  getFreshValue,
+  forceFresh = false,
+  checkValue = value => Boolean(value),
+}: {
+  key: string
+  getFreshValue: () => Promise<ReturnValue>
+  forceFresh?: boolean
+  checkValue?: (value: ReturnValue) => boolean
+}): Promise<ReturnValue> {
+  if (!forceFresh) {
+    try {
+      const cached = await get(key)
+      if (cached) {
+        const cachedValue = JSON.parse(cached) as ReturnValue
+        if (checkValue(cachedValue)) {
+          return cachedValue
+        } else {
+          console.warn(
+            `check failed for cached value of ${key}. Deleting the cache key and trying to get a fresh value.`,
+            cachedValue,
+          )
+          await del(key)
+        }
+      }
+    } catch (error: unknown) {
+      console.error(`error with cache at ${key}`, getErrorMessage(error))
+    }
+  }
+  const value = await getFreshValue()
+  if (checkValue(value)) {
+    void set(key, JSON.stringify(value)).catch(error => {
+      console.error(`error setting redis.${key}`, getErrorMessage(error))
+    })
+  } else {
+    console.error(`check failed for fresh value of ${key}:`, value)
+    throw new Error(`check failed for fresh value of ${key}`)
+  }
+  return value
+}
+
+export {get, set, del, cachified}

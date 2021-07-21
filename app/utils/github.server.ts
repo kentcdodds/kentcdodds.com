@@ -130,6 +130,28 @@ async function downloadFileBySha(sha: string) {
   return Buffer.from(data.content, encoding).toString()
 }
 
+async function downloadFile(path: string) {
+  const {data} = (await octokit.request(
+    'GET /repos/{owner}/{repo}/contents/{path}',
+    {
+      owner: 'kentcdodds',
+      repo: 'remix-kentcdodds',
+      path,
+    },
+  )) as {data: {content?: string; encoding?: string}}
+
+  if (!data.content || !data.encoding) {
+    console.error(data)
+    throw new Error(
+      `Tried to get ${path} but got back something that was unexpected. It doesn't have a content or encoding property`,
+    )
+  }
+
+  //                                lol
+  const encoding = data.encoding as Parameters<typeof Buffer.from>['1']
+  return Buffer.from(data.content, encoding).toString()
+}
+
 /**
  *
  * @param path the full path to list
@@ -152,4 +174,4 @@ async function downloadDirList(path: string) {
   return data
 }
 
-export {downloadMdxFileOrDirectory, downloadDirList}
+export {downloadMdxFileOrDirectory, downloadDirList, downloadFile}

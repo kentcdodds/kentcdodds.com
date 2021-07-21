@@ -154,6 +154,31 @@ const githubHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
       return res(ctx.json(resource))
     },
   ),
+  rest.get(
+    `https://api.github.com/repos/:owner/:repo/contents/:path*`,
+    async (req, res, ctx) => {
+      const {owner, repo} = req.params
+
+      // NOTE: we cheat a bit and in the contents/:path handler, we set the sha to the relativePath
+      const relativePath = req.params.path
+      const fullPath = nodePath.join(__dirname, '..', relativePath)
+      const encoding = 'base64' as const
+      const size = (await fs.stat(fullPath)).size
+      const content = await fs.readFile(fullPath, {encoding: 'utf-8'})
+      const sha = `${relativePath}_sha`
+
+      const resource: GHContent = {
+        sha,
+        node_id: `${req.params.path}_node_id`,
+        size,
+        url: `https://api.github.com/repos/${owner}/${repo}/git/blobs/${sha}`,
+        content: Buffer.from(content, 'utf-8').toString(encoding),
+        encoding,
+      }
+
+      return res(ctx.json(resource))
+    },
+  ),
 ]
 
 export {githubHandlers}
