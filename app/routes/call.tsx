@@ -20,6 +20,7 @@ import {HeaderSection} from '../components/sections/header-section'
 import {TriangleIcon} from '../components/icons/triangle-icon'
 import {formatTime} from '../utils/misc'
 import {AnimatePresence, motion} from 'framer-motion'
+import {useRef} from 'react'
 
 type LoaderData = {
   episodes: Await<ReturnType<typeof getEpisodes>>
@@ -54,19 +55,19 @@ export default function CallHomeScreen() {
   const avatar = alexProfiles[team]
 
   const activeSlug = pathname.replace('/call/', '')
+  const initialActiveSlugRef = useRef(activeSlug)
 
   const sortedEpisodes =
     sortOrder === 'desc' ? data.episodes : [...data.episodes].reverse()
 
-  // An effect to scroll to the episode's position when opening a direct link
+  // An effect to scroll to the episode's position when opening a direct link,
+  // use a ref so that it doesn't hijack scroll when the user is browsing episodes
   React.useEffect(() => {
-    if (activeSlug) {
-      document.querySelector(`[data-episode="${activeSlug}"]`)?.scrollIntoView()
+    const episode = initialActiveSlugRef.current
+    if (episode) {
+      document.querySelector(`[data-episode="${episode}"]`)?.scrollIntoView()
     }
-    // we really only want to run this on mount. Otherwise it will hijack the
-    // users scroll while they browse the episodes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [initialActiveSlugRef])
 
   return (
     <>
