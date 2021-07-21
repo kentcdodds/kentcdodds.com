@@ -44,7 +44,7 @@ export const loader: KCDLoader<{callId: string}> = async ({
     })
     if (!call) {
       // TODO: handle 404 instead of redirecting
-      return redirect('..')
+      return redirect('/call/record')
     }
     const data: LoaderData = {call}
     return json(data)

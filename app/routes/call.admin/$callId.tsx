@@ -29,7 +29,7 @@ export const action: KCDAction<{callId: string}> = async ({
     return replayable(request, async checkIfReplayable => {
       if (request.method === 'DELETE') {
         await prisma.call.delete({where: {id: params.callId}})
-        return redirect('..')
+        return redirect('/call/admin')
       }
       const session = await callKentStorage.getSession(
         request.headers.get('Cookie'),
@@ -40,7 +40,7 @@ export const action: KCDAction<{callId: string}> = async ({
       })
       if (!call) {
         // TODO: display an error message or something...
-        return redirect('/..')
+        return redirect('/call/admin')
       }
       try {
         const requestText = await request.text()
@@ -129,7 +129,7 @@ export const loader: KCDLoader<{callId: string}> = async ({
     if (!call) {
       console.error(`No call found at ${params.callId}`)
       // TODO: add message
-      return redirect('/call')
+      return redirect('/call/admin')
     }
     const session = await callKentStorage.getSession(
       request.headers.get('Cookie'),
