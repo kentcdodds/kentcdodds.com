@@ -1,7 +1,7 @@
 {
   "files": [],
   "exclude": ["node_modules"],
-  "extends": "./shared-tsconfig.json",
+  "extends": "./other/shared-tsconfig.json",
   "references": [
     {"path": "types"},
     {"path": "app"},

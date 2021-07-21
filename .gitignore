@@ -17,3 +17,5 @@ tsconfig.tsbuildinfo
 .env
 .env.production
 
+.envrc
+
