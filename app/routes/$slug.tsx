@@ -1,14 +1,28 @@
 import * as React from 'react'
 import {useRouteData, json} from 'remix'
 import type {MdxPage, KCDLoader} from 'types'
-import {getMdxPage, mdxPageMeta, getMdxComponent} from '../utils/mdx'
+import {
+  getMdxPage,
+  mdxPageMeta,
+  getMdxComponent,
+  refreshCacheForMdx,
+} from '../utils/mdx'
 import {FourOhFour} from '../components/errors'
+import {getUser} from '../utils/session.server'
 
-export const loader: KCDLoader<{slug: string}> = async ({params}) => {
-  const page = await getMdxPage({
+export const loader: KCDLoader<{slug: string}> = async ({params, request}) => {
+  const pageMeta = {
     contentDir: 'pages',
     slug: params.slug,
-  })
+  }
+  if (new URL(request.url).searchParams.has('fresh')) {
+    const user = await getUser(request)
+    if (user?.role === 'ADMIN') {
+      await refreshCacheForMdx(pageMeta)
+    }
+  }
+  const page = await getMdxPage(pageMeta)
+
   if (!page) return json(null, {status: 404})
   return json({page})
 }
