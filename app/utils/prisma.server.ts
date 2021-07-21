@@ -218,7 +218,13 @@ async function replayable(
     const isReadOnlyError = errorMessage.includes('SqlState("25006")')
     if (isReadOnlyError) {
       const pathname = new URL(request.url).pathname
-      console.info(`Replaying: ${pathname}`)
+      const logInfo = {
+        pathname,
+        method: request.method,
+        PRIMARY_REGION: process.env.PRIMARY_REGION,
+        FLY_REGION: process.env.FLY_REGION,
+      }
+      console.info(`Replaying:`, logInfo)
       return redirect(pathname, {
         status: 409,
         headers: {'fly-replay': `region=${PRIMARY_REGION}`},
