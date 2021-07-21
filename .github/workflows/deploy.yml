@@ -22,7 +22,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-${{github.sha}}
           restore-keys: |
             ${{ runner.os }}-buildx-
 
@@ -67,10 +67,10 @@ jobs:
         with:
           context: .
           push: false
-          tags: kcd-remix
+          tags: kcd-remix:${{github.sha}}
           build-args: |
             REMIX_TOKEN=${{secrets.REMIX_TOKEN}}
-            COMMIT_SHA=${{ github.sha }}
+            COMMIT_SHA=${{github.sha}}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
@@ -81,7 +81,7 @@ jobs:
           ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         uses: superfly/flyctl-actions@1.1
         with:
-          args: 'deploy -i kcd-remix'
+          args: 'deploy -i kcd-remix:${{github.sha}}'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
