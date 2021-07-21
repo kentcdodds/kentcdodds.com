@@ -21,6 +21,7 @@ import {TriangleIcon} from '../components/icons/triangle-icon'
 import {formatTime} from '../utils/misc'
 import {AnimatePresence, motion} from 'framer-motion'
 import {useRef} from 'react'
+import clsx from 'clsx'
 
 type LoaderData = {
   episodes: Await<ReturnType<typeof getEpisodes>>
@@ -68,6 +69,9 @@ export default function CallHomeScreen() {
       document.querySelector(`[data-episode="${episode}"]`)?.scrollIntoView()
     }
   }, [initialActiveSlugRef])
+
+  // used to automatically prefix numbers with the correct amount of zeros
+  const numberLength = sortedEpisodes.length.toString().length
 
   return (
     <>
@@ -159,9 +163,17 @@ export default function CallHomeScreen() {
                       </div>
                       <div className="text-primary relative flex flex-col col-span-3 md:col-span-7 lg:flex-row lg:col-span-11 lg:items-center lg:justify-between">
                         <div className="mb-3 text-xl font-medium lg:mb-0">
-                          {/* TODO: make it three digits? How many calls do we expect? */}
-                          <span className="inline-block w-10 lg:text-lg">
-                            {`${number.toString().padStart(2, '0')}.`}
+                          {/* For most optimal display, this will needs adjustment once you'll hit 5 digits */}
+                          <span
+                            className={clsx('inline-block lg:text-lg', {
+                              'w-10': numberLength <= 3,
+                              'w-14': numberLength === 4,
+                              'w-auto pr-4': numberLength > 4,
+                            })}
+                          >
+                            {`${number
+                              .toString()
+                              .padStart(numberLength, '0')}.`}
                           </span>
 
                           {episode.title}
