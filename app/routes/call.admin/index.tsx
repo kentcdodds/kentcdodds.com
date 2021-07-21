@@ -1,5 +1,5 @@
 import * as React from 'react'
 
-export default function CallHomeScreen() {
+export default function NoCallSelected() {
   return <div>Select a call</div>
 }

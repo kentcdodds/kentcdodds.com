@@ -98,19 +98,36 @@ type CWKEpisode = {
 /**
  * Chats with Kent Podcast List Item
  */
-type CWKListItem = Omit<
+type CWKListItem = Pick<
   CWKEpisode,
-  | 'homeworkHTMLs'
-  | 'resources'
-  | 'summaryHTML'
-  | 'transcriptHTML'
-  | 'meta'
-  | 'descriptionHTML'
+  | 'slug'
+  | 'title'
+  | 'seasonNumber'
+  | 'episodeNumber'
+  | 'image'
+  | 'guests'
+  | 'duration'
+  | 'simpleCastId'
 >
 
 type CWKSeason = {
   seasonNumber: number
   episodes: Array<CWKListItem>
+}
+
+type CallKentEpisode = {
+  slug: string
+  title: string
+  summary: string
+  description: string
+  keywords: string
+  duration: number
+  shareUrl: string
+  mediaUrl: string
+  embedHtml: string
+  embedHtmlDark: string
+  imageUrl: string
+  publishedAt: string
 }
 
 type KCDLoader<
@@ -142,6 +159,7 @@ export {
   CWKEpisode,
   CWKListItem,
   CWKSeason,
+  CallKentEpisode,
   KCDLoader,
   KCDAction,
   GitHubFile,

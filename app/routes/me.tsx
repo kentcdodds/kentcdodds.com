@@ -17,21 +17,17 @@ import {LogoutIcon} from '../components/icons/logout-icon'
 import {TEAM_MAP} from '../utils/onboarding'
 import {EyeIcon} from '../components/icons/eye-icon'
 
-type LoaderData = {message?: string; qrLoginCode: string}
+type LoaderData = {qrLoginCode: string}
 export const loader: LoaderFunction = ({request}) => {
   return requireUser(request, async user => {
-    const session = await rootStorage.getSession(request.headers.get('Cookie'))
-    const message = session.get('message')
-    const cookie = await rootStorage.commitSession(session)
-
     const qrLoginCode = await getQrCodeDataURL(
       getMagicLink({
         emailAddress: user.email,
         domainUrl: getDomainUrl(request),
       }),
     )
-    const loaderData: LoaderData = {message, qrLoginCode}
-    return json(loaderData, {headers: {'Set-Cookie': cookie}})
+    const loaderData: LoaderData = {qrLoginCode}
+    return json(loaderData)
   })
 }
 

@@ -2,24 +2,21 @@ import * as React from 'react'
 import {redirect, Form, json, useRouteData, Link} from 'remix'
 import type {Call, KCDAction, KCDLoader} from 'types'
 import {format} from 'date-fns'
-import {CallRecorder} from '../../../components/call/recorder'
-import {requireAdminUser, rootStorage} from '../../../utils/session.server'
-import {prisma, replayable} from '../../../utils/prisma.server'
-import {
-  getAvatarForUser,
-  getErrorMessage,
-  getNonNull,
-} from '../../../utils/misc'
-import {createEpisodeAudio} from '../../../utils/ffmpeg.server'
-import {createEpisode} from '../../../utils/transistor.server'
-import type {RecordingFormData} from '../../../components/call/submit-recording-form'
-import {RecordingForm} from '../../../components/call/submit-recording-form'
+import {CallRecorder} from '../../components/call/recorder'
+import {requireAdminUser} from '../../utils/session.server'
+import {prisma, replayable} from '../../utils/prisma.server'
+import {getAvatarForUser, getErrorMessage, getNonNull} from '../../utils/misc'
+import {createEpisodeAudio} from '../../utils/ffmpeg.server'
+import {createEpisode} from '../../utils/transistor.server'
+import type {RecordingFormData} from '../../components/call/submit-recording-form'
+import {RecordingForm} from '../../components/call/submit-recording-form'
 import {
   getErrorForAudio,
   getErrorForTitle,
   getErrorForDescription,
   getErrorForKeywords,
-} from '../../../utils/call-kent'
+} from '../../utils/call-kent'
+import {callKentStorage} from '../../utils/call-kent.server'
 
 const errorSessionKey = 'call_error'
 const fieldsSessionKey = 'call_fields'
@@ -32,9 +29,9 @@ export const action: KCDAction<{callId: string}> = async ({
     return replayable(request, async checkIfReplayable => {
       if (request.method === 'DELETE') {
         await prisma.call.delete({where: {id: params.callId}})
-        return redirect('/call/list')
+        return redirect('..')
       }
-      const session = await rootStorage.getSession(
+      const session = await callKentStorage.getSession(
         request.headers.get('Cookie'),
       )
       const call = await prisma.call.findFirst({
@@ -43,7 +40,7 @@ export const action: KCDAction<{callId: string}> = async ({
       })
       if (!call) {
         // TODO: display an error message or something...
-        return redirect('/call')
+        return redirect('/..')
       }
       try {
         const requestText = await request.text()
@@ -73,7 +70,7 @@ export const action: KCDAction<{callId: string}> = async ({
           session.flash(errorSessionKey, errors)
           return redirect(new URL(request.url).pathname, {
             headers: {
-              'Set-Cookie': await rootStorage.commitSession(session),
+              'Set-Cookie': await callKentStorage.commitSession(session),
             },
           })
         }
@@ -101,7 +98,7 @@ export const action: KCDAction<{callId: string}> = async ({
           where: {id: call.id},
         })
 
-        return redirect('/call')
+        return redirect('/call?fresh')
       } catch (error: unknown) {
         const replay = checkIfReplayable(error)
         if (replay) return replay
@@ -111,7 +108,7 @@ export const action: KCDAction<{callId: string}> = async ({
         session.flash(errorSessionKey, {generalError})
         return redirect(new URL(request.url).pathname, {
           headers: {
-            'Set-Cookie': await rootStorage.commitSession(session),
+            'Set-Cookie': await callKentStorage.commitSession(session),
           },
         })
       }
@@ -134,7 +131,9 @@ export const loader: KCDLoader<{callId: string}> = async ({
       // TODO: add message
       return redirect('/call')
     }
-    const session = await rootStorage.getSession(request.headers.get('Cookie'))
+    const session = await callKentStorage.getSession(
+      request.headers.get('Cookie'),
+    )
     const fields: LoaderData['fields'] = {
       title: call.title,
       description: call.description,
@@ -148,7 +147,7 @@ export const loader: KCDLoader<{callId: string}> = async ({
     }
     return json(data, {
       headers: {
-        'Set-Cookie': await rootStorage.commitSession(session),
+        'Set-Cookie': await callKentStorage.commitSession(session),
       },
     })
   })

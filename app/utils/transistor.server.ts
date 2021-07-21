@@ -107,6 +107,21 @@ async function createEpisode({
   })
 }
 
+async function getEpisodes() {
+  const episodes = await fetchTransitor<TransistorEpisodesJson>({
+    endpoint: `/v1/episodes`,
+  })
+  // sort by published_at
+  return episodes.data.sort((a, b) => {
+    if (a.attributes.published_at < b.attributes.published_at) {
+      return -1
+    } else if (a.attributes.published_at > b.attributes.published_at) {
+      return 1
+    }
+    return 0
+  })
+}
+
 const episodesCacheKey = `transistor:episodes:${podcastId}`
 
 async function getCachedEpisodes() {
@@ -128,10 +143,9 @@ async function getCachedEpisodes() {
   return episodes
 }
 
-function getEpisodes() {
-  return fetchTransitor<TransistorEpisodesJson>({
-    endpoint: `/v1/episodes`,
-  })
+async function refreshEpisodes() {
+  await redis.del(episodesCacheKey)
+  await getEpisodes()
 }
 
-export {createEpisode, getCachedEpisodes as getEpisodes}
+export {createEpisode, getCachedEpisodes as getEpisodes, refreshEpisodes}

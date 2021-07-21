@@ -1,4 +1,6 @@
 import {createCookieSessionStorage} from 'remix'
+import type {CallKentEpisode} from 'types'
+import slugify from '@sindresorhus/slugify'
 import * as transistor from './transistor.server'
 
 let callKentSessionSecret = 'not-even-a-little-secret'
@@ -20,25 +22,13 @@ const callKentStorage = createCookieSessionStorage({
   },
 })
 
-type CallKentEpisode = {
-  title: string
-  summary: string
-  description: string
-  keywords: string
-  duration: number
-  shareUrl: string
-  mediaUrl: string
-  embedHtml: string
-  embedHtmlDark: string
-  imageUrl: string
-  publishedAt: string
-}
-async function getEpisodes(): Promise<Array<CallKentEpisode>> {
+async function getEpisodes() {
   const transistorEpisodes = await transistor.getEpisodes()
   const episodes: Array<CallKentEpisode> = []
-  for (const episode of transistorEpisodes.data) {
+  for (const episode of transistorEpisodes) {
     if (episode.attributes.status !== 'published') continue
     episodes.push({
+      slug: slugify(episode.attributes.title),
       title: episode.attributes.title,
       summary: episode.attributes.summary,
       description: episode.attributes.description,
