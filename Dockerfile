@@ -1,5 +1,5 @@
 # install all node_modules, including dev
-FROM node:14-slim as deps
+FROM node:16-slim as deps
 
 ARG REMIX_TOKEN
 ENV REMIX_TOKEN=${REMIX_TOKEN}
@@ -13,7 +13,7 @@ ADD prisma package.json package-lock.json .npmrc ./
 RUN npm install --production=false
 
 # setup production node_modules
-FROM node:14-slim as production-deps
+FROM node:16-slim as production-deps
 
 ARG REMIX_TOKEN
 ENV REMIX_TOKEN=${REMIX_TOKEN}
@@ -26,7 +26,7 @@ ADD prisma package.json package-lock.json .npmrc /app/
 RUN npm prune --production
 
 # build app
-FROM node:14-slim as build
+FROM node:16-slim as build
 
 ARG REMIX_TOKEN
 ENV REMIX_TOKEN=${REMIX_TOKEN}
@@ -41,7 +41,7 @@ ADD . .
 RUN npm run build
 
 # build smaller image for running
-FROM node:14-slim
+FROM node:16-slim
 
 ARG REMIX_TOKEN
 ENV REMIX_TOKEN=${REMIX_TOKEN}

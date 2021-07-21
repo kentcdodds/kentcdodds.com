@@ -71,6 +71,7 @@
     "date-fns": "^2.22.1",
     "dotenv": "^10.0.0",
     "error-stack-parser": "^2.0.6",
+    "esbuild": "^0.11.16",
     "express": "^4.17.1",
     "framer-motion": "^4.1.17",
     "hast-util-to-html": "^7.1.3",
