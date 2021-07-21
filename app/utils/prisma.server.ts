@@ -226,7 +226,11 @@ async function replayable(
       }
       console.info(`Replaying:`, logInfo)
       return redirect(pathname, {
-        status: 409,
+        // TODO: when we get this: https://github.com/remix-run/remix/issues/217
+        // then let's use 409 because it's technically correct.
+        // but if we do a non-redirect status code then remix will ignore
+        // the headers from the loader/action on a document request.
+        // status: 409,
         headers: {'fly-replay': `region=${PRIMARY_REGION}`},
       })
     } else {
