@@ -1,4 +1,4 @@
-# install all nodemodules, including dev
+# install all node_modules, including dev
 FROM node:14-slim as deps
 
 ARG REMIX_TOKEN
@@ -44,6 +44,8 @@ FROM node:14-slim
 ARG REMIX_TOKEN
 ENV REMIX_TOKEN=${REMIX_TOKEN}
 ENV NODE_ENV=production
+ARG COMMIT_SHA
+ENV COMMIT_SHA=${COMMIT_SHA}
 
 RUN mkdir /app/
 WORKDIR /app/

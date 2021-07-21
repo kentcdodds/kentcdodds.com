@@ -6,7 +6,7 @@
     "npm": "7"
   },
   "description": "A remix version of kentcdodds.com",
-  "main": "remix.config.js",
+  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kentcdodds/remix-kentcdodds.com.git"
@@ -25,7 +25,7 @@
     "build:css": "postcss styles/**/*.css --base styles --dir app/styles --env production",
     "build:remix": "cross-env NODE_ENV=production dotenv -e .env remix build",
     "build": "npm run build:css && npm run build:remix",
-    "dev": "pm2-dev pm2.config.js",
+    "dev": "pm2-dev ./other/pm2.config.js",
     "start": "cross-env NODE_ENV=production node --require ./node_modules/dotenv/config --experimental-wasm-threads ./index.js",
     "start:mocks": "cross-env NODE_ENV=production node --require ./mocks --require ./node_modules/dotenv/config --experimental-wasm-threads ./index.js",
     "curl:blog": "curl --silent http://localhost:$PORT/blog > /dev/null",
