@@ -4,10 +4,14 @@ import {getBlogMdxListItems} from './mdx'
 import {prisma} from './prisma.server'
 import {teams} from './misc'
 
-async function getBlogRecommendations() {
+async function getBlogRecommendations({limit}: {limit?: number} = {}) {
   const posts = await getBlogMdxListItems()
 
-  return posts
+  if (typeof limit !== 'undefined') {
+    return posts
+  }
+
+  return posts.slice(0, limit)
 }
 
 async function getBlogReadRankings(slug: string) {

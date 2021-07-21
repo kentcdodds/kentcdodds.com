@@ -21,7 +21,7 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async () => {
-  const blogRecommendations = (await getBlogRecommendations()).slice(0, 3)
+  const blogRecommendations = await getBlogRecommendations({limit: 3})
 
   const data: LoaderData = {blogRecommendations}
   return json(data)

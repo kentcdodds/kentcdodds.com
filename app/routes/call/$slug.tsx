@@ -3,6 +3,7 @@ import {useParams} from 'react-router-dom'
 import type {KCDLoader} from 'types'
 import {useCallKentEpisodes} from '../../utils/providers'
 import {getEpisodes} from '../../utils/call-kent.server'
+import {useTheme} from '../../utils/theme-provider'
 
 export const loader: KCDLoader<{
   slug: string
@@ -24,12 +25,17 @@ export default function Screen() {
   const params = useParams() as {slug: string}
   const episodes = useCallKentEpisodes()
   const episode = episodes.find(e => e.slug === params.slug)
+  const [theme] = useTheme()
+
   if (!episode) {
     return <div>Oh no... No episode found with this slug: {params.slug}</div>
   }
+
   return (
-    <div>
-      <pre>{JSON.stringify(episode, null, 2)}</pre>
-    </div>
+    <div
+      dangerouslySetInnerHTML={{
+        __html: theme === 'dark' ? episode.embedHtmlDark : episode.embedHtml,
+      }}
+    />
   )
 }

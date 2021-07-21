@@ -104,12 +104,12 @@ const transistorHandlers: Array<
             keywords: faker.lorem.words().split(' ').join(','),
             status: 'published',
             image_url: faker.internet.avatar(),
-            media_url: 'https://media.transistor.fm/eac55340/b307611b.mp3',
-            share_url: 'https://share.transistor.fm/s/eac55340',
+            media_url: 'https://media.transistor.fm/1493e91f/10e5e65b.mp3',
+            share_url: 'https://share.transistor.fm/s/1493e91f',
             embed_html:
-              '<iframe width="100%" height="180" frameborder="no" scrolling="no" seamless src="https://share.transistor.fm/e/51c83e8d"></iframe>',
+              '<iframe src="https://share.transistor.fm/e/1493e91f" width="100%" height="180" frameborder="0" scrolling="no" seamless style="width:100%; height:180px;"></iframe>',
             embed_html_dark:
-              '<iframe width="100%" height="180" frameborder="no" scrolling="no" seamless src="https://share.transistor.fm/e/51c83e8d/dark"></iframe>',
+              '<iframe src="https://share.transistor.fm/e/1493e91f/dark" width="100%" height="180" frameborder="0" scrolling="no" seamless style="width:100%; height:180px;"></iframe>',
             published_at: faker.datatype
               .datetime({
                 max: Date.now() - 1000 * 60 * 60 * 24,
