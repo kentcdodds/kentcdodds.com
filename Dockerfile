@@ -50,7 +50,7 @@ ARG COMMIT_SHA
 ENV COMMIT_SHA=${COMMIT_SHA}
 
 # install open ssl for prisma
-RUN apt-get update && apt-get install openssl
+RUN apt-get update && apt-get install -y openssl
 
 RUN mkdir /app/
 WORKDIR /app/
