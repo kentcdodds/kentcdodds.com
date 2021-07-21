@@ -9,7 +9,7 @@ ENV HUSKY_SKIP_INSTALL=1
 RUN mkdir /app/
 WORKDIR /app/
 
-ADD package.json package-lock.json .npmrc ./
+ADD prisma package.json package-lock.json .npmrc ./
 RUN npm install --production=false
 
 # setup production node_modules
@@ -22,7 +22,7 @@ RUN mkdir /app/
 WORKDIR /app/
 
 COPY --from=deps /app/node_modules /app/node_modules
-ADD package.json package-lock.json .npmrc /app/
+ADD prisma package.json package-lock.json .npmrc /app/
 RUN npm prune --production
 
 # build app
