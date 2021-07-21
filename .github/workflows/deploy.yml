@@ -14,82 +14,49 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v2
 
-      - name: 🐳 Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-      # So now you can use Actions' own caching!
-      - name: ⚡️ Cache Docker layers
-        uses: actions/cache@v2
+      - name: 🏄 Copy test env vars
+        run: cp .env.example .env
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v1
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
+          node-version: 16
 
-      # temporarily disabling all these steps to make the deploy faster...
-      # - name: 🏄 Copy test env vars
-      #   run: cp .env.example .env
+      - name: 📥 Download deps
+        uses: bahmutov/npm-install@v1
 
-      # - name: ⎔ Setup node
-      #   uses: actions/setup-node@v1
-      #   with:
-      #     node-version: 16
+      - name: ▶️ Run validate script
+        run: npx kcd-scripts validate
+        env:
+          ENABLE_TEST_ROUTES: 'true'
 
-      # - name: 📥 Download deps
-      #   uses: bahmutov/npm-install@v1
+      - name: 🐳 Docker compose
+        run: docker-compose up -d && sleep 3 && npx prisma migrate reset --force
+        env:
+          DATABASE_URL: 'postgresql://kody:the_koala@localhost:5432/kentcdodds_db?schema=public'
 
-      # - name: ▶️ Run validate script
-      #   run: npx kcd-scripts validate
-      #   env:
-      #     ENABLE_TEST_ROUTES: 'true'
+      - name: ⚡️ Prime cache
+        run: npm run prime-cache:mocks
 
-      # - name: 🐳 Docker compose
-      #   run: docker-compose up -d && sleep 3 && npx prisma migrate reset --force
-      #   env:
-      #     DATABASE_URL: 'postgresql://kody:the_koala@localhost:5432/kentcdodds_db?schema=public'
-
-      # - name: ⚡️ Prime cache
-      #   run: npm run prime-cache:mocks
-
-      # - name: 🌳 Cypress run
-      #   uses: cypress-io/github-action@v2
-      #   continue-on-error: true
-      #   with:
-      #     start: npm run start:mocks
-      #     wait-on: 'http://localhost:8811'
-      #   env:
-      #     PORT: '8811'
-      #     RUNNING_E2E: 'true'
-      #     DATABASE_URL: 'postgresql://kody:the_koala@localhost:5432/kentcdodds_db?schema=public'
-
-      # Build with cache
-      - name: 🐳 Docker build
-        uses: docker/build-push-action@v2
+      - name: 🌳 Cypress run
+        uses: cypress-io/github-action@v2
+        continue-on-error: true
         with:
-          context: .
-          push: false
-          load: true
-          tags: kcd-remix
-          build-args: REMIX_TOKEN=${{secrets.REMIX_TOKEN}}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+          start: npm run start:mocks
+          wait-on: 'http://localhost:8811'
+        env:
+          PORT: '8811'
+          RUNNING_E2E: 'true'
+          DATABASE_URL: 'postgresql://kody:the_koala@localhost:5432/kentcdodds_db?schema=public'
 
       - name: 🚀 Deploy
         # only deploy main branch on pushes
-        # deploy kcd-remix image built previously
         if:
           ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         uses: superfly/flyctl-actions@1.1
         with:
-          args: 'deploy -i kcd-remix'
+          args:
+            'deploy --build-arg REMIX_TOKEN=${{ secrets.REMIX_TOKEN }}
+            --build-arg COMMIT_SHA="${{ github.sha }}"'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
-      # This ugly bit is necessary if you don't want your cache to grow forever
-      # till it hits GitHub's limit of 5GB.
-      # Temp fix
-      # https://github.com/docker/build-push-action/issues/252
-      # https://github.com/moby/buildkit/issues/1896
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
