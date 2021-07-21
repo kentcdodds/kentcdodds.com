@@ -13,7 +13,7 @@ import {ButtonLink} from '../components/button'
 import {Grid} from '../components/grid'
 import {getBlogRecommendations} from '../utils/blog.server'
 import {BlogSection} from '../components/sections/blog-section'
-import {H6} from '../components/typography'
+import {H6, Paragraph} from '../components/typography'
 import {ChevronUpIcon} from '../components/icons/chevron-up-icon'
 import {ChevronDownIcon} from '../components/icons/chevron-down-icon'
 import {HeaderSection} from '../components/sections/header-section'
@@ -134,6 +134,14 @@ export default function CallHomeScreen() {
             {sortedEpisodes.map((episode, idx, {length}) => {
               const number =
                 sortOrder === 'asc' ? idx + 1 : Math.abs(length - idx)
+              const keywords = Array.from(
+                new Set(
+                  episode.keywords
+                    .split(/[,;\s]/g) // split into words
+                    .map(x => x.trim()) // trim white spaces
+                    .filter(Boolean), // remove empties
+                ), // omit duplicates
+              ).slice(0, 3) // keep first 3 only
 
               return (
                 <div
@@ -209,6 +217,15 @@ export default function CallHomeScreen() {
                           transition={{duration: 0.15}}
                           className="relative col-span-full"
                         >
+                          <H6 as="div">Keywords</H6>
+                          <Paragraph className="flex mb-8">
+                            {keywords.join(', ')}
+                          </Paragraph>
+
+                          <H6 as="div">Description</H6>
+                          <Paragraph className="mb-8">
+                            {episode.description}
+                          </Paragraph>
                           <Outlet />
                         </motion.div>
                       ) : null}
