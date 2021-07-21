@@ -224,9 +224,13 @@ export default function CallHomeScreen() {
                           </Paragraph>
 
                           <H6 as="div">Description</H6>
-                          <Paragraph className="mb-8">
-                            {episode.description}
-                          </Paragraph>
+                          <Paragraph
+                            as="div"
+                            className="mb-8"
+                            dangerouslySetInnerHTML={{
+                              __html: episode.description,
+                            }}
+                          />
                           <Outlet />
                         </motion.div>
                       ) : null}
