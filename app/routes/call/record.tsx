@@ -14,6 +14,7 @@ import {
   getErrorForKeywords,
 } from '../../utils/call-kent'
 import {callKentStorage} from '../../utils/call-kent.server'
+import {useOptionalUser} from '../../utils/providers'
 
 const errorSessionKey = 'call_error'
 const fieldsSessionKey = 'call_fields'
@@ -253,25 +254,38 @@ function CallListing({call}: {call: Call}) {
 }
 
 export default function RecordScreen() {
+  const user = useOptionalUser()
   const data = useRouteData<LoaderData>()
   const [audio, setAudio] = React.useState<Blob | null>(null)
   return (
     <div>
-      {data.calls.length ? (
+      {user ? (
         <>
-          <h2>Your calls with Kent</h2>
-          <hr />
-          {data.calls.map(call => {
-            return <CallListing key={call.id} call={call} />
-          })}
+          {data.calls.length ? (
+            <>
+              <div>Your calls with Kent</div>
+              <hr />
+              {data.calls.map(call => {
+                return <CallListing key={call.id} call={call} />
+              })}
+            </>
+          ) : (
+            <div>You have no calls with Kent yet...</div>
+          )}
+          {audio ? (
+            <SubmitRecordingForm audio={audio} />
+          ) : (
+            <CallRecorder
+              onRecordingComplete={recording => setAudio(recording)}
+            />
+          )}
         </>
       ) : (
-        <h2>You have no calls with Kent yet...</h2>
-      )}
-      {audio ? (
-        <SubmitRecordingForm audio={audio} />
-      ) : (
-        <CallRecorder onRecordingComplete={recording => setAudio(recording)} />
+        // TODO: make this more useful
+        <div>
+          You are not logged in... To get your own questions answered, login
+          first...
+        </div>
       )}
     </div>
   )
