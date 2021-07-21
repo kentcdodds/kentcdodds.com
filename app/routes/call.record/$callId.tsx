@@ -3,6 +3,7 @@ import {json, redirect, useRouteData, Form} from 'remix'
 import type {Call, KCDLoader, KCDAction} from 'types'
 import {requireUser} from '../../utils/session.server'
 import {prisma} from '../../utils/prisma.server'
+import {Paragraph} from '../../components/typography'
 
 const actionTypes = {
   DELETE_RECORDING: 'delete recording',
@@ -61,18 +62,24 @@ export default function Screen() {
 
   return (
     <section>
-      <strong>{data.call.title}</strong>
-      <p>{data.call.description}</p>
-      <div>{audioURL ? <audio src={audioURL} controls /> : null}</div>
-      <Form method="post">
-        <input
-          type="hidden"
-          name="actionType"
-          value={actionTypes.DELETE_RECORDING}
-        />
-        <input type="hidden" name="callId" value={data.call.id} />
-        <button type="submit">Delete</button>
-      </Form>
+      <Paragraph className="mb-8">{data.call.description}</Paragraph>
+      <div className="flex items-center justify-between">
+        <div>{audioURL ? <audio src={audioURL} controls /> : null}</div>
+        <Form method="post">
+          <input
+            type="hidden"
+            name="actionType"
+            value={actionTypes.DELETE_RECORDING}
+          />
+          <input type="hidden" name="callId" value={data.call.id} />
+          <button
+            className="text-primary dark:hover:border-red-500 px-10 py-3 hover:text-red-500 text-lg font-medium border-2 border-gray-400 dark:border-gray-600 hover:border-red-500 rounded-full transition"
+            type="submit"
+          >
+            Delete
+          </button>
+        </Form>
+      </div>
     </section>
   )
 }
