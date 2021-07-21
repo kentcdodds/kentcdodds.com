@@ -67,6 +67,7 @@ jobs:
         with:
           context: .
           push: false
+          load: true
           tags: kcd-remix:${{github.sha}}
           build-args: |
             REMIX_TOKEN=${{secrets.REMIX_TOKEN}}
