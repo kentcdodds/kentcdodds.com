@@ -91,7 +91,7 @@ export default function CallHomeScreen() {
       />
 
       {/*
-        IDEA: when there will be manyu episodes, we could split this by year, and
+        IDEA: when there will be many episodes, we could split this by year, and
         display it with tabs like on the podcast page. [2023, 2022, 2021]
       */}
       <Grid className="mb-24 lg:mb-64">
