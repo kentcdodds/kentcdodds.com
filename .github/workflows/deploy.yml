@@ -41,6 +41,7 @@ jobs:
         run: npx kcd-scripts validate
         env:
           ENABLE_TEST_ROUTES: 'true'
+          COMMIT_SHA: ${{github.sha}}
 
       - name: 🐳 Docker compose
         run: docker-compose up -d && sleep 3 && npx prisma migrate reset --force

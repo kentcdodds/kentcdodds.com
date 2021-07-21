@@ -8,8 +8,10 @@ describe('call in', () => {
     cy.visit('/call')
     cy.findByRole('main').within(() => {
       cy.findByRole('link', {name: /record/i}).click()
+      cy.findByRole('link', {name: /new recording/i}).click()
       cy.findByRole('button', {name: /change.*device/i}).click()
-      cy.findByRole('button', {name: /default/i}).click()
+      // this is hidden by the label, but it's definitely clickable
+      cy.findByRole('checkbox', {name: /default/i}).click({force: true})
       cy.findByRole('button', {name: /start/i}).click()
       cy.wait(50)
       cy.findByRole('button', {name: /pause/i}).click()
@@ -37,7 +39,7 @@ describe('call in', () => {
 
     // login as admin
     cy.login({role: 'ADMIN'})
-    cy.visit('/call/list')
+    cy.visit('/call/admin')
     cy.findByRole('main').within(() => {
       cy.findByRole('link', {name: title}).click()
 
