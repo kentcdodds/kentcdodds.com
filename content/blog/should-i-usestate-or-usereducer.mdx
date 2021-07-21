@@ -501,7 +501,7 @@ function undoReducer(state, action) {
   const {past, present, future} = state
   const {type, newPresent} = action
 
-  switch (action.type) {
+  switch (type) {
     case UNDO: {
       if (past.length === 0) return state
 

@@ -1,10 +1,18 @@
 import uuid from 'uuid'
-import {getRequiredServerEnvVar} from './misc'
+import type {
+  TransistorErrorResponse,
+  TransistorCreateEpisodeData,
+  TransistorPublishedJson,
+  TransistorCreatedJson,
+  TransistorAuthorizedJson,
+  TransistorEpisodesJson,
+  Await,
+} from 'types'
+import {getErrorMessage, getRequiredServerEnvVar} from './misc'
+import * as redis from './redis.server'
 
 const transistorApiSecret = getRequiredServerEnvVar('TRANSISTOR_API_SECRET')
 const podcastId = getRequiredServerEnvVar('CALL_KENT_PODCAST_ID', '67890')
-
-type ErrorResponse = {errors: Array<{title: string}>}
 
 async function fetchTransitor<JsonResponse>({
   endpoint,
@@ -34,66 +42,30 @@ async function fetchTransitor<JsonResponse>({
   const res = await fetch(url.toString(), config)
   const json = await res.json()
   if (json.errors) {
-    throw new Error((json as ErrorResponse).errors.map(e => e.title).join('\n'))
+    throw new Error(
+      (json as TransistorErrorResponse).errors.map(e => e.title).join('\n'),
+    )
   }
   return json as JsonResponse
-}
-
-type AuthorizedJson = {
-  data: {
-    attributes: {
-      upload_url: string
-      audio_url: string
-      content_type: string
-    }
-  }
-}
-
-type CreatedJson = {
-  data: {
-    id: string
-  }
-}
-
-type PublishedJson = {
-  data: {
-    id: string
-    type: 'episode'
-    attributes: {
-      status: 'published'
-    }
-    relationships: {}
-  }
-}
-
-type CreateEpisodeData = {
-  show_id: string
-  season: string
-  audio_url: string
-  title: string
-  summary: string
-  description: string
-  image_url: string
-  /** comma separated list of keywords **/
-  keywords: string
-  // TODO: add alternate_url when we've got things listed on the site nicely
 }
 
 async function createEpisode({
   audio,
   title,
+  summary,
   description,
   keywords,
   imageUrl,
 }: {
   audio: Buffer
   title: string
+  summary: string
   description: string
   keywords: string
   imageUrl: string
 }) {
   const id = uuid.v4()
-  const authorized = await fetchTransitor<AuthorizedJson>({
+  const authorized = await fetchTransitor<TransistorAuthorizedJson>({
     endpoint: 'v1/episodes/authorize_upload',
     query: {filename: `${id}.mp3`},
   })
@@ -105,18 +77,18 @@ async function createEpisode({
     headers: {'Content-Type': content_type},
   })
 
-  const episode: CreateEpisodeData = {
+  const episode: TransistorCreateEpisodeData = {
     show_id: podcastId,
     season: '1',
     audio_url,
     title,
-    summary: description,
+    summary,
     description,
     keywords,
     image_url: imageUrl,
   }
 
-  const created = await fetchTransitor<CreatedJson>({
+  const created = await fetchTransitor<TransistorCreatedJson>({
     endpoint: 'v1/episodes',
     method: 'POST',
     data: {
@@ -124,7 +96,7 @@ async function createEpisode({
     },
   })
 
-  const published = await fetchTransitor<PublishedJson>({
+  await fetchTransitor<TransistorPublishedJson>({
     endpoint: `/v1/episodes/${encodeURIComponent(created.data.id)}/publish`,
     method: 'PATCH',
     data: {
@@ -133,25 +105,47 @@ async function createEpisode({
       },
     },
   })
-  return published
 }
 
-type EpisodeJson = {
-  data: {
-    id: string
-    type: 'episode'
-    attributes: {
-      title: string
-      media_url: string
-      share_url: string
+async function getEpisodes() {
+  const episodes = await fetchTransitor<TransistorEpisodesJson>({
+    endpoint: `/v1/episodes`,
+  })
+  // sort by published_at
+  return episodes.data.sort((a, b) => {
+    if (a.attributes.published_at < b.attributes.published_at) {
+      return -1
+    } else if (a.attributes.published_at > b.attributes.published_at) {
+      return 1
     }
-  }
-}
-
-function getEpisode(id: string) {
-  return fetchTransitor<EpisodeJson>({
-    endpoint: `/v1/episodes/${id}`,
+    return 0
   })
 }
 
-export {createEpisode, getEpisode}
+const episodesCacheKey = `transistor:episodes:${podcastId}`
+
+async function getCachedEpisodes() {
+  try {
+    const cached = await redis.get(episodesCacheKey)
+    if (cached)
+      return JSON.parse(cached) as Await<ReturnType<typeof getEpisodes>>
+  } catch (error: unknown) {
+    console.error(
+      `error with cache at ${episodesCacheKey}`,
+      getErrorMessage(error),
+    )
+  }
+
+  const episodes = await getEpisodes()
+
+  await redis.set(episodesCacheKey, JSON.stringify(episodes))
+
+  return episodes
+}
+
+async function refreshEpisodes() {
+  await redis.del(episodesCacheKey)
+  await getEpisodes()
+}
+
+export {createEpisode, getCachedEpisodes as getEpisodes, refreshEpisodes}

@@ -17,27 +17,17 @@ import {LogoutIcon} from '../components/icons/logout-icon'
 import {TEAM_MAP} from '../utils/onboarding'
 import {EyeIcon} from '../components/icons/eye-icon'
 
-type LoaderData = {message?: string; qrLoginCode: string}
+type LoaderData = {qrLoginCode: string}
 export const loader: LoaderFunction = ({request}) => {
   return requireUser(request, async user => {
-    const session = await rootStorage.getSession(request.headers.get('Cookie'))
-    const message = session.get('message')
-    const cookie = await rootStorage.commitSession(session)
-
     const qrLoginCode = await getQrCodeDataURL(
       getMagicLink({
         emailAddress: user.email,
         domainUrl: getDomainUrl(request),
-        validationRequired: false,
-        // make a very short expiration time because it should be scanned
-        // right away anyway.
-        // TODO: make sure that it's generated on-demand rather than as
-        // part of the page initial request.
-        expirationDate: new Date(Date.now() + 1000 * 30).toISOString(),
       }),
     )
-    const loaderData: LoaderData = {message, qrLoginCode}
-    return json(loaderData, {headers: {'Set-Cookie': cookie}})
+    const loaderData: LoaderData = {qrLoginCode}
+    return json(loaderData)
   })
 }
 

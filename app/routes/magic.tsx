@@ -12,10 +12,9 @@ import {
 export const loader: LoaderFunction = async ({request}) => {
   return replayable(request, async checkIfReplayable => {
     const session = await rootStorage.getSession(request.headers.get('Cookie'))
-    const validationEmail = session.get(sessionKeys.email) as string | null
 
     try {
-      const email = await validateMagicLink(validationEmail, request.url)
+      const email = await validateMagicLink(request.url)
 
       const user = await getUserByEmail(email)
       if (user) {

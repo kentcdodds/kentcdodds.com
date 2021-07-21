@@ -74,20 +74,18 @@ type LoaderData = {
 }
 
 async function getSessionInfo(session: Session) {
-  const email = session.get(sessionKeys.email)
   const magicLink = session.get(sessionKeys.magicLink)
   let hasActiveMagicLink = false
-  if (email && magicLink) {
+  if (typeof magicLink === 'string') {
     try {
-      await validateMagicLink(email, magicLink)
+      await validateMagicLink(magicLink)
       hasActiveMagicLink = true
     } catch {
       // the link is not active
-      session.unset(sessionKeys.email)
       session.unset(sessionKeys.magicLink)
     }
   }
-  return {email, hasActiveMagicLink}
+  return {email: session.get(sessionKeys.email), hasActiveMagicLink}
 }
 
 export const loader: LoaderFunction = async ({request}) => {

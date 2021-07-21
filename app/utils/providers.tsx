@@ -1,12 +1,13 @@
 import * as React from 'react'
 import {Team} from '@prisma/client'
-import type {Await, User} from 'types'
+import type {Await, CallKentEpisode, User} from 'types'
 import type {getUserInfo} from './user-info.server'
 
 function createSimpleContext<ContextType>(name: string) {
   const defaultValue = Symbol(`Default ${name} context value`)
-  const Context =
-    React.createContext<ContextType | null | typeof defaultValue>(defaultValue)
+  const Context = React.createContext<ContextType | null | typeof defaultValue>(
+    defaultValue,
+  )
   Context.displayName = name
 
   function useValue() {
@@ -90,6 +91,9 @@ const {
   useValue: useChatsEpisodeUIState,
 } = createSimpleContext<ChatsEpisodeUIState>('ChatsEpisodeUIState')
 
+const {Provider: CallKentEpisodesProvider, useValue: useCallKentEpisodes} =
+  createSimpleContext<Array<CallKentEpisode>>('CallKentEpisodes')
+
 export {
   RequestInfoProvider,
   useRequestInfo,
@@ -104,5 +108,7 @@ export {
   optionalTeams,
   ChatsEpisodeUIStateProvider,
   useChatsEpisodeUIState,
+  CallKentEpisodesProvider,
+  useCallKentEpisodes,
 }
 export type {RequestInfo, OptionalTeam}

@@ -238,13 +238,15 @@ function CallRecorder({
 
   return (
     <div>
-      {state.matches('ready') ? (
-        <button onClick={() => send({type: 'changeDevice'})}>
-          Change audio device from{' '}
-          {state.context.selectedAudioDevice?.label ?? 'default'}
-        </button>
-      ) : null}
-      {deviceSelection}
+      <div>
+        {state.matches('ready') ? (
+          <button onClick={() => send({type: 'changeDevice'})}>
+            Change audio device from{' '}
+            {state.context.selectedAudioDevice?.label ?? 'default'}
+          </button>
+        ) : null}
+        {deviceSelection}
+      </div>
       {state.matches('ready') ? (
         <button onClick={() => send({type: 'start'})}>Start</button>
       ) : null}
