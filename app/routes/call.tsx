@@ -126,84 +126,86 @@ export default function CallHomeScreen() {
         </div>
 
         <div className="col-span-full">
-          {sortedEpisodes.map((episode, idx, {length}) => {
-            const number =
-              sortOrder === 'asc' ? idx + 1 : Math.abs(length - idx)
+          <CallKentEpisodesProvider value={data.episodes}>
+            {sortedEpisodes.map((episode, idx, {length}) => {
+              const number =
+                sortOrder === 'asc' ? idx + 1 : Math.abs(length - idx)
 
-            return (
-              <div
-                className="border-b border-gray-200 dark:border-gray-600"
-                key={episode.slug}
-              >
-                <Link
-                  data-episode={episode.slug}
+              return (
+                <div
+                  className="border-b border-gray-200 dark:border-gray-600"
                   key={episode.slug}
-                  to={activeSlug === episode.slug ? './' : `./${episode.slug}`}
                 >
-                  <Grid nested className="group relative py-10 lg:py-5">
-                    <div className="bg-secondary absolute -inset-px group-hover:block hidden -mx-6 rounded-lg" />
-                    <div className="relative flex-none col-span-1">
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transform scale-0 group-hover:scale-100 transition">
-                        <div className="flex-none p-4 text-gray-800 bg-white rounded-full">
-                          <TriangleIcon size={12} />
+                  <Link
+                    data-episode={episode.slug}
+                    key={episode.slug}
+                    to={
+                      activeSlug === episode.slug ? './' : `./${episode.slug}`
+                    }
+                  >
+                    <Grid nested className="group relative py-10 lg:py-5">
+                      <div className="bg-secondary absolute -inset-px group-hover:block hidden -mx-6 rounded-lg" />
+                      <div className="relative flex-none col-span-1">
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transform scale-0 group-hover:scale-100 transition">
+                          <div className="flex-none p-4 text-gray-800 bg-white rounded-full">
+                            <TriangleIcon size={12} />
+                          </div>
+                        </div>
+                        <img
+                          className="w-full rounded-lg object-cover"
+                          src={episode.imageUrl}
+                          alt={episode.title}
+                        />
+                      </div>
+                      <div className="text-primary relative flex flex-col col-span-3 md:col-span-7 lg:flex-row lg:col-span-11 lg:items-center lg:justify-between">
+                        <div className="mb-3 text-xl font-medium lg:mb-0">
+                          {/* TODO: make it three digits? How many calls do we expect? */}
+                          <span className="inline-block w-10 lg:text-lg">
+                            {`${number.toString().padStart(2, '0')}.`}
+                          </span>
+
+                          {episode.title}
+                        </div>
+                        <div className="text-gray-400 text-lg font-medium">
+                          {formatTime(episode.duration)}
                         </div>
                       </div>
-                      <img
-                        className="w-full rounded-lg object-cover"
-                        src={episode.imageUrl}
-                        alt={episode.title}
-                      />
-                    </div>
-                    <div className="text-primary relative flex flex-col col-span-3 md:col-span-7 lg:flex-row lg:col-span-11 lg:items-center lg:justify-between">
-                      <div className="mb-3 text-xl font-medium lg:mb-0">
-                        {/* TODO: make it three digits? How many calls do we expect? */}
-                        <span className="inline-block w-10 lg:text-lg">
-                          {`${number.toString().padStart(2, '0')}.`}
-                        </span>
+                    </Grid>
+                  </Link>
 
-                        {episode.title}
-                      </div>
-                      <div className="text-gray-400 text-lg font-medium">
-                        {formatTime(episode.duration)}
-                      </div>
-                    </div>
-                  </Grid>
-                </Link>
-
-                <Grid nested>
-                  <AnimatePresence>
-                    {activeSlug === episode.slug ? (
-                      <motion.div
-                        variants={{
-                          collapsed: {
-                            height: 0,
-                            marginTop: 0,
-                            marginBottom: 0,
-                            opacity: 0,
-                          },
-                          expanded: {
-                            height: 'auto',
-                            marginTop: '1rem',
-                            marginBottom: '3rem',
-                            opacity: 1,
-                          },
-                        }}
-                        initial="collapsed"
-                        animate="expanded"
-                        exit="collapsed"
-                        transition={{duration: 0.15}}
-                        className="relative col-span-full"
-                      >
-                        <CallKentEpisodesProvider value={data.episodes}>
+                  <Grid nested>
+                    <AnimatePresence>
+                      {activeSlug === episode.slug ? (
+                        <motion.div
+                          variants={{
+                            collapsed: {
+                              height: 0,
+                              marginTop: 0,
+                              marginBottom: 0,
+                              opacity: 0,
+                            },
+                            expanded: {
+                              height: 'auto',
+                              marginTop: '1rem',
+                              marginBottom: '3rem',
+                              opacity: 1,
+                            },
+                          }}
+                          initial="collapsed"
+                          animate="expanded"
+                          exit="collapsed"
+                          transition={{duration: 0.15}}
+                          className="relative col-span-full"
+                        >
                           <Outlet />
-                        </CallKentEpisodesProvider>
-                      </motion.div>
-                    ) : null}
-                  </AnimatePresence>
-                </Grid>
-              </div>
-            )
-          })}
+                        </motion.div>
+                      ) : null}
+                    </AnimatePresence>
+                  </Grid>
+                </div>
+              )
+            })}
+          </CallKentEpisodesProvider>
         </div>
       </Grid>
 
