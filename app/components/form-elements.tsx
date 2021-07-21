@@ -13,14 +13,29 @@ function Label({className, ...labelProps}: JSX.IntrinsicElements['label']) {
   )
 }
 
-function Input({className, ...inputProps}: JSX.IntrinsicElements['input']) {
+function Input(
+  props:
+    | ({type: 'textarea'} & JSX.IntrinsicElements['textarea'])
+    | JSX.IntrinsicElements['input'],
+) {
+  const className = clsx(
+    'placeholder-gray-500 dark:disabled:text-blueGray-500 focus-ring px-11 py-8 w-full text-black disabled:text-gray-400 dark:text-white text-lg font-medium bg-gray-200 dark:bg-gray-800 rounded-lg',
+    props.className,
+  )
+
+  if (props.type === 'textarea') {
+    return (
+      <textarea
+        {...(props as JSX.IntrinsicElements['textarea'])}
+        className={className}
+      />
+    )
+  }
+
   return (
     <input
-      {...inputProps}
-      className={clsx(
-        'placeholder-gray-500 dark:disabled:text-blueGray-500 focus-ring px-11 py-8 w-full text-black disabled:text-gray-400 dark:text-white text-lg font-medium bg-gray-200 dark:bg-gray-800 rounded-lg',
-        className,
-      )}
+      {...(props as JSX.IntrinsicElements['input'])}
+      className={className}
     />
   )
 }

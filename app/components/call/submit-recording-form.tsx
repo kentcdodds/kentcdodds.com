@@ -1,5 +1,8 @@
 import * as React from 'react'
 import {Form, useSubmit} from 'remix'
+import {Input, InputError, Label} from '../form-elements'
+import {Grid} from '../grid'
+import {Button} from '../button'
 
 type RecordingFormData = {
   fields?: {
@@ -45,66 +48,82 @@ function RecordingForm({audio, data}: {audio: Blob; data: RecordingFormData}) {
 
   return (
     <div>
-      {data.errors?.generalError ? (
-        <p id="audio-error-message" className="text-red-600 text-center">
-          {data.errors.generalError}
-        </p>
-      ) : null}
-      {audioURL ? (
-        <audio src={audioURL} controls aria-describedby="audio-error-message" />
-      ) : (
-        'loading...'
-      )}
-      {data.errors?.audio ? (
-        <p id="audio-error-message" className="text-red-600 text-center">
-          {data.errors.audio}
-        </p>
-      ) : null}
+      <div className="mb-12">
+        {data.errors?.generalError ? (
+          <p id="audio-error-message" className="text-red-600 text-center">
+            {data.errors.generalError}
+          </p>
+        ) : null}
+        {audioURL ? (
+          <audio
+            src={audioURL}
+            controls
+            aria-describedby="audio-error-message"
+          />
+        ) : (
+          'loading...'
+        )}
+        {data.errors?.audio ? (
+          <p id="audio-error-message" className="text-red-600 text-center">
+            {data.errors.audio}
+          </p>
+        ) : null}
+      </div>
+
       <Form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="title">Title</label>
-          <input
-            id="title"
-            name="title"
-            aria-describedby="title-error-message"
-            defaultValue={data.fields?.title ?? ''}
-          />
-          {data.errors?.title ? (
-            <p id="title-error-message" className="text-red-600 text-center">
-              {data.errors.title}
-            </p>
-          ) : null}
-        </div>
-        <div>
-          <label htmlFor="description">Description</label>
-          <textarea
-            id="description"
-            name="description"
-            defaultValue={data.fields?.description ?? ''}
-          />
-          {data.errors?.description ? (
-            <p
-              id="description-error-message"
-              className="text-red-600 text-center"
-            >
-              {data.errors.description}
-            </p>
-          ) : null}
-        </div>
-        <div>
-          <label htmlFor="keywords">Keywords</label>
-          <textarea
-            id="keywords"
-            name="keywords"
-            defaultValue={data.fields?.keywords ?? ''}
-          />
-          {data.errors?.keywords ? (
-            <p id="keywords-error-message" className="text-red-600 text-center">
-              {data.errors.keywords}
-            </p>
-          ) : null}
-        </div>
-        <button type="submit">Submit Recording</button>
+        <Grid nested>
+          <div className="flex flex-col col-span-full space-y-12 lg:col-span-6 lg:space-y-20">
+            <div>
+              <div className="flex items-baseline justify-between mb-4">
+                <Label htmlFor="title">Title</Label>
+                <InputError id="firstName-error">
+                  {data.errors?.title}
+                </InputError>
+              </div>
+
+              <Input
+                id="title"
+                name="title"
+                aria-describedby="title-error-message"
+                defaultValue={data.fields?.title ?? ''}
+              />
+            </div>
+
+            <div>
+              <div className="flex items-baseline justify-between mb-4">
+                <Label htmlFor="description">Description</Label>
+                <InputError id="description-error-message">
+                  {data.errors?.description}
+                </InputError>
+              </div>
+
+              <Input
+                id="description"
+                name="description"
+                type="textarea"
+                aria-describedby="description-error-message"
+                defaultValue={data.fields?.description ?? ''}
+              />
+            </div>
+
+            <div>
+              <div className="flex items-baseline justify-between mb-4">
+                <Label htmlFor="keywords">Keywords</Label>
+                <InputError id="keywords-error-message">
+                  {data.errors?.keywords}
+                </InputError>
+              </div>
+
+              <Input
+                id="keywords"
+                name="keywords"
+                aria-describedby="keywords-error-message"
+                defaultValue={data.fields?.keywords ?? ''}
+              />
+            </div>
+            <Button type="submit">Submit Recording</Button>
+          </div>
+        </Grid>
       </Form>
     </div>
   )

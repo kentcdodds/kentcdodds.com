@@ -3,6 +3,13 @@ import {createMachine, assign, send as sendUtil} from 'xstate'
 import {useMachine} from '@xstate/react'
 import {inspect} from '@xstate/inspect'
 import {assertNonNull} from '../../utils/misc'
+import {Button} from '../button'
+import {Paragraph} from '../typography'
+import {Tag} from '../tag'
+import {MicrophoneIcon} from '../icons/microphone-icon'
+import {SquareIcon} from '../icons/square-icon'
+import {PauseIcon} from '../icons/pause-icon'
+import {TriangleIcon} from '../icons/triangle-icon'
 
 const devTools = false
 
@@ -182,33 +189,27 @@ function CallRecorder({
 
   let deviceSelection = null
   if (state.matches('gettingDevices')) {
-    deviceSelection = <div>Loading devices</div>
+    deviceSelection = <Paragraph>Loading devices</Paragraph>
   }
 
   if (state.matches('selecting')) {
     deviceSelection = (
       <div>
-        Select your device:
+        <Paragraph className="mb-8">Select your device:</Paragraph>
         <ul>
           {state.context.audioDevices.length
             ? state.context.audioDevices.map(device => (
                 <li key={device.deviceId}>
-                  <button
+                  <Tag
                     onClick={() => {
                       send({
                         type: 'selection',
                         selectedAudioDevice: device,
                       })
                     }}
-                    style={{
-                      fontWeight:
-                        state.context.selectedAudioDevice === device
-                          ? 'bold'
-                          : 'normal',
-                    }}
-                  >
-                    {device.label}
-                  </button>
+                    tag={device.label}
+                    selected={state.context.selectedAudioDevice === device}
+                  />
                 </li>
               ))
             : 'No audio devices found'}
@@ -229,9 +230,21 @@ function CallRecorder({
     )
     audioPreview = (
       <div>
-        <audio src={audioURL} controls />
-        <button onClick={() => onRecordingComplete(audioBlob)}>Accept</button>
-        <button onClick={() => send({type: 'restart'})}>Re-record</button>
+        <div className="mb-4">
+          <audio src={audioURL} controls />
+        </div>
+        <div className="space-x-4">
+          <Button size="medium" onClick={() => onRecordingComplete(audioBlob)}>
+            Accept
+          </Button>
+          <Button
+            size="medium"
+            variant="secondary"
+            onClick={() => send({type: 'restart'})}
+          >
+            Re-record
+          </Button>
+        </div>
       </div>
     )
   }
@@ -240,32 +253,53 @@ function CallRecorder({
     <div>
       <div>
         {state.matches('ready') ? (
-          <button onClick={() => send({type: 'changeDevice'})}>
-            Change audio device from{' '}
-            {state.context.selectedAudioDevice?.label ?? 'default'}
-          </button>
+          <div className="flex space-x-8">
+            <Button size="medium" onClick={() => send({type: 'start'})}>
+              <MicrophoneIcon />
+              <span>Start recording</span>
+            </Button>
+
+            <Button
+              variant="secondary"
+              size="medium"
+              onClick={() => send({type: 'changeDevice'})}
+            >
+              Change audio device from{' '}
+              {state.context.selectedAudioDevice?.label ?? 'default'}
+            </Button>
+          </div>
         ) : null}
         {deviceSelection}
       </div>
-      {state.matches('ready') ? (
-        <button onClick={() => send({type: 'start'})}>Start</button>
-      ) : null}
+
       {state.matches('recording') && state.context.mediaRecorder ? (
-        <StreamVis stream={state.context.mediaRecorder.stream} />
+        <div className="mb-4">
+          <StreamVis stream={state.context.mediaRecorder.stream} />
+        </div>
       ) : null}
+
       {state.matches('recording.playing') ? (
-        <>
-          <button onClick={() => send({type: 'stop'})}>Stop</button>
-          <button onClick={() => send({type: 'pause'})}>Pause</button>
-        </>
+        <div className="space-x-4">
+          <Button size="medium" onClick={() => send({type: 'stop'})}>
+            <SquareIcon /> <span>Stop</span>
+          </Button>
+          <Button size="medium" onClick={() => send({type: 'pause'})}>
+            <PauseIcon /> <span>Pause</span>
+          </Button>
+        </div>
       ) : state.matches('recording.paused') ? (
-        <>
-          <button onClick={() => send({type: 'stop'})}>Stop</button>
-          <button onClick={() => send({type: 'resume'})}>Resume</button>
-        </>
+        <div className="space-x-4">
+          <Button size="medium" onClick={() => send({type: 'stop'})}>
+            <SquareIcon /> <span>Stop</span>
+          </Button>
+          <Button size="medium" onClick={() => send({type: 'resume'})}>
+            <TriangleIcon /> <span>Resume</span>
+          </Button>
+        </div>
       ) : state.matches('recording.stopping') ? (
-        <div>Processing...</div>
+        <Paragraph>Processing...</Paragraph>
       ) : null}
+
       {audioPreview}
     </div>
   )
@@ -341,7 +375,7 @@ function StreamVis({stream}: {stream: MediaStream}) {
       cancelAnimationFrame(lastReq)
     }
   }, [stream])
-  return <canvas ref={canvasRef} />
+  return <canvas className="rounded-lg" ref={canvasRef} />
 }
 
 export {CallRecorder}
