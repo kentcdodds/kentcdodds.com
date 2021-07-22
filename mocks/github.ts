@@ -159,7 +159,6 @@ const githubHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
     async (req, res, ctx) => {
       const {owner, repo} = req.params
 
-      // NOTE: we cheat a bit and in the contents/:path handler, we set the sha to the relativePath
       const relativePath = req.params.path
       const fullPath = nodePath.join(__dirname, '..', relativePath)
       const encoding = 'base64' as const
