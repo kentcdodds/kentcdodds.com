@@ -84,8 +84,9 @@ export const action: ActionFunction = async ({request}) => {
       text: body,
     })
 
-    session.unset(fieldsSessionKey)
-    session.unset(errorSessionKey)
+    // I tried using session.unset, but that didn't work... This did... 🤷‍♂️
+    session.set(fieldsSessionKey, {})
+    session.set(errorSessionKey, {})
     session.flash(stateSessionKey, 'success')
     return redirect('/contact', {
       headers: {
@@ -151,14 +152,7 @@ export default function ContactRoute() {
         }
       />
 
-      {/*
-        TODO: the key trick doesn't work. After submission, `data.fields`
-          is still populated. So the new form uses submitted values as
-          initial values. It can be nice for the user to see what they
-          sent out, but we should block resubmissions of the same content.
-          The disabled button does that a bit, but isn't fail proof.
-      */}
-      <Form method="post" noValidate key={String(data.state === 'success')}>
+      <Form method="post" noValidate>
         <Grid>
           <div className="col-span-full mb-12 lg:col-span-8 lg:col-start-3">
             <H2>Contact Kent C. Dodds</H2>
