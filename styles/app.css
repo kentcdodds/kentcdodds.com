@@ -76,7 +76,8 @@ a.underlined:after {
 }
 
 a.underlined:hover:after,
-a.underlined:focus:after {
+a.underlined:focus:after,
+a.active.underlined:after {
   background-color: currentColor;
   transform: scaleX(1);
 }

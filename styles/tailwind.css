@@ -42,12 +42,20 @@
     @apply bg-black dark:bg-white;
   }
 
+  .border-primary {
+    @apply border-gray-900 dark:border-white;
+  }
+
+  .border-secondary {
+    @apply border-gray-200 dark:border-gray-600;
+  }
+
   .text-primary {
     @apply text-black dark:text-white;
   }
 
   .text-secondary {
-    @apply dark:text-blueGray-500 text-gray-500;
+    @apply dark:text-blueGray-500 text-gray-400;
   }
 
   .text-inverse {
