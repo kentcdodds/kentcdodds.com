@@ -19,9 +19,9 @@ function Tab({isSelected, children}: TabProps & {isSelected?: boolean}) {
   return (
     <ReachTab
       className={clsx(
-        'inline-flex items-center w-full focus:bg-transparent border-none lowercase space-x-8 transition',
+        'inline-flex items-center p-0 w-full focus:bg-transparent border-none lowercase space-x-8 transition',
         {
-          'text-black dark:text-white': isSelected,
+          'text-primary': isSelected,
           'dark:text-blueGray-500 text-gray-400': !isSelected,
         },
       )}
@@ -43,12 +43,67 @@ function Tab({isSelected, children}: TabProps & {isSelected?: boolean}) {
   )
 }
 
+function ImagePanel({
+  active,
+  imageUrl,
+  imageAlt,
+}: {
+  active: boolean
+  imageUrl: string
+  imageAlt: string
+}) {
+  return (
+    <TabPanel className="block col-start-1 row-start-1 h-44">
+      <AnimatePresence>
+        {active ? (
+          <motion.img
+            initial={{x: -40, opacity: 0}}
+            animate={{x: 0, opacity: 1}}
+            exit={{x: 40, opacity: 0}}
+            transition={{damping: 0, duration: 0.25}}
+            className="h-44"
+            src={imageUrl}
+            alt={imageAlt}
+          />
+        ) : null}
+      </AnimatePresence>
+    </TabPanel>
+  )
+}
+
+function ContentPanel({
+  children,
+  active,
+}: {
+  children: React.ReactNode | React.ReactNode[]
+  active: boolean
+}) {
+  return (
+    <TabPanel className="block col-start-1 row-start-1">
+      <AnimatePresence>
+        {active ? (
+          <motion.div
+            initial={{opacity: 0}}
+            animate={{opacity: 1}}
+            exit={{opacity: 0}}
+            transition={{duration: 0.25}}
+          >
+            {children}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </TabPanel>
+  )
+}
+
 function ProblemSolutionSection() {
+  const [activeTabIndex, setActiveTabIndex] = React.useState(0)
+
   return (
     <div className="px-5vw w-full">
       <div className="pb-16 pt-24 w-full bg-gray-100 dark:bg-gray-800 rounded-lg lg:pb-40 lg:pt-36">
         <div className="-mx-5vw">
-          <Tabs as={Grid}>
+          <Tabs as={Grid} onChange={index => setActiveTabIndex(index)}>
             <div className="col-span-full lg:col-span-5">
               <H2>
                 The JavaScript landscape is incredibly confusing to keep up with
@@ -70,83 +125,77 @@ function ProblemSolutionSection() {
 
               TODO: replace placeholders with right assets
             */}
-            <TabPanels className="col-span-full order-2 mt-16 lg:col-span-5 lg:col-start-7 lg:mt-0">
-              <TabPanel>
-                <img
-                  className="w-48"
-                  src={images.skis()}
-                  alt={images.skis.alt}
-                />
-              </TabPanel>
-              <TabPanel>
-                <img
-                  className="w-48"
-                  src="https://epicreact.dev/static/e9e50b43a9526373f48a11340fdfdbdc/e4e36/01-react-fundamentals.webp"
-                  alt="TODO: give a real alt"
-                />
-              </TabPanel>
-              <TabPanel>
-                <img
-                  className="w-48"
-                  src="https://epicreact.dev/static/2eec163c81b5805ff089fc59813197f8/35871/03-advanced-react-hooks.webp"
-                  alt="TODO: give a real alt"
-                />
-              </TabPanel>
+            <TabPanels className="relative grid col-span-full order-2 mt-16 lg:col-span-5 lg:col-start-7 lg:mt-0">
+              <ImagePanel
+                imageUrl={images.skis()}
+                imageAlt={images.skis.alt}
+                active={activeTabIndex === 0}
+              />
+
+              <ImagePanel
+                imageUrl={images.onewheel()}
+                imageAlt={images.onewheel.alt}
+                active={activeTabIndex === 1}
+              />
+
+              <ImagePanel
+                imageUrl={images.kayak()}
+                imageAlt={images.kayak.alt}
+                active={activeTabIndex === 2}
+              />
             </TabPanels>
 
-            <div className="col-span-full col-start-1 order-1 lg:col-span-5 lg:order-3 lg:mt-5">
-              <TabList className="inline-flex flex-row text-white text-xl bg-transparent space-x-8 lg:flex-col lg:text-7xl lg:space-x-0 lg:space-y-7">
+            <div className="col-span-full col-start-1 order-1 lg:col-span-5 lg:order-3 lg:mt-10">
+              <TabList className="inline-flex flex-row text-white text-xl leading-snug bg-transparent space-x-8 lg:flex-col lg:text-7xl lg:space-x-0">
                 <Tab>Blog</Tab>
                 <Tab>Courses</Tab>
                 <Tab>Podcast</Tab>
               </TabList>
             </div>
 
-            <TabPanels className="col-span-full order-4 mt-14 space-y-7 lg:col-span-5 lg:col-start-7">
-              <TabPanel>
+            <TabPanels className="grid col-span-full order-4 mt-14 lg:col-span-5 lg:col-start-7">
+              <ContentPanel active={activeTabIndex === 0}>
                 <H3>Educational blog</H3>
 
-                <Paragraph>
+                <Paragraph className="mt-8">
                   Vestibulum in cursus est, sit amet rhoncus sapien. Fusce nec
                   quam euismod, aliquet nulla at, gravida nunc. Nulla vitae
                   hendrerit velit. Duis nisi felis, porta eu convallis sit amet,
                   vulputate non mi. Mauris vel pellentesque mauris vivamus.
                 </Paragraph>
 
-                <div className="pt-7">
-                  <ArrowButton>Start reading the blog</ArrowButton>
-                </div>
-              </TabPanel>
+                <ArrowButton className="mt-14">
+                  Start reading the blog
+                </ArrowButton>
+              </ContentPanel>
 
-              <TabPanel>
+              <ContentPanel active={activeTabIndex === 1}>
                 <H3>Courses</H3>
 
-                <Paragraph>
+                <Paragraph className="mt-8">
                   Duis nisi felis, porta eu convallis sit amet, vulputate non
                   mi. Mauris vel pellentesque mauris vivamus. Vestibulum in
                   cursus est, sit amet rhoncus sapien. Fusce nec quam euismod,
                   aliquet nulla at, gravida nunc. Nulla vitae hendrerit velit.
                 </Paragraph>
 
-                <div className="pt-7">
-                  <ArrowButton>Explore the courses</ArrowButton>
-                </div>
-              </TabPanel>
+                <ArrowButton className="mt-14">Explore the courses</ArrowButton>
+              </ContentPanel>
 
-              <TabPanel>
+              <ContentPanel active={activeTabIndex === 2}>
                 <H3>Podcast</H3>
 
-                <Paragraph>
+                <Paragraph className="mt-8">
                   Mauris vel pellentesque mauris vivamus. Vestibulum in cursus
                   est, sit amet rhoncus sapien. Fusce nec quam euismod, aliquet
                   nulla at, gravida nunc. Nulla vitae hendrerit velit. Duis nisi
                   felis, porta eu convallis sit amet, vulputate non mi.
                 </Paragraph>
 
-                <div className="pt-7">
-                  <ArrowButton>Start listening to the podcasts</ArrowButton>
-                </div>
-              </TabPanel>
+                <ArrowButton className="mt-14">
+                  Start listening to the podcasts
+                </ArrowButton>
+              </ContentPanel>
             </TabPanels>
           </Tabs>
         </div>
