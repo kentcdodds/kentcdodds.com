@@ -74,7 +74,7 @@ jobs:
       fail-fast: false
       matrix:
         # run 3 copies of the current job in parallel
-        containers: [1, 2, 3]
+        containers: ['🐨 Kody', '💯 Hannah', '🦉 Olivia']
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v2
