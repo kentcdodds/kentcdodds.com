@@ -1,5 +1,6 @@
 import * as React from 'react'
 import clsx from 'clsx'
+import {useId} from '@reach/auto-id'
 
 function Label({className, ...labelProps}: JSX.IntrinsicElements['label']) {
   return (
@@ -63,6 +64,7 @@ function Field({
   name,
   label,
   className,
+  id,
   ...props
 }: {
   defaultValue?: string | null
@@ -71,8 +73,8 @@ function Field({
   className?: string
   error?: string | null
 } & InputProps) {
-  const {current: prefix} = React.useRef(Math.floor(Math.random() * 10e4))
-  const inputId = `${prefix}-${name}`
+  const prefix = useId()
+  const inputId = id ?? `${prefix}-${name}`
   const errorId = `${inputId}-error`
 
   return (
