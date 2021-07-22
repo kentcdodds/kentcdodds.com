@@ -104,46 +104,15 @@ jobs:
           RUNNING_E2E: 'true'
           DATABASE_URL: 'postgresql://kody:the_koala@localhost:5432/kentcdodds_db?schema=public'
 
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: ⬇️ Checkout repo
-        uses: actions/checkout@v2
-
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v1
-        with:
-          node-version: 16
-
-      - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
-
-      - name: ⚙️ Build
-        run: npm run build
-        env:
-          COMMIT_SHA: ${{github.sha}}
-
-      - name: ⬆️ Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: kcd-build-${{github.sha}}
-          path: |
-            build
-            public/build
-
   deploy:
     runs-on: ubuntu-latest
-    needs: [lint, typecheck, jest, test, build]
+    needs: [lint, typecheck, jest, test]
     # only deploy main branch on pushes
     if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
 
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v2
-
-      - uses: actions/download-artifact@v2
-        with:
-          name: kcd-build-${{github.sha}}
 
       - name: 🚀 Deploy
         uses: superfly/flyctl-actions@1.1
