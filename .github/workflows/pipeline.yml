@@ -1,4 +1,4 @@
-name: deploy
+name: pipeline
 on:
   push:
     branches:
@@ -124,7 +124,7 @@ jobs:
       - name: ⬆️ Upload artifact
         uses: actions/upload-artifact@v2
         with:
-          name: kcd-build:${{github.sha}}
+          name: kcd-build-${{github.sha}}
           path: |
             build
             public/build
@@ -141,7 +141,7 @@ jobs:
 
       - uses: actions/download-artifact@v2
         with:
-          name: kcd-build:${{github.sha}}
+          name: kcd-build-${{github.sha}}
 
       - name: 🚀 Deploy
         uses: superfly/flyctl-actions@1.1
