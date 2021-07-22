@@ -118,10 +118,7 @@ function Card({
   const isInFuture = latestDate.getTime() > Date.now()
 
   return (
-    <div
-      tabIndex={0}
-      className="focus-ring block flex flex-col p-16 pr-24 w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg"
-    >
+    <div className="block flex flex-col p-16 pr-24 w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg">
       <div className="flex flex-none justify-between mb-8">
         <div className="inline-flex items-baseline">
           {isInFuture ? (
