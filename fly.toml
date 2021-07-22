@@ -19,6 +19,10 @@ kill_timeout = 5
 [deploy]
   release_command = "npx prisma migrate deploy"
 
+[[statics]]
+  guest_path = "/public"
+  url_prefix = "/"
+
 [experimental]
   allowed_public_ports = []
   auto_rollback = true
