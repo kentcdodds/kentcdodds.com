@@ -55,7 +55,7 @@
   }
 
   .text-secondary {
-    @apply dark:text-blueGray-500 text-gray-400;
+    @apply dark:text-blueGray-500 text-gray-500;
   }
 
   .text-inverse {
