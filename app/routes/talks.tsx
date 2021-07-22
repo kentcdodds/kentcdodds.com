@@ -207,21 +207,23 @@ function Card({
 
 export default function TalksScreen() {
   const data = useRouteData<LoaderData>()
-  const [selectedTech, setSelectedTech] = useState<string[]>([])
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
 
-  const toggleTag = (tech: string) => {
-    const newSelection = selectedTech.includes(tech)
-      ? selectedTech.filter(x => x !== tech)
-      : [...selectedTech, tech]
+  const toggleTag = (tag: string) => {
+    const newSelection = selectedTags.includes(tag)
+      ? selectedTags.filter(x => x !== tag)
+      : [...selectedTags, tag]
 
-    setSelectedTech(newSelection)
+    setSelectedTags(newSelection)
   }
 
-  const talks = selectedTech.length
+  const talks = selectedTags.length
     ? data.talks.filter(talk =>
-        selectedTech.every(tag => talk.tags.includes(tag)),
+        selectedTags.every(tag => talk.tags.includes(tag)),
       )
     : data.talks
+
+  const visibleTags = new Set(talks.flatMap(x => x.tags))
 
   return (
     <>
@@ -235,12 +237,13 @@ export default function TalksScreen() {
 
       <Grid className="mb-14">
         <div className="flex flex-wrap col-span-full -mb-4 -mr-4 lg:col-span-10">
-          {data.tags.map(tech => (
+          {data.tags.map(tag => (
             <Tag
-              key={tech}
-              tag={tech}
-              selected={selectedTech.includes(tech)}
-              onClick={() => toggleTag(tech)}
+              key={tag}
+              tag={tag}
+              selected={selectedTags.includes(tag)}
+              onClick={() => toggleTag(tag)}
+              disabled={!visibleTags.has(tag)}
             />
           ))}
         </div>
@@ -248,7 +251,7 @@ export default function TalksScreen() {
 
       <Grid className="mb-64">
         <H6 as="h2" className="col-span-full mb-6">
-          {selectedTech.length
+          {selectedTags.length
             ? `${talks.length} talks found`
             : 'Showing all talks'}
         </H6>
