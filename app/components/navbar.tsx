@@ -234,7 +234,7 @@ function Navbar() {
     <nav className="text-primary flex items-center justify-between px-5vw py-9 lg:py-12">
       <Link
         to="/"
-        className="block hover:underline whitespace-nowrap text-2xl font-medium transition"
+        className="underlined block whitespace-nowrap text-2xl font-medium transition"
       >
         <h1>Kent C. Dodds</h1>
       </Link>
