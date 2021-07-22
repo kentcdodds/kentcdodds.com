@@ -57,6 +57,12 @@ input:-webkit-autofill::first-line {
     'Noto Color Emoji';
 }
 
+/* These elements get removed before hydration but they can look funny before hydrating */
+dark-mode,
+light-mode {
+  display: none;
+}
+
 a.underlined {
   position: relative;
   text-decoration: none;
