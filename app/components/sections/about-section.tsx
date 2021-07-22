@@ -19,26 +19,28 @@ function AboutSection() {
         </div>
       </div>
 
-      <div className="flex flex-col col-span-full justify-center space-y-12 lg:col-span-5 lg:col-start-8 lg:mt-0">
+      <div className="flex flex-col col-span-full justify-center lg:col-span-4 lg:col-start-8 lg:mt-0">
         <img
-          className="self-start mt-20 w-auto h-48 lg:mt-0"
+          className="self-start mt-20 w-48 w-auto lg:mt-0"
           src={images.snowboard()}
           alt={images.snowboard.alt}
         />
 
-        <H2>Big extreme sports enthusiast.</H2>
-        <H2 variant="secondary" as="p">
+        <H2 className="mt-12">Big extreme sports enthusiast.</H2>
+        <H2 className="mt-2" variant="secondary" as="p">
           With a big heart for helping people.{' '}
         </H2>
 
-        <Paragraph>
+        <Paragraph className="mt-8">
           Vestibulum in cursus est, sit amet rhoncus sapien. Fusce nec quam
           euismod, aliquet nulla at, gravida nunc. Nulla vitae hendrerit velit.
           Duis nisi felis, porta eu convallis sit vulputate non mi. Mauris vel
           pellentesq.
         </Paragraph>
 
-        <ArrowButton direction="right">Learn more about me </ArrowButton>
+        <ArrowButton direction="right" className="mt-14">
+          Learn more about me{' '}
+        </ArrowButton>
       </div>
     </Grid>
   )

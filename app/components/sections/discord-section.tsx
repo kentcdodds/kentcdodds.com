@@ -8,24 +8,24 @@ import {DiscordLogo} from '../icons/discord-logo'
 function DiscordSection() {
   return (
     <Grid>
-      <div className="flex flex-col col-span-full justify-center mt-12 space-y-12 lg:col-span-6 lg:mt-0">
+      <div className="flex flex-col col-span-full justify-center mt-12 lg:col-span-5 lg:mt-0">
         <div className="text-black dark:text-white">
           <DiscordLogo />
         </div>
 
-        <H2>
+        <H2 className="mt-12">
           Do you want to meet like minded people that face the same challenges?
         </H2>
-        <H2 variant="secondary" as="p">
+        <H2 variant="secondary" className="mt-8" as="p">
           Join the discord and learn to get better at react together.
         </H2>
 
-        <ArrowButton direction="right">
+        <ArrowButton direction="right" className="mt-20">
           Learn more about the discord
         </ArrowButton>
       </div>
 
-      <div className="relative hidden lg:block lg:col-span-6">
+      <div className="relative hidden lg:block lg:col-span-6 lg:col-start-7">
         <div className="aspect-w-3 aspect-h-4 w-full h-full">
           <img
             className="w-full h-full rounded-lg object-cover"
