@@ -20,7 +20,7 @@ import {
   getBlogReadRankings,
   getBlogRecommendations,
 } from '../../utils/blog.server'
-import {getUser} from '../../utils/session.server'
+import {shouldForceFresh} from '../../utils/redis.server'
 import {FourOhFour} from '../../components/errors'
 import {getDomainUrl} from '../../utils/misc'
 import {externalLinks} from '../../external-links'
@@ -38,11 +38,8 @@ export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
     contentDir: 'blog',
     slug: params.slug,
   }
-  if (new URL(request.url).searchParams.has('fresh')) {
-    const user = await getUser(request)
-    if (user?.role === 'ADMIN') {
-      await refreshCacheForMdx(pageMeta)
-    }
+  if (await shouldForceFresh(request)) {
+    await refreshCacheForMdx(pageMeta)
   }
 
   const page = await getMdxPage(pageMeta)

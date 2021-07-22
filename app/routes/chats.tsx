@@ -18,8 +18,7 @@ import {ChevronDownIcon} from '../components/icons/chevron-down-icon'
 import {ChevronUpIcon} from '../components/icons/chevron-up-icon'
 import {BlogSection} from '../components/sections/blog-section'
 import {getBlogRecommendations} from '../utils/blog.server'
-import {getSeasonListItems, refreshSeasons} from '../utils/simplecast.server'
-import {getUser} from '../utils/session.server'
+import {getSeasonListItems} from '../utils/simplecast.server'
 import {FeaturedSection} from '../components/sections/featured-section'
 import {listify, formatTime} from '../utils/misc'
 import {getCWKEpisodePath, getFeaturedEpisode} from '../utils/chats-with-kent'
@@ -31,17 +30,10 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  if (new URL(request.url).searchParams.has('fresh')) {
-    const user = await getUser(request)
-    if (user?.role === 'ADMIN') {
-      await refreshSeasons()
-    }
-  }
-
   const blogRecommendations = await getBlogRecommendations({limit: 3})
   const data: LoaderData = {
     // we show the seasons in reverse order
-    seasons: (await getSeasonListItems()).reverse(),
+    seasons: (await getSeasonListItems(request)).reverse(),
     blogRecommendations,
   }
 

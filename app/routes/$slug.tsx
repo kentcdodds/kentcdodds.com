@@ -7,8 +7,8 @@ import {
   getMdxComponent,
   refreshCacheForMdx,
 } from '../utils/mdx'
+import {shouldForceFresh} from '../utils/redis.server'
 import {FourOhFour} from '../components/errors'
-import {getUser} from '../utils/session.server'
 import {Grid} from '../components/grid'
 import {BackLink} from '../components/arrow-button'
 import {H2, H6} from '../components/typography'
@@ -18,11 +18,8 @@ export const loader: KCDLoader<{slug: string}> = async ({params, request}) => {
     contentDir: 'pages',
     slug: params.slug,
   }
-  if (new URL(request.url).searchParams.has('fresh')) {
-    const user = await getUser(request)
-    if (user?.role === 'ADMIN') {
-      await refreshCacheForMdx(pageMeta)
-    }
+  if (await shouldForceFresh(request)) {
+    await refreshCacheForMdx(pageMeta)
   }
   const page = await getMdxPage(pageMeta)
 

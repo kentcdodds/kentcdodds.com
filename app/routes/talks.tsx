@@ -7,7 +7,6 @@ import {typedBoolean} from '../utils/misc'
 import {markdownToHtml} from '../utils/markdown.server'
 import {downloadFile} from '../utils/github.server'
 import {cachified} from '../utils/redis.server'
-import {getUser} from '../utils/session.server'
 
 type RawTalk = {
   title?: string
@@ -72,13 +71,9 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  const forceFresh =
-    new URL(request.url).searchParams.has('fresh') &&
-    (await getUser(request))?.role === 'ADMIN'
-
   const talks = await cachified({
     key: 'content:data:talks.yml',
-    forceFresh,
+    request,
     getFreshValue: async () => {
       const talksString = await downloadFile('content/data/talks.yml')
       const rawTalks = YAML.parse(talksString) as Array<RawTalk>

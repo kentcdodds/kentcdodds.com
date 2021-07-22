@@ -15,7 +15,7 @@ import {FeaturedSection} from '../../components/sections/featured-section'
 import {Tag} from '../../components/tag'
 import {getBlogMdxListItems, refreshDirListForMdx} from '../../utils/mdx'
 import {useRequestInfo} from '../../utils/providers'
-import {getUser} from '../../utils/session.server'
+import {shouldForceFresh} from '../../utils/redis.server'
 import {HeroSection} from '../../components/sections/hero-section'
 import {PlusIcon} from '../../components/icons/plus-icon'
 
@@ -25,11 +25,8 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  if (new URL(request.url).searchParams.has('fresh')) {
-    const user = await getUser(request)
-    if (user?.role === 'ADMIN') {
-      await refreshDirListForMdx('blog')
-    }
+  if (await shouldForceFresh(request)) {
+    await refreshDirListForMdx('blog')
   }
 
   const posts = await getBlogMdxListItems()

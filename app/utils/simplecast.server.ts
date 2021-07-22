@@ -4,7 +4,7 @@ import type {
   SimplecastEpisode,
   SimplecastEpisodeListItem,
   CWKEpisode,
-  Await,
+  Request,
   CWKSeason,
 } from 'types'
 import {omit, sortBy} from 'lodash'
@@ -19,7 +19,7 @@ import hastToHtml from 'hast-util-to-html'
 import type * as U from 'unist'
 import type * as M from 'mdast'
 import visit from 'unist-util-visit'
-import {getErrorMessage, getRequiredServerEnvVar, typedBoolean} from './misc'
+import {getRequiredServerEnvVar, typedBoolean} from './misc'
 import {markdownToHtml} from './markdown.server'
 import * as redis from './redis.server'
 
@@ -34,24 +34,17 @@ const headers = {
 
 const seasonsCacheKey = `simplecast:seasons:${CHATS_WITH_KENT_PODCAST_ID}`
 
-async function getCachedSeasons() {
-  try {
-    const cached = await redis.get(seasonsCacheKey)
-    if (cached)
-      return JSON.parse(cached) as Await<ReturnType<typeof getSeasons>>
-  } catch (error: unknown) {
-    console.error(
-      `error with cache at ${seasonsCacheKey}`,
-      getErrorMessage(error),
-    )
-  }
-
-  const seasons = await getSeasons()
-
-  await redis.set(seasonsCacheKey, JSON.stringify(seasons))
-
-  return seasons
-}
+const getCachedSeasons = async (request: Request) =>
+  redis.cachified({
+    key: seasonsCacheKey,
+    getFreshValue: getSeasons,
+    request,
+    checkValue: (value: unknown) =>
+      Array.isArray(value) &&
+      value.every(
+        v => typeof v.seasonNumber === 'number' && Array.isArray(v.episodes),
+      ),
+  })
 
 async function getSeasons() {
   const res = await fetch(
@@ -330,13 +323,8 @@ async function parseSummaryMarkdown(
   }
 }
 
-async function refreshSeasons() {
-  await redis.del(seasonsCacheKey)
-  await getSeasons()
-}
-
-async function getSeasonListItems() {
-  const seasons = await getCachedSeasons()
+async function getSeasonListItems(request: Request) {
+  const seasons = await getCachedSeasons(request)
   const listItemSeasons: Array<CWKSeason> = []
   for (const season of seasons) {
     listItemSeasons.push({
@@ -357,4 +345,4 @@ async function getSeasonListItems() {
   return listItemSeasons
 }
 
-export {getCachedSeasons as getSeasons, getSeasonListItems, refreshSeasons}
+export {getCachedSeasons as getSeasons, getSeasonListItems}

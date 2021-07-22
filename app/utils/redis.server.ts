@@ -1,5 +1,7 @@
 import redis from 'redis'
+import type {Request} from 'types'
 import {getErrorMessage, getRequiredServerEnvVar} from './misc'
+import {getUser} from './session.server'
 
 declare global {
   // This prevents us from making multiple connections to the db when the
@@ -110,14 +112,24 @@ function del(key: string): Promise<string> {
 async function cachified<ReturnValue>({
   key,
   getFreshValue,
-  forceFresh = false,
+  request,
+  forceFresh,
   checkValue = value => Boolean(value),
 }: {
   key: string
   getFreshValue: () => Promise<ReturnValue>
-  forceFresh?: boolean
   checkValue?: (value: ReturnValue) => boolean
-}): Promise<ReturnValue> {
+} & (
+  | {
+      request?: never
+      forceFresh?: boolean
+    }
+  | {
+      forceFresh?: never
+      request?: Request
+    }
+)): Promise<ReturnValue> {
+  forceFresh = forceFresh ?? (request ? await shouldForceFresh(request) : false)
   if (!forceFresh) {
     try {
       const cached = await get(key)
@@ -149,4 +161,11 @@ async function cachified<ReturnValue>({
   return value
 }
 
-export {get, set, del, cachified}
+async function shouldForceFresh(request: Request) {
+  return (
+    new URL(request.url).searchParams.has('fresh') &&
+    (await getUser(request))?.role === 'ADMIN'
+  )
+}
+
+export {get, set, del, cachified, shouldForceFresh}

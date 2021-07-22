@@ -2,13 +2,13 @@ import * as React from 'react'
 import {useParams} from 'react-router-dom'
 import type {KCDLoader} from 'types'
 import {useCallKentEpisodes} from '../../utils/providers'
-import {getEpisodes} from '../../utils/call-kent.server'
+import {getEpisodes} from '../../utils/transistor.server'
 import {useTheme} from '../../utils/theme-provider'
 
 export const loader: KCDLoader<{
   slug: string
-}> = async ({params}) => {
-  const episodes = await getEpisodes()
+}> = async ({params, request}) => {
+  const episodes = await getEpisodes(request)
   const episode = episodes.find(e => e.slug === params.slug)
   if (!episode) {
     // TODO: 404

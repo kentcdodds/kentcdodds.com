@@ -2,11 +2,12 @@ import * as React from 'react'
 import {json, Link, useRouteData} from 'remix'
 import type {LoaderFunction} from 'remix'
 import {Outlet, useLocation} from 'react-router-dom'
+import {AnimatePresence, motion} from 'framer-motion'
+import {useRef} from 'react'
+import clsx from 'clsx'
 import type {Await} from 'types'
-import {getEpisodes} from '../utils/call-kent.server'
+import {getEpisodes} from '../utils/transistor.server'
 import {CallKentEpisodesProvider, useTeam} from '../utils/providers'
-import {getUser} from '../utils/session.server'
-import {refreshEpisodes} from '../utils/transistor.server'
 import {HeroSection} from '../components/sections/hero-section'
 import {alexProfiles} from '../images'
 import {ButtonLink} from '../components/button'
@@ -19,9 +20,6 @@ import {ChevronDownIcon} from '../components/icons/chevron-down-icon'
 import {HeaderSection} from '../components/sections/header-section'
 import {TriangleIcon} from '../components/icons/triangle-icon'
 import {formatTime} from '../utils/misc'
-import {AnimatePresence, motion} from 'framer-motion'
-import {useRef} from 'react'
-import clsx from 'clsx'
 
 type LoaderData = {
   episodes: Await<ReturnType<typeof getEpisodes>>
@@ -29,16 +27,9 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  if (new URL(request.url).searchParams.has('fresh')) {
-    const user = await getUser(request)
-    if (user?.role === 'ADMIN') {
-      await refreshEpisodes()
-    }
-  }
-
   const [blogRecommendations, episodes] = await Promise.all([
     getBlogRecommendations({limit: 3}),
-    getEpisodes(),
+    getEpisodes(request),
   ])
 
   return json({

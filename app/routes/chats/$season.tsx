@@ -14,8 +14,11 @@ type LoaderData = {
   season: CWKSeason
 }
 
-export const loader: KCDLoader<{season: string}> = async ({params}) => {
-  const seasons = await getSeasonListItems()
+export const loader: KCDLoader<{season: string}> = async ({
+  params,
+  request,
+}) => {
+  const seasons = await getSeasonListItems(request)
   const seasonNumber = Number(params.season)
   const season = seasons.find(s => s.seasonNumber === seasonNumber)
   if (!season) {

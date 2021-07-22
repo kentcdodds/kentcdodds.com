@@ -5,7 +5,7 @@ import {Link} from 'react-router-dom'
 import type {KCDLoader, CWKEpisode, CWKListItem} from 'types'
 import clsx from 'clsx'
 import {motion} from 'framer-motion'
-import {getSeasons, refreshSeasons} from '../utils/simplecast.server'
+import {getSeasons} from '../utils/simplecast.server'
 import {H2, H3, H6, Paragraph} from '../components/typography'
 import {Grid} from '../components/grid'
 import {ArrowIcon} from '../components/icons/arrow-icon'
@@ -20,7 +20,6 @@ import {ChevronRightIcon} from '../components/icons/chevron-right-icon'
 import {ChevronLeftIcon} from '../components/icons/chevron-left-icon'
 import {formatTime, listify} from '../utils/misc'
 import {getCWKEpisodePath, getFeaturedEpisode} from '../utils/chats-with-kent'
-import {getUser} from '../utils/session.server'
 
 type LoaderData = {
   prevEpisode: CWKListItem | null
@@ -34,17 +33,10 @@ export const loader: KCDLoader<{
   season: string
   episode: string
 }> = async ({request, params}) => {
-  if (new URL(request.url).searchParams.has('fresh')) {
-    const user = await getUser(request)
-    if (user?.role === 'ADMIN') {
-      await refreshSeasons()
-    }
-  }
-
   const seasonNumber = Number(params.season)
   const episodeNumber = Number(params.episode)
 
-  const seasons = await getSeasons()
+  const seasons = await getSeasons(request)
   const season = seasons.find(s => s.seasonNumber === seasonNumber)
   if (!season) {
     throw new Error(`oh no. season for season number: ${params.season}`)
