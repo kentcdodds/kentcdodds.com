@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+  pull_request: {}
 
 env:
   REMIX_TOKEN: ${{ secrets.REMIX_TOKEN }}
