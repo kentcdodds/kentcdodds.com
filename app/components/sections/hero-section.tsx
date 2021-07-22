@@ -13,11 +13,19 @@ type HeroSectionProps = {
       imageUrl: string
       imageAlt: string
       imageSize?: 'medium' | 'large' | 'giant'
+      image?: never
     }
   | {
       imageUrl?: never
       imageAlt?: never
       imageSize?: never
+      image?: never
+    }
+  | {
+      imageUrl?: never
+      imageAlt?: never
+      imageSize?: 'medium' | 'large' | 'giant'
+      image: React.ReactNode
     }
 ) &
   (
@@ -37,10 +45,13 @@ function HeroSection({
   subtitle,
   arrowUrl,
   arrowLabel,
+  image,
   imageUrl,
   imageAlt,
   imageSize = 'medium',
 }: HeroSectionProps) {
+  const hasImage = image ?? imageUrl
+
   return (
     <Grid
       className={clsx('lg:min-h-[40rem] mb-24 pt-24 lg:pb-12 lg:h-hero', {
@@ -48,7 +59,7 @@ function HeroSection({
         'lg:-mb-24': !arrowLabel,
       })}
     >
-      {imageUrl ? (
+      {hasImage ? (
         <div
           className={clsx('col-span-full mb-12 lg:mb-0', {
             'lg:col-start-7 lg:col-span-5 px-10': imageSize === 'medium',
@@ -58,14 +69,18 @@ function HeroSection({
               imageSize === 'giant',
           })}
         >
-          <img
-            className={clsx('w-full h-auto object-contain', {
-              'max-h-50vh': imageSize === 'medium',
-              'max-h-75vh': imageSize === 'giant',
-            })}
-            src={imageUrl}
-            alt={imageAlt}
-          />
+          {imageUrl ? (
+            <img
+              className={clsx('w-full h-auto object-contain', {
+                'max-h-50vh': imageSize === 'medium',
+                'max-h-75vh': imageSize === 'giant',
+              })}
+              src={imageUrl}
+              alt={imageAlt}
+            />
+          ) : (
+            image
+          )}
         </div>
       ) : null}
 
@@ -73,8 +88,8 @@ function HeroSection({
         className={clsx(
           'col-span-full pt-6 lg:flex lg:flex-col lg:col-start-1 lg:row-start-1 lg:h-full',
           {
-            'lg:col-span-5': imageUrl,
-            'lg:col-span-7': !imageUrl,
+            'lg:col-span-5': hasImage,
+            'lg:col-span-7': !hasImage,
           },
         )}
       >

@@ -5,6 +5,12 @@ import {getErrorMessage, getNonNull} from '../utils/misc'
 import {useOptionalUser} from '../utils/providers'
 import {sendEmail} from '../utils/send-email.server'
 import {contactStorage} from '../utils/contact.server'
+import {HeroSection} from '../components/sections/hero-section'
+import {images} from '../images'
+import {H2} from '../components/typography'
+import {ButtonGroup, ErrorPanel, Field} from '../components/form-elements'
+import {Button} from '../components/button'
+import {Grid} from '../components/grid'
 
 const errorSessionKey = 'contact_error'
 const fieldsSessionKey = 'contact_fields'
@@ -130,92 +136,88 @@ export const loader: LoaderFunction = async ({request}) => {
 export default function ContactRoute() {
   const data = useRouteData<LoaderData>()
   const user = useOptionalUser()
+
   return (
     <div>
-      <h2>Contact Kent</h2>
-      {data.state === 'success' ? <div>Hooray, email sent</div> : null}
+      <HeroSection
+        title="Send me an email."
+        subtitle="Like in the old days."
+        image={
+          <img
+            className="rounded-br-[25%] rounded-tl-[25%] max-h-50vh rounded-bl-3xl rounded-tr-3xl"
+            src={images.kentProfile()}
+            alt={images.kentProfile.alt}
+          />
+        }
+      />
+
+      {/*
+        TODO: the key trick doesn't work. After submission, `data.fields`
+          is still populated. So the new form uses submitted values as
+          initial values. It can be nice for the user to see what they
+          sent out, but we should block resubmissions of the same content.
+          The disabled button does that a bit, but isn't fail proof.
+      */}
       <Form method="post" noValidate key={String(data.state === 'success')}>
-        <div>
-          <label htmlFor="contact-name">Name</label>
-          <input
-            name="name"
-            id="contact-name"
-            aria-describedby="name-error"
-            defaultValue={data.fields?.name ?? user?.firstName ?? ''}
-          />
-          {data.errors?.name ? (
-            <div
-              role="alert"
-              className="dark:text-red-300 text-red-800"
-              id="name-error"
-            >
-              {data.errors.name}
-            </div>
-          ) : null}
-        </div>
-        <div>
-          <label htmlFor="contact-email">Email</label>
-          <input
-            name="email"
-            id="contact-email"
-            type="email"
-            aria-describedby="email-error"
-            defaultValue={data.fields?.email ?? user?.email ?? ''}
-          />
-          {data.errors?.email ? (
-            <div
-              role="alert"
-              className="dark:text-red-300 text-red-800"
-              id="email-error"
-            >
-              {data.errors.email}
-            </div>
-          ) : null}
-        </div>
-        <div>
-          <label htmlFor="contact-subject">Subject</label>
-          <input
-            name="subject"
-            id="contact-subject"
-            aria-describedby="subject-error"
-            defaultValue={data.fields?.subject ?? ''}
-          />
-          {data.errors?.subject ? (
-            <div
-              role="alert"
-              className="dark:text-red-300 text-red-800"
-              id="subject-error"
-            >
-              {data.errors.subject}
-            </div>
-          ) : null}
-        </div>
-        <div>
-          <label htmlFor="contact-body">Body</label>
-          <textarea
-            name="body"
-            id="contact-body"
-            aria-describedby="body-error"
-            defaultValue={data.fields?.body ?? ''}
-          />
-          {data.errors?.body ? (
-            <div
-              role="alert"
-              className="dark:text-red-300 text-red-800"
-              id="body-error"
-            >
-              {data.errors.body}
-            </div>
-          ) : null}
-        </div>
-        <div>
-          <input type="submit" />
-        </div>
-        {data.errors?.generalError ? (
-          <div role="alert" className="dark:text-red-300 text-red-800">
-            {data.errors.generalError}
+        <Grid>
+          <div className="col-span-full mb-12 lg:col-span-8 lg:col-start-3">
+            <H2>Contact Kent C. Dodds</H2>
           </div>
-        ) : null}
+
+          <div className="col-span-full lg:col-span-8 lg:col-start-3">
+            <Field
+              name="name"
+              label="Name"
+              placeholder="Person Doe"
+              defaultValue={data.fields?.name ?? user?.firstName ?? ''}
+              error={data.errors?.name}
+            />
+            <Field
+              type="email"
+              label="Email"
+              placeholder="person.doe@example.com"
+              defaultValue={data.fields?.email ?? user?.email ?? ''}
+              name="email"
+              error={data.errors?.email}
+            />
+            <Field
+              name="subject"
+              label="Subject"
+              placeholder="No subject"
+              defaultValue={data.fields?.subject ?? ''}
+              error={data.errors?.subject}
+            />
+            <Field
+              name="body"
+              label="Body"
+              type="textarea"
+              placeholder="A clear and concise message works wonders."
+              rows={8}
+              defaultValue={data.fields?.body ?? ''}
+              error={data.errors?.body}
+            />
+
+            <ButtonGroup>
+              {data.state === 'success' ? (
+                <Button type="submit" disabled>
+                  Hooray, email sent!{' '}
+                  <span role="img" aria-label="party popper emoji">
+                    🎉
+                  </span>
+                </Button>
+              ) : (
+                <Button type="submit">Send message</Button>
+              )}
+              <Button variant="secondary" type="reset">
+                Reset form
+              </Button>
+            </ButtonGroup>
+
+            {data.errors?.generalError ? (
+              <ErrorPanel>{data.errors.generalError}</ErrorPanel>
+            ) : null}
+          </div>
+        </Grid>
       </Form>
     </div>
   )
