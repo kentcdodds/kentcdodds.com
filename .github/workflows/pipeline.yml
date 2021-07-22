@@ -110,12 +110,14 @@ jobs:
         with:
           start: npm run start:mocks
           wait-on: 'http://localhost:8811'
+          record: true
           parallel: true
           group: 'KCD Cypress'
         env:
           PORT: '8811'
           RUNNING_E2E: 'true'
           DATABASE_URL: 'postgresql://kody:the_koala@localhost:5432/kentcdodds_db?schema=public'
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
 
   build:
     name: 🐳 Build
