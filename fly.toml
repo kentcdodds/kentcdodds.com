@@ -20,7 +20,7 @@ kill_timeout = 5
   release_command = "npx prisma migrate deploy"
 
 [[statics]]
-  guest_path = "/public"
+  guest_path = "/app/public"
   url_prefix = "/"
 
 [experimental]
