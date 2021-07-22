@@ -117,6 +117,9 @@ function Card({
 
   const isInFuture = latestDate.getTime() > Date.now()
 
+  // `software development` makes a terrible tag to render in this position
+  const tag = tags.filter(x => x.length <= 10)[0]
+
   return (
     <div className="block flex flex-col p-16 pr-24 w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg">
       <div className="flex flex-none justify-between mb-8">
@@ -132,9 +135,9 @@ function Card({
         </div>
 
         <div className="flex space-x-2">
-          {tags.length ? (
+          {tag ? (
             <div className="inline-block -mr-8 -mt-4 mb-4 px-8 py-4 text-black dark:text-white text-lg dark:bg-gray-600 bg-white rounded-full">
-              {tags[0]}
+              {tag}
             </div>
           ) : null}
         </div>
