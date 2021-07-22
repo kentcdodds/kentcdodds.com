@@ -76,7 +76,7 @@ type ParagraphProps = {
 
 function Paragraph({className, as = 'p', ...rest}: ParagraphProps) {
   return React.createElement(as, {
-    className: clsx('dark:text-blueGray-500 text-gray-500 text-lg', className),
+    className: clsx('text-secondary text-lg', className),
     ...rest,
   })
 }
