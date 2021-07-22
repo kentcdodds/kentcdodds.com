@@ -55,7 +55,7 @@ type ArrowButtonProps = {
 function getBaseProps({textSize, className}: ArrowButtonBaseProps) {
   return {
     className: clsx(
-      'text-primary inline-flex items-center font-medium cursor-pointer transition',
+      'text-primary inline-flex items-center text-left font-medium cursor-pointer transition',
       {
         'text-xl': textSize === 'medium',
         'text-lg': textSize === 'small',
@@ -73,6 +73,9 @@ function ArrowButtonContent({
   children,
   direction = 'right',
 }: Pick<ArrowButtonBaseProps, 'children' | 'direction'>) {
+  const circumference = 28 * 2 * Math.PI
+  const strokeDasharray = `${circumference} ${circumference}`
+
   return (
     <>
       {children &&
@@ -84,11 +87,43 @@ function ArrowButtonContent({
         </span>
       ) : null}
 
-      <span className="inline-flex flex-none items-center justify-center p-1 w-14 h-14 border-2 border-gray-200 dark:border-gray-600 rounded-full transition">
+      <div className="text-primary relative inline-flex flex-none items-center justify-center p-1 w-14 h-14">
+        <div className="absolute text-gray-200 dark:text-gray-600">
+          <svg width="60" height="60">
+            <motion.circle
+              stroke="currentColor"
+              strokeWidth="2"
+              fill="transparent"
+              r="28"
+              cx="30"
+              cy="30"
+            />
+          </svg>
+        </div>
+
+        <div className="absolute">
+          <svg width="60" height="60">
+            <motion.circle
+              stroke="currentColor"
+              strokeWidth="2"
+              fill="transparent"
+              r="28"
+              cx="30"
+              cy="30"
+              style={{strokeDasharray}}
+              variants={{
+                hover: {strokeDashoffset: 0},
+                initial: {strokeDashoffset: circumference, rotate: -90},
+              }}
+              transition={{damping: 0}}
+            />
+          </svg>
+        </div>
+
         <motion.span variants={arrowVariants[direction]}>
           <ArrowIcon direction={direction} />
         </motion.span>
-      </span>
+      </div>
 
       {children && (direction === 'left' || direction === 'down') ? (
         <span className="text-primary ml-8 text-xl font-medium">
