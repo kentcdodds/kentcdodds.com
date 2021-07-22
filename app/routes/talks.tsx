@@ -61,7 +61,7 @@ function mostRecent(dates: Array<string> = []) {
 }
 
 // returns true if a is more recent than b
-function moreRecent(a: string | Date, b: string | Date = new Date()) {
+function moreRecent(a: string | Date, b: string | Date) {
   if (typeof a === 'string') a = new Date(a)
   if (typeof b === 'string') b = new Date(b)
   return a > b
