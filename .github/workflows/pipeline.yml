@@ -56,8 +56,11 @@ jobs:
       - name: 📥 Download deps
         uses: bahmutov/npm-install@v1
 
-      - name: 🔎 Type check
+      - name: 🃏 Run jest
         run: npm run test -- --coverage
+
+      - name: ⬆️ Upload coverage report
+        uses: codecov/codecov-action@v1
 
   test:
     runs-on: ubuntu-latest
