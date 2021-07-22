@@ -27,7 +27,7 @@
 
 @layer utilities {
   .focus-ring {
-    @apply focus:outline-none focus-within:outline-none transition disabled:ring-0 hover:ring-2 focus:ring-2 focus-within:ring-2 hover:ring-team-current focus:ring-team-current focus-within:ring-team-current ring-offset-4 dark:ring-offset-gray-900 ring-offset-white;
+    @apply focus:outline-none focus-within:outline-none transition disabled:ring-0 hover:ring-2 focus:ring-2 focus-within:ring-2 group-hover:ring-2 hover:ring-team-current focus:ring-team-current focus-within:ring-team-current group-hover:ring-team-current ring-offset-4 dark:ring-offset-gray-900 ring-offset-white;
   }
 
   .bg-primary {
@@ -40,6 +40,14 @@
 
   .bg-inverse {
     @apply bg-black dark:bg-white;
+  }
+
+  .border-primary {
+    @apply border-gray-900 dark:border-white;
+  }
+
+  .border-secondary {
+    @apply border-gray-200 dark:border-gray-600;
   }
 
   .text-primary {

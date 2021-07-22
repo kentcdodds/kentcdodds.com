@@ -26,7 +26,7 @@ function ArticleCard({
         className="group peer relative block w-full focus:outline-none"
         href={`/blog/${slug}`}
       >
-        <div className="aspect-w-3 aspect-h-4 w-full rounded-lg transition group-hover:ring-2 group-focus:ring-2 ring-team-current ring-offset-4 dark:ring-offset-gray-900 ring-offset-white">
+        <div className="aspect-w-3 aspect-h-4 focus-ring w-full rounded-lg transition">
           <img
             alt={bannerAlt}
             className="rounded-lg object-cover"

@@ -63,6 +63,7 @@ function IndexRoute() {
         articles={data.blogRecommendations}
         title="Most popular from the blog."
         description="Probably the most helpful as well."
+        showArrowButton
       />
       <Spacer size="large" />
       <CourseSection />

@@ -7,6 +7,7 @@ import {ArrowButton} from './arrow-button'
 import {GithubIcon} from './icons/github-icon'
 import {TwitterIcon} from './icons/twitter-icon'
 import {YoutubeIcon} from './icons/youtube-icon'
+import {externalLinks} from '../external-links'
 
 interface FooterLinkProps {
   name: string
@@ -37,7 +38,7 @@ function NewsletterSection() {
           type="text"
           placeholder="First name"
           aria-label="First name"
-          className="dark:focus:bg-gray-800 px-8 py-6 w-full dark:text-white focus:bg-gray-100 bg-transparent border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none"
+          className="border-secondary hover:border-primary focus:border-primary focus:bg-secondary px-8 py-6 w-full dark:text-white bg-transparent border rounded-lg focus:outline-none"
         />
         <input
           name="email"
@@ -46,7 +47,7 @@ function NewsletterSection() {
           autoComplete="email"
           placeholder="email"
           aria-label="email"
-          className="dark:focus:bg-gray-800 px-8 py-6 w-full dark:text-white focus:bg-gray-100 bg-transparent border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none"
+          className="border-secondary hover:border-primary focus:border-primary focus:bg-secondary px-8 py-6 w-full dark:text-white bg-transparent border rounded-lg focus:outline-none"
         />
 
         <ArrowButton className="pt-4" type="submit" direction="right">
@@ -61,8 +62,8 @@ function ContactSection() {
     <div>
       <H6 as="div">Contact</H6>
       <ul className="mt-4">
-        <FooterLink name="contact page" href="/contact" />
-        <FooterLink name="office hours" href="/office-hours" />
+        <FooterLink name="Contact page" href="/contact" />
+        <FooterLink name="Office hours" href="/office-hours" />
         <FooterLink name="Call Kent" href="/call" />
       </ul>
     </div>
@@ -73,9 +74,9 @@ function GeneralSection() {
     <div>
       <H6 as="div">General</H6>
       <ul className="mt-4">
-        <FooterLink name="privacy policy" href="/privacy" />
-        <FooterLink name="terms of use" href="/terms" />
-        <FooterLink name="code of conduct" href="/coc" />
+        <FooterLink name="Privacy policy" href="/privacy" />
+        <FooterLink name="Terms of use" href="/terms" />
+        <FooterLink name="Code of conduct" href="/coc" />
       </ul>
     </div>
   )
@@ -86,15 +87,15 @@ function SitemapSection() {
     <div>
       <H6 as="div">Sitemap</H6>
       <ul className="mt-4">
-        <FooterLink name="home" href="/" />
-        <FooterLink name="blog" href="/blog" />
-        <FooterLink name="courses" href="/courses" />
-        <FooterLink name="discord" href="/discord" />
-        <FooterLink name="podcast" href="/chats" />
-        <FooterLink name="workshops" href="/workshops" />
-        <FooterLink name="about" href="/about" />
-        <FooterLink name="credits" href="/credits" />
-        <FooterLink name="all pages" href="/sitemap" />
+        <FooterLink name="Home" href="/" />
+        <FooterLink name="Blog" href="/blog" />
+        <FooterLink name="Courses" href="/courses" />
+        <FooterLink name="Discord" href="/discord" />
+        <FooterLink name="Podcast" href="/chats" />
+        <FooterLink name="Workshops" href="/workshops" />
+        <FooterLink name="About" href="/about" />
+        <FooterLink name="Credits" href="/credits" />
+        <FooterLink name="All pages" href="/sitemap" />
       </ul>
     </div>
   )
@@ -105,18 +106,18 @@ function AboutSection() {
     <div>
       <H4 as="div">Kent C. Dodds</H4>
 
-      <p className="mt-6 max-w-md dark:text-blueGray-500 text-gray-500 text-2xl">
+      <p className="text-secondary mt-6 max-w-md text-2xl">
         Full time educator teaching people development
       </p>
 
-      <div className="flex mt-6 dark:text-blueGray-500 text-gray-500 space-x-4">
-        <a href="https://kcd.im/github">
+      <div className="text-secondary flex mt-6 space-x-4">
+        <a className="hover:text-primary" href={externalLinks.github}>
           <GithubIcon />
         </a>
-        <a href="https://kcd.im/youtube">
+        <a className="hover:text-primary" href={externalLinks.youtube}>
           <YoutubeIcon />
         </a>
-        <a href="https://kcd.im/twitter">
+        <a className="hover:text-primary" href={externalLinks.twitter}>
           <TwitterIcon />
         </a>
       </div>
@@ -126,10 +127,10 @@ function AboutSection() {
 
 function FooterLink({name, href}: FooterLinkProps) {
   return (
-    <li>
+    <li className="py-1">
       <a
         href={href}
-        className="inline-block py-1 dark:text-blueGray-500 text-gray-500 hover:underline whitespace-nowrap text-lg"
+        className="text-secondary hover:text-primary underlined inline-block whitespace-nowrap text-lg"
       >
         {name}
       </a>

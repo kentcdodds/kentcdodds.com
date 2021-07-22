@@ -44,13 +44,13 @@ function NavLink({
     to === location.pathname || location.pathname.startsWith(`${to}/`)
 
   return (
-    <li>
+    <li className="px-5 py-2">
       <Link
         className={clsx(
-          'block px-5 py-2 hover:underline whitespace-nowrap text-lg font-medium',
+          'hover:text-primary underlined focus:text-primary block whitespace-nowrap text-lg font-medium focus:outline-none',
           {
-            'text-black dark:text-white': isSelected,
-            'text-blueGray-500': !isSelected,
+            'text-primary active': isSelected,
+            'text-secondary': !isSelected,
           },
         )}
         to={to}
@@ -70,7 +70,7 @@ function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
         )
       }}
       className={clsx(
-        'focus:bg-secondary hover:bg-secondary inline-flex items-center justify-center p-1 h-14 text-black dark:text-white border-2 border-gray-200 dark:border-gray-600 rounded-full focus:outline-none',
+        'border-secondary hover:border-primary focus:border-primary text-primary inline-flex items-center justify-center p-1 h-14 border-2 rounded-full focus:outline-none transition',
         {
           'w-14': variant === 'icon',
           'px-8': variant === 'labelled',
@@ -234,7 +234,7 @@ function Navbar() {
     <nav className="text-primary flex items-center justify-between px-5vw py-9 lg:py-12">
       <Link
         to="/"
-        className="block hover:underline whitespace-nowrap text-2xl font-medium transition"
+        className="underlined block whitespace-nowrap text-2xl font-medium focus:outline-none transition"
       >
         <h1>Kent C. Dodds</h1>
       </Link>
@@ -270,7 +270,7 @@ function Navbar() {
               ? 'Finish signing up'
               : 'Login'
           }
-          className="focus:bg-secondary hover:bg-secondary inline-flex items-center justify-center ml-4 w-14 h-14 text-white border-2 border-team-current rounded-full focus:outline-none"
+          className="focus:border-primary hover:border-primary inline-flex items-center justify-center ml-4 w-14 h-14 text-white border-2 border-team-current rounded-full focus:outline-none transition"
         >
           <img
             className="inline w-10 h-10 bg-white rounded-full object-cover"

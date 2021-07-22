@@ -23,7 +23,7 @@ function HeaderSection({
     <Grid>
       <div
         className={clsx(
-          'flex flex-col col-span-full space-y-10 lg:flex-row lg:items-end lg:justify-between lg:space-y-0',
+          'flex flex-col col-span-full space-y-10 lg:flex-row lg:items-center lg:justify-between lg:space-y-0',
           className,
         )}
       >

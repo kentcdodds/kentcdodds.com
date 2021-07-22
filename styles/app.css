@@ -56,3 +56,28 @@ input:-webkit-autofill::first-line {
     sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
     'Noto Color Emoji';
 }
+
+a.underlined {
+  position: relative;
+  text-decoration: none;
+}
+
+a.underlined:after {
+  content: '';
+  height: 2px;
+  transform: scaleX(0);
+  transition: transform 0.25s ease;
+  transform-origin: left;
+  left: 0;
+  bottom: -4px;
+  width: 100%;
+  display: block;
+  position: absolute;
+}
+
+a.underlined:hover:after,
+a.underlined:focus:after,
+a.active.underlined:after {
+  background-color: currentColor;
+  transform: scaleX(1);
+}
