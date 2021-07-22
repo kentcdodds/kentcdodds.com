@@ -48,7 +48,8 @@ describe('call in', () => {
       cy.findByRole('button', {name: /stop/i}).click()
 
       cy.findByRole('button', {name: /accept/i}).click()
-      cy.findByRole('button', {name: /submit/i}).click()
+      // processing the audio takes a while, so let the timeout run
+      cy.findByRole('button', {name: /submit/i}).click({timeout: 10000})
     })
   })
 })
