@@ -84,7 +84,7 @@ function Record({
     <Grid nested className="border-b border-gray-200 dark:border-gray-600">
       <Link
         to={active ? './' : slug}
-        className="text-primary group relative relative flex flex-col col-span-full py-5 text-xl font-medium"
+        className="text-primary group relative flex flex-col col-span-full py-5 text-xl font-medium"
       >
         <div className="bg-secondary absolute -inset-px group-hover:block hidden -mx-6 rounded-lg" />
         <span className="relative">{title}</span>
@@ -116,7 +116,7 @@ export default function RecordScreen() {
 
       <Grid as="header" className="mb-12">
         <H2 className="col-span-full lg:col-span-8 lg:col-start-3">
-          Record your call, and I'll answer.
+          Record your call, and I&apos;ll answer.
         </H2>
       </Grid>
 

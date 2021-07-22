@@ -42,28 +42,27 @@ function ClipboardCopyButton({
 }: ClipboardCopyButtonProps) {
   const [state, setState] = React.useState<State>(State.Idle)
 
-  const transition = async () => {
-    switch (state) {
-      case State.Copy: {
-        const res = await copyToClipboard(value)
-        console.log('copied', res)
-        setState(State.Copied)
-        break
-      }
-      case State.Copied: {
-        setTimeout(() => {
-          setState(State.Idle)
-        }, 2000)
-        break
-      }
-      default:
-        break
-    }
-  }
-
   React.useEffect(() => {
+    async function transition() {
+      switch (state) {
+        case State.Copy: {
+          const res = await copyToClipboard(value)
+          console.log('copied', res)
+          setState(State.Copied)
+          break
+        }
+        case State.Copied: {
+          setTimeout(() => {
+            setState(State.Idle)
+          }, 2000)
+          break
+        }
+        default:
+          break
+      }
+    }
     void transition()
-  }, [state])
+  }, [state, value])
 
   return (
     <button

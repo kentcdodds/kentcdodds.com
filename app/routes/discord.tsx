@@ -37,7 +37,7 @@ function CategoryCardContent({title, description, number}: CategoryCardProps) {
     <>
       <H5 as="div" className="w-full">
         <AccordionButton className="relative w-full text-left">
-          <span className="absolute -left-16 top-0 flex hidden text-lg lg:block">
+          <span className="absolute -left-16 top-0 flex text-lg lg:block">
             {number.toString().padStart(2, '0')}.
           </span>
 
@@ -248,7 +248,7 @@ export default function Discord() {
         </div>
         <div className="col-span-full mb-8 lg:col-span-4 lg:col-start-5 lg:mb-0 lg:pr-12">
           <H6 as="h3" className="mb-4">
-            When we learn together, we learn better, and that's the idea.
+            When we learn together, we learn better, and that&apos;s the idea.
           </H6>
           <Paragraph className="mb-16">
             Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
@@ -376,7 +376,7 @@ export default function Discord() {
             Learning is always better with like minded people, join the discord.
           </H2>
           <H2 variant="secondary" as="p" className="mb-16">
-            Click the button below and join the community, let's get better
+            Click the button below and join the community, let&apos;s get better
             together.
           </H2>
           <ButtonLink variant="primary" to={authorizeURL}>

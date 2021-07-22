@@ -102,10 +102,10 @@ function CreditsIndex() {
           suscipit sem aenean turpis.
         </Paragraph>
         <Paragraph className="col-span-full lg:col-span-4 lg:col-start-9 lg:mr-12">
-          With this workshop, you'll not only learn great patterns you can use
-          but also the strengths and weaknesses of each, so you know which to
-          reach for to provide your custom hooks and components the flexibility
-          and power you need.
+          With this workshop, you&apos;ll not only learn great patterns you can
+          use but also the strengths and weaknesses of each, so you know which
+          to reach for to provide your custom hooks and components the
+          flexibility and power you need.
         </Paragraph>
       </Grid>
 

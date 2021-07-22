@@ -40,18 +40,17 @@ function AboutIndex() {
         </div>
         <div className="col-span-full mb-8 lg:col-span-8 lg:mb-20">
           <H2 as="p" className="mb-8">
-            I'm a software engineer and teacher. I was born in 1988 (you can do
-            the math) and grew up in Idaho.
+            I&apos;m a software engineer and teacher. I was born in 1988 (you
+            can do the math) and grew up in Idaho.
           </H2>
           <H2 className="mb-12" variant="secondary" as="p">
             After graduating High School and serving a 2 year mission in the
             Missouri Independence Mission for The Church of Jesus Christ of
             Latter-day Saints, I went to BYU where I graduated with both a
-            Bachelor and Master's degree.
+            Bachelor and Master&apos;s degree.
           </H2>
 
-          {/* TODO: add link */}
-          <ArrowLink className="mb-16" to="">
+          <ArrowLink className="mb-16" to="/blog/2010s-decade-in-review">
             Read my full story
           </ArrowLink>
 
@@ -71,10 +70,10 @@ function AboutIndex() {
           suscipit sem aenean turpis.
         </Paragraph>
         <Paragraph className="col-span-full lg:col-span-4 lg:col-start-9 lg:mr-12">
-          With this workshop, you'll not only learn great patterns you can use
-          but also the strengths and weaknesses of each, so you know which to
-          reach for to provide your custom hooks and components the flexibility
-          and power you need.
+          With this workshop, you&apos;ll not only learn great patterns you can
+          use but also the strengths and weaknesses of each, so you know which
+          to reach for to provide your custom hooks and components the
+          flexibility and power you need.
         </Paragraph>
       </Grid>
 

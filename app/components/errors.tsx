@@ -1,12 +1,12 @@
 import {useMatches} from 'remix'
 import * as React from 'react'
+import errorStack from 'error-stack-parser'
+import clsx from 'clsx'
 import {images} from '../images'
 import {articles} from '../utils/temp.fixtures'
 import {HeroSection} from './sections/hero-section'
 import {BlogSection} from './sections/blog-section'
 import {H2, H6} from './typography'
-import errorStack from 'error-stack-parser'
-import clsx from 'clsx'
 
 function RedBox({error}: {error: Error}) {
   const [isVisible, setIsVisible] = React.useState(true)

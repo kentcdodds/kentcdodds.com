@@ -1,5 +1,6 @@
 import * as React from 'react'
 import {Form} from 'remix'
+import {externalLinks} from '../external-links'
 import {useOptionalUser, useOptionalUserInfo} from '../utils/providers'
 import {H4, H6, Paragraph} from './typography'
 import {Grid} from './grid'
@@ -7,7 +8,6 @@ import {ArrowButton} from './arrow-button'
 import {GithubIcon} from './icons/github-icon'
 import {TwitterIcon} from './icons/twitter-icon'
 import {YoutubeIcon} from './icons/youtube-icon'
-import {externalLinks} from '../external-links'
 
 interface FooterLinkProps {
   name: string
