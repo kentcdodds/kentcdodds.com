@@ -147,9 +147,7 @@ function App() {
         }}
       >
         <Navbar />
-        <main>
-          <Outlet />
-        </main>
+        <Outlet />
         <Spacer size="medium" />
         <Footer />
         <Scripts />
