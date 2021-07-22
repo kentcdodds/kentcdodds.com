@@ -76,8 +76,8 @@ jobs:
       - name: 📥 Download deps
         uses: bahmutov/npm-install@v1
 
-      - name: ▶️ Run validate script
-        run: npx kcd-scripts validate
+      - name: ⚙️ Build
+        run: npm run build
         env:
           ENABLE_TEST_ROUTES: 'true'
           COMMIT_SHA: ${{github.sha}}
@@ -118,7 +118,6 @@ jobs:
       - name: ⚙️ Build
         run: npm run build
         env:
-          ENABLE_TEST_ROUTES: 'true'
           COMMIT_SHA: ${{github.sha}}
 
       - name: ⬆️ Upload artifact
