@@ -147,7 +147,7 @@ function Card({
       <div className="flex-auto mb-10">
         <Paragraph
           as="div"
-          className="mb-12"
+          className="html mb-12"
           dangerouslySetInnerHTML={{__html: descriptionHTML ?? '&nbsp;'}}
         />
 
@@ -162,6 +162,7 @@ function Card({
                 <div className="inline-flex">
                   <Paragraph
                     as="div"
+                    className="html"
                     dangerouslySetInnerHTML={{
                       __html: delivery.eventHTML ?? '',
                     }}
@@ -192,6 +193,7 @@ function Card({
             <li key={resource}>
               <Paragraph
                 as="div"
+                className="html"
                 dangerouslySetInnerHTML={{__html: resource}}
               />
             </li>
