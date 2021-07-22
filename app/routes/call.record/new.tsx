@@ -7,7 +7,7 @@ import {
   RecordingFormData,
 } from '../../components/call/submit-recording-form'
 import {requireUser} from '../../utils/session.server'
-import {prisma, replayable} from '../../utils/prisma.server'
+import {prisma} from '../../utils/prisma.server'
 import {getErrorMessage, getNonNull} from '../../utils/misc'
 import {
   getErrorForAudio,
@@ -22,66 +22,61 @@ const fieldsSessionKey = 'call_fields'
 
 export const action: ActionFunction = async ({request}) => {
   return requireUser(request, async user => {
-    return replayable(request, async checkIfReplayable => {
-      const session = await callKentStorage.getSession(
-        request.headers.get('Cookie'),
-      )
-      try {
-        const requestText = await request.text()
-        const form = new URLSearchParams(requestText)
+    const session = await callKentStorage.getSession(
+      request.headers.get('Cookie'),
+    )
+    try {
+      const requestText = await request.text()
+      const form = new URLSearchParams(requestText)
 
-        const formData = {
-          audio: form.get('audio'),
-          title: form.get('title'),
-          description: form.get('description'),
-          keywords: form.get('keywords'),
-        }
-        const fields: LoaderData['fields'] = {
-          title: formData.title,
-          description: formData.description,
-          keywords: formData.keywords,
-        }
-        session.flash(fieldsSessionKey, fields)
+      const formData = {
+        audio: form.get('audio'),
+        title: form.get('title'),
+        description: form.get('description'),
+        keywords: form.get('keywords'),
+      }
+      const fields: LoaderData['fields'] = {
+        title: formData.title,
+        description: formData.description,
+        keywords: formData.keywords,
+      }
+      session.flash(fieldsSessionKey, fields)
 
-        const errors = {
-          audio: getErrorForAudio(formData.audio),
-          title: getErrorForTitle(formData.title),
-          description: getErrorForDescription(formData.description),
-          keywords: getErrorForKeywords(formData.keywords),
-        }
+      const errors = {
+        audio: getErrorForAudio(formData.audio),
+        title: getErrorForTitle(formData.title),
+        description: getErrorForDescription(formData.description),
+        keywords: getErrorForKeywords(formData.keywords),
+      }
 
-        if (Object.values(errors).some(err => err !== null)) {
-          session.flash(errorSessionKey, errors)
-          return redirect(new URL(request.url).pathname, {
-            headers: {
-              'Set-Cookie': await callKentStorage.commitSession(session),
-            },
-          })
-        }
-
-        const {audio, title, description, keywords} = getNonNull(formData)
-
-        const call = {
-          title,
-          description,
-          keywords,
-          userId: user.id,
-          base64: audio,
-        }
-        const createdCall = await prisma.call.create({data: call})
-        return redirect(`/call/record/${createdCall.id}`)
-      } catch (error: unknown) {
-        const replay = checkIfReplayable(error)
-        if (replay) return replay
-
-        session.flash(errorSessionKey, {generalError: getErrorMessage(error)})
+      if (Object.values(errors).some(err => err !== null)) {
+        session.flash(errorSessionKey, errors)
         return redirect(new URL(request.url).pathname, {
           headers: {
             'Set-Cookie': await callKentStorage.commitSession(session),
           },
         })
       }
-    })
+
+      const {audio, title, description, keywords} = getNonNull(formData)
+
+      const call = {
+        title,
+        description,
+        keywords,
+        userId: user.id,
+        base64: audio,
+      }
+      const createdCall = await prisma.call.create({data: call})
+      return redirect(`/call/record/${createdCall.id}`)
+    } catch (error: unknown) {
+      session.flash(errorSessionKey, {generalError: getErrorMessage(error)})
+      return redirect(new URL(request.url).pathname, {
+        headers: {
+          'Set-Cookie': await callKentStorage.commitSession(session),
+        },
+      })
+    }
   })
 }
 

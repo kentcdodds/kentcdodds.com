@@ -4,46 +4,38 @@ import * as React from 'react'
 import {requireUser, rootStorage} from '../../utils/session.server'
 import {getDomainUrl, getErrorMessage} from '../../utils/misc'
 import {connectDiscord} from '../../utils/discord.server'
-import {replayable} from '../../utils/prisma.server'
 
 export const loader: LoaderFunction = async ({request}) => {
   return requireUser(request, async user => {
-    return replayable(request, async checkIfReplayable => {
-      const session = await rootStorage.getSession(
-        request.headers.get('Cookie'),
-      )
+    const session = await rootStorage.getSession(request.headers.get('Cookie'))
 
-      try {
-        const code = new URL(request.url).searchParams.get('code')
-        if (!code) {
-          throw new Error('Discord code required')
-        }
-        const domainUrl = getDomainUrl(request)
-        const discordMember = await connectDiscord({user, code, domainUrl})
-        session.flash(
-          'message',
-          `Sucessfully connected your KCD account with ${discordMember.user.username} on discord.`,
-        )
-        return redirect('/me', {
-          headers: {'Set-Cookie': await rootStorage.commitSession(session)},
-        })
-      } catch (error: unknown) {
-        const replay = checkIfReplayable(error)
-        if (replay) return replay
-
-        const errorMessage = getErrorMessage(error)
-        if (error instanceof Error) {
-          console.error(error.stack)
-        } else {
-          console.error(errorMessage)
-        }
-
-        session.flash('error', errorMessage)
-        return redirect('/me', {
-          headers: {'Set-Cookie': await rootStorage.commitSession(session)},
-        })
+    try {
+      const code = new URL(request.url).searchParams.get('code')
+      if (!code) {
+        throw new Error('Discord code required')
       }
-    })
+      const domainUrl = getDomainUrl(request)
+      const discordMember = await connectDiscord({user, code, domainUrl})
+      session.flash(
+        'message',
+        `Sucessfully connected your KCD account with ${discordMember.user.username} on discord.`,
+      )
+      return redirect('/me', {
+        headers: {'Set-Cookie': await rootStorage.commitSession(session)},
+      })
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error)
+      if (error instanceof Error) {
+        console.error(error.stack)
+      } else {
+        console.error(errorMessage)
+      }
+
+      session.flash('error', errorMessage)
+      return redirect('/me', {
+        headers: {'Set-Cookie': await rootStorage.commitSession(session)},
+      })
+    }
   })
 }
 

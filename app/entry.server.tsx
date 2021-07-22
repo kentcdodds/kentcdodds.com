@@ -77,6 +77,8 @@ export default async function handleRequest(
   })
 }
 
+// This isn't supported yet. We're using patch-package to make this work:
+// https://github.com/remix-run/remix/issues/217
 export async function handleDataRequest(
   request: Request,
   dataResponse: Response,

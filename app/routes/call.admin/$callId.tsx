@@ -4,7 +4,7 @@ import type {Call, KCDAction, KCDLoader} from 'types'
 import {format} from 'date-fns'
 import {CallRecorder} from '../../components/call/recorder'
 import {requireAdminUser} from '../../utils/session.server'
-import {prisma, replayable} from '../../utils/prisma.server'
+import {prisma} from '../../utils/prisma.server'
 import {getAvatarForUser, getErrorMessage, getNonNull} from '../../utils/misc'
 import {createEpisodeAudio} from '../../utils/ffmpeg.server'
 import {createEpisode} from '../../utils/transistor.server'
@@ -26,93 +26,88 @@ export const action: KCDAction<{callId: string}> = async ({
   params,
 }) => {
   return requireAdminUser(request, async () => {
-    return replayable(request, async checkIfReplayable => {
-      if (request.method === 'DELETE') {
-        await prisma.call.delete({where: {id: params.callId}})
-        return redirect('/call/admin')
+    if (request.method === 'DELETE') {
+      await prisma.call.delete({where: {id: params.callId}})
+      return redirect('/call/admin')
+    }
+    const session = await callKentStorage.getSession(
+      request.headers.get('Cookie'),
+    )
+    const call = await prisma.call.findFirst({
+      where: {id: params.callId},
+      include: {user: true},
+    })
+    if (!call) {
+      // TODO: display an error message or something...
+      return redirect('/call/admin')
+    }
+    try {
+      const requestText = await request.text()
+      const form = new URLSearchParams(requestText)
+
+      const formData = {
+        audio: form.get('audio'),
+        title: form.get('title'),
+        description: form.get('description'),
+        keywords: form.get('keywords'),
       }
-      const session = await callKentStorage.getSession(
-        request.headers.get('Cookie'),
-      )
-      const call = await prisma.call.findFirst({
-        where: {id: params.callId},
-        include: {user: true},
-      })
-      if (!call) {
-        // TODO: display an error message or something...
-        return redirect('/call/admin')
+      const fields: LoaderData['fields'] = {
+        title: formData.title,
+        description: formData.description,
+        keywords: formData.keywords,
       }
-      try {
-        const requestText = await request.text()
-        const form = new URLSearchParams(requestText)
+      session.flash(fieldsSessionKey, fields)
 
-        const formData = {
-          audio: form.get('audio'),
-          title: form.get('title'),
-          description: form.get('description'),
-          keywords: form.get('keywords'),
-        }
-        const fields: LoaderData['fields'] = {
-          title: formData.title,
-          description: formData.description,
-          keywords: formData.keywords,
-        }
-        session.flash(fieldsSessionKey, fields)
+      const errors = {
+        audio: getErrorForAudio(formData.audio),
+        title: getErrorForTitle(formData.title),
+        description: getErrorForDescription(formData.description),
+        keywords: getErrorForKeywords(formData.keywords),
+      }
 
-        const errors = {
-          audio: getErrorForAudio(formData.audio),
-          title: getErrorForTitle(formData.title),
-          description: getErrorForDescription(formData.description),
-          keywords: getErrorForKeywords(formData.keywords),
-        }
-
-        if (Object.values(errors).some(err => err !== null)) {
-          session.flash(errorSessionKey, errors)
-          return redirect(new URL(request.url).pathname, {
-            headers: {
-              'Set-Cookie': await callKentStorage.commitSession(session),
-            },
-          })
-        }
-
-        const {
-          audio: response,
-          title,
-          description,
-          keywords,
-        } = getNonNull(formData)
-
-        const episodeAudio = await createEpisodeAudio(call.base64, response)
-        await createEpisode({
-          audio: episodeAudio,
-          title,
-          summary: `${call.user.firstName} asked this on ${format(
-            call.createdAt,
-            'yyyy-MM-dd',
-          )}`,
-          description,
-          imageUrl: getAvatarForUser(call.user).src,
-          keywords,
-        })
-        await prisma.call.delete({
-          where: {id: call.id},
-        })
-
-        return redirect('/call?fresh')
-      } catch (error: unknown) {
-        const replay = checkIfReplayable(error)
-        if (replay) return replay
-
-        const generalError = getErrorMessage(error)
-        console.error(generalError)
-        session.flash(errorSessionKey, {generalError})
+      if (Object.values(errors).some(err => err !== null)) {
+        session.flash(errorSessionKey, errors)
         return redirect(new URL(request.url).pathname, {
           headers: {
             'Set-Cookie': await callKentStorage.commitSession(session),
           },
         })
       }
-    })
+
+      const {
+        audio: response,
+        title,
+        description,
+        keywords,
+      } = getNonNull(formData)
+
+      const episodeAudio = await createEpisodeAudio(call.base64, response)
+      await createEpisode({
+        audio: episodeAudio,
+        title,
+        summary: `${call.user.firstName} asked this on ${format(
+          call.createdAt,
+          'yyyy-MM-dd',
+        )}`,
+        description,
+        imageUrl: getAvatarForUser(call.user).src,
+        keywords,
+      })
+      await prisma.call.delete({
+        where: {id: call.id},
+      })
+
+      return redirect('/call?fresh')
+    } catch (error: unknown) {
+      const generalError = getErrorMessage(error)
+      console.error(generalError)
+      session.flash(errorSessionKey, {generalError})
+      return redirect(new URL(request.url).pathname, {
+        headers: {
+          'Set-Cookie': await callKentStorage.commitSession(session),
+        },
+      })
+    }
   })
 }
 

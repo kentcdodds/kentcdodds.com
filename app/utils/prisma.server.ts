@@ -1,9 +1,9 @@
 import {PrismaClient} from '@prisma/client'
-import type {Request, Response, Headers, EntryContext} from 'remix'
+import type {Request, Response, EntryContext} from 'remix'
 import {redirect} from 'remix'
 import type {User, Session} from 'types'
 import {encrypt, decrypt} from './encryption.server'
-import {getErrorMessage, getRequiredServerEnvVar} from './misc'
+import {getRequiredServerEnvVar} from './misc'
 
 declare global {
   // This prevents us from making multiple connections to the db when the
@@ -200,59 +200,6 @@ async function addPostRead({slug, userId}: {slug: string; userId: string}) {
   }
 }
 
-/**
- * If a write request fails due to read-only and the fly region is not the primary
- * then we can replay it to the primary via fly.
- *
- * This will be required around any server code that writes to the database until
- * we get this: https://github.com/remix-run/remix/issues/217
- */
-async function replayable(
-  request: Request,
-  callback: (
-    checkIfReplayable: (error: unknown) => Response | null,
-  ) => Response | Promise<Response>,
-): Promise<Response> {
-  function checkIfReplayable(error: unknown) {
-    const errorMessage = getErrorMessage(error)
-    const isReadOnlyError = errorMessage.includes('SqlState("25006")')
-    if (isReadOnlyError) {
-      const pathname = new URL(request.url).pathname
-      const logInfo = {
-        pathname,
-        method: request.method,
-        PRIMARY_REGION: process.env.PRIMARY_REGION,
-        FLY_REGION: process.env.FLY_REGION,
-      }
-      console.info(`Replaying:`, logInfo)
-      return redirect(pathname, {
-        // TODO: when we get this: https://github.com/remix-run/remix/issues/217
-        // then let's use 409 because it's technically correct.
-        // but if we do a non-redirect status code then remix will ignore
-        // the headers from the loader/action on a document request.
-        // status: 409,
-        headers: {'fly-replay': `region=${PRIMARY_REGION}`},
-      })
-    } else {
-      console.error(
-        `There was an error, but we're not replaying because it wasn't a readOnly error. Here's what it was:`,
-        error,
-      )
-    }
-    return null
-  }
-  if (isPrimaryRegion) return callback(checkIfReplayable)
-
-  try {
-    const response = await callback(checkIfReplayable)
-    return response
-  } catch (error: unknown) {
-    const response = checkIfReplayable(error)
-    if (response) return response
-    throw error
-  }
-}
-
 async function getReplayResponse(request: Request, errorMessage?: string) {
   if (!isPrimaryRegion && errorMessage?.includes('SqlState("25006")')) {
     const pathname = new URL(request.url).pathname
@@ -301,7 +248,6 @@ export {
   getUserByEmail,
   updateUser,
   addPostRead,
-  replayable,
   getDocumentReplayResponse,
   getDataReplayResponse,
 }

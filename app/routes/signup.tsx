@@ -10,12 +10,7 @@ import {
   sessionKeys,
   signInSession,
 } from '../utils/session.server'
-import {
-  createSession,
-  prisma,
-  replayable,
-  validateMagicLink,
-} from '../utils/prisma.server'
+import {createSession, prisma, validateMagicLink} from '../utils/prisma.server'
 import {getErrorMessage, getNonNull, teams} from '../utils/misc'
 import {tagKCDSiteSubscriber} from '../utils/convertkit.server'
 import {useTeam} from '../utils/providers'
@@ -57,87 +52,79 @@ function getErrorForTeam(team: string | null) {
 }
 
 export const action: ActionFunction = async ({request}) => {
-  return replayable(request, async checkIfReplayable => {
-    const session = await rootStorage.getSession(request.headers.get('Cookie'))
-    const magicLink = session.get(sessionKeys.magicLink)
-    let email
-    try {
-      if (typeof magicLink !== 'string') {
-        throw new Error('email and magicLink required.')
-      }
-
-      email = await validateMagicLink(magicLink)
-    } catch (error: unknown) {
-      const replay = checkIfReplayable(error)
-      if (replay) return replay
-
-      console.error(getErrorMessage(error))
-
-      session.flash('error', 'Sign in link invalid. Please request a new one.')
-      return redirect('/login', {
-        headers: {'Set-Cookie': await rootStorage.commitSession(session)},
-      })
+  const session = await rootStorage.getSession(request.headers.get('Cookie'))
+  const magicLink = session.get(sessionKeys.magicLink)
+  let email
+  try {
+    if (typeof magicLink !== 'string') {
+      throw new Error('email and magicLink required.')
     }
 
-    const requestText = await request.text()
-    const form = new URLSearchParams(requestText)
-    const formData: LoaderData['fields'] = {
-      firstName: form.get('firstName'),
-      team: form.get('team') as Team | null,
-    }
-    session.flash(fieldsSessionKey, formData)
+    email = await validateMagicLink(magicLink)
+  } catch (error: unknown) {
+    console.error(getErrorMessage(error))
 
-    const errors: LoaderData['errors'] = {
-      firstName: getErrorForFirstName(formData.firstName),
-      team: getErrorForTeam(formData.team),
-    }
+    session.flash('error', 'Sign in link invalid. Please request a new one.')
+    return redirect('/login', {
+      headers: {'Set-Cookie': await rootStorage.commitSession(session)},
+    })
+  }
 
-    if (errors.firstName || errors.team) {
-      session.flash(errorSessionKey, errors)
-      return redirect(new URL(request.url).pathname, {
-        headers: {
-          'Set-Cookie': await rootStorage.commitSession(session),
-        },
-      })
-    }
+  const requestText = await request.text()
+  const form = new URLSearchParams(requestText)
+  const formData: LoaderData['fields'] = {
+    firstName: form.get('firstName'),
+    team: form.get('team') as Team | null,
+  }
+  session.flash(fieldsSessionKey, formData)
 
-    const {firstName, team} = getNonNull(formData)
+  const errors: LoaderData['errors'] = {
+    firstName: getErrorForFirstName(formData.firstName),
+    team: getErrorForTeam(formData.team),
+  }
 
-    try {
-      const user = await prisma.user.create({data: {email, firstName, team}})
+  if (errors.firstName || errors.team) {
+    session.flash(errorSessionKey, errors)
+    return redirect(new URL(request.url).pathname, {
+      headers: {
+        'Set-Cookie': await rootStorage.commitSession(session),
+      },
+    })
+  }
 
-      // add user to mailing list
-      const sub = await tagKCDSiteSubscriber(user)
-      await prisma.user.update({
-        data: {convertKitId: String(sub.id)},
-        where: {id: user.id},
-      })
+  const {firstName, team} = getNonNull(formData)
 
-      const userSession = await createSession({userId: user.id})
-      session.unset('email')
-      session.unset('magicLink')
-      await signInSession(session, userSession.id)
+  try {
+    const user = await prisma.user.create({data: {email, firstName, team}})
 
-      const cookie = await rootStorage.commitSession(session, {maxAge: 604_800})
-      return redirect('/me', {
-        headers: {'Set-Cookie': cookie},
-      })
-    } catch (error: unknown) {
-      const replay = checkIfReplayable(error)
-      if (replay) return replay
+    // add user to mailing list
+    const sub = await tagKCDSiteSubscriber(user)
+    await prisma.user.update({
+      data: {convertKitId: String(sub.id)},
+      where: {id: user.id},
+    })
 
-      const message = getErrorMessage(error)
-      console.error(message)
+    const userSession = await createSession({userId: user.id})
+    session.unset('email')
+    session.unset('magicLink')
+    await signInSession(session, userSession.id)
 
-      session.flash(
-        'error',
-        'There was a problem creating your account. Please try again.',
-      )
-      return redirect('/login', {
-        headers: {'Set-Cookie': await rootStorage.commitSession(session)},
-      })
-    }
-  })
+    const cookie = await rootStorage.commitSession(session, {maxAge: 604_800})
+    return redirect('/me', {
+      headers: {'Set-Cookie': cookie},
+    })
+  } catch (error: unknown) {
+    const message = getErrorMessage(error)
+    console.error(message)
+
+    session.flash(
+      'error',
+      'There was a problem creating your account. Please try again.',
+    )
+    return redirect('/login', {
+      headers: {'Set-Cookie': await rootStorage.commitSession(session)},
+    })
+  }
 }
 
 export const loader: LoaderFunction = async ({request}) => {
