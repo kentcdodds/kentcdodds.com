@@ -110,7 +110,6 @@ jobs:
         with:
           start: npm run start:mocks
           wait-on: 'http://localhost:8811'
-          record: true
           parallel: true
           group: 'KCD Cypress'
         env:
