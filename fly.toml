@@ -5,8 +5,8 @@ app = "withered-frost-3196"
 kill_signal = "SIGINT"
 kill_timeout = 5
 
-[build]
-  builder = "heroku/buildpacks:20"
+# [build]
+#   builder = "heroku/buildpacks:20"
 
 [env]
   PORT = "8080"
