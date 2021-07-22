@@ -1,7 +1,16 @@
 import * as React from 'react'
 import ReactDOMServer from 'react-dom/server'
-import type {Request, Headers, EntryContext} from 'remix'
-import {RemixServer as Remix} from 'remix'
+import {
+  RemixServer as Remix,
+  Response,
+  Request,
+  Headers,
+  EntryContext,
+} from 'remix'
+import {
+  getDocumentReplayResponse,
+  getDataReplayResponse,
+} from './utils/prisma.server'
 import {getRssFeedXml} from './utils/blog-rss-feed.server'
 import {getEnv} from './utils/env.server'
 
@@ -15,6 +24,10 @@ export default async function handleRequest(
   responseHeaders: Headers,
   remixContext: EntryContext,
 ) {
+  const replayResponse = await getDocumentReplayResponse(request, remixContext)
+  if (replayResponse) {
+    return replayResponse
+  }
   const {pathname} = new URL(request.url)
   if (pathname === '/build-info') {
     const buildInfo = {
@@ -60,6 +73,25 @@ export default async function handleRequest(
       'X-Fly-Region': process.env.FLY_REGION ?? 'unknown',
       'Content-Type': 'text/html',
       'Content-Length': String(Buffer.byteLength(html)),
+    },
+  })
+}
+
+export async function handleDataRequest(
+  request: Request,
+  dataResponse: Response,
+) {
+  const replayResponse = await getDataReplayResponse(request, dataResponse)
+  if (replayResponse) {
+    return replayResponse
+  }
+  return new Response(dataResponse.body, {
+    status: dataResponse.status,
+    headers: {
+      'X-Robots-Tag': 'none',
+      ...Object.fromEntries(dataResponse.headers),
+      'X-Powered-By': 'Kody the Koala',
+      'X-Fly-Region': process.env.FLY_REGION ?? 'unknown',
     },
   })
 }

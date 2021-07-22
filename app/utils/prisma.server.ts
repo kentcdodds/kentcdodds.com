@@ -1,6 +1,6 @@
 import {PrismaClient} from '@prisma/client'
+import type {Request, Response, Headers, EntryContext} from 'remix'
 import {redirect} from 'remix'
-import type {Request, Response} from 'remix'
 import type {User, Session} from 'types'
 import {encrypt, decrypt} from './encryption.server'
 import {getErrorMessage, getRequiredServerEnvVar} from './misc'
@@ -253,6 +253,45 @@ async function replayable(
   }
 }
 
+async function getReplayResponse(request: Request, errorMessage?: string) {
+  if (!isPrimaryRegion && errorMessage?.includes('SqlState("25006")')) {
+    const pathname = new URL(request.url).pathname
+    const logInfo = {
+      pathname,
+      method: request.method,
+      PRIMARY_REGION,
+      FLY_REGION,
+    }
+    console.info(`Replaying:`, logInfo)
+    return redirect(pathname, {
+      status: 409,
+      headers: {'fly-replay': `region=${PRIMARY_REGION}`},
+    })
+  }
+  return null
+}
+
+async function getDocumentReplayResponse(
+  request: Request,
+  remixContext: EntryContext,
+) {
+  return getReplayResponse(
+    request,
+    remixContext.componentDidCatchEmulator.error?.message,
+  )
+}
+
+async function getDataReplayResponse(request: Request, response: Response) {
+  if (
+    response.status === 500 &&
+    response.headers.get('content-type')?.includes('json')
+  ) {
+    const data = await response.json()
+    return getReplayResponse(request, data.message)
+  }
+  return null
+}
+
 export {
   prisma,
   getMagicLink,
@@ -263,4 +302,6 @@ export {
   updateUser,
   addPostRead,
   replayable,
+  getDocumentReplayResponse,
+  getDataReplayResponse,
 }

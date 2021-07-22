@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/kentcdodds/remix-kentcdodds.com#readme",
   "scripts": {
+    "postinstall": "patch-package --patch-dir other/patches",
     "css:watch": "postcss styles/**/*.css --base styles --dir app/styles --w",
     "clean": "rimraf ./node_modules/.cache ./server/dist ./build ./public/build \"./app/styles/**/*.css\"",
     "prebuild": "npm run clean && echo All clean ✨",
@@ -83,6 +84,7 @@
     "morgan": "^1.10.0",
     "node-fetch": "^2.6.1",
     "p-limit": "^2.3.0",
+    "patch-package": "^6.4.7",
     "path-to-regexp": "^6.2.0",
     "pm2": "^5.1.0",
     "postcss-import": "^14.0.2",
