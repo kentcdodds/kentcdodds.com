@@ -21,7 +21,6 @@ import {
   useTheme,
   ThemeProvider,
   sessionKey,
-  Theme,
   NonFlashOfWrongThemeEls,
 } from './utils/theme-provider'
 import {getUser, rootStorage, sessionKeys} from './utils/session.server'
@@ -68,7 +67,6 @@ export const links: LinksFunction = () => {
 type LoaderData = {
   user: User | null
   userInfo: Await<ReturnType<typeof getUserInfo>> | null
-  theme: Theme | null
   ENV: ReturnType<typeof getEnv>
   requestInfo: RequestInfo
 }
@@ -85,7 +83,11 @@ async function getSessionInfo(session: Session) {
       session.unset(sessionKeys.magicLink)
     }
   }
-  return {email: session.get(sessionKeys.email), hasActiveMagicLink}
+  return {
+    email: session.get(sessionKeys.email),
+    hasActiveMagicLink,
+    theme: session.get(sessionKey),
+  }
 }
 
 export const loader: LoaderFunction = async ({request}) => {
@@ -96,7 +98,6 @@ export const loader: LoaderFunction = async ({request}) => {
   const data: LoaderData = {
     user,
     userInfo: user ? await getUserInfo(user) : null,
-    theme: session.get(sessionKey),
     ENV: getEnv(),
     requestInfo: {
       origin: getDomainUrl(request),
@@ -129,7 +130,9 @@ function App() {
             --color-team-current: var(--color-team-${team.toLowerCase()}); 
           }
         `}</style>
-        <NonFlashOfWrongThemeEls ssrTheme={Boolean(data.theme)} />
+        <NonFlashOfWrongThemeEls
+          ssrTheme={Boolean(data.requestInfo.session.theme)}
+        />
       </head>
       <body
         className={clsx('dark:bg-gray-900 bg-white ', {
@@ -175,7 +178,7 @@ export default function AppWithProviders() {
       <UserProvider value={data.user}>
         <UserInfoProvider value={data.userInfo}>
           <TeamProvider>
-            <ThemeProvider specifiedTheme={data.theme}>
+            <ThemeProvider specifiedTheme={data.requestInfo.session.theme}>
               <App />
             </ThemeProvider>
           </TeamProvider>

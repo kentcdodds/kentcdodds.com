@@ -5,13 +5,15 @@ enum Theme {
   LIGHT = 'light',
 }
 const themes: Array<Theme> = Object.values(Theme)
+
 type ThemeContextType = [
   Theme | null,
   React.Dispatch<React.SetStateAction<Theme | null>>,
 ]
 
-const ThemeContext =
-  React.createContext<ThemeContextType | undefined>(undefined)
+const ThemeContext = React.createContext<ThemeContextType | undefined>(
+  undefined,
+)
 ThemeContext.displayName = 'ThemeContext'
 
 const prefersLightMQ = '(prefers-color-scheme: light)'
@@ -74,6 +76,11 @@ function ThemeProvider({
 }
 
 const clientThemeCode = `
+// hi there dear reader 👋
+// this is how I make certain we avoid a flash of the wrong theme. If you select
+// a theme, then I'll know what you want in the future and you'll not see this
+// script anymore.
+
 const theme = window.matchMedia(${JSON.stringify(prefersLightMQ)}).matches
   ? 'light'
   : 'dark';
@@ -88,6 +95,27 @@ if (themeAlreadyApplied) {
   cl.add(theme);
 }
 
+const darkEls = document.querySelectorAll('dark-mode');
+const lightEls = document.querySelectorAll('light-mode');
+for (const darkEl of darkEls) {
+  if (theme === 'dark') {
+    for (const child of darkEl.childNodes) {
+      darkEl.parentElement.append(child);
+    }
+  }
+  darkEl.remove();
+}
+for (const lightEl of lightEls) {
+  if (theme === 'light') {
+    for (const child of lightEl.childNodes) {
+      lightEl.parentElement.append(child);
+    }
+  }
+  lightEl.remove();
+}
+
+// the <dark-mode> and <light-mode> approach won't work for meta tags,
+// so we have to do it manually.
 const meta = document.querySelector('meta[name=color-scheme]');
 if (meta) {
   if (theme === 'dark') {
@@ -134,6 +162,35 @@ function useTheme() {
   return context
 }
 
+/**
+ * This allows you to render something that depends on the theme without
+ * worrying about whether it'll SSR properly when we don't actually know
+ * the user's preferred theme.
+ */
+function Themed({
+  dark,
+  light,
+}: {
+  dark: React.ReactNode | string
+  light: React.ReactNode | string
+}) {
+  const [theme] = useTheme()
+  const serverRenderWithUnknownTheme = !theme && typeof window !== 'object'
+  if (serverRenderWithUnknownTheme) {
+    // stick them both in and our little script will update the DOM to match
+    // what we'll render in the client during hydration.
+    return (
+      <>
+        {React.createElement('dark-mode', null, dark)}
+        {React.createElement('light-mode', null, dark)}
+      </>
+    )
+  } else {
+    // eslint-disable-next-line react/jsx-no-useless-fragment
+    return <>{theme === 'light' ? light : dark}</>
+  }
+}
+
 const sessionKey = 'theme'
 
 export {
@@ -142,5 +199,6 @@ export {
   sessionKey,
   themes,
   Theme,
+  Themed,
   NonFlashOfWrongThemeEls,
 }

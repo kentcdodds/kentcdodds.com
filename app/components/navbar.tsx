@@ -13,7 +13,7 @@ import {
 import {useEffect} from 'react'
 import {AnimatePresence, motion} from 'framer-motion'
 import {alexProfiles} from '../images'
-import {Theme, useTheme} from '../utils/theme-provider'
+import {Theme, Themed, useTheme} from '../utils/theme-provider'
 import {
   useOptionalUser,
   useOptionalUserInfo,
@@ -61,7 +61,7 @@ function NavLink({
 }
 
 function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
-  const [theme, setTheme] = useTheme()
+  const [, setTheme] = useTheme()
   return (
     <button
       onClick={() => {
@@ -77,13 +77,34 @@ function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
         },
       )}
     >
-      <span>{theme === 'dark' ? <MoonIcon /> : <SunIcon />}</span>
-      <span
-        className={clsx('ml-4', {'sr-only': variant === 'icon'})}
-      >{`switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}</span>
+      <span>
+        <Themed dark={<MoonIcon />} light={<SunIcon />} />
+      </span>
+      <span className={clsx('ml-4', {'sr-only': variant === 'icon'})}>
+        <Themed dark="switch to light mode" light="switch to dark mode" />
+      </span>
     </button>
   )
 }
+/*
+
+      {/*
+        NOTE: not relying on the theme state here because it might be `null`
+        during a server render when we don't know what theme the user prefers.
+      /}
+      <span className="dark:hidden">
+        <SunIcon />
+        <span
+          className={clsx('ml-4', {'sr-only': variant === 'icon'})}
+        >{`switch to light mode`}</span>
+      </span>
+      <span className="hidden dark:inline">
+        <MoonIcon />
+        <span
+          className={clsx('ml-4', {'sr-only': variant === 'icon'})}
+        >{`switch to dark mode`}</span>
+      </span>
+*/
 
 function MobileMenuList() {
   const {isExpanded} = useMenuButtonContext()

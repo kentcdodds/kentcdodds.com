@@ -2,6 +2,7 @@ import * as React from 'react'
 import {Team} from '@prisma/client'
 import type {Await, CallKentEpisode, User} from 'types'
 import type {getUserInfo} from './user-info.server'
+import type {Theme} from './theme-provider'
 
 function createSimpleContext<ContextType>(name: string) {
   const defaultValue = Symbol(`Default ${name} context value`)
@@ -37,7 +38,11 @@ function createSimpleContext<ContextType>(name: string) {
 type RequestInfo = {
   origin: string
   searchParams: string
-  session: {email: string | null; hasActiveMagicLink: boolean}
+  session: {
+    email: string | null
+    hasActiveMagicLink: boolean
+    theme: Theme | null
+  }
 }
 const {Provider: RequestInfoProvider, useValue: useRequestInfo} =
   createSimpleContext<RequestInfo>('RequestInfo')
