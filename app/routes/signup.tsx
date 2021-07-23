@@ -16,11 +16,12 @@ import {tagKCDSiteSubscriber} from '../utils/convertkit.server'
 import {useTeam} from '../utils/providers'
 import {Grid} from '../components/grid'
 import {H2, H6, Paragraph} from '../components/typography'
-import {Input, InputError, Label} from '../components/form-elements'
+import {Field, InputError} from '../components/form-elements'
 import {Button} from '../components/button'
 import {CheckCircledIcon} from '../components/icons/check-circled-icon'
 import {images} from '../images'
 import {TEAM_MAP} from '../utils/onboarding'
+import {HeaderSection} from '../components/sections/header-section'
 
 type LoaderData = {
   email: string
@@ -230,19 +231,13 @@ export default function NewAccount() {
           })
         }}
       >
-        <Grid>
-          <div className="col-span-full">
-            {/* TODO: get Gil's eye on this... */}
-            <H2 className="mb-2">
-              Hi {data.email},
-              <br />
-              Let’s start with choosing a team.
-            </H2>
-            <H2 className="mb-12 lg:mb-20" variant="secondary" as="p">
-              You can’t change this later.
-            </H2>
-          </div>
+        <HeaderSection
+          title="Let’s start with choosing a team."
+          subTitle="You can’t change this later."
+          className="mb-16"
+        />
 
+        <Grid>
           {data.errors?.team ? (
             <div className="col-span-full mb-4 text-right">
               <InputError id="team-error">{data.errors.team}</InputError>
@@ -264,27 +259,30 @@ export default function NewAccount() {
           <div className="col-span-full h-20 lg:h-24" />
 
           <div className="col-span-full mb-12">
-            <H2 className="mb-2">Some basic info to remember you.</H2>
-            <H2 className="mb-12 lg:mb-20" variant="secondary" as="p">
+            <H2>Some basic info to remember you.</H2>
+            <H2 variant="secondary" as="p">
               You can change these later.
             </H2>
           </div>
 
-          <div className="col-span-full mb-12 lg:col-span-4 lg:mb-20">
-            <div className="flex items-baseline justify-between mb-4">
-              <Label htmlFor="firstName">First name</Label>
-              <InputError id="firstName-error">
-                {data.errors?.firstName}
-              </InputError>
-            </div>
-
-            <Input
+          <div className="col-span-full mb-12 lg:col-span-5 lg:mb-20">
+            <Field
               name="firstName"
-              id="firstName"
+              label="First name"
+              error={data.errors?.firstName}
               autoComplete="firstName"
-              required
               defaultValue={data.fields?.firstName ?? ''}
-              aria-describedby={data.errors ? 'firstName-error' : undefined}
+              required
+            />
+          </div>
+
+          <div className="col-span-full mb-12 lg:col-span-5 lg:col-start-7 lg:mb-20">
+            <Field
+              name="email"
+              label="Email"
+              defaultValue={data.email}
+              readOnly
+              disabled
             />
           </div>
 
