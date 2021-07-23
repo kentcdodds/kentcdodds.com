@@ -244,7 +244,6 @@ function PodcastHome() {
         articles={data.blogRecommendations}
         title="Looking for more content?"
         description="Have a look at these articles."
-        showArrowButton
       />
     </>
   )
