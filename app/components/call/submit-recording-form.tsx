@@ -1,7 +1,6 @@
 import * as React from 'react'
 import {Form, useSubmit} from 'remix'
-import {Input, InputError, Label} from '../form-elements'
-import {Grid} from '../grid'
+import {Field} from '../form-elements'
 import {Button} from '../button'
 
 type RecordingFormData = {
@@ -71,59 +70,30 @@ function RecordingForm({audio, data}: {audio: Blob; data?: RecordingFormData}) {
       </div>
 
       <Form onSubmit={handleSubmit}>
-        <Grid nested>
-          <div className="flex flex-col col-span-full space-y-12 lg:col-span-6 lg:space-y-20">
-            <div>
-              <div className="flex items-baseline justify-between mb-4">
-                <Label htmlFor="title">Title</Label>
-                <InputError id="firstName-error">
-                  {data?.errors.title}
-                </InputError>
-              </div>
+        <Field
+          name="title"
+          label="Title"
+          defaultValue={data?.fields.title ?? ''}
+          error={data?.errors.title}
+        />
+        <Field
+          error={data?.errors.description}
+          name="description"
+          label="Description"
+          type="textarea"
+          defaultValue={data?.fields.description ?? ''}
+        />
 
-              <Input
-                id="title"
-                name="title"
-                aria-describedby="title-error-message"
-                defaultValue={data?.fields.title ?? ''}
-              />
-            </div>
+        <Field
+          error={data?.errors.keywords}
+          label="Keywords"
+          name="keywords"
+          defaultValue={data?.fields.keywords ?? ''}
+        />
 
-            <div>
-              <div className="flex items-baseline justify-between mb-4">
-                <Label htmlFor="description">Description</Label>
-                <InputError id="description-error-message">
-                  {data?.errors.description}
-                </InputError>
-              </div>
-
-              <Input
-                id="description"
-                name="description"
-                type="textarea"
-                aria-describedby="description-error-message"
-                defaultValue={data?.fields.description ?? ''}
-              />
-            </div>
-
-            <div>
-              <div className="flex items-baseline justify-between mb-4">
-                <Label htmlFor="keywords">Keywords</Label>
-                <InputError id="keywords-error-message">
-                  {data?.errors.keywords}
-                </InputError>
-              </div>
-
-              <Input
-                id="keywords"
-                name="keywords"
-                aria-describedby="keywords-error-message"
-                defaultValue={data?.fields.keywords ?? ''}
-              />
-            </div>
-            <Button type="submit">Submit Recording</Button>
-          </div>
-        </Grid>
+        <Button type="submit" className="mt-8">
+          Submit Recording
+        </Button>
       </Form>
     </div>
   )
