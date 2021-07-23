@@ -94,13 +94,10 @@ function YouScreen() {
               </div>
               <Form action="/me" method="post">
                 <input type="hidden" name="actionId" value={actionIds.logout} />
-                <button
-                  type="submit"
-                  className="flex col-span-full items-center self-end mb-12 px-11 py-6 text-black dark:text-white border-2 border-gray-600 rounded-full space-x-4 lg:col-span-8 lg:col-start-3 lg:self-auto lg:mb-0"
-                >
+                <Button type="submit" variant="secondary">
                   <LogoutIcon />
                   <H6 as="span">logout</H6>
-                </button>
+                </Button>
               </Form>
             </div>
           </div>

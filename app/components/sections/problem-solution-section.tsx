@@ -19,7 +19,7 @@ function Tab({isSelected, children}: TabProps & {isSelected?: boolean}) {
   return (
     <ReachTab
       className={clsx(
-        'inline-flex items-center p-0 w-full focus:bg-transparent border-none lowercase space-x-8 transition',
+        'hover:text-primary inline-flex items-center p-0 w-full focus:bg-transparent border-none lowercase space-x-8 transition',
         {
           'text-primary': isSelected,
           'dark:text-blueGray-500 text-gray-400': !isSelected,
