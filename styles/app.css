@@ -63,11 +63,21 @@ light-mode {
   display: none;
 }
 
+.html a {
+  color: var(--color-black);
+}
+
+.dark .html a {
+  color: var(--color-white);
+}
+
+.html a,
 a.underlined {
   position: relative;
   text-decoration: none;
 }
 
+.html a:after,
 a.underlined:after {
   content: '';
   height: 2px;
@@ -81,6 +91,9 @@ a.underlined:after {
   position: absolute;
 }
 
+.html a:hover:after,
+.html a:focus:after,
+.html a.active:after,
 a.underlined:hover:after,
 a.underlined:focus:after,
 a.active.underlined:after {
