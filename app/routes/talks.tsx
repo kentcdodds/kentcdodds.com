@@ -334,7 +334,9 @@ export default function TalksScreen() {
       <Grid className="mb-64">
         <H6 as="h2" className="col-span-full mb-6">
           {selectedTags.length
-            ? `${talks.length} talks found`
+            ? talks.length === 1
+              ? `1 talk found`
+              : `${talks.length} talks found`
             : 'Showing all talks'}
         </H6>
 
