@@ -33,7 +33,7 @@ module.exports = {
       name: 'Postcss',
       script: 'npm run build:css',
       autorestart: false,
-      watch: ['./app/**/*.tsx?', './styles/**/*.css'],
+      watch: ['./app/**/*.ts', './app/**/*.tsx', './styles/**/*.css'],
       env: {
         NODE_ENV: process.env.NODE_ENV ?? 'development',
       },
