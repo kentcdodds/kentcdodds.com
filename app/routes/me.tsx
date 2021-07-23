@@ -3,6 +3,7 @@ import type {ActionFunction, LoaderFunction} from 'remix'
 import {Form, json, redirect, useLoaderData, useActionData} from 'remix'
 import clsx from 'clsx'
 import {useEffect, useState} from 'react'
+import type {KCDHandle} from 'types'
 import {getQrCodeDataURL} from '../utils/qrcode.server'
 import {
   getDiscordAuthorizeURL,
@@ -21,6 +22,10 @@ import {LogoutIcon} from '../components/icons/logout-icon'
 import {TEAM_MAP} from '../utils/onboarding'
 import {handleFormSubmission} from '../utils/actions.server'
 import {EyeIcon} from '../components/icons/eye-icon'
+
+export const handle: KCDHandle = {
+  metas: [{httpEquiv: 'refresh', content: '1740'}],
+}
 
 type LoaderData = {qrLoginCode: string}
 export const loader: LoaderFunction = ({request}) => {

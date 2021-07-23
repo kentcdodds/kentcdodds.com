@@ -132,6 +132,10 @@ type CallKentEpisode = {
   publishedAt: string
 }
 
+type KCDHandle = {
+  metas?: Array<JSX.IntrinsicElements['meta']>
+}
+
 type KCDLoader<
   Params extends Record<string, unknown> = Record<string, unknown>,
 > = (
@@ -164,6 +168,7 @@ export {
   CallKentEpisode,
   KCDLoader,
   KCDAction,
+  KCDHandle,
   GitHubFile,
 }
 

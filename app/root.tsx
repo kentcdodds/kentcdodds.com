@@ -8,11 +8,12 @@ import {
   LoaderFunction,
   json,
   useRouteData,
+  useMatches,
 } from 'remix'
 import type {LinksFunction, MetaFunction, Session} from 'remix'
 import {useLocation, Outlet} from 'react-router-dom'
 import clsx from 'clsx'
-import type {Await, User} from 'types'
+import type {Await, KCDHandle, User} from 'types'
 import tailwindStyles from './styles/tailwind.css'
 import vendorStyles from './styles/vendors.css'
 import appStyles from './styles/app.css'
@@ -24,7 +25,7 @@ import {
   NonFlashOfWrongThemeEls,
 } from './utils/theme-provider'
 import {getUser, rootStorage, sessionKeys} from './utils/session.server'
-import {getDomainUrl} from './utils/misc'
+import {getDomainUrl, typedBoolean} from './utils/misc'
 import {
   RequestInfo,
   UserInfoProvider,
@@ -112,6 +113,11 @@ export const loader: LoaderFunction = async ({request}) => {
 }
 
 function App() {
+  const matches = useMatches()
+  const metas = matches
+    .flatMap(({handle}) => (handle as KCDHandle | undefined)?.metas)
+    .filter(typedBoolean)
+
   const data = useRouteData<LoaderData>()
   const [team] = useTeam()
   const [theme] = useTheme()
@@ -124,6 +130,9 @@ function App() {
     <html lang="en" className={theme ?? ''}>
       <head>
         <Meta />
+        {metas.map((m, i) => (
+          <meta key={i} {...m} />
+        ))}
         <Links />
         <style>{`
           :root {
