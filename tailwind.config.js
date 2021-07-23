@@ -129,6 +129,9 @@ module.exports = {
                 a: {
                   textDecoration: 'none',
                 },
+                'a:hover,a:focus': {
+                  textDecoration: 'underline',
+                },
                 strong: {
                   fontWeight: theme('fontWeight.medium'),
                   fontSize: fontSize('lg'),

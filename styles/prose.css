@@ -20,7 +20,7 @@ pre {
 }
 
 .light pre {
-  --base00: #fbfbfb; /* editor background */
+  --base00: #f3f3f3; /* editor background */
   --base01: #e0e0e0; /* unused (currently) */
   --base02: #d6d6d6; /* unused (currently) */
   --base03: #989fb1; /* code comments */
@@ -190,31 +190,37 @@ pre {
   pointer-events: none;
 }
 
-/* TODO: check back in on these colors to make sure they're accessibile in dark and light mode */
+/* the warning yellow is really inaccessible in light mode, so we have a special case for light mode */
+.light .prose callout-warning {
+  color: #676000;
+}
+.light .prose callout-warning:before {
+  background: #ffd800;
+}
 .prose callout-warning {
-  color: var(--color-yellow-500);
+  color: #ffd644;
 }
 .prose callout-warning:before {
-  background: var(--color-yellow-500);
+  background: #ffd644;
 }
 
 .prose callout-info {
-  color: var(--color-blue-500);
+  color: #4b96ff;
 }
 .prose callout-info:before {
-  background: var(--color-blue-500);
+  background: #4b96ff;
 }
 
 .prose callout-danger {
-  color: var(--color-red-500);
+  color: #ff4545;
 }
 .prose callout-danger:before {
-  background: var(--color-red-500);
+  background: #ff4545;
 }
 
 .prose callout-success {
-  color: var(--color-green-500);
+  color: #30c85e;
 }
 .prose callout-success:before {
-  background: var(--color-green-500);
+  background: #30c85e;
 }

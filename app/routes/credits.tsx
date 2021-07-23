@@ -6,6 +6,7 @@ import {HeaderSection} from '../components/sections/header-section'
 import {HeroSection} from '../components/sections/hero-section'
 import {GithubIcon} from '../components/icons/github-icon'
 import {TwitterIcon} from '../components/icons/twitter-icon'
+import {Spacer} from '../components/spacer'
 
 interface ProfileCardProps {
   name: string
@@ -121,6 +122,24 @@ function CreditsIndex() {
             <ProfileCard {...person} />
           </div>
         ))}
+      </Grid>
+
+      <Spacer size="medium" />
+
+      <HeaderSection
+        title="Shout-outs"
+        subTitle="Some other awesome folks"
+        className="mb-16"
+      />
+      <Grid className="prose prose-light dark:prose-dark gap-y-20 lg:gap-y-32">
+        <Paragraph className="col-span-4">
+          The syntax highlighting theme in blog posts is inspired by{' '}
+          <a href="https://twitter.com/sarah_edo">Sarah Drasner&apos;s</a>{' '}
+          <a href="https://github.com/sdras/night-owl-vscode-theme">
+            Night Owl
+          </a>
+          .
+        </Paragraph>
       </Grid>
     </>
   )
