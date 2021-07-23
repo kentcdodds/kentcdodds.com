@@ -24,6 +24,7 @@ const slugifyWithCounter = slugify.counter()
 
 type RawTalk = {
   title?: string
+  tag?: string
   tags?: Array<string>
   slug: string
   resources?: Array<string>
@@ -33,9 +34,10 @@ type RawTalk = {
 
 type Talk = Await<ReturnType<typeof getTalk>>
 
-async function getTalk(rawTalk: RawTalk) {
+async function getTalk(rawTalk: RawTalk, allTags: Array<string>) {
   return {
     title: rawTalk.title ?? 'TBA',
+    tag: allTags.find(tag => rawTalk.tags?.includes(tag)) ?? rawTalk.tags?.[0],
     tags: rawTalk.tags ?? [],
     slug: slugifyWithCounter(rawTalk.title ?? 'TBA'),
     resourceHTMLs: rawTalk.resources
@@ -87,10 +89,30 @@ type LoaderData = {
   tags: Array<string>
 }
 
+function getTags(talks: Array<RawTalk>): string[] {
+  // get most used tags
+  const tagCounts: Record<string, number> = {}
+
+  for (const talk of talks) {
+    if (!talk.tags) continue
+
+    for (const tag of talk.tags) {
+      tagCounts[tag] = (tagCounts[tag] ?? 0) + 1
+    }
+  }
+
+  const tags = Object.entries(tagCounts)
+    .filter(([_tag, counts]) => counts > 1) // only include tags assigned to >1 talks
+    .sort((l, r) => r[1] - l[1]) // sort on num occurrences
+    .map(([tag]) => tag) // extract tags, ditch the counts
+
+  return tags
+}
+
 export const loader: LoaderFunction = async ({request}) => {
   slugifyWithCounter.reset()
 
-  const talks = await cachified({
+  const data: LoaderData = await cachified({
     key: 'content:data:talks.yml',
     request,
     getFreshValue: async () => {
@@ -100,19 +122,29 @@ export const loader: LoaderFunction = async ({request}) => {
         console.error('Talks is not an array', rawTalks)
         throw new Error('Talks is not an array.')
       }
-      const allTalks = await Promise.all(rawTalks.map(getTalk))
-      return allTalks.sort(sortByPresentationDate)
+
+      const allTags = getTags(rawTalks)
+
+      const allTalks = await Promise.all(
+        rawTalks.map(talk => getTalk(talk, allTags)),
+      )
+      allTalks.sort(sortByPresentationDate)
+      allTags.sort()
+
+      return {talks: allTalks, tags: allTags}
     },
-    checkValue: (value: unknown) => Array.isArray(value),
+    checkValue: (value: unknown) =>
+      Boolean(value) &&
+      typeof value === 'object' &&
+      Array.isArray((value as LoaderData).talks) &&
+      Array.isArray((value as LoaderData).tags),
   })
 
-  const tags = Array.from(new Set(talks.flatMap(x => x.tags))).sort()
-
-  const data: LoaderData = {talks, tags}
   return json(data)
 }
 
 function Card({
+  tag,
   tags,
   title,
   slug,
@@ -127,9 +159,6 @@ function Card({
     .sort((l, r) => r.getTime() - l.getTime())[0] as Date
 
   const isInFuture = latestDate.getTime() > Date.now()
-
-  // `software development` makes a terrible tag to render in this position
-  const tag = tags.filter(x => x.length <= 10)[0]
 
   return (
     <div
