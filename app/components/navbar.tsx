@@ -186,7 +186,7 @@ function MobileMenu() {
         const state = isExpanded ? 'open' : 'closed'
         return (
           <>
-            <MenuButton className="focus:bg-secondary hover:bg-secondary text-primary inline-flex items-center justify-center p-1 w-14 h-14 border-2 border-gray-200 dark:border-gray-600 rounded-full focus:outline-none transition">
+            <MenuButton className="focus:border-primary hover:border-primary text-primary border-secondary inline-flex items-center justify-center p-1 w-14 h-14 border-2 rounded-full focus:outline-none transition">
               <svg
                 width="32"
                 height="32"
@@ -291,7 +291,13 @@ function Navbar() {
               ? 'Finish signing up'
               : 'Login'
           }
-          className="focus:border-primary hover:border-primary inline-flex items-center justify-center ml-4 w-14 h-14 text-white border-2 border-team-current rounded-full focus:outline-none transition"
+          className={clsx(
+            'focus:border-primary hover:border-primary inline-flex items-center justify-center ml-4 w-14 h-14 text-white border-2 rounded-full focus:outline-none transition',
+            {
+              'border-team-current': team !== 'UNKNOWN',
+              'border-secondary': team === 'UNKNOWN',
+            },
+          )}
         >
           <img
             className="inline w-10 h-10 bg-white rounded-full object-cover"

@@ -12,14 +12,14 @@ import {motion, AnimatePresence} from 'framer-motion'
 import {images} from '../../images'
 import {Grid} from '../grid'
 import {H2, H3, Paragraph} from '../typography'
-import {ArrowButton} from '../arrow-button'
+import {ArrowLink} from '../arrow-button'
 import {ArrowIcon} from '../icons/arrow-icon'
 
 function Tab({isSelected, children}: TabProps & {isSelected?: boolean}) {
   return (
     <ReachTab
       className={clsx(
-        'inline-flex items-center p-0 w-full focus:bg-transparent border-none lowercase space-x-8 transition',
+        'hover:text-primary inline-flex items-center p-0 w-full focus:bg-transparent border-none lowercase space-x-8 transition',
         {
           'text-primary': isSelected,
           'dark:text-blueGray-500 text-gray-400': !isSelected,
@@ -164,9 +164,9 @@ function ProblemSolutionSection() {
                   vulputate non mi. Mauris vel pellentesque mauris vivamus.
                 </Paragraph>
 
-                <ArrowButton className="mt-14">
+                <ArrowLink to="/blog" className="mt-14">
                   Start reading the blog
-                </ArrowButton>
+                </ArrowLink>
               </ContentPanel>
 
               <ContentPanel active={activeTabIndex === 1}>
@@ -179,7 +179,9 @@ function ProblemSolutionSection() {
                   aliquet nulla at, gravida nunc. Nulla vitae hendrerit velit.
                 </Paragraph>
 
-                <ArrowButton className="mt-14">Explore the courses</ArrowButton>
+                <ArrowLink to="/courses" className="mt-14">
+                  Explore the courses
+                </ArrowLink>
               </ContentPanel>
 
               <ContentPanel active={activeTabIndex === 2}>
@@ -192,9 +194,9 @@ function ProblemSolutionSection() {
                   felis, porta eu convallis sit amet, vulputate non mi.
                 </Paragraph>
 
-                <ArrowButton className="mt-14">
+                <ArrowLink to="/chats" className="mt-14">
                   Start listening to the podcasts
-                </ArrowButton>
+                </ArrowLink>
               </ContentPanel>
             </TabPanels>
           </Tabs>

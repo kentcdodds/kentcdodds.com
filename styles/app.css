@@ -26,6 +26,14 @@
   --color-team-yellow: #ffd644;
 }
 
+.light {
+  --color-team-unknown: var(--color-black);
+}
+
+.dark {
+  --color-team-unknown: var(--color-white);
+}
+
 :focus:not(:focus-visible) {
   outline: none;
 }
@@ -35,7 +43,7 @@ input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
   -webkit-text-fill-color: black !important;
-  -webkit-box-shadow: 0 0 0 999px var(--color-gray-200) inset !important; /* gray-200 */
+  -webkit-box-shadow: 0 0 0 999px var(--color-gray-100) inset !important;
   background-clip: content-box !important;
 }
 
@@ -44,7 +52,7 @@ input:-webkit-autofill:active {
 .dark input:-webkit-autofill:focus,
 .dark input:-webkit-autofill:active {
   -webkit-text-fill-color: white !important;
-  -webkit-box-shadow: 0 0 0 999px var(--color-gray-800) inset !important; /* gray-800 */
+  -webkit-box-shadow: 0 0 0 999px var(--color-gray-800) inset !important;
   background-clip: content-box !important;
 }
 

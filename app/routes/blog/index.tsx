@@ -18,6 +18,7 @@ import {useRequestInfo} from '../../utils/providers'
 import {shouldForceFresh} from '../../utils/redis.server'
 import {HeroSection} from '../../components/sections/hero-section'
 import {PlusIcon} from '../../components/icons/plus-icon'
+import {Button} from '../../components/button'
 
 type LoaderData = {
   posts: Array<MdxListItem>
@@ -63,6 +64,10 @@ export const meta: MetaFunction = () => {
   }
 }
 
+// should be divisible by 3 and 2 (large screen, and medium screen).
+const PAGE_SIZE = 12
+const initialIndexToShow = PAGE_SIZE + 1 // + 1 for the featured blog
+
 function BlogHome() {
   const requestInfo = useRequestInfo()
 
@@ -102,7 +107,6 @@ function BlogHome() {
     return filterPosts(allPosts, query)
   }, [allPosts, query])
 
-  const initialIndexToShow = 14
   const [indexToShow, setIndexToShow] = React.useState(initialIndexToShow)
   // when the query changes, we want to reset the index
   React.useEffect(() => {
@@ -161,7 +165,7 @@ function BlogHome() {
                 name="q"
                 placeholder="Search blog"
                 aria-label="Search blog"
-                className="dark:focus:bg-gray-800 placeholder-black dark:placeholder-white px-16 py-6 w-full text-black dark:text-white text-lg font-medium focus:bg-gray-100 bg-transparent border border-gray-200 dark:border-gray-600 rounded-full focus:outline-none"
+                className="text-primary bg-primary border-secondary hover:border-primary focus:border-primary focus:bg-secondary px-16 py-6 w-full text-lg font-medium border rounded-full focus:outline-none"
               />
               <div className="absolute right-8 top-0 flex items-center justify-center h-full text-blueGray-500 text-lg font-medium">
                 {matchingPosts.length}
@@ -235,12 +239,12 @@ function BlogHome() {
 
       {hasMorePosts ? (
         <div className="flex justify-center mb-64 w-full">
-          <button
-            onClick={() => setIndexToShow(i => i + 16)}
-            className="dark:focus:bg-gray-800 text-primary flex items-center px-8 py-6 focus:bg-gray-100 bg-transparent border border-gray-200 dark:border-gray-600 rounded-full focus:outline-none"
+          <Button
+            variant="secondary"
+            onClick={() => setIndexToShow(i => i + PAGE_SIZE)}
           >
-            <span className="mr-4">Load more articles</span> <PlusIcon />
-          </button>
+            <span>Load more articles</span> <PlusIcon />
+          </Button>
         </div>
       ) : null}
 

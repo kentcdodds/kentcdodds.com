@@ -340,16 +340,20 @@ export default function TalksScreen() {
             : 'Showing all talks'}
         </H6>
 
-        {talks.map(talk => {
-          return (
-            <div
-              key={talk.slug}
-              className="md-col-span-4 col-span-full mb-4 lg:col-span-6 lg:mb-6"
-            >
-              <Card active={activeSlug === talk.slug} {...talk} />
-            </div>
-          )
-        })}
+        <div className="col-span-full">
+          <Grid nested rowGap>
+            {talks.map(talk => {
+              return (
+                <div
+                  key={talk.slug}
+                  className="col-span-full md:col-span-4 lg:col-span-6"
+                >
+                  <Card active={activeSlug === talk.slug} {...talk} />
+                </div>
+              )
+            })}
+          </Grid>
+        </div>
       </Grid>
 
       <CourseSection />

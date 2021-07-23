@@ -20,7 +20,7 @@ type InputProps =
 
 function Input(props: InputProps) {
   const className = clsx(
-    'placeholder-gray-500 dark:disabled:text-blueGray-500 focus-ring px-11 py-8 w-full text-black disabled:text-gray-400 dark:text-white text-lg font-medium bg-gray-200 dark:bg-gray-800 rounded-lg',
+    'placeholder-gray-500 dark:disabled:text-blueGray-500 focus-ring px-11 py-8 w-full text-black disabled:text-gray-400 dark:text-white text-lg font-medium bg-gray-100 dark:bg-gray-800 rounded-lg',
     props.className,
   )
 
@@ -64,6 +64,7 @@ function Field({
   name,
   label,
   className,
+  description,
   id,
   ...props
 }: {
@@ -72,16 +73,24 @@ function Field({
   label: string
   className?: string
   error?: string | null
+  description?: React.ReactNode
 } & InputProps) {
   const prefix = useId()
   const inputId = id ?? `${prefix}-${name}`
   const errorId = `${inputId}-error`
+  const descriptionId = `${inputId}-description`
 
   return (
     <div className={clsx('mb-8', className)}>
       <div className="flex items-baseline justify-between mb-4">
         <Label htmlFor={inputId}>{label}</Label>
-        <InputError id={errorId}>{error}</InputError>
+        {error ? (
+          <InputError id={errorId}>{error}</InputError>
+        ) : description ? (
+          <p id={descriptionId} className="text-primary text-lg">
+            {description}
+          </p>
+        ) : null}
       </div>
 
       <Input
@@ -91,7 +100,9 @@ function Field({
         autoComplete={name}
         required
         defaultValue={defaultValue}
-        aria-describedby={error ? errorId : undefined}
+        aria-describedby={
+          error ? errorId : description ? descriptionId : undefined
+        }
       />
     </div>
   )

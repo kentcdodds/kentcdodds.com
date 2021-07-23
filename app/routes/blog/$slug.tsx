@@ -295,7 +295,7 @@ function MdxScreen() {
                   </ul>
                   <a
                     href={externalLinks.translationContributions}
-                    className="text-secondary block mb-6 ml-5 my-3 hover:underline"
+                    className="text-secondary underlined block mb-6 ml-5 my-3"
                     target="_blank"
                     rel="noreferrer noopener"
                   >
@@ -312,7 +312,7 @@ function MdxScreen() {
 
                   <a
                     href={externalLinks.translationContributions}
-                    className="text-secondary block ml-5 hover:underline"
+                    className="text-secondary underlined block ml-5"
                     target="_blank"
                     rel="noreferrer noopener"
                   >

@@ -16,7 +16,7 @@ function BlogSection({
   articles,
   title,
   description,
-  showArrowButton,
+  showArrowButton = true,
 }: BlogSectionProps) {
   return (
     <>

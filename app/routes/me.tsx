@@ -10,7 +10,7 @@ import {getMagicLink, updateUser} from '../utils/prisma.server'
 import {requireUser, rootStorage, signOutSession} from '../utils/session.server'
 import {H2, H6} from '../components/typography'
 import {Grid} from '../components/grid'
-import {Input, Label} from '../components/form-elements'
+import {Field, Label} from '../components/form-elements'
 import {Button} from '../components/button'
 import {CheckCircledIcon} from '../components/icons/check-circled-icon'
 import {LogoutIcon} from '../components/icons/logout-icon'
@@ -87,20 +87,17 @@ function YouScreen() {
           <div className="col-span-full mb-12 lg:mb-20">
             <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
               <div>
-                <H2 className="mb-2">Here’s your profile.</H2>
+                <H2>Here’s your profile.</H2>
                 <H2 variant="secondary" as="p">
                   Edit as you wish.
                 </H2>
               </div>
               <Form action="/me" method="post">
                 <input type="hidden" name="actionId" value={actionIds.logout} />
-                <button
-                  type="submit"
-                  className="flex col-span-full items-center self-end mb-12 px-11 py-6 text-black dark:text-white border-2 border-gray-600 rounded-full space-x-4 lg:col-span-8 lg:col-start-3 lg:self-auto lg:mb-0"
-                >
+                <Button type="submit" variant="secondary">
                   <LogoutIcon />
                   <H6 as="span">logout</H6>
-                </button>
+                </Button>
               </Form>
             </div>
           </div>
@@ -115,70 +112,50 @@ function YouScreen() {
               name="actionId"
               value={actionIds.changeDetails}
             />
-            <Label className="mb-4" htmlFor="firstName">
-              First name
-            </Label>
-
-            <Input
-              className="mb-8"
+            <Field
               name="firstName"
-              id="firstName"
-              autoComplete="firstName"
+              label="First name"
               defaultValue={user.firstName}
+              autoComplete="firstName"
               required
             />
 
-            <Label className="mb-4" htmlFor="email-address">
-              Email address
-            </Label>
-
-            <Input
+            <Field
               name="email"
-              id="email-address"
+              label="Email address"
               autoComplete="email"
               required
               defaultValue={user.email}
-              className="mb-8"
               readOnly
               disabled
             />
 
-            <div className="flex flex-wrap items-baseline justify-between mb-4">
-              <Label htmlFor="discord-id">Discord</Label>
-              <p
-                id="discord-message"
-                className="dark:text-blueGray-500 text-gray-500 text-lg"
-              >
-                {user.discordId ? (
+            <Field
+              name="discord"
+              label="Discord"
+              defaultValue={userInfo.discord?.username ?? user.discordId ?? ''}
+              placeholder="n/a"
+              readOnly
+              disabled
+              description={
+                user.discordId ? (
                   <a
-                    className="text-black dark:text-white"
+                    className="underlined"
                     href={`https://discord.com/users/${user.discordId}`}
                   >
                     connected
                   </a>
                 ) : (
-                  <a
-                    className="focus-ring text-black dark:text-white rounded-lg"
-                    href={authorizeURL}
-                  >
+                  <a className="underlined" href={authorizeURL}>
                     Connect to Discord
                   </a>
-                )}
-              </p>
-            </div>
-
-            <Input
-              id="discord-id"
-              name="discord"
-              value={userInfo.discord?.username ?? user.discordId ?? ''}
-              placeholder="n/a"
-              className="mb-12 lg:mb-20"
-              aria-describedby="discord-message"
-              readOnly
-              disabled
+                )
+              }
             />
 
-            <Button type="submit">Save changes</Button>
+            <Button className="mt-8" type="submit">
+              Save changes
+            </Button>
           </Form>
 
           <div className="col-span-full lg:col-span-4 lg:col-start-8">
@@ -215,13 +192,13 @@ function YouScreen() {
 
       <Grid>
         <div className="col-span-full mb-12 lg:col-span-5 lg:col-start-8 lg:mb-0">
-          <H2 className="mb-2">Need to login somewhere else?</H2>
+          <H2>Need to login somewhere else?</H2>
           <H2 variant="secondary" as="p">
             Scan this QR code on the other device.
           </H2>
         </div>
 
-        <div className="relative col-span-full lg:col-span-5 lg:col-start-1 lg:row-start-1">
+        <div className="bg-secondary relative col-span-full p-4 rounded-lg lg:col-span-5 lg:col-start-1 lg:row-start-1">
           <img
             src={data.qrLoginCode}
             alt="Login QR Code"

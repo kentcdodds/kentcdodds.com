@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {images} from '../../images'
 import {H2} from '../typography'
-import {ArrowButton} from '../arrow-button'
+import {ArrowLink} from '../arrow-button'
 import {Grid} from '../grid'
 import {DiscordLogo} from '../icons/discord-logo'
 
@@ -20,9 +20,9 @@ function DiscordSection() {
           Join the discord and learn to get better at react together.
         </H2>
 
-        <ArrowButton direction="right" className="mt-20">
+        <ArrowLink to="/discord" direction="right" className="mt-20">
           Learn more about the discord
-        </ArrowButton>
+        </ArrowLink>
       </div>
 
       <div className="relative hidden lg:block lg:col-span-6 lg:col-start-7">

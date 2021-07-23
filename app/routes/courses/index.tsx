@@ -84,7 +84,7 @@ function CoursesHome() {
 
       <h2 className="sr-only">Courses</h2>
 
-      <Grid className="gap-y-4 mb-24 lg:mb-96">
+      <Grid className="gap-y-4 mb-24 lg:mb-64">
         <div className="col-span-full lg:col-span-6">
           <CourseCard
             title="Epic React"

@@ -166,7 +166,7 @@ function PodcastHome() {
             <Tab
               key={season.seasonNumber}
               className={clsx(
-                'p-0 text-4xl leading-tight focus:bg-transparent border-none',
+                'hover:text-primary p-0 text-4xl leading-tight focus:bg-transparent border-none',
                 {
                   'text-primary': season.seasonNumber === seasonNumber,
                   'text-blueGray-500': season.seasonNumber !== seasonNumber,

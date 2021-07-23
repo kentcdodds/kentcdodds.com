@@ -77,14 +77,15 @@ function WorkshopsHome() {
             : 'Showing all workshops'}
         </H6>
 
-        {workshops.map(workshop => (
-          <div
-            key={workshop.slug}
-            className="col-span-full mb-4 md:col-span-4 lg:mb-6"
-          >
-            <WorkshopCard {...workshop} />
-          </div>
-        ))}
+        <div className="col-span-full">
+          <Grid nested rowGap>
+            {workshops.map(workshop => (
+              <div key={workshop.slug} className="col-span-full md:col-span-4">
+                <WorkshopCard {...workshop} />
+              </div>
+            ))}
+          </Grid>
+        </div>
       </Grid>
 
       <CourseSection />

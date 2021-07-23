@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {images} from '../../images'
 import {H2} from '../typography'
-import {ArrowButton} from '../arrow-button'
+import {ArrowLink} from '../arrow-button'
 import {Grid} from '../grid'
 import {VideoCard} from '../video-card'
 
@@ -27,9 +27,9 @@ function IntroductionSection() {
           rollerskater. When i’m not at the computer you can find me cruizing
           around on my one wheel.
         </H2>
-        <ArrowButton direction="right" className="mt-20">
+        <ArrowLink to="/about" direction="right" className="mt-20">
           Learn more about me
-        </ArrowButton>
+        </ArrowLink>
       </div>
     </Grid>
   )
