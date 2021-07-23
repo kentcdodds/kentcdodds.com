@@ -6,6 +6,7 @@ import type {Await} from 'types'
 import {useRef, useState} from 'react'
 import formatDate from 'date-fns/format'
 import {Link, useLocation} from 'react-router-dom'
+import clsx from 'clsx'
 import slugify from '@sindresorhus/slugify'
 import {typedBoolean} from '../utils/misc'
 import {markdownToHtml} from '../utils/markdown.server'
@@ -156,7 +157,7 @@ function Card({
 
         <div className="flex space-x-2">
           {tag ? (
-            <div className="inline-block -mr-8 -mt-4 mb-4 px-8 py-4 text-black dark:text-white text-lg dark:bg-gray-600 bg-white rounded-full">
+            <div className="inline-block -mr-8 -my-4 px-8 py-4 text-black dark:text-white text-lg dark:bg-gray-600 bg-white rounded-full">
               {tag}
             </div>
           ) : null}
@@ -170,58 +171,76 @@ function Card({
       <div className="flex-auto mb-10">
         <Paragraph
           as="div"
-          className="html mb-12"
+          className="html mb-20"
           dangerouslySetInnerHTML={{__html: descriptionHTML ?? '&nbsp;'}}
         />
 
-        <H6 as="div">Keywords</H6>
-        <Paragraph className="flex mb-8">{tags.join(', ')}</Paragraph>
+        {tags.length ? (
+          <>
+            <H6 as="div" className="mb-2 mt-10">
+              Keywords
+            </H6>
+            <Paragraph className="flex">{tags.join(', ')}</Paragraph>
+          </>
+        ) : null}
 
-        <H6 as="div">Presentations</H6>
-        <ul className="mb-8 space-y-2">
-          {deliveries.map(delivery => (
-            <li key={`${delivery.recording}-${delivery.date}`}>
-              <div className="flex justify-between">
-                <div className="inline-flex">
+        {deliveries.length ? (
+          <>
+            <H6 as="div" className="mb-2 mt-10">
+              Presentations
+            </H6>
+            <ul className="space-y-1">
+              {deliveries.map(delivery => (
+                <li key={`${delivery.recording}-${delivery.date}`}>
+                  <div className="flex justify-between">
+                    <div className="inline-flex">
+                      <Paragraph
+                        as="div"
+                        className="html"
+                        dangerouslySetInnerHTML={{
+                          __html: delivery.eventHTML ?? '',
+                        }}
+                      />
+                      {delivery.recording ? (
+                        <a
+                          className="text-secondary hover:text-primary ml-2"
+                          href={delivery.recording}
+                        >
+                          <YoutubeIcon />
+                        </a>
+                      ) : null}
+                    </div>
+
+                    <Paragraph className="flex-none" as="span">
+                      {delivery.date
+                        ? formatDate(new Date(delivery.date), 'yyyy-MM-ii')
+                        : null}
+                    </Paragraph>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : null}
+
+        {resourceHTMLs.length ? (
+          <>
+            <H6 className="mb-2 mt-10" as="div">
+              Resources
+            </H6>
+            <ul className="space-y-1">
+              {resourceHTMLs.map(resource => (
+                <li key={resource}>
                   <Paragraph
                     as="div"
                     className="html"
-                    dangerouslySetInnerHTML={{
-                      __html: delivery.eventHTML ?? '',
-                    }}
+                    dangerouslySetInnerHTML={{__html: resource}}
                   />
-                  {delivery.recording ? (
-                    <a
-                      className="text-secondary hover:text-primary ml-2"
-                      href={delivery.recording}
-                    >
-                      <YoutubeIcon />
-                    </a>
-                  ) : null}
-                </div>
-
-                <Paragraph>
-                  {delivery.date
-                    ? formatDate(new Date(delivery.date), 'yyyy-MM-ii')
-                    : null}
-                </Paragraph>
-              </div>
-            </li>
-          ))}
-        </ul>
-
-        <H6 as="div">Resources</H6>
-        <ul className="space-y-2">
-          {resourceHTMLs.map(resource => (
-            <li key={resource}>
-              <Paragraph
-                as="div"
-                className="html"
-                dangerouslySetInnerHTML={{__html: resource}}
-              />
-            </li>
-          ))}
-        </ul>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : null}
       </div>
     </div>
   )
