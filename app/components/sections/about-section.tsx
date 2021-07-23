@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {images} from '../../images'
 import {H2, Paragraph} from '../typography'
-import {ArrowButton} from '../arrow-button'
+import {ArrowLink} from '../arrow-button'
 import {Grid} from '../grid'
 
 function AboutSection() {
@@ -38,9 +38,9 @@ function AboutSection() {
           pellentesq.
         </Paragraph>
 
-        <ArrowButton direction="right" className="mt-14">
-          Learn more about me{' '}
-        </ArrowButton>
+        <ArrowLink to="/about" direction="right" className="mt-14">
+          Learn more about me
+        </ArrowLink>
       </div>
     </Grid>
   )
