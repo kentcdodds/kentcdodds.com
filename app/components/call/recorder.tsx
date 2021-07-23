@@ -283,7 +283,11 @@ function CallRecorder({
           <Button size="medium" onClick={() => send({type: 'stop'})}>
             <SquareIcon /> <span>Stop</span>
           </Button>
-          <Button size="medium" onClick={() => send({type: 'pause'})}>
+          <Button
+            size="medium"
+            variant="secondary"
+            onClick={() => send({type: 'pause'})}
+          >
             <PauseIcon /> <span>Pause</span>
           </Button>
         </div>
