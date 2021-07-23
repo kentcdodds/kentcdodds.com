@@ -3,8 +3,10 @@ import type {LoaderFunction} from 'remix'
 import {json, useRouteData} from 'remix'
 import * as YAML from 'yaml'
 import type {Await} from 'types'
-import {useState} from 'react'
+import {useRef, useState} from 'react'
 import formatDate from 'date-fns/format'
+import {Link, useLocation} from 'react-router-dom'
+import slugify from '@sindresorhus/slugify'
 import {typedBoolean} from '../utils/misc'
 import {markdownToHtml} from '../utils/markdown.server'
 import {downloadFile} from '../utils/github.server'
@@ -17,9 +19,12 @@ import {H3, H6, Paragraph} from '../components/typography'
 import {CourseSection} from '../components/sections/course-section'
 import {YoutubeIcon} from '../components/icons/youtube-icon'
 
+const slugifyWithCounter = slugify.counter()
+
 type RawTalk = {
   title?: string
   tags?: Array<string>
+  slug: string
   resources?: Array<string>
   description?: string
   deliveries?: Array<{event?: string; date?: string; recording?: string}>
@@ -29,8 +34,9 @@ type Talk = Await<ReturnType<typeof getTalk>>
 
 async function getTalk(rawTalk: RawTalk) {
   return {
-    title: rawTalk.title,
+    title: rawTalk.title ?? 'TBA',
     tags: rawTalk.tags ?? [],
+    slug: slugifyWithCounter(rawTalk.title ?? 'TBA'),
     resourceHTMLs: rawTalk.resources
       ? await Promise.all(rawTalk.resources.map(r => markdownToHtml(r)))
       : [],
@@ -81,6 +87,8 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
+  slugifyWithCounter.reset()
+
   const talks = await cachified({
     key: 'content:data:talks.yml',
     request,
@@ -106,10 +114,12 @@ export const loader: LoaderFunction = async ({request}) => {
 function Card({
   tags,
   title,
+  slug,
   deliveries,
   descriptionHTML,
   resourceHTMLs,
-}: LoaderData['talks'][0]) {
+  active,
+}: LoaderData['talks'][0] & {active: boolean}) {
   const latestDate = deliveries
     .filter(x => x.date)
     .map(x => new Date(x.date as string))
@@ -121,7 +131,17 @@ function Card({
   const tag = tags.filter(x => x.length <= 10)[0]
 
   return (
-    <div className="block flex flex-col p-16 pr-24 w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg">
+    <div
+      className={clsx(
+        'relative block flex flex-col p-16 pr-24 w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg',
+        {
+          'ring-2 focus-ring': active,
+        },
+      )}
+    >
+      {/* place the scroll marker a bit above the element to act as view margin */}
+      <div data-talk={slug} className="absolute -top-8" />
+
       <div className="flex flex-none justify-between mb-8">
         <div className="inline-flex items-baseline">
           {isInFuture ? (
@@ -143,9 +163,9 @@ function Card({
         </div>
       </div>
 
-      <H3 as="div" className="flex flex-none items-end mb-4 h-48">
-        {title}
-      </H3>
+      <Link to={`./${slug}`} className="flex flex-none items-end mb-4 h-48">
+        <H3 as="div">{title}</H3>
+      </Link>
 
       <div className="flex-auto mb-10">
         <Paragraph
@@ -210,6 +230,18 @@ function Card({
 export default function TalksScreen() {
   const data = useRouteData<LoaderData>()
   const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const {pathname} = useLocation()
+  const [activeSlug] = pathname.split('/').slice(-1)
+  const initialActiveSlugRef = useRef(activeSlug)
+
+  // An effect to scroll to the talk's position when opening a direct link,
+  // use a ref so that it doesn't hijack scroll when the user is browsing talks
+  React.useEffect(() => {
+    const talk = initialActiveSlugRef.current
+    if (talk) {
+      document.querySelector(`[data-talk="${talk}"]`)?.scrollIntoView()
+    }
+  }, [initialActiveSlugRef])
 
   const toggleTag = (tag: string) => {
     const newSelection = selectedTags.includes(tag)
@@ -258,15 +290,13 @@ export default function TalksScreen() {
             : 'Showing all talks'}
         </H6>
 
-        {/* TODO: talks don't have a unique prop */}
-        {talks.map((talk, idx) => {
+        {talks.map(talk => {
           return (
             <div
-              key={`${idx}-${talk.title}`}
-              data-idx={idx}
+              key={talk.slug}
               className="md-col-span-4 col-span-full mb-4 lg:col-span-6 lg:mb-6"
             >
-              <Card {...talk} />
+              <Card active={activeSlug === talk.slug} {...talk} />
             </div>
           )
         })}
