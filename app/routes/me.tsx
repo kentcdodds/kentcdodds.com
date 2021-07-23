@@ -1,20 +1,25 @@
 import * as React from 'react'
 import type {ActionFunction, LoaderFunction} from 'remix'
-import {Form, json, redirect, useRouteData} from 'remix'
+import {Form, json, redirect, useLoaderData, useActionData} from 'remix'
 import clsx from 'clsx'
 import {useEffect, useState} from 'react'
 import {getQrCodeDataURL} from '../utils/qrcode.server'
-import {getDiscordAuthorizeURL, getDomainUrl} from '../utils/misc'
+import {
+  getDiscordAuthorizeURL,
+  getDomainUrl,
+  getErrorMessage,
+} from '../utils/misc'
 import {useRequestInfo, useUser, useUserInfo} from '../utils/providers'
 import {getMagicLink, updateUser} from '../utils/prisma.server'
 import {requireUser, rootStorage, signOutSession} from '../utils/session.server'
 import {H2, H6} from '../components/typography'
 import {Grid} from '../components/grid'
-import {Field, Label} from '../components/form-elements'
+import {Field, InputError, Label} from '../components/form-elements'
 import {Button} from '../components/button'
 import {CheckCircledIcon} from '../components/icons/check-circled-icon'
 import {LogoutIcon} from '../components/icons/logout-icon'
 import {TEAM_MAP} from '../utils/onboarding'
+import {handleFormSubmission} from '../utils/actions.server'
 import {EyeIcon} from '../components/icons/eye-icon'
 
 type LoaderData = {qrLoginCode: string}
@@ -36,34 +41,60 @@ const actionIds = {
   logout: 'logout',
 }
 
+function getFirstNameError(firstName: string | null) {
+  if (!firstName?.length) return 'First name is required'
+  return null
+}
+
+type ActionData = {
+  fields: {
+    firstName?: string | null
+  }
+  errors: {
+    generalError?: string | null
+    firstName?: string | null
+  }
+}
 export const action: ActionFunction = async ({request}) => {
   return requireUser(request, async user => {
-    const session = await rootStorage.getSession(request.headers.get('Cookie'))
-    const params = new URLSearchParams(await request.text())
-    const actionId = params.get('actionId')
+    const form = new URLSearchParams(await request.text())
+    const actionId = form.get('actionId')
 
-    if (actionId === actionIds.logout) {
-      await signOutSession(session)
+    try {
+      if (actionId === actionIds.logout) {
+        const session = await rootStorage.getSession(
+          request.headers.get('Cookie'),
+        )
+        await signOutSession(session)
 
-      return redirect('/', {
-        headers: {'Set-Cookie': await rootStorage.commitSession(session)},
-      })
-    }
-    if (actionId === actionIds.changeDetails) {
-      const newFirstName = params.get('firstName')
-      if (newFirstName && user.firstName !== newFirstName) {
-        await updateUser(user.id, {firstName: newFirstName})
+        return redirect('/', {
+          headers: {'Set-Cookie': await rootStorage.commitSession(session)},
+        })
       }
+      if (actionId === actionIds.changeDetails) {
+        return await handleFormSubmission<ActionData>(
+          form,
+          {firstName: getFirstNameError},
+          async ({firstName}) => {
+            if (firstName && user.firstName !== firstName) {
+              await updateUser(user.id, {firstName})
+            }
+            return redirect('/me')
+          },
+        )
+      }
+      return redirect('/me')
+    } catch (error: unknown) {
+      return json({generalError: getErrorMessage(error)}, 500)
     }
-
-    return redirect('/me')
   })
 }
 
 const SHOW_QR_DURATION = 15_000
 
 function YouScreen() {
-  const data = useRouteData<LoaderData>()
+  const data = useLoaderData<LoaderData>()
+  const actionData = useActionData() as ActionData | undefined
   const user = useUser()
   const userInfo = useUserInfo()
   const requestInfo = useRequestInfo()
@@ -106,18 +137,25 @@ function YouScreen() {
             action="/me"
             method="post"
             className="col-span-full mb-24 lg:col-span-5 lg:mb-0"
+            noValidate
+            aria-describedby="profile-form-error"
           >
             <input
               type="hidden"
               name="actionId"
               value={actionIds.changeDetails}
             />
+            <InputError id="profile-form-error">
+              {actionData?.errors.generalError}
+            </InputError>
+
             <Field
               name="firstName"
               label="First name"
-              defaultValue={user.firstName}
+              defaultValue={actionData?.fields.firstName ?? user.firstName}
               autoComplete="firstName"
               required
+              error={actionData?.errors.firstName}
             />
 
             <Field

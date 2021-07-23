@@ -1,7 +1,6 @@
 import * as React from 'react'
 import type {ActionFunction} from 'remix'
-import {json, redirect} from 'remix'
-import {getErrorMessage, getNonNull} from '../../utils/misc'
+import {redirect} from 'remix'
 import {sendEmail} from '../../utils/send-email.server'
 import {Button} from '../../components/button'
 import {ButtonGroup} from '../../components/form-elements'
@@ -12,48 +11,32 @@ import {
   getErrorForEmail,
   getErrorForSubject,
 } from '../../utils/contact'
+import {handleFormSubmission} from '../../utils/actions.server'
 
 export const action: ActionFunction = async ({request}) => {
-  const actionData: ActionData = {fields: {}, errors: {}}
+  return handleFormSubmission<ActionData>(
+    request,
+    {
+      name: getErrorForName,
+      email: getErrorForEmail,
+      subject: getErrorForSubject,
+      body: getErrorForBody,
+    },
+    async formData => {
+      const {name, email, subject, body} = formData
 
-  try {
-    const requestText = await request.text()
-    const form = new URLSearchParams(requestText)
+      const sender = `"${name}" <${email}>`
 
-    actionData.fields = {
-      name: form.get('name'),
-      email: form.get('email'),
-      subject: form.get('subject'),
-      body: form.get('body'),
-    }
+      await sendEmail({
+        from: sender,
+        to: `"Kent C. Dodds" <me@kentcdodds.com>`,
+        subject,
+        text: body,
+      })
 
-    actionData.errors = {
-      name: getErrorForName(actionData.fields.name),
-      email: getErrorForEmail(actionData.fields.email),
-      subject: getErrorForSubject(actionData.fields.subject),
-      body: getErrorForBody(actionData.fields.body),
-    }
-
-    if (Object.values(actionData.errors).some(err => err !== null)) {
-      return json(actionData, 401)
-    }
-
-    const {name, email, subject, body} = getNonNull(actionData.fields)
-
-    const sender = `"${name}" <${email}>`
-
-    await sendEmail({
-      from: sender,
-      to: `"Kent C. Dodds" <me@kentcdodds.com>`,
-      subject,
-      text: body,
-    })
-
-    return redirect('/contact/success')
-  } catch (error: unknown) {
-    actionData.errors.generalError = getErrorMessage(error)
-    return json({errors: {generalError: getErrorMessage(error)}}, 500)
-  }
+      return redirect('/contact/success')
+    },
+  )
 }
 
 export default function IncompleteFormSubmitButton() {

@@ -5,7 +5,7 @@ import {useOptionalUser} from '../utils/providers'
 import {HeroSection} from '../components/sections/hero-section'
 import {images} from '../images'
 import {H2} from '../components/typography'
-import {ErrorPanel, Field} from '../components/form-elements'
+import {ErrorPanel, Field, InputError} from '../components/form-elements'
 import {Grid} from '../components/grid'
 import type {ActionData} from '../utils/contact'
 
@@ -27,7 +27,10 @@ export default function ContactRoute() {
         }
       />
 
-      <Form method="post" noValidate>
+      <Form method="post" noValidate aria-describedby="contact-form-error">
+        <InputError id="contact-form-error">
+          {actionData?.errors.generalError}
+        </InputError>
         <Grid>
           <div className="col-span-full mb-12 lg:col-span-8 lg:col-start-3">
             <H2>Contact Kent C. Dodds</H2>

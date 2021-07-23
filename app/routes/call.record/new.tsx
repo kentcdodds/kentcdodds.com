@@ -59,7 +59,7 @@ export const action: ActionFunction = async ({request}) => {
       return redirect(`/call/record/${createdCall.id}`)
     } catch (error: unknown) {
       actionData.errors.generalError = getErrorMessage(error)
-      return json({errors: {generalError: getErrorMessage(error)}}, 500)
+      return json(actionData, 500)
     }
   })
 }

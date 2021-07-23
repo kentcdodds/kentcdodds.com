@@ -90,7 +90,7 @@ export const action: KCDAction<{callId: string}> = async ({
       return redirect('/call?fresh')
     } catch (error: unknown) {
       actionData.errors.generalError = getErrorMessage(error)
-      return json({errors: {generalError: getErrorMessage(error)}}, 500)
+      return json(actionData, 500)
     }
   })
 }
