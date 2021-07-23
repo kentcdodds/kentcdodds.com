@@ -320,7 +320,7 @@ function PodcastDetail() {
         </H2>
       </Grid>
 
-      <Grid as="main" className="mb-24 lg:mb-96">
+      <Grid as="main" className="mb-24 lg:mb-64">
         <div className="col-span-full mb-16 lg:col-span-8 lg:col-start-3">
           <iframe
             className="mb-4"

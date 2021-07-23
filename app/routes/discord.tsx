@@ -23,6 +23,7 @@ import {TestimonialSection} from '../components/sections/testimonial-section'
 import {CourseSection} from '../components/sections/course-section'
 import {FeatureCard} from '../components/feature-card'
 import {HeroSection} from '../components/sections/hero-section'
+import {HeaderSection} from '../components/sections/header-section'
 
 export interface CategoryCardProps {
   title: string
@@ -330,16 +331,13 @@ export default function Discord() {
         className="mb-24 lg:mb-64"
       />
 
-      <Grid className="mb-24 lg:mb-64">
-        <div className="col-span-full">
-          <H2 className="mb-3 lg:mt-6">
-            Here’s a quick look at all categories.
-          </H2>
-          <H2 as="p" variant="secondary" className="mb-14">
-            Click on any category to get more info.
-          </H2>
-        </div>
+      <HeaderSection
+        title="Here’s a quick look at all categories."
+        subTitle="Click on any category to get more info."
+        className="mb-14"
+      />
 
+      <Grid className="mb-24 lg:mb-64">
         <Accordion
           collapsible
           multiple
