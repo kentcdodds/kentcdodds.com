@@ -63,6 +63,9 @@ export const meta: MetaFunction = () => {
   }
 }
 
+// should be divisible by 3 and 2 (large screen, and medium screen).
+const PAGE_SIZE = 12
+
 function BlogHome() {
   const requestInfo = useRequestInfo()
 
@@ -102,7 +105,7 @@ function BlogHome() {
     return filterPosts(allPosts, query)
   }, [allPosts, query])
 
-  const initialIndexToShow = 14
+  const initialIndexToShow = PAGE_SIZE + 1 // + 1 for the featured blog
   const [indexToShow, setIndexToShow] = React.useState(initialIndexToShow)
   // when the query changes, we want to reset the index
   React.useEffect(() => {
@@ -236,8 +239,8 @@ function BlogHome() {
       {hasMorePosts ? (
         <div className="flex justify-center mb-64 w-full">
           <button
-            onClick={() => setIndexToShow(i => i + 16)}
             className="dark:focus:bg-gray-800 text-primary flex items-center px-8 py-6 focus:bg-gray-100 bg-transparent border border-gray-200 dark:border-gray-600 rounded-full focus:outline-none"
+            onClick={() => setIndexToShow(i => i + PAGE_SIZE)}
           >
             <span className="mr-4">Load more articles</span> <PlusIcon />
           </button>
