@@ -66,6 +66,7 @@ export const meta: MetaFunction = () => {
 
 // should be divisible by 3 and 2 (large screen, and medium screen).
 const PAGE_SIZE = 12
+const initialIndexToShow = PAGE_SIZE + 1 // + 1 for the featured blog
 
 function BlogHome() {
   const requestInfo = useRequestInfo()
@@ -106,7 +107,6 @@ function BlogHome() {
     return filterPosts(allPosts, query)
   }, [allPosts, query])
 
-  const initialIndexToShow = PAGE_SIZE + 1 // + 1 for the featured blog
   const [indexToShow, setIndexToShow] = React.useState(initialIndexToShow)
   // when the query changes, we want to reset the index
   React.useEffect(() => {
