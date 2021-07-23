@@ -4,6 +4,7 @@ module.exports = {
       name: 'Server',
       script: [
         'node',
+        '--inspect',
         '--experimental-wasm-threads',
         '--require ./node_modules/dotenv/config',
         '--require ./mocks',
@@ -13,8 +14,8 @@ module.exports = {
         .join(' '),
       watch: ['./mocks/**/*.ts', './index.js', './.env'],
       env: {
-        NODE_ENV: 'development',
-        ENABLE_TEST_ROUTES: true,
+        NODE_ENV: process.env.NODE_ENV ?? 'development',
+        ENABLE_TEST_ROUTES: process.env.ENABLE_TEST_ROUTES ?? true,
         RUNNING_E2E: process.env.RUNNING_E2E,
       },
     },
@@ -23,8 +24,8 @@ module.exports = {
       script: 'remix dev',
       ignore_watch: ['.'],
       env: {
-        NODE_ENV: 'development',
-        ENABLE_TEST_ROUTES: true,
+        NODE_ENV: process.env.NODE_ENV ?? 'development',
+        ENABLE_TEST_ROUTES: process.env.ENABLE_TEST_ROUTES ?? true,
         RUNNING_E2E: process.env.RUNNING_E2E,
       },
     },
@@ -33,7 +34,7 @@ module.exports = {
       script: 'npm run css:watch',
       ignore_watch: ['.'],
       env: {
-        NODE_ENV: 'development',
+        NODE_ENV: process.env.NODE_ENV ?? 'development',
       },
     },
   ],

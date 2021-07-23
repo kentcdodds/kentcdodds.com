@@ -99,7 +99,7 @@ function getErrorMessage(error: unknown) {
   return 'Unknown Error'
 }
 
-function getNonNull<Type extends Record<string, null | unknown>>(
+function getNonNull<Type extends Record<string, null | undefined | unknown>>(
   obj: Type,
 ): NonNullProperties<Type> {
   for (const [key, val] of Object.entries(obj)) {
@@ -117,8 +117,8 @@ function typedBoolean<T>(
 function assertNonNull<PossibleNullType>(
   possibleNull: PossibleNullType,
   errorMessage: string,
-): asserts possibleNull is Exclude<PossibleNullType, null> {
-  if (possibleNull === null) throw new Error(errorMessage)
+): asserts possibleNull is Exclude<PossibleNullType, null | undefined> {
+  if (possibleNull == null) throw new Error(errorMessage)
 }
 
 function getRequiredEnvVarFromObj(

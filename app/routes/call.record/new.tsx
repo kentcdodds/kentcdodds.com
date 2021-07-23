@@ -1,6 +1,6 @@
 import * as React from 'react'
-import {redirect, json, useRouteData} from 'remix'
-import type {ActionFunction, LoaderFunction} from 'remix'
+import {redirect, json, useActionData} from 'remix'
+import type {ActionFunction} from 'remix'
 import {CallRecorder} from '../../components/call/recorder'
 import {
   RecordingForm,
@@ -15,16 +15,10 @@ import {
   getErrorForDescription,
   getErrorForKeywords,
 } from '../../utils/call-kent'
-import {callKentStorage} from '../../utils/call-kent.server'
-
-const errorSessionKey = 'call_error'
-const fieldsSessionKey = 'call_fields'
 
 export const action: ActionFunction = async ({request}) => {
   return requireUser(request, async user => {
-    const session = await callKentStorage.getSession(
-      request.headers.get('Cookie'),
-    )
+    const actionData: ActionData = {fields: {}, errors: {}}
     try {
       const requestText = await request.text()
       const form = new URLSearchParams(requestText)
@@ -35,27 +29,21 @@ export const action: ActionFunction = async ({request}) => {
         description: form.get('description'),
         keywords: form.get('keywords'),
       }
-      const fields: LoaderData['fields'] = {
+      actionData.fields = {
         title: formData.title,
         description: formData.description,
         keywords: formData.keywords,
       }
-      session.flash(fieldsSessionKey, fields)
 
-      const errors = {
+      actionData.errors = {
         audio: getErrorForAudio(formData.audio),
         title: getErrorForTitle(formData.title),
         description: getErrorForDescription(formData.description),
         keywords: getErrorForKeywords(formData.keywords),
       }
 
-      if (Object.values(errors).some(err => err !== null)) {
-        session.flash(errorSessionKey, errors)
-        return redirect(new URL(request.url).pathname, {
-          headers: {
-            'Set-Cookie': await callKentStorage.commitSession(session),
-          },
-        })
+      if (Object.values(actionData.errors).some(err => err !== null)) {
+        return json(actionData, 401)
       }
 
       const {audio, title, description, keywords} = getNonNull(formData)
@@ -70,40 +58,21 @@ export const action: ActionFunction = async ({request}) => {
       const createdCall = await prisma.call.create({data: call})
       return redirect(`/call/record/${createdCall.id}`)
     } catch (error: unknown) {
-      session.flash(errorSessionKey, {generalError: getErrorMessage(error)})
-      return redirect(new URL(request.url).pathname, {
-        headers: {
-          'Set-Cookie': await callKentStorage.commitSession(session),
-        },
-      })
+      actionData.errors.generalError = getErrorMessage(error)
+      return json({errors: {generalError: getErrorMessage(error)}}, 500)
     }
   })
 }
 
-type LoaderData = RecordingFormData
-
-export const loader: LoaderFunction = async ({request}) => {
-  const session = await callKentStorage.getSession(
-    request.headers.get('Cookie'),
-  )
-  const data: LoaderData = {
-    fields: session.get(fieldsSessionKey),
-    errors: session.get(errorSessionKey),
-  }
-  return json(data, {
-    headers: {
-      'Set-Cookie': await callKentStorage.commitSession(session),
-    },
-  })
-}
+type ActionData = RecordingFormData
 
 export default function RecordScreen() {
-  const data = useRouteData<LoaderData>()
+  const actionData = useActionData() as ActionData | undefined
   const [audio, setAudio] = React.useState<Blob | null>(null)
   return (
     <div>
       {audio ? (
-        <RecordingForm audio={audio} data={data} />
+        <RecordingForm audio={audio} data={actionData} />
       ) : (
         <CallRecorder onRecordingComplete={recording => setAudio(recording)} />
       )}

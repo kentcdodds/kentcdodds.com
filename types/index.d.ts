@@ -13,7 +13,9 @@ declare global {
   }
 }
 
-type NonNullProperties<Type> = {[Key in keyof Type]: Exclude<Type[Key], null>}
+type NonNullProperties<Type> = {
+  [Key in keyof Type]-?: Exclude<Type[Key], null | undefined>
+}
 type Await<Type> = Type extends Promise<infer Value> ? Await<Value> : Type
 
 type MdxPage = {

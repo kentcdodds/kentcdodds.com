@@ -49,18 +49,31 @@ function Button({
 
 const ButtonLink = React.forwardRef<
   HTMLAnchorElement,
-  ButtonProps & Pick<LinkProps, 'to' | 'className'>
->(function ButtonLink({children, variant = 'primary', className, to}, ref) {
+  ButtonProps & Pick<LinkProps, 'to' | 'className' | 'onClick'>
+>(function ButtonLink(
+  {children, variant = 'primary', className, to, onClick},
+  ref,
+) {
   if (typeof to === 'string' && (to.startsWith('http') || to.startsWith('#'))) {
     return (
-      <a ref={ref} href={to} className={getClassName({variant, className})}>
+      <a
+        ref={ref}
+        href={to}
+        onClick={onClick}
+        className={getClassName({variant, className})}
+      >
         {children}
       </a>
     )
   }
 
   return (
-    <Link ref={ref} to={to} className={getClassName({variant, className})}>
+    <Link
+      ref={ref}
+      to={to}
+      onClick={onClick}
+      className={getClassName({variant, className})}
+    >
       {children}
     </Link>
   )

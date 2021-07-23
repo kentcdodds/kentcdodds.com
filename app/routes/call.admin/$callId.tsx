@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {redirect, Form, json, useRouteData, Link} from 'remix'
+import {redirect, Form, json, useActionData, useLoaderData, Link} from 'remix'
 import type {Call, KCDAction, KCDLoader} from 'types'
 import {format} from 'date-fns'
 import {CallRecorder} from '../../components/call/recorder'
@@ -16,10 +16,8 @@ import {
   getErrorForDescription,
   getErrorForKeywords,
 } from '../../utils/call-kent'
-import {callKentStorage} from '../../utils/call-kent.server'
 
-const errorSessionKey = 'call_error'
-const fieldsSessionKey = 'call_fields'
+type ActionData = RecordingFormData
 
 export const action: KCDAction<{callId: string}> = async ({
   request,
@@ -30,9 +28,6 @@ export const action: KCDAction<{callId: string}> = async ({
       await prisma.call.delete({where: {id: params.callId}})
       return redirect('/call/admin')
     }
-    const session = await callKentStorage.getSession(
-      request.headers.get('Cookie'),
-    )
     const call = await prisma.call.findFirst({
       where: {id: params.callId},
       include: {user: true},
@@ -41,6 +36,7 @@ export const action: KCDAction<{callId: string}> = async ({
       // TODO: display an error message or something...
       return redirect('/call/admin')
     }
+    const actionData: ActionData = {fields: {}, errors: {}}
     try {
       const requestText = await request.text()
       const form = new URLSearchParams(requestText)
@@ -51,27 +47,21 @@ export const action: KCDAction<{callId: string}> = async ({
         description: form.get('description'),
         keywords: form.get('keywords'),
       }
-      const fields: LoaderData['fields'] = {
+      actionData.fields = {
         title: formData.title,
         description: formData.description,
         keywords: formData.keywords,
       }
-      session.flash(fieldsSessionKey, fields)
 
-      const errors = {
+      actionData.errors = {
         audio: getErrorForAudio(formData.audio),
         title: getErrorForTitle(formData.title),
         description: getErrorForDescription(formData.description),
         keywords: getErrorForKeywords(formData.keywords),
       }
 
-      if (Object.values(errors).some(err => err !== null)) {
-        session.flash(errorSessionKey, errors)
-        return redirect(new URL(request.url).pathname, {
-          headers: {
-            'Set-Cookie': await callKentStorage.commitSession(session),
-          },
-        })
+      if (Object.values(actionData.errors).some(err => err !== null)) {
+        return json(actionData, 401)
       }
 
       const {
@@ -99,21 +89,15 @@ export const action: KCDAction<{callId: string}> = async ({
 
       return redirect('/call?fresh')
     } catch (error: unknown) {
-      const generalError = getErrorMessage(error)
-      console.error(generalError)
-      session.flash(errorSessionKey, {generalError})
-      return redirect(new URL(request.url).pathname, {
-        headers: {
-          'Set-Cookie': await callKentStorage.commitSession(session),
-        },
-      })
+      actionData.errors.generalError = getErrorMessage(error)
+      return json({errors: {generalError: getErrorMessage(error)}}, 500)
     }
   })
 }
 
 type LoaderData = {
   call: Call | null
-} & RecordingFormData
+}
 
 export const loader: KCDLoader<{callId: string}> = async ({
   request,
@@ -126,25 +110,8 @@ export const loader: KCDLoader<{callId: string}> = async ({
       // TODO: add message
       return redirect('/call/admin')
     }
-    const session = await callKentStorage.getSession(
-      request.headers.get('Cookie'),
-    )
-    const fields: LoaderData['fields'] = {
-      title: call.title,
-      description: call.description,
-      keywords: call.keywords,
-      ...session.get(fieldsSessionKey),
-    }
-    const data: LoaderData = {
-      call,
-      fields,
-      errors: session.get(errorSessionKey),
-    }
-    return json(data, {
-      headers: {
-        'Set-Cookie': await callKentStorage.commitSession(session),
-      },
-    })
+    const data: LoaderData = {call}
+    return json(data)
   })
 }
 
@@ -170,7 +137,8 @@ function CallListing({call}: {call: Call}) {
 
 export default function RecordingDetailScreen() {
   const [responseAudio, setResponseAudio] = React.useState<Blob | null>(null)
-  const data = useRouteData<LoaderData>()
+  const data = useLoaderData<LoaderData>()
+  const actionData = useActionData() as ActionData | undefined
 
   if (!data.call) {
     return (
@@ -184,7 +152,7 @@ export default function RecordingDetailScreen() {
       <CallListing call={data.call} />
       <strong>Record your response:</strong>
       {responseAudio ? (
-        <RecordingForm audio={responseAudio} data={data} />
+        <RecordingForm audio={responseAudio} data={actionData} />
       ) : (
         <CallRecorder
           onRecordingComplete={recording => setResponseAudio(recording)}

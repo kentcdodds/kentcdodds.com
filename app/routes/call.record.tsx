@@ -7,7 +7,6 @@ import {AnimatePresence, motion} from 'framer-motion'
 import {useLocation} from 'react-router'
 import {getUser} from '../utils/session.server'
 import {prisma} from '../utils/prisma.server'
-import {callKentStorage} from '../utils/call-kent.server'
 import {useOptionalUser} from '../utils/providers'
 import {Grid} from '../components/grid'
 import {H2, Paragraph} from '../components/typography'
@@ -26,17 +25,10 @@ type LoaderData = {
 
 export const loader: LoaderFunction = async ({request}) => {
   const user = await getUser(request)
-  const session = await callKentStorage.getSession(
-    request.headers.get('Cookie'),
-  )
   const data: LoaderData = {
     calls: user ? await getCalls(user.id) : [],
   }
-  return json(data, {
-    headers: {
-      'Set-Cookie': await callKentStorage.commitSession(session),
-    },
-  })
+  return json(data)
 }
 
 function MaybeOutlet({open}: {open: boolean}) {

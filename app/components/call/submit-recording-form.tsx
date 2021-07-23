@@ -5,24 +5,24 @@ import {Grid} from '../grid'
 import {Button} from '../button'
 
 type RecordingFormData = {
-  fields?: {
+  fields: {
     // audio is too big to include in the session
     // hopefully it won't matter with fully client-side interactions though
     audio?: never
-    title: string | null
-    description: string | null
-    keywords: string | null
+    title?: string | null
+    description?: string | null
+    keywords?: string | null
   }
-  errors?: {
+  errors: {
     generalError?: string
-    audio: string | null
-    title: string | null
-    description: string | null
-    keywords: string | null
+    audio?: string | null
+    title?: string | null
+    description?: string | null
+    keywords?: string | null
   }
 }
 
-function RecordingForm({audio, data}: {audio: Blob; data: RecordingFormData}) {
+function RecordingForm({audio, data}: {audio: Blob; data?: RecordingFormData}) {
   const audioURL = React.useMemo(() => {
     return window.URL.createObjectURL(audio)
   }, [audio])
@@ -49,7 +49,7 @@ function RecordingForm({audio, data}: {audio: Blob; data: RecordingFormData}) {
   return (
     <div>
       <div className="mb-12">
-        {data.errors?.generalError ? (
+        {data?.errors.generalError ? (
           <p id="audio-error-message" className="text-red-600 text-center">
             {data.errors.generalError}
           </p>
@@ -63,7 +63,7 @@ function RecordingForm({audio, data}: {audio: Blob; data: RecordingFormData}) {
         ) : (
           'loading...'
         )}
-        {data.errors?.audio ? (
+        {data?.errors.audio ? (
           <p id="audio-error-message" className="text-red-600 text-center">
             {data.errors.audio}
           </p>
@@ -77,7 +77,7 @@ function RecordingForm({audio, data}: {audio: Blob; data: RecordingFormData}) {
               <div className="flex items-baseline justify-between mb-4">
                 <Label htmlFor="title">Title</Label>
                 <InputError id="firstName-error">
-                  {data.errors?.title}
+                  {data?.errors.title}
                 </InputError>
               </div>
 
@@ -85,7 +85,7 @@ function RecordingForm({audio, data}: {audio: Blob; data: RecordingFormData}) {
                 id="title"
                 name="title"
                 aria-describedby="title-error-message"
-                defaultValue={data.fields?.title ?? ''}
+                defaultValue={data?.fields.title ?? ''}
               />
             </div>
 
@@ -93,7 +93,7 @@ function RecordingForm({audio, data}: {audio: Blob; data: RecordingFormData}) {
               <div className="flex items-baseline justify-between mb-4">
                 <Label htmlFor="description">Description</Label>
                 <InputError id="description-error-message">
-                  {data.errors?.description}
+                  {data?.errors.description}
                 </InputError>
               </div>
 
@@ -102,7 +102,7 @@ function RecordingForm({audio, data}: {audio: Blob; data: RecordingFormData}) {
                 name="description"
                 type="textarea"
                 aria-describedby="description-error-message"
-                defaultValue={data.fields?.description ?? ''}
+                defaultValue={data?.fields.description ?? ''}
               />
             </div>
 
@@ -110,7 +110,7 @@ function RecordingForm({audio, data}: {audio: Blob; data: RecordingFormData}) {
               <div className="flex items-baseline justify-between mb-4">
                 <Label htmlFor="keywords">Keywords</Label>
                 <InputError id="keywords-error-message">
-                  {data.errors?.keywords}
+                  {data?.errors.keywords}
                 </InputError>
               </div>
 
@@ -118,7 +118,7 @@ function RecordingForm({audio, data}: {audio: Blob; data: RecordingFormData}) {
                 id="keywords"
                 name="keywords"
                 aria-describedby="keywords-error-message"
-                defaultValue={data.fields?.keywords ?? ''}
+                defaultValue={data?.fields.keywords ?? ''}
               />
             </div>
             <Button type="submit">Submit Recording</Button>

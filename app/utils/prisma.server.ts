@@ -200,7 +200,7 @@ async function addPostRead({slug, userId}: {slug: string; userId: string}) {
   }
 }
 
-async function getReplayResponse(request: Request, errorMessage?: string) {
+function getReplayResponse(request: Request, errorMessage?: string) {
   if (!isPrimaryRegion && errorMessage?.includes('SqlState("25006")')) {
     const pathname = new URL(request.url).pathname
     const logInfo = {
@@ -229,14 +229,11 @@ async function getDocumentReplayResponse(
 }
 
 async function getDataReplayResponse(request: Request, response: Response) {
-  if (
-    response.status === 500 &&
-    response.headers.get('content-type')?.includes('json')
-  ) {
-    const data = await response.json()
-    return getReplayResponse(request, data.message)
-  }
-  return null
+  if (response.status > 199 && response.status < 300) return null
+
+  const textClone = response.clone()
+  const text = await textClone.text().catch(() => null)
+  return getReplayResponse(request, text ?? '')
 }
 
 export {
