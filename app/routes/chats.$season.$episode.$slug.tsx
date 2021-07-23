@@ -292,7 +292,7 @@ function PrevNextButton({
           {episodeListItem.guests[0]?.name}
         </p>
         <h6 className="text-secondary text-lg font-medium">
-          {episodeListItem.title}
+          {`Episode ${episodeListItem.episodeNumber}`}
         </h6>
       </div>
     </MotionLink>
