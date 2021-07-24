@@ -144,6 +144,14 @@ function BlogHome() {
     ? matchingPosts.slice(0, indexToShow)
     : postsToShow.slice(1, indexToShow)
 
+  const visibleTags = isSearching
+    ? new Set(
+        matchingPosts
+          .flatMap(post => post.frontmatter.categories)
+          .filter(Boolean),
+      )
+    : new Set(data.tags)
+
   return (
     <>
       <HeroSection
@@ -181,14 +189,18 @@ function BlogHome() {
             Search blog by topics
           </H6>
           <div className="flex flex-wrap col-span-full -mb-4 -mr-4 lg:col-span-10">
-            {data.tags.map(tag => (
-              <Tag
-                key={tag}
-                tag={tag}
-                selected={query.includes(tag)}
-                onClick={() => toggleTag(tag)}
-              />
-            ))}
+            {data.tags.map(tag => {
+              const selected = query.includes(tag)
+              return (
+                <Tag
+                  key={tag}
+                  tag={tag}
+                  selected={selected}
+                  onClick={() => toggleTag(tag)}
+                  disabled={!visibleTags.has(tag) && !selected}
+                />
+              )
+            })}
           </div>
         </Grid>
       ) : null}
