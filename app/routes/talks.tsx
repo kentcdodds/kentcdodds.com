@@ -318,16 +318,23 @@ export default function TalksScreen() {
       />
 
       <Grid className="mb-14">
+        <H6 as="div" className="col-span-full mb-6">
+          Search talks by topics
+        </H6>
         <div className="flex flex-wrap col-span-full -mb-4 -mr-4 lg:col-span-10">
-          {data.tags.map(tag => (
-            <Tag
-              key={tag}
-              tag={tag}
-              selected={selectedTags.includes(tag)}
-              onClick={() => toggleTag(tag)}
-              disabled={!visibleTags.has(tag)}
-            />
-          ))}
+          {data.tags.map(tag => {
+            const selected = selectedTags.includes(tag)
+
+            return (
+              <Tag
+                key={tag}
+                tag={tag}
+                selected={selected}
+                onClick={() => toggleTag(tag)}
+                disabled={!visibleTags.has(tag) && !selected}
+              />
+            )
+          })}
         </div>
       </Grid>
 
