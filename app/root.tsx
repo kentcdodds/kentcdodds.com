@@ -11,7 +11,7 @@ import {
   useMatches,
 } from 'remix'
 import type {LinksFunction, MetaFunction, Session} from 'remix'
-import {useLocation, Outlet} from 'react-router-dom'
+import {Outlet} from 'react-router-dom'
 import clsx from 'clsx'
 import type {Await, KCDHandle, User} from 'types'
 import tailwindStyles from './styles/tailwind.css'
@@ -121,10 +121,8 @@ function App() {
   const data = useRouteData<LoaderData>()
   const [team] = useTeam()
   const [theme] = useTheme()
-  const location = useLocation()
   const pendingLocation = usePendingLocation()
   const showPendingState = pendingLocation
-  const includeTweets = location.pathname.includes('/blog/')
 
   return (
     <html lang="en" className={theme ?? ''}>
@@ -165,13 +163,6 @@ function App() {
             __html: `window.ENV = ${JSON.stringify(data.ENV)};`,
           }}
         />
-        {includeTweets ? (
-          <script
-            async
-            src="https://platform.twitter.com/widgets.js"
-            charSet="utf-8"
-          />
-        ) : null}
         {process.env.NODE_ENV === 'development' && <LiveReload />}
       </body>
     </html>

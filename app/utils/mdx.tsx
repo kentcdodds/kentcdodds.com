@@ -212,13 +212,17 @@ function getMdxComponent(code: string) {
   return KCDMdxComponent
 }
 
+function useMdxComponent(code: string) {
+  return React.useMemo(() => getMdxComponent(code), [code])
+}
+
 export {
   getMdxPage,
   getMdxPagesInDirectory,
   mapFromMdxPageToMdxListItem,
   getBlogMdxListItems,
   mdxPageMeta,
-  getMdxComponent,
+  useMdxComponent,
   refreshCacheForMdx,
   refreshDirListForMdx,
 }

@@ -4,7 +4,7 @@ import type {MdxPage, KCDLoader} from 'types'
 import {
   getMdxPage,
   mdxPageMeta,
-  getMdxComponent,
+  useMdxComponent,
   refreshCacheForMdx,
 } from '../utils/mdx'
 import {shouldForceFresh} from '../utils/redis.server'
@@ -38,7 +38,7 @@ export default function MdxScreenBase() {
 
 function MdxScreen({mdxPage}: {mdxPage: MdxPage}) {
   const {code, frontmatter} = mdxPage
-  const Component = React.useMemo(() => getMdxComponent(code), [code])
+  const Component = useMdxComponent(code)
 
   return (
     <>

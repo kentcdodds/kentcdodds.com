@@ -3,12 +3,11 @@ import {useRouteData, json} from 'remix'
 import {Link, useParams} from 'react-router-dom'
 import type {Await, KCDLoader, MdxListItem, MdxPage} from 'types'
 import formatDate from 'date-fns/format'
-import type {ComponentMap} from 'mdx-bundler/client'
 import {images} from '../../images'
 import {
   getMdxPage,
   mdxPageMeta,
-  getMdxComponent,
+  useMdxComponent,
   refreshCacheForMdx,
 } from '../../utils/mdx'
 import {useOptionalUser} from '../../utils/providers'
@@ -206,19 +205,6 @@ four kids in Utah.
   )
 }
 
-// remove extra wrapping div from elements like <div> (TheSpectrumOfAbstraction) and <pre> (code blocks)
-function Unwrap({
-  children,
-}: {
-  children?: React.ReactNode | Array<React.ReactNode>
-}) {
-  // eslint-disable-next-line react/jsx-no-useless-fragment
-  return <>{children}</>
-}
-const MdxComponentMap: ComponentMap = {
-  div: Unwrap,
-}
-
 function MdxScreen() {
   const data = useRouteData<LoaderData>()
   if (!data.page) {
@@ -231,7 +217,7 @@ function MdxScreen() {
   const {code, frontmatter} = data.page
   const params = useParams()
   const {slug} = params
-  const Component = React.useMemo(() => getMdxComponent(code), [code])
+  const Component = useMdxComponent(code)
 
   const readMarker = React.useRef<HTMLDivElement>(null)
   useOnRead({
@@ -327,7 +313,7 @@ function MdxScreen() {
         </Grid>
 
         <Grid className="prose prose-light dark:prose-dark mb-24">
-          <Component components={MdxComponentMap} />
+          <Component />
         </Grid>
       </main>
 

@@ -103,6 +103,12 @@ module.exports = {
           return Array.isArray(result) ? result[0] : result
         }
 
+        const breakout = {
+          marginLeft: 0,
+          marginRight: 0,
+          gridColumn: '2 / span 10',
+        }
+
         return {
           // DEFAULT only holds shared stuff and not the things that change
           // between light/dark
@@ -151,10 +157,27 @@ module.exports = {
                   borderRadius: 0,
 
                   [`@media (min-width: ${theme('screens.lg')})`]: {
-                    marginLeft: 0,
-                    marginRight: 0,
                     borderRadius: theme('borderRadius.lg'),
-                    gridColumn: '2 / span 10',
+                    ...breakout,
+                  },
+                },
+                '.egghead-embed, .youtube-embed': {
+                  marginLeft: '-10vw',
+                  marginRight: '-10vw',
+                  [`@media (min-width: ${theme('screens.lg')})`]: {
+                    ...breakout,
+                  },
+                },
+                '.egghead-embed iframe, .youtube-embed iframe': {
+                  height: '100%',
+                  width: '100%',
+                  top: '0',
+                  left: '0',
+                  position: 'absolute',
+                  border: 'none',
+                  borderRadius: '0',
+                  [`@media (min-width: ${theme('screens.lg')})`]: {
+                    borderRadius: '0.5rem',
                   },
                 },
                 ul: {
