@@ -161,23 +161,27 @@ module.exports = {
                     ...breakout,
                   },
                 },
-                '.egghead-embed, .youtube-embed': {
+                '.embed': {
+                  position: 'relative',
                   marginLeft: '-10vw',
                   marginRight: '-10vw',
                   [`@media (min-width: ${theme('screens.lg')})`]: {
                     ...breakout,
                   },
                 },
-                '.egghead-embed iframe, .youtube-embed iframe': {
-                  height: '100%',
-                  width: '100%',
+                '.embed > div': {
+                  height: '0px',
+                },
+                '.embed > div > iframe': {
+                  height: '100% !important',
+                  width: '100% !important',
                   top: '0',
                   left: '0',
                   position: 'absolute',
                   border: 'none',
-                  borderRadius: '0',
+                  borderRadius: '0 !important',
                   [`@media (min-width: ${theme('screens.lg')})`]: {
-                    borderRadius: '0.5rem',
+                    borderRadius: '0.5rem !important',
                   },
                 },
                 ul: {

@@ -32,19 +32,29 @@ function handleEmbedderError({url}: {url: string}) {
 
 type GottenHTML = string | null
 function handleEmbedderHtml(html: GottenHTML, info: TransformerInfo) {
+  if (!html) return null
+
   const url = new URL(info.url)
   // matches youtu.be and youtube.com
   if (/youtu\.?be/.test(url.hostname)) {
     // this allows us to set youtube embeds to 100% width and the
     // height will be relative to that width with a good aspect ratio
-    return `
-      <div class="youtube-embed" style="position: relative;">
-        <div style="height: 0px; padding-bottom: 56.25%;">
-          ${html}
-        </div>
-      </div>
-    `
+    return makeEmbed(html, 'youtube')
   }
+  if (url.hostname.includes('codesandbox.io')) {
+    return makeEmbed(html, 'codesandbox', '80%')
+  }
+  return html
+}
+
+function makeEmbed(html: string, type: string, heightRatio = '56.25%') {
+  return `
+  <div class="embed" data-embed-type="${type}">
+    <div style="padding-bottom: ${heightRatio}">
+      ${html}
+    </div>
+  </div>
+`
 }
 
 // yes, I did write this myself 😬
@@ -109,17 +119,10 @@ const eggheadTransformer = {
 
     const iframeSrc = `https://${host}${pathname}/embed?${searchParams.toString()}`
 
-    return `
-      <div class="egghead-embed" style="position: relative;">
-        <div style="height: 0px; padding-bottom: 56.25%;">
-          <iframe
-            src="${iframeSrc}"
-            allowfullscreen
-          >
-          </iframe>
-        </div>
-      </div>
-    `
+    return makeEmbed(
+      `<iframe src="${iframeSrc}" allowfullscreen></iframe>`,
+      'egghead',
+    )
   },
 }
 
