@@ -283,13 +283,11 @@ function MdxScreen() {
                   </ul>
                   <a
                     href={externalLinks.translationContributions}
-                    className="text-secondary underlined block mb-6 ml-5 my-3"
+                    className="text-secondary underlined hover:text-primary block mb-6 ml-5 my-3 text-lg font-medium transition"
                     target="_blank"
                     rel="noreferrer noopener"
                   >
-                    <H6 as="span" variant="secondary">
-                      Add translation
-                    </H6>
+                    Add translation
                   </a>
                 </>
               ) : (
@@ -300,13 +298,11 @@ function MdxScreen() {
 
                   <a
                     href={externalLinks.translationContributions}
-                    className="text-secondary underlined block ml-5"
+                    className="text-secondary underlined hover:text-primary block ml-5 text-lg font-medium transition"
                     target="_blank"
                     rel="noreferrer noopener"
                   >
-                    <H6 as="span" variant="secondary">
-                      Add translation
-                    </H6>
+                    Add translation
                   </a>
                 </>
               )}
