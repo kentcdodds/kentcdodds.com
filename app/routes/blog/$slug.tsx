@@ -254,11 +254,13 @@ function MdxScreen() {
             — {data.page.readTime?.text ?? 'a quick read'}
           </H6>
         </div>
-        <img
-          className="col-span-full mt-10 mx-auto rounded-lg lg:col-span-10 lg:col-start-2"
-          src={frontmatter.bannerUrl}
-          alt={frontmatter.bannerAlt}
-        />
+        <div className="aspect-h-4 aspect-w-3 md:aspect-w-3 md:aspect-h-2 col-span-full mt-10 rounded-lg lg:col-span-10 lg:col-start-2">
+          <img
+            className="w-full h-full rounded-lg object-cover"
+            src={frontmatter.bannerUrl}
+            alt={frontmatter.bannerAlt}
+          />
+        </div>
       </Grid>
 
       <main ref={readMarker}>
