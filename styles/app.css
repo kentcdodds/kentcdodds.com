@@ -71,6 +71,13 @@ light-mode {
   display: none;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  :focus {
+    transition: outline-offset 0.1s ease;
+    outline-offset: 4px;
+  }
+}
+
 .html a {
   color: var(--color-black);
 }

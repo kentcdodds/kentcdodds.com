@@ -9,6 +9,7 @@ node_modules/
 tsconfig.tsbuildinfo
 
 /app/styles/**/*.css
+other/postcss.ignored
 
 /cypress/videos
 /cypress/screenshots
@@ -16,6 +17,5 @@ tsconfig.tsbuildinfo
 
 .env
 .env.production
-
 .envrc
 
