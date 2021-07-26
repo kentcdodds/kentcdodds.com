@@ -52,10 +52,13 @@ type ArrowButtonProps = {
   type?: JSX.IntrinsicElements['button']['type']
 } & ArrowButtonBaseProps
 
+// whileFocus takes precedence over whileTap, so while we can't move the arrow
+// on focus (or on tap), we can still color and animate the circle.
+// See: https://github.com/framer/motion/issues/1221
 function getBaseProps({textSize, className}: ArrowButtonBaseProps) {
   return {
     className: clsx(
-      'text-primary inline-flex items-center text-left font-medium cursor-pointer transition',
+      'text-primary inline-flex items-center text-left font-medium focus:outline-none cursor-pointer transition',
       {
         'text-xl': textSize === 'medium',
         'text-lg': textSize === 'small',
@@ -64,6 +67,7 @@ function getBaseProps({textSize, className}: ArrowButtonBaseProps) {
     ),
     initial: 'initial',
     whileHover: 'hover',
+    whileFocus: 'focus',
     whileTap: 'tap',
     animate: 'initial',
   }
@@ -98,12 +102,9 @@ function ArrowButtonContent({
               cx="30"
               cy="30"
             />
-          </svg>
-        </div>
 
-        <div className="absolute">
-          <svg width="60" height="60">
             <motion.circle
+              className="text-primary"
               stroke="currentColor"
               strokeWidth="2"
               fill="transparent"
@@ -113,6 +114,7 @@ function ArrowButtonContent({
               style={{strokeDasharray}}
               variants={{
                 hover: {strokeDashoffset: 0},
+                focus: {strokeDashoffset: 0},
                 initial: {strokeDashoffset: circumference, rotate: -90},
               }}
               transition={{damping: 0}}

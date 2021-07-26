@@ -81,6 +81,9 @@ light-mode {
 .html a {
   color: var(--color-black);
 }
+.html a:focus {
+  outline: none;
+}
 
 .dark .html a {
   color: var(--color-white);

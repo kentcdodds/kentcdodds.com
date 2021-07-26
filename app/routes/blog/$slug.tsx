@@ -153,13 +153,13 @@ function ArticleFooter() {
           <H6 as="h2">Share article</H6>
           {/* TODO: fix links */}
           <Link
-            className="dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
+            className="dark:hover:text-white underlined dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
             to="/"
           >
             Facebook
           </Link>
           <Link
-            className="dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
+            className="dark:hover:text-white underlined dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
             to="/"
           >
             Twitter
@@ -168,14 +168,14 @@ function ArticleFooter() {
 
         <div className="flex">
           <Link
-            className="dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
+            className="underlined dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
             to="/"
           >
             Discuss on Twitter
           </Link>
           <span className="self-center mx-3 text-xs">•</span>
           <Link
-            className="dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
+            className="underlined dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
             to="/"
           >
             Edit on GitHub
@@ -283,7 +283,7 @@ function MdxScreen() {
                   </ul>
                   <a
                     href={externalLinks.translationContributions}
-                    className="text-secondary underlined hover:text-primary block mb-6 ml-5 my-3 text-lg font-medium transition"
+                    className="text-secondary underlined hover:text-primary focus:text-primary block mb-6 ml-5 my-3 text-lg font-medium focus:outline-none"
                     target="_blank"
                     rel="noreferrer noopener"
                   >
@@ -298,7 +298,7 @@ function MdxScreen() {
 
                   <a
                     href={externalLinks.translationContributions}
-                    className="text-secondary underlined hover:text-primary block ml-5 text-lg font-medium transition"
+                    className="text-secondary underlined hover:text-primary focus:text-primary block ml-5 text-lg font-medium focus:outline-none"
                     target="_blank"
                     rel="noreferrer noopener"
                   >

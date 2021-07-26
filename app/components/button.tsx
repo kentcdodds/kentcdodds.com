@@ -10,7 +10,7 @@ interface ButtonProps {
 
 function getClassName({className}: {className?: string}) {
   return clsx(
-    'group relative inline-flex text-lg font-medium opacity-100 disabled:opacity-50 transition',
+    'group relative inline-flex text-lg font-medium focus:outline-none opacity-100 disabled:opacity-50 transition',
     className,
   )
 }
@@ -26,7 +26,7 @@ function ButtonInner({
         className={clsx(
           'focus-ring absolute inset-0 rounded-full opacity-100 disabled:opacity-50 transform transition',
           {
-            'border-2 border-secondary bg-primary group-hover:border-transparent':
+            'border-2 border-secondary bg-primary group-hover:border-transparent group-focus:border-transparent':
               variant === 'secondary',
             'bg-inverse': variant === 'primary',
           },

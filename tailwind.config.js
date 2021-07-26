@@ -137,6 +137,7 @@ module.exports = {
                 },
                 'a:hover,a:focus': {
                   textDecoration: 'underline',
+                  outline: 'none',
                 },
                 strong: {
                   fontWeight: theme('fontWeight.medium'),
