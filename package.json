@@ -61,6 +61,7 @@
     "@remix-run/express": "experimental-9938d08",
     "@remix-run/node": "experimental-9938d08",
     "@remix-run/react": "experimental-9938d08",
+    "@sentry/node": "^6.10.0",
     "@sindresorhus/slugify": "^1.1.2",
     "@tailwindcss/aspect-ratio": "^0.2.1",
     "@tailwindcss/typography": "^0.4.1",

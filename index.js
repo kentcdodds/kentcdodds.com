@@ -7,6 +7,16 @@ const compression = require('compression')
 const morgan = require('morgan')
 const {pathToRegexp, compile: compileRedirectPath} = require('path-to-regexp')
 const {createRequestHandler} = require('@remix-run/express')
+const Sentry = require('@sentry/node')
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  tracesSampleRate: 0.3,
+  environment: process.env.NODE_ENV,
+  enabled: Boolean(process.env.FLY),
+})
+
+Sentry.setContext('region', process.env.FLY_REGION ?? 'unknown')
 
 const MODE = process.env.NODE_ENV
 const BUILD_DIR = path.join(process.cwd(), 'build')
