@@ -44,15 +44,19 @@ export default function Screen() {
   const {sortOrder} = useChatsEpisodeUIState()
   const episodes = orderBy(season.episodes, 'episodeNumber', sortOrder)
   return episodes.map(episode => (
-    <Link key={episode.slug} to={getCWKEpisodePath(episode)}>
+    <Link
+      className="group focus:outline-none"
+      key={episode.slug}
+      to={getCWKEpisodePath(episode)}
+    >
       <Grid
         nested
-        className="group relative py-10 border-b border-gray-200 dark:border-gray-600 lg:py-5"
+        className="relative py-10 border-b border-gray-200 dark:border-gray-600 lg:py-5"
       >
-        <div className="bg-secondary absolute -inset-px group-hover:block hidden -mx-6 rounded-lg" />
+        <div className="bg-secondary absolute -inset-px group-focus:block group-hover:block hidden -mx-6 rounded-lg" />
 
         <div className="relative flex-none col-span-1">
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transform scale-0 group-hover:scale-100 transition">
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-focus:opacity-100 group-hover:opacity-100 transform scale-0 group-hover:scale-100 transition">
             <div className="flex-none p-4 text-gray-800 bg-white rounded-full">
               <TriangleIcon size={12} />
             </div>

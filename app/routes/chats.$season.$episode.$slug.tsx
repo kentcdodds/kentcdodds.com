@@ -204,10 +204,10 @@ function Transcript({
       {collapsed ? (
         <button
           onClick={() => setCollapsed(false)}
-          className="text-primary inline-flex items-center mt-16 text-xl transition"
+          className="group text-primary inline-flex items-center mt-16 text-xl focus:outline-none transition"
         >
           <span>Read the full transcript</span>
-          <span className="inline-flex flex-none items-center justify-center ml-8 p-1 w-14 h-14 border-2 border-gray-200 dark:border-gray-600 rounded-full">
+          <span className="group-hover:border-primary group-focus:border-primary inline-flex flex-none items-center justify-center ml-8 p-1 w-14 h-14 border-2 border-gray-200 dark:border-gray-600 rounded-full">
             <PlusIcon />
           </span>
         </button>
