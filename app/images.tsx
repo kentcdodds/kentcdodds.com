@@ -43,24 +43,48 @@ const images = createImages({
     alt: 'Kent C. Dodds',
   },
   kentSnowSports: {
-    id: 'kent/kent-snow-sports',
+    id: 'kent/snow-sports',
     alt: 'Kent wearing snow clothes with skis and a snowboard',
   },
   kentCodingWithKody: {
-    id: 'kent/kent-coding-with-kody',
+    id: 'kent/coding-with-kody',
     alt: 'Kent sitting with his laptop on a bench next to Kody the Koala',
   },
   kentRidingOnewheelOutdoors: {
-    id: 'kent/kent-riding-onewheel-outdoors',
+    id: 'kent/riding-onewheel-outdoors',
     alt: 'Kent riding a onewheel outdoors',
   },
   kentRidingOnewheelOutdoorsFast: {
-    id: 'kent/kent-riding-onewheel-outdoors-fast',
+    id: 'kent/riding-onewheel-outdoors-fast',
     alt: 'Kent riding a onewheel outdoors fast',
   },
   kentPalmingSoccerBall: {
-    id: 'kent/kent-palming-soccer-ball',
+    id: 'kent/palming-soccer-ball',
     alt: 'Kent holding a soccer ball',
+  },
+  kentCodingWithSkates: {
+    id: 'kent/rollerblade-coding-checking-watch',
+    alt: 'Kent checking his watch while sitting in rollerblades with a laptop',
+  },
+  kentHoldingOutCody: {
+    id: 'kent/holding-out-kody',
+    alt: 'Kent holding out Kody the Koala',
+  },
+  kentCodingOnCouch: {
+    id: 'kent/coding-on-couch',
+    alt: 'Kent coding on a couch',
+  },
+  kentSmilingWithLaptop: {
+    id: 'kent/smiling-with-laptop-on-couch',
+    alt: 'Kent smiling with laptop on a couch',
+  },
+  kentWithOnewheel: {
+    id: 'kent/walking-away-with-onewheel',
+    alt: 'Kent walking away with a onewheel',
+  },
+  kentSkatingGear: {
+    id: 'kent/skating-gear',
+    alt: 'Kent with skating gear',
   },
 
   alexProfileYellow: {
