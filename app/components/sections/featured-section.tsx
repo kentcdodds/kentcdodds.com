@@ -43,7 +43,10 @@ function FeaturedSection({
               </div>
 
               <div className="flex items-center justify-between mt-12">
-                <ArrowLink to={slug ?? href ?? '/'}>{cta}</ArrowLink>
+                <ArrowLink to={slug ?? href ?? '/'}>
+                  {cta}
+                  <div className="focus-ring absolute z-10 -left-8 -right-8 inset-0 rounded-lg lg:left-0 lg:right-0" />
+                </ArrowLink>
               </div>
             </div>
 
@@ -57,7 +60,7 @@ function FeaturedSection({
               </div>
               {permalink ? (
                 <ClipboardCopyButton
-                  className="absolute left-6 top-6"
+                  className="absolute z-20 left-6 top-6"
                   value={permalink}
                 />
               ) : null}
