@@ -26,32 +26,40 @@ const createImages = <
 }
 
 const images = createImages({
+  kentSignatureDarkMode: {
+    id: 'kentcdodds.com/misc/signature-dark-mode.png',
+    alt: `Kent's signature`,
+  },
+  kentSignatureLightMode: {
+    id: 'kentcdodds.com/misc/signature-light-mode.png',
+    alt: `Kent's signature`,
+  },
   kentTransparentProfile: {
-    id: 'kentcdodds.com/profile-transparent',
+    id: 'kent/profile-transparent',
     alt: 'Kent C. Dodds',
   },
   kentProfile: {
-    id: 'kentcdodds.com/profile',
+    id: 'kent/profile',
     alt: 'Kent C. Dodds',
   },
   kentSnowSports: {
-    id: 'kentcdodds.com/pages/home/kent-snow-sports',
+    id: 'kent/kent-snow-sports',
     alt: 'Kent wearing snow clothes with skis and a snowboard',
   },
   kentCodingWithKody: {
-    id: 'kentcdodds.com/pages/home/kent-coding-with-kody',
+    id: 'kent/kent-coding-with-kody',
     alt: 'Kent sitting with his laptop on a bench next to Kody the Koala',
   },
   kentRidingOnewheelOutdoors: {
-    id: 'kentcdodds.com/pages/home/kent-riding-onewheel-outdoors',
+    id: 'kent/kent-riding-onewheel-outdoors',
     alt: 'Kent riding a onewheel outdoors',
   },
   kentRidingOnewheelOutdoorsFast: {
-    id: 'kentcdodds.com/pages/home/kent-riding-onewheel-outdoors-fast',
+    id: 'kent/kent-riding-onewheel-outdoors-fast',
     alt: 'Kent riding a onewheel outdoors fast',
   },
   kentPalmingSoccerBall: {
-    id: 'kentcdodds.com/pages/home/kent-palming-soccer-ball',
+    id: 'kent/kent-palming-soccer-ball',
     alt: 'Kent holding a soccer ball',
   },
 
