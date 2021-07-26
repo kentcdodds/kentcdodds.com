@@ -1,5 +1,6 @@
 import * as React from 'react'
 import {Grid} from '../grid'
+import {images} from '../../images'
 import {CourseCard} from '../course-card'
 import {HeaderSection} from './header-section'
 
@@ -15,23 +16,21 @@ function CourseSection() {
       />
       <Grid>
         <div className="col-span-full lg:col-span-6">
-          {/* TODO: set correct imageUrl */}
           <CourseCard
             title="Epic React"
             description="The most comprehensive guide for pro’s."
-            imageUrl="https://epicreact.dev/static/e9e50b43a9526373f48a11340fdfdbdc/6ba37/01-react-fundamentals.png"
-            imageAlt="Epic React logo"
+            imageUrl={images.courseEpicReact()}
+            imageAlt={images.courseEpicReact.alt}
             courseUrl="https://epicreact.dev"
           />
         </div>
 
         <div className="col-span-full mt-12 lg:col-span-6 lg:mt-0">
-          {/* TODO: set correct imageUrl */}
           <CourseCard
             title="Testing Javascript"
             description="Learn smart, efficient testing methods."
-            imageUrl="https://testingjavascript.com/static/Pricing_Trophy_Gold-c7bda50071dab490179a098b4b6b4886.png"
-            imageAlt="Testing Javascript logo"
+            imageUrl={images.courseTestingJS()}
+            imageAlt={images.courseTestingJS.alt}
             courseUrl="https://testing-library.com"
           />
         </div>
