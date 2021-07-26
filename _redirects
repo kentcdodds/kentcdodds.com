@@ -12,10 +12,13 @@
 /post/:slug*                                                             /blog/:slug*
 
 # lol, nice
-/wp-login.php                                                           https://www.youtube.com/watch?v=dQw4w9WgXcQ
-/wp-admin.php                                                           https://www.youtube.com/watch?v=dQw4w9WgXcQ
-/.env                                                                   https://www.youtube.com/watch?v=dQw4w9WgXcQ
+# not a single URL actually ends in .php... or .env
+/(.*).php                                                               https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/(.*).env                                                               https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /ads.txt                                                                https://www.youtube.com/watch?v=dQw4w9WgXcQ
-/vendor/phpunit/:path*                                                  https://www.youtube.com/watch?v=dQw4w9WgXcQ
-/boaform/admin/formLogin                                                https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/boaform(.*)                                                            https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /setup.cgi                                                              https://www.youtube.com/watch?v=dQw4w9WgXcQ
+# this is for phpmyadmin and php-my-admin stuff:
+/php(.*)                                                                https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/db(.*)                                                                 https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/sql(.*)                                                                https://www.youtube.com/watch?v=dQw4w9WgXcQ

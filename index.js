@@ -95,6 +95,9 @@ function getRedirectsMiddleware() {
   }
 
   return function redirectsMiddleware(req, res, next) {
+    const host = req.header('X-Forwarded-Host') ?? req.header('host')
+    const protocol = host.includes('localhost') ? 'http' : 'https'
+    const reqUrl = new URL(`${protocol}://${host}${req.url}`)
     for (const redirect of redirects) {
       try {
         const match = req.path.match(redirect.from)
@@ -110,9 +113,6 @@ function getRedirectsMiddleware() {
             params[redirect.keys[paramIndex].name] = paramValue
           }
           const toUrl = redirect.toUrl
-          const host = req.header('X-Forwarded-Host') ?? req.header('host')
-          const protocol = host.includes('localhost') ? 'http' : 'https'
-          const reqUrl = new URL(`${protocol}://${host}${req.url}`)
 
           toUrl.protocol = protocol
           if (toUrl.host === 'same_host') toUrl.host = reqUrl.host
