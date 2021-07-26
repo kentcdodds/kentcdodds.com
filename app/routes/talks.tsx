@@ -179,7 +179,7 @@ function Card({
           ) : (
             <div className="block flex-none w-3 h-3 bg-gray-400 dark:bg-gray-600 rounded-full" />
           )}
-          <H6 as="p" className="pl-4">
+          <H6 as="p" className="pl-4 lowercase">
             {formatDate(latestDate, 'PPP')}
           </H6>
         </div>

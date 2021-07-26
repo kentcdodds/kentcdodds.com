@@ -239,7 +239,7 @@ function TalkCard({tags, date, title, description, talkUrl}: TalkCardProps) {
         ))}
       </div>
 
-      <Paragraph as="span" className="mb-5">
+      <Paragraph as="span" className="mb-5 lowercase">
         {formatDate(date, 'PPP')}
       </Paragraph>
 

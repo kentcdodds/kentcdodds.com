@@ -58,7 +58,7 @@ function WorkshopCard({
           {truncate(description, 120)}
         </Paragraph>
       </div>
-      <H6 as="div" className="flex flex-wrap">
+      <H6 as="div" className="flex flex-wrap lowercase">
         {date ? formatDate(new Date(date), 'PPP') : 'To be announced'}
       </H6>
     </Link>
