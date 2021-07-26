@@ -1,18 +1,14 @@
-- title: TBA
-  tags:
-    - keynote
+- title: 'How React Uses Closures to Avoid Bugs'
   deliveries:
     - event: '[Connect.tech](https://connect.tech/)'
       date: 2021-11-08
   description: TBA
-- title: TBA
-  deliveries:
-    - event: '[Connect.tech](https://connect.tech/)'
-      date: 2021-11-08
-  description: TBA
-- title: TBA
+- title: Intentional Career Building
+  resources:
+    - '[blog post](https://kentcdodds.com/blog/intentional-career-building)'
   tags:
     - keynote
+    - career
   deliveries:
     - event: '[React Advanced London](https://reactadvanced.com/)'
       date: 2021-10-22
@@ -28,6 +24,8 @@
   deliveries:
     - event: '[Shift Dev Conf 2021](https://shift.infobip.com/)'
       date: 2021-09-07
+    - event: '[Connect.tech](https://connect.tech/)'
+      date: 2021-11-08
   description: >-
     Humans are natural problem solvers and we're good enough at it that we've
     survived over the centuries and become the dominant species of the planet.
