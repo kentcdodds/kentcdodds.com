@@ -11,7 +11,8 @@ import {
   useMenuButtonContext,
 } from '@reach/menu-button'
 import {useEffect} from 'react'
-import {AnimatePresence, motion} from 'framer-motion'
+import {AnimatePresence, motion, useAnimation} from 'framer-motion'
+import type {User} from '@prisma/client'
 import {alexProfiles} from '../images'
 import {Theme, Themed, useTheme} from '../utils/theme-provider'
 import {
@@ -19,10 +20,13 @@ import {
   useOptionalUserInfo,
   useTeam,
   useRequestInfo,
+  OptionalTeam,
 } from '../utils/providers'
 import {getAvatar} from '../utils/misc'
 import {SunIcon} from './icons/sun-icon'
 import {MoonIcon} from './icons/moon-icon'
+import {TeamCircle} from './team-circle'
+import {useElementState} from './hooks/use-element-state'
 
 const LINKS = [
   {name: 'Blog', to: '/blog'},
@@ -235,6 +239,78 @@ function MobileMenu() {
   )
 }
 
+// Timing durations used to control the speed of the team ring in the profile button.
+// Time is seconds per full rotation
+const durations = {
+  initial: 20,
+  hover: 10,
+  focus: 4,
+  active: 0.25,
+}
+
+function ProfileButton({
+  imageUrl,
+  imageAlt,
+  team,
+  user,
+  hasActiveMagicLink,
+}: {
+  imageUrl: string
+  imageAlt: string
+  team: OptionalTeam
+  user: User | null
+  hasActiveMagicLink: boolean
+}) {
+  const controls = useAnimation()
+  const [ref, state] = useElementState()
+  const isMascotAvatar = alexProfiles[team].src === imageUrl
+
+  React.useEffect(() => {
+    void controls.start((_, {rotate = 0}) => {
+      const target =
+        typeof rotate === 'number'
+          ? state === 'initial'
+            ? rotate - 360
+            : rotate + 360
+          : 360
+
+      return {
+        rotate: [rotate, target],
+        transition: {
+          duration: durations[state],
+          repeat: Infinity,
+          ease: 'linear',
+        },
+      }
+    })
+  }, [state, controls])
+
+  return (
+    <Link
+      to={user ? '/me' : hasActiveMagicLink ? '/signup' : '/login'}
+      aria-label={
+        user ? 'My Account' : hasActiveMagicLink ? 'Finish signing up' : 'Login'
+      }
+      className={clsx(
+        'inline-flex items-center justify-center ml-4 w-14 h-14 rounded-full focus:outline-none',
+      )}
+      ref={ref}
+    >
+      <motion.div className="absolute" animate={controls}>
+        <TeamCircle size={56} team={team} />
+      </motion.div>
+      <img
+        className={clsx('inline w-10 h-10 rounded-full select-none', {
+          'object-cover bg-inverse': !isMascotAvatar,
+          'object-contain': isMascotAvatar,
+        })}
+        src={imageUrl}
+        alt={imageAlt}
+      />
+    </Link>
+  )
+}
+
 function Navbar() {
   const [team] = useTeam()
   const user = useOptionalUser()
@@ -276,35 +352,13 @@ function Navbar() {
           <DarkModeToggle />
         </div>
 
-        <Link
-          to={
-            user
-              ? '/me'
-              : requestInfo.session.hasActiveMagicLink
-              ? '/signup'
-              : '/login'
-          }
-          title={
-            user
-              ? 'My Account'
-              : requestInfo.session.hasActiveMagicLink
-              ? 'Finish signing up'
-              : 'Login'
-          }
-          className={clsx(
-            'focus:border-primary hover:border-primary inline-flex items-center justify-center ml-4 w-14 h-14 text-white border-2 rounded-full focus:outline-none transition',
-            {
-              'border-team-current': team !== 'UNKNOWN',
-              'border-secondary': team === 'UNKNOWN',
-            },
-          )}
-        >
-          <img
-            className="inline w-10 h-10 bg-white rounded-full object-cover"
-            src={avatar.src}
-            alt={avatar.alt}
-          />
-        </Link>
+        <ProfileButton
+          hasActiveMagicLink={requestInfo.session.hasActiveMagicLink}
+          imageUrl={avatar.src}
+          imageAlt={avatar.alt}
+          team={team}
+          user={user}
+        />
       </div>
     </nav>
   )
