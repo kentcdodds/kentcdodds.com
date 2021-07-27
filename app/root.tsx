@@ -80,8 +80,7 @@ async function getSessionInfo(session: Session) {
       await validateMagicLink(magicLink)
       hasActiveMagicLink = true
     } catch {
-      // the link is not active
-      session.unset(sessionKeys.magicLink)
+      // ignore the error
     }
   }
   return {
@@ -107,9 +106,7 @@ export const loader: LoaderFunction = async ({request}) => {
     },
   }
 
-  return json(data, {
-    headers: {'Set-Cookie': await rootStorage.commitSession(session)},
-  })
+  return json(data)
 }
 
 function App() {
