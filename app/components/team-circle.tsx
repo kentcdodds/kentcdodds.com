@@ -91,6 +91,8 @@ function TeamCircle({
     OptionalTeam,
   ]
 
+  // The relative size of the "current team" compared to the other teams. A 3
+  // means that the current team is rendered 3 times as large as the other teams.
   const teamSpan = 3
   options = {...options, segments: 2 + 2 * teamSpan}
 
