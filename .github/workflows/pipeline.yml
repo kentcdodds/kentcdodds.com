@@ -94,7 +94,7 @@ jobs:
         run: npm run build
         env:
           ENABLE_TEST_ROUTES: 'true'
-          COMMIT_SHA: ${{github.sha}}
+          COMMIT_SHA: ${{ github.sha }}
 
       - name: 🐳 Docker compose
         run: docker-compose up -d && sleep 3 && npx prisma migrate reset --force
@@ -105,7 +105,7 @@ jobs:
         run: npm run prime-cache:mocks
         env:
           DATABASE_URL: 'postgresql://kody:the_koala@localhost:5432/kentcdodds_db?schema=public'
-          REDIS_URL: ${{secrets.REDIS_CI_TEST_URL}}
+          REDIS_URL: ${{ secrets.REDIS_CI_TEST_URL }}
 
       - name: 🌳 Cypress run
         uses: cypress-io/github-action@v2
@@ -120,7 +120,7 @@ jobs:
           PORT: '8811'
           RUNNING_E2E: 'true'
           DATABASE_URL: 'postgresql://kody:the_koala@localhost:5432/kentcdodds_db?schema=public'
-          REDIS_URL: ${{REDIS_CI_TEST_URL}}
+          REDIS_URL: ${{ secrets.REDIS_CI_TEST_URL }}
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
 
   build:
@@ -157,7 +157,7 @@ jobs:
           context: .
           push: true
           tags: registry.fly.io/withered-frost-3196:${{ github.sha }}
-          build-args: REMIX_TOKEN=${{secrets.REMIX_TOKEN}}
+          build-args: REMIX_TOKEN=${{ secrets.REMIX_TOKEN }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
