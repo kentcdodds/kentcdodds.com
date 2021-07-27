@@ -107,6 +107,8 @@ export const loader: LoaderFunction = async ({request}) => {
     },
   }
 
+  console.log({user})
+
   return json(data, {
     headers: {'Set-Cookie': await rootStorage.commitSession(session)},
   })

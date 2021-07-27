@@ -117,7 +117,7 @@ function YouScreen() {
   }, [qrIsVisible, setQrIsVisible])
 
   return (
-    <div>
+    <main>
       <div className="mb-64 mt-24 pt-6">
         <Grid>
           <div className="col-span-full mb-12 lg:mb-20">
@@ -262,7 +262,7 @@ function YouScreen() {
           </button>
         </div>
       </Grid>
-    </div>
+    </main>
   )
 }
 

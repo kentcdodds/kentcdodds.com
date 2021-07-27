@@ -152,7 +152,13 @@ export default function RecordingDetailScreen() {
       <CallListing call={data.call} />
       <strong>Record your response:</strong>
       {responseAudio ? (
-        <RecordingForm audio={responseAudio} data={actionData} />
+        <RecordingForm
+          audio={responseAudio}
+          data={{
+            fields: {...data.call, ...actionData?.fields},
+            errors: {...actionData?.errors},
+          }}
+        />
       ) : (
         <CallRecorder
           onRecordingComplete={recording => setResponseAudio(recording)}

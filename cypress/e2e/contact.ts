@@ -30,19 +30,13 @@ describe('contact', () => {
       cy.findByRole('textbox', {name: /subject/i}).type(emailData.subject)
       cy.findByRole('textbox', {name: /body/i}).type(bodyPart1)
 
-      cy.findByRole('button', {name: /submit/i}).click()
+      cy.findByRole('button', {name: /send/i}).click()
 
-      cy.findByRole('textbox', {name: /body/i}).then(textbox => {
-        cy.get(
-          `#${textbox.attr('aria-describedby') ?? 'no-described-by-found'}`,
-        )
-          .then(el => el.text())
-          .should('match', /too short/i)
-      })
+      cy.findByRole('alert').should('contain', /too short/i)
 
       cy.findByRole('textbox', {name: /body/i}).type(bodyPart2)
 
-      cy.findByRole('button', {name: /submit/i}).click()
+      cy.findByRole('button', {name: /send/i}).click()
     })
 
     cy.wait(200)

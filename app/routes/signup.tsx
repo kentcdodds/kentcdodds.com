@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {Form, json, redirect, useRouteData} from 'remix'
+import {json, redirect, useRouteData} from 'remix'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import type {Team} from 'types'
 import clsx from 'clsx'
@@ -219,8 +219,13 @@ export default function NewAccount() {
   }, [team, setTeam])
 
   return (
-    <div className="mt-24 pt-6">
-      <Form
+    <main className="mt-24 pt-6">
+      {/*
+        TODO: change this to <Form />
+        when we're no longer on the experimental release of remix.
+        Our current version has a bug where the root loader isn't called.
+      */}
+      <form
         className="mb-64"
         method="post"
         onChange={event => {
@@ -292,7 +297,7 @@ export default function NewAccount() {
             </Button>
           </div>
         </Grid>
-      </Form>
+      </form>
 
       <Grid>
         <div className="col-span-full lg:col-span-5 lg:col-start-8">
@@ -333,6 +338,6 @@ export default function NewAccount() {
           </div>
         </div>
       </Grid>
-    </div>
+    </main>
   )
 }
