@@ -105,7 +105,7 @@ jobs:
         run: npm run prime-cache:mocks
         env:
           DATABASE_URL: 'postgresql://kody:the_koala@localhost:5432/kentcdodds_db?schema=public'
-          REDIS_URL: ${{REDIS_CI_TEST_URL}}
+          REDIS_URL: ${{secrets.REDIS_CI_TEST_URL}}
 
       - name: 🌳 Cypress run
         uses: cypress-io/github-action@v2
