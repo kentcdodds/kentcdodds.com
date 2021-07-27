@@ -127,11 +127,27 @@ function TeamStats({
 
   return (
     <div
-      className={clsx('inline-flex flex-col justify-end', {
+      className={clsx('group relative inline-flex flex-col justify-end', {
         'justify-end': direction === 'down',
         'justify-start': direction === 'up',
       })}
     >
+      <div
+        className={clsx(
+          'underlined absolute right-0 h-8 text-sm opacity-0 group-hover:opacity-100 transition',
+          {
+            '-top-8': direction === 'down',
+            '-bottom-20': direction === 'up',
+          },
+        )}
+      >
+        <a
+          className="text-secondary hover:text-primary underlined"
+          href="{/* TODO: add correct url */}"
+        >
+          what's this?
+        </a>
+      </div>
       <ul
         className={clsx(
           'relative flex px-4 h-0 border-team-current overflow-visible',
