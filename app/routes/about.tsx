@@ -1,5 +1,8 @@
-import formatDate from 'date-fns/format'
 import * as React from 'react'
+import type {LoaderFunction} from 'remix'
+import {json, useLoaderData} from 'remix'
+import type {MdxListItem} from 'types'
+import formatDate from 'date-fns/format'
 import {images} from '../images'
 import {H2, H3, H6, Paragraph} from '../components/typography'
 import {ArrowLink} from '../components/arrow-button'
@@ -8,10 +11,20 @@ import {HeaderSection} from '../components/sections/header-section'
 import {FeatureCard} from '../components/feature-card'
 import {UsersIcon} from '../components/icons/users-icon'
 import {BlogSection} from '../components/sections/blog-section'
-import {articles} from '../utils/temp.fixtures'
+import {getBlogRecommendations} from '../utils/blog.server'
 import {HeroSection} from '../components/sections/hero-section'
 
+type LoaderData = {
+  blogRecommendations: Array<MdxListItem>
+}
+
+export const loader: LoaderFunction = async () => {
+  const data: LoaderData = {blogRecommendations: await getBlogRecommendations()}
+  return json(data)
+}
+
 function AboutIndex() {
+  const {blogRecommendations} = useLoaderData<LoaderData>()
   return (
     <>
       <HeroSection
@@ -207,9 +220,8 @@ function AboutIndex() {
         </div>
       </Grid>
 
-      {/* TODO: replace fixtures */}
       <BlogSection
-        articles={articles}
+        articles={blogRecommendations}
         title="Have a look at my writing."
         description="These are the most popular."
       />
