@@ -121,7 +121,7 @@ export default function RecordScreen() {
       )}
 
       {user ? (
-        <Grid>
+        <Grid as="main">
           <div className="col-span-full lg:col-span-8 lg:col-start-3">
             <Record
               slug="./new"

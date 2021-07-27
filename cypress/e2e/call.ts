@@ -6,8 +6,8 @@ describe('call in', () => {
 
     cy.login()
     cy.visit('/call')
+    cy.findByRole('link', {name: /record/i}).click()
     cy.findByRole('main').within(() => {
-      cy.findByRole('link', {name: /record/i}).click()
       cy.findByRole('link', {name: /new recording/i}).click()
       cy.findByRole('button', {name: /change.*device/i}).click()
       // this is hidden by the label, but it's definitely clickable

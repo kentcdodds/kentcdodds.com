@@ -69,7 +69,7 @@ export default function CallListScreen() {
     <div>
       <h2>All the calls</h2>
       <hr />
-      <div className="flex">
+      <main className="flex">
         <div className="w-52 overscroll-auto">
           {data.calls.length ? (
             <ul>
@@ -98,7 +98,7 @@ export default function CallListScreen() {
           )}
         </div>
         <Outlet />
-      </div>
+      </main>
       <hr />
     </div>
   )

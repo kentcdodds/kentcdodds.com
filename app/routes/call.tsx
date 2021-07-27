@@ -90,7 +90,7 @@ export default function CallHomeScreen() {
         IDEA: when there will be many episodes, we could split this by year, and
         display it with tabs like on the podcast page. [2023, 2022, 2021]
       */}
-      <Grid className="mb-24 lg:mb-64">
+      <Grid as="main" className="mb-24 lg:mb-64">
         <div className="flex flex-col col-span-full mb-6 lg:flex-row lg:justify-between lg:mb-12">
           <H6
             id="episodes"

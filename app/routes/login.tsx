@@ -80,7 +80,7 @@ function Login() {
       title="Log in to your account."
       subtitle="Or sign up for an account."
       action={
-        <div>
+        <main>
           <Form
             onChange={event => {
               const form = event.currentTarget
@@ -144,7 +144,7 @@ function Login() {
             NOTICE: Any and all of your data may get deleted at any time during
             development of the new site.
           </p>
-        </div>
+        </main>
       }
     />
   )

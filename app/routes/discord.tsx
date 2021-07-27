@@ -145,243 +145,245 @@ export default function Discord() {
           </ButtonLink>
         }
       />
-
-      <Grid className="mb-24 lg:mb-64">
-        <div className="col-span-full lg:col-span-6 lg:col-start-1">
-          <div className="aspect-h-6 aspect-w-4 mb-12 lg:mb-0">
-            <img
-              className="rounded-lg object-cover"
-              src={images.kentCodingWithKody()}
-              alt={images.kentCodingWithKody.alt}
-            />
+      <main>
+        <Grid className="mb-24 lg:mb-64">
+          <div className="col-span-full lg:col-span-6 lg:col-start-1">
+            <div className="aspect-h-6 aspect-w-4 mb-12 lg:mb-0">
+              <img
+                className="rounded-lg object-cover"
+                src={images.kentCodingWithKody()}
+                alt={images.kentCodingWithKody.alt}
+              />
+            </div>
           </div>
-        </div>
 
-        <div className="col-span-full lg:col-span-5 lg:col-start-8 lg:row-start-1">
-          <H2 id="reasons-to-join" className="mb-10">
-            Here’s why you should join the server.
-          </H2>
+          <div className="col-span-full lg:col-span-5 lg:col-start-8 lg:row-start-1">
+            <H2 id="reasons-to-join" className="mb-10">
+              Here’s why you should join the server.
+            </H2>
 
-          <ButtonLink className="mb-32" variant="primary" to={authorizeURL}>
-            Join Discord
-          </ButtonLink>
+            <ButtonLink className="mb-32" variant="primary" to={authorizeURL}>
+              Join Discord
+            </ButtonLink>
 
-          <H6 as="h3" className="mb-4">
-            Here will go the first title..
-          </H6>
-          <Paragraph className="mb-12">
-            Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
-            nunc, dictum quis condimentum in, impe rdiet at arcu.{' '}
-          </Paragraph>
-          <H6 as="h3" className="mb-4">
-            Here will go the second title..
-          </H6>
-          <Paragraph className="mb-12">
-            Mauris auctor nulla at felis placerat, ut elementum urna commodo.
-            Aenean et rutrum quam. Etiam odio massa, congue in orci nec, ornare
-            suscipit sem aenean turpis.
-          </Paragraph>
-          <H6 as="h3" className="mb-4">
-            Here will go the third title.
-          </H6>
-          <Paragraph className="mb-12">
-            Mauris auctor nulla at felis placerat, ut elementum urna commodo.
-            Aenean et rutrum quam. Etiam odio massa, congue in orci nec, ornare
-            suscipit sem aenean turpis.
-          </Paragraph>
-        </div>
-      </Grid>
+            <H6 as="h3" className="mb-4">
+              Here will go the first title..
+            </H6>
+            <Paragraph className="mb-12">
+              Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec
+              elit nunc, dictum quis condimentum in, impe rdiet at arcu.{' '}
+            </Paragraph>
+            <H6 as="h3" className="mb-4">
+              Here will go the second title..
+            </H6>
+            <Paragraph className="mb-12">
+              Mauris auctor nulla at felis placerat, ut elementum urna commodo.
+              Aenean et rutrum quam. Etiam odio massa, congue in orci nec,
+              ornare suscipit sem aenean turpis.
+            </Paragraph>
+            <H6 as="h3" className="mb-4">
+              Here will go the third title.
+            </H6>
+            <Paragraph className="mb-12">
+              Mauris auctor nulla at felis placerat, ut elementum urna commodo.
+              Aenean et rutrum quam. Etiam odio massa, congue in orci nec,
+              ornare suscipit sem aenean turpis.
+            </Paragraph>
+          </div>
+        </Grid>
 
-      <Grid className="mb-24 lg:mb-48">
-        <div className="col-span-full">
-          <H2 className="mb-3 lg:mt-6">
-            Not sure what to expect from the discord?
-          </H2>
-          <H2 as="p" variant="secondary" className="mb-14">
-            Here’s some features for you in a glance.{' '}
-          </H2>
-        </div>
+        <Grid className="mb-24 lg:mb-48">
+          <div className="col-span-full">
+            <H2 className="mb-3 lg:mt-6">
+              Not sure what to expect from the discord?
+            </H2>
+            <H2 as="p" variant="secondary" className="mb-14">
+              Here’s some features for you in a glance.{' '}
+            </H2>
+          </div>
 
-        <div className="col-span-full">
-          <Grid rowGap nested>
-            {Array.from({length: 3}).map((_, idx) => (
-              <React.Fragment key={idx}>
-                <div className="col-span-full lg:col-span-4">
-                  <FeatureCard
-                    title="Learning clubs"
-                    description="Form study groups and learn together."
-                    icon={<UsersIcon size={48} />}
-                  />
-                </div>
-                <div className="col-span-full lg:col-span-4">
-                  <FeatureCard
-                    title="Free forever"
-                    description="You will never have to pay for the discord."
-                    icon={<DollarIcon size={48} />}
-                  />
-                </div>
-                <div className="col-span-full lg:col-span-4">
-                  <FeatureCard
-                    title="Livestreams"
-                    description="Be the first to know when livestreams are."
-                    icon={<CodeIcon size={48} />}
-                  />
-                </div>
-              </React.Fragment>
-            ))}
+          <div className="col-span-full">
+            <Grid rowGap nested>
+              {Array.from({length: 3}).map((_, idx) => (
+                <React.Fragment key={idx}>
+                  <div className="col-span-full lg:col-span-4">
+                    <FeatureCard
+                      title="Learning clubs"
+                      description="Form study groups and learn together."
+                      icon={<UsersIcon size={48} />}
+                    />
+                  </div>
+                  <div className="col-span-full lg:col-span-4">
+                    <FeatureCard
+                      title="Free forever"
+                      description="You will never have to pay for the discord."
+                      icon={<DollarIcon size={48} />}
+                    />
+                  </div>
+                  <div className="col-span-full lg:col-span-4">
+                    <FeatureCard
+                      title="Livestreams"
+                      description="Be the first to know when livestreams are."
+                      icon={<CodeIcon size={48} />}
+                    />
+                  </div>
+                </React.Fragment>
+              ))}
+            </Grid>
+          </div>
+        </Grid>
+
+        <Grid className="mb-24 lg:mb-64">
+          <div className="hidden col-span-full mb-12 lg:block lg:col-span-4 lg:mb-0">
+            <H6 as="h2">Set up your own learning club.</H6>
+          </div>
+          <div className="col-span-full mb-20 lg:col-span-8 lg:mb-28">
+            <H2 as="p" className="mb-3">
+              Learning clubs in the discord are like study groups you put
+              together yourself.
+            </H2>
+            <H2 as="p" variant="secondary">
+              Having a group of people with the same challenges will help you
+              learn faster.
+            </H2>
+          </div>
+          <div className="col-span-full mb-8 lg:col-span-4 lg:col-start-5 lg:mb-0 lg:pr-12">
+            <H6 as="h3" className="mb-4">
+              When we learn together, we learn better, and that&apos;s the idea.
+            </H6>
+            <Paragraph className="mb-16">
+              Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec
+              elit nunc, dictum quis condimentum in, imp erdiet at arcu.
+            </Paragraph>
+
+            <H6 as="h3" className="mb-4">
+              Develop friendships with other nice learners in the community.
+            </H6>
+            <Paragraph>
+              Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec
+              elit nunc, dictum quis condimentum in, imp erdiet at arcu.
+            </Paragraph>
+          </div>
+          <div className="col-span-full lg:col-span-4 lg:col-start-9 lg:pr-12">
+            <H6 as="h3" className="mb-4">
+              You have access to me (Kent) during twice-weekly office hours.
+            </H6>
+            <Paragraph className="mb-16">
+              Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec
+              elit nunc, dictum quis condimentum in, imp erdiet at arcu.
+            </Paragraph>
+
+            <H6 as="h3" className="mb-4">
+              You can chat with members of the KCD Community on Discord.
+            </H6>
+            <Paragraph>
+              Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec
+              elit nunc, dictum quis condimentum in, imp erdiet at arcu.
+            </Paragraph>
+          </div>
+        </Grid>
+
+        <div className="mb-24 lg:mb-48">
+          <Grid featured>
+            <div className="flex flex-col col-span-full items-stretch mb-40 lg:col-span-5 lg:items-start lg:mb-0">
+              <H2 className="mb-8">
+                Enjoy community meetups in the discord server.
+              </H2>
+              <H2 className="mb-16" variant="secondary" as="p">
+                Voice and video chats hosted and managed on the Kent C. Dodds
+                Discord server.
+              </H2>
+              <ButtonLink variant="primary" to={authorizeURL}>
+                Join Discord
+              </ButtonLink>
+            </div>
+
+            <div className="col-span-full lg:col-span-5 lg:col-start-8 lg:mr-12">
+              <ol className="space-y-24 lg:space-y-16">
+                <NumberedPanel
+                  number={1}
+                  caption="What are the meetups?"
+                  description="Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
+        nunc, dictum quis condimentum in, imper diet at arcu."
+                />
+                <NumberedPanel
+                  number={2}
+                  caption="So, how do I use them?"
+                  description="Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
+        nunc, dictum quis condimentum in, imper diet at arcu."
+                />
+                <NumberedPanel
+                  number={3}
+                  caption="Can I organize meetups myself or are there only curated meetups?"
+                  description="Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
+        nunc, dictum quis condimentum in, imper diet at arcu."
+                />
+                <ArrowLink to="/meetups" direction="right">
+                  More about meetups
+                </ArrowLink>
+              </ol>
+            </div>
           </Grid>
         </div>
-      </Grid>
 
-      <Grid className="mb-24 lg:mb-64">
-        <div className="hidden col-span-full mb-12 lg:block lg:col-span-4 lg:mb-0">
-          <H6 as="h2">Set up your own learning club.</H6>
-        </div>
-        <div className="col-span-full mb-20 lg:col-span-8 lg:mb-28">
-          <H2 as="p" className="mb-3">
-            Learning clubs in the discord are like study groups you put together
-            yourself.
-          </H2>
-          <H2 as="p" variant="secondary">
-            Having a group of people with the same challenges will help you
-            learn faster.
-          </H2>
-        </div>
-        <div className="col-span-full mb-8 lg:col-span-4 lg:col-start-5 lg:mb-0 lg:pr-12">
-          <H6 as="h3" className="mb-4">
-            When we learn together, we learn better, and that&apos;s the idea.
-          </H6>
-          <Paragraph className="mb-16">
-            Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
-            nunc, dictum quis condimentum in, imp erdiet at arcu.
-          </Paragraph>
+        <TestimonialSection
+          testimonials={testimonials}
+          className="mb-24 lg:mb-64"
+        />
 
-          <H6 as="h3" className="mb-4">
-            Develop friendships with other nice learners in the community.
-          </H6>
-          <Paragraph>
-            Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
-            nunc, dictum quis condimentum in, imp erdiet at arcu.
-          </Paragraph>
-        </div>
-        <div className="col-span-full lg:col-span-4 lg:col-start-9 lg:pr-12">
-          <H6 as="h3" className="mb-4">
-            You have access to me (Kent) during twice-weekly office hours.
-          </H6>
-          <Paragraph className="mb-16">
-            Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
-            nunc, dictum quis condimentum in, imp erdiet at arcu.
-          </Paragraph>
+        <HeaderSection
+          title="Here’s a quick look at all categories."
+          subTitle="Click on any category to get more info."
+          className="mb-14"
+        />
 
-          <H6 as="h3" className="mb-4">
-            You can chat with members of the KCD Community on Discord.
-          </H6>
-          <Paragraph>
-            Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
-            nunc, dictum quis condimentum in, imp erdiet at arcu.
-          </Paragraph>
-        </div>
-      </Grid>
+        <Grid className="mb-24 lg:mb-64">
+          <Accordion
+            collapsible
+            multiple
+            className="col-span-full mb-4 space-y-4 lg:col-span-6 lg:mb-0 lg:space-y-6"
+          >
+            {categoryGroups[0].map(category => (
+              <CategoryCard key={category.number} {...category} />
+            ))}
+          </Accordion>
+          <Accordion
+            collapsible
+            multiple
+            className="col-span-full space-y-4 lg:col-span-6 lg:space-y-6"
+          >
+            {categoryGroups[1].map(category => (
+              <CategoryCard key={category.number} {...category} />
+            ))}
+          </Accordion>
+        </Grid>
 
-      <div className="mb-24 lg:mb-48">
-        <Grid featured>
-          <div className="flex flex-col col-span-full items-stretch mb-40 lg:col-span-5 lg:items-start lg:mb-0">
+        <Grid className="mb-24 lg:mb-64">
+          <div className="col-span-full lg:col-span-4 lg:col-start-2">
+            <img
+              className="object-contain"
+              src={images.helmet({
+                resize: {type: 'crop', width: 2000, height: 2100},
+              })}
+              alt={images.helmet.alt}
+            />
+          </div>
+
+          <div className="col-span-full mt-4 lg:col-span-6 lg:col-start-7 lg:mt-0">
             <H2 className="mb-8">
-              Enjoy community meetups in the discord server.
+              Learning is always better with like minded people, join the
+              discord.
             </H2>
-            <H2 className="mb-16" variant="secondary" as="p">
-              Voice and video chats hosted and managed on the Kent C. Dodds
-              Discord server.
+            <H2 variant="secondary" as="p" className="mb-16">
+              Click the button below and join the community, let&apos;s get
+              better together.
             </H2>
             <ButtonLink variant="primary" to={authorizeURL}>
               Join Discord
             </ButtonLink>
           </div>
-
-          <div className="col-span-full lg:col-span-5 lg:col-start-8 lg:mr-12">
-            <ol className="space-y-24 lg:space-y-16">
-              <NumberedPanel
-                number={1}
-                caption="What are the meetups?"
-                description="Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
-        nunc, dictum quis condimentum in, imper diet at arcu."
-              />
-              <NumberedPanel
-                number={2}
-                caption="So, how do I use them?"
-                description="Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
-        nunc, dictum quis condimentum in, imper diet at arcu."
-              />
-              <NumberedPanel
-                number={3}
-                caption="Can I organize meetups myself or are there only curated meetups?"
-                description="Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
-        nunc, dictum quis condimentum in, imper diet at arcu."
-              />
-              <ArrowLink to="/meetups" direction="right">
-                More about meetups
-              </ArrowLink>
-            </ol>
-          </div>
         </Grid>
-      </div>
-
-      <TestimonialSection
-        testimonials={testimonials}
-        className="mb-24 lg:mb-64"
-      />
-
-      <HeaderSection
-        title="Here’s a quick look at all categories."
-        subTitle="Click on any category to get more info."
-        className="mb-14"
-      />
-
-      <Grid className="mb-24 lg:mb-64">
-        <Accordion
-          collapsible
-          multiple
-          className="col-span-full mb-4 space-y-4 lg:col-span-6 lg:mb-0 lg:space-y-6"
-        >
-          {categoryGroups[0].map(category => (
-            <CategoryCard key={category.number} {...category} />
-          ))}
-        </Accordion>
-        <Accordion
-          collapsible
-          multiple
-          className="col-span-full space-y-4 lg:col-span-6 lg:space-y-6"
-        >
-          {categoryGroups[1].map(category => (
-            <CategoryCard key={category.number} {...category} />
-          ))}
-        </Accordion>
-      </Grid>
-
-      <Grid className="mb-24 lg:mb-64">
-        <div className="col-span-full lg:col-span-4 lg:col-start-2">
-          <img
-            className="object-contain"
-            src={images.helmet({
-              resize: {type: 'crop', width: 2000, height: 2100},
-            })}
-            alt={images.helmet.alt}
-          />
-        </div>
-
-        <div className="col-span-full mt-4 lg:col-span-6 lg:col-start-7 lg:mt-0">
-          <H2 className="mb-8">
-            Learning is always better with like minded people, join the discord.
-          </H2>
-          <H2 variant="secondary" as="p" className="mb-16">
-            Click the button below and join the community, let&apos;s get better
-            together.
-          </H2>
-          <ButtonLink variant="primary" to={authorizeURL}>
-            Join Discord
-          </ButtonLink>
-        </div>
-      </Grid>
+      </main>
 
       <CourseSection />
     </>
