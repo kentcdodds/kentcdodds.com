@@ -14,19 +14,22 @@ declare global {
 const REDIS_URL = getRequiredServerEnvVar('REDIS_URL')
 const replica = new URL(REDIS_URL)
 const isLocalHost = replica.hostname === 'localhost'
+const isInternal = replica.hostname.includes('.internal')
 
-const PRIMARY_REGION = isLocalHost
-  ? null
-  : getRequiredServerEnvVar('PRIMARY_REGION')
-const FLY_REGION = isLocalHost ? null : getRequiredServerEnvVar('FLY_REGION')
+const isMultiRegion = !isLocalHost && isInternal
 
-if (!isLocalHost) {
+const PRIMARY_REGION = isMultiRegion
+  ? getRequiredServerEnvVar('PRIMARY_REGION')
+  : null
+const FLY_REGION = isMultiRegion ? getRequiredServerEnvVar('FLY_REGION') : null
+
+if (FLY_REGION) {
   replica.host = `${FLY_REGION}.${replica.host}`
 }
 
 const replicaClient = createClient('replicaClient', {
   url: replica.toString(),
-  family: 'IPv6',
+  family: isInternal ? 'IPv6' : 'IPv4',
 })
 
 let primaryClient: redis.RedisClient | null = null
@@ -37,7 +40,7 @@ if (FLY_REGION !== PRIMARY_REGION) {
   }
   primaryClient = createClient('primaryClient', {
     url: primary.toString(),
-    family: 'IPv6',
+    family: isInternal ? 'IPv6' : 'IPv4',
   })
 }
 
