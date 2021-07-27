@@ -14,7 +14,10 @@ function sendEvent(
   // so we'll make this a sync function and ignore the promise ourselves.
   async function go() {
     try {
-      Sentry.captureException(error, await captureContext())
+      Sentry.captureException(
+        new Error('Data request resulted in a 404'),
+        await captureContext(),
+      )
     } catch (e: unknown) {
       console.error(
         `Error with Sentry.captureException`,
@@ -37,7 +40,7 @@ function sendEventWithRequestContext(
     const originalContext = await getContext()
 
     const user = await getUser(request)
-    const completeContext = {
+    return {
       ...originalContext,
       user: user
         ? {
@@ -53,7 +56,6 @@ function sendEventWithRequestContext(
         ...originalContext.tags,
       },
     }
-    return completeContext
   })
 }
 
