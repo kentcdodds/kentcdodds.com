@@ -13,6 +13,7 @@ import {
 } from './utils/prisma.server'
 import {getRssFeedXml} from './utils/blog-rss-feed.server'
 import {getEnv} from './utils/env.server'
+import {sendEventWithRequestContext} from './utils/sentry.server'
 
 global.ENV = getEnv()
 
@@ -61,6 +62,19 @@ export default async function handleRequest(
     responseHeaders.set('Cache-Control', 'no-store')
   }
 
+  if (responseStatusCode >= 400) {
+    sendEventWithRequestContext(
+      request,
+      new Error(`Document request resulted in a ${responseStatusCode}`),
+      () => ({
+        tags: {
+          type: 'handleDocumentRequest',
+          responseStatus: responseStatusCode,
+        },
+      }),
+    )
+  }
+
   const html = `<!DOCTYPE html>${markup}`
 
   return new Response(html, {
@@ -86,6 +100,18 @@ export async function handleDataRequest(
   const replayResponse = await getDataReplayResponse(request, dataResponse)
   if (replayResponse) {
     return replayResponse
+  }
+  if (dataResponse.status >= 400) {
+    sendEventWithRequestContext(
+      request,
+      new Error(`Data request resulted in a ${dataResponse.status}`),
+      () => ({
+        tags: {
+          type: 'handleDataRequest',
+          responseStatus: dataResponse.status,
+        },
+      }),
+    )
   }
   return new Response(dataResponse.body, {
     status: dataResponse.status,
