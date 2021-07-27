@@ -27,11 +27,11 @@ const createImages = <
 
 const images = createImages({
   kentSignatureDarkMode: {
-    id: 'kentcdodds.com/misc/signature-dark-mode.png',
+    id: 'kent/signature-dark-mode',
     alt: `Kent's signature`,
   },
   kentSignatureLightMode: {
-    id: 'kentcdodds.com/misc/signature-light-mode.png',
+    id: 'kent/signature-light-mode',
     alt: `Kent's signature`,
   },
   kentTransparentProfile: {
