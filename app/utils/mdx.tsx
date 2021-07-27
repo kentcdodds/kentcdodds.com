@@ -172,8 +172,8 @@ async function getBlogMdxListItems() {
   return pages.map(mapFromMdxPageToMdxListItem)
 }
 
-function mdxPageMeta({data}: {data: {page: MdxPage} | null}) {
-  if (data) {
+function mdxPageMeta({data}: {data: {page: MdxPage | null} | null}) {
+  if (data?.page) {
     return {
       title: data.page.frontmatter.title,
       description: data.page.frontmatter.description,

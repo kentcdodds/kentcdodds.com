@@ -65,7 +65,7 @@ export default function MdxScreenBase() {
   const data = useRouteData<LoaderData>()
 
   if (data.page) return <MdxScreen />
-  else return <FourOhFour />
+  else return <FourOhFour articles={data.recommendations} />
 }
 
 function useOnRead({

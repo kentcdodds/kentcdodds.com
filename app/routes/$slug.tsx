@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {useRouteData, json} from 'remix'
-import type {MdxPage, KCDLoader} from 'types'
+import type {MdxPage, KCDLoader, MdxListItem} from 'types'
 import {
   getMdxPage,
   mdxPageMeta,
@@ -8,10 +8,16 @@ import {
   refreshCacheForMdx,
 } from '../utils/mdx'
 import {shouldForceFresh} from '../utils/redis.server'
+import {getBlogRecommendations} from '../utils/blog.server'
 import {FourOhFour} from '../components/errors'
 import {Grid} from '../components/grid'
 import {BackLink} from '../components/arrow-button'
 import {H2, H6} from '../components/typography'
+
+type LoaderData = {
+  page: MdxPage | null
+  blogRecommendations: Array<MdxListItem>
+}
 
 export const loader: KCDLoader<{slug: string}> = async ({params, request}) => {
   const pageMeta = {
@@ -22,18 +28,19 @@ export const loader: KCDLoader<{slug: string}> = async ({params, request}) => {
     await refreshCacheForMdx(pageMeta)
   }
   const page = await getMdxPage(pageMeta)
+  const blogRecommendations = await getBlogRecommendations()
 
-  if (!page) return json(null, {status: 404})
-  return json({page})
+  const data: LoaderData = {page, blogRecommendations}
+  return json(data)
 }
 
 export const meta = mdxPageMeta
 
 export default function MdxScreenBase() {
-  const data = useRouteData<{page: MdxPage} | null>()
+  const data = useRouteData<LoaderData>()
 
-  if (data) return <MdxScreen mdxPage={data.page} />
-  else return <FourOhFour />
+  if (data.page) return <MdxScreen mdxPage={data.page} />
+  else return <FourOhFour articles={data.blogRecommendations} />
 }
 
 function MdxScreen({mdxPage}: {mdxPage: MdxPage}) {

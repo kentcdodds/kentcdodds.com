@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {useRouteData, json} from 'remix'
-import type {MdxPage, KCDLoader} from 'types'
+import type {MdxPage, KCDLoader, MdxListItem} from 'types'
 import formatDate from 'date-fns/format'
 import {getMdxPage, mdxPageMeta} from '../../utils/mdx'
 import {getScheduledEvents} from '../../utils/workshop-tickets.server'
@@ -13,6 +13,13 @@ import {WorkshopCard} from '../../components/workshop-card'
 import {NumberedPanel} from '../../components/numbered-panel'
 import {TestimonialSection} from '../../components/sections/testimonial-section'
 import {FourOhFour} from '../../components/errors'
+import {getBlogRecommendations} from '../../utils/blog.server'
+
+type LoaderData = {
+  page: MdxPage | null
+  workshop?: WorkshopEvent
+  blogRecommendations: Array<MdxListItem>
+}
 
 export const loader: KCDLoader<{slug: string}> = async ({params}) => {
   const page = await getMdxPage({
@@ -23,16 +30,22 @@ export const loader: KCDLoader<{slug: string}> = async ({params}) => {
   const workshop = events.find(
     ({metadata}) => metadata.workshopSlug === params.slug,
   )
-  return json({page, workshop})
+  const data: LoaderData = {
+    page,
+    workshop,
+    blogRecommendations: await getBlogRecommendations(),
+  }
+  return json(data)
 }
 
 export const meta = mdxPageMeta
 
 export default function MdxScreenBase() {
-  const data = useRouteData<{page: MdxPage; workshop?: WorkshopEvent} | null>()
+  const data = useRouteData<LoaderData>()
 
-  if (data) return <MdxScreen mdxPage={data.page} workshop={data.workshop} />
-  else return <FourOhFour />
+  if (data.page)
+    return <MdxScreen mdxPage={data.page} workshop={data.workshop} />
+  else return <FourOhFour articles={data.blogRecommendations} />
 }
 
 interface TopicRowProps {

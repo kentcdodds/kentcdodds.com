@@ -2,8 +2,8 @@ import {useMatches} from 'remix'
 import * as React from 'react'
 import errorStack from 'error-stack-parser'
 import clsx from 'clsx'
+import type {MdxListItem} from 'types'
 import {images} from '../images'
-import {articles} from '../utils/temp.fixtures'
 import {HeroSection} from './sections/hero-section'
 import {BlogSection} from './sections/blog-section'
 import {H2, H6} from './typography'
@@ -53,38 +53,47 @@ function ErrorPage({
   title,
   subtitle,
   error,
+  articles,
 }: {
   title: string
   subtitle: string
   error?: Error
+  articles?: Array<MdxListItem>
 }) {
+  const props = {
+    title,
+    subtitle,
+    imageUrl: images.bustedOnewheel(),
+    imageAlt: images.bustedOnewheel.alt,
+  }
+  if (articles?.length) {
+    Object.assign(props, {
+      arrowUrl: '#articles',
+      arrowLabel: 'But wait, there is more!',
+    })
+  }
   return (
     <main className="relative">
       {error && process.env.NODE_ENV === 'development' ? (
         <RedBox error={error} />
       ) : null}
+      <HeroSection {...props} />
 
-      <HeroSection
-        title={title}
-        subtitle={subtitle}
-        imageUrl={images.bustedOnewheel()}
-        imageAlt={images.bustedOnewheel.alt}
-        arrowUrl="#articles"
-        arrowLabel="But wait, there is more!"
-      />
-
-      {/* TODO: remove fixtures, do something smart */}
-      <div id="articles" />
-      <BlogSection
-        articles={articles}
-        title="Looking for something to read?"
-        description="Have a look at these articles."
-      />
+      {articles?.length ? (
+        <>
+          <div id="articles" />
+          <BlogSection
+            articles={articles}
+            title="Looking for something to read?"
+            description="Have a look at these articles."
+          />
+        </>
+      ) : null}
     </main>
   )
 }
 
-function FourOhFour() {
+function FourOhFour({articles}: {articles?: Array<MdxListItem>}) {
   const matches = useMatches()
   const last = matches[matches.length - 1]
   const pathname = last?.pathname
@@ -93,11 +102,18 @@ function FourOhFour() {
     <ErrorPage
       title="404 - Oh no, you found a page that's missing stuff."
       subtitle={`"${pathname}" is not a page on kentcdodds.com. So sorry.`}
+      articles={articles}
     />
   )
 }
 
-function ServerError({error}: {error?: Error}) {
+function ServerError({
+  error,
+  articles,
+}: {
+  error?: Error
+  articles?: Array<MdxListItem>
+}) {
   const matches = useMatches()
   const last = matches[matches.length - 1]
   const pathname = last?.pathname
@@ -107,6 +123,7 @@ function ServerError({error}: {error?: Error}) {
       title="500 - Oh no, something did not go that well."
       subtitle={`"${pathname}" is currently not working. So sorry.`}
       error={error}
+      articles={articles}
     />
   )
 }
