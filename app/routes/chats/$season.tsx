@@ -22,6 +22,7 @@ export const loader: KCDLoader<{season: string}> = async ({
   const seasonNumber = Number(params.season)
   const season = seasons.find(s => s.seasonNumber === seasonNumber)
   if (!season) {
+    // TODO: add 404 here
     throw new Error(`oh no. season for ${seasonNumber}: ${params.season}`)
   }
 

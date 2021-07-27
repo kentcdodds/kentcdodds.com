@@ -31,7 +31,11 @@ export const loader: KCDLoader<{slug: string}> = async ({params, request}) => {
   const blogRecommendations = await getBlogRecommendations()
 
   const data: LoaderData = {page, blogRecommendations}
-  return json(data)
+  if (page) {
+    return json(data)
+  } else {
+    return json(data, {status: 404})
+  }
 }
 
 export const meta = mdxPageMeta
