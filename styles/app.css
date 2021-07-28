@@ -84,15 +84,23 @@ light-mode {
 .html a:focus {
   outline: none;
 }
-
 .dark .html a {
   color: var(--color-white);
+}
+
+.html.text-primary a {
+  color: var(--color-gray-500);
+}
+
+.dark .html.text-primary a {
+  color: var(--color-blueGray-500);
 }
 
 .html a,
 a.underlined {
   position: relative;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .html a:after,
