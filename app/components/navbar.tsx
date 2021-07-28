@@ -64,6 +64,7 @@ function NavLink({
   )
 }
 
+const iconTransformOrigin = {transformOrigin: '50% 100px'}
 function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
   const [, setTheme] = useTheme()
   return (
@@ -74,16 +75,28 @@ function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
         )
       }}
       className={clsx(
-        'border-secondary hover:border-primary focus:border-primary text-primary inline-flex items-center justify-center p-1 h-14 border-2 rounded-full focus:outline-none transition',
+        'border-secondary hover:border-primary focus:border-primary inline-flex items-center justify-center p-1 h-14 border-2 rounded-full focus:outline-none overflow-hidden transition',
         {
           'w-14': variant === 'icon',
           'px-8': variant === 'labelled',
         },
       )}
     >
-      <span>
-        <Themed dark={<MoonIcon />} light={<SunIcon />} />
-      </span>
+      {/* note that the duration is longer then the one on body, controlling the bg-color */}
+      <div className="relative w-8 h-8">
+        <span
+          className="absolute inset-0 text-white transform dark:rotate-0 rotate-90 transition duration-1000"
+          style={iconTransformOrigin}
+        >
+          <MoonIcon />
+        </span>
+        <span
+          className="absolute inset-0 text-black transform dark:-rotate-90 rotate-0 transition duration-1000"
+          style={iconTransformOrigin}
+        >
+          <SunIcon />
+        </span>
+      </div>
       <span className={clsx('ml-4', {'sr-only': variant === 'icon'})}>
         <Themed dark="switch to light mode" light="switch to dark mode" />
       </span>
