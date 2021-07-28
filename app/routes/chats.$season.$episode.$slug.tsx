@@ -89,21 +89,18 @@ function Homework({
         <span>Homework</span>
       </H6>
 
-      <ul className="text-primary">
+      <ul className="text-primary html -mb-10 text-lg font-medium">
         {homeworkHTMLs.map(homeworkHTML => (
           <li
             key={homeworkHTML}
-            className="flex pb-12 pt-8 border-t border-gray-200 dark:border-gray-600"
+            className="border-secondary flex pb-10 pt-8 border-t"
           >
             <CheckCircledIcon
               className="flex-none mr-6 text-gray-400 dark:text-gray-600"
               size={24}
             />
 
-            <div
-              className="text-lg font-medium"
-              dangerouslySetInnerHTML={{__html: homeworkHTML}}
-            />
+            <div dangerouslySetInnerHTML={{__html: homeworkHTML}} />
           </li>
         ))}
       </ul>
@@ -118,13 +115,16 @@ function Resources({resources = []}: {resources: CWKEpisode['resources']}) {
         Resources
       </h4>
 
-      <ul className="text-primary space-y-8">
+      <ul className="text-secondary text-lg font-medium space-y-8 lg:space-y-2">
         {resources.map(resource => (
           <li key={resource.url}>
-            <a href={resource.url} className="text-secondary text-xl space-x-4">
+            <a
+              href={resource.url}
+              className="hover:text-primary focus:text-primary focus:outline-none transition"
+            >
               <span>{resource.name}</span>
-              <span className="inline-block align-bottom">
-                <ArrowIcon direction="top-right" />
+              <span className="inline-block align-top ml-4 mt-1">
+                <ArrowIcon size={26} direction="top-right" />
               </span>
             </a>
           </li>
