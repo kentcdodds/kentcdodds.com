@@ -201,7 +201,10 @@ async function addPostRead({slug, userId}: {slug: string; userId: string}) {
 }
 
 function getReplayResponse(request: Request, errorMessage?: string) {
-  if (!isPrimaryRegion && errorMessage?.includes('SqlState("25006")')) {
+  // depending on how the error is serialized, there may be quotes and escape
+  // characters in the error message, so we'll use a regex instead of a regular includes.
+  const isReadOnlyError = /SqlState\(.*?25006.*?\)/.test(errorMessage ?? '')
+  if (!isPrimaryRegion && isReadOnlyError) {
     const pathname = new URL(request.url).pathname
     const logInfo = {
       pathname,
