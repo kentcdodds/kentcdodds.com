@@ -1,38 +1,60 @@
 import * as React from 'react'
 import clsx from 'clsx'
 import {Link, LinkProps} from 'react-router-dom'
-import {motion} from 'framer-motion'
+import {motion, Variant} from 'framer-motion'
 import {ArrowIcon, ArrowIconProps} from './icons/arrow-icon'
 import {H6} from './typography'
+import {ElementState, useElementState} from './hooks/use-element-state'
 
 const arrowVariants: Record<
   ArrowIconProps['direction'],
-  Record<string, {x?: number; y?: number}>
+  Record<ElementState, Variant>
 > = {
   down: {
     initial: {y: 0},
     hover: {y: 8},
-    tap: {y: 24},
+    focus: {
+      y: [0, 8, 0],
+      transition: {repeat: Infinity},
+    },
+    active: {y: 24},
   },
   up: {
     initial: {y: 0},
     hover: {y: -8},
-    tap: {y: -24},
+    focus: {
+      y: [0, -8, 0],
+      transition: {repeat: Infinity},
+    },
+    active: {y: -24},
   },
   left: {
     initial: {x: 0},
     hover: {x: -8},
-    tap: {x: -24},
+    focus: {
+      x: [0, -8, 0],
+      transition: {repeat: Infinity},
+    },
+    active: {x: -24},
   },
   right: {
     initial: {x: 0},
     hover: {x: 8},
-    tap: {x: 24},
+    focus: {
+      x: [0, 8, 0],
+      transition: {repeat: Infinity},
+    },
+    active: {x: 24},
   },
   'top-right': {
     initial: {x: 0, y: 0},
     hover: {x: 8, y: -8},
-    tap: {x: 24, y: -24},
+    focus: {
+      x: [0, 8, 0],
+      y: [0, -8, 0],
+      transition: {repeat: Infinity},
+    },
+    active: {x: 24, y: -24},
   },
 }
 
@@ -65,11 +87,6 @@ function getBaseProps({textSize, className}: ArrowButtonBaseProps) {
       },
       className,
     ),
-    initial: 'initial',
-    whileHover: 'hover',
-    whileFocus: 'focus',
-    whileTap: 'tap',
-    animate: 'initial',
   }
 }
 
@@ -86,15 +103,13 @@ function ArrowButtonContent({
       (direction === 'right' ||
         direction === 'up' ||
         direction === 'top-right') ? (
-        <span className="text-primary mr-8 text-xl font-medium">
-          {children}
-        </span>
+        <span className="mr-8 text-xl font-medium">{children}</span>
       ) : null}
 
-      <div className="text-primary relative inline-flex flex-none items-center justify-center p-1 w-14 h-14">
+      <div className="relative inline-flex flex-none items-center justify-center p-1 w-14 h-14">
         <div className="absolute text-gray-200 dark:text-gray-600">
           <svg width="60" height="60">
-            <motion.circle
+            <circle
               stroke="currentColor"
               strokeWidth="2"
               fill="transparent"
@@ -111,11 +126,12 @@ function ArrowButtonContent({
               r="28"
               cx="30"
               cy="30"
-              style={{strokeDasharray}}
+              style={{strokeDasharray, rotate: -90}}
               variants={{
+                initial: {strokeDashoffset: circumference},
                 hover: {strokeDashoffset: 0},
                 focus: {strokeDashoffset: 0},
-                initial: {strokeDashoffset: circumference, rotate: -90},
+                active: {strokeDashoffset: 0},
               }}
               transition={{damping: 0}}
             />
@@ -128,17 +144,23 @@ function ArrowButtonContent({
       </div>
 
       {children && (direction === 'left' || direction === 'down') ? (
-        <span className="text-primary ml-8 text-xl font-medium">
-          {children}
-        </span>
+        <span className="ml-8 text-xl font-medium">{children}</span>
       ) : null}
     </>
   )
 }
 
 function ArrowButton({onClick, type, ...props}: ArrowButtonProps) {
+  const [ref, state] = useElementState()
+
   return (
-    <motion.button onClick={onClick} type={type} {...getBaseProps(props)}>
+    <motion.button
+      onClick={onClick}
+      type={type}
+      {...getBaseProps(props)}
+      ref={ref}
+      animate={state}
+    >
       <ArrowButtonContent {...props} />
     </motion.button>
   )
@@ -147,16 +169,18 @@ function ArrowButton({onClick, type, ...props}: ArrowButtonProps) {
 const MotionLink = motion(Link)
 
 function ArrowLink({to, ...props}: ArrowLinkProps) {
+  const [ref, state] = useElementState()
+
   if (typeof to === 'string' && (to.startsWith('http') || to.startsWith('#'))) {
     return (
-      <motion.a href={to} {...getBaseProps(props)}>
+      <motion.a href={to} {...getBaseProps(props)} ref={ref} animate={state}>
         <ArrowButtonContent {...props} />
       </motion.a>
     )
   }
 
   return (
-    <MotionLink to={to} {...getBaseProps(props)}>
+    <MotionLink to={to} {...getBaseProps(props)} ref={ref} animate={state}>
       <ArrowButtonContent {...props} />
     </MotionLink>
   )
@@ -167,14 +191,16 @@ function BackLink({
   className,
   children,
 }: Pick<ArrowLinkProps, 'to' | 'className' | 'children'>) {
+  const [ref, state] = useElementState()
   return (
     <MotionLink
       to={to}
-      className={clsx('flex text-black dark:text-white space-x-4', className)}
-      initial="initial"
-      whileHover="hover"
-      whileTap="tap"
-      animate="initial"
+      className={clsx(
+        'text-primary flex focus:outline-none space-x-4',
+        className,
+      )}
+      ref={ref}
+      animate={state}
     >
       <motion.span variants={arrowVariants.left}>
         <ArrowIcon direction="left" />

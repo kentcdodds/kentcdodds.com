@@ -1,12 +1,12 @@
 import {useRef, useEffect, useState, RefCallback, useCallback} from 'react'
 
-type State = 'active' | 'focus' | 'hover' | 'initial'
+export type ElementState = 'active' | 'focus' | 'hover' | 'initial'
 
 // This started as a work around for https://github.com/framer/motion/issues/1221,
 // but it's so much more now. The variants in framer motion support hover, focus
 // and tap, while this effect also listens to the keypress, so that `Enter`
 // results in an active state as well.
-function useElementState(): [RefCallback<HTMLElement>, State] {
+function useElementState(): [RefCallback<HTMLElement>, ElementState] {
   const ref = useRef<HTMLElement | null>(null)
   const [state, setState] = useState({
     focus: false,
@@ -50,8 +50,12 @@ function useElementState(): [RefCallback<HTMLElement>, State] {
       }
 
       setState(s => ({...s, active: true}))
+
+      // when clicking a link, the keyup doesn't need to come from the keydown
+      // element. We listen on the window instead, but only once.
+      const keyup = () => setState(s => ({...s, active: false}))
+      window.addEventListener('keyup', keyup, {once: true})
     }
-    const keyup = () => setState(s => ({...s, active: false}))
 
     el.addEventListener('pointerenter', pointerenter)
     el.addEventListener('pointerleave', pointerleave)
@@ -59,7 +63,6 @@ function useElementState(): [RefCallback<HTMLElement>, State] {
     el.addEventListener('blur', blur)
     el.addEventListener('pointerdown', pointerdown)
     el.addEventListener('keydown', keydown)
-    el.addEventListener('keyup', keyup)
 
     return () => {
       el.removeEventListener('pointerenter', pointerenter)
@@ -68,11 +71,10 @@ function useElementState(): [RefCallback<HTMLElement>, State] {
       el.removeEventListener('blur', blur)
       el.removeEventListener('pointerdown', pointerdown)
       el.removeEventListener('keydown', keydown)
-      el.removeEventListener('keyup', keyup)
     }
   }, [ref.current])
 
-  const status: State = state.active
+  const status: ElementState = state.active
     ? 'active'
     : state.focus
     ? 'focus'
