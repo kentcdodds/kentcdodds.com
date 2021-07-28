@@ -80,52 +80,70 @@ const clientThemeCode = `
 // this is how I make certain we avoid a flash of the wrong theme. If you select
 // a theme, then I'll know what you want in the future and you'll not see this
 // script anymore.
+;(() => {
+  const theme = window.matchMedia(${JSON.stringify(prefersLightMQ)}).matches
+    ? 'light'
+    : 'dark';
+  
+  const cl = document.documentElement.classList;
+  
+  const themeAlreadyApplied = cl.contains('light') || cl.contains('dark');
+  if (themeAlreadyApplied) {
+    // this script shouldn't exist if the theme is already applied!
+    console.warn(
+      "Hi there, could you let Kent know you're seeing this message? Thanks!",
+    );
+  } else {
+    cl.add(theme);
+  }
+  
+  // the <dark-mode> and <light-mode> approach won't work for meta tags,
+  // so we have to do it manually.
+  const meta = document.querySelector('meta[name=color-scheme]');
+  if (meta) {
+    if (theme === 'dark') {
+      meta.content = 'dark light';
+    } else if (theme === 'light') {
+      meta.content = 'light dark';
+    }
+  } else {
+    console.warn(
+      "Heya, could you let Kent know you're seeing this message? Thanks!",
+    );
+  }
 
-const theme = window.matchMedia(${JSON.stringify(prefersLightMQ)}).matches
-  ? 'light'
-  : 'dark';
+  // handle any dark/light-mode elements that are already in the DOM
+  handleDarkAndLightModeEls();
 
-const cl = document.documentElement.classList;
-
-const themeAlreadyApplied = cl.contains('light') || cl.contains('dark');
-if (themeAlreadyApplied) {
-  // this script shouldn't exist if the theme is already applied!
-  console.warn("Hi there, could you let Kent know you're seeing this message? Thanks!");
-} else {
-  cl.add(theme);
-}
-
-const darkEls = document.querySelectorAll('dark-mode');
-const lightEls = document.querySelectorAll('light-mode');
-for (const darkEl of darkEls) {
-  if (theme === 'dark') {
-    for (const child of darkEl.childNodes) {
-      darkEl.parentElement.append(child);
+  function handleDarkAndLightModeEls() {
+    const darkEls = document.querySelectorAll('dark-mode');
+    const lightEls = document.querySelectorAll('light-mode');
+    for (const darkEl of darkEls) {
+      if (theme === 'dark') {
+        for (const child of darkEl.childNodes) {
+          darkEl.parentElement.append(child);
+        }
+      }
+      darkEl.remove();
+    }
+    for (const lightEl of lightEls) {
+      if (theme === 'light') {
+        for (const child of lightEl.childNodes) {
+          lightEl.parentElement.append(child);
+        }
+      }
+      lightEl.remove();
     }
   }
-  darkEl.remove();
-}
-for (const lightEl of lightEls) {
-  if (theme === 'light') {
-    for (const child of lightEl.childNodes) {
-      lightEl.parentElement.append(child);
-    }
-  }
-  lightEl.remove();
-}
 
-// the <dark-mode> and <light-mode> approach won't work for meta tags,
-// so we have to do it manually.
-const meta = document.querySelector('meta[name=color-scheme]');
-if (meta) {
-  if (theme === 'dark') {
-    meta.content = 'dark light';
-  } else if (theme === 'light') {
-    meta.content = 'light dark';
-  }
-} else {
-  console.warn("Heya, could you let Kent know you're seeing this message? Thanks!");
-}
+  // handle any dark/light-mode elements that are present after the content
+  // is loaded, but still before hydration
+  document.addEventListener(
+    'DOMContentLoaded',
+    handleDarkAndLightModeEls,
+    {once: true},
+  );
+})();
 `
 
 function NonFlashOfWrongThemeEls({ssrTheme}: {ssrTheme: boolean}) {
@@ -146,7 +164,10 @@ function NonFlashOfWrongThemeEls({ssrTheme}: {ssrTheme: boolean}) {
       */}
       {ssrTheme ? null : (
         <script
-          type="module"
+          // NOTE: we cannot use type="module" because that automatically makes
+          // the script "defer". That doesn't work for us because we need
+          // this script to run synchronously before the rest of the document
+          // is finished loading.
           dangerouslySetInnerHTML={{__html: clientThemeCode}}
         />
       )}

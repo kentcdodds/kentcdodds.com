@@ -103,25 +103,6 @@ function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
     </button>
   )
 }
-/*
-
-      {/*
-        NOTE: not relying on the theme state here because it might be `null`
-        during a server render when we don't know what theme the user prefers.
-      /}
-      <span className="dark:hidden">
-        <SunIcon />
-        <span
-          className={clsx('ml-4', {'sr-only': variant === 'icon'})}
-        >{`switch to light mode`}</span>
-      </span>
-      <span className="hidden dark:inline">
-        <MoonIcon />
-        <span
-          className={clsx('ml-4', {'sr-only': variant === 'icon'})}
-        >{`switch to dark mode`}</span>
-      </span>
-*/
 
 function MobileMenuList() {
   const {isExpanded} = useMenuButtonContext()
@@ -145,7 +126,7 @@ function MobileMenuList() {
       {isExpanded ? (
         <MenuPopover
           position={r => ({
-            top: `calc(${r!.top + r!.height}px + 2.25rem)`, // 2.25 rem = py-9 from navbar
+            top: `calc(${Number(r?.top) + Number(r?.height)}px + 2.25rem)`, // 2.25 rem = py-9 from navbar
             left: 0,
             bottom: 0,
             right: 0,
