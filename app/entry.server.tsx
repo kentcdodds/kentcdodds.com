@@ -65,7 +65,9 @@ export default async function handleRequest(
   if (responseStatusCode >= 400) {
     sendEventWithRequestContext(
       request,
-      new Error(`Document request resulted in a ${responseStatusCode}`),
+      new Error(
+        `Document ${request.method} request to ${request.url} resulted in a ${responseStatusCode}`,
+      ),
       () => ({
         tags: {
           type: 'handleDocumentRequest',
@@ -104,7 +106,9 @@ export async function handleDataRequest(
   if (dataResponse.status >= 400) {
     sendEventWithRequestContext(
       request,
-      new Error(`Data request resulted in a ${dataResponse.status}`),
+      new Error(
+        `Data ${request.method} request to ${request.url} resulted in a ${dataResponse.status}`,
+      ),
       () => ({
         tags: {
           type: 'handleDataRequest',
