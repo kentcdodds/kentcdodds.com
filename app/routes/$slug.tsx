@@ -28,7 +28,7 @@ export const loader: KCDLoader<{slug: string}> = async ({params, request}) => {
     await refreshCacheForMdx(pageMeta)
   }
   const page = await getMdxPage(pageMeta)
-  const blogRecommendations = await getBlogRecommendations()
+  const blogRecommendations = await getBlogRecommendations(request)
 
   const data: LoaderData = {page, blogRecommendations}
   if (page) {

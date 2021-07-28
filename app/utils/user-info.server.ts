@@ -30,7 +30,7 @@ async function getUserInfo(user: User) {
     }
   }
   if (user.discordId) {
-    const discordUser = await discord.getUser(user.discordId)
+    const discordUser = await discord.getDiscordUser(user.discordId)
     userInfo.discord = {
       username: `${discordUser.username}#${discordUser.discriminator}`,
     }

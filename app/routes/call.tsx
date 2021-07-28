@@ -28,7 +28,7 @@ type LoaderData = {
 
 export const loader: LoaderFunction = async ({request}) => {
   const [blogRecommendations, episodes] = await Promise.all([
-    getBlogRecommendations({limit: 3}),
+    getBlogRecommendations(request),
     getEpisodes(request),
   ])
 

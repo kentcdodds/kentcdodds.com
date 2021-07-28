@@ -42,9 +42,11 @@ export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
   }
 
   const page = await getMdxPage(pageMeta)
-  const blogRecommendations = (await getBlogRecommendations())
-    .filter(b => b.slug !== params.slug)
-    .slice(0, 3)
+  const blogRecommendations = await getBlogRecommendations(request, {
+    limit: 3,
+    keywords: page?.frontmatter.meta?.keywords,
+    exclude: [params.slug],
+  })
   const readRankings = await getBlogReadRankings(params.slug)
 
   let data: LoaderData

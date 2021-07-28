@@ -90,7 +90,7 @@ async function getUserToken({
   return {discordUser, discordToken}
 }
 
-async function getUser(discordUserId: string) {
+async function getDiscordUser(discordUserId: string) {
   const user = await fetchJsonAsDiscordBot<DiscordUser>(
     `users/${discordUserId}`,
   )
@@ -170,4 +170,4 @@ async function connectDiscord({
   return discordMember
 }
 
-export {connectDiscord, getUser, getMember}
+export {connectDiscord, getDiscordUser, getMember}

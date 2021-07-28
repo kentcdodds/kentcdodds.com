@@ -21,7 +21,7 @@ type LoaderData = {
   blogRecommendations: Array<MdxListItem>
 }
 
-export const loader: KCDLoader<{slug: string}> = async ({params}) => {
+export const loader: KCDLoader<{slug: string}> = async ({params, request}) => {
   const page = await getMdxPage({
     contentDir: 'workshops',
     slug: params.slug,
@@ -33,7 +33,7 @@ export const loader: KCDLoader<{slug: string}> = async ({params}) => {
   const data: LoaderData = {
     page,
     workshop,
-    blogRecommendations: await getBlogRecommendations(),
+    blogRecommendations: await getBlogRecommendations(request),
   }
   if (page) {
     return json(data)

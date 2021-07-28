@@ -20,8 +20,8 @@ type LoaderData = {
   blogRecommendations: Array<MdxListItem>
 }
 
-export const loader: LoaderFunction = async () => {
-  const blogRecommendations = await getBlogRecommendations({limit: 3})
+export const loader: LoaderFunction = async ({request}) => {
+  const blogRecommendations = await getBlogRecommendations(request)
 
   const data: LoaderData = {blogRecommendations}
   return json(data)
