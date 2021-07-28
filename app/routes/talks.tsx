@@ -172,7 +172,7 @@ function Card({
       {/* place the scroll marker a bit above the element to act as view margin */}
       <div data-talk={slug} className="absolute -top-8" />
 
-      <div className="flex flex-none justify-between mb-8">
+      <div className="flex flex-none flex-col justify-between mb-8 md:flex-row">
         <div className="inline-flex items-baseline">
           {isInFuture ? (
             <div className="block flex-none w-3 h-3 bg-green-600 rounded-full" />
@@ -184,9 +184,9 @@ function Card({
           </H6>
         </div>
 
-        <div className="flex space-x-2">
+        <div className="flex mt-8 space-x-2 md:mt-0">
           {tag ? (
-            <div className="inline-block -mr-8 -my-4 px-8 py-4 text-black dark:text-white text-lg dark:bg-gray-600 bg-white rounded-full">
+            <div className="inline-block self-start -mr-8 -my-4 px-8 py-4 text-black dark:text-white whitespace-nowrap text-lg dark:bg-gray-600 bg-white rounded-full">
               {tag}
             </div>
           ) : null}
@@ -221,26 +221,26 @@ function Card({
             <ul className="space-y-1">
               {deliveries.map(delivery => (
                 <li key={`${delivery.recording}-${delivery.date}`}>
-                  <div className="flex justify-between">
-                    <div className="inline-flex">
-                      <Paragraph
-                        as="div"
-                        className="html"
-                        dangerouslySetInnerHTML={{
-                          __html: delivery.eventHTML ?? '',
-                        }}
-                      />
-                      {delivery.recording ? (
-                        <a
-                          className="text-secondary hover:text-primary ml-2"
-                          href={delivery.recording}
-                        >
-                          <YoutubeIcon />
-                        </a>
-                      ) : null}
-                    </div>
+                  <div className="flex w-full">
+                    <Paragraph
+                      as="div"
+                      className="html"
+                      dangerouslySetInnerHTML={{
+                        __html: delivery.eventHTML ?? '',
+                      }}
+                    />
 
-                    <Paragraph className="flex-none" as="span">
+                    {delivery.recording ? (
+                      <a
+                        className="text-secondary hover:text-primary flex-none ml-2"
+                        href={delivery.recording}
+                      >
+                        <YoutubeIcon />
+                      </a>
+                    ) : null}
+
+                    <div className="flex-auto" />
+                    <Paragraph className="flex-none ml-2" as="span">
                       {delivery.date
                         ? formatDate(new Date(delivery.date), 'yyyy-MM-ii')
                         : null}
@@ -351,10 +351,7 @@ export default function TalksScreen() {
           <Grid nested rowGap>
             {talks.map(talk => {
               return (
-                <div
-                  key={talk.slug}
-                  className="col-span-full md:col-span-4 lg:col-span-6"
-                >
+                <div key={talk.slug} className="col-span-full lg:col-span-6">
                   <Card active={activeSlug === talk.slug} {...talk} />
                 </div>
               )
