@@ -8,6 +8,7 @@ import {ArrowButton} from './arrow-button'
 import {GithubIcon} from './icons/github-icon'
 import {TwitterIcon} from './icons/twitter-icon'
 import {YoutubeIcon} from './icons/youtube-icon'
+import {Signature} from './signature'
 
 interface FooterLinkProps {
   name: string
@@ -110,25 +111,32 @@ function AboutSection() {
         Full time educator teaching people development
       </p>
 
-      <div className="text-secondary flex mt-6 space-x-4">
-        <a
-          className="hover:text-primary focus:text-primary focus:outline-none"
-          href={externalLinks.github}
-        >
-          <GithubIcon />
-        </a>
-        <a
-          className="hover:text-primary focus:text-primary focus:outline-none"
-          href={externalLinks.youtube}
-        >
-          <YoutubeIcon />
-        </a>
-        <a
-          className="hover:text-primary focus:text-primary focus:outline-none"
-          href={externalLinks.twitter}
-        >
-          <TwitterIcon />
-        </a>
+      <div className="text-secondary flex items-center justify-between mt-6 lg:flex-col lg:items-start">
+        <div className="flex space-x-4">
+          <a
+            className="hover:text-primary focus:text-primary focus:outline-none"
+            href={externalLinks.github}
+          >
+            <GithubIcon />
+          </a>
+          <a
+            className="hover:text-primary focus:text-primary focus:outline-none"
+            href={externalLinks.youtube}
+          >
+            <YoutubeIcon />
+          </a>
+          <a
+            className="hover:text-primary focus:text-primary focus:outline-none"
+            href={externalLinks.twitter}
+          >
+            <TwitterIcon />
+          </a>
+        </div>
+
+        <div className="text-secondary relative flex items-center w-24 lg:mt-20 lg:w-32">
+          {/* absolute position so that it doesn't change line-height of social icons */}
+          <Signature className="absolute block w-full" />
+        </div>
       </div>
     </div>
   )
