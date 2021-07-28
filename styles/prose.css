@@ -224,3 +224,178 @@ pre {
 .prose callout-success:before {
   background: #30c85e;
 }
+
+/* The twitter embed HTML is custom-generated in our utils/twitter.server.ts */
+.prose .tweet-embed {
+  display: flex;
+  flex-direction: column;
+  max-width: 550px;
+  width: 100%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-left: auto;
+  margin-right: auto;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 12px;
+  padding: 12px 16px 4px 16px;
+}
+
+.dark .prose .tweet-embed {
+  border: 1px solid var(--color-gray-700);
+}
+
+.prose .tweet-embed blockquote {
+  background-color: unset;
+  margin: 0;
+  white-space: break-spaces;
+  padding: 0px;
+  border: 0px;
+  line-height: 24px;
+}
+
+.prose .tweet-embed .tweet-author {
+  font-size: 0.9rem;
+  line-height: 20px;
+  text-decoration: none;
+  padding-bottom: 12px;
+}
+
+.prose .tweet-embed .tweet-author b {
+  display: block;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.prose .tweet-embed .tweet-author:hover,
+.prose .tweet-embed .tweet-author:focus {
+  text-decoration: underline;
+}
+
+.prose .tweet-embed .tweet-author img {
+  float: left;
+  width: 48px;
+  height: 48px;
+  border-radius: 100%;
+  margin-right: 4px;
+  margin-bottom: 0px;
+}
+
+.prose .tweet-embed .tweet-media-continer {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  align-content: center;
+  align-items: center;
+  width: 100%;
+  max-height: 366px;
+  margin-top: 12px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.prose .tweet-embed .tweet-quoted {
+  /* I mean... it works and looks nice so... */
+  zoom: 0.85;
+}
+
+.prose .tweet-embed .tweet-quoted .tweet-media-continer {
+  max-height: 160px;
+}
+
+.prose .tweet-embed .tweet-media-continer img {
+  margin-bottom: 0px;
+}
+
+.prose .tweet-embed .tweet-ref-metadata {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border: 1px solid var(--color-gray-200);
+  margin-top: 12px;
+  border-radius: 0.5rem;
+}
+.prose .tweet-embed .tweet-ref-metadata .tweet-ref-metadata-title {
+  border-top: 1px solid var(--color-gray-700);
+  padding: 4px 12px;
+  font-size: 0.9rem;
+}
+.prose .tweet-embed .tweet-ref-metadata .tweet-ref-metadata-description {
+  padding: 0 12px 4px 12px;
+  font-size: 0.8rem;
+}
+
+.prose .tweet-embed .tweet-ref-metadata .tweet-ref-metadata-domain {
+  padding: 0 12px 4px 12px;
+  font-size: 0.8rem;
+}
+
+.prose .tweet-embed .tweet-ref-metadata:hover,
+.prose .tweet-embed .tweet-ref-metadata:focus {
+  text-decoration: none;
+}
+.prose .tweet-embed .tweet-ref-metadata:hover .tweet-ref-metadata-domain,
+.prose .tweet-embed .tweet-ref-metadata:focus .tweet-ref-metadata-domain {
+  text-decoration: underline;
+}
+
+.dark .prose .tweet-embed .tweet-ref-metadata {
+  border: 1px solid var(--color-gray-700);
+}
+
+.prose .tweet-embed .tweet-ref-metadata img {
+  max-height: 300px;
+}
+
+.prose .tweet-embed .tweet-time a {
+  font-size: 0.85rem;
+  line-height: 32px;
+  height: 32px;
+  text-decoration: none;
+}
+
+.prose .tweet-embed .tweet-time a:hover,
+.prose .tweet-embed .tweet-time a:focus {
+  text-decoration: underline;
+}
+
+.prose .tweet-embed .tweet-stats {
+  display: flex;
+  align-items: center;
+}
+
+.prose .tweet-embed .tweet-stats svg {
+  height: 20px;
+  width: 20px;
+  margin-right: 4px;
+}
+
+.prose .tweet-embed .tweet-stats svg:first-child {
+  padding-left: 0px;
+}
+
+.prose .tweet-embed .tweet-stats a {
+  display: flex;
+  align-items: center;
+  margin-right: 20px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.prose .tweet-embed .tweet-stats a.tweet-like:hover,
+.prose .tweet-embed .tweet-stats a.tweet-like:focus {
+  color: rgb(224, 36, 94);
+}
+
+.prose .tweet-embed .tweet-stats a.tweet-reply:hover,
+.prose .tweet-embed .tweet-stats a.tweet-reply:focus {
+  color: rgb(29, 161, 242);
+}
+
+.prose .tweet-embed .tweet-stats a.tweet-retweet:hover,
+.prose .tweet-embed .tweet-stats a.tweet-retweet:focus {
+  color: #19cf86;
+}
+
+.prose .tweet-embed .tweet-stats svg path {
+  fill: currentColor;
+}

@@ -12,6 +12,7 @@ import gfm from 'remark-gfm'
 import type {Node} from 'unist'
 import type {GitHubFile} from 'types'
 import calculateReadingTime from 'reading-time'
+import * as twitter from './twitter.server'
 
 const getOEmbedConfig: OEmbedConfig = ({provider}) => {
   if (provider.provider_name === 'Twitter') {
@@ -94,6 +95,11 @@ function optimizeCloudinaryImages() {
   }
 }
 
+const twitterTransformer = {
+  shouldTransform: twitter.isTwitterUrl,
+  getHTML: twitter.getTweetEmbedHTML,
+}
+
 const eggheadTransformer = {
   shouldTransform: (url: string) => {
     const {host, pathname} = new URL(url)
@@ -173,7 +179,11 @@ const remarkPlugins: PluggableList = [
     {
       handleError: handleEmbedderError,
       handleHTML: handleEmbedderHtml,
-      transformers: [[oembedTransformer, getOEmbedConfig], eggheadTransformer],
+      transformers: [
+        twitterTransformer,
+        eggheadTransformer,
+        [oembedTransformer, getOEmbedConfig],
+      ],
     },
   ],
   autoAffiliates,

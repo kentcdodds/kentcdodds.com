@@ -129,9 +129,3 @@ a.active.underlined:after {
   background-color: currentColor;
   transform: scaleX(1);
 }
-
-.twitter-tweet iframe {
-  /* twitter adds a 12px border-radius to embeds */
-  /* we do 13px because it loosk best that way. */
-  border-radius: 13px;
-}
