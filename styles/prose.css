@@ -423,20 +423,26 @@ pre {
   color: inherit;
   text-decoration: none;
   position: relative;
+  transition: color 0.2s linear;
 }
 
-.prose .tweet-embed .tweet-stats a:hover:before,
-.prose .tweet-embed .tweet-stats a:focus:before {
+.prose .tweet-embed .tweet-stats a:before {
   content: '';
   display: block;
   width: 36px;
   height: 36px;
   border-radius: 18px;
-  background-color: currentColor;
+  background-color: rgba(0, 0, 0, 0);
   position: absolute;
   left: -9px;
   z-index: 0;
-  opacity: 0.1;
+  transition: background-color 0.1s linear, transform 0.1s linear;
+  transform: scale(0.5);
+}
+
+.prose .tweet-embed .tweet-stats a:hover:before,
+.prose .tweet-embed .tweet-stats a:focus:before {
+  transform: scale(1);
 }
 
 .prose .tweet-embed .tweet-stats a span {
@@ -446,17 +452,32 @@ pre {
 
 .prose .tweet-embed .tweet-stats a.tweet-like:hover,
 .prose .tweet-embed .tweet-stats a.tweet-like:focus {
-  color: rgb(224, 36, 94);
+  color: rgba(224, 36, 94, 1);
 }
 
 .prose .tweet-embed .tweet-stats a.tweet-reply:hover,
 .prose .tweet-embed .tweet-stats a.tweet-reply:focus {
-  color: rgb(29, 161, 242);
+  color: rgba(29, 161, 242, 1);
 }
 
 .prose .tweet-embed .tweet-stats a.tweet-retweet:hover,
 .prose .tweet-embed .tweet-stats a.tweet-retweet:focus {
-  color: #19cf86;
+  color: rgba(25, 207, 134, 1);
+}
+
+.prose .tweet-embed .tweet-stats a.tweet-like:hover:before,
+.prose .tweet-embed .tweet-stats a.tweet-like:focus:before {
+  background-color: rgba(224, 36, 94, 0.1);
+}
+
+.prose .tweet-embed .tweet-stats a.tweet-reply:hover:before,
+.prose .tweet-embed .tweet-stats a.tweet-reply:focus:before {
+  background-color: rgba(29, 161, 242, 0.1);
+}
+
+.prose .tweet-embed .tweet-stats a.tweet-retweet:hover:before,
+.prose .tweet-embed .tweet-stats a.tweet-retweet:focus:before {
+  background-color: rgba(25, 207, 134, 0.1);
 }
 
 .prose .tweet-embed .tweet-ref-metadata-domain svg path,
