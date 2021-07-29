@@ -236,9 +236,9 @@ function MobileMenu() {
 // Timing durations used to control the speed of the team ring in the profile button.
 // Time is seconds per full rotation
 const durations = {
-  initial: 20,
-  hover: 10,
-  focus: 4,
+  initial: 40,
+  hover: 3,
+  focus: 3,
   active: 0.25,
 }
 
