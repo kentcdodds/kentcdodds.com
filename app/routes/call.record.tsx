@@ -76,9 +76,9 @@ function Record({
     <Grid nested className="border-b border-gray-200 dark:border-gray-600">
       <Link
         to={active ? './' : slug}
-        className="text-primary group relative flex flex-col col-span-full py-5 text-xl font-medium"
+        className="text-primary group relative flex flex-col col-span-full py-5 text-xl font-medium focus:outline-none"
       >
-        <div className="bg-secondary absolute -inset-px group-hover:block hidden -mx-6 rounded-lg" />
+        <div className="bg-secondary absolute -inset-px group-hover:block group-focus:block hidden -mx-6 rounded-lg" />
         <span className="relative">{title}</span>
       </Link>
       <div className="col-span-full">

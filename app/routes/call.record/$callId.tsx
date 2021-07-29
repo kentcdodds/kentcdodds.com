@@ -73,7 +73,7 @@ export default function Screen() {
           />
           <input type="hidden" name="callId" value={data.call.id} />
           <button
-            className="text-primary dark:hover:border-red-500 px-10 py-3 hover:text-red-500 text-lg font-medium border-2 border-gray-400 dark:border-gray-600 hover:border-red-500 rounded-full transition"
+            className="text-primary dark:focus:border-red-500 dark:hover:border-red-500 px-10 py-3 hover:text-red-500 focus:text-red-500 text-lg font-medium border-2 border-gray-400 dark:border-gray-600 focus:border-red-500 hover:border-red-500 rounded-full focus:outline-none transition"
             type="submit"
           >
             Delete
