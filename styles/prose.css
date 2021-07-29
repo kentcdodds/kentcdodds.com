@@ -238,7 +238,7 @@ pre {
 }
 
 .dark .prose .tweet-embed {
-  border: 1px solid var(--color-gray-700);
+  border: 1px solid var(--border-secondary);
 }
 
 .prose .tweet-embed blockquote {
@@ -377,7 +377,7 @@ pre {
 }
 
 .dark .prose .tweet-embed .tweet-ref-metadata {
-  border: 1px solid var(--color-gray-700);
+  border: 1px solid var(--border-secondary);
 }
 
 .prose .tweet-embed .tweet-ref-metadata img {
