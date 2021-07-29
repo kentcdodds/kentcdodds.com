@@ -231,44 +231,35 @@ pre {
   flex-direction: column;
   max-width: 550px;
   width: 100%;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  margin-left: auto;
-  margin-right: auto;
-  border: 1px solid var(--color-gray-200);
-  border-radius: 12px;
-  padding: 12px 16px 4px 16px;
+  margin: 0 auto 2.5rem;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  background: var(--bg-secondary);
 }
 
 .dark .prose .tweet-embed {
-  border: 1px solid var(--color-gray-700);
+  border: 1px solid var(--border-secondary);
 }
 
 .prose .tweet-embed blockquote {
-  background-color: unset;
-  margin: 0;
+  font-size: 1.125rem;
+  margin: 1rem 0;
   white-space: break-spaces;
-  padding: 0px;
-  border: 0px;
-  line-height: 24px;
+  padding: 0;
+  border: 0;
+  font-style: normal;
+  background-color: unset;
+}
+
+.prose .tweet-embed blockquote a {
+  font-weight: normal;
 }
 
 .prose .tweet-embed .tweet-author {
-  font-size: 0.9rem;
-  line-height: 20px;
+  font-size: 1rem;
+  display: flex;
   text-decoration: none;
-  padding-bottom: 12px;
-}
-
-.prose .tweet-embed .tweet-author b {
-  display: block;
-  font-weight: 700;
-  font-size: 0.85rem;
-}
-
-.prose .tweet-embed .tweet-author:hover,
-.prose .tweet-embed .tweet-author:focus {
-  text-decoration: underline;
+  align-items: center;
 }
 
 .prose .tweet-embed .tweet-author img {
@@ -276,126 +267,270 @@ pre {
   width: 48px;
   height: 48px;
   border-radius: 100%;
-  margin-right: 4px;
+  margin-right: 1rem;
   margin-bottom: 0px;
 }
 
-.prose .tweet-embed .tweet-media-continer {
+.prose .tweet-embed .tweet-author div {
   display: flex;
-  flex-wrap: wrap;
-  flex-direction: row;
-  align-content: center;
-  align-items: center;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.prose .tweet-embed .tweet-author:hover .tweet-author-name,
+.prose .tweet-embed .tweet-author:focus .tweet-author-name {
+  text-decoration: underline;
+}
+
+.prose .tweet-embed .tweet-author .tweet-author-handle {
+  font-weight: normal;
+  color: var(--text-secondary);
+}
+
+.prose .tweet-embed .tweet-media-container {
   width: 100%;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border-secondary);
+  margin-bottom: 1rem;
+}
+.prose .tweet-embed .tweet-media-grid,
+.prose .tweet-embed .tweet-media-container {
   max-height: 366px;
-  margin-top: 12px;
-  border-radius: 12px;
+}
+.prose .tweet-embed .tweet-media-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-auto-rows: 1fr;
+  grid-gap: 0.25rem;
+}
+
+.prose .tweet-embed .tweet-media-grid[data-count='2'],
+.prose .tweet-embed .tweet-media-grid[data-count='3'],
+.prose .tweet-embed .tweet-media-grid[data-count='4'] {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.prose .tweet-embed .tweet-media-grid[data-count='3'] img:first-child {
+  grid-column: span 2 / span 2;
+}
+
+.prose .tweet-embed .tweet-media-container img {
+  border-radius: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   overflow: hidden;
 }
 
-.prose .tweet-embed .tweet-quoted {
-  /* I mean... it works and looks nice so... */
-  zoom: 0.85;
+.prose .tweet-embed .tweet-media-container .tweet-media-with-play-button {
+  position: relative;
+}
+.prose
+  .tweet-embed
+  .tweet-media-container
+  .tweet-media-with-play-button
+  .tweet-media-play-button {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.6;
+  transition: opacity 0.2s;
 }
 
-.prose .tweet-embed .tweet-quoted .tweet-media-continer {
+.prose
+  .tweet-embed
+  .tweet-media-container:hover
+  .tweet-media-with-play-button
+  .tweet-media-play-button,
+.prose
+  .tweet-embed
+  .tweet-media-container:focus
+  .tweet-media-with-play-button
+  .tweet-media-play-button {
+  opacity: 1;
+}
+
+.prose .tweet-embed .tweet-quoted {
+  margin-bottom: 1rem;
+}
+
+.prose .tweet-embed .tweet-quoted .tweet-media-container {
   max-height: 160px;
 }
+.prose .tweet-embed .tweet-quoted .tweet-media-grid {
+  margin-top: -40px;
+  max-height: unset;
+}
 
-.prose .tweet-embed .tweet-media-continer img {
-  margin-bottom: 0px;
+.prose .tweet-embed .tweet-quoted .tweet-embed {
+  margin: 0;
+  padding: 1rem 1rem 0 1rem;
+}
+
+.prose .tweet-embed .tweet-quoted .tweet-embed .tweet-stats,
+.prose .tweet-embed .tweet-quoted .tweet-embed .tweet-time {
+  display: none;
 }
 
 .prose .tweet-embed .tweet-ref-metadata {
   display: flex;
   flex-direction: column;
   width: 100%;
-  border: 1px solid var(--color-gray-200);
-  margin-top: 12px;
-  border-radius: 0.5rem;
+  border: 1px solid var(--border-secondary);
+  margin-bottom: 1rem;
+  border-radius: 0.75rem;
 }
+
 .prose .tweet-embed .tweet-ref-metadata .tweet-ref-metadata-title {
-  border-top: 1px solid var(--color-gray-700);
-  padding: 4px 12px;
-  font-size: 0.9rem;
+  padding: 0.75rem 0.75rem 0 0.75rem;
+  font-size: 0.85rem;
 }
 .prose .tweet-embed .tweet-ref-metadata .tweet-ref-metadata-description {
   padding: 0 12px 4px 12px;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
+  font-weight: normal;
+  color: var(--text-secondary);
+}
+
+.prose .tweet-embed .tweet-ref-metadata .tweet-ref-metadata-image {
+  border-radius: 0.75rem 0.75rem 0 0;
 }
 
 .prose .tweet-embed .tweet-ref-metadata .tweet-ref-metadata-domain {
   padding: 0 12px 4px 12px;
   font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.prose .tweet-embed .tweet-ref-metadata .tweet-ref-metadata-domain svg {
+  margin-right: 12px;
 }
 
 .prose .tweet-embed .tweet-ref-metadata:hover,
 .prose .tweet-embed .tweet-ref-metadata:focus {
   text-decoration: none;
-}
-.prose .tweet-embed .tweet-ref-metadata:hover .tweet-ref-metadata-domain,
-.prose .tweet-embed .tweet-ref-metadata:focus .tweet-ref-metadata-domain {
-  text-decoration: underline;
+  background-color: var(--bg-alt);
 }
 
 .dark .prose .tweet-embed .tweet-ref-metadata {
-  border: 1px solid var(--color-gray-700);
+  border: 1px solid var(--border-secondary);
 }
 
 .prose .tweet-embed .tweet-ref-metadata img {
   max-height: 300px;
 }
 
+.prose .tweet-embed .tweet-time {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-secondary);
+}
+
 .prose .tweet-embed .tweet-time a {
+  color: var(--text-secondary);
   font-size: 0.85rem;
-  line-height: 32px;
-  height: 32px;
+  font-weight: normal;
   text-decoration: none;
 }
 
 .prose .tweet-embed .tweet-time a:hover,
 .prose .tweet-embed .tweet-time a:focus {
   text-decoration: underline;
+  color: var(--text-primary);
 }
 
 .prose .tweet-embed .tweet-stats {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
 }
 
 .prose .tweet-embed .tweet-stats svg {
-  height: 20px;
-  width: 20px;
-  margin-right: 4px;
-}
-
-.prose .tweet-embed .tweet-stats svg:first-child {
-  padding-left: 0px;
+  height: 18px;
+  width: 18px;
+  z-index: 1;
+  fill: none;
 }
 
 .prose .tweet-embed .tweet-stats a {
   display: flex;
+  font-size: 0.85rem;
+  font-weight: normal;
   align-items: center;
-  margin-right: 20px;
   color: inherit;
   text-decoration: none;
+  position: relative;
+  transition: color 0.2s linear;
+}
+
+.prose .tweet-embed .tweet-stats a:before {
+  content: '';
+  display: block;
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background-color: rgba(0, 0, 0, 0);
+  position: absolute;
+  left: -9px;
+  z-index: 0;
+  transition: background-color 0.1s linear, transform 0.1s linear;
+  transform: scale(0.5);
+}
+
+.prose .tweet-embed .tweet-stats a:hover:before,
+.prose .tweet-embed .tweet-stats a:focus:before {
+  transform: scale(1);
+}
+
+.prose .tweet-embed .tweet-stats a span {
+  margin: 0 0.75rem;
+  z-index: 1;
 }
 
 .prose .tweet-embed .tweet-stats a.tweet-like:hover,
 .prose .tweet-embed .tweet-stats a.tweet-like:focus {
-  color: rgb(224, 36, 94);
+  color: rgba(224, 36, 94, 1);
 }
 
 .prose .tweet-embed .tweet-stats a.tweet-reply:hover,
 .prose .tweet-embed .tweet-stats a.tweet-reply:focus {
-  color: rgb(29, 161, 242);
+  color: rgba(29, 161, 242, 1);
 }
 
 .prose .tweet-embed .tweet-stats a.tweet-retweet:hover,
 .prose .tweet-embed .tweet-stats a.tweet-retweet:focus {
-  color: #19cf86;
+  color: rgba(25, 207, 134, 1);
 }
 
-.prose .tweet-embed .tweet-stats svg path {
+.prose .tweet-embed .tweet-stats a.tweet-link:hover,
+.prose .tweet-embed .tweet-stats a.tweet-link:focus {
+  color: rgba(29, 161, 242, 1);
+}
+
+.prose .tweet-embed .tweet-stats a.tweet-like:hover:before,
+.prose .tweet-embed .tweet-stats a.tweet-like:focus:before {
+  background-color: rgba(224, 36, 94, 0.1);
+}
+
+.prose .tweet-embed .tweet-stats a.tweet-reply:hover:before,
+.prose .tweet-embed .tweet-stats a.tweet-reply:focus:before {
+  background-color: rgba(29, 161, 242, 0.1);
+}
+
+.prose .tweet-embed .tweet-stats a.tweet-retweet:hover:before,
+.prose .tweet-embed .tweet-stats a.tweet-retweet:focus:before {
+  background-color: rgba(25, 207, 134, 0.1);
+}
+
+.prose .tweet-embed .tweet-stats a.tweet-link:hover:before,
+.prose .tweet-embed .tweet-stats a.tweet-link:focus:before {
+  background-color: rgba(29, 161, 242, 0.1);
+}
+
+.prose .tweet-embed .tweet-ref-metadata-domain svg path,
+.prose .tweet-embed .tweet-stats a:not(.tweet-link) svg path {
   fill: currentColor;
 }

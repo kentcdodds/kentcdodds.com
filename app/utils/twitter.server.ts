@@ -5,6 +5,7 @@ import mImage from 'metascraper-image'
 import mTitle from 'metascraper-title'
 import mDescription from 'metascraper-description'
 import {getRequiredServerEnvVar, typedBoolean} from './misc'
+import formatDate from 'date-fns/format'
 
 const token = getRequiredServerEnvVar('TWITTER_BEARER_TOKEN')
 
@@ -148,15 +149,22 @@ async function getTweet(tweetId: string) {
   return tweetJson as TweetJsonResponse | TweetErrorJsonResponse
 }
 
+const playSvg = `<svg width="75" height="75" viewBox="0 0 75 75" xmlns="http://www.w3.org/2000/svg"><circle cx="37.4883" cy="37.8254" r="37" fill="white" /><path fillRule="evenodd" clipRule="evenodd" d="M35.2643 33.025L41.0017 36.9265C41.6519 37.369 41.6499 38.3118 40.9991 38.7518L35.2616 42.6276C34.5113 43.1349 33.4883 42.6077 33.4883 41.7143V33.9364C33.4883 33.0411 34.5146 32.5151 35.2643 33.025" /></svg>`
+
 function buildMediaList(medias: Array<Media>, link?: string) {
   const width = medias.length > 1 ? '50%' : '100%'
   const imgs = medias
     .map(media => {
       const src = media.preview_image_url ?? media.url
-      return `<img data-type="${media.type}" src="${src}" width="${width}" loading="lazy" alt="Tweet media" />`
+      const imgHTML = `<img src="${src}" width="${width}" loading="lazy" alt="Tweet media" />`
+      if (media.type === 'animated_gif' || media.type === 'video') {
+        return `<div class="tweet-media-with-play-button"><div class="tweet-media-play-button">${playSvg}</div>${imgHTML}</div>`
+      } else {
+        return imgHTML
+      }
     })
     .join('')
-  const grid = `<div class="tweet-media-continer" data-count="${medias.length}">${imgs}</div>`
+  const grid = `<div class="tweet-media-container"><div class="tweet-media-grid" data-count="${medias.length}">${imgs}</div></div>`
   if (link) {
     return `<a href="${link}" target="_blank" rel="noreferrer noopener">${grid}</a>`
   } else {
@@ -164,9 +172,16 @@ function buildMediaList(medias: Array<Media>, link?: string) {
   }
 }
 
-const likesSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54 72"><path d="M38.723,12c-7.187,0-11.16,7.306-11.723,8.131C26.437,19.306,22.504,12,15.277,12C8.791,12,3.533,18.163,3.533,24.647 C3.533,39.964,21.891,55.907,27,56c5.109-0.093,23.467-16.036,23.467-31.353C50.467,18.163,45.209,12,38.723,12z"/></svg>`
-const repliesSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 65 72"><path d="M41 31h-9V19c0-1.14-.647-2.183-1.668-2.688-1.022-.507-2.243-.39-3.15.302l-21 16C5.438 33.18 5 34.064 5 35s.437 1.82 1.182 2.387l21 16c.533.405 1.174.613 1.82.613.453 0 .908-.103 1.33-.312C31.354 53.183 32 52.14 32 51V39h9c5.514 0 10 4.486 10 10 0 2.21 1.79 4 4 4s4-1.79 4-4c0-9.925-8.075-18-18-18z"/></svg>`
-const retweetSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 75 72"><path d="M70.676 36.644C70.166 35.636 69.13 35 68 35h-7V19c0-2.21-1.79-4-4-4H34c-2.21 0-4 1.79-4 4s1.79 4 4 4h18c.552 0 .998.446 1 .998V35h-7c-1.13 0-2.165.636-2.676 1.644-.51 1.01-.412 2.22.257 3.13l11 15C55.148 55.545 56.046 56 57 56s1.855-.455 2.42-1.226l11-15c.668-.912.767-2.122.256-3.13zM40 48H22c-.54 0-.97-.427-.992-.96L21 36h7c1.13 0 2.166-.636 2.677-1.644.51-1.01.412-2.22-.257-3.13l-11-15C18.854 15.455 17.956 15 17 15s-1.854.455-2.42 1.226l-11 15c-.667.912-.767 2.122-.255 3.13C3.835 35.365 4.87 36 6 36h7l.012 16.003c.002 2.208 1.792 3.997 4 3.997h22.99c2.208 0 4-1.79 4-4s-1.792-4-4-4z"/></svg>`
+const likesSVG = `<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><g><path d="M12 21.638h-.014C9.403 21.59 1.95 14.856 1.95 8.478c0-3.064 2.525-5.754 5.403-5.754 2.29 0 3.83 1.58 4.646 2.73.814-1.148 2.354-2.73 4.645-2.73 2.88 0 5.404 2.69 5.404 5.755 0 6.376-7.454 13.11-10.037 13.157H12zM7.354 4.225c-2.08 0-3.903 1.988-3.903 4.255 0 5.74 7.034 11.596 8.55 11.658 1.518-.062 8.55-5.917 8.55-11.658 0-2.267-1.823-4.255-3.903-4.255-2.528 0-3.94 2.936-3.952 2.965-.23.562-1.156.562-1.387 0-.014-.03-1.425-2.965-3.954-2.965z"></path></g></svg>`
+const repliesSVG = `<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><g><path d="M14.046 2.242l-4.148-.01h-.002c-4.374 0-7.8 3.427-7.8 7.802 0 4.098 3.186 7.206 7.465 7.37v3.828c0 .108.044.286.12.403.142.225.384.347.632.347.138 0 .277-.038.402-.118.264-.168 6.473-4.14 8.088-5.506 1.902-1.61 3.04-3.97 3.043-6.312v-.017c-.006-4.367-3.43-7.787-7.8-7.788zm3.787 12.972c-1.134.96-4.862 3.405-6.772 4.643V16.67c0-.414-.335-.75-.75-.75h-.396c-3.66 0-6.318-2.476-6.318-5.886 0-3.534 2.768-6.302 6.3-6.302l4.147.01h.002c3.532 0 6.3 2.766 6.302 6.296-.003 1.91-.942 3.844-2.514 5.176z"></path></g></svg>`
+const retweetSVG = `<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><g><path d="M23.77 15.67c-.292-.293-.767-.293-1.06 0l-2.22 2.22V7.65c0-2.068-1.683-3.75-3.75-3.75h-5.85c-.414 0-.75.336-.75.75s.336.75.75.75h5.85c1.24 0 2.25 1.01 2.25 2.25v10.24l-2.22-2.22c-.293-.293-.768-.293-1.06 0s-.294.768 0 1.06l3.5 3.5c.145.147.337.22.53.22s.383-.072.53-.22l3.5-3.5c.294-.292.294-.767 0-1.06zm-10.66 3.28H7.26c-1.24 0-2.25-1.01-2.25-2.25V6.46l2.22 2.22c.148.147.34.22.532.22s.384-.073.53-.22c.293-.293.293-.768 0-1.06l-3.5-3.5c-.293-.294-.768-.294-1.06 0l-3.5 3.5c-.294.292-.294.767 0 1.06s.767.293 1.06 0l2.22-2.22V16.7c0 2.068 1.683 3.75 3.75 3.75h5.85c.414 0 .75-.336.75-.75s-.337-.75-.75-.75z"></path></g></svg>`
+const linkSvg = `<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><g><path d="M11.96 14.945c-.067 0-.136-.01-.203-.027-1.13-.318-2.097-.986-2.795-1.932-.832-1.125-1.176-2.508-.968-3.893s.942-2.605 2.068-3.438l3.53-2.608c2.322-1.716 5.61-1.224 7.33 1.1.83 1.127 1.175 2.51.967 3.895s-.943 2.605-2.07 3.438l-1.48 1.094c-.333.246-.804.175-1.05-.158-.246-.334-.176-.804.158-1.05l1.48-1.095c.803-.592 1.327-1.463 1.476-2.45.148-.988-.098-1.975-.69-2.778-1.225-1.656-3.572-2.01-5.23-.784l-3.53 2.608c-.802.593-1.326 1.464-1.475 2.45-.15.99.097 1.975.69 2.778.498.675 1.187 1.15 1.992 1.377.4.114.633.528.52.928-.092.33-.394.547-.722.547z"></path><path d="M7.27 22.054c-1.61 0-3.197-.735-4.225-2.125-.832-1.127-1.176-2.51-.968-3.894s.943-2.605 2.07-3.438l1.478-1.094c.334-.245.805-.175 1.05.158s.177.804-.157 1.05l-1.48 1.095c-.803.593-1.326 1.464-1.475 2.45-.148.99.097 1.975.69 2.778 1.225 1.657 3.57 2.01 5.23.785l3.528-2.608c1.658-1.225 2.01-3.57.785-5.23-.498-.674-1.187-1.15-1.992-1.376-.4-.113-.633-.527-.52-.927.112-.4.528-.63.926-.522 1.13.318 2.096.986 2.794 1.932 1.717 2.324 1.224 5.612-1.1 7.33l-3.53 2.608c-.933.693-2.023 1.026-3.105 1.026z"></path></g></svg>`
+const arrowSvg = `<svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.25 15.25V6.75H8.75"></path>
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 7L6.75 17.25"></path>
+</svg>
+`
+const formatNumber = (num: number) => new Intl.NumberFormat().format(num)
 
 async function buildTweetHTML(
   tweet: TweetJsonResponse,
@@ -185,7 +200,14 @@ async function buildTweetHTML(
   // _normal is only 48x48 which looks bad on high-res displays
   // _bigger is 73x73 which looks better...
   const authorImg = author.profile_image_url.replace('_normal', '_bigger')
-  const authorHTML = `<a class="tweet-author" href="https://twitter.com/${author.username}" target="_blank" rel="noreferrer noopener"><img src="${authorImg}" loading="lazy" alt="${author.name} avatar" /><b>${author.name}</b>@${author.username}</a>`
+  const authorHTML = `
+    <a class="tweet-author" href="https://twitter.com/${author.username}" target="_blank" rel="noreferrer noopener">
+      <img src="${authorImg}" loading="lazy" alt="${author.name} avatar" />
+      <div>
+        <span class="tweet-author-name">${author.name}</span>
+        <span class="tweet-author-handle">@${author.username}</span>
+      </div>
+    </a>`
 
   const links = (
     await Promise.all(
@@ -197,7 +219,9 @@ async function buildTweetHTML(
           const longUrl = new URL(longLink)
           const isTwitterLink = longUrl.host === 'twitter.com'
           // TODO: handle more than just twitter links. If it's the last link, try to expand the og:title/image information and display that instead.
-          let replacement = `<a href="${longLink}" target="_blank" rel="noreferrer noopener">${longLink}</a>`
+          let replacement = `<a href="${longLink}" target="_blank" rel="noreferrer noopener">${
+            longUrl.hostname + longUrl.pathname
+          }</a>`
           const isReferenced = (tweet.data.referenced_tweets ?? []).some(r =>
             longLink.includes(r.id),
           )
@@ -219,11 +243,13 @@ async function buildTweetHTML(
           }
 
           if (metadata) {
-            if (isLast) {
+            if (isLast && !tweet.includes.media?.length) {
               // We put the embed at the end
               replacement = ''
-            } else if (metadata.title) {
-              replacement = `<a href="${longLink}" target="_blank" rel="noreferrer noopener">${metadata.title}</a>`
+            } else {
+              replacement = `<a href="${longLink}" target="_blank" rel="noreferrer noopener">${
+                metadata.title ?? longUrl.hostname + longUrl.pathname
+              }</a>`
             }
           }
           return {
@@ -247,6 +273,7 @@ async function buildTweetHTML(
     blockquote = blockquote.replaceAll(shortLink, replacement)
   }
 
+  let expandedQuoteTweetHTML = ''
   if (expandQuotedTweet) {
     const referencedTweetHTMLs = await Promise.all(
       (tweet.data.referenced_tweets ?? []).map(async referencedTweet => {
@@ -263,7 +290,7 @@ async function buildTweetHTML(
       }),
     )
 
-    blockquote = `${blockquote}${referencedTweetHTMLs.join('')}`
+    expandedQuoteTweetHTML = referencedTweetHTMLs.join('')
   }
 
   // twitterify @mentions
@@ -274,33 +301,28 @@ async function buildTweetHTML(
 
   const tweetHTML = `<blockquote>${blockquote.trim()}</blockquote>`
 
-  const lastLink = links[links.length - 1]
   const mediaHTML = tweet.includes.media
-    ? buildMediaList(
-        tweet.includes.media,
-        lastLink?.isTwitterLink ? lastLink.longLink : '',
-      )
+    ? buildMediaList(tweet.includes.media, tweetURL)
     : ''
 
   const lastMetadataLink = links.reverse().find(l => l.metadata)
   let linkMetadataHTML = ''
-  if (lastMetadataLink) {
+  if (lastMetadataLink && !mediaHTML) {
     const {metadata: md, longLink, longUrl} = lastMetadataLink
     linkMetadataHTML = `
         <a href="${longLink}" class="tweet-ref-metadata" target="_blank" rel="noreferrer noopener">
           <img class="tweet-ref-metadata-image" src="${md?.image}" loading="lazy" alt="Referenced media" />
           <div class="tweet-ref-metadata-title">${md?.title}</div>
           <div class="tweet-ref-metadata-description">${md?.description}</div>
-          <div class="tweet-ref-metadata-domain">${longUrl.hostname}</div>
+          <div class="tweet-ref-metadata-domain">${linkSvg}<span>${longUrl.hostname}</span></div>
         </a>
       `
   }
 
-  const createdAtHTML = `<div class="tweet-time"><a href="${tweetURL}" target="_blank" rel="noreferrer noopener">${new Date(
-    tweet.data.created_at,
-  ).toLocaleTimeString()} – ${new Date(
-    tweet.data.created_at,
-  ).toLocaleDateString()}</a></div>`
+  const createdAtHTML = `<div class="tweet-time"><a href="${tweetURL}" target="_blank" rel="noreferrer noopener">${formatDate(
+    new Date(tweet.data.created_at),
+    'h:mm a',
+  )} · ${formatDate(new Date(tweet.data.created_at), 'PPP')}</a></div>`
 
   const likeIntent = `https://twitter.com/intent/like?tweet_id=${tweet.data.id}`
   const retweetIntent = `https://twitter.com/intent/retweet?tweet_id=${tweet.data.id}`
@@ -308,12 +330,15 @@ async function buildTweetHTML(
 
   const {like_count, reply_count, retweet_count, quote_count} =
     tweet.data.public_metrics
-  const totalRetweets = retweet_count + quote_count
+  const likeCount = formatNumber(like_count)
+  const replyCount = formatNumber(reply_count)
+  const totalRetweets = formatNumber(retweet_count + quote_count)
   const statsHTML = `
     <div class="tweet-stats">
-      <a href="${likeIntent}" class="tweet-like" target="_blank" rel="noreferrer noopener">${likesSVG}${like_count}</a>
-      <a href="${replyIntent}" class="tweet-reply" target="_blank" rel="noreferrer noopener">${repliesSVG}${reply_count}</a>
-      <a href="${retweetIntent}" class="tweet-retweet" target="_blank" rel="noreferrer noopener">${retweetSVG}${totalRetweets}</a>
+      <a href="${replyIntent}" class="tweet-reply" target="_blank" rel="noreferrer noopener">${repliesSVG}<span>${replyCount}</span></a>
+      <a href="${retweetIntent}" class="tweet-retweet" target="_blank" rel="noreferrer noopener">${retweetSVG}<span>${totalRetweets}</span></a>
+      <a href="${likeIntent}" class="tweet-like" target="_blank" rel="noreferrer noopener">${likesSVG}<span>${likeCount}</span></a>
+      <a href="${tweetURL}" class="tweet-link" target="_blank" rel="noreferrer noopener">${arrowSvg}<span></span></a>
     </div>
   `
 
@@ -323,6 +348,7 @@ async function buildTweetHTML(
       ${tweetHTML}
       ${mediaHTML}
       ${linkMetadataHTML}
+      ${expandedQuoteTweetHTML}
       ${createdAtHTML}
       ${statsHTML}
     </div>
@@ -343,7 +369,8 @@ async function getTweetEmbedHTML(urlString: string) {
     if (!('data' in tweet)) {
       throw new Error('Oh no, tweet has no data.')
     }
-    return await buildTweetHTML(tweet, true)
+    const html = await buildTweetHTML(tweet, true)
+    return html
   } catch (error: unknown) {
     console.error('Error processing tweet', {urlString, tweetId, error, tweet})
     return ''

@@ -28,10 +28,22 @@
 
 .light {
   --color-team-unknown: var(--color-black);
+  --bg-primary: var(--color-white);
+  --bg-secondary: var(--color-gray-100);
+  --bg-alt: var(--color-gray-200);
+  --border-secondary: var(--color-gray-200);
+  --text-primary: var(--color-black);
+  --text-secondary: var(--color-gray-500);
 }
 
 .dark {
   --color-team-unknown: var(--color-white);
+  --bg-primary: var(--color-gray-900);
+  --bg-secondary: var(--color-gray-800);
+  --bg-alt: var(--color-gray-700);
+  --border-secondary: var(--color-gray-600);
+  --text-primary: var(--color-white);
+  --text-secondary: var(--color-blueGray-500);
 }
 
 :focus:not(:focus-visible) {
