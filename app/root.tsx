@@ -4,7 +4,6 @@ import {
   Meta,
   Scripts,
   LiveReload,
-  usePendingLocation,
   LoaderFunction,
   json,
   useRouteData,
@@ -12,7 +11,6 @@ import {
 } from 'remix'
 import type {LinksFunction, MetaFunction, Session} from 'remix'
 import {Outlet} from 'react-router-dom'
-import clsx from 'clsx'
 import type {Await, KCDHandle, User} from 'types'
 import tailwindStyles from './styles/tailwind.css'
 import vendorStyles from './styles/vendors.css'
@@ -146,8 +144,6 @@ function App() {
   const data = useRouteData<LoaderData>()
   const [team] = useTeam()
   const [theme] = useTheme()
-  const pendingLocation = usePendingLocation()
-  const showPendingState = pendingLocation
 
   return (
     <html lang="en" className={theme ?? ''}>
@@ -166,11 +162,7 @@ function App() {
           ssrTheme={Boolean(data.requestInfo.session.theme)}
         />
       </head>
-      <body
-        className={clsx('dark:bg-gray-900 bg-white transition duration-500', {
-          'opacity-50': showPendingState,
-        })}
-      >
+      <body className="dark:bg-gray-900 bg-white transition duration-500">
         <Navbar />
         <Outlet />
         <Spacer size="medium" />

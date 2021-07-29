@@ -1,5 +1,6 @@
 import * as React from 'react'
 import clsx from 'clsx'
+import {motion} from 'framer-motion'
 import {H2} from '../typography'
 import {ArrowLink} from '../arrow-button'
 import {Grid} from '../grid'
@@ -39,6 +40,11 @@ type HeroSectionProps = {
       }
   )
 
+const childVariants = {
+  initial: {opacity: 0, y: 25},
+  visible: {opacity: 1, y: 0, transition: {duration: 0.5}},
+}
+
 function HeroSection({
   action,
   title,
@@ -70,13 +76,16 @@ function HeroSection({
           })}
         >
           {imageUrl ? (
-            <img
+            <motion.img
               className={clsx('w-full h-auto object-contain', {
                 'max-h-50vh': imageSize === 'medium',
                 'max-h-75vh': imageSize === 'giant',
               })}
               src={imageUrl}
               alt={imageAlt}
+              initial={{scale: 1.5, opacity: 0}}
+              animate={{scale: 1, opacity: 1}}
+              transition={{duration: 0.75}}
             />
           ) : (
             image
@@ -93,25 +102,46 @@ function HeroSection({
           },
         )}
       >
-        <div className="flex flex-auto flex-col">
-          <H2 as="h2">{title}</H2>
+        <motion.div
+          className="flex flex-auto flex-col"
+          initial="initial"
+          animate="visible"
+          variants={{
+            initial: {opacity: 0},
+            visible: {opacity: 1, transition: {staggerChildren: 0.2}},
+          }}
+        >
+          <motion.div variants={childVariants}>
+            <H2 as="h2">{title}</H2>
+          </motion.div>
+
           {subtitle ? (
-            <H2 as="p" variant="secondary" className="mt-3">
-              {subtitle}
-            </H2>
+            <motion.div variants={childVariants}>
+              <H2 as="p" variant="secondary" className="mt-3">
+                {subtitle}
+              </H2>
+            </motion.div>
           ) : null}
           {action ? (
-            <div className="flex flex-col mt-14 space-y-4 lg:flex-row lg:space-x-4 lg:space-y-0">
+            <motion.div
+              variants={childVariants}
+              className="flex flex-col mt-14 space-y-4 lg:flex-row lg:space-x-4 lg:space-y-0"
+            >
               {action}
-            </div>
+            </motion.div>
           ) : null}
-        </div>
+        </motion.div>
         {arrowUrl ? (
-          <div className="hidden pt-12 lg:block">
+          <motion.div
+            initial={{opacity: 0}}
+            animate={{opacity: 1}}
+            transition={{delay: 1}}
+            className="hidden pt-12 lg:block"
+          >
             <ArrowLink to={arrowUrl} direction="down" textSize="small">
               {arrowLabel}
             </ArrowLink>
-          </div>
+          </motion.div>
         ) : null}
       </div>
     </Grid>
