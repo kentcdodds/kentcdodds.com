@@ -258,6 +258,7 @@ async function buildTweetHTML(
     blockquote = blockquote.replaceAll(shortLink, replacement)
   }
 
+  let expandedQuoteTweetHTML = ''
   if (expandQuotedTweet) {
     const referencedTweetHTMLs = await Promise.all(
       (tweet.data.referenced_tweets ?? []).map(async referencedTweet => {
@@ -274,7 +275,7 @@ async function buildTweetHTML(
       }),
     )
 
-    blockquote = `${blockquote}${referencedTweetHTMLs.join('')}`
+    expandedQuoteTweetHTML = referencedTweetHTMLs.join('')
   }
 
   // twitterify @mentions
@@ -295,7 +296,7 @@ async function buildTweetHTML(
 
   const lastMetadataLink = links.reverse().find(l => l.metadata)
   let linkMetadataHTML = ''
-  if (lastMetadataLink) {
+  if (lastMetadataLink && !mediaHTML) {
     const {metadata: md, longLink, longUrl} = lastMetadataLink
     linkMetadataHTML = `
         <a href="${longLink}" class="tweet-ref-metadata" target="_blank" rel="noreferrer noopener">
@@ -340,6 +341,7 @@ async function buildTweetHTML(
       ${tweetHTML}
       ${mediaHTML}
       ${linkMetadataHTML}
+      ${expandedQuoteTweetHTML}
       ${createdAtHTML}
       ${statsHTML}
     </div>
@@ -360,7 +362,9 @@ async function getTweetEmbedHTML(urlString: string) {
     if (!('data' in tweet)) {
       throw new Error('Oh no, tweet has no data.')
     }
-    return await buildTweetHTML(tweet, true)
+    const html = await buildTweetHTML(tweet, true)
+    console.log(html)
+    return html
   } catch (error: unknown) {
     console.error('Error processing tweet', {urlString, tweetId, error, tweet})
     return ''
