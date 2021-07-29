@@ -338,9 +338,15 @@ pre {
   opacity: 0.6;
   transition: opacity 0.2s;
 }
+
 .prose
   .tweet-embed
   .tweet-media-container:hover
+  .tweet-media-with-play-button
+  .tweet-media-play-button,
+.prose
+  .tweet-embed
+  .tweet-media-container:focus
   .tweet-media-with-play-button
   .tweet-media-play-button {
   opacity: 1;
