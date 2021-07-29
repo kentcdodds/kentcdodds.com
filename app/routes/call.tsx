@@ -103,20 +103,23 @@ export default function CallHomeScreen() {
           </H6>
 
           <button
-            className="text-primary inline-flex items-center text-lg font-medium"
+            className="group text-primary relative text-lg font-medium focus:outline-none"
             onClick={() => setSortOrder(o => (o === 'asc' ? 'desc' : 'asc'))}
           >
-            {sortOrder === 'asc' ? (
-              <>
-                Showing oldest first
-                <ChevronUpIcon className="ml-2 text-gray-400" />
-              </>
-            ) : (
-              <>
-                Showing newest first
-                <ChevronDownIcon className="ml-2 text-gray-400" />
-              </>
-            )}
+            <div className="bg-secondary absolute -bottom-2 -left-4 -right-4 -top-2 rounded-lg opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition" />
+            <span className="relative inline-flex items-center">
+              {sortOrder === 'asc' ? (
+                <>
+                  Showing oldest first
+                  <ChevronUpIcon className="ml-2 text-gray-400" />
+                </>
+              ) : (
+                <>
+                  Showing newest first
+                  <ChevronDownIcon className="ml-2 text-gray-400" />
+                </>
+              )}
+            </span>
           </button>
         </div>
 
