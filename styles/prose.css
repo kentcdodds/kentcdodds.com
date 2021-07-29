@@ -251,6 +251,10 @@ pre {
   background-color: unset;
 }
 
+.prose .tweet-embed blockquote a {
+  font-weight: normal;
+}
+
 .prose .tweet-embed .tweet-author {
   font-size: 1rem;
   display: flex;
