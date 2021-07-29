@@ -1,4 +1,5 @@
 import * as React from 'react'
+import {Link} from 'remix'
 import formatDate from 'date-fns/format'
 import parseISO from 'date-fns/parseISO'
 import type {MdxListItem} from 'types'
@@ -22,9 +23,9 @@ function ArticleCard({
 
   return (
     <div className="relative w-full">
-      <a
+      <Link
         className="group peer relative block w-full focus:outline-none"
-        href={`/blog/${slug}`}
+        to={`/blog/${slug}`}
       >
         <div className="aspect-w-3 aspect-h-4 focus-ring w-full rounded-lg transition">
           <img
@@ -40,7 +41,7 @@ function ArticleCard({
         <H3 as="div" className="mt-4">
           {title}
         </H3>
-      </a>
+      </Link>
 
       <ClipboardCopyButton
         value={permalink}
