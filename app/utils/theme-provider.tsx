@@ -17,6 +17,8 @@ const ThemeContext = React.createContext<ThemeContextType | undefined>(
 ThemeContext.displayName = 'ThemeContext'
 
 const prefersLightMQ = '(prefers-color-scheme: light)'
+const getPreferredTheme = () =>
+  window.matchMedia(prefersLightMQ).matches ? Theme.LIGHT : Theme.DARK
 
 function ThemeProvider({
   children,
@@ -39,7 +41,7 @@ function ThemeProvider({
     // the client will have to figure it out before hydration.
     if (typeof window !== 'object') return null
 
-    return window.matchMedia(prefersLightMQ).matches ? Theme.LIGHT : Theme.DARK
+    return getPreferredTheme()
   })
 
   const mountRun = React.useRef(false)
@@ -111,40 +113,30 @@ const clientThemeCode = `
       "Heya, could you let Kent know you're seeing this message? Thanks!",
     );
   }
-
-  // handle any dark/light-mode elements that are already in the DOM
-  handleDarkAndLightModeEls();
-
-  function handleDarkAndLightModeEls() {
-    const darkEls = document.querySelectorAll('dark-mode');
-    const lightEls = document.querySelectorAll('light-mode');
-    for (const darkEl of darkEls) {
-      if (theme === 'dark') {
-        for (const child of darkEl.childNodes) {
-          darkEl.parentElement.append(child);
-        }
-      }
-      darkEl.remove();
-    }
-    for (const lightEl of lightEls) {
-      if (theme === 'light') {
-        for (const child of lightEl.childNodes) {
-          lightEl.parentElement.append(child);
-        }
-      }
-      lightEl.remove();
-    }
-  }
-
-  // handle any dark/light-mode elements that are present after the content
-  // is loaded, but still before hydration
-  document.addEventListener(
-    'DOMContentLoaded',
-    handleDarkAndLightModeEls,
-    {once: true},
-  );
 })();
 `
+
+function handleDarkAndLightModeEls() {
+  const theme = getPreferredTheme()
+  const darkEls = document.querySelectorAll('dark-mode')
+  const lightEls = document.querySelectorAll('light-mode')
+  for (const darkEl of darkEls) {
+    if (theme === 'dark') {
+      for (const child of darkEl.childNodes) {
+        darkEl.parentElement?.append(child)
+      }
+    }
+    darkEl.remove()
+  }
+  for (const lightEl of lightEls) {
+    if (theme === 'light') {
+      for (const child of lightEl.childNodes) {
+        lightEl.parentElement?.append(child)
+      }
+    }
+    lightEl.remove()
+  }
+}
 
 function NonFlashOfWrongThemeEls({ssrTheme}: {ssrTheme: boolean}) {
   const [theme] = useTheme()
@@ -215,6 +207,7 @@ function Themed({
 const sessionKey = 'theme'
 
 export {
+  handleDarkAndLightModeEls,
   ThemeProvider,
   useTheme,
   sessionKey,
