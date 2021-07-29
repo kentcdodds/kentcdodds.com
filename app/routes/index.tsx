@@ -27,12 +27,7 @@ export const loader: LoaderFunction = async ({request}) => {
   return json(data)
 }
 
-export function ErrorBoundary({error}: {error: Error}) {
-  console.error(error)
-  return <ServerError />
-}
-
-function IndexRoute() {
+export default function IndexRoute() {
   const data = useRouteData<LoaderData>()
   return (
     <div>
@@ -75,4 +70,7 @@ function IndexRoute() {
   )
 }
 
-export default IndexRoute
+export function ErrorBoundary({error}: {error: Error}) {
+  console.error(error)
+  return <ServerError />
+}
