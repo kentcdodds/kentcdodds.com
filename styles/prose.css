@@ -314,11 +314,7 @@ pre {
 }
 
 .prose .tweet-embed .tweet-quoted {
-  /* I mean... it works and looks nice so... */
-  zoom: 0.85;
-  border: 1px solid var(--border-secondary);
-  border-radius: 0.75rem;
-  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
 .prose .tweet-embed .tweet-quoted .tweet-media-container {
