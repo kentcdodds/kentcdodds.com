@@ -38,6 +38,10 @@
     @apply bg-gray-100 dark:bg-gray-800;
   }
 
+  .bg-alt {
+    @apply bg-gray-200 dark:bg-gray-700;
+  }
+
   .bg-inverse {
     @apply bg-black dark:bg-white;
   }
@@ -60,9 +64,5 @@
 
   .text-inverse {
     @apply dark:text-black text-white;
-  }
-
-  .text-secondary-inverse {
-    @apply text-blueGray-500 dark:text-gray-500;
   }
 }
