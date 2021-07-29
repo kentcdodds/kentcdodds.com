@@ -3,6 +3,7 @@ import {setupServer} from 'msw/node'
 import {githubHandlers} from './github'
 import {tiToHandlers} from './tito'
 import {oembedHandlers} from './oembed'
+import {twitterHandlers} from './twitter'
 import {transistorHandlers} from './transistor'
 import {discordHandlers} from './discord'
 import {convertKitHandlers} from './convert-kit'
@@ -30,6 +31,7 @@ const miscHandlers = [
 const server = setupServer(
   ...githubHandlers,
   ...oembedHandlers,
+  ...twitterHandlers,
   ...tiToHandlers,
   ...transistorHandlers,
   ...discordHandlers,

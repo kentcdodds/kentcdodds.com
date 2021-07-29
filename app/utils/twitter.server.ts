@@ -113,6 +113,18 @@ type TweetJsonResponse = {
   }
 }
 
+type TweetErrorJsonResponse = {
+  errors: Array<{
+    value: string
+    detail: string
+    title: 'Not Found Error'
+    resource_type: 'tweet'
+    parameter: 'id'
+    resource_id: string
+    type: string
+  }>
+}
+
 // fetch tweet from API
 async function getTweet(tweetId: string) {
   const url = new URL(`https://api.twitter.com/2/tweets/${tweetId}`)
@@ -133,7 +145,7 @@ async function getTweet(tweetId: string) {
     },
   })
   const tweetJson = await response.json()
-  return tweetJson as TweetJsonResponse
+  return tweetJson as TweetJsonResponse | TweetErrorJsonResponse
 }
 
 function buildMediaList(medias: Array<Media>, link?: string) {
@@ -240,7 +252,7 @@ async function buildTweetHTML(
       (tweet.data.referenced_tweets ?? []).map(async referencedTweet => {
         if (referencedTweet.type !== 'quoted') return ''
         const quotedTweet = await getTweet(referencedTweet.id).catch(() => {})
-        if (!quotedTweet) return ''
+        if (!quotedTweet || !('data' in quotedTweet)) return ''
 
         const quotedHTML = await buildTweetHTML(quotedTweet, false).catch(
           () => {},
@@ -325,11 +337,15 @@ async function getTweetEmbedHTML(urlString: string) {
     console.error('TWEET ID NOT FOUND', urlString, tweetId)
     return ''
   }
+  let tweet
   try {
-    const tweet = await getTweet(tweetId)
+    tweet = await getTweet(tweetId)
+    if (!('data' in tweet)) {
+      throw new Error('Oh no, tweet has no data.')
+    }
     return await buildTweetHTML(tweet, true)
   } catch (error: unknown) {
-    console.error('Error processing tweet', urlString, tweetId, error)
+    console.error('Error processing tweet', {urlString, tweetId, error, tweet})
     return ''
   }
 }

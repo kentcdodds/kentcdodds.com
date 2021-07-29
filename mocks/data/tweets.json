@@ -1,0 +1,553 @@
+{
+  "video": {
+    "data": {
+      "attachments": {"media_keys": ["7_1420669327901003776"]},
+      "author_id": "2972744345",
+      "id": "1420669402932932611",
+      "public_metrics": {
+        "retweet_count": 1,
+        "reply_count": 0,
+        "like_count": 22,
+        "quote_count": 1
+      },
+      "text": "Improved my ray tracer's perf!\n1600x900 pixels * 10 rays per pixel * 6 bounces per ray * 24 spheres collision checks per bounce = 2 BILLION collision checks, at 60fps! Go go GPU =D\n\nhttps://t.co/m6fbsqeGXR https://t.co/ukZELKLf1S",
+      "created_at": "2021-07-29T08:55:55.000Z"
+    },
+    "includes": {
+      "media": [
+        {
+          "media_key": "7_1420669327901003776",
+          "preview_image_url": "https://pbs.twimg.com/ext_tw_video_thumb/1420669327901003776/pu/img/N9U2FnTT423ZjOqH.jpg",
+          "type": "video"
+        }
+      ],
+      "users": [
+        {
+          "profile_image_url": "https://pbs.twimg.com/profile_images/554199709909131265/Y5qUDaCB_normal.jpeg",
+          "url": "https://t.co/opn3GOx0jf",
+          "name": "Cheng Lou",
+          "username": "_chenglou",
+          "id": "2972744345"
+        }
+      ]
+    }
+  },
+  "onePhoto": {
+    "data": {
+      "id": "1418928039069511682",
+      "created_at": "2021-07-24T13:36:21.000Z",
+      "attachments": {"media_keys": ["3_1418928036129423369"]},
+      "text": "🚨 We've got an IST-friendly KCD Learning club looking for new members \"To learn React the epic way!\"\n\nGo through https://t.co/VFTzpCWpTr together with others! Learn how to join here: https://t.co/boWSztgAKM https://t.co/nyggsvsjHz",
+      "public_metrics": {
+        "retweet_count": 2,
+        "reply_count": 2,
+        "like_count": 32,
+        "quote_count": 0
+      },
+      "author_id": "389681470"
+    },
+    "includes": {
+      "media": [
+        {
+          "media_key": "3_1418928036129423369",
+          "type": "photo",
+          "url": "https://pbs.twimg.com/media/E7ELh_NWQAkEmgA.jpg"
+        }
+      ],
+      "users": [
+        {
+          "url": "https://t.co/F3SmzPLcfn",
+          "id": "389681470",
+          "username": "kentcdodds",
+          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg",
+          "name": "Kent C. Dodds"
+        }
+      ]
+    }
+  },
+  "twoPhotos": {
+    "data": {
+      "created_at": "2021-07-01T21:18:08.000Z",
+      "id": "1410709329951354880",
+      "text": "Took a different approach that allowed me to add data attributes to the lines nodes specifically.\n\nWorks great! https://t.co/2W86iwjs4L",
+      "in_reply_to_user_id": "389681470",
+      "author_id": "389681470",
+      "referenced_tweets": [
+        {"type": "replied_to", "id": "1410686542058688512"}
+      ],
+      "attachments": {
+        "media_keys": ["3_1410709026610958337", "3_1410709101118582785"]
+      },
+      "public_metrics": {
+        "retweet_count": 0,
+        "reply_count": 3,
+        "like_count": 21,
+        "quote_count": 0
+      }
+    },
+    "includes": {
+      "media": [
+        {
+          "media_key": "3_1410709026610958337",
+          "type": "photo",
+          "url": "https://pbs.twimg.com/media/E5PYYqyVUAELnKh.jpg"
+        },
+        {
+          "media_key": "3_1410709101118582785",
+          "type": "photo",
+          "url": "https://pbs.twimg.com/media/E5PYdAWVcAE4bbl.png"
+        }
+      ],
+      "users": [
+        {
+          "url": "https://t.co/F3SmzPLcfn",
+          "username": "kentcdodds",
+          "name": "Kent C. Dodds",
+          "id": "389681470",
+          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg"
+        }
+      ],
+      "tweets": [
+        {
+          "created_at": "2021-07-01T19:47:35.000Z",
+          "id": "1410686542058688512",
+          "text": "Please disregard. This is definitely impossible. I'll need to change my approach...",
+          "in_reply_to_user_id": "389681470",
+          "author_id": "389681470",
+          "referenced_tweets": [
+            {"type": "replied_to", "id": "1410684669671006208"}
+          ],
+          "public_metrics": {
+            "retweet_count": 0,
+            "reply_count": 2,
+            "like_count": 15,
+            "quote_count": 0
+          }
+        }
+      ]
+    }
+  },
+  "fourPhotos": {
+    "data": {
+      "author_id": "377036506",
+      "created_at": "2021-06-14T12:01:57.000Z",
+      "attachments": {"media_keys": ["3_1404408763960987648"]},
+      "id": "1404408769551994880",
+      "text": "accessibility dot jpeg https://t.co/lAbUQ1QGtk",
+      "public_metrics": {
+        "retweet_count": 21092,
+        "reply_count": 117,
+        "like_count": 121676,
+        "quote_count": 572
+      }
+    },
+    "includes": {
+      "media": [
+        {
+          "media_key": "3_1404408763960987648",
+          "type": "photo",
+          "url": "https://pbs.twimg.com/media/E312VHdXEAAGO86.jpg"
+        }
+      ],
+      "users": [
+        {
+          "username": "philosophequeer",
+          "id": "377036506",
+          "profile_image_url": "https://pbs.twimg.com/profile_images/1372478405401264128/yczc9Zf-_normal.jpg",
+          "name": "aaron",
+          "url": "https://t.co/PcKHddAUS7"
+        }
+      ]
+    }
+  },
+  "threePhotos": {
+    "data": {
+      "id": "1420726342996271105",
+      "created_at": "2021-07-29T12:42:10.000Z",
+      "text": "This tweet has three images...\n\nI'm testing something and couldn't easily find a tweet with three photos, so here you go. https://t.co/okUhem8zC7",
+      "attachments": {
+        "media_keys": [
+          "3_1420726187618291714",
+          "3_1420726187609841667",
+          "3_1420726187630813184"
+        ]
+      },
+      "public_metrics": {
+        "retweet_count": 0,
+        "reply_count": 0,
+        "like_count": 8,
+        "quote_count": 0
+      },
+      "author_id": "389681470"
+    },
+    "includes": {
+      "media": [
+        {
+          "media_key": "3_1420726187618291714",
+          "type": "photo",
+          "url": "https://pbs.twimg.com/media/E7du8LgVUAI_dK-.jpg"
+        },
+        {
+          "media_key": "3_1420726187609841667",
+          "type": "photo",
+          "url": "https://pbs.twimg.com/media/E7du8LeUYAMbo6P.jpg"
+        },
+        {
+          "media_key": "3_1420726187630813184",
+          "type": "photo",
+          "url": "https://pbs.twimg.com/media/E7du8LjUYAAD_CM.jpg"
+        }
+      ],
+      "users": [
+        {
+          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg",
+          "id": "389681470",
+          "name": "Kent C. Dodds",
+          "url": "https://t.co/F3SmzPLcfn",
+          "username": "kentcdodds"
+        }
+      ]
+    }
+  },
+  "quote": {
+    "data": {
+      "id": "1420720925868052486",
+      "referenced_tweets": [{"type": "quoted", "id": "1420683483660185601"}],
+      "public_metrics": {
+        "retweet_count": 1,
+        "reply_count": 1,
+        "like_count": 8,
+        "quote_count": 0
+      },
+      "attachments": {"media_keys": ["16_1420720837376679936"]},
+      "created_at": "2021-07-29T12:20:39.000Z",
+      "text": "I knew we'd make it. Good job everyone 👏👏👏 https://t.co/zBfFwCVjjx https://t.co/P4kqPBw4eV",
+      "author_id": "389681470"
+    },
+    "includes": {
+      "media": [
+        {
+          "media_key": "16_1420720837376679936",
+          "preview_image_url": "https://pbs.twimg.com/tweet_video_thumb/E7dqEwTVIAAUpoG.jpg",
+          "type": "animated_gif"
+        }
+      ],
+      "users": [
+        {
+          "url": "https://t.co/F3SmzPLcfn",
+          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg",
+          "name": "Kent C. Dodds",
+          "id": "389681470",
+          "username": "kentcdodds"
+        },
+        {
+          "url": "https://t.co/q7v0DjHk9o",
+          "profile_image_url": "https://pbs.twimg.com/profile_images/1392967452338704385/y8ts7dxh_normal.png",
+          "name": "Jane Manchun Wong",
+          "id": "337119125",
+          "username": "wongmjane"
+        }
+      ],
+      "tweets": [
+        {
+          "id": "1420683483660185601",
+          "public_metrics": {
+            "retweet_count": 77,
+            "reply_count": 42,
+            "like_count": 381,
+            "quote_count": 26
+          },
+          "attachments": {"media_keys": ["3_1420683478438342660"]},
+          "created_at": "2021-07-29T09:51:52.000Z",
+          "text": "“Never Gonna Give You Up” has reached one billion views on YouTube\n\nTo celebrate, YouTube has added a special feature to the video:\n\nhttps://t.co/uzikTJJlmf https://t.co/kH1jsTb0Ck",
+          "author_id": "337119125"
+        }
+      ]
+    }
+  },
+  "simpleWithMention": {
+    "data": {
+      "id": "1420508470726463489",
+      "created_at": "2021-07-28T22:16:25.000Z",
+      "text": "Discord threads: I'm a fan\n\nWell done @discord developers 👏",
+      "entities": {
+        "mentions": [
+          {"start": 38, "end": 46, "username": "discord", "id": "3065618342"}
+        ]
+      },
+      "public_metrics": {
+        "retweet_count": 3,
+        "reply_count": 5,
+        "like_count": 143,
+        "quote_count": 0
+      },
+      "author_id": "389681470"
+    },
+    "includes": {
+      "users": [
+        {
+          "url": "https://t.co/F3SmzPLcfn",
+          "id": "389681470",
+          "username": "kentcdodds",
+          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg",
+          "name": "Kent C. Dodds"
+        },
+        {
+          "url": "https://t.co/cNrYsYvfIi",
+          "id": "3065618342",
+          "username": "discord",
+          "profile_image_url": "https://pbs.twimg.com/profile_images/1392864511669854217/dBymBmGq_normal.jpg",
+          "name": "Discord"
+        }
+      ]
+    }
+  },
+  "reply": {
+    "data": {
+      "public_metrics": {
+        "retweet_count": 0,
+        "reply_count": 4,
+        "like_count": 22,
+        "quote_count": 2
+      },
+      "in_reply_to_user_id": "389681470",
+      "created_at": "2021-07-24T03:19:51.000Z",
+      "author_id": "389681470",
+      "id": "1418772893190606852",
+      "referenced_tweets": [
+        {"type": "replied_to", "id": "1418770182084784128"}
+      ],
+      "text": "It's working now and I don't know why 🤷‍♂️ 🙃"
+    },
+    "includes": {
+      "users": [
+        {
+          "username": "kentcdodds",
+          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg",
+          "id": "389681470",
+          "url": "https://t.co/F3SmzPLcfn",
+          "name": "Kent C. Dodds"
+        }
+      ],
+      "tweets": [
+        {
+          "public_metrics": {
+            "retweet_count": 2,
+            "reply_count": 5,
+            "like_count": 37,
+            "quote_count": 0
+          },
+          "created_at": "2021-07-24T03:09:05.000Z",
+          "author_id": "389681470",
+          "id": "1418770182084784128",
+          "text": "Has anyone ever had trouble embedding tweets? I've been debugging twitter's widgets code and it seems to fire off a promise to get \"settings\" which never resolves."
+        }
+      ]
+    }
+  },
+  "quoteOfQuote": {
+    "data": {
+      "id": "1420020360293011456",
+      "referenced_tweets": [{"type": "quoted", "id": "1420008083779096585"}],
+      "created_at": "2021-07-27T13:56:51.000Z",
+      "text": "Same https://t.co/RkjItSX4LZ",
+      "public_metrics": {
+        "retweet_count": 0,
+        "reply_count": 0,
+        "like_count": 17,
+        "quote_count": 0
+      },
+      "author_id": "389681470"
+    },
+    "includes": {
+      "users": [
+        {
+          "url": "https://t.co/F3SmzPLcfn",
+          "id": "389681470",
+          "username": "kentcdodds",
+          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg",
+          "name": "Kent C. Dodds"
+        },
+        {
+          "url": "https://t.co/k2A00HIDSX",
+          "id": "2308474213",
+          "username": "JoshWComeau",
+          "profile_image_url": "https://pbs.twimg.com/profile_images/1362432748011536385/vRY-trfG_normal.jpg",
+          "name": "Josh W. Comeau"
+        }
+      ],
+      "tweets": [
+        {
+          "id": "1420008083779096585",
+          "referenced_tweets": [
+            {"type": "quoted", "id": "1419801602546970627"}
+          ],
+          "created_at": "2021-07-27T13:08:04.000Z",
+          "text": "Yup!  I’ve spent thousands of hours at this point learning and practicing how to teach. \n\nHaving a skill is only half of the equation. https://t.co/VwhEOSHlnD",
+          "public_metrics": {
+            "retweet_count": 9,
+            "reply_count": 2,
+            "like_count": 79,
+            "quote_count": 2
+          },
+          "author_id": "2308474213"
+        }
+      ]
+    }
+  },
+  "poll": {
+    "data": {
+      "created_at": "2021-07-15T01:59:53.000Z",
+      "id": "1415491278008033280",
+      "text": "Let's say a site supports both dark and light mode. Which should it use by default for your first visit?",
+      "author_id": "389681470",
+      "public_metrics": {
+        "retweet_count": 2,
+        "reply_count": 24,
+        "like_count": 27,
+        "quote_count": 0
+      }
+    },
+    "includes": {
+      "users": [
+        {
+          "username": "kentcdodds",
+          "id": "389681470",
+          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg",
+          "name": "Kent C. Dodds",
+          "url": "https://t.co/F3SmzPLcfn"
+        }
+      ]
+    }
+  },
+  "linkWithMetadata": {
+    "data": {
+      "id": "1414579379422711809",
+      "created_at": "2021-07-12T13:36:20.000Z",
+      "text": "Today's the last day of that https://t.co/LoU6y2wvVV is 25% off.\n\nIt'd be awesome to become the team React expert. But what's even better than one React expert on the team, is an entire team of React experts! 💪\n\nTo get that, send your boss this: https://t.co/e7c3mMKkmQ 🚀",
+      "public_metrics": {
+        "retweet_count": 13,
+        "reply_count": 5,
+        "like_count": 30,
+        "quote_count": 4
+      },
+      "author_id": "389681470"
+    },
+    "includes": {
+      "users": [
+        {
+          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg",
+          "id": "389681470",
+          "name": "Kent C. Dodds",
+          "url": "https://t.co/F3SmzPLcfn",
+          "username": "kentcdodds"
+        }
+      ]
+    }
+  },
+  "textOnly": {
+    "data": {
+      "id": "1413326124969459714",
+      "created_at": "2021-07-09T02:36:21.000Z",
+      "text": "When I do a big refactor to a data structure I like to start by changing the type definitions. Then I fix the red squiggles until they're gone.\n\nThe joy of things *just working* when I finally run the code will never get old.",
+      "public_metrics": {
+        "retweet_count": 19,
+        "reply_count": 16,
+        "like_count": 488,
+        "quote_count": 7
+      },
+      "author_id": "389681470"
+    },
+    "includes": {
+      "users": [
+        {
+          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg",
+          "id": "389681470",
+          "name": "Kent C. Dodds",
+          "url": "https://t.co/F3SmzPLcfn",
+          "username": "kentcdodds"
+        }
+      ]
+    }
+  },
+  "quoteOfDeletedTweet": {
+    "data": {
+      "id": "1406244165529137159",
+      "author_id": "389681470",
+      "created_at": "2021-06-19T13:35:10.000Z",
+      "text": "One of the things I loved most when starting to learn React was that I felt myself getting better at JavaScript.\n\n@remix_run is making me better at the web platform. Not just the DOM, but the browser-to-server-to-browser communication too. https://t.co/2uOyEDPAUG",
+      "public_metrics": {
+        "retweet_count": 8,
+        "reply_count": 12,
+        "like_count": 143,
+        "quote_count": 0
+      },
+      "entities": {
+        "mentions": [
+          {
+            "start": 114,
+            "end": 124,
+            "username": "remix_run",
+            "id": "1250847387062419456"
+          }
+        ]
+      }
+    },
+    "includes": {
+      "users": [
+        {
+          "name": "Kent C. Dodds",
+          "username": "kentcdodds",
+          "id": "389681470",
+          "url": "https://t.co/F3SmzPLcfn",
+          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg"
+        },
+        {
+          "name": "Remix 💿",
+          "username": "remix_run",
+          "id": "1250847387062419456",
+          "url": "https://t.co/CIkPzYfePh",
+          "profile_image_url": "https://pbs.twimg.com/profile_images/1250847865565442053/5EfyvSwf_normal.jpg"
+        }
+      ]
+    }
+  },
+  "deletedTweet": {
+    "errors": [
+      {
+        "value": "1406128033216356353",
+        "detail": "Could not find tweet with id: [1406128033216356353].",
+        "title": "Not Found Error",
+        "resource_type": "tweet",
+        "parameter": "id",
+        "resource_id": "1406128033216356353",
+        "type": "https://api.twitter.com/2/problems/resource-not-found"
+      }
+    ]
+  },
+  "streamEmbed": {
+    "data": {
+      "id": "1403018951639113733",
+      "author_id": "389681470",
+      "created_at": "2021-06-10T15:59:19.000Z",
+      "text": "Prisma is amazing https://t.co/gmCkT93byp",
+      "public_metrics": {
+        "retweet_count": 7,
+        "reply_count": 0,
+        "like_count": 60,
+        "quote_count": 0
+      }
+    },
+    "includes": {
+      "users": [
+        {
+          "name": "Kent C. Dodds",
+          "username": "kentcdodds",
+          "id": "389681470",
+          "url": "https://t.co/F3SmzPLcfn",
+          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg"
+        }
+      ]
+    }
+  }
+}
