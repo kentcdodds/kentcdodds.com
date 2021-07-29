@@ -208,7 +208,9 @@ async function buildTweetHTML(
           const longUrl = new URL(longLink)
           const isTwitterLink = longUrl.host === 'twitter.com'
           // TODO: handle more than just twitter links. If it's the last link, try to expand the og:title/image information and display that instead.
-          let replacement = `<a href="${longLink}" target="_blank" rel="noreferrer noopener">${longLink}</a>`
+          let replacement = `<a href="${longLink}" target="_blank" rel="noreferrer noopener">${
+            longUrl.hostname + longUrl.pathname
+          }</a>`
           const isReferenced = (tweet.data.referenced_tweets ?? []).some(r =>
             longLink.includes(r.id),
           )
@@ -230,11 +232,13 @@ async function buildTweetHTML(
           }
 
           if (metadata) {
-            if (isLast) {
+            if (isLast && !tweet.includes.media?.length) {
               // We put the embed at the end
               replacement = ''
-            } else if (metadata.title) {
-              replacement = `<a href="${longLink}" target="_blank" rel="noreferrer noopener">${metadata.title}</a>`
+            } else {
+              replacement = `<a href="${longLink}" target="_blank" rel="noreferrer noopener">${
+                metadata.title ?? longUrl.hostname + longUrl.pathname
+              }</a>`
             }
           }
           return {
@@ -286,12 +290,8 @@ async function buildTweetHTML(
 
   const tweetHTML = `<blockquote>${blockquote.trim()}</blockquote>`
 
-  const lastLink = links[links.length - 1]
   const mediaHTML = tweet.includes.media
-    ? buildMediaList(
-        tweet.includes.media,
-        lastLink?.isTwitterLink ? lastLink.longLink : '',
-      )
+    ? buildMediaList(tweet.includes.media, tweetURL)
     : ''
 
   const lastMetadataLink = links.reverse().find(l => l.metadata)
@@ -319,18 +319,14 @@ async function buildTweetHTML(
 
   const {like_count, reply_count, retweet_count, quote_count} =
     tweet.data.public_metrics
-  const totalRetweets = retweet_count + quote_count
+  const likeCount = formatNumber(like_count)
+  const replyCount = formatNumber(reply_count)
+  const totalRetweets = formatNumber(retweet_count + quote_count)
   const statsHTML = `
     <div class="tweet-stats">
-      <a href="${replyIntent}" class="tweet-reply" target="_blank" rel="noreferrer noopener">${repliesSVG}<span>${formatNumber(
-    reply_count,
-  )}</span></a>
-      <a href="${retweetIntent}" class="tweet-retweet" target="_blank" rel="noreferrer noopener">${retweetSVG}<span>${formatNumber(
-    totalRetweets,
-  )}</span></a>
-      <a href="${likeIntent}" class="tweet-like" target="_blank" rel="noreferrer noopener">${likesSVG}<span>${formatNumber(
-    like_count,
-  )}</span></a>
+      <a href="${replyIntent}" class="tweet-reply" target="_blank" rel="noreferrer noopener">${repliesSVG}<span>${replyCount}</span></a>
+      <a href="${retweetIntent}" class="tweet-retweet" target="_blank" rel="noreferrer noopener">${retweetSVG}<span>${totalRetweets}</span></a>
+      <a href="${likeIntent}" class="tweet-like" target="_blank" rel="noreferrer noopener">${likesSVG}<span>${likeCount}</span></a>
       <span />
     </div>
   `
