@@ -22,10 +22,10 @@ type LoaderData = {
 }
 
 export const loader: KCDLoader<{slug: string}> = async ({params, request}) => {
-  const page = await getMdxPage({
-    contentDir: 'workshops',
-    slug: params.slug,
-  })
+  const page = await getMdxPage(
+    {contentDir: 'workshops', slug: params.slug},
+    {request},
+  )
   const events = await getScheduledEvents()
   const workshop = events.find(
     ({metadata}) => metadata.workshopSlug === params.slug,

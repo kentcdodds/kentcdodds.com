@@ -12,10 +12,9 @@ import {ArticleCard} from '../../components/article-card'
 import {ArrowLink} from '../../components/arrow-button'
 import {FeaturedSection} from '../../components/sections/featured-section'
 import {Tag} from '../../components/tag'
-import {getBlogMdxListItems, refreshDirListForMdx} from '../../utils/mdx'
+import {getBlogMdxListItems} from '../../utils/mdx'
 import {filterPosts} from '../../utils/blog'
 import {useRequestInfo} from '../../utils/providers'
-import {shouldForceFresh} from '../../utils/redis.server'
 import {HeroSection} from '../../components/sections/hero-section'
 import {PlusIcon} from '../../components/icons/plus-icon'
 import {Button} from '../../components/button'
@@ -26,11 +25,7 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  if (await shouldForceFresh(request)) {
-    await refreshDirListForMdx('blog')
-  }
-
-  const posts = await getBlogMdxListItems()
+  const posts = await getBlogMdxListItems({request})
 
   const tags = new Set<string>()
   for (const post of posts) {

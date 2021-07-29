@@ -8,16 +8,29 @@ import {
 } from '../utils/github.server'
 import {AnchorOrLink, getErrorMessage} from '../utils/misc'
 import * as redis from './redis.server'
+import type {ForceFreshOrRequest} from './redis.server'
 
-async function getMdxPage({
-  contentDir,
-  slug,
-}: {
-  contentDir: string
-  slug: string
-}): Promise<MdxPage | null> {
-  const pageFiles = await downloadMdxFilesCached(contentDir, slug)
-  const page = await compileMdxCached(contentDir, slug, pageFiles)
+async function getMdxPage(
+  {
+    contentDir,
+    slug,
+  }: {
+    contentDir: string
+    slug: string
+  },
+  forceFreshOrRequest: ForceFreshOrRequest,
+): Promise<MdxPage | null> {
+  const pageFiles = await downloadMdxFilesCached(
+    contentDir,
+    slug,
+    forceFreshOrRequest,
+  )
+  const page = await compileMdxCached(
+    contentDir,
+    slug,
+    pageFiles,
+    forceFreshOrRequest,
+  )
   if (page) {
     return {...page, slug}
   } else {
@@ -25,13 +38,23 @@ async function getMdxPage({
   }
 }
 
-async function getMdxPagesInDirectory(contentDir: string) {
-  const dirList = await getMdxDirListCached(contentDir)
+async function getMdxPagesInDirectory(
+  contentDir: string,
+  forceFreshOrRequest: ForceFreshOrRequest,
+) {
+  const dirList = await getMdxDirListCached(contentDir, forceFreshOrRequest)
 
   // our octokit throttle plugin will make sure we don't hit the rate limit
   const pageDatas = await Promise.all(
     dirList.map(async ({slug}) => {
-      return {files: await downloadMdxFilesCached(contentDir, slug), slug}
+      return {
+        files: await downloadMdxFilesCached(
+          contentDir,
+          slug,
+          forceFreshOrRequest,
+        ),
+        slug,
+      }
     }),
   )
 
@@ -45,6 +68,7 @@ async function getMdxPagesInDirectory(contentDir: string) {
       contentDir,
       pageData.slug,
       pageData.files,
+      forceFreshOrRequest,
     )
     if (page) pages.push({slug: pageData.slug, ...page})
   }
@@ -53,14 +77,21 @@ async function getMdxPagesInDirectory(contentDir: string) {
 
 const getDirListKey = (contentDir: string) => `${contentDir}:dir-list`
 
-async function getMdxDirListCached(contentDir: string) {
+async function getMdxDirListCached(
+  contentDir: string,
+  {request, forceFresh}: ForceFreshOrRequest,
+) {
   const key = getDirListKey(contentDir)
   let dirList: Array<{name: string; slug: string}> | undefined
-  try {
-    const cached = await redis.get(key)
-    if (cached) dirList = JSON.parse(cached)
-  } catch (error: unknown) {
-    console.error(`error with cache at ${key}`, getErrorMessage(error))
+  forceFresh =
+    forceFresh ?? (request ? await redis.shouldForceFresh(request) : false)
+  if (!forceFresh) {
+    try {
+      const cached = await redis.get(key)
+      if (cached) dirList = JSON.parse(cached)
+    } catch (error: unknown) {
+      console.error(`error with cache at ${key}`, getErrorMessage(error))
+    }
   }
   const fullContentDirPath = `content/${contentDir}`
   if (!dirList) {
@@ -85,15 +116,20 @@ const getDownloadKey = (contentDir: string, slug: string) =>
 async function downloadMdxFilesCached(
   contentDir: string,
   slug: string,
+  {request, forceFresh}: ForceFreshOrRequest,
 ): Promise<Array<GitHubFile>> {
   const contentPath = `${contentDir}/${slug}`
   const key = getDownloadKey(contentDir, slug)
   let files
-  try {
-    const cached = await redis.get(key)
-    if (cached) files = JSON.parse(cached)
-  } catch (error: unknown) {
-    console.error(`error with cache at ${key}`, getErrorMessage(error))
+  forceFresh =
+    forceFresh ?? (request ? await redis.shouldForceFresh(request) : false)
+  if (!forceFresh) {
+    try {
+      const cached = await redis.get(key)
+      if (cached) files = JSON.parse(cached)
+    } catch (error: unknown) {
+      console.error(`error with cache at ${key}`, getErrorMessage(error))
+    }
   }
   if (!files) {
     files = await downloadMdxFileOrDirectory(contentPath)
@@ -113,14 +149,19 @@ async function compileMdxCached(
   contentDir: string,
   slug: string,
   files: Array<GitHubFile>,
+  {request, forceFresh}: ForceFreshOrRequest,
 ) {
   const key = getCompiledKey(contentDir, slug)
   let page
-  try {
-    const cached = await redis.get(key)
-    if (cached) page = JSON.parse(cached)
-  } catch (error: unknown) {
-    console.error(`error with cache at ${key}`, getErrorMessage(error))
+  forceFresh =
+    forceFresh ?? (request ? await redis.shouldForceFresh(request) : false)
+  if (!forceFresh) {
+    try {
+      const cached = await redis.get(key)
+      if (cached) page = JSON.parse(cached)
+    } catch (error: unknown) {
+      console.error(`error with cache at ${key}`, getErrorMessage(error))
+    }
   }
   if (!page) {
     page = await compileMdx<MdxPage['frontmatter']>(slug, files)
@@ -134,34 +175,8 @@ async function compileMdxCached(
   return {slug, ...page}
 }
 
-async function refreshDirListForMdx(contentDir: string) {
-  const dirListKey = getDirListKey(contentDir)
-  await redis.del(dirListKey)
-  await getMdxDirListCached(contentDir)
-}
-
-async function refreshCacheForMdx({
-  contentDir,
-  slug,
-}: {
-  contentDir: string
-  slug: string
-}) {
-  const downloadKey = getDownloadKey(contentDir, slug)
-  await redis.del(downloadKey)
-  const compiledKey = getCompiledKey(contentDir, slug)
-  await redis.del(compiledKey)
-
-  // now prime the cache again
-  await compileMdxCached(
-    contentDir,
-    slug,
-    await downloadMdxFilesCached(contentDir, slug),
-  )
-}
-
-async function getBlogMdxListItems() {
-  let pages = await getMdxPagesInDirectory('blog')
+async function getBlogMdxListItems(forceFreshOrRequest: ForceFreshOrRequest) {
+  let pages = await getMdxPagesInDirectory('blog', forceFreshOrRequest)
 
   pages = pages.sort((a, z) => {
     const aTime = new Date(a.frontmatter.date ?? '').getTime()
@@ -223,6 +238,4 @@ export {
   getBlogMdxListItems,
   mdxPageMeta,
   useMdxComponent,
-  refreshCacheForMdx,
-  refreshDirListForMdx,
 }

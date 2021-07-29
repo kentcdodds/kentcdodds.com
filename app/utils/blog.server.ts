@@ -19,7 +19,9 @@ async function getBlogRecommendations(
     exclude?: Array<string>
   } = {},
 ) {
-  const allPosts = await getBlogMdxListItems()
+  // if we passed the request here, any "fresh" request on a post would
+  // result in refreshing *all* blog posts which is probably not what we want.
+  const allPosts = await getBlogMdxListItems({forceFresh: false})
 
   if (limit === null) return shuffle(allPosts)
 

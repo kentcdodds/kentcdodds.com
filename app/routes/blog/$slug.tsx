@@ -4,12 +4,7 @@ import {Link, useParams} from 'react-router-dom'
 import type {Await, KCDLoader, MdxListItem, MdxPage} from 'types'
 import formatDate from 'date-fns/format'
 import {images} from '../../images'
-import {
-  getMdxPage,
-  mdxPageMeta,
-  useMdxComponent,
-  refreshCacheForMdx,
-} from '../../utils/mdx'
+import {getMdxPage, mdxPageMeta, useMdxComponent} from '../../utils/mdx'
 import {useOptionalUser} from '../../utils/providers'
 import {H2, H6, Paragraph} from '../../components/typography'
 import {Grid} from '../../components/grid'
@@ -19,9 +14,7 @@ import {
   getBlogReadRankings,
   getBlogRecommendations,
 } from '../../utils/blog.server'
-import {shouldForceFresh} from '../../utils/redis.server'
 import {FourOhFour} from '../../components/errors'
-import {getDomainUrl} from '../../utils/misc'
 import {externalLinks} from '../../external-links'
 import {TeamStats} from '../../components/team-stats'
 
@@ -32,16 +25,13 @@ type LoaderData = {
 }
 
 export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
-  const pageMeta = {
-    permalink: `${getDomainUrl(request)}/blog/${params.slug}`,
-    contentDir: 'blog',
-    slug: params.slug,
-  }
-  if (await shouldForceFresh(request)) {
-    await refreshCacheForMdx(pageMeta)
-  }
-
-  const page = await getMdxPage(pageMeta)
+  const page = await getMdxPage(
+    {
+      contentDir: 'blog',
+      slug: params.slug,
+    },
+    {request},
+  )
   const blogRecommendations = await getBlogRecommendations(request, {
     limit: 3,
     keywords: [

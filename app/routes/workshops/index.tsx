@@ -19,8 +19,8 @@ type LoaderData = {
   workshops: Array<MdxListItem>
 }
 
-export const loader: LoaderFunction = async () => {
-  const pages = await getMdxPagesInDirectory('workshops')
+export const loader: LoaderFunction = async ({request}) => {
+  const pages = await getMdxPagesInDirectory('workshops', {request})
 
   const data: LoaderData = {workshops: pages.map(mapFromMdxPageToMdxListItem)}
   return json(data)

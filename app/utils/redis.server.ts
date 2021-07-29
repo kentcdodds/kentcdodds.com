@@ -112,6 +112,10 @@ function del(key: string): Promise<string> {
   })
 }
 
+type ForceFreshOrRequest =
+  | {forceFresh?: never; request: Request}
+  | {forceFresh: boolean; request?: never}
+
 async function cachified<ReturnValue>({
   key,
   getFreshValue,
@@ -122,16 +126,7 @@ async function cachified<ReturnValue>({
   key: string
   getFreshValue: () => Promise<ReturnValue>
   checkValue?: (value: ReturnValue) => boolean
-} & (
-  | {
-      request?: never
-      forceFresh?: boolean
-    }
-  | {
-      forceFresh?: never
-      request?: Request
-    }
-)): Promise<ReturnValue> {
+} & ForceFreshOrRequest): Promise<ReturnValue> {
   forceFresh = forceFresh ?? (request ? await shouldForceFresh(request) : false)
   if (!forceFresh) {
     try {
@@ -172,3 +167,4 @@ async function shouldForceFresh(request: Request) {
 }
 
 export {get, set, del, cachified, shouldForceFresh}
+export type {ForceFreshOrRequest}

@@ -1,13 +1,7 @@
 import * as React from 'react'
 import {useRouteData, json} from 'remix'
 import type {MdxPage, KCDLoader, MdxListItem} from 'types'
-import {
-  getMdxPage,
-  mdxPageMeta,
-  useMdxComponent,
-  refreshCacheForMdx,
-} from '../utils/mdx'
-import {shouldForceFresh} from '../utils/redis.server'
+import {getMdxPage, mdxPageMeta, useMdxComponent} from '../utils/mdx'
 import {getBlogRecommendations} from '../utils/blog.server'
 import {FourOhFour} from '../components/errors'
 import {Grid} from '../components/grid'
@@ -20,14 +14,10 @@ type LoaderData = {
 }
 
 export const loader: KCDLoader<{slug: string}> = async ({params, request}) => {
-  const pageMeta = {
-    contentDir: 'pages',
-    slug: params.slug,
-  }
-  if (await shouldForceFresh(request)) {
-    await refreshCacheForMdx(pageMeta)
-  }
-  const page = await getMdxPage(pageMeta)
+  const page = await getMdxPage(
+    {contentDir: 'pages', slug: params.slug},
+    {request},
+  )
   const blogRecommendations = await getBlogRecommendations(request)
 
   const data: LoaderData = {page, blogRecommendations}
