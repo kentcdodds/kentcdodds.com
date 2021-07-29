@@ -233,7 +233,7 @@ function PodcastHome() {
           {data.seasons.map(season => (
             <TabPanel
               key={season.seasonNumber}
-              className="border-t border-gray-200 dark:border-gray-600"
+              className="border-t border-gray-200 dark:border-gray-600 focus:outline-none"
             >
               <ChatsEpisodeUIStateProvider value={{sortOrder}}>
                 <Outlet />
