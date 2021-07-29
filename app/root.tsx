@@ -181,14 +181,6 @@ function App() {
             __html: `window.ENV = ${JSON.stringify(data.ENV)};`,
           }}
         />
-        {process.env.NODE_ENV === 'production' ? (
-          <script
-            src="https://cdn.usefathom.com/script.js"
-            data-spa="auto"
-            data-site="HJUUDKMT"
-            defer
-          />
-        ) : null}
         {process.env.NODE_ENV === 'development' ? <LiveReload /> : null}
       </body>
     </html>
