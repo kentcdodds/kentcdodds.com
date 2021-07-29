@@ -277,7 +277,8 @@ pre {
   line-height: 1.2;
 }
 
-.prose .tweet-embed .tweet-author:hover .tweet-author-name {
+.prose .tweet-embed .tweet-author:hover .tweet-author-name,
+.prose .tweet-embed .tweet-author:focus .tweet-author-name {
   text-decoration: underline;
 }
 
