@@ -57,6 +57,34 @@ export const meta: MetaFunction = () => {
 
 export const links: LinksFunction = () => {
   return [
+    {
+      rel: 'preload',
+      as: 'font',
+      href: '/fonts/Matter-Medium.woff2',
+      type: 'font/woff2',
+      crossOrigin: 'anonymous',
+    },
+    {
+      rel: 'preload',
+      as: 'font',
+      href: '/fonts/Matter-Regular.woff2',
+      type: 'font/woff2',
+      crossOrigin: 'anonymous',
+    },
+    {
+      rel: 'preload',
+      as: 'font',
+      href: '/fonts/Matter-Medium.woff',
+      type: 'font/woff',
+      crossOrigin: 'anonymous',
+    },
+    {
+      rel: 'preload',
+      as: 'font',
+      href: '/fonts/Matter-Regular.woff',
+      type: 'font/woff',
+      crossOrigin: 'anonymous',
+    },
     {rel: 'icon', href: '/favicon.ico'},
     {rel: 'stylesheet', href: vendorStyles},
     {rel: 'stylesheet', href: tailwindStyles},
