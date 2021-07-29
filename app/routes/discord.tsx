@@ -36,15 +36,20 @@ function CategoryCardContent({title, description, number}: CategoryCardProps) {
 
   return (
     <>
-      <H5 as="div" className="w-full">
-        <AccordionButton className="relative w-full text-left">
-          <span className="absolute -left-16 top-0 flex text-lg lg:block">
+      <H5
+        as="div"
+        className="text-primary group-hover:text-inverse focus-within:text-inverse w-full transition"
+      >
+        <AccordionButton className="relative w-full text-left focus:outline-none">
+          <div className="absolute -bottom-12 -left-8 -right-8 -top-12 rounded-lg lg:-left-28 lg:-right-20" />
+
+          <span className="absolute -left-16 top-0 flex hidden text-lg lg:block">
             {number.toString().padStart(2, '0')}.
           </span>
 
           <span>{title}</span>
 
-          <span className="text-primary absolute right-0 top-1 lg:-right-8">
+          <span className="absolute right-0 top-1 lg:-right-8">
             <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
               <motion.path
                 stroke="currentColor"
@@ -74,7 +79,9 @@ function CategoryCardContent({title, description, number}: CategoryCardProps) {
           isExpanded ? {opacity: 1, height: 'auto'} : {opacity: 0, height: 0}
         }
       >
-        <Paragraph className="mt-4 lg:mt-12">{description}</Paragraph>
+        <Paragraph className="group-focus-within:text-secondary-inverse group-hover:text-secondary-inverse mt-4 lg:mt-12">
+          {description}
+        </Paragraph>
       </AccordionPanel>
     </>
   )
@@ -82,7 +89,7 @@ function CategoryCardContent({title, description, number}: CategoryCardProps) {
 
 function CategoryCard(props: CategoryCardProps) {
   return (
-    <AccordionItem className="bg-secondary flex flex-col col-span-full items-start px-8 py-12 w-full rounded-lg lg:col-span-6 lg:pl-28 lg:pr-20">
+    <AccordionItem className="bg-secondary hover:bg-inverse group focus-within:bg-inverse flex flex-col col-span-full items-start px-8 py-12 w-full rounded-lg transition lg:col-span-6 lg:pl-28 lg:pr-20">
       <CategoryCardContent {...props} />
     </AccordionItem>
   )

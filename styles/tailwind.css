@@ -61,4 +61,8 @@
   .text-inverse {
     @apply dark:text-black text-white;
   }
+
+  .text-secondary-inverse {
+    @apply text-blueGray-500 dark:text-gray-500;
+  }
 }
