@@ -149,15 +149,22 @@ async function getTweet(tweetId: string) {
   return tweetJson as TweetJsonResponse | TweetErrorJsonResponse
 }
 
+const playSvg = `<svg width="75" height="75" viewBox="0 0 75 75" xmlns="http://www.w3.org/2000/svg"><circle cx="37.4883" cy="37.8254" r="37" fill="white" /><path fillRule="evenodd" clipRule="evenodd" d="M35.2643 33.025L41.0017 36.9265C41.6519 37.369 41.6499 38.3118 40.9991 38.7518L35.2616 42.6276C34.5113 43.1349 33.4883 42.6077 33.4883 41.7143V33.9364C33.4883 33.0411 34.5146 32.5151 35.2643 33.025" /></svg>`
+
 function buildMediaList(medias: Array<Media>, link?: string) {
   const width = medias.length > 1 ? '50%' : '100%'
   const imgs = medias
     .map(media => {
       const src = media.preview_image_url ?? media.url
-      return `<img data-type="${media.type}" src="${src}" width="${width}" loading="lazy" alt="Tweet media" />`
+      const imgHTML = `<img src="${src}" width="${width}" loading="lazy" alt="Tweet media" />`
+      if (media.type === 'animated_gif' || media.type === 'video') {
+        return `<div class="tweet-media-with-play-button"><div class="tweet-media-play-button">${playSvg}</div>${imgHTML}</div>`
+      } else {
+        return imgHTML
+      }
     })
     .join('')
-  const grid = `<div class="tweet-media-container" data-count="${medias.length}">${imgs}</div>`
+  const grid = `<div class="tweet-media-container"><div class="tweet-media-grid" data-count="${medias.length}">${imgs}</div></div>`
   if (link) {
     return `<a href="${link}" target="_blank" rel="noreferrer noopener">${grid}</a>`
   } else {
@@ -363,7 +370,6 @@ async function getTweetEmbedHTML(urlString: string) {
       throw new Error('Oh no, tweet has no data.')
     }
     const html = await buildTweetHTML(tweet, true)
-    console.log(html)
     return html
   } catch (error: unknown) {
     console.error('Error processing tweet', {urlString, tweetId, error, tweet})

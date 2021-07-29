@@ -288,25 +288,30 @@ pre {
 }
 
 .prose .tweet-embed .tweet-media-container {
-  display: grid;
   width: 100%;
-  max-height: 366px;
   overflow: hidden;
   border-radius: 0.75rem;
   border: 1px solid var(--border-secondary);
   margin-bottom: 1rem;
+}
+.prose .tweet-embed .tweet-media-grid,
+.prose .tweet-embed .tweet-media-container {
+  max-height: 366px;
+}
+.prose .tweet-embed .tweet-media-grid {
+  display: grid;
   grid-template-columns: 1fr;
   grid-auto-rows: 1fr;
   grid-gap: 0.25rem;
 }
 
-.prose .tweet-embed .tweet-media-container[data-count='2'],
-.prose .tweet-embed .tweet-media-container[data-count='3'],
-.prose .tweet-embed .tweet-media-container[data-count='4'] {
+.prose .tweet-embed .tweet-media-grid[data-count='2'],
+.prose .tweet-embed .tweet-media-grid[data-count='3'],
+.prose .tweet-embed .tweet-media-grid[data-count='4'] {
   grid-template-columns: repeat(2, 1fr);
 }
 
-.prose .tweet-embed .tweet-media-container[data-count='3'] img:first-child {
+.prose .tweet-embed .tweet-media-grid[data-count='3'] img:first-child {
   grid-column: span 2 / span 2;
 }
 
@@ -318,12 +323,39 @@ pre {
   overflow: hidden;
 }
 
+.prose .tweet-embed .tweet-media-container .tweet-media-with-play-button {
+  position: relative;
+}
+.prose
+  .tweet-embed
+  .tweet-media-container
+  .tweet-media-with-play-button
+  .tweet-media-play-button {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+.prose
+  .tweet-embed
+  .tweet-media-container:hover
+  .tweet-media-with-play-button
+  .tweet-media-play-button {
+  opacity: 1;
+}
+
 .prose .tweet-embed .tweet-quoted {
   margin-bottom: 1rem;
 }
 
 .prose .tweet-embed .tweet-quoted .tweet-media-container {
   max-height: 160px;
+}
+.prose .tweet-embed .tweet-quoted .tweet-media-grid {
+  margin-top: -40px;
+  max-height: unset;
 }
 
 .prose .tweet-embed .tweet-quoted .tweet-embed {
