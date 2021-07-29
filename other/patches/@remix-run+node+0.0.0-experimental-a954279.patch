@@ -1,0 +1,33 @@
+diff --git a/node_modules/@remix-run/node/server.js b/node_modules/@remix-run/node/server.js
+index af7406e..a543a1b 100644
+--- a/node_modules/@remix-run/node/server.js
++++ b/node_modules/@remix-run/node/server.js
+@@ -58,7 +58,7 @@ async function handleDataRequest(request, loadContext, build, routes) {
+   try {
+     response = isActionRequest(request) ? await data.callRouteAction(build, routeMatch.route.id, clonedRequest, loadContext, routeMatch.params) : await data.loadRouteData(build, routeMatch.route.id, clonedRequest, loadContext, routeMatch.params);
+   } catch (error) {
+-    return responses.json(errors.serializeError(error), {
++    response = responses.json(errors.serializeError(error), {
+       status: 500,
+       headers: {
+         "X-Remix-Error": "unfortunately, yes"
+@@ -66,6 +66,19 @@ async function handleDataRequest(request, loadContext, build, routes) {
+     });
+   }
+ 
++  if (build.entry.module.handleDataRequest) {
++    try {
++      response = await build.entry.module.handleDataRequest(clonedRequest, response, loadContext, routeMatch.params);
++    } catch (error) {
++      return responses.json(errors.serializeError(error), {
++        status: 500,
++        headers: {
++          "X-Data-Request-Handler-Error": "Handle your errors, yo."
++        }
++      });
++    }
++  }
++
+   if (isRedirectResponse(response)) {
+     // We don't have any way to prevent a fetch request from following
+     // redirects. So we use the `X-Remix-Redirect` header to indicate the
