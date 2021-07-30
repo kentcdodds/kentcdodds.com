@@ -322,39 +322,41 @@ function Navbar() {
     : alexProfiles[team]
 
   return (
-    <nav className="text-primary flex items-center justify-between px-5vw py-9 lg:py-12">
-      <Link
-        to="/"
-        className="underlined block whitespace-nowrap text-2xl font-medium focus:outline-none transition"
-      >
-        <h1>Kent C. Dodds</h1>
-      </Link>
+    <div className="px-5vw py-9 lg:py-12">
+      <nav className="text-primary flex items-center justify-between mx-auto max-w-8xl">
+        <Link
+          to="/"
+          className="underlined block whitespace-nowrap text-2xl font-medium focus:outline-none transition"
+        >
+          <h1>Kent C. Dodds</h1>
+        </Link>
 
-      <ul className="hidden lg:flex">
-        {LINKS.map(link => (
-          <NavLink key={link.to} to={link.to}>
-            {link.name}
-          </NavLink>
-        ))}
-      </ul>
+        <ul className="hidden lg:flex">
+          {LINKS.map(link => (
+            <NavLink key={link.to} to={link.to}>
+              {link.name}
+            </NavLink>
+          ))}
+        </ul>
 
-      <div className="flex items-center justify-center">
-        <div className="block lg:hidden">
-          <MobileMenu />
+        <div className="flex items-center justify-center">
+          <div className="block lg:hidden">
+            <MobileMenu />
+          </div>
+          <div className="hidden lg:block">
+            <DarkModeToggle />
+          </div>
+
+          <ProfileButton
+            hasActiveMagicLink={requestInfo.session.hasActiveMagicLink}
+            imageUrl={avatar.src}
+            imageAlt={avatar.alt}
+            team={team}
+            user={user}
+          />
         </div>
-        <div className="hidden lg:block">
-          <DarkModeToggle />
-        </div>
-
-        <ProfileButton
-          hasActiveMagicLink={requestInfo.session.hasActiveMagicLink}
-          imageUrl={avatar.src}
-          imageAlt={avatar.alt}
-          team={team}
-          user={user}
-        />
-      </div>
-    </nav>
+      </nav>
+    </div>
   )
 }
 
