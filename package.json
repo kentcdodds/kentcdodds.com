@@ -116,6 +116,7 @@
     "remark-rehype": "^8.1.0",
     "remix": "0.0.0-experimental-ad159b2",
     "sort-by": "^1.2.0",
+    "spin-delay": "^1.1.0",
     "tailwindcss": "^2.2.7",
     "unified": "^9.2.1",
     "unist-util-visit": "2.0.3",

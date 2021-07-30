@@ -50,6 +50,10 @@
   outline: none;
 }
 
+body {
+  overflow-x: hidden;
+}
+
 * {
   -webkit-tap-highlight-color: transparent;
 }
