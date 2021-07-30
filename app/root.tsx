@@ -236,6 +236,20 @@ function App() {
       </head>
       <body className="dark:bg-gray-900 bg-white transition duration-500">
         <PageLoadingMessage />
+        {ENV.NODE_ENV === 'development' ? null : (
+          <NotificationMessage autoClose={false}>
+            <span role="img" aria-label="wave">
+              👋
+            </span>{' '}
+            Welcome to kent.dev. This site is{' '}
+            <strong>currently under construction</strong> and when it&apos;s
+            finished it will be hosted at kentcdodds.com. Until then, feel free
+            to poke around! All the source code is available at{' '}
+            <a href="https://github.com/kentcdodds/remix-kentcdodds">
+              github.com/kentcdodds/remix-kentcdodds
+            </a>
+          </NotificationMessage>
+        )}
         <Navbar />
         <Outlet />
         <Spacer size="medium" />
