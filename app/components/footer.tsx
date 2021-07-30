@@ -2,6 +2,7 @@ import * as React from 'react'
 import {Form} from 'remix'
 import {externalLinks} from '../external-links'
 import {useOptionalUser, useOptionalUserInfo} from '../utils/providers'
+import {AnchorOrLink} from '../utils/misc'
 import {H4, H6, Paragraph} from './typography'
 import {Grid} from './grid'
 import {ArrowButton} from './arrow-button'
@@ -145,12 +146,12 @@ function AboutSection() {
 function FooterLink({name, href}: FooterLinkProps) {
   return (
     <li className="py-1">
-      <a
+      <AnchorOrLink
         href={href}
         className="text-secondary hover:text-primary focus:text-primary underlined inline-block whitespace-nowrap text-lg focus:outline-none"
       >
         {name}
-      </a>
+      </AnchorOrLink>
     </li>
   )
 }

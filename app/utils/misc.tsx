@@ -48,7 +48,7 @@ type AnchorProps = React.DetailedHTMLProps<
 
 function AnchorOrLink(props: AnchorProps) {
   const {href = '', ...rest} = props
-  if (href.startsWith('http')) {
+  if (href.startsWith('http') || href.startsWith('#')) {
     // eslint-disable-next-line jsx-a11y/anchor-has-content
     return <a {...props} />
   } else {

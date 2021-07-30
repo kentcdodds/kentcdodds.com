@@ -4,6 +4,7 @@ import clsx from 'clsx'
 import type {Team} from '@prisma/client'
 import {useOptionalUserInfo, useTeam} from '../utils/providers'
 import {alexProfiles} from '../images'
+import {Link} from 'remix'
 
 const barColors: Record<Team, string> = {
   RED: 'bg-team-red',
@@ -141,12 +142,12 @@ function TeamStats({
           },
         )}
       >
-        <a
+        <Link
           className="text-secondary hover:text-primary underlined"
-          href="{/* TODO: add correct url */}"
+          to="/teams#read-rankings"
         >
-          what's this?
-        </a>
+          what&apos;s this?
+        </Link>
       </div>
       <ul
         className={clsx(

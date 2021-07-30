@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import * as React from 'react'
-import {Link, LinkProps} from 'react-router-dom'
+import {AnchorOrLink} from '../utils/misc'
 
 interface ButtonProps {
   variant?: 'primary' | 'secondary'
@@ -68,33 +68,23 @@ function Button({
 
 const ButtonLink = React.forwardRef<
   HTMLAnchorElement,
-  ButtonProps & Pick<LinkProps, 'to' | 'className' | 'onClick'>
+  ButtonProps & {to: string} & Pick<
+      JSX.IntrinsicElements['a'],
+      'onClick' | 'className'
+    >
 >(function ButtonLink(
   {children, variant = 'primary', className, to, onClick},
   ref,
 ) {
-  if (typeof to === 'string' && (to.startsWith('http') || to.startsWith('#'))) {
-    return (
-      <a
-        ref={ref}
-        href={to}
-        onClick={onClick}
-        className={getClassName({className})}
-      >
-        <ButtonInner variant={variant}>{children}</ButtonInner>
-      </a>
-    )
-  }
-
   return (
-    <Link
+    <AnchorOrLink
       ref={ref}
-      to={to}
+      href={to}
       onClick={onClick}
       className={getClassName({className})}
     >
       <ButtonInner variant={variant}>{children}</ButtonInner>
-    </Link>
+    </AnchorOrLink>
   )
 })
 
