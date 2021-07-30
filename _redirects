@@ -3,6 +3,8 @@
 # Basically, you should be able to use params as documented in path-to-regexp on both the from and to side
 # These will also all apply to every HTTP method.
 
+/photo                                                                https://res.cloudinary.com/kentcdodds-com/image/upload/v1625699252/kent/profile
+
 
 # old podcast URLs:
 # TODO: add a bunch of redirects for each old episode. Too bad we didn't encode the episode number in the old URL scheme
