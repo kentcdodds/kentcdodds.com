@@ -8,6 +8,7 @@ import {PlusIcon} from './icons/plus-icon'
 function NotificationMessage({
   queryStringKey,
   visibleMs = 8000,
+  visible,
   autoClose,
   children,
   position = 'bottom-right',
@@ -15,12 +16,14 @@ function NotificationMessage({
   queryStringKey?: string
   children?: React.ReactNode | React.ReactNode[]
   position?: 'bottom-right' | 'top-center'
+  // make the visibility controlled
+  visible?: boolean
 } & (
   | {autoClose: false; visibleMs?: never}
   | {visibleMs?: number; autoClose?: never}
 )) {
-  // show the message a second after the page has loaded
-  const delay = 1
+  // how long to wait before the message is shown, after mount
+  const delay = typeof visible === 'undefined' ? 1 : 0
   const {searchParams} = useRequestInfo()
   const params = new URLSearchParams(searchParams)
   const [isVisible, setIsVisible] = useState(
@@ -42,14 +45,15 @@ function NotificationMessage({
   }, [queryStringKey, delay, autoClose, children, visibleMs])
 
   const initialY = position.includes('bottom') ? 50 : -50
+  const show = typeof visible === 'boolean' ? visible : isVisible
 
   return (
     <AnimatePresence>
-      {isVisible ? (
+      {show ? (
         <motion.div
-          initial={{y: initialY, opacity: 0, scale: 0.85}}
-          animate={{y: 0, opacity: 1, scale: 1, transition: {delay}}}
-          exit={{y: initialY, opacity: 0, scale: 0.85}}
+          initial={{y: initialY, opacity: 0}}
+          animate={{y: 0, opacity: 1, transition: {delay}}}
+          exit={{y: initialY, opacity: 0}}
           transition={{ease: 'easeInOut', duration: 0.3}}
           className={clsx(
             'fixed z-50 left-8 right-8 flex pointer-events-none',
@@ -60,13 +64,15 @@ function NotificationMessage({
           )}
         >
           <div className="bg-inverse text-inverse relative p-8 pr-14 max-w-xl rounded-lg shadow-md pointer-events-auto">
-            <button
-              aria-label="remove message"
-              onClick={() => setIsVisible(false)}
-              className="text-secondary hover:text-inverse focus:text-inverse absolute right-4 top-8 transform rotate-45"
-            >
-              <PlusIcon />
-            </button>
+            {typeof visible === 'undefined' ? (
+              <button
+                aria-label="remove message"
+                onClick={() => setIsVisible(false)}
+                className="text-secondary hover:text-inverse focus:text-inverse absolute right-4 top-8 transform rotate-45"
+              >
+                <PlusIcon />
+              </button>
+            ) : null}
             {message}
           </div>
         </motion.div>

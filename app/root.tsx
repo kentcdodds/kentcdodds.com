@@ -8,6 +8,7 @@ import {
   json,
   useRouteData,
   useMatches,
+  usePendingLocation,
 } from 'remix'
 import type {LinksFunction, MetaFunction, Session} from 'remix'
 import {Outlet} from 'react-router-dom'
@@ -38,6 +39,10 @@ import {validateMagicLink} from './utils/prisma.server'
 import {Navbar} from './components/navbar'
 import {Spacer} from './components/spacer'
 import {Footer} from './components/footer'
+import {TeamCircle} from './components/team-circle'
+import {NotificationMessage} from './components/notification-message'
+import {AnimatePresence, motion} from 'framer-motion'
+import {useSpinDelay} from 'spin-delay'
 
 export const meta: MetaFunction = () => {
   return {
@@ -135,6 +140,73 @@ export const loader: LoaderFunction = async ({request}) => {
   return json(data)
 }
 
+const LOADER_WORDS = [
+  'loading',
+  'checking cdn',
+  'checking cache',
+  'fetching from db',
+  'compiling mdx',
+  'updating cache',
+  'transfer',
+]
+
+function PageLoadingMessage() {
+  const pending = usePendingLocation()
+  const [words, setWords] = React.useState(LOADER_WORDS)
+  const [pendingPath, setPendingPath] = React.useState('')
+  const showLoader = useSpinDelay(Boolean(pending), {
+    delay: 300,
+    minDuration: 1000,
+  })
+
+  React.useEffect(() => {
+    setWords(LOADER_WORDS)
+
+    const interval = setInterval(() => {
+      setWords(([first, ...rest]) => [...rest, first] as Array<string>)
+    }, 2000)
+
+    return () => clearInterval(interval)
+  }, [pendingPath])
+
+  React.useEffect(() => {
+    if (!pending) return
+    setPendingPath(pending.pathname)
+  }, [pending])
+
+  const action = words[0]
+
+  return (
+    <NotificationMessage position="bottom-right" visible={showLoader}>
+      <div className="flex items-center w-64">
+        <motion.div
+          transition={{repeat: Infinity, duration: 2, ease: 'linear'}}
+          animate={{rotate: 360}}
+        >
+          <TeamCircle size={48} team="UNKNOWN" />
+        </motion.div>
+        <div className="inline-grid ml-4">
+          <AnimatePresence>
+            <div className="flex col-start-1 row-start-1 overflow-hidden">
+              <motion.span
+                key={action}
+                initial={{y: 15, opacity: 0}}
+                animate={{y: 0, opacity: 1}}
+                exit={{y: -15, opacity: 0}}
+                transition={{duration: 0.25}}
+                className="flex-none"
+              >
+                {action}
+              </motion.span>
+            </div>
+          </AnimatePresence>
+          <span className="text-secondary truncate">path: {pendingPath}</span>
+        </div>
+      </div>
+    </NotificationMessage>
+  )
+}
+
 function App() {
   const matches = useMatches()
   const metas = matches
@@ -163,6 +235,7 @@ function App() {
         />
       </head>
       <body className="dark:bg-gray-900 bg-white transition duration-500">
+        <PageLoadingMessage />
         <Navbar />
         <Outlet />
         <Spacer size="medium" />
