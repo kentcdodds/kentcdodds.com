@@ -1,6 +1,6 @@
 import type {Team, Request, MdxListItem} from 'types'
 import {subYears, subMonths} from 'date-fns'
-import {shuffle, sortBy} from 'lodash'
+import {shuffle} from 'lodash'
 import {getBlogMdxListItems} from './mdx'
 import {prisma} from './prisma.server'
 import {teams, typedBoolean} from './misc'
@@ -37,7 +37,7 @@ async function getBlogRecommendations(
   let exclude = Array.from(
     new Set(
       ...externalExclude,
-      readPosts.map(({postSlug}) => postSlug),
+      readPosts.map(p => p.postSlug),
     ),
   )
   const posts = allPosts.filter(post => !exclude.includes(post.slug))
@@ -91,17 +91,19 @@ async function getMostPopularPostSlugs({
 }) {
   const result = await prisma.postRead.groupBy({
     by: ['postSlug'],
-    orderBy: {postSlug: 'asc'},
     _count: true,
-    // figure out if it's possible to orderBy the count so we can use "take".
-    // as it is, we have to get everything, then sort it, then limit it... in JS
-    // take: limit,
+    orderBy: {
+      _count: {
+        postSlug: 'desc',
+      },
+    },
+    where: {
+      postSlug: {notIn: exclude},
+    },
+    take: limit,
   })
 
-  const filtered = result.filter(({postSlug}) => !exclude.includes(postSlug))
-  const sorted = sortBy(filtered, i => -i._count)
-
-  return sorted.slice(0, limit).map(({postSlug}) => postSlug)
+  return result.map(p => p.postSlug)
 }
 
 async function getBlogReadRankings(slug: string) {
