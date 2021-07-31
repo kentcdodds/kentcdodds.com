@@ -245,7 +245,10 @@ function App() {
             <strong>currently under construction</strong> and when it&apos;s
             finished it will be hosted at kentcdodds.com. Until then, feel free
             to poke around! All the source code is available at{' '}
-            <a href="https://github.com/kentcdodds/remix-kentcdodds">
+            <a
+              className="underline"
+              href="https://github.com/kentcdodds/remix-kentcdodds"
+            >
               github.com/kentcdodds/remix-kentcdodds
             </a>
           </NotificationMessage>
