@@ -24,7 +24,7 @@ function Grid({
       className={clsx('relative', {
         'mx-10vw': !nested,
         'w-full': nested,
-        'py-24 lg:pb-40 lg:pt-36': featured,
+        'py-10 md:py-24 lg:pb-40 lg:pt-36': featured,
       })}
     >
       {featured ? (
