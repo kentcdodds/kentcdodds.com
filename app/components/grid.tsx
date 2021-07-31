@@ -28,7 +28,9 @@ function Grid({
       })}
     >
       {featured ? (
-        <div className="bg-secondary absolute inset-0 -mx-5vw rounded-lg" />
+        <div className="absolute inset-0 -mx-5vw">
+          <div className="bg-secondary mx-auto w-full max-w-8xl h-full rounded-lg" />
+        </div>
       ) : null}
 
       <div
