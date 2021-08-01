@@ -72,7 +72,7 @@ function NotificationMessage({
             <div className="bg-inverse text-inverse relative p-8 pr-14 max-w-xl rounded-lg shadow-md pointer-events-auto">
               {typeof visible === 'undefined' ? (
                 <button
-                  aria-label="remove message"
+                  aria-label="dismiss message"
                   onClick={() => setIsVisible(false)}
                   className="text-secondary hover:text-inverse focus:text-inverse absolute right-4 top-8 transform rotate-45"
                 >
