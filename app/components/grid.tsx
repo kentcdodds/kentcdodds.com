@@ -24,11 +24,13 @@ function Grid({
       className={clsx('relative', {
         'mx-10vw': !nested,
         'w-full': nested,
-        'py-24 lg:pb-40 lg:pt-36': featured,
+        'py-10 md:py-24 lg:pb-40 lg:pt-36': featured,
       })}
     >
       {featured ? (
-        <div className="bg-secondary absolute inset-0 -mx-5vw rounded-lg" />
+        <div className="absolute inset-0 -mx-5vw">
+          <div className="bg-secondary mx-auto w-full max-w-8xl h-full rounded-lg" />
+        </div>
       ) : null}
 
       <div

@@ -56,24 +56,31 @@ function NotificationMessage({
           exit={{y: initialY, opacity: 0}}
           transition={{ease: 'easeInOut', duration: 0.3}}
           className={clsx(
-            'fixed z-50 left-8 right-8 flex pointer-events-none',
+            'fixed z-50 left-0 right-0 px-5vw pointer-events-none',
             {
-              'bottom-8 justify-end': position === 'bottom-right',
-              'top-8 justify-center': position === 'top-center',
+              'bottom-8': position === 'bottom-right',
+              'top-8': position === 'top-center',
             },
           )}
         >
-          <div className="bg-inverse text-inverse relative p-8 pr-14 max-w-xl rounded-lg shadow-md pointer-events-auto">
-            {typeof visible === 'undefined' ? (
-              <button
-                aria-label="remove message"
-                onClick={() => setIsVisible(false)}
-                className="text-secondary hover:text-inverse focus:text-inverse absolute right-4 top-8 transform rotate-45"
-              >
-                <PlusIcon />
-              </button>
-            ) : null}
-            {message}
+          <div
+            className={clsx('flex mx-auto w-full max-w-8xl', {
+              'justify-end': position === 'bottom-right',
+              'justify-center': position === 'top-center',
+            })}
+          >
+            <div className="bg-inverse text-inverse relative p-8 pr-14 max-w-xl rounded-lg shadow-md pointer-events-auto">
+              {typeof visible === 'undefined' ? (
+                <button
+                  aria-label="dismiss message"
+                  onClick={() => setIsVisible(false)}
+                  className="text-secondary hover:text-inverse focus:text-inverse absolute right-4 top-8 transform rotate-45"
+                >
+                  <PlusIcon />
+                </button>
+              ) : null}
+              {message}
+            </div>
           </div>
         </motion.div>
       ) : null}
