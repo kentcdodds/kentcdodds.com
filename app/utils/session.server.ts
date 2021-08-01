@@ -22,7 +22,7 @@ if (process.env.SESSION_SECRET) {
 
 const rootStorage = createCookieSessionStorage({
   cookie: {
-    name: '__root_session',
+    name: 'KCD_root_session',
     secrets: [rootSessionSecret],
     sameSite: 'lax',
     path: '/',

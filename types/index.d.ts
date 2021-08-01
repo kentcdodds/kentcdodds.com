@@ -3,16 +3,6 @@ import type {Request, Response} from 'node-fetch'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import type {User, Call, Session, Team, Role} from '@prisma/client'
 
-declare global {
-  interface Window {
-    twttr?: {
-      widgets: {
-        load: (node?: Element) => Promise<void>
-      }
-    }
-  }
-}
-
 type NonNullProperties<Type> = {
   [Key in keyof Type]-?: Exclude<Type[Key], null | undefined>
 }

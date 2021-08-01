@@ -58,6 +58,7 @@ function ThemeProvider({
     void fetch(`/_action/set-theme?${searchParams}`, {
       method: 'POST',
       body: JSON.stringify({theme}),
+      headers: {'Content-Type': 'application/json'},
     })
   }, [theme])
 
@@ -204,13 +205,10 @@ function Themed({
   }
 }
 
-const sessionKey = 'theme'
-
 export {
   handleDarkAndLightModeEls,
   ThemeProvider,
   useTheme,
-  sessionKey,
   themes,
   Theme,
   Themed,

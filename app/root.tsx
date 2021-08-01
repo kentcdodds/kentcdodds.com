@@ -22,9 +22,9 @@ import proseStyles from './styles/prose.css'
 import {
   useTheme,
   ThemeProvider,
-  sessionKey,
   NonFlashOfWrongThemeEls,
 } from './utils/theme-provider'
+import {getThemeSession, getTheme} from './utils/theme.server'
 import {getUser, rootStorage, sessionKeys} from './utils/session.server'
 import {getDomainUrl, typedBoolean} from './utils/misc'
 import {
@@ -104,7 +104,7 @@ type LoaderData = {
   requestInfo: RequestInfo
 }
 
-async function getSessionInfo(session: Session) {
+async function getSessionInfo(session: Session, themeSession: Session) {
   const magicLink = session.get(sessionKeys.magicLink)
   let hasActiveMagicLink = false
   if (typeof magicLink === 'string') {
@@ -118,7 +118,7 @@ async function getSessionInfo(session: Session) {
   return {
     email: session.get(sessionKeys.email),
     hasActiveMagicLink,
-    theme: session.get(sessionKey),
+    theme: getTheme(themeSession),
   }
 }
 
@@ -126,6 +126,7 @@ export const loader: LoaderFunction = async ({request}) => {
   const user = await getUser(request)
 
   const session = await rootStorage.getSession(request.headers.get('Cookie'))
+  const themeSession = await getThemeSession(request)
 
   const data: LoaderData = {
     user,
@@ -134,7 +135,7 @@ export const loader: LoaderFunction = async ({request}) => {
     requestInfo: {
       origin: getDomainUrl(request),
       searchParams: new URL(request.url).searchParams.toString(),
-      session: await getSessionInfo(session),
+      session: await getSessionInfo(session, themeSession),
     },
   }
 
