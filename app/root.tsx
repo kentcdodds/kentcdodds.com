@@ -12,6 +12,8 @@ import {
 } from 'remix'
 import type {LinksFunction, MetaFunction, Session} from 'remix'
 import {Outlet} from 'react-router-dom'
+import {AnimatePresence, motion} from 'framer-motion'
+import {useSpinDelay} from 'spin-delay'
 import type {Await, KCDHandle, User} from 'types'
 import tailwindStyles from './styles/tailwind.css'
 import vendorStyles from './styles/vendors.css'
@@ -36,13 +38,12 @@ import {
 import {getEnv} from './utils/env.server'
 import {getUserInfo} from './utils/user-info.server'
 import {validateMagicLink} from './utils/prisma.server'
+import {useScrollRestoration} from './utils/scroll'
 import {Navbar} from './components/navbar'
 import {Spacer} from './components/spacer'
 import {Footer} from './components/footer'
 import {TeamCircle} from './components/team-circle'
 import {NotificationMessage} from './components/notification-message'
-import {AnimatePresence, motion} from 'framer-motion'
-import {useSpinDelay} from 'spin-delay'
 
 export const meta: MetaFunction = () => {
   return {
@@ -212,6 +213,10 @@ function App() {
   const metas = matches
     .flatMap(({handle}) => (handle as KCDHandle | undefined)?.metas)
     .filter(typedBoolean)
+  const shouldManageScroll = matches.every(
+    ({handle}) => (handle as KCDHandle | undefined)?.scroll !== false,
+  )
+  useScrollRestoration(shouldManageScroll)
 
   const data = useRouteData<LoaderData>()
   const [team] = useTeam()

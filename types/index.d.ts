@@ -134,6 +134,7 @@ type CallKentEpisode = {
 
 type KCDHandle = {
   metas?: Array<JSX.IntrinsicElements['meta']>
+  scroll?: false
 }
 
 type KCDLoader<
