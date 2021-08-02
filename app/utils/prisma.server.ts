@@ -243,6 +243,8 @@ export {
   prisma,
   getMagicLink,
   validateMagicLink,
+  linkExpirationTime,
+  sessionExpirationTime,
   createSession,
   getUserFromSessionId,
   getUserByEmail,

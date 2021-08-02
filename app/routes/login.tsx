@@ -1,73 +1,81 @@
 import * as React from 'react'
-import type {ActionFunction, LoaderFunction} from 'remix'
-import {Form, useRouteData, json, redirect} from 'remix'
-import {getDomainUrl} from '../utils/misc'
-import {
-  sendToken,
-  getUser,
-  rootStorage,
-  signOutSession,
-  sessionKeys,
-} from '../utils/session.server'
+import type {ActionFunction, LoaderFunction, ResponseInit} from 'remix'
+import {Form, useLoaderData, json, redirect} from 'remix'
+import {getDomainUrl, getErrorMessage} from '../utils/misc'
+import {sendToken, getUser} from '../utils/session.server'
+import {getLoginInfoSession} from '../utils/login.server'
 import {images} from '../images'
 import {Paragraph} from '../components/typography'
 import {Button} from '../components/button'
 import {Input, InputError, Label} from '../components/form-elements'
 import {HeroSection} from '../components/sections/hero-section'
 
+type LoaderData = {
+  email?: string
+  error?: string
+  message?: string
+}
+
 export const loader: LoaderFunction = async ({request}) => {
   const user = await getUser(request)
   if (user) return redirect('/me')
 
-  const session = await rootStorage.getSession(request.headers.get('Cookie'))
-  await signOutSession(session)
+  const loginSession = await getLoginInfoSession(request)
 
-  return json(
-    {
-      error: session.get('error'),
-      message: session.get('message'),
-    },
-    {headers: {'Set-Cookie': await rootStorage.commitSession(session)}},
-  )
+  const data: LoaderData = {
+    email: loginSession.getEmail(),
+    message: loginSession.getMessage(),
+    error: loginSession.getError(),
+  }
+  const responseInit: ResponseInit = {}
+
+  if (Object.values(data).some(Boolean)) {
+    // no reason to set the cookie if we don't have values in the first place
+    responseInit.headers = {'Set-Cookie': await loginSession.commit()}
+  }
+
+  return json(data, responseInit)
 }
 
 const EMAIL_SENT_MESSAGE = 'Email sent.'
 
 export const action: ActionFunction = async ({request}) => {
   const params = new URLSearchParams(await request.text())
-  const session = await rootStorage.getSession(request.headers.get('Cookie'))
+  const loginSession = await getLoginInfoSession(request)
+
   const emailAddress = params.get('email')
+  if (emailAddress) loginSession.setEmail(emailAddress)
+
   if (!emailAddress?.match(/.+@.+/)) {
-    session.flash('error', 'A valid email is required')
-    const cookie = await rootStorage.commitSession(session)
-    return redirect(`/login`, {headers: {'Set-Cookie': cookie}})
+    loginSession.flashError('A valid email is required')
+    return redirect(`/login`, {
+      status: 400,
+      headers: {'Set-Cookie': await loginSession.commit()},
+    })
   }
 
   try {
     const domainUrl = getDomainUrl(request)
     await sendToken({emailAddress, domainUrl})
-    session.flash('message', EMAIL_SENT_MESSAGE)
-    session.set(sessionKeys.email, emailAddress)
-    const cookie = await rootStorage.commitSession(session)
-    return redirect(`/login`, {headers: {'Set-Cookie': cookie}})
+    loginSession.flashMessage(EMAIL_SENT_MESSAGE)
+    return redirect(`/login`, {
+      headers: {'Set-Cookie': await loginSession.commit()},
+    })
   } catch (e: unknown) {
-    let message = 'Unknown error'
-    if (e instanceof Error) {
-      message = e.message
-    }
-    session.flash('error', message)
-    const cookie = await rootStorage.commitSession(session)
-
-    return redirect(`/login`, {headers: {'Set-Cookie': cookie}})
+    loginSession.flashError(getErrorMessage(e))
+    return redirect(`/login`, {
+      status: 400,
+      headers: {'Set-Cookie': await loginSession.commit()},
+    })
   }
 }
 
 function Login() {
-  const data = useRouteData()
+  const data = useLoaderData<LoaderData>()
   const emailSent = data.message === EMAIL_SENT_MESSAGE
 
   const [formValues, setFormValues] = React.useState({
-    email: '',
+    email: data.email ?? '',
   })
 
   const formIsValid = formValues.email.match(/.+@.+/)
@@ -117,7 +125,7 @@ function Login() {
                 name="email"
                 type="email"
                 autoComplete="email"
-                defaultValue={data.email}
+                defaultValue={formValues.email}
                 required
                 placeholder="Email address"
               />

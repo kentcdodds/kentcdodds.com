@@ -1,42 +1,33 @@
 import type {LoaderFunction} from 'remix'
-import {redirect} from 'remix'
+import {redirect, Headers} from 'remix'
 import * as React from 'react'
-import {rootStorage, sessionKeys, signInSession} from '../utils/session.server'
-import {
-  createSession,
-  getUserByEmail,
-  validateMagicLink,
-} from '../utils/prisma.server'
+import {getLoginInfoSession} from '../utils/login.server'
+import {getUserSessionCookieFromMagicLink} from '../utils/session.server'
 
 export const loader: LoaderFunction = async ({request}) => {
-  const session = await rootStorage.getSession(request.headers.get('Cookie'))
-
+  const loginInfoSession = await getLoginInfoSession(request)
   try {
-    const email = await validateMagicLink(request.url)
-
-    const user = await getUserByEmail(email)
-    if (user) {
-      const userSession = await createSession({userId: user.id})
-      await signInSession(session, userSession.id)
-
-      const cookie = await rootStorage.commitSession(session, {
-        maxAge: 604_800,
-      })
-      return redirect('/me', {
-        headers: {'Set-Cookie': cookie},
-      })
+    const sessionIdCookie = await getUserSessionCookieFromMagicLink(request)
+    if (sessionIdCookie) {
+      const destroyCookie = await loginInfoSession.destroy()
+      const headers = new Headers()
+      headers.append('Set-Cookie', destroyCookie)
+      headers.append('Set-Cookie', sessionIdCookie)
+      return redirect('/me', {headers})
     } else {
-      session.set(sessionKeys.magicLink, request.url)
+      loginInfoSession.setMagicLink(request.url)
       return redirect('/signup', {
-        headers: {'Set-Cookie': await rootStorage.commitSession(session)},
+        headers: {'Set-Cookie': await loginInfoSession.commit()},
       })
     }
   } catch (error: unknown) {
     console.error(error)
-
-    session.flash('error', 'Sign in link invalid. Please request a new one.')
+    loginInfoSession.clean()
+    loginInfoSession.flashError(
+      'Sign in link invalid. Please request a new one.',
+    )
     return redirect('/login', {
-      headers: {'Set-Cookie': await rootStorage.commitSession(session)},
+      headers: {'Set-Cookie': await loginInfoSession.commit()},
     })
   }
 }

@@ -12,11 +12,11 @@ import {
 } from '../utils/misc'
 import {useRequestInfo, useUser, useUserInfo} from '../utils/providers'
 import {getMagicLink, updateUser} from '../utils/prisma.server'
-import {requireUser, rootStorage, signOutSession} from '../utils/session.server'
+import {requireUser} from '../utils/session.server'
 import {H2, H6} from '../components/typography'
 import {Grid} from '../components/grid'
 import {Field, InputError, Label} from '../components/form-elements'
-import {Button} from '../components/button'
+import {Button, ButtonLink} from '../components/button'
 import {CheckCircledIcon} from '../components/icons/check-circled-icon'
 import {LogoutIcon} from '../components/icons/logout-icon'
 import {TEAM_MAP} from '../utils/onboarding'
@@ -66,16 +66,6 @@ export const action: ActionFunction = async ({request}) => {
     const actionId = form.get('actionId')
 
     try {
-      if (actionId === actionIds.logout) {
-        const session = await rootStorage.getSession(
-          request.headers.get('Cookie'),
-        )
-        await signOutSession(session)
-
-        return redirect('/', {
-          headers: {'Set-Cookie': await rootStorage.commitSession(session)},
-        })
-      }
       if (actionId === actionIds.changeDetails) {
         return await handleFormSubmission<ActionData>(
           form,
@@ -128,13 +118,10 @@ function YouScreen() {
                   Edit as you wish.
                 </H2>
               </div>
-              <Form action="/me" method="post">
-                <input type="hidden" name="actionId" value={actionIds.logout} />
-                <Button type="submit" variant="secondary">
-                  <LogoutIcon />
-                  <H6 as="span">logout</H6>
-                </Button>
-              </Form>
+              <ButtonLink to="/logout" variant="secondary">
+                <LogoutIcon />
+                <H6 as="span">logout</H6>
+              </ButtonLink>
             </div>
           </div>
 

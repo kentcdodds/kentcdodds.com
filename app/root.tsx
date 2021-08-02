@@ -10,7 +10,7 @@ import {
   useMatches,
   usePendingLocation,
 } from 'remix'
-import type {LinksFunction, MetaFunction, Session} from 'remix'
+import type {LinksFunction, MetaFunction} from 'remix'
 import {Outlet} from 'react-router-dom'
 import {AnimatePresence, motion} from 'framer-motion'
 import {useSpinDelay} from 'spin-delay'
@@ -24,8 +24,9 @@ import {
   ThemeProvider,
   NonFlashOfWrongThemeEls,
 } from './utils/theme-provider'
-import {getThemeSession, getTheme} from './utils/theme.server'
-import {getUser, rootStorage, sessionKeys} from './utils/session.server'
+import {getThemeSession} from './utils/theme.server'
+import {getUser} from './utils/session.server'
+import {getLoginInfoSession} from './utils/login.server'
 import {getDomainUrl, typedBoolean} from './utils/misc'
 import {
   RequestInfo,
@@ -104,29 +105,27 @@ type LoaderData = {
   requestInfo: RequestInfo
 }
 
-async function getSessionInfo(session: Session, themeSession: Session) {
-  const magicLink = session.get(sessionKeys.magicLink)
+export const loader: LoaderFunction = async ({request}) => {
+  const user = await getUser(request)
+
+  const themeSession = await getThemeSession(request)
+  const {getMagicLink, getEmail} = await getLoginInfoSession(request)
+
+  const magicLink = getMagicLink()
   let hasActiveMagicLink = false
   if (typeof magicLink === 'string') {
     try {
       await validateMagicLink(magicLink)
       hasActiveMagicLink = true
     } catch {
-      // ignore the error
+      // TODO: should we update the cookie to remove the magic link here?
+      // trouble is we could get into a race condition where the root loader
+      // says we need to commit a cookie, but then another loader running in
+      // parallel says we need to commit a cookie as well and whichever finishes
+      // last wins.
+      // so for now, we'll just ignore the error
     }
   }
-  return {
-    email: session.get(sessionKeys.email),
-    hasActiveMagicLink,
-    theme: getTheme(themeSession),
-  }
-}
-
-export const loader: LoaderFunction = async ({request}) => {
-  const user = await getUser(request)
-
-  const session = await rootStorage.getSession(request.headers.get('Cookie'))
-  const themeSession = await getThemeSession(request)
 
   const data: LoaderData = {
     user,
@@ -135,7 +134,11 @@ export const loader: LoaderFunction = async ({request}) => {
     requestInfo: {
       origin: getDomainUrl(request),
       searchParams: new URL(request.url).searchParams.toString(),
-      session: await getSessionInfo(session, themeSession),
+      session: {
+        email: getEmail(),
+        hasActiveMagicLink,
+        theme: themeSession.getTheme(),
+      },
     },
   }
 
@@ -259,6 +262,7 @@ function App() {
             </a>
           </NotificationMessage>
         )}
+        <NotificationMessage queryStringKey="message" />
         <Navbar />
         <Outlet />
         <Spacer size="medium" />

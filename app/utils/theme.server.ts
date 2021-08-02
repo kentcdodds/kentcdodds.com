@@ -1,12 +1,12 @@
-import type {Request, Session} from 'remix'
+import type {Request} from 'remix'
 import {createCookieSessionStorage} from 'remix'
-import {Theme, themes} from './theme-provider'
+import {getRequiredServerEnvVar} from './misc'
+import {Theme, isTheme} from './theme-provider'
 
 const themeStorage = createCookieSessionStorage({
   cookie: {
     name: 'KCD_theme',
-    // FIXME: env variable this
-    secrets: ['sorta secret'],
+    secrets: [getRequiredServerEnvVar('SESSION_SECRET')],
     sameSite: 'lax',
     path: '/',
     // no theme for you on my 100th birthday! 😂
@@ -14,25 +14,16 @@ const themeStorage = createCookieSessionStorage({
   },
 })
 
-function getThemeSession(request: Request) {
-  return themeStorage.getSession(request.headers.get('Cookie'))
+async function getThemeSession(request: Request) {
+  const session = await themeStorage.getSession(request.headers.get('Cookie'))
+  return {
+    getTheme: () => {
+      const themeValue = session.get('theme')
+      return isTheme(themeValue) ? themeValue : Theme.DARK
+    },
+    setTheme: (theme: Theme) => session.set('theme', theme),
+    commit: () => themeStorage.commitSession(session),
+  }
 }
 
-function getTheme(session: Session) {
-  const themeValue = session.get('theme')
-  return isTheme(themeValue) ? themeValue : Theme.DARK
-}
-
-function setTheme(session: Session, theme: Theme) {
-  session.set('theme', theme)
-}
-
-function commitThemeSession(session: Session) {
-  return themeStorage.commitSession(session)
-}
-
-function isTheme(value: unknown): value is Theme {
-  return typeof value === 'string' && themes.includes(value as Theme)
-}
-
-export {getThemeSession, getTheme, setTheme, commitThemeSession, isTheme}
+export {getThemeSession}

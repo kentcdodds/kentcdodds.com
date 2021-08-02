@@ -1,17 +1,13 @@
 import * as React from 'react'
-import {json, redirect, useRouteData} from 'remix'
+import {json, redirect, useLoaderData, useActionData, Headers} from 'remix'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import type {Team} from 'types'
 import clsx from 'clsx'
 import {shuffle} from 'lodash'
-import {
-  getUser,
-  rootStorage,
-  sessionKeys,
-  signInSession,
-} from '../utils/session.server'
-import {createSession, prisma, validateMagicLink} from '../utils/prisma.server'
-import {getErrorMessage, getNonNull, teams} from '../utils/misc'
+import {getUser, getUserSessionCookieForUser} from '../utils/session.server'
+import {getLoginInfoSession} from '../utils/login.server'
+import {prisma, validateMagicLink} from '../utils/prisma.server'
+import {getErrorMessage, teams} from '../utils/misc'
 import {tagKCDSiteSubscriber} from '../utils/convertkit.server'
 import {useTeam} from '../utils/providers'
 import {Grid} from '../components/grid'
@@ -22,23 +18,24 @@ import {CheckCircledIcon} from '../components/icons/check-circled-icon'
 import {images} from '../images'
 import {TEAM_MAP} from '../utils/onboarding'
 import {HeaderSection} from '../components/sections/header-section'
+import {handleFormSubmission} from '../utils/actions.server'
 
-type LoaderData = {
-  email: string
-  teamsInOrder: Array<Team>
-  errors?: {
+type ActionData = {
+  fields: {
+    firstName: string | null
+    team: Team | null
+  }
+  errors: {
     generalError?: string
     firstName: string | null
     team: string | null
   }
-  fields?: {
-    firstName: string | null
-    team: Team | null
-  }
 }
 
-const errorSessionKey = 'new_account_error'
-const fieldsSessionKey = 'new_account_fields'
+type LoaderData = {
+  email: string
+  teamsInOrder: Array<Team>
+}
 
 function getErrorForFirstName(name: string | null) {
   if (!name) return `Name is required`
@@ -53,9 +50,9 @@ function getErrorForTeam(team: string | null) {
 }
 
 export const action: ActionFunction = async ({request}) => {
-  const session = await rootStorage.getSession(request.headers.get('Cookie'))
-  const magicLink = session.get(sessionKeys.magicLink)
-  let email
+  const loginInfoSession = await getLoginInfoSession(request)
+  const magicLink = loginInfoSession.getMagicLink()
+  let email: string
   try {
     if (typeof magicLink !== 'string') {
       throw new Error('email and magicLink required.')
@@ -65,95 +62,81 @@ export const action: ActionFunction = async ({request}) => {
   } catch (error: unknown) {
     console.error(getErrorMessage(error))
 
-    session.flash('error', 'Sign in link invalid. Please request a new one.')
-    return redirect('/login', {
-      headers: {'Set-Cookie': await rootStorage.commitSession(session)},
-    })
-  }
-
-  const requestText = await request.text()
-  const form = new URLSearchParams(requestText)
-  const formData: LoaderData['fields'] = {
-    firstName: form.get('firstName'),
-    team: form.get('team') as Team | null,
-  }
-  session.flash(fieldsSessionKey, formData)
-
-  const errors: LoaderData['errors'] = {
-    firstName: getErrorForFirstName(formData.firstName),
-    team: getErrorForTeam(formData.team),
-  }
-
-  if (errors.firstName || errors.team) {
-    session.flash(errorSessionKey, errors)
-    return redirect(new URL(request.url).pathname, {
-      headers: {
-        'Set-Cookie': await rootStorage.commitSession(session),
-      },
-    })
-  }
-
-  const {firstName, team} = getNonNull(formData)
-
-  try {
-    const user = await prisma.user.create({data: {email, firstName, team}})
-
-    // add user to mailing list
-    const sub = await tagKCDSiteSubscriber(user)
-    await prisma.user.update({
-      data: {convertKitId: String(sub.id)},
-      where: {id: user.id},
-    })
-
-    const userSession = await createSession({userId: user.id})
-    session.unset('email')
-    session.unset('magicLink')
-    await signInSession(session, userSession.id)
-
-    const cookie = await rootStorage.commitSession(session, {maxAge: 604_800})
-    return redirect('/me', {
-      headers: {'Set-Cookie': cookie},
-    })
-  } catch (error: unknown) {
-    const message = getErrorMessage(error)
-    console.error(message)
-
-    session.flash(
-      'error',
-      'There was a problem creating your account. Please try again.',
+    loginInfoSession.clean()
+    loginInfoSession.flashError(
+      'Sign in link invalid. Please request a new one.',
     )
     return redirect('/login', {
-      headers: {'Set-Cookie': await rootStorage.commitSession(session)},
+      headers: {'Set-Cookie': await loginInfoSession.commit()},
     })
   }
+
+  return handleFormSubmission<ActionData>(
+    request,
+    {
+      firstName: getErrorForFirstName,
+      team: getErrorForTeam,
+    },
+    async formData => {
+      const {firstName, team} = formData
+
+      try {
+        const user = await prisma.user.create({data: {email, firstName, team}})
+
+        // add user to mailing list
+        const sub = await tagKCDSiteSubscriber(user)
+        await prisma.user.update({
+          data: {convertKitId: String(sub.id)},
+          where: {id: user.id},
+        })
+
+        const sessionIdCookie = await getUserSessionCookieForUser(request, user)
+        const destroyCookie = await loginInfoSession.destroy()
+
+        const headers = new Headers()
+        headers.append('Set-Cookie', destroyCookie)
+        headers.append('Set-Cookie', sessionIdCookie)
+
+        return redirect('/me', {headers})
+      } catch (error: unknown) {
+        const message = getErrorMessage(error)
+        console.error(message)
+
+        loginInfoSession.flashError(
+          'There was a problem creating your account. Please try again.',
+        )
+        return redirect('/login', {
+          headers: {'Set-Cookie': await loginInfoSession.commit()},
+        })
+      }
+    },
+  )
 }
 
 export const loader: LoaderFunction = async ({request}) => {
   const user = await getUser(request)
   if (user) return redirect('/me')
 
-  const session = await rootStorage.getSession(request.headers.get('Cookie'))
-  const email = session.get(sessionKeys.email)
+  const loginInfoSession = await getLoginInfoSession(request)
+  const email = loginInfoSession.getEmail()
   if (!email) {
-    session.unset(sessionKeys.email)
-    session.unset(sessionKeys.magicLink)
-    session.flash('error', 'Invalid magic link. Try again.')
+    loginInfoSession.clean()
+    loginInfoSession.flashError('Invalid magic link. Try again.')
     return redirect('/login', {
       headers: {
-        'Set-Cookie': await rootStorage.commitSession(session),
+        'Set-Cookie': await loginInfoSession.commit(),
       },
     })
   }
+
   const values: LoaderData = {
-    email: session.get(sessionKeys.email),
-    // have to put this in the loader to ensure server render is the same as the client one.
+    email,
+    // have to put this shuffle in the loader to ensure server render is the same as the client one.
     teamsInOrder: shuffle(teams),
-    errors: session.get(errorSessionKey),
-    fields: session.get(fieldsSessionKey),
   }
   return json(values, {
     headers: {
-      'Set-Cookie': await rootStorage.commitSession(session),
+      'Set-Cookie': await loginInfoSession.commit(),
     },
   })
 }
@@ -199,7 +182,8 @@ function TeamOption({team: value, error, selected}: TeamOptionProps) {
 }
 
 export default function NewAccount() {
-  const data = useRouteData<LoaderData>()
+  const data = useLoaderData<LoaderData>()
+  const actionData = useActionData() as ActionData | undefined
   const [, setTeam] = useTeam()
   const [formValues, setFormValues] = React.useState<{
     firstName: string
@@ -243,9 +227,9 @@ export default function NewAccount() {
         />
 
         <Grid>
-          {data.errors?.team ? (
+          {actionData?.errors.team ? (
             <div className="col-span-full mb-4 text-right">
-              <InputError id="team-error">{data.errors.team}</InputError>
+              <InputError id="team-error">{actionData.errors.team}</InputError>
             </div>
           ) : null}
 
@@ -255,7 +239,7 @@ export default function NewAccount() {
               <TeamOption
                 key={teamOption}
                 team={teamOption}
-                error={data.errors?.team}
+                error={actionData?.errors.team}
                 selected={formValues.team === teamOption}
               />
             ))}
@@ -274,9 +258,9 @@ export default function NewAccount() {
             <Field
               name="firstName"
               label="First name"
-              error={data.errors?.firstName}
+              error={actionData?.errors.firstName}
               autoComplete="firstName"
-              defaultValue={data.fields?.firstName ?? ''}
+              defaultValue={actionData?.fields.firstName ?? ''}
               required
             />
           </div>

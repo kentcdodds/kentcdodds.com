@@ -1,4 +1,4 @@
-import type {Request, Response, Session} from 'remix'
+import type {Request, Response} from 'remix'
 import {createCookieSessionStorage, redirect} from 'remix'
 import type {User} from '@prisma/client'
 import {sendMagicLinkEmail} from './send-email.server'
@@ -7,26 +7,21 @@ import {
   getMagicLink,
   getUserFromSessionId,
   prisma,
+  validateMagicLink,
+  createSession,
+  sessionExpirationTime,
 } from './prisma.server'
-import {encrypt, decrypt} from './encryption.server'
-import {getErrorMessage} from './misc'
+import {getRequiredServerEnvVar} from './misc'
 
 const sessionIdKey = '__session_id__'
 
-let rootSessionSecret = 'not-at-all-secret'
-if (process.env.SESSION_SECRET) {
-  rootSessionSecret = process.env.SESSION_SECRET
-} else if (process.env.NODE_ENV === 'production') {
-  throw new Error('Must set SESSION_SECRET')
-}
-
-const rootStorage = createCookieSessionStorage({
+const sessionStorage = createCookieSessionStorage({
   cookie: {
     name: 'KCD_root_session',
-    secrets: [rootSessionSecret],
+    secrets: [getRequiredServerEnvVar('SESSION_SECRET')],
     sameSite: 'lax',
     path: '/',
-    expires: new Date('2088-10-18'),
+    maxAge: sessionExpirationTime,
   },
 })
 
@@ -50,46 +45,62 @@ async function sendToken({
   })
 }
 
-async function getUserRequestToken(userId: string) {
-  return encrypt(JSON.stringify({type: 'request', userId}))
-}
-
-async function validateUserRequestToken(token: string, userId: string) {
-  try {
-    const tokenObj = JSON.parse(decrypt(token))
-    return tokenObj.type === 'request' && tokenObj.userId === userId
-  } catch (error: unknown) {
-    console.error(getErrorMessage(error))
-    return false
+async function getSession(request: Request) {
+  const session = await sessionStorage.getSession(request.headers.get('Cookie'))
+  const getSessionId = () => session.get(sessionIdKey) as string | undefined
+  const unsetSessionId = () => session.unset(sessionIdKey)
+  return {
+    session,
+    getSessionId,
+    unsetSessionId,
+    singIn: async (user: User) => {
+      const userSession = await createSession({userId: user.id})
+      session.set(sessionIdKey, userSession.id)
+    },
+    signOut: () => {
+      const sessionId = getSessionId()
+      if (sessionId) {
+        unsetSessionId()
+        prisma.session
+          .delete({where: {id: sessionId}})
+          .catch((error: unknown) => {
+            console.error(`Failure deleting user session: `, error)
+          })
+      }
+    },
+    destroy: () => sessionStorage.destroySession(session),
+    commit: () => sessionStorage.commitSession(session),
   }
 }
 
 async function getUser(request: Request) {
-  const session = await rootStorage.getSession(request.headers.get('Cookie'))
+  const {session} = await getSession(request)
 
   const token = session.get(sessionIdKey) as string | undefined
   if (!token) return null
 
   return getUserFromSessionId(token).catch((error: unknown) => {
-    session.unset(sessionIdKey)
     console.error(`Failure getting user from session ID:`, error)
     return null
   })
 }
 
-async function signOutSession(session: Session) {
-  const sessionId = session.get(sessionIdKey)
-  session.unset(sessionIdKey)
-  if (sessionId) {
-    prisma.session.delete({where: {id: sessionId}}).catch((error: unknown) => {
-      console.error(`Failure deleting user session: `, error)
-      return null
-    })
-  }
+async function getUserSessionCookieFromMagicLink(request: Request) {
+  const email = await validateMagicLink(request.url)
+
+  const user = await getUserByEmail(email)
+  if (!user) return null
+
+  const cookie = await getUserSessionCookieForUser(request, user)
+  return cookie
 }
 
-async function signInSession(session: Session, sessionId: string) {
-  session.set(sessionIdKey, sessionId)
+async function getUserSessionCookieForUser(request: Request, user: User) {
+  const session = await getSession(request)
+  await session.singIn(user)
+
+  const cookie = await session.commit()
+  return cookie
 }
 
 async function requireAdminUser(
@@ -98,10 +109,9 @@ async function requireAdminUser(
 ): Promise<Response> {
   const user = await getUser(request)
   if (!user) {
-    const session = await rootStorage.getSession(request.headers.get('Cookie'))
-    await signOutSession(session)
-    const cookie = await rootStorage.commitSession(session)
-    return redirect('/login', {headers: {'Set-Cookie': cookie}})
+    const session = await getSession(request)
+    session.signOut()
+    return redirect('/login', {headers: {'Set-Cookie': await session.commit()}})
   }
   if (user.role !== 'ADMIN') {
     return redirect('/')
@@ -115,27 +125,19 @@ async function requireUser(
 ): Promise<Response> {
   const user = await getUser(request)
   if (!user) {
-    const session = await rootStorage.getSession(request.headers.get('Cookie'))
-    await signOutSession(session)
-    const cookie = await rootStorage.commitSession(session)
-    return redirect('/login', {headers: {'Set-Cookie': cookie}})
+    const session = await getSession(request)
+    session.signOut()
+    return redirect('/login', {headers: {'Set-Cookie': await session.commit()}})
   }
   return callback(user)
 }
 
-export const sessionKeys = {
-  magicLink: 'magicLink',
-  email: 'email',
-}
-
 export {
-  rootStorage,
+  getSession,
+  getUserSessionCookieFromMagicLink,
+  getUserSessionCookieForUser,
   requireUser,
   requireAdminUser,
-  getUserRequestToken,
-  validateUserRequestToken,
   getUser,
   sendToken,
-  signInSession,
-  signOutSession,
 }

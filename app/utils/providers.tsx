@@ -39,7 +39,7 @@ type RequestInfo = {
   origin: string
   searchParams: string
   session: {
-    email: string | null
+    email: string | undefined
     hasActiveMagicLink: boolean
     theme: Theme | null
   }

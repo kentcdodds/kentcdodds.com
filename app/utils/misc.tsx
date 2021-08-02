@@ -46,16 +46,17 @@ type AnchorProps = React.DetailedHTMLProps<
   HTMLAnchorElement
 >
 
-function AnchorOrLink(props: AnchorProps) {
-  const {href = '', ...rest} = props
-  if (href.startsWith('http') || href.startsWith('#')) {
-    // eslint-disable-next-line jsx-a11y/anchor-has-content
-    return <a {...props} />
-  } else {
-    // @ts-expect-error I'm not sure what to do about extra props other than to forward them
-    return <Link to={href} {...rest} />
-  }
-}
+const AnchorOrLink = React.forwardRef<HTMLAnchorElement, AnchorProps>(
+  function AnchorOrLink(props, ref) {
+    const {href = '', ...rest} = props
+    if (href.startsWith('http') || href.startsWith('#')) {
+      // eslint-disable-next-line jsx-a11y/anchor-has-content
+      return <a {...props} ref={ref} />
+    } else {
+      return <Link to={href} {...rest} ref={ref} />
+    }
+  },
+)
 
 // unfortunately TypeScript doesn't have Intl.ListFormat yet 😢
 // so we'll just add it ourselves:

@@ -79,17 +79,17 @@ export default async function handleRequest(
 
   const html = `<!DOCTYPE html>${markup}`
 
+  // TODO: remove this when we go to production
+  responseHeaders.set('X-Robots-Tag', 'none')
+
+  responseHeaders.set('X-Powered-By', 'Kody the Koala')
+  responseHeaders.set('X-Fly-Region', process.env.FLY_REGION ?? 'unknown')
+  responseHeaders.set('Content-Type', 'text/html')
+  responseHeaders.set('Content-Length', String(Buffer.byteLength(html)))
+
   return new Response(html, {
     status: responseStatusCode,
-    headers: {
-      // TODO: remove this when we go to production
-      'X-Robots-Tag': 'none',
-      ...Object.fromEntries(responseHeaders),
-      'X-Powered-By': 'Kody the Koala',
-      'X-Fly-Region': process.env.FLY_REGION ?? 'unknown',
-      'Content-Type': 'text/html',
-      'Content-Length': String(Buffer.byteLength(html)),
-    },
+    headers: responseHeaders,
   })
 }
 
@@ -117,13 +117,10 @@ export async function handleDataRequest(
       }),
     )
   }
-  return new Response(dataResponse.body, {
-    status: dataResponse.status,
-    headers: {
-      'X-Robots-Tag': 'none',
-      ...Object.fromEntries(dataResponse.headers),
-      'X-Powered-By': 'Kody the Koala',
-      'X-Fly-Region': process.env.FLY_REGION ?? 'unknown',
-    },
-  })
+  // TODO: remove this when we go to production
+  dataResponse.headers.set('X-Robots-Tag', 'none')
+
+  dataResponse.headers.set('X-Powered-By', 'Kody the Koala')
+  dataResponse.headers.set('X-Fly-Region', process.env.FLY_REGION ?? 'unknown')
+  return dataResponse
 }

@@ -1,14 +1,12 @@
 import type {LoaderFunction} from 'remix'
 import {redirect} from 'remix'
 import * as React from 'react'
-import {requireUser, rootStorage} from '../../utils/session.server'
+import {requireUser} from '../../utils/session.server'
 import {getDomainUrl, getErrorMessage} from '../../utils/misc'
 import {connectDiscord} from '../../utils/discord.server'
 
 export const loader: LoaderFunction = async ({request}) => {
   return requireUser(request, async user => {
-    const session = await rootStorage.getSession(request.headers.get('Cookie'))
-
     try {
       const code = new URL(request.url).searchParams.get('code')
       if (!code) {
@@ -16,13 +14,13 @@ export const loader: LoaderFunction = async ({request}) => {
       }
       const domainUrl = getDomainUrl(request)
       const discordMember = await connectDiscord({user, code, domainUrl})
-      session.flash(
+
+      const url = new URL('/me')
+      url.searchParams.set(
         'message',
-        `Sucessfully connected your KCD account with ${discordMember.user.username} on discord.`,
+        `✅ Sucessfully connected your KCD account with ${discordMember.user.username} on discord.`,
       )
-      return redirect('/me', {
-        headers: {'Set-Cookie': await rootStorage.commitSession(session)},
-      })
+      return redirect(url.toString())
     } catch (error: unknown) {
       const errorMessage = getErrorMessage(error)
       if (error instanceof Error) {
@@ -31,10 +29,9 @@ export const loader: LoaderFunction = async ({request}) => {
         console.error(errorMessage)
       }
 
-      session.flash('error', errorMessage)
-      return redirect('/me', {
-        headers: {'Set-Cookie': await rootStorage.commitSession(session)},
-      })
+      const url = new URL('/me')
+      url.searchParams.set('message', `🚨 ${errorMessage}`)
+      return redirect(url.toString())
     }
   })
 }

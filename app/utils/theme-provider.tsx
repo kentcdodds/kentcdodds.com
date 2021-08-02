@@ -205,12 +205,17 @@ function Themed({
   }
 }
 
+function isTheme(value: unknown): value is Theme {
+  return typeof value === 'string' && themes.includes(value as Theme)
+}
+
 export {
   handleDarkAndLightModeEls,
   ThemeProvider,
   useTheme,
   themes,
   Theme,
+  isTheme,
   Themed,
   NonFlashOfWrongThemeEls,
 }

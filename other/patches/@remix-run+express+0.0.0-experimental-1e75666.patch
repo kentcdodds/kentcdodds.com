@@ -1,0 +1,17 @@
+diff --git a/node_modules/@remix-run/express/server.js b/node_modules/@remix-run/express/server.js
+index 4fd2142..246a32e 100644
+--- a/node_modules/@remix-run/express/server.js
++++ b/node_modules/@remix-run/express/server.js
+@@ -73,8 +73,10 @@ function createRemixRequest(req) {
+ function sendRemixResponse(res, response) {
+   res.status(response.status);
+ 
+-  for (let [key, value] of response.headers.entries()) {
+-    res.set(key, value);
++  for (let [key, values] of Object.entries(response.headers.raw())) {
++    for (const value of values) {
++      res.append(key, value);
++    }
+   }
+ 
+   if (Buffer.isBuffer(response.body)) {
