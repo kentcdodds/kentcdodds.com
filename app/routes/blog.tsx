@@ -18,6 +18,7 @@ import {useRequestInfo} from '../utils/providers'
 import {HeroSection} from '../components/sections/hero-section'
 import {PlusIcon} from '../components/icons/plus-icon'
 import {Button} from '../components/button'
+import type {Timings} from '../utils/metrics.server'
 
 type LoaderData = {
   posts: Array<MdxListItem>
@@ -25,7 +26,9 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  const posts = await getBlogMdxListItems({request})
+  const timings: Timings = {}
+  const posts = await getBlogMdxListItems({request, timings})
+  console.log(timings)
 
   const tags = new Set<string>()
   for (const post of posts) {

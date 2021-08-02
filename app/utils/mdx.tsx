@@ -1,14 +1,16 @@
 import * as React from 'react'
-import type {GitHubFile, MdxListItem, MdxPage} from 'types'
+import type {GitHubFile, MdxListItem, MdxPage, Request} from 'types'
 import * as mdxBundler from 'mdx-bundler/client'
 import {compileMdx} from '../utils/compile-mdx.server'
 import {
   downloadDirList,
   downloadMdxFileOrDirectory,
 } from '../utils/github.server'
-import {AnchorOrLink, getErrorMessage} from '../utils/misc'
+import {AnchorOrLink} from '../utils/misc'
 import * as redis from './redis.server'
-import type {ForceFreshOrRequest} from './redis.server'
+import type {Timings} from './metrics.server'
+
+type Options = {forceFresh?: boolean; request?: Request; timings?: Timings}
 
 async function getMdxPage(
   {
@@ -18,19 +20,10 @@ async function getMdxPage(
     contentDir: string
     slug: string
   },
-  forceFreshOrRequest: ForceFreshOrRequest,
+  options: Options,
 ): Promise<MdxPage | null> {
-  const pageFiles = await downloadMdxFilesCached(
-    contentDir,
-    slug,
-    forceFreshOrRequest,
-  )
-  const page = await compileMdxCached(
-    contentDir,
-    slug,
-    pageFiles,
-    forceFreshOrRequest,
-  )
+  const pageFiles = await downloadMdxFilesCached(contentDir, slug, options)
+  const page = await compileMdxCached(contentDir, slug, pageFiles, options)
   if (page) {
     return {...page, slug}
   } else {
@@ -38,21 +31,14 @@ async function getMdxPage(
   }
 }
 
-async function getMdxPagesInDirectory(
-  contentDir: string,
-  forceFreshOrRequest: ForceFreshOrRequest,
-) {
-  const dirList = await getMdxDirListCached(contentDir, forceFreshOrRequest)
+async function getMdxPagesInDirectory(contentDir: string, options: Options) {
+  const dirList = await getMdxDirList(contentDir, options)
 
   // our octokit throttle plugin will make sure we don't hit the rate limit
   const pageDatas = await Promise.all(
     dirList.map(async ({slug}) => {
       return {
-        files: await downloadMdxFilesCached(
-          contentDir,
-          slug,
-          forceFreshOrRequest,
-        ),
+        files: await downloadMdxFilesCached(contentDir, slug, options),
         slug,
       }
     }),
@@ -68,46 +54,38 @@ async function getMdxPagesInDirectory(
       contentDir,
       pageData.slug,
       pageData.files,
-      forceFreshOrRequest,
+      options,
     )
-    if (page) pages.push({slug: pageData.slug, ...page})
+    if (page) pages.push(page)
   }
   return pages
 }
 
 const getDirListKey = (contentDir: string) => `${contentDir}:dir-list`
 
-async function getMdxDirListCached(
+async function getMdxDirList(
   contentDir: string,
-  {request, forceFresh}: ForceFreshOrRequest,
+  {request, forceFresh, timings}: Options,
 ) {
-  const key = getDirListKey(contentDir)
-  let dirList: Array<{name: string; slug: string}> | undefined
-  forceFresh =
-    forceFresh ?? (request ? await redis.shouldForceFresh(request) : false)
-  if (!forceFresh) {
-    try {
-      const cached = await redis.get(key)
-      if (cached) dirList = JSON.parse(cached)
-    } catch (error: unknown) {
-      console.error(`error with cache at ${key}`, getErrorMessage(error))
-    }
-  }
-  const fullContentDirPath = `content/${contentDir}`
-  if (!dirList) {
-    dirList = (await downloadDirList(fullContentDirPath))
-      .map(({name, path}) => ({
-        name,
-        slug: path.replace(`${fullContentDirPath}/`, '').replace(/\.mdx$/, ''),
-      }))
-      .filter(({name}) => name !== 'README.md')
-    if (dirList.length) {
-      void redis.set(key, JSON.stringify(dirList)).catch(error => {
-        console.error(`error setting redis.${key}`, getErrorMessage(error))
-      })
-    }
-  }
-  return dirList
+  return redis.cachified({
+    key: getDirListKey(contentDir),
+    forceFresh,
+    request,
+    timings,
+    checkValue: (value: unknown) => Array.isArray(value) && value.length > 0,
+    getFreshValue: async () => {
+      const fullContentDirPath = `content/${contentDir}`
+      const dirList = (await downloadDirList(fullContentDirPath))
+        .map(({name, path}) => ({
+          name,
+          slug: path
+            .replace(`${fullContentDirPath}/`, '')
+            .replace(/\.mdx$/, ''),
+        }))
+        .filter(({name}) => name !== 'README.md')
+      return dirList
+    },
+  })
 }
 
 const getDownloadKey = (contentDir: string, slug: string) =>
@@ -116,30 +94,17 @@ const getDownloadKey = (contentDir: string, slug: string) =>
 async function downloadMdxFilesCached(
   contentDir: string,
   slug: string,
-  {request, forceFresh}: ForceFreshOrRequest,
+  {request, forceFresh, timings}: Options,
 ): Promise<Array<GitHubFile>> {
-  const contentPath = `${contentDir}/${slug}`
-  const key = getDownloadKey(contentDir, slug)
-  let files
-  forceFresh =
-    forceFresh ?? (request ? await redis.shouldForceFresh(request) : false)
-  if (!forceFresh) {
-    try {
-      const cached = await redis.get(key)
-      if (cached) files = JSON.parse(cached)
-    } catch (error: unknown) {
-      console.error(`error with cache at ${key}`, getErrorMessage(error))
-    }
-  }
-  if (!files) {
-    files = await downloadMdxFileOrDirectory(contentPath)
-    if (files.length) {
-      void redis.set(key, JSON.stringify(files)).catch(error => {
-        console.error(`error setting redis.${key}`, getErrorMessage(error))
-      })
-    }
-  }
-  return files
+  return redis.cachified({
+    key: getDownloadKey(contentDir, slug),
+    forceFresh,
+    request,
+    timings,
+    checkValue: (value: unknown) => Array.isArray(value) && value.length > 0,
+    getFreshValue: async () =>
+      downloadMdxFileOrDirectory(`${contentDir}/${slug}`),
+  })
 }
 
 const getCompiledKey = (contentDir: string, slug: string) =>
@@ -149,42 +114,43 @@ async function compileMdxCached(
   contentDir: string,
   slug: string,
   files: Array<GitHubFile>,
-  {request, forceFresh}: ForceFreshOrRequest,
+  {request, forceFresh, timings}: Options,
 ) {
-  const key = getCompiledKey(contentDir, slug)
-  let page
-  forceFresh =
-    forceFresh ?? (request ? await redis.shouldForceFresh(request) : false)
-  if (!forceFresh) {
-    try {
-      const cached = await redis.get(key)
-      if (cached) page = JSON.parse(cached)
-    } catch (error: unknown) {
-      console.error(`error with cache at ${key}`, getErrorMessage(error))
-    }
-  }
-  if (!page) {
-    page = await compileMdx<MdxPage['frontmatter']>(slug, files)
-    if (page) {
-      void redis.set(key, JSON.stringify(page)).catch(error => {
-        console.error(`error setting redis.${key}`, getErrorMessage(error))
-      })
-    }
-  }
-  if (!page) return null
-  return {slug, ...page}
+  return redis.cachified({
+    key: getCompiledKey(contentDir, slug),
+    forceFresh,
+    request,
+    timings,
+    checkValue: (value: unknown) => value != undefined,
+    getFreshValue: async () => {
+      const page = await compileMdx<MdxPage['frontmatter']>(slug, files)
+      if (page) {
+        return {...page, slug}
+      } else {
+        return null
+      }
+    },
+  })
 }
 
-async function getBlogMdxListItems(forceFreshOrRequest: ForceFreshOrRequest) {
-  let pages = await getMdxPagesInDirectory('blog', forceFreshOrRequest)
+async function getBlogMdxListItems({request, timings, forceFresh}: Options) {
+  return redis.cachified({
+    key: 'blog-mdx-list-items',
+    request,
+    timings,
+    forceFresh,
+    getFreshValue: async () => {
+      let pages = await getMdxPagesInDirectory('blog', {request, forceFresh})
 
-  pages = pages.sort((a, z) => {
-    const aTime = new Date(a.frontmatter.date ?? '').getTime()
-    const zTime = new Date(z.frontmatter.date ?? '').getTime()
-    return aTime > zTime ? -1 : aTime === zTime ? 0 : 1
+      pages = pages.sort((a, z) => {
+        const aTime = new Date(a.frontmatter.date ?? '').getTime()
+        const zTime = new Date(z.frontmatter.date ?? '').getTime()
+        return aTime > zTime ? -1 : aTime === zTime ? 0 : 1
+      })
+
+      return pages.map(mapFromMdxPageToMdxListItem)
+    },
   })
-
-  return pages.map(mapFromMdxPageToMdxListItem)
 }
 
 function mdxPageMeta({data}: {data: {page: MdxPage | null} | null}) {

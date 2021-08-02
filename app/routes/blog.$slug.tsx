@@ -23,13 +23,15 @@ type LoaderData = {
 }
 
 export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
+  const timings = {}
   const page = await getMdxPage(
     {
       contentDir: 'blog',
       slug: params.slug,
     },
-    {request},
+    {request, timings},
   )
+  console.log(timings)
   const blogRecommendations = await getBlogRecommendations(request, {
     limit: 3,
     keywords: [

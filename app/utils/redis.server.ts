@@ -1,5 +1,7 @@
 import redis from 'redis'
 import type {Request} from 'types'
+import type {Timings} from './metrics.server'
+import {time} from './metrics.server'
 import {getErrorMessage, getRequiredServerEnvVar} from './misc'
 import {getUser} from './session.server'
 
@@ -112,25 +114,25 @@ function del(key: string): Promise<string> {
   })
 }
 
-type ForceFreshOrRequest =
-  | {forceFresh?: never; request: Request}
-  | {forceFresh: boolean; request?: never}
-
 async function cachified<ReturnValue>({
   key,
   getFreshValue,
   request,
   forceFresh,
   checkValue = value => Boolean(value),
+  timings,
 }: {
   key: string
   getFreshValue: () => Promise<ReturnValue>
   checkValue?: (value: ReturnValue) => boolean
-} & ForceFreshOrRequest): Promise<ReturnValue> {
+  timings?: Timings
+  forceFresh?: boolean
+  request?: Request
+}): Promise<ReturnValue> {
   forceFresh = forceFresh ?? (request ? await shouldForceFresh(request) : false)
   if (!forceFresh) {
     try {
-      const cached = await get(key)
+      const cached = await time(`redis.get(${key})`, () => get(key), timings)
       if (cached) {
         const cachedValue = JSON.parse(cached) as ReturnValue
         if (checkValue(cachedValue)) {
@@ -147,7 +149,7 @@ async function cachified<ReturnValue>({
       console.error(`error with cache at ${key}`, getErrorMessage(error))
     }
   }
-  const value = await getFreshValue()
+  const value = await time(`getFreshValue for ${key}`, getFreshValue, timings)
   if (checkValue(value)) {
     void set(key, JSON.stringify(value)).catch(error => {
       console.error(`error setting redis.${key}`, getErrorMessage(error))
@@ -167,4 +169,3 @@ async function shouldForceFresh(request: Request) {
 }
 
 export {get, set, del, cachified, shouldForceFresh}
-export type {ForceFreshOrRequest}

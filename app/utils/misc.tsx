@@ -100,6 +100,12 @@ function getErrorMessage(error: unknown) {
   return 'Unknown Error'
 }
 
+function getErrorStack(error: unknown) {
+  if (typeof error === 'string') return error
+  if (error instanceof Error) return error.stack
+  return 'Unknown Error'
+}
+
 function getNonNull<Type extends Record<string, null | undefined | unknown>>(
   obj: Type,
 ): NonNullProperties<Type> {
@@ -175,6 +181,7 @@ export {
   getAvatarForUser,
   AnchorOrLink,
   getErrorMessage,
+  getErrorStack,
   getNonNull,
   assertNonNull,
   listify,
