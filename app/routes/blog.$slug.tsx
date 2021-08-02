@@ -1,5 +1,6 @@
 import * as React from 'react'
 import {useRouteData, json} from 'remix'
+import type {HeadersFunction} from 'remix'
 import {Link, useParams} from 'react-router-dom'
 import type {Await, KCDLoader, MdxListItem, MdxPage} from 'types'
 import formatDate from 'date-fns/format'
@@ -10,10 +11,7 @@ import {H2, H6, Paragraph} from '../components/typography'
 import {Grid} from '../components/grid'
 import {ArrowLink, BackLink} from '../components/arrow-button'
 import {BlogSection} from '../components/sections/blog-section'
-import {
-  getBlogReadRankings,
-  getBlogRecommendations,
-} from '../utils/blog.server'
+import {getBlogReadRankings, getBlogRecommendations} from '../utils/blog.server'
 import {FourOhFour} from '../components/errors'
 import {externalLinks} from '../external-links'
 import {TeamStats} from '../components/team-stats'
@@ -43,14 +41,23 @@ export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
   const readRankings = await getBlogReadRankings(params.slug)
 
   let data: LoaderData
+  const headers = {
+    'Cache-Control': 'public, max-age=3600',
+  }
 
   if (page) {
     data = {page, recommendations: blogRecommendations, readRankings}
 
-    return json(data)
+    return json(data, {headers})
   } else {
     data = {page: null, recommendations: blogRecommendations, readRankings}
-    return json(data, {status: 404})
+    return json(data, {status: 404, headers})
+  }
+}
+
+export const headers: HeadersFunction = ({loaderHeaders}) => {
+  return {
+    'Cache-Control': loaderHeaders.get('Cache-Control') ?? 'no-cache',
   }
 }
 

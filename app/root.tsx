@@ -160,7 +160,7 @@ function PageLoadingMessage() {
   const [words, setWords] = React.useState(LOADER_WORDS)
   const [pendingPath, setPendingPath] = React.useState('')
   const showLoader = useSpinDelay(Boolean(pending), {
-    delay: 300,
+    delay: 400,
     minDuration: 1000,
   })
 

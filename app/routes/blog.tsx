@@ -41,7 +41,7 @@ export const loader: LoaderFunction = async ({request}) => {
 
   return json(data, {
     headers: {
-      'Cache-Control': 'public, max-age=60',
+      'Cache-Control': 'public, max-age=3600',
     },
   })
 }
