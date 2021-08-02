@@ -4,8 +4,8 @@ import makeMetascraper from 'metascraper'
 import mImage from 'metascraper-image'
 import mTitle from 'metascraper-title'
 import mDescription from 'metascraper-description'
-import {getRequiredServerEnvVar, typedBoolean} from './misc'
 import formatDate from 'date-fns/format'
+import {getRequiredServerEnvVar, typedBoolean} from './misc'
 
 const token = getRequiredServerEnvVar('TWITTER_BEARER_TOKEN')
 

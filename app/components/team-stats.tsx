@@ -1,10 +1,10 @@
 import * as React from 'react'
+import {Link} from 'remix'
 import {motion} from 'framer-motion'
 import clsx from 'clsx'
 import type {Team} from '@prisma/client'
 import {useOptionalUserInfo, useTeam} from '../utils/providers'
 import {alexProfiles} from '../images'
-import {Link} from 'remix'
 
 const barColors: Record<Team, string> = {
   RED: 'bg-team-red',

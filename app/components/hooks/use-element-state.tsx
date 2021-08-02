@@ -72,7 +72,7 @@ function useElementState(): [RefCallback<HTMLElement>, ElementState] {
       el.removeEventListener('pointerdown', pointerdown)
       el.removeEventListener('keydown', keydown)
     }
-  }, [ref.current])
+  }, [])
 
   const status: ElementState = state.active
     ? 'active'
