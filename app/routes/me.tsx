@@ -22,6 +22,7 @@ import {LogoutIcon} from '../components/icons/logout-icon'
 import {TEAM_MAP} from '../utils/onboarding'
 import {handleFormSubmission} from '../utils/actions.server'
 import {EyeIcon} from '../components/icons/eye-icon'
+import {PlusIcon} from '../components/icons/plus-icon'
 
 export const handle: KCDHandle = {
   metas: [{httpEquiv: 'refresh', content: '1740'}],
@@ -43,7 +44,7 @@ export const loader: LoaderFunction = ({request}) => {
 
 const actionIds = {
   changeDetails: 'change details',
-  logout: 'logout',
+  deleteDiscordConnection: 'delete discord connection',
 }
 
 function getFirstNameError(firstName: string | null) {
@@ -66,6 +67,9 @@ export const action: ActionFunction = async ({request}) => {
     const actionId = form.get('actionId')
 
     try {
+      if (actionId === actionIds.deleteDiscordConnection) {
+        await updateUser(user.id, {discordId: null})
+      }
       if (actionId === actionIds.changeDetails) {
         return await handleFormSubmission<ActionData>(
           form,
@@ -125,18 +129,7 @@ function YouScreen() {
             </div>
           </div>
 
-          <Form
-            action="/me"
-            method="post"
-            className="col-span-full mb-24 lg:col-span-5 lg:mb-0"
-            noValidate
-            aria-describedby="profile-form-error"
-          >
-            <input
-              type="hidden"
-              name="actionId"
-              value={actionIds.changeDetails}
-            />
+          <div className="col-span-full mb-24 lg:col-span-5 lg:mb-0">
             <InputError id="profile-form-error">
               {actionData?.errors.generalError}
             </InputError>
@@ -150,15 +143,28 @@ function YouScreen() {
               error={actionData?.errors.firstName}
             />
 
-            <Field
-              name="email"
-              label="Email address"
-              autoComplete="email"
-              required
-              defaultValue={user.email}
-              readOnly
-              disabled
-            />
+            <Form
+              id="profile-form"
+              action="/me"
+              method="post"
+              noValidate
+              aria-describedby="profile-form-error"
+            >
+              <input
+                type="hidden"
+                name="actionId"
+                value={actionIds.changeDetails}
+              />
+              <Field
+                name="email"
+                label="Email address"
+                autoComplete="email"
+                required
+                defaultValue={user.email}
+                readOnly
+                disabled
+              />
+            </Form>
 
             <Field
               name="discord"
@@ -169,12 +175,28 @@ function YouScreen() {
               disabled
               description={
                 user.discordId ? (
-                  <a
-                    className="underlined"
-                    href={`https://discord.com/users/${user.discordId}`}
-                  >
-                    connected
-                  </a>
+                  <div className="flex gap-2">
+                    <a
+                      className="underlined"
+                      href={`https://discord.com/users/${user.discordId}`}
+                    >
+                      connected
+                    </a>
+                    <Form action="/me" method="post">
+                      <input
+                        type="hidden"
+                        name="actionId"
+                        value={actionIds.deleteDiscordConnection}
+                      />
+                      <button
+                        type="submit"
+                        aria-label="remove connection"
+                        className="text-secondary outline-none rotate-45 hover:scale-150 focus:scale-150"
+                      >
+                        <PlusIcon />
+                      </button>
+                    </Form>
+                  </div>
                 ) : (
                   <a className="underlined" href={authorizeURL}>
                     Connect to Discord
@@ -183,10 +205,10 @@ function YouScreen() {
               }
             />
 
-            <Button className="mt-8" type="submit">
+            <Button className="mt-8" type="submit" form="profile-form">
               Save changes
             </Button>
-          </Form>
+          </div>
 
           <div className="col-span-full lg:col-span-4 lg:col-start-8">
             <Label className="mb-4" htmlFor="chosen-team">

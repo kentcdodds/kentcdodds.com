@@ -1,8 +1,8 @@
 import * as React from 'react'
 import {useState} from 'react'
+import {useSearchParams} from 'react-router-dom'
 import {AnimatePresence, motion} from 'framer-motion'
 import clsx from 'clsx'
-import {useRequestInfo} from '../utils/providers'
 import {PlusIcon} from './icons/plus-icon'
 
 function NotificationMessage({
@@ -24,30 +24,56 @@ function NotificationMessage({
 )) {
   // how long to wait before the message is shown, after mount
   const delay = typeof visible === 'undefined' ? 1 : 0
-  const {searchParams} = useRequestInfo()
-  const params = new URLSearchParams(searchParams)
+  const [searchParams] = useSearchParams()
   const [isVisible, setIsVisible] = useState(
-    !queryStringKey || params.has(queryStringKey),
+    !queryStringKey || searchParams.has(queryStringKey),
   )
-  const messageFromQuery = queryStringKey && params.get(queryStringKey)
+  const messageFromQuery = queryStringKey && searchParams.get(queryStringKey)
   // Eslint is wrong here, params.get can return an empty string
   // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
   const message = messageFromQuery || children
+  const latestMessageRef = React.useRef(message)
 
   React.useEffect(() => {
+    latestMessageRef.current = message
+  })
+
+  React.useEffect(() => {
+    if (!latestMessageRef.current) return
     if (autoClose === false) return
+    if (visible === false) return
 
     const timeout = setTimeout(() => {
       setIsVisible(false)
     }, visibleMs + delay)
 
     return () => clearTimeout(timeout)
-  }, [queryStringKey, delay, autoClose, children, visibleMs])
+  }, [queryStringKey, delay, autoClose, visible, visibleMs])
+
+  React.useEffect(() => {
+    if (!latestMessageRef.current) return
+    if (queryStringKey && searchParams.has(queryStringKey)) {
+      const newSearchParams = new URLSearchParams(searchParams)
+      newSearchParams.delete(queryStringKey)
+
+      // use setSearchParams from useSearchParams resulted in redirecting the
+      // user to the homepage (wut?) and left a `?` at the end of the URL even
+      // if there aren't any other search params. This doesn't have either of
+      // those issues.
+      window.history.replaceState(
+        null,
+        '',
+        [window.location.pathname, newSearchParams.toString()]
+          .filter(Boolean)
+          .join('?'),
+      )
+    }
+  }, [queryStringKey, searchParams])
 
   const initialY = position.includes('bottom') ? 50 : -50
   const show = typeof visible === 'boolean' ? visible : isVisible
 
-  return (
+  return message ? (
     <AnimatePresence>
       {show ? (
         <motion.div
@@ -85,7 +111,7 @@ function NotificationMessage({
         </motion.div>
       ) : null}
     </AnimatePresence>
-  )
+  ) : null
 }
 
 export {NotificationMessage}

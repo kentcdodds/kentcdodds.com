@@ -87,9 +87,9 @@ function Field({
         {error ? (
           <InputError id={errorId}>{error}</InputError>
         ) : description ? (
-          <p id={descriptionId} className="text-primary text-lg">
+          <div id={descriptionId} className="text-primary text-lg">
             {description}
-          </p>
+          </div>
         ) : null}
       </div>
 

@@ -7,15 +7,17 @@ import {connectDiscord} from '../../utils/discord.server'
 
 export const loader: LoaderFunction = async ({request}) => {
   return requireUser(request, async user => {
+    const url = new URL(request.url)
+    const code = url.searchParams.get('code')
+    url.searchParams.delete('code')
+    url.pathname = '/me'
     try {
-      const code = new URL(request.url).searchParams.get('code')
       if (!code) {
         throw new Error('Discord code required')
       }
       const domainUrl = getDomainUrl(request)
       const discordMember = await connectDiscord({user, code, domainUrl})
 
-      const url = new URL('/me')
       url.searchParams.set(
         'message',
         `✅ Sucessfully connected your KCD account with ${discordMember.user.username} on discord.`,
@@ -29,7 +31,6 @@ export const loader: LoaderFunction = async ({request}) => {
         console.error(errorMessage)
       }
 
-      const url = new URL('/me')
       url.searchParams.set('message', `🚨 ${errorMessage}`)
       return redirect(url.toString())
     }

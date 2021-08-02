@@ -165,6 +165,7 @@ function PageLoadingMessage() {
   })
 
   React.useEffect(() => {
+    if (!pending) return
     setWords(LOADER_WORDS)
 
     const interval = setInterval(() => {
@@ -172,7 +173,7 @@ function PageLoadingMessage() {
     }, 2000)
 
     return () => clearInterval(interval)
-  }, [pendingPath])
+  }, [pendingPath, pending])
 
   React.useEffect(() => {
     if (!pending) return
@@ -214,6 +215,7 @@ function PageLoadingMessage() {
 
 function App() {
   const matches = useMatches()
+
   const metas = matches
     .flatMap(({handle}) => (handle as KCDHandle | undefined)?.metas)
     .filter(typedBoolean)
