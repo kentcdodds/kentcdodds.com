@@ -24,11 +24,7 @@ async function getMdxPage(
 ): Promise<MdxPage | null> {
   const pageFiles = await downloadMdxFilesCached(contentDir, slug, options)
   const page = await compileMdxCached(contentDir, slug, pageFiles, options)
-  if (page) {
-    return {...page, slug}
-  } else {
-    return null
-  }
+  return page
 }
 
 async function getMdxPagesInDirectory(contentDir: string, options: Options) {
