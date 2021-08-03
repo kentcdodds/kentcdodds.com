@@ -1,5 +1,12 @@
 import * as React from 'react'
-import {json, redirect, useLoaderData, useActionData, Headers} from 'remix'
+import {
+  json,
+  redirect,
+  useLoaderData,
+  useActionData,
+  Headers,
+  Form,
+} from 'remix'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import type {Team} from 'types'
 import clsx from 'clsx'
@@ -7,7 +14,7 @@ import {shuffle} from 'lodash'
 import {getUser, getUserSessionCookieForUser} from '../utils/session.server'
 import {getLoginInfoSession} from '../utils/login.server'
 import {prisma, validateMagicLink} from '../utils/prisma.server'
-import {getErrorMessage, teams} from '../utils/misc'
+import {getErrorStack, teams} from '../utils/misc'
 import {tagKCDSiteSubscriber} from '../utils/convertkit.server'
 import {useTeam} from '../utils/providers'
 import {Grid} from '../components/grid'
@@ -60,7 +67,7 @@ export const action: ActionFunction = async ({request}) => {
 
     email = await validateMagicLink(magicLink)
   } catch (error: unknown) {
-    console.error(getErrorMessage(error))
+    console.error(getErrorStack(error))
 
     loginInfoSession.clean()
     loginInfoSession.flashError(
@@ -99,8 +106,7 @@ export const action: ActionFunction = async ({request}) => {
 
         return redirect('/me', {headers})
       } catch (error: unknown) {
-        const message = getErrorMessage(error)
-        console.error(message)
+        console.error(getErrorStack(error))
 
         loginInfoSession.flashError(
           'There was a problem creating your account. Please try again.',
@@ -209,7 +215,7 @@ export default function NewAccount() {
         when we're no longer on the experimental release of remix.
         Our current version has a bug where the root loader isn't called.
       */}
-      <form
+      <Form
         className="mb-64"
         method="post"
         onChange={event => {
@@ -287,7 +293,7 @@ export default function NewAccount() {
             can unsubscribe at any time.
           </p>
         </Grid>
-      </form>
+      </Form>
 
       <Grid>
         <div className="col-span-full lg:col-span-5 lg:col-start-8">
