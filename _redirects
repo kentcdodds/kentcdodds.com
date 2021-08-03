@@ -24,3 +24,4 @@
 /php(.*)                                                                https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /db(.*)                                                                 https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /sql(.*)                                                                https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/.git(.*)                                                               https://www.youtube.com/watch?v=dQw4w9WgXcQ
