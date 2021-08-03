@@ -98,7 +98,7 @@ async function getMostPopularPostSlugs({
       },
     },
     where: {
-      postSlug: {notIn: exclude},
+      postSlug: {notIn: exclude.filter(Boolean)},
     },
     take: limit,
   })
