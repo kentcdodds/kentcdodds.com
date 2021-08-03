@@ -71,9 +71,9 @@ function NotificationMessage({
   }, [queryStringKey, searchParams])
 
   const initialY = position.includes('bottom') ? 50 : -50
-  const show = typeof visible === 'boolean' ? visible : isVisible
+  const show = message && typeof visible === 'boolean' ? visible : isVisible
 
-  return message ? (
+  return (
     <AnimatePresence>
       {show ? (
         <motion.div
@@ -111,7 +111,7 @@ function NotificationMessage({
         </motion.div>
       ) : null}
     </AnimatePresence>
-  ) : null
+  )
 }
 
 export {NotificationMessage}
