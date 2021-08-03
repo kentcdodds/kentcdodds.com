@@ -18,7 +18,7 @@ ENV HUSKY_SKIP_INSTALL=1
 RUN mkdir /app/
 WORKDIR /app/
 
-ADD package.json package-lock.json .npmrc ./
+ADD package.json package-lock.json .npmrc other/patches ./
 RUN npm install --production=false
 
 # setup production node_modules
