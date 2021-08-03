@@ -15,6 +15,8 @@ import {getBlogReadRankings, getBlogRecommendations} from '../utils/blog.server'
 import {FourOhFour} from '../components/errors'
 import {externalLinks} from '../external-links'
 import {TeamStats} from '../components/team-stats'
+import type {Timings} from '../utils/metrics.server'
+import {getServerTimeHeader} from '../utils/metrics.server'
 
 type LoaderData = {
   page: MdxPage | null
@@ -23,7 +25,7 @@ type LoaderData = {
 }
 
 export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
-  const timings = {}
+  const timings: Timings = {}
   const page = await getMdxPage(
     {
       contentDir: 'blog',
@@ -31,7 +33,6 @@ export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
     },
     {request, timings},
   )
-  console.log(timings)
   const blogRecommendations = await getBlogRecommendations(request, {
     limit: 3,
     keywords: [
@@ -45,6 +46,7 @@ export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
   let data: LoaderData
   const headers = {
     'Cache-Control': 'public, max-age=3600',
+    'Server-Timing': getServerTimeHeader(timings),
   }
 
   if (page) {
@@ -60,6 +62,7 @@ export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
 export const headers: HeadersFunction = ({loaderHeaders}) => {
   return {
     'Cache-Control': loaderHeaders.get('Cache-Control') ?? 'no-cache',
+    'Server-Timing': loaderHeaders.get('Server-Timing') ?? '',
   }
 }
 

@@ -10,7 +10,7 @@ import {
   useMatches,
   usePendingLocation,
 } from 'remix'
-import type {LinksFunction, MetaFunction} from 'remix'
+import type {LinksFunction, MetaFunction, HeadersFunction} from 'remix'
 import {Outlet} from 'react-router-dom'
 import {AnimatePresence, motion} from 'framer-motion'
 import {useSpinDelay} from 'spin-delay'
@@ -38,6 +38,8 @@ import {
 } from './utils/providers'
 import {getEnv} from './utils/env.server'
 import {getUserInfo} from './utils/user-info.server'
+import type {Timings} from './utils/metrics.server'
+import {time, getServerTimeHeader} from './utils/metrics.server'
 import {validateMagicLink} from './utils/prisma.server'
 import {useScrollRestoration} from './utils/scroll'
 import {Navbar} from './components/navbar'
@@ -106,7 +108,13 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  const user = await getUser(request)
+  const timings: Timings = {}
+  const user = await time({
+    name: 'getUser in root loader',
+    type: 'postgres read',
+    timings,
+    fn: () => getUser(request),
+  })
 
   const themeSession = await getThemeSession(request)
   const {getMagicLink, getEmail} = await getLoginInfoSession(request)
@@ -129,7 +137,14 @@ export const loader: LoaderFunction = async ({request}) => {
 
   const data: LoaderData = {
     user,
-    userInfo: user ? await getUserInfo(user) : null,
+    userInfo: user
+      ? await time({
+          name: 'getUserInfo in root loader',
+          type: 'convertkit and discord read',
+          timings,
+          fn: () => getUserInfo(user),
+        })
+      : null,
     ENV: getEnv(),
     requestInfo: {
       origin: getDomainUrl(request),
@@ -142,7 +157,13 @@ export const loader: LoaderFunction = async ({request}) => {
     },
   }
 
-  return json(data)
+  return json(data, {headers: {'Server-Timing': getServerTimeHeader(timings)}})
+}
+
+export const headers: HeadersFunction = ({loaderHeaders}) => {
+  return {
+    'Server-Timing': loaderHeaders.get('Server-Timing') ?? '',
+  }
 }
 
 const LOADER_WORDS = [

@@ -121,18 +121,25 @@ async function cachified<ReturnValue>({
   forceFresh,
   checkValue = value => Boolean(value),
   timings,
+  timingType = 'getting fresh value',
 }: {
   key: string
   getFreshValue: () => Promise<ReturnValue>
   checkValue?: (value: ReturnValue) => boolean
-  timings?: Timings
   forceFresh?: boolean
   request?: Request
+  timings?: Timings
+  timingType?: string
 }): Promise<ReturnValue> {
   forceFresh = forceFresh ?? (request ? await shouldForceFresh(request) : false)
   if (!forceFresh) {
     try {
-      const cached = await time(`redis.get(${key})`, () => get(key), timings)
+      const cached = await time({
+        name: `redis.get(${key})`,
+        type: 'redis cache read',
+        fn: () => get(key),
+        timings,
+      })
       if (cached) {
         const cachedValue = JSON.parse(cached) as ReturnValue
         if (checkValue(cachedValue)) {
@@ -149,7 +156,12 @@ async function cachified<ReturnValue>({
       console.error(`error with cache at ${key}`, getErrorMessage(error))
     }
   }
-  const value = await time(`getFreshValue for ${key}`, getFreshValue, timings)
+  const value = await time({
+    name: `getFreshValue for ${key}`,
+    type: timingType,
+    fn: getFreshValue,
+    timings,
+  })
   if (checkValue(value)) {
     void set(key, JSON.stringify(value)).catch(error => {
       console.error(`error setting redis.${key}`, getErrorMessage(error))

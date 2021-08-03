@@ -19,6 +19,7 @@ import {HeroSection} from '../components/sections/hero-section'
 import {PlusIcon} from '../components/icons/plus-icon'
 import {Button} from '../components/button'
 import type {Timings} from '../utils/metrics.server'
+import {getServerTimeHeader} from '../utils/metrics.server'
 
 type LoaderData = {
   posts: Array<MdxListItem>
@@ -28,7 +29,6 @@ type LoaderData = {
 export const loader: LoaderFunction = async ({request}) => {
   const timings: Timings = {}
   const posts = await getBlogMdxListItems({request, timings})
-  console.log(timings)
 
   const tags = new Set<string>()
   for (const post of posts) {
@@ -45,6 +45,7 @@ export const loader: LoaderFunction = async ({request}) => {
   return json(data, {
     headers: {
       'Cache-Control': 'public, max-age=3600',
+      'Server-Timing': getServerTimeHeader(timings),
     },
   })
 }
@@ -52,6 +53,7 @@ export const loader: LoaderFunction = async ({request}) => {
 export const headers: HeadersFunction = ({loaderHeaders}) => {
   return {
     'Cache-Control': loaderHeaders.get('Cache-Control') ?? 'no-cache',
+    'Server-Timing': loaderHeaders.get('Server-Timing') ?? '',
   }
 }
 
