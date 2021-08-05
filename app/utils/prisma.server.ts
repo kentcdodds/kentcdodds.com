@@ -1,6 +1,7 @@
 import {PrismaClient} from '@prisma/client'
 import type {Request, Response, EntryContext} from 'remix'
 import {redirect} from 'remix'
+import chalk from 'chalk'
 import type {User, Session} from 'types'
 import {encrypt, decrypt} from './encryption.server'
 import {getRequiredServerEnvVar} from './misc'
@@ -9,7 +10,7 @@ declare global {
   // This prevents us from making multiple connections to the db when the
   // require cache is cleared.
   // eslint-disable-next-line
-  var prisma: PrismaClient | undefined
+  var prisma: ReturnType<typeof getClient> | undefined
 }
 
 const DATABASE_URL = getRequiredServerEnvVar('DATABASE_URL')
@@ -22,23 +23,43 @@ const PRIMARY_REGION = isLocalHost
 const FLY_REGION = isLocalHost ? null : getRequiredServerEnvVar('FLY_REGION')
 const isPrimaryRegion = PRIMARY_REGION === FLY_REGION
 if (!isLocalHost) {
+  regionalDB.host = `${FLY_REGION}.${regionalDB.host}`
   if (!isPrimaryRegion) {
     // 5433 is the read-replica port
     regionalDB.port = '5433'
-    regionalDB.host = `${FLY_REGION}.${regionalDB.host}`
   }
 }
 
-const prisma = getClient(
-  () =>
-    new PrismaClient({
-      datasources: {
-        db: {
-          url: regionalDB.toString(),
-        },
+const prisma = getClient(() => {
+  const client = new PrismaClient({
+    log: [
+      {emit: 'event', level: 'query'},
+      {emit: 'stdout', level: 'error'},
+      {emit: 'stdout', level: 'info'},
+      {emit: 'stdout', level: 'warn'},
+    ],
+    datasources: {
+      db: {
+        url: regionalDB.toString(),
       },
-    }),
-)
+    },
+  })
+  client.$on('query', e => {
+    const color =
+      e.duration < 15
+        ? 'green'
+        : e.duration < 20
+        ? 'blue'
+        : e.duration < 35
+        ? 'yellow'
+        : e.duration < 50
+        ? 'redBright'
+        : 'red'
+    const dur = chalk[color](`${e.duration}ms`)
+    console.log(`prisma:query - ${dur} - ${e.query}`)
+  })
+  return client
+})
 
 function getClient(createClient: () => PrismaClient): PrismaClient {
   let client = global.prisma

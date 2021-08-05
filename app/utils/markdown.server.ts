@@ -15,6 +15,11 @@ async function markdownToHtml(markdownString: string) {
   return contents.toString()
 }
 
+async function markdownToHtmlUnwrapped(markdownString: string) {
+  const wrapped = await markdownToHtml(markdownString)
+  return wrapped.replace(/(^<p>|<\/p>$)/g, '')
+}
+
 async function markdownToHtmlDocument(markdownString: string) {
   const {contents} = await unified()
     .use(markdown)
@@ -27,4 +32,4 @@ async function markdownToHtmlDocument(markdownString: string) {
   return contents.toString()
 }
 
-export {markdownToHtml, markdownToHtmlDocument}
+export {markdownToHtml, markdownToHtmlUnwrapped, markdownToHtmlDocument}

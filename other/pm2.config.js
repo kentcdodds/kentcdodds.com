@@ -17,6 +17,7 @@ module.exports = {
         NODE_ENV: process.env.NODE_ENV ?? 'development',
         ENABLE_TEST_ROUTES: process.env.ENABLE_TEST_ROUTES ?? true,
         RUNNING_E2E: process.env.RUNNING_E2E,
+        FORCE_COLOR: '1',
       },
     },
     {
@@ -27,6 +28,7 @@ module.exports = {
         NODE_ENV: process.env.NODE_ENV ?? 'development',
         ENABLE_TEST_ROUTES: process.env.ENABLE_TEST_ROUTES ?? true,
         RUNNING_E2E: process.env.RUNNING_E2E,
+        FORCE_COLOR: '1',
       },
     },
 
@@ -48,6 +50,7 @@ module.exports = {
       ],
       env: {
         NODE_ENV: process.env.NODE_ENV ?? 'development',
+        FORCE_COLOR: '1',
       },
     },
     {
@@ -55,6 +58,9 @@ module.exports = {
       script: 'rsync -v --checksum -r other/postcss.ignored/ app/styles',
       watch: ['other/postcss.ignored'],
       autorestart: false,
+      env: {
+        FORCE_COLOR: '1',
+      },
     },
   ],
 }

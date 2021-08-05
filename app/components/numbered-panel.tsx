@@ -1,13 +1,21 @@
 import * as React from 'react'
 import {H6, Paragraph} from './typography'
 
-interface NumberedPanelProps {
+type NumberedPanelProps = {
   number: number
-  caption: string
-  description: string
-}
+} & ({title?: never; titleHTML: string} | {title: string; titleHTML?: never}) &
+  (
+    | {description?: never; descriptionHTML: string}
+    | {description: string; descriptionHTML?: never}
+  )
 
-function NumberedPanel({number, caption, description}: NumberedPanelProps) {
+function NumberedPanel({
+  number,
+  title,
+  titleHTML,
+  description,
+  descriptionHTML,
+}: NumberedPanelProps) {
   // Note, we can move the counters to pure css if needed, but I'm not sure if it adds anything
   return (
     <li>
@@ -15,9 +23,17 @@ function NumberedPanel({number, caption, description}: NumberedPanelProps) {
         <span className="block mb-4 lg:absolute lg:-left-16 lg:mb-0">
           {number.toString().padStart(2, '0')}.
         </span>
-        {caption}
+        {titleHTML ? (
+          <span dangerouslySetInnerHTML={{__html: titleHTML}} />
+        ) : (
+          title
+        )}
       </H6>
-      <Paragraph>{description}</Paragraph>
+      {descriptionHTML ? (
+        <Paragraph dangerouslySetInnerHTML={{__html: descriptionHTML}} />
+      ) : (
+        <Paragraph>{description}</Paragraph>
+      )}
     </li>
   )
 }

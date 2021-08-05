@@ -1,0 +1,70 @@
+title: React Fundamentals
+description:
+  In this workshop you'll learn what you need to become productive with using
+  the ReactJS framework for building applications for the web.
+meta:
+  keywords:
+    - react
+categories:
+  - react
+convertKitTag: '896452'
+problemStatements:
+  part1: TODO
+  part2: TODO
+  part3: TODO
+  part4: TODO
+keyTakeaways:
+  - title: TODO
+    description: TODO
+  - title: TODO
+    description: TODO
+  - title: TODO
+    description: TODO
+  - title: TODO
+    description: TODO
+topics:
+  - Create HTML elements with React's createElement API
+  - Use JSX to create React elements for DOM nodes
+  - Creating custom components
+  - Styling your app with React
+  - Handling user events
+  - Basic forms with React
+  - Dynamic forms with React
+  - Using React Fragments
+  - What is the “key” prop and how to use it effectively
+prerequisite: >-
+  Attend [Modern JavaScript](/workshops/modern-javascript) or have the
+  equivalent experience with modern JavaScript APIs. Attend [Asyncronous
+  JavaScript](/workshops/asynchronous-javascript) or have the equivalent
+  experience with modern JavaScript Promises and async/await syntax. Experience
+  with HTML, CSS, and DOM APIs.
+testimonials:
+  - imageUrl: https://randomuser.me/api/portraits/lego/1.jpg
+    imageAlt: profile photo of person
+    author: Person 1
+    company: Freelance Figurine
+    testimonial:
+      Mauris auctor nulla at felis placerat, ut elementum urna commodo. Aenean
+      et rutrum quam. Etiam odio massa.
+# ---
+# ---
+
+# ### Learn the foundational concepts necessary for building React applications and libraries
+
+# Working effectively with React requires an understanding of JSX and React
+# elements. Many engineers work with React for months or years without ever having
+# a clear idea of how JSX works or what it even really is. They memorize a list of
+# rules and miss out on opportunities to make their code more expressive and
+# maintainable. Additionally, building applications in React requires an
+# understanding of code reuse through custom components, using and changing data
+# over time (state), handling user events, and working with forms.
+
+# In this workshop, you’ll learn everything you need to be effective with the
+# fundamental building block of React applications. When you’re finished, you’ll
+# be prepared to create React components to build excellent experiences for your
+# app's users.
+
+# ## Topics
+
+# ## Pre-requisites
+

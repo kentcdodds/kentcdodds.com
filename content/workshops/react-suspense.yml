@@ -1,0 +1,96 @@
+title: React Suspense
+description:
+  In this workshop, you'll learn everything you need to diagnose, profile, and
+  fix performance problems in your React application using the Browser
+  Performance Profiler, React DevTools Profiler, and proven React optimization
+  techniques.
+meta:
+  keywords:
+    - react
+    - react suspense
+    - react concurrent mode
+    - data fetching
+    - async react
+categories:
+  - react
+convertKitTag: '1163958'
+problemStatements:
+  part1: TODO
+  part2: TODO
+  part3: TODO
+  part4: TODO
+keyTakeaways:
+  - title: TODO
+    description: TODO
+  - title: TODO
+    description: TODO
+  - title: TODO
+    description: TODO
+  - title: TODO
+    description: TODO
+topics:
+  - know how Suspense works fundamentally
+  - be able to write your own Suspense-based abstraction
+  - understand the benefits and how to of "render as you fetch"
+  - know how to use <code>useTransition</code> and
+    <code>useDeferredValue</code>{' '} effectively
+  - know how to write your own cache for suspense-based abstractions
+  - know how to use <code>&lt;React.SuspenseList /&gt;</code> to coordinate
+    multiple suspending components
+
+prerequisite: >-
+  Watch Dan Abramov's talk [Beyond React 16 | JSConf Iceland
+  2018](https://www.youtube.com/watch?v=nLF0n9SACd4) (33 minutes). Go through my
+  [Learn React Hooks Workshop](https://kentcdodds.com/workshops/hooks), or have
+  the equivalent basic experience of using hooks. You should be experienced with
+  `useState`, `useEffect`, and `useRef`. Go through my [Advanced React Hooks
+  Workshop](https://kentcdodds.com/workshops/advanced-react-hooks), or have the
+  equivalent experience. You should be experienced with `useContext` and
+  `useReducer` (experience with `useMemo` and `useCallback` is a bonus).
+
+testimonials:
+  - imageUrl: https://randomuser.me/api/portraits/lego/1.jpg
+    imageAlt: profile photo of person
+    author: Person 1
+    company: Freelance Figurine
+    testimonial:
+      Mauris auctor nulla at felis placerat, ut elementum urna commodo. Aenean
+      et rutrum quam. Etiam odio massa.
+# ---
+# ---
+
+# ### Simplify your Async UI and improve your User Experience (EXPERIMENTAL)
+
+# One of the biggest challenges to writing software for the web is dealing with
+# asynchrony, but we have to deal with it all the time.
+
+# This leads to a bunch of boilerplate code for handling loading and error states
+# just to get the data we need to show the user-- whether the data comes from a
+# remote endpoint or from browser APIs like geolocation and Bluetooth.
+
+# The end result is countless spinners and the dreaded FOLC (flash of loading
+# content).
+
+# React Suspense is the answer to these problems.
+
+# React Suspense is a primitive built-into React that drastically simplifies
+# asynchronous state management in our applications, and helps you avoid FOLC out
+# of the box.
+
+# It's a bit of a different approach to managing these problems and understanding
+# how it works is key to taking advantage of what it has to offer.
+
+# In this workshop, you'll learn how Suspense works under the hood, preparing you
+# for the future of asynchronous state management.
+
+# > PLEASE NOTE: This feature of React is currently experimental and is likely to
+# > change in a future release. You will be getting a preview of how this feature
+# > works currently.
+
+# ## When you are done you will:
+
+# <ul>
+# </ul>
+
+# ## Pre-requisites
+

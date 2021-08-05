@@ -1,0 +1,56 @@
+title: Advanced React Patterns
+description:
+  With this workshop, you’ll not only learn great patterns you can use but also
+  the strengths and weaknesses of each, so you know which to reach for to
+  provide your components the flexibility and power you need.
+meta:
+  keywords:
+    - react
+categories:
+  - react
+convertKitTag: '896446'
+problemStatements:
+  part1: TODO
+  part2: TODO
+  part3: TODO
+  part4: TODO
+keyTakeaways:
+  - title: TODO
+    description: TODO
+  - title: TODO
+    description: TODO
+  - title: TODO
+    description: TODO
+  - title: TODO
+    description: TODO
+topics:
+  - Use Context Controllers to improve context value maintenance
+  - Use the Compound Components Pattern to write React components that
+    implicitly share state while giving rendering flexibility to the user
+  - Give simple control of state updates with a State Reducer
+  - Provide total logic control with the Controlled Props
+  - And more!
+
+prerequisite: >-
+  Attend my [Advanced React Hooks Workshop](/workshops/advanced-react-hooks) or
+  have the equivalent experience. You should be experienced with `useContext`
+  and `useReducer` (experience with `useMemo` and `useCallback` is a bonus).
+
+testimonials:
+  - imageUrl: https://randomuser.me/api/portraits/lego/1.jpg
+    imageAlt: profile photo of person
+    author: Person 1
+    company: Freelance Figurine
+    testimonial:
+      Mauris auctor nulla at felis placerat, ut elementum urna commodo. Aenean
+      et rutrum quam. Etiam odio massa.
+# ### Learn how to build simple and flexible React Components and Hooks using modern patterns
+
+# Making React components and hooks that can be used in multiple places is not
+# hard. What is hard is when the use cases differ. Without the right patterns, you
+# can find yourself with a highly complex component or custom hook that requires a
+# lot of configuration props and way too many if statements.
+
+# With this workshop, you'll not only learn great patterns you can use but also
+# the strengths and weaknesses of each, so you know which to reach for to provide
+# your custom hooks and components the flexibility and power you need.

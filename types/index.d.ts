@@ -23,6 +23,10 @@ type MdxPage = {
   frontmatter: {
     title?: string
     description?: string
+    meta?: {
+      keywords?: Array<string>
+      [key as string]: string
+    }
 
     // Post meta
     categories?: Array<string>
@@ -38,14 +42,6 @@ type MdxPage = {
         link?: string
       }
     }>
-
-    // Workshop meta
-    tech?: string
-    convertKitTag?: string
-    meta?: {
-      keywords?: Array<string>
-      [key as string]: string
-    }
   }
 }
 
@@ -54,6 +50,19 @@ type MdxPage = {
  * pretty big and the pages that simply list the pages shouldn't include the code.
  */
 type MdxListItem = Omit<MdxPage, 'code'>
+
+type Workshop = {
+  slug: string
+  title: string
+  description: string
+  categories: Array<string>
+  meta?: Record<string, string>
+  testimonials: Array<Testimonial>
+  problemStatementHTMLs: ProblemStatements
+  keyTakeawayHTMLs: Array<KeyTakeaway>
+  topicHTMLs: Array<string>
+  prerequisiteHTML: string
+}
 
 type Link = {
   name: string
@@ -153,6 +162,7 @@ export {
   Role,
   MdxPage,
   MdxListItem,
+  Workshop,
   CWKEpisode,
   CWKListItem,
   CWKSeason,

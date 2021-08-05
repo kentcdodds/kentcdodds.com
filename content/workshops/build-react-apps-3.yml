@@ -1,0 +1,65 @@
+title: Build React Applications (Part 3)
+description:
+  We’ll cover advanced use cases common to most frontend React applications like
+  authentication, code splitting, application state management, performance.
+meta:
+  keywords:
+    - react
+categories:
+  - react
+convertKitTag: '1345903'
+problemStatements:
+  part1: TODO
+  part2: TODO
+  part3: TODO
+  part4: TODO
+keyTakeaways:
+  - title: TODO
+    description: TODO
+  - title: TODO
+    description: TODO
+  - title: TODO
+    description: TODO
+  - title: TODO
+    description: TODO
+topics:
+  - Manage global application state with context
+  - Use React's Suspense feature for code-splitting
+  - Build flexible reusable components and hooks
+  - Profile application for performance optimizations
+prerequisite: >-
+  Attend my [Build ReactJS Applications](/workshops/build-react-apps), or have
+  equivalent experience building React applications with custom React components
+  and the basic React hooks. Attend my [Advanced React Hooks
+  Workshop](/workshops/advanced-react-hooks), or have the equivalent basic
+  experience of using advanced hooks. You should be experienced with
+  `useContext`, `useReducer`, `useMemo`, and `useCallback`.
+testimonials:
+  - imageUrl: https://randomuser.me/api/portraits/lego/1.jpg
+    imageAlt: profile photo of person
+    author: Person 1
+    company: Freelance Figurine
+    testimonial:
+      Mauris auctor nulla at felis placerat, ut elementum urna commodo. Aenean
+      et rutrum quam. Etiam odio massa.
+# ---
+# ---
+
+# ### Use advanced techniques to optimize ReactJS applications
+
+# We've built the first iteration of a React app, but now it's time to optimize
+# our app for performance and maintenance. In this workshop we’ll build upon the
+# application we built in the first part of this workshop
+# ([Build ReactJS Applications](/workshops/build-react-apps)) and improve it using
+# proven tools and techniques. We’ll cover everything you're likely to run into
+# when building frontend React applications like application state management,
+# performance profiling and optimizations, and creating reusable components and
+# hooks.
+
+# ## Topics
+
+# <ul>
+# </ul>
+
+# ## Pre-requisites
+

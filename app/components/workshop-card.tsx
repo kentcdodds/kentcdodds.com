@@ -1,7 +1,7 @@
-import {Link} from 'remix'
-import formatDate from 'date-fns/format'
 import * as React from 'react'
-import type {MdxListItem} from '../../types'
+import {Link} from 'remix'
+import type {Workshop} from 'types'
+import type {WorkshopEvent} from '../utils/workshop-tickets.server'
 import {H3, H6, Paragraph} from './typography'
 
 function truncate(text: string, length: number) {
@@ -13,23 +13,19 @@ function truncate(text: string, length: number) {
 }
 
 function WorkshopCard({
-  slug,
-  open = Math.random() < 0.3,
-  frontmatter: {
-    date,
-    title = 'Untitled Workshop',
-    description = 'Description TBA',
-    tech,
-  },
-}: MdxListItem & {open?: boolean}) {
+  workshop,
+  workshopEvent,
+}: {
+  workshop: Workshop
+  workshopEvent?: WorkshopEvent
+}) {
   return (
     <Link
-      to={slug}
-      className="focus-ring block flex flex-col p-16 pr-24 w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg"
+      to={`/workshops/${workshop.slug}`}
+      className="focus-ring flex flex-col p-16 pr-24 w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg"
     >
       <div className="flex-none h-36">
-        {/* TODO: how to determine if it's open or not? */}
-        {open ? (
+        {workshopEvent ? (
           <div className="inline-flex items-baseline">
             <div className="block flex-none w-3 h-3 bg-green-600 rounded-full" />
             <H6 as="p" className="pl-4">
@@ -38,13 +34,20 @@ function WorkshopCard({
           </div>
         ) : null}
       </div>
-      <div className="flex-none">
-        <div className="inline-block mb-4 px-8 py-4 text-black dark:text-white text-lg dark:bg-gray-600 bg-white rounded-full">
-          {tech}
+      {workshop.categories.length ? (
+        <div className="flex-none">
+          {workshop.categories.map(c => (
+            <div
+              key={c}
+              className="inline-block mb-4 px-8 py-4 text-black dark:text-white text-lg dark:bg-gray-600 bg-white rounded-full"
+            >
+              {c}
+            </div>
+          ))}
         </div>
-      </div>
+      ) : null}
       <H3 as="div" className="flex-none mb-3">
-        {title}
+        {workshop.title}
       </H3>
 
       <div className="flex-auto mb-10">
@@ -55,11 +58,11 @@ function WorkshopCard({
             that the truncated string remains longer than the line-clamp, so that
             line-clamp precedes for the 90% supporting that.
           */}
-          {truncate(description, 120)}
+          {truncate(workshop.description, 120)}
         </Paragraph>
       </div>
       <H6 as="div" className="flex flex-wrap lowercase">
-        {date ? formatDate(new Date(date), 'PPP') : 'To be announced'}
+        {workshopEvent ? workshopEvent.date : 'Not yet scheduled'}
       </H6>
     </Link>
   )

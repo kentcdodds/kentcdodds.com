@@ -1,0 +1,88 @@
+title: JavaScript Fundamentals
+description:
+  In this workshop, you’ll get started on the right foot with the most
+  ubiquitous programming language around. By the end of the workshop, you’ll
+  have something running on the world wide web and you’ll be equipped with the
+  tools you need to keep learning and building JavaScript applications.
+meta:
+  keywords:
+    - javascript
+categories:
+  - javascript
+convertKitTag: '896444'
+problemStatements:
+  part1: TODO
+  part2: TODO
+  part3: TODO
+  part4: TODO
+keyTakeaways:
+  - title: Statements vs Expressions
+    description: be able to write common statements and expressions
+  - title: Operate
+    description:
+      use variables, conditionals, loops, and functions to execute operations
+  - title: Deploy on WWW
+    description: have something running on the world wide web
+  - title: Tools
+    description:
+      be equipped with the tools you need to keep learning and building
+      JavaScript applications
+topics:
+  - JavaScript statements and expressions
+  - Code comments
+  - 'JavaScript’s main primitive values: string, boolean, number, undefined, and
+    null'
+  - Operators
+  - Variables
+  - Conditionals
+  - Loops
+  - Functions
+  - 'JavaScript’s main data structures: objects and arrays'
+  - Using Netlify to put your code on the web
+
+prerequisite: >-
+  A computer with an internet connection and Google Chrome installed
+testimonials:
+  - imageUrl: https://randomuser.me/api/portraits/lego/1.jpg
+    imageAlt: profile photo of person
+    author: Person 1
+    company: Freelance Figurine
+    testimonial:
+      Mauris auctor nulla at felis placerat, ut elementum urna commodo. Aenean
+      et rutrum quam. Etiam odio massa.
+# ---
+# ---
+
+# ### Take someone with no knowledge of computer programming and get them started with JavaScript
+
+# Interested in learning to program?
+
+# Do you want to build the next Facebook?
+
+# Or even just a little custom app to track (and reduce) your trips to the soda
+# machine?
+
+# JavaScript can get you there. It’s:
+
+# <ul>
+#   <li>the most ubiquitous programming language around</li>
+#   <li> the foundation of popular frameworks like React, Angular, and Redux</li>
+#   <li> what enables webpages to interact (hence “the internet”)</li>
+# </ul>
+
+# ## The Workshop
+
+# Hi, I’m Kent C. Dodds! In this workshop, I’ll help you build a foundation in
+# JavaScript. We will start out with common elements in JavaScript, build up to
+# variables and functions, and finally use Netlify to put your code on the web.
+
+# By the end of the workshop, you will:
+
+# <ul>
+# </ul>
+
+# ## Topics
+
+# ## Pre-requisites
+
+# -

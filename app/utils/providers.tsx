@@ -1,8 +1,9 @@
 import * as React from 'react'
 import {Team} from '@prisma/client'
-import type {Await, CallKentEpisode, User} from 'types'
+import type {Await, CallKentEpisode, User, Workshop} from 'types'
 import type {getUserInfo} from './user-info.server'
 import type {Theme} from './theme-provider'
+import type {WorkshopEvent} from './workshop-tickets.server'
 
 function createSimpleContext<ContextType>(name: string) {
   const defaultValue = Symbol(`Default ${name} context value`)
@@ -99,6 +100,13 @@ const {
 const {Provider: CallKentEpisodesProvider, useValue: useCallKentEpisodes} =
   createSimpleContext<Array<CallKentEpisode>>('CallKentEpisodes')
 
+type Workshops = {
+  workshops: Array<Workshop>
+  workshopEvents: Array<WorkshopEvent>
+}
+const {Provider: WorkshopsProvider, useValue: useWorkshops} =
+  createSimpleContext<Workshops>('Workshops')
+
 export {
   RequestInfoProvider,
   useRequestInfo,
@@ -115,5 +123,7 @@ export {
   useChatsEpisodeUIState,
   CallKentEpisodesProvider,
   useCallKentEpisodes,
+  WorkshopsProvider,
+  useWorkshops,
 }
 export type {RequestInfo, OptionalTeam}

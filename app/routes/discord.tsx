@@ -304,19 +304,19 @@ export default function Discord() {
               <ol className="space-y-24 lg:space-y-16">
                 <NumberedPanel
                   number={1}
-                  caption="What are the meetups?"
+                  title="What are the meetups?"
                   description="Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
         nunc, dictum quis condimentum in, imper diet at arcu."
                 />
                 <NumberedPanel
                   number={2}
-                  caption="So, how do I use them?"
+                  title="So, how do I use them?"
                   description="Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
         nunc, dictum quis condimentum in, imper diet at arcu."
                 />
                 <NumberedPanel
                   number={3}
-                  caption="Can I organize meetups myself or are there only curated meetups?"
+                  title="Can I organize meetups myself or are there only curated meetups?"
                   description="Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
         nunc, dictum quis condimentum in, imper diet at arcu."
                 />

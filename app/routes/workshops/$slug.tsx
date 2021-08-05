@@ -1,88 +1,104 @@
 import * as React from 'react'
-import {useRouteData, json} from 'remix'
-import type {MdxPage, KCDLoader, MdxListItem} from 'types'
-import formatDate from 'date-fns/format'
-import {getMdxPage, mdxPageMeta} from '../../utils/mdx'
-import {getScheduledEvents} from '../../utils/workshop-tickets.server'
-import type {WorkshopEvent} from '../../utils/workshop-tickets.server'
+import {useLoaderData, json} from 'remix'
+import type {MetaFunction} from 'remix'
+import {useParams} from 'react-router-dom'
+import type {KCDLoader, MdxListItem} from 'types'
 import {Grid} from '../../components/grid'
 import {H2, H5, H6, Paragraph} from '../../components/typography'
-import {Button} from '../../components/button'
+import {Button, ButtonLink} from '../../components/button'
 import {ArrowButton, BackLink} from '../../components/arrow-button'
 import {WorkshopCard} from '../../components/workshop-card'
 import {NumberedPanel} from '../../components/numbered-panel'
 import {TestimonialSection} from '../../components/sections/testimonial-section'
 import {FourOhFour} from '../../components/errors'
 import {getBlogRecommendations} from '../../utils/blog.server'
+import type {Timings} from '../../utils/metrics.server'
+import {getServerTimeHeader} from '../../utils/metrics.server'
+import {getWorkshop} from '../../utils/workshops.server'
+import {useWorkshops} from '../../utils/providers'
 
-type LoaderData = {
-  page: MdxPage | null
-  workshop?: WorkshopEvent
-  blogRecommendations: Array<MdxListItem>
-}
+type LoaderData = {blogRecommendations: Array<MdxListItem>}
 
 export const loader: KCDLoader<{slug: string}> = async ({params, request}) => {
-  const page = await getMdxPage(
-    {contentDir: 'workshops', slug: params.slug},
-    {request},
+  const timings: Timings = {}
+  const workshop = await getWorkshop(params.slug, {request, timings})
+  const headers = {'Server-Timing': getServerTimeHeader(timings)}
+
+  return json(
+    {
+      blogRecommendations: workshop
+        ? await getBlogRecommendations(request)
+        : [],
+    },
+    {status: workshop ? 200 : 404, headers},
   )
-  const events = await getScheduledEvents()
-  const workshop = events.find(
-    ({metadata}) => metadata.workshopSlug === params.slug,
-  )
-  const data: LoaderData = {
-    page,
-    workshop,
-    blogRecommendations: await getBlogRecommendations(request),
+}
+
+export const meta: MetaFunction = ({parentsData, params}) => {
+  let workshop
+  const workshopsData = parentsData['routes/workshops']
+  if (Array.isArray(workshopsData?.workshops)) {
+    workshop = workshopsData?.workshops.find(
+      (w: {slug?: string}) => w.slug === params.slug,
+    )
   }
-  if (page) {
-    return json(data)
-  } else {
-    return json(data, {status: 404})
+
+  return {
+    title: workshop ? workshop.title : 'Workshop not found',
+    description: workshop ? workshop.description : 'No workshop here :(',
+    ...workshop?.meta,
   }
 }
 
-export const meta = mdxPageMeta
+export default function WorkshopScreenBase() {
+  const loaderData = useLoaderData<LoaderData>()
+  const params = useParams()
+  const data = useWorkshops()
+  const workshop = data.workshops.find(w => w.slug === params.slug)
 
-export default function MdxScreenBase() {
-  const data = useRouteData<LoaderData>()
-
-  if (data.page)
-    return <MdxScreen mdxPage={data.page} workshop={data.workshop} />
-  else return <FourOhFour articles={data.blogRecommendations} />
+  if (workshop) {
+    return <WorkshopScreen />
+  } else {
+    return <FourOhFour articles={loaderData.blogRecommendations} />
+  }
 }
 
 interface TopicRowProps {
   number: number
-  topic: string
+  topicHTML: string
 }
 
-function TopicRow({number, topic}: TopicRowProps) {
+function TopicRow({number, topicHTML}: TopicRowProps) {
   return (
     <div className="bg-secondary pb-14 pt-12 px-10 rounded-lg lg:pl-36 lg:pr-56 lg:py-12">
       <H5 className="relative">
         <span className="lg:absolute lg:-left-24 lg:block">
           {number.toString().padStart(2, '0')}.
         </span>{' '}
-        {topic}
+        <div dangerouslySetInnerHTML={{__html: topicHTML}} />
       </H5>
     </div>
   )
 }
 
 interface RegistrationPanelProps {
-  workshop?: string
+  workshop: string
+  eventLink?: string
   totalSeats: number
   availableSeats: number
 }
 
 function RegistrationPanel({
-  workshop = 'to be announced',
+  workshop,
+  eventLink,
   availableSeats,
   totalSeats,
 }: RegistrationPanelProps) {
   return (
-    <div className="bg-secondary flex flex-col items-stretch pb-10 pt-12 px-10 w-full rounded-lg lg:flex-row-reverse lg:items-center lg:justify-end lg:py-8">
+    <div
+      id="register"
+      className="bg-secondary flex flex-col items-stretch pb-10 pt-12 px-10 w-full rounded-lg lg:flex-row-reverse lg:items-center lg:justify-end lg:py-8"
+    >
       <div className="mb-10 lg:mb-0 lg:ml-16">
         <div className="inline-flex items-baseline mb-10 lg:mb-2">
           <div className="block flex-none w-3 h-3 bg-green-600 rounded-full" />
@@ -96,23 +112,62 @@ function RegistrationPanel({
         </h5>
       </div>
 
-      <Button className="flex-none">Register here</Button>
+      {eventLink ? (
+        <ButtonLink to={eventLink} className="flex-none">
+          Register here
+        </ButtonLink>
+      ) : (
+        'TODO'
+      )}
     </div>
   )
 }
 
-const testimonials = Array.from({length: 9}).map((_, idx) => ({
-  imageUrl: `https://randomuser.me/api/portraits/lego/${idx}.jpg`,
-  imageAlt: 'profile photo of person',
-  author: `Person ${idx + 1}`,
-  company: 'Freelance Figurine',
-  testimonial:
-    'Mauris auctor nulla at felis placerat, ut elementum urna commodo. Aenean et rutrum quam. Etiam odio massa.',
-}))
+function restartArray<ArrayType>(array: Array<ArrayType>, startIndex: number) {
+  const newArray: typeof array = []
+  for (let i = 0; i < array.length; i++) {
+    const value = array[(i + startIndex) % array.length]
+    if (value === undefined) {
+      console.error('This is unusual...', value, i, array)
+      continue
+    }
+    newArray.push(value)
+  }
+  return newArray
+}
 
-function MdxScreen({mdxPage}: {mdxPage: MdxPage; workshop?: WorkshopEvent}) {
-  const {frontmatter} = mdxPage
-  const date = new Date()
+function WorkshopScreen() {
+  const params = useParams()
+  const data = useWorkshops()
+  const workshop = data.workshops.find(w => w.slug === params.slug)
+
+  if (!workshop) {
+    console.error(
+      `This should be impossible. There's no workshop even though we rendered the workshop screen...`,
+    )
+    return <div>Oh no... Email Kent</div>
+  }
+
+  const workshopEvent = data.workshopEvents.find(
+    e => e.metadata.workshopSlug === params.slug,
+  )
+
+  // restartArray allows us to make sure that the same workshops don't always appear in the list
+  // without having to do something complicated to get a deterministic selection between server/client.
+  const otherWorkshops = restartArray(
+    data.workshops.filter(w => w.slug !== workshop.slug),
+    data.workshops.indexOf(workshop),
+  )
+  const scheduledWorkshops = otherWorkshops.filter(w =>
+    data.workshopEvents.find(e => e.metadata.workshopSlug === w.slug),
+  )
+  const similarWorkshops = otherWorkshops.filter(w =>
+    w.categories.some(c => workshop.categories.includes(c)),
+  )
+
+  const alternateWorkshops = Array.from(
+    new Set([...scheduledWorkshops, ...similarWorkshops, ...otherWorkshops]),
+  ).slice(0, 3)
 
   return (
     <>
@@ -121,20 +176,20 @@ function MdxScreen({mdxPage}: {mdxPage: MdxPage; workshop?: WorkshopEvent}) {
           <BackLink to="/workshops" className="mb-10 lg:mb-24">
             Back to overview
           </BackLink>
-          <H2 className="mb-2">{`Learn ${frontmatter.title} in this workshop with Kent C. Dodds.`}</H2>
+          <H2 className="mb-2">{`Join Kent C. Dodds for "${workshop.title}"`}</H2>
 
           <H6 as="p" className="mb-16 lowercase lg:mb-44">
-            {`${formatDate(date, 'PPP')} — starts ${formatDate(
-              date,
-              'h:mmaaa z',
-            )}`}
+            {workshopEvent ? workshopEvent.date : 'Not currently scheduled'}
           </H6>
 
-          <RegistrationPanel
-            workshop={frontmatter.title}
-            totalSeats={150}
-            availableSeats={87}
-          />
+          {workshopEvent ? (
+            <RegistrationPanel
+              workshop={workshop.title}
+              eventLink={workshopEvent.url}
+              totalSeats={workshopEvent.quantity}
+              availableSeats={workshopEvent.remaining}
+            />
+          ) : null}
         </div>
         <div className="hidden col-span-1 col-start-12 items-end justify-center lg:flex">
           <ArrowButton direction="down" />
@@ -146,28 +201,32 @@ function MdxScreen({mdxPage}: {mdxPage: MdxPage; workshop?: WorkshopEvent}) {
           <H6>The problem statement</H6>
         </div>
         <div className="col-span-full mb-8 lg:col-span-8 lg:mb-20">
-          <H2 className="mb-8">
-            Making React components and hooks that can be used in multiple
-            places is not hard. What is hard is when the use cases differ ipsum
-            doler sit amet.
-          </H2>
-          <H2 variant="secondary" as="p">
-            Without the right patterns, you can find yourself with a complex
-            component or custom hook that requires configuration props and way
-            too many if statements.
-          </H2>
+          <H2
+            className="mb-8"
+            dangerouslySetInnerHTML={{
+              __html: workshop.problemStatementHTMLs.part1,
+            }}
+          />
+          <H2
+            variant="secondary"
+            as="p"
+            dangerouslySetInnerHTML={{
+              __html: workshop.problemStatementHTMLs.part2,
+            }}
+          />
         </div>
-        <Paragraph className="lg:mb:0 col-span-full mb-4 lg:col-span-4 lg:col-start-5 lg:mr-12">
-          Mauris auctor nulla at felis placerat, ut elementum urna commodo.
-          Aenean et rutrum quam. Etiam odio massa, congue in orci nec, ornare
-          suscipit sem aenean turpis.
-        </Paragraph>
-        <Paragraph className="col-span-full lg:col-span-4 lg:col-start-9 lg:mr-12">
-          With this workshop, you&apos;ll not only learn great patterns you can
-          use but also the strengths and weaknesses of each, so you know which
-          to reach for to provide your custom hooks and components the
-          flexibility and power you need.
-        </Paragraph>
+        <Paragraph
+          className="lg:mb:0 col-span-full mb-4 lg:col-span-4 lg:col-start-5 lg:mr-12"
+          dangerouslySetInnerHTML={{
+            __html: workshop.problemStatementHTMLs.part3,
+          }}
+        />
+        <Paragraph
+          className="col-span-full lg:col-span-4 lg:col-start-9 lg:mr-12"
+          dangerouslySetInnerHTML={{
+            __html: workshop.problemStatementHTMLs.part4,
+          }}
+        />
       </Grid>
 
       <div className="mb-24 px-5vw w-full lg:mb-48">
@@ -187,15 +246,16 @@ function MdxScreen({mdxPage}: {mdxPage: MdxPage; workshop?: WorkshopEvent}) {
 
               <div className="col-span-full lg:col-span-5 lg:col-start-8 lg:mr-12">
                 <ol className="space-y-24 lg:space-y-16">
-                  {Array.from({length: 3}).map((_, idx) => (
-                    <NumberedPanel
-                      key={idx}
-                      number={idx + 1}
-                      caption="Here will a random long title that doesn't fit on one line."
-                      description="Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
-        nunc, dictum quis condimentum in, imper diet at arcu."
-                    />
-                  ))}
+                  {workshop.keyTakeawayHTMLs.map(
+                    ({title, description}, index) => (
+                      <NumberedPanel
+                        key={index}
+                        number={index + 1}
+                        titleHTML={title}
+                        descriptionHTML={description}
+                      />
+                    ),
+                  )}
                 </ol>
               </div>
             </Grid>
@@ -214,83 +274,78 @@ function MdxScreen({mdxPage}: {mdxPage: MdxPage; workshop?: WorkshopEvent}) {
         </div>
 
         <ol className="col-span-full mb-16 space-y-4 lg:mb-20">
-          {Array.from({length: 4}).map((_, idx) => (
-            <TopicRow
-              key={idx}
-              number={idx + 1}
-              topic="Use the Compound Components Pattern to write React components
-        that implicitly share state while giving rendering flexibility
-        to the user."
-            />
+          {workshop.topicHTMLs.map((topicHTML, idx) => (
+            <TopicRow key={idx} number={idx + 1} topicHTML={topicHTML} />
           ))}
         </ol>
 
         <div className="col-span-full lg:col-span-5">
           <H6 className="mb-4">Required experience</H6>
-          <Paragraph>
-            Attend my Advanced React Hooks Workshop or have the equivalent
-            experience. You should be experienced with useContext and useReducer
-            (experience with useMemo and useCallback is a bonus).
-          </Paragraph>
-        </div>
-      </Grid>
-
-      <TestimonialSection
-        testimonials={testimonials}
-        className="mb-10 lg:mb-64"
-      />
-
-      <Grid className="mb-24 lg:hidden">
-        <div className="flex col-span-full items-center justify-between">
-          <p className="text-black dark:text-white text-2xl">1 — 4</p>
-          <div className="flex space-x-3">
-            <ArrowButton direction="left" />
-            <ArrowButton direction="right" />
-          </div>
-        </div>
-      </Grid>
-
-      <Grid className="mb-24 lg:mb-64">
-        <div className="col-span-full lg:col-span-8 lg:col-start-3">
-          <H2 className="mb-6 text-center">
-            {`Ready to learn more about ${frontmatter.title} in this workshop`}
-          </H2>
-          <H2 className="mb-20 text-center" variant="secondary">
-            You can register by using the button bellow, can’t wait to see you.
-          </H2>
-          <RegistrationPanel
-            workshop={frontmatter.title}
-            totalSeats={150}
-            availableSeats={87}
+          <Paragraph
+            dangerouslySetInnerHTML={{__html: workshop.prerequisiteHTML}}
           />
         </div>
       </Grid>
 
-      <Grid>
-        <div className="col-span-full mb-16">
-          <H2 className="mb-2">Have a look at my other workshops.</H2>
+      {workshop.testimonials.length ? (
+        <>
+          <TestimonialSection
+            testimonials={workshop.testimonials}
+            className="mb-10 lg:mb-64"
+          />
 
-          <H2 variant="secondary" as="p">
-            Learn more in these workshops.
-          </H2>
-        </div>
+          <Grid className="mb-24 lg:hidden">
+            <div className="flex col-span-full items-center justify-between">
+              <p className="text-black dark:text-white text-2xl">1 — 4</p>
+              <div className="flex space-x-3">
+                <ArrowButton direction="left" />
+                <ArrowButton direction="right" />
+              </div>
+            </div>
+          </Grid>
+        </>
+      ) : null}
 
-        {Array.from({length: 3}).map((_, idx) => (
-          <div key={idx} className="col-span-full mb-4 md:col-span-4 lg:mb-6">
-            <WorkshopCard
-              frontmatter={{
-                title: 'another course',
-                description:
-                  'Donec posuere orci turpis, amet condimentum libero porttitor at in ultrices.',
-                tech: 'javascript',
-                date: formatDate(new Date(), 'yyyy-MM-ii'),
-              }}
-              open={idx === 1}
-              slug="/workshops/advanced-react-hooks"
+      {workshopEvent ? (
+        <Grid className="mb-24 lg:mb-64">
+          <div className="col-span-full lg:col-span-8 lg:col-start-3">
+            <H2 className="mb-6 text-center">
+              {`Ready to learn more about ${workshop.title} in this workshop?`}
+            </H2>
+            <H2 className="mb-20 text-center" variant="secondary">
+              You can register by using the button below. Can’t wait to see you.
+            </H2>
+            <RegistrationPanel
+              workshop={workshop.title}
+              totalSeats={workshopEvent.quantity}
+              availableSeats={workshopEvent.remaining}
             />
           </div>
-        ))}
-      </Grid>
+        </Grid>
+      ) : null}
+
+      {alternateWorkshops.length ? (
+        <Grid>
+          <div className="col-span-full mb-16">
+            <H2 className="mb-2">Have a look at my other workshops.</H2>
+
+            <H2 variant="secondary" as="p">
+              Learn more in these workshops.
+            </H2>
+          </div>
+
+          {alternateWorkshops.map((altWorkshop, idx) => (
+            <div key={idx} className="col-span-full mb-4 md:col-span-4 lg:mb-6">
+              <WorkshopCard
+                workshop={altWorkshop}
+                workshopEvent={data.workshopEvents.find(
+                  e => e.metadata.workshopSlug === altWorkshop.slug,
+                )}
+              />
+            </div>
+          ))}
+        </Grid>
+      ) : null}
     </>
   )
 }

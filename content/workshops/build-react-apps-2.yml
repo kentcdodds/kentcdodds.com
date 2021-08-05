@@ -1,0 +1,62 @@
+title: Build React Applications (Part 2)
+description:
+  We’ll cover everything common to most frontend React applications like
+  routing, data fetching, and authentication.
+meta:
+  keywords:
+    - react
+categories:
+  - react
+convertKitTag: '1418847'
+problemStatements:
+  part1: TODO
+  part2: TODO
+  part3: TODO
+  part4: TODO
+keyTakeaways:
+  - title: TODO
+    description: TODO
+  - title: TODO
+    description: TODO
+  - title: TODO
+    description: TODO
+  - title: TODO
+    description: TODO
+topics:
+  - Support client-side routing with react-router
+  - Authentication
+  - Data Fetching
+  - Managing lists of data
+  - Use react-query to manage client-side cache of backend resources
+
+prerequisite: >-
+  Attend my [React Hooks Workshop](/workshops/advanced-react-hooks), or have the
+  equivalent basic experience of using basic hooks. You should be experienced
+  with creating custom React components and the `useState`, `useEffect`, and
+  `useRef` hooks. Attend my [Build React Apps (Part 1)
+  Workshop](/workshops/build-react-apps-1), or have the equivalent basic
+  experience of building basic React apps.
+
+testimonials:
+  - imageUrl: https://randomuser.me/api/portraits/lego/1.jpg
+    imageAlt: profile photo of person
+    author: Person 1
+    company: Freelance Figurine
+    testimonial:
+      Mauris auctor nulla at felis placerat, ut elementum urna commodo. Aenean
+      et rutrum quam. Etiam odio massa.
+# ### Use common libraries to build ReactJS applications
+
+# The React and JavaScript ecosystem is full of tools and libraries to help you
+# build your applications. In this workshop we’ll build an application from
+# scratch using widely supported and used tools and techniques. We’ll build on
+# part 1 of this workshop and cover everything common to most frontend React
+# applications like routing, data fetching, and authentication.
+
+# ## Topics
+
+# <ul>
+# </ul>
+
+# ## Pre-requisites
+

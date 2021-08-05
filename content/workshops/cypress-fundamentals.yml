@@ -1,0 +1,59 @@
+title: Cypress Fundamentals
+description:
+  In this workshop, we’ll go over how you can install, configure, and script
+  Cypress to test modern, real-world JavaScript web applications.
+meta:
+  keywords:
+    - testing
+    - Cypress
+categories:
+  - testing
+convertKitTag: '896453'
+problemStatements:
+  part1: TODO
+  part2: TODO
+  part3: TODO
+  part4: TODO
+keyTakeaways:
+  - title: TODO
+    description: TODO
+  - title: TODO
+    description: TODO
+  - title: TODO
+    description: TODO
+  - title: TODO
+    description: TODO
+topics:
+  - Install and run Cypress on an existing application
+  - Write simple Cypress tests
+  - Write complex Cypress tests that rely on authentication
+  - Create custom Cypress commands
+  - Debugging Cypress Tests
+  - Using Cypress to enhance your development workflow
+  - Mock HTTP requests to test failure situations
+
+prerequisite: TODO
+testimonials:
+  - imageUrl: https://randomuser.me/api/portraits/lego/1.jpg
+    imageAlt: profile photo of person
+    author: Person 1
+    company: Freelance Figurine
+    testimonial:
+      Mauris auctor nulla at felis placerat, ut elementum urna commodo. Aenean
+      et rutrum quam. Etiam odio massa.
+# ---
+# ---
+
+# ### Use Cypress to write end-to-end tests and be confident that the whole app works together.
+
+# Cypress is an incredibly powerful web testing tool. It’s capable of testing any
+# web application. Its architecture places it a cut above similar end-to-end
+# testing tools. Its developer experience is best-in-class. And because Cypress
+# runs your tests in the same context as the rest of your application, you’re able
+# to get speed, reliability, and debuggability that are just a long-distant dream
+# with similar tools. The catch? There is no catch. Cypress is exceptional.
+
+# In this workshop, we’ll go over how you can install, configure, and script
+# Cypress to test modern, real-world JavaScript web applications.
+
+# ## Topics

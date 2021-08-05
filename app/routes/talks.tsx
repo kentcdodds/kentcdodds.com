@@ -163,7 +163,7 @@ function Card({
   return (
     <div
       className={clsx(
-        'relative block flex flex-col p-16 pr-24 w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg',
+        'relative flex flex-col p-16 pr-24 w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg',
         {
           'ring-2 focus-ring': active,
         },
