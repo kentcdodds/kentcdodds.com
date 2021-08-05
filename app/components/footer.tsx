@@ -1,15 +1,14 @@
 import * as React from 'react'
-import {Form} from 'remix'
 import {externalLinks} from '../external-links'
-import {useOptionalUser, useOptionalUserInfo} from '../utils/providers'
+import {useOptionalUserInfo} from '../utils/providers'
 import {AnchorOrLink} from '../utils/misc'
 import {H4, H6, Paragraph} from './typography'
 import {Grid} from './grid'
-import {ArrowButton} from './arrow-button'
 import {GithubIcon} from './icons/github-icon'
 import {TwitterIcon} from './icons/twitter-icon'
 import {YoutubeIcon} from './icons/youtube-icon'
 import {Signature} from './signature'
+import {ConvertKitForm} from './convert-kit-form'
 
 interface FooterLinkProps {
   name: string
@@ -17,7 +16,6 @@ interface FooterLinkProps {
 }
 
 function NewsletterSection() {
-  const user = useOptionalUser()
   return (
     <div>
       <H6 as="div">Stay up to date</H6>
@@ -28,34 +26,7 @@ function NewsletterSection() {
         </Paragraph>
       </div>
 
-      <Form
-        className="mt-8 space-y-4"
-        method="post"
-        action="TODO: set up action for newsletter"
-      >
-        <input
-          name="firstName"
-          defaultValue={user?.firstName}
-          autoComplete="name"
-          type="text"
-          placeholder="First name"
-          aria-label="First name"
-          className="border-secondary hover:border-primary focus:border-primary focus:bg-secondary px-8 py-6 w-full dark:text-white bg-transparent border rounded-lg focus:outline-none"
-        />
-        <input
-          name="email"
-          defaultValue={user?.email}
-          type="email"
-          autoComplete="email"
-          placeholder="email"
-          aria-label="email"
-          className="border-secondary hover:border-primary focus:border-primary focus:bg-secondary px-8 py-6 w-full dark:text-white bg-transparent border rounded-lg focus:outline-none"
-        />
-
-        <ArrowButton className="pt-4" type="submit" direction="right">
-          Sign me up
-        </ArrowButton>
-      </Form>
+      <ConvertKitForm />
     </div>
   )
 }
