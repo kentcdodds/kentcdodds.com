@@ -11,7 +11,7 @@ import type {ActionFunction, LoaderFunction} from 'remix'
 import type {Team} from 'types'
 import clsx from 'clsx'
 import {shuffle} from 'lodash'
-import {getUser, getUserSessionCookieForUser} from '../utils/session.server'
+import {getSession, getUser} from '../utils/session.server'
 import {getLoginInfoSession} from '../utils/login.server'
 import {prisma, validateMagicLink} from '../utils/prisma.server'
 import {getErrorStack, teams} from '../utils/misc'
@@ -57,6 +57,7 @@ function getErrorForTeam(team: string | null) {
 }
 
 export const action: ActionFunction = async ({request}) => {
+  const session = await getSession(request)
   const loginInfoSession = await getLoginInfoSession(request)
   const magicLink = loginInfoSession.getMagicLink()
   let email: string
@@ -97,12 +98,9 @@ export const action: ActionFunction = async ({request}) => {
           where: {id: user.id},
         })
 
-        const sessionIdCookie = await getUserSessionCookieForUser(request, user)
-        const destroyCookie = await loginInfoSession.destroy()
-
         const headers = new Headers()
-        headers.append('Set-Cookie', destroyCookie)
-        headers.append('Set-Cookie', sessionIdCookie)
+        await session.getHeaders(headers)
+        headers.append('Set-Cookie', await loginInfoSession.destroy())
 
         return redirect('/me', {headers})
       } catch (error: unknown) {

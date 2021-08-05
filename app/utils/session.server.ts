@@ -1,5 +1,5 @@
-import type {Request, Response} from 'remix'
-import {createCookieSessionStorage, redirect} from 'remix'
+import type {Request, Response, ResponseInit} from 'remix'
+import {createCookieSessionStorage, redirect, Headers} from 'remix'
 import type {User} from '@prisma/client'
 import {sendMagicLinkEmail} from './send-email.server'
 import {
@@ -47,10 +47,26 @@ async function sendToken({
 
 async function getSession(request: Request) {
   const session = await sessionStorage.getSession(request.headers.get('Cookie'))
+  const initialValue = await sessionStorage.commitSession(session)
   const getSessionId = () => session.get(sessionIdKey) as string | undefined
   const unsetSessionId = () => session.unset(sessionIdKey)
+
+  const commit = async () => {
+    const currentValue = await sessionStorage.commitSession(session)
+    return currentValue === initialValue ? null : currentValue
+  }
   return {
     session,
+    getUser: async () => {
+      const token = getSessionId()
+      if (!token) return null
+
+      return getUserFromSessionId(token).catch((error: unknown) => {
+        unsetSessionId()
+        console.error(`Failure getting user from session ID:`, error)
+        return null
+      })
+    },
     getSessionId,
     unsetSessionId,
     singIn: async (user: User) => {
@@ -68,8 +84,24 @@ async function getSession(request: Request) {
           })
       }
     },
-    destroy: () => sessionStorage.destroySession(session),
-    commit: () => sessionStorage.commitSession(session),
+    commit,
+    /**
+     * This will initialize a Headers object if one is not provided.
+     * It will set the 'Set-Cookie' header value on that headers object.
+     * It will then return that Headers object.
+     */
+    getHeaders: async (headers: ResponseInit['headers'] = new Headers()) => {
+      const value = await commit()
+      if (!value) return headers
+      if (headers instanceof Headers) {
+        headers.append('Set-Cookie', value)
+      } else if (Array.isArray(headers)) {
+        headers.push(['Set-Cookie', value])
+      } else {
+        headers['Set-Cookie'] = value
+      }
+      return headers
+    },
   }
 }
 
@@ -111,7 +143,7 @@ async function requireAdminUser(
   if (!user) {
     const session = await getSession(request)
     session.signOut()
-    return redirect('/login', {headers: {'Set-Cookie': await session.commit()}})
+    return redirect('/login', {headers: await session.getHeaders()})
   }
   if (user.role !== 'ADMIN') {
     return redirect('/')
@@ -127,7 +159,7 @@ async function requireUser(
   if (!user) {
     const session = await getSession(request)
     session.signOut()
-    return redirect('/login', {headers: {'Set-Cookie': await session.commit()}})
+    return redirect('/login', {headers: await session.getHeaders()})
   }
   return callback(user)
 }

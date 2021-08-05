@@ -1,5 +1,6 @@
 import * as React from 'react'
 import {
+  Headers,
   Links,
   Meta,
   Scripts,
@@ -10,7 +11,12 @@ import {
   useMatches,
   usePendingLocation,
 } from 'remix'
-import type {LinksFunction, MetaFunction, HeadersFunction} from 'remix'
+import type {
+  LinksFunction,
+  MetaFunction,
+  HeadersFunction,
+  HeadersInit,
+} from 'remix'
 import {Outlet} from 'react-router-dom'
 import {AnimatePresence, motion} from 'framer-motion'
 import {useSpinDelay} from 'spin-delay'
@@ -25,7 +31,7 @@ import {
   NonFlashOfWrongThemeEls,
 } from './utils/theme-provider'
 import {getThemeSession} from './utils/theme.server'
-import {getUser} from './utils/session.server'
+import {getSession} from './utils/session.server'
 import {getLoginInfoSession} from './utils/login.server'
 import {getDomainUrl, typedBoolean} from './utils/misc'
 import {
@@ -38,6 +44,7 @@ import {
 } from './utils/providers'
 import {getEnv} from './utils/env.server'
 import {getUserInfo} from './utils/user-info.server'
+import {getClientSession} from './utils/client.server'
 import type {Timings} from './utils/metrics.server'
 import {time, getServerTimeHeader} from './utils/metrics.server'
 import {validateMagicLink} from './utils/prisma.server'
@@ -109,15 +116,17 @@ type LoaderData = {
 
 export const loader: LoaderFunction = async ({request}) => {
   const timings: Timings = {}
+  const session = await getSession(request)
+  const themeSession = await getThemeSession(request)
+  const clientSession = await getClientSession(request)
+  const {getMagicLink, getEmail} = await getLoginInfoSession(request)
+
   const user = await time({
     name: 'getUser in root loader',
     type: 'postgres read',
     timings,
-    fn: () => getUser(request),
+    fn: () => session.getUser(),
   })
-
-  const themeSession = await getThemeSession(request)
-  const {getMagicLink, getEmail} = await getLoginInfoSession(request)
 
   const magicLink = getMagicLink()
   let hasActiveMagicLink = false
@@ -157,7 +166,16 @@ export const loader: LoaderFunction = async ({request}) => {
     },
   }
 
-  return json(data, {headers: {'Server-Timing': getServerTimeHeader(timings)}})
+  const headers: HeadersInit = new Headers()
+  headers.append('Server-Timing', getServerTimeHeader(timings))
+  // this can lead to race conditions if a child route is also trying to commit
+  // the cookie as well. This is a bug in remix that will hopefully be fixed.
+  // we reduce the likelihood of a problem by only committing if the value is
+  // different.
+  await session.getHeaders(headers)
+  await clientSession.getHeaders(headers)
+
+  return json(data, {headers})
 }
 
 export const headers: HeadersFunction = ({loaderHeaders}) => {

@@ -6,12 +6,15 @@ import type {Await, KCDLoader, MdxListItem, MdxPage} from 'types'
 import formatDate from 'date-fns/format'
 import {images} from '../images'
 import {getMdxPage, mdxPageMeta, useMdxComponent} from '../utils/mdx'
-import {useOptionalUser} from '../utils/providers'
 import {H2, H6, Paragraph} from '../components/typography'
 import {Grid} from '../components/grid'
 import {ArrowLink, BackLink} from '../components/arrow-button'
 import {BlogSection} from '../components/sections/blog-section'
-import {getBlogReadRankings, getBlogRecommendations} from '../utils/blog.server'
+import {
+  getBlogReadRankings,
+  getTotalPostReads,
+  getBlogRecommendations,
+} from '../utils/blog.server'
 import {FourOhFour} from '../components/errors'
 import {externalLinks} from '../external-links'
 import {TeamStats} from '../components/team-stats'
@@ -22,6 +25,7 @@ type LoaderData = {
   page: MdxPage | null
   recommendations: Array<MdxListItem>
   readRankings: Await<ReturnType<typeof getBlogReadRankings>>
+  totalReads: number
 }
 
 export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
@@ -33,30 +37,27 @@ export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
     },
     {request, timings},
   )
-  const blogRecommendations = await getBlogRecommendations(request, {
-    limit: 3,
-    keywords: [
-      ...(page?.frontmatter.categories ?? []),
-      ...(page?.frontmatter.meta?.keywords ?? []),
-    ],
-    exclude: [params.slug],
-  })
-  const readRankings = await getBlogReadRankings(params.slug)
 
-  let data: LoaderData
+  const [recommendations, readRankings, totalReads] = await Promise.all([
+    getBlogRecommendations(request, {
+      limit: 3,
+      keywords: [
+        ...(page?.frontmatter.categories ?? []),
+        ...(page?.frontmatter.meta?.keywords ?? []),
+      ],
+      exclude: [params.slug],
+    }),
+    getBlogReadRankings(params.slug),
+    getTotalPostReads(params.slug),
+  ])
+
+  const data: LoaderData = {page, recommendations, readRankings, totalReads}
   const headers = {
     'Cache-Control': 'public, max-age=3600',
     'Server-Timing': getServerTimeHeader(timings),
   }
 
-  if (page) {
-    data = {page, recommendations: blogRecommendations, readRankings}
-
-    return json(data, {headers})
-  } else {
-    data = {page: null, recommendations: blogRecommendations, readRankings}
-    return json(data, {status: 404, headers})
-  }
+  return json(data, {status: page ? 200 : 400, headers})
 }
 
 export const headers: HeadersFunction = ({loaderHeaders}) => {
@@ -79,17 +80,15 @@ function useOnRead({
   parentElRef,
   readTime,
   onRead,
-  enabled = true,
 }: {
   parentElRef: React.RefObject<HTMLElement>
   readTime: MdxPage['readTime']
   onRead: () => void
-  enabled: boolean
 }) {
   React.useEffect(() => {
     const parentEl = parentElRef.current
     const time = readTime?.time
-    if (!enabled || !parentEl || !time) return
+    if (!parentEl || !time) return
 
     const visibilityEl = document.createElement('div')
 
@@ -149,7 +148,7 @@ function useOnRead({
       visibilityEl.remove()
     }
     return cleanup
-  }, [enabled, readTime, onRead, parentElRef])
+  }, [readTime, onRead, parentElRef])
 }
 
 function ArticleFooter() {
@@ -220,7 +219,6 @@ function MdxScreen() {
     )
   }
 
-  const user = useOptionalUser()
   const {code, frontmatter} = data.page
   const params = useParams()
   const {slug} = params
@@ -239,7 +237,6 @@ function MdxScreen() {
         body: JSON.stringify({articleSlug: slug}),
       })
     }, [slug]),
-    enabled: Boolean(user),
   })
 
   return (
@@ -247,7 +244,11 @@ function MdxScreen() {
       <Grid className="mb-10 mt-24 lg:mb-24">
         <div className="flex col-span-full justify-between lg:col-span-8 lg:col-start-3">
           <BackLink to="/blog">Back to overview</BackLink>
-          <TeamStats rankings={data.readRankings} direction="down" />
+          <TeamStats
+            totalReads={data.totalReads}
+            rankings={data.readRankings}
+            direction="down"
+          />
         </div>
       </Grid>
 
@@ -324,7 +325,11 @@ function MdxScreen() {
 
       <Grid className="mb-24">
         <div className="flex col-span-full justify-end lg:col-span-8 lg:col-start-3">
-          <TeamStats rankings={data.readRankings} direction="up" />
+          <TeamStats
+            totalReads={data.totalReads}
+            rankings={data.readRankings}
+            direction="up"
+          />
         </div>
       </Grid>
 

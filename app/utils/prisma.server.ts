@@ -202,11 +202,19 @@ function updateUser(
   return prisma.user.update({where: {id: userId}, data: updatedInfo})
 }
 
-async function addPostRead({slug, userId}: {slug: string; userId: string}) {
+async function addPostRead({
+  slug,
+  userId,
+  clientId,
+}: {slug: string} & (
+  | {userId: string; clientId?: undefined}
+  | {userId?: undefined; clientId: string}
+)) {
+  const id = userId ? {userId} : {clientId}
   const readInLastWeek = await prisma.postRead.findFirst({
     select: {id: true},
     where: {
-      userId,
+      ...id,
       postSlug: slug,
       createdAt: {gt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7)},
     },
@@ -215,7 +223,7 @@ async function addPostRead({slug, userId}: {slug: string; userId: string}) {
     return null
   } else {
     const postRead = await prisma.postRead.create({
-      data: {postSlug: slug, userId},
+      data: {postSlug: slug, ...id},
       select: {id: true},
     })
     return postRead

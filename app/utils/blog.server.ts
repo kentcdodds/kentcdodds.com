@@ -4,8 +4,9 @@ import {shuffle} from 'lodash'
 import {getBlogMdxListItems} from './mdx'
 import {prisma} from './prisma.server'
 import {teams, typedBoolean} from './misc'
-import {getUser} from './session.server'
+import {getSession} from './session.server'
 import {filterPosts} from './blog'
+import {getClientSession} from './client.server'
 
 async function getBlogRecommendations(
   request: Request,
@@ -25,13 +26,15 @@ async function getBlogRecommendations(
 
   if (limit === null) return shuffle(allPosts)
 
-  const user = await getUser(request)
-  const readPosts = user
-    ? await prisma.postRead.groupBy({
-        by: ['postSlug'],
-        where: {user: {id: user.id}},
-      })
-    : []
+  const session = await getSession(request)
+  const client = await getClientSession(request)
+  const clientId = client.getClientId()
+  const user = await session.getUser()
+  const where = user ? {user: {id: user.id}} : {clientId}
+  const readPosts = await prisma.postRead.groupBy({
+    by: ['postSlug'],
+    where,
+  })
 
   // exclude what they want us to + any posts the user has already read
   let exclude = Array.from(
@@ -106,6 +109,14 @@ async function getMostPopularPostSlugs({
   return result.map(p => p.postSlug)
 }
 
+async function getTotalPostReads(slug: string) {
+  const count = await prisma.postRead.count({
+    where: {postSlug: slug},
+  })
+
+  return count
+}
+
 async function getBlogReadRankings(slug: string) {
   const rawRankingData = await Promise.all(
     teams.map(async function getRankingsForTeam(
@@ -134,12 +145,17 @@ async function getBlogReadRankings(slug: string) {
       return {
         team,
         totalReads,
+        ranking,
         percent: Number(
-          ((ranking - minRanking) / (maxRanking - minRanking)).toFixed(2),
+          ((ranking - minRanking) / (maxRanking - minRanking || 1)).toFixed(2),
         ),
       }
     })
-    .sort(({percent: a}, {percent: b}) => b - a)
+    // if they're the same, then we'll randomize their relative order.
+    // Otherwise, it's greatest to smallest
+    .sort(({percent: a}, {percent: b}) =>
+      b === a ? (Math.random() > 0.5 ? -1 : 1) : a > b ? -1 : 1,
+    )
 
   return rankPercentages
 }
@@ -174,4 +190,4 @@ async function getActiveMembers(team: Team) {
   return count
 }
 
-export {getBlogRecommendations, getBlogReadRankings}
+export {getBlogRecommendations, getBlogReadRankings, getTotalPostReads}

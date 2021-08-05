@@ -16,14 +16,17 @@ type ReadRanking = {
   totalReads: number
   team: Team
   percent: number
+  ranking: number
 }
 
 function Stat({
   totalReads,
   team,
   percent,
+  ranking,
   direction,
-}: ReadRanking & {direction: 'up' | 'down'}) {
+  display,
+}: ReadRanking & {direction: 'up' | 'down'; display: 'ranking' | 'reads'}) {
   const info = useOptionalUserInfo()
   const [currentTeam] = useTeam()
   const avatar = info ? info.avatar : alexProfiles[team]
@@ -32,6 +35,11 @@ function Stat({
   return (
     <motion.div
       tabIndex={0}
+      title={
+        display === 'ranking'
+          ? `Rank of the ${team.toLowerCase()} team`
+          : `Total reads by the ${team.toLowerCase()} team`
+      }
       initial="initial"
       whileHover="hover"
       whileFocus="hover"
@@ -73,7 +81,9 @@ function Stat({
             'top-0': direction === 'up',
           })}
         >
-          {new Intl.NumberFormat().format(totalReads)}
+          {new Intl.NumberFormat().format(
+            display === 'ranking' ? ranking : totalReads,
+          )}
         </motion.span>
       </motion.div>
 
@@ -115,16 +125,25 @@ function Stat({
 }
 
 function TeamStats({
+  totalReads,
   rankings,
   direction = 'up',
 }: {
+  totalReads: number
   rankings: Array<ReadRanking>
   direction: 'up' | 'down'
 }) {
-  // sort rankings to be [second, first, last], just like contest stages, but
-  // reversed due to orientation. Sorting on ranking 1, 2, 3, results in stair like
-  // structures, which doesn't look pretty
-  const resorted = [rankings[2], rankings[0], rankings[1]] as Array<ReadRanking>
+  const [altDown, setAltDown] = React.useState(false)
+
+  React.useEffect(() => {
+    const set = (e: KeyboardEvent) => setAltDown(e.altKey)
+    document.addEventListener('keydown', set)
+    document.addEventListener('keyup', set)
+    return () => {
+      document.removeEventListener('keyup', set)
+      document.removeEventListener('keydown', set)
+    }
+  }, [])
 
   return (
     <div
@@ -142,6 +161,9 @@ function TeamStats({
           },
         )}
       >
+        <span title="Total reads">
+          {new Intl.NumberFormat().format(totalReads)}{' '}
+        </span>
         <Link
           className="text-secondary hover:text-primary underlined"
           to="/teams#read-rankings"
@@ -158,9 +180,13 @@ function TeamStats({
           },
         )}
       >
-        {resorted.map(ranking => (
+        {rankings.map(ranking => (
           <li key={ranking.team} className="h-0 overflow-visible">
-            <Stat direction={direction} {...ranking} />
+            <Stat
+              {...ranking}
+              direction={direction}
+              display={altDown ? 'ranking' : 'reads'}
+            />
           </li>
         ))}
       </ul>

@@ -7,9 +7,7 @@ export const loader: LoaderFunction = async ({request}) => {
   const session = await getSession(request)
   session.signOut()
   return redirect('/', {
-    headers: {
-      'Set-Cookie': await session.destroy(),
-    },
+    headers: await session.getHeaders(),
   })
 }
 

@@ -12,6 +12,9 @@ import type {Timings} from './metrics.server'
 
 type Options = {forceFresh?: boolean; request?: Request; timings?: Timings}
 
+const getCompiledKey = (contentDir: string, slug: string) =>
+  `${contentDir}:${slug}:compiled`
+
 async function getMdxPage(
   {
     contentDir,
@@ -22,9 +25,17 @@ async function getMdxPage(
   },
   options: Options,
 ): Promise<MdxPage | null> {
-  const pageFiles = await downloadMdxFilesCached(contentDir, slug, options)
-  const page = await compileMdxCached(contentDir, slug, pageFiles, options)
-  return page
+  return redis.cachified({
+    ...options,
+    // reusing the same key as compiledMdxCached because we just return that
+    // exact same value. Cachifying this allows us to skip getting the cached files
+    key: getCompiledKey(contentDir, slug),
+    getFreshValue: async () => {
+      const pageFiles = await downloadMdxFilesCached(contentDir, slug, options)
+      const page = await compileMdxCached(contentDir, slug, pageFiles, options)
+      return page
+    },
+  })
 }
 
 async function getMdxPagesInDirectory(contentDir: string, options: Options) {
@@ -102,9 +113,6 @@ async function downloadMdxFilesCached(
       downloadMdxFileOrDirectory(`${contentDir}/${slug}`),
   })
 }
-
-const getCompiledKey = (contentDir: string, slug: string) =>
-  `${contentDir}:${slug}:compiled`
 
 async function compileMdxCached(
   contentDir: string,
