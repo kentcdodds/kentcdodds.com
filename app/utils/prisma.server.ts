@@ -31,6 +31,7 @@ if (!isLocalHost) {
 }
 
 const prisma = getClient(() => {
+  console.log(`Connecting to ${regionalDB.host}`)
   const client = new PrismaClient({
     log: [
       {emit: 'event', level: 'query'},
