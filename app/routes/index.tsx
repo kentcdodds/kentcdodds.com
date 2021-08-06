@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {Outlet} from 'react-router'
-import type {LoaderFunction} from 'remix'
+import type {ActionFunction, LoaderFunction} from 'remix'
 import {json, useRouteData} from 'remix'
 import type {MdxListItem} from 'types'
 import {getBlogRecommendations} from '../utils/blog.server'
@@ -15,9 +15,16 @@ import {HeroSection} from '../components/sections/hero-section'
 import {images} from '../images'
 import {ButtonLink} from '../components/button'
 import {ServerError} from '../components/errors'
+import {handleConvertKitFormSubmission} from '../convertkit/action.server'
 
 type LoaderData = {
   blogRecommendations: Array<MdxListItem>
+}
+
+// this should go into `root.tsx`, but remix has a bug that should be fixed eventually.
+// if you're reading this, try moving it over to root.tsx and see if that fixes it.
+export const action: ActionFunction = async ({request}) => {
+  return handleConvertKitFormSubmission(request)
 }
 
 export const loader: LoaderFunction = async ({request}) => {

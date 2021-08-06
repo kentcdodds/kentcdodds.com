@@ -71,16 +71,16 @@ export const action: ActionFunction = async ({request}) => {
         await updateUser(user.id, {discordId: null})
       }
       if (actionId === actionIds.changeDetails) {
-        return await handleFormSubmission<ActionData>(
+        return await handleFormSubmission<ActionData>({
           form,
-          {firstName: getFirstNameError},
-          async ({firstName}) => {
+          validators: {firstName: getFirstNameError},
+          handleFormValues: async ({firstName}) => {
             if (firstName && user.firstName !== firstName) {
               await updateUser(user.id, {firstName})
             }
             return redirect('/me')
           },
-        )
+        })
       }
       return redirect('/me')
     } catch (error: unknown) {

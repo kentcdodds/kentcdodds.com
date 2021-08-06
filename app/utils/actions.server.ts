@@ -5,39 +5,65 @@ import {getErrorMessage, getNonNull} from './misc'
 type ErrorMessage = string
 type NoError = null
 type FormValue = string | null
-type FormValueValidator = (
-  formValue: FormValue,
-) => Promise<ErrorMessage | NoError> | ErrorMessage | NoError
 
 async function handleFormSubmission<
   ActionData extends {
     fields: {[field: string]: FormValue}
     errors: {[field: string]: ErrorMessage | NoError}
   },
->(
-  requestOrForm: Request | URLSearchParams,
-  validate: {[Key in keyof ActionData['errors']]: FormValueValidator},
+>({
+  form,
+  request,
+  validators,
+  // @ts-expect-error ts(2322) 🤷‍♂️
+  actionData = {fields: {}, errors: {}},
+  handleFormValues,
+}: {
+  validators: {
+    [Key in keyof ActionData['errors']]: (
+      formValue: FormValue,
+      fields: ActionData['fields'],
+    ) => Promise<ErrorMessage | NoError> | ErrorMessage | NoError
+  }
+  actionData?: ActionData
   handleFormValues: (
     formValues: NonNullProperties<ActionData['fields']>,
-  ) => Response | Promise<Response>,
-): Promise<Response> {
-  // @ts-expect-error ts(2322) 🤷‍♂️
-  const actionData: ActionData = {fields: {}, errors: {}}
-
+  ) => Response | Promise<Response>
+} & (
+  | {
+      form: URLSearchParams
+      request?: never
+    }
+  | {
+      form?: never
+      request: Request
+    }
+)): Promise<Response> {
   try {
-    let form: URLSearchParams
-    if (requestOrForm instanceof URLSearchParams) {
-      form = requestOrForm
-    } else {
-      const requestText = await requestOrForm.text()
+    if (!form) {
+      const requestText = await request!.text()
       form = new URLSearchParams(requestText)
     }
 
+    // collect all values first because validators can reference them
+    for (const fieldName of Object.keys(validators)) {
+      const formValue = form.get(fieldName)
+      // Default the value to empty string so it doesn't have trouble with
+      // getNonNull later. This allows us to have a validator that allows
+      // for optional values.
+      actionData.fields[fieldName] = formValue ?? ''
+    }
+
     await Promise.all(
-      Object.entries(validate).map(async ([fieldName, validator]) => {
-        const formValue = form.get(fieldName)
-        actionData.fields[fieldName] = formValue
-        actionData.errors[fieldName] = await validator(formValue)
+      Object.entries(validators).map(async ([fieldName, validator]) => {
+        const formValue = form!.get(fieldName)
+        // Default the value to empty string so it doesn't have trouble with
+        // getNonNull later. This allows us to have a validator that allows
+        // for optional values.
+        actionData.errors[fieldName] = await validator(
+          formValue,
+          actionData.fields,
+        )
       }),
     )
 

@@ -2,13 +2,13 @@ import * as React from 'react'
 import {externalLinks} from '../external-links'
 import {useOptionalUserInfo} from '../utils/providers'
 import {AnchorOrLink} from '../utils/misc'
+import {ConvertKitForm} from '../convertkit/form'
 import {H4, H6, Paragraph} from './typography'
 import {Grid} from './grid'
 import {GithubIcon} from './icons/github-icon'
 import {TwitterIcon} from './icons/twitter-icon'
 import {YoutubeIcon} from './icons/youtube-icon'
 import {Signature} from './signature'
-import {ConvertKitForm} from './convert-kit-form'
 
 interface FooterLinkProps {
   name: string
@@ -26,7 +26,7 @@ function NewsletterSection() {
         </Paragraph>
       </div>
 
-      <ConvertKitForm />
+      <ConvertKitForm convertKitFormId="827139" />
     </div>
   )
 }

@@ -14,15 +14,15 @@ import {
 import {handleFormSubmission} from '../../utils/actions.server'
 
 export const action: ActionFunction = async ({request}) => {
-  return handleFormSubmission<ActionData>(
+  return handleFormSubmission<ActionData>({
     request,
-    {
+    validators: {
       name: getErrorForName,
       email: getErrorForEmail,
       subject: getErrorForSubject,
       body: getErrorForBody,
     },
-    async formData => {
+    handleFormValues: async formData => {
       const {name, email, subject, body} = formData
 
       const sender = `"${name}" <${email}>`
@@ -36,7 +36,7 @@ export const action: ActionFunction = async ({request}) => {
 
       return redirect('/contact/success')
     },
-  )
+  })
 }
 
 export default function IncompleteFormSubmitButton() {

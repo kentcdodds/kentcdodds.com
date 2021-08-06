@@ -15,7 +15,7 @@ import {getSession, getUser} from '../utils/session.server'
 import {getLoginInfoSession} from '../utils/login.server'
 import {prisma, validateMagicLink} from '../utils/prisma.server'
 import {getErrorStack, teams} from '../utils/misc'
-import {tagKCDSiteSubscriber} from '../utils/convertkit.server'
+import {tagKCDSiteSubscriber} from '../convertkit/convertkit.server'
 import {useTeam} from '../utils/providers'
 import {Grid} from '../components/grid'
 import {H2, H6, Paragraph} from '../components/typography'
@@ -79,13 +79,13 @@ export const action: ActionFunction = async ({request}) => {
     })
   }
 
-  return handleFormSubmission<ActionData>(
+  return handleFormSubmission<ActionData>({
     request,
-    {
+    validators: {
       firstName: getErrorForFirstName,
       team: getErrorForTeam,
     },
-    async formData => {
+    handleFormValues: async formData => {
       const {firstName, team} = formData
 
       try {
@@ -114,7 +114,7 @@ export const action: ActionFunction = async ({request}) => {
         })
       }
     },
-  )
+  })
 }
 
 export const loader: LoaderFunction = async ({request}) => {

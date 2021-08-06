@@ -15,11 +15,11 @@ if (
   window.history.scrollRestoration = 'manual'
 }
 
-// there's a bug with this:
-// https://github.com/remix-run/remix/issues/230
+type LocationState = {isSubmission: boolean} | null
 export function useScrollRestoration(enabled: boolean = true) {
   const positions = useRef<Map<string, number>>(new Map()).current
   const location = useLocation()
+  console.log(location.state)
   const pendingLocation = usePendingLocation()
 
   useEffect(() => {
@@ -29,6 +29,7 @@ export function useScrollRestoration(enabled: boolean = true) {
   }, [pendingLocation, location, positions])
 
   useSSRLayoutEffect(() => {
+    if ((location.state as LocationState)?.isSubmission) return
     if (!enabled) return
     // don't restore scroll on initial render
     if (firstRender) {

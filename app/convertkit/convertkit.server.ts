@@ -1,4 +1,4 @@
-import {getRequiredServerEnvVar} from './misc'
+import {getRequiredServerEnvVar} from '../utils/misc'
 
 const CONVERT_KIT_API_SECRET = getRequiredServerEnvVar('CONVERT_KIT_API_SECRET')
 const CONVERT_KIT_API_KEY = getRequiredServerEnvVar('CONVERT_KIT_API_KEY')
@@ -26,6 +26,76 @@ async function getConvertKitSubscriber(email: string) {
   return subscriber.state === 'active' ? subscriber : null
 }
 
+async function ensureSubscriber({
+  email,
+  firstName,
+}: {
+  email: string
+  firstName: string
+}) {
+  const subscriber = await getConvertKitSubscriber(email)
+  if (subscriber) return
+
+  // this is a basic form that doesn't really do anything. It's just a way to
+  // get the users on the mailing list
+  return addSubscriberToForm({email, firstName, convertKitFormId: '2500372'})
+}
+
+async function addSubscriberToForm({
+  email,
+  firstName,
+  convertKitFormId,
+}: {
+  email: string
+  firstName: string
+  convertKitFormId: string
+}) {
+  const subscriberData = {
+    api_key: CONVERT_KIT_API_KEY,
+    api_secret: CONVERT_KIT_API_SECRET,
+    first_name: firstName,
+    email,
+  }
+
+  // this is a basic form that doesn't really do anything. It's just a way to
+  // get the users on the mailing list
+  await fetch(
+    `https://api.convertkit.com/v3/forms/${convertKitFormId}/subscribe`,
+    {
+      method: 'post',
+      body: JSON.stringify(subscriberData),
+      headers: {'Content-Type': 'application/json'},
+    },
+  )
+}
+
+async function addTagToSubscriber({
+  email,
+  firstName,
+  convertKitTagId,
+}: {
+  email: string
+  firstName: string
+  convertKitTagId: string
+}) {
+  await ensureSubscriber({email, firstName})
+  const subscriberData = {
+    api_key: CONVERT_KIT_API_KEY,
+    api_secret: CONVERT_KIT_API_SECRET,
+    first_name: firstName,
+    email,
+  }
+
+  const subscribeUrl = `https://api.convertkit.com/v3/tags/${convertKitTagId}/subscribe`
+  await fetch(subscribeUrl, {
+    method: 'post',
+    body: JSON.stringify(subscriberData),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+}
+
 async function tagKCDSiteSubscriber({
   email,
   firstName,
@@ -35,7 +105,7 @@ async function tagKCDSiteSubscriber({
   firstName: string
   id: string
 }) {
-  const subscriber = email ? await getConvertKitSubscriber(email) : null
+  const subscriber = await getConvertKitSubscriber(email)
   const kcdTagId = '2466369'
   const kcdSiteForm = '2393887'
   const subscriberData = {
@@ -49,6 +119,7 @@ async function tagKCDSiteSubscriber({
   // form is that in the form's case, the user will get a double opt-in
   // email before they're a confirmed subscriber. So we only add the
   // tag to existing subscribers who have already confirmed.
+  // This form auto-adds the tag to new subscribers
   const subscribeUrl = subscriber
     ? `https://api.convertkit.com/v3/tags/${kcdTagId}/subscribe`
     : `https://api.convertkit.com/v3/forms/${kcdSiteForm}/subscribe`
@@ -65,4 +136,9 @@ async function tagKCDSiteSubscriber({
   return updatedJson.subscription.subscriber
 }
 
-export {tagKCDSiteSubscriber, getConvertKitSubscriber}
+export {
+  tagKCDSiteSubscriber,
+  getConvertKitSubscriber,
+  addTagToSubscriber,
+  addSubscriberToForm,
+}

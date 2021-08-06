@@ -1,5 +1,5 @@
 import type {User} from 'types'
-// import {getConvertKitSubscriber} from './convertkit.server'
+import {getConvertKitSubscriber} from '../convertkit/convertkit.server'
 import * as discord from './discord.server'
 import {getAvatarForUser} from './misc'
 
@@ -9,6 +9,7 @@ type UserInfo = {
     alt: string
   }
   convertKit?: {
+    isInMailingList: boolean
     subscribedToNewsletter: boolean
   }
   discord?: {
@@ -21,8 +22,9 @@ async function getUserInfo(user: User) {
     avatar: getAvatarForUser(user),
   }
   if (user.convertKitId) {
-    // const subscriber = await getConvertKitSubscriber(user.email)
+    const subscriber = await getConvertKitSubscriber(user.email)
     userInfo.convertKit = {
+      isInMailingList: Boolean(subscriber),
       // TODO: this is incorrect... Gotta find out if they're actually on the form somehow...
       // https://community.convertkit.com/question/api-question-how-can-i-determine-whether-a-subscriber-is-subscribed-to-a-sp--60daaa1c6bd89706409cab6a
       // subscribedToNewsletter: subscriber?.state === 'active',
