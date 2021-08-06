@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {useRouteData, json} from 'remix'
+import {useLoaderData, json} from 'remix'
 import type {HeadersFunction} from 'remix'
 import {Link, useParams} from 'react-router-dom'
 import type {Await, KCDLoader, MdxListItem, MdxPage} from 'types'
@@ -70,7 +70,7 @@ export const headers: HeadersFunction = ({loaderHeaders}) => {
 export const meta = mdxPageMeta
 
 export default function MdxScreenBase() {
-  const data = useRouteData<LoaderData>()
+  const data = useLoaderData<LoaderData>()
 
   if (data.page) return <MdxScreen />
   else return <FourOhFour articles={data.recommendations} />
@@ -212,7 +212,7 @@ four kids in Utah.
 }
 
 function MdxScreen() {
-  const data = useRouteData<LoaderData>()
+  const data = useLoaderData<LoaderData>()
   if (!data.page) {
     throw new Error(
       'This should be impossible because we only render the MdxScreen if there is a data.page object.',

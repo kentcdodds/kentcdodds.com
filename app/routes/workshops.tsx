@@ -1,6 +1,6 @@
 import * as React from 'react'
 import type {LoaderFunction} from 'remix'
-import {useRouteData, json} from 'remix'
+import {useLoaderData, json} from 'remix'
 import {Outlet} from 'react-router-dom'
 import type {Workshop} from 'types'
 import {getWorkshops} from '../utils/workshops.server'
@@ -38,7 +38,7 @@ export const loader: LoaderFunction = async ({request}) => {
 }
 
 function WorkshopsHome() {
-  const data = useRouteData<LoaderData>()
+  const data = useLoaderData<LoaderData>()
   return (
     <WorkshopsProvider
       value={{

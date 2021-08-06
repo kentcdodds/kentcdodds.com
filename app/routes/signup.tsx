@@ -187,7 +187,7 @@ function TeamOption({team: value, error, selected}: TeamOptionProps) {
 
 export default function NewAccount() {
   const data = useLoaderData<LoaderData>()
-  const actionData = useActionData() as ActionData | undefined
+  const actionData = useActionData<ActionData>()
   const [, setTeam] = useTeam()
   const [formValues, setFormValues] = React.useState<{
     firstName: string

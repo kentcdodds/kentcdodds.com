@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {useRouteData, json} from 'remix'
+import {useLoaderData, json} from 'remix'
 import type {MdxPage, KCDLoader, MdxListItem} from 'types'
 import {getMdxPage, mdxPageMeta, useMdxComponent} from '../utils/mdx'
 import {getBlogRecommendations} from '../utils/blog.server'
@@ -31,7 +31,7 @@ export const loader: KCDLoader<{slug: string}> = async ({params, request}) => {
 export const meta = mdxPageMeta
 
 export default function MdxScreenBase() {
-  const data = useRouteData<LoaderData>()
+  const data = useLoaderData<LoaderData>()
 
   if (data.page) return <MdxScreen mdxPage={data.page} />
   else return <FourOhFour articles={data.blogRecommendations} />

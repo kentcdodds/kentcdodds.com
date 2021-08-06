@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {Outlet} from 'react-router'
 import type {ActionFunction, LoaderFunction} from 'remix'
-import {json, useRouteData} from 'remix'
+import {json, useLoaderData} from 'remix'
 import type {MdxListItem} from 'types'
 import {getBlogRecommendations} from '../utils/blog.server'
 import {AboutSection} from '../components/sections/about-section'
@@ -35,7 +35,7 @@ export const loader: LoaderFunction = async ({request}) => {
 }
 
 export default function IndexRoute() {
-  const data = useRouteData<LoaderData>()
+  const data = useLoaderData<LoaderData>()
   return (
     <div>
       <HeroSection

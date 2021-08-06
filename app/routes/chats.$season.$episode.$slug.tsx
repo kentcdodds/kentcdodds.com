@@ -1,5 +1,5 @@
 import React, {useState} from 'react'
-import {useRouteData, json, redirect} from 'remix'
+import {useLoaderData, json, redirect} from 'remix'
 import type {HeadersFunction} from 'remix'
 import {Link} from 'react-router-dom'
 import type {KCDLoader, CWKEpisode, CWKListItem} from 'types'
@@ -301,7 +301,7 @@ function PrevNextButton({
 
 function PodcastDetail() {
   const {episode, featured, nextEpisode, prevEpisode} =
-    useRouteData<LoaderData>()
+    useLoaderData<LoaderData>()
 
   return (
     <>

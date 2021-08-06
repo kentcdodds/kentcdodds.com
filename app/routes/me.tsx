@@ -93,7 +93,7 @@ const SHOW_QR_DURATION = 15_000
 
 function YouScreen() {
   const data = useLoaderData<LoaderData>()
-  const actionData = useActionData() as ActionData | undefined
+  const actionData = useActionData<ActionData>()
   const user = useUser()
   const userInfo = useUserInfo()
   const requestInfo = useRequestInfo()

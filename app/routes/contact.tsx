@@ -10,7 +10,7 @@ import {Grid} from '../components/grid'
 import type {ActionData} from '../utils/contact'
 
 export default function ContactRoute() {
-  const actionData = useActionData() as ActionData | undefined
+  const actionData = useActionData<ActionData>()
   const user = useOptionalUser()
 
   return (

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {json, Link, useRouteData} from 'remix'
+import {json, Link, useLoaderData} from 'remix'
 import type {LoaderFunction} from 'remix'
 import {Outlet, useLocation} from 'react-router-dom'
 import {AnimatePresence, motion} from 'framer-motion'
@@ -42,7 +42,7 @@ export default function CallHomeScreen() {
   const {pathname} = useLocation()
   const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('asc')
 
-  const data = useRouteData<LoaderData>()
+  const data = useLoaderData<LoaderData>()
   const [team] = useTeam()
   const avatar = alexProfiles[team]
 

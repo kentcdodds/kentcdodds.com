@@ -16,29 +16,11 @@ function ConvertKitForm({
   const user = useOptionalUser()
   const userInfo = useUserInfo()
 
-  const actionData = useActionData() as ActionData | undefined
-  console.log({actionData})
+  const submissionKey = 'convertkitform'
+
+  const actionData = useActionData<ActionData>(submissionKey)
   return (
-    <Form replace={true} className="mt-8 space-y-4" method="post">
-      <input type="hidden" name="convertKitTagId" value={convertKitTagId} />
-      <input type="hidden" name="convertKitFormId" value={convertKitFormId} />
-      <Field
-        name="firstName"
-        label="First name"
-        error={actionData?.errors.firstName}
-        autoComplete="firstName"
-        defaultValue={actionData?.fields.firstName ?? user?.firstName}
-        required
-      />
-
-      <Field
-        name="email"
-        label="Email"
-        autoComplete="email"
-        error={actionData?.errors.email}
-        defaultValue={actionData?.fields.email ?? user?.email}
-      />
-
+    <div>
       {actionData?.state === 'success' ? (
         <div className="flex">
           <CheckIcon />
@@ -49,11 +31,42 @@ function ConvertKitForm({
           </span>
         </div>
       ) : (
-        <ArrowButton className="pt-4" type="submit" direction="right">
-          Sign me up
-        </ArrowButton>
+        <Form
+          replace={true}
+          className="mt-8 space-y-4"
+          method="post"
+          noValidate
+          submissionKey={submissionKey}
+        >
+          <input type="hidden" name="convertKitTagId" value={convertKitTagId} />
+          <input
+            type="hidden"
+            name="convertKitFormId"
+            value={convertKitFormId}
+          />
+          <Field
+            name="firstName"
+            label="First name"
+            error={actionData?.errors.firstName}
+            autoComplete="firstName"
+            defaultValue={actionData?.fields.firstName ?? user?.firstName}
+            required
+          />
+
+          <Field
+            name="email"
+            label="Email"
+            autoComplete="email"
+            error={actionData?.errors.email}
+            defaultValue={actionData?.fields.email ?? user?.email}
+          />
+
+          <ArrowButton className="pt-4" type="submit" direction="right">
+            Sign me up
+          </ArrowButton>
+        </Form>
       )}
-    </Form>
+    </div>
   )
 }
 

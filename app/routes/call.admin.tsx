@@ -4,7 +4,7 @@ import {
   Link,
   LoaderFunction,
   redirect,
-  useRouteData,
+  useLoaderData,
   json,
 } from 'remix'
 import {Outlet} from 'react-router-dom'
@@ -64,7 +64,7 @@ export const loader: LoaderFunction = async ({request}) => {
 }
 
 export default function CallListScreen() {
-  const data = useRouteData<LoaderData>()
+  const data = useLoaderData<LoaderData>()
   return (
     <div>
       <h2>All the calls</h2>

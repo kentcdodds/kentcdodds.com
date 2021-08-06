@@ -138,7 +138,7 @@ function CallListing({call}: {call: Call}) {
 export default function RecordingDetailScreen() {
   const [responseAudio, setResponseAudio] = React.useState<Blob | null>(null)
   const data = useLoaderData<LoaderData>()
-  const actionData = useActionData() as ActionData | undefined
+  const actionData = useActionData<ActionData>()
 
   if (!data.call) {
     return (

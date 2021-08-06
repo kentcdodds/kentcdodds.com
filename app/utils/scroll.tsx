@@ -1,6 +1,6 @@
 import {useEffect, useLayoutEffect, useRef} from 'react'
 import {useLocation} from 'react-router-dom'
-import {usePendingLocation} from '@remix-run/react'
+import {useTransition} from '@remix-run/react'
 
 let firstRender = true
 
@@ -15,22 +15,20 @@ if (
   window.history.scrollRestoration = 'manual'
 }
 
-type LocationState = {isSubmission: boolean} | null
 export function useScrollRestoration(enabled: boolean = true) {
   const positions = useRef<Map<string, number>>(new Map()).current
   const location = useLocation()
-  console.log(location.state)
-  const pendingLocation = usePendingLocation()
+  const transition = useTransition()
 
   useEffect(() => {
-    if (pendingLocation) {
+    if (transition.state === 'loading') {
       positions.set(location.key, window.scrollY)
     }
-  }, [pendingLocation, location, positions])
+  }, [transition.state, location, positions])
 
   useSSRLayoutEffect(() => {
-    if ((location.state as LocationState)?.isSubmission) return
     if (!enabled) return
+    if (transition.state !== 'loading') return
     // don't restore scroll on initial render
     if (firstRender) {
       firstRender = false
@@ -47,19 +45,20 @@ export function useElementScrollRestoration(
 ) {
   const positions = useRef<Map<string, number>>(new Map()).current
   const location = useLocation()
-  const pendingLocation = usePendingLocation()
+  const transition = useTransition()
 
   useEffect(() => {
     if (!ref.current) return
-    if (pendingLocation) {
+    if (transition.state === 'loading') {
       positions.set(location.key, ref.current.scrollTop)
     }
-  }, [pendingLocation, location, ref, positions])
+  }, [transition.state, location, ref, positions])
 
   useSSRLayoutEffect(() => {
     if (!enabled) return
+    if (transition.state !== 'loading') return
     if (!ref.current) return
     const y = positions.get(location.key)
     ref.current.scrollTo(0, y ?? 0)
-  }, [location, positions, ref])
+  }, [transition.state, location, positions, ref])
 }

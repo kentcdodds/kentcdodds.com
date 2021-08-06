@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {Link, Outlet} from 'react-router-dom'
-import {json, useRouteData} from 'remix'
+import {json, useLoaderData} from 'remix'
 import type {LoaderFunction} from 'remix'
 import type {Await} from 'types'
 import {AnimatePresence, motion} from 'framer-motion'
@@ -90,7 +90,7 @@ function Record({
 export default function RecordScreen() {
   const {pathname} = useLocation()
   const user = useOptionalUser()
-  const data = useRouteData<LoaderData>()
+  const data = useLoaderData<LoaderData>()
 
   const [activeSlug] = pathname.split('/').slice(-1)
   const calls = data.calls

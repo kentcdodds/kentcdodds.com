@@ -1,6 +1,6 @@
 import * as React from 'react'
 import type {LoaderFunction} from 'remix'
-import {json, useRouteData} from 'remix'
+import {json, useLoaderData} from 'remix'
 import * as YAML from 'yaml'
 import type {Await} from 'types'
 import {useRef, useState} from 'react'
@@ -276,7 +276,7 @@ function Card({
 }
 
 export default function TalksScreen() {
-  const data = useRouteData<LoaderData>()
+  const data = useLoaderData<LoaderData>()
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const {pathname} = useLocation()
   const [activeSlug] = pathname.split('/').slice(-1)

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {json, useRouteData, Link} from 'remix'
+import {json, useLoaderData, Link} from 'remix'
 import type {HeadersFunction} from 'remix'
 import type {CWKSeason, KCDLoader} from 'types'
 import {orderBy} from 'lodash'
@@ -41,7 +41,7 @@ export const headers: HeadersFunction = ({loaderHeaders}) => {
 }
 
 export default function Screen() {
-  const {season} = useRouteData<LoaderData>()
+  const {season} = useLoaderData<LoaderData>()
   const {sortOrder} = useChatsEpisodeUIState()
   const episodes = orderBy(season.episodes, 'episodeNumber', sortOrder)
   return episodes.map(episode => (

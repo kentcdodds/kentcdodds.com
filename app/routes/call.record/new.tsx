@@ -67,7 +67,7 @@ export const action: ActionFunction = async ({request}) => {
 type ActionData = RecordingFormData
 
 export default function RecordScreen() {
-  const actionData = useActionData() as ActionData | undefined
+  const actionData = useActionData<ActionData>()
   const [audio, setAudio] = React.useState<Blob | null>(null)
   return (
     <div>

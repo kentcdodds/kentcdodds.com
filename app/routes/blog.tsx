@@ -1,6 +1,6 @@
 import * as React from 'react'
 import type {LoaderFunction, HeadersFunction, MetaFunction} from 'remix'
-import {json, useRouteData} from 'remix'
+import {json, useLoaderData} from 'remix'
 import type {MdxListItem} from 'types'
 import formatDate from 'date-fns/format'
 import parseISO from 'date-fns/parseISO'
@@ -101,7 +101,7 @@ function BlogHome() {
     window.history.pushState(null, '', newUrl)
   }, [query])
 
-  const data = useRouteData<LoaderData>()
+  const data = useLoaderData<LoaderData>()
   const allPosts = data.posts
   const matchingPosts = React.useMemo(() => {
     return filterPosts(allPosts, query)

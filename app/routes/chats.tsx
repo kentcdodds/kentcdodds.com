@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {json, useRouteData, useMatches, Link} from 'remix'
+import {json, useLoaderData, useMatches, Link} from 'remix'
 import type {LoaderFunction, HeadersFunction} from 'remix'
 import clsx from 'clsx'
 import {Tab, TabList, TabPanel, TabPanels, Tabs} from '@reach/tabs'
@@ -76,7 +76,7 @@ function PodcastAppLink({
 function PodcastHome() {
   const [sortOrder, setSortOrder] = React.useState<'desc' | 'asc'>('asc')
   const navigate = useNavigate()
-  const data = useRouteData<LoaderData>()
+  const data = useLoaderData<LoaderData>()
   const matches = useMatches()
   const last = matches[matches.length - 1]
 

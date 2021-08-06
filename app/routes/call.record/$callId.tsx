@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {json, redirect, useRouteData, Form} from 'remix'
+import {json, redirect, useLoaderData, Form} from 'remix'
 import type {Call, KCDLoader, KCDAction} from 'types'
 import {requireUser} from '../../utils/session.server'
 import {prisma} from '../../utils/prisma.server'
@@ -53,7 +53,7 @@ export const loader: KCDLoader<{callId: string}> = async ({
 }
 
 export default function Screen() {
-  const data = useRouteData<LoaderData>()
+  const data = useLoaderData<LoaderData>()
   const [audioURL, setAudioURL] = React.useState<string | null>(null)
   React.useEffect(() => {
     const audio = new Audio(data.call.base64)

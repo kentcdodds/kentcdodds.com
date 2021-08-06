@@ -7,9 +7,9 @@ import {
   LiveReload,
   LoaderFunction,
   json,
-  useRouteData,
+  useLoaderData,
   useMatches,
-  usePendingLocation,
+  useTransition,
 } from 'remix'
 import type {
   LinksFunction,
@@ -194,30 +194,50 @@ const LOADER_WORDS = [
   'transfer',
 ]
 
+const ACTION_WORDS = [
+  'packaging',
+  'zapping',
+  'validating',
+  'processing',
+  'calculating',
+  'computing',
+  'computering',
+]
+
+// we don't want to show the loading indicator on page load
+let firstRender = true
+
 function PageLoadingMessage() {
-  const pending = usePendingLocation()
-  const [words, setWords] = React.useState(LOADER_WORDS)
+  const transition = useTransition()
+  const [words, setWords] = React.useState<Array<string>>([])
   const [pendingPath, setPendingPath] = React.useState('')
-  const showLoader = useSpinDelay(Boolean(pending), {
+  const showLoader = useSpinDelay(Boolean(transition.state !== 'idle'), {
     delay: 400,
     minDuration: 1000,
   })
 
   React.useEffect(() => {
-    if (!pending) return
-    setWords(LOADER_WORDS)
+    if (firstRender) return
+    if (transition.state === 'idle') return
+    if (transition.state === 'loading') setWords(LOADER_WORDS)
+    if (transition.state === 'submitting') setWords(ACTION_WORDS)
 
     const interval = setInterval(() => {
       setWords(([first, ...rest]) => [...rest, first] as Array<string>)
     }, 2000)
 
     return () => clearInterval(interval)
-  }, [pendingPath, pending])
+  }, [pendingPath, transition.state])
 
   React.useEffect(() => {
-    if (!pending) return
-    setPendingPath(pending.pathname)
-  }, [pending])
+    if (firstRender) return
+    if (transition.state === 'idle') return
+    setPendingPath(transition.nextLocation.pathname)
+  }, [transition])
+
+  React.useEffect(() => {
+    firstRender = false
+  }, [])
 
   const action = words[0]
 
@@ -263,7 +283,7 @@ function App() {
   )
   useScrollRestoration(shouldManageScroll)
 
-  const data = useRouteData<LoaderData>()
+  const data = useLoaderData<LoaderData>()
   const [team] = useTeam()
   const [theme] = useTheme()
 
@@ -321,7 +341,7 @@ function App() {
 }
 
 export default function AppWithProviders() {
-  const data = useRouteData<LoaderData>()
+  const data = useLoaderData<LoaderData>()
   return (
     <RequestInfoProvider value={data.requestInfo}>
       <UserProvider value={data.user}>
