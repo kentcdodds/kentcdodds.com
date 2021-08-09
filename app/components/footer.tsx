@@ -129,6 +129,9 @@ function FooterLink({name, href}: FooterLinkProps) {
 
 function Footer() {
   const userInfo = useOptionalUserInfo()
+  const subscribedToNewsletter = userInfo?.convertKit?.tags.includes(
+    'Subscribed: general newsletter',
+  )
   return (
     <footer className="pb-16 pt-48 border-t border-gray-200 dark:border-gray-600">
       <Grid className="grid-rows-max-content">
@@ -136,7 +139,7 @@ function Footer() {
           <AboutSection />
         </div>
 
-        {userInfo?.convertKit?.subscribedToNewsletter ? null : (
+        {subscribedToNewsletter ? null : (
           <div className="col-span-full mt-20 md:col-span-3 md:col-start-1 lg:hidden">
             <NewsletterSection />
           </div>
@@ -158,7 +161,7 @@ function Footer() {
           Note that the <NewsletterSection /> is rendered twice. The position of this cell changes based on breakpoint.
           When we would move the cell around with css only, the tabIndex won't match the visual order.
          */}
-        {userInfo?.convertKit?.subscribedToNewsletter ? null : (
+        {subscribedToNewsletter ? null : (
           <div className="hidden col-span-3 col-start-10 row-span-2 row-start-1 mt-0 lg:block">
             <NewsletterSection />
           </div>
