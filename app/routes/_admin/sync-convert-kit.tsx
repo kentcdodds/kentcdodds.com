@@ -21,14 +21,6 @@ export const loader: LoaderFunction = async ({request}) => {
       interval: 61_000,
     })
 
-    const getSubThrottled = throttle((email: string) =>
-      ck.getConvertKitSubscriber(email),
-    )
-    const tagSubThrottled = throttle(
-      (user: {email: string; firstName: string; id: string}) =>
-        ck.tagKCDSiteSubscriber(user),
-    )
-
     const emails = url.searchParams.getAll('email')
     const where = emails.length ? {email: {in: emails}} : {convertKitId: null}
 
@@ -36,6 +28,14 @@ export const loader: LoaderFunction = async ({request}) => {
       select: {firstName: true, email: true, id: true},
       where,
     })
+
+    const getSubThrottled = throttle((email: string) =>
+      ck.getConvertKitSubscriber(email),
+    )
+    const tagSubThrottled = throttle((user: typeof users[number]) =>
+      ck.tagKCDSiteSubscriber(user),
+    )
+
     const updatedUsers = await Promise.all(
       users.map(async user => {
         const sub = await getSubThrottled(user.email)
