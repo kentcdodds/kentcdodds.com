@@ -10,11 +10,11 @@ import {
 import {getDomainUrl} from '../utils/misc'
 
 export const loader: LoaderFunction = async ({request}) => {
-  const query = new URL(request.url)
-  const email = query.searchParams.get('email')
-  const firstName = query.searchParams.get('firstName')
-  const team = query.searchParams.get('team')
-  const role = (query.searchParams.get('role') ?? 'MEMBER') as Role
+  const url = new URL(request.url)
+  const email = url.searchParams.get('email')
+  const firstName = url.searchParams.get('firstName')
+  const team = url.searchParams.get('team')
+  const role = (url.searchParams.get('role') ?? 'MEMBER') as Role
   if (!email) {
     throw new Error('email required for login page')
   }
