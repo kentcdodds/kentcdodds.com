@@ -7,7 +7,6 @@ let firstRender = true
 const useSSRLayoutEffect =
   typeof window === 'undefined' ? () => {} : useLayoutEffect
 
-// this is currently
 if (
   typeof window !== 'undefined' &&
   window.history.scrollRestoration !== 'manual'
@@ -28,7 +27,7 @@ export function useScrollRestoration(enabled: boolean = true) {
 
   useSSRLayoutEffect(() => {
     if (!enabled) return
-    if (transition.state !== 'loading') return
+    if (transition.state !== 'idle') return
     // don't restore scroll on initial render
     if (firstRender) {
       firstRender = false
@@ -36,7 +35,7 @@ export function useScrollRestoration(enabled: boolean = true) {
     }
     const y = positions.get(location.key)
     window.scrollTo(0, y ?? 0)
-  }, [location, positions])
+  }, [transition.state, location, positions])
 }
 
 export function useElementScrollRestoration(
@@ -56,7 +55,7 @@ export function useElementScrollRestoration(
 
   useSSRLayoutEffect(() => {
     if (!enabled) return
-    if (transition.state !== 'loading') return
+    if (transition.state !== 'idle') return
     if (!ref.current) return
     const y = positions.get(location.key)
     ref.current.scrollTo(0, y ?? 0)

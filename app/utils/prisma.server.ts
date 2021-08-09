@@ -30,6 +30,8 @@ if (!isLocalHost) {
   }
 }
 
+const logThreshold = 15
+
 const prisma = getClient(() => {
   console.log(`Connecting to ${regionalDB.host}`)
   const client = new PrismaClient({
@@ -46,6 +48,8 @@ const prisma = getClient(() => {
     },
   })
   client.$on('query', e => {
+    if (e.duration < logThreshold) return
+
     const color =
       e.duration < 15
         ? 'green'

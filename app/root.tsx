@@ -151,7 +151,7 @@ export const loader: LoaderFunction = async ({request}) => {
           name: 'getUserInfo in root loader',
           type: 'convertkit and discord read',
           timings,
-          fn: () => getUserInfo(user),
+          fn: () => getUserInfo(user, {request, timings}),
         })
       : null,
     ENV: getEnv(),

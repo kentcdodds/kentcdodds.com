@@ -20,6 +20,22 @@ const convertKitHandlers: Array<
       }),
     )
   }),
+  rest.get(
+    'https://api.convertkit.com/v3/subscribers/:subscriberId/tags',
+    (req, res, ctx) => {
+      return res(
+        ctx.json({
+          tags: [
+            {
+              id: 1,
+              name: 'Subscribed: general newsletter',
+              created_at: '2021-06-09T17:54:22Z',
+            },
+          ],
+        }),
+      )
+    },
+  ),
   rest.post(
     'https://api.convertkit.com/v3/forms/:formId/subscribe',
     (req, res, ctx) => {

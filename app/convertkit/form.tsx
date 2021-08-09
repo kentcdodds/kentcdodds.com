@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {Form, useActionData} from 'remix'
-import {useOptionalUser, useUserInfo} from '../utils/providers'
+import {useOptionalUser, useOptionalUserInfo} from '../utils/providers'
 import {ArrowButton} from '../components/arrow-button'
 import {Field} from '../components/form-elements'
 import {CheckIcon} from '../components/icons/check-icon'
@@ -14,7 +14,7 @@ function ConvertKitForm({
   | {convertKitTagId: string; convertKitFormId?: never}
   | {convertKitTagId: string; convertKitFormId: string}) {
   const user = useOptionalUser()
-  const userInfo = useUserInfo()
+  const userInfo = useOptionalUserInfo()
 
   const submissionKey = 'convertkitform'
 
@@ -25,7 +25,7 @@ function ConvertKitForm({
         <div className="flex">
           <CheckIcon />
           <span>
-            {userInfo.convertKit?.isInMailingList
+            {userInfo?.convertKit?.isInMailingList
               ? `Sweet, you're all set`
               : `Sweet, check your email for confirmation.`}
           </span>

@@ -12,6 +12,12 @@ type ConvertKitSubscriber = {
   fields: Record<string, string | null>
 }
 
+type ConvertKitTag = {
+  id: string
+  name: string
+  created_at: string
+}
+
 async function getConvertKitSubscriber(email: string) {
   const url = new URL('https://api.convertkit.com/v3/subscribers')
   url.searchParams.set('api_secret', CONVERT_KIT_API_SECRET)
@@ -24,6 +30,21 @@ async function getConvertKitSubscriber(email: string) {
   }
 
   return subscriber.state === 'active' ? subscriber : null
+}
+
+async function getConvertKitSubscriberTags(
+  subscriberId: ConvertKitSubscriber['id'],
+) {
+  const url = new URL(
+    `https://api.convertkit.com/v3/subscribers/${subscriberId}/tags`,
+  )
+  url.searchParams.set('api_secret', CONVERT_KIT_API_SECRET)
+
+  const resp = await fetch(url.toString())
+  const json = (await resp.json()) as {
+    tags: Array<ConvertKitTag>
+  }
+  return json.tags
 }
 
 async function ensureSubscriber({
@@ -137,8 +158,9 @@ async function tagKCDSiteSubscriber({
 }
 
 export {
-  tagKCDSiteSubscriber,
   getConvertKitSubscriber,
+  getConvertKitSubscriberTags,
+  tagKCDSiteSubscriber,
   addTagToSubscriber,
   addSubscriberToForm,
 }

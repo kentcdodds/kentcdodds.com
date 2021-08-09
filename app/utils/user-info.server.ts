@@ -1,7 +1,10 @@
+import type {Request} from 'remix'
 import type {User} from 'types'
-import {getConvertKitSubscriber} from '../convertkit/convertkit.server'
+import * as ck from '../convertkit/convertkit.server'
 import * as discord from './discord.server'
+import type {Timings} from './metrics.server'
 import {getAvatarForUser} from './misc'
+import {cachified} from './redis.server'
 
 type UserInfo = {
   avatar: {
@@ -10,29 +13,63 @@ type UserInfo = {
   }
   convertKit?: {
     isInMailingList: boolean
-    subscribedToNewsletter: boolean
+    tags: Array<string>
   }
   discord?: {
     username: string
   }
 }
 
-async function getUserInfo(user: User) {
+async function getUserInfo(
+  user: User,
+  {
+    request,
+    forceFresh,
+    timings,
+  }: {request?: Request; forceFresh?: boolean; timings?: Timings} = {},
+) {
   const userInfo: UserInfo = {
     avatar: getAvatarForUser(user),
   }
-  if (user.convertKitId) {
-    const subscriber = await getConvertKitSubscriber(user.email)
-    userInfo.convertKit = {
-      isInMailingList: Boolean(subscriber),
-      // TODO: this is incorrect... Gotta find out if they're actually on the form somehow...
-      // https://community.convertkit.com/question/api-question-how-can-i-determine-whether-a-subscriber-is-subscribed-to-a-sp--60daaa1c6bd89706409cab6a
-      // subscribedToNewsletter: subscriber?.state === 'active',
-      subscribedToNewsletter: false,
-    }
+  const {discordId, convertKitId, email} = user
+  if (convertKitId) {
+    userInfo.convertKit = await cachified({
+      request,
+      forceFresh,
+      timings,
+      key: `convertkit:${convertKitId}`,
+      checkValue: (value: unknown) =>
+        typeof value === 'object' &&
+        value !== null &&
+        'isInMailingList' in value,
+      getFreshValue: async () => {
+        const subscriber = await ck.getConvertKitSubscriber(email)
+        if (!subscriber) {
+          return {
+            isInMailingList: false,
+            tags: [],
+          }
+        }
+        const tags = await ck.getConvertKitSubscriberTags(subscriber.id)
+        return {
+          isInMailingList: Boolean(subscriber),
+          tags: tags.map(t => t.name),
+        }
+      },
+    })
   }
-  if (user.discordId) {
-    const discordUser = await discord.getDiscordUser(user.discordId)
+  if (discordId) {
+    const discordUser = await cachified({
+      request,
+      forceFresh,
+      key: `discord:${user.discordId}`,
+      checkValue: (value: unknown) =>
+        typeof value === 'object' && value !== null && 'id' in value,
+      getFreshValue: async () => {
+        const result = await discord.getDiscordUser(discordId)
+        return result
+      },
+    })
     userInfo.discord = {
       username: `${discordUser.username}#${discordUser.discriminator}`,
     }
