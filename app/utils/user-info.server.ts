@@ -13,7 +13,7 @@ type UserInfo = {
   }
   convertKit?: {
     isInMailingList: boolean
-    tags: Array<string>
+    tags: Array<{id: string; name: string}>
   }
   discord?: {
     username: string
@@ -53,7 +53,7 @@ async function getUserInfo(
         const tags = await ck.getConvertKitSubscriberTags(subscriber.id)
         return {
           isInMailingList: Boolean(subscriber),
-          tags: tags.map(t => t.name),
+          tags: tags.map(({name, id}) => ({name, id})),
         }
       },
     })

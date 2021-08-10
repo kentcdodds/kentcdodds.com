@@ -62,7 +62,7 @@ function WorkshopCard({
         </Paragraph>
       </div>
       <H6 as="div" className="flex flex-wrap lowercase">
-        {workshopEvent ? workshopEvent.date : 'Not yet scheduled'}
+        {workshopEvent ? workshopEvent.date : 'Not currently scheduled'}
       </H6>
     </Link>
   )

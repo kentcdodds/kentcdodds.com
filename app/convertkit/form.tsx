@@ -1,19 +1,28 @@
 import * as React from 'react'
-import {Form, useActionData, useLoaderData} from 'remix'
+import {Form, useActionData} from 'remix'
 import {useLocation} from 'react-router-dom'
-import {useOptionalUser, useOptionalUserInfo} from '../utils/providers'
+import {
+  useOptionalUser,
+  useOptionalUserInfo,
+  createSimpleContext,
+} from '../utils/providers'
 import {ArrowButton} from '../components/arrow-button'
 import {Field} from '../components/form-elements'
 import {CheckIcon} from '../components/icons/check-icon'
 import type {ActionData, LoaderData} from './types'
 
+const {Provider: ConvertKitDataProvider, useOptionalValue: useConvertKitData} =
+  createSimpleContext<LoaderData | null>('Workshops')
+
 function ConvertKitForm({
+  formId,
   convertKitTagId,
   convertKitFormId,
-}:
+}: {formId: string} & (
   | {convertKitTagId?: never; convertKitFormId: string}
   | {convertKitTagId: string; convertKitFormId?: never}
-  | {convertKitTagId: string; convertKitFormId: string}) {
+  | {convertKitTagId: string; convertKitFormId: string}
+)) {
   const user = useOptionalUser()
   const userInfo = useOptionalUserInfo()
   const location = useLocation()
@@ -28,34 +37,48 @@ function ConvertKitForm({
   const submissionKey = 'convertkitform'
 
   const actionData = useActionData<ActionData>(submissionKey)
-  const {convertKit: loaderData} =
-    useLoaderData<{convertKit: LoaderData | null}>()
-  const errors =
-    loaderData?.status === 'success' ? {} : actionData?.errors ?? {}
-  const fields =
-    loaderData?.status === 'success'
-      ? loaderData.fields
-      : actionData?.fields ?? {}
+  const loaderData = useConvertKitData()
+
+  const convertKitData =
+    loaderData?.status === 'success' && loaderData.fields.formId === formId
+      ? loaderData
+      : null
+
+  const errors = convertKitData ? {} : actionData?.errors ?? {}
+  const fields = convertKitData
+    ? convertKitData.fields
+    : actionData?.fields ?? {}
+  const alreadySubscribed = userInfo?.convertKit?.tags.some(
+    ({id}) => id === convertKitTagId,
+  )
+
+  if (alreadySubscribed) {
+    return (
+      <div>{`Actually, it looks like you're already signed up to be notified.`}</div>
+    )
+  }
 
   return (
     <div>
-      {loaderData?.status === 'success' ? (
+      {convertKitData ? (
         <div className="flex">
           <CheckIcon />
-          <span>
+          <p className="text-secondary">
             {userInfo?.convertKit?.isInMailingList
               ? `Sweet, you're all set`
               : `Sweet, check your email for confirmation.`}
-          </span>
+          </p>
         </div>
       ) : (
         <Form
           replace={true}
+          action="/_action/convert-kit"
           className="mt-8 space-y-4"
           method="post"
           noValidate
           submissionKey={submissionKey}
         >
+          <input type="hidden" name="formId" value={formId} />
           <input type="hidden" name="_redirect" value={redirect} />
           <input type="hidden" name="convertKitTagId" value={convertKitTagId} />
           <input
@@ -89,4 +112,4 @@ function ConvertKitForm({
   )
 }
 
-export {ConvertKitForm}
+export {ConvertKitForm, ConvertKitDataProvider, useConvertKitData}

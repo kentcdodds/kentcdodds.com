@@ -5,8 +5,8 @@ import {useParams} from 'react-router-dom'
 import type {KCDLoader, MdxListItem} from 'types'
 import {Grid} from '../../components/grid'
 import {H2, H5, H6, Paragraph} from '../../components/typography'
-import {Button, ButtonLink} from '../../components/button'
-import {ArrowButton, BackLink} from '../../components/arrow-button'
+import {ButtonLink} from '../../components/button'
+import {ArrowButton, ArrowLink, BackLink} from '../../components/arrow-button'
 import {WorkshopCard} from '../../components/workshop-card'
 import {NumberedPanel} from '../../components/numbered-panel'
 import {TestimonialSection} from '../../components/sections/testimonial-section'
@@ -16,6 +16,7 @@ import type {Timings} from '../../utils/metrics.server'
 import {getServerTimeHeader} from '../../utils/metrics.server'
 import {getWorkshop} from '../../utils/workshops.server'
 import {useWorkshops} from '../../utils/providers'
+import {ConvertKitForm} from '../../convertkit/form'
 
 type LoaderData = {blogRecommendations: Array<MdxListItem>}
 
@@ -83,7 +84,7 @@ function TopicRow({number, topicHTML}: TopicRowProps) {
 
 interface RegistrationPanelProps {
   workshop: string
-  eventLink?: string
+  eventLink: string
   totalSeats: number
   availableSeats: number
 }
@@ -112,13 +113,9 @@ function RegistrationPanel({
         </h5>
       </div>
 
-      {eventLink ? (
-        <ButtonLink to={eventLink} className="flex-none">
-          Register here
-        </ButtonLink>
-      ) : (
-        'TODO'
-      )}
+      <ButtonLink to={eventLink} className="flex-none">
+        Register here
+      </ButtonLink>
     </div>
   )
 }
@@ -178,7 +175,7 @@ function WorkshopScreen() {
           </BackLink>
           <H2 className="mb-2">{`Join Kent C. Dodds for "${workshop.title}"`}</H2>
 
-          <H6 as="p" className="mb-16 lowercase lg:mb-44">
+          <H6 as="p" className="lg:mb-22 mb-16 lowercase">
             {workshopEvent ? workshopEvent.date : 'Not currently scheduled'}
           </H6>
 
@@ -189,15 +186,25 @@ function WorkshopScreen() {
               totalSeats={workshopEvent.quantity}
               availableSeats={workshopEvent.remaining}
             />
+          ) : workshop.convertKitTag ? (
+            <div id="sign-up">
+              <H6 as="p" className="mb-0">
+                Sign up to be notified when this workshop is scheduled
+              </H6>
+              <ConvertKitForm
+                formId="workshop-convert-kit"
+                convertKitTagId={workshop.convertKitTag}
+              />
+            </div>
           ) : null}
         </div>
-        <div className="hidden col-span-1 col-start-12 items-end justify-center lg:flex">
-          <ArrowButton direction="down" />
+        <div className="hidden col-span-1 col-start-12 items-center justify-center lg:flex">
+          <ArrowLink to="#problem" direction="down" />
         </div>
       </Grid>
 
       <Grid as="main" className="mb-48">
-        <div className="col-span-full mb-12 lg:col-span-4 lg:mb-0">
+        <div className="col-span-full mb-12 lg:col-span-4 lg:mb-0" id="problem">
           <H6>The problem statement</H6>
         </div>
         <div className="col-span-full mb-8 lg:col-span-8 lg:mb-20">
@@ -241,7 +248,9 @@ function WorkshopScreen() {
                 <H2 className="mb-16" variant="secondary" as="p">
                   Here’s why you should register for the workshop.
                 </H2>
-                <Button>Register here</Button>
+                <ButtonLink to={workshopEvent ? workshopEvent.url : '#sign-up'}>
+                  Register here
+                </ButtonLink>
               </div>
 
               <div className="col-span-full lg:col-span-5 lg:col-start-8 lg:mr-12">
@@ -270,7 +279,9 @@ function WorkshopScreen() {
         </div>
 
         <div className="flex flex-col col-span-full items-stretch justify-end mb-16 lg:col-span-4 lg:items-end lg:justify-center">
-          <Button>register here</Button>
+          <ButtonLink to={workshopEvent ? workshopEvent.url : '#sign-up'}>
+            Register here
+          </ButtonLink>
         </div>
 
         <ol className="col-span-full mb-16 space-y-4 lg:mb-20">
@@ -319,6 +330,7 @@ function WorkshopScreen() {
               workshop={workshop.title}
               totalSeats={workshopEvent.quantity}
               availableSeats={workshopEvent.remaining}
+              eventLink={workshopEvent.url}
             />
           </div>
         </Grid>

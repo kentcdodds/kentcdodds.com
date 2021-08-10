@@ -17,7 +17,7 @@ function getErrorForEmail(email: string | null) {
   return null
 }
 
-function getConvertKitTagIdError(
+function getErrorForConvertKitTagId(
   tagId: string | null,
   {convertKitFormId}: ActionData['fields'],
 ) {
@@ -29,7 +29,7 @@ function getConvertKitTagIdError(
   return null
 }
 
-function getConvertKitFormIdError(
+function getErrorForConvertKitFormId(
   formId: string | null,
   {convertKitTagId}: ActionData['fields'],
 ) {
@@ -38,6 +38,11 @@ function getConvertKitFormIdError(
   }
   if (!formId) return null
   if (formId.length < 2) return `Convert Kit Form ID is incorrect`
+  return null
+}
+
+function getErrorForFormId(value: string | null) {
+  if (!value) return `Form ID is required`
   return null
 }
 
@@ -84,15 +89,22 @@ async function handleConvertKitFormSubmission(request: Request) {
   return handleFormSubmission<ActionData>({
     request,
     validators: {
+      formId: getErrorForFormId,
       _redirect: () => null,
       firstName: getErrorForFirstName,
       email: getErrorForEmail,
-      convertKitTagId: getConvertKitTagIdError,
-      convertKitFormId: getConvertKitFormIdError,
+      convertKitTagId: getErrorForConvertKitTagId,
+      convertKitFormId: getErrorForConvertKitFormId,
     },
     handleFormValues: async formData => {
-      const {firstName, email, convertKitTagId, convertKitFormId, _redirect} =
-        formData
+      const {
+        firstName,
+        email,
+        convertKitTagId,
+        convertKitFormId,
+        _redirect,
+        formId,
+      } = formData
 
       if (convertKitFormId) {
         await ck.addSubscriberToForm({email, firstName, convertKitFormId})
@@ -101,7 +113,7 @@ async function handleConvertKitFormSubmission(request: Request) {
         await ck.addTagToSubscriber({email, firstName, convertKitTagId})
       }
 
-      session.flashData({fields: {firstName, email}, status: 'success'})
+      session.flashData({fields: {formId, firstName, email}, status: 'success'})
 
       return redirect(_redirect || '/', {
         headers: await session.getHeaders(),

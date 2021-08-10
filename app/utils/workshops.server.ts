@@ -31,6 +31,7 @@ type ProblemStatements = {
 type RawWorkshop = {
   title?: string
   description?: string
+  convertKitTag?: string
   categories?: Array<string>
   testimonials?: Array<Testimonial>
   problemStatements?: ProblemStatements
@@ -85,6 +86,7 @@ async function getWorkshop(slug: string, {request, timings}: Options) {
       }
       const {
         title,
+        convertKitTag,
         description = 'This workshop is... indescribeable',
         testimonials = [],
         categories = [],
@@ -131,6 +133,7 @@ async function getWorkshop(slug: string, {request, timings}: Options) {
         slug,
         title,
         description,
+        convertKitTag,
         categories,
         testimonials,
         problemStatementHTMLs,

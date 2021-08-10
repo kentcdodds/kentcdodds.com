@@ -57,6 +57,7 @@ type Workshop = {
   description: string
   categories: Array<string>
   meta?: Record<string, string>
+  convertKitTag?: string
   testimonials: Array<Testimonial>
   problemStatementHTMLs: ProblemStatements
   keyTakeawayHTMLs: Array<KeyTakeaway>

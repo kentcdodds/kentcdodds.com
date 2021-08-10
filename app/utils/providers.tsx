@@ -109,6 +109,7 @@ const {Provider: WorkshopsProvider, useValue: useWorkshops} =
 
 export {
   RequestInfoProvider,
+  createSimpleContext,
   useRequestInfo,
   UserInfoProvider,
   useUserInfo,

@@ -26,7 +26,7 @@ function NewsletterSection() {
         </Paragraph>
       </div>
 
-      <ConvertKitForm convertKitFormId="827139" />
+      <ConvertKitForm formId="newsletter" convertKitFormId="827139" />
     </div>
   )
 }
@@ -129,8 +129,8 @@ function FooterLink({name, href}: FooterLinkProps) {
 
 function Footer() {
   const userInfo = useOptionalUserInfo()
-  const subscribedToNewsletter = userInfo?.convertKit?.tags.includes(
-    'Subscribed: general newsletter',
+  const subscribedToNewsletter = userInfo?.convertKit?.tags.some(
+    ({name}) => name === 'Subscribed: general newsletter',
   )
   return (
     <footer className="pb-16 pt-48 border-t border-gray-200 dark:border-gray-600">

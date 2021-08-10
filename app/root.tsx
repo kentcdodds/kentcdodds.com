@@ -55,6 +55,7 @@ import {Footer} from './components/footer'
 import {TeamCircle} from './components/team-circle'
 import {NotificationMessage} from './components/notification-message'
 import {getConvertKitFormLoaderData} from './convertkit/remix.server'
+import {ConvertKitDataProvider} from './convertkit/form'
 import type {LoaderData as ConvertKitLoaderData} from './convertkit/types'
 
 export const meta: MetaFunction = () => {
@@ -357,7 +358,9 @@ export default function AppWithProviders() {
         <UserInfoProvider value={data.userInfo}>
           <TeamProvider>
             <ThemeProvider specifiedTheme={data.requestInfo.session.theme}>
-              <App />
+              <ConvertKitDataProvider value={data.convertKit}>
+                <App />
+              </ConvertKitDataProvider>
             </ThemeProvider>
           </TeamProvider>
         </UserInfoProvider>
