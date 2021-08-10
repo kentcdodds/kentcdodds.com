@@ -18,7 +18,12 @@ const discordRoleTeams: {
   YELLOW: DISCORD_YELLOW_ROLE,
   BLUE: DISCORD_BLUE_ROLE,
 }
-type DiscordUser = {id: string; username: string; discriminator: string}
+type DiscordUser = {
+  id: string
+  username: string
+  discriminator: string
+  avatar?: string
+}
 type DiscordMember = {user: DiscordUser; roles: Array<string>}
 type DiscordToken = {
   token_type: string

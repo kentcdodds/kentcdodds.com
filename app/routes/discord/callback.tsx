@@ -4,6 +4,7 @@ import * as React from 'react'
 import {requireUser} from '../../utils/session.server'
 import {getDomainUrl, getErrorMessage} from '../../utils/misc'
 import {connectDiscord} from '../../utils/discord.server'
+import {deleteDiscordCache} from '../../utils/user-info.server'
 
 export const loader: LoaderFunction = async ({request}) => {
   return requireUser(request, async user => {
@@ -17,6 +18,7 @@ export const loader: LoaderFunction = async ({request}) => {
       }
       const domainUrl = getDomainUrl(request)
       const discordMember = await connectDiscord({user, code, domainUrl})
+      await deleteDiscordCache(discordMember.user.id)
 
       url.searchParams.set(
         'message',

@@ -2,6 +2,7 @@ import {redirect, createCookieSessionStorage, Headers} from 'remix'
 import type {Request, ResponseInit} from 'remix'
 import {getRequiredServerEnvVar} from '../utils/misc'
 import {handleFormSubmission} from '../utils/actions.server'
+import {deleteConvertKitCache} from '../utils/user-info.server'
 import * as ck from './convertkit.server'
 import type {ActionData, LoaderData} from './types'
 
@@ -106,11 +107,26 @@ async function handleConvertKitFormSubmission(request: Request) {
         formId,
       } = formData
 
+      let subscriberId: number | null = null
       if (convertKitFormId) {
-        await ck.addSubscriberToForm({email, firstName, convertKitFormId})
+        const subscriber = await ck.addSubscriberToForm({
+          email,
+          firstName,
+          convertKitFormId,
+        })
+        subscriberId = subscriber.id
       }
       if (convertKitTagId) {
-        await ck.addTagToSubscriber({email, firstName, convertKitTagId})
+        const subscriber = await ck.addTagToSubscriber({
+          email,
+          firstName,
+          convertKitTagId,
+        })
+        subscriberId = subscriber.id
+      }
+
+      if (subscriberId) {
+        await deleteConvertKitCache(subscriberId)
       }
 
       session.flashData({fields: {formId, firstName, email}, status: 'success'})

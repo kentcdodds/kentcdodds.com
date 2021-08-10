@@ -48,7 +48,7 @@ function ConvertKitForm({
   const fields = convertKitData
     ? convertKitData.fields
     : actionData?.fields ?? {}
-  const alreadySubscribed = userInfo?.convertKit.tags.some(
+  const alreadySubscribed = userInfo?.convertKit?.tags.some(
     ({id}) => id === convertKitTagId,
   )
 
@@ -64,7 +64,7 @@ function ConvertKitForm({
         <div className="flex">
           <CheckIcon />
           <p className="text-secondary">
-            {userInfo?.convertKit.isInMailingList
+            {userInfo?.convertKit
               ? `Sweet, you're all set`
               : `Sweet, check your email for confirmation.`}
           </p>

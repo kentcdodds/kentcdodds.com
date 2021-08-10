@@ -4,7 +4,7 @@ import * as ck from '../convertkit/convertkit.server'
 import * as discord from './discord.server'
 import type {Timings} from './metrics.server'
 import {getAvatarForUser} from './misc'
-import {cachified} from './redis.server'
+import {cachified, del} from './redis.server'
 
 type UserInfo = {
   avatar: {
@@ -12,13 +12,16 @@ type UserInfo = {
     alt: string
   }
   convertKit: {
-    isInMailingList: boolean
     tags: Array<{id: string; name: string}>
-  }
-  discord?: {
+  } | null
+  discord: {
     username: string
-  }
+  } | null
 }
+
+const getConvertKitCacheKey = (convertKitId: string) =>
+  `convertkit:${convertKitId}`
+const getDiscordCacheKey = (discordId: string) => `discord:${discordId}`
 
 async function getUserInfo(
   user: User,
@@ -28,54 +31,65 @@ async function getUserInfo(
     timings,
   }: {request?: Request; forceFresh?: boolean; timings?: Timings} = {},
 ) {
-  const userInfo: UserInfo = {
-    avatar: getAvatarForUser(user),
-    convertKit: {isInMailingList: false, tags: []},
-  }
   const {discordId, convertKitId, email} = user
-  if (convertKitId) {
-    userInfo.convertKit = await cachified({
-      request,
-      forceFresh,
-      timings,
-      key: `convertkit:${convertKitId}`,
-      checkValue: (value: unknown) =>
-        typeof value === 'object' &&
-        value !== null &&
-        'isInMailingList' in value,
-      getFreshValue: async () => {
-        const subscriber = await ck.getConvertKitSubscriber(email)
-        if (!subscriber) {
-          return {
-            isInMailingList: false,
-            tags: [],
-          }
-        }
-        const tags = await ck.getConvertKitSubscriberTags(subscriber.id)
-        return {
-          isInMailingList: Boolean(subscriber),
-          tags: tags.map(({name, id}) => ({name, id})),
-        }
-      },
-    })
-  }
-  if (discordId) {
-    const discordUser = await cachified({
-      request,
-      forceFresh,
-      key: `discord:${user.discordId}`,
-      checkValue: (value: unknown) =>
-        typeof value === 'object' && value !== null && 'id' in value,
-      getFreshValue: async () => {
-        const result = await discord.getDiscordUser(discordId)
-        return result
-      },
-    })
-    userInfo.discord = {
-      username: `${discordUser.username}#${discordUser.discriminator}`,
-    }
+  const [discordUser, convertKitInfo] = await Promise.all([
+    discordId
+      ? cachified({
+          request,
+          forceFresh,
+          key: getDiscordCacheKey(discordId),
+          checkValue: (value: unknown) =>
+            typeof value === 'object' && value !== null && 'id' in value,
+          getFreshValue: async () => {
+            const result = await discord.getDiscordUser(discordId)
+            return result
+          },
+        })
+      : null,
+    convertKitId
+      ? cachified({
+          request,
+          forceFresh,
+          timings,
+          key: getConvertKitCacheKey(convertKitId),
+          checkValue: (value: unknown) =>
+            typeof value === 'object' &&
+            value !== null &&
+            'isInMailingList' in value,
+          getFreshValue: async () => {
+            const subscriber = await ck.getConvertKitSubscriber(email)
+            if (!subscriber) {
+              return {
+                tags: [],
+              }
+            }
+            const tags = await ck.getConvertKitSubscriberTags(subscriber.id)
+            return {
+              tags: tags.map(({name, id}) => ({name, id})),
+            }
+          },
+        })
+      : null,
+  ])
+
+  const discordAvatarUrl =
+    discordId && discordUser?.avatar
+      ? `https://cdn.discordapp.com/avatars/${discordId}/${discordUser.avatar}.png?size=128`
+      : undefined
+  const userInfo: UserInfo = {
+    avatar: getAvatarForUser(user, discordAvatarUrl),
+    discord: discordUser,
+    convertKit: convertKitInfo,
   }
   return userInfo
 }
 
-export {getUserInfo}
+function deleteConvertKitCache(convertKitId: string | number) {
+  return del(getConvertKitCacheKey(String(convertKitId)))
+}
+
+function deleteDiscordCache(discordId: string) {
+  return del(getDiscordCacheKey(discordId))
+}
+
+export {getUserInfo, deleteConvertKitCache, deleteDiscordCache}

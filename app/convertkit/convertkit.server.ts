@@ -54,12 +54,18 @@ async function ensureSubscriber({
   email: string
   firstName: string
 }) {
-  const subscriber = await getConvertKitSubscriber(email)
-  if (subscriber) return
+  let subscriber = await getConvertKitSubscriber(email)
+  if (!subscriber) {
+    // this is a basic form that doesn't really do anything. It's just a way to
+    // get the users on the mailing list
+    subscriber = await addSubscriberToForm({
+      email,
+      firstName,
+      convertKitFormId: '2500372',
+    })
+  }
 
-  // this is a basic form that doesn't really do anything. It's just a way to
-  // get the users on the mailing list
-  return addSubscriberToForm({email, firstName, convertKitFormId: '2500372'})
+  return subscriber
 }
 
 async function addSubscriberToForm({
@@ -80,7 +86,7 @@ async function addSubscriberToForm({
 
   // this is a basic form that doesn't really do anything. It's just a way to
   // get the users on the mailing list
-  await fetch(
+  const response = await fetch(
     `https://api.convertkit.com/v3/forms/${convertKitFormId}/subscribe`,
     {
       method: 'post',
@@ -88,6 +94,10 @@ async function addSubscriberToForm({
       headers: {'Content-Type': 'application/json'},
     },
   )
+  const json = (await response.json()) as {
+    subscription: {subscriber: ConvertKitSubscriber}
+  }
+  return json.subscription.subscriber
 }
 
 async function addTagToSubscriber({
@@ -108,13 +118,17 @@ async function addTagToSubscriber({
   }
 
   const subscribeUrl = `https://api.convertkit.com/v3/tags/${convertKitTagId}/subscribe`
-  await fetch(subscribeUrl, {
+  const response = await fetch(subscribeUrl, {
     method: 'post',
     body: JSON.stringify(subscriberData),
     headers: {
       'Content-Type': 'application/json',
     },
   })
+  const json = (await response.json()) as {
+    subscription: {subscriber: ConvertKitSubscriber}
+  }
+  return json.subscription.subscriber
 }
 
 async function tagKCDSiteSubscriber({

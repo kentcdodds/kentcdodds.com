@@ -30,13 +30,12 @@ const avatarFallbacks: Record<Team, string> = {
   YELLOW: images.alexProfileYellow({resize: {width: defaultAvatarSize}}),
 }
 
-function getAvatarForUser({
-  email,
-  team,
-  firstName,
-}: Pick<User, 'email' | 'team' | 'firstName'>) {
+function getAvatarForUser(
+  {email, team, firstName}: Pick<User, 'email' | 'team' | 'firstName'>,
+  fallback: string = avatarFallbacks[team],
+) {
   return {
-    src: getAvatar(email, {fallback: avatarFallbacks[team]}),
+    src: getAvatar(email, {fallback}),
     alt: firstName,
   }
 }
