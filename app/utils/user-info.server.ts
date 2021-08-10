@@ -11,7 +11,7 @@ type UserInfo = {
     src: string
     alt: string
   }
-  convertKit?: {
+  convertKit: {
     isInMailingList: boolean
     tags: Array<{id: string; name: string}>
   }
@@ -30,6 +30,7 @@ async function getUserInfo(
 ) {
   const userInfo: UserInfo = {
     avatar: getAvatarForUser(user),
+    convertKit: {isInMailingList: false, tags: []},
   }
   const {discordId, convertKitId, email} = user
   if (convertKitId) {

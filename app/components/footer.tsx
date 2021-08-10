@@ -129,7 +129,7 @@ function FooterLink({name, href}: FooterLinkProps) {
 
 function Footer() {
   const userInfo = useOptionalUserInfo()
-  const subscribedToNewsletter = userInfo?.convertKit?.tags.some(
+  const subscribedToNewsletter = userInfo?.convertKit.tags.some(
     ({name}) => name === 'Subscribed: general newsletter',
   )
   return (
