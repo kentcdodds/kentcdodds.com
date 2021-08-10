@@ -5,15 +5,7 @@
 
 /photo                                                                https://res.cloudinary.com/kentcdodds-com/image/upload/v1625699252/kent/profile
 
-
-# old podcast URLs:
-# TODO: add a bunch of redirects for each old episode. Too bad we didn't encode the episode number in the old URL scheme
-/chats-with-kent-podcast/seasons/:seasonNumber/:path*       /chats/:seasonNumber
-
-# some people go to this page for some reason:
-/post/:slug*                                                             /blog/:slug*
-
-# lol, nice
+################# lol, nice
 # not a single URL actually ends in .php... or .env
 /(.*).php                                                               https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /(.*).env                                                               https://www.youtube.com/watch?v=dQw4w9WgXcQ
@@ -25,3 +17,49 @@
 /db(.*)                                                                 https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /sql(.*)                                                                https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /.git(.*)                                                               https://www.youtube.com/watch?v=dQw4w9WgXcQ
+
+################ old podcast URLs:
+/chats-with-kent-podcast/seasons/01/episodes/growing-your-skills-and-career-through-teaching-with-ali-spittel                   /chats/01/01/growing-your-skills-and-career-through-teaching-with-ali-spittel
+/chats-with-kent-podcast/seasons/01/episodes/establishing-your-personal-brand-with-cassidy-williams                             /chats/01/02/establishing-your-personal-brand-with-cassidy-williams
+/chats-with-kent-podcast/seasons/01/episodes/realigning-your-model-of-react-after-hooks-with-dan-abramov                        /chats/01/03/realigning-your-model-of-react-after-hooks-with-dan-abramov
+/chats-with-kent-podcast/seasons/01/episodes/a-rundown-of-whats-next-for-react-with-dan-abramov                                 /chats/01/04/a-rundown-of-whats-next-for-react-with-dan-abramov
+/chats-with-kent-podcast/seasons/01/episodes/make-your-apps-resilient-finite-state-machines-with-david-khourshid                /chats/01/05/make-your-apps-resilient-finite-state-machines-with-david-khourshid
+/chats-with-kent-podcast/seasons/01/episodes/creating-successful-mentor-relationships-with-emma-bostian                         /chats/01/06/creating-successful-mentor-relationships-with-emma-bostian
+/chats-with-kent-podcast/seasons/01/episodes/funding-open-source-maintainers-using-ethical-advertising-with-eric-berry          /chats/01/07/funding-open-source-maintainers-using-ethical-advertising-with-eric-berry
+/chats-with-kent-podcast/seasons/01/episodes/the-state-of-webassembly-with-lin-clark-and-till-schneidereit                      /chats/01/08/the-state-of-webassembly-with-lin-clark-and-till-schneidereit
+/chats-with-kent-podcast/seasons/01/episodes/a-few-excellent-reasons-for-why-you-should-give-graphql-a-try-with-peggy-rayzis    /chats/01/09/a-few-excellent-reasons-for-why-you-should-give-graphql-a-try-with-peggy-rayzis
+/chats-with-kent-podcast/seasons/01/episodes/there-arent-any-shortcuts-to-expertise-with-sara-vieira                            /chats/01/10/there-arent-any-shortcuts-to-expertise-with-sara-vieira
+/chats-with-kent-podcast/seasons/01/episodes/become-intentional-with-your-time-with-scott-hanselman                             /chats/01/11/become-intentional-with-your-time-with-scott-hanselman
+/chats-with-kent-podcast/seasons/01/episodes/you-can-learn-a-lot-for-the-low-price-of-your-ego-with-shawn-wang                  /chats/01/12/you-can-learn-a-lot-for-the-low-price-of-your-ego-with-shawn-wang
+/chats-with-kent-podcast/seasons/01/episodes/getting-started-with-code-live-streaming-with-suz-hinton                           /chats/01/13/getting-started-with-code-live-streaming-with-suz-hinton
+/chats-with-kent-podcast/seasons/01/episodes/lessons-learned-from-four-major-projects-with-shirley-wu                           /chats/01/14/lessons-learned-from-four-major-projects-with-shirley-wu
+/chats-with-kent-podcast/seasons/02/episodes/lindsey-kopacz-chats-with-kent-about-a11y                                          /chats/02/01/lindsey-kopacz-chats-with-kent-about-a11y
+/chats-with-kent-podcast/seasons/02/episodes/bianca-gandolfo-chats-with-kent-about-lifestyle-design                             /chats/02/02/bianca-gandolfo-chats-with-kent-about-lifestyle-design
+/chats-with-kent-podcast/seasons/02/episodes/jenn-creighton-chats-with-kent-about-avoiding-an-apropcolypse                      /chats/02/03/jenn-creighton-chats-with-kent-about-avoiding-an-apropcolypse
+/chats-with-kent-podcast/seasons/02/episodes/henry-zhu-chats-with-kent-about-the-human-side-of-open-source                      /chats/02/04/henry-zhu-chats-with-kent-about-the-human-side-of-open-source
+/chats-with-kent-podcast/seasons/02/episodes/jen-luker-chats-with-kent-about-finding-inspiration-from-anywhere                  /chats/02/05/jen-luker-chats-with-kent-about-finding-inspiration-from-anywhere
+/chats-with-kent-podcast/seasons/02/episodes/kelly-vaughn-chats-with-kent-about-personal-finance                                /chats/02/06/kelly-vaughn-chats-with-kent-about-personal-finance
+/chats-with-kent-podcast/seasons/02/episodes/nader-dabit-chats-with-kent-about-keeping-an-optimistic-mindset                    /chats/02/07/nader-dabit-chats-with-kent-about-keeping-an-optimistic-mindset
+/chats-with-kent-podcast/seasons/02/episodes/angie-jones-chats-with-kent-about-automated-visual-testing                         /chats/02/08/angie-jones-chats-with-kent-about-automated-visual-testing
+/chats-with-kent-podcast/seasons/02/episodes/erik-rasmussen-chats-with-kent-about-maintaining-open-source-libraries             /chats/02/09/erik-rasmussen-chats-with-kent-about-maintaining-open-source-libraries
+/chats-with-kent-podcast/seasons/02/episodes/ken-wheeler-chats-with-kent-about-going-for-challenging-opportunities              /chats/02/10/ken-wheeler-chats-with-kent-about-going-for-challenging-opportunities
+/chats-with-kent-podcast/seasons/02/episodes/eve-porcello-chats-with-kent-about-sustainably-expanding-skills                    /chats/02/11/eve-porcello-chats-with-kent-about-sustainably-expanding-skills
+/chats-with-kent-podcast/seasons/02/episodes/laurie-barth-chats-with-kent-about-growing-outside-of-your-comfort-zone            /chats/02/12/laurie-barth-chats-with-kent-about-growing-outside-of-your-comfort-zone
+/chats-with-kent-podcast/seasons/03/episodes/alex-anderson-creates-web-based-spaceship-controls                                 /chats/03/01/alex-anderson-creates-web-based-spaceship-controls
+/chats-with-kent-podcast/seasons/03/episodes/amelia-wattenberger-breaks-the-ux-mold                                             /chats/03/02/amelia-wattenberger-breaks-the-ux-mold
+/chats-with-kent-podcast/seasons/03/episodes/courtney-mccleve-on-developing-empathy                                             /chats/03/03/courtney-mccleve-on-developing-empathy
+/chats-with-kent-podcast/seasons/03/episodes/dr-michaela-greiler-makes-code-reviews-your-teams-superpower                       /chats/03/04/dr-michaela-greiler-makes-code-reviews-your-teams-superpower
+/chats-with-kent-podcast/seasons/03/episodes/talia-nassi-on-testing-in-production                                               /chats/03/05/talia-nassi-on-testing-in-production
+/chats-with-kent-podcast/seasons/03/episodes/justin-mcmurdie-breaks-apps-into-micro-services                                    /chats/03/06/justin-mcmurdie-breaks-apps-into-micro-services
+/chats-with-kent-podcast/seasons/03/episodes/michael-chan-teaches-you-how-to-break-into-the-industry                            /chats/03/07/michael-chan-teaches-you-how-to-break-into-the-industry
+/chats-with-kent-podcast/seasons/03/episodes/michael-chan-encapsulates-state                                                    /chats/03/08/michael-chan-encapsulates-state
+/chats-with-kent-podcast/seasons/03/episodes/preethi-kasireddy-reinvents-herself                                                /chats/03/09/preethi-kasireddy-reinvents-herself
+/chats-with-kent-podcast/seasons/03/episodes/saron-yitbareks-path-into-tech                                                     /chats/03/10/saron-yitbareks-path-into-tech
+/chats-with-kent-podcast/seasons/03/episodes/serene-yew-provides-mentorship                                                     /chats/03/11/serene-yew-provides-mentorship
+/chats-with-kent-podcast/seasons/03/episodes/tanner-linsley-separates-ui-state-and-server-state                                 /chats/03/12/tanner-linsley-separates-ui-state-and-server-state
+
+# podcast catch-all
+/chats-with-kent-podcast/seasons/:seasonNumber/:path*       /chats/:seasonNumber
+
+# some people go to this page for some reason:
+/post/:slug*                                                             /blog/:slug*
