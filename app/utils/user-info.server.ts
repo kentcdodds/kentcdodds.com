@@ -70,12 +70,8 @@ async function getUserInfo(
       : null,
   ])
 
-  const discordAvatarUrl =
-    discordId && discordUser?.avatar
-      ? `https://cdn.discordapp.com/avatars/${discordId}/${discordUser.avatar}.png?size=128`
-      : undefined
   const userInfo: UserInfo = {
-    avatar: getAvatarForUser(user, discordAvatarUrl),
+    avatar: getAvatarForUser(user),
     discord: discordUser,
     convertKit: convertKitInfo,
   }
