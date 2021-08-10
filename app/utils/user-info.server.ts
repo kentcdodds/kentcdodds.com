@@ -53,9 +53,7 @@ async function getUserInfo(
           timings,
           key: getConvertKitCacheKey(convertKitId),
           checkValue: (value: unknown) =>
-            typeof value === 'object' &&
-            value !== null &&
-            'isInMailingList' in value,
+            typeof value === 'object' && value !== null && 'tags' in value,
           getFreshValue: async () => {
             const subscriber = await ck.getConvertKitSubscriber(email)
             if (!subscriber) {
