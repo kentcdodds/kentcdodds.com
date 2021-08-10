@@ -15,7 +15,7 @@ import {HeroSection} from '../components/sections/hero-section'
 import {images} from '../images'
 import {ButtonLink} from '../components/button'
 import {ServerError} from '../components/errors'
-import {handleConvertKitFormSubmission} from '../convertkit/action.server'
+import {handleConvertKitFormSubmission} from '../convertkit/remix.server'
 
 type LoaderData = {
   blogRecommendations: Array<MdxListItem>

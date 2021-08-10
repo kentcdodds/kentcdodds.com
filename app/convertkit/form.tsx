@@ -1,10 +1,11 @@
 import * as React from 'react'
-import {Form, useActionData} from 'remix'
+import {Form, useActionData, useLoaderData} from 'remix'
+import {useLocation} from 'react-router-dom'
 import {useOptionalUser, useOptionalUserInfo} from '../utils/providers'
 import {ArrowButton} from '../components/arrow-button'
 import {Field} from '../components/form-elements'
 import {CheckIcon} from '../components/icons/check-icon'
-import type {ActionData} from './types'
+import type {ActionData, LoaderData} from './types'
 
 function ConvertKitForm({
   convertKitTagId,
@@ -15,13 +16,30 @@ function ConvertKitForm({
   | {convertKitTagId: string; convertKitFormId: string}) {
   const user = useOptionalUser()
   const userInfo = useOptionalUserInfo()
+  const location = useLocation()
+  let redirect = location.pathname
+  if (location.search) {
+    redirect = `${redirect}?${location.search}`
+  }
+  if (location.hash) {
+    redirect = `${redirect}#${location.hash}`
+  }
 
   const submissionKey = 'convertkitform'
 
   const actionData = useActionData<ActionData>(submissionKey)
+  const {convertKit: loaderData} =
+    useLoaderData<{convertKit: LoaderData | null}>()
+  const errors =
+    loaderData?.status === 'success' ? {} : actionData?.errors ?? {}
+  const fields =
+    loaderData?.status === 'success'
+      ? loaderData.fields
+      : actionData?.fields ?? {}
+
   return (
     <div>
-      {actionData?.state === 'success' ? (
+      {loaderData?.status === 'success' ? (
         <div className="flex">
           <CheckIcon />
           <span>
@@ -38,6 +56,7 @@ function ConvertKitForm({
           noValidate
           submissionKey={submissionKey}
         >
+          <input type="hidden" name="_redirect" value={redirect} />
           <input type="hidden" name="convertKitTagId" value={convertKitTagId} />
           <input
             type="hidden"
@@ -47,9 +66,9 @@ function ConvertKitForm({
           <Field
             name="firstName"
             label="First name"
-            error={actionData?.errors.firstName}
+            error={errors.firstName}
             autoComplete="firstName"
-            defaultValue={actionData?.fields.firstName ?? user?.firstName}
+            defaultValue={fields.firstName ?? user?.firstName}
             required
           />
 
@@ -57,8 +76,8 @@ function ConvertKitForm({
             name="email"
             label="Email"
             autoComplete="email"
-            error={actionData?.errors.email}
-            defaultValue={actionData?.fields.email ?? user?.email}
+            error={errors.email}
+            defaultValue={fields.email ?? user?.email}
           />
 
           <ArrowButton className="pt-4" type="submit" direction="right">

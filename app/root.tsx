@@ -54,6 +54,8 @@ import {Spacer} from './components/spacer'
 import {Footer} from './components/footer'
 import {TeamCircle} from './components/team-circle'
 import {NotificationMessage} from './components/notification-message'
+import {getConvertKitFormLoaderData} from './convertkit/remix.server'
+import type {LoaderData as ConvertKitLoaderData} from './convertkit/types'
 
 export const meta: MetaFunction = () => {
   return {
@@ -112,6 +114,7 @@ type LoaderData = {
   userInfo: Await<ReturnType<typeof getUserInfo>> | null
   ENV: ReturnType<typeof getEnv>
   requestInfo: RequestInfo
+  convertKit: ConvertKitLoaderData | null
 }
 
 export const loader: LoaderFunction = async ({request}) => {
@@ -155,6 +158,7 @@ export const loader: LoaderFunction = async ({request}) => {
         })
       : null,
     ENV: getEnv(),
+    convertKit: await getConvertKitFormLoaderData(request),
     requestInfo: {
       origin: getDomainUrl(request),
       searchParams: new URL(request.url).searchParams.toString(),
@@ -274,16 +278,21 @@ function PageLoadingMessage() {
 
 function App() {
   const matches = useMatches()
+  const data = useLoaderData<LoaderData>()
 
   const metas = matches
     .flatMap(({handle}) => (handle as KCDHandle | undefined)?.metas)
     .filter(typedBoolean)
-  const shouldManageScroll = matches.every(
-    ({handle}) => (handle as KCDHandle | undefined)?.scroll !== false,
-  )
+
+  // this convertkit thing is a workaround until we figure out this:
+  // https://github.com/remix-run/remix/issues/240
+  const shouldManageScroll =
+    data.convertKit?.status !== 'success' &&
+    matches.every(
+      ({handle}) => (handle as KCDHandle | undefined)?.scroll !== false,
+    )
   useScrollRestoration(shouldManageScroll)
 
-  const data = useLoaderData<LoaderData>()
   const [team] = useTeam()
   const [theme] = useTheme()
 
