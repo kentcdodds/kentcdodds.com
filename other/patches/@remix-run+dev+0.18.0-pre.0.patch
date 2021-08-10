@@ -1,0 +1,13 @@
+diff --git a/node_modules/@remix-run/dev/compiler/assets.js b/node_modules/@remix-run/dev/compiler/assets.js
+index 2e9bf3f..b465ff6 100644
+--- a/node_modules/@remix-run/dev/compiler/assets.js
++++ b/node_modules/@remix-run/dev/compiler/assets.js
+@@ -37,7 +37,7 @@ async function createAssetsManifest(config, metafile) {
+         module: resolveUrl(key),
+         imports: resolveImports(output.imports)
+       };
+-    } else {
++    } else if (output.entryPoint.startsWith("browser-route-module:")) {
+       let route = routesByFile.get(entryPointFile);
+       invariant['default'](route, `Cannot get route for entry point ${output.entryPoint}`);
+       let sourceExports = await routes.getRouteModuleExportsCached(config, route.id);

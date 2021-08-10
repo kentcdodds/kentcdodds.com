@@ -195,6 +195,11 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
   slug: string,
   githubFiles: Array<GitHubFile>,
 ) {
+  const {default: remarkAutolinkHeadings} = await import(
+    'remark-autolink-headings'
+  )
+  const {default: remarkSlug} = await import('remark-slug')
+
   const indexRegex = new RegExp(`${slug}\\/index.mdx?$`)
   const indexFile = githubFiles.find(({path}) => indexRegex.test(path))
   if (!indexFile) return null
@@ -214,8 +219,12 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
   const {frontmatter, code} = await bundleMDX(indexFile.content, {
     files,
     xdmOptions(options) {
+      // @ts-expect-error not sure why, but mdx-bundler isn't happy with
+      // the imported plugins
       options.remarkPlugins = [
         ...(options.remarkPlugins ?? []),
+        remarkSlug,
+        [remarkAutolinkHeadings, {behavior: 'wrap'}],
         ...remarkPlugins,
       ]
       options.rehypePlugins = [
