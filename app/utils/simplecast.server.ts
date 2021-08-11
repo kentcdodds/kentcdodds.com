@@ -8,17 +8,8 @@ import type {
   CWKSeason,
 } from 'types'
 import {omit, sortBy} from 'lodash'
-import unified from 'unified'
-import parseHtml from 'rehype-parse'
-import parseMarkdown from 'remark-parse'
-import remark2rehype from 'remark-rehype'
-import rehype2remark from 'rehype-remark'
-import rehypeStringify from 'rehype-stringify'
-import mdastToHast from 'mdast-util-to-hast'
-import hastToHtml from 'hast-util-to-html'
 import type * as U from 'unist'
 import type * as M from 'mdast'
-import visit from 'unist-util-visit'
 import {getRequiredServerEnvVar, typedBoolean} from './misc'
 import {markdownToHtml} from './markdown.server'
 import * as redis from './redis.server'
@@ -148,23 +139,27 @@ async function parseSummaryMarkdown(
 ): Promise<
   Pick<CWKEpisode, 'summaryHTML' | 'resources' | 'guests' | 'homeworkHTMLs'>
 > {
+  const {unified} = await import('unified')
+  const {default: parseHtml} = await import('rehype-parse')
+  const {default: parseMarkdown} = await import('remark-parse')
+  const {default: remark2rehype} = await import('remark-rehype')
+  const {default: rehype2remark} = await import('rehype-remark')
+  const {default: rehypeStringify} = await import('rehype-stringify')
+  const {toHast: mdastToHast} = await import('mdast-util-to-hast')
+  const {toHtml: hastToHtml} = await import('hast-util-to-html')
+  const {visit} = await import('unist-util-visit')
+
   const isHTMLInput = summaryInput.trim().startsWith('<')
   const resources: CWKEpisode['resources'] = []
   const guests: CWKEpisode['guests'] = []
   const homeworkHTMLs: CWKEpisode['homeworkHTMLs'] = []
 
-  const {contents} = await unified()
+  const result = await unified()
+    // @ts-expect-error not sure why typescript doesn't like these plugins
     .use(isHTMLInput ? parseHtml : parseMarkdown)
     .use(isHTMLInput ? rehype2remark : () => {})
     .use(function extractMetaData() {
-      return function transformer(treeArg) {
-        if (treeArg.type !== 'root') {
-          console.error(
-            `${errorKey}: summary markdown root element is a ${treeArg.type} not a "root".`,
-          )
-          return
-        }
-        const tree = treeArg as M.Root
+      return function transformer(tree) {
         type Section = {
           children: Array<U.Node>
           remove: () => void
@@ -178,13 +173,16 @@ async function parseSummaryMarkdown(
           if (heading.depth !== 3) return
 
           const nextHeading = parent.children
-            .slice(index + 1)
+            .slice((index ?? 0) + 1)
             .find(n => n.type === 'heading' && (n as M.Heading).depth >= 3)
           const endOfSection = nextHeading
             ? parent.children.indexOf(nextHeading)
             : parent.children.length
 
-          const headingChildren = parent.children.slice(index + 1, endOfSection)
+          const headingChildren = parent.children.slice(
+            (index ?? 0) + 1,
+            endOfSection,
+          )
           const sectionTitle = (heading.children[0] as M.Text | undefined)
             ?.value
           if (!sectionTitle) {
@@ -235,7 +233,19 @@ async function parseSummaryMarkdown(
               visit(child, 'listItem', (listItem: M.ListItem) => {
                 homeworkHTMLs.push(
                   listItem.children
-                    .map(c => hastToHtml(mdastToHast(c)))
+                    .map(c => {
+                      const hastC = mdastToHast(c)
+                      if (!hastC) {
+                        console.error(
+                          `${errorKey}: list item child that returned no hAST.`,
+                          c,
+                        )
+                        throw new Error(
+                          'This should not happen. mdastToHast of a list item child is falsy.',
+                        )
+                      }
+                      return hastToHtml(hastC)
+                    })
                     .join(''),
                 )
               })
@@ -314,7 +324,7 @@ async function parseSummaryMarkdown(
     .use(rehypeStringify)
     .process(summaryInput)
 
-  const summaryHTML = contents.toString()
+  const summaryHTML = result.value.toString()
   return {
     summaryHTML,
     homeworkHTMLs,

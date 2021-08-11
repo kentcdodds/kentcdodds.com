@@ -2,12 +2,12 @@ import * as React from 'react'
 import type {LoaderFunction} from 'remix'
 import {json, useLoaderData} from 'remix'
 import * as YAML from 'yaml'
+import type {CountableSlugify} from '@sindresorhus/slugify'
 import type {Await} from 'types'
 import {useRef, useState} from 'react'
 import formatDate from 'date-fns/format'
 import {Link, useLocation} from 'react-router-dom'
 import clsx from 'clsx'
-import slugify from '@sindresorhus/slugify'
 import {typedBoolean} from '../utils/misc'
 import {markdownToHtml} from '../utils/markdown.server'
 import {downloadFile} from '../utils/github.server'
@@ -19,8 +19,6 @@ import {Grid} from '../components/grid'
 import {H3, H6, Paragraph} from '../components/typography'
 import {CourseSection} from '../components/sections/course-section'
 import {YoutubeIcon} from '../components/icons/youtube-icon'
-
-const slugifyWithCounter = slugify.counter()
 
 type RawTalk = {
   title?: string
@@ -34,12 +32,25 @@ type RawTalk = {
 
 type Talk = Await<ReturnType<typeof getTalk>>
 
+let _slugify: CountableSlugify
+
+async function getSlugify() {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (!_slugify) {
+    const {slugifyWithCounter} = await import('@sindresorhus/slugify')
+
+    _slugify = slugifyWithCounter()
+  }
+  return _slugify
+}
+
 async function getTalk(rawTalk: RawTalk, allTags: Array<string>) {
+  const slugify = await getSlugify()
   return {
     title: rawTalk.title ?? 'TBA',
     tag: allTags.find(tag => rawTalk.tags?.includes(tag)) ?? rawTalk.tags?.[0],
     tags: rawTalk.tags ?? [],
-    slug: slugifyWithCounter(rawTalk.title ?? 'TBA'),
+    slug: slugify(rawTalk.title ?? 'TBA'),
     resourceHTMLs: rawTalk.resources
       ? await Promise.all(rawTalk.resources.map(r => markdownToHtml(r)))
       : [],
@@ -110,7 +121,8 @@ function getTags(talks: Array<RawTalk>): string[] {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  slugifyWithCounter.reset()
+  const slugify = await getSlugify()
+  slugify.reset()
 
   const data: LoaderData = await cachified({
     key: 'content:data:talks.yml',
@@ -126,7 +138,7 @@ export const loader: LoaderFunction = async ({request}) => {
       const allTags = getTags(rawTalks)
 
       const allTalks = await Promise.all(
-        rawTalks.map(talk => getTalk(talk, allTags)),
+        rawTalks.map(rawTalk => getTalk(rawTalk, allTags)),
       )
       allTalks.sort(sortByPresentationDate)
       allTags.sort()

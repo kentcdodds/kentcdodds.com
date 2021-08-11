@@ -1,18 +1,15 @@
-import unified from 'unified'
-import markdown from 'remark-parse'
-import remark2rehype from 'remark-rehype'
-import doc from 'rehype-document'
-import format from 'rehype-format'
-import rehypStringify from 'rehype-stringify'
-
 async function markdownToHtml(markdownString: string) {
-  const {contents} = await unified()
+  const {unified} = await import('unified')
+  const {default: markdown} = await import('remark-parse')
+  const {default: remark2rehype} = await import('remark-rehype')
+  const {default: rehypStringify} = await import('rehype-stringify')
+  const result = await unified()
     .use(markdown)
     .use(remark2rehype)
     .use(rehypStringify)
     .process(markdownString)
 
-  return contents.toString()
+  return result.value.toString()
 }
 
 async function markdownToHtmlUnwrapped(markdownString: string) {
@@ -21,7 +18,13 @@ async function markdownToHtmlUnwrapped(markdownString: string) {
 }
 
 async function markdownToHtmlDocument(markdownString: string) {
-  const {contents} = await unified()
+  const {unified} = await import('unified')
+  const {default: markdown} = await import('remark-parse')
+  const {default: remark2rehype} = await import('remark-rehype')
+  const {default: rehypStringify} = await import('rehype-stringify')
+  const {default: doc} = await import('rehype-document')
+  const {default: format} = await import('rehype-format')
+  const result = await unified()
     .use(markdown)
     .use(remark2rehype)
     .use(doc)
@@ -29,7 +32,7 @@ async function markdownToHtmlDocument(markdownString: string) {
     .use(rehypStringify)
     .process(markdownString)
 
-  return contents.toString()
+  return result.value.toString()
 }
 
 export {markdownToHtml, markdownToHtmlUnwrapped, markdownToHtmlDocument}

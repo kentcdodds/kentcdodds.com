@@ -1,6 +1,5 @@
 import type {Request} from 'remix'
 import * as YAML from 'yaml'
-import pProps from 'p-props'
 import type {Workshop} from 'types'
 import {markdownToHtmlUnwrapped} from './markdown.server'
 import type {Timings} from './metrics.server'
@@ -64,6 +63,8 @@ async function getWorkshops({request, timings}: Options) {
 }
 
 async function getWorkshop(slug: string, {request, timings}: Options) {
+  const {default: pProps} = await import('p-props')
+
   const workshop = await cachified({
     key: `content:workshops:${slug}.yml`,
     request,

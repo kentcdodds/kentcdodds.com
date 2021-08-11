@@ -1,15 +1,12 @@
 import {bundleMDX} from 'mdx-bundler'
-import visit from 'unist-util-visit'
-import type {PluggableList} from 'unified'
+import type * as U from 'unified'
+import type * as M from 'mdast'
+import type * as H from 'hast'
 import {remarkCodeBlocksShiki} from '@kentcdodds/md-temp'
 import remarkEmbedder from '@remark-embedder/core'
 import type {TransformerInfo} from '@remark-embedder/core'
-import type {Image, Link} from 'mdast'
-import type {Element} from 'hast'
 import oembedTransformer from '@remark-embedder/transformer-oembed'
 import type {Config as OEmbedConfig} from '@remark-embedder/transformer-oembed'
-import gfm from 'remark-gfm'
-import type {Node} from 'unist'
 import type {GitHubFile} from 'types'
 import calculateReadingTime from 'reading-time'
 import * as twitter from './twitter.server'
@@ -63,8 +60,9 @@ const cloudinaryUrlRegex =
   /^https?:\/\/res\.cloudinary\.com\/(?<cloudName>.+?)\/image\/upload(\/(?<transforms>(?!v\d+).+?))?(\/(?<version>v\d+))?\/(?<publicId>.+$)/
 
 function optimizeCloudinaryImages() {
-  return function transformer(tree: Node) {
-    visit(tree, 'image', function visitor(node: Image) {
+  return async function transformer(tree: M.Root) {
+    const {visit} = await import('unist-util-visit')
+    visit(tree, 'image', function visitor(node: M.Image) {
       if (!node.url) {
         console.error('image without url?', node)
         return
@@ -133,8 +131,9 @@ const eggheadTransformer = {
 }
 
 function autoAffiliates() {
-  return function affiliateTransformer(tree: Node) {
-    visit(tree, 'link', function visitor(linkNode: Link) {
+  return async function affiliateTransformer(tree: M.Root) {
+    const {visit} = await import('unist-util-visit')
+    visit(tree, 'link', function visitor(linkNode: M.Link) {
       if (linkNode.url.includes('amazon.com')) {
         const amazonUrl = new URL(linkNode.url)
         if (!amazonUrl.searchParams.has('tag')) {
@@ -154,14 +153,14 @@ function autoAffiliates() {
 }
 
 function removePreContainerDivs() {
-  return function preContainerDivsTransformer(tree: Node) {
+  return async function preContainerDivsTransformer(tree: H.Root) {
+    const {visit} = await import('unist-util-visit')
     visit(
       tree,
-      'element',
-      function visitor(node: Element, index: number, parent: Node | undefined) {
-        if (node.tagName !== 'pre') return
+      {type: 'element', tagName: 'pre'},
+      function visitor(node, index, parent) {
         if (parent?.type !== 'element') return
-        const parentEl = parent as Element
+        const parentEl = parent as H.Element
         if (parentEl.tagName !== 'div') return
         if (parentEl.children.length !== 1 && index === 0) return
         Object.assign(parentEl, node)
@@ -170,11 +169,11 @@ function removePreContainerDivs() {
   }
 }
 
-const remarkPlugins: PluggableList = [
-  gfm,
+const remarkPlugins: U.PluggableList = [
   remarkCodeBlocksShiki,
   optimizeCloudinaryImages,
   [
+    // @ts-expect-error 🤷‍♂️
     remarkEmbedder,
     {
       handleError: handleEmbedderError,
@@ -189,7 +188,7 @@ const remarkPlugins: PluggableList = [
   autoAffiliates,
 ]
 
-const rehypePlugins: PluggableList = [removePreContainerDivs]
+const rehypePlugins: U.PluggableList = [removePreContainerDivs]
 
 async function compileMdx<FrontmatterType extends Record<string, unknown>>(
   slug: string,
@@ -199,6 +198,7 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
     'remark-autolink-headings'
   )
   const {default: remarkSlug} = await import('remark-slug')
+  const {default: gfm} = await import('remark-gfm')
 
   const indexRegex = new RegExp(`${slug}\\/index.mdx?$`)
   const indexFile = githubFiles.find(({path}) => indexRegex.test(path))
@@ -225,8 +225,10 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
         ...(options.remarkPlugins ?? []),
         remarkSlug,
         [remarkAutolinkHeadings, {behavior: 'wrap'}],
+        gfm,
         ...remarkPlugins,
       ]
+      // @ts-expect-error 🤷‍♂️
       options.rehypePlugins = [
         ...(options.rehypePlugins ?? []),
         ...rehypePlugins,
