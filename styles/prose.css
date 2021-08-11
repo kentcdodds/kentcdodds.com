@@ -142,11 +142,15 @@ pre {
 
 .prose pre[data-lang]:after {
   content: attr(data-lang);
-  position: absolute;
-  right: 8px;
-  top: 4px;
+  position: sticky;
+  right: 0;
   font-size: 0.7rem;
   opacity: 0.7;
+  display: inline-block;
+  transform: translate(-16px, 24px);
+  text-align: right;
+  width: 200px;
+  margin-left: -200px;
 }
 
 .prose callout-info p,
