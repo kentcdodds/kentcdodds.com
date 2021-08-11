@@ -1,9 +1,13 @@
 import * as React from 'react'
 import {json, redirect, useLoaderData, Form} from 'remix'
-import type {Call, KCDLoader, KCDAction} from 'types'
+import type {Call, KCDLoader, KCDAction, KCDHandle} from 'types'
 import {requireUser} from '../../utils/session.server'
 import {prisma} from '../../utils/prisma.server'
 import {Paragraph} from '../../components/typography'
+
+export const handle: KCDHandle = {
+  getSitemapEntries: () => null,
+}
 
 const actionTypes = {
   DELETE_RECORDING: 'delete recording',
@@ -24,10 +28,10 @@ export const action: KCDAction<{callId: string}> = async ({
       console.warn(
         `Failed to get a call to delete by userId: ${user.id} and callId: ${params.callId}`,
       )
-      return redirect('/call/record')
+      return redirect('/calls/record')
     }
     await prisma.call.delete({where: {id: params.callId}})
-    return redirect('/call/record')
+    return redirect('/calls/record')
   })
 }
 
@@ -45,7 +49,7 @@ export const loader: KCDLoader<{callId: string}> = async ({
     })
     if (!call) {
       // TODO: handle 404 instead of redirecting
-      return redirect('/call/record')
+      return redirect('/calls/record')
     }
     const data: LoaderData = {call}
     return json(data)

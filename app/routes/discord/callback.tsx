@@ -1,10 +1,15 @@
 import type {LoaderFunction} from 'remix'
 import {redirect} from 'remix'
+import type {KCDHandle} from 'types'
 import * as React from 'react'
 import {requireUser} from '../../utils/session.server'
 import {getDomainUrl, getErrorMessage} from '../../utils/misc'
 import {connectDiscord} from '../../utils/discord.server'
 import {deleteDiscordCache} from '../../utils/user-info.server'
+
+export const handle: KCDHandle = {
+  getSitemapEntries: () => null,
+}
 
 export const loader: LoaderFunction = async ({request}) => {
   return requireUser(request, async user => {

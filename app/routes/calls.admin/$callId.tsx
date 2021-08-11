@@ -2,14 +2,14 @@ import * as React from 'react'
 import {redirect, Form, json, useActionData, useLoaderData, Link} from 'remix'
 import type {Call, KCDAction, KCDLoader} from 'types'
 import {format} from 'date-fns'
-import {CallRecorder} from '../../components/call/recorder'
+import {CallRecorder} from '../../components/calls/recorder'
 import {requireAdminUser} from '../../utils/session.server'
 import {prisma} from '../../utils/prisma.server'
 import {getAvatarForUser, getErrorMessage, getNonNull} from '../../utils/misc'
 import {createEpisodeAudio} from '../../utils/ffmpeg.server'
 import {createEpisode} from '../../utils/transistor.server'
-import type {RecordingFormData} from '../../components/call/submit-recording-form'
-import {RecordingForm} from '../../components/call/submit-recording-form'
+import type {RecordingFormData} from '../../components/calls/submit-recording-form'
+import {RecordingForm} from '../../components/calls/submit-recording-form'
 import {
   getErrorForAudio,
   getErrorForTitle,
@@ -26,7 +26,7 @@ export const action: KCDAction<{callId: string}> = async ({
   return requireAdminUser(request, async () => {
     if (request.method === 'DELETE') {
       await prisma.call.delete({where: {id: params.callId}})
-      return redirect('/call/admin')
+      return redirect('/calls/admin')
     }
     const call = await prisma.call.findFirst({
       where: {id: params.callId},
@@ -34,7 +34,7 @@ export const action: KCDAction<{callId: string}> = async ({
     })
     if (!call) {
       // TODO: display an error message or something...
-      return redirect('/call/admin')
+      return redirect('/calls/admin')
     }
     const actionData: ActionData = {fields: {}, errors: {}}
     try {
@@ -87,7 +87,7 @@ export const action: KCDAction<{callId: string}> = async ({
         where: {id: call.id},
       })
 
-      return redirect('/call?fresh')
+      return redirect('/calls?fresh')
     } catch (error: unknown) {
       actionData.errors.generalError = getErrorMessage(error)
       return json(actionData, 500)
@@ -108,7 +108,7 @@ export const loader: KCDLoader<{callId: string}> = async ({
     if (!call) {
       console.error(`No call found at ${params.callId}`)
       // TODO: add message
-      return redirect('/call/admin')
+      return redirect('/calls/admin')
     }
     const data: LoaderData = {call}
     return json(data)

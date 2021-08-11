@@ -46,7 +46,7 @@ export default function CallHomeScreen() {
   const [team] = useTeam()
   const avatar = alexProfiles[team]
 
-  const activeSlug = pathname.replace('/call/', '')
+  const activeSlug = pathname.replace('/calls/', '')
   const initialActiveSlugRef = useRef(activeSlug)
 
   const sortedEpisodes =
@@ -55,9 +55,9 @@ export default function CallHomeScreen() {
   // An effect to scroll to the episode's position when opening a direct link,
   // use a ref so that it doesn't hijack scroll when the user is browsing episodes
   React.useEffect(() => {
-    const episode = initialActiveSlugRef.current
-    if (episode) {
-      document.querySelector(`[data-episode="${episode}"]`)?.scrollIntoView()
+    const href = initialActiveSlugRef.current
+    if (href) {
+      document.querySelector(`[href="${href}"]`)?.scrollIntoView()
     }
   }, [initialActiveSlugRef])
 
@@ -125,9 +125,15 @@ export default function CallHomeScreen() {
 
         <div className="col-span-full">
           <CallKentEpisodesProvider value={data.episodes}>
-            {sortedEpisodes.map((episode, idx, {length}) => {
-              const number =
-                sortOrder === 'asc' ? idx + 1 : Math.abs(length - idx)
+            {sortedEpisodes.map(episode => {
+              const seasonNumber = episode.seasonNumber
+                .toString()
+                .padStart(2, '0')
+              const episodeNumber = episode.episodeNumber
+                .toString()
+                .padStart(numberLength, '0')
+              const fullSlug = `${seasonNumber}/${episodeNumber}/${episode.slug}`
+              const path = activeSlug === episode.slug ? './' : `./${fullSlug}`
               const keywords = Array.from(
                 new Set(
                   episode.keywords
@@ -143,11 +149,9 @@ export default function CallHomeScreen() {
                   key={episode.slug}
                 >
                   <Link
-                    data-episode={episode.slug}
+                    data-episode={path}
                     key={episode.slug}
-                    to={
-                      activeSlug === episode.slug ? './' : `./${episode.slug}`
-                    }
+                    to={path}
                     className="group focus:outline-none"
                   >
                     <Grid nested className="relative py-10 lg:py-5">
@@ -174,9 +178,7 @@ export default function CallHomeScreen() {
                               'w-auto pr-4': numberLength > 4,
                             })}
                           >
-                            {`${number
-                              .toString()
-                              .padStart(numberLength, '0')}.`}
+                            {`${episodeNumber}.`}
                           </span>
 
                           {episode.title}
@@ -190,7 +192,7 @@ export default function CallHomeScreen() {
 
                   <Grid nested>
                     <AnimatePresence>
-                      {activeSlug === episode.slug ? (
+                      {activeSlug === fullSlug ? (
                         <motion.div
                           variants={{
                             collapsed: {

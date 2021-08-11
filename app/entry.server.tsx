@@ -7,17 +7,12 @@ import {
   Headers,
   EntryContext,
 } from 'remix'
-import {
-  getDocumentReplayResponse,
-  getDataReplayResponse,
-} from './utils/prisma.server'
-import {getRssFeedXml} from './utils/blog-rss-feed.server'
+import {getDataReplayResponse} from './utils/prisma.server'
 import {getEnv} from './utils/env.server'
 import {sendEventWithRequestContext} from './utils/sentry.server'
+import {routes as otherRoutes} from './other-routes.server'
 
 global.ENV = getEnv()
-
-const startTime = Date.now()
 
 export default async function handleRequest(
   request: Request,
@@ -25,33 +20,10 @@ export default async function handleRequest(
   responseHeaders: Headers,
   remixContext: EntryContext,
 ) {
-  const replayResponse = await getDocumentReplayResponse(request, remixContext)
-  if (replayResponse) {
-    return replayResponse
-  }
-  const {pathname} = new URL(request.url)
-  if (pathname === '/build-info') {
-    const buildInfo = {
-      commit: ENV.COMMIT_SHA,
-      startTime,
-    }
-    const json = JSON.stringify(buildInfo)
-    return new Response(json, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': String(Buffer.byteLength(json)),
-      },
-    })
-  }
-  if (pathname === '/blog/rss.xml') {
-    const rss = await getRssFeedXml(request)
-    return new Response(rss, {
-      headers: {
-        'Content-Type': 'application/xml',
-        'Content-Length': String(Buffer.byteLength(rss)),
-      },
-    })
+  for (const handler of otherRoutes) {
+    // eslint-disable-next-line no-await-in-loop
+    const otherRouteResponse = await handler(request, remixContext)
+    if (otherRouteResponse) return otherRouteResponse
   }
 
   const markup = ReactDOMServer.renderToString(

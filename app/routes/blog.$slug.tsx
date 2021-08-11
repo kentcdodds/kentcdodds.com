@@ -2,10 +2,15 @@ import * as React from 'react'
 import {useLoaderData, json} from 'remix'
 import type {HeadersFunction} from 'remix'
 import {Link, useParams} from 'react-router-dom'
-import type {Await, KCDLoader, MdxListItem, MdxPage} from 'types'
+import type {Await, KCDHandle, KCDLoader, MdxListItem, MdxPage} from 'types'
 import formatDate from 'date-fns/format'
 import {images} from '../images'
-import {getMdxPage, mdxPageMeta, useMdxComponent} from '../utils/mdx'
+import {
+  getMdxDirList,
+  getMdxPage,
+  mdxPageMeta,
+  useMdxComponent,
+} from '../utils/mdx'
 import {H2, H6, Paragraph} from '../components/typography'
 import {Grid} from '../components/grid'
 import {ArrowLink, BackLink} from '../components/arrow-button'
@@ -20,6 +25,15 @@ import {externalLinks} from '../external-links'
 import {TeamStats} from '../components/team-stats'
 import type {Timings} from '../utils/metrics.server'
 import {getServerTimeHeader} from '../utils/metrics.server'
+
+export const handle: KCDHandle = {
+  getSitemapEntries: async request => {
+    const pages = await getMdxDirList('blog', {request})
+    return pages.map(page => {
+      return {route: `/blog/${page.slug}`, priority: 0.7}
+    })
+  },
+}
 
 type LoaderData = {
   page: MdxPage | null

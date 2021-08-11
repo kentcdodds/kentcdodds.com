@@ -82,6 +82,7 @@ async function getEpisode(episodeId: string) {
   const {
     id,
     is_published,
+    updated_at,
     slug,
     transcription: transcriptMarkdown,
     long_description: summaryMarkdown,
@@ -117,6 +118,7 @@ async function getEpisode(episodeId: string) {
     resources,
     image: image_url,
     episodeNumber: number,
+    updatedAt: updated_at,
     homeworkHTMLs,
     seasonNumber,
     duration,

@@ -1,11 +1,12 @@
 import * as React from 'react'
 import {redirect, json, useActionData} from 'remix'
 import type {ActionFunction} from 'remix'
-import {CallRecorder} from '../../components/call/recorder'
+import type {KCDHandle} from 'types'
+import {CallRecorder} from '../../components/calls/recorder'
 import {
   RecordingForm,
   RecordingFormData,
-} from '../../components/call/submit-recording-form'
+} from '../../components/calls/submit-recording-form'
 import {requireUser} from '../../utils/session.server'
 import {prisma} from '../../utils/prisma.server'
 import {getErrorMessage, getNonNull} from '../../utils/misc'
@@ -15,6 +16,10 @@ import {
   getErrorForDescription,
   getErrorForKeywords,
 } from '../../utils/call-kent'
+
+export const handle: KCDHandle = {
+  getSitemapEntries: () => null,
+}
 
 export const action: ActionFunction = async ({request}) => {
   return requireUser(request, async user => {
@@ -56,7 +61,7 @@ export const action: ActionFunction = async ({request}) => {
         base64: audio,
       }
       const createdCall = await prisma.call.create({data: call})
-      return redirect(`/call/record/${createdCall.id}`)
+      return redirect(`/calls/record/${createdCall.id}`)
     } catch (error: unknown) {
       actionData.errors.generalError = getErrorMessage(error)
       return json(actionData, 500)

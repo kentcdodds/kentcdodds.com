@@ -5,7 +5,7 @@ describe('call in', () => {
     const title = faker.lorem.words(2)
 
     cy.login()
-    cy.visit('/call')
+    cy.visit('/calls')
     cy.findByRole('link', {name: /record/i}).click()
     cy.findByRole('link', {name: /new recording/i}).click()
     cy.findByRole('main').within(() => {
@@ -39,7 +39,7 @@ describe('call in', () => {
 
     // login as admin
     cy.login({role: 'ADMIN'})
-    cy.visit('/call/admin')
+    cy.visit('/calls/admin')
     cy.findByRole('main').within(() => {
       cy.findByRole('link', {name: title}).click()
 

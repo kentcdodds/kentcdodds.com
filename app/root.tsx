@@ -57,6 +57,7 @@ import {NotificationMessage} from './components/notification-message'
 import {getConvertKitFormLoaderData} from './convertkit/remix.server'
 import {ConvertKitDataProvider} from './convertkit/form'
 import type {LoaderData as ConvertKitLoaderData} from './convertkit/types'
+import {pathedRoutes} from './other-routes.server'
 
 export const meta: MetaFunction = () => {
   return {
@@ -119,6 +120,12 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
+  // because this is called for every route, we'll do an early return for anything
+  // that has a other route setup. The response will be handled there.
+  if (pathedRoutes[new URL(request.url).pathname]) {
+    return new Response()
+  }
+
   const timings: Timings = {}
   const session = await getSession(request)
   const themeSession = await getThemeSession(request)

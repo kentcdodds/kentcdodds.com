@@ -2,7 +2,7 @@ import React, {useState} from 'react'
 import {useLoaderData, json, redirect} from 'remix'
 import type {HeadersFunction} from 'remix'
 import {Link} from 'react-router-dom'
-import type {KCDLoader, CWKEpisode, CWKListItem} from 'types'
+import type {KCDLoader, CWKEpisode, CWKListItem, KCDHandle} from 'types'
 import clsx from 'clsx'
 import {motion} from 'framer-motion'
 import {getSeasons} from '../utils/simplecast.server'
@@ -20,6 +20,24 @@ import {ChevronRightIcon} from '../components/icons/chevron-right-icon'
 import {ChevronLeftIcon} from '../components/icons/chevron-left-icon'
 import {formatTime, listify} from '../utils/misc'
 import {getCWKEpisodePath, getFeaturedEpisode} from '../utils/chats-with-kent'
+
+export const handle: KCDHandle = {
+  getSitemapEntries: async request => {
+    const seasons = await getSeasons(request)
+    return seasons.flatMap(season => {
+      return season.episodes.map(episode => {
+        const s = String(season.seasonNumber).padStart(2, '0')
+        const e = String(episode.episodeNumber).padStart(2, '0')
+        return {
+          route: `/chats/${s}/${e}/${episode.slug}`,
+          changefreq: 'weekly',
+          lastmod: new Date(episode.updatedAt).toISOString(),
+          priority: 0.4,
+        }
+      })
+    })
+  },
+}
 
 type LoaderData = {
   prevEpisode: CWKListItem | null
@@ -43,8 +61,9 @@ export const loader: KCDLoader<{
   }
   const episode = season.episodes.find(e => e.episodeNumber === episodeNumber)
   if (!episode) {
+    // TODO: 404
     throw new Error(
-      `oh no. no episode for ${params.season}/${params.episode}/${params.slug}`,
+      `oh no. no chats episode for ${params.season}/${params.episode}/${params.slug}`,
     )
   }
 

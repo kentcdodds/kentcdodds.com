@@ -92,11 +92,17 @@ const transistorHandlers: Array<
   rest.get('https://api.transistor.fm/v1/episodes', async (req, res, ctx) => {
     requiredHeader(req.headers, 'x-api-key')
     const data: TransistorEpisodesJson = {
-      data: Array.from({length: 35}, () => {
+      data: Array.from({length: 35}, (item, index) => {
+        const publishedAt = faker.datatype.datetime({
+          max: Date.now() - 1000 * 60 * 60 * 24,
+          min: Date.now() - 1000 * 60 * 60 * 24 * 7 * 6,
+        })
         return {
           id: faker.datatype.uuid(),
           type: 'episode',
           attributes: {
+            number: index + 1,
+            season: 1,
             title: faker.lorem.words(),
             duration: faker.datatype.number({min: 180, max: 900}),
             summary: faker.lorem.sentence(),
@@ -110,10 +116,11 @@ const transistorHandlers: Array<
               '<iframe src="https://share.transistor.fm/e/1493e91f" width="100%" height="180" frameborder="0" scrolling="no" seamless style="width:100%; height:180px;"></iframe>',
             embed_html_dark:
               '<iframe src="https://share.transistor.fm/e/1493e91f/dark" width="100%" height="180" frameborder="0" scrolling="no" seamless style="width:100%; height:180px;"></iframe>',
-            published_at: faker.datatype
+            published_at: publishedAt.toISOString(),
+            updated_at: faker.datatype
               .datetime({
-                max: Date.now() - 1000 * 60 * 60 * 24,
-                min: Date.now() - 1000 * 60 * 60 * 24 * 7 * 6,
+                max: Date.now() - 1000 * 60 * 60 * 23,
+                min: publishedAt.getTime(),
               })
               .toISOString(),
           },

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {json, useLoaderData, Link} from 'remix'
 import type {HeadersFunction} from 'remix'
-import type {CWKSeason, KCDLoader} from 'types'
+import type {CWKSeason, KCDHandle, KCDLoader} from 'types'
 import {orderBy} from 'lodash'
 import {Grid} from '../../components/grid'
 import {getSeasonListItems} from '../../utils/simplecast.server'
@@ -9,6 +9,18 @@ import {useChatsEpisodeUIState} from '../../utils/providers'
 import {formatTime} from '../../utils/misc'
 import {getCWKEpisodePath} from '../../utils/chats-with-kent'
 import {TriangleIcon} from '../../components/icons/triangle-icon'
+
+export const handle: KCDHandle = {
+  getSitemapEntries: async request => {
+    const seasons = await getSeasonListItems(request)
+    return seasons.map(season => {
+      return {
+        route: `/chats/${season.seasonNumber.toString().padStart(2, '0')}`,
+        priority: 0.4,
+      }
+    })
+  },
+}
 
 type LoaderData = {
   season: CWKSeason

@@ -26,6 +26,7 @@ import {EyeIcon} from '../components/icons/eye-icon'
 import {PlusIcon} from '../components/icons/plus-icon'
 
 export const handle: KCDHandle = {
+  getSitemapEntries: () => null,
   metas: [{httpEquiv: 'refresh', content: '1740'}],
 }
 

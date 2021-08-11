@@ -2,7 +2,7 @@ import * as React from 'react'
 import {useLoaderData, json} from 'remix'
 import type {MetaFunction} from 'remix'
 import {useParams} from 'react-router-dom'
-import type {KCDLoader, MdxListItem} from 'types'
+import type {KCDHandle, KCDLoader, MdxListItem} from 'types'
 import {Grid} from '../../components/grid'
 import {H2, H5, H6, Paragraph} from '../../components/typography'
 import {ButtonLink} from '../../components/button'
@@ -14,9 +14,21 @@ import {FourOhFour} from '../../components/errors'
 import {getBlogRecommendations} from '../../utils/blog.server'
 import type {Timings} from '../../utils/metrics.server'
 import {getServerTimeHeader} from '../../utils/metrics.server'
-import {getWorkshop} from '../../utils/workshops.server'
+import {getWorkshop, getWorkshops} from '../../utils/workshops.server'
 import {useWorkshops} from '../../utils/providers'
 import {ConvertKitForm} from '../../convertkit/form'
+
+export const handle: KCDHandle = {
+  getSitemapEntries: async request => {
+    const workshops = await getWorkshops({request})
+    return workshops.map(workshop => {
+      return {
+        route: `/workshops/${workshop.slug}`,
+        priority: 0.4,
+      }
+    })
+  },
+}
 
 type LoaderData = {blogRecommendations: Array<MdxListItem>}
 

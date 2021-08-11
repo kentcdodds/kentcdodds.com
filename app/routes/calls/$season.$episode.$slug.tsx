@@ -1,19 +1,47 @@
 import * as React from 'react'
 import {useParams} from 'react-router-dom'
-import type {KCDLoader} from 'types'
+import type {KCDHandle, KCDLoader} from 'types'
 import {useCallKentEpisodes} from '../../utils/providers'
 import {getEpisodes} from '../../utils/transistor.server'
 import {Themed} from '../../utils/theme-provider'
 
+export const handle: KCDHandle = {
+  scroll: false,
+  getSitemapEntries: async request => {
+    const episodes = await getEpisodes(request)
+    return episodes.map(episode => {
+      const s = String(episode.seasonNumber).padStart(2, '0')
+      const e = String(episode.episodeNumber).padStart(2, '0')
+      return {
+        route: `/calls/${s}/${e}/${episode.slug}`,
+        changefreq: 'weekly',
+        lastmod: new Date(episode.updatedAt).toISOString(),
+        priority: 0.3,
+      }
+    })
+  },
+}
+
 export const loader: KCDLoader<{
+  season: string
+  episode: string
   slug: string
 }> = async ({params, request}) => {
   const episodes = await getEpisodes(request)
-  const episode = episodes.find(e => e.slug === params.slug)
+  const episode = episodes.find(
+    e =>
+      e.seasonNumber === Number(params.season) &&
+      e.episodeNumber === Number(params.episode) &&
+      e.slug === params.slug,
+  )
+
   if (!episode) {
     // TODO: 404
-    throw new Error(`oh no. no call kent episode for ${params.slug}`)
+    throw new Error(
+      `oh no. no calls episode for ${params.season}/${params.episode}/${params.slug}`,
+    )
   }
+
   // we already load all the episodes in the parent route so it would be
   // wasteful to send it here. The parent sticks all the episodes in context
   // so we just use it in the component.

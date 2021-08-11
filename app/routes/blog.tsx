@@ -1,7 +1,7 @@
 import * as React from 'react'
 import type {LoaderFunction, HeadersFunction, MetaFunction} from 'remix'
 import {json, useLoaderData} from 'remix'
-import type {MdxListItem} from 'types'
+import type {KCDHandle, MdxListItem} from 'types'
 import formatDate from 'date-fns/format'
 import parseISO from 'date-fns/parseISO'
 import {Grid} from '../components/grid'
@@ -20,6 +20,15 @@ import {PlusIcon} from '../components/icons/plus-icon'
 import {Button} from '../components/button'
 import type {Timings} from '../utils/metrics.server'
 import {getServerTimeHeader} from '../utils/metrics.server'
+
+export const handle: KCDHandle = {
+  getSitemapEntries: () => [
+    {
+      route: `/blog`,
+      priority: 0.7,
+    },
+  ],
+}
 
 type LoaderData = {
   posts: Array<MdxListItem>

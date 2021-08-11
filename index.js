@@ -7,6 +7,7 @@ const compression = require('compression')
 const morgan = require('morgan')
 const {pathToRegexp, compile: compileRedirectPath} = require('path-to-regexp')
 const {createRequestHandler} = require('@remix-run/express')
+let build = require('./build')
 
 if (process.env.FLY) {
   const Sentry = require('@sentry/node')
@@ -39,10 +40,10 @@ app.use(express.static('public/build', {immutable: true, maxAge: '1y'}))
 app.all(
   '*',
   MODE === 'production'
-    ? createRequestHandler({build: require('./build')})
+    ? createRequestHandler({build})
     : (req, res, next) => {
         purgeRequireCache()
-        const build = require('./build')
+        build = require('./build')
         return createRequestHandler({build, mode: MODE})(req, res, next)
       },
 )

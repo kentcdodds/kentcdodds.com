@@ -9,7 +9,7 @@ module.exports = {
           )
           return
         }
-        route('/__tests/login', '__test_routes__/login.tsx')
+        route('__tests/login', '__test_routes__/login.tsx')
       }
     })
   },

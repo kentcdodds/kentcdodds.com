@@ -2,6 +2,8 @@ type TransistorEpisodeData = {
   id: string
   type: 'episode'
   attributes: {
+    number: number
+    season: number
     title: string
     summary: string
     description: string
@@ -14,6 +16,7 @@ type TransistorEpisodeData = {
     embed_html: string
     embed_html_dark: string
     published_at: string
+    updated_at: string
   }
 }
 type TransistorEpisodesJson = {data: Array<TransistorEpisodeData>}

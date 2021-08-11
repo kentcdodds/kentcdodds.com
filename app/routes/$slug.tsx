@@ -1,23 +1,44 @@
 import * as React from 'react'
-import {useLoaderData, json} from 'remix'
-import type {MdxPage, KCDLoader, MdxListItem} from 'types'
-import {getMdxPage, mdxPageMeta, useMdxComponent} from '../utils/mdx'
+import {useLoaderData, json, Response} from 'remix'
+import type {MdxPage, KCDLoader, MdxListItem, KCDHandle} from 'types'
+import {
+  getMdxPage,
+  getMdxDirList,
+  mdxPageMeta,
+  useMdxComponent,
+} from '../utils/mdx'
 import {getBlogRecommendations} from '../utils/blog.server'
 import {FourOhFour} from '../components/errors'
 import {Grid} from '../components/grid'
 import {BackLink} from '../components/arrow-button'
 import {H2, H6} from '../components/typography'
+import {pathedRoutes} from '../other-routes.server'
 
 type LoaderData = {
   page: MdxPage | null
   blogRecommendations: Array<MdxListItem>
 }
 
+export const handle: KCDHandle = {
+  getSitemapEntries: async request => {
+    const pages = await getMdxDirList('pages', {request})
+    return pages.map(page => {
+      return {route: `/${page.slug}`, priority: 0.6}
+    })
+  },
+}
+
 export const loader: KCDLoader<{slug: string}> = async ({params, request}) => {
+  // because this is our catch-all thing, we'll do an early return for anything
+  // that has a other route setup. The response will be handled there.
+  if (pathedRoutes[new URL(request.url).pathname]) {
+    return new Response()
+  }
+
   const page = await getMdxPage(
     {contentDir: 'pages', slug: params.slug},
     {request},
-  )
+  ).catch(() => null)
   const blogRecommendations = await getBlogRecommendations(request)
 
   const data: LoaderData = {page, blogRecommendations}

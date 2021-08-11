@@ -113,11 +113,11 @@ async function getEpisodes() {
   const transistorEpisodes = await fetchTransitor<TransistorEpisodesJson>({
     endpoint: `/v1/episodes`,
   })
-  // sort by published_at
+  // sort by episode number
   const sortedTransistorEpisodes = transistorEpisodes.data.sort((a, b) => {
-    if (a.attributes.published_at < b.attributes.published_at) {
+    if (a.attributes.number < b.attributes.number) {
       return -1
-    } else if (a.attributes.published_at > b.attributes.published_at) {
+    } else if (a.attributes.number > b.attributes.number) {
       return 1
     }
     return 0
@@ -126,6 +126,8 @@ async function getEpisodes() {
   for (const episode of sortedTransistorEpisodes) {
     if (episode.attributes.status !== 'published') continue
     episodes.push({
+      seasonNumber: episode.attributes.season,
+      episodeNumber: episode.attributes.number,
       slug: slugify(episode.attributes.title),
       title: episode.attributes.title,
       summary: episode.attributes.summary,
@@ -138,6 +140,7 @@ async function getEpisodes() {
       embedHtmlDark: episode.attributes.embed_html_dark,
       imageUrl: episode.attributes.image_url,
       publishedAt: episode.attributes.published_at,
+      updatedAt: episode.attributes.updated_at,
     })
   }
   return episodes

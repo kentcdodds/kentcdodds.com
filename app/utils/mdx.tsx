@@ -203,6 +203,7 @@ function useMdxComponent(code: string) {
 
 export {
   getMdxPage,
+  getMdxDirList,
   getMdxPagesInDirectory,
   mapFromMdxPageToMdxListItem,
   getBlogMdxListItems,

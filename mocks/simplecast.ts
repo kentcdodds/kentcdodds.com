@@ -78,6 +78,7 @@ for (const seasonListItem of seasonListItems) {
         transcription: faker.lorem.paragraphs(30),
         status: 'published',
         is_published: true,
+        updated_at: faker.date.past().toISOString(),
         image_url: faker.internet.avatar(),
         audio_file_url:
           'TODO... set audio_file_url to a real file if we ever use this',

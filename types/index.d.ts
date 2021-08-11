@@ -1,6 +1,5 @@
 import calculateReadingTime from 'reading-time'
-import type {Request, Response} from 'node-fetch'
-import type {ActionFunction, LoaderFunction} from 'remix'
+import type {ActionFunction, LoaderFunction, Request, Response} from 'remix'
 import type {User, Call, Session, Team, Role} from '@prisma/client'
 
 type NonNullProperties<Type> = {
@@ -81,6 +80,7 @@ type CWKEpisode = {
   }
   descriptionHTML: string
   summaryHTML: string
+  updatedAt: string
   seasonNumber: number
   episodeNumber: number
   homeworkHTMLs: Array<string>
@@ -118,6 +118,8 @@ type CWKSeason = {
 }
 
 type CallKentEpisode = {
+  episodeNumber: number
+  seasonNumber: number
   slug: string
   title: string
   summary: string
@@ -130,9 +132,32 @@ type CallKentEpisode = {
   embedHtmlDark: string
   imageUrl: string
   publishedAt: string
+  updatedAt: string
 }
 
+type KCDSitemapEntry = {
+  route: string
+  lastmod?: string
+  changefreq?:
+    | 'always'
+    | 'hourly'
+    | 'daily'
+    | 'weekly'
+    | 'monthly'
+    | 'yearly'
+    | 'never'
+  priority?: 0.0 | 0.1 | 0.2 | 0.3 | 0.4 | 0.5 | 0.6 | 0.7 | 0.8 | 0.9 | 1.0
+}
 type KCDHandle = {
+  /** this just allows us to identify routes more directly rather than relying on pathnames */
+  id?: string
+  getSitemapEntries?: (
+    request: Request,
+  ) =>
+    | Promise<Array<KCDSitemapEntry | null> | null>
+    | Array<KCDSitemapEntry | null>
+    | null
+  /** This gives us a little more flexibility in the kind of metadata elements you can render than the built-in meta export */
   metas?: Array<JSX.IntrinsicElements['meta']>
   scroll?: false
 }
@@ -171,6 +196,7 @@ export {
   KCDLoader,
   KCDAction,
   KCDHandle,
+  KCDSitemapEntry,
   GitHubFile,
 }
 
