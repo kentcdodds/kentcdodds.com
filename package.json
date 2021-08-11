@@ -20,6 +20,7 @@
   "homepage": "https://github.com/kentcdodds/remix-kentcdodds.com#readme",
   "scripts": {
     "postinstall": "patch-package --patch-dir other/patches",
+    "prepare": "husky install",
     "css:watch": "npm run build:css -- --w",
     "clean": "rimraf ./node_modules/.cache ./server/dist ./build ./public/build \"./app/styles/**/*.css\"",
     "prebuild": "npm run clean && echo All clean ✨",
@@ -38,11 +39,11 @@
     "cy:open": "cypress open",
     "test:e2e:dev": "cross-env RUNNING_E2E=true ENABLE_TEST_ROUTES=true start-server-and-test dev http-get://localhost:3000/build-info cy:open",
     "test:e2e:run": "cross-env RUNNING_E2E=true PORT=8811 start-server-and-test start:mocks http-get://localhost:8811/build-info cy:run",
-    "test": "kcd-scripts test",
-    "lint": "kcd-scripts lint",
-    "format": "kcd-scripts format",
+    "test": "jest",
+    "lint": "eslint --cache --cache-location ./node_modules/.cache/.eslintcache --ext js,jsx,ts,tsx .",
+    "format": "prettier --write \"**/*.+(js|jsx|json|yml|yaml|css|less|scss|ts|tsx|md|gql|graphql|mdx|vue)\"",
     "typecheck": "tsc -b",
-    "validate": "kcd-scripts validate",
+    "validate": "./other/validate",
     "setup": "npm install && docker compose up -d && prisma migrate reset --force && npm run validate && npm run prime-cache:mocks && npm run test:e2e:run"
   },
   "dependencies": {
@@ -129,11 +130,13 @@
     "yaml": "^1.10.2"
   },
   "devDependencies": {
+    "@cld-apis/types": "^0.1.3",
     "@remix-run/dev": "0.18.0-pre.0",
     "@tailwindcss/line-clamp": "^0.2.1",
     "@testing-library/cypress": "^8.0.0",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^12.0.0",
+    "@testing-library/react-hooks": "^7.0.1",
     "@testing-library/user-event": "^13.2.1",
     "@types/compression": "^1.7.1",
     "@types/cookie-session": "^2.0.43",
@@ -150,30 +153,33 @@
     "@types/redis": "^2.8.31",
     "@types/uuid": "^8.3.1",
     "autoprefixer": "^10.3.1",
+    "concurrently": "^6.2.1",
     "cypress": "^8.2.0",
     "dotenv-cli": "^4.0.0",
+    "esbuild-jest": "^0.5.0",
     "esbuild-register": "^2.6.0",
+    "eslint": "^7.32.0",
+    "eslint-config-kentcdodds": "^19.1.1",
     "faker": "^5.5.3",
     "glob": "^7.1.7",
-    "kcd-scripts": "^11.2.0",
+    "husky": "^7.0.1",
+    "jest": "^27.0.6",
+    "jest-watch-typeahead": "^0.6.4",
     "msw": "^0.34.0",
     "postcss": "^8.3.6",
     "postcss-cli": "^8.3.1",
+    "prettier": "^2.3.2",
     "prettier-plugin-tailwind": "^2.2.12",
     "rimraf": "^3.0.2",
     "start-server-and-test": "^1.13.1",
     "typescript": "^4.3.5"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "kcd-scripts pre-commit"
-    }
   },
   "eslintIgnore": [
     "node_modules",
     "coverage",
     "build",
     "public/build",
+    "*.ignored/",
     "*.ignored.*"
   ]
 }

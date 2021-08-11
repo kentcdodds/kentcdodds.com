@@ -2,7 +2,7 @@ import {render, screen} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import * as React from 'react'
 
-import {UseUndoExample} from '../use-undo.example'
+import {UseUndoExample} from '../use-undo.example.jsx'
 
 test('allows you to undo and redo', () => {
   render(<UseUndoExample />)

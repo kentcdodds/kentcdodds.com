@@ -1,5 +1,5 @@
 import * as React from 'react'
-import useUndo from './use-undo.jsx'
+import useUndo from './use-undo'
 
 function UseUndoExample() {
   const {present, past, future, set, undo, redo, canUndo, canRedo} =

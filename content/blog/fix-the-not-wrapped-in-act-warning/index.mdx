@@ -101,7 +101,7 @@ test('calls updateUsername with the new username', async () => {
   render(<UsernameForm updateUsername={handleUpdateUsername} />)
 
   const usernameInput = screen.getByLabelText(/username/i)
-  await user.type(usernameInput, fakeUsername)
+  user.type(usernameInput, fakeUsername)
   user.click(screen.getByText(/submit/i))
 
   expect(handleUpdateUsername).toHaveBeenCalledWith(fakeUsername)
@@ -253,11 +253,11 @@ test('calls updateUsername with the new username', async () => {
   render(<UsernameForm updateUsername={handleUpdateUsername} />)
 
   const usernameInput = screen.getByLabelText(/username/i)
-  await user.type(usernameInput, fakeUsername)
+  user.type(usernameInput, fakeUsername)
   user.click(screen.getByText(/submit/i))
 
   expect(handleUpdateUsername).toHaveBeenCalledWith(fakeUsername)
-  await waitForElementToBeRemoved(() => screen.getByText(/saving/i))
+  await waitForElementToBeRemoved(() => screen.queryByText(/saving/i))
 })
 ```
 
@@ -305,7 +305,7 @@ test('calls updateUsername with the new username', async () => {
   render(<UsernameForm updateUsername={handleUpdateUsername} />)
 
   const usernameInput = screen.getByLabelText(/username/i)
-  await user.type(usernameInput, fakeUsername)
+  user.type(usernameInput, fakeUsername)
   user.click(screen.getByText(/submit/i))
 
   expect(handleUpdateUsername).toHaveBeenCalledWith(fakeUsername)

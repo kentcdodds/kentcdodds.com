@@ -28,8 +28,9 @@ function CandyDispenser() {
 }
 
 function Poll() {
-  const [answer, setAnswer] =
-    React.useState<'useCallback' | 'original' | null>(null)
+  const [answer, setAnswer] = React.useState<'useCallback' | 'original' | null>(
+    null,
+  )
   const isWrong = answer === 'useCallback'
   const isRight = answer === 'original'
   return (
