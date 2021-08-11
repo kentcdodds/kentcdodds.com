@@ -11,6 +11,7 @@ import {
   getErrorMessage,
 } from '../utils/misc'
 import {useRequestInfo, useUser, useUserInfo} from '../utils/providers'
+import {deleteDiscordCache} from '../utils/user-info.server'
 import {getMagicLink, updateUser} from '../utils/prisma.server'
 import {requireUser} from '../utils/session.server'
 import {H2, H6} from '../components/typography'
@@ -67,7 +68,8 @@ export const action: ActionFunction = async ({request}) => {
     const actionId = form.get('actionId')
 
     try {
-      if (actionId === actionIds.deleteDiscordConnection) {
+      if (actionId === actionIds.deleteDiscordConnection && user.discordId) {
+        await deleteDiscordCache(user.discordId)
         await updateUser(user.id, {discordId: null})
       }
       if (actionId === actionIds.changeDetails) {

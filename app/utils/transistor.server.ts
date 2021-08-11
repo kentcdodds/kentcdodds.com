@@ -1,5 +1,4 @@
 import uuid from 'uuid'
-import slugify from '@sindresorhus/slugify'
 import type {
   TransistorErrorResponse,
   TransistorCreateEpisodeData,
@@ -110,6 +109,7 @@ async function createEpisode({
 }
 
 async function getEpisodes() {
+  const {default: slugify} = await import('@sindresorhus/slugify')
   const transistorEpisodes = await fetchTransitor<TransistorEpisodesJson>({
     endpoint: `/v1/episodes`,
   })
