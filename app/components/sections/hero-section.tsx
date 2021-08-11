@@ -1,6 +1,7 @@
 import * as React from 'react'
 import clsx from 'clsx'
 import {motion} from 'framer-motion'
+import type {ImageBuilder} from '../../images'
 import {H2} from '../typography'
 import {ArrowLink} from '../arrow-button'
 import {Grid} from '../grid'
@@ -15,18 +16,28 @@ type HeroSectionProps = {
       imageAlt: string
       imageSize?: 'medium' | 'large' | 'giant'
       image?: never
+      imageBuilder?: never
     }
   | {
       imageUrl?: never
       imageAlt?: never
       imageSize?: never
       image?: never
+      imageBuilder?: never
     }
   | {
       imageUrl?: never
       imageAlt?: never
       imageSize?: 'medium' | 'large' | 'giant'
       image: React.ReactNode
+      imageBuilder?: never
+    }
+  | {
+      imageUrl?: never
+      imageAlt?: never
+      imageSize?: 'medium' | 'large' | 'giant'
+      image?: never
+      imageBuilder: ImageBuilder
     }
 ) &
   (
@@ -54,9 +65,10 @@ function HeroSection({
   image,
   imageUrl,
   imageAlt,
+  imageBuilder,
   imageSize = 'medium',
 }: HeroSectionProps) {
-  const hasImage = image ?? imageUrl
+  const hasImage = Boolean(image ?? imageUrl ?? imageBuilder)
 
   return (
     <Grid
@@ -83,6 +95,30 @@ function HeroSection({
               })}
               src={imageUrl}
               alt={imageAlt}
+              initial={{scale: 1.5, opacity: 0}}
+              animate={{scale: 1, opacity: 1}}
+              transition={{duration: 0.75}}
+            />
+          ) : imageBuilder ? (
+            <motion.img
+              className={clsx('w-full h-auto object-contain', {
+                'max-h-50vh': imageSize === 'medium',
+                'max-h-75vh': imageSize === 'giant',
+              })}
+              src={imageBuilder({resize: {width: 900}})}
+              srcSet={[
+                [imageBuilder({resize: {width: 256}}), '256w'].join(' '),
+                [imageBuilder({resize: {width: 550}}), '550w'].join(' '),
+                [imageBuilder({resize: {width: 750}}), '750w'].join(' '),
+                [imageBuilder({resize: {width: 900}}), '900w'].join(' '),
+              ].join(', ')}
+              sizes={[
+                '(min-width: 640px) 500px',
+                '(min-width: 1023px) 850px',
+                '(min-width: 1200px) 700px',
+                '850px',
+              ].join(', ')}
+              alt={imageBuilder.alt}
               initial={{scale: 1.5, opacity: 0}}
               animate={{scale: 1, opacity: 1}}
               transition={{duration: 0.75}}

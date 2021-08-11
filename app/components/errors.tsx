@@ -63,8 +63,7 @@ function ErrorPage({
   const props = {
     title,
     subtitle,
-    imageUrl: images.bustedOnewheel(),
-    imageAlt: images.bustedOnewheel.alt,
+    imageBuilder: images.bustedOnewheel,
   }
   if (articles?.length) {
     Object.assign(props, {
@@ -73,23 +72,40 @@ function ErrorPage({
     })
   }
   return (
-    <main className="relative">
-      {error && process.env.NODE_ENV === 'development' ? (
-        <RedBox error={error} />
-      ) : null}
-      <HeroSection {...props} />
+    <>
+      <noscript>
+        <div
+          style={{
+            backgroundColor: 'black',
+            color: 'white',
+            padding: 30,
+          }}
+        >
+          <h1 style={{fontSize: '2em'}}>{title}</h1>
+          <p style={{fontSize: '1.5em'}}>{subtitle}</p>
+          <small>
+            Also, this site works much better with JavaScript enabled...
+          </small>
+        </div>
+      </noscript>
+      <main className="relative">
+        {error && process.env.NODE_ENV === 'development' ? (
+          <RedBox error={error} />
+        ) : null}
+        <HeroSection {...props} />
 
-      {articles?.length ? (
-        <>
-          <div id="articles" />
-          <BlogSection
-            articles={articles}
-            title="Looking for something to read?"
-            description="Have a look at these articles."
-          />
-        </>
-      ) : null}
-    </main>
+        {articles?.length ? (
+          <>
+            <div id="articles" />
+            <BlogSection
+              articles={articles}
+              title="Looking for something to read?"
+              description="Have a look at these articles."
+            />
+          </>
+        ) : null}
+      </main>
+    </>
   )
 }
 
@@ -120,7 +136,7 @@ function ServerError({
 
   return (
     <ErrorPage
-      title="500 - Oh no, something did not go that well."
+      title="500 - Oh no, something did not go well."
       subtitle={`"${pathname}" is currently not working. So sorry.`}
       error={error}
       articles={articles}

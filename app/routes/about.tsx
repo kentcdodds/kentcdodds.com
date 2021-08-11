@@ -32,8 +32,7 @@ function AboutIndex() {
       <HeroSection
         title="Hi, I'm Kent C. Dodds, I’m a full time educator."
         subtitle="I’m an extreme sports fan. I’m an avid snowboarder and roller skater."
-        imageUrl={images.snowboard()}
-        imageAlt={images.snowboard.alt}
+        imageBuilder={images.snowboard}
         arrowUrl="#about-me"
         arrowLabel="Get to know more about me"
       />

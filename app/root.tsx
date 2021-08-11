@@ -58,6 +58,7 @@ import {getConvertKitFormLoaderData} from './convertkit/remix.server'
 import {ConvertKitDataProvider} from './convertkit/form'
 import type {LoaderData as ConvertKitLoaderData} from './convertkit/types'
 import {pathedRoutes} from './other-routes.server'
+import {ServerError} from './components/errors'
 
 export const meta: MetaFunction = () => {
   return {
@@ -373,5 +374,24 @@ export default function AppWithProviders() {
         </UserInfoProvider>
       </UserProvider>
     </RequestInfoProvider>
+  )
+}
+
+// best effort, last ditch error boundary. This should only catch root errors
+// all other errors should be caught by the index route which will include
+// the footer and stuff, which is much better.
+export function ErrorBoundary({error}: {error: Error}) {
+  console.error(error)
+  return (
+    <html lang="en" className="dark">
+      <head>
+        <title>Oh no...</title>
+        <Links />
+      </head>
+      <body className="dark:bg-gray-900 bg-white transition duration-500">
+        <ServerError />
+        <Scripts />
+      </body>
+    </html>
   )
 }

@@ -19,6 +19,7 @@ export default function ContactRoute() {
         title="Send me an email."
         subtitle="Like in the old days."
         image={
+          // TODO: optimize this image:
           <img
             className="rounded-br-[25%] rounded-tl-[25%] max-h-50vh rounded-bl-3xl rounded-tr-3xl"
             src={images.kentProfile()}

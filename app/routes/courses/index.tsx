@@ -52,8 +52,7 @@ function CoursesHome() {
       <HeroSection
         title="Increase your value as a developer."
         subtitle="Invest in yourself with a dev course."
-        imageUrl={images.onewheel()}
-        imageAlt={images.onewheel.alt}
+        imageBuilder={images.onewheel}
       />
 
       <Grid as="main" className="mb-48">

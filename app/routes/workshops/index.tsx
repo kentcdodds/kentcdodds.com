@@ -38,8 +38,7 @@ function WorkshopsHome() {
       <HeroSection
         title="Check out these remote workshops."
         subtitle="See our upcoming events below."
-        imageUrl={images.teslaX()}
-        imageAlt={images.teslaX.alt}
+        imageBuilder={images.teslaX}
         imageSize="large"
       />
 

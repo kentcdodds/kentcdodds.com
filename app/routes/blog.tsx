@@ -166,8 +166,7 @@ function BlogHome() {
       <HeroSection
         title="Learn development with great articles."
         subtitle="Find the latest of my writing here."
-        imageUrl={images.skis()}
-        imageAlt={images.skis.alt}
+        imageBuilder={images.skis}
         action={
           <form action="/blog" method="GET" onSubmit={e => e.preventDefault()}>
             <div className="relative">

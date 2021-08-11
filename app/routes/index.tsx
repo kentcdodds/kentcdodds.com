@@ -33,8 +33,7 @@ export default function IndexRoute() {
     <div>
       <HeroSection
         title="Helping people make the world a better place through quality software."
-        imageUrl={images.alexSnowboarding()}
-        imageAlt={images.alexSnowboarding.alt}
+        imageBuilder={images.alexSnowboarding}
         imageSize="giant"
         arrowUrl="#intro"
         arrowLabel="Learn more about Kent"

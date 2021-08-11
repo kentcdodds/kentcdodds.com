@@ -82,8 +82,7 @@ function Login() {
 
   return (
     <HeroSection
-      imageUrl={images.skis()}
-      imageAlt={images.skis.alt}
+      imageBuilder={images.skis}
       imageSize="medium"
       title="Log in to your account."
       subtitle="Or sign up for an account."

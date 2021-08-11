@@ -6,23 +6,23 @@ setConfig({
   cloudName: 'kentcdodds-com',
 })
 
+type ImageBuilder = {
+  (transformations?: TransformerOption): string
+  alt: string
+}
 const createImages = <
   ImageType extends Record<string, {id: string; alt: string}>,
 >(
   images: ImageType,
 ) => {
-  type Builder = {
-    (transformations?: TransformerOption): string
-    alt: string
-  }
-  const imageBuilders: Record<string, Builder> = {}
+  const imageBuilders: Record<string, ImageBuilder> = {}
   for (const [name, {id, alt}] of Object.entries(images)) {
-    const builder: Builder = transformations =>
+    const builder: ImageBuilder = transformations =>
       buildImageUrl(id, {transformations})
     builder.alt = alt
     imageBuilders[name] = builder
   }
-  return imageBuilders as {[Name in keyof ImageType]: Builder}
+  return imageBuilders as {[Name in keyof ImageType]: ImageBuilder}
 }
 
 const images = createImages({
@@ -213,3 +213,4 @@ const alexProfiles: Record<OptionalTeam, {src: string; alt: string}> = {
 }
 
 export {images, alexProfiles}
+export type {ImageBuilder}
