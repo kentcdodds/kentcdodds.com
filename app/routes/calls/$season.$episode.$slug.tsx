@@ -23,11 +23,13 @@ export const handle: KCDHandle = {
   },
 }
 
-export const loader: KCDLoader<{
+type Params = {
   season: string
   episode: string
   slug: string
-}> = async ({params, request}) => {
+}
+
+export const loader: KCDLoader<Params> = async ({params, request}) => {
   const episodes = await getEpisodes({request})
   const episode = episodes.find(
     e =>
@@ -48,9 +50,14 @@ export const loader: KCDLoader<{
 }
 
 export default function Screen() {
-  const params = useParams() as {slug: string}
+  const params = useParams() as Params
   const episodes = useCallKentEpisodes()
-  const episode = episodes.find(e => e.slug === params.slug)
+  const episode = episodes.find(
+    e =>
+      e.seasonNumber === Number(params.season) &&
+      e.episodeNumber === Number(params.episode) &&
+      e.slug === params.slug,
+  )
 
   if (!episode) {
     return <div>Oh no... No episode found with this slug: {params.slug}</div>

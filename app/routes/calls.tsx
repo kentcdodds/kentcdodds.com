@@ -62,7 +62,8 @@ export default function CallHomeScreen() {
   }, [initialActiveSlugRef])
 
   // used to automatically prefix numbers with the correct amount of zeros
-  const numberLength = sortedEpisodes.length.toString().length
+  let numberLength = sortedEpisodes.length.toString().length
+  if (numberLength < 2) numberLength = 2
 
   return (
     <>
