@@ -97,15 +97,25 @@ async function createEpisode({
     },
   })
 
+  let number = 1
+  const latestEpisode = (await getEpisodes()).slice(-1)[0]
+  if (latestEpisode) {
+    number = latestEpisode.episodeNumber + 1
+  }
+
   await fetchTransitor<TransistorPublishedJson>({
     endpoint: `/v1/episodes/${encodeURIComponent(created.data.id)}/publish`,
     method: 'PATCH',
     data: {
       episode: {
+        number,
         status: 'published',
       },
     },
   })
+
+  // update the cache with the new episode
+  await getCachedEpisodes({forceFresh: true})
 }
 
 async function getEpisodes() {
@@ -115,9 +125,11 @@ async function getEpisodes() {
   })
   // sort by episode number
   const sortedTransistorEpisodes = transistorEpisodes.data.sort((a, b) => {
-    if (a.attributes.number < b.attributes.number) {
+    const aNumber = a.attributes.number ?? 0
+    const bNumber = b.attributes.number ?? 0
+    if (aNumber < bNumber) {
       return -1
-    } else if (a.attributes.number > b.attributes.number) {
+    } else if (aNumber > bNumber) {
       return 1
     }
     return 0
@@ -125,6 +137,8 @@ async function getEpisodes() {
   const episodes: Array<CallKentEpisode> = []
   for (const episode of sortedTransistorEpisodes) {
     if (episode.attributes.status !== 'published') continue
+    if (episode.attributes.number === null) continue
+
     episodes.push({
       seasonNumber: episode.attributes.season,
       episodeNumber: episode.attributes.number,
@@ -148,10 +162,17 @@ async function getEpisodes() {
 
 const episodesCacheKey = `transistor:episodes:${podcastId}`
 
-const getCachedEpisodes = async (request: Request) =>
-  redis.cachified({
+async function getCachedEpisodes({
+  request,
+  forceFresh,
+}: {
+  request?: Request
+  forceFresh?: boolean
+}) {
+  return redis.cachified({
     key: episodesCacheKey,
     getFreshValue: getEpisodes,
+    forceFresh,
     request,
     checkValue: (value: unknown) =>
       Array.isArray(value) &&
@@ -159,5 +180,6 @@ const getCachedEpisodes = async (request: Request) =>
         v => typeof v.slug === 'string' && typeof v.title === 'string',
       ),
   })
+}
 
 export {createEpisode, getCachedEpisodes as getEpisodes}

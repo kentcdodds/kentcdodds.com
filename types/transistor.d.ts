@@ -2,7 +2,7 @@ type TransistorEpisodeData = {
   id: string
   type: 'episode'
   attributes: {
-    number: number
+    number: number | null
     season: number
     title: string
     summary: string

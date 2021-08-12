@@ -7,7 +7,6 @@ const compression = require('compression')
 const morgan = require('morgan')
 const {pathToRegexp, compile: compileRedirectPath} = require('path-to-regexp')
 const {createRequestHandler} = require('@remix-run/express')
-let build = require('./build')
 
 if (process.env.FLY) {
   const Sentry = require('@sentry/node')
@@ -40,16 +39,20 @@ app.use(express.static('public/build', {immutable: true, maxAge: '1y'}))
 app.all(
   '*',
   MODE === 'production'
-    ? createRequestHandler({build})
+    ? createRequestHandler({build: require('./build')})
     : (req, res, next) => {
         purgeRequireCache()
-        build = require('./build')
+        const build = require('./build')
         return createRequestHandler({build, mode: MODE})(req, res, next)
       },
 )
 
 const port = process.env.PORT ?? 3000
 app.listen(port, () => {
+  // preload the build so we're ready for the first request
+  // we want the server to start accepting requests asap, so we wait until now
+  // to preload the build
+  require('./build')
   console.log(`Express server listening on port ${port}`)
 })
 

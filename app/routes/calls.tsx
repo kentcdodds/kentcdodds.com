@@ -29,7 +29,7 @@ type LoaderData = {
 export const loader: LoaderFunction = async ({request}) => {
   const [blogRecommendations, episodes] = await Promise.all([
     getBlogRecommendations(request),
-    getEpisodes(request),
+    getEpisodes({request}),
   ])
 
   return json({

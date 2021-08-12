@@ -149,3 +149,8 @@ a.active.underlined:after {
   background-color: currentColor;
   transform: scaleX(1);
 }
+
+/* transistor embed has rounded edges with white background 😬 */
+.dark iframe[src*='transistor'] {
+  border-radius: 8px;
+}

@@ -80,6 +80,11 @@ const transistorHandlers: Array<
           `req.body.episode.status must be published. Was "${req.body.episode.status}"`,
         )
       }
+      if (!req.body.episode.number) {
+        throw new Error(
+          `req.body.episode.number must be set. Was "${req.body.episode.number}"`,
+        )
+      }
       const data: TransistorPublishedJson = {
         data: {
           id: req.params.episodeId,

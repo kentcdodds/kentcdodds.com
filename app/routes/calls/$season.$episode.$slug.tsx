@@ -1,5 +1,6 @@
 import * as React from 'react'
 import {useParams} from 'react-router-dom'
+import {redirect} from 'remix'
 import type {KCDHandle, KCDLoader} from 'types'
 import {useCallKentEpisodes} from '../../utils/providers'
 import {getEpisodes} from '../../utils/transistor.server'
@@ -8,7 +9,7 @@ import {Themed} from '../../utils/theme-provider'
 export const handle: KCDHandle = {
   scroll: false,
   getSitemapEntries: async request => {
-    const episodes = await getEpisodes(request)
+    const episodes = await getEpisodes({request})
     return episodes.map(episode => {
       const s = String(episode.seasonNumber).padStart(2, '0')
       const e = String(episode.episodeNumber).padStart(2, '0')
@@ -27,7 +28,7 @@ export const loader: KCDLoader<{
   episode: string
   slug: string
 }> = async ({params, request}) => {
-  const episodes = await getEpisodes(request)
+  const episodes = await getEpisodes({request})
   const episode = episodes.find(
     e =>
       e.seasonNumber === Number(params.season) &&
@@ -36,10 +37,7 @@ export const loader: KCDLoader<{
   )
 
   if (!episode) {
-    // TODO: 404
-    throw new Error(
-      `oh no. no calls episode for ${params.season}/${params.episode}/${params.slug}`,
-    )
+    return redirect('/calls')
   }
 
   // we already load all the episodes in the parent route so it would be
