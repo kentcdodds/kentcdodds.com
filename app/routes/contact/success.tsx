@@ -1,6 +1,11 @@
 import * as React from 'react'
+import type {KCDHandle} from 'types'
 import {ButtonGroup} from '../../components/form-elements'
 import {Button, ButtonLink} from '../../components/button'
+
+export const handle: KCDHandle = {
+  getSitemapEntries: () => null,
+}
 
 export default function Screen() {
   return (
