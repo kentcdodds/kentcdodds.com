@@ -224,7 +224,7 @@ function getImgProps(
     transformations?: TransformerOption
   },
 ) {
-  const averageSize = widths.reduce((a, s) => a + s) / widths.length
+  const averageSize = Math.ceil(widths.reduce((a, s) => a + s) / widths.length)
 
   return {
     alt: imageBuilder.alt,
