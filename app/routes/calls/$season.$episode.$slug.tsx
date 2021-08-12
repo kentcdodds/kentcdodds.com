@@ -5,8 +5,10 @@ import type {KCDHandle, KCDLoader} from 'types'
 import {useCallKentEpisodes} from '../../utils/providers'
 import {getEpisodes} from '../../utils/transistor.server'
 import {Themed} from '../../utils/theme-provider'
+import {getEpisodeFromParams, Params} from '../../utils/call-kent'
 
 export const handle: KCDHandle = {
+  id: 'call-player',
   scroll: false,
   getSitemapEntries: async request => {
     const episodes = await getEpisodes({request})
@@ -23,20 +25,9 @@ export const handle: KCDHandle = {
   },
 }
 
-type Params = {
-  season: string
-  episode: string
-  slug: string
-}
-
 export const loader: KCDLoader<Params> = async ({params, request}) => {
   const episodes = await getEpisodes({request})
-  const episode = episodes.find(
-    e =>
-      e.seasonNumber === Number(params.season) &&
-      e.episodeNumber === Number(params.episode) &&
-      e.slug === params.slug,
-  )
+  const episode = getEpisodeFromParams(episodes, params)
 
   if (!episode) {
     return redirect('/calls')
@@ -52,12 +43,7 @@ export const loader: KCDLoader<Params> = async ({params, request}) => {
 export default function Screen() {
   const params = useParams() as Params
   const episodes = useCallKentEpisodes()
-  const episode = episodes.find(
-    e =>
-      e.seasonNumber === Number(params.season) &&
-      e.episodeNumber === Number(params.episode) &&
-      e.slug === params.slug,
-  )
+  const episode = getEpisodeFromParams(episodes, params)
 
   if (!episode) {
     return <div>Oh no... No episode found with this slug: {params.slug}</div>

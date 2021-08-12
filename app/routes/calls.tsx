@@ -1,11 +1,10 @@
 import * as React from 'react'
-import {json, Link, useLoaderData} from 'remix'
+import {json, Link, useLoaderData, useMatches} from 'remix'
 import type {LoaderFunction} from 'remix'
-import {Outlet, useLocation} from 'react-router-dom'
+import {Outlet} from 'react-router-dom'
 import {AnimatePresence, motion} from 'framer-motion'
-import {useRef} from 'react'
 import clsx from 'clsx'
-import type {Await} from 'types'
+import type {Await, CallKentEpisode, KCDHandle} from 'types'
 import {getEpisodes} from '../utils/transistor.server'
 import {CallKentEpisodesProvider, useTeam} from '../utils/providers'
 import {HeroSection} from '../components/sections/hero-section'
@@ -20,6 +19,11 @@ import {ChevronDownIcon} from '../components/icons/chevron-down-icon'
 import {HeaderSection} from '../components/sections/header-section'
 import {TriangleIcon} from '../components/icons/triangle-icon'
 import {formatTime} from '../utils/misc'
+import {
+  getEpisodeFromParams,
+  getEpisodePath,
+  Params as CallPlayerParams,
+} from '../utils/call-kent'
 
 type LoaderData = {
   episodes: Await<ReturnType<typeof getEpisodes>>
@@ -39,27 +43,33 @@ export const loader: LoaderFunction = async ({request}) => {
 }
 
 export default function CallHomeScreen() {
-  const {pathname} = useLocation()
   const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('asc')
 
   const data = useLoaderData<LoaderData>()
   const [team] = useTeam()
   const avatar = alexProfiles[team]
 
-  const activeSlug = pathname.replace('/calls/', '')
-  const initialActiveSlugRef = useRef(activeSlug)
-
   const sortedEpisodes =
     sortOrder === 'desc' ? data.episodes : [...data.episodes].reverse()
+
+  const matches = useMatches()
+  const callPlayerMatch = matches.find(
+    match => (match.handle as KCDHandle | undefined)?.id === 'call-player',
+  )
+  let selectedEpisode: CallKentEpisode | undefined
+  if (callPlayerMatch) {
+    const callPlayerParams = callPlayerMatch.params as CallPlayerParams
+    selectedEpisode = getEpisodeFromParams(sortedEpisodes, callPlayerParams)
+  }
+  const initialSelectedEpisode = React.useRef(selectedEpisode)
 
   // An effect to scroll to the episode's position when opening a direct link,
   // use a ref so that it doesn't hijack scroll when the user is browsing episodes
   React.useEffect(() => {
-    const href = initialActiveSlugRef.current
-    if (href) {
-      document.querySelector(`[href="${href}"]`)?.scrollIntoView()
-    }
-  }, [initialActiveSlugRef])
+    if (!initialSelectedEpisode.current) return
+    const href = getEpisodePath(initialSelectedEpisode.current)
+    document.querySelector(`[href="${href}"]`)?.scrollIntoView()
+  }, [])
 
   // used to automatically prefix numbers with the correct amount of zeros
   let numberLength = sortedEpisodes.length.toString().length
@@ -127,14 +137,7 @@ export default function CallHomeScreen() {
         <div className="col-span-full">
           <CallKentEpisodesProvider value={data.episodes}>
             {sortedEpisodes.map(episode => {
-              const seasonNumber = episode.seasonNumber
-                .toString()
-                .padStart(2, '0')
-              const episodeNumber = episode.episodeNumber
-                .toString()
-                .padStart(numberLength, '0')
-              const fullSlug = `${seasonNumber}/${episodeNumber}/${episode.slug}`
-              const path = activeSlug === episode.slug ? './' : `./${fullSlug}`
+              const path = getEpisodePath(episode)
               const keywords = Array.from(
                 new Set(
                   episode.keywords
@@ -179,7 +182,9 @@ export default function CallHomeScreen() {
                               'w-auto pr-4': numberLength > 4,
                             })}
                           >
-                            {`${episodeNumber}.`}
+                            {`${episode.episodeNumber
+                              .toString()
+                              .padStart(2, '0')}.`}
                           </span>
 
                           {episode.title}
@@ -193,7 +198,7 @@ export default function CallHomeScreen() {
 
                   <Grid nested>
                     <AnimatePresence>
-                      {activeSlug === fullSlug ? (
+                      {selectedEpisode === episode ? (
                         <motion.div
                           variants={{
                             collapsed: {

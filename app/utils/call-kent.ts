@@ -1,3 +1,5 @@
+import type {CallKentEpisode} from 'types'
+
 function getErrorForDescription(description: string | null) {
   if (!description) return `Description is required`
 
@@ -45,7 +47,33 @@ function getErrorForAudio(audio: string | null) {
   return null
 }
 
+export type Params = {
+  season: string
+  episode: string
+  slug: string
+}
+
+function getEpisodeFromParams(
+  episodes: Array<CallKentEpisode>,
+  params: Params,
+) {
+  return episodes.find(
+    e =>
+      e.seasonNumber === Number(params.season) &&
+      e.episodeNumber === Number(params.episode) &&
+      e.slug === params.slug,
+  )
+}
+
+function getEpisodePath(episode: CallKentEpisode) {
+  const seasonNumber = episode.seasonNumber.toString().padStart(2, '0')
+  const episodeNumber = episode.episodeNumber.toString().padStart(2, '0')
+  return `/calls/${seasonNumber}/${episodeNumber}/${episode.slug}`
+}
+
 export {
+  getEpisodePath,
+  getEpisodeFromParams,
   getErrorForAudio,
   getErrorForTitle,
   getErrorForDescription,

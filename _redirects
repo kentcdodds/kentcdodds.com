@@ -3,6 +3,10 @@
 # Basically, you should be able to use params as documented in path-to-regexp on both the from and to side
 # These will also all apply to every HTTP method.
 
+# I keep making this mistake 😅
+/call                                                                 /calls
+
+# Just a convenience for myself
 /photo                                                                https://res.cloudinary.com/kentcdodds-com/image/upload/v1625699252/kent/profile
 
 ################# lol, nice
