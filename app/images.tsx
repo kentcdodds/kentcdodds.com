@@ -212,5 +212,40 @@ const alexProfiles: Record<OptionalTeam, {src: string; alt: string}> = {
   UNKNOWN: {src: images.alexProfileGray(), alt: images.alexProfileGray.alt},
 }
 
-export {images, alexProfiles}
+function getImgProps(
+  imageBuilder: ImageBuilder,
+  {
+    widths,
+    sizes,
+    transformations,
+  }: {
+    widths: Array<number>
+    sizes: Array<string>
+    transformations?: TransformerOption
+  },
+) {
+  const averageSize = widths.reduce((a, s) => a + s) / widths.length
+
+  return {
+    alt: imageBuilder.alt,
+    src: imageBuilder({
+      ...transformations,
+      resize: {width: averageSize, ...transformations?.resize},
+    }),
+    srcSet: widths
+      .map(width =>
+        [
+          imageBuilder({
+            ...transformations,
+            resize: {width, ...transformations?.resize},
+          }),
+          `${width}w`,
+        ].join(' '),
+      )
+      .join(', '),
+    sizes: sizes.join(', '),
+  }
+}
+
+export {images, alexProfiles, getImgProps}
 export type {ImageBuilder}

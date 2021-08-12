@@ -2,7 +2,10 @@ import {Form, useActionData} from 'remix'
 import * as React from 'react'
 import {Outlet} from 'react-router-dom'
 import {useOptionalUser} from '../utils/providers'
-import {HeroSection} from '../components/sections/hero-section'
+import {
+  getHeroImageProps,
+  HeroSection,
+} from '../components/sections/hero-section'
 import {images} from '../images'
 import {H2} from '../components/typography'
 import {ErrorPanel, Field, InputError} from '../components/form-elements'
@@ -19,11 +22,9 @@ export default function ContactRoute() {
         title="Send me an email."
         subtitle="Like in the old days."
         image={
-          // TODO: optimize this image:
           <img
             className="rounded-br-[25%] rounded-tl-[25%] max-h-50vh rounded-bl-3xl rounded-tr-3xl"
-            src={images.kentProfile()}
-            alt={images.kentProfile.alt}
+            {...getHeroImageProps(images.kentProfile)}
           />
         }
       />

@@ -5,20 +5,14 @@ import {H5} from './typography'
 export interface VideoCardProps {
   title: string
   description: string
-  imageUrl: string
-  imageAlt: string
-  videoUrl: string
+  img: React.ReactNode
 }
 
-function VideoCard({title, description, imageAlt, imageUrl}: VideoCardProps) {
+function VideoCard({title, description, img}: VideoCardProps) {
   return (
     <div className="w-full">
       <div className="aspect-w-4 aspect-h-3 w-full">
-        <img
-          alt={imageAlt}
-          src={imageUrl}
-          className="rounded-lg object-cover"
-        />
+        {img}
 
         <div className="flex items-center justify-center w-full h-full">
           <PlayIcon />

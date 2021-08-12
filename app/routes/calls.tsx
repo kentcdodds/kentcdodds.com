@@ -80,8 +80,7 @@ export default function CallHomeScreen() {
       <HeroSection
         title="Calls with Kent C. Dodds."
         subtitle="You call, I'll answer."
-        imageUrl={avatar.src}
-        imageAlt={avatar.alt}
+        imageProps={avatar}
         arrowUrl="#episodes"
         arrowLabel="Wanna see my call logs?"
         action={

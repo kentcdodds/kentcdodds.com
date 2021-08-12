@@ -17,6 +17,7 @@ module.exports = {
     '@typescript-eslint/sort-type-union-intersection-members': 'off',
     'jsx-a11y/media-has-caption': 'off',
     'jsx-a11y/label-has-associated-control': 'off',
+    'jsx-a11y/alt-text': 'off', // it's not smart enough...
     '@babel/new-cap': 'off',
     'react/jsx-filename-extension': 'off',
     '@typescript-eslint/no-namespace': 'off',

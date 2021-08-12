@@ -105,12 +105,7 @@ function PodcastHome() {
       <HeroSection
         title="Listen to chats with Kent C. Dodds here."
         subtitle="Find all episodes of my podcast below."
-        // TODO: figure out how to both optimize this with srcset and
-        // add the crop stuff... Or just remove the need to crop...
-        imageUrl={images.kayak({
-          resize: {type: 'crop', width: 2600, height: 1800},
-        })}
-        imageAlt={images.kayak.alt}
+        imageBuilder={images.kayak}
         imageSize="large"
       />
 

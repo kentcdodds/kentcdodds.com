@@ -1,7 +1,10 @@
+import type {TransformerOption} from '@cld-apis/types'
 import * as React from 'react'
 import clsx from 'clsx'
+import type {HTMLMotionProps} from 'framer-motion'
 import {motion} from 'framer-motion'
 import type {ImageBuilder} from '../../images'
+import {getImgProps} from '../../images'
 import {H2} from '../typography'
 import {ArrowLink} from '../arrow-button'
 import {Grid} from '../grid'
@@ -12,32 +15,32 @@ type HeroSectionProps = {
   action?: React.ReactNode
 } & (
   | {
-      imageUrl: string
-      imageAlt: string
+      imageProps?: HTMLMotionProps<'img'>
       imageSize?: 'medium' | 'large' | 'giant'
       image?: never
       imageBuilder?: never
+      imageTransformations?: never
     }
   | {
-      imageUrl?: never
-      imageAlt?: never
+      imageProps?: never
       imageSize?: never
       image?: never
       imageBuilder?: never
+      imageTransformations?: never
     }
   | {
-      imageUrl?: never
-      imageAlt?: never
+      imageProps?: never
       imageSize?: 'medium' | 'large' | 'giant'
       image: React.ReactNode
       imageBuilder?: never
+      imageTransformations?: never
     }
   | {
-      imageUrl?: never
-      imageAlt?: never
+      imageProps?: never
       imageSize?: 'medium' | 'large' | 'giant'
       image?: never
       imageBuilder: ImageBuilder
+      imageTransformations?: TransformerOption
     }
 ) &
   (
@@ -63,12 +66,11 @@ function HeroSection({
   arrowUrl,
   arrowLabel,
   image,
-  imageUrl,
-  imageAlt,
+  imageProps,
   imageBuilder,
   imageSize = 'medium',
 }: HeroSectionProps) {
-  const hasImage = Boolean(image ?? imageUrl ?? imageBuilder)
+  const hasImage = Boolean(image ?? imageProps ?? imageBuilder)
 
   return (
     <Grid
@@ -87,14 +89,17 @@ function HeroSection({
               imageSize === 'giant',
           })}
         >
-          {imageUrl ? (
+          {imageProps ? (
             <motion.img
-              className={clsx('w-full h-auto object-contain', {
-                'max-h-50vh': imageSize === 'medium',
-                'max-h-75vh': imageSize === 'giant',
-              })}
-              src={imageUrl}
-              alt={imageAlt}
+              {...imageProps}
+              className={clsx(
+                'w-full h-auto object-contain',
+                {
+                  'max-h-50vh': imageSize === 'medium',
+                  'max-h-75vh': imageSize === 'giant',
+                },
+                imageProps.className,
+              )}
               initial={{scale: 1.5, opacity: 0}}
               animate={{scale: 1, opacity: 1}}
               transition={{duration: 0.75}}
@@ -105,20 +110,7 @@ function HeroSection({
                 'max-h-50vh': imageSize === 'medium',
                 'max-h-75vh': imageSize === 'giant',
               })}
-              src={imageBuilder({resize: {width: 900}})}
-              srcSet={[
-                [imageBuilder({resize: {width: 256}}), '256w'].join(' '),
-                [imageBuilder({resize: {width: 550}}), '550w'].join(' '),
-                [imageBuilder({resize: {width: 750}}), '750w'].join(' '),
-                [imageBuilder({resize: {width: 900}}), '900w'].join(' '),
-              ].join(', ')}
-              sizes={[
-                '(min-width: 640px) 500px',
-                '(min-width: 1023px) 850px',
-                '(min-width: 1200px) 700px',
-                '850px',
-              ].join(', ')}
-              alt={imageBuilder.alt}
+              {...getHeroImageProps(imageBuilder)}
               initial={{scale: 1.5, opacity: 0}}
               animate={{scale: 1, opacity: 1}}
               transition={{duration: 0.75}}
@@ -184,4 +176,15 @@ function HeroSection({
   )
 }
 
-export {HeroSection}
+function getHeroImageProps(imageBuilder: ImageBuilder) {
+  return getImgProps(imageBuilder, {
+    widths: [256, 550, 700, 900, 1300, 1800],
+    sizes: [
+      '(max-width: 1023px) 80vw',
+      '(min-width: 1024px) and (max-width: 1279px) 50vw',
+      '(min-width: 1280px) 900px',
+    ],
+  })
+}
+
+export {HeroSection, getHeroImageProps}

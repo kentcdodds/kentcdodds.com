@@ -135,11 +135,7 @@ export default function Discord() {
       <HeroSection
         title="Meet like minded people on our discord server."
         subtitle="Learn to become better developers together."
-        // TODO: optimize this image
-        imageUrl={images.helmet({
-          resize: {type: 'crop', width: 2000, height: 2100},
-        })}
-        imageAlt={images.helmet.alt}
+        imageBuilder={images.helmet}
         arrowUrl="#reasons-to-join"
         arrowLabel="Is this something for me?"
         action={
