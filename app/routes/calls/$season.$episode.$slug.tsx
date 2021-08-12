@@ -5,7 +5,11 @@ import type {KCDHandle, KCDLoader} from 'types'
 import {useCallKentEpisodes} from '../../utils/providers'
 import {getEpisodes} from '../../utils/transistor.server'
 import {Themed} from '../../utils/theme-provider'
-import {getEpisodeFromParams, Params} from '../../utils/call-kent'
+import {
+  getEpisodeFromParams,
+  getEpisodePath,
+  Params,
+} from '../../utils/call-kent'
 
 export const handle: KCDHandle = {
   id: 'call-player',
@@ -13,10 +17,8 @@ export const handle: KCDHandle = {
   getSitemapEntries: async request => {
     const episodes = await getEpisodes({request})
     return episodes.map(episode => {
-      const s = String(episode.seasonNumber).padStart(2, '0')
-      const e = String(episode.episodeNumber).padStart(2, '0')
       return {
-        route: `/calls/${s}/${e}/${episode.slug}`,
+        route: getEpisodePath(episode),
         changefreq: 'weekly',
         lastmod: new Date(episode.updatedAt).toISOString(),
         priority: 0.3,
