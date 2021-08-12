@@ -1,7 +1,7 @@
 import React, {useState} from 'react'
 import {useLoaderData, json, redirect} from 'remix'
 import type {HeadersFunction} from 'remix'
-import {Link} from 'react-router-dom'
+import {Link, useLocation} from 'react-router-dom'
 import type {KCDLoader, CWKEpisode, CWKListItem, KCDHandle} from 'types'
 import clsx from 'clsx'
 import {motion} from 'framer-motion'
@@ -199,6 +199,12 @@ function Transcript({
   transcriptHTML: CWKEpisode['transcriptHTML']
 }) {
   const [collapsed, setCollapsed] = useState(true)
+
+  // re-collapse the trascript when changing the episode
+  const location = useLocation()
+  React.useEffect(() => {
+    setCollapsed(true)
+  }, [location.key])
 
   return (
     <div className="bg-secondary col-span-full p-10 pb-16 rounded-lg">
