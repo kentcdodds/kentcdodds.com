@@ -22,7 +22,7 @@ import {H2, H6, Paragraph} from '../components/typography'
 import {Field, InputError} from '../components/form-elements'
 import {Button} from '../components/button'
 import {CheckCircledIcon} from '../components/icons/check-circled-icon'
-import {images} from '../images'
+import {getImgProps, images} from '../images'
 import {TEAM_MAP} from '../utils/onboarding'
 import {HeaderSection} from '../components/sections/header-section'
 import {handleFormSubmission} from '../utils/actions.server'
@@ -178,7 +178,17 @@ function TeamOption({team: value, error, selected}: TeamOptionProps) {
           value={value}
           aria-describedby={error ? 'team-error' : undefined}
         />
-        <img className="block mb-16" src={team.image()} alt={team.image.alt} />
+        <img
+          className="block mb-16 mx-auto"
+          {...getImgProps(team.image, {
+            widths: [350, 512, 685, 1370, 2055],
+            sizes: [
+              '(max-width: 1023px) 65vw',
+              '(min-width:1023px) and (max-width:1620px) 20vw',
+              '320px',
+            ],
+          })}
+        />
         <H6 as="span">{team.label}</H6>
       </label>
     </div>
@@ -225,8 +235,8 @@ export default function NewAccount() {
         }}
       >
         <HeaderSection
-          title="Let’s start with choosing a team."
-          subTitle="You can’t change this later."
+          title="Let's start with choosing a team."
+          subTitle="You can't change this later."
           className="mb-16"
         />
 
@@ -326,8 +336,20 @@ export default function NewAccount() {
           <div className="aspect-h-6 aspect-w-4">
             <img
               className="rounded-lg object-cover"
-              src={images.kentPalmingSoccerBall()}
-              alt={images.kentPalmingSoccerBall.alt}
+              {...getImgProps(images.kentPalmingSoccerBall, {
+                widths: [512, 650, 840, 1024, 1300, 1680, 2000, 2520],
+                sizes: [
+                  '(max-width: 1023px) 80vw',
+                  '(min-width: 1024px) and (max-width: 1620px) 40vw',
+                  '650px',
+                ],
+                transformations: {
+                  resize: {
+                    type: 'fill',
+                    aspectRatio: '3:4',
+                  },
+                },
+              })}
             />
           </div>
         </div>

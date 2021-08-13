@@ -1,6 +1,6 @@
 title: Testing Fundamentals
 description:
-  In this workshop, we’ll learn how testing frameworks, assertion libraries, and
+  In this workshop, we'll learn how testing frameworks, assertion libraries, and
   mocking libraries work by building our own, simple version of each.
 meta:
   keywords:
@@ -30,7 +30,7 @@ topics:
   - Support async tests
   - Why and when should you mock JavaScript modules and functions?
   - Use monkey-patch mocking
-  - Make assertions to ensure you’re calling the mocked functions correctly
+  - Make assertions to ensure you're calling the mocked functions correctly
   - Mock an entire module
 
 prerequisite: >-
@@ -49,7 +49,7 @@ prerequisite: >-
 # effectively is to understand how it works. And the best way to understand how a
 # tool works is by making it yourself!
 
-# In this workshop, we’ll learn how testing frameworks, assertion libraries, and
+# In this workshop, we'll learn how testing frameworks, assertion libraries, and
 # mocking libraries work by building our own, simple version of each.
 
 # ## Topics

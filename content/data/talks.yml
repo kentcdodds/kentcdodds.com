@@ -65,7 +65,7 @@
     about Testing Library, and to give us a live demo. You should bring fun
     questions, like, how did you come up with the name Testing Library? Maybe
     bring some real questions too, as Testing Library is a pretty powerful
-    library you’re probably using in production.
+    library you're probably using in production.
 - title: Managing State Management
   resources:
     - '[slides](https://github.com/kentcdodds/managing-state-management-slides)'
@@ -174,7 +174,7 @@
     You can use features and practices that have been a part of React for a long
     time and it will change the way you think about state management for your
     React apps. In other words: you probably don't need Redux, MobX, or any
-    state management library other than React. Let’s explore how that’s possible
+    state management library other than React. Let's explore how that's possible
     and why you might want to think twice before reaching for an abstraction.
 - title: React Hook Pitfalls
   resources:
@@ -187,13 +187,13 @@
       recording: https://www.youtube.com/watch?v=VIRcX2X7EUk&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
   description: >-
     The hooks honeymoon phase is over. We were able to overlook our confusion as
-    a reasonable familiarity issue, but now it’s time to get real about the
+    a reasonable familiarity issue, but now it's time to get real about the
     pitfalls of React Hooks. Hooks lead to a better user experience and fewer
     bugs for sure, but without the right foundational understanding of them and
-    certain JavaScript semantics, we’ll probably cause other problems in the
+    certain JavaScript semantics, we'll probably cause other problems in the
     process of using hooks.
 
-    In this talk, we’ll explore some of the gotchas of using hooks, why those
+    In this talk, we'll explore some of the gotchas of using hooks, why those
     things are problems, and how to think about hooks so we develop an intuition
     for how to use hooks while avoiding the pitfalls.
 - title: Testing Implementation Details

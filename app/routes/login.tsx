@@ -143,7 +143,7 @@ function Login() {
 
           <Paragraph className="mb-10">
             To sign in to your account or to create a new one fill in your email
-            above and we’ll send you an email with a magic link to get you
+            above and we'll send you an email with a magic link to get you
             started.
           </Paragraph>
           {/* TODO: remove notice */}

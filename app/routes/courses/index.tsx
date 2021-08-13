@@ -88,7 +88,7 @@ function CoursesHome() {
         <div className="col-span-full lg:col-span-6">
           <CourseCard
             title="Epic React"
-            description="The most comprehensive guide for pro’s."
+            description="The most comprehensive guide for pro's."
             imageBuilder={images.courseEpicReact}
             courseUrl="https://epicreact.dev"
           />
@@ -105,7 +105,7 @@ function CoursesHome() {
 
         <SmallCourseCard
           title="The Beginner's Guide to React"
-          description="This course is for React newbies and anyone looking to build a solid foundation. It’s designed to teach you everything you need to start building web applications in React right away."
+          description="This course is for React newbies and anyone looking to build a solid foundation. It's designed to teach you everything you need to start building web applications in React right away."
           imageBuilder={images.courseTheBeginnersGuideToReact}
           courseUrl="https://egghead.io/courses/the-beginner-s-guide-to-react"
         />
@@ -117,13 +117,13 @@ function CoursesHome() {
         />
         <SmallCourseCard
           title="Simplify React Apps with React Hooks"
-          description="In this course, I will take a modern React codebase that uses classes and refactor the entire thing to use function components as much as possible. We’ll look at state, side effects, async code, caching, and more!"
+          description="In this course, I will take a modern React codebase that uses classes and refactor the entire thing to use function components as much as possible. We'll look at state, side effects, async code, caching, and more!"
           imageBuilder={images.courseSimplifyReactAppsWithReactHooks}
           courseUrl="https://egghead.io/courses/simplify-react-apps-with-react-hooks"
         />
         <SmallCourseCard
           title="Advanced React Component Patterns"
-          description="Once you’ve nailed the fundamentals of React, that’s when things get really fun. This course teaches you advanced patterns in React that you can use to make components that are simple, flexible, and enjoyable to work with."
+          description="Once you've nailed the fundamentals of React, that's when things get really fun. This course teaches you advanced patterns in React that you can use to make components that are simple, flexible, and enjoyable to work with."
           imageBuilder={images.courseAdvancedReactComponentPatterns}
           courseUrl="https://egghead.io/courses/advanced-react-component-patterns"
         />
@@ -157,7 +157,7 @@ function CoursesHome() {
             images.courseHowToContributeToAnOpenSourceProjectOnGitHub
           }
           courseUrl="https://egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github"
-          description="“Feel free to submit a PR!” - words often found in GitHub issues, but met with confusion and fear by many. Getting started with contributing open source is not always straightforward and can be tricky. With this series, you’ll be equipped with the the tools, knowledge, and understanding you need to be productive and contribute to the wonderful world of open source projects."
+          description="“Feel free to submit a PR!” - words often found in GitHub issues, but met with confusion and fear by many. Getting started with contributing open source is not always straightforward and can be tricky. With this series, you'll be equipped with the the tools, knowledge, and understanding you need to be productive and contribute to the wonderful world of open source projects."
         />
       </Grid>
 
@@ -166,10 +166,14 @@ function CoursesHome() {
           <div className="col-span-full mb-12 px-10 lg:col-span-5 lg:col-start-1 lg:mb-0">
             <img
               className="object-contain"
-              src={images.helmet({
-                resize: {type: 'crop', width: 2000, height: 2100},
+              {...getImgProps(images.helmet, {
+                widths: [420, 512, 840, 1260, 1024, 1680, 2520],
+                sizes: [
+                  '(max-width: 1023px) 80vw',
+                  '(min-width: 1024px) and (max-width: 1620px) 40vw',
+                  '630px',
+                ],
               })}
-              alt={images.helmet.alt}
             />
           </div>
         </div>

@@ -19,7 +19,7 @@ function TestimonialSection({
     <Grid className={className}>
       <div className="flex flex-col col-span-full mb-20 space-y-10 lg:flex-row lg:items-end lg:justify-between lg:space-y-0">
         <div className="space-y-2 lg:space-y-0">
-          <H2>Don’t just take my word for it.</H2>
+          <H2>Don't just take my word for it.</H2>
           <H2 variant="secondary" as="p">
             What participants have to say.
           </H2>

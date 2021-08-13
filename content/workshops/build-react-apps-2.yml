@@ -1,6 +1,6 @@
 title: Build React Applications (Part 2)
 description:
-  We’ll cover everything common to most frontend React applications like
+  We'll cover everything common to most frontend React applications like
   routing, data fetching, and authentication.
 meta:
   keywords:
@@ -40,8 +40,8 @@ prerequisite: >-
 # ### Use common libraries to build ReactJS applications
 
 # The React and JavaScript ecosystem is full of tools and libraries to help you
-# build your applications. In this workshop we’ll build an application from
-# scratch using widely supported and used tools and techniques. We’ll build on
+# build your applications. In this workshop we'll build an application from
+# scratch using widely supported and used tools and techniques. We'll build on
 # part 1 of this workshop and cover everything common to most frontend React
 # applications like routing, data fetching, and authentication.
 

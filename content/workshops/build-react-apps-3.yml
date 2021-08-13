@@ -1,6 +1,6 @@
 title: Build React Applications (Part 3)
 description:
-  We’ll cover advanced use cases common to most frontend React applications like
+  We'll cover advanced use cases common to most frontend React applications like
   authentication, code splitting, application state management, performance.
 meta:
   keywords:
@@ -41,10 +41,10 @@ prerequisite: >-
 # ### Use advanced techniques to optimize ReactJS applications
 
 # We've built the first iteration of a React app, but now it's time to optimize
-# our app for performance and maintenance. In this workshop we’ll build upon the
+# our app for performance and maintenance. In this workshop we'll build upon the
 # application we built in the first part of this workshop
 # ([Build ReactJS Applications](/workshops/build-react-apps)) and improve it using
-# proven tools and techniques. We’ll cover everything you're likely to run into
+# proven tools and techniques. We'll cover everything you're likely to run into
 # when building frontend React applications like application state management,
 # performance profiling and optimizations, and creating reusable components and
 # hooks.

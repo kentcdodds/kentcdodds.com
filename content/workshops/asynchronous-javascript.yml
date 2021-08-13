@@ -1,8 +1,8 @@
 title: Asynchronous JavaScript
 description:
-  'In this workshop, we’ll take a deep dive into the two most commonly used
-  asynchronous patterns: The Promises API and async/await syntax. We’ll see how
-  these two relate to one another and you’ll leave with a strong understanding
+  'In this workshop, we'll take a deep dive into the two most commonly used
+  asynchronous patterns: The Promises API and async/await syntax. We'll see how
+  these two relate to one another and you'll leave with a strong understanding
   of how async code works in JavaScript with these patterns.'
 meta:
   keywords:
@@ -31,7 +31,7 @@ keyTakeaways:
   - title: TODO
     description: Write more readable, easy-to-follow async code
 topics:
-  - Understanding JavaScript’s Event Loop
+  - Understanding JavaScript's Event Loop
   - Callbacks
   - Promises (very deep dive)
   - Async/await
@@ -40,9 +40,9 @@ prerequisite: >-
   Attend my [Modern JavaScript Workshop](/workshops/modern-javascript) or have
   the equivalent experience with modern JavaScript APIs and Syntax.
 
-# ### Get up to speed with JavaScript’s built-in APIs and syntax for asynchronous programming
+# ### Get up to speed with JavaScript's built-in APIs and syntax for asynchronous programming
 
-# One of JavaScript’s strengths is what’s called the “event loop.” This one
+# One of JavaScript's strengths is what's called the “event loop.” This one
 # language architectural element forms a lot about how you program and interact
 # with JavaScript in your day-to-day. In recent years, JavaScript has made leaps
 # and bounds in the built-in standard library and syntax to allow for better
@@ -63,7 +63,7 @@ prerequisite: >-
 # Together, these two patterns allow you to create asynchronous code that is easy
 # to follow, readable, and behaves more or less like synchronous code.
 
-# Hi, I'm Kent C. Dodds and in my latest workshop, we’ll take a deep dive into
+# Hi, I'm Kent C. Dodds and in my latest workshop, we'll take a deep dive into
 # Promises and async/await to improve your asynchronous programming.
 
 # ## When you're done you will:

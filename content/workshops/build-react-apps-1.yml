@@ -1,6 +1,6 @@
 title: Build React Applications (Part 1)
 description:
-  We’ll cover everything the basics to building frontend React applications like
+  We'll cover everything the basics to building frontend React applications like
   bootstrapping, styling, and forms.
 meta:
   keywords:
@@ -39,8 +39,8 @@ prerequisite: >-
 # ### Get started building React applications
 
 # The React and JavaScript ecosystem is full of tools and libraries to help you
-# build your applications. In this workshop we’ll build an application from
-# scratch using widely supported and used tools and techniques. We’ll cover
+# build your applications. In this workshop we'll build an application from
+# scratch using widely supported and used tools and techniques. We'll cover
 # everything the basics to building frontend React applications like
 # bootstrapping, styling, and forms.
 

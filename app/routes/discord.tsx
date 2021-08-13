@@ -12,7 +12,7 @@ import {useOptionalUser, useRequestInfo} from '../utils/providers'
 import {ArrowLink} from '../components/arrow-button'
 import {ButtonLink} from '../components/button'
 import {H2, H5, H6, Paragraph} from '../components/typography'
-import {images} from '../images'
+import {getImgProps, images} from '../images'
 import {Grid} from '../components/grid'
 import {externalLinks} from '../external-links'
 import {UsersIcon} from '../components/icons/users-icon'
@@ -149,15 +149,27 @@ export default function Discord() {
             <div className="aspect-h-6 aspect-w-4 mb-12 lg:mb-0">
               <img
                 className="rounded-lg object-cover"
-                src={images.kentCodingWithKody()}
-                alt={images.kentCodingWithKody.alt}
+                {...getImgProps(images.kentListeningAtReactRally, {
+                  widths: [410, 650, 820, 1230, 1640, 2460],
+                  sizes: [
+                    '(max-width: 1023px) 80vw',
+                    '(min-width:1024px) and (max-width:1620px) 40vw',
+                    '630px',
+                  ],
+                  transformations: {
+                    resize: {
+                      type: 'fill',
+                      aspectRatio: '3:4',
+                    },
+                  },
+                })}
               />
             </div>
           </div>
 
           <div className="col-span-full lg:col-span-5 lg:col-start-8 lg:row-start-1">
             <H2 id="reasons-to-join" className="mb-10">
-              Here’s why you should join the server.
+              Here's why you should join the server.
             </H2>
 
             <ButtonLink className="mb-32" variant="primary" to={authorizeURL}>
@@ -196,7 +208,7 @@ export default function Discord() {
               Not sure what to expect from the discord?
             </H2>
             <H2 as="p" variant="secondary" className="mb-14">
-              Here’s some features for you in a glance.{' '}
+              {`Here's some features for you in a glance. `}
             </H2>
           </div>
 
@@ -330,7 +342,7 @@ export default function Discord() {
         />
 
         <HeaderSection
-          title="Here’s a quick look at all categories."
+          title="Here's a quick look at all categories."
           subTitle="Click on any category to get more info."
           className="mb-14"
         />
@@ -360,10 +372,14 @@ export default function Discord() {
           <div className="col-span-full lg:col-span-4 lg:col-start-2">
             <img
               className="object-contain"
-              src={images.helmet({
-                resize: {type: 'crop', width: 2000, height: 2100},
+              {...getImgProps(images.helmet, {
+                widths: [420, 512, 840, 1260, 1024, 1680, 2520],
+                sizes: [
+                  '(max-width: 1023px) 80vw',
+                  '(min-width: 1024px) and (max-width: 1620px) 40vw',
+                  '630px',
+                ],
               })}
-              alt={images.helmet.alt}
             />
           </div>
 

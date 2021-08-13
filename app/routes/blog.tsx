@@ -5,7 +5,7 @@ import type {KCDHandle, MdxListItem} from 'types'
 import formatDate from 'date-fns/format'
 import parseISO from 'date-fns/parseISO'
 import {Grid} from '../components/grid'
-import {getImageBuilder, images} from '../images'
+import {getImageBuilder, getImgProps, images} from '../images'
 import {H2, H3, H6} from '../components/typography'
 import {SearchIcon} from '../components/icons/search-icon'
 import {ArticleCard} from '../components/article-card'
@@ -249,8 +249,10 @@ function BlogHome() {
           <div className="flex flex-col col-span-full items-center">
             <img
               className="mt-24 w-full max-w-lg h-auto"
-              src={images.bustedOnewheel()}
-              alt={images.bustedOnewheel.alt}
+              {...getImgProps(images.bustedOnewheel, {
+                widths: [350, 512, 1024, 1536],
+                sizes: ['(max-width: 639px) 80vw', '512px'],
+              })}
             />
             <H3 variant="secondary" className="mt-24 max-w-lg">
               Looks like there are no articles for this topic. Use the tags
@@ -279,7 +281,16 @@ function BlogHome() {
 
       <Grid>
         <div className="col-span-full lg:col-span-5">
-          <img src={images.kayak()} alt={images.kayak.alt} />
+          <img
+            {...getImgProps(images.kayak, {
+              widths: [350, 512, 1024, 1536],
+              sizes: [
+                '80vw',
+                '(min-width: 1024px) 30vw',
+                '(min-width:1620px) 530px',
+              ],
+            })}
+          />
         </div>
 
         <div className="col-span-full mt-4 lg:col-span-6 lg:col-start-7 lg:mt-0">

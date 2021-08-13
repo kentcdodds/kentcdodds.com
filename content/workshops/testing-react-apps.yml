@@ -45,10 +45,10 @@ prerequisite: >-
 # Using React to build basic applications is one thing, but shipping those
 # applications with confidence is an entirely different story. And as you make
 # changes, how do you know that your changes work? How do you know those changes
-# aren’t going to break other parts of your application? Do you have to manually
-# walk through your whole application to make certain everything’s still working?
+# aren't going to break other parts of your application? Do you have to manually
+# walk through your whole application to make certain everything's still working?
 # No thank you! The more your tests resemble the way your software is used, the
-# more confidence they can give you. Let’s learn how to write tests that make us
+# more confidence they can give you. Let's learn how to write tests that make us
 # confident.
 
 # Hi, I'm Kent, and I'm the creator of

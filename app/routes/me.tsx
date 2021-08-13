@@ -120,7 +120,7 @@ function YouScreen() {
           <div className="col-span-full mb-12 lg:mb-20">
             <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
               <div>
-                <H2>Here’s your profile.</H2>
+                <H2>Here's your profile.</H2>
                 <H2 variant="secondary" as="p">
                   Edit as you wish.
                 </H2>

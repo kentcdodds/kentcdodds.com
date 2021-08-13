@@ -62,7 +62,7 @@ function DiscordSection() {
 
         <div className="absolute -bottom-6 -right-12 flex flex-col text-right space-y-1">
           <div className="self-end px-12 py-6 text-green-500 text-lg bg-green-100 rounded-full">
-            Sure thing man, let’s do it!
+            Sure thing man, let's do it!
           </div>
           <div className="self-end px-12 py-6 text-green-500 text-lg bg-green-100 rounded-full">
             Found some cool articles on the blog{' '}

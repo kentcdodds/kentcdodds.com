@@ -209,7 +209,7 @@ from Babel 5 to Babel 6:
 
 [https://egghead.io/lessons/angularjs-updating-babel-5-to-6](https://egghead.io/lessons/angularjs-updating-babel-5-to-6)
 
-Also, remember that nobody’s perfect and we’re all learning here :-) See you on
+Also, remember that nobody's perfect and we're all learning here :-) See you on
 [Twitter](https://twitter.com)!
 
 ---
@@ -238,9 +238,9 @@ export (under the default key).
 
 **Named Exports:**
 
-It’s notable that you can also use named exports and I recommend this with
+It's notable that you can also use named exports and I recommend this with
 utility modules. This will allow you to do the destructuring-like syntax in the
-import statement (**warning, despite what it looks like it’s not actually
+import statement (**warning, despite what it looks like it's not actually
 destructing due to the static analysis reasons mentioned earlier**). So you
 could do:
 
@@ -259,7 +259,7 @@ This gets really awesome/exciting with
 [tree shaking](http://www.2ality.com/2015/12/webpack-tree-shaking.html).
 
 Personally, I generally recommend that for a component (like a React component
-or an Angular service) you’ll want to use default exports (you’re importing a
+or an Angular service) you'll want to use default exports (you're importing a
 specific thing, single file, single component, you know 😀). But for utility
 modules you generally have various pure functions that can be used
 independently. This is a great use case for named exports.

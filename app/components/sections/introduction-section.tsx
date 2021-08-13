@@ -30,12 +30,12 @@ function IntroductionSection() {
       </div>
       <div className="col-span-full mt-12 lg:col-span-5 lg:col-start-7 lg:mt-0">
         <H2 id="intro">
-          Hi, I&apos;m Kent C. Dodds, I’m a full time educator teaching people
+          Hi, I&apos;m Kent C. Dodds, I'm a full time educator teaching people
           development.
         </H2>
         <H2 variant="secondary" as="p" className="mt-12">
-          I&apos;m a big extreme sports enthousiast. I’m an avid snowboarder and
-          rollerskater. When i’m not at the computer you can find me cruizing
+          I&apos;m a big extreme sports enthousiast. I'm an avid snowboarder and
+          rollerskater. When i'm not at the computer you can find me cruizing
           around on my one wheel.
         </H2>
         <ArrowLink to="/about" direction="right" className="mt-20">

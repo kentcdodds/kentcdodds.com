@@ -13,7 +13,7 @@ bannerCloudinaryId: kentcdodds.com/content/blog/control-props-vs-state-reducers/
 bannerCredit: unknown
 ---
 
-You’ve probably used components or elements that implement the control props
+You've probably used components or elements that implement the control props
 pattern. For example:
 
 ```tsx
@@ -25,10 +25,10 @@ Read more about the concept of control props in
 
 You may not have had much experience with the idea of a
 [state reducer](/blog/the-state-reducer-pattern). In contrast to control props,
-built-in react elements don’t support state reducers (though I hear that
+built-in react elements don't support state reducers (though I hear that
 reason-react does). My library
 [downshift](https://github.com/downshift-js/downshift) supports a state reducer.
-Here’s an example of using it to prevent the menu from closing after an item is
+Here's an example of using it to prevent the menu from closing after an item is
 selected:
 
 ```tsx
@@ -52,11 +52,11 @@ You can learn how to implement these patterns from
 
 Both of these patterns help you expose state management to component consumers
 and while they have significantly different APIs, they allow much of the same
-capabilities. So today I’d like to answer the question I’ve gotten many times
+capabilities. So today I'd like to answer the question I've gotten many times
 which is: “When should I expose a state reducer or a control prop?”
 
 Control Props are objectively more powerful because they allow complete control
-over state from outside the component. Let’s take my favorite Toggle component
+over state from outside the component. Let's take my favorite Toggle component
 as an example:
 
 ```tsx
@@ -93,7 +93,7 @@ class Example extends React.Component {
 }
 ```
 
-Here’s a rendered version of this component:
+Here's a rendered version of this component:
 
 ![gif of the rendered component showing an input and toggle that sync their state](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032645/kentcdodds.com/content/blog/control-props-vs-state-reducers/toggle1.gif)
 
@@ -106,8 +106,8 @@ Control props do come with a cost however. They require that the consumer
 completely manage state themselves which means the consumer must have a class
 component with state and change handlers to update that state.
 
-State reducers do not have to manage the component’s state themselves (though
-they can manage some of their own state as needed). Here’s an example of using a
+State reducers do not have to manage the component's state themselves (though
+they can manage some of their own state as needed). Here's an example of using a
 state reducer:
 
 ```tsx
@@ -151,14 +151,14 @@ class Example extends React.Component {
 }
 ```
 
-And here’s a gif of the rendered interaction.
+And here's a gif of the rendered interaction.
 
-![gif of the rendered component showing a toggle, reset button, and counter that’s limited to 4 toggles.](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032645/kentcdodds.com/content/blog/control-props-vs-state-reducers/toggle2.gif)
+![gif of the rendered component showing a toggle, reset button, and counter that's limited to 4 toggles.](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032645/kentcdodds.com/content/blog/control-props-vs-state-reducers/toggle2.gif)
 
 Now, you could definitely implement this experience using a control prop, but I
-would argue that it’s a fair bit simpler if you can use the state reducer. The
-biggest limitation of a state reducer is that it’s impossible to set state of
-the component from outside it’s normal `setState` calls (I couldn't implement
+would argue that it's a fair bit simpler if you can use the state reducer. The
+biggest limitation of a state reducer is that it's impossible to set state of
+the component from outside it's normal `setState` calls (I couldn't implement
 the first example using a state reducer).
 
 I hope this is helpful! Feel free to see the implementation and play around with

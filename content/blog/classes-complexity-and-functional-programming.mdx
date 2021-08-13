@@ -247,11 +247,11 @@ Here are a few extras for your viewing pleasure :)
 
 Another way to avoid the complexities of `this` and leverages simple objects and
 functions is the Module pattern. You can learn more about this pattern from
-[Addy Osmani](https://twitter.com/addyosmani)’s
+[Addy Osmani](https://twitter.com/addyosmani)'s
 “[Learning JavaScript Design Patterns](https://addyosmani.com/resources/essentialjsdesignpatterns/book)”
 book which is available to read for free
 [here](https://addyosmani.com/resources/essentialjsdesignpatterns/book/#modulepatternjavascript).
-Here’s an implementation of our `person` class based on Addy’s
+Here's an implementation of our `person` class based on Addy's
 “[Revealing Module Pattern](https://addyosmani.com/resources/essentialjsdesignpatterns/book/#revealingmodulepatternjavascript)”:
 
 ```js
@@ -303,7 +303,7 @@ person1.getGreetingCallback === person2.getGreetingCallback // false
 
 Even though the contents of the `getGreetingCallback` function are identical,
 they will each have their own copy of that function in memory. Most of the time
-this doesn’t matter, but if you’re planning on making a ton of instances of
+this doesn't matter, but if you're planning on making a ton of instances of
 these, or you want creating these to be more than fast, this can be a bit of a
 problem. With our `Person` class, every instance we create will have a reference
 to the exact same method `getGreetingCallback`:
@@ -327,9 +327,9 @@ const getGreeting = person.getGreeting
 getGreeting() // Hello Jane Doe
 ```
 
-We don’t need to concern ourselves with `this` at all in that case. And there
+We don't need to concern ourselves with `this` at all in that case. And there
 are [other issues](https://twitter.com/BrendanEich/status/871876967796056067)
-with relying heavily on closures to be aware of. It’s all about trade-offs.
+with relying heavily on closures to be aware of. It's all about trade-offs.
 
 #### Private properties with classes
 
@@ -369,8 +369,8 @@ person.#name // undefined or error or something... Either way it's totally inacc
 person.#getPrefixedName // same as above. Woo! 🎊 🎉
 ```
 
-So we’ve got the solution to the privacy problem with that proposal. However it
-doesn’t rid us of the complexities of `this`, so I’ll likely only use this in
+So we've got the solution to the privacy problem with that proposal. However it
+doesn't rid us of the complexities of `this`, so I'll likely only use this in
 places where I _really_ need performance gains of `class`.
 
 I should also note that you _can_ use a WeakMap to get privacy for classes as

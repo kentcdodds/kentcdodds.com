@@ -1,8 +1,8 @@
 title: JavaScript Fundamentals
 description:
-  In this workshop, you’ll get started on the right foot with the most
-  ubiquitous programming language around. By the end of the workshop, you’ll
-  have something running on the world wide web and you’ll be equipped with the
+  In this workshop, you'll get started on the right foot with the most
+  ubiquitous programming language around. By the end of the workshop, you'll
+  have something running on the world wide web and you'll be equipped with the
   tools you need to keep learning and building JavaScript applications.
 meta:
   keywords:
@@ -30,14 +30,14 @@ keyTakeaways:
 topics:
   - JavaScript statements and expressions
   - Code comments
-  - 'JavaScript’s main primitive values: string, boolean, number, undefined, and
+  - 'JavaScript's main primitive values: string, boolean, number, undefined, and
     null'
   - Operators
   - Variables
   - Conditionals
   - Loops
   - Functions
-  - 'JavaScript’s main data structures: objects and arrays'
+  - 'JavaScript's main data structures: objects and arrays'
   - Using Netlify to put your code on the web
 
 prerequisite: >-
@@ -55,7 +55,7 @@ prerequisite: >-
 # Or even just a little custom app to track (and reduce) your trips to the soda
 # machine?
 
-# JavaScript can get you there. It’s:
+# JavaScript can get you there. It's:
 
 # <ul>
 #   <li>the most ubiquitous programming language around</li>
@@ -65,7 +65,7 @@ prerequisite: >-
 
 # ## The Workshop
 
-# Hi, I’m Kent C. Dodds! In this workshop, I’ll help you build a foundation in
+# Hi, I'm Kent C. Dodds! In this workshop, I'll help you build a foundation in
 # JavaScript. We will start out with common elements in JavaScript, build up to
 # variables and functions, and finally use Netlify to put your code on the web.
 

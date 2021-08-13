@@ -3,7 +3,7 @@ import type {LoaderFunction} from 'remix'
 import {json, useLoaderData} from 'remix'
 import type {MdxListItem} from 'types'
 import formatDate from 'date-fns/format'
-import {images} from '../images'
+import {getImgProps, images} from '../images'
 import {H2, H3, H6, Paragraph} from '../components/typography'
 import {ArrowLink} from '../components/arrow-button'
 import {Grid} from '../components/grid'
@@ -30,8 +30,8 @@ function AboutIndex() {
   return (
     <>
       <HeroSection
-        title="Hi, I'm Kent C. Dodds, I’m a full time educator."
-        subtitle="I’m an extreme sports fan. I’m an avid snowboarder and roller skater."
+        title="Hi, I'm Kent C. Dodds, I'm a full time educator."
+        subtitle="I'm an extreme sports fan. I'm an avid snowboarder and roller skater."
         imageBuilder={images.snowboard}
         arrowUrl="#about-me"
         arrowLabel="Get to know more about me"
@@ -42,8 +42,10 @@ function AboutIndex() {
           <img
             id="about-me"
             className="rounded-lg object-cover"
-            src={images.kentRidingOnewheelOutdoorsFast()}
-            alt={images.kentRidingOnewheelOutdoorsFast.alt}
+            {...getImgProps(images.kentRidingOnewheelOutdoorsFast, {
+              widths: [280, 560, 840, 1100, 1300, 2600, 3900],
+              sizes: ['(min-width:1620px) 1280px', '80vw'],
+            })}
           />
         </div>
       </Grid>
@@ -69,11 +71,16 @@ function AboutIndex() {
           </ArrowLink>
 
           <div className="w-full lg:pr-12">
-            {/* TODO: replace with family picture? */}
             <img
               className="w-full rounded-lg object-cover"
-              src={images.kentRidingOnewheelOutdoors()}
-              alt={images.kentRidingOnewheelOutdoors.alt}
+              {...getImgProps(images.kentWorkingInNature, {
+                widths: [512, 840, 1024, 1680, 2520],
+                sizes: [
+                  '(max-width: 1023px) 80vw',
+                  '(min-width: 1024px) and (max-width: 1620px) 50vw',
+                  '800px',
+                ],
+              })}
             />
           </div>
         </div>
@@ -96,8 +103,21 @@ function AboutIndex() {
           <div className="aspect-h-6 aspect-w-4 mb-12 lg:mb-0">
             <img
               className="rounded-lg object-cover"
-              src={images.kentSnowSports()}
-              alt={images.kentSnowSports.alt}
+              {...getImgProps(images.happySnowboarder, {
+                widths: [512, 650, 840, 1024, 1300, 1680, 2000, 2520],
+                sizes: [
+                  '(max-width: 1023px) 80vw',
+                  '(min-width: 1024px) and (max-width: 1620px) 40vw',
+                  '650px',
+                ],
+                transformations: {
+                  gravity: 'faces',
+                  resize: {
+                    type: 'fill',
+                    aspectRatio: '3:4',
+                  },
+                },
+              })}
             />
           </div>
         </div>
@@ -140,6 +160,16 @@ function AboutIndex() {
       />
 
       <Grid className="mb-24 lg:mb-64">
+        <div className="col-span-full mb-12 lg:mb-20">
+          <img
+            id="about-me"
+            className="rounded-lg object-cover"
+            {...getImgProps(images.kentSpeakingAllThingsOpen, {
+              widths: [280, 560, 840, 1100, 1300, 2600, 3900],
+              sizes: ['(min-width:1620px) 1280px', '80vw'],
+            })}
+          />
+        </div>
         <div className="col-span-full lg:col-span-6">
           <TalkCard
             tags={['react', 'virtual', 'video']}
@@ -165,8 +195,20 @@ function AboutIndex() {
           <div className="aspect-h-6 aspect-w-4 mb-12 lg:mb-0">
             <img
               className="rounded-lg object-cover"
-              src={images.kentSnowSports()}
-              alt={images.kentSnowSports.alt}
+              {...getImgProps(images.microphoneWithHands, {
+                widths: [512, 650, 840, 1024, 1300, 1680, 2000, 2520],
+                sizes: [
+                  '(max-width: 1023px) 80vw',
+                  '(min-width: 1024px) and (max-width: 1620px) 40vw',
+                  '650px',
+                ],
+                transformations: {
+                  resize: {
+                    type: 'fill',
+                    aspectRatio: '3:4',
+                  },
+                },
+              })}
             />
           </div>
         </div>
@@ -204,20 +246,26 @@ function AboutIndex() {
         <div className="col-span-full mb-10 lg:col-span-6 lg:col-start-1 lg:mb-0">
           <img
             className="rounded-lg object-contain"
-            src={images.teslaX()}
-            alt={images.teslaX.alt}
+            {...getImgProps(images.teslaX, {
+              widths: [420, 512, 840, 1260, 1024, 1680, 2520],
+              sizes: [
+                '(max-width: 1023px) 80vw',
+                '(min-width: 1024px) and (max-width: 1620px) 40vw',
+                '630px',
+              ],
+            })}
           />
         </div>
 
         <div className="col-span-full lg:col-span-4 lg:col-start-8 lg:row-start-1">
           <H2 className="mb-10">
-            Curious to more about me? Check out some other stuff i’m working on.
+            {`Curious to more about me? Check out some other stuff I'm working on.`}
           </H2>
           <H2 variant="secondary" as="p" className="mb-14">
             Follow the link below to see my links page where I link to a lot
             more.
           </H2>
-          <ArrowLink to="/">Let’s see those other links</ArrowLink>
+          <ArrowLink to="/">{`Let's see those other links`}</ArrowLink>
         </div>
       </Grid>
 

@@ -254,11 +254,11 @@ function WorkshopScreen() {
             <Grid>
               <div className="flex flex-col col-span-full items-stretch mb-40 lg:col-span-5 lg:items-start lg:mb-0">
                 <H2 className="mb-8">
-                  At the end of this workshop you’ll be able to do all of these
+                  At the end of this workshop you'll be able to do all of these
                   things yourself.
                 </H2>
                 <H2 className="mb-16" variant="secondary" as="p">
-                  Here’s why you should register for the workshop.
+                  Here's why you should register for the workshop.
                 </H2>
                 <ButtonLink to={workshopEvent ? workshopEvent.url : '#sign-up'}>
                   Register here
@@ -336,7 +336,7 @@ function WorkshopScreen() {
               {`Ready to learn more about ${workshop.title} in this workshop?`}
             </H2>
             <H2 className="mb-20 text-center" variant="secondary">
-              You can register by using the button below. Can’t wait to see you.
+              You can register by using the button below. Can't wait to see you.
             </H2>
             <RegistrationPanel
               workshop={workshop.title}

@@ -36,7 +36,7 @@ function ProfileCard({
             sizes: [
               '(max-width:639px) 80vw',
               '(min-width:640px) and (max-width:1023px) 40vw',
-              '(min-width:1024px) and (max-width:1600px) 25vw',
+              '(min-width:1024px) and (max-width:1620px) 25vw',
               '410px',
             ],
           })}

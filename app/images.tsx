@@ -63,6 +63,10 @@ const images = createImages({
     id: 'kent/riding-onewheel-outdoors-fast',
     alt: 'Kent riding a onewheel outdoors fast',
   },
+  kentWorkingInNature: {
+    id: 'kent/working-in-nature',
+    alt: 'Kent working in nature',
+  },
   kentPalmingSoccerBall: {
     id: 'kent/palming-soccer-ball',
     alt: 'Kent holding a soccer ball',
@@ -90,6 +94,26 @@ const images = createImages({
   kentSkatingGear: {
     id: 'kent/skating-gear',
     alt: 'Kent with skating gear',
+  },
+  kentSpeakingAllThingsOpen: {
+    id: 'kent/kent-speaking-all-things-open',
+    alt: 'Kent speaking all things open',
+  },
+  mrRogersBeKind: {
+    id: 'kent/video-stills/mr-rogers-be-kind',
+    alt: 'Laptop with a sticker with a photo of Mr. Rogers and the words "Be kind"',
+  },
+  microphoneWithHands: {
+    id: 'kent/video-stills/microphone-with-hands',
+    alt: 'A microphone and hands',
+  },
+  happySnowboarder: {
+    id: 'kent/video-stills/happy-snowboarder',
+    alt: 'Kent smiling covered in snow',
+  },
+  kentListeningAtReactRally: {
+    id: 'kent/kent-listening-at-react-rally',
+    alt: 'Kent sitting as an audience member at React Rally',
   },
 
   alexProfileYellow: {
