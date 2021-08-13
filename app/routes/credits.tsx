@@ -1,5 +1,6 @@
 import * as React from 'react'
-import {images} from '../images'
+import type {ImageBuilder} from '../images'
+import {images, getImgProps} from '../images'
 import {H2, H3, H6, Paragraph} from '../components/typography'
 import {Grid} from '../components/grid'
 import {HeaderSection} from '../components/sections/header-section'
@@ -10,8 +11,7 @@ import {Spacer} from '../components/spacer'
 
 interface ProfileCardProps {
   name: string
-  imageUrl: string
-  imageAlt: string
+  imageBuilder: ImageBuilder
   role: string
   description: string
   github?: string
@@ -20,8 +20,7 @@ interface ProfileCardProps {
 
 function ProfileCard({
   name,
-  imageUrl,
-  imageAlt,
+  imageBuilder,
   role,
   description,
   github,
@@ -31,9 +30,16 @@ function ProfileCard({
     <div className="relative flex flex-col w-full">
       <div className="aspect-w-3 aspect-h-4 flex-none mb-8 w-full">
         <img
-          alt={imageAlt}
           className="rounded-lg object-cover"
-          src={imageUrl}
+          {...getImgProps(imageBuilder, {
+            widths: [280, 560, 840, 1100, 1300, 1650],
+            sizes: [
+              '(max-width:639px) 80vw',
+              '(min-width:640px) and (max-width:1023px) 40vw',
+              '(min-width:1024px) and (max-width:1600px) 25vw',
+              '410px',
+            ],
+          })}
         />
       </div>
 
@@ -60,10 +66,9 @@ function ProfileCard({
   )
 }
 
-const people = Array.from({length: 12}).map((_, idx) => ({
+const people = Array.from({length: 12}).map(() => ({
   name: 'Kent C. Dodds',
-  imageUrl: `${images.kentProfile()}?k=${idx}`,
-  imageAlt: 'Kent C. Dodds',
+  imageBuilder: images.kentProfile,
   role: 'a bit of everything',
   description:
     'Mauris auctor nulla at felis placerat, ut elementum urna commodo. Aenean et rutrum quam. Etiam odio massa, congue in orci nec, ornare suscipit sem aenean turpis.',
@@ -117,8 +122,8 @@ function CreditsIndex() {
       />
 
       <Grid className="gap-y-20 lg:gap-y-32">
-        {people.map(person => (
-          <div key={person.imageUrl} className="col-span-4">
+        {people.map((person, idx) => (
+          <div key={idx} className="col-span-4">
             <ProfileCard {...person} />
           </div>
         ))}
