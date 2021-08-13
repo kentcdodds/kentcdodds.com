@@ -1,19 +1,11 @@
 import type {Request} from 'remix'
 import * as YAML from 'yaml'
-import type {Workshop} from 'types'
+import type {Workshop, Testimonial} from 'types'
 import {markdownToHtmlUnwrapped} from './markdown.server'
 import type {Timings} from './metrics.server'
 import {cachified} from './redis.server'
 import {downloadDirList, downloadFile} from './github.server'
 import {typedBoolean} from './misc'
-
-type Testimonial = {
-  imageUrl: string
-  imageAlt: string
-  author: string
-  company: string
-  testimonial: string
-}
 
 type KeyTakeaway = {
   title: string

@@ -39,14 +39,6 @@ prerequisite: >-
   equivalent basic experience of using hooks. You should be experienced with
   `useState`, `useEffect`, and `useRef`.
 
-testimonials:
-  - imageUrl: https://randomuser.me/api/portraits/lego/1.jpg
-    imageAlt: profile photo of person
-    author: Person 1
-    company: Freelance Figurine
-    testimonial:
-      Mauris auctor nulla at felis placerat, ut elementum urna commodo. Aenean
-      et rutrum quam. Etiam odio massa.
 # ### To learn the more advanced React hooks and different patterns to enable great developer APIs for custom hooks.
 
 # React’s basic built-in hooks are phenomenally good and there are several more

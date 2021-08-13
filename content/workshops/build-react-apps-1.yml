@@ -32,14 +32,7 @@ prerequisite: >-
   equivalent basic experience of using basic hooks. You should be experienced
   with creating custom React components and the `useState`, `useEffect`, and
   `useRef` hooks.
-testimonials:
-  - imageUrl: https://randomuser.me/api/portraits/lego/1.jpg
-    imageAlt: profile photo of person
-    author: Person 1
-    company: Freelance Figurine
-    testimonial:
-      Mauris auctor nulla at felis placerat, ut elementum urna commodo. Aenean
-      et rutrum quam. Etiam odio massa.
+
 # ---
 # ---
 

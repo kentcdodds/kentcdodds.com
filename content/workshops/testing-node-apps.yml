@@ -40,14 +40,6 @@ prerequisite: >-
   JavaScript Workshop](/workshops/asynchronous-javascript) or have equivalent
   experience with asynchronous JavaScript.
 
-testimonials:
-  - imageUrl: https://randomuser.me/api/portraits/lego/1.jpg
-    imageAlt: profile photo of person
-    author: Person 1
-    company: Freelance Figurine
-    testimonial:
-      Mauris auctor nulla at felis placerat, ut elementum urna commodo. Aenean
-      et rutrum quam. Etiam odio massa.
 # ---
 # ---
 

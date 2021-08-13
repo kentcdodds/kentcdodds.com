@@ -55,9 +55,9 @@ prerequisite:
   Attend my Advanced React Hooks Workshop or have the equivalent experience. You
   should be experienced with useContext and useReducer (experience with useMemo
   and useCallback is a bonus).
+
 testimonials:
-  - imageUrl: https://randomuser.me/api/portraits/lego/1.jpg
-    imageAlt: profile photo of person
+  - cloudinaryId: kentcdodds.com/content/workshops/react-hooks/lego
     author: Person 1
     company: Freelance Figurine
     testimonial:

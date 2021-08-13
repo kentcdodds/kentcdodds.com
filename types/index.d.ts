@@ -50,6 +50,13 @@ type MdxPage = {
  */
 type MdxListItem = Omit<MdxPage, 'code'>
 
+type Testimonial = {
+  cloudinaryId: string
+  author: string
+  company: string
+  testimonial: string
+}
+
 type Workshop = {
   slug: string
   title: string
@@ -188,6 +195,7 @@ export {
   Role,
   MdxPage,
   MdxListItem,
+  Testimonial,
   Workshop,
   CWKEpisode,
   CWKListItem,

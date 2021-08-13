@@ -11,11 +11,21 @@ type FeaturedSectionProps = {
   cta?: string
   subTitle?: string
   title?: string
-  imageBuilder?: ImageBuilder
-  imageUrl?: string
-  imageAlt?: string
   permalink?: string
-} & ({href?: never; slug: string} | {href: string; slug?: never})
+} & (
+  | {
+      imageBuilder?: ImageBuilder
+      imageUrl?: never
+      imageAlt?: never
+    }
+  | {
+      imageBuilder?: never
+      /** use the imageBuilder if possible. imageUrl is for things we don't have in cloudinary */
+      imageUrl?: string
+      imageAlt?: string
+    }
+) &
+  ({href?: never; slug: string} | {href: string; slug?: never})
 
 function FeaturedSection({
   slug,

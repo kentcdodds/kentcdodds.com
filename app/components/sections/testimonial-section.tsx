@@ -1,17 +1,13 @@
 import clsx from 'clsx'
 import * as React from 'react'
+import type {Testimonial} from 'types'
+import {getImageBuilder, getImgProps} from '../../images'
 import {H2, H4} from '../typography'
 import {ArrowButton} from '../arrow-button'
 import {Grid} from '../grid'
 
 interface TestimonialSectionProps {
-  testimonials: Array<{
-    imageUrl: string
-    imageAlt: string
-    author: string
-    company: string
-    testimonial: string
-  }>
+  testimonials: Array<Testimonial>
   className?: string
 }
 
@@ -38,7 +34,7 @@ function TestimonialSection({
 
       {testimonials.slice(0, 3).map((testimonial, idx) => (
         <div
-          key={testimonial.imageUrl}
+          key={idx}
           className={clsx(
             'bg-secondary flex flex-col col-span-4 justify-between mb-8 p-16 rounded-lg lg:mb-0',
             {
@@ -51,9 +47,17 @@ function TestimonialSection({
           </H4>
           <div className="flex items-center">
             <img
-              src={testimonial.imageUrl}
               className="flex-none mr-8 w-16 h-16 rounded-full object-cover"
-              alt={testimonial.imageAlt}
+              {...getImgProps(
+                getImageBuilder(
+                  testimonial.cloudinaryId,
+                  `${testimonial.author} profile`,
+                ),
+                {
+                  widths: [64, 128, 256],
+                  sizes: ['4rem'],
+                },
+              )}
             />
             <div>
               <p className="text-primary mb-2 text-xl font-medium leading-none">

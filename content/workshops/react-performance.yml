@@ -41,14 +41,7 @@ topics:
 prerequisite: >-
   Attend my [Advanced React Hooks Workshop](/workshops/advanced-react-hooks) or
   have the equivalent experience with advanced React concepts.
-testimonials:
-  - imageUrl: https://randomuser.me/api/portraits/lego/1.jpg
-    imageAlt: profile photo of person
-    author: Person 1
-    company: Freelance Figurine
-    testimonial:
-      Mauris auctor nulla at felis placerat, ut elementum urna commodo. Aenean
-      et rutrum quam. Etiam odio massa.
+
 # ---
 # ---
 

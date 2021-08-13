@@ -37,14 +37,6 @@ prerequisite: >-
   Workshop](/workshops/build-react-apps-1), or have the equivalent basic
   experience of building basic React apps.
 
-testimonials:
-  - imageUrl: https://randomuser.me/api/portraits/lego/1.jpg
-    imageAlt: profile photo of person
-    author: Person 1
-    company: Freelance Figurine
-    testimonial:
-      Mauris auctor nulla at felis placerat, ut elementum urna commodo. Aenean
-      et rutrum quam. Etiam odio massa.
 # ### Use common libraries to build ReactJS applications
 
 # The React and JavaScript ecosystem is full of tools and libraries to help you

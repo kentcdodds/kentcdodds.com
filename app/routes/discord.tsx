@@ -91,8 +91,7 @@ function CategoryCard(props: CategoryCardProps) {
 }
 
 const testimonials = Array.from({length: 6}).map((_, idx) => ({
-  imageUrl: `https://randomuser.me/api/portraits/lego/${idx}.jpg`,
-  imageAlt: 'profile photo of person',
+  cloudinaryId: 'kentcdodds.com/content/workshops/react-hooks/lego',
   author: `Person ${idx + 1}`,
   company: 'Freelance Figurine',
   testimonial:
