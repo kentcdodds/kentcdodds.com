@@ -11,19 +11,6 @@ import type {GitHubFile} from 'types'
 import calculateReadingTime from 'reading-time'
 import * as twitter from './twitter.server'
 
-const getOEmbedConfig: OEmbedConfig = ({provider}) => {
-  if (provider.provider_name === 'Twitter') {
-    return {
-      params: {
-        dnt: true,
-        theme: 'dark',
-        omit_script: true,
-      },
-    }
-  }
-  return null
-}
-
 function handleEmbedderError({url}: {url: string}) {
   return `<p>Error embedding <a href="${url}">${url}</a>.`
 }
@@ -178,11 +165,7 @@ const remarkPlugins: U.PluggableList = [
     {
       handleError: handleEmbedderError,
       handleHTML: handleEmbedderHtml,
-      transformers: [
-        twitterTransformer,
-        eggheadTransformer,
-        [oembedTransformer, getOEmbedConfig],
-      ],
+      transformers: [twitterTransformer, eggheadTransformer, oembedTransformer],
     },
   ],
   autoAffiliates,
