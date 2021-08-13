@@ -19,8 +19,7 @@ function CourseSection() {
           <CourseCard
             title="Epic React"
             description="The most comprehensive guide for pro’s."
-            imageUrl={images.courseEpicReact()}
-            imageAlt={images.courseEpicReact.alt}
+            imageBuilder={images.courseEpicReact}
             courseUrl="https://epicreact.dev"
           />
         </div>
@@ -29,8 +28,7 @@ function CourseSection() {
           <CourseCard
             title="Testing Javascript"
             description="Learn smart, efficient testing methods."
-            imageUrl={images.courseTestingJS()}
-            imageAlt={images.courseTestingJS.alt}
+            imageBuilder={images.courseTestingJS}
             courseUrl="https://testing-library.com"
           />
         </div>

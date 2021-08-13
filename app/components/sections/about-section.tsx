@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {images} from '../../images'
+import {getImgProps, images} from '../../images'
 import {H2, Paragraph} from '../typography'
 import {ArrowLink} from '../arrow-button'
 import {Grid} from '../grid'
@@ -9,11 +9,23 @@ function AboutSection() {
     <Grid>
       <div className="table col-span-full lg:col-span-6">
         <div className="table-cell align-middle text-center">
-          <div className="aspect-h-4 aspect-w-3">
+          <div>
             <img
               className="rounded-lg object-cover"
-              src={images.kentSnowSports()}
-              alt={images.kentSnowSports.alt}
+              {...getImgProps(images.kentSnowSports, {
+                widths: [300, 650, 1300, 1800, 2600],
+                sizes: [
+                  '(max-width: 1023px) 80vw',
+                  '(min-width:1024px) and (max-width:1620px) 40vw',
+                  '630px',
+                ],
+                transformations: {
+                  resize: {
+                    type: 'fill',
+                    aspectRatio: '3:4',
+                  },
+                },
+              })}
             />
           </div>
         </div>
@@ -21,9 +33,15 @@ function AboutSection() {
 
       <div className="flex flex-col col-span-full justify-center lg:col-span-4 lg:col-start-8 lg:mt-0">
         <img
-          className="self-start mt-20 w-48 w-auto lg:mt-0"
-          src={images.snowboard()}
-          alt={images.snowboard.alt}
+          className="self-start mt-20 w-auto lg:mt-0"
+          {...getImgProps(images.snowboard, {
+            widths: [300, 600, 850, 1600, 2550],
+            sizes: [
+              '(max-width: 1023px) 80vw',
+              '(min-width:1024px) and (max-width:1620px) 25vw',
+              '410px',
+            ],
+          })}
         />
 
         <H2 className="mt-12">Big extreme sports enthusiast.</H2>

@@ -9,7 +9,8 @@ import {
 } from '@reach/tabs'
 import clsx from 'clsx'
 import {motion, AnimatePresence} from 'framer-motion'
-import {images} from '../../images'
+import {images, getImgProps} from '../../images'
+import type {ImageBuilder} from '../../images'
 import {Grid} from '../grid'
 import {H2, H3, Paragraph} from '../typography'
 import {ArrowLink} from '../arrow-button'
@@ -45,14 +46,12 @@ function Tab({isSelected, children}: TabProps & {isSelected?: boolean}) {
 
 function ContentPanel({
   children,
-  imageUrl,
-  imageAlt,
   active,
+  imageBuilder,
 }: {
   children: React.ReactNode | React.ReactNode[]
   active: boolean
-  imageUrl: string
-  imageAlt: string
+  imageBuilder: ImageBuilder
 }) {
   return (
     <TabPanel className="block col-start-1 row-start-1">
@@ -65,8 +64,10 @@ function ContentPanel({
               exit={{x: 40, opacity: 0}}
               transition={{damping: 0, duration: 0.25}}
               className="mb-6 h-44 lg:mb-14"
-              src={imageUrl}
-              alt={imageAlt}
+              {...getImgProps(imageBuilder, {
+                widths: [180, 360, 540],
+                sizes: ['11rem'],
+              })}
             />
 
             <motion.div
@@ -116,11 +117,7 @@ function ProblemSolutionSection() {
       </div>
 
       <TabPanels className="grid col-span-full order-4 mt-16 lg:col-span-5 lg:col-start-7 lg:mt-0">
-        <ContentPanel
-          active={activeTabIndex === 0}
-          imageUrl={images.skis()}
-          imageAlt={images.skis.alt}
-        >
+        <ContentPanel active={activeTabIndex === 0} imageBuilder={images.skis}>
           <H3>Educational blog</H3>
 
           <Paragraph className="mt-8">
@@ -137,8 +134,7 @@ function ProblemSolutionSection() {
 
         <ContentPanel
           active={activeTabIndex === 1}
-          imageUrl={images.onewheel()}
-          imageAlt={images.onewheel.alt}
+          imageBuilder={images.onewheel}
         >
           <H3>Courses</H3>
 
@@ -154,11 +150,7 @@ function ProblemSolutionSection() {
           </ArrowLink>
         </ContentPanel>
 
-        <ContentPanel
-          active={activeTabIndex === 2}
-          imageUrl={images.kayak()}
-          imageAlt={images.kayak.alt}
-        >
+        <ContentPanel active={activeTabIndex === 2} imageBuilder={images.kayak}>
           <H3>Podcast</H3>
 
           <Paragraph className="mt-8">

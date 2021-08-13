@@ -1,5 +1,7 @@
 import * as React from 'react'
 import {motion, Variants} from 'framer-motion'
+import type {ImageBuilder} from '../images'
+import {getImgProps} from '../images'
 import {ArrowIcon} from './icons/arrow-icon'
 import {H2} from './typography'
 import {ButtonLink} from './button'
@@ -14,16 +16,14 @@ const arrowVariants: Variants = {
 export interface CourseCardProps {
   title: string
   description: string
-  imageUrl: string
+  imageBuilder: ImageBuilder
   courseUrl: string
-  imageAlt: string
 }
 
 function CourseCard({
   title,
   description,
-  imageUrl,
-  imageAlt,
+  imageBuilder,
   courseUrl,
 }: CourseCardProps) {
   return (
@@ -54,9 +54,11 @@ function CourseCard({
 
       <div className="absolute left-16 top-0">
         <img
-          alt={imageAlt}
           className="w-auto h-32 object-contain"
-          src={imageUrl}
+          {...getImgProps(imageBuilder, {
+            widths: [128, 256, 384],
+            sizes: ['8rem'],
+          })}
         />
       </div>
     </div>

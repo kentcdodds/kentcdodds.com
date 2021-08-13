@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {images} from '../../images'
+import {getImgProps, images} from '../../images'
 import {H2} from '../typography'
 import {ArrowLink} from '../arrow-button'
 import {Grid} from '../grid'
@@ -26,11 +26,26 @@ function DiscordSection() {
       </div>
 
       <div className="relative hidden lg:block lg:col-span-6 lg:col-start-7">
-        <div className="aspect-w-3 aspect-h-4 w-full h-full">
+        <div className="w-full h-full">
           <img
             className="w-full h-full rounded-lg object-cover"
-            src={images.kentCodingWithKody()}
-            alt={images.kentCodingWithKody.alt}
+            {...getImgProps(images.kentCodingWithKody, {
+              // this image is hidden at max-width of 1023px
+              // so we set that to 0px and have a width for 1px
+              // to save data on the request
+              widths: [1, 650, 1300, 2600],
+              sizes: [
+                '(max-width: 1023px) 0px',
+                '(min-width:1024px) and (max-width:1620px) 40vw',
+                '630px',
+              ],
+              transformations: {
+                resize: {
+                  type: 'fill',
+                  aspectRatio: '3:4',
+                },
+              },
+            })}
           />
         </div>
         <div className="absolute -left-12 -top-6 flex flex-col space-y-1">
