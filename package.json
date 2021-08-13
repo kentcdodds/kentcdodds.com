@@ -87,7 +87,7 @@
     "match-sorter": "^6.3.0",
     "md5-hash": "^1.0.1",
     "mdast-util-to-hast": "^11.2.0",
-    "mdx-bundler": "^6.0.0",
+    "mdx-bundler": "^6.0.1",
     "metascraper": "^5.24.1",
     "metascraper-description": "^5.24.1",
     "metascraper-image": "^5.24.1",
