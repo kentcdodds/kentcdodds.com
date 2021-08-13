@@ -219,8 +219,6 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
   const {frontmatter, code} = await bundleMDX(indexFile.content, {
     files,
     xdmOptions(options) {
-      // @ts-expect-error not sure why, but mdx-bundler isn't happy with
-      // the imported plugins
       options.remarkPlugins = [
         ...(options.remarkPlugins ?? []),
         remarkSlug,
@@ -228,7 +226,6 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
         gfm,
         ...remarkPlugins,
       ]
-      // @ts-expect-error 🤷‍♂️
       options.rehypePlugins = [
         ...(options.rehypePlugins ?? []),
         ...rehypePlugins,
