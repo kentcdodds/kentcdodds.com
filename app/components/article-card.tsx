@@ -16,7 +16,6 @@ function ArticleCard({
     title = 'Untitled Post',
     // TODO: add a default banner and alt for unbannered articles
     bannerAlt,
-    bannerUrl,
     bannerCloudinaryId,
     bannerCredit,
   },
@@ -50,13 +49,7 @@ function ArticleCard({
               )}
               className="rounded-lg object-cover"
             />
-          ) : (
-            <img
-              className="rounded-lg object-cover"
-              alt={bannerAlt}
-              src={bannerUrl}
-            />
-          )}
+          ) : null}
         </div>
 
         <div className="mt-8 text-blueGray-500 text-xl font-medium lowercase">

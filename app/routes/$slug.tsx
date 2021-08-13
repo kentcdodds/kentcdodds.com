@@ -101,12 +101,6 @@ function MdxScreen({mdxPage}: {mdxPage: MdxPage}) {
               },
             )}
           />
-        ) : frontmatter.bannerUrl ? (
-          <img
-            className="col-span-full mt-10 mx-auto rounded-lg lg:col-span-10 lg:col-start-2"
-            src={frontmatter.bannerUrl}
-            alt={frontmatter.bannerAlt}
-          />
         ) : null}
       </Grid>
 

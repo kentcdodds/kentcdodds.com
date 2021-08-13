@@ -298,13 +298,7 @@ function MdxScreen() {
                 },
               )}
             />
-          ) : (
-            <img
-              className="w-full h-full rounded-lg object-cover"
-              src={frontmatter.bannerUrl}
-              alt={frontmatter.bannerAlt}
-            />
-          )}
+          ) : null}
         </div>
       </Grid>
 

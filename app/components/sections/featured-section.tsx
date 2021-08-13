@@ -1,4 +1,6 @@
 import * as React from 'react'
+import type {ImageBuilder} from '../../images'
+import {getImgProps} from '../../images'
 import {Grid} from '../grid'
 import {H2, H6} from '../typography'
 import {ArrowLink} from '../arrow-button'
@@ -9,6 +11,7 @@ type FeaturedSectionProps = {
   cta?: string
   subTitle?: string
   title?: string
+  imageBuilder?: ImageBuilder
   imageUrl?: string
   imageAlt?: string
   permalink?: string
@@ -19,6 +22,7 @@ function FeaturedSection({
   href,
   caption = 'Featured article',
   cta = 'Read full article',
+  imageBuilder,
   imageUrl,
   imageAlt,
   title = 'Untitled Post',
@@ -51,12 +55,32 @@ function FeaturedSection({
             </div>
 
             <div className="relative col-span-full mt-12 lg:col-span-4 lg:col-start-8">
-              <div className="aspect-w-3 aspect-h-4 w-full">
-                <img
-                  className="rounded-lg object-cover"
-                  src={imageUrl}
-                  alt={imageAlt}
-                />
+              <div className="w-full">
+                {imageBuilder ? (
+                  <img
+                    className="rounded-lg object-cover"
+                    {...getImgProps(imageBuilder, {
+                      widths: [300, 600, 900, 1700, 2500],
+                      sizes: [
+                        '(max-width: 1023px) 80vw',
+                        '(min-width:1024px) and (max-width:1620px) 25vw',
+                        '410px',
+                      ],
+                      transformations: {
+                        resize: {
+                          type: 'fill',
+                          aspectRatio: '3:4',
+                        },
+                      },
+                    })}
+                  />
+                ) : (
+                  <img
+                    className="rounded-lg object-cover"
+                    src={imageUrl}
+                    alt={imageAlt}
+                  />
+                )}
               </div>
               {permalink ? (
                 <ClipboardCopyButton

@@ -31,7 +31,6 @@ type MdxPage = {
     categories?: Array<string>
     date?: string
     bannerCloudinaryId?: string
-    bannerUrl?: string
     bannerCredit?: string
     bannerAlt?: string
     translations?: Array<{

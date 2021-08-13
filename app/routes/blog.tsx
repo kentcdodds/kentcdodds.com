@@ -5,7 +5,7 @@ import type {KCDHandle, MdxListItem} from 'types'
 import formatDate from 'date-fns/format'
 import parseISO from 'date-fns/parseISO'
 import {Grid} from '../components/grid'
-import {images} from '../images'
+import {getImageBuilder, images} from '../images'
 import {H2, H3, H6} from '../components/typography'
 import {SearchIcon} from '../components/icons/search-icon'
 import {ArticleCard} from '../components/article-card'
@@ -225,8 +225,17 @@ function BlogHome() {
                 : 'TBA'
             }
             title={featured.frontmatter.title}
-            imageUrl={featured.frontmatter.bannerUrl}
-            imageAlt={featured.frontmatter.bannerAlt}
+            imageBuilder={
+              featured.frontmatter.bannerCloudinaryId
+                ? getImageBuilder(
+                    featured.frontmatter.bannerCloudinaryId,
+                    featured.frontmatter.bannerAlt ??
+                      featured.frontmatter.bannerCredit ??
+                      featured.frontmatter.title ??
+                      'Post banner',
+                  )
+                : undefined
+            }
             caption="Featured article"
             cta="Read full article"
             slug={featured.slug}
