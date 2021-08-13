@@ -13,6 +13,7 @@ import {Grid} from '../components/grid'
 import {BackLink} from '../components/arrow-button'
 import {H2, H6} from '../components/typography'
 import {pathedRoutes} from '../other-routes.server'
+import {getImageBuilder, getImgProps} from '../images'
 
 type LoaderData = {
   page: MdxPage | null
@@ -79,7 +80,28 @@ function MdxScreen({mdxPage}: {mdxPage: MdxPage}) {
             </H6>
           ) : null}
         </div>
-        {frontmatter.bannerUrl ? (
+        {frontmatter.bannerCloudinaryId ? (
+          <img
+            className="col-span-full mt-10 mx-auto rounded-lg lg:col-span-10 lg:col-start-2"
+            {...getImgProps(
+              getImageBuilder(
+                frontmatter.bannerCloudinaryId,
+                frontmatter.bannerAlt ??
+                  frontmatter.bannerCredit ??
+                  frontmatter.title ??
+                  'Post banner',
+              ),
+              {
+                widths: [280, 560, 840, 1100, 1650, 2500, 2100, 3100],
+                sizes: [
+                  '(max-width:1023px) 80vw',
+                  '(min-width:1024px) and (max-width:1620px) 67vw',
+                  '1100px',
+                ],
+              },
+            )}
+          />
+        ) : frontmatter.bannerUrl ? (
           <img
             className="col-span-full mt-10 mx-auto rounded-lg lg:col-span-10 lg:col-start-2"
             src={frontmatter.bannerUrl}

@@ -30,6 +30,7 @@ type MdxPage = {
     // Post meta
     categories?: Array<string>
     date?: string
+    bannerCloudinaryId?: string
     bannerUrl?: string
     bannerCredit?: string
     bannerAlt?: string

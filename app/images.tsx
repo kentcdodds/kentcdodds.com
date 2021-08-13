@@ -17,12 +17,17 @@ const createImages = <
 ) => {
   const imageBuilders: Record<string, ImageBuilder> = {}
   for (const [name, {id, alt}] of Object.entries(images)) {
-    const builder: ImageBuilder = transformations =>
-      buildImageUrl(id, {transformations})
-    builder.alt = alt
-    imageBuilders[name] = builder
+    imageBuilders[name] = getImageBuilder(id, alt)
   }
   return imageBuilders as {[Name in keyof ImageType]: ImageBuilder}
+}
+
+function getImageBuilder(id: string, alt: string): ImageBuilder {
+  function imageBuilder(transformations?: TransformerOption) {
+    return buildImageUrl(id, {transformations})
+  }
+  imageBuilder.alt = alt
+  return imageBuilder
 }
 
 const images = createImages({
@@ -247,5 +252,5 @@ function getImgProps(
   }
 }
 
-export {images, alexProfiles, getImgProps}
+export {images, alexProfiles, getImgProps, getImageBuilder}
 export type {ImageBuilder}

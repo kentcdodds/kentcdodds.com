@@ -4,6 +4,7 @@ import formatDate from 'date-fns/format'
 import parseISO from 'date-fns/parseISO'
 import type {MdxListItem} from 'types'
 import {useRequestInfo} from '../utils/providers'
+import {getImageBuilder, getImgProps} from '../images'
 import {H3} from './typography'
 import {ClipboardCopyButton} from './clipboard-copy-button'
 
@@ -16,6 +17,8 @@ function ArticleCard({
     // TODO: add a default banner and alt for unbannered articles
     bannerAlt,
     bannerUrl,
+    bannerCloudinaryId,
+    bannerCredit,
   },
 }: MdxListItem) {
   const requestInfo = useRequestInfo()
@@ -28,11 +31,32 @@ function ArticleCard({
         to={`/blog/${slug}`}
       >
         <div className="aspect-w-3 aspect-h-4 focus-ring w-full rounded-lg transition">
-          <img
-            alt={bannerAlt}
-            className="rounded-lg object-cover"
-            src={bannerUrl}
-          />
+          {bannerCloudinaryId ? (
+            <img
+              {...getImgProps(
+                getImageBuilder(
+                  bannerCloudinaryId,
+                  bannerAlt ?? bannerCredit ?? title,
+                ),
+                {
+                  widths: [280, 560, 840, 1100, 1300, 1650],
+                  sizes: [
+                    '(max-width:639px) 80vw',
+                    '(min-width:640px) and (max-width:1023px) 40vw',
+                    '(min-width:1024px) and (max-width:1620px) 25vw',
+                    '420px',
+                  ],
+                },
+              )}
+              className="rounded-lg object-cover"
+            />
+          ) : (
+            <img
+              className="rounded-lg object-cover"
+              alt={bannerAlt}
+              src={bannerUrl}
+            />
+          )}
         </div>
 
         <div className="mt-8 text-blueGray-500 text-xl font-medium lowercase">
