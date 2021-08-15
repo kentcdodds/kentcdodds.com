@@ -62,8 +62,42 @@
 /chats-with-kent-podcast/seasons/03/episodes/serene-yew-provides-mentorship                                                     /chats/03/11/serene-yew-provides-mentorship
 /chats-with-kent-podcast/seasons/03/episodes/tanner-linsley-separates-ui-state-and-server-state                                 /chats/03/12/tanner-linsley-separates-ui-state-and-server-state
 
+/chats-with-kent-podcast                                                                                                        /chats
 # podcast catch-all
 /chats-with-kent-podcast/seasons/:seasonNumber/:path*       /chats/:seasonNumber
 
+/workshops/past                                            /workshops
+
 # some people go to this page for some reason:
 /post/:slug*                                                             /blog/:slug*
+
+############################## some old redirects we should hang onto...
+/blog/always-use-memo-your-context-value                                /blog/how-to-optimize-your-context-value
+/blog/moist-programming                                                 /blog/aha-programming
+/aha                                                                    /blog/aha-programming
+/blog/aha                                                               /blog/aha-programming
+/workshops/advanced-react-component-patterns                            /workshops/advanced-react-patterns
+/workshops/hooks                                                        /workshops/react-hooks
+/workshops/build-react-apps                                             /workshops/build-react-apps-1
+/workshops/build-react-apps-advanced                                    /workshops/build-react-apps-3
+/blog/make-test-utils-for-your-app                                      /blog/test-utils
+/blog/what-code-comments-can-teach-us-about-scaling-a-codebase          /blog/colocation
+/blog/avoid-nesting-in-tests                                            /blog/avoid-nesting-when-youre-testing
+/podcast                                                                /chats-with-kent-podcast
+/blog/state-colocation-will-make-your-app-faster                        /blog/state-colocation-will-make-your-react-app-faster
+/blog/why-your-team-needs-testing-java-script-com                       /blog/why-your-team-needs-testing-javascript-com
+/cohorts                                                                /clubs
+/learning-clubs                                                         /clubs
+/blog/how-to-write-a-react-component-in-type-script                     /blog/how-to-write-a-react-component-in-typescript
+/blog/how-to-write-a-type-narrowing-identity-function-in-typescript     /blog/how-to-write-a-constrained-identity-function-in-typescript
+
+# Joel whoopsies
+/chats-with-kent-podcast/seasons/01/episodes/01                         /chats-with-kent-podcast/seasons/01/episodes/growing-your-skills-and-career-through-teaching-with-ali-spittel
+
+# Rewritten posts
+/blog/application-state-management                                      /blog/application-state-management-with-react
+/blog/how-to-start-testing                                              /blog/how-to-add-testing-to-an-existing-project
+/blog/super-simple-start-to-serverless                                  /blog/super-simple-start-to-netlify-functions
+/blog/unit-vs-integration-vs-e2e-tests                                  /blog/static-vs-unit-vs-integration-vs-e2e-tests
+
+/chats-with-kent-podcast/seasons/01/episodes/creating-successful-mentor-relationships-with-emma-wedekind        /chats-with-kent-podcast/seasons/01/episodes/creating-successful-mentor-relationships-with-emma-bostian
