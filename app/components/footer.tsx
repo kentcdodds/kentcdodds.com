@@ -47,9 +47,9 @@ function GeneralSection() {
     <div>
       <H6 as="div">General</H6>
       <ul className="mt-4">
-        <FooterLink name="Privacy policy" href="/privacy" />
-        <FooterLink name="Terms of use" href="/terms" />
-        <FooterLink name="Code of conduct" href="/coc" />
+        <FooterLink name="Privacy policy" href="/transparency#privacy" />
+        <FooterLink name="Terms of use" href="/transparency#terms" />
+        <FooterLink name="Code of conduct" href="/conduct" />
       </ul>
     </div>
   )

@@ -220,7 +220,7 @@ function AboutIndex() {
           <H2 variant="secondary" as="p" className="mb-14">
             Check out my appearances on podcasts, blog and other cool stuff.
           </H2>
-          <ArrowLink to="/">See all appearances</ArrowLink>
+          <ArrowLink to="/appearances">See all appearances</ArrowLink>
         </div>
       </Grid>
 
@@ -265,7 +265,7 @@ function AboutIndex() {
             Follow the link below to see my links page where I link to a lot
             more.
           </H2>
-          <ArrowLink to="/">{`Let's see those other links`}</ArrowLink>
+          <ArrowLink to="/links">{`Let's see those other links`}</ArrowLink>
         </div>
       </Grid>
 
