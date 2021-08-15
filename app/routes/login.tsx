@@ -1,5 +1,5 @@
 import * as React from 'react'
-import type {ActionFunction, LoaderFunction, ResponseInit} from 'remix'
+import type {ActionFunction, LoaderFunction} from 'remix'
 import {Form, useLoaderData, json, redirect} from 'remix'
 import {getDomainUrl, getErrorMessage} from '../utils/misc'
 import {sendToken, getUser} from '../utils/session.server'
@@ -27,14 +27,8 @@ export const loader: LoaderFunction = async ({request}) => {
     message: loginSession.getMessage(),
     error: loginSession.getError(),
   }
-  const responseInit: ResponseInit = {}
 
-  if (Object.values(data).some(Boolean)) {
-    // no reason to set the cookie if we don't have values in the first place
-    responseInit.headers = {'Set-Cookie': await loginSession.commit()}
-  }
-
-  return json(data, responseInit)
+  return json(data, {headers: await loginSession.getHeaders()})
 }
 
 const EMAIL_SENT_MESSAGE = 'Email sent.'
@@ -50,7 +44,7 @@ export const action: ActionFunction = async ({request}) => {
     loginSession.flashError('A valid email is required')
     return redirect(`/login`, {
       status: 400,
-      headers: {'Set-Cookie': await loginSession.commit()},
+      headers: await loginSession.getHeaders(),
     })
   }
 
@@ -59,13 +53,13 @@ export const action: ActionFunction = async ({request}) => {
     await sendToken({emailAddress, domainUrl})
     loginSession.flashMessage(EMAIL_SENT_MESSAGE)
     return redirect(`/login`, {
-      headers: {'Set-Cookie': await loginSession.commit()},
+      headers: await loginSession.getHeaders(),
     })
   } catch (e: unknown) {
     loginSession.flashError(getErrorMessage(e))
     return redirect(`/login`, {
       status: 400,
-      headers: {'Set-Cookie': await loginSession.commit()},
+      headers: await loginSession.getHeaders(),
     })
   }
 }
