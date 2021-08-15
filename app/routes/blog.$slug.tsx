@@ -20,7 +20,7 @@ import {
   getTotalPostReads,
   getBlogRecommendations,
 } from '../utils/blog.server'
-import {FourOhFour} from '../components/errors'
+import {FourOhFour, ServerError} from '../components/errors'
 import {externalLinks} from '../external-links'
 import {TeamStats} from '../components/team-stats'
 import type {Timings} from '../utils/metrics.server'
@@ -43,7 +43,6 @@ type LoaderData = {
 }
 
 export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
-  throw new Error('ah')
   const timings: Timings = {}
   const page = await getMdxPage(
     {
@@ -379,4 +378,9 @@ function MdxScreen() {
       />
     </>
   )
+}
+
+export function ErrorBoundary({error}: {error: Error}) {
+  console.error(error)
+  return <ServerError />
 }

@@ -20,6 +20,7 @@ import {PlusIcon} from '../components/icons/plus-icon'
 import {Button} from '../components/button'
 import type {Timings} from '../utils/metrics.server'
 import {getServerTimeHeader} from '../utils/metrics.server'
+import {ServerError} from '../components/errors'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => [
@@ -309,3 +310,8 @@ function BlogHome() {
 }
 
 export default BlogHome
+
+export function ErrorBoundary({error}: {error: Error}) {
+  console.error(error)
+  return <ServerError />
+}
