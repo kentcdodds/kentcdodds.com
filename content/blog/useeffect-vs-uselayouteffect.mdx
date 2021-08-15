@@ -64,12 +64,12 @@ sure it's up-to-date before any other code runs. For example:
 ```js
 const ref = React.useRef()
 React.useEffect(() => {
-  ref.value = 'some value'
+  ref.current = 'some value'
 })
 
 // then, later in another hook or something
 React.useLayoutEffect(() => {
-  console.log(ref.value) // <-- this logs an old value because this runs first!
+  console.log(ref.current) // <-- this logs an old value because this runs first!
 })
 ```
 
