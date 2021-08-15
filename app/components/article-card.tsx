@@ -7,6 +7,7 @@ import {useRequestInfo} from '../utils/providers'
 import {getImageBuilder, getImgProps} from '../images'
 import {H3} from './typography'
 import {ClipboardCopyButton} from './clipboard-copy-button'
+import {MissingSomething} from './kifs'
 
 function ArticleCard({
   readTime,
@@ -14,7 +15,6 @@ function ArticleCard({
   frontmatter: {
     date = formatDate(new Date(), 'yyyy-MM-ii'),
     title = 'Untitled Post',
-    // TODO: add a default banner and alt for unbannered articles
     bannerAlt,
     bannerCloudinaryId,
     bannerCredit,
@@ -49,7 +49,9 @@ function ArticleCard({
               )}
               className="rounded-lg object-cover"
             />
-          ) : null}
+          ) : (
+            <MissingSomething aspectRatio="3:4" />
+          )}
         </div>
 
         <div className="mt-8 text-blueGray-500 text-xl font-medium lowercase">

@@ -3,10 +3,11 @@ import * as React from 'react'
 import errorStack from 'error-stack-parser'
 import clsx from 'clsx'
 import type {MdxListItem} from 'types'
-import {images} from '../images'
 import {HeroSection} from './sections/hero-section'
+import type {HeroSectionProps} from './sections/hero-section'
 import {BlogSection} from './sections/blog-section'
 import {H2, H6} from './typography'
+import {Grimmacing, MissingSomething} from './kifs'
 
 function RedBox({error}: {error: Error}) {
   const [isVisible, setIsVisible] = React.useState(true)
@@ -50,23 +51,16 @@ function RedBox({error}: {error: Error}) {
 }
 
 function ErrorPage({
-  title,
-  subtitle,
   error,
   articles,
+  heroProps,
 }: {
-  title: string
-  subtitle: string
   error?: Error
   articles?: Array<MdxListItem>
+  heroProps: HeroSectionProps
 }) {
-  const props = {
-    title,
-    subtitle,
-    imageBuilder: images.bustedOnewheel,
-  }
   if (articles?.length) {
-    Object.assign(props, {
+    Object.assign(heroProps, {
       arrowUrl: '#articles',
       arrowLabel: 'But wait, there is more!',
     })
@@ -81,8 +75,8 @@ function ErrorPage({
             padding: 30,
           }}
         >
-          <h1 style={{fontSize: '2em'}}>{title}</h1>
-          <p style={{fontSize: '1.5em'}}>{subtitle}</p>
+          <h1 style={{fontSize: '2em'}}>{heroProps.title}</h1>
+          <p style={{fontSize: '1.5em'}}>{heroProps.subtitle}</p>
           <small>
             Also, this site works much better with JavaScript enabled...
           </small>
@@ -92,7 +86,7 @@ function ErrorPage({
         {error && process.env.NODE_ENV === 'development' ? (
           <RedBox error={error} />
         ) : null}
-        <HeroSection {...props} />
+        <HeroSection {...heroProps} />
 
         {articles?.length ? (
           <>
@@ -116,9 +110,12 @@ function FourOhFour({articles}: {articles?: Array<MdxListItem>}) {
 
   return (
     <ErrorPage
-      title="404 - Oh no, you found a page that's missing stuff."
-      subtitle={`"${pathname}" is not a page on kentcdodds.com. So sorry.`}
       articles={articles}
+      heroProps={{
+        title: "404 - Oh no, you found a page that's missing stuff.",
+        subtitle: `"${pathname}" is not a page on kentcdodds.com. So sorry.`,
+        image: <MissingSomething className="rounded-lg" aspectRatio="3:4" />,
+      }}
     />
   )
 }
@@ -136,10 +133,13 @@ function ServerError({
 
   return (
     <ErrorPage
-      title="500 - Oh no, something did not go well."
-      subtitle={`"${pathname}" is currently not working. So sorry.`}
       error={error}
       articles={articles}
+      heroProps={{
+        title: '500 - Oh no, something did not go well.',
+        subtitle: `"${pathname}" is currently not working. So sorry.`,
+        image: <Grimmacing className="rounded-lg" aspectRatio="3:4" />,
+      }}
     />
   )
 }

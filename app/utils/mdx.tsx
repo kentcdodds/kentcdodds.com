@@ -14,6 +14,9 @@ type Options = {forceFresh?: boolean; request?: Request; timings?: Timings}
 
 const getCompiledKey = (contentDir: string, slug: string) =>
   `${contentDir}:${slug}:compiled`
+const checkCompiledValue = (value: unknown) =>
+  typeof value === 'object' &&
+  (value === null || ('code' in value && 'frontmatter' in value))
 
 async function getMdxPage(
   {
@@ -30,6 +33,7 @@ async function getMdxPage(
     // reusing the same key as compiledMdxCached because we just return that
     // exact same value. Cachifying this allows us to skip getting the cached files
     key: getCompiledKey(contentDir, slug),
+    checkValue: checkCompiledValue,
     getFreshValue: async () => {
       const pageFiles = await downloadMdxFilesCached(contentDir, slug, options)
       const page = await compileMdxCached(contentDir, slug, pageFiles, options)
@@ -79,7 +83,7 @@ async function getMdxDirList(
     forceFresh,
     request,
     timings,
-    checkValue: (value: unknown) => Array.isArray(value) && value.length > 0,
+    checkValue: (value: unknown) => Array.isArray(value),
     getFreshValue: async () => {
       const fullContentDirPath = `content/${contentDir}`
       const dirList = (await downloadDirList(fullContentDirPath))
@@ -108,7 +112,7 @@ async function downloadMdxFilesCached(
     forceFresh,
     request,
     timings,
-    checkValue: (value: unknown) => Array.isArray(value) && value.length > 0,
+    checkValue: (value: unknown) => Array.isArray(value),
     getFreshValue: async () =>
       downloadMdxFileOrDirectory(`${contentDir}/${slug}`),
   })
@@ -125,7 +129,7 @@ async function compileMdxCached(
     forceFresh,
     request,
     timings,
-    checkValue: (value: unknown) => value != undefined,
+    checkValue: checkCompiledValue,
     getFreshValue: async () => {
       const page = await compileMdx<MdxPage['frontmatter']>(slug, files)
       if (page) {

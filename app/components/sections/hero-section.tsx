@@ -9,7 +9,7 @@ import {H2} from '../typography'
 import {ArrowLink} from '../arrow-button'
 import {Grid} from '../grid'
 
-type HeroSectionProps = {
+export type HeroSectionProps = {
   title: string
   subtitle?: string
   action?: React.ReactNode
