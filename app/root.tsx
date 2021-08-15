@@ -132,7 +132,7 @@ export const loader: LoaderFunction = async ({request}) => {
   const session = await getSession(request)
   const themeSession = await getThemeSession(request)
   const clientSession = await getClientSession(request)
-  const {getMagicLink, getEmail} = await getLoginInfoSession(request)
+  const loginInfoSession = await getLoginInfoSession(request)
 
   const user = await time({
     name: 'getUser in root loader',
@@ -141,19 +141,14 @@ export const loader: LoaderFunction = async ({request}) => {
     fn: () => session.getUser(),
   })
 
-  const magicLink = getMagicLink()
+  const magicLink = loginInfoSession.getMagicLink()
   let hasActiveMagicLink = false
   if (typeof magicLink === 'string') {
     try {
       await validateMagicLink(magicLink)
       hasActiveMagicLink = true
     } catch {
-      // TODO: should we update the cookie to remove the magic link here?
-      // trouble is we could get into a race condition where the root loader
-      // says we need to commit a cookie, but then another loader running in
-      // parallel says we need to commit a cookie as well and whichever finishes
-      // last wins.
-      // so for now, we'll just ignore the error
+      loginInfoSession.unsetMagicLink()
     }
   }
 
@@ -173,7 +168,7 @@ export const loader: LoaderFunction = async ({request}) => {
       origin: getDomainUrl(request),
       searchParams: new URL(request.url).searchParams.toString(),
       session: {
-        email: getEmail(),
+        email: loginInfoSession.getEmail(),
         hasActiveMagicLink,
         theme: themeSession.getTheme(),
       },
@@ -188,6 +183,7 @@ export const loader: LoaderFunction = async ({request}) => {
   // different.
   await session.getHeaders(headers)
   await clientSession.getHeaders(headers)
+  await loginInfoSession.getHeaders(headers)
 
   return json(data, {headers})
 }
