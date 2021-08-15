@@ -75,7 +75,7 @@ export const action: ActionFunction = async ({request}) => {
       'Sign in link invalid. Please request a new one.',
     )
     return redirect('/login', {
-      headers: {'Set-Cookie': await loginInfoSession.commit()},
+      headers: await loginInfoSession.getHeaders(),
     })
   }
 
@@ -110,7 +110,7 @@ export const action: ActionFunction = async ({request}) => {
           'There was a problem creating your account. Please try again.',
         )
         return redirect('/login', {
-          headers: {'Set-Cookie': await loginInfoSession.commit()},
+          headers: await loginInfoSession.getHeaders(),
         })
       }
     },
@@ -127,9 +127,7 @@ export const loader: LoaderFunction = async ({request}) => {
     loginInfoSession.clean()
     loginInfoSession.flashError('Invalid magic link. Try again.')
     return redirect('/login', {
-      headers: {
-        'Set-Cookie': await loginInfoSession.commit(),
-      },
+      headers: await loginInfoSession.getHeaders(),
     })
   }
 
@@ -139,9 +137,7 @@ export const loader: LoaderFunction = async ({request}) => {
     teamsInOrder: shuffle(teams),
   }
   return json(values, {
-    headers: {
-      'Set-Cookie': await loginInfoSession.commit(),
-    },
+    headers: await loginInfoSession.getHeaders(),
   })
 }
 

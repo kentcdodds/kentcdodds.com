@@ -22,7 +22,7 @@ export const loader: LoaderFunction = async ({request}) => {
     } else {
       loginInfoSession.setMagicLink(request.url)
       return redirect('/signup', {
-        headers: {'Set-Cookie': await loginInfoSession.commit()},
+        headers: await loginInfoSession.getHeaders(),
       })
     }
   } catch (error: unknown) {
@@ -32,7 +32,7 @@ export const loader: LoaderFunction = async ({request}) => {
       'Sign in link invalid. Please request a new one.',
     )
     return redirect('/login', {
-      headers: {'Set-Cookie': await loginInfoSession.commit()},
+      headers: await loginInfoSession.getHeaders(),
     })
   }
 }
