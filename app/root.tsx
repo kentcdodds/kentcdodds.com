@@ -25,6 +25,7 @@ import tailwindStyles from './styles/tailwind.css'
 import vendorStyles from './styles/vendors.css'
 import appStyles from './styles/app.css'
 import proseStyles from './styles/prose.css'
+import noScriptStyles from './styles/no-script.css'
 import {
   useTheme,
   ThemeProvider,
@@ -318,6 +319,9 @@ function App() {
             --color-team-current: var(--color-team-${team.toLowerCase()}); 
           }
         `}</style>
+        <noscript>
+          <link rel="stylesheet" href={noScriptStyles} />
+        </noscript>
         <NonFlashOfWrongThemeEls
           ssrTheme={Boolean(data.requestInfo.session.theme)}
         />

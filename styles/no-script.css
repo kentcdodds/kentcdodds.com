@@ -1,0 +1,27 @@
+/*
+We animate in some stuff with framer-motion and a bunch of our elements use
+framer-motion to animate hover/focus states. This works great and looks nice,
+but if JavaScript is disabled things could be invisible or not accessible.
+This file is included in a <noscript> tag in the head of the page so the page
+will work if JavaScript is disabled.
+
+The only real time JavaScript will be disabled on our site is when people want
+to test the claim that it works without JavaScript 😆.
+
+So let's make it work without JavaScript as much as possible.
+*/
+
+/* This is mostly for the hero image */
+[style*='opacity:0'] {
+  opacity: unset !important;
+  transform: unset !important;
+}
+a:not(.underlined):hover,
+a:not(.underlined):focus {
+  text-decoration: underline !important;
+}
+
+/* This is for anything that just won't work without JavaScript */
+.noscript-hidden {
+  display: none !important;
+}

@@ -155,7 +155,7 @@ function MobileMenuList() {
                   {link.name}
                 </MenuLink>
               ))}
-              <div className="py-9 text-center">
+              <div className="noscript-hidden py-9 text-center">
                 <DarkModeToggle variant="labelled" />
               </div>
             </MenuItems>
@@ -347,7 +347,7 @@ function Navbar() {
           <div className="block lg:hidden">
             <MobileMenu />
           </div>
-          <div className="hidden lg:block">
+          <div className="noscript-hidden hidden lg:block">
             <DarkModeToggle />
           </div>
 

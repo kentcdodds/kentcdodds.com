@@ -75,7 +75,7 @@ export default function Screen() {
             </div>
           </div>
           <img
-            className="w-full rounded-lg object-cover"
+            className="w-full h-16 rounded-lg object-cover"
             src={episode.image}
             alt={episode.title}
           />
