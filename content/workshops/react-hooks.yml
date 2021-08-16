@@ -1,5 +1,5 @@
 title: React Hooks
-description:
+description: >-
   In this workshop, you'll learn everything you need to be effective with the
   fundamental building block of React applications. When you're finished, you'll
   go back to your applications and refactor your components to be simpler, more
@@ -55,11 +55,3 @@ prerequisite:
   Attend my Advanced React Hooks Workshop or have the equivalent experience. You
   should be experienced with useContext and useReducer (experience with useMemo
   and useCallback is a bonus).
-
-testimonials:
-  - cloudinaryId: kentcdodds.com/content/workshops/react-hooks/lego
-    author: Person 1
-    company: Freelance Figurine
-    testimonial:
-      Mauris auctor nulla at felis placerat, ut elementum urna commodo. Aenean
-      et rutrum quam. Etiam odio massa.

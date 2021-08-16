@@ -41,12 +41,12 @@ function TestimonialSection({
       {Array.from({
         length: testimonials.length > 3 ? 3 : testimonials.length,
       }).map((_, index) => {
-        const testimonial =
-          testimonials[(page * 3 + index) % testimonials.length]
+        const testimonialIndex = (page * 3 + index) % testimonials.length
+        const testimonial = testimonials[testimonialIndex]
         if (!testimonial) return null
         return (
           <div
-            key={index}
+            key={testimonialIndex}
             className={clsx(
               'bg-secondary flex flex-col col-span-4 justify-between mb-8 p-16 rounded-lg lg:mb-0',
               {

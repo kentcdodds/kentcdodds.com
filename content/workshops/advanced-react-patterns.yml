@@ -1,11 +1,12 @@
 title: Advanced React Patterns
-description:
+description: >-
   With this workshop, you'll not only learn great patterns you can use but also
   the strengths and weaknesses of each, so you know which to reach for to
   provide your components the flexibility and power you need.
 meta:
   keywords:
     - react
+    - react patterns
 categories:
   - react
 convertKitTag: '896446'
