@@ -7,6 +7,8 @@ import {
   AccordionPanel,
   useAccordionItemContext,
 } from '@reach/accordion'
+import {json, useLoaderData} from 'remix'
+import type {KCDLoader} from 'types'
 import {getDiscordAuthorizeURL} from '../utils/misc'
 import {useOptionalUser, useRequestInfo} from '../utils/providers'
 import {ArrowLink} from '../components/arrow-button'
@@ -24,6 +26,23 @@ import {CourseSection} from '../components/sections/course-section'
 import {FeatureCard} from '../components/feature-card'
 import {HeroSection} from '../components/sections/hero-section'
 import {HeaderSection} from '../components/sections/header-section'
+import {getTestimonials} from '../utils/testimonials.server'
+import type {Testimonial} from '../utils/testimonials.server'
+
+type LoaderData = {
+  testimonials: Array<Testimonial>
+}
+
+export const loader: KCDLoader = async ({request}) => {
+  const testimonials = await getTestimonials({
+    request,
+    subjects: ['Discord Community'],
+    categories: ['community'],
+  })
+
+  const data: LoaderData = {testimonials}
+  return json(data)
+}
 
 export interface CategoryCardProps {
   title: string
@@ -90,14 +109,6 @@ function CategoryCard(props: CategoryCardProps) {
   )
 }
 
-const testimonials = Array.from({length: 6}).map((_, idx) => ({
-  cloudinaryId: 'kentcdodds.com/content/workshops/react-hooks/lego',
-  author: `Person ${idx + 1}`,
-  company: 'Freelance Figurine',
-  testimonial:
-    'Mauris auctor nulla at felis placerat, ut elementum urna commodo. Aenean et rutrum quam. Etiam odio massa.',
-}))
-
 const categories = Array.from({length: 8}).map((_, idx) => ({
   number: idx + 1,
   title: ['Development Livestreams', 'Learning clubs'][idx % 2] as string,
@@ -121,6 +132,7 @@ function partitionCategories<T>(entries: T[]): [T[], T[]] {
 }
 
 export default function Discord() {
+  const data = useLoaderData<LoaderData>()
   const user = useOptionalUser()
   const requestInfo = useRequestInfo()
   const authorizeURL = user
@@ -337,7 +349,7 @@ export default function Discord() {
         </div>
 
         <TestimonialSection
-          testimonials={testimonials}
+          testimonials={data.testimonials}
           className="mb-24 lg:mb-64"
         />
 

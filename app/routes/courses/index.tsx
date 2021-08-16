@@ -1,16 +1,29 @@
 import * as React from 'react'
-import {json} from 'remix'
-
+import {json, useLoaderData} from 'remix'
+import type {KCDLoader} from 'types'
 import {Grid} from '../../components/grid'
 import {getImgProps, images} from '../../images'
 import {H2, H3, H6, Paragraph} from '../../components/typography'
-import type {KCDLoader} from '../../../types'
 import {ArrowButton, ArrowLink} from '../../components/arrow-button'
 import {CourseCard, CourseCardProps} from '../../components/course-card'
 import {HeroSection} from '../../components/sections/hero-section'
+import {TestimonialSection} from '../../components/sections/testimonial-section'
+import {getTestimonials} from '../../utils/testimonials.server'
+import type {Testimonial} from '../../utils/testimonials.server'
+import {Spacer} from '../../components/spacer'
 
-export const loader: KCDLoader = async () => {
-  return json({})
+type LoaderData = {
+  testimonials: Array<Testimonial>
+}
+
+export const loader: KCDLoader = async ({request}) => {
+  const testimonials = await getTestimonials({
+    request,
+    categories: ['courses', 'teaching'],
+  })
+
+  const data: LoaderData = {testimonials}
+  return json(data)
 }
 
 export function meta() {
@@ -48,6 +61,7 @@ function SmallCourseCard({
 }
 
 function CoursesHome() {
+  const data = useLoaderData<LoaderData>()
   return (
     <>
       <HeroSection
@@ -84,7 +98,7 @@ function CoursesHome() {
 
       <h2 className="sr-only">Courses</h2>
 
-      <Grid className="gap-y-4 mb-24 lg:mb-64">
+      <Grid className="gap-y-4">
         <div className="col-span-full lg:col-span-6">
           <CourseCard
             title="Epic React"
@@ -160,6 +174,12 @@ function CoursesHome() {
           description="“Feel free to submit a PR!” - words often found in GitHub issues, but met with confusion and fear by many. Getting started with contributing open source is not always straightforward and can be tricky. With this series, you'll be equipped with the the tools, knowledge, and understanding you need to be productive and contribute to the wonderful world of open source projects."
         />
       </Grid>
+
+      <Spacer size="medium" />
+
+      <TestimonialSection testimonials={data.testimonials} />
+
+      <Spacer size="medium" />
 
       <Grid>
         <div className="col-span-full lg:col-span-5">

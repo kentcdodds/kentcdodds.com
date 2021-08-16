@@ -1,75 +1,91 @@
 import clsx from 'clsx'
 import * as React from 'react'
-import type {Testimonial} from 'types'
+import type {Testimonial} from '../../utils/testimonials.server'
 import {getImageBuilder, getImgProps} from '../../images'
-import {H2, H4} from '../typography'
+import {H2} from '../typography'
 import {ArrowButton} from '../arrow-button'
 import {Grid} from '../grid'
-
-interface TestimonialSectionProps {
-  testimonials: Array<Testimonial>
-  className?: string
-}
 
 function TestimonialSection({
   testimonials,
   className,
-}: TestimonialSectionProps) {
+  nested,
+}: {
+  testimonials: Array<Testimonial>
+  className?: string
+  nested?: boolean
+}) {
+  const [page, setPage] = React.useState(0)
+
   return (
-    <Grid className={className}>
+    <Grid className={className} nested={nested}>
       <div className="flex flex-col col-span-full mb-20 space-y-10 lg:flex-row lg:items-end lg:justify-between lg:space-y-0">
         <div className="space-y-2 lg:space-y-0">
-          <H2>Don't just take my word for it.</H2>
+          <H2>{`Don't just take my word for it.`}</H2>
           <H2 variant="secondary" as="p">
-            What participants have to say.
+            {`What participants have to say.`}
           </H2>
         </div>
 
-        {/* TODO: either connect these button, or add a "testimonial page" and turn this in a "show all testimonials" link */}
-        <div className="hidden col-span-2 col-start-11 items-end justify-end mb-16 space-x-3 lg:flex">
-          <ArrowButton direction="left" />
-          <ArrowButton direction="right" />
-        </div>
+        {testimonials.length > 3 ? (
+          <div className="col-span-2 col-start-11 items-end justify-end mb-16 space-x-3">
+            <ArrowButton direction="left" onClick={() => setPage(p => p - 1)} />
+            <ArrowButton
+              direction="right"
+              onClick={() => setPage(p => p + 1)}
+            />
+          </div>
+        ) : null}
       </div>
 
-      {testimonials.slice(0, 3).map((testimonial, idx) => (
-        <div
-          key={idx}
-          className={clsx(
-            'bg-secondary flex flex-col col-span-4 justify-between mb-8 p-16 rounded-lg lg:mb-0',
-            {
-              'hidden lg:block': idx >= 2,
-            },
-          )}
-        >
-          <H4 as="p" className="mb-24">
-            “{testimonial.testimonial}”
-          </H4>
-          <div className="flex items-center">
-            <img
-              className="flex-none mr-8 w-16 h-16 rounded-full object-cover"
-              {...getImgProps(
-                getImageBuilder(
-                  testimonial.cloudinaryId,
-                  `${testimonial.author} profile`,
-                ),
-                {
-                  widths: [64, 128, 256],
-                  sizes: ['4rem'],
-                },
-              )}
-            />
-            <div>
-              <p className="text-primary mb-2 text-xl font-medium leading-none">
-                {testimonial.author}
-              </p>
-              <p className="text-secondary text-xl leading-none">
-                {testimonial.company}
-              </p>
+      {Array.from({length: 3}).map((_, index) => {
+        const testimonial =
+          testimonials[(page * 3 + index) % testimonials.length]
+        if (!testimonial) return null
+        return (
+          <div
+            key={index}
+            className={clsx(
+              'bg-secondary flex flex-col col-span-4 justify-between mb-8 p-16 rounded-lg lg:mb-0',
+              {
+                'hidden lg:flex': index >= 2,
+              },
+            )}
+          >
+            <p className="mb-14 text-base">“{testimonial.testimonial}”</p>
+            <div className="flex items-center">
+              <img
+                className="flex-none mr-8 w-16 h-16 rounded-full object-cover"
+                {...getImgProps(
+                  getImageBuilder(
+                    testimonial.cloudinaryId,
+                    `${testimonial.author} profile`,
+                  ),
+                  {
+                    widths: [64, 128, 256],
+                    sizes: ['4rem'],
+                    transformations: {
+                      gravity: 'face:center',
+                      resize: {
+                        aspectRatio: '1:1',
+                        type: 'fill',
+                      },
+                    },
+                  },
+                )}
+              />
+              <div>
+                <p className="text-primary mb-2 text-lg font-medium leading-none">
+                  {testimonial.author}
+                </p>
+                <p className="text-secondary text-sm leading-none">
+                  {testimonial.company}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        )
+      })}
     </Grid>
   )
 }

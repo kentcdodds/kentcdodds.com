@@ -17,6 +17,12 @@ import {getServerTimeHeader} from '../../utils/metrics.server'
 import {getWorkshop, getWorkshops} from '../../utils/workshops.server'
 import {useWorkshops} from '../../utils/providers'
 import {ConvertKitForm} from '../../convertkit/form'
+import {getTestimonials} from '../../utils/testimonials.server'
+import type {
+  Testimonial,
+  TestimonialSubject,
+  TestimonialCategory,
+} from '../../utils/testimonials.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
@@ -30,15 +36,27 @@ export const handle: KCDHandle = {
   },
 }
 
-type LoaderData = {blogRecommendations: Array<MdxListItem>}
+type LoaderData = {
+  testimonials: Array<Testimonial>
+  blogRecommendations: Array<MdxListItem>
+}
 
 export const loader: KCDLoader<{slug: string}> = async ({params, request}) => {
   const timings: Timings = {}
   const workshop = await getWorkshop(params.slug, {request, timings})
+  const testimonials = await getTestimonials({
+    request,
+    subjects: [`workshop: ${params.slug}` as TestimonialSubject],
+    categories: [
+      'workshop',
+      ...((workshop?.categories ?? []) as Array<TestimonialCategory>),
+    ],
+  })
   const headers = {'Server-Timing': getServerTimeHeader(timings)}
 
   return json(
     {
+      testimonials,
       blogRecommendations: workshop
         ? await getBlogRecommendations(request)
         : [],
@@ -66,8 +84,8 @@ export const meta: MetaFunction = ({parentsData, params}) => {
 export default function WorkshopScreenBase() {
   const loaderData = useLoaderData<LoaderData>()
   const params = useParams()
-  const data = useWorkshops()
-  const workshop = data.workshops.find(w => w.slug === params.slug)
+  const {workshops} = useWorkshops()
+  const workshop = workshops.find(w => w.slug === params.slug)
 
   if (workshop) {
     return <WorkshopScreen />
@@ -147,8 +165,9 @@ function restartArray<ArrayType>(array: Array<ArrayType>, startIndex: number) {
 
 function WorkshopScreen() {
   const params = useParams()
-  const data = useWorkshops()
-  const workshop = data.workshops.find(w => w.slug === params.slug)
+  const {workshopEvents, workshops} = useWorkshops()
+  const data = useLoaderData<LoaderData>()
+  const workshop = workshops.find(w => w.slug === params.slug)
 
   if (!workshop) {
     console.error(
@@ -157,18 +176,18 @@ function WorkshopScreen() {
     return <div>Oh no... Email Kent</div>
   }
 
-  const workshopEvent = data.workshopEvents.find(
+  const workshopEvent = workshopEvents.find(
     e => e.metadata.workshopSlug === params.slug,
   )
 
   // restartArray allows us to make sure that the same workshops don't always appear in the list
   // without having to do something complicated to get a deterministic selection between server/client.
   const otherWorkshops = restartArray(
-    data.workshops.filter(w => w.slug !== workshop.slug),
-    data.workshops.indexOf(workshop),
+    workshops.filter(w => w.slug !== workshop.slug),
+    workshops.indexOf(workshop),
   )
   const scheduledWorkshops = otherWorkshops.filter(w =>
-    data.workshopEvents.find(e => e.metadata.workshopSlug === w.slug),
+    workshopEvents.find(e => e.metadata.workshopSlug === w.slug),
   )
   const similarWorkshops = otherWorkshops.filter(w =>
     w.categories.some(c => workshop.categories.includes(c)),
@@ -310,10 +329,10 @@ function WorkshopScreen() {
         </div>
       </Grid>
 
-      {workshop.testimonials.length ? (
+      {data.testimonials.length ? (
         <>
           <TestimonialSection
-            testimonials={workshop.testimonials}
+            testimonials={data.testimonials}
             className="mb-10 lg:mb-64"
           />
 
@@ -362,7 +381,7 @@ function WorkshopScreen() {
             <div key={idx} className="col-span-full mb-4 md:col-span-4 lg:mb-6">
               <WorkshopCard
                 workshop={altWorkshop}
-                workshopEvent={data.workshopEvents.find(
+                workshopEvent={workshopEvents.find(
                   e => e.metadata.workshopSlug === altWorkshop.slug,
                 )}
               />

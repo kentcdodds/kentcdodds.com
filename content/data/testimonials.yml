@@ -1,0 +1,194 @@
+# Please don't be offended by the "priority" on these!
+# The priority allows me to surface some particular testimonials with a
+# slightly greater frequency. I appreciate all the testimonials listed here!
+# Some reasons a testimonial gets a higher priority:
+# - Impact-focused ("because of this, I got this" > "it's great!")
+# - Systemically excluded individuals
+# - Good photos
+
+- author: Vasilis Drosatos
+  priority: 2
+  subject: EpicReact.dev
+  cloudinaryId: kentcdodds.com/testimonials/vasileios-drosatos
+  company: Senior Frontend Developer
+  testimonial: >-
+    Even with nearly 2 years of React experience, EpicReact.dev helped me to
+    refresh and even learn better the basic stuff and apply more advanced
+    patterns to real use cases.
+
+- author: Mert Efe Işıkgör
+  priority: 3
+  subject: Discord Community
+  cloudinaryId: kentcdodds.com/testimonials/efeisikgor
+  company: JavaScript Developer at Byte24
+  testimonial: >-
+    I've never been in such a helpful community before. The people there are
+    truly sharing what they know without holding back and answering questions
+    all the time. I was able to solve my daily tasks and grow rapidly in my
+    progression towards higher salary and mastery.
+
+- author: Josh Payette
+  priority: 3
+  subject: EpicReact.dev
+  cloudinaryId: kentcdodds.com/testimonials/josh-payette
+  company: Software Developer
+  testimonial: >-
+    Amazing course! I knew almost immediately that the cost was justified. I'm
+    self-taught, and Kent clearly and concisely filled in gaps in my knowledge
+    and corrected assumptions I incorrectly relied on.
+
+- author: Ashwin Khode
+  priority: 1
+  subject: Discord Community
+  cloudinaryId: kentcdodds.com/testimonials/ashwin-khode
+  company: Student
+  testimonial: >-
+    KCD Discord Community is the best community out there. When I first joined
+    the server I was amazed by the environment that I was in! Curated channels,
+    great moderation, and great people to help you all the time. It made me feel
+    like home <3
+
+- author: Bernard Baker
+  priority: 3
+  subject: TestingJavaScript.com
+  cloudinaryId: kentcdodds.com/testimonials/bernard-baker
+  company: Front End Engineer
+  testimonial: >-
+    This course gave me insight to testing like never before. We learned how to
+    build an assertion library! And I haven't even finished it yet. The videos
+    are really easy to code along and transcripts are a great read while
+    travelling. Highly recommended to you and your colleagues.
+
+- author: Arpan Chattopadhyay
+  priority: 4
+  subject: Discord Community
+  cloudinaryId: kentcdodds.com/testimonials/arpanchattopadhyay
+  company: Software Engineer, Healthifyme
+  testimonial: >-
+    This community helped me land my first software engineering job! Being
+    active in the community, discussing problems and helping people has been the
+    best decision I could make professionally. On this journey I have made some
+    really great friends too and I could keep going about all the nice things
+    that come with the community. You really have to be a part of it to
+    experience it.
+
+- author: Jared Jardine
+  priority: 2
+  subject: TestingJavaScript.com
+  cloudinaryId: kentcdodds.com/testimonials/jared-jardine
+  company: Senior Software Engineer - Frontend
+  testimonial: >-
+    Incredibly good training videos. Kent C. Dodds not only shows you how, he
+    explains why and does so in a way that is easy to consume without ever being
+    boring. Definitely recommended.
+
+- author: Conor Gaughan
+  priority: 4
+  subject: EpicReact.dev
+  cloudinaryId: kentcdodds.com/testimonials/conor-gaughan
+  company: Forge Labs LLC
+  testimonial: >-
+    I can't say enough positive things about Epic React. I've not only improved
+    so many gaps I've had with React but have finally found how I learn best,
+    well, Kent figured it out with how he created this course. After the Epic
+    React I felt confident enough to begin freelancing and just shipped my first
+    client site!
+
+- author: Diego Alvarez
+  priority: 4
+  subject: EpicReact.dev
+  cloudinaryId: kentcdodds.com/testimonials/diego-alvarez
+  company: Ssr React Developer
+  testimonial: >-
+    The confidence and the solid concepts that I ve learned in EpicReact made me
+    land my first react job this month. I nailed the technical interview and
+    felt so grateful to Kent! Thanks my friend!
+
+- author: Jacob M-G Evans
+  priority: 4
+  subject: EpicReact.dev
+  cloudinaryId: kentcdodds.com/testimonials/jacob-m-g-evans
+  company: Sr. FullStack Engineer
+  testimonial: >-
+    I used Epic React not to just upskill myself but I took the knowledge gained
+    from the course and added them to patterns I showed coworkers and mentees.
+    The teaching and learning approach that the platform implements utilizes
+    some of the best learning and memory techniques available from modern
+    research in those fields.
+
+- author: Jack
+  priority: 4
+  subject: EpicReact.dev
+  cloudinaryId: kentcdodds.com/testimonials/jack
+  company: Junior Software Engineer
+  testimonial: >-
+    Whilst job searching, I knew I had to improve my React skills beyond what
+    I'd picked up doing my own projects. Thanks to Kent's workshop, I was able
+    to fill in any gaps in my knowledge, which led to me being hired for my
+    first Software Engineering role. His teachings are cohesive and objective,
+    pointing out best practices and their inevitable drawbacks. I look forward
+    to seeing his future work for the developer community!
+
+- author: Fares Essayeh
+  priority: 3
+  subject: EpicReact.dev
+  cloudinaryId: kentcdodds.com/testimonials/fares-essayeh
+  company: Frontend Developer
+  testimonial: >-
+    EpicReact.dev is a treasure! It helped me understand how do things work
+    internally, real world practices and top quality code that I still refer to,
+    to this day. The effort, passion that has been dedicated towards this course
+    is immeasurable and it also got me my first internship!
+
+- author: Kevin Bailey
+  priority: 4
+  subject: EpicReact.dev
+  cloudinaryId: kentcdodds.com/testimonials/kevin-bailey
+  company: Senior Front End Developer
+  testimonial: >-
+    EpicReact.dev has completely changed the way I approach writing React. It
+    gave me a deeper understanding which has resulted in better performance,
+    less bugs and components that are easier to understand and maintain.
+
+- author: Apoorv Kansal
+  priority: 3
+  subject: EpicReact.dev
+  cloudinaryId: kentcdodds.com/testimonials/apoorv-kansal
+  company: Lead Front End Developer
+  testimonial: >-
+    Kent is a great teacher. Coming to JavaScript world and learning and
+    implementing React in daily life was made so easy by this course. The hands
+    on working on project and his tips were greatly helpful in real life.
+
+- author: Bouwe
+  priority: 3
+  subject: Other
+  categories: [teaching, community]
+  cloudinaryId: kentcdodds.com/testimonials/bouwe
+  company: Software Engineer @ WebinarGeek
+  testimonial: >-
+    There is more to Kent than just being a great teacher and a knowledgeable
+    person. He is kind, authentic and inspiring. He inspired me to learn new
+    things by teaching others. Also it is very impressive and heartwarming how
+    he leads his great Discord community by example.
+
+- author: Johannes Hörteis
+  priority: 4
+  subject: Other
+  categories: [teaching]
+  cloudinaryId: kentcdodds.com/testimonials/johannes
+  company: Supreme Commander @ ProPro Productions
+  testimonial: >-
+    Thanks to Kent, I‘m very happy about how I use state management (with React
+    Query) and many other tricks that make me a better programmer.
+
+- author: Azizbek Jonibekov
+  priority: 3
+  subject: Discord Community
+  cloudinaryId: kentcdodds.com/testimonials/azizbek-jonibekov
+  company: Software Engineer at Epam
+  testimonial: >-
+    I was surprised of how KCD community is so friendly and supportive. I have
+    had some troubles with testing library and discovered KCD discord channel
+    and a lot of people there was ready to help. Kent has build an amazing
+    community in which members loves sharing a knowledge!
