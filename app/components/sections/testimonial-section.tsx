@@ -54,7 +54,9 @@ function TestimonialSection({
               },
             )}
           >
-            <p className="mb-14 text-base">“{testimonial.testimonial}”</p>
+            <p className="text-primary mb-14 text-base">
+              “{testimonial.testimonial}”
+            </p>
             <div className="flex items-center">
               <img
                 className="flex-none mr-8 w-16 h-16 rounded-full object-cover"
