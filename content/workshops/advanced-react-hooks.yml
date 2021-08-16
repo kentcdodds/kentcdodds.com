@@ -1,9 +1,9 @@
 title: Advanced React Hooks
 description: >-
-  In this workshop, we'll look at some of the more advanced hooks and ways they
-  can be used to optimize your components and custom hooks. We'll also look at
-  several patterns you can follow to make custom hooks that provide great APIs
-  for developers to be productive building applications.
+  Lets check out the more advanced hooks and ways hooks can be used to optimize
+  your components and custom hooks. We'll also look at several patterns you can
+  follow to make custom hooks that provide great APIs for developers to be
+  productive building applications.
 meta:
   keywords:
     - react

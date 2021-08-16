@@ -6,7 +6,6 @@ import type {Timings} from './metrics.server'
 import {cachified} from './redis.server'
 import {downloadDirList, downloadFile} from './github.server'
 import {typedBoolean} from './misc'
-import type {Testimonial} from './testimonials.server'
 
 type KeyTakeaway = {
   title: string
@@ -25,7 +24,6 @@ type RawWorkshop = {
   description?: string
   convertKitTag?: string
   categories?: Array<string>
-  testimonials?: Array<Testimonial>
   problemStatements?: ProblemStatements
   keyTakeaways?: Array<KeyTakeaway>
   topics?: Array<string>
@@ -82,7 +80,6 @@ async function getWorkshop(slug: string, {request, timings}: Options) {
         title,
         convertKitTag,
         description = 'This workshop is... indescribeable',
-        testimonials = [],
         categories = [],
         topics,
       } = rawWorkshop
@@ -129,7 +126,6 @@ async function getWorkshop(slug: string, {request, timings}: Options) {
         description,
         convertKitTag,
         categories,
-        testimonials,
         problemStatementHTMLs,
         keyTakeawayHTMLs,
         topicHTMLs,
