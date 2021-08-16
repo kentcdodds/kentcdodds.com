@@ -31,6 +31,11 @@ module.exports = {
         FORCE_COLOR: '1',
       },
     },
+    {
+      name: 'Content',
+      script: 'node ./other/refresh-on-content-changes.js',
+      ignore_watch: ['.'],
+    },
 
     // We build postcss to other/postcss.ignored and use rsync to copy them to
     // the app directory. If we point postcss directly to the app directory then

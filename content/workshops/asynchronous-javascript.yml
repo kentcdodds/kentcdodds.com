@@ -1,5 +1,5 @@
 title: Asynchronous JavaScript
-description:
+description: >-
   'In this workshop, we'll take a deep dive into the two most commonly used
   asynchronous patterns: The Promises API and async/await syntax. We'll see how
   these two relate to one another and you'll leave with a strong understanding

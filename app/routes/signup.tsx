@@ -8,7 +8,7 @@ import {
   Form,
 } from 'remix'
 import type {ActionFunction, LoaderFunction} from 'remix'
-import type {Team} from 'types'
+import type {KCDHandle, Team} from 'types'
 import clsx from 'clsx'
 import {shuffle} from 'lodash'
 import {getSession, getUser} from '../utils/session.server'
@@ -26,6 +26,10 @@ import {getImgProps, images} from '../images'
 import {TEAM_MAP} from '../utils/onboarding'
 import {HeaderSection} from '../components/sections/header-section'
 import {handleFormSubmission} from '../utils/actions.server'
+
+export const handle: KCDHandle = {
+  getSitemapEntries: () => null,
+}
 
 type ActionData = {
   fields: {

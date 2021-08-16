@@ -1,7 +1,12 @@
 import type {LoaderFunction} from 'remix'
 import {redirect} from 'remix'
 import * as React from 'react'
+import type {KCDHandle} from 'types'
 import {getSession} from '../utils/session.server'
+
+export const handle: KCDHandle = {
+  getSitemapEntries: () => null,
+}
 
 export const loader: LoaderFunction = async ({request}) => {
   const session = await getSession(request)

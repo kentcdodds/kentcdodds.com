@@ -30,14 +30,14 @@ keyTakeaways:
 topics:
   - JavaScript statements and expressions
   - Code comments
-  - 'JavaScript's main primitive values: string, boolean, number, undefined, and
-    null'
+  - "JavaScript's main primitive values: string, boolean, number, undefined, and
+    null"
   - Operators
   - Variables
   - Conditionals
   - Loops
   - Functions
-  - 'JavaScript's main data structures: objects and arrays'
+  - "JavaScript's main data structures: objects and arrays"
   - Using Netlify to put your code on the web
 
 prerequisite: >-

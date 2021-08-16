@@ -12,6 +12,14 @@ import {getEnv} from './utils/env.server'
 import {sendEventWithRequestContext} from './utils/sentry.server'
 import {routes as otherRoutes} from './other-routes.server'
 
+if (process.env.NODE_ENV === 'development') {
+  try {
+    require('./refresh.ignored')
+  } catch {
+    // ignore
+  }
+}
+
 global.ENV = getEnv()
 
 export default async function handleRequest(
