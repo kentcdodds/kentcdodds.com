@@ -38,7 +38,9 @@ function TestimonialSection({
         ) : null}
       </div>
 
-      {Array.from({length: 3}).map((_, index) => {
+      {Array.from({
+        length: testimonials.length > 3 ? 3 : testimonials.length,
+      }).map((_, index) => {
         const testimonial =
           testimonials[(page * 3 + index) % testimonials.length]
         if (!testimonial) return null
