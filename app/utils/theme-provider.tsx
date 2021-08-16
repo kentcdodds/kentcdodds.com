@@ -196,7 +196,7 @@ function Themed({
     return (
       <>
         {React.createElement('dark-mode', null, dark)}
-        {React.createElement('light-mode', null, dark)}
+        {React.createElement('light-mode', null, light)}
       </>
     )
   } else {
