@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {redirect, Form, json, useActionData, useLoaderData, Link} from 'remix'
-import type {Call, KCDAction, KCDLoader} from 'types'
+import type {Call, KCDAction, KCDHandle, KCDLoader} from 'types'
 import {format} from 'date-fns'
 import {CallRecorder} from '../../components/calls/recorder'
 import {requireAdminUser} from '../../utils/session.server'
@@ -16,6 +16,10 @@ import {
   getErrorForDescription,
   getErrorForKeywords,
 } from '../../utils/call-kent'
+
+export const handle: KCDHandle = {
+  getSitemapEntries: () => null,
+}
 
 type ActionData = RecordingFormData
 

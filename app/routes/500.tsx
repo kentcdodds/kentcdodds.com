@@ -1,7 +1,12 @@
 // this is just here to test the error page
 import * as React from 'react'
 import type {LoaderFunction} from 'remix'
+import type {KCDHandle} from 'types'
 import {ServerError} from '../components/errors'
+
+export const handle: KCDHandle = {
+  getSitemapEntries: () => null,
+}
 
 export const loader: LoaderFunction = async () => {
   throw new Error('Oh no!')
