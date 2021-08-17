@@ -24,19 +24,18 @@ function getAvatar(
   return url.toString()
 }
 
-const avatarFallbacks: Record<Team, string> = {
-  BLUE: images.alexProfileBlue({resize: {width: defaultAvatarSize}}),
-  RED: images.alexProfileRed({resize: {width: defaultAvatarSize}}),
-  YELLOW: images.alexProfileYellow({resize: {width: defaultAvatarSize}}),
+const avatarFallbacks: Record<Team, (width: number) => string> = {
+  BLUE: (width: number) => images.alexProfileBlue({resize: {width}}),
+  RED: (width: number) => images.alexProfileRed({resize: {width}}),
+  YELLOW: (width: number) => images.alexProfileYellow({resize: {width}}),
 }
 
-function getAvatarForUser({
-  email,
-  team,
-  firstName,
-}: Pick<User, 'email' | 'team' | 'firstName'>) {
+function getAvatarForUser(
+  {email, team, firstName}: Pick<User, 'email' | 'team' | 'firstName'>,
+  {size = defaultAvatarSize}: {size?: number} = {},
+) {
   return {
-    src: getAvatar(email, {fallback: avatarFallbacks[team]}),
+    src: getAvatar(email, {fallback: avatarFallbacks[team](size), size}),
     alt: firstName,
   }
 }

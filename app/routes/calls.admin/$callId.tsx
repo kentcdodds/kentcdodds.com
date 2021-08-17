@@ -89,7 +89,7 @@ export const action: KCDAction<{callId: string}> = async ({
           'yyyy-MM-dd',
         )}`,
         description,
-        imageUrl: getAvatarForUser(call.user).src,
+        imageUrl: getAvatarForUser(call.user, {size: 800}).src,
         keywords,
         domainUrl: getDomainUrl(request),
       })
