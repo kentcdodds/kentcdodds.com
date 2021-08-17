@@ -5,6 +5,9 @@ description:
 meta:
   keywords:
     - react
+    - styling with react
+    - react forms
+    - data fetching with react
 categories:
   - react
 convertKitTag: '896449'
@@ -38,10 +41,17 @@ keyTakeaways:
       Forms are a key part any modern website. Once you've gone through this
       workshop, you'll have the tools to build accessible forms that manage
       state in a maintainable and testable way.
+  - title: Make HTTP requests to get data
+    description:
+      A website that doesn't get data is pretty limited. Most of the websites
+      you'll build will have some data requirements. When we're done with this,
+      you'll have the right idea of how to make client-side data requests with
+      React.
 topics:
   - Bootstrap a new react application with create-react-app
   - Styling Components with modern tools
   - Manage login and registration forms
+  - Data fetching and managing lists of data
 
 prerequisite: >-
   Attend my [React Hooks Workshop](/workshops/advanced-react-hooks), or have the

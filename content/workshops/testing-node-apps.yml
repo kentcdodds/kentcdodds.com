@@ -35,10 +35,8 @@ topics:
   - Mocking third party dependencies
   - Testing authenticated code
 prerequisite: >-
-  Attend my [Modern JavaScript Workshop](/workshops/modern-javascript) or have
-  equivalent experience with modern JavaScript APIs. Attend my [Asynchronous
-  JavaScript Workshop](/workshops/asynchronous-javascript) or have equivalent
-  experience with asynchronous JavaScript.
+  You should have experience with [these JavaScript
+  features](/blog/javascript-to-know-for-react).
 
 # ---
 # ---

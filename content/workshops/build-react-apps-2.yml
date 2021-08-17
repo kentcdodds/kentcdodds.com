@@ -5,29 +5,49 @@ description:
 meta:
   keywords:
     - react
+    - react-query
+    - react-router
+    - authentication
 categories:
   - react
 convertKitTag: '1418847'
 problemStatements:
-  part1: TODO
-  part2: TODO
-  part3: TODO
-  part4: TODO
+  part1:
+    Ensuring users are shown what they're allowed to see requires getting a lot
+    of things right
+  part2:
+    It's important to structure your code to optimize both what the user is
+    shown and what data is loaded
+  part3:
+    Organizing data you retrieve from the server is the bane of many a
+    developer's existance. Making certain that your cache of the server data is
+    up-to-date is a huge source of code complexity in web applications.
+  part4:
+    The URL is one of the Web's biggest strong points and thanks to some
+    fantastic tools, we can use it to our advantage. But how do you make certain
+    that an unauthorized user can't get to pages they don't have access to?
 keyTakeaways:
-  - title: TODO
-    description: TODO
-  - title: TODO
-    description: TODO
-  - title: TODO
-    description: TODO
-  - title: TODO
-    description: TODO
+  - title: Manage server state in your app
+    description:
+      This is one of the biggest challenges developers have in application
+      development. I'm excited to show you how `react-query` can drastically
+      simplify the way you think about state management in React apps. When
+      we're done, you'll confidently install and integrate `react-query` into
+      your own client-side React app.
+  - title: Add Authentication to your app
+    description:
+      Regardless of whether you use a service or roll your own authentication,
+      much of the React portion of this is the same, and you'll come away from
+      this workshop ready to apply it to your own apps' authentication strategy.
+  - title: Route your app
+    description:
+      We'll go over routing your React app with the latest version of the tried
+      and true `react-router` library. And we'll answer the age-old question of
+      how to prevent users from seeing authentication-only pages.
 topics:
   - Support client-side routing with react-router
   - Authentication
-  - Data Fetching
-  - Managing lists of data
-  - Use react-query to manage client-side cache of backend resources
+  - Use react-query to manage client-side cache of backend data
 
 prerequisite: >-
   Attend my [React Hooks Workshop](/workshops/advanced-react-hooks), or have the
@@ -36,19 +56,3 @@ prerequisite: >-
   `useRef` hooks. Attend my [Build React Apps (Part 1)
   Workshop](/workshops/build-react-apps-1), or have the equivalent basic
   experience of building basic React apps.
-
-# ### Use common libraries to build ReactJS applications
-
-# The React and JavaScript ecosystem is full of tools and libraries to help you
-# build your applications. In this workshop we'll build an application from
-# scratch using widely supported and used tools and techniques. We'll build on
-# part 1 of this workshop and cover everything common to most frontend React
-# applications like routing, data fetching, and authentication.
-
-# ## Topics
-
-# <ul>
-# </ul>
-
-# ## Pre-requisites
-

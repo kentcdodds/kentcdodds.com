@@ -24,6 +24,8 @@ import type {
   TestimonialSubject,
   TestimonialCategory,
 } from '../../utils/testimonials.server'
+import {listify} from '../../utils/misc'
+import type {WorkshopEvent} from '../../utils/workshop-tickets.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
@@ -113,19 +115,7 @@ function TopicRow({number, topicHTML}: TopicRowProps) {
   )
 }
 
-interface RegistrationPanelProps {
-  workshop: string
-  eventLink: string
-  totalSeats: number
-  availableSeats: number
-}
-
-function RegistrationPanel({
-  workshop,
-  eventLink,
-  availableSeats,
-  totalSeats,
-}: RegistrationPanelProps) {
+function RegistrationPanel({workshopEvent}: {workshopEvent: WorkshopEvent}) {
   return (
     <div
       id="register"
@@ -135,16 +125,17 @@ function RegistrationPanel({
         <div className="inline-flex items-baseline mb-10 lg:mb-2">
           <div className="block flex-none w-3 h-3 bg-green-600 rounded-full" />
           <H6 as="p" className="pl-4">
-            {`${availableSeats} of ${totalSeats} spots left`}
+            {`${workshopEvent.remaining} of ${workshopEvent.quantity} spots left`}
           </H6>
         </div>
         {/* note: this heading doesn't scale on narrow screens */}
         <h5 className="text-black dark:text-white text-2xl font-medium">
-          {workshop}
+          {workshopEvent.title}
         </h5>
+        <p className="text-secondary">{workshopEvent.date}</p>
       </div>
 
-      <ButtonLink to={eventLink} className="flex-none">
+      <ButtonLink to={workshopEvent.url} className="flex-none">
         Register here
       </ButtonLink>
     </div>
@@ -166,7 +157,7 @@ function restartArray<ArrayType>(array: Array<ArrayType>, startIndex: number) {
 
 function WorkshopScreen() {
   const params = useParams()
-  const {workshopEvents, workshops} = useWorkshops()
+  const {workshopEvents: allWorkshopEvents, workshops} = useWorkshops()
   const data = useLoaderData<LoaderData>()
   const workshop = workshops.find(w => w.slug === params.slug)
 
@@ -177,7 +168,7 @@ function WorkshopScreen() {
     return <div>Oh no... Email Kent</div>
   }
 
-  const workshopEvent = workshopEvents.find(
+  const workshopEvents = allWorkshopEvents.filter(
     e => e.metadata.workshopSlug === params.slug,
   )
 
@@ -188,7 +179,7 @@ function WorkshopScreen() {
     workshops.indexOf(workshop),
   )
   const scheduledWorkshops = otherWorkshops.filter(w =>
-    workshopEvents.find(e => e.metadata.workshopSlug === w.slug),
+    allWorkshopEvents.some(e => e.metadata.workshopSlug === w.slug),
   )
   const similarWorkshops = otherWorkshops.filter(w =>
     w.categories.some(c => workshop.categories.includes(c)),
@@ -197,6 +188,11 @@ function WorkshopScreen() {
   const alternateWorkshops = Array.from(
     new Set([...scheduledWorkshops, ...similarWorkshops, ...otherWorkshops]),
   ).slice(0, 3)
+
+  let registerLink = '#sign-up'
+  if (workshopEvents.length === 1 && workshopEvents[0]) {
+    registerLink = workshopEvents[0].url
+  }
 
   return (
     <>
@@ -208,27 +204,33 @@ function WorkshopScreen() {
           <H2 className="mb-2">{`Join Kent C. Dodds for "${workshop.title}"`}</H2>
 
           <H6 as="p" className="lg:mb-22 mb-16 lowercase">
-            {workshopEvent ? workshopEvent.date : 'Not currently scheduled'}
+            {workshopEvents.length
+              ? listify(workshopEvents.map(w => w.date))
+              : 'Not currently scheduled'}
           </H6>
 
-          {workshopEvent ? (
-            <RegistrationPanel
-              workshop={workshop.title}
-              eventLink={workshopEvent.url}
-              totalSeats={workshopEvent.quantity}
-              availableSeats={workshopEvent.remaining}
-            />
-          ) : workshop.convertKitTag ? (
-            <div id="sign-up">
-              <H6 as="p" className="mb-0">
-                Sign up to be notified when this workshop is scheduled
-              </H6>
-              <ConvertKitForm
-                formId="workshop-convert-kit"
-                convertKitTagId={workshop.convertKitTag}
-              />
-            </div>
-          ) : null}
+          <div id="sign-up">
+            {workshopEvents.length ? (
+              workshopEvents.map((workshopEvent, index) => (
+                <React.Fragment key={workshopEvent.date}>
+                  <RegistrationPanel workshopEvent={workshopEvent} />
+                  {index === workshopEvents.length - 1 ? null : (
+                    <Spacer size="smallest" />
+                  )}
+                </React.Fragment>
+              ))
+            ) : workshop.convertKitTag ? (
+              <>
+                <H6 as="p" className="mb-0">
+                  Sign up to be notified when this workshop is scheduled
+                </H6>
+                <ConvertKitForm
+                  formId="workshop-convert-kit"
+                  convertKitTagId={workshop.convertKitTag}
+                />
+              </>
+            ) : null}
+          </div>
         </div>
         <div className="hidden col-span-1 col-start-12 items-center justify-center lg:flex">
           <ArrowLink to="#problem" direction="down" />
@@ -280,9 +282,7 @@ function WorkshopScreen() {
                 <H2 className="mb-16" variant="secondary" as="p">
                   Here's why you should register for the workshop.
                 </H2>
-                <ButtonLink to={workshopEvent ? workshopEvent.url : '#sign-up'}>
-                  Register here
-                </ButtonLink>
+                <ButtonLink to={registerLink}>Register here</ButtonLink>
               </div>
 
               <div className="col-span-full lg:col-span-5 lg:col-start-8 lg:mr-12">
@@ -311,9 +311,7 @@ function WorkshopScreen() {
         </div>
 
         <div className="flex flex-col col-span-full items-stretch justify-end mb-16 lg:col-span-4 lg:items-end lg:justify-center">
-          <ButtonLink to={workshopEvent ? workshopEvent.url : '#sign-up'}>
-            Register here
-          </ButtonLink>
+          <ButtonLink to={registerLink}>Register here</ButtonLink>
         </div>
 
         <ol className="col-span-full mb-16 space-y-4 lg:mb-20">
@@ -336,7 +334,7 @@ function WorkshopScreen() {
 
       <Spacer size="medium" />
 
-      {workshopEvent ? (
+      {workshopEvents.length ? (
         <Grid className="mb-24 lg:mb-64">
           <div className="col-span-full lg:col-span-8 lg:col-start-3">
             <H2 className="mb-6 text-center">
@@ -345,12 +343,14 @@ function WorkshopScreen() {
             <H2 className="mb-20 text-center" variant="secondary">
               You can register by using the button below. Can't wait to see you.
             </H2>
-            <RegistrationPanel
-              workshop={workshop.title}
-              totalSeats={workshopEvent.quantity}
-              availableSeats={workshopEvent.remaining}
-              eventLink={workshopEvent.url}
-            />
+            {workshopEvents.map((workshopEvent, index) => (
+              <React.Fragment key={workshopEvent.date}>
+                <RegistrationPanel workshopEvent={workshopEvent} />
+                {index === workshopEvents.length - 1 ? null : (
+                  <Spacer size="smallest" />
+                )}
+              </React.Fragment>
+            ))}
           </div>
         </Grid>
       ) : null}
@@ -369,7 +369,7 @@ function WorkshopScreen() {
             <div key={idx} className="col-span-full mb-4 md:col-span-4 lg:mb-6">
               <WorkshopCard
                 workshop={altWorkshop}
-                workshopEvent={workshopEvents.find(
+                workshopEvent={allWorkshopEvents.find(
                   e => e.metadata.workshopSlug === altWorkshop.slug,
                 )}
               />

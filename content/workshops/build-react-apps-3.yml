@@ -1,10 +1,16 @@
 title: Build React Applications (Part 3)
 description:
-  We'll cover advanced use cases common to most frontend React applications like
-  authentication, code splitting, application state management, performance.
+  Let's work on optimizing a React app for performance and maintenance.
 meta:
   keywords:
     - react
+    - react patterns
+    - react suspense
+    - lazy loading
+    - code splitting
+    - react context
+    - react compound components
+    - react performance
 categories:
   - react
 convertKitTag: '1345903'
