@@ -71,7 +71,7 @@ export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
     'Server-Timing': getServerTimeHeader(timings),
   }
 
-  return json(data, {status: page ? 200 : 400, headers})
+  return json(data, {status: page ? 200 : 404, headers})
 }
 
 export const headers: HeadersFunction = ({loaderHeaders}) => {

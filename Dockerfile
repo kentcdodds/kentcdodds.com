@@ -20,6 +20,7 @@ WORKDIR /app/
 
 ADD package.json package-lock.json .npmrc ./
 ADD other/patches ./other/patches
+ADD other/tracing.js ./other/tracing.js
 RUN npm install --production=false
 
 # setup production node_modules
