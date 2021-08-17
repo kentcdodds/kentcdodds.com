@@ -1,7 +1,7 @@
 title: Build React Applications (Part 1)
 description:
-  We'll cover everything the basics to building frontend React applications like
-  bootstrapping, styling, and forms.
+  The basics to building frontend React applications like bootstrapping,
+  styling, and forms.
 meta:
   keywords:
     - react
@@ -9,45 +9,42 @@ categories:
   - react
 convertKitTag: '896449'
 problemStatements:
-  part1: TODO
-  part2: TODO
-  part3: TODO
-  part4: TODO
+  part1: Learning React is one thing. Building an app is another
+  part2:
+    Getting the tooling put together and structuring your app is tough when
+    there are so many ways to do it
+  part3:
+    The decisions you make at the start of the application become increasingly
+    difficult to change the longer you run with it. Changing them can be a
+    distraction from the primary purpose of the app.
+  part4:
+    Frankly, some of these decisions don't matter a ton to the success of your
+    project, but inconsistency will make maintainability suffer, so the
+    decisions need to be solid so things remain constant.
 keyTakeaways:
-  - title: TODO
-    description: TODO
-  - title: TODO
-    description: TODO
-  - title: TODO
-    description: TODO
-  - title: TODO
-    description: TODO
+  - title: Setup a React App
+    description:
+      We'll be using modern tooling to create a client-side application with the
+      tried and true `create-react-app`.
+  - title: Component-oriented styling
+    description:
+      A component isn't a component without its styles. CSS can be a difficult
+      part of your application if you're not intentional about that
+      relationship. When we're through, you'll know how to connect your
+      components to the styles in a way that will help you know what impact your
+      changes will make on the rest of the app.
+  - title: Managing web forms
+    description:
+      Forms are a key part any modern website. Once you've gone through this
+      workshop, you'll have the tools to build accessible forms that manage
+      state in a maintainable and testable way.
 topics:
   - Bootstrap a new react application with create-react-app
-  - Styling Components
-  - Manage forms
+  - Styling Components with modern tools
+  - Manage login and registration forms
 
 prerequisite: >-
   Attend my [React Hooks Workshop](/workshops/advanced-react-hooks), or have the
   equivalent basic experience of using basic hooks. You should be experienced
   with creating custom React components and the `useState`, `useEffect`, and
   `useRef` hooks.
-
-# ---
-# ---
-
-# ### Get started building React applications
-
-# The React and JavaScript ecosystem is full of tools and libraries to help you
-# build your applications. In this workshop we'll build an application from
-# scratch using widely supported and used tools and techniques. We'll cover
-# everything the basics to building frontend React applications like
-# bootstrapping, styling, and forms.
-
-# ## Topics
-
-# <ul>
-# </ul>
-
-# ## Pre-requisites
-

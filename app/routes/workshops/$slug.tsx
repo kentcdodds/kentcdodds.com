@@ -6,9 +6,10 @@ import type {KCDHandle, KCDLoader, MdxListItem} from 'types'
 import {Grid} from '../../components/grid'
 import {H2, H5, H6, Paragraph} from '../../components/typography'
 import {ButtonLink} from '../../components/button'
-import {ArrowButton, ArrowLink, BackLink} from '../../components/arrow-button'
+import {ArrowLink, BackLink} from '../../components/arrow-button'
 import {WorkshopCard} from '../../components/workshop-card'
 import {NumberedPanel} from '../../components/numbered-panel'
+import {Spacer} from '../../components/spacer'
 import {TestimonialSection} from '../../components/sections/testimonial-section'
 import {FourOhFour} from '../../components/errors'
 import {getBlogRecommendations} from '../../utils/blog.server'
@@ -330,23 +331,10 @@ function WorkshopScreen() {
       </Grid>
 
       {data.testimonials.length ? (
-        <>
-          <TestimonialSection
-            testimonials={data.testimonials}
-            className="mb-10 lg:mb-64"
-          />
-
-          <Grid className="mb-24 lg:hidden">
-            <div className="flex col-span-full items-center justify-between">
-              <p className="text-black dark:text-white text-2xl">1 — 4</p>
-              <div className="flex space-x-3">
-                <ArrowButton direction="left" />
-                <ArrowButton direction="right" />
-              </div>
-            </div>
-          </Grid>
-        </>
+        <TestimonialSection testimonials={data.testimonials} />
       ) : null}
+
+      <Spacer size="medium" />
 
       {workshopEvent ? (
         <Grid className="mb-24 lg:mb-64">

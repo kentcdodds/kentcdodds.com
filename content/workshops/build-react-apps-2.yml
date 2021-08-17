@@ -1,7 +1,7 @@
 title: Build React Applications (Part 2)
 description:
-  We'll cover everything common to most frontend React applications like
-  routing, data fetching, and authentication.
+  Let's get serious about building React apps with routing, data fetching, and
+  authentication.
 meta:
   keywords:
     - react
