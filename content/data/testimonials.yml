@@ -192,3 +192,45 @@
     had some troubles with testing library and discovered KCD discord channel
     and a lot of people there was ready to help. Kent has build an amazing
     community in which members loves sharing a knowledge!
+
+- author: zhu baohua
+  priority: 1
+  subject: EpicReact.dev
+  cloudinaryId: kentcdodds.com/testimonials/zhu-baohua
+  company: Leqee
+  testimonial: >-
+    I am learning epicreact.dev. It's good!
+
+- author: Pramod Jingade
+  priority: 4
+  subject: 'workshop: advanced-react-hooks'
+  cloudinaryId: kentcdodds.com/testimonials/pramod-jingade
+  company: INSCALE Asia Sdn. Bhd
+  testimonial: >-
+    I've had the pleasure to attend Kent's - Advanced React Hooks, back in 2020
+    and it was such a insightful course. Kent has a knack of breaking complex
+    subjects which are easier for every developer to understand. His workshops
+    are worth the investment Even topics like - Concurrency, memo, callbacks &
+    effects, which would otherwise be daunting to completely comprehend, are
+    simplified. Highly recommend his workshops and his website - epicreact.dev
+
+- author: Cameron Pak
+  priority: 5
+  subject: 'workshop: advanced-react-hooks'
+  cloudinaryId: kentcdodds.com/testimonials/cameron-pak
+  company: YouVersion Bible
+  testimonial: >-
+    Because of Kent's teachings, my team and I are proficient and comfortable in
+    React best practices. Our code is consistent and clean, and our applications
+    are speedy and superb. Thanks Kent!
+
+- author: David Han
+  priority: 4
+  subject: 'workshop: advanced-react-hooks'
+  cloudinaryId: kentcdodds.com/testimonials/david-han
+  company: Engineer at Greenhouse Software
+  testimonial: >-
+    Advanced React Hooks was crucial in solidifying my understanding of React.
+    This workshop was so good that I couldn't help but write a blog post about
+    my experience. Not only is this workshop great but Kent C. Dodds is my go to
+    resource for all things React.
