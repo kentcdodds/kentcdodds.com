@@ -8,7 +8,7 @@ type TransistorEpisodeData = {
     summary: string
     description: string
     keywords: string
-    duration: number
+    duration?: number
     status: 'published' | 'scheduled' | 'draft'
     image_url: string
     media_url: string
@@ -17,6 +17,7 @@ type TransistorEpisodeData = {
     embed_html_dark: string
     published_at: string
     updated_at: string
+    audio_processing: boolean
   }
 }
 type TransistorEpisodesJson = {data: Array<TransistorEpisodeData>}

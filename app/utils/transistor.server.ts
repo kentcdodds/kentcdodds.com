@@ -159,8 +159,10 @@ async function getEpisodes() {
   })
   const episodes: Array<CallKentEpisode> = []
   for (const episode of sortedTransistorEpisodes) {
+    if (episode.attributes.audio_processing) continue
     if (episode.attributes.status !== 'published') continue
-    if (episode.attributes.number == null) continue
+    if (!episode.attributes.number) continue
+    if (!episode.attributes.duration) continue
 
     episodes.push({
       seasonNumber: episode.attributes.season,
