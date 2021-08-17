@@ -8,9 +8,11 @@ import type {
   TransistorEpisodesJson,
   Request,
   CallKentEpisode,
+  TransistorUpdateEpisodeData,
 } from 'types'
 import {getRequiredServerEnvVar} from './misc'
 import * as redis from './redis.server'
+import {getEpisodePath} from './call-kent'
 
 const transistorApiSecret = getRequiredServerEnvVar('TRANSISTOR_API_SECRET')
 const podcastId = getRequiredServerEnvVar('CALL_KENT_PODCAST_ID', '67890')
@@ -57,6 +59,7 @@ async function createEpisode({
   description,
   keywords,
   imageUrl,
+  domainUrl,
 }: {
   audio: Buffer
   title: string
@@ -64,6 +67,7 @@ async function createEpisode({
   description: string
   keywords: string
   imageUrl: string
+  domainUrl: string
 }) {
   const id = uuid.v4()
   const authorized = await fetchTransitor<TransistorAuthorizedJson>({
@@ -78,41 +82,60 @@ async function createEpisode({
     headers: {'Content-Type': content_type},
   })
 
-  const episode: TransistorCreateEpisodeData = {
-    show_id: podcastId,
-    season: '1',
-    audio_url,
-    title,
-    summary,
-    description,
-    keywords,
-    image_url: imageUrl,
+  const createData: TransistorCreateEpisodeData = {
+    episode: {
+      show_id: podcastId,
+      season: 1,
+      audio_url,
+      title,
+      summary,
+      description,
+      keywords,
+      image_url: imageUrl,
+      increment_number: true,
+    },
   }
 
   const created = await fetchTransitor<TransistorCreatedJson>({
     endpoint: 'v1/episodes',
     method: 'POST',
-    data: {
-      episode,
-    },
+    data: createData,
   })
-
-  let number = 1
-  const latestEpisode = (await getEpisodes()).slice(-1)[0]
-  if (latestEpisode) {
-    number = latestEpisode.episodeNumber + 1
-  }
 
   await fetchTransitor<TransistorPublishedJson>({
     endpoint: `/v1/episodes/${encodeURIComponent(created.data.id)}/publish`,
     method: 'PATCH',
     data: {
       episode: {
-        number,
         status: 'published',
       },
     },
   })
+
+  // set the alternate_url if we have enough info for it.
+  const {number, season} = created.data.attributes
+  if (typeof number === 'number' && typeof season === 'number') {
+    const {default: slugify} = await import('@sindresorhus/slugify')
+    const slug = slugify(created.data.attributes.title)
+    const episodePath = getEpisodePath({
+      episodeNumber: number,
+      seasonNumber: season,
+      slug,
+    })
+
+    const updateData: TransistorUpdateEpisodeData = {
+      id: created.data.id,
+      episode: {
+        alternate_url: `${domainUrl}${episodePath}`,
+      },
+    }
+
+    await fetchTransitor<TransistorPublishedJson>({
+      endpoint: `/v1/episodes/${encodeURIComponent(created.data.id)}`,
+      method: 'PATCH',
+      data: updateData,
+    })
+  }
 
   // update the cache with the new episode
   await getCachedEpisodes({forceFresh: true})
@@ -137,7 +160,7 @@ async function getEpisodes() {
   const episodes: Array<CallKentEpisode> = []
   for (const episode of sortedTransistorEpisodes) {
     if (episode.attributes.status !== 'published') continue
-    if (episode.attributes.number === null) continue
+    if (episode.attributes.number == null) continue
 
     episodes.push({
       seasonNumber: episode.attributes.season,

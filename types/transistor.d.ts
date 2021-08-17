@@ -32,9 +32,7 @@ type TransistorAuthorizedJson = {
 }
 
 type TransistorCreatedJson = {
-  data: {
-    id: string
-  }
+  data: TransistorEpisodeData
 }
 
 type TransistorPublishedJson = {
@@ -42,16 +40,26 @@ type TransistorPublishedJson = {
 }
 
 type TransistorCreateEpisodeData = {
-  show_id: string
-  season: string
-  audio_url: string
-  title: string
-  summary: string
-  description: string
-  image_url: string
-  /** comma separated list of keywords **/
-  keywords: string
-  // TODO: add alternate_url when we've got things listed on the site nicely
+  episode: {
+    show_id: string
+    season?: number
+    number?: number
+    audio_url?: string
+    title?: string
+    summary?: string
+    description?: string
+    status?: 'published' | 'scheduled' | 'draft'
+    image_url?: string
+    increment_number?: boolean
+    /** comma separated list of keywords **/
+    keywords?: string
+    alternate_url?: string
+  }
+}
+
+type TransistorUpdateEpisodeData = {
+  id: string
+  episode: Omit<TransistorCreateEpisodeData['episode'], 'show_id'>
 }
 
 type TransistorErrorResponse = {errors: Array<{title: string}>}
@@ -59,6 +67,7 @@ type TransistorErrorResponse = {errors: Array<{title: string}>}
 export {
   TransistorErrorResponse,
   TransistorCreateEpisodeData,
+  TransistorUpdateEpisodeData,
   TransistorPublishedJson,
   TransistorCreatedJson,
   TransistorAuthorizedJson,

@@ -65,7 +65,9 @@ function getEpisodeFromParams(
   )
 }
 
-function getEpisodePath(episode: CallKentEpisode) {
+function getEpisodePath(
+  episode: Pick<CallKentEpisode, 'seasonNumber' | 'episodeNumber' | 'slug'>,
+) {
   const seasonNumber = episode.seasonNumber.toString().padStart(2, '0')
   const episodeNumber = episode.episodeNumber.toString().padStart(2, '0')
   return `/calls/${seasonNumber}/${episodeNumber}/${episode.slug}`

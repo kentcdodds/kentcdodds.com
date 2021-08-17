@@ -166,7 +166,7 @@ export default function CallHomeScreen() {
                           </div>
                         </div>
                         <img
-                          className="w-full rounded-lg object-cover"
+                          className="w-full h-16 rounded-lg object-cover"
                           src={episode.imageUrl}
                           alt={episode.title}
                         />

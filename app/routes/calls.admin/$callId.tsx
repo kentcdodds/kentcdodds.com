@@ -5,7 +5,12 @@ import {format} from 'date-fns'
 import {CallRecorder} from '../../components/calls/recorder'
 import {requireAdminUser} from '../../utils/session.server'
 import {prisma} from '../../utils/prisma.server'
-import {getAvatarForUser, getErrorMessage, getNonNull} from '../../utils/misc'
+import {
+  getAvatarForUser,
+  getDomainUrl,
+  getErrorMessage,
+  getNonNull,
+} from '../../utils/misc'
 import {createEpisodeAudio} from '../../utils/ffmpeg.server'
 import {createEpisode} from '../../utils/transistor.server'
 import type {RecordingFormData} from '../../components/calls/submit-recording-form'
@@ -86,12 +91,13 @@ export const action: KCDAction<{callId: string}> = async ({
         description,
         imageUrl: getAvatarForUser(call.user).src,
         keywords,
+        domainUrl: getDomainUrl(request),
       })
       await prisma.call.delete({
         where: {id: call.id},
       })
 
-      return redirect('/calls?fresh')
+      return redirect('/calls')
     } catch (error: unknown) {
       actionData.errors.generalError = getErrorMessage(error)
       return json(actionData, 500)
