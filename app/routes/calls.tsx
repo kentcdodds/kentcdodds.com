@@ -149,14 +149,9 @@ export default function CallHomeScreen() {
               return (
                 <div
                   className="border-b border-gray-200 dark:border-gray-600"
-                  key={episode.slug}
+                  key={path}
                 >
-                  <Link
-                    data-episode={path}
-                    key={episode.slug}
-                    to={path}
-                    className="group focus:outline-none"
-                  >
+                  <Link to={path} className="group focus:outline-none">
                     <Grid nested className="relative py-10 lg:py-5">
                       <div className="bg-secondary absolute -inset-px group-hover:block group-focus:block hidden -mx-6 rounded-lg" />
                       <div className="relative flex-none col-span-1">
