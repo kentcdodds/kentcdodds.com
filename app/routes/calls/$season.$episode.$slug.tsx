@@ -35,6 +35,13 @@ export const loader: KCDLoader<Params> = async ({params, request}) => {
     return redirect('/calls')
   }
 
+  // the slug doesn't really matter.
+  // The unique identifier is the season and episode numbers.
+  // But we'll redirect to the correct slug to make the URL nice.
+  if (episode.slug !== params.slug) {
+    return redirect(getEpisodePath(episode))
+  }
+
   // we already load all the episodes in the parent route so it would be
   // wasteful to send it here. The parent sticks all the episodes in context
   // so we just use it in the component.

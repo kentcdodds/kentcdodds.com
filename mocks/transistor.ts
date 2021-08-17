@@ -41,6 +41,7 @@ function makeEpisode(
       embed_html_dark:
         '<iframe src="https://share.transistor.fm/e/1493e91f/dark" width="100%" height="180" frameborder="0" scrolling="no" seamless style="width:100%; height:180px;"></iframe>',
       published_at: publishedAt.toISOString(),
+      audio_processing: false,
       updated_at: faker.datatype
         .datetime({
           max: Date.now() - 1000 * 60 * 60 * 23,
