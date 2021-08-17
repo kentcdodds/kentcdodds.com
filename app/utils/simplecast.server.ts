@@ -104,8 +104,12 @@ async function getEpisode(episodeId: string) {
     descriptionHTML,
     {summaryHTML, homeworkHTMLs, resources, guests},
   ] = await Promise.all([
-    markdownToHtml(transcriptMarkdown),
-    markdownToHtml(descriptionMarkdown),
+    transcriptMarkdown.trim().startsWith('<')
+      ? transcriptMarkdown
+      : markdownToHtml(transcriptMarkdown),
+    descriptionMarkdown.trim().startsWith('<')
+      ? descriptionMarkdown
+      : markdownToHtml(descriptionMarkdown),
     parseSummaryMarkdown(summaryMarkdown, `${id}-${slug}`),
   ])
 
