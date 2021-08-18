@@ -35,7 +35,10 @@ prerequisite: >-
   Attend my [React Fundamentals Workshop](/workshops/react-fundamentals) or have
   the equivalent fundamental experience with React and JavaScript. Attend my
   [Testing Fundamentals Workshop](/workshops/testing-fundamentals) or have the
-  equivalent experience with the fundamentals of testing.
+  equivalent experience with the fundamentals of testing. This workshop will use
+  TypeScript, but should be completable if you do not have experience with
+  TypeScript (or you could attend my [TypeScript to know for
+  React](/workshops/typescript-to-know-for-react) workshop first).
 
 # ---
 # ---

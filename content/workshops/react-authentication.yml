@@ -29,4 +29,5 @@ prerequisite: >-
   Experience with Remix is a bonus, but not a requirement (this workshop will
   still be useful even if you plan to use a different framework). This workshop
   will use TypeScript, but should be completable if you do not have experience
-  with TypeScript.
+  with TypeScript (or you could attend my [TypeScript to know for
+  React](/workshops/typescript-to-know-for-react) workshop first).

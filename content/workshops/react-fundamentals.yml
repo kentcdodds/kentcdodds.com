@@ -1,7 +1,5 @@
 title: React Fundamentals
-description:
-  In this workshop you'll learn what you need to become productive with using
-  the ReactJS framework for building applications for the web.
+description: Get productive using React to build web apps.
 meta:
   keywords:
     - react
@@ -9,19 +7,42 @@ categories:
   - react
 convertKitTag: '896452'
 problemStatements:
-  part1: TODO
-  part2: TODO
-  part3: TODO
-  part4: TODO
+  part1:
+    By the best metrics we have, React is more widely used than all other
+    frameworks–combined.
+  part2:
+    Are **you** an expert in the most popular web framework of all time yet?
+  part3:
+    Being the most popular comes with a lot of benefits. The React ecosystem is
+    thriving and innovative. You can find a library to do just about anything
+    you need and thanks to React's terrific foundation, connecting it to your
+    app is a snap. If you know React.
+  part4:
+    You want a job building web applications? Becoming a React expert is the
+    quickest way to open yourself up to the most number of job opportunities.
+    And it's fun work to boot.
 keyTakeaways:
-  - title: TODO
-    description: TODO
-  - title: TODO
-    description: TODO
-  - title: TODO
-    description: TODO
-  - title: TODO
-    description: TODO
+  - title: Understand React's role in things
+    description:
+      Many people learn React so fast that they don't know where the
+      JavaScript/CSS/HTML ends and React starts. Being able to draw a box around
+      the abstractions you're using (like React) is an important aspect of using
+      that abstraction effectively.
+  - title: Creating Custom Components
+    description:
+      React components are how you share chunks of UI throughout the application
+      and you'll learn invaluable tips on how to create custom components with
+      nice clean APIs.
+  - title: Style React apps
+    description:
+      Layout and logic are just two pieces to the component puzzle. After we're
+      done here, you'll know what it takes to add that third piece of styling
+      your React components.
+  - title: React Forms
+    description:
+      Forms are the basis for data mutations on the web and when we're all done,
+      you'll know how to properly create and manage forms and basic state with
+      React.
 topics:
   - Create HTML elements with React's createElement API
   - Use JSX to create React elements for DOM nodes
@@ -33,31 +54,9 @@ topics:
   - Using React Fragments
   - What is the “key” prop and how to use it effectively
 prerequisite: >-
-  Attend [Modern JavaScript](/workshops/modern-javascript) or have the
-  equivalent experience with modern JavaScript APIs. Attend [Asyncronous
-  JavaScript](/workshops/asynchronous-javascript) or have the equivalent
-  experience with modern JavaScript Promises and async/await syntax. Experience
-  with HTML, CSS, and DOM APIs.
-
-# ---
-# ---
-
-# ### Learn the foundational concepts necessary for building React applications and libraries
-
-# Working effectively with React requires an understanding of JSX and React
-# elements. Many engineers work with React for months or years without ever having
-# a clear idea of how JSX works or what it even really is. They memorize a list of
-# rules and miss out on opportunities to make their code more expressive and
-# maintainable. Additionally, building applications in React requires an
-# understanding of code reuse through custom components, using and changing data
-# over time (state), handling user events, and working with forms.
-
-# In this workshop, you'll learn everything you need to be effective with the
-# fundamental building block of React applications. When you're finished, you'll
-# be prepared to create React components to build excellent experiences for your
-# app's users.
-
-# ## Topics
-
-# ## Pre-requisites
-
+  You should have experience with [these JavaScript
+  features](/blog/javascript-to-know-for-react). Experience with HTML, CSS, and
+  DOM APIs will also be really helpful. This workshop will use TypeScript, but
+  should be completable if you do not have experience with TypeScript (or you
+  could attend my [TypeScript to know for
+  React](/workshops/typescript-to-know-for-react) workshop first).

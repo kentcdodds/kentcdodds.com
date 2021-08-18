@@ -53,3 +53,6 @@ prerequisite: >-
   Attend my [Advanced React Hooks Workshop](/workshops/advanced-react-hooks) or
   have the equivalent experience. You should be experienced with `useContext`
   and `useReducer` (experience with `useMemo` and `useCallback` is a bonus).
+  This workshop will use TypeScript, but should be completable if you do not
+  have experience with TypeScript (or you could attend my [TypeScript to know
+  for React](/workshops/typescript-to-know-for-react) workshop first).

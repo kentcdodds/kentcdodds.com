@@ -36,7 +36,9 @@ topics:
   - Testing authenticated code
 prerequisite: >-
   You should have experience with [these JavaScript
-  features](/blog/javascript-to-know-for-react).
+  features](/blog/javascript-to-know-for-react). This workshop will use
+  TypeScript, but should be completable if you do not have experience with
+  TypeScript.
 
 # ---
 # ---

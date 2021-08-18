@@ -58,4 +58,7 @@ topics:
 prerequisite: >-
   Attend my [React Hooks Workshop](/workshops/react-hooks) or have the
   equivalent basic experience of using hooks. You should be experienced with
-  `useState`, `useEffect`, and `useRef`.
+  `useState`, `useEffect`, and `useRef`. This workshop will use TypeScript, but
+  should be completable if you do not have experience with TypeScript (or you
+  could attend my [TypeScript to know for
+  React](/workshops/typescript-to-know-for-react) workshop first).

@@ -1,28 +1,53 @@
 title: Cypress Fundamentals
-description:
-  In this workshop, we'll go over how you can install, configure, and script
-  Cypress to test modern, real-world JavaScript web applications.
+description: Let's get confidence that our apps work–front to back–with Cypress.
 meta:
   keywords:
     - testing
     - Cypress
+    - e2e
 categories:
   - testing
 convertKitTag: '896453'
 problemStatements:
-  part1: TODO
-  part2: TODO
-  part3: TODO
-  part4: TODO
+  part1:
+    When you make a big refactor, how confident are you that you can deploy?
+  part2:
+    Would you be willing to hit the big green deploy button without checking?
+  part3:
+    Deploying a live production app without first making sure that everything's
+    working the way it should is not a way to go about doing business. You'll
+    lose the trust of your users really quick. You need to make sure when people
+    use your app, it delivers for them.
+  part4:
+    But manually checking every feature (and permutation of the features) of
+    your app becomes increasingly impractical as your app grows. You've got to
+    write automated tests. And no, unit tests aren't going to cover it. So make
+    a robot use your app like a real user before you deploy. That robot is
+    Cypress.
 keyTakeaways:
-  - title: TODO
-    description: TODO
-  - title: TODO
-    description: TODO
-  - title: TODO
-    description: TODO
-  - title: TODO
-    description: TODO
+  - title: Setup Cypress in your project
+    description:
+      There are a handful of useful configurations and companion tools you'll
+      want for your project to make sure you're ready for the tests you're going
+      to write so writing new tests is as painless as possible.
+  - title: Write Cypress tests
+    description:
+      Whether you're just checking that your terms of service page is rendered,
+      or running through an authenticated user flow, when we're done here,
+      you'll know how to write tests to handle all those cases.
+  - title: Write Cypress Utilities
+    description:
+      Every app has certain useful utilities that are useful for testing that
+      app specifically. In Cypress-land these are called custom commands and
+      you'll know how to write these yourself with no trouble.
+  - title: Using Cypress to Drive your Development
+    description: >-
+      Have you heard of TDD? That's Test Driven Development. It's great and once
+      you've got it into your workflow, it can help speed you up. Well, in this
+      workshop we'll learn about Cypress Driven Development (CDD) which is it's
+      own brand of productive. Instead of the usual change, refresh, `*click*`
+      `*click*` `*click*` workflow, we'll see how to make Cypress do that for
+      you and super-charge your productivity.
 topics:
   - Install and run Cypress on an existing application
   - Write simple Cypress tests
@@ -31,21 +56,9 @@ topics:
   - Debugging Cypress Tests
   - Using Cypress to enhance your development workflow
   - Mock HTTP requests to test failure situations
-
-prerequisite: TODO
-# ---
-# ---
-
-# ### Use Cypress to write end-to-end tests and be confident that the whole app works together.
-
-# Cypress is an incredibly powerful web testing tool. It's capable of testing any
-# web application. Its architecture places it a cut above similar end-to-end
-# testing tools. Its developer experience is best-in-class. And because Cypress
-# runs your tests in the same context as the rest of your application, you're able
-# to get speed, reliability, and debuggability that are just a long-distant dream
-# with similar tools. The catch? There is no catch. Cypress is exceptional.
-
-# In this workshop, we'll go over how you can install, configure, and script
-# Cypress to test modern, real-world JavaScript web applications.
-
-# ## Topics
+prerequisite: >-
+  You should have experience with [these JavaScript
+  features](/blog/javascript-to-know-for-react). This workshop will use
+  TypeScript, but should be completable if you do not have experience with
+  TypeScript (or you could attend my [TypeScript to know for
+  React](/workshops/typescript-to-know-for-react) workshop first).
