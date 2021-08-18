@@ -176,13 +176,23 @@ function Guests({episode}: {episode: CWKEpisode}) {
           </div>
           <div className="flex flex-none space-x-4">
             {guest.twitter ? (
-              <a href={guest.twitter} aria-label="twitter profile">
+              <a
+                target="_blank"
+                rel="noreferrer noopener"
+                href={`https://twitter.com/${guest.twitter}`}
+                aria-label="twitter profile"
+              >
                 <TwitterIcon />
               </a>
             ) : null}
 
             {guest.github ? (
-              <a href={guest.github} aria-label="github profile">
+              <a
+                target="_blank"
+                rel="noreferrer noopener"
+                href={`https://github.com/${guest.github}`}
+                aria-label="github profile"
+              >
                 <GithubIcon />
               </a>
             ) : null}
