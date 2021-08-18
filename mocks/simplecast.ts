@@ -80,8 +80,7 @@ for (const seasonListItem of seasonListItems) {
         is_published: true,
         updated_at: faker.date.past().toISOString(),
         image_url: faker.internet.avatar(),
-        audio_file_url:
-          'TODO... set audio_file_url to a real file if we ever use this',
+        audio_file_url: 'set audio_file_url to a real file if we ever use this',
         slug: title.split(' ').join('-'),
         description: faker.lorem.sentence(),
         season: seasonListItem,
