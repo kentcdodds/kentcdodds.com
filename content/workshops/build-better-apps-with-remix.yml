@@ -10,14 +10,15 @@ meta:
     - accessibility
 categories:
   - react
+  - remix
 convertKitTag: '2568112'
 problemStatements:
   part1: Building modern web applications is riddled with complexity
   part2: And that's only if you bother to deal with the problems
   part3: >-
-    Wouldn't it be nice to not have to worry about server cache/state management
-    or pending and error state management? Wouldn't it be cool to be able to
-    _use_ the global nature of CSS to your benefit, rather than find tools or
+    Tired of wiring up `onSubmit` to backend APIs and making sure your
+    client-side cache stays up-to-date? Wouldn't it be cool to be able to _use_
+    the global nature of CSS to your benefit, rather than find tools or
     conventions to avoid or work around it? And how would you like _nested
     layouts_ with intelligent and performance optimized data management that
     just works™?
@@ -25,10 +26,9 @@ problemStatements:
     Remix solves some of these problems, and completely eliminates the rest.
     **You don't even have to think** about server cache management or global CSS
     namespace clashes. It's not that Remix has APIs to avoid these problems,
-    they simply don't exist when you're using Remix. Oh, and feel free to use
-    GraphQL too if you want, but you'll find you don't need that added
-    complexity in your client-side code when using Remix. Ready to build faster
-    apps faster?
+    they simply don't exist when you're using Remix. Oh, and you don't need that
+    huge complex graphql client when you're using Remix. They've got you
+    covered. Ready to build faster apps faster?
 keyTakeaways:
   - title: Take advantage of nested routing
     description:
@@ -36,19 +36,29 @@ keyTakeaways:
       means each route you define can focus exclusively on itself and doesn't
       have to wrap itself in an overarching layout component which eliminates
       that boilerplate you need with other frameworks.
-  - title: Improve your site performance
+  - title: Write dead simple mutations
+    description:
+      Why re-invent mutations on the web when we've had something that works for
+      ages? `<form>` works great with Remix. No wiring up `useEffect`s,
+      `onSubmit`s, `useReducer`s or whatever. Remix will do all that for you,
+      including the backend portion. And when the mutation is done, Remix will
+      make sure the rest of the data on the page is fresh too ✨
+  - title:
+      Improve your site performance... As in speed, but also for search rankings
     description:
       Remix is already ridiculously fast, and it gives you a simple API into
       HTTP cache headers so you can make it even faster for pages that can be
       cached. It also gives you a great API for preloading/prefetching resources
-      and pages you think the user is likely to go next.
-  - title: Optimize your site for Search Engines (SEO)
+      and pages you think the user is likely to go next. On top of this, you get
+      a super simple API for data-driven `<meta>` tags which are critical for
+      SEO.
+  - title: Completely eliminate pending states
     description:
-      Most of page-level SEO works via `<meta>` tags and Remix gives simple and
-      effective ways to set those on a per-route-basis. You get access to your
-      data and it's all server-rendered _without_ the need for something like
-      `react-helmet`.
-  - title: Handle errors and pending states
+      Look. It's important to show you users that something's going on, and some
+      of these things take time. But what if we could cheat a little bit? Yup,
+      I'm talking about optimistic UI. But you've never seen optimistic UI done
+      this easily and reliably, I promise you.
+  - title: Handle errors
     description:
       Unfortunately, we can't get our data immediately and getting our data
       isn't always error free. But when you use Remix, your React components
@@ -60,7 +70,8 @@ topics:
   - SEO optimization
   - Data loading and mutations
   - Provide regular CSS
-  - Error Handling and Pending UI
+  - Error Handling
+  - Optimistic UI
   - Accessibility
 prerequisite: >-
   You should have experience with [these JavaScript

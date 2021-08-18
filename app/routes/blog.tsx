@@ -21,6 +21,7 @@ import {Button} from '../components/button'
 import type {Timings} from '../utils/metrics.server'
 import {getServerTimeHeader} from '../utils/metrics.server'
 import {ServerError} from '../components/errors'
+import {useSearchParams} from 'react-router-dom'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => [
@@ -80,6 +81,7 @@ const initialIndexToShow = PAGE_SIZE + 1 // + 1 for the featured blog
 
 function BlogHome() {
   const requestInfo = useRequestInfo()
+  const [searchParams] = useSearchParams()
 
   // alright, let's talk about the query params...
   // Normally with remix, you'd useSearchParams from react-router-dom
@@ -90,22 +92,21 @@ function BlogHome() {
   // already have. So we manually call `window.history.pushState` to avoid
   // the router from triggering the loader.
   const [queryValue, setQuery] = React.useState<string>(() => {
-    const initialSearchParams = requestInfo.searchParams
-    return new URLSearchParams(initialSearchParams).get('q') ?? ''
+    return searchParams.get('q') ?? ''
   })
   const query = queryValue.trim()
 
   React.useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search)
-    const oldQuery = searchParams.get('q') ?? ''
+    const currentSearchParams = new URLSearchParams(window.location.search)
+    const oldQuery = currentSearchParams.get('q') ?? ''
     if (query === oldQuery) return
 
     if (query) {
-      searchParams.set('q', query)
+      currentSearchParams.set('q', query)
     } else {
-      searchParams.delete('q')
+      currentSearchParams.delete('q')
     }
-    const newUrl = [window.location.pathname, searchParams.toString()]
+    const newUrl = [window.location.pathname, currentSearchParams.toString()]
       .filter(Boolean)
       .join('?')
     window.history.pushState(null, '', newUrl)

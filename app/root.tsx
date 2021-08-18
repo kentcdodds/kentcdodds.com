@@ -166,7 +166,6 @@ export const loader: LoaderFunction = async ({request}) => {
     convertKit: await getConvertKitFormLoaderData(request),
     requestInfo: {
       origin: getDomainUrl(request),
-      searchParams: new URL(request.url).searchParams.toString(),
       session: {
         email: loginInfoSession.getEmail(),
         hasActiveMagicLink,

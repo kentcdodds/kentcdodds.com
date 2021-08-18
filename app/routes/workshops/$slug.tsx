@@ -287,18 +287,22 @@ function WorkshopScreen() {
               </div>
 
               <div className="col-span-full lg:col-span-5 lg:col-start-8 lg:mr-12">
-                <ol className="space-y-24 lg:space-y-16">
-                  {workshop.keyTakeawayHTMLs.map(
-                    ({title, description}, index) => (
-                      <NumberedPanel
-                        key={index}
-                        number={index + 1}
-                        titleHTML={title}
-                        descriptionHTML={description}
-                      />
-                    ),
-                  )}
-                </ol>
+                {workshop.keyTakeawayHTMLs.length ? (
+                  <ol className="space-y-24 lg:space-y-16">
+                    {workshop.keyTakeawayHTMLs.map(
+                      ({title, description}, index) => (
+                        <NumberedPanel
+                          key={index}
+                          number={index + 1}
+                          titleHTML={title}
+                          descriptionHTML={description}
+                        />
+                      ),
+                    )}
+                  </ol>
+                ) : (
+                  <Paragraph>Key takeaways coming soon...</Paragraph>
+                )}
               </div>
             </Grid>
           </div>
@@ -315,11 +319,17 @@ function WorkshopScreen() {
           <ButtonLink to={registerLink}>Register here</ButtonLink>
         </div>
 
-        <ol className="col-span-full space-y-4">
-          {workshop.topicHTMLs.map((topicHTML, idx) => (
-            <TopicRow key={idx} number={idx + 1} topicHTML={topicHTML} />
-          ))}
-        </ol>
+        {workshop.topicHTMLs.length ? (
+          <ol className="col-span-full space-y-4">
+            {workshop.topicHTMLs.map((topicHTML, idx) => (
+              <TopicRow key={idx} number={idx + 1} topicHTML={topicHTML} />
+            ))}
+          </ol>
+        ) : (
+          <Paragraph className="col-span-full">
+            Topic list coming soon...
+          </Paragraph>
+        )}
       </Grid>
 
       <Spacer size="xs" />

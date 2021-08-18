@@ -38,7 +38,6 @@ function createSimpleContext<ContextType>(name: string) {
 
 type RequestInfo = {
   origin: string
-  searchParams: string
   session: {
     email: string | undefined
     hasActiveMagicLink: boolean
