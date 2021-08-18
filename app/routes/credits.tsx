@@ -129,7 +129,7 @@ function CreditsIndex() {
         ))}
       </Grid>
 
-      <Spacer size="medium" />
+      <Spacer size="base" />
 
       <HeaderSection
         title="Shout-outs"

@@ -71,12 +71,20 @@ function H6(props: TitleProps) {
 
 type ParagraphProps = {
   className?: string
+  prose?: boolean
   as?: React.ElementType
 } & ({children: React.ReactNode} | {dangerouslySetInnerHTML: {__html: string}})
 
-function Paragraph({className, as = 'p', ...rest}: ParagraphProps) {
+function Paragraph({
+  className,
+  prose = true,
+  as = 'p',
+  ...rest
+}: ParagraphProps) {
   return React.createElement(as, {
-    className: clsx('text-secondary text-lg', className),
+    className: clsx('text-secondary text-lg', className, {
+      'prose prose-light dark:prose-dark': prose,
+    }),
     ...rest,
   })
 }

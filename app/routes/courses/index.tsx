@@ -175,11 +175,11 @@ function CoursesHome() {
         />
       </Grid>
 
-      <Spacer size="medium" />
+      <Spacer size="base" />
 
       <TestimonialSection testimonials={data.testimonials} />
 
-      <Spacer size="medium" />
+      <Spacer size="base" />
 
       <Grid>
         <div className="col-span-full lg:col-span-5">

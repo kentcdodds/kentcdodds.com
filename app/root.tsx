@@ -344,7 +344,7 @@ function App() {
         <NotificationMessage queryStringKey="message" />
         <Navbar />
         <Outlet />
-        <Spacer size="medium" />
+        <Spacer size="base" />
         <Footer />
         <Scripts />
         <script

@@ -1,31 +1,70 @@
 title: Build Better Apps with Remix
-description: TODO
+description: Learn how you can use Remix to build faster apps... faster.
 meta:
   keywords:
     - react
     - remix
     - ssr
+    - performance
+    - seo
+    - accessibility
 categories:
   - react
 convertKitTag: '2568112'
 problemStatements:
-  part1: TODO
-  part2: TODO
-  part3: TODO
-  part4: TODO
+  part1: Building modern web applications is riddled with complexity
+  part2: And that's only if you bother to deal with the problems
+  part3: >-
+    Wouldn't it be nice to not have to worry about server cache/state management
+    or pending and error state management? Wouldn't it be cool to be able to
+    _use_ the global nature of CSS to your benefit, rather than find tools or
+    conventions to avoid or work around it? And how would you like _nested
+    layouts_ with intelligent and performance optimized data management that
+    just works™?
+  part4: >-
+    Remix solves some of these problems, and completely eliminates the rest.
+    **You don't even have to think** about server cache management or global CSS
+    namespace clashes. It's not that Remix has APIs to avoid these problems,
+    they simply don't exist when you're using Remix. Oh, and feel free to use
+    GraphQL too if you want, but you'll find you don't need that added
+    complexity in your client-side code when using Remix. Ready to build faster
+    apps faster?
 keyTakeaways:
-  - title: TODO
-    description: TODO
-  - title: TODO
-    description: TODO
-  - title: TODO
-    description: TODO
-  - title: TODO
-    description: TODO
+  - title: Take advantage of nested routing
+    description:
+      Nested routing enables Remix to optimize the data you request. It also
+      means each route you define can focus exclusively on itself and doesn't
+      have to wrap itself in an overarching layout component which eliminates
+      that boilerplate you need with other frameworks.
+  - title: Improve your site performance
+    description:
+      Remix is already ridiculously fast, and it gives you a simple API into
+      HTTP cache headers so you can make it even faster for pages that can be
+      cached. It also gives you a great API for preloading/prefetching resources
+      and pages you think the user is likely to go next.
+  - title: Optimize your site for Search Engines (SEO)
+    description:
+      Most of page-level SEO works via `<meta>` tags and Remix gives simple and
+      effective ways to set those on a per-route-basis. You get access to your
+      data and it's all server-rendered _without_ the need for something like
+      `react-helmet`.
+  - title: Handle errors and pending states
+    description:
+      Unfortunately, we can't get our data immediately and getting our data
+      isn't always error free. But when you use Remix, your React components
+      feel synchronous and error free. We'll learn the APIs Remix exposes to
+      give you powerful pending states and error management.
 topics:
-  - TODO
+  - Nested routing
+  - Setting HTTP Cache Headers
+  - SEO optimization
+  - Data loading and mutations
+  - Provide regular CSS
+  - Error Handling and Pending UI
+  - Accessibility
 prerequisite: >-
   You should have experience with [these JavaScript
   features](/blog/javascript-to-know-for-react) and attend my [React Hooks
-  Workshop](/workshops/react-hooks) or have the equivalent experience. You
-  should be experienced with React.
+  Workshop](/workshops/react-hooks) or have the equivalent experience. This
+  workshop will use TypeScript, but should be completable if you do not have
+  experience with TypeScript.

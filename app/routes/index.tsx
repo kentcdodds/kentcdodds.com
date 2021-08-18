@@ -50,19 +50,19 @@ export default function IndexRoute() {
       />
 
       <IntroductionSection />
-      <Spacer size="large" />
+      <Spacer size="lg" />
       <ProblemSolutionSection />
-      <Spacer size="medium" />
+      <Spacer size="base" />
       <BlogSection
         articles={data.blogRecommendations}
         title="Most popular from the blog."
         description="Probably the most helpful as well."
       />
-      <Spacer size="large" />
+      <Spacer size="lg" />
       <CourseSection />
-      <Spacer size="large" />
+      <Spacer size="lg" />
       <DiscordSection />
-      <Spacer size="large" />
+      <Spacer size="lg" />
       <AboutSection />
       <Outlet />
     </div>

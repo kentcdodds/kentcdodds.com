@@ -1,18 +1,15 @@
 import * as React from 'react'
 
-export interface SpacerProps {
-  size: keyof typeof spacerSizes
-}
-
 const spacerSizes = {
-  smallest: 'h-12',
-  smaller: 'h-24', // 96
-  small: 'h-36', // 144
-  medium: 'h-48', // 200
-  large: 'h-64', // 250
+  '3xs': 'h-6 lg:h-8',
+  '2xs': 'h-10 lg:h-12',
+  xs: 'h-20 lg:h-24',
+  sm: 'h-32 lg:h-36',
+  base: 'h-40 lg:h-48',
+  lg: 'h-56 lg:h-64',
 }
 
-function Spacer({size}: SpacerProps) {
+function Spacer({size}: {size: keyof typeof spacerSizes}) {
   return <div className={spacerSizes[size]} />
 }
 

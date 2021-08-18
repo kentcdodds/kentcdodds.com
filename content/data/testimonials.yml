@@ -234,3 +234,41 @@
     This workshop was so good that I couldn't help but write a blog post about
     my experience. Not only is this workshop great but Kent C. Dodds is my go to
     resource for all things React.
+
+- author: Yago Pereira Azevedo
+  priority: 4
+  subject: Discord Community
+  cloudinaryId: kentcdodds.com/testimonials/yago-pereira-azevedo
+  company: Software Engineer @BitGo
+  testimonial: >-
+    Kent's Discord community is amazing! Together with the Epic React workshop
+    it took me too a different level in my career. The amount of knowledge
+    exchange in there is amazing. Everyone is so helpful. I was able to get my
+    most recent job through a friend I met in there. Not only is it great for
+    all dev things, it's a great place to meet some really kind people and make
+    friends. I am really appreciative of the work Kent has put in to taking care
+    of his community.
+
+- author: Yago Pereira Azevedo
+  priority: 3
+  subject: EpicReact.dev
+  cloudinaryId: kentcdodds.com/testimonials/yago-pereira-azevedo
+  company: Software Engineer @BitGo
+  testimonial: >-
+    You can call me an Epic React 🥑 (Advocate), there is no better React course
+    around. Kent's approach to teaching is the one that resonates the most with
+    me. The pacing is amazing and he really focus on practice. This course
+    helped me understand React at a much deeper level. It builds up in the
+    fundamentals and progress extremely well into the advanced topics. Best
+    course investment I made to date.
+
+- author: Praveen Senadheera
+  priority: 4
+  subject: TestingJavaScript.com
+  cloudinaryId: kentcdodds.com/testimonials/praveen-senadheera
+  company: Software Engineer
+  testimonial: >-
+    I was able to use what I learned from TestingJavaScript.com to make
+    productive changes in the testing culture in the team. The small video
+    lessons that focus on topics are convenient to search and find the answer to
+    the specific problems I had with testing.

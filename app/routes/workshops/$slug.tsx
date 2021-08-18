@@ -15,7 +15,7 @@ import {FourOhFour} from '../../components/errors'
 import {getBlogRecommendations} from '../../utils/blog.server'
 import type {Timings} from '../../utils/metrics.server'
 import {getServerTimeHeader} from '../../utils/metrics.server'
-import {getWorkshop, getWorkshops} from '../../utils/workshops.server'
+import {getWorkshops} from '../../utils/workshops.server'
 import {useWorkshops} from '../../utils/providers'
 import {ConvertKitForm} from '../../convertkit/form'
 import {getTestimonials} from '../../utils/testimonials.server'
@@ -46,7 +46,8 @@ type LoaderData = {
 
 export const loader: KCDLoader<{slug: string}> = async ({params, request}) => {
   const timings: Timings = {}
-  const workshop = await getWorkshop(params.slug, {request, timings})
+  const workshops = await getWorkshops({request, timings})
+  const workshop = workshops.find(w => w.slug === params.slug)
   const testimonials = await getTestimonials({
     request,
     subjects: [`workshop: ${params.slug}` as TestimonialSubject],
@@ -215,7 +216,7 @@ function WorkshopScreen() {
                 <React.Fragment key={workshopEvent.date}>
                   <RegistrationPanel workshopEvent={workshopEvent} />
                   {index === workshopEvents.length - 1 ? null : (
-                    <Spacer size="smallest" />
+                    <Spacer size="2xs" />
                   )}
                 </React.Fragment>
               ))
@@ -276,11 +277,11 @@ function WorkshopScreen() {
             <Grid>
               <div className="flex flex-col col-span-full items-stretch mb-40 lg:col-span-5 lg:items-start lg:mb-0">
                 <H2 className="mb-8">
-                  At the end of this workshop you'll be able to do all of these
-                  things yourself.
+                  {`At the end of this workshop you'll be able to do all of
+                  these things yourself.`}
                 </H2>
                 <H2 className="mb-16" variant="secondary" as="p">
-                  Here's why you should register for the workshop.
+                  {`Here's why you should register for the workshop.`}
                 </H2>
                 <ButtonLink to={registerLink}>Register here</ButtonLink>
               </div>
@@ -304,7 +305,7 @@ function WorkshopScreen() {
         </div>
       </div>
 
-      <Grid className="mb-48 lg:mb-64">
+      <Grid>
         <div className="col-span-8 mb-8 lg:mb-16">
           <H2 className="mb-4 lg:mb-2">The topics we will be covering.</H2>
           <H2 variant="secondary">This is what we will talk about.</H2>
@@ -314,25 +315,44 @@ function WorkshopScreen() {
           <ButtonLink to={registerLink}>Register here</ButtonLink>
         </div>
 
-        <ol className="col-span-full mb-16 space-y-4 lg:mb-20">
+        <ol className="col-span-full space-y-4">
           {workshop.topicHTMLs.map((topicHTML, idx) => (
             <TopicRow key={idx} number={idx + 1} topicHTML={topicHTML} />
           ))}
         </ol>
+      </Grid>
 
+      <Spacer size="xs" />
+
+      <Grid>
+        {workshop.prerequisiteHTML ? (
+          <>
+            <div className="col-span-full lg:col-span-5">
+              <H6 className="mb-4">Required experience</H6>
+              <Paragraph
+                dangerouslySetInnerHTML={{__html: workshop.prerequisiteHTML}}
+              />
+            </div>
+            <div className="col-span-full lg:col-span-2">
+              <Spacer size="2xs" />
+            </div>
+          </>
+        ) : null}
         <div className="col-span-full lg:col-span-5">
-          <H6 className="mb-4">Required experience</H6>
-          <Paragraph
-            dangerouslySetInnerHTML={{__html: workshop.prerequisiteHTML}}
-          />
+          <H6 className="h- mb-4">Important Note</H6>
+          <Paragraph>
+            {`Depending on the questions asked during the workshop, or necessary changes in the material, the actual content of the workshop could differ from the above mentioned topics.`}
+          </Paragraph>
         </div>
       </Grid>
+
+      <Spacer size="base" />
 
       {data.testimonials.length ? (
         <TestimonialSection testimonials={data.testimonials} />
       ) : null}
 
-      <Spacer size="medium" />
+      <Spacer size="base" />
 
       {workshopEvents.length ? (
         <Grid className="mb-24 lg:mb-64">
@@ -341,13 +361,13 @@ function WorkshopScreen() {
               {`Ready to learn more about ${workshop.title} in this workshop?`}
             </H2>
             <H2 className="mb-20 text-center" variant="secondary">
-              You can register by using the button below. Can't wait to see you.
+              {`You can register by using the button below. Can't wait to see you.`}
             </H2>
             {workshopEvents.map((workshopEvent, index) => (
               <React.Fragment key={workshopEvent.date}>
                 <RegistrationPanel workshopEvent={workshopEvent} />
                 {index === workshopEvents.length - 1 ? null : (
-                  <Spacer size="smallest" />
+                  <Spacer size="2xs" />
                 )}
               </React.Fragment>
             ))}
