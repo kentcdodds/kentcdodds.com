@@ -2,13 +2,15 @@ import * as React from 'react'
 import {useSearchParams} from 'react-router-dom'
 import {Grid} from '../../components/grid'
 import {images} from '../../images'
-import {H6} from '../../components/typography'
+import {H3, H6} from '../../components/typography'
 import {Tag} from '../../components/tag'
+import {Spacer} from '../../components/spacer'
 import {CourseSection} from '../../components/sections/course-section'
 import {WorkshopCard} from '../../components/workshop-card'
 import {HeroSection} from '../../components/sections/hero-section'
 import {useWorkshops} from '../../utils/providers'
 import {useUpdateQueryStringValueWithoutNavigation} from '../../utils/misc'
+import {RegistrationPanel} from '../../components/workshop-registration-panel'
 
 export function meta() {
   return {
@@ -71,6 +73,24 @@ function WorkshopsHome() {
         imageBuilder={images.teslaX}
         imageSize="large"
       />
+
+      {data.workshopEvents.length ? (
+        <Grid>
+          <H3 className="col-span-full">Currently Schedule Workshops</H3>
+          <div className="col-span-full mt-6">
+            {data.workshopEvents.map((workshopEvent, index) => (
+              <React.Fragment key={workshopEvent.date}>
+                <RegistrationPanel workshopEvent={workshopEvent} />
+                {index === data.workshopEvents.length - 1 ? null : (
+                  <Spacer size="2xs" />
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        </Grid>
+      ) : null}
+
+      <Spacer size="base" />
 
       <Grid className="mb-14">
         <div className="flex flex-wrap col-span-full -mb-4 -mr-4 lg:col-span-10">
