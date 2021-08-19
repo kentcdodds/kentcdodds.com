@@ -82,7 +82,7 @@ function Paragraph({
   ...rest
 }: ParagraphProps) {
   return React.createElement(as, {
-    className: clsx('text-secondary text-lg', className, {
+    className: clsx('text-secondary max-w-full text-lg', className, {
       'prose prose-light dark:prose-dark': prose,
     }),
     ...rest,

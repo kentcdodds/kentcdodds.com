@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {useLoaderData, json} from 'remix'
 import type {MetaFunction} from 'remix'
-import {useParams} from 'react-router-dom'
+import {Link, useParams} from 'react-router-dom'
 import type {KCDHandle, KCDLoader, MdxListItem} from 'types'
 import {Grid} from '../../components/grid'
 import {H2, H5, H6, Paragraph} from '../../components/typography'
@@ -349,10 +349,56 @@ function WorkshopScreen() {
           </>
         ) : null}
         <div className="col-span-full lg:col-span-5">
-          <H6 className="h- mb-4">Important Note</H6>
+          <H6 className="mb-4">Important Note</H6>
           <Paragraph>
             {`Depending on the questions asked during the workshop, or necessary changes in the material, the actual content of the workshop could differ from the above mentioned topics.`}
           </Paragraph>
+        </div>
+        <div className="col-span-full">
+          <Spacer size="2xs" />
+        </div>
+        <div className="col-span-full mt-6">
+          <H6 className="mb-4">What to expect from a Kent C. Dodds workshop</H6>
+          <div className="flex flex-col gap-2">
+            <Paragraph>
+              {`
+                My primary goal is retention. If you can't remember what I've
+                taught you, then the whole experience was a waste of our time.
+              `}
+            </Paragraph>
+            <Paragraph>
+              {`
+                With that in mind, we'll follow the teaching strategy I've
+                developed over years of teaching
+              `}
+              {`(`}
+              <Link to="/blog/how-i-teach">
+                learn more about my teaching strategy here
+              </Link>
+              {`).`}
+            </Paragraph>
+            <Paragraph>
+              {`
+                The short version is, you'll spend the majority of time working
+                through exercises that are specifically crafted to help you
+                experiment with topics you may have never experienced before.
+                I intentionally put you into the deep end and let you struggle a
+                bit to prepare your brain for the instruction.
+              `}
+            </Paragraph>
+            <Paragraph>
+              {`
+                Based on both my personal experience and scientific research
+                around how people learn, this is an incredibly efficient way to
+                ensure you understand and remember what you're learning. This is
+                just one of the strategies I employ to improve your retention. I
+                think you'll love it!
+              `}
+            </Paragraph>
+            <Paragraph>
+              {`I'm excited to be your guide as we learn together!`}
+            </Paragraph>
+          </div>
         </div>
       </Grid>
 
