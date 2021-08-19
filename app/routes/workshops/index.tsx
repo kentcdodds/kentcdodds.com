@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {useState} from 'react'
+import {useSearchParams} from 'react-router-dom'
 import {Grid} from '../../components/grid'
 import {images} from '../../images'
 import {H6} from '../../components/typography'
@@ -8,6 +8,7 @@ import {CourseSection} from '../../components/sections/course-section'
 import {WorkshopCard} from '../../components/workshop-card'
 import {HeroSection} from '../../components/sections/hero-section'
 import {useWorkshops} from '../../utils/providers'
+import {useUpdateQueryStringValueWithoutNavigation} from '../../utils/misc'
 
 export function meta() {
   return {
@@ -26,12 +27,41 @@ function WorkshopsHome() {
     }
   }
 
+  // this bit is very similar to what's on the blogs page.
+  // Next time we need to do work in here, let's make an abstraction for them
   const tags = Array.from(tagsSet)
-  // TODO: save state in url, like the filters on the blog?
-  const [selectedCategory, setSelectedCategory] = useState<string>('')
-  const workshops = selectedCategory
-    ? data.workshops.filter(x => x.categories.includes(selectedCategory))
+  const [searchParams] = useSearchParams()
+
+  const [queryValue, setQuery] = React.useState<string>(() => {
+    return searchParams.get('q') ?? ''
+  })
+  const workshops = queryValue
+    ? data.workshops.filter(workshop =>
+        queryValue.split(' ').every(tag => workshop.categories.includes(tag)),
+      )
     : data.workshops
+
+  const visibleTags = queryValue
+    ? new Set(
+        workshops.flatMap(workshop => workshop.categories).filter(Boolean),
+      )
+    : new Set(tags)
+
+  function toggleTag(tag: string) {
+    setQuery(q => {
+      // create a regexp so that we can replace multiple occurrences (`react node react`)
+      const expression = new RegExp(tag, 'ig')
+
+      const newQuery = expression.test(q)
+        ? q.replace(expression, '')
+        : `${q} ${tag}`
+
+      // trim and remove subsequent spaces (`react   node ` => `react node`)
+      return newQuery.replace(/\s+/g, ' ').trim()
+    })
+  }
+
+  useUpdateQueryStringValueWithoutNavigation('q', queryValue)
 
   return (
     <>
@@ -48,12 +78,9 @@ function WorkshopsHome() {
             <Tag
               key={tag}
               tag={tag}
-              selected={selectedCategory === tag}
-              onClick={() =>
-                selectedCategory === tag
-                  ? setSelectedCategory('')
-                  : setSelectedCategory(tag)
-              }
+              selected={queryValue.includes(tag)}
+              onClick={() => toggleTag(tag)}
+              disabled={!visibleTags.has(tag) && !queryValue.includes(tag)}
             />
           ))}
         </div>
@@ -61,7 +88,7 @@ function WorkshopsHome() {
 
       <Grid className="mb-64">
         <H6 as="h2" className="col-span-full mb-6">
-          {selectedCategory
+          {queryValue
             ? `${workshops.length} workshops found`
             : 'Showing all workshops'}
         </H6>

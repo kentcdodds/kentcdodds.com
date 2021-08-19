@@ -4,6 +4,7 @@ import {json, useLoaderData} from 'remix'
 import type {KCDHandle, MdxListItem} from 'types'
 import formatDate from 'date-fns/format'
 import parseISO from 'date-fns/parseISO'
+import {useSearchParams} from 'react-router-dom'
 import {Grid} from '../components/grid'
 import {getImageBuilder, getImgProps, images} from '../images'
 import {H2, H3, H6} from '../components/typography'
@@ -21,7 +22,7 @@ import {Button} from '../components/button'
 import type {Timings} from '../utils/metrics.server'
 import {getServerTimeHeader} from '../utils/metrics.server'
 import {ServerError} from '../components/errors'
-import {useSearchParams} from 'react-router-dom'
+import {useUpdateQueryStringValueWithoutNavigation} from '../utils/misc'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => [
@@ -83,34 +84,12 @@ function BlogHome() {
   const requestInfo = useRequestInfo()
   const [searchParams] = useSearchParams()
 
-  // alright, let's talk about the query params...
-  // Normally with remix, you'd useSearchParams from react-router-dom
-  // and updating the search params will trigger the search to update for you.
-  // However, it also triggers a navigation to the new url, which will trigger
-  // the loader to run which we do not want because all our data is already
-  // on the client and we're just doing client-side filtering of data we
-  // already have. So we manually call `window.history.pushState` to avoid
-  // the router from triggering the loader.
   const [queryValue, setQuery] = React.useState<string>(() => {
     return searchParams.get('q') ?? ''
   })
   const query = queryValue.trim()
 
-  React.useEffect(() => {
-    const currentSearchParams = new URLSearchParams(window.location.search)
-    const oldQuery = currentSearchParams.get('q') ?? ''
-    if (query === oldQuery) return
-
-    if (query) {
-      currentSearchParams.set('q', query)
-    } else {
-      currentSearchParams.delete('q')
-    }
-    const newUrl = [window.location.pathname, currentSearchParams.toString()]
-      .filter(Boolean)
-      .join('?')
-    window.history.pushState(null, '', newUrl)
-  }, [query])
+  useUpdateQueryStringValueWithoutNavigation('q', query)
 
   const data = useLoaderData<LoaderData>()
   const allPosts = data.posts
@@ -126,6 +105,9 @@ function BlogHome() {
   const postsToShow = matchingPosts.slice(0, indexToShow)
 
   const hasMorePosts = indexToShow < matchingPosts.length
+
+  // this bit is very similar to what's on the blogs page.
+  // Next time we need to do work in here, let's make an abstraction for them
 
   function toggleTag(tag: string) {
     setQuery(q => {
@@ -143,14 +125,6 @@ function BlogHome() {
 
   const isSearching = query.length > 0
 
-  // feature the most recent post, unless we're searching
-  // TODO: determine featured posts using some smarts on the backend
-  // based on the user's read posts etc.
-  const featured = isSearching ? null : matchingPosts[0]
-  const featuredPermalink = featured
-    ? `${requestInfo.origin}/blog/${featured.slug}`
-    : undefined
-
   const posts = isSearching
     ? matchingPosts.slice(0, indexToShow)
     : postsToShow.slice(1, indexToShow)
@@ -162,6 +136,14 @@ function BlogHome() {
           .filter(Boolean),
       )
     : new Set(data.tags)
+
+  // feature the most recent post, unless we're searching
+  // TODO: determine featured posts using some smarts on the backend
+  // based on the user's read posts etc.
+  const featured = isSearching ? null : matchingPosts[0]
+  const featuredPermalink = featured
+    ? `${requestInfo.origin}/blog/${featured.slug}`
+    : undefined
 
   return (
     <>

@@ -1,32 +1,57 @@
 title: Testing Node.js Applications
 description:
-  In this workshop, we'll cover common cases you'll come across when testing a
-  production Node.js application which uses frameworks like Express.js, Nest.js,
-  Koa.js, Hapi.js and more. By the end of this, you'll know what you need to do
-  to increase your deployment confidence by adding unit and integration tests
-  your Node.js-based backends.
+  Increase your Node.js deployment confidence with unit and integration tests.
 meta:
   keywords:
     - node
     - node.js
     - testing
+    - workshop
 categories:
   - testing
 convertKitTag: '938289'
 problemStatements:
-  part1: TODO
-  part2: TODO
-  part3: TODO
-  part4: TODO
+  part1: Hey, nice backend you've poured countless hours into
+  part2: Would be a shame if something were to ... break!
+  part3:
+    You've got a fancy UI that allows users to look at their data and make nice
+    mutations all with beautiful and completely accessible animations. But if
+    you're backend isn't working, no amount of fanciness in the UI is going to
+    shield your users from the huge feelings of frustration (and there may even
+    be some... profanity 😱).
+  part4:
+    Save your users the pain and frustration by ensuring your backend can show
+    up for your fancy UI. You probably don't want to just hit every endpoint
+    manually before shipping. Make the computer do it. They're better at it
+    anyway. This is easy to get wrong though. That's where this workshop comes
+    in.
 keyTakeaways:
-  - title: TODO
-    description: TODO
-  - title: TODO
-    description: TODO
-  - title: TODO
-    description: TODO
-  - title: TODO
-    description: TODO
+  - title: Write unit tests
+    description:
+      When writing Node.js backends, you typically find yourself the proud
+      parent of a lot of utility functions, controllers, and middleware. These
+      creations of yours need to be tested. They can often be covered by
+      integration tests, but sometimes there are enough edge cases in them that
+      they require their own isolated unit tests and after this workshop you'll
+      know how to do that.
+  - title: Write integration tests regardless of your HTTP framework
+    description:
+      Most of our tests should be integration focused. When we're talking about
+      Node.js backends, we're normally exposing HTTP endpoints that other
+      developers will hit. This is our public API and we can get most of our
+      confidence by hitting those in our tests. When we're through here, you'll
+      know how to do this effectively.
+  - title: Mock third party dependencies
+    description:
+      We gotta mock things out sometimes (unless you really do want to order two
+      hundred of your company's plush Koalas when testing the checkout flow). In
+      this workshop we'll learn how to effectively mock things out and how to
+      keep as much confidence as possible while doing so.
+  - title: Ship with confidence
+    description:
+      When we're done here, you'll know what you need to do to set your own
+      project up for automated testing so you can deploy your application with
+      confidence.
 topics:
   - Write unit tests for pure functions
   - Write unit tests for "Controller" modules
@@ -39,26 +64,3 @@ prerequisite: >-
   features](/blog/javascript-to-know-for-react). This workshop will use
   TypeScript, but should be completable if you do not have experience with
   TypeScript.
-
-# ---
-# ---
-
-# ### Increase your confidence in deploying Node.js-based backends
-
-# Backends hold so much of our application's business logic that is often used to
-# support multiple clients (web, mobile, and other native platforms). This logic
-# is critical to get right and deploying a breaking change to this can be
-# devastating to your company's goals (not to mention the bottom-line). Increasing
-# your "deployment confidence" is crucial and automated testing is the best way to
-# do that.
-
-# As Node.js continues to grow in usage around the world, learning how to test
-# this mission-critical code in a way that increases developer velocity as well as
-# confidence becomes increasingly important. In this workshop we use an Express.js
-# example and focus on the patterns and practices that you need to learn so you
-# can apply what you learn to test your code written in any Node.js web framework.
-
-# ## Topics
-
-# ## Pre-requisities
-
