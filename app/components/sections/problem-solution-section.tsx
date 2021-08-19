@@ -135,7 +135,7 @@ function ProblemSolutionSection({
           <Paragraph className="mt-8">
             {`My `}
             <strong>{blogPostCount}</strong>
-            {` blog posts (and counting) have been read ${totalBlogReads} times by ${totalBlogReaders} people. There you'll find blogs about `}
+            {` blog posts (and counting) have been read ${totalBlogReads} of times by ${totalBlogReaders} people. There you'll find blogs about `}
             <Link to="/blog?q=javascript">JavaScript</Link>
             {`, `}
             <Link to="/blog?q=typescript">TypeScript</Link>
