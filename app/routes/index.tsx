@@ -36,13 +36,22 @@ export const loader: LoaderFunction = async ({request}) => {
   const totalBlogReaders = await getReaderCount()
   const blogRecommendations = await getBlogRecommendations(request)
 
+  const totalBlogReads = blogRankings.reduce(
+    (total, ranking) => ranking.totalReads + total,
+    0,
+  )
+
   const data: LoaderData = {
     blogRecommendations,
     blogPostCount: formatNumber(posts.length),
-    totalBlogReaders: formatNumber(totalBlogReaders),
-    totalBlogReads: formatNumber(
-      blogRankings.reduce((total, ranking) => ranking.totalReads + total, 0),
-    ),
+    totalBlogReaders:
+      totalBlogReaders < 10_000
+        ? 'tens of thousands'
+        : formatNumber(totalBlogReaders),
+    totalBlogReads:
+      totalBlogReads < 100_000
+        ? 'hundreds of thousands'
+        : formatNumber(totalBlogReads),
     currentBlogLeaderTeam: blogRankings[0]?.team,
   }
   return json(data)
