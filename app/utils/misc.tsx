@@ -8,6 +8,9 @@ import {images} from '../images'
 import type {getEnv} from './env.server'
 
 const teams: Array<Team> = Object.values(Team)
+const unknownTeam = {UNKNOWN: 'UNKNOWN'} as const
+const optionalTeams = {...Team, ...unknownTeam}
+type OptionalTeam = typeof optionalTeams[keyof typeof optionalTeams]
 
 const defaultAvatarSize = 128
 function getAvatar(
@@ -40,6 +43,19 @@ function getAvatarForUser(
   }
 }
 
+const teamTextColorClasses: Record<OptionalTeam, string> = {
+  YELLOW: 'text-team-yellow',
+  BLUE: 'text-team-blue',
+  RED: 'text-team-red',
+  UNKNOWN: 'text-team-unknown',
+}
+
+const teamDisplay: Record<Team, string> = {
+  RED: 'Red',
+  BLUE: 'Blue',
+  YELLOW: 'Yellow',
+}
+
 type AnchorProps = React.DetailedHTMLProps<
   React.AnchorHTMLAttributes<HTMLAnchorElement>,
   HTMLAnchorElement
@@ -57,41 +73,11 @@ const AnchorOrLink = React.forwardRef<HTMLAnchorElement, AnchorProps>(
   },
 )
 
-// unfortunately TypeScript doesn't have Intl.ListFormat yet 😢
-// so we'll just add it ourselves:
-type ListFormatOptions = {
-  type?: 'conjunction' | 'disjunction' | 'unit'
-  style?: 'long' | 'short' | 'narrow'
-  localeMatcher?: 'lookup' | 'best fit'
-}
-declare namespace Intl {
-  class ListFormat {
-    constructor(locale: string, options: ListFormatOptions)
-    public format: (items: Array<string>) => string
-  }
-}
-
-type ListifyOptions<ItemType> = {
-  type?: ListFormatOptions['type']
-  style?: ListFormatOptions['style']
-  stringify?: (item: ItemType) => string
-}
-function listify<ItemType>(
-  array: Array<ItemType>,
-  {
-    type = 'conjunction',
-    style = 'long',
-    stringify = (thing: {toString(): string}) => thing.toString(),
-  }: ListifyOptions<ItemType> = {},
-) {
-  const stringified = array.map(item => stringify(item))
-  const formatter = new Intl.ListFormat('en', {style, type})
-  return formatter.format(stringified)
-}
-
 function formatTime(seconds: number) {
   return dateFns.format(dateFns.addSeconds(new Date(0), seconds), 'mm:ss')
 }
+
+const formatNumber = (num: number) => new Intl.NumberFormat().format(num)
 
 function getErrorMessage(error: unknown) {
   if (typeof error === 'string') return error
@@ -175,7 +161,10 @@ function getDomainUrl(request: Request) {
   return `${protocol}://${host}`
 }
 
-function useUpdateQueryStringValueWithoutNavigation(queryKey: string, queryValue: string) {
+function useUpdateQueryStringValueWithoutNavigation(
+  queryKey: string,
+  queryValue: string,
+) {
   React.useEffect(() => {
     const currentSearchParams = new URLSearchParams(window.location.search)
     const oldQuery = currentSearchParams.get(queryKey) ?? ''
@@ -199,7 +188,6 @@ function useUpdateQueryStringValueWithoutNavigation(queryKey: string, queryValue
     // the router from triggering the loader.
     window.history.pushState(null, '', newUrl)
   }, [queryKey, queryValue])
-
 }
 
 export {
@@ -211,12 +199,17 @@ export {
   getNonNull,
   assertNonNull,
   useUpdateQueryStringValueWithoutNavigation,
-  listify,
   typedBoolean,
   getRequiredServerEnvVar,
   getRequiredGlobalEnvVar,
   getDiscordAuthorizeURL,
   getDomainUrl,
+  unknownTeam,
   teams,
+  teamDisplay,
+  teamTextColorClasses,
   formatTime,
+  formatNumber,
 }
+export {listify} from './listify'
+export type {OptionalTeam}

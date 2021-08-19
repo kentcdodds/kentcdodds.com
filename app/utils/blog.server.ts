@@ -46,18 +46,23 @@ async function getBlogRecommendations(
   const posts = allPosts.filter(post => !exclude.includes(post.slug))
 
   const recommendations: Array<MdxListItem> = []
-  const limitPerGroup = Math.floor(limit / 3)
+  // if no keywords were given, then we won't have a group for best match
+  // so there will only be two groups
+  const groupsCount = keywords.length ? 3 : 2
+  const limitPerGroup = Math.floor(limit / groupsCount) || 1
 
-  // get best match posts
-  const postsByBestMatch = keywords.length
-    ? Array.from(new Set(...keywords.map(k => filterPosts(posts, k))))
-    : posts
-  const bestMatchRecommendations = shuffle(
-    postsByBestMatch.slice(0, limitPerGroup * 4),
-  ).slice(0, limitPerGroup)
-  recommendations.push(...bestMatchRecommendations)
+  if (keywords.length) {
+    // get best match posts
+    const postsByBestMatch = keywords.length
+      ? Array.from(new Set(...keywords.map(k => filterPosts(posts, k))))
+      : posts
+    const bestMatchRecommendations = shuffle(
+      postsByBestMatch.slice(0, limitPerGroup * 4),
+    ).slice(0, limitPerGroup)
+    recommendations.push(...bestMatchRecommendations)
 
-  exclude = [...exclude, ...bestMatchRecommendations.map(({slug}) => slug)]
+    exclude = [...exclude, ...bestMatchRecommendations.map(({slug}) => slug)]
+  }
 
   // get most popular posts
   const mostPopularRecommendationSlugs = await getMostPopularPostSlugs({
@@ -73,13 +78,15 @@ async function getBlogRecommendations(
   recommendations.push(...mostPopularRecommendations)
   exclude = [...exclude, ...mostPopularRecommendationSlugs]
 
-  // fill in the rest with random posts
-  const remainingPosts = allPosts.filter(({slug}) => !exclude.includes(slug))
-  const completelyRandomRecommendations = shuffle(remainingPosts).slice(
-    0,
-    limit - recommendations.length,
-  )
-  recommendations.push(...completelyRandomRecommendations)
+  if (recommendations.length < limit) {
+    // fill in the rest with random posts
+    const remainingPosts = allPosts.filter(({slug}) => !exclude.includes(slug))
+    const completelyRandomRecommendations = shuffle(remainingPosts).slice(
+      0,
+      limit - recommendations.length,
+    )
+    recommendations.push(...completelyRandomRecommendations)
+  }
 
   // then mix them up
   return shuffle(recommendations)
@@ -109,7 +116,7 @@ async function getMostPopularPostSlugs({
   return result.map(p => p.postSlug)
 }
 
-async function getTotalPostReads(slug: string) {
+async function getTotalPostReads(slug?: string) {
   const count = await prisma.postRead.count({
     where: {postSlug: slug},
   })
@@ -117,7 +124,17 @@ async function getTotalPostReads(slug: string) {
   return count
 }
 
-async function getBlogReadRankings(slug: string) {
+async function getReaderCount() {
+  // couldn't figure out how to do this in one query with out $queryRaw 🤷‍♂️
+  type CountResult = [{count: number}]
+  const [userIdCount, clientIdCount] = await Promise.all([
+    prisma.$queryRaw`SELECT COUNT(DISTINCT "public"."PostRead"."userId") FROM "public"."PostRead" WHERE ("public"."PostRead"."userId") IS NOT NULL` as Promise<CountResult>,
+    prisma.$queryRaw`SELECT COUNT(DISTINCT "public"."PostRead"."clientId") FROM "public"."PostRead" WHERE ("public"."PostRead"."clientId") IS NOT NULL` as Promise<CountResult>,
+  ]).catch(() => [[{count: 0}], [{count: 0}]])
+  return userIdCount[0].count + clientIdCount[0].count
+}
+
+async function getBlogReadRankings(slug?: string) {
   const rawRankingData = await Promise.all(
     teams.map(async function getRankingsForTeam(
       team,
@@ -160,7 +177,7 @@ async function getBlogReadRankings(slug: string) {
   return rankPercentages
 }
 
-async function getRecentReads(slug: string, team: Team) {
+async function getRecentReads(slug: string | undefined, team: Team) {
   const withinTheLastSixMonths = subMonths(new Date(), 6)
 
   const count = await prisma.postRead.count({
@@ -190,4 +207,9 @@ async function getActiveMembers(team: Team) {
   return count
 }
 
-export {getBlogRecommendations, getBlogReadRankings, getTotalPostReads}
+export {
+  getBlogRecommendations,
+  getBlogReadRankings,
+  getTotalPostReads,
+  getReaderCount,
+}

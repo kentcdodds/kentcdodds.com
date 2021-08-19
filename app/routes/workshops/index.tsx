@@ -1,4 +1,5 @@
 import * as React from 'react'
+import type {MetaFunction} from 'remix'
 import {useSearchParams} from 'react-router-dom'
 import {Grid} from '../../components/grid'
 import {images} from '../../images'
@@ -9,13 +10,27 @@ import {CourseSection} from '../../components/sections/course-section'
 import {WorkshopCard} from '../../components/workshop-card'
 import {HeroSection} from '../../components/sections/hero-section'
 import {useWorkshops} from '../../utils/providers'
-import {useUpdateQueryStringValueWithoutNavigation} from '../../utils/misc'
+import {
+  useUpdateQueryStringValueWithoutNavigation,
+  listify,
+} from '../../utils/misc'
 import {RegistrationPanel} from '../../components/workshop-registration-panel'
 
-export function meta() {
+export const meta: MetaFunction = ({parentsData}) => {
+  const data = parentsData['routes/workshops']
+
+  const tagsSet = new Set<string>()
+  for (const workshop of data.workshops) {
+    for (const category of workshop.categories) {
+      tagsSet.add(category)
+    }
+  }
+
   return {
     title: 'Workshops with Kent C. Dodds',
-    description: 'Get really good at making software with Kent C. Dodds',
+    description: `Get really good at making software with Kent C. Dodds' ${
+      data.workshops.length
+    } workshops on ${listify([...tagsSet])}`,
   }
 }
 

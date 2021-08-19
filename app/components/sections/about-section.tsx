@@ -44,16 +44,17 @@ function AboutSection() {
           })}
         />
 
-        <H2 className="mt-12">Big extreme sports enthusiast.</H2>
+        <H2 className="mt-12">{`Big extreme sports enthusiast.`}</H2>
         <H2 className="mt-2" variant="secondary" as="p">
-          With a big heart for helping people.{' '}
+          {`With a big heart for helping people.`}
         </H2>
 
         <Paragraph className="mt-8">
-          Vestibulum in cursus est, sit amet rhoncus sapien. Fusce nec quam
-          euismod, aliquet nulla at, gravida nunc. Nulla vitae hendrerit velit.
-          Duis nisi felis, porta eu convallis sit vulputate non mi. Mauris vel
-          pellentesq.
+          {`
+            I'm a JavaScript engineer and teacher and I'm active in the open
+            source community. And I'm also a husband, father, and an extreme
+            sports and sustainability enthusiast.
+          `}
         </Paragraph>
 
         <ArrowLink to="/about" direction="right" className="mt-14">

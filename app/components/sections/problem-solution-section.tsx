@@ -1,4 +1,6 @@
 import * as React from 'react'
+import {Link} from 'react-router-dom'
+import clsx from 'clsx'
 import {
   Tabs,
   Tab as ReachTab,
@@ -7,10 +9,12 @@ import {
   TabPanels,
   TabPanel,
 } from '@reach/tabs'
-import clsx from 'clsx'
+import {differenceInYears} from 'date-fns'
 import {motion, AnimatePresence} from 'framer-motion'
+import type {Team} from 'types'
 import {images, getImgProps} from '../../images'
 import type {ImageBuilder} from '../../images'
+import {teamTextColorClasses} from '../../utils/misc'
 import {Grid} from '../grid'
 import {H2, H3, Paragraph} from '../typography'
 import {ArrowLink} from '../arrow-button'
@@ -85,28 +89,36 @@ function ContentPanel({
   )
 }
 
-function ProblemSolutionSection() {
+function ProblemSolutionSection({
+  blogPostCount,
+  totalBlogReaders,
+  totalBlogReads,
+  currentBlogLeaderTeam,
+}: {
+  blogPostCount: string
+  totalBlogReaders: string
+  totalBlogReads: string
+  currentBlogLeaderTeam: Team | undefined
+}) {
   const [activeTabIndex, setActiveTabIndex] = React.useState(0)
 
   return (
     <Tabs as={Grid} featured onChange={index => setActiveTabIndex(index)}>
       <div className="col-span-full lg:col-span-5">
         <H2 className="mb-4 lg:mb-0">
-          The JavaScript landscape is incredibly confusing to keep up with
-          right?
+          Having a hard time keeping up with JavaScript?
         </H2>
       </div>
       <div className="col-span-full lg:col-span-5 lg:col-start-7">
         <H2 variant="secondary" as="p">
-          You're in the right place, my website is your one stop shop for
-          everything JavaScript related.
+          {`
+            Well, you're in the right place. My website is your one stop shop
+            for everything you need to build JavaScript apps.
+          `}
         </H2>
       </div>
 
-      <hr
-        id="p"
-        className="col-span-full mb-10 mt-16 border-gray-200 dark:border-gray-600 lg:mb-20 lg:mt-24"
-      />
+      <hr className="col-span-full mb-10 mt-16 border-gray-200 dark:border-gray-600 lg:mb-20 lg:mt-24" />
 
       <div className="col-span-full col-start-1 order-1 lg:col-span-5 lg:order-3 lg:mt-52 lg:pt-2">
         <TabList className="inline-flex flex-row text-white text-xl leading-snug bg-transparent space-x-8 lg:flex-col lg:text-7xl lg:space-x-0">
@@ -121,11 +133,43 @@ function ProblemSolutionSection() {
           <H3>Educational blog</H3>
 
           <Paragraph className="mt-8">
-            Vestibulum in cursus est, sit amet rhoncus sapien. Fusce nec quam
-            euismod, aliquet nulla at, gravida nunc. Nulla vitae hendrerit
-            velit. Duis nisi felis, porta eu convallis sit amet, vulputate non
-            mi. Mauris vel pellentesque mauris vivamus.
+            {`My `}
+            <strong>{blogPostCount}</strong>
+            {` blog posts (and counting) have been read ${totalBlogReads} times by ${totalBlogReaders} people. There you'll find blogs about `}
+            <Link to="/blog?q=javascript">JavaScript</Link>
+            {`, `}
+            <Link to="/blog?q=typescript">TypeScript</Link>
+            {`, `}
+            <Link to="/blog?q=react">React</Link>
+            {`, `}
+            <Link to="/blog?q=testing">Testing</Link>
+            {`, `}
+            <Link to="/blog?q=career">your career</Link>
+            {`, and `}
+            <Link to="/blog">and more</Link>.
           </Paragraph>
+          {currentBlogLeaderTeam ? (
+            <Paragraph
+              prose={false}
+              textColorClassName={teamTextColorClasses[currentBlogLeaderTeam]}
+              className={clsx({
+                // if the yellow team is winning, it looks *really* bad in light mode
+                // so we have this mess... Probably should figure out a better way to deal with this
+                // more generally...
+                'inline-block dark:p-0 px-4 py-2 bg-gray-400 dark:bg-transparent rounded-sm':
+                  currentBlogLeaderTeam === 'YELLOW',
+              })}
+            >
+              {`The `}
+              <Link
+                to="/teams"
+                className={`${teamTextColorClasses[currentBlogLeaderTeam]} underlined`}
+              >
+                <strong>{currentBlogLeaderTeam.toLowerCase()}</strong>
+              </Link>
+              {` team is winning.`}
+            </Paragraph>
+          ) : null}
 
           <ArrowLink to="/blog" className="mt-14">
             Start reading the blog
@@ -139,10 +183,21 @@ function ProblemSolutionSection() {
           <H3>Courses</H3>
 
           <Paragraph className="mt-8">
-            Duis nisi felis, porta eu convallis sit amet, vulputate non mi.
-            Mauris vel pellentesque mauris vivamus. Vestibulum in cursus est,
-            sit amet rhoncus sapien. Fusce nec quam euismod, aliquet nulla at,
-            gravida nunc. Nulla vitae hendrerit velit.
+            {`
+              I've been teaching people just like you how to build better
+              software for over ${differenceInYears(
+                Date.now(),
+                new Date(2014, 0, 0),
+              )}
+              years. Tens of thousands of people have increased their confidence
+              in shipping software with
+            `}
+            <a href="https://testingjavascript.com">TestingJavaScript.com</a>
+            {`
+              and even more have improved the performance and maintainability
+              of their React applications from what they've learned from
+            `}
+            <a href="https://epicreact.dev">EpicReact.dev</a>.
           </Paragraph>
 
           <ArrowLink to="/courses" className="mt-14">
@@ -154,14 +209,33 @@ function ProblemSolutionSection() {
           <H3>Podcast</H3>
 
           <Paragraph className="mt-8">
-            Mauris vel pellentesque mauris vivamus. Vestibulum in cursus est,
-            sit amet rhoncus sapien. Fusce nec quam euismod, aliquet nulla at,
-            gravida nunc. Nulla vitae hendrerit velit. Duis nisi felis, porta eu
-            convallis sit amet, vulputate non mi.
+            {`
+              I really enjoy chatting with people about softare development and
+              life as a software developer. So I have several podcasts for you
+              to enjoy like
+            `}
+            <Link to="/chats">Chats with Kent</Link>
+            {`, `}
+            <Link to="/call">Call Kent</Link>
+            {`, and `}
+            <a href="https://epicreact.dev/podcast">
+              the EpicReact.dev podcast
+            </a>
+            .
+          </Paragraph>
+
+          <Paragraph>
+            {`
+              I've also had the pleasure to be a guest on many other podcasts
+              where I've been able to share my thoughts on webdev. You can find
+              those on my
+            `}
+            <Link to="/appearances">appearances</Link>
+            {` page.`}
           </Paragraph>
 
           <ArrowLink to="/chats" className="mt-14">
-            Start listening to the podcasts
+            Start listening to chats with Kent
           </ArrowLink>
         </ContentPanel>
       </TabPanels>

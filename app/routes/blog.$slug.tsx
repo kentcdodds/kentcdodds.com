@@ -25,6 +25,8 @@ import {externalLinks} from '../external-links'
 import {TeamStats} from '../components/team-stats'
 import type {Timings} from '../utils/metrics.server'
 import {getServerTimeHeader} from '../utils/metrics.server'
+import {useRequestInfo} from '../utils/providers'
+import {formatNumber} from '../utils/misc'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
@@ -39,7 +41,7 @@ type LoaderData = {
   page: MdxPage | null
   recommendations: Array<MdxListItem>
   readRankings: Await<ReturnType<typeof getBlogReadRankings>>
-  totalReads: number
+  totalReads: string
 }
 
 export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
@@ -65,7 +67,12 @@ export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
     getTotalPostReads(params.slug),
   ])
 
-  const data: LoaderData = {page, recommendations, readRankings, totalReads}
+  const data: LoaderData = {
+    page,
+    recommendations,
+    readRankings,
+    totalReads: formatNumber(totalReads),
+  }
   const headers = {
     'Cache-Control': 'public, max-age=3600',
     'Server-Timing': getServerTimeHeader(timings),
@@ -165,25 +172,28 @@ function useOnRead({
   }, [readTime, onRead, parentElRef])
 }
 
-function ArticleFooter() {
+function ArticleFooter({
+  permalink,
+  title = 'an awesome post',
+}: {
+  permalink: string
+  title?: string
+}) {
   return (
     <Grid>
-      <div className="flex flex-col col-span-full justify-between mb-12 pb-12 text-blueGray-500 text-lg font-medium border-b border-gray-600 lg:flex-row lg:col-span-8 lg:col-start-3 lg:pb-6">
+      <div className="flex flex-col flex-wrap gap-2 col-span-full justify-between mb-12 pb-12 text-blueGray-500 text-lg font-medium border-b border-gray-600 lg:flex-row lg:col-span-8 lg:col-start-3 lg:pb-6">
         <div className="flex space-x-5">
-          <H6 as="h2">Share article</H6>
-          {/* TODO: fix links */}
-          <Link
+          <a
             className="dark:hover:text-white underlined dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
-            to="/"
+            target="_blank"
+            rel="noreferrer noopener"
+            href={`https://twitter.com/intent/tweet?${new URLSearchParams({
+              url: permalink,
+              text: `I just read ${title} by @kentcdodds`,
+            })}`}
           >
-            Facebook
-          </Link>
-          <Link
-            className="dark:hover:text-white underlined dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
-            to="/"
-          >
-            Twitter
-          </Link>
+            Tweet this article
+          </a>
         </div>
 
         <div className="flex">
@@ -229,6 +239,7 @@ four kids in Utah.
 
 function MdxScreen() {
   const data = useLoaderData<LoaderData>()
+  const requestInfo = useRequestInfo()
   if (!data.page) {
     throw new Error(
       'This should be impossible because we only render the MdxScreen if there is a data.page object.',
@@ -239,6 +250,8 @@ function MdxScreen() {
   const params = useParams()
   const {slug} = params
   const Component = useMdxComponent(code)
+
+  const permalink = `${requestInfo.origin}/blog/${slug}`
 
   const readMarker = React.useRef<HTMLDivElement>(null)
   useOnRead({
@@ -367,7 +380,10 @@ function MdxScreen() {
       </Grid>
 
       <div className="mb-64">
-        <ArticleFooter />
+        <ArticleFooter
+          permalink={permalink}
+          title={data.page.frontmatter.title}
+        />
       </div>
 
       <BlogSection

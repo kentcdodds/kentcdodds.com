@@ -14,14 +14,14 @@ function DiscordSection() {
         </div>
 
         <H2 className="mt-12">
-          Do you want to meet like minded people that face the same challenges?
+          Meet like minded people who face similar challenges.
         </H2>
         <H2 variant="secondary" className="mt-8" as="p">
-          Join the discord and learn to get better at react together.
+          Join the discord and get better at building software together.
         </H2>
 
         <ArrowLink to="/discord" direction="right" className="mt-20">
-          Learn more about the discord
+          Learn more about the KCD Community on Discord
         </ArrowLink>
       </div>
 
@@ -50,10 +50,10 @@ function DiscordSection() {
         </div>
         <div className="absolute -left-12 -top-6 flex flex-col space-y-1">
           <div className="self-start px-12 py-6 text-blue-500 text-lg bg-blue-100 rounded-full">
-            Want to learn react together?
+            {`Want to learn react together?`}
           </div>
           <div className="self-start px-12 py-6 text-blue-500 text-lg bg-blue-100 rounded-full">
-            Let me know{' '}
+            {`Let me know `}
             <span role="img" aria-label="victory hand emoji">
               ✌️
             </span>
@@ -62,10 +62,10 @@ function DiscordSection() {
 
         <div className="absolute -bottom-6 -right-12 flex flex-col text-right space-y-1">
           <div className="self-end px-12 py-6 text-green-500 text-lg bg-green-100 rounded-full">
-            Sure thing man, let's do it!
+            {`For sure! Let's do it!`}
           </div>
           <div className="self-end px-12 py-6 text-green-500 text-lg bg-green-100 rounded-full">
-            Found some cool articles on the blog{' '}
+            {`Let me show you what I'm working on...`}
             <span role="img" aria-label="technologist emoji">
               🧑‍💻
             </span>

@@ -2,8 +2,12 @@ import * as React from 'react'
 import {Outlet} from 'react-router'
 import type {LoaderFunction} from 'remix'
 import {json, useLoaderData} from 'remix'
-import type {MdxListItem} from 'types'
-import {getBlogRecommendations} from '../utils/blog.server'
+import type {MdxListItem, Team} from 'types'
+import {
+  getBlogReadRankings,
+  getBlogRecommendations,
+  getReaderCount,
+} from '../utils/blog.server'
 import {AboutSection} from '../components/sections/about-section'
 import {BlogSection} from '../components/sections/blog-section'
 import {CourseSection} from '../components/sections/course-section'
@@ -15,15 +19,32 @@ import {HeroSection} from '../components/sections/hero-section'
 import {images} from '../images'
 import {ButtonLink} from '../components/button'
 import {ServerError} from '../components/errors'
+import {getBlogMdxListItems} from '../utils/mdx'
+import {formatNumber} from '../utils/misc'
 
 type LoaderData = {
+  blogPostCount: string
+  totalBlogReaders: string
+  totalBlogReads: string
+  currentBlogLeaderTeam: Team | undefined
   blogRecommendations: Array<MdxListItem>
 }
 
 export const loader: LoaderFunction = async ({request}) => {
+  const posts = await getBlogMdxListItems({request})
+  const blogRankings = await getBlogReadRankings()
+  const totalBlogReaders = await getReaderCount()
   const blogRecommendations = await getBlogRecommendations(request)
 
-  const data: LoaderData = {blogRecommendations}
+  const data: LoaderData = {
+    blogRecommendations,
+    blogPostCount: formatNumber(posts.length),
+    totalBlogReaders: formatNumber(totalBlogReaders),
+    totalBlogReads: formatNumber(
+      blogRankings.reduce((total, ranking) => ranking.totalReads + total, 0),
+    ),
+    currentBlogLeaderTeam: blogRankings[0]?.team,
+  }
   return json(data)
 }
 
@@ -51,12 +72,17 @@ export default function IndexRoute() {
 
       <IntroductionSection />
       <Spacer size="lg" />
-      <ProblemSolutionSection />
+      <ProblemSolutionSection
+        blogPostCount={data.blogPostCount}
+        totalBlogReads={data.totalBlogReads}
+        currentBlogLeaderTeam={data.currentBlogLeaderTeam}
+        totalBlogReaders={data.totalBlogReaders}
+      />
       <Spacer size="base" />
       <BlogSection
         articles={data.blogRecommendations}
-        title="Most popular from the blog."
-        description="Probably the most helpful as well."
+        title="Blog recommendations"
+        description="Prepared especially for you."
       />
       <Spacer size="lg" />
       <CourseSection />

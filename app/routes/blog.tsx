@@ -1,7 +1,7 @@
 import * as React from 'react'
 import type {LoaderFunction, HeadersFunction, MetaFunction} from 'remix'
 import {json, useLoaderData} from 'remix'
-import type {KCDHandle, MdxListItem} from 'types'
+import type {Await, KCDHandle, MdxListItem} from 'types'
 import formatDate from 'date-fns/format'
 import parseISO from 'date-fns/parseISO'
 import {useSearchParams} from 'react-router-dom'
@@ -22,7 +22,18 @@ import {Button} from '../components/button'
 import type {Timings} from '../utils/metrics.server'
 import {getServerTimeHeader} from '../utils/metrics.server'
 import {ServerError} from '../components/errors'
-import {useUpdateQueryStringValueWithoutNavigation} from '../utils/misc'
+import {
+  formatNumber,
+  useUpdateQueryStringValueWithoutNavigation,
+} from '../utils/misc'
+import {TeamStats} from '../components/team-stats'
+import {Spacer} from '../components/spacer'
+import {
+  getBlogReadRankings,
+  getBlogRecommendations,
+  getReaderCount,
+  getTotalPostReads,
+} from '../utils/blog.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => [
@@ -35,12 +46,24 @@ export const handle: KCDHandle = {
 
 type LoaderData = {
   posts: Array<MdxListItem>
+  recommended: MdxListItem | undefined
   tags: Array<string>
+  readRankings: Await<ReturnType<typeof getBlogReadRankings>>
+  totalReads: string
+  totalBlogReaders: string
 }
 
 export const loader: LoaderFunction = async ({request}) => {
   const timings: Timings = {}
-  const posts = await getBlogMdxListItems({request, timings})
+
+  const [posts, [recommended], readRankings, totalReads, totalBlogReaders] =
+    await Promise.all([
+      getBlogMdxListItems({request, timings}),
+      getBlogRecommendations(request, {limit: 1}),
+      getBlogReadRankings(),
+      getTotalPostReads(),
+      getReaderCount(),
+    ])
 
   const tags = new Set<string>()
   for (const post of posts) {
@@ -51,6 +74,10 @@ export const loader: LoaderFunction = async ({request}) => {
 
   const data: LoaderData = {
     posts,
+    recommended,
+    readRankings,
+    totalReads: formatNumber(totalReads),
+    totalBlogReaders: formatNumber(totalBlogReaders),
     tags: Array.from(tags),
   }
 
@@ -69,16 +96,20 @@ export const headers: HeadersFunction = ({loaderHeaders}) => {
   }
 }
 
-export const meta: MetaFunction = () => {
+export const meta: MetaFunction = ({data}: {data: LoaderData}) => {
   return {
-    title: 'Blog | Kent C. Dodds',
-    description: 'This is the Kent C. Dodds blog',
+    title: 'The Kent C. Dodds Blog',
+    description: `Join ${
+      data.totalBlogReaders
+    } people who have read Kent's ${formatNumber(
+      data.posts.length,
+    )} articles on JavaScript, TypeScript, React, Testing, Career, and more.`,
   }
 }
 
 // should be divisible by 3 and 2 (large screen, and medium screen).
 const PAGE_SIZE = 12
-const initialIndexToShow = PAGE_SIZE + 1 // + 1 for the featured blog
+const initialIndexToShow = PAGE_SIZE
 
 function BlogHome() {
   const requestInfo = useRequestInfo()
@@ -102,7 +133,6 @@ function BlogHome() {
   React.useEffect(() => {
     setIndexToShow(initialIndexToShow)
   }, [query])
-  const postsToShow = matchingPosts.slice(0, indexToShow)
 
   const hasMorePosts = indexToShow < matchingPosts.length
 
@@ -125,9 +155,7 @@ function BlogHome() {
 
   const isSearching = query.length > 0
 
-  const posts = isSearching
-    ? matchingPosts.slice(0, indexToShow)
-    : postsToShow.slice(1, indexToShow)
+  const posts = matchingPosts.slice(0, indexToShow)
 
   const visibleTags = isSearching
     ? new Set(
@@ -137,12 +165,8 @@ function BlogHome() {
       )
     : new Set(data.tags)
 
-  // feature the most recent post, unless we're searching
-  // TODO: determine featured posts using some smarts on the backend
-  // based on the user's read posts etc.
-  const featured = isSearching ? null : matchingPosts[0]
-  const featuredPermalink = featured
-    ? `${requestInfo.origin}/blog/${featured.slug}`
+  const recommendedPermalink = data.recommended
+    ? `${requestInfo.origin}/blog/${data.recommended.slug}`
     : undefined
 
   return (
@@ -152,26 +176,38 @@ function BlogHome() {
         subtitle="Find the latest of my writing here."
         imageBuilder={images.skis}
         action={
-          <form action="/blog" method="GET" onSubmit={e => e.preventDefault()}>
-            <div className="relative">
-              <div className="absolute left-8 top-0 flex items-center justify-center h-full text-blueGray-500">
-                <SearchIcon />
+          <div>
+            <form
+              action="/blog"
+              method="GET"
+              onSubmit={e => e.preventDefault()}
+            >
+              <div className="relative">
+                <div className="absolute left-8 top-0 flex items-center justify-center h-full text-blueGray-500">
+                  <SearchIcon />
+                </div>
+                <input
+                  value={queryValue}
+                  onChange={event =>
+                    setQuery(event.currentTarget.value.toLowerCase())
+                  }
+                  name="q"
+                  placeholder="Search blog"
+                  aria-label="Search blog"
+                  className="text-primary bg-primary border-secondary hover:border-primary focus:border-primary focus:bg-secondary px-16 py-6 w-full text-lg font-medium border rounded-full focus:outline-none"
+                />
+                <div className="absolute right-8 top-0 flex items-center justify-center h-full text-blueGray-500 text-lg font-medium">
+                  {matchingPosts.length}
+                </div>
               </div>
-              <input
-                value={queryValue}
-                onChange={event =>
-                  setQuery(event.currentTarget.value.toLowerCase())
-                }
-                name="q"
-                placeholder="Search blog"
-                aria-label="Search blog"
-                className="text-primary bg-primary border-secondary hover:border-primary focus:border-primary focus:bg-secondary px-16 py-6 w-full text-lg font-medium border rounded-full focus:outline-none"
-              />
-              <div className="absolute right-8 top-0 flex items-center justify-center h-full text-blueGray-500 text-lg font-medium">
-                {matchingPosts.length}
-              </div>
-            </div>
-          </form>
+            </form>
+            <Spacer size="xs" />
+            <TeamStats
+              totalReads={data.totalReads}
+              rankings={data.readRankings}
+              direction="down"
+            />
+          </div>
         }
       />
 
@@ -197,33 +233,35 @@ function BlogHome() {
         </Grid>
       ) : null}
 
-      {featured ? (
+      {!isSearching && data.recommended ? (
         <div className="mb-10">
           <FeaturedSection
             subTitle={
-              featured.frontmatter.date
+              data.recommended.frontmatter.date
                 ? `${formatDate(
-                    parseISO(featured.frontmatter.date),
+                    parseISO(data.recommended.frontmatter.date),
                     'PPP',
-                  ).toLowerCase()} — ${featured.readTime?.text ?? 'quick read'}`
+                  ).toLowerCase()} — ${
+                    data.recommended.readTime?.text ?? 'quick read'
+                  }`
                 : 'TBA'
             }
-            title={featured.frontmatter.title}
+            title={data.recommended.frontmatter.title}
             imageBuilder={
-              featured.frontmatter.bannerCloudinaryId
+              data.recommended.frontmatter.bannerCloudinaryId
                 ? getImageBuilder(
-                    featured.frontmatter.bannerCloudinaryId,
-                    featured.frontmatter.bannerAlt ??
-                      featured.frontmatter.bannerCredit ??
-                      featured.frontmatter.title ??
+                    data.recommended.frontmatter.bannerCloudinaryId,
+                    data.recommended.frontmatter.bannerAlt ??
+                      data.recommended.frontmatter.bannerCredit ??
+                      data.recommended.frontmatter.title ??
                       'Post banner',
                   )
                 : undefined
             }
             caption="Featured article"
             cta="Read full article"
-            slug={featured.slug}
-            permalink={featuredPermalink}
+            slug={data.recommended.slug}
+            permalink={recommendedPermalink}
           />
         </div>
       ) : null}

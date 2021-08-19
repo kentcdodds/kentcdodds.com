@@ -5,6 +5,7 @@ import clsx from 'clsx'
 import type {Team} from '@prisma/client'
 import {useOptionalUserInfo, useTeam} from '../utils/providers'
 import {alexProfiles} from '../images'
+import {formatNumber} from '../utils/misc'
 
 const barColors: Record<Team, string> = {
   RED: 'bg-team-red',
@@ -81,9 +82,7 @@ function Stat({
             'top-0': direction === 'up',
           })}
         >
-          {new Intl.NumberFormat().format(
-            display === 'ranking' ? ranking : totalReads,
-          )}
+          {formatNumber(display === 'ranking' ? ranking : totalReads)}
         </motion.span>
       </motion.div>
 
@@ -129,7 +128,7 @@ function TeamStats({
   rankings,
   direction = 'up',
 }: {
-  totalReads: number
+  totalReads: string
   rankings: Array<ReadRanking>
   direction: 'up' | 'down'
 }) {
@@ -147,7 +146,7 @@ function TeamStats({
 
   return (
     <div
-      className={clsx('group relative inline-flex flex-col justify-end', {
+      className={clsx('group relative inline-flex flex-col justify-end h-8', {
         'justify-end': direction === 'down',
         'justify-start': direction === 'up',
       })}
@@ -161,14 +160,12 @@ function TeamStats({
           },
         )}
       >
-        <span title="Total reads">
-          {new Intl.NumberFormat().format(totalReads)}{' '}
-        </span>
+        <span title="Total reads">{totalReads} </span>
         <Link
           className="text-secondary hover:text-primary underlined"
           to="/teams#read-rankings"
         >
-          what&apos;s this?
+          {`what's this?`}
         </Link>
       </div>
       <ul

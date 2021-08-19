@@ -8,8 +8,8 @@ function CourseSection() {
   return (
     <>
       <HeaderSection
-        title="Have a look at some of the courses"
-        subTitle="Level up your development skills."
+        title="Are you ready to level up?"
+        subTitle="Checkout some of my courses"
         cta="See all courses"
         ctaUrl="/courses"
         className="mb-16"
@@ -18,7 +18,7 @@ function CourseSection() {
         <div className="col-span-full lg:col-span-6">
           <CourseCard
             title="Epic React"
-            description="The most comprehensive guide for pro's."
+            description="The most comprehensive guide for pros."
             imageBuilder={images.courseEpicReact}
             courseUrl="https://epicreact.dev"
           />

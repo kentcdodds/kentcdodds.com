@@ -1,4 +1,5 @@
 import * as React from 'react'
+import clsx from 'clsx'
 import {externalLinks} from '../external-links'
 import {useOptionalUserInfo} from '../utils/providers'
 import {AnchorOrLink} from '../utils/misc'
@@ -36,8 +37,8 @@ function ContactSection() {
       <H6 as="div">Contact</H6>
       <ul className="mt-4">
         <FooterLink name="Contact page" href="/contact" />
-        <FooterLink name="Office hours" href="/office-hours" />
         <FooterLink name="Call Kent" href="/calls" />
+        <FooterLink name="Office hours" href="/office-hours" />
       </ul>
     </div>
   )
@@ -47,6 +48,7 @@ function GeneralSection() {
     <div>
       <H6 as="div">General</H6>
       <ul className="mt-4">
+        <FooterLink name="My Mission" href="/transparency" />
         <FooterLink name="Privacy policy" href="/transparency#privacy" />
         <FooterLink name="Terms of use" href="/transparency#terms" />
         <FooterLink name="Code of conduct" href="/conduct" />
@@ -64,11 +66,11 @@ function SitemapSection() {
         <FooterLink name="Blog" href="/blog" />
         <FooterLink name="Courses" href="/courses" />
         <FooterLink name="Discord" href="/discord" />
-        <FooterLink name="Podcast" href="/chats" />
+        <FooterLink name="Chats Podcast" href="/chats" />
         <FooterLink name="Workshops" href="/workshops" />
         <FooterLink name="About" href="/about" />
         <FooterLink name="Credits" href="/credits" />
-        <FooterLink name="All pages" href="/sitemap.xml" />
+        <FooterLink name="Full Sitemap" href="/sitemap.xml" />
       </ul>
     </div>
   )
@@ -80,7 +82,7 @@ function AboutSection() {
       <H4 as="div">Kent C. Dodds</H4>
 
       <p className="text-secondary mt-6 max-w-md text-2xl">
-        Full time educator teaching people development
+        Full time educator making our world better
       </p>
 
       <div className="text-secondary flex items-center justify-between mt-6 lg:flex-col lg:items-start">
@@ -140,7 +142,7 @@ function Footer() {
         </div>
 
         {subscribedToNewsletter ? null : (
-          <div className="col-span-full mt-20 md:col-span-3 md:col-start-1 lg:hidden">
+          <div className="col-span-full mt-20 md:col-span-5 md:col-start-1 lg:hidden">
             <NewsletterSection />
           </div>
         )}
@@ -153,7 +155,15 @@ function Footer() {
           <GeneralSection />
         </div>
 
-        <div className="col-span-full mt-20 md:col-span-2 md:col-start-5 lg:col-start-5 lg:row-span-2 lg:row-start-1 lg:ml-56 lg:mt-0">
+        <div
+          className={clsx(
+            'col-span-full mt-20 md:col-span-2 lg:col-start-5 lg:row-span-2 lg:row-start-1 lg:ml-56 lg:mt-0',
+            {
+              'md:col-start-7': !subscribedToNewsletter,
+              'md:col-start-5': subscribedToNewsletter,
+            },
+          )}
+        >
           <SitemapSection />
         </div>
 

@@ -5,7 +5,7 @@ import mImage from 'metascraper-image'
 import mTitle from 'metascraper-title'
 import mDescription from 'metascraper-description'
 import formatDate from 'date-fns/format'
-import {getRequiredServerEnvVar, typedBoolean} from './misc'
+import {formatNumber, getRequiredServerEnvVar, typedBoolean} from './misc'
 
 const token = getRequiredServerEnvVar('TWITTER_BEARER_TOKEN')
 
@@ -181,7 +181,6 @@ const arrowSvg = `<svg width="24" height="24" fill="none" viewBox="0 0 24 24">
   <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 7L6.75 17.25"></path>
 </svg>
 `
-const formatNumber = (num: number) => new Intl.NumberFormat().format(num)
 
 async function buildTweetHTML(
   tweet: TweetJsonResponse,
