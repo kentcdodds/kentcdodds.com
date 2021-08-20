@@ -243,9 +243,7 @@ function BlogHome() {
                 ? `${formatDate(
                     parseISO(data.recommended.frontmatter.date),
                     'PPP',
-                  ).toLowerCase()} — ${
-                    data.recommended.readTime?.text ?? 'quick read'
-                  }`
+                  )} — ${data.recommended.readTime?.text ?? 'quick read'}`
                 : 'TBA'
             }
             title={data.recommended.frontmatter.title}

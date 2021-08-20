@@ -27,12 +27,10 @@ And if you want to add a possessive apostrophe to "Dodds" then it should be:
 
 ## Photos
 
-{/** TODO: add more options and an option to get full-res version of the photos
-**/}
-
 <div
   style={{
     display: 'flex',
+    flexWrap: 'wrap',
     justifyContent: 'space-around',
     textAlign: 'center',
   }}
@@ -45,10 +43,10 @@ And if you want to add a possessive apostrophe to "Dodds" then it should be:
     >
       <img
         alt="Cropped photo of Kent"
-        style={{height: 200, display: 'block', marginBottom: 4}}
-        src="https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0,h_200/kent/profile"
+        style={{height: 200, width: 200, display: 'block', marginBottom: 4}}
+        src="https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0,h_200,ar_1:1,c_fill/kent/profile"
       />
-      <small>Cropped photo of Kent</small>
+      <small>Uncropped photo of Kent</small>
     </a>
   </div>
   <div>
@@ -59,10 +57,10 @@ And if you want to add a possessive apostrophe to "Dodds" then it should be:
     >
       <img
         alt="Unropped photo of Kent"
-        style={{height: 200, display: 'block', marginBottom: 4}}
-        src="https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0,h_200/kent/profile-transparent"
+        style={{height: 200, width: 200, display: 'block', marginBottom: 4}}
+        src="https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0,h_200,ar_1:1,c_fill/kent/profile-transparent"
       />
-      <small>Uncropped photo of Kent</small>
+      <small>Cropped photo of Kent</small>
     </a>
   </div>
 </div>

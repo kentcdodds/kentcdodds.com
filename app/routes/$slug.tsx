@@ -78,7 +78,7 @@ function MdxScreen({mdxPage}: {mdxPage: MdxPage}) {
         <div className="col-span-full lg:col-span-8 lg:col-start-3">
           <H2>{frontmatter.title}</H2>
           {frontmatter.description ? (
-            <H6 as="p" variant="secondary" className="mt-2 lowercase">
+            <H6 as="p" variant="secondary" className="mt-2">
               {frontmatter.description}
             </H6>
           ) : null}

@@ -179,7 +179,7 @@ function WorkshopScreen() {
           </BackLink>
           <H2 className="mb-2">{`Join Kent C. Dodds for "${workshop.title}"`}</H2>
 
-          <H6 as="p" className="lg:mb-22 mb-16 lowercase">
+          <H6 as="p" className="lg:mb-22 mb-16">
             {workshopEvents.length
               ? listify(workshopEvents.map(w => w.date))
               : 'Not currently scheduled'}

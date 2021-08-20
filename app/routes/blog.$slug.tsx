@@ -279,7 +279,7 @@ function MdxScreen() {
       <Grid as="header" className="mb-12">
         <div className="col-span-full lg:col-span-8 lg:col-start-3">
           <H2>{frontmatter.title}</H2>
-          <H6 as="p" variant="secondary" className="mt-2 lowercase">
+          <H6 as="p" variant="secondary" className="mt-2">
             {frontmatter.date
               ? formatDate(new Date(frontmatter.date), 'PPP')
               : 'some day in the past'}{' '}

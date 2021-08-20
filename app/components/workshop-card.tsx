@@ -61,7 +61,7 @@ function WorkshopCard({
           {truncate(workshop.description, 120)}
         </Paragraph>
       </div>
-      <H6 as="div" className="flex flex-wrap lowercase">
+      <H6 as="div" className="flex flex-wrap">
         {workshopEvent ? workshopEvent.date : 'Not currently scheduled'}
       </H6>
     </Link>
