@@ -9,7 +9,7 @@ import type {
   Request,
   CallKentEpisode,
   TransistorUpdateEpisodeData,
-} from 'types'
+} from '~/types'
 import {getRequiredServerEnvVar} from './misc'
 import * as redis from './redis.server'
 import {getEpisodePath} from './call-kent'

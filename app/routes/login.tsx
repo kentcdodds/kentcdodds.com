@@ -1,14 +1,14 @@
 import * as React from 'react'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import {Form, useLoaderData, json, redirect} from 'remix'
-import {getDomainUrl, getErrorMessage} from '../utils/misc'
-import {sendToken, getUser} from '../utils/session.server'
-import {getLoginInfoSession} from '../utils/login.server'
-import {images} from '../images'
-import {Paragraph} from '../components/typography'
-import {Button} from '../components/button'
-import {Input, InputError, Label} from '../components/form-elements'
-import {HeroSection} from '../components/sections/hero-section'
+import {getDomainUrl, getErrorMessage} from '~/utils/misc'
+import {sendToken, getUser} from '~/utils/session.server'
+import {getLoginInfoSession} from '~/utils/login.server'
+import {images} from '~/images'
+import {Paragraph} from '~/components/typography'
+import {Button} from '~/components/button'
+import {Input, InputError, Label} from '~/components/form-elements'
+import {HeroSection} from '~/components/sections/hero-section'
 
 type LoaderData = {
   email?: string

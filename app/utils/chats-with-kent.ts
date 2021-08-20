@@ -1,4 +1,4 @@
-import type {CWKEpisode} from 'types'
+import type {CWKEpisode} from '~/types'
 import {differenceInWeeks} from 'date-fns'
 
 function getCWKEpisodePath({

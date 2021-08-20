@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import * as React from 'react'
-import type {MdxListItem} from 'types'
+import type {MdxListItem} from '~/types'
 import {Grid} from '../grid'
 import {ArticleCard} from '../article-card'
 import {HeaderSection} from './header-section'

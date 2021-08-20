@@ -29,5 +29,8 @@ module.exports = {
 
     // enable these again someday:
     '@typescript-eslint/no-unsafe-argument': 'off',
+
+    // this one isn't smart enough for our "~/" imports
+    'import/order': 'off',
   },
 }

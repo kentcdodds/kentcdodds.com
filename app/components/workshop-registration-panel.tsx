@@ -1,5 +1,5 @@
 import * as React from 'react'
-import type {WorkshopEvent} from '../utils/workshop-tickets.server'
+import type {WorkshopEvent} from '~/utils/workshop-tickets.server'
 import {ButtonLink} from './button'
 import {H6} from './typography'
 

@@ -6,7 +6,7 @@ import type {
   TransistorAuthorizedJson,
   TransistorCreatedJson,
   TransistorEpisodeData,
-} from 'types'
+} from '~/types'
 import * as faker from 'faker'
 import {requiredParam, requiredHeader, requiredProperty} from './utils'
 

@@ -1,39 +1,39 @@
 import * as React from 'react'
 import type {LoaderFunction, HeadersFunction, MetaFunction} from 'remix'
 import {json, useLoaderData} from 'remix'
-import type {Await, KCDHandle, MdxListItem} from 'types'
+import type {Await, KCDHandle, MdxListItem} from '~/types'
 import formatDate from 'date-fns/format'
 import parseISO from 'date-fns/parseISO'
 import {useSearchParams} from 'react-router-dom'
-import {Grid} from '../components/grid'
-import {getImageBuilder, getImgProps, images} from '../images'
-import {H2, H3, H6} from '../components/typography'
-import {SearchIcon} from '../components/icons/search-icon'
-import {ArticleCard} from '../components/article-card'
-import {ArrowLink} from '../components/arrow-button'
-import {FeaturedSection} from '../components/sections/featured-section'
-import {Tag} from '../components/tag'
-import {getBlogMdxListItems} from '../utils/mdx'
-import {filterPosts} from '../utils/blog'
-import {useRequestInfo} from '../utils/providers'
-import {HeroSection} from '../components/sections/hero-section'
-import {PlusIcon} from '../components/icons/plus-icon'
-import {Button} from '../components/button'
-import type {Timings} from '../utils/metrics.server'
-import {getServerTimeHeader} from '../utils/metrics.server'
-import {ServerError} from '../components/errors'
+import {Grid} from '~/components/grid'
+import {getImageBuilder, getImgProps, images} from '~/images'
+import {H2, H3, H6} from '~/components/typography'
+import {SearchIcon} from '~/components/icons/search-icon'
+import {ArticleCard} from '~/components/article-card'
+import {ArrowLink} from '~/components/arrow-button'
+import {FeaturedSection} from '~/components/sections/featured-section'
+import {Tag} from '~/components/tag'
+import {getBlogMdxListItems} from '~/utils/mdx'
+import {filterPosts} from '~/utils/blog'
+import {useRequestInfo} from '~/utils/providers'
+import {HeroSection} from '~/components/sections/hero-section'
+import {PlusIcon} from '~/components/icons/plus-icon'
+import {Button} from '~/components/button'
+import type {Timings} from '~/utils/metrics.server'
+import {getServerTimeHeader} from '~/utils/metrics.server'
+import {ServerError} from '~/components/errors'
 import {
   formatNumber,
   useUpdateQueryStringValueWithoutNavigation,
-} from '../utils/misc'
-import {TeamStats} from '../components/team-stats'
-import {Spacer} from '../components/spacer'
+} from '~/utils/misc'
+import {TeamStats} from '~/components/team-stats'
+import {Spacer} from '~/components/spacer'
 import {
   getBlogReadRankings,
   getBlogRecommendations,
   getReaderCount,
   getTotalPostReads,
-} from '../utils/blog.server'
+} from '~/utils/blog.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => [

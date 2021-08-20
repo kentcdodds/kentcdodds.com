@@ -5,7 +5,7 @@ import type {
   SimpelcastSeasonListItem,
   SimplecastEpisode,
   SimplecastEpisodeListItem,
-} from 'types'
+} from '~/types'
 import * as faker from 'faker'
 
 const seasonListItems: Array<SimpelcastSeasonListItem> = [

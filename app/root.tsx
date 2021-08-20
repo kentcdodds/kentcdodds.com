@@ -20,7 +20,7 @@ import type {
 import {Outlet} from 'react-router-dom'
 import {AnimatePresence, motion} from 'framer-motion'
 import {useSpinDelay} from 'spin-delay'
-import type {Await, KCDHandle, User} from 'types'
+import type {Await, KCDHandle, User} from '~/types'
 import tailwindStyles from './styles/tailwind.css'
 import vendorStyles from './styles/vendors.css'
 import appStyles from './styles/app.css'

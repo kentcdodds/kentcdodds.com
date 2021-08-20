@@ -1,17 +1,17 @@
 import * as React from 'react'
 import type {ActionFunction} from 'remix'
 import {redirect} from 'remix'
-import {sendEmail} from '../../utils/send-email.server'
-import {Button} from '../../components/button'
-import {ButtonGroup} from '../../components/form-elements'
-import type {ActionData} from '../../utils/contact'
+import {sendEmail} from '~/utils/send-email.server'
+import {Button} from '~/components/button'
+import {ButtonGroup} from '~/components/form-elements'
+import type {ActionData} from '~/utils/contact'
 import {
   getErrorForName,
   getErrorForBody,
   getErrorForEmail,
   getErrorForSubject,
-} from '../../utils/contact'
-import {handleFormSubmission} from '../../utils/actions.server'
+} from '~/utils/contact'
+import {handleFormSubmission} from '~/utils/actions.server'
 
 export const action: ActionFunction = async ({request}) => {
   return handleFormSubmission<ActionData>({

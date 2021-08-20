@@ -75,7 +75,7 @@ function fn(impl = () => {}) {
   return mockFn
 }
 
-const utilsPath = require.resolve('../utils')
+const utilsPath = require.resolve('~/utils')
 require.cache[utilsPath] = {
   id: utilsPath,
   filename: utilsPath,

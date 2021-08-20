@@ -2,31 +2,31 @@ import * as React from 'react'
 import {useLoaderData, json} from 'remix'
 import type {HeadersFunction} from 'remix'
 import {Link, useParams} from 'react-router-dom'
-import type {Await, KCDHandle, KCDLoader, MdxListItem, MdxPage} from 'types'
+import type {Await, KCDHandle, KCDLoader, MdxListItem, MdxPage} from '~/types'
 import formatDate from 'date-fns/format'
-import {getImageBuilder, getImgProps, images} from '../images'
+import {getImageBuilder, getImgProps, images} from '~/images'
 import {
   getMdxDirList,
   getMdxPage,
   mdxPageMeta,
   useMdxComponent,
-} from '../utils/mdx'
-import {H2, H6, Paragraph} from '../components/typography'
-import {Grid} from '../components/grid'
-import {ArrowLink, BackLink} from '../components/arrow-button'
-import {BlogSection} from '../components/sections/blog-section'
+} from '~/utils/mdx'
+import {H2, H6, Paragraph} from '~/components/typography'
+import {Grid} from '~/components/grid'
+import {ArrowLink, BackLink} from '~/components/arrow-button'
+import {BlogSection} from '~/components/sections/blog-section'
 import {
   getBlogReadRankings,
   getTotalPostReads,
   getBlogRecommendations,
-} from '../utils/blog.server'
-import {FourOhFour, ServerError} from '../components/errors'
+} from '~/utils/blog.server'
+import {FourOhFour, ServerError} from '~/components/errors'
 import {externalLinks} from '../external-links'
-import {TeamStats} from '../components/team-stats'
-import type {Timings} from '../utils/metrics.server'
-import {getServerTimeHeader} from '../utils/metrics.server'
-import {useRequestInfo} from '../utils/providers'
-import {formatNumber} from '../utils/misc'
+import {TeamStats} from '~/components/team-stats'
+import type {Timings} from '~/utils/metrics.server'
+import {getServerTimeHeader} from '~/utils/metrics.server'
+import {useRequestInfo} from '~/utils/providers'
+import {formatNumber} from '~/utils/misc'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {

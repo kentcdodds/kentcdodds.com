@@ -13,16 +13,16 @@ import {
 import {useEffect} from 'react'
 import {AnimatePresence, motion, useAnimation} from 'framer-motion'
 import type {User} from '@prisma/client'
-import {alexProfiles} from '../images'
-import {Theme, Themed, useTheme} from '../utils/theme-provider'
+import {alexProfiles} from '~/images'
+import {Theme, Themed, useTheme} from '~/utils/theme-provider'
 import {
   useOptionalUser,
   useOptionalUserInfo,
   useTeam,
   useRequestInfo,
   OptionalTeam,
-} from '../utils/providers'
-import {getAvatar} from '../utils/misc'
+} from '~/utils/providers'
+import {getAvatar} from '~/utils/misc'
 import {SunIcon} from './icons/sun-icon'
 import {MoonIcon} from './icons/moon-icon'
 import {TeamCircle} from './team-circle'

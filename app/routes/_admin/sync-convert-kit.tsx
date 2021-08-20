@@ -8,9 +8,9 @@ import * as React from 'react'
 import type {LoaderFunction} from 'remix'
 import {useLoaderData, json} from 'remix'
 import pThrottle from 'p-throttle'
-import {prisma} from '../../utils/prisma.server'
+import {prisma} from '~/utils/prisma.server'
 import * as ck from '../../convertkit/convertkit.server'
-import {requireAdminUser} from '../../utils/session.server'
+import {requireAdminUser} from '~/utils/session.server'
 
 export const loader: LoaderFunction = async ({request}) => {
   return requireAdminUser(request, async () => {

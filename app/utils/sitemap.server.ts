@@ -1,5 +1,5 @@
 import type {Request, EntryContext} from 'remix'
-import type {KCDHandle, KCDSitemapEntry} from 'types'
+import type {KCDHandle, KCDSitemapEntry} from '~/types'
 import {isEqual} from 'lodash'
 import {getDomainUrl, typedBoolean} from './misc'
 

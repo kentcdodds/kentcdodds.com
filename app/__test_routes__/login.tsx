@@ -6,8 +6,8 @@ import {
   updateUser,
   getUserByEmail,
   prisma,
-} from '../utils/prisma.server'
-import {getDomainUrl} from '../utils/misc'
+} from '~/utils/prisma.server'
+import {getDomainUrl} from '~/utils/misc'
 
 export const loader: LoaderFunction = async ({request}) => {
   const url = new URL(request.url)

@@ -1,5 +1,5 @@
 import {json} from 'remix'
-import type {NonNullProperties, Request, Response} from 'types'
+import type {NonNullProperties, Request, Response} from '~/types'
 import {getErrorMessage, getNonNull} from './misc'
 
 type ErrorMessage = string

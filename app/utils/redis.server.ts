@@ -1,5 +1,5 @@
 import redis from 'redis'
-import type {Request} from 'types'
+import type {Request} from '~/types'
 import type {Timings} from './metrics.server'
 import {time} from './metrics.server'
 import {getErrorMessage, getRequiredServerEnvVar} from './misc'

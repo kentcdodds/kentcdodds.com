@@ -1,12 +1,8 @@
 import * as React from 'react'
 import {redirect} from 'remix'
-import type {KCDHandle, KCDLoader} from 'types'
-import {getEpisodes} from '../../utils/transistor.server'
-import {
-  getEpisodeFromParams,
-  getEpisodePath,
-  Params,
-} from '../../utils/call-kent'
+import type {KCDHandle, KCDLoader} from '~/types'
+import {getEpisodes} from '~/utils/transistor.server'
+import {getEpisodeFromParams, getEpisodePath, Params} from '~/utils/call-kent'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,

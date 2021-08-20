@@ -1,5 +1,5 @@
 import type {Team} from '../../types'
-import {images} from '../images'
+import {images} from '~/images'
 
 export const TEAM_MAP: Record<
   Team,

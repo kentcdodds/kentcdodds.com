@@ -1,5 +1,5 @@
 import * as React from 'react'
-import type {Await, CallKentEpisode, User, Workshop} from 'types'
+import type {Await, CallKentEpisode, User, Workshop} from '~/types'
 import type {getUserInfo} from './user-info.server'
 import type {Theme} from './theme-provider'
 import type {WorkshopEvent} from './workshop-tickets.server'

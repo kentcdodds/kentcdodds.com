@@ -1,21 +1,21 @@
 import * as React from 'react'
 import {redirect, json, useActionData} from 'remix'
 import type {ActionFunction} from 'remix'
-import type {KCDHandle} from 'types'
-import {CallRecorder} from '../../components/calls/recorder'
+import type {KCDHandle} from '~/types'
+import {CallRecorder} from '~/components/calls/recorder'
 import {
   RecordingForm,
   RecordingFormData,
-} from '../../components/calls/submit-recording-form'
-import {requireUser} from '../../utils/session.server'
-import {prisma} from '../../utils/prisma.server'
-import {getErrorMessage, getNonNull} from '../../utils/misc'
+} from '~/components/calls/submit-recording-form'
+import {requireUser} from '~/utils/session.server'
+import {prisma} from '~/utils/prisma.server'
+import {getErrorMessage, getNonNull} from '~/utils/misc'
 import {
   getErrorForAudio,
   getErrorForTitle,
   getErrorForDescription,
   getErrorForKeywords,
-} from '../../utils/call-kent'
+} from '~/utils/call-kent'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,

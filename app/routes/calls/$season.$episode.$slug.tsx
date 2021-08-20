@@ -1,15 +1,11 @@
 import * as React from 'react'
 import {useParams} from 'react-router-dom'
 import {redirect} from 'remix'
-import type {KCDHandle, KCDLoader} from 'types'
-import {useCallKentEpisodes} from '../../utils/providers'
-import {getEpisodes} from '../../utils/transistor.server'
-import {Themed} from '../../utils/theme-provider'
-import {
-  getEpisodeFromParams,
-  getEpisodePath,
-  Params,
-} from '../../utils/call-kent'
+import type {KCDHandle, KCDLoader} from '~/types'
+import {useCallKentEpisodes} from '~/utils/providers'
+import {getEpisodes} from '~/utils/transistor.server'
+import {Themed} from '~/utils/theme-provider'
+import {getEpisodeFromParams, getEpisodePath, Params} from '~/utils/call-kent'
 
 export const handle: KCDHandle = {
   id: 'call-player',

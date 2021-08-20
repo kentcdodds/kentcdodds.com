@@ -6,7 +6,7 @@ import {remarkCodeBlocksShiki} from '@kentcdodds/md-temp'
 import remarkEmbedder from '@remark-embedder/core'
 import type {TransformerInfo} from '@remark-embedder/core'
 import oembedTransformer from '@remark-embedder/transformer-oembed'
-import type {GitHubFile} from 'types'
+import type {GitHubFile} from '~/types'
 import calculateReadingTime from 'reading-time'
 import * as twitter from './twitter.server'
 

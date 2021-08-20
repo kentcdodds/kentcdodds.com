@@ -1,4 +1,4 @@
-import type {User, Team} from 'types'
+import type {User, Team} from '~/types'
 import {prisma} from './prisma.server'
 import {getRequiredServerEnvVar} from './misc'
 

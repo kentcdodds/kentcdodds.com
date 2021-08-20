@@ -1,6 +1,6 @@
 import formatDate from 'date-fns/format'
 import parseISO from 'date-fns/parseISO'
-import type {Request} from 'types'
+import type {Request} from '~/types'
 import {getBlogMdxListItems} from './mdx'
 import {getDomainUrl} from './misc'
 

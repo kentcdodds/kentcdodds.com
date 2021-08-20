@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {Link} from 'remix'
-import type {Workshop} from 'types'
-import type {WorkshopEvent} from '../utils/workshop-tickets.server'
+import type {Workshop} from '~/types'
+import type {WorkshopEvent} from '~/utils/workshop-tickets.server'
 import {H3, H6, Paragraph} from './typography'
 
 function truncate(text: string, length: number) {

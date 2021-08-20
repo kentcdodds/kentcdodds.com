@@ -1,16 +1,16 @@
 import {Form, useActionData} from 'remix'
 import * as React from 'react'
 import {Outlet} from 'react-router-dom'
-import {useOptionalUser} from '../utils/providers'
+import {useOptionalUser} from '~/utils/providers'
 import {
   getHeroImageProps,
   HeroSection,
-} from '../components/sections/hero-section'
-import {images} from '../images'
-import {H2} from '../components/typography'
-import {ErrorPanel, Field, InputError} from '../components/form-elements'
-import {Grid} from '../components/grid'
-import type {ActionData} from '../utils/contact'
+} from '~/components/sections/hero-section'
+import {images} from '~/images'
+import {H2} from '~/components/typography'
+import {ErrorPanel, Field, InputError} from '~/components/form-elements'
+import {Grid} from '~/components/grid'
+import type {ActionData} from '~/utils/contact'
 
 export default function ContactRoute() {
   const actionData = useActionData<ActionData>()

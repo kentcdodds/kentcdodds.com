@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {Grid} from '../grid'
-import {images} from '../../images'
+import {images} from '~/images'
 import {CourseCard} from '../course-card'
 import {HeaderSection} from './header-section'
 

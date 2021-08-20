@@ -26,9 +26,9 @@ What's wrong with this test?
 import * as React from 'react'
 import {render, screen} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import {client} from '../../utils/api-client'
+import {client} from '~/utils/api-client'
 
-jest.mock('../../utils/api-client')
+jest.mock('~/utils/api-client')
 
 test('clicking "confirm" submits payment', async () => {
   const shoppingCart = buildShoppingCart()

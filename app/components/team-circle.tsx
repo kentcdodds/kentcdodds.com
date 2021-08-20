@@ -1,5 +1,5 @@
 import * as React from 'react'
-import type {OptionalTeam} from '../utils/providers'
+import type {OptionalTeam} from '~/utils/providers'
 
 function polarToCartesian(x: number, y: number, r: number, degrees: number) {
   const radians = (degrees * Math.PI) / 180.0

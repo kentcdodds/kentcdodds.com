@@ -1,7 +1,7 @@
 import React from 'react'
 import {redirect} from 'remix'
-import type {KCDLoader} from 'types'
-import {getSeasons} from '../utils/simplecast.server'
+import type {KCDLoader} from '~/types'
+import {getSeasons} from '~/utils/simplecast.server'
 
 export const loader: KCDLoader<{
   slug: string

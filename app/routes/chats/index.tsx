@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {redirect} from 'remix'
 import type {LoaderFunction} from 'remix'
-import {getSeasonListItems} from '../../utils/simplecast.server'
+import {getSeasonListItems} from '~/utils/simplecast.server'
 
 export const loader: LoaderFunction = async ({request}) => {
   const seasons = await getSeasonListItems(request)

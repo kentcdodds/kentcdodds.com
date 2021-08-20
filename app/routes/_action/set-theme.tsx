@@ -1,8 +1,8 @@
 import * as React from 'react'
 import {redirect} from 'remix'
 import type {ActionFunction} from 'remix'
-import {getThemeSession} from '../../utils/theme.server'
-import {isTheme} from '../../utils/theme-provider'
+import {getThemeSession} from '~/utils/theme.server'
+import {isTheme} from '~/utils/theme-provider'
 
 export const action: ActionFunction = async ({request}) => {
   const themeSession = await getThemeSession(request)

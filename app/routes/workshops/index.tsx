@@ -1,20 +1,17 @@
 import * as React from 'react'
 import type {MetaFunction} from 'remix'
 import {useSearchParams} from 'react-router-dom'
-import {Grid} from '../../components/grid'
-import {images} from '../../images'
-import {H3, H6} from '../../components/typography'
-import {Tag} from '../../components/tag'
-import {Spacer} from '../../components/spacer'
-import {CourseSection} from '../../components/sections/course-section'
-import {WorkshopCard} from '../../components/workshop-card'
-import {HeroSection} from '../../components/sections/hero-section'
-import {useWorkshops} from '../../utils/providers'
-import {
-  useUpdateQueryStringValueWithoutNavigation,
-  listify,
-} from '../../utils/misc'
-import {RegistrationPanel} from '../../components/workshop-registration-panel'
+import {Grid} from '~/components/grid'
+import {images} from '~/images'
+import {H3, H6} from '~/components/typography'
+import {Tag} from '~/components/tag'
+import {Spacer} from '~/components/spacer'
+import {CourseSection} from '~/components/sections/course-section'
+import {WorkshopCard} from '~/components/workshop-card'
+import {HeroSection} from '~/components/sections/hero-section'
+import {useWorkshops} from '~/utils/providers'
+import {useUpdateQueryStringValueWithoutNavigation, listify} from '~/utils/misc'
+import {RegistrationPanel} from '~/components/workshop-registration-panel'
 
 export const meta: MetaFunction = ({parentsData}) => {
   const data = parentsData['routes/workshops']

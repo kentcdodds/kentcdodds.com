@@ -2,7 +2,6 @@
   "extends": "../other/shared-tsconfig.json",
   "include": ["./**/*"],
   "compilerOptions": {
-    "baseUrl": ".",
     "paths": {
       "~/*": ["./*"]
     }

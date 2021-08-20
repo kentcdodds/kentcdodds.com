@@ -1,13 +1,13 @@
 import * as React from 'react'
-import type {ImageBuilder} from '../images'
-import {images, getImgProps} from '../images'
-import {H2, H3, H6, Paragraph} from '../components/typography'
-import {Grid} from '../components/grid'
-import {HeaderSection} from '../components/sections/header-section'
-import {HeroSection} from '../components/sections/hero-section'
-import {GithubIcon} from '../components/icons/github-icon'
-import {TwitterIcon} from '../components/icons/twitter-icon'
-import {Spacer} from '../components/spacer'
+import type {ImageBuilder} from '~/images'
+import {images, getImgProps} from '~/images'
+import {H2, H3, H6, Paragraph} from '~/components/typography'
+import {Grid} from '~/components/grid'
+import {HeaderSection} from '~/components/sections/header-section'
+import {HeroSection} from '~/components/sections/hero-section'
+import {GithubIcon} from '~/components/icons/github-icon'
+import {TwitterIcon} from '~/components/icons/twitter-icon'
+import {Spacer} from '~/components/spacer'
 
 interface ProfileCardProps {
   name: string

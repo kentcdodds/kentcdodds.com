@@ -1,7 +1,7 @@
 import * as React from 'react'
-import type {KCDHandle} from 'types'
-import {HeroSection} from '../components/sections/hero-section'
-import {images} from '../images'
+import type {KCDHandle} from '~/types'
+import {HeroSection} from '~/components/sections/hero-section'
+import {images} from '~/images'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,

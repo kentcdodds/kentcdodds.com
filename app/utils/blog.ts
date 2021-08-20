@@ -1,5 +1,5 @@
 import {matchSorter, rankings as matchSorterRankings} from 'match-sorter'
-import type {MdxListItem} from 'types'
+import type {MdxListItem} from '~/types'
 
 function filterPosts(posts: Array<MdxListItem>, searchString: string) {
   if (!searchString) return posts

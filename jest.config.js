@@ -13,8 +13,11 @@ module.exports = {
     '^.+\\.jsx?$': 'esbuild-jest',
   },
   setupFilesAfterEnv: ['@testing-library/jest-dom'],
-  moduleDirectories: ['node_modules', fromRoot('app'), fromRoot('tests')],
+  moduleDirectories: ['node_modules', fromRoot('tests')],
   moduleFileExtensions: ['js', 'jsx', 'json', 'ts', 'tsx'],
+  moduleNameMapper: {
+    '~/(.*)': fromRoot('app/$1'),
+  },
   watchPlugins: [
     'jest-watch-typeahead/filename',
     'jest-watch-typeahead/testname',

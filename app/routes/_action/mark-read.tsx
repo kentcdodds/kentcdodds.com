@@ -1,9 +1,9 @@
 import * as React from 'react'
 import {redirect, Headers} from 'remix'
 import type {ActionFunction} from 'remix'
-import {addPostRead} from '../../utils/prisma.server'
-import {getSession} from '../../utils/session.server'
-import {getClientSession} from '../../utils/client.server'
+import {addPostRead} from '~/utils/prisma.server'
+import {getSession} from '~/utils/session.server'
+import {getClientSession} from '~/utils/client.server'
 
 export const action: ActionFunction = async ({request}) => {
   const params = await request.json()

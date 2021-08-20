@@ -33,7 +33,7 @@ Consider the following tests:
 
 ```js
 // __tests__/utils.js
-import {isPasswordAllowed} from '../utils'
+import {isPasswordAllowed} from '~/utils'
 
 test('allows passwords that are good', () => {
   expect(isPasswordAllowed('Ab3.efgh')).toBe(true)
@@ -147,7 +147,7 @@ Here's what a good test for that `isPasswordAllowed` function would be like:
 
 ```js
 // __tests__/utils.js
-import {isPasswordAllowed} from '../utils'
+import {isPasswordAllowed} from '~/utils'
 
 test('allows passwords that are good', () => {
   expect(isPasswordAllowed('Ab3.efgh')).toBe(true)

@@ -6,7 +6,7 @@ import type {
   CWKEpisode,
   Request,
   CWKSeason,
-} from 'types'
+} from '~/types'
 import {omit, sortBy} from 'lodash'
 import type * as U from 'unist'
 import type * as M from 'mdast'

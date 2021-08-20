@@ -1,6 +1,6 @@
 import * as React from 'react'
-import type {ImageBuilder} from '../../images'
-import {getImgProps} from '../../images'
+import type {ImageBuilder} from '~/images'
+import {getImgProps} from '~/images'
 import {Grid} from '../grid'
 import {H2, H6} from '../typography'
 import {ArrowLink} from '../arrow-button'

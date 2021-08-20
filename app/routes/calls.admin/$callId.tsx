@@ -1,26 +1,26 @@
 import * as React from 'react'
 import {redirect, Form, json, useActionData, useLoaderData, Link} from 'remix'
-import type {Call, KCDAction, KCDHandle, KCDLoader} from 'types'
+import type {Call, KCDAction, KCDHandle, KCDLoader} from '~/types'
 import {format} from 'date-fns'
-import {CallRecorder} from '../../components/calls/recorder'
-import {requireAdminUser} from '../../utils/session.server'
-import {prisma} from '../../utils/prisma.server'
+import {CallRecorder} from '~/components/calls/recorder'
+import {requireAdminUser} from '~/utils/session.server'
+import {prisma} from '~/utils/prisma.server'
 import {
   getAvatarForUser,
   getDomainUrl,
   getErrorMessage,
   getNonNull,
-} from '../../utils/misc'
-import {createEpisodeAudio} from '../../utils/ffmpeg.server'
-import {createEpisode} from '../../utils/transistor.server'
-import type {RecordingFormData} from '../../components/calls/submit-recording-form'
-import {RecordingForm} from '../../components/calls/submit-recording-form'
+} from '~/utils/misc'
+import {createEpisodeAudio} from '~/utils/ffmpeg.server'
+import {createEpisode} from '~/utils/transistor.server'
+import type {RecordingFormData} from '~/components/calls/submit-recording-form'
+import {RecordingForm} from '~/components/calls/submit-recording-form'
 import {
   getErrorForAudio,
   getErrorForTitle,
   getErrorForDescription,
   getErrorForKeywords,
-} from '../../utils/call-kent'
+} from '~/utils/call-kent'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,

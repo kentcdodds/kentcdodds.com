@@ -1,19 +1,19 @@
 import * as React from 'react'
 import {useLoaderData, json, Response} from 'remix'
-import type {MdxPage, KCDLoader, MdxListItem, KCDHandle} from 'types'
+import type {MdxPage, KCDLoader, MdxListItem, KCDHandle} from '~/types'
 import {
   getMdxPage,
   getMdxDirList,
   mdxPageMeta,
   useMdxComponent,
-} from '../utils/mdx'
-import {getBlogRecommendations} from '../utils/blog.server'
-import {FourOhFour} from '../components/errors'
-import {Grid} from '../components/grid'
-import {BackLink} from '../components/arrow-button'
-import {H2, H6} from '../components/typography'
+} from '~/utils/mdx'
+import {getBlogRecommendations} from '~/utils/blog.server'
+import {FourOhFour} from '~/components/errors'
+import {Grid} from '~/components/grid'
+import {BackLink} from '~/components/arrow-button'
+import {H2, H6} from '~/components/typography'
 import {pathedRoutes} from '../other-routes.server'
-import {getImageBuilder, getImgProps} from '../images'
+import {getImageBuilder, getImgProps} from '~/images'
 
 type LoaderData = {
   page: MdxPage | null

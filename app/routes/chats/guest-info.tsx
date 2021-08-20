@@ -1,7 +1,7 @@
 import * as React from 'react'
 import type {LoaderFunction, ActionFunction} from 'remix'
 import {json, redirect, useRouteData, Form} from 'remix'
-import type {KCDHandle} from 'types'
+import type {KCDHandle} from '~/types'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,

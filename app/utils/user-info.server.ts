@@ -1,5 +1,5 @@
 import type {Request} from 'remix'
-import type {User} from 'types'
+import type {User} from '~/types'
 import * as ck from '../convertkit/convertkit.server'
 import * as discord from './discord.server'
 import type {Timings} from './metrics.server'

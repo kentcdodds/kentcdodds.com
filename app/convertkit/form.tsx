@@ -5,10 +5,10 @@ import {
   useOptionalUser,
   useOptionalUserInfo,
   createSimpleContext,
-} from '../utils/providers'
-import {ArrowButton} from '../components/arrow-button'
-import {Field} from '../components/form-elements'
-import {CheckIcon} from '../components/icons/check-icon'
+} from '~/utils/providers'
+import {ArrowButton} from '~/components/arrow-button'
+import {Field} from '~/components/form-elements'
+import {CheckIcon} from '~/components/icons/check-icon'
 import type {ActionData, LoaderData} from './types'
 
 const {Provider: ConvertKitDataProvider, useOptionalValue: useConvertKitData} =

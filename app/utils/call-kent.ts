@@ -1,4 +1,4 @@
-import type {CallKentEpisode} from 'types'
+import type {CallKentEpisode} from '~/types'
 
 function getErrorForDescription(description: string | null) {
   if (!description) return `Description is required`

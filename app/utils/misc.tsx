@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {Link} from 'remix'
-import type {NonNullProperties, User, Request} from 'types'
+import type {NonNullProperties, User, Request} from '~/types'
 import {Team} from '@prisma/client'
 import * as dateFns from 'date-fns'
 import md5 from 'md5-hash'

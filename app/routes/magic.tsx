@@ -1,9 +1,9 @@
 import type {LoaderFunction} from 'remix'
 import {redirect, Headers} from 'remix'
-import type {KCDHandle} from 'types'
+import type {KCDHandle} from '~/types'
 import * as React from 'react'
-import {getLoginInfoSession} from '../utils/login.server'
-import {getUserSessionCookieFromMagicLink} from '../utils/session.server'
+import {getLoginInfoSession} from '~/utils/login.server'
+import {getUserSessionCookieFromMagicLink} from '~/utils/session.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,

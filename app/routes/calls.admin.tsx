@@ -8,10 +8,10 @@ import {
   json,
 } from 'remix'
 import {Outlet} from 'react-router-dom'
-import type {Await, KCDHandle} from 'types'
-import {requireAdminUser} from '../utils/session.server'
-import {prisma} from '../utils/prisma.server'
-import {getAvatarForUser} from '../utils/misc'
+import type {Await, KCDHandle} from '~/types'
+import {requireAdminUser} from '~/utils/session.server'
+import {prisma} from '~/utils/prisma.server'
+import {getAvatarForUser} from '~/utils/misc'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
