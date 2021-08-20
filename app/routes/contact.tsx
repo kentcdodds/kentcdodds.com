@@ -8,7 +8,7 @@ import {
   HeroSection,
 } from '~/components/sections/hero-section'
 import {images} from '~/images'
-import {H2} from '~/components/typography'
+import {H2, Paragraph} from '~/components/typography'
 import {ErrorPanel, Field, InputError} from '~/components/form-elements'
 import {Grid} from '~/components/grid'
 import type {ActionData} from '~/utils/contact'
@@ -41,7 +41,23 @@ export default function ContactRoute() {
           </InputError>
           <Grid>
             <div className="col-span-full mb-12 lg:col-span-8 lg:col-start-3">
-              <H2>Contact Kent C. Dodds</H2>
+              <H2>Email me</H2>
+              <Paragraph>
+                {`
+                  I do my best to respond, but unfortunately I can't always
+                  respond to every email I receive. If you have a support
+                  request about my open source work, please open an issue
+                  on the GitHub repo instead. If have a support need on one of
+                  my courses, please email the team (`}
+                <a href="mailto:team@epicreact.dev">team@epicreact.dev</a>
+                {`, `}
+                <a href="mailto:help@testingjavascript.com">
+                  help@testingjavascript.com
+                </a>
+                {`, or `}
+                <a href="mailto:support@egghead.io">support@egghead.io</a>
+                {`) instead. I'll just forward your message to them anyway.`}
+              </Paragraph>
             </div>
 
             <div className="col-span-full lg:col-span-8 lg:col-start-3">

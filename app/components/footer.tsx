@@ -36,7 +36,7 @@ function ContactSection() {
     <div>
       <H6 as="div">Contact</H6>
       <ul className="mt-4">
-        <FooterLink name="Contact page" href="/contact" />
+        <FooterLink name="Email Kent" href="/contact" />
         <FooterLink name="Call Kent" href="/calls" />
         <FooterLink name="Office hours" href="/office-hours" />
       </ul>
