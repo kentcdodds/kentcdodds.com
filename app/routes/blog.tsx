@@ -130,8 +130,6 @@ function BlogHome() {
     setIndexToShow(initialIndexToShow)
   }, [query])
 
-  const hasMorePosts = indexToShow < matchingPosts.length
-
   // this bit is very similar to what's on the blogs page.
   // Next time we need to do work in here, let's make an abstraction for them
 
@@ -151,7 +149,15 @@ function BlogHome() {
 
   const isSearching = query.length > 0
 
-  const posts = matchingPosts.slice(0, indexToShow)
+  const posts = isSearching
+    ? matchingPosts.slice(0, indexToShow)
+    : matchingPosts
+        .slice(0, indexToShow)
+        .filter(p => p.slug !== data.recommended?.slug)
+
+  const hasMorePosts = isSearching
+    ? indexToShow < matchingPosts.length
+    : indexToShow < matchingPosts.length - 1
 
   const visibleTags = isSearching
     ? new Set(
@@ -312,14 +318,14 @@ function BlogHome() {
         </div>
 
         <div className="col-span-full mt-4 lg:col-span-6 lg:col-start-7 lg:mt-0">
-          <H2 className="mb-8">
-            More of a listener when it comes to learning development?
-          </H2>
+          <H2 className="mb-8">{`More of a listener?`}</H2>
           <H2 className="mb-16" variant="secondary" as="p">
-            Check out my podcast Chats with Kent and learn about development and
-            more.
+            {`
+              Check out my podcast Chats with Kent and learn about software
+              development, career, life, and more.
+            `}
           </H2>
-          <ArrowLink to="/chats">Check out the podcast</ArrowLink>
+          <ArrowLink to="/chats">{`Check out the podcast`}</ArrowLink>
         </div>
       </Grid>
     </>

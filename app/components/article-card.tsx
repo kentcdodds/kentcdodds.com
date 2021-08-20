@@ -29,30 +29,36 @@ function ArticleCard({
         className="group peer relative block w-full focus:outline-none"
         to={`/blog/${slug}`}
       >
-        <div className="aspect-w-3 aspect-h-4 focus-ring w-full rounded-lg transition">
-          {bannerCloudinaryId ? (
-            <img
-              {...getImgProps(
-                getImageBuilder(
-                  bannerCloudinaryId,
-                  bannerAlt ?? bannerCredit ?? title,
-                ),
-                {
-                  widths: [280, 560, 840, 1100, 1300, 1650],
-                  sizes: [
-                    '(max-width:639px) 80vw',
-                    '(min-width:640px) and (max-width:1023px) 40vw',
-                    '(min-width:1024px) and (max-width:1620px) 25vw',
-                    '420px',
-                  ],
+        {bannerCloudinaryId ? (
+          <img
+            {...getImgProps(
+              getImageBuilder(
+                bannerCloudinaryId,
+                bannerAlt ?? bannerCredit ?? title,
+              ),
+              {
+                widths: [280, 560, 840, 1100, 1300, 1650],
+                sizes: [
+                  '(max-width:639px) 80vw',
+                  '(min-width:640px) and (max-width:1023px) 40vw',
+                  '(min-width:1024px) and (max-width:1620px) 25vw',
+                  '420px',
+                ],
+                transformations: {
+                  resize: {
+                    type: 'fill',
+                    aspectRatio: '3:4',
+                  },
                 },
-              )}
-              className="rounded-lg object-cover"
-            />
-          ) : (
+              },
+            )}
+            className="focus-ring w-full rounded-lg object-cover transition"
+          />
+        ) : (
+          <div className="focus-ring w-full rounded-lg transition">
             <MissingSomething aspectRatio="3:4" />
-          )}
-        </div>
+          </div>
+        )}
 
         <div className="mt-8 text-blueGray-500 text-xl font-medium lowercase">
           {formatDate(parseISO(date), 'PPP')} — {readTime?.text ?? 'quick read'}
