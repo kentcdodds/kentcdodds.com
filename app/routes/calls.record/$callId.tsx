@@ -1,9 +1,9 @@
 import * as React from 'react'
 import {json, redirect, useLoaderData, Form} from 'remix'
 import type {Call, KCDLoader, KCDAction, KCDHandle} from 'types'
-import {requireUser} from '../../utils/session.server'
-import {prisma} from '../../utils/prisma.server'
-import {Paragraph} from '../../components/typography'
+import {requireUser} from '~/utils/session.server'
+import {prisma} from '~/utils/prisma.server'
+import {Paragraph} from '~/components/typography'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,

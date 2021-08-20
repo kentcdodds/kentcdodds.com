@@ -1,3 +1,16 @@
+diff --git a/node_modules/@remix-run/dev/compiler.js b/node_modules/@remix-run/dev/compiler.js
+index 923d122..cbc40ce 100644
+--- a/node_modules/@remix-run/dev/compiler.js
++++ b/node_modules/@remix-run/dev/compiler.js
+@@ -239,7 +239,7 @@ async function createServerBuild(config, options) {
+ }
+ 
+ function isBareModuleId(id) {
+-  return !id.startsWith(".") && !path.isAbsolute(id);
++  return !id.startsWith(".") && !id.startsWith('~') && !path.isAbsolute(id);
+ }
+ 
+ function getNpmPackageName(id) {
 diff --git a/node_modules/@remix-run/dev/compiler/assets.js b/node_modules/@remix-run/dev/compiler/assets.js
 index 2e9bf3f..b465ff6 100644
 --- a/node_modules/@remix-run/dev/compiler/assets.js
