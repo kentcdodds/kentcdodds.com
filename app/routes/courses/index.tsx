@@ -1,10 +1,10 @@
 import * as React from 'react'
-import {json, useLoaderData} from 'remix'
+import {json, Link, useLoaderData} from 'remix'
 import type {KCDLoader} from '~/types'
 import {Grid} from '~/components/grid'
 import {getImgProps, images} from '~/images'
 import {H2, H3, H6, Paragraph} from '~/components/typography'
-import {ArrowButton, ArrowLink} from '~/components/arrow-button'
+import {ArrowLink} from '~/components/arrow-button'
 import {CourseCard, CourseCardProps} from '~/components/course-card'
 import {HeroSection} from '~/components/sections/hero-section'
 import {TestimonialSection} from '~/components/sections/testimonial-section'
@@ -65,38 +65,51 @@ function CoursesHome() {
   return (
     <>
       <HeroSection
-        title="Increase your value as a developer."
-        subtitle="Invest in yourself with a dev course."
+        title="Level up as a developer."
+        subtitle="Invest in yourself with a premium dev course."
         imageBuilder={images.onewheel}
       />
 
       <Grid as="main" className="mb-48">
         <div className="hidden col-span-full mb-12 lg:block lg:col-span-4 lg:mb-0">
-          <H6 as="h2">Reasons to invest in your career.</H6>
+          <H6 as="h2">{`Reasons to invest in yourself`}</H6>
         </div>
         <div className="col-span-full mb-8 lg:col-span-4 lg:mb-20">
           <H6 as="h3" className="mb-4">
-            Become a more confident developer
+            {`Become a more confident developer`}
           </H6>
           <Paragraph className="mb-20">
-            Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
-            nunc, dictum quis condimentum in, impe rdiet at arcu. Donec et nunc
-            vel mas sa fringilla fermentum. Donec in orn are est doler sit amet.
+            {`
+              All of us are familiar with the feeling of stumbling around
+              between YouTube videos, blog posts, and documentation just
+              copy/pasting code and hoping it'll work. It's frustrating and
+              unproductive. With these courses, you'll have the confidence you
+              need to skip all that stumbling and start shipping. Coding is
+            `}
+            <strong>more fun</strong>
+            {` this way, trust me 🥳`}
           </Paragraph>
           <H6 as="h3" className="mb-4">
-            Earn more money as a developer
+            {`Earn more money as a developer`}
           </H6>
           <Paragraph>
-            Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
-            nunc, dictum quis condimentum in, imp erdiet at arcu.
+            {`
+              The more skilled you are, the more you can get done and the more
+              value you can provide to your employer and clients. If you don't
+              think that comes with a bump in pay, ask the thousands of other
+              devs who have experienced exactly this as a result of what they
+              learned in these courses. Get that money 🤑
+            `}
           </Paragraph>
         </div>
         <div className="hidden col-span-2 col-start-11 items-start justify-end lg:flex">
-          <ArrowButton direction="down" />
+          <ArrowLink to="#courses" direction="down" />
         </div>
       </Grid>
 
-      <h2 className="sr-only">Courses</h2>
+      <h2 className="sr-only" id="courses">
+        Courses
+      </h2>
 
       <Grid className="gap-y-4">
         <div className="col-span-full lg:col-span-6">
@@ -200,12 +213,16 @@ function CoursesHome() {
 
         <div className="col-span-full mt-4 lg:col-span-6 lg:col-start-7 lg:mt-0">
           <H2 as="p" className="mb-8">
-            Do you want to work trough one of these courses with peers?
+            {`Do you want to work trough one of these courses with peers?`}
           </H2>
           <H2 variant="secondary" as="p" className="mb-16">
-            Check out our discord where we have learning clubs.
+            {`Check out our discord where we have `}
+            <Link className="underline" to="/clubs">
+              learning clubs
+            </Link>
+            {`.`}
           </H2>
-          <ArrowLink to="/discord">Learn more about the discord</ArrowLink>
+          <ArrowLink to="/discord">{`Learn more about the discord`}</ArrowLink>
         </div>
       </Grid>
     </>

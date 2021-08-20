@@ -126,6 +126,7 @@ export const loader: LoaderFunction = async ({request}) => {
 
   const data: LoaderData = await cachified({
     key: 'content:data:talks.yml',
+    maxAge: 1000 * 60 * 60 * 24 * 14,
     request,
     getFreshValue: async () => {
       const talksString = await downloadFile('content/data/talks.yml')

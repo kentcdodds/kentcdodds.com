@@ -10,7 +10,15 @@ import {AnchorOrLink} from '~/utils/misc'
 import * as redis from './redis.server'
 import type {Timings} from './metrics.server'
 
-type Options = {forceFresh?: boolean; request?: Request; timings?: Timings}
+type CachifiedOptions = {
+  forceFresh?: boolean
+  request?: Request
+  timings?: Timings
+  maxAge?: number
+  expires?: Date
+}
+
+const defaultMaxAge = 1000 * 60 * 60 * 24
 
 const getCompiledKey = (contentDir: string, slug: string) =>
   `${contentDir}:${slug}:compiled`
@@ -26,9 +34,10 @@ async function getMdxPage(
     contentDir: string
     slug: string
   },
-  options: Options,
+  options: CachifiedOptions,
 ): Promise<MdxPage | null> {
   return redis.cachified({
+    maxAge: defaultMaxAge,
     ...options,
     // reusing the same key as compiledMdxCached because we just return that
     // exact same value. Cachifying this allows us to skip getting the cached files
@@ -42,7 +51,10 @@ async function getMdxPage(
   })
 }
 
-async function getMdxPagesInDirectory(contentDir: string, options: Options) {
+async function getMdxPagesInDirectory(
+  contentDir: string,
+  options: CachifiedOptions,
+) {
   const dirList = await getMdxDirList(contentDir, options)
 
   // our octokit throttle plugin will make sure we don't hit the rate limit
@@ -74,15 +86,11 @@ async function getMdxPagesInDirectory(contentDir: string, options: Options) {
 
 const getDirListKey = (contentDir: string) => `${contentDir}:dir-list`
 
-async function getMdxDirList(
-  contentDir: string,
-  {request, forceFresh, timings}: Options,
-) {
+async function getMdxDirList(contentDir: string, options: CachifiedOptions) {
   return redis.cachified({
+    maxAge: defaultMaxAge,
+    ...options,
     key: getDirListKey(contentDir),
-    forceFresh,
-    request,
-    timings,
     checkValue: (value: unknown) => Array.isArray(value),
     getFreshValue: async () => {
       const fullContentDirPath = `content/${contentDir}`
@@ -105,13 +113,12 @@ const getDownloadKey = (contentDir: string, slug: string) =>
 async function downloadMdxFilesCached(
   contentDir: string,
   slug: string,
-  {request, forceFresh, timings}: Options,
+  options: CachifiedOptions,
 ): Promise<Array<GitHubFile>> {
   return redis.cachified({
+    maxAge: defaultMaxAge,
+    ...options,
     key: getDownloadKey(contentDir, slug),
-    forceFresh,
-    request,
-    timings,
     checkValue: (value: unknown) => Array.isArray(value),
     getFreshValue: async () =>
       downloadMdxFileOrDirectory(`${contentDir}/${slug}`),
@@ -122,13 +129,12 @@ async function compileMdxCached(
   contentDir: string,
   slug: string,
   files: Array<GitHubFile>,
-  {request, forceFresh, timings}: Options,
+  options: CachifiedOptions,
 ) {
   return redis.cachified({
+    maxAge: defaultMaxAge,
+    ...options,
     key: getCompiledKey(contentDir, slug),
-    forceFresh,
-    request,
-    timings,
     checkValue: checkCompiledValue,
     getFreshValue: async () => {
       const page = await compileMdx<MdxPage['frontmatter']>(slug, files)
@@ -141,14 +147,13 @@ async function compileMdxCached(
   })
 }
 
-async function getBlogMdxListItems({request, timings, forceFresh}: Options) {
+async function getBlogMdxListItems(options: CachifiedOptions) {
   return redis.cachified({
+    maxAge: defaultMaxAge,
+    ...options,
     key: 'blog-mdx-list-items',
-    request,
-    timings,
-    forceFresh,
     getFreshValue: async () => {
-      let pages = await getMdxPagesInDirectory('blog', {request, forceFresh})
+      let pages = await getMdxPagesInDirectory('blog', options)
 
       pages = pages.sort((a, z) => {
         const aTime = new Date(a.frontmatter.date ?? '').getTime()

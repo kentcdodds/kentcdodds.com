@@ -46,7 +46,10 @@ export type TestimonialWithMetadata = Testimonial & {
   categories: Array<TestimonialCategory>
 }
 
-const categoriesBySubject: Record<TestimonialSubject, Array<TestimonialCategory>> = {
+const categoriesBySubject: Record<
+  TestimonialSubject,
+  Array<TestimonialCategory>
+> = {
   'Discord Community': ['community'],
   'EpicReact.dev': ['teaching', 'courses', 'react'],
   'TestingJavaScript.com': ['teaching', 'courses', 'testing'],
@@ -144,6 +147,7 @@ async function getAllTestimonials({request}: {request: Request}) {
   const allTestimonials = await cachified({
     key: 'content:data:testimonials.yml',
     request,
+    maxAge: 1000 * 60 * 60 * 24,
     getFreshValue: async (): Promise<Array<TestimonialWithMetadata>> => {
       const talksString = await downloadFile('content/data/testimonials.yml')
       const rawTestimonials = YAML.parse(talksString)

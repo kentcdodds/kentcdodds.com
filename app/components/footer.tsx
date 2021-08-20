@@ -1,7 +1,7 @@
 import * as React from 'react'
 import clsx from 'clsx'
 import {externalLinks} from '../external-links'
-import {useOptionalUserInfo} from '~/utils/providers'
+import {useOptionalUserInfo, useRequestInfo} from '~/utils/providers'
 import {AnchorOrLink} from '~/utils/misc'
 import {ConvertKitForm} from '../convertkit/form'
 import {H4, H6, Paragraph} from './typography'
@@ -58,6 +58,7 @@ function GeneralSection() {
 }
 
 function SitemapSection() {
+  const requestInfo = useRequestInfo()
   return (
     <div>
       <H6 as="div">Sitemap</H6>
@@ -70,7 +71,14 @@ function SitemapSection() {
         <FooterLink name="Workshops" href="/workshops" />
         <FooterLink name="About" href="/about" />
         <FooterLink name="Credits" href="/credits" />
-        <FooterLink name="Full Sitemap" href="/sitemap.xml" />
+        {/*
+          can't use client-side routing here, so we need the full URL so our
+          AnchorOrLink treats it as a full page reload
+        */}
+        <FooterLink
+          name="Full Sitemap"
+          href={`${requestInfo.origin}/sitemap.xml`}
+        />
       </ul>
     </div>
   )

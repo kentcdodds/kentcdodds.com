@@ -197,6 +197,7 @@ async function getCachedEpisodes({
   return redis.cachified({
     key: episodesCacheKey,
     getFreshValue: getEpisodes,
+    maxAge: 1000 * 60 * 60 * 24,
     forceFresh,
     request,
     checkValue: (value: unknown) =>

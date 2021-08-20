@@ -114,24 +114,47 @@ function del(key: string): Promise<string> {
   })
 }
 
-async function cachified<ReturnValue>({
-  key,
-  getFreshValue,
-  request,
-  forceFresh,
-  checkValue = value => Boolean(value),
-  timings,
-  timingType = 'getting fresh value',
-}: {
+type CacheMetadata = {
+  createdTime: number
+  maxAge: number | null
+  expires: number | null
+}
+
+function shouldRefresh(metadata: CacheMetadata) {
+  if (metadata.maxAge) {
+    return Date.now() > metadata.createdTime + metadata.maxAge
+  }
+  if (metadata.expires) {
+    return Date.now() > metadata.expires
+  }
+  return false
+}
+
+async function cachified<ReturnValue>(options: {
   key: string
   getFreshValue: () => Promise<ReturnValue>
   checkValue?: (value: ReturnValue) => boolean
   forceFresh?: boolean
   request?: Request
+  fallbackToCache?: boolean
   timings?: Timings
   timingType?: string
+  maxAge?: number
+  expires?: Date
 }): Promise<ReturnValue> {
-  forceFresh = forceFresh ?? (request ? await shouldForceFresh(request) : false)
+  const {
+    key,
+    getFreshValue,
+    request,
+    forceFresh = request ? await shouldForceFresh(request) : false,
+    checkValue = value => Boolean(value),
+    fallbackToCache = true,
+    timings,
+    timingType = 'getting fresh value',
+    maxAge,
+    expires,
+  } = options
+
   if (!forceFresh) {
     try {
       const cached = await time({
@@ -141,13 +164,27 @@ async function cachified<ReturnValue>({
         timings,
       })
       if (cached) {
-        const cachedValue = JSON.parse(cached) as ReturnValue
-        if (checkValue(cachedValue)) {
-          return cachedValue
+        const cachedParsed = JSON.parse(cached) as {
+          metadata?: CacheMetadata
+          value?: ReturnValue
+        }
+        if (cachedParsed.metadata && shouldRefresh(cachedParsed.metadata)) {
+          // time to refresh the value. Fire and forget so we don't slow down
+          // this request
+          // originally I thought it may be good to make sure we don't have
+          // multiple requests for the same key triggering multiple refreshes
+          // like this, but as I thought about it I realized the liklihood of
+          // this causing real issues is pretty small (unless there's a failure)
+          // to update the value, in which case we should probably be notified
+          // anyway...
+          void cachified({...options, forceFresh: true})
+        }
+        if (cachedParsed.value && checkValue(cachedParsed.value)) {
+          return cachedParsed.value
         } else {
           console.warn(
             `check failed for cached value of ${key}. Deleting the cache key and trying to get a fresh value.`,
-            cachedValue,
+            cachedParsed,
           )
           await del(key)
         }
@@ -156,14 +193,30 @@ async function cachified<ReturnValue>({
       console.error(`error with cache at ${key}`, getErrorMessage(error))
     }
   }
+
   const value = await time({
     name: `getFreshValue for ${key}`,
     type: timingType,
     fn: getFreshValue,
     timings,
+  }).catch((error: unknown) => {
+    // If we got this far without forceFresh then we know there's nothing
+    // in the cache so no need to bother. So we need both the option to fallback
+    // and the ability.
+    if (fallbackToCache && forceFresh) {
+      return cachified({...options, forceFresh: false})
+    } else {
+      throw error
+    }
   })
+
   if (checkValue(value)) {
-    void set(key, JSON.stringify(value)).catch(error => {
+    const metadata: CacheMetadata = {
+      maxAge: maxAge ?? null,
+      expires: expires?.getTime() ?? null,
+      createdTime: Date.now(),
+    }
+    void set(key, JSON.stringify({metadata, value})).catch(error => {
       console.error(`error setting redis.${key}`, getErrorMessage(error))
     })
   } else {

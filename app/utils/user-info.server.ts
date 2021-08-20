@@ -37,6 +37,7 @@ async function getUserInfo(
       ? cachified({
           request,
           forceFresh,
+          maxAge: 1000 * 60 * 60 * 24 * 30,
           key: getDiscordCacheKey(discordId),
           checkValue: (value: unknown) =>
             typeof value === 'object' && value !== null && 'id' in value,
@@ -50,6 +51,7 @@ async function getUserInfo(
       ? cachified({
           request,
           forceFresh,
+          maxAge: 1000 * 60 * 60 * 24 * 30,
           timings,
           key: getConvertKitCacheKey(convertKitId),
           checkValue: (value: unknown) =>

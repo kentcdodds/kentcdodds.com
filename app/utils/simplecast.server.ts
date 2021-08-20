@@ -28,6 +28,7 @@ const seasonsCacheKey = `simplecast:seasons:${CHATS_WITH_KENT_PODCAST_ID}`
 const getCachedSeasons = async (request: Request) =>
   redis.cachified({
     key: seasonsCacheKey,
+    maxAge: 1000 * 60 * 60 * 24 * 7,
     getFreshValue: getSeasons,
     request,
     checkValue: (value: unknown) =>

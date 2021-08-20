@@ -34,6 +34,7 @@ type Options = {request?: Request; timings?: Timings}
 function getWorkshops({request, timings}: Options) {
   return cachified({
     key: 'content:workshops',
+    maxAge: 1000 * 60 * 60 * 24 * 7,
     request,
     timings,
     getFreshValue: async () => {

@@ -67,6 +67,7 @@ type ArrowButtonBaseProps = {
 
 type ArrowLinkProps = {
   to: LinkProps['to']
+  direction?: ArrowIconProps['direction']
 } & ArrowButtonBaseProps
 
 type ArrowButtonProps = {
