@@ -20,7 +20,7 @@ import {BlogSection} from '~/components/sections/blog-section'
 import {getBlogRecommendations} from '~/utils/blog.server'
 import {getSeasonListItems} from '~/utils/simplecast.server'
 import {FeaturedSection} from '~/components/sections/featured-section'
-import {listify, formatTime} from '~/utils/misc'
+import {listify, formatTime, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {getCWKEpisodePath, getFeaturedEpisode} from '~/utils/chats-with-kent'
 import {HeroSection} from '~/components/sections/hero-section'
 
@@ -39,16 +39,12 @@ export const loader: LoaderFunction = async ({request}) => {
 
   return json(data, {
     headers: {
-      'Cache-Control': 'public, max-age=600',
+      'Cache-Control': 'private, max-age=3600',
     },
   })
 }
 
-export const headers: HeadersFunction = ({loaderHeaders}) => {
-  return {
-    'Cache-Control': loaderHeaders.get('Cache-Control') ?? 'no-cache',
-  }
-}
+export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export function meta() {
   return {

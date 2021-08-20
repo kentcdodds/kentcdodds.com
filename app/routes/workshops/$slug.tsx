@@ -1,6 +1,6 @@
 import * as React from 'react'
+import type {MetaFunction, HeadersFunction} from 'remix'
 import {useLoaderData, json} from 'remix'
-import type {MetaFunction} from 'remix'
 import {Link, useParams} from 'react-router-dom'
 import type {KCDHandle, KCDLoader, MdxListItem} from '~/types'
 import {Grid} from '~/components/grid'
@@ -24,7 +24,7 @@ import type {
   TestimonialSubject,
   TestimonialCategory,
 } from '~/utils/testimonials.server'
-import {listify} from '~/utils/misc'
+import {listify, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {RegistrationPanel} from '~/components/workshop-registration-panel'
 
 export const handle: KCDHandle = {
@@ -56,18 +56,20 @@ export const loader: KCDLoader<{slug: string}> = async ({params, request}) => {
       ...((workshop?.categories ?? []) as Array<TestimonialCategory>),
     ],
   })
-  const headers = {'Server-Timing': getServerTimeHeader(timings)}
+  const headers = {
+    'Cache-Control': 'private, max-age=3600',
+    'Server-Timing': getServerTimeHeader(timings),
+  }
 
-  return json(
-    {
-      testimonials,
-      blogRecommendations: workshop
-        ? await getBlogRecommendations(request)
-        : [],
-    },
-    {status: workshop ? 200 : 404, headers},
-  )
+  const data: LoaderData = {
+    testimonials,
+    blogRecommendations: workshop ? await getBlogRecommendations(request) : [],
+  }
+
+  return json(data, {status: workshop ? 200 : 404, headers})
 }
+
+export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export const meta: MetaFunction = ({parentsData, params}) => {
   let workshop

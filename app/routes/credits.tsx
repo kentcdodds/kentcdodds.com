@@ -1,4 +1,5 @@
 import * as React from 'react'
+import type {HeadersFunction} from 'remix'
 import type {ImageBuilder} from '~/images'
 import {images, getImgProps} from '~/images'
 import {H2, H3, H6, Paragraph} from '~/components/typography'
@@ -17,6 +18,10 @@ interface ProfileCardProps {
   github?: string
   twitter?: string
 }
+
+export const headers: HeadersFunction = () => ({
+  'Cache-Control': 'public, max-age=3600',
+})
 
 function ProfileCard({
   name,

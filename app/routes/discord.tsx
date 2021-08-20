@@ -7,9 +7,10 @@ import {
   AccordionPanel,
   useAccordionItemContext,
 } from '@reach/accordion'
+import type {HeadersFunction} from 'remix'
 import {json, useLoaderData} from 'remix'
 import type {KCDLoader} from '~/types'
-import {getDiscordAuthorizeURL} from '~/utils/misc'
+import {getDiscordAuthorizeURL, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {useOptionalUser, useRequestInfo} from '~/utils/providers'
 import {ArrowLink} from '~/components/arrow-button'
 import {ButtonLink} from '~/components/button'
@@ -41,8 +42,14 @@ export const loader: KCDLoader = async ({request}) => {
   })
 
   const data: LoaderData = {testimonials}
-  return json(data)
+  return json(data, {
+    headers: {
+      'Cache-Control': 'public, max-age=3600',
+    },
+  })
 }
+
+export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export interface CategoryCardProps {
   title: string

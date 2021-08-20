@@ -1,5 +1,6 @@
 import * as React from 'react'
-import {Link} from 'remix'
+import type {HeadersFunction} from 'remix'
+import {Link, Headers} from 'remix'
 import type {NonNullProperties, User, Request} from '~/types'
 import {Team} from '@prisma/client'
 import * as dateFns from 'date-fns'
@@ -190,6 +191,18 @@ function useUpdateQueryStringValueWithoutNavigation(
   }, [queryKey, queryValue])
 }
 
+const reuseUsefulLoaderHeaders: HeadersFunction = ({loaderHeaders}) => {
+  const headers = new Headers()
+  const usefulHeaders = ['Cache-Control', 'Server-Timing']
+  for (const headerName of usefulHeaders) {
+    if (loaderHeaders.has(headerName)) {
+      headers.set(headerName, loaderHeaders.get(headerName)!)
+    }
+  }
+
+  return headers
+}
+
 export {
   getAvatar,
   getAvatarForUser,
@@ -204,6 +217,7 @@ export {
   getRequiredGlobalEnvVar,
   getDiscordAuthorizeURL,
   getDomainUrl,
+  reuseUsefulLoaderHeaders,
   unknownTeam,
   teams,
   teamDisplay,

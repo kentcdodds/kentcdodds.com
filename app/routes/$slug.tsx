@@ -1,4 +1,5 @@
 import * as React from 'react'
+import type {HeadersFunction} from 'remix'
 import {useLoaderData, json, Response} from 'remix'
 import type {MdxPage, KCDLoader, MdxListItem, KCDHandle} from '~/types'
 import {
@@ -14,6 +15,7 @@ import {BackLink} from '~/components/arrow-button'
 import {H2, H6} from '~/components/typography'
 import {pathedRoutes} from '../other-routes.server'
 import {getImageBuilder, getImgProps} from '~/images'
+import {reuseUsefulLoaderHeaders} from '~/utils/misc'
 
 type LoaderData = {
   page: MdxPage | null
@@ -43,12 +45,13 @@ export const loader: KCDLoader<{slug: string}> = async ({params, request}) => {
   const blogRecommendations = await getBlogRecommendations(request)
 
   const data: LoaderData = {page, blogRecommendations}
-  if (page) {
-    return json(data)
-  } else {
-    return json(data, {status: 404})
+  const headers = {
+    'Cache-Control': 'public, max-age=3600',
   }
+  return json(data, {status: page ? 200 : 404, headers})
 }
+
+export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export const meta = mdxPageMeta
 

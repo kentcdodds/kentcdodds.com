@@ -1,5 +1,5 @@
 import * as React from 'react'
-import type {MetaFunction} from 'remix'
+import type {HeadersFunction, MetaFunction} from 'remix'
 import {useSearchParams} from 'react-router-dom'
 import {Grid} from '~/components/grid'
 import {images} from '~/images'
@@ -30,6 +30,8 @@ export const meta: MetaFunction = ({parentsData}) => {
     } workshops on ${listify([...tagsSet])}`,
   }
 }
+
+export const headers: HeadersFunction = ({parentHeaders}) => parentHeaders
 
 function WorkshopsHome() {
   const data = useWorkshops()

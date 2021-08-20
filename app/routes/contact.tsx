@@ -1,5 +1,6 @@
-import {Form, useActionData} from 'remix'
 import * as React from 'react'
+import type {HeadersFunction} from 'remix'
+import {Form, useActionData} from 'remix'
 import {Outlet} from 'react-router-dom'
 import {useOptionalUser} from '~/utils/providers'
 import {
@@ -11,6 +12,10 @@ import {H2} from '~/components/typography'
 import {ErrorPanel, Field, InputError} from '~/components/form-elements'
 import {Grid} from '~/components/grid'
 import type {ActionData} from '~/utils/contact'
+
+export const headers: HeadersFunction = () => ({
+  'Cache-Control': 'public, max-age=3600',
+})
 
 export default function ContactRoute() {
   const actionData = useActionData<ActionData>()

@@ -1,4 +1,5 @@
 import * as React from 'react'
+import type {HeadersFunction} from 'remix'
 import {json, Link, useLoaderData} from 'remix'
 import type {KCDLoader} from '~/types'
 import {Grid} from '~/components/grid'
@@ -11,6 +12,7 @@ import {TestimonialSection} from '~/components/sections/testimonial-section'
 import {getTestimonials} from '~/utils/testimonials.server'
 import type {Testimonial} from '~/utils/testimonials.server'
 import {Spacer} from '~/components/spacer'
+import {reuseUsefulLoaderHeaders} from '~/utils/misc'
 
 type LoaderData = {
   testimonials: Array<Testimonial>
@@ -23,8 +25,14 @@ export const loader: KCDLoader = async ({request}) => {
   })
 
   const data: LoaderData = {testimonials}
-  return json(data)
+  return json(data, {
+    headers: {
+      'Cache-Control': 'public, max-age=3600',
+    },
+  })
 }
+
+export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export function meta() {
   return {

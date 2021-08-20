@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {Link, Outlet} from 'react-router-dom'
+import type {LoaderFunction, HeadersFunction} from 'remix'
 import {json, useLoaderData} from 'remix'
-import type {LoaderFunction} from 'remix'
 import type {Await} from '~/types'
 import {AnimatePresence, motion} from 'framer-motion'
 import {useLocation} from 'react-router'
@@ -11,6 +11,7 @@ import {useOptionalUser} from '~/utils/providers'
 import {Grid} from '~/components/grid'
 import {H2, Paragraph} from '~/components/typography'
 import {BackLink} from '~/components/arrow-button'
+import {reuseUsefulLoaderHeaders} from '~/utils/misc'
 
 function getCalls(userId: string) {
   return prisma.call.findMany({
@@ -28,8 +29,14 @@ export const loader: LoaderFunction = async ({request}) => {
   const data: LoaderData = {
     calls: user ? await getCalls(user.id) : [],
   }
-  return json(data)
+  return json(data, {
+    headers: {
+      'Cache-Control': 'private, max-age=3600',
+    },
+  })
 }
+
+export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 function MaybeOutlet({open}: {open: boolean}) {
   return (

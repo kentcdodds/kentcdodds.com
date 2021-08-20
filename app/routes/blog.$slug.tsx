@@ -26,7 +26,7 @@ import {TeamStats} from '~/components/team-stats'
 import type {Timings} from '~/utils/metrics.server'
 import {getServerTimeHeader} from '~/utils/metrics.server'
 import {useRequestInfo} from '~/utils/providers'
-import {formatNumber} from '~/utils/misc'
+import {formatNumber, reuseUsefulLoaderHeaders} from '~/utils/misc'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
@@ -74,19 +74,14 @@ export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
     totalReads: formatNumber(totalReads),
   }
   const headers = {
-    'Cache-Control': 'public, max-age=3600',
+    'Cache-Control': 'private, max-age=3600',
     'Server-Timing': getServerTimeHeader(timings),
   }
 
   return json(data, {status: page ? 200 : 404, headers})
 }
 
-export const headers: HeadersFunction = ({loaderHeaders}) => {
-  return {
-    'Cache-Control': loaderHeaders.get('Cache-Control') ?? 'no-cache',
-    'Server-Timing': loaderHeaders.get('Server-Timing') ?? '',
-  }
-}
+export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export const meta = mdxPageMeta
 

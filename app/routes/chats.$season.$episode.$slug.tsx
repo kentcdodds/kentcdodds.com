@@ -18,7 +18,7 @@ import {FeaturedSection} from '~/components/sections/featured-section'
 import {ArrowLink, BackLink} from '~/components/arrow-button'
 import {ChevronRightIcon} from '~/components/icons/chevron-right-icon'
 import {ChevronLeftIcon} from '~/components/icons/chevron-left-icon'
-import {formatTime, listify} from '~/utils/misc'
+import {formatTime, listify, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {getCWKEpisodePath, getFeaturedEpisode} from '~/utils/chats-with-kent'
 
 export const handle: KCDHandle = {
@@ -90,11 +90,7 @@ export const loader: KCDLoader<{
   })
 }
 
-export const headers: HeadersFunction = ({loaderHeaders}) => {
-  return {
-    'Cache-Control': loaderHeaders.get('Cache-Control') ?? 'no-cache',
-  }
-}
+export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 function Homework({
   homeworkHTMLs = [],

@@ -1,7 +1,11 @@
 import * as React from 'react'
-import type {ActionFunction, LoaderFunction} from 'remix'
-import {Form, useLoaderData, json, redirect} from 'remix'
-import {getDomainUrl, getErrorMessage} from '~/utils/misc'
+import type {ActionFunction, HeadersFunction, LoaderFunction} from 'remix'
+import {Headers, Form, useLoaderData, json, redirect} from 'remix'
+import {
+  getDomainUrl,
+  getErrorMessage,
+  reuseUsefulLoaderHeaders,
+} from '~/utils/misc'
 import {sendToken, getUser} from '~/utils/session.server'
 import {getLoginInfoSession} from '~/utils/login.server'
 import {images} from '~/images'
@@ -28,8 +32,15 @@ export const loader: LoaderFunction = async ({request}) => {
     error: loginSession.getError(),
   }
 
-  return json(data, {headers: await loginSession.getHeaders()})
+  const headers = new Headers({
+    'Cache-Control': 'public, max-age=3600',
+  })
+  await loginSession.getHeaders(headers)
+
+  return json(data, {headers})
 }
+
+export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 const EMAIL_SENT_MESSAGE = 'Email sent.'
 

@@ -6,7 +6,7 @@ import {orderBy} from 'lodash'
 import {Grid} from '~/components/grid'
 import {getSeasonListItems} from '~/utils/simplecast.server'
 import {useChatsEpisodeUIState} from '~/utils/providers'
-import {formatTime} from '~/utils/misc'
+import {formatTime, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {getCWKEpisodePath} from '~/utils/chats-with-kent'
 import {TriangleIcon} from '~/components/icons/triangle-icon'
 
@@ -46,11 +46,7 @@ export const loader: KCDLoader<{season: string}> = async ({
   })
 }
 
-export const headers: HeadersFunction = ({loaderHeaders}) => {
-  return {
-    'Cache-Control': loaderHeaders.get('Cache-Control') ?? 'no-cache',
-  }
-}
+export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export default function Screen() {
   const {season} = useLoaderData<LoaderData>()

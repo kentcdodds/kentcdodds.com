@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {Outlet} from 'react-router'
-import type {LoaderFunction} from 'remix'
+import type {HeadersFunction, LoaderFunction} from 'remix'
 import {json, useLoaderData} from 'remix'
 import type {MdxListItem, Team} from '~/types'
 import {
@@ -20,7 +20,7 @@ import {images} from '~/images'
 import {ButtonLink} from '~/components/button'
 import {ServerError} from '~/components/errors'
 import {getBlogMdxListItems} from '~/utils/mdx'
-import {formatNumber} from '~/utils/misc'
+import {formatNumber, reuseUsefulLoaderHeaders} from '~/utils/misc'
 
 type LoaderData = {
   blogPostCount: string
@@ -54,8 +54,14 @@ export const loader: LoaderFunction = async ({request}) => {
         : formatNumber(totalBlogReads),
     currentBlogLeaderTeam: blogRankings[0]?.team,
   }
-  return json(data)
+  return json(data, {
+    headers: {
+      'Cache-Control': 'private, max-age=300',
+    },
+  })
 }
+
+export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export default function IndexRoute() {
   const data = useLoaderData<LoaderData>()

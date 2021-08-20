@@ -1,9 +1,11 @@
 import * as React from 'react'
+import type {HeadersFunction} from 'remix'
 import {json, redirect, useLoaderData, Form} from 'remix'
 import type {Call, KCDLoader, KCDAction, KCDHandle} from '~/types'
 import {requireUser} from '~/utils/session.server'
 import {prisma} from '~/utils/prisma.server'
 import {Paragraph} from '~/components/typography'
+import {reuseUsefulLoaderHeaders} from '~/utils/misc'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -52,9 +54,15 @@ export const loader: KCDLoader<{callId: string}> = async ({
       return redirect('/calls/record')
     }
     const data: LoaderData = {call}
-    return json(data)
+    return json(data, {
+      headers: {
+        'Cache-Control': 'public, max-age=3600',
+      },
+    })
   })
 }
+
+export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export default function Screen() {
   const data = useLoaderData<LoaderData>()

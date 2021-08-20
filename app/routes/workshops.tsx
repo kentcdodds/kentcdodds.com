@@ -1,5 +1,5 @@
 import * as React from 'react'
-import type {LoaderFunction} from 'remix'
+import type {HeadersFunction, LoaderFunction} from 'remix'
 import {useLoaderData, json} from 'remix'
 import {Outlet} from 'react-router-dom'
 import type {Workshop} from '~/types'
@@ -9,6 +9,7 @@ import {getServerTimeHeader} from '~/utils/metrics.server'
 import type {WorkshopEvent} from '~/utils/workshop-tickets.server'
 import {getScheduledEvents} from '~/utils/workshop-tickets.server'
 import {WorkshopsProvider} from '~/utils/providers'
+import {reuseUsefulLoaderHeaders} from '~/utils/misc'
 
 type LoaderData = {
   workshops: Array<Workshop>
@@ -33,9 +34,14 @@ export const loader: LoaderFunction = async ({request}) => {
     workshopEvents,
     tags: Array.from(tags),
   }
-  const headers = {'Server-Timing': getServerTimeHeader(timings)}
+  const headers = {
+    'Cache-Control': 'public, max-age=3600',
+    'Server-Timing': getServerTimeHeader(timings),
+  }
   return json(data, {headers})
 }
+
+export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 function WorkshopsHome() {
   const data = useLoaderData<LoaderData>()

@@ -37,9 +37,9 @@ export default async function handleRequest(
     <Remix context={remixContext} url={request.url} />,
   )
 
-  if (process.env.NODE_ENV !== 'production') {
-    responseHeaders.set('Cache-Control', 'no-store')
-  }
+  // if (process.env.NODE_ENV !== 'production') {
+  //   responseHeaders.set('Cache-Control', 'no-store')
+  // }
 
   const html = `<!DOCTYPE html>${markup}`
 

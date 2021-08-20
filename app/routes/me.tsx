@@ -1,5 +1,5 @@
 import * as React from 'react'
-import type {ActionFunction, LoaderFunction} from 'remix'
+import type {ActionFunction, HeadersFunction, LoaderFunction} from 'remix'
 import {Form, json, redirect, useLoaderData, useActionData} from 'remix'
 import clsx from 'clsx'
 import {useEffect, useState} from 'react'
@@ -9,6 +9,7 @@ import {
   getDiscordAuthorizeURL,
   getDomainUrl,
   getErrorMessage,
+  reuseUsefulLoaderHeaders,
 } from '~/utils/misc'
 import {useRequestInfo, useUser, useUserInfo} from '~/utils/providers'
 import {deleteDiscordCache} from '~/utils/user-info.server'
@@ -40,9 +41,15 @@ export const loader: LoaderFunction = ({request}) => {
       }),
     )
     const loaderData: LoaderData = {qrLoginCode}
-    return json(loaderData)
+    return json(loaderData, {
+      headers: {
+        'Cache-Control': 'private, max-age=3600',
+      },
+    })
   })
 }
+
+export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 const actionIds = {
   changeDetails: 'change details',

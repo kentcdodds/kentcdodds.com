@@ -1,6 +1,6 @@
 import * as React from 'react'
+import type {LoaderFunction, HeadersFunction} from 'remix'
 import {json, Link, useLoaderData, useMatches} from 'remix'
-import type {LoaderFunction} from 'remix'
 import {Outlet} from 'react-router-dom'
 import {AnimatePresence, motion} from 'framer-motion'
 import clsx from 'clsx'
@@ -18,7 +18,7 @@ import {ChevronUpIcon} from '~/components/icons/chevron-up-icon'
 import {ChevronDownIcon} from '~/components/icons/chevron-down-icon'
 import {HeaderSection} from '~/components/sections/header-section'
 import {TriangleIcon} from '~/components/icons/triangle-icon'
-import {formatTime} from '~/utils/misc'
+import {formatTime, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {
   getEpisodeFromParams,
   getEpisodePath,
@@ -36,11 +36,18 @@ export const loader: LoaderFunction = async ({request}) => {
     getEpisodes({request}),
   ])
 
-  return json({
+  const data: LoaderData = {
     blogRecommendations,
     episodes,
+  }
+  return json(data, {
+    headers: {
+      'Cache-Control': 'private, max-age=3600',
+    },
   })
 }
+
+export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export default function CallHomeScreen() {
   const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('asc')

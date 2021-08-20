@@ -1,5 +1,5 @@
 import * as React from 'react'
-import type {LoaderFunction} from 'remix'
+import type {HeadersFunction, LoaderFunction} from 'remix'
 import {json, useLoaderData} from 'remix'
 import type {MdxListItem} from '~/types'
 import formatDate from 'date-fns/format'
@@ -13,6 +13,7 @@ import {UsersIcon} from '~/components/icons/users-icon'
 import {BlogSection} from '~/components/sections/blog-section'
 import {getBlogRecommendations} from '~/utils/blog.server'
 import {HeroSection} from '~/components/sections/hero-section'
+import {reuseUsefulLoaderHeaders} from '~/utils/misc'
 
 type LoaderData = {
   blogRecommendations: Array<MdxListItem>
@@ -22,8 +23,14 @@ export const loader: LoaderFunction = async ({request}) => {
   const data: LoaderData = {
     blogRecommendations: await getBlogRecommendations(request),
   }
-  return json(data)
+  return json(data, {
+    headers: {
+      'Cache-Control': 'public, max-age=3600',
+    },
+  })
 }
+
+export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 function AboutIndex() {
   const {blogRecommendations} = useLoaderData<LoaderData>()

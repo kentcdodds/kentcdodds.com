@@ -1,5 +1,5 @@
 import * as React from 'react'
-import type {LoaderFunction} from 'remix'
+import type {HeadersFunction, LoaderFunction} from 'remix'
 import {json, useLoaderData} from 'remix'
 import * as YAML from 'yaml'
 import type {CountableSlugify} from '@sindresorhus/slugify'
@@ -8,7 +8,7 @@ import {useRef, useState} from 'react'
 import formatDate from 'date-fns/format'
 import {Link, useLocation} from 'react-router-dom'
 import clsx from 'clsx'
-import {typedBoolean} from '~/utils/misc'
+import {reuseUsefulLoaderHeaders, typedBoolean} from '~/utils/misc'
 import {markdownToHtml} from '~/utils/markdown.server'
 import {downloadFile} from '~/utils/github.server'
 import {cachified} from '~/utils/redis.server'
@@ -153,8 +153,14 @@ export const loader: LoaderFunction = async ({request}) => {
       Array.isArray((value as LoaderData).tags),
   })
 
-  return json(data)
+  return json(data, {
+    headers: {
+      'Cache-Control': 'public, max-age=3600',
+    },
+  })
 }
+
+export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 function Card({
   tag,

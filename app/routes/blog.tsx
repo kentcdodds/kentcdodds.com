@@ -24,6 +24,7 @@ import {getServerTimeHeader} from '~/utils/metrics.server'
 import {ServerError} from '~/components/errors'
 import {
   formatNumber,
+  reuseUsefulLoaderHeaders,
   useUpdateQueryStringValueWithoutNavigation,
 } from '~/utils/misc'
 import {TeamStats} from '~/components/team-stats'
@@ -83,18 +84,13 @@ export const loader: LoaderFunction = async ({request}) => {
 
   return json(data, {
     headers: {
-      'Cache-Control': 'public, max-age=3600',
+      'Cache-Control': 'private, max-age=3600',
       'Server-Timing': getServerTimeHeader(timings),
     },
   })
 }
 
-export const headers: HeadersFunction = ({loaderHeaders}) => {
-  return {
-    'Cache-Control': loaderHeaders.get('Cache-Control') ?? 'no-cache',
-    'Server-Timing': loaderHeaders.get('Server-Timing') ?? '',
-  }
-}
+export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export const meta: MetaFunction = ({data}: {data: LoaderData}) => {
   return {
