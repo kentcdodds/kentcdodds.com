@@ -51,17 +51,15 @@ export const meta: MetaFunction = ({data}: {data: LoaderData | undefined}) => {
   }
   const title = `${episode.title} | Chats with Kent Podcast | ${episode.episodeNumber}`
   const playerUrl = `https://player.simplecast.com/${episode.simpleCastId}`
-  const description = episode.descriptionHTML
   return {
     title,
-    // TODO: strip the HTML
-    description,
+    description: episode.description,
     keywords: `call kent, kent c. dodds, ${episode.meta?.keywords ?? ''}`,
 
     'twitter:card': 'player',
     'twitter:site': '@kentcdodds',
     'twitter:title': title,
-    'twitter:description': description,
+    'twitter:description': episode.description,
     'twitter:player': playerUrl,
     'twitter:player:width': '436',
     'twitter:player:height': '196',

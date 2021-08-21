@@ -35,4 +35,18 @@ async function markdownToHtmlDocument(markdownString: string) {
   return result.value.toString()
 }
 
-export {markdownToHtml, markdownToHtmlUnwrapped, markdownToHtmlDocument}
+async function stripHtml(htmlString: string) {
+  const {unified} = await import('unified')
+  const {default: rehypeParse} = await import('rehype-parse')
+  const {toString: hastToString} = await import('hast-util-to-string')
+  const result = unified().use(rehypeParse).parse(htmlString)
+
+  return hastToString(result)
+}
+
+export {
+  markdownToHtml,
+  markdownToHtmlUnwrapped,
+  markdownToHtmlDocument,
+  stripHtml,
+}

@@ -91,6 +91,7 @@
     "fathom-client": "^3.1.0",
     "framer-motion": "^4.1.17",
     "hast-util-to-html": "^8.0.1",
+    "hast-util-to-string": "^2.0.0",
     "lodash": "^4.17.21",
     "match-sorter": "^6.3.0",
     "md5-hash": "^1.0.1",

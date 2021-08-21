@@ -78,6 +78,7 @@ type CWKEpisode = {
     [key as string]: string
   }
   descriptionHTML: string
+  description: string
   summaryHTML: string
   updatedAt: string
   seasonNumber: number

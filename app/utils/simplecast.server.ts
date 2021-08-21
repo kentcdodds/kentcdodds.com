@@ -11,7 +11,7 @@ import {omit, sortBy} from 'lodash'
 import type * as U from 'unist'
 import type * as M from 'mdast'
 import {getRequiredServerEnvVar, typedBoolean} from './misc'
-import {markdownToHtml} from './markdown.server'
+import {markdownToHtml, stripHtml} from './markdown.server'
 import * as redis from './redis.server'
 
 const SIMPLECAST_KEY = getRequiredServerEnvVar('SIMPLECAST_KEY')
@@ -118,6 +118,7 @@ async function getEpisode(episodeId: string) {
   const cwkEpisode: CWKEpisode = {
     transcriptHTML,
     descriptionHTML,
+    description: await stripHtml(descriptionHTML),
     summaryHTML,
     guests,
     slug,
