@@ -13,15 +13,16 @@ export const handle: KCDHandle = {
 
 export const loader: LoaderFunction = async ({request}) => {
   return requireUser(request, async user => {
-    const url = new URL(request.url)
-    const code = url.searchParams.get('code')
-    url.searchParams.delete('code')
+    const domainUrl = getDomainUrl(request)
+    const code = new URL(request.url).searchParams.get('code')
+
+    const url = new URL(domainUrl)
     url.pathname = '/me'
+
     try {
       if (!code) {
         throw new Error('Discord code required')
       }
-      const domainUrl = getDomainUrl(request)
       const discordMember = await connectDiscord({user, code, domainUrl})
       await deleteDiscordCache(discordMember.user.id)
 
@@ -29,6 +30,7 @@ export const loader: LoaderFunction = async ({request}) => {
         'message',
         `✅ Sucessfully connected your KCD account with ${discordMember.user.username} on discord.`,
       )
+      console.log('redirecting to', url.toString())
       return redirect(url.toString())
     } catch (error: unknown) {
       const errorMessage = getErrorMessage(error)
