@@ -94,6 +94,7 @@ async function getEpisode(episodeId: string) {
     title,
     season: {number: seasonNumber},
     keywords: keywordsData,
+    enclosure_url: mediaUrl,
   } = (await res.json()) as SimplecastEpisode
   if (!is_published) {
     return null
@@ -132,6 +133,7 @@ async function getEpisode(episodeId: string) {
       keywords,
     },
     simpleCastId: episodeId,
+    mediaUrl,
   }
   return cwkEpisode
 }

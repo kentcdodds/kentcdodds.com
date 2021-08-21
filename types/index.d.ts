@@ -94,6 +94,7 @@ type CWKEpisode = {
   duration: number
   transcriptHTML: string
   simpleCastId: string
+  mediaUrl: string
 }
 
 /**

@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
+import type {HeadersFunction, MetaFunction} from 'remix'
 import {useLoaderData, json, redirect} from 'remix'
-import type {HeadersFunction} from 'remix'
 import {Link, useLocation} from 'react-router-dom'
 import type {KCDLoader, CWKEpisode, CWKListItem, KCDHandle} from '~/types'
 import clsx from 'clsx'
@@ -20,6 +20,7 @@ import {ChevronRightIcon} from '~/components/icons/chevron-right-icon'
 import {ChevronLeftIcon} from '~/components/icons/chevron-left-icon'
 import {formatTime, listify, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {getCWKEpisodePath, getFeaturedEpisode} from '~/utils/chats-with-kent'
+import {Themed} from '~/utils/theme-provider'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
@@ -37,6 +38,38 @@ export const handle: KCDHandle = {
       })
     })
   },
+}
+
+export const meta: MetaFunction = ({data}: {data: LoaderData | undefined}) => {
+  const metadata = {}
+  const episode = data?.episode
+  if (!episode) {
+    // the TS defs for MetaFunction are kinda weird...
+    return Object.assign(metadata, {
+      title: 'Chats with Kent Episode not found',
+    })
+  }
+  const title = `${episode.title} | Chats with Kent Podcast | ${episode.episodeNumber}`
+  const playerUrl = `https://player.simplecast.com/${episode.simpleCastId}`
+  const description = episode.descriptionHTML
+  return {
+    title,
+    // TODO: strip the HTML
+    description,
+    keywords: `call kent, kent c. dodds, ${episode.meta?.keywords ?? ''}`,
+
+    'twitter:card': 'player',
+    'twitter:site': '@kentcdodds',
+    'twitter:title': title,
+    'twitter:description': description,
+    'twitter:player': playerUrl,
+    'twitter:player:width': '436',
+    'twitter:player:height': '196',
+    'twitter:image': episode.image,
+    'twitter:image:alt': title,
+    'twitter:player:stream': episode.mediaUrl,
+    'twitter:player:stream:content_type': 'audio/mpeg',
+  }
 }
 
 type LoaderData = {
@@ -353,15 +386,31 @@ function PodcastDetail() {
 
       <Grid as="main" className="mb-24 lg:mb-64">
         <div className="col-span-full mb-16 lg:col-span-8 lg:col-start-3">
-          <iframe
-            className="mb-4"
-            title="player"
-            height="200px"
-            width="100%"
-            frameBorder="no"
-            scrolling="no"
-            seamless
-            src={`https://player.simplecast.com/${episode.simpleCastId}?dark=false`}
+          <Themed
+            dark={
+              <iframe
+                className="mb-4"
+                title="player"
+                height="200px"
+                width="100%"
+                frameBorder="no"
+                scrolling="no"
+                seamless
+                src={`https://player.simplecast.com/${episode.simpleCastId}?dark=true`}
+              />
+            }
+            light={
+              <iframe
+                className="mb-4"
+                title="player"
+                height="200px"
+                width="100%"
+                frameBorder="no"
+                scrolling="no"
+                seamless
+                src={`https://player.simplecast.com/${episode.simpleCastId}?dark=false`}
+              />
+            }
           />
 
           <div className="flex justify-between">

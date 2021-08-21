@@ -20,6 +20,7 @@ type SimplecastEpisode = {
   long_description: string
   title: string
   keywords: SimplecastCollectionResponse<{value: string}>
+  enclosure_url: string
 }
 
 type SimplecastEpisodeListItem = Pick<
