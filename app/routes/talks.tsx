@@ -1,17 +1,12 @@
 import * as React from 'react'
 import type {HeadersFunction, LoaderFunction} from 'remix'
 import {json, useLoaderData} from 'remix'
-import * as YAML from 'yaml'
-import type {CountableSlugify} from '@sindresorhus/slugify'
 import type {Await} from '~/types'
 import {useRef, useState} from 'react'
 import formatDate from 'date-fns/format'
 import {Link, useLocation} from 'react-router-dom'
 import clsx from 'clsx'
-import {reuseUsefulLoaderHeaders, typedBoolean} from '~/utils/misc'
-import {markdownToHtml} from '~/utils/markdown.server'
-import {downloadFile} from '~/utils/github.server'
-import {cachified} from '~/utils/redis.server'
+import {reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {HeroSection} from '~/components/sections/hero-section'
 import {images} from '~/images'
 import {Tag} from '~/components/tag'
@@ -19,141 +14,14 @@ import {Grid} from '~/components/grid'
 import {H3, H6, Paragraph} from '~/components/typography'
 import {CourseSection} from '~/components/sections/course-section'
 import {YoutubeIcon} from '~/components/icons/youtube-icon'
+import {getTalksAndTags} from '~/utils/talks.server'
 
-type RawTalk = {
-  title?: string
-  tag?: string
-  tags?: Array<string>
-  slug: string
-  resources?: Array<string>
-  description?: string
-  deliveries?: Array<{event?: string; date?: string; recording?: string}>
-}
-
-type Talk = Await<ReturnType<typeof getTalk>>
-
-let _slugify: CountableSlugify
-
-async function getSlugify() {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (!_slugify) {
-    const {slugifyWithCounter} = await import('@sindresorhus/slugify')
-
-    _slugify = slugifyWithCounter()
-  }
-  return _slugify
-}
-
-async function getTalk(rawTalk: RawTalk, allTags: Array<string>) {
-  const slugify = await getSlugify()
-  return {
-    title: rawTalk.title ?? 'TBA',
-    tag: allTags.find(tag => rawTalk.tags?.includes(tag)) ?? rawTalk.tags?.[0],
-    tags: rawTalk.tags ?? [],
-    slug: slugify(rawTalk.title ?? 'TBA'),
-    resourceHTMLs: rawTalk.resources
-      ? await Promise.all(rawTalk.resources.map(r => markdownToHtml(r)))
-      : [],
-    descriptionHTML: rawTalk.description
-      ? await markdownToHtml(rawTalk.description)
-      : undefined,
-    deliveries: rawTalk.deliveries
-      ? await Promise.all(
-          rawTalk.deliveries.map(async d => {
-            return {
-              eventHTML: d.event ? await markdownToHtml(d.event) : undefined,
-              date: d.date,
-              recording: d.recording,
-            }
-          }),
-        )
-      : [],
-  }
-}
-
-function sortByPresentationDate(a: Talk, b: Talk) {
-  const mostRecentA = mostRecent(
-    a.deliveries.map(({date}) => date).filter(typedBoolean),
-  )
-  const mostRecentB = mostRecent(
-    b.deliveries.map(({date}) => date).filter(typedBoolean),
-  )
-  return moreRecent(mostRecentA, mostRecentB) ? -1 : 1
-}
-
-function mostRecent(dates: Array<string> = []) {
-  return dates.reduce((recent: string, compare: string) => {
-    if (!recent) return compare
-    return moreRecent(compare, recent) ? compare : recent
-  })
-}
-
-// returns true if a is more recent than b
-function moreRecent(a: string | Date, b: string | Date) {
-  if (typeof a === 'string') a = new Date(a)
-  if (typeof b === 'string') b = new Date(b)
-  return a > b
-}
-
-type LoaderData = {
-  talks: Array<Talk>
-  tags: Array<string>
-}
-
-function getTags(talks: Array<RawTalk>): string[] {
-  // get most used tags
-  const tagCounts: Record<string, number> = {}
-
-  for (const talk of talks) {
-    if (!talk.tags) continue
-
-    for (const tag of talk.tags) {
-      tagCounts[tag] = (tagCounts[tag] ?? 0) + 1
-    }
-  }
-
-  const tags = Object.entries(tagCounts)
-    .filter(([_tag, counts]) => counts > 1) // only include tags assigned to >1 talks
-    .sort((l, r) => r[1] - l[1]) // sort on num occurrences
-    .map(([tag]) => tag) // extract tags, ditch the counts
-
-  return tags
-}
+type LoaderData = Await<ReturnType<typeof getTalksAndTags>>
 
 export const loader: LoaderFunction = async ({request}) => {
-  const slugify = await getSlugify()
-  slugify.reset()
+  const talksAndTags: LoaderData = await getTalksAndTags({request})
 
-  const data: LoaderData = await cachified({
-    key: 'content:data:talks.yml',
-    maxAge: 1000 * 60 * 60 * 24 * 14,
-    request,
-    getFreshValue: async () => {
-      const talksString = await downloadFile('content/data/talks.yml')
-      const rawTalks = YAML.parse(talksString) as Array<RawTalk>
-      if (!Array.isArray(rawTalks)) {
-        console.error('Talks is not an array', rawTalks)
-        throw new Error('Talks is not an array.')
-      }
-
-      const allTags = getTags(rawTalks)
-
-      const allTalks = await Promise.all(
-        rawTalks.map(rawTalk => getTalk(rawTalk, allTags)),
-      )
-      allTalks.sort(sortByPresentationDate)
-      allTags.sort()
-
-      return {talks: allTalks, tags: allTags}
-    },
-    checkValue: (value: unknown) =>
-      Boolean(value) &&
-      typeof value === 'object' &&
-      Array.isArray((value as LoaderData).talks) &&
-      Array.isArray((value as LoaderData).tags),
-  })
-
-  return json(data, {
+  return json(talksAndTags, {
     headers: {
       'Cache-Control': 'public, max-age=3600',
     },

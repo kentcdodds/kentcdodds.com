@@ -6,8 +6,10 @@ import type {
   MetaFunction,
 } from 'remix'
 import {json, useLoaderData} from 'remix'
+import {shuffle} from 'lodash'
 import formatDate from 'date-fns/format'
-import type {MdxListItem} from '~/types'
+import parseDate from 'date-fns/parseISO'
+import type {Await, MdxListItem} from '~/types'
 import {getImgProps, images} from '~/images'
 import {H2, H3, H6, Paragraph} from '~/components/typography'
 import {ArrowLink} from '~/components/arrow-button'
@@ -26,14 +28,20 @@ import {
 } from '~/components/fullscreen-yt-embed'
 import {useSearchParams} from 'react-router-dom'
 import {useRequestInfo} from '~/utils/providers'
+import {getTalksAndTags} from '~/utils/talks.server'
 
 type LoaderData = {
   blogRecommendations: Array<MdxListItem>
+  talkRecommendations: Await<ReturnType<typeof getTalksAndTags>>['talks']
 }
 
 export const loader: LoaderFunction = async ({request}) => {
+  const {talks} = await getTalksAndTags({request})
+
   const data: LoaderData = {
     blogRecommendations: await getBlogRecommendations(request),
+    // they're ordered by date, so we'll grab two random of the first 10.
+    talkRecommendations: shuffle(talks.slice(0, 10)).slice(0, 2),
   }
   return json(data, {
     headers: {
@@ -57,7 +65,7 @@ export const meta: MetaFunction = () => {
 }
 
 function AboutIndex() {
-  const {blogRecommendations} = useLoaderData<LoaderData>()
+  const {blogRecommendations, talkRecommendations} = useLoaderData<LoaderData>()
   const [searchParams] = useSearchParams()
   const requestInfo = useRequestInfo()
   const permalinkAutoplay = `${requestInfo.origin}/about?autoplay`
@@ -108,10 +116,10 @@ function AboutIndex() {
             rel="noreferrer noopener"
             href={`https://twitter.com/intent/tweet?${new URLSearchParams({
               url: permalinkAutoplay,
-              text: `I just watched @kentcdodds's life flash before my eyes.`,
+              text: `I just watched @kentcdodds' life flash before my eyes.`,
             })}`}
           >
-            Share this video.
+            {`Share this video.`}
           </a>
         </div>
       </Grid>
@@ -153,15 +161,30 @@ function AboutIndex() {
         </div>
 
         <Paragraph className="lg:mb:0 col-span-full mb-4 lg:col-span-4 lg:col-start-5 lg:mr-12">
-          Mauris auctor nulla at felis placerat, ut elementum urna commodo.
-          Aenean et rutrum quam. Etiam odio massa, congue in orci nec, ornare
-          suscipit sem aenean turpis.
+          {`
+            Early on in my career I decided I wanted to be an expert in
+            JavaScript. So I set my mind on mastering the world's most popular
+            programming language. I spent countless hours writing JavaScript
+            for the companies I worked for as well as in the evenings for open
+            source and other side projects. Eventually I even represented PayPal
+            on the TC-39 (the committee responsible for standardizing the
+            JavaScript language). I feel like I achieved my goal of becoming an
+            expert in JavaScript, but I do need to keep up just like everyone
+            else, which is an enjoyable challenge.
+          `}
         </Paragraph>
         <Paragraph className="col-span-full lg:col-span-4 lg:col-start-9 lg:mr-12">
-          With this workshop, you&apos;ll not only learn great patterns you can
-          use but also the strengths and weaknesses of each, so you know which
-          to reach for to provide your custom hooks and components the
-          flexibility and power you need.
+          {`
+            I've also always been excited about sharing what I know with others.
+            When I was in school, I signed up to be a tutor for my classmates
+            and once I even got Firebase to sponsor pizza for me to give an
+            informal workshop about Angular.js to my fellow students. I was a
+            speaker at the first meetup I ever attended, and I've now delivered
+            over a hundred talks on topics including JavaScript, React, Testing,
+            Careers, and more. One of my talks got noticed by egghead and I was
+            invited to turn that talk into an egghead course. The rest is
+            history!
+          `}
         </Paragraph>
       </Grid>
 
@@ -193,27 +216,41 @@ function AboutIndex() {
           <H2 className="mb-10">Here are some of the values I live by.</H2>
 
           <H6 as="h3" className="mb-4">
-            Here will go the first value
+            {`Kindness`}
           </H6>
           <Paragraph className="mb-12">
-            Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
-            nunc, dictum quis condimentum in, impe rdiet at arcu.
+            {`
+              You can be the smartest and most skilled software engineer in the
+              world, but if you're not kind to those with whom you interact,
+              you'll never reach your full potential and you'll always be
+              chasing the next thing to bring you happiness in life. Be kind.
+            `}
           </Paragraph>
           <H6 as="h3" className="mb-4">
-            Here will go the second value.
+            {`Share what I know`}
           </H6>
           <Paragraph className="mb-12">
-            Mauris auctor nulla at felis placerat, ut elementum urna commodo.
-            Aenean et rutrum quam. Etiam odio massa, congue in orci nec, ornare
-            suscipit sem aenean turpis.
+            {`
+              One of the biggest things that has helped me learn is by
+              committing myself to sharing what I know with others. Between
+              podcasts, blog posts, talks, and workshops, I force myself into
+              situations where I have to be accountable to those I'm teaching
+              to really know my stuff. And as a result, a lot of people have
+              learned from me as well.
+            `}
           </Paragraph>
           <H6 as="h3" className="mb-4">
-            Here will go the third value
+            {`Collaboration with others`}
           </H6>
           <Paragraph className="mb-12">
-            Mauris auctor nulla at felis placerat, ut elementum urna commodo.
-            Aenean et rutrum quam. Etiam odio massa, congue in orci nec, ornare
-            suscipit sem aenean turpis.
+            {`
+              I've worked with a ton of developers in my role as a team member
+              at companies I've worked at as well as in the open source
+              community. I've found it to be invaluable to collaborate well with
+              others. I value giving credit where it is due and celebrating
+              the successes of others with them. We can accomplish much more
+              together than separately.
+            `}
           </Paragraph>
         </div>
       </Grid>
@@ -237,24 +274,17 @@ function AboutIndex() {
             })}
           />
         </div>
-        <div className="col-span-full lg:col-span-6">
-          <TalkCard
-            tags={['react', 'virtual', 'video']}
-            date={new Date()}
-            title="Managing State Management"
-            description="Mauris auctor nulla at felis placerat, ut elem entum urna commodo. Aenean et rutrum quam. Etiam odio massa, congue in orci nec, ornare suscipit sem aenean turpis."
-            talkUrl="/"
-          />
-        </div>
-        <div className="col-span-full lg:col-span-6">
-          <TalkCard
-            tags={['react', 'virtual', 'video']}
-            date={new Date()}
-            title="Managing State Management"
-            description="Mauris auctor nulla at felis placerat, ut elem entum urna commodo. Aenean et rutrum quam. Etiam odio massa, congue in orci nec, ornare suscipit sem aenean turpis."
-            talkUrl="/"
-          />
-        </div>
+        {talkRecommendations.map(talk => (
+          <div key={talk.slug} className="col-span-full lg:col-span-6">
+            <TalkCard
+              tags={talk.tags}
+              date={talk.deliveries[0]?.date}
+              title={talk.title}
+              descriptionHTML={talk.descriptionHTML}
+              talkUrl={`/talks/${talk.slug}`}
+            />
+          </div>
+        ))}
       </Grid>
 
       <Grid className="mb-24 lg:mb-64">
@@ -347,13 +377,19 @@ function AboutIndex() {
 
 interface TalkCardProps {
   tags: string[]
-  date: Date
+  date?: string
   title: string
-  description: string
+  descriptionHTML?: string
   talkUrl: string
 }
 
-function TalkCard({tags, date, title, description, talkUrl}: TalkCardProps) {
+function TalkCard({
+  tags,
+  date,
+  title,
+  descriptionHTML = 'to be determined',
+  talkUrl,
+}: TalkCardProps) {
   return (
     <div className="bg-secondary text-primary p-16 pt-20 w-full rounded-lg">
       <div className="flex flex-wrap -mr-4 mb-28">
@@ -368,11 +404,16 @@ function TalkCard({tags, date, title, description, talkUrl}: TalkCardProps) {
       </div>
 
       <Paragraph as="span" className="mb-5">
-        {formatDate(date, 'PPP')}
+        {date ? formatDate(parseDate(date), 'PPP') : 'to be determined'}
       </Paragraph>
 
       <H3 className="mb-5">{title}</H3>
-      <Paragraph className="mb-10">{description}</Paragraph>
+      <Paragraph
+        className="mb-10"
+        // TODO: make sure this is rendering properly...
+        // had some sort of ssr error that the server wasn't getting this
+        dangerouslySetInnerHTML={{__html: descriptionHTML}}
+      />
       <ArrowLink to={talkUrl}>
         <span className="hidden md:inline">Have a look at this talk</span>
         <span className="md:hidden">Read more</span>
