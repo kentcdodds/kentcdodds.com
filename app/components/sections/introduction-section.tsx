@@ -1,15 +1,16 @@
 import * as React from 'react'
+import {Link} from 'remix'
 import {getImgProps, images} from '~/images'
 import {H2} from '../typography'
 import {ArrowLink} from '../arrow-button'
 import {Grid} from '../grid'
-import {VideoCard} from '../video-card'
+import {FullScreenYouTubeEmbed, LiteYouTubeEmbed} from '../fullscreen-yt-embed'
 
 function IntroductionSection() {
   return (
     <Grid>
       <div className="col-span-full lg:col-span-4">
-        <VideoCard
+        <FullScreenYouTubeEmbed
           img={
             <img
               {...getImgProps(images.kentRidingOnewheelOutdoorsFast, {
@@ -24,9 +25,26 @@ function IntroductionSection() {
               className="rounded-lg object-cover"
             />
           }
-          title="Hi, I'm Kent C. Dodds"
-          description="Introduction video 1:42"
+          ytLiteEmbed={
+            <LiteYouTubeEmbed
+              // TODO: replace this with the real ID before releasing
+              id="dQw4w9WgXcQ"
+              title="Get to know Kent C. Dodds"
+              // We don't show the poster, so we use the lowest-res version
+              poster="default"
+              params={new URLSearchParams({
+                color: 'white',
+                playsinline: '0',
+                rel: '0',
+              }).toString()}
+            />
+          }
         />
+        <p className="text-blueGray-500 text-xl">{`Introduction video (2:13)`}</p>
+        <Link
+          className="underlined"
+          to="/about#about-me"
+        >{`or, watch the full video here (8:05)`}</Link>
       </div>
       <div className="col-span-full mt-12 lg:col-span-5 lg:col-start-7 lg:mt-0">
         <H2 id="intro">

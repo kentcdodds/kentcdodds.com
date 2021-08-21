@@ -153,3 +153,12 @@ a.active.underlined:after {
 .dark iframe[src*='transistor'] {
   border-radius: 8px;
 }
+
+.yt-lite {
+  border-radius: 0.5rem;
+}
+/* this is for react-lite-youtube-embed */
+/* Annoyingly the background image can be a pixel taller than the video in front of it when the video is playing */
+.lyt-activated {
+  background-image: none !important;
+}

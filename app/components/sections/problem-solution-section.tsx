@@ -24,7 +24,7 @@ function Tab({isSelected, children}: TabProps & {isSelected?: boolean}) {
   return (
     <ReachTab
       className={clsx(
-        'hover:text-primary inline-flex items-center p-0 w-full focus:bg-transparent border-none lowercase transition',
+        'hover:text-primary inline-flex items-center p-0 w-full focus:bg-transparent border-none transition',
         {
           'text-primary': isSelected,
           'dark:text-blueGray-500 text-gray-400': !isSelected,
@@ -122,9 +122,9 @@ function ProblemSolutionSection({
 
       <div className="col-span-full col-start-1 order-1 lg:col-span-5 lg:order-3 lg:mt-52 lg:pt-2">
         <TabList className="inline-flex flex-row text-white text-xl leading-snug bg-transparent space-x-8 lg:flex-col lg:text-7xl lg:space-x-0">
-          <Tab>Blog</Tab>
-          <Tab>Courses</Tab>
-          <Tab>Podcast</Tab>
+          <Tab>blog</Tab>
+          <Tab>courses</Tab>
+          <Tab>podcast</Tab>
         </TabList>
       </div>
 

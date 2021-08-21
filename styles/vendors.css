@@ -2,3 +2,5 @@
 @import '@reach/checkbox/styles.css';
 @import '@reach/accordion/styles.css';
 @import '@reach/menu-button/styles.css';
+@import '@reach/dialog/styles.css';
+@import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';

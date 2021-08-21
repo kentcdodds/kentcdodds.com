@@ -22,6 +22,7 @@
 /db(.*)                                                                 https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /sql(.*)                                                                https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /.git(.*)                                                               https://www.youtube.com/watch?v=dQw4w9WgXcQ
+(.*)/wp-includes/(.*)                                                               https://www.youtube.com/watch?v=dQw4w9WgXcQ
 
 ################ old podcast URLs:
 /chats-with-kent-podcast/seasons/01/episodes/growing-your-skills-and-career-through-teaching-with-ali-spittel                   /chats/01/01/growing-your-skills-and-career-through-teaching-with-ali-spittel

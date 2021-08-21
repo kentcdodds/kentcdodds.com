@@ -1,8 +1,8 @@
 import * as React from 'react'
-import type {HeadersFunction, LoaderFunction} from 'remix'
+import type {HeadersFunction, LinksFunction, LoaderFunction} from 'remix'
 import {json, useLoaderData} from 'remix'
-import type {MdxListItem} from '~/types'
 import formatDate from 'date-fns/format'
+import type {MdxListItem} from '~/types'
 import {getImgProps, images} from '~/images'
 import {H2, H3, H6, Paragraph} from '~/components/typography'
 import {ArrowLink} from '~/components/arrow-button'
@@ -14,6 +14,11 @@ import {BlogSection} from '~/components/sections/blog-section'
 import {getBlogRecommendations} from '~/utils/blog.server'
 import {HeroSection} from '~/components/sections/hero-section'
 import {reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {
+  FullScreenYouTubeEmbed,
+  LiteYouTubeEmbed,
+  links as youTubeEmbedLinks,
+} from '~/components/fullscreen-yt-embed'
 
 type LoaderData = {
   blogRecommendations: Array<MdxListItem>
@@ -32,13 +37,18 @@ export const loader: LoaderFunction = async ({request}) => {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
+export const links: LinksFunction = ({data}) => {
+  return youTubeEmbedLinks({data})
+}
+
 function AboutIndex() {
   const {blogRecommendations} = useLoaderData<LoaderData>()
+
   return (
     <>
       <HeroSection
         title="Hi, I'm Kent C. Dodds, I'm a full time educator."
-        subtitle="I'm an extreme sports fan. I'm an avid snowboarder and roller skater."
+        subtitle="I make the world a better place by teaching people like you how to make quality softare."
         imageBuilder={images.snowboard}
         arrowUrl="#about-me"
         arrowLabel="Get to know more about me"
@@ -46,35 +56,55 @@ function AboutIndex() {
 
       <Grid className="mb-24 mt-16 lg:mb-48">
         <div className="col-span-full">
-          <img
-            id="about-me"
-            className="rounded-lg object-cover"
-            {...getImgProps(images.kentRidingOnewheelOutdoorsFast, {
-              widths: [280, 560, 840, 1100, 1300, 2600, 3900],
-              sizes: ['(min-width:1620px) 1280px', '80vw'],
-            })}
+          <FullScreenYouTubeEmbed
+            img={
+              <img
+                id="about-me"
+                className="rounded-lg object-cover"
+                {...getImgProps(images.kentRidingOnewheelOutdoorsFast, {
+                  widths: [280, 560, 840, 1100, 1300, 2600, 3900],
+                  sizes: ['(min-width:1620px) 1280px', '80vw'],
+                })}
+              />
+            }
+            ytLiteEmbed={
+              <LiteYouTubeEmbed
+                // TODO: update this with the right ID when we launch
+                id="dQw4w9WgXcQ"
+                title="Get to know Kent C. Dodds"
+                // We don't show the poster, so we use the lowest-res version
+                poster="default"
+                params={new URLSearchParams({
+                  color: 'white',
+                  playsinline: '0',
+                  rel: '0',
+                }).toString()}
+              />
+            }
           />
+          <p className="text-blueGray-500 text-xl">{`Get to know me in this full introduction video (8:05)`}</p>
         </div>
       </Grid>
 
       <Grid className="mb-24 mt-16 lg:mb-48">
         <div className="col-span-full mb-12 lg:col-span-4 lg:mb-0">
-          <H6 as="h2">How I got where we are now.</H6>
+          <H6 as="h2">{`How I got where we are now.`}</H6>
         </div>
         <div className="col-span-full mb-8 lg:col-span-8 lg:mb-20">
           <H2 as="p" className="mb-8">
-            I&apos;m a software engineer and teacher. I was born in 1988 (you
-            can do the math) and grew up in Idaho.
+            {`I was born in 1988 in Twin Falls, Idaho.`}
           </H2>
           <H2 className="mb-12" variant="secondary" as="p">
-            After graduating High School and serving a 2 year mission in the
-            Missouri Independence Mission for The Church of Jesus Christ of
-            Latter-day Saints, I went to BYU where I graduated with both a
-            Bachelor and Master&apos;s degree.
+            {`
+              After graduating High School and serving a 2 year mission in the
+              Missouri Independence Mission for The Church of Jesus Christ of
+              Latter-day Saints, I went to BYU where I graduated with a Master
+              of Science in Information Systems degree in 2014.
+            `}
           </H2>
 
           <ArrowLink className="mb-16" to="/blog/2010s-decade-in-review">
-            Read my full story
+            {`Read my full story`}
           </ArrowLink>
 
           <div className="w-full lg:pr-12">
@@ -107,7 +137,7 @@ function AboutIndex() {
 
       <Grid className="mb-24 lg:mb-64">
         <div className="col-span-full lg:col-span-6 lg:col-start-7">
-          <div className="aspect-h-6 aspect-w-4 mb-12 lg:mb-0">
+          <div className="mb-12 lg:mb-0">
             <img
               className="rounded-lg object-cover"
               {...getImgProps(images.happySnowboarder, {
@@ -199,7 +229,7 @@ function AboutIndex() {
 
       <Grid className="mb-24 lg:mb-64">
         <div className="col-span-full lg:col-span-6 lg:col-start-1">
-          <div className="aspect-h-6 aspect-w-4 mb-12 lg:mb-0">
+          <div className="mb-12 lg:mb-0">
             <img
               className="rounded-lg object-cover"
               {...getImgProps(images.microphoneWithHands, {

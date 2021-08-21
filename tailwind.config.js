@@ -7,7 +7,7 @@ module.exports = {
   mode: process.env.NODE_ENV ? 'jit' : undefined,
   darkMode: 'class',
   variants: {
-    opacity: ['responsive', 'hover', 'focus', 'dark'],
+    opacity: ['responsive', 'hover', 'focus', 'dark', 'group-hover'],
     boxShadow: ['responsive', 'hover', 'focus', 'dark'],
   },
   theme: {
