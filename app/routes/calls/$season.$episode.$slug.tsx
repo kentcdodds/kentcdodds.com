@@ -1,11 +1,12 @@
 import * as React from 'react'
 import {useParams} from 'react-router-dom'
-import {redirect} from 'remix'
+import {MetaFunction, redirect} from 'remix'
 import type {KCDHandle, KCDLoader} from '~/types'
 import {useCallKentEpisodes} from '~/utils/providers'
 import {getEpisodes} from '~/utils/transistor.server'
 import {Themed} from '~/utils/theme-provider'
 import {getEpisodeFromParams, getEpisodePath, Params} from '~/utils/call-kent'
+import type {LoaderData} from '../calls'
 
 export const handle: KCDHandle = {
   id: 'call-player',
@@ -21,6 +22,49 @@ export const handle: KCDHandle = {
       }
     })
   },
+}
+
+export const meta: MetaFunction = ({parentsData, params}) => {
+  const callsData = parentsData['routes/calls'] as LoaderData | undefined
+  const metadata = {}
+  if (!callsData) {
+    console.error(
+      `A call was unable to retrieve the parent's data by routes/calls`,
+    )
+    // the TS defs for MetaFunction are kinda weird...
+    return Object.assign(metadata, {
+      title: 'Call not found',
+    })
+  }
+  const episode = getEpisodeFromParams(callsData.episodes, params as Params)
+  if (!episode) {
+    console.error(
+      `A call was unable to retrieve the parent's data by routes/calls`,
+    )
+    // the TS defs for MetaFunction are kinda weird...
+    return Object.assign(metadata, {
+      title: 'Call not found',
+    })
+  }
+  const title = `${episode.title} | Call Kent Podcast | ${episode.episodeNumber}`
+  const playerUrl = episode.embedHtml.match(/src="(?<src>.+)"/)?.groups?.src
+  return {
+    title,
+    description: episode.description,
+    keywords: `call kent, kent c. dodds, ${episode.keywords}`,
+
+    'twitter:card': 'player',
+    'twitter:site': '@kentcdodds',
+    'twitter:title': title,
+    'twitter:description': episode.description,
+    'twitter:player': playerUrl ?? '',
+    'twitter:player:width': '500',
+    'twitter:player:height': '180',
+    'twitter:image': episode.imageUrl,
+    'twitter:image:alt': title,
+    'twitter:player:stream': episode.mediaUrl,
+    'twitter:player:stream:content_type': 'audio/mpeg',
+  }
 }
 
 export const loader: KCDLoader<Params> = async ({params, request}) => {

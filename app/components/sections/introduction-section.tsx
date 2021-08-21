@@ -1,5 +1,6 @@
 import * as React from 'react'
 import {Link} from 'remix'
+import {useSearchParams} from 'react-router-dom'
 import {getImgProps, images} from '~/images'
 import {H2} from '../typography'
 import {ArrowLink} from '../arrow-button'
@@ -7,10 +8,12 @@ import {Grid} from '../grid'
 import {FullScreenYouTubeEmbed, LiteYouTubeEmbed} from '../fullscreen-yt-embed'
 
 function IntroductionSection() {
+  const [searchParams] = useSearchParams()
   return (
     <Grid>
       <div className="col-span-full lg:col-span-4">
         <FullScreenYouTubeEmbed
+          autoplay={searchParams.has('autoplay')}
           img={
             <img
               {...getImgProps(images.kentRidingOnewheelOutdoorsFast, {
@@ -43,7 +46,7 @@ function IntroductionSection() {
         <p className="text-blueGray-500 text-xl">{`Introduction video (2:13)`}</p>
         <Link
           className="underlined"
-          to="/about#about-me"
+          to="/about?autoplay"
         >{`or, watch the full video here (8:05)`}</Link>
       </div>
       <div className="col-span-full mt-12 lg:col-span-5 lg:col-start-7 lg:mt-0">

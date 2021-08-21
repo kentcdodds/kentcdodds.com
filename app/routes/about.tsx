@@ -1,5 +1,10 @@
 import * as React from 'react'
-import type {HeadersFunction, LinksFunction, LoaderFunction} from 'remix'
+import type {
+  HeadersFunction,
+  LinksFunction,
+  LoaderFunction,
+  MetaFunction,
+} from 'remix'
 import {json, useLoaderData} from 'remix'
 import formatDate from 'date-fns/format'
 import type {MdxListItem} from '~/types'
@@ -19,6 +24,8 @@ import {
   LiteYouTubeEmbed,
   links as youTubeEmbedLinks,
 } from '~/components/fullscreen-yt-embed'
+import {useSearchParams} from 'react-router-dom'
+import {useRequestInfo} from '~/utils/providers'
 
 type LoaderData = {
   blogRecommendations: Array<MdxListItem>
@@ -41,8 +48,19 @@ export const links: LinksFunction = ({data}) => {
   return youTubeEmbedLinks({data})
 }
 
+export const meta: MetaFunction = () => {
+  return {
+    title: 'About Kent C. Dodds',
+    description: 'Get to know Kent C. Dodds',
+    keywords: 'about, kent, kent c. dodds, kent dodds',
+  }
+}
+
 function AboutIndex() {
   const {blogRecommendations} = useLoaderData<LoaderData>()
+  const [searchParams] = useSearchParams()
+  const requestInfo = useRequestInfo()
+  const permalinkAutoplay = `${requestInfo.origin}/about?autoplay`
 
   return (
     <>
@@ -57,6 +75,7 @@ function AboutIndex() {
       <Grid className="mb-24 mt-16 lg:mb-48">
         <div className="col-span-full">
           <FullScreenYouTubeEmbed
+            autoplay={searchParams.has('autoplay')}
             img={
               <img
                 id="about-me"
@@ -83,6 +102,17 @@ function AboutIndex() {
             }
           />
           <p className="text-blueGray-500 text-xl">{`Get to know me in this full introduction video (8:05)`}</p>
+          <a
+            className="underlined"
+            target="_blank"
+            rel="noreferrer noopener"
+            href={`https://twitter.com/intent/tweet?${new URLSearchParams({
+              url: permalinkAutoplay,
+              text: `I just watched @kentcdodds's life flash before my eyes.`,
+            })}`}
+          >
+            Share this video.
+          </a>
         </div>
       </Grid>
 

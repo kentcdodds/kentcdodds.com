@@ -1,5 +1,5 @@
 import * as React from 'react'
-import type {LoaderFunction, HeadersFunction} from 'remix'
+import type {LoaderFunction, HeadersFunction, MetaFunction} from 'remix'
 import {json, Link, useLoaderData, useMatches} from 'remix'
 import {Outlet} from 'react-router-dom'
 import {AnimatePresence, motion} from 'framer-motion'
@@ -25,7 +25,7 @@ import {
   Params as CallPlayerParams,
 } from '~/utils/call-kent'
 
-type LoaderData = {
+export type LoaderData = {
   episodes: Await<ReturnType<typeof getEpisodes>>
   blogRecommendations: Await<ReturnType<typeof getBlogRecommendations>>
 }
@@ -48,6 +48,14 @@ export const loader: LoaderFunction = async ({request}) => {
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
+
+export const meta: MetaFunction = () => {
+  return {
+    title: 'Call Kent Podcast',
+    description: `Leave Kent an audio message here, then your message and Kent's response are published in the podcast.`,
+    keywords: 'podcast, call kent, call kent c. dodds, the call kent podcast',
+  }
+}
 
 export default function CallHomeScreen() {
   const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('asc')

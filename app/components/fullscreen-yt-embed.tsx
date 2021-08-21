@@ -43,12 +43,14 @@ function YouTubeEmbed({
 
 function FullScreenYouTubeEmbed({
   img,
+  autoplay = false,
   ytLiteEmbed,
 }: {
   img: React.ReactElement
+  autoplay?: boolean
   ytLiteEmbed: React.ReactElement
 }) {
-  const [showPlayer, setShowPlayer] = React.useState(false)
+  const [showPlayer, setShowPlayer] = React.useState(autoplay)
   return (
     <>
       <Dialog
