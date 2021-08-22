@@ -144,7 +144,7 @@ function removeEls<ItemType>(array: Array<ItemType>, ...els: Array<ItemType>) {
   return array.filter(el => !els.includes(el))
 }
 
-interface Link extends H.Element {
+interface Link extends H.Parent {
   /**
    * Represents this variant of a Node.
    */
