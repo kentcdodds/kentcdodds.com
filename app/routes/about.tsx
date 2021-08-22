@@ -29,6 +29,11 @@ import {
 import {useSearchParams} from 'react-router-dom'
 import {useRequestInfo} from '~/utils/providers'
 import {getTalksAndTags} from '~/utils/talks.server'
+import {AwardIcon} from '~/components/icons/award-icon'
+import {MugIcon} from '~/components/icons/mug-icon'
+import {BadgeIcon} from '~/components/icons/badge-icon'
+import {BookIcon} from '~/components/icons/book-icon'
+import {FastForwardIcon} from '~/components/icons/fast-forward-icon'
 
 type LoaderData = {
   blogRecommendations: Array<MdxListItem>
@@ -41,7 +46,7 @@ export const loader: LoaderFunction = async ({request}) => {
   const data: LoaderData = {
     blogRecommendations: await getBlogRecommendations(request),
     // they're ordered by date, so we'll grab two random of the first 10.
-    talkRecommendations: shuffle(talks.slice(0, 10)).slice(0, 2),
+    talkRecommendations: shuffle(talks.slice(0, 14)).slice(0, 4),
   }
   return json(data, {
     headers: {
@@ -227,7 +232,7 @@ function AboutIndex() {
             `}
           </Paragraph>
           <H6 as="h3" className="mb-4">
-            {`Share what I know`}
+            {`Share knowledge`}
           </H6>
           <Paragraph className="mb-12">
             {`
@@ -240,7 +245,7 @@ function AboutIndex() {
             `}
           </Paragraph>
           <H6 as="h3" className="mb-4">
-            {`Collaboration with others`}
+            {`Collaborate with others`}
           </H6>
           <Paragraph className="mb-12">
             {`
@@ -260,10 +265,10 @@ function AboutIndex() {
         ctaUrl="/talks"
         cta="See all talks"
         title="I do talks all over the world."
-        subTitle="Here are some I did in the past."
+        subTitle="Here are a couple recent ones."
       />
 
-      <Grid className="mb-24 lg:mb-64">
+      <Grid className="gap-5 mb-24 lg:mb-64">
         <div className="col-span-full mb-12 lg:mb-20">
           <img
             id="about-me"
@@ -312,10 +317,10 @@ function AboutIndex() {
 
         <div className="col-span-full lg:col-span-4 lg:col-start-8 lg:row-start-1">
           <H2 className="mb-10 lg:mt-24">
-            I have had the privilege to do a lot of cool interviews and chats.
+            {`I have had the privilege to do a lot of cool interviews and chats.`}
           </H2>
           <H2 variant="secondary" as="p" className="mb-14">
-            Check out my appearances on podcasts, blog and other cool stuff.
+            {`Check out my appearances on podcasts, blog and other cool stuff.`}
           </H2>
           <ArrowLink to="/appearances">See all appearances</ArrowLink>
         </div>
@@ -323,20 +328,53 @@ function AboutIndex() {
 
       <HeaderSection
         title="Here are some random fun facts."
-        subTitle="Here will go a subtitle for the facts."
+        subTitle="Some unique things about me."
         className="mb-16"
       />
 
       <Grid className="mb-24 lg:mb-64" rowGap>
-        {Array.from({length: 4}).map((_, idx) => (
-          <div key={idx} className="col-span-full lg:col-span-6">
-            <FeatureCard
-              title={`Fun fact number ${idx + 1} will go here`}
-              description="Suspendisse potenti. In consectetur, lorem eu tempus pretium, nisl tortor lobortis erat, in finibus orci elit a quam."
-              icon={<UsersIcon size={48} />}
-            />
-          </div>
-        ))}
+        <div className="col-span-full lg:col-span-6">
+          <FeatureCard
+            title="I have 11 brothers and sisters"
+            description="Yup! There are 6 boys and 6 girls in my family. I'm second to last. No twins. We all have the same mom and dad. Yes my parents are super heros 🦸‍♀️ 🦸"
+            icon={<UsersIcon size={48} />}
+          />
+        </div>
+        <div className="col-span-full lg:col-span-6">
+          <FeatureCard
+            title="I can still do a backflip"
+            description="When I was a kid, I competed in various gymnastics events. As of 2021, I can still do a backflip 🤸‍♂️"
+            icon={<AwardIcon size={48} />}
+          />
+        </div>
+        <div className="col-span-full lg:col-span-6">
+          <FeatureCard
+            title="I've never had a sip of alcohol or coffee"
+            description="It's a religious thing. That said, I do appreciate offers to go out for drinks! I'll just have a Hawaiian Punch thank you 🧃"
+            icon={<MugIcon size={48} />}
+          />
+        </div>
+        <div className="col-span-full lg:col-span-6">
+          <FeatureCard
+            title="I'm an Eagle Scout"
+            description="When I was 14, I got my friends and scout leaders to plant 15 trees in a new park in town for my eagle scout project 🦅"
+            icon={<BadgeIcon size={48} />}
+          />
+        </div>
+        <div className="col-span-full lg:col-span-6">
+          <FeatureCard
+            title="I've written a novel"
+            description="In 2018, I wanted to get good at telling stories, so I participated in National Novel Writing Month and wrote a 50k word novel in one month 📘"
+            icon={<BookIcon size={48} />}
+          />
+        </div>
+        <div className="col-span-full lg:col-span-6">
+          <FeatureCard
+            title="I listen to books and podcasts at 3x"
+            description="I've worked my way up to 3x listening so I could listen to more. So far I've saved ~100 days of listening by doing this 🎧"
+            icon={<FastForwardIcon size={48} />}
+          />
+        </div>
       </Grid>
 
       <Grid className="mb-24 lg:mb-64">
@@ -391,29 +429,31 @@ function TalkCard({
   talkUrl,
 }: TalkCardProps) {
   return (
-    <div className="bg-secondary text-primary p-16 pt-20 w-full rounded-lg">
-      <div className="flex flex-wrap -mr-4 mb-28">
-        {tags.map(tag => (
-          <div
-            className="text-primary mb-4 mr-4 px-6 py-1 bg-gray-300 dark:bg-gray-700 rounded-full"
-            key={tag}
-          >
-            {tag}
-          </div>
-        ))}
+    <div className="bg-secondary text-primary flex flex-col justify-between p-16 pt-20 w-full h-full rounded-lg">
+      <div>
+        <div className="flex flex-wrap -mr-4 mb-12">
+          {tags.map(tag => (
+            <div
+              className="text-primary mb-4 mr-4 px-6 py-1 bg-gray-300 dark:bg-gray-700 rounded-full"
+              key={tag}
+            >
+              {tag}
+            </div>
+          ))}
+        </div>
+
+        <Paragraph as="span" className="mb-5">
+          {date ? formatDate(parseDate(date), 'PPP') : 'to be determined'}
+        </Paragraph>
+
+        <H3 className="mb-5">{title}</H3>
+        <Paragraph
+          className="mb-10"
+          // TODO: make sure this is rendering properly...
+          // had some sort of ssr error that the server wasn't getting this
+          dangerouslySetInnerHTML={{__html: descriptionHTML}}
+        />
       </div>
-
-      <Paragraph as="span" className="mb-5">
-        {date ? formatDate(parseDate(date), 'PPP') : 'to be determined'}
-      </Paragraph>
-
-      <H3 className="mb-5">{title}</H3>
-      <Paragraph
-        className="mb-10"
-        // TODO: make sure this is rendering properly...
-        // had some sort of ssr error that the server wasn't getting this
-        dangerouslySetInnerHTML={{__html: descriptionHTML}}
-      />
       <ArrowLink to={talkUrl}>
         <span className="hidden md:inline">Have a look at this talk</span>
         <span className="md:hidden">Read more</span>
