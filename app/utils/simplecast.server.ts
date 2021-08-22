@@ -10,6 +10,7 @@ import type {
 import {omit, sortBy} from 'lodash'
 import type * as U from 'unist'
 import type * as M from 'mdast'
+import type * as H from 'hast'
 import {getRequiredServerEnvVar, typedBoolean} from './misc'
 import {markdownToHtml, stripHtml} from './markdown.server'
 import * as redis from './redis.server'
@@ -143,6 +144,40 @@ function removeEls<ItemType>(array: Array<ItemType>, ...els: Array<ItemType>) {
   return array.filter(el => !els.includes(el))
 }
 
+interface Link extends H.Element {
+  /**
+   * Represents this variant of a Node.
+   */
+  type: 'link'
+
+  /**
+   * Represents the destination of the link.
+   */
+  url: string
+}
+
+function autoAffiliates() {
+  return async function affiliateTransformer(tree: H.Root) {
+    const {visit} = await import('unist-util-visit')
+    visit(tree, 'link', function visitor(linkNode: Link) {
+      if (linkNode.url.includes('amazon.com')) {
+        const amazonUrl = new URL(linkNode.url)
+        if (!amazonUrl.searchParams.has('tag')) {
+          amazonUrl.searchParams.set('tag', 'kentcdodds-20')
+          linkNode.url = amazonUrl.toString()
+        }
+      }
+      if (linkNode.url.includes('egghead.io')) {
+        const eggheadUrl = new URL(linkNode.url)
+        if (!eggheadUrl.searchParams.has('af')) {
+          eggheadUrl.searchParams.set('af', '5236ad')
+          linkNode.url = eggheadUrl.toString()
+        }
+      }
+    })
+  }
+}
+
 async function parseSummaryMarkdown(
   summaryInput: string,
   errorKey: string,
@@ -168,6 +203,7 @@ async function parseSummaryMarkdown(
     // @ts-expect-error not sure why typescript doesn't like these plugins
     .use(isHTMLInput ? parseHtml : parseMarkdown)
     .use(isHTMLInput ? rehype2remark : () => {})
+    .use(autoAffiliates)
     .use(function extractMetaData() {
       return function transformer(tree) {
         type Section = {
