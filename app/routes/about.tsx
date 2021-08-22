@@ -285,7 +285,6 @@ function AboutIndex() {
               tags={talk.tags}
               date={talk.deliveries[0]?.date}
               title={talk.title}
-              descriptionHTML={talk.descriptionHTML}
               talkUrl={`/talks/${talk.slug}`}
             />
           </div>
@@ -417,17 +416,10 @@ interface TalkCardProps {
   tags: string[]
   date?: string
   title: string
-  descriptionHTML?: string
   talkUrl: string
 }
 
-function TalkCard({
-  tags,
-  date,
-  title,
-  descriptionHTML = 'to be determined',
-  talkUrl,
-}: TalkCardProps) {
+function TalkCard({tags, date, title, talkUrl}: TalkCardProps) {
   return (
     <div className="bg-secondary text-primary flex flex-col justify-between p-16 pt-20 w-full h-full rounded-lg">
       <div>
@@ -447,12 +439,6 @@ function TalkCard({
         </Paragraph>
 
         <H3 className="mb-5">{title}</H3>
-        <Paragraph
-          className="mb-10"
-          // TODO: make sure this is rendering properly...
-          // had some sort of ssr error that the server wasn't getting this
-          dangerouslySetInnerHTML={{__html: descriptionHTML}}
-        />
       </div>
       <ArrowLink to={talkUrl}>
         <span className="hidden md:inline">Have a look at this talk</span>
