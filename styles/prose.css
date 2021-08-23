@@ -178,7 +178,14 @@ pre {
   position: relative;
   border-top-right-radius: 0.5rem;
   border-bottom-right-radius: 0.5rem;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
+}
+
+.prose callout-info p,
+.prose callout-warning p,
+.prose callout-danger p,
+.prose callout-success p {
+  font-size: 0.9rem;
 }
 
 .prose callout-info:before,
