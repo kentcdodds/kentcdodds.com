@@ -181,10 +181,10 @@ pre {
   font-size: 0.9rem;
 }
 
-.prose callout-info p,
-.prose callout-warning p,
-.prose callout-danger p,
-.prose callout-success p {
+.prose callout-info *,
+.prose callout-warning *,
+.prose callout-danger *,
+.prose callout-success * {
   font-size: 0.9rem;
 }
 

@@ -43,8 +43,7 @@ application and/or libraries.
 First, let's create a file at `src/count-context.js` and we'll create our
 context there:
 
-```tsx
-// src/count-context.js
+```jsx filename=src/count-context.js
 import * as React from 'react'
 
 const CountContext = React.createContext()
@@ -55,7 +54,7 @@ initial value, I would call `React.createContext({count: 0})`. But I don't
 include a default value and that's intentional. The `defaultValue` is only
 useful in a situation like this:
 
-```tsx [2]
+```tsx lines=2
 function CountDisplay() {
   const {count} = React.useContext(CountContext)
   return <div>{count}</div>
@@ -103,7 +102,7 @@ Ok, let's continue. For this context module to be useful _at all_ we need to use
 the Provider and expose a component that provides a value. Our component will be
 used like this:
 
-```tsx [3,6]
+```tsx lines=3,6
 function App() {
   return (
     <CountProvider>
@@ -118,8 +117,7 @@ ReactDOM.render(<App />, document.getElementById('⚛️'))
 
 So let's make a component that can be used like that:
 
-```tsx
-// src/count-context.js
+```jsx filename=src/count-context.js
 import * as React from 'react'
 
 const CountContext = React.createContext()
@@ -186,8 +184,7 @@ function YourComponent() {
 This has the benefit of you being able to do a few things which I'll show you in
 the implementation now:
 
-```tsx [28-34,36]
-// src/count-context.js
+```jsx lines=28-34,36 filename=src/count-context.js
 import * as React from 'react'
 
 const CountContext = React.createContext()
@@ -288,8 +285,7 @@ I promised I'd show you how to avoid issues with skipping the `defaultValue`
 when using TypeScript. Guess what! By doing what I'm suggesting, you avoid the
 problem by default! It's actually not a problem at all. Check it out:
 
-```tsx [9-11,36-42,44]
-// src/count-context.tsx
+```tsx lines=9-11,36-42,44 filename=src/count-context.tsx
 import * as React from 'react'
 
 type Action = {type: 'increment'} | {type: 'decrement'}
@@ -374,8 +370,7 @@ accepts `dispatch` along with any other data you need, and make that helper be
 responsible for dealing with all of that. Here's an example from
 [my Advanced React Patterns workshop](/workshops/advanced-react-patterns):
 
-```js
-// user-context.js
+```jsx filename=user-context.js
 async function updateUser(dispatch, user, updates) {
   dispatch({type: 'start update', updates})
   try {
@@ -391,9 +386,7 @@ export {UserProvider, useUser, updateUser}
 
 Then you can use that like this:
 
-```js
-// user-profile.js
-
+```jsx filename=user-profile.js
 import {useUser, updateUser} from './user-context'
 
 function UserSettings() {
@@ -417,8 +410,7 @@ time I host the workshop)!
 
 So here's the final version of the code:
 
-```tsx
-// src/count-context.js
+```jsx filename=src/count-context.js
 import * as React from 'react'
 
 const CountContext = React.createContext()

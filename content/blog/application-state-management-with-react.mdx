@@ -85,7 +85,11 @@ even need to `npm install` (or `yarn add`) it. It costs no extra bytes for your
 users, it integrates with all React packages on npm, and it's already well
 documented by the React team. It's React itself.
 
-> **React is a state management library**
+<callout-success>
+  <span
+    style={{fontSize: '1.4rem', fontWeight: 'bold'}}
+  >{`React is a state management library`}</span>
+</callout-success>
 
 When you build a React application, you're assembling a bunch of components to
 make a tree of components starting at your `<App />` and ending at your
@@ -95,7 +99,7 @@ location. Instead, you let each individual component manage that and it ends up
 being a really effective way to build your UI. You can do this with your state
 as well, and it's very likely that you do today:
 
-```tsx {2}
+```tsx [2]
 function Counter() {
   const [count, setCount] = React.useState(0)
   const increment = () => setCount(c => c + 1)
@@ -113,7 +117,7 @@ Note that everything I'm talking about here works with class components as well.
 Hooks just make things a bit easier (especially context which we'll get into in
 a minute).
 
-```tsx {2}
+```tsx [2]
 class Counter extends React.Component {
   state = {count: 0}
   increment = () => this.setState(({count}) => ({count: count + 1}))
@@ -127,7 +131,7 @@ class Counter extends React.Component {
 is easy, but what do you do when I need to share that state across components?
 For example, what if I wanted to do this:"
 
-```tsx {3}
+```tsx [3]
 function CountDisplay() {
   // where does `count` come from?
   return <div>The current counter count is {count}</div>
@@ -240,8 +244,7 @@ mechanism I'm referring to without them having to be worried about the warning
 that was in the React docs. But now that `context` is an officially supported
 part of the React API, we can use this directly without any problem:
 
-```tsx
-// src/count/count-context.js
+```tsx filename=src/count/count-context.js
 import * as React from 'react'
 
 const CountContext = React.createContext()
@@ -261,8 +264,9 @@ function CountProvider(props) {
 }
 
 export {CountProvider, useCount}
+```
 
-// src/count/page.js
+```tsx filename=src/count/page.js
 import * as React from 'react'
 import {CountProvider, useCount} from './count-context'
 
@@ -291,11 +295,13 @@ function CountPage() {
 
 [![Edit React Codesandbox](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/4qzj73lozx?fontsize=14&hidenavigation=1&module=%2Fsrc%2F03-context.js&moduleview=1)
 
-> NOTE: That particular code example is VERY contrived and I would NOT recommend
-> you reach for context to solve this specific scenario. Please read
-> [Prop Drilling](/blog/prop-drilling) to get a better sense for why prop
-> drilling isn't necessarily a problem and is often desirable. Don't reach for
-> context too soon!
+<callout-warning>
+  NOTE: That particular code example is VERY contrived and I would NOT recommend
+  you reach for context to solve this specific scenario. Please read [Prop
+  Drilling](/blog/prop-drilling) to get a better sense for why prop drilling
+  isn't necessarily a problem and is often desirable. Don't reach for context
+  too soon!
+</callout-warning>
 
 And what's cool about this approach is that we could put all the logic for
 common ways to update the state in our `useCount` hook:
