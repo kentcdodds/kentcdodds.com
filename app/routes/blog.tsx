@@ -61,9 +61,9 @@ export const loader: LoaderFunction = async ({request}) => {
     await Promise.all([
       getBlogMdxListItems({request, timings}),
       getBlogRecommendations(request, {limit: 1}),
-      getBlogReadRankings(),
-      getTotalPostReads(),
-      getReaderCount(),
+      getBlogReadRankings(request),
+      getTotalPostReads(request),
+      getReaderCount(request),
     ])
 
   const tags = new Set<string>()

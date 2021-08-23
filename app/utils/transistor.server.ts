@@ -11,7 +11,8 @@ import type {
   TransistorUpdateEpisodeData,
 } from '~/types'
 import {getRequiredServerEnvVar} from './misc'
-import * as redis from './redis.server'
+import {redisCache} from './redis.server'
+import {cachified} from './cache.server'
 import {getEpisodePath} from './call-kent'
 
 const transistorApiSecret = getRequiredServerEnvVar('TRANSISTOR_API_SECRET')
@@ -194,7 +195,8 @@ async function getCachedEpisodes({
   request?: Request
   forceFresh?: boolean
 }) {
-  return redis.cachified({
+  return cachified({
+    cache: redisCache,
     key: episodesCacheKey,
     getFreshValue: getEpisodes,
     maxAge: 1000 * 60 * 60 * 24,

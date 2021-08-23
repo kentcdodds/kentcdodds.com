@@ -5,7 +5,8 @@ import type {Await} from '~/types'
 import {typedBoolean} from '~/utils/misc'
 import {markdownToHtml} from '~/utils/markdown.server'
 import {downloadFile} from '~/utils/github.server'
-import {cachified} from '~/utils/redis.server'
+import {cachified} from '~/utils/cache.server'
+import {redisCache} from '~/utils/redis.server'
 
 type RawTalk = {
   title?: string
@@ -107,6 +108,7 @@ async function getTalksAndTags({request}: {request: Request}) {
   slugify.reset()
 
   const talks = await cachified({
+    cache: redisCache,
     key: 'content:data:talks.yml',
     maxAge: 1000 * 60 * 60 * 24 * 14,
     request,

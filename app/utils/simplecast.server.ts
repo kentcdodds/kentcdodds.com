@@ -13,7 +13,8 @@ import type * as M from 'mdast'
 import type * as H from 'hast'
 import {getRequiredServerEnvVar, typedBoolean} from './misc'
 import {markdownToHtml, stripHtml} from './markdown.server'
-import * as redis from './redis.server'
+import {redisCache} from './redis.server'
+import {cachified} from './cache.server'
 
 const SIMPLECAST_KEY = getRequiredServerEnvVar('SIMPLECAST_KEY')
 const CHATS_WITH_KENT_PODCAST_ID = getRequiredServerEnvVar(
@@ -27,7 +28,8 @@ const headers = {
 const seasonsCacheKey = `simplecast:seasons:${CHATS_WITH_KENT_PODCAST_ID}`
 
 const getCachedSeasons = async (request: Request) =>
-  redis.cachified({
+  cachified({
+    cache: redisCache,
     key: seasonsCacheKey,
     maxAge: 1000 * 60 * 60 * 24 * 7,
     getFreshValue: getSeasons,

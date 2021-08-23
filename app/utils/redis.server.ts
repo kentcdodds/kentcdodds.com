@@ -1,9 +1,5 @@
 import redis from 'redis'
-import type {Request} from '~/types'
-import type {Timings} from './metrics.server'
-import {time} from './metrics.server'
-import {getErrorMessage, getRequiredServerEnvVar} from './misc'
-import {getUser} from './session.server'
+import {getRequiredServerEnvVar} from './misc'
 
 declare global {
   // This prevents us from making multiple connections to the db when the
@@ -66,29 +62,35 @@ function createClient(
 // NOTE: Caching should never crash the app, so instead of rejecting all these
 // promises, we'll just resolve things with null and log the error.
 
-function get(key: string): Promise<string | null> {
+function get<Value = unknown>(key: string): Promise<Value | null> {
   return new Promise(resolve => {
     replicaClient.get(key, (err: Error | null, result: string | null) => {
-      if (err)
+      if (err) {
         console.error(
           `REDIS replicaClient (${FLY_REGION}) ERROR with .get:`,
           err,
         )
-      resolve(result)
+      }
+      if (!result) return null
+      resolve(JSON.parse(result) as Value)
     })
   })
 }
 
-function set(key: string, value: string): Promise<'OK'> {
+function set<Value>(key: string, value: Value): Promise<'OK'> {
   return new Promise(resolve => {
-    replicaClient.set(key, value, (err: Error | null, reply: 'OK') => {
-      if (err)
-        console.error(
-          `REDIS replicaClient (${FLY_REGION}) ERROR with .set:`,
-          err,
-        )
-      resolve(reply)
-    })
+    replicaClient.set(
+      key,
+      JSON.stringify(value),
+      (err: Error | null, reply: 'OK') => {
+        if (err)
+          console.error(
+            `REDIS replicaClient (${FLY_REGION}) ERROR with .set:`,
+            err,
+          )
+        resolve(reply)
+      },
+    )
   })
 }
 
@@ -114,123 +116,5 @@ function del(key: string): Promise<string> {
   })
 }
 
-type CacheMetadata = {
-  createdTime: number
-  maxAge: number | null
-  expires: number | null
-}
-
-function shouldRefresh(metadata: CacheMetadata) {
-  if (metadata.maxAge) {
-    return Date.now() > metadata.createdTime + metadata.maxAge
-  }
-  if (metadata.expires) {
-    return Date.now() > metadata.expires
-  }
-  return false
-}
-
-async function cachified<ReturnValue>(options: {
-  key: string
-  getFreshValue: () => Promise<ReturnValue>
-  checkValue?: (value: ReturnValue) => boolean
-  forceFresh?: boolean
-  request?: Request
-  fallbackToCache?: boolean
-  timings?: Timings
-  timingType?: string
-  maxAge?: number
-  expires?: Date
-}): Promise<ReturnValue> {
-  const {
-    key,
-    getFreshValue,
-    request,
-    forceFresh = request ? await shouldForceFresh(request) : false,
-    checkValue = value => Boolean(value),
-    fallbackToCache = true,
-    timings,
-    timingType = 'getting fresh value',
-    maxAge,
-    expires,
-  } = options
-
-  if (!forceFresh) {
-    try {
-      const cached = await time({
-        name: `redis.get(${key})`,
-        type: 'redis cache read',
-        fn: () => get(key),
-        timings,
-      })
-      if (cached) {
-        const cachedParsed = JSON.parse(cached) as {
-          metadata?: CacheMetadata
-          value?: ReturnValue
-        }
-        if (cachedParsed.metadata && shouldRefresh(cachedParsed.metadata)) {
-          // time to refresh the value. Fire and forget so we don't slow down
-          // this request
-          // originally I thought it may be good to make sure we don't have
-          // multiple requests for the same key triggering multiple refreshes
-          // like this, but as I thought about it I realized the liklihood of
-          // this causing real issues is pretty small (unless there's a failure)
-          // to update the value, in which case we should probably be notified
-          // anyway...
-          void cachified({...options, forceFresh: true})
-        }
-        if (cachedParsed.value && checkValue(cachedParsed.value)) {
-          return cachedParsed.value
-        } else {
-          console.warn(
-            `check failed for cached value of ${key}. Deleting the cache key and trying to get a fresh value.`,
-            cachedParsed,
-          )
-          await del(key)
-        }
-      }
-    } catch (error: unknown) {
-      console.error(`error with cache at ${key}`, getErrorMessage(error))
-    }
-  }
-
-  const value = await time({
-    name: `getFreshValue for ${key}`,
-    type: timingType,
-    fn: getFreshValue,
-    timings,
-  }).catch((error: unknown) => {
-    // If we got this far without forceFresh then we know there's nothing
-    // in the cache so no need to bother. So we need both the option to fallback
-    // and the ability.
-    if (fallbackToCache && forceFresh) {
-      return cachified({...options, forceFresh: false})
-    } else {
-      throw error
-    }
-  })
-
-  if (checkValue(value)) {
-    const metadata: CacheMetadata = {
-      maxAge: maxAge ?? null,
-      expires: expires?.getTime() ?? null,
-      createdTime: Date.now(),
-    }
-    void set(key, JSON.stringify({metadata, value})).catch(error => {
-      console.error(`error setting redis.${key}`, getErrorMessage(error))
-    })
-  } else {
-    console.error(`check failed for fresh value of ${key}:`, value)
-    throw new Error(`check failed for fresh value of ${key}`)
-  }
-  return value
-}
-
-async function shouldForceFresh(request: Request) {
-  return (
-    new URL(request.url).searchParams.has('fresh') &&
-    (await getUser(request))?.role === 'ADMIN'
-  )
-}
-
-export {get, set, del, cachified, shouldForceFresh}
+const redisCache = {get, set, del}
+export {get, set, del, redisCache}

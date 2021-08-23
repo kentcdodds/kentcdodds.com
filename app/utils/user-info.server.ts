@@ -4,7 +4,8 @@ import * as ck from '../convertkit/convertkit.server'
 import * as discord from './discord.server'
 import type {Timings} from './metrics.server'
 import {getAvatarForUser} from './misc'
-import {cachified, del} from './redis.server'
+import {redisCache} from './redis.server'
+import {cachified} from './cache.server'
 
 type UserInfo = {
   avatar: {
@@ -35,6 +36,7 @@ async function getUserInfo(
   const [discordUser, convertKitInfo] = await Promise.all([
     discordId
       ? cachified({
+          cache: redisCache,
           request,
           forceFresh,
           maxAge: 1000 * 60 * 60 * 24 * 30,
@@ -49,6 +51,7 @@ async function getUserInfo(
       : null,
     convertKitId
       ? cachified({
+          cache: redisCache,
           request,
           forceFresh,
           maxAge: 1000 * 60 * 60 * 24 * 30,
@@ -81,11 +84,11 @@ async function getUserInfo(
 }
 
 function deleteConvertKitCache(convertKitId: string | number) {
-  return del(getConvertKitCacheKey(String(convertKitId)))
+  return redisCache.del(getConvertKitCacheKey(String(convertKitId)))
 }
 
 function deleteDiscordCache(discordId: string) {
-  return del(getDiscordCacheKey(discordId))
+  return redisCache.del(getDiscordCacheKey(discordId))
 }
 
 export {getUserInfo, deleteConvertKitCache, deleteDiscordCache}

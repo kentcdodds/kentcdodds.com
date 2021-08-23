@@ -2,7 +2,8 @@ import type {Request} from 'remix'
 import * as YAML from 'yaml'
 import {markdownToHtmlUnwrapped} from './markdown.server'
 import type {Timings} from './metrics.server'
-import {cachified} from './redis.server'
+import {redisCache} from './redis.server'
+import {cachified} from './cache.server'
 import {downloadDirList, downloadFile} from './github.server'
 import {typedBoolean} from './misc'
 
@@ -33,6 +34,7 @@ type Options = {request?: Request; timings?: Timings}
 
 function getWorkshops({request, timings}: Options) {
   return cachified({
+    cache: redisCache,
     key: 'content:workshops',
     maxAge: 1000 * 60 * 60 * 24 * 7,
     request,

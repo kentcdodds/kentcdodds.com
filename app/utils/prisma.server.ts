@@ -33,6 +33,9 @@ if (!isLocalHost) {
 const logThreshold = 15
 
 const prisma = getClient(() => {
+  // NOTE: during development if you change anything in this function, remember
+  // that this only runs once per server restart and won't automatically be
+  // re-run per request like everything else is.
   console.log(`Connecting to ${regionalDB.host}`)
   const client = new PrismaClient({
     log: [

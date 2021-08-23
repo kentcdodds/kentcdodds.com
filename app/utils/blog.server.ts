@@ -7,6 +7,7 @@ import {teams, typedBoolean} from './misc'
 import {getSession} from './session.server'
 import {filterPosts} from './blog'
 import {getClientSession} from './client.server'
+import {cachified, lruCache} from './cache.server'
 
 async function getBlogRecommendations(
   request: Request,
@@ -38,10 +39,7 @@ async function getBlogRecommendations(
 
   // exclude what they want us to + any posts the user has already read
   let exclude = Array.from(
-    new Set(
-      ...externalExclude,
-      readPosts.map(p => p.postSlug),
-    ),
+    new Set([...externalExclude, ...readPosts.map(p => p.postSlug)]),
   )
   const posts = allPosts.filter(post => !exclude.includes(post.slug))
 
@@ -99,82 +97,128 @@ async function getMostPopularPostSlugs({
   limit: number
   exclude: Array<string>
 }) {
-  const result = await prisma.postRead.groupBy({
-    by: ['postSlug'],
-    _count: true,
-    orderBy: {
-      _count: {
-        postSlug: 'desc',
-      },
-    },
-    where: {
-      postSlug: {notIn: exclude.filter(Boolean)},
-    },
-    take: limit,
-  })
+  // don't bother caching if there's an exclude... Too many permutations
+  if (exclude.length) return getFreshValue()
 
-  return result.map(p => p.postSlug)
-}
-
-async function getTotalPostReads(slug?: string) {
-  const count = await prisma.postRead.count({
-    where: {postSlug: slug},
-  })
-
-  return count
-}
-
-async function getReaderCount() {
-  // couldn't figure out how to do this in one query with out $queryRaw 🤷‍♂️
-  type CountResult = [{count: number}]
-  const [userIdCount, clientIdCount] = await Promise.all([
-    prisma.$queryRaw`SELECT COUNT(DISTINCT "public"."PostRead"."userId") FROM "public"."PostRead" WHERE ("public"."PostRead"."userId") IS NOT NULL` as Promise<CountResult>,
-    prisma.$queryRaw`SELECT COUNT(DISTINCT "public"."PostRead"."clientId") FROM "public"."PostRead" WHERE ("public"."PostRead"."clientId") IS NOT NULL` as Promise<CountResult>,
-  ]).catch(() => [[{count: 0}], [{count: 0}]])
-  return userIdCount[0].count + clientIdCount[0].count
-}
-
-async function getBlogReadRankings(slug?: string) {
-  const rawRankingData = await Promise.all(
-    teams.map(async function getRankingsForTeam(
-      team,
-    ): Promise<{team: Team; totalReads: number; ranking: number}> {
-      const totalReads = await prisma.postRead.count({
-        where: {
-          postSlug: slug,
-          user: {team},
+  async function getFreshValue() {
+    const result = await prisma.postRead.groupBy({
+      by: ['postSlug'],
+      _count: true,
+      orderBy: {
+        _count: {
+          postSlug: 'desc',
         },
-      })
-      const activeMembers = await getActiveMembers(team)
-      const recentReads = await getRecentReads(slug, team)
-      let ranking = 0
-      if (activeMembers) {
-        ranking = Number(recentReads / activeMembers)
-      }
-      return {team, totalReads, ranking}
-    }),
-  )
-  const rankings = rawRankingData.map(r => r.ranking)
-  const maxRanking = Math.max(...rankings)
-  const minRanking = Math.min(...rankings)
-  const rankPercentages = rawRankingData
-    .map(({team, totalReads, ranking}) => {
-      return {
-        team,
-        totalReads,
-        ranking,
-        percent: Number(
-          ((ranking - minRanking) / (maxRanking - minRanking || 1)).toFixed(2),
-        ),
-      }
+      },
+      where: {
+        postSlug: {notIn: exclude.filter(Boolean)},
+      },
+      take: limit,
     })
-    // if they're the same, then we'll randomize their relative order.
-    // Otherwise, it's greatest to smallest
-    .sort(({percent: a}, {percent: b}) =>
-      b === a ? (Math.random() > 0.5 ? -1 : 1) : a > b ? -1 : 1,
-    )
 
-  return rankPercentages
+    return result.map(p => p.postSlug)
+  }
+
+  return cachified({
+    key: `${limit}-most-popular-post-slugs`,
+    maxAge: 1000 * 60,
+    cache: lruCache,
+    getFreshValue,
+    checkValue: (value: unknown) =>
+      Array.isArray(value) && value.every(v => typeof v === 'string'),
+  })
+}
+
+async function getTotalPostReads(request: Request, slug?: string) {
+  return cachified({
+    key: 'total-post-reads',
+    cache: lruCache,
+    request,
+    checkValue: (value: unknown) => typeof value === 'number',
+    getFreshValue: () =>
+      prisma.postRead.count({
+        where: {postSlug: slug},
+      }),
+  })
+}
+
+async function getReaderCount(request: Request) {
+  return cachified({
+    key: 'total-reader-count',
+    cache: lruCache,
+    request,
+    checkValue: (value: unknown) => typeof value === 'number',
+    getFreshValue: async () => {
+      // couldn't figure out how to do this in one query with out $queryRaw 🤷‍♂️
+      type CountResult = [{count: number}]
+      const [userIdCount, clientIdCount] = await Promise.all([
+        prisma.$queryRaw`SELECT COUNT(DISTINCT "public"."PostRead"."userId") FROM "public"."PostRead" WHERE ("public"."PostRead"."userId") IS NOT NULL` as Promise<CountResult>,
+        prisma.$queryRaw`SELECT COUNT(DISTINCT "public"."PostRead"."clientId") FROM "public"."PostRead" WHERE ("public"."PostRead"."clientId") IS NOT NULL` as Promise<CountResult>,
+      ]).catch(() => [[{count: 0}], [{count: 0}]])
+      return userIdCount[0].count + clientIdCount[0].count
+    },
+  })
+}
+
+async function getBlogReadRankings(request: Request, slug?: string) {
+  const key = slug ? `blog:${slug}:rankings` : `blog:rankings`
+  const rankingObjs = await cachified({
+    key,
+    cache: lruCache,
+    request,
+    checkValue: (value: unknown) =>
+      Array.isArray(value) &&
+      value.every(v => typeof v === 'object' && 'team' in v),
+    getFreshValue: async () => {
+      const rawRankingData = await Promise.all(
+        teams.map(async function getRankingsForTeam(
+          team,
+        ): Promise<{team: Team; totalReads: number; ranking: number}> {
+          console.log('getting ranking for', slug, team)
+          const totalReads = await prisma.postRead.count({
+            where: {
+              postSlug: slug,
+              user: {team},
+            },
+          })
+          const activeMembers = await getActiveMembers(team)
+          const recentReads = await getRecentReads(slug, team)
+          let ranking = 0
+          if (activeMembers) {
+            ranking = Number(recentReads / activeMembers)
+          }
+          return {team, totalReads, ranking}
+        }),
+      )
+      const rankings = rawRankingData.map(r => r.ranking)
+      const maxRanking = Math.max(...rankings)
+      const minRanking = Math.min(...rankings)
+      const rankPercentages = rawRankingData.map(
+        ({team, totalReads, ranking}) => {
+          return {
+            team,
+            totalReads,
+            ranking,
+            percent: Number(
+              ((ranking - minRanking) / (maxRanking - minRanking || 1)).toFixed(
+                2,
+              ),
+            ),
+          }
+        },
+      )
+
+      return rankPercentages
+    },
+  })
+
+  return (
+    rankingObjs
+      // if they're the same, then we'll randomize their relative order.
+      // Otherwise, it's greatest to smallest
+      .sort(({percent: a}, {percent: b}) =>
+        b === a ? (Math.random() > 0.5 ? -1 : 1) : a > b ? -1 : 1,
+      )
+  )
 }
 
 async function getRecentReads(slug: string | undefined, team: Team) {

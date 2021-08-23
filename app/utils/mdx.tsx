@@ -7,8 +7,9 @@ import {
   downloadMdxFileOrDirectory,
 } from '~/utils/github.server'
 import {AnchorOrLink} from '~/utils/misc'
-import * as redis from './redis.server'
+import {redisCache} from './redis.server'
 import type {Timings} from './metrics.server'
+import {cachified} from './cache.server'
 
 type CachifiedOptions = {
   forceFresh?: boolean
@@ -36,7 +37,8 @@ async function getMdxPage(
   },
   options: CachifiedOptions,
 ): Promise<MdxPage | null> {
-  return redis.cachified({
+  return cachified({
+    cache: redisCache,
     maxAge: defaultMaxAge,
     ...options,
     // reusing the same key as compiledMdxCached because we just return that
@@ -87,7 +89,8 @@ async function getMdxPagesInDirectory(
 const getDirListKey = (contentDir: string) => `${contentDir}:dir-list`
 
 async function getMdxDirList(contentDir: string, options: CachifiedOptions) {
-  return redis.cachified({
+  return cachified({
+    cache: redisCache,
     maxAge: defaultMaxAge,
     ...options,
     key: getDirListKey(contentDir),
@@ -115,7 +118,8 @@ async function downloadMdxFilesCached(
   slug: string,
   options: CachifiedOptions,
 ): Promise<Array<GitHubFile>> {
-  return redis.cachified({
+  return cachified({
+    cache: redisCache,
     maxAge: defaultMaxAge,
     ...options,
     key: getDownloadKey(contentDir, slug),
@@ -131,7 +135,8 @@ async function compileMdxCached(
   files: Array<GitHubFile>,
   options: CachifiedOptions,
 ) {
-  return redis.cachified({
+  return cachified({
+    cache: redisCache,
     maxAge: defaultMaxAge,
     ...options,
     key: getCompiledKey(contentDir, slug),
@@ -148,7 +153,8 @@ async function compileMdxCached(
 }
 
 async function getBlogMdxListItems(options: CachifiedOptions) {
-  return redis.cachified({
+  return cachified({
+    cache: redisCache,
     maxAge: defaultMaxAge,
     ...options,
     key: 'blog-mdx-list-items',

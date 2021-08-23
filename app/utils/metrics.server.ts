@@ -8,7 +8,7 @@ async function time<ReturnType>({
 }: {
   name: string
   type: string
-  fn: () => Promise<ReturnType>
+  fn: () => ReturnType | Promise<ReturnType>
   timings?: Timings
 }): Promise<ReturnType> {
   if (!timings) return fn()

@@ -63,8 +63,8 @@ export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
       ],
       exclude: [params.slug],
     }),
-    getBlogReadRankings(params.slug),
-    getTotalPostReads(params.slug),
+    getBlogReadRankings(request, params.slug),
+    getTotalPostReads(request, params.slug),
   ])
 
   const data: LoaderData = {

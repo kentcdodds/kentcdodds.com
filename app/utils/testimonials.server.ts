@@ -3,7 +3,8 @@ import * as YAML from 'yaml'
 import {pick} from 'lodash'
 import {downloadFile} from './github.server'
 import {getErrorMessage, typedBoolean} from './misc'
-import {cachified} from './redis.server'
+import {redisCache} from './redis.server'
+import {cachified} from './cache.server'
 
 const allCategories = [
   'teaching',
@@ -145,6 +146,7 @@ function mapTestimonial(rawTestimonial: UnknownObj) {
 
 async function getAllTestimonials({request}: {request: Request}) {
   const allTestimonials = await cachified({
+    cache: redisCache,
     key: 'content:data:testimonials.yml',
     request,
     maxAge: 1000 * 60 * 60 * 24,
