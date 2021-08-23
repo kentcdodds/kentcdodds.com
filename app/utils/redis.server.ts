@@ -71,8 +71,7 @@ function get<Value = unknown>(key: string): Promise<Value | null> {
           err,
         )
       }
-      if (!result) return null
-      resolve(JSON.parse(result) as Value)
+      resolve(result ? (JSON.parse(result) as Value) : null)
     })
   })
 }

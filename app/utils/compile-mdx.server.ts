@@ -198,30 +198,34 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
     valueName: 'content',
   })
 
-  const {frontmatter, code} = await bundleMDX(indexFile.content, {
-    files,
-    xdmOptions(options) {
-      options.remarkPlugins = [
-        ...(options.remarkPlugins ?? []),
-        remarkSlug,
-        [remarkAutolinkHeadings, {behavior: 'wrap'}],
-        gfm,
-        ...remarkPlugins,
-      ]
-      options.rehypePlugins = [
-        ...(options.rehypePlugins ?? []),
-        ...rehypePlugins,
-      ]
-      return options
-    },
-  })
+  try {
+    const {frontmatter, code} = await bundleMDX(indexFile.content, {
+      files,
+      xdmOptions(options) {
+        options.remarkPlugins = [
+          ...(options.remarkPlugins ?? []),
+          remarkSlug,
+          [remarkAutolinkHeadings, {behavior: 'wrap'}],
+          gfm,
+          ...remarkPlugins,
+        ]
+        options.rehypePlugins = [
+          ...(options.rehypePlugins ?? []),
+          ...rehypePlugins,
+        ]
+        return options
+      },
+    })
+    const readTime = calculateReadingTime(indexFile.content)
 
-  const readTime = calculateReadingTime(indexFile.content)
-
-  return {
-    code,
-    readTime,
-    frontmatter: frontmatter as FrontmatterType,
+    return {
+      code,
+      readTime,
+      frontmatter: frontmatter as FrontmatterType,
+    }
+  } catch (error: unknown) {
+    console.error(`Compilation error for slug: `, slug)
+    throw error
   }
 }
 
