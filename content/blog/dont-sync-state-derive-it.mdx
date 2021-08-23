@@ -341,10 +341,10 @@ performance problem (and even if they could play that fast, I assure you that
 you'll have other performance problems that will be lower hanging fruit for
 you).
 
-<callout-info>
-Ok ok, I tried it on my phone and only got 4.3 million operations per second.
-And then I tried with a CPU 6x slowdown on my laptop and only got 2 million...
-I think we're still good.
+<callout-info class="asside">
+  Ok ok, I tried it on my phone and only got 4.3 million operations per second.
+  And then I tried with a CPU 6x slowdown on my laptop and only got 2 million...
+  I think we're still good.
 </callout-info>
 
 That said, if you _do_ happen to have a function which _is_ computationally
@@ -372,7 +372,9 @@ the app to re-render is if `squares` changes in which case all of those
 functions will be run anyway, so we've actually not accomplished much with this
 "optimization." That's why I say: "Measure first!"
 
-> [Learn more about `useMemo` and `useCallback`](/blog/usememo-and-usecallback)
+<callout-info class="asside">
+  [Learn more about `useMemo` and `useCallback`](/blog/usememo-and-usecallback)
+</callout-info>
 
 Oh, and I'd like to mention that derived state can sometimes be even faster than
 state synchronization because it will result in fewer unnecessary re-renders,
