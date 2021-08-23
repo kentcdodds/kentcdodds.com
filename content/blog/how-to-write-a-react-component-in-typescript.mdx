@@ -133,7 +133,9 @@ Suffice it to say, don't use `React.FC` (or its longer alias
 One of the things I love about React components is that they aren't all that
 special. Here's the definition of a React component:
 
-> A React component is a function that returns something React can render.
+<callout-success class="important">
+  A React component is a function that returns something React can render.
+</callout-success>
 
 Now, according to `@types/react`, we're limited to `null` and `JSX.Element`s,
 but React can actually render strings, numbers, and booleans as well. In any

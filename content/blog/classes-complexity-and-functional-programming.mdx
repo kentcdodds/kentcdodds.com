@@ -79,8 +79,10 @@ understand this code and how much complexity those concepts add to your code.
 - A function/method's `this` keyword: Definitely an important concept in
   JavaScript.
 
-> My assertion is that `this` is hard to learn and can add unnecessary
-> complexity to your codebase.
+<callout-warning>
+  My assertion is that `this` is hard to learn and can add unnecessary
+  complexity to your codebase.
+</callout-warning>
 
 ### The `this` keyword
 
@@ -120,9 +122,11 @@ const getGreeting = person.getGreeting
 getGreeting() // Uncaught TypeError: Cannot read property 'greeting' of undefined at getGreeting
 ```
 
-> The core issue is that your function has been
-> "[complected](https://youtu.be/rI8tNMsozo0)" with wherever it is referenced
-> because it uses `this`.
+<callout-warning>
+  The core issue is that your function has been
+  "[complected](https://youtu.be/rI8tNMsozo0)" with wherever it is referenced
+  because it uses `this`.
+</callout-warning>
 
 For a more real world example of the problem, you'll find that this is
 especially evident in React ⚛️. If you've used React for a while, you've
@@ -152,8 +156,10 @@ is not calling our `increment` function with `this` bound to our instance of the
 component. There are various ways to fix this
 ([watch this free 🆓 egghead.io video 💻 about how](https://egghead.io/lessons/javascript-public-class-fields-with-react-components)).
 
-> The fact that you have to think about `this` adds cognitive load that would be
-> nice to avoid.
+<callout-success>
+  The fact that you have to think about `this` adds cognitive load that would be
+  nice to avoid.
+</callout-success>
 
 ### How to avoid `this`
 

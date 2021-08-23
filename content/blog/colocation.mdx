@@ -130,15 +130,19 @@ the story would be completely different. I'm not saying don't bother unit
 testing complex utility functions (please do), but keeping them closer to where
 they're needed helps you avoid problems.
 
-> And for heaven's sake,
-> [please DELETE THIS ESLINT RULE](https://github.com/yannickcr/eslint-plugin-react/blob/e6b4c33a1db4cc94c3e9223b09fb92b1dbddc00d/docs/rules/no-multi-comp.md)
-> and all rules like it.
+<callout-warning class="asside">
+  And for heaven's sake, [please DELETE THIS ESLINT
+  RULE](https://github.com/yannickcr/eslint-plugin-react/blob/e6b4c33a1db4cc94c3e9223b09fb92b1dbddc00d/docs/rules/no-multi-comp.md)
+  and all rules like it.
+</callout-warning>
 
 ## The principle
 
 **The concept of co-location can be boiled down to this fundamental principle:**
 
-> Place code as close to where it's relevant as possible
+<callout-success>
+  Place code as close to where it's relevant as possible
+</callout-success>
 
 You might also say: "Things that change together should be located as close as
 reasonable." ([Dan Abramov](https://twitter.com/dan_abramov) said something like

@@ -112,8 +112,10 @@ somethingAsync().then(result => result => (foo[result.key] = result.value))
 const {foobar} = require('./foo')
 ```
 
-> However, because the ES6 specification states that imports and exports must be
-> statically analyzable, you can't accomplish this dynamic behavior in ES6.
+<callout-warning>
+  However, because the ES6 specification states that imports and exports must be
+  statically analyzable, you can't accomplish this dynamic behavior in ES6.
+</callout-warning>
 
 So that's the _why_ for Babel's change. It's no longer possible to do this and
 that's a good thing.

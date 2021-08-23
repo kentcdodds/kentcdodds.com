@@ -178,14 +178,40 @@ pre {
   position: relative;
   border-top-right-radius: 0.5rem;
   border-bottom-right-radius: 0.5rem;
-  font-size: 0.9rem;
 }
 
+.prose callout-info,
+.prose callout-warning,
+.prose callout-danger,
+.prose callout-success,
 .prose callout-info *,
 .prose callout-warning *,
 .prose callout-danger *,
 .prose callout-success * {
-  font-size: 0.9rem;
+  font-size: 1.2rem;
+}
+
+.prose callout-info.asside,
+.prose callout-warning.asside,
+.prose callout-danger.asside,
+.prose callout-success.asside,
+.prose callout-info.asside *,
+.prose callout-warning.asside *,
+.prose callout-danger.asside *,
+.prose callout-success.asside * {
+  font-size: 0.875rem;
+}
+
+.prose callout-info.important,
+.prose callout-warning.important,
+.prose callout-danger.important,
+.prose callout-success.important,
+.prose callout-info.important *,
+.prose callout-warning.important *,
+.prose callout-danger.important *,
+.prose callout-success.important * {
+  font-size: 1.4rem;
+  font-weight: bold;
 }
 
 .prose callout-info:before,
@@ -202,34 +228,39 @@ pre {
 }
 
 /* the warning yellow is really inaccessible in light mode, so we have a special case for light mode */
-.light .prose callout-warning {
+.light .prose callout-warning,
+.light .prose callout-warning ol > li:before {
   color: #676000;
 }
 .light .prose callout-warning:before {
   background: #ffd800;
 }
-.prose callout-warning {
+.prose callout-warning,
+.prose callout-warning ol > li:before {
   color: #ffd644;
 }
 .prose callout-warning:before {
   background: #ffd644;
 }
 
-.prose callout-info {
+.prose callout-info,
+.prose callout-info ol > li:before {
   color: #4b96ff;
 }
 .prose callout-info:before {
   background: #4b96ff;
 }
 
-.prose callout-danger {
+.prose callout-danger,
+.prose callout-danger ol > li:before {
   color: #ff4545;
 }
 .prose callout-danger:before {
   background: #ff4545;
 }
 
-.prose callout-success {
+.prose callout-success,
+.prose callout-success ol > li:before {
   color: #30c85e;
 }
 .prose callout-success:before {

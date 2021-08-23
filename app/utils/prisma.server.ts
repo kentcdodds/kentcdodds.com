@@ -39,10 +39,10 @@ const prisma = getClient(() => {
   console.log(`Connecting to ${regionalDB.host}`)
   const client = new PrismaClient({
     log: [
-      {emit: 'event', level: 'query'},
-      {emit: 'stdout', level: 'error'},
-      {emit: 'stdout', level: 'info'},
-      {emit: 'stdout', level: 'warn'},
+      {level: 'query', emit: 'event'},
+      {level: 'error', emit: 'stdout'},
+      {level: 'info', emit: 'stdout'},
+      {level: 'warn', emit: 'stdout'},
     ],
     datasources: {
       db: {

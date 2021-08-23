@@ -85,10 +85,12 @@ items in the menu.
 This means that `downshift` doesn't need to expose nearly as many props as other
 solutions because there's no rendering to configure.
 
-> It turns out that rendering nothing increases simplicity, decreases bundle
-> size, and enhances flexibility.
+<callout-success>
+  It turns out that rendering nothing increases simplicity, decreases bundle
+  size, and enhances flexibility.
+</callout-success>
 
-## **So what does it look like?**
+## So what does it look like?
 
 Here's a bare-bones autocomplete component with `downshift`:
 
@@ -165,10 +167,12 @@ invoked with some helper methods and state for us to build our component out of.
 most of accessibility for us, and we're responsible for rendering things based
 on that state.**
 
-> Your autocomplete component is literally a function of the state of
-> `downshift`
+<callout-info>
+  Your autocomplete component is literally a function of the state of
+  `downshift`
+</callout-info>
 
-## **prop getters**
+## prop getters
 
 Another thing you'll notice about the example above is the `render` function is
 passed more than just state. You're also given `getInputProps` and

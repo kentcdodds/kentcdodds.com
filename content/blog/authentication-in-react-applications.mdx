@@ -72,9 +72,11 @@ the app or the other if there is no user.
 
 ## How do we get here?
 
-> If you want to just look at how it's all done, then you can checkout
-> [the bookshelf repo](https://github.com/kentcdodds/bookshelf) which I made for
-> my [Build ReactJS Applications Workshop](/workshops/build-react-apps).
+<callout-info class="asside">
+  If you want to just look at how it's all done, then you can checkout [the
+  bookshelf repo](https://github.com/kentcdodds/bookshelf) which I made for my
+  [Build ReactJS Applications Workshop](/workshops/build-react-apps).
+</callout-info>
 
 Ok, so what do you do to get to this point? Let's start by looking at where
 we're actually rendering the app:
@@ -168,9 +170,11 @@ export {AuthProvider, useAuth}
 
 The key idea that drastically simplifies authentication in your app is this:
 
-> The component which has the user data prevents the rest of the app from being
-> rendered until the user data is retrieved or it's determined that there is no
-> logged-in user
+<callout-info>
+  The component which has the user data prevents the rest of the app from being
+  rendered until the user data is retrieved or it's determined that there is no
+  logged-in user
+</callout-info>
 
 It does this by simply returning a spinner instead of rendering the rest of the
 app. It's not rendering a router or anything at all really. Just a spinner until

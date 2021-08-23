@@ -173,7 +173,6 @@ async function getBlogReadRankings(request: Request, slug?: string) {
         teams.map(async function getRankingsForTeam(
           team,
         ): Promise<{team: Team; totalReads: number; ranking: number}> {
-          console.log('getting ranking for', slug, team)
           const totalReads = await prisma.postRead.count({
             where: {
               postSlug: slug,

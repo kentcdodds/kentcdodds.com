@@ -33,18 +33,22 @@ following these suboptimal patterns and I'd like to go through some of these,
 explain why they're not great and how you can improve your tests to avoid these
 pitfalls.
 
-> Note: I label each of these by their importance:
->
-> - low: this is mostly just my opinion, feel free to ignore and you'll probably
->   be fine.
-> - medium: you might experience bugs, lose confidence, or be doing work you
->   don't need to
-> - high: definitely listen to this advice! You're likely missing confidence or
->   will have problematic tests
+<callout-info class="asside">
+
+Note: I label each of these by their importance:
+
+- low: this is mostly just my opinion, feel free to ignore and you'll probably
+  be fine.
+- medium: you might experience bugs, lose confidence, or be doing work you don't
+  need to
+- high: definitely listen to this advice! You're likely missing confidence or
+  will have problematic tests
+
+</callout-info>
 
 ## Not using Testing Library ESLint plugins
 
-> Importance: medium
+<callout-warning class="asside">Importance: medium</callout-warning>
 
 If you'd like to avoid several of these common mistakes, then the official
 ESLint plugins could help out a lot:
@@ -52,11 +56,13 @@ ESLint plugins could help out a lot:
 - [eslint-plugin-testing-library](https://github.com/testing-library/eslint-plugin-testing-library)
 - [eslint-plugin-jest-dom](https://github.com/testing-library/eslint-plugin-jest-dom)
 
-**Advice: Install and use the ESLint plugin for Testing Library.**
+<callout-success>
+  Advice: Install and use the ESLint plugin for Testing Library.
+</callout-success>
 
 ## Using `wrapper` as the variable name for the return value from `render`
 
-> Importance: low
+<callout-info class="asside">Importance: low</callout-info>
 
 ```js
 // ❌
@@ -73,11 +79,12 @@ return value from `render` is not "wrapping" anything. It's simply a collection
 of utilities that (thanks to the next thing) you should actually not often need
 anyway.
 
-**Advice: destructure what you need from `render` or call it `view`.**
+<callout-success>Advice: destructure what you need from `render` or call it
+`view`.</callout-success>
 
 ## Using `cleanup`
 
-> Importance: medium
+<callout-warning class="asside">Importance: medium</callout-warning>
 
 ```js
 // ❌
@@ -93,11 +100,11 @@ For a long time now `cleanup` happens automatically (supported for most major
 testing frameworks) and you no longer need to worry about it.
 [Learn more](https://testing-library.com/docs/react-testing-library/api#cleanup).
 
-**Advice: don't use `cleanup`**
+<callout-success>Advice: don't use `cleanup`</callout-success>
 
 ## Not using `screen`
 
-> Importance: medium
+<callout-warning class="asside">Importance: medium</callout-warning>
 
 ```js
 // ❌
@@ -131,11 +138,12 @@ You can also call
 [`screen.debug`](https://testing-library.com/docs/dom-testing-library/api-queries#screendebug)
 instead of `debug`
 
-**Advice: use `screen` for querying and debugging.**
+<callout-success>Advice: use `screen` for querying and
+debugging.</callout-success>
 
 ## Using the wrong assertion
 
-> Importance: high
+<callout-danger class="asside">Importance: high</callout-danger>
 
 ```js
 const button = screen.getByRole('button', {name: /disabled button/i})
@@ -160,12 +168,14 @@ That `toBeDisabled` assertion comes from
 recommended to use `jest-dom` because the error messages you get with it are
 much better.
 
-**Advice: install and use
-[`@testing-library/jest-dom`](https://github.com/testing-library/jest-dom#tobedisabled)**
+<callout-success>
+  Advice: install and use
+  [`@testing-library/jest-dom`](https://github.com/testing-library/jest-dom#tobedisabled)\*\*
+</callout-success>
 
 ## Wrapping things in `act` unnecessarily
 
-> Importance: medium
+<callout-warning class="asside">Importance: medium</callout-warning>
 
 ```js
 // ❌
@@ -195,12 +205,13 @@ happening in your test. You can learn more about this from my blog post (and
 videos):
 [Fix the "not wrapped in act(...)" warning](https://kentcdodds.com/blog/fix-the-not-wrapped-in-act-warning).
 
-**Advice: Learn when `act` is necessary and don't wrap things in `act`
-unnecessarily.**
+<callout-success>
+  Advice: Learn when `act` is necessary and don't wrap things in `act` unnecessarily.
+</callout-success>
 
 ## Using the wrong query
 
-> Importance: high
+<callout-danger class="asside">Importance: high</callout-danger>
 
 ```js
 // ❌
@@ -350,12 +361,14 @@ Notice that we didn't have to add the `role=button` to our button for it to have
 the role of button. That's an implicit role, which leads us perfectly into our
 next one...
 
-**Advice: Read and follow the recommendations on
-[The "Which Query Should I Use" Guide](https://testing-library.com/docs/guide-which-query).**
+<callout-success>
+  Advice: Read and follow the recommendations [The "Which Query Should I Use"
+  Guide](https://testing-library.com/docs/guide-which-query).**
+</callout-success>
 
 ## Adding `aria-`, `role`, and other accessibility attributes incorrectly
 
-> Importance: high
+<callout-danger class="asside">Importance: high</callout-danger>
 
 ```js
 // ❌
@@ -375,14 +388,18 @@ what you're building, be sure to use an existing library that does this
 accessibly or follow the WAI-ARIA practices. They often have
 [great examples](https://www.w3.org/TR/wai-aria-practices/examples/accordion/accordion.html).
 
-> Note: to make `input`s accessible via a "role" you'll want to specify the
-> `type` attribute!
+<callout-warning class="asside">
+  Note: to make `input`s accessible via a "role" you'll want to specify the
+  `type` attribute!
+</callout-warning>
 
-**Advice: Avoid adding unnecessary or incorrect accessibility attributes.**
+<callout-success>
+  Advice: Avoid adding unnecessary or incorrect accessibility attributes.
+</callout-success>
 
 ## Not using `@testing-library/user-event`
 
-> Importance: medium
+<callout-warning class="asside">Importance: medium</callout-warning>
 
 ```js
 // ❌
@@ -408,11 +425,13 @@ baked-into `@testing-library/dom` (though it may be at some point in the
 future). However, I'm confident enough in it to recommend you give it a look and
 use it's utilities over `fireEvent`.
 
-**Advice: Use `@testing-library/user-event` over `fireEvent` where possible.**
+<callout-success>
+  Advice: Use `@testing-library/user-event` over `fireEvent` where possible.
+</callout-success>
 
 ## Using `query*` variants for _anything_ except checking for non-existence
 
-> Importance: high
+<callout-danger class="asside">Importance: high</callout-danger>
 
 ```js
 // ❌
@@ -428,12 +447,14 @@ have a function you can call which does not throw an error if no element is
 found to match the query (it returns `null` if no element is found). The _only_
 reason this is useful is to verify that an element is not rendered to the page.
 
-**Advice: Only use the `query*` variants for asserting that an element cannot be
-found.**
+<callout-success>
+  Advice: Only use the `query*` variants for asserting that an element cannot
+  found.
+</callout-success>
 
 ## Using `waitFor` to wait for elements that can be queried with `find*`
 
-> Importance: high
+<callout-danger class="asside">Importance: high</callout-danger>
 
 ```js
 // ❌
@@ -449,12 +470,14 @@ Those two bits of code are basically equivalent (`find*` queries use `waitFor`
 under the hood), but the second is simpler and the error message you get will be
 better.
 
-**Advice: use `find*` any time you want to query for something that may not be
-available right away.**
+<callout-success>
+  Advice: use `find*` any time you want to query for something that may not
+  available right away.
+</callout-success>
 
 ## Passing an empty callback to `waitFor`
 
-> Importance: high
+<callout-danger class="asside">Importance: high</callout-danger>
 
 ```js
 // ❌
@@ -473,11 +496,13 @@ for is "one tick of the event loop" thanks to the way your mocks work. But
 you'll be left with a fragile test which could easily fail if you refactor your
 async logic.
 
-**Advice: wait for a specific assertion inside `waitFor`.**
+<callout-success>
+  Advice: wait for a specific assertion inside `waitFor`.
+</callout-success>
 
 ## Having multiple assertions in a single `waitFor` callback
 
-> Importance: low
+<callout-info class="asside">Importance: low</callout-info>
 
 ```js
 // ❌
@@ -497,11 +522,11 @@ see that test failure. By putting a single assertion in there, we can both wait
 for the UI to settle to the state we want to assert on, and also fail faster if
 one of the assertions do end up failing.
 
-**Advice: only put one assertion in a callback.**
+<callout-success>Advice: only put one assertion in a callback.</callout-success>
 
 ## Performing side-effects in `waitFor`
 
-> Importance: high
+<callout-danger class="asside">Importance: high</callout-danger>
 
 ```js
 // ❌
@@ -527,12 +552,14 @@ This also means that you can't use snapshot assertions within `waitFor`. If you
 do want to use a snapshot assertion, then first wait for a specific assertion,
 and then after that you can take your snapshot.
 
-**Advice: put side-effects outside `waitFor` callbacks and reserve the callback
-for assertions only.**
+<callout-success>
+  Advice: put side-effects outside `waitFor` callbacks and reserve the callback
+  for assertions only.
+</callout-success>
 
 ## Using `get*` variants as assertions
 
-> Importance: low
+<callout-info class="asside">Importance: low</callout-info>
 
 ```js
 // ❌
@@ -554,8 +581,10 @@ but I personally normally keep the assertion in there just to communicate to
 readers of the code that it's not just an old query hanging around after a
 refactor but that I'm explicitly asserting that it exists.
 
-**Advice: If you want to assert that something exists, make that assertion
-explicit.**
+<callout-success>
+  Advice: If you want to assert that something exists, make that assertion
+  explicit.
+</callout-success>
 
 ## Conclusion
 

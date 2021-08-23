@@ -100,8 +100,10 @@ ReactDOM.render(
 Did you notice the change? Yeah! We get the initial log, but then we don't get
 new logs when we click the button anymore! WHAAAAT!?
 
-> If you want to skip all the deep-dive technical details and get to the "what
-> does this mean for me" go ahead and [plop yourself down there now](#practical)
+<callout-info>
+  If you want to skip all the deep-dive technical details and get to the "what
+  does this mean for me" go ahead and [plop yourself down there now](#practical)
+</callout-info>
 
 ## What's going on?
 
@@ -307,15 +309,17 @@ before/after that you can check out and play with:
 
 https://codesandbox.io/s/react-codesandbox-qtdob
 
-> One thing I want to add is that even though it's _better_ to use the faster
-> version of this code, it's still performing really badly when it renders
-> initially and it would perform really badly if it ever actually needed to do
-> another top-down re-render (or when you update the rows/columns). That's a
-> performance problem that should probably be dealt with on its own merits
-> (irrespective of how necessary the re-renders are). Also please remember that
-> codesandbox uses the development version of React which gives you a really
-> nice development experience, but performs WAY slower than the production
-> version of React.
+<callout-warning class="asside">
+  One thing I want to add is that even though it's _better_ to use the faster
+  version of this code, it's still performing really badly when it renders
+  initially and it would perform really badly if it ever actually needed to do
+  another top-down re-render (or when you update the rows/columns). That's a
+  performance problem that should probably be dealt with on its own merits
+  (irrespective of how necessary the re-renders are). Also please remember that
+  codesandbox uses the development version of React which gives you a really
+  nice development experience, but performs WAY slower than the production
+  version of React.
+</callout-warning>
 
 And this isn't just something that's useful at the top-level of your app either.
 This could be applied to your app anywhere it makes sense. What I like about
@@ -328,8 +332,10 @@ you to use as escape hatches.**
 
 Good luck!
 
-> I want to add a note that if you're using legacy context, you wont be able to
-> get this optimization,
-> [as React has a special case for that here](https://github.com/facebook/react/blob/d420d2ccb6223a66d5e8fe824ac0d31ed5bf87a1/packages/react-reconciler/src/ReactFiberBeginWork.js#L2576),
-> so people concerned about performance should probably migrate from legacy
-> context.
+<callback-info class="asside">
+  I want to add a note that if you're using legacy context, you wont be able to
+  get this optimization, [as React has a special case for that
+  here](https://github.com/facebook/react/blob/d420d2ccb6223a66d5e8fe824ac0d31ed5bf87a1/packages/react-reconciler/src/ReactFiberBeginWork.js#L2576),
+  so people concerned about performance should probably migrate from legacy
+  context.
+</callback-info>

@@ -13,9 +13,10 @@ bannerCloudinaryId: kentcdodds.com/content/blog/but-really-what-is-a-javascript-
 bannerCredit: Photo by [Dmitri Popov](https://unsplash.com/photos/cnOlhGQY-SI)
 ---
 
-> This is a great follow-up to
-> [But really, what is a JavaScript test?](/blog/but-really-what-is-a-javascript-test)
-> So here we go!
+<callout-info>
+  This is a great follow-up to [But really, what is a JavaScript
+  test?](/blog/but-really-what-is-a-javascript-test) So here we go!
+</callout-info>
 
 <br />
 
@@ -308,14 +309,16 @@ and poof! It does! Notice also that I changed the name of the import from
 communicate the intention that this should be importing a mocked version of the
 module, not the real thing.
 
-> _Common question: If you only want to mock one of several functions in a
-> module, then you may like the_ >
-> [`require.requireActual`](https://jestjs.io/docs/en/jest-object#jestrequireactualmodulename) >
-> _API._
+<callout-info class="asside">
+  Common question: If you only want to mock one of several functions in a
+  module, then you may like the
+  [`jest.requireActual`](https://jestjs.io/docs/jest-object#jestrequireactualmodulename)
+  API.
+</callout-info>
 
 ### Step 6
 
-Ok, so we're almost done. What if we're using this `getWinner`function in
+Ok, so we're almost done. What if we're using this `getWinner` function in
 several of our tests and we don't want to copy/paste this mock everywhere?
 That's where [the](https://facebook.github.io/jest/docs/en/manual-mocks.html)
 [`__mocks__`](https://facebook.github.io/jest/docs/en/manual-mocks.html)

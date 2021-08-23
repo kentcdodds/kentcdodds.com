@@ -18,8 +18,11 @@ bannerCredit:
   Photo by [Paweł Czerwiński](https://unsplash.com/photos/_nqApgG-QrY)
 ---
 
-> NOTE: I want to add that the times it's important to optimize your context
-> value is when a certain combination of the following conditions are met:
+<callout-warning>
+
+NOTE: Before we get started, I want to make sure you know the times it's
+important to optimize your context value is when a certain combination of the
+following conditions are met:
 
 1. Your context value changes frequently
 2. Your context has many consumers
@@ -33,10 +36,12 @@ definitely better and I've reworked the blog post to remove my original
 recommendation and just show the alternative. If you want to see my original,
 [read the original stuff here](https://github.com/kentcdodds/kentcdodds.com/blob/319db97260078ea4c263e75166f05e2cea21ccd1/content/blog/how-to-optimize-your-context-value/index.md).
 
-> No seriously, if you're going to do this stuff just because you _think_ your
-> code _might_ be slow, then don't bother. I'm not joking. React is really fast
-> and adding complexity in the name of performance when performance is good
-> enough is just wasteful of your "complexity budget"
+No seriously, if you're going to do this stuff just because you _think_ your
+code _might_ be slow, then don't bother. I'm not joking. React is really fast
+and adding complexity in the name of performance when performance is good enough
+is just wasteful of your "complexity budget"
+
+</callout-warning>
 
 The simplest solution to optimizing your context value involves using
 `useReducer` or `useState` for your state management and putting the `state` in
