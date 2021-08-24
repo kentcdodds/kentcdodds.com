@@ -10,7 +10,7 @@ import {ArrowLink} from '../arrow-button'
 import {Grid} from '../grid'
 
 export type HeroSectionProps = {
-  title: string
+  title: string | React.ReactNode
   subtitle?: string
   action?: React.ReactNode
 } & (

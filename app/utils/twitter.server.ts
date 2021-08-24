@@ -217,7 +217,6 @@ async function buildTweetHTML(
           const longLink = await unshorten(shortLink).catch(() => shortLink)
           const longUrl = new URL(longLink)
           const isTwitterLink = longUrl.host === 'twitter.com'
-          // TODO: handle more than just twitter links. If it's the last link, try to expand the og:title/image information and display that instead.
           let replacement = `<a href="${longLink}" target="_blank" rel="noreferrer noopener">${
             longUrl.hostname + longUrl.pathname
           }</a>`

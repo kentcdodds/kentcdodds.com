@@ -28,6 +28,14 @@ import {HeroSection} from '~/components/sections/hero-section'
 import {HeaderSection} from '~/components/sections/header-section'
 import {getTestimonials} from '~/utils/testimonials.server'
 import type {Testimonial} from '~/utils/testimonials.server'
+import {DiscordLogo} from '~/components/icons/discord-logo'
+import {HeartIcon} from '~/components/icons/heart-icon'
+import {EmojiHappyIcon} from '~/components/icons/emoji-happy-icon'
+import {BriefcaseIcon} from '~/components/icons/briefcase-icon'
+import {RocketIcon} from '~/components/icons/rocket-icon'
+import {TrophyIcon} from '~/components/icons/trophy-icon'
+import LaptopIcon from '~/components/icons/laptop-icon'
+import {MessageIcon} from '~/components/icons/message-icon'
 
 type LoaderData = {
   testimonials: Array<Testimonial>
@@ -115,28 +123,6 @@ function CategoryCard(props: CategoryCardProps) {
   )
 }
 
-const categories = Array.from({length: 8}).map((_, idx) => ({
-  number: idx + 1,
-  title: ['Development Livestreams', 'Learning clubs'][idx % 2] as string,
-  description:
-    'Mauris auctor nulla at felis placerat, ut elementum urna commodo. Aenean et rutrum quam. Etiam odio massa, congue in orci nec, ornare suscipit sem aen.',
-}))
-
-function partitionCategories<T>(entries: T[]): [T[], T[]] {
-  const left: T[] = []
-  const right: T[] = []
-
-  for (let idx = 0; idx < entries.length; idx++) {
-    if (idx % 2 === 0) {
-      left.push(entries[idx] as T)
-    } else {
-      right.push(entries[idx] as T)
-    }
-  }
-
-  return [left, right]
-}
-
 export default function Discord() {
   const data = useLoaderData<LoaderData>()
   const user = useOptionalUser()
@@ -145,12 +131,15 @@ export default function Discord() {
     ? getDiscordAuthorizeURL(requestInfo.origin)
     : externalLinks.discord
 
-  const categoryGroups = partitionCategories(categories)
-
   return (
     <>
       <HeroSection
-        title="Make friends on our discord server."
+        title={
+          <>
+            <DiscordLogo />
+            {`Make friends on our discord server.`}
+          </>
+        }
         subtitle="Learn to become better developers together."
         imageBuilder={images.helmet}
         arrowUrl="#reasons-to-join"
@@ -240,7 +229,7 @@ export default function Discord() {
               {`Not sure what to expect from the discord?`}
             </H2>
             <H2 as="p" variant="secondary" className="mb-14">
-              {`Here's some features for you in a glance. `}
+              {`Here are some features for you at a glance.`}
             </H2>
           </div>
 
@@ -250,13 +239,13 @@ export default function Discord() {
                 <FeatureCard
                   title="High quality people"
                   description="Our onboarding process, enforced code of conduct, and fantastic moderators keep it a friendly place to be."
-                  icon={<CodeIcon size={48} />}
+                  icon={<HeartIcon size={48} />}
                 />
               </div>
               <div className="col-span-full lg:col-span-4">
                 <FeatureCard
                   title="Learning clubs"
-                  description="Form study groups and learn together."
+                  description="Form study groups and learn better together."
                   icon={<UsersIcon size={48} />}
                 />
               </div>
@@ -272,35 +261,35 @@ export default function Discord() {
                 <FeatureCard
                   title="Software Channels"
                   description="Channels on popular topics like frontend, backend, career, and more."
-                  icon={<UsersIcon size={48} />}
+                  icon={<LaptopIcon size={48} />}
                 />
               </div>
               <div className="col-span-full lg:col-span-4">
                 <FeatureCard
                   title="Life Channels"
                   description="We're not robots. We're people. And we have kids, pets, and money. Channels for those and more."
-                  icon={<UsersIcon size={48} />}
+                  icon={<EmojiHappyIcon size={48} />}
                 />
               </div>
               <div className="col-span-full lg:col-span-4">
                 <FeatureCard
                   title="Jobs channel"
                   description="Looking for work or an engineer? You wouldn't be the first to start an employment relationship here."
-                  icon={<UsersIcon size={48} />}
+                  icon={<BriefcaseIcon size={48} />}
                 />
               </div>
               <div className="col-span-full lg:col-span-4">
                 <FeatureCard
                   title="EpicReact.dev Channels"
                   description="There's a channel for each of the workshops in EpicReact.dev so you can get/give a hand when you get stuck."
-                  icon={<UsersIcon size={48} />}
+                  icon={<RocketIcon size={48} />}
                 />
               </div>
               <div className="col-span-full lg:col-span-4">
                 <FeatureCard
                   title="TestingJavaScript.com Channels"
                   description="Leveling up your testing experience? Sweet! Get and give help in these channels."
-                  icon={<UsersIcon size={48} />}
+                  icon={<TrophyIcon size={48} />}
                 />
               </div>
               <div className="col-span-full lg:col-span-4">
@@ -311,7 +300,7 @@ export default function Discord() {
                       ? `As a member of the ${user.team.toLocaleLowerCase()} team, connect your discord account and you'll get access to the exclusive ${user.team.toLocaleLowerCase()} team channels.`
                       : 'Sign up for an account on kentcdodds.com and connect your discord account to get access to the exclusive team channels.'
                   }
-                  icon={<UsersIcon size={48} />}
+                  icon={<MessageIcon size={48} />}
                 />
               </div>
             </Grid>
@@ -320,50 +309,70 @@ export default function Discord() {
 
         <Grid className="mb-24 lg:mb-64">
           <div className="hidden col-span-full mb-12 lg:block lg:col-span-4 lg:mb-0">
-            <H6 as="h2">Set up your own learning club.</H6>
+            <H6 as="h2">{`Set up your own learning club.`}</H6>
           </div>
           <div className="col-span-full mb-20 lg:col-span-8 lg:mb-28">
             <H2 as="p" className="mb-3">
-              Learning clubs in the discord are like study groups you put
-              together yourself.
+              {`
+                KCD Learning Clubs are like study groups you put together yourself.
+              `}
             </H2>
             <H2 as="p" variant="secondary">
-              Having a group of people with the same challenges will help you
-              learn faster.
+              {`
+                Having a group of people with the same challenges will help you
+                learn faster. The discord bot can help you find them.
+              `}
             </H2>
           </div>
-          <div className="col-span-full mb-8 lg:col-span-4 lg:col-start-5 lg:mb-0 lg:pr-12">
+          <div className="col-span-full lg:col-span-4 lg:col-start-5 lg:pr-12">
             <H6 as="h3" className="mb-4">
-              When we learn together, we learn better, and that&apos;s the idea.
+              {`When we learn together, we learn better, and that's the idea.`}
             </H6>
             <Paragraph className="mb-16">
-              Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec
-              elit nunc, dictum quis condimentum in, imp erdiet at arcu.
+              {`
+                Research has shown that learning is more effective when you have
+                a group of people to hold you accountable. It's also more fun
+                and less frustrating when you can help each other.
+              `}
             </Paragraph>
 
             <H6 as="h3" className="mb-4">
-              Develop friendships with other nice learners in the community.
+              {`You can choose anything as your learning club topic.`}
             </H6>
-            <Paragraph>
-              Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec
-              elit nunc, dictum quis condimentum in, imp erdiet at arcu.
+            <Paragraph className="mb-16">
+              {`
+                A learning club can be about anything. All that's really
+                required is some sort of curriculum or schedule to keep everyone
+                focused on the same goal. So you can definitely choose one of
+                my courses, but you could also choose something completely
+                unrelated to software. The bot doesn't care and nobody's had
+                trouble filling their learning club with interested members yet!
+              `}
             </Paragraph>
           </div>
           <div className="col-span-full lg:col-span-4 lg:col-start-9 lg:pr-12">
             <H6 as="h3" className="mb-4">
-              You have access to me (Kent) during twice-weekly office hours.
+              {`Develop friendships with other nice learners in the community.`}
             </H6>
             <Paragraph className="mb-16">
-              Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec
-              elit nunc, dictum quis condimentum in, imp erdiet at arcu.
+              {`
+                The KCD Community on Discord is full of friendly people. When
+                you put together a learning club here, in addition to learning
+                better, you'll develop new friendships.
+              `}
             </Paragraph>
 
             <H6 as="h3" className="mb-4">
-              You can chat with members of the KCD Community on Discord.
+              {`You have access to me (Kent) during weekly office hours.`}
             </H6>
-            <Paragraph>
-              Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec
-              elit nunc, dictum quis condimentum in, imp erdiet at arcu.
+            <Paragraph className="mb-16">
+              {`
+                By joining the KCD Community on Discord, you can ask questions
+                that I'll answer during office hours. Often these questions come
+                from discussions you and your fellow learners have during your
+                learning club meetings. So if you all get stuck on the same
+                thing, I'm there to help you get unstuck.
+              `}
             </Paragraph>
           </div>
         </Grid>
@@ -372,11 +381,11 @@ export default function Discord() {
           <Grid featured>
             <div className="flex flex-col col-span-full items-stretch mb-40 lg:col-span-5 lg:items-start lg:mb-0">
               <H2 className="mb-8">
-                Enjoy community meetups in the discord server.
+                {`Enjoy community meetups in the discord server (and host your own!).`}
               </H2>
               <H2 className="mb-16" variant="secondary" as="p">
-                Voice and video chats hosted and managed on the Kent C. Dodds
-                Discord server.
+                Voice and video chats hosted and managed on the KCD Discord
+                server.
               </H2>
               <ButtonLink variant="primary" to={authorizeURL}>
                 Join Discord
@@ -387,24 +396,21 @@ export default function Discord() {
               <ol className="space-y-24 lg:space-y-16">
                 <NumberedPanel
                   number={1}
-                  title="What are the meetups?"
-                  description="Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
-        nunc, dictum quis condimentum in, imper diet at arcu."
+                  title={`What are "meetups"?`}
+                  description={`It's an event. It can be about anything and have any format.`}
                 />
                 <NumberedPanel
                   number={2}
                   title="So, how do I use them?"
-                  description="Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
-        nunc, dictum quis condimentum in, imper diet at arcu."
+                  description={`You go to the meetups channel to see who's hosting meetups and let the bot know which you'd like to be notified about.`}
                 />
                 <NumberedPanel
                   number={3}
                   title="Can I organize meetups myself or are there only curated meetups?"
-                  description="Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
-        nunc, dictum quis condimentum in, imper diet at arcu."
+                  description={`Anyone can host a meetup. Simply tell the bot about what you want to do and it'll let everyone know about it in the meetups channel.`}
                 />
                 <ArrowLink to="/meetups" direction="right">
-                  More about meetups
+                  Learn more about meetups
                 </ArrowLink>
               </ol>
             </div>
@@ -428,18 +434,52 @@ export default function Discord() {
             multiple
             className="col-span-full mb-4 space-y-4 lg:col-span-6 lg:mb-0 lg:space-y-6"
           >
-            {categoryGroups[0].map(category => (
-              <CategoryCard key={category.number} {...category} />
-            ))}
+            <CategoryCard
+              number={1}
+              title="Welcome"
+              description="A place to introduce yourself, read the rules, talk to the bot, and get tips about the server"
+            />
+            <CategoryCard
+              number={2}
+              title="KCD"
+              description="All the stuff I'm up to goes here. You might consider adding special notification settings to the announcements channel so you don't miss anything important."
+            />
+            <CategoryCard
+              number={3}
+              title="Meetups"
+              description="This is where all meetup activity happens. Go here to chat during meetups, follow meetup hosts, and sign up to be notified of new meetups."
+            />
+            <CategoryCard
+              number={4}
+              title="Clubs"
+              description="Here's where you can coordinate setting up a new KCD Learning Club. Club captains also get access to a special channel for captains to talk about how to make the most of the experience for everyone."
+            />
           </Accordion>
           <Accordion
             collapsible
             multiple
             className="col-span-full space-y-4 lg:col-span-6 lg:space-y-6"
           >
-            {categoryGroups[1].map(category => (
-              <CategoryCard key={category.number} {...category} />
-            ))}
+            <CategoryCard
+              number={5}
+              title="Tech"
+              description={`Need to talk software? That's what this category is for. We've got your whole tech stack covered here (and if we're missing anything, that's what "general" is for 😅). And you've got career related topics here too.`}
+            />
+            <CategoryCard
+              number={6}
+              title="Life"
+              description={`We're not automatons "turning coffee into code" 🙄. We're humans with lives, families, pets, preferences, money decisions, and joys. So we've got a channel to talk about that stuff.`}
+            />
+            <CategoryCard
+              number={7}
+              title="EpicReact.dev"
+              description={`Are you trying to learn React? It can help a lot to have others to help you go through the material. Ask questions about the material in these channels and people will know what you're talking about and jump in to help if they can.`}
+            />
+            <CategoryCard
+              number={8}
+              title="TestingJavaScript.com"
+              description={`Testing can be a tricky subject, so we've got channels for every module in TestingJavaScript.com for you to ask and answer questions about the material.`}
+            />
           </Accordion>
         </Grid>
 
@@ -460,12 +500,13 @@ export default function Discord() {
 
           <div className="col-span-full mt-4 lg:col-span-6 lg:col-start-7 lg:mt-0">
             <H2 className="mb-8">
-              Learning is always better with like minded people, join the
-              discord.
+              {`Life is better with friends. Find them on discord.`}
             </H2>
             <H2 variant="secondary" as="p" className="mb-16">
-              Click the button below and join the community, let&apos;s get
-              better together.
+              {`
+                Click the button below and join the community. Let's get
+                better together.
+              `}
             </H2>
             <ButtonLink variant="primary" to={authorizeURL}>
               Join Discord
