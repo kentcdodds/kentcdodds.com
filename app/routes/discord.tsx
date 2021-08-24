@@ -19,7 +19,6 @@ import {getImgProps, images} from '~/images'
 import {Grid} from '~/components/grid'
 import {externalLinks} from '../external-links'
 import {UsersIcon} from '~/components/icons/users-icon'
-import {DollarIcon} from '~/components/icons/dollar-icon'
 import {CodeIcon} from '~/components/icons/code-icon'
 import {NumberedPanel} from '~/components/numbered-panel'
 import {TestimonialSection} from '~/components/sections/testimonial-section'
@@ -66,7 +65,7 @@ function CategoryCardContent({title, description, number}: CategoryCardProps) {
         <AccordionButton className="relative w-full text-left focus:outline-none">
           <div className="absolute -bottom-12 -left-8 -right-8 -top-12 rounded-lg lg:-left-28 lg:-right-20" />
 
-          <span className="absolute -left-16 top-0 flex hidden text-lg lg:block">
+          <span className="absolute -left-16 top-0 hidden text-lg lg:block">
             {number.toString().padStart(2, '0')}.
           </span>
 
@@ -151,7 +150,7 @@ export default function Discord() {
   return (
     <>
       <HeroSection
-        title="Meet like minded people on our discord server."
+        title="Make friends on our discord server."
         subtitle="Learn to become better developers together."
         imageBuilder={images.helmet}
         arrowUrl="#reasons-to-join"
@@ -188,7 +187,7 @@ export default function Discord() {
 
           <div className="col-span-full lg:col-span-5 lg:col-start-8 lg:row-start-1">
             <H2 id="reasons-to-join" className="mb-10">
-              Here's why you should join the server.
+              {`Here's why you should join the server.`}
             </H2>
 
             <ButtonLink className="mb-32" variant="primary" to={authorizeURL}>
@@ -196,27 +195,41 @@ export default function Discord() {
             </ButtonLink>
 
             <H6 as="h3" className="mb-4">
-              Here will go the first title..
+              {`What is it?`}
             </H6>
             <Paragraph className="mb-12">
-              Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec
-              elit nunc, dictum quis condimentum in, impe rdiet at arcu.{' '}
+              {`
+                Discord is a chat application. The KCD Community on Discord is
+                community of people who want to make connections, share ideas,
+                and use software to help make the world a better place.
+              `}
             </Paragraph>
             <H6 as="h3" className="mb-4">
-              Here will go the second title..
+              {`Make connections and friends`}
             </H6>
             <Paragraph className="mb-12">
-              Mauris auctor nulla at felis placerat, ut elementum urna commodo.
-              Aenean et rutrum quam. Etiam odio massa, congue in orci nec,
-              ornare suscipit sem aenean turpis.
+              {`
+                We're better when we work together. Discord allows us to have
+                meaningful and nuanced conversations about building software.
+                If you want to ask questions or provide your own opinions, this
+                discord community is for you. We'll celebrate your sucesses and
+                lament your misfortunes and failures. This community is focused
+                on software development primarily, but we're humans and we
+                embrase that (we even have a channel on parenting!).
+              `}
             </Paragraph>
             <H6 as="h3" className="mb-4">
-              Here will go the third title.
+              {`Share ideas`}
             </H6>
             <Paragraph className="mb-12">
-              Mauris auctor nulla at felis placerat, ut elementum urna commodo.
-              Aenean et rutrum quam. Etiam odio massa, congue in orci nec,
-              ornare suscipit sem aenean turpis.
+              {`
+                This community is a fantastic place to get and provide feedback
+                on fun and interesting ideas. We're all motivated to use
+                software to make the world better in a wide variety of ways.
+                Got a project you've been working on? Want to discover
+                facinating ways people are using software? This is the place to
+                be.
+              `}
             </Paragraph>
           </div>
         </Grid>
@@ -224,7 +237,7 @@ export default function Discord() {
         <Grid className="mb-24 lg:mb-48">
           <div className="col-span-full">
             <H2 className="mb-3 lg:mt-6">
-              Not sure what to expect from the discord?
+              {`Not sure what to expect from the discord?`}
             </H2>
             <H2 as="p" variant="secondary" className="mb-14">
               {`Here's some features for you in a glance. `}
@@ -233,31 +246,74 @@ export default function Discord() {
 
           <div className="col-span-full">
             <Grid rowGap nested>
-              {Array.from({length: 3}).map((_, idx) => (
-                <React.Fragment key={idx}>
-                  <div className="col-span-full lg:col-span-4">
-                    <FeatureCard
-                      title="Learning clubs"
-                      description="Form study groups and learn together."
-                      icon={<UsersIcon size={48} />}
-                    />
-                  </div>
-                  <div className="col-span-full lg:col-span-4">
-                    <FeatureCard
-                      title="Free forever"
-                      description="You will never have to pay for the discord."
-                      icon={<DollarIcon size={48} />}
-                    />
-                  </div>
-                  <div className="col-span-full lg:col-span-4">
-                    <FeatureCard
-                      title="Livestreams"
-                      description="Be the first to know when livestreams are."
-                      icon={<CodeIcon size={48} />}
-                    />
-                  </div>
-                </React.Fragment>
-              ))}
+              <div className="col-span-full lg:col-span-4">
+                <FeatureCard
+                  title="High quality people"
+                  description="Our onboarding process, enforced code of conduct, and fantastic moderators keep it a friendly place to be."
+                  icon={<CodeIcon size={48} />}
+                />
+              </div>
+              <div className="col-span-full lg:col-span-4">
+                <FeatureCard
+                  title="Learning clubs"
+                  description="Form study groups and learn together."
+                  icon={<UsersIcon size={48} />}
+                />
+              </div>
+              <div className="col-span-full lg:col-span-4">
+                <FeatureCard
+                  title="Meetups"
+                  description="Discord-bot facilitated feature to plan virtual events (like streams) and connect with other devs."
+                  icon={<CodeIcon size={48} />}
+                />
+              </div>
+
+              <div className="col-span-full lg:col-span-4">
+                <FeatureCard
+                  title="Software Channels"
+                  description="Channels on popular topics like frontend, backend, career, and more."
+                  icon={<UsersIcon size={48} />}
+                />
+              </div>
+              <div className="col-span-full lg:col-span-4">
+                <FeatureCard
+                  title="Life Channels"
+                  description="We're not robots. We're people. And we have kids, pets, and money. Channels for those and more."
+                  icon={<UsersIcon size={48} />}
+                />
+              </div>
+              <div className="col-span-full lg:col-span-4">
+                <FeatureCard
+                  title="Jobs channel"
+                  description="Looking for work or an engineer? You wouldn't be the first to start an employment relationship here."
+                  icon={<UsersIcon size={48} />}
+                />
+              </div>
+              <div className="col-span-full lg:col-span-4">
+                <FeatureCard
+                  title="EpicReact.dev Channels"
+                  description="There's a channel for each of the workshops in EpicReact.dev so you can get/give a hand when you get stuck."
+                  icon={<UsersIcon size={48} />}
+                />
+              </div>
+              <div className="col-span-full lg:col-span-4">
+                <FeatureCard
+                  title="TestingJavaScript.com Channels"
+                  description="Leveling up your testing experience? Sweet! Get and give help in these channels."
+                  icon={<UsersIcon size={48} />}
+                />
+              </div>
+              <div className="col-span-full lg:col-span-4">
+                <FeatureCard
+                  title="Team Channels"
+                  description={
+                    user
+                      ? `As a member of the ${user.team.toLocaleLowerCase()} team, connect your discord account and you'll get access to the exclusive ${user.team.toLocaleLowerCase()} team channels.`
+                      : 'Sign up for an account on kentcdodds.com and connect your discord account to get access to the exclusive team channels.'
+                  }
+                  icon={<UsersIcon size={48} />}
+                />
+              </div>
             </Grid>
           </div>
         </Grid>

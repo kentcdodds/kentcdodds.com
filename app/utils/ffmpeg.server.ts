@@ -22,18 +22,18 @@ async function createEpisodeAudio(callBase64: string, responseBase64: string) {
 
   ffmpeg.FS(
     'writeFile',
-    'call-kent-intro.mp3',
-    await fetchFile(asset('call-kent-intro.mp3')),
+    'call-kent/intro.mp3',
+    await fetchFile(asset('call-kent/intro.mp3')),
   )
   ffmpeg.FS(
     'writeFile',
-    'call-kent-interlude.mp3',
-    await fetchFile(asset('call-kent-interlude.mp3')),
+    'call-kent/interlude.mp3',
+    await fetchFile(asset('call-kent/interlude.mp3')),
   )
   ffmpeg.FS(
     'writeFile',
-    'call-kent-outro.mp3',
-    await fetchFile(asset('call-kent-outro.mp3')),
+    'call-kent/outro.mp3',
+    await fetchFile(asset('call-kent/outro.mp3')),
   )
 
   ffmpeg.FS(
@@ -50,11 +50,11 @@ async function createEpisodeAudio(callBase64: string, responseBase64: string) {
   // prettier-ignore
   await ffmpeg.run(
     ...[
-      '-i', 'call-kent-intro.mp3',
+      '-i', 'call-kent/intro.mp3',
       '-i', 'call.mp3',
-      '-i', 'call-kent-interlude.mp3',
+      '-i', 'call-kent/interlude.mp3',
       '-i', 'response.mp3',
-      '-i', 'call-kent-outro.mp3',
+      '-i', 'call-kent/outro.mp3',
       '-filter_complex', '[0:a][1:a]concat=n=5:v=0:a=1',
       'output.mp3',
     ],
