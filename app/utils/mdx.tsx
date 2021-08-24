@@ -157,7 +157,7 @@ async function getBlogMdxListItems(options: CachifiedOptions) {
     cache: redisCache,
     maxAge: defaultMaxAge,
     ...options,
-    key: 'blog-mdx-list-items',
+    key: 'blog:mdx-list-items',
     getFreshValue: async () => {
       let pages = await getMdxPagesInDirectory('blog', options)
 
