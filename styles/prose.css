@@ -49,6 +49,11 @@ pre {
   content: unset;
 }
 
+/* I think this is a bug in the tailwind/typography thing */
+.dark .dark\:prose-dark thead {
+  color: var(--color-blueGray-500);
+}
+
 .prose pre[data-line-numbers='true']:not([data-lang='sh']) {
   padding-left: 0rem;
   padding-right: 0rem;
