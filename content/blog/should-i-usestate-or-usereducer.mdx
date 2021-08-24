@@ -199,7 +199,9 @@ That's a lot better than our other try with `useReducer`. But we basically
 And even then, it's still less clear than our `useState` version. So at the end
 of the day, `useState` was a much better solution in this case.
 
-> **When it's just an independent element of state you're managing: `useState`**
+<callout-success class="important">
+  When it's just an independent element of state you're managing: `useState`
+</callout-success>
 
 ### Custom `useUndo` hook
 
@@ -579,8 +581,10 @@ issue naturally.
 You may find it interesting that the switch cases in our reducer are basically
 exactly what the contents of our functions were before we made the change.
 
-> **When one element of your state relies on the value of another element of
-> your state in order to update: `useReducer`**
+<callout-success class="important">
+  **When one element of your state relies on the value of another element of
+  your state in order to update: `useReducer`**
+</callout-success>
 
 ## Conclusion
 

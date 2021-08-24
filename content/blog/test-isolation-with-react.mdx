@@ -104,10 +104,12 @@ test(`the reset button has been rendered and resets the count when it's hit the 
 })
 ```
 
-> First of all, as of
-> [@testing-library/react@9.0.0](https://github.com/testing-library/react-testing-library/releases/tag/v9.0.0)
-> this style of testing won't even work properly, but let's imagine that it
-> would.
+<callout-info>
+  First of all, as of
+  [@testing-library/react@9.0.0](https://github.com/testing-library/react-testing-library/releases/tag/v9.0.0)
+  this style of testing won't even work properly, but let's imagine that it
+  would.
+</callout-info>
 
 These tests give us 100% coverage of the component and verify exactly what they
 say they'll verify. The problem is that they share mutable state. What is the

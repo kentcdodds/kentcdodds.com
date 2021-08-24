@@ -12,24 +12,24 @@ bannerCloudinaryId: unsplash/photo-1454537468202-b7ff71d51c2e
 bannerCredit: Photo by [Susan Yin](https://unsplash.com/photos/ImoVrhUBeFs)
 ---
 
-In last week's newsletter ["What is a polyfill"](/blog/what-is-a-polyfill), I
-talked about a situation I came across with a white screen on IE10 (the app
-crashed because we were missing polyfills). I explained a bit of the difference
-between a polyfill and a code transform. I explained a few options you have at
-your disposal to use new JavaScript features and still support older browsers.
-In the conclusion I said this:
+In another post ["What is a polyfill"](/blog/what-is-a-polyfill), I talked about
+a situation I came across with a white screen on IE10 (the app crashed because
+we were missing polyfills). I explained a bit of the difference between a
+polyfill and a code transform. I explained a few options you have at your
+disposal to use new JavaScript features and still support older browsers. In the
+conclusion I said this:
 
-> _So what did I do to fix my IE10 bug? Well, one thing that really bugs me is
-> that I have to ship all this code for polyfills to all browsers even if they_
-> do _support these features. But a few years ago I heard of_ >
-> [_a service_](https://polyfill.io) _that was able to ship polyfills that are
+> So what did I do to fix my IE10 bug? Well, one thing that really bugs me is
+> that I have to ship all this code for polyfills to all browsers even if they
+> do support these features. But a few years ago I heard of
+> [a service](https://polyfill.io) that was able to ship polyfills that are
 > relevant only to the browser requesting them. I created my own endpoint that
-> uses_ [_the module_](https://github.com/Financial-Times/polyfill-service) >
-> _that powers that service and I'll write about that next week!_
+> uses [the module](https://github.com/Financial-Times/polyfill-service) that
+> powers that service and I'll write about that next week!
 
-That's today's newsletter! I'll explain how I created a `polyfill.js` endpoint
-that gives back a very aggressively cached JavaScript file with the polyfills
-that users need and no more.
+That's this post! I'll explain how I created a `polyfill.js` endpoint that gives
+back a very aggressively cached JavaScript file with the polyfills that users
+need and no more.
 
 ### Why polyfill-service?
 

@@ -25,23 +25,32 @@ async function getBlogRecommendations(
   // result in refreshing *all* blog posts which is probably not what we want.
   const allPosts = await getBlogMdxListItems({forceFresh: false})
 
-  if (limit === null) return shuffle(allPosts)
-
+  // exclude what they want us to + any posts that are labeled as archived.
+  let exclude = Array.from(
+    new Set([
+      ...externalExclude,
+      ...allPosts.filter(post => post.frontmatter.archived).map(p => p.slug),
+    ]),
+  )
+  // filter out what they've already read
   const session = await getSession(request)
   const client = await getClientSession(request)
   const clientId = client.getClientId()
   const user = await session.getUser()
-  const where = user ? {user: {id: user.id}} : {clientId}
+  const where = user
+    ? {user: {id: user.id}, postSlug: {notIn: exclude.filter(Boolean)}}
+    : {clientId, postSlug: {notIn: exclude.filter(Boolean)}}
   const readPosts = await prisma.postRead.groupBy({
     by: ['postSlug'],
     where,
   })
+  exclude.push(...readPosts.map(p => p.postSlug))
 
-  // exclude what they want us to + any posts the user has already read
-  let exclude = Array.from(
-    new Set([...externalExclude, ...readPosts.map(p => p.postSlug)]),
+  const recommendablePosts = allPosts.filter(
+    post => !exclude.includes(post.slug),
   )
-  const posts = allPosts.filter(post => !exclude.includes(post.slug))
+
+  if (limit === null) return shuffle(recommendablePosts)
 
   const recommendations: Array<MdxListItem> = []
   // if no keywords were given, then we won't have a group for best match
@@ -52,8 +61,10 @@ async function getBlogRecommendations(
   if (keywords.length) {
     // get best match posts
     const postsByBestMatch = keywords.length
-      ? Array.from(new Set(...keywords.map(k => filterPosts(posts, k))))
-      : posts
+      ? Array.from(
+          new Set(...keywords.map(k => filterPosts(recommendablePosts, k))),
+        )
+      : recommendablePosts
     const bestMatchRecommendations = shuffle(
       postsByBestMatch.slice(0, limitPerGroup * 4),
     ).slice(0, limitPerGroup)
@@ -70,7 +81,7 @@ async function getBlogRecommendations(
   })
   const mostPopularRecommendations = shuffle(
     mostPopularRecommendationSlugs
-      .map(slug => allPosts.find(({slug: s}) => s === slug))
+      .map(slug => recommendablePosts.find(({slug: s}) => s === slug))
       .filter(typedBoolean),
   ).slice(0, limitPerGroup)
   recommendations.push(...mostPopularRecommendations)
@@ -78,7 +89,9 @@ async function getBlogRecommendations(
 
   if (recommendations.length < limit) {
     // fill in the rest with random posts
-    const remainingPosts = allPosts.filter(({slug}) => !exclude.includes(slug))
+    const remainingPosts = recommendablePosts.filter(
+      ({slug}) => !exclude.includes(slug),
+    )
     const completelyRandomRecommendations = shuffle(remainingPosts).slice(
       0,
       limit - recommendations.length,

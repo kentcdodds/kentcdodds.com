@@ -113,18 +113,23 @@ one, it doesn't affect existing components.
 You may know that React's `key` prop is something you need to put on elements
 when you map over an array (otherwise React will get mad at you).
 
-> Side note: If you'd like to know why this is necessary and what can happen if
-> you ignore it or simply put the `index` as the key, watch
-> ["Use the key prop when Rendering a List with React"](https://egghead.io/lessons/react-use-the-key-prop-when-rendering-a-list-with-react)
+<callout-info class="aside">
+  Side note: If you'd like to know why this is necessary and what can happen if
+  you ignore it or simply put the `index` as the key, watch ["Use the key prop
+  when Rendering a List with
+  React"](https://egghead.io/lessons/react-use-the-key-prop-when-rendering-a-list-with-react)
+</callout-info>
 
 React's `key` prop gives you the ability to control component instances. Each
 time React renders your components, it's calling your functions to retrieve the
 new React elements that it uses to update the DOM. If you return the same
-element types, it keeps those components/DOM nodes around, even if all\* the
-props changed.
+element types, it keeps those components/DOM nodes around, even if all the props
+changed.
 
-> For more on this, read
-> [One simple trick to optimize React re-renders](/blog/optimize-react-re-renders)
+<callout-info class="aside">
+  For more on this, read [One simple trick to optimize React
+  re-renders](/blog/optimize-react-re-renders)
+</callout-info>
 
 That asterisk on the word "all" above is what I want to talk about here. The
 exception to this is the `key` prop. This allows you to return the exact same
@@ -135,8 +140,10 @@ purposes. For components, this means that React will run cleanup on effects (or
 `componentWillUnmount`), then it will run state initializers (or the
 `constructor`) and effect callbacks (or `componentDidMount`).
 
-> NOTE: effect cleanup actually happens _after_ the new component has been
-> mounted, but before the next effect callback is run.
+<callout-info class="aside">
+  NOTE: effect cleanup actually happens _after_ the new component has been
+  mounted, but before the next effect callback is run.
+</callout-info>
 
 Here's a simple example of this working in a counter:
 

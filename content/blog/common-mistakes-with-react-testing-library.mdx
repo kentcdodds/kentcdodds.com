@@ -33,7 +33,7 @@ following these suboptimal patterns and I'd like to go through some of these,
 explain why they're not great and how you can improve your tests to avoid these
 pitfalls.
 
-<callout-info class="asside">
+<callout-info class="aside">
 
 Note: I label each of these by their importance:
 
@@ -48,7 +48,7 @@ Note: I label each of these by their importance:
 
 ## Not using Testing Library ESLint plugins
 
-<callout-warning class="asside">Importance: medium</callout-warning>
+<callout-warning class="aside">Importance: medium</callout-warning>
 
 If you'd like to avoid several of these common mistakes, then the official
 ESLint plugins could help out a lot:
@@ -62,7 +62,7 @@ ESLint plugins could help out a lot:
 
 ## Using `wrapper` as the variable name for the return value from `render`
 
-<callout-info class="asside">Importance: low</callout-info>
+<callout-info class="aside">Importance: low</callout-info>
 
 ```js
 // ❌
@@ -84,7 +84,7 @@ anyway.
 
 ## Using `cleanup`
 
-<callout-warning class="asside">Importance: medium</callout-warning>
+<callout-warning class="aside">Importance: medium</callout-warning>
 
 ```js
 // ❌
@@ -104,7 +104,7 @@ testing frameworks) and you no longer need to worry about it.
 
 ## Not using `screen`
 
-<callout-warning class="asside">Importance: medium</callout-warning>
+<callout-warning class="aside">Importance: medium</callout-warning>
 
 ```js
 // ❌
@@ -143,7 +143,7 @@ debugging.</callout-success>
 
 ## Using the wrong assertion
 
-<callout-danger class="asside">Importance: high</callout-danger>
+<callout-danger class="aside">Importance: high</callout-danger>
 
 ```js
 const button = screen.getByRole('button', {name: /disabled button/i})
@@ -175,7 +175,7 @@ much better.
 
 ## Wrapping things in `act` unnecessarily
 
-<callout-warning class="asside">Importance: medium</callout-warning>
+<callout-warning class="aside">Importance: medium</callout-warning>
 
 ```js
 // ❌
@@ -206,12 +206,13 @@ videos):
 [Fix the "not wrapped in act(...)" warning](https://kentcdodds.com/blog/fix-the-not-wrapped-in-act-warning).
 
 <callout-success>
-  Advice: Learn when `act` is necessary and don't wrap things in `act` unnecessarily.
+  Advice: Learn when `act` is necessary and don't wrap things in `act`
+  unnecessarily.
 </callout-success>
 
 ## Using the wrong query
 
-<callout-danger class="asside">Importance: high</callout-danger>
+<callout-danger class="aside">Importance: high</callout-danger>
 
 ```js
 // ❌
@@ -368,7 +369,7 @@ next one...
 
 ## Adding `aria-`, `role`, and other accessibility attributes incorrectly
 
-<callout-danger class="asside">Importance: high</callout-danger>
+<callout-danger class="aside">Importance: high</callout-danger>
 
 ```js
 // ❌
@@ -388,7 +389,7 @@ what you're building, be sure to use an existing library that does this
 accessibly or follow the WAI-ARIA practices. They often have
 [great examples](https://www.w3.org/TR/wai-aria-practices/examples/accordion/accordion.html).
 
-<callout-warning class="asside">
+<callout-warning class="aside">
   Note: to make `input`s accessible via a "role" you'll want to specify the
   `type` attribute!
 </callout-warning>
@@ -399,7 +400,7 @@ accessibly or follow the WAI-ARIA practices. They often have
 
 ## Not using `@testing-library/user-event`
 
-<callout-warning class="asside">Importance: medium</callout-warning>
+<callout-warning class="aside">Importance: medium</callout-warning>
 
 ```js
 // ❌
@@ -431,7 +432,7 @@ use it's utilities over `fireEvent`.
 
 ## Using `query*` variants for _anything_ except checking for non-existence
 
-<callout-danger class="asside">Importance: high</callout-danger>
+<callout-danger class="aside">Importance: high</callout-danger>
 
 ```js
 // ❌
@@ -454,7 +455,7 @@ reason this is useful is to verify that an element is not rendered to the page.
 
 ## Using `waitFor` to wait for elements that can be queried with `find*`
 
-<callout-danger class="asside">Importance: high</callout-danger>
+<callout-danger class="aside">Importance: high</callout-danger>
 
 ```js
 // ❌
@@ -477,7 +478,7 @@ better.
 
 ## Passing an empty callback to `waitFor`
 
-<callout-danger class="asside">Importance: high</callout-danger>
+<callout-danger class="aside">Importance: high</callout-danger>
 
 ```js
 // ❌
@@ -502,7 +503,7 @@ async logic.
 
 ## Having multiple assertions in a single `waitFor` callback
 
-<callout-info class="asside">Importance: low</callout-info>
+<callout-info class="aside">Importance: low</callout-info>
 
 ```js
 // ❌
@@ -526,7 +527,7 @@ one of the assertions do end up failing.
 
 ## Performing side-effects in `waitFor`
 
-<callout-danger class="asside">Importance: high</callout-danger>
+<callout-danger class="aside">Importance: high</callout-danger>
 
 ```js
 // ❌
@@ -559,7 +560,7 @@ and then after that you can take your snapshot.
 
 ## Using `get*` variants as assertions
 
-<callout-info class="asside">Importance: low</callout-info>
+<callout-info class="aside">Importance: low</callout-info>
 
 ```js
 // ❌

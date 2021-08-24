@@ -57,8 +57,7 @@ https://twitter.com/kentcdodds/status/1229781024604708865
 
 Here's the basic idea:
 
-```js
-// src/index.js
+```js filename=src/index.js
 import loadDevTools from './dev-tools/load'
 import * as React from 'react'
 import ReactDOM from 'react-dom'
@@ -77,8 +76,7 @@ loadDevTools(() => {
 
 And then:
 
-```js
-// src/dev-tools/load.js
+```js filename=src/dev-tools/load.js
 function loadDevTools(callback) {
   // this allows you to explicitly disable it in development for example
   const explicitlyDisabled =
@@ -130,9 +128,7 @@ Once you get into the `dev-tools.js` file, you have free reign to do whatever
 you want (even async stuff). Just export an `install` function and you're off to
 the races:
 
-```js
-// src/dev-tools/dev-tools.js
-
+```js filename=src/dev-tools/dev-tools.js
 import * as React from 'react'
 
 function install() {

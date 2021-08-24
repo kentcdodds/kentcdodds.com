@@ -73,9 +73,10 @@ function App() {
 As much as this solution works thanks to the composability of React components,
 I'm still not super thrilled with it. And I'm not the only one:
 
-> _We've heard feedback that adopting the new render prop API can be difficult
-> in class components. So we've added a convenience API to_ >
-> [_consume a context value from within a class component_](https://reactjs.org/docs/context.html#classcontexttype)_. — _[_React v16.6.0: lazy, memo and contextType_](https://reactjs.org/blog/2018/10/23/react-v-16-6.html)
+> We've heard feedback that adopting the new render prop API can be difficult in
+> class components. So we've added a convenience API to
+> [consume a context value from within a class component](https://reactjs.org/docs/context.html#classcontexttype). 
+> —[React v16.6.0: lazy, memo and contextType](https://reactjs.org/blog/2018/10/23/react-v-16-6.html)
 
 This new convenience API means that if you use a class component and you're only
 consuming one context, you can simply define a static property called

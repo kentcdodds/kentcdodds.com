@@ -98,15 +98,15 @@ performance? Go ahead and submit your guess (this is not recorded anywhere):
 
 <Poll />
 
-> Let me give you some space to not spoil the answer for you...
+_Let me give you some space to not spoil the answer for you..._
 
 <div style={{height: 400}} />
 
-> Keep scrolling... You did answer, didn't you?
+_Keep scrolling... You did answer, didn't you?_
 
 <div style={{height: 400}} />
 
-> There, that should do it...
+_There, that should do it..._
 
 ## Why is `useCallback` worse?!
 
@@ -156,8 +156,10 @@ poll here:
 
 https://twitter.com/kentcdodds/status/1135943012410830848
 
-> Granted, I had several people tell me that was worded poorly, so my apologies
-> if you got the wrong answer but actually knew the correct answer.
+<callout-info class="aside">
+  Granted, I had several people tell me that was worded poorly, so my apologies
+  if you got the wrong answer but actually knew the correct answer.
+</callout-info>
 
 I'd like to mention also that on the second render of the component, the
 original `dispense` function gets garbage collected (freeing up memory space)
@@ -262,8 +264,10 @@ through them one at a time.
 
 Let's review an example.
 
-> Warning, you're about to see some seriously contrived code. Please don't
-> nit-pick that and just focus on the concepts please, thank you.
+<callout-warning class="aside">
+  Warning, you're about to see some seriously contrived code. Please don't
+  nit-pick that and just focus on the concepts please, thank you.
+</callout-warning>
 
 ```tsx
 function Foo({bar, baz}) {
@@ -331,13 +335,17 @@ function Blub() {
 }
 ```
 
-> Note that this same thing applies for the dependencies array passed to
-> `useEffect`, `useLayoutEffect`, `useCallback`, and `useMemo`.
+<callout-info>
+  Note that this same thing applies for the dependencies array passed to
+  `useEffect`, `useLayoutEffect`, `useCallback`, and `useMemo`.
+</callout-info>
 
 ### `React.memo` (and friends)
 
-> Warning, you're about to see some more contrived code. Please be advised to
-> not nit-pick this either but focus on the concepts, thanks.
+<callout-warning class="aside">
+  Warning, you're about to see some more contrived code. Please be advised to
+  not nit-pick this either but focus on the concepts, thanks.
+</callout-warning>
 
 Check this out:
 

@@ -1,4 +1,5 @@
 ---
+archived: true
 title: Rendering a function with React
 date: 2017-11-13
 description:
@@ -13,16 +14,20 @@ bannerCloudinaryId: unsplash/photo-1475518845976-0fd87b7e4e5d
 bannerCredit: Photo by [paul morris](https://unsplash.com/photos/Ovn1hyBge38)
 ---
 
-**EDIT: This "feature" will soon be removed from React 16, so please don't rely
-on it. That said, this is kinda fun so keep reading!**
+<callout-danger>
+  This "feature" was removed from React 16, so please don't rely on it. That
+  said, this is kinda fun so keep reading!
+</callout-danger>
 
 This week I was working on an internal module at PayPal and
 [had to do something kinda sorta-hacky with React](https://twitter.com/kentcdodds/status/923241478670909441).
 I thought You'd be interested to hear what I learned.
 
-> _No, this isn't about_ >
-> [_render props_](https://cdb.reacttraining.com/use-a-render-prop-50de598f11ce)_.
-> If you were hoping for that... callback later 😉_
+<callout-warning>
+  No, this isn't about [render
+  props](https://cdb.reacttraining.com/use-a-render-prop-50de598f11ce). If you
+  were hoping for that... callback later 😉
+</callout-warning>
 
 ![I see what you did there](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033311/kentcdodds.com/content/blog/rendering-a-function-with-react/0.gif)
 
@@ -58,11 +63,13 @@ getContent('pages')('home.nav')('about')
 // etc...
 ```
 
-> _There are reasons the API is this way, and I'm not going to go over them all.
-> If you're not a fan of the API,_ >
-> [_you're not alone_](https://twitter.com/dan_abramov/status/923326332020449280)_.
-> But there are reasons for the API as it is and that's not what we're going
-> over in this newsletter..._
+<callout-warning>
+  There are reasons the API is this way, and I'm not going to go over them all.
+  If you're not a fan of the API, [you're not
+  alone](https://twitter.com/dan_abramov/status/923326332020449280)_. But there
+  are reasons for the API as it is and that's not what we're going over in this
+  post... In retrospect, it's a bad API and I shouldn't have done it this way 😅
+</callout-warning>
 
 ### With React
 
@@ -161,9 +168,9 @@ situation like this?
 At first I thought I could monkey-patch `toString` on the content getter
 function. But that didn't work. I still got this warning from React:
 
-> _Warning: Functions are not valid as a React child. This may happen if you
+> Warning: Functions are not valid as a React child. This may happen if you
 > return a Component instead of from render. Or maybe you meant to call this
-> function rather than return it._
+> function rather than return it.
 
 So I stuck a breakpoint at the line where that error was logged and stepped up
 the stack to find where the problem was.

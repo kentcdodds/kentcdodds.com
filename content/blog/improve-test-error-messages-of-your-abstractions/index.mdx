@@ -105,12 +105,13 @@ test('sums numbers', () => {
 })
 ```
 
-> Please keep in mind, I am _not_ recommending you create useless abstractions
-> like the one above. As with everything, you should be applying
-> [AHA Programming](/blog/aha-programming) (and
-> [for testing](/blog/aha-testing)). This blog post is just useful for
-> situations where the abstraction is clear and you want to include assertions
-> in your abstraction.
+<callout-warning>
+  Please keep in mind, I am _not_ recommending you create useless abstractions
+  like the one above. As with everything, you should be applying [AHA
+  Programming](/blog/aha-programming) (and [for testing](/blog/aha-testing)).
+  This blog post is just useful for situations where the abstraction is clear
+  and you want to include assertions in your abstraction.
+</callout-warning>
 
 Alright, with this little abstraction, here's the error we get:
 
@@ -206,9 +207,11 @@ Received: 3
 That `error.stack` has already gotten some helpful treatment from Jest's
 `expect` assertion library (it's even got helpful colors at this point).
 
-> Note that `error.stack` is actually a combination of the `error.message` + the
-> stack trace, so the error message that `expect` provides is everything above
-> the first "at" line which is where the stack trace actually starts.
+<callout-info>
+  Note that `error.stack` is actually a combination of the `error.message` + the
+  stack trace, so the error message that `expect` provides is everything above
+  the first "at" line which is where the stack trace actually starts.
+</callout-info>
 
 Ok, so you'll notice that the stack trace we've got here is very different from
 the one that Jest shows us. This is because most of the stuff in there is pretty
@@ -290,9 +293,11 @@ function we want removed from the stack trace. That argument is called the
 `constructorOpt`.
 [According to the Node.js docs](https://nodejs.org/api/errors.html#errors_error_capturestacktrace_targetobject_constructoropt):
 
-> The optional `constructorOpt` argument accepts a function. If given, all
-> frames above `constructorOpt`, including `constructorOpt`, will be omitted
-> from the generated stack trace.
+<callout-info>
+  The optional `constructorOpt` argument accepts a function. If given, all
+  frames above `constructorOpt`, including `constructorOpt`, will be omitted
+  from the generated stack trace.
+</callout-info>
 
 It's almost as if this were created for our exact use case!
 

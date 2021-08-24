@@ -34,13 +34,15 @@ implementation details. Tests which test implementation details:
 1. Can break when you refactor application code. **False negatives**
 2. May not fail when you break application code. **False positives**
 
-> To be clear, the test is: "does the software work". If the test passes, then
-> that means the test came back "positive" (found working software). If it does
-> not, that means the test comes back "negative" (did not find working
-> software). The term "False" refers to when the test came back with an
-> incorrect result, meaning the software is actually broken but the test passes
-> (false positive) or the software is actually working but the test fails (false
-> negative).
+<callout-warning>
+  To be clear, the test is: "does the software work". If the test passes, then
+  that means the test came back "positive" (found working software). If it does
+  not, that means the test comes back "negative" (did not find working
+  software). The term "False" refers to when the test came back with an
+  incorrect result, meaning the software is actually broken but the test passes
+  (false positive) or the software is actually working but the test fails (false
+  negative).
+</callout-warning>
 
 Let's take a look at each of these in turn, using the following simple accordion
 component as an example:
@@ -294,8 +296,10 @@ accordion is working as the user wants it too.
 
 Here's the simplest definition I can come up with:
 
-> _Implementation details are things which users of your code will not typically
-> use, see, or even know about._
+<callout-success class="important">
+  Implementation details are things which users of your code will not typically
+  use, see, or even know about.
+</callout-success>
 
 So the first question we need an answer to is: "Who is the user of this code."
 Well, the end user who will be interacting with our component in the browser is
@@ -333,10 +337,12 @@ application code to consider the tests. What a complete waste of time. I don't
 want tests that are written for their own sake. _Automated tests should verify
 that the application code works for the production users._
 
-> _[The more your tests resemble the way your software is used, the more confidence they can give you.](https://twitter.com/kentcdodds/status/977018512689455106)
->  — me_
+> [The more your tests resemble the way your software is used, the more confidence they can give you.](https://twitter.com/kentcdodds/status/977018512689455106)
+>  — me
 
-> Read more about this in [Avoid the Test User](/blog/avoid-the-test-user).
+<callout-info class="aside">
+  Read more about this in [Avoid the Test User](/blog/avoid-the-test-user).
+</callout-info>
 
 ## So, what about hooks
 
@@ -351,7 +357,9 @@ React Testing Library on the other hand? It works either way. Check the
 codesandbox link at the end to see it in action. I like to call tests you write
 with React Testing Library:
 
-> Implementation detail free and refactor friendly.
+<callout-success class="important">
+  Implementation detail free and refactor friendly.
+</callout-success>
 
 ![happy goats](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033409/kentcdodds.com/content/blog/testing-implementation-details/0.gif)
 

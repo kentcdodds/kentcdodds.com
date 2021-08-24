@@ -1,15 +1,9 @@
----
-title: Pure Modules
-date: 2018-04-30
-description:
-  How you write your ES Modules impacts the performance and maintainability of
-  your code.
-meta:
-  keywords:
-    - javascript
-bannerCloudinaryId: unsplash/photo-1523039918496-486825032d8a
-bannerCredit:
-  Photo by [Mohan Murugesan](https://unsplash.com/photos/aPUi7w4kKbI)
+c--- title: Pure Modules date: 2018-04-30 description: How you write your ES
+Modules impacts the performance and maintainability of your code. meta:
+keywords: - javascript bannerCloudinaryId:
+unsplash/photo-1523039918496-486825032d8a bannerCredit: Photo by
+[Mohan Murugesan](https://unsplash.com/photos/aPUi7w4kKbI)
+
 ---
 
 A few weeks ago, I saw
@@ -141,10 +135,12 @@ impure functions. The same applies with modules. What if I wanted to test the
 weird things with the module system to re-import those modules again after
 initializing the DOM differently.
 
-> _With jest, you have
-> [`jest.resetModules()`](https://facebook.github.io/jest/docs/en/jest-object.html#jestresetmodules)
-> which makes this much easier, but it's still not super simple, nor is it
-> straightforward for anyone maintaining those tests._
+<callout-info>
+  With jest, you have
+  [`jest.resetModules()`](https://facebook.github.io/jest/docs/en/jest-object.html#jestresetmodules)
+  which makes this much easier, but it's still not super simple, nor is it
+  straightforward for anyone maintaining those tests.
+</callout-info>
 
 ### The Alternative
 
@@ -193,10 +189,12 @@ How does this resolve the above problems?
   test as many times, re-initializing the DOM before each test with exactly what
   we need without any trouble or hacks. 🎉
 
-> _Note that the `a.js` module is not pure. At some point one of your modules
-> needs to do something to kick everything off. This is the purpose the `a.js`
-> module is serving. These modules should normally be very small (and often
-> it'll be your `index.js` entry module)._
+<callout-info>
+  Note that the `a.js` module is not pure. At some point one of your modules
+  needs to do something to kick everything off. This is the purpose the `a.js`
+  module is serving. These modules should normally be very small (and often
+  it'll be your `index.js` entry module).
+</callout-info>
 
 ### Conclusion
 

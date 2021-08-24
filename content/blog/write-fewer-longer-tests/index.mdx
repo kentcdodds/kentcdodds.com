@@ -194,9 +194,11 @@ problems with it:
 3. Asynchronous things can happen between tests resulting in you getting `act`
    warnings (for this particular example)
 
-> It's notable that the first two points there are applicable regardless of what
-> you're testing. The third is a bit of an implementation detail between jest
-> and `act`.
+<callout-info>
+  It's notable that the first two points there are applicable regardless of what
+  you're testing. The third is a bit of an implementation detail between jest
+  and `act`.
+</callout-info>
 
 Instead, I suggest that we combine the tests like so:
 
@@ -341,16 +343,21 @@ on prop updates for example).
 
 **The principle:**
 
-> Think of a test case workflow for a manual tester and try to make each of your
-> test cases include all parts to that workflow. This often results in multiple
-> actions and assertions which is fine.
+<callout-success class="important">
+  Think of a test case workflow for a manual tester and try to make each of your
+  test cases include all parts to that workflow. This often results in multiple
+  actions and assertions which is fine.
+</callout-success>
 
 There's the old "Arrange" "Act" "Assert" model for structuring tests. I
 typically suggest that you have a single "Arrange" per test, and as many "Act"
 and "Asserts" as necessary for the workflow you're trying to get confidence
 about.
 
-> [Find runnable code for these examples here](https://github.com/kentcdodds/write-fewer-longer-tests-demo)
+<callout-info class="aside">
+  [Find runnable code for these examples
+  here](https://github.com/kentcdodds/write-fewer-longer-tests-demo)
+</callout-info>
 
 ## Appendix
 

@@ -1,4 +1,5 @@
 ---
+archived: true
 title: When to NOT use Render Props
 date: 2018-03-26
 description:
@@ -13,17 +14,13 @@ bannerCloudinaryId: unsplash/photo-1504344977555-430929e2c4ba
 bannerCredit: Photo by [Erwan Hesry](https://unsplash.com/photos/h-ACUrBngrw)
 ---
 
----
-
-**UPDATE: If you can use react@16.8.0 then the answer is to rarely use render
-props and almost always use a custom hook. HOOKS ARE ALMOST ALWAYS THE SUPERIOR
-PATTERN.**
-[Read about when you might still use render props](/blog/react-hooks-whats-going-to-happen-to-render-props)
-
----
-
-> _🚨 Announcement: I am now on Patreon! Support these newsletters and other
-> things I do!_ [_patreon.com/kentcdodds_](https://www.patreon.com/kentcdodds)
+<callout-danger>
+  This post is only kept around for historical purposes. If you can use
+  react@16.8.0 then the answer is to rarely use render props and almost always
+  use a custom hook. **Hooks are almost always the superior approach**. [Read
+  about when you might still use render
+  props](/blog/react-hooks-whats-going-to-happen-to-render-props)
+</callout-danger>
 
 With all the [tweets](https://twitter.com/kentcdodds/status/957388589171539968),
 [posts](/blog/answers-to-common-questions-about-render-props), and
@@ -72,12 +69,14 @@ provided a clean declarative API instead. By doing this, Ryan made the code
 easier to understand because the visual UI was separated from the DOM APIs that
 were used to create the sound.
 
-> _Note: In Ryan's example he didn't actually use a render prop (he rendered_ >
-> `_null_`_), but we can do the same thing he did in that example with our own
-> code. Find good examples of components that do this in the_ >
-> [_react-fns_](https://github.com/jaredpalmer/react-fns/tree/master/src) >
-> _source code (by_ [_Jared Palmer_](https://twitter.com/jaredpalmer) _and_ >
-> [_other contributors_](https://github.com/jaredpalmer/react-fns/blob/master/README.md#contributors)_)._
+<callout-info class="aside">
+  Note: In Ryan's example he didn't actually use a render prop (he rendered
+  `null`), but we can do the same thing he did in that example with our own
+  code. Find good examples of components that do this in the
+  [react-fns](https://github.com/jaredpalmer/react-fns/tree/master/src) source
+  code (by [Jared Palmer](https://twitter.com/jaredpalmer) and [other
+  contributors](https://github.com/jaredpalmer/react-fns/blob/master/README.md#contributors)).
+</callout-info>
 
 ### When to use render props:
 
@@ -123,11 +122,13 @@ component to implement common-case components to make it more usable. Common
 case users can use the common-case components, and advanced users can use the
 render prop component. Everyone wins!
 
-> _Note: If you want to see more examples of how to implement a higher order
-> component using a render prop component, check out every HOC in_ >
-> [_react-fns_](https://github.com/jaredpalmer/react-fns/tree/master/src) _which
-> do exactly that (like the_ >
-> [`withGeoPosition`](https://github.com/jaredpalmer/react-fns/blob/052ea56092c53946c7937e1d32adf78a7d37d6f3/src/GeoPosition/withGeoPosition.tsx) >
-> _HOC)!_
+<callout-info class="aside">
+  Note: If you want to see more examples of how to implement a higher order
+  component using a render prop component, check out every HOC in
+  [react-fns](https://github.com/jaredpalmer/react-fns/tree/master/src) which do
+  exactly that (like the
+  [`withGeoPosition`](https://github.com/jaredpalmer/react-fns/blob/052ea56092c53946c7937e1d32adf78a7d37d6f3/src/GeoPosition/withGeoPosition.tsx)
+  HOC)!
+</callout-info>
 
 I hope that's helpful to you! Good luck!

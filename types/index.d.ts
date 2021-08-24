@@ -20,6 +20,7 @@ type MdxPage = {
    * these values are missing to avoid runtime errors.
    */
   frontmatter: {
+    archived?: boolean
     title?: string
     description?: string
     meta?: {

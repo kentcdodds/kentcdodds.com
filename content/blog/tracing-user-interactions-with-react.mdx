@@ -1,4 +1,5 @@
 ---
+archived: true
 title: Tracing user interactions with React
 date: 2020-05-08
 description: How to use the (EXPERIMENTAL) interactions tracing API in React.
@@ -15,6 +16,10 @@ meta:
 bannerCloudinaryId: unsplash/photo-1461016951828-c09537329b3a
 bannerCredit: Photo by [Luke Porter](https://unsplash.com/photos/1DDFLlCz42k)
 ---
+
+<callout-danger>
+  This post has been archived. This API was removed in React 17.
+</callout-danger>
 
 In my post
 ["React Production Performance Monitoring"](/blog/react-production-performance-monitoring),
@@ -36,8 +41,10 @@ The data the `Profiler` calls your `onRender` method with has a property for
 `interactions` which is intended to provide this for you. And I want to show you
 how to use that API.
 
-> **Alert**: Please remember that this is an unstable/experimental API from
-> React and may change when the feature is officially released.
+<callout-danger>
+  🚨 Please remember that this is an unstable/experimental API from React and
+  may change when the feature is officially released.
+</callout-danger>
 
 ## Basic usage
 

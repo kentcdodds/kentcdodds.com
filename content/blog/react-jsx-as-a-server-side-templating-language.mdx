@@ -12,12 +12,6 @@ bannerCredit:
   Photo by [Dwinanda Nurhanif Mujito](https://unsplash.com/photos/3vp_7D1xd2A)
 ---
 
-> _Another note:
-> [I've been teasing](https://twitter.com/kentcdodds/status/1041712678970875904)
-> about something big that I have coming. I'm totally not joking. I'm working on
-> something really huge and y'all will be the first to know about it. Stay
-> tuned. It's weeks away and I think you're going to love it._
-
 Last week at PayPal, one of my pull requests was merged in an express codebase
 which migrated us from a custom template system to using React function
 components and JSX. The motivation was to reduce the maintenance overhead of
@@ -35,12 +29,12 @@ server as "skeleton" html pages (with SEO-relevant tags and a root `<div>` etc.)
 and then the client-side React app kicks in to load the rest of the
 data/interactivity needed on the page.
 
-> _I should note that generally I'd suggest that if you're doing any server
-> rendering at all, you'd probably find better performance doing server
-> rendering for everything (using something like [Next.js](https://nextjs.org)
-> or [gatsby](https://www.gatsbyjs.org) if you can), not just the skeleton
-> `index.html` as we're doing on [paypal.me](http://paypal.me). We have our
-> reasons (there's nuance in everything and I'm not going to get into this)._
+<callout-info>
+  You should use [Remix](https://remix.run), not just the skeleton `index.html`
+  as we're doing on [paypal.me](http://paypal.me). We have our reasons (there's
+  nuance in everything and I'm not going to get into this). Of course, Remix
+  didn't exist at the time we were working on this so 🤷‍♂️
+</callout-info>
 
 Before my PR, we actually had two systems in place. We used
 [`express-es6-template-engine`](https://github.com/dondido/express-es6-template-engine)
@@ -50,9 +44,9 @@ solution that was react-like (with functions that accepted props and returned a
 string of HTML). So engineers that work on this codebase would have to know and
 maintain:
 
-1.  `express-es6-template-engine` for the profile and settings pages
-2.  React and JSX for the client-side app
-3.  The custom tagged-template literal solution for the marketing pages.
+1. `express-es6-template-engine` for the profile and settings pages
+2. React and JSX for the client-side app
+3. The custom tagged-template literal solution for the marketing pages.
 
 It was decided to simplify this down to a single solution: React and JSX for
 both frontend and backend. And that's the task I took. I want to explain a few
@@ -172,7 +166,7 @@ So, effectively what our `rendered` string looks like is this:
 
 ```html
 <head>
-  <script src="hello.js" />
+  <script src="hello.js"></script>
 </head>
 ```
 
@@ -186,11 +180,13 @@ this problem would be for React to
 [`dangerouslySetInnerHTML`](https://github.com/facebook/react/issues/12014)
 [on Fragments](https://github.com/facebook/react/issues/12014)).
 
-> _**NOTE:** The fact that this logic lives in a function right next to the
-> definition of the `RawText` component rather than just hard-coding the
-> replacement where it happens is IMPORTANT. Anyone coming to the codebase and
-> seeing `RawText` or `removeRawText` will be able to find out what's going on
-> much more quickly._
+<callout-info>
+  **NOTE:** The fact that this logic lives in a function right next to the
+  definition of the `RawText` component rather than just hard-coding the
+  replacement where it happens is IMPORTANT. Anyone coming to the codebase and
+  seeing `RawText` or `removeRawText` will be able to find out what's going on
+  much more quickly.
+</callout-info>
 
 ### Localization
 

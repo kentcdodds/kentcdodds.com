@@ -1,16 +1,10 @@
----
-title: Why I Never Use Shallow Rendering
-date: 2018-07-23
-description:
-  Tests should help me be confident that my application is working and there are
-  better ways to do that than shallow rendering.
-meta:
-  keywords:
-    - javascript
-    - react
-    - testing
-bannerCloudinaryId: kentcdodds.com/content/blog/why-i-never-use-shallow-rendering/banner.jpg
+c--- title: Why I Never Use Shallow Rendering date: 2018-07-23 description:
+Tests should help me be confident that my application is working and there are
+better ways to do that than shallow rendering. meta: keywords: - javascript -
+react - testing bannerCloudinaryId:
+kentcdodds.com/content/blog/why-i-never-use-shallow-rendering/banner.jpg
 bannerCredit: Photo by [Teddy Kelley](https://unsplash.com/photos/okavjRLgnjo)
+
 ---
 
 I remember a few years ago when I got started with React I decided I needed to
@@ -25,9 +19,11 @@ will never support `shallow` rendering.
 So finally I'm coming out with it and explaining why I never use shallow
 rendering and why I think nobody else should either. Here's my main assertion:
 
-> **_With shallow rendering, I can refactor my component's implementation and my
-> tests break. With shallow rendering, I can break my application and my tests
-> say everything's still working._**
+<callout-success class="important">
+  With shallow rendering, I can refactor my component's implementation and my
+  tests break. With shallow rendering, I can break my application and my tests
+  say everything's still working.
+</callout-success>
 
 This is highly concerning to me because not only does it make testing
 frustrating, but it also lulls you into a false sense of security. **The reason
@@ -270,8 +266,8 @@ mocks.
 I'm a huge believer of the guiding principle of
 [React Testing Library](https://github.com/testing-library/react-testing-library):
 
-> _[The more your tests resemble the way your software is used, the more confidence they can give you.](https://twitter.com/kentcdodds/status/977018512689455106)
->  — Kent C. Dodds 👋_
+> [The more your tests resemble the way your software is used, the more confidence they can give you.](https://twitter.com/kentcdodds/status/977018512689455106)
+>  — Kent C. Dodds 👋
 
 That's why I wrote the library in the first place. As a side-note to this
 shallow rendering post, I want to mention there are fewer ways for you to do
@@ -355,7 +351,7 @@ experience to users. I wish you luck in that endeavor!
 
 #### P.S.
 
-Someone brought this up after I emailed my newsletter out:
+Someone brought this up:
 
 > Shallow wrapper is good to test small independent components. With proper
 > serializer it allows to have clear and understandable snapshots.

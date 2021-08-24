@@ -1,19 +1,11 @@
----
-title: Don't call a React function component
-date: 2019-12-08
-description:
-  The difference between React.createElement and calling a function component
-  directly
-categories:
-  - react
-meta:
-  keywords:
-    - react
-    - javascript
-    - react elements
-bannerCloudinaryId: unsplash/photo-1498582750569-89914abe05e4
-bannerCredit:
+c--- title: Don't call a React function component date: 2019-12-08 description:
+The difference between React.createElement and calling a function component
+directly categories:
+
+- react meta: keywords: - react - javascript - react elements
+  bannerCloudinaryId: unsplash/photo-1498582750569-89914abe05e4 bannerCredit:
   Photo by [Alexander Andrews](https://unsplash.com/photos/bxhYCD7cdq8)
+
 ---
 
 import * as Comps from './components'
@@ -84,10 +76,12 @@ First off, I'll just tell you the solution:
 <div>{items.map(i => <Counter key={i.id} />)}</div>
 ```
 
-> Before you start thinking it has to do with the `key` prop, let me just tell
-> you it doesn't. But the key prop is important in general and you can learn
-> about that from my other blog post:
-> [Understanding React's key prop](/blog/understanding-reacts-key-prop)
+<callout-warning class="aside">
+  Before you start thinking it has to do with the `key` prop, let me just tell
+  you it doesn't. But the key prop is important in general and you can learn
+  about that from my other blog post: [Understanding React's key
+  prop](/blog/understanding-reacts-key-prop)
+</callout-warning>
 
 Here's another way to make this same kind of error happen:
 

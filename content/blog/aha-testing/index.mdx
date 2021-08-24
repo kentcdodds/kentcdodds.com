@@ -44,7 +44,7 @@ to understand the nuances of the route handler.
 
 Try to read this test and understand the one nuance between the two of them.
 
-> Don't spend too long on this...
+<callout-info class="aside">Don't spend too long on this...</callout-info>
 
 ```js
 import * as blogPostController from '../blog-post'
@@ -198,8 +198,10 @@ I've seen it a lot. Here's how it gets this way:
 
 Here's your litmus test:
 
-> How easy is it to determine the difference between assertions of two similar
-> tests and what causes that difference?
+<callout-success class="important">
+  How easy is it to determine the difference between assertions of two similar
+  tests and what causes that difference?
+</callout-success>
 
 Absolutely No Abstraction testing makes this very difficult.
 
@@ -370,10 +372,12 @@ test('submit calls the submit handler', () => {
 })
 ```
 
-> Note: I would consider this pre-mature abstraction if you've only got two or
-> three tests in the file that is using it and those tests are short. But if
-> you've got some nuance you're testing (like error states for example), then
-> this kind of abstraction is great.
+<callout-warning>
+  Note: I would consider this pre-mature abstraction if you've only got two or
+  three tests in the file that is using it and those tests are short. But if
+  you've got some nuance you're testing (like error states for example), then
+  this kind of abstraction is great.
+</callout-warning>
 
 ## Nesting
 

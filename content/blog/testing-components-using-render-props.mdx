@@ -1,16 +1,9 @@
----
-title: Testing ⚛️ components using render props
-date: 2018-01-08
-description:
-  Let's look at how we can write tests for React components that use render
-  props!
-meta:
-  keywords:
-    - javascript
-    - testing
-    - react
-bannerCloudinaryId: unsplash/photo-1500479694472-551d1fb6258d
-bannerCredit: Photo by [Scott Walsh](https://unsplash.com/photos/CQl3Y5bV6FA)
+c--- title: Testing ⚛️ components using render props date: 2018-01-08
+description: Let's look at how we can write tests for React components that use
+render props! meta: keywords: - javascript - testing - react bannerCloudinaryId:
+unsplash/photo-1500479694472-551d1fb6258d bannerCredit: Photo by
+[Scott Walsh](https://unsplash.com/photos/CQl3Y5bV6FA)
+
 ---
 
 With the release of my
@@ -21,10 +14,12 @@ create a course on [egghead.io](http://egghead.io) about testing react
 components. Until then, I've decided to write this about some approaches that
 could help you when testing a component that renders a render prop component :)
 
-> _Note: This isn't about how to test components that implement_ >
-> [_the render prop pattern_](https://cdb.reacttraining.com/use-a-render-prop-50de598f11ce)_.
-> Rather, this is about how to tests components that_ use _components that
-> implement the render prop pattern :)_
+<callout-info class="aside">
+  Note: This isn't about how to test components that implement [the render prop
+  pattern](https://cdb.reacttraining.com/use-a-render-prop-50de598f11ce).
+  Rather, this is about how to tests components that_ use _components that
+  implement the render prop pattern :)
+</callout-info>
 
 In preparing this blog post, **I created**
 [**this repo**](https://github.com/kentcdodds/test-render-prop-example) which
@@ -101,9 +96,6 @@ implementation details matter, as you go down the pyramid, you have to deal with
 implementation details a little more.
 
 ![UI, Service, Unit](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033405/kentcdodds.com/content/blog/testing-components-using-render-props/0.png)
-
-> _Sorry, no example of E2E tests today. Maybe when I publish this to_ >
-> [_my blog_](/blog) _I'll have some..._
 
 ### Integration Tests
 

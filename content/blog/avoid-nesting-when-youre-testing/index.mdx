@@ -22,9 +22,11 @@ I want to show you something. What I'm going to show is a general testing
 principle, applied to a React component test. So even though the example is a
 React one, hopefully it helps communicate the concept properly.
 
-> Note: my point isn't that nesting is bad by itself, but rather that it
-> naturally encourages using test hooks (such as `beforeEach`) as a mechanism
-> for code reuse which does lead to unmaintainable tests. Please read on...
+<callout-info class="aside">
+  Note: my point isn't that nesting is bad by itself, but rather that it
+  naturally encourages using test hooks (such as `beforeEach`) as a mechanism
+  for code reuse which does lead to unmaintainable tests. Please read on...
+</callout-info>
 
 Here's a React component that I want to test:
 
@@ -304,8 +306,10 @@ test('shows an error message when submit is clicked and no password is provided'
 })
 ```
 
-> Note: `test` is an alias for `it` and I just prefer using `test` when I'm not
-> nested in a `describe`.
+<callout-info class="aside">
+  Note: `test` is an alias for `it` and I just prefer using `test` when I'm not
+  nested in a `describe`.
+</callout-info>
 
 You'll notice that there is a bit of duplication there (we'll get to that), but
 look at how clear these tests are. With the exception of some test utilities and
@@ -445,9 +449,11 @@ failure would result in your cleanup not running which could then lead to other
 tests failing, ultimately resulting in a lot of error output that is harder to
 debug.
 
-> NOTE: This example was written before `@testing-library/react@9` which made
-> cleanup automatic. But the concept still applies and I didn't want to rewrite
-> the example 😅
+<callout-info class="aside">
+  NOTE: This example was written before `@testing-library/react@9` which made
+  cleanup automatic. But the concept still applies and I didn't want to rewrite
+  the example 😅
+</callout-info>
 
 For example, React Testing Library will insert your component into the document,
 and if you don't cleanup after each test, then your tests can run over
@@ -556,10 +562,12 @@ test('example 2', () => {
 })
 ```
 
-> Even better, with React Testing Library,
-> [`cleanup`](https://testing-library.com/docs/react-testing-library/api#cleanup)
-> is called after each test automatically by default. Learn more
-> [in the docs](https://testing-library.com/docs/react-testing-library/setup#skipping-auto-cleanup)
+<callout-info class="aside">
+  Even better, with React Testing Library,
+  [`cleanup`](https://testing-library.com/docs/react-testing-library/api#cleanup)
+  is called after each test automatically by default. Learn more
+  [in the docs](https://testing-library.com/docs/react-testing-library/setup#skipping-auto-cleanup)
+</callout-info>
 
 In addition, sometimes there are definitely good use cases for `before*`, but
 they're normally matched with a cleanup that's necessary in an `after*`. Like

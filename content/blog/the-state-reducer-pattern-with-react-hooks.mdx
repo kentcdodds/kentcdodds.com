@@ -22,11 +22,13 @@ in [downshift](https://github.com/downshift-js/downshift) to enable an awesome
 API for people who wanted to make changes to how downshift updates state
 internally.
 
-> If you're unfamiliar with downshift, just know that it's an "enhanced input"
-> component that allows you to build things like accessible
-> autocomplete/typeahead/dropdown components. It's important to know that it
-> manages the following items of state: `isOpen`, `selectedItem`,
-> `highlightedIndex`, and `inputValue`.
+<callout-info class="aside">
+  If you're unfamiliar with downshift, just know that it's an "enhanced input"
+  component that allows you to build things like accessible
+  autocomplete/typeahead/dropdown components. It's important to know that it
+  manages the following items of state: `isOpen`, `selectedItem`,
+  `highlightedIndex`, and `inputValue`.
+</callout-info>
 
 Downshift is currently implemented as a render prop component, because at the
 time, render props was the best way to make a
@@ -50,7 +52,9 @@ this, I strongly recommend you give my React Rally 2018 talk a watch:
 
 https://youtu.be/AiJ8tRRH0f8?list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
 
-> Read also on my blog: ["Inversion of Control"](/blog/inversion-of-control)
+<callout-info class="aside">
+  Read also on my blog: ["Inversion of Control"](/blog/inversion-of-control)
+</callout-info>
 
 So in the downshift example, I had made the decision that when an end user
 selects an item, the `isOpen` should be set to `false` (and the menu should be

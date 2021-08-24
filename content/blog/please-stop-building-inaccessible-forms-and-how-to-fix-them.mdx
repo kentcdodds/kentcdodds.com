@@ -1,26 +1,27 @@
----
-title: Please stop building inaccessible forms (and how to fix them)
-date: 2019-02-04
-description:
-  I regularly find inaccessible forms. In this post we'll check out some common
-  accessibility problems and fix them.
-meta:
-  keywords:
-    - Accessibility
-    - Forms
-bannerCloudinaryId: unsplash/photo-1493119508027-2b584f234d6c
-bannerCredit: Photo by [Goran Ivos](https://unsplash.com/photos/iacpoKgpBAM)
+c--- title: Please stop building inaccessible forms (and how to fix them) date:
+2019-02-04 description: I regularly find inaccessible forms. In this post we'll
+check out some common accessibility problems and fix them. meta: keywords: -
+Accessibility - Forms bannerCloudinaryId:
+unsplash/photo-1493119508027-2b584f234d6c bannerCredit: Photo by
+[Goran Ivos](https://unsplash.com/photos/iacpoKgpBAM)
+
 ---
 
-> Note, today's blog post is very heavily inspired by the
-> [Labeling Controls tutorial](https://www.w3.org/WAI/tutorials/forms/labels)
-> from [w3.org](https://www.w3.org).
+<callout-info class="aside">
+  Note, today's blog post is very heavily inspired by the [Labeling Controls
+  tutorial](https://www.w3.org/WAI/tutorials/forms/labels) from
+  [w3.org](https://www.w3.org).
+</callout-info>
 
 **HTML is accessible by default.** This is true, with the important caveat that
-when you use semantic HTML properly, what you've built will be accessible. Now,
-there are lots of ways that you can mess this up. Today I'm going to focus on
-`<label>` and how to ensure that your form controls (inputs) are properly
-labeled.
+when you use semantic HTML properly, what you've built will be accessible. For
+the most part... There are definitely some UI elements that can be a real
+challenge and you need a combination of CSS and JavaScript with that HTML to
+make it truly accessible. But that's not the subject of this article. We're just
+talking about semantic HTML which makes most built-in UI elements (like forms)
+accessible. Now, there are lots of ways that you can mess this up. Today I'm
+going to focus on `<label>` and how to ensure that your form controls (inputs)
+are properly labeled.
 
 Before I get into that, allow me to just take a quick tangent and say this:
 PLEASE USE YOUR FORM WITH NOTHING BUT THE KEYBOARD AND SEE IF IT IS POSSIBLE. So
@@ -47,8 +48,10 @@ wont work:
 <label>Username</label> <input />
 ```
 
-> ⚡️ You can know that the input has a label associated with it by checking the
-> input's `labels` property or the label's `control` property.
+<callout-info class="aside">
+  ⚡️ You can know that the input has a label associated with it by checking the
+  input's `labels` property or the label's `control` property.
+</callout-info>
 
 Ok, here are four ways to associate the label with the input (in order of
 personal preference):
@@ -67,7 +70,9 @@ personal preference):
 
 ## label 🤗 input
 
-> I like to think of this one as the label hugging the input
+<callout-info class="aside">
+  I like to think of this one as the label hugging the input
+</callout-info>
 
 ```html
 <label>
@@ -116,7 +121,9 @@ controls are properly labeled, please please try using your form with a keyboard
 only. They're both very low hanging fruit and can make a big difference in the
 accessibility of your forms.
 
-> **Install and use
-> [eslint-plugin-jsx-a11y](https://github.com/evcohen/eslint-plugin-jsx-a11y)**
+<callout-success>
+  **Install and use
+  [eslint-plugin-jsx-a11y](https://github.com/evcohen/eslint-plugin-jsx-a11y)**
+</callout-success>
 
 Good luck! 💪

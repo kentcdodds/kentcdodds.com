@@ -309,7 +309,7 @@ before/after that you can check out and play with:
 
 https://codesandbox.io/s/react-codesandbox-qtdob
 
-<callout-warning class="asside">
+<callout-warning class="aside">
   One thing I want to add is that even though it's _better_ to use the faster
   version of this code, it's still performing really badly when it renders
   initially and it would perform really badly if it ever actually needed to do
@@ -332,10 +332,10 @@ you to use as escape hatches.**
 
 Good luck!
 
-<callback-info class="asside">
+<callout-info class="aside">
   I want to add a note that if you're using legacy context, you wont be able to
   get this optimization, [as React has a special case for that
   here](https://github.com/facebook/react/blob/d420d2ccb6223a66d5e8fe824ac0d31ed5bf87a1/packages/react-reconciler/src/ReactFiberBeginWork.js#L2576),
   so people concerned about performance should probably migrate from legacy
   context.
-</callback-info>
+</callout-info>

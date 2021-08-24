@@ -543,8 +543,10 @@ You'll notice it's very similar to our custom `setup` function. Under the hood,
 - Several async utilities to wait an unspecified amount of time (to test async
   logic)
 
-> Note, you _can_ test more than a single hook by simply calling all the hooks
-> you want in the callback function you pass to `renderHook`.
+<callout-info class="aside">
+  Note, you _can_ test more than a single hook by simply calling all the hooks
+  you want in the callback function you pass to `renderHook`.
+</callout-info>
 
 Writing a "test-only" component to support some of these requires a fair amount
 of error-prone boilerplate and you can wind up spending more time writing and
