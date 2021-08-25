@@ -114,19 +114,19 @@ light-mode {
 }
 
 .html a,
-a.underlined {
+.underlined {
   position: relative;
   text-decoration: none;
   white-space: nowrap;
 }
 
 .html a:focus,
-a.underlined:focus {
+.underlined:focus {
   outline: none;
 }
 
 .html a:after,
-a.underlined:after {
+.underlined:after {
   content: '';
   height: 2px;
   transform: scaleX(0);
@@ -142,9 +142,9 @@ a.underlined:after {
 .html a:hover:after,
 .html a:focus:after,
 .html a.active:after,
-a.underlined:hover:after,
-a.underlined:focus:after,
-a.active.underlined:after {
+.underlined:hover:after,
+.underlined:focus:after,
+.active.underlined:after {
   background-color: currentColor;
   transform: scaleX(1);
 }

@@ -3,7 +3,7 @@ import {createMachine, assign, send as sendUtil} from 'xstate'
 import {useMachine} from '@xstate/react'
 import {inspect} from '@xstate/inspect'
 import {assertNonNull} from '~/utils/misc'
-import {Button} from '../button'
+import {Button, LinkButton} from '../button'
 import {Paragraph} from '../typography'
 import {Tag} from '../tag'
 import {MicrophoneIcon} from '../icons/microphone-icon'
@@ -233,7 +233,7 @@ function CallRecorder({
         <div className="mb-4">
           <audio src={audioURL} controls />
         </div>
-        <div className="space-x-4">
+        <div className="flex flex-wrap gap-4">
           <Button size="medium" onClick={() => onRecordingComplete(audioBlob)}>
             Accept
           </Button>
@@ -253,19 +253,20 @@ function CallRecorder({
     <div>
       <div>
         {state.matches('ready') ? (
-          <div className="flex space-x-8">
+          <div className="flex flex-col gap-12">
+            <Paragraph>
+              {`Current recording device: `}
+              <LinkButton
+                onClick={() => send({type: 'changeDevice'})}
+                className="truncate"
+                style={{maxWidth: '80vw'}}
+              >
+                {state.context.selectedAudioDevice?.label ?? 'default'}
+              </LinkButton>
+            </Paragraph>
             <Button size="medium" onClick={() => send({type: 'start'})}>
               <MicrophoneIcon />
               <span>Start recording</span>
-            </Button>
-
-            <Button
-              variant="secondary"
-              size="medium"
-              onClick={() => send({type: 'changeDevice'})}
-            >
-              Change audio device from{' '}
-              {state.context.selectedAudioDevice?.label ?? 'default'}
             </Button>
           </div>
         ) : null}
@@ -279,7 +280,7 @@ function CallRecorder({
       ) : null}
 
       {state.matches('recording.playing') ? (
-        <div className="space-x-4">
+        <div className="flex flex-wrap gap-4">
           <Button size="medium" onClick={() => send({type: 'stop'})}>
             <SquareIcon /> <span>Stop</span>
           </Button>
@@ -292,7 +293,7 @@ function CallRecorder({
           </Button>
         </div>
       ) : state.matches('recording.paused') ? (
-        <div className="space-x-4">
+        <div className="flex flex-wrap gap-4">
           <Button size="medium" onClick={() => send({type: 'stop'})}>
             <SquareIcon /> <span>Stop</span>
           </Button>

@@ -66,6 +66,25 @@ function Button({
   )
 }
 
+function LinkButton({
+  className,
+  underlined,
+  ...buttonProps
+}: {underlined?: boolean} & JSX.IntrinsicElements['button']) {
+  return (
+    <button
+      {...buttonProps}
+      className={clsx(
+        className,
+        underlined
+          ? 'underlined whitespace-nowrap focus:outline-none'
+          : 'underline',
+        'text-primary inline-block',
+      )}
+    />
+  )
+}
+
 const ButtonLink = React.forwardRef<
   HTMLAnchorElement,
   ButtonProps & {to: string} & Pick<
@@ -88,4 +107,4 @@ const ButtonLink = React.forwardRef<
   )
 })
 
-export {Button, ButtonLink}
+export {Button, ButtonLink, LinkButton}

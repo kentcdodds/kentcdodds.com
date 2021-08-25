@@ -109,20 +109,20 @@ export default function RecordScreen() {
           to="/calls"
           className="col-span-full lg:col-span-8 lg:col-start-3"
         >
-          Back to overview
+          {`Back to overview`}
         </BackLink>
       </Grid>
 
       <Grid as="header" className="mb-12">
         <H2 className="col-span-full lg:col-span-8 lg:col-start-3">
-          Record your call, and I&apos;ll answer.
+          {`Record your call, and I'll answer.`}
         </H2>
       </Grid>
 
       {user ? null : (
         <Grid>
           <div className="col-span-full lg:col-span-8 lg:col-start-3">
-            <Paragraph>Please login to have your questions answered.</Paragraph>
+            <Paragraph>{`Please login to have your questions answered.`}</Paragraph>
           </div>
         </Grid>
       )}
