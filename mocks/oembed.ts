@@ -6,6 +6,35 @@ const oembedHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
     return res(
       ctx.json([
         {
+          provider_name: 'YouTube',
+          provider_url: 'https://www.youtube.com/',
+          endpoints: [
+            {
+              schemes: [
+                'https://*.youtube.com/watch*',
+                'https://*.youtube.com/v/*',
+                'https://youtu.be/*',
+                'https://*.youtube.com/playlist?list=*',
+              ],
+              url: 'https://www.youtube.com/oembed',
+              discovery: true,
+            },
+          ],
+        },
+        {
+          provider_name: 'CodeSandbox',
+          provider_url: 'https://codesandbox.io',
+          endpoints: [
+            {
+              schemes: [
+                'https://codesandbox.io/s/*',
+                'https://codesandbox.io/embed/*',
+              ],
+              url: 'https://codesandbox.io/oembed',
+            },
+          ],
+        },
+        {
           provider_name: 'Twitter',
           provider_url: 'http://www.twitter.com/',
           endpoints: [
@@ -32,22 +61,18 @@ const oembedHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
     )
   }),
 
+  rest.get('https://codesandbox.io/oembed', async (req, res, ctx) => {
+    return res(
+      ctx.json({
+        html: '<iframe width="1000" height="500" src="https://codesandbox.io/embed/ynn88nx9x?view=editor" sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin" style="width: 1000px; height: 500px; border: 0px; border-radius: 4px; overflow: hidden;"></iframe>',
+      }),
+    )
+  }),
+
   rest.get('https://www.youtube.com/oembed', async (req, res, ctx) => {
     return res(
       ctx.json({
-        title: "🚨 Announcement! I'm Going Full-Time Educator 👨‍🏫",
-        author_name: 'Kent C. Dodds',
-        author_url: 'https://www.youtube.com/user/kentdoddsfamily',
-        type: 'video',
-        height: 113,
-        width: 200,
-        version: '1.0',
-        provider_name: 'YouTube',
-        provider_url: 'https://www.youtube.com/',
-        thumbnail_height: 360,
-        thumbnail_width: 480,
-        thumbnail_url: 'https://i.ytimg.com/vi/ticz3T7xSWI/hqdefault.jpg',
-        html: '<iframe width="200" height="113" src="https://www.youtube.com/embed/ticz3T7xSWI?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
+        html: '<iframe width="200" height="113" src="https://www.youtube.com/embed/dQw4w9WgXcQ?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
       }),
     )
   }),

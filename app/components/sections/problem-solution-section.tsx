@@ -124,7 +124,7 @@ function ProblemSolutionSection({
         <TabList className="inline-flex flex-row text-white text-xl leading-snug bg-transparent space-x-8 lg:flex-col lg:text-7xl lg:space-x-0">
           <Tab>blog</Tab>
           <Tab>courses</Tab>
-          <Tab>podcast</Tab>
+          <Tab>podcasts</Tab>
         </TabList>
       </div>
 

@@ -1,7 +1,205 @@
 ---
-title: KCD Meetups
-description: >-
-  TODO: write this thing...
+title: KCD Community Meetups
+description: Meetups on the KCD Community on Discord
+bannerCloudinaryId: kent/kent-with-friends
+bannerCredit:
+  Photo shared by Eric Berry
+  (https://twitter.com/coderberry/status/917481804289818624)
+bannerAlt: Kent with some friends eating lunch
 ---
 
-TODO: write this thing...
+# KCD Community Meetups
+
+Meetups are voice/video chats hosted and managed on the
+[KCD Community on Discord](/discord).
+
+https://youtu.be/DiRo3qbSB_I
+
+**KCD Community Meetups help develop friendships within the community to make
+the world a more pleasant place to be for all of us.**
+
+When a host starts a meetup, anyone can join to listen in or join in the
+discussion. A meetup could be around a specific topic or just an informal
+get-together. You could play a game together, collaborate on a solution to a
+problem, practice a talk, discuss a book or movie, give a demo of your work,
+chat about world events, or really whatever else you want to do (provided you
+follow [the code of conduct](/conduct)).
+
+## So, what is it?
+
+It's conceptually similar to [clubhouse](https://www.joinclubhouse.com/):
+
+- You can follow other users to be notified when they start a meetup
+- You can schedule a meetup at a specific time (one-time or recurring) and folks
+  can opt-into getting notified when you start
+- You can start an impromptu meetup
+
+Everything works within Discord via the KCD Discord bot and the `?meetup`
+command. By default, when your meetup starts, the bot will create a voice
+channel for you and everyone to join (the channel will be deleted when it's
+empty but no sooner than 15 minutes after it's created). If you want, you can
+use Zoom instead by including a zoom link in your meetup details (if you want
+the meetup recorded, this is the recommended approach).
+
+## So, how do I use it?
+
+Once you've [joined the KCD Community on Discord](/discord), then go to the
+[`#🤖-talk-to-bots`](https://kcd.im/discord-talk-to-bots) channel and type:
+
+```
+?meetup help
+```
+
+This will list the available commands you can run. Like this:
+
+![Discord chat showing the KCD bot replying to Kent saying ?meetup help](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625036118/kentcdodds.com/src/pages/meetups/meetup-help.png)
+
+### Following other people
+
+All meetup-related stuff happens in the `MEETUPS` channel category. In there,
+you'll find a `#➡️-follow-me` channel where you'll see everyone who hosts
+meetups. You can follow them by adding an emoji reaction of `✋` to their
+message.
+
+When you follow someone, you will be notified in the `#🔔-meetup-notifications`
+channel any time they start a meetup.
+
+### Getting followers
+
+To add your own message to the `#➡️-follow-me` channel, think of a good bio to
+describe yourself and the kind of meetups you plan to host. Then go to
+`#🤖-talk-to-bots` and use the `?meetup follow-me` command. Here's an example:
+
+```
+?meetup follow-me Put your bio here
+```
+
+Then you'll get a message in the `#➡️-follow-me` channel and people can start
+following you.
+
+If you'd like to update your bio, simply run the command again until you're
+happy with it.
+
+If you'd like to remove your follow me message, add the `❌` reaction to it and
+the bot will delete it. You can always recreate it, but **KEEP IN MIND** this is
+a destructive operation and when you do this you will lose all your followers.
+
+### Starting a meetup
+
+Anyone can start a meetup at any time. To start a meetup, go to
+`#🤖-talk-to-bots` and use the `?meetup start` command. Here's an example:
+
+```
+?meetup start Title of your meetup
+```
+
+This will create a voice channel for the meetup and notify all your followers.
+
+If you'd like to use zoom instead of a discord voice channel, simply include the
+zoom link at the end of the command:
+
+```
+?meetup start Title of your meetup https://zoom.us/j/761555341
+```
+
+Keep in mind that if you do not have a paid Zoom account, your meetup will be
+limited to 40 minutes if you have more than two people in your meetup.
+
+### Scheduled meetups
+
+You can find all the scheduled meetups in the `#⏱-upcoming-meetups` channel. If
+one of them looks interesting to you, then add an emoji reaction of `✋` and
+you'll be notified in the `#🔔-meetup-notifications` channel when the host
+starts that meetup. If you'd no longer like to be notified of that meetup, then
+you can remove your emoji reaction.
+
+> Tip: if you're following that host, then you don't need to bother because
+> you'll be notified of every meetup they start anyway.
+
+### Scheduling a meetup
+
+If you have a meetup you would like to plan in advance, you can add it to the
+schedule in `#⏱-upcoming-meetups` for people to opt-into being notified and plan
+for. To schedule a meetup, go to `#🤖-talk-to-bots` and use the
+`?meetup schedule` command. Here's an example:
+
+```
+?meetup schedule "The Subject of the Meetup" and some more details about the meetup go here
+
+You can also use multiple lines
+Make sure to include the day and time (and timezone). An everytimezone.com link could be helpful.
+Include a zoom link if you'd like to run it through zoom instead of discord
+```
+
+This will add your meetup to the schedule and it will notify all your followers
+in `#🔔-meetup-notifications` that you've scheduled a meetup (so they can plan
+for it).
+
+### Starting a scheduled meetup
+
+When you're ready for your scheduled meetup to start, go to the
+`#⏱-upcoming-meetups`, find the message for your meetup, and add a `🏁` emoji
+reaction to it. This will create a voice channel (if necessary), notify all your
+followers and those who opted-into notifications for the scheduled meetup, and
+delete the scheduled meetup message (read more about recurring meetups below).
+
+### Canceling a scheduled meetup
+
+If you'd like to cancel a scheduled meetup, locate it's message in the
+`#⏱-upcoming-meetups` channel and add one of the following emoji as a reaction
+to it:
+
+- `❌` if you want to cancel and notify your followers (and those who opted-into
+  notifications for it) that it was canceled.
+- `🛑` if you want to cancel and NOT notify anyone it was canceled.
+
+When it's canceled, the bot will delete the message. You can schedule more
+meetups if you'd like, but **KEEP IN MIND** that canceling a meetup is a
+destructive operation and you will lose all opt-ins (`✋` reactions) when you do
+this.
+
+### Updating a scheduled meetup
+
+If you'd like to update an existing scheduled meetup, go to `#🤖-talk-to-bots`
+and use the `?meetup schedule update` command. You need to provide a link to the
+scheduled message (long-press on the message or click the three dots next to it
+and click "Copy Message Link"). Here's an example:
+
+```
+?meetup update https://discord.com/channels/715220730605731931/801954718984175657/812228747973230622 "Updated Subject" and any additional details
+
+Don't forget to put the day/time/timezone if it's for a specific time!
+```
+
+This will update the scheduled meetup message.
+
+### Scheduling a recurring meetup
+
+By default, once a scheduled meetup has been started, it's removed from the
+schedule. If you'd like the meetup to happen regularly, then you might want to
+make it a recurring meetup. To do this, simply add the word "recurring" before
+your meetup subject. For example:
+
+```
+?meetup schedule recurring "The Subject of the Meetup" and some more details
+```
+
+This does everything a regular scheduled meetup does except instead of deleting
+the message when you start the meetup (by adding the `🏁` to the message), the
+message will remain and the bot just removes the `🏁` so you can start it again
+another time.
+
+## Where do we send links/text etc.?
+
+Anywhere you'd like. You can use the `#💬-meetup-general-chat` to drop links
+during your meetup if you'd like. If you're on Zoom, you can use the built-in
+chat in Zoom. Or, if you plan to make heavy use of text-based chat for your
+meetups, then you can request a text chat channel be made. Bring it up in
+`#💬-meetup-general-chat` and we'll get you set up.
+
+## Conclusion
+
+We really hope that you enjoy using Meetups to connect more with people and
+develop lasting relationships with people.
+
+![Friends looking at a sunset](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625036118/kentcdodds.com/src/pages/meetups/friends-2.jpg)

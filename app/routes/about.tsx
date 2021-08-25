@@ -392,14 +392,11 @@ function AboutIndex() {
         </div>
 
         <div className="col-span-full lg:col-span-4 lg:col-start-8 lg:row-start-1">
-          <H2 className="mb-10">
-            {`Curious to more about me? Check out some other stuff I'm working on.`}
-          </H2>
+          <H2 className="mb-10">{`Curious to know the stuff I use?`}</H2>
           <H2 variant="secondary" as="p" className="mb-14">
-            Follow the link below to see my links page where I link to a lot
-            more.
+            {`I keep a "uses" page updated with the stuff I use.`}
           </H2>
-          <ArrowLink to="/links">{`Let's see those other links`}</ArrowLink>
+          <ArrowLink to="/uses">{`Check out the uses page`}</ArrowLink>
         </div>
       </Grid>
 
