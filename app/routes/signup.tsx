@@ -218,11 +218,6 @@ export default function NewAccount() {
 
   return (
     <main className="mt-24 pt-6">
-      {/*
-        TODO: change this to <Form />
-        when we're no longer on the experimental release of remix.
-        Our current version has a bug where the root loader isn't called.
-      */}
       <Form
         className="mb-64"
         method="post"

@@ -371,7 +371,6 @@ function StreamVis({stream}: {stream: MediaStream}) {
       lastReq = requestAnimationFrame(() => {
         draw()
         reqDraw()
-        // TODO: this happens too frequently...
       })
     }
     reqDraw()

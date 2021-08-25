@@ -8,15 +8,14 @@ import type {Await, CallKentEpisode, KCDHandle} from '~/types'
 import {getEpisodes} from '~/utils/transistor.server'
 import {CallKentEpisodesProvider, useTeam} from '~/utils/providers'
 import {HeroSection} from '~/components/sections/hero-section'
-import {alexProfiles} from '~/images'
+import {alexProfiles, getImageBuilder, getImgProps} from '~/images'
 import {ButtonLink} from '~/components/button'
 import {Grid} from '~/components/grid'
 import {getBlogRecommendations} from '~/utils/blog.server'
 import {BlogSection} from '~/components/sections/blog-section'
-import {H6, Paragraph} from '~/components/typography'
+import {H4, H6, Paragraph} from '~/components/typography'
 import {ChevronUpIcon} from '~/components/icons/chevron-up-icon'
 import {ChevronDownIcon} from '~/components/icons/chevron-down-icon'
-import {HeaderSection} from '~/components/sections/header-section'
 import {TriangleIcon} from '~/components/icons/triangle-icon'
 import {formatTime, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {
@@ -24,6 +23,8 @@ import {
   getEpisodePath,
   Params as CallPlayerParams,
 } from '~/utils/call-kent'
+import {PodcastSubs} from '~/components/podcast-subs'
+import {Spacer} from '~/components/spacer'
 
 export type LoaderData = {
   episodes: Await<ReturnType<typeof getEpisodes>>
@@ -97,7 +98,7 @@ export default function CallHomeScreen() {
         subtitle="You call, I'll answer."
         imageProps={avatar}
         arrowUrl="#episodes"
-        arrowLabel="Wanna see my call logs?"
+        arrowLabel="Take a listen"
         action={
           <ButtonLink variant="primary" to="./record">
             Record your call
@@ -105,26 +106,86 @@ export default function CallHomeScreen() {
         }
       />
 
-      <HeaderSection
-        className="mb-16"
-        title="This thing is a bit new."
-        subTitle="But here is what we got."
-      />
+      <Grid>
+        <H6 as="div" className="col-span-full mb-6">
+          Listen to the podcasts here
+        </H6>
+
+        <PodcastSubs
+          apple="TODO: add this"
+          google="TODO: add this"
+          spotify="TODO: add this"
+          rss="https://feeds.transistor.fm/call-kent"
+        />
+      </Grid>
+
+      <Spacer size="base" />
+
+      <Grid>
+        <div className="col-span-full lg:col-span-6">
+          <img
+            className="w-full rounded-lg object-cover"
+            title="Photo by Luke Southern"
+            {...getImgProps(
+              getImageBuilder(
+                'unsplash/photo-1571079570759-8b8800f7c412',
+                'Phone sitting on a stool',
+              ),
+              {
+                widths: [512, 650, 840, 1024, 1300, 1680, 2000, 2520],
+                sizes: [
+                  '(max-width: 1023px) 80vw',
+                  '(min-width: 1024px) and (max-width: 1620px) 40vw',
+                  '630px',
+                ],
+                transformations: {
+                  resize: {
+                    type: 'fill',
+                    aspectRatio: '4:3',
+                  },
+                },
+              },
+            )}
+          />
+        </div>
+        <Spacer size="xs" className="block col-span-full lg:hidden" />
+        <div className="col-span-full lg:col-span-5 lg:col-start-8">
+          <H4 as="p">{`What's this all about?`}</H4>
+          <div className="flex flex-col gap-3">
+            <Paragraph>
+              {`The goal of the Call Kent Podcast is to `}
+              <strong>get my answers to your questions.</strong>
+              {`
+              You record your brief question (120 seconds or less) right from
+              your browser. Then I listen to it later and give my response,
+              and through the magic of technology (ffmpeg), our question
+              and answer are stitched together and published to the podcast
+              feed.
+            `}
+            </Paragraph>
+            <Paragraph>{`I look forward to hearing from you!`}</Paragraph>
+            <Spacer size="2xs" />
+            <ButtonLink variant="primary" to="./record">
+              Record your call
+            </ButtonLink>
+          </div>
+        </div>
+      </Grid>
+
+      <Spacer size="base" />
 
       {/*
         IDEA: when there will be many episodes, we could split this by year, and
         display it with tabs like on the podcast page. [2023, 2022, 2021]
       */}
-      <Grid as="main" className="mb-24 lg:mb-64">
+      <Grid as="main">
         <div className="flex flex-col col-span-full mb-6 lg:flex-row lg:justify-between lg:mb-12">
           <H6
             id="episodes"
             as="h2"
             className="flex flex-col col-span-full mb-10 lg:flex-row lg:mb-0"
           >
-            <span>Calls with Kent C. Dodds</span>
-            &nbsp;
-            <span>{` — ${data.episodes.length} episodes`}</span>
+            {`Calls with Kent C. Dodds — ${data.episodes.length} episodes`}
           </H6>
 
           <button
@@ -253,6 +314,8 @@ export default function CallHomeScreen() {
           </CallKentEpisodesProvider>
         </div>
       </Grid>
+
+      <Spacer size="base" />
 
       <BlogSection
         articles={data.blogRecommendations}

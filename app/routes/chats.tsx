@@ -9,11 +9,7 @@ import {ChatsEpisodeUIStateProvider} from '~/utils/providers'
 import {Grid} from '~/components/grid'
 import {getImageBuilder, getImgProps, images} from '~/images'
 import {H4, H6, Paragraph} from '~/components/typography'
-import {AppleIcon} from '~/components/icons/apple-icon'
 import {externalLinks} from '../external-links'
-import {RssIcon} from '~/components/icons/rss-icon'
-import {SpotifyIcon} from '~/components/icons/spotify-icon'
-import {GoogleIcon} from '~/components/icons/google-icon'
 import {ChevronDownIcon} from '~/components/icons/chevron-down-icon'
 import {ChevronUpIcon} from '~/components/icons/chevron-up-icon'
 import {BlogSection} from '~/components/sections/blog-section'
@@ -24,6 +20,7 @@ import {listify, formatTime, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {getCWKEpisodePath, getFeaturedEpisode} from '~/utils/chats-with-kent'
 import {HeroSection} from '~/components/sections/hero-section'
 import {Spacer} from '~/components/spacer'
+import {PodcastSubs} from '~/components/podcast-subs'
 
 type LoaderData = {
   seasons: Await<ReturnType<typeof getSeasonListItems>>
@@ -52,22 +49,6 @@ export function meta() {
     title: 'Podcasts by Kent C. Dodds',
     description: 'Get really good at making software with Kent C. Dodds',
   }
-}
-
-function PodcastAppLink({
-  icon,
-  children,
-  ...props
-}: JSX.IntrinsicElements['a'] & {icon: React.ReactElement}) {
-  return (
-    <a
-      {...props}
-      className="focus-ring text-primary bg-secondary flex flex-none items-center mb-4 mr-4 px-8 py-4 rounded-full space-x-4"
-    >
-      <span className="text-gray-400">{icon}</span>
-      <span>{children}</span>
-    </a>
-  )
 }
 
 function PodcastHome() {
@@ -111,28 +92,12 @@ function PodcastHome() {
           Listen to the podcasts here
         </H6>
 
-        <div className="flex flex-wrap col-span-full items-start justify-start -mb-4 -mr-4 lg:col-span-10">
-          <PodcastAppLink
-            icon={<AppleIcon />}
-            href={externalLinks.applePodcast}
-          >
-            Apple podcasts
-          </PodcastAppLink>
-          <PodcastAppLink
-            icon={<GoogleIcon />}
-            href={externalLinks.googlePodcast}
-          >
-            Google podcasts
-          </PodcastAppLink>
-          <div className="flex-no-wrap flex">
-            <PodcastAppLink icon={<SpotifyIcon />} href={externalLinks.spotify}>
-              Spotify
-            </PodcastAppLink>
-            <PodcastAppLink icon={<RssIcon />} href={externalLinks.simpleCast}>
-              RSS
-            </PodcastAppLink>
-          </div>
-        </div>
+        <PodcastSubs
+          apple={externalLinks.applePodcast}
+          google={externalLinks.googlePodcast}
+          spotify={externalLinks.spotify}
+          rss={externalLinks.simpleCast}
+        />
       </Grid>
 
       <Spacer size="xs" />
@@ -169,7 +134,6 @@ function PodcastHome() {
                   '630px',
                 ],
                 transformations: {
-                  gravity: 'faces',
                   resize: {
                     type: 'fill',
                     aspectRatio: '3:4',

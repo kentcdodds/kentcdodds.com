@@ -212,7 +212,7 @@ async function getTestimonials({
         t.categories.some(c => categories.includes(c)),
     )
     .sort((a, b) => {
-      // TODO: one day, make this smarter...
+      // IDEA: one day, make this smarter...
       return a.priority * Math.random() > b.priority * Math.random() ? 1 : -1
     })
 

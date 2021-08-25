@@ -1,0 +1,54 @@
+import * as React from 'react'
+import {AppleIcon} from './icons/apple-icon'
+import {RssIcon} from './icons/rss-icon'
+import {SpotifyIcon} from './icons/spotify-icon'
+import {GoogleIcon} from './icons/google-icon'
+
+function PodcastAppLink({
+  icon,
+  children,
+  ...props
+}: JSX.IntrinsicElements['a'] & {icon: React.ReactElement}) {
+  return (
+    <a
+      {...props}
+      className="focus-ring text-primary bg-secondary flex flex-none items-center mb-4 mr-4 px-8 py-4 rounded-full space-x-4"
+    >
+      <span className="text-gray-400">{icon}</span>
+      <span>{children}</span>
+    </a>
+  )
+}
+
+function PodcastSubs({
+  apple,
+  google,
+  spotify,
+  rss,
+}: {
+  apple: string
+  google: string
+  spotify: string
+  rss: string
+}) {
+  return (
+    <div className="flex flex-wrap col-span-full items-start justify-start -mb-4 -mr-4 lg:col-span-10">
+      <PodcastAppLink icon={<AppleIcon />} href={apple}>
+        Apple podcasts
+      </PodcastAppLink>
+      <PodcastAppLink icon={<GoogleIcon />} href={google}>
+        Google podcasts
+      </PodcastAppLink>
+      <div className="flex-no-wrap flex">
+        <PodcastAppLink icon={<SpotifyIcon />} href={spotify}>
+          Spotify
+        </PodcastAppLink>
+        <PodcastAppLink icon={<RssIcon />} href={rss}>
+          RSS
+        </PodcastAppLink>
+      </div>
+    </div>
+  )
+}
+
+export {PodcastSubs}
