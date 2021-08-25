@@ -86,6 +86,7 @@ function MdxScreen({mdxPage}: {mdxPage: MdxPage}) {
         {frontmatter.bannerCloudinaryId ? (
           <img
             className="col-span-full mt-10 mx-auto rounded-lg lg:col-span-10 lg:col-start-2"
+            title={frontmatter.bannerCredit}
             {...getImgProps(
               getImageBuilder(
                 frontmatter.bannerCloudinaryId,

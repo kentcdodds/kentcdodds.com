@@ -7,8 +7,8 @@ import {Outlet, useNavigate} from 'react-router-dom'
 import type {Await} from '~/types'
 import {ChatsEpisodeUIStateProvider} from '~/utils/providers'
 import {Grid} from '~/components/grid'
-import {images} from '~/images'
-import {H6} from '~/components/typography'
+import {getImageBuilder, getImgProps, images} from '~/images'
+import {H4, H6, Paragraph} from '~/components/typography'
 import {AppleIcon} from '~/components/icons/apple-icon'
 import {externalLinks} from '../external-links'
 import {RssIcon} from '~/components/icons/rss-icon'
@@ -23,6 +23,7 @@ import {FeaturedSection} from '~/components/sections/featured-section'
 import {listify, formatTime, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {getCWKEpisodePath, getFeaturedEpisode} from '~/utils/chats-with-kent'
 import {HeroSection} from '~/components/sections/hero-section'
+import {Spacer} from '~/components/spacer'
 
 type LoaderData = {
   seasons: Await<ReturnType<typeof getSeasonListItems>>
@@ -105,7 +106,7 @@ function PodcastHome() {
         imageSize="large"
       />
 
-      <Grid className="mb-14">
+      <Grid>
         <H6 as="div" className="col-span-full mb-6">
           Listen to the podcasts here
         </H6>
@@ -134,19 +135,88 @@ function PodcastHome() {
         </div>
       </Grid>
 
-      <div className="mb-48">
-        <FeaturedSection
-          cta="Listen to this episode"
-          caption="Featured episode"
-          subTitle={`Season ${featured.seasonNumber} Episode ${
-            featured.episodeNumber
-          } — ${formatTime(featured.duration)}`}
-          title={featured.title}
-          href={getCWKEpisodePath(featured)}
-          imageUrl={featured.image}
-          imageAlt={listify(featured.guests.map(g => g.name))}
-        />
-      </div>
+      <Spacer size="xs" />
+
+      <FeaturedSection
+        cta="Listen to this episode"
+        caption="Featured episode"
+        subTitle={`Season ${featured.seasonNumber} Episode ${
+          featured.episodeNumber
+        } — ${formatTime(featured.duration)}`}
+        title={featured.title}
+        href={getCWKEpisodePath(featured)}
+        imageUrl={featured.image}
+        imageAlt={listify(featured.guests.map(g => g.name))}
+      />
+
+      <Spacer size="base" />
+
+      <Grid>
+        <div className="col-span-full lg:col-span-6">
+          <img
+            className="rounded-lg object-cover"
+            title="Photo by Jukka Aalho / Kertojan ääni: https://kertojanaani.fi"
+            {...getImgProps(
+              getImageBuilder(
+                'unsplash/photo-1590602847861-f357a9332bbc',
+                'A SM7B Microphone',
+              ),
+              {
+                widths: [512, 650, 840, 1024, 1300, 1680, 2000, 2520],
+                sizes: [
+                  '(max-width: 1023px) 80vw',
+                  '(min-width: 1024px) and (max-width: 1620px) 40vw',
+                  '630px',
+                ],
+                transformations: {
+                  gravity: 'faces',
+                  resize: {
+                    type: 'fill',
+                    aspectRatio: '3:4',
+                  },
+                },
+              },
+            )}
+          />
+        </div>
+        <Spacer size="xs" className="block col-span-full lg:hidden" />
+        <div className="col-span-full lg:col-span-5 lg:col-start-8">
+          <H4 as="p">{`What's this all about?`}</H4>
+          <div className="flex flex-col gap-3">
+            <Paragraph>
+              {`The goal of the Chats with Kent Podcast is to `}
+              <strong>help you become a better person.</strong>
+              {`
+              With each episode, there's a key takeaway and a specific action
+              item to help you on your path to becoming the best person you can
+              be.
+            `}
+            </Paragraph>
+            <Paragraph>
+              {`
+              Before each show, I ask the guest to share with me the change they
+              would like to see in the world. Any change at all. Whether it's
+              related to software development or not. And then we brainstorm
+              together a specific thing we can invite you to do at the end of
+              the show to help push that change in the world along. Something
+              small, but meaningful.
+            `}
+            </Paragraph>
+            <Paragraph>
+              {`
+              Once we know that what we want to commit you to, I kick things off
+              and try to stear the conversation in a direction that will prepare
+              you to accept that invitation and hopefully help you make that
+              change in your life. I hope you take advantage of this
+              opportunity.
+            `}
+            </Paragraph>
+            <Paragraph>{`Enjoy the show.`}</Paragraph>
+          </div>
+        </div>
+      </Grid>
+
+      <Spacer size="base" />
 
       <Tabs
         as={Grid}
