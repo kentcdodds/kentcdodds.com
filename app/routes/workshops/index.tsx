@@ -123,7 +123,9 @@ function WorkshopsHome() {
       <Grid className="mb-64">
         <H6 as="h2" className="col-span-full mb-6">
           {queryValue
-            ? `${workshops.length} workshops found`
+            ? workshops.length === 1
+              ? `1 workshop found`
+              : `${workshops.length} workshops found`
             : 'Showing all workshops'}
         </H6>
 

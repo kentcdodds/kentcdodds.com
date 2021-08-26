@@ -2,11 +2,13 @@ import * as React from 'react'
 import type {HeadersFunction, LoaderFunction} from 'remix'
 import {json, useLoaderData} from 'remix'
 import type {Await} from '~/types'
-import {useRef, useState} from 'react'
 import formatDate from 'date-fns/format'
-import {Link, useLocation} from 'react-router-dom'
+import {Link, useLocation, useSearchParams} from 'react-router-dom'
 import clsx from 'clsx'
-import {reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {
+  reuseUsefulLoaderHeaders,
+  useUpdateQueryStringValueWithoutNavigation,
+} from '~/utils/misc'
 import {HeroSection} from '~/components/sections/hero-section'
 import {images} from '~/images'
 import {Tag} from '~/components/tag'
@@ -112,6 +114,7 @@ function Card({
                     <Paragraph
                       as="div"
                       className="html"
+                      prose={false}
                       dangerouslySetInnerHTML={{
                         __html: delivery.eventHTML ?? '',
                       }}
@@ -150,6 +153,7 @@ function Card({
                   <Paragraph
                     as="div"
                     className="html"
+                    prose={false}
                     dangerouslySetInnerHTML={{__html: resource}}
                   />
                 </li>
@@ -164,35 +168,47 @@ function Card({
 
 export default function TalksScreen() {
   const data = useLoaderData<LoaderData>()
-  const [selectedTags, setSelectedTags] = useState<string[]>([])
   const {pathname} = useLocation()
   const [activeSlug] = pathname.split('/').slice(-1)
-  const initialActiveSlugRef = useRef(activeSlug)
 
   // An effect to scroll to the talk's position when opening a direct link,
   // use a ref so that it doesn't hijack scroll when the user is browsing talks
   React.useEffect(() => {
-    const talk = initialActiveSlugRef.current
-    if (talk) {
-      document.querySelector(`[data-talk="${talk}"]`)?.scrollIntoView()
-    }
-  }, [initialActiveSlugRef])
+    document.querySelector(`[data-talk="${activeSlug}"]`)?.scrollIntoView()
+  }, [activeSlug])
 
-  const toggleTag = (tag: string) => {
-    const newSelection = selectedTags.includes(tag)
-      ? selectedTags.filter(x => x !== tag)
-      : [...selectedTags, tag]
+  // this bit is very similar to what's on the blogs page.
+  // Next time we need to do work in here, let's make an abstraction for them
+  const [searchParams] = useSearchParams()
 
-    setSelectedTags(newSelection)
-  }
+  const [queryValue, setQuery] = React.useState<string>(() => {
+    return searchParams.get('q') ?? ''
+  })
 
-  const talks = selectedTags.length
+  const talks = queryValue
     ? data.talks.filter(talk =>
-        selectedTags.every(tag => talk.tags.includes(tag)),
+        queryValue.split(',').every(tag => talk.tags.includes(tag)),
       )
     : data.talks
 
   const visibleTags = new Set(talks.flatMap(x => x.tags))
+
+  function toggleTag(tag: string) {
+    setQuery(q => {
+      const existing = q
+        .split(',')
+        .map(x => x.trim())
+        .filter(Boolean)
+
+      const newQuery = existing.includes(tag)
+        ? existing.filter(t => t !== tag)
+        : [...existing, tag]
+
+      return newQuery.join(',')
+    })
+  }
+
+  useUpdateQueryStringValueWithoutNavigation('q', queryValue)
 
   return (
     <>
@@ -208,25 +224,21 @@ export default function TalksScreen() {
           Search talks by topics
         </H6>
         <div className="flex flex-wrap col-span-full -mb-4 -mr-4 lg:col-span-10">
-          {data.tags.map(tag => {
-            const selected = selectedTags.includes(tag)
-
-            return (
-              <Tag
-                key={tag}
-                tag={tag}
-                selected={selected}
-                onClick={() => toggleTag(tag)}
-                disabled={!visibleTags.has(tag) && !selected}
-              />
-            )
-          })}
+          {data.tags.map(tag => (
+            <Tag
+              key={tag}
+              tag={tag}
+              selected={queryValue.includes(tag)}
+              onClick={() => toggleTag(tag)}
+              disabled={!visibleTags.has(tag) && !queryValue.includes(tag)}
+            />
+          ))}
         </div>
       </Grid>
 
       <Grid className="mb-64">
         <H6 as="h2" className="col-span-full mb-6">
-          {selectedTags.length
+          {queryValue
             ? talks.length === 1
               ? `1 talk found`
               : `${talks.length} talks found`
