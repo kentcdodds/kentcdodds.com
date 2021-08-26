@@ -35,7 +35,7 @@ function WorkshopCard({
         ) : null}
       </div>
       {workshop.categories.length ? (
-        <div className="flex-none">
+        <div className="flex flex-none flex-wrap gap-2">
           {workshop.categories.map(c => (
             <div
               key={c}

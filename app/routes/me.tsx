@@ -13,9 +13,9 @@ import {
 } from '~/utils/misc'
 import {useRequestInfo, useUser, useUserInfo} from '~/utils/providers'
 import {deleteDiscordCache} from '~/utils/user-info.server'
-import {getMagicLink, updateUser} from '~/utils/prisma.server'
-import {requireUser} from '~/utils/session.server'
-import {H2, H6} from '~/components/typography'
+import {deleteUser, getMagicLink, updateUser} from '~/utils/prisma.server'
+import {getSession, requireUser} from '~/utils/session.server'
+import {H2, H3, H6, Paragraph} from '~/components/typography'
 import {Grid} from '~/components/grid'
 import {Field, InputError, Label} from '~/components/form-elements'
 import {Button, ButtonLink} from '~/components/button'
@@ -25,6 +25,8 @@ import {TEAM_MAP} from '~/utils/onboarding'
 import {handleFormSubmission} from '~/utils/actions.server'
 import {EyeIcon} from '~/components/icons/eye-icon'
 import {PlusIcon} from '~/components/icons/plus-icon'
+import {Spacer} from '~/components/spacer'
+import Dialog from '@reach/dialog'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -54,6 +56,7 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 const actionIds = {
   changeDetails: 'change details',
   deleteDiscordConnection: 'delete discord connection',
+  deleteAccount: 'delete account',
 }
 
 function getFirstNameError(firstName: string | null) {
@@ -92,6 +95,17 @@ export const action: ActionFunction = async ({request}) => {
           },
         })
       }
+      if (actionId === actionIds.deleteAccount) {
+        const session = await getSession(request)
+        session.signOut()
+        await deleteUser(user.id)
+        const searchParams = new URLSearchParams({
+          message: `Your KCD account and all associated data has been completely deleted from the KCD database.`,
+        })
+        return redirect(`/?${searchParams.toString()}`, {
+          headers: await session.getHeaders(),
+        })
+      }
       return redirect('/me')
     } catch (error: unknown) {
       return json({generalError: getErrorMessage(error)}, 500)
@@ -109,6 +123,7 @@ function YouScreen() {
   const requestInfo = useRequestInfo()
   const authorizeURL = getDiscordAuthorizeURL(requestInfo.origin)
   const [qrIsVisible, setQrIsVisible] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = React.useState(false)
 
   useEffect(() => {
     if (!qrIsVisible) return
@@ -127,9 +142,9 @@ function YouScreen() {
           <div className="col-span-full mb-12 lg:mb-20">
             <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
               <div>
-                <H2>Here's your profile.</H2>
+                <H2>{`Here's your profile.`}</H2>
                 <H2 variant="secondary" as="p">
-                  Edit as you wish.
+                  {`Edit as you wish.`}
                 </H2>
               </div>
               <ButtonLink to="/logout" variant="secondary">
@@ -138,27 +153,17 @@ function YouScreen() {
               </ButtonLink>
             </div>
           </div>
+          <InputError id="general-erorr">
+            {actionData?.errors.generalError}
+          </InputError>
 
           <div className="col-span-full mb-24 lg:col-span-5 lg:mb-0">
-            <InputError id="profile-form-error">
-              {actionData?.errors.generalError}
-            </InputError>
-
-            <Field
-              name="firstName"
-              label="First name"
-              defaultValue={actionData?.fields.firstName ?? user.firstName}
-              autoComplete="firstName"
-              required
-              error={actionData?.errors.firstName}
-            />
-
             <Form
               id="profile-form"
               action="/me"
               method="post"
               noValidate
-              aria-describedby="profile-form-error"
+              aria-describedby="general-error"
             >
               <input
                 type="hidden"
@@ -166,15 +171,23 @@ function YouScreen() {
                 value={actionIds.changeDetails}
               />
               <Field
-                name="email"
-                label="Email address"
-                autoComplete="email"
+                name="firstName"
+                label="First name"
+                defaultValue={actionData?.fields.firstName ?? user.firstName}
+                autoComplete="firstName"
                 required
-                defaultValue={user.email}
-                readOnly
-                disabled
+                error={actionData?.errors.firstName}
               />
             </Form>
+            <Field
+              name="email"
+              label="Email address"
+              autoComplete="email"
+              required
+              defaultValue={user.email}
+              readOnly
+              disabled
+            />
 
             <Field
               name="discord"
@@ -281,6 +294,52 @@ function YouScreen() {
           </button>
         </div>
       </Grid>
+
+      <Spacer size="sm" />
+
+      <Grid>
+        <div className="col-span-full">
+          <H2>Manage Your Account</H2>
+        </div>
+        <Spacer size="3xs" className="col-span-full" />
+        <div className="col-span-full lg:col-span-4">
+          <Button onClick={() => setDeleteModalOpen(true)}>
+            Delete Account
+          </Button>
+        </div>
+      </Grid>
+
+      <Dialog
+        onDismiss={() => setDeleteModalOpen(false)}
+        isOpen={deleteModalOpen}
+        aria-label="Delete your account"
+        className="px-24 py-14 max-w-screen-lg dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg"
+      >
+        <H3>Delete your KCD Account</H3>
+        <Paragraph>
+          {`Are you certain you want to do this? There's no going back.`}
+        </Paragraph>
+        <Spacer size="2xs" />
+        <Form
+          id="profile-form"
+          action="/me"
+          method="post"
+          noValidate
+          aria-describedby="general-error"
+        >
+          <input
+            type="hidden"
+            name="actionId"
+            value={actionIds.deleteAccount}
+          />
+          <div className="flex flex-wrap gap-4">
+            <Button type="button" onClick={() => setDeleteModalOpen(false)}>
+              Nevermind
+            </Button>
+            <Button type="submit">Delete Account</Button>
+          </div>
+        </Form>
+      </Dialog>
     </main>
   )
 }
