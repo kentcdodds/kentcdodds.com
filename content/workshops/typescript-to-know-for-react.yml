@@ -9,6 +9,7 @@ meta:
 categories:
   - react
   - testing
+  - typescript
 convertKitTag: '2568110'
 problemStatements:
   part1: Runtime errors are annoying in development
