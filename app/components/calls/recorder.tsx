@@ -1,4 +1,5 @@
 import * as React from 'react'
+import gsap from 'gsap'
 import {createMachine, assign, send as sendUtil} from 'xstate'
 import {useMachine} from '@xstate/react'
 import {inspect} from '@xstate/inspect'
@@ -10,6 +11,20 @@ import {MicrophoneIcon} from '../icons/microphone-icon'
 import {SquareIcon} from '../icons/square-icon'
 import {PauseIcon} from '../icons/pause-icon'
 import {TriangleIcon} from '../icons/triangle-icon'
+
+// Play around with these values to affect the audio visualisation.
+// Should be able to stream the visualisation back no problem.
+const MIN_BAR_HEIGHT = 2
+const MAX_BAR_HEIGHT = 100
+const SHIFT_SPEED = 4
+const SHIFT_PER_SECOND = 130
+const SHIFT_DELAY = 0.05
+const GROW_SPEED = 0.25
+const GROW_DELAY = 0
+const BAR_WIDTH = 4
+const COLOR_ONE = 'hsl(185, 73%, 90%)'
+const COLOR_TWO = 'hsl(206, 47%, 50%)'
+const COLOR_THREE = 'hsl(205, 42%, 31%)'
 
 const devTools = false
 
@@ -177,6 +192,8 @@ function CallRecorder({
   onRecordingComplete: (audio: Blob) => void
 }) {
   const [state, send] = useMachine(recorderMachine, {devTools})
+  const metadataRef = React.useRef<Array<number>>([])
+  const playbackRef = React.useRef<HTMLAudioElement | null>(null)
   const {audioBlob} = state.context
 
   const audioURL = React.useMemo(() => {
@@ -231,8 +248,14 @@ function CallRecorder({
     audioPreview = (
       <div>
         <div className="mb-4">
-          <audio src={audioURL} controls />
+          <audio src={audioURL} controls ref={playbackRef} />
         </div>
+        <StreamVis
+          metadata={metadataRef}
+          replay={true}
+          paused={state.matches('recording.paused')}
+          playbackRef={playbackRef}
+        />
         <div className="flex flex-wrap gap-4">
           <Button size="medium" onClick={() => onRecordingComplete(audioBlob)}>
             Accept
@@ -275,7 +298,12 @@ function CallRecorder({
 
       {state.matches('recording') && state.context.mediaRecorder ? (
         <div className="mb-4">
-          <StreamVis stream={state.context.mediaRecorder.stream} />
+          <StreamVis
+            metadata={metadataRef}
+            stream={state.context.mediaRecorder.stream}
+            paused={state.matches('recording.paused')}
+            playbackRef={playbackRef}
+          />
         </div>
       ) : null}
 
@@ -310,19 +338,170 @@ function CallRecorder({
   )
 }
 
-function visualize(canvas: HTMLCanvasElement, stream: MediaStream) {
-  const audioCtx = new AudioContext()
+const generateGradient = ({
+  width,
+  height,
+  context,
+  fill,
+}: {
+  width: number
+  height: number
+  context: CanvasRenderingContext2D
+  fill: CallVizTheme['fill']
+}) => {
+  const fillStyle = context.createLinearGradient(
+    width / 2,
+    0,
+    width / 2,
+    height,
+  )
+  // Color stop is three colors
+  fillStyle.addColorStop(0, fill.colors[2])
+  fillStyle.addColorStop(1, fill.colors[2])
+  fillStyle.addColorStop(0.35, fill.colors[1])
+  fillStyle.addColorStop(0.65, fill.colors[1])
+  fillStyle.addColorStop(0.5, fill.colors[0])
+  return fillStyle
+}
+
+function redraw({
+  canvas,
+  nodes,
+  theme,
+}: {
+  canvas: HTMLCanvasElement
+  nodes: Array<{
+    growth: number
+    size: number
+    x: number
+  }>
+  theme: CallVizTheme
+}) {
+  const {minBarHeight, barWidth} = theme
+
   const canvasCtx = canvas.getContext('2d')
 
-  const source = audioCtx.createMediaStreamSource(stream)
+  function draw() {
+    if (!canvasCtx) return
+    const WIDTH = canvas.width
+    const HEIGHT = canvas.height
 
-  const analyser = audioCtx.createAnalyser()
-  analyser.fftSize = 2048
-  const bufferLength = analyser.frequencyBinCount
-  const dataArray = new Uint8Array(bufferLength)
+    canvasCtx.clearRect(0, 0, WIDTH, HEIGHT)
+    for (let n = 0; n < nodes.length; n++) {
+      const node = nodes[n]
+      if (!node) continue
 
-  source.connect(analyser)
+      canvasCtx.fillRect(
+        node.x,
+        HEIGHT / 2 - Math.max(minBarHeight, node.size) / 2,
+        barWidth,
+        Math.max(minBarHeight, node.size),
+      )
+    }
+  }
 
+  return draw
+}
+
+/**
+ * 1. Create a node object
+ * 2. Push it to an Array
+ * 3. Create an insertion point
+ * 4. Add to a timeline
+ */
+
+const addToTimeline = ({
+  timeline,
+  width,
+  nodes,
+  onStart,
+  size,
+  insert,
+  theme,
+}: {
+  timeline: gsap.core.Timeline
+  width: number
+  nodes: Array<{
+    growth: number
+    size: number
+    x: number
+  }>
+  onStart: () => void
+  size: number
+  insert: number
+  theme: CallVizTheme
+}) => {
+  const {shiftDelay, barWidth, growDelay, growSpeed, shiftPerSecond} = theme
+
+  // Generate new node
+  const newNode = {
+    growth: size,
+    size: 0,
+    x: width,
+  }
+
+  // Add it in
+  nodes.push(newNode)
+
+  timeline.add(
+    gsap
+      .timeline()
+      .to(newNode, {
+        size: newNode.growth,
+        delay: growDelay,
+        duration: growSpeed,
+      })
+      .to(
+        newNode,
+        {
+          delay: shiftDelay,
+          x: `-=${width + barWidth}`,
+          duration: width / shiftPerSecond,
+          ease: 'none',
+          onStart,
+        },
+        0,
+      ),
+    insert,
+  )
+}
+
+function visualize({
+  canvas,
+  stream,
+  nodes,
+  metaTrack,
+  timeline,
+  start,
+  theme,
+}: {
+  canvas: HTMLCanvasElement
+  stream?: MediaStream
+  nodes: Array<{
+    growth: number
+    size: number
+    x: number
+  }>
+  metaTrack: {current: Array<number>}
+  timeline: gsap.core.Timeline
+  start: number
+  theme: CallVizTheme
+}) {
+  const {minBarHeight, maxBarHeight, shiftDelay, barWidth} = theme
+
+  const audioCtx = new AudioContext()
+  const canvasCtx = canvas.getContext('2d')
+  let analyser: AnalyserNode
+  let bufferLength: number
+  let source: MediaStreamAudioSourceNode
+  let add: boolean
+  let dataArray: Uint8Array
+  const padCount = nodes.length
+
+  // Set the time on the animation
+  timeline.time(start)
+
+  // Reusable draw function
   function draw() {
     if (!canvasCtx) return
     const WIDTH = canvas.width
@@ -330,56 +509,326 @@ function visualize(canvas: HTMLCanvasElement, stream: MediaStream) {
 
     analyser.getByteTimeDomainData(dataArray)
 
-    canvasCtx.fillStyle = 'rgb(180, 180, 180)'
-    canvasCtx.fillRect(0, 0, WIDTH, HEIGHT)
+    canvasCtx.clearRect(0, 0, WIDTH, HEIGHT)
 
-    canvasCtx.lineWidth = 2
-    canvasCtx.strokeStyle = 'rgb(0, 0, 0)'
+    if (add) {
+      add = false
+      let avg = 0
+      let min = 0
+      // TODO:: For perf could you hit this in blocks like
+      // dataArray.length / 70 * i and only hit it like 10 times instead of however many.
+      for (let i = 0; i < bufferLength; i++) {
+        const value = dataArray[i]
+        if (value === undefined) continue
 
-    canvasCtx.beginPath()
-
-    const sliceWidth = (WIDTH * 1.0) / bufferLength
-    let x = 0
-
-    for (let i = 0; i < bufferLength; i++) {
-      const v = (dataArray[i] ?? 0) / 128.0
-      const y = (v * HEIGHT) / 2
-
-      if (i === 0) {
-        canvasCtx.moveTo(x, y)
-      } else {
-        canvasCtx.lineTo(x, y)
+        if (!min || value < min) min = value
+        avg += value
       }
+      // Final size is the mapping of the size against the uInt8 bounds.
+      const SIZE = Math.floor(
+        gsap.utils.mapRange(
+          0,
+          maxBarHeight,
+          0,
+          HEIGHT,
+          Math.max(avg / bufferLength - min, minBarHeight),
+        ),
+      )
+      /**
+       * Tricky part here is that we need a metadata track as well as an animation
+       * object track. One that only cares about sizing and one that cares about
+       * animation.
+       */
+      addToTimeline({
+        size: SIZE,
+        width: WIDTH,
+        nodes,
+        timeline,
+        insert: start + (nodes.length - padCount) * shiftDelay,
+        onStart: () => (add = true),
+        theme,
+      })
 
-      x += sliceWidth
+      // Track the metadata by making a big Array of the sizes.
+      metaTrack.current = [...metaTrack.current, SIZE]
     }
-
-    canvasCtx.lineTo(canvas.width, canvas.height / 2)
-    canvasCtx.stroke()
+    for (let n = 0; n < nodes.length; n++) {
+      const node = nodes[n]
+      if (!node) continue
+      canvasCtx.fillRect(
+        node.x,
+        HEIGHT / 2 - Math.max(minBarHeight, node.size) / 2,
+        barWidth,
+        Math.max(minBarHeight, node.size),
+      )
+    }
   }
 
-  return draw
+  if (stream) {
+    add = true
+    source = audioCtx.createMediaStreamSource(stream)
+    analyser = audioCtx.createAnalyser()
+    analyser.fftSize = 2048
+    bufferLength = analyser.frequencyBinCount
+    dataArray = new Uint8Array(bufferLength)
+    source.connect(analyser)
+    return draw
+  }
 }
 
-function StreamVis({stream}: {stream: MediaStream}) {
+const padTimeline = ({
+  canvas,
+  nodes,
+  timeline,
+  startPoint,
+  theme,
+}: {
+  canvas: HTMLCanvasElement
+  nodes: Array<{
+    growth: number
+    size: number
+    x: number
+    // animation is a gsap timeline instance
+  }>
+  timeline: gsap.core.Timeline
+  startPoint: React.MutableRefObject<number>
+  theme: CallVizTheme
+}) => {
+  const {minBarHeight, shiftPerSecond, shiftDelay, barWidth} = theme
+
+  const padCount = Math.floor(canvas.width / barWidth)
+
+  for (let p = 0; p < padCount; p++) {
+    addToTimeline({
+      size: minBarHeight,
+      width: canvas.width,
+      nodes,
+      timeline,
+      insert: shiftDelay * p,
+      onStart: () => {},
+      theme,
+    })
+  }
+
+  startPoint.current = timeline.totalDuration() - canvas.width / shiftPerSecond
+}
+
+type CallVizTheme = {
+  minBarHeight: number
+  maxBarHeight: number
+  shiftSpeed: number
+  shiftPerSecond: number
+  shiftDelay: number
+  growSpeed: number
+  growDelay: number
+  barWidth: number
+  fill: {
+    colors: [string, string, string]
+  }
+}
+
+function StreamVis({
+  stream,
+  paused = false,
+  playbackRef,
+  replay = false,
+  theme = {
+    minBarHeight: MIN_BAR_HEIGHT,
+    maxBarHeight: MAX_BAR_HEIGHT,
+    shiftSpeed: SHIFT_SPEED,
+    shiftPerSecond: SHIFT_PER_SECOND,
+    shiftDelay: SHIFT_DELAY,
+    growSpeed: GROW_SPEED,
+    growDelay: GROW_DELAY,
+    barWidth: BAR_WIDTH,
+    fill: {
+      colors: [COLOR_ONE, COLOR_TWO, COLOR_THREE],
+    },
+  },
+  metadata = {current: []},
+}: {
+  stream?: MediaStream
+  paused?: boolean
+  playbackRef: React.MutableRefObject<HTMLAudioElement | null>
+  replay?: boolean
+  metadata: React.MutableRefObject<Array<number>>
+  theme?: CallVizTheme
+}) {
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null)
+  const nodesRef = React.useRef<
+    Array<{
+      growth: number
+      size: number
+      x: number
+    }>
+  >([])
+  const startRef = React.useRef<number>(0)
+  const drawRef = React.useRef<ReturnType<typeof visualize>>()
+
+  /**
+   * This is a GSAP timeline that either gets used by the recorder
+   * or prefilled with the metadata
+   */
+  const timelineRef = React.useRef<gsap.core.Timeline>()
+
+  // Destructure the theme
+  const {shiftDelay} = theme
+
+  /**
+   * Effect handles playback of the GSAP timeline in sync
+   * with audio playback controls. Pass an audio tag ref.
+   */
+  React.useEffect(() => {
+    let playbackControl: HTMLAudioElement | undefined
+
+    const updateTime = () => {
+      const timeline = timelineRef.current
+      if (!timeline) return
+      if (!playbackControl) return
+
+      timeline.time(startRef.current + playbackControl.currentTime)
+      if (playbackControl.seeking) {
+        timeline.play()
+      } else if (playbackControl.paused) {
+        timeline.pause()
+      } else {
+        timeline.play()
+      }
+    }
+    if (playbackRef.current) {
+      playbackControl = playbackRef.current
+      playbackControl.addEventListener('play', updateTime)
+      playbackControl.addEventListener('pause', updateTime)
+      playbackControl.addEventListener('seeking', updateTime)
+      playbackControl.addEventListener('seeked', updateTime)
+    }
+    return () => {
+      if (playbackControl) {
+        playbackControl.removeEventListener('play', updateTime)
+        playbackControl.removeEventListener('pause', updateTime)
+        playbackControl.removeEventListener('seeking', updateTime)
+        playbackControl.removeEventListener('seeked', updateTime)
+      }
+    }
+  }, [playbackRef])
+
+  /**
+   * Set the canvas to the correct size
+   */
+  React.useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    // Set the correct canvas dimensions
+    canvas.width = canvas.offsetWidth
+    canvas.height = canvas.offsetHeight
+
+    // Apply the fillStyle to the canvas
+    const canvasCtx = canvas.getContext('2d')
+    if (!canvasCtx) return
+
+    canvasCtx.fillStyle = generateGradient({
+      width: canvas.width,
+      height: canvas.height,
+      context: canvasCtx,
+      fill: theme.fill,
+    })
+  }, [theme.fill])
+
+  /**
+   * Respond to media recording being paused.
+   */
+  React.useEffect(() => {
+    if (paused && timelineRef.current) {
+      timelineRef.current.pause()
+    } else if (timelineRef.current) {
+      timelineRef.current.play()
+    }
+  }, [paused])
 
   React.useEffect(() => {
-    if (!canvasRef.current) return () => {}
-    const draw = visualize(canvasRef.current, stream)
-    let lastReq: number
-    function reqDraw() {
-      lastReq = requestAnimationFrame(() => {
-        draw()
-        reqDraw()
+    const canvas = canvasRef.current
+    const nodes = nodesRef.current
+    if (!canvas) return
+
+    // pad the start of the timeline to fill out the width
+    const timeline = gsap.timeline({paused: replay})
+    timelineRef.current = timeline
+    padTimeline({
+      canvas,
+      nodes,
+      timeline,
+      startPoint: startRef,
+      theme,
+    })
+  }, [replay, theme])
+
+  /**
+   * If the visualisation is a replay, it needs padding.
+   * Need to generate the nodes from metadata and the animation.
+   */
+  React.useEffect(() => {
+    const canvas = canvasRef.current
+    const timeline = timelineRef.current
+    if (!canvas || !replay || !timeline) return
+
+    // For every item in the metadata Array, create a node and it's animation.
+
+    metadata.current.forEach((growth, index) => {
+      addToTimeline({
+        size: growth,
+        width: canvas.width,
+        nodes: nodesRef.current,
+        timeline,
+        insert: startRef.current + shiftDelay * index,
+        onStart: () => {},
+        theme,
       })
+    })
+    // This sets the animation timeline forwards to the end of padding.
+    timeline.time(startRef.current)
+  }, [replay, metadata, shiftDelay, theme])
+
+  React.useEffect(() => {
+    const canvas = canvasRef.current
+    const timeline = timelineRef.current
+    const nodes = nodesRef.current
+    if (!timeline || !canvas) return
+
+    // Only start the ticker if it isn't a replay
+    if (canvasRef.current && !replay) {
+      // Generate visualisation function for streaming
+      console.info('runnig this')
+      drawRef.current = visualize({
+        canvas,
+        stream,
+        nodes,
+        metaTrack: metadata,
+        timeline,
+        start: startRef.current,
+        theme,
+      })
+    } else if (replay && canvasRef.current) {
+      drawRef.current = redraw({canvas, nodes, theme})
     }
-    reqDraw()
+
+    // Add draw to the ticker – Don't worry about replay because that's
+    // controlled by the playback controls.
+    // if (canvasRef.current && stream) gsap.ticker.add(drawRef.current)
+    if (drawRef.current) gsap.ticker.add(drawRef.current)
+
     return () => {
-      cancelAnimationFrame(lastReq)
+      if (timelineRef.current) timelineRef.current.pause(0)
+      if (drawRef.current) gsap.ticker.remove(drawRef.current)
     }
-  }, [stream])
-  return <canvas className="rounded-lg" ref={canvasRef} />
+  }, [stream, replay, metadata, theme])
+
+  return <canvas className="w-full h-40" ref={canvasRef} />
 }
 
 export {CallRecorder}
+
+/*
+eslint
+  one-var: "off",
+*/
