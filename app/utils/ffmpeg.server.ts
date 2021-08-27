@@ -49,58 +49,25 @@ async function createEpisodeAudio(callBase64: string, responseBase64: string) {
 
   // prettier-ignore
   await ffmpeg.run(
-    '-i', 'call.mp3',
-    '-af', 'silenceremove=1:0:-50dB',
-    'call1.mp3',
-  )
-
-  // prettier-ignore
-  await ffmpeg.run(
-    '-i', 'response.mp3',
-    '-af', 'silenceremove=1:0:-50dB',
-    'response1.mp3',
-  )
-
-  // prettier-ignore
-  await ffmpeg.run(
-    '-i', 'call1.mp3',
-    '-af', 'silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB',
-    'call2.mp3',
-  )
-
-  // prettier-ignore
-  await ffmpeg.run(
-    '-i', 'response1.mp3',
-    '-af', 'silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB',
-    'response2.mp3',
-  )
-
-  // prettier-ignore
-  await ffmpeg.run(
-    '-i', 'call2.mp3',
-    '-af', 'loudnorm=I=-16:LRA=11:TP=0.0',
-    'call3.mp3',
-  )
-
-  // prettier-ignore
-  await ffmpeg.run(
-    '-i', 'response2.mp3',
-    '-af', 'loudnorm=I=-16:LRA=11:TP=0.0',
-    'response3.mp3',
-  )
-
-  // prettier-ignore
-  await ffmpeg.run(
     '-i', 'intro.mp3',
-    '-i', 'call3.mp3',
+    '-i', 'call.mp3',
     '-i', 'interstitial.mp3',
-    '-i', 'response3.mp3',
+    '-i', 'response.mp3',
     '-i', 'outro.mp3',
     '-filter_complex', `
-[0][1]acrossfade=d=1:c2=nofade[a01];
-[a01][2]acrossfade=d=1:c1=nofade[a02];
-[a02][3]acrossfade=d=1:c2=nofade[a03];
-[a03][4]acrossfade=d=1:c1=nofade
+      [1]silenceremove=1:0:-50dB[trimmedCall];
+      [3]silenceremove=1:0:-50dB[trimmedResponse];
+
+      [trimmedCall]silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB[noSilenceCall];
+      [trimmedResponse]silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB[noSilenceResponse];
+
+      [noSilenceCall]loudnorm=I=-16:LRA=11:TP=0.0[call];
+      [noSilenceResponse]loudnorm=I=-16:LRA=11:TP=0.0[response];
+
+      [0][call]acrossfade=d=1:c2=nofade[a01];
+      [a01][2]acrossfade=d=1:c1=nofade[a02];
+      [a02][response]acrossfade=d=1:c2=nofade[a03];
+      [a03][4]acrossfade=d=1:c1=nofade
     `,
     'output.mp3',
   )
