@@ -58,7 +58,10 @@ async function getSeasons() {
         )
         return
       }
-      return {seasonNumber: number, episodes: await getEpisodes(seasonId)}
+      const episodes = await getEpisodes(seasonId)
+      if (!episodes.length) return null
+
+      return {seasonNumber: number, episodes}
     }),
   ).then(s => s.filter(typedBoolean))
 
