@@ -103,9 +103,11 @@ export const action: ActionFunction = async ({request}) => {
         })
 
         const headers = new Headers()
+        await session.singIn(user)
         await session.getHeaders(headers)
-        headers.append('Set-Cookie', await loginInfoSession.destroy())
-
+        // IDEA: try using destroy... Didn't seem to work last time I tried though.
+        loginInfoSession.clean()
+        await loginInfoSession.getHeaders(headers)
         return redirect('/me', {headers})
       } catch (error: unknown) {
         console.error(getErrorStack(error))
@@ -257,9 +259,9 @@ export default function NewAccount() {
           <div className="col-span-full h-20 lg:h-24" />
 
           <div className="col-span-full mb-12">
-            <H2>Some basic info to remember you.</H2>
+            <H2>{`Some basic info to remember you.`}</H2>
             <H2 variant="secondary" as="p">
-              You can change these later.
+              {`You can change this later.`}
             </H2>
           </div>
 
@@ -286,44 +288,55 @@ export default function NewAccount() {
 
           <div className="col-span-full">
             <Button type="submit" disabled={!formIsValid}>
-              Create account
+              {`Create account`}
             </Button>
           </div>
           <p className="col-span-4 mt-10 text-xs font-medium tracking-wider">
-            NOTICE: By signing up for an account, your email address will be
-            added to Kent&apos;s mailing list (if it&apos;s not already) and
-            you&apos;ll ocassionally receive promotional emails from Kent. You
-            can unsubscribe at any time.
+            {`
+              NOTICE: By signing up for an account, your email address will be
+              added to Kent's mailing list (if it's not already) and
+              you'll ocassionally receive promotional emails from Kent. You
+              can unsubscribe at any time.
+            `}
           </p>
         </Grid>
       </Form>
 
       <Grid>
         <div className="col-span-full lg:col-span-5 lg:col-start-8">
-          <H2 className="mb-32">You might be thinking, why pick a team?</H2>
+          <H2 className="mb-32">{`You might be thinking, why pick a team?`}</H2>
 
           <H6 as="h3" className="mb-4">
-            Gamify your learning.
+            {`Own a post`}
           </H6>
           <Paragraph className="mb-12">
-            Praesent eu lacus odio. Pellentesque vitae lectus tortor. Donec elit
-            nunc, dictum quis condimentum in, impe rdiet at arcu.{' '}
+            {`
+              Your team associates your blog post reads with a group and it's
+              fun to know that your contributing to a group while learning
+              and reading. When your team has the highest ranking on a post,
+              you "own" that post. Kinda like an NFT, but not really.
+            `}
           </Paragraph>
           <H6 as="h3" className="mb-4">
-            Here will go the second title.
+            {`Exclusive team discord channels`}
           </H6>
           <Paragraph className="mb-12">
-            Mauris auctor nulla at felis placerat, ut elementum urna commodo.
-            Aenean et rutrum quam. Etiam odio massa, congue in orci nec, ornare
-            suscipit sem aenean turpis.
+            {`
+              After signing up you can connect your discord account. When you do
+              this, your account will be given a team role. This will give you
+              access to your team channels where you can plan team blog post
+              raids and fun stuff like that.
+            `}
           </Paragraph>
           <H6 as="h3" className="mb-4">
-            Here will go the third title.
+            {`UI Theme`}
           </H6>
           <Paragraph className="mb-12">
-            Mauris auctor nulla at felis placerat, ut elementum urna commodo.
-            Aenean et rutrum quam. Etiam odio massa, congue in orci nec, ornare
-            suscipit sem aenean turpis.
+            {`
+              The theme of this website is controlled by your team color
+              selection. So choose your favorite color and have that preference
+              shown throughout the site.
+            `}
           </Paragraph>
         </div>
 

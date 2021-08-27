@@ -18,7 +18,7 @@ import {getSession, requireUser} from '~/utils/session.server'
 import {H2, H3, H6, Paragraph} from '~/components/typography'
 import {Grid} from '~/components/grid'
 import {Field, InputError, Label} from '~/components/form-elements'
-import {Button, ButtonLink} from '~/components/button'
+import {Button} from '~/components/button'
 import {CheckCircledIcon} from '~/components/icons/check-circled-icon'
 import {LogoutIcon} from '~/components/icons/logout-icon'
 import {TEAM_MAP} from '~/utils/onboarding'
@@ -54,6 +54,7 @@ export const loader: LoaderFunction = ({request}) => {
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 const actionIds = {
+  logout: 'logout',
   changeDetails: 'change details',
   deleteDiscordConnection: 'delete discord connection',
   deleteAccount: 'delete account',
@@ -79,6 +80,13 @@ export const action: ActionFunction = async ({request}) => {
     const actionId = form.get('actionId')
 
     try {
+      if (actionId === actionIds.logout) {
+        const session = await getSession(request)
+        session.signOut()
+        return redirect('/', {
+          headers: await session.getHeaders(),
+        })
+      }
       if (actionId === actionIds.deleteDiscordConnection && user.discordId) {
         await deleteDiscordCache(user.discordId)
         await updateUser(user.id, {discordId: null})
@@ -147,10 +155,17 @@ function YouScreen() {
                   {`Edit as you wish.`}
                 </H2>
               </div>
-              <ButtonLink to="/logout" variant="secondary">
-                <LogoutIcon />
-                <H6 as="span">logout</H6>
-              </ButtonLink>
+              <Form action="/me" method="post">
+                <input
+                  type="hidden"
+                  name="actionId"
+                  value={actionIds.logout}
+                />
+                <Button variant="secondary">
+                  <LogoutIcon />
+                  <H6 as="span">logout</H6>
+                </Button>
+              </Form>
             </div>
           </div>
           <InputError id="general-erorr">

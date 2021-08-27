@@ -3,7 +3,7 @@ import {redirect, Headers} from 'remix'
 import type {KCDHandle} from '~/types'
 import * as React from 'react'
 import {getLoginInfoSession} from '~/utils/login.server'
-import {getUserSessionCookieFromMagicLink} from '~/utils/session.server'
+import {getUserSessionFromMagicLink} from '~/utils/session.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -12,12 +12,12 @@ export const handle: KCDHandle = {
 export const loader: LoaderFunction = async ({request}) => {
   const loginInfoSession = await getLoginInfoSession(request)
   try {
-    const sessionIdCookie = await getUserSessionCookieFromMagicLink(request)
-    if (sessionIdCookie) {
-      const destroyCookie = await loginInfoSession.destroy()
+    const session = await getUserSessionFromMagicLink(request)
+    if (session) {
       const headers = new Headers()
-      headers.append('Set-Cookie', destroyCookie)
-      headers.append('Set-Cookie', sessionIdCookie)
+      loginInfoSession.clean()
+      await loginInfoSession.getHeaders(headers)
+      await session.getHeaders(headers)
       return redirect('/me', {headers})
     } else {
       loginInfoSession.setMagicLink(request.url)

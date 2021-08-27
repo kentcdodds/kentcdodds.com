@@ -69,7 +69,7 @@ async function getSession(request: Request) {
     },
     getSessionId,
     unsetSessionId,
-    singIn: async (user: User) => {
+    singIn: async (user: Pick<User, 'id'>) => {
       const userSession = await createSession({userId: user.id})
       session.set(sessionIdKey, userSession.id)
     },
@@ -117,22 +117,15 @@ async function getUser(request: Request) {
   })
 }
 
-async function getUserSessionCookieFromMagicLink(request: Request) {
+async function getUserSessionFromMagicLink(request: Request) {
   const email = await validateMagicLink(request.url)
 
   const user = await getUserByEmail(email)
   if (!user) return null
 
-  const cookie = await getUserSessionCookieForUser(request, user)
-  return cookie
-}
-
-async function getUserSessionCookieForUser(request: Request, user: User) {
   const session = await getSession(request)
   await session.singIn(user)
-
-  const cookie = await session.commit()
-  return cookie
+  return session
 }
 
 async function requireAdminUser(
@@ -166,8 +159,7 @@ async function requireUser(
 
 export {
   getSession,
-  getUserSessionCookieFromMagicLink,
-  getUserSessionCookieForUser,
+  getUserSessionFromMagicLink,
   requireUser,
   requireAdminUser,
   getUser,
