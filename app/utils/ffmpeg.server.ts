@@ -22,17 +22,17 @@ async function createEpisodeAudio(callBase64: string, responseBase64: string) {
 
   ffmpeg.FS(
     'writeFile',
-    'call-kent/intro.mp3',
+    'intro.mp3',
     await fetchFile(asset('call-kent/intro.mp3')),
   )
   ffmpeg.FS(
     'writeFile',
-    'call-kent/interlude.mp3',
-    await fetchFile(asset('call-kent/interlude.mp3')),
+    'interstitial.mp3',
+    await fetchFile(asset('call-kent/interstitial.mp3')),
   )
   ffmpeg.FS(
     'writeFile',
-    'call-kent/outro.mp3',
+    'outro.mp3',
     await fetchFile(asset('call-kent/outro.mp3')),
   )
 
@@ -49,19 +49,65 @@ async function createEpisodeAudio(callBase64: string, responseBase64: string) {
 
   // prettier-ignore
   await ffmpeg.run(
-    ...[
-      '-i', 'call-kent/intro.mp3',
-      '-i', 'call.mp3',
-      '-i', 'call-kent/interlude.mp3',
-      '-i', 'response.mp3',
-      '-i', 'call-kent/outro.mp3',
-      '-filter_complex', '[0:a][1:a]concat=n=5:v=0:a=1',
-      'output.mp3',
-    ],
+    '-i', 'call.mp3',
+    '-af', 'silenceremove=1:0:-50dB',
+    'call1.mp3',
+  )
+
+  // prettier-ignore
+  await ffmpeg.run(
+    '-i', 'response.mp3',
+    '-af', 'silenceremove=1:0:-50dB',
+    'response1.mp3',
+  )
+
+  // prettier-ignore
+  await ffmpeg.run(
+    '-i', 'call1.mp3',
+    '-af', 'silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB',
+    'call2.mp3',
+  )
+
+  // prettier-ignore
+  await ffmpeg.run(
+    '-i', 'response1.mp3',
+    '-af', 'silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB',
+    'response2.mp3',
+  )
+
+  // prettier-ignore
+  await ffmpeg.run(
+    '-i', 'call2.mp3',
+    '-af', 'loudnorm=I=-16:LRA=11:TP=0.0',
+    'call3.mp3',
+  )
+
+  // prettier-ignore
+  await ffmpeg.run(
+    '-i', 'response2.mp3',
+    '-af', 'loudnorm=I=-16:LRA=11:TP=0.0',
+    'response3.mp3',
+  )
+
+  // prettier-ignore
+  await ffmpeg.run(
+    '-i', 'intro.mp3',
+    '-i', 'call3.mp3',
+    '-i', 'interstitial.mp3',
+    '-i', 'response3.mp3',
+    '-i', 'outro.mp3',
+    '-filter_complex', `
+[0][1]acrossfade=d=1:c2=nofade[a01];
+[a01][2]acrossfade=d=1:c1=nofade[a02];
+[a02][3]acrossfade=d=1:c2=nofade[a03];
+[a03][4]acrossfade=d=1:c1=nofade
+    `,
+    'output.mp3',
   )
 
   const outputData = ffmpeg.FS('readFile', 'output.mp3')
-  return Buffer.from(outputData)
+  const buffer = Buffer.from(outputData)
+  return buffer
 }
 
 export {createEpisodeAudio}
