@@ -155,8 +155,8 @@ increment the count.
 So why is the count `0` every time? It's because the `increment` function that
 we've given to React through the `onClick` prop on that `button` "closes over"
 the value of `count` at the time it's created. You can
-[learn more about closures from whatthefork.is/closure](https://whatthefork.is/closure),
-but in short, when a function is created, it has access to the variables defined
+[learn more about closures from mdn.io/closure](https://mdn.io/closure), but in
+short, when a function is created, it has access to the variables defined
 outside of it and even if what those variables are assigned to changes.
 
 The problem is that we're actually calling the exact same `increment` function
