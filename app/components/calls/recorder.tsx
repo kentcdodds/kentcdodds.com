@@ -11,6 +11,7 @@ import {MicrophoneIcon} from '../icons/microphone-icon'
 import {SquareIcon} from '../icons/square-icon'
 import {PauseIcon} from '../icons/pause-icon'
 import {TriangleIcon} from '../icons/triangle-icon'
+import type {Team} from '~/types'
 
 // Play around with these values to affect the audio visualisation.
 // Should be able to stream the visualisation back no problem.
@@ -22,9 +23,22 @@ const SHIFT_DELAY = 0.05
 const GROW_SPEED = 0.25
 const GROW_DELAY = 0
 const BAR_WIDTH = 4
-const COLOR_ONE = 'hsl(185, 73%, 90%)'
-const COLOR_TWO = 'hsl(206, 47%, 50%)'
-const COLOR_THREE = 'hsl(205, 42%, 31%)'
+const colorsByTeam: Record<Team, [string, string, string]> = {
+  RED: ['#FF9393', '#FF4545', '#BA0808'],
+  BLUE: ['#8CCAFE', '#36A4FF', '#018AFB'],
+  YELLOW: ['#FFE792', '#FFD644', '#BA9308'],
+}
+
+const theme = {
+  minBarHeight: MIN_BAR_HEIGHT,
+  maxBarHeight: MAX_BAR_HEIGHT,
+  shiftSpeed: SHIFT_SPEED,
+  shiftPerSecond: SHIFT_PER_SECOND,
+  shiftDelay: SHIFT_DELAY,
+  growSpeed: GROW_SPEED,
+  growDelay: GROW_DELAY,
+  barWidth: BAR_WIDTH,
+}
 
 const devTools = false
 
@@ -64,12 +78,17 @@ const recorderMachine = createMachine<RecorderContext>(
         invoke: {
           src: 'getDevices',
           onDone: {target: 'ready', actions: 'assignAudioDevices'},
-          onError: '', // TODO
+          onError: {target: 'error'},
         },
       },
       selecting: {
         on: {
           selection: {target: 'ready', actions: 'assignSelectedAudioDevice'},
+        },
+      },
+      error: {
+        on: {
+          retry: 'gettingDevices',
         },
       },
       ready: {
@@ -188,8 +207,10 @@ const recorderMachine = createMachine<RecorderContext>(
 
 function CallRecorder({
   onRecordingComplete,
+  team,
 }: {
   onRecordingComplete: (audio: Blob) => void
+  team: Team
 }) {
   const [state, send] = useMachine(recorderMachine, {devTools})
   const metadataRef = React.useRef<Array<number>>([])
@@ -235,6 +256,17 @@ function CallRecorder({
     )
   }
 
+  if (state.matches('error')) {
+    deviceSelection = (
+      <div>
+        <Paragraph className="mb-8">
+          An error occurred while loading recording devices.
+        </Paragraph>
+        <Button onClick={() => send('retry')}>Try again</Button>
+      </div>
+    )
+  }
+
   let audioPreview = null
   if (state.matches('done')) {
     assertNonNull(
@@ -248,13 +280,14 @@ function CallRecorder({
     audioPreview = (
       <div>
         <div className="mb-4">
-          <audio src={audioURL} controls ref={playbackRef} />
+          <audio src={audioURL} controls ref={playbackRef} preload="metadata" />
         </div>
         <StreamVis
           metadata={metadataRef}
           replay={true}
           paused={state.matches('recording.paused')}
           playbackRef={playbackRef}
+          team={team}
         />
         <div className="flex flex-wrap gap-4">
           <Button size="medium" onClick={() => onRecordingComplete(audioBlob)}>
@@ -303,6 +336,7 @@ function CallRecorder({
             stream={state.context.mediaRecorder.stream}
             paused={state.matches('recording.paused')}
             playbackRef={playbackRef}
+            team={team}
           />
         </div>
       ) : null}
@@ -342,12 +376,12 @@ const generateGradient = ({
   width,
   height,
   context,
-  fill,
+  colors,
 }: {
   width: number
   height: number
   context: CanvasRenderingContext2D
-  fill: CallVizTheme['fill']
+  colors: [string, string, string]
 }) => {
   const fillStyle = context.createLinearGradient(
     width / 2,
@@ -356,18 +390,17 @@ const generateGradient = ({
     height,
   )
   // Color stop is three colors
-  fillStyle.addColorStop(0, fill.colors[2])
-  fillStyle.addColorStop(1, fill.colors[2])
-  fillStyle.addColorStop(0.35, fill.colors[1])
-  fillStyle.addColorStop(0.65, fill.colors[1])
-  fillStyle.addColorStop(0.5, fill.colors[0])
+  fillStyle.addColorStop(0, colors[2])
+  fillStyle.addColorStop(1, colors[2])
+  fillStyle.addColorStop(0.35, colors[1])
+  fillStyle.addColorStop(0.65, colors[1])
+  fillStyle.addColorStop(0.5, colors[0])
   return fillStyle
 }
 
 function redraw({
   canvas,
   nodes,
-  theme,
 }: {
   canvas: HTMLCanvasElement
   nodes: Array<{
@@ -375,7 +408,6 @@ function redraw({
     size: number
     x: number
   }>
-  theme: CallVizTheme
 }) {
   const {minBarHeight, barWidth} = theme
 
@@ -417,7 +449,6 @@ const addToTimeline = ({
   onStart,
   size,
   insert,
-  theme,
 }: {
   timeline: gsap.core.Timeline
   width: number
@@ -429,7 +460,6 @@ const addToTimeline = ({
   onStart: () => void
   size: number
   insert: number
-  theme: CallVizTheme
 }) => {
   const {shiftDelay, barWidth, growDelay, growSpeed, shiftPerSecond} = theme
 
@@ -473,7 +503,6 @@ function visualize({
   metaTrack,
   timeline,
   start,
-  theme,
 }: {
   canvas: HTMLCanvasElement
   stream?: MediaStream
@@ -485,7 +514,6 @@ function visualize({
   metaTrack: {current: Array<number>}
   timeline: gsap.core.Timeline
   start: number
-  theme: CallVizTheme
 }) {
   const {minBarHeight, maxBarHeight, shiftDelay, barWidth} = theme
 
@@ -546,7 +574,6 @@ function visualize({
         timeline,
         insert: start + (nodes.length - padCount) * shiftDelay,
         onStart: () => (add = true),
-        theme,
       })
 
       // Track the metadata by making a big Array of the sizes.
@@ -581,7 +608,6 @@ const padTimeline = ({
   nodes,
   timeline,
   startPoint,
-  theme,
 }: {
   canvas: HTMLCanvasElement
   nodes: Array<{
@@ -592,7 +618,6 @@ const padTimeline = ({
   }>
   timeline: gsap.core.Timeline
   startPoint: React.MutableRefObject<number>
-  theme: CallVizTheme
 }) => {
   const {minBarHeight, shiftPerSecond, shiftDelay, barWidth} = theme
 
@@ -606,25 +631,10 @@ const padTimeline = ({
       timeline,
       insert: shiftDelay * p,
       onStart: () => {},
-      theme,
     })
   }
 
   startPoint.current = timeline.totalDuration() - canvas.width / shiftPerSecond
-}
-
-type CallVizTheme = {
-  minBarHeight: number
-  maxBarHeight: number
-  shiftSpeed: number
-  shiftPerSecond: number
-  shiftDelay: number
-  growSpeed: number
-  growDelay: number
-  barWidth: number
-  fill: {
-    colors: [string, string, string]
-  }
 }
 
 function StreamVis({
@@ -632,19 +642,7 @@ function StreamVis({
   paused = false,
   playbackRef,
   replay = false,
-  theme = {
-    minBarHeight: MIN_BAR_HEIGHT,
-    maxBarHeight: MAX_BAR_HEIGHT,
-    shiftSpeed: SHIFT_SPEED,
-    shiftPerSecond: SHIFT_PER_SECOND,
-    shiftDelay: SHIFT_DELAY,
-    growSpeed: GROW_SPEED,
-    growDelay: GROW_DELAY,
-    barWidth: BAR_WIDTH,
-    fill: {
-      colors: [COLOR_ONE, COLOR_TWO, COLOR_THREE],
-    },
-  },
+  team,
   metadata = {current: []},
 }: {
   stream?: MediaStream
@@ -652,8 +650,9 @@ function StreamVis({
   playbackRef: React.MutableRefObject<HTMLAudioElement | null>
   replay?: boolean
   metadata: React.MutableRefObject<Array<number>>
-  theme?: CallVizTheme
+  team: Team
 }) {
+  const colors = colorsByTeam[team]
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null)
   const nodesRef = React.useRef<
     Array<{
@@ -670,9 +669,6 @@ function StreamVis({
    * or prefilled with the metadata
    */
   const timelineRef = React.useRef<gsap.core.Timeline>()
-
-  // Destructure the theme
-  const {shiftDelay} = theme
 
   /**
    * Effect handles playback of the GSAP timeline in sync
@@ -731,18 +727,20 @@ function StreamVis({
       width: canvas.width,
       height: canvas.height,
       context: canvasCtx,
-      fill: theme.fill,
+      colors,
     })
-  }, [theme.fill])
+  }, [colors])
 
   /**
    * Respond to media recording being paused.
    */
   React.useEffect(() => {
-    if (paused && timelineRef.current) {
-      timelineRef.current.pause()
-    } else if (timelineRef.current) {
-      timelineRef.current.play()
+    const timeline = timelineRef.current
+    if (!timeline) return
+    if (paused) {
+      timeline.pause()
+    } else {
+      timeline.play()
     }
   }, [paused])
 
@@ -752,6 +750,7 @@ function StreamVis({
     if (!canvas) return
 
     // pad the start of the timeline to fill out the width
+    console.log('creating timeline')
     const timeline = gsap.timeline({paused: replay})
     timelineRef.current = timeline
     padTimeline({
@@ -759,9 +758,8 @@ function StreamVis({
       nodes,
       timeline,
       startPoint: startRef,
-      theme,
     })
-  }, [replay, theme])
+  }, [replay])
 
   /**
    * If the visualisation is a replay, it needs padding.
@@ -780,14 +778,13 @@ function StreamVis({
         width: canvas.width,
         nodes: nodesRef.current,
         timeline,
-        insert: startRef.current + shiftDelay * index,
+        insert: startRef.current + theme.shiftDelay * index,
         onStart: () => {},
-        theme,
       })
     })
     // This sets the animation timeline forwards to the end of padding.
     timeline.time(startRef.current)
-  }, [replay, metadata, shiftDelay, theme])
+  }, [replay, metadata])
 
   React.useEffect(() => {
     const canvas = canvasRef.current
@@ -798,7 +795,6 @@ function StreamVis({
     // Only start the ticker if it isn't a replay
     if (canvasRef.current && !replay) {
       // Generate visualisation function for streaming
-      console.info('runnig this')
       drawRef.current = visualize({
         canvas,
         stream,
@@ -806,10 +802,9 @@ function StreamVis({
         metaTrack: metadata,
         timeline,
         start: startRef.current,
-        theme,
       })
     } else if (replay && canvasRef.current) {
-      drawRef.current = redraw({canvas, nodes, theme})
+      drawRef.current = redraw({canvas, nodes})
     }
 
     // Add draw to the ticker – Don't worry about replay because that's
@@ -821,7 +816,7 @@ function StreamVis({
       if (timelineRef.current) timelineRef.current.pause(0)
       if (drawRef.current) gsap.ticker.remove(drawRef.current)
     }
-  }, [stream, replay, metadata, theme])
+  }, [stream, replay, metadata])
 
   return <canvas className="w-full h-40" ref={canvasRef} />
 }

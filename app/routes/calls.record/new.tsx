@@ -16,6 +16,7 @@ import {
   getErrorForDescription,
   getErrorForKeywords,
 } from '~/utils/call-kent'
+import {useUser} from '~/utils/providers'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -74,12 +75,16 @@ type ActionData = RecordingFormData
 export default function RecordScreen() {
   const actionData = useActionData<ActionData>()
   const [audio, setAudio] = React.useState<Blob | null>(null)
+  const user = useUser()
   return (
     <div>
       {audio ? (
         <RecordingForm audio={audio} data={actionData} />
       ) : (
-        <CallRecorder onRecordingComplete={recording => setAudio(recording)} />
+        <CallRecorder
+          onRecordingComplete={recording => setAudio(recording)}
+          team={user.team}
+        />
       )}
     </div>
   )

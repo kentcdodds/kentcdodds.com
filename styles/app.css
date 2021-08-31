@@ -63,6 +63,7 @@ input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
   -webkit-text-fill-color: black !important;
   -webkit-box-shadow: 0 0 0 999px var(--color-gray-100) inset !important;
+  box-shadow: 0 0 0 999px var(--color-gray-100) inset !important;
   background-clip: content-box !important;
 }
 
@@ -72,6 +73,7 @@ input:-webkit-autofill:active {
 .dark input:-webkit-autofill:active {
   -webkit-text-fill-color: white !important;
   -webkit-box-shadow: 0 0 0 999px var(--color-gray-800) inset !important;
+  box-shadow: 0 0 0 999px var(--color-gray-800) inset !important;
   background-clip: content-box !important;
 }
 

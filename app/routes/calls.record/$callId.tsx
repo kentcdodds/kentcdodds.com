@@ -76,7 +76,11 @@ export default function Screen() {
     <section>
       <Paragraph className="mb-8">{data.call.description}</Paragraph>
       <div className="flex items-center justify-between">
-        <div>{audioURL ? <audio src={audioURL} controls /> : null}</div>
+        <div>
+          {audioURL ? (
+            <audio src={audioURL} controls preload="metadata" />
+          ) : null}
+        </div>
         <Form method="post">
           <input
             type="hidden"

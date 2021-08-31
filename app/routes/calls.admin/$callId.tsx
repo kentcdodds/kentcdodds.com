@@ -21,6 +21,7 @@ import {
   getErrorForDescription,
   getErrorForKeywords,
 } from '~/utils/call-kent'
+import {useUser} from '~/utils/providers'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -136,7 +137,9 @@ function CallListing({call}: {call: Call}) {
     <section>
       <strong>{call.title}</strong>
       <p>{call.description}</p>
-      <div>{audioURL ? <audio src={audioURL} controls /> : null}</div>
+      <div>
+        {audioURL ? <audio src={audioURL} controls preload="metadata" /> : null}
+      </div>
       <Form method="delete">
         <input type="hidden" name="callId" value={call.id} />
         <button type="submit">Delete</button>
@@ -149,6 +152,7 @@ export default function RecordingDetailScreen() {
   const [responseAudio, setResponseAudio] = React.useState<Blob | null>(null)
   const data = useLoaderData<LoaderData>()
   const actionData = useActionData<ActionData>()
+  const user = useUser()
 
   if (!data.call) {
     return (
@@ -172,6 +176,7 @@ export default function RecordingDetailScreen() {
       ) : (
         <CallRecorder
           onRecordingComplete={recording => setResponseAudio(recording)}
+          team={user.team}
         />
       )}
     </div>

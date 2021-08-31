@@ -57,6 +57,7 @@ function RecordingForm({audio, data}: {audio: Blob; data?: RecordingFormData}) {
           <audio
             src={audioURL}
             controls
+            preload="metadata"
             aria-describedby="audio-error-message"
           />
         ) : (
