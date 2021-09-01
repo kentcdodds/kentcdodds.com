@@ -70,6 +70,6 @@ COPY --from=build /app/build /app/build
 COPY --from=build /app/public /app/public
 ADD . .
 ARG COMMIT_SHA
-ENV COMMIT_SHA=${COMMIT_SHA}
+ENV COMMIT_SHA=$COMMIT_SHA
 
 CMD ["npm", "run", "start"]
