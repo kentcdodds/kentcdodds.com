@@ -11,7 +11,7 @@ export const loader: KCDLoader<{
   const seasonNumber = Number(params.season)
   const episodeNumber = Number(params.episode)
 
-  const seasons = await getSeasons(request)
+  const seasons = await getSeasons({request})
   const season = seasons.find(s => s.seasonNumber === seasonNumber)
   if (!season) {
     return redirect('/chats')

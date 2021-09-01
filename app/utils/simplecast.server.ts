@@ -27,13 +27,20 @@ const headers = {
 
 const seasonsCacheKey = `simplecast:seasons:${CHATS_WITH_KENT_PODCAST_ID}`
 
-const getCachedSeasons = async (request: Request) =>
+const getCachedSeasons = async ({
+  request,
+  forceFresh,
+}: {
+  request: Request
+  forceFresh?: boolean
+}) =>
   cachified({
     cache: redisCache,
     key: seasonsCacheKey,
     maxAge: 1000 * 60 * 60 * 24 * 7,
     getFreshValue: getSeasons,
     request,
+    forceFresh,
     checkValue: (value: unknown) =>
       Array.isArray(value) &&
       value.every(
@@ -384,8 +391,14 @@ async function parseSummaryMarkdown(
   }
 }
 
-async function getSeasonListItems(request: Request) {
-  const seasons = await getCachedSeasons(request)
+async function getSeasonListItems({
+  request,
+  forceFresh,
+}: {
+  request: Request
+  forceFresh?: boolean
+}) {
+  const seasons = await getCachedSeasons({request, forceFresh})
   const listItemSeasons: Array<CWKSeason> = []
   for (const season of seasons) {
     listItemSeasons.push({

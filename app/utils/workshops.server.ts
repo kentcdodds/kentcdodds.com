@@ -30,14 +30,21 @@ type RawWorkshop = {
   prerequisite?: string
 }
 
-type Options = {request?: Request; timings?: Timings}
-
-function getWorkshops({request, timings}: Options) {
+function getWorkshops({
+  request,
+  forceFresh,
+  timings,
+}: {
+  request?: Request
+  forceFresh?: boolean
+  timings?: Timings
+}) {
   return cachified({
     cache: redisCache,
     key: 'content:workshops',
     maxAge: 1000 * 60 * 60 * 24 * 7,
     request,
+    forceFresh,
     timings,
     getFreshValue: async () => {
       const dirList = await downloadDirList(`content/workshops`)

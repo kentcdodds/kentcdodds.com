@@ -151,7 +151,8 @@ jobs:
           context: .
           push: true
           tags: registry.fly.io/withered-frost-3196:${{ github.sha }}
-          build-args: REMIX_TOKEN=${{ secrets.REMIX_TOKEN }}
+          build-args:
+            REMIX_TOKEN=${{ secrets.REMIX_TOKEN }} COMMIT_SHA=${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 

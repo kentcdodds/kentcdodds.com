@@ -12,7 +12,7 @@ import {TriangleIcon} from '~/components/icons/triangle-icon'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
-    const seasons = await getSeasonListItems(request)
+    const seasons = await getSeasonListItems({request})
     return seasons.map(season => {
       return {
         route: `/chats/${season.seasonNumber.toString().padStart(2, '0')}`,
@@ -30,7 +30,7 @@ export const loader: KCDLoader<{season: string}> = async ({
   params,
   request,
 }) => {
-  const seasons = await getSeasonListItems(request)
+  const seasons = await getSeasonListItems({request})
   const seasonNumber = Number(params.season)
   const season = seasons.find(s => s.seasonNumber === seasonNumber)
   if (!season) {

@@ -103,7 +103,13 @@ function getTags(talks: Array<RawTalk>): string[] {
   return tags
 }
 
-async function getTalksAndTags({request}: {request: Request}) {
+async function getTalksAndTags({
+  request,
+  forceFresh,
+}: {
+  request?: Request
+  forceFresh?: boolean
+}) {
   const slugify = await getSlugify()
   slugify.reset()
 
@@ -112,6 +118,7 @@ async function getTalksAndTags({request}: {request: Request}) {
     key: 'content:data:talks.yml',
     maxAge: 1000 * 60 * 60 * 24 * 14,
     request,
+    forceFresh,
     getFreshValue: async () => {
       const talksString = await downloadFile('content/data/talks.yml')
       const rawTalks = YAML.parse(talksString) as Array<RawTalk>

@@ -24,7 +24,7 @@ import {Themed} from '~/utils/theme-provider'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
-    const seasons = await getSeasons(request)
+    const seasons = await getSeasons({request})
     return seasons.flatMap(season => {
       return season.episodes.map(episode => {
         const s = String(season.seasonNumber).padStart(2, '0')
@@ -85,7 +85,7 @@ export const loader: KCDLoader<{
   const seasonNumber = Number(params.season)
   const episodeNumber = Number(params.episode)
 
-  const seasons = await getSeasons(request)
+  const seasons = await getSeasons({request})
   const season = seasons.find(s => s.seasonNumber === seasonNumber)
   if (!season) {
     throw new Error(`oh no. season for season number: ${params.season}`)

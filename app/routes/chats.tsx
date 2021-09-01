@@ -31,7 +31,7 @@ export const loader: LoaderFunction = async ({request}) => {
   const blogRecommendations = await getBlogRecommendations(request)
   const data: LoaderData = {
     // we show the seasons in reverse order
-    seasons: (await getSeasonListItems(request)).reverse(),
+    seasons: (await getSeasonListItems({request})).reverse(),
     blogRecommendations,
   }
 

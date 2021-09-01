@@ -144,11 +144,18 @@ function mapTestimonial(rawTestimonial: UnknownObj) {
   }
 }
 
-async function getAllTestimonials({request}: {request: Request}) {
+async function getAllTestimonials({
+  request,
+  forceFresh,
+}: {
+  request?: Request
+  forceFresh?: boolean
+}) {
   const allTestimonials = await cachified({
     cache: redisCache,
     key: 'content:data:testimonials.yml',
     request,
+    forceFresh,
     maxAge: 1000 * 60 * 60 * 24,
     getFreshValue: async (): Promise<Array<TestimonialWithMetadata>> => {
       const talksString = await downloadFile('content/data/testimonials.yml')
@@ -185,16 +192,18 @@ function mapOutMetadata(
 
 async function getTestimonials({
   request,
+  forceFresh,
   subjects = [],
   categories = [],
   limit,
 }: {
-  request: Request
+  request?: Request
+  forceFresh?: boolean
   subjects?: Array<TestimonialSubject>
   categories?: Array<TestimonialCategory>
   limit?: number
 }) {
-  const allTestimonials = await getAllTestimonials({request})
+  const allTestimonials = await getAllTestimonials({request, forceFresh})
 
   if (!(subjects.length + categories.length)) {
     // they must just want all the testimonials
