@@ -12,6 +12,7 @@ import {Grid} from '~/components/grid'
 import {H2, Paragraph} from '~/components/typography'
 import {BackLink} from '~/components/arrow-button'
 import {reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {ButtonLink} from '~/components/button'
 
 function getCalls(userId: string) {
   return prisma.call.findMany({
@@ -122,7 +123,8 @@ export default function RecordScreen() {
       {user ? null : (
         <Grid>
           <div className="col-span-full lg:col-span-8 lg:col-start-3">
-            <Paragraph>{`Please login to have your questions answered.`}</Paragraph>
+            <Paragraph className="mb-4">{`Please login to have your questions answered.`}</Paragraph>
+            <ButtonLink to="/login">Login (or sign up)</ButtonLink>
           </div>
         </Grid>
       )}
