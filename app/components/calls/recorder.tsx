@@ -543,7 +543,7 @@ function visualize({
       add = false
       let avg = 0
       let min = 0
-      // TODO:: For perf could you hit this in blocks like
+      // IDEA: If perf is ever an issue, you could you hit this in blocks like
       // dataArray.length / 70 * i and only hit it like 10 times instead of however many.
       for (let i = 0; i < bufferLength; i++) {
         const value = dataArray[i]
@@ -750,7 +750,6 @@ function StreamVis({
     if (!canvas) return
 
     // pad the start of the timeline to fill out the width
-    console.log('creating timeline')
     const timeline = gsap.timeline({paused: replay})
     timelineRef.current = timeline
     padTimeline({

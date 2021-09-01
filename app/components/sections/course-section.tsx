@@ -26,7 +26,7 @@ function CourseSection() {
 
         <div className="col-span-full mt-12 lg:col-span-6 lg:mt-0">
           <CourseCard
-            title="Testing Javascript"
+            title="Testing JavaScript"
             description="Learn smart, efficient testing methods."
             imageBuilder={images.courseTestingJS}
             courseUrl="https://testing-library.com"
