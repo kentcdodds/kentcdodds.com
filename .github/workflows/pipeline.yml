@@ -183,7 +183,18 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v2
 
+      - name: 🔎 Determine deployable changes
+        id: deployable
+        run: >-
+          echo ::set-output name=DEPLOYABLE::$(node ./other/is-deployable.js ${{
+          github.sha }})
+
+      - name: 🛑 Not Deployable
+        if: steps.deployable.outputs.DEPLOYABLE == 'false'
+        run: echo "Changes not deployable"
+
       - name: 🚀 Deploy
+        if: steps.deployable.outputs.DEPLOYABLE == 'true'
         uses: superfly/flyctl-actions@1.1
         with:
           args:
