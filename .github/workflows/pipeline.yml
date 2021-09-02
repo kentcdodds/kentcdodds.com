@@ -189,7 +189,7 @@ jobs:
           echo ::set-output name=DEPLOYABLE::$(node ./other/is-deployable.js ${{
           github.sha }})
 
-      - name: 🛑 Not Deployable
+      - name: ⛔️ Not Deployable
         if: steps.deployable.outputs.DEPLOYABLE == 'false'
         run: echo "Changes not deployable"
 
