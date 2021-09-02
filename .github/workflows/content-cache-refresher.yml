@@ -5,8 +5,8 @@ on:
       - main
 
 jobs:
-  lint:
-    name: Bust Cache
+  refresh:
+    name: 🥬 Refresh Content
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout repo
