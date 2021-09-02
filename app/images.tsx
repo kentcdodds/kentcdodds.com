@@ -115,6 +115,10 @@ const images = createImages({
     id: 'kent/kent-listening-at-react-rally',
     alt: 'Kent sitting as an audience member at React Rally',
   },
+  getToKnowKentVideoThumbnail: {
+    id: 'kent/video-stills/get-to-know-kent-video-thumbnail',
+    alt: 'Kent in the air on a snowboard with the words "Get to know Kent C. Dodds"',
+  },
 
   alexProfileYellow: {
     id: 'kentcdodds.com/illustrations/yellow-head',

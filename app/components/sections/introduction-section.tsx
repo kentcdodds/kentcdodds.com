@@ -16,7 +16,7 @@ function IntroductionSection() {
           autoplay={searchParams.has('autoplay')}
           img={
             <img
-              {...getImgProps(images.kentRidingOnewheelOutdoorsFast, {
+              {...getImgProps(images.getToKnowKentVideoThumbnail, {
                 widths: [256, 550, 700, 900, 1300, 1800],
                 sizes: [
                   '(max-width: 320px) 256px',

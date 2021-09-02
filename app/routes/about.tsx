@@ -93,7 +93,7 @@ function AboutIndex() {
               <img
                 id="about-me"
                 className="rounded-lg object-cover"
-                {...getImgProps(images.kentRidingOnewheelOutdoorsFast, {
+                {...getImgProps(images.getToKnowKentVideoThumbnail, {
                   widths: [280, 560, 840, 1100, 1300, 2600, 3900],
                   sizes: ['(min-width:1620px) 1280px', '80vw'],
                 })}

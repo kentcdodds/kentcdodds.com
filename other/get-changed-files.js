@@ -21,22 +21,37 @@ function fetchJson(url) {
   })
 }
 
-async function getChangedFiles(currentCommitSha) {
-  try {
-    const buildInfo = await fetchJson('https://kent.dev/build/info.json')
+const changeTypes = {
+  M: 'modified',
+  A: 'added',
+  D: 'deleted',
+  R: 'moved',
+}
 
-    const deployedCommitSha = buildInfo.commit.sha
+async function getChangedFiles(currentCommitSha, compareCommitSha) {
+  try {
+    const lineParser = /^(?<change>\w).+?\s+(?<filename>.+$)/
     const changedFiles = execSync(
-      `git diff --name-only ${currentCommitSha} ${deployedCommitSha}`,
+      `git diff --name-status ${currentCommitSha} ${compareCommitSha}`,
     )
       .toString()
       .split('\n')
+      .map(line => line.match(lineParser)?.groups)
       .filter(Boolean)
-    return changedFiles
+    const changes = []
+    for (const {change, filename} of changedFiles) {
+      const changeType = changeTypes[change]
+      if (changeType) {
+        changes.push({changeType: changeTypes[change], filename})
+      } else {
+        console.error(`Unknown change type: ${change} ${filename}`)
+      }
+    }
+    return changes
   } catch (error) {
     console.error(`Something went wrong trying to get changed files.`, error)
     return null
   }
 }
 
-module.exports = {getChangedFiles}
+module.exports = {getChangedFiles, fetchJson}

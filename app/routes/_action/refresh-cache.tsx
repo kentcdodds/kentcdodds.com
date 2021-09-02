@@ -9,9 +9,16 @@ import {getTalksAndTags} from '~/utils/talks.server'
 import {getTestimonials} from '~/utils/testimonials.server'
 import {getWorkshops} from '~/utils/workshops.server'
 
-type Body = {keys: Array<string>} | {contentPaths: Array<string>}
+type Body =
+  | {keys: Array<string>; commitSha?: string}
+  | {contentPaths: Array<string>; commitSha?: string}
+
+export const commitShaKey = 'meta:last-refresh-commit-sha'
 
 export const action: ActionFunction = async ({request}) => {
+  // Everything in this function is fire and forget, so we don't need to await
+  // anything.
+
   if (
     request.headers.get('auth') !==
     getRequiredServerEnvVar('REFRESH_CACHE_SECRET')
@@ -20,11 +27,21 @@ export const action: ActionFunction = async ({request}) => {
   }
 
   const body = (await request.json()) as Body
-  // fire and forget
+
+  function setShaInRedis() {
+    if (body.commitSha) {
+      void redisCache.set(
+        commitShaKey,
+        JSON.stringify({sha: body.commitSha, date: new Date()}),
+      )
+    }
+  }
+
   if ('keys' in body && Array.isArray(body.keys)) {
     for (const key of body.keys) {
       void redisCache.del(key)
     }
+    setShaInRedis()
     return {message: 'Deleting redis cache keys', keys: body.keys}
   }
   if ('contentPaths' in body && Array.isArray(body.contentPaths)) {
@@ -53,6 +70,7 @@ export const action: ActionFunction = async ({request}) => {
         void getTalksAndTags({forceFresh: true})
       }
     }
+    setShaInRedis()
     return {
       message: 'Refreshing cache for content paths',
       contentPaths: refreshingContentPaths,
