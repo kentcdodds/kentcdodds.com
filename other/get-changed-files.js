@@ -30,11 +30,11 @@ const changeTypes = {
 
 async function getChangedFiles(currentCommitSha, compareCommitSha) {
   try {
-    const lineParser = /^(?<change>\w).+?\s+(?<filename>.+$)/
-    const changedFiles = execSync(
+    const lineParser = /^(?<change>\w).*?\s+(?<filename>.+$)/
+    const gitOutput = execSync(
       `git diff --name-status ${currentCommitSha} ${compareCommitSha}`,
-    )
-      .toString()
+    ).toString()
+    const changedFiles = gitOutput
       .split('\n')
       .map(line => line.match(lineParser)?.groups)
       .filter(Boolean)
