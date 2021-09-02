@@ -19,10 +19,12 @@ async function go() {
     changedFiles === null ||
     changedFiles.length === 0 ||
     changedFiles.some(({filename}) => !filename.startsWith('content'))
+
   console.error(
     isDeployable
       ? '🟢 There are deployable changes'
       : '🔴 No deployable changes',
+    {isDeployable},
   )
   console.log(isDeployable)
 }
