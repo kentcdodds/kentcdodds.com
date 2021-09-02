@@ -60,6 +60,8 @@ async function go() {
     .map(f => f.filename.replace(/^content\//, ''))
   if (contentPaths.length) {
     console.log(`⚡️ Content changed. Requesting the cache be refreshed.`, {
+      currentCommitSha,
+      compareSha,
       contentPaths,
     })
     const response = await postRefreshCache({

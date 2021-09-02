@@ -7,6 +7,8 @@ async function go() {
   const compareCommitSha = buildInfo.commit.sha
   const changedFiles = await getChangedFiles(currentCommitSha, compareCommitSha)
   console.error('Determining whether the changed files are deployable', {
+    currentCommitSha,
+    compareCommitSha,
     changedFiles,
   })
   // deploy if:
