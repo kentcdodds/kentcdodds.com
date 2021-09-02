@@ -12,7 +12,11 @@ function fetchJson(url) {
         })
 
         res.on('end', () => {
-          resolve(JSON.parse(data))
+          try {
+            resolve(JSON.parse(data))
+          } catch (error) {
+            reject(error)
+          }
         })
       })
       .on('error', e => {
