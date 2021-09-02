@@ -7,6 +7,8 @@ getChangedFiles(currentCommitSha).then(changedFiles => {
   console.error('Determining whether the changed files are deployable', {
     changedFiles,
   })
-  const isDeployable = changedFiles.some(file => !file.startsWith('content'))
+  const isDeployable =
+    changedFiles === null ||
+    changedFiles.some(file => !file.startsWith('content'))
   console.log(isDeployable)
 })

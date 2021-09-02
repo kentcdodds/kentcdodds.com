@@ -35,8 +35,8 @@ async function getChangedFiles(currentCommitSha) {
     return changedFiles
   } catch (error) {
     console.error(`Something went wrong trying to get changed files.`, error)
+    return null
   }
-  return []
 }
 
 module.exports = {getChangedFiles}

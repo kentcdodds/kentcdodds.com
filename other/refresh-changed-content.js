@@ -39,7 +39,7 @@ function postRefreshCache(postData) {
 const [currentCommitSha] = process.argv.slice(2)
 
 async function go() {
-  const changedFiles = await getChangedFiles(currentCommitSha)
+  const changedFiles = (await getChangedFiles(currentCommitSha)) ?? []
   const contentPaths = changedFiles
     .filter(f => f.startsWith('content'))
     .map(f => f.replace(/^content\//, ''))
