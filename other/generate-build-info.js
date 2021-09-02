@@ -34,6 +34,7 @@ async function go() {
     path.join(__dirname, '../public/build/info.json'),
     JSON.stringify(buildInfo, null, 2),
   )
+  console.log('build info generated', buildInfo)
 }
 go()
 
