@@ -31,7 +31,7 @@ async function go() {
   }
 
   fs.writeFileSync(
-    path.join(__dirname, '../public/build-info.json'),
+    path.join(__dirname, '../public/build/info.json'),
     JSON.stringify(buildInfo, null, 2),
   )
 }
