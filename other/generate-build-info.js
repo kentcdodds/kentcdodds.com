@@ -10,7 +10,7 @@ async function getCommit() {
     const res = await fetch(
       `https://api.github.com/repos/kentcdodds/remix-kentcdodds/commits/${commit}`,
     )
-    const data = res.json()
+    const data = await res.json()
     return {
       isDeployCommit: commit === 'HEAD' ? 'Unknown' : true,
       sha: data.sha,

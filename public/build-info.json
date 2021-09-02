@@ -1,4 +1,11 @@
 {
-  "buildTime": 1630549829050,
-  "commit": "No COMMIT_SHA environment variable."
+  "buildTime": 1630549979675,
+  "commit": {
+    "isDeployCommit": true,
+    "sha": "c3373711014c7a4a297d9460d2382de422840243",
+    "author": "Kent C. Dodds",
+    "date": "2021-09-01T23:52:05Z",
+    "message": "fix syntax error",
+    "link": "https://github.com/kentcdodds/remix-kentcdodds/commit/c3373711014c7a4a297d9460d2382de422840243"
+  }
 }
