@@ -2,7 +2,7 @@
 FROM node:16-slim as base
 
 ARG REMIX_TOKEN
-ENV REMIX_TOKEN=${REMIX_TOKEN}
+ENV REMIX_TOKEN=$REMIX_TOKEN
 
 # install open ssl for prisma
 RUN apt-get update && apt-get install -y openssl
@@ -25,7 +25,7 @@ RUN npm install --production=false
 FROM base as production-deps
 
 ARG REMIX_TOKEN
-ENV REMIX_TOKEN=${REMIX_TOKEN}
+ENV REMIX_TOKEN=$REMIX_TOKEN
 
 RUN mkdir /app/
 WORKDIR /app/
@@ -38,9 +38,9 @@ RUN npm prune --production
 FROM base as build
 
 ARG REMIX_TOKEN
-ENV REMIX_TOKEN=${REMIX_TOKEN}
+ENV REMIX_TOKEN=$REMIX_TOKEN
 ARG COMMIT_SHA
-ENV COMMIT_SHA=${COMMIT_SHA}
+ENV COMMIT_SHA=$COMMIT_SHA
 
 RUN mkdir /app/
 WORKDIR /app/
