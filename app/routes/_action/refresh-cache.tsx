@@ -4,10 +4,12 @@ import {json, redirect} from 'remix'
 import type {ActionFunction} from 'remix'
 import {getRequiredServerEnvVar} from '~/utils/misc'
 import {redisCache} from '~/utils/redis.server'
-import {getMdxPage} from '~/utils/mdx'
+import {getMdxDirList, getMdxPage} from '~/utils/mdx'
 import {getTalksAndTags} from '~/utils/talks.server'
 import {getTestimonials} from '~/utils/testimonials.server'
 import {getWorkshops} from '~/utils/workshops.server'
+
+type Body = {keys: Array<string>} | {contentPaths: Array<string>}
 
 export const action: ActionFunction = async ({request}) => {
   if (
@@ -17,15 +19,15 @@ export const action: ActionFunction = async ({request}) => {
     return redirect('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
   }
 
-  const body = await request.json()
+  const body = (await request.json()) as Body
   // fire and forget
-  if (body.keys) {
+  if ('keys' in body && Array.isArray(body.keys)) {
     for (const key of body.keys) {
       void redisCache.del(key)
     }
     return {message: 'Deleting redis cache keys', keys: body.keys}
   }
-  if (Array.isArray(body.contentPaths)) {
+  if ('contentPaths' in body && Array.isArray(body.contentPaths)) {
     const refreshingContentPaths = []
     for (const contentPath of body.contentPaths) {
       if (typeof contentPath !== 'string') continue
@@ -36,7 +38,7 @@ export const action: ActionFunction = async ({request}) => {
         const slug = path.parse(dirOrFilename).name
 
         refreshingContentPaths.push(contentPath)
-        void getMdxPage({contentDir, slug}, {forceFresh: true})
+        void refreshMdxContent({contentDir, slug})
       }
       if (contentPath.startsWith('workshops')) {
         refreshingContentPaths.push(contentPath)
@@ -57,6 +59,18 @@ export const action: ActionFunction = async ({request}) => {
     }
   }
   return json({message: 'no action taken'}, {status: 400})
+}
+
+async function refreshMdxContent({
+  contentDir,
+  slug,
+}: {
+  contentDir: string
+  slug: string
+}) {
+  // refresh the page first, then refresh the whole list
+  await getMdxPage({contentDir, slug}, {forceFresh: true})
+  await getMdxDirList(contentDir, {forceFresh: true})
 }
 
 export const loader = () => redirect('/', {status: 404})

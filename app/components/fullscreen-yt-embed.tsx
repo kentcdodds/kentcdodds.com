@@ -1,6 +1,5 @@
 import Dialog from '@reach/dialog'
 import * as React from 'react'
-import type {LinksFunction} from 'remix'
 import {PlayIcon} from './icons/play-icon'
 import {PlusIcon} from './icons/plus-icon'
 
@@ -83,7 +82,7 @@ function FullScreenYouTubeEmbed({
 export {FullScreenYouTubeEmbed}
 export {default as LiteYouTubeEmbed} from 'react-lite-youtube-embed'
 
-export const links: LinksFunction = () => {
+export const links = () => {
   // for the youtube embed
   return [
     {rel: 'preconnect', href: 'https://www.youtube-nocookie.com'},

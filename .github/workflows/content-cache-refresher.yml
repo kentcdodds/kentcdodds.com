@@ -1,0 +1,23 @@
+name: Content Cache Refresher
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    name: Bust Cache
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v2
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+
+      - name: 🥬 Refresh Content
+        run: node ./other/refresh-changed-content.js ${{ github.sha }}
+        env:
+          REFRESH_CACHE_SECRET: ${{ secrets.REFRESH_CACHE_SECRET }}

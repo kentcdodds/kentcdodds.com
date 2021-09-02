@@ -57,8 +57,8 @@ export const loader: LoaderFunction = async ({request}) => {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const links: LinksFunction = ({data}) => {
-  return youTubeEmbedLinks({data})
+export const links: LinksFunction = () => {
+  return youTubeEmbedLinks()
 }
 
 export const meta: MetaFunction = () => {

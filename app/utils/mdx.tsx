@@ -37,20 +37,31 @@ async function getMdxPage(
   },
   options: CachifiedOptions,
 ): Promise<MdxPage | null> {
-  return cachified({
+  const key = getCompiledKey(contentDir, slug)
+  const page = await cachified({
     cache: redisCache,
     maxAge: defaultMaxAge,
     ...options,
     // reusing the same key as compiledMdxCached because we just return that
     // exact same value. Cachifying this allows us to skip getting the cached files
-    key: getCompiledKey(contentDir, slug),
+    key,
     checkValue: checkCompiledValue,
     getFreshValue: async () => {
       const pageFiles = await downloadMdxFilesCached(contentDir, slug, options)
-      const page = await compileMdxCached(contentDir, slug, pageFiles, options)
-      return page
+      const compiledPage = await compileMdxCached(
+        contentDir,
+        slug,
+        pageFiles,
+        options,
+      )
+      return compiledPage
     },
   })
+  if (!page) {
+    // if there's no page, let's remove it from the cache
+    void redisCache.del(key)
+  }
+  return page
 }
 
 async function getMdxPagesInDirectory(
@@ -88,7 +99,7 @@ async function getMdxPagesInDirectory(
 
 const getDirListKey = (contentDir: string) => `${contentDir}:dir-list`
 
-async function getMdxDirList(contentDir: string, options: CachifiedOptions) {
+async function getMdxDirList(contentDir: string, options?: CachifiedOptions) {
   return cachified({
     cache: redisCache,
     maxAge: defaultMaxAge,
@@ -118,15 +129,21 @@ async function downloadMdxFilesCached(
   slug: string,
   options: CachifiedOptions,
 ): Promise<Array<GitHubFile>> {
-  return cachified({
+  const key = getDownloadKey(contentDir, slug)
+  const files = await cachified({
     cache: redisCache,
     maxAge: defaultMaxAge,
     ...options,
-    key: getDownloadKey(contentDir, slug),
+    key,
     checkValue: (value: unknown) => Array.isArray(value),
     getFreshValue: async () =>
       downloadMdxFileOrDirectory(`${contentDir}/${slug}`),
   })
+  // if there aren't any files, remove it from the cache
+  if (!files.length) {
+    void redisCache.del(key)
+  }
+  return files
 }
 
 async function compileMdxCached(
@@ -135,21 +152,27 @@ async function compileMdxCached(
   files: Array<GitHubFile>,
   options: CachifiedOptions,
 ) {
-  return cachified({
+  const key = getCompiledKey(contentDir, slug)
+  const page = await cachified({
     cache: redisCache,
     maxAge: defaultMaxAge,
     ...options,
-    key: getCompiledKey(contentDir, slug),
+    key,
     checkValue: checkCompiledValue,
     getFreshValue: async () => {
-      const page = await compileMdx<MdxPage['frontmatter']>(slug, files)
-      if (page) {
-        return {...page, slug}
+      const compiledPage = await compileMdx<MdxPage['frontmatter']>(slug, files)
+      if (compiledPage) {
+        return {...compiledPage, slug}
       } else {
         return null
       }
     },
   })
+  // if there's no page, remove it from the cache
+  if (!page) {
+    void redisCache.del(key)
+  }
+  return page
 }
 
 async function getBlogMdxListItems(options: CachifiedOptions) {
