@@ -4,6 +4,9 @@ const {getChangedFiles} = require('./get-changed-files')
 const [currentCommitSha] = process.argv.slice(2)
 
 getChangedFiles(currentCommitSha).then(changedFiles => {
+  console.error('Determining whether the changed files are deployable', {
+    changedFiles,
+  })
   const isDeployable = changedFiles.some(file => !file.startsWith('content'))
   console.log(isDeployable)
 })
