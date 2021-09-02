@@ -32,6 +32,7 @@ function IntroductionSection() {
             <LiteYouTubeEmbed
               // TODO: replace this with the real ID before releasing
               id="dQw4w9WgXcQ"
+              announce="Watch"
               title="Get to know Kent C. Dodds"
               // We don't show the poster, so we use the lowest-res version
               poster="default"
