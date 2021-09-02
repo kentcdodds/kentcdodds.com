@@ -42,7 +42,11 @@ export const action: ActionFunction = async ({request}) => {
       void redisCache.del(key)
     }
     setShaInRedis()
-    return {message: 'Deleting redis cache keys', keys: body.keys}
+    return {
+      message: 'Deleting redis cache keys',
+      keys: body.keys,
+      commitSha: body.commitSha,
+    }
   }
   if ('contentPaths' in body && Array.isArray(body.contentPaths)) {
     const refreshingContentPaths = []
@@ -74,6 +78,7 @@ export const action: ActionFunction = async ({request}) => {
     return {
       message: 'Refreshing cache for content paths',
       contentPaths: refreshingContentPaths,
+      commitSha: body.commitSha,
     }
   }
   return json({message: 'no action taken'}, {status: 400})
