@@ -74,4 +74,4 @@ async function go() {
   }
 }
 
-go().catch(e => console.error(e))
+void go()
