@@ -4,35 +4,38 @@ const {getChangedFiles} = require('./get-changed-files')
 
 function postRefreshCache(postData) {
   return new Promise((resolve, reject) => {
-    const postDataString = JSON.stringify(postData)
-    const options = {
-      hostname: 'kent.dev',
-      port: 80,
-      path: '/_action/refresh-cache?_data=routes/_action/refresh-cache',
-      method: 'POST',
-      headers: {
-        auth: process.env.REFRESH_CACHE_SECRET,
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(postDataString),
-      },
+    try {
+      const postDataString = JSON.stringify(postData)
+      const options = {
+        hostname: 'kent.dev',
+        port: 443,
+        path: '/_action/refresh-cache?_data=routes/_action/refresh-cache',
+        method: 'POST',
+        headers: {
+          auth: process.env.REFRESH_CACHE_SECRET,
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(postDataString),
+        },
+      }
+
+      const req = https
+        .request(options, res => {
+          let data = ''
+          res.on('data', d => {
+            data += d
+          })
+
+          res.on('end', () => {
+            resolve(JSON.parse(data))
+          })
+        })
+        .on('error', reject)
+      req.write(postDataString)
+      req.end()
+    } catch (error) {
+      console.log('oh no', error)
+      reject(error)
     }
-
-    const req = https
-      .request(options, res => {
-        let data = ''
-        res.on('data', d => {
-          data += d
-        })
-
-        res.on('end', () => {
-          resolve(JSON.parse(data))
-        })
-      })
-      .on('error', e => {
-        reject(e)
-      })
-    req.write(postDataString)
-    req.end()
   })
 }
 
@@ -54,4 +57,4 @@ async function go() {
   }
 }
 
-void go()
+go().catch(e => console.error(e))
