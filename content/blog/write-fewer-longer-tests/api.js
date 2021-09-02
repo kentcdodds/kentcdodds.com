@@ -1,6 +1,6 @@
 let failedLastTime = true
 function getCourseInfo() {
-  // pretend this makes an HTTP request
+  // pretend this makes an HTTP request 😅
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       if (failedLastTime) {
