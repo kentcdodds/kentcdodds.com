@@ -28,6 +28,10 @@ jobs:
           echo ::set-output name=DEPLOYABLE::$(node ./other/is-deployable.js ${{
           github.sha }})
 
+      - name: ❓ Deployable
+        run: >-
+          echo "DEPLOYABLE: ${{steps.changes.outputs.DEPLOYABLE}}"
+
   lint:
     name: ⬣ ESLint
     needs: [changes]
