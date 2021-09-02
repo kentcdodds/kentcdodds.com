@@ -9,8 +9,13 @@ async function go() {
   console.error('Determining whether the changed files are deployable', {
     changedFiles,
   })
+  // deploy if:
+  // - there was an error getting the changed files (null)
+  // - there are no changed files
+  // - there are changed files, but at least one of them is non-content
   const isDeployable =
     changedFiles === null ||
+    changedFiles.length === 0 ||
     changedFiles.some(({filename}) => !filename.startsWith('content'))
   console.log(isDeployable)
 }
