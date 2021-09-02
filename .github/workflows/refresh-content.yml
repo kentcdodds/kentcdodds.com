@@ -1,4 +1,4 @@
-name: Content Cache Refresher
+name: 🥬 Refresh Content
 on:
   push:
     branches:
