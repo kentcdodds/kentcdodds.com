@@ -14,7 +14,7 @@ type Handler = (
 // Just made it this way to make it easier to check for handled routes in
 // our `routes/$slug.tsx` catch-all route.
 const pathedRoutes: Record<string, Handler> = {
-  '/refresh-commit-sha': async () => {
+  '/refresh-commit-sha.json': async () => {
     const shaInfo = await redisCache.get(refreshCacheCommitShaKey)
     const data = JSON.stringify(shaInfo)
     return new Response(data, {
