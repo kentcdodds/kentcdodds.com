@@ -39,6 +39,8 @@ FROM base as build
 
 ARG REMIX_TOKEN
 ENV REMIX_TOKEN=${REMIX_TOKEN}
+ARG COMMIT_SHA
+ENV COMMIT_SHA=$COMMIT_SHA
 
 RUN mkdir /app/
 WORKDIR /app/
@@ -69,7 +71,5 @@ COPY --from=build /app/node_modules/.prisma /app/node_modules/.prisma
 COPY --from=build /app/build /app/build
 COPY --from=build /app/public /app/public
 ADD . .
-ARG COMMIT_SHA
-ENV COMMIT_SHA=$COMMIT_SHA
 
 CMD ["npm", "run", "start"]

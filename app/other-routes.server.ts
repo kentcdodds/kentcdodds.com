@@ -4,8 +4,6 @@ import {getSitemapXml} from './utils/sitemap.server'
 import {getRssFeedXml} from './utils/blog-rss-feed.server'
 import {getDocumentReplayResponse} from './utils/prisma.server'
 
-const startTime = Date.now()
-
 type Handler = (
   request: Request,
   remixContext: EntryContext,
@@ -14,20 +12,6 @@ type Handler = (
 // Just made it this way to make it easier to check for handled routes in
 // our `routes/$slug.tsx` catch-all route.
 const pathedRoutes: Record<string, Handler> = {
-  '/build-info': async () => {
-    const buildInfo = {
-      commit: ENV.COMMIT_SHA,
-      startTime,
-    }
-    const json = JSON.stringify(buildInfo)
-    return new Response(json, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': String(Buffer.byteLength(json)),
-      },
-    })
-  },
   '/blog/rss.xml': async request => {
     const rss = await getRssFeedXml(request)
     return new Response(rss, {
