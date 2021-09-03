@@ -88,6 +88,7 @@ function RecordingForm({audio, data}: {audio: Blob; data?: RecordingFormData}) {
         <Field
           error={data?.errors.keywords}
           label="Keywords"
+          description="comma separated values"
           name="keywords"
           defaultValue={data?.fields.keywords ?? ''}
         />

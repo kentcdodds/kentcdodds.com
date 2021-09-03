@@ -246,32 +246,34 @@ async function addPostRead({
   }
 }
 
-function getReplayResponse(request: Request, errorMessage?: string) {
+function getReplayResponse(request: Request) {
+  if (isPrimaryRegion) return null
+  const pathname = new URL(request.url).pathname
+  const logInfo = {
+    pathname,
+    method: request.method,
+    PRIMARY_REGION,
+    FLY_REGION,
+  }
+  console.info(`Replaying:`, logInfo)
+  return redirect(pathname, {
+    status: 409,
+    headers: {'fly-replay': `region=${PRIMARY_REGION}`},
+  })
+}
+
+function getReplayResponseForError(request: Request, errorMessage?: string) {
   // depending on how the error is serialized, there may be quotes and escape
   // characters in the error message, so we'll use a regex instead of a regular includes.
   const isReadOnlyError = /SqlState\(.*?25006.*?\)/.test(errorMessage ?? '')
-  if (!isPrimaryRegion && isReadOnlyError) {
-    const pathname = new URL(request.url).pathname
-    const logInfo = {
-      pathname,
-      method: request.method,
-      PRIMARY_REGION,
-      FLY_REGION,
-    }
-    console.info(`Replaying:`, logInfo)
-    return redirect(pathname, {
-      status: 409,
-      headers: {'fly-replay': `region=${PRIMARY_REGION}`},
-    })
-  }
-  return null
+  return isReadOnlyError ? getReplayResponse(request) : null
 }
 
 async function getDocumentReplayResponse(
   request: Request,
   remixContext: EntryContext,
 ) {
-  return getReplayResponse(
+  return getReplayResponseForError(
     request,
     remixContext.componentDidCatchEmulator.error?.message,
   )
@@ -282,7 +284,7 @@ async function getDataReplayResponse(request: Request, response: Response) {
 
   const textClone = response.clone()
   const text = await textClone.text().catch(() => null)
-  return getReplayResponse(request, text ?? '')
+  return getReplayResponseForError(request, text ?? '')
 }
 
 export {
@@ -297,6 +299,7 @@ export {
   updateUser,
   deleteUser,
   addPostRead,
+  getReplayResponse,
   getDocumentReplayResponse,
   getDataReplayResponse,
 }

@@ -8,7 +8,7 @@ import {
   RecordingFormData,
 } from '~/components/calls/submit-recording-form'
 import {requireUser} from '~/utils/session.server'
-import {prisma} from '~/utils/prisma.server'
+import {getReplayResponse, prisma} from '~/utils/prisma.server'
 import {getErrorMessage, getNonNull} from '~/utils/misc'
 import {
   getErrorForAudio,
@@ -24,6 +24,9 @@ export const handle: KCDHandle = {
 }
 
 export const action: ActionFunction = async ({request}) => {
+  const replay = getReplayResponse(request)
+  if (replay) return replay
+
   return requireUser(request, async user => {
     const actionData: ActionData = {fields: {}, errors: {}}
     try {
@@ -83,7 +86,7 @@ export default function RecordScreen() {
         <RecordingForm audio={audio} data={actionData} />
       ) : (
         <div>
-          <Paragraph>
+          <Paragraph className="mb-4">
             {`
               Choose which recording device you would like to use.
               Then click "Start Recording," introduce yourself

@@ -13,7 +13,11 @@ import clsx from 'clsx'
 import {shuffle} from 'lodash'
 import {getSession, getUser} from '~/utils/session.server'
 import {getLoginInfoSession} from '~/utils/login.server'
-import {prisma, validateMagicLink} from '~/utils/prisma.server'
+import {
+  getReplayResponse,
+  prisma,
+  validateMagicLink,
+} from '~/utils/prisma.server'
 import {getErrorStack, teams} from '~/utils/misc'
 import {tagKCDSiteSubscriber} from '../convertkit/convertkit.server'
 import {useTeam} from '~/utils/providers'
@@ -61,6 +65,8 @@ function getErrorForTeam(team: string | null) {
 }
 
 export const action: ActionFunction = async ({request}) => {
+  const replay = getReplayResponse(request)
+  if (replay) return replay
   const session = await getSession(request)
   const loginInfoSession = await getLoginInfoSession(request)
   const magicLink = loginInfoSession.getMagicLink()
