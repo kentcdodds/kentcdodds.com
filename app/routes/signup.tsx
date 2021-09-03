@@ -286,6 +286,20 @@ export default function NewAccount() {
             <Field
               name="email"
               label="Email"
+              description={
+                <span>
+                  {`This controls your avatar via `}
+                  <a
+                    className="underlined font-bold"
+                    href="https://gravatar.com"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                  >
+                    Gravatar
+                  </a>
+                  {'.'}
+                </span>
+              }
               defaultValue={data.email}
               readOnly
               disabled
