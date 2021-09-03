@@ -49,7 +49,7 @@ function RecordingForm({audio, data}: {audio: Blob; data?: RecordingFormData}) {
     <div>
       <div className="mb-12">
         {data?.errors.generalError ? (
-          <p id="audio-error-message" className="text-red-600 text-center">
+          <p id="audio-error-message" className="text-center text-red-500">
             {data.errors.generalError}
           </p>
         ) : null}
