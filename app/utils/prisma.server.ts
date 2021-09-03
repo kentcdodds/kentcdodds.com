@@ -257,7 +257,7 @@ function getReplayResponse(request: Request) {
   }
   console.info(`Replaying:`, logInfo)
   return redirect(pathname, {
-    status: 409,
+    status: 302,
     headers: {'fly-replay': `region=${PRIMARY_REGION}`},
   })
 }
