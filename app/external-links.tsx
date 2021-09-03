@@ -5,6 +5,8 @@ const externalLinks = {
     'https://podcasts.google.com/?feed=aHR0cHM6Ly9mZWVkcy5zaW1wbGVjYXN0LmNvbS9YX3dTX1dZaA',
   spotify: 'https://open.spotify.com/show/7GkO2poedjbltWT5lduL5w',
   simpleCast: 'https://feeds.simplecast.com/X_wS_WYh',
+  callKentSpotify: 'https://open.spotify.com/show/6czfajqqSfPYD7bKZaFUNg',
+  callKentRSS: 'https://feeds.transistor.fm/call-kent',
   discord: 'https://kcd.im/discord',
   translationContributions:
     'https://github.com/kentcdodds/remix-kentcdodds/blob/main/CONTRIBUTING.md#translation-contributions',

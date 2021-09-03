@@ -25,6 +25,7 @@ import {
 } from '~/utils/call-kent'
 import {PodcastSubs} from '~/components/podcast-subs'
 import {Spacer} from '~/components/spacer'
+import {externalLinks} from '~/external-links'
 
 export type LoaderData = {
   episodes: Await<ReturnType<typeof getEpisodes>>
@@ -114,8 +115,8 @@ export default function CallHomeScreen() {
         <PodcastSubs
           apple="TODO: add this"
           google="TODO: add this"
-          spotify="TODO: add this"
-          rss="https://feeds.transistor.fm/call-kent"
+          spotify={externalLinks.callKentSpotify}
+          rss={externalLinks.callKentRSS}
         />
       </Grid>
 
