@@ -144,6 +144,11 @@ jobs:
       - name: 📥 Download deps
         uses: bahmutov/npm-install@v1
 
+      - name: 🎛 Installing ffmpeg
+        uses: FedericoCarboni/setup-ffmpeg@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: ⚙️ Build
         run: npm run build
         env:
