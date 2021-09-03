@@ -311,11 +311,12 @@ function CallRecorder({
         {state.matches('ready') ? (
           <div className="flex flex-col gap-12">
             <Paragraph>
-              {`Current recording device: `}
+              <span id="device-label">{`Current recording device: `}</span>
               <LinkButton
                 onClick={() => send({type: 'changeDevice'})}
                 className="truncate"
                 style={{maxWidth: '80vw'}}
+                aria-labelledby="device-label"
               >
                 {state.context.selectedAudioDevice?.label ?? 'default'}
               </LinkButton>

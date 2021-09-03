@@ -5,12 +5,8 @@ module.exports = {
       script: [
         'node',
         '--inspect',
-        '--experimental-wasm-threads',
-        // TODO: once this is fixed, updated index.js to not require these
-        // files and use the --require flag instead.
-        // https://github.com/ffmpegwasm/ffmpeg.wasm/issues/246
-        // '--require ./node_modules/dotenv/config',
-        // '--require ./mocks',
+        '--require ./node_modules/dotenv/config',
+        '--require ./mocks',
         './index.js',
       ]
         .filter(Boolean)

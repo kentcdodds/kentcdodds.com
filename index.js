@@ -16,11 +16,6 @@ if (process.env.FLY) {
     environment: process.env.NODE_ENV,
   })
   Sentry.setContext('region', process.env.FLY_REGION ?? 'unknown')
-} else {
-  // move this back to --require flags in pm2 once this is solved:
-  // https://github.com/ffmpegwasm/ffmpeg.wasm/issues/246
-  require('./mocks')
-  require('dotenv/config')
 }
 
 const MODE = process.env.NODE_ENV
