@@ -1,11 +1,11 @@
 # base node image
-FROM node:16-slim as base
+FROM node:16-bullseye-slim as base
 
 ARG REMIX_TOKEN
 ENV REMIX_TOKEN=$REMIX_TOKEN
 
-# install open ssl for prisma
-RUN apt-get update && apt-get install -y openssl
+# install open ssl for prisma and ffmpeg for the call kent functionality
+RUN apt-get update && apt-get install -y openssl ffmpeg
 
 # install all node_modules, including dev
 FROM base as deps
@@ -59,9 +59,6 @@ RUN npm run build
 FROM base
 
 ENV NODE_ENV=production
-
-# install open ssl for prisma
-RUN apt-get update && apt-get install -y openssl ffmpeg=4.4
 
 RUN mkdir /app/
 WORKDIR /app/
