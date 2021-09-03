@@ -67,6 +67,7 @@ function getErrorForTeam(team: string | null) {
 export const action: ActionFunction = async ({request}) => {
   const replay = getReplayResponse(request)
   if (replay) return replay
+
   const session = await getSession(request)
   const loginInfoSession = await getLoginInfoSession(request)
   const magicLink = loginInfoSession.getMagicLink()

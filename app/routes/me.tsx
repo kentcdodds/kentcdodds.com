@@ -156,11 +156,7 @@ function YouScreen() {
                 </H2>
               </div>
               <Form action="/me" method="post">
-                <input
-                  type="hidden"
-                  name="actionId"
-                  value={actionIds.logout}
-                />
+                <input type="hidden" name="actionId" value={actionIds.logout} />
                 <Button variant="secondary">
                   <LogoutIcon />
                   <H6 as="span">logout</H6>
@@ -200,6 +196,20 @@ function YouScreen() {
               autoComplete="email"
               required
               defaultValue={user.email}
+              description={
+                <span>
+                  {`This controls your avatar via `}
+                  <a
+                    className="underlined font-bold"
+                    href="https://gravatar.com"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                  >
+                    Gravatar
+                  </a>
+                  {'.'}
+                </span>
+              }
               readOnly
               disabled
             />
