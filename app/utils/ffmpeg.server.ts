@@ -56,7 +56,7 @@ async function createEpisodeAudio(callBase64: string, responseBase64: string) {
   })
 
   const buffer = await fs.promises.readFile(outputPath)
-  await fsExtra.promises.unlink(cacheDir)
+  await fs.promises.rmdir(cacheDir, {recursive: true})
   return buffer
 }
 
