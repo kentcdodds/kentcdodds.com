@@ -61,7 +61,7 @@ FROM base
 ENV NODE_ENV=production
 
 # install open ssl for prisma
-RUN apt-get update && apt-get install -y openssl ffmpeg
+RUN apt-get update && apt-get install -y openssl ffmpeg=4.4
 
 RUN mkdir /app/
 WORKDIR /app/

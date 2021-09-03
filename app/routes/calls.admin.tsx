@@ -10,7 +10,7 @@ import {
 import {Outlet} from 'react-router-dom'
 import type {Await, KCDHandle} from '~/types'
 import {requireAdminUser} from '~/utils/session.server'
-import {prisma} from '~/utils/prisma.server'
+import {getReplayResponse, prisma} from '~/utils/prisma.server'
 import {getAvatarForUser} from '~/utils/misc'
 
 export const handle: KCDHandle = {
@@ -18,6 +18,9 @@ export const handle: KCDHandle = {
 }
 
 export const action: ActionFunction = async ({request}) => {
+  const replay = getReplayResponse(request)
+  if (replay) return replay
+
   return requireAdminUser(request, async () => {
     const requestText = await request.text()
     const form = new URLSearchParams(requestText)
