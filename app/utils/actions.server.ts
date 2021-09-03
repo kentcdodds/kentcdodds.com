@@ -1,5 +1,5 @@
 import {json} from 'remix'
-import type {NonNullProperties, Request, Response} from '~/types'
+import type {NonNullProperties} from '~/types'
 import {getErrorMessage, getNonNull} from './misc'
 
 type ErrorMessage = string
@@ -68,7 +68,7 @@ async function handleFormSubmission<
     )
 
     if (Object.values(actionData.errors).some(err => err !== null)) {
-      return json(actionData, 401)
+      return json(actionData, 400)
     }
 
     const nonNullFields = getNonNull(actionData.fields)

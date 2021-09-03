@@ -1,8 +1,7 @@
 // This just allows us to track individual clients so we can keep track of
 // the posts they've read and make useful suggestions even if they're not logged in.
 
-import type {Request, ResponseInit} from 'remix'
-import {Headers, createCookieSessionStorage} from 'remix'
+import {createCookieSessionStorage} from 'remix'
 import uuid from 'uuid'
 import {getRequiredServerEnvVar} from './misc'
 

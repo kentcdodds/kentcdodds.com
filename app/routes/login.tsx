@@ -1,6 +1,6 @@
 import * as React from 'react'
 import type {ActionFunction, HeadersFunction, LoaderFunction} from 'remix'
-import {Headers, Form, useLoaderData, json, redirect} from 'remix'
+import {Form, useLoaderData, json, redirect} from 'remix'
 import {
   getDomainUrl,
   getErrorMessage,

@@ -1,5 +1,4 @@
 import LRU from 'lru-cache'
-import type {Request} from '~/types'
 import type {Timings} from './metrics.server'
 import {time} from './metrics.server'
 import {getErrorMessage} from './misc'

@@ -1,4 +1,3 @@
-import type {Request} from 'remix'
 import {createCookieSessionStorage} from 'remix'
 import {getRequiredServerEnvVar} from './misc'
 import {Theme, isTheme} from './theme-provider'

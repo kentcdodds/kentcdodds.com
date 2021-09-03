@@ -1,5 +1,4 @@
-import type {Request, ResponseInit} from 'remix'
-import {createCookieSessionStorage, Headers} from 'remix'
+import {createCookieSessionStorage} from 'remix'
 import {getRequiredServerEnvVar} from './misc'
 import {linkExpirationTime} from './prisma.server'
 

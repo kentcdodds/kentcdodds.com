@@ -1,5 +1,5 @@
 import {PrismaClient} from '@prisma/client'
-import type {Request, Response, EntryContext} from 'remix'
+import type {EntryContext} from 'remix'
 import {redirect} from 'remix'
 import chalk from 'chalk'
 import type {User, Session} from '~/types'

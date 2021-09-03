@@ -1,4 +1,4 @@
-import type {Team, Request, MdxListItem} from '~/types'
+import type {Team, MdxListItem} from '~/types'
 import {subYears, subMonths} from 'date-fns'
 import {shuffle} from 'lodash'
 import {getBlogMdxListItems} from './mdx'

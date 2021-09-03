@@ -1,5 +1,8 @@
+/// <reference types="@remix-run/dev" />
+/// <reference types="@remix-run/node/globals" />
+
 import calculateReadingTime from 'reading-time'
-import type {ActionFunction, LoaderFunction, Request, Response} from 'remix'
+import type {ActionFunction, LoaderFunction} from 'remix'
 import type {User, Call, Session, Team, Role} from '@prisma/client'
 
 type NonNullProperties<Type> = {
@@ -179,8 +182,6 @@ type KCDAction<
 type GitHubFile = {path: string; content: string}
 
 export {
-  Request,
-  Response,
   NonNullProperties,
   Await,
   User,

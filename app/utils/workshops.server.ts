@@ -1,4 +1,3 @@
-import type {Request} from 'remix'
 import * as YAML from 'yaml'
 import {markdownToHtmlUnwrapped} from './markdown.server'
 import type {Timings} from './metrics.server'

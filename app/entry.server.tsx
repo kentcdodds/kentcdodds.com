@@ -1,12 +1,7 @@
 import * as React from 'react'
 import ReactDOMServer from 'react-dom/server'
-import {
-  RemixServer as Remix,
-  Response,
-  Request,
-  Headers,
-  EntryContext,
-} from 'remix'
+import type {EntryContext} from 'remix'
+import {RemixServer as Remix} from 'remix'
 import {getDataReplayResponse} from './utils/prisma.server'
 import {getEnv} from './utils/env.server'
 import {routes as otherRoutes} from './other-routes.server'
@@ -34,6 +29,7 @@ export default async function handleRequest(
   }
 
   const markup = ReactDOMServer.renderToString(
+    // @ts-expect-error this is... odd... I think it's a bug with the experimental version
     <Remix context={remixContext} url={request.url} />,
   )
 

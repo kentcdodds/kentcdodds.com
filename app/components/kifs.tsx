@@ -37,20 +37,14 @@ function CloudinaryVideo({
 
 function MissingSomething(props: Omit<CloudinaryVideoProps, 'cloudinaryId'>) {
   return (
-    <CloudinaryVideo
-      cloudinaryId="kentcdodds.com/misc/where_am_i.mp4"
-      {...props}
-    />
+    <CloudinaryVideo cloudinaryId="kentcdodds.com/misc/where_am_i" {...props} />
   )
 }
 
 function Grimmacing(props: Omit<CloudinaryVideoProps, 'cloudinaryId'>) {
   return (
-    <CloudinaryVideo
-      cloudinaryId="kentcdodds.com/misc/grimmace.mp4"
-      {...props}
-    />
+    <CloudinaryVideo cloudinaryId="kentcdodds.com/misc/grimmace" {...props} />
   )
 }
 
-export {MissingSomething, Grimmacing}
+export {MissingSomething, Grimmacing, CloudinaryVideo}

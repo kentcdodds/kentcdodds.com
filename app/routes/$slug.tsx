@@ -1,6 +1,6 @@
 import * as React from 'react'
 import type {HeadersFunction} from 'remix'
-import {useLoaderData, json, Response} from 'remix'
+import {useLoaderData, json} from 'remix'
 import type {MdxPage, KCDLoader, MdxListItem, KCDHandle} from '~/types'
 import {
   getMdxPage,

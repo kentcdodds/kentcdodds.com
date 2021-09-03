@@ -6,7 +6,6 @@ import type {
   TransistorCreatedJson,
   TransistorAuthorizedJson,
   TransistorEpisodesJson,
-  Request,
   CallKentEpisode,
   TransistorUpdateEpisodeData,
 } from '~/types'

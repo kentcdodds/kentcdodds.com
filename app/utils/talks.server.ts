@@ -1,4 +1,3 @@
-import type {Request} from 'remix'
 import * as YAML from 'yaml'
 import type {CountableSlugify} from '@sindresorhus/slugify'
 import type {Await} from '~/types'

@@ -1,0 +1,33 @@
+diff --git a/node_modules/@remix-run/server-runtime/server.js b/node_modules/@remix-run/server-runtime/server.js
+index 7289bcc..76ba6ca 100644
+--- a/node_modules/@remix-run/server-runtime/server.js
++++ b/node_modules/@remix-run/server-runtime/server.js
+@@ -66,7 +66,7 @@ async function handleDataRequest(request, loadContext, build, platform, routes)
+     var _platform$formatServe;
+ 
+     let formattedError = (await ((_platform$formatServe = platform.formatServerError) === null || _platform$formatServe === void 0 ? void 0 : _platform$formatServe.call(platform, error))) || error;
+-    return responses.json(await errors.serializeError(formattedError), {
++    response = responses.json(await errors.serializeError(formattedError), {
+       status: 500,
+       headers: {
+         "X-Remix-Error": "unfortunately, yes"
+@@ -74,6 +74,19 @@ async function handleDataRequest(request, loadContext, build, platform, routes)
+     });
+   }
+ 
++  if (build.entry.module.handleDataRequest) {
++    try {
++      response = await build.entry.module.handleDataRequest(clonedRequest, response, loadContext, routeMatch.params);
++    } catch (error) {
++      return responses.json(errors.serializeError(error), {
++        status: 500,
++        headers: {
++          "X-Data-Request-Handler-Error": "Handle your errors, yo."
++        }
++      });
++    }
++  }
++
+   if (isRedirectResponse(response)) {
+     // We don't have any way to prevent a fetch request from following
+     // redirects. So we use the `X-Remix-Redirect` header to indicate the

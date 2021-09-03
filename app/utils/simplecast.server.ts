@@ -4,7 +4,6 @@ import type {
   SimplecastEpisode,
   SimplecastEpisodeListItem,
   CWKEpisode,
-  Request,
   CWKSeason,
 } from '~/types'
 import {omit, sortBy} from 'lodash'

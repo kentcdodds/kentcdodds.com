@@ -1,12 +1,5 @@
 import * as React from 'react'
-import {
-  json,
-  redirect,
-  useLoaderData,
-  useActionData,
-  Headers,
-  Form,
-} from 'remix'
+import {json, redirect, useLoaderData, useActionData, Form} from 'remix'
 import type {ActionFunction, LoaderFunction} from 'remix'
 import type {KCDHandle, Team} from '~/types'
 import clsx from 'clsx'

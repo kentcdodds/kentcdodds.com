@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {redirect, Headers} from 'remix'
+import {redirect} from 'remix'
 import type {ActionFunction} from 'remix'
 import {addPostRead} from '~/utils/prisma.server'
 import {getSession} from '~/utils/session.server'

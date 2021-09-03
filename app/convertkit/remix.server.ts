@@ -1,10 +1,8 @@
-import {redirect, createCookieSessionStorage, Headers} from 'remix'
-import type {Request, ResponseInit} from 'remix'
-import {getRequiredServerEnvVar} from '~/utils/misc'
-import {handleFormSubmission} from '~/utils/actions.server'
+import {json} from 'remix'
+import {getErrorMessage} from '~/utils/misc'
 import {deleteConvertKitCache} from '~/utils/user-info.server'
 import * as ck from './convertkit.server'
-import type {ActionData, LoaderData} from './types'
+import type {Errors, Fields, ActionData} from './types'
 
 function getErrorForFirstName(name: string | null) {
   if (!name) return `Name is required`
@@ -20,9 +18,9 @@ function getErrorForEmail(email: string | null) {
 
 function getErrorForConvertKitTagId(
   tagId: string | null,
-  {convertKitFormId}: ActionData['fields'],
+  form: URLSearchParams,
 ) {
-  if (!convertKitFormId && !tagId) {
+  if (!form.get('convertKitFormId') && !tagId) {
     return `convertKitTagId is required if convertKitFormId is not specified`
   }
   if (!tagId) return null
@@ -32,9 +30,9 @@ function getErrorForConvertKitTagId(
 
 function getErrorForConvertKitFormId(
   formId: string | null,
-  {convertKitTagId}: ActionData['fields'],
+  form: URLSearchParams,
 ) {
-  if (!convertKitTagId && !formId) {
+  if (!form.get('convertKitTagId') && !formId) {
     return `convertKitFormId is required if convertKitTagId is not specified`
   }
   if (!formId) return null
@@ -47,104 +45,60 @@ function getErrorForFormId(value: string | null) {
   return null
 }
 
-const storage = createCookieSessionStorage({
-  cookie: {
-    name: 'KCD_convert_kit',
-    secrets: [getRequiredServerEnvVar('SESSION_SECRET')],
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 10,
-  },
-})
-
-async function getSession(request: Request) {
-  const session = await storage.getSession(request.headers.get('Cookie'))
-  const initialValue = await storage.commitSession(session)
-
-  const commit = async () => {
-    const currentValue = await storage.commitSession(session)
-    return currentValue === initialValue ? null : currentValue
-  }
-  return {
-    getData: () => session.get('data') as LoaderData | null,
-    flashData: (data: LoaderData) => session.flash('data', data),
-    commit,
-    getHeaders: async (headers: ResponseInit['headers'] = new Headers()) => {
-      const value = await commit()
-      if (!value) return headers
-      if (headers instanceof Headers) {
-        headers.append('Set-Cookie', value)
-      } else if (Array.isArray(headers)) {
-        headers.push(['Set-Cookie', value])
-      } else {
-        headers['Set-Cookie'] = value
-      }
-      return headers
-    },
-  }
-}
-
 async function handleConvertKitFormSubmission(request: Request) {
-  const session = await getSession(request)
+  const requestText = await request.text()
+  const form = new URLSearchParams(requestText)
 
-  return handleFormSubmission<ActionData>({
-    request,
-    validators: {
-      formId: getErrorForFormId,
-      _redirect: () => null,
-      firstName: getErrorForFirstName,
-      email: getErrorForEmail,
-      convertKitTagId: getErrorForConvertKitTagId,
-      convertKitFormId: getErrorForConvertKitFormId,
-    },
-    handleFormValues: async formData => {
-      const {
-        firstName,
-        email,
-        convertKitTagId,
-        convertKitFormId,
-        _redirect,
-        formId,
-      } = formData
+  const fields: Fields = {
+    formId: form.get('formId') ?? '',
+    firstName: form.get('firstName') ?? '',
+    email: form.get('email') ?? '',
+    convertKitTagId: form.get('convertKitTagId') ?? '',
+    convertKitFormId: form.get('convertKitFormId') ?? '',
+  }
 
-      let subscriberId: number | null = null
-      if (convertKitFormId) {
-        const subscriber = await ck.addSubscriberToForm({
-          email,
-          firstName,
-          convertKitFormId,
-        })
-        subscriberId = subscriber.id
-      }
-      if (convertKitTagId) {
-        const subscriber = await ck.addTagToSubscriber({
-          email,
-          firstName,
-          convertKitTagId,
-        })
-        subscriberId = subscriber.id
-      }
+  const errors: Errors = {
+    generalError: null,
+    formId: getErrorForFormId(fields.formId),
+    firstName: getErrorForFirstName(fields.firstName),
+    email: getErrorForEmail(fields.email),
+    convertKitTagId: getErrorForConvertKitTagId(fields.convertKitTagId, form),
+    convertKitFormId: getErrorForConvertKitFormId(
+      fields.convertKitFormId,
+      form,
+    ),
+  }
 
-      if (subscriberId) {
-        await deleteConvertKitCache(subscriberId)
-      }
+  let data: ActionData
 
-      session.flashData({fields: {formId, firstName, email}, status: 'success'})
+  if (Object.values(errors).some(err => err !== null)) {
+    data = {status: 'error', errors}
+    return json(data, 400)
+  }
 
-      return redirect(_redirect || '/', {
-        headers: await session.getHeaders(),
-      })
-    },
-  })
+  try {
+    let subscriberId: number | null = null
+    if (fields.convertKitFormId) {
+      const subscriber = await ck.addSubscriberToForm(fields)
+      subscriberId = subscriber.id
+    }
+    if (fields.convertKitTagId) {
+      const subscriber = await ck.addTagToSubscriber(fields)
+      subscriberId = subscriber.id
+    }
+
+    if (subscriberId) {
+      // if this errors out it's not a big deal. The cache will expire eventually
+      await deleteConvertKitCache(subscriberId).catch(() => {})
+    }
+  } catch (error: unknown) {
+    errors.generalError = getErrorMessage(error)
+    data = {status: 'error', errors}
+    return json(data, 500)
+  }
+
+  data = {status: 'success'}
+  return json(data)
 }
 
-async function getConvertKitFormLoaderData(request: Request) {
-  const session = await getSession(request)
-  return session.getData() ?? null
-}
-
-export {
-  handleConvertKitFormSubmission,
-  getSession as getConvertKitFormSession,
-  getConvertKitFormLoaderData,
-}
+export {handleConvertKitFormSubmission}

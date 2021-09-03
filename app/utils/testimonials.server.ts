@@ -1,4 +1,3 @@
-import type {Request} from 'remix'
 import * as YAML from 'yaml'
 import {pick} from 'lodash'
 import {downloadFile} from './github.server'

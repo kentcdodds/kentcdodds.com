@@ -1,6 +1,5 @@
 import * as React from 'react'
 import {
-  Headers,
   Links,
   Meta,
   Scripts,
@@ -11,12 +10,7 @@ import {
   useMatches,
   useTransition,
 } from 'remix'
-import type {
-  LinksFunction,
-  MetaFunction,
-  HeadersFunction,
-  HeadersInit,
-} from 'remix'
+import type {LinksFunction, MetaFunction, HeadersFunction} from 'remix'
 import {Outlet} from 'react-router-dom'
 import {AnimatePresence, motion} from 'framer-motion'
 import {useSpinDelay} from 'spin-delay'
@@ -55,9 +49,6 @@ import {Spacer} from './components/spacer'
 import {Footer} from './components/footer'
 import {TeamCircle} from './components/team-circle'
 import {NotificationMessage} from './components/notification-message'
-import {getConvertKitFormLoaderData} from './convertkit/remix.server'
-import {ConvertKitDataProvider} from './convertkit/form'
-import type {LoaderData as ConvertKitLoaderData} from './convertkit/types'
 import {pathedRoutes} from './other-routes.server'
 import {ServerError} from './components/errors'
 
@@ -118,7 +109,6 @@ type LoaderData = {
   userInfo: Await<ReturnType<typeof getUserInfo>> | null
   ENV: ReturnType<typeof getEnv>
   requestInfo: RequestInfo
-  convertKit: ConvertKitLoaderData | null
 }
 
 export const loader: LoaderFunction = async ({request}) => {
@@ -163,7 +153,6 @@ export const loader: LoaderFunction = async ({request}) => {
         })
       : null,
     ENV: getEnv(),
-    convertKit: await getConvertKitFormLoaderData(request),
     requestInfo: {
       origin: getDomainUrl(request),
       session: {
@@ -241,7 +230,7 @@ function PageLoadingMessage() {
   React.useEffect(() => {
     if (firstRender) return
     if (transition.state === 'idle') return
-    setPendingPath(transition.nextLocation.pathname)
+    setPendingPath(transition.location.pathname)
   }, [transition])
 
   React.useEffect(() => {
@@ -289,13 +278,9 @@ function App() {
     .flatMap(({handle}) => (handle as KCDHandle | undefined)?.metas)
     .filter(typedBoolean)
 
-  // this convertkit thing is a workaround until we figure out this:
-  // https://github.com/remix-run/remix/issues/240
-  const shouldManageScroll =
-    data.convertKit?.status !== 'success' &&
-    matches.every(
-      ({handle}) => (handle as KCDHandle | undefined)?.scroll !== false,
-    )
+  const shouldManageScroll = matches.every(
+    ({handle}) => (handle as KCDHandle | undefined)?.scroll !== false,
+  )
   useScrollRestoration(shouldManageScroll)
 
   const [team] = useTeam()
@@ -365,9 +350,7 @@ export default function AppWithProviders() {
         <UserInfoProvider value={data.userInfo}>
           <TeamProvider>
             <ThemeProvider specifiedTheme={data.requestInfo.session.theme}>
-              <ConvertKitDataProvider value={data.convertKit}>
-                <App />
-              </ConvertKitDataProvider>
+              <App />
             </ThemeProvider>
           </TeamProvider>
         </UserInfoProvider>

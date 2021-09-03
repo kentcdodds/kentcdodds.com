@@ -1,5 +1,4 @@
-import type {Request, EntryContext} from 'remix'
-import {Response} from 'remix'
+import type {EntryContext} from 'remix'
 import {getSitemapXml} from './utils/sitemap.server'
 import {getRssFeedXml} from './utils/blog-rss-feed.server'
 import {getDocumentReplayResponse} from './utils/prisma.server'

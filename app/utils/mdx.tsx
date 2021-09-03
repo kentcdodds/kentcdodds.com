@@ -1,5 +1,5 @@
 import * as React from 'react'
-import type {GitHubFile, MdxListItem, MdxPage, Request} from '~/types'
+import type {GitHubFile, MdxListItem, MdxPage} from '~/types'
 import * as mdxBundler from 'mdx-bundler/client'
 import {compileMdx} from '~/utils/compile-mdx.server'
 import {

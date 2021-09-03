@@ -1,5 +1,5 @@
 import type {LoaderFunction} from 'remix'
-import {redirect, Headers} from 'remix'
+import {redirect} from 'remix'
 import type {KCDHandle} from '~/types'
 import * as React from 'react'
 import {getLoginInfoSession} from '~/utils/login.server'
