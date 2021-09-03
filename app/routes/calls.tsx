@@ -113,8 +113,8 @@ export default function CallHomeScreen() {
         </H6>
 
         <PodcastSubs
-          apple="TODO: add this"
-          google="TODO: add this"
+          apple={externalLinks.callKentApple}
+          google={externalLinks.callKentGoogle}
           spotify={externalLinks.callKentSpotify}
           rss={externalLinks.callKentRSS}
         />
