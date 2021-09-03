@@ -170,6 +170,7 @@ jobs:
           DATABASE_URL: 'postgresql://kody:the_koala@localhost:5432/kentcdodds_db?schema=public'
           REDIS_URL: ${{ secrets.REDIS_CI_TEST_URL }}
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          DISABLE_TELEMETRY: 'true'
 
   build:
     name: 🐳 Build
