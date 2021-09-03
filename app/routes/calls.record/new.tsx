@@ -17,6 +17,7 @@ import {
   getErrorForKeywords,
 } from '~/utils/call-kent'
 import {useUser} from '~/utils/providers'
+import {Paragraph} from '~/components/typography'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -81,10 +82,20 @@ export default function RecordScreen() {
       {audio ? (
         <RecordingForm audio={audio} data={actionData} />
       ) : (
-        <CallRecorder
-          onRecordingComplete={recording => setAudio(recording)}
-          team={user.team}
-        />
+        <div>
+          <Paragraph>
+            {`
+              Choose which recording device you would like to use.
+              Then click "Start Recording," introduce yourself
+              ("Hi, Kent, my name is ${user.firstName}") and say whatever you'd like.
+              Try to keep it 2 minutes or less. Thanks!
+            `}
+          </Paragraph>
+          <CallRecorder
+            onRecordingComplete={recording => setAudio(recording)}
+            team={user.team}
+          />
+        </div>
       )}
     </div>
   )
