@@ -289,6 +289,7 @@ function MdxScreen() {
         <div className="aspect-h-4 aspect-w-3 md:aspect-w-3 md:aspect-h-2 col-span-full mt-10 rounded-lg lg:col-span-10 lg:col-start-2">
           {frontmatter.bannerCloudinaryId ? (
             <img
+              key={frontmatter.bannerCloudinaryId}
               title={frontmatter.bannerCredit}
               className="w-full h-full rounded-lg object-cover"
               {...getImgProps(
