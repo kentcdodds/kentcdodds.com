@@ -1,5 +1,4 @@
-import formatDate from 'date-fns/format'
-import parseISO from 'date-fns/parseISO'
+import * as dateFns from 'date-fns'
 import {getBlogMdxListItems} from './mdx'
 import {getDomainUrl} from './misc'
 
@@ -25,10 +24,13 @@ async function getRssFeedXml(request: Request) {
               <description>${cdata(
                 post.frontmatter.description ?? 'This post is... indescribable',
               )}</description>
-              <pubDate>${formatDate(
-                post.frontmatter.date
-                  ? parseISO(post.frontmatter.date)
-                  : Date.now(),
+              <pubDate>${dateFns.format(
+                dateFns.add(
+                  post.frontmatter.date
+                    ? dateFns.parseISO(post.frontmatter.date)
+                    : Date.now(),
+                  {minutes: new Date().getTimezoneOffset()},
+                ),
                 'yyyy-MM-ii',
               )}</pubDate>
               <guid>${blogUrl}/${post.slug}</guid>

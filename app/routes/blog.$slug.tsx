@@ -3,7 +3,6 @@ import {useLoaderData, json} from 'remix'
 import type {HeadersFunction} from 'remix'
 import {Link, useParams} from 'react-router-dom'
 import type {Await, KCDHandle, KCDLoader, MdxListItem, MdxPage} from '~/types'
-import formatDate from 'date-fns/format'
 import {getImageBuilder, getImgProps, images} from '~/images'
 import {
   getMdxDirList,
@@ -26,7 +25,7 @@ import {TeamStats} from '~/components/team-stats'
 import type {Timings} from '~/utils/metrics.server'
 import {getServerTimeHeader} from '~/utils/metrics.server'
 import {useRequestInfo} from '~/utils/providers'
-import {formatNumber, reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {formatDate, formatNumber, reuseUsefulLoaderHeaders} from '~/utils/misc'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
@@ -281,7 +280,7 @@ function MdxScreen() {
           <H2>{frontmatter.title}</H2>
           <H6 as="p" variant="secondary" className="mt-2">
             {frontmatter.date
-              ? formatDate(new Date(frontmatter.date), 'PPP')
+              ? formatDate(frontmatter.date)
               : 'some day in the past'}{' '}
             — {data.page.readTime?.text ?? 'a quick read'}
           </H6>

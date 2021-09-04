@@ -80,6 +80,15 @@ function formatTime(seconds: number) {
 
 const formatNumber = (num: number) => new Intl.NumberFormat().format(num)
 
+function formatDate(dateString: string) {
+  return dateFns.format(
+    dateFns.add(dateFns.parseISO(dateString), {
+      minutes: new Date().getTimezoneOffset(),
+    }),
+    'PPP',
+  )
+}
+
 function getErrorMessage(error: unknown) {
   if (typeof error === 'string') return error
   if (error instanceof Error) return error.message
@@ -222,6 +231,7 @@ export {
   teams,
   teamDisplay,
   teamTextColorClasses,
+  formatDate,
   formatTime,
   formatNumber,
 }

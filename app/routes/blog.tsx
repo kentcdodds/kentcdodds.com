@@ -2,8 +2,6 @@ import * as React from 'react'
 import type {LoaderFunction, HeadersFunction, MetaFunction} from 'remix'
 import {json, useLoaderData} from 'remix'
 import type {Await, KCDHandle, MdxListItem} from '~/types'
-import formatDate from 'date-fns/format'
-import parseISO from 'date-fns/parseISO'
 import {useSearchParams} from 'react-router-dom'
 import {Grid} from '~/components/grid'
 import {getImageBuilder, getImgProps, images} from '~/images'
@@ -23,6 +21,7 @@ import type {Timings} from '~/utils/metrics.server'
 import {getServerTimeHeader} from '~/utils/metrics.server'
 import {ServerError} from '~/components/errors'
 import {
+  formatDate,
   formatNumber,
   reuseUsefulLoaderHeaders,
   useUpdateQueryStringValueWithoutNavigation,
@@ -240,10 +239,9 @@ function BlogHome() {
           <FeaturedSection
             subTitle={
               data.recommended.frontmatter.date
-                ? `${formatDate(
-                    parseISO(data.recommended.frontmatter.date),
-                    'PPP',
-                  )} — ${data.recommended.readTime?.text ?? 'quick read'}`
+                ? `${formatDate(data.recommended.frontmatter.date)} — ${
+                    data.recommended.readTime?.text ?? 'quick read'
+                  }`
                 : 'TBA'
             }
             title={data.recommended.frontmatter.title}
