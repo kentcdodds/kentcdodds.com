@@ -447,6 +447,12 @@ The _only_ reason the `query*` variant of the queries is exposed is for you to
 have a function you can call which does not throw an error if no element is
 found to match the query (it returns `null` if no element is found). The _only_
 reason this is useful is to verify that an element is not rendered to the page.
+The reason this is so important is because the `get*` and `find*` variants will
+throw an extremely helpful error if no element is found–it prints out the whole
+document so you can see what's rendred and maybe why your query failed to find
+what you were looking for. Whereas `query*` will only return `null` and the best
+`toBeInTheDocument` can do is say: "null isn't in the document" which is not
+very helpful.
 
 <callout-success>
   Advice: Only use the `query*` variants for asserting that an element cannot
