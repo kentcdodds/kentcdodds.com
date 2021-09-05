@@ -26,6 +26,7 @@ import type {Timings} from '~/utils/metrics.server'
 import {getServerTimeHeader} from '~/utils/metrics.server'
 import {useRequestInfo} from '~/utils/providers'
 import {formatDate, formatNumber, reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {BlurrableImage} from '~/components/blurrable-image'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
@@ -287,27 +288,34 @@ function MdxScreen() {
         </div>
         <div className="aspect-h-4 aspect-w-3 md:aspect-w-3 md:aspect-h-2 col-span-full mt-10 rounded-lg lg:col-span-10 lg:col-start-2">
           {frontmatter.bannerCloudinaryId ? (
-            <img
+            <BlurrableImage
               key={frontmatter.bannerCloudinaryId}
-              title={frontmatter.bannerCredit}
-              className="w-full h-full rounded-lg object-cover"
-              {...getImgProps(
-                getImageBuilder(
-                  frontmatter.bannerCloudinaryId,
-                  frontmatter.bannerAlt ??
-                    frontmatter.bannerCredit ??
-                    frontmatter.title ??
-                    'Post banner',
-                ),
-                {
-                  widths: [280, 560, 840, 1100, 1650, 2500, 2100, 3100],
-                  sizes: [
-                    '(max-width:1023px) 80vw',
-                    '(min-width:1024px) and (max-width:1620px) 67vw',
-                    '1100px',
-                  ],
-                },
-              )}
+              blurDataUrl={frontmatter.bannerBlurDataUrl}
+              className="aspect-h-4 aspect-w-3 md:aspect-w-3 md:aspect-h-2 col-span-full mt-10 mx-auto rounded-lg lg:col-span-10 lg:col-start-2"
+              img={
+                <img
+                  key={frontmatter.bannerCloudinaryId}
+                  title={frontmatter.bannerCredit}
+                  className="w-full h-full rounded-lg object-cover"
+                  {...getImgProps(
+                    getImageBuilder(
+                      frontmatter.bannerCloudinaryId,
+                      frontmatter.bannerAlt ??
+                        frontmatter.bannerCredit ??
+                        frontmatter.title ??
+                        'Post banner',
+                    ),
+                    {
+                      widths: [280, 560, 840, 1100, 1650, 2500, 2100, 3100],
+                      sizes: [
+                        '(max-width:1023px) 80vw',
+                        '(min-width:1024px) and (max-width:1620px) 67vw',
+                        '1100px',
+                      ],
+                    },
+                  )}
+                />
+              }
             />
           ) : null}
         </div>

@@ -262,6 +262,8 @@ function getImgProps(
   return {
     alt: imageBuilder.alt,
     src: imageBuilder({
+      quality: 'auto',
+      format: 'auto',
       ...transformations,
       resize: {width: averageSize, ...transformations?.resize},
     }),
@@ -269,6 +271,8 @@ function getImgProps(
       .map(width =>
         [
           imageBuilder({
+            quality: 'auto',
+            format: 'auto',
             ...transformations,
             resize: {width, ...transformations?.resize},
           }),

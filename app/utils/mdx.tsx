@@ -1,4 +1,5 @@
 import * as React from 'react'
+import {buildImageUrl} from 'cloudinary-build-url'
 import type {GitHubFile, MdxListItem, MdxPage} from '~/types'
 import * as mdxBundler from 'mdx-bundler/client'
 import {compileMdx} from '~/utils/compile-mdx.server'
@@ -54,6 +55,22 @@ async function getMdxPage(
         pageFiles,
         options,
       )
+      if (
+        compiledPage?.frontmatter.bannerCloudinaryId &&
+        !compiledPage.frontmatter.bannerBlurDataUrl
+      ) {
+        try {
+          compiledPage.frontmatter.bannerBlurDataUrl = await getBlurDataUrl(
+            compiledPage.frontmatter.bannerCloudinaryId,
+          )
+        } catch (error: unknown) {
+          console.error(
+            'oh no, there was an error getting the blur image data url',
+            error,
+          )
+        }
+      }
+      console.log('frontmatter', compiledPage?.frontmatter)
       return compiledPage
     },
   })
@@ -173,6 +190,31 @@ async function compileMdxCached(
     void redisCache.del(key)
   }
   return page
+}
+
+async function getBlurDataUrl(cloudinaryId: string) {
+  const imageURL = buildImageUrl(cloudinaryId, {
+    transformations: {
+      resize: {width: 100},
+      quality: 'auto',
+      format: 'webp',
+      effect: {
+        name: 'blur',
+        value: '1000',
+      },
+    },
+  })
+  const dataUrl = await getDataUrlForImage(imageURL)
+  return dataUrl
+}
+
+async function getDataUrlForImage(imageUrl: string) {
+  const res = await fetch(imageUrl)
+  const arrayBuffer = await res.arrayBuffer()
+  const base64 = Buffer.from(arrayBuffer).toString('base64')
+  const mime = res.headers.get('Content-Type') ?? 'image/webp'
+  const dataUrl = `data:${mime};base64,${base64}`
+  return dataUrl
 }
 
 async function getBlogMdxListItems(options: CachifiedOptions) {

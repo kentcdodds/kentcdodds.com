@@ -40,7 +40,7 @@ const server = setupServer(
   ...miscHandlers,
 )
 
-server.listen({onUnhandledRequest: 'error'})
+server.listen({onUnhandledRequest: 'warn'})
 console.info('🔶 Mock server installed')
 if (isE2E) console.info('running in E2E mode')
 
