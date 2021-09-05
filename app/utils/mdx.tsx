@@ -55,21 +55,6 @@ async function getMdxPage(
         pageFiles,
         options,
       )
-      if (
-        compiledPage?.frontmatter.bannerCloudinaryId &&
-        !compiledPage.frontmatter.bannerBlurDataUrl
-      ) {
-        try {
-          compiledPage.frontmatter.bannerBlurDataUrl = await getBlurDataUrl(
-            compiledPage.frontmatter.bannerCloudinaryId,
-          )
-        } catch (error: unknown) {
-          console.error(
-            'oh no, there was an error getting the blur image data url',
-            error,
-          )
-        }
-      }
       console.log('frontmatter', compiledPage?.frontmatter)
       return compiledPage
     },
@@ -179,6 +164,21 @@ async function compileMdxCached(
     getFreshValue: async () => {
       const compiledPage = await compileMdx<MdxPage['frontmatter']>(slug, files)
       if (compiledPage) {
+        if (
+          compiledPage.frontmatter.bannerCloudinaryId &&
+          !compiledPage.frontmatter.bannerBlurDataUrl
+        ) {
+          try {
+            compiledPage.frontmatter.bannerBlurDataUrl = await getBlurDataUrl(
+              compiledPage.frontmatter.bannerCloudinaryId,
+            )
+          } catch (error: unknown) {
+            console.error(
+              'oh no, there was an error getting the blur image data url',
+              error,
+            )
+          }
+        }
         return {...compiledPage, slug}
       } else {
         return null
