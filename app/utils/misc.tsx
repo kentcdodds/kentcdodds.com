@@ -57,6 +57,11 @@ const teamDisplay: Record<Team, string> = {
   YELLOW: 'Yellow',
 }
 
+
+const useSSRLayoutEffect =
+  typeof window === 'undefined' ? () => {} : React.useLayoutEffect
+
+
 type AnchorProps = React.DetailedHTMLProps<
   React.AnchorHTMLAttributes<HTMLAnchorElement>,
   HTMLAnchorElement
@@ -221,6 +226,7 @@ export {
   getNonNull,
   assertNonNull,
   useUpdateQueryStringValueWithoutNavigation,
+  useSSRLayoutEffect,
   typedBoolean,
   getRequiredServerEnvVar,
   getRequiredGlobalEnvVar,

@@ -1,5 +1,6 @@
 import * as React from 'react'
 import clsx from 'clsx'
+import {useSSRLayoutEffect} from '~/utils/misc'
 
 function BlurrableImage({
   img,
@@ -12,14 +13,17 @@ function BlurrableImage({
   const [visible, setVisible] = React.useState(false)
   const imgRef = React.useRef<HTMLImageElement>(null)
 
-  React.useEffect(() => {
-    let current = true
-    if (!imgRef.current) return
-    if (imgRef.current.complete) {
-      setVisible(true)
-      return
-    }
+  // make this happen asap
+  // if it's alrady loaded, don't bother fading it in.
+  useSSRLayoutEffect(() => {
+    if (imgRef.current?.complete) setVisible(true)
+  }, [])
 
+  React.useEffect(() => {
+    if (!imgRef.current) return
+    if (imgRef.current.complete) return
+
+    let current = true
     imgRef.current.addEventListener('load', () => {
       if (!imgRef.current || !current) return
       setTimeout(() => {

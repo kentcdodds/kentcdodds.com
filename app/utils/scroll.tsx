@@ -1,11 +1,9 @@
 import * as React from 'react'
 import {useLocation} from 'react-router-dom'
 import {useTransition} from '@remix-run/react'
+import {useSSRLayoutEffect} from './misc'
 
 let firstRender = true
-
-const useSSRLayoutEffect =
-  typeof window === 'undefined' ? () => {} : React.useLayoutEffect
 
 if (
   typeof window !== 'undefined' &&
