@@ -88,7 +88,7 @@ function MdxScreen({mdxPage}: {mdxPage: MdxPage}) {
           <BlurrableImage
             key={frontmatter.bannerCloudinaryId}
             blurDataUrl={frontmatter.bannerBlurDataUrl}
-            className="aspect-h-4 aspect-w-3 md:aspect-w-3 md:aspect-h-2 col-span-full mt-10 mx-auto rounded-lg lg:col-span-10 lg:col-start-2"
+            className="aspect-h-4 aspect-w-3 md:aspect-w-3 md:aspect-h-2 col-span-full mt-10 mx-auto w-full h-full rounded-lg lg:col-span-10 lg:col-start-2"
             img={
               <img
                 className="rounded-lg"

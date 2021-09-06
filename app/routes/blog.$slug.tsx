@@ -245,6 +245,7 @@ function MdxScreen() {
   const params = useParams()
   const {slug} = params
   const Component = useMdxComponent(code)
+  console.log(frontmatter.bannerCloudinaryId)
 
   const permalink = `${requestInfo.origin}/blog/${slug}`
 

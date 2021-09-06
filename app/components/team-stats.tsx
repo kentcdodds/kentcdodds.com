@@ -153,7 +153,7 @@ function TeamStats({
     >
       <div
         className={clsx(
-          'underlined absolute right-0 h-8 text-sm opacity-0 group-hover:opacity-100 transition',
+          'absolute right-0 h-8 text-sm opacity-0 group-hover:opacity-100 transition',
           {
             '-top-8': direction === 'down',
             '-bottom-20': direction === 'up',
