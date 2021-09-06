@@ -12,8 +12,6 @@ function BlurrableImage({
   const [visible, setVisible] = React.useState(false)
   const imgRef = React.useRef<HTMLImageElement>(null)
 
-  const {src, srcSet, sizes} = img.props
-
   React.useEffect(() => {
     let current = true
     if (!imgRef.current) return
@@ -26,42 +24,45 @@ function BlurrableImage({
       if (!imgRef.current || !current) return
       setTimeout(() => {
         setVisible(true)
-      }, 150)
+      }, 0)
     })
 
     return () => {
       current = false
     }
-  }, [src, srcSet, sizes])
+  }, [])
 
   const imgEl = React.cloneElement(img, {
     // @ts-expect-error no idea 🤷‍♂️
     ref: imgRef,
     key: img.props.src,
-    className: clsx(
-      img.props.className,
-      'z-10 w-full h-full object-cover transition-opacity',
-      {'opacity-0': !visible},
-    ),
+    className: clsx(img.props.className, 'w-full h-full object-cover'),
+  })
+
+  const blurEl = (
+    <img
+      key={blurDataUrl}
+      src={blurDataUrl}
+      className={imgEl.props.className}
+    />
+  )
+
+  const jsImgEl = React.cloneElement(imgEl, {
+    key: `${img.props.src}-js`,
+    className: clsx(imgEl.props.className, 'z-10 transition-opacity', {
+      'opacity-0': !visible,
+    }),
   })
 
   return (
-    <div
-      className={clsx(rest.className, 'w-full h-full')}
-      style={
-        blurDataUrl
-          ? {
-              ...rest.style,
-              backgroundImage: `url("${blurDataUrl}")`,
-              backgroundSize: 'cover',
-            }
-          : rest.style
-      }
-    >
-      {imgEl}
+    <div className={clsx(rest.className, 'w-full h-full')} {...rest}>
+      {jsImgEl}
       <noscript className="z-10">{imgEl}</noscript>
       {blurDataUrl ? (
-        <div className="w-full h-full rounded-lg backdrop-blur-xl" />
+        <>
+          {blurEl}
+          <div className={clsx(imgEl.props.className, 'backdrop-blur-xl')} />
+        </>
       ) : null}
     </div>
   )

@@ -55,7 +55,6 @@ async function getMdxPage(
         pageFiles,
         options,
       )
-      console.log('frontmatter', compiledPage?.frontmatter)
       return compiledPage
     },
   })

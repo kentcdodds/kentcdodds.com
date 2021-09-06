@@ -48,7 +48,6 @@ async function createEpisodeAudio(callBase64: string, responseBase64: string) {
       `,
       outputPath,
     ]
-    console.log('Running ffmpeg with these args: ', {args})
     spawn('ffmpeg', args, {stdio: 'inherit'}).on('close', code => {
       if (code === 0) resolve(null)
       else reject(null)
