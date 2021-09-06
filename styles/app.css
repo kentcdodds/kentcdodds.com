@@ -22,7 +22,9 @@
   --color-team-unknown: #818890;
   --color-team-blue: #36a3ff;
   --color-team-red: #ff4545;
-  --color-team-yellow: #ffd644;
+  /* yellow in light mode is... hard */
+  --color-team-yellow: #a08600;
+  --color-yellow-500: #a08600;
 }
 
 .light {
@@ -36,6 +38,8 @@
 }
 
 .dark {
+  --color-team-yellow: #ffd644;
+  --color-yellow-500: #ffd644;
   --color-team-unknown: var(--color-white);
   --bg-primary: var(--color-gray-900);
   --bg-secondary: var(--color-gray-800);
@@ -84,6 +88,11 @@ input:-webkit-autofill::first-line {
     BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
     sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
     'Noto Color Emoji';
+}
+
+/* I kinda feel like this should be the default... 🤷‍♂️ */
+[hidden] {
+  pointer-events: none;
 }
 
 /* These elements get removed before hydration but they can look funny before hydrating */

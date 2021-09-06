@@ -96,19 +96,19 @@ function AboutSection() {
       <div className="text-secondary flex items-center justify-between mt-6 lg:flex-col lg:items-start">
         <div className="flex space-x-4">
           <a
-            className="hover:text-primary focus:text-primary focus:outline-none"
+            className="hover:text-team-current focus:text-team-current focus:outline-none"
             href={externalLinks.github}
           >
             <GithubIcon />
           </a>
           <a
-            className="hover:text-primary focus:text-primary focus:outline-none"
+            className="hover:text-team-current focus:text-team-current focus:outline-none"
             href={externalLinks.youtube}
           >
             <YoutubeIcon />
           </a>
           <a
-            className="hover:text-primary focus:text-primary focus:outline-none"
+            className="hover:text-team-current focus:text-team-current focus:outline-none"
             href={externalLinks.twitter}
           >
             <TwitterIcon />
@@ -129,7 +129,7 @@ function FooterLink({name, href}: FooterLinkProps) {
     <li className="py-1">
       <AnchorOrLink
         href={href}
-        className="text-secondary hover:text-primary focus:text-primary underlined inline-block whitespace-nowrap text-lg focus:outline-none"
+        className="text-secondary underlined inline-block hover:text-team-current focus:text-team-current whitespace-nowrap text-lg focus:outline-none"
       >
         {name}
       </AnchorOrLink>

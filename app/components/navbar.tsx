@@ -52,9 +52,9 @@ function NavLink({
     <li className="px-5 py-2">
       <Link
         className={clsx(
-          'hover:text-primary underlined focus:text-primary block whitespace-nowrap text-lg font-medium focus:outline-none',
+          'underlined block hover:text-team-current focus:text-team-current whitespace-nowrap text-lg font-medium focus:outline-none',
           {
-            'text-primary active': isSelected,
+            'text-team-current active': isSelected,
             'text-secondary': !isSelected,
           },
         )}
@@ -137,18 +137,19 @@ function MobileMenuList() {
             right: 0,
           })}
           style={{display: 'block'}}
+          className="z-50"
         >
           <motion.div
             initial={{y: -50, opacity: 0}}
             animate={{y: 0, opacity: 1}}
             exit={{y: -50, opacity: 0}}
             transition={{duration: 0.15, ease: 'linear'}}
-            className="bg-primary z-50 flex flex-col pb-12 h-full border-t border-gray-200 dark:border-gray-600 overflow-y-scroll"
+            className="bg-primary flex flex-col pb-12 h-full border-t border-gray-200 dark:border-gray-600 overflow-y-scroll"
           >
             <MenuItems className="p-0 bg-transparent border-none">
               {MOBILE_LINKS.map(link => (
                 <MenuLink
-                  className="text-primary hover:bg-secondary focus:bg-secondary hover:text-primary px-5vw py-9 border-b border-gray-200 dark:border-gray-600"
+                  className="hover:bg-secondary focus:bg-secondary text-primary px-5vw py-9 hover:text-team-current border-b border-gray-200 dark:border-gray-600"
                   key={link.to}
                   as={Link}
                   to={link.to}
@@ -189,7 +190,7 @@ function MobileMenu() {
         const state = isExpanded ? 'open' : 'closed'
         return (
           <>
-            <MenuButton className="focus:border-primary hover:border-primary text-primary border-secondary inline-flex items-center justify-center p-1 w-14 h-14 border-2 rounded-full focus:outline-none transition">
+            <MenuButton className="focus:border-primary hover:border-primary border-secondary text-primary inline-flex items-center justify-center p-1 w-14 h-14 border-2 rounded-full focus:outline-none transition">
               <svg
                 width="32"
                 height="32"
