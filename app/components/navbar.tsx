@@ -332,7 +332,7 @@ function Navbar() {
       <nav className="text-primary flex items-center justify-between mx-auto max-w-8xl">
         <Link
           to="/"
-          className="underlined block whitespace-nowrap text-2xl font-medium focus:outline-none transition"
+          className="text-primary underlined block whitespace-nowrap text-2xl font-medium focus:outline-none transition"
         >
           <h1>Kent C. Dodds</h1>
         </Link>

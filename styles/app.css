@@ -108,20 +108,8 @@ light-mode {
   }
 }
 
-.html a {
-  color: var(--color-black);
-}
-
-.dark .html a {
-  color: var(--color-white);
-}
-
-.html.text-primary a {
-  color: var(--color-gray-500);
-}
-
-.dark .html.text-primary a {
-  color: var(--color-blueGray-500);
+a {
+  color: var(--color-team-current);
 }
 
 .html a,

@@ -96,19 +96,19 @@ function AboutSection() {
       <div className="text-secondary flex items-center justify-between mt-6 lg:flex-col lg:items-start">
         <div className="flex space-x-4">
           <a
-            className="hover:text-team-current focus:text-team-current focus:outline-none"
+            className="text-primary hover:text-team-current focus:text-team-current focus:outline-none"
             href={externalLinks.github}
           >
             <GithubIcon />
           </a>
           <a
-            className="hover:text-team-current focus:text-team-current focus:outline-none"
+            className="text-primary hover:text-team-current focus:text-team-current focus:outline-none"
             href={externalLinks.youtube}
           >
             <YoutubeIcon />
           </a>
           <a
-            className="hover:text-team-current focus:text-team-current focus:outline-none"
+            className="text-primary hover:text-team-current focus:text-team-current focus:outline-none"
             href={externalLinks.twitter}
           >
             <TwitterIcon />
