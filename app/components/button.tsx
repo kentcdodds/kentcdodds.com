@@ -109,4 +109,4 @@ const ButtonLink = React.forwardRef<
   )
 })
 
-export {Button, ButtonLink, LinkButton, DangerButton}
+export {Button, ButtonLink, LinkButton}

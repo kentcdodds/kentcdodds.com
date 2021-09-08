@@ -6,7 +6,7 @@ import {requireUser} from '~/utils/session.server'
 import {prisma} from '~/utils/prisma.server'
 import {Paragraph} from '~/components/typography'
 import {reuseUsefulLoaderHeaders} from '~/utils/misc'
-import {Button, DangerButton} from '~/components/button'
+import {Button} from '~/components/button'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
