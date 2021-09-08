@@ -166,7 +166,7 @@ function Resources({resources = []}: {resources: CWKEpisode['resources']}) {
           <li key={resource.url}>
             <a
               href={resource.url}
-              className="hover:text-primary focus:text-primary focus:outline-none transition"
+              className="hover:text-team-current focus:text-team-current focus:outline-none transition"
             >
               <span>{resource.name}</span>
               <span className="inline-block align-top ml-4 mt-1">

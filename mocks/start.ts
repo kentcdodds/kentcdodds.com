@@ -12,6 +12,12 @@ import {isE2E, updateFixture} from './utils'
 
 // put one-off handlers that don't really need an entire file to themselves here
 const miscHandlers = [
+  rest.get(
+    'https://res.cloudinary.com/kentcdodds-com/image/upload/w_100,q_auto,f_webp,e_blur:1000/unsplash/photo-1609667083964-f3dbecb7e7a5',
+    async () => {
+      // IDEA: mock this out if isConnectedToTheInternet() resolves to false
+    },
+  ),
   rest.post(
     'https://api.mailgun.net/v3/:domain/messages',
     async (req, res, ctx) => {

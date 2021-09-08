@@ -112,19 +112,17 @@ a {
   color: var(--color-team-current);
 }
 
-.html a,
 .underlined {
   position: relative;
   text-decoration: none;
   white-space: nowrap;
 }
 
-.html a:focus,
 .underlined:focus {
   outline: none;
+  text-decoration: none;
 }
 
-.html a:after,
 .underlined:after {
   content: '';
   height: 2px;
@@ -138,9 +136,6 @@ a {
   position: absolute;
 }
 
-.html a:hover:after,
-.html a:focus:after,
-.html a.active:after,
 .underlined:hover:after,
 .underlined:focus:after,
 .active.underlined:after {

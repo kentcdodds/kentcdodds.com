@@ -162,7 +162,7 @@ function TeamStats({
       >
         <span title="Total reads">{totalReads} </span>
         <Link
-          className="text-secondary hover:text-primary underlined"
+          className="text-secondary underlined hover:text-team-current"
           to="/teams#read-rankings"
         >
           {`what's this?`}

@@ -2,6 +2,7 @@ import type {DefaultRequestBody, MockedRequest, RestHandler} from 'msw'
 import {rest} from 'msw'
 import tweets from './data/tweets.json'
 import siteMetadata from './data/site-metadata.json'
+import {isConnectedToTheInternet} from './utils'
 
 const tweetsArray = Object.values(tweets)
 const siteMetadataArray = Object.values(siteMetadata)
@@ -25,6 +26,9 @@ const twitterHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
   rest.get(
     'https://api.twitter.com/2/tweets/:tweetId',
     async (req, res, ctx) => {
+      // if you want to mock out specific tweets, comment out this next line
+      // eslint-disable-next-line
+      if (await isConnectedToTheInternet()) return
       // uncomment this and send whatever tweet you want to work with...
       // return res(ctx.json(tweets.linkWithMetadata))
 

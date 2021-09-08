@@ -122,7 +122,7 @@ function Card({
 
                     {delivery.recording ? (
                       <a
-                        className="text-secondary hover:text-primary flex-none ml-2"
+                        className="text-secondary flex-none ml-2 hover:text-team-current"
                         href={delivery.recording}
                       >
                         <YoutubeIcon />

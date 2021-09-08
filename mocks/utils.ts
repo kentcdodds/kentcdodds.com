@@ -1,7 +1,21 @@
+import dns from 'dns'
 import fs from 'fs'
 import path from 'path'
 
 const isE2E = process.env.RUNNING_E2E === 'true'
+
+let connected: boolean | null = null
+
+async function isConnectedToTheInternet() {
+  if (connected === null) {
+    connected = await new Promise(resolve => {
+      dns.lookupService('8.8.8.8', 53, err => {
+        resolve(!err)
+      })
+    })
+  }
+  return connected
+}
 
 async function updateFixture(updates: Record<string, unknown>) {
   const mswDataPath = path.join(__dirname, `./msw.local.json`)
@@ -56,4 +70,11 @@ function requiredProperty(object: {[key: string]: unknown}, property: string) {
   }
 }
 
-export {isE2E, updateFixture, requiredParam, requiredHeader, requiredProperty}
+export {
+  isE2E,
+  updateFixture,
+  requiredParam,
+  requiredHeader,
+  requiredProperty,
+  isConnectedToTheInternet,
+}

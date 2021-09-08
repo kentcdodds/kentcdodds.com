@@ -341,7 +341,7 @@ function MdxScreen() {
                   </ul>
                   <a
                     href={externalLinks.translationContributions}
-                    className="text-secondary underlined hover:text-primary focus:text-primary block mb-6 ml-5 my-3 text-lg font-medium focus:outline-none"
+                    className="text-secondary underlined block mb-6 ml-5 my-3 hover:text-team-current focus:text-team-current text-lg font-medium focus:outline-none"
                     target="_blank"
                     rel="noreferrer noopener"
                   >
@@ -356,7 +356,7 @@ function MdxScreen() {
 
                   <a
                     href={externalLinks.translationContributions}
-                    className="text-secondary underlined hover:text-primary focus:text-primary block ml-5 text-lg font-medium focus:outline-none"
+                    className="text-secondary underlined block ml-5 hover:text-team-current focus:text-team-current text-lg font-medium focus:outline-none"
                     target="_blank"
                     rel="noreferrer noopener"
                   >
