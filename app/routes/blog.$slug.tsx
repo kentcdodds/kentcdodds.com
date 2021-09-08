@@ -1,8 +1,15 @@
 import * as React from 'react'
-import {useLoaderData, json, useFetcher, ActionFunction} from 'remix'
+import {useLoaderData, json, useFetcher} from 'remix'
 import type {HeadersFunction} from 'remix'
 import {Link, useParams} from 'react-router-dom'
-import type {Await, KCDHandle, KCDLoader, MdxListItem, MdxPage} from '~/types'
+import type {
+  Await,
+  KCDAction,
+  KCDHandle,
+  KCDLoader,
+  MdxListItem,
+  MdxPage,
+} from '~/types'
 import {getImageBuilder, getImgProps, images} from '~/images'
 import {
   getMdxDirList,
@@ -40,24 +47,21 @@ export const handle: KCDHandle = {
   },
 }
 
-export const action: ActionFunction = async ({request}) => {
-  const params = await request.json()
-  if (!params.articleSlug) {
-    return new Response('', {status: 404})
-  }
+export const action: KCDAction<{slug: string}> = async ({request, params}) => {
+  const {slug} = params
   const session = await getSession(request)
   const user = await session.getUser()
   const headers = new Headers()
   if (user) {
     await addPostRead({
-      slug: params.articleSlug,
+      slug,
       userId: user.id,
     })
     await session.getHeaders(headers)
   } else {
     const client = await getClientSession(request)
     await addPostRead({
-      slug: params.articleSlug,
+      slug,
       clientId: client.getClientId(),
     })
     await client.getHeaders(headers)
@@ -122,16 +126,15 @@ export default function MdxScreenBase() {
 
 function useOnRead({
   parentElRef,
-  readTime,
+  time,
   onRead,
 }: {
   parentElRef: React.RefObject<HTMLElement>
-  readTime: MdxPage['readTime']
+  time: number | undefined
   onRead: () => void
 }) {
   React.useEffect(() => {
     const parentEl = parentElRef.current
-    const time = readTime?.time
     if (!parentEl || !time) return
 
     const visibilityEl = document.createElement('div')
@@ -192,7 +195,7 @@ function useOnRead({
       visibilityEl.remove()
     }
     return cleanup
-  }, [readTime, onRead, parentElRef])
+  }, [time, onRead, parentElRef])
 }
 
 function ArticleFooter({
@@ -272,7 +275,10 @@ function MdxScreen() {
   const {code, frontmatter} = data.page
   const params = useParams()
   const markAsRead = useFetcher()
-  console.log({markAsRead})
+  const markAsReadRef = React.useRef(markAsRead)
+  React.useEffect(() => {
+    markAsReadRef.current = markAsRead
+  }, [markAsRead])
   const {slug} = params
   const Component = useMdxComponent(code)
 
@@ -281,12 +287,10 @@ function MdxScreen() {
   const readMarker = React.useRef<HTMLDivElement>(null)
   useOnRead({
     parentElRef: readMarker,
-    readTime: data.page.readTime,
+    time: data.page.readTime?.time,
     onRead: React.useCallback(() => {
-      if (!slug) return
-      console.log('here')
-      markAsRead.submit({articleSlug: slug}, {method: 'post'})
-    }, [slug, markAsRead]),
+      markAsReadRef.current.submit({}, {method: 'post'})
+    }, []),
   })
 
   return (
