@@ -22,7 +22,6 @@ const MODE = process.env.NODE_ENV
 const BUILD_DIR = path.join(process.cwd(), 'build')
 
 const app = express()
-app.use(morgan('tiny'))
 app.all('*', getRedirectsMiddleware())
 app.use(compression())
 
@@ -35,6 +34,7 @@ app.use(express.static('public/fonts', {immutable: true, maxAge: '1y'}))
 // Remix fingerprints its assets so we can cache forever
 app.use(express.static('public/build', {immutable: true, maxAge: '1y'}))
 
+app.use(morgan('tiny'))
 app.all(
   '*',
   MODE === 'production'
