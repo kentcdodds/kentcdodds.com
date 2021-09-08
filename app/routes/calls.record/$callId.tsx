@@ -6,6 +6,7 @@ import {requireUser} from '~/utils/session.server'
 import {prisma} from '~/utils/prisma.server'
 import {Paragraph} from '~/components/typography'
 import {reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {Button, DangerButton} from '~/components/button'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -88,12 +89,9 @@ export default function Screen() {
             value={actionTypes.DELETE_RECORDING}
           />
           <input type="hidden" name="callId" value={data.call.id} />
-          <button
-            className="text-primary dark:focus:border-red-500 dark:hover:border-red-500 px-10 py-3 hover:text-red-500 focus:text-red-500 text-lg font-medium border-2 border-gray-400 dark:border-gray-600 focus:border-red-500 hover:border-red-500 rounded-full focus:outline-none transition"
-            type="submit"
-          >
+          <Button variant="danger" size="medium" type="submit">
             Delete
-          </button>
+          </Button>
         </Form>
       </div>
     </section>

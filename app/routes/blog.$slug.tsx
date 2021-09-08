@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {useLoaderData, json} from 'remix'
+import {useLoaderData, json, useFetcher, ActionFunction} from 'remix'
 import type {HeadersFunction} from 'remix'
 import {Link, useParams} from 'react-router-dom'
 import type {Await, KCDHandle, KCDLoader, MdxListItem, MdxPage} from '~/types'
@@ -27,6 +27,9 @@ import {getServerTimeHeader} from '~/utils/metrics.server'
 import {useRequestInfo} from '~/utils/providers'
 import {formatDate, formatNumber, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {BlurrableImage} from '~/components/blurrable-image'
+import {getSession} from '~/utils/session.server'
+import {addPostRead} from '~/utils/prisma.server'
+import {getClientSession} from '~/utils/client.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
@@ -35,6 +38,31 @@ export const handle: KCDHandle = {
       return {route: `/blog/${page.slug}`, priority: 0.7}
     })
   },
+}
+
+export const action: ActionFunction = async ({request}) => {
+  const params = await request.json()
+  if (!params.articleSlug) {
+    return new Response('', {status: 404})
+  }
+  const session = await getSession(request)
+  const user = await session.getUser()
+  const headers = new Headers()
+  if (user) {
+    await addPostRead({
+      slug: params.articleSlug,
+      userId: user.id,
+    })
+    await session.getHeaders(headers)
+  } else {
+    const client = await getClientSession(request)
+    await addPostRead({
+      slug: params.articleSlug,
+      clientId: client.getClientId(),
+    })
+    await client.getHeaders(headers)
+  }
+  return json({success: true})
 }
 
 type LoaderData = {
@@ -122,7 +150,7 @@ function useOnRead({
     })
 
     let startTime = new Date().getTime()
-    let timeoutTime = time * 0.6
+    let timeoutTime = time * 0.00006 // FIXME: don't leave this hardcoded
     let timerId: ReturnType<typeof setTimeout>
     let timerFinished = false
     function startTimer() {
@@ -243,6 +271,8 @@ function MdxScreen() {
 
   const {code, frontmatter} = data.page
   const params = useParams()
+  const markAsRead = useFetcher()
+  console.log({markAsRead})
   const {slug} = params
   const Component = useMdxComponent(code)
 
@@ -253,14 +283,10 @@ function MdxScreen() {
     parentElRef: readMarker,
     readTime: data.page.readTime,
     onRead: React.useCallback(() => {
-      const searchParams = new URLSearchParams([
-        ['_data', 'routes/_action/mark-read'],
-      ])
-      void fetch(`/_action/mark-read?${searchParams}`, {
-        method: 'POST',
-        body: JSON.stringify({articleSlug: slug}),
-      })
-    }, [slug]),
+      if (!slug) return
+      console.log('here')
+      markAsRead.submit({articleSlug: slug}, {method: 'post'})
+    }, [slug, markAsRead]),
   })
 
   return (

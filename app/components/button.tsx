@@ -3,7 +3,7 @@ import * as React from 'react'
 import {AnchorOrLink} from '~/utils/misc'
 
 interface ButtonProps {
-  variant?: 'primary' | 'secondary'
+  variant?: 'primary' | 'secondary' | 'danger'
   size?: 'medium' | 'large'
   children: React.ReactNode | React.ReactNode[]
 }
@@ -27,7 +27,8 @@ function ButtonInner({
           'focus-ring absolute inset-0 rounded-full opacity-100 disabled:opacity-50 transform transition',
           {
             'border-2 border-secondary bg-primary group-hover:border-transparent group-focus:border-transparent':
-              variant === 'secondary',
+              variant === 'secondary' || variant === 'danger',
+            danger: variant === 'danger',
             'bg-inverse': variant === 'primary',
           },
         )}
@@ -39,6 +40,7 @@ function ButtonInner({
           {
             'text-primary': variant === 'secondary',
             'text-inverse': variant === 'primary',
+            'text-red-500': variant === 'danger',
             'px-11 py-6 space-x-5': size !== 'medium',
             'px-8 py-4 space-x-3': size === 'medium',
           },
@@ -107,4 +109,4 @@ const ButtonLink = React.forwardRef<
   )
 })
 
-export {Button, ButtonLink, LinkButton}
+export {Button, ButtonLink, LinkButton, DangerButton}

@@ -18,7 +18,7 @@ import {getSession, requireUser} from '~/utils/session.server'
 import {H2, H3, H6, Paragraph} from '~/components/typography'
 import {Grid} from '~/components/grid'
 import {Field, InputError, Label} from '~/components/form-elements'
-import {Button} from '~/components/button'
+import {Button, DangerButton} from '~/components/button'
 import {CheckCircledIcon} from '~/components/icons/check-circled-icon'
 import {LogoutIcon} from '~/components/icons/logout-icon'
 import {TEAM_MAP} from '~/utils/onboarding'
@@ -328,7 +328,7 @@ function YouScreen() {
         </div>
         <Spacer size="3xs" className="col-span-full" />
         <div className="col-span-full lg:col-span-4">
-          <Button onClick={() => setDeleteModalOpen(true)}>
+          <Button variant="danger" onClick={() => setDeleteModalOpen(true)}>
             Delete Account
           </Button>
         </div>
@@ -338,7 +338,7 @@ function YouScreen() {
         onDismiss={() => setDeleteModalOpen(false)}
         isOpen={deleteModalOpen}
         aria-label="Delete your account"
-        className="px-24 py-14 max-w-screen-lg dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg"
+        className="w-11/12 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:px-24 lg:py-14 lg:max-w-screen-lg"
       >
         <H3>Delete your KCD Account</H3>
         <Paragraph>
@@ -361,7 +361,9 @@ function YouScreen() {
             <Button type="button" onClick={() => setDeleteModalOpen(false)}>
               Nevermind
             </Button>
-            <Button type="submit">Delete Account</Button>
+            <Button variant="danger" size="medium" type="submit">
+              Delete Account
+            </Button>
           </div>
         </Form>
       </Dialog>

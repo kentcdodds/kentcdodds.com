@@ -30,6 +30,10 @@
     @apply focus:outline-none focus-within:outline-none transition duration-300 disabled:ring-0 hover:ring-2 focus:ring-2 focus-within:ring-2 group-hover:ring-2 group-focus:ring-2 hover:ring-team-current focus:ring-team-current focus-within:ring-team-current group-hover:ring-team-current group-focus:ring-team-current ring-team-current ring-offset-4 dark:ring-offset-gray-900 ring-offset-white;
   }
 
+  .focus-ring.danger {
+    @apply dark:focus:ring-red-500 dark:hover:ring-red-500 dark:focus-within:ring-red-500 dark:group-hover:ring-red-500 group-focus:dark:ring-red-500 focus:ring-red-500 hover:ring-red-500 focus-within:ring-red-500 group-hover:ring-red-500 group-focus:ring-red-500 ring-red-500;
+  }
+
   .bg-primary {
     @apply dark:bg-gray-900 bg-white;
   }
