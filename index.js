@@ -26,8 +26,7 @@ app.use(morgan('tiny'))
 app.all('*', getRedirectsMiddleware())
 app.use(compression())
 
-// You may want to be more aggressive with this caching
-app.use(express.static('public', {maxAge: '1h'}))
+app.use(express.static('public', {maxAge: '1w'}))
 
 // If we ever change our font (which we quite possibly never will)
 // then we'll just want to change the filename or something...

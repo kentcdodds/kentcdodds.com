@@ -5,9 +5,6 @@ app = "withered-frost-3196"
 kill_signal = "SIGINT"
 kill_timeout = 5
 
-# [build]
-#   builder = "heroku/buildpacks:20"
-
 [env]
   PORT = "8080"
   CYPRESS_INSTALL_BINARY = "0"
@@ -19,9 +16,7 @@ kill_timeout = 5
 [deploy]
   release_command = "npx prisma migrate deploy"
 
-[[statics]]
-  guest_path = "/app/public"
-  url_prefix = "/"
+# IDEA: add back statics config here (fa0fbe9)
 
 [experimental]
   allowed_public_ports = []
