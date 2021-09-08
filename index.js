@@ -22,6 +22,7 @@ const MODE = process.env.NODE_ENV
 const BUILD_DIR = path.join(process.cwd(), 'build')
 
 const app = express()
+app.disable('x-powered-by')
 app.all('*', getRedirectsMiddleware())
 app.use(compression())
 
