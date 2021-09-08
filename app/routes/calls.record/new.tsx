@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {redirect, json, useActionData} from 'remix'
+import {redirect, json, useActionData, Link} from 'remix'
 import type {ActionFunction} from 'remix'
 import type {KCDHandle} from '~/types'
 import {CallRecorder} from '~/components/calls/recorder'
@@ -17,7 +17,9 @@ import {
   getErrorForKeywords,
 } from '~/utils/call-kent'
 import {useUser} from '~/utils/providers'
-import {Paragraph} from '~/components/typography'
+import {H4, Paragraph} from '~/components/typography'
+import {Grimmacing} from '~/components/kifs'
+import {Grid} from '~/components/grid'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -100,6 +102,27 @@ export default function RecordScreen() {
           />
         </div>
       )}
+    </div>
+  )
+}
+
+export function ErrorBoundary({error}: {error: Error}) {
+  console.error(error)
+  return (
+    <div>
+      <Grid nested>
+        <div className="col-span-6">
+          <H4 as="p">{`Yikes... Something went wrong. Sorry about that.`}</H4>
+          <H4 as="p" variant="secondary" className="mt-3">
+            {`Want to `}
+            <Link to=".">try again?</Link>
+          </H4>
+        </div>
+        <Grimmacing
+          className="col-span-5 col-start-7 rounded-lg"
+          aspectRatio="3:4"
+        />
+      </Grid>
     </div>
   )
 }
