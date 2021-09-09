@@ -8,47 +8,54 @@ import {PlusIcon} from './icons/plus-icon'
 function NotificationMessage({
   queryStringKey,
   visibleMs = 8000,
-  visible,
+  visible: controlledVisible,
   autoClose,
   children,
   position = 'bottom-right',
+  /* how long to wait before the message is shown, after mount 0 to 1 */
+  delay = typeof controlledVisible === 'undefined' ? 1 : 0,
 }: {
   queryStringKey?: string
   children?: React.ReactNode | React.ReactNode[]
   position?: 'bottom-right' | 'top-center'
   // make the visibility controlled
   visible?: boolean
+  delay?: number
 } & (
   | {autoClose: false; visibleMs?: never}
   | {visibleMs?: number; autoClose?: never}
 )) {
-  // how long to wait before the message is shown, after mount
-  const delay = typeof visible === 'undefined' ? 1 : 0
   const [searchParams] = useSearchParams()
-  const [isVisible, setIsVisible] = useState(
-    !queryStringKey || searchParams.has(queryStringKey),
-  )
+  const hasQueryStringValue = queryStringKey
+    ? searchParams.has(queryStringKey)
+    : false
+  const [isVisible, setIsVisible] = useState(hasQueryStringValue)
   const messageFromQuery = queryStringKey && searchParams.get(queryStringKey)
   // Eslint is wrong here, params.get can return an empty string
   // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
   const message = messageFromQuery || children
   const latestMessageRef = React.useRef(message)
 
+  // if the query gets a message after the initial mount then we want to toggle visibility
+  React.useEffect(() => {
+    if (hasQueryStringValue) setIsVisible(true)
+  }, [hasQueryStringValue])
+
   React.useEffect(() => {
     latestMessageRef.current = message
-  })
+  }, [message])
 
   React.useEffect(() => {
     if (!latestMessageRef.current) return
     if (autoClose === false) return
-    if (visible === false) return
+    if (controlledVisible === false) return
 
     const timeout = setTimeout(() => {
       setIsVisible(false)
     }, visibleMs + delay)
 
     return () => clearTimeout(timeout)
-  }, [queryStringKey, delay, autoClose, visible, visibleMs])
+  }, [queryStringKey, delay, autoClose, controlledVisible, visibleMs])
 
   React.useEffect(() => {
     if (!latestMessageRef.current) return
@@ -71,7 +78,10 @@ function NotificationMessage({
   }, [queryStringKey, searchParams])
 
   const initialY = position.includes('bottom') ? 50 : -50
-  const show = message && typeof visible === 'boolean' ? visible : isVisible
+  const show =
+    message && typeof controlledVisible === 'boolean'
+      ? controlledVisible
+      : isVisible
 
   return (
     <AnimatePresence>
@@ -96,7 +106,7 @@ function NotificationMessage({
             })}
           >
             <div className="bg-inverse text-inverse relative p-8 pr-14 max-w-xl rounded-lg shadow-md pointer-events-auto">
-              {typeof visible === 'undefined' ? (
+              {typeof controlledVisible === 'undefined' ? (
                 <button
                   aria-label="dismiss message"
                   onClick={() => setIsVisible(false)}

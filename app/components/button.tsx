@@ -91,10 +91,10 @@ const ButtonLink = React.forwardRef<
   HTMLAnchorElement,
   ButtonProps & {to: string} & Pick<
       JSX.IntrinsicElements['a'],
-      'onClick' | 'className'
+      'onClick' | 'className' | 'download'
     >
 >(function ButtonLink(
-  {children, variant = 'primary', className, to, onClick},
+  {children, variant = 'primary', className, download, to, onClick},
   ref,
 ) {
   return (
@@ -102,6 +102,7 @@ const ButtonLink = React.forwardRef<
       ref={ref}
       href={to}
       onClick={onClick}
+      download={download}
       className={getClassName({className})}
     >
       <ButtonInner variant={variant}>{children}</ButtonInner>

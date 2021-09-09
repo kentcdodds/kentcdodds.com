@@ -11,13 +11,25 @@ import {
   getErrorMessage,
   reuseUsefulLoaderHeaders,
 } from '~/utils/misc'
-import {deleteDiscordCache} from '~/utils/user-info.server'
-import {deleteUser, getMagicLink, updateUser} from '~/utils/prisma.server'
-import {getSession, requireUser} from '~/utils/session.server'
+import {
+  deleteConvertKitCache,
+  deleteDiscordCache,
+} from '~/utils/user-info.server'
+import {
+  prisma,
+  deleteUser,
+  getMagicLink,
+  updateUser,
+} from '~/utils/prisma.server'
+import {
+  deleteOtherSessions,
+  getSession,
+  requireUser,
+} from '~/utils/session.server'
 import {H2, H3, H6, Paragraph} from '~/components/typography'
 import {Grid} from '~/components/grid'
 import {Field, InputError, Label} from '~/components/form-elements'
-import {Button} from '~/components/button'
+import {Button, ButtonLink} from '~/components/button'
 import {CheckCircledIcon} from '~/components/icons/check-circled-icon'
 import {LogoutIcon} from '~/components/icons/logout-icon'
 import {TEAM_MAP} from '~/utils/onboarding'
@@ -32,16 +44,17 @@ export const handle: KCDHandle = {
   metas: [{httpEquiv: 'refresh', content: '1740'}],
 }
 
-type LoaderData = {qrLoginCode: string}
+type LoaderData = {qrLoginCode: string; sessionCount: number}
 export const loader: LoaderFunction = ({request}) => {
   return requireUser(request, async user => {
+    const sessionCount = await prisma.session.count({where: {userId: user.id}})
     const qrLoginCode = await getQrCodeDataURL(
       getMagicLink({
         emailAddress: user.email,
         domainUrl: getDomainUrl(request),
       }),
     )
-    const loaderData: LoaderData = {qrLoginCode}
+    const loaderData: LoaderData = {qrLoginCode, sessionCount}
     return json(loaderData, {
       headers: {
         'Cache-Control': 'private, max-age=3600',
@@ -57,6 +70,7 @@ const actionIds = {
   changeDetails: 'change details',
   deleteDiscordConnection: 'delete discord connection',
   deleteAccount: 'delete account',
+  deleteSessions: 'delete sessions',
 }
 
 function getFirstNameError(firstName: string | null) {
@@ -82,13 +96,20 @@ export const action: ActionFunction = async ({request}) => {
       if (actionId === actionIds.logout) {
         const session = await getSession(request)
         session.signOut()
-        return redirect('/', {
+        const searchParams = new URLSearchParams({
+          message: `👋 See you again soon!`,
+        })
+        return redirect(`/?${searchParams.toString()}`, {
           headers: await session.getHeaders(),
         })
       }
       if (actionId === actionIds.deleteDiscordConnection && user.discordId) {
         await deleteDiscordCache(user.discordId)
         await updateUser(user.id, {discordId: null})
+        const searchParams = new URLSearchParams({
+          message: `✅ Connection deleted`,
+        })
+        return redirect(`/me?${searchParams.toString()}`)
       }
       if (actionId === actionIds.changeDetails) {
         return await handleFormSubmission<ActionData>({
@@ -98,16 +119,29 @@ export const action: ActionFunction = async ({request}) => {
             if (firstName && user.firstName !== firstName) {
               await updateUser(user.id, {firstName})
             }
-            return redirect('/me')
+            const searchParams = new URLSearchParams({
+              message: `✅ Sucessfully saved your info`,
+            })
+            return redirect(`/me?${searchParams.toString()}`)
           },
         })
+      }
+      if (actionId === actionIds.deleteSessions) {
+        await deleteOtherSessions(request)
+        const searchParams = new URLSearchParams({
+          message: `✅ Sucessfully signed out of other sessions`,
+        })
+        return redirect(`/me?${searchParams.toString()}`)
       }
       if (actionId === actionIds.deleteAccount) {
         const session = await getSession(request)
         session.signOut()
+        if (user.discordId) await deleteDiscordCache(user.discordId)
+        if (user.convertKitId) await deleteConvertKitCache(user.convertKitId)
+
         await deleteUser(user.id)
         const searchParams = new URLSearchParams({
-          message: `Your KCD account and all associated data has been completely deleted from the KCD database.`,
+          message: `✅ Your KCD account and all associated data has been completely deleted from the KCD database.`,
         })
         return redirect(`/?${searchParams.toString()}`, {
           headers: await session.getHeaders(),
@@ -124,6 +158,7 @@ const SHOW_QR_DURATION = 15_000
 
 function YouScreen() {
   const data = useLoaderData<LoaderData>()
+  const otherSessionsCount = data.sessionCount - 1
   const actionData = useActionData<ActionData>()
   const {requestInfo, userInfo, user} = useRootData()
 
@@ -329,7 +364,35 @@ function YouScreen() {
           <H2>Manage Your Account</H2>
         </div>
         <Spacer size="3xs" className="col-span-full" />
-        <div className="col-span-full lg:col-span-4">
+        <div className="flex flex-wrap gap-3 col-span-full">
+          <ButtonLink
+            variant="secondary"
+            download="my-kcd-data.json"
+            to={`${requestInfo.origin}/me/download.json`}
+          >
+            Download Your Data
+          </ButtonLink>
+          <Form
+            id="profile-form"
+            action="/me"
+            method="post"
+            noValidate
+            aria-describedby="general-error"
+          >
+            <input
+              type="hidden"
+              name="actionId"
+              value={actionIds.deleteSessions}
+            />
+            <Button
+              disabled={otherSessionsCount < 1}
+              variant="danger"
+              type="submit"
+            >
+              Sign out of your {otherSessionsCount} other{' '}
+              {otherSessionsCount === 1 ? 'session' : 'sessions'}
+            </Button>
+          </Form>
           <Button variant="danger" onClick={() => setDeleteModalOpen(true)}>
             Delete Account
           </Button>

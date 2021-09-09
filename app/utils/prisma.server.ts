@@ -208,6 +208,16 @@ async function deleteUser(userId: string) {
   return prisma.user.delete({where: {id: userId}})
 }
 
+async function getAllUserData(userId: string) {
+  const {default: pProps} = await import('p-props')
+  return pProps({
+    user: prisma.user.findUnique({where: {id: userId}}),
+    calls: prisma.call.findMany({where: {userId}}),
+    postReads: prisma.postRead.findMany({where: {userId}}),
+    sessions: prisma.session.findMany({where: {userId}}),
+  })
+}
+
 function updateUser(
   userId: string,
   updatedInfo: Omit<
@@ -298,6 +308,7 @@ export {
   getUserByEmail,
   updateUser,
   deleteUser,
+  getAllUserData,
   addPostRead,
   getReplayResponse,
   getDocumentReplayResponse,

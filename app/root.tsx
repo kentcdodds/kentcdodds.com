@@ -330,7 +330,7 @@ function App() {
             </a>
           </NotificationMessage>
         )}
-        <NotificationMessage queryStringKey="message" />
+        <NotificationMessage queryStringKey="message" delay={0.3} />
         <Navbar />
         <Outlet />
         <Spacer size="base" />

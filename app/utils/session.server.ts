@@ -104,6 +104,20 @@ async function getSession(request: Request) {
   }
 }
 
+async function deleteOtherSessions(request: Request) {
+  const {session} = await getSession(request)
+
+  const token = session.get(sessionIdKey) as string | undefined
+  if (!token) {
+    console.warn(
+      `Trying to delete other sessions, but the request came from someone who has no sessions`,
+    )
+    return
+  }
+  const user = await getUserFromSessionId(token)
+  await prisma.session.deleteMany({where: {userId: user.id, NOT: {id: token}}})
+}
+
 async function getUser(request: Request) {
   const {session} = await getSession(request)
 
@@ -158,6 +172,7 @@ async function requireUser(
 
 export {
   getSession,
+  deleteOtherSessions,
   getUserSessionFromMagicLink,
   requireUser,
   requireAdminUser,
