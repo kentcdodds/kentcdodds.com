@@ -2,8 +2,8 @@ import * as React from 'react'
 import type {ActionFunction, HeadersFunction, LoaderFunction} from 'remix'
 import {Form, json, redirect, useLoaderData, useActionData} from 'remix'
 import clsx from 'clsx'
-import {useEffect, useState} from 'react'
 import type {KCDHandle} from '~/types'
+import {useRootData} from '~/utils/use-root-data'
 import {getQrCodeDataURL} from '~/utils/qrcode.server'
 import {
   getDiscordAuthorizeURL,
@@ -11,7 +11,6 @@ import {
   getErrorMessage,
   reuseUsefulLoaderHeaders,
 } from '~/utils/misc'
-import {useRequestInfo, useUser, useUserInfo} from '~/utils/providers'
 import {deleteDiscordCache} from '~/utils/user-info.server'
 import {deleteUser, getMagicLink, updateUser} from '~/utils/prisma.server'
 import {getSession, requireUser} from '~/utils/session.server'
@@ -126,14 +125,17 @@ const SHOW_QR_DURATION = 15_000
 function YouScreen() {
   const data = useLoaderData<LoaderData>()
   const actionData = useActionData<ActionData>()
-  const user = useUser()
-  const userInfo = useUserInfo()
-  const requestInfo = useRequestInfo()
+  const {requestInfo, userInfo, user} = useRootData()
+
+  // this *should* never happen...
+  if (!user) throw new Error('user required')
+  if (!userInfo) throw new Error('userInfo required')
+
   const authorizeURL = getDiscordAuthorizeURL(requestInfo.origin)
-  const [qrIsVisible, setQrIsVisible] = useState(false)
+  const [qrIsVisible, setQrIsVisible] = React.useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false)
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!qrIsVisible) return
 
     const timeout = setTimeout(() => {

@@ -10,6 +10,7 @@ import type {
   MdxListItem,
   MdxPage,
 } from '~/types'
+import {useRootData} from '~/utils/use-root-data'
 import {getImageBuilder, getImgProps, images} from '~/images'
 import {
   getMdxDirList,
@@ -27,16 +28,15 @@ import {
   getBlogRecommendations,
 } from '~/utils/blog.server'
 import {FourOhFour, ServerError} from '~/components/errors'
-import {externalLinks} from '../external-links'
 import {TeamStats} from '~/components/team-stats'
 import type {Timings} from '~/utils/metrics.server'
 import {getServerTimeHeader} from '~/utils/metrics.server'
-import {useRequestInfo} from '~/utils/providers'
 import {formatDate, formatNumber, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {BlurrableImage} from '~/components/blurrable-image'
 import {getSession} from '~/utils/session.server'
 import {addPostRead} from '~/utils/prisma.server'
 import {getClientSession} from '~/utils/client.server'
+import {externalLinks} from '../external-links'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
@@ -265,7 +265,7 @@ four kids in Utah.
 
 function MdxScreen() {
   const data = useLoaderData<LoaderData>()
-  const requestInfo = useRequestInfo()
+  const {requestInfo} = useRootData()
   if (!data.page) {
     throw new Error(
       'This should be impossible because we only render the MdxScreen if there is a data.page object.',

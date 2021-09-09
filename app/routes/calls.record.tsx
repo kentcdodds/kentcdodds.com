@@ -7,12 +7,12 @@ import {AnimatePresence, motion} from 'framer-motion'
 import {useLocation} from 'react-router'
 import {getUser} from '~/utils/session.server'
 import {prisma} from '~/utils/prisma.server'
-import {useOptionalUser} from '~/utils/providers'
 import {Grid} from '~/components/grid'
 import {H2, Paragraph} from '~/components/typography'
 import {BackLink} from '~/components/arrow-button'
 import {reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {ButtonLink} from '~/components/button'
+import {useRootData} from '~/utils/use-root-data'
 
 function getCalls(userId: string) {
   return prisma.call.findMany({
@@ -97,7 +97,7 @@ function Record({
 }
 export default function RecordScreen() {
   const {pathname} = useLocation()
-  const user = useOptionalUser()
+  const {user} = useRootData()
   const data = useLoaderData<LoaderData>()
 
   const [activeSlug] = pathname.split('/').slice(-1)

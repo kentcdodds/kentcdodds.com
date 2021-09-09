@@ -151,29 +151,29 @@ function PodcastHome() {
               {`The goal of the Chats with Kent Podcast is to `}
               <strong>help you become a better person.</strong>
               {`
-              With each episode, there's a key takeaway and a specific action
-              item to help you on your path to becoming the best person you can
-              be.
-            `}
+                With each episode, there's a key takeaway and a specific action
+                item to help you on your path to becoming the best person you
+                can be.
+              `}
             </Paragraph>
             <Paragraph>
               {`
-              Before each show, I ask the guest to share with me the change they
-              would like to see in the world. Any change at all. Whether it's
-              related to software development or not. And then we brainstorm
-              together a specific thing we can invite you to do at the end of
-              the show to help push that change in the world along. Something
-              small, but meaningful.
-            `}
+                Before each show, I ask the guest to share with me the change
+                they would like to see in the world. Any change at all. Whether
+                it's related to software development or not. And then we
+                brainstorm a specific thing we can invite you to do at the end
+                of the show to help push that change in the world along.
+                Something small, but meaningful.
+              `}
             </Paragraph>
             <Paragraph>
               {`
-              Once we know that what we want to commit you to, I kick things off
-              and try to stear the conversation in a direction that will prepare
-              you to accept that invitation and hopefully help you make that
-              change in your life. I hope you take advantage of this
-              opportunity.
-            `}
+                Once we know what we want to commit you to, I kick things off
+                and try to stear the conversation in a direction that will
+                prepare you to accept that invitation and hopefully help you
+                make that change in your life. I hope you take advantage of this
+                opportunity.
+              `}
             </Paragraph>
             <Paragraph>{`Enjoy the show.`}</Paragraph>
           </div>

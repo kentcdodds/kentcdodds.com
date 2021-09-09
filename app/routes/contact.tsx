@@ -2,7 +2,7 @@ import * as React from 'react'
 import type {HeadersFunction} from 'remix'
 import {Form, useActionData} from 'remix'
 import {Outlet} from 'react-router-dom'
-import {useOptionalUser} from '~/utils/providers'
+import {useRootData} from '~/utils/use-root-data'
 import {
   getHeroImageProps,
   HeroSection,
@@ -19,7 +19,7 @@ export const headers: HeadersFunction = () => ({
 
 export default function ContactRoute() {
   const actionData = useActionData<ActionData>()
-  const user = useOptionalUser()
+  const {user} = useRootData()
 
   return (
     <div>

@@ -2,6 +2,7 @@ import * as React from 'react'
 import {redirect, Form, json, useActionData, useLoaderData, Link} from 'remix'
 import type {Call, KCDAction, KCDHandle, KCDLoader} from '~/types'
 import {format} from 'date-fns'
+import {useRootData} from '~/utils/use-root-data'
 import {CallRecorder} from '~/components/calls/recorder'
 import {requireAdminUser} from '~/utils/session.server'
 import {prisma} from '~/utils/prisma.server'
@@ -21,7 +22,6 @@ import {
   getErrorForDescription,
   getErrorForKeywords,
 } from '~/utils/call-kent'
-import {useUser} from '~/utils/providers'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -152,7 +152,10 @@ export default function RecordingDetailScreen() {
   const [responseAudio, setResponseAudio] = React.useState<Blob | null>(null)
   const data = useLoaderData<LoaderData>()
   const actionData = useActionData<ActionData>()
-  const user = useUser()
+  const {user} = useRootData()
+
+  // this *should* be impossible
+  if (!user) throw new Error('user required')
 
   if (!data.call) {
     return (

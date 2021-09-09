@@ -3,7 +3,8 @@ import {Link} from 'remix'
 import {motion} from 'framer-motion'
 import clsx from 'clsx'
 import type {Team} from '@prisma/client'
-import {useOptionalUserInfo, useTeam} from '~/utils/providers'
+import {useRootData} from '~/utils/use-root-data'
+import {useTeam} from '~/utils/team-provider'
 import {alexProfiles} from '~/images'
 import {formatNumber} from '~/utils/misc'
 
@@ -28,9 +29,9 @@ function Stat({
   direction,
   display,
 }: ReadRanking & {direction: 'up' | 'down'; display: 'ranking' | 'reads'}) {
-  const info = useOptionalUserInfo()
+  const {userInfo} = useRootData()
   const [currentTeam] = useTeam()
-  const avatar = info ? info.avatar : alexProfiles[team]
+  const avatar = userInfo ? userInfo.avatar : alexProfiles[team]
   const isUsersTeam = team === currentTeam
 
   return (

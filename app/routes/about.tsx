@@ -9,7 +9,9 @@ import {json, useLoaderData} from 'remix'
 import {shuffle} from 'lodash'
 import formatDate from 'date-fns/format'
 import parseDate from 'date-fns/parseISO'
+import {useSearchParams} from 'react-router-dom'
 import type {Await, MdxListItem} from '~/types'
+import {useRootData} from '~/utils/use-root-data'
 import {getImgProps, images} from '~/images'
 import {H2, H3, H6, Paragraph} from '~/components/typography'
 import {ArrowLink} from '~/components/arrow-button'
@@ -26,8 +28,6 @@ import {
   LiteYouTubeEmbed,
   links as youTubeEmbedLinks,
 } from '~/components/fullscreen-yt-embed'
-import {useSearchParams} from 'react-router-dom'
-import {useRequestInfo} from '~/utils/providers'
 import {getTalksAndTags} from '~/utils/talks.server'
 import {AwardIcon} from '~/components/icons/award-icon'
 import {MugIcon} from '~/components/icons/mug-icon'
@@ -72,7 +72,7 @@ export const meta: MetaFunction = () => {
 function AboutIndex() {
   const {blogRecommendations, talkRecommendations} = useLoaderData<LoaderData>()
   const [searchParams] = useSearchParams()
-  const requestInfo = useRequestInfo()
+  const {requestInfo} = useRootData()
   const permalinkAutoplay = `${requestInfo.origin}/about?autoplay`
 
   return (

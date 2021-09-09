@@ -5,8 +5,10 @@ import {Outlet} from 'react-router-dom'
 import {AnimatePresence, motion} from 'framer-motion'
 import clsx from 'clsx'
 import type {Await, CallKentEpisode, KCDHandle} from '~/types'
+import {useTeam} from '~/utils/team-provider'
+import {externalLinks} from '~/external-links'
 import {getEpisodes} from '~/utils/transistor.server'
-import {CallKentEpisodesProvider, useTeam} from '~/utils/providers'
+import {useMatchLoaderData} from '~/utils/providers'
 import {HeroSection} from '~/components/sections/hero-section'
 import {alexProfiles, getImageBuilder, getImgProps} from '~/images'
 import {ButtonLink} from '~/components/button'
@@ -25,7 +27,10 @@ import {
 } from '~/utils/call-kent'
 import {PodcastSubs} from '~/components/podcast-subs'
 import {Spacer} from '~/components/spacer'
-import {externalLinks} from '~/external-links'
+
+export const handle: KCDHandle & {id: string} = {
+  id: 'calls',
+}
 
 export type LoaderData = {
   episodes: Await<ReturnType<typeof getEpisodes>>
@@ -211,108 +216,106 @@ export default function CallHomeScreen() {
         </div>
 
         <div className="col-span-full">
-          <CallKentEpisodesProvider value={data.episodes}>
-            {sortedEpisodes.map(episode => {
-              const path = getEpisodePath(episode)
-              const keywords = Array.from(
-                new Set(
-                  episode.keywords
-                    .split(/[,;\s]/g) // split into words
-                    .map(x => x.trim()) // trim white spaces
-                    .filter(Boolean), // remove empties
-                ), // omit duplicates
-              ).slice(0, 3) // keep first 3 only
+          {sortedEpisodes.map(episode => {
+            const path = getEpisodePath(episode)
+            const keywords = Array.from(
+              new Set(
+                episode.keywords
+                  .split(/[,;\s]/g) // split into words
+                  .map(x => x.trim()) // trim white spaces
+                  .filter(Boolean), // remove empties
+              ), // omit duplicates
+            ).slice(0, 3) // keep first 3 only
 
-              return (
-                <div
-                  className="border-b border-gray-200 dark:border-gray-600"
-                  key={path}
-                >
-                  <Link to={path} className="group focus:outline-none">
-                    <Grid nested className="relative py-10 lg:py-5">
-                      <div className="bg-secondary absolute -inset-px group-hover:block group-focus:block hidden -mx-6 rounded-lg" />
-                      <div className="relative flex-none col-span-1">
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-focus:opacity-100 group-hover:opacity-100 transform scale-0 group-focus:scale-100 group-hover:scale-100 transition">
-                          <div className="flex-none p-4 text-gray-800 bg-white rounded-full">
-                            <TriangleIcon size={12} />
-                          </div>
-                        </div>
-                        <img
-                          className="w-full h-16 rounded-lg object-cover"
-                          src={episode.imageUrl}
-                          alt={episode.title}
-                        />
-                      </div>
-                      <div className="text-primary relative flex flex-col col-span-3 md:col-span-7 lg:flex-row lg:col-span-11 lg:items-center lg:justify-between">
-                        <div className="mb-3 text-xl font-medium lg:mb-0">
-                          {/* For most optimal display, this will needs adjustment once you'll hit 5 digits */}
-                          <span
-                            className={clsx('inline-block lg:text-lg', {
-                              'w-10': numberLength <= 3,
-                              'w-14': numberLength === 4,
-                              'w-auto pr-4': numberLength > 4,
-                            })}
-                          >
-                            {`${episode.episodeNumber
-                              .toString()
-                              .padStart(2, '0')}.`}
-                          </span>
-
-                          {episode.title}
-                        </div>
-                        <div className="text-gray-400 text-lg font-medium">
-                          {formatTime(episode.duration)}
+            return (
+              <div
+                className="border-b border-gray-200 dark:border-gray-600"
+                key={path}
+              >
+                <Link to={path} className="group focus:outline-none">
+                  <Grid nested className="relative py-10 lg:py-5">
+                    <div className="bg-secondary absolute -inset-px group-hover:block group-focus:block hidden -mx-6 rounded-lg" />
+                    <div className="relative flex-none col-span-1">
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-focus:opacity-100 group-hover:opacity-100 transform scale-0 group-focus:scale-100 group-hover:scale-100 transition">
+                        <div className="flex-none p-4 text-gray-800 bg-white rounded-full">
+                          <TriangleIcon size={12} />
                         </div>
                       </div>
-                    </Grid>
-                  </Link>
-
-                  <Grid nested>
-                    <AnimatePresence>
-                      {selectedEpisode === episode ? (
-                        <motion.div
-                          variants={{
-                            collapsed: {
-                              height: 0,
-                              marginTop: 0,
-                              marginBottom: 0,
-                              opacity: 0,
-                            },
-                            expanded: {
-                              height: 'auto',
-                              marginTop: '1rem',
-                              marginBottom: '3rem',
-                              opacity: 1,
-                            },
-                          }}
-                          initial="collapsed"
-                          animate="expanded"
-                          exit="collapsed"
-                          transition={{duration: 0.15}}
-                          className="relative col-span-full"
+                      <img
+                        className="w-full h-16 rounded-lg object-cover"
+                        src={episode.imageUrl}
+                        alt={episode.title}
+                      />
+                    </div>
+                    <div className="text-primary relative flex flex-col col-span-3 md:col-span-7 lg:flex-row lg:col-span-11 lg:items-center lg:justify-between">
+                      <div className="mb-3 text-xl font-medium lg:mb-0">
+                        {/* For most optimal display, this will needs adjustment once you'll hit 5 digits */}
+                        <span
+                          className={clsx('inline-block lg:text-lg', {
+                            'w-10': numberLength <= 3,
+                            'w-14': numberLength === 4,
+                            'w-auto pr-4': numberLength > 4,
+                          })}
                         >
-                          <H6 as="div">Keywords</H6>
-                          <Paragraph className="flex mb-8">
-                            {keywords.join(', ')}
-                          </Paragraph>
+                          {`${episode.episodeNumber
+                            .toString()
+                            .padStart(2, '0')}.`}
+                        </span>
 
-                          <H6 as="div">Description</H6>
-                          <Paragraph
-                            as="div"
-                            className="mb-8"
-                            dangerouslySetInnerHTML={{
-                              __html: episode.description,
-                            }}
-                          />
-                          <Outlet />
-                        </motion.div>
-                      ) : null}
-                    </AnimatePresence>
+                        {episode.title}
+                      </div>
+                      <div className="text-gray-400 text-lg font-medium">
+                        {formatTime(episode.duration)}
+                      </div>
+                    </div>
                   </Grid>
-                </div>
-              )
-            })}
-          </CallKentEpisodesProvider>
+                </Link>
+
+                <Grid nested>
+                  <AnimatePresence>
+                    {selectedEpisode === episode ? (
+                      <motion.div
+                        variants={{
+                          collapsed: {
+                            height: 0,
+                            marginTop: 0,
+                            marginBottom: 0,
+                            opacity: 0,
+                          },
+                          expanded: {
+                            height: 'auto',
+                            marginTop: '1rem',
+                            marginBottom: '3rem',
+                            opacity: 1,
+                          },
+                        }}
+                        initial="collapsed"
+                        animate="expanded"
+                        exit="collapsed"
+                        transition={{duration: 0.15}}
+                        className="relative col-span-full"
+                      >
+                        <H6 as="div">Keywords</H6>
+                        <Paragraph className="flex mb-8">
+                          {keywords.join(', ')}
+                        </Paragraph>
+
+                        <H6 as="div">Description</H6>
+                        <Paragraph
+                          as="div"
+                          className="mb-8"
+                          dangerouslySetInnerHTML={{
+                            __html: episode.description,
+                          }}
+                        />
+                        <Outlet />
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
+                </Grid>
+              </div>
+            )
+          })}
         </div>
       </Grid>
 
@@ -326,3 +329,5 @@ export default function CallHomeScreen() {
     </>
   )
 }
+
+export const useCallsData = () => useMatchLoaderData<LoaderData>(handle.id)

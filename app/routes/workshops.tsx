@@ -1,15 +1,19 @@
 import * as React from 'react'
 import type {HeadersFunction, LoaderFunction} from 'remix'
-import {useLoaderData, json} from 'remix'
+import {json} from 'remix'
 import {Outlet} from 'react-router-dom'
-import type {Workshop} from '~/types'
+import type {KCDHandle, Workshop} from '~/types'
 import {getWorkshops} from '~/utils/workshops.server'
 import type {Timings} from '~/utils/metrics.server'
 import {getServerTimeHeader} from '~/utils/metrics.server'
 import type {WorkshopEvent} from '~/utils/workshop-tickets.server'
 import {getScheduledEvents} from '~/utils/workshop-tickets.server'
-import {WorkshopsProvider} from '~/utils/providers'
 import {reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {useMatchLoaderData} from '~/utils/providers'
+
+export const handle: KCDHandle & {id: string} = {
+  id: 'workshops',
+}
 
 type LoaderData = {
   workshops: Array<Workshop>
@@ -44,17 +48,9 @@ export const loader: LoaderFunction = async ({request}) => {
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 function WorkshopsHome() {
-  const data = useLoaderData<LoaderData>()
-  return (
-    <WorkshopsProvider
-      value={{
-        workshops: data.workshops,
-        workshopEvents: data.workshopEvents,
-      }}
-    >
-      <Outlet />
-    </WorkshopsProvider>
-  )
+  return <Outlet />
 }
 
 export default WorkshopsHome
+
+export const useWorkshopsData = () => useMatchLoaderData<LoaderData>(handle.id)

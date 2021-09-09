@@ -10,8 +10,8 @@ import {
 import type {HeadersFunction} from 'remix'
 import {json, useLoaderData} from 'remix'
 import type {KCDLoader} from '~/types'
+import {useRootData} from '~/utils/use-root-data'
 import {getDiscordAuthorizeURL, reuseUsefulLoaderHeaders} from '~/utils/misc'
-import {useOptionalUser, useRequestInfo} from '~/utils/providers'
 import {ArrowLink} from '~/components/arrow-button'
 import {ButtonLink} from '~/components/button'
 import {H2, H5, H6, Paragraph} from '~/components/typography'
@@ -125,8 +125,7 @@ function CategoryCard(props: CategoryCardProps) {
 
 export default function Discord() {
   const data = useLoaderData<LoaderData>()
-  const user = useOptionalUser()
-  const requestInfo = useRequestInfo()
+  const {requestInfo, user} = useRootData()
   const authorizeURL = user
     ? getDiscordAuthorizeURL(requestInfo.origin)
     : externalLinks.discord

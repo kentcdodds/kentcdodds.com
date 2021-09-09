@@ -9,7 +9,7 @@ import {Spacer} from '~/components/spacer'
 import {CourseSection} from '~/components/sections/course-section'
 import {WorkshopCard} from '~/components/workshop-card'
 import {HeroSection} from '~/components/sections/hero-section'
-import {useWorkshops} from '~/utils/providers'
+import {useWorkshopsData} from '../workshops'
 import {useUpdateQueryStringValueWithoutNavigation, listify} from '~/utils/misc'
 import {RegistrationPanel} from '~/components/workshop-registration-panel'
 
@@ -34,7 +34,7 @@ export const meta: MetaFunction = ({parentsData}) => {
 export const headers: HeadersFunction = ({parentHeaders}) => parentHeaders
 
 function WorkshopsHome() {
-  const data = useWorkshops()
+  const data = useWorkshopsData()
 
   const tagsSet = new Set<string>()
   for (const workshop of data.workshops) {

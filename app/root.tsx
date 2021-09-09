@@ -24,19 +24,12 @@ import {
   useTheme,
   ThemeProvider,
   NonFlashOfWrongThemeEls,
+  Theme,
 } from './utils/theme-provider'
 import {getThemeSession} from './utils/theme.server'
 import {getSession} from './utils/session.server'
 import {getLoginInfoSession} from './utils/login.server'
 import {getDomainUrl, typedBoolean} from './utils/misc'
-import {
-  RequestInfo,
-  UserInfoProvider,
-  UserProvider,
-  RequestInfoProvider,
-  TeamProvider,
-  useTeam,
-} from './utils/providers'
 import {getEnv} from './utils/env.server'
 import {getUserInfo} from './utils/user-info.server'
 import {getClientSession} from './utils/client.server'
@@ -51,6 +44,11 @@ import {TeamCircle} from './components/team-circle'
 import {NotificationMessage} from './components/notification-message'
 import {pathedRoutes} from './other-routes.server'
 import {ServerError} from './components/errors'
+import {TeamProvider, useTeam} from './utils/team-provider'
+
+export const handle: KCDHandle & {id: string} = {
+  id: 'root',
+}
 
 export const meta: MetaFunction = () => {
   return {
@@ -104,11 +102,18 @@ export const links: LinksFunction = () => {
   ]
 }
 
-type LoaderData = {
+export type LoaderData = {
   user: User | null
   userInfo: Await<ReturnType<typeof getUserInfo>> | null
   ENV: ReturnType<typeof getEnv>
-  requestInfo: RequestInfo
+  requestInfo: {
+    origin: string
+    session: {
+      email: string | undefined
+      hasActiveMagicLink: boolean
+      theme: Theme | null
+    }
+  }
 }
 
 export const loader: LoaderFunction = async ({request}) => {
@@ -275,11 +280,11 @@ function App() {
   const data = useLoaderData<LoaderData>()
 
   const metas = matches
-    .flatMap(({handle}) => (handle as KCDHandle | undefined)?.metas)
+    .flatMap(m => (m.handle as KCDHandle | undefined)?.metas)
     .filter(typedBoolean)
 
   const shouldManageScroll = matches.every(
-    ({handle}) => (handle as KCDHandle | undefined)?.scroll !== false,
+    m => (m.handle as KCDHandle | undefined)?.scroll !== false,
   )
   useScrollRestoration(shouldManageScroll)
 
@@ -345,17 +350,11 @@ function App() {
 export default function AppWithProviders() {
   const data = useLoaderData<LoaderData>()
   return (
-    <RequestInfoProvider value={data.requestInfo}>
-      <UserProvider value={data.user}>
-        <UserInfoProvider value={data.userInfo}>
-          <TeamProvider>
-            <ThemeProvider specifiedTheme={data.requestInfo.session.theme}>
-              <App />
-            </ThemeProvider>
-          </TeamProvider>
-        </UserInfoProvider>
-      </UserProvider>
-    </RequestInfoProvider>
+    <TeamProvider>
+      <ThemeProvider specifiedTheme={data.requestInfo.session.theme}>
+        <App />
+      </ThemeProvider>
+    </TeamProvider>
   )
 }
 
@@ -377,3 +376,8 @@ export function ErrorBoundary({error}: {error: Error}) {
     </html>
   )
 }
+
+/*
+eslint
+  @typescript-eslint/no-use-before-define: "off",
+*/

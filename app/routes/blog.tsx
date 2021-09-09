@@ -1,8 +1,9 @@
 import * as React from 'react'
 import type {LoaderFunction, HeadersFunction, MetaFunction} from 'remix'
 import {json, useLoaderData} from 'remix'
-import type {Await, KCDHandle, MdxListItem} from '~/types'
 import {useSearchParams} from 'react-router-dom'
+import type {Await, KCDHandle, MdxListItem} from '~/types'
+import {useRootData} from '~/utils/use-root-data'
 import {Grid} from '~/components/grid'
 import {getImageBuilder, getImgProps, images} from '~/images'
 import {H2, H3, H6} from '~/components/typography'
@@ -13,7 +14,6 @@ import {FeaturedSection} from '~/components/sections/featured-section'
 import {Tag} from '~/components/tag'
 import {getBlogMdxListItems} from '~/utils/mdx'
 import {filterPosts} from '~/utils/blog'
-import {useRequestInfo} from '~/utils/providers'
 import {HeroSection} from '~/components/sections/hero-section'
 import {PlusIcon} from '~/components/icons/plus-icon'
 import {Button} from '~/components/button'
@@ -107,7 +107,7 @@ const PAGE_SIZE = 12
 const initialIndexToShow = PAGE_SIZE
 
 function BlogHome() {
-  const requestInfo = useRequestInfo()
+  const {requestInfo} = useRootData()
   const [searchParams] = useSearchParams()
 
   const [queryValue, setQuery] = React.useState<string>(() => {

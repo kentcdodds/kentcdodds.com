@@ -1,8 +1,8 @@
 import * as React from 'react'
 import clsx from 'clsx'
 import {externalLinks} from '../external-links'
-import {useOptionalUserInfo, useRequestInfo} from '~/utils/providers'
 import {AnchorOrLink} from '~/utils/misc'
+import {useRootData} from '~/utils/use-root-data'
 import {ConvertKitForm} from '../convertkit/form'
 import {H4, H6, Paragraph} from './typography'
 import {Grid} from './grid'
@@ -58,7 +58,7 @@ function GeneralSection() {
 }
 
 function SitemapSection() {
-  const requestInfo = useRequestInfo()
+  const {requestInfo} = useRootData()
   return (
     <div>
       <H6 as="div">Sitemap</H6>
@@ -138,7 +138,7 @@ function FooterLink({name, href}: FooterLinkProps) {
 }
 
 function Footer() {
-  const userInfo = useOptionalUserInfo()
+  const {userInfo} = useRootData()
   const subscribedToNewsletter = userInfo?.convertKit?.tags.some(
     ({name}) => name === 'Subscribed: general newsletter',
   )

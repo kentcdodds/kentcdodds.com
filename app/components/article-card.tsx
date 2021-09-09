@@ -3,12 +3,12 @@ import {Link} from 'remix'
 import formatDate from 'date-fns/format'
 import parseISO from 'date-fns/parseISO'
 import type {MdxListItem} from '~/types'
-import {useRequestInfo} from '~/utils/providers'
 import {getImageBuilder, getImgProps} from '~/images'
 import {H3} from './typography'
 import {ClipboardCopyButton} from './clipboard-copy-button'
 import {MissingSomething} from './kifs'
 import {BlurrableImage} from './blurrable-image'
+import {useRootData} from '~/utils/use-root-data'
 
 function ArticleCard({
   readTime,
@@ -22,7 +22,7 @@ function ArticleCard({
     bannerBlurDataUrl,
   },
 }: MdxListItem) {
-  const requestInfo = useRequestInfo()
+  const {requestInfo} = useRootData()
   const permalink = `${requestInfo.origin}/blog/${slug}`
 
   return (

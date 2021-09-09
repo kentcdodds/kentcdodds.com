@@ -16,7 +16,7 @@ import {getBlogRecommendations} from '~/utils/blog.server'
 import type {Timings} from '~/utils/metrics.server'
 import {getServerTimeHeader} from '~/utils/metrics.server'
 import {getWorkshops} from '~/utils/workshops.server'
-import {useWorkshops} from '~/utils/providers'
+import {useWorkshopsData} from '../workshops'
 import {ConvertKitForm} from '../../convertkit/form'
 import {getTestimonials} from '~/utils/testimonials.server'
 import type {
@@ -90,7 +90,7 @@ export const meta: MetaFunction = ({parentsData, params}) => {
 export default function WorkshopScreenBase() {
   const loaderData = useLoaderData<LoaderData>()
   const params = useParams()
-  const {workshops} = useWorkshops()
+  const {workshops} = useWorkshopsData()
   const workshop = workshops.find(w => w.slug === params.slug)
 
   if (workshop) {
@@ -133,7 +133,7 @@ function restartArray<ArrayType>(array: Array<ArrayType>, startIndex: number) {
 
 function WorkshopScreen() {
   const params = useParams()
-  const {workshopEvents: allWorkshopEvents, workshops} = useWorkshops()
+  const {workshopEvents: allWorkshopEvents, workshops} = useWorkshopsData()
   const data = useLoaderData<LoaderData>()
   const workshop = workshops.find(w => w.slug === params.slug)
 

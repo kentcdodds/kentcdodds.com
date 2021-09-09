@@ -2,11 +2,10 @@ import * as React from 'react'
 import {useParams} from 'react-router-dom'
 import {MetaFunction, redirect} from 'remix'
 import type {KCDHandle, KCDLoader} from '~/types'
-import {useCallKentEpisodes} from '~/utils/providers'
 import {getEpisodes} from '~/utils/transistor.server'
 import {Themed} from '~/utils/theme-provider'
 import {getEpisodeFromParams, getEpisodePath, Params} from '~/utils/call-kent'
-import type {LoaderData} from '../calls'
+import {LoaderData as CallsLoaderData, useCallsData} from '../calls'
 
 export const handle: KCDHandle = {
   id: 'call-player',
@@ -25,7 +24,7 @@ export const handle: KCDHandle = {
 }
 
 export const meta: MetaFunction = ({parentsData, params}) => {
-  const callsData = parentsData['routes/calls'] as LoaderData | undefined
+  const callsData = parentsData['routes/calls'] as CallsLoaderData | undefined
   const metadata = {}
   if (!callsData) {
     console.error(
@@ -91,7 +90,7 @@ export const loader: KCDLoader<Params> = async ({params, request}) => {
 
 export default function Screen() {
   const params = useParams() as Params
-  const episodes = useCallKentEpisodes()
+  const {episodes} = useCallsData()
   const episode = getEpisodeFromParams(episodes, params)
 
   if (!episode) {

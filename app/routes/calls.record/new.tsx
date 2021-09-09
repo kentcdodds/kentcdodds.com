@@ -2,6 +2,7 @@ import * as React from 'react'
 import {redirect, json, useActionData, Link} from 'remix'
 import type {ActionFunction} from 'remix'
 import type {KCDHandle} from '~/types'
+import {useRootData} from '~/utils/use-root-data'
 import {CallRecorder} from '~/components/calls/recorder'
 import {
   RecordingForm,
@@ -16,7 +17,6 @@ import {
   getErrorForDescription,
   getErrorForKeywords,
 } from '~/utils/call-kent'
-import {useUser} from '~/utils/providers'
 import {H4, Paragraph} from '~/components/typography'
 import {Grimmacing} from '~/components/kifs'
 import {Grid} from '~/components/grid'
@@ -81,7 +81,9 @@ type ActionData = RecordingFormData
 export default function RecordScreen() {
   const actionData = useActionData<ActionData>()
   const [audio, setAudio] = React.useState<Blob | null>(null)
-  const user = useUser()
+  const {user} = useRootData()
+  // should be impossible...
+  if (!user) throw new Error('user required')
   return (
     <div>
       {audio ? (

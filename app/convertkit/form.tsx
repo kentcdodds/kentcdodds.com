@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {useFetcher} from 'remix'
-import {useOptionalUser, useOptionalUserInfo} from '~/utils/providers'
+import {useRootData} from '~/utils/use-root-data'
 import {ArrowButton} from '~/components/arrow-button'
 import {Field} from '~/components/form-elements'
 import {CheckIcon} from '~/components/icons/check-icon'
@@ -25,8 +25,7 @@ function ConvertKitForm({
     }
   }, [convertKitData])
 
-  const user = useOptionalUser()
-  const userInfo = useOptionalUserInfo()
+  const {user, userInfo} = useRootData()
 
   const alreadySubscribed = userInfo?.convertKit?.tags.some(
     ({id}) => id === convertKitTagId,
