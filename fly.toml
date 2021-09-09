@@ -31,7 +31,7 @@ kill_timeout = 5
   [services.concurrency]
     hard_limit = 200
     soft_limit = 150
-    type = "connections"
+    type = "requests"
 
   [[services.ports]]
     handlers = ["http"]
