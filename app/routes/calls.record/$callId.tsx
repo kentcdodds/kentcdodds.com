@@ -76,10 +76,15 @@ export default function Screen() {
   return (
     <section>
       <Paragraph className="mb-8">{data.call.description}</Paragraph>
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-wrap gap-2">
+        <div className="flex-1 w-full" style={{minWidth: '16rem'}}>
           {audioURL ? (
-            <audio src={audioURL} controls preload="metadata" />
+            <audio
+              src={audioURL}
+              controls
+              preload="metadata"
+              className="w-full"
+            />
           ) : null}
         </div>
         <Form method="post">
