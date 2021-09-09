@@ -5,6 +5,7 @@ import {getAllUserData, getDocumentReplayResponse} from './utils/prisma.server'
 import {commitShaKey as refreshCacheCommitShaKey} from './routes/_action/refresh-cache'
 import {redisCache} from './utils/redis.server'
 import {requireUser} from './utils/session.server'
+import {getUserInfo} from './utils/user-info.server'
 
 type Handler = (
   request: Request,
@@ -44,7 +45,9 @@ const pathedRoutes: Record<string, Handler> = {
   },
   '/me/download.json': async request => {
     return requireUser(request, async user => {
-      return json(await getAllUserData(user.id))
+      const postgres = await getAllUserData(user.id)
+      const cache = await getUserInfo(user)
+      return json({postgres, cache})
     })
   },
 }
