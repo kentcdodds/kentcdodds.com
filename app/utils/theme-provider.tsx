@@ -1,4 +1,5 @@
 import * as React from 'react'
+import {useFetcher} from 'remix'
 
 enum Theme {
   DARK = 'dark',
@@ -44,6 +45,13 @@ function ThemeProvider({
     return getPreferredTheme()
   })
 
+  const persistTheme = useFetcher()
+  // TODO: remove this when persistTheme is memoized properly
+  const persistThemeRef = React.useRef(persistTheme)
+  React.useEffect(() => {
+    persistThemeRef.current = persistTheme
+  }, [persistTheme])
+
   const mountRun = React.useRef(false)
 
   React.useEffect(() => {
@@ -51,15 +59,12 @@ function ThemeProvider({
       mountRun.current = true
       return
     }
+    if (!theme) return
 
-    const searchParams = new URLSearchParams([
-      ['_data', 'routes/_action/set-theme'],
-    ])
-    void fetch(`/_action/set-theme?${searchParams}`, {
-      method: 'POST',
-      body: JSON.stringify({theme}),
-      headers: {'Content-Type': 'application/json'},
-    })
+    persistThemeRef.current.submit(
+      {theme},
+      {action: '_action/set-theme', method: 'post'},
+    )
   }, [theme])
 
   React.useEffect(() => {

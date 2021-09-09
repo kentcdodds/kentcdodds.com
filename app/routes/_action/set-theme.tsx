@@ -1,19 +1,27 @@
 import * as React from 'react'
-import {redirect} from 'remix'
+import {json, redirect} from 'remix'
 import type {ActionFunction} from 'remix'
 import {getThemeSession} from '~/utils/theme.server'
 import {isTheme} from '~/utils/theme-provider'
 
 export const action: ActionFunction = async ({request}) => {
   const themeSession = await getThemeSession(request)
-  const params = await request.json()
-  const theme = params.theme
-  if (!isTheme(theme)) return redirect(new URL(request.url).pathname)
+  const requestText = await request.text()
+  const form = new URLSearchParams(requestText)
+  const theme = form.get('theme')
+  if (!isTheme(theme))
+    return json({
+      success: false,
+      message: `theme value of ${theme} is not a valid theme.`,
+    })
 
   themeSession.setTheme(theme)
-  return redirect(new URL(request.url).pathname, {
-    headers: {'Set-Cookie': await themeSession.commit()},
-  })
+  return json(
+    {success: true},
+    {
+      headers: {'Set-Cookie': await themeSession.commit()},
+    },
+  )
 }
 
 export const loader = () => redirect('/', {status: 404})
