@@ -13,7 +13,7 @@ import {isConnectedToTheInternet, isE2E, updateFixture} from './utils'
 // put one-off handlers that don't really need an entire file to themselves here
 const miscHandlers = [
   rest.get(
-    'https://res.cloudinary.com/kentcdodds-com/image/upload/w_100,q_auto,f_webp,e_blur:1000/:cloudinaryId',
+    'https://res.cloudinary.com/kentcdodds-com/image/upload/w_100,q_auto,f_webp,e_blur:1000/unsplash/:photoId',
     async (req, res, ctx) => {
       if (await isConnectedToTheInternet()) return
 

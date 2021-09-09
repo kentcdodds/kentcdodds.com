@@ -10,6 +10,8 @@ import {GithubIcon} from './icons/github-icon'
 import {TwitterIcon} from './icons/twitter-icon'
 import {YoutubeIcon} from './icons/youtube-icon'
 import {Signature} from './signature'
+import {Link} from 'remix'
+import {ArrowIcon} from './icons/arrow-icon'
 
 interface FooterLinkProps {
   name: string
@@ -21,9 +23,18 @@ function NewsletterSection() {
     <div>
       <H6 as="div">Stay up to date</H6>
       <div className="mt-4 max-w-md">
-        <Paragraph>
-          Subscribe to the newsletter to stay up to date with articles, courses
-          and much more
+        <Paragraph prose={false}>
+          {`
+            Subscribe to the newsletter to stay up to date with articles,
+            courses and much more!
+          `}
+          <Link
+            to="/subscribe"
+            className="text-secondary underlined hover:text-team-current focus:text-team-current"
+          >
+            {`Learn more`}{' '}
+            <ArrowIcon className="inline-block" direction="top-right" />
+          </Link>
         </Paragraph>
       </div>
 

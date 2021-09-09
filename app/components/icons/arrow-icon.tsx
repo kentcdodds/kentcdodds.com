@@ -4,6 +4,7 @@ import * as React from 'react'
 export interface ArrowIconProps {
   direction: 'up' | 'right' | 'down' | 'left' | 'top-right'
   size?: number
+  className?: string
 }
 
 export const rotationMap = {
@@ -14,10 +15,10 @@ export const rotationMap = {
   'top-right': '-rotate-135',
 }
 
-function ArrowIcon({direction, size = 32}: ArrowIconProps) {
+function ArrowIcon({direction, size = 32, className}: ArrowIconProps) {
   return (
     <svg
-      className={clsx('transform', rotationMap[direction])}
+      className={clsx(className, 'transform', rotationMap[direction])}
       width={size}
       height={size}
       viewBox="0 0 32 32"

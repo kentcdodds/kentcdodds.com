@@ -114,13 +114,13 @@ a {
 
 .underlined {
   position: relative;
-  text-decoration: none;
+  text-decoration: none !important;
   white-space: nowrap;
 }
 
 .underlined:focus {
   outline: none;
-  text-decoration: none;
+  text-decoration: none !important;
 }
 
 .underlined:after {
