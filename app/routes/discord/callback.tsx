@@ -34,7 +34,6 @@ export const loader: LoaderFunction = async ({request}) => {
         'message',
         `✅ Sucessfully connected your KCD account with ${discordMember.user.username} on discord.`,
       )
-      console.log('redirecting to', url.toString())
       return redirect(url.toString())
     } catch (error: unknown) {
       const errorMessage = getErrorMessage(error)

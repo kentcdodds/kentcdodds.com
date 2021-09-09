@@ -29,7 +29,7 @@ import {
 import {getThemeSession} from './utils/theme.server'
 import {getSession} from './utils/session.server'
 import {getLoginInfoSession} from './utils/login.server'
-import {getDomainUrl, typedBoolean} from './utils/misc'
+import {getDomainUrl, OptionalTeam, typedBoolean} from './utils/misc'
 import {getEnv} from './utils/env.server'
 import {getUserInfo} from './utils/user-info.server'
 import {getClientSession} from './utils/client.server'
@@ -45,6 +45,7 @@ import {NotificationMessage} from './components/notification-message'
 import {pathedRoutes} from './other-routes.server'
 import {ServerError} from './components/errors'
 import {TeamProvider, useTeam} from './utils/team-provider'
+import clsx from 'clsx'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',
@@ -290,20 +291,34 @@ function App() {
 
   const [team] = useTeam()
   const [theme] = useTheme()
+  let currentTeam: OptionalTeam | null = null
+  for (const match of matches) {
+    const matchHandle = match.handle as KCDHandle | undefined
+    if (matchHandle?.useLeadingTeam) {
+      // the matches are sorted from least specific to most specific
+      // so if a more specific route comes here and returns null that's
+      // desired behavior, not a bug.
+      currentTeam = matchHandle.useLeadingTeam()
+    }
+  }
+  if (!currentTeam) {
+    currentTeam = team
+  }
 
   return (
-    <html lang="en" className={theme ?? ''}>
+    <html
+      lang="en"
+      className={clsx(
+        theme,
+        `set-color-team-current-${currentTeam.toLowerCase()}`,
+      )}
+    >
       <head>
         <Meta />
         {metas.map((m, i) => (
           <meta key={i} {...m} />
         ))}
         <Links />
-        <style>{`
-          :root {
-            --color-team-current: var(--color-team-${team.toLowerCase()}); 
-          }
-        `}</style>
         <noscript>
           <link rel="stylesheet" href={noScriptStyles} />
         </noscript>

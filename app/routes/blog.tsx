@@ -34,14 +34,21 @@ import {
   getReaderCount,
   getTotalPostReads,
 } from '~/utils/blog.server'
+import {useOptionalMatchLoaderData} from '~/utils/providers'
 
+const handleId = 'blog'
 export const handle: KCDHandle = {
-  getSitemapEntries: () => [
-    {
-      route: `/blog`,
-      priority: 0.7,
-    },
-  ],
+  id: handleId,
+  useLeadingTeam() {
+    const blogPostData = useOptionalMatchLoaderData<LoaderData>(handleId)
+    // the read rankings are sorted greatest to smallest, so the first one
+    // will be the leader. Unless it's percentage is 0 in which case
+    // there is no winner.
+    if (!blogPostData?.readRankings[0]) return null
+    if (blogPostData.readRankings[0].percent <= 0) return null
+    return blogPostData.readRankings[0].team
+  },
+  getSitemapEntries: () => [{route: `/blog`, priority: 0.7}],
 }
 
 type LoaderData = {
@@ -195,7 +202,7 @@ function BlogHome() {
                   name="q"
                   placeholder="Search blog"
                   aria-label="Search blog"
-                  className="text-primary bg-primary border-secondary hover:border-primary focus:border-primary focus:bg-secondary px-16 py-6 w-full text-lg font-medium border rounded-full focus:outline-none"
+                  className="text-primary bg-primary border-secondary focus:bg-secondary px-16 py-6 w-full text-lg font-medium border hover:border-team-current focus:border-team-current rounded-full focus:outline-none"
                 />
                 <div className="absolute right-8 top-0 flex items-center justify-center h-full text-blueGray-500 text-lg font-medium">
                   {matchingPosts.length}

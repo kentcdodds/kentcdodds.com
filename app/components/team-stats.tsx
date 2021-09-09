@@ -134,6 +134,7 @@ function TeamStats({
   direction: 'up' | 'down'
 }) {
   const [altDown, setAltDown] = React.useState(false)
+  const [team] = useTeam()
 
   React.useEffect(() => {
     const set = (e: KeyboardEvent) => setAltDown(e.altKey)
@@ -147,10 +148,14 @@ function TeamStats({
 
   return (
     <div
-      className={clsx('group relative inline-flex flex-col justify-end h-8', {
-        'justify-end': direction === 'down',
-        'justify-start': direction === 'up',
-      })}
+      className={clsx(
+        'group relative inline-flex flex-col justify-end h-8',
+        `set-color-team-current-${team.toLowerCase()}`,
+        {
+          'justify-end': direction === 'down',
+          'justify-start': direction === 'up',
+        },
+      )}
     >
       <div
         className={clsx(

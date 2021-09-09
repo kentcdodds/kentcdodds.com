@@ -51,10 +51,17 @@ function useMatchLoaderData<LoaderData>(handleId: string) {
   }
   return match.data as LoaderData
 }
+function useOptionalMatchLoaderData<LoaderData>(handleId: string) {
+  const matches = useMatches()
+  return matches.find(
+    ({handle}) => (handle as KCDHandle | undefined)?.id === handleId,
+  )?.data as LoaderData | undefined
+}
 
 export {
   createSimpleContext,
   ChatsEpisodeUIStateProvider,
   useChatsEpisodeUIState,
   useMatchLoaderData,
+  useOptionalMatchLoaderData,
 }

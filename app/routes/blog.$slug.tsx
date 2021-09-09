@@ -37,8 +37,20 @@ import {getSession} from '~/utils/session.server'
 import {addPostRead} from '~/utils/prisma.server'
 import {getClientSession} from '~/utils/client.server'
 import {externalLinks} from '../external-links'
+import {useOptionalMatchLoaderData} from '~/utils/providers'
 
+const handleId = 'blog-post'
 export const handle: KCDHandle = {
+  id: handleId,
+  useLeadingTeam() {
+    const blogPostData = useOptionalMatchLoaderData<LoaderData>(handleId)
+    // the read rankings are sorted greatest to smallest, so the first one
+    // will be the leader. Unless it's percentage is 0 in which case
+    // there is no winner.
+    if (!blogPostData?.readRankings[0]) return null
+    if (blogPostData.readRankings[0].percent <= 0) return null
+    return blogPostData.readRankings[0].team
+  },
   getSitemapEntries: async request => {
     const pages = await getMdxDirList('blog', {request})
     return pages.map(page => {
@@ -294,7 +306,7 @@ function MdxScreen() {
   })
 
   return (
-    <>
+    <React.Fragment key={slug}>
       <Grid className="mb-10 mt-24 lg:mb-24">
         <div className="flex col-span-full justify-between lg:col-span-8 lg:col-start-3">
           <BackLink to="/blog">Back to overview</BackLink>
@@ -426,7 +438,7 @@ function MdxScreen() {
         description="You will love these ones as well."
         showArrowButton={false}
       />
-    </>
+    </React.Fragment>
   )
 }
 

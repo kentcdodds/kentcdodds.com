@@ -49,6 +49,22 @@
   --text-secondary: var(--color-blueGray-500);
 }
 
+.set-color-team-current-yellow {
+  --color-team-current: var(--color-team-yellow);
+}
+
+.set-color-team-current-red {
+  --color-team-current: var(--color-team-red);
+}
+
+.set-color-team-current-blue {
+  --color-team-current: var(--color-team-blue);
+}
+
+.set-color-team-current-unknown {
+  --color-team-current: var(--color-team-unknown);
+}
+
 :focus:not(:focus-visible) {
   outline: none;
 }
