@@ -28,15 +28,23 @@ function Stat({
   ranking,
   direction,
   display,
-}: ReadRanking & {direction: 'up' | 'down'; display: 'ranking' | 'reads'}) {
+  onClick,
+}: ReadRanking & {
+  direction: 'up' | 'down'
+  display: 'ranking' | 'reads'
+  onClick?: () => void
+}) {
   const {userInfo} = useRootData()
   const [currentTeam] = useTeam()
   const avatar = userInfo ? userInfo.avatar : alexProfiles[team]
   const isUsersTeam = team === currentTeam
 
+  const MotionEl = onClick ? motion.button : motion.div
+
   return (
-    <motion.div
+    <MotionEl
       tabIndex={0}
+      onClick={onClick}
       title={
         display === 'ranking'
           ? `Rank of the ${team.toLowerCase()} team`
@@ -120,7 +128,7 @@ function Stat({
           />
         </motion.div>
       ) : null}
-    </motion.div>
+    </MotionEl>
   )
 }
 
@@ -128,10 +136,12 @@ function TeamStats({
   totalReads,
   rankings,
   direction = 'up',
+  onStatClick,
 }: {
   totalReads: string
   rankings: Array<ReadRanking>
   direction: 'up' | 'down'
+  onStatClick?: (team: Team) => void
 }) {
   const [altDown, setAltDown] = React.useState(false)
   const [team] = useTeam()
@@ -159,7 +169,7 @@ function TeamStats({
     >
       <div
         className={clsx(
-          'absolute right-0 h-8 text-sm opacity-0 group-hover:opacity-100 transition',
+          'absolute right-0 h-8 text-sm opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition',
           {
             '-top-8': direction === 'down',
             '-bottom-20': direction === 'up',
@@ -168,7 +178,7 @@ function TeamStats({
       >
         <span title="Total reads">{totalReads} </span>
         <Link
-          className="text-secondary underlined hover:text-team-current"
+          className="text-secondary underlined hover:text-team-current focus:text-team-current"
           to="/teams#read-rankings"
         >
           {`what's this?`}
@@ -189,6 +199,9 @@ function TeamStats({
               {...ranking}
               direction={direction}
               display={altDown ? 'ranking' : 'reads'}
+              onClick={
+                onStatClick ? () => onStatClick(ranking.team) : undefined
+              }
             />
           </li>
         ))}

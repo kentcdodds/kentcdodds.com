@@ -1,4 +1,4 @@
-import type {Team, MdxListItem} from '~/types'
+import type {Team, MdxListItem, Await} from '~/types'
 import {subYears, subMonths} from 'date-fns'
 import {shuffle} from 'lodash'
 import {getBlogMdxListItems} from './mdx'
@@ -172,11 +172,14 @@ async function getReaderCount(request: Request) {
   })
 }
 
+export type ReadRankings = Await<ReturnType<typeof getBlogReadRankings>>
+
 async function getBlogReadRankings(request: Request, slug?: string) {
   const key = slug ? `blog:${slug}:rankings` : `blog:rankings`
   const rankingObjs = await cachified({
     key,
     cache: lruCache,
+    maxAge: 1000 * 60 * 5,
     request,
     checkValue: (value: unknown) =>
       Array.isArray(value) &&

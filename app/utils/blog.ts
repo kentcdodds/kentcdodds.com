@@ -1,5 +1,16 @@
 import {matchSorter, rankings as matchSorterRankings} from 'match-sorter'
 import type {MdxListItem} from '~/types'
+import type {ReadRankings} from './blog.server'
+
+function getRankingLeader(rankings?: ReadRankings) {
+  if (!rankings) return null
+
+  return rankings.reduce((leader: ReadRankings[number] | null, rank) => {
+    if (rank.ranking <= 0) return leader
+    if (!leader || rank.ranking > leader.ranking) return rank
+    return leader
+  }, null)
+}
 
 function filterPosts(posts: Array<MdxListItem>, searchString: string) {
   if (!searchString) return posts
@@ -71,4 +82,4 @@ function filterPosts(posts: Array<MdxListItem>, searchString: string) {
   return Array.from(new Set([...allResults, ...individualWordResults]))
 }
 
-export {filterPosts}
+export {filterPosts, getRankingLeader}

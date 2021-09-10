@@ -1,10 +1,12 @@
 import * as React from 'react'
+import clsx from 'clsx'
 import type {ImageBuilder} from '~/images'
 import {getImgProps} from '~/images'
 import {Grid} from '../grid'
 import {H2, H6} from '../typography'
 import {ArrowLink} from '../arrow-button'
 import {ClipboardCopyButton} from '../clipboard-copy-button'
+import type {Team} from '~/types'
 
 type FeaturedSectionProps = {
   caption?: string
@@ -12,6 +14,7 @@ type FeaturedSectionProps = {
   subTitle?: string
   title?: string
   permalink?: string
+  leadingTeam?: Team | null
 } & (
   | {
       imageBuilder?: ImageBuilder
@@ -38,9 +41,17 @@ function FeaturedSection({
   title = 'Untitled Post',
   subTitle,
   permalink,
+  leadingTeam,
 }: FeaturedSectionProps) {
   return (
-    <div className="px-8 w-full lg:px-0">
+    <div
+      className={clsx(
+        'px-8 w-full lg:px-0',
+        leadingTeam
+          ? `set-color-team-current-${leadingTeam.toLowerCase()}`
+          : null,
+      )}
+    >
       <div className="lg:dark:bg-transparent bg-gray-100 dark:bg-gray-800 rounded-lg lg:bg-transparent">
         <div className="-mx-8 lg:mx-0">
           <Grid className="group lg:dark:bg-gray-800 pb-6 pt-14 rounded-lg md:pb-12 lg:bg-gray-100">
@@ -92,6 +103,9 @@ function FeaturedSection({
                   />
                 )}
               </div>
+              {leadingTeam ? (
+                <div className="absolute z-20 left-6 top-6 p-1 w-4 h-4 bg-team-current rounded-full" />
+              ) : null}
               {permalink ? (
                 <ClipboardCopyButton
                   className="absolute z-20 left-6 top-6"

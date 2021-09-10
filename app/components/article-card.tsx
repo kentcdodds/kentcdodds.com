@@ -1,8 +1,9 @@
 import * as React from 'react'
 import {Link} from 'remix'
+import clsx from 'clsx'
 import formatDate from 'date-fns/format'
 import parseISO from 'date-fns/parseISO'
-import type {MdxListItem} from '~/types'
+import type {MdxListItem, Team} from '~/types'
 import {getImageBuilder, getImgProps} from '~/images'
 import {H3} from './typography'
 import {ClipboardCopyButton} from './clipboard-copy-button'
@@ -11,22 +12,35 @@ import {BlurrableImage} from './blurrable-image'
 import {useRootData} from '~/utils/use-root-data'
 
 function ArticleCard({
-  readTime,
-  slug,
-  frontmatter: {
-    date = formatDate(new Date(), 'yyyy-MM-ii'),
-    title = 'Untitled Post',
-    bannerAlt,
-    bannerCloudinaryId,
-    bannerCredit,
-    bannerBlurDataUrl,
+  leadingTeam,
+  article: {
+    readTime,
+    slug,
+    frontmatter: {
+      date = formatDate(new Date(), 'yyyy-MM-ii'),
+      title = 'Untitled Post',
+      bannerAlt,
+      bannerCloudinaryId,
+      bannerCredit,
+      bannerBlurDataUrl,
+    },
   },
-}: MdxListItem) {
+}: {
+  article: MdxListItem
+  leadingTeam?: Team | null
+}) {
   const {requestInfo} = useRootData()
   const permalink = `${requestInfo.origin}/blog/${slug}`
 
   return (
-    <div className="relative w-full">
+    <div
+      className={clsx(
+        'relative w-full',
+        leadingTeam
+          ? `set-color-team-current-${leadingTeam.toLowerCase()}`
+          : null,
+      )}
+    >
       <Link
         className="group peer relative block w-full focus:outline-none"
         to={`/blog/${slug}`}
@@ -79,6 +93,9 @@ function ArticleCard({
         </H3>
       </Link>
 
+      {leadingTeam ? (
+        <div className="absolute z-10 left-6 top-6 p-1 w-4 h-4 bg-team-current rounded-full" />
+      ) : null}
       <ClipboardCopyButton
         value={permalink}
         className="absolute z-10 left-6 top-6"

@@ -2,7 +2,7 @@ import * as React from 'react'
 import type {LoaderFunction, HeadersFunction, MetaFunction} from 'remix'
 import {json, useLoaderData} from 'remix'
 import {useSearchParams} from 'react-router-dom'
-import type {Await, KCDHandle, MdxListItem} from '~/types'
+import type {KCDHandle, MdxListItem, Team} from '~/types'
 import {useRootData} from '~/utils/use-root-data'
 import {Grid} from '~/components/grid'
 import {getImageBuilder, getImgProps, images} from '~/images'
@@ -13,7 +13,7 @@ import {ArrowLink} from '~/components/arrow-button'
 import {FeaturedSection} from '~/components/sections/featured-section'
 import {Tag} from '~/components/tag'
 import {getBlogMdxListItems} from '~/utils/mdx'
-import {filterPosts} from '~/utils/blog'
+import {filterPosts, getRankingLeader} from '~/utils/blog'
 import {HeroSection} from '~/components/sections/hero-section'
 import {PlusIcon} from '~/components/icons/plus-icon'
 import {Button} from '~/components/button'
@@ -24,6 +24,7 @@ import {
   formatDate,
   formatNumber,
   reuseUsefulLoaderHeaders,
+  teams,
   useUpdateQueryStringValueWithoutNavigation,
 } from '~/utils/misc'
 import {TeamStats} from '~/components/team-stats'
@@ -33,6 +34,7 @@ import {
   getBlogRecommendations,
   getReaderCount,
   getTotalPostReads,
+  ReadRankings,
 } from '~/utils/blog.server'
 import {useOptionalMatchLoaderData} from '~/utils/providers'
 
@@ -41,12 +43,8 @@ export const handle: KCDHandle = {
   id: handleId,
   useLeadingTeam() {
     const blogPostData = useOptionalMatchLoaderData<LoaderData>(handleId)
-    // the read rankings are sorted greatest to smallest, so the first one
-    // will be the leader. Unless it's percentage is 0 in which case
-    // there is no winner.
-    if (!blogPostData?.readRankings[0]) return null
-    if (blogPostData.readRankings[0].percent <= 0) return null
-    return blogPostData.readRankings[0].team
+    if (!blogPostData) return null
+    return getRankingLeader(blogPostData.readRankings)?.team ?? null
   },
   getSitemapEntries: () => [{route: `/blog`, priority: 0.7}],
 }
@@ -55,12 +53,14 @@ type LoaderData = {
   posts: Array<MdxListItem>
   recommended: MdxListItem | undefined
   tags: Array<string>
-  readRankings: Await<ReturnType<typeof getBlogReadRankings>>
+  allPostReadRankings: Record<string, ReadRankings>
+  readRankings: ReadRankings
   totalReads: string
   totalBlogReaders: string
 }
 
 export const loader: LoaderFunction = async ({request}) => {
+  const {default: pLimit} = await import('p-limit')
   const timings: Timings = {}
 
   const [posts, [recommended], readRankings, totalReads, totalBlogReaders] =
@@ -71,6 +71,19 @@ export const loader: LoaderFunction = async ({request}) => {
       getTotalPostReads(request),
       getReaderCount(request),
     ])
+
+  const limit = pLimit(8)
+  const allPostReadRankings: LoaderData['allPostReadRankings'] = {}
+  await Promise.all(
+    posts.map(post =>
+      limit(async () => {
+        allPostReadRankings[post.slug] = await getBlogReadRankings(
+          request,
+          post.slug,
+        )
+      }),
+    ),
+  )
 
   const tags = new Set<string>()
   for (const post of posts) {
@@ -83,6 +96,7 @@ export const loader: LoaderFunction = async ({request}) => {
     posts,
     recommended,
     readRankings,
+    allPostReadRankings,
     totalReads: formatNumber(totalReads),
     totalBlogReaders: formatNumber(totalBlogReaders),
     tags: Array.from(tags),
@@ -113,6 +127,9 @@ export const meta: MetaFunction = ({data}: {data: LoaderData}) => {
 const PAGE_SIZE = 12
 const initialIndexToShow = PAGE_SIZE
 
+const specialQueryRegex = /(?<not>!)?leader:(?<team>\w+)(\s|$)?/g
+const isTeam = (team?: string): team is Team => teams.includes(team as Team)
+
 function BlogHome() {
   const {requestInfo} = useRootData()
   const [searchParams] = useSearchParams()
@@ -126,9 +143,53 @@ function BlogHome() {
 
   const data = useLoaderData<LoaderData>()
   const allPosts = data.posts
+
+  const getLeadingTeamForSlug = React.useCallback(
+    (slug: string) => {
+      return getRankingLeader(data.allPostReadRankings[slug])?.team
+    },
+    [data.allPostReadRankings],
+  )
+
+  const regularQuery = query.replace(specialQueryRegex, '').trim()
+
   const matchingPosts = React.useMemo(() => {
-    return filterPosts(allPosts, query)
-  }, [allPosts, query])
+    const r = new RegExp(specialQueryRegex)
+    let match = r.exec(query)
+    const leaders: Array<Team> = []
+    const nonLeaders: Array<Team> = []
+    while (match) {
+      const {team, not} = match.groups ?? {}
+      const upperTeam = team?.toUpperCase()
+      if (isTeam(upperTeam)) {
+        if (not) {
+          nonLeaders.push(upperTeam)
+        } else {
+          leaders.push(upperTeam)
+        }
+      }
+      match = r.exec(query)
+    }
+
+    const teamPosts =
+      leaders.length || nonLeaders.length
+        ? allPosts.filter(post => {
+            const leader = getLeadingTeamForSlug(post.slug)
+            if (leaders.length && leader && leaders.includes(leader)) {
+              return true
+            }
+            if (
+              nonLeaders.length &&
+              (!leader || !nonLeaders.includes(leader))
+            ) {
+              return true
+            }
+            return false
+          })
+        : allPosts
+
+    return filterPosts(teamPosts, regularQuery)
+  }, [allPosts, query, regularQuery, getLeadingTeamForSlug])
 
   const [indexToShow, setIndexToShow] = React.useState(initialIndexToShow)
   // when the query changes, we want to reset the index
@@ -151,6 +212,17 @@ function BlogHome() {
       // trim and remove subsequent spaces (`react   node ` => `react node`)
       return newQuery.replace(/\s+/g, ' ').trim()
     })
+  }
+
+  function toggleTeam(team: string) {
+    team = team.toLowerCase()
+    if (query.includes(`!leader:${team}`)) {
+      setQuery(q => q.replace(`!leader:${team}`, ``))
+    } else if (query.includes(`leader:${team}`)) {
+      setQuery(q => q.replace(`leader:${team}`, `!leader:${team}`))
+    } else {
+      setQuery(q => `${q} leader:${team}`)
+    }
   }
 
   const isSearching = query.length > 0
@@ -184,7 +256,7 @@ function BlogHome() {
         subtitle="Find the latest of my writing here."
         imageBuilder={images.skis}
         action={
-          <div>
+          <div className="w-full">
             <form
               action="/blog"
               method="GET"
@@ -200,6 +272,7 @@ function BlogHome() {
                     setQuery(event.currentTarget.value.toLowerCase())
                   }
                   name="q"
+                  autoFocus
                   placeholder="Search blog"
                   aria-label="Search blog"
                   className="text-primary bg-primary border-secondary focus:bg-secondary px-16 py-6 w-full text-lg font-medium border hover:border-team-current focus:border-team-current rounded-full focus:outline-none"
@@ -210,36 +283,43 @@ function BlogHome() {
               </div>
             </form>
             <Spacer size="xs" />
-            <TeamStats
-              totalReads={data.totalReads}
-              rankings={data.readRankings}
-              direction="down"
-            />
+            <div className="relative h-20">
+              <div className="absolute">
+                <TeamStats
+                  totalReads={data.totalReads}
+                  rankings={data.readRankings}
+                  direction="down"
+                  onStatClick={toggleTeam}
+                />
+              </div>
+            </div>
           </div>
         }
       />
 
-      {data.tags.length > 0 ? (
-        <Grid className="mb-14">
-          <H6 as="div" className="col-span-full mb-6">
-            Search blog by topics
-          </H6>
-          <div className="flex flex-wrap col-span-full -mb-4 -mr-4 lg:col-span-10">
-            {data.tags.map(tag => {
-              const selected = query.includes(tag)
-              return (
-                <Tag
-                  key={tag}
-                  tag={tag}
-                  selected={selected}
-                  onClick={() => toggleTag(tag)}
-                  disabled={!visibleTags.has(tag) && !selected}
-                />
-              )
-            })}
-          </div>
-        </Grid>
-      ) : null}
+      <Grid className="mb-14">
+        {data.tags.length > 0 ? (
+          <>
+            <H6 as="div" className="col-span-full mb-6">
+              Search blog by topics
+            </H6>
+            <div className="flex flex-wrap col-span-full -mb-4 -mr-4 lg:col-span-10">
+              {data.tags.map(tag => {
+                const selected = regularQuery.includes(tag)
+                return (
+                  <Tag
+                    key={tag}
+                    tag={tag}
+                    selected={selected}
+                    onClick={() => toggleTag(tag)}
+                    disabled={!visibleTags.has(tag) && !selected}
+                  />
+                )
+              })}
+            </div>
+          </>
+        ) : null}
+      </Grid>
 
       {!isSearching && data.recommended ? (
         <div className="mb-10">
@@ -267,6 +347,7 @@ function BlogHome() {
             cta="Read full article"
             slug={data.recommended.slug}
             permalink={recommendedPermalink}
+            leadingTeam={getLeadingTeamForSlug(data.recommended.slug)}
           />
         </div>
       ) : null}
@@ -289,7 +370,10 @@ function BlogHome() {
         ) : (
           posts.map(article => (
             <div key={article.slug} className="col-span-4 mb-10">
-              <ArticleCard {...article} />
+              <ArticleCard
+                article={article}
+                leadingTeam={getLeadingTeamForSlug(article.slug)}
+              />
             </div>
           ))
         )}

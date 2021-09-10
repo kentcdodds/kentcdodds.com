@@ -35,7 +35,7 @@ function BlogSection({
               'hidden lg:block': idx >= 2,
             })}
           >
-            <ArticleCard {...article} />
+            <ArticleCard article={article} />
           </div>
         ))}
       </Grid>
