@@ -81,7 +81,7 @@ function ArticleCard({
 
       <ClipboardCopyButton
         value={permalink}
-        className="absolute left-6 top-6"
+        className="absolute z-10 left-6 top-6"
       />
     </div>
   )
