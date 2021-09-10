@@ -20,6 +20,7 @@ ADD package.json package-lock.json .npmrc ./
 ADD other/patches ./other/patches
 ADD other/tracing.js ./other/tracing.js
 RUN npm install --production=false
+RUN npx metronome setup
 
 # setup production node_modules
 FROM base as production-deps
