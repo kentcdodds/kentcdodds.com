@@ -131,7 +131,7 @@ async function cachified<
             cachified(Object.assign({}, options, {forceFresh: true})),
           )
         }
-        if (cached.value && checkValue(cached.value)) {
+        if (cached.value != null && checkValue(cached.value)) {
           return cached.value
         } else {
           console.warn(
