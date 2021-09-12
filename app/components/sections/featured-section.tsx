@@ -70,7 +70,7 @@ function FeaturedSection({
               <div className="flex items-center justify-between mt-12">
                 <ArrowLink to={slug ?? href ?? '/'}>
                   {cta}
-                  <div className="focus-ring absolute z-10 -left-8 -right-8 inset-0 rounded-lg lg:left-0 lg:right-0" />
+                  <div className="focus-ring absolute z-10 inset-0 left-0 right-0 rounded-lg md:-left-12 md:-right-12 lg:left-0 lg:right-0" />
                 </ArrowLink>
               </div>
             </div>

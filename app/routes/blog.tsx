@@ -216,13 +216,15 @@ function BlogHome() {
 
   function toggleTeam(team: string) {
     team = team.toLowerCase()
+    let newSpecialQuery = ''
     if (query.includes(`!leader:${team}`)) {
-      setQuery(q => q.replace(`!leader:${team}`, ``))
+      newSpecialQuery = ''
     } else if (query.includes(`leader:${team}`)) {
-      setQuery(q => q.replace(`leader:${team}`, `!leader:${team}`))
+      newSpecialQuery = `!leader:${team}`
     } else {
-      setQuery(q => `${q} leader:${team}`)
+      newSpecialQuery = `leader:${team}`
     }
+    setQuery(`${newSpecialQuery} ${regularQuery}`.trim())
   }
 
   const isSearching = query.length > 0
@@ -272,7 +274,6 @@ function BlogHome() {
                     setQuery(event.currentTarget.value.toLowerCase())
                   }
                   name="q"
-                  autoFocus
                   placeholder="Search blog"
                   aria-label="Search blog"
                   className="text-primary bg-primary border-secondary focus:bg-secondary px-16 py-6 w-full text-lg font-medium border hover:border-team-current focus:border-team-current rounded-full focus:outline-none"

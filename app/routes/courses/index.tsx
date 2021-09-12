@@ -221,7 +221,7 @@ function CoursesHome() {
 
         <div className="col-span-full mt-4 lg:col-span-6 lg:col-start-7 lg:mt-0">
           <H2 as="p" className="mb-8">
-            {`Do you want to work trough one of these courses with peers?`}
+            {`Do you want to work through one of these courses with peers?`}
           </H2>
           <H2 variant="secondary" as="p" className="mb-16">
             {`Check out our discord where we have `}
