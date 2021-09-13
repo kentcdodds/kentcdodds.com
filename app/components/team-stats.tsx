@@ -5,7 +5,7 @@ import clsx from 'clsx'
 import type {Team} from '@prisma/client'
 import {useRootData} from '~/utils/use-root-data'
 import {useTeam} from '~/utils/team-provider'
-import {alexProfiles} from '~/images'
+import {kodyProfiles} from '~/images'
 import {formatNumber} from '~/utils/misc'
 
 const barColors: Record<Team, string> = {
@@ -36,7 +36,7 @@ function Stat({
 }) {
   const {userInfo} = useRootData()
   const [currentTeam] = useTeam()
-  const avatar = userInfo ? userInfo.avatar : alexProfiles[team]
+  const avatar = userInfo ? userInfo.avatar : kodyProfiles[team]
   const isUsersTeam = team === currentTeam
 
   const MotionEl = onClick ? motion.button : motion.div

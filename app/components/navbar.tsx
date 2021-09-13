@@ -13,7 +13,7 @@ import {
 import {useEffect} from 'react'
 import {AnimatePresence, motion, useAnimation} from 'framer-motion'
 import type {User} from '@prisma/client'
-import {alexProfiles} from '~/images'
+import {kodyProfiles} from '~/images'
 import {Theme, Themed, useTheme} from '~/utils/theme-provider'
 import {getAvatar, OptionalTeam} from '~/utils/misc'
 import {SunIcon} from './icons/sun-icon'
@@ -258,7 +258,7 @@ function ProfileButton({
 }) {
   const controls = useAnimation()
   const [ref, state] = useElementState()
-  const isMascotAvatar = alexProfiles[team].src === imageUrl
+  const isMascotAvatar = kodyProfiles[team].src === imageUrl
 
   React.useEffect(() => {
     void controls.start((_, {rotate = 0}) => {
@@ -314,11 +314,11 @@ function Navbar() {
     : requestInfo.session.email && requestInfo.session.hasActiveMagicLink
     ? {
         src: getAvatar(requestInfo.session.email, {
-          fallback: alexProfiles[team].src,
+          fallback: kodyProfiles[team].src,
         }),
         alt: 'Profile',
       }
-    : alexProfiles[team]
+    : kodyProfiles[team]
 
   return (
     <div className="px-5vw py-9 lg:py-12">

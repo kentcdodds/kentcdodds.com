@@ -5,12 +5,11 @@ import {Outlet} from 'react-router-dom'
 import {AnimatePresence, motion} from 'framer-motion'
 import clsx from 'clsx'
 import type {Await, CallKentEpisode, KCDHandle} from '~/types'
-import {useTeam} from '~/utils/team-provider'
 import {externalLinks} from '~/external-links'
 import {getEpisodes} from '~/utils/transistor.server'
 import {useMatchLoaderData} from '~/utils/providers'
 import {HeroSection} from '~/components/sections/hero-section'
-import {alexProfiles, getImageBuilder, getImgProps} from '~/images'
+import {getImageBuilder, getImgProps, images} from '~/images'
 import {ButtonLink} from '~/components/button'
 import {Grid} from '~/components/grid'
 import {getBlogRecommendations} from '~/utils/blog.server'
@@ -68,8 +67,6 @@ export default function CallHomeScreen() {
   const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('asc')
 
   const data = useLoaderData<LoaderData>()
-  const [team] = useTeam()
-  const avatar = alexProfiles[team]
 
   const sortedEpisodes =
     sortOrder === 'desc' ? data.episodes : [...data.episodes].reverse()
@@ -102,7 +99,7 @@ export default function CallHomeScreen() {
       <HeroSection
         title="Calls with Kent C. Dodds."
         subtitle="You call, I'll answer."
-        imageProps={avatar}
+        imageBuilder={images.microphone}
         arrowUrl="#episodes"
         arrowLabel="Take a listen"
         action={

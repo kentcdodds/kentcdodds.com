@@ -120,21 +120,21 @@ const images = createImages({
     alt: 'Kent in the air on a snowboard with the words "Get to know Kent C. Dodds"',
   },
 
-  alexProfileYellow: {
-    id: 'kentcdodds.com/illustrations/yellow-head',
+  kodyProfileYellow: {
+    id: 'kentcdodds.com/illustrations/kody_profile_yellow',
     alt: 'Mascot Profile in Yellow',
   },
-  alexProfileBlue: {
-    id: 'kentcdodds.com/illustrations/blue-head',
+  kodyProfileBlue: {
+    id: 'kentcdodds.com/illustrations/kody_profile_blue',
     alt: 'Mascot Profile in Blue',
   },
-  alexProfileRed: {
-    id: 'kentcdodds.com/illustrations/red-head',
+  kodyProfileRed: {
+    id: 'kentcdodds.com/illustrations/kody_profile_red',
     alt: 'Mascot Profile in Red',
   },
-  alexProfileGray: {
-    id: 'kentcdodds.com/illustrations/gray-head',
-    alt: 'Mascot Profile in Gray',
+  kodyProfileWhite: {
+    id: 'kentcdodds.com/illustrations/kody_profile_white',
+    alt: 'Mascot Profile in White',
   },
   teslaX: {
     id: 'kentcdodds.com/illustrations/tesla_zphbjp',
@@ -160,32 +160,40 @@ const images = createImages({
     id: 'kentcdodds.com/illustrations/one_wheel',
     alt: 'Illustration of a onewheel',
   },
-  alexSnowboardingWithCable: {
-    id: 'kentcdodds.com/illustrations/m15',
-    alt: 'Illistration of a mascot standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, a recycle logo, and a cable.',
+  microphone: {
+    id: 'kentcdodds.com/illustrations/mic',
+    alt: 'Illustration of a microphone',
   },
-  alexSnowboarding: {
-    id: 'kentcdodds.com/illustrations/m14_s8mwg1',
-    alt: 'Illistration of a mascot standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+  kodySnowboardingWhite: {
+    id: 'kentcdodds.com/illustrations/kody-flying_white',
+    alt: 'Illistration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
   },
-  alexSnowboardingWithHandOut: {
-    id: 'kentcdodds.com/illustrations/image_yzvt1w',
-    alt: 'Illistration of a mascot standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+  kodySnowboardingYellow: {
+    id: 'kentcdodds.com/illustrations/kody-flying_yellow',
+    alt: 'Illistration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+  },
+  kodySnowboardingRed: {
+    id: 'kentcdodds.com/illustrations/kody-flying_red',
+    alt: 'Illistration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+  },
+  kodySnowboardingBlue: {
+    id: 'kentcdodds.com/illustrations/kody-flying_blue',
+    alt: 'Illistration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
   },
   helmet: {
     id: 'kentcdodds.com/illustrations/helmet',
     alt: 'Illustration of a helmet',
   },
-  alexYellow: {
-    id: 'kentcdodds.com/illustrations/character_y',
+  kodyYellow: {
+    id: 'kentcdodds.com/illustrations/kody_yellow',
     alt: 'Illustration of snowboarder in yellow',
   },
-  alexRed: {
-    id: 'kentcdodds.com/illustrations/character_r',
+  kodyRed: {
+    id: 'kentcdodds.com/illustrations/kody_red',
     alt: 'Illustration of snowboarder in red',
   },
-  alexBlue: {
-    id: 'kentcdodds.com/illustrations/character_b',
+  kodyBlue: {
+    id: 'kentcdodds.com/illustrations/kody_blue',
     alt: 'Illustration of snowboarder in blue',
   },
   bustedOnewheel: {
@@ -238,11 +246,18 @@ const images = createImages({
   },
 })
 
-const alexProfiles: Record<OptionalTeam, {src: string; alt: string}> = {
-  RED: {src: images.alexProfileRed(), alt: images.alexProfileRed.alt},
-  BLUE: {src: images.alexProfileBlue(), alt: images.alexProfileBlue.alt},
-  YELLOW: {src: images.alexProfileYellow(), alt: images.alexProfileYellow.alt},
-  UNKNOWN: {src: images.alexProfileGray(), alt: images.alexProfileGray.alt},
+const kodyProfiles: Record<OptionalTeam, {src: string; alt: string}> = {
+  RED: {src: images.kodyProfileRed(), alt: images.kodyProfileRed.alt},
+  BLUE: {src: images.kodyProfileBlue(), alt: images.kodyProfileBlue.alt},
+  YELLOW: {src: images.kodyProfileYellow(), alt: images.kodyProfileYellow.alt},
+  UNKNOWN: {src: images.kodyProfileWhite(), alt: images.kodyProfileWhite.alt},
+}
+
+const kodySnowboardingImages: Record<OptionalTeam, ImageBuilder> = {
+  RED: images.kodySnowboardingRed,
+  YELLOW: images.kodySnowboardingYellow,
+  BLUE: images.kodySnowboardingBlue,
+  UNKNOWN: images.kodySnowboardingWhite,
 }
 
 function getImgProps(
@@ -284,5 +299,11 @@ function getImgProps(
   }
 }
 
-export {images, alexProfiles, getImgProps, getImageBuilder}
+export {
+  images,
+  kodyProfiles,
+  getImgProps,
+  getImageBuilder,
+  kodySnowboardingImages,
+}
 export type {ImageBuilder}
