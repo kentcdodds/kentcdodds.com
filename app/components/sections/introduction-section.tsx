@@ -44,7 +44,7 @@ function IntroductionSection() {
             />
           }
         />
-        <p className="text-blueGray-500 text-xl">{`Introduction video (2:13)`}</p>
+        <p className="text-secondary text-xl">{`Introduction video (2:13)`}</p>
         <Link
           className="underlined"
           to="/about?autoplay"
