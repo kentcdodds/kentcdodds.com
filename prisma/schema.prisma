@@ -15,7 +15,6 @@ datasource db {
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["orderByAggregateGroup"]
 }
 
 enum Role {
@@ -33,7 +32,7 @@ model User {
   id           String     @id @default(uuid())
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
-  email        String     @unique
+  email        String     @unique(map: "User.email_unique")
   firstName    String
   discordId    String?
   convertKitId String?
@@ -47,7 +46,7 @@ model User {
 model Session {
   id             String   @id @default(uuid())
   createdAt      DateTime @default(now())
-  user           User     @relation(fields: [userId], references: [id])
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String
   expirationDate DateTime
 }
@@ -59,7 +58,7 @@ model Call {
   title       String
   description String
   keywords    String
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
   base64      String
 }
@@ -67,7 +66,7 @@ model Call {
 model PostRead {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
-  user      User?    @relation(fields: [userId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String?
   clientId  String?
   postSlug  String

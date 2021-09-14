@@ -200,11 +200,6 @@ function getUserByEmail(email: string) {
 }
 
 async function deleteUser(userId: string) {
-  await Promise.all([
-    prisma.call.deleteMany({where: {userId}}),
-    prisma.postRead.deleteMany({where: {userId}}),
-    prisma.session.deleteMany({where: {userId}}),
-  ])
   return prisma.user.delete({where: {id: userId}})
 }
 
