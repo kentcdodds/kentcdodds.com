@@ -529,6 +529,7 @@ function visualize({
 
   // Set the time on the animation
   timeline.time(start)
+  timeline.play()
 
   // Reusable draw function
   function draw() {
