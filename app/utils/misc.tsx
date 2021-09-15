@@ -174,6 +174,22 @@ function getDomainUrl(request: Request) {
   return `${protocol}://${host}`
 }
 
+function removeTrailingSlash(s: string) {
+  return s.endsWith('/') ? s.slice(0, -1) : s
+}
+
+function getDisplayUrl(requestInfo?: {origin: string; path: string}) {
+  return getUrl(requestInfo).replace(/^https?:\/\//, '')
+}
+
+function getUrl(requestInfo?: {origin: string; path: string}) {
+  return removeTrailingSlash(
+    `${requestInfo?.origin ?? 'https://kentcdodds.com'}${
+      requestInfo?.path ?? ''
+    }`,
+  )
+}
+
 function useUpdateQueryStringValueWithoutNavigation(
   queryKey: string,
   queryValue: string,
@@ -230,6 +246,9 @@ export {
   getRequiredGlobalEnvVar,
   getDiscordAuthorizeURL,
   getDomainUrl,
+  getUrl,
+  getDisplayUrl,
+  removeTrailingSlash,
   reuseUsefulLoaderHeaders,
   unknownTeam,
   teams,

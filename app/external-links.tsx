@@ -5,7 +5,8 @@ const externalLinks = {
     'https://podcasts.google.com/feed/aHR0cHM6Ly9mZWVkcy5zaW1wbGVjYXN0LmNvbS9YX3dTX1dZaA',
   spotify: 'https://open.spotify.com/show/7GkO2poedjbltWT5lduL5w',
   simpleCast: 'https://feeds.simplecast.com/X_wS_WYh',
-  callKentApple: 'TODO: add this',
+  callKentApple:
+    'https://podcasts.apple.com/us/podcast/call-kent-c-dodds/id1584425659',
   callKentGoogle:
     'https://podcasts.google.com/feed/aHR0cHM6Ly9mZWVkcy50cmFuc2lzdG9yLmZtL2NhbGwta2VudA',
   callKentSpotify: 'https://open.spotify.com/show/6czfajqqSfPYD7bKZaFUNg',

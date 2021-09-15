@@ -2,7 +2,7 @@ import * as YAML from 'yaml'
 import type {CountableSlugify} from '@sindresorhus/slugify'
 import type {Await} from '~/types'
 import {typedBoolean} from '~/utils/misc'
-import {markdownToHtml} from '~/utils/markdown.server'
+import {markdownToHtml, stripHtml} from '~/utils/markdown.server'
 import {downloadFile} from '~/utils/github.server'
 import {cachified} from '~/utils/cache.server'
 import {redisCache} from '~/utils/redis.server'
@@ -33,6 +33,9 @@ async function getSlugify() {
 
 async function getTalk(rawTalk: RawTalk, allTags: Array<string>) {
   const slugify = await getSlugify()
+  const descriptionHTML = rawTalk.description
+    ? await markdownToHtml(rawTalk.description)
+    : ''
   return {
     title: rawTalk.title ?? 'TBA',
     tag: allTags.find(tag => rawTalk.tags?.includes(tag)) ?? rawTalk.tags?.[0],
@@ -41,9 +44,8 @@ async function getTalk(rawTalk: RawTalk, allTags: Array<string>) {
     resourceHTMLs: rawTalk.resources
       ? await Promise.all(rawTalk.resources.map(r => markdownToHtml(r)))
       : [],
-    descriptionHTML: rawTalk.description
-      ? await markdownToHtml(rawTalk.description)
-      : undefined,
+    descriptionHTML,
+    description: descriptionHTML ? await stripHtml(descriptionHTML) : '',
     deliveries: rawTalk.deliveries
       ? await Promise.all(
           rawTalk.deliveries.map(async d => {
@@ -132,7 +134,6 @@ async function getTalksAndTags({
         rawTalks.map(rawTalk => getTalk(rawTalk, allTags)),
       )
       allTalks.sort(sortByPresentationDate)
-      allTags.sort()
 
       return {talks: allTalks, tags: allTags}
     },

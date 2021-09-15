@@ -29,7 +29,13 @@ import {
 import {getThemeSession} from './utils/theme.server'
 import {getSession} from './utils/session.server'
 import {getLoginInfoSession} from './utils/login.server'
-import {getDomainUrl, OptionalTeam, typedBoolean} from './utils/misc'
+import {
+  getDisplayUrl,
+  getDomainUrl,
+  getUrl,
+  OptionalTeam,
+  typedBoolean,
+} from './utils/misc'
 import {getEnv} from './utils/env.server'
 import {getUserInfo} from './utils/user-info.server'
 import {getClientSession} from './utils/client.server'
@@ -46,22 +52,39 @@ import {pathedRoutes} from './other-routes.server'
 import {ServerError} from './components/errors'
 import {TeamProvider, useTeam} from './utils/team-provider'
 import clsx from 'clsx'
+import {getSocialMetas} from './utils/seo'
+import {getGenericSocialImage} from './images'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',
 }
 
-export const meta: MetaFunction = () => {
+export const meta: MetaFunction = ({data}) => {
+  const requestInfo = (data as LoaderData | undefined)?.requestInfo
+  const title = 'Kent C. Dodds'
+  const description =
+    'Come check out how Kent C. Dodds can help you level up your career as a software engineer.'
   return {
     // TODO: remove this when we're ready to launch
     robots: 'noindex',
-    title: 'Kent C. Dodds',
-    description:
-      'Come check out how Kent C. Dodds can help you level up your career as a software engineer.',
+    title,
+    description,
     viewport: 'width=device-width,initial-scale=1,viewport-fit=cover',
     charSet: 'utf-8',
     'theme-color': '#A9ADC1',
-    'twitter:widgets:autoload': 'off',
+    keywords:
+      'Learn React, React Workshops, Testing JavaScript Training, React Training, Learn JavaScript, Learn TypeScript',
+    ...getSocialMetas({
+      url: getUrl(requestInfo),
+      image: getGenericSocialImage({
+        url: getDisplayUrl(requestInfo),
+        words:
+          'Helping people make the world a better place through quality software.',
+        featuredImage: 'kentcdodds.com/illustrations/kody-flying_blue',
+      }),
+      title,
+      description,
+    }),
   }
 }
 
@@ -109,6 +132,7 @@ export type LoaderData = {
   ENV: ReturnType<typeof getEnv>
   requestInfo: {
     origin: string
+    path: string
     session: {
       email: string | undefined
       hasActiveMagicLink: boolean
@@ -161,6 +185,7 @@ export const loader: LoaderFunction = async ({request}) => {
     ENV: getEnv(),
     requestInfo: {
       origin: getDomainUrl(request),
+      path: new URL(request.url).pathname,
       session: {
         email: loginInfoSession.getEmail(),
         hasActiveMagicLink,

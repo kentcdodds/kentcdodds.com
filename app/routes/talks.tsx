@@ -1,24 +1,47 @@
 import * as React from 'react'
-import type {HeadersFunction, LoaderFunction} from 'remix'
+import type {HeadersFunction, LoaderFunction, MetaFunction} from 'remix'
 import {json, useLoaderData} from 'remix'
 import type {Await} from '~/types'
 import formatDate from 'date-fns/format'
 import {Link, useLocation, useSearchParams} from 'react-router-dom'
 import clsx from 'clsx'
 import {
+  getUrl,
+  getDisplayUrl,
   reuseUsefulLoaderHeaders,
   useUpdateQueryStringValueWithoutNavigation,
+  listify,
 } from '~/utils/misc'
 import {HeroSection} from '~/components/sections/hero-section'
-import {images} from '~/images'
+import {getGenericSocialImage, images} from '~/images'
 import {Tag} from '~/components/tag'
 import {Grid} from '~/components/grid'
 import {H3, H6, Paragraph} from '~/components/typography'
 import {CourseSection} from '~/components/sections/course-section'
 import {YoutubeIcon} from '~/components/icons/youtube-icon'
 import {getTalksAndTags} from '~/utils/talks.server'
+import {getSocialMetas} from '~/utils/seo'
 
-type LoaderData = Await<ReturnType<typeof getTalksAndTags>>
+export const meta: MetaFunction = ({data, parentsData}) => {
+  const {talks = [], tags = []} = (data as LoaderData | undefined) ?? {}
+  const talkCount = talks.length
+  const title = `${talkCount} talks by Kent all about software development`
+  const topicsList = listify(tags.slice(0, 6))
+  return {
+    title,
+    description: `Check out Kent's ${talkCount} talks. Topics include: ${topicsList}`,
+    ...getSocialMetas({
+      url: getUrl(parentsData.root?.requestInfo),
+      image: getGenericSocialImage({
+        url: getDisplayUrl(parentsData.root?.requestInfo),
+        featuredImage: images.teslaY.id,
+        words: title,
+      }),
+    }),
+  }
+}
+
+export type LoaderData = Await<ReturnType<typeof getTalksAndTags>>
 
 export const loader: LoaderFunction = async ({request}) => {
   const talksAndTags: LoaderData = await getTalksAndTags({request})
@@ -90,7 +113,7 @@ function Card({
         <Paragraph
           as="div"
           className="html mb-20"
-          dangerouslySetInnerHTML={{__html: descriptionHTML ?? '&nbsp;'}}
+          dangerouslySetInnerHTML={{__html: descriptionHTML || '&nbsp;'}}
         />
 
         {tags.length ? (
