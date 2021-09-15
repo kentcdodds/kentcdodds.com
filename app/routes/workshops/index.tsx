@@ -84,7 +84,7 @@ function WorkshopsHome() {
       <HeroSection
         title="Check out these remote workshops."
         subtitle="See our upcoming events below."
-        imageBuilder={images.teslaX}
+        imageBuilder={images.teslaY}
         imageSize="large"
       />
 

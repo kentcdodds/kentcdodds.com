@@ -215,7 +215,7 @@ export default function TalksScreen() {
       <HeroSection
         title="Check out these talks."
         subtitle="Mostly on location, sometimes remote."
-        imageBuilder={images.teslaX}
+        imageBuilder={images.teslaY}
         imageSize="large"
       />
 

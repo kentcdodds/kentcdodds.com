@@ -136,9 +136,9 @@ const images = createImages({
     id: 'kentcdodds.com/illustrations/kody_profile_white',
     alt: 'Mascot Profile in White',
   },
-  teslaX: {
-    id: 'kentcdodds.com/illustrations/tesla_zphbjp',
-    alt: 'Illustration of a Tesla Model X',
+  teslaY: {
+    id: 'kentcdodds.com/illustrations/tesla_y2_j8kti2',
+    alt: 'Illustration of a Tesla Model Y',
   },
   solarPanels: {
     id: 'kentcdodds.com/illustrations/solar_panels_2_ftbwvb',

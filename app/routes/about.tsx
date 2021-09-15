@@ -381,7 +381,7 @@ function AboutIndex() {
         <div className="col-span-full mb-10 lg:col-span-6 lg:col-start-1 lg:mb-0">
           <img
             className="rounded-lg object-contain"
-            {...getImgProps(images.teslaX, {
+            {...getImgProps(images.teslaY, {
               widths: [420, 512, 840, 1260, 1024, 1680, 2520],
               sizes: [
                 '(max-width: 1023px) 80vw',
