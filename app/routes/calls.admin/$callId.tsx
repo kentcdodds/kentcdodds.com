@@ -22,6 +22,7 @@ import {
   getErrorForDescription,
   getErrorForKeywords,
 } from '~/utils/call-kent'
+import {markdownToHtml} from '~/utils/markdown.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -89,7 +90,7 @@ export const action: KCDAction<{callId: string}> = async ({
           call.createdAt,
           'yyyy-MM-dd',
         )}`,
-        description,
+        description: await markdownToHtml(description),
         imageUrl: getAvatarForUser(call.user, {size: 800}).src,
         keywords,
         domainUrl: getDomainUrl(request),
