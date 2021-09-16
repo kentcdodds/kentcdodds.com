@@ -38,6 +38,14 @@ const miscHandlers = [
       return res(ctx.json({id, message: 'Queued. Thank you.'}))
     },
   ),
+  rest.head(
+    'https://www.gravatar.com/avatar/:md5Hash',
+    async (req, res, ctx) => {
+      if (await isConnectedToTheInternet()) return
+
+      return res(ctx.status(404))
+    },
+  ),
 ]
 
 const server = setupServer(
