@@ -6,12 +6,7 @@ import {useRootData} from '~/utils/use-root-data'
 import {CallRecorder} from '~/components/calls/recorder'
 import {requireAdminUser} from '~/utils/session.server'
 import {prisma} from '~/utils/prisma.server'
-import {
-  getAvatarForUser,
-  getDomainUrl,
-  getErrorMessage,
-  getNonNull,
-} from '~/utils/misc'
+import {getDomainUrl, getErrorMessage, getNonNull} from '~/utils/misc'
 import {createEpisodeAudio} from '~/utils/ffmpeg.server'
 import {createEpisode} from '~/utils/transistor.server'
 import type {RecordingFormData} from '~/components/calls/submit-recording-form'
@@ -23,6 +18,10 @@ import {
   getErrorForKeywords,
 } from '~/utils/call-kent'
 import {markdownToHtml} from '~/utils/markdown.server'
+import {Button} from '~/components/button'
+import {Paragraph} from '~/components/typography'
+import {Field} from '~/components/form-elements'
+import {Spacer} from '~/components/spacer'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -83,6 +82,7 @@ export const action: KCDAction<{callId: string}> = async ({
       } = getNonNull(formData)
 
       const episodeAudio = await createEpisodeAudio(call.base64, response)
+
       await createEpisode({
         audio: episodeAudio,
         title,
@@ -91,7 +91,7 @@ export const action: KCDAction<{callId: string}> = async ({
           'yyyy-MM-dd',
         )}`,
         description: await markdownToHtml(description),
-        imageUrl: getAvatarForUser(call.user, {size: 800}).src,
+        user: call.user,
         keywords,
         domainUrl: getDomainUrl(request),
       })
@@ -129,21 +129,49 @@ export const loader: KCDLoader<{callId: string}> = async ({
 
 function CallListing({call}: {call: Call}) {
   const [audioURL, setAudioURL] = React.useState<string | null>(null)
+  const [audioEl, setAudioEl] = React.useState<HTMLAudioElement | null>(null)
+  const [playbackRate, setPlaybackRate] = React.useState(2)
   React.useEffect(() => {
     const audio = new Audio(call.base64)
     setAudioURL(audio.src)
   }, [call.base64])
 
+  React.useEffect(() => {
+    if (!audioEl) return
+    audioEl.playbackRate = playbackRate
+  }, [audioEl, playbackRate])
+
   return (
     <section>
       <strong>{call.title}</strong>
-      <p>{call.description}</p>
-      <div>
-        {audioURL ? <audio src={audioURL} controls preload="metadata" /> : null}
-      </div>
+      <Paragraph>{call.description}</Paragraph>
+      {audioURL ? (
+        <div className="flex flex-wrap gap-6 items-center my-6">
+          <audio
+            className="flex-1"
+            style={{minWidth: '300px'}}
+            ref={el => setAudioEl(el)}
+            src={audioURL}
+            controls
+            preload="metadata"
+          />
+          <Field
+            value={playbackRate}
+            onChange={e => setPlaybackRate(Number(e.target.value))}
+            label="Playback rate"
+            name="playbackRate"
+            type="number"
+            max="3"
+            min="0.5"
+            step="0.1"
+          />
+        </div>
+      ) : null}
       <Form method="delete">
         <input type="hidden" name="callId" value={call.id} />
-        <button type="submit">Delete</button>
+        <Button type="submit" variant="danger">
+          Delete
+        </Button>
       </Form>
     </section>
   )
@@ -168,7 +196,9 @@ export default function RecordingDetailScreen() {
   return (
     <div>
       <CallListing call={data.call} />
+      <Spacer size="xs" />
       <strong>Record your response:</strong>
+      <Spacer size="2xs" />
       {responseAudio ? (
         <RecordingForm
           audio={responseAudio}

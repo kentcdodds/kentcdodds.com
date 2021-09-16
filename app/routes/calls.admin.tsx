@@ -73,29 +73,30 @@ export const loader: LoaderFunction = async ({request}) => {
 export default function CallListScreen() {
   const data = useLoaderData<LoaderData>()
   return (
-    <div>
-      <h2>All the calls</h2>
-      <hr />
-      <main className="flex">
+    <div className="px-6">
+      <main className="flex gap-8">
         <div className="w-52 overscroll-auto">
           {data.calls.length ? (
             <ul>
               {data.calls.map(call => {
                 const avatar = getAvatarForUser(call.user)
                 return (
-                  <li key={call.id}>
-                    <img
-                      alt={avatar.alt}
-                      src={avatar.src}
-                      style={{
-                        height: 64,
-                        borderColor: call.user.team.toLowerCase(),
-                        borderWidth: 2,
-                        borderStyle: 'solid',
-                      }}
-                    />
-                    <Link to={call.id}>{call.title}</Link>
-                    <small>{call.description}</small>
+                  <li
+                    key={call.id}
+                    className={`mb-6 set-color-team-current-${call.user.team.toLowerCase()}`}
+                  >
+                    <Link to={call.id} className="block mb-1">
+                      <img
+                        alt={avatar.alt}
+                        src={avatar.src}
+                        className="block h-16 rounded-full"
+                      />
+                      {call.title}
+                    </Link>
+                    <small>
+                      {call.description.slice(0, 30)}
+                      {call.description.length > 30 ? '...' : null}
+                    </small>
                   </li>
                 )
               })}
@@ -104,9 +105,10 @@ export default function CallListScreen() {
             <p>No calls.</p>
           )}
         </div>
-        <Outlet />
+        <div className="flex-1">
+          <Outlet />
+        </div>
       </main>
-      <hr />
     </div>
   )
 }

@@ -1,8 +1,9 @@
 import type {User} from '~/types'
+import {getImageBuilder, images} from '~/images'
 import * as ck from '../convertkit/convertkit.server'
 import * as discord from './discord.server'
 import type {Timings} from './metrics.server'
-import {getAvatarForUser} from './misc'
+import {getAvatar} from './misc'
 import {redisCache} from './redis.server'
 import {cachified} from './cache.server'
 
@@ -10,6 +11,7 @@ type UserInfo = {
   avatar: {
     src: string
     alt: string
+    hasGravatar: boolean
   }
   convertKit: {
     tags: Array<{id: string; name: string}>
@@ -17,6 +19,34 @@ type UserInfo = {
   discord: {
     username: string
   } | null
+}
+
+async function getDirectAvatarForUser(
+  {email, team}: Pick<User, 'email' | 'team'>,
+  {size = 128}: {size: number},
+) {
+  const gravatarUrl = getAvatar(email, {fallback: '404'})
+  const avatarResponse = await fetch(gravatarUrl, {method: 'HEAD'})
+  const hasGravatar = avatarResponse.status === 200
+  if (hasGravatar) {
+    return {hasGravatar, avatar: getAvatar(email, {size, fallback: null})}
+  } else {
+    const imageProfileIds = {
+      RED: images.kodyProfileRed.id,
+      BLUE: images.kodyProfileBlue.id,
+      YELLOW: images.kodyProfileYellow.id,
+    }
+    return {
+      hasGravatar,
+      avatar: getImageBuilder(imageProfileIds[team])({
+        resize: {
+          type: 'pad',
+          width: size,
+          height: size,
+        },
+      }),
+    }
+  }
 }
 
 const getConvertKitCacheKey = (convertKitId: string) =>
@@ -74,8 +104,13 @@ async function getUserInfo(
       : null,
   ])
 
+  const {avatar, hasGravatar} = await getDirectAvatarForUser(user, {size: 128})
   const userInfo: UserInfo = {
-    avatar: getAvatarForUser(user),
+    avatar: {
+      src: avatar,
+      alt: user.firstName,
+      hasGravatar,
+    },
     discord: discordUser,
     convertKit: convertKitInfo,
   }
@@ -90,4 +125,9 @@ function deleteDiscordCache(discordId: string) {
   return redisCache.del(getDiscordCacheKey(discordId))
 }
 
-export {getUserInfo, deleteConvertKitCache, deleteDiscordCache}
+export {
+  getUserInfo,
+  deleteConvertKitCache,
+  deleteDiscordCache,
+  getDirectAvatarForUser,
+}

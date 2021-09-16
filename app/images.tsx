@@ -1,6 +1,6 @@
 import type {TransformerOption} from '@cld-apis/types'
 import {setConfig, buildImageUrl} from 'cloudinary-build-url'
-import type {OptionalTeam} from './utils/misc'
+import {OptionalTeam, toBase64} from './utils/misc'
 
 setConfig({
   cloudName: 'kentcdodds-com',
@@ -23,7 +23,7 @@ const createImages = <
   return imageBuilders as {[Name in keyof ImageType]: ImageBuilder}
 }
 
-function getImageBuilder(id: string, alt: string): ImageBuilder {
+function getImageBuilder(id: string, alt: string = ''): ImageBuilder {
   function imageBuilder(transformations?: TransformerOption) {
     return buildImageUrl(id, {transformations})
   }
@@ -390,14 +390,6 @@ function getGenericSocialImage({
     featureImageSection,
     backgroundSection,
   ].join('/')
-}
-
-function toBase64(string: string) {
-  if (typeof window === 'undefined') {
-    return Buffer.from(string).toString('base64')
-  } else {
-    return window.btoa(string)
-  }
 }
 
 export {

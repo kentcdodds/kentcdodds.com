@@ -258,7 +258,6 @@ function ProfileButton({
 }) {
   const controls = useAnimation()
   const [ref, state] = useElementState()
-  const isMascotAvatar = kodyProfiles[team].src === imageUrl
 
   React.useEffect(() => {
     void controls.start((_, {rotate = 0}) => {
@@ -296,8 +295,8 @@ function ProfileButton({
       </motion.div>
       <img
         className={clsx('inline w-10 h-10 rounded-full select-none', {
-          'object-cover bg-inverse': !isMascotAvatar,
-          'object-contain': isMascotAvatar,
+          // 'object-cover bg-inverse': !isMascotAvatar,
+          // 'object-contain': isMascotAvatar,
         })}
         src={imageUrl}
         alt={imageAlt}

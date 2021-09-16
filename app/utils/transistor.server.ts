@@ -8,11 +8,13 @@ import type {
   TransistorEpisodesJson,
   CallKentEpisode,
   TransistorUpdateEpisodeData,
+  Team,
 } from '~/types'
-import {getRequiredServerEnvVar} from './misc'
+import {getRequiredServerEnvVar, toBase64} from './misc'
 import {redisCache} from './redis.server'
 import {cachified} from './cache.server'
 import {getEpisodePath} from './call-kent'
+import {getDirectAvatarForUser} from './user-info.server'
 
 const transistorApiSecret = getRequiredServerEnvVar('TRANSISTOR_API_SECRET')
 const podcastId = getRequiredServerEnvVar('CALL_KENT_PODCAST_ID', '67890')
@@ -58,7 +60,7 @@ async function createEpisode({
   summary,
   description,
   keywords,
-  imageUrl,
+  user,
   domainUrl,
 }: {
   audio: Buffer
@@ -66,7 +68,7 @@ async function createEpisode({
   summary: string
   description: string
   keywords: string
-  imageUrl: string
+  user: {firstName: string; email: string; team: Team}
   domainUrl: string
 }) {
   const id = uuid.v4()
@@ -85,13 +87,15 @@ async function createEpisode({
   const createData: TransistorCreateEpisodeData = {
     episode: {
       show_id: podcastId,
+      // IDEA: set the season automatically based on the year
+      // new Date().getFullYear() - 2020
+      // need to support multiple seasons in the UI first though.
       season: 1,
       audio_url,
       title,
       summary,
       description,
       keywords,
-      image_url: imageUrl,
       increment_number: true,
     },
   }
@@ -123,10 +127,36 @@ async function createEpisode({
       slug,
     })
 
+    const shortEpisodePath = getEpisodePath({
+      episodeNumber: number,
+      seasonNumber: season,
+    }).replace(/^https?:\/\//, '')
+
+    // cloudinary needs this to be double-encoded
+    const encodedTitle = encodeURIComponent(encodeURIComponent(title))
+    const encodedUrl = encodeURIComponent(
+      encodeURIComponent(`${domainUrl}${shortEpisodePath}`),
+    )
+    const encodedName = encodeURIComponent(
+      encodeURIComponent(`- ${user.firstName}`),
+    )
+    const {hasGravatar, avatar} = await getDirectAvatarForUser(user, {
+      size: 1400,
+    })
+    const encodedAvatar = toBase64(avatar)
+    const radius = hasGravatar ? ',r_max' : ''
+    const textLines = Number(
+      Math.ceil(Math.min(title.length, 50) / 18).toFixed(),
+    )
+    const avatarYPosition = textLines + 0.6
+    const nameYPosition = -textLines + 5.2
+    const imageUrl = `https://res.cloudinary.com/kentcdodds-com/image/upload/$th_3000,$tw_3000,$gw_$tw_div_12,$gh_$th_div_12/w_$tw,h_$th,l_kentcdodds.com:social-background/co_white,c_fit,g_north_west,w_$gw_mul_6,h_$gh_mul_2.6,x_$gw_mul_0.8,y_$gh_mul_0.8,l_text:kentcdodds.com:Matter-Medium.woff2_180:${encodedTitle}/c_crop${radius},g_north_west,h_$gh_mul_5.5,w_$gh_mul_5.5,x_$gw_mul_0.8,y_$gh_mul_${avatarYPosition},l_fetch:${encodedAvatar}/co_rgb:a9adc1,c_fit,g_south_west,w_$gw_mul_8,h_$gh_mul_4,x_$gw_mul_0.8,y_$gh_mul_0.8,l_text:kentcdodds.com:Matter-Regular.woff2_120:${encodedUrl}/co_rgb:a9adc1,c_fit,g_south_west,w_$gw_mul_8,h_$gh_mul_4,x_$gw_mul_0.8,y_$gh_mul_${nameYPosition},l_text:kentcdodds.com:Matter-Regular.woff2_140:${encodedName}/c_fit,g_east,w_$gw_mul_11,h_$gh_mul_11,x_$gw,l_kentcdodds.com:illustrations:mic/c_fill,w_$tw,h_$th/kentcdodds.com/social-background.png`
+
     const updateData: TransistorUpdateEpisodeData = {
       id: created.data.id,
       episode: {
         alternate_url: `${domainUrl}${episodePath}`,
+        image_url: imageUrl,
       },
     }
 

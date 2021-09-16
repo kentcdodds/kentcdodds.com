@@ -18,7 +18,7 @@ function getErrorForTitle(title: string | null) {
   if (!title) return `Title is required`
 
   const minLength = 5
-  const maxLength = 100
+  const maxLength = 50
   if (title.length < minLength) {
     return `Title must be at least ${minLength} characters`
   }
@@ -64,12 +64,23 @@ function getEpisodeFromParams(
   )
 }
 
-function getEpisodePath(
-  episode: Pick<CallKentEpisode, 'seasonNumber' | 'episodeNumber' | 'slug'>,
-) {
-  const seasonNumber = episode.seasonNumber.toString().padStart(2, '0')
-  const episodeNumber = episode.episodeNumber.toString().padStart(2, '0')
-  return `/calls/${seasonNumber}/${episodeNumber}/${episode.slug}`
+function getEpisodePath({
+  seasonNumber,
+  episodeNumber,
+  slug,
+}: {
+  seasonNumber: number
+  episodeNumber: number
+  slug?: string
+}) {
+  return [
+    '/calls',
+    seasonNumber.toString().padStart(2, '0'),
+    episodeNumber.toString().padStart(2, '0'),
+    slug,
+  ]
+    .filter(Boolean)
+    .join('/')
 }
 
 export {

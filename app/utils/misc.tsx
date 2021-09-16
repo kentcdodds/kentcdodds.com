@@ -19,12 +19,12 @@ function getAvatar(
   {
     size = defaultAvatarSize,
     fallback = images.kodyProfileWhite({resize: {width: size}}),
-  }: {size?: number; fallback?: string} = {},
+  }: {size?: number; fallback?: string | null} = {},
 ) {
   const hash = md5(email)
   const url = new URL(`https://www.gravatar.com/avatar/${hash}`)
   url.searchParams.set('size', String(size))
-  url.searchParams.set('default', fallback)
+  if (fallback) url.searchParams.set('default', fallback)
   return url.toString()
 }
 
@@ -190,6 +190,14 @@ function getUrl(requestInfo?: {origin: string; path: string}) {
   )
 }
 
+function toBase64(string: string) {
+  if (typeof window === 'undefined') {
+    return Buffer.from(string).toString('base64')
+  } else {
+    return window.btoa(string)
+  }
+}
+
 function useUpdateQueryStringValueWithoutNavigation(
   queryKey: string,
   queryValue: string,
@@ -248,6 +256,7 @@ export {
   getDomainUrl,
   getUrl,
   getDisplayUrl,
+  toBase64,
   removeTrailingSlash,
   reuseUsefulLoaderHeaders,
   unknownTeam,
