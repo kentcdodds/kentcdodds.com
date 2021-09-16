@@ -12,6 +12,7 @@ import {
   useUpdateQueryStringValueWithoutNavigation,
   listify,
 } from '~/utils/misc'
+import type {LoaderData as RootLoaderData} from '../root'
 import {HeroSection} from '~/components/sections/hero-section'
 import {getGenericSocialImage, images} from '~/images'
 import {Tag} from '~/components/tag'
@@ -24,16 +25,17 @@ import {getSocialMetas} from '~/utils/seo'
 
 export const meta: MetaFunction = ({data, parentsData}) => {
   const {talks = [], tags = []} = (data as LoaderData | undefined) ?? {}
+  const {requestInfo} = parentsData as RootLoaderData
   const talkCount = talks.length
   const title = `${talkCount} talks by Kent all about software development`
   const topicsList = listify(tags.slice(0, 6))
   return {
-    title,
-    description: `Check out Kent's ${talkCount} talks. Topics include: ${topicsList}`,
     ...getSocialMetas({
-      url: getUrl(parentsData.root?.requestInfo),
+      title,
+      description: `Check out Kent's ${talkCount} talks. Topics include: ${topicsList}`,
+      url: getUrl(requestInfo),
       image: getGenericSocialImage({
-        url: getDisplayUrl(parentsData.root?.requestInfo),
+        url: getDisplayUrl(requestInfo),
         featuredImage: images.teslaY.id,
         words: title,
       }),

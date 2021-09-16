@@ -130,6 +130,7 @@ type CallKentEpisode = {
   title: string
   summary: string
   description: string
+  descriptionHTML: string
   keywords: string
   duration: number
   shareUrl: string

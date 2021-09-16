@@ -8,6 +8,7 @@ import {getSession} from './session.server'
 import {filterPosts} from './blog'
 import {getClientSession} from './client.server'
 import {cachified, lruCache} from './cache.server'
+import {redisCache} from './redis.server'
 
 async function getBlogRecommendations(
   request: Request,
@@ -178,7 +179,7 @@ async function getBlogReadRankings(request: Request, slug?: string) {
   const key = slug ? `blog:${slug}:rankings` : `blog:rankings`
   const rankingObjs = await cachified({
     key,
-    cache: lruCache,
+    cache: redisCache,
     maxAge: 1000 * 60 * 5,
     request,
     checkValue: (value: unknown) =>

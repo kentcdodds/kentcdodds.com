@@ -1,13 +1,22 @@
-import type {CWKEpisode} from '~/types'
 import {differenceInWeeks} from 'date-fns'
 
 function getCWKEpisodePath({
   seasonNumber,
   episodeNumber,
   slug,
-}: Pick<CWKEpisode, 'seasonNumber' | 'episodeNumber' | 'slug'>) {
-  const pad = (num: number) => String(num).padStart(2, '0')
-  return `/chats/${pad(seasonNumber)}/${pad(episodeNumber)}/${slug}`
+}: {
+  seasonNumber: number
+  episodeNumber: number
+  slug?: string
+}) {
+  return [
+    '/chats',
+    seasonNumber.toString().padStart(2, '0'),
+    episodeNumber.toString().padStart(2, '0'),
+    slug,
+  ]
+    .filter(Boolean)
+    .join('/')
 }
 
 function getFeaturedEpisode<EpisodeType>(

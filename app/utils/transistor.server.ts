@@ -15,6 +15,7 @@ import {redisCache} from './redis.server'
 import {cachified} from './cache.server'
 import {getEpisodePath} from './call-kent'
 import {getDirectAvatarForUser} from './user-info.server'
+import {stripHtml} from './markdown.server'
 
 const transistorApiSecret = getRequiredServerEnvVar('TRANSISTOR_API_SECRET')
 const podcastId = getRequiredServerEnvVar('CALL_KENT_PODCAST_ID', '67890')
@@ -130,12 +131,13 @@ async function createEpisode({
     const shortEpisodePath = getEpisodePath({
       episodeNumber: number,
       seasonNumber: season,
-    }).replace(/^https?:\/\//, '')
+    })
+    const shortDomain = domainUrl.replace(/^https?:\/\//, '')
 
     // cloudinary needs this to be double-encoded
     const encodedTitle = encodeURIComponent(encodeURIComponent(title))
     const encodedUrl = encodeURIComponent(
-      encodeURIComponent(`${domainUrl}${shortEpisodePath}`),
+      encodeURIComponent(`${shortDomain}${shortEpisodePath}`),
     )
     const encodedName = encodeURIComponent(
       encodeURIComponent(`- ${user.firstName}`),
@@ -200,7 +202,9 @@ async function getEpisodes() {
       slug: slugify(episode.attributes.title),
       title: episode.attributes.title,
       summary: episode.attributes.summary,
-      description: episode.attributes.description,
+      descriptionHTML: episode.attributes.description,
+      // eslint-disable-next-line no-await-in-loop
+      description: await stripHtml(episode.attributes.description),
       keywords: episode.attributes.keywords,
       duration: episode.attributes.duration,
       shareUrl: episode.attributes.share_url,

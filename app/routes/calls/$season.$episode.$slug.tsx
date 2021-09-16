@@ -1,11 +1,14 @@
 import * as React from 'react'
 import {useParams} from 'react-router-dom'
 import {MetaFunction, redirect} from 'remix'
+import type {LoaderData as RootLoaderData} from '../../root'
 import type {KCDHandle, KCDLoader} from '~/types'
 import {getEpisodes} from '~/utils/transistor.server'
 import {Themed} from '~/utils/theme-provider'
 import {getEpisodeFromParams, getEpisodePath, Params} from '~/utils/call-kent'
 import {LoaderData as CallsLoaderData, useCallsData} from '../calls'
+import {getSocialMetas} from '~/utils/seo'
+import {getUrl} from '~/utils/misc'
 
 export const handle: KCDHandle = {
   id: 'call-player',
@@ -25,6 +28,7 @@ export const handle: KCDHandle = {
 
 export const meta: MetaFunction = ({parentsData, params}) => {
   const callsData = parentsData['routes/calls'] as CallsLoaderData | undefined
+  const {requestInfo} = parentsData.root as RootLoaderData
   const metadata = {}
   if (!callsData) {
     console.error(
@@ -48,19 +52,18 @@ export const meta: MetaFunction = ({parentsData, params}) => {
   const title = `${episode.title} | Call Kent Podcast | ${episode.episodeNumber}`
   const playerUrl = episode.embedHtml.match(/src="(?<src>.+)"/)?.groups?.src
   return {
-    title,
-    description: episode.description,
-    keywords: `call kent, kent c. dodds, ${episode.keywords}`,
+    ...getSocialMetas({
+      title,
+      description: episode.description,
+      keywords: `call kent, kent c. dodds, ${episode.keywords}`,
+      url: getUrl(requestInfo),
+      image: episode.imageUrl,
+    }),
 
     'twitter:card': 'player',
-    'twitter:site': '@kentcdodds',
-    'twitter:title': title,
-    'twitter:description': episode.description,
     'twitter:player': playerUrl ?? '',
     'twitter:player:width': '500',
     'twitter:player:height': '180',
-    'twitter:image': episode.imageUrl,
-    'twitter:image:alt': title,
     'twitter:player:stream': episode.mediaUrl,
     'twitter:player:stream:content_type': 'audio/mpeg',
   }

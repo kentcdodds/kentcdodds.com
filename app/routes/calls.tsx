@@ -4,12 +4,18 @@ import {json, Link, useLoaderData, useMatches} from 'remix'
 import {Outlet} from 'react-router-dom'
 import {AnimatePresence, motion} from 'framer-motion'
 import clsx from 'clsx'
+import type {LoaderData as RootLoaderData} from '../root'
 import type {Await, CallKentEpisode, KCDHandle} from '~/types'
 import {externalLinks} from '~/external-links'
 import {getEpisodes} from '~/utils/transistor.server'
 import {useMatchLoaderData} from '~/utils/providers'
 import {HeroSection} from '~/components/sections/hero-section'
-import {getImageBuilder, getImgProps, images} from '~/images'
+import {
+  getGenericSocialImage,
+  getImageBuilder,
+  getImgProps,
+  images,
+} from '~/images'
 import {ButtonLink} from '~/components/button'
 import {Grid} from '~/components/grid'
 import {getBlogRecommendations} from '~/utils/blog.server'
@@ -18,7 +24,12 @@ import {H4, H6, Paragraph} from '~/components/typography'
 import {ChevronUpIcon} from '~/components/icons/chevron-up-icon'
 import {ChevronDownIcon} from '~/components/icons/chevron-down-icon'
 import {TriangleIcon} from '~/components/icons/triangle-icon'
-import {formatTime, reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {
+  formatTime,
+  getDisplayUrl,
+  getUrl,
+  reuseUsefulLoaderHeaders,
+} from '~/utils/misc'
 import {
   getEpisodeFromParams,
   getEpisodePath,
@@ -26,6 +37,7 @@ import {
 } from '~/utils/call-kent'
 import {PodcastSubs} from '~/components/podcast-subs'
 import {Spacer} from '~/components/spacer'
+import {getSocialMetas} from '~/utils/seo'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'calls',
@@ -55,11 +67,31 @@ export const loader: LoaderFunction = async ({request}) => {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction = () => {
+export const meta: MetaFunction = ({parentsData}) => {
+  const {requestInfo} = parentsData.root as RootLoaderData
   return {
-    title: 'Call Kent Podcast',
-    description: `Leave Kent an audio message here, then your message and Kent's response are published in the podcast.`,
-    keywords: 'podcast, call kent, call kent c. dodds, the call kent podcast',
+    ...getSocialMetas({
+      title: 'Call Kent Podcast',
+      description: `Leave Kent an audio message here, then your message and Kent's response are published in the podcast.`,
+      keywords: 'podcast, call kent, call kent c. dodds, the call kent podcast',
+      url: getUrl(requestInfo),
+      image: getGenericSocialImage({
+        words: 'Listen to the Call Kent Podcast and make your own call.',
+        featuredImage: images.microphone({
+          // if we don't do this resize, the narrow microphone appears on the
+          // far right of the social image
+          resize: {
+            type: 'pad',
+            width: 1200,
+            height: 1200,
+          },
+        }),
+        url: getDisplayUrl({
+          origin: requestInfo.origin,
+          path: '/calls',
+        }),
+      }),
+    }),
   }
 }
 
@@ -302,7 +334,7 @@ export default function CallHomeScreen() {
                           as="div"
                           className="mb-8"
                           dangerouslySetInnerHTML={{
-                            __html: episode.description,
+                            __html: episode.descriptionHTML,
                           }}
                         />
                         <Outlet />

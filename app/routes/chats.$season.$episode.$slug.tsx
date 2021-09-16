@@ -5,6 +5,7 @@ import {Link, useLocation} from 'react-router-dom'
 import type {KCDLoader, CWKEpisode, CWKListItem, KCDHandle} from '~/types'
 import clsx from 'clsx'
 import {motion} from 'framer-motion'
+import type {LoaderData as RootLoaderData} from '../root'
 import {getSeasons} from '~/utils/simplecast.server'
 import {H2, H3, H6, Paragraph} from '~/components/typography'
 import {Grid} from '~/components/grid'
@@ -18,9 +19,17 @@ import {FeaturedSection} from '~/components/sections/featured-section'
 import {ArrowLink, BackLink} from '~/components/arrow-button'
 import {ChevronRightIcon} from '~/components/icons/chevron-right-icon'
 import {ChevronLeftIcon} from '~/components/icons/chevron-left-icon'
-import {formatTime, listify, reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {
+  formatTime,
+  getDisplayUrl,
+  getUrl,
+  listify,
+  reuseUsefulLoaderHeaders,
+} from '~/utils/misc'
 import {getCWKEpisodePath, getFeaturedEpisode} from '~/utils/chats-with-kent'
 import {Themed} from '~/utils/theme-provider'
+import {getSocialImageWithPreTitle} from '~/images'
+import {getSocialMetas} from '~/utils/seo'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
@@ -40,32 +49,47 @@ export const handle: KCDHandle = {
   },
 }
 
-export const meta: MetaFunction = ({data}: {data: LoaderData | undefined}) => {
-  const metadata = {}
-  const episode = data?.episode
+export const meta: MetaFunction = ({data, parentsData}) => {
+  const episode = (data as LoaderData | undefined)?.episode
+  const {requestInfo} = parentsData.root as RootLoaderData
   if (!episode) {
-    // the TS defs for MetaFunction are kinda weird...
-    return Object.assign(metadata, {
+    return {
       title: 'Chats with Kent Episode not found',
-    })
+    }
   }
-  const title = `${episode.title} | Chats with Kent Podcast | ${episode.episodeNumber}`
-  const playerUrl = `https://player.simplecast.com/${episode.simpleCastId}`
+  const {
+    description,
+    image,
+    mediaUrl,
+    simpleCastId,
+    episodeNumber,
+    seasonNumber,
+  } = episode
+  const title = `${episode.title} | Chats with Kent Podcast | ${episodeNumber}`
+  const playerUrl = `https://player.simplecast.com/${simpleCastId}`
   return {
-    title,
-    description: episode.description,
-    keywords: `call kent, kent c. dodds, ${episode.meta?.keywords ?? ''}`,
-
+    ...getSocialMetas({
+      title,
+      description,
+      keywords: `chats with kent, kent c. dodds, ${
+        episode.meta?.keywords ?? ''
+      }`,
+      url: getUrl(requestInfo),
+      image: getSocialImageWithPreTitle({
+        title: episode.title,
+        preTitle: 'Check out this Podcast',
+        featuredImage: image,
+        url: getDisplayUrl({
+          origin: requestInfo.origin,
+          path: getCWKEpisodePath({seasonNumber, episodeNumber}),
+        }),
+      }),
+    }),
     'twitter:card': 'player',
-    'twitter:site': '@kentcdodds',
-    'twitter:title': title,
-    'twitter:description': episode.description,
     'twitter:player': playerUrl,
     'twitter:player:width': '436',
     'twitter:player:height': '196',
-    'twitter:image': episode.image,
-    'twitter:image:alt': title,
-    'twitter:player:stream': episode.mediaUrl,
+    'twitter:player:stream': mediaUrl,
     'twitter:player:stream:content_type': 'audio/mpeg',
   }
 }

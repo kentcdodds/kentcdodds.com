@@ -323,7 +323,7 @@ function getSocialImageWithPreTitle({
   const preTitleSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_14,h_$gh,x_$gw_mul_1.5,y_$gh_mul_1.3,l_text:kentcdodds.com:Matter-Regular.woff2_50:${encodedPreTitle}`
 
   const encodedTitle = doubleEncode(title)
-  const titleSection = `co_white,c_fit,g_north_west,w_$gw_mul_13,h_$gh_mul_7,x_$gw_mul_1.5,y_$gh_mul_2,l_text:kentcdodds.com:Matter-Regular.woff2_110:${encodedTitle}`
+  const titleSection = `co_white,c_fit,g_north_west,w_$gw_mul_13,h_$gh_mul_7,x_$gw_mul_1.5,y_$gh_mul_2.3,l_text:kentcdodds.com:Matter-Regular.woff2_110:${encodedTitle}`
 
   const kentProfileSection = `c_fit,g_north_west,r_max,w_$gw_mul_4,h_$gh_mul_3,x_$gw,y_$gh_mul_8,l_kent:profile-transparent`
   const kentNameSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_5.5,h_$gh_mul_4,x_$gw_mul_4.5,y_$gh_mul_9,l_text:kentcdodds.com:Matter-Regular.woff2_70:Kent%20C.%20Dodds`
@@ -335,7 +335,7 @@ function getSocialImageWithPreTitle({
   const featuredImageCloudinaryId = featuredImageIsRemote
     ? toBase64(featuredImage)
     : featuredImage.replace(/\//g, ':')
-  const featuredImageLayerType = featuredImageIsRemote ? 'l_fetch' : 'l_'
+  const featuredImageLayerType = featuredImageIsRemote ? 'l_fetch:' : 'l_'
   const featuredImageSection = `c_fill,ar_3:4,r_12,g_east,h_$gh_mul_10,x_$gw,${featuredImageLayerType}${featuredImageCloudinaryId}`
 
   return [
@@ -375,7 +375,7 @@ function getGenericSocialImage({
   const featuredImageCloudinaryId = featuredImageIsRemote
     ? toBase64(featuredImage)
     : featuredImage.replace(/\//g, ':')
-  const featuredImageLayerType = featuredImageIsRemote ? 'l_fetch' : 'l_'
+  const featuredImageLayerType = featuredImageIsRemote ? 'l_fetch:' : 'l_'
 
   const featureImageSection = `c_fit,g_east,w_$gw_mul_11,h_$gh_mul_11,x_$gw,${featuredImageLayerType}${featuredImageCloudinaryId}`
 

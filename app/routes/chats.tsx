@@ -1,13 +1,19 @@
 import * as React from 'react'
-import {json, useLoaderData, useMatches, Link} from 'remix'
+import {json, useLoaderData, useMatches, Link, MetaFunction} from 'remix'
 import type {LoaderFunction, HeadersFunction} from 'remix'
 import clsx from 'clsx'
 import {Tab, TabList, TabPanel, TabPanels, Tabs} from '@reach/tabs'
 import {Outlet, useNavigate} from 'react-router-dom'
+import type {LoaderData as RootLoaderData} from '../root'
 import type {Await} from '~/types'
 import {ChatsEpisodeUIStateProvider} from '~/utils/providers'
 import {Grid} from '~/components/grid'
-import {getImageBuilder, getImgProps, images} from '~/images'
+import {
+  getGenericSocialImage,
+  getImageBuilder,
+  getImgProps,
+  images,
+} from '~/images'
 import {H4, H6, Paragraph} from '~/components/typography'
 import {externalLinks} from '../external-links'
 import {ChevronDownIcon} from '~/components/icons/chevron-down-icon'
@@ -16,11 +22,18 @@ import {BlogSection} from '~/components/sections/blog-section'
 import {getBlogRecommendations} from '~/utils/blog.server'
 import {getSeasonListItems} from '~/utils/simplecast.server'
 import {FeaturedSection} from '~/components/sections/featured-section'
-import {listify, formatTime, reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {
+  listify,
+  formatTime,
+  reuseUsefulLoaderHeaders,
+  getUrl,
+  getDisplayUrl,
+} from '~/utils/misc'
 import {getCWKEpisodePath, getFeaturedEpisode} from '~/utils/chats-with-kent'
 import {HeroSection} from '~/components/sections/hero-section'
 import {Spacer} from '~/components/spacer'
 import {PodcastSubs} from '~/components/podcast-subs'
+import {getSocialMetas} from '~/utils/seo'
 
 type LoaderData = {
   seasons: Await<ReturnType<typeof getSeasonListItems>>
@@ -44,10 +57,34 @@ export const loader: LoaderFunction = async ({request}) => {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export function meta() {
+export const meta: MetaFunction = ({data, parentsData}) => {
+  const {seasons} = (data as LoaderData | undefined) ?? {}
+  if (!seasons) {
+    return {
+      title: 'Chats with Kent Seasons not found',
+    }
+  }
+  const episodeCount = seasons.reduce(
+    (acc, season) => acc + season.episodes.length,
+    0,
+  )
+  const {requestInfo} = parentsData.root as RootLoaderData
+
   return {
-    title: 'Podcasts by Kent C. Dodds',
-    description: 'Get really good at making software with Kent C. Dodds',
+    ...getSocialMetas({
+      title: 'Chats with Kent C. Dodds Podcast',
+      description: `Become a better person with ${episodeCount} interesting and actionable conversations with interesting people.`,
+      keywords: `chats with kent, kent c. dodds`,
+      url: getUrl(requestInfo),
+      image: getGenericSocialImage({
+        words: 'Listen to the Chats with Kent Podcast',
+        featuredImage: images.kayak.id,
+        url: getDisplayUrl({
+          origin: requestInfo.origin,
+          path: '/chats',
+        }),
+      }),
+    }),
   }
 }
 
