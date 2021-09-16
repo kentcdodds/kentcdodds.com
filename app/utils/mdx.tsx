@@ -1,5 +1,6 @@
 import * as React from 'react'
 import {buildImageUrl} from 'cloudinary-build-url'
+import type {LoaderData as RootLoaderData} from '../root'
 import type {GitHubFile, MdxListItem, MdxPage} from '~/types'
 import * as mdxBundler from 'mdx-bundler/client'
 import {compileMdx} from '~/utils/compile-mdx.server'
@@ -7,10 +8,12 @@ import {
   downloadDirList,
   downloadMdxFileOrDirectory,
 } from '~/utils/github.server'
-import {AnchorOrLink} from '~/utils/misc'
+import {AnchorOrLink, getDisplayUrl, getUrl} from '~/utils/misc'
 import {redisCache} from './redis.server'
 import type {Timings} from './metrics.server'
 import {cachified} from './cache.server'
+import {getSocialMetas} from './seo'
+import {getSocialImageWithPreTitle} from '~/images'
 
 type CachifiedOptions = {
   forceFresh?: boolean
@@ -236,12 +239,37 @@ async function getBlogMdxListItems(options: CachifiedOptions) {
   })
 }
 
-function mdxPageMeta({data}: {data: {page: MdxPage | null} | null}) {
+function mdxPageMeta({
+  data,
+  parentsData,
+}: {
+  data: {page: MdxPage | null} | null
+  parentsData: {root: RootLoaderData}
+}) {
+  const {requestInfo} = parentsData.root
   if (data?.page) {
+    const {keywords = [], ...extraMeta} = data.page.frontmatter.meta ?? {}
     return {
-      title: data.page.frontmatter.title,
-      description: data.page.frontmatter.description,
-      ...data.page.frontmatter.meta,
+      ...getSocialMetas({
+        title: data.page.frontmatter.title,
+        description: data.page.frontmatter.description,
+        keywords: keywords.join(', '),
+        url: getUrl(requestInfo),
+        image: getSocialImageWithPreTitle({
+          url: getDisplayUrl(requestInfo),
+          featuredImage:
+            data.page.frontmatter.bannerCloudinaryId ??
+            'kentcdodds.com/illustrations/kody-flying_blue',
+          title:
+            data.page.frontmatter.socialImageTitle ??
+            data.page.frontmatter.title ??
+            'Untitled',
+          preTitle:
+            data.page.frontmatter.socialImagePreTitle ??
+            `Checkout this Aritcle`,
+        }),
+      }),
+      ...extraMeta,
     }
   } else {
     return {
