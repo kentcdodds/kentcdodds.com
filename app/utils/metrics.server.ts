@@ -27,7 +27,6 @@ async function time<ReturnType>({
 }
 
 function getServerTimeHeader(timings: Timings) {
-  console.dir({timings}, {color: true, depth: 6})
   return Object.entries(timings)
     .map(([key, timingInfos]) => {
       const dur = timingInfos
