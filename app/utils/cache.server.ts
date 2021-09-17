@@ -1,7 +1,6 @@
 import LRU from 'lru-cache'
 import type {Timings} from './metrics.server'
 import {time} from './metrics.server'
-import {getErrorMessage} from './misc'
 import {getUser} from './session.server'
 
 declare global {
@@ -118,9 +117,9 @@ async function cachified<
           // originally I thought it may be good to make sure we don't have
           // multiple requests for the same key triggering multiple refreshes
           // like this, but as I thought about it I realized the liklihood of
-          // this causing real issues is pretty small (unless there's a failure)
-          // to update the value, in which case we should probably be notified
-          // anyway...
+          // this causing real issues is pretty small (unless there's a failure
+          // to update the value, in which case we should probably add a
+          // notification feature anyway...)
           // we use Promise.resolve here to make sure this happens on the next tick
           // of the event loop so we don't end up slowing this request down in the
           // event the cache is synchronous (unlikely now, but if the code is changed
@@ -144,12 +143,13 @@ async function cachified<
     } catch (error: unknown) {
       console.error(
         `error with cache at ${key}. Deleting the cache key and trying to get a fresh value.`,
-        getErrorMessage(error),
+        error,
       )
       await cache.del(key)
     }
   }
 
+  const start = performance.now()
   const value = await time({
     name: `getFreshValue for ${key}`,
     type: timingType,
@@ -157,14 +157,20 @@ async function cachified<
     timings,
   }).catch((error: unknown) => {
     // If we got this far without forceFresh then we know there's nothing
-    // in the cache so no need to bother. So we need both the option to fallback
-    // and the ability.
+    // in the cache so no need to bother trying again without a forceFresh.
+    // So we need both the option to fallback and the ability to fallback.
     if (fallbackToCache && forceFresh) {
       return cachified({...options, forceFresh: false})
     } else {
+      console.error(
+        `getting a fresh value for ${key} failed`,
+        {fallbackToCache, forceFresh},
+        error,
+      )
       throw error
     }
   })
+  const totalTime = performance.now() - start
 
   if (checkValue(value)) {
     const metadata: CacheMetadata = {
@@ -173,9 +179,14 @@ async function cachified<
       createdTime: Date.now(),
     }
     try {
+      console.log(
+        `Updating the cache value for ${key}.`,
+        `Getting a fresh value for this took ${totalTime}ms.`,
+        `Caching for a minimum of ${maxAge ? `${maxAge}ms` : 'forever'}.`,
+      )
       await cache.set(key, {metadata, value})
     } catch (error: unknown) {
-      console.error(`error setting cache.${key}`, getErrorMessage(error))
+      console.error(`error setting cache: ${key}`, error)
     }
   } else {
     console.error(`check failed for fresh value of ${key}:`, value)
