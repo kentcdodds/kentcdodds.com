@@ -32,7 +32,7 @@ type LoaderData = {
 
 export const loader: LoaderFunction = async ({request}) => {
   const posts = await getBlogMdxListItems({request})
-  const blogRankings = await getBlogReadRankings(request)
+  const blogRankings = await getBlogReadRankings({request})
   const totalBlogReaders = await getReaderCount(request)
   const blogRecommendations = await getBlogRecommendations(request)
 

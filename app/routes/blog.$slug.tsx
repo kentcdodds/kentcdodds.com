@@ -75,7 +75,10 @@ export const action: KCDAction<{slug: string}> = async ({request, params}) => {
     })
     await client.getHeaders(headers)
   }
-  return json({success: true})
+  // trigger an update to the ranking cache
+  void getBlogReadRankings({request, slug: params.slug, forceFresh: true})
+
+  return json({success: true, headers})
 }
 
 type LoaderData = {
@@ -104,7 +107,7 @@ export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
       ],
       exclude: [params.slug],
     }),
-    getBlogReadRankings(request, params.slug),
+    getBlogReadRankings({request, slug: params.slug}),
     getTotalPostReads(request, params.slug),
   ])
 

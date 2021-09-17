@@ -175,13 +175,22 @@ async function getReaderCount(request: Request) {
 
 export type ReadRankings = Await<ReturnType<typeof getBlogReadRankings>>
 
-async function getBlogReadRankings(request: Request, slug?: string) {
+async function getBlogReadRankings({
+  slug,
+  request,
+  forceFresh,
+}: {
+  slug?: string
+  request?: Request
+  forceFresh?: boolean
+}) {
   const key = slug ? `blog:${slug}:rankings` : `blog:rankings`
   const rankingObjs = await cachified({
     key,
     cache: redisCache,
-    maxAge: 1000 * 60 * 5,
+    maxAge: 1000 * 60 * 60 * 24 * 7,
     request,
+    forceFresh,
     checkValue: (value: unknown) =>
       Array.isArray(value) &&
       value.every(v => typeof v === 'object' && 'team' in v),
@@ -237,6 +246,44 @@ async function getBlogReadRankings(request: Request, slug?: string) {
   )
 }
 
+async function getAllBlogPostReadRankings({
+  request,
+  forceFresh,
+}: {
+  request?: Request
+  forceFresh?: boolean
+}) {
+  return cachified({
+    key: 'all-blog-post-read-rankings',
+    cache: redisCache,
+    forceFresh,
+    request,
+    maxAge: 1000 * 60 * 5, // the underlying caching should be able to handle this every 5 minues
+    getFreshValue: async () => {
+      const posts = await getBlogMdxListItems({request})
+      const {default: pLimit} = await import('p-limit')
+
+      // each of the getBlogReadRankings calls results in 9 postgres queries
+      // and we don't want to hit the limit of connections so we limit this
+      // to 2 at a time. Though most of the data should be cached in redis
+      // anyway. This is good to just be certain.
+      const limit = pLimit(2)
+      const allPostReadRankings: Record<string, ReadRankings> = {}
+      await Promise.all(
+        posts.map(post =>
+          limit(async () => {
+            allPostReadRankings[post.slug] = await getBlogReadRankings({
+              request,
+              slug: post.slug,
+            })
+          }),
+        ),
+      )
+      return allPostReadRankings
+    },
+  })
+}
+
 async function getRecentReads(slug: string | undefined, team: Team) {
   const withinTheLastSixMonths = subMonths(new Date(), 6)
 
@@ -270,6 +317,7 @@ async function getActiveMembers(team: Team) {
 export {
   getBlogRecommendations,
   getBlogReadRankings,
+  getAllBlogPostReadRankings,
   getTotalPostReads,
   getReaderCount,
 }

@@ -30,6 +30,7 @@ import {
 import {TeamStats} from '~/components/team-stats'
 import {Spacer} from '~/components/spacer'
 import {
+  getAllBlogPostReadRankings,
   getBlogReadRankings,
   getBlogRecommendations,
   getReaderCount,
@@ -60,30 +61,23 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  const {default: pLimit} = await import('p-limit')
   const timings: Timings = {}
 
-  const [posts, [recommended], readRankings, totalReads, totalBlogReaders] =
-    await Promise.all([
-      getBlogMdxListItems({request, timings}),
-      getBlogRecommendations(request, {limit: 1}),
-      getBlogReadRankings(request),
-      getTotalPostReads(request),
-      getReaderCount(request),
-    ])
-
-  const limit = pLimit(8)
-  const allPostReadRankings: LoaderData['allPostReadRankings'] = {}
-  await Promise.all(
-    posts.map(post =>
-      limit(async () => {
-        allPostReadRankings[post.slug] = await getBlogReadRankings(
-          request,
-          post.slug,
-        )
-      }),
-    ),
-  )
+  const [
+    posts,
+    [recommended],
+    readRankings,
+    totalReads,
+    totalBlogReaders,
+    allPostReadRankings,
+  ] = await Promise.all([
+    getBlogMdxListItems({request, timings}),
+    getBlogRecommendations(request, {limit: 1}),
+    getBlogReadRankings({request}),
+    getTotalPostReads(request),
+    getReaderCount(request),
+    getAllBlogPostReadRankings({request}),
+  ])
 
   const tags = new Set<string>()
   for (const post of posts) {
