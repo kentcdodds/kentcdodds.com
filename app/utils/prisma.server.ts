@@ -15,6 +15,8 @@ declare global {
 
 const DATABASE_URL = getRequiredServerEnvVar('DATABASE_URL')
 const regionalDB = new URL(DATABASE_URL)
+// Need a lot more than the default of 3 connections for this app.
+regionalDB.searchParams.set('connection_limit', '100')
 const isLocalHost = regionalDB.hostname === 'localhost'
 const PRIMARY_REGION = isLocalHost
   ? null
