@@ -21,6 +21,7 @@ import {ButtonLink} from '~/components/button'
 import {ServerError} from '~/components/errors'
 import {getBlogMdxListItems} from '~/utils/mdx'
 import {formatNumber, reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {getRankingLeader} from '~/utils/blog'
 
 type LoaderData = {
   blogPostCount: string
@@ -52,7 +53,7 @@ export const loader: LoaderFunction = async ({request}) => {
       totalBlogReads < 100_000
         ? 'hundreds of thousands'
         : formatNumber(totalBlogReads),
-    currentBlogLeaderTeam: blogRankings[0]?.team,
+    currentBlogLeaderTeam: getRankingLeader(blogRankings)?.team,
   }
   return json(data, {
     headers: {
