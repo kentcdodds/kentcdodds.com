@@ -30,7 +30,7 @@ if (!isLocalHost) {
   }
 }
 
-const logThreshold = 15
+const logThreshold = 50
 
 const prisma = getClient(() => {
   // NOTE: during development if you change anything in this function, remember
@@ -54,13 +54,13 @@ const prisma = getClient(() => {
     if (e.duration < logThreshold) return
 
     const color =
-      e.duration < 15
+      e.duration < 30
         ? 'green'
-        : e.duration < 20
-        ? 'blue'
-        : e.duration < 35
-        ? 'yellow'
         : e.duration < 50
+        ? 'blue'
+        : e.duration < 80
+        ? 'yellow'
+        : e.duration < 100
         ? 'redBright'
         : 'red'
     const dur = chalk[color](`${e.duration}ms`)
