@@ -379,7 +379,7 @@ function App() {
             finished it will be hosted at kentcdodds.com. Until then, feel free
             to poke around! All the source code is available at{' '}
             <a
-              className="underline"
+              className="text-blue-500 underline"
               href="https://github.com/kentcdodds/remix-kentcdodds"
             >
               github.com/kentcdodds/remix-kentcdodds

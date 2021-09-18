@@ -44,14 +44,13 @@ if (!isLocalHost) {
 
 const logThreshold = 50
 
-console.log(`Setting up prisma client to ${regionalDB.host} for reads`)
 const prismaRead =
-  global.prismaRead ?? (global.prismaRead = getClient(regionalDB.toString()))
-console.log(`Setting up prisma client to ${primaryDB.host} for writes`)
+  global.prismaRead ?? (global.prismaRead = getClient(regionalDB, 'read'))
 const prismaWrite =
-  global.prismaWrite ?? (global.prismaWrite = getClient(primaryDB.toString()))
+  global.prismaWrite ?? (global.prismaWrite = getClient(primaryDB, 'write'))
 
-function getClient(connectionUrl: string): PrismaClient {
+function getClient(connectionUrl: URL, type: 'write' | 'read'): PrismaClient {
+  console.log(`Setting up prisma client to ${connectionUrl.host} for ${type}`)
   // NOTE: during development if you change anything in this function, remember
   // that this only runs once per server restart and won't automatically be
   // re-run per request like everything else is.
@@ -64,7 +63,7 @@ function getClient(connectionUrl: string): PrismaClient {
     ],
     datasources: {
       db: {
-        url: connectionUrl,
+        url: connectionUrl.toString(),
       },
     },
   })
