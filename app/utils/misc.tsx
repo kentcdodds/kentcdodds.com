@@ -252,7 +252,7 @@ async function waitFor<Value>({
   let value = await cb().catch(() => undefined)
 
   /* eslint-disable no-await-in-loop */
-  while (value === undefined && Date.now() - start < timeout) {
+  while (!value && Date.now() - start < timeout) {
     await new Promise(resolve => setTimeout(resolve, interval))
     value = await cb().catch(() => undefined)
   }

@@ -5,7 +5,7 @@ import type {Call, KCDLoader, KCDAction, KCDHandle} from '~/types'
 import {requireUser} from '~/utils/session.server'
 import {prismaRead, prismaWrite} from '~/utils/prisma.server'
 import {Paragraph} from '~/components/typography'
-import {reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {reuseUsefulLoaderHeaders, waitFor} from '~/utils/misc'
 import {Button} from '~/components/button'
 
 export const handle: KCDHandle = {
@@ -34,6 +34,17 @@ export const action: KCDAction<{callId: string}> = async ({
       return redirect('/calls/record')
     }
     await prismaWrite.call.delete({where: {id: params.callId}})
+
+    // ensure that the value has actually been deleted before proceeding.
+    await waitFor({
+      cb: async () => {
+        return !(await prismaRead.call.findFirst({
+          where: {id: params.callId},
+        }))
+      },
+      timeout: 5000,
+      interval: 750,
+    })
     return redirect('/calls/record')
   })
 }
