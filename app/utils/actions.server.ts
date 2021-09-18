@@ -8,6 +8,7 @@ type FormValue = string | null
 
 async function handleFormSubmission<
   ActionData extends {
+    status: 'success' | 'error'
     fields: {[field: string]: FormValue}
     errors: {[field: string]: ErrorMessage | NoError}
   },
@@ -68,7 +69,7 @@ async function handleFormSubmission<
     )
 
     if (Object.values(actionData.errors).some(err => err !== null)) {
-      return json(actionData, 400)
+      return json({...actionData, status: 'error'}, 400)
     }
 
     const nonNullFields = getNonNull(actionData.fields)

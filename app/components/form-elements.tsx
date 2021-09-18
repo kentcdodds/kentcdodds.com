@@ -120,9 +120,9 @@ function ButtonGroup({
   )
 }
 
-function ErrorPanel({children}: {children: React.ReactNode}) {
+function ErrorPanel({children, id}: {children: React.ReactNode; id?: string}) {
   return (
-    <div role="alert" className="relative mt-8 px-11 py-8">
+    <div role="alert" className="relative mt-8 px-11 py-8" id={id}>
       <div className="absolute inset-0 bg-red-500 rounded-lg opacity-25" />
       <div className="text-primary relative text-lg font-medium">
         {children}

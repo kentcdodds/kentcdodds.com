@@ -46,6 +46,9 @@ const miscHandlers = [
       return res(ctx.status(404))
     },
   ),
+  rest.get('https://verifier.meetchopra.com/verify/:email', (req, res, ctx) => {
+    return res(ctx.json({status: true}))
+  }),
 ]
 
 const server = setupServer(

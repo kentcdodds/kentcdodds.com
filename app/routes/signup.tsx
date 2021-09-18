@@ -29,6 +29,7 @@ export const handle: KCDHandle = {
 }
 
 type ActionData = {
+  status: 'success' | 'error'
   fields: {
     firstName: string | null
     team: Team | null

@@ -13,6 +13,7 @@ import {Paragraph} from '~/components/typography'
 import {Button} from '~/components/button'
 import {Input, InputError, Label} from '~/components/form-elements'
 import {HeroSection} from '~/components/sections/hero-section'
+import {verifyEmailAddress} from '~/utils/verifier.server'
 
 type LoaderData = {
   email?: string
@@ -60,6 +61,22 @@ export const action: ActionFunction = async ({request}) => {
   }
 
   try {
+    const verifierResult = await verifyEmailAddress(emailAddress)
+    if (!verifierResult.status) {
+      const errorMessage = `I tried to verify that email and got this error message: "${verifierResult.error.message}". If you think this is wrong, shoot an email to team@kentcdodds.com.`
+      loginSession.flashError(errorMessage)
+      return redirect(`/login`, {
+        status: 400,
+        headers: await loginSession.getHeaders(),
+      })
+    }
+  } catch (error: unknown) {
+    console.error(`There was an error verifying an email address:`, error)
+    // continue on... This was probably our fault...
+    // IDEA: notify me of this issue...
+  }
+
+  try {
     const domainUrl = getDomainUrl(request)
     await sendToken({emailAddress, domainUrl})
     loginSession.flashMessage(EMAIL_SENT_MESSAGE)
@@ -77,6 +94,7 @@ export const action: ActionFunction = async ({request}) => {
 
 function Login() {
   const data = useLoaderData<LoaderData>()
+  const [submitted, setSubmitted] = React.useState(false)
   const emailSent = data.message === EMAIL_SENT_MESSAGE
 
   const [formValues, setFormValues] = React.useState({
@@ -98,6 +116,7 @@ function Login() {
               const form = event.currentTarget
               setFormValues({email: form.email.value})
             }}
+            onSubmit={() => setSubmitted(true)}
             action="/login"
             method="post"
             className="mb-10 lg:mb-12"
@@ -135,7 +154,7 @@ function Login() {
               />
             </div>
 
-            <Button type="submit" disabled={!formIsValid}>
+            <Button type="submit" disabled={!formIsValid || submitted}>
               Email a login link
             </Button>
 

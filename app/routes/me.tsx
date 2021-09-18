@@ -79,6 +79,7 @@ function getFirstNameError(firstName: string | null) {
 }
 
 type ActionData = {
+  status: 'success' | 'error'
   fields: {
     firstName?: string | null
   }

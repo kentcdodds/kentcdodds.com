@@ -1,7 +1,6 @@
 import * as React from 'react'
-import type {HeadersFunction} from 'remix'
-import {Form, useActionData} from 'remix'
-import {Outlet} from 'react-router-dom'
+import type {ActionFunction, HeadersFunction} from 'remix'
+import {useFetcher, json} from 'remix'
 import {useRootData} from '~/utils/use-root-data'
 import {
   getHeroImageProps,
@@ -9,17 +8,106 @@ import {
 } from '~/components/sections/hero-section'
 import {images} from '~/images'
 import {H2, Paragraph} from '~/components/typography'
-import {ErrorPanel, Field, InputError} from '~/components/form-elements'
+import {ButtonGroup, ErrorPanel, Field} from '~/components/form-elements'
 import {Grid} from '~/components/grid'
-import type {ActionData} from '~/utils/contact'
+import {handleFormSubmission} from '~/utils/actions.server'
+import {sendEmail} from '~/utils/send-email.server'
+import {verifyEmailAddress} from '~/utils/verifier.server'
+import {Button} from '~/components/button'
+
+function getErrorForName(name: string | null) {
+  if (!name) return `Name is required`
+  if (name.length > 60) return `Name is too long`
+  return null
+}
+
+async function getErrorForEmail(email: string | null) {
+  if (!email) return `Email is required`
+  if (!/^.+@.+\..+$/.test(email)) return `That's not an email`
+
+  try {
+    const verifierResult = await verifyEmailAddress(email)
+    if (!verifierResult.status) {
+      return `I tried to verify that email address and got this error message: "${verifierResult.error.message}". If you think this is wrong, shoot an email to team@kentcdodds.com.`
+    }
+  } catch (error: unknown) {
+    console.error(`There was an error verifying an email address:`, error)
+    // continue on... This was probably our fault...
+    // IDEA: notify me of this issue...
+  }
+
+  return null
+}
+
+function getErrorForSubject(subject: string | null) {
+  if (!subject) return `Subject is required`
+  if (subject.length <= 5) return `Subject is too short`
+  if (subject.length > 120) return `Subject is too long`
+  return null
+}
+
+function getErrorForBody(body: string | null) {
+  if (!body) return `Body is required`
+  if (body.length <= 40) return `Body is too short`
+  if (body.length > 1001) return `Body is too long`
+  return null
+}
+
+type ActionData = {
+  status: 'success' | 'error'
+  fields: {
+    name?: string | null
+    email?: string | null
+    subject?: string | null
+    body?: string | null
+  }
+  errors: {
+    generalError?: string
+    name?: string | null
+    email?: string | null
+    subject?: string | null
+    body?: string | null
+  }
+}
+
+export const action: ActionFunction = async ({request}) => {
+  return handleFormSubmission<ActionData>({
+    request,
+    validators: {
+      name: getErrorForName,
+      email: getErrorForEmail,
+      subject: getErrorForSubject,
+      body: getErrorForBody,
+    },
+    handleFormValues: async fields => {
+      const {name, email, subject, body} = fields
+
+      const sender = `"${name}" <${email}>`
+
+      await sendEmail({
+        from: sender,
+        to: `"Kent C. Dodds" <me@kentcdodds.com>`,
+        subject,
+        text: body,
+      })
+
+      const actionData: ActionData = {fields, status: 'success', errors: {}}
+      return json(actionData)
+    },
+  })
+}
 
 export const headers: HeadersFunction = () => ({
-  'Cache-Control': 'public, max-age=3600',
+  'Cache-Control': 'private, max-age=3600',
 })
 
 export default function ContactRoute() {
-  const actionData = useActionData<ActionData>()
+  const contactFetcher = useFetcher()
   const {user} = useRootData()
+
+  const emailSuccessfullySent =
+    contactFetcher.type === 'done' &&
+    (contactFetcher.data as ActionData).status === 'success'
 
   return (
     <div>
@@ -35,10 +123,11 @@ export default function ContactRoute() {
       />
 
       <main>
-        <Form method="post" noValidate aria-describedby="contact-form-error">
-          <InputError id="contact-form-error">
-            {actionData?.errors.generalError}
-          </InputError>
+        <contactFetcher.Form
+          method="post"
+          noValidate
+          aria-describedby="contact-form-error"
+        >
           <Grid>
             <div className="col-span-full mb-12 lg:col-span-8 lg:col-start-3">
               <H2>Email me</H2>
@@ -65,23 +154,27 @@ export default function ContactRoute() {
                 name="name"
                 label="Name"
                 placeholder="Your name"
-                defaultValue={actionData?.fields.name ?? user?.firstName ?? ''}
-                error={actionData?.errors.name}
+                defaultValue={
+                  contactFetcher.data?.fields.name ?? user?.firstName ?? ''
+                }
+                error={contactFetcher.data?.errors.name}
               />
               <Field
                 type="email"
                 label="Email"
                 placeholder="person.doe@example.com"
-                defaultValue={actionData?.fields.email ?? user?.email ?? ''}
+                defaultValue={
+                  contactFetcher.data?.fields.email ?? user?.email ?? ''
+                }
                 name="email"
-                error={actionData?.errors.email}
+                error={contactFetcher.data?.errors.email}
               />
               <Field
                 name="subject"
                 label="Subject"
                 placeholder="No subject"
-                defaultValue={actionData?.fields.subject ?? ''}
-                error={actionData?.errors.subject}
+                defaultValue={contactFetcher.data?.fields.subject ?? ''}
+                error={contactFetcher.data?.errors.subject}
               />
               <Field
                 name="body"
@@ -89,16 +182,38 @@ export default function ContactRoute() {
                 type="textarea"
                 placeholder="A clear and concise message works wonders."
                 rows={8}
-                defaultValue={actionData?.fields.body ?? ''}
-                error={actionData?.errors.body}
+                defaultValue={contactFetcher.data?.fields.body ?? ''}
+                error={contactFetcher.data?.errors.body}
               />
-              <Outlet />
-              {actionData?.errors.generalError ? (
-                <ErrorPanel>{actionData.errors.generalError}</ErrorPanel>
+              {emailSuccessfullySent ? (
+                <>
+                  {`Hooray, email sent! `}
+                  <span role="img" aria-label="party popper emoji">
+                    🎉
+                  </span>
+                </>
+              ) : (
+                // IDEA: show a loading state here
+                <ButtonGroup>
+                  <Button
+                    type="submit"
+                    disabled={contactFetcher.state !== 'idle'}
+                  >
+                    Send message
+                  </Button>
+                  <Button variant="secondary" type="reset">
+                    Reset form
+                  </Button>
+                </ButtonGroup>
+              )}
+              {contactFetcher.data?.errors.generalError ? (
+                <ErrorPanel id="contact-form-error">
+                  {contactFetcher.data.errors.generalError}
+                </ErrorPanel>
               ) : null}
             </div>
           </Grid>
-        </Form>
+        </contactFetcher.Form>
       </main>
     </div>
   )
