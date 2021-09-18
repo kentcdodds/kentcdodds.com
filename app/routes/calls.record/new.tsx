@@ -9,8 +9,8 @@ import {
   RecordingFormData,
 } from '~/components/calls/submit-recording-form'
 import {requireUser} from '~/utils/session.server'
-import {prismaWrite} from '~/utils/prisma.server'
-import {getErrorMessage, getNonNull} from '~/utils/misc'
+import {prismaWrite, prismaRead} from '~/utils/prisma.server'
+import {getErrorMessage, getNonNull, waitFor} from '~/utils/misc'
 import {
   getErrorForAudio,
   getErrorForTitle,
@@ -65,6 +65,14 @@ export const action: ActionFunction = async ({request}) => {
         base64: audio,
       }
       const createdCall = await prismaWrite.call.create({data: call})
+
+      // wait for the created call to be ready in the read replica so when the
+      // loader runs it's in the db.
+      await waitFor({
+        cb: () => prismaRead.call.findFirst({where: {id: createdCall.id}}),
+        timeout: 5000,
+        interval: 750,
+      })
       return redirect(`/calls/record/${createdCall.id}`)
     } catch (error: unknown) {
       actionData.errors.generalError = getErrorMessage(error)

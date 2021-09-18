@@ -239,6 +239,28 @@ const reuseUsefulLoaderHeaders: HeadersFunction = ({loaderHeaders}) => {
   return headers
 }
 
+async function waitFor<Value>({
+  cb,
+  timeout,
+  interval,
+}: {
+  cb: () => Promise<Value>
+  timeout: number
+  interval: number
+}): Promise<Value | undefined> {
+  const start = Date.now()
+  let value = await cb().catch(() => undefined)
+
+  /* eslint-disable no-await-in-loop */
+  while (value === undefined && Date.now() - start < timeout) {
+    await new Promise(resolve => setTimeout(resolve, interval))
+    value = await cb().catch(() => undefined)
+  }
+  /* eslint-enable no-await-in-loop */
+
+  return value
+}
+
 export {
   getAvatar,
   getAvatarForUser,
@@ -266,6 +288,7 @@ export {
   formatDate,
   formatTime,
   formatNumber,
+  waitFor,
 }
 export {listify} from './listify'
 export type {OptionalTeam}
