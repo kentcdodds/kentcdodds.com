@@ -43,7 +43,7 @@ describe('call in', () => {
     cy.login({role: 'ADMIN'})
     cy.visit('/calls/admin')
     cy.findByRole('main').within(() => {
-      cy.findByRole('link', {name: title}).click()
+      cy.findByRole('link', {name: new RegExp(title, 'i')}).click()
 
       cy.findByRole('button', {name: /start/i}).click()
       cy.wait(500)

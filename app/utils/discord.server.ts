@@ -1,5 +1,5 @@
 import type {User, Team} from '~/types'
-import {prisma} from './prisma.server'
+import {prismaWrite} from './prisma.server'
 import {getRequiredServerEnvVar} from './misc'
 
 const DISCORD_CLIENT_ID = getRequiredServerEnvVar('DISCORD_CLIENT_ID')
@@ -113,7 +113,7 @@ async function updateDiscordRolesForUser(
   discordMember: DiscordMember,
   user: User,
 ) {
-  await prisma.user.update({
+  await prismaWrite.user.update({
     where: {id: user.id},
     data: {discordId: discordMember.user.id},
   })

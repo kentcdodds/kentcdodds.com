@@ -6,16 +6,12 @@ import {requireUser} from '~/utils/session.server'
 import {getDomainUrl, getErrorMessage} from '~/utils/misc'
 import {connectDiscord} from '~/utils/discord.server'
 import {deleteDiscordCache} from '~/utils/user-info.server'
-import {getReplayResponse} from '~/utils/prisma.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  const replay = getReplayResponse(request)
-  if (replay) return replay
-
   return requireUser(request, async user => {
     const domainUrl = getDomainUrl(request)
     const code = new URL(request.url).searchParams.get('code')

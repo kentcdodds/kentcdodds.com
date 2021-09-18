@@ -5,7 +5,7 @@ import {
   getUserByEmail,
   getMagicLink,
   getUserFromSessionId,
-  prisma,
+  prismaWrite,
   validateMagicLink,
   createSession,
   sessionExpirationTime,
@@ -76,7 +76,7 @@ async function getSession(request: Request) {
       const sessionId = getSessionId()
       if (sessionId) {
         unsetSessionId()
-        prisma.session
+        prismaWrite.session
           .delete({where: {id: sessionId}})
           .catch((error: unknown) => {
             console.error(`Failure deleting user session: `, error)
@@ -115,7 +115,9 @@ async function deleteOtherSessions(request: Request) {
     return
   }
   const user = await getUserFromSessionId(token)
-  await prisma.session.deleteMany({where: {userId: user.id, NOT: {id: token}}})
+  await prismaWrite.session.deleteMany({
+    where: {userId: user.id, NOT: {id: token}},
+  })
 }
 
 async function getUser(request: Request) {

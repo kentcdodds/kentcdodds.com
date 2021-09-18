@@ -1,6 +1,4 @@
 import {PrismaClient} from '@prisma/client'
-import type {EntryContext} from 'remix'
-import {redirect} from 'remix'
 import chalk from 'chalk'
 import type {User, Session} from '~/types'
 import {encrypt, decrypt} from './encryption.server'
@@ -10,13 +8,24 @@ declare global {
   // This prevents us from making multiple connections to the db when the
   // require cache is cleared.
   // eslint-disable-next-line
-  var prisma: ReturnType<typeof getClient> | undefined
+  var prismaRead: ReturnType<typeof getClient> | undefined
+  // eslint-disable-next-line
+  var prismaWrite: ReturnType<typeof getClient> | undefined
 }
 
 const DATABASE_URL = getRequiredServerEnvVar('DATABASE_URL')
 const regionalDB = new URL(DATABASE_URL)
+const primaryDB = new URL(DATABASE_URL)
+
 // Need a lot more than the default of 3 connections for this app.
-regionalDB.searchParams.set('connection_limit', '100')
+const totalConnections = 100
+regionalDB.searchParams.set('connection_limit', totalConnections.toString())
+const totalRegions = 7
+primaryDB.searchParams.set(
+  'connection_limit',
+  Math.floor(totalConnections / totalRegions).toString(),
+)
+
 const isLocalHost = regionalDB.hostname === 'localhost'
 const PRIMARY_REGION = isLocalHost
   ? null
@@ -26,6 +35,7 @@ const FLY_REGION = isLocalHost ? null : getRequiredServerEnvVar('FLY_REGION')
 const isPrimaryRegion = PRIMARY_REGION === FLY_REGION
 if (!isLocalHost) {
   regionalDB.host = `${FLY_REGION}.${regionalDB.host}`
+  primaryDB.host = `${PRIMARY_REGION}.${primaryDB.host}`
   if (!isPrimaryRegion) {
     // 5433 is the read-replica port
     regionalDB.port = '5433'
@@ -34,11 +44,17 @@ if (!isLocalHost) {
 
 const logThreshold = 50
 
-const prisma = getClient(() => {
+console.log(`Setting up prisma client to ${regionalDB.host} for reads`)
+const prismaRead =
+  global.prismaRead ?? (global.prismaRead = getClient(regionalDB.toString()))
+console.log(`Setting up prisma client to ${primaryDB.host} for writes`)
+const prismaWrite =
+  global.prismaWrite ?? (global.prismaWrite = getClient(primaryDB.toString()))
+
+function getClient(connectionUrl: string): PrismaClient {
   // NOTE: during development if you change anything in this function, remember
   // that this only runs once per server restart and won't automatically be
   // re-run per request like everything else is.
-  console.log(`Connecting to ${regionalDB.host}`)
   const client = new PrismaClient({
     log: [
       {level: 'query', emit: 'event'},
@@ -48,7 +64,7 @@ const prisma = getClient(() => {
     ],
     datasources: {
       db: {
-        url: regionalDB.toString(),
+        url: connectionUrl,
       },
     },
   })
@@ -68,21 +84,14 @@ const prisma = getClient(() => {
     const dur = chalk[color](`${e.duration}ms`)
     console.log(`prisma:query - ${dur} - ${e.query}`)
   })
-  return client
-})
-
-function getClient(createClient: () => PrismaClient): PrismaClient {
-  let client = global.prisma
-  if (!client) {
-    // eslint-disable-next-line no-multi-assign
-    client = global.prisma = createClient()
-  }
+  // make the connection eagerly so the first request doesn't have to wait
+  void client.$connect()
   return client
 }
 
 const isProd = process.env.NODE_ENV === 'production'
 
-if (!isProd && DATABASE_URL && !DATABASE_URL.includes('localhost')) {
+if (!isProd && !isLocalHost) {
   // if we're connected to a non-localhost db, let's make
   // sure we know it.
   const domain = new URL(DATABASE_URL)
@@ -162,7 +171,7 @@ async function validateMagicLink(link: string) {
 async function createSession(
   sessionData: Omit<Session, 'id' | 'expirationDate' | 'createdAt'>,
 ) {
-  return prisma.session.create({
+  return prismaWrite.session.create({
     data: {
       ...sessionData,
       expirationDate: new Date(Date.now() + sessionExpirationTime),
@@ -171,7 +180,7 @@ async function createSession(
 }
 
 async function getUserFromSessionId(sessionId: string) {
-  const session = await prisma.session.findUnique({
+  const session = await prismaRead.session.findUnique({
     where: {id: sessionId},
     include: {user: true},
   })
@@ -180,7 +189,7 @@ async function getUserFromSessionId(sessionId: string) {
   }
 
   if (Date.now() > session.expirationDate.getTime()) {
-    await prisma.session.delete({where: {id: sessionId}})
+    await prismaWrite.session.delete({where: {id: sessionId}})
     throw new Error('Session expired. Please request a new magic link.')
   }
 
@@ -188,7 +197,7 @@ async function getUserFromSessionId(sessionId: string) {
   const twoWeeks = 2 * 7 * 24 * 60 * 60 * 1000
   if (Date.now() + twoWeeks > session.expirationDate.getTime()) {
     const newExpirationDate = new Date(Date.now() + sessionExpirationTime)
-    await prisma.session.update({
+    await prismaWrite.session.update({
       data: {expirationDate: newExpirationDate},
       where: {id: sessionId},
     })
@@ -198,20 +207,20 @@ async function getUserFromSessionId(sessionId: string) {
 }
 
 function getUserByEmail(email: string) {
-  return prisma.user.findUnique({where: {email}})
+  return prismaRead.user.findUnique({where: {email}})
 }
 
 async function deleteUser(userId: string) {
-  return prisma.user.delete({where: {id: userId}})
+  return prismaWrite.user.delete({where: {id: userId}})
 }
 
 async function getAllUserData(userId: string) {
   const {default: pProps} = await import('p-props')
   return pProps({
-    user: prisma.user.findUnique({where: {id: userId}}),
-    calls: prisma.call.findMany({where: {userId}}),
-    postReads: prisma.postRead.findMany({where: {userId}}),
-    sessions: prisma.session.findMany({where: {userId}}),
+    user: prismaRead.user.findUnique({where: {id: userId}}),
+    calls: prismaRead.call.findMany({where: {userId}}),
+    postReads: prismaRead.postRead.findMany({where: {userId}}),
+    sessions: prismaRead.session.findMany({where: {userId}}),
   })
 }
 
@@ -222,7 +231,7 @@ function updateUser(
     'id' | 'email' | 'team' | 'createdAt' | 'updatedAt'
   >,
 ) {
-  return prisma.user.update({where: {id: userId}, data: updatedInfo})
+  return prismaWrite.user.update({where: {id: userId}, data: updatedInfo})
 }
 
 async function addPostRead({
@@ -234,7 +243,7 @@ async function addPostRead({
   | {userId?: undefined; clientId: string}
 )) {
   const id = userId ? {userId} : {clientId}
-  const readInLastWeek = await prisma.postRead.findFirst({
+  const readInLastWeek = await prismaRead.postRead.findFirst({
     select: {id: true},
     where: {
       ...id,
@@ -245,7 +254,7 @@ async function addPostRead({
   if (readInLastWeek) {
     return null
   } else {
-    const postRead = await prisma.postRead.create({
+    const postRead = await prismaWrite.postRead.create({
       data: {postSlug: slug, ...id},
       select: {id: true},
     })
@@ -253,49 +262,9 @@ async function addPostRead({
   }
 }
 
-function getReplayResponse(request: Request) {
-  if (isPrimaryRegion) return null
-  const pathname = new URL(request.url).pathname
-  const logInfo = {
-    pathname,
-    method: request.method,
-    PRIMARY_REGION,
-    FLY_REGION,
-  }
-  console.info(`Replaying:`, logInfo)
-  return redirect(pathname, {
-    status: 302,
-    headers: {'fly-replay': `region=${PRIMARY_REGION}`},
-  })
-}
-
-function getReplayResponseForError(request: Request, errorMessage?: string) {
-  // depending on how the error is serialized, there may be quotes and escape
-  // characters in the error message, so we'll use a regex instead of a regular includes.
-  const isReadOnlyError = /SqlState\(.*?25006.*?\)/.test(errorMessage ?? '')
-  return isReadOnlyError ? getReplayResponse(request) : null
-}
-
-async function getDocumentReplayResponse(
-  request: Request,
-  remixContext: EntryContext,
-) {
-  return getReplayResponseForError(
-    request,
-    remixContext.componentDidCatchEmulator.error?.message,
-  )
-}
-
-async function getDataReplayResponse(request: Request, response: Response) {
-  if (response.status > 199 && response.status < 300) return null
-
-  const textClone = response.clone()
-  const text = await textClone.text().catch(() => null)
-  return getReplayResponseForError(request, text ?? '')
-}
-
 export {
-  prisma,
+  prismaRead,
+  prismaWrite,
   getMagicLink,
   validateMagicLink,
   linkExpirationTime,
@@ -307,7 +276,4 @@ export {
   deleteUser,
   getAllUserData,
   addPostRead,
-  getReplayResponse,
-  getDocumentReplayResponse,
-  getDataReplayResponse,
 }

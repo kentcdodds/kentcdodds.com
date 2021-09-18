@@ -7,11 +7,7 @@ import type {KCDHandle, Team} from '~/types'
 import {useTeam} from '~/utils/team-provider'
 import {getSession, getUser} from '~/utils/session.server'
 import {getLoginInfoSession} from '~/utils/login.server'
-import {
-  getReplayResponse,
-  prisma,
-  validateMagicLink,
-} from '~/utils/prisma.server'
+import {prismaWrite, validateMagicLink} from '~/utils/prisma.server'
 import {getErrorStack, teams} from '~/utils/misc'
 import {tagKCDSiteSubscriber} from '../convertkit/convertkit.server'
 import {Grid} from '~/components/grid'
@@ -59,9 +55,6 @@ function getErrorForTeam(team: string | null) {
 }
 
 export const action: ActionFunction = async ({request}) => {
-  const replay = getReplayResponse(request)
-  if (replay) return replay
-
   const session = await getSession(request)
   const loginInfoSession = await getLoginInfoSession(request)
   const magicLink = loginInfoSession.getMagicLink()
@@ -94,11 +87,13 @@ export const action: ActionFunction = async ({request}) => {
       const {firstName, team} = formData
 
       try {
-        const user = await prisma.user.create({data: {email, firstName, team}})
+        const user = await prismaWrite.user.create({
+          data: {email, firstName, team},
+        })
 
         // add user to mailing list
         const sub = await tagKCDSiteSubscriber(user)
-        await prisma.user.update({
+        await prismaWrite.user.update({
           data: {convertKitId: String(sub.id)},
           where: {id: user.id},
         })

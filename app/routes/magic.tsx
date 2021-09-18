@@ -4,16 +4,11 @@ import type {KCDHandle} from '~/types'
 import * as React from 'react'
 import {getLoginInfoSession} from '~/utils/login.server'
 import {getUserSessionFromMagicLink} from '~/utils/session.server'
-import {getReplayResponse} from '~/utils/prisma.server'
-
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  const replay = getReplayResponse(request)
-  if (replay) return replay
-
   const loginInfoSession = await getLoginInfoSession(request)
   try {
     const session = await getUserSessionFromMagicLink(request)

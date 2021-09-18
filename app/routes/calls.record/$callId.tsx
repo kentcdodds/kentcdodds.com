@@ -3,7 +3,7 @@ import type {HeadersFunction} from 'remix'
 import {json, redirect, useLoaderData, Form} from 'remix'
 import type {Call, KCDLoader, KCDAction, KCDHandle} from '~/types'
 import {requireUser} from '~/utils/session.server'
-import {prisma} from '~/utils/prisma.server'
+import {prismaRead, prismaWrite} from '~/utils/prisma.server'
 import {Paragraph} from '~/components/typography'
 import {reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {Button} from '~/components/button'
@@ -21,7 +21,7 @@ export const action: KCDAction<{callId: string}> = async ({
   request,
 }) => {
   return requireUser(request, async user => {
-    const call = await prisma.call.findFirst({
+    const call = await prismaRead.call.findFirst({
       // NOTE: this is how we ensure the user is the owner of the call
       // and is therefore authorized to delete it.
       where: {userId: user.id, id: params.callId},
@@ -33,7 +33,7 @@ export const action: KCDAction<{callId: string}> = async ({
       )
       return redirect('/calls/record')
     }
-    await prisma.call.delete({where: {id: params.callId}})
+    await prismaWrite.call.delete({where: {id: params.callId}})
     return redirect('/calls/record')
   })
 }
@@ -45,7 +45,7 @@ export const loader: KCDLoader<{callId: string}> = async ({
   request,
 }) => {
   return requireUser(request, async user => {
-    const call = await prisma.call.findFirst({
+    const call = await prismaRead.call.findFirst({
       // NOTE: this is how we ensure the user is the owner of the call
       // and is therefore authorized to delete it.
       where: {userId: user.id, id: params.callId},

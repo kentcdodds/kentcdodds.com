@@ -5,7 +5,7 @@ import {format} from 'date-fns'
 import {useRootData} from '~/utils/use-root-data'
 import {CallRecorder} from '~/components/calls/recorder'
 import {requireAdminUser} from '~/utils/session.server'
-import {prisma} from '~/utils/prisma.server'
+import {prismaWrite, prismaRead} from '~/utils/prisma.server'
 import {getDomainUrl, getErrorMessage, getNonNull} from '~/utils/misc'
 import {createEpisodeAudio} from '~/utils/ffmpeg.server'
 import {createEpisode} from '~/utils/transistor.server'
@@ -35,10 +35,10 @@ export const action: KCDAction<{callId: string}> = async ({
 }) => {
   return requireAdminUser(request, async () => {
     if (request.method === 'DELETE') {
-      await prisma.call.delete({where: {id: params.callId}})
+      await prismaWrite.call.delete({where: {id: params.callId}})
       return redirect('/calls/admin')
     }
-    const call = await prisma.call.findFirst({
+    const call = await prismaRead.call.findFirst({
       where: {id: params.callId},
       include: {user: true},
     })
@@ -95,7 +95,7 @@ export const action: KCDAction<{callId: string}> = async ({
         keywords,
         domainUrl: getDomainUrl(request),
       })
-      await prisma.call.delete({
+      await prismaWrite.call.delete({
         where: {id: call.id},
       })
 
@@ -116,7 +116,7 @@ export const loader: KCDLoader<{callId: string}> = async ({
   params,
 }) => {
   return requireAdminUser(request, async () => {
-    const call = await prisma.call.findFirst({where: {id: params.callId}})
+    const call = await prismaRead.call.findFirst({where: {id: params.callId}})
     if (!call) {
       console.error(`No call found at ${params.callId}`)
       // TODO: add message

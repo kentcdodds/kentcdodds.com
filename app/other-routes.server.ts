@@ -1,7 +1,7 @@
 import {EntryContext, json} from 'remix'
 import {getSitemapXml} from './utils/sitemap.server'
 import {getRssFeedXml} from './utils/blog-rss-feed.server'
-import {getAllUserData, getDocumentReplayResponse} from './utils/prisma.server'
+import {getAllUserData} from './utils/prisma.server'
 import {commitShaKey as refreshCacheCommitShaKey} from './routes/_action/refresh-cache'
 import {redisCache} from './utils/redis.server'
 import {requireUser} from './utils/session.server'
@@ -53,7 +53,6 @@ const pathedRoutes: Record<string, Handler> = {
 }
 
 const routes: Array<Handler> = [
-  getDocumentReplayResponse,
   ...Object.entries(pathedRoutes).map(([path, handler]) => {
     return (request: Request, remixContext: EntryContext) => {
       if (new URL(request.url).pathname !== path) return null

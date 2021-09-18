@@ -16,7 +16,7 @@ import {
   deleteDiscordCache,
 } from '~/utils/user-info.server'
 import {
-  prisma,
+  prismaRead,
   deleteUser,
   getMagicLink,
   updateUser,
@@ -47,7 +47,9 @@ export const handle: KCDHandle = {
 type LoaderData = {qrLoginCode: string; sessionCount: number}
 export const loader: LoaderFunction = ({request}) => {
   return requireUser(request, async user => {
-    const sessionCount = await prisma.session.count({where: {userId: user.id}})
+    const sessionCount = await prismaRead.session.count({
+      where: {userId: user.id},
+    })
     const qrLoginCode = await getQrCodeDataURL(
       getMagicLink({
         emailAddress: user.email,

@@ -6,7 +6,7 @@ import type {Await} from '~/types'
 import {AnimatePresence, motion} from 'framer-motion'
 import {useLocation} from 'react-router'
 import {getUser} from '~/utils/session.server'
-import {prisma} from '~/utils/prisma.server'
+import {prismaRead} from '~/utils/prisma.server'
 import {Grid} from '~/components/grid'
 import {H2, Paragraph} from '~/components/typography'
 import {BackLink} from '~/components/arrow-button'
@@ -15,7 +15,7 @@ import {ButtonLink} from '~/components/button'
 import {useRootData} from '~/utils/use-root-data'
 
 function getCalls(userId: string) {
-  return prisma.call.findMany({
+  return prismaRead.call.findMany({
     where: {userId},
     select: {id: true, title: true},
   })

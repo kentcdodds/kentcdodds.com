@@ -10,7 +10,7 @@ import {
 import {Outlet} from 'react-router-dom'
 import type {Await, KCDHandle} from '~/types'
 import {requireAdminUser} from '~/utils/session.server'
-import {getReplayResponse, prisma} from '~/utils/prisma.server'
+import {prismaRead, prismaWrite} from '~/utils/prisma.server'
 import {getAvatarForUser} from '~/utils/misc'
 
 export const handle: KCDHandle = {
@@ -18,9 +18,6 @@ export const handle: KCDHandle = {
 }
 
 export const action: ActionFunction = async ({request}) => {
-  const replay = getReplayResponse(request)
-  if (replay) return replay
-
   return requireAdminUser(request, async () => {
     const requestText = await request.text()
     const form = new URLSearchParams(requestText)
@@ -30,7 +27,7 @@ export const action: ActionFunction = async ({request}) => {
       console.warn(`No callId provided to call delete action.`)
       return redirect(new URL(request.url).pathname)
     }
-    const call = await prisma.call.findFirst({
+    const call = await prismaRead.call.findFirst({
       // NOTE: since we require an admin user, we don't need to check
       // whether this user is the creator of the call
       where: {id: callId},
@@ -40,13 +37,13 @@ export const action: ActionFunction = async ({request}) => {
       console.warn(`Failed to get a call to delete by callId: ${callId}`)
       return redirect(new URL(request.url).pathname)
     }
-    await prisma.call.delete({where: {id: callId}})
+    await prismaWrite.call.delete({where: {id: callId}})
     return redirect(new URL(request.url).pathname)
   })
 }
 
 async function getAllCalls() {
-  const calls = await prisma.call.findMany({
+  const calls = await prismaRead.call.findMany({
     select: {
       id: true,
       title: true,

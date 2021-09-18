@@ -5,7 +5,7 @@ import {
   getMagicLink,
   updateUser,
   getUserByEmail,
-  prisma,
+  prismaWrite,
 } from '~/utils/prisma.server'
 import {getDomainUrl} from '~/utils/misc'
 
@@ -35,7 +35,7 @@ export const loader: LoaderFunction = async ({request}) => {
       throw new Error('a valid team is required')
     }
 
-    await prisma.user.create({data: {email, team, firstName, role}})
+    await prismaWrite.user.create({data: {email, team, firstName, role}})
   }
   return redirect(
     getMagicLink({emailAddress: email, domainUrl: getDomainUrl(request)}),

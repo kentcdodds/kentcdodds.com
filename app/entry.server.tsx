@@ -2,7 +2,6 @@ import * as React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import type {EntryContext} from 'remix'
 import {RemixServer as Remix} from 'remix'
-import {getDataReplayResponse} from './utils/prisma.server'
 import {getEnv} from './utils/env.server'
 import {routes as otherRoutes} from './other-routes.server'
 
@@ -59,10 +58,6 @@ export async function handleDataRequest(
   request: Request,
   dataResponse: Response,
 ) {
-  const replayResponse = await getDataReplayResponse(request, dataResponse)
-  if (replayResponse) {
-    return replayResponse
-  }
   // TODO: remove this when we go to production
   dataResponse.headers.set('X-Robots-Tag', 'none')
 

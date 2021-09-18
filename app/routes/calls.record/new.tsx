@@ -9,7 +9,7 @@ import {
   RecordingFormData,
 } from '~/components/calls/submit-recording-form'
 import {requireUser} from '~/utils/session.server'
-import {getReplayResponse, prisma} from '~/utils/prisma.server'
+import {prismaWrite} from '~/utils/prisma.server'
 import {getErrorMessage, getNonNull} from '~/utils/misc'
 import {
   getErrorForAudio,
@@ -26,9 +26,6 @@ export const handle: KCDHandle = {
 }
 
 export const action: ActionFunction = async ({request}) => {
-  const replay = getReplayResponse(request)
-  if (replay) return replay
-
   return requireUser(request, async user => {
     const actionData: ActionData = {fields: {}, errors: {}}
     try {
@@ -67,7 +64,7 @@ export const action: ActionFunction = async ({request}) => {
         userId: user.id,
         base64: audio,
       }
-      const createdCall = await prisma.call.create({data: call})
+      const createdCall = await prismaWrite.call.create({data: call})
       return redirect(`/calls/record/${createdCall.id}`)
     } catch (error: unknown) {
       actionData.errors.generalError = getErrorMessage(error)
