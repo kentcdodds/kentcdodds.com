@@ -24,6 +24,28 @@ const BUILD_DIR = path.join(process.cwd(), 'build')
 const app = express()
 app.disable('x-powered-by')
 app.all('*', getRedirectsMiddleware())
+
+const {FLY, PRIMARY_REGION, FLY_REGION} = process.env
+const isPrimaryRegion = PRIMARY_REGION === FLY_REGION
+
+function getReplayResponse(req, res, next) {
+  const {method, path: pathname} = req
+  if (method === 'GET') return next()
+
+  if (!FLY || isPrimaryRegion) return next()
+
+  const logInfo = {
+    pathname,
+    method,
+    PRIMARY_REGION,
+    FLY_REGION,
+  }
+  console.info(`Replaying:`, logInfo)
+  res.set('fly-replay', `region=${PRIMARY_REGION}`)
+  return res.sendStatus(409)
+}
+
+app.all('*', getReplayResponse)
 app.use(compression())
 
 app.use(express.static('public', {maxAge: '1w'}))
