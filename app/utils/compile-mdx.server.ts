@@ -172,10 +172,22 @@ const remarkPlugins: U.PluggableList = [
 
 const rehypePlugins: U.PluggableList = [removePreContainerDivs]
 
+let running: {slug: string; githubFiles: Array<GitHubFile>} | null = null
 async function compileMdx<FrontmatterType extends Record<string, unknown>>(
   slug: string,
   githubFiles: Array<GitHubFile>,
 ) {
+  if (running) {
+    console.error(
+      `We're already running compileMdx, but we can't run more than one of these at a time!`,
+      {
+        runningInfo: running,
+        newInfo: {slug, githubFiles},
+      },
+    )
+  }
+  running = {slug, githubFiles}
+
   const {default: remarkAutolinkHeadings} = await import(
     'remark-autolink-headings'
   )
@@ -217,6 +229,8 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
       },
     })
     const readTime = calculateReadingTime(indexFile.content)
+
+    running = null
 
     return {
       code,

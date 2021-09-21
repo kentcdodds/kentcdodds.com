@@ -51,6 +51,7 @@ export const loader: LoaderFunction = async ({request}) => {
   return json(talksAndTags, {
     headers: {
       'Cache-Control': 'public, max-age=3600',
+      Vary: 'Cookie',
     },
   })
 }

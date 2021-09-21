@@ -141,6 +141,7 @@ export const loader: KCDLoader<{
   return json(data, {
     headers: {
       'Cache-Control': 'public, max-age=600',
+      Vary: 'Cookie',
     },
   })
 }

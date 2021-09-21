@@ -38,6 +38,8 @@ function shouldRefresh(metadata: CacheMetadata) {
 
 type VNUP<Value> = Value | null | undefined | Promise<Value | null | undefined>
 
+const keysRefreshing = new Set()
+
 async function cachified<
   Value,
   Cache extends {
@@ -114,21 +116,26 @@ async function cachified<
         if (shouldRefresh(cached.metadata)) {
           // time to refresh the value. Fire and forget so we don't slow down
           // this request
-          // originally I thought it may be good to make sure we don't have
-          // multiple requests for the same key triggering multiple refreshes
-          // like this, but as I thought about it I realized the liklihood of
-          // this causing real issues is pretty small (unless there's a failure
-          // to update the value, in which case we should probably add a
-          // notification feature anyway...)
-          // we use Promise.resolve here to make sure this happens on the next tick
+          // we use setTimeout here to make sure this happens on the next tick
           // of the event loop so we don't end up slowing this request down in the
           // event the cache is synchronous (unlikely now, but if the code is changed
           // then it's quite possible this could happen and it would be easy to
           // forget to check).
-          void Promise.resolve().then(() =>
-            // eslint-disable-next-line prefer-object-spread
-            cachified(Object.assign({}, options, {forceFresh: true})),
-          )
+          // In practice we have had a handful of situations where multiple
+          // requests triggered a refresh of the same resource, so that's what
+          // the keysRefreshing thing is for to ensure we don't refresh a
+          // value if it's already in the process of being refreshed.
+          if (!keysRefreshing.has(key)) {
+            keysRefreshing.add(key)
+            setTimeout(() => {
+              // eslint-disable-next-line prefer-object-spread
+              void cachified(Object.assign({}, options, {forceFresh: true}))
+                .catch(() => {})
+                .finally(() => {
+                  keysRefreshing.delete(key)
+                })
+            }, 200)
+          }
         }
         if (cached.value != null && checkValue(cached.value)) {
           return cached.value
@@ -203,3 +210,8 @@ async function shouldForceFresh(request: Request) {
 }
 
 export {cachified, lruCache}
+
+/*
+eslint
+  max-depth: "off",
+*/

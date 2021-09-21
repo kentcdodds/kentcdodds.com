@@ -19,6 +19,7 @@ import {getImgProps, images} from '~/images'
 import {TEAM_MAP} from '~/utils/onboarding'
 import {HeaderSection} from '~/components/sections/header-section'
 import {handleFormSubmission} from '~/utils/actions.server'
+import {Spacer} from '~/components/spacer'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -54,9 +55,24 @@ function getErrorForTeam(team: string | null) {
   return null
 }
 
+const actionIds = {
+  cancel: 'cancel',
+  signUp: 'sign up',
+}
+
 export const action: ActionFunction = async ({request}) => {
-  const session = await getSession(request)
   const loginInfoSession = await getLoginInfoSession(request)
+
+  const requestText = await request.text()
+  const form = new URLSearchParams(requestText)
+  if (form.get('actionId') === actionIds.cancel) {
+    loginInfoSession.clean()
+    return redirect('/', {
+      headers: await loginInfoSession.getHeaders(),
+    })
+  }
+
+  const session = await getSession(request)
   const magicLink = loginInfoSession.getMagicLink()
   let email: string
   try {
@@ -78,7 +94,7 @@ export const action: ActionFunction = async ({request}) => {
   }
 
   return handleFormSubmission<ActionData>({
-    request,
+    form,
     validators: {
       firstName: getErrorForFirstName,
       team: getErrorForTeam,
@@ -216,8 +232,13 @@ export default function NewAccount() {
 
   return (
     <main className="mt-24 pt-6">
+      <HeaderSection
+        title="Let's start with choosing a team."
+        subTitle="You can't change this later."
+        className="mb-16"
+      />
+
       <Form
-        className="mb-64"
         method="post"
         onChange={event => {
           const form = event.currentTarget
@@ -227,12 +248,7 @@ export default function NewAccount() {
           })
         }}
       >
-        <HeaderSection
-          title="Let's start with choosing a team."
-          subTitle="You can't change this later."
-          className="mb-16"
-        />
-
+        <input type="hidden" name="actionId" value={actionIds.signUp} />
         <Grid>
           {actionData?.errors.team ? (
             <div className="col-span-full mb-4 text-right">
@@ -311,7 +327,16 @@ export default function NewAccount() {
           </p>
         </Grid>
       </Form>
-
+      <Spacer size="2xs" />
+      <Grid>
+        <Form method="post">
+          <input type="hidden" name="actionId" value={actionIds.cancel} />
+          <Button type="submit" variant="danger">
+            {`Cancel`}
+          </Button>
+        </Form>
+      </Grid>
+      <Spacer size="lg" />
       <Grid>
         <div className="col-span-full lg:col-span-5 lg:col-start-8">
           <H2 className="mb-32">{`You might be thinking, why pick a team?`}</H2>

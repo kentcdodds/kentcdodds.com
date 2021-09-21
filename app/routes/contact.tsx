@@ -99,6 +99,7 @@ export const action: ActionFunction = async ({request}) => {
 
 export const headers: HeadersFunction = () => ({
   'Cache-Control': 'private, max-age=3600',
+  Vary: 'Cookie',
 })
 
 export default function ContactRoute() {

@@ -119,6 +119,7 @@ export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
   }
   const headers = {
     'Cache-Control': 'private, max-age=3600',
+    Vary: 'Cookie',
     'Server-Timing': getServerTimeHeader(timings),
   }
 

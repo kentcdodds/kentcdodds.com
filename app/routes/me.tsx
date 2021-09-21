@@ -60,6 +60,7 @@ export const loader: LoaderFunction = ({request}) => {
     return json(loaderData, {
       headers: {
         'Cache-Control': 'private, max-age=3600',
+        Vary: 'Cookie',
       },
     })
   })

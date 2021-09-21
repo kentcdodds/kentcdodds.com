@@ -21,6 +21,7 @@ interface ProfileCardProps {
 
 export const headers: HeadersFunction = () => ({
   'Cache-Control': 'public, max-age=3600',
+  Vary: 'Cookie',
 })
 
 function ProfileCard({

@@ -229,7 +229,7 @@ function useUpdateQueryStringValueWithoutNavigation(
 
 const reuseUsefulLoaderHeaders: HeadersFunction = ({loaderHeaders}) => {
   const headers = new Headers()
-  const usefulHeaders = ['Cache-Control', 'Server-Timing']
+  const usefulHeaders = ['Cache-Control', 'Vary', 'Server-Timing']
   for (const headerName of usefulHeaders) {
     if (loaderHeaders.has(headerName)) {
       headers.set(headerName, loaderHeaders.get(headerName)!)

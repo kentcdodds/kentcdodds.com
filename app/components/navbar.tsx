@@ -294,10 +294,7 @@ function ProfileButton({
         <TeamCircle size={56} team={team} />
       </motion.div>
       <img
-        className={clsx('inline w-10 h-10 rounded-full select-none', {
-          // 'object-cover bg-inverse': !isMascotAvatar,
-          // 'object-contain': isMascotAvatar,
-        })}
+        className={clsx('inline w-10 rounded-full select-none')}
         src={imageUrl}
         alt={imageAlt}
       />

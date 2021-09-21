@@ -52,6 +52,7 @@ export const loader: KCDLoader = async ({request}) => {
   return json(data, {
     headers: {
       'Cache-Control': 'public, max-age=3600',
+      Vary: 'Cookie',
     },
   })
 }

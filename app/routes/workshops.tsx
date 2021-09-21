@@ -40,6 +40,7 @@ export const loader: LoaderFunction = async ({request}) => {
   }
   const headers = {
     'Cache-Control': 'public, max-age=3600',
+    Vary: 'Cookie',
     'Server-Timing': getServerTimeHeader(timings),
   }
   return json(data, {headers})

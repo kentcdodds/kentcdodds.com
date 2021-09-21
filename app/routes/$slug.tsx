@@ -47,7 +47,8 @@ export const loader: KCDLoader<{slug: string}> = async ({params, request}) => {
 
   const data: LoaderData = {page, blogRecommendations}
   const headers = {
-    'Cache-Control': 'public, max-age=3600',
+    'Cache-Control': 'private, max-age=3600',
+    Vary: 'Cookie',
   }
   return json(data, {status: page ? 200 : 404, headers})
 }

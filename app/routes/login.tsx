@@ -34,7 +34,8 @@ export const loader: LoaderFunction = async ({request}) => {
   }
 
   const headers = new Headers({
-    'Cache-Control': 'public, max-age=3600',
+    'Cache-Control': 'private, max-age=3600',
+    Vary: 'Cookie',
   })
   await loginSession.getHeaders(headers)
 
