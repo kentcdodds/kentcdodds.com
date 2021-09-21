@@ -1,8 +1,8 @@
 import * as React from 'react'
-import {redirect, Form, json, useActionData, useLoaderData, Link} from 'remix'
-import type {Call, KCDAction, KCDHandle, KCDLoader} from '~/types'
+import {redirect, Form, json, useActionData, useLoaderData} from 'remix'
+import type {Await, KCDAction, KCDHandle, KCDLoader} from '~/types'
 import {format} from 'date-fns'
-import {useRootData} from '~/utils/use-root-data'
+import {useUser} from '~/utils/use-root-data'
 import {CallRecorder} from '~/components/calls/recorder'
 import {requireAdminUser} from '~/utils/session.server'
 import {prismaWrite, prismaRead} from '~/utils/prisma.server'
@@ -108,7 +108,18 @@ export const action: KCDAction<{callId: string}> = async ({
 }
 
 type LoaderData = {
-  call: Call | null
+  call: Await<ReturnType<typeof getCallInfo>>
+}
+
+async function getCallInfo({callId}: {callId: string}) {
+  const call = await prismaRead.call.findFirst({
+    where: {id: callId},
+    include: {user: {select: {firstName: true}}},
+  })
+  if (!call) {
+    throw new Error(`No call by the ID of ${callId}`)
+  }
+  return call
 }
 
 export const loader: KCDLoader<{callId: string}> = async ({
@@ -116,7 +127,7 @@ export const loader: KCDLoader<{callId: string}> = async ({
   params,
 }) => {
   return requireAdminUser(request, async () => {
-    const call = await prismaRead.call.findFirst({where: {id: params.callId}})
+    const call = await getCallInfo({callId: params.callId}).catch(() => null)
     if (!call) {
       console.error(`No call found at ${params.callId}`)
       // TODO: add message
@@ -127,7 +138,7 @@ export const loader: KCDLoader<{callId: string}> = async ({
   })
 }
 
-function CallListing({call}: {call: Call}) {
+function CallListing({call}: {call: LoaderData['call']}) {
   const [audioURL, setAudioURL] = React.useState<string | null>(null)
   const [audioEl, setAudioEl] = React.useState<HTMLAudioElement | null>(null)
   const [playbackRate, setPlaybackRate] = React.useState(2)
@@ -143,6 +154,7 @@ function CallListing({call}: {call: Call}) {
 
   return (
     <section>
+      <strong className="text-team-current">{call.user.firstName}</strong>
       <strong>{call.title}</strong>
       <Paragraph>{call.description}</Paragraph>
       {audioURL ? (
@@ -181,18 +193,8 @@ export default function RecordingDetailScreen() {
   const [responseAudio, setResponseAudio] = React.useState<Blob | null>(null)
   const data = useLoaderData<LoaderData>()
   const actionData = useActionData<ActionData>()
-  const {user} = useRootData()
+  const user = useUser()
 
-  // this *should* be impossible
-  if (!user) throw new Error('user required')
-
-  if (!data.call) {
-    return (
-      <div>
-        Oh no... No call by that ID. Too bad. <Link to="..">See all calls</Link>
-      </div>
-    )
-  }
   return (
     <div>
       <CallListing call={data.call} />
