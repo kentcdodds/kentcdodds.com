@@ -114,7 +114,7 @@ type LoaderData = {
 async function getCallInfo({callId}: {callId: string}) {
   const call = await prismaRead.call.findFirst({
     where: {id: callId},
-    include: {user: {select: {firstName: true}}},
+    include: {user: {select: {firstName: true, team: true}}},
   })
   if (!call) {
     throw new Error(`No call by the ID of ${callId}`)
@@ -153,8 +153,10 @@ function CallListing({call}: {call: LoaderData['call']}) {
   }, [audioEl, playbackRate])
 
   return (
-    <section>
-      <strong className="text-team-current">{call.user.firstName}</strong>
+    <section
+      className={`set-color-team-current-${call.user.team.toLowerCase()}`}
+    >
+      <strong className="text-team-current">{call.user.firstName}</strong>{' '}
       <strong>{call.title}</strong>
       <Paragraph>{call.description}</Paragraph>
       {audioURL ? (
@@ -196,7 +198,7 @@ export default function RecordingDetailScreen() {
   const user = useUser()
 
   return (
-    <div>
+    <div key={data.call.id}>
       <CallListing call={data.call} />
       <Spacer size="xs" />
       <strong>Record your response:</strong>
