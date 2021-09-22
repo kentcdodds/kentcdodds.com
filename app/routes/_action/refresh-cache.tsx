@@ -74,6 +74,13 @@ export const action: ActionFunction = async ({request}) => {
         void getTalksAndTags({forceFresh: true})
       }
     }
+
+    // if any blog contentPaths were changed then let's update the dir list
+    // so it will appear on the blog page.
+    if (refreshingContentPaths.some(p => p.startsWith('blog'))) {
+      void getMdxDirList('blog', {forceFresh: true})
+    }
+
     setShaInRedis()
     return json({
       message: 'Refreshing cache for content paths',
