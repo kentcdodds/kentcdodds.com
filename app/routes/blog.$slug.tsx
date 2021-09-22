@@ -8,6 +8,7 @@ import type {
   KCDLoader,
   MdxListItem,
   MdxPage,
+  Team,
 } from '~/types'
 import {useRootData} from '~/utils/use-root-data'
 import {getImageBuilder, getImgProps, images} from '~/images'
@@ -86,6 +87,7 @@ type LoaderData = {
   recommendations: Array<MdxListItem>
   readRankings: ReadRankings
   totalReads: string
+  leadingTeam: Team | null
 }
 
 export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
@@ -116,6 +118,7 @@ export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
     recommendations,
     readRankings,
     totalReads: formatNumber(totalReads),
+    leadingTeam: getRankingLeader(readRankings)?.team ?? null,
   }
   const headers = {
     'Cache-Control': 'private, max-age=3600',
@@ -306,8 +309,17 @@ function MdxScreen() {
     }, []),
   })
 
+  console.log('leadingTeam', data.leadingTeam)
+
   return (
-    <React.Fragment key={slug}>
+    <div
+      key={slug}
+      className={
+        data.leadingTeam
+          ? `set-color-team-current-${data.leadingTeam.toLowerCase()}`
+          : ''
+      }
+    >
       <Grid className="mb-10 mt-24 lg:mb-24">
         <div className="flex col-span-full justify-between lg:col-span-8 lg:col-start-3">
           <BackLink to="/blog">Back to overview</BackLink>
@@ -439,7 +451,7 @@ function MdxScreen() {
         description="You will love these ones as well."
         showArrowButton={false}
       />
-    </React.Fragment>
+    </div>
   )
 }
 

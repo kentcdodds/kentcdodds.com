@@ -1,12 +1,12 @@
 import * as React from 'react'
 import type {LoaderFunction, HeadersFunction, MetaFunction} from 'remix'
-import {json, useLoaderData} from 'remix'
+import {Link, json, useLoaderData} from 'remix'
 import {useSearchParams} from 'react-router-dom'
 import type {KCDHandle, MdxListItem, Team} from '~/types'
 import {useRootData} from '~/utils/use-root-data'
 import {Grid} from '~/components/grid'
 import {getImageBuilder, getImgProps, images} from '~/images'
-import {H2, H3, H6} from '~/components/typography'
+import {H2, H3, H6, Paragraph} from '~/components/typography'
 import {SearchIcon} from '~/components/icons/search-icon'
 import {ArticleCard} from '~/components/article-card'
 import {ArrowLink} from '~/components/arrow-button'
@@ -38,6 +38,7 @@ import {
   ReadRankings,
 } from '~/utils/blog.server'
 import {useOptionalMatchLoaderData} from '~/utils/providers'
+import {useTeam} from '~/utils/team-provider'
 
 const handleId = 'blog'
 export const handle: KCDHandle = {
@@ -58,6 +59,7 @@ type LoaderData = {
   readRankings: ReadRankings
   totalReads: string
   totalBlogReaders: string
+  overallLeadingTeam: Team | null
 }
 
 export const loader: LoaderFunction = async ({request}) => {
@@ -94,6 +96,7 @@ export const loader: LoaderFunction = async ({request}) => {
     totalReads: formatNumber(totalReads),
     totalBlogReaders: formatNumber(totalBlogReaders),
     tags: Array.from(tags),
+    overallLeadingTeam: getRankingLeader(readRankings)?.team ?? null,
   }
 
   return json(data, {
@@ -128,6 +131,8 @@ const isTeam = (team?: string): team is Team => teams.includes(team as Team)
 function BlogHome() {
   const {requestInfo} = useRootData()
   const [searchParams] = useSearchParams()
+
+  const [userTeam] = useTeam()
 
   const [queryValue, setQuery] = React.useState<string>(() => {
     return searchParams.get('q') ?? ''
@@ -247,7 +252,13 @@ function BlogHome() {
     : undefined
 
   return (
-    <>
+    <div
+      className={
+        data.overallLeadingTeam
+          ? `set-color-team-current-${data.overallLeadingTeam.toLowerCase()}`
+          : ''
+      }
+    >
       <HeroSection
         title="Learn development with great articles."
         subtitle="Find the latest of my writing here."
@@ -293,6 +304,45 @@ function BlogHome() {
             />
           </div>
         </div>
+
+        <Spacer size="2xs" className="col-span-full" />
+
+        <Paragraph className="col-span-full" prose={false}>
+          {data.overallLeadingTeam ? (
+            <>
+              {`The `}
+              <strong
+                className={`text-team-current set-color-team-current-${data.overallLeadingTeam.toLowerCase()}`}
+              >
+                {data.overallLeadingTeam.toLowerCase()}
+              </strong>
+              {` team is in the lead. `}
+              {userTeam === 'UNKNOWN' ? (
+                <>
+                  <Link to="/login" className="underlined">
+                    Login or sign up
+                  </Link>
+                  {` to choose your team!`}
+                </>
+              ) : userTeam === data.overallLeadingTeam ? (
+                `That's your team! Keep your lead!`
+              ) : (
+                <>
+                  {`Keep reading to get the `}
+                  <strong
+                    className={`text-team-current set-color-team-current-${userTeam.toLowerCase()}`}
+                  >
+                    {userTeam.toLowerCase()}
+                  </strong>{' '}
+                  {` team on top!`}
+                </>
+              )}
+            </>
+          ) : (
+            `No team is in the lead! Read read read!`
+          )}
+        </Paragraph>
+
         <Spacer size="xs" className="col-span-full" />
 
         {data.tags.length > 0 ? (
@@ -412,7 +462,7 @@ function BlogHome() {
           <ArrowLink to="/chats">{`Check out the podcast`}</ArrowLink>
         </div>
       </Grid>
-    </>
+    </div>
   )
 }
 

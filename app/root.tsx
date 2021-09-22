@@ -29,13 +29,7 @@ import {
 import {getThemeSession} from './utils/theme.server'
 import {getSession} from './utils/session.server'
 import {getLoginInfoSession} from './utils/login.server'
-import {
-  getDisplayUrl,
-  getDomainUrl,
-  getUrl,
-  OptionalTeam,
-  typedBoolean,
-} from './utils/misc'
+import {getDisplayUrl, getDomainUrl, getUrl, typedBoolean} from './utils/misc'
 import {getEnv} from './utils/env.server'
 import {getUserInfo} from './utils/user-info.server'
 import {getClientSession} from './utils/client.server'
@@ -314,27 +308,11 @@ function App() {
 
   const [team] = useTeam()
   const [theme] = useTheme()
-  let currentTeam: OptionalTeam | null = null
-  for (const match of matches) {
-    const matchHandle = match.handle as KCDHandle | undefined
-    if (matchHandle?.useLeadingTeam) {
-      // the matches are sorted from least specific to most specific
-      // so if a more specific route comes here and returns null that's
-      // desired behavior, not a bug.
-      currentTeam = matchHandle.useLeadingTeam()
-    }
-  }
-  if (!currentTeam) {
-    currentTeam = team
-  }
 
   return (
     <html
       lang="en"
-      className={clsx(
-        theme,
-        `set-color-team-current-${currentTeam.toLowerCase()}`,
-      )}
+      className={clsx(theme, `set-color-team-current-${team.toLowerCase()}`)}
     >
       <head>
         <Meta />
