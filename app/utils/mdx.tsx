@@ -8,7 +8,7 @@ import {
   downloadDirList,
   downloadMdxFileOrDirectory,
 } from '~/utils/github.server'
-import {AnchorOrLink, getDisplayUrl, getUrl} from '~/utils/misc'
+import {AnchorOrLink, getDisplayUrl, getUrl, typedBoolean} from '~/utils/misc'
 import {redisCache} from './redis.server'
 import type {Timings} from './metrics.server'
 import {cachified} from './cache.server'
@@ -84,21 +84,12 @@ async function getMdxPagesInDirectory(
     }),
   )
 
-  const pages: Array<MdxPage> = []
-  for (const pageData of pageDatas) {
-    // esbuild is already optimized to use as many resources as possible
-    // so we don't want these running at the same time otherwise we'll
-    // run out of memory.
-    // eslint-disable-next-line no-await-in-loop
-    const page = await compileMdxCached(
-      contentDir,
-      pageData.slug,
-      pageData.files,
-      options,
-    )
-    if (page) pages.push(page)
-  }
-  return pages
+  const pages = await Promise.all(
+    pageDatas.map(pageData =>
+      compileMdxCached(contentDir, pageData.slug, pageData.files, options),
+    ),
+  )
+  return pages.filter(typedBoolean)
 }
 
 const getDirListKey = (contentDir: string) => `${contentDir}:dir-list`

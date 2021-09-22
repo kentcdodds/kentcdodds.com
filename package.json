@@ -110,6 +110,7 @@
     "node-fetch": "2.6.1",
     "p-limit": "^4.0.0",
     "p-props": "^5.0.0",
+    "p-queue": "^7.1.0",
     "p-throttle": "^4.1.1",
     "patch-package": "^6.4.7",
     "path-to-regexp": "^6.2.0",

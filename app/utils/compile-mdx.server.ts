@@ -6,8 +6,9 @@ import {remarkCodeBlocksShiki} from '@kentcdodds/md-temp'
 import remarkEmbedder from '@remark-embedder/core'
 import type {TransformerInfo} from '@remark-embedder/core'
 import oembedTransformer from '@remark-embedder/transformer-oembed'
-import type {GitHubFile} from '~/types'
 import calculateReadingTime from 'reading-time'
+import PQueue from 'p-queue'
+import type {GitHubFile} from '~/types'
 import * as twitter from './twitter.server'
 
 function handleEmbedderError({url}: {url: string}) {
@@ -177,6 +178,7 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
   slug: string,
   githubFiles: Array<GitHubFile>,
 ) {
+  console.log('running', slug)
   if (running) {
     console.error(
       `We're already running compileMdx, but we can't run more than one of these at a time!`,
@@ -231,6 +233,7 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
     const readTime = calculateReadingTime(indexFile.content)
 
     running = null
+    console.log('finished', slug)
 
     return {
       code,
@@ -259,4 +262,15 @@ function arrayToObj<ItemType extends Record<string, unknown>>(
   return obj
 }
 
-export {compileMdx}
+const queue = new PQueue({concurrency: 1})
+
+// We have to use a queue because we can't run more than one of these at a time
+// or we'll hit an out of memory error because esbuild uses a lot of memory...
+async function queuedCompileMdx<
+  FrontmatterType extends Record<string, unknown>,
+>(...args: Parameters<typeof compileMdx>) {
+  const result = await queue.add(() => compileMdx<FrontmatterType>(...args))
+  return result
+}
+
+export {queuedCompileMdx as compileMdx}
