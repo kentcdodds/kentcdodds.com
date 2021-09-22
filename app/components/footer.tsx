@@ -5,7 +5,6 @@ import {AnchorOrLink} from '~/utils/misc'
 import {useRootData} from '~/utils/use-root-data'
 import {ConvertKitForm} from '../convertkit/form'
 import {H4, H6, Paragraph} from './typography'
-import {Grid} from './grid'
 import {GithubIcon} from './icons/github-icon'
 import {TwitterIcon} from './icons/twitter-icon'
 import {YoutubeIcon} from './icons/youtube-icon'
@@ -104,7 +103,7 @@ function AboutSection() {
         Full time educator making our world better
       </p>
 
-      <div className="text-secondary flex items-center justify-between mt-6 lg:flex-col lg:items-start">
+      <div className="text-secondary flex items-center justify-between mt-6 xl:flex-col xl:items-start">
         <div className="flex space-x-4">
           <a
             className="text-primary hover:text-team-current focus:text-team-current focus:outline-none"
@@ -126,7 +125,7 @@ function AboutSection() {
           </a>
         </div>
 
-        <div className="text-secondary relative flex items-center w-24 lg:mt-20 lg:w-32">
+        <div className="text-secondary relative flex items-center w-24 xl:mt-20 xl:w-32">
           {/* absolute position so that it doesn't change line-height of social icons */}
           <Signature className="absolute block w-full" />
         </div>
@@ -155,52 +154,54 @@ function Footer() {
   )
   return (
     <footer className="pb-16 pt-48 border-t border-gray-200 dark:border-gray-600">
-      <Grid className="grid-rows-max-content">
-        <div className="col-span-full md:col-span-3 lg:row-span-2">
-          <AboutSection />
-        </div>
-
-        {subscribedToNewsletter ? null : (
-          <div className="col-span-full mt-20 md:col-span-5 md:col-start-1 lg:hidden">
-            <NewsletterSection />
+      <div className="relative mx-10vw">
+        <div className="relative grid gap-x-4 grid-cols-4 grid-rows-max-content mx-auto max-w-7xl md:grid-cols-8 xl:gap-x-6 xl:grid-cols-12">
+          <div className="col-span-full md:col-span-3 xl:row-span-2">
+            <AboutSection />
           </div>
-        )}
 
-        <div className="col-span-2 mt-20 md:col-start-5 md:row-start-1 md:mt-0">
-          <ContactSection />
-        </div>
-
-        <div className="col-span-2 mt-20 md:col-start-7 md:row-start-1 md:mt-0 lg:col-start-5 lg:row-start-2 lg:mt-16">
-          <GeneralSection />
-        </div>
-
-        <div
-          className={clsx(
-            'col-span-full mt-20 md:col-span-2 lg:col-start-5 lg:row-span-2 lg:row-start-1 lg:ml-56 lg:mt-0',
-            {
-              'md:col-start-7': !subscribedToNewsletter,
-              'md:col-start-5': subscribedToNewsletter,
-            },
+          {subscribedToNewsletter ? null : (
+            <div className="col-span-full mt-20 md:col-span-5 md:col-start-1 xl:hidden">
+              <NewsletterSection />
+            </div>
           )}
-        >
-          <SitemapSection />
-        </div>
 
-        {/*
+          <div className="col-span-2 mt-20 md:col-start-5 md:row-start-1 md:mt-0">
+            <ContactSection />
+          </div>
+
+          <div className="col-span-2 mt-20 md:col-start-7 md:row-start-1 md:mt-0 xl:col-start-5 xl:row-start-2 xl:mt-16">
+            <GeneralSection />
+          </div>
+
+          <div
+            className={clsx(
+              'col-span-full mt-20 md:col-span-2 xl:col-start-5 xl:row-span-2 xl:row-start-1 xl:ml-56 xl:mt-0',
+              {
+                'md:col-start-7': !subscribedToNewsletter,
+                'md:col-start-5': subscribedToNewsletter,
+              },
+            )}
+          >
+            <SitemapSection />
+          </div>
+
+          {/*
           Note that the <NewsletterSection /> is rendered twice. The position of this cell changes based on breakpoint.
           When we would move the cell around with css only, the tabIndex won't match the visual order.
          */}
-        {subscribedToNewsletter ? null : (
-          <div className="hidden col-span-3 col-start-10 row-span-2 row-start-1 mt-0 lg:block">
-            <NewsletterSection />
-          </div>
-        )}
+          {subscribedToNewsletter ? null : (
+            <div className="hidden col-span-3 col-start-10 row-span-2 row-start-1 mt-0 xl:block">
+              <NewsletterSection />
+            </div>
+          )}
 
-        <div className="col-span-full mt-24 dark:text-blueGray-500 text-gray-500 text-lg md:mt-44">
-          <span>All rights reserved</span>{' '}
-          <span className="block md:inline">{`© Kent C. Dodds ${new Date().getFullYear()}`}</span>
+          <div className="col-span-full mt-24 dark:text-blueGray-500 text-gray-500 text-lg md:mt-44">
+            <span>All rights reserved</span>{' '}
+            <span className="block md:inline">{`© Kent C. Dodds ${new Date().getFullYear()}`}</span>
+          </div>
         </div>
-      </Grid>
+      </div>
     </footer>
   )
 }
