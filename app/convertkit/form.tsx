@@ -37,6 +37,9 @@ function ConvertKitForm({
     )
   }
 
+  const success =
+    convertKit.type === 'done' && convertKitData?.status === 'success'
+
   return (
     <convertKit.Form
       ref={formRef}
@@ -59,7 +62,7 @@ function ConvertKitForm({
         autoComplete="firstName"
         defaultValue={user?.firstName}
         required
-        disabled={convertKit.type === 'done'}
+        disabled={convertKit.state !== 'idle' || success}
       />
 
       <Field
@@ -72,10 +75,10 @@ function ConvertKitForm({
             : null
         }
         defaultValue={user?.email}
-        disabled={convertKit.type === 'done'}
+        disabled={convertKit.state !== 'idle' || success}
       />
 
-      {convertKit.type === 'done' ? (
+      {success ? (
         <div className="flex">
           <CheckIcon />
           <p className="text-secondary">
