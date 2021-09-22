@@ -278,22 +278,23 @@ function BlogHome() {
                 </div>
               </div>
             </form>
-            <Spacer size="xs" />
-            <div className="relative h-20">
-              <div className="absolute">
-                <TeamStats
-                  totalReads={data.totalReads}
-                  rankings={data.readRankings}
-                  direction="down"
-                  onStatClick={toggleTeam}
-                />
-              </div>
-            </div>
           </div>
         }
       />
 
       <Grid className="mb-14">
+        <div className="relative col-span-full h-20">
+          <div className="absolute">
+            <TeamStats
+              totalReads={data.totalReads}
+              rankings={data.readRankings}
+              direction="down"
+              onStatClick={toggleTeam}
+            />
+          </div>
+        </div>
+        <Spacer size="xs" className="col-span-full" />
+
         {data.tags.length > 0 ? (
           <>
             <H6 as="div" className="col-span-full mb-6">
