@@ -134,7 +134,7 @@ function CoursesHome() {
             title="Testing JavaScript"
             description="Learn smart, efficient testing methods."
             imageBuilder={images.courseTestingJS}
-            courseUrl="https://testing-library.com"
+            courseUrl="https://testingjavascript.com"
           />
         </div>
 
