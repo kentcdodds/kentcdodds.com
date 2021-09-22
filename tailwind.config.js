@@ -14,6 +14,7 @@ module.exports = {
     screens: {
       md: '640px',
       lg: '1024px',
+      xl: '1500px', // this is the "design resolution"
     },
     colors: {
       // color scheme is defined in /app.css
