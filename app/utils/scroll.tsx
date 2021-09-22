@@ -20,6 +20,8 @@ export function useScrollRestoration(enabled: boolean = true) {
   const location = useLocation()
   const isSubmission = (location.state as LocationState)?.isSubmission ?? false
   const transition = useTransition()
+  const hash =
+    typeof window === 'undefined' ? location.hash : window.location.hash
 
   React.useEffect(() => {
     if (isSubmission) return
@@ -29,6 +31,7 @@ export function useScrollRestoration(enabled: boolean = true) {
   }, [transition.state, location.key, positions, isSubmission])
 
   useSSRLayoutEffect(() => {
+    console.log('effect called')
     if (!enabled) return
     if (transition.state !== 'idle') return
     if (isSubmission) return
@@ -37,9 +40,18 @@ export function useScrollRestoration(enabled: boolean = true) {
       firstRender = false
       return
     }
+
+    if (hash) {
+      const el = document.getElementById(hash.slice(1))
+      if (el) {
+        el.scrollIntoView({behavior: 'smooth'})
+        return
+      }
+    }
+
     const y = positions.get(location.key)
     window.scrollTo(0, y ?? 0)
-  }, [transition.state, location.key, positions, isSubmission])
+  }, [transition.state, location.key, hash, positions, isSubmission])
 }
 
 export function useElementScrollRestoration(
