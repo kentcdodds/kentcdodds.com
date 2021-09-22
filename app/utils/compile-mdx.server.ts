@@ -7,7 +7,7 @@ import remarkEmbedder from '@remark-embedder/core'
 import type {TransformerInfo} from '@remark-embedder/core'
 import oembedTransformer from '@remark-embedder/transformer-oembed'
 import calculateReadingTime from 'reading-time'
-import PQueue from 'p-queue'
+import type TPQueue from 'p-queue'
 import type {GitHubFile} from '~/types'
 import * as twitter from './twitter.server'
 
@@ -262,13 +262,21 @@ function arrayToObj<ItemType extends Record<string, unknown>>(
   return obj
 }
 
-const queue = new PQueue({concurrency: 1})
+let _queue: TPQueue | null = null
+async function getQueue() {
+  const {default: PQueue} = await import('p-queue')
+  if (_queue) return _queue
+
+  _queue = new PQueue({concurrency: 1})
+  return _queue
+}
 
 // We have to use a queue because we can't run more than one of these at a time
 // or we'll hit an out of memory error because esbuild uses a lot of memory...
 async function queuedCompileMdx<
   FrontmatterType extends Record<string, unknown>,
 >(...args: Parameters<typeof compileMdx>) {
+  const queue = await getQueue()
   const result = await queue.add(() => compileMdx<FrontmatterType>(...args))
   return result
 }
