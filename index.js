@@ -72,6 +72,7 @@ function purgeRequireCache() {
 }
 
 function getRedirectsMiddleware() {
+  const possibleMethods = ['HEAD', 'GET', 'POST', 'PUT', 'DELETE', 'PATCH', '*']
   const redirectsString = fs.readFileSync('./_redirects', 'utf8')
   const redirects = []
   const lines = redirectsString.split('\n')
@@ -80,13 +81,24 @@ function getRedirectsMiddleware() {
     line = line.trim()
     if (!line || line.startsWith('#')) continue
 
-    const [from, to] = line
+    let methods, from, to
+    const [one, two, three] = line
       .split(' ')
       .map(l => l.trim())
       .filter(Boolean)
+    const splitOne = one.split(',')
+    if (possibleMethods.some(m => splitOne.includes(m))) {
+      methods = splitOne
+      from = two
+      to = three
+    } else {
+      methods = ['*']
+      from = one
+      to = two
+    }
 
     if (!from || !to) {
-      console.error(`Invalid redirect on line ${lineNumber}: "${line}"`)
+      console.error(`Invalid redirect on line ${lineNumber + 1}: "${line}"`)
       continue
     }
     const keys = []
@@ -96,6 +108,7 @@ function getRedirectsMiddleware() {
       : new URL(`https://same_host${to}`)
     try {
       redirects.push({
+        methods,
         from: pathToRegexp(from, keys),
         keys,
         toPathname: compileRedirectPath(toUrl.pathname, {
@@ -115,30 +128,36 @@ function getRedirectsMiddleware() {
     const reqUrl = new URL(`${protocol}://${host}${req.url}`)
     for (const redirect of redirects) {
       try {
-        const match = req.path.match(redirect.from)
-        if (match) {
-          const params = {}
-          const paramValues = match.slice(1)
-          for (
-            let paramIndex = 0;
-            paramIndex < paramValues.length;
-            paramIndex++
-          ) {
-            const paramValue = paramValues[paramIndex]
-            params[redirect.keys[paramIndex].name] = paramValue
-          }
-          const toUrl = redirect.toUrl
-
-          toUrl.protocol = protocol
-          if (toUrl.host === 'same_host') toUrl.host = reqUrl.host
-
-          for (const [key, value] of reqUrl.searchParams.entries()) {
-            toUrl.searchParams.append(key, value)
-          }
-          toUrl.pathname = redirect.toPathname(params)
-          res.redirect(307, toUrl.toString())
-          return
+        if (
+          !redirect.methods.includes('*') &&
+          !redirect.methods.includes(req.method)
+        ) {
+          continue
         }
+        const match = req.path.match(redirect.from)
+        if (!match) continue
+
+        const params = {}
+        const paramValues = match.slice(1)
+        for (
+          let paramIndex = 0;
+          paramIndex < paramValues.length;
+          paramIndex++
+        ) {
+          const paramValue = paramValues[paramIndex]
+          params[redirect.keys[paramIndex].name] = paramValue
+        }
+        const toUrl = redirect.toUrl
+
+        toUrl.protocol = protocol
+        if (toUrl.host === 'same_host') toUrl.host = reqUrl.host
+
+        for (const [key, value] of reqUrl.searchParams.entries()) {
+          toUrl.searchParams.append(key, value)
+        }
+        toUrl.pathname = redirect.toPathname(params)
+        res.redirect(307, toUrl.toString())
+        return
       } catch (error) {
         // an error in the redirect shouldn't stop the request from going through
         console.error(`Error processing redirects:`, {

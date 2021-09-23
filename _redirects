@@ -16,13 +16,22 @@
 /ads.txt                                                                https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /boaform(.*)                                                            https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /setup.cgi                                                              https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/s3cmd.ini                                                              https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /HNAP1(.*)                                                              https://www.youtube.com/watch?v=dQw4w9WgXcQ
 # this is for phpmyadmin and php-my-admin stuff:
 /php(.*)                                                                https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /db(.*)                                                                 https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /sql(.*)                                                                https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /.git(.*)                                                               https://www.youtube.com/watch?v=dQw4w9WgXcQ
-(.*)/wp-includes/(.*)                                                               https://www.youtube.com/watch?v=dQw4w9WgXcQ
+(.*)/wp-includes/(.*)                                                   https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/api(.*)                                                                https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/Autodiscover(.*)                                                       https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/_ignition(.*)                                                          https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/solr(.*)                                                               https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/wp-content(.*)                                                         https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/ReportServer(.*)                                                       https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/currentsetting(.*)                                                     https://www.youtube.com/watch?v=dQw4w9WgXcQ
+POST,DELETE,PATCH,PUT  /                                                https://www.youtube.com/watch?v=dQw4w9WgXcQ
 
 ################ old podcast URLs:
 /chats-with-kent-podcast/seasons/01/episodes/growing-your-skills-and-career-through-teaching-with-ali-spittel                   /chats/01/01/growing-your-skills-and-career-through-teaching-with-ali-spittel
@@ -72,6 +81,7 @@
 
 # some people go to this page for some reason:
 /post/:slug*                                                             /blog/:slug*
+/rss.xml                                                                 /blog/rss.xml
 
 ############################## some old redirects we should hang onto...
 /blog/always-use-memo-your-context-value                                /blog/how-to-optimize-your-context-value
