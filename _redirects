@@ -1,7 +1,7 @@
 # This is similar to netlify's _redirects file, but we're not using netlify at all
 # So just keep that in mind. This is a hand-rolled thing.
 # Basically, you should be able to use params as documented in path-to-regexp on both the from and to side
-# These will also all apply to every HTTP method.
+# These will also all apply to every HTTP method unless you specify a method as the first part of the line (comma-separated and all caps).
 
 # I keep making this mistake 😅
 /call                                                                 /calls
