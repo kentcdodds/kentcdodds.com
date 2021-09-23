@@ -6,19 +6,24 @@ import {getUser} from './session.server'
 declare global {
   // This preserves the LRU cache during development
   // eslint-disable-next-line
-  var lruCache: LRU<string, {metadata: CacheMetadata; value: any}> | undefined
+  var lruCache:
+    | (LRU<string, {metadata: CacheMetadata; value: any}> & {name: string})
+    | undefined
 }
 
-const lruCache =
-  // eslint-disable-next-line no-multi-assign
-  (global.lruCache = global.lruCache
-    ? global.lruCache
-    : // doing anything other than "any" here was a big pain
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      new LRU<string, {metadata: CacheMetadata; value: any}>({
-        max: 1000,
-        maxAge: 1000 * 60 * 60, // 1 hour
-      }))
+const lruCache = (global.lruCache = global.lruCache
+  ? global.lruCache
+  : createLruCache())
+
+function createLruCache() {
+  // doing anything other than "any" here was a big pain
+  const newCache = new LRU<string, {metadata: CacheMetadata; value: any}>({
+    max: 1000,
+    maxAge: 1000 * 60 * 60, // 1 hour
+  })
+  Object.assign(newCache, {name: 'LRU'})
+  return newCache as typeof newCache & {name: 'LRU'}
+}
 
 type CacheMetadata = {
   createdTime: number
@@ -43,6 +48,7 @@ const keysRefreshing = new Set()
 async function cachified<
   Value,
   Cache extends {
+    name: string
     get: (key: string) => VNUP<{
       metadata: CacheMetadata
       value: Value
@@ -189,7 +195,9 @@ async function cachified<
       console.log(
         `Updating the cache value for ${key}.`,
         `Getting a fresh value for this took ${totalTime}ms.`,
-        `Caching for a minimum of ${maxAge ? `${maxAge}ms` : 'forever'}.`,
+        `Caching for a minimum of ${maxAge ? `${maxAge}ms` : 'forever'} in ${
+          cache.name
+        }.`,
       )
       await cache.set(key, {metadata, value})
     } catch (error: unknown) {
@@ -214,4 +222,6 @@ export {cachified, lruCache}
 /*
 eslint
   max-depth: "off",
+  no-multi-assign: "off",
+  @typescript-eslint/no-explicit-any: "off",
 */

@@ -303,8 +303,6 @@ function MdxScreen() {
     }, []),
   })
 
-  console.log('leadingTeam', data.leadingTeam)
-
   return (
     <div
       key={slug}

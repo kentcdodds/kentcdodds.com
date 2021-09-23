@@ -115,5 +115,5 @@ function del(key: string): Promise<string> {
   })
 }
 
-const redisCache = {get, set, del}
+const redisCache = {get, set, del, name: 'redis'}
 export {get, set, del, redisCache}
