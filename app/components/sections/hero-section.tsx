@@ -176,7 +176,10 @@ function HeroSection({
   )
 }
 
-function getHeroImageProps(imageBuilder: ImageBuilder) {
+function getHeroImageProps(
+  imageBuilder: ImageBuilder,
+  transformations?: TransformerOption,
+) {
   return getImgProps(imageBuilder, {
     widths: [256, 550, 700, 900, 1300, 1800],
     sizes: [
@@ -184,6 +187,7 @@ function getHeroImageProps(imageBuilder: ImageBuilder) {
       '(min-width: 1024px) and (max-width: 1279px) 50vw',
       '(min-width: 1280px) 900px',
     ],
+    transformations,
   })
 }
 

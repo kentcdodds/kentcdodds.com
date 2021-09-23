@@ -151,7 +151,7 @@ function Card({
                         className="text-secondary flex-none ml-2 hover:text-team-current"
                         href={delivery.recording}
                       >
-                        <YoutubeIcon />
+                        <YoutubeIcon size={32} />
                       </a>
                     ) : null}
 

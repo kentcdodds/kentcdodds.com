@@ -109,19 +109,19 @@ function AboutSection() {
             className="text-primary hover:text-team-current focus:text-team-current focus:outline-none"
             href={externalLinks.github}
           >
-            <GithubIcon />
+            <GithubIcon size={32} />
           </a>
           <a
             className="text-primary hover:text-team-current focus:text-team-current focus:outline-none"
             href={externalLinks.youtube}
           >
-            <YoutubeIcon />
+            <YoutubeIcon size={32} />
           </a>
           <a
             className="text-primary hover:text-team-current focus:text-team-current focus:outline-none"
             href={externalLinks.twitter}
           >
-            <TwitterIcon />
+            <TwitterIcon size={32} />
           </a>
         </div>
 

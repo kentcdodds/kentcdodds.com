@@ -31,7 +31,6 @@ export function useScrollRestoration(enabled: boolean = true) {
   }, [transition.state, location.key, positions, isSubmission])
 
   useSSRLayoutEffect(() => {
-    console.log('effect called')
     if (!enabled) return
     if (transition.state !== 'idle') return
     if (isSubmission) return

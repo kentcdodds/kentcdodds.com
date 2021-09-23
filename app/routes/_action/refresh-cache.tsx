@@ -8,6 +8,7 @@ import {getMdxDirList, getMdxPage} from '~/utils/mdx'
 import {getTalksAndTags} from '~/utils/talks.server'
 import {getTestimonials} from '~/utils/testimonials.server'
 import {getWorkshops} from '~/utils/workshops.server'
+import {getPeople} from '~/utils/credits.server'
 
 type Body =
   | {keys: Array<string>; commitSha?: string}
@@ -72,6 +73,10 @@ export const action: ActionFunction = async ({request}) => {
       if (contentPath === 'data/talks.yml') {
         refreshingContentPaths.push(contentPath)
         void getTalksAndTags({forceFresh: true})
+      }
+      if (contentPath === 'data/credits.yml') {
+        refreshingContentPaths.push(contentPath)
+        void getPeople({forceFresh: true})
       }
     }
 

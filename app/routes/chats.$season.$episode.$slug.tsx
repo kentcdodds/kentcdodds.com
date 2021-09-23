@@ -234,7 +234,7 @@ function Guests({episode}: {episode: CWKEpisode}) {
                 href={`https://twitter.com/${guest.twitter}`}
                 aria-label="twitter profile"
               >
-                <TwitterIcon />
+                <TwitterIcon size={32} />
               </a>
             ) : null}
 
@@ -245,7 +245,7 @@ function Guests({episode}: {episode: CWKEpisode}) {
                 href={`https://github.com/${guest.github}`}
                 aria-label="github profile"
               >
-                <GithubIcon />
+                <GithubIcon size={32} />
               </a>
             ) : null}
           </div>

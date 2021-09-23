@@ -1,0 +1,58 @@
+# Each person can have: github, twitter, dribbble, instagram, website, or linkedin
+
+# Template:
+
+# - name: Name
+#   cloudinaryId: cloudinary-path (leave blank if you don't have it)
+#   role: some role
+#   description: >-
+#     Summary of what they did here
+#   github: https://github.com/username
+#   twitter: https://twitter.com/username
+#   website: https://example.com
+#   dribbble: https://dribbble.com/username
+#   instagram: https://www.instagram.com/username
+#   linkedin: https://www.linkedin.com/in/username
+
+- name: Kent C. Dodds
+  cloudinaryId: kent/profile
+  role: A bit of everything
+  description: >-
+    Hi! It's me. Yeah, I worked on this project too. I was the "client" for
+    egghead and I implemented the vast majority of the code on this site and
+    made architectural decisions. I'm also the long-term maintainer.
+  github: https://github.com/kentcdodds
+  twitter: https://twitter.com/kentcdodds
+
+- name: Stephan Meijer
+  cloudinaryId: kentcdodds.com/content/credits/stephan
+  role: Design Implementation
+  description: >-
+    Took the designs and implemented them using Tailwind. Did a terrific job of
+    implementing the designs and coming up with solutions when unexpected
+    requirements popped up.
+  website: http://meijer.ws
+  github: https://github.com/smeijer
+  twitter: https://twitter.com/meijer_s
+
+- name: Gil Huybrecht
+  cloudinaryId: kentcdodds.com/content/credits/gil
+  role: Design
+  description: >-
+    Responsible for the overall web design and the information architecture.
+    Kent and Gil worked together to get the best possible structure for the
+    website and visual design.
+  website: https://www.gilhuybrecht.com
+  dribbble: https://dribbble.com/gilhuybrecht
+  twitter: https://twitter.com/gilhuybrecht
+  instagram: https://www.instagram.com/gil.huybrecht
+
+- name: Daniel Miller
+  cloudinaryId: kentcdodds.com/content/credits/daniel
+  role: Project Manager
+  description: >-
+    Daniel managed the redesign project, acting as phone switch operator,
+    document creator, magician of time, and general herder of cats.
+  website: https://www.daniel.industries/
+  twitter: https://twitter.com/danielindustri4
+  github: https://github.com/dealingwith
