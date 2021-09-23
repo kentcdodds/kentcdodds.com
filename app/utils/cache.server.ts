@@ -8,7 +8,7 @@ function niceFormatDuration(milliseconds: number) {
   const duration = intervalToDuration({start: 0, end: milliseconds})
   const formatted = formatDuration(duration, {delimiter: ', '})
   const ms = milliseconds % 1000
-  return [formatted, ms ? `${ms.toFixed(2)}ms` : null]
+  return [formatted, ms ? `${ms.toFixed(3)}ms` : null]
     .filter(Boolean)
     .join(', ')
 }
