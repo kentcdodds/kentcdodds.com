@@ -1,7 +1,19 @@
 import * as React from 'react'
-import {HeadersFunction, json, Link, LoaderFunction, useLoaderData} from 'remix'
+import {
+  HeadersFunction,
+  json,
+  Link,
+  LoaderFunction,
+  MetaFunction,
+  useLoaderData,
+} from 'remix'
 import {shuffle} from 'lodash'
-import {getImageBuilder, images, getImgProps} from '~/images'
+import {
+  getImageBuilder,
+  images,
+  getImgProps,
+  getSocialImageWithPreTitle,
+} from '~/images'
 import {H2, H3, H6, Paragraph} from '~/components/typography'
 import {Grid} from '~/components/grid'
 import {HeaderSection} from '~/components/sections/header-section'
@@ -14,11 +26,13 @@ import {TwitterIcon} from '~/components/icons/twitter-icon'
 import {Spacer} from '~/components/spacer'
 import {getPeople} from '~/utils/credits.server'
 import type {Await} from '~/types'
-import {reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {getDisplayUrl, getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {GlobeIcon} from '~/components/icons/globe-icon'
 import {DribbbleIcon} from '~/components/icons/dribbble-icon'
 import {InstagramIcon} from '~/components/icons/instagram-icon'
 import {LinkedInIcon} from '~/components/icons/linkedin-icon'
+import {getSocialMetas} from '~/utils/seo'
+import type {LoaderData as RootLoaderData} from '../root'
 
 export type LoaderData = {people: Await<ReturnType<typeof getPeople>>}
 
@@ -35,6 +49,24 @@ export const loader: LoaderFunction = async ({request}) => {
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
+
+export const meta: MetaFunction = ({parentsData}) => {
+  const {requestInfo} = parentsData.root as RootLoaderData
+  const domain = new URL(requestInfo.origin).host
+  return {
+    ...getSocialMetas({
+      title: `Who built ${domain}`,
+      description: `It took a team of people to create ${domain}. This page will tell you a little bit about them.`,
+      url: getUrl(requestInfo),
+      image: getSocialImageWithPreTitle({
+        url: getDisplayUrl(requestInfo),
+        featuredImage: images.kentCodingOnCouch.id,
+        title: `The fantastic people who built ${domain}`,
+        preTitle: 'Check out these people',
+      }),
+    }),
+  }
+}
 
 function ProfileCard({person}: {person: LoaderData['people'][number]}) {
   return (
