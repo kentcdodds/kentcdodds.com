@@ -295,3 +295,37 @@
     times to review and tune up my skills. We were able to implement multiple of
     the patterns and concepts from the workshop, increasing test coverage, code
     quality, and overall user experience in multiple products.
+
+- author: Alan Medina
+  priority: 4
+  subject: EpicReact.dev
+  cloudinaryId: kentcdodds.com/testimonials/alan-medina
+  company: Frontend Engineer
+  testimonial: >-
+    After signing up to EpicReact, I gained a lot of knowledge regarding
+    advanced things in React, and that helped me to double my salary in less
+    than 2 years. Now I feel confident to use fancy things like compound
+    components, context module functions or prop collectors. EpicReact was the
+    little push that I needed.
+
+- author: Sergio Xalambrí
+  priority: 4
+  subject: EpicReact.dev
+  cloudinaryId: kentcdodds.com/testimonials/sergio-xalambrí
+  company: Web Developer at Silverback Ventures
+  testimonial: >-
+    The content is so good that anyone who completed Epic React is a safe hire
+    from a tech knowledge perspective.
+
+- author: Sandrina Pereira
+  priority: 3
+  subject: Discord Community
+  cloudinaryId: kentcdodds.com/testimonials/sandrina-pereira
+  company: Lead Frontend Engineer
+  testimonial: >-
+    KCD meetup group was my entry point to the world of streaming! There I
+    shared topics related with Accessibility, which was very interesting in a
+    community mostly focus on JS/React. A lot of interesting topics were
+    explored after each meetup. These meetups also gave me the confidence I
+    needed to start streaming on other platforms (eg Twitch). Thank you Kent for
+    that open door!
