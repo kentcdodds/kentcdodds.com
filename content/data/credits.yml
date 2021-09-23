@@ -57,28 +57,28 @@
   github: https://github.com/dealingwith
 
 - name: Kevin Winzeler
-  cloudinaryId: entcdodds.com/content/credits/kevin
+  cloudinaryId: kentcdodds.com/content/credits/kevin
   role: Video Production
   description: >-
     Kevin directed, shot, and edited Kent's bio video.
   website: https://www.kevinwinzeler.com/
 
 - name: Haze Provinsal
-  cloudinaryID: entcdodds.com/content/credits/haze
+  cloudinaryId: kentcdodds.com/content/credits/haze
   role: Video Editing
   description: >-
     Haze did additional video editing.
   twitter: https://twitter.com/hazeprovinsal
 
 - name: Cree Provinsal
-  cloudinaryID: entcdodds.com/content/credits/cree
+  cloudinaryId: kentcdodds.com/content/credits/cree
   role: Podcast Production
   description: >-
     Cree helped produce and edit the new season of Chats with Kent.
   twitter: https://twitter.com/CProvinsal
 
 - name: Maggie Appleton
-  cloudinaryID: entcdodds.com/content/credits/maggie
+  cloudinaryId: kentcdodds.com/content/credits/maggie
   role: Art Direction
   description: >-
     Maggie led the production of illustrations for the site as well as 
