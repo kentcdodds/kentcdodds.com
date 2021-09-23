@@ -169,7 +169,6 @@ type KCDHandle = {
   /** This gives us a little more flexibility in the kind of metadata elements you can render than the built-in meta export */
   metas?: Array<JSX.IntrinsicElements['meta']>
   scroll?: false
-  useLeadingTeam?: () => Team | null
 }
 
 type KCDLoader<

@@ -37,17 +37,11 @@ import {
   getTotalPostReads,
   ReadRankings,
 } from '~/utils/blog.server'
-import {useOptionalMatchLoaderData} from '~/utils/providers'
 import {useTeam} from '~/utils/team-provider'
 
 const handleId = 'blog'
 export const handle: KCDHandle = {
   id: handleId,
-  useLeadingTeam() {
-    const blogPostData = useOptionalMatchLoaderData<LoaderData>(handleId)
-    if (!blogPostData) return null
-    return getRankingLeader(blogPostData.readRankings)?.team ?? null
-  },
   getSitemapEntries: () => [{route: `/blog`, priority: 0.7}],
 }
 

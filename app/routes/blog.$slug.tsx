@@ -37,18 +37,12 @@ import {BlurrableImage} from '~/components/blurrable-image'
 import {getSession} from '~/utils/session.server'
 import {addPostRead} from '~/utils/prisma.server'
 import {getClientSession} from '~/utils/client.server'
-import {useOptionalMatchLoaderData} from '~/utils/providers'
 import {getRankingLeader} from '~/utils/blog'
 import {externalLinks} from '../external-links'
 
 const handleId = 'blog-post'
 export const handle: KCDHandle = {
   id: handleId,
-  useLeadingTeam() {
-    const blogPostData = useOptionalMatchLoaderData<LoaderData>(handleId)
-    if (!blogPostData) return null
-    return getRankingLeader(blogPostData.readRankings)?.team ?? null
-  },
   getSitemapEntries: async request => {
     const pages = await getMdxDirList('blog', {request})
     return pages.map(page => {
