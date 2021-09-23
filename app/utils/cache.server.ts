@@ -1,7 +1,17 @@
 import LRU from 'lru-cache'
+import {formatDuration, intervalToDuration} from 'date-fns'
 import type {Timings} from './metrics.server'
 import {time} from './metrics.server'
 import {getUser} from './session.server'
+
+function niceFormatDuration(milliseconds: number) {
+  const duration = intervalToDuration({start: 0, end: milliseconds})
+  const formatted = formatDuration(duration, {delimiter: ', '})
+  const ms = milliseconds % 1000
+  return [formatted, ms ? `${ms.toFixed(2)}ms` : null]
+    .filter(Boolean)
+    .join(', ')
+}
 
 declare global {
   // This preserves the LRU cache during development
@@ -194,10 +204,12 @@ async function cachified<
     try {
       console.log(
         `Updating the cache value for ${key}.`,
-        `Getting a fresh value for this took ${totalTime}ms.`,
-        `Caching for a minimum of ${maxAge ? `${maxAge}ms` : 'forever'} in ${
-          cache.name
-        }.`,
+        `Getting a fresh value for this took ${niceFormatDuration(totalTime)}.`,
+        `Caching for a minimum of ${
+          typeof maxAge === 'number'
+            ? `${niceFormatDuration(maxAge)}`
+            : 'forever'
+        } in ${cache.name}.`,
       )
       await cache.set(key, {metadata, value})
     } catch (error: unknown) {
