@@ -125,7 +125,14 @@ function getRedirectsMiddleware() {
   return function redirectsMiddleware(req, res, next) {
     const host = req.header('X-Forwarded-Host') ?? req.header('host')
     const protocol = host.includes('localhost') ? 'http' : 'https'
-    const reqUrl = new URL(`${protocol}://${host}${req.url}`)
+    let reqUrl
+    try {
+      reqUrl = new URL(`${protocol}://${host}${req.url}`)
+    } catch (error) {
+      console.error(`Invalid URL: ${protocol}://${host}${req.url}`)
+      next()
+      return
+    }
     for (const redirect of redirects) {
       try {
         if (
