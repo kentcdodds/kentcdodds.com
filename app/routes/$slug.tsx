@@ -109,6 +109,9 @@ function MdxScreen({mdxPage}: {mdxPage: MdxPage}) {
                       '(min-width:1024px) and (max-width:1620px) 67vw',
                       '1100px',
                     ],
+                    transformations: {
+                      background: 'rgb:e6e9ee',
+                    },
                   },
                 )}
               />
