@@ -6,7 +6,7 @@ import {useUser} from '~/utils/use-root-data'
 import {CallRecorder} from '~/components/calls/recorder'
 import {requireAdminUser} from '~/utils/session.server'
 import {prismaWrite, prismaRead} from '~/utils/prisma.server'
-import {getDomainUrl, getErrorMessage, getNonNull} from '~/utils/misc'
+import {getErrorMessage, getNonNull} from '~/utils/misc'
 import {createEpisodeAudio} from '~/utils/ffmpeg.server'
 import {createEpisode} from '~/utils/transistor.server'
 import type {RecordingFormData} from '~/components/calls/submit-recording-form'
@@ -93,7 +93,6 @@ export const action: KCDAction<{callId: string}> = async ({
         description: await markdownToHtml(description),
         user: call.user,
         keywords,
-        domainUrl: getDomainUrl(request),
       })
       await prismaWrite.call.delete({
         where: {id: call.id},
