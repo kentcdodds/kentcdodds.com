@@ -5,7 +5,12 @@ import {useSearchParams} from 'react-router-dom'
 import type {KCDHandle, MdxListItem, Team} from '~/types'
 import {useRootData} from '~/utils/use-root-data'
 import {Grid} from '~/components/grid'
-import {getImageBuilder, getImgProps, images} from '~/images'
+import {
+  getImageBuilder,
+  getImgProps,
+  getSocialImageWithPreTitle,
+  images,
+} from '~/images'
 import {H2, H3, H6, Paragraph} from '~/components/typography'
 import {SearchIcon} from '~/components/icons/search-icon'
 import {ArticleCard} from '~/components/article-card'
@@ -23,6 +28,8 @@ import {ServerError} from '~/components/errors'
 import {
   formatDate,
   formatNumber,
+  getDisplayUrl,
+  getUrl,
   reuseUsefulLoaderHeaders,
   teams,
   useUpdateQueryStringValueWithoutNavigation,
@@ -38,6 +45,8 @@ import {
   ReadRankings,
 } from '~/utils/blog.server'
 import {useTeam} from '~/utils/team-provider'
+import type {LoaderData as RootLoaderData} from '../root'
+import {getSocialMetas} from '~/utils/seo'
 
 const handleId = 'blog'
 export const handle: KCDHandle = {
@@ -104,14 +113,26 @@ export const loader: LoaderFunction = async ({request}) => {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction = ({data}: {data: LoaderData}) => {
+export const meta: MetaFunction = ({data, parentsData}) => {
+  const {requestInfo} = parentsData.root as RootLoaderData
+  const {totalBlogReaders, posts} = data as LoaderData
+
   return {
-    title: 'The Kent C. Dodds Blog',
-    description: `Join ${
-      data.totalBlogReaders
-    } people who have read Kent's ${formatNumber(
-      data.posts.length,
-    )} articles on JavaScript, TypeScript, React, Testing, Career, and more.`,
+    ...getSocialMetas({
+      title: 'The Kent C. Dodds Blog',
+      description: `Join ${totalBlogReaders} people who have read Kent's ${formatNumber(
+        posts.length,
+      )} articles on JavaScript, TypeScript, React, Testing, Career, and more.`,
+      keywords:
+        'JavaScript, TypeScript, React, Testing, Career, Software Development, Kent C. Dodds Blog',
+      url: getUrl(requestInfo),
+      image: getSocialImageWithPreTitle({
+        url: getDisplayUrl(requestInfo),
+        featuredImage: images.skis.id,
+        preTitle: 'Check out this Blog',
+        title: `Priceless insights, ideas, and experiences for your dev work`,
+      }),
+    }),
   }
 }
 

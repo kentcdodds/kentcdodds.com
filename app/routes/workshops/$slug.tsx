@@ -2,7 +2,7 @@ import * as React from 'react'
 import type {MetaFunction, HeadersFunction} from 'remix'
 import {useLoaderData, json} from 'remix'
 import {Link, useParams} from 'react-router-dom'
-import type {KCDHandle, KCDLoader, MdxListItem} from '~/types'
+import type {KCDHandle, KCDLoader, MdxListItem, Workshop} from '~/types'
 import {Grid} from '~/components/grid'
 import {H2, H5, H6, Paragraph} from '~/components/typography'
 import {ButtonLink} from '~/components/button'
@@ -24,8 +24,16 @@ import type {
   TestimonialSubject,
   TestimonialCategory,
 } from '~/utils/testimonials.server'
-import {listify, reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {
+  getDisplayUrl,
+  getUrl,
+  listify,
+  reuseUsefulLoaderHeaders,
+} from '~/utils/misc'
 import {RegistrationPanel} from '~/components/workshop-registration-panel'
+import type {LoaderData as RootLoaderData} from '../../root'
+import {getSocialMetas} from '~/utils/seo'
+import {getSocialImageWithPreTitle} from '~/images'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
@@ -73,7 +81,9 @@ export const loader: KCDLoader<{slug: string}> = async ({params, request}) => {
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export const meta: MetaFunction = ({parentsData, params}) => {
-  let workshop
+  const {requestInfo} = parentsData.root as RootLoaderData
+
+  let workshop: Workshop | undefined
   const workshopsData = parentsData['routes/workshops']
   if (Array.isArray(workshopsData?.workshops)) {
     workshop = workshopsData?.workshops.find(
@@ -82,9 +92,19 @@ export const meta: MetaFunction = ({parentsData, params}) => {
   }
 
   return {
-    title: workshop ? workshop.title : 'Workshop not found',
-    description: workshop ? workshop.description : 'No workshop here :(',
-    ...workshop?.meta,
+    ...getSocialMetas({
+      title: workshop ? workshop.title : 'Workshop not found',
+      description: workshop ? workshop.description : 'No workshop here :(',
+      keywords: workshop ? workshop.categories.join(',') : '',
+      ...workshop?.meta,
+      url: getUrl(requestInfo),
+      image: getSocialImageWithPreTitle({
+        url: getDisplayUrl(requestInfo),
+        featuredImage: 'kent/kent-workshopping-at-underbelly',
+        preTitle: 'Check out this workshops',
+        title: workshop ? workshop.title : 'Workshop not found',
+      }),
+    }),
   }
 }
 

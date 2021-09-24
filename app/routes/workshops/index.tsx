@@ -2,7 +2,7 @@ import * as React from 'react'
 import type {HeadersFunction, MetaFunction} from 'remix'
 import {useSearchParams} from 'react-router-dom'
 import {Grid} from '~/components/grid'
-import {images} from '~/images'
+import {getSocialImageWithPreTitle, images} from '~/images'
 import {H3, H6} from '~/components/typography'
 import {Tag} from '~/components/tag'
 import {Spacer} from '~/components/spacer'
@@ -10,10 +10,18 @@ import {CourseSection} from '~/components/sections/course-section'
 import {WorkshopCard} from '~/components/workshop-card'
 import {HeroSection} from '~/components/sections/hero-section'
 import {useWorkshopsData} from '../workshops'
-import {useUpdateQueryStringValueWithoutNavigation, listify} from '~/utils/misc'
+import {
+  useUpdateQueryStringValueWithoutNavigation,
+  listify,
+  getUrl,
+  getDisplayUrl,
+} from '~/utils/misc'
 import {RegistrationPanel} from '~/components/workshop-registration-panel'
+import {getSocialMetas} from '~/utils/seo'
+import type {LoaderData as RootLoaderData} from '../../root'
 
 export const meta: MetaFunction = ({parentsData}) => {
+  const {requestInfo} = parentsData.root as RootLoaderData
   const data = parentsData['routes/workshops']
 
   const tagsSet = new Set<string>()
@@ -24,10 +32,20 @@ export const meta: MetaFunction = ({parentsData}) => {
   }
 
   return {
-    title: 'Workshops with Kent C. Dodds',
-    description: `Get really good at making software with Kent C. Dodds' ${
-      data.workshops.length
-    } workshops on ${listify([...tagsSet])}`,
+    ...getSocialMetas({
+      title: 'Workshops with Kent C. Dodds',
+      description: `Get really good at making software with Kent C. Dodds' ${
+        data.workshops.length
+      } workshops on ${listify([...tagsSet])}`,
+      keywords: Array.from(tagsSet).join(', '),
+      url: getUrl(requestInfo),
+      image: getSocialImageWithPreTitle({
+        url: getDisplayUrl(requestInfo),
+        featuredImage: 'kent/kent-workshopping-at-underbelly',
+        preTitle: 'Check out these workshops',
+        title: `Live and remote React, TypeScript, and Testing workshops with instructor Kent C. Dodds`,
+      }),
+    }),
   }
 }
 

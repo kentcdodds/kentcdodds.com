@@ -12,7 +12,7 @@ import parseDate from 'date-fns/parseISO'
 import {useSearchParams} from 'react-router-dom'
 import type {Await, MdxListItem} from '~/types'
 import {useRootData} from '~/utils/use-root-data'
-import {getImgProps, images} from '~/images'
+import {getImgProps, getSocialImageWithPreTitle, images} from '~/images'
 import {H2, H3, H6, Paragraph} from '~/components/typography'
 import {ArrowLink} from '~/components/arrow-button'
 import {Grid} from '~/components/grid'
@@ -22,7 +22,7 @@ import {UsersIcon} from '~/components/icons/users-icon'
 import {BlogSection} from '~/components/sections/blog-section'
 import {getBlogRecommendations} from '~/utils/blog.server'
 import {HeroSection} from '~/components/sections/hero-section'
-import {reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {getDisplayUrl, getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {
   FullScreenYouTubeEmbed,
   LiteYouTubeEmbed,
@@ -34,6 +34,8 @@ import {MugIcon} from '~/components/icons/mug-icon'
 import {BadgeIcon} from '~/components/icons/badge-icon'
 import {BookIcon} from '~/components/icons/book-icon'
 import {FastForwardIcon} from '~/components/icons/fast-forward-icon'
+import {getSocialMetas} from '~/utils/seo'
+import type {LoaderData as RootLoaderData} from '../root'
 
 type LoaderData = {
   blogRecommendations: Array<MdxListItem>
@@ -58,16 +60,26 @@ export const loader: LoaderFunction = async ({request}) => {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const links: LinksFunction = () => {
-  return youTubeEmbedLinks()
+export const meta: MetaFunction = ({parentsData}) => {
+  const {requestInfo} = parentsData.root as RootLoaderData
+  return {
+    ...getSocialMetas({
+      title: 'About Kent C. Dodds',
+      description: 'Get to know Kent C. Dodds',
+      keywords: 'about, kent, kent c. dodds, kent dodds',
+      url: getUrl(requestInfo),
+      image: getSocialImageWithPreTitle({
+        url: getDisplayUrl(requestInfo),
+        featuredImage: 'kent/video-stills/snowboard-butter',
+        preTitle: 'Get to know',
+        title: `Kent C. Dodds`,
+      }),
+    }),
+  }
 }
 
-export const meta: MetaFunction = () => {
-  return {
-    title: 'About Kent C. Dodds',
-    description: 'Get to know Kent C. Dodds',
-    keywords: 'about, kent, kent c. dodds, kent dodds',
-  }
+export const links: LinksFunction = () => {
+  return youTubeEmbedLinks()
 }
 
 function AboutIndex() {
