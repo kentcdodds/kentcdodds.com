@@ -1,6 +1,11 @@
+import emojiRegex from 'emoji-regex'
 import type {TransformerOption} from '@cld-apis/types'
 import {setConfig, buildImageUrl} from 'cloudinary-build-url'
 import {OptionalTeam, toBase64} from './utils/misc'
+
+function emojiStrip(string: string) {
+  return string.replace(emojiRegex(), '').trim()
+}
 
 setConfig({
   cloudName: 'kentcdodds-com',
@@ -319,16 +324,16 @@ function getSocialImageWithPreTitle({
 }) {
   const vars = `$th_1256,$tw_2400,$gw_$tw_div_24,$gh_$th_div_12`
 
-  const encodedPreTitle = doubleEncode(preTitle)
+  const encodedPreTitle = doubleEncode(emojiStrip(preTitle))
   const preTitleSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_14,h_$gh,x_$gw_mul_1.5,y_$gh_mul_1.3,l_text:kentcdodds.com:Matter-Regular.woff2_50:${encodedPreTitle}`
 
-  const encodedTitle = doubleEncode(title)
+  const encodedTitle = doubleEncode(emojiStrip(title))
   const titleSection = `co_white,c_fit,g_north_west,w_$gw_mul_13.5,h_$gh_mul_7,x_$gw_mul_1.5,y_$gh_mul_2.3,l_text:kentcdodds.com:Matter-Regular.woff2_110:${encodedTitle}`
 
   const kentProfileSection = `c_fit,g_north_west,r_max,w_$gw_mul_4,h_$gh_mul_3,x_$gw,y_$gh_mul_8,l_kent:profile-transparent`
   const kentNameSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_5.5,h_$gh_mul_4,x_$gw_mul_4.5,y_$gh_mul_9,l_text:kentcdodds.com:Matter-Regular.woff2_70:Kent%20C.%20Dodds`
 
-  const encodedUrl = doubleEncode(url)
+  const encodedUrl = doubleEncode(emojiStrip(url))
   const urlSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_9,x_$gw_mul_4.5,y_$gh_mul_9.8,l_text:kentcdodds.com:Matter-Regular.woff2_40:${encodedUrl}`
 
   const featuredImageIsRemote = featuredImage.startsWith('http')
@@ -362,13 +367,13 @@ function getGenericSocialImage({
 }) {
   const vars = `$th_1256,$tw_2400,$gw_$tw_div_24,$gh_$th_div_12`
 
-  const encodedWords = doubleEncode(words)
+  const encodedWords = doubleEncode(emojiStrip(words))
   const primaryWordsSection = `co_white,c_fit,g_north_west,w_$gw_mul_10,h_$gh_mul_7,x_$gw_mul_1.3,y_$gh_mul_1.5,l_text:kentcdodds.com:Matter-Regular.woff2_110:${encodedWords}`
 
   const kentProfileSection = `c_fit,g_north_west,r_max,w_$gw_mul_4,h_$gh_mul_3,x_$gw,y_$gh_mul_8,l_kent:profile-transparent`
   const kentNameSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_5.5,h_$gh_mul_4,x_$gw_mul_4.5,y_$gh_mul_9,l_text:kentcdodds.com:Matter-Regular.woff2_70:Kent%20C.%20Dodds`
 
-  const encodedUrl = doubleEncode(url)
+  const encodedUrl = doubleEncode(emojiStrip(url))
   const urlSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_5.5,x_$gw_mul_4.5,y_$gh_mul_9.8,l_text:kentcdodds.com:Matter-Regular.woff2_40:${encodedUrl}`
 
   const featuredImageIsRemote = featuredImage.startsWith('http')

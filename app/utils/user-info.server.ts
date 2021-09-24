@@ -1,5 +1,5 @@
 import type {User} from '~/types'
-import {getImageBuilder, images} from '~/images'
+import {getImageBuilder, images} from '../images'
 import * as ck from '../convertkit/convertkit.server'
 import * as discord from './discord.server'
 import type {Timings} from './metrics.server'

@@ -87,6 +87,7 @@
     "cross-env": "^7.0.3",
     "date-fns": "^2.24.0",
     "dotenv": "^10.0.0",
+    "emoji-regex": "^9.2.2",
     "error-stack-parser": "^2.0.6",
     "esbuild": "^0.12.28",
     "express": "^4.17.1",
