@@ -1,9 +1,9 @@
 import * as React from 'react'
-import type {HeadersFunction} from 'remix'
+import type {HeadersFunction, MetaFunction} from 'remix'
 import {json, Link, useLoaderData} from 'remix'
 import type {KCDLoader} from '~/types'
 import {Grid} from '~/components/grid'
-import {getImgProps, images} from '~/images'
+import {getImgProps, getSocialImageWithPreTitle, images} from '~/images'
 import {H2, H3, H6, Paragraph} from '~/components/typography'
 import {ArrowLink} from '~/components/arrow-button'
 import {CourseCard, CourseCardProps} from '~/components/course-card'
@@ -12,7 +12,9 @@ import {TestimonialSection} from '~/components/sections/testimonial-section'
 import {getTestimonials} from '~/utils/testimonials.server'
 import type {Testimonial} from '~/utils/testimonials.server'
 import {Spacer} from '~/components/spacer'
-import {reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {getDisplayUrl, getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc'
+import type {LoaderData as RootLoaderData} from '../root'
+import {getSocialMetas} from '~/utils/seo'
 
 type LoaderData = {
   testimonials: Array<Testimonial>
@@ -34,10 +36,20 @@ export const loader: KCDLoader = async ({request}) => {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export function meta() {
+export const meta: MetaFunction = ({parentsData}) => {
+  const {requestInfo} = parentsData.root as RootLoaderData
   return {
-    title: 'Courses by Kent C. Dodds',
-    description: 'Get really good at making software with Kent C. Dodds',
+    ...getSocialMetas({
+      title: 'Courses by Kent C. Dodds',
+      description: 'Get really good at making software with Kent C. Dodds',
+      url: getUrl(requestInfo),
+      image: getSocialImageWithPreTitle({
+        url: getDisplayUrl(requestInfo),
+        featuredImage: images.onewheel.id,
+        title: `Level up your skills with self-paced courses from Kent C. Dodds`,
+        preTitle: 'Check out these courses',
+      }),
+    }),
   }
 }
 
