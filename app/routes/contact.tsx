@@ -1,12 +1,12 @@
 import * as React from 'react'
-import type {ActionFunction, HeadersFunction} from 'remix'
+import type {ActionFunction, HeadersFunction, MetaFunction} from 'remix'
 import {useFetcher, json} from 'remix'
 import {useRootData} from '~/utils/use-root-data'
 import {
   getHeroImageProps,
   HeroSection,
 } from '~/components/sections/hero-section'
-import {images} from '~/images'
+import {getGenericSocialImage, images} from '~/images'
 import {H2, Paragraph} from '~/components/typography'
 import {ButtonGroup, ErrorPanel, Field} from '~/components/form-elements'
 import {Grid} from '~/components/grid'
@@ -14,6 +14,9 @@ import {handleFormSubmission} from '~/utils/actions.server'
 import {sendEmail} from '~/utils/send-email.server'
 import {verifyEmailAddress} from '~/utils/verifier.server'
 import {Button} from '~/components/button'
+import type {LoaderData as RootLoaderData} from '../root'
+import {getSocialMetas} from '~/utils/seo'
+import {getDisplayUrl, getUrl} from '~/utils/misc'
 
 function getErrorForName(name: string | null) {
   if (!name) return `Name is required`
@@ -101,6 +104,22 @@ export const headers: HeadersFunction = () => ({
   'Cache-Control': 'private, max-age=3600',
   Vary: 'Cookie',
 })
+
+export const meta: MetaFunction = ({parentsData}) => {
+  const {requestInfo} = parentsData.root as RootLoaderData
+  return {
+    ...getSocialMetas({
+      title: 'Contact Kent C. Dodds',
+      description: 'Send Kent C. Dodds a personal email.',
+      url: getUrl(requestInfo),
+      image: getGenericSocialImage({
+        url: getDisplayUrl(requestInfo),
+        featuredImage: 'unsplash/photo-1563225409-127c18758bd5',
+        words: `Shoot Kent an email`,
+      }),
+    }),
+  }
+}
 
 export default function ContactRoute() {
   const contactFetcher = useFetcher()

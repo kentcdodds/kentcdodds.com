@@ -3,7 +3,7 @@ import type {HeadersFunction, MetaFunction} from 'remix'
 import {json, Link, useLoaderData} from 'remix'
 import type {KCDLoader} from '~/types'
 import {Grid} from '~/components/grid'
-import {getImgProps, getSocialImageWithPreTitle, images} from '~/images'
+import {getImgProps, getGenericSocialImage, images} from '~/images'
 import {H2, H3, H6, Paragraph} from '~/components/typography'
 import {ArrowLink} from '~/components/arrow-button'
 import {CourseCard, CourseCardProps} from '~/components/course-card'
@@ -43,11 +43,10 @@ export const meta: MetaFunction = ({parentsData}) => {
       title: 'Courses by Kent C. Dodds',
       description: 'Get really good at making software with Kent C. Dodds',
       url: getUrl(requestInfo),
-      image: getSocialImageWithPreTitle({
+      image: getGenericSocialImage({
         url: getDisplayUrl(requestInfo),
         featuredImage: images.onewheel.id,
-        title: `Level up your skills with self-paced courses from Kent C. Dodds`,
-        preTitle: 'Check out these courses',
+        words: `Level up your skills with self-paced courses from Kent C. Dodds`,
       }),
     }),
   }

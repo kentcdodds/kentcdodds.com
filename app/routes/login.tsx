@@ -1,19 +1,28 @@
 import * as React from 'react'
-import type {ActionFunction, HeadersFunction, LoaderFunction} from 'remix'
+import type {
+  ActionFunction,
+  HeadersFunction,
+  LoaderFunction,
+  MetaFunction,
+} from 'remix'
 import {Form, useLoaderData, json, redirect} from 'remix'
 import {
+  getDisplayUrl,
   getDomainUrl,
   getErrorMessage,
+  getUrl,
   reuseUsefulLoaderHeaders,
 } from '~/utils/misc'
 import {sendToken, getUser} from '~/utils/session.server'
 import {getLoginInfoSession} from '~/utils/login.server'
-import {images} from '~/images'
+import {getGenericSocialImage, images} from '~/images'
 import {Paragraph} from '~/components/typography'
 import {Button} from '~/components/button'
 import {Input, InputError, Label} from '~/components/form-elements'
 import {HeroSection} from '~/components/sections/hero-section'
 import {verifyEmailAddress} from '~/utils/verifier.server'
+import type {LoaderData as RootLoaderData} from '../root'
+import {getSocialMetas} from '~/utils/seo'
 
 type LoaderData = {
   email?: string
@@ -43,6 +52,23 @@ export const loader: LoaderFunction = async ({request}) => {
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
+
+export const meta: MetaFunction = ({parentsData}) => {
+  const {requestInfo} = parentsData.root as RootLoaderData
+  const domain = new URL(requestInfo.origin).host
+  return {
+    ...getSocialMetas({
+      title: `Login to ${domain}`,
+      description: `Sign up or login to ${domain} to join a team and learn together.`,
+      url: getUrl(requestInfo),
+      image: getGenericSocialImage({
+        url: getDisplayUrl(requestInfo),
+        featuredImage: images.skis.id,
+        words: `Login to your account on ${domain}`,
+      }),
+    }),
+  }
+}
 
 const EMAIL_SENT_MESSAGE = 'Email sent.'
 
