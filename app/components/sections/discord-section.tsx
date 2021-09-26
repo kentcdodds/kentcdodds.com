@@ -20,7 +20,12 @@ function DiscordSection() {
           Join the discord and get better at building software together.
         </H2>
 
-        <ArrowLink to="/discord" direction="right" className="mt-20">
+        <ArrowLink
+          to="/discord"
+          direction="right"
+          className="mt-20"
+          prefetch="intent"
+        >
           Learn more about the KCD Community on Discord
         </ArrowLink>
       </div>

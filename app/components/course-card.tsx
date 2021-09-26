@@ -43,6 +43,7 @@ function CourseCard({
             whileTap="tap"
             animate="initial"
             to={courseUrl}
+            prefetch="intent"
           >
             <span>Visit course</span>
             <motion.span variants={arrowVariants}>

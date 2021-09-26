@@ -28,6 +28,7 @@ function NewsletterSection() {
             courses and much more!
           `}
           <Link
+            prefetch="intent"
             to="/subscribe"
             className="text-secondary underlined hover:text-team-current focus:text-team-current"
           >
@@ -138,6 +139,7 @@ function FooterLink({name, href}: FooterLinkProps) {
   return (
     <li className="py-1">
       <AnchorOrLink
+        prefetch={href.startsWith('http') ? undefined : 'intent'}
         href={href}
         className="text-secondary underlined inline-block hover:text-team-current focus:text-team-current whitespace-nowrap text-lg focus:outline-none"
       >

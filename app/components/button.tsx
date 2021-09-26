@@ -92,13 +92,14 @@ const ButtonLink = React.forwardRef<
   ButtonProps & {to: string} & Pick<
       JSX.IntrinsicElements['a'],
       'onClick' | 'className' | 'download'
-    >
+    > & {prefetch?: 'none' | 'intent' | 'render'}
 >(function ButtonLink(
-  {children, variant = 'primary', className, download, to, onClick},
+  {children, variant = 'primary', className, download, to, onClick, prefetch},
   ref,
 ) {
   return (
     <AnchorOrLink
+      prefetch={prefetch}
       ref={ref}
       href={to}
       onClick={onClick}

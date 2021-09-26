@@ -46,6 +46,7 @@ function IntroductionSection() {
         />
         <p className="text-secondary text-xl">{`Introduction video (2:13)`}</p>
         <Link
+          prefetch="intent"
           className="underlined"
           to="/about?autoplay"
         >{`or, watch the full video here (8:05)`}</Link>
@@ -61,7 +62,12 @@ function IntroductionSection() {
             my onewheel or hitting the slopes on my snowboard when it's cold.
           `}
         </H2>
-        <ArrowLink to="/about" direction="right" className="mt-20">
+        <ArrowLink
+          to="/about"
+          direction="right"
+          className="mt-20"
+          prefetch="intent"
+        >
           Learn more about me
         </ArrowLink>
       </div>

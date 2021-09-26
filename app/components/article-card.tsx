@@ -42,6 +42,7 @@ function ArticleCard({
       )}
     >
       <Link
+        prefetch="intent"
         className="group peer relative block w-full focus:outline-none"
         to={`/blog/${slug}`}
       >

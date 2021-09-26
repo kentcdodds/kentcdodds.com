@@ -57,7 +57,12 @@ function AboutSection() {
           `}
         </Paragraph>
 
-        <ArrowLink to="/about" direction="right" className="mt-14">
+        <ArrowLink
+          to="/about"
+          direction="right"
+          className="mt-14"
+          prefetch="intent"
+        >
           Learn more about me
         </ArrowLink>
       </div>

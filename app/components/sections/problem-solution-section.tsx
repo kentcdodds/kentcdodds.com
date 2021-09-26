@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {Link} from 'react-router-dom'
+import {Link} from 'remix'
 import clsx from 'clsx'
 import {
   Tabs,
@@ -136,17 +136,30 @@ function ProblemSolutionSection({
             {`My `}
             <strong>{blogPostCount}</strong>
             {` blog posts (and counting) have been read ${totalBlogReads} of times by ${totalBlogReaders} people. There you'll find blogs about `}
-            <Link to="/blog?q=javascript">JavaScript</Link>
+            <Link prefetch="intent" to="/blog?q=javascript">
+              JavaScript
+            </Link>
             {`, `}
-            <Link to="/blog?q=typescript">TypeScript</Link>
+            <Link prefetch="intent" to="/blog?q=typescript">
+              TypeScript
+            </Link>
             {`, `}
-            <Link to="/blog?q=react">React</Link>
+            <Link prefetch="intent" to="/blog?q=react">
+              React
+            </Link>
             {`, `}
-            <Link to="/blog?q=testing">Testing</Link>
+            <Link prefetch="intent" to="/blog?q=testing">
+              Testing
+            </Link>
             {`, `}
-            <Link to="/blog?q=career">your career</Link>
+            <Link prefetch="intent" to="/blog?q=career">
+              your career
+            </Link>
             {`, and `}
-            <Link to="/blog">and more</Link>.
+            <Link prefetch="intent" to="/blog">
+              and more
+            </Link>
+            .
           </Paragraph>
           {currentBlogLeaderTeam ? (
             <Paragraph
@@ -214,9 +227,13 @@ function ProblemSolutionSection({
               life as a software developer. So I have several podcasts for you
               to enjoy like
             `}
-            <Link to="/chats">Chats with Kent</Link>
+            <Link prefetch="intent" to="/chats">
+              Chats with Kent
+            </Link>
             {`, `}
-            <Link to="/call">Call Kent</Link>
+            <Link prefetch="intent" to="/call">
+              Call Kent
+            </Link>
             {`, and `}
             <a href="https://epicreact.dev/podcast">
               the EpicReact.dev podcast
@@ -230,7 +247,9 @@ function ProblemSolutionSection({
               where I've been able to share my thoughts on webdev. You can find
               those on my
             `}
-            <Link to="/appearances">appearances</Link>
+            <Link prefetch="intent" to="/appearances">
+              appearances
+            </Link>
             {` page.`}
           </Paragraph>
 

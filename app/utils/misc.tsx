@@ -65,17 +65,18 @@ type AnchorProps = React.DetailedHTMLProps<
   HTMLAnchorElement
 >
 
-const AnchorOrLink = React.forwardRef<HTMLAnchorElement, AnchorProps>(
-  function AnchorOrLink(props, ref) {
-    const {href = '', download, ...rest} = props
-    if (download || href.startsWith('http') || href.startsWith('#')) {
-      // eslint-disable-next-line jsx-a11y/anchor-has-content
-      return <a {...props} ref={ref} />
-    } else {
-      return <Link to={href} {...rest} ref={ref} />
-    }
-  },
-)
+const AnchorOrLink = React.forwardRef<
+  HTMLAnchorElement,
+  AnchorProps & {prefetch?: 'intent' | 'none' | 'render'}
+>(function AnchorOrLink(props, ref) {
+  const {href = '', download, prefetch, ...rest} = props
+  if (download || href.startsWith('http') || href.startsWith('#')) {
+    // eslint-disable-next-line jsx-a11y/anchor-has-content
+    return <a {...props} ref={ref} />
+  } else {
+    return <Link prefetch={prefetch} to={href} {...rest} ref={ref} />
+  }
+})
 
 function formatTime(seconds: number) {
   return dateFns.format(dateFns.addSeconds(new Date(0), seconds), 'mm:ss')

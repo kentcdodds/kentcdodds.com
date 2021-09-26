@@ -79,10 +79,10 @@ export default function IndexRoute() {
         arrowLabel="Learn more about Kent"
         action={
           <>
-            <ButtonLink to="/blog" variant="primary">
+            <ButtonLink to="/blog" variant="primary" prefetch="intent">
               Read the blog
             </ButtonLink>
-            <ButtonLink to="/courses" variant="secondary">
+            <ButtonLink to="/courses" variant="secondary" prefetch="intent">
               Take a course
             </ButtonLink>
           </>

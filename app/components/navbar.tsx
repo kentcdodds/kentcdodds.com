@@ -46,6 +46,7 @@ function NavLink({
   return (
     <li className="px-5 py-2">
       <Link
+        prefetch="intent"
         className={clsx(
           'underlined block hover:text-team-current focus:text-team-current whitespace-nowrap text-lg font-medium focus:outline-none',
           {
@@ -281,6 +282,7 @@ function ProfileButton({
 
   return (
     <Link
+      prefetch="intent"
       to={user ? '/me' : hasActiveMagicLink ? '/signup' : '/login'}
       aria-label={
         user ? 'My Account' : hasActiveMagicLink ? 'Finish signing up' : 'Login'
@@ -320,6 +322,7 @@ function Navbar() {
     <div className="px-5vw py-9 lg:py-12">
       <nav className="text-primary flex items-center justify-between mx-auto max-w-8xl">
         <Link
+          prefetch="intent"
           to="/"
           className="text-primary underlined block whitespace-nowrap text-2xl font-medium focus:outline-none transition"
         >

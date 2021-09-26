@@ -68,7 +68,7 @@ type ArrowButtonBaseProps = {
 type ArrowLinkProps = {
   to: LinkProps['to']
   direction?: ArrowIconProps['direction']
-} & ArrowButtonBaseProps
+} & ArrowButtonBaseProps & {prefetch?: 'intent' | 'render' | 'none'}
 
 type ArrowButtonProps = {
   onClick?: JSX.IntrinsicElements['button']['onClick']
