@@ -147,10 +147,9 @@ function removePreContainerDivs() {
       {type: 'element', tagName: 'pre'},
       function visitor(node, index, parent) {
         if (parent?.type !== 'element') return
-        const parentEl = parent as H.Element
-        if (parentEl.tagName !== 'div') return
-        if (parentEl.children.length !== 1 && index === 0) return
-        Object.assign(parentEl, node)
+        if (parent.tagName !== 'div') return
+        if (parent.children.length !== 1 && index === 0) return
+        Object.assign(parent, node)
       },
     )
   }

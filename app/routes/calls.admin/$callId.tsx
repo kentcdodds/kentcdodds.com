@@ -33,77 +33,72 @@ export const action: KCDAction<{callId: string}> = async ({
   request,
   params,
 }) => {
-  return requireAdminUser(request, async () => {
-    if (request.method === 'DELETE') {
-      await prismaWrite.call.delete({where: {id: params.callId}})
-      return redirect('/calls/admin')
-    }
-    const call = await prismaRead.call.findFirst({
-      where: {id: params.callId},
-      include: {user: true},
-    })
-    if (!call) {
-      // TODO: display an error message or something...
-      return redirect('/calls/admin')
-    }
-    const actionData: ActionData = {fields: {}, errors: {}}
-    try {
-      const requestText = await request.text()
-      const form = new URLSearchParams(requestText)
+  await requireAdminUser(request)
 
-      const formData = {
-        audio: form.get('audio'),
-        title: form.get('title'),
-        description: form.get('description'),
-        keywords: form.get('keywords'),
-      }
-      actionData.fields = {
-        title: formData.title,
-        description: formData.description,
-        keywords: formData.keywords,
-      }
-
-      actionData.errors = {
-        audio: getErrorForAudio(formData.audio),
-        title: getErrorForTitle(formData.title),
-        description: getErrorForDescription(formData.description),
-        keywords: getErrorForKeywords(formData.keywords),
-      }
-
-      if (Object.values(actionData.errors).some(err => err !== null)) {
-        return json(actionData, 401)
-      }
-
-      const {
-        audio: response,
-        title,
-        description,
-        keywords,
-      } = getNonNull(formData)
-
-      const episodeAudio = await createEpisodeAudio(call.base64, response)
-
-      await createEpisode({
-        audio: episodeAudio,
-        title,
-        summary: `${call.user.firstName} asked this on ${format(
-          call.createdAt,
-          'yyyy-MM-dd',
-        )}`,
-        description: await markdownToHtml(description),
-        user: call.user,
-        keywords,
-      })
-      await prismaWrite.call.delete({
-        where: {id: call.id},
-      })
-
-      return redirect('/calls')
-    } catch (error: unknown) {
-      actionData.errors.generalError = getErrorMessage(error)
-      return json(actionData, 500)
-    }
+  if (request.method === 'DELETE') {
+    await prismaWrite.call.delete({where: {id: params.callId}})
+    return redirect('/calls/admin')
+  }
+  const call = await prismaRead.call.findFirst({
+    where: {id: params.callId},
+    include: {user: true},
   })
+  if (!call) {
+    // TODO: display an error message or something...
+    return redirect('/calls/admin')
+  }
+  const actionData: ActionData = {fields: {}, errors: {}}
+  try {
+    const requestText = await request.text()
+    const form = new URLSearchParams(requestText)
+
+    const formData = {
+      audio: form.get('audio'),
+      title: form.get('title'),
+      description: form.get('description'),
+      keywords: form.get('keywords'),
+    }
+    actionData.fields = {
+      title: formData.title,
+      description: formData.description,
+      keywords: formData.keywords,
+    }
+
+    actionData.errors = {
+      audio: getErrorForAudio(formData.audio),
+      title: getErrorForTitle(formData.title),
+      description: getErrorForDescription(formData.description),
+      keywords: getErrorForKeywords(formData.keywords),
+    }
+
+    if (Object.values(actionData.errors).some(err => err !== null)) {
+      return json(actionData, 401)
+    }
+
+    const {audio: response, title, description, keywords} = getNonNull(formData)
+
+    const episodeAudio = await createEpisodeAudio(call.base64, response)
+
+    await createEpisode({
+      audio: episodeAudio,
+      title,
+      summary: `${call.user.firstName} asked this on ${format(
+        call.createdAt,
+        'yyyy-MM-dd',
+      )}`,
+      description: await markdownToHtml(description),
+      user: call.user,
+      keywords,
+    })
+    await prismaWrite.call.delete({
+      where: {id: call.id},
+    })
+
+    return redirect('/calls')
+  } catch (error: unknown) {
+    actionData.errors.generalError = getErrorMessage(error)
+    return json(actionData, 500)
+  }
 }
 
 type LoaderData = {
@@ -125,16 +120,16 @@ export const loader: KCDLoader<{callId: string}> = async ({
   request,
   params,
 }) => {
-  return requireAdminUser(request, async () => {
-    const call = await getCallInfo({callId: params.callId}).catch(() => null)
-    if (!call) {
-      console.error(`No call found at ${params.callId}`)
-      // TODO: add message
-      return redirect('/calls/admin')
-    }
-    const data: LoaderData = {call}
-    return json(data)
-  })
+  await requireAdminUser(request)
+
+  const call = await getCallInfo({callId: params.callId}).catch(() => null)
+  if (!call) {
+    console.error(`No call found at ${params.callId}`)
+    // TODO: add message
+    return redirect('/calls/admin')
+  }
+  const data: LoaderData = {call}
+  return json(data)
 }
 
 function CallListing({call}: {call: LoaderData['call']}) {

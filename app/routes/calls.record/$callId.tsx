@@ -20,23 +20,22 @@ export const action: KCDAction<{callId: string}> = async ({
   params,
   request,
 }) => {
-  return requireUser(request, async user => {
-    const call = await prismaRead.call.findFirst({
-      // NOTE: this is how we ensure the user is the owner of the call
-      // and is therefore authorized to delete it.
-      where: {userId: user.id, id: params.callId},
-    })
-    if (!call) {
-      // Maybe they tried to delete a call they don't own?
-      console.warn(
-        `Failed to get a call to delete by userId: ${user.id} and callId: ${params.callId}`,
-      )
-      return redirect('/calls/record')
-    }
-    await prismaWrite.call.delete({where: {id: params.callId}})
-
-    return redirect('/calls/record')
+  const user = await requireUser(request)
+  const call = await prismaRead.call.findFirst({
+    // NOTE: this is how we ensure the user is the owner of the call
+    // and is therefore authorized to delete it.
+    where: {userId: user.id, id: params.callId},
   })
+  if (!call) {
+    // Maybe they tried to delete a call they don't own?
+    console.warn(
+      `Failed to get a call to delete by userId: ${user.id} and callId: ${params.callId}`,
+    )
+    return redirect('/calls/record')
+  }
+  await prismaWrite.call.delete({where: {id: params.callId}})
+
+  return redirect('/calls/record')
 }
 
 type LoaderData = {call: Call}
@@ -45,22 +44,21 @@ export const loader: KCDLoader<{callId: string}> = async ({
   params,
   request,
 }) => {
-  return requireUser(request, async user => {
-    const call = await prismaRead.call.findFirst({
-      // NOTE: this is how we ensure the user is the owner of the call
-      // and is therefore authorized to delete it.
-      where: {userId: user.id, id: params.callId},
-    })
-    if (!call) {
-      // TODO: handle 404 instead of redirecting
-      return redirect('/calls/record')
-    }
-    const data: LoaderData = {call}
-    return json(data, {
-      headers: {
-        'Cache-Control': 'public, max-age=3600',
-      },
-    })
+  const user = await requireUser(request)
+  const call = await prismaRead.call.findFirst({
+    // NOTE: this is how we ensure the user is the owner of the call
+    // and is therefore authorized to delete it.
+    where: {userId: user.id, id: params.callId},
+  })
+  if (!call) {
+    // TODO: handle 404 instead of redirecting
+    return redirect('/calls/record')
+  }
+  const data: LoaderData = {call}
+  return json(data, {
+    headers: {
+      'Cache-Control': 'public, max-age=3600',
+    },
   })
 }
 

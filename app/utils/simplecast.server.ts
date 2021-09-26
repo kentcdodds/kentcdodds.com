@@ -231,9 +231,12 @@ async function parseSummaryMarkdown(
 
           const nextHeading = parent.children
             .slice((index ?? 0) + 1)
+            // the rule is wrong here...
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
             .find(n => n.type === 'heading' && (n as M.Heading).depth >= 3)
           const endOfSection = nextHeading
-            ? parent.children.indexOf(nextHeading)
+            ? // @ts-expect-error no idea why typescript says something I found can't be indexed 🤷‍♂️
+              parent.children.indexOf(nextHeading)
             : parent.children.length
 
           const headingChildren = parent.children.slice(

@@ -29,12 +29,14 @@ async function getLoaderData() {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  return requireAdminUser(request, async () => {
-    return json(await getLoaderData())
-  })
+  await requireAdminUser(request)
+
+  return json(await getLoaderData())
 }
 
 export const action: ActionFunction = async ({request}) => {
+  await requireAdminUser(request)
+
   const requestText = await request.text()
   const form = new URLSearchParams(requestText)
   try {
@@ -109,7 +111,6 @@ const defaultColumn = {
 export default function MeAdmin() {
   const data = useLoaderData<LoaderData>()
   const actionData = useActionData<{error: string}>()
-  console.log({actionData})
 
   const {getTableProps, getTableBodyProps, headerGroups, rows, prepareRow} =
     useTable({columns: userColumns, data: data.users, defaultColumn})

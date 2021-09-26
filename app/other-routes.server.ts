@@ -44,11 +44,11 @@ const pathedRoutes: Record<string, Handler> = {
     })
   },
   '/me/download.json': async request => {
-    return requireUser(request, async user => {
-      const postgres = await getAllUserData(user.id)
-      const cache = await getUserInfo(user)
-      return json({postgres, cache})
-    })
+    const user = await requireUser(request)
+
+    const postgres = await getAllUserData(user.id)
+    const cache = await getUserInfo(user)
+    return json({postgres, cache})
   },
 }
 

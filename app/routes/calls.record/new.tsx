@@ -26,51 +26,50 @@ export const handle: KCDHandle = {
 }
 
 export const action: ActionFunction = async ({request}) => {
-  return requireUser(request, async user => {
-    const actionData: ActionData = {fields: {}, errors: {}}
-    try {
-      const requestText = await request.text()
-      const form = new URLSearchParams(requestText)
+  const user = await requireUser(request)
+  const actionData: ActionData = {fields: {}, errors: {}}
+  try {
+    const requestText = await request.text()
+    const form = new URLSearchParams(requestText)
 
-      const formData = {
-        audio: form.get('audio'),
-        title: form.get('title'),
-        description: form.get('description'),
-        keywords: form.get('keywords'),
-      }
-      actionData.fields = {
-        title: formData.title,
-        description: formData.description,
-        keywords: formData.keywords,
-      }
-
-      actionData.errors = {
-        audio: getErrorForAudio(formData.audio),
-        title: getErrorForTitle(formData.title),
-        description: getErrorForDescription(formData.description),
-        keywords: getErrorForKeywords(formData.keywords),
-      }
-
-      if (Object.values(actionData.errors).some(err => err !== null)) {
-        return json(actionData, 401)
-      }
-
-      const {audio, title, description, keywords} = getNonNull(formData)
-
-      const call = {
-        title,
-        description,
-        keywords,
-        userId: user.id,
-        base64: audio,
-      }
-      const createdCall = await prismaWrite.call.create({data: call})
-      return redirect(`/calls/record/${createdCall.id}`)
-    } catch (error: unknown) {
-      actionData.errors.generalError = getErrorMessage(error)
-      return json(actionData, 500)
+    const formData = {
+      audio: form.get('audio'),
+      title: form.get('title'),
+      description: form.get('description'),
+      keywords: form.get('keywords'),
     }
-  })
+    actionData.fields = {
+      title: formData.title,
+      description: formData.description,
+      keywords: formData.keywords,
+    }
+
+    actionData.errors = {
+      audio: getErrorForAudio(formData.audio),
+      title: getErrorForTitle(formData.title),
+      description: getErrorForDescription(formData.description),
+      keywords: getErrorForKeywords(formData.keywords),
+    }
+
+    if (Object.values(actionData.errors).some(err => err !== null)) {
+      return json(actionData, 401)
+    }
+
+    const {audio, title, description, keywords} = getNonNull(formData)
+
+    const call = {
+      title,
+      description,
+      keywords,
+      userId: user.id,
+      base64: audio,
+    }
+    const createdCall = await prismaWrite.call.create({data: call})
+    return redirect(`/calls/record/${createdCall.id}`)
+  } catch (error: unknown) {
+    actionData.errors.generalError = getErrorMessage(error)
+    return json(actionData, 500)
+  }
 }
 
 type ActionData = RecordingFormData

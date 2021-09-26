@@ -45,24 +45,24 @@ export const handle: KCDHandle = {
 }
 
 type LoaderData = {qrLoginCode: string; sessionCount: number}
-export const loader: LoaderFunction = ({request}) => {
-  return requireUser(request, async user => {
-    const sessionCount = await prismaRead.session.count({
-      where: {userId: user.id},
-    })
-    const qrLoginCode = await getQrCodeDataURL(
-      getMagicLink({
-        emailAddress: user.email,
-        domainUrl: getDomainUrl(request),
-      }),
-    )
-    const loaderData: LoaderData = {qrLoginCode, sessionCount}
-    return json(loaderData, {
-      headers: {
-        'Cache-Control': 'private, max-age=3600',
-        Vary: 'Cookie',
-      },
-    })
+export const loader: LoaderFunction = async ({request}) => {
+  const user = await requireUser(request)
+
+  const sessionCount = await prismaRead.session.count({
+    where: {userId: user.id},
+  })
+  const qrLoginCode = await getQrCodeDataURL(
+    getMagicLink({
+      emailAddress: user.email,
+      domainUrl: getDomainUrl(request),
+    }),
+  )
+  const loaderData: LoaderData = {qrLoginCode, sessionCount}
+  return json(loaderData, {
+    headers: {
+      'Cache-Control': 'private, max-age=3600',
+      Vary: 'Cookie',
+    },
   })
 }
 
@@ -92,70 +92,69 @@ type ActionData = {
   }
 }
 export const action: ActionFunction = async ({request}) => {
-  return requireUser(request, async user => {
-    const form = new URLSearchParams(await request.text())
-    const actionId = form.get('actionId')
+  const user = await requireUser(request)
+  const form = new URLSearchParams(await request.text())
+  const actionId = form.get('actionId')
 
-    try {
-      if (actionId === actionIds.logout) {
-        const session = await getSession(request)
-        session.signOut()
-        const searchParams = new URLSearchParams({
-          message: `👋 See you again soon!`,
-        })
-        return redirect(`/?${searchParams.toString()}`, {
-          headers: await session.getHeaders(),
-        })
-      }
-      if (actionId === actionIds.deleteDiscordConnection && user.discordId) {
-        await deleteDiscordCache(user.discordId)
-        await updateUser(user.id, {discordId: null})
-        const searchParams = new URLSearchParams({
-          message: `✅ Connection deleted`,
-        })
-        return redirect(`/me?${searchParams.toString()}`)
-      }
-      if (actionId === actionIds.changeDetails) {
-        return await handleFormSubmission<ActionData>({
-          form,
-          validators: {firstName: getFirstNameError},
-          handleFormValues: async ({firstName}) => {
-            if (firstName && user.firstName !== firstName) {
-              await updateUser(user.id, {firstName})
-            }
-            const searchParams = new URLSearchParams({
-              message: `✅ Sucessfully saved your info`,
-            })
-            return redirect(`/me?${searchParams.toString()}`)
-          },
-        })
-      }
-      if (actionId === actionIds.deleteSessions) {
-        await deleteOtherSessions(request)
-        const searchParams = new URLSearchParams({
-          message: `✅ Sucessfully signed out of other sessions`,
-        })
-        return redirect(`/me?${searchParams.toString()}`)
-      }
-      if (actionId === actionIds.deleteAccount) {
-        const session = await getSession(request)
-        session.signOut()
-        if (user.discordId) await deleteDiscordCache(user.discordId)
-        if (user.convertKitId) await deleteConvertKitCache(user.convertKitId)
-
-        await deleteUser(user.id)
-        const searchParams = new URLSearchParams({
-          message: `✅ Your KCD account and all associated data has been completely deleted from the KCD database.`,
-        })
-        return redirect(`/?${searchParams.toString()}`, {
-          headers: await session.getHeaders(),
-        })
-      }
-      return redirect('/me')
-    } catch (error: unknown) {
-      return json({generalError: getErrorMessage(error)}, 500)
+  try {
+    if (actionId === actionIds.logout) {
+      const session = await getSession(request)
+      session.signOut()
+      const searchParams = new URLSearchParams({
+        message: `👋 See you again soon!`,
+      })
+      return redirect(`/?${searchParams.toString()}`, {
+        headers: await session.getHeaders(),
+      })
     }
-  })
+    if (actionId === actionIds.deleteDiscordConnection && user.discordId) {
+      await deleteDiscordCache(user.discordId)
+      await updateUser(user.id, {discordId: null})
+      const searchParams = new URLSearchParams({
+        message: `✅ Connection deleted`,
+      })
+      return redirect(`/me?${searchParams.toString()}`)
+    }
+    if (actionId === actionIds.changeDetails) {
+      return await handleFormSubmission<ActionData>({
+        form,
+        validators: {firstName: getFirstNameError},
+        handleFormValues: async ({firstName}) => {
+          if (firstName && user.firstName !== firstName) {
+            await updateUser(user.id, {firstName})
+          }
+          const searchParams = new URLSearchParams({
+            message: `✅ Sucessfully saved your info`,
+          })
+          return redirect(`/me?${searchParams.toString()}`)
+        },
+      })
+    }
+    if (actionId === actionIds.deleteSessions) {
+      await deleteOtherSessions(request)
+      const searchParams = new URLSearchParams({
+        message: `✅ Sucessfully signed out of other sessions`,
+      })
+      return redirect(`/me?${searchParams.toString()}`)
+    }
+    if (actionId === actionIds.deleteAccount) {
+      const session = await getSession(request)
+      session.signOut()
+      if (user.discordId) await deleteDiscordCache(user.discordId)
+      if (user.convertKitId) await deleteConvertKitCache(user.convertKitId)
+
+      await deleteUser(user.id)
+      const searchParams = new URLSearchParams({
+        message: `✅ Your KCD account and all associated data has been completely deleted from the KCD database.`,
+      })
+      return redirect(`/?${searchParams.toString()}`, {
+        headers: await session.getHeaders(),
+      })
+    }
+    return redirect('/me')
+  } catch (error: unknown) {
+    return json({generalError: getErrorMessage(error)}, 500)
+  }
 }
 
 const SHOW_QR_DURATION = 15_000

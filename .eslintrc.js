@@ -32,5 +32,8 @@ module.exports = {
 
     // this one isn't smart enough for our "~/" imports
     'import/order': 'off',
+
+    // for CatchBoundaries
+    '@typescript-eslint/no-throw-literal': 'off',
   },
 }

@@ -143,33 +143,27 @@ async function getUserSessionFromMagicLink(request: Request) {
   return session
 }
 
-async function requireAdminUser(
-  request: Request,
-  callback: (data: User) => Response | Promise<Response>,
-): Promise<Response> {
+async function requireAdminUser(request: Request): Promise<User> {
   const user = await getUser(request)
   if (!user) {
     const session = await getSession(request)
     session.signOut()
-    return redirect('/login', {headers: await session.getHeaders()})
+    throw redirect('/login', {headers: await session.getHeaders()})
   }
   if (user.role !== 'ADMIN') {
-    return redirect('/')
+    throw redirect('/')
   }
-  return callback(user)
+  return user
 }
 
-async function requireUser(
-  request: Request,
-  callback: (data: User) => Response | Promise<Response>,
-): Promise<Response> {
+async function requireUser(request: Request): Promise<User> {
   const user = await getUser(request)
   if (!user) {
     const session = await getSession(request)
     session.signOut()
-    return redirect('/login', {headers: await session.getHeaders()})
+    throw redirect('/login', {headers: await session.getHeaders()})
   }
-  return callback(user)
+  return user
 }
 
 export {

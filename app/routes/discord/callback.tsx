@@ -12,37 +12,36 @@ export const handle: KCDHandle = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  return requireUser(request, async user => {
-    const domainUrl = getDomainUrl(request)
-    const code = new URL(request.url).searchParams.get('code')
+  const user = await requireUser(request)
+  const domainUrl = getDomainUrl(request)
+  const code = new URL(request.url).searchParams.get('code')
 
-    const url = new URL(domainUrl)
-    url.pathname = '/me'
+  const url = new URL(domainUrl)
+  url.pathname = '/me'
 
-    try {
-      if (!code) {
-        throw new Error('Discord code required')
-      }
-      const discordMember = await connectDiscord({user, code, domainUrl})
-      await deleteDiscordCache(discordMember.user.id)
-
-      url.searchParams.set(
-        'message',
-        `✅ Sucessfully connected your KCD account with ${discordMember.user.username} on discord.`,
-      )
-      return redirect(url.toString())
-    } catch (error: unknown) {
-      const errorMessage = getErrorMessage(error)
-      if (error instanceof Error) {
-        console.error(error.stack)
-      } else {
-        console.error(errorMessage)
-      }
-
-      url.searchParams.set('message', `🚨 ${errorMessage}`)
-      return redirect(url.toString())
+  try {
+    if (!code) {
+      throw new Error('Discord code required')
     }
-  })
+    const discordMember = await connectDiscord({user, code, domainUrl})
+    await deleteDiscordCache(discordMember.user.id)
+
+    url.searchParams.set(
+      'message',
+      `✅ Sucessfully connected your KCD account with ${discordMember.user.username} on discord.`,
+    )
+    return redirect(url.toString())
+  } catch (error: unknown) {
+    const errorMessage = getErrorMessage(error)
+    if (error instanceof Error) {
+      console.error(error.stack)
+    } else {
+      console.error(errorMessage)
+    }
+
+    url.searchParams.set('message', `🚨 ${errorMessage}`)
+    return redirect(url.toString())
+  }
 }
 
 export default function DiscordCallback() {

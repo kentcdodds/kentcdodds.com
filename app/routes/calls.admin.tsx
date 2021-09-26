@@ -18,28 +18,28 @@ export const handle: KCDHandle = {
 }
 
 export const action: ActionFunction = async ({request}) => {
-  return requireAdminUser(request, async () => {
-    const requestText = await request.text()
-    const form = new URLSearchParams(requestText)
-    const callId = form.get('callId')
-    if (!callId) {
-      // this should be impossible
-      console.warn(`No callId provided to call delete action.`)
-      return redirect(new URL(request.url).pathname)
-    }
-    const call = await prismaRead.call.findFirst({
-      // NOTE: since we require an admin user, we don't need to check
-      // whether this user is the creator of the call
-      where: {id: callId},
-    })
-    if (!call) {
-      // Maybe they tried to delete a call they don't own?
-      console.warn(`Failed to get a call to delete by callId: ${callId}`)
-      return redirect(new URL(request.url).pathname)
-    }
-    await prismaWrite.call.delete({where: {id: callId}})
+  await requireAdminUser(request)
+
+  const requestText = await request.text()
+  const form = new URLSearchParams(requestText)
+  const callId = form.get('callId')
+  if (!callId) {
+    // this should be impossible
+    console.warn(`No callId provided to call delete action.`)
     return redirect(new URL(request.url).pathname)
+  }
+  const call = await prismaRead.call.findFirst({
+    // NOTE: since we require an admin user, we don't need to check
+    // whether this user is the creator of the call
+    where: {id: callId},
   })
+  if (!call) {
+    // Maybe they tried to delete a call they don't own?
+    console.warn(`Failed to get a call to delete by callId: ${callId}`)
+    return redirect(new URL(request.url).pathname)
+  }
+  await prismaWrite.call.delete({where: {id: callId}})
+  return redirect(new URL(request.url).pathname)
 }
 
 async function getAllCalls() {
@@ -61,10 +61,10 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  return requireAdminUser(request, async () => {
-    const data: LoaderData = {calls: await getAllCalls()}
-    return json(data)
-  })
+  await requireAdminUser(request)
+
+  const data: LoaderData = {calls: await getAllCalls()}
+  return json(data)
 }
 
 export default function CallListScreen() {
