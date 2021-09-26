@@ -1,6 +1,6 @@
 import * as React from 'react'
 import type {LoaderFunction, ActionFunction} from 'remix'
-import {json, redirect, useRouteData, Form} from 'remix'
+import {json, redirect, useLoaderData, Form} from 'remix'
 import type {KCDHandle} from '~/types'
 
 export const handle: KCDHandle = {
@@ -20,7 +20,7 @@ export const action: ActionFunction = async ({request}) => {
 
 // TODO: make this a thing...
 export default function GuestInfo() {
-  const data = useRouteData<LoaderData>()
+  const data = useLoaderData<LoaderData>()
   return (
     <div>
       {`TODO: make this a thing...`}

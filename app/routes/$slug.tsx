@@ -1,6 +1,6 @@
 import * as React from 'react'
 import type {HeadersFunction} from 'remix'
-import {useLoaderData, json} from 'remix'
+import {useLoaderData, json, useCatch} from 'remix'
 import type {MdxPage, KCDLoader, MdxListItem, KCDHandle} from '~/types'
 import {
   getMdxPage,
@@ -19,7 +19,7 @@ import {reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {BlurrableImage} from '~/components/blurrable-image'
 
 type LoaderData = {
-  page: MdxPage | null
+  page: MdxPage
   blogRecommendations: Array<MdxListItem>
 }
 
@@ -39,33 +39,31 @@ export const loader: KCDLoader<{slug: string}> = async ({params, request}) => {
     return new Response()
   }
 
-  const page = await getMdxPage(
-    {contentDir: 'pages', slug: params.slug},
-    {request},
-  ).catch(() => null)
-  const blogRecommendations = await getBlogRecommendations(request)
+  const [page, blogRecommendations] = await Promise.all([
+    getMdxPage({contentDir: 'pages', slug: params.slug}, {request}).catch(
+      () => null,
+    ),
+    getBlogRecommendations(request),
+  ])
 
-  const data: LoaderData = {page, blogRecommendations}
   const headers = {
     'Cache-Control': 'private, max-age=3600',
     Vary: 'Cookie',
   }
-  return json(data, {status: page ? 200 : 404, headers})
+  if (!page) {
+    throw json({blogRecommendations}, {status: 404, headers})
+  }
+  const data: LoaderData = {page, blogRecommendations}
+  return json(data, {status: 200, headers})
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export const meta = mdxPageMeta
 
-export default function MdxScreenBase() {
+export default function MdxScreen() {
   const data = useLoaderData<LoaderData>()
-
-  if (data.page) return <MdxScreen mdxPage={data.page} />
-  else return <FourOhFour articles={data.blogRecommendations} />
-}
-
-function MdxScreen({mdxPage}: {mdxPage: MdxPage}) {
-  const {code, frontmatter} = mdxPage
+  const {code, frontmatter} = data.page
   const Component = useMdxComponent(code)
 
   return (
@@ -125,4 +123,13 @@ function MdxScreen({mdxPage}: {mdxPage: MdxPage}) {
       </Grid>
     </>
   )
+}
+
+export function CatchBoundary() {
+  const caught = useCatch()
+  console.error('CatchBoundary', caught)
+  if (caught.data.blogRecommendations) {
+    return <FourOhFour articles={caught.data.blogRecommendations} />
+  }
+  throw new Error(`Unhandled error: ${caught.status}`)
 }

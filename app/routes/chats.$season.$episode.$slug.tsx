@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
 import type {HeadersFunction, MetaFunction} from 'remix'
-import {useLoaderData, json, redirect} from 'remix'
+import {useLoaderData, json, redirect, useCatch} from 'remix'
 import {Link, useLocation} from 'react-router-dom'
 import type {KCDLoader, CWKEpisode, CWKListItem, KCDHandle} from '~/types'
 import clsx from 'clsx'
@@ -30,6 +30,7 @@ import {getCWKEpisodePath, getFeaturedEpisode} from '~/utils/chats-with-kent'
 import {Themed} from '~/utils/theme-provider'
 import {getSocialImageWithPreTitle} from '~/images'
 import {getSocialMetas} from '~/utils/seo'
+import {FourOhFour} from '~/components/errors'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
@@ -112,14 +113,11 @@ export const loader: KCDLoader<{
   const seasons = await getSeasons({request})
   const season = seasons.find(s => s.seasonNumber === seasonNumber)
   if (!season) {
-    throw new Error(`oh no. season for season number: ${params.season}`)
+    throw new Response(`Season ${seasonNumber} not found`, {status: 404})
   }
   const episode = season.episodes.find(e => e.episodeNumber === episodeNumber)
   if (!episode) {
-    // TODO: 404
-    throw new Error(
-      `oh no. no chats episode for ${params.season}/${params.episode}/${params.slug}`,
-    )
+    throw new Response(`Episode ${episodeNumber} not found`, {status: 404})
   }
 
   // we don't actually need the slug, but we'll redirect them to the place
@@ -137,7 +135,6 @@ export const loader: KCDLoader<{
     episode,
   }
 
-  // TODO: add 404 handling
   return json(data, {
     headers: {
       'Cache-Control': 'public, max-age=600',
@@ -386,7 +383,7 @@ function PrevNextButton({
   )
 }
 
-function PodcastDetail() {
+export default function PodcastDetail() {
   const {episode, featured, nextEpisode, prevEpisode} =
     useLoaderData<LoaderData>()
 
@@ -499,4 +496,11 @@ function PodcastDetail() {
   )
 }
 
-export default PodcastDetail
+export function CatchBoundary() {
+  const caught = useCatch()
+  console.error('CatchBoundary', caught)
+  if (caught.status === 404) {
+    return <FourOhFour />
+  }
+  throw new Error(`Unhandled error: ${caught.status}`)
+}

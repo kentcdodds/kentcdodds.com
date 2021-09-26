@@ -1,6 +1,6 @@
 import * as React from 'react'
 import type {MetaFunction, HeadersFunction} from 'remix'
-import {useLoaderData, json} from 'remix'
+import {useLoaderData, json, useCatch} from 'remix'
 import {Link, useParams} from 'react-router-dom'
 import type {KCDHandle, KCDLoader, MdxListItem, Workshop} from '~/types'
 import {Grid} from '~/components/grid'
@@ -54,28 +54,35 @@ type LoaderData = {
 
 export const loader: KCDLoader<{slug: string}> = async ({params, request}) => {
   const timings: Timings = {}
-  const workshops = await getWorkshops({request, timings})
+  const [workshops, blogRecommendations] = await Promise.all([
+    getWorkshops({request, timings}),
+    getBlogRecommendations(request),
+  ])
   const workshop = workshops.find(w => w.slug === params.slug)
-  const testimonials = await getTestimonials({
-    request,
-    subjects: [`workshop: ${params.slug}` as TestimonialSubject],
-    categories: [
-      'workshop',
-      ...((workshop?.categories ?? []) as Array<TestimonialCategory>),
-    ],
-  })
   const headers = {
     'Cache-Control': 'private, max-age=3600',
     Vary: 'Cookie',
     'Server-Timing': getServerTimeHeader(timings),
   }
 
-  const data: LoaderData = {
-    testimonials,
-    blogRecommendations: workshop ? await getBlogRecommendations(request) : [],
+  if (!workshop) {
+    throw json({blogRecommendations}, {status: 404})
   }
 
-  return json(data, {status: workshop ? 200 : 404, headers})
+  const testimonials = await getTestimonials({
+    request,
+    subjects: [`workshop: ${params.slug}` as TestimonialSubject],
+    categories: [
+      'workshop',
+      ...(workshop.categories as Array<TestimonialCategory>),
+    ],
+  })
+  const data: LoaderData = {
+    testimonials,
+    blogRecommendations,
+  }
+
+  return json(data, {status: 200, headers})
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
@@ -105,19 +112,6 @@ export const meta: MetaFunction = ({parentsData, params}) => {
         title: workshop ? workshop.title : 'Workshop not found',
       }),
     }),
-  }
-}
-
-export default function WorkshopScreenBase() {
-  const loaderData = useLoaderData<LoaderData>()
-  const params = useParams()
-  const {workshops} = useWorkshopsData()
-  const workshop = workshops.find(w => w.slug === params.slug)
-
-  if (workshop) {
-    return <WorkshopScreen />
-  } else {
-    return <FourOhFour articles={loaderData.blogRecommendations} />
   }
 }
 
@@ -152,7 +146,7 @@ function restartArray<ArrayType>(array: Array<ArrayType>, startIndex: number) {
   return newArray
 }
 
-function WorkshopScreen() {
+export default function WorkshopScreen() {
   const params = useParams()
   const {workshopEvents: allWorkshopEvents, workshops} = useWorkshopsData()
   const data = useLoaderData<LoaderData>()
@@ -451,4 +445,13 @@ function WorkshopScreen() {
       ) : null}
     </>
   )
+}
+
+export function CatchBoundary() {
+  const caught = useCatch()
+  console.error('CatchBoundary', caught)
+  if (caught.status === 404) {
+    return <FourOhFour articles={caught.data.blogRecommendations} />
+  }
+  throw new Error(`Unhandled error: ${caught.status}`)
 }

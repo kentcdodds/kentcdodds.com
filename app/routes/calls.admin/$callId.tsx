@@ -44,8 +44,9 @@ export const action: KCDAction<{callId: string}> = async ({
     include: {user: true},
   })
   if (!call) {
-    // TODO: display an error message or something...
-    return redirect('/calls/admin')
+    const searchParams = new URLSearchParams()
+    searchParams.set('message', 'Call not found')
+    return redirect(`/calls/admin?${searchParams.toString()}`)
   }
   const actionData: ActionData = {fields: {}, errors: {}}
   try {
@@ -125,8 +126,9 @@ export const loader: KCDLoader<{callId: string}> = async ({
   const call = await getCallInfo({callId: params.callId}).catch(() => null)
   if (!call) {
     console.error(`No call found at ${params.callId}`)
-    // TODO: add message
-    return redirect('/calls/admin')
+    const searchParams = new URLSearchParams()
+    searchParams.set('message', 'Call not found')
+    return redirect(`/calls/admin?${searchParams.toString()}`)
   }
   const data: LoaderData = {call}
   return json(data)

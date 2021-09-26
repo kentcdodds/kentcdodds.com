@@ -51,7 +51,6 @@ export const loader: KCDLoader<{callId: string}> = async ({
     where: {userId: user.id, id: params.callId},
   })
   if (!call) {
-    // TODO: handle 404 instead of redirecting
     return redirect('/calls/record')
   }
   const data: LoaderData = {call}

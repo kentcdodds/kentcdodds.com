@@ -1,6 +1,7 @@
 import * as React from 'react'
-import {json, useLoaderData, Link} from 'remix'
+import {json, useLoaderData, Link, useCatch} from 'remix'
 import type {HeadersFunction} from 'remix'
+import {useParams} from 'react-router-dom'
 import type {CWKSeason, KCDHandle, KCDLoader} from '~/types'
 import {orderBy} from 'lodash'
 import {Grid} from '~/components/grid'
@@ -9,6 +10,8 @@ import {useChatsEpisodeUIState} from '~/utils/providers'
 import {formatTime, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {getCWKEpisodePath} from '~/utils/chats-with-kent'
 import {TriangleIcon} from '~/components/icons/triangle-icon'
+import {MissingSomething} from '~/components/kifs'
+import {H3, Paragraph} from '~/components/typography'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
@@ -34,8 +37,7 @@ export const loader: KCDLoader<{season: string}> = async ({
   const seasonNumber = Number(params.season)
   const season = seasons.find(s => s.seasonNumber === seasonNumber)
   if (!season) {
-    // TODO: add 404 here
-    throw new Error(`oh no. season for ${seasonNumber}: ${params.season}`)
+    throw new Response(`No season for ${params.season}`, {status: 404})
   }
 
   const data: LoaderData = {season}
@@ -90,4 +92,26 @@ export default function Screen() {
       </Grid>
     </Link>
   ))
+}
+
+export function CatchBoundary() {
+  const caught = useCatch()
+  const params = useParams()
+  console.error('CatchBoundary', caught)
+  if (caught.status === 404) {
+    return (
+      <Grid nested className="mt-3">
+        <div className="col-span-full md:col-span-5">
+          <H3>{`Season not found`}</H3>
+          <Paragraph>{`Are you sure ${
+            params.season ? `season ${params.season}` : 'this season'
+          } exists?`}</Paragraph>
+        </div>
+        <div className="md:col-span-start-6 col-span-full md:col-span-5">
+          <MissingSomething className="rounded-lg" aspectRatio="3:4" />
+        </div>
+      </Grid>
+    )
+  }
+  throw new Error(`Unhandled error: ${caught.status}`)
 }

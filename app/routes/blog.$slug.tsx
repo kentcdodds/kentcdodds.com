@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {useLoaderData, json, useFetcher} from 'remix'
+import {useLoaderData, json, useFetcher, useCatch} from 'remix'
 import type {HeadersFunction} from 'remix'
 import {Link, useParams} from 'react-router-dom'
 import type {
@@ -76,12 +76,14 @@ export const action: KCDAction<{slug: string}> = async ({request, params}) => {
   return json({success: true, headers})
 }
 
-type LoaderData = {
-  page: MdxPage | null
+type CatchData = {
   recommendations: Array<MdxListItem>
   readRankings: ReadRankings
   totalReads: string
   leadingTeam: Team | null
+}
+type LoaderData = CatchData & {
+  page: MdxPage
 }
 
 export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
@@ -107,8 +109,7 @@ export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
     getTotalPostReads(request, params.slug),
   ])
 
-  const data: LoaderData = {
-    page,
+  const catchData: CatchData = {
     recommendations,
     readRankings,
     totalReads: formatNumber(totalReads),
@@ -119,20 +120,17 @@ export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
     Vary: 'Cookie',
     'Server-Timing': getServerTimeHeader(timings),
   }
+  if (!page) {
+    throw json(catchData, {status: 404, headers})
+  }
 
-  return json(data, {status: page ? 200 : 404, headers})
+  const data: LoaderData = {page, ...catchData}
+  return json(data, {status: 200, headers})
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export const meta = mdxPageMeta
-
-export default function MdxScreenBase() {
-  const data = useLoaderData<LoaderData>()
-
-  if (data.page) return <MdxScreen />
-  else return <FourOhFour articles={data.recommendations} />
-}
 
 function useOnRead({
   parentElRef,
@@ -273,14 +271,9 @@ four kids in Utah.
   )
 }
 
-function MdxScreen() {
+export default function MdxScreen() {
   const data = useLoaderData<LoaderData>()
   const {requestInfo} = useRootData()
-  if (!data.page) {
-    throw new Error(
-      'This should be impossible because we only render the MdxScreen if there is a data.page object.',
-    )
-  }
 
   const {code, frontmatter} = data.page
   const params = useParams()
@@ -453,4 +446,13 @@ function MdxScreen() {
 export function ErrorBoundary({error}: {error: Error}) {
   console.error(error)
   return <ServerError />
+}
+
+export function CatchBoundary() {
+  const caught = useCatch()
+  console.error('CatchBoundary', caught)
+  if (caught.data.recommendations) {
+    return <FourOhFour articles={caught.data.recommendations} />
+  }
+  throw new Error(`Unhandled error: ${caught.status}`)
 }
