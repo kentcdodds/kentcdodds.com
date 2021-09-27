@@ -7,9 +7,6 @@ function emojiStrip(string: string) {
   return (
     string
       .replace(emojiRegex(), '')
-      // https://github.com/mathiasbynens/emoji-regex/issues/93
-      .replaceAll('🏎', '')
-      .replaceAll('🛠', '')
       // get rid of double spaces:
       .split(' ')
       .filter(Boolean)
