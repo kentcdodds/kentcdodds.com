@@ -85,3 +85,16 @@
     the overall design.
   website: https://maggieappleton.com/
   twitter: https://twitter.com/Mappletons
+
+- name: Jhey Tompkins
+  cloudinaryId: kentcdodds.com/content/credits/jhey
+  role: Motion Wizard
+  description: >-
+    Jhey worked on making using the sight visually interesting by adding
+    motion. In particular he built the audio recorder visualizer and the
+    parallax experience on the homepage.
+  github: https://github.com/jh3y
+  twitter: https://twitter.com/jh3yy
+  website: https://jhey.dev/links
+  twitch: https://twitch.tv/jh3yy
+  codepen: https://codepen.io/jh3y
