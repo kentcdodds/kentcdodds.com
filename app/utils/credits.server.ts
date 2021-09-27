@@ -91,6 +91,16 @@ function mapPerson(rawPerson: UnknownObj) {
         warnOnFallback: false,
         validateType: isString,
       }),
+      codepen: getValueWithFallback(rawPerson, 'codepen', {
+        fallback: null,
+        warnOnFallback: false,
+        validateType: isString,
+      }),
+      twitch: getValueWithFallback(rawPerson, 'twitch', {
+        fallback: null,
+        warnOnFallback: false,
+        validateType: isString,
+      }),
     }
   } catch (error: unknown) {
     console.error(getErrorMessage(error), rawPerson)

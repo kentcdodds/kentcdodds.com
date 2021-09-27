@@ -33,6 +33,8 @@ import {InstagramIcon} from '~/components/icons/instagram-icon'
 import {LinkedInIcon} from '~/components/icons/linkedin-icon'
 import {getSocialMetas} from '~/utils/seo'
 import type {LoaderData as RootLoaderData} from '../root'
+import {TwitchIcon} from '~/components/icons/twitch-icon'
+import {CodepenIcon} from '~/components/icons/codepen-icon'
 
 export type LoaderData = {people: Await<ReturnType<typeof getPeople>>}
 
@@ -68,6 +70,17 @@ export const meta: MetaFunction = ({parentsData}) => {
   }
 }
 
+const icons = {
+  website: <GlobeIcon title="Website" />,
+  github: <GithubIcon />,
+  twitter: <TwitterIcon />,
+  instagram: <InstagramIcon />,
+  dribbble: <DribbbleIcon />,
+  codepen: <CodepenIcon />,
+  twitch: <TwitchIcon />,
+  linkedin: <LinkedInIcon />,
+} as const
+
 function ProfileCard({person}: {person: LoaderData['people'][number]}) {
   return (
     <div className="relative flex flex-col w-full">
@@ -95,59 +108,18 @@ function ProfileCard({person}: {person: LoaderData['people'][number]}) {
       </div>
 
       <div className="text-secondary flex flex-none space-x-4">
-        {person.website ? (
-          <a
-            href={person.website}
-            className="hover:text-primary focus:text-primary"
-          >
-            <GlobeIcon size={32} title="Website" />
-          </a>
-        ) : null}
-
-        {person.github ? (
-          <a
-            href={person.github}
-            className="hover:text-primary focus:text-primary"
-          >
-            <GithubIcon size={32} />
-          </a>
-        ) : null}
-
-        {person.twitter ? (
-          <a
-            href={person.twitter}
-            className="hover:text-primary focus:text-primary"
-          >
-            <TwitterIcon size={32} />
-          </a>
-        ) : null}
-
-        {person.instagram ? (
-          <a
-            href={person.instagram}
-            className="hover:text-primary focus:text-primary"
-          >
-            <InstagramIcon size={32} />
-          </a>
-        ) : null}
-
-        {person.dribbble ? (
-          <a
-            href={person.dribbble}
-            className="hover:text-primary focus:text-primary"
-          >
-            <DribbbleIcon size={32} />
-          </a>
-        ) : null}
-
-        {person.linkedin ? (
-          <a
-            href={person.linkedin}
-            className="hover:text-primary focus:text-primary"
-          >
-            <LinkedInIcon size={32} />
-          </a>
-        ) : null}
+        {Object.entries(icons).map(([key, Icon]) => {
+          const url = person[key as keyof typeof icons]
+          return url ? (
+            <a
+              key={key}
+              href={url}
+              className="hover:text-primary focus:text-primary"
+            >
+              {React.cloneElement(Icon, {size: 32})}
+            </a>
+          ) : null
+        })}
       </div>
     </div>
   )
