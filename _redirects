@@ -87,6 +87,9 @@ POST,DELETE,PATCH,PUT  /                                                https://
 /post/:slug*                                                             /blog/:slug*
 /rss.xml                                                                 /blog/rss.xml
 
+# during local dev, sometimes the service worker is installed from other apps.
+/mockServiceWorker.js                                                    /
+
 ############################## some old redirects we should hang onto...
 /blog/always-use-memo-your-context-value                                /blog/how-to-optimize-your-context-value
 /blog/moist-programming                                                 /blog/aha-programming

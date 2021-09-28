@@ -7,11 +7,13 @@ function postRefreshCache({
   return new Promise((resolve, reject) => {
     try {
       const postDataString = JSON.stringify(postData)
+      const searchParams = new URLSearchParams()
+      searchParams.set('_data', 'routes/_action/refresh-cache')
       const options = {
         // TODO: update this to kentcdodds.com
         hostname: 'kent.dev',
         port: 443,
-        path: '/_action/refresh-cache?_data=routes/_action/refresh-cache',
+        path: `/_action/refresh-cache?${searchParams.toString()}`,
         method: 'POST',
         headers: {
           auth: process.env.REFRESH_CACHE_SECRET,
@@ -30,7 +32,11 @@ function postRefreshCache({
           })
 
           res.on('end', () => {
-            resolve(JSON.parse(data))
+            try {
+              resolve(JSON.parse(data))
+            } catch (error) {
+              reject(data)
+            }
           })
         })
         .on('error', reject)

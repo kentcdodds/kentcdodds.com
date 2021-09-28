@@ -21,7 +21,7 @@ Knowing how to test is great and important. I've created a LOT of content that
 teaches people the fundamentals of testing, how to configure tools, how to write
 tests for specific scenarios, and so on. But knowing _how_ to write tests is
 only half the battle to achieve confidence in your application. Knowing _what_
-to test is the other–very important–battle.
+to test is the other–very important–half of the battle.
 
 In my [workshop material](/workshops) and on
 [TestingJavaScript.com](https://testingjavascript.com), I do talk about how to
@@ -91,9 +91,9 @@ Unfortunately, there's no such thing as an automated "Use Case Coverage Report."
 We have to make that up ourselves. But the code coverage report can sometimes
 help us identify use cases that we're not covering. Let's try it out.
 
-So if we read at the code and consider it for a minute, we can identify our
-first use case to support: "it returns an array if given an array." This use
-case statement is actually a great title for our test.
+So if we read the code and consider it for a minute, we can identify our first
+use case to support: "it returns an array if given an array." This use case
+statement is actually a great title for our test.
 
 ```js
 test('returns an array if given an array', () => {
@@ -208,14 +208,17 @@ around, see that `.filter(Boolean)` thing and think: "Huh, that's weird... I
 wonder if we really need that." So they remove it, and our tests continue to
 pass, but any code that relied on the falsy behavior is now broken.
 
-Key takeaway: **Test use cases, not code.**
+Key takeaway:
+
+<callout-success class="important">Test use cases, not code.</callout-success>
 
 ## How does this apply to React?
 
 When writing code, remember that you already have two users that you need to
 support: End users, and developer users. Again, if you think about the code
 rather than the use cases, it becomes dangerously natural to start testing
-implementation details. When you do that, your code now has a third user.
+implementation details. When you do that, your code now has
+[a third user](/blog/avoid-the-test-user).
 
 Here are a few aspects of React that people often think about testing which
 results in implementation details tests. For all of these, rather than thinking
@@ -245,7 +248,7 @@ would be useful to test:
   context resulting in your component re-rendering?
 - Subscription changes: What happens when an event emitter the component
   subscribes to changes? (Like firebase, a redux store, a router, a media query,
-  or DOM-based subscriptions like online status)
+  or browser-based subscriptions like online status)
 
 ## How do I know where to start in an app?
 

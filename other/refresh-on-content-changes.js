@@ -16,7 +16,7 @@ chokidar
   .watch(path.join(__dirname, '../content'))
   .on('change', async updatedFile => {
     console.log('changed', updatedFile)
-    const response = await postRefreshCache({
+    await postRefreshCache({
       http: require('http'),
       options: {
         hostname: 'localhost',
@@ -25,8 +25,10 @@ chokidar
       postData: {
         contentPaths: [updatedFile.replace(`${process.cwd()}/content/`, '')],
       },
-    })
-    console.log(`Content change request finished.`, {response})
+    }).then(
+      response => console.log(`Content change request finished.`, {response}),
+      error => console.error(`Content change request errored`, {error}),
+    )
     // give the cache a second to update
     setTimeout(() => {
       fs.writeFileSync(refreshPath, `// ${Date.now()}: ${updatedFile}`)
