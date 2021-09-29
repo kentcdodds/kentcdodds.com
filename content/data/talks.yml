@@ -3,16 +3,6 @@
     - event: '[Connect.tech](https://connect.tech/)'
       date: 2021-11-08
   description: TBA
-- title: Intentional Career Building
-  resources:
-    - '[blog post](https://kentcdodds.com/blog/intentional-career-building)'
-  tags:
-    - keynote
-    - career
-  deliveries:
-    - event: '[React Advanced London](https://reactadvanced.com/)'
-      date: 2021-10-22
-  description: TBA
 - title: Don't Solve Problems, Eliminate Them
   resources:
     - '[blog
@@ -24,6 +14,9 @@
   deliveries:
     - event: '[Shift Dev Conf 2021](https://shift.infobip.com/)'
       date: 2021-09-07
+      recording: https://www.youtube.com/watch?v=EETYrR8TOoc&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
+    - event: '[React Advanced London](https://reactadvanced.com/)'
+      date: 2021-10-22
     - event: '[Connect.tech](https://connect.tech/)'
       date: 2021-11-08
   description: >-
