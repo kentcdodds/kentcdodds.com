@@ -137,19 +137,19 @@ const images = createImages({
 
   kodyProfileYellow: {
     id: 'kentcdodds.com/illustrations/kody_profile_yellow',
-    alt: 'Mascot Profile in Yellow',
+    alt: 'Kody Profile in Yellow',
   },
   kodyProfileBlue: {
     id: 'kentcdodds.com/illustrations/kody_profile_blue',
-    alt: 'Mascot Profile in Blue',
+    alt: 'Kody Profile in Blue',
   },
   kodyProfileRed: {
     id: 'kentcdodds.com/illustrations/kody_profile_red',
-    alt: 'Mascot Profile in Red',
+    alt: 'Kody Profile in Red',
   },
   kodyProfileWhite: {
     id: 'kentcdodds.com/illustrations/kody_profile_white',
-    alt: 'Mascot Profile in White',
+    alt: 'Kody Profile in White',
   },
   teslaY: {
     id: 'kentcdodds.com/illustrations/tesla_y2_j8kti2',
@@ -273,6 +273,17 @@ const kodySnowboardingImages: Record<OptionalTeam, ImageBuilder> = {
   YELLOW: images.kodySnowboardingYellow,
   BLUE: images.kodySnowboardingBlue,
   UNKNOWN: images.kodySnowboardingWhite,
+}
+
+const illustrationImages = {
+  teslaY: images.teslaY,
+  solarPanels: images.solarPanels,
+  snowboard: images.snowboard,
+  skis: images.skis,
+  kayak: images.kayak,
+  onewheel: images.onewheel,
+  microphone: images.microphone,
+  helmet: images.helmet,
 }
 
 function getImgProps(
@@ -413,5 +424,6 @@ export {
   getGenericSocialImage,
   getSocialImageWithPreTitle,
   kodySnowboardingImages,
+  illustrationImages,
 }
 export type {ImageBuilder}

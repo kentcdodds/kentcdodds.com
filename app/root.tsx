@@ -47,7 +47,7 @@ import {ServerError} from './components/errors'
 import {TeamProvider, useTeam} from './utils/team-provider'
 import clsx from 'clsx'
 import {getSocialMetas} from './utils/seo'
-import {getGenericSocialImage} from './images'
+import {getGenericSocialImage, illustrationImages, images} from './images'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',
@@ -122,6 +122,7 @@ export type LoaderData = {
   user: User | null
   userInfo: Await<ReturnType<typeof getUserInfo>> | null
   ENV: ReturnType<typeof getEnv>
+  randomFooterImageKey: keyof typeof illustrationImages
   requestInfo: {
     origin: string
     path: string
@@ -163,7 +164,10 @@ export const loader: LoaderFunction = async ({request}) => {
       loginInfoSession.unsetMagicLink()
     }
   }
-
+  const randomFooterImageKeys = Object.keys(illustrationImages)
+  const randomFooterImageKey = randomFooterImageKeys[
+    Math.floor(Math.random() * randomFooterImageKeys.length)
+  ] as keyof typeof illustrationImages
   const data: LoaderData = {
     user,
     userInfo: user
@@ -175,6 +179,7 @@ export const loader: LoaderFunction = async ({request}) => {
         })
       : null,
     ENV: getEnv(),
+    randomFooterImageKey,
     requestInfo: {
       origin: getDomainUrl(request),
       path: new URL(request.url).pathname,
@@ -368,7 +373,7 @@ function App() {
         <Navbar />
         <Outlet />
         <Spacer size="base" />
-        <Footer />
+        <Footer image={images[data.randomFooterImageKey]} />
         <Scripts />
         <script
           dangerouslySetInnerHTML={{

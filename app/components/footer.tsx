@@ -10,7 +10,7 @@ import {YoutubeIcon} from './icons/youtube-icon'
 import {Signature} from './signature'
 import {Link} from 'remix'
 import {ArrowIcon} from './icons/arrow-icon'
-import {getImgProps, images} from '~/images'
+import {getImgProps, ImageBuilder} from '~/images'
 
 function NewsletterSection() {
   return (
@@ -145,24 +145,34 @@ function FooterLink({
   )
 }
 
-function Footer() {
+function Footer({image}: {image: ImageBuilder}) {
   const {userInfo} = useRootData()
-  const subscribedToNewsletter = userInfo?.convertKit?.tags.some(
-    ({name}) => name === 'Subscribed: general newsletter',
-  )
-  const snowboardImg = (
-    <img
-      className="w-full"
-      {...getImgProps(images.snowboard, {
-        widths: [300, 600, 850, 1600, 2550],
-        sizes: [
-          '(max-width: 639px) 80vw',
-          '(min-width: 640px) and (max-width: 1499px) 50vw',
-          '(min-width: 1500px) and (max-width: 1620px) 25vw',
-          '410px',
-        ],
-      })}
-    />
+  const subscribedToNewsletter =
+    Boolean(userInfo) ||
+    userInfo?.convertKit?.tags.some(
+      ({name}) => name === 'Subscribed: general newsletter',
+    )
+  const featuredImg = (
+    <div className="aspect-w-4 aspect-h-3">
+      <img
+        className="w-full rounded-sm object-contain"
+        {...getImgProps(image, {
+          widths: [300, 600, 850, 1600, 2550],
+          sizes: [
+            '(max-width: 639px) 80vw',
+            '(min-width: 640px) and (max-width: 1499px) 50vw',
+            '(min-width: 1500px) and (max-width: 1620px) 25vw',
+            '410px',
+          ],
+          transformations: {
+            resize: {
+              aspectRatio: '4:3',
+              type: 'fit',
+            },
+          },
+        })}
+      />
+    </div>
   )
   return (
     <footer className="pb-16 pt-48 border-t border-gray-200 dark:border-gray-600">
@@ -173,7 +183,7 @@ function Footer() {
           </div>
 
           <div className="col-span-full mt-20 md:col-span-5 md:col-start-1 xl:hidden">
-            {subscribedToNewsletter ? snowboardImg : <NewsletterSection />}
+            {subscribedToNewsletter ? featuredImg : <NewsletterSection />}
           </div>
 
           <div className="col-span-2 mt-20 md:col-start-5 md:row-start-1 md:mt-0">
@@ -193,7 +203,7 @@ function Footer() {
           When we would move the cell around with css only, the tabIndex won't match the visual order.
          */}
           <div className="hidden col-span-4 col-start-9 row-span-2 row-start-1 mt-0 xl:block">
-            {subscribedToNewsletter ? snowboardImg : <NewsletterSection />}
+            {subscribedToNewsletter ? featuredImg : <NewsletterSection />}
           </div>
 
           <div className="col-span-full mt-24 dark:text-blueGray-500 text-gray-500 text-lg md:mt-44">
