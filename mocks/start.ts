@@ -1,5 +1,6 @@
 import {rest} from 'msw'
 import {setupServer} from 'msw/node'
+import {blob} from 'stream/consumers'
 import {githubHandlers} from './github'
 import {tiToHandlers} from './tito'
 import {oembedHandlers} from './oembed'
@@ -19,8 +20,7 @@ const miscHandlers = [
 
       const base64 =
         'UklGRhoBAABXRUJQVlA4IA4BAABwCgCdASpkAEMAPqVInUq5sy+hqvqpuzAUiWcG+BsvrZQel/iYPLGE154ZiYwzeF8UJRAKZ0oAzLdTpjlp8qBuGwW1ntMTe6iQZbxzyP4gBeg7X7SH7NwyBcUDAAD+8MrTwbAD8OLmsoaL1QDPwEE+GrfqLQPn6xkgFHCB8lyjV3K2RvcQ7pSvgA87LOVuDtMrtkm+tTV0x1RcIe4Uvb6J+yygkV48DSejuyrMWrYgoZyjkf/0/L9+bAZgCam6+oHqjBSWTq5jF7wzBxYwfoGY7OdYZOdeGb4euuuLaCzDHz/QRbDCaIsJWJW3Jo4bkbz44AI/8UfFTGX4tMTRcKLXTDIviU+/u7UnlVaDQAA='
-      const blob = new Blob([base64])
-      const buffer = await blob.arrayBuffer()
+      const buffer = Buffer.from(base64)
       return res(ctx.body(buffer))
     },
   ),

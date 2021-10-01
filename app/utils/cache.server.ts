@@ -38,15 +38,11 @@ function createLruCache() {
 type CacheMetadata = {
   createdTime: number
   maxAge: number | null
-  expires: number | null
 }
 
 function shouldRefresh(metadata: CacheMetadata) {
   if (metadata.maxAge) {
     return Date.now() > metadata.createdTime + metadata.maxAge
-  }
-  if (metadata.expires) {
-    return Date.now() > metadata.expires
   }
   return false
 }
@@ -83,7 +79,6 @@ async function cachified<
   timings?: Timings
   timingType?: string
   maxAge?: number
-  expires?: Date
 }): Promise<Value> {
   const {
     key,
@@ -96,7 +91,6 @@ async function cachified<
     timings,
     timingType = 'getting fresh value',
     maxAge,
-    expires,
   } = options
 
   function assertCacheEntry(entry: unknown): asserts entry is {
@@ -198,7 +192,6 @@ async function cachified<
   if (checkValue(value)) {
     const metadata: CacheMetadata = {
       maxAge: maxAge ?? null,
-      expires: expires?.getTime() ?? null,
       createdTime: Date.now(),
     }
     try {

@@ -49,6 +49,11 @@ pre {
   content: unset;
 }
 
+.dark .prose ol > li::before,
+.dark .prose ul > li::before {
+  color: var(--color-gray-300);
+}
+
 /* I think this is a bug in the tailwind/typography thing */
 .dark .dark\:prose-dark thead {
   color: var(--color-blueGray-500);
@@ -158,6 +163,7 @@ pre {
   margin-left: -200px;
 }
 
+.prose callout-muted p,
 .prose callout-info p,
 .prose callout-warning p,
 .prose callout-danger p,
@@ -165,6 +171,7 @@ pre {
   margin-bottom: 0;
 }
 
+.prose callout-muted,
 .prose callout-info,
 .prose callout-warning,
 .prose callout-danger,
@@ -173,6 +180,7 @@ pre {
   margin-bottom: 2rem;
 }
 
+.prose callout-muted,
 .prose callout-info,
 .prose callout-warning,
 .prose callout-danger,
@@ -185,10 +193,12 @@ pre {
   border-bottom-right-radius: 0.5rem;
 }
 
+.prose callout-muted,
 .prose callout-info,
 .prose callout-warning,
 .prose callout-danger,
 .prose callout-success,
+.prose callout-muted *,
 .prose callout-info *,
 .prose callout-warning *,
 .prose callout-danger *,
@@ -196,10 +206,12 @@ pre {
   font-size: 1.2rem;
 }
 
+.prose callout-muted.asside,
 .prose callout-info.asside,
 .prose callout-warning.asside,
 .prose callout-danger.asside,
 .prose callout-success.asside,
+.prose callout-muted.asside *,
 .prose callout-info.asside *,
 .prose callout-warning.asside *,
 .prose callout-danger.asside *,
@@ -207,10 +219,12 @@ pre {
   font-size: 0.875rem;
 }
 
+.prose callout-muted.important,
 .prose callout-info.important,
 .prose callout-warning.important,
 .prose callout-danger.important,
 .prose callout-success.important,
+.prose callout-muted.important *,
 .prose callout-info.important *,
 .prose callout-warning.important *,
 .prose callout-danger.important *,
@@ -219,6 +233,7 @@ pre {
   font-weight: bold;
 }
 
+.prose callout-muted:before,
 .prose callout-info:before,
 .prose callout-warning:before,
 .prose callout-danger:before,
@@ -246,6 +261,23 @@ pre {
 }
 .prose callout-warning:before {
   background: #ffd644;
+}
+
+/* the muted gray is really inaccessible in light mode, so we have a special case for light mode */
+.light .prose callout-muted,
+.light .prose callout-muted ol > li:before {
+  color: #4c4b5e;
+}
+.light .prose callout-muted:before {
+  background: #3c3e4d;
+}
+
+.prose callout-muted,
+.prose callout-muted ol > li:before {
+  color: #b9b9c3;
+}
+.prose callout-muted:before {
+  background: #3c3e4d;
 }
 
 .prose callout-info,

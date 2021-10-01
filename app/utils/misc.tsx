@@ -67,12 +67,12 @@ type AnchorProps = React.DetailedHTMLProps<
 
 const AnchorOrLink = React.forwardRef<
   HTMLAnchorElement,
-  AnchorProps & {prefetch?: 'intent' | 'none' | 'render'}
+  AnchorProps & {prefetch?: 'intent' | 'none' | 'render'; reload?: boolean}
 >(function AnchorOrLink(props, ref) {
-  const {href = '', download, prefetch, ...rest} = props
-  if (download || href.startsWith('http') || href.startsWith('#')) {
+  const {href = '', download, reload = false, prefetch, ...rest} = props
+  if (reload || download || href.startsWith('http') || href.startsWith('#')) {
     // eslint-disable-next-line jsx-a11y/anchor-has-content
-    return <a {...props} ref={ref} />
+    return <a {...rest} download={download} href={href} ref={ref} />
   } else {
     return <Link prefetch={prefetch} to={href} {...rest} ref={ref} />
   }

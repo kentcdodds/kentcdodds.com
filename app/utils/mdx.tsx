@@ -13,7 +13,12 @@ import {redisCache} from './redis.server'
 import type {Timings} from './metrics.server'
 import {cachified} from './cache.server'
 import {getSocialMetas} from './seo'
-import {getSocialImageWithPreTitle} from '~/images'
+import {
+  getImageBuilder,
+  getImgProps,
+  getSocialImageWithPreTitle,
+} from '~/images'
+import {Themed} from './theme-provider'
 
 type CachifiedOptions = {
   forceFresh?: boolean
@@ -279,6 +284,12 @@ function mapFromMdxPageToMdxListItem(page: MdxPage): MdxListItem {
   return mdxListItem
 }
 
+const mdxComponents = {
+  a: AnchorOrLink,
+  Themed,
+  ThemedBlogImage,
+  BlogImage,
+}
 /**
  * This should be rendered within a useMemo
  * @param code the code to get the component from
@@ -290,9 +301,53 @@ function getMdxComponent(code: string) {
     components,
     ...rest
   }: Parameters<typeof Component>['0']) {
-    return <Component components={{a: AnchorOrLink, ...components}} {...rest} />
+    return (
+      // @ts-expect-error the types are wrong here
+      <Component components={{...mdxComponents, ...components}} {...rest} />
+    )
   }
   return KCDMdxComponent
+}
+
+function BlogImage({
+  cloudinaryId,
+  imgProps,
+}: {
+  cloudinaryId: string
+  imgProps: JSX.IntrinsicElements['img']
+}) {
+  return (
+    <img
+      className="py-8 w-full rounded-lg object-cover"
+      {...getImgProps(getImageBuilder(cloudinaryId, imgProps.alt), {
+        widths: [350, 550, 700, 845, 1250, 1700, 2550],
+        sizes: [
+          '(max-width:1023px) 80vw',
+          '(min-width:1024px) and (max-width:1620px) 50vw',
+          '850px',
+        ],
+        transformations: {background: 'rgb:e6e9ee'},
+      })}
+      {...imgProps}
+    />
+  )
+}
+
+function ThemedBlogImage({
+  darkCloudinaryId,
+  lightCloudinaryId,
+  imgProps,
+}: {
+  darkCloudinaryId: string
+  lightCloudinaryId: string
+  imgProps: JSX.IntrinsicElements['img']
+}) {
+  return (
+    <Themed
+      light={<BlogImage cloudinaryId={lightCloudinaryId} imgProps={imgProps} />}
+      dark={<BlogImage cloudinaryId={darkCloudinaryId} imgProps={imgProps} />}
+    />
+  )
 }
 
 function useMdxComponent(code: string) {
