@@ -20,8 +20,14 @@ import {kodySnowboardingImages} from '~/images'
 import {ButtonLink} from '~/components/button'
 import {ServerError} from '~/components/errors'
 import {getBlogMdxListItems} from '~/utils/mdx'
-import {formatNumber, reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {
+  formatNumber,
+  OptionalTeam,
+  reuseUsefulLoaderHeaders,
+  teams,
+} from '~/utils/misc'
 import {getRankingLeader} from '~/utils/blog'
+import {getUser} from '~/utils/session.server'
 
 type LoaderData = {
   blogPostCount: string
@@ -29,13 +35,18 @@ type LoaderData = {
   totalBlogReads: string
   currentBlogLeaderTeam: Team | undefined
   blogRecommendations: Array<MdxListItem>
+  kodyTeam: OptionalTeam
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  const posts = await getBlogMdxListItems({request})
-  const blogRankings = await getBlogReadRankings({request})
-  const totalBlogReaders = await getReaderCount(request)
-  const blogRecommendations = await getBlogRecommendations(request)
+  const [user, posts, blogRankings, totalBlogReaders, blogRecommendations] =
+    await Promise.all([
+      getUser(request),
+      getBlogMdxListItems({request}),
+      getBlogReadRankings({request}),
+      getReaderCount(request),
+      getBlogRecommendations(request),
+    ])
 
   const totalBlogReads = blogRankings.reduce(
     (total, ranking) => ranking.totalReads + total,
@@ -54,6 +65,10 @@ export const loader: LoaderFunction = async ({request}) => {
         ? 'hundreds of thousands'
         : formatNumber(totalBlogReads),
     currentBlogLeaderTeam: getRankingLeader(blogRankings)?.team,
+    kodyTeam:
+      user?.team ??
+      teams[Math.floor(Math.random() * teams.length)] ??
+      'UNKNOWN',
   }
   return json(data, {
     headers: {
@@ -67,8 +82,7 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export default function IndexRoute() {
   const data = useLoaderData<LoaderData>()
-  const kodySnowboarding =
-    kodySnowboardingImages[data.currentBlogLeaderTeam ?? 'UNKNOWN']
+  const kodySnowboarding = kodySnowboardingImages[data.kodyTeam]
   return (
     <div>
       <HeroSection
