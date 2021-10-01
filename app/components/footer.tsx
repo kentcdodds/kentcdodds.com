@@ -1,5 +1,4 @@
 import * as React from 'react'
-import clsx from 'clsx'
 import {externalLinks} from '../external-links'
 import {AnchorOrLink} from '~/utils/misc'
 import {useRootData} from '~/utils/use-root-data'
@@ -11,11 +10,7 @@ import {YoutubeIcon} from './icons/youtube-icon'
 import {Signature} from './signature'
 import {Link} from 'remix'
 import {ArrowIcon} from './icons/arrow-icon'
-
-interface FooterLinkProps {
-  name: string
-  href: string
-}
+import {getImgProps, images} from '~/images'
 
 function NewsletterSection() {
   return (
@@ -69,7 +64,6 @@ function GeneralSection() {
 }
 
 function SitemapSection() {
-  const {requestInfo} = useRootData()
   return (
     <div>
       <H6 as="div">Sitemap</H6>
@@ -82,14 +76,7 @@ function SitemapSection() {
         <FooterLink name="Workshops" href="/workshops" />
         <FooterLink name="About" href="/about" />
         <FooterLink name="Credits" href="/credits" />
-        {/*
-          can't use client-side routing here, so we need the full URL so our
-          AnchorOrLink treats it as a full page reload
-        */}
-        <FooterLink
-          name="Full Sitemap"
-          href={`${requestInfo.origin}/sitemap.xml`}
-        />
+        <FooterLink name="Full Sitemap" reload href="/sitemap.xml" />
       </ul>
     </div>
   )
@@ -104,8 +91,8 @@ function AboutSection() {
         Full time educator making our world better
       </p>
 
-      <div className="text-secondary flex items-center justify-between mt-6 xl:flex-col xl:items-start">
-        <div className="flex space-x-4">
+      <div className="text-secondary flex gap-4 items-center justify-between mt-6 xl:flex-col xl:items-start">
+        <div className="flex gap-4">
           <a
             className="text-primary hover:text-team-current focus:text-team-current focus:outline-none"
             href={externalLinks.github}
@@ -135,13 +122,22 @@ function AboutSection() {
   )
 }
 
-function FooterLink({name, href}: FooterLinkProps) {
+function FooterLink({
+  name,
+  href,
+  reload,
+}: {
+  name: string
+  href: string
+  reload?: boolean
+}) {
   return (
     <li className="py-1">
       <AnchorOrLink
         prefetch={href.startsWith('http') ? undefined : 'intent'}
         href={href}
         className="text-secondary underlined inline-block hover:text-team-current focus:text-team-current whitespace-nowrap text-lg focus:outline-none"
+        reload={reload}
       >
         {name}
       </AnchorOrLink>
@@ -154,6 +150,20 @@ function Footer() {
   const subscribedToNewsletter = userInfo?.convertKit?.tags.some(
     ({name}) => name === 'Subscribed: general newsletter',
   )
+  const snowboardImg = (
+    <img
+      className="w-full"
+      {...getImgProps(images.snowboard, {
+        widths: [300, 600, 850, 1600, 2550],
+        sizes: [
+          '(max-width: 639px) 80vw',
+          '(min-width: 640px) and (max-width: 1499px) 50vw',
+          '(min-width: 1500px) and (max-width: 1620px) 25vw',
+          '410px',
+        ],
+      })}
+    />
+  )
   return (
     <footer className="pb-16 pt-48 border-t border-gray-200 dark:border-gray-600">
       <div className="relative mx-10vw">
@@ -162,11 +172,9 @@ function Footer() {
             <AboutSection />
           </div>
 
-          {subscribedToNewsletter ? null : (
-            <div className="col-span-full mt-20 md:col-span-5 md:col-start-1 xl:hidden">
-              <NewsletterSection />
-            </div>
-          )}
+          <div className="col-span-full mt-20 md:col-span-5 md:col-start-1 xl:hidden">
+            {subscribedToNewsletter ? snowboardImg : <NewsletterSection />}
+          </div>
 
           <div className="col-span-2 mt-20 md:col-start-5 md:row-start-1 md:mt-0">
             <ContactSection />
@@ -176,15 +184,7 @@ function Footer() {
             <GeneralSection />
           </div>
 
-          <div
-            className={clsx(
-              'col-span-full mt-20 md:col-span-2 xl:col-start-5 xl:row-span-2 xl:row-start-1 xl:ml-56 xl:mt-0',
-              {
-                'md:col-start-7': !subscribedToNewsletter,
-                'md:col-start-5': subscribedToNewsletter,
-              },
-            )}
-          >
+          <div className="col-span-full mt-20 md:col-span-2 md:col-start-7 xl:col-start-5 xl:row-span-2 xl:row-start-1 xl:ml-56 xl:mt-0">
             <SitemapSection />
           </div>
 
@@ -192,11 +192,9 @@ function Footer() {
           Note that the <NewsletterSection /> is rendered twice. The position of this cell changes based on breakpoint.
           When we would move the cell around with css only, the tabIndex won't match the visual order.
          */}
-          {subscribedToNewsletter ? null : (
-            <div className="hidden col-span-3 col-start-10 row-span-2 row-start-1 mt-0 xl:block">
-              <NewsletterSection />
-            </div>
-          )}
+          <div className="hidden col-span-4 col-start-9 row-span-2 row-start-1 mt-0 xl:block">
+            {subscribedToNewsletter ? snowboardImg : <NewsletterSection />}
+          </div>
 
           <div className="col-span-full mt-24 dark:text-blueGray-500 text-gray-500 text-lg md:mt-44">
             <span>All rights reserved</span>{' '}
