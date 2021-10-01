@@ -1,6 +1,5 @@
 import {rest} from 'msw'
 import {setupServer} from 'msw/node'
-import {blob} from 'stream/consumers'
 import {githubHandlers} from './github'
 import {tiToHandlers} from './tito'
 import {oembedHandlers} from './oembed'
