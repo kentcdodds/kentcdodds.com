@@ -51,8 +51,8 @@
   cloudinaryId: kentcdodds.com/content/credits/daniel
   role: Project Manager
   description: >-
-    Daniel managed the redesign project, acting as phone switch operator 
-    and document creator.
+    Daniel managed the redesign project, acting as phone switch operator  and
+    document creator.
   website: https://www.daniel.industries/
   github: https://github.com/dealingwith
 
@@ -81,8 +81,8 @@
   cloudinaryId: kentcdodds.com/content/credits/maggie
   role: Art Direction
   description: >-
-    Maggie led the production of illustrations for the site as well as 
-    the overall design.
+    Maggie led the production of illustrations for the site as well as  the
+    overall design.
   website: https://maggieappleton.com/
   twitter: https://twitter.com/Mappletons
 
@@ -90,11 +90,21 @@
   cloudinaryId: kentcdodds.com/content/credits/jhey
   role: Motion Wizard
   description: >-
-    Jhey worked on making using the site visually interesting by adding
-    motion. In particular he built the audio recorder visualizer and the
-    parallax experience on the homepage.
+    Jhey worked on making using the site visually interesting by adding motion.
+    In particular he built the audio recorder visualizer and the parallax
+    experience on the homepage.
   github: https://github.com/jh3y
   twitter: https://twitter.com/jh3yy
   website: https://jhey.dev/links
   twitch: https://twitch.tv/jh3yy
   codepen: https://codepen.io/jh3y
+
+- name: Mohamed Chahin
+  cloudinaryId: kentcdodds.com/content/credits/mohamed
+  role: Illustration
+  description: >-
+    All these beautiful illustrations you see on the website were created by
+    Mohamed.
+  behance: https://www.behance.net/MChahin
+  twitter: https://twitter.com/beastochahin
+  dribbble: https://dribbble.com/MohChahin

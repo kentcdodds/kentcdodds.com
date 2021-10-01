@@ -35,6 +35,7 @@ import {getSocialMetas} from '~/utils/seo'
 import type {LoaderData as RootLoaderData} from '../root'
 import {TwitchIcon} from '~/components/icons/twitch-icon'
 import {CodepenIcon} from '~/components/icons/codepen-icon'
+import BehanceIcon from '~/components/icons/behance-icon'
 
 export type LoaderData = {people: Await<ReturnType<typeof getPeople>>}
 
@@ -70,7 +71,13 @@ export const meta: MetaFunction = ({parentsData}) => {
   }
 }
 
-const icons = {
+type Person = LoaderData['people'][number]
+type Socials = keyof Omit<
+  Person,
+  'name' | 'role' | 'cloudinaryId' | 'description'
+>
+
+const icons: Record<Socials, React.ReactElement> = {
   website: <GlobeIcon title="Website" />,
   github: <GithubIcon />,
   twitter: <TwitterIcon />,
@@ -79,9 +86,10 @@ const icons = {
   codepen: <CodepenIcon />,
   twitch: <TwitchIcon />,
   linkedin: <LinkedInIcon />,
+  behance: <BehanceIcon />,
 } as const
 
-function ProfileCard({person}: {person: LoaderData['people'][number]}) {
+function ProfileCard({person}: {person: Person}) {
   return (
     <div className="relative flex flex-col w-full">
       <div className="aspect-w-3 aspect-h-4 flex-none mb-8 w-full">
@@ -109,7 +117,7 @@ function ProfileCard({person}: {person: LoaderData['people'][number]}) {
 
       <div className="text-secondary flex flex-none space-x-4">
         {Object.entries(icons).map(([key, Icon]) => {
-          const url = person[key as keyof typeof icons]
+          const url = person[key as Socials]
           return url ? (
             <a
               key={key}

@@ -101,6 +101,11 @@ function mapPerson(rawPerson: UnknownObj) {
         warnOnFallback: false,
         validateType: isString,
       }),
+      behance: getValueWithFallback(rawPerson, 'behance', {
+        fallback: null,
+        warnOnFallback: false,
+        validateType: isString,
+      }),
     }
   } catch (error: unknown) {
     console.error(getErrorMessage(error), rawPerson)
