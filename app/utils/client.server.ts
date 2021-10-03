@@ -13,6 +13,7 @@ const clientStorage = createCookieSessionStorage({
     path: '/',
     // no client ID for you on my 100th birthday! 😂
     expires: new Date('2088-10-18'),
+    httpOnly: true,
   },
 })
 

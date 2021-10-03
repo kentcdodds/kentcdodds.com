@@ -21,6 +21,7 @@ const sessionStorage = createCookieSessionStorage({
     sameSite: 'lax',
     path: '/',
     maxAge: sessionExpirationTime,
+    httpOnly: true,
   },
 })
 

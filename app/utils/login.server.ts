@@ -9,6 +9,7 @@ const loginInfoStorage = createCookieSessionStorage({
     sameSite: 'lax',
     path: '/',
     maxAge: linkExpirationTime,
+    httpOnly: true,
   },
 })
 

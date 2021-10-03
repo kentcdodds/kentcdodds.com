@@ -10,6 +10,7 @@ const themeStorage = createCookieSessionStorage({
     path: '/',
     // no theme for you on my 100th birthday! 😂
     expires: new Date('2088-10-18'),
+    httpOnly: true,
   },
 })
 
