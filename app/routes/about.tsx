@@ -92,7 +92,7 @@ function AboutIndex() {
     <>
       <HeroSection
         title="Hi, I'm Kent C. Dodds, I'm a full time educator."
-        subtitle="I make the world a better place by teaching people like you how to make quality softare."
+        subtitle="I make the world a better place by teaching people like you how to make quality software."
         imageBuilder={images.snowboard}
         arrowUrl="#about-me"
         arrowLabel="Get to know more about me"
