@@ -87,6 +87,8 @@ POST,DELETE,PATCH,PUT  /                                                https://
 /post/:slug*                                                             /blog/:slug*
 /rss.xml                                                                 /blog/rss.xml
 
+/humans.txt                                                              /credits
+
 # during local dev, sometimes the service worker is installed from other apps.
 /mockServiceWorker.js                                                    /
 
