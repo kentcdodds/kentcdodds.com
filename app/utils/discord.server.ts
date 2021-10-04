@@ -121,13 +121,17 @@ async function updateDiscordRolesForUser(
   const teamRole = discordRoleTeams[user.team]
 
   if (!discordMember.roles.includes(teamRole)) {
-    await fetchJsonAsDiscordBot(
+    await fetchAsDiscordBot(
       `guilds/${DISCORD_GUILD_ID}/members/${discordMember.user.id}`,
       {
         method: 'PATCH',
         body: JSON.stringify({
           roles: Array.from(new Set([...discordMember.roles, teamRole])),
         }),
+        // note using fetchJsonAsDiscordBot because this API doesn't return JSON.
+        headers: {
+          'Content-Type': 'application/json',
+        },
       },
     )
   }
