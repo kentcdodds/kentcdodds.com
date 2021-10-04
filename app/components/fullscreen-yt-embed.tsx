@@ -19,22 +19,19 @@ function YouTubeEmbed({
   }, [])
 
   return (
-    <div className="fixed left-0 top-0 w-screen h-screen bg-black">
-      <div className="relative flex items-center justify-center w-full h-full">
-        <button
-          aria-label="close video"
-          onClick={onCloseClick}
-          className="absolute z-50 right-4 top-8 text-white focus:outline-none transform rotate-45 hover:scale-150 focus:scale-150"
-        >
-          <PlusIcon />
-        </button>
-        <div
-          className="w-full"
-          style={{maxWidth: '90vw', maxHeight: '90vh'}}
-          ref={embedContainer}
-        >
-          {ytLiteEmbed}
-        </div>
+    <div className="fixed inset-0 px-5vw bg-black">
+      <button
+        aria-label="close video"
+        onClick={onCloseClick}
+        className="absolute z-50 right-4 top-8 text-white focus:outline-none transform rotate-45 hover:scale-150 focus:scale-150"
+      >
+        <PlusIcon />
+      </button>
+      <div
+        className="flex flex-col justify-center w-full h-full"
+        ref={embedContainer}
+      >
+        {ytLiteEmbed}
       </div>
     </div>
   )
