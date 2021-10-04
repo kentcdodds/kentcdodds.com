@@ -41,7 +41,7 @@ first.
 First, to give you an idea of the scale we're talking here. So here are a few
 stats:
 
-At the time of this writting (September 2021) here are the
+At the time of this writing (September 2021) here are the
 [`cloc`](https://github.com/AlDanial/cloc) stats:
 
 ```
@@ -99,14 +99,14 @@ Here are the primary technologies used in this project (in no particular order):
 - MSW: Fantastic tool for mocking HTTP requests in the browser/node
 - Tailwind CSS: Utility classes for consistent/maintainable styling
 - Postcss: CSS processor (pretty much just use it for autoprefixer and tailwind)
-- Reach UI: A set of accessibile UI components every app needs
-  (accordion/tas/dialog/etc...)
+- Reach UI: A set of accessible UI components every app needs
+  (accordion/tabs/dialog/etc...)
 - ESBuild: JavaScript bundler (used by Remix and mdx-bundler).
 - mdx-bundler: Tool for compiling and bundling MDX for my site content (blog
   posts and some simple pages).
 - Octokit: Library making interacting with the GitHub API easier.
 - Framer Motion: Great React Animation library
-- Unified: Markdown/HTML parser/tranformer/compiler system.
+- Unified: Markdown/HTML parser/transformer/compiler system.
 - Postgres: Battle tested SQL database
 - Redis: In-memory database–key/value store.
 
@@ -153,7 +153,7 @@ I think it can be quite instructive of overall architecture to describe how an
 app is deployed. The [Excalidraw](https://excalidraw.com/) diagram above
 describes it visually. Allow me to describe it in written form as well:
 
-First I commit a change to the local repo. Then I push my changes to the (open
+First, I commit a change to the local repo. Then I push my changes to the (open
 source) GitHub repository. From there, I have two GitHub Actions that run
 automatically on every push to the `main` branch.
 
@@ -180,7 +180,7 @@ need to make sure that when I make an update to some content, the Redis cache
 gets refreshed.
 
 And that's what this first GitHub action does. First it determines all content
-changes that ocurred between the commit that's being built and the commit of the
+changes that occurred between the commit that's being built and the commit of the
 last time there was a refresh (that value is stored in redis and my server
 exposes an endpoint for my action to retrieve it). If any of the changed files
 were in the `./content` directory, then the action makes an authenticated POST
@@ -281,13 +281,13 @@ And that's what happens when I say: `git push` or click the "Merge" button 😄
   }
 />
 
-One of the coolest parts of Fly.io (and the region I chose Fly over alternative
+One of the coolest parts of Fly.io (and the reason I chose Fly over alternative
 Node server hosts) is the ability to deploy your app to multiple regions all
 over the world. I've chosen 6 based on the analytics from my previous site, but
 they have many more.
 
 Deploying the Node server to multiple regions is only part of the story though.
-To really get the network performance beneifts of colocation, you need your data
+To really get the network performance benefits of colocation, you need your data
 to be close by as well. So Fly also supports hosting Postgres and Redis clusters
 in each region as well. This means when an authorized user in Berlin goes to
 [The Call Kent Podcast](/calls), they hit the closest server to them (Amsterdam)
@@ -295,7 +295,7 @@ which will query the Postgres DB and Redis cache that are located in the same
 region, making the whole experience extremely fast wherever you are in the
 world.
 
-What's more, I don't have to make the trade-off of vender lock-in. At any time I
+What's more, I don't have to make the trade-off of vendor lock-in. At any time I
 could take my toys home and host my site anywhere else that supports deploying
 Docker. This is why I didn't go with a solution like Cloudflare Workers and
 FaunaDB. Additionally, I don't have to retrofit/limit my app to the constraints
@@ -303,7 +303,7 @@ of those services. I'm extremely happy with Fly and don't expect to leave any
 time soon.
 
 But that doesn't mean this is all trade-off free (nothing is). All of this
-multi-regional deployment comes with the problem if consistency. I've got
+multi-regional deployment comes with the problem of consistency. I've got
 multiple databases, but I don't want to partition my app by region. The data
 should be the same in all those databases. So how do I ensure consistency? Well,
 we choose one region to be our primary region, and then make all other regions
@@ -358,7 +358,7 @@ happens in milliseconds, but in cases where the data is large (like when you
 it's quite possible your next read will beat Fly.
 
 One way to avoid this problem is to make sure that once you've done a write, the
-rest of the request performs it's reads against the primary database.
+rest of the request performs its reads against the primary database.
 Unfortunately this makes the code a bit complex.
 
 Another approach Fly supports is to "replay" a request to the primary region
@@ -454,7 +454,7 @@ hitting real APIs.
 ## Caching with Redis/LRU
 
 As described earlier with the architecture diagrams, I host my redis cache with
-Fly.io. It's phenominal. But I've built my own little abstraction for
+Fly.io. It's phenomenal. But I've built my own little abstraction for
 interacting with redis to have some interesting qualities that I think are worth
 talking about.
 
@@ -674,7 +674,7 @@ Unified is really powerful and I love using it for my markdown-based content.
 ## Database interaction with Prisma
 
 Alright my friends. Let's talk about Prisma. I am _not_ a database person... At
-all. All the backend stuff is outside of my wheel house. What's funny though is
+all. All the backend stuff is outside of my wheelhouse. What's funny though is
 Remix makes the backend so approachable that most of the work I've been doing
 over the past few months has been backend stuff 😆 And I couldn't be happier
 with how simple Prisma makes working with a database. Not just querying
@@ -691,7 +691,7 @@ queries necessary to make the table updates for your schema changes.
 
 If you're careful about how you do this, you can make zero downtime migrations.
 Zero downtime migrations aren't unique to prisma, but prisma does make creating
-these migrations much simpler for me, an guy who hasn't done SQL in years and
+these migrations much simpler for me, a guy who hasn't done SQL in years and
 never really liked it anyway 😬 During the development of my site, I had 7
 migrations, and two of those were breaking schema changes. The fact that I of
 all people managed to do this should be endorsement enough 😅
@@ -839,7 +839,7 @@ https://twitter.com/kentcdodds/status/1299758509312024576
 
 Yup, that's right... I hand-rolled my own authentication on this site. But I had
 a good reason! Remember all the talk above about making things super fast by
-colocating the node servers and databases close to users? Well, I'd kinda undo
+collocating the node servers and databases close to users? Well, I'd kinda undo
 all that work if I used an authentication service. Every request would have to
 go to the region that provider supported to verify the user's logged in state.
 How disappointing would that be?
@@ -856,7 +856,7 @@ Doing this means I don't need to worry about storing passwords or handling
 password resets/changes. But this wasn't just a selfish/lazy decision. I feel
 strongly that magic links are the best authentication system for an app like
 mine. Keep in mind that pretty much every other app has a "magic link"-like auth
-system even if it's implicit because the "reset password" flow which emails you
+system even if it's implicit because of the "reset password" flow which emails you
 a link to reset your password. So it's certainly not any less secure. In fact,
 actually more secure because there's no password to lose.
 
