@@ -1,0 +1,35 @@
+.parallax {
+  transform: rotateX(calc((var(--rx, 0) * var(--range-y, 0)) * 1deg))
+    rotateY(calc((var(--ry, 0) * var(--range-x, 0)) * 1deg))
+    rotate(calc((var(--r, 0) * var(--range-x, 0)) * 1deg));
+  transform-style: preserve-3d;
+  /* Trick to make the perfect square */
+  padding-bottom: 100%;
+}
+
+.parallax__wrapper {
+  perspective: 60vmin;
+  transform: translate3d(0, 0, 100vmin);
+  transform-style: preserve-3d;
+}
+
+.parallax__item {
+  left: calc(var(--x, 50) * 1%);
+  top: calc(var(--y, 50) * 1%);
+  height: calc(var(--height, auto) * 1%);
+  width: calc(var(--width, auto) * 1%);
+  transform: translate(-50%, -50%)
+    translate3d(calc((var(--mx, 0) * var(--range-x, 0)) * 1%), calc((var(--my, 0) * var(--range-y, 0)) * 1%), calc(var(--z, 0) * 1vmin))
+    rotateX(calc((var(--rx, 0) * var(--range-y, 0)) * 1deg))
+    rotateY(calc((var(--ry, 0) * var(--range-x, 0)) * 1deg))
+    rotate(calc((var(--r, 0) * var(--range-x, 0)) * 1deg));
+  transform-style: preserve-3d;
+}
+
+.kody-segment {
+  background-image: url("https://assets.codepen.io/605876/kody-spritesheet.png");
+  height: 100%;
+  width: 100%;
+  background-position: calc(var(--pos-x, 0) * 1%) calc(var(--pos-y, 0) * 1%);
+  background-size: calc(var(--size, 0) * 1%);
+}

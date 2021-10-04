@@ -18,6 +18,7 @@ import type {Await, KCDHandle, User} from '~/types'
 import tailwindStyles from './styles/tailwind.css'
 import vendorStyles from './styles/vendors.css'
 import appStyles from './styles/app.css'
+import parallaxStyles from '~/components/parallax/parallax.css'
 import proseStyles from './styles/prose.css'
 import noScriptStyles from './styles/no-script.css'
 import {
@@ -113,6 +114,7 @@ export const links: LinksFunction = () => {
     {rel: 'stylesheet', href: tailwindStyles},
     {rel: 'stylesheet', href: proseStyles},
     {rel: 'stylesheet', href: appStyles},
+    {rel: 'stylesheet', href: parallaxStyles},
   ]
 }
 

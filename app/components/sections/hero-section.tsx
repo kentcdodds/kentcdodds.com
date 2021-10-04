@@ -20,6 +20,7 @@ export type HeroSectionProps = {
       image?: never
       imageBuilder?: never
       imageTransformations?: never
+      parallax?: never
     }
   | {
       imageProps?: never
@@ -27,6 +28,7 @@ export type HeroSectionProps = {
       image?: never
       imageBuilder?: never
       imageTransformations?: never
+      parallax?: never
     }
   | {
       imageProps?: never
@@ -34,6 +36,7 @@ export type HeroSectionProps = {
       image: React.ReactNode
       imageBuilder?: never
       imageTransformations?: never
+      parallax?: never
     }
   | {
       imageProps?: never
@@ -41,6 +44,15 @@ export type HeroSectionProps = {
       image?: never
       imageBuilder: ImageBuilder
       imageTransformations?: TransformerOption
+      parallax?: never
+    }
+  | {
+      imageProps?: never
+      imageSize?: 'medium' | 'large' | 'giant'
+      image?: never
+      imageBuilder?: never
+      imageTransformations?: never
+      parallax: React.ComponentType
     }
 ) &
   (
@@ -69,8 +81,9 @@ function HeroSection({
   imageProps,
   imageBuilder,
   imageSize = 'medium',
+  parallax: Parallax,
 }: HeroSectionProps) {
-  const hasImage = Boolean(image ?? imageProps ?? imageBuilder)
+  const hasImage = Boolean(image ?? imageProps ?? imageBuilder ?? Parallax)
 
   return (
     <Grid
@@ -79,7 +92,7 @@ function HeroSection({
         'lg:-mb-24': !arrowLabel,
       })}
     >
-      {hasImage ? (
+      {hasImage && !Parallax ? (
         <div
           className={clsx('col-span-full mb-12 lg:mb-0', {
             'lg:col-start-7 lg:col-span-5 px-10': imageSize === 'medium',
@@ -118,6 +131,20 @@ function HeroSection({
           ) : (
             image
           )}
+        </div>
+      ) : null}
+
+      {Parallax ? (
+        <div
+          className={clsx('col-span-full mb-12 lg:mb-0', {
+            'lg:col-start-7 lg:col-span-5 px-10': imageSize === 'medium',
+            'lg:col-start-6 lg:col-span-6 pl-10 flex items-start justify-end':
+              imageSize === 'large',
+            'lg:col-start-6 lg:col-span-7 lg:px-0 lg:-mt-24 lg:-mr-5vw flex items-center justify-center':
+              imageSize === 'giant',
+          })}
+        >
+          <Parallax />
         </div>
       ) : null}
 

@@ -19,3 +19,4 @@ other/postcss.ignored
 .env.production
 .envrc
 
+.npmrc

@@ -12,11 +12,11 @@ import {AboutSection} from '~/components/sections/about-section'
 import {BlogSection} from '~/components/sections/blog-section'
 import {CourseSection} from '~/components/sections/course-section'
 import {DiscordSection} from '~/components/sections/discord-section'
+import {KodyParallax} from '~/components/kody-parallax'
 import {IntroductionSection} from '~/components/sections/introduction-section'
 import {ProblemSolutionSection} from '~/components/sections/problem-solution-section'
 import {Spacer} from '~/components/spacer'
 import {HeroSection} from '~/components/sections/hero-section'
-import {kodySnowboardingImages} from '~/images'
 import {ButtonLink} from '~/components/button'
 import {ServerError} from '~/components/errors'
 import {getBlogMdxListItems} from '~/utils/mdx'
@@ -80,14 +80,15 @@ export const loader: LoaderFunction = async ({request}) => {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
+
+
 export default function IndexRoute() {
   const data = useLoaderData<LoaderData>()
-  const kodySnowboarding = kodySnowboardingImages[data.kodyTeam]
   return (
     <div>
       <HeroSection
         title="Helping people make the world a better place through quality software."
-        imageBuilder={kodySnowboarding}
+        parallax={KodyParallax}
         imageSize="giant"
         arrowUrl="#intro"
         arrowLabel="Learn more about Kent"
