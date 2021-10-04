@@ -183,7 +183,7 @@ And that's what this first GitHub action does. First it determines all content
 changes that ocurred between the commit that's being built and the commit of the
 last time there was a refresh (that value is stored in redis and my server
 exposes an endpoint for my action to retrieve it). If any of the changed files
-were in the `./conent` directory, then the action makes an authenticated POST
+were in the `./content` directory, then the action makes an authenticated POST
 request to another endpoint on my server with all the content files that were
 changed. Then my server retrieves all the content from the GitHub API,
 recompiles the MDX pages, and pushes the update to the Redis cache which Fly.io
