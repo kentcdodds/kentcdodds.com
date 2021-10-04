@@ -156,10 +156,6 @@ async function getEpisode(episodeId: string) {
     return null
   }
 
-  if (!json.description) {
-    debugger
-  }
-
   const {
     id,
     is_published,
