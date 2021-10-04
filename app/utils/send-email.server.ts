@@ -119,9 +119,11 @@ P.S. If you did not request this email, you can safely ignore it.
   <body style="font-family:Matter, sans-serif;">
     <div style="margin: 0 auto; max-width: 450px;">
 
-      <h2 style="text-align: center">Welcome ${
-        userExists ? 'back to' : 'to'
-      } Kent C. Dodds' site!</h2>
+      <h2 style="text-align: center">${
+        user
+          ? `Hey ${user.firstName}! Welcome back to ${hostname}!`
+          : `Hey ${emailAddress}! Welcome to ${hostname}`
+      }</h2>
 
       <center><img src="https://res.cloudinary.com/kentcdodds-com/image/upload/w_800,q_auto,f_auto/kentcdodds.com/illustrations/kody-flying_${teamColor}" style="max-width: 80%"></center>
       

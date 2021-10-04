@@ -36,6 +36,7 @@ async function sendToken({
 
   const user = await getUserByEmail(emailAddress).catch(() => {
     /* ignore... */
+    return null
   })
 
   await sendMagicLinkEmail({
