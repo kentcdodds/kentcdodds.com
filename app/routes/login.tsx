@@ -199,11 +199,6 @@ function Login() {
               you started.
             `}
           </Paragraph>
-          {/* TODO: remove notice */}
-          <p className="text-red-500 text-xs font-medium tracking-wider">
-            NOTICE: Any and all of your data may get deleted at any time during
-            development of the new site.
-          </p>
         </main>
       }
     />

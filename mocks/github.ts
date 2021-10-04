@@ -52,7 +52,7 @@ const githubHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
       const path = decodeURIComponent(req.params.path).trim()
       const isMockable =
         owner === 'kentcdodds' &&
-        repo === 'remix-kentcdodds' &&
+        repo === 'kentcdodds.com' &&
         path.startsWith('content')
 
       if (!isMockable) {

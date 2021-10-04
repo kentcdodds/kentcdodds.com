@@ -121,7 +121,7 @@ async function downloadFileBySha(sha: string) {
     'GET /repos/{owner}/{repo}/git/blobs/{file_sha}',
     {
       owner: 'kentcdodds',
-      repo: 'remix-kentcdodds',
+      repo: 'kentcdodds.com',
       file_sha: sha,
     },
   )
@@ -135,7 +135,7 @@ async function downloadFile(path: string) {
     'GET /repos/{owner}/{repo}/contents/{path}',
     {
       owner: 'kentcdodds',
-      repo: 'remix-kentcdodds',
+      repo: 'kentcdodds.com',
       path,
     },
   )) as {data: {content?: string; encoding?: string}}
@@ -160,7 +160,7 @@ async function downloadFile(path: string) {
 async function downloadDirList(path: string) {
   const resp = await octokit.repos.getContent({
     owner: 'kentcdodds',
-    repo: 'remix-kentcdodds',
+    repo: 'kentcdodds.com',
     path,
   })
   const data = resp.data

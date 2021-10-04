@@ -59,8 +59,6 @@ export const meta: MetaFunction = ({data}) => {
   const description =
     'Come check out how Kent C. Dodds can help you level up your career as a software engineer.'
   return {
-    // TODO: remove this when we're ready to launch
-    robots: 'noindex',
     viewport: 'width=device-width,initial-scale=1,viewport-fit=cover',
     charSet: 'utf-8',
     'theme-color': '#A9ADC1',
@@ -352,23 +350,6 @@ function App() {
       </head>
       <body className="dark:bg-gray-900 bg-white transition duration-500">
         <PageLoadingMessage />
-        {ENV.NODE_ENV === 'development' ? null : (
-          <NotificationMessage autoClose={false}>
-            <span role="img" aria-label="wave">
-              👋
-            </span>{' '}
-            Welcome to kent.dev. This site is{' '}
-            <strong>currently under construction</strong> and when it&apos;s
-            finished it will be hosted at kentcdodds.com. Until then, feel free
-            to poke around! All the source code is available at{' '}
-            <a
-              className="text-blue-500 underline"
-              href="https://github.com/kentcdodds/remix-kentcdodds"
-            >
-              github.com/kentcdodds/remix-kentcdodds
-            </a>
-          </NotificationMessage>
-        )}
         <NotificationMessage queryStringKey="message" delay={0.3} />
         <Navbar />
         <Outlet />

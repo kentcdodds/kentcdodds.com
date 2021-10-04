@@ -8,7 +8,7 @@ async function getCommit() {
   if (!commit) return `No COMMIT_SHA environment variable set.`
   try {
     const res = await fetch(
-      `https://api.github.com/repos/kentcdodds/remix-kentcdodds/commits/${commit}`,
+      `https://api.github.com/repos/kentcdodds/kentcdodds.com/commits/${commit}`,
     )
     const data = await res.json()
     return {

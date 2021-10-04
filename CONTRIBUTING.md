@@ -72,7 +72,7 @@ First, fork the repo, then do this:
 
 ```sh
 git clone <your-fork>
-cd ./remix-kentcdodds
+cd ./kentcdodds.com
 
 # copy the .env.example to .env
 #   everything's mocked out during development so you shouldn't need to
@@ -202,5 +202,5 @@ requests! Thanks!
 
 <!-- prettier-ignore-start -->
 [egghead]: https://egghead.io/series/how-to-contribute-to-an-open-source-project-on-github
-[issues]: https://github.com/kentcdodds/remix-kentcdodds/issues
+[issues]: https://github.com/kentcdodds/kentcdodds.com/issues
 <!-- prettier-ignore-end -->

@@ -9,6 +9,7 @@ import type {Await} from '~/types'
 import {prismaRead, prismaWrite} from '~/utils/prisma.server'
 import {requireAdminUser} from '~/utils/session.server'
 import {getErrorMessage} from '~/utils/misc'
+import {Button} from '~/components/button'
 
 type LoaderData = Await<ReturnType<typeof getLoaderData>>
 type User = LoaderData['users'][number]
@@ -43,10 +44,14 @@ export const action: ActionFunction = async ({request}) => {
     const {id, ...values} = Object.fromEntries(form)
     if (!id) return json({error: 'id is required'}, {status: 400})
 
-    await prismaWrite.user.update({
-      where: {id},
-      data: values,
-    })
+    if (request.method === 'DELETE') {
+      await prismaWrite.user.delete({where: {id}})
+    } else {
+      await prismaWrite.user.update({
+        where: {id},
+        data: values,
+      })
+    }
   } catch (error: unknown) {
     console.error(error)
     return json({error: getErrorMessage(error)})
@@ -83,20 +88,48 @@ function Cell({
   column: {id: string}
 }) {
   const [isEditing, setIsEditing] = React.useState(false)
-  if (propertyName === 'id') return value
+  const [doubleCheck, setDoubleCheck] = React.useState(false)
 
   return isEditing ? (
-    <Form
-      method="post"
-      onSubmit={() => setIsEditing(false)}
-      onBlur={() => setIsEditing(false)}
-      onKeyUp={e => {
-        if (e.key === 'Escape') setIsEditing(false)
-      }}
-    >
-      <input type="hidden" name="id" value={user.id} />
-      <input type="text" defaultValue={value} name={propertyName} autoFocus />
-    </Form>
+    propertyName === 'id' ? (
+      <Form
+        method="delete"
+        onSubmit={() => setIsEditing(false)}
+        onBlur={() => setIsEditing(false)}
+        onKeyUp={e => {
+          if (e.key === 'Escape') setIsEditing(false)
+        }}
+      >
+        <input type="hidden" name="id" value={user.id} />
+        <Button
+          type={doubleCheck ? 'submit' : 'button'}
+          variant="danger"
+          autoFocus
+          onClick={
+            doubleCheck
+              ? undefined
+              : e => {
+                  e.preventDefault()
+                  setDoubleCheck(true)
+                }
+          }
+        >
+          {doubleCheck ? 'You sure?' : 'Delete'}
+        </Button>
+      </Form>
+    ) : (
+      <Form
+        method="post"
+        onSubmit={() => setIsEditing(false)}
+        onBlur={() => setIsEditing(false)}
+        onKeyUp={e => {
+          if (e.key === 'Escape') setIsEditing(false)
+        }}
+      >
+        <input type="hidden" name="id" value={user.id} />
+        <input type="text" defaultValue={value} name={propertyName} autoFocus />
+      </Form>
+    )
   ) : (
     <button className="border-none" onClick={() => setIsEditing(true)}>
       {value || 'NO_VALUE'}

@@ -321,13 +321,15 @@ function Navbar() {
   return (
     <div className="px-5vw py-9 lg:py-12">
       <nav className="text-primary flex items-center justify-between mx-auto max-w-8xl">
-        <Link
-          prefetch="intent"
-          to="/"
-          className="text-primary underlined block whitespace-nowrap text-2xl font-medium focus:outline-none transition"
-        >
-          <h1>Kent C. Dodds</h1>
-        </Link>
+        <div>
+          <Link
+            prefetch="intent"
+            to="/"
+            className="text-primary underlined block whitespace-nowrap text-2xl font-medium focus:outline-none transition"
+          >
+            <h1>Kent C. Dodds</h1>
+          </Link>
+        </div>
 
         <ul className="hidden lg:flex">
           {LINKS.map(link => (

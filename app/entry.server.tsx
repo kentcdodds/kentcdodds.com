@@ -38,9 +38,6 @@ export default async function handleRequest(
 
   const html = `<!DOCTYPE html>${markup}`
 
-  // TODO: remove this when we go to production
-  responseHeaders.set('X-Robots-Tag', 'none')
-
   responseHeaders.set('X-Powered-By', 'Kody the Koala')
   responseHeaders.set('X-Fly-Region', process.env.FLY_REGION ?? 'unknown')
   responseHeaders.set('Content-Type', 'text/html')
@@ -58,9 +55,6 @@ export async function handleDataRequest(
   request: Request,
   dataResponse: Response,
 ) {
-  // TODO: remove this when we go to production
-  dataResponse.headers.set('X-Robots-Tag', 'none')
-
   dataResponse.headers.set('X-Powered-By', 'Kody the Koala')
   dataResponse.headers.set('X-Fly-Region', process.env.FLY_REGION ?? 'unknown')
   return dataResponse

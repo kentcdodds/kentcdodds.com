@@ -1,14 +1,22 @@
 import * as React from 'react'
-import type {ActionFunction, HeadersFunction, LoaderFunction} from 'remix'
+import type {
+  ActionFunction,
+  HeadersFunction,
+  LoaderFunction,
+  MetaFunction,
+} from 'remix'
 import {Form, json, redirect, useLoaderData, useActionData} from 'remix'
 import clsx from 'clsx'
+import Dialog from '@reach/dialog'
 import type {KCDHandle} from '~/types'
 import {useRootData} from '~/utils/use-root-data'
 import {getQrCodeDataURL} from '~/utils/qrcode.server'
 import {
   getDiscordAuthorizeURL,
+  getDisplayUrl,
   getDomainUrl,
   getErrorMessage,
+  getUrl,
   reuseUsefulLoaderHeaders,
 } from '~/utils/misc'
 import {
@@ -37,11 +45,30 @@ import {handleFormSubmission} from '~/utils/actions.server'
 import {EyeIcon} from '~/components/icons/eye-icon'
 import {PlusIcon} from '~/components/icons/plus-icon'
 import {Spacer} from '~/components/spacer'
-import Dialog from '@reach/dialog'
+import {getSocialMetas} from '~/utils/seo'
+import type {LoaderData as RootLoaderData} from '../root'
+import {getGenericSocialImage, images} from '~/images'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
   metas: [{httpEquiv: 'refresh', content: '1740'}],
+}
+
+export const meta: MetaFunction = ({parentsData}) => {
+  const {requestInfo} = parentsData.root as RootLoaderData
+  const domain = new URL(requestInfo.origin).host
+  return {
+    ...getSocialMetas({
+      title: `Your account on ${domain}`,
+      description: `Personal account information on ${domain}.`,
+      url: getUrl(requestInfo),
+      image: getGenericSocialImage({
+        url: getDisplayUrl(requestInfo),
+        featuredImage: images.kodySnowboardingWhite(),
+        words: `View your account info on ${domain}`,
+      }),
+    }),
+  }
 }
 
 type LoaderData = {qrLoginCode: string; sessionCount: number}

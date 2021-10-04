@@ -1,5 +1,6 @@
 import * as React from 'react'
-import {json, Link, LoaderFunction, useLoaderData} from 'remix'
+import {json, Link, useLoaderData} from 'remix'
+import type {LoaderFunction, MetaFunction} from 'remix'
 import {ButtonLink} from '~/components/button'
 import {Grid} from '~/components/grid'
 import {MailIcon} from '~/components/icons/mail-icon'
@@ -7,10 +8,29 @@ import {BlogSection} from '~/components/sections/blog-section'
 import {HeroSection} from '~/components/sections/hero-section'
 import {H2, H3, H6, Paragraph} from '~/components/typography'
 import {ConvertKitForm} from '~/convertkit/form'
-import {getImgProps, images} from '~/images'
+import {getGenericSocialImage, getImgProps, images} from '~/images'
 import type {Await} from '~/types'
 import {getBlogRecommendations} from '~/utils/blog.server'
 import {useRootData} from '~/utils/use-root-data'
+import {getSocialMetas} from '~/utils/seo'
+import {getDisplayUrl, getUrl} from '~/utils/misc'
+import type {LoaderData as RootLoaderData} from '../root'
+
+export const meta: MetaFunction = ({parentsData}) => {
+  const {requestInfo} = parentsData.root as RootLoaderData
+  return {
+    ...getSocialMetas({
+      title: `Subscribe to the KCD Mailing List`,
+      description: `Get weekly insights, ideas, and proven coding practices from the KCD Mailing List`,
+      url: getUrl(requestInfo),
+      image: getGenericSocialImage({
+        url: getDisplayUrl(requestInfo),
+        featuredImage: images.snowboard(),
+        words: `Subscribe to the KCD Mailing List`,
+      }),
+    }),
+  }
+}
 
 type LoaderData = {
   blogRecommendations: Await<ReturnType<typeof getBlogRecommendations>>

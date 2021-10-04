@@ -167,7 +167,7 @@ function CreditsIndex() {
               place for me to share my thoughts, ideas, and experiences as
               well as the thoughts, ideas, and experiences of others (yourself
               included). It's a full fleged–`}
-            <Link to="https://github.com/kentcdodds/remix-kentcdodds">
+            <Link to="https://github.com/kentcdodds/kentcdodds.com">
               open source
             </Link>
             {`–web application.`}
@@ -231,11 +231,11 @@ function CreditsIndex() {
             To prepare for the launch of this website, a number of terrific
             folks reviewed and
           `}
-          <a href="https://github.com/kentcdodds/remix-kentcdodds/issues?q=is%3Aissue">
+          <a href="https://github.com/kentcdodds/kentcdodds.com/issues?q=is%3Aissue">
             opened issues
           </a>
           {` and even made `}
-          <a href="https://github.com/kentcdodds/remix-kentcdodds/pulls?q=is%3Apr">
+          <a href="https://github.com/kentcdodds/kentcdodds.com/pulls?q=is%3Apr">
             pull requests
           </a>
           {` to get it ready for launch. Thank you!`}
