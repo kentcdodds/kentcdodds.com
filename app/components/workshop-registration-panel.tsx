@@ -1,9 +1,14 @@
 import * as React from 'react'
+import {isFuture, parseISO} from 'date-fns'
 import type {WorkshopEvent} from '~/utils/workshop-tickets.server'
 import {ButtonLink} from './button'
 import {H6} from './typography'
 
 function RegistrationPanel({workshopEvent}: {workshopEvent: WorkshopEvent}) {
+  const discounts = Object.entries(workshopEvent.discounts).filter(
+    ([, discount]) => isFuture(parseISO(discount.ends)),
+  )
+  const hasDiscounts = discounts.length > 0
   return (
     <div
       id="register"
@@ -16,12 +21,31 @@ function RegistrationPanel({workshopEvent}: {workshopEvent: WorkshopEvent}) {
             {`${workshopEvent.remaining} of ${workshopEvent.quantity} spots left`}
           </H6>
         </div>
-        {/* note: this heading doesn't scale on narrow screens */}
         <h5 className="text-black dark:text-white text-2xl font-medium">
           {workshopEvent.title}
         </h5>
-        <p className="text-secondary">{workshopEvent.date}</p>
+        <div className="flex flex-wrap gap-2">
+          <p className="text-secondary inline-block">{workshopEvent.date}</p>
+          <span>{hasDiscounts ? ' | ' : null}</span>
+          {hasDiscounts ? (
+            <div>
+              <p className="text-secondary inline-block">Grab a discount:</p>
+              <div className="inline-block ml-1">
+                <ul className="flex gap-2 list-none">
+                  {discounts.map(([code, discount]) => (
+                    <li key={code} className="inline-block">
+                      <a href={discount.url} className="underlined">
+                        {code}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ) : null}
+        </div>
       </div>
+      {/* note: this heading doesn't scale on narrow screens */}
 
       <ButtonLink to={workshopEvent.url} className="flex-none">
         Register here
