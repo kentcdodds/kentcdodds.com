@@ -41,7 +41,8 @@ async function sendToken({
   await sendMagicLinkEmail({
     emailAddress,
     confirmationLink,
-    userExists: Boolean(user),
+    user,
+    domainUrl,
   })
 }
 

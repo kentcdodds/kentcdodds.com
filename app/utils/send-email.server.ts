@@ -1,4 +1,6 @@
+import type {User} from '~/types'
 import {markdownToHtmlDocument} from './markdown.server'
+import {teams} from './misc'
 
 let mailgunDomain = 'mg.example.com'
 if (process.env.MAILGUN_DOMAIN) {
@@ -51,16 +53,25 @@ async function sendEmail({to, from, subject, text, html}: MailgunMessage) {
 async function sendMagicLinkEmail({
   emailAddress,
   confirmationLink,
-  userExists,
+  user,
+  domainUrl,
 }: {
   emailAddress: string
   confirmationLink: string
-  userExists: boolean
+  user?: User | null
+  domainUrl: string
 }) {
-  const sender = `"Kent C. Dodds Team" <team@kentcdodds.com>`
+  const sender = `"Kent C. Dodds Team" <team+kcd@kentcdodds.com>`
+  const {hostname} = new URL(domainUrl)
+  const userExists = Boolean(user)
 
-  const body = `
-Here's your sign-in link for kentcdodds.com:
+  const teamColor =
+    user?.team.toLowerCase() ??
+    teams[Math.floor(Math.random() * teams.length)]?.toLowerCase() ??
+    'white'
+
+  const text = `
+Here's your sign-in link for ${hostname}:
 
 ${confirmationLink}
 
@@ -68,7 +79,7 @@ ${
   userExists
     ? `Welcome back ${emailAddress}!`
     : `
-Clicking the link above will create a *new* account on kentcdodds.com with the email ${emailAddress}. Welcome!
+Clicking the link above will create a *new* account on ${hostname} with the email ${emailAddress}. Welcome!
 If you'd instead like to change your email address for an existing account, please send an email to team+email-change@kentcdodds.com from the original email address.
       `.trim()
 }
@@ -80,12 +91,69 @@ Thanks!
 P.S. If you did not request this email, you can safely ignore it.
   `.trim()
 
+  const html = `
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html charset=UTF-8" />
+    <style type="text/css">
+      @font-face {
+        font-family: 'Matter';
+        src: url('https://kcd-img.netlify.app/Matter-Medium.woff2') format('woff2'),
+          url('https://kcd-img.netlify.app/Matter-Medium.woff') format('woff');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Matter';
+        src: url('https://kcd-img.netlify.app/Matter-Regular.woff2') format('woff2'),
+          url('https://kcd-img.netlify.app/Matter-Regular.woff') format('woff');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+    </style>
+  </head>
+  <body style="font-family:Matter, sans-serif;">
+    <div style="margin: 0 auto; max-width: 450px;">
+
+      <h2 style="text-align: center">Welcome ${
+        userExists ? 'back to' : 'to'
+      } Kent C. Dodds' site!</h2>
+
+      <center><img src="https://res.cloudinary.com/kentcdodds-com/image/upload/w_800,q_auto,f_auto/kentcdodds.com/illustrations/kody-flying_${teamColor}" style="max-width: 80%"></center>
+      
+      <h3 style="text-align: center">Click the button below to login to ${hostname}</h3>
+
+      <a href="${confirmationLink}" style="display: block; margin: 0 auto; width: 80%; padding: 1.5rem; background: #A6DEE4; border-radius: 7px; border-width: 0; font-size: 1.1rem; text-align: center; font-family: sans-serif; text-decoration: none; color: black">
+        ${userExists ? 'Login' : 'Create Account'}
+      </a>
+
+      <div style="text-align: center; margin-top: 1rem; font-size: .9rem">
+        <div style="color: grey">This link is valid for 30 minutes.</div>
+        <a href="${domainUrl}/login" style="margin-top: .4rem; display: block">Click here to request a new link.</a>
+      </div>
+        
+      <hr style="width: 20%; height: 0px; border: 1px solid lightgrey; margin-top: 2rem; margin-bottom: 2rem">
+        
+      <div style="text-align: center; color: grey; font-size: .8rem; line-height: 1.2rem">
+        You recieved this because your email address was used to sign up for an account on
+        <a href="${domainUrl}" style="color: grey">${hostname}</a>. If you didn't sign up for an account,
+        feel free to disregard this email.
+      </div>
+    </div>
+  </body>
+</html>
+  `
+
   const message = {
     from: sender,
     to: emailAddress,
     subject: `Here's your Magic ✨ sign-in link for kentcdodds.com`,
-    text: body,
-    html: await markdownToHtmlDocument(body),
+    text,
+    html,
   }
 
   await sendEmail(message)

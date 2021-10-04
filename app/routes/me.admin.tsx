@@ -90,6 +90,12 @@ function Cell({
   const [isEditing, setIsEditing] = React.useState(false)
   const [doubleCheck, setDoubleCheck] = React.useState(false)
 
+  React.useEffect(() => {
+    if (!isEditing) {
+      setDoubleCheck(false)
+    }
+  }, [isEditing])
+
   return isEditing ? (
     propertyName === 'id' ? (
       <Form
