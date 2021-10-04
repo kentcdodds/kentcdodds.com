@@ -233,13 +233,7 @@ function PodcastHome() {
               // Because we have a link right under the tab, we'll keep this off
               // the tab "tree" and rely on focusing/activating the link.
               tabIndex={-1}
-              className={clsx(
-                'hover:text-primary p-0 text-4xl leading-tight focus:bg-transparent border-none focus:outline-none',
-                {
-                  'text-primary': season.seasonNumber === seasonNumber,
-                  'text-blueGray-500': season.seasonNumber !== seasonNumber,
-                },
-              )}
+              className="hover:text-primary p-0 text-4xl leading-tight focus:bg-transparent border-none focus:outline-none"
             >
               {/*
                 The link is here for progressive enhancement. Even though this
@@ -248,7 +242,13 @@ function PodcastHome() {
                 off, but more importantly it'll allow people to meta-click it.
               */}
               <Link
-                className="focus:text-primary focus:outline-none"
+                className={clsx(
+                  'hover:text-primary focus:text-primary focus:outline-none',
+                  {
+                    'text-primary': season.seasonNumber === seasonNumber,
+                    'text-blueGray-500': season.seasonNumber !== seasonNumber,
+                  },
+                )}
                 to={String(season.seasonNumber).padStart(2, '0')}
                 onClick={e => {
                   if (e.metaKey) {
