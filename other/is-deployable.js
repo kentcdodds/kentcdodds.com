@@ -3,7 +3,7 @@ const {getChangedFiles, fetchJson} = require('./get-changed-files')
 const [currentCommitSha] = process.argv.slice(2)
 
 async function go() {
-  const buildInfo = await fetchJson('https://kent.dev/build/info.json')
+  const buildInfo = await fetchJson('https://kentcdodds.com/build/info.json')
   const compareCommitSha = buildInfo.commit.sha
   const changedFiles = await getChangedFiles(currentCommitSha, compareCommitSha)
   console.error('Determining whether the changed files are deployable', {

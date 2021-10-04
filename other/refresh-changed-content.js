@@ -5,10 +5,12 @@ const {postRefreshCache} = require('./utils')
 const [currentCommitSha] = process.argv.slice(2)
 
 async function go() {
-  const shaInfo = await fetchJson('https://kent.dev/refresh-commit-sha.json')
+  const shaInfo = await fetchJson(
+    'https://kentcdodds.com/refresh-commit-sha.json',
+  )
   let compareSha = shaInfo?.sha
   if (!compareSha) {
-    const buildInfo = await fetchJson('https://kent.dev/build/info.json')
+    const buildInfo = await fetchJson('https://kentcdodds.com/build/info.json')
     compareSha = buildInfo.commit.sha
   }
   if (typeof compareSha !== 'string') {
