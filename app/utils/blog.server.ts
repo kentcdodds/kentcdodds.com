@@ -188,7 +188,7 @@ async function getBlogReadRankings({
   const rankingObjs = await cachified({
     key,
     cache: redisCache,
-    maxAge: 1000 * 60 * 60 * 24 * 7,
+    maxAge: slug ? 1000 * 60 * 60 * 24 * 7 : 1000 * 60 * 60,
     request,
     forceFresh,
     checkValue: (value: unknown) =>
