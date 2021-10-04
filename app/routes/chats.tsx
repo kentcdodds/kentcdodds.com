@@ -207,7 +207,7 @@ function PodcastHome() {
             <Paragraph>
               {`
                 Once we know what we want to commit you to, I kick things off
-                and try to stear the conversation in a direction that will
+                and try to steer the conversation in a direction that will
                 prepare you to accept that invitation and hopefully help you
                 make that change in your life. I hope you take advantage of this
                 opportunity.
