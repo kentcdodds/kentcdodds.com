@@ -57,7 +57,7 @@ function IntroductionSection() {
         <H2 variant="secondary" as="p" className="mt-12">
           {`
             I'm also a big extreme sports enthusiast. When I'm not hanging out
-            with my family or at the computer you can find me cruizing around on
+            with my family or at the computer you can find me cruising around on
             my onewheel or hitting the slopes on my snowboard when it's cold.
           `}
         </H2>
