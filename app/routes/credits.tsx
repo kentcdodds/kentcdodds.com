@@ -219,6 +219,16 @@ function CreditsIndex() {
       />
       <Grid className="prose prose-light dark:prose-dark gap-y-20 lg:gap-y-32">
         <Paragraph className="col-span-4">
+          <a href="https://twitter.com/ryanflorence">Ryan Florence</a>
+          {` and other friends at `}
+          <a href="https://remix.run">Remix.run</a>
+          {`
+            were super helpful as I was figuring out the best way to rewrite my
+            website in this new technology with completely new and improved
+            features that far exceeded what my website had been previously.
+          `}
+        </Paragraph>
+        <Paragraph className="col-span-4">
           The syntax highlighting theme in blog posts is inspired by{' '}
           <a href="https://twitter.com/sarah_edo">Sarah Drasner&apos;s</a>{' '}
           <a href="https://github.com/sdras/night-owl-vscode-theme">
@@ -239,6 +249,24 @@ function CreditsIndex() {
             pull requests
           </a>
           {` to get it ready for launch. Thank you!`}
+        </Paragraph>
+        <Paragraph className="col-span-4">
+          {`The folks at`}
+          <a href="https://fly.io">Fly.io</a>
+          {`
+            were an enormous help in getting me off the ground with hosting the
+            site and databases. The backend is totally not my domain and they
+            seriously helped me be successful.
+          `}
+        </Paragraph>
+        <Paragraph className="col-span-4">
+          {`The folks at `}
+          <a href="https://fly.io">Fly.io</a>
+          {`
+            were an enormous help in getting me off the ground with hosting the
+            site and databases. The backend is totally not my domain and they
+            seriously helped me be successful.
+          `}
         </Paragraph>
       </Grid>
     </>

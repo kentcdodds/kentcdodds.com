@@ -108,3 +108,21 @@
   behance: https://www.behance.net/MChahin
   twitter: https://twitter.com/beastochahin
   dribbble: https://dribbble.com/MohChahin
+
+- name: Sean Olszewski
+  cloudinaryId: kentcdodds.com/content/credits/sean-olszewski
+  role: Audio Magic
+  description: >-
+    Sean worked on the audio for the launch video as well as the Chats with Kent
+    podcast.
+  twitter: https://twitter.com/__chefski__
+  github: https://github.com/SeanROlszewski
+
+- name: Daniel Nisttahuz
+  cloudinaryId: kentcdodds.com/content/credits/daniel-nisttahuz
+  role: Launch Video
+  description: >-
+    Daniel was the guy behind the amazing launch video.
+  twitter: https://twitter.com/dnisttahuz
+  linkedin: https://www.linkedin.com/in/danielnisttahuz
+  website: https://www.dniel.io/
