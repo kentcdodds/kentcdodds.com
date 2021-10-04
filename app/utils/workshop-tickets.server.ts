@@ -1,3 +1,6 @@
+import {cachified} from './cache.server'
+import {redisCache} from './redis.server'
+
 type TiToDiscount = {
   code: string
   state: 'current' | 'past' | 'unused' | 'upcoming' | 'used'
@@ -147,9 +150,34 @@ async function getScheduledEvents() {
   return events
 }
 
+async function getCachedScheduledEvents({
+  request,
+  forceFresh,
+}: {
+  request: Request
+  forceFresh?: boolean
+}) {
+  const scheduledEvents = await cachified({
+    key: 'tito:scheduled-events',
+    cache: redisCache,
+    getFreshValue: getScheduledEvents,
+    checkValue: (value: unknown) => Array.isArray(value),
+    request,
+    forceFresh,
+    maxAge: 1000 * 60 * 24 * 7,
+  })
+  return scheduledEvents
+}
+
 // we don't want the TiTo integration to prevent the page from showing up
-function getScheduledEventsIgnoreErrors() {
-  return getScheduledEvents().catch(error => {
+function getScheduledEventsIgnoreErrors({
+  request,
+  forceFresh,
+}: {
+  request: Request
+  forceFresh?: boolean
+}) {
+  return getCachedScheduledEvents({request, forceFresh}).catch(error => {
     console.error('There was a problem retrieving ti.to info', error)
     return []
   })

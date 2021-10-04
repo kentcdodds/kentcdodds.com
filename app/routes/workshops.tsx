@@ -24,7 +24,7 @@ type LoaderData = {
 export const loader: LoaderFunction = async ({request}) => {
   const timings: Timings = {}
   const workshops = await getWorkshops({request, timings})
-  const workshopEvents = await getScheduledEvents()
+  const workshopEvents = await getScheduledEvents({request})
 
   const tags = new Set<string>()
   for (const workshop of workshops) {
