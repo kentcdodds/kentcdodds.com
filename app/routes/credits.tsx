@@ -251,15 +251,6 @@ function CreditsIndex() {
           {` to get it ready for launch. Thank you!`}
         </Paragraph>
         <Paragraph className="col-span-4">
-          {`The folks at`}
-          <a href="https://fly.io">Fly.io</a>
-          {`
-            were an enormous help in getting me off the ground with hosting the
-            site and databases. The backend is totally not my domain and they
-            seriously helped me be successful.
-          `}
-        </Paragraph>
-        <Paragraph className="col-span-4">
           {`The folks at `}
           <a href="https://fly.io">Fly.io</a>
           {`
