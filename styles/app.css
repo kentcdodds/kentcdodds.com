@@ -166,6 +166,8 @@ a {
 
 .yt-lite {
   border-radius: 0.5rem;
+  max-height: 90vh;
+  max-width: 90vw;
 }
 /* this is for react-lite-youtube-embed */
 /* Annoyingly the background image can be a pixel taller than the video in front of it when the video is playing */
