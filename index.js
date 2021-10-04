@@ -26,13 +26,13 @@ app.disable('x-powered-by')
 
 if (process.env.FLY) {
   app.set('trust proxy')
-  app.all('*', (req, res, next) => {
-    if (req.secure) {
-      next()
-    } else {
-      res.redirect(`https://${req.hostname}${req.url}`)
-    }
-  })
+  // app.all('*', (req, res, next) => {
+  //   if (req.secure) {
+  //     next()
+  //   } else {
+  //     res.redirect(`https://${req.hostname}${req.url}`)
+  //   }
+  // })
 }
 
 app.all('*', getRedirectsMiddleware())
