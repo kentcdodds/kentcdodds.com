@@ -164,7 +164,7 @@ async function getCachedScheduledEvents({
     checkValue: (value: unknown) => Array.isArray(value),
     request,
     forceFresh,
-    maxAge: 1000 * 60 * 24 * 7,
+    maxAge: 1000 * 60 * 24,
   })
   return scheduledEvents
 }
