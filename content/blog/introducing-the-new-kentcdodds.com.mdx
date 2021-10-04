@@ -1,0 +1,174 @@
+---
+title: Introducing the new kentcdodds.com
+date: 2021-10-21
+description:
+  This site just experienced a huge rewrite and I want to show you around a bit.
+categories:
+  - personal
+meta:
+  keywords:
+    - kent c. dodds
+    - kcd teams
+    - kcd discord
+    - the call kent podcast
+bannerCloudinaryId: kent/riding-onewheel-outdoors-fast
+bannerAlt: Kent riding on a onewheel in the outdoors
+---
+
+I'm so excited to announce the launch of my brand new website! In this post I'm
+going to describe to you what this website can do for your learning and
+advancement as a software engineer. If you want a more technical deep dive,
+check out
+[How I built a modern website in 2021](/blog/how-i-built-a-modern-website-in-2021).
+
+Alright, let's get into it!
+
+https://youtu.be/7H2VsJb8LgY
+
+Hopefully you are feeling sufficiently hyped! I'm super excited about this. So
+here's a high-level of everything I want to tell you about:
+
+## The Call Kent Podcast
+
+I'm talking about this one first because I don't want you to miss it.
+[The Call Kent Podcast](/calls) is awesome. Here's how it works: You record a ~2
+minute question or discussion topic and I record my reply. Then our conversation
+gets turned into a podcast episode and published automatically. It's rad and
+we've already got a bunch of episodes for you to listen to and get an idea of
+what this really is all about. Enjoy!
+
+## Getting to know me
+
+Another thing I did as part of this relaunch is I created a video to introduce
+myself to you all! You can
+[watch the short version here](https://youtu.be/a7VxBwLGcDE). Here's the full
+version:
+
+https://youtu.be/sxcRxZpUJWo
+
+I want to teach you how to build better software. When you're making a choice
+about who to teach you, you're putting trust in that person. So the goal of the
+video was to introduce myself to you and help you get an idea of my personal
+values and teaching philosophy. I hope you enjoy it!
+
+## Dark Mode
+
+Of course, this is the feature everyone wants. Well it's here now. So there.
+Enjoy!
+
+## My photo
+
+I've had the same user photo for a very long time. It was definitely time for an
+update :)
+
+![Kent's old profile picture with an arrow leading to Kent's new profile picture](https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/introducing-the-new-kentcdodds.com/new-kent_luxjl8.png)
+
+## User Accounts
+
+When I decided to rewrite my site from Gatsby (a static site generation
+framework) to use Remix (a server side rendering framework), I relized that I
+could do so much more. With a real server, I could add authentication and a
+database without forcing my users to look at spinners all the time (SSG also
+stands for "spinner site generation" 😆).
+
+One cool thing I can do is give good content recommendations based on what
+you're looking at. So at the bottom of every post are other related posts. But
+with user accounts we can take this further. I can keep track of the posts
+you've read already and make sure I don't recommend a post you've read recently.
+And since I'm keeping track of post reads, I can also recommend one of the more
+popular posts as well. The whole thing is dynamic and completely user-specific.
+Additionally, one of the recommendations is completely random, just to spice
+things up a bit 🤌
+
+In the future, you'll also be able to have a lot more control over your mailing
+list subscriptions on your user account page. And I'm planning on allowing you
+to take notes in blog posts and also mark some posts as a favorite. Cool stuff
+upcoming!
+
+Oh, and then there's also the whole teams thing...
+
+## Teams
+
+<Themed
+  dark={
+    <a href="/signup">
+      <BlogImage
+        cloudinaryId="kentcdodds.com/content/blog/introducing-the-new-kentcdodds.com/choose-team_rynvdn"
+        imgProps={{alt: 'Three koalas on snowboards in red, yellow, and blue'}}
+      />
+    </a>
+  }
+  light={
+    <a href="/signup">
+      <BlogImage
+        cloudinaryId="kentcdodds.com/content/blog/introducing-the-new-kentcdodds.com/choose-team-light_zze8cf"
+        imgProps={{alt: 'Three koalas on snowboards in red, yellow, and blue'}}
+      />
+    </a>
+  }
+/>
+
+When you sign up for an account on this site, you have to select a team. Think
+"Ingress" or "Pokémon Go." But... why? It's for fun.
+
+Here's what you get out of it. As a team member, you can connect your discord
+account and get access to an exclusive channel on discord for your team. Teams
+"own" my blog posts (kinda like a Pokémon Go gym) based on some magic and
+(hopefully fair) rules which you can read about on [the teams page](/teams).
+
+The app also changes some of the colors based on your team or the team that owns
+a particular post. You can filter posts by which team is the leader and you'll
+notice a little indicator on each post showing the rankings.
+
+It's fun what you can do when you have a server and Remix makes it just so easy
+to manage the communication between the server and client.
+
+## Workshops
+
+I had workshops on my old site and they're back on this site. The difference is
+there's no weird loading state to determine whether there's currently an event
+available (again with the server side rendering stuff).
+
+Go ahead and [try it for yourself](/workshops). I scheduled a few special for
+this launch. Grab your ticket before they're gone!
+
+## Chats with Kent Season 4
+
+As part of this launch, I talked with a bunch of amazing folks for Season 4 of
+[The Chats with Kent Podcast](/chats)! And there are 25 episodes! Twice as much
+goodness as usual. [The first episode](/chats/04/01) actually has Michael Chan
+as the host and me as the guest to introduce you to the season and talk about
+this new website. I think you'll love it!
+
+## Public Analytics and Metrics
+
+I disabled Google Analytics on my old website because I rarely looked at them
+and I didn't like the privacy implications. When I was working on this site I
+found [Fathom](https://kcd.im/fathom) and knew this is what I wanted. In
+addition to being ethical analytics, Fathom also allows you to make your
+analytics URL public, so I did!
+[Checkout the analytics for this site](https://kcd.im/kcd-fathom).
+
+[![fathom analytics screenshot](https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/introducing-the-new-kentcdodds.com/fathom_gx7md5.png)](https://kcd.im/kcd-fathom)
+
+Also, [Erick Tamayo](https://twitter.com/ericktamayo) created a Remix-specific
+metrics tracking platform. It's in beta right now, but I just had to try it.
+It's fantastic.
+[Checkout the metrics for this site](https://kcd.im/kcd-metronome).
+
+[![metronome metrics screenshot](https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/introducing-the-new-kentcdodds.com/metronome_b08gpc.png)](https://kcd.im/kcd-metronome)
+
+## Credits
+
+This was definitely a team effort. A bunch of great people helped make this
+project as successful as possible. You can learn about them on
+[the Credits page](/credits). Thank you friends!
+
+## Conclusion
+
+I learned so much building this site for you. I'm looking forward to all the
+other cool things I'll be able to do here now that this first iteration is
+finished. Stay tuned! I hope this place helps you learn to be a better software
+engineer.
+
+Thanks for reading!
