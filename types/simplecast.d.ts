@@ -15,7 +15,7 @@ type SimplecastEpisode = {
   image_url: string
   audio_file_url: string
   slug: string
-  description: string
+  description?: string
   season: SimpelcastSeasonListItem
   long_description: string
   title: string
@@ -28,9 +28,17 @@ type SimplecastEpisodeListItem = Pick<
   'status' | 'is_hidden' | 'id'
 >
 
+type SimplecastTooManyRequests = {
+  status: 429
+  href: null
+  error_message: string
+  error: string
+}
+
 export {
   SimplecastCollectionResponse,
   SimpelcastSeasonListItem,
   SimplecastEpisode,
   SimplecastEpisodeListItem,
+  SimplecastTooManyRequests,
 }

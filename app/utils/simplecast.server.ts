@@ -2,6 +2,7 @@ import type {
   SimplecastCollectionResponse,
   SimpelcastSeasonListItem,
   SimplecastEpisode,
+  SimplecastTooManyRequests,
   SimplecastEpisodeListItem,
   CWKEpisode,
   CWKSeason,
@@ -26,6 +27,14 @@ const headers = {
 
 const seasonsCacheKey = `simplecast:seasons:${CHATS_WITH_KENT_PODCAST_ID}`
 
+function isTooManyRequests(json: unknown): json is SimplecastTooManyRequests {
+  return (
+    typeof json === 'object' &&
+    json !== null &&
+    json.hasOwnProperty('too_many_requests')
+  )
+}
+
 const getCachedSeasons = async ({
   request,
   forceFresh,
@@ -37,23 +46,56 @@ const getCachedSeasons = async ({
     cache: redisCache,
     key: seasonsCacheKey,
     maxAge: 1000 * 60 * 60 * 24 * 7,
-    getFreshValue: getSeasons,
+    getFreshValue: () => getSeasons({request, forceFresh}),
     request,
     forceFresh,
     checkValue: (value: unknown) =>
       Array.isArray(value) &&
+      value.length > 0 &&
       value.every(
         v => typeof v.seasonNumber === 'number' && Array.isArray(v.episodes),
       ),
   })
 
-async function getSeasons() {
+const getCachedEpisode = async (
+  episodeId: string,
+  {
+    request,
+    forceFresh,
+  }: {
+    request: Request
+    forceFresh?: boolean
+  },
+) =>
+  cachified({
+    cache: redisCache,
+    key: `simplecast:episode:${episodeId}`,
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+    getFreshValue: () => getEpisode(episodeId),
+    request,
+    forceFresh,
+    checkValue: (value: unknown) =>
+      typeof value === 'object' && value !== null && 'title' in value,
+  })
+
+async function getSeasons({
+  request,
+  forceFresh,
+}: {
+  request: Request
+  forceFresh?: boolean
+}) {
   const res = await fetch(
     `https://api.simplecast.com/podcasts/${CHATS_WITH_KENT_PODCAST_ID}/seasons`,
     {headers},
   )
-  const {collection} =
-    (await res.json()) as SimplecastCollectionResponse<SimpelcastSeasonListItem>
+  const json = (await res.json()) as
+    | SimplecastCollectionResponse<SimpelcastSeasonListItem>
+    | SimplecastTooManyRequests
+  if (isTooManyRequests(json)) {
+    return []
+  }
+  const {collection} = json
 
   const seasons = await Promise.all(
     collection.map(async ({href, number}) => {
@@ -64,7 +106,7 @@ async function getSeasons() {
         )
         return
       }
-      const episodes = await getEpisodes(seasonId)
+      const episodes = await getEpisodes(seasonId, {request, forceFresh})
       if (!episodes.length) return null
 
       return {seasonNumber: number, episodes}
@@ -74,16 +116,31 @@ async function getSeasons() {
   return sortBy(seasons, s => Number(s.seasonNumber))
 }
 
-async function getEpisodes(seasonId: string) {
+async function getEpisodes(
+  seasonId: string,
+  {
+    request,
+    forceFresh,
+  }: {
+    request: Request
+    forceFresh?: boolean
+  },
+) {
   const url = new URL(`https://api.simplecast.com/seasons/${seasonId}/episodes`)
   url.searchParams.set('limit', '300')
   const res = await fetch(url.toString(), {headers})
-  const {collection} =
-    (await res.json()) as SimplecastCollectionResponse<SimplecastEpisodeListItem>
+  const json = (await res.json()) as
+    | SimplecastCollectionResponse<SimplecastEpisodeListItem>
+    | SimplecastTooManyRequests
+  if (isTooManyRequests(json)) {
+    return []
+  }
+
+  const {collection} = json
   const episodes = await Promise.all(
     collection
       .filter(({status, is_hidden}) => status === 'published' && !is_hidden)
-      .map(({id}) => getEpisode(id)),
+      .map(({id}) => getCachedEpisode(id, {request, forceFresh})),
   )
   return episodes.filter(typedBoolean)
 }
@@ -92,6 +149,17 @@ async function getEpisode(episodeId: string) {
   const res = await fetch(`https://api.simplecast.com/episodes/${episodeId}`, {
     headers,
   })
+  const json = (await res.json()) as
+    | SimplecastEpisode
+    | SimplecastTooManyRequests
+  if (isTooManyRequests(json)) {
+    return null
+  }
+
+  if (!json.description) {
+    debugger
+  }
+
   const {
     id,
     is_published,
@@ -99,7 +167,7 @@ async function getEpisode(episodeId: string) {
     slug,
     transcription: transcriptMarkdown,
     long_description: summaryMarkdown,
-    description: descriptionMarkdown,
+    description: descriptionMarkdown = '',
     image_url,
     number,
     duration,
@@ -107,7 +175,8 @@ async function getEpisode(episodeId: string) {
     season: {number: seasonNumber},
     keywords: keywordsData,
     enclosure_url: mediaUrl,
-  } = (await res.json()) as SimplecastEpisode
+  } = json
+
   if (!is_published) {
     return null
   }
