@@ -90,7 +90,14 @@ POST,DELETE,PATCH,PUT  /                                                https://
 /humans.txt                                                              /credits
 
 # during local dev, sometimes the service worker is installed from other apps.
-/mockServiceWorker.js                                                    /
+/mockServiceWorker.js                                                    /404
+# and I guess we've still got some zombie service workers from the old site 🤷‍♂️
+/sw.js                                                                   /404
+# Gatsby site used to have stuff at this route and we don't anymore so...
+/static(.*)                                                              /404
+
+# I didn't bring over my writing blog
+/writing/:slug*                                                          https://kentcdodds-old.netlify.app/writing/:slug*
 
 ############################## some old redirects we should hang onto...
 /blog/always-use-memo-your-context-value                                /blog/how-to-optimize-your-context-value
