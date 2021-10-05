@@ -180,8 +180,8 @@ need to make sure that when I make an update to some content, the Redis cache
 gets refreshed.
 
 And that's what this first GitHub action does. First it determines all content
-changes that occurred between the commit that's being built and the commit of the
-last time there was a refresh (that value is stored in redis and my server
+changes that occurred between the commit that's being built and the commit of
+the last time there was a refresh (that value is stored in redis and my server
 exposes an endpoint for my action to retrieve it). If any of the changed files
 were in the `./content` directory, then the action makes an authenticated POST
 request to another endpoint on my server with all the content files that were
@@ -189,7 +189,7 @@ changed. Then my server retrieves all the content from the GitHub API,
 recompiles the MDX pages, and pushes the update to the Redis cache which Fly.io
 automatically propagates to the other regions.
 
-This reduces what used to take 10-25 minutes down to 20 seconds. And it saves me
+This reduces what used to take 10-25 minutes down to 8 seconds. And it saves me
 computational resources as well because fixing a typo in my content doesn't
 necessitate a rebuild/redeploy/cache bust of the whole site.
 
@@ -856,9 +856,9 @@ Doing this means I don't need to worry about storing passwords or handling
 password resets/changes. But this wasn't just a selfish/lazy decision. I feel
 strongly that magic links are the best authentication system for an app like
 mine. Keep in mind that pretty much every other app has a "magic link"-like auth
-system even if it's implicit because of the "reset password" flow which emails you
-a link to reset your password. So it's certainly not any less secure. In fact,
-actually more secure because there's no password to lose.
+system even if it's implicit because of the "reset password" flow which emails
+you a link to reset your password. So it's certainly not any less secure. In
+fact, actually more secure because there's no password to lose.
 
 Oh, and before you say:
 
