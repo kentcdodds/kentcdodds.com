@@ -42,6 +42,11 @@ export default async function handleRequest(
   responseHeaders.set('X-Fly-Region', process.env.FLY_REGION ?? 'unknown')
   responseHeaders.set('Content-Type', 'text/html')
   responseHeaders.set('Content-Length', String(Buffer.byteLength(html)))
+  // if they connect once with HTTPS, then they'll connect with HTTPS for the next hundred years
+  responseHeaders.set(
+    'Strict-Transport-Security',
+    `max-age=${60 * 60 * 24 * 365 * 100}`,
+  )
 
   return new Response(html, {
     status: responseStatusCode,
@@ -57,5 +62,10 @@ export async function handleDataRequest(
 ) {
   dataResponse.headers.set('X-Powered-By', 'Kody the Koala')
   dataResponse.headers.set('X-Fly-Region', process.env.FLY_REGION ?? 'unknown')
+  // if they connect once with HTTPS, then they'll connect with HTTPS for the next hundred years
+  dataResponse.headers.set(
+    'Strict-Transport-Security',
+    `max-age=${60 * 60 * 24 * 365 * 100}`,
+  )
   return dataResponse
 }
