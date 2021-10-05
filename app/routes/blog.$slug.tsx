@@ -243,7 +243,7 @@ function ArticleFooter({
             })}`}
           >
             Discuss on Twitter
-          </Link>
+          </a>
           <span className="self-center mx-3 text-xs">•</span>
           <Link
             className="underlined dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
