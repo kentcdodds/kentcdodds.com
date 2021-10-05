@@ -318,7 +318,7 @@ function App() {
       className={clsx(theme, `set-color-team-current-${team.toLowerCase()}`)}
     >
       <head>
-        {process.env.FLY ? (
+        {ENV.FLY ? (
           <script
             dangerouslySetInnerHTML={{
               __html: `
