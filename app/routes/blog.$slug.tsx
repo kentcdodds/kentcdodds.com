@@ -234,9 +234,11 @@ function ArticleFooter({
         </div>
 
         <div className="flex">
-          <Link
+          <a
             className="underlined dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
-            to={`https://twitter.com/search?${new URLSearchParams({
+            target="_blank"
+            rel="noreferrer noopener"
+            href={`https://twitter.com/search?${new URLSearchParams({
               q: permalink,
             })}`}
           >
