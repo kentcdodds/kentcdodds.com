@@ -340,13 +340,13 @@ if (window.location.protocol === 'http:') {
           rel="icon"
           type="image/png"
           sizes="32x32"
-          href="/favicon-32x32.png"
+          href="/favicons/favicon-32x32.png"
         />
         <link
           rel="icon"
           type="image/png"
           sizes="16x16"
-          href="/favicon-16x16.png"
+          href="/favicons/favicon-16x16.png"
         />
         <link rel="manifest" href="/site.webmanifest" />
         {metas.map((m, i) => (
