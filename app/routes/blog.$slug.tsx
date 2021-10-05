@@ -89,7 +89,7 @@ type LoaderData = CatchData & {
 
 export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
   // the loader won't handle this anyway, we've got this handled in other-routes.server.ts
-  if (params.slug === 'rss.xml') return
+  if (params.slug === 'rss.xml') return null
 
   const timings: Timings = {}
   const page = await getMdxPage(
