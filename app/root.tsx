@@ -318,6 +318,18 @@ function App() {
       className={clsx(theme, `set-color-team-current-${team.toLowerCase()}`)}
     >
       <head>
+        {process.env.FLY ? (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+// this is a temporary solution until I can figure out a safe way to do this on the server 😅
+if (window.location.protocol === 'http:') {
+  window.location.href = window.location.href.replace('http:', 'https:');
+}
+        `.trim(),
+            }}
+          />
+        ) : null}
         <Meta />
         <link
           rel="apple-touch-icon"
