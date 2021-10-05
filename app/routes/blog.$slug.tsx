@@ -211,9 +211,11 @@ function useOnRead({
 
 function ArticleFooter({
   permalink,
+  slug,
   title = 'an awesome post',
 }: {
   permalink: string
+  slug: string
   title?: string
 }) {
   return (
@@ -243,12 +245,14 @@ function ArticleFooter({
             Discuss on Twitter
           </Link>
           <span className="self-center mx-3 text-xs">•</span>
-          <Link
+          <a
             className="underlined dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
-            to="/"
+            target="_blank"
+            rel="noreferrer noopener"
+            href={`https://github.com/kentcdodds/kentcdodds.com/edit/main/content/blog/${slug}.mdx`}
           >
             Edit on GitHub
-          </Link>
+          </a>
         </div>
       </div>
       <div className="col-span-full lg:col-span-2 lg:col-start-3">
@@ -434,6 +438,7 @@ export default function MdxScreen() {
       <div className="mb-64">
         <ArticleFooter
           permalink={permalink}
+          slug={slug}
           title={data.page.frontmatter.title}
         />
       </div>
