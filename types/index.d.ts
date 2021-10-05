@@ -13,6 +13,7 @@ type Await<Type> = Type extends Promise<infer Value> ? Await<Value> : Type
 type MdxPage = {
   code: string
   slug: string
+  editLink: string
   readTime?: ReturnType<typeof calculateReadingTime>
 
   /**

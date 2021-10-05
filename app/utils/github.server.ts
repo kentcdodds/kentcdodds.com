@@ -49,7 +49,7 @@ async function downloadFirstMdxFile(
  */
 async function downloadMdxFileOrDirectory(
   relativeMdxFileOrDirectory: string,
-): Promise<Array<GitHubFile>> {
+): Promise<{entry: string; files: Array<GitHubFile>}> {
   const mdxFileOrDirectory = `content/${relativeMdxFileOrDirectory}`
 
   const parentDir = nodePath.dirname(mdxFileOrDirectory)
@@ -61,25 +61,29 @@ async function downloadMdxFileOrDirectory(
   const exactMatch = potentials.find(
     ({name}) => nodePath.parse(name).name === mdxFileWithoutExt,
   )
+  const dirPotential = potentials.find(({type}) => type === 'dir')
 
   const content = await downloadFirstMdxFile(
     exactMatch ? [exactMatch] : potentials,
   )
-  let downloaded: Array<GitHubFile>
-  // /content/about.mdx => entry is about.mdx, but compileMdx needs
-  // the entry to be called "/content/index.mdx" so we'll set it to that
-  // because this is the entry for this path
+  let files: Array<GitHubFile> = []
+  let entry = mdxFileOrDirectory
   if (content) {
-    downloaded = [
-      {path: nodePath.join(mdxFileOrDirectory, 'index.mdx'), content},
-    ]
-  } else if (potentials.find(({type}) => type === 'dir')) {
-    downloaded = await downloadDirectory(mdxFileOrDirectory)
-  } else {
-    downloaded = []
+    // technically you can get the blog post by adding .mdx at the end... Weird
+    // but may as well handle it since that's easy...
+    entry = mdxFileOrDirectory.endsWith('.mdx')
+      ? mdxFileOrDirectory
+      : `${mdxFileOrDirectory}.mdx`
+    // /content/about.mdx => entry is about.mdx, but compileMdx needs
+    // the entry to be called "/content/index.mdx" so we'll set it to that
+    // because this is the entry for this path
+    files = [{path: nodePath.join(mdxFileOrDirectory, 'index.mdx'), content}]
+  } else if (dirPotential) {
+    entry = dirPotential.path
+    files = await downloadDirectory(mdxFileOrDirectory)
   }
 
-  return downloaded
+  return {entry, files}
 }
 
 /**

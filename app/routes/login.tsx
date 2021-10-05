@@ -23,6 +23,7 @@ import {HeroSection} from '~/components/sections/hero-section'
 import {verifyEmailAddress} from '~/utils/verifier.server'
 import type {LoaderData as RootLoaderData} from '../root'
 import {getSocialMetas} from '~/utils/seo'
+import {Grid} from '~/components/grid'
 
 type LoaderData = {
   email?: string
@@ -131,77 +132,108 @@ function Login() {
   const formIsValid = formValues.email.match(/.+@.+/)
 
   return (
-    <HeroSection
-      imageBuilder={images.skis}
-      imageSize="medium"
-      title="Log in to your account."
-      subtitle="Or sign up for an account."
-      action={
-        <main>
-          <Form
-            onChange={event => {
-              const form = event.currentTarget
-              setFormValues({email: form.email.value})
-            }}
-            onSubmit={() => setSubmitted(true)}
-            action="/login"
-            method="post"
-            className="mb-10 lg:mb-12"
-          >
-            <div className="mb-6">
-              <div className="flex flex-wrap items-baseline justify-between mb-4">
-                <Label htmlFor="email-address">Email address</Label>
-                {emailSent ? (
-                  <p
-                    id="success-message"
-                    className="dark:text-blueGray-500 text-gray-500 text-lg"
-                  >
-                    Thanks! A magic link has been sent.{' '}
-                    <span role="img" aria-label="sparkles">
-                      ✨
-                    </span>
-                  </p>
-                ) : (
-                  <InputError id="error-message">{data.error}</InputError>
-                )}
+    <>
+      <HeroSection
+        imageBuilder={images.skis}
+        imageSize="medium"
+        title="Log in to your account."
+        subtitle="Or sign up for an account."
+        action={
+          <main>
+            <Form
+              onChange={event => {
+                const form = event.currentTarget
+                setFormValues({email: form.email.value})
+              }}
+              onSubmit={() => setSubmitted(true)}
+              action="/login"
+              method="post"
+              className="mb-10 lg:mb-12"
+            >
+              <div className="mb-6">
+                <div className="flex flex-wrap items-baseline justify-between mb-4">
+                  <Label htmlFor="email-address">Email address</Label>
+                  {emailSent ? (
+                    <p
+                      id="success-message"
+                      className="dark:text-blueGray-500 text-gray-500 text-lg"
+                    >
+                      Thanks! A magic link has been sent.{' '}
+                      <span role="img" aria-label="sparkles">
+                        ✨
+                      </span>
+                    </p>
+                  ) : (
+                    <InputError id="error-message">{data.error}</InputError>
+                  )}
+                </div>
+
+                <Input
+                  autoFocus
+                  aria-describedby={
+                    data.error ? 'error-message' : 'success-message'
+                  }
+                  id="email-address"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  defaultValue={formValues.email}
+                  required
+                  placeholder="Email address"
+                />
               </div>
 
-              <Input
-                autoFocus
-                aria-describedby={
-                  data.error ? 'error-message' : 'success-message'
-                }
-                id="email-address"
-                name="email"
-                type="email"
-                autoComplete="email"
-                defaultValue={formValues.email}
-                required
-                placeholder="Email address"
-              />
-            </div>
+              <Button type="submit" disabled={!formIsValid || submitted}>
+                Email a login link
+              </Button>
 
-            <Button type="submit" disabled={!formIsValid || submitted}>
-              Email a login link
-            </Button>
-
-            <div className="sr-only" aria-live="polite">
-              {formIsValid
-                ? 'Sign in form is now valid and ready to submit'
-                : 'Sign in form is now invalid.'}
-            </div>
-          </Form>
-
-          <Paragraph className="mb-10">
-            {`
+              <div className="sr-only" aria-live="polite">
+                {formIsValid
+                  ? 'Sign in form is now valid and ready to submit'
+                  : 'Sign in form is now invalid.'}
+              </div>
+            </Form>
+          </main>
+        }
+      />
+      <Grid>
+        <Paragraph className="col-span-full mb-10 md:col-span-4">
+          {`
               To sign in to your account or to create a new one fill in your
               email above and we'll send you an email with a magic link to get
               you started.
             `}
-          </Paragraph>
-        </main>
-      }
-    />
+        </Paragraph>
+
+        <Paragraph
+          className="col-span-full mb-10 text-sm md:col-span-4 lg:col-start-7"
+          prose={false}
+        >
+          {`Tip: this account is a completely different account from your `}
+          <a
+            href="https://testingjavascript.com"
+            className="underlined text-yellow-500"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            TestingJavaScript.com
+          </a>
+          {` and `}
+          <a
+            href="https://epicreact.dev"
+            className="underlined text-blue-500"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            EpicReact.dev
+          </a>
+          {`
+            accounts, but I recommend you use the same email address for all of
+            them because they all feed into my mailing list.
+          `}
+        </Paragraph>
+      </Grid>
+    </>
   )
 }
 

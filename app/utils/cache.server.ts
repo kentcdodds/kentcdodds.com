@@ -72,7 +72,7 @@ async function cachified<
   key: string
   cache: Cache
   getFreshValue: () => Promise<Value>
-  checkValue?: (value: Value) => boolean
+  checkValue?: (value: Value) => boolean | string
   forceFresh?: boolean
   request?: Request
   fallbackToCache?: boolean
@@ -147,11 +147,13 @@ async function cachified<
             }, 200)
           }
         }
-        if (cached.value != null && checkValue(cached.value)) {
+        const valueCheck = checkValue(cached.value)
+        if (valueCheck === true) {
           return cached.value
         } else {
+          const reason = typeof valueCheck === 'string' ? valueCheck : 'unknown'
           console.warn(
-            `check failed for cached value of ${key}. Deleting the cache key and trying to get a fresh value.`,
+            `check failed for cached value of ${key}\nReason: ${reason}.\nDeleting the cache key and trying to get a fresh value.`,
             cached,
           )
           await cache.del(key)
@@ -189,7 +191,8 @@ async function cachified<
   })
   const totalTime = performance.now() - start
 
-  if (checkValue(value)) {
+  const valueCheck = checkValue(value)
+  if (valueCheck === true) {
     const metadata: CacheMetadata = {
       maxAge: maxAge ?? null,
       createdTime: Date.now(),
@@ -209,7 +212,11 @@ async function cachified<
       console.error(`error setting cache: ${key}`, error)
     }
   } else {
-    console.error(`check failed for fresh value of ${key}:`, value)
+    const reason = typeof valueCheck === 'string' ? valueCheck : 'unknown'
+    console.error(
+      `check failed for cached value of ${key}\nReason: ${reason}.\nDeleting the cache key and trying to get a fresh value.`,
+      value,
+    )
     throw new Error(`check failed for fresh value of ${key}`)
   }
   return value

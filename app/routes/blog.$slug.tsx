@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {useLoaderData, json, useFetcher, useCatch} from 'remix'
 import type {HeadersFunction} from 'remix'
-import {Link, useParams} from 'react-router-dom'
+import {useParams} from 'react-router-dom'
 import type {
   KCDAction,
   KCDHandle,
@@ -39,6 +39,7 @@ import {addPostRead} from '~/utils/prisma.server'
 import {getClientSession} from '~/utils/client.server'
 import {getRankingLeader} from '~/utils/blog'
 import {externalLinks} from '../external-links'
+import {useTeam} from '~/utils/team-provider'
 
 const handleId = 'blog-post'
 export const handle: KCDHandle = {
@@ -209,13 +210,28 @@ function useOnRead({
   }, [time, onRead, parentElRef])
 }
 
+const teamEmoji: Record<Team, string> = {
+  RED: '🔴',
+  BLUE: '🔵',
+  YELLOW: '🟡',
+}
+
 function ArticleFooter({
+  editLink,
   permalink,
   title = 'an awesome post',
 }: {
+  editLink: string
   permalink: string
   title?: string
 }) {
+  const [team] = useTeam()
+  const tweetMessage =
+    team === 'UNKNOWN'
+      ? `I just read "${title}" by @kentcdodds\n\n`
+      : `I just scored a point for the ${team.toLowerCase()} team ${
+          teamEmoji[team]
+        } by reading "${title}" by @kentcdodds\n\n`
   return (
     <Grid>
       <div className="flex flex-col flex-wrap gap-2 col-span-full justify-between mb-12 pb-12 text-blueGray-500 text-lg font-medium border-b border-gray-600 lg:flex-row lg:col-span-8 lg:col-start-3 lg:pb-6">
@@ -226,7 +242,7 @@ function ArticleFooter({
             rel="noreferrer noopener"
             href={`https://twitter.com/intent/tweet?${new URLSearchParams({
               url: permalink,
-              text: `I just read ${title} by @kentcdodds`,
+              text: tweetMessage,
             })}`}
           >
             Tweet this article
@@ -234,21 +250,25 @@ function ArticleFooter({
         </div>
 
         <div className="flex">
-          <Link
+          <a
             className="underlined dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
-            to={`https://twitter.com/search?${new URLSearchParams({
+            target="_blank"
+            rel="noreferrer noopener"
+            href={`https://twitter.com/search?${new URLSearchParams({
               q: permalink,
             })}`}
           >
             Discuss on Twitter
-          </Link>
+          </a>
           <span className="self-center mx-3 text-xs">•</span>
-          <Link
+          <a
             className="underlined dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
-            to="/"
+            target="_blank"
+            rel="noreferrer noopener"
+            href={editLink}
           >
             Edit on GitHub
-          </Link>
+          </a>
         </div>
       </div>
       <div className="col-span-full lg:col-span-2 lg:col-start-3">
@@ -433,6 +453,7 @@ export default function MdxScreen() {
 
       <div className="mb-64">
         <ArticleFooter
+          editLink={data.page.editLink}
           permalink={permalink}
           title={data.page.frontmatter.title}
         />

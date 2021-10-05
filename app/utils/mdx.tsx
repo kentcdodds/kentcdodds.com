@@ -57,12 +57,12 @@ async function getMdxPage(
     checkValue: checkCompiledValue,
     getFreshValue: async () => {
       const pageFiles = await downloadMdxFilesCached(contentDir, slug, options)
-      const compiledPage = await compileMdxCached(
+      const compiledPage = await compileMdxCached({
         contentDir,
         slug,
-        pageFiles,
+        ...pageFiles,
         options,
-      )
+      })
       return compiledPage
     },
   })
@@ -83,7 +83,7 @@ async function getMdxPagesInDirectory(
   const pageDatas = await Promise.all(
     dirList.map(async ({slug}) => {
       return {
-        files: await downloadMdxFilesCached(contentDir, slug, options),
+        ...(await downloadMdxFilesCached(contentDir, slug, options)),
         slug,
       }
     }),
@@ -91,7 +91,7 @@ async function getMdxPagesInDirectory(
 
   const pages = await Promise.all(
     pageDatas.map(pageData =>
-      compileMdxCached(contentDir, pageData.slug, pageData.files, options),
+      compileMdxCached({contentDir, ...pageData, options}),
     ),
   )
   return pages.filter(typedBoolean)
@@ -128,30 +128,54 @@ async function downloadMdxFilesCached(
   contentDir: string,
   slug: string,
   options: CachifiedOptions,
-): Promise<Array<GitHubFile>> {
+) {
   const key = getDownloadKey(contentDir, slug)
-  const files = await cachified({
+  const downloaded = await cachified({
     cache: redisCache,
     maxAge: defaultMaxAge,
     ...options,
     key,
-    checkValue: (value: unknown) => Array.isArray(value),
+    checkValue: (value: unknown) => {
+      if (typeof value !== 'object') {
+        return `value is not an object`
+      }
+      if (value === null) {
+        return `value is null`
+      }
+
+      const download = value as Record<string, unknown>
+      if (!Array.isArray(download.files)) {
+        return `value.files is not an array`
+      }
+      if (typeof download.entry !== 'string') {
+        return `value.entry is not a string`
+      }
+
+      return true
+    },
     getFreshValue: async () =>
       downloadMdxFileOrDirectory(`${contentDir}/${slug}`),
   })
   // if there aren't any files, remove it from the cache
-  if (!files.length) {
+  if (!downloaded.files.length) {
     void redisCache.del(key)
   }
-  return files
+  return downloaded
 }
 
-async function compileMdxCached(
-  contentDir: string,
-  slug: string,
-  files: Array<GitHubFile>,
-  options: CachifiedOptions,
-) {
+async function compileMdxCached({
+  contentDir,
+  slug,
+  entry,
+  files,
+  options,
+}: {
+  contentDir: string
+  slug: string
+  entry: string
+  files: Array<GitHubFile>
+  options: CachifiedOptions
+}) {
   const key = getCompiledKey(contentDir, slug)
   const page = await cachified({
     cache: redisCache,
@@ -177,7 +201,11 @@ async function compileMdxCached(
             )
           }
         }
-        return {...compiledPage, slug}
+        return {
+          ...compiledPage,
+          slug,
+          editLink: `https://github.com/kentcdodds/kentcdodds.com/edit/main/${entry}`,
+        }
       } else {
         return null
       }
@@ -262,7 +290,7 @@ function mdxPageMeta({
             'Untitled',
           preTitle:
             data.page.frontmatter.socialImagePreTitle ??
-            `Checkout this Aritcle`,
+            `Checkout this article`,
         }),
       }),
       ...extraMeta,
