@@ -334,7 +334,7 @@ if (window.location.protocol === 'http:') {
         <link
           rel="apple-touch-icon"
           sizes="180x180"
-          href="/apple-touch-icon.png"
+          href="/favicons/apple-touch-icon.png"
         />
         <link
           rel="icon"
