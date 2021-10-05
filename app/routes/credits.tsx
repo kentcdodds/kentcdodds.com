@@ -2,7 +2,6 @@ import * as React from 'react'
 import {
   HeadersFunction,
   json,
-  Link,
   LoaderFunction,
   MetaFunction,
   useLoaderData,
@@ -167,9 +166,13 @@ function CreditsIndex() {
               place for me to share my thoughts, ideas, and experiences as
               well as the thoughts, ideas, and experiences of others (yourself
               included). It's a full fleged–`}
-            <Link to="https://github.com/kentcdodds/kentcdodds.com">
+            <a
+              target="_blank"
+              rel="noreferrer noopener"
+              href="https://github.com/kentcdodds/kentcdodds.com"
+            >
               open source
-            </Link>
+            </a>
             {`–web application.`}
           </H2>
           <H2 variant="secondary" as="p">
