@@ -60,7 +60,7 @@ export const action: ActionFunction = async ({request}) => {
         const slug = path.parse(dirOrFilename).name
 
         refreshingContentPaths.push(contentPath)
-        void refreshMdxContent({contentDir, slug})
+        void getMdxPage({contentDir, slug}, {forceFresh: true})
       }
       if (contentPath.startsWith('workshops')) {
         refreshingContentPaths.push(contentPath)
@@ -85,6 +85,9 @@ export const action: ActionFunction = async ({request}) => {
     if (refreshingContentPaths.some(p => p.startsWith('blog'))) {
       void getMdxDirList('blog', {forceFresh: true})
     }
+    if (refreshingContentPaths.some(p => p.startsWith('pages'))) {
+      void getMdxDirList('pages', {forceFresh: true})
+    }
 
     setShaInRedis()
     return json({
@@ -94,18 +97,6 @@ export const action: ActionFunction = async ({request}) => {
     })
   }
   return json({message: 'no action taken'}, {status: 400})
-}
-
-async function refreshMdxContent({
-  contentDir,
-  slug,
-}: {
-  contentDir: string
-  slug: string
-}) {
-  // refresh the page first, then refresh the whole list
-  await getMdxPage({contentDir, slug}, {forceFresh: true})
-  await getMdxDirList(contentDir, {forceFresh: true})
 }
 
 export const loader = () => redirect('/', {status: 404})

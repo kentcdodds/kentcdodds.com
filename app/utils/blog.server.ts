@@ -146,6 +146,7 @@ async function getTotalPostReads(request: Request, slug?: string) {
   return cachified({
     key: 'total-post-reads',
     cache: lruCache,
+    maxAge: 1000 * 60,
     request,
     checkValue: (value: unknown) => typeof value === 'number',
     getFreshValue: () =>
@@ -159,6 +160,7 @@ async function getReaderCount(request: Request) {
   return cachified({
     key: 'total-reader-count',
     cache: lruCache,
+    maxAge: 1000 * 60 * 5,
     request,
     checkValue: (value: unknown) => typeof value === 'number',
     getFreshValue: async () => {

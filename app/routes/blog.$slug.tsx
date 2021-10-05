@@ -73,6 +73,7 @@ export const action: KCDAction<{slug: string}> = async ({request, params}) => {
   }
   // trigger an update to the ranking cache
   void getBlogReadRankings({request, slug: params.slug, forceFresh: true})
+  void getBlogReadRankings({request, forceFresh: true})
 
   return json({success: true, headers})
 }
