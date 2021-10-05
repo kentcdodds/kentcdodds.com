@@ -10,7 +10,12 @@ import {
 } from '~/components/calls/submit-recording-form'
 import {requireUser} from '~/utils/session.server'
 import {prismaWrite} from '~/utils/prisma.server'
-import {getErrorMessage, getNonNull} from '~/utils/misc'
+import {
+  getDomainUrl,
+  getErrorMessage,
+  getNonNull,
+  getRequiredServerEnvVar,
+} from '~/utils/misc'
 import {
   getErrorForAudio,
   getErrorForTitle,
@@ -20,14 +25,20 @@ import {
 import {H4, Paragraph} from '~/components/typography'
 import {Grimmacing} from '~/components/kifs'
 import {Grid} from '~/components/grid'
+import {sendMessageFromDiscordBot} from '~/utils/discord.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
 }
 
+const DISCORD_PRIVATE_BOT_CHANNEL = getRequiredServerEnvVar(
+  'DISCORD_PRIVATE_BOT_CHANNEL',
+)
+
 export const action: ActionFunction = async ({request}) => {
   const user = await requireUser(request)
   const actionData: ActionData = {fields: {}, errors: {}}
+  const domainUrl = getDomainUrl(request)
   try {
     const requestText = await request.text()
     const form = new URLSearchParams(requestText)
@@ -65,6 +76,10 @@ export const action: ActionFunction = async ({request}) => {
       base64: audio,
     }
     const createdCall = await prismaWrite.call.create({data: call})
+    void sendMessageFromDiscordBot(
+      DISCORD_PRIVATE_BOT_CHANNEL,
+      `Ring! <@!105755735731781632> 📞 New call: ${createdCall.title}: ${domainUrl}/calls/admin/${createdCall.id}`,
+    )
     return redirect(`/calls/record/${createdCall.id}`)
   } catch (error: unknown) {
     actionData.errors.generalError = getErrorMessage(error)

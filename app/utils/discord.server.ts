@@ -57,6 +57,14 @@ async function fetchJsonAsDiscordBot<JsonType = unknown>(
   return json
 }
 
+async function sendMessageFromDiscordBot(channelId: string, content: string) {
+  await fetchAsDiscordBot(`channels/${channelId}/messages`, {
+    method: 'POST',
+    body: JSON.stringify({content}),
+    headers: {'Content-Type': 'application/json'},
+  })
+}
+
 async function getUserToken({
   code,
   domainUrl,
@@ -179,4 +187,4 @@ async function connectDiscord({
   return discordMember
 }
 
-export {connectDiscord, getDiscordUser, getMember}
+export {connectDiscord, getDiscordUser, getMember, sendMessageFromDiscordBot}
