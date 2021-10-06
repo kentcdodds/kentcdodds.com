@@ -291,10 +291,10 @@ const KodyParallax = () => (
       <Parallax
         config={{
           rotate: 0.01,
-          rotateX: -0.1,
-          rotateY: 0.25,
-          coefficientX: 0.75,
-          coefficientY: 0.75,
+          rotateX: -0.01,
+          rotateY: 0.025,
+          coefficientX: 1.5,
+          coefficientY: 1.5,
         }}
       >
         {ITEMS.map((item: ParallaxItem) => (
