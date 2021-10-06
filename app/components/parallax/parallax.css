@@ -6,6 +6,7 @@
   transform-style: preserve-3d;
   /* Trick to make the perfect square */
   padding-bottom: 100%;
+  transition: transform 0.25s;
 }
 
 .parallax__wrapper {
