@@ -139,12 +139,23 @@ function getMagicLink({
   return url.toString()
 }
 
-async function validateMagicLink(link: string, sessionMagicLink?: string) {
-  let emailAddress, linkCreationDateString, validateSessionMagicLink
+function getMagicLinkCode(link: string) {
   try {
     const url = new URL(link)
-    const encryptedString = url.searchParams.get(magicLinkSearchParam) ?? '[]'
-    const decryptedString = decrypt(encryptedString)
+    return url.searchParams.get(magicLinkSearchParam) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+async function validateMagicLink(link: string, sessionMagicLink?: string) {
+  const linkCode = getMagicLinkCode(link)
+  const sessionLinkCode = sessionMagicLink
+    ? getMagicLinkCode(sessionMagicLink)
+    : null
+  let emailAddress, linkCreationDateString, validateSessionMagicLink
+  try {
+    const decryptedString = decrypt(linkCode)
     const payload = JSON.parse(decryptedString) as MagicLinkPayload
     emailAddress = payload.emailAddress
     linkCreationDateString = payload.creationDate
@@ -159,11 +170,19 @@ async function validateMagicLink(link: string, sessionMagicLink?: string) {
     throw new Error('Sign in link invalid. Please request a new one.')
   }
 
-  if (validateSessionMagicLink && link !== sessionMagicLink) {
-    console.error(`Magic link does not match sessionMagicLink`)
-    throw new Error(
-      `You must open the magic link on the same device it was created from for security reasons. Please request a new link.`,
-    )
+  if (validateSessionMagicLink) {
+    if (!sessionLinkCode) {
+      console.error(
+        'Must validate session magic link but no session link provided',
+      )
+      throw new Error('Sign in link invalid. Please request a new one.')
+    }
+    if (linkCode !== sessionLinkCode) {
+      console.error(`Magic link does not match sessionMagicLink`)
+      throw new Error(
+        `You must open the magic link on the same device it was created from for security reasons. Please request a new link.`,
+      )
+    }
   }
 
   if (typeof linkCreationDateString !== 'string') {
