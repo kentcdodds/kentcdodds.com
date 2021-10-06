@@ -52,12 +52,12 @@ async function sendEmail({to, from, subject, text, html}: MailgunMessage) {
 
 async function sendMagicLinkEmail({
   emailAddress,
-  confirmationLink,
+  magicLink,
   user,
   domainUrl,
 }: {
   emailAddress: string
-  confirmationLink: string
+  magicLink: string
   user?: User | null
   domainUrl: string
 }) {
@@ -73,7 +73,7 @@ async function sendMagicLinkEmail({
   const text = `
 Here's your sign-in link for ${hostname}:
 
-${confirmationLink}
+${magicLink}
 
 ${
   userExists
@@ -129,7 +129,7 @@ P.S. If you did not request this email, you can safely ignore it.
       
       <h3 style="text-align: center">Click the button below to login to ${hostname}</h3>
 
-      <a href="${confirmationLink}" style="display: block; margin: 0 auto; width: 80%; padding: 1.5rem; background: #A6DEE4; border-radius: 7px; border-width: 0; font-size: 1.1rem; text-align: center; font-family: sans-serif; text-decoration: none; color: black">
+      <a href="${magicLink}" style="display: block; margin: 0 auto; width: 80%; padding: 1.5rem; background: #A6DEE4; border-radius: 7px; border-width: 0; font-size: 1.1rem; text-align: center; font-family: sans-serif; text-decoration: none; color: black">
         ${userExists ? 'Login' : 'Create Account'}
       </a>
 

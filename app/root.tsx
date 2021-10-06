@@ -35,7 +35,6 @@ import {getUserInfo} from './utils/user-info.server'
 import {getClientSession} from './utils/client.server'
 import type {Timings} from './utils/metrics.server'
 import {time, getServerTimeHeader} from './utils/metrics.server'
-import {validateMagicLink} from './utils/prisma.server'
 import {useScrollRestoration} from './utils/scroll'
 import {Navbar} from './components/navbar'
 import {Spacer} from './components/spacer'
@@ -126,7 +125,7 @@ export type LoaderData = {
     path: string
     session: {
       email: string | undefined
-      hasActiveMagicLink: boolean
+      magicLinkVerified: boolean | undefined
       theme: Theme | null
     }
   }
@@ -152,16 +151,6 @@ export const loader: LoaderFunction = async ({request}) => {
     fn: () => session.getUser(),
   })
 
-  const magicLink = loginInfoSession.getMagicLink()
-  let hasActiveMagicLink = false
-  if (typeof magicLink === 'string') {
-    try {
-      await validateMagicLink(magicLink, loginInfoSession.getEmail())
-      hasActiveMagicLink = true
-    } catch {
-      loginInfoSession.unsetMagicLink()
-    }
-  }
   const randomFooterImageKeys = Object.keys(illustrationImages)
   const randomFooterImageKey = randomFooterImageKeys[
     Math.floor(Math.random() * randomFooterImageKeys.length)
@@ -183,7 +172,7 @@ export const loader: LoaderFunction = async ({request}) => {
       path: new URL(request.url).pathname,
       session: {
         email: loginInfoSession.getEmail(),
-        hasActiveMagicLink,
+        magicLinkVerified: loginInfoSession.getMagicLinkVerified(),
         theme: themeSession.getTheme(),
       },
     },

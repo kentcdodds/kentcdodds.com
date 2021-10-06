@@ -102,7 +102,8 @@ export const action: ActionFunction = async ({request}) => {
 
   try {
     const domainUrl = getDomainUrl(request)
-    await sendToken({emailAddress, domainUrl})
+    const magicLink = await sendToken({emailAddress, domainUrl})
+    loginSession.setMagicLink(magicLink)
     return redirect(`/login`, {
       headers: await loginSession.getHeaders(),
     })
@@ -117,6 +118,7 @@ export const action: ActionFunction = async ({request}) => {
 
 function Login() {
   const data = useLoaderData<LoaderData>()
+  const inputRef = React.useRef<HTMLInputElement>(null)
   const [submitted, setSubmitted] = React.useState(false)
 
   const [formValues, setFormValues] = React.useState({
@@ -150,6 +152,7 @@ function Login() {
                 </div>
 
                 <Input
+                  ref={inputRef}
                   autoFocus
                   aria-describedby={
                     data.error ? 'error-message' : 'success-message'
@@ -173,6 +176,7 @@ function Login() {
                   onClick={() => {
                     setFormValues({email: ''})
                     setSubmitted(false)
+                    inputRef.current?.focus()
                   }}
                 >
                   Reset

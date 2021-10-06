@@ -40,7 +40,7 @@ export const loader: LoaderFunction = async ({request}) => {
   return redirect(
     getMagicLink({
       emailAddress: email,
-      validateEmail: false,
+      validateSessionMagicLink: false,
       domainUrl: getDomainUrl(request),
     }),
   )

@@ -18,7 +18,10 @@ type InputProps =
   | ({type: 'textarea'} & JSX.IntrinsicElements['textarea'])
   | JSX.IntrinsicElements['input']
 
-function Input(props: InputProps) {
+const Input = React.forwardRef<HTMLInputElement, InputProps>(function Input(
+  props,
+  ref,
+) {
   const className = clsx(
     'placeholder-gray-500 dark:disabled:text-blueGray-500 focus-ring px-11 py-8 w-full text-black disabled:text-gray-400 dark:text-white text-lg font-medium bg-gray-100 dark:bg-gray-800 rounded-lg',
     props.className,
@@ -37,9 +40,10 @@ function Input(props: InputProps) {
     <input
       {...(props as JSX.IntrinsicElements['input'])}
       className={className}
+      ref={ref}
     />
   )
-}
+})
 
 interface InputErrorProps {
   id: string
@@ -58,23 +62,20 @@ function InputError({children, id}: InputErrorProps) {
   )
 }
 
-function Field({
-  defaultValue,
-  error,
-  name,
-  label,
-  className,
-  description,
-  id,
-  ...props
-}: {
-  defaultValue?: string | null
-  name: string
-  label: string
-  className?: string
-  error?: string | null
-  description?: React.ReactNode
-} & InputProps) {
+const Field = React.forwardRef<
+  HTMLInputElement,
+  {
+    defaultValue?: string | null
+    name: string
+    label: string
+    className?: string
+    error?: string | null
+    description?: React.ReactNode
+  } & InputProps
+>(function Field(
+  {defaultValue, error, name, label, className, description, id, ...props},
+  ref,
+) {
   const prefix = useId()
   const inputId = id ?? `${prefix}-${name}`
   const errorId = `${inputId}-error`
@@ -94,6 +95,8 @@ function Field({
       </div>
 
       <Input
+        // @ts-expect-error no idea 🤷‍♂️
+        ref={ref}
         {...(props as InputProps)}
         name={name}
         id={inputId}
@@ -106,7 +109,7 @@ function Field({
       />
     </div>
   )
-}
+})
 
 function ButtonGroup({
   children,

@@ -33,9 +33,9 @@ async function sendToken({
   emailAddress: string
   domainUrl: string
 }) {
-  const confirmationLink = getMagicLink({
+  const magicLink = getMagicLink({
     emailAddress,
-    validateEmail: true,
+    validateSessionMagicLink: true,
     domainUrl,
   })
 
@@ -46,10 +46,11 @@ async function sendToken({
 
   await sendMagicLinkEmail({
     emailAddress,
-    confirmationLink,
+    magicLink,
     user,
     domainUrl,
   })
+  return magicLink
 }
 
 async function getSession(request: Request) {
@@ -144,7 +145,7 @@ async function getUserSessionFromMagicLink(request: Request) {
   const loginInfoSession = await getLoginInfoSession(request)
   const email = await validateMagicLink(
     request.url,
-    loginInfoSession.getEmail(),
+    loginInfoSession.getMagicLink(),
   )
 
   const user = await getUserByEmail(email)

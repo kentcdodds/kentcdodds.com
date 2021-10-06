@@ -7,7 +7,7 @@ import type {KCDHandle, Team} from '~/types'
 import {useTeam} from '~/utils/team-provider'
 import {getSession, getUser} from '~/utils/session.server'
 import {getLoginInfoSession} from '~/utils/login.server'
-import {prismaWrite, validateMagicLink} from '~/utils/prisma.server'
+import {prismaWrite, prismaRead, validateMagicLink} from '~/utils/prisma.server'
 import {getErrorStack, teams} from '~/utils/misc'
 import {tagKCDSiteSubscriber} from '../convertkit/convertkit.server'
 import {Grid} from '~/components/grid'
@@ -80,7 +80,7 @@ export const action: ActionFunction = async ({request}) => {
       throw new Error('email and magicLink required.')
     }
 
-    email = await validateMagicLink(magicLink, loginInfoSession.getEmail())
+    email = await validateMagicLink(magicLink, loginInfoSession.getMagicLink())
   } catch (error: unknown) {
     console.error(getErrorStack(error))
 
@@ -140,8 +140,25 @@ export const loader: LoaderFunction = async ({request}) => {
   if (user) return redirect('/me')
 
   const loginInfoSession = await getLoginInfoSession(request)
+  const magicLink = loginInfoSession.getMagicLink()
   const email = loginInfoSession.getEmail()
-  if (!email) {
+  if (!magicLink || !email) {
+    loginInfoSession.clean()
+    loginInfoSession.flashError('Invalid magic link. Try again.')
+    return redirect('/login', {
+      headers: await loginInfoSession.getHeaders(),
+    })
+  }
+
+  const userForMagicLink = await prismaRead.user.findFirst({
+    where: {email},
+    select: {id: true},
+  })
+
+  if (userForMagicLink) {
+    // user exists, but they haven't clicked their magic link yet
+    // we don't want to tell them that a user exists with that email though
+    // so we'll invalidate the magic link and force them to try again.
     loginInfoSession.clean()
     loginInfoSession.flashError('Invalid magic link. Try again.')
     return redirect('/login', {

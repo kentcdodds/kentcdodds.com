@@ -29,12 +29,18 @@ async function getLoginInfoSession(request: Request) {
     getMagicLink: () => session.get('magicLink') as string | undefined,
     setMagicLink: (magicLink: string) => session.set('magicLink', magicLink),
     unsetMagicLink: () => session.unset('magicLink'),
+    getMagicLinkVerified: () =>
+      session.get('magicLinkVerified') as boolean | undefined,
+    setMagicLinkVerified: (verified: boolean) =>
+      session.set('magicLinkVerified', verified),
+    unsetMagicLinkVerified: () => session.unset('magicLinkVerified'),
     getError: () => session.get('error') as string | undefined,
     flashError: (error: string) => session.flash('error', error),
     clean: () => {
       session.unset('email')
       session.unset('magicLink')
       session.unset('error')
+      session.unset('magicLinkVerified')
     },
     destroy: () => loginInfoStorage.destroySession(session),
     commit,

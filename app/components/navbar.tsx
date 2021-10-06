@@ -249,13 +249,13 @@ function ProfileButton({
   imageAlt,
   team,
   user,
-  hasActiveMagicLink,
+  magicLinkVerified,
 }: {
   imageUrl: string
   imageAlt: string
   team: OptionalTeam
   user: User | null
-  hasActiveMagicLink: boolean
+  magicLinkVerified: boolean | undefined
 }) {
   const controls = useAnimation()
   const [ref, state] = useElementState()
@@ -283,9 +283,9 @@ function ProfileButton({
   return (
     <Link
       prefetch="intent"
-      to={user ? '/me' : hasActiveMagicLink ? '/signup' : '/login'}
+      to={user ? '/me' : magicLinkVerified ? '/signup' : '/login'}
       aria-label={
-        user ? 'My Account' : hasActiveMagicLink ? 'Finish signing up' : 'Login'
+        user ? 'My Account' : magicLinkVerified ? 'Finish signing up' : 'Login'
       }
       className={clsx(
         'inline-flex items-center justify-center ml-4 w-14 h-14 rounded-full focus:outline-none',
@@ -309,7 +309,7 @@ function Navbar() {
   const {requestInfo, userInfo, user} = useRootData()
   const avatar = userInfo
     ? userInfo.avatar
-    : requestInfo.session.email && requestInfo.session.hasActiveMagicLink
+    : requestInfo.session.email
     ? {
         src: getAvatar(requestInfo.session.email, {
           fallback: kodyProfiles[team].src,
@@ -348,7 +348,7 @@ function Navbar() {
           </div>
 
           <ProfileButton
-            hasActiveMagicLink={requestInfo.session.hasActiveMagicLink}
+            magicLinkVerified={requestInfo.session.magicLinkVerified}
             imageUrl={avatar.src}
             imageAlt={avatar.alt}
             team={team}

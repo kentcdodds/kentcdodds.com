@@ -114,21 +114,21 @@ const magicLinkSearchParam = 'kodyKey'
 type MagicLinkPayload = {
   emailAddress: string
   creationDate: string
-  validateEmail: boolean
+  validateSessionMagicLink: boolean
 }
 
 function getMagicLink({
   emailAddress,
-  validateEmail,
+  validateSessionMagicLink,
   domainUrl,
 }: {
   emailAddress: string
-  validateEmail: boolean
+  validateSessionMagicLink: boolean
   domainUrl: string
 }) {
   const payload: MagicLinkPayload = {
     emailAddress,
-    validateEmail,
+    validateSessionMagicLink,
     creationDate: new Date().toISOString(),
   }
   const stringToEncrypt = JSON.stringify(payload)
@@ -139,17 +139,16 @@ function getMagicLink({
   return url.toString()
 }
 
-async function validateMagicLink(link: string, sessionEmailAddress?: string) {
-  let emailAddress, linkCreationDateString, validateEmail
+async function validateMagicLink(link: string, sessionMagicLink?: string) {
+  let emailAddress, linkCreationDateString, validateSessionMagicLink
   try {
     const url = new URL(link)
     const encryptedString = url.searchParams.get(magicLinkSearchParam) ?? '[]'
     const decryptedString = decrypt(encryptedString)
     const payload = JSON.parse(decryptedString) as MagicLinkPayload
-    console.log({payload, sessionEmailAddress})
     emailAddress = payload.emailAddress
     linkCreationDateString = payload.creationDate
-    validateEmail = payload.validateEmail
+    validateSessionMagicLink = payload.validateSessionMagicLink
   } catch (error: unknown) {
     console.error(error)
     throw new Error('Sign in link invalid. Please request a new one.')
@@ -160,10 +159,8 @@ async function validateMagicLink(link: string, sessionEmailAddress?: string) {
     throw new Error('Sign in link invalid. Please request a new one.')
   }
 
-  if (validateEmail && emailAddress !== sessionEmailAddress) {
-    console.error(
-      `magic link payload email address does not match sessionEmailAddress`,
-    )
+  if (validateSessionMagicLink && link !== sessionMagicLink) {
+    console.error(`Magic link does not match sessionMagicLink`)
     throw new Error(
       `You must open the magic link on the same device it was created from for security reasons. Please request a new link.`,
     )

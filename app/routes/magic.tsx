@@ -13,6 +13,7 @@ export const loader: LoaderFunction = async ({request}) => {
   const loginInfoSession = await getLoginInfoSession(request)
   try {
     const session = await getUserSessionFromMagicLink(request)
+    loginInfoSession.setMagicLinkVerified(true)
     if (session) {
       const headers = new Headers()
       loginInfoSession.clean()
