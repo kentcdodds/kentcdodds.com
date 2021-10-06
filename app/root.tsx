@@ -373,7 +373,7 @@ if (window.location.protocol === 'http:') {
             __html: `window.ENV = ${JSON.stringify(data.ENV)};`,
           }}
         />
-        {process.env.NODE_ENV === 'development' ? <LiveReload /> : null}
+        {ENV.NODE_ENV === 'development' ? <LiveReload /> : null}
       </body>
     </html>
   )

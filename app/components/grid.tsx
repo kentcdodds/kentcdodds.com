@@ -53,7 +53,7 @@ function Grid({
  * Use for development only! It renders the grid columns and gaps as page overlay
  */
 function GridLines() {
-  if (process.env.NODE_ENV !== 'development') {
+  if (ENV.NODE_ENV !== 'development') {
     throw new Error('<GridLines />  should only be used during development')
   }
 

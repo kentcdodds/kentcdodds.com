@@ -31,10 +31,6 @@ export const handle: KCDHandle = {
   getSitemapEntries: () => null,
 }
 
-const DISCORD_PRIVATE_BOT_CHANNEL = getRequiredServerEnvVar(
-  'DISCORD_PRIVATE_BOT_CHANNEL',
-)
-
 export const action: ActionFunction = async ({request}) => {
   const user = await requireUser(request)
   const actionData: ActionData = {fields: {}, errors: {}}
@@ -76,10 +72,16 @@ export const action: ActionFunction = async ({request}) => {
       base64: audio,
     }
     const createdCall = await prismaWrite.call.create({data: call})
-    void sendMessageFromDiscordBot(
-      DISCORD_PRIVATE_BOT_CHANNEL,
-      `Ring! <@!105755735731781632> 📞 New call: ${createdCall.title}: ${domainUrl}/calls/admin/${createdCall.id}`,
-    )
+
+    try {
+      void sendMessageFromDiscordBot(
+        getRequiredServerEnvVar('DISCORD_PRIVATE_BOT_CHANNEL'),
+        `<@!105755735731781632> 📳 Ring! New call: ${createdCall.title}: ${domainUrl}/calls/admin/${createdCall.id}`,
+      )
+    } catch (error: unknown) {
+      console.error('Could not get env var DISCORD_PRIVATE_BOT_CHANNEL')
+      // ignore
+    }
     return redirect(`/calls/record/${createdCall.id}`)
   } catch (error: unknown) {
     actionData.errors.generalError = getErrorMessage(error)
