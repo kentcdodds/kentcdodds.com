@@ -28,3 +28,10 @@ export function TeamProvider({
     </TeamProviderBase>
   )
 }
+
+export const teamEmoji: Record<OptionalTeam, string> = {
+  RED: '🔴',
+  BLUE: '🔵',
+  YELLOW: '🟡',
+  UNKNOWN: '⚪',
+}

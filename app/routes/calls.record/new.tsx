@@ -26,6 +26,7 @@ import {H4, Paragraph} from '~/components/typography'
 import {Grimmacing} from '~/components/kifs'
 import {Grid} from '~/components/grid'
 import {sendMessageFromDiscordBot} from '~/utils/discord.server'
+import {teamEmoji} from '~/utils/team-provider'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -74,12 +75,14 @@ export const action: ActionFunction = async ({request}) => {
     const createdCall = await prismaWrite.call.create({data: call})
 
     try {
-      void sendMessageFromDiscordBot(
-        getRequiredServerEnvVar('DISCORD_PRIVATE_BOT_CHANNEL'),
-        `<@!105755735731781632> 📳 Ring! New call: ${createdCall.title}: ${domainUrl}/calls/admin/${createdCall.id}`,
-      )
+      const channelId = getRequiredServerEnvVar('DISCORD_PRIVATE_BOT_CHANNEL')
+      const adminUserId = getRequiredServerEnvVar('DISCORD_ADMIN_USER_ID')
+      const {firstName, team} = user
+      const emoji = teamEmoji[team]
+      const message = `📳 <@!${adminUserId}> ring ring! New call from ${firstName} ${emoji}: "${title}"\n\n${description}\n\n${domainUrl}/calls/admin/${createdCall.id}`
+      void sendMessageFromDiscordBot(channelId, message)
     } catch (error: unknown) {
-      console.error('Could not get env var DISCORD_PRIVATE_BOT_CHANNEL')
+      console.error('Problem sending a call message', error)
       // ignore
     }
     return redirect(`/calls/record/${createdCall.id}`)

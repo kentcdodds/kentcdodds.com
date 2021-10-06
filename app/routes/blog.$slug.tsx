@@ -39,7 +39,7 @@ import {addPostRead} from '~/utils/prisma.server'
 import {getClientSession} from '~/utils/client.server'
 import {getRankingLeader} from '~/utils/blog'
 import {externalLinks} from '../external-links'
-import {useTeam} from '~/utils/team-provider'
+import {teamEmoji, useTeam} from '~/utils/team-provider'
 
 const handleId = 'blog-post'
 export const handle: KCDHandle = {
@@ -209,12 +209,6 @@ function useOnRead({
     }
     return cleanup
   }, [time, onRead, parentElRef])
-}
-
-const teamEmoji: Record<Team, string> = {
-  RED: '🔴',
-  BLUE: '🔵',
-  YELLOW: '🟡',
 }
 
 function ArticleFooter({

@@ -86,6 +86,9 @@ POST,DELETE,PATCH,PUT  /                                                https://
 # some people go to this page for some reason:
 /post/:slug*                                                             /blog/:slug*
 /rss.xml                                                                 /blog/rss.xml
+/blog/blog/rss.xml                                                       /blog/rss.xml
+# no idea why, but I get a lot of 404s for this route. I'm pretty sure they're looking for Scott's post...
+/bring-kindness-back-to-open-source                                      https://www.hanselman.com/blog/bring-kindness-back-to-open-source
 
 /humans.txt                                                              /credits
 
@@ -95,6 +98,7 @@ POST,DELETE,PATCH,PUT  /                                                https://
 /sw.js                                                                   /404
 # Gatsby site used to have stuff at this route and we don't anymore so...
 /static(.*)                                                              /404
+/page-data(.*)                                                           /404
 
 # I didn't bring over my writing blog
 /writing/:slug*                                                          https://kentcdodds-old.netlify.app/writing/:slug*
