@@ -11,6 +11,7 @@ import {
   sessionExpirationTime,
 } from './prisma.server'
 import {getRequiredServerEnvVar} from './misc'
+import {getLoginInfoSession} from './login.server'
 
 const sessionIdKey = '__session_id__'
 
@@ -32,7 +33,11 @@ async function sendToken({
   emailAddress: string
   domainUrl: string
 }) {
-  const confirmationLink = getMagicLink({emailAddress, domainUrl})
+  const confirmationLink = getMagicLink({
+    emailAddress,
+    validateEmail: true,
+    domainUrl,
+  })
 
   const user = await getUserByEmail(emailAddress).catch(() => {
     /* ignore... */
@@ -136,7 +141,11 @@ async function getUser(request: Request) {
 }
 
 async function getUserSessionFromMagicLink(request: Request) {
-  const email = await validateMagicLink(request.url)
+  const loginInfoSession = await getLoginInfoSession(request)
+  const email = await validateMagicLink(
+    request.url,
+    loginInfoSession.getEmail(),
+  )
 
   const user = await getUserByEmail(email)
   if (!user) return null

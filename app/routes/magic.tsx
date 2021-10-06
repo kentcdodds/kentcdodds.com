@@ -4,6 +4,7 @@ import type {KCDHandle} from '~/types'
 import * as React from 'react'
 import {getLoginInfoSession} from '~/utils/login.server'
 import {getUserSessionFromMagicLink} from '~/utils/session.server'
+import {getErrorMessage} from '~/utils/misc'
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
 }
@@ -28,7 +29,8 @@ export const loader: LoaderFunction = async ({request}) => {
     console.error(error)
     loginInfoSession.clean()
     loginInfoSession.flashError(
-      'Sign in link invalid. Please request a new one.',
+      getErrorMessage(error) ||
+        'Sign in link invalid. Please request a new one.',
     )
     return redirect('/login', {
       headers: await loginInfoSession.getHeaders(),

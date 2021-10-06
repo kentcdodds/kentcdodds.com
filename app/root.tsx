@@ -156,7 +156,7 @@ export const loader: LoaderFunction = async ({request}) => {
   let hasActiveMagicLink = false
   if (typeof magicLink === 'string') {
     try {
-      await validateMagicLink(magicLink)
+      await validateMagicLink(magicLink, loginInfoSession.getEmail())
       hasActiveMagicLink = true
     } catch {
       loginInfoSession.unsetMagicLink()

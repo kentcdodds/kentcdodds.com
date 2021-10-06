@@ -31,13 +31,10 @@ async function getLoginInfoSession(request: Request) {
     unsetMagicLink: () => session.unset('magicLink'),
     getError: () => session.get('error') as string | undefined,
     flashError: (error: string) => session.flash('error', error),
-    getMessage: () => session.get('message') as string | undefined,
-    flashMessage: (message: string) => session.flash('message', message),
     clean: () => {
       session.unset('email')
       session.unset('magicLink')
       session.unset('error')
-      session.unset('message')
     },
     destroy: () => loginInfoStorage.destroySession(session),
     commit,

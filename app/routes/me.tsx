@@ -81,6 +81,7 @@ export const loader: LoaderFunction = async ({request}) => {
   const qrLoginCode = await getQrCodeDataURL(
     getMagicLink({
       emailAddress: user.email,
+      validateEmail: false,
       domainUrl: getDomainUrl(request),
     }),
   )

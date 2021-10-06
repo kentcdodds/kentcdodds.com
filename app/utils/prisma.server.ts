@@ -114,17 +114,21 @@ const magicLinkSearchParam = 'kodyKey'
 type MagicLinkPayload = {
   emailAddress: string
   creationDate: string
+  validateEmail: boolean
 }
 
 function getMagicLink({
   emailAddress,
+  validateEmail,
   domainUrl,
 }: {
   emailAddress: string
+  validateEmail: boolean
   domainUrl: string
 }) {
   const payload: MagicLinkPayload = {
     emailAddress,
+    validateEmail,
     creationDate: new Date().toISOString(),
   }
   const stringToEncrypt = JSON.stringify(payload)
@@ -135,28 +139,39 @@ function getMagicLink({
   return url.toString()
 }
 
-async function validateMagicLink(link: string) {
-  let emailAddress, linkCreationDateString
+async function validateMagicLink(link: string, sessionEmailAddress?: string) {
+  let emailAddress, linkCreationDateString, validateEmail
   try {
     const url = new URL(link)
     const encryptedString = url.searchParams.get(magicLinkSearchParam) ?? '[]'
     const decryptedString = decrypt(encryptedString)
     const payload = JSON.parse(decryptedString) as MagicLinkPayload
+    console.log({payload, sessionEmailAddress})
     emailAddress = payload.emailAddress
     linkCreationDateString = payload.creationDate
+    validateEmail = payload.validateEmail
   } catch (error: unknown) {
     console.error(error)
-    throw new Error('Invalid magic link.')
+    throw new Error('Sign in link invalid. Please request a new one.')
   }
 
   if (typeof emailAddress !== 'string') {
     console.error(`Email is not a string. Maybe wasn't set in the session?`)
-    throw new Error('Invalid magic link.')
+    throw new Error('Sign in link invalid. Please request a new one.')
+  }
+
+  if (validateEmail && emailAddress !== sessionEmailAddress) {
+    console.error(
+      `magic link payload email address does not match sessionEmailAddress`,
+    )
+    throw new Error(
+      `You must open the magic link on the same device it was created from for security reasons. Please request a new link.`,
+    )
   }
 
   if (typeof linkCreationDateString !== 'string') {
     console.error('Link expiration is not a string.')
-    throw new Error('Invalid magic link.')
+    throw new Error('Sign in link invalid. Please request a new one.')
   }
 
   const linkCreationDate = new Date(linkCreationDateString)

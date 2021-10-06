@@ -17,7 +17,7 @@ import {sendToken, getUser} from '~/utils/session.server'
 import {getLoginInfoSession} from '~/utils/login.server'
 import {getGenericSocialImage, images} from '~/images'
 import {Paragraph} from '~/components/typography'
-import {Button} from '~/components/button'
+import {Button, LinkButton} from '~/components/button'
 import {Input, InputError, Label} from '~/components/form-elements'
 import {HeroSection} from '~/components/sections/hero-section'
 import {verifyEmailAddress} from '~/utils/verifier.server'
@@ -28,7 +28,6 @@ import {Grid} from '~/components/grid'
 type LoaderData = {
   email?: string
   error?: string
-  message?: string
 }
 
 export const loader: LoaderFunction = async ({request}) => {
@@ -39,7 +38,6 @@ export const loader: LoaderFunction = async ({request}) => {
 
   const data: LoaderData = {
     email: loginSession.getEmail(),
-    message: loginSession.getMessage(),
     error: loginSession.getError(),
   }
 
@@ -70,8 +68,6 @@ export const meta: MetaFunction = ({parentsData}) => {
     }),
   }
 }
-
-const EMAIL_SENT_MESSAGE = 'Email sent.'
 
 export const action: ActionFunction = async ({request}) => {
   const params = new URLSearchParams(await request.text())
@@ -107,7 +103,6 @@ export const action: ActionFunction = async ({request}) => {
   try {
     const domainUrl = getDomainUrl(request)
     await sendToken({emailAddress, domainUrl})
-    loginSession.flashMessage(EMAIL_SENT_MESSAGE)
     return redirect(`/login`, {
       headers: await loginSession.getHeaders(),
     })
@@ -123,7 +118,6 @@ export const action: ActionFunction = async ({request}) => {
 function Login() {
   const data = useLoaderData<LoaderData>()
   const [submitted, setSubmitted] = React.useState(false)
-  const emailSent = data.message === EMAIL_SENT_MESSAGE
 
   const [formValues, setFormValues] = React.useState({
     email: data.email ?? '',
@@ -153,19 +147,6 @@ function Login() {
               <div className="mb-6">
                 <div className="flex flex-wrap items-baseline justify-between mb-4">
                   <Label htmlFor="email-address">Email address</Label>
-                  {emailSent ? (
-                    <p
-                      id="success-message"
-                      className="dark:text-blueGray-500 text-gray-500 text-lg"
-                    >
-                      Thanks! A magic link has been sent.{' '}
-                      <span role="img" aria-label="sparkles">
-                        ✨
-                      </span>
-                    </p>
-                  ) : (
-                    <InputError id="error-message">{data.error}</InputError>
-                  )}
                 </div>
 
                 <Input
@@ -183,14 +164,41 @@ function Login() {
                 />
               </div>
 
-              <Button type="submit" disabled={!formIsValid || submitted}>
-                Email a login link
-              </Button>
+              <div className="flex flex-wrap gap-4">
+                <Button type="submit" disabled={!formIsValid || submitted}>
+                  Email a login link
+                </Button>
+                <LinkButton
+                  type="reset"
+                  onClick={() => {
+                    setFormValues({email: ''})
+                    setSubmitted(false)
+                  }}
+                >
+                  Reset
+                </LinkButton>
+              </div>
 
               <div className="sr-only" aria-live="polite">
                 {formIsValid
                   ? 'Sign in form is now valid and ready to submit'
                   : 'Sign in form is now invalid.'}
+              </div>
+
+              <div className="mt-2">
+                {data.error ? (
+                  <InputError id="error-message">{data.error}</InputError>
+                ) : data.email ? (
+                  <p
+                    id="success-message"
+                    className="dark:text-blueGray-500 text-gray-500 text-lg"
+                  >
+                    <span role="img" aria-label="sparkles">
+                      ✨
+                    </span>
+                    {` A magic link has been sent to ${data.email}.`}
+                  </p>
+                ) : null}
               </div>
             </Form>
           </main>

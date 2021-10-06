@@ -136,7 +136,7 @@ export default function CallHomeScreen() {
         arrowUrl="#episodes"
         arrowLabel="Take a listen"
         action={
-          <ButtonLink variant="primary" to="./record">
+          <ButtonLink variant="primary" to="./record" className="mr-auto">
             Record your call
           </ButtonLink>
         }

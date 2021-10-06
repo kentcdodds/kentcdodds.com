@@ -11,7 +11,12 @@ import type {HeadersFunction, MetaFunction} from 'remix'
 import {json, useLoaderData} from 'remix'
 import type {KCDLoader} from '~/types'
 import {useRootData} from '~/utils/use-root-data'
-import {getDiscordAuthorizeURL, getDisplayUrl, getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {
+  getDiscordAuthorizeURL,
+  getDisplayUrl,
+  getUrl,
+  reuseUsefulLoaderHeaders,
+} from '~/utils/misc'
 import {ArrowLink} from '~/components/arrow-button'
 import {ButtonLink} from '~/components/button'
 import {H2, H5, H6, Paragraph} from '~/components/typography'
@@ -37,7 +42,7 @@ import {TrophyIcon} from '~/components/icons/trophy-icon'
 import LaptopIcon from '~/components/icons/laptop-icon'
 import {MessageIcon} from '~/components/icons/message-icon'
 import type {LoaderData as RootLoaderData} from '../root'
-import { getSocialMetas } from '~/utils/seo'
+import {getSocialMetas} from '~/utils/seo'
 
 type LoaderData = {
   testimonials: Array<Testimonial>
@@ -61,13 +66,13 @@ export const loader: KCDLoader = async ({request}) => {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-
 export const meta: MetaFunction = ({parentsData}) => {
   const {requestInfo} = parentsData.root as RootLoaderData
   return {
     ...getSocialMetas({
       title: 'The KCD Community on Discord',
-      description: 'Make friends, share ideas, connect, network, and improve yourself in the KCD Community on Discord',
+      description:
+        'Make friends, share ideas, connect, network, and improve yourself in the KCD Community on Discord',
       url: getUrl(requestInfo),
       image: getGenericSocialImage({
         url: getDisplayUrl(requestInfo),
@@ -77,7 +82,6 @@ export const meta: MetaFunction = ({parentsData}) => {
     }),
   }
 }
-
 
 export interface CategoryCardProps {
   title: string
@@ -165,7 +169,7 @@ export default function Discord() {
         arrowUrl="#reasons-to-join"
         arrowLabel="Is this something for me?"
         action={
-          <ButtonLink variant="primary" to={authorizeURL}>
+          <ButtonLink variant="primary" to={authorizeURL} className="mr-auto">
             Join Discord
           </ButtonLink>
         }

@@ -38,7 +38,11 @@ export const loader: LoaderFunction = async ({request}) => {
     await prismaWrite.user.create({data: {email, team, firstName, role}})
   }
   return redirect(
-    getMagicLink({emailAddress: email, domainUrl: getDomainUrl(request)}),
+    getMagicLink({
+      emailAddress: email,
+      validateEmail: false,
+      domainUrl: getDomainUrl(request),
+    }),
   )
 }
 

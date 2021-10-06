@@ -153,7 +153,7 @@ function HeroSection({
           {action ? (
             <motion.div
               variants={childVariants}
-              className="flex flex-col mt-14 space-y-4 lg:flex-row lg:space-x-4 lg:space-y-0"
+              className="flex flex-col mt-14 space-y-4"
             >
               {action}
             </motion.div>
