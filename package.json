@@ -103,6 +103,7 @@
     "metascraper-title": "^5.24.6",
     "morgan": "^1.10.0",
     "node-fetch": "2.6.1",
+    "on-finished": "^2.3.0",
     "p-limit": "^4.0.0",
     "p-props": "^5.0.0",
     "p-queue": "^7.1.0",

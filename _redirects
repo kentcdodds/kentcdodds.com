@@ -34,7 +34,6 @@
 POST,DELETE,PATCH,PUT  /                                                https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /webfig(.*)                                                             https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /config(.*)                                                             https://www.youtube.com/watch?v=dQw4w9WgXcQ
-/humans.txt                                                             https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /console(.*)                                                            https://www.youtube.com/watch?v=dQw4w9WgXcQ
 
 ################ old podcast URLs:

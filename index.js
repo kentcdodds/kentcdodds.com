@@ -1,6 +1,7 @@
 // @ts-check
 const fs = require('fs')
 const path = require('path')
+const onFinished = require('on-finished')
 const {URL} = require('url')
 const express = require('express')
 const compression = require('compression')
@@ -48,6 +49,21 @@ app.use(express.static('public/fonts', {immutable: true, maxAge: '1y'}))
 app.use(express.static('public/build', {immutable: true, maxAge: '1y'}))
 
 app.use(morgan('tiny'))
+
+// log the referrer for 404s
+app.use((req, res, next) => {
+  onFinished(res, () => {
+    const referrer = req.get('referer')
+    console.log({referrer, status: res.statusCode})
+    if (res.statusCode === 404 && referrer) {
+      console.info(
+        `👻 404 on ${req.method} ${req.path} referred by: ${referrer}`,
+      )
+    }
+  })
+  next()
+})
+
 app.all(
   '*',
   MODE === 'production'
