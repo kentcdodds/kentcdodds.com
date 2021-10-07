@@ -74,6 +74,7 @@ function SitemapSection() {
         <FooterLink name="Discord" href="/discord" />
         <FooterLink name="Chats Podcast" href="/chats" />
         <FooterLink name="Workshops" href="/workshops" />
+        <FooterLink name="Talks" href="/talks" />
         <FooterLink name="About" href="/about" />
         <FooterLink name="Credits" href="/credits" />
         <FooterLink name="Full Sitemap" reload href="/sitemap.xml" />

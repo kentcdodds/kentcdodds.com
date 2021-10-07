@@ -211,7 +211,7 @@ async function getBlogReadRankings({
           const recentReads = await getRecentReads(slug, team)
           let ranking = 0
           if (activeMembers) {
-            ranking = Number(recentReads / activeMembers)
+            ranking = Number((recentReads / activeMembers).toFixed(4))
           }
           return {team, totalReads, ranking}
         }),

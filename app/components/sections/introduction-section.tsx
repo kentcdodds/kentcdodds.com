@@ -2,7 +2,7 @@ import * as React from 'react'
 import {Link} from 'remix'
 import {useSearchParams} from 'react-router-dom'
 import {getImgProps, images} from '~/images'
-import {H2} from '../typography'
+import {H2, H3} from '../typography'
 import {ArrowLink} from '../arrow-button'
 import {Grid} from '../grid'
 import {FullScreenYouTubeEmbed, LiteYouTubeEmbed} from '../fullscreen-yt-embed'
@@ -50,17 +50,17 @@ function IntroductionSection() {
           to="/about?autoplay"
         >{`or, watch the full video here (8:05)`}</Link>
       </div>
-      <div className="col-span-full mt-12 lg:col-span-5 lg:col-start-7 lg:mt-0">
+      <div className="col-span-full mt-12 lg:col-span-6 lg:col-start-6 lg:mt-0">
         <H2 id="intro">
           {`Hi, I'm Kent C. Dodds. I help people make the world better through quality software.`}
         </H2>
-        <H2 variant="secondary" as="p" className="mt-12">
+        <H3 variant="secondary" as="p" className="mt-12">
           {`
             I'm also a big extreme sports enthusiast. When I'm not hanging out
             with my family or at the computer you can find me cruising around on
             my onewheel or hitting the slopes on my snowboard when it's cold.
           `}
-        </H2>
+        </H3>
         <ArrowLink
           to="/about"
           direction="right"
