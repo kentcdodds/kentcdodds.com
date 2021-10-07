@@ -115,7 +115,7 @@ export const action: ActionFunction = async ({request}) => {
         })
 
         const headers = new Headers()
-        await session.singIn(user)
+        await session.signIn(user)
         await session.getHeaders(headers)
         // IDEA: try using destroy... Didn't seem to work last time I tried though.
         loginInfoSession.clean()
