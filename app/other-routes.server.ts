@@ -1,7 +1,7 @@
 import {EntryContext, json} from 'remix'
 import {getSitemapXml} from './utils/sitemap.server'
 import {getRssFeedXml} from './utils/blog-rss-feed.server'
-import {getAllUserData} from './utils/prisma.server'
+import {getAllUserData, prismaRead} from './utils/prisma.server'
 import {commitShaKey as refreshCacheCommitShaKey} from './routes/_action/refresh-cache'
 import {redisCache} from './utils/redis.server'
 import {requireUser} from './utils/session.server'
@@ -49,6 +49,16 @@ const pathedRoutes: Record<string, Handler> = {
     const postgres = await getAllUserData(user.id)
     const cache = await getUserInfo(user)
     return json({postgres, cache})
+  },
+  '/healthcheck': async () => {
+    try {
+      const userCount = await prismaRead.user.count()
+      console.log('healthcheck ✅', {userCount})
+      return new Response('OK')
+    } catch (error: unknown) {
+      console.log('healthcheck ❌', {error})
+      return new Response('ERROR', {status: 500})
+    }
   },
 }
 
