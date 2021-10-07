@@ -54,7 +54,6 @@ app.use(morgan('tiny'))
 app.use((req, res, next) => {
   onFinished(res, () => {
     const referrer = req.get('referer')
-    console.log({referrer, status: res.statusCode})
     if (res.statusCode === 404 && referrer) {
       console.info(
         `👻 404 on ${req.method} ${req.path} referred by: ${referrer}`,
