@@ -77,7 +77,7 @@ async function getSession(request: Request) {
     },
     getSessionId,
     unsetSessionId,
-    singIn: async (user: Pick<User, 'id'>) => {
+    signIn: async (user: Pick<User, 'id'>) => {
       const userSession = await createSession({userId: user.id})
       session.set(sessionIdKey, userSession.id)
     },
@@ -152,7 +152,7 @@ async function getUserSessionFromMagicLink(request: Request) {
   if (!user) return null
 
   const session = await getSession(request)
-  await session.singIn(user)
+  await session.signIn(user)
   return session
 }
 
