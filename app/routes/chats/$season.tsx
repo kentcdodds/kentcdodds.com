@@ -12,6 +12,7 @@ import {getCWKEpisodePath} from '~/utils/chats-with-kent'
 import {TriangleIcon} from '~/components/icons/triangle-icon'
 import {MissingSomething} from '~/components/kifs'
 import {H3, Paragraph} from '~/components/typography'
+import {ServerError} from '~/components/errors'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
@@ -50,7 +51,7 @@ export const loader: KCDLoader<{season: string}> = async ({
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export default function Screen() {
+export default function ChatsSeason() {
   const {season} = useLoaderData<LoaderData>()
   const {sortOrder} = useChatsEpisodeUIState()
   const episodes = orderBy(season.episodes, 'episodeNumber', sortOrder)
@@ -92,6 +93,11 @@ export default function Screen() {
       </Grid>
     </Link>
   ))
+}
+
+export function ErrorBoundary({error}: {error: Error}) {
+  console.error(error)
+  return <ServerError />
 }
 
 export function CatchBoundary() {
