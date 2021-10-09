@@ -1,4 +1,5 @@
 import * as React from 'react'
+import {motion} from 'framer-motion'
 import type {LoaderFunction, HeadersFunction, MetaFunction} from 'remix'
 import {Link, json, useLoaderData} from 'remix'
 import {useSearchParams} from 'react-router-dom'
@@ -12,6 +13,11 @@ import {
   images,
 } from '~/images'
 import {H2, H3, H6, Paragraph} from '~/components/typography'
+import {
+  Parallax,
+  ParallaxItem,
+  ParallaxWrapper,
+} from '~/components/parallax/parallax'
 import {SearchIcon} from '~/components/icons/search-icon'
 import {ArticleCard} from '~/components/article-card'
 import {ArrowLink} from '~/components/arrow-button'
@@ -19,7 +25,10 @@ import {FeaturedSection} from '~/components/sections/featured-section'
 import {Tag} from '~/components/tag'
 import {getBlogMdxListItems} from '~/utils/mdx'
 import {filterPosts, getRankingLeader} from '~/utils/blog'
-import {HeroSection} from '~/components/sections/hero-section'
+import {
+  HeroSection,
+  getHeroImageProps,
+} from '~/components/sections/hero-section'
 import {PlusIcon} from '~/components/icons/plus-icon'
 import {Button} from '~/components/button'
 import type {Timings} from '~/utils/metrics.server'
@@ -64,6 +73,46 @@ type LoaderData = {
   totalBlogReaders: string
   overallLeadingTeam: Team | null
 }
+
+const SkiParallax = () => (
+  <motion.div
+    initial={{scale: 1.5, opacity: 0}}
+    animate={{scale: 1, opacity: 1}}
+    transition={{duration: 0.75}}
+    className="w-full"
+  >
+    <ParallaxWrapper>
+      <Parallax
+        config={{
+          rotate: 0.01,
+          rotateX: -0.1,
+          rotateY: 0.25,
+          coefficientX: 1.25,
+          coefficientY: 1.25,
+        }}
+      >
+        <ParallaxItem
+          config={{
+            width: 100,
+            positionX: 50,
+            positionY: 65,
+            positionZ: 3,
+            moveX: 0.45,
+            moveY: 0.25,
+          }}
+        >
+          <motion.img
+            className="w-full h-auto max-h-50vh object-contain"
+            {...getHeroImageProps(images.skis)}
+            initial={{scale: 1.5, opacity: 0}}
+            animate={{scale: 1, opacity: 1}}
+            transition={{duration: 0.75}}
+          />
+        </ParallaxItem>
+      </Parallax>
+    </ParallaxWrapper>
+  </motion.div>
+)
 
 export const loader: LoaderFunction = async ({request}) => {
   const timings: Timings = {}
@@ -277,7 +326,7 @@ function BlogHome() {
       <HeroSection
         title="Learn development with great articles."
         subtitle="Find the latest of my writing here."
-        imageBuilder={images.skis}
+        parallax={SkiParallax}
         action={
           <div className="w-full">
             <form
