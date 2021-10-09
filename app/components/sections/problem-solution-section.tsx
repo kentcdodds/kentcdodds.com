@@ -223,7 +223,7 @@ function ProblemSolutionSection({
 
           <Paragraph className="mt-8">
             {`
-              I really enjoy chatting with people about softare development and
+              I really enjoy chatting with people about software development and
               life as a software developer. So I have several podcasts for you
               to enjoy like
             `}
