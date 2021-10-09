@@ -332,6 +332,7 @@ export default function MdxScreen() {
             totalReads={data.totalReads}
             rankings={data.readRankings}
             direction="down"
+            pull="right"
           />
         </div>
       </Grid>
@@ -442,6 +443,7 @@ export default function MdxScreen() {
             totalReads={data.totalReads}
             rankings={data.readRankings}
             direction="up"
+            pull="right"
           />
         </div>
       </Grid>

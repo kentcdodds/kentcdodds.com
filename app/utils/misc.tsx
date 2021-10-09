@@ -84,6 +84,18 @@ function formatTime(seconds: number) {
 
 const formatNumber = (num: number) => new Intl.NumberFormat().format(num)
 
+function formatAbbreviatedNumber(num: number) {
+  return num < 1_000
+    ? formatNumber(num)
+    : num < 1_000_000
+    ? `${formatNumber(Number((num / 1_000).toFixed(2)))}k`
+    : num < 1_000_000_000
+    ? `${formatNumber(Number((num / 1_000_000).toFixed(2)))}m`
+    : num < 1_000_000_000_000
+    ? `${formatNumber(Number((num / 1_000_000_000).toFixed(2)))}b`
+    : 'a lot'
+}
+
 function formatDate(dateString: string) {
   return dateFns.format(
     dateFns.add(dateFns.parseISO(dateString), {
@@ -267,6 +279,7 @@ export {
   formatDate,
   formatTime,
   formatNumber,
+  formatAbbreviatedNumber,
 }
 export {listify} from './listify'
 export type {OptionalTeam}

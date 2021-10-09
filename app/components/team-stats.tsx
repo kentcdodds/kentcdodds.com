@@ -135,12 +135,14 @@ function Stat({
 function TeamStats({
   totalReads,
   rankings,
-  direction = 'up',
+  direction,
+  pull,
   onStatClick,
 }: {
   totalReads: string
   rankings: Array<ReadRanking>
   direction: 'up' | 'down'
+  pull: 'left' | 'right'
   onStatClick?: (team: Team) => void
 }) {
   const [altDown, setAltDown] = React.useState(false)
@@ -169,9 +171,11 @@ function TeamStats({
     >
       <div
         className={clsx(
-          'absolute right-0 h-8 text-sm opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition',
+          'absolute flex gap-2 items-center h-8 text-sm opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition',
           {
-            '-top-8': direction === 'down',
+            'left-0': pull === 'right',
+            'right-0': pull === 'left',
+            '-top-9': direction === 'down',
             '-bottom-20': direction === 'up',
           },
         )}

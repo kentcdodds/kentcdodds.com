@@ -26,6 +26,7 @@ import type {Timings} from '~/utils/metrics.server'
 import {getServerTimeHeader} from '~/utils/metrics.server'
 import {ServerError} from '~/components/errors'
 import {
+  formatAbbreviatedNumber,
   formatDate,
   formatNumber,
   getDisplayUrl,
@@ -96,8 +97,8 @@ export const loader: LoaderFunction = async ({request}) => {
     recommended,
     readRankings,
     allPostReadRankings,
-    totalReads: formatNumber(totalReads),
-    totalBlogReaders: formatNumber(totalBlogReaders),
+    totalReads: formatAbbreviatedNumber(totalReads),
+    totalBlogReaders: formatAbbreviatedNumber(totalBlogReaders),
     tags: Array.from(tags),
     overallLeadingTeam: getRankingLeader(readRankings)?.team ?? null,
   }
@@ -314,6 +315,7 @@ function BlogHome() {
             <TeamStats
               totalReads={data.totalReads}
               rankings={data.readRankings}
+              pull="left"
               direction="down"
               onStatClick={toggleTeam}
             />
