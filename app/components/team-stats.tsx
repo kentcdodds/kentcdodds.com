@@ -173,14 +173,16 @@ function TeamStats({
         className={clsx(
           'absolute flex gap-2 items-center h-8 text-sm opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition',
           {
-            'left-0': pull === 'right',
-            'right-0': pull === 'left',
+            'right-0': pull === 'right',
+            'left-0': pull === 'left',
             '-top-9': direction === 'down',
             '-bottom-20': direction === 'up',
           },
         )}
       >
-        <span title="Total reads">{totalReads} </span>
+        <span title="Total reads" className="text-primary">
+          {totalReads}{' '}
+        </span>
         <Link
           className="text-secondary underlined hover:text-team-current focus:text-team-current"
           to="/teams#read-rankings"
@@ -202,7 +204,7 @@ function TeamStats({
             <Stat
               {...ranking}
               direction={direction}
-              display={altDown ? 'ranking' : 'reads'}
+              display={altDown ? 'reads' : 'ranking'}
               onClick={
                 onStatClick ? () => onStatClick(ranking.team) : undefined
               }
