@@ -8,11 +8,11 @@ function postRefreshCache({
     try {
       const postDataString = JSON.stringify(postData)
       const searchParams = new URLSearchParams()
-      searchParams.set('_data', 'routes/_action/refresh-cache')
+      searchParams.set('_data', 'routes/action/refresh-cache')
       const options = {
         hostname: 'kentcdodds.com',
         port: 443,
-        path: `/_action/refresh-cache?${searchParams.toString()}`,
+        path: `/action/refresh-cache?${searchParams.toString()}`,
         method: 'POST',
         headers: {
           auth: process.env.REFRESH_CACHE_SECRET,
