@@ -36,12 +36,18 @@ async function getSitemapXml(request: Request, remixContext: EntryContext) {
         }
         let parentId = manifestEntry.parentId
         let parent = parentId ? remixContext.manifest.routes[parentId] : null
-        // TODO: fix index routes
-        if (!manifestEntry.path) {
+
+        let path
+        if (manifestEntry.path) {
+          path = removeTrailingSlash(manifestEntry.path)
+          // @ts-expect-error types need to be updated for this
+          // https://github.com/remix-run/remix/issues/307
+        } else if (manifestEntry.index) {
+          path = ''
+        } else {
           return
         }
 
-        let path = removeTrailingSlash(manifestEntry.path)
         while (parent) {
           // the root path is '/', so it messes things up if we add another '/'
           path = `${removeTrailingSlash(parent.path)}/${path}`
