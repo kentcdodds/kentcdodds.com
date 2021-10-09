@@ -156,7 +156,7 @@ export default function ContactRoute() {
                   I do my best to respond, but unfortunately I can't always
                   respond to every email I receive. If you have a support
                   request about my open source work, please open an issue
-                  on the GitHub repo instead. If have a support need on one of
+                  on the GitHub repo instead. If you have a support need on one of
                   my courses, please email the team (`}
                 <a href="mailto:team@epicreact.dev">team@epicreact.dev</a>
                 {`, `}
