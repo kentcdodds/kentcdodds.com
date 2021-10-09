@@ -165,13 +165,6 @@ function ProblemSolutionSection({
             <Paragraph
               prose={false}
               textColorClassName={teamTextColorClasses[currentBlogLeaderTeam]}
-              className={clsx({
-                // if the yellow team is winning, it looks *really* bad in light mode
-                // so we have this mess... Probably should figure out a better way to deal with this
-                // more generally...
-                'inline-block dark:p-0 px-4 py-2 bg-gray-400 dark:bg-transparent rounded-sm':
-                  currentBlogLeaderTeam === 'YELLOW',
-              })}
             >
               {`The `}
               <Link
