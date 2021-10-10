@@ -27,6 +27,8 @@ import {
   getTotalPostReads,
   getBlogRecommendations,
   ReadRankings,
+  notifyOfOverallTeamLeaderChange,
+  notifyOfTeamLeaderChangeOnPost,
 } from '~/utils/blog.server'
 import {FourOhFour, ServerError} from '~/components/errors'
 import {TeamStats} from '~/components/team-stats'
@@ -57,7 +59,13 @@ export const action: KCDAction<{slug: string}> = async ({request, params}) => {
   const session = await getSession(request)
   const user = await session.getUser()
   const headers = new Headers()
+  let beforePostLeader: ReadRankings[number] | null = null
+  let beforeOverallLeader: ReadRankings[number] | null = null
   if (user) {
+    ;[beforePostLeader, beforeOverallLeader] = await Promise.all([
+      getBlogReadRankings({request, slug: params.slug}).then(getRankingLeader),
+      getBlogReadRankings({request}).then(getRankingLeader),
+    ])
     await addPostRead({
       slug,
       userId: user.id,
@@ -71,9 +79,39 @@ export const action: KCDAction<{slug: string}> = async ({request, params}) => {
     })
     await client.getHeaders(headers)
   }
-  // trigger an update to the ranking cache
-  void getBlogReadRankings({request, slug: params.slug, forceFresh: true})
-  void getBlogReadRankings({request, forceFresh: true})
+
+  // trigger an update to the ranking cache and notify when the leader changed
+  const [afterPostLeader, afterOverallLeader] = await Promise.all([
+    getBlogReadRankings({request, slug: params.slug, forceFresh: true}).then(
+      getRankingLeader,
+    ),
+    getBlogReadRankings({request, forceFresh: true}).then(getRankingLeader),
+  ])
+
+  if (
+    afterPostLeader?.team &&
+    afterPostLeader.team !== beforePostLeader?.team
+  ) {
+    await notifyOfTeamLeaderChangeOnPost({
+      request,
+      postSlug: slug,
+      reader: user,
+      newLeader: afterPostLeader.team,
+      prevLeader: beforePostLeader?.team,
+    })
+  }
+  if (
+    afterOverallLeader?.team &&
+    afterOverallLeader.team !== beforeOverallLeader?.team
+  ) {
+    await notifyOfOverallTeamLeaderChange({
+      request,
+      postSlug: slug,
+      reader: user,
+      newLeader: afterOverallLeader.team,
+      prevLeader: beforeOverallLeader?.team,
+    })
+  }
 
   return json({success: true, headers})
 }

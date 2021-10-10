@@ -545,6 +545,7 @@ export default function Discord() {
 }
 
 export function ErrorBoundary({error}: {error: Error}) {
+  console.error(error)
   return (
     <div>
       <h2>Error</h2>
