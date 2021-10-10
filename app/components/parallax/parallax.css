@@ -34,7 +34,8 @@
 }
 
 .kody-segment {
-  background-image: url("https://assets.codepen.io/605876/kody-spritesheet.png");
+  /* background-image: url("https://assets.codepen.io/605876/kody-spritesheet.png"); */
+  background-image: url("https://res.cloudinary.com/jh3yy/image/upload/f_auto,q_auto/v1633865338/Projects/kody-spritesheet-all_ak8clo.png");
   height: 100%;
   width: 100%;
   background-position: calc(var(--pos-x, 0) * 1%) calc(var(--pos-y, 0) * 1%);

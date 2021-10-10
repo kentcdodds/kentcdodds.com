@@ -23,24 +23,69 @@ interface KodySegmentCSS extends React.CSSProperties {
 
 const ITEMS = [
   {
-    identifier: 'kody',
-    backgroundPositionX: 54,
-    backgroundPositionY: 10,
-    size: 450,
+    identifier: 'kody-yellow',
+    backgroundPositionX: 53.15,
+    backgroundPositionY: 50,
+    size: 739,
     config: {
       positionX: 50,
-      positionY: 56,
+      positionY: 54,
       moveX: 0.15,
       moveY: -0.25,
-      height: 68,
-      width: 66,
+      height: 58,
+      width: 55,
+      rotate: 0.01,
+    },
+  },
+  {
+    identifier: 'kody-red',
+    backgroundPositionX: 100,
+    backgroundPositionY: 50,
+    size: 739,
+    config: {
+      positionX: 50,
+      positionY: 54,
+      moveX: 0.15,
+      moveY: -0.25,
+      height: 58,
+      width: 55,
+      rotate: 0.01,
+    },
+  },
+  {
+    identifier: 'kody-white',
+    backgroundPositionX: 68.8,
+    backgroundPositionY: 50,
+    size: 739,
+    config: {
+      positionX: 50,
+      positionY: 54,
+      moveX: 0.15,
+      moveY: -0.25,
+      height: 58,
+      width: 55,
+      rotate: 0.01,
+    },
+  },
+  {
+    identifier: 'kody-blue',
+    backgroundPositionX: 84.4,
+    backgroundPositionY: 50,
+    size: 739,
+    config: {
+      positionX: 50,
+      positionY: 54,
+      moveX: 0.15,
+      moveY: -0.25,
+      height: 58,
+      width: 55,
       rotate: 0.01,
     },
   },
   {
     identifier: 'battery',
-    size: 1700,
-    backgroundPositionX: 88.25,
+    size: 2620,
+    backgroundPositionX: -0.075,
     backgroundPositionY: 0,
     config: {
       positionX: 74,
@@ -54,27 +99,27 @@ const ITEMS = [
   },
   {
     identifier: 'leaf-one',
-    size: 6000,
-    backgroundPositionX: 36.75,
-    backgroundPositionY: 0,
+    size: 10000,
+    backgroundPositionX: 3.75,
+    backgroundPositionY: -1,
     config: {
       positionX: 35,
-      positionY: 95,
+      positionY: 94,
       moveX: 1.5,
       moveY: -0.85,
       height: 7,
-      width: 5,
+      width: 4,
       rotate: 0.6,
     },
   },
   {
     identifier: 'leaf-two',
-    size: 3600,
-    backgroundPositionX: 28.15,
-    backgroundPositionY: 1,
+    size: 5800,
+    backgroundPositionX: 10.15,
+    backgroundPositionY: -0.25,
     config: {
-      positionX: 96,
-      positionY: 64,
+      positionX: 97,
+      positionY: 63,
       moveX: 1.5,
       moveY: -0.85,
       height: 4,
@@ -84,9 +129,9 @@ const ITEMS = [
   },
   {
     identifier: 'leaf-three',
-    size: 5000,
-    backgroundPositionX: 67.5,
-    backgroundPositionY: 0,
+    size: 8000,
+    backgroundPositionX: 8.85,
+    backgroundPositionY: -0.5,
     config: {
       positionX: 84,
       positionY: 21,
@@ -99,9 +144,9 @@ const ITEMS = [
   },
   {
     identifier: 'leaf-four',
-    size: 8500,
-    backgroundPositionX: 92.65,
-    backgroundPositionY: 0,
+    size: 13500,
+    backgroundPositionX: 19.125,
+    backgroundPositionY: -0.5,
     config: {
       positionX: 57,
       positionY: 18,
@@ -114,12 +159,12 @@ const ITEMS = [
   },
   {
     identifier: 'leaf-five',
-    size: 4000,
-    backgroundPositionX: 34.5,
-    backgroundPositionY: 0,
+    size: 6500,
+    backgroundPositionX: 16,
+    backgroundPositionY: -1,
     config: {
       positionX: 55,
-      positionY: 95,
+      positionY: 94,
       moveX: 1.5,
       moveY: -0.85,
       height: 10,
@@ -129,12 +174,12 @@ const ITEMS = [
   },
   {
     identifier: 'leaf-six',
-    size: 3100,
-    backgroundPositionX: 79.25,
-    backgroundPositionY: 0,
+    size: 5000,
+    backgroundPositionX: 14,
+    backgroundPositionY: -0.5,
     config: {
       positionX: 9,
-      positionY: 21,
+      positionY: 22,
       moveX: 1.5,
       moveY: -0.85,
       height: 8,
@@ -144,12 +189,12 @@ const ITEMS = [
   },
   {
     identifier: 'leaf-seven',
-    size: 3300,
-    backgroundPositionX: 39,
-    backgroundPositionY: 0,
+    size: 5100,
+    backgroundPositionX: 11.975,
+    backgroundPositionY: -0.5,
     config: {
       positionX: 4,
-      positionY: 84,
+      positionY: 83,
       moveX: 1.5,
       moveY: -0.85,
       height: 8,
@@ -159,11 +204,11 @@ const ITEMS = [
   },
   {
     identifier: 'leaf-eight',
-    size: 3300,
-    backgroundPositionX: 82.5,
-    backgroundPositionY: 0,
+    size: 5000,
+    backgroundPositionX: 20.15,
+    backgroundPositionY: -0.5,
     config: {
-      positionX: 9,
+      positionX: 10,
       positionY: 74,
       moveX: 1.5,
       moveY: -0.85,
@@ -174,9 +219,9 @@ const ITEMS = [
   },
   {
     identifier: 'leaf-nine',
-    size: 3200,
-    backgroundPositionX: 31.15,
-    backgroundPositionY: 0,
+    size: 5000,
+    backgroundPositionX: 4.8,
+    backgroundPositionY: -0.25,
     config: {
       positionX: 83,
       positionY: 64,
@@ -189,8 +234,8 @@ const ITEMS = [
   },
   {
     identifier: 'leaf-ten',
-    size: 3200,
-    backgroundPositionX: 76,
+    size: 5000,
+    backgroundPositionX: 6.85,
     backgroundPositionY: 0,
     config: {
       positionX: 56,
@@ -204,9 +249,9 @@ const ITEMS = [
   },
   {
     identifier: 'leaf-eleven',
-    size: 3800,
-    backgroundPositionX: 91.25,
-    backgroundPositionY: 0,
+    size: 6200,
+    backgroundPositionX: 17.65,
+    backgroundPositionY: -0.5,
     config: {
       positionX: 28,
       positionY: 32,
@@ -219,9 +264,9 @@ const ITEMS = [
   },
   {
     identifier: 'one-wheel',
-    size: 810,
-    backgroundPositionX: 1,
-    backgroundPositionY: 0,
+    size: 1250,
+    backgroundPositionX: 27.5,
+    backgroundPositionY: -8,
     config: {
       positionX: 80,
       positionY: 83,
@@ -230,47 +275,47 @@ const ITEMS = [
       moveX: 1.5,
       moveY: -0.85,
       height: 26,
-      width: 36,
+      width: 32,
     },
   },
   {
     identifier: 'speaker',
-    size: 1370,
-    backgroundPositionX: 100,
-    backgroundPositionY: 1,
+    size: 2150,
+    backgroundPositionX: 35,
+    backgroundPositionY: 0,
     config: {
-      positionX: 10,
+      positionX: 12,
       positionY: 51,
       positionZ: 2,
       moveX: 1.5,
       moveY: -0.85,
       height: 24,
-      width: 20,
+      width: 19,
     },
   },
   {
     identifier: 'skis',
-    size: 760,
-    backgroundPositionX: 16,
-    backgroundPositionY: 7,
+    size: 1240,
+    backgroundPositionX: 41.3,
+    backgroundPositionY: -2,
     config: {
-      positionX: 83,
-      positionY: 39,
+      positionX: 77,
+      positionY: 40,
       positionZ: 10,
       moveX: 1.5,
       moveY: -0.85,
-      height: 36,
-      width: 36,
+      height: 30,
+      width: 30,
     },
   },
   {
     identifier: 'recycle',
-    size: 1800,
-    backgroundPositionX: 72.15,
+    size: 2850,
+    backgroundPositionX: 22.55,
     backgroundPositionY: 0,
     config: {
-      positionX: 27,
-      positionY: 12,
+      positionX: 28,
+      positionY: 11,
       rotate: -2,
       moveX: 1.5,
       moveY: -0.85,
@@ -280,7 +325,7 @@ const ITEMS = [
   },
 ]
 
-const KodyParallax = () => (
+const KodyParallax = ({team = 'white'}: {team: string}) => (
   <motion.div
     initial={{scale: 1.5, opacity: 0}}
     animate={{scale: 1, opacity: 1}}
@@ -297,7 +342,19 @@ const KodyParallax = () => (
           coefficientY: 1.5,
         }}
       >
-        {ITEMS.map((item: ParallaxItem) => (
+        {/* Debug image. Uncomment to match up positions in DevTools */}
+        {/* <img style={{
+          position: 'absolute',
+          width: '100%',
+          objectFit: 'cover',
+          zIndex: 2,
+          opacity: 0.5,
+        }} src="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/illustrations/kody-flying_blue.png"/> */}
+        {ITEMS.filter(
+          item =>
+            item.identifier === `kody-${team}` ||
+            !item.identifier.includes('kody'),
+        ).map((item: ParallaxItem) => (
           <ParallaxItem key={item.identifier} config={item.config}>
             <div
               className="kody-segment"

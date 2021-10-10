@@ -80,15 +80,13 @@ export const loader: LoaderFunction = async ({request}) => {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-
-
 export default function IndexRoute() {
   const data = useLoaderData<LoaderData>()
   return (
     <div>
       <HeroSection
         title="Helping people make the world a better place through quality software."
-        parallax={KodyParallax}
+        parallax={() => <KodyParallax team={data.kodyTeam.toLowerCase()} />}
         imageSize="giant"
         arrowUrl="#intro"
         arrowLabel="Learn more about Kent"
