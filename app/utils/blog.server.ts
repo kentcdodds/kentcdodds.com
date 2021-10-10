@@ -343,12 +343,9 @@ async function getPostJson(request: Request) {
   })
 }
 
-const teamChannels: Record<Team, string> = {
-  RED: getRequiredServerEnvVar('DISCORD_RED_CHANNEL'),
-  BLUE: getRequiredServerEnvVar('DISCORD_BLUE_CHANNEL'),
-  YELLOW: getRequiredServerEnvVar('DISCORD_YELLOW_CHANNEL'),
-}
-const siteChannel = getRequiredServerEnvVar('DISCORD_SITE_CHANNEL')
+const leaderboardChannelId = getRequiredServerEnvVar(
+  'DISCORD_LEADERBOARD_CHANNEL',
+)
 
 const getUserDiscordMention = (user: User) =>
   user.discordId ? `<@!${user.discordId}>` : user.firstName
@@ -369,22 +366,16 @@ async function notifyOfTeamLeaderChangeOnPost({
   const blogUrl = `${getDomainUrl(request)}/blog`
   const newLeaderEmoji = teamEmoji[newLeader]
   const url = `${blogUrl}/${postSlug}`
-  const newLeaderChannelId = teamChannels[newLeader]
   const newTeamMention = `the ${newLeaderEmoji} ${newLeader.toLowerCase()} team`
   if (prevLeader) {
-    const oldLeaderChannelId = teamChannels[prevLeader]
     const prevLeaderEmoji = teamEmoji[prevLeader]
     const prevTeamMention = `the ${prevLeaderEmoji} ${prevLeader.toLowerCase()} team`
     if (reader && reader.team === newLeader) {
       const readerMention = getUserDiscordMention(reader)
       const cause = `${readerMention} just read ${url} and won the post from ${prevTeamMention} for ${newTeamMention}!`
       await sendMessageFromDiscordBot(
-        newLeaderChannelId,
+        leaderboardChannelId,
         `🎉 Congratulations! You've won a post!\n\n${cause}`,
-      )
-      await sendMessageFromDiscordBot(
-        oldLeaderChannelId,
-        `😱 Oh no! You've lost a post!\n\n${cause}`,
       )
     } else {
       const who = reader
@@ -394,18 +385,14 @@ async function notifyOfTeamLeaderChangeOnPost({
         : `An anonymous user`
       const cause = `${who} just read ${url} and triggered a recalculation of the rankings: ${prevTeamMention} lost the post and it's now claimed by ${newTeamMention}!`
       await sendMessageFromDiscordBot(
-        newLeaderChannelId,
+        leaderboardChannelId,
         `🎉 Congratulations! You've won a post!\n\n${cause}`,
-      )
-      await sendMessageFromDiscordBot(
-        oldLeaderChannelId,
-        `😱 Oh no! You've lost a post!\n\n${cause}`,
       )
     }
   } else if (reader) {
     const readerMention = getUserDiscordMention(reader)
     await sendMessageFromDiscordBot(
-      newLeaderChannelId,
+      leaderboardChannelId,
       `Congratulations! You've won a post!\n\n${readerMention} just read ${url} and claimed the post for ${newTeamMention}!`,
     )
   }
@@ -435,12 +422,12 @@ async function notifyOfOverallTeamLeaderChange({
   if (prevLeader) {
     const prevLeaderEmoji = teamEmoji[prevLeader]
     await sendMessageFromDiscordBot(
-      siteChannel,
+      leaderboardChannelId,
       `🎉 Congratulations to the ${newLeaderEmoji} ${newLeader.toLowerCase()} team! ${cause} and knocked team ${prevLeaderEmoji} ${prevLeader.toLowerCase()} team off the top of the leader board! 👏`,
     )
   } else {
     await sendMessageFromDiscordBot(
-      siteChannel,
+      leaderboardChannelId,
       `🎉 Congratulations to the ${newLeaderEmoji} ${newLeader.toLowerCase()} team! ${cause} and took ${newLeader.toLowerCase()} team to the top of the leader board! 👏`,
     )
   }
