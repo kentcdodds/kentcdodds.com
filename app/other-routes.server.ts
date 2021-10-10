@@ -6,6 +6,7 @@ import {commitShaKey as refreshCacheCommitShaKey} from './routes/action/refresh-
 import {redisCache} from './utils/redis.server'
 import {requireUser} from './utils/session.server'
 import {getUserInfo} from './utils/user-info.server'
+import {getPostJson} from './utils/blog.server'
 
 type Handler = (
   request: Request,
@@ -22,6 +23,16 @@ const pathedRoutes: Record<string, Handler> = {
       headers: {
         'Content-Type': 'application/json',
         'Content-Length': String(Buffer.byteLength(data)),
+      },
+    })
+  },
+  '/blog.json': async request => {
+    const data = await getPostJson(request)
+    const string = JSON.stringify(data)
+    return new Response(string, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': String(Buffer.byteLength(string)),
       },
     })
   },

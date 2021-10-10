@@ -3,7 +3,7 @@ import {subYears, subMonths} from 'date-fns'
 import {shuffle} from 'lodash'
 import {getBlogMdxListItems} from './mdx'
 import {prismaRead} from './prisma.server'
-import {teams, typedBoolean} from './misc'
+import {getDomainUrl, teams, typedBoolean} from './misc'
 import {getSession} from './session.server'
 import {filterPosts} from './blog'
 import {getClientSession} from './client.server'
@@ -316,10 +316,33 @@ async function getActiveMembers(team: Team) {
   return count
 }
 
+async function getPostJson(request: Request) {
+  const posts = await getBlogMdxListItems({request})
+
+  const blogUrl = `${getDomainUrl(request)}/blog`
+
+  return posts.map(post => {
+    const {
+      slug,
+      frontmatter: {title, description, meta: {keywords = []} = {}, categories},
+    } = post
+    return {
+      id: slug,
+      slug,
+      productionUrl: `${blogUrl}/${slug}`,
+      title,
+      categories,
+      keywords,
+      description,
+    }
+  })
+}
+
 export {
   getBlogRecommendations,
   getBlogReadRankings,
   getAllBlogPostReadRankings,
   getTotalPostReads,
   getReaderCount,
+  getPostJson,
 }
