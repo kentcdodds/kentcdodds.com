@@ -189,11 +189,15 @@ function useTheme() {
 function Themed({
   dark,
   light,
+  initialOnly = false,
 }: {
   dark: React.ReactNode | string
   light: React.ReactNode | string
+  initialOnly?: boolean
 }) {
   const [theme] = useTheme()
+  const [initialTheme] = React.useState(theme)
+  const themeToReference = initialOnly ? initialTheme : theme
   const serverRenderWithUnknownTheme = !theme && typeof window !== 'object'
   if (serverRenderWithUnknownTheme) {
     // stick them both in and our little script will update the DOM to match
@@ -206,7 +210,7 @@ function Themed({
     )
   } else {
     // eslint-disable-next-line react/jsx-no-useless-fragment
-    return <>{theme === 'light' ? light : dark}</>
+    return <>{themeToReference === 'light' ? light : dark}</>
   }
 }
 

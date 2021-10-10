@@ -102,6 +102,10 @@ export default function Screen() {
 
   return (
     <Themed
+      // changing the theme while the player is going will cause it to
+      // unload the player in the one theme and load it in the other
+      // which is annoying.
+      initialOnly={true}
       dark={
         <div
           dangerouslySetInnerHTML={{

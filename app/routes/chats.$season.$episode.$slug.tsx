@@ -407,6 +407,10 @@ export default function PodcastDetail() {
       <Grid as="main" className="mb-24 lg:mb-64">
         <div className="col-span-full mb-16 lg:col-span-8 lg:col-start-3">
           <Themed
+            // changing the theme while the player is going will cause it to
+            // unload the player in the one theme and load it in the other
+            // which is annoying.
+            initialOnly={true}
             dark={
               <iframe
                 className="mb-4"
