@@ -151,15 +151,13 @@ async function getMostPopularPostSlugs({
 
 async function getTotalPostReads(request: Request, slug?: string) {
   return cachified({
-    key: 'total-post-reads',
+    key: `total-post-reads:${slug ?? '__all-posts__'}`,
     cache: lruCache,
     maxAge: 1000 * 60,
     request,
     checkValue: (value: unknown) => typeof value === 'number',
     getFreshValue: () =>
-      prismaRead.postRead.count({
-        where: {postSlug: slug},
-      }),
+      prismaRead.postRead.count(slug ? {where: {postSlug: slug}} : undefined),
   })
 }
 

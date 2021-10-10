@@ -59,13 +59,12 @@ export const action: KCDAction<{slug: string}> = async ({request, params}) => {
   const session = await getSession(request)
   const user = await session.getUser()
   const headers = new Headers()
-  let beforePostLeader: ReadRankings[number] | null = null
-  let beforeOverallLeader: ReadRankings[number] | null = null
+
+  const [beforePostLeader, beforeOverallLeader] = await Promise.all([
+    getBlogReadRankings({request, slug: params.slug}).then(getRankingLeader),
+    getBlogReadRankings({request}).then(getRankingLeader),
+  ])
   if (user) {
-    ;[beforePostLeader, beforeOverallLeader] = await Promise.all([
-      getBlogReadRankings({request, slug: params.slug}).then(getRankingLeader),
-      getBlogReadRankings({request}).then(getRankingLeader),
-    ])
     await addPostRead({
       slug,
       userId: user.id,

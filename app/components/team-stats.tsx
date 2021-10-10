@@ -202,6 +202,8 @@ function TeamStats({
         {rankings.map(ranking => (
           <li key={ranking.team} className="h-0 overflow-visible">
             <Stat
+              // trigger a re-render if the percentage changes
+              key={ranking.percent}
               {...ranking}
               direction={direction}
               display={altDown ? 'reads' : 'ranking'}
