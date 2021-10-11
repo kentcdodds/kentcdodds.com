@@ -25,6 +25,16 @@ const BUILD_DIR = path.join(process.cwd(), 'build')
 const app = express()
 app.disable('x-powered-by')
 
+app.use((req, res, next) => {
+  const proto = req.get('X-Forwarded-Proto')
+  if (proto === 'http') {
+    res.set('X-Forwarded-Proto', 'https')
+    res.redirect(`https://${req.get('host')}${req.url}`)
+    return
+  }
+  next()
+})
+
 app.all('*', getRedirectsMiddleware())
 
 app.use((req, res, next) => {
