@@ -224,7 +224,7 @@ function ProblemSolutionSection({
               Chats with Kent
             </Link>
             {`, `}
-            <Link prefetch="intent" to="/call">
+            <Link prefetch="intent" to="/calls">
               Call Kent
             </Link>
             {`, and `}
