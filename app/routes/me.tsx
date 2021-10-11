@@ -420,7 +420,7 @@ function YouScreen() {
               variant="danger"
               type="submit"
             >
-              Sign out of your {otherSessionsCount} other{' '}
+              Sign out of {otherSessionsCount}{' '}
               {otherSessionsCount === 1 ? 'session' : 'sessions'}
             </Button>
           </Form>
