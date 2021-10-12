@@ -13,7 +13,7 @@ categories:
 convertKitTag: '2568110'
 problemStatements:
   part1: Runtime errors are annoying in development
-  part2: And they're **devistating** in production
+  part2: And they're **devastating** in production
   part3: >-
     You could have 100% automated test code coverage on your entire application
     and _still_ experience a runtime error. Sure is a good thing you've tested
