@@ -38,6 +38,9 @@ import {
 import {PodcastSubs} from '~/components/podcast-subs'
 import {Spacer} from '~/components/spacer'
 import {getSocialMetas} from '~/utils/seo'
+import {TwitterIcon} from '~/components/icons/twitter-icon'
+import {IconLink} from '~/components/icon-link'
+import {useRootData} from '~/utils/use-root-data'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'calls',
@@ -98,6 +101,7 @@ export const meta: MetaFunction = ({parentsData}) => {
 
 export default function CallHomeScreen() {
   const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('asc')
+  const {requestInfo} = useRootData()
 
   const data = useLoaderData<LoaderData>()
 
@@ -325,10 +329,28 @@ export default function CallHomeScreen() {
                         transition={{duration: 0.15}}
                         className="relative col-span-full"
                       >
-                        <H6 as="div">Keywords</H6>
-                        <Paragraph className="flex mb-8">
-                          {keywords.join(', ')}
-                        </Paragraph>
+                        <div className="flex gap-4 justify-between">
+                          <div>
+                            <H6 as="div" className="flex-auto">
+                              Keywords
+                            </H6>
+                            <Paragraph className="flex mb-8">
+                              {keywords.join(', ')}
+                            </Paragraph>
+                          </div>
+                          <IconLink
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            href={`https://twitter.com/intent/tweet?${new URLSearchParams(
+                              {
+                                url: `${requestInfo.origin}/${path}`,
+                                text: `I just listened to "${episode.title}" on the Chats with Kent Podcast 🎙 by @kentcdodds`,
+                              },
+                            )}`}
+                          >
+                            <TwitterIcon title="Tweet this" />
+                          </IconLink>
+                        </div>
 
                         <H6 as="div">Description</H6>
                         <Paragraph

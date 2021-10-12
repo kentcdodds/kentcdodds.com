@@ -11,6 +11,7 @@ import {Signature} from './signature'
 import {Link} from 'remix'
 import {ArrowIcon} from './icons/arrow-icon'
 import {getImgProps, ImageBuilder} from '~/images'
+import {IconLink} from './icon-link'
 
 function NewsletterSection() {
   return (
@@ -94,24 +95,15 @@ function AboutSection() {
 
       <div className="text-secondary flex gap-4 items-center justify-between mt-6 xl:flex-col xl:items-start">
         <div className="flex gap-4">
-          <a
-            className="text-primary hover:text-team-current focus:text-team-current focus:outline-none"
-            href={externalLinks.github}
-          >
+          <IconLink href={externalLinks.github}>
             <GithubIcon size={32} />
-          </a>
-          <a
-            className="text-primary hover:text-team-current focus:text-team-current focus:outline-none"
-            href={externalLinks.youtube}
-          >
+          </IconLink>
+          <IconLink href={externalLinks.youtube}>
             <YoutubeIcon size={32} />
-          </a>
-          <a
-            className="text-primary hover:text-team-current focus:text-team-current focus:outline-none"
-            href={externalLinks.twitter}
-          >
+          </IconLink>
+          <IconLink href={externalLinks.twitter}>
             <TwitterIcon size={32} />
-          </a>
+          </IconLink>
         </div>
 
         <div className="text-secondary relative flex items-center w-24 xl:mt-20 xl:w-32">
