@@ -390,7 +390,7 @@ export default function PodcastDetail() {
   const {requestInfo} = useRootData()
   const {episode, featured, nextEpisode, prevEpisode} =
     useLoaderData<LoaderData>()
-  const permalink = `${requestInfo.origin}/${getCWKEpisodePath(episode)}`
+  const permalink = `${requestInfo.origin}${getCWKEpisodePath(episode)}`
 
   return (
     <>

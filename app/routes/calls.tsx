@@ -343,7 +343,7 @@ export default function CallHomeScreen() {
                             rel="noreferrer noopener"
                             href={`https://twitter.com/intent/tweet?${new URLSearchParams(
                               {
-                                url: `${requestInfo.origin}/${path}`,
+                                url: `${requestInfo.origin}${path}`,
                                 text: `I just listened to "${episode.title}" on the Chats with Kent Podcast 🎙 by @kentcdodds`,
                               },
                             )}`}
