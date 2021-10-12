@@ -2,6 +2,7 @@ import * as React from 'react'
 import {Link} from 'remix'
 import type {Workshop} from '~/types'
 import type {WorkshopEvent} from '~/utils/workshop-tickets.server'
+import {Spacer} from './spacer'
 import {H3, H6, Paragraph} from './typography'
 
 function truncate(text: string, length: number) {
@@ -26,18 +27,14 @@ function WorkshopCard({
   return (
     <Link
       to={`/workshops/${workshop.slug}`}
-      className="focus-ring flex flex-col p-16 pr-24 w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg"
+      className="focus-ring flex flex-col p-12 pr-16 w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg"
     >
-      <div className="flex-none h-36">
-        {workshopEvents.length ? (
-          <div className="inline-flex items-baseline">
-            <div className="block flex-none w-3 h-3 bg-green-600 rounded-full" />
-            <H6 as="p" className="pl-4">
-              Open for registration
-            </H6>
-          </div>
-        ) : null}
-      </div>
+      <H3 as="div" className="flex-none">
+        {workshop.title}
+      </H3>
+
+      <Spacer size="2xs" />
+
       {workshop.categories.length ? (
         <div className="flex flex-none flex-wrap gap-2">
           {workshop.categories.map(c => (
@@ -50,11 +47,8 @@ function WorkshopCard({
           ))}
         </div>
       ) : null}
-      <H3 as="div" className="flex-none mb-3">
-        {workshop.title}
-      </H3>
 
-      <div className="flex-auto mb-10">
+      <div className="flex-auto">
         <Paragraph className="line-clamp-3">
           {/*
             We do use css line-clamp, this is for the 10% of the browsers that
@@ -65,12 +59,23 @@ function WorkshopCard({
           {truncate(workshop.description, 120)}
         </Paragraph>
       </div>
-      <H6 as="div" className="flex flex-wrap">
-        {workshopEvents.length
-          ? workshopEvents.length === 1
-            ? workshopEvents[0]?.date
-            : 'Multiple events scheduled'
-          : 'Not currently scheduled'}
+
+      <Spacer size="2xs" />
+
+      <H6 as="div" className="flex flex-wrap gap-2 items-center">
+        {workshopEvents.length ? (
+          <>
+            <div
+              className="block flex-none w-3 h-3 bg-green-600 rounded-full"
+              title="Open for registration"
+            />
+            {workshopEvents.length === 1
+              ? workshopEvents[0]?.date
+              : 'Multiple events scheduled'}
+          </>
+        ) : (
+          'Not currently scheduled'
+        )}
       </H6>
     </Link>
   )

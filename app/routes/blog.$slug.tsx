@@ -9,6 +9,7 @@ import type {
   MdxListItem,
   MdxPage,
   Team,
+  Workshop,
 } from '~/types'
 import {useRootData} from '~/utils/use-root-data'
 import {getImageBuilder, getImgProps, images} from '~/images'
@@ -42,6 +43,15 @@ import {getClientSession} from '~/utils/client.server'
 import {getRankingLeader} from '~/utils/blog'
 import {externalLinks} from '../external-links'
 import {teamEmoji, useTeam} from '~/utils/team-provider'
+import {getWorkshops} from '~/utils/workshops.server'
+import {
+  getScheduledEvents,
+  WorkshopEvent,
+} from '~/utils/workshop-tickets.server'
+import {WorkshopCard} from '~/components/workshop-card'
+import {Spacer} from '~/components/spacer'
+import clsx from 'clsx'
+import {HeaderSection} from '~/components/sections/header-section'
 
 const handleId = 'blog-post'
 export const handle: KCDHandle = {
@@ -123,6 +133,8 @@ type CatchData = {
 }
 type LoaderData = CatchData & {
   page: MdxPage
+  workshops: Array<Workshop>
+  workshopEvents: Array<WorkshopEvent>
 }
 
 export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
@@ -138,18 +150,21 @@ export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
     {request, timings},
   )
 
-  const [recommendations, readRankings, totalReads] = await Promise.all([
-    getBlogRecommendations(request, {
-      limit: 3,
-      keywords: [
-        ...(page?.frontmatter.categories ?? []),
-        ...(page?.frontmatter.meta?.keywords ?? []),
-      ],
-      exclude: [params.slug],
-    }),
-    getBlogReadRankings({request, slug: params.slug}),
-    getTotalPostReads(request, params.slug),
-  ])
+  const [recommendations, readRankings, totalReads, workshops, workshopEvents] =
+    await Promise.all([
+      getBlogRecommendations(request, {
+        limit: 3,
+        keywords: [
+          ...(page?.frontmatter.categories ?? []),
+          ...(page?.frontmatter.meta?.keywords ?? []),
+        ],
+        exclude: [params.slug],
+      }),
+      getBlogReadRankings({request, slug: params.slug}),
+      getTotalPostReads(request, params.slug),
+      getWorkshops({request, timings}),
+      getScheduledEvents({request}),
+    ])
 
   const catchData: CatchData = {
     recommendations,
@@ -166,7 +181,30 @@ export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
     throw json(catchData, {status: 404, headers})
   }
 
-  const data: LoaderData = {page, ...catchData}
+  const topics = [
+    ...(page.frontmatter.categories ?? []),
+    ...(page.frontmatter.meta?.keywords ?? []),
+  ]
+  const relevantWorkshops = workshops.filter(workshop => {
+    const workshopTopics = [
+      ...workshop.categories,
+      ...(workshop.meta?.keywords ?? []),
+    ]
+    return (
+      workshopTopics.some(t => topics.includes(t)) &&
+      (workshop.events.length ||
+        workshopEvents.some(
+          event => event.metadata.workshopSlug === workshop.slug,
+        ))
+    )
+  })
+
+  const data: LoaderData = {
+    page,
+    workshops: relevantWorkshops,
+    workshopEvents,
+    ...catchData,
+  }
   return json(data, {status: 200, headers})
 }
 
@@ -485,13 +523,47 @@ export default function MdxScreen() {
         </div>
       </Grid>
 
-      <div className="mb-64">
-        <ArticleFooter
-          editLink={data.page.editLink}
-          permalink={permalink}
-          title={data.page.frontmatter.title}
-        />
-      </div>
+      <ArticleFooter
+        editLink={data.page.editLink}
+        permalink={permalink}
+        title={data.page.frontmatter.title}
+      />
+
+      <Spacer size="base" />
+
+      {data.workshops.length > 0 ? (
+        <>
+          <HeaderSection
+            title="Want to learn more?"
+            subTitle="Join Kent in a live workshop"
+          />
+          <Spacer size="2xs" />
+
+          <Grid>
+            <div className="col-span-full">
+              <Grid nested rowGap>
+                {data.workshops.map((workshop, idx) => (
+                  <div
+                    key={workshop.slug}
+                    className={clsx('col-span-4', {
+                      'hidden lg:block': idx >= 2,
+                    })}
+                  >
+                    <WorkshopCard
+                      workshop={workshop}
+                      titoEvents={data.workshopEvents.filter(
+                        e => e.metadata.workshopSlug === workshop.slug,
+                      )}
+                    />
+                  </div>
+                ))}
+              </Grid>
+            </div>
+          </Grid>
+
+          <Spacer size="base" />
+        </>
+      ) : null}
 
       <BlogSection
         articles={data.recommendations}

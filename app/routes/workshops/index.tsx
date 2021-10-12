@@ -133,7 +133,7 @@ function WorkshopsHome() {
       <Spacer size="base" />
 
       <Grid className="mb-14">
-        <div className="flex flex-wrap col-span-full -mb-4 -mr-4 lg:col-span-10">
+        <div className="flex flex-wrap gap-4 col-span-full lg:col-span-10">
           {tags.map(tag => (
             <Tag
               key={tag}
@@ -157,22 +157,43 @@ function WorkshopsHome() {
 
         <div className="col-span-full">
           <Grid nested rowGap>
-            {workshops.map(workshop => (
-              <div key={workshop.slug} className="col-span-full md:col-span-4">
-                <WorkshopCard
-                  workshop={workshop}
-                  titoEvents={data.workshopEvents.filter(
-                    e => e.metadata.workshopSlug === workshop.slug,
-                  )}
-                />
-              </div>
-            ))}
+            {workshops
+              .sort((a, z) =>
+                workshopHasEvents(a, data.workshopEvents)
+                  ? workshopHasEvents(z, data.workshopEvents)
+                    ? 0
+                    : -1
+                  : 1,
+              )
+              .map(workshop => (
+                <div
+                  key={workshop.slug}
+                  className="col-span-full md:col-span-4"
+                >
+                  <WorkshopCard
+                    workshop={workshop}
+                    titoEvents={data.workshopEvents.filter(
+                      e => e.metadata.workshopSlug === workshop.slug,
+                    )}
+                  />
+                </div>
+              ))}
           </Grid>
         </div>
       </Grid>
 
       <CourseSection />
     </>
+  )
+}
+
+function workshopHasEvents(
+  workshop: Workshop,
+  titoEvents: Array<WorkshopEvent>,
+) {
+  return Boolean(
+    workshop.events.length ||
+      titoEvents.filter(e => e.metadata.workshopSlug === workshop.slug).length,
   )
 }
 
