@@ -47,6 +47,7 @@ keyTakeaways:
       the rest of them and rest easy.
 topics:
   - Use the latest ref pattern to make your custom hooks easier to use
+  - Use composition to simplify layout components and avoid prop drilling
   - Use the Compound Components Pattern to write React components that
     implicitly share state while giving rendering flexibility to the user
   - Handle common use cases for your hooks and components with the prop getter
