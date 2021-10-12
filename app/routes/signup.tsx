@@ -334,7 +334,7 @@ export default function NewAccount() {
               {`Create account`}
             </Button>
           </div>
-          <p className="col-span-4 mt-10 text-xs font-medium tracking-wider">
+          <p className="text-primary col-span-4 mt-10 text-xs font-medium tracking-wider">
             {`
               NOTICE: By signing up for an account, your email address will be
               added to Kent's mailing list (if it's not already) and
