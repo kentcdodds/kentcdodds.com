@@ -15,7 +15,7 @@ import {AnimatePresence, motion, useAnimation} from 'framer-motion'
 import type {User} from '@prisma/client'
 import {kodyProfiles} from '~/images'
 import {Theme, Themed, useTheme} from '~/utils/theme-provider'
-import {getAvatar, OptionalTeam} from '~/utils/misc'
+import type {OptionalTeam} from '~/utils/misc'
 import {SunIcon} from './icons/sun-icon'
 import {MoonIcon} from './icons/moon-icon'
 import {TeamCircle} from './team-circle'
@@ -307,16 +307,7 @@ function ProfileButton({
 function Navbar() {
   const [team] = useTeam()
   const {requestInfo, userInfo, user} = useRootData()
-  const avatar = userInfo
-    ? userInfo.avatar
-    : requestInfo.session.email
-    ? {
-        src: getAvatar(requestInfo.session.email, {
-          fallback: kodyProfiles[team].src,
-        }),
-        alt: 'Profile',
-      }
-    : kodyProfiles[team]
+  const avatar = userInfo ? userInfo.avatar : kodyProfiles[team]
 
   return (
     <div className="px-5vw py-9 lg:py-12">
