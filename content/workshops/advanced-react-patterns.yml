@@ -46,7 +46,7 @@ keyTakeaways:
       number of those requests. And with control props, you'll be able to ditch
       the rest of them and rest easy.
 topics:
-  - Use Context Controllers to improve context value maintenance
+  - Use the latest ref pattern to make your custom hooks easier to use
   - Use the Compound Components Pattern to write React components that
     implicitly share state while giving rendering flexibility to the user
   - Handle common use cases for your hooks and components with the prop getter
