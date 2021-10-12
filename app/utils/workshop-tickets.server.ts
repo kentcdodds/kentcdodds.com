@@ -38,11 +38,9 @@ type TiToActivity = {
 }
 
 type Discount = {url: string; ends: string}
-type WorkshopEvent = Pick<
-  TiToEvent,
-  'banner' | 'description' | 'slug' | 'title' | 'url'
-> &
+type WorkshopEvent = Pick<TiToEvent, 'description' | 'title' | 'url'> &
   Pick<TiToEventDetails, 'location'> & {
+    type: 'tito'
     quantity: number
     sold: number
     remaining: number
@@ -119,6 +117,7 @@ async function getScheduledEvents() {
         ])
 
         const eventInfo = {
+          type: 'tito' as const,
           quantity: 0,
           sold: 0,
           remaining: 0,

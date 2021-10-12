@@ -3,11 +3,19 @@ import {isFuture, parseISO} from 'date-fns'
 import type {WorkshopEvent} from '~/utils/workshop-tickets.server'
 import {ButtonLink} from './button'
 import {H6} from './typography'
+import type {Workshop} from '~/types'
 
-function RegistrationPanel({workshopEvent}: {workshopEvent: WorkshopEvent}) {
-  const discounts = Object.entries(workshopEvent.discounts).filter(
-    ([, discount]) => isFuture(parseISO(discount.ends)),
-  )
+function RegistrationPanel({
+  workshopEvent,
+}: {
+  workshopEvent: WorkshopEvent | Workshop['events'][number]
+}) {
+  const discounts =
+    workshopEvent.type === 'tito'
+      ? Object.entries(workshopEvent.discounts).filter(([, discount]) =>
+          isFuture(parseISO(discount.ends)),
+        )
+      : []
   const hasDiscounts = discounts.length > 0
   return (
     <div
@@ -17,9 +25,13 @@ function RegistrationPanel({workshopEvent}: {workshopEvent: WorkshopEvent}) {
       <div className="mb-10 lg:mb-0 lg:ml-16">
         <div className="inline-flex items-baseline mb-10 lg:mb-2">
           <div className="block flex-none w-3 h-3 bg-green-600 rounded-full" />
-          <H6 as="p" className="pl-4">
-            {`${workshopEvent.remaining} of ${workshopEvent.quantity} spots left`}
-          </H6>
+          {workshopEvent.quantity ? (
+            <H6 as="p" className="pl-4">
+              {workshopEvent.remaining
+                ? `${workshopEvent.remaining} of ${workshopEvent.quantity} spots left`
+                : `Only ${workshopEvent.quantity} spots total`}
+            </H6>
+          ) : null}
         </div>
         <h5 className="text-black dark:text-white text-2xl font-medium">
           {workshopEvent.title}

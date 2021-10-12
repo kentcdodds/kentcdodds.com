@@ -5,26 +5,16 @@ import {redisCache} from './redis.server'
 import {cachified} from './cache.server'
 import {downloadDirList, downloadFile} from './github.server'
 import {typedBoolean} from './misc'
-
-type KeyTakeaway = {
-  title: string
-  description: string
-}
-
-type ProblemStatements = {
-  part1: string
-  part2: string
-  part3: string
-  part4: string
-}
+import type {Workshop} from '~/types'
 
 type RawWorkshop = {
   title?: string
   description?: string
+  events?: Array<Omit<Workshop['events'][number], 'type'>>
   convertKitTag?: string
   categories?: Array<string>
-  problemStatements?: ProblemStatements
-  keyTakeaways?: Array<KeyTakeaway>
+  problemStatements?: Workshop['problemStatementHTMLs']
+  keyTakeaways?: Workshop['keyTakeawayHTMLs']
   topics?: Array<string>
   prerequisite?: string
 }
@@ -61,7 +51,7 @@ function getWorkshops({
   })
 }
 
-async function getWorkshop(slug: string) {
+async function getWorkshop(slug: string): Promise<null | Workshop> {
   const {default: pProps} = await import('p-props')
 
   const rawWorkshopString = await downloadFile(
@@ -84,8 +74,13 @@ async function getWorkshop(slug: string) {
     convertKitTag,
     description = 'This workshop is... indescribeable',
     categories = [],
+    events = [],
     topics,
   } = rawWorkshop
+
+  if (!convertKitTag) {
+    throw new Error('All workshops must have a convertKitTag')
+  }
 
   const [
     problemStatementHTMLs,
@@ -118,6 +113,7 @@ async function getWorkshop(slug: string) {
   return {
     slug,
     title,
+    events: events.map(e => ({type: 'manual', ...e})),
     description,
     convertKitTag,
     categories,

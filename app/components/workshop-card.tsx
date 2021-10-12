@@ -14,18 +14,22 @@ function truncate(text: string, length: number) {
 
 function WorkshopCard({
   workshop,
-  workshopEvent,
+  titoEvents,
 }: {
   workshop: Workshop
-  workshopEvent?: WorkshopEvent
+  titoEvents: Array<Workshop['events'][number] | WorkshopEvent>
 }) {
+  const workshopEvents: Array<Workshop['events'][number] | WorkshopEvent> = [
+    ...workshop.events,
+    ...titoEvents,
+  ]
   return (
     <Link
       to={`/workshops/${workshop.slug}`}
       className="focus-ring flex flex-col p-16 pr-24 w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg"
     >
       <div className="flex-none h-36">
-        {workshopEvent ? (
+        {workshopEvents.length ? (
           <div className="inline-flex items-baseline">
             <div className="block flex-none w-3 h-3 bg-green-600 rounded-full" />
             <H6 as="p" className="pl-4">
@@ -62,7 +66,11 @@ function WorkshopCard({
         </Paragraph>
       </div>
       <H6 as="div" className="flex flex-wrap">
-        {workshopEvent ? workshopEvent.date : 'Not currently scheduled'}
+        {workshopEvents.length
+          ? workshopEvents.length === 1
+            ? workshopEvents[0]?.date
+            : 'Multiple events scheduled'
+          : 'Not currently scheduled'}
       </H6>
     </Link>
   )

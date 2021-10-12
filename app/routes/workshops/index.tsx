@@ -15,10 +15,13 @@ import {
   listify,
   getUrl,
   getDisplayUrl,
+  typedBoolean,
 } from '~/utils/misc'
 import {RegistrationPanel} from '~/components/workshop-registration-panel'
 import {getSocialMetas} from '~/utils/seo'
 import type {LoaderData as RootLoaderData} from '../../root'
+import type {Workshop} from '~/types'
+import type {WorkshopEvent} from '~/utils/workshop-tickets.server'
 
 export const meta: MetaFunction = ({parentsData}) => {
   const {requestInfo} = parentsData.root as RootLoaderData
@@ -97,6 +100,11 @@ function WorkshopsHome() {
 
   useUpdateQueryStringValueWithoutNavigation('q', queryValue)
 
+  const workshopEvents: Array<Workshop['events'][number] | WorkshopEvent> = [
+    ...workshops.flatMap(w => w.events),
+    ...data.workshopEvents,
+  ].filter(typedBoolean)
+
   return (
     <>
       <HeroSection
@@ -106,14 +114,14 @@ function WorkshopsHome() {
         imageSize="large"
       />
 
-      {data.workshopEvents.length ? (
+      {workshopEvents.length ? (
         <Grid>
           <H3 className="col-span-full">Currently Schedule Workshops</H3>
           <div className="col-span-full mt-6">
-            {data.workshopEvents.map((workshopEvent, index) => (
+            {workshopEvents.map((workshopEvent, index) => (
               <React.Fragment key={workshopEvent.date}>
                 <RegistrationPanel workshopEvent={workshopEvent} />
-                {index === data.workshopEvents.length - 1 ? null : (
+                {index === workshopEvents.length - 1 ? null : (
                   <Spacer size="2xs" />
                 )}
               </React.Fragment>
@@ -153,7 +161,7 @@ function WorkshopsHome() {
               <div key={workshop.slug} className="col-span-full md:col-span-4">
                 <WorkshopCard
                   workshop={workshop}
-                  workshopEvent={data.workshopEvents.find(
+                  titoEvents={data.workshopEvents.filter(
                     e => e.metadata.workshopSlug === workshop.slug,
                   )}
                 />
