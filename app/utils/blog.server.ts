@@ -375,7 +375,7 @@ async function notifyOfTeamLeaderChangeOnPost({
       const cause = `${readerMention} just read ${url} and won the post from ${prevTeamMention} for ${newTeamMention}!`
       await sendMessageFromDiscordBot(
         leaderboardChannelId,
-        `🎉 Congratulations! You've won a post!\n\n${cause}`,
+        `🎉 Congratulations to ${newTeamMention}! You've won a post!\n\n${cause}`,
       )
     } else {
       const who = reader
@@ -386,14 +386,14 @@ async function notifyOfTeamLeaderChangeOnPost({
       const cause = `${who} just read ${url} and triggered a recalculation of the rankings: ${prevTeamMention} lost the post and it's now claimed by ${newTeamMention}!`
       await sendMessageFromDiscordBot(
         leaderboardChannelId,
-        `🎉 Congratulations! You've won a post!\n\n${cause}`,
+        `🎉 Congratulations to ${newTeamMention}! You've won a post!\n\n${cause}`,
       )
     }
   } else if (reader) {
     const readerMention = getUserDiscordMention(reader)
     await sendMessageFromDiscordBot(
       leaderboardChannelId,
-      `Congratulations! You've won a post!\n\n${readerMention} just read ${url} and claimed the post for ${newTeamMention}!`,
+      `Congratulations to ${newTeamMention}! You've won a post!\n\n${readerMention} just read ${url} and claimed the post for ${newTeamMention}!`,
     )
   }
 }
