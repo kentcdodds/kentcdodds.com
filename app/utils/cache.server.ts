@@ -175,17 +175,17 @@ async function cachified<
     fn: getFreshValue,
     timings,
   }).catch((error: unknown) => {
+    console.error(
+      `getting a fresh value for ${key} failed`,
+      {fallbackToCache, forceFresh},
+      error,
+    )
     // If we got this far without forceFresh then we know there's nothing
     // in the cache so no need to bother trying again without a forceFresh.
     // So we need both the option to fallback and the ability to fallback.
     if (fallbackToCache && forceFresh) {
       return cachified({...options, forceFresh: false})
     } else {
-      console.error(
-        `getting a fresh value for ${key} failed`,
-        {fallbackToCache, forceFresh},
-        error,
-      )
       throw error
     }
   })

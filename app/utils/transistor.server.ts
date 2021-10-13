@@ -179,6 +179,7 @@ async function getEpisodes() {
   const {default: slugify} = await import('@sindresorhus/slugify')
   const transistorEpisodes = await fetchTransitor<TransistorEpisodesJson>({
     endpoint: `/v1/episodes`,
+    query: {'pagination[per]': '5000'},
   })
   // sort by episode number
   const sortedTransistorEpisodes = transistorEpisodes.data.sort((a, b) => {
