@@ -6,7 +6,7 @@ import {commitShaKey as refreshCacheCommitShaKey} from './routes/action/refresh-
 import {redisCache} from './utils/redis.server'
 import {requireUser} from './utils/session.server'
 import {getUserInfo} from './utils/user-info.server'
-import {getPostJson} from './utils/blog.server'
+import {getBlogReadRankings, getPostJson} from './utils/blog.server'
 
 type Handler = (
   request: Request,
@@ -61,10 +61,18 @@ const pathedRoutes: Record<string, Handler> = {
     const cache = await getUserInfo(user)
     return json({postgres, cache})
   },
-  '/healthcheck': async () => {
+  '/healthcheck': async request => {
     try {
       const userCount = await prismaRead.user.count()
-      console.log('healthcheck ✅', {userCount})
+      const rankings = await getBlogReadRankings({request})
+      console.log('healthcheck ✅', {
+        userCount,
+        rankings: rankings.map(r => ({
+          team: r.team,
+          totalReads: r.totalReads,
+          ranking: r.ranking,
+        })),
+      })
       return new Response('OK')
     } catch (error: unknown) {
       console.log('healthcheck ❌', {error})
