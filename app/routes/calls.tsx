@@ -100,13 +100,13 @@ export const meta: MetaFunction = ({parentsData}) => {
 }
 
 export default function CallHomeScreen() {
-  const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('asc')
+  const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('desc')
   const {requestInfo} = useRootData()
 
   const data = useLoaderData<LoaderData>()
 
   const sortedEpisodes =
-    sortOrder === 'desc' ? data.episodes : [...data.episodes].reverse()
+    sortOrder === 'desc' ? [...data.episodes].reverse() : data.episodes
 
   const matches = useMatches()
   const callPlayerMatch = matches.find(
