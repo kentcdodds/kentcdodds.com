@@ -51,7 +51,6 @@ import {getGenericSocialImage, images} from '~/images'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
-  metas: [{httpEquiv: 'refresh', content: '1740'}],
 }
 
 export const meta: MetaFunction = ({parentsData}) => {

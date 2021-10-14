@@ -289,10 +289,6 @@ function App() {
   const matches = useMatches()
   const data = useLoaderData<LoaderData>()
 
-  const metas = matches
-    .flatMap(m => (m.handle as KCDHandle | undefined)?.metas)
-    .filter(typedBoolean)
-
   const shouldManageScroll = matches.every(
     m => (m.handle as KCDHandle | undefined)?.scroll !== false,
   )
@@ -326,9 +322,6 @@ function App() {
           href="/favicons/favicon-16x16.png"
         />
         <link rel="manifest" href="/site.webmanifest" />
-        {metas.map((m, i) => (
-          <meta key={i} {...m} />
-        ))}
         <Links />
         <noscript>
           <link rel="stylesheet" href={noScriptStyles} />

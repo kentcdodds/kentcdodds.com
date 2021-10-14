@@ -189,8 +189,6 @@ type KCDHandle = {
     | Promise<Array<KCDSitemapEntry | null> | null>
     | Array<KCDSitemapEntry | null>
     | null
-  /** This gives us a little more flexibility in the kind of metadata elements you can render than the built-in meta export */
-  metas?: Array<JSX.IntrinsicElements['meta']>
   scroll?: false
 }
 
