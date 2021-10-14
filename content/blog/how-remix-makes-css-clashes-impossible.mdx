@@ -1,0 +1,184 @@
+---
+title: How Remix makes CSS clashes impossible
+date: 2021-10-13
+description:
+  Remix has this beautifully simple feature for CSS that I want to tell you all
+  about.
+categories:
+  - css
+meta:
+  keywords:
+    - remix
+    - css
+    - link
+    - react
+    - css-in-js
+    - tailwind
+bannerCloudinaryId: unsplash/photo-1543393716-375f47996a77
+bannerAlt: white police car in wall
+bannerCredit: Photo by [Conor Samuel](https://unsplash.com/photos/K5BFXOsFp7g)
+---
+
+Before we get started, I should probably clarify the title a little bit really
+quick. You can always get CSS to clash, no matter the tool you use (yep, I'm
+talking about you CSS-modules and CSS-in-JS). It's simple:
+
+```css
+button {
+  color: red;
+}
+
+/* then later */
+button {
+  color: blue; /* oh no! this clashes with what's above! */
+}
+```
+
+What I mean is that with Remix you'll never have a situation where a change in
+one CSS file has unexpected impacts on other pages in your app, without any
+runtime or class name mangling. It's pretty cool. Now that we understand each
+other, please continue.
+
+CSS can be challenging at scale. This fact is evident based on the number of
+solutions people have come up with to make it easier to deal with. The biggest
+challenge with CSS is this:
+
+<callout-danger class="important">
+  How can you be sure your CSS changes aren't having an unexpected impact?
+</callout-danger>
+
+This is due to the "C" part of CSS: "Cascading Style Sheets". I've been doing
+this web dev thing since around 2013. I've been through just about every
+solution for this CSS challenge you can think of. From regular CSS with good
+naming conventions, through pre-processors, css-modules, css-in-js, and utility
+css classes.
+
+In my post
+[How I built a modern website in 2021](/blog/how-i-built-a-modern-website-in-2021),
+I explain that this website uses [Tailwind CSS](https://tailwindcss.com/) for
+styling. I couldn't be happier with this because it makes it so easy for me to
+have a maintainable and consistent styling solution all in around 12kbs of CSS
+for the whole site.
+
+So my site isn't really taking advantage of the feature I'm about to show you,
+but I want to tell you all about it anyway because it's a brilliantly simple
+feature unique to Remix that has a profound impact on developer productivity and
+performance.
+
+Ok, so let's say that on [my About Me](/about) page, I wanted to customize the
+styling of something. For example, what if I wanted to make all the `h1`s blue?
+If you wanted to do that on your own about page, how would you do it? If you're
+using CSS-in-JS, let's imagine for a moment that you're not. So you'd probably
+want to do something like this:
+
+```css
+.about-page h1 {
+  color: blue;
+}
+```
+
+And then you'd make sure you have the `about-page` class name applied somewhere
+high in your DOM tree.
+
+Why the `about-page` class name? To namespace it right? You wouldn't want to
+have `h1`s on other pages to suddenly all be blue. But let's think about the
+problem here. We only need this CSS to be on the page when the user's on the
+`/about` page right? So why do we even have the CSS on the other pages? Wouldn't
+it be better if we just... like... don't have the CSS on any page other than the
+`/about` page?
+
+And I'm not talking about just lazy-loading the CSS or anything. That's not
+enough. We need the CSS to not only arrive in the browser when the user gets to
+the `/about` page but also make sure it's _removed_ from the page when the user
+navigates away from the `/about` page.
+
+And _that_ is the magic ingridiant of Remix's anti-clash potion. Observe:
+
+![Gif showing a link tag getting removed when navigating from the about page to the homepage](https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/blog/how-remix-makes-css-clashes-impossible/css-link-removed)
+
+Allow me to describe what's happening in this gif. We start on the `/about` page
+and there's a `<link />` tag for a `about-[hash].css` file. That file's making
+our `h1` title blue. Then when we navigate to the homepage, that `<link />` tag
+is removed from the page and the `h1` is restored to it's regular white color.
+
+Pretty simple right? When I first saw this I just sat there processing what I
+was seeing. It's almost too simple and I'm almost mad I never thought about it.
+I expect Remix isn't the first to ever have this idea, but it's certainly not a
+popular idea. I don't know of any other frameworks or tools that enable this.
+
+Let me take it a step further though. Just in case it's not clear how profound
+this is. Here's how this works from a code standpoint:
+
+```tsx lines=4-6 filename=app/routes/about.tsx
+import type {LinksFunction} from 'remix'
+import aboutStyles from '~/styles/routes/about.css'
+
+export const links: LinksFunction = () => {
+  return [{rel: 'stylesheet', href: aboutStyles}]
+}
+
+export default function AboutScreen() {
+  return <stuff />
+}
+```
+
+<callout-info class="aside">
+  In remix, when you import a `.css` file, it gives you back a URL.
+</callout-info>
+
+What this route module does is tell Remix: "When this route is active on the
+page, here are the link tags I need on the page." And Remix ensures that those
+link tags are on the page and **also that they're removed from the page when
+that route is not active.**
+
+So what does this mean in practice? It means that when you're working in a CSS
+file, you can find exactly where it's being used (which routes it's being used
+in) and you know exactly what impact your changes will have.
+
+In practice, you typically will have your CSS file used on a single route, so
+there's normally only one page you need to worry about. So you can freely
+develop your CSS without worrying that your changes are impacting any other page
+than the one you're looking for. You don't need to even follow a namespace
+convention if you don't want to. You don't need a tool to auto-namespace your
+CSS styles for you. And Remix isn't doing anything to your CSS either. It's just
+loading _and unloading_ your CSS for you.
+
+## Reusable components?
+
+But what about the CSS for reusable components? For these, you'll need to make
+sure their CSS files are on every page you use the component. In practice, it's
+most likely you'll just want this on every page so you can put it in your root
+route so it's on every page. Once you do that, you have to acknowledge that when
+you make a change to that file (or any other CSS file you load on the root
+route) will be active on every page (which again, is what you want 😅).
+
+In this case it's actually less about reusable components and more about
+remembering to think about the pages where the CSS file appears and ensure
+you're properly namespacing relative to the other CSS files that will be on the
+pages your CSS file is active on.
+
+The point of this post is more to call out this fact:
+
+<callout-success class="important">
+  With Remix, it's possible to be explicit about the pages upon which your CSS
+  file is active and it's possible to statically determine those pages for a
+  given CSS file.
+</callout-success>
+
+## Tailwind
+
+As mentioned, this website is using Tailwind. Before this site, I had never used
+tailwind. But [Stephan](/credits) recommended that we go with it. I figured it
+might make us productive as we got started, then I could back out of tailwind
+over time later and use this feature of Remix.
+
+By the end of it I realized that Tailwind does more than side-step the Cascade
+clashing issues, it also gives you a great set of constraints to keep your UI
+looking consistant. So I decided to keep it.
+
+## Conclusion
+
+So what do I recommend? I suggest you skip to the end and use Tailwind. But when
+you're in need of some one-off styles (or if you really don't want to use
+Tailwind), it's really nice to know that Remix has your back for that sort of
+thing making for a stellar maintainable CSS solution.

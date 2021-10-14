@@ -206,16 +206,16 @@ pre {
   font-size: 1.2rem;
 }
 
-.prose callout-muted.asside,
-.prose callout-info.asside,
-.prose callout-warning.asside,
-.prose callout-danger.asside,
-.prose callout-success.asside,
-.prose callout-muted.asside *,
-.prose callout-info.asside *,
-.prose callout-warning.asside *,
-.prose callout-danger.asside *,
-.prose callout-success.asside * {
+.prose callout-muted.aside,
+.prose callout-info.aside,
+.prose callout-warning.aside,
+.prose callout-danger.aside,
+.prose callout-success.aside,
+.prose callout-muted.aside *,
+.prose callout-info.aside *,
+.prose callout-warning.aside *,
+.prose callout-danger.aside *,
+.prose callout-success.aside * {
   font-size: 0.875rem;
 }
 

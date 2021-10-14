@@ -73,7 +73,7 @@ async function cachified<
   cache: Cache
   getFreshValue: () => Promise<Value>
   checkValue?: (value: Value) => boolean | string
-  forceFresh?: boolean
+  forceFresh?: boolean | string
   request?: Request
   fallbackToCache?: boolean
   timings?: Timings
@@ -85,13 +85,22 @@ async function cachified<
     cache,
     getFreshValue,
     request,
-    forceFresh = request ? await shouldForceFresh(request) : false,
     checkValue = value => Boolean(value),
     fallbackToCache = true,
     timings,
     timingType = 'getting fresh value',
     maxAge,
   } = options
+
+  // if forceFresh is a string, we'll only force fresh if the key is in the
+  // comma separated list. Otherwise we'll go with it's value and fallback
+  // to the shouldForceFresh function on the request if the request is provided
+  // otherwise it's false.
+  const forceFresh =
+    typeof options.forceFresh === 'string'
+      ? options.forceFresh.split(',').includes(key)
+      : options.forceFresh ??
+        (request ? await shouldForceFresh(request, key) : false)
 
   function assertCacheEntry(entry: unknown): asserts entry is {
     metadata: CacheMetadata
@@ -222,11 +231,13 @@ async function cachified<
   return value
 }
 
-async function shouldForceFresh(request: Request) {
-  return (
-    new URL(request.url).searchParams.has('fresh') &&
-    (await getUser(request))?.role === 'ADMIN'
-  )
+async function shouldForceFresh(request: Request, key: string) {
+  const fresh = new URL(request.url).searchParams.get('fresh')
+  if (typeof fresh !== 'string') return false
+  if ((await getUser(request))?.role !== 'ADMIN') return false
+  if (fresh === '') return true
+
+  return fresh.split(',').includes(key)
 }
 
 export {cachified, lruCache}

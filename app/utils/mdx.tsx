@@ -21,7 +21,7 @@ import {
 import {Themed} from './theme-provider'
 
 type CachifiedOptions = {
-  forceFresh?: boolean
+  forceFresh?: boolean | string
   request?: Request
   timings?: Timings
   maxAge?: number

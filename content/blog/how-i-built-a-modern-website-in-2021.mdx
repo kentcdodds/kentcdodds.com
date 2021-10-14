@@ -118,37 +118,49 @@ so far 😅.
 
 Here are the primary technologies used in this project (in no particular order):
 
-- React: For the UI
-- Remix: Framework for the Client/Server/Routing
-- TypeScript: Typed JavaScript (necessary for any project you plan to maintain)
-- XState: State machine tool making complex component state management simple
-- Prisma: Fantastic ORM with stellar migrations and TypeScript client support
-- Express: Node server framework
-- Cypress: E2E testing framework
-- Jest: Unit/Component testing framework
-- Testing Library: Simple utilities for testing DOM-based user interfaces
-- MSW: Fantastic tool for mocking HTTP requests in the browser/node
-- Tailwind CSS: Utility classes for consistent/maintainable styling
-- Postcss: CSS processor (pretty much just use it for autoprefixer and tailwind)
-- Reach UI: A set of accessible UI components every app needs
-  (accordion/tabs/dialog/etc...)
-- ESBuild: JavaScript bundler (used by Remix and mdx-bundler).
-- mdx-bundler: Tool for compiling and bundling MDX for my site content (blog
-  posts and some simple pages).
-- Octokit: Library making interacting with the GitHub API easier.
-- Framer Motion: Great React Animation library
-- Unified: Markdown/HTML parser/transformer/compiler system.
-- Postgres: Battle tested SQL database
-- Redis: In-memory database–key/value store.
+- [React](https://reactjs.org): For the UI
+- [Remix](https://remix.run): Framework for the Client/Server/Routing
+- [TypeScript](https://www.typescriptlang.org): Typed JavaScript (necessary for
+  any project you plan to maintain)
+- [XState](https://xstate.js.org): State machine tool making complex component
+  state management simple
+- [Prisma](https://www.prisma.io): Fantastic ORM with stellar migrations and
+  TypeScript client support
+- [Express](https://expressjs.com): Node server framework
+- [Cypress](https://cypress.io): E2E testing framework
+- [Jest](https://jestjs.io): Unit/Component testing framework
+- [Testing Library](https://testing-library.com): Simple utilities for testing
+  DOM-based user interfaces
+- [MSW](https://mswjs.io): Fantastic tool for mocking HTTP requests in the
+  browser/node
+- [Tailwind CSS](https://tailwindcss.com): Utility classes for
+  consistent/maintainable styling
+- [Postcss](https://postcss.org/): CSS processor (pretty much just use it for
+  autoprefixer and tailwind)
+- [Reach UI](https://reach.tech/): A set of accessible UI components every app
+  needs (accordion/tabs/dialog/etc...)
+- [ESBuild](https://esbuild.github.io/): JavaScript bundler (used by Remix and
+  mdx-bundler).
+- [mdx-bundler](https://github.com/kentcdodds/mdx-bundler): Tool for compiling
+  and bundling MDX for my site content (blog posts and some simple pages).
+- [Octokit](https://github.com/octokit/octokit.js): Library making interacting
+  with the GitHub API easier.
+- [Framer Motion](https://www.framer.com/motion/): Great React Animation library
+- [Unified](https://unifiedjs.com/): Markdown/HTML parser/transformer/compiler
+  system.
+- [Postgres](https://www.postgresql.org/): Battle tested SQL database
+- [Redis](https://redis.io/): In-memory database–key/value store.
 
 Here are the services this site uses:
 
-- Fly.io: Super hosting platform
-- GitHub Actions: Hosted CI pipeline service
-- Sentry: Error reporting service
-- Cloudinary: Fantastic image hosting and transformation service.
-- Fathom: Privacy-focused ethical analytics service.
-- Metronome: Remix metrics service
+- [Fly.io](https://fly.io): Super hosting platform
+- [GitHub Actions](https://github.com/features/actions): Hosted CI pipeline
+  service
+- [Sentry](https://sentry.io): Error reporting service
+- [Cloudinary](https://cloudinary.com): Fantastic image hosting and
+  transformation service.
+- [Fathom](https://kcd.im/fathom): Privacy-focused ethical analytics service.
+- [Metronome](https://metronome.sh): Remix metrics service
 
 ## Architectural overview
 
@@ -223,7 +235,7 @@ This reduces what used to take 10-25 minutes down to 8 seconds. And it saves me
 computational resources as well because fixing a typo in my content doesn't
 necessitate a rebuild/redeploy/cache bust of the whole site.
 
-<callout-info class="asside">
+<callout-info class="aside">
   I realize that using GitHub as my CMS is a little odd, but wonderful people
   like you contribute improvements to my open source content all the time and I
   appreciate that. So by keeping things in GitHub, that can continue. (Note the
@@ -251,7 +263,7 @@ The Cypress step is further parallelized by splitting my E2E tests into three
 individual containers which split the tests between them to run them as quickly
 as possible.
 
-<callout-muted class="asside">
+<callout-muted class="aside">
   You might notice that there are no arrows coming out of the Cypress step. This
   is intentional and temporary. Currently I do not fail the build if the E2E
   tests fail. So far, I haven't been worried about deploying something that's
@@ -538,7 +550,7 @@ async function cachified<
   cache: Cache
   getFreshValue: () => Promise<Value>
   checkValue?: (value: Value) => boolean
-  forceFresh?: boolean
+  forceFresh?: boolean | string
   request?: Request
   fallbackToCache?: boolean
   timings?: Timings
@@ -554,7 +566,7 @@ async function getPeople({
   forceFresh,
 }: {
   request?: Request
-  forceFresh?: boolean
+  forceFresh?: boolean | string
 }) {
   const allPeople = await cachified({
     cache: redisCache,
@@ -601,13 +613,19 @@ And now for the options:
   runtime type errors. We also use this to check that what we got from
   `getFreshValue` is correct and if it's not then we throw a helpful error
   message (definitely better than a type error).
-- `forceFresh` is what you think. It skips looking at the cache and will call
-  `getFreshValue` even if the value hasn't expired yet.
+- `forceFresh` allows you to skip looking at the cache and will call
+  `getFreshValue` even if the value hasn't expired yet. If you provide a string
+  then it splits that string by `,` and checks whether the `key` is included in
+  that string. If it is then we'll call `getFreshValue`. This is useful for when
+  you're calling a cachified function which calls other cachified functions
+  (like the function that retrieves all the blog mdx files). You can call that
+  function and only refresh _some_ of the cache values, not all of them.
 - `request` is used to determine the default value of `forceFresh`. If the
   request has the query parameter of `?fresh` and the user has the role of
   `ADMIN` (so... just me) then `forceFresh` will default to `true`. This allows
   me to manually refresh the cache for all resources on any page. I don't need
-  to do this very often though.
+  to do this very often though. You can also provide a value of `,`-sparated
+  cache key values to force only _those_ cache values to be refreshed.
 - `fallbackToCache` if we tried to `forceFresh` (so we skipped the cache) and
   getting the fresh value failed, then we might want to fallback to the cached
   value rather than throwing an error. This controls that and defaults to
@@ -979,7 +997,7 @@ easier with its cookie session abstraction.
 
 ## Remix
 
-![Remix logo](https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/remix.png)
+![Remix logo](https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/remix)
 
 Ok folks. Of all tools I'm using, Remix has made the biggest impact on my
 productivity and the performance of my website. Remix enables me to do all this

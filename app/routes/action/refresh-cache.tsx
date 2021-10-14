@@ -4,7 +4,7 @@ import {json, redirect} from 'remix'
 import type {ActionFunction} from 'remix'
 import {getRequiredServerEnvVar} from '~/utils/misc'
 import {redisCache} from '~/utils/redis.server'
-import {getMdxDirList, getMdxPage} from '~/utils/mdx'
+import {getBlogMdxListItems, getMdxDirList, getMdxPage} from '~/utils/mdx'
 import {getTalksAndTags} from '~/utils/talks.server'
 import {getTestimonials} from '~/utils/testimonials.server'
 import {getWorkshops} from '~/utils/workshops.server'
@@ -83,7 +83,10 @@ export const action: ActionFunction = async ({request}) => {
     // if any blog contentPaths were changed then let's update the dir list
     // so it will appear on the blog page.
     if (refreshingContentPaths.some(p => p.startsWith('blog'))) {
-      void getMdxDirList('blog', {forceFresh: true})
+      void getBlogMdxListItems({
+        request,
+        forceFresh: 'blog:dir-list,blog:mdx-list-items',
+      })
     }
     if (refreshingContentPaths.some(p => p.startsWith('pages'))) {
       void getMdxDirList('pages', {forceFresh: true})
