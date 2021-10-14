@@ -29,7 +29,7 @@ import {
 import {getThemeSession} from './utils/theme.server'
 import {getSession} from './utils/session.server'
 import {getLoginInfoSession} from './utils/login.server'
-import {getDisplayUrl, getDomainUrl, getUrl, typedBoolean} from './utils/misc'
+import {getDisplayUrl, getDomainUrl, getUrl} from './utils/misc'
 import {getEnv} from './utils/env.server'
 import {getUserInfo} from './utils/user-info.server'
 import {getClientSession} from './utils/client.server'
