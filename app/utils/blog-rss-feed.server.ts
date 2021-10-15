@@ -33,6 +33,7 @@ async function getRssFeedXml(request: Request) {
                 ),
                 'yyyy-MM-ii',
               )}</pubDate>
+              <link>${blogUrl}/${post.slug}</link>
               <guid>${blogUrl}/${post.slug}</guid>
             </item>
           `.trim(),
