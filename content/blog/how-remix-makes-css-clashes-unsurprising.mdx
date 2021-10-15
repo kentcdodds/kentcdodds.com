@@ -1,5 +1,5 @@
 ---
-title: How Remix makes CSS clashes impossible
+title: How Remix makes CSS clashes unsurprising
 date: 2021-10-13
 description:
   Remix has this beautifully simple feature for CSS that I want to tell you all
@@ -18,26 +18,6 @@ bannerCloudinaryId: unsplash/photo-1543393716-375f47996a77
 bannerAlt: white police car in wall
 bannerCredit: Photo by [Conor Samuel](https://unsplash.com/photos/K5BFXOsFp7g)
 ---
-
-Before we get started, I should probably clarify the title a little bit really
-quick. You can always get CSS to clash, no matter the tool you use (yep, I'm
-talking about you CSS-modules and CSS-in-JS). It's simple:
-
-```css
-button {
-  color: red;
-}
-
-/* then later */
-button {
-  color: blue; /* oh no! this clashes with what's above! */
-}
-```
-
-What I mean is that with Remix you'll never have a situation where a change in
-one CSS file has unexpected impacts on other pages in your app, without any
-runtime or class name mangling. It's pretty cool. Now that we understand each
-other, please continue.
 
 CSS can be challenging at scale. This fact is evident based on the number of
 solutions people have come up with to make it easier to deal with. The biggest
