@@ -72,21 +72,21 @@ them, then please continue.
 First, to give you an idea of the scale we're talking here. So here are a few
 stats:
 
-At the time of this writing (September 2021) here are the
+At the time of this writing (October 2021) here are the
 [`cloc`](https://github.com/AlDanial/cloc) stats:
 
 ```
 $ npx cloc ./app ./types ./tests ./styles ./mocks ./cypress ./prisma ./.github
-     265 text files.
-     256 unique files.
-      16 files ignored.
+     266 text files.
+     257 unique files.
+      15 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.28 s (883.8 files/s, 103677.4 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.16 s (1601.9 files/s, 194240.7 lines/s)
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-TypeScript                     217           1955            573          20603
-CSS                             11            195            299           4655
+TypeScript                     219           2020            583          21582
+CSS                             10            198            301           4705
 JSON                             7              0              0            609
 YAML                             2             43             13            232
 SQL                              7             20             25             52
@@ -94,14 +94,23 @@ JavaScript                       4              2              3             42
 Markdown                         1              0              0              2
 TOML                             1              0              2              1
 -------------------------------------------------------------------------------
-SUM:                           250           2215            915          26196
+SUM:                           251           2283            927          27225
 -------------------------------------------------------------------------------
 ```
 
-26k lines of code isn't like your work project where a half dozen teams have
-been contributing code for the last 8 years or anything, but it's nothing like
-your blogfolio site either. This is a legit full-stack web application with a
-database, cache, user accounts, etc. I'm fairly confident that this is the
+And to get a sense of the amount of content I have on this site, here's a word
+count:
+
+```
+$ find ./content -type f | xargs wc -w | tail -1
+  280801 total
+```
+
+27k lines of code and 280k words of content (more than the first three Harry
+Potter books combined) isn't like your work project where a half dozen teams
+have been contributing code for the last 8 years or anything, but it's nothing
+like your blogfolio site either. This is a legit full-stack web application with
+a database, cache, user accounts, etc. I'm fairly confident that this is the
 biggest Remix application in existence at the moment.
 
 I didn't do this whole thing by myself. You can check out
