@@ -204,12 +204,11 @@ Here we've simply wrapped our `getWinner` mock implementation with
 [`jest.fn`](https://facebook.github.io/jest/docs/en/jest-object.html#jestfnimplementation).
 This effectively does all the same stuff we were doing, except because it's a
 special Jest mock function, there are some special assertions we can use just
-for that purpose (like `toHaveBeenCalledTimes`). Unfortunately there's not
-currently an assertion called `nthCalledWith`
-([though there will be one soon!](https://jestjs.io/docs/en/next/expect.html#tohavebeennthcalledwithnthcall-arg1-arg2-)),
-otherwise we could have avoided our `forEach`, but I think it's ok as it is (and
-luckily we implemented our own metadata collection in the same way Jest does, so
-we don't need to change that assertion. Fancy that!).
+for that purpose (like `toHaveBeenCalledTimes`). Jest has an assertion called 
+[`toHaveBeenNthCalledWith`](https://jestjs.io/docs/expect#tohavebeennthcalledwithnthcall-arg1-arg2-),
+so we could have avoided our `forEach`, but I think it's ok as it is (and luckily
+we implemented our own metadata collection in the same way Jest does, so we don't
+need to change that assertion. Fancy that!).
 
 The next thing I don't like is having to keep track of `originalGetWinner` and
 restore that at the end. I'm also bothered by those eslint comments I had to put
