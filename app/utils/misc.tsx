@@ -252,6 +252,36 @@ const reuseUsefulLoaderHeaders: HeadersFunction = ({loaderHeaders}) => {
   return headers
 }
 
+function callAll<Args extends Array<unknown>>(
+  ...fns: Array<((...args: Args) => unknown) | undefined>
+) {
+  return (...args: Args) => fns.forEach(fn => fn?.(...args))
+}
+
+function useDoubleCheck() {
+  const [doubleCheck, setDoubleCheck] = React.useState(false)
+
+  function getButtonProps(props?: JSX.IntrinsicElements['button']) {
+    const onBlur: JSX.IntrinsicElements['button']['onBlur'] = () =>
+      setDoubleCheck(false)
+
+    const onClick: JSX.IntrinsicElements['button']['onClick'] = doubleCheck
+      ? undefined
+      : e => {
+          e.preventDefault()
+          setDoubleCheck(true)
+        }
+
+    return {
+      ...props,
+      onBlur: callAll(onBlur, props?.onBlur),
+      onClick: callAll(onClick, props?.onClick),
+    }
+  }
+
+  return {doubleCheck, getButtonProps}
+}
+
 export {
   getAvatar,
   getAvatarForUser,
@@ -262,6 +292,7 @@ export {
   assertNonNull,
   useUpdateQueryStringValueWithoutNavigation,
   useSSRLayoutEffect,
+  useDoubleCheck,
   typedBoolean,
   getRequiredServerEnvVar,
   getRequiredGlobalEnvVar,

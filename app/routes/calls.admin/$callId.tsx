@@ -6,7 +6,7 @@ import {useUser} from '~/utils/use-root-data'
 import {CallRecorder} from '~/components/calls/recorder'
 import {requireAdminUser} from '~/utils/session.server'
 import {prismaWrite, prismaRead} from '~/utils/prisma.server'
-import {getErrorMessage, getNonNull} from '~/utils/misc'
+import {getErrorMessage, getNonNull, useDoubleCheck} from '~/utils/misc'
 import {createEpisodeAudio} from '~/utils/ffmpeg.server'
 import {createEpisode} from '~/utils/transistor.server'
 import type {RecordingFormData} from '~/components/calls/submit-recording-form'
@@ -138,7 +138,7 @@ function CallListing({call}: {call: LoaderData['call']}) {
   const [audioURL, setAudioURL] = React.useState<string | null>(null)
   const [audioEl, setAudioEl] = React.useState<HTMLAudioElement | null>(null)
   const [playbackRate, setPlaybackRate] = React.useState(2)
-  const [doubleCheck, setDoubleCheck] = React.useState(false)
+  const dc = useDoubleCheck()
   React.useEffect(() => {
     const audio = new Audio(call.base64)
     setAudioURL(audio.src)
@@ -180,20 +180,8 @@ function CallListing({call}: {call: LoaderData['call']}) {
       ) : null}
       <Form method="delete">
         <input type="hidden" name="callId" value={call.id} />
-        <Button
-          type={doubleCheck ? 'submit' : 'button'}
-          variant="danger"
-          onBlur={() => setDoubleCheck(false)}
-          onClick={
-            doubleCheck
-              ? undefined
-              : e => {
-                  e.preventDefault()
-                  setDoubleCheck(true)
-                }
-          }
-        >
-          {doubleCheck ? 'You sure?' : 'Delete'}
+        <Button type="submit" variant="danger" {...dc.getButtonProps()}>
+          {dc.doubleCheck ? 'You sure?' : 'Delete'}
         </Button>
       </Form>
     </section>

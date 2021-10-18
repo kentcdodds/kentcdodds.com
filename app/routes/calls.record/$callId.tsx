@@ -5,7 +5,7 @@ import type {Call, KCDLoader, KCDAction, KCDHandle} from '~/types'
 import {requireUser} from '~/utils/session.server'
 import {prismaRead, prismaWrite} from '~/utils/prisma.server'
 import {Paragraph} from '~/components/typography'
-import {reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {reuseUsefulLoaderHeaders, useDoubleCheck} from '~/utils/misc'
 import {Button} from '~/components/button'
 
 export const handle: KCDHandle = {
@@ -66,7 +66,7 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 export default function Screen() {
   const data = useLoaderData<LoaderData>()
   const [audioURL, setAudioURL] = React.useState<string | null>(null)
-  const [doubleCheck, setDoubleCheck] = React.useState(false)
+  const dc = useDoubleCheck()
   React.useEffect(() => {
     const audio = new Audio(data.call.base64)
     setAudioURL(audio.src)
@@ -94,21 +94,13 @@ export default function Screen() {
           />
           <input type="hidden" name="callId" value={data.call.id} />
           <Button
-            type={doubleCheck ? 'submit' : 'button'}
+            type="submit"
             variant="danger"
             size="medium"
             autoFocus
-            onBlur={() => setDoubleCheck(false)}
-            onClick={
-              doubleCheck
-                ? undefined
-                : e => {
-                    e.preventDefault()
-                    setDoubleCheck(true)
-                  }
-            }
+            {...dc.getButtonProps()}
           >
-            {doubleCheck ? 'You sure?' : 'Delete'}
+            {dc.doubleCheck ? 'You sure?' : 'Delete'}
           </Button>
         </Form>
       </div>

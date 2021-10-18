@@ -8,7 +8,7 @@ import {H1} from '~/components/typography'
 import type {Await} from '~/types'
 import {prismaRead, prismaWrite} from '~/utils/prisma.server'
 import {requireAdminUser} from '~/utils/session.server'
-import {getErrorMessage} from '~/utils/misc'
+import {getErrorMessage, useDoubleCheck} from '~/utils/misc'
 import {Button} from '~/components/button'
 
 type LoaderData = Await<ReturnType<typeof getLoaderData>>
@@ -88,13 +88,7 @@ function Cell({
   column: {id: string}
 }) {
   const [isEditing, setIsEditing] = React.useState(false)
-  const [doubleCheck, setDoubleCheck] = React.useState(false)
-
-  React.useEffect(() => {
-    if (!isEditing) {
-      setDoubleCheck(false)
-    }
-  }, [isEditing])
+  const dc = useDoubleCheck()
 
   return isEditing ? (
     propertyName === 'id' ? (
@@ -108,20 +102,12 @@ function Cell({
       >
         <input type="hidden" name="id" value={user.id} />
         <Button
-          type={doubleCheck ? 'submit' : 'button'}
+          type="submit"
           variant="danger"
           autoFocus
-          onBlur={() => setDoubleCheck(false)}
-          onClick={
-            doubleCheck
-              ? undefined
-              : e => {
-                  e.preventDefault()
-                  setDoubleCheck(true)
-                }
-          }
+          {...dc.getButtonProps()}
         >
-          {doubleCheck ? 'You sure?' : 'Delete'}
+          {dc.doubleCheck ? 'You sure?' : 'Delete'}
         </Button>
       </Form>
     ) : (
