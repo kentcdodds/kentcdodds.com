@@ -138,6 +138,7 @@ function CallListing({call}: {call: LoaderData['call']}) {
   const [audioURL, setAudioURL] = React.useState<string | null>(null)
   const [audioEl, setAudioEl] = React.useState<HTMLAudioElement | null>(null)
   const [playbackRate, setPlaybackRate] = React.useState(2)
+  const [doubleCheck, setDoubleCheck] = React.useState(false)
   React.useEffect(() => {
     const audio = new Audio(call.base64)
     setAudioURL(audio.src)
@@ -179,8 +180,20 @@ function CallListing({call}: {call: LoaderData['call']}) {
       ) : null}
       <Form method="delete">
         <input type="hidden" name="callId" value={call.id} />
-        <Button type="submit" variant="danger">
-          Delete
+        <Button
+          type={doubleCheck ? 'submit' : 'button'}
+          variant="danger"
+          onBlur={() => setDoubleCheck(false)}
+          onClick={
+            doubleCheck
+              ? undefined
+              : e => {
+                  e.preventDefault()
+                  setDoubleCheck(true)
+                }
+          }
+        >
+          {doubleCheck ? 'You sure?' : 'Delete'}
         </Button>
       </Form>
     </section>

@@ -111,6 +111,7 @@ function Cell({
           type={doubleCheck ? 'submit' : 'button'}
           variant="danger"
           autoFocus
+          onBlur={() => setDoubleCheck(false)}
           onClick={
             doubleCheck
               ? undefined

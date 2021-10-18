@@ -56,7 +56,7 @@ export const loader: KCDLoader<{callId: string}> = async ({
   const data: LoaderData = {call}
   return json(data, {
     headers: {
-      'Cache-Control': 'public, max-age=3600',
+      'Cache-Control': 'public, max-age=10',
     },
   })
 }
@@ -66,6 +66,7 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 export default function Screen() {
   const data = useLoaderData<LoaderData>()
   const [audioURL, setAudioURL] = React.useState<string | null>(null)
+  const [doubleCheck, setDoubleCheck] = React.useState(false)
   React.useEffect(() => {
     const audio = new Audio(data.call.base64)
     setAudioURL(audio.src)
@@ -74,7 +75,7 @@ export default function Screen() {
   return (
     <section>
       <Paragraph className="mb-8">{data.call.description}</Paragraph>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-4">
         <div className="flex-1 w-full" style={{minWidth: '16rem'}}>
           {audioURL ? (
             <audio
@@ -85,15 +86,29 @@ export default function Screen() {
             />
           ) : null}
         </div>
-        <Form method="post">
+        <Form method="delete">
           <input
             type="hidden"
             name="actionType"
             value={actionTypes.DELETE_RECORDING}
           />
           <input type="hidden" name="callId" value={data.call.id} />
-          <Button variant="danger" size="medium" type="submit">
-            Delete
+          <Button
+            type={doubleCheck ? 'submit' : 'button'}
+            variant="danger"
+            size="medium"
+            autoFocus
+            onBlur={() => setDoubleCheck(false)}
+            onClick={
+              doubleCheck
+                ? undefined
+                : e => {
+                    e.preventDefault()
+                    setDoubleCheck(true)
+                  }
+            }
+          >
+            {doubleCheck ? 'You sure?' : 'Delete'}
           </Button>
         </Form>
       </div>

@@ -112,6 +112,28 @@ const discordHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
       )
     },
   ),
+
+  rest.post(
+    'https://discord.com/api/channels/:channelId/messages',
+    async (req, res, ctx) => {
+      requiredHeader(req.headers, 'Authorization')
+      if (typeof req.body !== 'object') {
+        console.error('Request body:', req.body)
+        throw new Error('Request body must be a JSON object')
+      }
+
+      console.log(
+        `🤖 Sending bot message to ${req.params.channelId}:\n`,
+        req.body.content,
+      )
+
+      return res(
+        ctx.json({
+          /* we ignore the response */
+        }),
+      )
+    },
+  ),
 ]
 
 export {discordHandlers}
