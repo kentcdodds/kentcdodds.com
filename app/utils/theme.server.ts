@@ -5,6 +5,7 @@ import {Theme, isTheme} from './theme-provider'
 const themeStorage = createCookieSessionStorage({
   cookie: {
     name: 'KCD_theme',
+    secure: true,
     secrets: [getRequiredServerEnvVar('SESSION_SECRET')],
     sameSite: 'lax',
     path: '/',

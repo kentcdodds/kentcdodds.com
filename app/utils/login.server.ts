@@ -6,6 +6,7 @@ import {linkExpirationTime} from './prisma.server'
 const loginInfoStorage = createCookieSessionStorage({
   cookie: {
     name: 'KCD_login',
+    secure: true,
     secrets: [getRequiredServerEnvVar('SESSION_SECRET')],
     sameSite: 'lax',
     path: '/',

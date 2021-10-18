@@ -18,6 +18,7 @@ const sessionIdKey = '__session_id__'
 const sessionStorage = createCookieSessionStorage({
   cookie: {
     name: 'KCD_root_session',
+    secure: true,
     secrets: [getRequiredServerEnvVar('SESSION_SECRET')],
     sameSite: 'lax',
     path: '/',

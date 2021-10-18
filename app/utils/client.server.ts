@@ -8,6 +8,7 @@ import {getRequiredServerEnvVar} from './misc'
 const clientStorage = createCookieSessionStorage({
   cookie: {
     name: 'KCD_client_id',
+    secure: true,
     secrets: [getRequiredServerEnvVar('SESSION_SECRET')],
     sameSite: 'lax',
     path: '/',
