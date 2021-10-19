@@ -427,12 +427,12 @@ export default function MdxScreen() {
             <BlurrableImage
               key={frontmatter.bannerCloudinaryId}
               blurDataUrl={frontmatter.bannerBlurDataUrl}
-              className="aspect-h-4 aspect-w-3 md:aspect-w-3 md:aspect-h-2 mx-auto rounded-lg"
+              className="aspect-h-4 aspect-w-3 md:aspect-w-3 md:aspect-h-2"
               img={
                 <img
                   key={frontmatter.bannerCloudinaryId}
                   title={frontmatter.bannerCredit}
-                  className="rounded-lg"
+                  className="rounded-lg object-cover object-center"
                   {...getImgProps(
                     getImageBuilder(
                       frontmatter.bannerCloudinaryId,

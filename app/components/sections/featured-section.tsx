@@ -48,7 +48,7 @@ function FeaturedSection({
 }: FeaturedSectionProps) {
   const img = imageBuilder ? (
     <img
-      className="rounded-lg object-cover"
+      className="rounded-lg object-cover object-center"
       {...getImgProps(imageBuilder, {
         widths: [300, 600, 900, 1700, 2500],
         sizes: [
@@ -60,7 +60,11 @@ function FeaturedSection({
       })}
     />
   ) : (
-    <img className="rounded-lg object-cover" src={imageUrl} alt={imageAlt} />
+    <img
+      className="rounded-lg object-cover object-center"
+      src={imageUrl}
+      alt={imageAlt}
+    />
   )
   return (
     <div
@@ -89,7 +93,7 @@ function FeaturedSection({
               <div className="flex items-center justify-between mt-12">
                 <ArrowLink to={slug ?? href ?? '/'} prefetch="intent">
                   {cta}
-                  <div className="focus-ring absolute z-20 inset-0 left-0 right-0 rounded-lg md:-left-12 md:-right-12 lg:left-0 lg:right-0" />
+                  <div className="focus-ring absolute z-10 inset-0 left-0 right-0 rounded-lg md:-left-12 md:-right-12 lg:left-0 lg:right-0" />
                 </ArrowLink>
               </div>
             </div>
@@ -99,7 +103,7 @@ function FeaturedSection({
                 <BlurrableImage
                   blurDataUrl={blurDataUrl}
                   img={img}
-                  className="aspect-w-4 aspect-h-3 lg:aspect-h-5 lg:aspect-w-4"
+                  className="aspect-w-4 aspect-h-3 lg:aspect-h-5 lg:aspect-w-4 pointer-events-none"
                 />
               ) : (
                 <div className="aspect-w-4 aspect-h-3 lg:aspect-h-5 lg:aspect-w-4">
@@ -107,11 +111,11 @@ function FeaturedSection({
                 </div>
               )}
               {leadingTeam ? (
-                <div className="absolute z-30 left-6 top-6 p-1 w-4 h-4 bg-team-current rounded-full" />
+                <div className="absolute z-20 left-6 top-6 p-1 w-4 h-4 bg-team-current rounded-full" />
               ) : null}
               {permalink ? (
                 <ClipboardCopyButton
-                  className="absolute z-30 left-6 top-6"
+                  className="absolute z-20 left-6 top-6"
                   value={permalink}
                 />
               ) : null}

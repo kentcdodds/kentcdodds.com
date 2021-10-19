@@ -40,7 +40,7 @@ function BlurrableImage({
     // @ts-expect-error no idea 🤷‍♂️
     ref: imgRef,
     key: img.props.src,
-    className: clsx(img.props.className, 'w-full h-full object-cover'),
+    className: img.props.className,
   })
 
   const blurEl = (
@@ -59,9 +59,9 @@ function BlurrableImage({
   })
 
   return (
-    <div className={clsx(rest.className, 'w-full h-full')} {...rest}>
+    <div className={rest.className} {...rest}>
       {jsImgEl}
-      <noscript className="z-10">{imgEl}</noscript>
+      <noscript>{imgEl}</noscript>
       {blurDataUrl ? (
         <>
           {blurEl}

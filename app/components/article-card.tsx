@@ -75,7 +75,7 @@ function ArticleCard({
                     },
                   },
                 )}
-                className="focus-ring w-full rounded-lg object-cover transition"
+                className="focus-ring w-full rounded-lg object-cover object-center transition"
               />
             }
           />
