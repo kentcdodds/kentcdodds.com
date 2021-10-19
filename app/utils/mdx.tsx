@@ -28,7 +28,7 @@ type CachifiedOptions = {
   expires?: Date
 }
 
-const defaultMaxAge = 1000 * 60 * 60 * 24 * 7
+const defaultMaxAge = 1000 * 60 * 60 * 24 * 30
 
 const getCompiledKey = (contentDir: string, slug: string) =>
   `${contentDir}:${slug}:compiled`

@@ -396,6 +396,7 @@ function BlogHome() {
                 : 'TBA'
             }
             title={data.recommended.frontmatter.title}
+            blurDataUrl={data.recommended.frontmatter.bannerBlurDataUrl}
             imageBuilder={
               data.recommended.frontmatter.bannerCloudinaryId
                 ? getImageBuilder(

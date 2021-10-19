@@ -7,6 +7,7 @@ import {H2, H6} from '../typography'
 import {ArrowLink} from '../arrow-button'
 import {ClipboardCopyButton} from '../clipboard-copy-button'
 import type {Team} from '~/types'
+import {BlurrableImage} from '../blurrable-image'
 
 type FeaturedSectionProps = {
   caption?: string
@@ -15,6 +16,7 @@ type FeaturedSectionProps = {
   title?: string
   permalink?: string
   leadingTeam?: Team | null
+  blurDataUrl?: string
 } & (
   | {
       imageBuilder?: ImageBuilder
@@ -38,11 +40,28 @@ function FeaturedSection({
   imageBuilder,
   imageUrl,
   imageAlt,
+  blurDataUrl,
   title = 'Untitled Post',
   subTitle,
   permalink,
   leadingTeam,
 }: FeaturedSectionProps) {
+  const img = imageBuilder ? (
+    <img
+      className="rounded-lg object-cover"
+      {...getImgProps(imageBuilder, {
+        widths: [300, 600, 900, 1700, 2500],
+        sizes: [
+          '(max-width: 1023px) 80vw',
+          '(min-width:1024px) and (max-width:1620px) 25vw',
+          '410px',
+        ],
+        transformations: {background: 'rgb:e6e9ee'},
+      })}
+    />
+  ) : (
+    <img className="rounded-lg object-cover" src={imageUrl} alt={imageAlt} />
+  )
   return (
     <div
       className={clsx(
@@ -70,46 +89,29 @@ function FeaturedSection({
               <div className="flex items-center justify-between mt-12">
                 <ArrowLink to={slug ?? href ?? '/'} prefetch="intent">
                   {cta}
-                  <div className="focus-ring absolute z-10 inset-0 left-0 right-0 rounded-lg md:-left-12 md:-right-12 lg:left-0 lg:right-0" />
+                  <div className="focus-ring absolute z-20 inset-0 left-0 right-0 rounded-lg md:-left-12 md:-right-12 lg:left-0 lg:right-0" />
                 </ArrowLink>
               </div>
             </div>
 
             <div className="relative col-span-full mt-12 lg:col-span-4 lg:col-start-8">
-              <div className="w-full">
-                {imageBuilder ? (
-                  <img
-                    className="rounded-lg object-cover"
-                    {...getImgProps(imageBuilder, {
-                      widths: [300, 600, 900, 1700, 2500],
-                      sizes: [
-                        '(max-width: 1023px) 80vw',
-                        '(min-width:1024px) and (max-width:1620px) 25vw',
-                        '410px',
-                      ],
-                      transformations: {
-                        background: 'rgb:e6e9ee',
-                        resize: {
-                          type: 'fill',
-                          aspectRatio: '3:4',
-                        },
-                      },
-                    })}
-                  />
-                ) : (
-                  <img
-                    className="rounded-lg object-cover"
-                    src={imageUrl}
-                    alt={imageAlt}
-                  />
-                )}
-              </div>
+              {blurDataUrl ? (
+                <BlurrableImage
+                  blurDataUrl={blurDataUrl}
+                  img={img}
+                  className="aspect-w-4 aspect-h-3 lg:aspect-h-5 lg:aspect-w-4"
+                />
+              ) : (
+                <div className="aspect-w-4 aspect-h-3 lg:aspect-h-5 lg:aspect-w-4">
+                  {img}
+                </div>
+              )}
               {leadingTeam ? (
-                <div className="absolute z-20 left-6 top-6 p-1 w-4 h-4 bg-team-current rounded-full" />
+                <div className="absolute z-30 left-6 top-6 p-1 w-4 h-4 bg-team-current rounded-full" />
               ) : null}
               {permalink ? (
                 <ClipboardCopyButton
-                  className="absolute z-20 left-6 top-6"
+                  className="absolute z-30 left-6 top-6"
                   value={permalink}
                 />
               ) : null}

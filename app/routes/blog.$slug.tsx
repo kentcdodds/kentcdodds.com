@@ -422,17 +422,17 @@ export default function MdxScreen() {
             — {data.page.readTime?.text ?? 'a quick read'}
           </H6>
         </div>
-        <div className="aspect-h-4 aspect-w-3 md:aspect-w-3 md:aspect-h-2 col-span-full mt-10 rounded-lg lg:col-span-10 lg:col-start-2">
+        <div className="col-span-full mt-10 lg:col-span-10 lg:col-start-2 lg:mt-16">
           {frontmatter.bannerCloudinaryId ? (
             <BlurrableImage
               key={frontmatter.bannerCloudinaryId}
               blurDataUrl={frontmatter.bannerBlurDataUrl}
-              className="aspect-h-4 aspect-w-3 md:aspect-w-3 md:aspect-h-2 col-span-full mt-10 mx-auto rounded-lg lg:col-span-10 lg:col-start-2"
+              className="aspect-h-4 aspect-w-3 md:aspect-w-3 md:aspect-h-2 mx-auto rounded-lg"
               img={
                 <img
                   key={frontmatter.bannerCloudinaryId}
                   title={frontmatter.bannerCredit}
-                  className="w-full h-full rounded-lg object-cover"
+                  className="rounded-lg"
                   {...getImgProps(
                     getImageBuilder(
                       frontmatter.bannerCloudinaryId,
