@@ -19,6 +19,7 @@ import {
   getSocialImageWithPreTitle,
 } from '~/images'
 import {Themed} from './theme-provider'
+import {markdownToHtmlUnwrapped, stripHtml} from './markdown.server'
 
 type CachifiedOptions = {
   forceFresh?: boolean | string
@@ -201,6 +202,21 @@ async function compileMdxCached({
             )
           }
         }
+        if (compiledPage.frontmatter.bannerCredit) {
+          const credit = await markdownToHtmlUnwrapped(
+            compiledPage.frontmatter.bannerCredit,
+          )
+          compiledPage.frontmatter.bannerCredit = credit
+          const noHtml = await stripHtml(credit)
+          if (!compiledPage.frontmatter.bannerAlt) {
+            compiledPage.frontmatter.bannerAlt = noHtml
+              .replace(/(photo|image)/i, '')
+              .trim()
+          }
+          if (!compiledPage.frontmatter.bannerTitle) {
+            compiledPage.frontmatter.bannerTitle = noHtml
+          }
+        }
         return {
           ...compiledPage,
           slug,
@@ -216,6 +232,22 @@ async function compileMdxCached({
     void redisCache.del(key)
   }
   return page
+}
+
+function getBannerAltProp(frontmatter: MdxPage['frontmatter']) {
+  return (
+    frontmatter.bannerAlt ??
+    frontmatter.bannerTitle ??
+    frontmatter.bannerCredit ??
+    frontmatter.title ??
+    'Post banner'
+  )
+}
+
+function getBannerTitleProp(frontmatter: MdxPage['frontmatter']) {
+  return (
+    frontmatter.bannerTitle ?? frontmatter.bannerAlt ?? frontmatter.bannerCredit
+  )
 }
 
 async function getBlurDataUrl(cloudinaryId: string) {
@@ -390,4 +422,6 @@ export {
   getBlogMdxListItems,
   mdxPageMeta,
   useMdxComponent,
+  getBannerTitleProp,
+  getBannerAltProp,
 }

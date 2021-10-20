@@ -7,6 +7,7 @@ import {Grid} from '../grid'
 interface HeaderSectionProps {
   ctaUrl?: string
   cta?: string
+  as?: React.ElementType
   title: string
   subTitle: string
   className?: string
@@ -18,9 +19,10 @@ function HeaderSection({
   title,
   subTitle,
   className,
+  as,
 }: HeaderSectionProps) {
   return (
-    <Grid>
+    <Grid as={as}>
       <div
         className={clsx(
           'flex flex-col col-span-full space-y-10 lg:flex-row lg:items-end lg:justify-between lg:space-y-0',

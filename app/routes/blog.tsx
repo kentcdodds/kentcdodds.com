@@ -17,7 +17,7 @@ import {ArticleCard} from '~/components/article-card'
 import {ArrowLink} from '~/components/arrow-button'
 import {FeaturedSection} from '~/components/sections/featured-section'
 import {Tag} from '~/components/tag'
-import {getBlogMdxListItems} from '~/utils/mdx'
+import {getBlogMdxListItems, getBannerAltProp} from '~/utils/mdx'
 import {filterPosts, getRankingLeader} from '~/utils/blog'
 import {HeroSection} from '~/components/sections/hero-section'
 import {PlusIcon} from '~/components/icons/plus-icon'
@@ -401,10 +401,7 @@ function BlogHome() {
               data.recommended.frontmatter.bannerCloudinaryId
                 ? getImageBuilder(
                     data.recommended.frontmatter.bannerCloudinaryId,
-                    data.recommended.frontmatter.bannerAlt ??
-                      data.recommended.frontmatter.bannerCredit ??
-                      data.recommended.frontmatter.title ??
-                      'Post banner',
+                    getBannerAltProp(data.recommended.frontmatter),
                   )
                 : undefined
             }

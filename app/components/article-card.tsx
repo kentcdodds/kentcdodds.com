@@ -10,18 +10,18 @@ import {ClipboardCopyButton} from './clipboard-copy-button'
 import {MissingSomething} from './kifs'
 import {BlurrableImage} from './blurrable-image'
 import {useRootData} from '~/utils/use-root-data'
+import {getBannerAltProp, getBannerTitleProp} from '~/utils/mdx'
 
 function ArticleCard({
   leadingTeam,
   article: {
     readTime,
     slug,
+    frontmatter,
     frontmatter: {
       date = formatDate(new Date(), 'yyyy-MM-ii'),
       title = 'Untitled Post',
-      bannerAlt,
       bannerCloudinaryId,
-      bannerCredit,
       bannerBlurDataUrl,
     },
   },
@@ -53,10 +53,11 @@ function ArticleCard({
             className="aspect-h-4 aspect-w-3 rounded-lg"
             img={
               <img
+                title={frontmatter.title ?? getBannerTitleProp(frontmatter)}
                 {...getImgProps(
                   getImageBuilder(
                     bannerCloudinaryId,
-                    bannerAlt ?? bannerCredit ?? title,
+                    getBannerAltProp(frontmatter),
                   ),
                   {
                     widths: [280, 560, 840, 1100, 1300, 1650],

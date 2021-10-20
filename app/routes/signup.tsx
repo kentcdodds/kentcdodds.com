@@ -248,172 +248,176 @@ export default function NewAccount() {
   }, [team, setTeam])
 
   return (
-    <main className="mt-24 pt-6">
+    <div className="mt-24 pt-6">
       <HeaderSection
+        as="header"
         title="Let's start with choosing a team."
         subTitle="You can't change this later."
         className="mb-16"
       />
+      <main>
+        <Form
+          method="post"
+          onChange={event => {
+            const form = event.currentTarget
+            setFormValues({
+              firstName: form.firstName.value,
+              team: form.team.value,
+            })
+          }}
+        >
+          <input type="hidden" name="actionId" value={actionIds.signUp} />
+          <Grid>
+            {actionData?.errors.team ? (
+              <div className="col-span-full mb-4 text-right">
+                <InputError id="team-error">
+                  {actionData.errors.team}
+                </InputError>
+              </div>
+            ) : null}
 
-      <Form
-        method="post"
-        onChange={event => {
-          const form = event.currentTarget
-          setFormValues({
-            firstName: form.firstName.value,
-            team: form.team.value,
-          })
-        }}
-      >
-        <input type="hidden" name="actionId" value={actionIds.signUp} />
-        <Grid>
-          {actionData?.errors.team ? (
-            <div className="col-span-full mb-4 text-right">
-              <InputError id="team-error">{actionData.errors.team}</InputError>
+            <fieldset className="contents">
+              <legend className="sr-only">Team</legend>
+              {data.teamsInOrder.map(teamOption => (
+                <TeamOption
+                  key={teamOption}
+                  team={teamOption}
+                  error={actionData?.errors.team}
+                  selected={formValues.team === teamOption}
+                />
+              ))}
+            </fieldset>
+
+            <div className="col-span-full h-20 lg:h-24" />
+
+            <div className="col-span-full mb-12">
+              <H2>{`Some basic info to remember you.`}</H2>
+              <H2 variant="secondary" as="p">
+                {`You can change this later.`}
+              </H2>
             </div>
-          ) : null}
 
-          <fieldset className="contents">
-            <legend className="sr-only">Team</legend>
-            {data.teamsInOrder.map(teamOption => (
-              <TeamOption
-                key={teamOption}
-                team={teamOption}
-                error={actionData?.errors.team}
-                selected={formValues.team === teamOption}
+            <div className="col-span-full mb-12 lg:col-span-5 lg:mb-20">
+              <Field
+                name="firstName"
+                label="First name"
+                error={actionData?.errors.firstName}
+                autoComplete="given-name"
+                defaultValue={actionData?.fields.firstName ?? ''}
+                required
               />
-            ))}
-          </fieldset>
+            </div>
 
-          <div className="col-span-full h-20 lg:h-24" />
+            <div className="col-span-full mb-12 lg:col-span-5 lg:col-start-7 lg:mb-20">
+              <Field
+                name="email"
+                label="Email"
+                description={
+                  <span>
+                    {`This controls your avatar via `}
+                    <a
+                      className="underlined font-bold"
+                      href="https://gravatar.com"
+                      target="_blank"
+                      rel="noreferrer noopener"
+                    >
+                      Gravatar
+                    </a>
+                    {'.'}
+                  </span>
+                }
+                defaultValue={data.email}
+                readOnly
+                disabled
+              />
+            </div>
 
-          <div className="col-span-full mb-12">
-            <H2>{`Some basic info to remember you.`}</H2>
-            <H2 variant="secondary" as="p">
-              {`You can change this later.`}
-            </H2>
-          </div>
-
-          <div className="col-span-full mb-12 lg:col-span-5 lg:mb-20">
-            <Field
-              name="firstName"
-              label="First name"
-              error={actionData?.errors.firstName}
-              autoComplete="firstName"
-              defaultValue={actionData?.fields.firstName ?? ''}
-              required
-            />
-          </div>
-
-          <div className="col-span-full mb-12 lg:col-span-5 lg:col-start-7 lg:mb-20">
-            <Field
-              name="email"
-              label="Email"
-              description={
-                <span>
-                  {`This controls your avatar via `}
-                  <a
-                    className="underlined font-bold"
-                    href="https://gravatar.com"
-                    target="_blank"
-                    rel="noreferrer noopener"
-                  >
-                    Gravatar
-                  </a>
-                  {'.'}
-                </span>
-              }
-              defaultValue={data.email}
-              readOnly
-              disabled
-            />
-          </div>
-
-          <div className="col-span-full">
-            <Button type="submit" disabled={!formIsValid}>
-              {`Create account`}
-            </Button>
-          </div>
-          <p className="text-primary col-span-4 mt-10 text-xs font-medium tracking-wider">
-            {`
+            <div className="col-span-full">
+              <Button type="submit" disabled={!formIsValid}>
+                {`Create account`}
+              </Button>
+            </div>
+            <p className="text-primary col-span-4 mt-10 text-xs font-medium tracking-wider">
+              {`
               NOTICE: By signing up for an account, your email address will be
               added to Kent's mailing list (if it's not already) and
               you'll ocassionally receive promotional emails from Kent. You
               can unsubscribe at any time.
             `}
-          </p>
-        </Grid>
-      </Form>
-      <Spacer size="2xs" />
-      <Grid>
-        <Form method="post">
-          <input type="hidden" name="actionId" value={actionIds.cancel} />
-          <Button type="submit" variant="danger">
-            {`Cancel`}
-          </Button>
+            </p>
+          </Grid>
         </Form>
-      </Grid>
-      <Spacer size="lg" />
-      <Grid>
-        <div className="col-span-full lg:col-span-5 lg:col-start-8">
-          <H2 className="mb-32">{`You might be thinking, why pick a team?`}</H2>
+        <Spacer size="2xs" />
+        <Grid>
+          <Form method="post">
+            <input type="hidden" name="actionId" value={actionIds.cancel} />
+            <Button type="submit" variant="danger">
+              {`Cancel`}
+            </Button>
+          </Form>
+        </Grid>
+        <Spacer size="lg" />
+        <Grid>
+          <div className="col-span-full lg:col-span-5 lg:col-start-8">
+            <H2 className="mb-32">{`You might be thinking, why pick a team?`}</H2>
 
-          <H6 as="h3" className="mb-4">
-            {`Own a post`}
-          </H6>
-          <Paragraph className="mb-12">
-            {`
+            <H6 as="h3" className="mb-4">
+              {`Own a post`}
+            </H6>
+            <Paragraph className="mb-12">
+              {`
               Your team associates your blog post reads with a group and it's
               fun to know that your contributing to a group while learning
               and reading. When your team has the highest ranking on a post,
               you "own" that post. Kinda like an NFT, but not really.
             `}
-          </Paragraph>
-          <H6 as="h3" className="mb-4">
-            {`Exclusive team discord channels`}
-          </H6>
-          <Paragraph className="mb-12">
-            {`
+            </Paragraph>
+            <H6 as="h3" className="mb-4">
+              {`Exclusive team discord channels`}
+            </H6>
+            <Paragraph className="mb-12">
+              {`
               After signing up you can connect your discord account. When you do
               this, your account will be given a team role. This will give you
               access to your team channels where you can plan team blog post
               raids and fun stuff like that.
             `}
-          </Paragraph>
-          <H6 as="h3" className="mb-4">
-            {`UI Theme`}
-          </H6>
-          <Paragraph className="mb-12">
-            {`
+            </Paragraph>
+            <H6 as="h3" className="mb-4">
+              {`UI Theme`}
+            </H6>
+            <Paragraph className="mb-12">
+              {`
               The theme of this website is controlled by your team color
               selection. So choose your favorite color and have that preference
               shown throughout the site.
             `}
-          </Paragraph>
-        </div>
-
-        <div className="col-span-full lg:col-span-6 lg:col-start-1 lg:row-start-1">
-          <div className="aspect-h-6 aspect-w-4">
-            <img
-              className="rounded-lg object-cover"
-              {...getImgProps(images.kentPalmingSoccerBall, {
-                widths: [512, 650, 840, 1024, 1300, 1680, 2000, 2520],
-                sizes: [
-                  '(max-width: 1023px) 80vw',
-                  '(min-width: 1024px) and (max-width: 1620px) 40vw',
-                  '650px',
-                ],
-                transformations: {
-                  resize: {
-                    type: 'fill',
-                    aspectRatio: '3:4',
-                  },
-                },
-              })}
-            />
+            </Paragraph>
           </div>
-        </div>
-      </Grid>
-    </main>
+
+          <div className="col-span-full lg:col-span-6 lg:col-start-1 lg:row-start-1">
+            <div className="aspect-h-6 aspect-w-4">
+              <img
+                className="rounded-lg object-cover"
+                {...getImgProps(images.kentPalmingSoccerBall, {
+                  widths: [512, 650, 840, 1024, 1300, 1680, 2000, 2520],
+                  sizes: [
+                    '(max-width: 1023px) 80vw',
+                    '(min-width: 1024px) and (max-width: 1620px) 40vw',
+                    '650px',
+                  ],
+                  transformations: {
+                    resize: {
+                      type: 'fill',
+                      aspectRatio: '3:4',
+                    },
+                  },
+                })}
+              />
+            </div>
+          </div>
+        </Grid>
+      </main>
+    </div>
   )
 }

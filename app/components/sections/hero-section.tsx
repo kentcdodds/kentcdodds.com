@@ -13,6 +13,7 @@ export type HeroSectionProps = {
   title: string | React.ReactNode
   subtitle?: string
   action?: React.ReactNode
+  as?: React.ElementType
 } & (
   | {
       imageProps?: HTMLMotionProps<'img'>
@@ -69,11 +70,13 @@ function HeroSection({
   imageProps,
   imageBuilder,
   imageSize = 'medium',
+  as = 'header',
 }: HeroSectionProps) {
   const hasImage = Boolean(image ?? imageProps ?? imageBuilder)
 
   return (
     <Grid
+      as={as}
       className={clsx('lg:min-h-[40rem] lg: mb-24 pt-24 h-auto lg:pb-12', {
         'lg:mb-64': arrowLabel,
         'lg:mb-0': !arrowLabel,

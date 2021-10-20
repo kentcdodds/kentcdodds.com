@@ -39,6 +39,7 @@ type MdxPage = {
     bannerCloudinaryId?: string
     bannerCredit?: string
     bannerAlt?: string
+    bannerTitle?: string
     socialImageTitle?: string
     socialImagePreTitle?: string
     translations?: Array<{

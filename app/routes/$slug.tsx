@@ -7,6 +7,8 @@ import {
   getMdxDirList,
   mdxPageMeta,
   useMdxComponent,
+  getBannerTitleProp,
+  getBannerAltProp,
 } from '~/utils/mdx'
 import {getBlogRecommendations} from '~/utils/blog.server'
 import {FourOhFour} from '~/components/errors'
@@ -74,7 +76,7 @@ export default function MdxScreen() {
         </div>
       </Grid>
 
-      <Grid className="mb-12">
+      <Grid as="header" className="mb-12">
         <div className="col-span-full lg:col-span-8 lg:col-start-3">
           <H2>{frontmatter.title}</H2>
           {frontmatter.description ? (
@@ -84,41 +86,40 @@ export default function MdxScreen() {
           ) : null}
         </div>
         {frontmatter.bannerCloudinaryId ? (
-          <BlurrableImage
-            key={frontmatter.bannerCloudinaryId}
-            blurDataUrl={frontmatter.bannerBlurDataUrl}
-            className="aspect-h-4 aspect-w-3 md:aspect-w-3 md:aspect-h-2 col-span-full mt-10 mx-auto w-full h-full rounded-lg lg:col-span-10 lg:col-start-2"
-            img={
-              <img
-                className="rounded-lg object-cover object-center"
-                title={frontmatter.bannerCredit}
-                {...getImgProps(
-                  getImageBuilder(
-                    frontmatter.bannerCloudinaryId,
-                    frontmatter.bannerAlt ??
-                      frontmatter.bannerCredit ??
-                      frontmatter.title ??
-                      'Post banner',
-                  ),
-                  {
-                    widths: [280, 560, 840, 1100, 1650, 2500, 2100, 3100],
-                    sizes: [
-                      '(max-width:1023px) 80vw',
-                      '(min-width:1024px) and (max-width:1620px) 67vw',
-                      '1100px',
-                    ],
-                    transformations: {
-                      background: 'rgb:e6e9ee',
+          <div className="col-span-full mt-10 lg:col-span-10 lg:col-start-2 lg:mt-16">
+            <BlurrableImage
+              key={frontmatter.bannerCloudinaryId}
+              blurDataUrl={frontmatter.bannerBlurDataUrl}
+              className="aspect-h-4 aspect-w-3 md:aspect-w-3 md:aspect-h-2"
+              img={
+                <img
+                  className="rounded-lg object-cover object-center"
+                  title={getBannerTitleProp(frontmatter)}
+                  {...getImgProps(
+                    getImageBuilder(
+                      frontmatter.bannerCloudinaryId,
+                      getBannerAltProp(frontmatter),
+                    ),
+                    {
+                      widths: [280, 560, 840, 1100, 1650, 2500, 2100, 3100],
+                      sizes: [
+                        '(max-width:1023px) 80vw',
+                        '(min-width:1024px) and (max-width:1620px) 67vw',
+                        '1100px',
+                      ],
+                      transformations: {
+                        background: 'rgb:e6e9ee',
+                      },
                     },
-                  },
-                )}
-              />
-            }
-          />
+                  )}
+                />
+              }
+            />
+          </div>
         ) : null}
       </Grid>
 
-      <Grid className="prose prose-light dark:prose-dark">
+      <Grid as="main" className="prose prose-light dark:prose-dark">
         <Component />
       </Grid>
     </>

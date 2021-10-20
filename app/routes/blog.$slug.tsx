@@ -18,6 +18,8 @@ import {
   getMdxPage,
   mdxPageMeta,
   useMdxComponent,
+  getBannerTitleProp,
+  getBannerAltProp,
 } from '~/utils/mdx'
 import {H2, H6, Paragraph} from '~/components/typography'
 import {Grid} from '~/components/grid'
@@ -422,8 +424,8 @@ export default function MdxScreen() {
             — {data.page.readTime?.text ?? 'a quick read'}
           </H6>
         </div>
-        <div className="col-span-full mt-10 lg:col-span-10 lg:col-start-2 lg:mt-16">
-          {frontmatter.bannerCloudinaryId ? (
+        {frontmatter.bannerCloudinaryId ? (
+          <div className="col-span-full mt-10 lg:col-span-10 lg:col-start-2 lg:mt-16">
             <BlurrableImage
               key={frontmatter.bannerCloudinaryId}
               blurDataUrl={frontmatter.bannerBlurDataUrl}
@@ -431,15 +433,12 @@ export default function MdxScreen() {
               img={
                 <img
                   key={frontmatter.bannerCloudinaryId}
-                  title={frontmatter.bannerCredit}
+                  title={getBannerTitleProp(frontmatter)}
                   className="rounded-lg object-cover object-center"
                   {...getImgProps(
                     getImageBuilder(
                       frontmatter.bannerCloudinaryId,
-                      frontmatter.bannerAlt ??
-                        frontmatter.bannerCredit ??
-                        frontmatter.title ??
-                        'Post banner',
+                      getBannerAltProp(frontmatter),
                     ),
                     {
                       widths: [280, 560, 840, 1100, 1650, 2500, 2100, 3100],
@@ -456,8 +455,8 @@ export default function MdxScreen() {
                 />
               }
             />
-          ) : null}
-        </div>
+          </div>
+        ) : null}
       </Grid>
 
       <main ref={readMarker}>
@@ -507,7 +506,7 @@ export default function MdxScreen() {
           </div>
         </Grid>
 
-        <Grid className="prose prose-light dark:prose-dark mb-24">
+        <Grid as="main" className="prose prose-light dark:prose-dark mb-24">
           <Component />
         </Grid>
       </main>

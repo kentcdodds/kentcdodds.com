@@ -98,7 +98,7 @@ function AboutIndex() {
         arrowLabel="Get to know more about me"
       />
 
-      <Grid className="mb-24 mt-16 lg:mb-48">
+      <Grid as="main" className="mb-24 mt-16 lg:mb-48">
         <div className="col-span-full">
           <FullScreenYouTubeEmbed
             autoplay={searchParams.has('autoplay')}

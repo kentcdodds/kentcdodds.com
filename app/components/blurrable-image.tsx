@@ -52,6 +52,7 @@ function BlurrableImage({
             key={blurDataUrl}
             src={blurDataUrl}
             className={img.props.className}
+            alt={img.props.alt}
           />
           <div className={clsx(img.props.className, 'backdrop-blur-xl')} />
         </>
