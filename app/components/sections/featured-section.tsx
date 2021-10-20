@@ -103,7 +103,7 @@ function FeaturedSection({
                 <BlurrableImage
                   blurDataUrl={blurDataUrl}
                   img={img}
-                  className="aspect-w-4 aspect-h-3 lg:aspect-h-5 lg:aspect-w-4 pointer-events-none"
+                  className="aspect-w-4 aspect-h-3 lg:aspect-h-5 lg:aspect-w-4"
                 />
               ) : (
                 <div className="aspect-w-4 aspect-h-3 lg:aspect-h-5 lg:aspect-w-4">
