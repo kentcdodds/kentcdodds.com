@@ -7,7 +7,7 @@ function BlurrableImage({
   blurDataUrl,
   ...rest
 }: {
-  img: React.ReactHTMLElement<HTMLImageElement>
+  img: React.ReactElement<React.ImgHTMLAttributes<HTMLImageElement>>
   blurDataUrl?: string
 } & React.HTMLAttributes<HTMLDivElement>) {
   const [visible, setVisible] = React.useState(false)
@@ -37,6 +37,7 @@ function BlurrableImage({
   }, [])
 
   const jsImgEl = React.cloneElement(img, {
+    // @ts-expect-error no idea 🤷‍♂️
     ref: jsImgElRef,
     className: clsx(img.props.className, 'transition-opacity', {
       'opacity-0': !visible,
