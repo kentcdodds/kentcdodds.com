@@ -2,11 +2,6 @@ title: Testing React Apps
 description:
   Increase your deploy confidence by using Jest and React Testing Library to
   test your react components.
-events:
-  - title: Testing React Apps at React Advanced London
-    url: https://ti.to/gitnation/react-advanced-conference-2021
-    quantity: 40
-    date: October 20th, 2021
 meta:
   keywords:
     - react

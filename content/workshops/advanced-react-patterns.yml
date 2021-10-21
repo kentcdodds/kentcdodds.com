@@ -3,11 +3,6 @@ description: >-
   Let's learn great patterns you can use, and also the strengths and weaknesses
   of each, so you know which to reach for to provide your components the
   flexibility and power you need.
-events:
-  - title: Advanced React Patterns at React Advanced London
-    url: https://ti.to/gitnation/react-advanced-conference-2021
-    quantity: 40
-    date: October 21st, 2021
 meta:
   keywords:
     - react
