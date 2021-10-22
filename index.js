@@ -45,6 +45,11 @@ function getReplayResponse(req, res, next) {
 
   if (!FLY || isPrimaryRegion) return next()
 
+  if (pathname.includes('__insights')) {
+    // metronome doesn't need to be replayed...
+    return next()
+  }
+
   const logInfo = {
     pathname,
     method,
