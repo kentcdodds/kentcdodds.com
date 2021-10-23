@@ -39,7 +39,6 @@ const isPrimaryRegion = PRIMARY_REGION === FLY_REGION
 
 function getReplayResponse(req, res, next) {
   const {method, path: pathname} = req
-  console.log(pathname)
   if (method === 'GET' || method === 'OPTIONS' || method === 'HEAD') {
     return next()
   }

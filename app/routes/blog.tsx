@@ -1,8 +1,10 @@
 import * as React from 'react'
 import type {LoaderFunction, HeadersFunction, MetaFunction} from 'remix'
 import {Link, json, useLoaderData} from 'remix'
+import clsx from 'clsx'
 import {useSearchParams} from 'react-router-dom'
-import type {KCDHandle, MdxListItem, Team} from '~/types'
+import {MixedCheckbox} from '@reach/checkbox'
+import type {Await, KCDHandle, MdxListItem, Team} from '~/types'
 import {useRootData} from '~/utils/use-root-data'
 import {Grid} from '~/components/grid'
 import {
@@ -42,6 +44,7 @@ import {
   getBlogReadRankings,
   getBlogRecommendations,
   getReaderCount,
+  getSlugReadsByUser,
   getTotalPostReads,
   ReadRankings,
 } from '~/utils/blog.server'
@@ -64,6 +67,7 @@ type LoaderData = {
   totalReads: string
   totalBlogReaders: string
   overallLeadingTeam: Team | null
+  userReads: Await<ReturnType<typeof getSlugReadsByUser>>
 }
 
 export const loader: LoaderFunction = async ({request}) => {
@@ -76,6 +80,7 @@ export const loader: LoaderFunction = async ({request}) => {
     totalReads,
     totalBlogReaders,
     allPostReadRankings,
+    userReads,
   ] = await Promise.all([
     getBlogMdxListItems({request, timings}),
     getBlogRecommendations(request, {limit: 1}),
@@ -83,6 +88,7 @@ export const loader: LoaderFunction = async ({request}) => {
     getTotalPostReads(request),
     getReaderCount(request),
     getAllBlogPostReadRankings({request}),
+    getSlugReadsByUser(request),
   ])
 
   const tags = new Set<string>()
@@ -99,6 +105,7 @@ export const loader: LoaderFunction = async ({request}) => {
     allPostReadRankings,
     totalReads: formatAbbreviatedNumber(totalReads),
     totalBlogReaders: formatAbbreviatedNumber(totalBlogReaders),
+    userReads,
     tags: Array.from(tags),
     overallLeadingTeam: getRankingLeader(readRankings)?.team ?? null,
   }
@@ -147,6 +154,10 @@ const isTeam = (team?: string): team is Team => teams.includes(team as Team)
 function BlogHome() {
   const {requestInfo} = useRootData()
   const [searchParams] = useSearchParams()
+  const [userReadsState, setUserReadsState] = React.useState<
+    'read' | 'unread' | 'unset'
+  >('unset')
+  const searchInputRef = React.useRef<HTMLInputElement>(null)
 
   const [userTeam] = useTeam()
 
@@ -158,7 +169,7 @@ function BlogHome() {
   useUpdateQueryStringValueWithoutNavigation('q', query)
 
   const data = useLoaderData<LoaderData>()
-  const allPosts = data.posts
+  const {posts: allPosts, userReads} = data
 
   const getLeadingTeamForSlug = React.useCallback(
     (slug: string) => {
@@ -187,9 +198,21 @@ function BlogHome() {
       match = r.exec(query)
     }
 
-    const teamPosts =
+    let filteredPosts = allPosts
+
+    filteredPosts =
+      userReadsState === 'unset'
+        ? filteredPosts
+        : filteredPosts.filter(post => {
+            const isRead = userReads.includes(post.slug)
+            if (userReadsState === 'read' && !isRead) return false
+            if (userReadsState === 'unread' && isRead) return false
+            return true
+          })
+
+    filteredPosts =
       leaders.length || nonLeaders.length
-        ? allPosts.filter(post => {
+        ? filteredPosts.filter(post => {
             const leader = getLeadingTeamForSlug(post.slug)
             if (leaders.length && leader && leaders.includes(leader)) {
               return true
@@ -202,10 +225,17 @@ function BlogHome() {
             }
             return false
           })
-        : allPosts
+        : filteredPosts
 
-    return filterPosts(teamPosts, regularQuery)
-  }, [allPosts, query, regularQuery, getLeadingTeamForSlug])
+    return filterPosts(filteredPosts, regularQuery)
+  }, [
+    allPosts,
+    query,
+    regularQuery,
+    getLeadingTeamForSlug,
+    userReadsState,
+    userReads,
+  ])
 
   const [indexToShow, setIndexToShow] = React.useState(initialIndexToShow)
   // when the query changes, we want to reset the index
@@ -243,7 +273,7 @@ function BlogHome() {
     setQuery(`${newSpecialQuery} ${regularQuery}`.trim())
   }
 
-  const isSearching = query.length > 0
+  const isSearching = query.length > 0 || userReadsState !== 'unset'
 
   const posts = isSearching
     ? matchingPosts.slice(0, indexToShow)
@@ -267,6 +297,20 @@ function BlogHome() {
     ? `${requestInfo.origin}/blog/${data.recommended.slug}`
     : undefined
 
+  const checkboxLabel =
+    userReadsState === 'read'
+      ? 'Showing only posts you have not read'
+      : userReadsState === 'unread'
+      ? `Showing only posts you have read`
+      : `Showing all posts`
+
+  const searchInputPlaceholder =
+    userReadsState === 'read'
+      ? 'Search posts you have read'
+      : userReadsState === 'unread'
+      ? 'Search posts you have not read'
+      : 'Search posts'
+
   return (
     <div
       className={
@@ -287,20 +331,51 @@ function BlogHome() {
               onSubmit={e => e.preventDefault()}
             >
               <div className="relative">
-                <div className="absolute left-8 top-0 flex items-center justify-center h-full text-blueGray-500">
+                <button
+                  title={query === '' ? 'Search' : 'Clear search'}
+                  onClick={() => {
+                    setQuery('')
+                    searchInputRef.current?.focus()
+                  }}
+                  className={clsx(
+                    'absolute bg-transparent border-none p-0 left-6 top-0 flex items-center justify-center h-full text-blueGray-500',
+                    {
+                      'cursor-pointer': query !== '',
+                      'cursor-default': query === '',
+                    },
+                  )}
+                >
                   <SearchIcon />
-                </div>
+                </button>
                 <input
+                  ref={searchInputRef}
+                  type="search"
                   value={queryValue}
                   onChange={event =>
                     setQuery(event.currentTarget.value.toLowerCase())
                   }
                   name="q"
-                  placeholder="Search blog"
-                  aria-label="Search blog"
-                  className="text-primary bg-primary border-secondary focus:bg-secondary px-16 py-6 w-full text-lg font-medium border hover:border-team-current focus:border-team-current rounded-full focus:outline-none"
+                  placeholder={searchInputPlaceholder}
+                  className="text-primary bg-primary border-secondary focus:bg-secondary pl-14 pr-6 md:pr-24 py-6 w-full text-lg font-medium border hover:border-team-current focus:border-team-current rounded-full focus:outline-none"
                 />
-                <div className="absolute right-8 top-0 flex items-center justify-center h-full text-blueGray-500 text-lg font-medium">
+                <div className="hidden md:flex absolute right-6 top-0 items-center justify-between h-full w-14 text-blueGray-500 text-lg font-medium">
+                  <MixedCheckbox
+                    title={checkboxLabel}
+                    aria-label={checkboxLabel}
+                    onChange={() => {
+                      setUserReadsState(s => {
+                        if (s === 'unset') return 'unread'
+                        if (s === 'unread') return 'read'
+                        return 'unset'
+                      })
+                    }}
+                    checked={
+                      userReadsState === 'unset'
+                        ? 'mixed'
+                        : userReadsState === 'read'
+                    }
+                  />
+                  <div className="flex-1" />
                   {matchingPosts.length}
                 </div>
               </div>
@@ -424,9 +499,8 @@ function BlogHome() {
                 sizes: ['(max-width: 639px) 80vw', '512px'],
               })}
             />
-            <H3 variant="secondary" className="mt-24 max-w-lg">
-              Looks like there are no articles for this topic. Use the tags
-              above to find articles.
+            <H3 as="p" variant="secondary" className="mt-24 max-w-lg">
+              {`Couldn't find anything to match your criteria. Sorry.`}
             </H3>
           </div>
         ) : (
@@ -487,3 +561,8 @@ export function ErrorBoundary({error}: {error: Error}) {
   console.error(error)
   return <ServerError />
 }
+
+/*
+eslint
+  complexity: "off",
+*/

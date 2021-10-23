@@ -9,7 +9,7 @@ import {
   teams,
   typedBoolean,
 } from './misc'
-import {getSession} from './session.server'
+import {getSession, getUser} from './session.server'
 import {filterPosts} from './blog'
 import {getClientSession} from './client.server'
 import {cachified, lruCache} from './cache.server'
@@ -321,6 +321,16 @@ async function getActiveMembers(team: Team) {
   return count
 }
 
+async function getSlugReadsByUser(request: Request) {
+  const user = await getUser(request)
+  if (!user) return []
+  const reads = await prismaRead.postRead.findMany({
+    where: {userId: user.id},
+    select: {postSlug: true},
+  })
+  return Array.from(new Set(reads.map(read => read.postSlug)))
+}
+
 async function getPostJson(request: Request) {
   const posts = await getBlogMdxListItems({request})
 
@@ -437,6 +447,7 @@ export {
   getBlogRecommendations,
   getBlogReadRankings,
   getAllBlogPostReadRankings,
+  getSlugReadsByUser,
   getTotalPostReads,
   getReaderCount,
   getPostJson,
