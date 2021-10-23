@@ -39,6 +39,7 @@ const isPrimaryRegion = PRIMARY_REGION === FLY_REGION
 
 function getReplayResponse(req, res, next) {
   const {method, path: pathname} = req
+  console.log(pathname)
   if (method === 'GET' || method === 'OPTIONS' || method === 'HEAD') {
     return next()
   }
@@ -47,6 +48,11 @@ function getReplayResponse(req, res, next) {
 
   if (pathname.includes('__insights')) {
     // metronome doesn't need to be replayed...
+    return next()
+  }
+
+  if (pathname === '/calls/record/new') {
+    // replaying calls doesn't work very well so we won't replay those
     return next()
   }
 
