@@ -108,7 +108,7 @@ Connected to non-localhost DB in dev mode:
 }
 
 const linkExpirationTime = 1000 * 60 * 30
-const sessionExpirationTime = 1000 * 60 * 60 * 24 * 30
+const sessionExpirationTime = 1000 * 60 * 60 * 24 * 365
 const magicLinkSearchParam = 'kodyKey'
 
 type MagicLinkPayload = {
@@ -223,8 +223,8 @@ async function getUserFromSessionId(sessionId: string) {
     throw new Error('Session expired. Please request a new magic link.')
   }
 
-  // if there's less than two weeks left, extend the session
-  const twoWeeks = 2 * 7 * 24 * 60 * 60 * 1000
+  // if there's less than ~six months left, extend the session
+  const twoWeeks = 1000 * 60 * 60 * 24 * 30 * 6
   if (Date.now() + twoWeeks > session.expirationDate.getTime()) {
     const newExpirationDate = new Date(Date.now() + sessionExpirationTime)
     await prismaWrite.session.update({

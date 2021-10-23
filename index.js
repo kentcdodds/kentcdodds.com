@@ -52,7 +52,8 @@ function getReplayResponse(req, res, next) {
   }
 
   if (pathname === '/calls/record/new') {
-    // replaying calls doesn't work very well so we won't replay those
+    // replaying calls doesn't work very well because the request body is so
+    // large so we won't replay those
     return next()
   }
 
