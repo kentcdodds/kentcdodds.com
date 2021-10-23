@@ -61,7 +61,7 @@ image is loading (read more about this in
 ## `sizes`, `srcset`, and Cloudinary
 
 Another important aspect of making the image load fast is ensuring that you're
-only loading the size of image that you need. If you've got an images that's
+only loading the size of image that you need. If you've got an image that's
 3000x3000 and rendering that onto a retina screen in a 600x600 square, then
 you're serving 1800x1800 too many pixels! (retina means double-the pixels).
 
@@ -92,7 +92,7 @@ What this says is that when the screen width is between `50em` and `60em` then
 the image will be `50em`. So then the browser can determine the best image to
 load for that image size from the `srcset` you gave it. And look at that
 progressive enhancement! If the browser doesn't support these attributes it'll
-just use the `src` attribute like ususual.
+just use the `src` attribute like usual.
 
 Unsplash uses this feature a great deal and so do I. But creating all those
 sizes of images would be an enormous pain, that's why I use cloudinary!
@@ -195,7 +195,7 @@ little abstraction I have on top of
 [`cloudinary-build-url`](https://npm.im/cloudinary-build-url) for building
 cloudinary URLs in a typesafe way. My point is that Cloudinary makes it easy for
 me to serve you the _right_ sized image for your device and screen size so it
-loads quick and I save you data!
+loads quickly and I save you data!
 
 ## Unsplash's placeholder
 
@@ -250,7 +250,7 @@ Like, seriously, this is all you need to pass to the blurhash client library for
 a nice looking blur of a full image: `LGFFaXYk^6#M@-5c,1J5@[or[Q6.`:
 
 ![blurhash website showing an image being
-converted into a hash and the canvas represenation of
+converted into a hash and the canvas representation of
 that](https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/blurhash)
 
 Honestly, it's so cool. Magical 🧙
@@ -292,7 +292,7 @@ data:image/webp;base64,UklGRhQBAABXRUJQVlA4IAgBAAAQDQCdASpkAEMAPrFGmko7qyWhsls9U
 Now, that's _quite_ a bit more than the 30 or so characters that represent the
 hash for blurhash, but remember that blurhash also requires a client library
 which is larger than this. But that's actually not the reason I didn't go with
-blurhash. Once you apply this to just a couple images, blurhash more than pays
+blurhash. Once you apply this to just a couple of images, blurhash more than pays
 for its own weight. So a site like unsplash definitely hits that point where it
 makes a lot of sense.
 
@@ -454,7 +454,7 @@ export {BlurrableImage}
 Alright, that's a bit to take in... Let me walk you through it...
 
 First, the props are pretty simple. We accept an `img` element which is the
-ultimate image we want loaded. We accept a `blurDataUrl` to render a blurred
+ultimate image we want to be loaded. We accept a `blurDataUrl` to render a blurred
 version of the image while we're waiting for the image to load. And then the
 rest of the props are just applied to the `div` that's the container for
 everything. I pretty much only use that for the `className` for the aspect ratio
@@ -465,7 +465,7 @@ Let's skip all the stuff in the middle and go down to what we're rendering:
 We render a wrapper div to keep everything together (in particular for the
 aspect ratio stuff to work properly).
 
-Then if there is a `blurDataUrl`, we render the an `img` element with the
+Then if there is a `blurDataUrl`, we render an `img` element with the
 `blurDataUrl`. We inherit the `className` to ensure we get stuff like the right
 border radius etc.
 
@@ -485,7 +485,7 @@ aren't many (any) users like this, but it's just so easy so why not?
 Alrighty, so to make the fade work, we need to have the `jsImgEl` start out as
 invisible. The browser will still load this for us though, and it fires events
 along the way, so we use `useEffect` to add an event handler to know when it's
-loaded and when it does finishe loading we'll trigger an update to make the
+loaded and when it does finish loading we'll trigger an update to make the
 image fade in.
 
 And really that's it.
