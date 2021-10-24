@@ -134,7 +134,7 @@ function CoursesHome() {
         <div className="col-span-full lg:col-span-6">
           <CourseCard
             title="Epic React"
-            description="The most comprehensive guide for pro's."
+            description="The most comprehensive guide for pros."
             imageBuilder={images.courseEpicReact}
             courseUrl="https://epicreact.dev"
           />
