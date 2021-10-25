@@ -10,7 +10,7 @@ const loginInfoStorage = createCookieSessionStorage({
     secrets: [getRequiredServerEnvVar('SESSION_SECRET')],
     sameSite: 'lax',
     path: '/',
-    maxAge: linkExpirationTime,
+    maxAge: linkExpirationTime / 1000,
     httpOnly: true,
   },
 })
