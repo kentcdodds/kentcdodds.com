@@ -85,6 +85,10 @@ POST,DELETE,PATCH,PUT  /                                                https://
 # some people go to this page for some reason:
 /post/:slug*                                                             /blog/:slug*
 /rss.xml                                                                 /blog/rss.xml
+/feed                                                                    /blog/rss.xml
+/rss                                                                     /blog/rss.xml
+/blog/rss                                                                /blog/rss.xml
+/blog/feed                                                               /blog/rss.xml
 /blog/blog/rss.xml                                                       /blog/rss.xml
 # no idea why, but I get a lot of 404s for this route. I'm pretty sure they're looking for Scott's post...
 /bring-kindness-back-to-open-source                                      https://www.hanselman.com/blog/bring-kindness-back-to-open-source
