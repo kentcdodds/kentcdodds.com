@@ -66,9 +66,9 @@ type ArrowButtonBaseProps = {
 }
 
 type ArrowLinkProps = {
-  to: LinkProps['to']
   direction?: ArrowIconProps['direction']
-} & ArrowButtonBaseProps & {prefetch?: 'intent' | 'render' | 'none'}
+} & ({href?: string; to?: never} | {href?: never; to: LinkProps['to']}) &
+  ArrowButtonBaseProps & {prefetch?: 'intent' | 'render' | 'none'}
 
 type ArrowButtonProps = {
   onClick?: JSX.IntrinsicElements['button']['onClick']
@@ -169,29 +169,30 @@ function ArrowButton({onClick, type, ...props}: ArrowButtonProps) {
 
 const MotionLink = motion(Link)
 
-function ArrowLink({to, ...props}: ArrowLinkProps) {
+function ArrowLink({to, href, ...props}: ArrowLinkProps) {
   const [ref, state] = useElementState()
 
-  if (typeof to === 'string' && (to.startsWith('http') || to.startsWith('#'))) {
+  if (href) {
     return (
-      <motion.a href={to} {...getBaseProps(props)} ref={ref} animate={state}>
+      <motion.a href={href} {...getBaseProps(props)} ref={ref} animate={state}>
         <ArrowButtonContent {...props} />
       </motion.a>
     )
+  } else if (to) {
+    return (
+      <MotionLink to={to} {...getBaseProps(props)} ref={ref} animate={state}>
+        <ArrowButtonContent {...props} />
+      </MotionLink>
+    )
   }
-
-  return (
-    <MotionLink to={to} {...getBaseProps(props)} ref={ref} animate={state}>
-      <ArrowButtonContent {...props} />
-    </MotionLink>
-  )
+  throw new Error('Must provide either to or href to ArrowLink')
 }
 
 function BackLink({
   to,
   className,
   children,
-}: Pick<ArrowLinkProps, 'to' | 'className' | 'children'>) {
+}: {to: LinkProps['to']} & Pick<ArrowLinkProps, 'className' | 'children'>) {
   const [ref, state] = useElementState()
   return (
     <MotionLink

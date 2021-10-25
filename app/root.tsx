@@ -9,9 +9,10 @@ import {
   useLoaderData,
   useMatches,
   useTransition,
+  useCatch,
 } from 'remix'
 import type {LinksFunction, MetaFunction, HeadersFunction} from 'remix'
-import {Outlet} from 'react-router-dom'
+import {Outlet, useLocation} from 'react-router-dom'
 import {AnimatePresence, motion} from 'framer-motion'
 import {useSpinDelay} from 'spin-delay'
 import type {Await, KCDHandle, User} from '~/types'
@@ -42,11 +43,13 @@ import {Footer} from './components/footer'
 import {TeamCircle} from './components/team-circle'
 import {NotificationMessage} from './components/notification-message'
 import {pathedRoutes} from './other-routes.server'
-import {ServerError} from './components/errors'
+import {ErrorPage} from './components/errors'
 import {TeamProvider, useTeam} from './utils/team-provider'
 import clsx from 'clsx'
 import {getSocialMetas} from './utils/seo'
 import {getGenericSocialImage, illustrationImages, images} from './images'
+import {Grimmacing, MissingSomething} from './components/kifs'
+import {ArrowLink} from './components/arrow-button'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',
@@ -369,6 +372,7 @@ export default function AppWithProviders() {
 // the footer and stuff, which is much better.
 export function ErrorBoundary({error}: {error: Error}) {
   console.error(error)
+  const location = useLocation()
   return (
     <html lang="en" className="dark">
       <head>
@@ -376,11 +380,48 @@ export function ErrorBoundary({error}: {error: Error}) {
         <Links />
       </head>
       <body className="dark:bg-gray-900 bg-white transition duration-500">
-        <ServerError />
+        <ErrorPage
+          heroProps={{
+            title: '500 - Oh no, something did not go well.',
+            subtitle: `"${location.pathname}" is currently not working. So sorry.`,
+            image: <Grimmacing className="rounded-lg" aspectRatio="3:4" />,
+            action: <ArrowLink href="/">Go home</ArrowLink>,
+          }}
+        />
         <Scripts />
       </body>
     </html>
   )
+}
+
+export function CatchBoundary() {
+  const caught = useCatch()
+  const location = useLocation()
+  console.error('CatchBoundary', caught)
+  if (caught.status === 404) {
+    return (
+      <html lang="en" className="dark">
+        <head>
+          <title>Oh no...</title>
+          <Links />
+        </head>
+        <body className="dark:bg-gray-900 bg-white transition duration-500">
+          <ErrorPage
+            heroProps={{
+              title: "404 - Oh no, you found a page that's missing stuff.",
+              subtitle: `"${location.pathname}" is not a page on kentcdodds.com. So sorry.`,
+              image: (
+                <MissingSomething className="rounded-lg" aspectRatio="3:4" />
+              ),
+              action: <ArrowLink href="/">Go home</ArrowLink>,
+            }}
+          />
+          <Scripts />
+        </body>
+      </html>
+    )
+  }
+  throw new Error(`Unhandled error: ${caught.status}`)
 }
 
 /*
