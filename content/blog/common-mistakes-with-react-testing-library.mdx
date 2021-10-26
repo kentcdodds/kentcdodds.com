@@ -453,7 +453,7 @@ found to match the query (it returns `null` if no element is found). The _only_
 reason this is useful is to verify that an element is not rendered to the page.
 The reason this is so important is because the `get*` and `find*` variants will
 throw an extremely helpful error if no element is found–it prints out the whole
-document so you can see what's rendred and maybe why your query failed to find
+document so you can see what's rendered and maybe why your query failed to find
 what you were looking for. Whereas `query*` will only return `null` and the best
 `toBeInTheDocument` can do is say: "null isn't in the document" which is not
 very helpful.
@@ -482,7 +482,7 @@ under the hood), but the second is simpler and the error message you get will be
 better.
 
 <callout-success>
-  Advice: use `find*` any time you want to query for something that may not
+  Advice: use `find*` any time you want to query for something that may not be
   available right away.
 </callout-success>
 
