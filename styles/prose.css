@@ -64,10 +64,6 @@ pre {
   padding-right: 0rem;
 }
 
-.prose > * {
-  overflow-x: scroll;
-}
-
 .prose
   pre[data-line-numbers='true']:not([data-lang='sh'])
   [data-line-number]:before {
