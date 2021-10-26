@@ -8,14 +8,14 @@ import {transistorHandlers} from './transistor'
 import {discordHandlers} from './discord'
 import {convertKitHandlers} from './convert-kit'
 import {simplecastHandlers} from './simplecast'
-import {isConnectedToTheInternet, isE2E, updateFixture} from './utils'
+import {isConnectedToTheInternet, forward, isE2E, updateFixture} from './utils'
 
 // put one-off handlers that don't really need an entire file to themselves here
 const miscHandlers = [
   rest.get(
     'https://res.cloudinary.com/kentcdodds-com/image/upload/w_100,q_auto,f_webp,e_blur:1000/unsplash/:photoId',
     async (req, res, ctx) => {
-      if (await isConnectedToTheInternet()) return
+      if (await isConnectedToTheInternet()) return res(forward())
 
       const base64 =
         'UklGRhoBAABXRUJQVlA4IA4BAABwCgCdASpkAEMAPqVInUq5sy+hqvqpuzAUiWcG+BsvrZQel/iYPLGE154ZiYwzeF8UJRAKZ0oAzLdTpjlp8qBuGwW1ntMTe6iQZbxzyP4gBeg7X7SH7NwyBcUDAAD+8MrTwbAD8OLmsoaL1QDPwEE+GrfqLQPn6xkgFHCB8lyjV3K2RvcQ7pSvgA87LOVuDtMrtkm+tTV0x1RcIe4Uvb6J+yygkV48DSejuyrMWrYgoZyjkf/0/L9+bAZgCam6+oHqjBSWTq5jF7wzBxYwfoGY7OdYZOdeGb4euuuLaCzDHz/QRbDCaIsJWJW3Jo4bkbz44AI/8UfFTGX4tMTRcKLXTDIviU+/u7UnlVaDQAA='
@@ -23,6 +23,9 @@ const miscHandlers = [
       return res(ctx.body(buffer))
     },
   ),
+  rest.get(/res.cloudinary.com\/kentcdodds-com\//, (req, res) => {
+    return res(forward())
+  }),
   rest.post(
     'https://api.mailgun.net/v3/:domain/messages',
     async (req, res, ctx) => {
@@ -40,7 +43,7 @@ const miscHandlers = [
   rest.head(
     'https://www.gravatar.com/avatar/:md5Hash',
     async (req, res, ctx) => {
-      if (await isConnectedToTheInternet()) return
+      if (await isConnectedToTheInternet()) return res(forward())
 
       return res(ctx.status(404))
     },

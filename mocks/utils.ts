@@ -1,5 +1,6 @@
 import dns from 'dns'
 import fs from 'fs'
+import type {ResponseTransformer} from 'msw'
 import path from 'path'
 
 const isE2E = process.env.RUNNING_E2E === 'true'
@@ -16,6 +17,10 @@ async function isConnectedToTheInternet() {
   }
   return connected
 }
+
+// @ts-expect-error we've got patch-package to silence the warning
+// https://github.com/mswjs/msw/pull/923
+const forward = (): ResponseTransformer => () => {}
 
 async function updateFixture(updates: Record<string, unknown>) {
   const mswDataPath = path.join(__dirname, `./msw.local.json`)
@@ -72,6 +77,7 @@ function requiredProperty(object: {[key: string]: unknown}, property: string) {
 
 export {
   isE2E,
+  forward,
   updateFixture,
   requiredParam,
   requiredHeader,

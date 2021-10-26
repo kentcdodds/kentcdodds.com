@@ -1,0 +1,52 @@
+diff --git a/node_modules/msw/lib/esm/index.js b/node_modules/msw/lib/esm/index.js
+index 5d57fca..0ca68d8 100644
+--- a/node_modules/msw/lib/esm/index.js
++++ b/node_modules/msw/lib/esm/index.js
+@@ -1474,7 +1474,7 @@ function handleRequest(request, handlers, options, emitter, handleRequestOptions
+         // When the handled request returned no mocked response, warn the developer,
+         // as it may be an oversight on their part. Perform the request as-is.
+         if (!response) {
+-            devUtils.warn('Expected a mocking resolver function to return a mocked response Object, but got: %s. Original response is going to be used instead.', response);
++            // devUtils.warn('Expected a mocking resolver function to return a mocked response Object, but got: %s. Original response is going to be used instead.', response);
+             emitter.emit('request:end', request);
+             (_c = handleRequestOptions === null || handleRequestOptions === void 0 ? void 0 : handleRequestOptions.onBypassResponse) === null || _c === void 0 ? void 0 : _c.call(handleRequestOptions, request);
+             return;
+diff --git a/node_modules/msw/lib/umd/index.js b/node_modules/msw/lib/umd/index.js
+index 5290f4d..8fe2543 100644
+--- a/node_modules/msw/lib/umd/index.js
++++ b/node_modules/msw/lib/umd/index.js
+@@ -23047,7 +23047,7 @@ Read more: https://mswjs.io/docs/getting-started/mocks\
+           // When the handled request returned no mocked response, warn the developer,
+           // as it may be an oversight on their part. Perform the request as-is.
+           if (!response) {
+-              devUtils.warn('Expected a mocking resolver function to return a mocked response Object, but got: %s. Original response is going to be used instead.', response);
++              // devUtils.warn('Expected a mocking resolver function to return a mocked response Object, but got: %s. Original response is going to be used instead.', response);
+               emitter.emit('request:end', request);
+               (_c = handleRequestOptions === null || handleRequestOptions === void 0 ? void 0 : handleRequestOptions.onBypassResponse) === null || _c === void 0 ? void 0 : _c.call(handleRequestOptions, request);
+               return;
+diff --git a/node_modules/msw/native/lib/index.js b/node_modules/msw/native/lib/index.js
+index ec84a95..a27cc36 100644
+--- a/node_modules/msw/native/lib/index.js
++++ b/node_modules/msw/native/lib/index.js
+@@ -6008,7 +6008,7 @@ function handleRequest(request, handlers, options, emitter, handleRequestOptions
+         // When the handled request returned no mocked response, warn the developer,
+         // as it may be an oversight on their part. Perform the request as-is.
+         if (!response) {
+-            devUtils.warn('Expected a mocking resolver function to return a mocked response Object, but got: %s. Original response is going to be used instead.', response);
++            // devUtils.warn('Expected a mocking resolver function to return a mocked response Object, but got: %s. Original response is going to be used instead.', response);
+             emitter.emit('request:end', request);
+             (_c = handleRequestOptions === null || handleRequestOptions === void 0 ? void 0 : handleRequestOptions.onBypassResponse) === null || _c === void 0 ? void 0 : _c.call(handleRequestOptions, request);
+             return;
+diff --git a/node_modules/msw/node/lib/index.js b/node_modules/msw/node/lib/index.js
+index 7e9b881..4206ed5 100644
+--- a/node_modules/msw/node/lib/index.js
++++ b/node_modules/msw/node/lib/index.js
+@@ -7894,7 +7894,7 @@ function handleRequest(request, handlers, options, emitter, handleRequestOptions
+         // When the handled request returned no mocked response, warn the developer,
+         // as it may be an oversight on their part. Perform the request as-is.
+         if (!response) {
+-            devUtils.warn('Expected a mocking resolver function to return a mocked response Object, but got: %s. Original response is going to be used instead.', response);
++            // devUtils.warn('Expected a mocking resolver function to return a mocked response Object, but got: %s. Original response is going to be used instead.', response);
+             emitter.emit('request:end', request);
+             (_c = handleRequestOptions === null || handleRequestOptions === void 0 ? void 0 : handleRequestOptions.onBypassResponse) === null || _c === void 0 ? void 0 : _c.call(handleRequestOptions, request);
+             return;

@@ -38,34 +38,11 @@ export default async function handleRequest(
 
   const html = `<!DOCTYPE html>${markup}`
 
-  responseHeaders.set('X-Powered-By', 'Kody the Koala')
-  responseHeaders.set('X-Fly-Region', process.env.FLY_REGION ?? 'unknown')
   responseHeaders.set('Content-Type', 'text/html')
   responseHeaders.set('Content-Length', String(Buffer.byteLength(html)))
-  // if they connect once with HTTPS, then they'll connect with HTTPS for the next hundred years
-  responseHeaders.set(
-    'Strict-Transport-Security',
-    `max-age=${60 * 60 * 24 * 365 * 100}`,
-  )
 
   return new Response(html, {
     status: responseStatusCode,
     headers: responseHeaders,
   })
-}
-
-// This isn't supported yet. We're using patch-package to make this work:
-// https://github.com/remix-run/remix/issues/217
-export async function handleDataRequest(
-  request: Request,
-  dataResponse: Response,
-) {
-  dataResponse.headers.set('X-Powered-By', 'Kody the Koala')
-  dataResponse.headers.set('X-Fly-Region', process.env.FLY_REGION ?? 'unknown')
-  // if they connect once with HTTPS, then they'll connect with HTTPS for the next hundred years
-  dataResponse.headers.set(
-    'Strict-Transport-Security',
-    `max-age=${60 * 60 * 24 * 365 * 100}`,
-  )
-  return dataResponse
 }

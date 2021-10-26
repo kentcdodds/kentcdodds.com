@@ -1,0 +1,13 @@
+diff --git a/node_modules/express-http-proxy/app/steps/decorateUserResHeaders.js b/node_modules/express-http-proxy/app/steps/decorateUserResHeaders.js
+index 0e9d323..a810cab 100644
+--- a/node_modules/express-http-proxy/app/steps/decorateUserResHeaders.js
++++ b/node_modules/express-http-proxy/app/steps/decorateUserResHeaders.js
+@@ -10,7 +10,7 @@ function decorateUserResHeaders(container) {
+   }
+ 
+   const clearAllHeaders = (res) => {
+-    for (const header in res._headers) {
++    for (const header in res.getHeaders ? res.getHeaders() : res._headers) {
+       res.removeHeader(header)
+     }
+   }

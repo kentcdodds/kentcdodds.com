@@ -1,6 +1,7 @@
 // @ts-check
 const fs = require('fs')
 const path = require('path')
+const httpProxy = require('express-http-proxy')
 const onFinished = require('on-finished')
 const {URL} = require('url')
 const express = require('express')
@@ -23,7 +24,14 @@ const MODE = process.env.NODE_ENV
 const BUILD_DIR = path.join(process.cwd(), 'build')
 
 const app = express()
-app.disable('x-powered-by')
+
+app.use((req, res, next) => {
+  res.set('X-Powered-By', 'Kody the Koala')
+  res.set('X-Fly-Region', process.env.FLY_REGION ?? 'unknown')
+  // if they connect once with HTTPS, then they'll connect with HTTPS for the next hundred years
+  res.set('Strict-Transport-Security', `max-age=${60 * 60 * 24 * 365 * 100}`)
+  next()
+})
 
 app.use((req, res, next) => {
   const proto = req.get('X-Forwarded-Proto')
@@ -68,10 +76,26 @@ function getReplayResponse(req, res, next) {
 }
 
 app.all('*', getReplayResponse)
-app.all('/img/*', (req, res) => {
-  const rest = req.originalUrl.replace('/img', '')
-  return res.redirect(302, `https://res.cloudinary.com/kentcdodds-com${rest}`)
-})
+
+// we're proxying cloudinary so we can set a cache control that takes advantage
+// of the shared cache with cloudflare to drastically reduce our bill for
+// image bandwidth (hopefully).
+app.all(
+  '/img/*',
+  // using patch-package to avoid a deprecation warning for this package:
+  // https://github.com/villadora/express-http-proxy/pull/492
+  httpProxy('https://res.cloudinary.com/', {
+    proxyReqPathResolver(req) {
+      return req.url.replace('/img', '/kentcdodds-com')
+    },
+    userResHeaderDecorator(headers) {
+      headers['cache-control'] =
+        'public, immutable, max-age=86400, s-maxage=31536000'
+      return headers
+    },
+  }),
+)
+
 app.all('*', getRedirectsMiddleware())
 
 app.use((req, res, next) => {
