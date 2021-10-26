@@ -58,10 +58,12 @@ export const meta: MetaFunction = ({parentsData}) => {
   const domain = new URL(requestInfo.origin).host
   return {
     ...getSocialMetas({
+      origin: requestInfo.origin,
       title: `Your account on ${domain}`,
       description: `Personal account information on ${domain}.`,
       url: getUrl(requestInfo),
       image: getGenericSocialImage({
+        origin: requestInfo.origin,
         url: getDisplayUrl(requestInfo),
         featuredImage: images.kodySnowboardingWhite(),
         words: `View your account info on ${domain}`,

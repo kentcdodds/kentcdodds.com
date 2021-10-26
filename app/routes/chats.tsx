@@ -73,11 +73,13 @@ export const meta: MetaFunction = ({data, parentsData}) => {
 
   return {
     ...getSocialMetas({
+      origin: requestInfo.origin,
       title: 'Chats with Kent C. Dodds Podcast',
       description: `Become a better person with ${episodeCount} interesting and actionable conversations with interesting people.`,
       keywords: `chats with kent, kent c. dodds`,
       url: getUrl(requestInfo),
       image: getGenericSocialImage({
+        origin: requestInfo.origin,
         words: 'Listen to the Chats with Kent Podcast',
         featuredImage: images.kayak.id,
         url: getDisplayUrl({

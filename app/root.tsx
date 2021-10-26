@@ -65,10 +65,12 @@ export const meta: MetaFunction = ({data}) => {
     charSet: 'utf-8',
     'theme-color': '#A9ADC1',
     ...getSocialMetas({
+      origin: requestInfo?.origin ?? '',
       keywords:
         'Learn React, React Workshops, Testing JavaScript Training, React Training, Learn JavaScript, Learn TypeScript',
       url: getUrl(requestInfo),
       image: getGenericSocialImage({
+        origin: requestInfo?.origin ?? '',
         url: getDisplayUrl(requestInfo),
         words:
           'Helping people make the world a better place through quality software.',

@@ -75,11 +75,13 @@ export const meta: MetaFunction = ({parentsData}) => {
   const {requestInfo} = parentsData.root as RootLoaderData
   return {
     ...getSocialMetas({
+      origin: requestInfo.origin,
       title: 'Call Kent Podcast',
       description: `Leave Kent an audio message here, then your message and Kent's response are published in the podcast.`,
       keywords: 'podcast, call kent, call kent c. dodds, the call kent podcast',
       url: getUrl(requestInfo),
       image: getGenericSocialImage({
+        origin: requestInfo.origin,
         words: 'Listen to the Call Kent Podcast and make your own call.',
         featuredImage: images.microphone({
           // if we don't do this resize, the narrow microphone appears on the

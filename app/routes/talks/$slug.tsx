@@ -13,10 +13,12 @@ export const meta: MetaFunction = ({parentsData, params}) => {
   const title = talk ? talk.title : '404: Talk not found'
   return {
     ...getSocialMetas({
+      origin: parentsData.root?.requestInfo.origin,
       title: talk ? `${title} by Kent C. Dodds` : title,
       description: talk ? talk.description : '404: Talk not found',
       url: getUrl(parentsData.root?.requestInfo),
       image: getSocialImageWithPreTitle({
+        origin: parentsData.root?.requestInfo.origin,
         url: getDisplayUrl(parentsData.root?.requestInfo),
         featuredImage: 'kent/kent-speaking-all-things-open',
         title,

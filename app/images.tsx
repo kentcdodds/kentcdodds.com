@@ -319,11 +319,13 @@ function getImgProps(
 }
 
 function getSocialImageWithPreTitle({
+  origin,
   title,
   preTitle,
   featuredImage: img,
   url,
 }: {
+  origin: string
   title: string
   preTitle: string
   featuredImage: string
@@ -336,14 +338,16 @@ function getSocialImageWithPreTitle({
     img,
     url,
   })
-  return `/img/social?${params.toString()}`
+  return `${origin}/img/social?${params.toString()}`
 }
 
 function getGenericSocialImage({
+  origin,
   words,
   featuredImage: img,
   url,
 }: {
+  origin: string
   words: string
   featuredImage: string
   url: string
@@ -354,7 +358,7 @@ function getGenericSocialImage({
     img,
     url,
   })
-  return `/img/social?${params.toString()}`
+  return `${origin}/img/social?${params.toString()}`
 }
 
 export {

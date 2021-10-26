@@ -127,6 +127,7 @@ export const meta: MetaFunction = ({data, parentsData}) => {
 
   return {
     ...getSocialMetas({
+      origin: requestInfo.origin,
       title: 'The Kent C. Dodds Blog',
       description: `Join ${totalBlogReaders} people who have read Kent's ${formatNumber(
         posts.length,
@@ -135,6 +136,7 @@ export const meta: MetaFunction = ({data, parentsData}) => {
         'JavaScript, TypeScript, React, Testing, Career, Software Development, Kent C. Dodds Blog',
       url: getUrl(requestInfo),
       image: getSocialImageWithPreTitle({
+        origin: requestInfo.origin,
         url: getDisplayUrl(requestInfo),
         featuredImage: images.skis.id,
         preTitle: 'Check out this Blog',
@@ -338,7 +340,7 @@ function BlogHome() {
                     searchInputRef.current?.focus()
                   }}
                   className={clsx(
-                    'absolute bg-transparent border-none p-0 left-6 top-0 flex items-center justify-center h-full text-blueGray-500',
+                    'absolute left-6 top-0 flex items-center justify-center p-0 h-full text-blueGray-500 bg-transparent border-none',
                     {
                       'cursor-pointer': query !== '',
                       'cursor-default': query === '',
@@ -356,9 +358,9 @@ function BlogHome() {
                   }
                   name="q"
                   placeholder={searchInputPlaceholder}
-                  className="text-primary bg-primary border-secondary focus:bg-secondary pl-14 pr-6 md:pr-24 py-6 w-full text-lg font-medium border hover:border-team-current focus:border-team-current rounded-full focus:outline-none"
+                  className="text-primary bg-primary border-secondary focus:bg-secondary pl-14 pr-6 py-6 w-full text-lg font-medium border hover:border-team-current focus:border-team-current rounded-full focus:outline-none md:pr-24"
                 />
-                <div className="hidden md:flex absolute right-6 top-0 items-center justify-between h-full w-14 text-blueGray-500 text-lg font-medium">
+                <div className="absolute right-6 top-0 hidden items-center justify-between w-14 h-full text-blueGray-500 text-lg font-medium md:flex">
                   <MixedCheckbox
                     title={checkboxLabel}
                     aria-label={checkboxLabel}

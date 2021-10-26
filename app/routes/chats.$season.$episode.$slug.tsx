@@ -73,6 +73,7 @@ export const meta: MetaFunction = ({data, parentsData}) => {
   const playerUrl = `https://player.simplecast.com/${simpleCastId}`
   return {
     ...getSocialMetas({
+      origin: requestInfo.origin,
       title,
       description,
       keywords: `chats with kent, kent c. dodds, ${
@@ -80,6 +81,7 @@ export const meta: MetaFunction = ({data, parentsData}) => {
       }`,
       url: getUrl(requestInfo),
       image: getSocialImageWithPreTitle({
+        origin: requestInfo.origin,
         title: episode.title,
         preTitle: 'Check out this Podcast',
         featuredImage: image,

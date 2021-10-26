@@ -307,11 +307,13 @@ function mdxPageMeta({
     const {keywords = [], ...extraMeta} = data.page.frontmatter.meta ?? {}
     return {
       ...getSocialMetas({
+        origin: requestInfo.origin,
         title: data.page.frontmatter.title,
         description: data.page.frontmatter.description,
         keywords: keywords.join(', '),
         url: getUrl(requestInfo),
         image: getSocialImageWithPreTitle({
+          origin: requestInfo.origin,
           url: getDisplayUrl(requestInfo),
           featuredImage:
             data.page.frontmatter.bannerCloudinaryId ??

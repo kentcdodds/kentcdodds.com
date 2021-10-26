@@ -70,11 +70,13 @@ export const meta: MetaFunction = ({parentsData}) => {
   const {requestInfo} = parentsData.root as RootLoaderData
   return {
     ...getSocialMetas({
+      origin: requestInfo.origin,
       title: 'The KCD Community on Discord',
       description:
         'Make friends, share ideas, connect, network, and improve yourself in the KCD Community on Discord',
       url: getUrl(requestInfo),
       image: getGenericSocialImage({
+        origin: requestInfo.origin,
         url: getDisplayUrl(requestInfo),
         featuredImage: images.helmet.id,
         words: `Join the KCD Community on Discord`,

@@ -62,13 +62,16 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export const meta: MetaFunction = ({parentsData}) => {
   const {requestInfo} = parentsData.root as RootLoaderData
+  console.log(requestInfo.origin)
   return {
     ...getSocialMetas({
+      origin: requestInfo.origin,
       title: 'About Kent C. Dodds',
       description: 'Get to know Kent C. Dodds',
       keywords: 'about, kent, kent c. dodds, kent dodds',
       url: getUrl(requestInfo),
       image: getSocialImageWithPreTitle({
+        origin: requestInfo.origin,
         url: getDisplayUrl(requestInfo),
         featuredImage: 'kent/video-stills/snowboard-butter',
         preTitle: 'Get to know',
