@@ -11,7 +11,7 @@ module.exports = {
       ]
         .filter(Boolean)
         .join(' '),
-      watch: ['./mocks/**/*.ts', './index.js', './.env'],
+      watch: ['./mocks/**/*.ts', './index.js', './server/**/*.js', './.env'],
       env: {
         NODE_ENV: process.env.NODE_ENV ?? 'development',
         ENABLE_TEST_ROUTES: process.env.ENABLE_TEST_ROUTES ?? true,

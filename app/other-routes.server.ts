@@ -63,16 +63,10 @@ const pathedRoutes: Record<string, Handler> = {
   },
   '/healthcheck': async request => {
     try {
-      const userCount = await prismaRead.user.count()
-      const rankings = await getBlogReadRankings({request})
-      console.log('healthcheck ✅', {
-        userCount,
-        rankings: rankings.map(r => ({
-          team: r.team,
-          totalReads: r.totalReads,
-          ranking: r.ranking,
-        })),
-      })
+      await Promise.all([
+        prismaRead.user.count(),
+        getBlogReadRankings({request}),
+      ])
       return new Response('OK')
     } catch (error: unknown) {
       console.log('healthcheck ❌', {error})

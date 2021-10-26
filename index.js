@@ -1,13 +1,15 @@
 // @ts-check
+// eslint-disable-next-line import/no-extraneous-dependencies
+require('@remix-run/node/globals').installGlobals()
 const fs = require('fs')
 const path = require('path')
-const httpProxy = require('express-http-proxy')
+const {addCloudinaryProxies} = require('./server/cloudinary')
+const {getRedirectsMiddleware} = require('./server/redirects')
+const {getReplayResponse} = require('./server/fly')
 const onFinished = require('on-finished')
-const {URL} = require('url')
 const express = require('express')
 const compression = require('compression')
 const morgan = require('morgan')
-const {pathToRegexp, compile: compileRedirectPath} = require('path-to-regexp')
 const {createRequestHandler} = require('@remix-run/express')
 
 if (process.env.FLY) {
@@ -42,61 +44,17 @@ app.use((req, res, next) => {
   }
   next()
 })
-const {FLY, PRIMARY_REGION, FLY_REGION} = process.env
-const isPrimaryRegion = PRIMARY_REGION === FLY_REGION
-
-function getReplayResponse(req, res, next) {
-  const {method, path: pathname} = req
-  if (method === 'GET' || method === 'OPTIONS' || method === 'HEAD') {
-    return next()
-  }
-
-  if (!FLY || isPrimaryRegion) return next()
-
-  if (pathname.includes('__insights')) {
-    // metronome doesn't need to be replayed...
-    return next()
-  }
-
-  if (pathname === '/calls/record/new') {
-    // replaying calls doesn't work very well because the request body is so
-    // large so we won't replay those
-    return next()
-  }
-
-  const logInfo = {
-    pathname,
-    method,
-    PRIMARY_REGION,
-    FLY_REGION,
-  }
-  console.info(`Replaying:`, logInfo)
-  res.set('fly-replay', `region=${PRIMARY_REGION}`)
-  return res.sendStatus(409)
-}
 
 app.all('*', getReplayResponse)
 
-// we're proxying cloudinary so we can set a cache control that takes advantage
-// of the shared cache with cloudflare to drastically reduce our bill for
-// image bandwidth (hopefully).
+addCloudinaryProxies(app)
+
 app.all(
-  '/img/*',
-  // using patch-package to avoid a deprecation warning for this package:
-  // https://github.com/villadora/express-http-proxy/pull/492
-  httpProxy('https://res.cloudinary.com/', {
-    proxyReqPathResolver(req) {
-      return req.url.replace('/img', '/kentcdodds-com')
-    },
-    userResHeaderDecorator(headers) {
-      headers['cache-control'] =
-        'public, immutable, max-age=86400, s-maxage=31536000'
-      return headers
-    },
+  '*',
+  getRedirectsMiddleware({
+    redirectsString: fs.readFileSync('./_redirects', 'utf8'),
   }),
 )
-
-app.all('*', getRedirectsMiddleware())
 
 app.use((req, res, next) => {
   if (req.path.endsWith('/') && req.path.length > 1) {
@@ -165,112 +123,5 @@ function purgeRequireCache() {
     if (key.startsWith(BUILD_DIR)) {
       delete require.cache[key]
     }
-  }
-}
-
-function getRedirectsMiddleware() {
-  const possibleMethods = ['HEAD', 'GET', 'POST', 'PUT', 'DELETE', 'PATCH', '*']
-  const redirectsString = fs.readFileSync('./_redirects', 'utf8')
-  const redirects = []
-  const lines = redirectsString.split('\n')
-  for (let lineNumber = 0; lineNumber < lines.length; lineNumber++) {
-    let line = lines[lineNumber]
-    line = line.trim()
-    if (!line || line.startsWith('#')) continue
-
-    let methods, from, to
-    const [one, two, three] = line
-      .split(' ')
-      .map(l => l.trim())
-      .filter(Boolean)
-    const splitOne = one.split(',')
-    if (possibleMethods.some(m => splitOne.includes(m))) {
-      methods = splitOne
-      from = two
-      to = three
-    } else {
-      methods = ['*']
-      from = one
-      to = two
-    }
-
-    if (!from || !to) {
-      console.error(`Invalid redirect on line ${lineNumber + 1}: "${line}"`)
-      continue
-    }
-    const keys = []
-
-    const toUrl = to.includes('//')
-      ? new URL(to)
-      : new URL(`https://same_host${to}`)
-    try {
-      redirects.push({
-        methods,
-        from: pathToRegexp(from, keys),
-        keys,
-        toPathname: compileRedirectPath(toUrl.pathname, {
-          encode: encodeURIComponent,
-        }),
-        toUrl,
-      })
-    } catch (error) {
-      // if parsing the redirect fails, we'll warn, but we won't crash
-      console.error(`Failed to parse redirect on line ${lineNumber}: "${line}"`)
-    }
-  }
-
-  return function redirectsMiddleware(req, res, next) {
-    const host = req.header('X-Forwarded-Host') ?? req.header('host')
-    const protocol = host.includes('localhost') ? 'http' : 'https'
-    let reqUrl
-    try {
-      reqUrl = new URL(`${protocol}://${host}${req.url}`)
-    } catch (error) {
-      console.error(`Invalid URL: ${protocol}://${host}${req.url}`)
-      next()
-      return
-    }
-    for (const redirect of redirects) {
-      try {
-        if (
-          !redirect.methods.includes('*') &&
-          !redirect.methods.includes(req.method)
-        ) {
-          continue
-        }
-        const match = req.path.match(redirect.from)
-        if (!match) continue
-
-        const params = {}
-        const paramValues = match.slice(1)
-        for (
-          let paramIndex = 0;
-          paramIndex < paramValues.length;
-          paramIndex++
-        ) {
-          const paramValue = paramValues[paramIndex]
-          params[redirect.keys[paramIndex].name] = paramValue
-        }
-        const toUrl = redirect.toUrl
-
-        toUrl.protocol = protocol
-        if (toUrl.host === 'same_host') toUrl.host = reqUrl.host
-
-        for (const [key, value] of reqUrl.searchParams.entries()) {
-          toUrl.searchParams.append(key, value)
-        }
-        toUrl.pathname = redirect.toPathname(params)
-        res.redirect(307, toUrl.toString())
-        return
-      } catch (error) {
-        // an error in the redirect shouldn't stop the request from going through
-        console.error(`Error processing redirects:`, {
-          error,
-          redirect,
-          'req.url': req.url,
-        })
-      }
-    }
-    next()
   }
 }
