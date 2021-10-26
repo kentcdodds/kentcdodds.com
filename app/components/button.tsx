@@ -89,23 +89,13 @@ function LinkButton({
 
 const ButtonLink = React.forwardRef<
   HTMLAnchorElement,
-  ButtonProps & {to: string} & Pick<
-      JSX.IntrinsicElements['a'],
-      'onClick' | 'className' | 'download'
-    > & {prefetch?: 'none' | 'intent' | 'render'}
+  React.ComponentPropsWithRef<typeof AnchorOrLink> & ButtonProps
 >(function ButtonLink(
-  {children, variant = 'primary', className, download, to, onClick, prefetch},
+  {children, variant = 'primary', className, ...rest},
   ref,
 ) {
   return (
-    <AnchorOrLink
-      prefetch={prefetch}
-      ref={ref}
-      href={to}
-      onClick={onClick}
-      download={download}
-      className={getClassName({className})}
-    >
+    <AnchorOrLink ref={ref} className={getClassName({className})} {...rest}>
       <ButtonInner variant={variant}>{children}</ButtonInner>
     </AnchorOrLink>
   )

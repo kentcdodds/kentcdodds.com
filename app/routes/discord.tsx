@@ -169,7 +169,7 @@ export default function Discord() {
         arrowUrl="#reasons-to-join"
         arrowLabel="Is this something for me?"
         action={
-          <ButtonLink variant="primary" to={authorizeURL} className="mr-auto">
+          <ButtonLink variant="primary" href={authorizeURL} className="mr-auto">
             Join Discord
           </ButtonLink>
         }
@@ -203,7 +203,7 @@ export default function Discord() {
               {`Here's why you should join the server.`}
             </H2>
 
-            <ButtonLink className="mb-32" variant="primary" to={authorizeURL}>
+            <ButtonLink className="mb-32" variant="primary" href={authorizeURL}>
               Join Discord
             </ButtonLink>
 
@@ -411,7 +411,7 @@ export default function Discord() {
                 Voice and video chats hosted and managed on the KCD Discord
                 server.
               </H2>
-              <ButtonLink variant="primary" to={authorizeURL}>
+              <ButtonLink variant="primary" href={authorizeURL}>
                 Join Discord
               </ButtonLink>
             </div>
@@ -532,7 +532,7 @@ export default function Discord() {
                 better together.
               `}
             </H2>
-            <ButtonLink variant="primary" to={authorizeURL}>
+            <ButtonLink variant="primary" href={authorizeURL}>
               Join Discord
             </ButtonLink>
           </div>

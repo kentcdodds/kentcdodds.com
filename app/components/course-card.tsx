@@ -42,7 +42,7 @@ function CourseCard({
             whileHover="hover"
             whileTap="tap"
             animate="initial"
-            to={courseUrl}
+            href={courseUrl}
             prefetch="intent"
           >
             <span>Visit course</span>

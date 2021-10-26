@@ -398,7 +398,7 @@ function YouScreen() {
           <ButtonLink
             variant="secondary"
             download="my-kcd-data.json"
-            to={`${requestInfo.origin}/me/download.json`}
+            href={`${requestInfo.origin}/me/download.json`}
           >
             Download Your Data
           </ButtonLink>

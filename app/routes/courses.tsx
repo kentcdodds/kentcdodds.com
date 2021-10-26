@@ -72,7 +72,7 @@ function SmallCourseCard({
       </div>
       <Paragraph className="flex-auto mb-16 max-w-sm">{description}</Paragraph>
 
-      <ArrowLink to={courseUrl} className="flex-none">
+      <ArrowLink href={courseUrl} className="flex-none">
         Visit course
       </ArrowLink>
     </div>

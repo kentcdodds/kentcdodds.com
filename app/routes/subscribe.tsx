@@ -63,7 +63,7 @@ export default function SubscribeScreen() {
         arrowUrl="#why"
         arrowLabel="Why should I?"
         action={
-          <ButtonLink variant="primary" to="#subscribe-form">
+          <ButtonLink variant="primary" href="#subscribe-form">
             <MailIcon /> Subscribe
           </ButtonLink>
         }
@@ -100,7 +100,7 @@ export default function SubscribeScreen() {
             <ButtonLink
               className="mb-32"
               variant="primary"
-              to="#subscribe-form"
+              href="#subscribe-form"
             >
               <MailIcon /> Subscribe
             </ButtonLink>

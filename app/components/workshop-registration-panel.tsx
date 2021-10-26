@@ -59,7 +59,7 @@ function RegistrationPanel({
       </div>
       {/* note: this heading doesn't scale on narrow screens */}
 
-      <ButtonLink to={workshopEvent.url} className="flex-none">
+      <ButtonLink href={workshopEvent.url} className="flex-none">
         Register here
       </ButtonLink>
     </div>

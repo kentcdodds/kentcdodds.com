@@ -1,5 +1,5 @@
 import * as React from 'react'
-import type {HeadersFunction} from 'remix'
+import type {HeadersFunction, LinkProps} from 'remix'
 import {Link} from 'remix'
 import type {NonNullProperties, User} from '~/types'
 import {Team} from '@prisma/client'
@@ -67,14 +67,52 @@ type AnchorProps = React.DetailedHTMLProps<
 
 const AnchorOrLink = React.forwardRef<
   HTMLAnchorElement,
-  AnchorProps & {prefetch?: 'intent' | 'none' | 'render'; reload?: boolean}
+  AnchorProps & {
+    reload?: boolean
+    to?: LinkProps['to']
+    prefetch?: LinkProps['prefetch']
+  }
 >(function AnchorOrLink(props, ref) {
-  const {href = '', download, reload = false, prefetch, ...rest} = props
-  if (reload || download || href.startsWith('http') || href.startsWith('#')) {
-    // eslint-disable-next-line jsx-a11y/anchor-has-content
-    return <a {...rest} download={download} href={href} ref={ref} />
+  const {
+    to,
+    href,
+    download,
+    reload = false,
+    prefetch,
+    children,
+    ...rest
+  } = props
+  let toUrl = ''
+  let shouldUserRegularAnchor = reload || download
+
+  if (!shouldUserRegularAnchor && typeof href === 'string') {
+    shouldUserRegularAnchor = href.startsWith('http') || href.startsWith('#')
+  }
+
+  if (!shouldUserRegularAnchor && typeof to === 'string') {
+    toUrl = to
+    shouldUserRegularAnchor = to.startsWith('http')
+  }
+
+  if (!shouldUserRegularAnchor && typeof to === 'object') {
+    toUrl = `${to.pathname ?? ''}${to.hash ? `#${to.hash}` : ''}${
+      to.search ? `?${to.search}` : ''
+    }`
+    shouldUserRegularAnchor = to.pathname?.startsWith('http')
+  }
+
+  if (shouldUserRegularAnchor) {
+    return (
+      <a {...rest} download={download} href={href ?? toUrl} ref={ref}>
+        {children}
+      </a>
+    )
   } else {
-    return <Link prefetch={prefetch} to={href} {...rest} ref={ref} />
+    return (
+      <Link prefetch={prefetch} to={to ?? href ?? ''} {...rest} ref={ref}>
+        {children}
+      </Link>
+    )
   }
 })
 

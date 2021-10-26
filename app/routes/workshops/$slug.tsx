@@ -274,7 +274,7 @@ export default function WorkshopScreen() {
                 <H2 className="mb-16" variant="secondary" as="p">
                   {`Here's why you should register for the workshop.`}
                 </H2>
-                <ButtonLink to={registerLink}>Register here</ButtonLink>
+                <ButtonLink href={registerLink}>Register here</ButtonLink>
               </div>
 
               <div className="col-span-full lg:col-span-5 lg:col-start-8 lg:mr-12">
@@ -307,7 +307,7 @@ export default function WorkshopScreen() {
         </div>
 
         <div className="flex flex-col col-span-full items-stretch justify-end mb-16 lg:col-span-4 lg:items-end lg:justify-center">
-          <ButtonLink to={registerLink}>Register here</ButtonLink>
+          <ButtonLink href={registerLink}>Register here</ButtonLink>
         </div>
 
         {workshop.topicHTMLs.length ? (

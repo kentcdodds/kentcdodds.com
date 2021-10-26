@@ -15,8 +15,9 @@ function emojiStrip(string: string) {
   )
 }
 
+const cloudinaryCloudName = 'kentcdodds-com'
 setConfig({
-  cloudName: 'kentcdodds-com',
+  cloudName: cloudinaryCloudName,
 })
 
 type ImageBuilder = {
@@ -38,7 +39,12 @@ const createImages = <
 
 function getImageBuilder(id: string, alt: string = ''): ImageBuilder {
   function imageBuilder(transformations?: TransformerOption) {
-    return buildImageUrl(id, {transformations})
+    const cloudinaryUrlString = buildImageUrl(id, {transformations})
+    const cloudinaryUrl = new URL(cloudinaryUrlString)
+    return `/img${cloudinaryUrl.pathname.replace(
+      `/${cloudinaryCloudName}`,
+      '',
+    )}`
   }
   imageBuilder.alt = alt
   imageBuilder.id = id
