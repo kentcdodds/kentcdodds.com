@@ -68,6 +68,10 @@ function getReplayResponse(req, res, next) {
 }
 
 app.all('*', getReplayResponse)
+app.all('/img/*', (req, res) => {
+  const rest = req.originalUrl.replace('/img', '')
+  return res.redirect(302, `https://res.cloudinary.com/kentcdodds-com${rest}`)
+})
 app.all('*', getRedirectsMiddleware())
 
 app.use((req, res, next) => {
