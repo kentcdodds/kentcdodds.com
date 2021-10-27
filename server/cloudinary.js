@@ -2,6 +2,9 @@
 const httpProxy = require('express-http-proxy')
 const emojiRegex = require('emoji-regex')
 
+const isString = s => typeof s === 'string'
+const areStrings = (...s) => s.every(isString)
+
 function toBase64(string) {
   return Buffer.from(string).toString('base64')
 }
@@ -23,7 +26,9 @@ function doubleEncode(s) {
   return encodeURIComponent(encodeURIComponent(s))
 }
 
-function getSocialImageWithPreTitle({title, preTitle, featuredImage, url}) {
+function getSocialImageWithPreTitle({title, preTitle, img, url}) {
+  if (!areStrings(title, preTitle, img, url)) return null
+
   const vars = `$th_1256,$tw_2400,$gw_$tw_div_24,$gh_$th_div_12`
 
   const encodedPreTitle = doubleEncode(emojiStrip(preTitle))
@@ -38,10 +43,10 @@ function getSocialImageWithPreTitle({title, preTitle, featuredImage, url}) {
   const encodedUrl = doubleEncode(emojiStrip(url))
   const urlSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_9,x_$gw_mul_4.5,y_$gh_mul_9.8,l_text:kentcdodds.com:Matter-Regular.woff2_40:${encodedUrl}`
 
-  const featuredImageIsRemote = featuredImage.startsWith('http')
+  const featuredImageIsRemote = img.startsWith('http')
   const featuredImageCloudinaryId = featuredImageIsRemote
-    ? toBase64(featuredImage)
-    : featuredImage.replace(/\//g, ':')
+    ? toBase64(img)
+    : img.replace(/\//g, ':')
   const featuredImageLayerType = featuredImageIsRemote ? 'l_fetch:' : 'l_'
   const featuredImageSection = `c_fill,ar_3:4,r_12,g_east,h_$gh_mul_10,x_$gw,${featuredImageLayerType}${featuredImageCloudinaryId}`
 
@@ -58,7 +63,9 @@ function getSocialImageWithPreTitle({title, preTitle, featuredImage, url}) {
   ].join('/')
 }
 
-function getGenericSocialImage({words, featuredImage, url}) {
+function getGenericSocialImage({words, img, url}) {
+  if (!areStrings(words, img, url)) return null
+
   const vars = `$th_1256,$tw_2400,$gw_$tw_div_24,$gh_$th_div_12`
 
   const encodedWords = doubleEncode(emojiStrip(words))
@@ -70,10 +77,10 @@ function getGenericSocialImage({words, featuredImage, url}) {
   const encodedUrl = doubleEncode(emojiStrip(url))
   const urlSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_5.5,x_$gw_mul_4.5,y_$gh_mul_9.8,l_text:kentcdodds.com:Matter-Regular.woff2_40:${encodedUrl}`
 
-  const featuredImageIsRemote = featuredImage.startsWith('http')
+  const featuredImageIsRemote = img.startsWith('http')
   const featuredImageCloudinaryId = featuredImageIsRemote
-    ? toBase64(featuredImage)
-    : featuredImage.replace(/\//g, ':')
+    ? toBase64(img)
+    : img.replace(/\//g, ':')
   const featuredImageLayerType = featuredImageIsRemote ? 'l_fetch:' : 'l_'
 
   const featureImageSection = `c_fit,g_east,w_$gw_mul_11,h_$gh_mul_11,x_$gw,${featuredImageLayerType}${featuredImageCloudinaryId}`
@@ -97,25 +104,16 @@ function addCloudinaryProxies(app) {
     httpProxy('https://res.cloudinary.com/kentcdodds-com', {
       proxyReqPathResolver(req) {
         const [, queryParamsString] = req.url.split('?')
-        const params = new URLSearchParams(queryParamsString)
-        const type = params.get('type')
-        let path
-        if (type === '1') {
-          path = getGenericSocialImage({
-            words: params.get('words'),
-            featuredImage: params.get('img'),
-            url: params.get('url'),
-          })
+        const params = {}
+        for (const [key, value] of new URLSearchParams(queryParamsString)) {
+          params[key] = value
         }
-        if (type === '2') {
-          path = getSocialImageWithPreTitle({
-            title: params.get('title'),
-            preTitle: params.get('preTitle'),
-            featuredImage: params.get('img'),
-            url: params.get('url'),
-          })
-        }
-        return path ?? req.url
+        const {type} = params
+        return type === '1'
+          ? getGenericSocialImage(params)
+          : type === '2'
+          ? getSocialImageWithPreTitle(params)
+          : req.url
       },
       userResHeaderDecorator(headers) {
         headers['cache-control'] =
