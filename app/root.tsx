@@ -30,7 +30,12 @@ import {
 import {getThemeSession} from './utils/theme.server'
 import {getSession} from './utils/session.server'
 import {getLoginInfoSession} from './utils/login.server'
-import {getDisplayUrl, getDomainUrl, getUrl} from './utils/misc'
+import {
+  getDisplayUrl,
+  getDomainUrl,
+  getUrl,
+  removeTrailingSlash,
+} from './utils/misc'
 import {getEnv} from './utils/env.server'
 import {getUserInfo} from './utils/user-info.server'
 import {getClientSession} from './utils/client.server'
@@ -82,7 +87,7 @@ export const meta: MetaFunction = ({data}) => {
   }
 }
 
-export const links: LinksFunction = ({data}: {data?: LoaderData}) => {
+export const links: LinksFunction = () => {
   return [
     {
       rel: 'preload',
@@ -99,9 +104,23 @@ export const links: LinksFunction = ({data}: {data?: LoaderData}) => {
       crossOrigin: 'anonymous',
     },
     {
-      rel: 'canonical',
-      href: `${data?.requestInfo.origin}${data?.requestInfo.path}`,
+      rel: 'apple-touch-icon',
+      sizes: '180x180',
+      href: '/favicons/apple-touch-icon.png',
     },
+    {
+      rel: 'icon',
+      type: 'image/png',
+      sizes: '32x32',
+      href: '/favicons/favicon-32x32.png',
+    },
+    {
+      rel: 'icon',
+      type: 'image/png',
+      sizes: '16x16',
+      href: '/favicons/favicon-16x16.png',
+    },
+    {rel: 'manifest', href: '/site.webmanifest'},
     {rel: 'icon', href: '/favicon.ico'},
     {rel: 'stylesheet', href: vendorStyles},
     {rel: 'stylesheet', href: tailwindStyles},
@@ -299,24 +318,14 @@ function App() {
     >
       <head>
         <Meta />
+
         <link
-          rel="apple-touch-icon"
-          sizes="180x180"
-          href="/favicons/apple-touch-icon.png"
+          rel="canonical"
+          href={removeTrailingSlash(
+            `${data.requestInfo.origin}${data.requestInfo.path}`,
+          )}
         />
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="32x32"
-          href="/favicons/favicon-32x32.png"
-        />
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="16x16"
-          href="/favicons/favicon-16x16.png"
-        />
-        <link rel="manifest" href="/site.webmanifest" />
+
         <Links />
         <noscript>
           <link rel="stylesheet" href={noScriptStyles} />
