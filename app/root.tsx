@@ -82,7 +82,7 @@ export const meta: MetaFunction = ({data}) => {
   }
 }
 
-export const links: LinksFunction = () => {
+export const links: LinksFunction = ({data}: {data?: LoaderData}) => {
   return [
     {
       rel: 'preload',
@@ -99,18 +99,8 @@ export const links: LinksFunction = () => {
       crossOrigin: 'anonymous',
     },
     {
-      rel: 'preload',
-      as: 'font',
-      href: '/fonts/Matter-Medium.woff',
-      type: 'font/woff',
-      crossOrigin: 'anonymous',
-    },
-    {
-      rel: 'preload',
-      as: 'font',
-      href: '/fonts/Matter-Regular.woff',
-      type: 'font/woff',
-      crossOrigin: 'anonymous',
+      rel: 'canonical',
+      href: `${data?.requestInfo.origin}${data?.requestInfo.path}`,
     },
     {rel: 'icon', href: '/favicon.ico'},
     {rel: 'stylesheet', href: vendorStyles},

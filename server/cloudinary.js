@@ -5,6 +5,10 @@ const emojiRegex = require('emoji-regex')
 const isString = s => typeof s === 'string'
 const areStrings = (...s) => s.every(isString)
 
+const BROWSER_CACHE_SECONDS = 60 * 60 * 24
+const PROXY_CACHE_SECONDS = BROWSER_CACHE_SECONDS * 365
+const CACHE_CONTROL_HEADER = `public, immutable, max-age=${BROWSER_CACHE_SECONDS}, s-maxage=${PROXY_CACHE_SECONDS}`
+
 function toBase64(string) {
   return Buffer.from(string).toString('base64')
 }
@@ -116,8 +120,7 @@ function addCloudinaryProxies(app) {
           : req.url
       },
       userResHeaderDecorator(headers) {
-        headers['cache-control'] =
-          'public, immutable, max-age=86400, s-maxage=31536000'
+        headers['cache-control'] = CACHE_CONTROL_HEADER
         return headers
       },
     }),
@@ -135,8 +138,7 @@ function addCloudinaryProxies(app) {
         return req.url.replace('/img', '/kentcdodds-com')
       },
       userResHeaderDecorator(headers) {
-        headers['cache-control'] =
-          'public, immutable, max-age=86400, s-maxage=31536000'
+        headers['cache-control'] = CACHE_CONTROL_HEADER
         return headers
       },
     }),
