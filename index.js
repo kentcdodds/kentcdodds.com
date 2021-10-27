@@ -37,9 +37,10 @@ app.use((req, res, next) => {
 
 app.use((req, res, next) => {
   const proto = req.get('X-Forwarded-Proto')
+  const host = req.get('X-Forwarded-Host') ?? req.get('host')
   if (proto === 'http') {
     res.set('X-Forwarded-Proto', 'https')
-    res.redirect(`https://${req.get('host')}${req.url}`)
+    res.redirect(`https://${host}${req.originalUrl}`)
     return
   }
   next()
