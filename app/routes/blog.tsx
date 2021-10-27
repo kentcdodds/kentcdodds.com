@@ -280,8 +280,8 @@ function BlogHome() {
   const posts = isSearching
     ? matchingPosts.slice(0, indexToShow)
     : matchingPosts
-        .slice(0, indexToShow)
         .filter(p => p.slug !== data.recommended?.slug)
+        .slice(0, indexToShow)
 
   const hasMorePosts = isSearching
     ? indexToShow < matchingPosts.length
