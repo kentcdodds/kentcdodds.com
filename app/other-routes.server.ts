@@ -7,7 +7,6 @@ import {redisCache} from './utils/redis.server'
 import {requireUser} from './utils/session.server'
 import {getUserInfo} from './utils/user-info.server'
 import {getBlogReadRankings, getPostJson} from './utils/blog.server'
-import {getDomainUrl} from './utils/misc'
 
 type Handler = (
   request: Request,
@@ -63,12 +62,14 @@ const pathedRoutes: Record<string, Handler> = {
     return json({postgres, cache})
   },
   '/healthcheck': async request => {
-    const domainUrl = getDomainUrl(request)
+    const host =
+      request.headers.get('X-Forwarded-Host') ?? request.headers.get('host')
+
     try {
       await Promise.all([
         prismaRead.user.count(),
         getBlogReadRankings({request}),
-        fetch(domainUrl, {method: 'HEAD'}).then(r => {
+        fetch(`http://${host}`, {method: 'HEAD'}).then(r => {
           if (!r.ok) return Promise.reject(r)
         }),
       ])
