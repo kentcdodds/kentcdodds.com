@@ -141,7 +141,7 @@ P.S. If you did not request this email, you can safely ignore it.
       <hr style="width: 20%; height: 0px; border: 1px solid lightgrey; margin-top: 2rem; margin-bottom: 2rem">
         
       <div style="text-align: center; color: grey; font-size: .8rem; line-height: 1.2rem">
-        You recieved this because your email address was used to sign up for an account on
+        You received this because your email address was used to sign up for an account on
         <a href="${domainUrl}" style="color: grey">${hostname}</a>. If you didn't sign up for an account,
         feel free to disregard this email.
       </div>
