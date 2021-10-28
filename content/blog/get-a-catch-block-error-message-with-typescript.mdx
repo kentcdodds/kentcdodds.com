@@ -50,7 +50,10 @@ try {
 That `reportError` call there isn't happy. Specifically it's the `error.message`
 bit. It's because (as of recently) TypeScript defaults our `error` type to
 `unknown`. Which is truly what it is! In the world of errors, there's not much
-guarantees you can offer about the types of errors that are thrown. In fact, it
+guarantees you can offer about the types of errors that are thrown. In fact,
+this is the same reason you can't provide the type for the `.catch(error => {})`
+of a promise rejection with the promise generic
+(`Promise<ResolvedValue, NopeYouCantProvidARejectedValueType>`). In fact, it
 might not even be an error that's thrown at all. It could be just about
 anything:
 
