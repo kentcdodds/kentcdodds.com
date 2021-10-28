@@ -122,7 +122,6 @@ the error and hopefully that will end up being something useful.
 
 Then we can turn this into a utility for use in all our catch blocks:
 
-
 ```ts lines=1-4,14
 function getErrorMessage(error: unknown) {
   if (error instanceof Error) return error.message
@@ -145,4 +144,9 @@ This has been helpful for me in my projects. Hopefully it helps you as well.
 
 ## Conclusion
 
-I think the key takeaway here is to remember that while TypeScript has it's funny bits, don't dismiss a compilation error or warning from TypeScript just because you think it's impossible or whatever. Most of the time it absolutely is possible for the unexpected to happen and TypeScript does a pretty good job of forcing you to handle those unlikely cases... And you'll probably find they're not as unlikely as you think.
+I think the key takeaway here is to remember that while TypeScript has it's
+funny bits, don't dismiss a compilation error or warning from TypeScript just
+because you think it's impossible or whatever. Most of the time it absolutely is
+possible for the unexpected to happen and TypeScript does a pretty good job of
+forcing you to handle those unlikely cases... And you'll probably find they're
+not as unlikely as you think.
