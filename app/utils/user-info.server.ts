@@ -3,7 +3,7 @@ import {getImageBuilder, images} from '../images'
 import * as ck from '../convertkit/convertkit.server'
 import * as discord from './discord.server'
 import type {Timings} from './metrics.server'
-import {getAvatar} from './misc'
+import {getAvatar, getDomainUrl} from './misc'
 import {redisCache} from './redis.server'
 import {cachified} from './cache.server'
 
@@ -23,9 +23,9 @@ type UserInfo = {
 
 async function getDirectAvatarForUser(
   {email, team}: Pick<User, 'email' | 'team'>,
-  {size = 128}: {size: number},
+  {size = 128, origin}: {size: number; origin?: string},
 ) {
-  const gravatarUrl = getAvatar(email, {fallback: '404'})
+  const gravatarUrl = getAvatar(email, {fallback: '404', origin})
   const avatarResponse = await fetch(gravatarUrl, {method: 'HEAD'})
   const hasGravatar = avatarResponse.status === 200
   if (hasGravatar) {
@@ -59,7 +59,7 @@ async function getUserInfo(
     request,
     forceFresh,
     timings,
-  }: {request?: Request; forceFresh?: boolean; timings?: Timings} = {},
+  }: {request: Request; forceFresh?: boolean; timings?: Timings},
 ) {
   const {discordId, convertKitId, email} = user
   const [discordUser, convertKitInfo] = await Promise.all([
@@ -104,7 +104,10 @@ async function getUserInfo(
       : null,
   ])
 
-  const {avatar, hasGravatar} = await getDirectAvatarForUser(user, {size: 128})
+  const {avatar, hasGravatar} = await getDirectAvatarForUser(user, {
+    size: 128,
+    origin: getDomainUrl(request),
+  })
   const userInfo: UserInfo = {
     avatar: {
       src: avatar,

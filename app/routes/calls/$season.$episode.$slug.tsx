@@ -9,6 +9,10 @@ import {getEpisodeFromParams, getEpisodePath, Params} from '~/utils/call-kent'
 import {LoaderData as CallsLoaderData, useCallsData} from '../calls'
 import {getSocialMetas} from '~/utils/seo'
 import {getUrl} from '~/utils/misc'
+import {H6, Paragraph} from '~/components/typography'
+import {IconLink} from '~/components/icon-link'
+import {useRootData} from '~/utils/use-root-data'
+import {TwitterIcon} from '~/components/icons/twitter-icon'
 
 export const handle: KCDHandle = {
   id: 'call-player',
@@ -95,32 +99,72 @@ export const loader: KCDLoader<Params> = async ({params, request}) => {
 export default function Screen() {
   const params = useParams() as Params
   const {episodes} = useCallsData()
+  const {requestInfo} = useRootData()
   const episode = getEpisodeFromParams(episodes, params)
 
   if (!episode) {
     return <div>Oh no... No episode found with this slug: {params.slug}</div>
   }
+  const path = getEpisodePath(episode)
+
+  const keywords = Array.from(
+    new Set(
+      episode.keywords
+        .split(/[,;\s]/g) // split into words
+        .map(x => x.trim()) // trim white spaces
+        .filter(Boolean), // remove empties
+    ), // omit duplicates
+  ).slice(0, 3) // keep first 3 only
 
   return (
-    <Themed
-      // changing the theme while the player is going will cause it to
-      // unload the player in the one theme and load it in the other
-      // which is annoying.
-      initialOnly={true}
-      dark={
-        <div
-          dangerouslySetInnerHTML={{
-            __html: episode.embedHtmlDark,
-          }}
-        />
-      }
-      light={
-        <div
-          dangerouslySetInnerHTML={{
-            __html: episode.embedHtml,
-          }}
-        />
-      }
-    />
+    <>
+      <div className="flex gap-4 justify-between">
+        <div>
+          <H6 as="div" className="flex-auto">
+            Keywords
+          </H6>
+          <Paragraph className="flex mb-8">{keywords.join(', ')}</Paragraph>
+        </div>
+        <IconLink
+          target="_blank"
+          rel="noreferrer noopener"
+          href={`https://twitter.com/intent/tweet?${new URLSearchParams({
+            url: `${requestInfo.origin}${path}`,
+            text: `I just listened to "${episode.title}" on the Chats with Kent Podcast 🎙 by @kentcdodds`,
+          })}`}
+        >
+          <TwitterIcon title="Tweet this" />
+        </IconLink>
+      </div>
+
+      <H6 as="div">Description</H6>
+      <Paragraph
+        as="div"
+        className="mb-8"
+        dangerouslySetInnerHTML={{
+          __html: episode.descriptionHTML,
+        }}
+      />
+      <Themed
+        // changing the theme while the player is going will cause it to
+        // unload the player in the one theme and load it in the other
+        // which is annoying.
+        initialOnly={true}
+        dark={
+          <div
+            dangerouslySetInnerHTML={{
+              __html: episode.embedHtmlDark,
+            }}
+          />
+        }
+        light={
+          <div
+            dangerouslySetInnerHTML={{
+              __html: episode.embedHtml,
+            }}
+          />
+        }
+      />
+    </>
   )
 }

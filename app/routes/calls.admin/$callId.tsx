@@ -2,11 +2,16 @@ import * as React from 'react'
 import {redirect, Form, json, useActionData, useLoaderData} from 'remix'
 import type {Await, KCDAction, KCDHandle, KCDLoader} from '~/types'
 import {format} from 'date-fns'
-import {useUser} from '~/utils/use-root-data'
+import {useRootData, useUser} from '~/utils/use-root-data'
 import {CallRecorder} from '~/components/calls/recorder'
 import {requireAdminUser} from '~/utils/session.server'
 import {prismaWrite, prismaRead} from '~/utils/prisma.server'
-import {getErrorMessage, getNonNull, useDoubleCheck} from '~/utils/misc'
+import {
+  getAvatarForUser,
+  getErrorMessage,
+  getNonNull,
+  useDoubleCheck,
+} from '~/utils/misc'
 import {createEpisodeAudio} from '~/utils/ffmpeg.server'
 import {createEpisode} from '~/utils/transistor.server'
 import type {RecordingFormData} from '~/components/calls/submit-recording-form'
@@ -81,6 +86,8 @@ export const action: KCDAction<{callId: string}> = async ({
     const episodeAudio = await createEpisodeAudio(call.base64, response)
 
     await createEpisode({
+      request,
+      avatar: form.get('avatar'),
       audio: episodeAudio,
       title,
       summary: `${call.user.firstName} asked this on ${format(
@@ -109,7 +116,7 @@ type LoaderData = {
 async function getCallInfo({callId}: {callId: string}) {
   const call = await prismaRead.call.findFirst({
     where: {id: callId},
-    include: {user: {select: {firstName: true, team: true}}},
+    include: {user: {select: {firstName: true, team: true, email: true}}},
   })
   if (!call) {
     throw new Error(`No call by the ID of ${callId}`)
@@ -193,6 +200,12 @@ export default function RecordingDetailScreen() {
   const data = useLoaderData<LoaderData>()
   const actionData = useActionData<ActionData>()
   const user = useUser()
+  const {requestInfo} = useRootData()
+  const [callerAvatar, setCallerAvatar] = React.useState(
+    getAvatarForUser(data.call.user, {
+      origin: requestInfo.origin,
+    }).src,
+  )
 
   return (
     <div key={data.call.id}>
@@ -207,6 +220,18 @@ export default function RecordingDetailScreen() {
             fields: {...data.call, ...actionData?.fields},
             errors: {...actionData?.errors},
           }}
+          additionalFields={
+            <>
+              <Field
+                label="Avatar"
+                description="Episode avatar URL"
+                name="avatar"
+                value={callerAvatar}
+                onChange={e => setCallerAvatar(e.currentTarget.value)}
+              />
+              <img src={callerAvatar} alt="Caller avatar" />
+            </>
+          }
         />
       ) : (
         <CallRecorder

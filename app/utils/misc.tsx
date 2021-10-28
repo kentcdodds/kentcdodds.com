@@ -19,12 +19,18 @@ function getAvatar(
   {
     size = defaultAvatarSize,
     fallback = images.kodyProfileWhite({resize: {width: size}}),
-  }: {size?: number; fallback?: string | null} = {},
+    origin,
+  }: {size?: number; fallback?: string | null; origin?: string} = {},
 ) {
   const hash = md5(email)
   const url = new URL(`https://www.gravatar.com/avatar/${hash}`)
   url.searchParams.set('size', String(size))
-  if (fallback) url.searchParams.set('default', fallback)
+  if (fallback) {
+    if (origin && fallback.startsWith('/')) {
+      fallback = `${origin}${fallback}`
+    }
+    url.searchParams.set('default', fallback)
+  }
   return url.toString()
 }
 
@@ -36,10 +42,14 @@ const avatarFallbacks: Record<Team, (width: number) => string> = {
 
 function getAvatarForUser(
   {email, team, firstName}: Pick<User, 'email' | 'team' | 'firstName'>,
-  {size = defaultAvatarSize}: {size?: number} = {},
+  {size = defaultAvatarSize, origin}: {size?: number; origin?: string} = {},
 ) {
   return {
-    src: getAvatar(email, {fallback: avatarFallbacks[team](size), size}),
+    src: getAvatar(email, {
+      fallback: avatarFallbacks[team](size),
+      size,
+      origin,
+    }),
     alt: firstName,
   }
 }

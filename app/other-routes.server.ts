@@ -58,7 +58,7 @@ const pathedRoutes: Record<string, Handler> = {
     const user = await requireUser(request)
 
     const postgres = await getAllUserData(user.id)
-    const cache = await getUserInfo(user)
+    const cache = await getUserInfo(user, {request})
     return json({postgres, cache})
   },
   '/healthcheck': async request => {

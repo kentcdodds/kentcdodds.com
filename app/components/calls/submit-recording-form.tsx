@@ -21,7 +21,15 @@ type RecordingFormData = {
   }
 }
 
-function RecordingForm({audio, data}: {audio: Blob; data?: RecordingFormData}) {
+function RecordingForm({
+  audio,
+  data,
+  additionalFields,
+}: {
+  audio: Blob
+  data?: RecordingFormData
+  additionalFields?: React.ReactElement
+}) {
   const audioURL = React.useMemo(() => {
     return window.URL.createObjectURL(audio)
   }, [audio])
@@ -92,6 +100,8 @@ function RecordingForm({audio, data}: {audio: Blob; data?: RecordingFormData}) {
           name="keywords"
           defaultValue={data?.fields.keywords ?? ''}
         />
+
+        {additionalFields}
 
         <Button type="submit" className="mt-8">
           Submit Recording

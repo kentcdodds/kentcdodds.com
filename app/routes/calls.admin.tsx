@@ -12,6 +12,7 @@ import type {Await, KCDHandle} from '~/types'
 import {requireAdminUser} from '~/utils/session.server'
 import {prismaRead, prismaWrite} from '~/utils/prisma.server'
 import {getAvatarForUser} from '~/utils/misc'
+import {useRootData} from '~/utils/use-root-data'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -69,6 +70,7 @@ export const loader: LoaderFunction = async ({request}) => {
 
 export default function CallListScreen() {
   const data = useLoaderData<LoaderData>()
+  const {requestInfo} = useRootData()
   return (
     <div className="px-6">
       <main className="flex gap-8">
@@ -76,7 +78,9 @@ export default function CallListScreen() {
           {data.calls.length ? (
             <ul>
               {data.calls.map(call => {
-                const avatar = getAvatarForUser(call.user)
+                const avatar = getAvatarForUser(call.user, {
+                  origin: requestInfo.origin,
+                })
                 return (
                   <li
                     key={call.id}

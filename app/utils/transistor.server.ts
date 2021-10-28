@@ -10,7 +10,7 @@ import type {
   TransistorUpdateEpisodeData,
   Team,
 } from '~/types'
-import {getRequiredServerEnvVar, toBase64} from './misc'
+import {getDomainUrl, getRequiredServerEnvVar, toBase64} from './misc'
 import {redisCache} from './redis.server'
 import {cachified} from './cache.server'
 import {getEpisodePath} from './call-kent'
@@ -62,6 +62,8 @@ async function createEpisode({
   description,
   keywords,
   user,
+  request,
+  avatar: providedAvatar,
 }: {
   audio: Buffer
   title: string
@@ -69,6 +71,8 @@ async function createEpisode({
   description: string
   keywords: string
   user: {firstName: string; email: string; team: Team}
+  request: Request
+  avatar?: string | null
 }) {
   const id = uuid.v4()
   const authorized = await fetchTransitor<TransistorAuthorizedJson>({
@@ -144,11 +148,19 @@ async function createEpisode({
     const encodedName = encodeURIComponent(
       encodeURIComponent(`- ${user.firstName}`),
     )
-    const {hasGravatar, avatar} = await getDirectAvatarForUser(user, {
-      size: 1400,
-    })
-    const encodedAvatar = toBase64(avatar)
-    const radius = hasGravatar ? ',r_max' : ''
+    let radius: string, encodedAvatar: string
+    if (providedAvatar) {
+      encodedAvatar = toBase64(providedAvatar)
+      radius = ',r_max'
+    } else {
+      const {hasGravatar, avatar} = await getDirectAvatarForUser(user, {
+        size: 1400,
+        origin: getDomainUrl(request),
+      })
+      encodedAvatar = toBase64(avatar)
+      radius = hasGravatar ? ',r_max' : ''
+    }
+
     const textLines = Number(
       Math.ceil(Math.min(title.length, 50) / 18).toFixed(),
     )
