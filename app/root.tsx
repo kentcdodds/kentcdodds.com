@@ -67,7 +67,6 @@ export const meta: MetaFunction = ({data}) => {
     'Come check out how Kent C. Dodds can help you level up your career as a software engineer.'
   return {
     viewport: 'width=device-width,initial-scale=1,viewport-fit=cover',
-    charSet: 'utf-8',
     'theme-color': '#A9ADC1',
     ...getSocialMetas({
       origin: requestInfo?.origin ?? '',
@@ -317,6 +316,7 @@ function App() {
       className={clsx(theme, `set-color-team-current-${team.toLowerCase()}`)}
     >
       <head>
+        <meta charSet="utf-8" />
         <Meta />
 
         <link
