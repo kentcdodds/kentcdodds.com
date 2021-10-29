@@ -2,7 +2,7 @@ import type {TransformerOption} from '@cld-apis/types'
 import * as React from 'react'
 import clsx from 'clsx'
 import type {HTMLMotionProps} from 'framer-motion'
-import {motion} from 'framer-motion'
+import {motion, useReducedMotion} from 'framer-motion'
 import type {ImageBuilder} from '~/images'
 import {getImgProps} from '~/images'
 import {H2} from '../typography'
@@ -55,11 +55,6 @@ export type HeroSectionProps = {
       }
   )
 
-const childVariants = {
-  initial: {opacity: 0, y: 25},
-  visible: {opacity: 1, y: 0, transition: {duration: 0.5}},
-}
-
 function HeroSection({
   action,
   title,
@@ -73,6 +68,12 @@ function HeroSection({
   as = 'header',
 }: HeroSectionProps) {
   const hasImage = Boolean(image ?? imageProps ?? imageBuilder)
+  const shouldReduceMotion = useReducedMotion()
+
+  const childVariants = {
+    initial: {opacity: 0, y: shouldReduceMotion ? 0 : 25},
+    visible: {opacity: 1, y: 0, transition: {duration: 0.5}},
+  }
 
   return (
     <Grid
@@ -103,7 +104,7 @@ function HeroSection({
                 },
                 imageProps.className,
               )}
-              initial={{scale: 1.5, opacity: 0}}
+              initial={{scale: shouldReduceMotion ? 1 : 1.5, opacity: 0}}
               animate={{scale: 1, opacity: 1}}
               transition={{duration: 0.75}}
             />
@@ -114,7 +115,7 @@ function HeroSection({
                 'max-h-75vh': imageSize === 'giant',
               })}
               {...getHeroImageProps(imageBuilder)}
-              initial={{scale: 1.5, opacity: 0}}
+              initial={{scale: shouldReduceMotion ? 1 : 1.5, opacity: 0}}
               animate={{scale: 1, opacity: 1}}
               transition={{duration: 0.75}}
             />

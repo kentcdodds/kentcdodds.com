@@ -2,7 +2,7 @@ import * as React from 'react'
 import type {LoaderFunction, HeadersFunction, MetaFunction} from 'remix'
 import {json, Link, useLoaderData, useMatches} from 'remix'
 import {Outlet} from 'react-router-dom'
-import {AnimatePresence, motion} from 'framer-motion'
+import {AnimatePresence, motion, useReducedMotion} from 'framer-motion'
 import clsx from 'clsx'
 import type {LoaderData as RootLoaderData} from '../root'
 import type {Await, CallKentEpisode, KCDHandle} from '~/types'
@@ -100,6 +100,7 @@ export const meta: MetaFunction = ({parentsData}) => {
 
 export default function CallHomeScreen() {
   const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('desc')
+  const shouldReduceMotion = useReducedMotion()
 
   const data = useLoaderData<LoaderData>()
 
@@ -316,7 +317,9 @@ export default function CallHomeScreen() {
                         initial="collapsed"
                         animate="expanded"
                         exit="collapsed"
-                        transition={{duration: 0.15}}
+                        transition={
+                          shouldReduceMotion ? {duration: 0} : {duration: 0.15}
+                        }
                         className="relative col-span-full"
                       >
                         <Outlet />

@@ -9,6 +9,8 @@ module.exports = {
   variants: {
     opacity: ['responsive', 'hover', 'focus', 'dark', 'group-hover'],
     boxShadow: ['responsive', 'hover', 'focus', 'dark'],
+    animation: ['responsive', 'motion-safe', 'motion-reduce'],
+    transitionProperty: ['responsive', 'motion-safe', 'motion-reduce'],
   },
   theme: {
     screens: {

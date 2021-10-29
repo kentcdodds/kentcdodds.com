@@ -159,6 +159,19 @@ a {
   transform: scaleX(1);
 }
 
+@media (prefers-reduced-motion) {
+  .underlined:after {
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  .underlined:hover:after,
+  .underlined:focus:after,
+  .active.underlined:after {
+    opacity: 1;
+  }
+}
+
 /* transistor embed has rounded edges with white background 😬 */
 .dark iframe[src*='transistor'] {
   border-radius: 8px;

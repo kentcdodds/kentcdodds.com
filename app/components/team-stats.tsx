@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {Link} from 'remix'
-import {motion} from 'framer-motion'
+import {motion, useReducedMotion} from 'framer-motion'
 import clsx from 'clsx'
 import type {Team} from '@prisma/client'
 import {useRootData} from '~/utils/use-root-data'
@@ -41,6 +41,9 @@ function Stat({
 
   const MotionEl = onClick ? motion.button : motion.div
 
+  const shouldReduceMotion = useReducedMotion()
+  const transition = shouldReduceMotion ? {duration: 0} : {}
+
   return (
     <MotionEl
       tabIndex={0}
@@ -54,11 +57,13 @@ function Stat({
       whileHover="hover"
       whileFocus="hover"
       className="relative flex items-center justify-center focus:outline-none origin-right"
+      transition={transition}
       variants={{
         initial: {width: 22},
       }}
     >
       <motion.div
+        transition={transition}
         variants={{
           initial: {
             height: 12 + 24 * percent,
@@ -77,6 +82,7 @@ function Stat({
         )}
       >
         <motion.span
+          transition={transition}
           variants={{
             initial: {opacity: 0, scale: 1, y: 0, fontSize: 0},
             hover: {
@@ -98,6 +104,7 @@ function Stat({
       {isUsersTeam ? (
         <motion.div
           className="absolute left-1/2 top-0 border-team-current rounded-md"
+          transition={transition}
           variants={{
             initial: {
               width: 22,
@@ -118,6 +125,7 @@ function Stat({
           }}
         >
           <motion.img
+            transition={transition}
             variants={{
               initial: {borderWidth: 2, borderRadius: 4 - 2},
               hover: {borderWidth: 4, borderRadius: 8 - 3},

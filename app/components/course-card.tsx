@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {motion, Variants} from 'framer-motion'
+import {motion, useReducedMotion, Variants} from 'framer-motion'
 import type {ImageBuilder} from '~/images'
 import {getImgProps} from '~/images'
 import {ArrowIcon} from './icons/arrow-icon'
@@ -26,6 +26,8 @@ function CourseCard({
   imageBuilder,
   courseUrl,
 }: CourseCardProps) {
+  const shouldReduceMotion = useReducedMotion()
+
   return (
     <div className="relative pt-12 w-full h-full">
       <div className="relative block pb-10 pt-36 px-8 w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg md:pb-20 md:px-16">
@@ -46,7 +48,7 @@ function CourseCard({
             prefetch="intent"
           >
             <span>Visit course</span>
-            <motion.span variants={arrowVariants}>
+            <motion.span variants={shouldReduceMotion ? arrowVariants : {}}>
               <ArrowIcon direction="top-right" size={24} />
             </motion.span>
           </MotionButtonLink>

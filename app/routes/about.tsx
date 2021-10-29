@@ -62,7 +62,6 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export const meta: MetaFunction = ({parentsData}) => {
   const {requestInfo} = parentsData.root as RootLoaderData
-  console.log(requestInfo.origin)
   return {
     ...getSocialMetas({
       origin: requestInfo.origin,

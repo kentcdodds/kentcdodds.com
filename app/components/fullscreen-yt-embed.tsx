@@ -65,7 +65,7 @@ function FullScreenYouTubeEmbed({
           {img}
           <span className="absolute left-0 top-0 w-full h-full">
             <span className="flex items-center justify-center w-full h-full">
-              <span className="group-hover:opacity-100 group-focus:opacity-100 opacity-70 transform group-hover:scale-110 group-focus:scale-110 group-active:scale-125 transition-all">
+              <span className="motion-safe:group-hover:scale-110 motion-safe:group-focus:scale-110 motion-safe:group-active:scale-125 group-hover:opacity-100 group-focus:opacity-100 opacity-70 transform transition-all">
                 <PlayIcon />
               </span>
             </span>
