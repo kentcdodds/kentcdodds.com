@@ -9,6 +9,15 @@ const BROWSER_CACHE_SECONDS = 60 * 60 * 24
 const PROXY_CACHE_SECONDS = BROWSER_CACHE_SECONDS * 365
 const CACHE_CONTROL_HEADER = `public, immutable, max-age=${BROWSER_CACHE_SECONDS}, s-maxage=${PROXY_CACHE_SECONDS}`
 
+// cloudinary serves different images based on the user agent, so we need to
+// make sure our shared cache keeps the user agent in consideration
+function addUserAgentVary(varyHeader = '') {
+  if (varyHeader.includes('User-Agent')) return varyHeader
+
+  const vary = varyHeader.split(',').map(s => s.trim())
+  return [...vary, 'User-Agent'].join(',')
+}
+
 function toBase64(string) {
   return Buffer.from(string).toString('base64')
 }
@@ -121,6 +130,7 @@ function addCloudinaryProxies(app) {
       },
       userResHeaderDecorator(headers) {
         headers['cache-control'] = CACHE_CONTROL_HEADER
+        headers.vary = addUserAgentVary(headers.vary)
         return headers
       },
     }),
@@ -139,6 +149,7 @@ function addCloudinaryProxies(app) {
       },
       userResHeaderDecorator(headers) {
         headers['cache-control'] = CACHE_CONTROL_HEADER
+        headers.vary = addUserAgentVary(headers.vary)
         return headers
       },
     }),
