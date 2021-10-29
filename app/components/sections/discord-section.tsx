@@ -53,11 +53,15 @@ function DiscordSection() {
             })}
           />
         </div>
-        <div className="absolute -left-12 -top-6 flex flex-col space-y-1">
-          <div className="self-start px-12 py-6 text-blue-500 text-lg bg-blue-100 rounded-full">
+        <div
+          className="absolute -left-12 -top-6 flex flex-col space-y-1"
+          // this shade of blue is much more accessible with the bg-blue-100
+          style={{color: '#006ece'}}
+        >
+          <div className="self-start px-12 py-6 text-lg bg-blue-100 rounded-full">
             {`Want to learn react together?`}
           </div>
-          <div className="self-start px-12 py-6 text-blue-500 text-lg bg-blue-100 rounded-full">
+          <div className="self-start px-12 py-6 text-lg bg-blue-100 rounded-full">
             {`Let me know `}
             <span role="img" aria-label="victory hand emoji">
               ✌️
@@ -65,11 +69,15 @@ function DiscordSection() {
           </div>
         </div>
 
-        <div className="absolute -bottom-6 -right-12 flex flex-col text-right space-y-1">
-          <div className="self-end px-12 py-6 text-green-500 text-lg bg-green-100 rounded-full">
+        <div
+          className="absolute -bottom-6 -right-12 flex flex-col text-right space-y-1"
+          // this shade of green is much more accessible with the bg-green-100
+          style={{color: '#008300'}}
+        >
+          <div className="self-end px-12 py-6 text-lg bg-green-100 rounded-full">
             {`For sure! Let's do it!`}
           </div>
-          <div className="self-end px-12 py-6 text-green-500 text-lg bg-green-100 rounded-full">
+          <div className="self-end px-12 py-6 text-lg bg-green-100 rounded-full">
             {`Let me show you what I'm working on...`}
             <span role="img" aria-label="technologist emoji">
               🧑‍💻

@@ -41,7 +41,7 @@ import {getUserInfo} from './utils/user-info.server'
 import {getClientSession} from './utils/client.server'
 import type {Timings} from './utils/metrics.server'
 import {time, getServerTimeHeader} from './utils/metrics.server'
-import {useScrollRestoration} from './utils/scroll'
+import {RestoreScrollPosition, useScrollRestoration} from './utils/scroll'
 import {Navbar} from './components/navbar'
 import {Spacer} from './components/spacer'
 import {Footer} from './components/footer'
@@ -345,6 +345,7 @@ function App() {
         <Outlet />
         <Spacer size="base" />
         <Footer image={images[data.randomFooterImageKey]} />
+        <RestoreScrollPosition />
         <Scripts />
         <script
           dangerouslySetInnerHTML={{

@@ -1,34 +1,47 @@
 import * as React from 'react'
 import {useLocation} from 'react-router-dom'
 import {useTransition} from '@remix-run/react'
+import {useBeforeUnload} from 'remix'
 import {useSSRLayoutEffect} from './misc'
 
 let firstRender = true
+let positions: {[key: string]: number} = {}
+const SESSION_STORAGE_KEY = 'kody_scroll_positions'
 
-if (
-  typeof window !== 'undefined' &&
-  window.history.scrollRestoration !== 'manual'
-) {
-  window.history.scrollRestoration = 'manual'
+if (typeof window !== 'undefined') {
+  try {
+    positions = JSON.parse(sessionStorage.getItem(SESSION_STORAGE_KEY) ?? '{}')
+  } catch {
+    sessionStorage.removeItem(SESSION_STORAGE_KEY)
+  }
 }
 
 // shouldn't have to do it this way
 // https://github.com/remix-run/remix/issues/240
 type LocationState = undefined | {isSubmission: boolean}
 export function useScrollRestoration(enabled: boolean = true) {
-  const positions = React.useRef<Map<string, number>>(new Map()).current
   const location = useLocation()
+  const latestLocationRef = React.useRef(location)
+  React.useEffect(() => {
+    latestLocationRef.current = location
+  }, [location])
   const isSubmission = (location.state as LocationState)?.isSubmission ?? false
   const transition = useTransition()
   const hash =
     typeof window === 'undefined' ? location.hash : window.location.hash
 
   React.useEffect(() => {
-    if (isSubmission) return
-    if (transition.state === 'loading') {
-      positions.set(location.key, window.scrollY)
+    if (transition.location) {
+      positions[location.key] = window.scrollY
     }
-  }, [transition.state, location.key, positions, isSubmission])
+  }, [transition, location])
+
+  useBeforeUnload(
+    React.useCallback(() => {
+      positions[latestLocationRef.current.key] = window.scrollY
+      sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(positions))
+    }, []),
+  )
 
   useSSRLayoutEffect(() => {
     if (!enabled) return
@@ -48,31 +61,36 @@ export function useScrollRestoration(enabled: boolean = true) {
       }
     }
 
-    const y = positions.get(location.key)
+    const y = positions[location.key]
     window.scrollTo(0, y ?? 0)
   }, [transition.state, location.key, hash, positions, isSubmission])
 }
 
-export function useElementScrollRestoration(
-  ref: React.MutableRefObject<HTMLElement | null>,
-  enabled: boolean = true,
-) {
-  const positions = React.useRef<Map<string, number>>(new Map()).current
-  const location = useLocation()
-  const transition = useTransition()
-
-  React.useEffect(() => {
-    if (!ref.current) return
-    if (transition.state === 'loading') {
-      positions.set(location.key, ref.current.scrollTop)
-    }
-  }, [transition.state, location.key, ref, positions])
-
-  useSSRLayoutEffect(() => {
-    if (!enabled) return
-    if (transition.state !== 'idle') return
-    if (!ref.current) return
-    const y = positions.get(location.key)
-    ref.current.scrollTo(0, y ?? 0)
-  }, [transition.state, location.key, positions, ref])
+export function RestoreScrollPosition() {
+  return (
+    <script
+      // restore scroll position ASAP:
+      // doing it inline like this means scroll position will happen before the page is hyrdated
+      // (or even if it's not).
+      dangerouslySetInnerHTML={{
+        __html: `
+// yo, this code here ensures that you have a most excellent scroll management
+// experience on the site. It's inline to make sure your scroll position is
+// restored asap when refreshing or navigating back to the site using the back button
+window.history.scrollRestoration = 'manual'
+try {
+  const positions = JSON.parse(sessionStorage.getItem(${JSON.stringify(
+    SESSION_STORAGE_KEY,
+  )}) ?? '{}')
+  const storedY = positions[window.history.state.key]
+  if (typeof storedY === 'number') {
+    window.scrollTo(0, storedY)
+  }
+} catch {
+  sessionStorage.removeItem('positions')
+}
+    `,
+      }}
+    />
+  )
 }
