@@ -145,6 +145,42 @@ try {
 
 This has been helpful for me in my projects. Hopefully it helps you as well.
 
+Update: [Nicolas](https://github.com/npirotte) had
+[a nice suggestion](https://github.com/kentcdodds/kentcdodds.com/issues/206) for
+handling situations where the error object you're dealing with isn't an actual
+error. And then [Jesse](https://discord.com/users/804795652252106762) had
+[a suggestion](https://discord.com/channels/715220730605731931/715227739749089281/903649313228480532)
+to stringify the error object if possible. So all together the combined
+suggestions looks like this:
+
+```ts
+type ErrorWithMessage = {
+  message: string
+}
+
+function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
+  return typeof error === 'object' && error !== null && 'message' in error
+}
+
+function toErrorWithMessage(maybeError: unknown): ErrorWithMessage {
+  if (isErrorWithMessage(maybeError)) return maybeError
+
+  try {
+    return new Error(JSON.stringify(maybeError))
+  } catch {
+    // fallback in case there's an error stringifying the maybeError
+    // like with circular references for example.
+    return new Error(String(maybeError))
+  }
+}
+
+function getErrorMessage(error: unknown) {
+  return toErrorWithMessage(error).message
+}
+```
+
+Handy!
+
 ## Conclusion
 
 I think the key takeaway here is to remember that while TypeScript has it's
