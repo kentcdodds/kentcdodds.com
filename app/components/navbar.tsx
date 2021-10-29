@@ -112,6 +112,7 @@ function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
 
 function MobileMenuList() {
   const {isExpanded} = useMenuButtonContext()
+  const shouldReduceMotion = useReducedMotion()
 
   useEffect(() => {
     if (isExpanded) {
@@ -144,7 +145,10 @@ function MobileMenuList() {
             initial={{y: -50, opacity: 0}}
             animate={{y: 0, opacity: 1}}
             exit={{y: -50, opacity: 0}}
-            transition={{duration: 0.15, ease: 'linear'}}
+            transition={{
+              duration: shouldReduceMotion ? 0 : 0.15,
+              ease: 'linear',
+            }}
             className="bg-primary flex flex-col pb-12 h-full border-t border-gray-200 dark:border-gray-600 overflow-y-scroll"
           >
             <MenuItems className="p-0 bg-transparent border-none">
