@@ -53,7 +53,7 @@ bit. It's because (as of recently) TypeScript defaults our `error` type to
 guarantees you can offer about the types of errors that are thrown. In fact,
 this is the same reason you can't provide the type for the `.catch(error => {})`
 of a promise rejection with the promise generic
-(`Promise<ResolvedValue, NopeYouCantProvidARejectedValueType>`). In fact, it
+(`Promise<ResolvedValue, NopeYouCantProvideARejectedValueType>`). In fact, it
 might not even be an error that's thrown at all. It could be just about
 anything:
 
@@ -183,7 +183,7 @@ Handy!
 
 ## Conclusion
 
-I think the key takeaway here is to remember that while TypeScript has it's
+I think the key takeaway here is to remember that while TypeScript has its
 funny bits, don't dismiss a compilation error or warning from TypeScript just
 because you think it's impossible or whatever. Most of the time it absolutely is
 possible for the unexpected to happen and TypeScript does a pretty good job of
