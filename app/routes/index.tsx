@@ -1,5 +1,4 @@
 import * as React from 'react'
-import {Outlet} from 'react-router'
 import type {HeadersFunction, LoaderFunction} from 'remix'
 import {json, useLoaderData} from 'remix'
 import type {MdxListItem, Team} from '~/types'
@@ -103,27 +102,28 @@ export default function IndexRoute() {
         }
       />
 
-      <IntroductionSection />
-      <Spacer size="lg" />
-      <ProblemSolutionSection
-        blogPostCount={data.blogPostCount}
-        totalBlogReads={data.totalBlogReads}
-        currentBlogLeaderTeam={data.currentBlogLeaderTeam}
-        totalBlogReaders={data.totalBlogReaders}
-      />
-      <Spacer size="base" />
-      <BlogSection
-        articles={data.blogRecommendations}
-        title="Blog recommendations"
-        description="Prepared especially for you."
-      />
-      <Spacer size="lg" />
-      <CourseSection />
-      <Spacer size="lg" />
-      <DiscordSection />
-      <Spacer size="lg" />
-      <AboutSection />
-      <Outlet />
+      <main>
+        <IntroductionSection />
+        <Spacer size="lg" />
+        <ProblemSolutionSection
+          blogPostCount={data.blogPostCount}
+          totalBlogReads={data.totalBlogReads}
+          currentBlogLeaderTeam={data.currentBlogLeaderTeam}
+          totalBlogReaders={data.totalBlogReaders}
+        />
+        <Spacer size="base" />
+        <BlogSection
+          articles={data.blogRecommendations}
+          title="Blog recommendations"
+          description="Prepared especially for you."
+        />
+        <Spacer size="lg" />
+        <CourseSection />
+        <Spacer size="lg" />
+        <DiscordSection />
+        <Spacer size="lg" />
+        <AboutSection />
+      </main>
     </div>
   )
 }

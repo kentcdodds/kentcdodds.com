@@ -258,6 +258,6 @@ jobs:
         with:
           args:
             'deploy -i registry.fly.io/withered-frost-3196:${{ github.sha }}
-            --strategy rolling'
+            --strategy bluegreen'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
