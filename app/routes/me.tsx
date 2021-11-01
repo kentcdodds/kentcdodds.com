@@ -254,7 +254,7 @@ function YouScreen() {
                 name="firstName"
                 label="First name"
                 defaultValue={actionData?.fields.firstName ?? user.firstName}
-                autoComplete="firstName"
+                autoComplete="given-name"
                 required
                 error={actionData?.errors.firstName}
               />

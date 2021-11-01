@@ -59,7 +59,7 @@ function ConvertKitForm({
             ? convertKitData.errors.firstName
             : null
         }
-        autoComplete="firstName"
+        autoComplete="given-name"
         defaultValue={user?.firstName}
         required
         disabled={convertKit.state !== 'idle' || success}
