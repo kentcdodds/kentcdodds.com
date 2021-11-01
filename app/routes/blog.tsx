@@ -360,6 +360,9 @@ function BlogHome() {
                   }
                   onKeyUp={e => {
                     if (e.key === 'Enter') {
+                      resultsRef.current
+                        ?.querySelector('a')
+                        ?.focus({preventScroll: true})
                       resultsRef.current?.scrollIntoView({behavior: 'smooth'})
                     }
                   }}
@@ -498,8 +501,7 @@ function BlogHome() {
         </div>
       ) : null}
 
-      <div ref={resultsRef} />
-      <Grid className="mb-64">
+      <Grid className="mb-64" ref={resultsRef}>
         {posts.length === 0 ? (
           <div className="flex flex-col col-span-full items-center">
             <img
