@@ -230,7 +230,7 @@ export default function Discord() {
                 discord community is for you. We'll celebrate your sucesses and
                 lament your misfortunes and failures. This community is focused
                 on software development primarily, but we're humans and we
-                embrase that (we even have a channel on parenting!).
+                embrace that (we even have a channel on parenting!).
               `}
             </Paragraph>
             <H6 as="h3" className="mb-4">
