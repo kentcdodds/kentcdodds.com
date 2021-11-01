@@ -1,9 +1,8 @@
-// @ts-check
-const httpProxy = require('express-http-proxy')
-const emojiRegex = require('emoji-regex')
+import type {Express as App} from 'express'
+import httpProxy from 'express-http-proxy'
+import emojiRegex from 'emoji-regex'
 
-const isString = s => typeof s === 'string'
-const areStrings = (...s) => s.every(isString)
+const isString = (s: unknown): s is string => typeof s === 'string'
 
 const BROWSER_CACHE_SECONDS = 60 * 60 * 24
 const PROXY_CACHE_SECONDS = BROWSER_CACHE_SECONDS * 365
@@ -18,11 +17,11 @@ function addUserAgentVary(varyHeader = '') {
   return [...vary, 'User-Agent'].join(',')
 }
 
-function toBase64(string) {
+function toBase64(string: string) {
   return Buffer.from(string).toString('base64')
 }
 
-function emojiStrip(string) {
+function emojiStrip(string: string) {
   return (
     string
       .replace(emojiRegex(), '')
@@ -35,12 +34,24 @@ function emojiStrip(string) {
 }
 
 // cloudinary needs double-encoding
-function doubleEncode(s) {
+function doubleEncode(s: string) {
   return encodeURIComponent(encodeURIComponent(s))
 }
 
-function getSocialImageWithPreTitle({title, preTitle, img, url}) {
-  if (!areStrings(title, preTitle, img, url)) return null
+function getSocialImageWithPreTitle({
+  title,
+  preTitle,
+  img,
+  url,
+}: Record<string, unknown>) {
+  if (
+    !isString(title) ||
+    !isString(preTitle) ||
+    !isString(img) ||
+    !isString(url)
+  ) {
+    return null
+  }
 
   const vars = `$th_1256,$tw_2400,$gw_$tw_div_24,$gh_$th_div_12`
 
@@ -76,8 +87,8 @@ function getSocialImageWithPreTitle({title, preTitle, img, url}) {
   ].join('/')
 }
 
-function getGenericSocialImage({words, img, url}) {
-  if (!areStrings(words, img, url)) return null
+function getGenericSocialImage({words, img, url}: Record<string, unknown>) {
+  if (!isString(words) || !isString(img) || !isString(url)) return null
 
   const vars = `$th_1256,$tw_2400,$gw_$tw_div_24,$gh_$th_div_12`
 
@@ -111,22 +122,24 @@ function getGenericSocialImage({words, img, url}) {
   ].join('/')
 }
 
-function addCloudinaryProxies(app) {
+function addCloudinaryProxies(app: App) {
   app.get(
     '/img/social',
     httpProxy('https://res.cloudinary.com/kentcdodds-com', {
       proxyReqPathResolver(req) {
         const [, queryParamsString] = req.url.split('?')
-        const params = {}
+        const params: Record<string, string> = {}
         for (const [key, value] of new URLSearchParams(queryParamsString)) {
           params[key] = value
         }
         const {type} = params
-        return type === '1'
-          ? getGenericSocialImage(params)
-          : type === '2'
-          ? getSocialImageWithPreTitle(params)
-          : req.url
+        return (
+          (type === '1'
+            ? getGenericSocialImage(params)
+            : type === '2'
+            ? getSocialImageWithPreTitle(params)
+            : null) ?? req.url
+        )
       },
       userResHeaderDecorator(headers) {
         headers['cache-control'] = CACHE_CONTROL_HEADER
@@ -156,4 +169,4 @@ function addCloudinaryProxies(app) {
   )
 }
 
-module.exports = {addCloudinaryProxies}
+export {addCloudinaryProxies}
