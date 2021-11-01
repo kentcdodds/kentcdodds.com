@@ -164,6 +164,13 @@ function BlogHome() {
   const [userTeam] = useTeam()
 
   const resultsRef = React.useRef<HTMLDivElement>(null)
+  /**
+   * This is here to make sure that a user doesn't hit "enter" on the search
+   * button, which focuses the input and then keyup the enter on the input
+   * which will trigger the scroll down. We should *only* scroll when the
+   * "enter" keypress and keyup happen on the input.
+   */
+  const ignoreInputKeyUp = React.useRef<boolean>(false)
   const [queryValue, setQuery] = React.useState<string>(() => {
     return searchParams.get('q') ?? ''
   })
@@ -339,7 +346,14 @@ function BlogHome() {
                   type="button"
                   onClick={() => {
                     setQuery('')
+                    ignoreInputKeyUp.current = true
                     searchInputRef.current?.focus()
+                  }}
+                  onKeyDown={() => {
+                    ignoreInputKeyUp.current = true
+                  }}
+                  onKeyUp={() => {
+                    ignoreInputKeyUp.current = false
                   }}
                   className={clsx(
                     'absolute left-6 top-0 flex items-center justify-center p-0 h-full text-blueGray-500 bg-transparent border-none',
@@ -359,12 +373,13 @@ function BlogHome() {
                     setQuery(event.currentTarget.value.toLowerCase())
                   }
                   onKeyUp={e => {
-                    if (e.key === 'Enter') {
+                    if (!ignoreInputKeyUp.current && e.key === 'Enter') {
                       resultsRef.current
                         ?.querySelector('a')
                         ?.focus({preventScroll: true})
                       resultsRef.current?.scrollIntoView({behavior: 'smooth'})
                     }
+                    ignoreInputKeyUp.current = false
                   }}
                   name="q"
                   placeholder={searchInputPlaceholder}
