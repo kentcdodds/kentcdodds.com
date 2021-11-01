@@ -284,7 +284,7 @@ function useUpdateQueryStringValueWithoutNavigation(
     // on the client and we're just doing client-side filtering of data we
     // already have. So we manually call `window.history.pushState` to avoid
     // the router from triggering the loader.
-    window.history.pushState(null, '', newUrl)
+    window.history.replaceState(null, '', newUrl)
   }, [queryKey, queryValue])
 }
 

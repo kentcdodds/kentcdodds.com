@@ -21,7 +21,7 @@ module.exports = {
     },
     {
       name: 'Remix',
-      script: 'remix dev',
+      script: 'remix watch',
       ignore_watch: ['.'],
       env: {
         NODE_ENV: process.env.NODE_ENV ?? 'development',

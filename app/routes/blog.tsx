@@ -163,6 +163,7 @@ function BlogHome() {
 
   const [userTeam] = useTeam()
 
+  const resultsRef = React.useRef<HTMLDivElement>(null)
   const [queryValue, setQuery] = React.useState<string>(() => {
     return searchParams.get('q') ?? ''
   })
@@ -335,6 +336,7 @@ function BlogHome() {
               <div className="relative">
                 <button
                   title={query === '' ? 'Search' : 'Clear search'}
+                  type="button"
                   onClick={() => {
                     setQuery('')
                     searchInputRef.current?.focus()
@@ -356,6 +358,11 @@ function BlogHome() {
                   onChange={event =>
                     setQuery(event.currentTarget.value.toLowerCase())
                   }
+                  onKeyUp={e => {
+                    if (e.key === 'Enter') {
+                      resultsRef.current?.scrollIntoView({behavior: 'smooth'})
+                    }
+                  }}
                   name="q"
                   placeholder={searchInputPlaceholder}
                   className="text-primary bg-primary border-secondary focus:bg-secondary pl-14 pr-6 py-6 w-full text-lg font-medium border hover:border-team-current focus:border-team-current rounded-full focus:outline-none md:pr-24"
@@ -491,6 +498,7 @@ function BlogHome() {
         </div>
       ) : null}
 
+      <div ref={resultsRef} />
       <Grid className="mb-64">
         {posts.length === 0 ? (
           <div className="flex flex-col col-span-full items-center">

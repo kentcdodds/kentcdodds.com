@@ -28,7 +28,6 @@ export default async function handleRequest(
   }
 
   const markup = ReactDOMServer.renderToString(
-    // @ts-expect-error this is... odd... I think it's a bug with the experimental version
     <Remix context={remixContext} url={request.url} />,
   )
 

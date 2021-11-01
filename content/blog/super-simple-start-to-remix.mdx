@@ -142,14 +142,14 @@ Let's add a `build` script to our `package.json`:
     "build": "remix build"
   },
   "dependencies": {
-    "@remix-run/node": "^0.17.0",
-    "@remix-run/react": "^0.17.0",
+    "@remix-run/node": "^0.20.1",
+    "@remix-run/react": "^0.20.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "remix": "^0.17.0"
+    "remix": "^0.20.1"
   },
   "devDependencies": {
-    "@remix-run/dev": "^0.17.0"
+    "@remix-run/dev": "^0.20.1"
   }
 }
 ```
@@ -325,17 +325,17 @@ in production. Now let's add `dev` script to our `package.json`:
 {
   "scripts": {
     "build": "remix build",
-    "dev": "remix run"
+    "dev": "remix dev"
   },
   "dependencies": {
-    "@remix-run/node": "^0.17.0",
-    "@remix-run/react": "^0.17.0",
+    "@remix-run/node": "^0.20.1",
+    "@remix-run/react": "^0.20.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "remix": "^0.17.0"
+    "remix": "^0.20.1"
   },
   "devDependencies": {
-    "@remix-run/dev": "^0.17.0"
+    "@remix-run/dev": "^0.20.1"
   }
 }
 ```
@@ -348,7 +348,7 @@ Remix App Server started at http://localhost:3000
 💿 Built in 102ms
 ```
 
-That output shows that `remix run` does two things:
+That output shows that `remix dev` does two things:
 
 1. `Remix App Server started at http://localhost:3000`: This comes from
    `remix-serve` which is running a simple express server based on what's in the
@@ -359,7 +359,7 @@ That output shows that `remix run` does two things:
 Whenever we make a change, the output in `build` is updated and the express
 server picks up those changes.
 
-One other thing `remix run` does is start a websocket with the browser to
+One other thing `remix dev` does is start a websocket with the browser to
 support live reload. Currently there's no support for "Hot Module Replacement"
 (HMR) and I'm actually totally cool with that. I never trusted HMR in apps
 anyway (though it's awesome in tools like storybook) and always did a full-page
@@ -499,18 +499,18 @@ Now, let's add a `start` script to run `remix-serve` for our `build` directory:
 {
   "scripts": {
     "build": "remix build",
-    "dev": "remix run",
+    "dev": "remix dev",
     "start": "remix-serve build"
   },
   "dependencies": {
-    "@remix-run/node": "^0.17.0",
-    "@remix-run/react": "^0.17.0",
+    "@remix-run/node": "^0.20.1",
+    "@remix-run/react": "^0.20.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "remix": "^0.17.0"
+    "remix": "^0.20.1"
   },
   "devDependencies": {
-    "@remix-run/dev": "^0.17.0"
+    "@remix-run/dev": "^0.20.1"
   }
 }
 ```
@@ -523,20 +523,20 @@ work as expected, so let's add `cross-env` and set the `NODE_ENV` with that:
 {
   "scripts": {
     "build": "remix build",
-    "dev": "remix run",
+    "dev": "remix dev",
     "start": "cross-env NODE_ENV=production remix-serve build"
   },
   "dependencies": {
-    "@remix-run/node": "^0.17.0",
-    "@remix-run/react": "^0.17.0",
-    "@remix-run/serve": "^0.17.0",
+    "@remix-run/node": "^0.20.1",
+    "@remix-run/react": "^0.20.1",
+    "@remix-run/serve": "^0.20.1",
     "cross-env": "^7.0.3",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "remix": "^0.17.0"
+    "remix": "^0.20.1"
   },
   "devDependencies": {
-    "@remix-run/dev": "^0.17.0"
+    "@remix-run/dev": "^0.20.1"
   }
 }
 ```
