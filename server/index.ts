@@ -79,6 +79,10 @@ app.use(
     maxAge: '1w',
     setHeaders(res, resourcePath) {
       const relativePath = resourcePath.replace(`${publicAbsolutePath}/`, '')
+      if (relativePath.startsWith('build/info.json')) {
+        res.setHeader('cache-control', 'no-cache')
+        return
+      }
       // If we ever change our font (which we quite possibly never will)
       // then we'll just want to change the filename or something...
       // Remix fingerprints its assets so we can cache forever
