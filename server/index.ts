@@ -144,5 +144,3 @@ function purgeRequireCache() {
     }
   }
 }
-
-export {}
