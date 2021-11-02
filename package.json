@@ -9,15 +9,15 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kentcdodds/kentcdodds.com.com.git"
+    "url": "git+https://github.com/kentcdodds/kentcdodds.com.git"
   },
   "keywords": [],
   "author": "Kent C. Dodds <me@kentcdodds.com> (https://kentcdodds.com/)",
   "license": "GPL-3.0-only",
   "bugs": {
-    "url": "https://github.com/kentcdodds/kentcdodds.com.com/issues"
+    "url": "https://github.com/kentcdodds/kentcdodds.com/issues"
   },
-  "homepage": "https://github.com/kentcdodds/kentcdodds.com.com#readme",
+  "homepage": "https://github.com/kentcdodds/kentcdodds.com#readme",
   "scripts": {
     "postinstall": "patch-package --patch-dir other/patches && remix setup",
     "prepare": "husky install",
