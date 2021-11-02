@@ -31,7 +31,7 @@ RUN mkdir /app/
 WORKDIR /app/
 
 COPY --from=deps /app/node_modules /app/node_modules
-ADD package.json package-lock.json .npmrc /app/
+ADD package.json package-lock.json .npmrc /app/ /server/
 RUN npm prune --production
 
 # build app
