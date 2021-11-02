@@ -86,10 +86,15 @@ Catch clause variable type annotation must be 'any' or 'unknown' if specified. t
 ```
 
 The reason for this is because even though in our code we can clearly see that
-there's no way anything else could be thrown, JavaScript is kinda funny and I'll
-bet someone who reads this could figure out a way to make that code throw a
-different kind of error than a regular `Error` object (PRs to this post with an
-example are welcome).
+there's no way anything else could be thrown, JavaScript is kinda funny and so
+its perfectly possible to do something funky like monkey-patching the error constructor
+to throw something different:
+
+```ts
+Error = (function() {
+  throw "Flowers"
+} as any)
+```
 
 So what's a dev to do? The very best they can! So how about this:
 
