@@ -16,7 +16,7 @@ for (const file of allFiles) {
   } else {
     const dest = file.replace(here('../server'), here('../server-build'))
     fsExtra.ensureDir(path.parse(dest).dir)
-    fsExtra.copyFileSync(file, dest)
+    fsExtra.copySync(file, dest)
     console.log(`copied: ${file.replace(`${here('../server')}/`, '')}`)
   }
 }
