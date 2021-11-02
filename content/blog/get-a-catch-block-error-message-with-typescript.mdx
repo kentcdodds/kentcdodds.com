@@ -85,9 +85,9 @@ Not so fast! With that you'll get the following TypeScript compilation error:
 Catch clause variable type annotation must be 'any' or 'unknown' if specified. ts(1196)
 ```
 
-The reason for this is because even though in our code we can clearly see that
+The reason for this is because even though in our code it looks like
 there's no way anything else could be thrown, JavaScript is kinda funny and so
-its perfectly possible to do something funky like monkey-patching the error constructor
+its perfectly possible for a third party library to do something funky like monkey-patching the error constructor
 to throw something different:
 
 ```ts
