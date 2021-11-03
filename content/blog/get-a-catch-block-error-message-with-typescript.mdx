@@ -85,15 +85,15 @@ Not so fast! With that you'll get the following TypeScript compilation error:
 Catch clause variable type annotation must be 'any' or 'unknown' if specified. ts(1196)
 ```
 
-The reason for this is because even though in our code it looks like
-there's no way anything else could be thrown, JavaScript is kinda funny and so
-its perfectly possible for a third party library to do something funky like monkey-patching the error constructor
-to throw something different:
+The reason for this is because even though in our code it looks like there's no
+way anything else could be thrown, JavaScript is kinda funny and so its
+perfectly possible for a third party library to do something funky like
+monkey-patching the error constructor to throw something different:
 
 ```ts
-Error = (function() {
-  throw "Flowers"
-} as any)
+Error = function () {
+  throw 'Flowers'
+} as any
 ```
 
 So what's a dev to do? The very best they can! So how about this:
@@ -164,7 +164,12 @@ type ErrorWithMessage = {
 }
 
 function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
-  return typeof error === 'object' && error !== null && 'message' in error
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof (error as Record<string, unknown>).message === 'string'
+  )
 }
 
 function toErrorWithMessage(maybeError: unknown): ErrorWithMessage {
@@ -188,9 +193,9 @@ Handy!
 
 ## Conclusion
 
-I think the key takeaway here is to remember that while TypeScript has its
-funny bits, don't dismiss a compilation error or warning from TypeScript just
-because you think it's impossible or whatever. Most of the time it absolutely is
+I think the key takeaway here is to remember that while TypeScript has its funny
+bits, don't dismiss a compilation error or warning from TypeScript just because
+you think it's impossible or whatever. Most of the time it absolutely is
 possible for the unexpected to happen and TypeScript does a pretty good job of
 forcing you to handle those unlikely cases... And you'll probably find they're
 not as unlikely as you think.
