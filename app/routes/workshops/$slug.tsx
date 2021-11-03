@@ -111,7 +111,7 @@ export const meta: MetaFunction = ({parentsData, params}) => {
         origin: requestInfo.origin,
         url: getDisplayUrl(requestInfo),
         featuredImage: 'kent/kent-workshopping-at-underbelly',
-        preTitle: 'Check out this workshops',
+        preTitle: 'Check out this workshop',
         title: workshop ? workshop.title : 'Workshop not found',
       }),
     }),
