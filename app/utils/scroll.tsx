@@ -82,7 +82,7 @@ try {
   const positions = JSON.parse(sessionStorage.getItem(${JSON.stringify(
     SESSION_STORAGE_KEY,
   )}) ?? '{}')
-  const storedY = positions[window.history.state.key]
+  const storedY = positions[window.history.state.key] || positions['default']
   if (typeof storedY === 'number') {
     window.scrollTo(0, storedY)
   }
