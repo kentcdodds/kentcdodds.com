@@ -14,7 +14,7 @@ function addUserAgentVary(varyHeader = '') {
   if (varyHeader.includes('User-Agent')) return varyHeader
 
   const vary = varyHeader.split(',').map(s => s.trim())
-  return [...vary, 'User-Agent'].join(',')
+  return [...vary, 'User-Agent', 'Accepts'].join(',')
 }
 
 function toBase64(string: string) {
