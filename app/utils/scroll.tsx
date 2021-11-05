@@ -89,7 +89,7 @@ try {
     }
   } else {
     // we want to make sure there's a key so the position can be associated
-    // with the key
+    // with the key and restored if they leave and come back.
     window.history.replaceState({key: Date.now()}, null)
   }
 } catch {
