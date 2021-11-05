@@ -617,3 +617,23 @@ pre {
 .prose .tweet-embed .tweet-stats a:not(.tweet-link) svg path {
   fill: currentColor;
 }
+
+/* Some of our blog posts have inline demos that could use some nicer styling */
+/* IDEA: In the future, it would be nice for those blog posts to have a css file that the post could reference as a link */
+.prose .demo {
+  display: flex;
+  justify-content: center;
+  background-color: var(--bg-alt);
+  padding: 2rem;
+}
+.prose .demo button,
+.prose .demo input {
+  padding: revert;
+  margin: revert;
+  display: revert;
+  border: revert;
+  background: revert;
+  appearance: revert;
+  line-height: revert;
+  color: revert;
+}
