@@ -82,9 +82,15 @@ try {
   const positions = JSON.parse(sessionStorage.getItem(${JSON.stringify(
     SESSION_STORAGE_KEY,
   )}) ?? '{}')
-  const storedY = positions[window.history.state.key] || positions['default']
-  if (typeof storedY === 'number') {
-    window.scrollTo(0, storedY)
+  if (window.history.state.key) {
+    const storedY = positions[window.history.state.key]
+    if (typeof storedY === 'number') {
+      window.scrollTo(0, storedY)
+    }
+  } else {
+    // we want to make sure there's a key so the position can be associated
+    // with the key
+    window.history.replaceState({key: Date.now()}, null)
   }
 } catch {
   sessionStorage.removeItem('positions')
