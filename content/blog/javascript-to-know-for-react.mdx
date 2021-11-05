@@ -584,7 +584,7 @@ function UserProfile({user}) {
   return (
     <div>
       <h1>{user.name}</h1>
-      <strong>{user.bio?.slice(0, 50)}...</strong>
+      <strong>{user.bio?.short ?? 'No bio provided'}</strong>
     </div>
   )
 }
