@@ -543,7 +543,7 @@ Ok, great, let's get this opened up! Navigate to
 
 ## 7. Hydrating our Remix app
 
-But oh no! If we click that button nothings happens. Weird... I thought this was
+But oh no! If we click that button nothing happens. Weird... I thought this was
 a react app. Let's take a look at the network tab:
 
 ![Network tab showing two GET requests, one for the document and the other for a favicon](https://res.cloudinary.com/kentcdodds-com/image/upload/v1620395539/kentcdodds.com/blog/super-simple-start-to-remix/network-tab_iyg7iy.png)
@@ -552,7 +552,7 @@ Notice anything missing? Oh yeah! No JavaScript! Yup, that's right, with Remix
 you get to choose whether you load any JavaScript at all. And it's not a
 configuration thing. Remember how we are in charge of the entire document
 starting from `<html>`? Cool right? So let's update our `app/root.jsx` to
-include the the script tag. Remix conveniently gives us a component we can
+include the script tag. Remix conveniently gives us a component we can
 render to render that script tag:
 
 ```tsx lines=3,15 filename=app/root.jsx
