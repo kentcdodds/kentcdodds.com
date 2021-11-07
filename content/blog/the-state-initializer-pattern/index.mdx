@@ -26,7 +26,7 @@ import * as C from './components'
 
 When I was working on [`downshift`](https://github.com/downshift-js/downshift),
 I came across a situation where my users (myself included) needed the ability to
-at any time reset the dropdown we were building to it's initial state: no input
+at any time reset the dropdown we were building to its initial state: no input
 value, nothing highlighted, nothing selected, closed. But I also had users who
 wanted the "initial state" to have some default input, default selection, or
 remain open. So I came up with the state initializers pattern to support all
@@ -60,7 +60,7 @@ function Counter() {
 }
 ```
 
-So our component has a way to initialize it's state (to `0`) and it also
+So our component has a way to initialize its state (to `0`) and it also
 supports a way to reset the state to that initial value.
 
 So what this pattern is for is to allow outside users of your component to
@@ -112,7 +112,7 @@ our count is changing the `initialCount` after the initial mount every 500ms:
   <C.BugReproduced />
 </div>
 
-Clicking "reset" above will reset our component to a different state from it's
+Clicking "reset" above will reset our component to a different state from its
 initial state which is probably a mistake, so we want that to not be possible.
 Click it multiple times and it's getting reset to something completely different
 every time. Now, I definitely agree with you. This is an example of someone
