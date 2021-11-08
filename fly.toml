@@ -1,4 +1,4 @@
-app = "kcd-web"
+app = "withered-frost-3196"
 
 kill_signal = "SIGINT"
 kill_timeout = 5
