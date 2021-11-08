@@ -195,7 +195,7 @@ function CallListing({call}: {call: LoaderData['call']}) {
   )
 }
 
-export default function RecordingDetailScreen() {
+function RecordingDetailScreen() {
   const [responseAudio, setResponseAudio] = React.useState<Blob | null>(null)
   const data = useLoaderData<LoaderData>()
   const actionData = useActionData<ActionData>()
@@ -241,6 +241,13 @@ export default function RecordingDetailScreen() {
       )}
     </div>
   )
+}
+
+// IDEA: maybe suggest to the remix team that this would be a good default?
+// where params is a key for the route. Got a few spots like this...
+export default function RecordDetailScreenContainer() {
+  const data = useLoaderData<LoaderData>()
+  return <RecordingDetailScreen key={data.call.id} />
 }
 
 /*
