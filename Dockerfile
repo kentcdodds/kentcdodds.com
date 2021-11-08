@@ -1,9 +1,6 @@
 # base node image
 FROM node:16-bullseye-slim as base
 
-ARG REMIX_TOKEN
-ENV REMIX_TOKEN=$REMIX_TOKEN
-
 # install open ssl for prisma and ffmpeg for the call kent functionality
 RUN apt-get update && apt-get install -y openssl ffmpeg
 
@@ -24,9 +21,6 @@ RUN npx metronome setup
 # setup production node_modules
 FROM base as production-deps
 
-ARG REMIX_TOKEN
-ENV REMIX_TOKEN=$REMIX_TOKEN
-
 RUN mkdir /app/
 WORKDIR /app/
 
@@ -37,8 +31,6 @@ RUN npm prune --production
 # build app
 FROM base as build
 
-ARG REMIX_TOKEN
-ENV REMIX_TOKEN=$REMIX_TOKEN
 ARG COMMIT_SHA
 ENV COMMIT_SHA=$COMMIT_SHA
 
