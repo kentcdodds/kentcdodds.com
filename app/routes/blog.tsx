@@ -33,8 +33,8 @@ import {
   formatNumber,
   getDisplayUrl,
   getUrl,
+  isTeam,
   reuseUsefulLoaderHeaders,
-  teams,
   useUpdateQueryStringValueWithoutNavigation,
 } from '~/utils/misc'
 import {TeamStats} from '~/components/team-stats'
@@ -151,7 +151,6 @@ const PAGE_SIZE = 12
 const initialIndexToShow = PAGE_SIZE
 
 const specialQueryRegex = /(?<not>!)?leader:(?<team>\w+)(\s|$)?/g
-const isTeam = (team?: string): team is Team => teams.includes(team as Team)
 
 function BlogHome() {
   const {requestInfo} = useRootData()

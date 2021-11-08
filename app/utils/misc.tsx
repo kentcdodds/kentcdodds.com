@@ -9,6 +9,7 @@ import {images} from '../images'
 import type {getEnv} from './env.server'
 
 const teams: Array<Team> = Object.values(Team)
+const isTeam = (team?: string): team is Team => teams.includes(team as Team)
 const unknownTeam = {UNKNOWN: 'UNKNOWN'} as const
 const optionalTeams = {...Team, ...unknownTeam}
 type OptionalTeam = typeof optionalTeams[keyof typeof optionalTeams]
@@ -288,6 +289,33 @@ function useUpdateQueryStringValueWithoutNavigation(
   }, [queryKey, queryValue])
 }
 
+function debounce<Callback extends (...args: Array<unknown>) => void>(
+  fn: Callback,
+  delay: number,
+) {
+  let timer: ReturnType<typeof setTimeout> | null = null
+  return (...args: Parameters<Callback>) => {
+    if (timer) clearTimeout(timer)
+    timer = setTimeout(() => {
+      fn(...args)
+    }, delay)
+  }
+}
+
+function useDebounce<Callback extends (...args: Array<unknown>) => unknown>(
+  callback: Callback,
+  delay: number,
+) {
+  const callbackRef = React.useRef(callback)
+  React.useEffect(() => {
+    callbackRef.current = callback
+  })
+  return React.useMemo(
+    () => debounce((...args) => callbackRef.current(...args), delay),
+    [delay],
+  )
+}
+
 const reuseUsefulLoaderHeaders: HeadersFunction = ({loaderHeaders}) => {
   const headers = new Headers()
   const usefulHeaders = ['Cache-Control', 'Vary', 'Server-Timing']
@@ -341,6 +369,7 @@ export {
   useUpdateQueryStringValueWithoutNavigation,
   useSSRLayoutEffect,
   useDoubleCheck,
+  useDebounce,
   typedBoolean,
   getRequiredServerEnvVar,
   getRequiredGlobalEnvVar,
@@ -353,6 +382,7 @@ export {
   reuseUsefulLoaderHeaders,
   unknownTeam,
   teams,
+  isTeam,
   teamDisplay,
   teamTextColorClasses,
   formatDate,

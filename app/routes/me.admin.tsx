@@ -8,23 +8,72 @@ import {H1} from '~/components/typography'
 import type {Await} from '~/types'
 import {prismaRead, prismaWrite} from '~/utils/prisma.server'
 import {requireAdminUser} from '~/utils/session.server'
-import {getErrorMessage, useDoubleCheck} from '~/utils/misc'
+import {
+  formatDate,
+  getErrorMessage,
+  isTeam,
+  typedBoolean,
+  useDebounce,
+  useDoubleCheck,
+} from '~/utils/misc'
 import {Button} from '~/components/button'
+import {useSearchParams} from 'react-router-dom'
+import clsx from 'clsx'
+import {SearchIcon} from '~/components/icons/search-icon'
+import {Spacer} from '~/components/spacer'
+import {Field} from '~/components/form-elements'
+import {ChevronUpIcon} from '~/components/icons/chevron-up-icon'
+import {ChevronDownIcon} from '~/components/icons/chevron-down-icon'
 
 type LoaderData = Await<ReturnType<typeof getLoaderData>>
 type User = LoaderData['users'][number]
 
-async function getLoaderData() {
+const DEFAULT_LIMIT = 100
+
+type UserFields = 'createdAt' | 'firstName' | 'email' | 'id' | 'team'
+type SortOrder = 'asc' | 'desc'
+type OrderField = UserFields
+const isSortOrder = (s: unknown): s is SortOrder => s === 'asc' || s === 'desc'
+const isOrderField = (s: unknown): s is OrderField =>
+  s === 'team' ||
+  s === 'id' ||
+  s === 'email' ||
+  s === 'firstName' ||
+  s === 'createdAt'
+
+async function getLoaderData({request}: {request: Request}) {
+  const {searchParams} = new URL(request.url)
+  const query = searchParams.get('q')
+  const select: Record<UserFields, true> = {
+    createdAt: true,
+    firstName: true,
+    email: true,
+    id: true,
+    team: true,
+  }
+
+  let order = 'asc'
+  let orderField = 'createdAt'
+  const spOrder = searchParams.get('order')
+  const spOrderField = searchParams.get('orderField')
+  if (isSortOrder(spOrder)) order = spOrder
+  if (isOrderField(spOrderField)) orderField = spOrderField
+
+  const limit = Number(searchParams.get('limit') ?? DEFAULT_LIMIT)
   const users = await prismaRead.user.findMany({
-    select: {
-      firstName: true,
-      email: true,
-      id: true,
-      team: true,
-    },
-    orderBy: {
-      createdAt: 'asc',
-    },
+    where: query
+      ? {
+          OR: [
+            {firstName: {contains: query}},
+            {email: {contains: query}},
+            {id: {contains: query}},
+            isTeam(query) ? {team: {equals: query}} : null,
+          ].filter(typedBoolean),
+        }
+      : {},
+    select,
+    orderBy: {[orderField]: order},
+    take: limit,
   })
   return {users}
 }
@@ -32,7 +81,7 @@ async function getLoaderData() {
 export const loader: LoaderFunction = async ({request}) => {
   await requireAdminUser(request)
 
-  return json(await getLoaderData())
+  return json(await getLoaderData({request}))
 }
 
 export const action: ActionFunction = async ({request}) => {
@@ -59,7 +108,11 @@ export const action: ActionFunction = async ({request}) => {
   return redirect(new URL(request.url).pathname)
 }
 
-const userColumns: Array<Column<LoaderData['users'][number]>> = [
+const userColumns: Array<Column<User>> = [
+  {
+    Header: 'Created',
+    accessor: 'createdAt',
+  },
   {
     Header: 'ID',
     accessor: 'id',
@@ -89,6 +142,9 @@ function Cell({
 }) {
   const [isEditing, setIsEditing] = React.useState(false)
   const dc = useDoubleCheck()
+  if (propertyName === 'createdAt') {
+    return formatDate(value)
+  }
 
   return isEditing ? (
     propertyName === 'id' ? (
@@ -136,7 +192,63 @@ const defaultColumn = {
 
 export default function MeAdmin() {
   const data = useLoaderData<LoaderData>()
+  const searchInputRef = React.useRef<HTMLInputElement>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const [query, setQuery] = React.useState(searchParams.get('q') ?? '')
+  const [limit, setLimit] = React.useState(
+    searchParams.get('limit') ?? String(DEFAULT_LIMIT),
+  )
+  const spOrder = searchParams.get('order')
+  const spOrderField = searchParams.get('orderField')
+  const [ordering, setOrdering] = React.useState({
+    order: isSortOrder(spOrder) ? spOrder : 'asc',
+    field: isOrderField(spOrderField) ? spOrderField : 'createdAt',
+  })
   const actionData = useActionData<{error: string}>()
+
+  const syncSearchParams = useDebounce(() => {
+    if (
+      searchParams.get('q') === query &&
+      searchParams.get('limit') === limit
+    ) {
+      return
+    }
+
+    const newParams = new URLSearchParams(searchParams)
+    if (query) {
+      newParams.set('q', query)
+    } else {
+      newParams.delete('q')
+    }
+    if (limit && limit !== String(DEFAULT_LIMIT)) {
+      newParams.set('limit', limit)
+    } else {
+      newParams.delete('limit')
+    }
+    setSearchParams(newParams, {replace: true})
+  }, 400)
+
+  React.useEffect(() => {
+    syncSearchParams()
+  }, [query, limit, syncSearchParams])
+
+  React.useEffect(() => {
+    const newParams = new URLSearchParams(searchParams)
+    if (ordering.field === 'createdAt') {
+      newParams.delete('orderField')
+    } else {
+      newParams.set('orderField', ordering.field)
+    }
+    if (ordering.order === 'asc') {
+      newParams.delete('order')
+    } else {
+      newParams.set('order', ordering.order)
+    }
+    if (newParams.toString() !== searchParams.toString()) {
+      setSearchParams(newParams, {replace: true})
+    }
+  }, [ordering, searchParams, setSearchParams])
 
   const {getTableProps, getTableBodyProps, headerGroups, rows, prepareRow} =
     useTable({columns: userColumns, data: data.users, defaultColumn})
@@ -147,12 +259,74 @@ export default function MeAdmin() {
         <H1>Admin panel</H1>
       </div>
       {actionData?.error ? (
-        <p role="alert" className="col-span-full text-red-500 text-sm">
-          {actionData.error}
-        </p>
+        <>
+          <Spacer size="3xs" />
+          <p role="alert" className="col-span-full text-red-500 text-sm">
+            {actionData.error}
+          </p>
+        </>
       ) : null}
+      <Spacer size="2xs" />
       <div className="col-span-full">
-        <table {...getTableProps({className: 'border-blueGray-500 border-4'})}>
+        <Form method="get">
+          <div className="flex flex-wrap gap-4 items-center">
+            <div className="flex-1">
+              <div className="relative flex-1">
+                <button
+                  title={query === '' ? 'Search' : 'Clear search'}
+                  type="button"
+                  onClick={() => {
+                    setQuery('')
+                    // manually sync immediately when the
+                    // change was from a finite interaction like this click.
+                    syncSearchParams()
+                    searchInputRef.current?.focus()
+                  }}
+                  className={clsx(
+                    'absolute left-6 top-0 flex items-center justify-center p-0 h-full text-blueGray-500 bg-transparent border-none',
+                    {
+                      'cursor-pointer': query !== '',
+                      'cursor-default': query === '',
+                    },
+                  )}
+                >
+                  <SearchIcon />
+                </button>
+                <input
+                  ref={searchInputRef}
+                  type="search"
+                  value={query}
+                  onChange={event => setQuery(event.currentTarget.value)}
+                  name="q"
+                  placeholder="Filter users"
+                  className="text-primary bg-primary border-secondary focus:bg-secondary pl-14 pr-6 py-6 w-full text-lg font-medium border hover:border-team-current focus:border-team-current rounded-full focus:outline-none md:pr-24"
+                />
+                <div className="absolute right-2 top-0 flex items-center justify-between w-14 h-full text-blueGray-500 text-lg font-medium">
+                  <span title="Total results shown">{rows.length}</span>
+                </div>
+              </div>
+            </div>
+            <Field
+              label="Limit"
+              name="limit"
+              value={limit}
+              type="number"
+              step="1"
+              min="1"
+              max="10000"
+              onChange={event => setLimit(event.currentTarget.value)}
+              placeholder="results limit"
+            />
+          </div>
+        </Form>
+      </div>
+      <Spacer size="2xs" />
+      <div className="col-span-full overflow-x-scroll">
+        <table
+          {...getTableProps({
+            className: 'border-blueGray-500 border-4',
+          })}
+        >
           <thead>
             {headerGroups.map(headerGroup => (
               <tr {...headerGroup.getHeaderGroupProps()}>
@@ -162,7 +336,41 @@ export default function MeAdmin() {
                       className: 'border-b-4 border-blue-500 font-bold',
                     })}
                   >
-                    {column.render('Header')}
+                    <button
+                      className="flex gap-1 justify-center w-full"
+                      onClick={() => {
+                        setOrdering(prev => {
+                          const field = column.id
+                          if (!isOrderField(field)) return prev
+
+                          if (prev.field === column.id) {
+                            return {
+                              field,
+                              order: prev.order === 'asc' ? 'desc' : 'asc',
+                            }
+                          } else {
+                            return {field, order: 'asc'}
+                          }
+                        })
+                      }}
+                    >
+                      {column.render('Header')}
+                      {ordering.order === 'asc' ? (
+                        <ChevronUpIcon
+                          title="Asc"
+                          className={clsx('ml-2 text-gray-400', {
+                            'opacity-0': ordering.field !== column.id,
+                          })}
+                        />
+                      ) : (
+                        <ChevronDownIcon
+                          title="Desc"
+                          className={clsx('ml-2 text-gray-400', {
+                            'opacity-0': ordering.field !== column.id,
+                          })}
+                        />
+                      )}
+                    </button>
                   </th>
                 ))}
               </tr>

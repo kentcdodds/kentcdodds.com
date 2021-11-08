@@ -1,6 +1,12 @@
 import * as React from 'react'
 
-function ChevronDownIcon({className}: {className?: string}) {
+function ChevronDownIcon({
+  className,
+  title,
+}: {
+  className?: string
+  title?: string
+}) {
   return (
     <svg
       width="24"
@@ -9,6 +15,7 @@ function ChevronDownIcon({className}: {className?: string}) {
       viewBox="0 0 24 24"
       className={className}
     >
+      {title ? <title>{title}</title> : null}
       <path
         stroke="currentColor"
         strokeLinecap="round"
