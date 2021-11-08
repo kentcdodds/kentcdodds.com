@@ -1,6 +1,4 @@
-# fly.toml file generated for withered-frost-3196 on 2021-05-28T15:49:41-06:00
-
-app = "withered-frost-3196"
+app = "kcd-web"
 
 kill_signal = "SIGINT"
 kill_timeout = 5
