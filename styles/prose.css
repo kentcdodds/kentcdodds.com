@@ -163,6 +163,14 @@ pre {
   margin-left: -200px;
 }
 
+.prose callout-muted a,
+.prose callout-info a,
+.prose callout-warning a,
+.prose callout-danger a,
+.prose callout-success a {
+  text-decoration: underline;
+}
+
 .prose callout-muted p,
 .prose callout-info p,
 .prose callout-warning p,
