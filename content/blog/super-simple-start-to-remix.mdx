@@ -28,26 +28,19 @@ Before we get started, create a folder for our project. I'm going to be super
 original and put mine on the desktop with the folder name
 "super-simple-start-to-remix". Alright, now we're ready to go!
 
-## 1. Get a license
+## 1. Installing Remix
 
 <callout-warning>
-  Remix used to be paid software but it's going open source soon. You'll have to
-  wait until it's officially released before continuing. At which point I'll
-  update this post with simplified instructions (because you won't need a
-  license key anymore).
+  Remix used to be paid software but it's going open source soon. While in limbo
+  you'll need to install Remix through their proxy. Once Remix is officially
+  open source, you won't need to do this extra `.npmrc` step.
 </callout-warning>
 
-For now, let's imagine your key is `8398430662990a1fc7677ee4d349d9b4cc1e4163`.
-
-## 2. Installing Remix
-
-You install remix packages just like you install all other packages on `npm`,
-except because it's paid software, Remix hosts it's own package registry for
-remix packages. This means that you list `remix` packages in your `package.json`
-and you can use `npm install` or `yarn add` or whatever like usual, but you need
-to tell the package manager where to get the remix packages. You need to tell
-`npm` that when it's installing remix packages, it needs to use remix's registry
-instead of the official npm registry.
+To install `@remix-run/*`-prefixed packages, you list them in your
+`package.json` and you can use `npm install` or `yarn add` or whatever like
+usual, but you need to tell the package manager where to get the remix packages.
+You need to tell `npm` that when it's installing remix packages, it needs to use
+remix's registry instead of the official npm registry.
 
 Here's how we do that. Create a file in your project called `.npmrc`:
 
@@ -56,69 +49,15 @@ Here's how we do that. Create a file in your project called `.npmrc`:
 ```
 
 So now when npm comes across any package within the `@remix-run` scope, it'll
-use the `npm.remix.run` registry. Go ahead and try installing one:
-
-```sh
-npm install @remix-run/react
-
-npm ERR! code E403
-npm ERR! 403 403 Forbidden - GET https://npm.remix.run/@remix-run%2freact - Missing authorization
-npm ERR! 403 In most cases, you or one of your dependencies are requesting
-npm ERR! 403 a package version that is forbidden by your security policy.
-
-npm ERR! A complete log of this run can be found in:
-npm ERR!     /Users/kentcdodds/.npm/_logs/2021-05-03T22_34_06_763Z-debug.log
-```
-
-Oh yeah, we need to make sure the remix registry knows we're authorized to
-download remix packages. The way we do this is by providing an `authToken` by
-updating our `.npmrc` with this:
-
-```sh filename=.npmrc
-//npm.remix.run/:_authToken=8398430662990a1fc7677ee4d349d9b4cc1e4163
-@remix-run:registry=https://npm.remix.run
-```
-
-BUT WAIT! We don't want to put our license right there in plain sight for anyone
-to grab, especially if we plan on pushing this to source control. So instead,
-we'll put our license key in an environment variable and reference that
-environment variable.
-
-So let's update the `.npmrc` to not reference our key directly, and interpolate
-an environment variable instead:
-
-```sh filename=.npmrc
-//npm.remix.run/:_authToken=${REMIX_TOKEN}
-@remix-run:registry=https://npm.remix.run
-```
-
-So now, try setting that variable and then installing. Here's how you do that on
-macOS:
-
-```sh
-REMIX_TOKEN=8398430662990a1fc7677ee4d349d9b4cc1e4163
-
-npm install @remix-run/react
-```
-
-SUCCESS!
-
-Personally, I'm not a fan of setting that environment variable every time I open
-a terminal window and need to install my dependencies, so I suggest you set that
-environment variable on your system:
-
-- [macOS](https://www.talkofweb.com/how-to-set-environment-variable-in-macos-catalina/)
-- [Windows](https://www.alphr.com/environment-variables-windows-10/)
-
-With that set up, we can now install the other packages we need to get things
-started:
+use the `npm.remix.run` registry. With that set up, we can now install the other
+packages we need to get things started:
 
 ```sh
 npm install react react-dom react-router-dom
 npm install --save-dev @remix-run/dev
 ```
 
-## 3. Configuring Remix
+## 2. Configuring Remix
 
 Cool, with those things installed, let's configure Remix. Create a
 `remix.config.js`:
@@ -130,7 +69,7 @@ module.exports = {}
 Yup, that's all you need. The defaults all work fine, but remix won't build
 without the config file, so we'll create that.
 
-## 4. Building the app with Remix
+## 3. Building the app with Remix
 
 Let's add a `build` script to our `package.json`:
 
@@ -251,7 +190,7 @@ And once we run `npm run build` remix creates a few files for us:
 
 Sweet! We built it... Now what?
 
-## 5. Coding our Remix App
+## 4. Coding our Remix App
 
 Remix is a server-side rendering React framework. So far we've just got it
 compiling things for us. Let's actually get a server running and show something
@@ -428,7 +367,7 @@ and other dependencies are supported by the platform, you should be good to go.
 So let's install the packages we're going to need.
 
 ```sh
-npm install remix @remix-run/react @remix-run/serve
+npm install @remix-run/react @remix-run/serve
 ```
 
 Next we need to set up the `remix` package to act as a proxy for us, so let's
@@ -482,7 +421,7 @@ to our project.
 Sweet. So now we actually have something _real_ that'll run and build. Onto the
 next step!
 
-## 6. Running our Remix server
+## 5. Running our Remix server
 
 Alright, so we want to "develop" our app right? So let's add `dev` script to our
 `package.json`:
@@ -541,7 +480,7 @@ Ok, great, let's get this opened up! Navigate to
 
 ![Browser window with the text "This is a remix app. Hooray!"" And a button with the number 0 in it](https://res.cloudinary.com/kentcdodds-com/image/upload/v1620151304/kentcdodds.com/blog/super-simple-start-to-remix/app_ol57hw.png)
 
-## 7. Hydrating our Remix app
+## 6. Hydrating our Remix app
 
 But oh no! If we click that button nothing happens. Weird... I thought this was
 a react app. Let's take a look at the network tab:
@@ -552,10 +491,10 @@ Notice anything missing? Oh yeah! No JavaScript! Yup, that's right, with Remix
 you get to choose whether you load any JavaScript at all. And it's not a
 configuration thing. Remember how we are in charge of the entire document
 starting from `<html>`? Cool right? So let's update our `app/root.jsx` to
-include the script tag. Remix conveniently gives us a component we can
-render to render that script tag:
+include the script tag. Remix conveniently gives us a component we can render to
+render that script tag:
 
-```tsx lines=3,15 filename=app/root.jsx
+```tsx lines=2,14 filename=app/root.jsx
 import * as React from 'react'
 import {Scripts} from 'remix'
 
@@ -653,7 +592,7 @@ for us, so we don't have a waterfall (you'll notice the network tab has all
 resources starting to load at the same time). This gets even more interesting
 when we start routing, but we'll keep things simple.
 
-## 8. Running Production Mode locally
+## 7. Running Production Mode locally
 
 Alright, let's build and run this thing locally. So first we need to run the
 production build to get everything minified and have React optimize itself for
