@@ -19,7 +19,7 @@ const getReplayResponse: RequestHandler = function getReplayResponse(
     return next()
   }
 
-  if (pathname === '/calls/record/new') {
+  if (pathname.startsWith('/calls')) {
     // replaying calls doesn't work very well because the request body is so
     // large so we won't replay those
     return next()
