@@ -4,7 +4,7 @@ import {useLoaderData, json, useCatch} from 'remix'
 import type {MdxPage, KCDLoader, MdxListItem, KCDHandle} from '~/types'
 import {
   getMdxPage,
-  getMdxDirList,
+  getMdxPagesInDirectory,
   mdxPageMeta,
   useMdxComponent,
   getBannerTitleProp,
@@ -27,10 +27,12 @@ type LoaderData = {
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
-    const pages = await getMdxDirList('pages', {request})
-    return pages.map(page => {
-      return {route: `/${page.slug}`, priority: 0.6}
-    })
+    const pages = await getMdxPagesInDirectory('pages', {request})
+    return pages
+      .filter(page => !page.frontmatter.draft)
+      .map(page => {
+        return {route: `/${page.slug}`, priority: 0.6}
+      })
   },
 }
 
@@ -66,6 +68,7 @@ export const meta = mdxPageMeta
 export default function MdxScreen() {
   const data = useLoaderData<LoaderData>()
   const {code, frontmatter} = data.page
+  const isDraft = frontmatter.draft
   const Component = useMdxComponent(code)
 
   return (
@@ -78,6 +81,15 @@ export default function MdxScreen() {
 
       <Grid as="header" className="mb-12">
         <div className="col-span-full lg:col-span-8 lg:col-start-3">
+          {isDraft ? (
+            <div className="prose prose-light dark:prose-dark mb-6 max-w-full">
+              {React.createElement(
+                'callout-warning',
+                {},
+                `This blog post is a draft. Please don't share it in its current state.`,
+              )}
+            </div>
+          ) : null}
           <H2>{frontmatter.title}</H2>
           {frontmatter.description ? (
             <H6 as="p" variant="secondary" className="mt-2">

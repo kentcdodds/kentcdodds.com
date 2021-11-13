@@ -305,10 +305,14 @@ function mdxPageMeta({
   const {requestInfo} = parentsData.root
   if (data?.page) {
     const {keywords = [], ...extraMeta} = data.page.frontmatter.meta ?? {}
+    let title = data.page.frontmatter.title
+    const isDraft = data.page.frontmatter.draft
+    if (isDraft) title = `(DRAFT) ${title ?? ''}`
     return {
+      ...(isDraft ? {robots: 'noindex'} : null),
       ...getSocialMetas({
         origin: requestInfo.origin,
-        title: data.page.frontmatter.title,
+        title,
         description: data.page.frontmatter.description,
         keywords: keywords.join(', '),
         url: getUrl(requestInfo),

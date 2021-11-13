@@ -14,7 +14,7 @@ import type {
 import {useRootData} from '~/utils/use-root-data'
 import {getImageBuilder, getImgProps, images} from '~/images'
 import {
-  getMdxDirList,
+  getBlogMdxListItems,
   getMdxPage,
   mdxPageMeta,
   useMdxComponent,
@@ -59,10 +59,12 @@ const handleId = 'blog-post'
 export const handle: KCDHandle = {
   id: handleId,
   getSitemapEntries: async request => {
-    const pages = await getMdxDirList('blog', {request})
-    return pages.map(page => {
-      return {route: `/blog/${page.slug}`, priority: 0.7}
-    })
+    const pages = await getBlogMdxListItems({request})
+    return pages
+      .filter(page => !page.frontmatter.draft)
+      .map(page => {
+        return {route: `/blog/${page.slug}`, priority: 0.7}
+      })
   },
 }
 
@@ -292,10 +294,12 @@ function ArticleFooter({
   editLink,
   permalink,
   title = 'an awesome post',
+  isDraft,
 }: {
   editLink: string
   permalink: string
   title?: string
+  isDraft: boolean
 }) {
   const [team] = useTeam()
   const tweetMessage =
@@ -304,12 +308,16 @@ function ArticleFooter({
       : `I just scored a point for the ${team.toLowerCase()} team ${
           teamEmoji[team]
         } by reading "${title}" by @kentcdodds\n\n`
+
   return (
     <Grid>
       <div className="flex flex-col flex-wrap gap-2 col-span-full justify-between mb-12 pb-12 text-blueGray-500 text-lg font-medium border-b border-gray-600 lg:flex-row lg:col-span-8 lg:col-start-3 lg:pb-6">
         <div className="flex space-x-5">
           <a
-            className="dark:hover:text-white underlined dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
+            className={clsx(
+              'dark:hover:text-white underlined dark:focus:text-white hover:text-black focus:text-black focus:outline-none',
+              {hidden: isDraft},
+            )}
             target="_blank"
             rel="noreferrer noopener"
             href={`https://twitter.com/intent/tweet?${new URLSearchParams({
@@ -323,7 +331,10 @@ function ArticleFooter({
 
         <div className="flex">
           <a
-            className="underlined dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
+            className={clsx(
+              'underlined dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none',
+              {hidden: isDraft},
+            )}
             target="_blank"
             rel="noreferrer noopener"
             href={`https://twitter.com/search?${new URLSearchParams({
@@ -332,7 +343,9 @@ function ArticleFooter({
           >
             Discuss on Twitter
           </a>
-          <span className="self-center mx-3 text-xs">•</span>
+          <span className={clsx('self-center mx-3 text-xs', {hidden: isDraft})}>
+            •
+          </span>
           <a
             className="underlined dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
             target="_blank"
@@ -385,12 +398,14 @@ export default function MdxScreen() {
   const permalink = `${requestInfo.origin}/blog/${slug}`
 
   const readMarker = React.useRef<HTMLDivElement>(null)
+  const isDraft = data.page.frontmatter.draft
   useOnRead({
     parentElRef: readMarker,
     time: data.page.readTime?.time,
     onRead: React.useCallback(() => {
+      if (isDraft) return
       markAsReadRef.current.submit({}, {method: 'post'})
-    }, []),
+    }, [isDraft]),
   })
 
   return (
@@ -416,6 +431,15 @@ export default function MdxScreen() {
 
       <Grid as="header" className="mb-12">
         <div className="col-span-full lg:col-span-8 lg:col-start-3">
+          {isDraft ? (
+            <div className="prose prose-light dark:prose-dark mb-6 max-w-full">
+              {React.createElement(
+                'callout-warning',
+                {},
+                `This blog post is a draft. Please don't share it in its current state.`,
+              )}
+            </div>
+          ) : null}
           <H2>{frontmatter.title}</H2>
           <H6 as="p" variant="secondary" className="mt-2">
             {frontmatter.date
@@ -526,6 +550,7 @@ export default function MdxScreen() {
         editLink={data.page.editLink}
         permalink={permalink}
         title={data.page.frontmatter.title}
+        isDraft={isDraft}
       />
 
       <Spacer size="base" />

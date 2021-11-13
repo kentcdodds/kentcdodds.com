@@ -33,11 +33,13 @@ async function getBlogRecommendations(
   // result in refreshing *all* blog posts which is probably not what we want.
   const allPosts = await getBlogMdxListItems({forceFresh: false})
 
-  // exclude what they want us to + any posts that are labeled as archived.
+  // exclude what they want us to + any posts that are labeled as archived or draft.
   let exclude = Array.from(
     new Set([
       ...externalExclude,
-      ...allPosts.filter(post => post.frontmatter.archived).map(p => p.slug),
+      ...allPosts
+        .filter(post => post.frontmatter.archived ?? post.frontmatter.draft)
+        .map(p => p.slug),
     ]),
   )
   // filter out what they've already read

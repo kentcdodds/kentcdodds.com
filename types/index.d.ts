@@ -25,6 +25,7 @@ type MdxPage = {
    */
   frontmatter: {
     archived?: boolean
+    draft?: boolean
     title?: string
     description?: string
     meta?: {
