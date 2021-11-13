@@ -86,7 +86,10 @@ type Workshop = {
   events: Array<ManualWorkshopEvent>
   description: string
   categories: Array<string>
-  meta?: Record<string, string>
+  meta: {
+    keywords?: Array<string>
+    [key as string]: string
+  }
   convertKitTag?: string
   problemStatementHTMLs: ProblemStatements
   keyTakeawayHTMLs: Array<KeyTakeaway>

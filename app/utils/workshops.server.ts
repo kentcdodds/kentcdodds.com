@@ -10,6 +10,7 @@ import type {Workshop} from '~/types'
 type RawWorkshop = {
   title?: string
   description?: string
+  meta?: Record<string, unknown>
   events?: Array<Omit<Workshop['events'][number], 'type'>>
   convertKitTag?: string
   categories?: Array<string>
@@ -76,6 +77,7 @@ async function getWorkshop(slug: string): Promise<null | Workshop> {
     categories = [],
     events = [],
     topics,
+    meta = {},
   } = rawWorkshop
 
   if (!convertKitTag) {
@@ -114,6 +116,7 @@ async function getWorkshop(slug: string): Promise<null | Workshop> {
     slug,
     title,
     events: events.map(e => ({type: 'manual', ...e})),
+    meta,
     description,
     convertKitTag,
     categories,
