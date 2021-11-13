@@ -341,7 +341,7 @@ export default function NewAccount() {
               {`
               NOTICE: By signing up for an account, your email address will be
               added to Kent's mailing list (if it's not already) and
-              you'll ocassionally receive promotional emails from Kent. You
+              you'll occasionally receive promotional emails from Kent. You
               can unsubscribe at any time.
             `}
             </p>
