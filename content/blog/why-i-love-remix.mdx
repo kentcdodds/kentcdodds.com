@@ -1,0 +1,278 @@
+---
+title: Why I Love Remix
+draft: true
+date: 2021-11-13
+description:
+  I've written tens of thousands of lines of code with Remix and I want to tell
+  you why I love using this framework.
+categories:
+  - remix
+meta:
+  keywords:
+    - remix run
+    - react
+    - server side rendering
+    - ssr
+    - ssg
+    - performance
+    - css
+    - user experience
+bannerCloudinaryId: unsplash/photo-1587096473086-abb7a1ec4393
+bannerAlt: blue and black compact disc
+bannerCredit: Photo by [Gio Bartlett](https://unsplash.com/photos/syexL_Ke5V8)
+---
+
+[kentcdodds.com](https://kentcdodds.com) is completely custom built by me using
+[Remix](https://remix.run). After writing tens of thousands of lines of code
+using this framework, I have developed a great appreciation for what this
+framework can do for me and the users of my site. I want to tell you about some
+of it.
+
+## In a sentence
+
+Here's the core reason I love using Remix to build websites:
+
+<callout-success class="important">
+  Remix enables me to build amazing user experiences and still be happy with the
+  code I had to write to get there.
+</callout-success>
+
+That's it. So what does that mean? Let's dig deeper...
+
+## The User Experience
+
+There are a lot of things that impact the user's experience when they use our
+software. Most of the time I think people are focused on performance/speed and
+while that's one important aspect, it is only one part of things. The user
+experience includes a whole host of other aspects of your website though. Here
+are a few:
+
+- Accessibility
+- Performance
+- Content reflows
+- Reliability and availability
+- Error handling
+- Pending management
+- State management
+- Progressive enhancement
+- Resiliance (behavior in poor network conditions)
+- Layout
+- Content clarity
+
+Even the speed of development of features can impact the user's experience. So
+the user's experience is
+[indirectly impacted](/blog/why-users-care-about-how-you-write-code) by our the
+maintainability of our code.
+
+Remix helps with many of these things. Some without me having to think about it.
+In particulare, some of the harder problems involving state management (race
+conditions of mutations and data loading) are completely managed within the
+framework.
+
+Remix does a lot to keep my website fast through it's use of `<link />` tags to
+preload assets and data at the right time. Sometimes I'm blown away by the fact
+that my site _feels_ like it's static files on a CDN, but it's _actually_ server
+rendered/hydrated and every page is completely unique to every user (so a shared
+HTTP cache on a CDN is not possible).
+
+Remix's use of the platform APIs is what enables this. That's also what makes
+Remix so resiliant and great for progressive enhancement as well. In poor
+network conditions where loading the JavaScript is slow/fails, Remix's standard
+API for mutations (`<Form />`) will actually work even before the app is
+hyrdated. This means that the user can start getting work done with the app,
+even if they're on a poor connection. Much better than a completely unresponsive
+button whose `onClick` handler hasn't yet loaded (which was my own standard
+before Remix)!
+
+Remix's declarative error handling means that it's easier for me to properly
+handle errors in the context of where the error happens. Combine this with
+nested routing and what you get is the ability to render a contextual error
+without breaking the rest of the app.
+
+<ThemedBlogImage
+  darkCloudinaryId="kentcdodds.com/content/blog/why-i-love-remix/nested-errors-dark"
+  lightCloudinaryId="kentcdodds.com/content/blog/why-i-love-remix/nested-errors-light"
+  imgProps={{
+    alt: 'Excalidraw wireframe of a nested user interface with only one part that is broken and the rest is working',
+  }}
+/>
+
+And also (unique to Remix), this works on the server as well, so users will get
+the same experience whether the error happened during a client transition or a
+full document download.
+
+<callout-success>
+  Remix makes a terrific user experience the default. And that's one of the
+  primary reasons I love Remix.
+</callout-success>
+
+## The Code
+
+Apps I've helped build are used by millions of people all over the world.
+Building websites with Remix is the first time I can say that I'm truly happy
+with the code I deployed. The biggest reason for this is that before Remix I
+spent a lot of time just trying to deal with user experience issues. Because
+Remix helps so much with the user experience, I don't have so much complex code
+to manage myself. So all that's left for me to do is use the declarative APIs
+that Remix (and React) give me, to build my app and the user experience is good
+by default.
+
+<callout-danger>
+  When I'm using Remix, I can leave my _hacks_ at home.
+</callout-danger>
+
+Honestly that's the biggest thing I have to say about the code portion. You know
+how demo code is always so simple because it often skips the nuance of pending
+states, race conditions, error handling, accessibility, etc? Well, my code isn't
+quite like demo code, but Remix makes it feel pretty similar. I'm definitely
+still thinking about accessibility (though Remix's
+[@reach-ui](https://reach.tech) packages help a lot with that) and error/pending
+states. But the APIs that Remix gives me for those things are simple and
+declarative. I mean, here it is:
+
+```tsx filename=app/events/$eventId/attendees.tsx
+const loader: LoaderFunction = async ({request, params}) => {
+  // this runs on the server
+  // unexpected runtime errors will trigger the ErrorBoundary to be rendered
+  // expected errors (like 401s, 404s, etc) will render the CatchBoundary
+  // otherwise I can return a response and that'll render the default component
+  return json(data)
+}
+
+export default function AttendeesRoute() {
+  const data = useLoaderData()
+  return <div>{/* render the data */}</div>
+}
+
+export function ErrorBoundary({error}) {
+  return <div>{/* render an "unexpected error" message */}</div>
+}
+
+export function CatchBoundary() {
+  const caught = useCatch()
+  return <div>{/* render the error for 400-status level responses */}</div>
+}
+```
+
+Oh, and for pending states (whether mutations or regular transitions) you can
+stick this wherever you want the pending UI to show up (whether global or
+local):
+
+```tsx
+const transition = useTransition()
+
+const text =
+  transition.state === 'submitting'
+    ? 'Saving...'
+    : transition.state === 'loading'
+    ? 'Saved!'
+    : 'Ready'
+```
+
+This drastically simplifies the React code that I write to the point that I
+don't write _any_ HTTP-related React code. That client-server communication is
+completely managed by Remix and it's managed in a way that optimizes for the
+user's experience. Oh, and the client/server boundary can all be fully typed as
+well so I spend less time going back and forth between my browser and editor
+fixing silly mistakes.
+
+I also love that Remix is founded on web APIs. That `json` function we're
+calling above in our loader? That's just a simple function to create a regular
+[`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) object.
+That's right. If you want to learn how to do something with Remix, you'll spend
+just as much (maybe more) time on [mdn](https://developer.mozilla.org) as you do
+on [the remix docs](https://docs.remix.run) and this brings me to another thing
+I love about Remix:
+
+<callout-success>
+  The better I get at building sites with Remix, the better I get at building
+  sites for the web.
+</callout-success>
+
+This happens naturally thanks to the fact that Remix uses so much of the web
+platform and defers to the web platform APIs as much as possible. (This is
+similar to how I feel that the better I get with React, the better I get at
+JavaScript.)
+
+And because Remix is founded on the web APIs as the common interface for the
+server, you can deploy the same app to any platform (provided the code you bring
+along will run on those platforms) and all you have to do is change which
+adapter you're using. Whether you want to run on serverless or in a docker
+container, Remix has got you covered.
+
+<callout-success>
+  Remix is the jQuery of hosting platforms. It normalizes their differences so
+  you can write once, host anywhere.
+</callout-success>
+
+Another awesome part of the `loader` thing is that because it runs on the server
+I can hit APIs that give me far too much data and slim it down to just the part
+of the data I need. That means I can naturally eliminate the data overfetching
+problem that leads so many of us to reach for the complexity of `graphql`. I
+mean, you can still totally use `graphql` with Remix, but because Remix manages
+the client/server communication for you, you don't have to ship a huge and
+complex `graphql` client library to the browser and instead just rely on Remix
+to do the right thing at the right time (which it does).
+
+And if I ever need more data than the server is sending to the client, I just
+scroll up in the file, change the loader to include the extra data I need, and
+I've got it right there. All typed and ready to go for my client-side code It's
+fabulous.
+
+I mentioned the `<Form />` component earlier and how it will still work even
+before JavaScript loads. For that reason, it's great for the user experience.
+And it's also great for the developer experience, because I don't have to manage
+a bunch of `fetch` and state nonsense for my mutations. Normally, I have an
+`onSubmit` that adds an `event.preventDefault()`, `fetch`, race condition
+management, and cache invalidation code. Well, with Remix, all that goes away
+and I'm left with a declarative mutations API:
+
+```tsx filename=app/events/$eventId/attendees.tsx
+const action: ActionFunction = async ({request}) => {
+  // this runs on the server and I can handle the request form data here
+  // whether that be a direct database interaction or calling a downstream
+  // service to perform the actual mutation. It's just brilliant.
+  return redirect(/* send the user whever you like after this */)
+}
+
+export default function AttendeesRoute() {
+  // look mah! No event handler or useEffect necessary!
+  // race conditions handled.
+  return (
+    <Form method="post">
+      <div>
+        <label htmlFor="name-input">Name: </label>
+        <input id="name-input" name="name" />
+      </div>
+      <div>
+        <label htmlFor="email-input">Email: </label>
+        <input id="email-input" name="email" type="email" />
+      </div>
+      <button type="submit">Add Attendee</button>
+    </Form>
+  )
+}
+```
+
+Oh, and you want validation right? Well, you're gonna want to do that on the
+server, so you can put it in the `action` there. But you may also want it on the
+client right? Well, you literally just move the validation logic from the
+`action` into a function and call it in both the `action` as well as your
+component. That's it. Wowza.
+
+## Conclusion
+
+I could go on and on. There are so many blog posts and workshops inside of me. I
+didn't even get to talk about how simple Optimistic UI is to implement with
+Remix, secure authentication, abstractability (code reuse), pagination, no
+`<Layout />` components necessary thanks to nested routing, and so much more.
+I'll get to all that eventually I promise.
+
+At the end of the day, it comes back to this:
+
+<callout-success class="important">
+  I love Remix because it enables me to build amazing user experiences and still
+  be happy with the code I had to write to get there.
+</callout-success>
+
+And that's just something I can get behind and push on. Care to join me?
