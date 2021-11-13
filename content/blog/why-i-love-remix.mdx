@@ -66,7 +66,9 @@ maintainability of our code.
 Remix helps with many of these things. Some without me having to think about it.
 In particular, some of the harder problems involving state management (race
 conditions of mutations and data loading) are completely managed within the
-framework.
+framework. Because of this, user's won't find themselves having to refresh the
+page because they're looking at stale data. This just happens without me
+thinking about it. It's just the way Remix works.
 
 Remix does a lot to keep my website fast through it's use of `<link />` tags to
 preload assets and data at the right time. Sometimes I'm blown away by the fact
