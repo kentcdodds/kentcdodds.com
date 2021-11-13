@@ -104,8 +104,11 @@ export const meta: MetaFunction = ({parentsData, params}) => {
       origin: requestInfo.origin,
       title: workshop ? workshop.title : 'Workshop not found',
       description: workshop ? workshop.description : 'No workshop here :(',
-      keywords: workshop ? workshop.categories.join(',') : '',
       ...workshop?.meta,
+      keywords:
+        workshop?.meta.keywords?.join(',') ??
+        workshop?.categories.join(',') ??
+        '',
       url: getUrl(requestInfo),
       image: getSocialImageWithPreTitle({
         origin: requestInfo.origin,
