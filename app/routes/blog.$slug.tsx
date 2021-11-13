@@ -192,7 +192,7 @@ export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
   const relevantWorkshops = workshops.filter(workshop => {
     const workshopTopics = [
       ...workshop.categories,
-      ...(workshop.meta?.keywords ?? []),
+      ...(workshop.meta.keywords ?? []),
     ]
     return (
       workshopTopics.some(t => topics.includes(t)) &&
