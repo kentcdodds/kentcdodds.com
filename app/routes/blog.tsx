@@ -82,7 +82,9 @@ export const loader: LoaderFunction = async ({request}) => {
     allPostReadRankings,
     userReads,
   ] = await Promise.all([
-    getBlogMdxListItems({request, timings}),
+    getBlogMdxListItems({request, timings}).then(allPosts =>
+      allPosts.filter(p => !(p.frontmatter.archived ?? p.frontmatter.draft)),
+    ),
     getBlogRecommendations(request, {limit: 1}),
     getBlogReadRankings({request}),
     getTotalPostReads(request),
