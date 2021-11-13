@@ -398,7 +398,7 @@ export default function MdxScreen() {
   const permalink = `${requestInfo.origin}/blog/${slug}`
 
   const readMarker = React.useRef<HTMLDivElement>(null)
-  const isDraft = data.page.frontmatter.draft
+  const isDraft = Boolean(data.page.frontmatter.draft)
   useOnRead({
     parentElRef: readMarker,
     time: data.page.readTime?.time,

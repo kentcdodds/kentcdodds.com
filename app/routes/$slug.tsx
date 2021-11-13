@@ -68,7 +68,7 @@ export const meta = mdxPageMeta
 export default function MdxScreen() {
   const data = useLoaderData<LoaderData>()
   const {code, frontmatter} = data.page
-  const isDraft = frontmatter.draft
+  const isDraft = Boolean(frontmatter.draft)
   const Component = useMdxComponent(code)
 
   return (
