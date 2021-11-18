@@ -2,13 +2,20 @@
   deliveries:
     - event: '[Utah JS Conf](https://utahjs.com/)'
       date: 2021-10-08
+      recording: https://www.youtube.com/watch?v=owOZMwNPAyc&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
   tags:
     - keynote
     - react
   description: >-
-    I just released a complete rewrite of my website. This isn't your regular developer blog though. You can actually log in, record some audio for a podcast, choose a "team" to be a part of, connect with discord, and much more. I'm using some of the coolest modern tech around including React, Remix, Prisma, Postgres, Redis, Fly.io, tailwind, TypeScript, and more!
+    I just released a complete rewrite of my website. This isn't your regular
+    developer blog though. You can actually log in, record some audio for a
+    podcast, choose a "team" to be a part of, connect with discord, and much
+    more. I'm using some of the coolest modern tech around including React,
+    Remix, Prisma, Postgres, Redis, Fly.io, tailwind, TypeScript, and more!
 
-    I want to take you on a tour of some of the highlights and talk about some of the problems I faced and decisions I had to make while building a brand new modern website in 2021.
+    I want to take you on a tour of some of the highlights and talk about some
+    of the problems I faced and decisions I had to make while building a brand
+    new modern website in 2021.
 
 - title: 'How React Uses Closures to Avoid Bugs'
   deliveries:
