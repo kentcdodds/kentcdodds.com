@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {Link} from 'remix'
-import {useLocation} from 'react-router'
+import {useLocation} from 'react-router-dom'
 import clsx from 'clsx'
 import {
   Menu,
@@ -149,12 +149,12 @@ function MobileMenuList() {
               duration: shouldReduceMotion ? 0 : 0.15,
               ease: 'linear',
             }}
-            className="bg-primary flex flex-col pb-12 h-full border-t border-gray-200 dark:border-gray-600 overflow-y-scroll"
+            className="flex flex-col h-full pb-12 overflow-y-scroll border-t border-gray-200 bg-primary dark:border-gray-600"
           >
             <MenuItems className="p-0 bg-transparent border-none">
               {MOBILE_LINKS.map(link => (
                 <MenuLink
-                  className="hover:bg-secondary focus:bg-secondary text-primary px-5vw py-9 hover:text-team-current border-b border-gray-200 dark:border-gray-600"
+                  className="border-b border-gray-200 hover:bg-secondary focus:bg-secondary text-primary px-5vw py-9 hover:text-team-current dark:border-gray-600"
                   key={link.to}
                   as={Link}
                   to={link.to}
@@ -162,7 +162,7 @@ function MobileMenuList() {
                   {link.name}
                 </MenuLink>
               ))}
-              <div className="noscript-hidden py-9 text-center">
+              <div className="text-center noscript-hidden py-9">
                 <DarkModeToggle variant="labelled" />
               </div>
             </MenuItems>
@@ -197,7 +197,7 @@ function MobileMenu() {
         const state = isExpanded ? 'open' : 'closed'
         return (
           <>
-            <MenuButton className="focus:border-primary hover:border-primary border-secondary text-primary inline-flex items-center justify-center p-1 w-14 h-14 border-2 rounded-full focus:outline-none transition">
+            <MenuButton className="inline-flex items-center justify-center p-1 transition border-2 rounded-full focus:border-primary hover:border-primary border-secondary text-primary w-14 h-14 focus:outline-none">
               <svg
                 width="32"
                 height="32"
@@ -328,12 +328,12 @@ function Navbar() {
 
   return (
     <div className="px-5vw py-9 lg:py-12">
-      <nav className="text-primary flex items-center justify-between mx-auto max-w-8xl">
+      <nav className="flex items-center justify-between mx-auto text-primary max-w-8xl">
         <div>
           <Link
             prefetch="intent"
             to="/"
-            className="text-primary underlined block whitespace-nowrap text-2xl font-medium focus:outline-none transition"
+            className="block text-2xl font-medium transition text-primary underlined whitespace-nowrap focus:outline-none"
           >
             <h1>Kent C. Dodds</h1>
           </Link>
@@ -351,7 +351,7 @@ function Navbar() {
           <div className="block lg:hidden">
             <MobileMenu />
           </div>
-          <div className="noscript-hidden hidden lg:block">
+          <div className="hidden noscript-hidden lg:block">
             <DarkModeToggle />
           </div>
 
