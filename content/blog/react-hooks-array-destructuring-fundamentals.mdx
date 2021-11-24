@@ -238,7 +238,7 @@ right? Cool, let's check that out.
 
 One thing that's interesting is that the implementation of `useState` exists
 within `react-dom` rather than `react`. I know, that may be confusing because we
-import `useState` from the `react` package, but it actually just delegates to
+`import` `useState` from the `react` package, but it actually just delegates to
 the current renderer (which is `react-dom` in our situation here). In fact,
 [`setState` is the same way](https://overreacted.io/how-does-setstate-know-what-to-do)!
 
