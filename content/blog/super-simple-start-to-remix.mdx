@@ -44,30 +44,11 @@ original and put mine on the desktop with the folder name
 
 ## 1. Installing Remix
 
-<callout-warning>
-  Remix used to be paid software but it's going open source soon. While in limbo
-  you'll need to install Remix through their proxy. Once Remix is officially
-  open source, you won't need to do this extra `.npmrc` step.
-</callout-warning>
-
-To install `@remix-run/*`-prefixed packages, you list them in your
-`package.json` and you can use `npm install` or `yarn add` or whatever like
-usual, but you need to tell the package manager where to get the remix packages.
-You need to tell `npm` that when it's installing remix packages, it needs to use
-remix's registry instead of the official npm registry.
-
-Here's how we do that. Create a file in your project called `.npmrc`:
-
-```sh filename=.npmrc
-@remix-run:registry=https://npm.remix.run
-```
-
-So now when npm comes across any package within the `@remix-run` scope, it'll
-use the `npm.remix.run` registry. With that set up, we can now install the other
-packages we need to get things started:
+We can install Remix together with the other packages we need to get things
+started like we always do:
 
 ```sh
-npm install react react-dom react-router-dom
+npm install react react-dom
 npm install --save-dev @remix-run/dev
 ```
 
@@ -94,11 +75,10 @@ Let's add a `build` script to our `package.json`:
   },
   "dependencies": {
     "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "remix": "^0.20.1"
+    "react-dom": "^17.0.2"
   },
   "devDependencies": {
-    "@remix-run/dev": "^0.20.1"
+    "@remix-run/dev": "^1.0.4"
   }
 }
 ```
@@ -409,22 +389,21 @@ our "proxy" package, I don't want to have to run that `setup` script any time I
 install dependencies. So let's add a `postinstall` script to do that
 automatically for us:
 
-```json lines=3,7-8,12 filename=package.json
+```json lines=3,7-8,11 filename=package.json
 {
   "scripts": {
     "postinstall": "remix setup node",
     "build": "remix build"
   },
   "dependencies": {
-    "@remix-run/react": "^0.20.1",
-    "@remix-run/serve": "^0.20.1",
+    "@remix-run/react": "^1.0.4",
+    "@remix-run/serve": "^1.0.4",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-router-dom": "^6.0.0",
-    "remix": "^0.20.1"
+    "remix": "^1.0.4"
   },
   "devDependencies": {
-    "@remix-run/dev": "^0.20.1"
+    "@remix-run/dev": "^1.0.4"
   }
 }
 ```
@@ -448,15 +427,14 @@ Alright, so we want to "develop" our app right? So let's add `dev` script to our
     "dev": "remix dev"
   },
   "dependencies": {
-    "@remix-run/react": "^0.20.1",
-    "@remix-run/serve": "^0.20.1",
+    "@remix-run/react": "^1.0.4",
+    "@remix-run/serve": "^1.0.4",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-router-dom": "^6.0.0",
-    "remix": "^0.20.1"
+    "remix": "^1.0.4"
   },
   "devDependencies": {
-    "@remix-run/dev": "^0.20.1"
+    "@remix-run/dev": "^1.0.4"
   }
 }
 ```
@@ -630,15 +608,14 @@ Now, let's add a `start` script to run `remix-serve` for our `build` directory:
     "start": "remix-serve ./build"
   },
   "dependencies": {
-    "@remix-run/react": "^0.20.1",
-    "@remix-run/serve": "^0.20.1",
+    "@remix-run/react": "^1.0.4",
+    "@remix-run/serve": "^1.0.4",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-router-dom": "^6.0.0",
-    "remix": "^0.20.1"
+    "remix": "^1.0.4"
   },
   "devDependencies": {
-    "@remix-run/dev": "^0.20.1"
+    "@remix-run/dev": "^1.0.4"
   }
 }
 ```
@@ -656,16 +633,15 @@ work as expected, so let's add `cross-env` and set the `NODE_ENV` with that:
     "start": "cross-env NODE_ENV=production remix-serve ./build"
   },
   "dependencies": {
-    "@remix-run/react": "^0.20.1",
-    "@remix-run/serve": "^0.20.1",
+    "@remix-run/react": "^1.0.4",
+    "@remix-run/serve": "^1.0.4",
     "cross-env": "^7.0.3",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-router-dom": "^6.0.0",
-    "remix": "^0.20.1"
+    "remix": "^1.0.4"
   },
   "devDependencies": {
-    "@remix-run/dev": "^0.20.1"
+    "@remix-run/dev": "^1.0.4"
   }
 }
 ```
