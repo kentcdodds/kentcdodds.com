@@ -159,7 +159,7 @@ function HeroSection({
           <motion.div variants={childVariants}>
             <H4 as="p" variant="secondary" className="mt-3">
               <Link
-                prefetch="intent"
+                reloadDocument
                 to="/rss.xml"
                 className="text-secondary underlined hover:text-team-current focus:text-team-current"
               >
