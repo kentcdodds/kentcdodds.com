@@ -17,6 +17,7 @@ const externalLinks = {
   github: 'https://github.com/kentcdodds',
   youtube: 'https://youtube.com/c/KentCDodds-vids/videos',
   twitter: 'https://twitter.com/kentcdodds',
+  rss: 'https://kentcdodds.com/blog/rss.xml',
 }
 
 export {externalLinks}
