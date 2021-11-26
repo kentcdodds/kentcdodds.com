@@ -12,6 +12,7 @@ import {Link} from 'remix'
 import {ArrowIcon} from './icons/arrow-icon'
 import {getImgProps, ImageBuilder} from '~/images'
 import {IconLink} from './icon-link'
+import {RssIcon} from './icons/rss-icon'
 
 function NewsletterSection() {
   return (
@@ -103,6 +104,9 @@ function AboutSection() {
           </IconLink>
           <IconLink href={externalLinks.twitter}>
             <TwitterIcon size={32} />
+          </IconLink>
+          <IconLink href={externalLinks.rss}>
+            <RssIcon size={32} />
           </IconLink>
         </div>
 
