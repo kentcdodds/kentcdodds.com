@@ -17,7 +17,7 @@ ADD package.json package-lock.json .npmrc ./
 ADD other/patches ./other/patches
 RUN npm install --production=false
 # TODO: enable this again. It was having trouble with v1 of Remix
-# RUN npx metronome setup
+RUN npx metronome setup
 
 # setup production node_modules
 FROM base as production-deps
