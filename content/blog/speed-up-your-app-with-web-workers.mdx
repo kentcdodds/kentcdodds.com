@@ -146,8 +146,8 @@ const {getItems} = makeFilterCitiesWorker()
 export {getItems}
 ```
 
-The `workerize!` thing in the import statement is a fancy webpack syntax to tell
-webpack to treat that module specially (specifically to pipe it through the
+The `workerize!` thing in the `import` statement is a fancy webpack syntax to
+tell webpack to treat that module specially (specifically to pipe it through the
 `workerize-loader` so Jason can do his magic on it to get it into a web worker).
 
 Putting the `getItems` code into a web worker did wonders to speed up my demo.

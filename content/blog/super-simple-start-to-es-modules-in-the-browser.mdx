@@ -124,7 +124,7 @@ function go() {
 export {go}
 ```
 
-Then we can load that using a dynamic import statement:
+Then we can load that using a dynamic `import` statement:
 
 ```js [6-14]
 // script-src.js
@@ -155,7 +155,7 @@ doesn't end in `.js` you are fine omitting that.
 import * as d3 from 'https://unpkg.com/d3?module'
 ```
 
-The point is, the thing you put in the quotes in your import statements has to
+The point is, the thing you put in the quotes in your `import` statements has to
 point to a JavaScript resource on some server somewhere.
 [Learn more about unpkg.com](https://unpkg.com/).
 

@@ -63,6 +63,12 @@ async function getMdxPage(
         slug,
         ...pageFiles,
         options,
+      }).catch(err => {
+        console.error(`Failed to get a fresh value for mdx:`, {
+          contentDir,
+          slug,
+        })
+        return Promise.reject(err)
       })
       return compiledPage
     },
