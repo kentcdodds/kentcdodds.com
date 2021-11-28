@@ -31,8 +31,7 @@ async function getSitemapXml(request: Request, remixContext: EntryContext) {
 
         // exclude resource routes from the sitemap
         // (these are an opt-in via the getSitemapEntries method)
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- https://github.com/remix-run/remix/pull/742
-        if (!mod.default) return
+        if (!('default' in mod)) return
 
         const manifestEntry = remixContext.manifest.routes[id]
         if (!manifestEntry) {

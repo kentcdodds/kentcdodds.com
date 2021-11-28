@@ -5,7 +5,7 @@ import {useTable} from 'react-table'
 import type {Column} from 'react-table'
 import {Grid} from '~/components/grid'
 import {H1} from '~/components/typography'
-import type {Await} from '~/types'
+import type {Await, KCDHandle} from '~/types'
 import {prismaRead, prismaWrite} from '~/utils/prisma.server'
 import {requireAdminUser} from '~/utils/session.server'
 import {
@@ -24,6 +24,10 @@ import {Spacer} from '~/components/spacer'
 import {Field} from '~/components/form-elements'
 import {ChevronUpIcon} from '~/components/icons/chevron-up-icon'
 import {ChevronDownIcon} from '~/components/icons/chevron-down-icon'
+
+export const handle: KCDHandle = {
+  getSitemapEntries: () => null,
+}
 
 type LoaderData = Await<ReturnType<typeof getLoaderData>>
 type User = LoaderData['users'][number]
