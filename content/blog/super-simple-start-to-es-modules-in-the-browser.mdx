@@ -17,7 +17,7 @@ translations:
   - language: Português (do Brasil)
     link: https://mjfneto.medium.com/uma-introdu%C3%A7%C3%A3o-super-simples-aos-es-modules-no-browser-39fda8aa0da3
   - language: 简体中文
-    link: https://segmentfault.com/a/1190000040806331 
+    link: https://segmentfault.com/a/1190000040806331
 bannerCloudinaryId: unsplash/photo-1516641051054-9df6a1aad654
 bannerCredit: Photo by [JOSE LARRAZOLO](https://unsplash.com/photos/S8bde3hkBR8)
 ---
@@ -52,8 +52,7 @@ export {appendDiv}
 
 Next, let's make an HTML file to load that file:
 
-```html
-<!-- index.html -->
+```html filename=index.html
 <script type="module">
   import {appendDiv} from './append-div.js'
   appendDiv('Hello from inline script')
@@ -96,8 +95,7 @@ appendDiv('Hello from external script')
 
 To load that up, we just add another script tag to our HTML:
 
-```html [6]
-<!-- index.html -->
+```html filename=index.html lines=6
 <script type="module">
   import {appendDiv} from './append-div.js'
   appendDiv('Hello from inline script')
