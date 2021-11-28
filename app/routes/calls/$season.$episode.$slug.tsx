@@ -16,7 +16,6 @@ import {TwitterIcon} from '~/components/icons/twitter-icon'
 
 export const handle: KCDHandle = {
   id: 'call-player',
-  scroll: false,
   getSitemapEntries: async request => {
     const episodes = await getEpisodes({request})
     return episodes.map(episode => {

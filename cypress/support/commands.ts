@@ -43,12 +43,6 @@ function login({
 
 Cypress.Commands.add('login', login)
 
-function log(subject: unknown, message: unknown) {
-  return cy.task('log', message)
-}
-
-Cypress.Commands.overwrite('log', log)
-
 /*
 eslint
   @typescript-eslint/no-namespace: "off",

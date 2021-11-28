@@ -51,6 +51,7 @@ import {
 import {useTeam} from '~/utils/team-provider'
 import type {LoaderData as RootLoaderData} from '../root'
 import {getSocialMetas} from '~/utils/seo'
+import {RssIcon} from '~/components/icons/rss-icon'
 
 const handleId = 'blog'
 export const handle: KCDHandle = {
@@ -332,7 +333,18 @@ function BlogHome() {
     >
       <HeroSection
         title="Learn development with great articles."
-        subtitle="Find the latest of my writing here."
+        subtitle={
+          <>
+            <span>{`Find the latest of my writing here.`}</span>
+            <Link
+              reloadDocument
+              to="rss.xml"
+              className="text-secondary underlined inline-block ml-2 hover:text-team-current focus:text-team-current"
+            >
+              <RssIcon title="Get my blog as RSS" />
+            </Link>
+          </>
+        }
         imageBuilder={images.skis}
         action={
           <div className="w-full">

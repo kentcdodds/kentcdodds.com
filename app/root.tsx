@@ -7,9 +7,9 @@ import {
   LoaderFunction,
   json,
   useLoaderData,
-  useMatches,
   useTransition,
   useCatch,
+  ScrollRestoration,
 } from 'remix'
 import type {LinksFunction, MetaFunction, HeadersFunction} from 'remix'
 import {Outlet, useLocation} from 'react-router-dom'
@@ -41,7 +41,6 @@ import {getUserInfo} from './utils/user-info.server'
 import {getClientSession} from './utils/client.server'
 import type {Timings} from './utils/metrics.server'
 import {time, getServerTimeHeader} from './utils/metrics.server'
-import {RestoreScrollPosition, useScrollRestoration} from './utils/scroll'
 import {Navbar} from './components/navbar'
 import {Spacer} from './components/spacer'
 import {Footer} from './components/footer'
@@ -299,13 +298,7 @@ function PageLoadingMessage() {
 }
 
 function App() {
-  const matches = useMatches()
   const data = useLoaderData<LoaderData>()
-
-  const shouldManageScroll = matches.every(
-    m => (m.handle as KCDHandle | undefined)?.scroll !== false,
-  )
-  useScrollRestoration(shouldManageScroll)
 
   const [team] = useTeam()
   const [theme] = useTheme()
@@ -345,7 +338,7 @@ function App() {
         <Outlet />
         <Spacer size="base" />
         <Footer image={images[data.randomFooterImageKey]} />
-        <RestoreScrollPosition />
+        <ScrollRestoration />
         <Scripts />
         <script
           dangerouslySetInnerHTML={{

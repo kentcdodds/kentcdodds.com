@@ -194,7 +194,6 @@ type KCDHandle = {
     | Promise<Array<KCDSitemapEntry | null> | null>
     | Array<KCDSitemapEntry | null>
     | null
-  scroll?: false
 }
 
 type KCDLoader<

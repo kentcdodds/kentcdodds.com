@@ -5,15 +5,13 @@ import type {HTMLMotionProps} from 'framer-motion'
 import {motion, useReducedMotion} from 'framer-motion'
 import type {ImageBuilder} from '~/images'
 import {getImgProps} from '~/images'
-import {H2, H4} from '../typography'
+import {H2} from '../typography'
 import {ArrowLink} from '../arrow-button'
 import {Grid} from '../grid'
-import {RssIcon} from '../icons/rss-icon'
-import {Link} from 'remix'
 
 export type HeroSectionProps = {
   title: string | React.ReactNode
-  subtitle?: string
+  subtitle?: string | React.ReactNode
   action?: React.ReactNode
   as?: React.ElementType
 } & (
@@ -156,18 +154,6 @@ function HeroSection({
               </H2>
             </motion.div>
           ) : null}
-          <motion.div variants={childVariants}>
-            <H4 as="p" variant="secondary" className="mt-3">
-              <Link
-                reloadDocument
-                to="/rss.xml"
-                className="text-secondary underlined hover:text-team-current focus:text-team-current"
-              >
-                {`Prefer RSS? Subscribe to my feed here.`}{' '}
-                <RssIcon className="inline-block" />
-              </Link>
-            </H4>
-          </motion.div>
           {action ? (
             <motion.div
               variants={childVariants}
