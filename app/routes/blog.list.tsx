@@ -53,12 +53,12 @@ export default function BlogList() {
             </Link>
           </>
         }
-        arrowUrl="#results"
+        arrowUrl="#posts"
         arrowLabel={`${data.posts.length} Total Posts`}
         imageBuilder={images.skis}
       />
       <Grid as="main">
-        <div className="col-span-full" id="results">
+        <div className="col-span-full" id="posts">
           <H3>Posts</H3>
           <Spacer size="2xs" />
           <div>
