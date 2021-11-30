@@ -8,20 +8,25 @@ import {H3} from '~/components/typography'
 import {Spacer} from '~/components/spacer'
 import {HeroSection} from '~/components/sections/hero-section'
 import {RssIcon} from '~/components/icons/rss-icon'
+import {markdownToHtmlUnwrapped} from '~/utils/markdown.server'
 
 type LoaderData = {
-  posts: Array<{title: string; description: string; slug: string}>
+  posts: Array<{title: string; descriptionHTML: string; slug: string}>
 }
 
 export const loader: LoaderFunction = async ({request}) => {
   const posts = await getBlogMdxListItems({request}).then(allPosts =>
-    allPosts
-      .filter(p => !p.frontmatter.draft)
-      .map(p => ({
-        title: p.frontmatter.title ?? 'Untitled',
-        description: p.frontmatter.description ?? 'No description',
-        slug: p.slug,
-      })),
+    Promise.all(
+      allPosts
+        .filter(p => !p.frontmatter.draft)
+        .map(async p => ({
+          title: p.frontmatter.title ?? 'Untitled',
+          descriptionHTML: await markdownToHtmlUnwrapped(
+            p.frontmatter.description ?? 'No description',
+          ),
+          slug: p.slug,
+        })),
+    ),
   )
 
   const data: LoaderData = {posts}
@@ -67,8 +72,11 @@ export default function BlogList() {
                 <li key={post.slug} className="leading-loose">
                   <Link to={`/blog/${post.slug}`} className="text-xl">
                     {post.title}
-                  </Link>
-                  <span className="text-secondary"> {post.description}</span>
+                  </Link>{' '}
+                  <span
+                    className="text-secondary"
+                    dangerouslySetInnerHTML={{__html: post.descriptionHTML}}
+                  />
                 </li>
               ))}
             </ul>
