@@ -13,7 +13,7 @@ ENV HUSKY_SKIP_INSTALL=1
 RUN mkdir /app/
 WORKDIR /app/
 
-ADD package.json package-lock.json .npmrc ./
+ADD package.json package-lock.json ./
 ADD other/patches ./other/patches
 RUN npm install --production=false
 # TODO: enable this again. It was having trouble with v1 of Remix
@@ -26,7 +26,7 @@ RUN mkdir /app/
 WORKDIR /app/
 
 COPY --from=deps /app/node_modules /app/node_modules
-ADD package.json package-lock.json .npmrc /app/
+ADD package.json package-lock.json /app/
 RUN npm prune --production
 
 # build app
