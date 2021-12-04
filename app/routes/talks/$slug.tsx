@@ -27,3 +27,7 @@ export const meta: MetaFunction = ({parentsData, params}) => {
     }),
   }
 }
+
+export default function TalksSlug() {
+  return null;
+}
