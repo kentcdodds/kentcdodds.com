@@ -62,8 +62,6 @@ instructions:
 
 - [Node.js](https://nodejs.org/) >= 16.0.0
 - [git](https://git-scm.com/) >= 2.7.0
-- Active [remix](https://remix.run) license with the `REMIX_TOKEN` environment
-  variable set.
 - [Docker](https://www.docker.com/)
 
 ### Setup steps
@@ -79,7 +77,6 @@ cd ./kentcdodds.com
 #   change any of these values unless you want to hit real environments.
 cp .env.example .env
 
-# make sure you have a REMIX_TOKEN environment variable set
 npm run setup
 ```
 
@@ -87,7 +84,6 @@ That should do everything for you... If it doesn't work, here's basically what
 it does, go ahead and try each of these commands one at a time:
 
 ```sh
-# make sure you have a REMIX_TOKEN environment variable set
 npm install
 
 # make sure you have docker installed
