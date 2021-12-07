@@ -111,6 +111,7 @@ pre {
   top: 0;
   width: 100%;
   opacity: 0.15;
+  pointer-events: none;
 }
 
 .codeblock-line[data-highlight='true']:before {
