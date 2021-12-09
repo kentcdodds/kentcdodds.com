@@ -839,16 +839,12 @@ function StreamVis({
 }
 
 function RecordingTime({timer}: {timer: number}) {
-
   const minutes = Math.floor(timer / 60)
   const seconds = timer - minutes * 60
 
   let className = ''
   if (timer >= 90) className = 'text-yellow-500'
-
-  if (timer >= 105) className = `${className} animate-blink`
-  if (timer >= 120) className = 'text-red-500 animate-blinkFast'
-  if (timer >= 130) className = 'text-red-500'
+  if (timer >= 120) className = 'text-red-500'
 
   return (
     <div className={className}>
@@ -868,4 +864,3 @@ export {CallRecorder}
 eslint
   one-var: "off",
 */
-
