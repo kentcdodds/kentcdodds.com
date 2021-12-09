@@ -12,6 +12,7 @@ import {SquareIcon} from '../icons/square-icon'
 import {PauseIcon} from '../icons/pause-icon'
 import {TriangleIcon} from '../icons/triangle-icon'
 import type {Team} from '~/types'
+import { useInterval } from '../hooks/use-interval'
 
 // Play around with these values to affect the audio visualisation.
 // Should be able to stream the visualisation back no problem.
@@ -213,6 +214,7 @@ function CallRecorder({
   team: Team
 }) {
   const [state, send] = useMachine(recorderMachine, {devTools})
+  const [timer, setTimer] = React.useState<number>(0)
   const metadataRef = React.useRef<Array<number>>([])
   const playbackRef = React.useRef<HTMLAudioElement | null>(null)
   const {audioBlob} = state.context
@@ -224,6 +226,16 @@ function CallRecorder({
       return null
     }
   }, [audioBlob])
+
+  useInterval(() => {
+    setTimer(timer + 1)
+  }, state.matches('recording.playing') ? 1000 : null)
+
+  React.useEffect(() => {
+    if (state.matches('done')) {
+      setTimer(0)
+    }
+  }, [state])
 
   let deviceSelection = null
   if (state.matches('gettingDevices')) {
@@ -339,6 +351,7 @@ function CallRecorder({
             playbackRef={playbackRef}
             team={team}
           />
+          <RecordingTime timer={ timer } />
         </div>
       ) : null}
 
@@ -822,9 +835,33 @@ function StreamVis({
   return <canvas className="w-full h-40" ref={canvasRef} />
 }
 
+function RecordingTime({
+  timer
+}: {
+  timer: number
+}) {
+
+  const minutes = Math.floor(timer / 60)
+  const seconds = timer - minutes * 60
+
+  let className = ''
+  if (timer >= 90) className = 'text-yellow-500'
+  if (timer >= 120) className = 'text-red-500'
+
+  return (
+    <div className={ className }>Duration: { padTime(minutes) }:{ padTime(seconds) }</div>
+  )
+}
+
+function padTime(time: number) {
+  const timeString = `${time}`
+  return timeString.padStart(2, '0')
+}
+
 export {CallRecorder}
 
 /*
 eslint
   one-var: "off",
 */
+
