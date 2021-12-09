@@ -101,6 +101,20 @@ module.exports = {
         '-135': '-135deg',
         135: '135deg',
       },
+      keyframes: {
+        blink: {
+          '0%, 100%': {
+            opacity: 1,
+          },
+          '50%': {
+            opacity: 0,
+          },
+        },
+      },
+      animation: {
+        blink: 'blink 1s ease-in-out infinite',
+        blinkFast: 'blink .5s ease-in-out infinite',
+      },
 
       typography: theme => {
         // some fontSizes return [size, props], others just size :/
