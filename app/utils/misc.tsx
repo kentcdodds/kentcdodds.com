@@ -97,19 +97,19 @@ const AnchorOrLink = React.forwardRef<
   let shouldUserRegularAnchor = reload || download
 
   if (!shouldUserRegularAnchor && typeof href === 'string') {
-    shouldUserRegularAnchor = href.startsWith('http') || href.startsWith('#')
+    shouldUserRegularAnchor = href.includes(':') || href.startsWith('#')
   }
 
   if (!shouldUserRegularAnchor && typeof to === 'string') {
     toUrl = to
-    shouldUserRegularAnchor = to.startsWith('http')
+    shouldUserRegularAnchor = to.includes(':')
   }
 
   if (!shouldUserRegularAnchor && typeof to === 'object') {
     toUrl = `${to.pathname ?? ''}${to.hash ? `#${to.hash}` : ''}${
       to.search ? `?${to.search}` : ''
     }`
-    shouldUserRegularAnchor = to.pathname?.startsWith('http')
+    shouldUserRegularAnchor = to.pathname?.includes(':')
   }
 
   if (shouldUserRegularAnchor) {
