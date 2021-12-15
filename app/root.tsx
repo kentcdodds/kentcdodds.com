@@ -302,7 +302,7 @@ function App() {
   const data = useLoaderData<LoaderData>()
   const matches = useMatches()
   const shouldRestoreScroll = matches.every(
-    match => (match.handle as KCDHandle).restoreScroll !== false,
+    match => (match.handle as KCDHandle | undefined)?.restoreScroll !== false,
   )
 
   const [team] = useTeam()
