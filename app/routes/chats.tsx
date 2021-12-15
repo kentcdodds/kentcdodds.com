@@ -5,7 +5,7 @@ import clsx from 'clsx'
 import {Tab, TabList, TabPanel, TabPanels, Tabs} from '@reach/tabs'
 import {Outlet, useNavigate} from 'react-router-dom'
 import type {LoaderData as RootLoaderData} from '../root'
-import type {Await} from '~/types'
+import type {Await, KCDHandle} from '~/types'
 import {ChatsEpisodeUIStateProvider} from '~/utils/providers'
 import {Grid} from '~/components/grid'
 import {
@@ -34,6 +34,10 @@ import {HeroSection} from '~/components/sections/hero-section'
 import {Spacer} from '~/components/spacer'
 import {PodcastSubs} from '~/components/podcast-subs'
 import {getSocialMetas} from '~/utils/seo'
+
+export const handle: KCDHandle = {
+  restoreScroll: false,
+}
 
 type LoaderData = {
   seasons: Await<ReturnType<typeof getSeasonListItems>>

@@ -41,6 +41,7 @@ import {getSocialMetas} from '~/utils/seo'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'calls',
+  restoreScroll: false,
 }
 
 export type LoaderData = {

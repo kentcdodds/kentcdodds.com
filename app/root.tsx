@@ -10,6 +10,7 @@ import {
   useTransition,
   useCatch,
   ScrollRestoration,
+  useMatches,
 } from 'remix'
 import type {LinksFunction, MetaFunction, HeadersFunction} from 'remix'
 import {Outlet, useLocation} from 'react-router-dom'
@@ -299,6 +300,10 @@ function PageLoadingMessage() {
 
 function App() {
   const data = useLoaderData<LoaderData>()
+  const matches = useMatches()
+  const shouldRestoreScroll = matches.every(
+    match => (match.handle as KCDHandle).restoreScroll !== false,
+  )
 
   const [team] = useTeam()
   const [theme] = useTheme()
@@ -338,7 +343,7 @@ function App() {
         <Outlet />
         <Spacer size="base" />
         <Footer image={images[data.randomFooterImageKey]} />
-        <ScrollRestoration />
+        {shouldRestoreScroll ? <ScrollRestoration /> : null}
         <Scripts />
         <script
           dangerouslySetInnerHTML={{
