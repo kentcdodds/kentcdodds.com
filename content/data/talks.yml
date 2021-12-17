@@ -1,8 +1,73 @@
-- title: 'How I Built a Modern Website in 2021'
+- title: Building Excellent User Experiences with Remix
+  deliveries:
+    - event:
+        '[React Denver](https://www.meetup.com/ReactDenver/events/282107884/)'
+      date: 2021-12-21
+    - event: '[React Wednesdays](https://www.telerik.com/react-wednesdays)'
+      date: 2022-01-05
+    - event: '[YYC.js](https://www.meetup.com/yyc-js/events/282715530/)'
+      date: 2022-01-12
+    - event: 'iO Frontend Meetup'
+      date: 2022-01-19
+    - event:
+        '[Cincinnati Software
+        Craftsmanship](https://www.meetup.com/Cincinnati-Software-Craftsmanship/events/282695621/)'
+      date: 2022-02-02
+    - event:
+        '[Gorrion
+        Unplugged](https://www.youtube.com/channel/UCAQI4x8pKnnTZRmE1Rj1V7w)'
+      date: 2022-02-10
+    - event: '[Node Congress](https://nodecongress.com/)'
+      date: 2022-02-17
+    - event: '[XTSummit](https://xtsummit.com/)'
+      date: 2022-02-18
+    - event: '[Brum.js](https://www.meetup.com/brum_js/)'
+      date: 2022-02-24
+  tags:
+    - react
+    - remix
+  description: >-
+    Remix is a Web Framework that uses the web platform to enable you to build
+    excellent user experiences. In this talk I'm going to show you what makes
+    Remix so special and how the user experiences you build with Remix are
+    excellent by default.
+
+- title: The Power of Forms
+  deliveries:
+    - event: '[Holiday Snowtacular](https://www.twitch.tv/TrostCodes)'
+      date: 2021-12-17
+      recording: 'https://www.youtube.com/AlexTrosts'
+  tags:
+    - remix
+  description: >-
+    The web has been able to do mutations for a really long time and we've been
+    `preventDefault`-ing in our JavaScript SPAs. But if you build your backend
+    to support both the `fetch`-submit type of form submission as well as the
+    default behavior, then you can make your app work without JavaScript or
+    before the JavaScript has finished loading! Let's explore how Remix makes
+    this possible.
+
+- title: Remix and Progressive Enhancement
+  deliveries:
+    - event: '[Remix Utah](https://www.meetup.com/UtahJS/events/xltcqsyccpbpb/)'
+      date: 2021-11-11
+      recording: 'https://www.youtube.com/watch?v=YD3U6jo9epY'
+  tags:
+    - remix
+  description: >-
+    We like to talk about how Remix sites work well without JavaScript in the
+    browser, but there's gotta be a reason to ship some JavaScript right? In
+    this talk, I'll show you the amazing things you can do once you have
+    JavaScript on the client. Progressive enhancement FTW!
+
+- title: How I Built a Modern Website in 2021
   deliveries:
     - event: '[Utah JS Conf](https://utahjs.com/)'
       date: 2021-10-08
       recording: https://www.youtube.com/watch?v=owOZMwNPAyc&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
+    - event:
+        '[Agent Conf 2022](https://www.alpine-conferences.com/agent-conf-2022/)'
+      date: 2022-01-27
   tags:
     - keynote
     - react
@@ -59,6 +124,7 @@
     This talk is about how testing uses the same currency as everything else we
     do for the product: our time. And we need to decide how much time we invest
     relative to the ROI of everything else we can do.
+
 - title: Testing Library
   resources:
     - '[repo](https://github.com/kentcdodds/testing-react-apps)'
@@ -78,6 +144,7 @@
     questions, like, how did you come up with the name Testing Library? Maybe
     bring some real questions too, as Testing Library is a pretty powerful
     library you're probably using in production.
+
 - title: Managing State Management
   resources:
     - '[slides](https://github.com/kentcdodds/managing-state-management-slides)'
