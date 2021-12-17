@@ -1,7 +1,6 @@
 import * as React from 'react'
 import type {LoaderFunction, HeadersFunction, MetaFunction} from 'remix'
-import {json, Link, useLoaderData, useMatches} from 'remix'
-import {Outlet} from 'react-router-dom'
+import {json, Link, useLoaderData, useMatches, Outlet} from 'remix'
 import {AnimatePresence, motion, useReducedMotion} from 'framer-motion'
 import clsx from 'clsx'
 import type {LoaderData as RootLoaderData} from '../root'

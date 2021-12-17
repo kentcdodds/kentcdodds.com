@@ -1,9 +1,8 @@
 import * as React from 'react'
 import type {HeadersFunction, LoaderFunction, MetaFunction} from 'remix'
-import {json, useLoaderData} from 'remix'
+import {json, useLoaderData, Link, useLocation, useSearchParams} from 'remix'
 import type {Await} from '~/types'
 import formatDate from 'date-fns/format'
-import {Link, useLocation, useSearchParams} from 'react-router-dom'
 import clsx from 'clsx'
 import {
   getUrl,

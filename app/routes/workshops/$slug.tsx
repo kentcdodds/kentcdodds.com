@@ -1,7 +1,6 @@
 import * as React from 'react'
 import type {MetaFunction, HeadersFunction} from 'remix'
-import {useLoaderData, json, useCatch} from 'remix'
-import {Link, useParams} from 'react-router-dom'
+import {useLoaderData, json, useCatch, Link, useParams} from 'remix'
 import type {KCDHandle, KCDLoader, MdxListItem, Workshop} from '~/types'
 import {Grid} from '~/components/grid'
 import {H2, H5, H6, Paragraph} from '~/components/typography'

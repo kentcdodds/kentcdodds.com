@@ -1,7 +1,6 @@
 import * as React from 'react'
-import {json, useLoaderData, redirect, Link} from 'remix'
+import {json, useLoaderData, redirect, Link, useParams} from 'remix'
 import type {LoaderFunction} from 'remix'
-import {useParams} from 'react-router-dom'
 import {matchSorter, rankings} from 'match-sorter'
 import {getBlogMdxListItems} from '~/utils/mdx'
 import {getSeasons as getChatsWithKentSeasons} from '~/utils/simplecast.server'

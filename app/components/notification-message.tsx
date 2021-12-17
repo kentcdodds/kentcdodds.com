@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {useState} from 'react'
-import {useSearchParams} from 'react-router-dom'
+import {useSearchParams} from 'remix'
 import {AnimatePresence, motion} from 'framer-motion'
 import clsx from 'clsx'
 import {PlusIcon} from './icons/plus-icon'

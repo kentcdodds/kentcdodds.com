@@ -1,7 +1,6 @@
 import * as React from 'react'
-import {useLoaderData, json, useFetcher, useCatch} from 'remix'
+import {useLoaderData, json, useFetcher, useCatch, useParams} from 'remix'
 import type {HeadersFunction} from 'remix'
-import {useParams} from 'react-router-dom'
 import type {
   KCDAction,
   KCDHandle,

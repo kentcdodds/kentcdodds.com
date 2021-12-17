@@ -6,8 +6,8 @@ import {
   redirect,
   useLoaderData,
   json,
+  Outlet,
 } from 'remix'
-import {Outlet} from 'react-router-dom'
 import type {Await, KCDHandle} from '~/types'
 import {requireAdminUser} from '~/utils/session.server'
 import {prismaRead, prismaWrite} from '~/utils/prisma.server'

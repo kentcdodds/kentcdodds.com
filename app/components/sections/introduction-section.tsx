@@ -1,6 +1,5 @@
 import * as React from 'react'
-import {Link} from 'remix'
-import {useSearchParams} from 'react-router-dom'
+import {Link,useSearchParams} from 'remix'
 import {getImgProps, images} from '~/images'
 import {H2, H3} from '../typography'
 import {ArrowLink} from '../arrow-button'

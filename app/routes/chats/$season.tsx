@@ -1,7 +1,6 @@
 import * as React from 'react'
-import {json, useLoaderData, Link, useCatch} from 'remix'
+import {json, useLoaderData, Link, useCatch, useParams} from 'remix'
 import type {HeadersFunction} from 'remix'
-import {useParams} from 'react-router-dom'
 import type {CWKSeason, KCDHandle, KCDLoader} from '~/types'
 import {orderBy} from 'lodash'
 import {Grid} from '~/components/grid'

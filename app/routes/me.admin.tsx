@@ -1,6 +1,13 @@
 import * as React from 'react'
 import type {LoaderFunction, ActionFunction} from 'remix'
-import {json, redirect, useLoaderData, useActionData, Form} from 'remix'
+import {
+  json,
+  redirect,
+  useLoaderData,
+  useActionData,
+  Form,
+  useSearchParams,
+} from 'remix'
 import {useTable} from 'react-table'
 import type {Column} from 'react-table'
 import {Grid} from '~/components/grid'
@@ -17,7 +24,6 @@ import {
   useDoubleCheck,
 } from '~/utils/misc'
 import {Button} from '~/components/button'
-import {useSearchParams} from 'react-router-dom'
 import clsx from 'clsx'
 import {SearchIcon} from '~/components/icons/search-icon'
 import {Spacer} from '~/components/spacer'

@@ -1,9 +1,8 @@
 import * as React from 'react'
 import type {LoaderFunction, HeadersFunction} from 'remix'
-import {json, useLoaderData, Link} from 'remix'
+import {json, useLoaderData, Link, useLocation, Outlet} from 'remix'
 import type {Await} from '~/types'
 import {AnimatePresence, motion} from 'framer-motion'
-import {useLocation, Outlet} from 'react-router-dom'
 import {getUser} from '~/utils/session.server'
 import {prismaRead} from '~/utils/prisma.server'
 import {Grid} from '~/components/grid'
@@ -84,9 +83,9 @@ function Record({
     <Grid nested className="border-b border-gray-200 dark:border-gray-600">
       <Link
         to={active ? './' : slug}
-        className="relative flex flex-col py-5 text-xl font-medium text-primary group col-span-full focus:outline-none"
+        className="text-primary group relative flex flex-col col-span-full py-5 text-xl font-medium focus:outline-none"
       >
-        <div className="absolute hidden -mx-6 rounded-lg bg-secondary -inset-px group-hover:block group-focus:block" />
+        <div className="bg-secondary absolute -inset-px group-hover:block group-focus:block hidden -mx-6 rounded-lg" />
         <span className="relative">{title}</span>
       </Link>
       <div className="col-span-full">
@@ -105,7 +104,7 @@ export default function RecordScreen() {
 
   return (
     <>
-      <Grid className="mt-24 mb-10 lg:mb-24">
+      <Grid className="mb-10 mt-24 lg:mb-24">
         <BackLink
           to="/calls"
           className="col-span-full lg:col-span-8 lg:col-start-3"

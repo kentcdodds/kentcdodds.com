@@ -5,11 +5,10 @@ import type {
   LoaderFunction,
   MetaFunction,
 } from 'remix'
-import {json, useLoaderData} from 'remix'
+import {json, useLoaderData, useSearchParams} from 'remix'
 import {shuffle} from 'lodash'
 import formatDate from 'date-fns/format'
 import parseDate from 'date-fns/parseISO'
-import {useSearchParams} from 'react-router-dom'
 import type {Await, MdxListItem} from '~/types'
 import {useRootData} from '~/utils/use-root-data'
 import {getImgProps, getSocialImageWithPreTitle, images} from '~/images'

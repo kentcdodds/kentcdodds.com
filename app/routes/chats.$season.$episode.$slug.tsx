@@ -1,7 +1,6 @@
 import React, {useState} from 'react'
 import type {HeadersFunction, MetaFunction} from 'remix'
-import {useLoaderData, json, redirect, useCatch} from 'remix'
-import {Link, useLocation} from 'react-router-dom'
+import {useLoaderData, json, redirect, useCatch, Link, useLocation} from 'remix'
 import type {KCDLoader, CWKEpisode, CWKListItem, KCDHandle} from '~/types'
 import clsx from 'clsx'
 import {motion} from 'framer-motion'

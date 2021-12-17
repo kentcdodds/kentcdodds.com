@@ -1,7 +1,6 @@
 import * as React from 'react'
 import type {HeadersFunction, LoaderFunction} from 'remix'
-import {json} from 'remix'
-import {Outlet} from 'react-router-dom'
+import {json, Outlet} from 'remix'
 import type {KCDHandle, Workshop} from '~/types'
 import {getWorkshops} from '~/utils/workshops.server'
 import type {Timings} from '~/utils/metrics.server'

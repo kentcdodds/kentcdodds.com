@@ -11,9 +11,10 @@ import {
   useCatch,
   ScrollRestoration,
   useMatches,
+  Outlet,
+  useLocation,
 } from 'remix'
 import type {LinksFunction, MetaFunction, HeadersFunction} from 'remix'
-import {Outlet, useLocation} from 'react-router-dom'
 import {AnimatePresence, motion} from 'framer-motion'
 import {useSpinDelay} from 'spin-delay'
 import type {Await, KCDHandle, User} from '~/types'

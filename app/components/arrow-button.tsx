@@ -1,6 +1,6 @@
 import * as React from 'react'
 import clsx from 'clsx'
-import {Link, LinkProps} from 'react-router-dom'
+import {Link, LinkProps} from 'remix'
 import {motion, useReducedMotion, Variant} from 'framer-motion'
 import {ArrowIcon, ArrowIconProps} from './icons/arrow-icon'
 import {H6} from './typography'
