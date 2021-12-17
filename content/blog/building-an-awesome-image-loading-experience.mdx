@@ -292,9 +292,9 @@ data:image/webp;base64,UklGRhQBAABXRUJQVlA4IAgBAAAQDQCdASpkAEMAPrFGmko7qyWhsls9U
 Now, that's _quite_ a bit more than the 30 or so characters that represent the
 hash for blurhash, but remember that blurhash also requires a client library
 which is larger than this. But that's actually not the reason I didn't go with
-blurhash. Once you apply this to just a couple of images, blurhash more than pays
-for its own weight. So a site like unsplash definitely hits that point where it
-makes a lot of sense.
+blurhash. Once you apply this to just a couple of images, blurhash more than
+pays for its own weight. So a site like unsplash definitely hits that point
+where it makes a lot of sense.
 
 And blurhash would probably pay for itself on my site too. I have the
 recommendations at the bottom of every page which are all blur-loaded as well.
@@ -454,9 +454,9 @@ export {BlurrableImage}
 Alright, that's a bit to take in... Let me walk you through it...
 
 First, the props are pretty simple. We accept an `img` element which is the
-ultimate image we want to be loaded. We accept a `blurDataUrl` to render a blurred
-version of the image while we're waiting for the image to load. And then the
-rest of the props are just applied to the `div` that's the container for
+ultimate image we want to be loaded. We accept a `blurDataUrl` to render a
+blurred version of the image while we're waiting for the image to load. And then
+the rest of the props are just applied to the `div` that's the container for
 everything. I pretty much only use that for the `className` for the aspect ratio
 stuff.
 
@@ -485,8 +485,8 @@ aren't many (any) users like this, but it's just so easy so why not?
 Alrighty, so to make the fade work, we need to have the `jsImgEl` start out as
 invisible. The browser will still load this for us though, and it fires events
 along the way, so we use `useEffect` to add an event handler to know when it's
-loaded and when it does finish loading we'll trigger an update to make the
-image fade in.
+loaded and when it does finish loading we'll trigger an update to make the image
+fade in.
 
 And really that's it.
 

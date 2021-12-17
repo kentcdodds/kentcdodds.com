@@ -11,14 +11,10 @@ interface GridProps {
   featured?: boolean
 }
 
-const Grid = React.forwardRef<HTMLElement, GridProps>(function Grid({
-  children,
-  className,
-  as: Tag = 'div',
-  featured,
-  nested,
-  rowGap,
-}, ref) {
+const Grid = React.forwardRef<HTMLElement, GridProps>(function Grid(
+  {children, className, as: Tag = 'div', featured, nested, rowGap},
+  ref,
+) {
   return (
     <Tag
       ref={ref}

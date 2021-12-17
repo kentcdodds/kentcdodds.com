@@ -1,4 +1,4 @@
-import * as React from "react"
+import * as React from 'react'
 
 function MessageIcon({size = 24}: {size?: number} = {}) {
   return (

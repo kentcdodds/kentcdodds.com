@@ -1,5 +1,13 @@
 import * as React from 'react'
-import {json, useLoaderData, useMatches, Link, MetaFunction,Outlet, useNavigate} from 'remix'
+import {
+  json,
+  useLoaderData,
+  useMatches,
+  Link,
+  MetaFunction,
+  Outlet,
+  useNavigate,
+} from 'remix'
 import type {LoaderFunction, HeadersFunction} from 'remix'
 import clsx from 'clsx'
 import {Tab, TabList, TabPanel, TabPanels, Tabs} from '@reach/tabs'

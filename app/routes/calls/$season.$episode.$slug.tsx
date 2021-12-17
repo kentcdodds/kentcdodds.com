@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {useParams,MetaFunction, redirect} from 'remix'
+import {useParams, MetaFunction, redirect} from 'remix'
 import type {LoaderData as RootLoaderData} from '../../root'
 import type {KCDHandle, KCDLoader} from '~/types'
 import {getEpisodes} from '~/utils/transistor.server'
