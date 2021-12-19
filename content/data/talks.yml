@@ -1,3 +1,26 @@
+- title: RenderATL TBA
+  deliveries:
+    - event: '[RenderATL](https://www.renderatl.com/)'
+      date: 2022-06-01
+  description: >-
+    This talk is yet to be announced
+
+- title: Reactathon Keynote
+  deliveries:
+    - event: '[Reactathon](https://www.reactathon.com/)'
+      date: 2022-05-02
+  tags:
+    - keynote
+  description: >-
+    This talk is yet to be announced
+
+- title: React Miami TBA
+  deliveries:
+    - event: '[React Miami](https://www.reactmiami.com/)'
+      date: 2022-04-19
+  description: >-
+    This talk is yet to be announced
+
 - title: Building Excellent User Experiences with Remix
   deliveries:
     - event:
