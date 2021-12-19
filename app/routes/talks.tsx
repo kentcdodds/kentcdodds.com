@@ -160,7 +160,7 @@ function Card({
                     <div className="flex-auto" />
                     <Paragraph className="flex-none ml-2" as="span">
                       {delivery.date
-                        ? formatDate(new Date(delivery.date), 'yyyy-MM-ii')
+                        ? formatDate(new Date(delivery.date), 'yyyy-MM-dd')
                         : null}
                     </Paragraph>
                   </div>
