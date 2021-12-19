@@ -146,6 +146,9 @@ const simplecastHandlers: Array<
   rest.get(
     'https://api.simplecast.com/seasons/:seasonId/episodes',
     (req, res, ctx) => {
+      if (typeof req.params.seasonId !== 'string') {
+        throw new Error('req.params.seasonId is not a string')
+      }
       const episodes = episodesBySeasonId[req.params.seasonId]
       if (!episodes) {
         throw new Error(`No mock episodes by season ID: ${req.params.seasonId}`)
@@ -165,6 +168,9 @@ const simplecastHandlers: Array<
   rest.get(
     `https://api.simplecast.com/episodes/:episodeId`,
     (req, res, ctx) => {
+      if (typeof req.params.episodeId !== 'string') {
+        throw new Error('req.params.episodeId is not a string')
+      }
       return res(ctx.json(episodesById[req.params.episodeId]))
     },
   ),

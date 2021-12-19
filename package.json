@@ -187,7 +187,7 @@
     "prettier-plugin-tailwind": "^2.2.12",
     "rimraf": "^3.0.2",
     "start-server-and-test": "^1.14.0",
-    "typescript": "4.5.4"
+    "typescript": "4.4.4"
   },
   "eslintIgnore": [
     "node_modules",

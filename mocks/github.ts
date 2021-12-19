@@ -49,6 +49,9 @@ const githubHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
     `https://api.github.com/repos/:owner/:repo/contents/:path`,
     async (req, res, ctx) => {
       const {owner, repo} = req.params
+      if (typeof req.params.path !== 'string') {
+        throw new Error('req.params.path must be a string')
+      }
       const path = decodeURIComponent(req.params.path).trim()
       const isMockable =
         owner === 'kentcdodds' &&
@@ -125,6 +128,9 @@ const githubHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
     `https://api.github.com/repos/:owner/:repo/git/blobs/:sha`,
     async (req, res, ctx) => {
       const {owner, repo} = req.params
+      if (typeof req.params.sha !== 'string') {
+        throw new Error('req.params.sha must be a string')
+      }
       const sha = decodeURIComponent(req.params.sha).trim()
       // if the sha includes a "/" that means it's not a sha but a relativePath
       // and therefore the client is getting content it got from the local
@@ -160,6 +166,9 @@ const githubHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
       const {owner, repo} = req.params
 
       const relativePath = req.params.path
+      if (typeof relativePath !== 'string') {
+        throw new Error('req.params.path must be a string')
+      }
       const fullPath = nodePath.join(__dirname, '..', relativePath)
       const encoding = 'base64' as const
       const size = (await fs.stat(fullPath)).size
