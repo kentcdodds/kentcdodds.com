@@ -31,7 +31,9 @@
       date: 2022-01-05
     - event: '[YYC.js](https://www.meetup.com/yyc-js/events/282715530/)'
       date: 2022-01-12
-    - event: 'iO Frontend Meetup'
+    - event:
+        '[iO Frontend
+        Meetup](https://www.meetup.com/nl-NL/Frontmen/events/282800242/)'
       date: 2022-01-19
     - event:
         '[Cincinnati Software
