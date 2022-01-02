@@ -334,7 +334,7 @@ function mdxPageMeta({
             'Untitled',
           preTitle:
             data.page.frontmatter.socialImagePreTitle ??
-            `Checkout this article`,
+            `Check out this article`,
         }),
       }),
       ...extraMeta,
