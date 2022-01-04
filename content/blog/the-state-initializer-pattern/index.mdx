@@ -20,6 +20,12 @@ meta:
 bannerCloudinaryId: unsplash/photo-1455612693675-112974d4880b
 bannerAlt: white abstract geometric artwork
 bannerCredit: Photo by [Silvio Kundt](https://unsplash.com/photos/Fixg8KipOg8)
+translations:
+  - language: Español
+    link: https://www.jpmti2016.com/es/posts/the-state-initializer-pattern
+    author:
+      name: Yampier Medina
+      link: https://www.jpmti2016.com/
 ---
 
 import * as C from './components'
@@ -163,10 +169,10 @@ function KeyPropReset() {
   return <KeyPropResetCounter key={key} reset={resetCounter} />
 }
 
-function KeyPropResetCounter({reset}: {reset: () => void}) {
-  const [count, setCount] = React.useState(0)
-  const increment = () => setCount(c => c + 1)
-  return <CountUI count={count} increment={increment} reset={reset} />
+function KeyPropResetCounter({ reset }) {
+  const [count, setCount] = React.useState(0);
+  const increment = () => setCount((c) => c + 1);
+  return <CountUI count={count} increment={increment} reset={reset} />;
 }
 ```
 
