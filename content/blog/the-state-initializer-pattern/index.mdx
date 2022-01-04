@@ -163,7 +163,7 @@ function KeyPropReset() {
   return <KeyPropResetCounter key={key} reset={resetCounter} />
 }
 
-function Counter({reset}: {reset: () => void}) {
+function KeyPropResetCounter({reset}: {reset: () => void}) {
   const [count, setCount] = React.useState(0)
   const increment = () => setCount(c => c + 1)
   return <CountUI count={count} increment={increment} reset={reset} />
