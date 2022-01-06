@@ -59,6 +59,8 @@
     excellent by default.
 
 - title: The Power of Forms
+  resources:
+    - '[repo](https://github.com/kentcdodds/form-seas)'
   deliveries:
     - event: '[Holiday Snowtacular](https://www.twitch.tv/TrostCodes)'
       date: 2021-12-17
