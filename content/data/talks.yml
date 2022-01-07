@@ -65,6 +65,9 @@
     - event: '[Holiday Snowtacular](https://www.twitch.tv/TrostCodes)'
       date: 2021-12-17
       recording: 'https://www.youtube.com/watch?v=8GTeh9K52b8'
+    - event: '[Remix Utah](https://www.meetup.com/remix-utah/events/282462790)'
+      date: 2022-01-06
+      recording: 'https://www.youtube.com/watch?v=Ax9iVzTTpSM&start=1195&end=2580'
   tags:
     - remix
   description: >-
@@ -77,8 +80,8 @@
 
 - title: Remix and Progressive Enhancement
   deliveries:
-    - event: '[Remix Utah](https://www.meetup.com/UtahJS/events/xltcqsyccpbpb/)'
-      date: 2021-11-11
+    - event: '[Remix Utah](https://www.meetup.com/remix-utah/events/282031168)'
+      date: 2021-12-02
       recording: 'https://www.youtube.com/watch?v=YD3U6jo9epY'
   tags:
     - remix
