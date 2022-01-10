@@ -1,7 +1,18 @@
+- title: ThunderPlains 2022 TBA
+  deliveries:
+    - event: '[ThunderPlains](https://thunderplainsconf.com/)'
+      date: 2022-10-28
+  tags:
+    - keynote
+  description: >-
+    This talk is yet to be announced
+
 - title: Infobip Shift 2022 TBA
   deliveries:
     - event: '[Infobip](https://shift.infobip.com/)'
       date: 2022-09-19
+  tags:
+    - keynote
   description: >-
     This talk is yet to be announced
 
@@ -9,6 +20,8 @@
   deliveries:
     - event: '[RenderATL](https://www.renderatl.com/)'
       date: 2022-06-01
+  tags:
+    - keynote
   description: >-
     This talk is yet to be announced
 
