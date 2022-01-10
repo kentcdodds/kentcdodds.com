@@ -314,19 +314,17 @@ function mdxPageMeta({
     let title = data.page.frontmatter.title
     const isDraft = data.page.frontmatter.draft
     if (isDraft) title = `(DRAFT) ${title ?? ''}`
-    const {origin} = requestInfo
-    const path = `/${data.page.slug}`
     return {
       ...(isDraft ? {robots: 'noindex'} : null),
       ...getSocialMetas({
-        origin,
+        origin: requestInfo.origin,
         title,
         description: data.page.frontmatter.description,
         keywords: keywords.join(', '),
-        url: getUrl({origin, path}),
+        url: getUrl(requestInfo),
         image: getSocialImageWithPreTitle({
-          origin,
-          url: getDisplayUrl({origin, path}),
+          origin: requestInfo.origin,
+          url: getDisplayUrl(requestInfo),
           featuredImage:
             data.page.frontmatter.bannerCloudinaryId ??
             'kentcdodds.com/illustrations/kody-flying_blue',
