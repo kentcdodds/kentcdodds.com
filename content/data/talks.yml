@@ -42,9 +42,10 @@
       recording: https://www.youtube.com/watch?v=tAHVmkHOr_w&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf&t=485
     - event: '[React Wednesdays](https://www.telerik.com/react-wednesdays)'
       date: 2022-01-05
-      recording: https://www.youtube.com/watch?v=QgY49LCD8jQ
+      recording: https://www.youtube.com/watch?v=QgY49LCD8jQ&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
     - event: '[YYC.js](https://www.meetup.com/yyc-js/events/282715530/)'
       date: 2022-01-12
+      recording: https://www.youtube.com/watch?v=EwVoHu0dgfg&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
     - event:
         '[iO Frontend
         Meetup](https://www.meetup.com/nl-NL/Frontmen/events/282800242/)'
@@ -82,7 +83,9 @@
     - event: '[Remix Utah](https://www.meetup.com/remix-utah/events/282462790)'
       date: 2022-01-06
       recording: 'https://www.youtube.com/watch?v=Ax9iVzTTpSM&start=1195&end=2580'
-    - event: '[Remix India Online](https://www.meetup.com/remix-india-online/events/282827944)'
+    - event:
+        '[Remix India
+        Online](https://www.meetup.com/remix-india-online/events/282827944)'
       date: 2022-01-11
       recording: 'https://www.youtube.com/watch?v=5xBndUop8CE&start=103&end=1473'
   tags:
