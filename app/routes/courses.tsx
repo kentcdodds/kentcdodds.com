@@ -61,18 +61,18 @@ function SmallCourseCard({
   courseUrl,
 }: CourseCardProps) {
   return (
-    <div className="bg-secondary relative flex flex-col col-span-full items-start mt-12 px-8 py-12 rounded-lg lg:col-span-4 lg:mt-0 lg:px-12">
+    <div className="bg-secondary relative col-span-full mt-12 flex flex-col items-start rounded-lg px-8 py-12 lg:col-span-4 lg:mt-0 lg:px-12">
       <img
-        className="flex-none w-auto h-32 object-contain"
+        className="h-32 w-auto flex-none object-contain"
         {...getImgProps(imageBuilder, {
           widths: [128, 256, 384],
           sizes: ['8rem'],
         })}
       />
-      <div className="flex flex-none items-end mb-4 h-48">
+      <div className="mb-4 flex h-48 flex-none items-end">
         <H3>{title}</H3>
       </div>
-      <Paragraph className="flex-auto mb-16 max-w-sm">{description}</Paragraph>
+      <Paragraph className="mb-16 max-w-sm flex-auto">{description}</Paragraph>
 
       <ArrowLink href={courseUrl} className="flex-none">
         Visit course
@@ -92,7 +92,7 @@ function CoursesHome() {
       />
 
       <Grid as="main" className="mb-48">
-        <div className="hidden col-span-full mb-12 lg:block lg:col-span-4 lg:mb-0">
+        <div className="col-span-full mb-12 hidden lg:col-span-4 lg:mb-0 lg:block">
           <H6 as="h2">{`Reasons to invest in yourself`}</H6>
         </div>
         <div className="col-span-full mb-8 lg:col-span-4 lg:mb-20">
@@ -123,7 +123,7 @@ function CoursesHome() {
             `}
           </Paragraph>
         </div>
-        <div className="hidden col-span-2 col-start-11 items-start justify-end lg:flex">
+        <div className="col-span-2 col-start-11 hidden items-start justify-end lg:flex">
           <ArrowLink to="#courses" direction="down" />
         </div>
       </Grid>

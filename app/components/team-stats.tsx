@@ -56,7 +56,7 @@ function Stat({
       initial="initial"
       whileHover="hover"
       whileFocus="hover"
-      className="relative flex items-center justify-center focus:outline-none origin-right"
+      className="focus:outline-none relative flex origin-right items-center justify-center"
       transition={transition}
       variants={{
         initial: {width: 22},
@@ -103,7 +103,7 @@ function Stat({
 
       {isUsersTeam ? (
         <motion.div
-          className="absolute left-1/2 top-0 border-team-current rounded-md"
+          className="absolute left-1/2 top-0 rounded-md border-team-current"
           transition={transition}
           variants={{
             initial: {
@@ -130,7 +130,7 @@ function Stat({
               initial: {borderWidth: 2, borderRadius: 4 - 2},
               hover: {borderWidth: 4, borderRadius: 8 - 3},
             }}
-            className="w-full h-full dark:border-gray-900 border-white object-cover"
+            className="h-full w-full border-white object-cover dark:border-gray-900"
             src={avatar.src}
             alt={avatar.alt}
           />
@@ -169,7 +169,7 @@ function TeamStats({
   return (
     <div
       className={clsx(
-        'group relative inline-flex flex-col justify-end h-8',
+        'group relative inline-flex h-8 flex-col justify-end',
         `set-color-team-current-${team.toLowerCase()}`,
         {
           'justify-end': direction === 'down',
@@ -179,7 +179,7 @@ function TeamStats({
     >
       <div
         className={clsx(
-          'absolute flex gap-2 items-center h-8 text-sm opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition',
+          'absolute flex h-8 items-center gap-2 text-sm opacity-0 transition focus-within:opacity-100 group-hover:opacity-100',
           {
             'right-0': pull === 'right',
             'left-0': pull === 'left',
@@ -200,7 +200,7 @@ function TeamStats({
       </div>
       <ul
         className={clsx(
-          'relative flex px-4 h-0 border-team-current overflow-visible',
+          'relative flex h-0 overflow-visible border-team-current px-4',
           {
             'border-t': direction === 'down',
             'border-b': direction === 'up',

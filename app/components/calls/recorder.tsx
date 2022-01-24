@@ -835,7 +835,7 @@ function StreamVis({
     }
   }, [stream, replay, metadata])
 
-  return <canvas className="w-full h-40" ref={canvasRef} />
+  return <canvas className="h-40 w-full" ref={canvasRef} />
 }
 
 function RecordingTime({timer}: {timer: number}) {

@@ -97,7 +97,7 @@ function CategoryCardContent({title, description, number}: CategoryCardProps) {
   return (
     <>
       <H5 as="div" className="text-primary w-full transition">
-        <AccordionButton className="relative w-full text-left focus:outline-none">
+        <AccordionButton className="focus:outline-none relative w-full text-left">
           <div className="absolute -bottom-12 -left-8 -right-8 -top-12 rounded-lg lg:-left-28 lg:-right-20" />
 
           <span className="absolute -left-16 top-0 hidden text-lg lg:block">
@@ -144,7 +144,7 @@ function CategoryCardContent({title, description, number}: CategoryCardProps) {
 
 function CategoryCard(props: CategoryCardProps) {
   return (
-    <AccordionItem className="bg-secondary hover:bg-alt focus-within:bg-alt flex flex-col col-span-full items-start px-8 py-12 w-full rounded-lg transition lg:col-span-6 lg:pl-28 lg:pr-20">
+    <AccordionItem className="bg-secondary hover:bg-alt focus-within:bg-alt col-span-full flex w-full flex-col items-start rounded-lg px-8 py-12 transition lg:col-span-6 lg:pl-28 lg:pr-20">
       <CategoryCardContent {...props} />
     </AccordionItem>
   )
@@ -334,7 +334,7 @@ export default function Discord() {
         </Grid>
 
         <Grid className="mb-24 lg:mb-64">
-          <div className="hidden col-span-full mb-12 lg:block lg:col-span-4 lg:mb-0">
+          <div className="col-span-full mb-12 hidden lg:col-span-4 lg:mb-0 lg:block">
             <H6 as="h2">{`Set up your own learning club.`}</H6>
           </div>
           <div className="col-span-full mb-20 lg:col-span-8 lg:mb-28">
@@ -405,7 +405,7 @@ export default function Discord() {
 
         <div className="mb-24 lg:mb-48">
           <Grid featured>
-            <div className="flex flex-col col-span-full items-stretch mb-40 lg:col-span-5 lg:items-start lg:mb-0">
+            <div className="col-span-full mb-40 flex flex-col items-stretch lg:col-span-5 lg:mb-0 lg:items-start">
               <H2 className="mb-8">
                 {`Enjoy community meetups in the discord server (and host your own!).`}
               </H2>

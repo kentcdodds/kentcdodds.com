@@ -29,8 +29,8 @@ function CourseCard({
   const shouldReduceMotion = useReducedMotion()
 
   return (
-    <div className="relative pt-12 w-full h-full">
-      <div className="relative block pb-10 pt-36 px-8 w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg md:pb-20 md:px-16">
+    <div className="relative h-full w-full pt-12">
+      <div className="relative block h-full w-full rounded-lg bg-gray-100 px-8 pb-10 pt-36 dark:bg-gray-800 md:px-16 md:pb-20">
         <H2 as="h3">{title}</H2>
         <div className="mt-4 max-w-sm">
           <H2 variant="secondary" as="p">
@@ -57,7 +57,7 @@ function CourseCard({
 
       <div className="absolute left-16 top-0">
         <img
-          className="w-auto h-32 object-contain"
+          className="h-32 w-auto object-contain"
           {...getImgProps(imageBuilder, {
             widths: [128, 256, 384],
             sizes: ['8rem'],

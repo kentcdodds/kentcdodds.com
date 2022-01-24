@@ -135,7 +135,7 @@ function WorkshopsHome() {
       <Spacer size="base" />
 
       <Grid className="mb-14">
-        <div className="flex flex-wrap gap-4 col-span-full lg:col-span-10">
+        <div className="col-span-full flex flex-wrap gap-4 lg:col-span-10">
           {tags.map(tag => (
             <Tag
               key={tag}

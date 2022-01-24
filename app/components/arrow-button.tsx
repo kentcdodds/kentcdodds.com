@@ -108,7 +108,7 @@ function ArrowButtonContent({
         <span className="mr-8 text-xl font-medium">{children}</span>
       ) : null}
 
-      <div className="relative inline-flex flex-none items-center justify-center p-1 w-14 h-14">
+      <div className="relative inline-flex h-14 w-14 flex-none items-center justify-center p-1">
         <div className="absolute text-gray-200 dark:text-gray-600">
           <svg width="60" height="60">
             <circle
@@ -221,7 +221,7 @@ function BackLink({
     <MotionLink
       to={to}
       className={clsx(
-        'text-primary flex focus:outline-none space-x-4',
+        'text-primary focus:outline-none flex space-x-4',
         className,
       )}
       ref={ref}

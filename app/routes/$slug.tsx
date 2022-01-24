@@ -74,7 +74,7 @@ export default function MdxScreen() {
   return (
     <>
       <Grid className="mb-10 mt-24 lg:mb-24">
-        <div className="flex col-span-full justify-between lg:col-span-8 lg:col-start-3">
+        <div className="col-span-full flex justify-between lg:col-span-8 lg:col-start-3">
           <BackLink to="/">Back to home</BackLink>
         </div>
       </Grid>
@@ -82,7 +82,7 @@ export default function MdxScreen() {
       <Grid as="header" className="mb-12">
         <div className="col-span-full lg:col-span-8 lg:col-start-3">
           {isDraft ? (
-            <div className="prose prose-light dark:prose-dark mb-6 max-w-full">
+            <div className="prose prose-light mb-6 max-w-full dark:prose-dark">
               {React.createElement(
                 'callout-warning',
                 {},

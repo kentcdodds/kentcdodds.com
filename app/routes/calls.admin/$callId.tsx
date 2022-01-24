@@ -164,7 +164,7 @@ function CallListing({call}: {call: LoaderData['call']}) {
       <strong>{call.title}</strong>
       <Paragraph>{call.description}</Paragraph>
       {audioURL ? (
-        <div className="flex flex-wrap gap-6 items-center my-6">
+        <div className="my-6 flex flex-wrap items-center gap-6">
           <audio
             className="flex-1"
             style={{minWidth: '300px'}}

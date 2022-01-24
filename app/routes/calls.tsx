@@ -187,7 +187,7 @@ export default function CallHomeScreen() {
             )}
           />
         </div>
-        <Spacer size="xs" className="block col-span-full lg:hidden" />
+        <Spacer size="xs" className="col-span-full block lg:hidden" />
         <div className="col-span-full lg:col-span-5 lg:col-start-8">
           <H4 as="p">{`What's this all about?`}</H4>
           <div className="flex flex-col gap-3">
@@ -218,20 +218,20 @@ export default function CallHomeScreen() {
         display it with tabs like on the podcast page. [2023, 2022, 2021]
       */}
       <Grid as="main">
-        <div className="flex flex-col col-span-full mb-6 lg:flex-row lg:justify-between lg:mb-12">
+        <div className="col-span-full mb-6 flex flex-col lg:mb-12 lg:flex-row lg:justify-between">
           <H6
             id="episodes"
             as="h2"
-            className="flex flex-col col-span-full mb-10 lg:flex-row lg:mb-0"
+            className="col-span-full mb-10 flex flex-col lg:mb-0 lg:flex-row"
           >
             {`Calls with Kent C. Dodds — ${data.episodes.length} episodes`}
           </H6>
 
           <button
-            className="group text-primary relative text-lg font-medium focus:outline-none"
+            className="group text-primary focus:outline-none relative text-lg font-medium"
             onClick={() => setSortOrder(o => (o === 'asc' ? 'desc' : 'asc'))}
           >
-            <div className="bg-secondary absolute -bottom-2 -left-4 -right-4 -top-2 rounded-lg opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition" />
+            <div className="bg-secondary absolute -bottom-2 -left-4 -right-4 -top-2 rounded-lg opacity-0 transition group-hover:opacity-100 group-focus:opacity-100" />
             <span className="relative inline-flex items-center">
               {sortOrder === 'asc' ? (
                 <>
@@ -259,20 +259,20 @@ export default function CallHomeScreen() {
               >
                 <Link to={path} className="group focus:outline-none">
                   <Grid nested className="relative py-10 lg:py-5">
-                    <div className="bg-secondary absolute -inset-px group-hover:block group-focus:block hidden -mx-6 rounded-lg" />
-                    <div className="relative flex-none col-span-1">
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-focus:opacity-100 group-hover:opacity-100 transform scale-0 group-focus:scale-100 group-hover:scale-100 transition">
-                        <div className="flex-none p-4 text-gray-800 bg-white rounded-full">
+                    <div className="bg-secondary absolute -inset-px -mx-6 hidden rounded-lg group-hover:block group-focus:block" />
+                    <div className="relative col-span-1 flex-none">
+                      <div className="absolute inset-0 flex scale-0 transform items-center justify-center opacity-0 transition group-hover:scale-100 group-hover:opacity-100 group-focus:scale-100 group-focus:opacity-100">
+                        <div className="flex-none rounded-full bg-white p-4 text-gray-800">
                           <TriangleIcon size={12} />
                         </div>
                       </div>
                       <img
-                        className="w-full h-16 rounded-lg object-cover"
+                        className="h-16 w-full rounded-lg object-cover"
                         src={episode.imageUrl}
                         alt="" // this is decorative only
                       />
                     </div>
-                    <div className="text-primary relative flex flex-col col-span-3 md:col-span-7 lg:flex-row lg:col-span-11 lg:items-center lg:justify-between">
+                    <div className="text-primary relative col-span-3 flex flex-col md:col-span-7 lg:col-span-11 lg:flex-row lg:items-center lg:justify-between">
                       <div className="mb-3 text-xl font-medium lg:mb-0">
                         {/* For most optimal display, this will needs adjustment once you'll hit 5 digits */}
                         <span
@@ -289,7 +289,7 @@ export default function CallHomeScreen() {
 
                         {episode.title}
                       </div>
-                      <div className="text-gray-400 text-lg font-medium">
+                      <div className="text-lg font-medium text-gray-400">
                         {formatTime(episode.duration)}
                       </div>
                     </div>

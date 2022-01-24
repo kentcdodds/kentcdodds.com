@@ -68,7 +68,7 @@ function ClipboardCopyButton({
     <button
       onClick={() => setState(State.Copy)}
       className={clsx(
-        'p-3 text-black whitespace-nowrap text-lg font-medium bg-white rounded-lg focus:outline-none shadow hover:shadow-md group-hover:opacity-100 peer-hover:opacity-100 hover:opacity-100 peer-focus:opacity-100 focus:opacity-100 transition focus:ring-4 hover:ring-4 ring-team-current lg:opacity-0',
+        'focus:outline-none whitespace-nowrap rounded-lg bg-white p-3 text-lg font-medium text-black shadow ring-team-current transition hover:opacity-100 hover:shadow-md hover:ring-4 focus:opacity-100 focus:ring-4 group-hover:opacity-100 peer-hover:opacity-100 peer-focus:opacity-100 lg:opacity-0',
         {'lg:px-8 lg:py-4': variant === 'responsive'},
         className,
       )}

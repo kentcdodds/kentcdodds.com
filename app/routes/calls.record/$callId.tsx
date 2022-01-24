@@ -76,7 +76,7 @@ export default function Screen() {
     <section>
       <Paragraph className="mb-8">{data.call.description}</Paragraph>
       <div className="flex flex-wrap gap-4">
-        <div className="flex-1 w-full" style={{minWidth: '16rem'}}>
+        <div className="w-full flex-1" style={{minWidth: '16rem'}}>
           {audioURL ? (
             <audio
               src={audioURL}

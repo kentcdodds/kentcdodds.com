@@ -12,7 +12,7 @@ function PodcastAppLink({
   return (
     <a
       {...props}
-      className="focus-ring text-primary bg-secondary flex flex-none items-center mb-4 mr-4 px-8 py-4 rounded-full space-x-4"
+      className="focus-ring text-primary bg-secondary mb-4 mr-4 flex flex-none items-center space-x-4 rounded-full px-8 py-4"
     >
       <span className="text-gray-400">{icon}</span>
       <span>{children}</span>
@@ -32,7 +32,7 @@ function PodcastSubs({
   rss: string
 }) {
   return (
-    <div className="flex flex-wrap col-span-full items-start justify-start -mb-4 -mr-4 lg:col-span-10">
+    <div className="col-span-full -mb-4 -mr-4 flex flex-wrap items-start justify-start lg:col-span-10">
       <PodcastAppLink icon={<AppleIcon />} href={apple}>
         Apple podcasts
       </PodcastAppLink>

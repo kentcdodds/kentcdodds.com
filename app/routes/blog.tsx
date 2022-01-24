@@ -338,7 +338,7 @@ function BlogHome() {
             <Link
               reloadDocument
               to="rss.xml"
-              className="text-secondary underlined inline-block ml-2 hover:text-team-current focus:text-team-current"
+              className="text-secondary underlined ml-2 inline-block hover:text-team-current focus:text-team-current"
             >
               <RssIcon title="Get my blog as RSS" />
             </Link>
@@ -368,7 +368,7 @@ function BlogHome() {
                     ignoreInputKeyUp.current = false
                   }}
                   className={clsx(
-                    'absolute left-6 top-0 flex items-center justify-center p-0 h-full text-blueGray-500 bg-transparent border-none',
+                    'absolute left-6 top-0 flex h-full items-center justify-center border-none bg-transparent p-0 text-blueGray-500',
                     {
                       'cursor-pointer': query !== '',
                       'cursor-default': query === '',
@@ -395,9 +395,9 @@ function BlogHome() {
                   }}
                   name="q"
                   placeholder={searchInputPlaceholder}
-                  className="text-primary bg-primary border-secondary focus:bg-secondary pl-14 pr-6 py-6 w-full text-lg font-medium border hover:border-team-current focus:border-team-current rounded-full focus:outline-none md:pr-24"
+                  className="text-primary bg-primary border-secondary focus:bg-secondary focus:outline-none w-full rounded-full border py-6 pl-14 pr-6 text-lg font-medium hover:border-team-current focus:border-team-current md:pr-24"
                 />
-                <div className="absolute right-6 top-0 hidden items-center justify-between w-14 h-full text-blueGray-500 text-lg font-medium md:flex">
+                <div className="absolute right-6 top-0 hidden h-full w-14 items-center justify-between text-lg font-medium text-blueGray-500 md:flex">
                   <MixedCheckbox
                     title={checkboxLabel}
                     aria-label={checkboxLabel}
@@ -481,7 +481,7 @@ function BlogHome() {
             <H6 as="div" className="col-span-full mb-6">
               Search blog by topics
             </H6>
-            <div className="flex flex-wrap col-span-full -mb-4 -mr-4 lg:col-span-10">
+            <div className="col-span-full -mb-4 -mr-4 flex flex-wrap lg:col-span-10">
               {data.tags.map(tag => {
                 const selected = regularQuery.includes(tag)
                 return (
@@ -530,9 +530,9 @@ function BlogHome() {
 
       <Grid className="mb-64" ref={resultsRef}>
         {posts.length === 0 ? (
-          <div className="flex flex-col col-span-full items-center">
+          <div className="col-span-full flex flex-col items-center">
             <img
-              className="mt-24 w-full max-w-lg h-auto"
+              className="mt-24 h-auto w-full max-w-lg"
               {...getImgProps(images.bustedOnewheel, {
                 widths: [350, 512, 1024, 1536],
                 sizes: ['(max-width: 639px) 80vw', '512px'],
@@ -555,7 +555,7 @@ function BlogHome() {
       </Grid>
 
       {hasMorePosts ? (
-        <div className="flex justify-center mb-64 w-full">
+        <div className="mb-64 flex w-full justify-center">
           <Button
             variant="secondary"
             onClick={() => setIndexToShow(i => i + PAGE_SIZE)}

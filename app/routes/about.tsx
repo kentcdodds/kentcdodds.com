@@ -128,7 +128,7 @@ function AboutIndex() {
               />
             }
           />
-          <p className="text-blueGray-500 text-xl">{`Get to know me in this full introduction video (8:05)`}</p>
+          <p className="text-xl text-blueGray-500">{`Get to know me in this full introduction video (8:05)`}</p>
           <a
             className="underlined"
             target="_blank"
@@ -282,7 +282,7 @@ function AboutIndex() {
         subTitle="Here are a couple recent ones."
       />
 
-      <Grid className="gap-5 mb-24 lg:mb-64">
+      <Grid className="mb-24 gap-5 lg:mb-64">
         <div className="col-span-full mb-12 lg:mb-20">
           <img
             id="about-me"
@@ -432,12 +432,12 @@ interface TalkCardProps {
 
 function TalkCard({tags, date, title, talkUrl}: TalkCardProps) {
   return (
-    <div className="bg-secondary text-primary flex flex-col justify-between p-16 pt-20 w-full h-full rounded-lg">
+    <div className="bg-secondary text-primary flex h-full w-full flex-col justify-between rounded-lg p-16 pt-20">
       <div>
-        <div className="flex flex-wrap -mr-4 mb-12">
+        <div className="-mr-4 mb-12 flex flex-wrap">
           {tags.map(tag => (
             <div
-              className="text-primary mb-4 mr-4 px-6 py-1 bg-gray-300 dark:bg-gray-700 rounded-full"
+              className="text-primary mb-4 mr-4 rounded-full bg-gray-300 px-6 py-1 dark:bg-gray-700"
               key={tag}
             >
               {tag}

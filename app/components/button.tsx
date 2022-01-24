@@ -24,9 +24,9 @@ function ButtonInner({
     <>
       <div
         className={clsx(
-          'focus-ring absolute inset-0 rounded-full opacity-100 disabled:opacity-50 transform transition',
+          'focus-ring absolute inset-0 transform rounded-full opacity-100 transition disabled:opacity-50',
           {
-            'border-2 border-secondary bg-primary group-hover:border-transparent group-focus:border-transparent':
+            'border-secondary bg-primary border-2 group-hover:border-transparent group-focus:border-transparent':
               variant === 'secondary' || variant === 'danger',
             danger: variant === 'danger',
             'bg-inverse': variant === 'primary',
@@ -36,13 +36,13 @@ function ButtonInner({
 
       <div
         className={clsx(
-          'relative flex items-center justify-center w-full h-full whitespace-nowrap',
+          'relative flex h-full w-full items-center justify-center whitespace-nowrap',
           {
             'text-primary': variant === 'secondary',
             'text-inverse': variant === 'primary',
             'text-red-500': variant === 'danger',
-            'px-11 py-6 space-x-5': size !== 'medium',
-            'px-8 py-4 space-x-3': size === 'medium',
+            'space-x-5 px-11 py-6': size !== 'medium',
+            'space-x-3 px-8 py-4': size === 'medium',
           },
         )}
       >
@@ -79,7 +79,7 @@ function LinkButton({
       className={clsx(
         className,
         underlined
-          ? 'underlined whitespace-nowrap focus:outline-none'
+          ? 'underlined focus:outline-none whitespace-nowrap'
           : 'underline',
         'text-primary inline-block',
       )}

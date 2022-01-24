@@ -127,7 +127,7 @@ interface TopicRowProps {
 
 function TopicRow({number, topicHTML}: TopicRowProps) {
   return (
-    <div className="bg-secondary pb-14 pt-12 px-10 rounded-lg lg:pl-36 lg:pr-56 lg:py-12">
+    <div className="bg-secondary rounded-lg px-10 pb-14 pt-12 lg:py-12 lg:pl-36 lg:pr-56">
       <H5 className="relative">
         <span className="lg:absolute lg:-left-24 lg:block">
           {number.toString().padStart(2, '0')}.
@@ -228,7 +228,7 @@ export default function WorkshopScreen() {
             ) : null}
           </div>
         </div>
-        <div className="hidden col-span-1 col-start-12 items-center justify-center lg:flex">
+        <div className="col-span-1 col-start-12 hidden items-center justify-center lg:flex">
           <ArrowLink to="#problem" direction="down" />
         </div>
       </Grid>
@@ -266,11 +266,11 @@ export default function WorkshopScreen() {
         />
       </Grid>
 
-      <div className="mb-24 px-5vw w-full lg:mb-48">
-        <div className="bg-secondary py-24 w-full rounded-lg lg:pb-40 lg:pt-36">
+      <div className="mb-24 w-full px-5vw lg:mb-48">
+        <div className="bg-secondary w-full rounded-lg py-24 lg:pb-40 lg:pt-36">
           <div className="-mx-5vw">
             <Grid>
-              <div className="flex flex-col col-span-full items-stretch mb-40 lg:col-span-5 lg:items-start lg:mb-0">
+              <div className="col-span-full mb-40 flex flex-col items-stretch lg:col-span-5 lg:mb-0 lg:items-start">
                 <H2 className="mb-8">
                   {`At the end of this workshop you'll be able to do all of
                   these things yourself.`}
@@ -310,7 +310,7 @@ export default function WorkshopScreen() {
           <H2 variant="secondary">This is what we will talk about.</H2>
         </div>
 
-        <div className="flex flex-col col-span-full items-stretch justify-end mb-16 lg:col-span-4 lg:items-end lg:justify-center">
+        <div className="col-span-full mb-16 flex flex-col items-stretch justify-end lg:col-span-4 lg:items-end lg:justify-center">
           <ButtonLink href={registerLink}>Register here</ButtonLink>
         </div>
 

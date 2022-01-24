@@ -20,7 +20,7 @@ function NumberedPanel({
   return (
     <li>
       <H6 as="h3" className="relative mb-6 lg:mb-8">
-        <span className="block mb-4 lg:absolute lg:-left-16 lg:mb-0">
+        <span className="mb-4 block lg:absolute lg:-left-16 lg:mb-0">
           {number.toString().padStart(2, '0')}.
         </span>
         {titleHTML ? (

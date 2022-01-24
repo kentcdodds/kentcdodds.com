@@ -390,7 +390,7 @@ function BlogImage({
 }) {
   return (
     <img
-      className="py-8 w-full rounded-lg object-cover"
+      className="w-full rounded-lg object-cover py-8"
       {...getImgProps(getImageBuilder(cloudinaryId, imgProps.alt), {
         widths: [350, 550, 700, 845, 1250, 1700, 2550],
         sizes: [

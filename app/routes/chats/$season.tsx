@@ -62,30 +62,30 @@ export default function ChatsSeason() {
     >
       <Grid
         nested
-        className="relative py-10 border-b border-gray-200 dark:border-gray-600 lg:py-5"
+        className="relative border-b border-gray-200 py-10 dark:border-gray-600 lg:py-5"
       >
-        <div className="bg-secondary absolute -inset-px group-focus:block group-hover:block hidden -mx-6 rounded-lg" />
+        <div className="bg-secondary absolute -inset-px -mx-6 hidden rounded-lg group-hover:block group-focus:block" />
 
-        <div className="relative flex-none col-span-1">
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-focus:opacity-100 group-hover:opacity-100 transform scale-0 group-hover:scale-100 transition">
-            <div className="flex-none p-4 text-gray-800 bg-white rounded-full">
+        <div className="relative col-span-1 flex-none">
+          <div className="absolute inset-0 flex scale-0 transform items-center justify-center opacity-0 transition group-hover:scale-100 group-hover:opacity-100 group-focus:opacity-100">
+            <div className="flex-none rounded-full bg-white p-4 text-gray-800">
               <TriangleIcon size={12} />
             </div>
           </div>
           <img
-            className="w-full h-16 rounded-lg object-cover"
+            className="h-16 w-full rounded-lg object-cover"
             src={episode.image}
             alt={episode.title}
           />
         </div>
-        <div className="text-primary relative flex flex-col col-span-3 md:col-span-7 lg:flex-row lg:col-span-11 lg:items-center lg:justify-between">
+        <div className="text-primary relative col-span-3 flex flex-col md:col-span-7 lg:col-span-11 lg:flex-row lg:items-center lg:justify-between">
           <div className="mb-3 text-xl font-medium lg:mb-0">
             <span className="inline-block w-10 lg:text-lg">
               {`${episode.episodeNumber.toString().padStart(2, '0')}.`}
             </span>
             {episode.title}
           </div>
-          <div className="text-gray-400 text-lg font-medium">
+          <div className="text-lg font-medium text-gray-400">
             {formatTime(episode.duration)}
           </div>
         </div>

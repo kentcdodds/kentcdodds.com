@@ -270,16 +270,16 @@ function PageLoadingMessage() {
 
   return (
     <NotificationMessage position="bottom-right" visible={showLoader}>
-      <div className="flex items-center w-64">
+      <div className="flex w-64 items-center">
         <motion.div
           transition={{repeat: Infinity, duration: 2, ease: 'linear'}}
           animate={{rotate: 360}}
         >
           <TeamCircle size={48} team="UNKNOWN" />
         </motion.div>
-        <div className="inline-grid ml-4">
+        <div className="ml-4 inline-grid">
           <AnimatePresence>
-            <div className="flex col-start-1 row-start-1 overflow-hidden">
+            <div className="col-start-1 row-start-1 flex overflow-hidden">
               <motion.span
                 key={action}
                 initial={{y: 15, opacity: 0}}
@@ -337,7 +337,7 @@ function App() {
           src="https://polyfill.io/v3/polyfill.min.js?features=Intl%2CIntl.ListFormat"
         />
       </head>
-      <body className="dark:bg-gray-900 bg-white transition duration-500">
+      <body className="bg-white transition duration-500 dark:bg-gray-900">
         <PageLoadingMessage />
         <NotificationMessage queryStringKey="message" delay={0.3} />
         <Navbar />
@@ -380,7 +380,7 @@ export function ErrorBoundary({error}: {error: Error}) {
         <title>Oh no...</title>
         <Links />
       </head>
-      <body className="dark:bg-gray-900 bg-white transition duration-500">
+      <body className="bg-white transition duration-500 dark:bg-gray-900">
         <ErrorPage
           heroProps={{
             title: '500 - Oh no, something did not go well.',
@@ -406,7 +406,7 @@ export function CatchBoundary() {
           <title>Oh no...</title>
           <Links />
         </head>
-        <body className="dark:bg-gray-900 bg-white transition duration-500">
+        <body className="bg-white transition duration-500 dark:bg-gray-900">
           <ErrorPage
             heroProps={{
               title: "404 - Oh no, you found a page that's missing stuff.",

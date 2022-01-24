@@ -194,7 +194,7 @@ function PodcastHome() {
             )}
           />
         </div>
-        <Spacer size="xs" className="block col-span-full lg:hidden" />
+        <Spacer size="xs" className="col-span-full block lg:hidden" />
         <div className="col-span-full lg:col-span-5 lg:col-start-8">
           <H4 as="p">{`What's this all about?`}</H4>
           <div className="flex flex-col gap-3">
@@ -239,14 +239,14 @@ function PodcastHome() {
         index={tabIndex}
         onChange={handleTabChange}
       >
-        <TabList className="flex flex-col col-span-full items-start mb-20 bg-transparent lg:flex-row lg:space-x-12">
+        <TabList className="col-span-full mb-20 flex flex-col items-start bg-transparent lg:flex-row lg:space-x-12">
           {data.seasons.map(season => (
             <Tab
               key={season.seasonNumber}
               // Because we have a link right under the tab, we'll keep this off
               // the tab "tree" and rely on focusing/activating the link.
               tabIndex={-1}
-              className="p-0 text-4xl leading-tight focus:bg-transparent border-none focus:outline-none"
+              className="focus:outline-none border-none p-0 text-4xl leading-tight focus:bg-transparent"
             >
               {/*
                 The link is here for progressive enhancement. Even though this
@@ -278,10 +278,10 @@ function PodcastHome() {
         </TabList>
 
         {currentSeason ? (
-          <div className="flex flex-col col-span-full mb-6 lg:flex-row lg:justify-between lg:mb-12">
+          <div className="col-span-full mb-6 flex flex-col lg:mb-12 lg:flex-row lg:justify-between">
             <H6
               as="h2"
-              className="flex flex-col col-span-full mb-10 lg:flex-row lg:mb-0"
+              className="col-span-full mb-10 flex flex-col lg:mb-0 lg:flex-row"
             >
               <span>Chats with Kent C. Dodds</span>
               &nbsp;
@@ -289,10 +289,10 @@ function PodcastHome() {
             </H6>
 
             <button
-              className="group text-primary relative text-lg font-medium focus:outline-none"
+              className="group text-primary focus:outline-none relative text-lg font-medium"
               onClick={() => setSortOrder(o => (o === 'asc' ? 'desc' : 'asc'))}
             >
-              <div className="bg-secondary absolute -bottom-2 -left-4 -right-4 -top-2 rounded-lg opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition" />
+              <div className="bg-secondary absolute -bottom-2 -left-4 -right-4 -top-2 rounded-lg opacity-0 transition group-hover:opacity-100 group-focus:opacity-100" />
               <span className="relative inline-flex items-center">
                 {sortOrder === 'asc' ? (
                   <>
@@ -314,7 +314,7 @@ function PodcastHome() {
           {data.seasons.map(season => (
             <TabPanel
               key={season.seasonNumber}
-              className="border-t border-gray-200 dark:border-gray-600 focus:outline-none"
+              className="focus:outline-none border-t border-gray-200 dark:border-gray-600"
             >
               <ChatsEpisodeUIStateProvider value={{sortOrder}}>
                 <Outlet />

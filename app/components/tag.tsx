@@ -17,7 +17,7 @@ function Tag({tag, selected, onClick, disabled}: TagProps) {
       checked={selected}
       onChange={onClick}
       className={clsx(
-        'relative block mb-4 mr-4 px-6 py-3 w-auto h-auto rounded-full cursor-pointer transition',
+        'relative mb-4 mr-4 block h-auto w-auto cursor-pointer rounded-full px-6 py-3 transition',
         {
           'text-primary bg-secondary': !selected,
           'text-inverse bg-inverse': selected,

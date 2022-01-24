@@ -8,7 +8,7 @@ import {DiscordLogo} from '../icons/discord-logo'
 function DiscordSection() {
   return (
     <Grid>
-      <div className="flex flex-col col-span-full justify-center mt-12 lg:col-span-5 lg:mt-0">
+      <div className="col-span-full mt-12 flex flex-col justify-center lg:col-span-5 lg:mt-0">
         <div className="text-black dark:text-white">
           <DiscordLogo />
         </div>
@@ -30,10 +30,10 @@ function DiscordSection() {
         </ArrowLink>
       </div>
 
-      <div className="relative hidden lg:block lg:col-span-6 lg:col-start-7">
-        <div className="w-full h-full">
+      <div className="relative hidden lg:col-span-6 lg:col-start-7 lg:block">
+        <div className="h-full w-full">
           <img
-            className="w-full h-full rounded-lg object-cover"
+            className="h-full w-full rounded-lg object-cover"
             {...getImgProps(images.kentCodingWithKody, {
               // this image is hidden at max-width of 1023px
               // so we set that to 0px and have a width for 1px
@@ -58,10 +58,10 @@ function DiscordSection() {
           // this shade of blue is much more accessible with the bg-blue-100
           style={{color: '#006ece'}}
         >
-          <div className="self-start px-12 py-6 text-lg bg-blue-100 rounded-full">
+          <div className="self-start rounded-full bg-blue-100 px-12 py-6 text-lg">
             {`Want to learn react together?`}
           </div>
-          <div className="self-start px-12 py-6 text-lg bg-blue-100 rounded-full">
+          <div className="self-start rounded-full bg-blue-100 px-12 py-6 text-lg">
             {`Let me know `}
             <span role="img" aria-label="victory hand emoji">
               ✌️
@@ -70,14 +70,14 @@ function DiscordSection() {
         </div>
 
         <div
-          className="absolute -bottom-6 -right-12 flex flex-col text-right space-y-1"
+          className="absolute -bottom-6 -right-12 flex flex-col space-y-1 text-right"
           // this shade of green is much more accessible with the bg-green-100
           style={{color: '#008300'}}
         >
-          <div className="self-end px-12 py-6 text-lg bg-green-100 rounded-full">
+          <div className="self-end rounded-full bg-green-100 px-12 py-6 text-lg">
             {`For sure! Let's do it!`}
           </div>
-          <div className="self-end px-12 py-6 text-lg bg-green-100 rounded-full">
+          <div className="self-end rounded-full bg-green-100 px-12 py-6 text-lg">
             {`Let me show you what I'm working on...`}
             <span role="img" aria-label="technologist emoji">
               🧑‍💻

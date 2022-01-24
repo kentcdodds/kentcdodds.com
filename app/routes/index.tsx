@@ -91,7 +91,7 @@ export default function IndexRoute() {
         arrowUrl="#intro"
         arrowLabel="Learn more about Kent"
         action={
-          <div className="flex flex-col gap-4 mr-auto">
+          <div className="mr-auto flex flex-col gap-4">
             <ButtonLink to="/blog" variant="primary" prefetch="intent">
               Read the blog
             </ButtonLink>

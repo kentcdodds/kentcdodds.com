@@ -310,11 +310,11 @@ function ArticleFooter({
 
   return (
     <Grid>
-      <div className="flex flex-col flex-wrap gap-2 col-span-full justify-between mb-12 pb-12 text-blueGray-500 text-lg font-medium border-b border-gray-600 lg:flex-row lg:col-span-8 lg:col-start-3 lg:pb-6">
+      <div className="col-span-full mb-12 flex flex-col flex-wrap justify-between gap-2 border-b border-gray-600 pb-12 text-lg font-medium text-blueGray-500 lg:col-span-8 lg:col-start-3 lg:flex-row lg:pb-6">
         <div className="flex space-x-5">
           <a
             className={clsx(
-              'dark:hover:text-white underlined dark:focus:text-white hover:text-black focus:text-black focus:outline-none',
+              'underlined focus:outline-none hover:text-black focus:text-black dark:hover:text-white dark:focus:text-white',
               {hidden: isDraft},
             )}
             target="_blank"
@@ -331,7 +331,7 @@ function ArticleFooter({
         <div className="flex">
           <a
             className={clsx(
-              'underlined dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none',
+              'underlined focus:outline-none hover:text-black focus:text-black dark:hover:text-white dark:focus:text-white',
               {hidden: isDraft},
             )}
             target="_blank"
@@ -342,11 +342,11 @@ function ArticleFooter({
           >
             Discuss on Twitter
           </a>
-          <span className={clsx('self-center mx-3 text-xs', {hidden: isDraft})}>
+          <span className={clsx('mx-3 self-center text-xs', {hidden: isDraft})}>
             •
           </span>
           <a
-            className="underlined dark:hover:text-white dark:focus:text-white hover:text-black focus:text-black focus:outline-none"
+            className="underlined focus:outline-none hover:text-black focus:text-black dark:hover:text-white dark:focus:text-white"
             target="_blank"
             rel="noreferrer noopener"
             href={editLink}
@@ -417,7 +417,7 @@ export default function MdxScreen() {
       }
     >
       <Grid className="mb-10 mt-24 lg:mb-24">
-        <div className="flex col-span-full justify-between lg:col-span-8 lg:col-start-3">
+        <div className="col-span-full flex justify-between lg:col-span-8 lg:col-start-3">
           <BackLink to="/blog">Back to overview</BackLink>
           <TeamStats
             totalReads={data.totalReads}
@@ -431,7 +431,7 @@ export default function MdxScreen() {
       <Grid as="header" className="mb-12">
         <div className="col-span-full lg:col-span-8 lg:col-start-3">
           {isDraft ? (
-            <div className="prose prose-light dark:prose-dark mb-6 max-w-full">
+            <div className="prose prose-light mb-6 max-w-full dark:prose-dark">
               {React.createElement(
                 'callout-warning',
                 {},
@@ -488,12 +488,12 @@ export default function MdxScreen() {
             <div className="flex flex-wrap">
               {frontmatter.translations?.length ? (
                 <>
-                  <ul className="flex flex-wrap col-span-full -mb-4 -mr-4 lg:col-span-10 lg:col-start-3">
+                  <ul className="col-span-full -mb-4 -mr-4 flex flex-wrap lg:col-span-10 lg:col-start-3">
                     {frontmatter.translations.map(({language, link}) => (
                       <li key={`${language}:${link}`}>
                         <a
                           href={link}
-                          className="focus-ring bg-secondary text-primary relative block mb-4 mr-4 px-6 py-3 w-auto h-auto whitespace-nowrap rounded-full"
+                          className="focus-ring bg-secondary text-primary relative mb-4 mr-4 block h-auto w-auto whitespace-nowrap rounded-full px-6 py-3"
                         >
                           {language}
                         </a>
@@ -502,7 +502,7 @@ export default function MdxScreen() {
                   </ul>
                   <a
                     href={externalLinks.translationContributions}
-                    className="text-secondary underlined block mb-6 ml-5 my-3 hover:text-team-current focus:text-team-current text-lg font-medium focus:outline-none"
+                    className="text-secondary underlined focus:outline-none my-3 mb-6 ml-5 block text-lg font-medium hover:text-team-current focus:text-team-current"
                     target="_blank"
                     rel="noreferrer noopener"
                   >
@@ -517,7 +517,7 @@ export default function MdxScreen() {
 
                   <a
                     href={externalLinks.translationContributions}
-                    className="text-secondary underlined block ml-5 hover:text-team-current focus:text-team-current text-lg font-medium focus:outline-none"
+                    className="text-secondary underlined focus:outline-none ml-5 block text-lg font-medium hover:text-team-current focus:text-team-current"
                     target="_blank"
                     rel="noreferrer noopener"
                   >
@@ -529,13 +529,13 @@ export default function MdxScreen() {
           </div>
         </Grid>
 
-        <Grid as="main" className="prose prose-light dark:prose-dark mb-24">
+        <Grid as="main" className="prose prose-light mb-24 dark:prose-dark">
           <Component />
         </Grid>
       </main>
 
       <Grid className="mb-24">
-        <div className="flex col-span-full justify-end lg:col-span-8 lg:col-start-3">
+        <div className="col-span-full flex justify-end lg:col-span-8 lg:col-start-3">
           <TeamStats
             totalReads={data.totalReads}
             rankings={data.readRankings}
