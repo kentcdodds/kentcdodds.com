@@ -7,8 +7,8 @@ import {Grid} from '../grid'
 function AboutSection() {
   return (
     <Grid>
-      <div className="table col-span-full lg:col-span-6">
-        <div className="table-cell align-middle text-center">
+      <div className="col-span-full table lg:col-span-6">
+        <div className="table-cell text-center align-middle">
           <div>
             <img
               className="rounded-lg object-cover"
@@ -31,9 +31,9 @@ function AboutSection() {
         </div>
       </div>
 
-      <div className="flex flex-col col-span-full justify-center lg:col-span-4 lg:col-start-8 lg:mt-0">
+      <div className="col-span-full flex flex-col justify-center lg:col-span-4 lg:col-start-8 lg:mt-0">
         <img
-          className="self-start mt-20 w-auto lg:mt-0"
+          className="mt-20 w-auto self-start lg:mt-0"
           {...getImgProps(images.snowboard, {
             widths: [300, 600, 850, 1600, 2550],
             sizes: [

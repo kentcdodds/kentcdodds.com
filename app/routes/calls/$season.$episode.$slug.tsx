@@ -116,12 +116,12 @@ export default function Screen() {
 
   return (
     <>
-      <div className="flex gap-4 justify-between">
+      <div className="flex justify-between gap-4">
         <div>
           <H6 as="div" className="flex-auto">
             Keywords
           </H6>
-          <Paragraph className="flex mb-8">{keywords.join(', ')}</Paragraph>
+          <Paragraph className="mb-8 flex">{keywords.join(', ')}</Paragraph>
         </div>
         <IconLink
           target="_blank"

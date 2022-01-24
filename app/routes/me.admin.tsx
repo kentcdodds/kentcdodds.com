@@ -271,7 +271,7 @@ export default function MeAdmin() {
       {actionData?.error ? (
         <>
           <Spacer size="3xs" />
-          <p role="alert" className="col-span-full text-red-500 text-sm">
+          <p role="alert" className="col-span-full text-sm text-red-500">
             {actionData.error}
           </p>
         </>
@@ -279,7 +279,7 @@ export default function MeAdmin() {
       <Spacer size="2xs" />
       <div className="col-span-full">
         <Form method="get">
-          <div className="flex flex-wrap gap-4 items-center">
+          <div className="flex flex-wrap items-center gap-4">
             <div className="flex-1">
               <div className="relative flex-1">
                 <button
@@ -293,7 +293,7 @@ export default function MeAdmin() {
                     searchInputRef.current?.focus()
                   }}
                   className={clsx(
-                    'absolute left-6 top-0 flex items-center justify-center p-0 h-full text-blueGray-500 bg-transparent border-none',
+                    'absolute left-6 top-0 flex h-full items-center justify-center border-none bg-transparent p-0 text-blueGray-500',
                     {
                       'cursor-pointer': query !== '',
                       'cursor-default': query === '',
@@ -309,9 +309,9 @@ export default function MeAdmin() {
                   onChange={event => setQuery(event.currentTarget.value)}
                   name="q"
                   placeholder="Filter users"
-                  className="text-primary bg-primary border-secondary focus:bg-secondary pl-14 pr-6 py-6 w-full text-lg font-medium border hover:border-team-current focus:border-team-current rounded-full focus:outline-none md:pr-24"
+                  className="text-primary bg-primary border-secondary focus:bg-secondary focus:outline-none w-full rounded-full border py-6 pl-14 pr-6 text-lg font-medium hover:border-team-current focus:border-team-current md:pr-24"
                 />
-                <div className="absolute right-2 top-0 flex items-center justify-between w-14 h-full text-blueGray-500 text-lg font-medium">
+                <div className="absolute right-2 top-0 flex h-full w-14 items-center justify-between text-lg font-medium text-blueGray-500">
                   <span title="Total results shown">{rows.length}</span>
                 </div>
               </div>
@@ -347,7 +347,7 @@ export default function MeAdmin() {
                     })}
                   >
                     <button
-                      className="flex gap-1 justify-center w-full"
+                      className="flex w-full justify-center gap-1"
                       onClick={() => {
                         setOrdering(prev => {
                           const field = column.id

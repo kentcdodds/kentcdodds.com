@@ -20,11 +20,11 @@ function RegistrationPanel({
   return (
     <div
       id="register"
-      className="bg-secondary flex flex-col items-stretch pb-10 pt-12 px-10 w-full rounded-lg lg:flex-row-reverse lg:items-center lg:justify-end lg:py-8"
+      className="bg-secondary flex w-full flex-col items-stretch rounded-lg px-10 pb-10 pt-12 lg:flex-row-reverse lg:items-center lg:justify-end lg:py-8"
     >
       <div className="mb-10 lg:mb-0 lg:ml-16">
-        <div className="inline-flex items-baseline mb-10 lg:mb-2">
-          <div className="block flex-none w-3 h-3 bg-green-600 rounded-full" />
+        <div className="mb-10 inline-flex items-baseline lg:mb-2">
+          <div className="block h-3 w-3 flex-none rounded-full bg-green-600" />
           {workshopEvent.quantity ? (
             <H6 as="p" className="pl-4">
               {workshopEvent.remaining
@@ -33,7 +33,7 @@ function RegistrationPanel({
             </H6>
           ) : null}
         </div>
-        <h5 className="text-black dark:text-white text-2xl font-medium">
+        <h5 className="text-2xl font-medium text-black dark:text-white">
           {workshopEvent.title}
         </h5>
         <div className="flex flex-wrap gap-2">
@@ -42,8 +42,8 @@ function RegistrationPanel({
           {hasDiscounts ? (
             <div>
               <p className="text-secondary inline-block">Grab a discount:</p>
-              <div className="inline-block ml-1">
-                <ul className="flex gap-2 list-none">
+              <div className="ml-1 inline-block">
+                <ul className="flex list-none gap-2">
                   {discounts.map(([code, discount]) => (
                     <li key={code} className="inline-block">
                       <a href={discount.url} className="underlined">

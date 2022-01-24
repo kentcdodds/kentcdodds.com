@@ -16,17 +16,17 @@ function RedBox({error}: {error: Error}) {
   return (
     <div
       className={clsx(
-        'fixed z-10 inset-0 flex items-center justify-center transition',
+        'fixed inset-0 z-10 flex items-center justify-center transition',
         {
-          'opacity-0 pointer-events-none': !isVisible,
+          'pointer-events-none opacity-0': !isVisible,
         },
       )}
     >
       <button
-        className="absolute inset-0 block w-full h-full bg-black opacity-75"
+        className="absolute inset-0 block h-full w-full bg-black opacity-75"
         onClick={() => setIsVisible(false)}
       />
-      <div className="border-lg text-primary relative mx-5vw my-16 p-12 max-h-75vh bg-red-500 rounded-lg overflow-y-auto">
+      <div className="border-lg text-primary relative mx-5vw my-16 max-h-75vh overflow-y-auto rounded-lg bg-red-500 p-12">
         <H2>{error.message}</H2>
         <div>
           {frames.map(frame => (

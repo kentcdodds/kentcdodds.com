@@ -155,8 +155,8 @@ function Homework({
   homeworkHTMLs: CWKEpisode['homeworkHTMLs']
 }) {
   return (
-    <div className="bg-secondary p-10 pb-16 w-full rounded-lg">
-      <H6 as="h4" className="inline-flex items-center mb-8 space-x-4">
+    <div className="bg-secondary w-full rounded-lg p-10 pb-16">
+      <H6 as="h4" className="mb-8 inline-flex items-center space-x-4">
         <ClipboardIcon />
         <span>Homework</span>
       </H6>
@@ -165,10 +165,10 @@ function Homework({
         {homeworkHTMLs.map(homeworkHTML => (
           <li
             key={homeworkHTML}
-            className="border-secondary flex pb-10 pt-8 border-t"
+            className="border-secondary flex border-t pb-10 pt-8"
           >
             <CheckCircledIcon
-              className="flex-none mr-6 text-gray-400 dark:text-gray-600"
+              className="mr-6 flex-none text-gray-400 dark:text-gray-600"
               size={24}
             />
 
@@ -182,20 +182,20 @@ function Homework({
 
 function Resources({resources = []}: {resources: CWKEpisode['resources']}) {
   return (
-    <div className="bg-secondary p-10 pb-16 rounded-lg">
-      <h4 className="text-primary inline-flex items-center mb-8 text-xl font-medium">
+    <div className="bg-secondary rounded-lg p-10 pb-16">
+      <h4 className="text-primary mb-8 inline-flex items-center text-xl font-medium">
         Resources
       </h4>
 
-      <ul className="text-secondary text-lg font-medium space-y-8 lg:space-y-2">
+      <ul className="text-secondary space-y-8 text-lg font-medium lg:space-y-2">
         {resources.map(resource => (
           <li key={resource.url}>
             <a
               href={resource.url}
-              className="hover:text-team-current focus:text-team-current focus:outline-none transition"
+              className="focus:outline-none transition hover:text-team-current focus:text-team-current"
             >
               <span>{resource.name}</span>
-              <span className="inline-block align-top ml-4 mt-1">
+              <span className="ml-4 mt-1 inline-block align-top">
                 <ArrowIcon size={26} direction="top-right" />
               </span>
             </a>
@@ -214,14 +214,14 @@ function Guests({episode}: {episode: CWKEpisode}) {
       {episode.guests.map(guest => (
         <div
           key={guest.name}
-          className="text-secondary bg-secondary flex flex-col p-10 pb-16 rounded-lg md:flex-row md:items-center md:pb-12"
+          className="text-secondary bg-secondary flex flex-col rounded-lg p-10 pb-16 md:flex-row md:items-center md:pb-12"
         >
           <img
             src={episode.image}
             alt={guest.name}
-            className="flex-none mb-6 mr-8 w-20 h-20 rounded-lg object-cover md:mb-0"
+            className="mb-6 mr-8 h-20 w-20 flex-none rounded-lg object-cover md:mb-0"
           />
-          <div className="mb-6 w-full md:flex-auto md:mb-0">
+          <div className="mb-6 w-full md:mb-0 md:flex-auto">
             <div className="text-primary mb-2 text-xl font-medium leading-none">
               {guest.name}
             </div>
@@ -270,14 +270,14 @@ function Transcript({
   }, [location.key])
 
   return (
-    <div className="bg-secondary col-span-full p-10 pb-16 rounded-lg">
-      <h4 className="text-primary inline-flex items-center mb-8 text-xl font-medium">
+    <div className="bg-secondary col-span-full rounded-lg p-10 pb-16">
+      <h4 className="text-primary mb-8 inline-flex items-center text-xl font-medium">
         Transcript
       </h4>
 
       <div
         className={clsx(
-          'prose prose-light dark:prose-dark relative overflow-hidden',
+          'prose prose-light relative overflow-hidden dark:prose-dark',
           {
             'max-h-96': collapsed,
           },
@@ -286,16 +286,16 @@ function Transcript({
         <div dangerouslySetInnerHTML={{__html: transcriptHTML}} />
 
         {collapsed ? (
-          <div className="absolute bottom-0 w-full h-48 bg-gradient-to-b from-transparent to-gray-100 dark:to-gray-800" />
+          <div className="absolute bottom-0 h-48 w-full bg-gradient-to-b from-transparent to-gray-100 dark:to-gray-800" />
         ) : null}
       </div>
       {collapsed ? (
         <button
           onClick={() => setCollapsed(false)}
-          className="group text-primary inline-flex items-center mt-16 text-xl focus:outline-none transition"
+          className="group text-primary focus:outline-none mt-16 inline-flex items-center text-xl transition"
         >
           <span>Read the full transcript</span>
-          <span className="group-hover:border-primary group-focus:border-primary inline-flex flex-none items-center justify-center ml-8 p-1 w-14 h-14 border-2 border-gray-200 dark:border-gray-600 rounded-full">
+          <span className="group-hover:border-primary group-focus:border-primary ml-8 inline-flex h-14 w-14 flex-none items-center justify-center rounded-full border-2 border-gray-200 p-1 dark:border-gray-600">
             <PlusIcon />
           </span>
         </button>
@@ -351,21 +351,21 @@ function PrevNextButton({
       whileTap={direction === 'next' ? 'tapRight' : 'tapLeft'}
       animate="initial"
       to={getCWKEpisodePath(episodeListItem)}
-      className={clsx('flex items-start focus:outline-none', {
+      className={clsx('focus:outline-none flex items-start', {
         'flex-row-reverse': direction === 'next',
       })}
     >
-      <div className="relative flex-none mt-1 w-12 h-12 rounded-lg overflow-hidden">
+      <div className="relative mt-1 h-12 w-12 flex-none overflow-hidden rounded-lg">
         <motion.img
           variants={imageVariants}
           transition={{duration: 0.2}}
-          className="w-full h-full object-cover"
+          className="h-full w-full object-cover"
           src={episodeListItem.image}
           alt={episodeListItem.title}
         />
         <motion.div
           variants={arrowVariants}
-          className="text-primary absolute inset-0 flex items-center justify-center origin-center"
+          className="text-primary absolute inset-0 flex origin-center items-center justify-center"
         >
           {direction === 'next' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
         </motion.div>
@@ -500,7 +500,7 @@ export default function PodcastDetail() {
       </Grid>
 
       <Grid>
-        <div className="flex flex-col col-span-full mb-20 space-y-10 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+        <div className="col-span-full mb-20 flex flex-col space-y-10 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
           <div className="space-y-2 lg:space-y-0">
             <H2>Sweet episode right?</H2>
             <H2 variant="secondary" as="p">

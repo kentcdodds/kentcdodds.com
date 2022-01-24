@@ -78,7 +78,7 @@ function HeroSection({
   return (
     <Grid
       as={as}
-      className={clsx('lg:min-h-[40rem] lg: mb-24 pt-24 h-auto lg:pb-12', {
+      className={clsx('lg: mb-24 h-auto pt-24 lg:min-h-[40rem] lg:pb-12', {
         'lg:mb-64': arrowLabel,
         'lg:mb-0': !arrowLabel,
       })}
@@ -86,10 +86,10 @@ function HeroSection({
       {hasImage ? (
         <div
           className={clsx('col-span-full mb-12 lg:mb-0', {
-            'lg:col-start-7 lg:col-span-5 px-10': imageSize === 'medium',
-            'lg:col-start-6 lg:col-span-6 pl-10 flex items-start justify-end':
+            'px-10 lg:col-span-5 lg:col-start-7': imageSize === 'medium',
+            'flex items-start justify-end pl-10 lg:col-span-6 lg:col-start-6':
               imageSize === 'large',
-            'lg:col-start-6 lg:col-span-7 lg:px-0 lg:-mt-24 lg:-mr-5vw flex items-center justify-center':
+            'flex items-center justify-center lg:col-span-7 lg:col-start-6 lg:-mt-24 lg:-mr-5vw lg:px-0':
               imageSize === 'giant',
           })}
         >
@@ -97,7 +97,7 @@ function HeroSection({
             <motion.img
               {...imageProps}
               className={clsx(
-                'w-full h-auto object-contain',
+                'h-auto w-full object-contain',
                 {
                   'max-h-50vh': imageSize === 'medium',
                   'max-h-75vh': imageSize === 'giant',
@@ -110,7 +110,7 @@ function HeroSection({
             />
           ) : imageBuilder ? (
             <motion.img
-              className={clsx('w-full h-auto object-contain', {
+              className={clsx('h-auto w-full object-contain', {
                 'max-h-50vh': imageSize === 'medium',
                 'max-h-75vh': imageSize === 'giant',
               })}
@@ -127,7 +127,7 @@ function HeroSection({
 
       <div
         className={clsx(
-          'col-span-full pt-6 lg:flex lg:flex-col lg:col-start-1 lg:row-start-1 lg:h-full',
+          'col-span-full pt-6 lg:col-start-1 lg:row-start-1 lg:flex lg:h-full lg:flex-col',
           {
             'lg:col-span-5': hasImage,
             'lg:col-span-7': !hasImage,
@@ -157,7 +157,7 @@ function HeroSection({
           {action ? (
             <motion.div
               variants={childVariants}
-              className="flex flex-col mt-14 space-y-4"
+              className="mt-14 flex flex-col space-y-4"
             >
               {action}
             </motion.div>

@@ -52,7 +52,7 @@ export default function BlogList() {
             <Link
               reloadDocument
               to="rss.xml"
-              className="text-secondary underlined inline-block ml-2 hover:text-team-current focus:text-team-current"
+              className="text-secondary underlined ml-2 inline-block hover:text-team-current focus:text-team-current"
             >
               <RssIcon title="Get my blog as RSS" />
             </Link>

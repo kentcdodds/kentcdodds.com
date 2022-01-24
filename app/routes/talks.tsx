@@ -80,41 +80,41 @@ function Card({
   return (
     <div
       className={clsx(
-        'relative flex flex-col p-6 w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg md:p-16',
+        'relative flex h-full w-full flex-col rounded-lg bg-gray-100 p-6 dark:bg-gray-800 md:p-16',
         {
-          'ring-2 focus-ring': active,
+          'focus-ring ring-2': active,
         },
       )}
     >
       {/* place the scroll marker a bit above the element to act as view margin */}
       <div data-talk={slug} className="absolute -top-8" />
 
-      <div className="flex flex-none flex-col justify-between mb-8 md:flex-row">
+      <div className="mb-8 flex flex-none flex-col justify-between md:flex-row">
         <div className="inline-flex items-baseline">
           {isInFuture ? (
-            <div className="block flex-none w-3 h-3 bg-green-600 rounded-full" />
+            <div className="block h-3 w-3 flex-none rounded-full bg-green-600" />
           ) : (
-            <div className="block flex-none w-3 h-3 bg-gray-400 dark:bg-gray-600 rounded-full" />
+            <div className="block h-3 w-3 flex-none rounded-full bg-gray-400 dark:bg-gray-600" />
           )}
           <H6 as="p" className="pl-4">
             {formatDate(latestDate, 'PPP')}
           </H6>
         </div>
 
-        <div className="flex mt-8 space-x-2 md:mt-0">
+        <div className="mt-8 flex space-x-2 md:mt-0">
           {tag ? (
-            <div className="inline-block self-start -mr-8 -my-4 px-8 py-4 text-black dark:text-white whitespace-nowrap text-lg dark:bg-gray-600 bg-white rounded-full">
+            <div className="-my-4 -mr-8 inline-block self-start whitespace-nowrap rounded-full bg-white px-8 py-4 text-lg text-black dark:bg-gray-600 dark:text-white">
               {tag}
             </div>
           ) : null}
         </div>
       </div>
 
-      <Link to={`./${slug}`} className="flex flex-none items-end mb-4 h-48">
+      <Link to={`./${slug}`} className="mb-4 flex h-48 flex-none items-end">
         <H3 as="div">{title}</H3>
       </Link>
 
-      <div className="flex-auto mb-10">
+      <div className="mb-10 flex-auto">
         <Paragraph
           as="div"
           className="html mb-20"
@@ -150,7 +150,7 @@ function Card({
 
                     {delivery.recording ? (
                       <a
-                        className="text-secondary flex-none ml-2 hover:text-team-current"
+                        className="text-secondary ml-2 flex-none hover:text-team-current"
                         href={delivery.recording}
                       >
                         <YoutubeIcon size={32} />
@@ -158,7 +158,7 @@ function Card({
                     ) : null}
 
                     <div className="flex-auto" />
-                    <Paragraph className="flex-none ml-2" as="span">
+                    <Paragraph className="ml-2 flex-none" as="span">
                       {delivery.date
                         ? formatDate(new Date(delivery.date), 'yyyy-MM-dd')
                         : null}
@@ -251,7 +251,7 @@ export default function TalksScreen() {
         <H6 as="div" className="col-span-full mb-6">
           Search talks by topics
         </H6>
-        <div className="flex flex-wrap col-span-full -mb-4 -mr-4 lg:col-span-10">
+        <div className="col-span-full -mb-4 -mr-4 flex flex-wrap lg:col-span-10">
           {data.tags.map(tag => (
             <Tag
               key={tag}

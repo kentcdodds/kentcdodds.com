@@ -149,7 +149,7 @@ function Login() {
               className="mb-10 lg:mb-12"
             >
               <div className="mb-6">
-                <div className="flex flex-wrap items-baseline justify-between mb-4">
+                <div className="mb-4 flex flex-wrap items-baseline justify-between">
                   <Label htmlFor="email-address">Email address</Label>
                 </div>
 
@@ -197,7 +197,7 @@ function Login() {
                 ) : data.email ? (
                   <p
                     id="success-message"
-                    className="dark:text-blueGray-500 text-gray-500 text-lg"
+                    className="text-lg text-gray-500 dark:text-blueGray-500"
                   >
                     <span role="img" aria-label="sparkles">
                       ✨

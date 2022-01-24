@@ -24,10 +24,10 @@ function Tab({isSelected, children}: TabProps & {isSelected?: boolean}) {
   return (
     <ReachTab
       className={clsx(
-        'hover:text-primary inline-flex items-center p-0 w-full focus:bg-transparent border-none transition',
+        'hover:text-primary inline-flex w-full items-center border-none p-0 transition focus:bg-transparent',
         {
           'text-primary': isSelected,
-          'dark:text-blueGray-500 text-gray-400': !isSelected,
+          'text-gray-400 dark:text-blueGray-500': !isSelected,
         },
       )}
     >
@@ -35,7 +35,7 @@ function Tab({isSelected, children}: TabProps & {isSelected?: boolean}) {
       <AnimatePresence>
         {isSelected ? (
           <motion.span
-            className="hidden items-center ml-8 mt-4 h-12 lg:flex"
+            className="ml-8 mt-4 hidden h-12 items-center lg:flex"
             initial={{x: -20, opacity: 0}}
             animate={{x: 0, opacity: 1, transition: {duration: 0.15}}}
             exit={{x: 20, opacity: 0, transition: {duration: 0.15}}}
@@ -58,7 +58,7 @@ function ContentPanel({
   imageBuilder: ImageBuilder
 }) {
   return (
-    <TabPanel className="block col-start-1 row-start-1">
+    <TabPanel className="col-start-1 row-start-1 block">
       <AnimatePresence>
         {active ? (
           <>
@@ -120,15 +120,15 @@ function ProblemSolutionSection({
 
       <hr className="col-span-full mb-10 mt-16 border-gray-200 dark:border-gray-600 lg:mb-20 lg:mt-24" />
 
-      <div className="col-span-full col-start-1 order-1 lg:col-span-5 lg:order-3 lg:mt-52 lg:pt-2">
-        <TabList className="inline-flex flex-row text-white text-xl leading-snug bg-transparent space-x-8 lg:flex-col lg:text-7xl lg:space-x-0">
+      <div className="order-1 col-span-full col-start-1 lg:order-3 lg:col-span-5 lg:mt-52 lg:pt-2">
+        <TabList className="inline-flex flex-row space-x-8 bg-transparent text-xl leading-snug text-white lg:flex-col lg:space-x-0 lg:text-7xl">
           <Tab>blog</Tab>
           <Tab>courses</Tab>
           <Tab>podcasts</Tab>
         </TabList>
       </div>
 
-      <TabPanels className="grid col-span-full order-4 mt-16 lg:col-span-5 lg:col-start-7 lg:mt-0">
+      <TabPanels className="order-4 col-span-full mt-16 grid lg:col-span-5 lg:col-start-7 lg:mt-0">
         <ContentPanel active={activeTabIndex === 0} imageBuilder={images.skis}>
           <H3>Educational blog</H3>
 

@@ -188,7 +188,7 @@ function TeamOption({team: value, error, selected}: TeamOptionProps) {
   return (
     <div
       className={clsx(
-        'focus-ring relative col-span-full mb-3 bg-gray-100 dark:bg-gray-800 rounded-lg lg:col-span-4 lg:mb-0',
+        'focus-ring relative col-span-full mb-3 rounded-lg bg-gray-100 dark:bg-gray-800 lg:col-span-4 lg:mb-0',
         team.focusClassName,
         {
           'ring-2': selected,
@@ -201,7 +201,7 @@ function TeamOption({team: value, error, selected}: TeamOptionProps) {
         </span>
       ) : null}
 
-      <label className="block pb-12 pt-20 px-12 text-center cursor-pointer">
+      <label className="block cursor-pointer px-12 pb-12 pt-20 text-center">
         <input
           className="sr-only"
           type="radio"
@@ -210,7 +210,7 @@ function TeamOption({team: value, error, selected}: TeamOptionProps) {
           aria-describedby={error ? 'team-error' : undefined}
         />
         <img
-          className="block mb-16 mx-auto"
+          className="mx-auto mb-16 block"
           {...getImgProps(team.image, {
             widths: [350, 512, 685, 1370, 2055],
             sizes: [

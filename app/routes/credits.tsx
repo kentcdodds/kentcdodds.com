@@ -92,8 +92,8 @@ const icons: Record<Socials, React.ReactElement> = {
 
 function ProfileCard({person}: {person: Person}) {
   return (
-    <div className="relative flex flex-col w-full">
-      <div className="aspect-w-3 aspect-h-4 flex-none mb-8 w-full">
+    <div className="relative flex w-full flex-col">
+      <div className="aspect-w-3 aspect-h-4 mb-8 w-full flex-none">
         <img
           className="rounded-lg object-cover"
           {...getImgProps(getImageBuilder(person.cloudinaryId), {
@@ -109,7 +109,7 @@ function ProfileCard({person}: {person: Person}) {
       </div>
 
       <div className="flex-auto">
-        <div className="mb-4 text-blueGray-500 text-xl font-medium lowercase">
+        <div className="mb-4 text-xl font-medium lowercase text-blueGray-500">
           {person.role}
         </div>
         <H3 className="mb-6">{person.name}</H3>
@@ -222,7 +222,7 @@ function CreditsIndex() {
         subTitle="Some other awesome folks"
         className="mb-16"
       />
-      <Grid className="prose prose-light dark:prose-dark gap-y-20 lg:gap-y-32">
+      <Grid className="prose prose-light gap-y-20 dark:prose-dark lg:gap-y-32">
         <Paragraph className="col-span-4">
           <a href="https://twitter.com/ryanflorence">Ryan Florence</a>
           {` and other friends at `}

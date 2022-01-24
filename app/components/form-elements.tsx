@@ -7,7 +7,7 @@ function Label({className, ...labelProps}: JSX.IntrinsicElements['label']) {
     <label
       {...labelProps}
       className={clsx(
-        'inline-block dark:text-blueGray-500 text-gray-500 text-lg',
+        'inline-block text-lg text-gray-500 dark:text-blueGray-500',
         className,
       )}
     />
@@ -56,7 +56,7 @@ function InputError({children, id}: InputErrorProps) {
   }
 
   return (
-    <p role="alert" id={id} className="text-red-500 text-sm">
+    <p role="alert" id={id} className="text-sm text-red-500">
       {children}
     </p>
   )
@@ -83,7 +83,7 @@ const Field = React.forwardRef<
 
   return (
     <div className={clsx('mb-8', className)}>
-      <div className="flex gap-2 items-baseline justify-between mb-4">
+      <div className="mb-4 flex items-baseline justify-between gap-2">
         <Label htmlFor={inputId}>{label}</Label>
         {error ? (
           <InputError id={errorId}>{error}</InputError>
@@ -126,7 +126,7 @@ function ButtonGroup({
 function ErrorPanel({children, id}: {children: React.ReactNode; id?: string}) {
   return (
     <div role="alert" className="relative mt-8 px-11 py-8" id={id}>
-      <div className="absolute inset-0 bg-red-500 rounded-lg opacity-25" />
+      <div className="absolute inset-0 rounded-lg bg-red-500 opacity-25" />
       <div className="text-primary relative text-lg font-medium">
         {children}
       </div>

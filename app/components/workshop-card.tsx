@@ -27,7 +27,7 @@ function WorkshopCard({
   return (
     <Link
       to={`/workshops/${workshop.slug}`}
-      className="focus-ring flex flex-col p-12 pr-16 w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg"
+      className="focus-ring flex h-full w-full flex-col rounded-lg bg-gray-100 p-12 pr-16 dark:bg-gray-800"
     >
       <H3 as="div" className="flex-none">
         {workshop.title}
@@ -40,7 +40,7 @@ function WorkshopCard({
           {workshop.categories.map(c => (
             <div
               key={c}
-              className="inline-block mb-4 px-8 py-4 text-black dark:text-white text-lg dark:bg-gray-600 bg-white rounded-full"
+              className="mb-4 inline-block rounded-full bg-white px-8 py-4 text-lg text-black dark:bg-gray-600 dark:text-white"
             >
               {c}
             </div>
@@ -62,11 +62,11 @@ function WorkshopCard({
 
       <Spacer size="2xs" />
 
-      <H6 as="div" className="flex flex-wrap gap-2 items-center">
+      <H6 as="div" className="flex flex-wrap items-center gap-2">
         {workshopEvents.length ? (
           <>
             <div
-              className="block flex-none w-3 h-3 bg-green-600 rounded-full"
+              className="block h-3 w-3 flex-none rounded-full bg-green-600"
               title="Open for registration"
             />
             {workshopEvents.length === 1

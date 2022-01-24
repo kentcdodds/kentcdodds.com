@@ -52,9 +52,9 @@ function NavLink({
       <Link
         prefetch="intent"
         className={clsx(
-          'underlined block hover:text-team-current focus:text-team-current whitespace-nowrap text-lg font-medium focus:outline-none',
+          'underlined focus:outline-none block whitespace-nowrap text-lg font-medium hover:text-team-current focus:text-team-current',
           {
-            'text-team-current active': isSelected,
+            'active text-team-current': isSelected,
             'text-secondary': !isSelected,
           },
         )}
@@ -76,7 +76,7 @@ function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
         )
       }}
       className={clsx(
-        'border-secondary hover:border-primary focus:border-primary inline-flex items-center justify-center p-1 h-14 border-2 rounded-full focus:outline-none overflow-hidden transition',
+        'border-secondary hover:border-primary focus:border-primary focus:outline-none inline-flex h-14 items-center justify-center overflow-hidden rounded-full border-2 p-1 transition',
         {
           'w-14': variant === 'icon',
           'px-8': variant === 'labelled',
@@ -84,15 +84,15 @@ function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
       )}
     >
       {/* note that the duration is longer then the one on body, controlling the bg-color */}
-      <div className="relative w-8 h-8">
+      <div className="relative h-8 w-8">
         <span
-          className="motion-reduce:duration-[0s] absolute inset-0 text-black dark:text-white transform dark:rotate-0 rotate-90 transition duration-1000"
+          className="absolute inset-0 rotate-90 transform text-black transition duration-1000 motion-reduce:duration-[0s] dark:rotate-0 dark:text-white"
           style={iconTransformOrigin}
         >
           <MoonIcon />
         </span>
         <span
-          className="motion-reduce:duration-[0s] absolute inset-0 text-black dark:text-white transform dark:-rotate-90 rotate-0 transition duration-1000"
+          className="absolute inset-0 rotate-0 transform text-black transition duration-1000 motion-reduce:duration-[0s] dark:-rotate-90 dark:text-white"
           style={iconTransformOrigin}
         >
           <SunIcon />
@@ -148,12 +148,12 @@ function MobileMenuList() {
               duration: shouldReduceMotion ? 0 : 0.15,
               ease: 'linear',
             }}
-            className="bg-primary flex flex-col pb-12 h-full border-t border-gray-200 dark:border-gray-600 overflow-y-scroll"
+            className="bg-primary flex h-full flex-col overflow-y-scroll border-t border-gray-200 pb-12 dark:border-gray-600"
           >
-            <MenuItems className="p-0 bg-transparent border-none">
+            <MenuItems className="border-none bg-transparent p-0">
               {MOBILE_LINKS.map(link => (
                 <MenuLink
-                  className="hover:bg-secondary focus:bg-secondary text-primary px-5vw py-9 hover:text-team-current border-b border-gray-200 dark:border-gray-600"
+                  className="hover:bg-secondary focus:bg-secondary text-primary border-b border-gray-200 px-5vw py-9 hover:text-team-current dark:border-gray-600"
                   key={link.to}
                   as={Link}
                   to={link.to}
@@ -196,7 +196,7 @@ function MobileMenu() {
         const state = isExpanded ? 'open' : 'closed'
         return (
           <>
-            <MenuButton className="focus:border-primary hover:border-primary border-secondary text-primary inline-flex items-center justify-center p-1 w-14 h-14 border-2 rounded-full focus:outline-none transition">
+            <MenuButton className="focus:border-primary hover:border-primary border-secondary text-primary focus:outline-none inline-flex h-14 w-14 items-center justify-center rounded-full border-2 p-1 transition">
               <svg
                 width="32"
                 height="32"
@@ -304,7 +304,7 @@ function ProfileButton({
         user ? 'My Account' : magicLinkVerified ? 'Finish signing up' : 'Login'
       }
       className={clsx(
-        'inline-flex items-center justify-center ml-4 w-14 h-14 rounded-full focus:outline-none',
+        'focus:outline-none ml-4 inline-flex h-14 w-14 items-center justify-center rounded-full',
       )}
       ref={ref}
     >
@@ -312,7 +312,7 @@ function ProfileButton({
         <TeamCircle size={56} team={team} />
       </motion.div>
       <img
-        className={clsx('inline w-10 rounded-full select-none')}
+        className={clsx('inline w-10 select-none rounded-full')}
         src={imageUrl}
         alt={imageAlt}
       />
@@ -327,12 +327,12 @@ function Navbar() {
 
   return (
     <div className="px-5vw py-9 lg:py-12">
-      <nav className="text-primary flex items-center justify-between mx-auto max-w-8xl">
+      <nav className="text-primary mx-auto flex max-w-8xl items-center justify-between">
         <div>
           <Link
             prefetch="intent"
             to="/"
-            className="text-primary underlined block whitespace-nowrap text-2xl font-medium focus:outline-none transition"
+            className="text-primary underlined focus:outline-none block whitespace-nowrap text-2xl font-medium transition"
           >
             <h1>Kent C. Dodds</h1>
           </Link>

@@ -94,7 +94,7 @@ function NotificationMessage({
           exit={{y: initialY, opacity: 0}}
           transition={{ease: 'easeInOut', duration: 0.3}}
           className={clsx(
-            'fixed z-50 left-0 right-0 px-5vw pointer-events-none',
+            'pointer-events-none fixed left-0 right-0 z-50 px-5vw',
             {
               'bottom-8': position === 'bottom-right',
               'top-8': position === 'top-center',
@@ -102,17 +102,17 @@ function NotificationMessage({
           )}
         >
           <div
-            className={clsx('flex mx-auto w-full max-w-8xl', {
+            className={clsx('mx-auto flex w-full max-w-8xl', {
               'justify-end': position === 'bottom-right',
               'justify-center': position === 'top-center',
             })}
           >
-            <div className="bg-inverse text-inverse relative p-8 pr-14 max-w-xl rounded-lg shadow-md pointer-events-auto">
+            <div className="bg-inverse text-inverse pointer-events-auto relative max-w-xl rounded-lg p-8 pr-14 shadow-md">
               {typeof controlledVisible === 'undefined' ? (
                 <button
                   aria-label="dismiss message"
                   onClick={() => setIsVisible(false)}
-                  className="text-secondary hover:text-inverse focus:text-inverse absolute right-4 top-8 transform rotate-45"
+                  className="text-secondary hover:text-inverse focus:text-inverse absolute right-4 top-8 rotate-45 transform"
                 >
                   <PlusIcon />
                 </button>

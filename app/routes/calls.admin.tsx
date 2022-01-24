@@ -86,7 +86,7 @@ export default function CallListScreen() {
                     key={call.id}
                     className={`mb-6 set-color-team-current-${call.user.team.toLowerCase()}`}
                   >
-                    <Link to={call.id} className="block mb-1">
+                    <Link to={call.id} className="mb-1 block">
                       <img
                         alt={avatar.alt}
                         src={avatar.src}

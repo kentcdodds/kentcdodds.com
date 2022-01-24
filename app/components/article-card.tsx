@@ -43,7 +43,7 @@ function ArticleCard({
     >
       <Link
         prefetch="intent"
-        className="group peer relative block w-full focus:outline-none"
+        className="group peer focus:outline-none relative block w-full"
         to={`/blog/${slug}`}
       >
         {bannerCloudinaryId ? (
@@ -88,7 +88,7 @@ function ArticleCard({
           </div>
         )}
 
-        <div className="mt-8 text-blueGray-500 text-xl font-medium">
+        <div className="mt-8 text-xl font-medium text-blueGray-500">
           {formatDate(parseISO(date), 'PPP')} — {readTime?.text ?? 'quick read'}
         </div>
         <H3 as="div" className="mt-4">
@@ -97,11 +97,11 @@ function ArticleCard({
       </Link>
 
       {leadingTeam ? (
-        <div className="absolute z-10 right-6 top-6 p-1 w-4 h-4 bg-team-current rounded-full lg:left-6" />
+        <div className="absolute right-6 top-6 z-10 h-4 w-4 rounded-full bg-team-current p-1 lg:left-6" />
       ) : null}
       <ClipboardCopyButton
         value={permalink}
-        className="absolute z-10 left-6 top-6"
+        className="absolute left-6 top-6 z-10"
       />
     </div>
   )

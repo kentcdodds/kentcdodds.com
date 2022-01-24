@@ -94,7 +94,7 @@ function AboutSection() {
         Full time educator making our world better
       </p>
 
-      <div className="text-secondary flex gap-4 items-center justify-between mt-6 xl:flex-col xl:items-start">
+      <div className="text-secondary mt-6 flex items-center justify-between gap-4 xl:flex-col xl:items-start">
         <div className="flex gap-4">
           <IconLink href={externalLinks.github}>
             <GithubIcon size={32} />
@@ -110,7 +110,7 @@ function AboutSection() {
           </IconLink>
         </div>
 
-        <div className="text-secondary relative flex items-center w-24 xl:mt-20 xl:w-32">
+        <div className="text-secondary relative flex w-24 items-center xl:mt-20 xl:w-32">
           {/* absolute position so that it doesn't change line-height of social icons */}
           <Signature className="absolute block w-full" />
         </div>
@@ -133,7 +133,7 @@ function FooterLink({
       <AnchorOrLink
         prefetch={href.startsWith('http') ? undefined : 'intent'}
         href={href}
-        className="text-secondary underlined inline-block hover:text-team-current focus:text-team-current whitespace-nowrap text-lg focus:outline-none"
+        className="text-secondary underlined focus:outline-none inline-block whitespace-nowrap text-lg hover:text-team-current focus:text-team-current"
         reload={reload}
       >
         {name}
@@ -172,9 +172,9 @@ function Footer({image}: {image: ImageBuilder}) {
     </div>
   )
   return (
-    <footer className="pb-16 pt-48 border-t border-gray-200 dark:border-gray-600">
+    <footer className="border-t border-gray-200 pb-16 pt-48 dark:border-gray-600">
       <div className="relative mx-10vw">
-        <div className="relative grid gap-x-4 grid-cols-4 grid-rows-max-content mx-auto max-w-7xl md:grid-cols-8 xl:gap-x-6 xl:grid-cols-12">
+        <div className="relative mx-auto grid max-w-7xl grid-cols-4 grid-rows-max-content gap-x-4 md:grid-cols-8 xl:grid-cols-12 xl:gap-x-6">
           <div className="col-span-full md:col-span-3 xl:row-span-2">
             <AboutSection />
           </div>
@@ -199,11 +199,11 @@ function Footer({image}: {image: ImageBuilder}) {
           Note that the <NewsletterSection /> is rendered twice. The position of this cell changes based on breakpoint.
           When we would move the cell around with css only, the tabIndex won't match the visual order.
          */}
-          <div className="hidden col-span-4 col-start-9 row-span-2 row-start-1 mt-0 xl:block">
+          <div className="col-span-4 col-start-9 row-span-2 row-start-1 mt-0 hidden xl:block">
             {subscribedToNewsletter ? featuredImg : <NewsletterSection />}
           </div>
 
-          <div className="col-span-full mt-24 dark:text-blueGray-500 text-gray-500 text-lg md:mt-44">
+          <div className="col-span-full mt-24 text-lg text-gray-500 dark:text-blueGray-500 md:mt-44">
             <span>All rights reserved</span>{' '}
             <span className="block md:inline">{`© Kent C. Dodds ${new Date().getFullYear()}`}</span>
           </div>

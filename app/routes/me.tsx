@@ -341,14 +341,14 @@ function YouScreen() {
               readOnly
             />
 
-            <div className="relative col-span-full mb-3 bg-gray-100 dark:bg-gray-800 rounded-lg focus-within:outline-none ring-2 focus-within:ring-2 ring-team-current ring-offset-4 ring-offset-team-current ring-offset-team-current lg:col-span-4 lg:mb-0">
+            <div className="focus-within:outline-none relative col-span-full mb-3 rounded-lg bg-gray-100 ring-2 ring-team-current ring-offset-4 ring-offset-team-current ring-offset-team-current focus-within:ring-2 dark:bg-gray-800 lg:col-span-4 lg:mb-0">
               <span className="absolute left-9 top-9 text-team-current">
                 <CheckCircledIcon />
               </span>
 
-              <div className="block pb-12 pt-20 px-12 text-center">
+              <div className="block px-12 pb-12 pt-20 text-center">
                 <img
-                  className="block mb-16"
+                  className="mb-16 block"
                   src={TEAM_MAP[user.team].image()}
                   alt={TEAM_MAP[user.team].image.alt}
                 />
@@ -367,7 +367,7 @@ function YouScreen() {
           </H2>
         </div>
 
-        <div className="bg-secondary relative col-span-full p-4 rounded-lg lg:col-span-5 lg:col-start-1 lg:row-start-1">
+        <div className="bg-secondary relative col-span-full rounded-lg p-4 lg:col-span-5 lg:col-start-1 lg:row-start-1">
           <img
             src={data.qrLoginCode}
             alt="Login QR Code"
@@ -376,7 +376,7 @@ function YouScreen() {
           <button
             onClick={() => setQrIsVisible(true)}
             className={clsx(
-              'focus-ring text-primary bg-secondary absolute inset-0 flex flex-col items-center justify-center w-full h-full text-lg font-medium rounded-lg transition duration-200',
+              'focus-ring text-primary bg-secondary absolute inset-0 flex h-full w-full flex-col items-center justify-center rounded-lg text-lg font-medium transition duration-200',
               {
                 'opacity-100': !qrIsVisible,
                 'opacity-0': qrIsVisible,
@@ -396,7 +396,7 @@ function YouScreen() {
           <H2>Manage Your Account</H2>
         </div>
         <Spacer size="3xs" className="col-span-full" />
-        <div className="flex flex-wrap gap-3 col-span-full">
+        <div className="col-span-full flex flex-wrap gap-3">
           <ButtonLink
             variant="secondary"
             download="my-kcd-data.json"
@@ -435,7 +435,7 @@ function YouScreen() {
         onDismiss={() => setDeleteModalOpen(false)}
         isOpen={deleteModalOpen}
         aria-label="Delete your account"
-        className="w-11/12 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:px-24 lg:py-14 lg:max-w-screen-lg"
+        className="w-11/12 rounded-lg border-2 border-black dark:border-white dark:bg-gray-900 lg:max-w-screen-lg lg:px-24 lg:py-14"
       >
         <H3>Delete your KCD Account</H3>
         <Paragraph>
