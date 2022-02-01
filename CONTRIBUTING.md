@@ -120,19 +120,13 @@ endpoints are mocked out via [`MSW`](https://mswjs.io/).
 
 ## Caching
 
-Because the mdx files are built on-demand and that can take some time, we heavily
-cache them via redis (which is configured in the `docker-compose.yml` file).
-This means that if you need to work on content, you'll need a way to clear the
-cache. Only the admin can clear the cache, but locally, you can login as the
-admin. Luckily for you, the postgres DB is seeded with an admin account you can
-use.
-
-So first, you need to login as `me@kentcdodds.com`. Simply enter that in as the
-email address, and then check the logs for the magic link. Copy that into the
-URL and you should be logged in as the admin.
-
-Now that you're an admin, you can go to any MDX-based page and add `?fresh` to
-the end of the URL and it'll clear the cache for that MDX.
+Because the mdx files are built on-demand and that can take some time, we
+heavily cache them via redis (which is configured in the `docker-compose.yml`
+file). This means that if you need to work on content, you'll need a way to
+clear the cache. Luckily, when running the dev script, we have a file watcher
+that auto-updates the cache as you save the file. It should happen so fast you
+don't even notice what's going on, but I thought I'd mention it here just so you
+know if it doesn't work.
 
 ## Running automated tests
 
