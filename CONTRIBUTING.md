@@ -120,7 +120,7 @@ endpoints are mocked out via [`MSW`](https://mswjs.io/).
 
 ## Caching
 
-Because the mdx files are built on-demand and that take some time, we heavily
+Because the mdx files are built on-demand and that can take some time, we heavily
 cache them via redis (which is configured in the `docker-compose.yml` file).
 This means that if you need to work on content, you'll need a way to clear the
 cache. Only the admin can clear the cache, but locally, you can login as the
