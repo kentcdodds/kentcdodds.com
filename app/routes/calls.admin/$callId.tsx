@@ -230,7 +230,7 @@ function RecordingDetailScreen() {
                 value={callerAvatar}
                 onChange={e => setCallerAvatar(e.currentTarget.value)}
               />
-              <img src={callerAvatar} alt="Caller avatar" />
+              <img src={callerAvatar} alt="Caller avatar" className="w-32" />
             </>
           }
         />
