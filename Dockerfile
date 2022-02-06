@@ -16,7 +16,7 @@ WORKDIR /app/
 ADD package.json package-lock.json ./
 ADD other/patches ./other/patches
 RUN npm install --production=false
-RUN npx metronome setup
+# RUN npx metronome setup
 
 # setup production node_modules
 FROM base as production-deps
