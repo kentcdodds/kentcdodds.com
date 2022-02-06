@@ -204,6 +204,7 @@ function RecordingDetailScreen() {
   const [callerAvatar, setCallerAvatar] = React.useState(
     getAvatarForUser(data.call.user, {
       origin: requestInfo.origin,
+      size: 1400,
     }).src,
   )
 
