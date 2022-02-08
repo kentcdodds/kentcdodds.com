@@ -9,11 +9,6 @@ meta:
     - react patterns
 categories:
   - react
-events:
-  - title: Advanced React Patterns (AgentConf)
-    url: https://www.alpine-conferences.com/agent-conf-2022/workshops
-    quantity: 10
-    date: January 26th, 2022
 convertKitTag: '896446'
 problemStatements:
   part1: Building reusable hooks and components can be tricky
