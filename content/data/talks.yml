@@ -25,10 +25,10 @@
   description: >-
     This talk is yet to be announced
 
-- title: React Miami
+- title: Remix Conf Keynote
   deliveries:
-    - event: '[React Miami](https://www.reactmiami.com/)'
-      date: 2022-04-19
+    - event: '[Remix Conf](https://remix.run/conf)'
+      date: 2022-05-25
   tags:
     - keynote
   description: >-
@@ -38,6 +38,15 @@
   deliveries:
     - event: '[Reactathon](https://www.reactathon.com/)'
       date: 2022-05-02
+  tags:
+    - keynote
+  description: >-
+    This talk is yet to be announced
+
+- title: React Miami
+  deliveries:
+    - event: '[React Miami](https://www.reactmiami.com/)'
+      date: 2022-04-19
   tags:
     - keynote
   description: >-
