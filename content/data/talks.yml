@@ -25,6 +25,15 @@
   description: >-
     This talk is yet to be announced
 
+- title: React Miami
+  deliveries:
+    - event: '[React Miami](https://www.reactmiami.com/)'
+      date: 2022-04-19
+  tags:
+    - keynote
+  description: >-
+    This talk is yet to be announced
+
 - title: Reactathon Keynote
   deliveries:
     - event: '[Reactathon](https://www.reactathon.com/)'
@@ -141,8 +150,6 @@
     - event:
         '[Agent Conf 2022](https://www.alpine-conferences.com/agent-conf-2022/)'
       date: 2022-01-27
-    - event: '[React Miami](https://www.reactmiami.com/)'
-      date: 2022-04-19
   tags:
     - keynote
     - react
