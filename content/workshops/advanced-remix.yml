@@ -1,0 +1,87 @@
+title: Advanced Remix
+description:
+  Learn to build state-of-the-art user interfaces on the web with Remix.
+meta:
+  keywords:
+    - react
+    - user experience
+    - remix
+    - developer experience
+    - pending UI
+    - optimistic UI
+events:
+  - title: Advanced Remix (Remix Conf)
+    url: https://remix.run/conf/workshops
+    quantity: 40
+    date: May 24th, 2022
+  - title: Advanced Remix (React Summit remote)
+    url: https://www.reactsummit.com
+    quantity: 40
+    date: June 23rd/24th, 2022
+categories:
+  - react
+  - remix
+convertKitTag: '2925780'
+problemStatements:
+  part1: Remix is a terrific tool for building simple websites
+  part2: And it's even better for building complex web applications
+  part3: >-
+    What makes Remix special is the mental model is the same regardless of
+    whether you're building a simple website on your own or complex business web
+    application with teams of developers. And it does this with a lightweight
+    abstraction on top of the web platform APIs. Remix scales down to simple
+    stuff and up to the complex stuff.
+  part4: >-
+    It's the complex stuff we're going to be talking about in this workshop.
+    Remix will ensure that you can keep things as declarative as possible and
+    keep your app bug-free. And to make it even better, you can ship something
+    simple that works well to start and iterate to the more complex solution
+    without having to rearchitect everything because the mental model remains
+    the same.
+keyTakeaways:
+  - title: Mutations Mental Model
+    description:
+      Understanding how mutations work on the web is critical to building great
+      user experiences for most web apps (it's great that a user can *see* the
+      data, but can they *do* anything with it?). So we're going to get a grip
+      on how to think about mutations with Remix (and the web) and how Remix
+      helps you manage that.
+  - title: Skip busy spinners when you can
+    description:
+      You know how when you favorite a tweet the heart turns red right away,
+      even if you have a slow internet connection? Twitter has implemented
+      what's called "Optimistic UI" for that experience. It makes you feel like
+      the UI is snappier and you trust it more. We'll learn how to do that, and
+      we'll also learn how to handle situations where our optimism was misplaced
+      (like when the tweet you favorited was deleted 😅).
+  - title: Build server-intelligent UI components
+    description:
+      As fun as it is to build reusable UI components, they often require a fair
+      amount of wiring up to make them very useful for applications. We'll learn
+      how to make reusable components that manage that server component as well.
+      Pretty awesome productivity boost for product teams I'd say!
+  - title: Create app-level navigation indicators
+    description:
+      Remix is your router as well as your framework, so it can give you
+      everything you need to give the user awesome feedback and a smooth
+      experience as they navigate around your app.
+  - title: Accessibility with a focus on focus
+    description:
+      Focus management is one of the "side-effects" that React's `useEffect` was
+      created for, and we'll learn how to use the hooks Remix gives you combined
+      with `useEffect` to help get the user's focus where it needs to be, when
+      it needs to be there.
+topics:
+  - Optimistic UI
+  - Optimize Remix's automatic data revalidation
+  - Data driven components
+  - Navigation Indicators
+  - Accessibility
+  - Imperative data mutations
+prerequisite: >-
+  You should have experience with [these JavaScript
+  features](/blog/javascript-to-know-for-react) and watch my [Beginner's Guide
+  to React](https://kcd.im/beginner-react) or have the equivalent experience.
+  Experience with Remix is a bonus, but not a requirement. This workshop will
+  use TypeScript, but should be completable if you do not have experience with
+  TypeScript.

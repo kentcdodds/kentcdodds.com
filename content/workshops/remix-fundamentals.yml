@@ -1,4 +1,4 @@
-title: Build Better Apps with Remix
+title: Remix Fundamentals
 description: Learn how you can use Remix to build faster apps... faster.
 meta:
   keywords:
@@ -8,6 +8,15 @@ meta:
     - performance
     - seo
     - accessibility
+events:
+  - title: Remix Fundamentals (Remix Conf)
+    url: https://remix.run/conf/workshops
+    quantity: 40
+    date: May 24th, 2022
+  - title: Remix Fundamentals (React Summit remote)
+    url: https://www.reactsummit.com
+    quantity: 40
+    date: June 22nd, 2022
 categories:
   - react
   - remix
@@ -66,13 +75,12 @@ keyTakeaways:
       give you powerful pending states and error management.
 topics:
   - Nested routing
-  - Setting HTTP Cache Headers
-  - SEO optimization
   - Data loading and mutations
-  - Provide regular CSS
+  - Styling
   - Error Handling
   - Optimistic UI
   - Accessibility
+  - SEO optimization
 prerequisite: >-
   You should have experience with [these JavaScript
   features](/blog/javascript-to-know-for-react) and attend my [React Hooks

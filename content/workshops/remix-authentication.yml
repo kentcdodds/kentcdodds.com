@@ -1,0 +1,61 @@
+title: Remix Authentication
+description: Let's learn how to add user authentication to a Remix App
+meta:
+  keywords:
+    - react
+    - authentication
+    - remix
+    - magic links
+categories:
+  - react
+  - remix
+convertKitTag: '2569493'
+problemStatements:
+  part1: Authenticating your users can be tricky business
+  part2: And it can be pretty bad if you get it wrong
+  part3: >-
+    Sure, you can pay for something off-the-shelf, but that can get expensive
+    really quickly and you have to worry about integrating, vendor lock-in, and
+    keeping your code up-to-date.
+  part4:
+    And whether you do decide to pay for an off-the-shelf solution or roll your
+    own, you need to figure out how to code up your React components and data
+    retrieval code to make sure the right user is shown the right thing at the
+    right time. Tricky business indeed.
+keyTakeaways:
+  - title: Connect to a database
+    description:
+      Doing user auth without a persistence layer doesn't make a lot of sense,
+      so in this workshop we're going to connect our app to a database and show
+      how to ensure users have access to their own data (and nobody else's).
+  - title: Hand roll our own auth
+    description:
+      Authentication is not nearly as complicated when you have the right tools
+      and Remix is the right tool. In this workshop, we'll create our own cookie
+      session management utilities that are simple and straightforward to extend
+      and change as our authentication use cases change over time.
+  - title: Protect pages
+    description:
+      There are some pages you don't want your end users to see if they aren't
+      authenticated. It wouldn't do them any good anyway, so we'll redirect them
+      to the login screen and send them back once they've successfully logged
+      in.
+  - title: Handle unauthorized requests
+    description:
+      Just because the user is authenticated doesn't mean they're authorized to
+      do what they're trying to do. So we're going to stop them from doing
+      things they're not allowed to do. And we're going to give them an
+      excellent user experience while we're at it.
+topics:
+  - Cookies
+  - Sessions
+  - Authorization
+  - Protected database access
+  - Protected routes
+prerequisite: >-
+  You should have experience with [these JavaScript
+  features](/blog/javascript-to-know-for-react) and watch my [Beginner's Guide
+  to React](https://kcd.im/beginner-react) or have the equivalent experience.
+  Experience with Remix is a bonus, but not a requirement. This workshop will
+  use TypeScript, but should be completable if you do not have experience with
+  TypeScript.
