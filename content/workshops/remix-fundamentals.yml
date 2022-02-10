@@ -21,6 +21,10 @@ events:
     url: https://www.reactsummit.com
     quantity: 40
     date: June 22nd, 2022
+  - title: Remix Fundamentals (RenderATL)
+    url: https://www.renderatl.com
+    quantity: 40
+    date: June 1st, 2022
 categories:
   - react
   - remix
