@@ -9,6 +9,10 @@ meta:
     - seo
     - accessibility
 events:
+  - title: Remix Fundamentals (Reactathon)
+    url: https://www.reactathon.com/workshops
+    quantity: 40
+    date: May 6th, 2022
   - title: Remix Fundamentals (Remix Conf)
     url: https://remix.run/conf/workshops
     quantity: 40
