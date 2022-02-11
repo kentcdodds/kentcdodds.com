@@ -7,6 +7,15 @@
   description: >-
     This talk is yet to be announced
 
+- title: infoShare 2022 Keynote
+  deliveries:
+    - event: '[infoShare](https://infoshare.pl/)'
+      date: 2022-10-06
+  tags:
+    - keynote
+  description: >-
+    This talk is yet to be announced
+
 - title: Infobip Shift 2022 Keynote
   deliveries:
     - event: '[Infobip](https://shift.infobip.com/)'
