@@ -215,7 +215,7 @@ export default function Discord() {
             <Paragraph className="mb-12">
               {`
                 Discord is a chat application. The KCD Community on Discord is
-                community of people who want to make connections, share ideas,
+                a community of people who want to make connections, share ideas,
                 and use software to help make the world a better place.
               `}
             </Paragraph>
