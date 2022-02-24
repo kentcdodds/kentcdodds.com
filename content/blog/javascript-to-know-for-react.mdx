@@ -636,9 +636,8 @@ function asyncAwaits() {
   }
 
   async function recoveredAsyncAwait() {
-    let result
     try {
-      result = await timeout(300, true)
+      const result = await timeout(300, true)
       return `failed: ${result}` // this would not be executed
     } catch (error) {
       return `failed and recovered: ${error}`
