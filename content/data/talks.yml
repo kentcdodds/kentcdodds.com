@@ -120,6 +120,14 @@
       recording: 'https://www.youtube.com/watch?v=T0aigxxfGrc&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf'
     - event: '[XTSummit](https://xtsummit.com/)'
       date: 2022-02-18
+    - event:
+        '[Remix
+        Uppsala](https://www.meetup.com/remix_run-uppsala/events/283688341)'
+      date: 2022-03-01
+      recording: 'https://www.youtube.com/watch?v=_lEYvuRG130&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf'
+    - event:
+        '[Remix London](https://www.meetup.com/remix-london/events/283361856)'
+      date: 2022-03-02
     - event: '[Brum.js](https://brum.js.org/)'
       date: 2022-03-31
   tags:
