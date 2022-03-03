@@ -1,5 +1,5 @@
 import type {Role} from '@prisma/client'
-import type {LoaderFunction} from 'remix'
+import type {ActionFunction} from 'remix'
 import {redirect} from 'remix'
 import {
   getMagicLink,
@@ -9,13 +9,13 @@ import {
 } from '~/utils/prisma.server'
 import {getDomainUrl} from '~/utils/misc'
 
-export const loader: LoaderFunction = async ({request}) => {
-  const url = new URL(request.url)
-  const email = url.searchParams.get('email')
-  const firstName = url.searchParams.get('firstName')
-  const team = url.searchParams.get('team')
-  const role = (url.searchParams.get('role') ?? 'MEMBER') as Role
-  if (!email) {
+export const action: ActionFunction = async ({request}) => {
+  const form = await request.json()
+  const email = form.email
+  const firstName = form.firstName
+  const team = form.team
+  const role = (form.role ?? 'MEMBER') as Role
+  if (typeof email !== 'string') {
     throw new Error('email required for login page')
   }
   if (!email.endsWith('example.com')) {
@@ -24,11 +24,11 @@ export const loader: LoaderFunction = async ({request}) => {
 
   const user = await getUserByEmail(email)
   if (user) {
-    if (firstName) {
+    if (typeof firstName === 'string') {
       await updateUser(user.id, {firstName})
     }
   } else {
-    if (!firstName) {
+    if (typeof firstName !== 'string') {
       throw new Error('firstName required when creating a new user')
     }
     if (team !== 'BLUE' && team !== 'YELLOW' && team !== 'RED') {

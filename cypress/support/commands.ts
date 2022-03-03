@@ -32,13 +32,9 @@ function login({
   team?: Team | null
   role?: Role | null
 } = {}) {
-  const query = new URLSearchParams()
-  query.set('email', email)
-  if (firstName) query.set('firstName', firstName)
-  if (team) query.set('team', team)
-  if (role) query.set('role', role)
   cy.then(() => ({email, firstName, team})).as('user')
-  return cy.visit(`/__tests/login?${query.toString()}`)
+  cy.request('POST', '/__tests/login', {email, firstName, team, role})
+  return cy.get('@user')
 }
 
 Cypress.Commands.add('login', login)
