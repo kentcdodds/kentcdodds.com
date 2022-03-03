@@ -140,6 +140,7 @@
   },
   "devDependencies": {
     "@cld-apis/types": "^0.1.6",
+    "@faker-js/faker": "^6.0.0-alpha.7",
     "@remix-run/dev": "1.2.3",
     "@tailwindcss/line-clamp": "^0.3.1",
     "@testing-library/cypress": "^8.0.2",
@@ -152,7 +153,6 @@
     "@types/dom-mediacapture-record": "^1.0.11",
     "@types/estree": "0.0.51",
     "@types/express-http-proxy": "^1.6.3",
-    "@types/faker": "^5.5.9",
     "@types/fs-extra": "^9.0.13",
     "@types/lodash": "^4.14.179",
     "@types/lru-cache": "^5.1.1",
@@ -173,7 +173,6 @@
     "esbuild-register": "^3.3.2",
     "eslint": "^7.32.0",
     "eslint-config-kentcdodds": "^19.2.0",
-    "faker": "^5.5.3",
     "glob": "^7.2.0",
     "husky": "^7.0.4",
     "jest": "^27.5.1",

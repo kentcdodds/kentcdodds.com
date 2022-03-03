@@ -6,7 +6,7 @@ import type {
   SimplecastEpisode,
   SimplecastEpisodeListItem,
 } from '~/types'
-import * as faker from 'faker'
+import {faker} from '@faker-js/faker'
 
 const seasonListItems: Array<SimpelcastSeasonListItem> = [
   {

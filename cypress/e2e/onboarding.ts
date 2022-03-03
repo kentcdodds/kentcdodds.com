@@ -1,4 +1,4 @@
-import faker from 'faker'
+import {faker} from '@faker-js/faker'
 
 describe('onboarding', () => {
   it('should allow a user to register a new account', () => {

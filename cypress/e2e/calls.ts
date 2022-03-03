@@ -1,4 +1,4 @@
-import faker from 'faker'
+import {faker} from '@faker-js/faker'
 
 describe('call in', () => {
   it('should allow creating a call, response, and podcast', () => {

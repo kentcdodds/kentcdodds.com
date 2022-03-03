@@ -1,4 +1,4 @@
-import faker from 'faker'
+import {faker} from '@faker-js/faker'
 
 describe('contact', () => {
   it('should allow a typical user flow', () => {

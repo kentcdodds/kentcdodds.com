@@ -7,7 +7,7 @@ import type {
   TransistorCreatedJson,
   TransistorEpisodeData,
 } from '~/types'
-import * as faker from 'faker'
+import {faker} from '@faker-js/faker'
 import {requiredParam, requiredHeader, requiredProperty} from './utils'
 
 function makeEpisode(

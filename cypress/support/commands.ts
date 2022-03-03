@@ -1,4 +1,4 @@
-import faker from 'faker'
+import {faker} from '@faker-js/faker'
 import type {Team, Role} from '../../types'
 
 declare global {
