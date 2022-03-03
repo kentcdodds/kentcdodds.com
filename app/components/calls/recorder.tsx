@@ -2,7 +2,6 @@ import * as React from 'react'
 import gsap from 'gsap'
 import {createMachine, assign, send as sendUtil} from 'xstate'
 import {useMachine} from '@xstate/react'
-import {inspect} from '@xstate/inspect'
 import {assertNonNull} from '~/utils/misc'
 import {Button, LinkButton} from '../button'
 import {Paragraph} from '../typography'
@@ -39,13 +38,6 @@ const theme = {
   growSpeed: GROW_SPEED,
   growDelay: GROW_DELAY,
   barWidth: BAR_WIDTH,
-}
-
-const devTools = false
-
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-if (devTools && typeof window !== 'undefined') {
-  inspect({iframe: false})
 }
 
 function stopMediaRecorder(mediaRecorder: MediaRecorder) {
@@ -99,7 +91,7 @@ const recorderMachine = createMachine<RecorderContext>(
         },
       },
       recording: {
-        invoke: {src: 'mediaRecorder'},
+        invoke: {src: 'mediaRecorder', id: 'mediaRecorder'},
         initial: 'playing',
         states: {
           playing: {
@@ -213,7 +205,7 @@ function CallRecorder({
   onRecordingComplete: (audio: Blob) => void
   team: Team
 }) {
-  const [state, send] = useMachine(recorderMachine, {devTools})
+  const [state, send] = useMachine(recorderMachine)
   const [timer, setTimer] = React.useState<number>(0)
   const metadataRef = React.useRef<Array<number>>([])
   const playbackRef = React.useRef<HTMLAudioElement | null>(null)

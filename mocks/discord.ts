@@ -66,7 +66,7 @@ const discordHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
         console.error('Request body:', req.body)
         throw new Error('Request body must be a JSON object')
       }
-      if (!req.body.access_token) {
+      if (!req.body?.access_token) {
         const bodyString = JSON.stringify(req.body, null, 2)
         throw new Error(
           `access_token required in the body, but not found in ${bodyString}`,
@@ -87,7 +87,11 @@ const discordHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
       if (typeof req.body !== 'object') {
         throw new Error('patch request to member must have a JSON body')
       }
-      if (!Array.isArray(req.body.roles) || req.body.roles.length < 1) {
+      if (
+        !Array.isArray(req.body?.roles) ||
+        !req.body ||
+        req.body.roles.length < 1
+      ) {
         throw new Error(
           'patch request to member must include a roles array with the new role',
         )
@@ -124,7 +128,7 @@ const discordHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
 
       console.log(
         `🤖 Sending bot message to ${req.params.channelId}:\n`,
-        req.body.content,
+        req.body?.content,
       )
 
       return res(

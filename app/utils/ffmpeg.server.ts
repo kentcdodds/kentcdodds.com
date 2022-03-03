@@ -1,7 +1,7 @@
 import fs from 'fs'
 import {spawn} from 'child_process'
 import path from 'path'
-import uuid from 'uuid'
+import * as uuid from 'uuid'
 import fsExtra from 'fs-extra'
 
 const asset = (...p: Array<string>) =>

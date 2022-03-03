@@ -42,6 +42,7 @@ async function handleFormSubmission<
 )): Promise<Response> {
   try {
     if (!form) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       const requestText = await request!.text()
       form = new URLSearchParams(requestText)
     }

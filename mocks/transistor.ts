@@ -97,7 +97,7 @@ const transistorHandlers: Array<
   ),
 
   rest.post('https://api.transistor.fm/v1/episodes', async (req, res, ctx) => {
-    if (typeof req.body !== 'object') {
+    if (!req.body || typeof req.body !== 'object') {
       throw new Error('req.body must be an object')
     }
     requiredHeader(req.headers, 'x-api-key')
@@ -122,7 +122,7 @@ const transistorHandlers: Array<
   rest.patch(
     'https://api.transistor.fm/v1/episodes/:episodeId/publish',
     async (req, res, ctx) => {
-      if (typeof req.body !== 'object') {
+      if (!req.body || typeof req.body !== 'object') {
         throw new Error('req.body must be an object')
       }
       requiredProperty(req.body, 'episode')
@@ -147,7 +147,7 @@ const transistorHandlers: Array<
   rest.patch(
     'https://api.transistor.fm/v1/episodes/:episodeId',
     async (req, res, ctx) => {
-      if (typeof req.body !== 'object') {
+      if (!req.body || typeof req.body !== 'object') {
         throw new Error('req.body must be an object')
       }
       requiredProperty(req.body, 'episode')

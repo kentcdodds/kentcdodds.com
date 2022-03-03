@@ -2,7 +2,7 @@
 // the posts they've read and make useful suggestions even if they're not logged in.
 
 import {createCookieSessionStorage} from 'remix'
-import uuid from 'uuid'
+import * as uuid from 'uuid'
 import {getRequiredServerEnvVar} from './misc'
 
 const clientStorage = createCookieSessionStorage({

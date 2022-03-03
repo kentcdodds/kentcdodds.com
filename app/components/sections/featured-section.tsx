@@ -91,6 +91,7 @@ function FeaturedSection({
               </div>
 
               <div className="mt-12 flex items-center justify-between">
+                {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
                 <ArrowLink to={slug ?? href ?? '/'} prefetch="intent">
                   {cta}
                   <div className="focus-ring absolute inset-0 left-0 right-0 z-10 rounded-lg md:-left-12 md:-right-12 lg:left-0 lg:right-0" />
