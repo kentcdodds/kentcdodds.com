@@ -87,7 +87,30 @@
     Platform the way it was meant to be done to give us simple and secure
     server-side authentication for the web.
 
+- title: Developing a Remix app... Offline
+  tags:
+    - react
+    - msw
+    - docker
+  description: >-
+    I love riding my onewheel up to the mountains where there's no internet/cell
+    service and working on my app. But my app uses tons of 3rd party services
+    and two databases to get things done. In this talk I'll walk you through how
+    I manage to still work offline and enjoy nature!
+  deliveries:
+    - event: '[Remix Utah](https://www.meetup.com/remix-utah/events/283702057)'
+      date: 2022-03-03
+      recording: 'https://www.youtube.com/watch?v=4pBKWRjwCgE&t=1814&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf'
+
 - title: Building Excellent User Experiences with Remix
+  tags:
+    - react
+    - remix
+  description: >-
+    Remix is a Web Framework that uses the web platform to enable you to build
+    excellent user experiences. In this talk I'm going to show you what makes
+    Remix so special and how the user experiences you build with Remix are
+    excellent by default.
   deliveries:
     - event:
         '[React Denver](https://www.meetup.com/ReactDenver/events/282107884/)'
@@ -128,16 +151,11 @@
     - event:
         '[Remix London](https://www.meetup.com/remix-london/events/283361856)'
       date: 2022-03-02
+      recording: 'https://www.youtube.com/watch?v=r6sDMntthms&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf'
+    - event: 'Farfetch Webinar'
+      date: 2022-03-04
     - event: '[Brum.js](https://brum.js.org/)'
       date: 2022-03-31
-  tags:
-    - react
-    - remix
-  description: >-
-    Remix is a Web Framework that uses the web platform to enable you to build
-    excellent user experiences. In this talk I'm going to show you what makes
-    Remix so special and how the user experiences you build with Remix are
-    excellent by default.
 
 - title: The Power of Forms
   resources:
