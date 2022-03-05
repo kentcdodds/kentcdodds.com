@@ -70,3 +70,18 @@
     @apply text-white dark:text-black;
   }
 }
+
+body::-webkit-scrollbar {
+  @apply w-2;
+}
+body::-webkit-scrollbar-track {
+  @apply rounded bg-white shadow-none dark:bg-gray-900;
+}
+
+body::-webkit-scrollbar-thumb {
+  @apply rounded bg-gray-900 duration-100 dark:bg-white;
+}
+
+body::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-700 dark:bg-gray-300;
+}
