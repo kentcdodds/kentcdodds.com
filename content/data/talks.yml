@@ -52,14 +52,22 @@
   description: >-
     This talk is yet to be announced
 
-- title: Reactathon Keynote
+- title: Shipping to the Edge
   deliveries:
     - event: '[Reactathon](https://www.reactathon.com/)'
       date: 2022-05-02
   tags:
     - keynote
   description: >-
-    This talk is yet to be announced
+    The landscape of the web has evolved drastically since the first website was
+    published to the World Wide Web in 1991. Over the years, the pendulum has
+    swung from servers rendering HTML to JavaScript-heavy clients and now it's
+    swinging toward something more in the middle.
+
+    What about the web today is enabling us to overcome the shortcomings of the
+    web of the past? In this talk, we'll get a little peak into the history of
+    each of these stages of the web and what that means for anyone building on
+    the web platform in the future.
 
 - title: The Stack of the Future
   deliveries:
@@ -158,8 +166,7 @@
         '[JavaScript
         Marathon](https://labs.thisdot.co/resources/Remix-with-Kent-C-Dodds)'
       date: 2022-03-14
-    - event:
-        '[CharlestonJS](https://www.meetup.com/nl-NL/CharlestonJS/events/283033703)'
+    - event: '[CharlestonJS](https://www.meetup.com/nl-NL/CharlestonJS/events/283033703)'
       date: 2022-03-17
     - event:
         '[Applitools
