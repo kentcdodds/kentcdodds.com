@@ -11,14 +11,15 @@ async function go() {
     compareCommitSha,
     changedFiles,
   })
-  // deploy if:
+  // don't deploy if:
   // - there was an error getting the changed files (null)
   // - there are no changed files
-  // - there are changed files, but at least one of them is non-content
-  const isDeployable =
+  // - there are changed files, but all of them are non-content
+  const isDeployable = !(
     changedFiles === null ||
     changedFiles.length === 0 ||
-    changedFiles.some(({filename}) => !filename.startsWith('content'))
+    changedFiles.every(({filename}) => !filename.startsWith('content'))
+  )
 
   console.error(
     isDeployable
