@@ -3,6 +3,7 @@ import type {HeadersFunction, LoaderFunction, MetaFunction} from 'remix'
 import {json, useLoaderData, Link, useLocation, useSearchParams} from 'remix'
 import type {Await} from '~/types'
 import formatDate from 'date-fns/format'
+import parseDate from 'date-fns/parseISO'
 import clsx from 'clsx'
 import {
   getUrl,
@@ -72,7 +73,7 @@ function Card({
 }: LoaderData['talks'][0] & {active: boolean}) {
   const latestDate = deliveries
     .filter(x => x.date)
-    .map(x => new Date(x.date as string))
+    .map(x => parseDate(x.date as string))
     .sort((l, r) => r.getTime() - l.getTime())[0] as Date
 
   const isInFuture = latestDate.getTime() > Date.now()
@@ -160,7 +161,7 @@ function Card({
                     <div className="flex-auto" />
                     <Paragraph className="ml-2 flex-none" as="span">
                       {delivery.date
-                        ? formatDate(new Date(delivery.date), 'yyyy-MM-dd')
+                        ? formatDate(parseDate(delivery.date), 'yyyy-MM-dd')
                         : null}
                     </Paragraph>
                   </div>
