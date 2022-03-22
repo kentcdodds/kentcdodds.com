@@ -49,6 +49,7 @@ function createClient(
   let client = global[name]
   if (!client) {
     const url = new URL(options.url ?? 'http://no-redis-url.example.com?weird')
+    console.log(`Setting up redis client to ${url.host} for ${name}`)
     // eslint-disable-next-line no-multi-assign
     client = global[name] = redis.createClient(options)
 
