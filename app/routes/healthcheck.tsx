@@ -10,7 +10,7 @@ export const loader: LoaderFunction = async ({request}) => {
     await Promise.all([
       prismaRead.user.count(),
       getBlogReadRankings({request}),
-      fetch(`http://${host}?log-a-lot=true`, {method: 'HEAD'}).then(r => {
+      fetch(`http://${host}`, {method: 'HEAD'}).then(r => {
         if (!r.ok) return Promise.reject(r)
       }),
     ])

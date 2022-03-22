@@ -38,11 +38,6 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  const shouldLog =
-    new URL(request.url).searchParams.get('log-a-lot') === 'true'
-  const log = (...args: Array<unknown>) =>
-    shouldLog && console.log('loader', ...args)
-  log('in the loader function')
   const [user, posts, blogRankings, totalBlogReaders, blogRecommendations] =
     await Promise.all([
       getUser(request),
@@ -51,7 +46,6 @@ export const loader: LoaderFunction = async ({request}) => {
       getReaderCount(request),
       getBlogRecommendations(request),
     ])
-  log('after the promises')
 
   const totalBlogReads = blogRankings.reduce(
     (total, ranking) => ranking.totalReads + total,

@@ -131,19 +131,11 @@ async function deleteOtherSessions(request: Request) {
 }
 
 async function getUser(request: Request) {
-  const shouldLog =
-    new URL(request.url).searchParams.get('log-a-lot') === 'true'
-  const log = (...args: Array<unknown>) =>
-    shouldLog && console.log('loader', ...args)
-  log('getUser before getting session')
   const {session} = await getSession(request)
 
-  log('getUser after getting session')
   const token = session.get(sessionIdKey) as string | undefined
-  log('getUser token', token)
   if (!token) return null
 
-  log('getUser getting from sessionId', token)
   return getUserFromSessionId(token).catch((error: unknown) => {
     console.error(`Failure getting user from session ID:`, error)
     return null

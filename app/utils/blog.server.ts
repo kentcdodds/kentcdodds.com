@@ -29,15 +29,9 @@ async function getBlogRecommendations(
     exclude?: Array<string>
   } = {},
 ) {
-  const shouldLog =
-    new URL(request.url).searchParams.get('log-a-lot') === 'true'
-  const log = (...args: Array<unknown>) =>
-    shouldLog && console.log('loader', ...args)
   // if we passed the request here, any "fresh" request on a post would
   // result in refreshing *all* blog posts which is probably not what we want.
-  log('getBlogRecommendations: start. Getting BlogMdxListItems')
   const allPosts = await getBlogMdxListItems({forceFresh: false})
-  log('getBlogRecommendations: Gotten BlogMdxListItems')
 
   // exclude what they want us to + any posts that are labeled as archived or draft.
   let exclude = Array.from(
@@ -48,8 +42,6 @@ async function getBlogRecommendations(
         .map(p => p.slug),
     ]),
   )
-
-  log(`getBlogRecommendations: Starting determining what they've read`)
   // filter out what they've already read
   const session = await getSession(request)
   const client = await getClientSession(request)
@@ -63,7 +55,6 @@ async function getBlogRecommendations(
     where,
   })
   exclude.push(...readPosts.map(p => p.postSlug))
-  log(`getBlogRecommendations: Determined what they've read`)
 
   const recommendablePosts = allPosts.filter(
     post => !exclude.includes(post.slug),
@@ -79,7 +70,6 @@ async function getBlogRecommendations(
 
   if (keywords.length) {
     // get best match posts
-    log(`getBlogRecommendations: getting best match posts`)
     const postsByBestMatch = keywords.length
       ? Array.from(
           new Set(...keywords.map(k => filterPosts(recommendablePosts, k))),
@@ -91,10 +81,8 @@ async function getBlogRecommendations(
     recommendations.push(...bestMatchRecommendations)
 
     exclude = [...exclude, ...bestMatchRecommendations.map(({slug}) => slug)]
-    log(`getBlogRecommendations: gotten best match posts`)
   }
 
-  log(`getBlogRecommendations: getting most popular posts`)
   // get most popular posts
   const mostPopularRecommendationSlugs = await getMostPopularPostSlugs({
     // get 4x the limit so we can have a little randomness
@@ -108,11 +96,9 @@ async function getBlogRecommendations(
   ).slice(0, limitPerGroup)
   recommendations.push(...mostPopularRecommendations)
   exclude = [...exclude, ...mostPopularRecommendationSlugs]
-  log(`getBlogRecommendations: gotten most popular posts`)
 
   if (recommendations.length < limit) {
     // fill in the rest with random posts
-    log(`getBlogRecommendations: getting random posts`)
     const remainingPosts = recommendablePosts.filter(
       ({slug}) => !exclude.includes(slug),
     )
@@ -121,10 +107,8 @@ async function getBlogRecommendations(
       limit - recommendations.length,
     )
     recommendations.push(...completelyRandomRecommendations)
-    log(`getBlogRecommendations: gotten random posts`)
   }
 
-  log(`getBlogRecommendations: finishing/mixing up the recommendations`)
   // then mix them up
   return shuffle(recommendations)
 }
@@ -180,11 +164,6 @@ async function getTotalPostReads(request: Request, slug?: string) {
 }
 
 async function getReaderCount(request: Request) {
-  const shouldLog =
-    new URL(request.url).searchParams.get('log-a-lot') === 'true'
-  const log = (...args: Array<unknown>) =>
-    shouldLog && console.log('loader', ...args)
-  log('getReaderCount start')
   return cachified({
     key: 'total-reader-count',
     cache: lruCache,
@@ -192,14 +171,12 @@ async function getReaderCount(request: Request) {
     request,
     checkValue: (value: unknown) => typeof value === 'number',
     getFreshValue: async () => {
-      log('getReaderCount getting fresh value')
       // couldn't figure out how to do this in one query with out $queryRaw 🤷‍♂️
       type CountResult = [{count: number}]
       const [userIdCount, clientIdCount] = await Promise.all([
         prismaRead.$queryRaw`SELECT COUNT(DISTINCT "public"."PostRead"."userId") FROM "public"."PostRead" WHERE ("public"."PostRead"."userId") IS NOT NULL` as Promise<CountResult>,
         prismaRead.$queryRaw`SELECT COUNT(DISTINCT "public"."PostRead"."clientId") FROM "public"."PostRead" WHERE ("public"."PostRead"."clientId") IS NOT NULL` as Promise<CountResult>,
       ]).catch(() => [[{count: 0}], [{count: 0}]])
-      log('getReaderCount gotten fresh value')
       return userIdCount[0].count + clientIdCount[0].count
     },
   })
@@ -216,12 +193,7 @@ async function getBlogReadRankings({
   request?: Request
   forceFresh?: boolean
 }) {
-  const shouldLog =
-    request && new URL(request.url).searchParams.get('log-a-lot') === 'true'
-  const log = (...args: Array<unknown>) =>
-    shouldLog && console.log('loader', ...args)
   const key = slug ? `blog:${slug}:rankings` : `blog:rankings`
-  log('getBlogReadRankings start with key:', key)
   const rankingObjs = await cachified({
     key,
     cache: redisCache,
@@ -232,7 +204,6 @@ async function getBlogReadRankings({
       Array.isArray(value) &&
       value.every(v => typeof v === 'object' && 'team' in v),
     getFreshValue: async () => {
-      log('getBlogReadRankings getting fresh value:', key)
       const rawRankingData = await Promise.all(
         teams.map(async function getRankingsForTeam(
           team,
@@ -270,7 +241,6 @@ async function getBlogReadRankings({
         },
       )
 
-      log('getBlogReadRankings gotten fresh value:', key)
       return rankPercentages
     },
   })
