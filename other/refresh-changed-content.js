@@ -12,6 +12,9 @@ async function go() {
   if (!compareSha) {
     const buildInfo = await fetchJson('https://kentcdodds.com/build/info.json')
     compareSha = buildInfo.commit.sha
+    console.log(
+      `No compare sha found, using build sha: ${buildInfo.commit.sha}`,
+    )
   }
   if (typeof compareSha !== 'string') {
     console.log('🤷‍♂️ No sha to compare to. Unsure what to refresh.')
