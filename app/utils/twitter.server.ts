@@ -364,6 +364,7 @@ async function getTweetEmbedHTML(urlString: string) {
   let tweet
   try {
     tweet = await getTweet(tweetId)
+    console.log(tweet)
     if (!('data' in tweet)) {
       throw new Error('Oh no, tweet has no data.')
     }
