@@ -31,10 +31,7 @@ export const action: ActionFunction = async ({request}) => {
 
   function setShaInRedis() {
     if (body.commitSha) {
-      void redisCache.set(
-        commitShaKey,
-        JSON.stringify({sha: body.commitSha, date: new Date()}),
-      )
+      void redisCache.set(commitShaKey, {sha: body.commitSha, date: new Date()})
     }
   }
 
