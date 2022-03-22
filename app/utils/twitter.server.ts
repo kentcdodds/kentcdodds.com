@@ -364,7 +364,6 @@ async function getTweetEmbedHTML(urlString: string) {
   let tweet
   try {
     tweet = await getTweet(tweetId)
-    console.log(tweet)
     if (!('data' in tweet)) {
       throw new Error('Oh no, tweet has no data.')
     }
@@ -372,6 +371,12 @@ async function getTweetEmbedHTML(urlString: string) {
     return html
   } catch (error: unknown) {
     console.error('Error processing tweet', {urlString, tweetId, error, tweet})
+    if (tweet && 'errors' in tweet) {
+      console.error('Tweet errors:')
+      for (const er of tweet.errors) {
+        console.error(er)
+      }
+    }
     return ''
   }
 }
