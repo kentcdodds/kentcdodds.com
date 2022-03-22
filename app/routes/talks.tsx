@@ -159,7 +159,10 @@ function Card({
                     ) : null}
 
                     <div className="flex-auto" />
-                    <Paragraph className="ml-2 flex-none" as="span">
+                    <Paragraph
+                      className="ml-2 flex-none tabular-nums"
+                      as="span"
+                    >
                       {delivery.date
                         ? formatDate(parseDate(delivery.date), 'yyyy-MM-dd')
                         : null}
