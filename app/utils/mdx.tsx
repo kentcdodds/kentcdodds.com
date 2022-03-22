@@ -282,12 +282,19 @@ async function getDataUrlForImage(imageUrl: string) {
 }
 
 async function getBlogMdxListItems(options: CachifiedOptions) {
+  const shouldLog =
+    options.request &&
+    new URL(options.request.url).searchParams.get('log-a-lot') === 'true'
+  const log = (...args: Array<unknown>) =>
+    shouldLog && console.log('loader', ...args)
+  log('getBlogMdxListItems options', options)
   return cachified({
     cache: redisCache,
     maxAge: defaultMaxAge,
     ...options,
     key: 'blog:mdx-list-items',
     getFreshValue: async () => {
+      log('getBlogMdxListItems getting fresh value')
       let pages = await getMdxPagesInDirectory('blog', options)
 
       pages = pages.sort((a, z) => {
@@ -296,6 +303,7 @@ async function getBlogMdxListItems(options: CachifiedOptions) {
         return aTime > zTime ? -1 : aTime === zTime ? 0 : 1
       })
 
+      log('getBlogMdxListItems gotten fresh value')
       return pages.map(mapFromMdxPageToMdxListItem)
     },
   })
