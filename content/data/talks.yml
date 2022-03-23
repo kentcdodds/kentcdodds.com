@@ -70,15 +70,6 @@
   description: >-
     This talk is yet to be announced
 
-- title: Remix Conf Keynote
-  deliveries:
-    - event: '[Remix Conf](https://remix.run/conf)'
-      date: 2022-05-25
-  tags:
-    - keynote
-  description: >-
-    This talk is yet to be announced
-
 - title: Shipping to the Edge
   deliveries:
     - event: '[Reactathon](https://www.reactathon.com/)'
