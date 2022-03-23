@@ -103,7 +103,21 @@
   tags:
     - keynote
   description: >-
-    More details coming soon
+    When a brilliant idea strikes, you want to hit the ground running and focus
+    on building out your idea. Unfortunately, for any ambitious project, it
+    takes a significant amount of time configuring the tools you'll ultimately
+    need to make your idea a reality. Far too often we either under prepare and
+    our MVP-shortcuts end up being a pain in the neck for the next few years if
+    we're successful, or we spend so much time in the setup process that we lose
+    all motivation.
+
+
+    In this talk, I'll show you how Remix can help you get started with a solid
+    foundation so you can focus on building out your ideas. And when your MVP
+    turns into a money maker, you won't feel like you have to rewrite your app
+    from scratch! And for those of you starting new projects from scratch on a
+    regular basis, I'll show you how you can make your own Remix stack to create
+    these projects just like you want them again and again.
 
 - title: Server-side Auth with Remix, Prisma, and the Web Platform
   deliveries:
