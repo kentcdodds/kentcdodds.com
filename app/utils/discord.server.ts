@@ -29,6 +29,7 @@ type DiscordToken = {
   token_type: string
   access_token: string
 }
+type DiscordError = {message: string; code: number}
 
 async function fetchAsDiscordBot(endpoint: string, config?: RequestInit) {
   const url = new URL(`https://discord.com/api/${endpoint}`)
@@ -111,7 +112,7 @@ async function getDiscordUser(discordUserId: string) {
 }
 
 async function getMember(discordUserId: string) {
-  const member = await fetchJsonAsDiscordBot<DiscordMember>(
+  const member = await fetchJsonAsDiscordBot<DiscordMember | DiscordError>(
     `guilds/${DISCORD_GUILD_ID}/members/${discordUserId}`,
   )
   return member
@@ -182,7 +183,13 @@ async function connectDiscord({
   await new Promise(resolve => setTimeout(resolve, 300))
 
   const discordMember = await getMember(discordUser.id)
-  await updateDiscordRolesForUser(discordMember, user)
+  if ('id' in discordMember) {
+    await updateDiscordRolesForUser(discordMember, user)
+  } else if ('message' in discordMember) {
+    throw new Error(
+      `Discord Error (${discordMember.code}): ${discordMember.message}`,
+    )
+  }
 
   return discordMember
 }
