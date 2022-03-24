@@ -1,0 +1,352 @@
+---
+title: "Remix: The Yang to React's Yin"
+draft: true
+date: 2022-03-24
+description:
+  Remix fills the missing piece that all React web applications need. Let me
+  explain.
+categories:
+  - remix
+  - react
+meta:
+  keywords:
+    - remix
+    - react
+    - web
+    - react router
+bannerCloudinaryId: unsplash/photo-1604845029162-cfa4b9a1550f
+bannerAlt: yellow and black fish in water
+bannerCredit:
+  Photo by [Sergio Capuzzimati](https://unsplash.com/photos/SITwDBhar6w)
+---
+
+I've been building React applications since 2015. Since then, React has been the
+biggest single productivity boost for my development by a long shot. React's
+declarative model for rendering UI based on state drastically simplified the way
+I thought about building UIs for the web. It also gave me a great way to think
+about state that was miles ahead of what I had been doing with Angular.js and
+Backbone before it.
+
+React's tagline is:
+
+> A JavaScript library for building user interfaces
+
+React does an excellent job of this by giving you that declarative component
+model it pioneered. You can't build a user interface without managing some state
+(is the combobox menu `open` or `closed`?). This is why React _has_ component
+state management.
+
+The trick is that there's a lot more to Web applications than local component
+state. In fact, the vast majority of the "state" loaded in the typical React
+application is not state at all, but a cache of state that came from the server
+(which it probably got from a persistence layer like a database for example).
+While React has always given us a nice way to manage state, it can't hide the
+fact that much of the state we're manging is actually a cache and suffers from
+the problems of caching.
+
+As
+[Phil Karlton's famous quote](https://www.karlton.org/2017/12/naming-things-hard/)
+states:
+
+> There are only two hard things in Computer Science: cache invalidation and
+> naming things.
+
+In many ways this is a joke, but cache invalidation is definitely a challenging
+problem. And up to this point, React hasn't given us anything out of the box for
+managing this problem, as evidenced by the myrid of libraries and tools that
+have been built around React to make this easier. Whether you're using Redux
+(toolkit), MobX, Apollo, React Query, SWR, or something else, you're only
+reaching for those tools because there's a common, shared problem in web
+development that React doesn't have a built-in answer for:
+
+<callout-info>Management of the Network Chasm</callout-info>
+
+## What's the network chasm?
+
+Here's what I mean by the network chasm:
+
+<Themed
+  dark={
+    <a
+      href="https://res.cloudinary.com/kentcdodds-com/image/upload/v2/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/network-chasm-dark"
+      target="_blank"
+    >
+      <BlogImage
+        cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/network-chasm-dark"
+        imgProps={{
+          alt: 'Excalidraw diagram showing a box labeled client and a box labeled server with the words "Network Chasm" between them',
+        }}
+      />
+    </a>
+  }
+  light={
+    <a
+      href="https://res.cloudinary.com/kentcdodds-com/image/upload/v2/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/network-chasm-light"
+      target="_blank"
+    >
+      <BlogImage
+        cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/network-chasm-light"
+        imgProps={{
+          alt: 'Excalidraw diagram showing a box labeled client and a box labeled server with the words "Network Chasm" between them',
+        }}
+      />
+    </a>
+  }
+/>
+
+As web developers, we get to write code that runs in the client (the browser)
+and the server. We don't get any control over the network. This is why we have
+to think about caching in the first place. When our React component re-renders
+as the user makes their taco selection 🌮 we need to have synchronous access to
+the options available for that particular taco 🤤. So we make HTTP requests over
+the network, and store those values in an in-memory cache via React state (or
+some library) so they're available for our re-render.
+
+Do you know the number one cause of bugs in apps both large and small?
+
+Code.
+
+That network chasm is the source of an enormous amount of code. Getting it right
+is extremely difficult, but we're building web apps, so we have to try. So,
+using the power of JavaScript, the modern fetch API, and some handy dandy
+libraries, we shoot a grapling hook over the network chasm via HTTP to get data
+to and from the backend:
+
+<Themed
+  dark={
+    <a
+      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/client-side-apps-only-dark"
+      target="_blank"
+    >
+      <BlogImage
+        cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/client-side-apps-only-dark"
+        imgProps={{
+          alt: 'Similar diagram as above with a box above "Client" that says "SPA" and an arrow from that over the network chasm pointing to a box that says "Node/Rails/PHP/Java/.Net". The row is labeled "Client-side apps"',
+        }}
+      />
+    </a>
+  }
+  light={
+    <a
+      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/client-side-apps-only-light"
+      target="_blank"
+    >
+      <BlogImage
+        cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/client-side-apps-only-light"
+        imgProps={{
+          alt: 'Similar diagram as above with a box above "Client" that says "SPA" and an arrow from that over the network chasm pointing to a box that says "Node/Rails/PHP/Java/.Net". The row is labeled "Client-side apps"',
+        }}
+      />
+    </a>
+  }
+/>
+
+The code required for this grapling hook to work all exists on the frontend. For
+data fetching, you have to know what data to fetch, and often that's a
+challenging problem because we like to co-locate our data fetching with the code
+that requires the data (reduces bugs/mistakes/data overfetching a great deal by
+doing things this way). This has the unfortunate side-effect of not being able
+to fetch data until the components have rendered.
+
+Add to that the desire to implement code-splitting to make our app load faster,
+and now you have to not only wait for the component to render, but once it
+starts rendering you have to fetch the code that does the fetching too. This
+leads to network waterfalls (and we all know about
+[the danger of waterfalls](https://www.youtube.com/watch?v=3d-H5B1QQVM)).
+
+Unfortunately, data fetching by itself can't solve this problem. In fact, even
+React Suspense for Data fetching won't be able to solve this problem. Suspense
+will take the place of many data fetching libraries in being able to get the
+data from within the components (and if it's not cached yet it'll trigger the
+data to be fetched which is so fetch), but if you want to avoid the waterfall
+effect, you've got to start fetching the data before the code for those
+components are rendered.
+
+## Fetching Sooner
+
+This is why I'm so excited that React Router is going to solve this problem by
+bringing much of what I love about Remix into React Router.
+[Ryan](https://twitter.com/ryanflorence) explains this in his post
+[Remixing React Router](https://remix.run/blog/remixing-react-router). With the
+power of layout nested routes and `loaders` (getting data) and `actions`
+(mutating data), you can decouple the data fetching from the components, but
+still benefit a lot from colocation. The fetching code might not be _inside_ the
+component in this case, but because of the nature of nested layout routes, it's
+pretty darn close.
+
+<callout-success>
+  With these features, we go from "I have to render to know data requirements"
+  to "I know data requirements from the URL."
+</callout-success>
+
+On top of this, React Router is now managing some of that network chasm for you,
+meaning you have much less of your own code that has to worry about
+loading/error states. It also means that React Router can handle cache
+revalidation for you! Oh, and form resubmissions and race conditions too (some
+of the more challenging problems in UI development). And building excellent user
+experiences (like optimistic UI patterns) has never been easier. This
+effectively narrows the network chasm for you a bit:
+
+<Themed
+  dark={
+    <a
+      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/remixed-router-apps-dark"
+      target="_blank"
+    >
+      <BlogImage
+        cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/remixed-router-apps-dark"
+        imgProps={{
+          alt: 'Similar diagram as before except now the SPA box extends slightly further over the network chasm and the row is labeled "Remixed Router apps"',
+        }}
+      />
+    </a>
+  }
+  light={
+    <a
+      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/remixed-router-apps-light"
+      target="_blank"
+    >
+      <BlogImage
+        cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/remixed-router-apps-light"
+        imgProps={{
+          alt: 'Similar diagram as before except now the SPA box extends slightly further over the network chasm and the row is labeled "Remixed Router apps"',
+        }}
+      />
+    </a>
+  }
+/>
+
+## Can we do better?
+
+Having those features within React Router will be a **huge benefit** for anyone
+looking to simplify their code and speed up their app. React Router will be a
+best friend for anyone using React Suspense for Data Fetching (unless you have
+the infrastructure/compiler/router that Meta has I suppose).
+
+But we _can_ do even better. Even once you start fetching from the browser
+earlier, your users still have to wait for the initial JavaScript bundles to
+show up and execute before they can see anything. With React Router helping you
+with managing the loading and mutation of data, you can delete a lot of state
+(cache) management code, but it's still all there in the browser. On top of
+that, because we need the code to do the fetching before we get the code that
+needs the fetched data it means that code isn't code-split anymore.
+
+Wouldn't it be great, if we could just move all of that code out of the browser
+and onto the server? Isn't it annoying to have to write a serverless function
+any time you need to talk to a database or hit an API that needs your private
+key? (yes it is). These are the sorts of things React Server Components promise
+to do for us, and we can definitely look forward to that for data _loading_, but
+they don't do anything for _mutations_ and it'd be cool to move that code out of
+the browser as well (and not have to wait for it to be released).
+
+Enter stage right: [Remix](https://remix.run) 💿
+
+To _really_ take your app to the next level, you'll want to server render your
+app. And the best way to do that is to use Remix. Remix finishes the bridge
+across the network boundary for you in such a way that you don't even have to
+think about it. You take all your data fetching and data mutation code and move
+it to be exported functions from conventional "Remix route modules" and all of a
+sudden all of that code stays on the server and Remix handles the entire network
+chasm for you:
+
+<Themed
+  dark={
+    <a
+      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/backend-for-frontend-dark"
+      target="_blank"
+    >
+      <BlogImage
+        cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/backend-for-frontend-dark"
+        imgProps={{
+          alt: 'Similar to the diagrams before with the addition of a "Backend for frontend" row that shows Remix spanning over the client and network boundary into the Server and an arrow pointing to "Rails/PHP/Java/.Net"',
+        }}
+      />
+    </a>
+  }
+  light={
+    <a
+      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/backend-for-frontend-light"
+      target="_blank"
+    >
+      <BlogImage
+        cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/backend-for-frontend-light"
+        imgProps={{
+          alt: 'Similar to the diagrams before with the addition of a "Backend for frontend" row that shows Remix spanning over the client and network boundary into the Server and an arrow pointing to "Rails/PHP/Java/.Net"',
+        }}
+      />
+    </a>
+  }
+/>
+
+Now your app can really fly ⚡ because the user no longer has to wait for the
+JavaScript to load. The app is there and ready for them (and thanks to
+progressive enhancement, all the links and forms will work while the JavaScript
+downloads in the background too).
+
+And get this, because now you can write code that runs on the server, you don't
+have to worry about making direct database calls or hitting APIs with private
+keys anymore. Your loaders and actions only run on the server so they can do
+whatever you need them to. Nice DX improvement there!
+
+## Your entire app
+
+Remix giving you the power of the server means that it can actually handle your
+entire app if you need it to. Not everyone wants to do things this way, but
+because you've got a backend that can talk directly to databases and third party
+services, you can make your app structure look more like this:
+
+<Themed
+  dark={
+    <a
+      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/full-stack-dark"
+      target="_blank"
+    >
+      <BlogImage
+        cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/full-stack-dark"
+        imgProps={{
+          alt: 'Similar to the diagrams before with the addition of a "Full Stack" row that shows Remix spanning over the entire client, network chasm, and server',
+        }}
+      />
+    </a>
+  }
+  light={
+    <a
+      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/full-stack-light"
+      target="_blank"
+    >
+      <BlogImage
+        cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/full-stack-light"
+        imgProps={{
+          alt: 'Similar to the diagrams before with the addition of a "Full Stack" row that shows Remix spanning over the entire client, network chasm, and server',
+        }}
+      />
+    </a>
+  }
+/>
+
+The cool thing is, you get all the benefits of a fully managed network chasm by
+using Remix whether you go with 100% Remix or not, so if you're happy with your
+existing backed you can certainly stick with that.
+
+## Conclusion
+
+React's tagline is:
+
+> A JavaScript library for building user interfaces
+
+And it does a terrific job at that. React has never promised "network chasm
+management," but every web application needs it. With Remix managing that
+network chasm, we finally have a yang to React's yin. With a great rendering
+library and a super network chasm manager, you can build better, faster web
+applications with fewer bugs, simpler code, and more fun.
+
+On a personal note, this is what made me fall in love with building web apps
+with Remix. The website you're reading this on today is the result of a rewrite
+to Remix. I had no idea when I started what cool things it would become. Remix
+enabled all of that because when I was finished with the basic features I
+realized I had time and capability to do so much more
+([read more about my site rewrite here](/blog/how-i-built-a-modern-website-in-2021)).
+Remix made me feel like I could say "yes" to the fun ideas I had and that was
+really refreshing.
+
+I hope this helps you in your pursuit of building better websites. Stay cool 😎
