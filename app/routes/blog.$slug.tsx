@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {useLoaderData, json, useFetcher, useCatch, useParams} from 'remix'
+import {useLoaderData, json, useFetcher, useCatch, useParams, Link} from 'remix'
 import type {HeadersFunction} from 'remix'
 import type {
   KCDAction,
@@ -398,6 +398,13 @@ export default function MdxScreen() {
 
   const readMarker = React.useRef<HTMLDivElement>(null)
   const isDraft = Boolean(data.page.frontmatter.draft)
+  const categoriesAndKeywords = [
+    ...(data.page.frontmatter.categories ?? []),
+    ...(data.page.frontmatter.meta?.keywords ?? []),
+  ]
+  const isNonRemixReact =
+    categoriesAndKeywords.includes('react') &&
+    !categoriesAndKeywords.includes('remix')
   useOnRead({
     parentElRef: readMarker,
     time: data.page.readTime?.time,
@@ -436,6 +443,17 @@ export default function MdxScreen() {
                 'callout-warning',
                 {},
                 `This blog post is a draft. Please don't share it in its current state.`,
+              )}
+            </div>
+          ) : null}
+          {isNonRemixReact ? (
+            <div className="prose prose-light mb-6 max-w-full dark:prose-dark">
+              {React.createElement(
+                'callout-success',
+                {},
+                `💿 This blog post involves React, but was written before Remix was launched. Learn how Remix drastically simplifies React applications from the post:`,
+                <br />,
+                <Link to="/blog/remix-the-yang-to-react-s-yin">{`Remix: The Yang to React's Yin ☯`}</Link>,
               )}
             </div>
           ) : null}
@@ -529,10 +547,25 @@ export default function MdxScreen() {
           </div>
         </Grid>
 
-        <Grid as="main" className="prose prose-light mb-24 dark:prose-dark">
+        <Grid className="prose prose-light mb-24 dark:prose-dark">
           <Component />
         </Grid>
       </main>
+
+      {isNonRemixReact ? (
+        <Grid className="mb-24">
+          <div className="col-span-full lg:col-span-8 lg:col-start-3">
+            <div className="prose prose-light mb-6 max-w-full dark:prose-dark">
+              {React.createElement(
+                'callout-warning',
+                {},
+                `💿 Don't forget to checkout `,
+                <Link to="/blog/remix-the-yang-to-react-s-yin">{`Remix: The Yang to React's Yin ☯`}</Link>,
+              )}
+            </div>
+          </div>
+        </Grid>
+      ) : null}
 
       <Grid className="mb-24">
         <div className="col-span-full flex justify-end lg:col-span-8 lg:col-start-3">
