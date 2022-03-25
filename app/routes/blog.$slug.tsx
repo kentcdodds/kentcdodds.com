@@ -446,17 +446,6 @@ export default function MdxScreen() {
               )}
             </div>
           ) : null}
-          {isNonRemixReact ? (
-            <div className="prose prose-light mb-6 max-w-full dark:prose-dark">
-              {React.createElement(
-                'callout-success',
-                {},
-                `💿 This blog post involves React, but was written before Remix was launched. Learn how Remix drastically simplifies React applications from the post:`,
-                <br />,
-                <Link to="/blog/remix-the-yang-to-react-s-yin">{`Remix: The Yang to React's Yin ☯`}</Link>,
-              )}
-            </div>
-          ) : null}
           <H2>{frontmatter.title}</H2>
           <H6 as="p" variant="secondary" className="mt-2">
             {frontmatter.date
@@ -544,6 +533,20 @@ export default function MdxScreen() {
                 </>
               )}
             </div>
+
+            {isNonRemixReact ? (
+              <div className="prose prose-light mt-12 max-w-full dark:prose-dark">
+                {React.createElement(
+                  'callout-success',
+                  {},
+                  `💿 This blog post involves React, but was written before `,
+                  <a href="https://remix.run">Remix</a>,
+                  ` was launched. Learn how Remix drastically simplifies React applications from the post:`,
+                  <br />,
+                  <Link to="/blog/remix-the-yang-to-react-s-yin">{`Remix: The Yang to React's Yin ☯`}</Link>,
+                )}
+              </div>
+            ) : null}
           </div>
         </Grid>
 
