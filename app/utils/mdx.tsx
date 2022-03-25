@@ -288,7 +288,9 @@ async function getBlogMdxListItems(options: CachifiedOptions) {
     ...options,
     key: 'blog:mdx-list-items',
     getFreshValue: async () => {
-      let pages = await getMdxPagesInDirectory('blog', options)
+      let pages = await getMdxPagesInDirectory('blog', options).then(allPosts =>
+        allPosts.filter(p => !p.frontmatter.draft),
+      )
 
       pages = pages.sort((a, z) => {
         const aTime = new Date(a.frontmatter.date ?? '').getTime()
