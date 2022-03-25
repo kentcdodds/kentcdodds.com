@@ -491,7 +491,7 @@ export default function MdxScreen() {
 
       <main ref={readMarker}>
         <Grid className="mb-24">
-          <div className="col-span-full lg:col-start-3">
+          <div className="col-span-full lg:col-start-3 lg:col-end-11">
             <div className="flex flex-wrap">
               {frontmatter.translations?.length ? (
                 <>
@@ -533,8 +533,10 @@ export default function MdxScreen() {
                 </>
               )}
             </div>
+          </div>
 
-            {isNonRemixReact ? (
+          {isNonRemixReact ? (
+            <div className="col-span-full lg:col-start-2 lg:col-end-12">
               <div className="prose prose-light mt-12 max-w-full dark:prose-dark">
                 {React.createElement(
                   'callout-success',
@@ -546,8 +548,8 @@ export default function MdxScreen() {
                   <Link to="/blog/remix-the-yang-to-react-s-yin">{`Remix: The Yang to React's Yin ☯`}</Link>,
                 )}
               </div>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
         </Grid>
 
         <Grid className="prose prose-light mb-24 dark:prose-dark">
@@ -557,7 +559,7 @@ export default function MdxScreen() {
 
       {isNonRemixReact ? (
         <Grid className="mb-24">
-          <div className="col-span-full lg:col-span-8 lg:col-start-3">
+          <div className="col-span-full lg:col-start-2 lg:col-end-12">
             <div className="prose prose-light mb-6 max-w-full dark:prose-dark">
               {React.createElement(
                 'callout-warning',
