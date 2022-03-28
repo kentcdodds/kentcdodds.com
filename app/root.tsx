@@ -332,10 +332,6 @@ function App() {
         <NonFlashOfWrongThemeEls
           ssrTheme={Boolean(data.requestInfo.session.theme)}
         />
-        <script
-          crossOrigin="anonymous"
-          src="https://polyfill.io/v3/polyfill.min.js?features=Intl%2CIntl.ListFormat"
-        />
       </head>
       <body className="bg-white transition duration-500 dark:bg-gray-900">
         <PageLoadingMessage />
