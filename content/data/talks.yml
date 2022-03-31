@@ -278,11 +278,20 @@
     of the problems I faced and decisions I had to make while building a brand
     new modern website in 2021.
 
-- title: 'How React Uses Closures to Avoid Bugs'
+- title: Super Simple Start to Remix
   deliveries:
     - event: '[Connect.tech](https://connect.tech/)'
       date: 2021-11-08
-  description: TBA
+      recording: https://www.youtube.com/watch?v=zyz4PR6RG0U&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
+  description: >-
+    Remix has me more excited about building better websites than anything else
+    since I started using React back in 2015. I have so much to say about it, but
+    for this blog post, we're going to remove as many distractions as possible
+    and give remix the "super simple start" treatment. So, even though Remix has a
+    fancy npm init remix thing you can run (which is much easier than what I'm
+    going to show you), we're going to skip that and build a simple remix app from
+    absolutely nothing to running so we can inspect each bit required to get it going.
+
 - title: Don't Solve Problems, Eliminate Them
   resources:
     - '[blog
@@ -300,6 +309,7 @@
       recording: https://www.youtube.com/watch?v=SMJKUHNrPng&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
     - event: '[Connect.tech](https://connect.tech/)'
       date: 2021-11-08
+      recording: https://www.youtube.com/watch?v=yE_PlrvF4OA&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
   description: >-
     Humans are natural problem solvers and we're good enough at it that we've
     survived over the centuries and become the dominant species of the planet.
