@@ -214,6 +214,10 @@
       recording: 'https://youtube.com/watch?v=xl-8VgF8wH4&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf'
     - event: 'Austin Software Tech Talk'
       date: 2022-03-23
+    - event:
+        '[Shop Apotheke Technology
+        Summit](https://shop-apotheke-technology-summit.com/)'
+      date: 2022-03-31
     - event: '[Brum.js](https://brum.js.org)'
       date: 2022-03-31
 
@@ -285,12 +289,13 @@
       recording: https://www.youtube.com/watch?v=zyz4PR6RG0U&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
   description: >-
     Remix has me more excited about building better websites than anything else
-    since I started using React back in 2015. I have so much to say about it, but
-    for this blog post, we're going to remove as many distractions as possible
-    and give remix the "super simple start" treatment. So, even though Remix has a
-    fancy npm init remix thing you can run (which is much easier than what I'm
-    going to show you), we're going to skip that and build a simple remix app from
-    absolutely nothing to running so we can inspect each bit required to get it going.
+    since I started using React back in 2015. I have so much to say about it,
+    but for this blog post, we're going to remove as many distractions as
+    possible and give remix the "super simple start" treatment. So, even though
+    Remix has a fancy npm init remix thing you can run (which is much easier
+    than what I'm going to show you), we're going to skip that and build a
+    simple remix app from absolutely nothing to running so we can inspect each
+    bit required to get it going.
 
 - title: Don't Solve Problems, Eliminate Them
   resources:
