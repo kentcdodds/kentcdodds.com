@@ -220,6 +220,8 @@
       date: 2022-03-31
     - event: '[Brum.js](https://brum.js.org)'
       date: 2022-03-31
+    - event: 'Tesla Frontend Meetup'
+      date: 2022-04-01
 
 - title: The Power of Forms
   resources:
