@@ -43,15 +43,6 @@
   description: >-
     This talk is yet to be announced
 
-- title: Node TLV 2022 Keynote
-  deliveries:
-    - event: '[Node TLV](https://www.nodetlv.com/)'
-      date: 2022-06-29
-  tags:
-    - keynote
-  description: >-
-    This talk is yet to be announced
-
 - title: ReactNext 2022 Keynote
   deliveries:
     - event: '[ReactNext](https://www.react-next.com/)'
@@ -61,14 +52,34 @@
   description: >-
     This talk is yet to be announced
 
-- title: RenderATL Keynote
+- title: Bringing Back Progressive Enhancement
   deliveries:
     - event: '[RenderATL](https://www.renderatl.com/)'
       date: 2022-06-01
   tags:
     - keynote
+    - remix
+    - react
+    - html
+    - progressive enhancement
   description: >-
-    This talk is yet to be announced
+    One fun (sometimes frustrating) part of the web is that your application
+    must run on countless variations of devices with different configurations,
+    screen sizes, and capabilities. Over the years, technology has improved and
+    we've been given some really awesome APIs to _enhance_ our applications to
+    make them more useful despite the uniquely challenging (and awesome)
+    distribution mechanism of the web.
+
+
+    Unfortunately, when we use these new features of the web platform to
+    _enable_ our application, we limit our application's usefulness to the
+    trade-offs of those features which has surprisingly negative impacts (even
+    if the device itself supports those features).
+
+
+    In this talk, we're going to learn the true scope of Progressive Enhancement
+    and what can be gained by using tools and techiques that allow features of
+    the web to _enhance_ your user's exeprience rather than _enable_ it.
 
 - title: Shipping to the Edge
   deliveries:
@@ -115,7 +126,10 @@
   deliveries:
     - event: '[Node Congress](https://nodecongress.com/)'
       date: 2022-02-17
+    - event: '[Node TLV](https://www.nodetlv.com/)'
+      date: 2022-06-29
   tags:
+    - keynote
     - remix
     - prisma
   description: >-
