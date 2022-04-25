@@ -41,11 +41,11 @@ function Counter() {
   const increment = () => setCount(c => c + 1)
   return <button onClick={increment}>{count}</button>
 }
-```
 
 <Layout>
   <Counter />
 </Layout>
+```
 
 Every time we click on that button, we're triggering a re-render. But what is a
 "re-render"?
