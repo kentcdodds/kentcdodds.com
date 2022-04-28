@@ -298,7 +298,7 @@ to await that promise resolution:
 
 ```tsx [2,3,13]
 test('calls updateUsername with the new username', async () => {
-  const promise = Promise.resolve()
+  const promise = Promise.resolve() // You can also resolve with a mocked return value if necessary
   const handleUpdateUsername = jest.fn(() => promise)
   const fakeUsername = 'sonicthehedgehog'
 
@@ -309,7 +309,8 @@ test('calls updateUsername with the new username', async () => {
   user.click(screen.getByText(/submit/i))
 
   expect(handleUpdateUsername).toHaveBeenCalledWith(fakeUsername)
-  await act(() => promise)
+  // we await the promise instead of returning directly, because act expects a "void" result
+  await act(async () => { await promise })
 })
 ```
 
