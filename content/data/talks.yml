@@ -103,6 +103,7 @@
   deliveries:
     - event: '[React Miami](https://www.reactmiami.com/)'
       date: 2022-04-19
+      recording: https://www.youtube.com/watch?v=AI-5dHnnyiA&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
   tags:
     - keynote
   description: >-
