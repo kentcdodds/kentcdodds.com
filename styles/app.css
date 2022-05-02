@@ -25,6 +25,7 @@
   /* yellow in light mode is... hard */
   --color-team-yellow: #a08600;
   --color-yellow-500: #a08600;
+  --color-yellow-500-inverted: #ffd644;
 }
 
 .light {
@@ -40,6 +41,7 @@
 .dark {
   --color-team-yellow: #ffd644;
   --color-yellow-500: #ffd644;
+  --color-yellow-500-inverted: #a08600;
   --color-team-unknown: var(--color-white);
   --bg-primary: var(--color-gray-900);
   --bg-secondary: var(--color-gray-800);
