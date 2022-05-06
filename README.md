@@ -11,5 +11,5 @@ Read CONTRIBUTING.md
 [build-badge]: https://img.shields.io/github/workflow/status/kentcdodds/kentcdodds.com/pipeline?logo=github&style=flat-square
 [build]: https://github.com/kentcdodds/kentcdodds.com/actions?query=workflow%3Apipeline
 [license-badge]: https://img.shields.io/badge/license-GPL%203.0%20License-blue.svg?style=flat-square
-[license]: https://github.com/kentcdodds/react-fundamentals/blob/main/LICENSE
+[license]: https://github.com/kentcdodds/kentcdodds.com/blob/main/LICENSE.md
 <!-- prettier-ignore-end -->
