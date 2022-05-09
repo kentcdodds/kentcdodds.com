@@ -10,10 +10,6 @@ meta:
     - pending UI
     - optimistic UI
 events:
-  - title: Advanced Remix (Remix Conf)
-    url: https://remix.run/conf/workshops
-    quantity: 40
-    date: May 24th, 2022
   - title: Advanced Remix (React Summit remote)
     url: https://www.reactsummit.com
     quantity: 40
