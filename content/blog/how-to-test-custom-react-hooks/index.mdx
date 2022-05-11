@@ -443,15 +443,8 @@ This is why
 exists. Here's what this test would be like if we use
 `@testing-library/react-hooks`:
 
-<callout-warning>
-  `@testing-library/react`'s latest version has a `renderHook` utility which you
-  can use now (instead of `@testing-library/react-hooks`). If anyone wants to
-  update this blog post to use that instead you'll find a link to edit the post
-  at the bottom of the page 😉
-</callout-warning>
-
 ```js
-import {renderHook, act} from '@testing-library/react-hooks'
+import {renderHook, act} from '@testing-library/react'
 import useUndo from '../use-undo'
 
 test('allows you to undo and redo', () => {
