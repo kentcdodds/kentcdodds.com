@@ -9,14 +9,6 @@ meta:
     - seo
     - accessibility
 events:
-  - title: Remix Fundamentals (Reactathon)
-    url: https://www.reactathon.com/workshops
-    quantity: 40
-    date: May 6th, 2022
-  - title: Remix Fundamentals (React Summit remote)
-    url: https://www.reactsummit.com
-    quantity: 40
-    date: June 22nd, 2022
   - title: Remix Fundamentals (RenderATL)
     url: https://ti.to/render-atlanta/2022tickets
     quantity: 40

@@ -118,7 +118,7 @@ function WorkshopsHome() {
 
       {workshopEvents.length ? (
         <Grid>
-          <H3 className="col-span-full">Currently Schedule Workshops</H3>
+          <H3 className="col-span-full">Currently Scheduled Workshops</H3>
           <div className="col-span-full mt-6">
             {workshopEvents.map((workshopEvent, index) => (
               <React.Fragment key={workshopEvent.date}>

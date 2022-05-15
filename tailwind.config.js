@@ -48,6 +48,7 @@ module.exports = {
       },
       yellow: {
         500: 'var(--color-yellow-500)',
+        '500-inverted': 'var(--color-yellow-500-inverted)',
       },
       blue: {
         100: 'var(--color-blue-100)',

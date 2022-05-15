@@ -43,15 +43,6 @@
   description: >-
     This talk is yet to be announced
 
-- title: Node TLV 2022 Keynote
-  deliveries:
-    - event: '[Node TLV](https://www.nodetlv.com/)'
-      date: 2022-06-29
-  tags:
-    - keynote
-  description: >-
-    This talk is yet to be announced
-
 - title: ReactNext 2022 Keynote
   deliveries:
     - event: '[ReactNext](https://www.react-next.com/)'
@@ -61,14 +52,34 @@
   description: >-
     This talk is yet to be announced
 
-- title: RenderATL Keynote
+- title: Bringing Back Progressive Enhancement
   deliveries:
     - event: '[RenderATL](https://www.renderatl.com/)'
       date: 2022-06-01
   tags:
     - keynote
+    - remix
+    - react
+    - html
+    - progressive enhancement
   description: >-
-    This talk is yet to be announced
+    One fun (sometimes frustrating) part of the web is that your application
+    must run on countless variations of devices with different configurations,
+    screen sizes, and capabilities. Over the years, technology has improved and
+    we've been given some really awesome APIs to _enhance_ our applications to
+    make them more useful despite the uniquely challenging (and awesome)
+    distribution mechanism of the web.
+
+
+    Unfortunately, when we use these new features of the web platform to
+    _enable_ our application, we limit our application's usefulness to the
+    trade-offs of those features which has surprisingly negative impacts (even
+    if the device itself supports those features).
+
+
+    In this talk, we're going to learn the true scope of Progressive Enhancement
+    and what can be gained by using tools and techiques that allow features of
+    the web to _enhance_ your user's exeprience rather than _enable_ it.
 
 - title: Shipping to the Edge
   deliveries:
@@ -92,6 +103,7 @@
   deliveries:
     - event: '[React Miami](https://www.reactmiami.com/)'
       date: 2022-04-19
+      recording: https://www.youtube.com/watch?v=AI-5dHnnyiA&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
   tags:
     - keynote
   description: >-
@@ -115,7 +127,10 @@
   deliveries:
     - event: '[Node Congress](https://nodecongress.com/)'
       date: 2022-02-17
+    - event: '[Node TLV](https://www.nodetlv.com/)'
+      date: 2022-06-29
   tags:
+    - keynote
     - remix
     - prisma
   description: >-
@@ -214,8 +229,16 @@
       recording: 'https://youtube.com/watch?v=xl-8VgF8wH4&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf'
     - event: 'Austin Software Tech Talk'
       date: 2022-03-23
+    - event:
+        '[Shop Apotheke Technology
+        Summit](https://shop-apotheke-technology-summit.com/)'
+      date: 2022-03-31
     - event: '[Brum.js](https://brum.js.org)'
       date: 2022-03-31
+    - event: 'Tesla Frontend Meetup'
+      date: 2022-04-01
+    - event: 'Code for Ukraine Tech Beetup #3'
+      date: 2022-04-13
 
 - title: The Power of Forms
   resources:
@@ -278,11 +301,21 @@
     of the problems I faced and decisions I had to make while building a brand
     new modern website in 2021.
 
-- title: 'How React Uses Closures to Avoid Bugs'
+- title: Super Simple Start to Remix
   deliveries:
     - event: '[Connect.tech](https://connect.tech/)'
       date: 2021-11-08
-  description: TBA
+      recording: https://www.youtube.com/watch?v=zyz4PR6RG0U&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
+  description: >-
+    Remix has me more excited about building better websites than anything else
+    since I started using React back in 2015. I have so much to say about it,
+    but for this blog post, we're going to remove as many distractions as
+    possible and give remix the "super simple start" treatment. So, even though
+    Remix has a fancy npm init remix thing you can run (which is much easier
+    than what I'm going to show you), we're going to skip that and build a
+    simple remix app from absolutely nothing to running so we can inspect each
+    bit required to get it going.
+
 - title: Don't Solve Problems, Eliminate Them
   resources:
     - '[blog
@@ -300,6 +333,7 @@
       recording: https://www.youtube.com/watch?v=SMJKUHNrPng&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
     - event: '[Connect.tech](https://connect.tech/)'
       date: 2021-11-08
+      recording: https://www.youtube.com/watch?v=yE_PlrvF4OA&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
   description: >-
     Humans are natural problem solvers and we're good enough at it that we've
     survived over the centuries and become the dominant species of the planet.

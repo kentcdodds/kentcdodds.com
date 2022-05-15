@@ -155,25 +155,25 @@ function CoursesHome() {
           title="The Beginner's Guide to React"
           description="This course is for React newbies and anyone looking to build a solid foundation. It's designed to teach you everything you need to start building web applications in React right away."
           imageBuilder={images.courseTheBeginnersGuideToReact}
-          courseUrl="https://egghead.io/courses/the-beginner-s-guide-to-react"
+          courseUrl="https://egghead.io/courses/the-beginner-s-guide-to-react?af=5236ad"
         />
         <SmallCourseCard
           title="Use Suspense to Simplify Your Async UI"
           description="In this course, I teach how Suspense works under the hood, preparing you for the future of asynchronous state management in React."
           imageBuilder={images.courseUseSuspenseToSimplifyYourAsyncUI}
-          courseUrl="https://egghead.io/courses/use-suspense-to-simplify-your-async-ui"
+          courseUrl="https://egghead.io/courses/use-suspense-to-simplify-your-async-ui?af=5236ad"
         />
         <SmallCourseCard
           title="Simplify React Apps with React Hooks"
           description="In this course, I will take a modern React codebase that uses classes and refactor the entire thing to use function components as much as possible. We'll look at state, side effects, async code, caching, and more!"
           imageBuilder={images.courseSimplifyReactAppsWithReactHooks}
-          courseUrl="https://egghead.io/courses/simplify-react-apps-with-react-hooks"
+          courseUrl="https://egghead.io/courses/simplify-react-apps-with-react-hooks?af=5236ad"
         />
         <SmallCourseCard
           title="Advanced React Component Patterns"
           description="Once you've nailed the fundamentals of React, that's when things get really fun. This course teaches you advanced patterns in React that you can use to make components that are simple, flexible, and enjoyable to work with."
           imageBuilder={images.courseAdvancedReactComponentPatterns}
-          courseUrl="https://egghead.io/courses/advanced-react-component-patterns"
+          courseUrl="https://egghead.io/courses/advanced-react-component-patterns?af=5236ad"
         />
         <SmallCourseCard
           title="JavaScript Testing Practices and Principles"
@@ -197,14 +197,14 @@ function CoursesHome() {
           title="How to Write an Open Source JavaScript Library"
           description="From Github and npm, to releasing beta versions, semantic versioning, code coverage, continuous integration, and providing your library with a solid set of unit tests, there are a ton of things to learn. This series will guide you through a set of steps to publish a JavaScript open source library."
           imageBuilder={images.courseHowToWriteAnOpenSourceJavaScriptLibrary}
-          courseUrl="https://egghead.io/courses/how-to-write-an-open-source-javascript-library"
+          courseUrl="https://egghead.io/courses/how-to-write-an-open-source-javascript-library?af=5236ad"
         />
         <SmallCourseCard
           title="How to Contribute to an Open Source Project on GitHub"
           imageBuilder={
             images.courseHowToContributeToAnOpenSourceProjectOnGitHub
           }
-          courseUrl="https://egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github"
+          courseUrl="https://egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github?af=5236ad"
           description="“Feel free to submit a PR!” - words often found in GitHub issues, but met with confusion and fear by many. Getting started with contributing open source is not always straightforward and can be tricky. With this series, you'll be equipped with the the tools, knowledge, and understanding you need to be productive and contribute to the wonderful world of open source projects."
         />
       </Grid>
