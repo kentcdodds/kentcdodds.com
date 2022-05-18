@@ -1,5 +1,5 @@
 import * as React from 'react'
-import type { Variants} from 'framer-motion';
+import type {Variants} from 'framer-motion'
 import {motion, useReducedMotion} from 'framer-motion'
 import type {ImageBuilder} from '~/images'
 import {getImgProps} from '~/images'

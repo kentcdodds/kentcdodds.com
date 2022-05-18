@@ -1,15 +1,8 @@
 import * as React from 'react'
 import {Link} from '@remix-run/react'
 import clsx from 'clsx'
-import type {
-  TabProps} from '@reach/tabs';
-import {
-  Tabs,
-  Tab as ReachTab,
-  TabList,
-  TabPanels,
-  TabPanel,
-} from '@reach/tabs'
+import type {TabProps} from '@reach/tabs'
+import {Tabs, Tab as ReachTab, TabList, TabPanels, TabPanel} from '@reach/tabs'
 import {differenceInYears} from 'date-fns'
 import {motion, AnimatePresence} from 'framer-motion'
 import type {Team} from '~/types'

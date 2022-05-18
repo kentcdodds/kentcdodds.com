@@ -10,7 +10,7 @@ import {Grid} from '~/components/grid'
 import {getImgProps, getGenericSocialImage, images} from '~/images'
 import {H2, H3, H6, Paragraph} from '~/components/typography'
 import {ArrowLink} from '~/components/arrow-button'
-import type { CourseCardProps} from '~/components/course-card';
+import type {CourseCardProps} from '~/components/course-card'
 import {CourseCard} from '~/components/course-card'
 import {HeroSection} from '~/components/sections/hero-section'
 import {TestimonialSection} from '~/components/sections/testimonial-section'

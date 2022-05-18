@@ -10,7 +10,7 @@ import {YoutubeIcon} from './icons/youtube-icon'
 import {Signature} from './signature'
 import {Link} from '@remix-run/react'
 import {ArrowIcon} from './icons/arrow-icon'
-import type { ImageBuilder} from '~/images';
+import type {ImageBuilder} from '~/images'
 import {getImgProps} from '~/images'
 import {IconLink} from './icon-link'
 import {RssIcon} from './icons/rss-icon'

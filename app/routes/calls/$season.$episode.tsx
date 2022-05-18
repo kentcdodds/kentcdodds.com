@@ -1,6 +1,6 @@
 import * as React from 'react'
-import type {LoaderFunction} from '@remix-run/node';
-import { redirect} from '@remix-run/node'
+import type {LoaderFunction} from '@remix-run/node'
+import {redirect} from '@remix-run/node'
 import type {KCDHandle} from '~/types'
 import {getEpisodes} from '~/utils/transistor.server'
 import {getEpisodeFromParams, getEpisodePath} from '~/utils/call-kent'

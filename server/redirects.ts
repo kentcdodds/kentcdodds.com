@@ -1,5 +1,5 @@
 import type {RequestHandler} from 'express'
-import type { Key} from 'path-to-regexp';
+import type {Key} from 'path-to-regexp'
 import {pathToRegexp, compile as compileRedirectPath} from 'path-to-regexp'
 
 function typedBoolean<T>(

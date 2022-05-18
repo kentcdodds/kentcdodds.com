@@ -1,8 +1,5 @@
-import type {
-  CookieSerializeOptions} from '@remix-run/node';
-import {
-  createCookieSessionStorage,
-} from '@remix-run/node'
+import type {CookieSerializeOptions} from '@remix-run/node'
+import {createCookieSessionStorage} from '@remix-run/node'
 import {getRequiredServerEnvVar} from './misc'
 
 const storage = createCookieSessionStorage({

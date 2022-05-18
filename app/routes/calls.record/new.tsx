@@ -5,11 +5,8 @@ import {Link, useActionData} from '@remix-run/react'
 import type {KCDHandle} from '~/types'
 import {useRootData} from '~/utils/use-root-data'
 import {CallRecorder} from '~/components/calls/recorder'
-import type {
-  RecordingFormData} from '~/components/calls/submit-recording-form';
-import {
-  RecordingForm
-} from '~/components/calls/submit-recording-form'
+import type {RecordingFormData} from '~/components/calls/submit-recording-form'
+import {RecordingForm} from '~/components/calls/submit-recording-form'
 import {requireUser} from '~/utils/session.server'
 import {prismaWrite} from '~/utils/prisma.server'
 import {

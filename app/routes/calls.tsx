@@ -34,12 +34,8 @@ import {
   getUrl,
   reuseUsefulLoaderHeaders,
 } from '~/utils/misc'
-import type {
-  Params as CallPlayerParams} from '~/utils/call-kent';
-import {
-  getEpisodeFromParams,
-  getEpisodePath
-} from '~/utils/call-kent'
+import type {Params as CallPlayerParams} from '~/utils/call-kent'
+import {getEpisodeFromParams, getEpisodePath} from '~/utils/call-kent'
 import {PodcastSubs} from '~/components/podcast-subs'
 import {Spacer} from '~/components/spacer'
 import {getSocialMetas} from '~/utils/seo'

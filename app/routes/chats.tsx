@@ -1,5 +1,9 @@
 import * as React from 'react'
-import type {HeadersFunction, LoaderFunction, MetaFunction} from '@remix-run/node'
+import type {
+  HeadersFunction,
+  LoaderFunction,
+  MetaFunction,
+} from '@remix-run/node'
 import {json} from '@remix-run/node'
 import {
   Link,
