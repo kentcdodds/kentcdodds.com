@@ -160,7 +160,7 @@ export const loader: LoaderFunction = async ({request, params}) => {
     throw new Error('params.slug is not defined')
   }
   // the loader won't handle this anyway, we've got this handled in other-routes.server.ts
-  if (params.slug === 'rss.xml') return null
+  if (params.slug === 'rss.xml') return json({})
 
   const timings: Timings = {}
   const page = await getMdxPage(
