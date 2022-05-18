@@ -292,7 +292,7 @@ function Transcript({
       {collapsed ? (
         <button
           onClick={() => setCollapsed(false)}
-          className="group text-primary focus:outline-none mt-16 inline-flex items-center text-xl transition"
+          className="text-primary focus:outline-none group mt-16 inline-flex items-center text-xl transition"
         >
           <span>Read the full transcript</span>
           <span className="group-hover:border-primary group-focus:border-primary ml-8 inline-flex h-14 w-14 flex-none items-center justify-center rounded-full border-2 border-gray-200 p-1 dark:border-gray-600">
@@ -418,6 +418,7 @@ export default function PodcastDetail() {
             // which is annoying.
             initialOnly={true}
             dark={
+              // eslint-disable-next-line react/iframe-missing-sandbox
               <iframe
                 className="mb-4"
                 title="player"
@@ -430,6 +431,7 @@ export default function PodcastDetail() {
               />
             }
             light={
+              // eslint-disable-next-line react/iframe-missing-sandbox
               <iframe
                 className="mb-4"
                 title="player"

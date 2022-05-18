@@ -60,11 +60,11 @@ export const loader: LoaderFunction = async ({request}) => {
     blogPostCount: formatNumber(posts.length),
     totalBlogReaders:
       totalBlogReaders < 10_000
-        ? 'tens of thousands'
+        ? 'hundreds of thousands of'
         : formatNumber(totalBlogReaders),
     totalBlogReads:
       totalBlogReads < 100_000
-        ? 'hundreds of thousands'
+        ? 'hundreds of thousands of'
         : formatNumber(totalBlogReads),
     currentBlogLeaderTeam: getRankingLeader(blogRankings)?.team,
     kodyTeam:

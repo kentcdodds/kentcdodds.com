@@ -1,11 +1,6 @@
 import * as React from 'react'
 import user from '@testing-library/user-event'
-import {
-  render,
-  screen,
-  waitForElementToBeRemoved,
-  act,
-} from '@testing-library/react'
+import {render, screen, act} from '@testing-library/react'
 import {UsernameForm} from '../components.jsx'
 
 jest.mock('../api')
@@ -25,24 +20,36 @@ test('calls updateUsername with the new username (with act warning)', async () =
   render(<UsernameForm updateUsername={handleUpdateUsername} />)
 
   const usernameInput = screen.getByLabelText(/username/i)
-  user.type(usernameInput, fakeUsername)
-  user.click(screen.getByText(/submit/i))
+  await user.type(usernameInput, fakeUsername)
+  await user.click(screen.getByText(/submit/i))
 
   expect(handleUpdateUsername).toHaveBeenCalledWith(fakeUsername)
 })
 
+function deferred() {
+  let resolve, reject
+  const promise = new Promise((res, rej) => {
+    resolve = res
+    reject = rej
+  })
+  return {promise, resolve, reject}
+}
+
 test('calls updateUsername with the new username', async () => {
-  const handleUpdateUsername = jest.fn(() => Promise.resolve())
+  const defer = deferred()
+  const handleUpdateUsername = jest.fn(() => defer.promise)
   const fakeUsername = 'sonicthehedgehog'
 
   render(<UsernameForm updateUsername={handleUpdateUsername} />)
 
   const usernameInput = screen.getByLabelText(/username/i)
-  user.type(usernameInput, fakeUsername)
-  user.click(screen.getByText(/submit/i))
-
+  await user.type(usernameInput, fakeUsername)
+  const clickPromise = user.click(screen.getByText(/submit/i))
+  expect(await screen.findByText(/saving/i)).toBeInTheDocument()
   expect(handleUpdateUsername).toHaveBeenCalledWith(fakeUsername)
-  await waitForElementToBeRemoved(() => screen.queryByText(/saving/i))
+  await defer.resolve()
+  await clickPromise
+  expect(screen.queryByText(/saving/i)).not.toBeInTheDocument()
 })
 
 test('calls updateUsername with the new username (with manual act and promise)', async () => {
@@ -53,8 +60,8 @@ test('calls updateUsername with the new username (with manual act and promise)',
   render(<UsernameForm updateUsername={handleUpdateUsername} />)
 
   const usernameInput = screen.getByLabelText(/username/i)
-  user.type(usernameInput, fakeUsername)
-  user.click(screen.getByText(/submit/i))
+  await user.type(usernameInput, fakeUsername)
+  await user.click(screen.getByText(/submit/i))
 
   expect(handleUpdateUsername).toHaveBeenCalledWith(fakeUsername)
   await act(() => promise)

@@ -35,5 +35,6 @@ module.exports = {
 
     // for CatchBoundaries
     '@typescript-eslint/no-throw-literal': 'off',
+    'testing-library/no-await-sync-events': 'off',
   },
 }

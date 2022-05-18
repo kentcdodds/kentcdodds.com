@@ -1,0 +1,15 @@
+{
+  "files": [],
+  "exclude": ["node_modules"],
+  "extends": "./shared-tsconfig.json",
+  "references": [
+    {"path": "../types"},
+    {"path": "../app"},
+    {"path": "../server"},
+    {"path": "../tests"},
+    {"path": "../mocks"},
+    {"path": "../content"},
+    {"path": "../prisma"},
+    {"path": "../cypress"}
+  ]
+}

@@ -83,11 +83,12 @@ function set<Value>(key: string, value: Value): Promise<'OK'> {
       key,
       JSON.stringify(value),
       (err: Error | null, reply: 'OK') => {
-        if (err)
+        if (err) {
           console.error(
             `REDIS replicaClient (${FLY_REGION}) ERROR with .set:`,
             err,
           )
+        }
         resolve(reply)
       },
     )

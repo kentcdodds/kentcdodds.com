@@ -1,5 +1,5 @@
 import * as React from 'react'
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line
 import {MemoryRouter as Router, Link} from 'react-router-dom'
 import {getDog, getDogs} from './dogs.jsx'
 

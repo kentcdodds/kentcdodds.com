@@ -29,7 +29,7 @@ function createLruCache() {
   // doing anything other than "any" here was a big pain
   const newCache = new LRU<string, {metadata: CacheMetadata; value: any}>({
     max: 1000,
-    maxAge: 1000 * 60 * 60, // 1 hour
+    ttl: 1000 * 60 * 60, // 1 hour
   })
   Object.assign(newCache, {name: 'LRU'})
   return newCache as typeof newCache & {name: 'LRU'}

@@ -4,7 +4,7 @@ import * as React from 'react'
 
 import {UseUndoExample} from '../use-undo.example.jsx'
 
-test('allows you to undo and redo', () => {
+test('allows you to undo and redo', async () => {
   render(<UseUndoExample />)
   const present = screen.getByText(/present/i)
   const past = screen.getByText(/past/i)
@@ -23,7 +23,7 @@ test('allows you to undo and redo', () => {
 
   // add second value
   input.value = 'two'
-  userEvent.click(submit)
+  await userEvent.click(submit)
 
   // assert new state
   expect(undo).toBeEnabled()
@@ -34,7 +34,7 @@ test('allows you to undo and redo', () => {
 
   // add third value
   input.value = 'three'
-  userEvent.click(submit)
+  await userEvent.click(submit)
 
   // assert new state
   expect(undo).toBeEnabled()
@@ -44,7 +44,7 @@ test('allows you to undo and redo', () => {
   expect(future).toHaveTextContent(`Future:`)
 
   // undo
-  userEvent.click(undo)
+  await userEvent.click(undo)
 
   // assert "undone" state
   expect(undo).toBeEnabled()
@@ -54,7 +54,7 @@ test('allows you to undo and redo', () => {
   expect(future).toHaveTextContent(`Future: three`)
 
   // undo again
-  userEvent.click(undo)
+  await userEvent.click(undo)
 
   // assert "double-undone" state
   expect(undo).toBeDisabled()
@@ -64,7 +64,7 @@ test('allows you to undo and redo', () => {
   expect(future).toHaveTextContent(`Future: two, three`)
 
   // redo
-  userEvent.click(redo)
+  await userEvent.click(redo)
 
   // assert undo + undo + redo state
   expect(undo).toBeEnabled()
@@ -75,7 +75,7 @@ test('allows you to undo and redo', () => {
 
   // add fourth value
   input.value = 'four'
-  userEvent.click(submit)
+  await userEvent.click(submit)
 
   // assert final state (note the lack of "third")
   expect(undo).toBeEnabled()

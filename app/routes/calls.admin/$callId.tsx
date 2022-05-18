@@ -267,8 +267,3 @@ export default function RecordDetailScreenContainer() {
   const data = useLoaderData<LoaderData>()
   return <RecordingDetailScreen key={data.call.id} />
 }
-
-/*
-eslint
-  @babel/new-cap: "off",
-*/
