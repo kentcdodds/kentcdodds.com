@@ -27,6 +27,7 @@ import {Button} from '~/components/button'
 import {Paragraph} from '~/components/typography'
 import {Field} from '~/components/form-elements'
 import {Spacer} from '~/components/spacer'
+import {sendEmail} from '~/utils/send-email.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -85,7 +86,7 @@ export const action: KCDAction<{callId: string}> = async ({
 
     const episodeAudio = await createEpisodeAudio(call.base64, response)
 
-    await createEpisode({
+    const {episodeUrl, imageUrl} = await createEpisode({
       request,
       avatar: form.get('avatar'),
       audio: episodeAudio,
@@ -98,6 +99,22 @@ export const action: KCDAction<{callId: string}> = async ({
       user: call.user,
       keywords,
     })
+
+    if (episodeUrl) {
+      await sendEmail({
+        to: call.user.email,
+        from: `"Kent C. Dodds" <hello+calls@kentcdodds.com>`,
+        subject: `Your "Call Kent" episode has been published`,
+        text: `
+Hi ${call.user.firstName},
+
+Thanks for your call. Kent just replied and the episode has been published to the podcast!
+
+[![${title}](${imageUrl})](${episodeUrl})
+        `.trim(),
+      })
+    }
+
     await prismaWrite.call.delete({
       where: {id: call.id},
     })

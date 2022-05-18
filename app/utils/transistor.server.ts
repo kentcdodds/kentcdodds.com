@@ -119,6 +119,7 @@ async function createEpisode({
     },
   })
 
+  const returnValue: {episodeUrl?: string; imageUrl?: string} = {}
   // set the alternate_url if we have enough info for it.
   const {number, season} = created.data.attributes
   if (typeof number === 'number' && typeof season === 'number') {
@@ -168,10 +169,12 @@ async function createEpisode({
     const nameYPosition = -textLines + 5.2
     const imageUrl = `https://res.cloudinary.com/kentcdodds-com/image/upload/$th_3000,$tw_3000,$gw_$tw_div_12,$gh_$th_div_12/w_$tw,h_$th,l_kentcdodds.com:social-background/co_white,c_fit,g_north_west,w_$gw_mul_6,h_$gh_mul_2.6,x_$gw_mul_0.8,y_$gh_mul_0.8,l_text:kentcdodds.com:Matter-Medium.woff2_180:${encodedTitle}/c_crop${radius},g_north_west,h_$gh_mul_5.5,w_$gh_mul_5.5,x_$gw_mul_0.8,y_$gh_mul_${avatarYPosition},l_fetch:${encodedAvatar}/co_rgb:a9adc1,c_fit,g_south_west,w_$gw_mul_8,h_$gh_mul_4,x_$gw_mul_0.8,y_$gh_mul_0.8,l_text:kentcdodds.com:Matter-Regular.woff2_120:${encodedUrl}/co_rgb:a9adc1,c_fit,g_south_west,w_$gw_mul_8,h_$gh_mul_4,x_$gw_mul_0.8,y_$gh_mul_${nameYPosition},l_text:kentcdodds.com:Matter-Regular.woff2_140:${encodedName}/c_fit,g_east,w_$gw_mul_11,h_$gh_mul_11,x_$gw,l_kentcdodds.com:illustrations:mic/c_fill,w_$tw,h_$th/kentcdodds.com/social-background.png`
 
+    returnValue.episodeUrl = `${domainUrl}${episodePath}`
+    returnValue.imageUrl = imageUrl
     const updateData: TransistorUpdateEpisodeData = {
       id: created.data.id,
       episode: {
-        alternate_url: `${domainUrl}${episodePath}`,
+        alternate_url: returnValue.episodeUrl,
         image_url: imageUrl,
       },
     }
@@ -185,6 +188,8 @@ async function createEpisode({
 
   // update the cache with the new episode
   await getCachedEpisodes({forceFresh: true})
+
+  return returnValue
 }
 
 async function getEpisodes() {
