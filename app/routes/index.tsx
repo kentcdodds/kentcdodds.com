@@ -6,6 +6,7 @@ import {
   getBlogReadRankings,
   getBlogRecommendations,
   getReaderCount,
+  getTotalPostReads,
 } from '~/utils/blog.server'
 import {AboutSection} from '~/components/sections/about-section'
 import {BlogSection} from '~/components/sections/blog-section'
@@ -38,19 +39,21 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  const [user, posts, blogRankings, totalBlogReaders, blogRecommendations] =
-    await Promise.all([
-      getUser(request),
-      getBlogMdxListItems({request}),
-      getBlogReadRankings({request}),
-      getReaderCount(request),
-      getBlogRecommendations(request),
-    ])
-
-  const totalBlogReads = blogRankings.reduce(
-    (total, ranking) => ranking.totalReads + total,
-    0,
-  )
+  const [
+    user,
+    posts,
+    totalBlogReads,
+    blogRankings,
+    totalBlogReaders,
+    blogRecommendations,
+  ] = await Promise.all([
+    getUser(request),
+    getBlogMdxListItems({request}),
+    getTotalPostReads(request),
+    getBlogReadRankings({request}),
+    getReaderCount(request),
+    getBlogRecommendations(request),
+  ])
 
   const data: LoaderData = {
     blogRecommendations,
