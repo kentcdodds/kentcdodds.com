@@ -15,7 +15,6 @@ import {
   Scripts,
   ScrollRestoration,
   useCatch,
-  useFetcher,
   useLoaderData,
   useLocation,
   useMatches,
@@ -40,7 +39,6 @@ import {
 import {getThemeSession} from './utils/theme.server'
 import {getSession} from './utils/session.server'
 import {getLoginInfoSession} from './utils/login.server'
-import {getKCDSpringSaleSession} from './utils/kcd-spring-sale-message.server'
 import {
   getDisplayUrl,
   getDomainUrl,
@@ -65,7 +63,6 @@ import {getSocialMetas} from './utils/seo'
 import {getGenericSocialImage, illustrationImages, images} from './images'
 import {Grimmacing, MissingSomething} from './components/kifs'
 import {ArrowLink} from './components/arrow-button'
-import {Button} from './components/button'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',
@@ -143,7 +140,6 @@ export type LoaderData = {
   user: User | null
   userInfo: Await<ReturnType<typeof getUserInfo>> | null
   ENV: ReturnType<typeof getEnv>
-  showKCDSaleMessage: boolean
   randomFooterImageKey: keyof typeof illustrationImages
   requestInfo: {
     origin: string
@@ -168,7 +164,6 @@ export const loader: LoaderFunction = async ({request}) => {
   const themeSession = await getThemeSession(request)
   const clientSession = await getClientSession(request)
   const loginInfoSession = await getLoginInfoSession(request)
-  const kcdSpringSaleSession = await getKCDSpringSaleSession(request)
 
   const user = await time({
     name: 'getUser in root loader',
@@ -182,7 +177,6 @@ export const loader: LoaderFunction = async ({request}) => {
     Math.floor(Math.random() * randomFooterImageKeys.length)
   ] as keyof typeof illustrationImages
 
-  const saleIsOver = new Date('2022-05-17T06:59:00.000Z').getTime()
   const data: LoaderData = {
     user,
     userInfo: user
@@ -195,8 +189,6 @@ export const loader: LoaderFunction = async ({request}) => {
       : null,
     ENV: getEnv(),
     randomFooterImageKey,
-    showKCDSaleMessage:
-      !kcdSpringSaleSession.getDismissed() && Date.now() < saleIsOver,
     requestInfo: {
       origin: getDomainUrl(request),
       path: new URL(request.url).pathname,
@@ -217,7 +209,6 @@ export const loader: LoaderFunction = async ({request}) => {
   await session.getHeaders(headers)
   await clientSession.getHeaders(headers)
   await loginInfoSession.getHeaders(headers)
-  await kcdSpringSaleSession.getHeaders(headers)
 
   return json(data, {headers})
 }
@@ -322,14 +313,6 @@ function App() {
   const shouldRestoreScroll = matches.every(
     match => (match.handle as KCDHandle | undefined)?.restoreScroll !== false,
   )
-  const saleFetcher = useFetcher()
-  let showKCDSaleMessage = true
-  if (data.showKCDSaleMessage) {
-    showKCDSaleMessage = !saleFetcher.submission
-  } else {
-    showKCDSaleMessage = false
-  }
-
   const [team] = useTeam()
   const [theme] = useTheme()
 
@@ -361,70 +344,6 @@ function App() {
       <body className="bg-white transition duration-500 dark:bg-gray-900">
         <PageLoadingMessage />
         <NotificationMessage queryStringKey="message" delay={0.3} />
-        <NotificationMessage visible={showKCDSaleMessage}>
-          <div className="text-lg">
-            Did you know about the huge discount happening on{' '}
-            <a
-              href="https://testingjavascript.com"
-              className="underlined text-xl text-yellow-500-inverted"
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              <span role="img" aria-label="trophy">
-                🏆
-              </span>
-              {' TestingJavaScript.com'}
-            </a>
-            {` and `}
-            <a
-              href="https://epicreact.dev"
-              className="underlined text-xl text-blue-500"
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              <span role="img" aria-label="rocket">
-                🚀
-              </span>
-              {' EpicReact.dev'}
-            </a>
-            ? Check out{' '}
-            <a
-              href="https://kcdbundle.com"
-              className="underlined text-xl text-blue-500"
-            >
-              <span role="img" aria-label="star">
-                ⭐
-              </span>
-              {' KCDBundle.com'}
-            </a>
-            .
-          </div>
-          <saleFetcher.Form
-            action="/action/dismiss-kcd-spring-sale"
-            method="post"
-            className="mt-6 flex justify-end gap-3 text-right"
-          >
-            <Button
-              name="action"
-              value="dismiss-kcd-spring-sale"
-              type="submit"
-              size="small"
-              variant="secondary"
-            >
-              Dismiss
-            </Button>
-
-            <Button
-              name="action"
-              value="remind-kcd-spring-sale"
-              size="small"
-              variant="secondary"
-              type="submit"
-            >
-              Remind me later
-            </Button>
-          </saleFetcher.Form>
-        </NotificationMessage>
         <Navbar />
         <Outlet />
         <Spacer size="base" />
