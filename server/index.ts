@@ -8,6 +8,10 @@ import * as Sentry from '@sentry/node'
 import {createRequestHandler} from '@remix-run/express'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import {installGlobals} from '@remix-run/node/globals'
+import {
+  createMetronomeGetLoadContext,
+  registerMetronome,
+} from '@metronome-sh/express'
 import {addCloudinaryProxies} from './cloudinary'
 import {getRedirectsMiddleware} from './redirects'
 import {getReplayResponse} from './fly'
@@ -111,17 +115,31 @@ app.use((req, res, next) => {
   next()
 })
 
+function getRequestHandlerOptions(): Parameters<
+  typeof createRequestHandler
+>[0] {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const build = require('../build')
+  if (MODE === 'production') {
+    const buildWithMetronome = registerMetronome(build)
+    const metronomeGetLoadContext =
+      createMetronomeGetLoadContext(buildWithMetronome)
+    return {
+      build: buildWithMetronome,
+      getLoadContext: metronomeGetLoadContext,
+      mode: MODE,
+    }
+  }
+  return {build, mode: MODE}
+}
+
 app.all(
   '*',
   MODE === 'production'
-    ? createRequestHandler({build: require('../build')})
+    ? createRequestHandler(getRequestHandlerOptions())
     : (req, res, next) => {
         purgeRequireCache()
-        return createRequestHandler({build: require('../build'), mode: MODE})(
-          req,
-          res,
-          next,
-        )
+        return createRequestHandler(getRequestHandlerOptions())(req, res, next)
       },
 )
 

@@ -52,6 +52,8 @@
   },
   "dependencies": {
     "@kentcdodds/md-temp": "^1.1.0",
+    "@metronome-sh/express": "^5.4.0",
+    "@metronome-sh/react": "^5.4.0",
     "@octokit/plugin-throttling": "^3.6.2",
     "@octokit/rest": "^18.12.0",
     "@prisma/client": "^3.14.0",
@@ -99,7 +101,6 @@
     "metascraper-description": "^5.29.3",
     "metascraper-image": "^5.29.3",
     "metascraper-title": "^5.29.3",
-    "metronome-sh": "^1.0.2",
     "morgan": "^1.10.0",
     "on-finished": "^2.4.1",
     "p-limit": "^4.0.0",

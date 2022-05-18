@@ -16,6 +16,7 @@ import {
   useFetcher,
 } from 'remix'
 import type {LinksFunction, MetaFunction, HeadersFunction} from 'remix'
+import {MetronomeLinks} from '@metronome-sh/react'
 import {AnimatePresence, motion} from 'framer-motion'
 import {useSpinDelay} from 'spin-delay'
 import type {Await, KCDHandle, User} from '~/types'
@@ -343,6 +344,7 @@ function App() {
         />
 
         <Links />
+        {ENV.NODE_ENV === 'production' ? <MetronomeLinks /> : null}
         <noscript>
           <link rel="stylesheet" href={noScriptStyles} />
         </noscript>
