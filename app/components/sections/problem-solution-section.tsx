@@ -135,7 +135,11 @@ function ProblemSolutionSection({
           <Paragraph className="mt-8">
             {`My `}
             <strong>{blogPostCount}</strong>
-            {` blog posts (and counting) have been read ${totalBlogReads} times by ${totalBlogReaders} people. There you'll find blogs about `}
+            {` blog posts (and counting) have been `}
+            <Link prefetch="intent" to="/teams#read-rankings">
+              read
+            </Link>
+            {` ${totalBlogReads} times by ${totalBlogReaders} people. There you'll find blogs about `}
             <Link prefetch="intent" to="/blog?q=javascript">
               JavaScript
             </Link>
