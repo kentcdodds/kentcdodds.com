@@ -27,8 +27,7 @@ import {H2, H6, Paragraph} from '~/components/typography'
 import {Grid} from '~/components/grid'
 import {ArrowLink, BackLink} from '~/components/arrow-button'
 import {BlogSection} from '~/components/sections/blog-section'
-import type {
-  ReadRankings} from '~/utils/blog.server';
+import type {ReadRankings} from '~/utils/blog.server'
 import {
   getBlogReadRankings,
   getTotalPostReads,
@@ -49,11 +48,8 @@ import {getRankingLeader} from '~/utils/blog'
 import {externalLinks} from '../external-links'
 import {teamEmoji, useTeam} from '~/utils/team-provider'
 import {getWorkshops} from '~/utils/workshops.server'
-import type {
-  WorkshopEvent} from '~/utils/workshop-tickets.server';
-import {
-  getScheduledEvents
-} from '~/utils/workshop-tickets.server'
+import type {WorkshopEvent} from '~/utils/workshop-tickets.server'
+import {getScheduledEvents} from '~/utils/workshop-tickets.server'
 import {WorkshopCard} from '~/components/workshop-card'
 import {Spacer} from '~/components/spacer'
 import clsx from 'clsx'
@@ -76,64 +72,75 @@ export const action: ActionFunction = async ({params, request}) => {
   if (!params.slug) {
     throw new Error('params.slug is not defined')
   }
-  const {slug} = params
-  const session = await getSession(request)
-  const user = await session.getUser()
-  const headers = new Headers()
+  const formData = await request.formData()
+  const intent = formData.get('intent')
+  switch (intent) {
+    case 'mark-as-read': {
+      const {slug} = params
+      const session = await getSession(request)
+      const user = await session.getUser()
+      const headers = new Headers()
 
-  const [beforePostLeader, beforeOverallLeader] = await Promise.all([
-    getBlogReadRankings({request, slug: params.slug}).then(getRankingLeader),
-    getBlogReadRankings({request}).then(getRankingLeader),
-  ])
-  if (user) {
-    await addPostRead({
-      slug,
-      userId: user.id,
-    })
-    await session.getHeaders(headers)
-  } else {
-    const client = await getClientSession(request)
-    await addPostRead({
-      slug,
-      clientId: client.getClientId(),
-    })
-    await client.getHeaders(headers)
+      const [beforePostLeader, beforeOverallLeader] = await Promise.all([
+        getBlogReadRankings({request, slug}).then(getRankingLeader),
+        getBlogReadRankings({request}).then(getRankingLeader),
+      ])
+      if (user) {
+        await addPostRead({
+          slug,
+          userId: user.id,
+        })
+        await session.getHeaders(headers)
+      } else {
+        const client = await getClientSession(request)
+        await addPostRead({
+          slug,
+          clientId: client.getClientId(),
+        })
+        await client.getHeaders(headers)
+      }
+
+      // trigger an update to the ranking cache and notify when the leader changed
+      const [afterPostLeader, afterOverallLeader] = await Promise.all([
+        getBlogReadRankings({
+          request,
+          slug,
+          forceFresh: true,
+        }).then(getRankingLeader),
+        getBlogReadRankings({request, forceFresh: true}).then(getRankingLeader),
+      ])
+
+      if (
+        afterPostLeader?.team &&
+        afterPostLeader.team !== beforePostLeader?.team
+      ) {
+        await notifyOfTeamLeaderChangeOnPost({
+          request,
+          postSlug: slug,
+          reader: user,
+          newLeader: afterPostLeader.team,
+          prevLeader: beforePostLeader?.team,
+        })
+      }
+      if (
+        afterOverallLeader?.team &&
+        afterOverallLeader.team !== beforeOverallLeader?.team
+      ) {
+        await notifyOfOverallTeamLeaderChange({
+          request,
+          postSlug: slug,
+          reader: user,
+          newLeader: afterOverallLeader.team,
+          prevLeader: beforeOverallLeader?.team,
+        })
+      }
+
+      return json({success: true, headers})
+    }
+    default: {
+      throw new Error(`Unknown intent: ${intent}`)
+    }
   }
-
-  // trigger an update to the ranking cache and notify when the leader changed
-  const [afterPostLeader, afterOverallLeader] = await Promise.all([
-    getBlogReadRankings({request, slug: params.slug, forceFresh: true}).then(
-      getRankingLeader,
-    ),
-    getBlogReadRankings({request, forceFresh: true}).then(getRankingLeader),
-  ])
-
-  if (
-    afterPostLeader?.team &&
-    afterPostLeader.team !== beforePostLeader?.team
-  ) {
-    await notifyOfTeamLeaderChangeOnPost({
-      request,
-      postSlug: slug,
-      reader: user,
-      newLeader: afterPostLeader.team,
-      prevLeader: beforePostLeader?.team,
-    })
-  }
-  if (
-    afterOverallLeader?.team &&
-    afterOverallLeader.team !== beforeOverallLeader?.team
-  ) {
-    await notifyOfOverallTeamLeaderChange({
-      request,
-      postSlug: slug,
-      reader: user,
-      newLeader: afterOverallLeader.team,
-      prevLeader: beforeOverallLeader?.team,
-    })
-  }
-
-  return json({success: true, headers})
 }
 
 type CatchData = {
@@ -421,7 +428,7 @@ export default function MdxScreen() {
     time: data.page.readTime?.time,
     onRead: React.useCallback(() => {
       if (isDraft) return
-      markAsReadRef.current.submit({}, {method: 'post'})
+      markAsReadRef.current.submit({intent: 'mark-as-read'}, {method: 'post'})
     }, [isDraft]),
   })
 

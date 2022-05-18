@@ -52,8 +52,8 @@
   },
   "dependencies": {
     "@kentcdodds/md-temp": "^1.1.0",
-    "@metronome-sh/express": "^5.4.0",
-    "@metronome-sh/react": "^5.4.0",
+    "@metronome-sh/express": "^5.4.1",
+    "@metronome-sh/react": "^5.4.1",
     "@octokit/plugin-throttling": "^3.6.2",
     "@octokit/rest": "^18.12.0",
     "@prisma/client": "^3.14.0",
