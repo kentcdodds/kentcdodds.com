@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/kentcdodds/kentcdodds.com#readme",
   "scripts": {
-    "postinstall": "patch-package --patch-dir other/patches && remix setup",
+    "postinstall": "patch-package --patch-dir other/patches",
     "prepare": "husky install",
     "css:watch": "npm run build:css -- --w",
     "clean": "rimraf ./node_modules/.cache ./server/dist ./build ./public/build \"./app/styles/**/*.css\"",
@@ -130,7 +130,6 @@
     "remark-parse": "^10.0.1",
     "remark-rehype": "^10.1.0",
     "remark-slug": "^7.0.1",
-    "remix": "1.4.3",
     "spin-delay": "^1.1.0",
     "tailwindcss": "^2.2.19",
     "unified": "^10.1.2",
