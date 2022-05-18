@@ -1,5 +1,6 @@
 import * as React from 'react'
-import {ActionFunction, Link} from 'remix'
+import type {ActionFunction} from '@remix-run/node'
+import {Link} from '@remix-run/react'
 import {Grid} from '~/components/grid'
 import {CloudinaryVideo} from '~/components/kifs'
 import {HeroSection} from '~/components/sections/hero-section'

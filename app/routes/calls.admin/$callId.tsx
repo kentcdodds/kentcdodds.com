@@ -1,6 +1,7 @@
 import * as React from 'react'
-import {redirect, Form, json, useActionData, useLoaderData} from 'remix'
-import type {Await, KCDAction, KCDHandle, KCDLoader} from '~/types'
+import {ActionFunction, json, LoaderFunction, redirect} from '@remix-run/node'
+import {Form, useActionData, useLoaderData} from '@remix-run/react'
+import type {Await, KCDHandle} from '~/types'
 import {format} from 'date-fns'
 import {useRootData, useUser} from '~/utils/use-root-data'
 import {CallRecorder} from '~/components/calls/recorder'
@@ -35,10 +36,7 @@ export const handle: KCDHandle = {
 
 type ActionData = RecordingFormData
 
-export const action: KCDAction<{callId: string}> = async ({
-  request,
-  params,
-}) => {
+export const action: ActionFunction = async ({request, params}) => {
   await requireAdminUser(request)
 
   if (request.method === 'DELETE') {
@@ -141,10 +139,10 @@ async function getCallInfo({callId}: {callId: string}) {
   return call
 }
 
-export const loader: KCDLoader<{callId: string}> = async ({
-  request,
-  params,
-}) => {
+export const loader: LoaderFunction = async ({request, params}) => {
+  if (!params.callId) {
+    throw new Error('params.callId is not defined')
+  }
   await requireAdminUser(request)
 
   const call = await getCallInfo({callId: params.callId}).catch(() => null)

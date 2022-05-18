@@ -1,6 +1,6 @@
 // this is a placeholder to make /routes/talks catch nested paths
 
-import type {MetaFunction} from 'remix'
+import type {MetaFunction} from '@remix-run/node'
 import {getSocialImageWithPreTitle} from '~/images'
 import {getDisplayUrl, getUrl} from '~/utils/misc'
 import {getSocialMetas} from '~/utils/seo'

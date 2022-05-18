@@ -1,7 +1,8 @@
 import * as React from 'react'
-import type {HeadersFunction} from 'remix'
-import {useLoaderData, json, useCatch} from 'remix'
-import type {MdxPage, KCDLoader, MdxListItem, KCDHandle} from '~/types'
+import type {HeadersFunction, LoaderFunction} from '@remix-run/node'
+import {json} from '@remix-run/node'
+import {useCatch, useLoaderData} from '@remix-run/react'
+import type {MdxPage, MdxListItem, KCDHandle} from '~/types'
 import {
   getMdxPage,
   getMdxPagesInDirectory,
@@ -36,7 +37,10 @@ export const handle: KCDHandle = {
   },
 }
 
-export const loader: KCDLoader<{slug: string}> = async ({params, request}) => {
+export const loader: LoaderFunction = async ({params, request}) => {
+  if (!params.slug) {
+    throw new Error('params.slug is not defined')
+  }
   // because this is our catch-all thing, we'll do an early return for anything
   // that has a other route setup. The response will be handled there.
   if (pathedRoutes[new URL(request.url).pathname]) {

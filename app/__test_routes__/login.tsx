@@ -1,6 +1,6 @@
 import type {Role} from '@prisma/client'
-import type {ActionFunction} from 'remix'
-import {redirect} from 'remix'
+import type {ActionFunction} from '@remix-run/node'
+import {redirect} from '@remix-run/node'
 import {
   getMagicLink,
   updateUser,

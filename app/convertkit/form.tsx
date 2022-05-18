@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {useFetcher} from 'remix'
+import {useFetcher} from '@remix-run/react'
 import {useRootData} from '~/utils/use-root-data'
 import {ArrowButton} from '~/components/arrow-button'
 import {Field} from '~/components/form-elements'

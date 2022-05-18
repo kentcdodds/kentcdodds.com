@@ -2,7 +2,6 @@
 /// <reference types="@remix-run/node/globals" />
 
 import calculateReadingTime from 'reading-time'
-import type {ActionFunction, LoaderFunction} from 'remix'
 import type {User, Call, Session, Team, Role} from '@prisma/client'
 
 type NonNullProperties<Type> = {
@@ -198,18 +197,6 @@ type KCDHandle = {
     | null
 }
 
-type KCDLoader<
-  Params extends Record<string, unknown> = Record<string, unknown>,
-> = (
-  args: Omit<Parameters<LoaderFunction>['0'], 'params'> & {params: Params},
-) => ReturnType<LoaderFunction>
-
-type KCDAction<
-  Params extends Record<string, unknown> = Record<string, unknown>,
-> = (
-  args: Omit<Parameters<ActionFunction>['0'], 'params'> & {params: Params},
-) => ReturnType<ActionFunction>
-
 type GitHubFile = {path: string; content: string}
 
 export {
@@ -227,8 +214,6 @@ export {
   CWKListItem,
   CWKSeason,
   CallKentEpisode,
-  KCDLoader,
-  KCDAction,
   KCDHandle,
   KCDSitemapEntry,
   GitHubFile,

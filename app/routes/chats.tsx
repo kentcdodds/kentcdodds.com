@@ -1,14 +1,13 @@
 import * as React from 'react'
+import type {HeadersFunction, LoaderFunction} from '@remix-run/node'
+import {json, MetaFunction} from '@remix-run/node'
 import {
-  json,
+  Link,
+  Outlet,
   useLoaderData,
   useMatches,
-  Link,
-  MetaFunction,
-  Outlet,
   useNavigate,
-} from 'remix'
-import type {LoaderFunction, HeadersFunction} from 'remix'
+} from '@remix-run/react'
 import clsx from 'clsx'
 import {Tab, TabList, TabPanel, TabPanels, Tabs} from '@reach/tabs'
 import type {LoaderData as RootLoaderData} from '../root'
@@ -289,7 +288,7 @@ function PodcastHome() {
             </H6>
 
             <button
-              className="group text-primary focus:outline-none relative text-lg font-medium"
+              className="text-primary focus:outline-none group relative text-lg font-medium"
               onClick={() => setSortOrder(o => (o === 'asc' ? 'desc' : 'asc'))}
             >
               <div className="bg-secondary absolute -bottom-2 -left-4 -right-4 -top-2 rounded-lg opacity-0 transition group-hover:opacity-100 group-focus:opacity-100" />

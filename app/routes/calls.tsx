@@ -1,6 +1,11 @@
 import * as React from 'react'
-import type {LoaderFunction, HeadersFunction, MetaFunction} from 'remix'
-import {json, Link, useLoaderData, useMatches, Outlet} from 'remix'
+import type {
+  HeadersFunction,
+  LoaderFunction,
+  MetaFunction,
+} from '@remix-run/node'
+import {json} from '@remix-run/node'
+import {Link, Outlet, useLoaderData, useMatches} from '@remix-run/react'
 import {AnimatePresence, motion, useReducedMotion} from 'framer-motion'
 import clsx from 'clsx'
 import type {LoaderData as RootLoaderData} from '../root'
@@ -228,7 +233,7 @@ export default function CallHomeScreen() {
           </H6>
 
           <button
-            className="group text-primary focus:outline-none relative text-lg font-medium"
+            className="text-primary focus:outline-none group relative text-lg font-medium"
             onClick={() => setSortOrder(o => (o === 'asc' ? 'desc' : 'asc'))}
           >
             <div className="bg-secondary absolute -bottom-2 -left-4 -right-4 -top-2 rounded-lg opacity-0 transition group-hover:opacity-100 group-focus:opacity-100" />
@@ -257,7 +262,7 @@ export default function CallHomeScreen() {
                 className="border-b border-gray-200 dark:border-gray-600"
                 key={path}
               >
-                <Link to={path} className="group focus:outline-none">
+                <Link to={path} className="focus:outline-none group">
                   <Grid nested className="relative py-10 lg:py-5">
                     <div className="bg-secondary absolute -inset-px -mx-6 hidden rounded-lg group-hover:block group-focus:block" />
                     <div className="relative col-span-1 flex-none">

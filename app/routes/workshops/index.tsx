@@ -1,6 +1,6 @@
 import * as React from 'react'
-import type {HeadersFunction, MetaFunction} from 'remix'
-import {useSearchParams} from 'remix'
+import type {HeadersFunction, MetaFunction} from '@remix-run/node'
+import {useSearchParams} from '@remix-run/react'
 import {Grid} from '~/components/grid'
 import {getSocialImageWithPreTitle, images} from '~/images'
 import {H3, H6} from '~/components/typography'

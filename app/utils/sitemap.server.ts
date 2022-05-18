@@ -1,4 +1,4 @@
-import type {EntryContext} from 'remix'
+import type {EntryContext} from '@remix-run/node'
 import type {KCDHandle, KCDSitemapEntry} from '~/types'
 import {isEqual} from 'lodash'
 import {getDomainUrl, removeTrailingSlash, typedBoolean} from './misc'

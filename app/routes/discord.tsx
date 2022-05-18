@@ -7,9 +7,13 @@ import {
   AccordionPanel,
   useAccordionItemContext,
 } from '@reach/accordion'
-import type {HeadersFunction, MetaFunction} from 'remix'
-import {json, useLoaderData} from 'remix'
-import type {KCDLoader} from '~/types'
+import type {
+  HeadersFunction,
+  LoaderFunction,
+  MetaFunction,
+} from '@remix-run/node'
+import {json} from '@remix-run/node'
+import {useLoaderData} from '@remix-run/react'
 import {useRootData} from '~/utils/use-root-data'
 import {
   getDiscordAuthorizeURL,
@@ -48,7 +52,7 @@ type LoaderData = {
   testimonials: Array<Testimonial>
 }
 
-export const loader: KCDLoader = async ({request}) => {
+export const loader: LoaderFunction = async ({request}) => {
   const testimonials = await getTestimonials({
     request,
     subjects: ['Discord Community'],

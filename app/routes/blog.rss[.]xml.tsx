@@ -1,4 +1,4 @@
-import type {LoaderFunction} from 'remix'
+import type {LoaderFunction} from '@remix-run/node'
 import * as dateFns from 'date-fns'
 import {getBlogMdxListItems} from '~/utils/mdx'
 import {getDomainUrl} from '~/utils/misc'

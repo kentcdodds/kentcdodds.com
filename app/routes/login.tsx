@@ -4,8 +4,9 @@ import type {
   HeadersFunction,
   LoaderFunction,
   MetaFunction,
-} from 'remix'
-import {Form, useLoaderData, json, redirect} from 'remix'
+} from '@remix-run/node'
+import {json, redirect} from '@remix-run/node'
+import {Form, useLoaderData} from '@remix-run/react'
 import {
   getDisplayUrl,
   getDomainUrl,

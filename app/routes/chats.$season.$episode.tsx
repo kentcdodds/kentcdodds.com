@@ -1,13 +1,8 @@
 import React from 'react'
-import {redirect} from 'remix'
-import type {KCDLoader} from '~/types'
+import {LoaderFunction, redirect} from '@remix-run/node'
 import {getSeasons} from '~/utils/simplecast.server'
 
-export const loader: KCDLoader<{
-  slug: string
-  season: string
-  episode: string
-}> = async ({request, params}) => {
+export const loader: LoaderFunction = async ({request, params}) => {
   const seasonNumber = Number(params.season)
   const episodeNumber = Number(params.episode)
 

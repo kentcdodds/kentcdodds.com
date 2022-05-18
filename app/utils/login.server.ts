@@ -1,4 +1,4 @@
-import {createCookieSessionStorage} from 'remix'
+import {createCookieSessionStorage} from '@remix-run/node'
 import {decrypt, encrypt} from './encryption.server'
 import {getRequiredServerEnvVar} from './misc'
 import {linkExpirationTime} from './prisma.server'

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import ReactDOMServer from 'react-dom/server'
-import type {EntryContext} from 'remix'
-import {RemixServer as Remix} from 'remix'
+import type {EntryContext} from '@remix-run/node'
+import {RemixServer as Remix} from '@remix-run/react'
 import {getEnv} from './utils/env.server'
 import {routes as otherRoutes} from './other-routes.server'
 

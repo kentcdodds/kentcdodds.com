@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {Link, useLocation} from 'remix'
+import {Link, useLocation} from '@remix-run/react'
 import clsx from 'clsx'
 import {
   Menu,

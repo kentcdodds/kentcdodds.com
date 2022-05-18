@@ -1,7 +1,8 @@
 import * as React from 'react'
-import {useParams, MetaFunction, redirect} from 'remix'
+import {LoaderFunction, MetaFunction, redirect} from '@remix-run/node'
+import {useParams} from '@remix-run/react'
 import type {LoaderData as RootLoaderData} from '../../root'
-import type {KCDHandle, KCDLoader} from '~/types'
+import type {KCDHandle} from '~/types'
 import {getEpisodes} from '~/utils/transistor.server'
 import {Themed} from '~/utils/theme-provider'
 import {getEpisodeFromParams, getEpisodePath, Params} from '~/utils/call-kent'
@@ -72,9 +73,19 @@ export const meta: MetaFunction = ({parentsData, params}) => {
   }
 }
 
-export const loader: KCDLoader<Params> = async ({params, request}) => {
+export const loader: LoaderFunction = async ({params, request}) => {
+  const {season, episode: episodeParam, slug} = params
+  if (!season || !episodeParam || !slug) {
+    throw new Error(
+      'params.season or params.episode or params.slug is not defined',
+    )
+  }
   const episodes = await getEpisodes({request})
-  const episode = getEpisodeFromParams(episodes, params)
+  const episode = getEpisodeFromParams(episodes, {
+    season,
+    episode: episodeParam,
+    slug,
+  })
 
   if (!episode) {
     return redirect('/calls')

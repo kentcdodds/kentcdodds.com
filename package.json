@@ -66,6 +66,7 @@
     "@remark-embedder/core": "^2.0.0",
     "@remark-embedder/transformer-oembed": "^2.0.0",
     "@remix-run/express": "1.4.3",
+    "@remix-run/node": "1.4.3",
     "@remix-run/react": "1.4.3",
     "@sentry/node": "^6.19.7",
     "@sindresorhus/slugify": "^2.1.0",

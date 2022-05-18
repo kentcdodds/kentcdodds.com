@@ -1,7 +1,12 @@
 import * as React from 'react'
-import type {MetaFunction, HeadersFunction} from 'remix'
-import {useLoaderData, json, useCatch, Link, useParams} from 'remix'
-import type {KCDHandle, KCDLoader, MdxListItem, Workshop} from '~/types'
+import type {
+  HeadersFunction,
+  LoaderFunction,
+  MetaFunction,
+} from '@remix-run/node'
+import {json} from '@remix-run/node'
+import {Link, useCatch, useLoaderData, useParams} from '@remix-run/react'
+import type {KCDHandle, MdxListItem, Workshop} from '~/types'
 import {Grid} from '~/components/grid'
 import {H2, H5, H6, Paragraph} from '~/components/typography'
 import {ButtonLink} from '~/components/button'
@@ -52,7 +57,10 @@ type LoaderData = {
   blogRecommendations: Array<MdxListItem>
 }
 
-export const loader: KCDLoader<{slug: string}> = async ({params, request}) => {
+export const loader: LoaderFunction = async ({params, request}) => {
+  if (!params.slug) {
+    throw new Error('params.slug is not defined')
+  }
   const timings: Timings = {}
   const [workshops, blogRecommendations] = await Promise.all([
     getWorkshops({request, timings}),

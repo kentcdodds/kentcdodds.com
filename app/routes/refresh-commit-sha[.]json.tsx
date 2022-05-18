@@ -1,4 +1,4 @@
-import type {LoaderFunction} from 'remix'
+import type {LoaderFunction} from '@remix-run/node'
 import {redisCache} from '~/utils/redis.server'
 import {commitShaKey as refreshCacheCommitShaKey} from './action/refresh-cache'
 

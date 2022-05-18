@@ -4,8 +4,9 @@ import type {
   HeadersFunction,
   LoaderFunction,
   MetaFunction,
-} from 'remix'
-import {Form, json, redirect, useLoaderData, useActionData} from 'remix'
+} from '@remix-run/node'
+import {json, redirect} from '@remix-run/node'
+import {Form, useActionData, useLoaderData} from '@remix-run/react'
 import clsx from 'clsx'
 import Dialog from '@reach/dialog'
 import type {KCDHandle} from '~/types'

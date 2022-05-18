@@ -1,4 +1,4 @@
-import {createCookieSessionStorage, redirect} from 'remix'
+import {createCookieSessionStorage, redirect} from '@remix-run/node'
 import type {User} from '@prisma/client'
 import {sendMagicLinkEmail} from './send-email.server'
 import {

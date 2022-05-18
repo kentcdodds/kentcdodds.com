@@ -1,4 +1,4 @@
-import {json} from 'remix'
+import {json} from '@remix-run/node'
 import {getErrorMessage} from '~/utils/misc'
 import {deleteConvertKitCache} from '~/utils/user-info.server'
 import * as ck from './convertkit.server'

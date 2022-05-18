@@ -310,7 +310,9 @@ test('calls updateUsername with the new username', async () => {
 
   expect(handleUpdateUsername).toHaveBeenCalledWith(fakeUsername)
   // we await the promise instead of returning directly, because act expects a "void" result
-  await act(async () => { await promise })
+  await act(async () => {
+    await promise
+  })
 })
 ```
 

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {Link} from 'remix'
+import {Link} from '@remix-run/react'
 import clsx from 'clsx'
 import formatDate from 'date-fns/format'
 import parseISO from 'date-fns/parseISO'
@@ -43,7 +43,7 @@ function ArticleCard({
     >
       <Link
         prefetch="intent"
-        className="group peer focus:outline-none relative block w-full"
+        className="focus:outline-none group peer relative block w-full"
         to={`/blog/${slug}`}
       >
         {bannerCloudinaryId ? (

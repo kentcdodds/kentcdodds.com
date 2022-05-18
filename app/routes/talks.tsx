@@ -1,6 +1,16 @@
 import * as React from 'react'
-import type {HeadersFunction, LoaderFunction, MetaFunction} from 'remix'
-import {json, useLoaderData, Link, useLocation, useSearchParams} from 'remix'
+import type {
+  HeadersFunction,
+  LoaderFunction,
+  MetaFunction,
+} from '@remix-run/node'
+import {json} from '@remix-run/node'
+import {
+  Link,
+  useLoaderData,
+  useLocation,
+  useSearchParams,
+} from '@remix-run/react'
 import type {Await} from '~/types'
 import formatDate from 'date-fns/format'
 import parseDate from 'date-fns/parseISO'

@@ -1,13 +1,6 @@
 import * as React from 'react'
-import {
-  ActionFunction,
-  Link,
-  LoaderFunction,
-  redirect,
-  useLoaderData,
-  json,
-  Outlet,
-} from 'remix'
+import {ActionFunction, json, LoaderFunction, redirect} from '@remix-run/node'
+import {Link, Outlet, useLoaderData} from '@remix-run/react'
 import type {Await, KCDHandle} from '~/types'
 import {requireAdminUser} from '~/utils/session.server'
 import {prismaRead, prismaWrite} from '~/utils/prisma.server'

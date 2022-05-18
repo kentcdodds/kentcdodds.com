@@ -1,6 +1,11 @@
 import * as React from 'react'
-import type {ActionFunction, HeadersFunction, MetaFunction} from 'remix'
-import {useFetcher, json} from 'remix'
+import type {
+  ActionFunction,
+  HeadersFunction,
+  MetaFunction,
+} from '@remix-run/node'
+import {json} from '@remix-run/node'
+import {useFetcher} from '@remix-run/react'
 import {useRootData} from '~/utils/use-root-data'
 import {
   getHeroImageProps,

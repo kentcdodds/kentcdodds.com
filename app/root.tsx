@@ -1,21 +1,26 @@
 import * as React from 'react'
+import type {
+  HeadersFunction,
+  LinksFunction,
+  MetaFunction,
+} from '@remix-run/node'
+import {json, LoaderFunction} from '@remix-run/node'
+
 import {
   Links,
-  Meta,
-  Scripts,
   LiveReload,
-  LoaderFunction,
-  json,
-  useLoaderData,
-  useTransition,
-  useCatch,
-  ScrollRestoration,
-  useMatches,
+  Meta,
   Outlet,
-  useLocation,
+  Scripts,
+  ScrollRestoration,
+  useCatch,
   useFetcher,
-} from 'remix'
-import type {LinksFunction, MetaFunction, HeadersFunction} from 'remix'
+  useLoaderData,
+  useLocation,
+  useMatches,
+  useTransition,
+} from '@remix-run/react'
+
 import {MetronomeLinks} from '@metronome-sh/react'
 import {AnimatePresence, motion} from 'framer-motion'
 import {useSpinDelay} from 'spin-delay'

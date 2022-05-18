@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {Link} from 'remix'
+import {Link} from '@remix-run/react'
 import {motion, useReducedMotion} from 'framer-motion'
 import clsx from 'clsx'
 import type {Team} from '@prisma/client'

@@ -4,8 +4,8 @@ import {
   json,
   LoaderFunction,
   MetaFunction,
-  useLoaderData,
-} from 'remix'
+} from '@remix-run/node'
+import {useLoaderData} from '@remix-run/react'
 import {shuffle} from 'lodash'
 import {
   getImageBuilder,

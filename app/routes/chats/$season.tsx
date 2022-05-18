@@ -1,7 +1,8 @@
 import * as React from 'react'
-import {json, useLoaderData, Link, useCatch, useParams} from 'remix'
-import type {HeadersFunction} from 'remix'
-import type {CWKSeason, KCDHandle, KCDLoader} from '~/types'
+import type {HeadersFunction, LoaderFunction} from '@remix-run/node'
+import {json} from '@remix-run/node'
+import {Link, useCatch, useLoaderData, useParams} from '@remix-run/react'
+import type {CWKSeason, KCDHandle} from '~/types'
 import {orderBy} from 'lodash'
 import {Grid} from '~/components/grid'
 import {getSeasonListItems} from '~/utils/simplecast.server'
@@ -29,10 +30,10 @@ type LoaderData = {
   season: CWKSeason
 }
 
-export const loader: KCDLoader<{season: string}> = async ({
-  params,
-  request,
-}) => {
+export const loader: LoaderFunction = async ({params, request}) => {
+  if (!params.season) {
+    throw new Error('params.season is not defined')
+  }
   const seasons = await getSeasonListItems({request})
   const seasonNumber = Number(params.season)
   const season = seasons.find(s => s.seasonNumber === seasonNumber)
@@ -56,7 +57,7 @@ export default function ChatsSeason() {
   const episodes = orderBy(season.episodes, 'episodeNumber', sortOrder)
   return episodes.map(episode => (
     <Link
-      className="group focus:outline-none"
+      className="focus:outline-none group"
       key={episode.slug}
       to={getCWKEpisodePath(episode)}
     >

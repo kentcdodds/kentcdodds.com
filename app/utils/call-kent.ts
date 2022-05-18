@@ -50,7 +50,7 @@ function getErrorForAudio(audio: string | null) {
 export type Params = {
   season: string
   episode: string
-  slug: string
+  slug?: string
 }
 
 function getEpisodeFromParams(

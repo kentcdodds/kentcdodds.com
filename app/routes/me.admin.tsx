@@ -1,13 +1,12 @@
 import * as React from 'react'
-import type {LoaderFunction, ActionFunction} from 'remix'
+import type {ActionFunction, LoaderFunction} from '@remix-run/node'
+import {json, redirect} from '@remix-run/node'
 import {
-  json,
-  redirect,
-  useLoaderData,
-  useActionData,
   Form,
+  useActionData,
+  useLoaderData,
   useSearchParams,
-} from 'remix'
+} from '@remix-run/react'
 import {useTable} from 'react-table'
 import type {Column} from 'react-table'
 import {Grid} from '~/components/grid'

@@ -1,15 +1,18 @@
 import * as React from 'react'
-import {useLoaderData, json, useFetcher, useCatch, useParams, Link} from 'remix'
-import type {HeadersFunction} from 'remix'
 import type {
-  KCDAction,
-  KCDHandle,
-  KCDLoader,
-  MdxListItem,
-  MdxPage,
-  Team,
-  Workshop,
-} from '~/types'
+  HeadersFunction,
+  LoaderFunction,
+  ActionFunction,
+} from '@remix-run/node'
+import {json} from '@remix-run/node'
+import {
+  Link,
+  useCatch,
+  useFetcher,
+  useLoaderData,
+  useParams,
+} from '@remix-run/react'
+import type {KCDHandle, MdxListItem, MdxPage, Team, Workshop} from '~/types'
 import {useRootData} from '~/utils/use-root-data'
 import {getImageBuilder, getImgProps, images} from '~/images'
 import {
@@ -67,7 +70,10 @@ export const handle: KCDHandle = {
   },
 }
 
-export const action: KCDAction<{slug: string}> = async ({request, params}) => {
+export const action: ActionFunction = async ({params, request}) => {
+  if (!params.slug) {
+    throw new Error('params.slug is not defined')
+  }
   const {slug} = params
   const session = await getSession(request)
   const user = await session.getUser()
@@ -140,7 +146,10 @@ type LoaderData = CatchData & {
   workshopEvents: Array<WorkshopEvent>
 }
 
-export const loader: KCDLoader<{slug: string}> = async ({request, params}) => {
+export const loader: LoaderFunction = async ({request, params}) => {
+  if (!params.slug) {
+    throw new Error('params.slug is not defined')
+  }
   // the loader won't handle this anyway, we've got this handled in other-routes.server.ts
   if (params.slug === 'rss.xml') return null
 

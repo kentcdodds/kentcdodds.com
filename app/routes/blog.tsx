@@ -1,6 +1,11 @@
 import * as React from 'react'
-import type {LoaderFunction, HeadersFunction, MetaFunction} from 'remix'
-import {Link, json, useLoaderData, useSearchParams} from 'remix'
+import type {
+  HeadersFunction,
+  LoaderFunction,
+  MetaFunction,
+} from '@remix-run/node'
+import {json} from '@remix-run/node'
+import {Link, useLoaderData, useSearchParams} from '@remix-run/react'
 import clsx from 'clsx'
 import {MixedCheckbox} from '@reach/checkbox'
 import type {Await, KCDHandle, MdxListItem, Team} from '~/types'
@@ -395,7 +400,7 @@ function BlogHome() {
                   }}
                   name="q"
                   placeholder={searchInputPlaceholder}
-                  className="appearance-none text-primary bg-primary border-secondary focus:bg-secondary focus:outline-none w-full rounded-full border py-6 pl-14 pr-6 text-lg font-medium hover:border-team-current focus:border-team-current md:pr-24"
+                  className="text-primary bg-primary border-secondary focus:bg-secondary focus:outline-none w-full appearance-none rounded-full border py-6 pl-14 pr-6 text-lg font-medium hover:border-team-current focus:border-team-current md:pr-24"
                 />
                 <div className="absolute right-6 top-0 hidden h-full w-14 items-center justify-between text-lg font-medium text-blueGray-500 md:flex">
                   <MixedCheckbox

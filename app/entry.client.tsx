@@ -2,7 +2,7 @@ import './bootstrap.client'
 import * as React from 'react'
 import ReactDOM from 'react-dom'
 import {load} from 'fathom-client'
-import {RemixBrowser as Remix} from 'remix'
+import {RemixBrowser as Remix} from '@remix-run/react'
 
 ReactDOM.hydrate(<Remix />, document)
 

@@ -1,6 +1,7 @@
 import * as React from 'react'
-import type {LoaderFunction, ActionFunction} from 'remix'
-import {json, redirect, useLoaderData, Form} from 'remix'
+import type {ActionFunction, LoaderFunction} from '@remix-run/node'
+import {json, redirect} from '@remix-run/node'
+import {Form, useLoaderData} from '@remix-run/react'
 import type {KCDHandle} from '~/types'
 
 export const handle: KCDHandle = {

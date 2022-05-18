@@ -1,16 +1,23 @@
 import * as React from 'react'
-import {redirect} from 'remix'
-import type {KCDHandle, KCDLoader} from '~/types'
+import {LoaderFunction, redirect} from '@remix-run/node'
+import type {KCDHandle} from '~/types'
 import {getEpisodes} from '~/utils/transistor.server'
-import {getEpisodeFromParams, getEpisodePath, Params} from '~/utils/call-kent'
+import {getEpisodeFromParams, getEpisodePath} from '~/utils/call-kent'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
 }
 
-export const loader: KCDLoader<Params> = async ({params, request}) => {
+export const loader: LoaderFunction = async ({params, request}) => {
+  const {season, episode: episodeParam} = params
+  if (!season || !episodeParam) {
+    throw new Error('params.season or params.episode is not defined')
+  }
   const episodes = await getEpisodes({request})
-  const episode = getEpisodeFromParams(episodes, params)
+  const episode = getEpisodeFromParams(episodes, {
+    season,
+    episode: episodeParam,
+  })
 
   if (!episode) {
     return redirect('/calls')

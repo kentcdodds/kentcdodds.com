@@ -1,7 +1,11 @@
 import * as React from 'react'
-import type {HeadersFunction, MetaFunction} from 'remix'
-import {json, Link, useLoaderData} from 'remix'
-import type {KCDLoader} from '~/types'
+import type {
+  HeadersFunction,
+  LoaderFunction,
+  MetaFunction,
+} from '@remix-run/node'
+import {json} from '@remix-run/node'
+import {Link, useLoaderData} from '@remix-run/react'
 import {Grid} from '~/components/grid'
 import {getImgProps, getGenericSocialImage, images} from '~/images'
 import {H2, H3, H6, Paragraph} from '~/components/typography'
@@ -20,7 +24,7 @@ type LoaderData = {
   testimonials: Array<Testimonial>
 }
 
-export const loader: KCDLoader = async ({request}) => {
+export const loader: LoaderFunction = async ({request}) => {
   const testimonials = await getTestimonials({
     request,
     categories: ['courses', 'teaching'],

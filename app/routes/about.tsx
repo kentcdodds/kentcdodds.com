@@ -4,8 +4,9 @@ import type {
   LinksFunction,
   LoaderFunction,
   MetaFunction,
-} from 'remix'
-import {json, useLoaderData, useSearchParams} from 'remix'
+} from '@remix-run/node'
+import {json} from '@remix-run/node'
+import {useLoaderData, useSearchParams} from '@remix-run/react'
 import {shuffle} from 'lodash'
 import formatDate from 'date-fns/format'
 import parseDate from 'date-fns/parseISO'

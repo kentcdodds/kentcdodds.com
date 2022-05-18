@@ -1,4 +1,4 @@
-import type {LoaderFunction} from 'remix'
+import type {LoaderFunction} from '@remix-run/node'
 import {prismaRead} from '~/utils/prisma.server'
 import {getBlogReadRankings} from '~/utils/blog.server'
 

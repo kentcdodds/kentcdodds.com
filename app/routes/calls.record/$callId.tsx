@@ -1,7 +1,12 @@
 import * as React from 'react'
-import type {HeadersFunction} from 'remix'
-import {json, redirect, useLoaderData, Form} from 'remix'
-import type {Call, KCDLoader, KCDAction, KCDHandle} from '~/types'
+import type {
+  ActionFunction,
+  HeadersFunction,
+  LoaderFunction,
+} from '@remix-run/node'
+import {json, redirect} from '@remix-run/node'
+import {Form, useLoaderData} from '@remix-run/react'
+import type {Call, KCDHandle} from '~/types'
 import {requireUser} from '~/utils/session.server'
 import {prismaRead, prismaWrite} from '~/utils/prisma.server'
 import {Paragraph} from '~/components/typography'
@@ -16,10 +21,10 @@ const actionTypes = {
   DELETE_RECORDING: 'delete recording',
 }
 
-export const action: KCDAction<{callId: string}> = async ({
-  params,
-  request,
-}) => {
+export const action: ActionFunction = async ({params, request}) => {
+  if (!params.callId) {
+    throw new Error('params.callId is not defined')
+  }
   const user = await requireUser(request)
   const call = await prismaRead.call.findFirst({
     // NOTE: this is how we ensure the user is the owner of the call
@@ -40,10 +45,10 @@ export const action: KCDAction<{callId: string}> = async ({
 
 type LoaderData = {call: Call}
 
-export const loader: KCDLoader<{callId: string}> = async ({
-  params,
-  request,
-}) => {
+export const loader: LoaderFunction = async ({params, request}) => {
+  if (!params.callId) {
+    throw new Error('params.callId is not defined')
+  }
   const user = await requireUser(request)
   const call = await prismaRead.call.findFirst({
     // NOTE: this is how we ensure the user is the owner of the call

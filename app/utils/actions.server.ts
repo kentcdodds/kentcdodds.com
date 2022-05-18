@@ -1,4 +1,4 @@
-import {json} from 'remix'
+import {json} from '@remix-run/node'
 import type {NonNullProperties} from '~/types'
 import {getErrorMessage, getNonNull} from './misc'
 

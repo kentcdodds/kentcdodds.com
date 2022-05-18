@@ -1,7 +1,12 @@
 import React, {useState} from 'react'
-import type {HeadersFunction, MetaFunction} from 'remix'
-import {useLoaderData, json, redirect, useCatch, Link, useLocation} from 'remix'
-import type {KCDLoader, CWKEpisode, CWKListItem, KCDHandle} from '~/types'
+import type {
+  HeadersFunction,
+  LoaderFunction,
+  MetaFunction,
+} from '@remix-run/node'
+import {json, redirect} from '@remix-run/node'
+import {Link, useCatch, useLoaderData, useLocation} from '@remix-run/react'
+import type {CWKEpisode, CWKListItem, KCDHandle} from '~/types'
 import clsx from 'clsx'
 import {motion} from 'framer-motion'
 import type {LoaderData as RootLoaderData} from '../root'
@@ -106,11 +111,7 @@ type LoaderData = {
   episode: CWKEpisode
 }
 
-export const loader: KCDLoader<{
-  slug: string
-  season: string
-  episode: string
-}> = async ({request, params}) => {
+export const loader: LoaderFunction = async ({request, params}) => {
   const seasonNumber = Number(params.season)
   const episodeNumber = Number(params.episode)
 

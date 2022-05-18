@@ -1,6 +1,6 @@
 import * as React from 'react'
-import {json, redirect} from 'remix'
-import type {ActionFunction} from 'remix'
+import type {ActionFunction} from '@remix-run/node'
+import {json, redirect} from '@remix-run/node'
 import {getKCDSpringSaleSession} from '~/utils/kcd-spring-sale-message.server'
 
 export const action: ActionFunction = async ({request}) => {
