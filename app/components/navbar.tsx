@@ -31,7 +31,7 @@ const LINKS = [
   {name: 'Blog', to: '/blog'},
   {name: 'Courses', to: '/courses'},
   {name: 'Discord', to: '/discord'},
-  {name: 'Chats', to: '/chats'},
+  {name: 'Chats', to: '/chats/04'},
   {name: 'Calls', to: '/calls'},
   {name: 'Workshops', to: '/workshops'},
   {name: 'About', to: '/about'},
