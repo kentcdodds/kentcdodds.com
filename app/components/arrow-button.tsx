@@ -1,10 +1,14 @@
 import * as React from 'react'
 import clsx from 'clsx'
-import {Link, LinkProps} from '@remix-run/react'
-import {motion, useReducedMotion, Variant} from 'framer-motion'
-import {ArrowIcon, ArrowIconProps} from './icons/arrow-icon'
+import type { LinkProps} from '@remix-run/react';
+import {Link} from '@remix-run/react'
+import type { Variant} from 'framer-motion';
+import {motion, useReducedMotion} from 'framer-motion'
+import type { ArrowIconProps} from './icons/arrow-icon';
+import {ArrowIcon} from './icons/arrow-icon'
 import {H6} from './typography'
-import {ElementState, useElementState} from './hooks/use-element-state'
+import type {ElementState} from './hooks/use-element-state';
+import { useElementState} from './hooks/use-element-state'
 
 const arrowVariants: Record<
   ArrowIconProps['direction'],

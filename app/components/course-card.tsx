@@ -1,5 +1,6 @@
 import * as React from 'react'
-import {motion, useReducedMotion, Variants} from 'framer-motion'
+import type { Variants} from 'framer-motion';
+import {motion, useReducedMotion} from 'framer-motion'
 import type {ImageBuilder} from '~/images'
 import {getImgProps} from '~/images'
 import {ArrowIcon} from './icons/arrow-icon'

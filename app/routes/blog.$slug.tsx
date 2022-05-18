@@ -27,11 +27,12 @@ import {H2, H6, Paragraph} from '~/components/typography'
 import {Grid} from '~/components/grid'
 import {ArrowLink, BackLink} from '~/components/arrow-button'
 import {BlogSection} from '~/components/sections/blog-section'
+import type {
+  ReadRankings} from '~/utils/blog.server';
 import {
   getBlogReadRankings,
   getTotalPostReads,
   getBlogRecommendations,
-  ReadRankings,
   notifyOfOverallTeamLeaderChange,
   notifyOfTeamLeaderChangeOnPost,
 } from '~/utils/blog.server'
@@ -48,9 +49,10 @@ import {getRankingLeader} from '~/utils/blog'
 import {externalLinks} from '../external-links'
 import {teamEmoji, useTeam} from '~/utils/team-provider'
 import {getWorkshops} from '~/utils/workshops.server'
+import type {
+  WorkshopEvent} from '~/utils/workshop-tickets.server';
 import {
-  getScheduledEvents,
-  WorkshopEvent,
+  getScheduledEvents
 } from '~/utils/workshop-tickets.server'
 import {WorkshopCard} from '~/components/workshop-card'
 import {Spacer} from '~/components/spacer'

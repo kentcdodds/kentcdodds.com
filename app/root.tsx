@@ -3,8 +3,8 @@ import type {
   HeadersFunction,
   LinksFunction,
   MetaFunction,
-} from '@remix-run/node'
-import {json, LoaderFunction} from '@remix-run/node'
+ LoaderFunction} from '@remix-run/node'
+import {json} from '@remix-run/node'
 
 import {
   Links,
@@ -30,11 +30,12 @@ import vendorStyles from './styles/vendors.css'
 import appStyles from './styles/app.css'
 import proseStyles from './styles/prose.css'
 import noScriptStyles from './styles/no-script.css'
+import type {
+  Theme} from './utils/theme-provider';
 import {
   useTheme,
   ThemeProvider,
-  NonFlashOfWrongThemeEls,
-  Theme,
+  NonFlashOfWrongThemeEls
 } from './utils/theme-provider'
 import {getThemeSession} from './utils/theme.server'
 import {getSession} from './utils/session.server'

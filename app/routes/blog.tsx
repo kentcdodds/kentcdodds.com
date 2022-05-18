@@ -43,14 +43,15 @@ import {
 } from '~/utils/misc'
 import {TeamStats} from '~/components/team-stats'
 import {Spacer} from '~/components/spacer'
+import type {
+  ReadRankings} from '~/utils/blog.server';
 import {
   getAllBlogPostReadRankings,
   getBlogReadRankings,
   getBlogRecommendations,
   getReaderCount,
   getSlugReadsByUser,
-  getTotalPostReads,
-  ReadRankings,
+  getTotalPostReads
 } from '~/utils/blog.server'
 import {useTeam} from '~/utils/team-provider'
 import type {LoaderData as RootLoaderData} from '../root'

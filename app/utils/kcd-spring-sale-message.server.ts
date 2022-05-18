@@ -1,5 +1,6 @@
+import type {
+  CookieSerializeOptions} from '@remix-run/node';
 import {
-  CookieSerializeOptions,
   createCookieSessionStorage,
 } from '@remix-run/node'
 import {getRequiredServerEnvVar} from './misc'

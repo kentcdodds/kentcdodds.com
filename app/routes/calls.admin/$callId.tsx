@@ -1,5 +1,6 @@
 import * as React from 'react'
-import {ActionFunction, json, LoaderFunction, redirect} from '@remix-run/node'
+import type {ActionFunction, LoaderFunction} from '@remix-run/node';
+import { json, redirect} from '@remix-run/node'
 import {Form, useActionData, useLoaderData} from '@remix-run/react'
 import type {Await, KCDHandle} from '~/types'
 import {format} from 'date-fns'

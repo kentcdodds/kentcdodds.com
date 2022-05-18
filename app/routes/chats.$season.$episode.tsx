@@ -1,5 +1,6 @@
 import React from 'react'
-import {LoaderFunction, redirect} from '@remix-run/node'
+import type {LoaderFunction} from '@remix-run/node';
+import { redirect} from '@remix-run/node'
 import {getSeasons} from '~/utils/simplecast.server'
 
 export const loader: LoaderFunction = async ({request, params}) => {

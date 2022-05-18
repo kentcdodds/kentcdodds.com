@@ -1,12 +1,15 @@
 import * as React from 'react'
-import {LoaderFunction, MetaFunction, redirect} from '@remix-run/node'
+import type {LoaderFunction, MetaFunction} from '@remix-run/node';
+import { redirect} from '@remix-run/node'
 import {useParams} from '@remix-run/react'
 import type {LoaderData as RootLoaderData} from '../../root'
 import type {KCDHandle} from '~/types'
 import {getEpisodes} from '~/utils/transistor.server'
 import {Themed} from '~/utils/theme-provider'
-import {getEpisodeFromParams, getEpisodePath, Params} from '~/utils/call-kent'
-import {LoaderData as CallsLoaderData, useCallsData} from '../calls'
+import type { Params} from '~/utils/call-kent';
+import {getEpisodeFromParams, getEpisodePath} from '~/utils/call-kent'
+import type {LoaderData as CallsLoaderData} from '../calls';
+import { useCallsData} from '../calls'
 import {getSocialMetas} from '~/utils/seo'
 import {getUrl} from '~/utils/misc'
 import {H6, Paragraph} from '~/components/typography'

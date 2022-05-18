@@ -1,9 +1,10 @@
 import * as React from 'react'
-import {
+import type {
   HeadersFunction,
-  json,
   LoaderFunction,
-  MetaFunction,
+  MetaFunction} from '@remix-run/node';
+import {
+  json
 } from '@remix-run/node'
 import {useLoaderData} from '@remix-run/react'
 import {shuffle} from 'lodash'

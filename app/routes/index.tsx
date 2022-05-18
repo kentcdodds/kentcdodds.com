@@ -21,9 +21,10 @@ import {kodySnowboardingImages} from '~/images'
 import {ButtonLink} from '~/components/button'
 import {ServerError} from '~/components/errors'
 import {getBlogMdxListItems} from '~/utils/mdx'
+import type {
+  OptionalTeam} from '~/utils/misc';
 import {
   formatNumber,
-  OptionalTeam,
   reuseUsefulLoaderHeaders,
   teams,
 } from '~/utils/misc'
