@@ -271,7 +271,7 @@ That said, what we're about to do doesn't really comply with the spec either
 complies with the spec which is important so folks on the team don't learn bad
 habits that could find their way into application code.
 
-So to solve this, we _could_ attempt to muck with the `require.cache`to swap the
+So to solve this, we _could_ attempt to mock with the `require.cache`to swap the
 actual implementation of the module for our mock version, but we'd find out that
 `imports` happen before our code runs and so we wouldn't be able to run it in
 time without pulling it into another file. Also, my kids are about to wake up
