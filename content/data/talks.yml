@@ -83,8 +83,9 @@
 
 - title: Shipping to the Edge
   deliveries:
-    - event: '[Reactathon](https://www.reactathon.com/)'
+    - event: '[Reactathon](https://reactathon.com)'
       date: 2022-05-02
+      recording: https://youtube.com/watch?v=osSaUWlgAyo&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
   tags:
     - keynote
   description: >-
