@@ -75,7 +75,7 @@ export const meta: MetaFunction = ({data}) => {
     'Come check out how Kent C. Dodds can help you level up your career as a software engineer.'
   return {
     viewport: 'width=device-width,initial-scale=1,viewport-fit=cover',
-    'theme-color': '#A9ADC1',
+    'theme-color': requestInfo?.session.theme === 'dark' ? '#1F2028' : '#FFF',
     ...getSocialMetas({
       origin: requestInfo?.origin ?? '',
       keywords:
