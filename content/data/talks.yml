@@ -43,6 +43,15 @@
   description: >-
     This talk is yet to be announced
 
+- title: Front Conference Zurich
+  deliveries:
+    - event: '[Front Conference](https://frontconference.com/)'
+      date: 2022-08-25
+  tags:
+    - keynote
+  description: >-
+    This talk is yet to be announced
+
 - title: ReactNext 2022 Keynote
   deliveries:
     - event: '[ReactNext](https://www.react-next.com/)'
