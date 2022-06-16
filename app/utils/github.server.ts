@@ -123,14 +123,11 @@ async function downloadDirectory(dir: string): Promise<Array<GitHubFile>> {
  * @returns a promise that resolves to a string of the contents of the file
  */
 async function downloadFileBySha(sha: string) {
-  const {data} = await octokit.request(
-    'GET /repos/{owner}/{repo}/git/blobs/{file_sha}',
-    {
-      owner: 'kentcdodds',
-      repo: 'kentcdodds.com',
-      file_sha: sha,
-    },
-  )
+  const {data} = await octokit.git.getBlob({
+    owner: 'kentcdodds',
+    repo: 'kentcdodds.com',
+    file_sha: sha,
+  })
   //                                lol
   const encoding = data.encoding as Parameters<typeof Buffer.from>['1']
   return Buffer.from(data.content, encoding).toString()
@@ -140,26 +137,22 @@ async function downloadFileBySha(sha: string) {
 // https://raw.githubusercontent.com/{owner}/{repo}/{ref}/{path}
 // nice thing is it's not rate limited
 async function downloadFile(path: string) {
-  const {data} = await octokit.request(
-    'GET /repos/{owner}/{repo}/contents/{path}',
-    {
-      owner: 'kentcdodds',
-      repo: 'kentcdodds.com',
-      path,
-      ref,
-    },
-  )
+  const {data} = await octokit.repos.getContent({
+    owner: 'kentcdodds',
+    repo: 'kentcdodds.com',
+    path,
+    ref,
+  })
 
-  if (!('content' in data)) {
-    console.error(data)
-    throw new Error(
-      `Tried to get ${path} but got back something that was unexpected. It doesn't have a content or encoding property`,
-    )
+  if ('content' in data && 'encoding' in data) {
+    const encoding = data.encoding as Parameters<typeof Buffer.from>['1']
+    return Buffer.from(data.content, encoding).toString()
   }
 
-  //                                lol
-  const encoding = data.encoding as Parameters<typeof Buffer.from>['1']
-  return Buffer.from(data.content, encoding).toString()
+  console.error(data)
+  throw new Error(
+    `Tried to get ${path} but got back something that was unexpected. It doesn't have a content or encoding property`,
+  )
 }
 
 /**
