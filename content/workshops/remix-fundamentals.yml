@@ -8,11 +8,6 @@ meta:
     - performance
     - seo
     - accessibility
-events:
-  - title: Remix Fundamentals (RenderATL)
-    url: https://ti.to/render-atlanta/2022tickets
-    quantity: 40
-    date: June 1st, 2022
 categories:
   - react
   - remix

@@ -9,11 +9,6 @@ meta:
     - developer experience
     - pending UI
     - optimistic UI
-events:
-  - title: Advanced Remix (React Summit remote)
-    url: https://www.reactsummit.com
-    quantity: 40
-    date: June 23rd/24th, 2022
 categories:
   - react
   - remix
