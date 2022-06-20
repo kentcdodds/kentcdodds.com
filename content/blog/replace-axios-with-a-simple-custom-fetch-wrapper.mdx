@@ -234,10 +234,9 @@ function client(endpoint, {body, ...customConfig} = {}) {
       }
       if (response.ok) {
         return await response.json()
-      } else {
-        const errorMessage = await response.text()
-        return Promise.reject(new Error(errorMessage))
       }
+      const errorMessage = await response.text()
+      throw new Error(errorMessage)
     })
 }
 
