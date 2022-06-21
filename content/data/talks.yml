@@ -128,6 +128,7 @@
   deliveries:
     - event: '[Node Congress](https://nodecongress.com/)'
       date: 2022-02-17
+      recording: https://portal.gitnation.org/contents/server-side-auth-with-remix-prisma-and-the-web-platform
     - event: '[Node TLV](https://www.nodetlv.com/)'
       date: 2022-06-29
   tags:
