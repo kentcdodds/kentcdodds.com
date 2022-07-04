@@ -121,19 +121,21 @@ export default function ContactRoute() {
       />
 
       <main>
-        {user ? null : (
-          <Paragraph>
-            Note: due to spam issues, you have to confirm your email by{' '}
-            <Link to="/login">signing up for an account</Link> on my website
-            first.
-          </Paragraph>
-        )}
         <contactFetcher.Form
           method="post"
           noValidate
           aria-describedby="contact-form-error"
         >
           <Grid>
+            {user ? null : (
+              <div className="col-span-full mb-12 lg:col-span-8 lg:col-start-3">
+                <Paragraph>
+                  Note: due to spam issues, you have to confirm your email by{' '}
+                  <Link to="/login">signing up for an account</Link> on my
+                  website first.
+                </Paragraph>
+              </div>
+            )}
             <div className="col-span-full mb-12 lg:col-span-8 lg:col-start-3">
               <H2>Email me</H2>
               <Paragraph>
