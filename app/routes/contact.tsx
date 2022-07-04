@@ -5,7 +5,7 @@ import type {
   MetaFunction,
 } from '@remix-run/node'
 import {json} from '@remix-run/node'
-import {useFetcher} from '@remix-run/react'
+import {Link, useFetcher} from '@remix-run/react'
 import {useRootData} from '~/utils/use-root-data'
 import {
   getHeroImageProps,
@@ -22,6 +22,7 @@ import {Button} from '~/components/button'
 import type {LoaderData as RootLoaderData} from '../root'
 import {getSocialMetas} from '~/utils/seo'
 import {getDisplayUrl, getUrl} from '~/utils/misc'
+import {requireUser} from '~/utils/session.server'
 
 function getErrorForName(name: string | null) {
   if (!name) return `Name is required`
@@ -79,6 +80,7 @@ type ActionData = {
 }
 
 export const action: ActionFunction = async ({request}) => {
+  await requireUser(request)
   return handleFormSubmission<ActionData>({
     request,
     validators: {
@@ -150,6 +152,13 @@ export default function ContactRoute() {
       />
 
       <main>
+        {user ? null : (
+          <Paragraph>
+            Note: due to spam issues, you have to confirm your email by{' '}
+            <Link to="/login">signing up for an account</Link> on my website
+            first.
+          </Paragraph>
+        )}
         <contactFetcher.Form
           method="post"
           noValidate
@@ -224,7 +233,7 @@ export default function ContactRoute() {
                 <ButtonGroup>
                   <Button
                     type="submit"
-                    disabled={contactFetcher.state !== 'idle'}
+                    disabled={!user || contactFetcher.state !== 'idle'}
                   >
                     Send message
                   </Button>
