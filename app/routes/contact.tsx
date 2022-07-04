@@ -17,36 +17,11 @@ import {ButtonGroup, ErrorPanel, Field} from '~/components/form-elements'
 import {Grid} from '~/components/grid'
 import {handleFormSubmission} from '~/utils/actions.server'
 import {sendEmail} from '~/utils/send-email.server'
-import {verifyEmailAddress} from '~/utils/verifier.server'
 import {Button} from '~/components/button'
 import type {LoaderData as RootLoaderData} from '../root'
 import {getSocialMetas} from '~/utils/seo'
 import {getDisplayUrl, getUrl} from '~/utils/misc'
 import {requireUser} from '~/utils/session.server'
-
-function getErrorForName(name: string | null) {
-  if (!name) return `Name is required`
-  if (name.length > 60) return `Name is too long`
-  return null
-}
-
-async function getErrorForEmail(email: string | null) {
-  if (!email) return `Email is required`
-  if (!/^.+@.+\..+$/.test(email)) return `That's not an email`
-
-  try {
-    const verifierResult = await verifyEmailAddress(email)
-    if (!verifierResult.status) {
-      return `I tried to verify that email address and got this error message: "${verifierResult.error.message}". If you think this is wrong, shoot an email to team@kentcdodds.com.`
-    }
-  } catch (error: unknown) {
-    console.error(`There was an error verifying an email address:`, error)
-    // continue on... This was probably our fault...
-    // IDEA: notify me of this issue...
-  }
-
-  return null
-}
 
 function getErrorForSubject(subject: string | null) {
   if (!subject) return `Subject is required`
@@ -65,34 +40,28 @@ function getErrorForBody(body: string | null) {
 type ActionData = {
   status: 'success' | 'error'
   fields: {
-    name?: string | null
-    email?: string | null
     subject?: string | null
     body?: string | null
   }
   errors: {
     generalError?: string
-    name?: string | null
-    email?: string | null
     subject?: string | null
     body?: string | null
   }
 }
 
 export const action: ActionFunction = async ({request}) => {
-  await requireUser(request)
+  const user = await requireUser(request)
   return handleFormSubmission<ActionData>({
     request,
     validators: {
-      name: getErrorForName,
-      email: getErrorForEmail,
       subject: getErrorForSubject,
       body: getErrorForBody,
     },
     handleFormValues: async fields => {
-      const {name, email, subject, body} = fields
+      const {subject, body} = fields
 
-      const sender = `"${name}" <${email}>`
+      const sender = `"${user.firstName}" <${user.email}>`
 
       await sendEmail({
         from: sender,
@@ -190,20 +159,16 @@ export default function ContactRoute() {
                 name="name"
                 label="Name"
                 placeholder="Your name"
-                defaultValue={
-                  contactFetcher.data?.fields.name ?? user?.firstName ?? ''
-                }
-                error={contactFetcher.data?.errors.name}
+                disabled={true}
+                defaultValue={user?.firstName ?? ''}
               />
               <Field
                 type="email"
                 label="Email"
                 placeholder="person.doe@example.com"
-                defaultValue={
-                  contactFetcher.data?.fields.email ?? user?.email ?? ''
-                }
+                disabled={true}
+                defaultValue={user?.email ?? ''}
                 name="email"
-                error={contactFetcher.data?.errors.email}
               />
               <Field
                 name="subject"
