@@ -141,9 +141,9 @@ like this:
 3. Click on the button that has text `sign in`
 
 ```js
-const usernameField = rootNode.getByLabelText('username')
+const usernameField = rootNode.getByRole('textbox', {name: /username/i})
 const passwordField = rootNode.getByLabelText('password')
-const submitButton = rootNode.getByRole('button', {name: /'sign in'/i})
+const submitButton = rootNode.getByRole('button', {name: /sign in/i})
 ```
 
 And that would help to ensure that you are testing your software as closely to
