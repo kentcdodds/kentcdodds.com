@@ -1,0 +1,79 @@
+title: Web Fundamentals
+description:
+  Learn most important key concepts of building web-based applications.
+meta:
+  keywords:
+    - web
+    - remix
+    - http
+    - servers
+    - browser
+    - frontend
+    - backend
+categories:
+  - web
+convertKitTag: '3208567'
+problemStatements:
+  part1: The web is the doorway to the world
+  part2: Understanding it at a fundamental level is critical to building on it
+  part3: >-
+    There are over five billion people connected to the internet. Whether you're
+    building an online presence for your business, a personal blog, an ecommerce
+    site, or anything in between, having a solid understanding of the
+    fundamentals of the web is critical to creating the kind of user experience
+    software developers expect.
+  part4: >-
+    Most people getting into web development in recent years naturally breeze
+    through (or plain skip over) web fundamentals in their pursuit of their
+    first dev job. Unfortunately, this results in the substandard reinvention of
+    wheels which means lots of work for sub-optimal results. Frustrated devs.
+    Frustrated customers. In this workshop we'll review the foundational bits of
+    the web platform you need to be successful building web applications.
+keyTakeaways:
+  - title: Understand HTTP
+    description:
+      Your web app starts with the HTTP request/response cycle. We'll look at
+      this in depth from both the browser and server perspective. In particular
+      through the lense of the Web Fetch standard.
+  - title: Implement efficient caching
+    description:
+      Not just assets, but any resource accessed via HTTP can be cached via
+      proper use of `Cache-Control` header directives. We'll learn how to take
+      advantage of these directives for in-browser caching as well as shared
+      caching on a CDN.
+  - title: Speed up your site with prefetching
+    description:
+      Eliminate pending states by taking advantage of the platform's `<link>`
+      tag for preloading and prefetching resources and even preconnecting to
+      other domains to easily speed up your app.
+  - title: Explain how links and forms work
+    description:
+      If you joined the web dev industry in recent years, you were probably
+      taught that your `onSubmit` handler for a form should start with the line
+      `event.preventDefault()`. We're going to get you to the point that you
+      understand what the browser actually does if you don't prevent this
+      behavior. You'll also understand important browser behavior regarding
+      links and what happens when the user changes their mind.
+  - title: Use Semantic HTML
+    description:
+      HTML is a relatively simple markup language that includes a great deal of
+      built-in capabilities. Just like any tool, it works best when you hold it
+      right, and using semantic HTML is how you ensure the browser can do it's
+      job with your app. We'll also briefly talk about the role of CSS
+      (Cascading Style Sheets) has in this.
+topics:
+  - HTTP
+  - Web Fetch
+  - Semantic HTML
+  - CSS (Cascading Style Sheets)
+  - Resource Prefetching
+  - HTTP Caching
+  - Forms
+prerequisite: >-
+  This is __not__ an introduction to programming course. You should have *some*
+  experience with coding. You will be expected to have and be comfortable with a
+  coding editor. You will need to have modern versions of git, npm, and Node.js
+  installed on your computer. It will be guided and appropriate for beginners
+  looking to get a better understanding of the web platform as well as
+  experienced developers who want to level-up by reviewing the fundamentals of
+  the web platform.

@@ -242,6 +242,10 @@ const images = createImages({
     id: 'kentcdodds.com/pages/courses/the-beginners-guide-to-react',
     alt: `Illustration for The Beginner's Guide to React`,
   },
+  courseUpAndRunningWithRemix: {
+    id: 'kentcdodds.com/pages/courses/up-and-running-with-remix',
+    alt: `Illustration for Up and Running with Remix`,
+  },
   courseUseSuspenseToSimplifyYourAsyncUI: {
     id: 'kentcdodds.com/pages/courses/use-suspense-to-simplify-your-async-ui',
     alt: 'Illustration for Use Suspense to Simplify Your Async UI',

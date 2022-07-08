@@ -157,6 +157,12 @@ function CoursesHome() {
         </div>
 
         <SmallCourseCard
+          title="Up and Running with Remix"
+          description="Jump in feet first and learn the most productive way to build a web application with the web framework that offers the best UX and DX the web has to offer."
+          imageBuilder={images.courseUpAndRunningWithRemix}
+          courseUrl="https://egghead.io/courses/up-and-running-with-remix-b82b6bb6?af=5236ad"
+        />
+        <SmallCourseCard
           title="The Beginner's Guide to React"
           description="This course is for React newbies and anyone looking to build a solid foundation. It's designed to teach you everything you need to start building web applications in React right away."
           imageBuilder={images.courseTheBeginnersGuideToReact}
