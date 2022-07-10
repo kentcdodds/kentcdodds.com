@@ -1,4 +1,4 @@
-title: Web Fundamentals
+title: Web Deep Dive
 description:
   Learn most important key concepts of building web-based applications.
 meta:
@@ -15,7 +15,7 @@ categories:
 convertKitTag: '3208567'
 problemStatements:
   part1: The web is the doorway to the world
-  part2: Understanding it at a fundamental level is critical to building on it
+  part2: Understanding it at a deep level is critical to building on it
   part3: >-
     There are over five billion people connected to the internet. Whether you're
     building an online presence for your business, a personal blog, an ecommerce
@@ -27,8 +27,8 @@ problemStatements:
     through (or plain skip over) web fundamentals in their pursuit of their
     first dev job. Unfortunately, this results in the substandard reinvention of
     wheels which means lots of work for sub-optimal results. Frustrated devs.
-    Frustrated customers. In this workshop we'll review the foundational bits of
-    the web platform you need to be successful building web applications.
+    Frustrated customers. In this workshop we're diving deep into important bits
+    of the web platform you need to be successful building web applications.
 keyTakeaways:
   - title: Understand HTTP
     description:
@@ -75,5 +75,5 @@ prerequisite: >-
   coding editor. You will need to have modern versions of git, npm, and Node.js
   installed on your computer. It will be guided and appropriate for beginners
   looking to get a better understanding of the web platform as well as
-  experienced developers who want to level-up by reviewing the fundamentals of
-  the web platform.
+  experienced developers who want to level-up with a deep dive of the web
+  platform.
