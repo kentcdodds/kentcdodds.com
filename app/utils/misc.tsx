@@ -129,7 +129,7 @@ const AnchorOrLink = React.forwardRef<
 })
 
 function formatTime(seconds: number) {
-  return dateFns.format(dateFns.addSeconds(new Date(0), seconds), 'mm:ss')
+  return dateFns.format(dateFns.addSeconds(new Date('0'), seconds), 'mm:ss')
 }
 
 const formatNumber = (num: number) => new Intl.NumberFormat().format(num)
