@@ -12,6 +12,7 @@ import {
   getAvatarForUser,
   getErrorMessage,
   getNonNull,
+  getRequiredServerEnvVar,
   useDoubleCheck,
 } from '~/utils/misc'
 import {createEpisodeAudio} from '~/utils/ffmpeg.server'
@@ -30,6 +31,8 @@ import {Paragraph} from '~/components/typography'
 import {Field} from '~/components/form-elements'
 import {Spacer} from '~/components/spacer'
 import {sendEmail} from '~/utils/send-email.server'
+import {teamEmoji} from '~/utils/team-provider'
+import {sendMessageFromDiscordBot} from '~/utils/discord.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -100,18 +103,38 @@ export const action: ActionFunction = async ({request, params}) => {
     })
 
     if (episodeUrl) {
-      await sendEmail({
-        to: call.user.email,
-        from: `"Kent C. Dodds" <hello+calls@kentcdodds.com>`,
-        subject: `Your "Call Kent" episode has been published`,
-        text: `
+      try {
+        void sendEmail({
+          to: call.user.email,
+          from: `"Kent C. Dodds" <hello+calls@kentcdodds.com>`,
+          subject: `Your "Call Kent" episode has been published`,
+          text: `
 Hi ${call.user.firstName},
 
 Thanks for your call. Kent just replied and the episode has been published to the podcast!
 
 [![${title}](${imageUrl})](${episodeUrl})
-        `.trim(),
-      })
+          `.trim(),
+        })
+      } catch (error: unknown) {
+        console.error(
+          `Problem sending email about a call: ${episodeUrl}`,
+          error,
+        )
+      }
+      try {
+        const channelId = getRequiredServerEnvVar('DISCORD_CALL_KENT_CHANNEL')
+        const {firstName, team, discordId} = call.user
+        const userMention = discordId ? `<@!${discordId}>` : firstName
+        const emoji = teamEmoji[team]
+        const message = `📳 ring ring! New Call Kent Podcast episode from ${userMention} ${emoji}: "${title}"\n\n${description}\n\n${episodeUrl}`
+        void sendMessageFromDiscordBot(channelId, message)
+      } catch (error: unknown) {
+        console.error(
+          `Problem sending discord message about a call: ${episodeUrl}`,
+          error,
+        )
+      }
     }
 
     await prismaWrite.call.delete({

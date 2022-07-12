@@ -176,6 +176,7 @@ async function createEpisode({
       episode: {
         alternate_url: returnValue.episodeUrl,
         image_url: imageUrl,
+        description: `${description}\n\n<a href="${returnValue.episodeUrl}">${title}</a>`,
       },
     }
 
