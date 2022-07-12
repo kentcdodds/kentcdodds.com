@@ -40,6 +40,7 @@ import {useRootData} from '~/utils/use-root-data'
 import {Spacer} from '~/components/spacer'
 
 export const handle: KCDHandle = {
+  restoreScroll: true,
   getSitemapEntries: async request => {
     const seasons = await getSeasons({request})
     return seasons.flatMap(season => {

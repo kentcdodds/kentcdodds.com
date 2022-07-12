@@ -310,9 +310,15 @@ function PageLoadingMessage() {
 function App() {
   const data = useLoaderData<LoaderData>()
   const matches = useMatches()
-  const shouldRestoreScroll = matches.every(
-    match => (match.handle as KCDHandle | undefined)?.restoreScroll !== false,
-  )
+  let shouldRestoreScroll = true
+  for (const match of matches.reverse()) {
+    const matchHandle = match.handle as KCDHandle | undefined
+    if (!matchHandle) continue
+    if ('restoreScroll' in matchHandle) {
+      shouldRestoreScroll = Boolean(matchHandle.restoreScroll)
+      break
+    }
+  }
   const [team] = useTeam()
   const [theme] = useTheme()
 

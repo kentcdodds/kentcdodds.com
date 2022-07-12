@@ -188,7 +188,7 @@ type KCDHandle = {
   /** this just allows us to identify routes more directly rather than relying on pathnames */
   id?: string
   /** this is here to allow us to disable scroll restoration until Remix gives us better control */
-  restoreScroll?: false
+  restoreScroll?: boolean
   getSitemapEntries?: (
     request: Request,
   ) =>
