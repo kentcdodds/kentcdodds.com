@@ -77,6 +77,7 @@
   deliveries:
     - event: '[RenderATL](https://www.renderatl.com/)'
       date: 2022-06-01
+      recording: https://www.youtube.com/watch?v=EzLGleT1yrY&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
   tags:
     - keynote
     - remix
