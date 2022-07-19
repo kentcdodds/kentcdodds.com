@@ -5,12 +5,10 @@ const fromRoot = p => path.join(__dirname, p)
 module.exports = {
   // the NODE_ENV thing is for https://github.com/Acidic9/prettier-plugin-tailwind/issues/29
   mode: process.env.NODE_ENV ? 'jit' : undefined,
+  content: [fromRoot('./app/**/*.+(js|jsx|ts|tsx|mdx|md)')],
   darkMode: 'class',
-  variants: {
-    opacity: ['responsive', 'hover', 'focus', 'dark', 'group-hover'],
-    boxShadow: ['responsive', 'hover', 'focus', 'dark'],
-    animation: ['responsive', 'motion-safe', 'motion-reduce'],
-    transitionProperty: ['responsive', 'motion-safe', 'motion-reduce'],
+  corePlugins: {
+    aspectRatio: false,
   },
   theme: {
     screens: {
@@ -36,8 +34,8 @@ module.exports = {
         800: 'var(--color-gray-800)',
         900: 'var(--color-gray-900)',
       },
-      blueGray: {
-        500: 'var(--color-blueGray-500)',
+      slate: {
+        500: 'var(--color-slate-500)',
       },
       team: {
         unknown: 'var(--color-team-unknown)',
@@ -285,7 +283,7 @@ module.exports = {
           dark: {
             css: [
               {
-                color: theme('colors.blueGray.500'),
+                color: theme('colors.slate.500'),
                 a: {
                   color: theme('colors.team.current'),
                 },
@@ -302,7 +300,7 @@ module.exports = {
                   color: theme('colors.white'),
                 },
                 blockquote: {
-                  color: theme('colors.blueGray.500'),
+                  color: theme('colors.slate.500'),
                   backgroundColor: theme('colors.gray.800'),
                 },
                 'thead, tbody tr': {
@@ -314,11 +312,6 @@ module.exports = {
         }
       },
     },
-  },
-  purge: {
-    mode: 'layers',
-    enabled: process.env.NODE_ENV === 'production',
-    content: [fromRoot('./app/**/*.+(js|ts|tsx|mdx|md)')],
   },
   plugins: [
     require('@tailwindcss/typography'),

@@ -489,11 +489,11 @@ function useCount() {
 export default useCount
 ```
 
-Here, we'll use `@testing-library/react-hooks` to validate our hook works:
+Here, we'll use `@testing-library/react` to validate our hook works:
 
 ```js
 import * as React from 'react'
-import {renderHook} from '@testing-library/react-hooks'
+import {renderHook} from '@testing-library/react'
 import useCount from '../use-count'
 
 test('increment and decrement updates the count', () => {
@@ -514,7 +514,7 @@ to get an `act(...)` warning. So, let's wrap that in `act(...)`!
 
 ```js [2,9,12]
 import * as React from 'react'
-import {renderHook, act} from '@testing-library/react-hooks'
+import {renderHook, act} from '@testing-library/react'
 import useCount from '../use-count'
 
 test('increment and decrement updates the count', () => {
@@ -529,10 +529,9 @@ test('increment and decrement updates the count', () => {
 })
 ```
 
-You'll notice that we're pulling `act` from `@testing-library/react-hooks` and
-that's because it simply re-exports the `act` function from
-`react-test-renderer` so you don't need to add an additional export. Nice
-right!?
+You'll notice that we're pulling `act` from `@testing-library/react` and that's
+because it simply re-exports the `act` function from `react-test-renderer` so
+you don't need to add an additional export. Nice right!?
 
 ### 3. When using `useImperativeHandle`
 

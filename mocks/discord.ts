@@ -1,8 +1,10 @@
-import type {DefaultRequestBody, MockedRequest, RestHandler} from 'msw'
+import type {DefaultRequestMultipartBody, MockedRequest, RestHandler} from 'msw'
 import {rest} from 'msw'
 import {requiredHeader, requiredParam} from './utils'
 
-const discordHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
+const discordHandlers: Array<
+  RestHandler<MockedRequest<DefaultRequestMultipartBody>>
+> = [
   rest.post('https://discord.com/api/oauth2/token', async (req, res, ctx) => {
     if (typeof req.body !== 'string') {
       throw new Error('request body must be a string of URLSearchParams')

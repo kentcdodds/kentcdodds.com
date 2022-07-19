@@ -1,7 +1,9 @@
-import type {DefaultRequestBody, MockedRequest, RestHandler} from 'msw'
+import type {DefaultRequestMultipartBody, MockedRequest, RestHandler} from 'msw'
 import {rest} from 'msw'
 
-const oembedHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
+const oembedHandlers: Array<
+  RestHandler<MockedRequest<DefaultRequestMultipartBody>>
+> = [
   rest.get('https://oembed.com/providers.json', async (req, res, ctx) => {
     return res(
       ctx.json([

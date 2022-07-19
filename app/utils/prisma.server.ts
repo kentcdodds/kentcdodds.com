@@ -67,7 +67,7 @@ function getClient(connectionUrl: URL, type: 'write' | 'read'): PrismaClient {
       },
     },
   })
-  client.$on('query', e => {
+  client.$on('query', async e => {
     if (e.duration < logThreshold) return
 
     const color =

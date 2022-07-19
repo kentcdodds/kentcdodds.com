@@ -129,7 +129,7 @@ function AboutIndex() {
               />
             }
           />
-          <p className="text-xl text-blueGray-500">{`Get to know me in this full introduction video (8:05)`}</p>
+          <p className="text-xl text-slate-500">{`Get to know me in this full introduction video (8:05)`}</p>
           <a
             className="underlined"
             target="_blank"

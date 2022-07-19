@@ -328,7 +328,7 @@ function ArticleFooter({
 
   return (
     <Grid>
-      <div className="col-span-full mb-12 flex flex-col flex-wrap justify-between gap-2 border-b border-gray-600 pb-12 text-lg font-medium text-blueGray-500 lg:col-span-8 lg:col-start-3 lg:flex-row lg:pb-6">
+      <div className="col-span-full mb-12 flex flex-col flex-wrap justify-between gap-2 border-b border-gray-600 pb-12 text-lg font-medium text-slate-500 lg:col-span-8 lg:col-start-3 lg:flex-row lg:pb-6">
         <div className="flex space-x-5">
           <a
             className={clsx(

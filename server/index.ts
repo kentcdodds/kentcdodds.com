@@ -7,7 +7,7 @@ import morgan from 'morgan'
 import * as Sentry from '@sentry/node'
 import {createRequestHandler} from '@remix-run/express'
 // eslint-disable-next-line import/no-extraneous-dependencies
-import {installGlobals} from '@remix-run/node/globals'
+import {installGlobals} from '@remix-run/node/dist/globals'
 import {
   createMetronomeGetLoadContext,
   registerMetronome,

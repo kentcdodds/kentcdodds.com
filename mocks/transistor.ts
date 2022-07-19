@@ -1,4 +1,4 @@
-import type {DefaultRequestBody, MockedRequest, RestHandler} from 'msw'
+import type {DefaultRequestMultipartBody, MockedRequest, RestHandler} from 'msw'
 import {rest} from 'msw'
 import type {
   TransistorEpisodesJson,
@@ -59,7 +59,7 @@ const episodes: Array<TransistorEpisodeData> = Array.from(
 )
 
 const transistorHandlers: Array<
-  RestHandler<MockedRequest<DefaultRequestBody>>
+  RestHandler<MockedRequest<DefaultRequestMultipartBody>>
 > = [
   rest.get(
     'https://api.transistor.fm/v1/episodes/authorize_upload',

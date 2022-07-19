@@ -109,7 +109,7 @@ function ProfileCard({person}: {person: Person}) {
       </div>
 
       <div className="flex-auto">
-        <div className="mb-4 text-xl font-medium lowercase text-blueGray-500">
+        <div className="mb-4 text-xl font-medium lowercase text-slate-500">
           {person.role}
         </div>
         <H3 className="mb-6">{person.name}</H3>

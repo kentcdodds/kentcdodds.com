@@ -262,7 +262,7 @@ function PodcastHome() {
                   'hover:text-primary focus:text-primary focus:outline-none',
                   {
                     'text-primary': season.seasonNumber === seasonNumber,
-                    'text-blueGray-500': season.seasonNumber !== seasonNumber,
+                    'text-slate-500': season.seasonNumber !== seasonNumber,
                   },
                 )}
                 to={String(season.seasonNumber).padStart(2, '0')}

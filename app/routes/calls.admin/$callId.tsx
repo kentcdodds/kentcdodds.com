@@ -155,7 +155,16 @@ type LoaderData = {
 async function getCallInfo({callId}: {callId: string}) {
   const call = await prismaRead.call.findFirst({
     where: {id: callId},
-    include: {user: {select: {firstName: true, team: true, email: true}}},
+    select: {
+      base64: true,
+      description: true,
+      keywords: true,
+      title: true,
+      id: true,
+      user: {
+        select: {firstName: true, email: true, team: true, discordId: true},
+      },
+    },
   })
   if (!call) {
     throw new Error(`No call by the ID of ${callId}`)

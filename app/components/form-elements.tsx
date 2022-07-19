@@ -7,7 +7,7 @@ function Label({className, ...labelProps}: JSX.IntrinsicElements['label']) {
     <label
       {...labelProps}
       className={clsx(
-        'inline-block text-lg text-gray-500 dark:text-blueGray-500',
+        'inline-block text-lg text-gray-500 dark:text-slate-500',
         className,
       )}
     />
@@ -23,7 +23,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(function Input(
   ref,
 ) {
   const className = clsx(
-    'placeholder-gray-500 dark:disabled:text-blueGray-500 focus-ring px-11 py-8 w-full text-black disabled:text-gray-400 dark:text-white text-lg font-medium bg-gray-100 dark:bg-gray-800 rounded-lg',
+    'placeholder-gray-500 dark:disabled:text-slate-500 focus-ring px-11 py-8 w-full text-black disabled:text-gray-400 dark:text-white text-lg font-medium bg-gray-100 dark:bg-gray-800 rounded-lg',
     props.className,
   )
 

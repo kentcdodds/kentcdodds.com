@@ -198,7 +198,7 @@ function Login() {
                 ) : data.email ? (
                   <p
                     id="success-message"
-                    className="text-lg text-gray-500 dark:text-blueGray-500"
+                    className="text-lg text-gray-500 dark:text-slate-500"
                   >
                     <span role="img" aria-label="sparkles">
                       ✨

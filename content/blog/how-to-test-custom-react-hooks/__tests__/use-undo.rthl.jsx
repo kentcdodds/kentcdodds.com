@@ -1,5 +1,5 @@
 // TODO use `@testing-library/react` instead
-import {renderHook, act} from '@testing-library/react-hooks'
+import {renderHook, act} from '@testing-library/react'
 import useUndo from '../use-undo'
 
 test('allows you to undo and redo', () => {

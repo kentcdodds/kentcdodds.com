@@ -63,7 +63,7 @@
   }
 
   .text-secondary {
-    @apply text-gray-500 dark:text-blueGray-500;
+    @apply dark:text-slate-500 text-gray-500;
   }
 
   .text-inverse {

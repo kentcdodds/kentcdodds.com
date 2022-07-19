@@ -12,17 +12,18 @@ const clientStorage = createCookieSessionStorage({
     secrets: [getRequiredServerEnvVar('SESSION_SECRET')],
     sameSite: 'lax',
     path: '/',
-    // no client ID for you on my 100th birthday! 😂
-    expires: new Date('2088-10-18'),
     httpOnly: true,
   },
 })
 
 async function getClientSession(request: Request) {
   const session = await clientStorage.getSession(request.headers.get('Cookie'))
-  const initialValue = await clientStorage.commitSession(session)
+
+  // no client ID for you on my 100th birthday! 😂
+  const expires = new Date('2088-10-18')
+  const initialValue = await clientStorage.commitSession(session, {expires})
   async function commit() {
-    const currentValue = await clientStorage.commitSession(session)
+    const currentValue = await clientStorage.commitSession(session, {expires})
     return currentValue === initialValue ? null : currentValue
   }
 

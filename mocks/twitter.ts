@@ -1,4 +1,4 @@
-import type {DefaultRequestBody, MockedRequest, RestHandler} from 'msw'
+import type {DefaultRequestMultipartBody, MockedRequest, RestHandler} from 'msw'
 import {rest} from 'msw'
 import tweets from './data/tweets.json'
 import siteMetadata from './data/site-metadata.json'
@@ -22,7 +22,9 @@ function getSiteMetadata(tweetUrlId: string) {
   return metadata
 }
 
-const twitterHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
+const twitterHandlers: Array<
+  RestHandler<MockedRequest<DefaultRequestMultipartBody>>
+> = [
   rest.get(
     'https://api.twitter.com/2/tweets/:tweetId',
     async (req, res, ctx) => {

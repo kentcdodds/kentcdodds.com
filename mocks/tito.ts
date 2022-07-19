@@ -1,7 +1,9 @@
-import type {DefaultRequestBody, MockedRequest, RestHandler} from 'msw'
+import type {DefaultRequestMultipartBody, MockedRequest, RestHandler} from 'msw'
 import {rest} from 'msw'
 
-const tiToHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
+const tiToHandlers: Array<
+  RestHandler<MockedRequest<DefaultRequestMultipartBody>>
+> = [
   rest.get(
     'https://api.tito.io/v3/kent-c-dodds/events',
     async (req, res, ctx) => {

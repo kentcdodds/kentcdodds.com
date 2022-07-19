@@ -1,6 +1,6 @@
 require('dotenv').config()
 // eslint-disable-next-line import/no-extraneous-dependencies
-require('@remix-run/node/globals').installGlobals()
+require('@remix-run/node/dist/globals').installGlobals()
 require('esbuild-register/dist/node').register()
 const fs = require('fs')
 const path = require('path')

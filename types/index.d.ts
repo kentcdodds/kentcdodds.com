@@ -1,5 +1,5 @@
 /// <reference types="@remix-run/dev" />
-/// <reference types="@remix-run/node/globals" />
+/// <reference types="@remix-run/node/dist/globals" />
 
 import type calculateReadingTime from 'reading-time'
 import type {User, Call, Session, Team, Role} from '@prisma/client'

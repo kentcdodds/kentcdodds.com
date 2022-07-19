@@ -84,7 +84,12 @@ async function getLoaderData({request}: {request: Request}) {
     orderBy: {[orderField]: order},
     take: limit,
   })
-  return {users}
+  return {
+    users: users.map(user => ({
+      ...user,
+      createdAt: formatDate(user.createdAt),
+    })),
+  }
 }
 
 export const loader: LoaderFunction = async ({request}) => {
@@ -151,9 +156,6 @@ function Cell({
 }) {
   const [isEditing, setIsEditing] = React.useState(false)
   const dc = useDoubleCheck()
-  if (propertyName === 'createdAt') {
-    return formatDate(value)
-  }
 
   return isEditing ? (
     propertyName === 'id' ? (
@@ -260,6 +262,7 @@ export default function MeAdmin() {
   }, [ordering, searchParams, setSearchParams])
 
   const {getTableProps, getTableBodyProps, headerGroups, rows, prepareRow} =
+    // @ts-expect-error 🤷‍♂️ no idea why defaultColumn isn't work ing here...
     useTable({columns: userColumns, data: data.users, defaultColumn})
 
   return (
@@ -292,7 +295,7 @@ export default function MeAdmin() {
                     searchInputRef.current?.focus()
                   }}
                   className={clsx(
-                    'absolute left-6 top-0 flex h-full items-center justify-center border-none bg-transparent p-0 text-blueGray-500',
+                    'absolute left-6 top-0 flex h-full items-center justify-center border-none bg-transparent p-0 text-slate-500',
                     {
                       'cursor-pointer': query !== '',
                       'cursor-default': query === '',
@@ -308,9 +311,9 @@ export default function MeAdmin() {
                   onChange={event => setQuery(event.currentTarget.value)}
                   name="q"
                   placeholder="Filter users"
-                  className="text-primary bg-primary border-secondary focus:bg-secondary focus:outline-none w-full rounded-full border py-6 pl-14 pr-6 text-lg font-medium hover:border-team-current focus:border-team-current md:pr-24"
+                  className="text-primary bg-primary border-secondary focus:bg-secondary w-full rounded-full border py-6 pl-14 pr-6 text-lg font-medium hover:border-team-current focus:border-team-current focus:outline-none md:pr-24"
                 />
-                <div className="absolute right-2 top-0 flex h-full w-14 items-center justify-between text-lg font-medium text-blueGray-500">
+                <div className="absolute right-2 top-0 flex h-full w-14 items-center justify-between text-lg font-medium text-slate-500">
                   <span title="Total results shown">{rows.length}</span>
                 </div>
               </div>
@@ -333,7 +336,7 @@ export default function MeAdmin() {
       <div className="col-span-full overflow-x-scroll">
         <table
           {...getTableProps({
-            className: 'border-blueGray-500 border-4',
+            className: 'border-slate-500 border-4',
           })}
         >
           <thead>
@@ -395,7 +398,7 @@ export default function MeAdmin() {
                       <td
                         {...cell.getCellProps({
                           className:
-                            'p-3 bg-opacity-30 bg-gray-800 border-2 border-blueGray-500',
+                            'p-3 bg-opacity-30 bg-gray-800 border-2 border-slate-500',
                         })}
                       >
                         {cell.render('Cell')}

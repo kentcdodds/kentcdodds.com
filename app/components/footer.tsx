@@ -204,7 +204,7 @@ function Footer({image}: {image: ImageBuilder}) {
             {subscribedToNewsletter ? featuredImg : <NewsletterSection />}
           </div>
 
-          <div className="col-span-full mt-24 text-lg text-gray-500 dark:text-blueGray-500 md:mt-44">
+          <div className="col-span-full mt-24 text-lg text-gray-500 dark:text-slate-500 md:mt-44">
             <span>All rights reserved</span>{' '}
             <span className="block md:inline">{`© Kent C. Dodds ${new Date().getFullYear()}`}</span>
           </div>

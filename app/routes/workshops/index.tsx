@@ -142,7 +142,9 @@ function WorkshopsHome() {
               tag={tag}
               selected={queryValue.includes(tag)}
               onClick={() => toggleTag(tag)}
-              disabled={!visibleTags.has(tag) && !queryValue.includes(tag)}
+              disabled={Boolean(
+                !visibleTags.has(tag) && !queryValue.includes(tag),
+              )}
             />
           ))}
         </div>

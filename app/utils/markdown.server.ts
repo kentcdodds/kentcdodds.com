@@ -32,6 +32,7 @@ async function markdownToHtmlDocument(markdownString: string) {
     .use(rehypeStringify)
     .process(markdownString)
 
+  console.log(result)
   return result.value.toString()
 }
 
@@ -50,3 +51,20 @@ export {
   markdownToHtmlDocument,
   stripHtml,
 }
+
+// async function go() {
+//   console.log(
+//     await markdownToHtml(
+//       `
+// # helo
+
+// this is stuff
+
+// <div>
+//   <p>this is stuff</p>
+// </div>
+//   `.trim(),
+//     ),
+//   )
+// }
+// go()

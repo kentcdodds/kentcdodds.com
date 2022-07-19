@@ -3,7 +3,7 @@
   --color-white: #fff;
   --color-blue-100: #e8f2ff;
   --color-blue-500: #4b96ff;
-  --color-blueGray-500: #a9adc1;
+  --color-slate-500: #a9adc1;
   --color-gray-100: #f7f7f7;
   --color-gray-200: #e6e9ee;
   --color-gray-300: #dde0e4;
@@ -48,7 +48,7 @@
   --bg-alt: var(--color-gray-700);
   --border-secondary: var(--color-gray-600);
   --text-primary: var(--color-white);
-  --text-secondary: var(--color-blueGray-500);
+  --text-secondary: var(--color-slate-500);
 }
 
 .set-color-team-current-yellow {

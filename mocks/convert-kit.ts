@@ -1,4 +1,4 @@
-import type {DefaultRequestBody, MockedRequest, RestHandler} from 'msw'
+import type {DefaultRequestMultipartBody, MockedRequest, RestHandler} from 'msw'
 import {rest} from 'msw'
 
 type RequestBody = {
@@ -8,7 +8,7 @@ type RequestBody = {
 }
 
 const convertKitHandlers: Array<
-  RestHandler<MockedRequest<DefaultRequestBody>>
+  RestHandler<MockedRequest<DefaultRequestMultipartBody>>
 > = [
   rest.get('https://api.convertkit.com/v3/subscribers', (req, res, ctx) => {
     return res(

@@ -21,7 +21,7 @@ function Tab({isSelected, children}: TabProps & {isSelected?: boolean}) {
         'hover:text-primary inline-flex w-full items-center border-none p-0 transition focus:bg-transparent',
         {
           'text-primary': isSelected,
-          'text-gray-400 dark:text-blueGray-500': !isSelected,
+          'text-gray-400 dark:text-slate-500': !isSelected,
         },
       )}
     >

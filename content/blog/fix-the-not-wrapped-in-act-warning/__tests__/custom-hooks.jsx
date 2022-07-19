@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {renderHook, act} from '@testing-library/react-hooks'
+import {renderHook, act} from '@testing-library/react'
 
 function useCount() {
   const [count, setCount] = React.useState(0)

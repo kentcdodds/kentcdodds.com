@@ -43,7 +43,10 @@ async function fetchTransitor<JsonResponse>({
   }
   if (data) {
     config.body = JSON.stringify(data)
-    Object.assign(config.headers, {'Content-Type': 'application/json'})
+    config.headers = {
+      ...config.headers,
+      'Content-Type': 'application/json',
+    }
   }
   const res = await fetch(url.toString(), config)
   const json = await res.json()

@@ -88,7 +88,7 @@ function ArticleCard({
           </div>
         )}
 
-        <div className="mt-8 text-xl font-medium text-blueGray-500">
+        <div className="mt-8 text-xl font-medium text-slate-500">
           {formatDate(parseISO(date), 'PPP')} — {readTime?.text ?? 'quick read'}
         </div>
         <H3 as="div" className="mt-4">

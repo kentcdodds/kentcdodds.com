@@ -1,6 +1,6 @@
 import * as nodePath from 'path'
 import {promises as fs} from 'fs'
-import type {DefaultRequestBody, MockedRequest, RestHandler} from 'msw'
+import type {DefaultRequestMultipartBody, MockedRequest, RestHandler} from 'msw'
 import {rest} from 'msw'
 
 async function isDirectory(d: string) {
@@ -44,7 +44,9 @@ type GHContent = {
   encoding: 'base64'
 }
 
-const githubHandlers: Array<RestHandler<MockedRequest<DefaultRequestBody>>> = [
+const githubHandlers: Array<
+  RestHandler<MockedRequest<DefaultRequestMultipartBody>>
+> = [
   rest.get(
     `https://api.github.com/repos/:owner/:repo/contents/:path`,
     async (req, res, ctx) => {

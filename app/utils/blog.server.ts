@@ -172,12 +172,12 @@ async function getReaderCount(request: Request) {
     checkValue: (value: unknown) => typeof value === 'number',
     getFreshValue: async () => {
       // couldn't figure out how to do this in one query with out $queryRaw 🤷‍♂️
-      type CountResult = [{count: number}]
+      type CountResult = [{count: BigInt}]
       const [userIdCount, clientIdCount] = await Promise.all([
         prismaRead.$queryRaw`SELECT COUNT(DISTINCT "public"."PostRead"."userId") FROM "public"."PostRead" WHERE ("public"."PostRead"."userId") IS NOT NULL` as Promise<CountResult>,
         prismaRead.$queryRaw`SELECT COUNT(DISTINCT "public"."PostRead"."clientId") FROM "public"."PostRead" WHERE ("public"."PostRead"."clientId") IS NOT NULL` as Promise<CountResult>,
-      ]).catch(() => [[{count: 0}], [{count: 0}]])
-      return userIdCount[0].count + clientIdCount[0].count
+      ]).catch(() => [[{count: BigInt(0)}], [{count: BigInt(0)}]])
+      return Number(userIdCount[0].count) + Number(clientIdCount[0].count)
     },
   })
 }

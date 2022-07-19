@@ -150,7 +150,10 @@ function formatAbbreviatedNumber(num: number) {
     : 'a lot'
 }
 
-function formatDate(dateString: string) {
+function formatDate(dateString: string | Date) {
+  if (typeof dateString !== 'string') {
+    dateString = dateFns.format(dateString, 'yyyy-MM-dd')
+  }
   return dateFns.format(
     dateFns.add(dateFns.parseISO(dateString), {
       minutes: new Date().getTimezoneOffset(),

@@ -56,7 +56,7 @@ pre {
 
 /* I think this is a bug in the tailwind/typography thing */
 .dark .dark\:prose-dark thead {
-  color: var(--color-blueGray-500);
+  color: var(--color-slate-500);
 }
 
 .prose pre[data-line-numbers='true']:not([data-lang='sh']) {

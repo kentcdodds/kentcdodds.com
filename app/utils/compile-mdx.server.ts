@@ -159,7 +159,6 @@ const remarkPlugins: U.PluggableList = [
   remarkCodeBlocksShiki,
   optimizeCloudinaryImages,
   [
-    // @ts-expect-error 🤷‍♂️
     remarkEmbedder,
     {
       handleError: handleEmbedderError,
@@ -238,7 +237,7 @@ function arrayToObj<ItemType extends Record<string, unknown>>(
   for (const item of array) {
     const key = item[keyName]
     if (typeof key !== 'string') {
-      throw new Error(`${keyName} of item must be a string`)
+      throw new Error(`${String(keyName)} of item must be a string`)
     }
     const value = item[valueName]
     obj[key] = value

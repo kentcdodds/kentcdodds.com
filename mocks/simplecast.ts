@@ -1,4 +1,4 @@
-import type {DefaultRequestBody, MockedRequest, RestHandler} from 'msw'
+import type {DefaultRequestMultipartBody, MockedRequest, RestHandler} from 'msw'
 import {rest} from 'msw'
 import type {
   SimplecastCollectionResponse,
@@ -132,7 +132,7 @@ ${guest.links.length ? `* ${guest.links.join('\n* ')}` : ''}
 }
 
 const simplecastHandlers: Array<
-  RestHandler<MockedRequest<DefaultRequestBody>>
+  RestHandler<MockedRequest<DefaultRequestMultipartBody>>
 > = [
   rest.get(
     'https://api.simplecast.com/podcasts/:podcastId/seasons',

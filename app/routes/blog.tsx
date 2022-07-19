@@ -294,7 +294,7 @@ function BlogHome() {
   const posts = isSearching
     ? matchingPosts.slice(0, indexToShow)
     : matchingPosts
-        .filter(p => p.slug !== data.recommended?.slug)
+        .filter(p => p.slug !== data.recommended.slug)
         .slice(0, indexToShow)
 
   const hasMorePosts = isSearching
@@ -309,6 +309,8 @@ function BlogHome() {
       )
     : new Set(data.tags)
 
+  // this is a remix bug
+  // eslint-disable-next-line
   const recommendedPermalink = data.recommended
     ? `${requestInfo.origin}/blog/${data.recommended.slug}`
     : undefined
@@ -373,7 +375,7 @@ function BlogHome() {
                     ignoreInputKeyUp.current = false
                   }}
                   className={clsx(
-                    'absolute left-6 top-0 flex h-full items-center justify-center border-none bg-transparent p-0 text-blueGray-500',
+                    'absolute left-6 top-0 flex h-full items-center justify-center border-none bg-transparent p-0 text-slate-500',
                     {
                       'cursor-pointer': query !== '',
                       'cursor-default': query === '',
@@ -400,9 +402,9 @@ function BlogHome() {
                   }}
                   name="q"
                   placeholder={searchInputPlaceholder}
-                  className="text-primary bg-primary border-secondary focus:bg-secondary focus:outline-none w-full appearance-none rounded-full border py-6 pl-14 pr-6 text-lg font-medium hover:border-team-current focus:border-team-current md:pr-24"
+                  className="text-primary bg-primary border-secondary focus:bg-secondary w-full appearance-none rounded-full border py-6 pl-14 pr-6 text-lg font-medium hover:border-team-current focus:border-team-current focus:outline-none md:pr-24"
                 />
-                <div className="absolute right-6 top-0 hidden h-full w-14 items-center justify-between text-lg font-medium text-blueGray-500 md:flex">
+                <div className="absolute right-6 top-0 hidden h-full w-14 items-center justify-between text-lg font-medium text-slate-500 md:flex">
                   <MixedCheckbox
                     title={checkboxLabel}
                     aria-label={checkboxLabel}
@@ -495,7 +497,9 @@ function BlogHome() {
                     tag={tag}
                     selected={selected}
                     onClick={() => toggleTag(tag)}
-                    disabled={!visibleTags.has(tag) && !selected}
+                    disabled={
+                      Boolean(!visibleTags.has(tag)) ? !selected : false
+                    }
                   />
                 )
               })}
@@ -504,6 +508,8 @@ function BlogHome() {
         ) : null}
       </Grid>
 
+      {/* this is a remix bug */}
+      {/* eslint-disable-next-line */}
       {!isSearching && data.recommended ? (
         <div className="mb-10">
           <FeaturedSection

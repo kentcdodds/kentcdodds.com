@@ -85,7 +85,7 @@ function FeaturedSection({
                   {title}
                 </H2>
 
-                <div className="mt-6 text-xl font-medium text-blueGray-500">
+                <div className="mt-6 text-xl font-medium text-slate-500">
                   {subTitle}
                 </div>
               </div>
