@@ -36,6 +36,7 @@
   --border-secondary: var(--color-gray-200);
   --text-primary: var(--color-black);
   --text-secondary: var(--color-gray-500);
+  color-scheme: light;
 }
 
 .dark {
