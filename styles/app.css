@@ -49,6 +49,7 @@
   --border-secondary: var(--color-gray-600);
   --text-primary: var(--color-white);
   --text-secondary: var(--color-slate-500);
+  color-scheme: dark;
 }
 
 .set-color-team-current-yellow {
