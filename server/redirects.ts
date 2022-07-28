@@ -101,7 +101,7 @@ function getRedirectsMiddleware({
             params[key.name] = paramValue
           }
         }
-        const toUrl = redirect.toUrl
+        const toUrl = new URL(redirect.toUrl)
 
         toUrl.protocol = protocol
         if (toUrl.host === 'same_host') toUrl.host = reqUrl.host
