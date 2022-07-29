@@ -74,11 +74,11 @@ Let's add a `build` script to our `package.json`:
     "build": "remix build"
   },
   "dependencies": {
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@remix-run/dev": "^1.0.4"
+    "@remix-run/dev": "^1.6.5"
   }
 }
 ```
@@ -196,7 +196,7 @@ element Remix will render:
 ```tsx filename=app/root.jsx
 import * as React from 'react'
 
-function App() {
+export default function App() {
   const [count, setCount] = React.useState(0)
   return (
     <html>
@@ -210,8 +210,6 @@ function App() {
     </html>
   )
 }
-
-export default App
 ```
 
 It's neat that we get to render the `<html>` element right? Yeah, that's cooler
@@ -220,10 +218,10 @@ than you think it is I promise you.
 Ok, next, let's fill in the `entry.client.jsx`:
 
 ```tsx filename=app/entry.client.jsx
-import ReactDOM from 'react-dom'
-import {RemixBrowser} from 'remix'
+import {RemixBrowser} from '@remix-run/react'
+import {hydrateRoot} from 'react-dom/client'
 
-ReactDOM.hydrate(<RemixBrowser />, document)
+hydrateRoot(document, <RemixBrowser />)
 ```
 
 What's that? We're... HYDRATING the `document`?! How neat is that?!
@@ -232,9 +230,9 @@ And finally, let's fill in the `entry.server.jsx`:
 
 ```tsx filename=app/entry.server.jsx
 import ReactDOMServer from 'react-dom/server'
-import {RemixServer} from 'remix'
+import {RemixServer} from '@remix-run/react'
 
-function handleRequest(
+export default function handleRequest(
   request,
   responseStatusCode,
   responseHeaders,
@@ -244,16 +242,13 @@ function handleRequest(
     <RemixServer context={remixContext} url={request.url} />,
   )
 
+  responseHeaders.set('Content-Type', 'text/html')
+
   return new Response(`<!DOCTYPE html>${markup}`, {
     status: responseStatusCode,
-    headers: {
-      ...Object.fromEntries(responseHeaders),
-      'Content-Type': 'text/html',
-    },
+    headers: responseHeaders,
   })
 }
-
-export default handleRequest
 ```
 
 This one's pretty cool too. So we export a default function that accepts
@@ -274,23 +269,26 @@ Alright, let's try running the build again!
 npm run build
 
 Building Remix app in production mode...
-The path "remix" is imported in app/entry.server.jsx but remix is not listed in your package.json dependencies. Did you forget to install it?
+The path "@remix-run/react" is imported in app/entry.server.jsx but "@remix-run/react" was not found in your node_modules. Did you forget to install it?
 
- > app/entry.client.jsx:2:27: error: Could not resolve "remix" (mark it as external to exclude it from the bundle)
-    2 │ import {RemixBrowser} from 'remix'
-      ╵                            ~~~~~~~
+✘ [ERROR] Could not resolve "@remix-run/react"
+
+    app/entry.client.jsx:1:29:
+      1 │ import { RemixBrowser } from "@remix-run/react";
+        ╵                              ~~~~~~~~~~~~~~~~~~
+
+  You can mark the path "@remix-run/react" as external to exclude it from the bundle, which will remove this error.
 
 
 Build failed with 1 error:
-app/entry.client.jsx:2:27: error: Could not resolve "remix" (mark it as external to exclude it from the bundle)
-Built in 258ms
+app/entry.client.jsx:1:29: ERROR: Could not resolve "@remix-run/react"
 ```
 
-Oh, right, we're using the `remix` package for the `RemixBrowser` and
+Oh, right, we're using the `@remix-run/react` package for the `RemixBrowser` and
 `RemixServer` components. Let's install that:
 
 ```sh
-npm install remix
+npm install @remix-run/react
 ```
 
 Now let's try the build again:
@@ -299,33 +297,17 @@ Now let's try the build again:
 npm run build
 
 Building Remix app in production mode...
-
- > node_modules/remix/browser/index.js:11:14: error: Could not resolve "./client"
-    11 │ export * from './client';
-       ╵               ~~~~~~~~~~
-
-  > node_modules/remix/browser/index.js:12:14: error: Could not resolve "./server"
-    12 │ export * from './server';
-       ╵               ~~~~~~~~~~
-
-  > node_modules/remix/browser/index.js:13:14: error: Could not resolve "./platform"
-    13 │ export * from './platform';
-       ╵               ~~~~~~~~~~~~
-
-
-Build failed with 3 errors:
-node_modules/remix/browser/index.js:11:14: error: Could not resolve "./client"
-node_modules/remix/browser/index.js:12:14: error: Could not resolve "./server"
-node_modules/remix/browser/index.js:13:14: error: Could not resolve "./platform"
-Built in 274ms
+Built in 121ms
 ```
 
-Ah! What's going on here? Well, the `remix` package itself is actually rather
-simple. All it does is act as a sort of "proxy" for the other packages we're
-going to be using. There's a `@remix-run/react` for the react-specific stuff.
-And then there are `@remix-run/{adapter}` packages that we can use for
-server-side platform-specific stuff. Currently, here are all the adapters we can
-use currently:
+Sweet! It worked 🎉 So now we actually have something _real_ that'll run and
+build. Onto the next step!
+
+## 5. Running our Remix server
+
+There are `@remix-run/{adapter}` packages that we can use for server-side
+platform-specific stuff. Currently, here are all the adapters we can use
+currently:
 
 Deploy anywhere you can ship node and/or a docker container:
 
@@ -335,17 +317,14 @@ Deploy anywhere you can ship node and/or a docker container:
 
 Deploy to specific platforms (serverless etc.):
 
+- `@remix-run/deno`
 - `@remix-run/architect`
 - `@remix-run/vercel`
 - `@remix-run/netlify`
 - `@remix-run/cloudflare-workers`
 
-More adapters are coming:
-
-- [deno](https://deno.land/)
-- [Service workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers)
-- Maybe even
-  [ducktape.org](https://twitter.com/mjackson/status/1456319239170580487)!!
+And you can even build your own adapter. Most adapters are just a couple hundred
+lines of code (and some aren't even that much).
 
 The primary thing these adapters do is convert the Request/Response from the
 platform-specific objects to the Web-standard Request/Response (or a polyfilled
@@ -358,83 +337,29 @@ if you want to deploy anywhere else you totally can and you just need to swap
 out the adapter you're using in the `package.json` and so long as your own code
 and other dependencies are supported by the platform, you should be good to go.
 
-So let's install the packages we're going to need.
+Let's install `@remix-run/serve`.
 
 ```sh
-npm install @remix-run/react @remix-run/serve
+npm install @remix-run/serve
 ```
-
-Next we need to set up the `remix` package to act as a proxy for us, so let's
-run:
-
-```sh
-npx remix setup node
-
-Successfully setup Remix for node.
-```
-
-Now let's run the build again:
-
-```sh
-npm run build
-
-Building Remix app in production mode...
-Built in 255ms
-```
-
-Sweet! It worked 🎉
-
-Now, I don't know about you, but as nice as it is that `remix` is going to be
-our "proxy" package, I don't want to have to run that `setup` script any time I
-install dependencies. So let's add a `postinstall` script to do that
-automatically for us:
-
-```json lines=3,7-8,11 filename=package.json
-{
-  "scripts": {
-    "postinstall": "remix setup node",
-    "build": "remix build"
-  },
-  "dependencies": {
-    "@remix-run/react": "^1.0.4",
-    "@remix-run/serve": "^1.0.4",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "remix": "^1.0.4"
-  },
-  "devDependencies": {
-    "@remix-run/dev": "^1.0.4"
-  }
-}
-```
-
-I also highlighted the lines above that are the other dependencies we've added
-to our project.
-
-Sweet. So now we actually have something _real_ that'll run and build. Onto the
-next step!
-
-## 5. Running our Remix server
 
 Alright, so we want to "develop" our app right? So let's add `dev` script to our
 `package.json`:
 
-```json lines=5 filename=package.json
+```json lines=4 filename=package.json
 {
   "scripts": {
-    "postinstall": "remix setup node",
     "build": "remix build",
     "dev": "remix dev"
   },
   "dependencies": {
-    "@remix-run/react": "^1.0.4",
-    "@remix-run/serve": "^1.0.4",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "remix": "^1.0.4"
+    "@remix-run/react": "^1.6.5",
+    "@remix-run/serve": "^1.6.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@remix-run/dev": "^1.0.4"
+    "@remix-run/dev": "^1.6.5"
   }
 }
 ```
@@ -443,8 +368,8 @@ And now if we run `npm run dev` we'll get this output:
 
 ```
 Watching Remix app in development mode...
-Remix App Server started at http://localhost:3000
-💿 Built in 314ms
+💿 Built in 156ms
+Remix App Server started at http://localhost:3000 (http://192.168.115.103:3000)
 ```
 
 That output shows that `remix dev` does two things:
@@ -452,7 +377,7 @@ That output shows that `remix dev` does two things:
 1. `Remix App Server started at http://localhost:3000`: This comes from
    `remix-serve` which is running a simple express server based on what's in the
    `build` directory.
-2. `💿 Built in 314ms`: This comes from `remix build` which is running in watch
+2. `💿 Built in 156ms`: This comes from `remix build` which is running in watch
    mode and development mode.
 
 Whenever we make a change, the output in `build` is updated and the express
@@ -460,12 +385,13 @@ server picks up those changes.
 
 One other thing `remix dev` does is start a websocket with the browser to
 support live reload. Currently there's no support for "Hot Module Replacement"
-(HMR) and I'm actually totally cool with that. I never trusted HMR in apps
-anyway (though it's awesome in tools like storybook) and always did a full-page
-refresh even with HMR setup. Additionally, since a lot of the code you write
-with remix is server-side, you typically want a full-page refresh anyway to get
-all the server-side code to run again. All that said, HMR will come in the
-future.
+(HMR) and I know that for a lot of people that's a ship stopper, but I encourage
+you to stick around. Eventually HMR will be supported. Personally, I'm actually
+totally cool with that. I never trusted HMR in apps anyway (though it's awesome
+in tools like storybook) and always did a full-page refresh even with HMR setup.
+Additionally, since a lot of the code you write with remix is server-side, you
+typically want a full-page refresh anyway to get all the server-side code to run
+again. Again, HMR will come in the future.
 
 Ok, great, let's get this opened up! Navigate to
 [localhost:3000](http://localhost:3000) and poof:
@@ -488,9 +414,9 @@ render that script tag:
 
 ```tsx lines=2,14 filename=app/root.jsx
 import * as React from 'react'
-import {Scripts} from 'remix'
+import {Scripts} from '@remix-run/react'
 
-function App() {
+export default function App() {
   const [count, setCount] = React.useState(0)
   return (
     <html>
@@ -505,8 +431,6 @@ function App() {
     </html>
   )
 }
-
-export default App
 ```
 
 Also that missing favicon thing is annoying so I'll add this cool CD as a
@@ -526,7 +450,7 @@ Neato, let's try that now:
 
 ![Network tab with scripts getting loaded](https://res.cloudinary.com/kentcdodds-com/image/upload/v1620153551/kentcdodds.com/blog/super-simple-start-to-remix/network-tab-with-scripts_tdibpc.png)
 
-And if we "view source" on the document here's what we get:
+And if we "view source" on the document here's what we get (formatted):
 
 ```html
 <!DOCTYPE html>
@@ -537,26 +461,12 @@ And if we "view source" on the document here's what we get:
   <body>
     <p>This is a remix app. Hooray!</p>
     <button>0</button>
-    <link rel="modulepreload" href="/build/_shared/chunk-DLVV55I2.js" />
-    <link rel="modulepreload" href="/build/root-2UAEY3HA.js" />
+    <link rel="modulepreload" href="/build/_shared/chunk-PYN2BJX3.js" />
+    <link rel="modulepreload" href="/build/root-FYPD7R2X.js" />
     <script>
       window.__remixContext = {
-        matches: [
-          {
-            params: {},
-            pathname: '/',
-            route: {
-              id: 'root',
-              path: '',
-              module: '/build/root-2UAEY3HA.js',
-              hasAction: false,
-              hasLoader: false,
-              hasCatchBoundary: false,
-              hasErrorBoundary: false,
-            },
-          },
-        ],
-        componentDidCatchEmulator: {
+        actionData: undefined,
+        appState: {
           trackBoundaries: true,
           trackCatchBoundaries: true,
           catchBoundaryRouteId: null,
@@ -565,16 +475,34 @@ And if we "view source" on the document here's what we get:
           error: undefined,
           catch: undefined,
         },
-        routeData: {root: null},
-        actionData: undefined,
+        matches: [
+          {
+            params: {},
+            pathname: '/',
+            route: {
+              id: 'root',
+              parentId: undefined,
+              path: '',
+              index: undefined,
+              caseSensitive: undefined,
+              module: '/build/root-FYPD7R2X.js',
+              imports: undefined,
+              hasAction: false,
+              hasLoader: false,
+              hasCatchBoundary: false,
+              hasErrorBoundary: false,
+            },
+          },
+        ],
+        routeData: {},
       }
     </script>
-    <script src="/build/manifest-14A81006.js"></script>
+    <script src="/build/manifest-142295AD.js"></script>
     <script type="module">
-      import * as route0 from '/build/root-2UAEY3HA.js'
+      import * as route0 from '/build/root-FYPD7R2X.js'
       window.__remixRouteModules = {root: route0}
     </script>
-    <script src="/build/entry.client-7F2IUO4V.js" type="module"></script>
+    <script src="/build/entry.client-UK7WD5HF.js" type="module"></script>
   </body>
 </html>
 ```
@@ -599,23 +527,21 @@ Built in 281ms
 
 Now, let's add a `start` script to run `remix-serve` for our `build` directory:
 
-```json lines=6 filename=package.json
+```json lines=5 filename=package.json
 {
   "scripts": {
-    "postinstall": "remix setup node",
     "build": "remix build",
     "dev": "remix dev",
     "start": "remix-serve ./build"
   },
   "dependencies": {
-    "@remix-run/react": "^1.0.4",
-    "@remix-run/serve": "^1.0.4",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "remix": "^1.0.4"
+    "@remix-run/react": "^1.6.5",
+    "@remix-run/serve": "^1.6.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@remix-run/dev": "^1.0.4"
+    "@remix-run/dev": "^1.6.5"
   }
 }
 ```
@@ -627,21 +553,19 @@ work as expected, so let's add `cross-env` and set the `NODE_ENV` with that:
 ```json lines=6,11 filename=package.json
 {
   "scripts": {
-    "postinstall": "remix setup node",
     "build": "remix build",
     "dev": "remix dev",
     "start": "cross-env NODE_ENV=production remix-serve ./build"
   },
   "dependencies": {
-    "@remix-run/react": "^1.0.4",
-    "@remix-run/serve": "^1.0.4",
+    "@remix-run/react": "^1.6.5",
+    "@remix-run/serve": "^1.6.5",
     "cross-env": "^7.0.3",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "remix": "^1.0.4"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@remix-run/dev": "^1.0.4"
+    "@remix-run/dev": "^1.6.5"
   }
 }
 ```
@@ -651,10 +575,7 @@ Cool, so let's get it started:
 ```
 npm start
 
-> @ start ~/Desktop/super-simple-start-to-remix
-> cross-env NODE_ENV=production remix-serve build
-
-Remix App Server started at http://localhost:3000
+Remix App Server started at http://localhost:3000 (http://192.168.115.103:3000)
 ```
 
 And if we open that up, we'll see it's working perfectly:
