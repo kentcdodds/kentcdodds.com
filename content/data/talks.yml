@@ -53,9 +53,13 @@
     This talk is yet to be announced
 
 - title: Stream Away the Wait
+  resources:
+    - '[slides / demo](-
+      https://github.com/kentcdodds/stream-away-the-wait-talk)'
   deliveries:
     - event: '[ReactNext](https://www.react-next.com/)'
       date: 2022-06-28
+      recording: 'https://www.youtube.com/watch?v=gb2DGJB1ZsM&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf'
   tags:
     - keynote
   description: >-
