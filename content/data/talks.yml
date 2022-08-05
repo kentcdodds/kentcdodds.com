@@ -54,8 +54,7 @@
 
 - title: Stream Away the Wait
   resources:
-    - '[slides / demo](-
-      https://github.com/kentcdodds/stream-away-the-wait-talk)'
+    - '[slides / demo](https://github.com/kentcdodds/stream-away-the-wait-talk)'
   deliveries:
     - event: '[ReactNext](https://www.react-next.com/)'
       date: 2022-06-28
