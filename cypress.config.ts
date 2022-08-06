@@ -6,6 +6,7 @@ export default defineConfig({
       const isDev = config.watchForFileChanges
       const port = process.env.PORT ?? (isDev ? '3000' : '8811')
       const configOverrides: Partial<Cypress.PluginConfigOptions> = {
+        projectId: '4rxk45',
         baseUrl: `http://localhost:${port}`,
         viewportWidth: 1030,
         viewportHeight: 800,
