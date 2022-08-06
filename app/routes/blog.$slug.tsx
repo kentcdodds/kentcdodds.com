@@ -1,9 +1,5 @@
 import * as React from 'react'
-import type {
-  HeadersFunction,
-  LoaderFunction,
-  ActionFunction,
-} from '@remix-run/node'
+import type {HeadersFunction, ActionFunction, LoaderArgs} from '@remix-run/node'
 import {json} from '@remix-run/node'
 import {
   Link,
@@ -12,7 +8,7 @@ import {
   useLoaderData,
   useParams,
 } from '@remix-run/react'
-import type {KCDHandle, MdxListItem, MdxPage, Team, Workshop} from '~/types'
+import type {KCDHandle, MdxListItem, Team} from '~/types'
 import {useRootData} from '~/utils/use-root-data'
 import {getImageBuilder, getImgProps, images} from '~/images'
 import {
@@ -48,7 +44,6 @@ import {getRankingLeader} from '~/utils/blog'
 import {externalLinks} from '../external-links'
 import {teamEmoji, useTeam} from '~/utils/team-provider'
 import {getWorkshops} from '~/utils/workshops.server'
-import type {WorkshopEvent} from '~/utils/workshop-tickets.server'
 import {getScheduledEvents} from '~/utils/workshop-tickets.server'
 import {WorkshopCard} from '~/components/workshop-card'
 import {Spacer} from '~/components/spacer'
@@ -149,18 +144,11 @@ type CatchData = {
   totalReads: string
   leadingTeam: Team | null
 }
-type LoaderData = CatchData & {
-  page: MdxPage
-  workshops: Array<Workshop>
-  workshopEvents: Array<WorkshopEvent>
-}
 
-export const loader: LoaderFunction = async ({request, params}) => {
+export async function loader({request, params}: LoaderArgs) {
   if (!params.slug) {
     throw new Error('params.slug is not defined')
   }
-  // the loader won't handle this anyway, we've got this handled in other-routes.server.ts
-  if (params.slug === 'rss.xml') return json({})
 
   const timings: Timings = {}
   const page = await getMdxPage(
@@ -220,7 +208,7 @@ export const loader: LoaderFunction = async ({request, params}) => {
     )
   })
 
-  const data: LoaderData = {
+  const data = {
     page,
     workshops: relevantWorkshops,
     workshopEvents,
@@ -332,7 +320,7 @@ function ArticleFooter({
         <div className="flex space-x-5">
           <a
             className={clsx(
-              'underlined focus:outline-none hover:text-black focus:text-black dark:hover:text-white dark:focus:text-white',
+              'underlined hover:text-black focus:text-black focus:outline-none dark:hover:text-white dark:focus:text-white',
               {hidden: isDraft},
             )}
             target="_blank"
@@ -349,7 +337,7 @@ function ArticleFooter({
         <div className="flex">
           <a
             className={clsx(
-              'underlined focus:outline-none hover:text-black focus:text-black dark:hover:text-white dark:focus:text-white',
+              'underlined hover:text-black focus:text-black focus:outline-none dark:hover:text-white dark:focus:text-white',
               {hidden: isDraft},
             )}
             target="_blank"
@@ -364,7 +352,7 @@ function ArticleFooter({
             •
           </span>
           <a
-            className="underlined focus:outline-none hover:text-black focus:text-black dark:hover:text-white dark:focus:text-white"
+            className="underlined hover:text-black focus:text-black focus:outline-none dark:hover:text-white dark:focus:text-white"
             target="_blank"
             rel="noreferrer noopener"
             href={editLink}
@@ -399,7 +387,7 @@ and practices. He lives with his wife and four kids in Utah.
 }
 
 export default function MdxScreen() {
-  const data = useLoaderData<LoaderData>()
+  const data = useLoaderData<typeof loader>()
   const {requestInfo} = useRootData()
 
   const {code, frontmatter} = data.page
@@ -527,7 +515,7 @@ export default function MdxScreen() {
                   </ul>
                   <a
                     href={externalLinks.translationContributions}
-                    className="text-secondary underlined focus:outline-none my-3 mb-6 ml-5 block text-lg font-medium hover:text-team-current focus:text-team-current"
+                    className="text-secondary underlined my-3 mb-6 ml-5 block text-lg font-medium hover:text-team-current focus:text-team-current focus:outline-none"
                     target="_blank"
                     rel="noreferrer noopener"
                   >
@@ -542,7 +530,7 @@ export default function MdxScreen() {
 
                   <a
                     href={externalLinks.translationContributions}
-                    className="text-secondary underlined focus:outline-none ml-5 block text-lg font-medium hover:text-team-current focus:text-team-current"
+                    className="text-secondary underlined ml-5 block text-lg font-medium hover:text-team-current focus:text-team-current focus:outline-none"
                     target="_blank"
                     rel="noreferrer noopener"
                   >
@@ -630,6 +618,8 @@ export default function MdxScreen() {
                   >
                     <WorkshopCard
                       workshop={workshop}
+                      // @ts-expect-error need to figure out a better way to
+                      // handle the fact that this is a SeralizeObject type...
                       titoEvents={data.workshopEvents.filter(
                         e => e.metadata.workshopSlug === workshop.slug,
                       )}

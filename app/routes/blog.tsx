@@ -1,14 +1,10 @@
 import * as React from 'react'
-import type {
-  HeadersFunction,
-  LoaderFunction,
-  MetaFunction,
-} from '@remix-run/node'
+import type {HeadersFunction, LoaderArgs, MetaFunction} from '@remix-run/node'
 import {json} from '@remix-run/node'
 import {Link, useLoaderData, useSearchParams} from '@remix-run/react'
 import clsx from 'clsx'
 import {MixedCheckbox} from '@reach/checkbox'
-import type {Await, KCDHandle, MdxListItem, Team} from '~/types'
+import type {KCDHandle, Team} from '~/types'
 import {useRootData} from '~/utils/use-root-data'
 import {Grid} from '~/components/grid'
 import {
@@ -43,7 +39,6 @@ import {
 } from '~/utils/misc'
 import {TeamStats} from '~/components/team-stats'
 import {Spacer} from '~/components/spacer'
-import type {ReadRankings} from '~/utils/blog.server'
 import {
   getAllBlogPostReadRankings,
   getBlogReadRankings,
@@ -56,6 +51,7 @@ import {useTeam} from '~/utils/team-provider'
 import type {LoaderData as RootLoaderData} from '../root'
 import {getSocialMetas} from '~/utils/seo'
 import {RssIcon} from '~/components/icons/rss-icon'
+import type {UseDataFunctionReturn} from '@remix-run/react/dist/components'
 
 const handleId = 'blog'
 export const handle: KCDHandle = {
@@ -63,19 +59,7 @@ export const handle: KCDHandle = {
   getSitemapEntries: () => [{route: `/blog`, priority: 0.7}],
 }
 
-type LoaderData = {
-  posts: Array<MdxListItem>
-  recommended: MdxListItem | undefined
-  tags: Array<string>
-  allPostReadRankings: Record<string, ReadRankings>
-  readRankings: ReadRankings
-  totalReads: string
-  totalBlogReaders: string
-  overallLeadingTeam: Team | null
-  userReads: Await<ReturnType<typeof getSlugReadsByUser>>
-}
-
-export const loader: LoaderFunction = async ({request}) => {
+export async function loader({request}: LoaderArgs) {
   const timings: Timings = {}
 
   const [
@@ -105,7 +89,7 @@ export const loader: LoaderFunction = async ({request}) => {
     }
   }
 
-  const data: LoaderData = {
+  const data = {
     posts,
     recommended,
     readRankings,
@@ -130,7 +114,7 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export const meta: MetaFunction = ({data, parentsData}) => {
   const {requestInfo} = parentsData.root as RootLoaderData
-  const {totalBlogReaders, posts} = data as LoaderData
+  const {totalBlogReaders, posts} = data as UseDataFunctionReturn<typeof loader>
 
   return {
     ...getSocialMetas({
@@ -184,7 +168,7 @@ function BlogHome() {
 
   useUpdateQueryStringValueWithoutNavigation('q', query)
 
-  const data = useLoaderData<LoaderData>()
+  const data = useLoaderData<typeof loader>()
   const {posts: allPosts, userReads} = data
 
   const getLeadingTeamForSlug = React.useCallback(
@@ -294,7 +278,7 @@ function BlogHome() {
   const posts = isSearching
     ? matchingPosts.slice(0, indexToShow)
     : matchingPosts
-        .filter(p => p.slug !== data.recommended.slug)
+        .filter(p => p.slug !== data.recommended?.slug)
         .slice(0, indexToShow)
 
   const hasMorePosts = isSearching

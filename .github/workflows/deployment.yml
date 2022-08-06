@@ -148,7 +148,7 @@ jobs:
           DATABASE_URL: 'postgresql://kody:the_koala@localhost:5432/kentcdodds_db?schema=public'
 
       - name: 🌳 Cypress run
-        uses: cypress-io/github-action@v2
+        uses: cypress-io/github-action@v4
         continue-on-error: true
         with:
           start: npm run start:mocks
