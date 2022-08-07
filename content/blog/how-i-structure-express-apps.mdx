@@ -338,7 +338,7 @@ function getRoutes() {
   // create a router for all the routes of our app
   const router = express.Router()
 
-  router.use('/math', getMathRoutes())
+  router.use('/math', getMathRoutes(router))
   // any additional routes would go here
 
   return router
@@ -357,8 +357,8 @@ import express from 'express'
 // A function to get the routes.
 // That way all the route definitions are in one place which I like.
 // This is the only thing that's exported
-function getMathRoutes() {
-  const router = express.Router()
+// Provide a router instance to attach routing methods
+function getMathRoutes(router) {
   router.get('/add', add)
   router.get('/subtract', subtract)
   return router
