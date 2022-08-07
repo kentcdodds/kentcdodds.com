@@ -21,6 +21,9 @@ function hydrate() {
     load('HJUUDKMT', {
       url: 'https://sailfish.kentcdodds.com/script.js',
       spa: 'history',
+      // canonical URLs don't change during client-side navigation, so if Fathom relied on them
+      // it would only be able to track initially loaded pages and full refreshes
+      canonical: false,
       excludedDomains: ['localhost'],
     })
   }
