@@ -307,6 +307,26 @@ function PageLoadingMessage() {
   )
 }
 
+declare global {
+  const fathom: {
+    trackPageview(): void
+  }
+}
+
+function CanonicalLink({origin, path}: {origin: string; path: string}) {
+  const matches = useMatches()
+  const leafRoute = matches[matches.length - 1]
+  const canonicalUrl = removeTrailingSlash(
+    `${origin}${leafRoute?.pathname ?? path}`,
+  )
+
+  React.useEffect(() => {
+    fathom.trackPageview()
+  }, [canonicalUrl])
+
+  return <link rel="canonical" href={canonicalUrl} />
+}
+
 function App() {
   const data = useLoaderData<LoaderData>()
   const matches = useMatches()
@@ -331,11 +351,9 @@ function App() {
         <meta charSet="utf-8" />
         <Meta />
 
-        <link
-          rel="canonical"
-          href={removeTrailingSlash(
-            `${data.requestInfo.origin}${data.requestInfo.path}`,
-          )}
+        <CanonicalLink
+          origin={data.requestInfo.origin}
+          path={data.requestInfo.path}
         />
 
         <Links />
@@ -355,6 +373,16 @@ function App() {
         <Spacer size="base" />
         <Footer image={images[data.randomFooterImageKey]} />
         {shouldRestoreScroll ? <ScrollRestoration /> : null}
+        {ENV.NODE_ENV === 'development' ? null : (
+          <script
+            src="https://sailfish.kentcdodds.com/script.js"
+            data-site="HJUUDKMT"
+            data-spa="history"
+            data-auto="false" // prevent tracking visit twice on initial page load
+            data-excluded-domains="localhost"
+            defer
+          />
+        )}
         <Scripts />
         <script
           dangerouslySetInnerHTML={{
