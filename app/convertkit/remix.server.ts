@@ -55,6 +55,7 @@ async function handleConvertKitFormSubmission(request: Request) {
     email: form.get('email') ?? '',
     convertKitTagId: form.get('convertKitTagId') ?? '',
     convertKitFormId: form.get('convertKitFormId') ?? '',
+    url: form.get('url'),
   }
 
   const errors: Errors = {
@@ -67,6 +68,13 @@ async function handleConvertKitFormSubmission(request: Request) {
       fields.convertKitFormId,
       form,
     ),
+    url: null,
+  }
+
+  const failedHoneypot = Boolean(fields.url)
+  if (failedHoneypot) {
+    console.log(`FAILED HONEYPOT`, fields)
+    return json({status: 'success'})
   }
 
   let data: ActionData

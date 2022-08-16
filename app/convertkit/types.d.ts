@@ -2,6 +2,7 @@ export type Fields = {
   formId: string
   firstName: string
   email: string
+  url: string | null
   convertKitTagId: string
   convertKitFormId: string
 }

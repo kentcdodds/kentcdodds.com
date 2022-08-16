@@ -165,7 +165,7 @@ https://twitter.com/kentcdodds/status/1135943012410830848
 I'd like to mention also that on the second render of the component, the
 original `dispense` function gets garbage collected (freeing up memory space)
 and then a new one is created. However with `useCallback` the original
-`dispense` function wont get garbage collected and a new one is created, so
+`dispense` function won't get garbage collected and a new one is created, so
 you're worse-off from a memory perspective as well.
 
 As a related note, if you have dependencies then it's quite possible React is

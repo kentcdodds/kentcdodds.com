@@ -48,6 +48,17 @@ function ConvertKitForm({
       method="post"
       noValidate
     >
+      <div style={{position: 'absolute', left: '-9999px'}}>
+        <label htmlFor="website-url">Your website</label>
+        {/* eslint-disable-next-line jsx-a11y/autocomplete-valid */}
+        <input
+          type="text"
+          id="website-url"
+          name="url"
+          tabIndex={-1}
+          autoComplete="nope"
+        />
+      </div>
       <input type="hidden" name="formId" value={formId} />
       <input type="hidden" name="convertKitTagId" value={convertKitTagId} />
       <input type="hidden" name="convertKitFormId" value={convertKitFormId} />
