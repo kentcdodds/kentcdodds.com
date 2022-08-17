@@ -307,6 +307,41 @@ function PageLoadingMessage() {
   )
 }
 
+declare global {
+  const fathom:
+    | {
+        trackPageview(): void
+      }
+    | undefined
+}
+
+type FathomQueue = Array<{command: 'trackPageview'}>
+
+function CanonicalLink({
+  origin,
+  fathomQueue,
+}: {
+  origin: string
+  fathomQueue: React.MutableRefObject<FathomQueue>
+}) {
+  const {pathname} = useLocation()
+  const canonicalUrl = removeTrailingSlash(`${origin}${pathname}`)
+
+  React.useEffect(() => {
+    if (fathom) {
+      fathom.trackPageview()
+    } else {
+      // Fathom hasn't finished loading yet! queue the command
+      fathomQueue.current.push({command: 'trackPageview'})
+    }
+    // Fathom looks uses the canonical URL to track visits, so we're using it
+    // as a dependency even though we're not using it explicitly
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canonicalUrl])
+
+  return <link rel="canonical" href={canonicalUrl} />
+}
+
 function App() {
   const data = useLoaderData<LoaderData>()
   const matches = useMatches()
@@ -321,6 +356,7 @@ function App() {
   }
   const [team] = useTeam()
   const [theme] = useTheme()
+  const fathomQueue = React.useRef<FathomQueue>([])
 
   return (
     <html
@@ -331,11 +367,9 @@ function App() {
         <meta charSet="utf-8" />
         <Meta />
 
-        <link
-          rel="canonical"
-          href={removeTrailingSlash(
-            `${data.requestInfo.origin}${data.requestInfo.path}`,
-          )}
+        <CanonicalLink
+          origin={data.requestInfo.origin}
+          fathomQueue={fathomQueue}
         />
 
         <Links />
@@ -355,6 +389,27 @@ function App() {
         <Spacer size="base" />
         <Footer image={images[data.randomFooterImageKey]} />
         {shouldRestoreScroll ? <ScrollRestoration /> : null}
+        {ENV.NODE_ENV === 'development' ? null : (
+          <script
+            src="https://sailfish.kentcdodds.com/script.js"
+            data-site="HJUUDKMT"
+            data-spa="history"
+            data-auto="false" // prevent tracking visit twice on initial page load
+            data-excluded-domains="localhost"
+            defer
+            onLoad={() => {
+              fathomQueue.current.forEach(({command}) => {
+                if (fathom) {
+                  fathom[command]()
+                } else {
+                  // Fathom isn't available even though the script has loaded
+                  // this should never happen!
+                }
+              })
+              fathomQueue.current = []
+            }}
+          />
+        )}
         <Scripts />
         <script
           dangerouslySetInnerHTML={{
