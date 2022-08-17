@@ -63,6 +63,7 @@ import {getSocialMetas} from './utils/seo'
 import {getGenericSocialImage, illustrationImages, images} from './images'
 import {Grimmacing, MissingSomething} from './components/kifs'
 import {ArrowLink} from './components/arrow-button'
+import {trackPageview} from 'fathom-client'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',
@@ -307,18 +308,12 @@ function PageLoadingMessage() {
   )
 }
 
-declare global {
-  const fathom: {
-    trackPageview(): void
-  }
-}
-
 function CanonicalLink({origin}: {origin: string}) {
   const {pathname} = useLocation()
   const canonicalUrl = removeTrailingSlash(`${origin}${pathname}`)
 
   React.useEffect(() => {
-    fathom.trackPageview()
+    trackPageview()
   }, [canonicalUrl])
 
   return <link rel="canonical" href={canonicalUrl} />
@@ -367,16 +362,6 @@ function App() {
         <Spacer size="base" />
         <Footer image={images[data.randomFooterImageKey]} />
         {shouldRestoreScroll ? <ScrollRestoration /> : null}
-        {ENV.NODE_ENV === 'development' ? null : (
-          <script
-            src="https://sailfish.kentcdodds.com/script.js"
-            data-site="HJUUDKMT"
-            data-spa="history"
-            data-auto="false" // prevent tracking visit twice on initial page load
-            data-excluded-domains="localhost"
-            defer
-          />
-        )}
         <Scripts />
         <script
           dangerouslySetInnerHTML={{
