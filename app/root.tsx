@@ -308,17 +308,35 @@ function PageLoadingMessage() {
 }
 
 declare global {
-  const fathom: {
-    trackPageview(): void
-  }
+  const fathom:
+    | {
+        trackPageview(): void
+      }
+    | undefined
 }
 
-function CanonicalLink({origin}: {origin: string}) {
+type FathomQueue = Array<{command: 'trackPageview'}>
+
+function CanonicalLink({
+  origin,
+  fathomQueue,
+}: {
+  origin: string
+  fathomQueue: React.MutableRefObject<FathomQueue>
+}) {
   const {pathname} = useLocation()
   const canonicalUrl = removeTrailingSlash(`${origin}${pathname}`)
 
   React.useEffect(() => {
-    fathom.trackPageview()
+    if (fathom) {
+      fathom.trackPageview()
+    } else {
+      // Fathom hasn't finished loading yet! queue the command
+      fathomQueue.current.push({command: 'trackPageview'})
+    }
+    // Fathom looks uses the canonical URL to track visits, so we're using it
+    // as a dependency even though we're not using it explicitly
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canonicalUrl])
 
   return <link rel="canonical" href={canonicalUrl} />
@@ -338,6 +356,7 @@ function App() {
   }
   const [team] = useTeam()
   const [theme] = useTheme()
+  const fathomQueue = React.useRef<FathomQueue>([])
 
   return (
     <html
@@ -348,7 +367,10 @@ function App() {
         <meta charSet="utf-8" />
         <Meta />
 
-        <CanonicalLink origin={data.requestInfo.origin} />
+        <CanonicalLink
+          origin={data.requestInfo.origin}
+          fathomQueue={fathomQueue}
+        />
 
         <Links />
         {ENV.NODE_ENV === 'production' ? <MetronomeLinks /> : null}
@@ -375,6 +397,17 @@ function App() {
             data-auto="false" // prevent tracking visit twice on initial page load
             data-excluded-domains="localhost"
             defer
+            onLoad={() => {
+              fathomQueue.current.forEach(({command}) => {
+                if (fathom) {
+                  fathom[command]()
+                } else {
+                  // Fathom isn't available even though the script has loaded
+                  // this should never happen!
+                }
+              })
+              fathomQueue.current = []
+            }}
           />
         )}
         <Scripts />
