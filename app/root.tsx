@@ -313,12 +313,9 @@ declare global {
   }
 }
 
-function CanonicalLink({origin, path}: {origin: string; path: string}) {
-  const matches = useMatches()
-  const leafRoute = matches[matches.length - 1]
-  const canonicalUrl = removeTrailingSlash(
-    `${origin}${leafRoute?.pathname ?? path}`,
-  )
+function CanonicalLink({origin}: {origin: string}) {
+  const {pathname} = useLocation()
+  const canonicalUrl = removeTrailingSlash(`${origin}${pathname}`)
 
   React.useEffect(() => {
     fathom.trackPageview()
@@ -351,10 +348,7 @@ function App() {
         <meta charSet="utf-8" />
         <Meta />
 
-        <CanonicalLink
-          origin={data.requestInfo.origin}
-          path={data.requestInfo.path}
-        />
+        <CanonicalLink origin={data.requestInfo.origin} />
 
         <Links />
         {ENV.NODE_ENV === 'production' ? <MetronomeLinks /> : null}
