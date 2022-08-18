@@ -393,7 +393,7 @@ function App() {
         {shouldRestoreScroll ? <ScrollRestoration /> : null}
         {ENV.NODE_ENV === 'development' ? null : (
           <script
-            src="https://sailfish.kentcdodds.com/script.js"
+            src="/bunnies"
             data-site="HJUUDKMT"
             data-spa="history"
             data-auto="false" // prevent tracking visit twice on initial page load
