@@ -328,8 +328,8 @@ function CanonicalLink({
   const canonicalUrl = removeTrailingSlash(`${origin}${pathname}`)
 
   React.useEffect(() => {
-    if (fathom) {
-      fathom.trackPageview()
+    if (window.fathom) {
+      window.fathom.trackPageview()
     } else {
       // Fathom hasn't finished loading yet! queue the command
       fathomQueue.current.push({command: 'trackPageview'})
@@ -399,8 +399,8 @@ function App() {
             defer
             onLoad={() => {
               fathomQueue.current.forEach(({command}) => {
-                if (fathom) {
-                  fathom[command]()
+                if (window.fathom) {
+                  window.fathom[command]()
                 } else {
                   // Fathom isn't available even though the script has loaded
                   // this should never happen!
