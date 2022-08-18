@@ -308,11 +308,13 @@ function PageLoadingMessage() {
 }
 
 declare global {
-  const fathom:
-    | {
-        trackPageview(): void
-      }
-    | undefined
+  interface Window {
+    fathom:
+      | {
+          trackPageview(): void
+        }
+      | undefined
+  }
 }
 
 type FathomQueue = Array<{command: 'trackPageview'}>
