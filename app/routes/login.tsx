@@ -7,6 +7,7 @@ import type {
 } from '@remix-run/node'
 import {json, redirect} from '@remix-run/node'
 import {Form, useLoaderData} from '@remix-run/react'
+import invariant from 'tiny-invariant'
 import {
   getDisplayUrl,
   getDomainUrl,
@@ -73,16 +74,29 @@ export const meta: MetaFunction = ({parentsData}) => {
 }
 
 export const action: ActionFunction = async ({request}) => {
-  const params = new URLSearchParams(await request.text())
+  const formData = await request.formData()
   const loginSession = await getLoginInfoSession(request)
 
-  const emailAddress = params.get('email')
+  const emailAddress = formData.get('email')
+  invariant(typeof emailAddress === 'string', 'Form submitted incorrectly')
   if (emailAddress) loginSession.setEmail(emailAddress)
 
-  if (!emailAddress?.match(/.+@.+/)) {
+  if (!emailAddress.match(/.+@.+/)) {
     loginSession.flashError('A valid email is required')
     return redirect(`/login`, {
       status: 400,
+      headers: await loginSession.getHeaders(),
+    })
+  }
+
+  // this is our honeypot. Our login is passwordless.
+  const failedHoneypot = Boolean(formData.get('password'))
+  if (failedHoneypot) {
+    console.log(
+      `FAILED HONEYPOT ON LOGIN`,
+      Object.fromEntries(formData.entries()),
+    )
+    return redirect(`/login`, {
       headers: await loginSession.getHeaders(),
     })
   }
@@ -167,6 +181,18 @@ function Login() {
                   defaultValue={formValues.email}
                   required
                   placeholder="Email address"
+                />
+              </div>
+
+              <div style={{position: 'absolute', left: '-9999px'}}>
+                <label htmlFor="password-field">Password</label>
+                {/* eslint-disable-next-line jsx-a11y/autocomplete-valid */}
+                <input
+                  type="password"
+                  id="password-field"
+                  name="password"
+                  tabIndex={-1}
+                  autoComplete="nope"
                 />
               </div>
 
