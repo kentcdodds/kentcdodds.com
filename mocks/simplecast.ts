@@ -49,7 +49,7 @@ for (const seasonListItem of seasonListItems) {
       const guests = Array.from(
         {length: faker.datatype.number({min: 1, max: 3})},
         () => {
-          const name = faker.name.findName()
+          const name = faker.name.fullName()
           const username = faker.internet.userName()
           const website = faker.internet.url()
           const links = [

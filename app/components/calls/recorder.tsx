@@ -59,6 +59,7 @@ interface RecorderContext {
 const recorderMachine = createMachine<RecorderContext>(
   {
     id: 'recorder',
+    predictableActionArguments: true,
     context: {
       mediaRecorder: null,
       audioDevices: [],
