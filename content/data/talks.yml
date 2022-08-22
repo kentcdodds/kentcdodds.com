@@ -85,6 +85,18 @@
     APIs and a soon-to-be-released API in Remix to give a top-notch user and
     developer experience. Prepare to have your mind blown.
 
+- title: AHA Testing 💡
+  deliveries:
+    - event: '[Node TLV](https://www.nodetlv.com/)'
+      date: 2022-06-29
+      recording: https://www.youtube.com/watch?v=o5sLLYxRtko&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf&t=100s
+  tags:
+    - lightning
+  description: >-
+    There's a spectrum of abstraction and tests are no less important to
+    consider your abstractions than anything else. In this quick talk, we'll
+    look at what it takes to make sure you avoid hasty abstractions (AHA!).
+
 - title: Bringing Back Progressive Enhancement
   deliveries:
     - event: '[RenderATL](https://www.renderatl.com/)'
@@ -167,6 +179,7 @@
       recording: https://portal.gitnation.org/contents/server-side-auth-with-remix-prisma-and-the-web-platform
     - event: '[Node TLV](https://www.nodetlv.com/)'
       date: 2022-06-29
+      recording: https://www.youtube.com/watch?v=OK-AGnsOo5U&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
   tags:
     - keynote
     - remix
