@@ -36,7 +36,9 @@ function NewsletterSection() {
         </Paragraph>
       </div>
 
-      <ConvertKitForm formId="newsletter" convertKitFormId="827139" />
+      <div className="mt-8">
+        <ConvertKitForm formId="newsletter" convertKitFormId="827139" />
+      </div>
     </div>
   )
 }
@@ -134,7 +136,7 @@ function FooterLink({
       <AnchorOrLink
         prefetch={href.startsWith('http') ? undefined : 'intent'}
         href={href}
-        className="text-secondary underlined focus:outline-none inline-block whitespace-nowrap text-lg hover:text-team-current focus:text-team-current"
+        className="text-secondary underlined inline-block whitespace-nowrap text-lg hover:text-team-current focus:text-team-current focus:outline-none"
         reload={reload}
       >
         {name}

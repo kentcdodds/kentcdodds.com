@@ -20,6 +20,7 @@ import {
 } from '~/images'
 import {Themed} from './theme-provider'
 import {markdownToHtmlUnwrapped, stripHtml} from './markdown.server'
+import {ConvertKitForm} from '~/convertkit/form'
 
 type CachifiedOptions = {
   forceFresh?: boolean | string
@@ -363,6 +364,7 @@ const mdxComponents = {
   Themed,
   ThemedBlogImage,
   BlogImage,
+  SubscribeForm,
 }
 /**
  * This should be rendered within a useMemo
@@ -421,6 +423,32 @@ function ThemedBlogImage({
       light={<BlogImage cloudinaryId={lightCloudinaryId} imgProps={imgProps} />}
       dark={<BlogImage cloudinaryId={darkCloudinaryId} imgProps={imgProps} />}
     />
+  )
+}
+
+function SubscribeForm(props: Record<string, unknown>) {
+  const {formId, convertKitTagId, convertKitFormId} = props
+
+  if (
+    typeof formId !== 'string' ||
+    typeof convertKitFormId !== 'string' ||
+    typeof convertKitTagId !== 'string'
+  ) {
+    console.error(
+      `SubscribeForm improperly used. Must have a formId, convertKitFormId, and convertKitTagId`,
+      props,
+    )
+    return null
+  }
+
+  return (
+    <div className="mb-12 border-t-2 border-b-2 border-team-current p-5">
+      <ConvertKitForm
+        formId={formId}
+        convertKitFormId={convertKitFormId}
+        convertKitTagId={convertKitTagId}
+      />
+    </div>
   )
 }
 

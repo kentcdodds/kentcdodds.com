@@ -45,7 +45,6 @@ function ConvertKitForm({
     <convertKit.Form
       ref={formRef}
       action="/action/convert-kit"
-      className="mt-8 space-y-4"
       method="post"
       noValidate
     >

@@ -228,10 +228,12 @@ export default function WorkshopScreen() {
                 <H6 as="p" className="mb-0">
                   Sign up to be notified when this workshop is scheduled
                 </H6>
-                <ConvertKitForm
-                  formId="workshop-convert-kit"
-                  convertKitTagId={workshop.convertKitTag}
-                />
+                <div className="mt-8">
+                  <ConvertKitForm
+                    formId="workshop-convert-kit"
+                    convertKitTagId={workshop.convertKitTag}
+                  />
+                </div>
               </>
             ) : null}
           </div>

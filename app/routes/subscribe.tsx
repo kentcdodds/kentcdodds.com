@@ -168,7 +168,10 @@ export default function SubscribeScreen() {
                 <H3>{`Sign up here`}</H3>
                 <Paragraph>{`And get your first email this week!`}</Paragraph>
               </div>
-              <div id="subscribe-form" className="col-span-full lg:col-span-7">
+              <div
+                id="subscribe-form"
+                className="col-span-full mt-8 lg:col-span-7"
+              >
                 <ConvertKitForm formId="newsletter" convertKitFormId="827139" />
               </div>
             </>
