@@ -13,11 +13,6 @@ categories:
   - react
   - remix
 convertKitTag: '2925780'
-events:
-  - title: Advanced Remix @ Frontend Masters
-    url: 'https://frontendmasters.com/workshops/advanced-remix/'
-    date: August 3rd, 2022
-
 problemStatements:
   part1: Remix is a terrific tool for building simple websites
   part2: And it's even better for building complex web applications

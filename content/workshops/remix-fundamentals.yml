@@ -12,11 +12,6 @@ categories:
   - react
   - remix
 convertKitTag: '2568112'
-events:
-  - title: Remix Fundamentals @ Frontend Masters
-    url: 'https://frontendmasters.com/workshops/remix/'
-    date: August 2nd, 2022
-
 problemStatements:
   part1: Building modern web applications is riddled with complexity
   part2: And that's only if you bother to deal with the problems

@@ -61,15 +61,6 @@
   description: >-
     This talk is yet to be announced
 
-- title: Infobip Shift 2022 Keynote
-  deliveries:
-    - event: '[Infobip](https://shift.infobip.com/)'
-      date: 2022-09-19
-  tags:
-    - keynote
-  description: >-
-    This talk is yet to be announced
-
 - title: Stream Away the Wait
   resources:
     - '[slides / demo](https://github.com/kentcdodds/stream-away-the-wait-talk)'
@@ -99,6 +90,8 @@
     - event: '[RenderATL](https://www.renderatl.com/)'
       date: 2022-06-01
       recording: https://www.youtube.com/watch?v=EzLGleT1yrY&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
+    - event: '[Infobip](https://shift.infobip.com/)'
+      date: 2022-09-19
   tags:
     - keynote
     - remix
