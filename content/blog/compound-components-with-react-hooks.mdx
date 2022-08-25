@@ -107,19 +107,13 @@ Here's how our `<Toggle>` compound components are going to be used:
 function App() {
   return (
     <Toggle onToggle={on => console.log(on)}>
-      <Toggle.On>The button is on</Toggle.On>
-      <Toggle.Off>The button is off</Toggle.Off>
-      <Toggle.Button />
+      <ToggleOn>The button is on</ToggleOn>
+      <ToggleOff>The button is off</ToggleOff>
+      <ToggleButton />
     </Toggle>
   )
 }
 ```
-
-You'll notice that we're using a `.` in our component names. That's because
-those components are added as static properties to the `<Toggle>` component.
-Note that this is not at all a requirement of compound components (the `<Menu>`
-components above do not do this). I just like doing this as a way to explicitly
-communicate the relationship.
 
 Ok, the moment you've all been waiting for, the actual full implementation of
 compound components with context and hooks:
@@ -165,25 +159,20 @@ function useToggleContext() {
   return context
 }
 
-function On({children}) {
+function ToggleOn({children}) {
   const {on} = useToggleContext()
   return on ? children : null
 }
 
-function Off({children}) {
+function ToggleOff({children}) {
   const {on} = useToggleContext()
   return on ? null : children
 }
 
-function Button(props) {
+function ToggleButton(props) {
   const {on, toggle} = useToggleContext()
   return <Switch on={on} onClick={toggle} {...props} />
 }
-
-// for convenience, but totally not required...
-Toggle.On = On
-Toggle.Off = Off
-Toggle.Button = Button
 ```
 
 Here's this component in action:
