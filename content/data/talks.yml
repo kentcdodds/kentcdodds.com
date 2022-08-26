@@ -52,23 +52,30 @@
   description: >-
     This talk is yet to be announced
 
-- title: infoShare 2022 Keynote
+- title: The Web's Next Transformation
   deliveries:
+    - event: '[React India](https://www.reactindia.io)'
+      date: 2022-09-23
     - event: '[infoShare](https://infoshare.pl/)'
       date: 2022-10-06
   tags:
     - keynote
   description: >-
-    This talk is yet to be announced
+    The web. What started as a document sharing platform has evolved into an
+    application platform. The web has been through a number of transformations
+    over the years. From static HTML files to dynamic server-generated HTML
+    responses. Then to REST or GraphQL APIs consumed by JavaScript-heavy clients
+    with the Jamstack. The web is entering a completely new transformation.
+    Modern infrastructure and techniques have changed the rules of what it means
+    to make an excellent user experience. In this new future, what's old is new
+    and what's modern is lacking.
 
-- title: React India 2022 Keynote
-  deliveries:
-    - event: '[React India](https://www.reactindia.io)'
-      date: 2022-09-23
-  tags:
-    - keynote
-  description: >-
-    This talk is yet to be announced
+
+    In this keynote, Kent C. Dodds will show you how this transformation will
+    impact your user experience, your development productivity, and your
+    business goals. The future of the web is distributed. It's faster. It's
+    cheaper. It's exciting. Kent will show you what you can do to stay in front
+    of it (and no, it's not web3).
 
 - title: Stream Away the Wait
   resources:
