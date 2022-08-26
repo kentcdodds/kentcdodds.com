@@ -16,6 +16,15 @@
   description: >-
     This talk is yet to be announced
 
+- title: CityJS Conference London
+  deliveries:
+    - event: '[CityJS Conf London](https://london.cityjsconf.org/)'
+      date: 2023-03-31
+  tags:
+    - keynote
+  description: >-
+    This talk is yet to be announced
+
 - title: Modern Frontends Live 2022 Keynote
   deliveries:
     - event: '[Modern Frontends Live](https://www.modernfrontends.live/)'
