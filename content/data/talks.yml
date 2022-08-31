@@ -25,6 +25,15 @@
   description: >-
     This talk is yet to be announced
 
+- title: Infobip Shift Africa
+  deliveries:
+    - event: 'Infobip Shift Africa 2023'
+      date: 2023-01-26
+  tags:
+    - keynote
+  description: >-
+    This talk is yet to be announced
+
 - title: Modern Frontends Live 2022 Keynote
   deliveries:
     - event: '[Modern Frontends Live](https://www.modernfrontends.live/)'
