@@ -14,7 +14,12 @@ type NormalizedItemGroup = {
   items: Array<{
     route: string
     title: string
-    segment: string
+    segment:
+      | 'Blog Posts'
+      | 'Chats with Kent Episodes'
+      | 'Talks'
+      | 'Call Kent Podcast Episodes'
+      | 'Workshops'
     values: {
       priority: string | Array<string | undefined>
       other: Array<string | undefined>
@@ -85,7 +90,10 @@ export async function searchKCD({
         chatsWithKentEpisodes
           .flatMap(s => s.episodes)
           .map(async e => ({
-            route: getCWKEpisodePath(e),
+            route: getCWKEpisodePath({
+              seasonNumber: e.seasonNumber,
+              episodeNumber: e.episodeNumber,
+            }),
             title: e.title,
             segment: 'Chats with Kent Episodes',
             values: {
@@ -107,7 +115,10 @@ export async function searchKCD({
     {
       prefix: 'ck',
       items: callKentEpisodes.map(e => ({
-        route: getCKEpisodePath(e),
+        route: getCKEpisodePath({
+          seasonNumber: e.seasonNumber,
+          episodeNumber: e.episodeNumber,
+        }),
         title: e.title,
         segment: 'Call Kent Podcast Episodes',
         values: {
