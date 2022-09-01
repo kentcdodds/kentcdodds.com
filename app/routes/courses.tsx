@@ -68,6 +68,7 @@ function SmallCourseCard({
   return (
     <div className="bg-secondary relative col-span-full mt-12 flex flex-col items-start rounded-lg px-8 py-12 lg:col-span-4 lg:mt-0 lg:px-12">
       <img
+        loading="lazy"
         className="h-32 w-auto flex-none object-contain"
         {...getImgProps(imageBuilder, {
           widths: [128, 256, 384],
@@ -230,6 +231,7 @@ function CoursesHome() {
         <div className="col-span-full lg:col-span-5">
           <div className="col-span-full mb-12 px-10 lg:col-span-5 lg:col-start-1 lg:mb-0">
             <img
+              loading="lazy"
               className="object-contain"
               {...getImgProps(images.helmet, {
                 widths: [420, 512, 840, 1260, 1024, 1680, 2520],

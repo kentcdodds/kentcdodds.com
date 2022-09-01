@@ -155,6 +155,7 @@ function Footer({image}: {image: ImageBuilder}) {
   const featuredImg = (
     <div className="aspect-w-4 aspect-h-3">
       <img
+        loading="lazy"
         className="w-full rounded-sm object-contain"
         {...getImgProps(image, {
           widths: [300, 600, 850, 1600, 2550],

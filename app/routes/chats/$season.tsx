@@ -57,7 +57,7 @@ export default function ChatsSeason() {
   const episodes = orderBy(season.episodes, 'episodeNumber', sortOrder)
   return episodes.map(episode => (
     <Link
-      className="focus:outline-none group"
+      className="group focus:outline-none"
       key={episode.slug}
       to={getCWKEpisodePath(episode)}
     >
@@ -77,6 +77,7 @@ export default function ChatsSeason() {
             className="h-16 w-full rounded-lg object-cover"
             src={episode.image}
             alt={episode.title}
+            loading="lazy"
           />
         </div>
         <div className="text-primary relative col-span-3 flex flex-col md:col-span-7 lg:col-span-11 lg:flex-row lg:items-center lg:justify-between">

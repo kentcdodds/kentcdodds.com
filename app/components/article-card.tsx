@@ -43,7 +43,7 @@ function ArticleCard({
     >
       <Link
         prefetch="intent"
-        className="focus:outline-none group peer relative block w-full"
+        className="group peer relative block w-full focus:outline-none"
         to={`/blog/${slug}`}
       >
         {bannerCloudinaryId ? (
@@ -77,6 +77,7 @@ function ArticleCard({
                   },
                 )}
                 className="focus-ring w-full rounded-lg object-cover object-center transition"
+                loading="lazy"
               />
             }
           />
