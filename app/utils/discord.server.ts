@@ -186,7 +186,7 @@ async function connectDiscord({
   await new Promise(resolve => setTimeout(resolve, 300))
 
   const discordMember = await getMember(discordUser.id)
-  if ('id' in discordMember) {
+  if ('user' in discordMember) {
     await updateDiscordRolesForUser(discordMember, user)
   } else if ('message' in discordMember) {
     throw new Error(
