@@ -10,6 +10,7 @@ const DISCORD_GUILD_ID = getRequiredServerEnvVar('DISCORD_GUILD_ID')
 const DISCORD_RED_ROLE = getRequiredServerEnvVar('DISCORD_RED_ROLE')
 const DISCORD_YELLOW_ROLE = getRequiredServerEnvVar('DISCORD_YELLOW_ROLE')
 const DISCORD_BLUE_ROLE = getRequiredServerEnvVar('DISCORD_BLUE_ROLE')
+const DISCORD_MEMBER_ROLE = getRequiredServerEnvVar('DISCORD_MEMBER_ROLE')
 
 const discordRoleTeams: {
   [Key in Team]: string
@@ -135,7 +136,9 @@ async function updateDiscordRolesForUser(
       {
         method: 'PATCH',
         body: JSON.stringify({
-          roles: Array.from(new Set([...discordMember.roles, teamRole])),
+          roles: Array.from(
+            new Set([...discordMember.roles, DISCORD_MEMBER_ROLE, teamRole]),
+          ),
         }),
         // note using fetchJsonAsDiscordBot because this API doesn't return JSON.
         headers: {
