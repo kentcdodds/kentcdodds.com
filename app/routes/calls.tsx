@@ -230,7 +230,7 @@ export default function CallHomeScreen() {
           </H6>
 
           <button
-            className="text-primary focus:outline-none group relative text-lg font-medium"
+            className="text-primary group relative text-lg font-medium focus:outline-none"
             onClick={() => setSortOrder(o => (o === 'asc' ? 'desc' : 'asc'))}
           >
             <div className="bg-secondary absolute -bottom-2 -left-4 -right-4 -top-2 rounded-lg opacity-0 transition group-hover:opacity-100 group-focus:opacity-100" />
@@ -259,7 +259,7 @@ export default function CallHomeScreen() {
                 className="border-b border-gray-200 dark:border-gray-600"
                 key={path}
               >
-                <Link to={path} className="focus:outline-none group">
+                <Link to={path} className="group focus:outline-none">
                   <Grid nested className="relative py-10 lg:py-5">
                     <div className="bg-secondary absolute -inset-px -mx-6 hidden rounded-lg group-hover:block group-focus:block" />
                     <div className="relative col-span-1 flex-none">
@@ -271,6 +271,7 @@ export default function CallHomeScreen() {
                       <img
                         className="h-16 w-full rounded-lg object-cover"
                         src={episode.imageUrl}
+                        loading="lazy"
                         alt="" // this is decorative only
                       />
                     </div>
