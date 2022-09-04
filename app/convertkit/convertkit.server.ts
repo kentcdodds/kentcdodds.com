@@ -134,11 +134,11 @@ async function addTagToSubscriber({
 async function tagKCDSiteSubscriber({
   email,
   firstName,
-  id,
+  fields,
 }: {
   email: string
   firstName: string
-  id: string
+  fields: Record<string, string>
 }) {
   const subscriber = await getConvertKitSubscriber(email)
   const kcdTagId = '2466369'
@@ -148,7 +148,7 @@ async function tagKCDSiteSubscriber({
     api_secret: CONVERT_KIT_API_SECRET,
     first_name: firstName,
     email,
-    fields: {kcd_site_id: id},
+    fields,
   }
   // the main difference in subscribing to a tag and subscribing to a
   // form is that in the form's case, the user will get a double opt-in
@@ -169,34 +169,6 @@ async function tagKCDSiteSubscriber({
     subscription: {subscriber: ConvertKitSubscriber}
   }
   return updatedJson.subscription.subscriber
-}
-
-export async function setSubscriberFields({
-  email,
-  fields,
-}: {
-  email: string
-  fields: Record<string, string>
-}) {
-  const subscriber = await ensureSubscriber({email, firstName: ''})
-  const subscriberData = {
-    api_key: CONVERT_KIT_API_KEY,
-    api_secret: CONVERT_KIT_API_SECRET,
-    fields,
-  }
-
-  const updateUrl = `https://api.convertkit.com/v3/subscribers/${subscriber.id}`
-  const updatedRes = await fetch(updateUrl, {
-    method: 'put',
-    body: JSON.stringify(subscriberData),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-  const updatedJson = (await updatedRes.json()) as {
-    subscriber: ConvertKitSubscriber
-  }
-  return updatedJson.subscriber
 }
 
 export {

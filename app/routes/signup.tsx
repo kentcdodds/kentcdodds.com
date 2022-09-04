@@ -109,7 +109,11 @@ export const action: ActionFunction = async ({request}) => {
         })
 
         // add user to mailing list
-        const sub = await tagKCDSiteSubscriber(user)
+        const sub = await tagKCDSiteSubscriber({
+          email,
+          firstName,
+          fields: {kcd_team: team, kcd_site_id: user.id},
+        })
         await prismaWrite.user.update({
           data: {convertKitId: String(sub.id)},
           where: {id: user.id},
