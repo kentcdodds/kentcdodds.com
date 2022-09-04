@@ -6,6 +6,7 @@ import {requireUser} from '~/utils/session.server'
 import {getDomainUrl, getErrorMessage} from '~/utils/misc'
 import {connectDiscord} from '~/utils/discord.server'
 import {deleteDiscordCache} from '~/utils/user-info.server'
+import {setSubscriberFields} from '~/convertkit/convertkit.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -24,6 +25,10 @@ export const loader: LoaderFunction = async ({request}) => {
       throw new Error('Discord code required')
     }
     const discordMember = await connectDiscord({user, code, domainUrl})
+    void setSubscriberFields({
+      email: user.email,
+      fields: {discord_user_id: discordMember.user.id},
+    })
     await deleteDiscordCache(discordMember.user.id)
 
     url.searchParams.set(

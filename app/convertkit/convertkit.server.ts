@@ -171,6 +171,34 @@ async function tagKCDSiteSubscriber({
   return updatedJson.subscription.subscriber
 }
 
+export async function setSubscriberFields({
+  email,
+  fields,
+}: {
+  email: string
+  fields: Record<string, string>
+}) {
+  const subscriber = await ensureSubscriber({email, firstName: ''})
+  const subscriberData = {
+    api_key: CONVERT_KIT_API_KEY,
+    api_secret: CONVERT_KIT_API_SECRET,
+    fields,
+  }
+
+  const updateUrl = `https://api.convertkit.com/v3/subscribers/${subscriber.id}`
+  const updatedRes = await fetch(updateUrl, {
+    method: 'put',
+    body: JSON.stringify(subscriberData),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+  const updatedJson = (await updatedRes.json()) as {
+    subscriber: ConvertKitSubscriber
+  }
+  return updatedJson.subscriber
+}
+
 export {
   getConvertKitSubscriber,
   getConvertKitSubscriberTags,
