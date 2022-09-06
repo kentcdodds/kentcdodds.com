@@ -123,6 +123,8 @@
     look at what it takes to make sure you avoid hasty abstractions (AHA!).
 
 - title: Bringing Back Progressive Enhancement
+  resources:
+    - '[slides and demo](https://github.com/kentcdodds/remix-todomvc)'
   deliveries:
     - event: '[RenderATL](https://www.renderatl.com/)'
       date: 2022-06-01
