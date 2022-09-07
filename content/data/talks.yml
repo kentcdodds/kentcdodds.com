@@ -43,15 +43,6 @@
   description: >-
     This talk is yet to be announced
 
-- title: All Things Open 2022 Keynote
-  deliveries:
-    - event: '[All Things Open](https://www.allthingsopen.org/)'
-      date: 2022-11-01
-  tags:
-    - keynote
-  description: >-
-    This talk is yet to be announced
-
 - title: ThunderPlains 2022 Keynote
   deliveries:
     - event: '[ThunderPlains](https://thunderplainsconf.com/)'
@@ -67,6 +58,8 @@
       date: 2022-09-23
     - event: '[infoShare](https://infoshare.pl/)'
       date: 2022-10-06
+    - event: '[All Things Open](https://www.allthingsopen.org/)'
+      date: 2022-11-01
   tags:
     - keynote
   description: >-
