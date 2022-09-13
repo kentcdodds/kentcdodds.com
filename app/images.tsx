@@ -168,19 +168,19 @@ const images = createImages({
   },
   kodySnowboardingWhite: {
     id: 'kentcdodds.com/illustrations/kody-flying_white',
-    alt: 'Illistration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+    alt: 'Illustration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
   },
   kodySnowboardingYellow: {
     id: 'kentcdodds.com/illustrations/kody-flying_yellow',
-    alt: 'Illistration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+    alt: 'Illustration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
   },
   kodySnowboardingRed: {
     id: 'kentcdodds.com/illustrations/kody-flying_red',
-    alt: 'Illistration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+    alt: 'Illustration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
   },
   kodySnowboardingBlue: {
     id: 'kentcdodds.com/illustrations/kody-flying_blue',
-    alt: 'Illistration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+    alt: 'Illustration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
   },
   helmet: {
     id: 'kentcdodds.com/illustrations/helmet',
