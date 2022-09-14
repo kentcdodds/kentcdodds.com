@@ -127,6 +127,13 @@ First, let's keep in mind, we have 2 goals:
 2. Ensure that `keyof typeof` for our object results in a finite union of the
    keys
 
+<callout-success>
+  TypeScript version 4.9.0 introduces `satisfies` which ... eh... satisfies our
+  use cases here. Please feel free to [skip to the
+  end](#typescript-490---satisfies) if you're using TypeScript v4.9.0 or
+  greater.
+</callout-success>
+
 With TypeScript, it's a challenge to have both of these. By default, we get the
 second goal. The problem is that when you try to accomplish the first goal with
 a type annotation like `const operations: Record<string, OperationFn> = ...`,
@@ -332,6 +339,25 @@ But like, huh. Bummer.
 Luckily, I don't find myself making CIFs very often anyway and they aren't
 difficult to write so I don't need an abstraction for them. Thought it'd be
 interesting to share with you though 😄
+
+## TypeScript 4.9.0 - `satisfies`
+
+With the `satisfies` keyword in TypeScript, you can avoid _all_ these issues
+pretty easily:
+
+```ts
+type OperationFn = (left: number, right: number) => number
+
+const operations = {
+  '+': (left, right) => left + right,
+  '-': (left, right) => left - right,
+  '*': (left, right) => left * right,
+  '/': (left, right) => left / right,
+} satisfies Record<string, OperationFn>
+```
+
+This effectively does the same thing and has none of the drawbacks. Hooray for
+progress!
 
 ## Conclusion
 
