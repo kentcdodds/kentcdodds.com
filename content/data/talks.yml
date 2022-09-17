@@ -907,6 +907,7 @@
   deliveries:
     - event: '[UtahJS Conf](https://conf.utahjs.com)'
       date: 2018-09-14
+      recording: https://youtu.be/SAIdyBFHfVU?list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
     - event:
         '[UtahJS SLC Meetup](https://www.meetup.com/UtahJS/events/245220227)'
       date: 2017-12-19
