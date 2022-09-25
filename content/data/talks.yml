@@ -43,7 +43,32 @@
   description: >-
     This talk is yet to be announced
 
+- title: Fullstack Components
+  deliveries:
+    - event:
+        '[JS Fwdays Europe](https://fwdays.com/en/event/javascript-fwdays-2022)'
+      date: 2022-11-10
+  tags:
+    - remix
+  description: >-
+    Remix is a web framework that gives you the simple mental model of a
+    Multi-Page App (MPA) but the power and capabilities of a Single-Page App
+    (SPA). One of the big challenges of SPAs is network management resulting in
+    a great deal of indirection and buggy code. This is especially noticeable in
+    application state which Remix completely eliminates, but it's also an issue
+    in individual components that communicate with a single-purpose backend
+    endpoint (like a combobox search for example).
+
+
+    In this talk, Kent will demonstrate how Remix enables you to build complex
+    UI components that are connected to a backend in the simplest and most
+    powerful way you've ever seen. Leaving you time to chill with your family or
+    whatever else you do for fun 😎.
+
 - title: The Web's Next Transformation
+  resources:
+    - '[slides and
+      demo](https://github.com/kentcdodds/the-webs-next-transformation)'
   deliveries:
     - event: '[React India](https://www.reactindia.io)'
       date: 2022-09-23
@@ -55,6 +80,8 @@
       date: 2022-11-01
   tags:
     - keynote
+    - remix
+    - web
   description: >-
     The web. What started as a document sharing platform has evolved into an
     application platform. The web has been through a number of transformations
@@ -81,6 +108,7 @@
       recording: 'https://www.youtube.com/watch?v=gb2DGJB1ZsM&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf'
   tags:
     - keynote
+    - remix
   description: >-
     When implementing the design of a user interface, we often finish before
     remembering that not everyone's running the app's services locally on their
@@ -103,6 +131,7 @@
       recording: https://www.youtube.com/watch?v=o5sLLYxRtko&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf&t=100s
   tags:
     - lightning
+    - testing
   description: >-
     There's a spectrum of abstraction and tests are no less important to
     consider your abstractions than anything else. In this quick talk, we'll
