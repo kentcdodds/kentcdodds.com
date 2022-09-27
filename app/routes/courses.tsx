@@ -158,6 +158,18 @@ function CoursesHome() {
         </div>
 
         <SmallCourseCard
+          title="Advanced Remix"
+          description="Take your Remix skills to the next level."
+          imageBuilder={images.courseFEMAdvancedRemix}
+          courseUrl="https://frontendmasters.com/courses/advanced-remix/"
+        />
+        <SmallCourseCard
+          title="Remix Fundamentals"
+          description="Follow this workshop to learn the fundamentals of Remix."
+          imageBuilder={images.courseFEMRemixFundamentals}
+          courseUrl="https://frontendmasters.com/courses/remix/"
+        />
+        <SmallCourseCard
           title="Up and Running with Remix"
           description="Jump in feet first and learn the most productive way to build a web application with the web framework that offers the best UX and DX the web has to offer."
           imageBuilder={images.courseUpAndRunningWithRemix}

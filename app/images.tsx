@@ -250,6 +250,14 @@ const images = createImages({
     id: 'kentcdodds.com/pages/courses/use-suspense-to-simplify-your-async-ui',
     alt: 'Illustration for Use Suspense to Simplify Your Async UI',
   },
+  courseFEMAdvancedRemix: {
+    id: 'kentcdodds.com/pages/courses/fem-advanced-remix',
+    alt: 'Illustration of the Remix logo R with the word "Advanced"',
+  },
+  courseFEMRemixFundamentals: {
+    id: 'kentcdodds.com/pages/courses/fem-remix-fundamentals',
+    alt: 'Illustration of the Remix logo R with the word "Fundamentals"',
+  },
 })
 
 const kodyProfiles: Record<OptionalTeam, {src: string; alt: string}> = {
