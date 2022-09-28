@@ -159,13 +159,13 @@ function CoursesHome() {
 
         <SmallCourseCard
           title="Advanced Remix"
-          description="Take your Remix skills to the next level."
+          description="Remix is a terrific tool for building simple websites and even better for building complex web applications. Remix solves many problems in modern web development. You don't even think about server cache management or global CSS namespace clashes. It's not that Remix has APIs to avoid these problems; they simply don't exist when you're using Remix!"
           imageBuilder={images.courseFEMAdvancedRemix}
           courseUrl="https://frontendmasters.com/courses/advanced-remix/"
         />
         <SmallCourseCard
           title="Remix Fundamentals"
-          description="Follow this workshop to learn the fundamentals of Remix."
+          description="Remix is a fullstack web framework that enables you to deliver a fast, slick, and resilient user experience. With Remix, you can build both static websites and dynamic web apps (requiring user data) while embracing the web platform's standard APIs along the way! Ready to build web apps faster?"
           imageBuilder={images.courseFEMRemixFundamentals}
           courseUrl="https://frontendmasters.com/courses/remix/"
         />
