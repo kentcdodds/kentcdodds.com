@@ -876,9 +876,7 @@ Now _that's_ what I'm talking about! And with Remix, I can easily query directly
 in my `loader`, and then have that **typed** data available in my component:
 
 ```tsx
-type LoaderData = Await<ReturnType<typeof getLoaderData>>
-
-async function getLoaderData() {
+export async function loader({request}: LoaderArgs) {
   const users = await prismaRead.user.findMany({
     select: {
       id: true,
@@ -892,15 +890,11 @@ async function getLoaderData() {
       },
     },
   })
-  return {users}
-}
-
-export const loader: LoaderFunction = async ({request}) => {
-  return json(await getLoaderData())
+  return json({users})
 }
 
 export default function UsersPage() {
-  const data = useLoaderData<LoaderData>()
+  const data = useLoaderData<typeof loader>()
   return (
     <div>
       <h1>Users</h1>

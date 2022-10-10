@@ -34,15 +34,6 @@
   description: >-
     This talk is yet to be announced
 
-- title: Modern Frontends Live 2022 Keynote
-  deliveries:
-    - event: '[Modern Frontends Live](https://www.modernfrontends.live/)'
-      date: 2022-11-17
-  tags:
-    - keynote
-  description: >-
-    This talk is yet to be announced
-
 - title: Fullstack Components
   deliveries:
     - event:
@@ -78,6 +69,8 @@
       date: 2022-10-28
     - event: '[All Things Open](https://www.allthingsopen.org/)'
       date: 2022-11-01
+    - event: '[Modern Frontends Live](https://www.modernfrontends.live/)'
+      date: 2022-11-17
   tags:
     - keynote
     - remix
