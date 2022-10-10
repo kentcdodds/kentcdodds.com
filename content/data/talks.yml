@@ -39,6 +39,8 @@
     - event:
         '[JS Fwdays Europe](https://fwdays.com/en/event/javascript-fwdays-2022)'
       date: 2022-11-10
+    - event: '[Remix Conf Europe](https://remixconf.eu/)'
+      date: 2022-11-18
   tags:
     - remix
   description: >-
