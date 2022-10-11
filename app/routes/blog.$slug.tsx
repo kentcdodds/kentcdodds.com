@@ -558,7 +558,7 @@ export default function MdxScreen() {
           ) : null}
         </Grid>
 
-        <Grid className="prose prose-light mb-24 dark:prose-dark">
+        <Grid className="prose prose-light mb-24 break-all dark:prose-dark">
           <Component />
         </Grid>
       </main>
