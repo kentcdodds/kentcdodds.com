@@ -63,11 +63,15 @@ export const action: ActionFunction = async ({request}) => {
 
       const sender = `"${user.firstName}" <${user.email}>`
 
+      // this bit is included so I can have a filter that ensures
+      // messages sent from the contact form never end up in spam.
+      const noSpamMessage = '- Sent via the KCD Contact Form'
+
       await sendEmail({
         from: sender,
         to: `"Kent C. Dodds" <me@kentcdodds.com>`,
         subject,
-        text: body,
+        text: `${body}\n\n${noSpamMessage}`,
       })
 
       const actionData: ActionData = {fields, status: 'success', errors: {}}
