@@ -5,6 +5,7 @@ import {getBlogMdxListItems} from './mdx'
 import {prismaRead} from './prisma.server'
 import {
   getDomainUrl,
+  getOptionalTeam,
   getRequiredServerEnvVar,
   teams,
   typedBoolean,
@@ -392,7 +393,7 @@ async function notifyOfTeamLeaderChangeOnPost({
     } else {
       const who = reader
         ? `Someone on the ${
-            teamEmoji[reader.team]
+            teamEmoji[getOptionalTeam(reader.team)]
           } ${reader.team.toLowerCase()} team`
         : `An anonymous user`
       const cause = `${who} just read ${url} and triggered a recalculation of the rankings: ${prevTeamMention} lost the post and it's now claimed by ${newTeamMention}!`

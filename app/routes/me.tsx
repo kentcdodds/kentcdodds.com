@@ -17,6 +17,7 @@ import {
   getDisplayUrl,
   getDomainUrl,
   getErrorMessage,
+  getTeam,
   getUrl,
   reuseUsefulLoaderHeaders,
 } from '~/utils/misc'
@@ -194,10 +195,12 @@ function YouScreen() {
   const otherSessionsCount = data.sessionCount - 1
   const actionData = useActionData<ActionData>()
   const {requestInfo, userInfo, user} = useRootData()
+  const team = getTeam(user?.team)
 
   // this *should* never happen...
   if (!user) throw new Error('user required')
   if (!userInfo) throw new Error('userInfo required')
+  if (!team) throw new Error('team required')
 
   const authorizeURL = getDiscordAuthorizeURL(requestInfo.origin)
   const [qrIsVisible, setQrIsVisible] = React.useState(false)
@@ -309,7 +312,7 @@ function YouScreen() {
                       <button
                         type="submit"
                         aria-label="remove connection"
-                        className="text-secondary outline-none rotate-45 hover:scale-150 focus:scale-150"
+                        className="text-secondary rotate-45 outline-none hover:scale-150 focus:scale-150"
                       >
                         <PlusIcon />
                       </button>
@@ -337,12 +340,12 @@ function YouScreen() {
               className="sr-only"
               type="radio"
               name="team"
-              value={user.team}
+              value={team}
               checked
               readOnly
             />
 
-            <div className="focus-within:outline-none relative col-span-full mb-3 rounded-lg bg-gray-100 ring-2 ring-team-current ring-offset-4 ring-offset-team-current ring-offset-team-current focus-within:ring-2 dark:bg-gray-800 lg:col-span-4 lg:mb-0">
+            <div className="relative col-span-full mb-3 rounded-lg bg-gray-100 ring-2 ring-team-current ring-offset-4 ring-offset-team-current ring-offset-team-current focus-within:outline-none focus-within:ring-2 dark:bg-gray-800 lg:col-span-4 lg:mb-0">
               <span className="absolute left-9 top-9 text-team-current">
                 <CheckCircledIcon />
               </span>
@@ -350,10 +353,10 @@ function YouScreen() {
               <div className="block px-12 pb-12 pt-20 text-center">
                 <img
                   className="mb-16 block"
-                  src={TEAM_MAP[user.team].image()}
-                  alt={TEAM_MAP[user.team].image.alt}
+                  src={TEAM_MAP[team].image()}
+                  alt={TEAM_MAP[team].image.alt}
                 />
-                <H6 as="span">{TEAM_MAP[user.team].label}</H6>
+                <H6 as="span">{TEAM_MAP[team].label}</H6>
               </div>
             </div>
           </div>

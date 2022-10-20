@@ -3,7 +3,7 @@ import {getImageBuilder, images} from '../images'
 import * as ck from '../convertkit/convertkit.server'
 import * as discord from './discord.server'
 import type {Timings} from './metrics.server'
-import {getAvatar, getDomainUrl} from './misc'
+import {getAvatar, getDomainUrl, getOptionalTeam} from './misc'
 import {redisCache} from './redis.server'
 import {cachified} from './cache.server'
 
@@ -35,10 +35,11 @@ async function getDirectAvatarForUser(
       RED: images.kodyProfileRed.id,
       BLUE: images.kodyProfileBlue.id,
       YELLOW: images.kodyProfileYellow.id,
+      UNKNOWN: images.kodyProfileWhite.id,
     }
     return {
       hasGravatar,
-      avatar: getImageBuilder(imageProfileIds[team])({
+      avatar: getImageBuilder(imageProfileIds[getOptionalTeam(team)])({
         resize: {
           type: 'pad',
           width: size,

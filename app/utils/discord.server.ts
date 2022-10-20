@@ -1,6 +1,6 @@
 import type {User, Team} from '~/types'
 import {prismaWrite} from './prisma.server'
-import {getRequiredServerEnvVar} from './misc'
+import {getRequiredServerEnvVar, getTeam} from './misc'
 
 const DISCORD_CLIENT_ID = getRequiredServerEnvVar('DISCORD_CLIENT_ID')
 const DISCORD_CLIENT_SECRET = getRequiredServerEnvVar('DISCORD_CLIENT_SECRET')
@@ -128,7 +128,11 @@ async function updateDiscordRolesForUser(
     data: {discordId: discordMember.user.id},
   })
 
-  const teamRole = discordRoleTeams[user.team]
+  const team = getTeam(user.team)
+  if (!team) {
+    return
+  }
+  const teamRole = discordRoleTeams[team]
 
   if (!discordMember.roles.includes(teamRole)) {
     await fetchAsDiscordBot(

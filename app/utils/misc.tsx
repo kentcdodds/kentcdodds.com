@@ -2,18 +2,19 @@ import * as React from 'react'
 import type {HeadersFunction} from '@remix-run/node'
 import type {LinkProps} from '@remix-run/react'
 import {Link} from '@remix-run/react'
-import type {NonNullProperties, User} from '~/types'
-import {Team} from '@prisma/client'
+import type {NonNullProperties, User, Team, Role, OptionalTeam} from '~/types'
 import * as dateFns from 'date-fns'
 import md5 from 'md5-hash'
 import {images} from '../images'
 import type {getEnv} from './env.server'
 
-const teams: Array<Team> = Object.values(Team)
+const teams: Array<Team> = ['RED', 'BLUE', 'YELLOW']
+const roles: Array<Role> = ['ADMIN', 'MEMBER']
 const isTeam = (team?: string): team is Team => teams.includes(team as Team)
-const unknownTeam = {UNKNOWN: 'UNKNOWN'} as const
-const optionalTeams = {...Team, ...unknownTeam}
-type OptionalTeam = typeof optionalTeams[keyof typeof optionalTeams]
+const isRole = (role?: string): role is Role => roles.includes(role as Role)
+const getTeam = (team?: string): Team | null => (isTeam(team) ? team : null)
+const getOptionalTeam = (team?: string): OptionalTeam =>
+  isTeam(team) ? team : 'UNKNOWN'
 
 const defaultAvatarSize = 128
 function getAvatar(
@@ -36,10 +37,11 @@ function getAvatar(
   return url.toString()
 }
 
-const avatarFallbacks: Record<Team, (width: number) => string> = {
+const avatarFallbacks: Record<OptionalTeam, (width: number) => string> = {
   BLUE: (width: number) => images.kodyProfileBlue({resize: {width}}),
   RED: (width: number) => images.kodyProfileRed({resize: {width}}),
   YELLOW: (width: number) => images.kodyProfileYellow({resize: {width}}),
+  UNKNOWN: (width: number) => images.kodyProfileWhite({resize: {width}}),
 }
 
 function getAvatarForUser(
@@ -48,7 +50,7 @@ function getAvatarForUser(
 ) {
   return {
     src: getAvatar(email, {
-      fallback: avatarFallbacks[team](size),
+      fallback: avatarFallbacks[getOptionalTeam(team)](size),
       size,
       origin,
     }),
@@ -388,9 +390,11 @@ export {
   toBase64,
   removeTrailingSlash,
   reuseUsefulLoaderHeaders,
-  unknownTeam,
   teams,
   isTeam,
+  isRole,
+  getTeam,
+  getOptionalTeam,
   teamDisplay,
   teamTextColorClasses,
   formatDate,

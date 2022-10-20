@@ -41,6 +41,8 @@ COPY --from=deps /app/node_modules /app/node_modules
 # schema doesn't change much so these will stay cached
 ADD prisma .
 RUN npx prisma generate
+ADD prisma-postgres .
+RUN npx prisma generate --schema ./prisma-postgres/schema.prisma
 
 # app code changes all the time
 ADD . .
@@ -49,7 +51,10 @@ RUN npm run build
 # build smaller image for running
 FROM base
 
+ENV DATABASE_URL=file:/data/sqlite.db
 ENV NODE_ENV=production
+# Make SQLite CLI accessible
+RUN echo "#!/bin/sh\nset -x\nsqlite3 \$DATABASE_URL" > /usr/local/bin/database-cli && chmod +x /usr/local/bin/database-cli
 
 RUN mkdir /app/
 WORKDIR /app/

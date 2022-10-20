@@ -12,6 +12,7 @@ import {
   getAvatarForUser,
   getErrorMessage,
   getNonNull,
+  getOptionalTeam,
   getRequiredServerEnvVar,
   useDoubleCheck,
 } from '~/utils/misc'
@@ -126,7 +127,7 @@ Thanks for your call. Kent just replied and the episode has been published to th
         const channelId = getRequiredServerEnvVar('DISCORD_CALL_KENT_CHANNEL')
         const {firstName, team, discordId} = call.user
         const userMention = discordId ? `<@!${discordId}>` : firstName
-        const emoji = teamEmoji[team]
+        const emoji = teamEmoji[getOptionalTeam(team)]
         const message = `📳 ring ring! New Call Kent Podcast episode from ${userMention} ${emoji}: "${title}"\n\n${description}\n\n${episodeUrl}`
         void sendMessageFromDiscordBot(channelId, message)
       } catch (error: unknown) {

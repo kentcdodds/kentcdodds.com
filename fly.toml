@@ -12,7 +12,8 @@ kill_timeout = 5
   PRIMARY_REGION = "dfw"
 
 [deploy]
-  release_command = "npx prisma migrate deploy"
+  # TODO: remove migration one-off script
+  release_command = "node ./other/runfile.js prisma-postgres/migrate.ts && npx prisma migrate deploy"
 
 # IDEA: add back statics config here (fa0fbe9)
 

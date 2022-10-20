@@ -2,11 +2,11 @@ import * as React from 'react'
 import {Link} from '@remix-run/react'
 import {motion, useReducedMotion} from 'framer-motion'
 import clsx from 'clsx'
-import type {Team} from '@prisma/client'
 import {useRootData} from '~/utils/use-root-data'
 import {useTeam} from '~/utils/team-provider'
 import {kodyProfiles} from '~/images'
-import {formatNumber} from '~/utils/misc'
+import {formatNumber, getOptionalTeam} from '~/utils/misc'
+import type {Team} from '~/types'
 
 const barColors: Record<Team, string> = {
   RED: 'bg-team-red',
@@ -36,7 +36,9 @@ function Stat({
 }) {
   const {userInfo} = useRootData()
   const [currentTeam] = useTeam()
-  const avatar = userInfo ? userInfo.avatar : kodyProfiles[team]
+  const avatar = userInfo
+    ? userInfo.avatar
+    : kodyProfiles[getOptionalTeam(team)]
   const isUsersTeam = team === currentTeam
 
   const MotionEl = onClick ? motion.button : motion.div
@@ -56,7 +58,7 @@ function Stat({
       initial="initial"
       whileHover="hover"
       whileFocus="hover"
-      className="focus:outline-none relative flex origin-right items-center justify-center"
+      className="relative flex origin-right items-center justify-center focus:outline-none"
       transition={transition}
       variants={{
         initial: {width: 22},

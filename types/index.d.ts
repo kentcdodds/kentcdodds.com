@@ -2,7 +2,7 @@
 /// <reference types="@remix-run/node/dist/globals" />
 
 import type calculateReadingTime from 'reading-time'
-import type {User, Call, Session, Team, Role} from '@prisma/client'
+import type {User, Call, Session} from '@prisma/client'
 
 type NonNullProperties<Type> = {
   [Key in keyof Type]-?: Exclude<Type[Key], null | undefined>
@@ -198,6 +198,9 @@ type KCDHandle = {
 }
 
 type GitHubFile = {path: string; content: string}
+type Team = 'RED' | 'BLUE' | 'YELLOW'
+type Role = 'ADMIN' | 'MEMBER'
+type OptionalTeam = Team | 'UNKNOWN'
 
 export {
   NonNullProperties,
@@ -207,6 +210,7 @@ export {
   Session,
   Team,
   Role,
+  OptionalTeam,
   MdxPage,
   MdxListItem,
   Workshop,

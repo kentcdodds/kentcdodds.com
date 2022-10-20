@@ -1,4 +1,3 @@
-import type {Role} from '@prisma/client'
 import type {ActionFunction} from '@remix-run/node'
 import {redirect} from '@remix-run/node'
 import {
@@ -14,7 +13,7 @@ export const action: ActionFunction = async ({request}) => {
   const email = form.email
   const firstName = form.firstName
   const team = form.team
-  const role = (form.role ?? 'MEMBER') as Role
+  const role = form.role ?? 'MEMBER'
   if (typeof email !== 'string') {
     throw new Error('email required for login page')
   }

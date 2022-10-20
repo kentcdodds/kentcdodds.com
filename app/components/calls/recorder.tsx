@@ -2,7 +2,7 @@ import * as React from 'react'
 import gsap from 'gsap'
 import {createMachine, assign, send as sendUtil} from 'xstate'
 import {useMachine} from '@xstate/react'
-import {assertNonNull} from '~/utils/misc'
+import {assertNonNull, getOptionalTeam} from '~/utils/misc'
 import {Button, LinkButton} from '../button'
 import {Paragraph} from '../typography'
 import {Tag} from '../tag'
@@ -10,8 +10,8 @@ import {MicrophoneIcon} from '../icons/microphone-icon'
 import {SquareIcon} from '../icons/square-icon'
 import {PauseIcon} from '../icons/pause-icon'
 import {TriangleIcon} from '../icons/triangle-icon'
-import type {Team} from '~/types'
 import {useInterval} from '../hooks/use-interval'
+import type {OptionalTeam} from '~/types'
 
 // Play around with these values to affect the audio visualisation.
 // Should be able to stream the visualisation back no problem.
@@ -23,10 +23,11 @@ const SHIFT_DELAY = 0.05
 const GROW_SPEED = 0.25
 const GROW_DELAY = 0
 const BAR_WIDTH = 4
-const colorsByTeam: Record<Team, [string, string, string]> = {
+const colorsByTeam: Record<OptionalTeam, [string, string, string]> = {
   RED: ['#FF9393', '#FF4545', '#BA0808'],
   BLUE: ['#8CCAFE', '#36A4FF', '#018AFB'],
   YELLOW: ['#FFE792', '#FFD644', '#BA9308'],
+  UNKNOWN: ['#C4C4C4', '#8C8C8C', '#4C4C4C'],
 }
 
 const theme = {
@@ -204,7 +205,7 @@ function CallRecorder({
   team,
 }: {
   onRecordingComplete: (audio: Blob) => void
-  team: Team
+  team: string
 }) {
   const [state, send] = useMachine(recorderMachine)
   const [timer, setTimer] = React.useState<number>(0)
@@ -661,9 +662,9 @@ function StreamVis({
   playbackRef: React.MutableRefObject<HTMLAudioElement | null>
   replay?: boolean
   metadata: React.MutableRefObject<Array<number>>
-  team: Team
+  team: string
 }) {
-  const colors = colorsByTeam[team]
+  const colors = colorsByTeam[getOptionalTeam(team)]
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null)
   const nodesRef = React.useRef<
     Array<{

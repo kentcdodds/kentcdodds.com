@@ -22,7 +22,12 @@ import {ButtonLink} from '~/components/button'
 import {ServerError} from '~/components/errors'
 import {getBlogMdxListItems} from '~/utils/mdx'
 import type {OptionalTeam} from '~/utils/misc'
-import {formatNumber, reuseUsefulLoaderHeaders, teams} from '~/utils/misc'
+import {
+  getOptionalTeam,
+  formatNumber,
+  reuseUsefulLoaderHeaders,
+  teams,
+} from '~/utils/misc'
 import {getRankingLeader} from '~/utils/blog'
 import {getUser} from '~/utils/session.server'
 
@@ -64,10 +69,9 @@ export const loader: LoaderFunction = async ({request}) => {
         ? 'hundreds of thousands of'
         : formatNumber(totalBlogReads),
     currentBlogLeaderTeam: getRankingLeader(blogRankings)?.team,
-    kodyTeam:
-      user?.team ??
-      teams[Math.floor(Math.random() * teams.length)] ??
-      'UNKNOWN',
+    kodyTeam: getOptionalTeam(
+      user?.team ?? teams[Math.floor(Math.random() * teams.length)],
+    ),
   }
   return json(data, {
     headers: {

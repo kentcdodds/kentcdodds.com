@@ -9,7 +9,7 @@ import {useTeam} from '~/utils/team-provider'
 import {getSession, getUser} from '~/utils/session.server'
 import {getLoginInfoSession} from '~/utils/login.server'
 import {prismaWrite, prismaRead, validateMagicLink} from '~/utils/prisma.server'
-import {getErrorStack, teams} from '~/utils/misc'
+import {getErrorStack, isTeam, teams} from '~/utils/misc'
 import {tagKCDSiteSubscriber} from '../convertkit/convertkit.server'
 import {Grid} from '~/components/grid'
 import {H2, H6, Paragraph} from '~/components/typography'
@@ -52,7 +52,7 @@ function getErrorForFirstName(name: string | null) {
 
 function getErrorForTeam(team: string | null) {
   if (!team) return `Team is required`
-  if (!teams.includes(team as Team)) return `Please choose a valid team`
+  if (!isTeam(team)) return `Please choose a valid team`
   return null
 }
 

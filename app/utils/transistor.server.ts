@@ -8,7 +8,6 @@ import type {
   TransistorEpisodesJson,
   CallKentEpisode,
   TransistorUpdateEpisodeData,
-  Team,
 } from '~/types'
 import {getDomainUrl, getRequiredServerEnvVar, toBase64} from './misc'
 import {redisCache} from './redis.server'
@@ -73,7 +72,7 @@ async function createEpisode({
   summary: string
   description: string
   keywords: string
-  user: {firstName: string; email: string; team: Team}
+  user: {firstName: string; email: string; team: string}
   request: Request
   avatar?: string | null
 }) {

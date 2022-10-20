@@ -13,6 +13,7 @@ import {
   getDomainUrl,
   getErrorMessage,
   getNonNull,
+  getOptionalTeam,
   getRequiredServerEnvVar,
 } from '~/utils/misc'
 import {
@@ -78,7 +79,7 @@ export const action: ActionFunction = async ({request}) => {
       const adminUserId = getRequiredServerEnvVar('DISCORD_ADMIN_USER_ID')
       const {firstName, team, discordId} = user
       const userMention = discordId ? `<@!${discordId}>` : firstName
-      const emoji = teamEmoji[team]
+      const emoji = teamEmoji[getOptionalTeam(team)]
       const message = `📳 <@!${adminUserId}> ring ring! New call from ${userMention} ${emoji}: "${title}"\n\n${description}\n\n${domainUrl}/calls/admin/${createdCall.id}`
       void sendMessageFromDiscordBot(channelId, message)
     } catch (error: unknown) {
