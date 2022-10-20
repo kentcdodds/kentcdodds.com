@@ -2,7 +2,7 @@ import {createCookieSessionStorage, redirect} from '@remix-run/node'
 import type {User} from '@prisma/client'
 import {sendMagicLinkEmail} from './send-email.server'
 import {
-  getUserByEmail,
+  prismaRead,
   getMagicLink,
   getUserFromSessionId,
   prismaWrite,
@@ -40,10 +40,12 @@ async function sendToken({
     domainUrl,
   })
 
-  const user = await getUserByEmail(emailAddress).catch(() => {
-    /* ignore... */
-    return null
-  })
+  const user = await prismaRead.user
+    .findUnique({where: {email: emailAddress}})
+    .catch(() => {
+      /* ignore... */
+      return null
+    })
 
   await sendMagicLinkEmail({
     emailAddress,
@@ -149,7 +151,7 @@ async function getUserSessionFromMagicLink(request: Request) {
     loginInfoSession.getMagicLink(),
   )
 
-  const user = await getUserByEmail(email)
+  const user = await prismaRead.user.findUnique({where: {email}})
   if (!user) return null
 
   const session = await getSession(request)

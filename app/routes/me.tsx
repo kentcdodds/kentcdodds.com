@@ -25,12 +25,7 @@ import {
   deleteConvertKitCache,
   deleteDiscordCache,
 } from '~/utils/user-info.server'
-import {
-  prismaRead,
-  deleteUser,
-  getMagicLink,
-  updateUser,
-} from '~/utils/prisma.server'
+import {prismaRead, prismaWrite, getMagicLink} from '~/utils/prisma.server'
 import {
   deleteOtherSessions,
   getSession,
@@ -140,7 +135,10 @@ export const action: ActionFunction = async ({request}) => {
     }
     if (actionId === actionIds.deleteDiscordConnection && user.discordId) {
       await deleteDiscordCache(user.discordId)
-      await updateUser(user.id, {discordId: null})
+      await prismaWrite.user.update({
+        where: {id: user.id},
+        data: {discordId: null},
+      })
       const searchParams = new URLSearchParams({
         message: `✅ Connection deleted`,
       })
@@ -152,7 +150,10 @@ export const action: ActionFunction = async ({request}) => {
         validators: {firstName: getFirstNameError},
         handleFormValues: async ({firstName}) => {
           if (firstName && user.firstName !== firstName) {
-            await updateUser(user.id, {firstName})
+            await prismaWrite.user.update({
+              where: {id: user.id},
+              data: {firstName},
+            })
           }
           const searchParams = new URLSearchParams({
             message: `✅ Sucessfully saved your info`,
@@ -174,7 +175,7 @@ export const action: ActionFunction = async ({request}) => {
       if (user.discordId) await deleteDiscordCache(user.discordId)
       if (user.convertKitId) await deleteConvertKitCache(user.convertKitId)
 
-      await deleteUser(user.id)
+      await prismaWrite.user.delete({where: {id: user.id}})
       const searchParams = new URLSearchParams({
         message: `✅ Your KCD account and all associated data has been completely deleted from the KCD database.`,
       })

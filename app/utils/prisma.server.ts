@@ -1,8 +1,7 @@
 import {PrismaClient} from '@prisma/client'
 import chalk from 'chalk'
-import type {User, Session} from '~/types'
+import type {Session} from '~/types'
 import {encrypt, decrypt} from './encryption.server'
-import {getRequiredServerEnvVar} from './misc'
 
 declare global {
   // This prevents us from making multiple connections to the db when the
@@ -13,44 +12,12 @@ declare global {
   var prismaWrite: ReturnType<typeof getClient> | undefined
 }
 
-const DATABASE_URL = getRequiredServerEnvVar('DATABASE_URL')
-const regionalDB = new URL(DATABASE_URL)
-const primaryDB = new URL(DATABASE_URL)
-
-// Need a lot more than the default of 3 connections for this app.
-const totalConnections = 100
-regionalDB.searchParams.set('connection_limit', totalConnections.toString())
-const totalRegions = 7
-primaryDB.searchParams.set(
-  'connection_limit',
-  Math.floor(totalConnections / totalRegions).toString(),
-)
-
-const isLocalHost = regionalDB.hostname === 'localhost'
-const PRIMARY_REGION = isLocalHost
-  ? null
-  : getRequiredServerEnvVar('PRIMARY_REGION')
-
-const FLY_REGION = isLocalHost ? null : getRequiredServerEnvVar('FLY_REGION')
-const isPrimaryRegion = PRIMARY_REGION === FLY_REGION
-if (!isLocalHost) {
-  regionalDB.host = `${FLY_REGION}.${regionalDB.host}`
-  primaryDB.host = `${PRIMARY_REGION}.${primaryDB.host}`
-  if (!isPrimaryRegion) {
-    // 5433 is the read-replica port
-    regionalDB.port = '5433'
-  }
-}
-
 const logThreshold = 50
 
-const prismaRead =
-  global.prismaRead ?? (global.prismaRead = getClient(regionalDB, 'read'))
-const prismaWrite =
-  global.prismaWrite ?? (global.prismaWrite = getClient(primaryDB, 'write'))
+const prismaRead = global.prismaRead ?? (global.prismaRead = getClient())
+const prismaWrite = prismaRead
 
-function getClient(connectionUrl: URL, type: 'write' | 'read'): PrismaClient {
-  console.log(`Setting up prisma client to ${connectionUrl.host} for ${type}`)
+function getClient(): PrismaClient {
   // NOTE: during development if you change anything in this function, remember
   // that this only runs once per server restart and won't automatically be
   // re-run per request like everything else is.
@@ -61,11 +28,6 @@ function getClient(connectionUrl: URL, type: 'write' | 'read'): PrismaClient {
       {level: 'info', emit: 'stdout'},
       {level: 'warn', emit: 'stdout'},
     ],
-    datasources: {
-      db: {
-        url: connectionUrl.toString(),
-      },
-    },
   })
   client.$on('query', async e => {
     if (e.duration < logThreshold) return
@@ -86,25 +48,6 @@ function getClient(connectionUrl: URL, type: 'write' | 'read'): PrismaClient {
   // make the connection eagerly so the first request doesn't have to wait
   void client.$connect()
   return client
-}
-
-const isProd = process.env.NODE_ENV === 'production'
-
-if (!isProd && !isLocalHost) {
-  // if we're connected to a non-localhost db, let's make
-  // sure we know it.
-  const domain = new URL(DATABASE_URL)
-  if (domain.password) {
-    domain.password = '**************'
-  }
-  console.warn(
-    `
-⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️
-Connected to non-localhost DB in dev mode:
-  ${domain.toString()}
-⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️
-    `.trim(),
-  )
 }
 
 const linkExpirationTime = 1000 * 60 * 30
@@ -236,14 +179,6 @@ async function getUserFromSessionId(sessionId: string) {
   return session.user
 }
 
-function getUserByEmail(email: string) {
-  return prismaRead.user.findUnique({where: {email}})
-}
-
-async function deleteUser(userId: string) {
-  return prismaWrite.user.delete({where: {id: userId}})
-}
-
 async function getAllUserData(userId: string) {
   const {default: pProps} = await import('p-props')
   return pProps({
@@ -252,16 +187,6 @@ async function getAllUserData(userId: string) {
     postReads: prismaRead.postRead.findMany({where: {userId}}),
     sessions: prismaRead.session.findMany({where: {userId}}),
   })
-}
-
-function updateUser(
-  userId: string,
-  updatedInfo: Omit<
-    Partial<User>,
-    'id' | 'email' | 'team' | 'createdAt' | 'updatedAt'
-  >,
-) {
-  return prismaWrite.user.update({where: {id: userId}, data: updatedInfo})
 }
 
 async function addPostRead({
@@ -301,9 +226,6 @@ export {
   sessionExpirationTime,
   createSession,
   getUserFromSessionId,
-  getUserByEmail,
-  updateUser,
-  deleteUser,
   getAllUserData,
   addPostRead,
 }

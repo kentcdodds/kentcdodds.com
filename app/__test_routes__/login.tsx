@@ -1,11 +1,6 @@
 import type {ActionFunction} from '@remix-run/node'
 import {redirect} from '@remix-run/node'
-import {
-  getMagicLink,
-  updateUser,
-  getUserByEmail,
-  prismaWrite,
-} from '~/utils/prisma.server'
+import {getMagicLink, prismaWrite, prismaRead} from '~/utils/prisma.server'
 import {getDomainUrl} from '~/utils/misc'
 
 export const action: ActionFunction = async ({request}) => {
@@ -21,10 +16,10 @@ export const action: ActionFunction = async ({request}) => {
     throw new Error('All test emails must end in example.com')
   }
 
-  const user = await getUserByEmail(email)
+  const user = await prismaRead.user.findUnique({where: {email}})
   if (user) {
     if (typeof firstName === 'string') {
-      await updateUser(user.id, {firstName})
+      await prismaWrite.user.update({where: {id: user.id}, data: {firstName}})
     }
   } else {
     if (typeof firstName !== 'string') {

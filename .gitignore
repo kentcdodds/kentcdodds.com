@@ -8,6 +8,7 @@ node_modules/
 /public/build
 /coverage
 tsconfig.tsbuildinfo
+/prisma/data.db
 
 /app/styles/**/*.css
 other/postcss.ignored
