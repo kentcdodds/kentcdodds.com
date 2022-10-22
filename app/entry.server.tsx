@@ -4,6 +4,7 @@ import type {EntryContext} from '@remix-run/node'
 import {RemixServer as Remix} from '@remix-run/react'
 import {getEnv} from './utils/env.server'
 import {routes as otherRoutes} from './other-routes.server'
+import {getFlyReplayResponse, getRequiredServerEnvVar} from './utils/misc'
 
 if (process.env.NODE_ENV === 'development') {
   try {
@@ -21,6 +22,15 @@ export default async function handleRequest(
   responseHeaders: Headers,
   remixContext: EntryContext,
 ) {
+  if (responseStatusCode >= 500) {
+    // maybe we're just in trouble in this region... if we're not in the primary
+    // region, then replay and hopefully it works next time.
+    const FLY_REGION = getRequiredServerEnvVar('FLY_REGION')
+    if (FLY_REGION !== ENV.PRIMARY_REGION) {
+      return getFlyReplayResponse()
+    }
+  }
+
   for (const handler of otherRoutes) {
     // eslint-disable-next-line no-await-in-loop
     const otherRouteResponse = await handler(request, remixContext)
@@ -44,4 +54,16 @@ export default async function handleRequest(
     status: responseStatusCode,
     headers: responseHeaders,
   })
+}
+
+export function handleDataRequest(response: Response) {
+  if (response.status >= 500) {
+    // maybe we're just in trouble in this region... if we're not in the primary
+    // region, then replay and hopefully it works next time.
+    const FLY_REGION = getRequiredServerEnvVar('FLY_REGION')
+    if (FLY_REGION !== ENV.PRIMARY_REGION) {
+      return getFlyReplayResponse()
+    }
+  }
+  return response
 }
