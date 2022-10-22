@@ -4,7 +4,7 @@ import type {EntryContext} from '@remix-run/node'
 import {RemixServer as Remix} from '@remix-run/react'
 import {getEnv} from './utils/env.server'
 import {routes as otherRoutes} from './other-routes.server'
-import {getFlyReplayResponse, getRequiredServerEnvVar} from './utils/misc'
+import {getRequiredServerEnvVar} from './utils/misc'
 
 if (process.env.NODE_ENV === 'development') {
   try {
@@ -27,7 +27,10 @@ export default async function handleRequest(
     // region, then replay and hopefully it works next time.
     const FLY_REGION = getRequiredServerEnvVar('FLY_REGION')
     if (FLY_REGION !== ENV.PRIMARY_REGION) {
-      return getFlyReplayResponse()
+      return new Response('Fly Replay', {
+        status: 409,
+        headers: {'fly-replay': `region=${ENV.PRIMARY_REGION}`},
+      })
     }
   }
 
@@ -62,7 +65,10 @@ export function handleDataRequest(response: Response) {
     // region, then replay and hopefully it works next time.
     const FLY_REGION = getRequiredServerEnvVar('FLY_REGION')
     if (FLY_REGION !== ENV.PRIMARY_REGION) {
-      return getFlyReplayResponse()
+      return new Response('Fly Replay', {
+        status: 409,
+        headers: {'fly-replay': `region=${ENV.PRIMARY_REGION}`},
+      })
     }
   }
   return response
