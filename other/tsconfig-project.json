@@ -10,6 +10,6 @@
     {"path": "../mocks"},
     {"path": "../content"},
     {"path": "../prisma"},
-    {"path": "../cypress"}
+    {"path": "../e2e"}
   ]
 }

@@ -1,14 +1,19 @@
-import type {LoaderFunction} from '@remix-run/node'
-import {redisCache} from '~/utils/redis.server'
+import {json} from '@remix-run/node'
+import {prisma} from '~/utils/prisma.server'
 import {commitShaKey as refreshCacheCommitShaKey} from './action/refresh-cache'
 
-export const loader: LoaderFunction = async () => {
-  const shaInfo = await redisCache.get(refreshCacheCommitShaKey)
-  const data = JSON.stringify(shaInfo)
-  return new Response(data, {
+export async function loader() {
+  const result = await prisma.cache.findUnique({
+    where: {key: refreshCacheCommitShaKey},
+    select: {value: true},
+  })
+  if (!result) {
+    return json(null)
+  }
+  return new Response(result.value, {
     headers: {
       'Content-Type': 'application/json',
-      'Content-Length': String(Buffer.byteLength(data)),
+      'Content-Length': String(Buffer.byteLength(result.value)),
     },
   })
 }

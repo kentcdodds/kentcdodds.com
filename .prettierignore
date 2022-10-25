@@ -9,3 +9,6 @@ node_modules/
 /coverage
 
 app/styles
+/test-results/
+/playwright-report/
+/playwright/.cache/

@@ -250,7 +250,11 @@ async function getQueue() {
   const {default: PQueue} = await import('p-queue')
   if (_queue) return _queue
 
-  _queue = new PQueue({concurrency: 1})
+  _queue = new PQueue({
+    concurrency: 1,
+    throwOnTimeout: true,
+    timeout: 1000 * 30,
+  })
   return _queue
 }
 

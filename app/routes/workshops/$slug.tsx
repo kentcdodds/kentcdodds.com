@@ -17,8 +17,6 @@ import {Spacer} from '~/components/spacer'
 import {TestimonialSection} from '~/components/sections/testimonial-section'
 import {FourOhFour} from '~/components/errors'
 import {getBlogRecommendations} from '~/utils/blog.server'
-import type {Timings} from '~/utils/metrics.server'
-import {getServerTimeHeader} from '~/utils/metrics.server'
 import {getWorkshops} from '~/utils/workshops.server'
 import {useWorkshopsData} from '../workshops'
 import {ConvertKitForm} from '../../convertkit/form'
@@ -61,16 +59,14 @@ export const loader: LoaderFunction = async ({params, request}) => {
   if (!params.slug) {
     throw new Error('params.slug is not defined')
   }
-  const timings: Timings = {}
   const [workshops, blogRecommendations] = await Promise.all([
-    getWorkshops({request, timings}),
+    getWorkshops({request}),
     getBlogRecommendations(request),
   ])
   const workshop = workshops.find(w => w.slug === params.slug)
   const headers = {
     'Cache-Control': 'private, max-age=3600',
     Vary: 'Cookie',
-    'Server-Timing': getServerTimeHeader(timings),
   }
 
   if (!workshop) {

@@ -4,8 +4,6 @@ import {json} from '@remix-run/node'
 import {Outlet} from '@remix-run/react'
 import type {KCDHandle, Workshop} from '~/types'
 import {getWorkshops} from '~/utils/workshops.server'
-import type {Timings} from '~/utils/metrics.server'
-import {getServerTimeHeader} from '~/utils/metrics.server'
 import type {WorkshopEvent} from '~/utils/workshop-tickets.server'
 import {getScheduledEvents} from '~/utils/workshop-tickets.server'
 import {reuseUsefulLoaderHeaders} from '~/utils/misc'
@@ -22,9 +20,8 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  const timings: Timings = {}
   const [workshops, workshopEvents] = await Promise.all([
-    getWorkshops({request, timings}),
+    getWorkshops({request}),
     getScheduledEvents({request}),
   ])
 
@@ -43,7 +40,6 @@ export const loader: LoaderFunction = async ({request}) => {
   const headers = {
     'Cache-Control': 'public, max-age=3600',
     Vary: 'Cookie',
-    'Server-Timing': getServerTimeHeader(timings),
   }
   return json(data, {headers})
 }

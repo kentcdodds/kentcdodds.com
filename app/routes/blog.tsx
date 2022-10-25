@@ -29,8 +29,6 @@ import {filterPosts, getRankingLeader} from '~/utils/blog'
 import {HeroSection} from '~/components/sections/hero-section'
 import {PlusIcon} from '~/components/icons/plus-icon'
 import {Button} from '~/components/button'
-import type {Timings} from '~/utils/metrics.server'
-import {getServerTimeHeader} from '~/utils/metrics.server'
 import {ServerError} from '~/components/errors'
 import {
   formatAbbreviatedNumber,
@@ -64,8 +62,6 @@ export const handle: KCDHandle = {
 }
 
 export async function loader({request}: LoaderArgs) {
-  const timings: Timings = {}
-
   const [
     posts,
     [recommended],
@@ -75,7 +71,7 @@ export async function loader({request}: LoaderArgs) {
     allPostReadRankings,
     userReads,
   ] = await Promise.all([
-    getBlogMdxListItems({request, timings}).then(allPosts =>
+    getBlogMdxListItems({request}).then(allPosts =>
       allPosts.filter(p => !p.frontmatter.draft),
     ),
     getBlogRecommendations(request, {limit: 1}),
@@ -109,7 +105,6 @@ export async function loader({request}: LoaderArgs) {
     headers: {
       'Cache-Control': 'private, max-age=3600',
       Vary: 'Cookie',
-      'Server-Timing': getServerTimeHeader(timings),
     },
   })
 }

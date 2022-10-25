@@ -4,7 +4,7 @@ import {json, redirect} from '@remix-run/node'
 import {Link, Outlet, useLoaderData} from '@remix-run/react'
 import type {Await, KCDHandle} from '~/types'
 import {requireAdminUser} from '~/utils/session.server'
-import {prismaRead, prismaWrite} from '~/utils/prisma.server'
+import {prisma} from '~/utils/prisma.server'
 import {getAvatarForUser} from '~/utils/misc'
 import {useRootData} from '~/utils/use-root-data'
 
@@ -23,7 +23,7 @@ export const action: ActionFunction = async ({request}) => {
     console.warn(`No callId provided to call delete action.`)
     return redirect(new URL(request.url).pathname)
   }
-  const call = await prismaRead.call.findFirst({
+  const call = await prisma.call.findFirst({
     // NOTE: since we require an admin user, we don't need to check
     // whether this user is the creator of the call
     where: {id: callId},
@@ -33,12 +33,12 @@ export const action: ActionFunction = async ({request}) => {
     console.warn(`Failed to get a call to delete by callId: ${callId}`)
     return redirect(new URL(request.url).pathname)
   }
-  await prismaWrite.call.delete({where: {id: callId}})
+  await prisma.call.delete({where: {id: callId}})
   return redirect(new URL(request.url).pathname)
 }
 
 async function getAllCalls() {
-  const calls = await prismaRead.call.findMany({
+  const calls = await prisma.call.findMany({
     select: {
       id: true,
       title: true,

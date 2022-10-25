@@ -8,7 +8,7 @@ import {json, redirect} from '@remix-run/node'
 import {Form, useLoaderData} from '@remix-run/react'
 import type {Call, KCDHandle} from '~/types'
 import {requireUser} from '~/utils/session.server'
-import {prismaRead, prismaWrite} from '~/utils/prisma.server'
+import {prisma} from '~/utils/prisma.server'
 import {Paragraph} from '~/components/typography'
 import {reuseUsefulLoaderHeaders, useDoubleCheck} from '~/utils/misc'
 import {Button} from '~/components/button'
@@ -26,7 +26,7 @@ export const action: ActionFunction = async ({params, request}) => {
     throw new Error('params.callId is not defined')
   }
   const user = await requireUser(request)
-  const call = await prismaRead.call.findFirst({
+  const call = await prisma.call.findFirst({
     // NOTE: this is how we ensure the user is the owner of the call
     // and is therefore authorized to delete it.
     where: {userId: user.id, id: params.callId},
@@ -38,7 +38,7 @@ export const action: ActionFunction = async ({params, request}) => {
     )
     return redirect('/calls/record')
   }
-  await prismaWrite.call.delete({where: {id: params.callId}})
+  await prisma.call.delete({where: {id: params.callId}})
 
   return redirect('/calls/record')
 }
@@ -50,7 +50,7 @@ export const loader: LoaderFunction = async ({params, request}) => {
     throw new Error('params.callId is not defined')
   }
   const user = await requireUser(request)
-  const call = await prismaRead.call.findFirst({
+  const call = await prisma.call.findFirst({
     // NOTE: this is how we ensure the user is the owner of the call
     // and is therefore authorized to delete it.
     where: {userId: user.id, id: params.callId},

@@ -1,4 +1,4 @@
-import Dialog from '@reach/dialog'
+import {Dialog} from '@reach/dialog'
 import * as React from 'react'
 import {PlayIcon} from './icons/play-icon'
 import {PlusIcon} from './icons/plus-icon'
@@ -23,7 +23,7 @@ function YouTubeEmbed({
       <button
         aria-label="close video"
         onClick={onCloseClick}
-        className="focus:outline-none absolute right-4 top-8 z-50 rotate-45 transform text-white hover:scale-150 focus:scale-150"
+        className="absolute right-4 top-8 z-50 rotate-45 transform text-white hover:scale-150 focus:scale-150 focus:outline-none"
       >
         <PlusIcon />
       </button>

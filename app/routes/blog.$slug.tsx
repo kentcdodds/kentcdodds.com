@@ -33,8 +33,6 @@ import {
 } from '~/utils/blog.server'
 import {FourOhFour, ServerError} from '~/components/errors'
 import {TeamStats} from '~/components/team-stats'
-import type {Timings} from '~/utils/metrics.server'
-import {getServerTimeHeader} from '~/utils/metrics.server'
 import {formatDate, formatNumber, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {BlurrableImage} from '~/components/blurrable-image'
 import {getSession} from '~/utils/session.server'
@@ -150,13 +148,9 @@ export async function loader({request, params}: LoaderArgs) {
     throw new Error('params.slug is not defined')
   }
 
-  const timings: Timings = {}
   const page = await getMdxPage(
-    {
-      contentDir: 'blog',
-      slug: params.slug,
-    },
-    {request, timings},
+    {contentDir: 'blog', slug: params.slug},
+    {request},
   )
 
   const [recommendations, readRankings, totalReads, workshops, workshopEvents] =
@@ -171,7 +165,7 @@ export async function loader({request, params}: LoaderArgs) {
       }),
       getBlogReadRankings({request, slug: params.slug}),
       getTotalPostReads(request, params.slug),
-      getWorkshops({request, timings}),
+      getWorkshops({request}),
       getScheduledEvents({request}),
     ])
 
@@ -184,7 +178,6 @@ export async function loader({request, params}: LoaderArgs) {
   const headers = {
     'Cache-Control': 'private, max-age=3600',
     Vary: 'Cookie',
-    'Server-Timing': getServerTimeHeader(timings),
   }
   if (!page) {
     throw json(catchData, {status: 404, headers})

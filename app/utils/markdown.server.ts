@@ -32,7 +32,6 @@ async function markdownToHtmlDocument(markdownString: string) {
     .use(rehypeStringify)
     .process(markdownString)
 
-  console.log(result)
   return result.value.toString()
 }
 

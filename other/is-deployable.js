@@ -2,8 +2,13 @@
 const {getChangedFiles, fetchJson} = require('./get-changed-files')
 const [currentCommitSha] = process.argv.slice(2)
 
+const baseUrl =
+  process.env.GITHUB_REF_NAME === 'dev'
+    ? 'https://kcd-staging.fly.dev'
+    : 'https://kentcdodds.com'
+
 async function go() {
-  const buildInfo = await fetchJson('https://kentcdodds.com/build/info.json')
+  const buildInfo = await fetchJson(`${baseUrl}/build/info.json`)
   const compareCommitSha = buildInfo.commit.sha
   const changedFiles = await getChangedFiles(currentCommitSha, compareCommitSha)
   console.error('Determining whether the changed files are deployable', {

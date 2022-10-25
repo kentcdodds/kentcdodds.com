@@ -8,7 +8,7 @@ import type {KCDHandle, Team} from '~/types'
 import {useTeam} from '~/utils/team-provider'
 import {getSession, getUser} from '~/utils/session.server'
 import {getLoginInfoSession} from '~/utils/login.server'
-import {prismaWrite, prismaRead, validateMagicLink} from '~/utils/prisma.server'
+import {prisma, validateMagicLink} from '~/utils/prisma.server'
 import {getErrorStack, isTeam, teams} from '~/utils/misc'
 import {tagKCDSiteSubscriber} from '../convertkit/convertkit.server'
 import {Grid} from '~/components/grid'
@@ -104,7 +104,7 @@ export const action: ActionFunction = async ({request}) => {
       const {firstName, team} = formData
 
       try {
-        const user = await prismaWrite.user.create({
+        const user = await prisma.user.create({
           data: {email, firstName, team},
         })
 
@@ -114,7 +114,7 @@ export const action: ActionFunction = async ({request}) => {
           firstName,
           fields: {kcd_team: team, kcd_site_id: user.id},
         })
-        await prismaWrite.user.update({
+        await prisma.user.update({
           data: {convertKitId: String(sub.id)},
           where: {id: user.id},
         })
@@ -155,7 +155,7 @@ export const loader: LoaderFunction = async ({request}) => {
     })
   }
 
-  const userForMagicLink = await prismaRead.user.findFirst({
+  const userForMagicLink = await prisma.user.findFirst({
     where: {email},
     select: {id: true},
   })

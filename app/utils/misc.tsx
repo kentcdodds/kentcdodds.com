@@ -237,6 +237,9 @@ function getDiscordAuthorizeURL(domainUrl: string) {
   return url.toString()
 }
 
+/**
+ * @returns domain URL (without a ending slash)
+ */
 function getDomainUrl(request: Request) {
   const host =
     request.headers.get('X-Forwarded-Host') ?? request.headers.get('host')
@@ -245,6 +248,20 @@ function getDomainUrl(request: Request) {
   }
   const protocol = host.includes('localhost') ? 'http' : 'https'
   return `${protocol}://${host}`
+}
+
+function ensurePrimary() {
+  const FLY_REGION = getRequiredServerEnvVar('FLY_REGION')
+  if (FLY_REGION !== ENV.PRIMARY_REGION) {
+    throw getFlyReplayResponse()
+  }
+}
+
+function getFlyReplayResponse() {
+  return new Response('Fly Replay', {
+    status: 409,
+    headers: {'fly-replay': `region=${ENV.PRIMARY_REGION}`},
+  })
 }
 
 function removeTrailingSlash(s: string) {
@@ -382,6 +399,8 @@ export {
   useDoubleCheck,
   useDebounce,
   typedBoolean,
+  ensurePrimary,
+  getFlyReplayResponse,
   getRequiredServerEnvVar,
   getRequiredGlobalEnvVar,
   getDiscordAuthorizeURL,

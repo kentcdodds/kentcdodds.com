@@ -12,7 +12,7 @@ import type {Column} from 'react-table'
 import {Grid} from '~/components/grid'
 import {H1} from '~/components/typography'
 import type {Await, KCDHandle} from '~/types'
-import {prismaRead, prismaWrite} from '~/utils/prisma.server'
+import {prisma} from '~/utils/prisma.server'
 import {requireAdminUser} from '~/utils/session.server'
 import {
   formatDate,
@@ -69,7 +69,7 @@ async function getLoaderData({request}: {request: Request}) {
   if (isOrderField(spOrderField)) orderField = spOrderField
 
   const limit = Number(searchParams.get('limit') ?? DEFAULT_LIMIT)
-  const users = await prismaRead.user.findMany({
+  const users = await prisma.user.findMany({
     where: query
       ? {
           OR: [
@@ -108,9 +108,9 @@ export const action: ActionFunction = async ({request}) => {
     if (!id) return json({error: 'id is required'}, {status: 400})
 
     if (request.method === 'DELETE') {
-      await prismaWrite.user.delete({where: {id}})
+      await prisma.user.delete({where: {id}})
     } else {
-      await prismaWrite.user.update({
+      await prisma.user.update({
         where: {id},
         data: values,
       })

@@ -6,7 +6,8 @@ const discordHandlers: Array<
   RestHandler<MockedRequest<DefaultRequestMultipartBody>>
 > = [
   rest.post('https://discord.com/api/oauth2/token', async (req, res, ctx) => {
-    if (typeof req.body !== 'string') {
+    const body = await req.text()
+    if (typeof body !== 'string') {
       throw new Error('request body must be a string of URLSearchParams')
     }
     if (
@@ -16,7 +17,7 @@ const discordHandlers: Array<
         'Content-Type header must be "application/x-www-form-urlencoded"',
       )
     }
-    const params = new URLSearchParams(req.body)
+    const params = new URLSearchParams(body)
     requiredParam(params, 'client_id')
     requiredParam(params, 'client_secret')
     requiredParam(params, 'grant_type')
@@ -64,12 +65,13 @@ const discordHandlers: Array<
     'https://discord.com/api/guilds/:guildId/members/:userId',
     async (req, res, ctx) => {
       requiredHeader(req.headers, 'Authorization')
-      if (typeof req.body !== 'object') {
-        console.error('Request body:', req.body)
+      const body = await req.json()
+      if (typeof body !== 'object') {
+        console.error('Request body:', body)
         throw new Error('Request body must be a JSON object')
       }
-      if (!req.body?.access_token) {
-        const bodyString = JSON.stringify(req.body, null, 2)
+      if (!body?.access_token) {
+        const bodyString = JSON.stringify(body, null, 2)
         throw new Error(
           `access_token required in the body, but not found in ${bodyString}`,
         )
@@ -86,14 +88,11 @@ const discordHandlers: Array<
     'https://discord.com/api/guilds/:guildId/members/:userId',
     async (req, res, ctx) => {
       requiredHeader(req.headers, 'Authorization')
-      if (typeof req.body !== 'object') {
+      const body = await req.json()
+      if (typeof body !== 'object') {
         throw new Error('patch request to member must have a JSON body')
       }
-      if (
-        !Array.isArray(req.body?.roles) ||
-        !req.body ||
-        req.body.roles.length < 1
-      ) {
+      if (!Array.isArray(body?.roles) || !body || body.roles.length < 1) {
         throw new Error(
           'patch request to member must include a roles array with the new role',
         )
@@ -123,14 +122,15 @@ const discordHandlers: Array<
     'https://discord.com/api/channels/:channelId/messages',
     async (req, res, ctx) => {
       requiredHeader(req.headers, 'Authorization')
-      if (typeof req.body !== 'object') {
-        console.error('Request body:', req.body)
+      const body = await req.json()
+      if (typeof body !== 'object') {
+        console.error('Request body:', body)
         throw new Error('Request body must be a JSON object')
       }
 
       console.log(
         `🤖 Sending bot message to ${req.params.channelId}:\n`,
-        req.body?.content,
+        body?.content,
       )
 
       return res(
