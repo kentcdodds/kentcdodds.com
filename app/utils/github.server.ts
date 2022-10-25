@@ -134,17 +134,20 @@ async function downloadFileBySha(sha: string) {
   return Buffer.from(data.content, encoding).toString()
 }
 
+// IDEA: possibly change this to a regular fetch since all my content is public anyway:
+// https://raw.githubusercontent.com/{owner}/{repo}/{ref}/{path}
+// nice thing is it's not rate limited
 async function downloadFile(path: string) {
-  const {data} = (await octokit.request(
+  const {data} = await octokit.request(
     'GET /repos/{owner}/{repo}/contents/{path}',
     {
       owner: 'kentcdodds',
       repo: 'kentcdodds.com',
       path,
     },
-  )) as {data: {content?: string; encoding?: string}}
+  )
 
-  if (!data.content || !data.encoding) {
+  if (!('content' in data)) {
     console.error(data)
     throw new Error(
       `Tried to get ${path} but got back something that was unexpected. It doesn't have a content or encoding property`,
