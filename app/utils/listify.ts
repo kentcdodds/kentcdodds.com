@@ -14,17 +14,22 @@ declare namespace Intl {
   }
 }
 
-type ListifyOptions<ItemType> = {
+type ToStringable = {
+  toString(): string
+}
+
+type ListifyOptions<ItemType extends ToStringable> = {
   type?: ListFormatOptions['type']
   style?: ListFormatOptions['style']
   stringify?: (item: ItemType) => string
 }
-function listify<ItemType>(
+
+function listify<ItemType extends ToStringable>(
   array: Array<ItemType>,
   {
     type = 'conjunction',
     style = 'long',
-    stringify = (thing: {toString(): string}) => thing.toString(),
+    stringify = thing => thing.toString(),
   }: ListifyOptions<ItemType> = {},
 ) {
   const stringified = array.map(item => stringify(item))
