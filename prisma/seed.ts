@@ -1,5 +1,6 @@
 import {subMonths} from 'date-fns'
-import {PrismaClient} from '@prisma/client'
+// eslint-disable-next-line import/no-extraneous-dependencies
+import {PrismaClient} from '@prisma/client-postgres'
 
 const prisma = new PrismaClient()
 
