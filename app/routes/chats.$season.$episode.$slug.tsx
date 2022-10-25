@@ -29,6 +29,7 @@ import {
   getUrl,
   listify,
   reuseUsefulLoaderHeaders,
+  typedBoolean,
 } from '~/utils/misc'
 import {getCWKEpisodePath, getFeaturedEpisode} from '~/utils/chats-with-kent'
 import {Themed} from '~/utils/theme-provider'
@@ -194,7 +195,7 @@ function Resources({resources = []}: {resources: CWKEpisode['resources']}) {
           <li key={resource.url}>
             <a
               href={resource.url}
-              className="focus:outline-none transition hover:text-team-current focus:text-team-current"
+              className="transition hover:text-team-current focus:text-team-current focus:outline-none"
             >
               <span>{resource.name}</span>
               <span className="ml-4 mt-1 inline-block align-top">
@@ -294,7 +295,7 @@ function Transcript({
       {collapsed ? (
         <button
           onClick={() => setCollapsed(false)}
-          className="text-primary focus:outline-none group mt-16 inline-flex items-center text-xl transition"
+          className="text-primary group mt-16 inline-flex items-center text-xl transition focus:outline-none"
         >
           <span>Read the full transcript</span>
           <span className="group-hover:border-primary group-focus:border-primary ml-8 inline-flex h-14 w-14 flex-none items-center justify-center rounded-full border-2 border-gray-200 p-1 dark:border-gray-600">
@@ -353,7 +354,7 @@ function PrevNextButton({
       whileTap={direction === 'next' ? 'tapRight' : 'tapLeft'}
       animate="initial"
       to={getCWKEpisodePath(episodeListItem)}
-      className={clsx('focus:outline-none flex items-start', {
+      className={clsx('flex items-start focus:outline-none', {
         'flex-row-reverse': direction === 'next',
       })}
     >
@@ -470,7 +471,7 @@ export default function PodcastDetail() {
               text: `I just listened to "${episode.title}" with ${listify(
                 episode.guests
                   .map(g => (g.twitter ? `@${g.twitter}` : null))
-                  .filter(Boolean),
+                  .filter(typedBoolean),
               )} on the Call Kent Podcast 🎙 by @kentcdodds`,
             })}`}
           >
