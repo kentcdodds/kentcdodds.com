@@ -1,4 +1,3 @@
-// TODO use `@testing-library/react` instead
 import {renderHook, act} from '@testing-library/react'
 import useUndo from '../use-undo'
 
