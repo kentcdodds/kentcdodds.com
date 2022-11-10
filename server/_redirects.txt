@@ -127,6 +127,7 @@ POST,DELETE,PATCH,PUT  /                                                https://
 /blog/how-to-write-a-type-narrowing-identity-function-in-typescript     /blog/how-to-write-a-constrained-identity-function-in-typescript
 
 /talks/the-web-s-next-transformation                                    /talks/the-web-s-next-transition
+/talks/fullstack-components                                             /talks/full-stack-components
 
 # Old workshops
 /workshops/advanced-react-hooks                                         https://epicreact.dev/advanced-hooks
