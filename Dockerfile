@@ -79,7 +79,4 @@ RUN mkdir -p /data /litefs/data
 
 ADD . .
 
-# TODO: revert these two lines in favor of the last commented line
-ENV DATABASE_URL=file:/data/sqlite.db
-CMD ["bash", "start.sh"]
-# CMD ["litefs", "--", "bash", "start.sh"]
+CMD ["litefs", "--", "bash", "start.sh"]
