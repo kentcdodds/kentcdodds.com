@@ -8,12 +8,7 @@ import {handleDarkAndLightModeEls} from './utils/theme-provider'
 function hydrate() {
   handleDarkAndLightModeEls()
   React.startTransition(() => {
-    hydrateRoot(
-      document,
-      <React.StrictMode>
-        <RemixBrowser />
-      </React.StrictMode>,
-    )
+    hydrateRoot(document, <RemixBrowser />)
   })
 }
 

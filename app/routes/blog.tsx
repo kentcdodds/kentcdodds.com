@@ -1,5 +1,10 @@
 import * as React from 'react'
-import type {HeadersFunction, LoaderArgs, MetaFunction} from '@remix-run/node'
+import type {
+  HeadersFunction,
+  LoaderArgs,
+  MetaFunction,
+  SerializeFrom,
+} from '@remix-run/node'
 import {json} from '@remix-run/node'
 import {Link, useLoaderData, useSearchParams} from '@remix-run/react'
 import clsx from 'clsx'
@@ -51,7 +56,6 @@ import {useTeam} from '~/utils/team-provider'
 import type {LoaderData as RootLoaderData} from '../root'
 import {getSocialMetas} from '~/utils/seo'
 import {RssIcon} from '~/components/icons/rss-icon'
-import type {UseDataFunctionReturn} from '@remix-run/react/dist/components'
 
 const handleId = 'blog'
 export const handle: KCDHandle = {
@@ -114,7 +118,7 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export const meta: MetaFunction = ({data, parentsData}) => {
   const {requestInfo} = parentsData.root as RootLoaderData
-  const {totalBlogReaders, posts} = data as UseDataFunctionReturn<typeof loader>
+  const {totalBlogReaders, posts} = data as SerializeFrom<typeof loader>
 
   return {
     ...getSocialMetas({
