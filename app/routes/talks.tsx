@@ -12,8 +12,6 @@ import {
   useSearchParams,
 } from '@remix-run/react'
 import type {Await} from '~/types'
-import formatDate from 'date-fns/format'
-import parseDate from 'date-fns/parseISO'
 import clsx from 'clsx'
 import {
   getUrl,
@@ -21,6 +19,8 @@ import {
   reuseUsefulLoaderHeaders,
   useUpdateQueryStringValueWithoutNavigation,
   listify,
+  formatDate,
+  parseDate,
 } from '~/utils/misc'
 import type {LoaderData as RootLoaderData} from '../root'
 import {HeroSection} from '~/components/sections/hero-section'
@@ -108,7 +108,7 @@ function Card({
             <div className="block h-3 w-3 flex-none rounded-full bg-gray-400 dark:bg-gray-600" />
           )}
           <H6 as="p" className="pl-4">
-            {formatDate(latestDate, 'PPP')}
+            {formatDate(latestDate)}
           </H6>
         </div>
 
@@ -174,7 +174,7 @@ function Card({
                       as="span"
                     >
                       {delivery.date
-                        ? formatDate(parseDate(delivery.date), 'yyyy-MM-dd')
+                        ? formatDate(delivery.date, 'yyyy-MM-dd')
                         : null}
                     </Paragraph>
                   </div>

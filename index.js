@@ -1,6 +1,6 @@
 if (process.env.NODE_ENV === 'production') {
   require('./server-build')
 } else {
-  require('esbuild-register/dist/node').register()
+  // TODO: check that we're running within TSX and warn if not
   require('./server')
 }

@@ -1,6 +1,5 @@
-import * as dateFns from 'date-fns'
 import {getBlogMdxListItems} from './mdx'
-import {getDomainUrl} from './misc'
+import {formatDate, getDomainUrl} from './misc'
 
 async function getRssFeedXml(request: Request) {
   const posts = await getBlogMdxListItems({request})
@@ -24,13 +23,8 @@ async function getRssFeedXml(request: Request) {
               <description>${cdata(
                 post.frontmatter.description ?? 'This post is... indescribable',
               )}</description>
-              <pubDate>${dateFns.format(
-                dateFns.add(
-                  post.frontmatter.date
-                    ? dateFns.parseISO(post.frontmatter.date)
-                    : Date.now(),
-                  {minutes: new Date().getTimezoneOffset()},
-                ),
+              <pubDate>${formatDate(
+                post.frontmatter.date ?? new Date(),
                 'yyyy-MM-ii',
               )}</pubDate>
               <link>${blogUrl}/${post.slug}</link>

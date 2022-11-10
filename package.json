@@ -27,12 +27,12 @@
     "build:css": "postcss styles/**/*.css --base styles --dir app/styles",
     "build:css:prod": "npm run build:css -- --env production",
     "build:remix": "cross-env NODE_ENV=production dotenv -e .env remix build --sourcemap",
-    "build:server": "node ./other/build-server.js",
-    "build": "npm run build:css:prod && npm run build:remix && npm run build:server && node ./other/generate-build-info",
+    "build:server": "tsx ./other/build-server.js",
+    "build": "npm run build:css:prod && npm run build:remix && npm run build:server && tsx ./other/generate-build-info",
     "dev": "pm2-dev ./other/pm2.config.js",
-    "runfile": "node ./other/runfile.js",
+    "runfile": "tsx ./other/runfile.js",
     "start": "cross-env NODE_ENV=production node --require ./node_modules/dotenv/config ./index.js",
-    "start:mocks": "cross-env NODE_ENV=production node --require ./mocks --require ./node_modules/dotenv/config ./index.js",
+    "start:mocks": "cross-env NODE_ENV=production tsx --require ./mocks --require ./node_modules/dotenv/config ./index.js",
     "curl:blog": "curl --silent http://localhost:$PORT/blog > /dev/null",
     "prime-cache:prod": "PORT=4001 npx start-server-and-test start http-get://localhost:4001/build/info.json curl:blog && echo cache primed ⚡️",
     "prime-cache:mocks": "PORT=4001 npx start-server-and-test start:mocks http-get://localhost:4001/build/info.json curl:blog && echo cache primed ⚡️",
@@ -48,7 +48,7 @@
     "setup": "npm install && docker compose up -d && prisma migrate reset --force && npm run validate && npm run prime-cache:mocks && npm run test:e2e:run"
   },
   "prisma": {
-    "seed": "node other/runfile prisma/seed.ts"
+    "seed": "tsx other/runfile prisma/seed.ts"
   },
   "dependencies": {
     "@kentcdodds/md-temp": "^1.1.0",
@@ -184,7 +184,8 @@
     "prettier-plugin-tailwindcss": "^0.1.13",
     "rimraf": "^3.0.2",
     "start-server-and-test": "^1.14.0",
-    "typescript": "4.7.4"
+    "tsx": "^3.12.0",
+    "typescript": "4.8.4"
   },
   "eslintIgnore": [
     "node_modules",

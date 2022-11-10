@@ -7,7 +7,7 @@ import {orderBy} from 'lodash'
 import {Grid} from '~/components/grid'
 import {getSeasonListItems} from '~/utils/simplecast.server'
 import {useChatsEpisodeUIState} from '~/utils/providers'
-import {formatTime, reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {formatDuration, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {getCWKEpisodePath} from '~/utils/chats-with-kent'
 import {TriangleIcon} from '~/components/icons/triangle-icon'
 import {MissingSomething} from '~/components/kifs'
@@ -88,7 +88,7 @@ export default function ChatsSeason() {
             {episode.title}
           </div>
           <div className="text-lg font-medium text-gray-400">
-            {formatTime(episode.duration)}
+            {formatDuration(episode.duration)}
           </div>
         </div>
       </Grid>

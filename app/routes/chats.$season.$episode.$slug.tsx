@@ -24,7 +24,7 @@ import {ArrowLink, BackLink} from '~/components/arrow-button'
 import {ChevronRightIcon} from '~/components/icons/chevron-right-icon'
 import {ChevronLeftIcon} from '~/components/icons/chevron-left-icon'
 import {
-  formatTime,
+  formatDuration,
   getDisplayUrl,
   getUrl,
   listify,
@@ -525,7 +525,7 @@ export default function PodcastDetail() {
           caption="Featured episode"
           subTitle={`Season ${featured.seasonNumber} Episode ${
             featured.episodeNumber
-          } — ${formatTime(featured.duration)}`}
+          } — ${formatDuration(featured.duration)}`}
           title={featured.title}
           href={getCWKEpisodePath(featured)}
           imageUrl={featured.image}

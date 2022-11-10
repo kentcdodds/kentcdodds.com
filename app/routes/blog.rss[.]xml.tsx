@@ -1,7 +1,6 @@
 import type {LoaderFunction} from '@remix-run/node'
-import * as dateFns from 'date-fns'
 import {getBlogMdxListItems} from '~/utils/mdx'
-import {getDomainUrl} from '~/utils/misc'
+import {formatDate, getDomainUrl} from '~/utils/misc'
 
 export const loader: LoaderFunction = async ({request}) => {
   const posts = await getBlogMdxListItems({request})
@@ -25,13 +24,8 @@ export const loader: LoaderFunction = async ({request}) => {
               <description>${cdata(
                 post.frontmatter.description ?? 'This post is... indescribable',
               )}</description>
-              <pubDate>${dateFns.format(
-                dateFns.add(
-                  post.frontmatter.date
-                    ? dateFns.parseISO(post.frontmatter.date)
-                    : Date.now(),
-                  {minutes: new Date().getTimezoneOffset()},
-                ),
+              <pubDate>${formatDate(
+                post.frontmatter.date ?? new Date(),
                 'yyyy-MM-ii',
               )}</pubDate>
               <link>${blogUrl}/${post.slug}</link>

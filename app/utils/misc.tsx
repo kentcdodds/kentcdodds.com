@@ -130,7 +130,7 @@ const AnchorOrLink = React.forwardRef<
   }
 })
 
-function formatTime(seconds: number) {
+function formatDuration(seconds: number) {
   const mins = Math.floor(seconds / 60)
     .toString()
     .padStart(2, '0')
@@ -152,16 +152,17 @@ function formatAbbreviatedNumber(num: number) {
     : 'a lot'
 }
 
-function formatDate(dateString: string | Date) {
+function formatDate(dateString: string | Date, format = 'PPP') {
   if (typeof dateString !== 'string') {
-    dateString = dateFns.format(dateString, 'yyyy-MM-dd')
+    dateString = dateString.toISOString()
   }
-  return dateFns.format(
-    dateFns.add(dateFns.parseISO(dateString), {
-      minutes: new Date().getTimezoneOffset(),
-    }),
-    'PPP',
-  )
+  return dateFns.format(parseDate(dateString), format)
+}
+
+function parseDate(dateString: string) {
+  return dateFns.add(dateFns.parseISO(dateString), {
+    minutes: new Date().getTimezoneOffset(),
+  })
 }
 
 function getErrorMessage(error: unknown) {
@@ -397,8 +398,9 @@ export {
   getOptionalTeam,
   teamDisplay,
   teamTextColorClasses,
+  parseDate,
   formatDate,
-  formatTime,
+  formatDuration,
   formatNumber,
   formatAbbreviatedNumber,
 }

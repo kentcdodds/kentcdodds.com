@@ -4,8 +4,12 @@ import makeMetascraper from 'metascraper'
 import mImage from 'metascraper-image'
 import mTitle from 'metascraper-title'
 import mDescription from 'metascraper-description'
-import formatDate from 'date-fns/format'
-import {formatNumber, getRequiredServerEnvVar, typedBoolean} from './misc'
+import {
+  formatDate,
+  formatNumber,
+  getRequiredServerEnvVar,
+  typedBoolean,
+} from './misc'
 
 const token = getRequiredServerEnvVar('TWITTER_BEARER_TOKEN')
 
@@ -318,9 +322,9 @@ async function buildTweetHTML(
   }
 
   const createdAtHTML = `<div class="tweet-time"><a href="${tweetURL}" target="_blank" rel="noreferrer noopener">${formatDate(
-    new Date(tweet.data.created_at),
+    tweet.data.created_at,
     'h:mm a',
-  )} · ${formatDate(new Date(tweet.data.created_at), 'PPP')}</a></div>`
+  )} (UTC) · ${formatDate(new Date(tweet.data.created_at))}</a></div>`
 
   const likeIntent = `https://twitter.com/intent/like?tweet_id=${tweet.data.id}`
   const retweetIntent = `https://twitter.com/intent/retweet?tweet_id=${tweet.data.id}`

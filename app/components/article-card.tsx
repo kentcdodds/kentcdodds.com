@@ -1,8 +1,6 @@
 import * as React from 'react'
 import {Link} from '@remix-run/react'
 import clsx from 'clsx'
-import formatDate from 'date-fns/format'
-import parseISO from 'date-fns/parseISO'
 import type {MdxListItem, Team} from '~/types'
 import {getImageBuilder, getImgProps} from '~/images'
 import {H3} from './typography'
@@ -11,6 +9,7 @@ import {MissingSomething} from './kifs'
 import {BlurrableImage} from './blurrable-image'
 import {useRootData} from '~/utils/use-root-data'
 import {getBannerAltProp, getBannerTitleProp} from '~/utils/mdx'
+import {formatDate} from '~/utils/misc'
 
 function ArticleCard({
   leadingTeam,
@@ -19,7 +18,7 @@ function ArticleCard({
     slug,
     frontmatter,
     frontmatter: {
-      date = formatDate(new Date(), 'yyyy-MM-ii'),
+      date,
       title = 'Untitled Post',
       bannerCloudinaryId,
       bannerBlurDataUrl,
@@ -90,7 +89,7 @@ function ArticleCard({
         )}
 
         <div className="mt-8 text-xl font-medium text-slate-500">
-          {formatDate(parseISO(date), 'PPP')} — {readTime?.text ?? 'quick read'}
+          {formatDate(date ?? new Date())} — {readTime?.text ?? 'quick read'}
         </div>
         <H3 as="div" className="mt-4">
           {title}

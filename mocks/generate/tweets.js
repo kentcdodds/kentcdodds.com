@@ -1,7 +1,7 @@
 require('dotenv').config()
 // eslint-disable-next-line import/no-extraneous-dependencies
 require('@remix-run/node/dist/globals').installGlobals()
-require('esbuild-register/dist/node').register()
+// NOTE: run this with tsx ./mocks/generate/tweets
 const fs = require('fs')
 const path = require('path')
 const {getTweet} = require('../../app/utils/twitter.server')

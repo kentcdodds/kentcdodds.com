@@ -34,7 +34,7 @@ import {getSeasonListItems} from '~/utils/simplecast.server'
 import {FeaturedSection} from '~/components/sections/featured-section'
 import {
   listify,
-  formatTime,
+  formatDuration,
   reuseUsefulLoaderHeaders,
   getUrl,
   getDisplayUrl,
@@ -161,7 +161,7 @@ function PodcastHome() {
         caption="Featured episode"
         subTitle={`Season ${featured.seasonNumber} Episode ${
           featured.episodeNumber
-        } — ${formatTime(featured.duration)}`}
+        } — ${formatDuration(featured.duration)}`}
         title={featured.title}
         href={getCWKEpisodePath(featured)}
         imageUrl={featured.image}
@@ -249,7 +249,7 @@ function PodcastHome() {
               // Because we have a link right under the tab, we'll keep this off
               // the tab "tree" and rely on focusing/activating the link.
               tabIndex={-1}
-              className="focus:outline-none border-none p-0 text-4xl leading-tight focus:bg-transparent"
+              className="border-none p-0 text-4xl leading-tight focus:bg-transparent focus:outline-none"
             >
               {/*
                 The link is here for progressive enhancement. Even though this
@@ -292,7 +292,7 @@ function PodcastHome() {
             </H6>
 
             <button
-              className="text-primary focus:outline-none group relative text-lg font-medium"
+              className="text-primary group relative text-lg font-medium focus:outline-none"
               onClick={() => setSortOrder(o => (o === 'asc' ? 'desc' : 'asc'))}
             >
               <div className="bg-secondary absolute -bottom-2 -left-4 -right-4 -top-2 rounded-lg opacity-0 transition group-hover:opacity-100 group-focus:opacity-100" />
@@ -317,7 +317,7 @@ function PodcastHome() {
           {data.seasons.map(season => (
             <TabPanel
               key={season.seasonNumber}
-              className="focus:outline-none border-t border-gray-200 dark:border-gray-600"
+              className="border-t border-gray-200 focus:outline-none dark:border-gray-600"
             >
               <ChatsEpisodeUIStateProvider value={{sortOrder}}>
                 <Outlet />

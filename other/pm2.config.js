@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'Server',
       script: [
-        'node',
+        'tsx',
         '--inspect',
         '--require ./node_modules/dotenv/config',
         '--require ./mocks',

@@ -29,7 +29,7 @@ import {ChevronUpIcon} from '~/components/icons/chevron-up-icon'
 import {ChevronDownIcon} from '~/components/icons/chevron-down-icon'
 import {TriangleIcon} from '~/components/icons/triangle-icon'
 import {
-  formatTime,
+  formatDuration,
   getDisplayUrl,
   getUrl,
   reuseUsefulLoaderHeaders,
@@ -293,7 +293,7 @@ export default function CallHomeScreen() {
                         {episode.title}
                       </div>
                       <div className="text-lg font-medium text-gray-400">
-                        {formatTime(episode.duration)}
+                        {formatDuration(episode.duration)}
                       </div>
                     </div>
                   </Grid>

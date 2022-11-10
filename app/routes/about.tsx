@@ -8,8 +8,6 @@ import type {
 import {json} from '@remix-run/node'
 import {useLoaderData, useSearchParams} from '@remix-run/react'
 import {shuffle} from 'lodash'
-import formatDate from 'date-fns/format'
-import parseDate from 'date-fns/parseISO'
 import type {Await, MdxListItem} from '~/types'
 import {useRootData} from '~/utils/use-root-data'
 import {getImgProps, getSocialImageWithPreTitle, images} from '~/images'
@@ -22,7 +20,12 @@ import {UsersIcon} from '~/components/icons/users-icon'
 import {BlogSection} from '~/components/sections/blog-section'
 import {getBlogRecommendations} from '~/utils/blog.server'
 import {HeroSection} from '~/components/sections/hero-section'
-import {getDisplayUrl, getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {
+  formatDate,
+  getDisplayUrl,
+  getUrl,
+  reuseUsefulLoaderHeaders,
+} from '~/utils/misc'
 import {
   FullScreenYouTubeEmbed,
   LiteYouTubeEmbed,
@@ -447,7 +450,7 @@ function TalkCard({tags, date, title, talkUrl}: TalkCardProps) {
         </div>
 
         <Paragraph as="span" className="mb-5">
-          {date ? formatDate(parseDate(date), 'PPP') : 'to be determined'}
+          {date ? formatDate(date) : 'to be determined'}
         </Paragraph>
 
         <H3 className="mb-5">{title}</H3>

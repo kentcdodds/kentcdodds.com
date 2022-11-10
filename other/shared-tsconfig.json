@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "lib": ["ES2021", "DOM", "DOM.Iterable"],
-    "incremental": true,
     "isolatedModules": true,
     "importsNotUsedAsValues": "error",
     "noEmit": true,
