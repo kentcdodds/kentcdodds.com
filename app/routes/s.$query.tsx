@@ -1,5 +1,5 @@
 import * as React from 'react'
-import type {LoaderArgs} from '@remix-run/node'
+import type {DataFunctionArgs} from '@remix-run/node'
 import {json, redirect} from '@remix-run/node'
 import {Link, useLoaderData, useParams} from '@remix-run/react'
 import {images} from '~/images'
@@ -43,7 +43,7 @@ function itemsToSegmentedItems(items: NormalizedItemGroup['items']) {
   }, init)
 }
 
-export async function loader({request, params}: LoaderArgs) {
+export async function loader({request, params}: DataFunctionArgs) {
   const query = params.query
   if (typeof query !== 'string' || !query) return redirect('/')
 

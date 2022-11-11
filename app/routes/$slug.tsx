@@ -1,5 +1,5 @@
 import * as React from 'react'
-import type {HeadersFunction, LoaderArgs} from '@remix-run/node'
+import type {HeadersFunction, DataFunctionArgs} from '@remix-run/node'
 import {json} from '@remix-run/node'
 import {useCatch, useLoaderData} from '@remix-run/react'
 import type {KCDHandle} from '~/types'
@@ -32,7 +32,7 @@ export const handle: KCDHandle = {
   },
 }
 
-export async function loader({params, request}: LoaderArgs) {
+export async function loader({params, request}: DataFunctionArgs) {
   if (!params.slug) {
     throw new Error('params.slug is not defined')
   }

@@ -1,4 +1,4 @@
-import type {LoaderArgs} from '@remix-run/node'
+import type {DataFunctionArgs} from '@remix-run/node'
 import {redirect} from '@remix-run/node'
 import type {KCDHandle} from '~/types'
 import {requireUser} from '~/utils/session.server'
@@ -11,7 +11,7 @@ export const handle: KCDHandle = {
   getSitemapEntries: () => null,
 }
 
-export async function loader({request}: LoaderArgs) {
+export async function loader({request}: DataFunctionArgs) {
   const user = await requireUser(request)
   const domainUrl = getDomainUrl(request)
   const code = new URL(request.url).searchParams.get('code')

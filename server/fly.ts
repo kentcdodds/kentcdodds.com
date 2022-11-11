@@ -20,6 +20,12 @@ export const getReplayResponse: RequestHandler = function getReplayResponse(
     return next()
   }
 
+  // TODO: remove this when we support writing in replica instances
+  if (pathname.includes('/cache/admin')) {
+    // so we can clear the cache in other regions
+    return next()
+  }
+
   const logInfo = {
     pathname,
     method,

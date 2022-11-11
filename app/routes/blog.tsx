@@ -1,7 +1,7 @@
 import * as React from 'react'
 import type {
   HeadersFunction,
-  LoaderArgs,
+  DataFunctionArgs,
   MetaFunction,
   SerializeFrom,
 } from '@remix-run/node'
@@ -61,7 +61,7 @@ export const handle: KCDHandle = {
   getSitemapEntries: () => [{route: `/blog`, priority: 0.7}],
 }
 
-export async function loader({request}: LoaderArgs) {
+export async function loader({request}: DataFunctionArgs) {
   const [
     posts,
     [recommended],

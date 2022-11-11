@@ -1,5 +1,9 @@
 import * as React from 'react'
-import type {HeadersFunction, ActionFunction, LoaderArgs} from '@remix-run/node'
+import type {
+  HeadersFunction,
+  ActionFunction,
+  DataFunctionArgs,
+} from '@remix-run/node'
 import {json} from '@remix-run/node'
 import {
   Link,
@@ -143,7 +147,7 @@ type CatchData = {
   leadingTeam: Team | null
 }
 
-export async function loader({request, params}: LoaderArgs) {
+export async function loader({request, params}: DataFunctionArgs) {
   if (!params.slug) {
     throw new Error('params.slug is not defined')
   }

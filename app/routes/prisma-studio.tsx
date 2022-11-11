@@ -1,5 +1,5 @@
 import {spawn} from 'child_process'
-import type {LoaderArgs} from '@remix-run/node'
+import type {DataFunctionArgs} from '@remix-run/node'
 import {requireAdminUser} from '~/utils/session.server'
 
 async function ensurePrismaStudioIsRunning() {
@@ -21,7 +21,7 @@ async function ensurePrismaStudioIsRunning() {
   }
 }
 
-export async function loader({request}: LoaderArgs) {
+export async function loader({request}: DataFunctionArgs) {
   await requireAdminUser(request)
   await ensurePrismaStudioIsRunning()
   const response = await fetch('http://localhost:5555', request)

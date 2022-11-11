@@ -65,6 +65,20 @@ export const cache: CachifiedCache = {
   },
 }
 
+export async function getAllCacheKeys(limit: number) {
+  return cacheDb
+    .prepare('SELECT key FROM cache LIMIT ?')
+    .all(limit)
+    .map(row => row.key)
+}
+
+export async function searchCacheKeys(search: string, limit: number) {
+  return cacheDb
+    .prepare('SELECT key FROM cache WHERE key LIKE ? LIMIT ?')
+    .all(`%${search}%`, limit)
+    .map(row => row.key)
+}
+
 export async function shouldForceFresh({
   forceFresh,
   request,

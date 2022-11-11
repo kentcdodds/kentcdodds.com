@@ -1,8 +1,8 @@
-import type {LoaderArgs} from '@remix-run/node'
+import type {DataFunctionArgs} from '@remix-run/node'
 import {prisma} from '~/utils/prisma.server'
 import {getBlogReadRankings} from '~/utils/blog.server'
 
-export async function loader({request}: LoaderArgs) {
+export async function loader({request}: DataFunctionArgs) {
   const host =
     request.headers.get('X-Forwarded-Host') ?? request.headers.get('host')
 
