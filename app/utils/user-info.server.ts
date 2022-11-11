@@ -68,6 +68,7 @@ async function getUserInfo(
             key: getDiscordCacheKey(discordId),
           }),
           ttl: 1000 * 60 * 60 * 24 * 30,
+          staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
           key: getDiscordCacheKey(discordId),
           checkValue: (value: unknown) =>
             typeof value === 'object' && value !== null && 'id' in value,
@@ -86,6 +87,7 @@ async function getUserInfo(
             key: getConvertKitCacheKey(convertKitId),
           }),
           ttl: 1000 * 60 * 60 * 24 * 30,
+          staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
           key: getConvertKitCacheKey(convertKitId),
           checkValue: (value: unknown) =>
             typeof value === 'object' && value !== null && 'tags' in value,

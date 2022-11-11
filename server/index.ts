@@ -1,5 +1,4 @@
 import fs from 'fs'
-import os from 'os'
 import path from 'path'
 import onFinished from 'on-finished'
 import express from 'express'

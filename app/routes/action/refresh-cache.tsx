@@ -8,11 +8,26 @@ import {getTalksAndTags} from '~/utils/talks.server'
 import {getTestimonials} from '~/utils/testimonials.server'
 import {getWorkshops} from '~/utils/workshops.server'
 import {getPeople} from '~/utils/credits.server'
-import {prisma} from '~/utils/prisma.server'
 
 type Body =
   | {keys: Array<string>; commitSha?: string}
   | {contentPaths: Array<string>; commitSha?: string}
+
+export type RefreshShaInfo = {
+  sha: string
+  date: string
+}
+
+export function isRefreshShaInfo(value: any): value is RefreshShaInfo {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'sha' in value &&
+    typeof value.sha === 'string' &&
+    'date' in value &&
+    typeof value.date === 'string'
+  )
+}
 
 export const commitShaKey = 'meta:last-refresh-commit-sha'
 
@@ -30,16 +45,16 @@ export const action: ActionFunction = async ({request}) => {
   const body = (await request.json()) as Body
 
   function setShaInCache() {
-    if (body.commitSha) {
-      const data = {
-        key: commitShaKey,
-        value: JSON.stringify({sha: body.commitSha, date: new Date()}),
-        metadata: '',
-      }
-      void prisma.cache.upsert({
-        where: {key: commitShaKey},
-        update: data,
-        create: data,
+    const {commitSha: sha} = body
+    if (sha) {
+      const value: RefreshShaInfo = {sha, date: new Date().toISOString()}
+      cache.set(commitShaKey, {
+        value,
+        metadata: {
+          createdTime: new Date().getTime(),
+          swr: Number.MAX_SAFE_INTEGER,
+          ttl: Number.MAX_SAFE_INTEGER,
+        },
       })
     }
   }

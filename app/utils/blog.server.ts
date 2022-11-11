@@ -145,6 +145,7 @@ async function getMostPopularPostSlugs({
   return cachified({
     key: `${limit}-most-popular-post-slugs`,
     ttl: 1000 * 60,
+    staleWhileRevalidate: 1000 * 60 * 60 * 24,
     cache: lruCache,
     getFreshValue,
     checkValue: (value: unknown) =>
@@ -158,6 +159,7 @@ async function getTotalPostReads(request: Request, slug?: string) {
     key,
     cache: lruCache,
     ttl: 1000 * 60,
+    staleWhileRevalidate: 1000 * 60 * 60 * 24,
     forceFresh: await shouldForceFresh({request, key}),
     checkValue: (value: unknown) => typeof value === 'number',
     getFreshValue: () =>
@@ -171,6 +173,7 @@ async function getReaderCount(request: Request) {
     key,
     cache: lruCache,
     ttl: 1000 * 60 * 5,
+    staleWhileRevalidate: 1000 * 60 * 60 * 24,
     forceFresh: await shouldForceFresh({request, key}),
     checkValue: (value: unknown) => typeof value === 'number',
     getFreshValue: async () => {
@@ -201,6 +204,7 @@ async function getBlogReadRankings({
     key,
     cache,
     ttl: slug ? 1000 * 60 * 60 * 24 * 7 : 1000 * 60 * 60,
+    staleWhileRevalidate: 1000 * 60 * 60 * 24,
     forceFresh: await shouldForceFresh({forceFresh, request, key}),
     checkValue: (value: unknown) =>
       Array.isArray(value) &&
@@ -270,6 +274,7 @@ async function getAllBlogPostReadRankings({
     cache,
     forceFresh: await shouldForceFresh({forceFresh, request, key}),
     ttl: 1000 * 60 * 5, // the underlying caching should be able to handle this every 5 minues
+    staleWhileRevalidate: 1000 * 60 * 60 * 24,
     getFreshValue: async () => {
       const posts = await getBlogMdxListItems({request})
       const {default: pLimit} = await import('p-limit')

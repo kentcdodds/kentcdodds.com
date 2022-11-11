@@ -156,6 +156,7 @@ async function getAllTestimonials({
     key,
     forceFresh: await shouldForceFresh({forceFresh, request, key}),
     ttl: 1000 * 60 * 60 * 24,
+    staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
     getFreshValue: async (): Promise<Array<TestimonialWithMetadata>> => {
       const talksString = await downloadFile('content/data/testimonials.yml')
       const rawTestimonials = YAML.parse(talksString)

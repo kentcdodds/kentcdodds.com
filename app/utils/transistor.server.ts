@@ -256,6 +256,7 @@ async function getCachedEpisodes({
     key: episodesCacheKey,
     getFreshValue: getEpisodes,
     ttl: 1000 * 60 * 60 * 24,
+    staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
     forceFresh: await shouldForceFresh({
       forceFresh,
       request,

@@ -5,7 +5,7 @@ export async function ensurePrimary() {
   const {currentIsPrimary, currentInstance, primaryInstance} =
     await getInstanceInfo()
 
-  if (currentIsPrimary) {
+  if (!currentIsPrimary) {
     console.log(
       `Instance (${currentInstance}) in ${process.env.FLY_REGION} is not primary (primary is: ${primaryInstance}), sending fly replay response`,
     )

@@ -27,7 +27,8 @@ type CachifiedOptions = {
   ttl?: number
 }
 
-const defaultTTL = 1000 * 60 * 60 * 24 * 30
+const defaultTTL = 1000 * 60 * 60 * 24
+const defaultStaleWhileRevalidate = 1000 * 60 * 60 * 24 * 30
 
 const checkCompiledValue = (value: unknown) =>
   typeof value === 'object' &&
@@ -48,6 +49,7 @@ async function getMdxPage(
   const page = await cachified({
     cache,
     ttl,
+    staleWhileRevalidate: defaultStaleWhileRevalidate,
     forceFresh: await shouldForceFresh({forceFresh, request, key}),
     // reusing the same key as compiledMdxCached because we just return that
     // exact same value. Cachifying this allows us to skip getting the cached files
@@ -109,6 +111,7 @@ async function getMdxDirList(contentDir: string, options?: CachifiedOptions) {
   return cachified({
     cache,
     ttl,
+    staleWhileRevalidate: defaultStaleWhileRevalidate,
     forceFresh: await shouldForceFresh({forceFresh, request, key}),
     key,
     checkValue: (value: unknown) => Array.isArray(value),
@@ -137,6 +140,7 @@ export async function downloadMdxFilesCached(
   const downloaded = await cachified({
     cache,
     ttl,
+    staleWhileRevalidate: defaultStaleWhileRevalidate,
     forceFresh: await shouldForceFresh({forceFresh, request, key}),
     key,
     checkValue: (value: unknown) => {
@@ -184,6 +188,7 @@ async function compileMdxCached({
   const page = await cachified({
     cache,
     ttl: defaultTTL,
+    staleWhileRevalidate: defaultStaleWhileRevalidate,
     reporter: verboseReporter(),
     ...options,
     forceFresh: await shouldForceFresh({
@@ -290,6 +295,7 @@ async function getBlogMdxListItems(options: CachifiedOptions) {
   return cachified({
     cache,
     ttl,
+    staleWhileRevalidate: defaultStaleWhileRevalidate,
     forceFresh: await shouldForceFresh({forceFresh, request, key}),
     key,
     getFreshValue: async () => {

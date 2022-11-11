@@ -31,6 +31,7 @@ async function getWorkshops({
     cache,
     key,
     ttl: 1000 * 60 * 60 * 24 * 7,
+    staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
     forceFresh: await shouldForceFresh({forceFresh, request, key}),
     getFreshValue: async () => {
       const dirList = await downloadDirList(`content/workshops`)

@@ -12,7 +12,7 @@ import type {GitHubFile} from '~/types'
 import * as twitter from './twitter.server'
 
 function handleEmbedderError({url}: {url: string}) {
-  return `<p>Error embedding <a href="${url}">${url}</a>.`
+  return `<p>Error embedding <a href="${url}">${url}</a></p>.`
 }
 
 type GottenHTML = string | null

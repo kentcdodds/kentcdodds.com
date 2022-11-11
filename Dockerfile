@@ -57,9 +57,11 @@ RUN npm run build
 FROM base
 
 ENV DATABASE_URL=file:/litefs/data/sqlite.db
+ENV CACHE_DATABASE_PATH=/data/cache.db
 ENV NODE_ENV=production
 # Make SQLite CLI accessible
 RUN echo "#!/bin/sh\nset -x\nsqlite3 \$DATABASE_URL" > /usr/local/bin/database-cli && chmod +x /usr/local/bin/database-cli
+RUN echo "#!/bin/sh\nset -x\nsqlite3 \$CACHE_DATABASE_PATH" > /usr/local/bin/cache-database-cli && chmod +x /usr/local/bin/cache-database-cli
 
 RUN mkdir /app/
 WORKDIR /app/

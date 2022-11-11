@@ -46,6 +46,7 @@ const getCachedSeasons = async ({
     cache,
     key: seasonsCacheKey,
     ttl: 1000 * 60 * 60 * 24 * 7,
+    staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
     getFreshValue: () => getSeasons({request, forceFresh}),
     forceFresh: await shouldForceFresh({
       forceFresh,
@@ -75,6 +76,7 @@ async function getCachedEpisode(
     cache,
     key,
     ttl: 1000 * 60 * 60 * 24 * 7,
+    staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
     getFreshValue: () => getEpisode(episodeId),
     forceFresh: await shouldForceFresh({forceFresh, request, key}),
     checkValue: (value: unknown) =>

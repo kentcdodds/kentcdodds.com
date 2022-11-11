@@ -126,6 +126,7 @@ async function getPeople({
     key,
     forceFresh: await shouldForceFresh({forceFresh, request, key}),
     ttl: 1000 * 60 * 60 * 24 * 30,
+    staleWhileRevalidate: 1000 * 60 * 60 * 24,
     getFreshValue: async () => {
       const creditsString = await downloadFile('content/data/credits.yml')
       const rawCredits = YAML.parse(creditsString)

@@ -50,20 +50,3 @@ export {
   markdownToHtmlDocument,
   stripHtml,
 }
-
-// async function go() {
-//   console.log(
-//     await markdownToHtml(
-//       `
-// # helo
-
-// this is stuff
-
-// <div>
-//   <p>this is stuff</p>
-// </div>
-//   `.trim(),
-//     ),
-//   )
-// }
-// go()

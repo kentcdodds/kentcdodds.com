@@ -1,19 +1,28 @@
 import {json} from '@remix-run/node'
-import {prisma} from '~/utils/prisma.server'
-import {commitShaKey as refreshCacheCommitShaKey} from './action/refresh-cache'
+import {cache} from '~/utils/cache.server'
+import type {RefreshShaInfo} from './action/refresh-cache'
+import {
+  commitShaKey as refreshCacheCommitShaKey,
+  isRefreshShaInfo,
+} from './action/refresh-cache'
 
 export async function loader() {
-  const result = await prisma.cache.findUnique({
-    where: {key: refreshCacheCommitShaKey},
-    select: {value: true},
-  })
+  const result = await cache.get(refreshCacheCommitShaKey)
   if (!result) {
     return json(null)
   }
-  return new Response(result.value, {
-    headers: {
-      'Content-Type': 'application/json',
-      'Content-Length': String(Buffer.byteLength(result.value)),
-    },
-  })
+
+  let value: RefreshShaInfo
+  try {
+    value = JSON.parse(result.value as any)
+    if (!isRefreshShaInfo(value)) {
+      throw new Error(`Invalid value: ${result.value}`)
+    }
+  } catch (error: unknown) {
+    console.error(`Error parsing commit sha from cache: ${error}`)
+    cache.delete(refreshCacheCommitShaKey)
+    return json(null)
+  }
+
+  return json(value)
 }

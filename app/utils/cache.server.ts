@@ -1,13 +1,34 @@
 import LRU from 'lru-cache'
 import type {Cache as CachifiedCache, CacheEntry} from 'cachified'
 import {lruCacheAdapter} from 'cachified'
+import Database from 'better-sqlite3'
 import {getUser} from './session.server'
-import {prisma} from './prisma.server'
+import {getRequiredServerEnvVar} from './misc'
+
+const CACHE_DATABASE_PATH = getRequiredServerEnvVar('CACHE_DATABASE_PATH')
 
 declare global {
   // This preserves the LRU cache during development
   // eslint-disable-next-line
-  var __lruCache: LRU<string, CacheEntry<unknown>> | undefined
+  var __lruCache: LRU<string, CacheEntry<unknown>> | undefined,
+    __cacheDb: ReturnType<typeof Database> | undefined
+}
+
+const cacheDb = (global.__cacheDb = global.__cacheDb
+  ? global.__cacheDb
+  : createDatabase())
+
+function createDatabase() {
+  const db = new Database(CACHE_DATABASE_PATH)
+  // create cache table with metadata JSON column and value JSON column if it does not exist already
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS cache (
+      key TEXT PRIMARY KEY,
+      metadata TEXT,
+      value TEXT
+    )
+  `)
+  return db
 }
 
 const lru = (global.__lruCache = global.__lruCache
@@ -18,32 +39,29 @@ export const lruCache = lruCacheAdapter(lru)
 
 export const cache: CachifiedCache = {
   name: 'SQLite cache',
-  async get(key) {
-    const result = await prisma.cache.findUnique({
-      where: {key},
-      select: {value: true, metadata: true},
-    })
+  get(key) {
+    const result = cacheDb
+      .prepare('SELECT value, metadata FROM cache WHERE key = ?')
+      .get(key)
     if (!result) return null
     return {
       metadata: JSON.parse(result.metadata),
       value: JSON.parse(result.value),
     }
   },
-  async set(key, {value, metadata}) {
-    const data = {
-      key,
-      value: JSON.stringify(value),
-      metadata: JSON.stringify(metadata),
-    }
-    await prisma.cache.upsert({
-      where: {key},
-      create: data,
-      update: data,
-    })
+  set(key, {value, metadata}) {
+    cacheDb
+      .prepare(
+        'INSERT OR REPLACE INTO cache (key, value, metadata) VALUES (@key, @value, @metadata)',
+      )
+      .run({
+        key,
+        value: JSON.stringify(value),
+        metadata: JSON.stringify(metadata),
+      })
   },
   async delete(key) {
-    // we don't care if the key didn't already exist
-    await prisma.cache.delete({where: {key}}).catch(() => {})
+    cacheDb.prepare('DELETE FROM cache WHERE key = ?').run(key)
   },
 }
 

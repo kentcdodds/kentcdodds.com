@@ -164,6 +164,7 @@ async function getCachedScheduledEvents({
     checkValue: (value: unknown) => Array.isArray(value),
     forceFresh: await shouldForceFresh({forceFresh, request, key}),
     ttl: 1000 * 60 * 24,
+    staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
   })
   return scheduledEvents
 }

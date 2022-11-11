@@ -21,3 +21,4 @@ other/postcss.ignored
 /test-results/
 /playwright-report/
 /playwright/.cache/
+/other/cache.db

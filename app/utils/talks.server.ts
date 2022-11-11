@@ -119,6 +119,7 @@ async function getTalksAndTags({
     cache,
     key,
     ttl: 1000 * 60 * 60 * 24 * 14,
+    staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
     forceFresh: await shouldForceFresh({forceFresh, request, key}),
     getFreshValue: async () => {
       const talksString = await downloadFile('content/data/talks.yml')
