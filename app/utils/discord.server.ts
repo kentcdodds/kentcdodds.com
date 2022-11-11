@@ -1,6 +1,7 @@
 import type {User, Team} from '~/types'
 import {prisma} from './prisma.server'
-import {ensurePrimary, getRequiredServerEnvVar, getTeam} from './misc'
+import {getRequiredServerEnvVar, getTeam} from './misc'
+import {ensurePrimary} from './fly.server'
 
 const DISCORD_CLIENT_ID = getRequiredServerEnvVar('DISCORD_CLIENT_ID')
 const DISCORD_CLIENT_SECRET = getRequiredServerEnvVar('DISCORD_CLIENT_SECRET')
@@ -179,7 +180,7 @@ async function connectDiscord({
   code: string
   domainUrl: string
 }) {
-  ensurePrimary()
+  await ensurePrimary()
   const {discordUser, discordToken} = await getUserToken({code, domainUrl})
 
   await addUserToDiscordServer(discordUser, discordToken)

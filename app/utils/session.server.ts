@@ -9,8 +9,9 @@ import {
   createSession,
   sessionExpirationTime,
 } from './prisma.server'
-import {ensurePrimary, getRequiredServerEnvVar} from './misc'
+import {getRequiredServerEnvVar} from './misc'
 import {getLoginInfoSession} from './login.server'
+import {ensurePrimary} from './fly.server'
 
 const sessionIdKey = '__session_id__'
 
@@ -83,10 +84,10 @@ async function getSession(request: Request) {
       const userSession = await createSession({userId: user.id})
       session.set(sessionIdKey, userSession.id)
     },
-    signOut: () => {
+    signOut: async () => {
       const sessionId = getSessionId()
       if (sessionId) {
-        ensurePrimary()
+        await ensurePrimary()
         unsetSessionId()
         prisma.session
           .delete({where: {id: sessionId}})
@@ -127,7 +128,7 @@ async function deleteOtherSessions(request: Request) {
     return
   }
   const user = await getUserFromSessionId(token)
-  ensurePrimary()
+  await ensurePrimary()
   await prisma.session.deleteMany({
     where: {userId: user.id, NOT: {id: token}},
   })
@@ -164,7 +165,7 @@ async function requireAdminUser(request: Request): Promise<User> {
   const user = await getUser(request)
   if (!user) {
     const session = await getSession(request)
-    session.signOut()
+    await session.signOut()
     throw redirect('/login', {headers: await session.getHeaders()})
   }
   if (user.role !== 'ADMIN') {
@@ -177,7 +178,7 @@ async function requireUser(request: Request): Promise<User> {
   const user = await getUser(request)
   if (!user) {
     const session = await getSession(request)
-    session.signOut()
+    await session.signOut()
     throw redirect('/login', {headers: await session.getHeaders()})
   }
   return user

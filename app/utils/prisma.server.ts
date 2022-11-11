@@ -1,7 +1,7 @@
 import {PrismaClient} from '@prisma/client'
 import type {Session} from '~/types'
 import {encrypt, decrypt} from './encryption.server'
-import {ensurePrimary} from './misc'
+import {ensurePrimary} from './fly.server'
 
 declare global {
   // This prevents us from making multiple connections to the db when the
@@ -142,7 +142,7 @@ async function validateMagicLink(link: string, sessionMagicLink?: string) {
 async function createSession(
   sessionData: Omit<Session, 'id' | 'expirationDate' | 'createdAt'>,
 ) {
-  ensurePrimary()
+  await ensurePrimary()
   return prisma.session.create({
     data: {
       ...sessionData,
@@ -161,7 +161,7 @@ async function getUserFromSessionId(sessionId: string) {
   }
 
   if (Date.now() > session.expirationDate.getTime()) {
-    ensurePrimary()
+    await ensurePrimary()
     await prisma.session.delete({where: {id: sessionId}})
     throw new Error('Session expired. Please request a new magic link.')
   }
@@ -169,7 +169,7 @@ async function getUserFromSessionId(sessionId: string) {
   // if there's less than ~six months left, extend the session
   const twoWeeks = 1000 * 60 * 60 * 24 * 30 * 6
   if (Date.now() + twoWeeks > session.expirationDate.getTime()) {
-    ensurePrimary()
+    await ensurePrimary()
     const newExpirationDate = new Date(Date.now() + sessionExpirationTime)
     await prisma.session.update({
       data: {expirationDate: newExpirationDate},
@@ -210,7 +210,7 @@ async function addPostRead({
   if (readInLastWeek) {
     return null
   } else {
-    ensurePrimary()
+    await ensurePrimary()
     const postRead = await prisma.postRead.create({
       data: {postSlug: slug, ...id},
       select: {id: true},

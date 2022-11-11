@@ -4,7 +4,7 @@ import type {EntryContext} from '@remix-run/node'
 import {RemixServer as Remix} from '@remix-run/react'
 import {getEnv} from './utils/env.server'
 import {routes as otherRoutes} from './other-routes.server'
-import {getFlyReplayResponse, getRequiredServerEnvVar} from './utils/misc'
+import {getFlyReplayResponse, getInstanceInfo} from './utils/fly.server'
 
 if (process.env.NODE_ENV === 'development') {
   try {
@@ -25,8 +25,9 @@ export default async function handleRequest(
   if (responseStatusCode >= 500) {
     // maybe we're just in trouble in this region... if we're not in the primary
     // region, then replay and hopefully it works next time.
-    if (process.env.IS_PRIMARY_FLY_INSTANCE) {
-      return getFlyReplayResponse()
+    const {currentIsPrimary, primaryInstance} = await getInstanceInfo()
+    if (!currentIsPrimary) {
+      return getFlyReplayResponse(primaryInstance)
     }
   }
 
@@ -59,12 +60,13 @@ export default async function handleRequest(
   })
 }
 
-export function handleDataRequest(response: Response) {
+export async function handleDataRequest(response: Response) {
   if (response.status >= 500) {
     // maybe we're just in trouble in this instance... if we're not in the primary
     // instance, then replay and hopefully it works next time.
-    if (process.env.IS_PRIMARY_FLY_INSTANCE) {
-      return getFlyReplayResponse()
+    const {currentIsPrimary, primaryInstance} = await getInstanceInfo()
+    if (!currentIsPrimary) {
+      return getFlyReplayResponse(primaryInstance)
     }
   }
   return response

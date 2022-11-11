@@ -250,23 +250,6 @@ function getDomainUrl(request: Request) {
   return `${protocol}://${host}`
 }
 
-function ensurePrimary() {
-  if (!process.env.IS_PRIMARY_FLY_INSTANCE) {
-    throw getFlyReplayResponse()
-  }
-}
-
-function getFlyReplayResponse() {
-  const {PRIMARY_INSTANCE} = process.env
-  if (!PRIMARY_INSTANCE) {
-    return new Response('Unknown primary instance', {status: 500})
-  }
-  return new Response('Fly Replay', {
-    status: 409,
-    headers: {'fly-replay': `instance=${process.env.PRIMARY_INSTANCE}`},
-  })
-}
-
 function removeTrailingSlash(s: string) {
   return s.endsWith('/') ? s.slice(0, -1) : s
 }
@@ -402,8 +385,6 @@ export {
   useDoubleCheck,
   useDebounce,
   typedBoolean,
-  ensurePrimary,
-  getFlyReplayResponse,
   getRequiredServerEnvVar,
   getRequiredGlobalEnvVar,
   getDiscordAuthorizeURL,

@@ -125,7 +125,7 @@ export const action: ActionFunction = async ({request}) => {
   try {
     if (actionId === actionIds.logout) {
       const session = await getSession(request)
-      session.signOut()
+      await session.signOut()
       const searchParams = new URLSearchParams({
         message: `👋 See you again soon!`,
       })
@@ -171,7 +171,7 @@ export const action: ActionFunction = async ({request}) => {
     }
     if (actionId === actionIds.deleteAccount) {
       const session = await getSession(request)
-      session.signOut()
+      await session.signOut()
       if (user.discordId) await deleteDiscordCache(user.discordId)
       if (user.convertKitId) await deleteConvertKitCache(user.convertKitId)
 
