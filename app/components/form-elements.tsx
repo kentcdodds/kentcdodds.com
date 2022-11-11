@@ -97,11 +97,11 @@ const Field = React.forwardRef<
       <Input
         // @ts-expect-error no idea 🤷‍♂️
         ref={ref}
-        {...(props as InputProps)}
+        required
+        {...props}
         name={name}
         id={inputId}
         autoComplete={name}
-        required
         defaultValue={defaultValue}
         aria-describedby={
           error ? errorId : description ? descriptionId : undefined

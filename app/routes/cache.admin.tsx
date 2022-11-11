@@ -22,6 +22,15 @@ export async function loader({request}: DataFunctionArgs) {
   const searchParams = new URL(request.url).searchParams
   const query = searchParams.get('query')
   const limit = Number(searchParams.get('limit') ?? 100)
+  const region = searchParams.get('region') ?? process.env.FLY_REGION
+  if (process.env.FLY && region !== process.env.FLY_REGION) {
+    throw new Response('Fly Replay', {
+      status: 409,
+      headers: {
+        'fly-replay': `region=${region}`,
+      },
+    })
+  }
 
   let cacheKeys: Array<string>
   if (typeof query === 'string') {
@@ -29,7 +38,7 @@ export async function loader({request}: DataFunctionArgs) {
   } else {
     cacheKeys = await getAllCacheKeys(limit)
   }
-  return json({cacheKeys})
+  return json({cacheKeys, region})
 }
 
 export async function action({request}: DataFunctionArgs) {
@@ -46,6 +55,7 @@ export default function CacheAdminRoute() {
   const [searchParams] = useSearchParams()
   const query = searchParams.get('query') ?? ''
   const limit = searchParams.get('limit') ?? '100'
+  const region = searchParams.get('region') ?? data.region
 
   return (
     <div className="mx-10vw">
@@ -82,6 +92,14 @@ export default function CacheAdminRoute() {
             min="1"
             max="10000"
             placeholder="results limit"
+          />
+          <Field
+            label="Region"
+            name="region"
+            defaultValue={region}
+            type="text"
+            placeholder="region"
+            required={false}
           />
         </div>
       </Form>
