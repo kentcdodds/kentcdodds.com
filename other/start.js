@@ -51,7 +51,7 @@ async function deployMigrations() {
 }
 
 async function startApp() {
-  const command = 'npx remix-serve build'
+  const command = 'npm start'
   const child = spawn(command, {shell: true, stdio: 'inherit'})
   await new Promise((res, rej) => {
     child.on('exit', code => {
