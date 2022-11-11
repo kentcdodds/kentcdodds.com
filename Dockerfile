@@ -72,6 +72,9 @@ COPY --from=build /app/public /app/public
 COPY --from=build /app/server-build /app/server-build
 COPY --from=build /app/other/runfile.js /app/other/runfile.js
 COPY --from=build /app/other/start.js /app/other/start.js
+COPY --from=build /app/prisma /app/prisma
+COPY --from=build /app/prisma-postgres /app/prisma-postgres
+COPY --from=build /app/remix.config.js /app/remix.config.js
 
 # prepare for litefs
 COPY --from=litefs /usr/local/bin/litefs /usr/local/bin/litefs
