@@ -26,7 +26,7 @@ if (process.env.FLY) {
     tracesSampleRate: 0.3,
     environment: process.env.NODE_ENV,
   })
-  Sentry.setContext('region', {name: process.env.FLY_REGION ?? 'unknown'})
+  Sentry.setContext('region', {name: process.env.FLY_INSTANCE ?? 'unknown'})
 }
 
 const MODE = process.env.NODE_ENV
@@ -37,6 +37,8 @@ const app = express()
 app.use((req, res, next) => {
   res.set('X-Powered-By', 'Kody the Koala')
   res.set('X-Fly-Region', process.env.FLY_REGION ?? 'unknown')
+  res.set('X-Fly-Instance', process.env.FLY_INSTANCE ?? 'unknown')
+  res.set('X-Fly-Is-Primary', process.env.IS_PRIMARY_FLY_INSTANCE ?? 'false')
   // if they connect once with HTTPS, then they'll connect with HTTPS for the next hundred years
   res.set('Strict-Transport-Security', `max-age=${60 * 60 * 24 * 365 * 100}`)
   next()

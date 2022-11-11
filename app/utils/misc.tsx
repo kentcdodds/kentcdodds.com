@@ -251,16 +251,19 @@ function getDomainUrl(request: Request) {
 }
 
 function ensurePrimary() {
-  const FLY_REGION = getRequiredServerEnvVar('FLY_REGION')
-  if (FLY_REGION !== ENV.PRIMARY_REGION) {
+  if (!process.env.IS_PRIMARY_FLY_INSTANCE) {
     throw getFlyReplayResponse()
   }
 }
 
 function getFlyReplayResponse() {
+  const {PRIMARY_INSTANCE} = process.env
+  if (!PRIMARY_INSTANCE) {
+    return new Response('Unknown primary instance', {status: 500})
+  }
   return new Response('Fly Replay', {
     status: 409,
-    headers: {'fly-replay': `region=${ENV.PRIMARY_REGION}`},
+    headers: {'fly-replay': `instance=${process.env.PRIMARY_INSTANCE}`},
   })
 }
 

@@ -71,12 +71,11 @@ COPY --from=build /app/build /app/build
 COPY --from=build /app/public /app/public
 COPY --from=build /app/server-build /app/server-build
 COPY --from=build /app/other/runfile.js /app/other/runfile.js
+COPY --from=build /app/other/start.js /app/other/start.js
 
 # prepare for litefs
 COPY --from=litefs /usr/local/bin/litefs /usr/local/bin/litefs
 ADD other/litefs.yml /etc/litefs.yml
 RUN mkdir -p /data /litefs/data
 
-ADD . .
-
-CMD ["litefs", "--", "bash", "start.sh"]
+CMD ["litefs", "--", "node", "./other/start.js"]

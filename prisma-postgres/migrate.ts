@@ -5,11 +5,6 @@ import {PrismaClient as PostgresClient} from '@prisma/client-postgres'
 // TIP: do not do this if you have lots of data... I don't
 // copy all data from pg to sq
 async function main() {
-  if (process.env.FLY_REGION !== process.env.PRIMARY_REGION) {
-    console.log('not primary region, skipping')
-    return
-  }
-
   const pg = new PostgresClient({
     datasources: {
       db: {

@@ -3,7 +3,6 @@ function getEnv() {
     FLY: process.env.FLY,
     NODE_ENV: process.env.NODE_ENV,
     DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
-    PRIMARY_REGION: process.env.PRIMARY_REGION,
   }
 }
 

@@ -1,6 +1,11 @@
 import type {RequestHandler} from 'express'
-const {FLY, PRIMARY_REGION, FLY_REGION} = process.env
-const isPrimaryRegion = PRIMARY_REGION === FLY_REGION
+const {
+  FLY,
+  IS_PRIMARY_FLY_INSTANCE,
+  PRIMARY_INSTANCE,
+  FLY_INSTANCE,
+  FLY_REGION,
+} = process.env
 
 const getReplayResponse: RequestHandler = function getReplayResponse(
   req,
@@ -12,7 +17,7 @@ const getReplayResponse: RequestHandler = function getReplayResponse(
     return next()
   }
 
-  if (!FLY || isPrimaryRegion) return next()
+  if (!FLY || IS_PRIMARY_FLY_INSTANCE) return next()
 
   if (pathname.includes('__metronome')) {
     // metronome doesn't need to be replayed...
@@ -22,11 +27,12 @@ const getReplayResponse: RequestHandler = function getReplayResponse(
   const logInfo = {
     pathname,
     method,
-    PRIMARY_REGION,
+    PRIMARY_INSTANCE,
+    FLY_INSTANCE,
     FLY_REGION,
   }
   console.info(`Replaying:`, logInfo)
-  res.set('fly-replay', `region=${PRIMARY_REGION}`)
+  res.set('fly-replay', `instance=${IS_PRIMARY_FLY_INSTANCE}`)
   return res.sendStatus(409)
 }
 

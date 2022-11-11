@@ -25,8 +25,7 @@ export default async function handleRequest(
   if (responseStatusCode >= 500) {
     // maybe we're just in trouble in this region... if we're not in the primary
     // region, then replay and hopefully it works next time.
-    const FLY_REGION = getRequiredServerEnvVar('FLY_REGION')
-    if (FLY_REGION !== ENV.PRIMARY_REGION) {
+    if (process.env.IS_PRIMARY_FLY_INSTANCE) {
       return getFlyReplayResponse()
     }
   }
@@ -62,10 +61,9 @@ export default async function handleRequest(
 
 export function handleDataRequest(response: Response) {
   if (response.status >= 500) {
-    // maybe we're just in trouble in this region... if we're not in the primary
-    // region, then replay and hopefully it works next time.
-    const FLY_REGION = getRequiredServerEnvVar('FLY_REGION')
-    if (FLY_REGION !== ENV.PRIMARY_REGION) {
+    // maybe we're just in trouble in this instance... if we're not in the primary
+    // instance, then replay and hopefully it works next time.
+    if (process.env.IS_PRIMARY_FLY_INSTANCE) {
       return getFlyReplayResponse()
     }
   }
