@@ -1,4 +1,5 @@
 import fs from 'fs'
+import os from 'os'
 import path from 'path'
 import onFinished from 'on-finished'
 import express from 'express'
@@ -14,7 +15,7 @@ import {
 } from '@metronome-sh/express'
 import {addCloudinaryProxies} from './cloudinary'
 import {getRedirectsMiddleware} from './redirects'
-import {getReplayResponse} from './fly'
+import {getInstanceInfo, getReplayResponse} from './fly'
 
 installGlobals()
 
@@ -35,10 +36,13 @@ const BUILD_DIR = path.join(process.cwd(), 'build')
 const app = express()
 
 app.use((req, res, next) => {
+  const {currentInstance, primaryInstance} = getInstanceInfo()
   res.set('X-Powered-By', 'Kody the Koala')
   res.set('X-Fly-Region', process.env.FLY_REGION ?? 'unknown')
-  res.set('X-Fly-Instance', process.env.FLY_INSTANCE ?? 'unknown')
-  res.set('X-Fly-Is-Primary', process.env.IS_PRIMARY_FLY_INSTANCE ?? 'false')
+  res.set('X-Fly-App', process.env.FLY_APP_NAME ?? 'unknown')
+  res.set('X-Fly-Instance', currentInstance)
+  res.set('X-Fly-Primary-Instance', primaryInstance)
+
   // if they connect once with HTTPS, then they'll connect with HTTPS for the next hundred years
   res.set('Strict-Transport-Security', `max-age=${60 * 60 * 24 * 365 * 100}`)
   next()

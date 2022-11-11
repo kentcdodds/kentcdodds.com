@@ -1,13 +1,8 @@
+import os from 'os'
+import fs from 'fs'
 import type {RequestHandler} from 'express'
-const {
-  FLY,
-  IS_PRIMARY_FLY_INSTANCE,
-  PRIMARY_INSTANCE,
-  FLY_INSTANCE,
-  FLY_REGION,
-} = process.env
 
-const getReplayResponse: RequestHandler = function getReplayResponse(
+export const getReplayResponse: RequestHandler = function getReplayResponse(
   req,
   res,
   next,
@@ -17,7 +12,8 @@ const getReplayResponse: RequestHandler = function getReplayResponse(
     return next()
   }
 
-  if (!FLY || IS_PRIMARY_FLY_INSTANCE) return next()
+  const {currentInstance, currentIsPrimary, primaryInstance} = getInstanceInfo()
+  if (!process.env.FLY || currentIsPrimary) return next()
 
   if (pathname.includes('__metronome')) {
     // metronome doesn't need to be replayed...
@@ -27,13 +23,27 @@ const getReplayResponse: RequestHandler = function getReplayResponse(
   const logInfo = {
     pathname,
     method,
-    PRIMARY_INSTANCE,
-    FLY_INSTANCE,
-    FLY_REGION,
+    currentInstance,
+    currentIsPrimary,
+    primaryInstance,
   }
   console.info(`Replaying:`, logInfo)
-  res.set('fly-replay', `instance=${IS_PRIMARY_FLY_INSTANCE}`)
+  res.set('fly-replay', `instance=${primaryInstance}`)
   return res.sendStatus(409)
 }
 
-export {getReplayResponse}
+export function getInstanceInfo() {
+  const currentInstance = os.hostname()
+  let primaryInstance
+  try {
+    primaryInstance = fs.readFileSync('/litefs/data/.primary', 'utf8')
+    primaryInstance = primaryInstance.trim()
+  } catch (error: unknown) {
+    primaryInstance = currentInstance
+  }
+  return {
+    primaryInstance,
+    currentInstance,
+    currentIsPrimary: currentInstance === primaryInstance,
+  }
+}

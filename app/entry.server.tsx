@@ -49,6 +49,7 @@ export default async function handleRequest(
 
   responseHeaders.set('Content-Type', 'text/html')
   responseHeaders.set('Content-Length', String(Buffer.byteLength(html)))
+
   responseHeaders.append(
     'Link',
     '<https://res.cloudinary.com>; rel="preconnect"',
