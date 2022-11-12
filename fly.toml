@@ -3,11 +3,6 @@ app = "kcd"
 kill_signal = "SIGINT"
 kill_timeout = 5
 
-[env]
-  PORT = "8080"
-  NODE_ENV = "production"
-  FLY = "true"
-
 [mounts]
   source = "data"
   destination = "/data"

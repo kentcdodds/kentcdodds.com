@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import onFinished from 'on-finished'
 import express from 'express'
+import 'express-async-errors'
 import compression from 'compression'
 import morgan from 'morgan'
 import * as Sentry from '@sentry/node'
@@ -14,7 +15,7 @@ import {
 } from '@metronome-sh/express'
 import {addCloudinaryProxies} from './cloudinary'
 import {getRedirectsMiddleware} from './redirects'
-import {getInstanceInfo, getReplayResponse} from './fly'
+import {getInstanceInfo, getReplayResponse, txIDMiddleware} from './fly'
 
 installGlobals()
 
@@ -137,6 +138,8 @@ function getRequestHandlerOptions(): Parameters<
   }
   return {build, mode: MODE}
 }
+
+app.all('*', txIDMiddleware)
 
 app.all(
   '*',

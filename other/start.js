@@ -1,6 +1,7 @@
 const fs = require('fs')
 const {spawn} = require('child_process')
 const os = require('os')
+const path = require('path')
 
 async function go() {
   const currentInstance = os.hostname()
@@ -24,7 +25,12 @@ go()
 
 async function getPrimaryInstanceHostname() {
   try {
-    const primary = await fs.promises.readFile('/litefs/data/.primary', 'utf8')
+    const {FLY_LITEFS_DIR} = process.env
+    invariant(FLY_LITEFS_DIR, 'FLY_LITEFS_DIR is not defined')
+    const primary = await fs.promises.readFile(
+      path.join(FLY_LITEFS_DIR, '.primary'),
+      'utf8',
+    )
     console.log(`Found primary instance in .primary file: ${primary}`)
     return primary.trim()
   } catch (error) {

@@ -56,7 +56,11 @@ RUN npm run build
 # build smaller image for running
 FROM base
 
-ENV DATABASE_URL=file:/litefs/data/sqlite.db
+ENV FLY="true"
+ENV FLY_LITEFS_DIR="/litefs/data"
+ENV DATABASE_URL="file:$FLY_LITEFS_DIR/sqlite.db"
+ENV PORT="8080"
+ENV NODE_ENV="production"
 ENV CACHE_DATABASE_PATH=/data/cache.db
 ENV NODE_ENV=production
 # Make SQLite CLI accessible
@@ -82,6 +86,6 @@ ADD . .
 # prepare for litefs
 COPY --from=litefs /usr/local/bin/litefs /usr/local/bin/litefs
 ADD other/litefs.yml /etc/litefs.yml
-RUN mkdir -p /data /litefs/data
+RUN mkdir -p /data ${FLY_LITEFS_DIR}
 
 CMD ["litefs", "--", "node", "./other/start.js"]
