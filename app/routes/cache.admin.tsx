@@ -45,6 +45,16 @@ export async function action({request}: DataFunctionArgs) {
   await requireAdminUser(request)
   const formData = await request.formData()
   const key = formData.get('cacheKey')
+  const region = formData.get('region') ?? process.env.FLY_REGION
+  if (process.env.FLY && region !== process.env.FLY_REGION) {
+    throw new Response('Fly Replay', {
+      status: 409,
+      headers: {
+        'fly-replay': `region=${region}`,
+      },
+    })
+  }
+
   invariant(typeof key === 'string', 'cacheKey must be a string')
   await cache.delete(key)
   return json({success: true})
@@ -106,20 +116,21 @@ export default function CacheAdminRoute() {
       <Spacer size="2xs" />
       <div className="flex flex-col gap-4">
         {data.cacheKeys.map(key => (
-          <CacheKeyRow cacheKey={key} key={key} />
+          <CacheKeyRow key={key} cacheKey={key} region={region} />
         ))}
       </div>
     </div>
   )
 }
 
-function CacheKeyRow({cacheKey}: {cacheKey: string}) {
+function CacheKeyRow({cacheKey, region}: {cacheKey: string; region?: string}) {
   const fetcher = useFetcher()
   const dc = useDoubleCheck()
   return (
     <div className="flex items-center gap-2 font-mono">
       <fetcher.Form method="post">
         <input type="hidden" name="cacheKey" value={cacheKey} />
+        <input type="hidden" name="region" value={region} />
         <Button
           size="small"
           variant="danger"
