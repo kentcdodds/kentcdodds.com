@@ -21,7 +21,10 @@ installGlobals()
 
 const here = (...d: Array<string>) => path.join(__dirname, ...d)
 
-if (process.env.FLY) {
+// TODO: enable this
+const enableSentry = false
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+if (enableSentry && process.env.FLY) {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
     tracesSampleRate: 0.3,
@@ -42,6 +45,11 @@ app.use((req, res, next) => {
   res.set('X-Fly-App', process.env.FLY_APP_NAME ?? 'unknown')
   res.set('X-Fly-Instance', currentInstance)
   res.set('X-Fly-Primary-Instance', primaryInstance)
+
+  const host = req.get('X-Forwarded-Host') ?? req.get('host')
+  if (!host?.endsWith('kentcdodds.com')) {
+    res.set('X-Robots-Tag', 'noindex')
+  }
 
   // if they connect once with HTTPS, then they'll connect with HTTPS for the next hundred years
   res.set('Strict-Transport-Security', `max-age=${60 * 60 * 24 * 365 * 100}`)
