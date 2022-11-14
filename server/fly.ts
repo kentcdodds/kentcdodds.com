@@ -80,12 +80,17 @@ export const txIDMiddleware: RequestHandler = async (req, res, next) => {
   const cookies = reqCookie ? cookie.parse(reqCookie) : {}
 
   if (req.method === 'GET' || req.method === 'HEAD') {
+    console.log(cookies)
     if (cookies.txid && !currentIsPrimary) {
       const shouldReplay = await waitForUpToDateTXID(parseInt(cookies.txid, 16))
       if (shouldReplay) {
+        console.log('Timed out waiting, replaying request to primary instance')
         res.set('fly-replay', `instance=${primaryInstance}`)
         return res.sendStatus(409)
       } else {
+        console.log(
+          'Request is up to date, clearing the cookie and, continuing',
+        )
         res.append(
           'Set-Cookie',
           cookie.serialize('txid', '', {
@@ -126,16 +131,24 @@ async function waitForUpToDateTXID(sessionTXNumber: number) {
   const maxAttempts = 5
   while (attempt <= maxAttempts) {
     const txid = await getTXID()
-    if (!txid) return true
+    console.log({attempt, sessionTXNumber, txid})
+    if (!txid) {
+      console.log('returning true due to no txid')
+      return true
+    }
     const localTXNumber = parseInt(txid, 16)
     if (sessionTXNumber > localTXNumber) {
       // slowly decrease the amount of time we wait
-      await sleep((Math.abs(attempt - maxAttempts) + 1) * 50)
+      const sleepTime = (Math.abs(attempt - maxAttempts) + 1) * 50
+      console.log(`sleeping ${sleepTime}ms before next attempt`)
+      await sleep(sleepTime)
       attempt++
     } else {
+      console.log('returning true due to txid being up to date')
       return true
     }
   }
+  console.log('Waited long enough, returning false')
   return false
 }
 
