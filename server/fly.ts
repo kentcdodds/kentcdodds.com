@@ -6,6 +6,7 @@ import cookie from 'cookie'
 import invariant from 'tiny-invariant'
 import chokidar from 'chokidar'
 import EventEmitter from 'events'
+import onFinished from 'on-finished'
 
 export const getReplayResponse: RequestHandler = function getReplayResponse(
   req,
@@ -108,18 +109,26 @@ export const txMiddleware: RequestHandler = async (req, res, next) => {
     }
   } else if (req.method === 'POST') {
     if (currentIsPrimary) {
-      const txnum = getTXNumber()
-      if (!txnum) return next()
-
-      res.append(
-        'Set-Cookie',
-        cookie.serialize('txnum', txnum.toString(), {
-          path: '/',
-          httpOnly: true,
-          sameSite: 'lax',
-          secure: true,
-        }),
+      const preTxnum = getTXNumber()
+      console.log(
+        `POST on primary, setting here's the txnum before finishing the post: ${preTxnum}`,
       )
+      onFinished(res, () => {
+        const txnum = getTXNumber()
+        if (!txnum) return
+        console.log('POST to primary is finished, setting txnum cookie', {
+          txnum,
+        })
+        res.append(
+          'Set-Cookie',
+          cookie.serialize('txnum', txnum.toString(), {
+            path: '/',
+            httpOnly: true,
+            sameSite: 'lax',
+            secure: true,
+          }),
+        )
+      })
     }
   }
 
