@@ -2,6 +2,7 @@ const fs = require('fs')
 const {spawn} = require('child_process')
 const os = require('os')
 const path = require('path')
+const invariant = require('tiny-invariant')
 
 async function go() {
   const currentInstance = os.hostname()
