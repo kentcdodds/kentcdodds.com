@@ -67,9 +67,7 @@ app.use((req, res, next) => {
   next()
 })
 
-if (process.env.FLY) {
-  app.all('*', getReplayResponse)
-}
+app.all('*', getReplayResponse)
 
 addCloudinaryProxies(app)
 
@@ -149,9 +147,7 @@ function getRequestHandlerOptions(): Parameters<
   return {build, mode: MODE}
 }
 
-if (process.env.FLY) {
-  app.all('*', txMiddleware)
-}
+app.all('*', txMiddleware)
 
 app.all(
   '*',
