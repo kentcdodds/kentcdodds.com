@@ -80,15 +80,8 @@ export async function handleDataRequest(
 
   if (request.method === 'POST') {
     if (currentIsPrimary) {
-      const preTxnum = getTXNumber()
-      console.log(
-        `POST on primary, setting here's the txnum before finishing the post: ${preTxnum}`,
-      )
       const txnum = getTXNumber()
       if (txnum) {
-        console.log('POST to primary is finished, setting txnum cookie', {
-          txnum,
-        })
         response.headers.append(
           'Set-Cookie',
           cookie.serialize('txnum', txnum.toString(), {

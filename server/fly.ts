@@ -84,15 +84,11 @@ export const txMiddleware: RequestHandler = async (req, res, next) => {
   const cookies = reqCookie ? cookie.parse(reqCookie) : {}
 
   if (req.method === 'GET' || req.method === 'HEAD') {
-    console.log({cookies})
     if (cookies.txnum && !currentIsPrimary) {
       const txNumberIsUpToDate = await waitForUpToDateTXNumber(
         Number(cookies.txnum),
       )
       if (txNumberIsUpToDate) {
-        console.log(
-          'Request is up to date, clearing the cookie and, continuing',
-        )
         res.append(
           'Set-Cookie',
           cookie.serialize('txnum', '', {
@@ -101,7 +97,6 @@ export const txMiddleware: RequestHandler = async (req, res, next) => {
           }),
         )
       } else {
-        console.log('Timed out waiting, replaying request to primary instance')
         res.set('fly-replay', `instance=${primaryInstance}`)
         return res.sendStatus(409)
       }
@@ -115,17 +110,14 @@ const txEmitter = new EventEmitter()
 const {FLY_LITEFS_DIR} = process.env
 if (process.env.FLY) {
   invariant(FLY_LITEFS_DIR, 'FLY_LITEFS_DIR is not defined')
-  console.log('*********************** watching sqlite.db-pos file')
   chokidar
     .watch(path.join(FLY_LITEFS_DIR, `sqlite.db-pos`))
     .on('change', () => {
-      console.log('********************** change event')
       const txNumber = getTXNumber()
-      console.log(`tx number changed to ${txNumber}`)
       txEmitter.emit('change', txNumber)
     })
     .on('error', error => {
-      console.error(`^^^^^^^^^^^^^^^^^^^^^ Error watching sqlite.db-pos`, error)
+      console.error(`Error watching sqlite.db-pos`, error)
     })
 }
 
@@ -135,30 +127,21 @@ if (process.env.FLY) {
  */
 async function waitForUpToDateTXNumber(sessionTXNumber: number) {
   const currentTXNumber = getTXNumber()
-  console.log({currentTXNumber, sessionTXNumber})
   if (currentTXNumber >= sessionTXNumber) return true
 
   return new Promise(resolve => {
     const MAX_WAITING_TIME = 500
     const timeout = setTimeout(() => {
-      console.log(
-        `Timed out waiting for tx number to be up to date, returning false`,
-      )
+      console.error(`Timed out waiting for tx number! Call Kent!`)
       txEmitter.off('change', handleTxNumberChange)
       resolve(false)
     }, MAX_WAITING_TIME)
 
     function handleTxNumberChange(newTXNumber: number) {
-      console.log({newTXNumber, sessionTXNumber})
       if (newTXNumber >= sessionTXNumber) {
-        console.log(`tx number up to date, returning true`)
         txEmitter.off('change', handleTxNumberChange)
         clearTimeout(timeout)
         resolve(true)
-      } else {
-        console.log(
-          `Current tx number is ${newTXNumber}, waiting for it to be at least ${sessionTXNumber}`,
-        )
       }
     }
     txEmitter.on('change', handleTxNumberChange)
