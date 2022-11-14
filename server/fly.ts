@@ -6,7 +6,6 @@ import cookie from 'cookie'
 import invariant from 'tiny-invariant'
 import chokidar from 'chokidar'
 import EventEmitter from 'events'
-import onFinished from 'on-finished'
 
 export const getReplayResponse: RequestHandler = function getReplayResponse(
   req,
@@ -107,29 +106,6 @@ export const txMiddleware: RequestHandler = async (req, res, next) => {
         return res.sendStatus(409)
       }
     }
-  } else if (req.method === 'POST') {
-    if (currentIsPrimary) {
-      const preTxnum = getTXNumber()
-      console.log(
-        `POST on primary, setting here's the txnum before finishing the post: ${preTxnum}`,
-      )
-      onFinished(res, () => {
-        const txnum = getTXNumber()
-        if (!txnum) return
-        console.log('POST to primary is finished, setting txnum cookie', {
-          txnum,
-        })
-        res.append(
-          'Set-Cookie',
-          cookie.serialize('txnum', txnum.toString(), {
-            path: '/',
-            httpOnly: true,
-            sameSite: 'lax',
-            secure: true,
-          }),
-        )
-      })
-    }
   }
 
   return next()
@@ -139,7 +115,7 @@ const txEmitter = new EventEmitter()
 const {FLY_LITEFS_DIR} = process.env
 if (process.env.FLY) {
   invariant(FLY_LITEFS_DIR, 'FLY_LITEFS_DIR is not defined')
-  console.log('watching sqlite.db-pos file')
+  console.log('*********************** watching sqlite.db-pos file')
   chokidar
     .watch(path.join(FLY_LITEFS_DIR, `sqlite.db-pos`))
     .on('change', () => {
@@ -149,7 +125,7 @@ if (process.env.FLY) {
       txEmitter.emit('change', txNumber)
     })
     .on('error', error => {
-      console.error(`Error watching sqlite.db-pos`, error)
+      console.error(`^^^^^^^^^^^^^^^^^^^^^ Error watching sqlite.db-pos`, error)
     })
 }
 

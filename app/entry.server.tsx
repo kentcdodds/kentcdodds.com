@@ -1,10 +1,14 @@
 import * as React from 'react'
 import ReactDOMServer from 'react-dom/server'
-import type {EntryContext} from '@remix-run/node'
+import cookie from 'cookie'
+import type {EntryContext, HandleDataRequestFunction} from '@remix-run/node'
 import {RemixServer as Remix} from '@remix-run/react'
 import {getEnv} from './utils/env.server'
 import {routes as otherRoutes} from './other-routes.server'
 import {getFlyReplayResponse, getInstanceInfo} from './utils/fly.server'
+import invariant from 'tiny-invariant'
+import fs from 'fs'
+import path from 'path'
 
 if (process.env.NODE_ENV === 'development') {
   try {
@@ -61,14 +65,53 @@ export default async function handleRequest(
   })
 }
 
-export async function handleDataRequest(response: Response) {
+export async function handleDataRequest(
+  response: Response,
+  {request}: Parameters<HandleDataRequestFunction>[1],
+) {
+  const {currentIsPrimary, primaryInstance} = await getInstanceInfo()
   if (response.status >= 500) {
     // maybe we're just in trouble in this instance... if we're not in the primary
     // instance, then replay and hopefully it works next time.
-    const {currentIsPrimary, primaryInstance} = await getInstanceInfo()
     if (!currentIsPrimary) {
       return getFlyReplayResponse(primaryInstance)
     }
   }
+
+  if (request.method === 'POST') {
+    if (currentIsPrimary) {
+      const preTxnum = getTXNumber()
+      console.log(
+        `POST on primary, setting here's the txnum before finishing the post: ${preTxnum}`,
+      )
+      const txnum = getTXNumber()
+      if (txnum) {
+        console.log('POST to primary is finished, setting txnum cookie', {
+          txnum,
+        })
+        response.headers.append(
+          'Set-Cookie',
+          cookie.serialize('txnum', txnum.toString(), {
+            path: '/',
+            httpOnly: true,
+            sameSite: 'lax',
+            secure: true,
+          }),
+        )
+      }
+    }
+  }
   return response
+}
+
+function getTXNumber() {
+  const {FLY_LITEFS_DIR} = process.env
+  invariant(FLY_LITEFS_DIR, 'FLY_LITEFS_DIR is not defined')
+  let dbPos = '0'
+  try {
+    dbPos = fs.readFileSync(path.join(FLY_LITEFS_DIR, `sqlite.db-pos`), 'utf-8')
+  } catch {
+    // ignore
+  }
+  return parseInt(dbPos.trim().split('/')[0] ?? '0', 16)
 }
