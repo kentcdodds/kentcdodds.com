@@ -139,6 +139,7 @@ const txEmitter = new EventEmitter()
 const {FLY_LITEFS_DIR} = process.env
 if (process.env.FLY) {
   invariant(FLY_LITEFS_DIR, 'FLY_LITEFS_DIR is not defined')
+  console.log('watching sqlite.db-pos file')
   chokidar
     .watch(path.join(FLY_LITEFS_DIR, `sqlite.db-pos`))
     .on('change', () => {
