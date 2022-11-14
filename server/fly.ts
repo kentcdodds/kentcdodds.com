@@ -80,7 +80,7 @@ export const txIDMiddleware: RequestHandler = async (req, res, next) => {
   const cookies = reqCookie ? cookie.parse(reqCookie) : {}
 
   if (req.method === 'GET' || req.method === 'HEAD') {
-    console.log(cookies)
+    console.log({cookies})
     if (cookies.txid && !currentIsPrimary) {
       const shouldReplay = await waitForUpToDateTXID(parseInt(cookies.txid, 16))
       if (shouldReplay) {
@@ -137,7 +137,7 @@ async function waitForUpToDateTXID(sessionTXNumber: number) {
       return true
     }
     const localTXNumber = parseInt(txid, 16)
-    if (sessionTXNumber > localTXNumber) {
+    if (sessionTXNumber < localTXNumber) {
       // slowly decrease the amount of time we wait
       const sleepTime = (Math.abs(attempt - maxAttempts) + 1) * 50
       console.log(`sleeping ${sleepTime}ms before next attempt`)
