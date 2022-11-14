@@ -133,7 +133,9 @@ if (process.env.FLY) {
   chokidar
     .watch(path.join(FLY_LITEFS_DIR, `sqlite.db-pos`))
     .on('change', () => {
+      console.log('********************** change event')
       const txNumber = getTXNumber()
+      console.log(`tx number changed to ${txNumber}`)
       txEmitter.emit('change', txNumber)
     })
     .on('error', error => {
