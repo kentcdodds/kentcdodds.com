@@ -82,12 +82,10 @@ export const txIDMiddleware: RequestHandler = async (req, res, next) => {
   if (req.method === 'GET' || req.method === 'HEAD') {
     console.log({cookies})
     if (cookies.txid && !currentIsPrimary) {
-      const shouldReplay = await waitForUpToDateTXID(parseInt(cookies.txid, 16))
-      if (shouldReplay) {
-        console.log('Timed out waiting, replaying request to primary instance')
-        res.set('fly-replay', `instance=${primaryInstance}`)
-        return res.sendStatus(409)
-      } else {
+      const txIdIsUpToDate = await waitForUpToDateTXID(
+        parseInt(cookies.txid, 16),
+      )
+      if (txIdIsUpToDate) {
         console.log(
           'Request is up to date, clearing the cookie and, continuing',
         )
@@ -98,6 +96,10 @@ export const txIDMiddleware: RequestHandler = async (req, res, next) => {
             expires: new Date(0),
           }),
         )
+      } else {
+        console.log('Timed out waiting, replaying request to primary instance')
+        res.set('fly-replay', `instance=${primaryInstance}`)
+        return res.sendStatus(409)
       }
     }
   } else if (req.method === 'POST') {
@@ -128,7 +130,7 @@ const sleep = (t: number) => new Promise(r => setTimeout(r, t))
  */
 async function waitForUpToDateTXID(sessionTXNumber: number) {
   let attempt = 1
-  const maxAttempts = 5
+  const maxAttempts = 8
   while (attempt <= maxAttempts) {
     const txid = await getTXID()
     console.log({attempt, sessionTXNumber, txid})
