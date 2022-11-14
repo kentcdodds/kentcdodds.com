@@ -4,6 +4,8 @@ import type {RequestHandler} from 'express'
 import path from 'path'
 import cookie from 'cookie'
 import invariant from 'tiny-invariant'
+import chokidar from 'chokidar'
+import EventEmitter from 'events'
 
 export const getReplayResponse: RequestHandler = function getReplayResponse(
   req,
@@ -16,7 +18,7 @@ export const getReplayResponse: RequestHandler = function getReplayResponse(
   }
 
   const {currentInstance, currentIsPrimary, primaryInstance} = getInstanceInfo()
-  if (!process.env.FLY || currentIsPrimary) return next()
+  if (currentIsPrimary) return next()
 
   if (pathname.includes('__metronome')) {
     // metronome doesn't need to be replayed...
@@ -63,35 +65,33 @@ export function getInstanceInfo() {
 
 /**
  * This middleware ensures that the user only continues GET/HEAD requests if they:
- * 1. Do not have a txid cookie
+ * 1. Do not have a txnum cookie
  * 2. Are running in primary
- * 3. The local txid is equal or greater than the txid in the cookie
+ * 3. The local txnum is equal or greater than the txnum in the cookie
  *
- * It's also responsible for setting the txid cookie on post requests
+ * It's also responsible for setting the txnum cookie on post requests
  *
- * This only applies on FLY
+ * This should only be used on FLY
  */
-export const txIDMiddleware: RequestHandler = async (req, res, next) => {
+export const txMiddleware: RequestHandler = async (req, res, next) => {
   const {currentIsPrimary, primaryInstance} = getInstanceInfo()
-
-  if (!process.env.FLY) return next()
 
   const reqCookie = req.get('cookie')
   const cookies = reqCookie ? cookie.parse(reqCookie) : {}
 
   if (req.method === 'GET' || req.method === 'HEAD') {
     console.log({cookies})
-    if (cookies.txid && !currentIsPrimary) {
-      const txIdIsUpToDate = await waitForUpToDateTXID(
-        parseInt(cookies.txid, 16),
+    if (cookies.txnum && !currentIsPrimary) {
+      const txNumberIsUpToDate = await waitForUpToDateTXNumber(
+        Number(cookies.txnum),
       )
-      if (txIdIsUpToDate) {
+      if (txNumberIsUpToDate) {
         console.log(
           'Request is up to date, clearing the cookie and, continuing',
         )
         res.append(
           'Set-Cookie',
-          cookie.serialize('txid', '', {
+          cookie.serialize('txnum', '', {
             path: '/',
             expires: new Date(0),
           }),
@@ -104,12 +104,12 @@ export const txIDMiddleware: RequestHandler = async (req, res, next) => {
     }
   } else if (req.method === 'POST') {
     if (currentIsPrimary) {
-      const txid = await getTXID()
-      if (!txid) return next()
+      const txnum = getTXNumber()
+      if (!txnum) return next()
 
       res.append(
         'Set-Cookie',
-        cookie.serialize('txid', txid, {
+        cookie.serialize('txnum', txnum.toString(), {
           path: '/',
           httpOnly: true,
           sameSite: 'lax',
@@ -122,45 +122,67 @@ export const txIDMiddleware: RequestHandler = async (req, res, next) => {
   return next()
 }
 
-const sleep = (t: number) => new Promise(r => setTimeout(r, t))
+const {FLY_LITEFS_DIR} = process.env
+invariant(FLY_LITEFS_DIR, 'FLY_LITEFS_DIR is not defined')
+let txEmitter: EventEmitter | null = new EventEmitter()
+chokidar
+  .watch(path.join(FLY_LITEFS_DIR, `sqlite.db-pos`))
+  .on('change', () => {
+    const txNumber = getTXNumber()
+    txEmitter?.emit('change', txNumber)
+  })
+  .on('error', error => {
+    txEmitter = null
+    console.error(`Error watching sqlite.db-pos`, error)
+  })
 
 /**
  * @param sessionTXNumber
  * @returns true if it's safe to continue. false if the request should be replayed on the primary
  */
-async function waitForUpToDateTXID(sessionTXNumber: number) {
-  let attempt = 1
-  const maxAttempts = 8
-  while (attempt <= maxAttempts) {
-    const txid = await getTXID()
-    console.log({attempt, sessionTXNumber, txid})
-    if (!txid) {
-      console.log('returning true due to no txid')
-      return true
+async function waitForUpToDateTXNumber(sessionTXNumber: number) {
+  const currentTXNumber = getTXNumber()
+  console.log({currentTXNumber, sessionTXNumber})
+  if (currentTXNumber >= sessionTXNumber) return true
+  if (!txEmitter) return false
+  const emitter = txEmitter
+
+  return new Promise(resolve => {
+    const MAX_WAITING_TIME = 500
+    const timeout = setTimeout(() => {
+      console.log(
+        `Timed out waiting for tx number to be up to date, returning false`,
+      )
+      emitter.off('change', handleTxNumberChange)
+      resolve(false)
+    }, MAX_WAITING_TIME)
+
+    function handleTxNumberChange(newTXNumber: number) {
+      console.log({newTXNumber, sessionTXNumber})
+      if (newTXNumber >= sessionTXNumber) {
+        console.log(`tx number up to date, returning true`)
+        emitter.off('change', handleTxNumberChange)
+        clearTimeout(timeout)
+        resolve(true)
+      } else {
+        console.log(
+          `Current tx number is ${newTXNumber}, waiting for it to be at least ${sessionTXNumber}`,
+        )
+      }
     }
-    const localTXNumber = parseInt(txid, 16)
-    if (sessionTXNumber <= localTXNumber) {
-      // slowly decrease the amount of time we wait
-      const sleepTime = (Math.abs(attempt - maxAttempts) + 1) * 50
-      console.log(`sleeping ${sleepTime}ms before next attempt`)
-      await sleep(sleepTime)
-      attempt++
-    } else {
-      console.log('returning true due to txid being up to date')
-      return true
-    }
-  }
-  console.log('Waited long enough, returning false')
-  return false
+    emitter.on('change', handleTxNumberChange)
+  })
 }
 
-async function getTXID() {
-  const {FLY_LITEFS_DIR} = process.env
+function getTXNumber() {
   invariant(FLY_LITEFS_DIR, 'FLY_LITEFS_DIR is not defined')
-  const dbPos = await fs.promises
-    .readFile(path.join(FLY_LITEFS_DIR, `sqlite.db-pos`), 'utf-8')
-    .catch(() => '0')
-  return dbPos.trim().split('/')[0]
+  let dbPos = '0'
+  try {
+    dbPos = fs.readFileSync(path.join(FLY_LITEFS_DIR, `sqlite.db-pos`), 'utf-8')
+  } catch {
+    // ignore
+  }
+  return parseInt(dbPos.trim().split('/')[0] ?? '0', 16)
 }
 
 /*

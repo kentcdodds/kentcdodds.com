@@ -15,7 +15,7 @@ import {
 } from '@metronome-sh/express'
 import {addCloudinaryProxies} from './cloudinary'
 import {getRedirectsMiddleware} from './redirects'
-import {getInstanceInfo, getReplayResponse, txIDMiddleware} from './fly'
+import {getInstanceInfo, getReplayResponse, txMiddleware} from './fly'
 
 installGlobals()
 
@@ -67,7 +67,9 @@ app.use((req, res, next) => {
   next()
 })
 
-app.all('*', getReplayResponse)
+if (process.env.FLY) {
+  app.all('*', getReplayResponse)
+}
 
 addCloudinaryProxies(app)
 
@@ -147,7 +149,9 @@ function getRequestHandlerOptions(): Parameters<
   return {build, mode: MODE}
 }
 
-app.all('*', txIDMiddleware)
+if (process.env.FLY) {
+  app.all('*', txMiddleware)
+}
 
 app.all(
   '*',

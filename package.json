@@ -76,6 +76,7 @@
     "better-sqlite3": "^7.6.2",
     "cachified": "^3.0.0",
     "chalk": "^5.1.2",
+    "chokidar": "^3.5.3",
     "cloudinary-build-url": "^0.2.4",
     "clsx": "^1.2.1",
     "compression": "^1.7.4",
