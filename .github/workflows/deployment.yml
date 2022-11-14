@@ -121,6 +121,9 @@ jobs:
         with:
           node-version: 18
 
+      - name: 🎬 Setup ffmpeg
+        uses: FedericoCarboni/setup-ffmpeg@v1
+
       - name: 📥 Download deps
         uses: bahmutov/npm-install@v1
         with:
