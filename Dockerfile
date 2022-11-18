@@ -1,5 +1,5 @@
 # Fetch the LiteFS binary using a multi-stage build.
-FROM flyio/litefs:sha-fabf62d AS litefs
+FROM flyio/litefs:sha-33a80a3 AS litefs
 
 # base node image
 FROM node:18-bullseye-slim as base
@@ -88,4 +88,4 @@ COPY --from=litefs /usr/local/bin/litefs /usr/local/bin/litefs
 ADD other/litefs.yml /etc/litefs.yml
 RUN mkdir -p /data ${FLY_LITEFS_DIR}
 
-CMD ["litefs", "--", "node", "./other/start.js"]
+CMD ["litefs", "mount", "--", "node", "./other/start.js"]
