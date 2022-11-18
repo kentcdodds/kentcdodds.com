@@ -111,7 +111,7 @@ const {FLY_LITEFS_DIR} = process.env
 if (process.env.FLY) {
   invariant(FLY_LITEFS_DIR, 'FLY_LITEFS_DIR is not defined')
   chokidar
-    .watch(path.join(FLY_LITEFS_DIR, `sqlite.db-pos`))
+    .watch(path.join(FLY_LITEFS_DIR, `sqlite.db-pos`), {usePolling: true})
     .on('change', () => {
       const txNumber = getTXNumber()
       txEmitter.emit('change', txNumber)
