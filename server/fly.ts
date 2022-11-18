@@ -111,9 +111,13 @@ const {FLY_LITEFS_DIR} = process.env
 if (process.env.FLY) {
   invariant(FLY_LITEFS_DIR, 'FLY_LITEFS_DIR is not defined')
   chokidar
-    .watch(path.join(FLY_LITEFS_DIR, `sqlite.db-pos`), {usePolling: true})
+    .watch(path.join(FLY_LITEFS_DIR, `sqlite.db-pos`), {
+      // disable this if/when fly supports watching this "virtual" file
+      usePolling: true,
+    })
     .on('change', () => {
       const txNumber = getTXNumber()
+      console.log('txNumber changed', {txNumber})
       txEmitter.emit('change', txNumber)
     })
     .on('error', error => {
