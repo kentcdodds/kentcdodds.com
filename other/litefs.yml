@@ -1,5 +1,4 @@
 # The path to where the SQLite database will be accessed by the app
-# TODO: see if we can access this value via environment variables in the app
 mount-dir: '${FLY_LITEFS_DIR}'
 
 # The path to where the underlying volume mount is.
