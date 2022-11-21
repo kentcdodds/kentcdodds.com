@@ -167,6 +167,12 @@ async function getTotalPostReads(request: Request, slug?: string) {
   })
 }
 
+function isRawQueryResult(
+  result: any,
+): result is Array<Record<string, unknown>> {
+  return Array.isArray(result) && result.every(r => typeof r === 'object')
+}
+
 async function getReaderCount(request: Request) {
   const key = 'total-reader-count'
   return cachified({
@@ -178,12 +184,18 @@ async function getReaderCount(request: Request) {
     checkValue: (value: unknown) => typeof value === 'number',
     getFreshValue: async () => {
       // couldn't figure out how to do this in one query with out $queryRaw 🤷‍♂️
-      type CountResult = [{count: BigInt}]
-      const [userIdCount, clientIdCount] = await Promise.all([
-        prisma.$queryRaw`SELECT COUNT(DISTINCT "public"."PostRead"."userId") FROM "public"."PostRead" WHERE ("public"."PostRead"."userId") IS NOT NULL` as Promise<CountResult>,
-        prisma.$queryRaw`SELECT COUNT(DISTINCT "public"."PostRead"."clientId") FROM "public"."PostRead" WHERE ("public"."PostRead"."clientId") IS NOT NULL` as Promise<CountResult>,
-      ]).catch(() => [[{count: BigInt(0)}], [{count: BigInt(0)}]])
-      return Number(userIdCount[0].count) + Number(clientIdCount[0].count)
+      console.time('******* getReaderCount')
+      const result = await prisma.$queryRaw`
+      SELECT
+        (SELECT COUNT(DISTINCT "userId") FROM "PostRead" WHERE "userId" IS NOT NULL) +
+        (SELECT COUNT(DISTINCT "clientId") FROM "PostRead" WHERE "clientId" IS NOT NULL)`
+      if (!isRawQueryResult(result)) {
+        console.error(`Unexpected result from getReaderCount: ${result}`)
+        return 0
+      }
+      const count = Object.values(result[0] ?? [])[0] ?? 0
+      console.timeEnd('******* getReaderCount')
+      return Number(count)
     },
   })
 }
