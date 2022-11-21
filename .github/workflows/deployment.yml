@@ -105,6 +105,8 @@ jobs:
   # TODO: fix playwright
   playwright:
     name: 🎭 Playwright
+    needs: [changes]
+    if: needs.changes.outputs.DEPLOYABLE == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
