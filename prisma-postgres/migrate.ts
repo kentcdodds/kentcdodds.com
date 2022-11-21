@@ -24,9 +24,9 @@ async function main() {
 
   console.log('connected 🔌')
 
+  await upsertPostReads()
   await upsertUsers()
   await upsertSessions()
-  await upsertPostReads()
   await upsertCalls()
 
   console.log('✅  all finished')
@@ -74,15 +74,19 @@ async function main() {
       }
       const postRead = postReads[index]
       if (!postRead) {
-        console.log('HUH???', index)
+        console.log('HUH??? No post read??', index)
         continue
       }
       // eslint-disable-next-line no-await-in-loop
-      await sq.postRead.upsert({
-        where: {id: postRead.id},
-        update: postRead,
-        create: postRead,
-      })
+      await sq.postRead
+        .upsert({
+          where: {id: postRead.id},
+          update: postRead,
+          create: postRead,
+        })
+        .catch(err => {
+          console.error('error', err, postRead)
+        })
     }
     console.timeEnd('postReads 📖')
   }
