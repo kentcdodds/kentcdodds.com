@@ -187,7 +187,7 @@
     "rimraf": "^3.0.2",
     "start-server-and-test": "^1.14.0",
     "tsx": "^3.12.0",
-    "typescript": "4.8.4"
+    "typescript": "4.9.3"
   },
   "eslintIgnore": [
     "node_modules",

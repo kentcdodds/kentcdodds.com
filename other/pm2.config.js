@@ -14,8 +14,6 @@ module.exports = {
       watch: ['./mocks/**/*.ts', './index.js', './server/**/*.ts', './.env'],
       env: {
         NODE_ENV: process.env.NODE_ENV ?? 'development',
-        ENABLE_TEST_ROUTES: process.env.ENABLE_TEST_ROUTES ?? true,
-        RUNNING_E2E: process.env.RUNNING_E2E,
         FORCE_COLOR: '1',
       },
     },
@@ -25,8 +23,6 @@ module.exports = {
       ignore_watch: ['.'],
       env: {
         NODE_ENV: process.env.NODE_ENV ?? 'development',
-        ENABLE_TEST_ROUTES: process.env.ENABLE_TEST_ROUTES ?? true,
-        RUNNING_E2E: process.env.RUNNING_E2E,
         FORCE_COLOR: '1',
       },
     },

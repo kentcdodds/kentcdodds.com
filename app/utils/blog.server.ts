@@ -184,7 +184,6 @@ async function getReaderCount(request: Request) {
     checkValue: (value: unknown) => typeof value === 'number',
     getFreshValue: async () => {
       // couldn't figure out how to do this in one query with out $queryRaw 🤷‍♂️
-      console.time('******* getReaderCount')
       const result = await prisma.$queryRaw`
       SELECT
         (SELECT COUNT(DISTINCT "userId") FROM "PostRead" WHERE "userId" IS NOT NULL) +
@@ -194,7 +193,7 @@ async function getReaderCount(request: Request) {
         return 0
       }
       const count = Object.values(result[0] ?? [])[0] ?? 0
-      console.timeEnd('******* getReaderCount')
+      // the count is a BigInt, so we need to convert it to a number
       return Number(count)
     },
   })
@@ -291,7 +290,7 @@ async function getAllBlogPostReadRankings({
       const posts = await getBlogMdxListItems({request})
       const {default: pLimit} = await import('p-limit')
 
-      // each of the getBlogReadRankings calls results in 9 postgres queries
+      // each of the getBlogReadRankings calls results in 9 database queries
       // and we don't want to hit the limit of connections so we limit this
       // to 2 at a time. Though most of the data should be cached anyway.
       // This is good to just be certain.

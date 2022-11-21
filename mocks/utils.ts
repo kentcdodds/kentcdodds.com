@@ -2,8 +2,6 @@ import dns from 'dns'
 import fs from 'fs'
 import path from 'path'
 
-const isE2E = process.env.RUNNING_E2E === 'true'
-
 let connected: boolean | null = null
 
 async function isConnectedToTheInternet() {
@@ -83,7 +81,6 @@ function requiredProperty(object: {[key: string]: unknown}, property: string) {
 }
 
 export {
-  isE2E,
   requiredParam,
   requiredHeader,
   requiredProperty,

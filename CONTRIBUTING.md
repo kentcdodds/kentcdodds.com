@@ -90,7 +90,7 @@ npm install
 # The `-d` tells docker to run this in the background
 docker compose up -d
 
-# get the postgres DB initialized to match our prisma schema.
+# get the DB initialized to match our prisma schema.
 npx prisma migrate reset --force
 
 # Run type checking, linting, and unit tests
@@ -115,8 +115,8 @@ And open up `http://localhost:3000` and rock!
 ## Mocks
 
 Everything's mocked locally so you should be able to work completely offline.
-The postgres DB runs in a docker container locally, but all third party
-endpoints are mocked out via [`MSW`](https://mswjs.io/).
+The DB runs locally, but all third party endpoints are mocked out via
+[`MSW`](https://mswjs.io/).
 
 ## Caching
 
@@ -170,8 +170,8 @@ up from there.
 
 ## Database
 
-We've got PostgreSQL and Prisma set up. Learn about the schema and learn more
-about what commands you can run in `./prisma/schema.prisma`.
+We've got SQLite and Prisma set up. Learn about the schema and learn more about
+what commands you can run in `./prisma/schema.prisma`.
 
 One common command you might need to run is to re-seed the database:
 

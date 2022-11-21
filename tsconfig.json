@@ -2,22 +2,14 @@
   "files": [],
   "exclude": ["node_modules"],
   "extends": "./other/shared-tsconfig.json",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "forceConsistentCasingInFileNames": true,
-    "target": "es2019",
-    "lib": ["DOM", "DOM.Iterable", "ES2019"],
-    "allowJs": true,
-    "strict": true,
-    "paths": {
-      "~/*": ["./app/*"]
-    },
-    "esModuleInterop": true,
-    "isolatedModules": true,
-    "jsx": "react-jsx",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "noEmit": true
-  },
-  "include": ["remix.env.d.ts", "**/*.ts", "**/*.tsx"]
+  "references": [
+    {"path": "./types"},
+    {"path": "./app"},
+    {"path": "./server"},
+    {"path": "./tests"},
+    {"path": "./mocks"},
+    {"path": "./content"},
+    {"path": "./prisma"},
+    {"path": "./e2e"}
+  ]
 }

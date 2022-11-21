@@ -8,12 +8,7 @@ import {transistorHandlers} from './transistor'
 import {discordHandlers} from './discord'
 import {convertKitHandlers} from './convert-kit'
 import {simplecastHandlers} from './simplecast'
-import {
-  isConnectedToTheInternet,
-  isE2E,
-  updateFixture,
-  readFixture,
-} from './utils'
+import {isConnectedToTheInternet, updateFixture, readFixture} from './utils'
 
 // put one-off handlers that don't really need an entire file to themselves here
 const miscHandlers = [
@@ -79,7 +74,6 @@ const server = setupServer(
 
 server.listen({onUnhandledRequest: 'warn'})
 console.info('🔶 Mock server installed')
-if (isE2E) console.info('running in E2E mode')
 
 process.once('SIGINT', () => server.close())
 process.once('SIGTERM', () => server.close())

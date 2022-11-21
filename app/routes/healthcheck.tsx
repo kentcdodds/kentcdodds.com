@@ -10,9 +10,11 @@ export async function loader({request}: DataFunctionArgs) {
     await Promise.all([
       prisma.user.count(),
       getBlogReadRankings({request}),
-      fetch(`http://${host}`, {method: 'HEAD'}).then(r => {
-        if (!r.ok) return Promise.reject(r)
-      }),
+      fetch(`${new URL(request.url).protocol}${host}`, {method: 'HEAD'}).then(
+        r => {
+          if (!r.ok) return Promise.reject(r)
+        },
+      ),
     ])
     return new Response('OK')
   } catch (error: unknown) {
