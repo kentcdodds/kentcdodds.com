@@ -164,7 +164,6 @@ async function getTotalPostReads(request: Request, slug?: string) {
     forceFresh: await shouldForceFresh({request, key}),
     checkValue: (value: unknown) => typeof value === 'number',
     getFreshValue: () => {
-      console.log('counting total post reads', {slug})
       return prisma.postRead.count(slug ? {where: {postSlug: slug}} : undefined)
     },
   })
@@ -183,12 +182,14 @@ async function getReaderCount(request: Request) {
       // sum the number of readers of two categories in the "PostRead" table
       // 1. Distinct values with non-null userId field
       // 2. Distinct values with non-null clientId field
+      console.time(`****** getReaderCount raw query`)
       const sql = `
         SELECT
           (SELECT COUNT(DISTINCT "userId") FROM "PostRead" WHERE "userId" IS NOT NULL) +
           (SELECT COUNT(DISTINCT "clientId") FROM "PostRead" WHERE "clientId" IS NOT NULL)
       `
       const result = rawDb.prepare(sql).get()
+      console.timeEnd(`****** getReaderCount raw query`)
       return Object.values(result)[0]
     },
   })
@@ -220,7 +221,6 @@ async function getBlogReadRankings({
         teams.map(async function getRankingsForTeam(
           team,
         ): Promise<{team: Team; totalReads: number; ranking: number}> {
-          console.log('counting team reads')
           const totalReads = await prisma.postRead.count({
             where: {
               postSlug: slug,
@@ -310,7 +310,6 @@ async function getAllBlogPostReadRankings({
 async function getRecentReads(slug: string | undefined, team: Team) {
   const withinTheLastSixMonths = subMonths(new Date(), 6)
 
-  console.log('counting recent reads', slug, team)
   const count = await prisma.postRead.count({
     where: {
       postSlug: slug,
@@ -324,7 +323,6 @@ async function getRecentReads(slug: string | undefined, team: Team) {
 async function getActiveMembers(team: Team) {
   const withinTheLastYear = subYears(new Date(), 1)
 
-  console.log('counting active members', team)
   const count = await prisma.user.count({
     where: {
       team,
