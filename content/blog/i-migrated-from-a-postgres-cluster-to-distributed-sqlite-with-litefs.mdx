@@ -1,0 +1,714 @@
+---
+title: I Migrated from a Postgres Cluster to Distributed SQLite with LiteFS
+date: 2022-11-21
+description:
+  Why and how I migrated from distributed postgres to distributed sqlite on
+  kentcdodds.com
+categories:
+  - databases
+meta:
+  keywords:
+    - postgres
+    - sqlite
+    - litefs
+    - fly
+    - infrastructure
+    - litestream
+    - databases
+    - distributed
+bannerCloudinaryId: unsplash/photo-1642134222020-cc21d2e39dd6
+bannerAlt: HD photo by Radu Chelariu
+bannerCredit: Photo by [Radu Chelariu](https://unsplash.com/photos/TO79QbSkwaI)
+---
+
+Over the last few months, I've been heads-down on building the content for
+[EpicWeb.dev](https://epicweb.dev). And I've been building it all in the open on
+[my YouTube channel](https://kcd.im/YouTube). If you've been watching
+[my EpicWeb.dev live streams](https://www.youtube.com/playlist?list=PLV5CVI1eNcJhNHoK946zgZ8ZivZbo6uyx),
+you'll know that I've been building the app we'll use to learn web dev: Rocket
+Rental 🚀. With that app, I've started with SQLite and I've been trying to
+decide whether I should move over to Postgres.
+
+When
+[I released the 2021 update to kentcdodds.com](/blog/how-i-built-a-modern-website-in-2021),
+I decided to use Postgres on [Fly.io](https://fly.io) because of its support for
+multi-regional deploys and both Postgres and Redis clusters with automatic data
+replication (I use Redis for caching slow/rate limited third party APIs and
+expensive computations). That proved to work out really well. My site is fast
+wherever you are in the world. However, there are a few downsides:
+
+1. Databases are way outside my wheelhouse (and personal interest).
+2. Running my app locally requires starting up Postgres/Redis via
+   `docker compose` which is fine, but annoying, especially for contributors.
+3. The infrastructure is complicated and can fail occasionally.
+
+Also, when I built and deployed my site, I think I was the first to build and
+deploy a distributed Node.js app with a Postgres cluster on the Fly.io network.
+I believe the infra has improved, but I was still running on older versions of
+things and reliability was a problem (for both Postgres and Redis). I could
+definitely upgrade and improve those reliability concerns, but I had another
+idea. My site gets enough regular traffic that these reliability issues led to
+me getting a lot of tweets like this:
+
+https://twitter.com/TheRyanFurrer/status/1582905750590222337
+
+So I've been wanting to address these issues, but because I'm heads-down on
+EpicWeb, I didn't know how I could justify spending time on my personal site.
+
+Whelp, I started the "Rocket Rental" app with SQLite to keep things simple and
+I'd really like to keep that if possible. At the same time, it's important to me
+that the app I use to teach web development is realistic. So I was expecting
+that eventually I'd move to "a real database" like Postgres. But I've been
+hearing rumblings about SQLite being pretty dang capable, so I decided to take
+advantage of my personal site's database reliability issues to spend time
+investigating SQLite's feasibility for use in my site.
+
+## [Litestream](https://litestream.io/)
+
+Several months ago, I met [Kurt](https://twitter.com/mrkurt) (Fly.io CEO) at
+[Remix Conf](https://remix.run/conf). We talked about a new project he's been
+very excited about that I'd heard rumblings about called
+[Litestream](https://litestream.io/). He suggested that for many categories of
+applications, SQLite can provide an even better user experience than Postgres
+along with a simplified developer experience. Whenever I hear "better UX _and_
+DX," I'm interested.
+
+Litestream was
+[originally created](https://litestream.io/blog/why-i-built-litestream/) to
+improve reliability of SQLite in edge cases (specifically, disaster recovery),
+but the way this was done also lends itself well to the idea of distributed
+SQLite deployments.
+
+Turns out by the time Kurt and I had our conversation, he'd already hired
+[Ben Johnson](https://twitter.com/benbjohnson) (the author of Litestream) to
+work at Fly. Ben wrote
+[an awesome article](https://fly.io/blog/all-in-on-sqlite-litestream/)
+explaining what Litestream is. I recommend you give it a read if you're
+unconvinced that SQLite is production-ready. He'll convince you it is.
+
+## LiteFS
+
+Litestream has had "read-replicas" as a desired future feature for over a year.
+Ben joined Fly to work on that and has now released
+[LiteFS](https://fly.io/blog/introducing-litefs). Architecturally, LiteFS works
+similarly to Postgres clusters. One LiteFS node is the "primary" and other nodes
+automatically replicate data writes. LiteFS acts as a proxy to your SQLite
+database (you connect to LiteFS instead of the underlying database) and then
+LiteFS effectively replays data updates to all read replicas. And this reply
+happens behind the scenes normally within 200ms (on par with distributed
+Postgres clusters).
+
+LiteFS allows us to get distributed SQLite. As a reminder, the benefit of
+distributed databases is that the data for your app can be geographically close
+to the users of your app leading to hundreds of milliseconds performance boost
+(per request) for many users.
+
+Additionally, SQLite data access is much faster than Postgres which is "fast
+enough" normally, but actually means
+[SQLite suffers much less from N+1 queries](https://www.sqlite.org/np1queryprob.html)
+(which should be avoided, but this is nice).
+
+So with LiteFS, our users get a faster app because we get faster data access
+that's distributed all over the world. And on top of that, it's simpler thanks
+to the fact we don't have to manage a database server.
+
+## Evaluating the existing data
+
+So, with that, I realized that it's possible for me to migrate to SQLite on my
+site without giving up the distributed nature of my app. Luckily for me, LiteFS
+is still in beta at Fly, so the migration went off without a hitch of course (jk
+jk, I felt the beta nature of things pretty hard 😅).
+
+My existing app has the following Postgres data model:
+
+```
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+enum Team {
+  BLUE
+  RED
+  YELLOW
+}
+
+model User {
+  id           String     @id @default(uuid())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  email        String     @unique(map: "User.email_unique")
+  firstName    String
+  discordId    String?
+  convertKitId String?
+  role         Role       @default(MEMBER)
+  team         Team
+  calls        Call[]
+  sessions     Session[]
+  postReads    PostRead[]
+}
+
+model Session {
+  id             String   @id @default(uuid())
+  createdAt      DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  expirationDate DateTime
+}
+
+model Call {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  title       String
+  description String
+  keywords    String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  base64      String
+}
+
+model PostRead {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String?
+  clientId  String?
+  postSlug  String
+}
+```
+
+By far, the largest table in my database is the `PostRead` table with nearly a
+half million rows. This actually blows my mind because that [measures](/teams)
+_actual reads_ of my blog posts, not just page loads. Anyway, there are several
+thousand user and session rows and very few call rows (though those hold a lot
+of data).
+
+The amount of data is important because the first thing I needed to think about
+was how to migrate the data. There are various established practices for doing
+this. I'm not a database guy, so I'm not well versed in them, but I considered
+one approach: Run both databases at the same time and write to both of them,
+writes go to both while still reading from the old one, then switch to reading
+from the new one and take down the old one... That sounded... annoyingly
+difficult. And unnecessary for my situation. But I did explore it for a while.
+It's probably what you'd want to do to ensure you had absolutely 0 data loss in
+the time it takes to move users to the new version of the app.
+
+In my case, I was ok with a tiny bit of data loss. All that would be lost would
+be the data collected and changed in the Postgres database after I copied
+everything over to SQLite. I planned on doing the switch over as a DNS switch
+immediately after copying over the database so hopefully that would be a pretty
+short time.
+
+We'll talk more about how I actually migrated the data itself later.
+
+## Updating App code
+
+With that established, I needed to migrate my application from Postgres to
+SQLite. Luckily, because I use Prisma, this was pretty simple! Here's the diff
+to the schema file:
+
+```diff add=3,30-31 remove=2,9-19,28-29
+datasource db {
+  provider = "postgresql"
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+...
+
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+enum Team {
+  BLUE
+  RED
+  YELLOW
+}
+
+model User {
+  id           String     @id @default(uuid())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  email        String     @unique(map: "User.email_unique")
+  firstName    String
+  discordId    String?
+  convertKitId String?
+  role         Role       @default(MEMBER)
+  team         Team
+  role         String     @default("MEMBER")
+  team         String
+  calls        Call[]
+  sessions     Session[]
+  postReads    PostRead[]
+}
+
+...
+```
+
+I had to turn enum types into strings due to SQLite's lack of support for enums.
+Other than that, all I had to do was switch from `postgresql` to `sqlite` in the
+`provider` and everything else just worked for the schema.
+
+Of course, this impacted my application a bit due to my reliance on those enums.
+I know prisma is working on a feature called "extensions" that would probably
+allow me to hook into prisma to do runtime checks to turn those columns into
+enums (effectively) so I wouldn't have to update any app code, but I'd rather
+not use that experimental feature just yet. So instead, I wrote a few handy
+types and utility functions:
+
+```ts
+type Team = 'RED' | 'BLUE' | 'YELLOW'
+type Role = 'ADMIN' | 'MEMBER'
+type OptionalTeam = Team | 'UNKNOWN'
+
+const teams: Array<Team> = ['RED', 'BLUE', 'YELLOW']
+const roles: Array<Role> = ['ADMIN', 'MEMBER']
+const isTeam = (team?: string): team is Team => teams.includes(team as Team)
+const isRole = (role?: string): role is Role => roles.includes(role as Role)
+const getTeam = (team?: string): Team | null => (isTeam(team) ? team : null)
+const getOptionalTeam = (team?: string): OptionalTeam =>
+  isTeam(team) ? team : 'UNKNOWN'
+```
+
+With that, I just followed TypeScript squiggly lines to fix a few places that
+were busted (huzzah for TypeScript).
+
+### Database connections
+
+The next thing that added complexity to my setup is updating how the database
+connects. To understand why this is so complicated, you need to understand a bit
+of the constraints there are with multi-region databases.
+
+In my Postgres app, my primary region was Dallas (`dfw`). Let's say you're in
+Amsterdam (`ams`) and you want to update your first name in your KCD profile.
+When that `POST` request comes in, I automatically send a special kind of
+response with a header: `fly-replay: dfw`. Fly will intercept that response
+before sending it to you and "replay" that request to the node app running in
+Dallas.
+
+It does this because the read replicas in all regions other than the primary
+region are unable to accept write requests.
+
+Doing this is simple enough because I'm using express so I just have a simple
+middleware to do this for me. Unfortunately I do need to make data writes on
+non-POST requests. For example, I like to update your `SESSION` if you make a
+request within 6 weeks of your session's expiration so you don't have to
+re-authenticate if you're a regular reader of the post. In that case, I have two
+options:
+
+1. Write to the primary region directly (even though you're not in the primary
+   region)
+2. Send a `fly-replay` response so it can be handled by the primary region
+
+At the time I was working on my site originally, option 2 was very difficult. So
+I went with option 1. So every region created two Prisma clients: One called
+`prismaRead` (which connected to the local region db) and the other called
+`prismaWrite` (which connected to the primary region db). This worked just fine.
+
+Unfortunately, with this migration to SQLite, option 1 is no longer possible.
+SQLite literally only runs locally on the machine and can't be connected to from
+the outside world. So now I have new options:
+
+1. Create special endpoints in my application so `ams` can call `dfw` to perform
+   these specific writes.
+2. Send a `fly-replay` response so it can be handled by the primary region
+
+I started with option 1 and I almost finished with it. It wasn't really complex
+or anything, but it sure was annoying. Then I remembered that when I was writing
+my site originally, we didn't have the `throw Response` feature in Remix. In
+Remix, at any point in your `action` or `loader`, you can throw a Response
+object and Remix will catch that and send the response. This made option 2
+_much_ easier. Had we been able to do this before, I would have gone with this
+option originally!
+
+So, I made a util file for interacting with fly:
+
+```ts filename=app/utils/fly.server.ts
+import fs from 'fs'
+import os from 'os'
+import path from 'path'
+import invariant from 'tiny-invariant'
+
+export async function ensurePrimary() {
+  const {currentIsPrimary, currentInstance, primaryInstance} =
+    await getInstanceInfo()
+
+  if (!currentIsPrimary) {
+    console.log(
+      `Instance (${currentInstance}) in ${process.env.FLY_REGION} is not primary (primary is: ${primaryInstance}), sending fly replay response`,
+    )
+    throw new Response('Fly Replay', {
+      status: 409,
+      headers: {'fly-replay': `instance=${primaryInstance}`},
+    })
+  }
+}
+
+export async function getInstanceInfo() {
+  const currentInstance = os.hostname()
+  let primaryInstance
+  try {
+    const {FLY_LITEFS_DIR} = process.env
+    invariant(FLY_LITEFS_DIR, 'FLY_LITEFS_DIR is not defined')
+    primaryInstance = await fs.promises.readFile(
+      path.join(FLY_LITEFS_DIR, '.primary'),
+      'utf8',
+    )
+    primaryInstance = primaryInstance.trim()
+  } catch (error: unknown) {
+    primaryInstance = currentInstance
+  }
+  return {
+    primaryInstance,
+    currentInstance,
+    currentIsPrimary: currentInstance === primaryInstance,
+  }
+}
+
+export async function getFlyReplayResponse(instance?: string) {
+  return new Response('Fly Replay', {
+    status: 409,
+    headers: {
+      'fly-replay': `instance=${
+        instance ?? (await getInstanceInfo()).primaryInstance
+      }`,
+    },
+  })
+}
+```
+
+With that, I could simply add `ensurePrimary()` in the few situations I needed
+to do a write on a GET request:
+
+```ts lines=4
+// if there's less than ~six months left, extend the session
+const twoWeeks = 1000 * 60 * 60 * 24 * 30 * 6
+if (Date.now() + twoWeeks > session.expirationDate.getTime()) {
+  await ensurePrimary()
+  const newExpirationDate = new Date(Date.now() + sessionExpirationTime)
+  await prisma.session.update({
+    data: {expirationDate: newExpirationDate},
+    where: {id: sessionId},
+  })
+}
+```
+
+There really aren't many situations where a mutation on a GET makes sense so
+this works great. All the user experiences is a _slightly_ longer response time
+in these rare scenarios.
+
+With that in place, I was able to remove all the `prismaWrite` and `prismaRead`
+and just have a single `prisma` client. Ultimately this simplified things for me
+quite a bit.
+
+**To take things further,** the fly team is currently working on making it so
+LiteFS will handle this all for me. They'll effectively allow writes to
+non-primary DBs. So hopefully in the near-ish future I can remove all this from
+my codebase. This will be a significant improvement. There's a trade-off here
+that I'll need to evaluate (I think it basically means that all writes are slow,
+even those to the primary region). Trade-offs everywhere!
+
+### Redis
+
+Another thing I've been wanting to do is get rid of Redis. Remix uses SQLite to
+cache it's documentation pages and I realized I could do the same thing with my
+blog posts and third party APIs I cached. This would significantly simplify my
+architecture further by reducing the number of services my app depends on (Redis
+had definitely caused outages on my site as well).
+
+When I built my site, I created an abstraction for turning a function into a
+"cachified" version of itself called... wait for it... `cachified`.
+[Hannes Diercks](https://github.com/Xiphe) asked whether he could extract my
+code for that and package it up as a library. I said yes and
+[here it is](https://github.com/Xiphe/cachified). So I decided to take this
+opportunity to delete my own implementation and use Hannes' improved library.
+
+At first, I planned on just adding a `Cache` table to my SQLite database as part
+of my prisma schema. But then I realized that I would run into issues with not
+being able to write to the cache in non-primary regions. Replaying requests to
+do this would kind of defeat the purpose of the cache (which is to make things
+faster), so I decided to use a separate SQLite database for the cache. Thanks to
+[`better-sqlite3`](https://npm.im/better-sqlite3) (which is COMPLETELY
+SYNCHRONOUS!), this was pretty simple.
+
+For the most part, moving from my own `cachified` to Hannes' version went very
+well. There were just a few different (better) option names and I needed to
+write a SQLite adapter:
+
+```ts
+export const cache: CachifiedCache = {
+  name: 'SQLite cache',
+  get(key) {
+    const result = cacheDb
+      .prepare('SELECT value, metadata FROM cache WHERE key = ?')
+      .get(key)
+    if (!result) return null
+    return {
+      metadata: JSON.parse(result.metadata),
+      value: JSON.parse(result.value),
+    }
+  },
+  set(key, {value, metadata}) {
+    cacheDb
+      .prepare(
+        'INSERT OR REPLACE INTO cache (key, value, metadata) VALUES (@key, @value, @metadata)',
+      )
+      .run({
+        key,
+        value: JSON.stringify(value),
+        metadata: JSON.stringify(metadata),
+      })
+  },
+  async delete(key) {
+    cacheDb.prepare('DELETE FROM cache WHERE key = ?').run(key)
+  },
+}
+```
+
+Now I can ditch another service and simplify my architecture even further! One
+drawback to this, however is that I don't get auto-replication like I did when
+using Redis (fly managed that for me). So each region has to manage its own
+cache which is not a huge deal, but it's something to keep in mind. Maybe one
+day when LiteFS supports writing to all regions, I'll move this into LiteFS as
+well.
+
+### The double-thick wall
+
+Unfortunately, I hit a bit of a wall once I finished this part of the migration.
+MDX pages wouldn't display. Anything that used MDX wouldn't work at all. This
+meant not only blog posts or mdx pages, but also any page that has blog post
+recommendations (so most pages). It took me quite some time debugging this to
+figure out that MDX compilation was causing me trouble because there were
+actually two problems and one of them only happened when deployed to my staging
+environment 😱
+
+The first issue was I happened to be using the same cache key for two functions
+🙈 For various reasons I don't want to get into, they actually do end up storing
+the same data. The reason this migration to the new `cachified` package broke
+this is because the `cachified` library does a good job of making sure you only
+get a fresh value for a particular key once and all other requests for it wait
+on that first one. So I ended up getting into a situation where Function A would
+trigger getting a fresh value which called Function B which asked for that same
+key in the cache so it hung forever.
+
+If that's confusing, it's because it was. Don't worry, it's not important that
+you understand the problem. Just know this. When dealing with a cache, make sure
+to not share a cache key between two different places that can create the cached
+value.
+
+The second issue was extremely frustrating because I couldn't reproduce it
+locally. This meant I had to deploy my site to make and view changes. I couldn't
+use my preferred debugging tools (I could only use `console.log` and watch the
+logs). I made use of [`patch-package`](https://npm.im/patch-package) to add logs
+to libraries I was using. I added a crazy number of logs to
+`@remix-run/server-runtime` only to determine that it was working perfectly.
+
+I added a resource route to the app so I could run _only_ the offending code (to
+reduce logs and just because this is typically a good practice during debugging
+to scope down the search area). I eventually found that the issue lay in MDX
+compilation again. I added logs to `mdx-bundler` and found that execution
+stopped when starting to actually compile the MDX with `esbuild`.
+
+Finally I realized it was a very specific blog post that caused the hold up. It
+was my ["Migrating to Jest"](/blog/migrating-to-jest) blog post. I realized I
+needed to figure out what part of that post was causing issues. So I updated my
+GitHub fetching code so it could fetch from the correct branch (so I could make
+content changes in the `dev` branch and not `main` where people would be
+confused about my experiments in production). With that in place, I chopped up
+the post into 10 sections. Each had a part of the post.
+
+I hit the special resource route for each of those sections. I found it was in
+the last section. I further split that into 6 more sections and found the
+problem was a specific tweet. The tweet at the end of the post where I said:
+"PayPal is hiring!" which also linked to a PayPal job listings page that is no
+longer working. My custom twitter embed `remark` plugin performs a GET request
+to links within tweets so I can display metadata like the
+title/description/image for the page. Unfortunately because the page wasn't
+working (it just hangs forever), it caused compilation to hang forever which
+caused most pages on my site to hang forever as well.
+
+Phew! What a pain! So I added a timeout for compilation and I removed the tweet
+from the post. There's probably more I could do to improve the resilience of
+this code as well 😅
+
+### Deploying LiteFS
+
+With that bug worked out, my site was humming along just fine in a single
+region. So I was ready to figure out how to setup LiteFS to get multi-region
+working.
+
+Because LiteFS is still in beta, documentation is still relatively sparse. Even
+worse, somehow I missed all but the example documentation page. So I was
+stumbling around in the dark quite a bit. Finally I figured out which files I
+needed and where. I got help from Ben directly in a Zoom call during one of my
+streams. I did bump into a number of issues that went back as feedback to the
+Fly team. Ben was quite responsive and helpful. I finally did get it working
+though.
+
+One thing I love about LiteFS is that it doesn't infect my app code all over the
+place. The only thing I need to worry about is that read replicas are read-only
+(for now), so I have to do the `fly-replay` stuff. Really looking forward to
+when I won't have to even do that and it really will just be a bit of
+configuration that doesn't impact my app code one bit.
+
+## The Migration
+
+I had my app working in a staging environment for a while. Once I felt like that
+was working well in multiple regions I decided to start the migration. So I put
+together a little list of things I needed to do:
+
+1. Open up logs on everything
+1. Double-check volumes in `kcd` (`den` is primary)
+1. Double-check memory allocation in `kcd` (use 2GB during migration, can drop
+   to 1GB later)
+1. Double-check env vars in `kcd`
+1. Merge to `main` - trigger a deploy
+1. Prepare DNS switch (don't run it)
+1. SSH into the server and run `npx /app/prisma-postgres/migrate.ts`
+1. Quick Manual Quality check
+1. Run DNS switch
+1. Pray
+1. Add new regions
+   (`fly vol create --size 3 -a kcd --region {ams,maa,syd,gru,hkg}`) and scale
+   (`fly scale count -a kcd 6`)
+1. Make sure writes in non-primary regions are working
+1. Delete prisma postgres stuff (the migrate script and stuff in the dockerfile)
+1. Enable workflow quality control (turn back on ESLint, TypeScript, Testing,
+   etc.)
+
+Everything went great. As I write this, I'm running the migration script. Turns
+out, with almost half a million records, using a naïve approach to migration
+takes quite some time. It would probably be much faster if I were smarter with
+databases, but here's what my script did:
+
+```ts filename prisma-postgres/migrate.ts
+import {PrismaClient as SqliteClient} from '@prisma/client'
+// eslint-disable-next-line import/no-extraneous-dependencies
+import {PrismaClient as PostgresClient} from '@prisma/client-postgres'
+
+// TIP: do not do this if you have lots of data...
+async function main() {
+  const pg = new PostgresClient({
+    datasources: {db: {url: process.env.POSTGRES_DATABASE_URL}},
+  })
+  const sq = new SqliteClient({
+    datasources: {db: {url: process.env.DATABASE_URL}},
+  })
+  await pg.$connect()
+  await sq.$connect()
+
+  console.log('connected 🔌')
+
+  await upsertUsers()
+  await upsertSessions()
+  await upsertPostReads()
+  await upsertCalls()
+
+  console.log('✅  all finished')
+
+  await pg.$disconnect()
+  await sq.$disconnect()
+
+  async function upsertUsers() {
+    console.time('users 👥')
+    const users = await pg.user.findMany()
+    console.log(`Found ${users.length} users. Upserting them into SQLite ⤴️`)
+    for (const user of users) {
+      // eslint-disable-next-line no-await-in-loop
+      await sq.user.upsert({where: {id: user.id}, update: user, create: user})
+    }
+    console.timeEnd('users 👥')
+  }
+
+  async function upsertSessions() {
+    console.time('sessions 📊')
+    const sessions = await pg.session.findMany()
+    console.log(
+      `Found ${sessions.length} sessions. Upserting them into SQLite ⤴️`,
+    )
+    for (const session of sessions) {
+      // eslint-disable-next-line no-await-in-loop
+      await sq.session.upsert({
+        where: {id: session.id},
+        update: session,
+        create: session,
+      })
+    }
+    console.timeEnd('sessions 📊')
+  }
+
+  async function upsertPostReads() {
+    console.time('postReads 📖')
+    const postReads = await pg.postRead.findMany()
+    console.log(
+      `Found ${postReads.length} post reads. Upserting them into SQLite ⤴️`,
+    )
+    for (let index = 0; index < postReads.length; index++) {
+      if (index % 100 === 0) {
+        console.log(`Upserting ${index}`)
+      }
+      const postRead = postReads[index]
+      if (!postRead) {
+        console.log('HUH??? No post read??', index)
+        continue
+      }
+      // eslint-disable-next-line no-await-in-loop
+      await sq.postRead
+        .upsert({
+          where: {id: postRead.id},
+          update: postRead,
+          create: postRead,
+        })
+        .catch(err => {
+          console.error('error', err, postRead)
+        })
+    }
+    console.timeEnd('postReads 📖')
+  }
+
+  async function upsertCalls() {
+    console.time('calls 📞')
+    const calls = await pg.call.findMany()
+    console.log(`Found ${calls.length} calls. Upserting them into SQLite ⤴️`)
+    for (const call of calls) {
+      // eslint-disable-next-line no-await-in-loop
+      await sq.call.upsert({where: {id: call.id}, update: call, create: call})
+    }
+    console.timeEnd('calls 📞')
+  }
+}
+
+main().catch(e => {
+  console.error(e)
+  process.exit(1)
+})
+```
+
+There's more interesting stuff that happened here. If you're interested in
+watching the migration, then tune in
+[here](https://www.youtube.com/watch?v=1kWcU3d5P00).
+
+The whole thing took about an hour and fifteen minutes to run the migration
+script. But once that was finished, everything else went off pretty much without
+issue.
+
+## Conclusion
+
+Only time will tell whether this was a good idea or not. I'm pretty confident
+that it will be. Just moving from three services to one is quite nice. Local
+development is simpler thanks to just using SQLite as well.
+
+And I'm hopeful that the site will be noticeably faster. I may add real numbers
+to this section of the post once the new site gets some more traffic.
