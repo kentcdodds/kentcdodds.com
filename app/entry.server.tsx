@@ -31,6 +31,9 @@ export default async function handleRequest(
     // region, then replay and hopefully it works next time.
     const {currentIsPrimary, primaryInstance} = await getInstanceInfo()
     if (!currentIsPrimary) {
+      console.error(
+        `Replaying request in ${process.env.FLY_REGION} to primary instance (${primaryInstance}) because of error`,
+      )
       return getFlyReplayResponse(primaryInstance)
     }
   }
@@ -74,6 +77,9 @@ export async function handleDataRequest(
     // maybe we're just in trouble in this instance... if we're not in the primary
     // instance, then replay and hopefully it works next time.
     if (!currentIsPrimary) {
+      console.error(
+        `Replaying request in ${process.env.FLY_REGION} to primary instance (${primaryInstance}) because of error`,
+      )
       return getFlyReplayResponse(primaryInstance)
     }
   }
