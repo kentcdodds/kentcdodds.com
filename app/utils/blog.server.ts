@@ -17,7 +17,6 @@ import {getClientSession} from './client.server'
 import {cache, lruCache, shouldForceFresh} from './cache.server'
 import {sendMessageFromDiscordBot} from './discord.server'
 import {teamEmoji} from './team-provider'
-import {rawDb} from './raw-sqlite.server'
 
 async function getBlogRecommendations(
   request: Request,
@@ -163,9 +162,8 @@ async function getTotalPostReads(request: Request, slug?: string) {
     staleWhileRevalidate: 1000 * 60 * 60 * 24,
     forceFresh: await shouldForceFresh({request, key}),
     checkValue: (value: unknown) => typeof value === 'number',
-    getFreshValue: () => {
-      return prisma.postRead.count(slug ? {where: {postSlug: slug}} : undefined)
-    },
+    getFreshValue: () =>
+      prisma.postRead.count(slug ? {where: {postSlug: slug}} : undefined),
   })
 }
 
@@ -179,18 +177,13 @@ async function getReaderCount(request: Request) {
     forceFresh: await shouldForceFresh({request, key}),
     checkValue: (value: unknown) => typeof value === 'number',
     getFreshValue: async () => {
-      // sum the number of readers of two categories in the "PostRead" table
-      // 1. Distinct values with non-null userId field
-      // 2. Distinct values with non-null clientId field
-      console.time(`****** getReaderCount raw query`)
-      const sql = `
-        SELECT
-          (SELECT COUNT(DISTINCT "userId") FROM "PostRead" WHERE "userId" IS NOT NULL) +
-          (SELECT COUNT(DISTINCT "clientId") FROM "PostRead" WHERE "clientId" IS NOT NULL)
-      `
-      const result = rawDb.prepare(sql).get()
-      console.timeEnd(`****** getReaderCount raw query`)
-      return Object.values(result)[0]
+      // couldn't figure out how to do this in one query with out $queryRaw 🤷‍♂️
+      type CountResult = [{count: BigInt}]
+      const [userIdCount, clientIdCount] = await Promise.all([
+        prisma.$queryRaw`SELECT COUNT(DISTINCT "public"."PostRead"."userId") FROM "public"."PostRead" WHERE ("public"."PostRead"."userId") IS NOT NULL` as Promise<CountResult>,
+        prisma.$queryRaw`SELECT COUNT(DISTINCT "public"."PostRead"."clientId") FROM "public"."PostRead" WHERE ("public"."PostRead"."clientId") IS NOT NULL` as Promise<CountResult>,
+      ]).catch(() => [[{count: BigInt(0)}], [{count: BigInt(0)}]])
+      return Number(userIdCount[0].count) + Number(clientIdCount[0].count)
     },
   })
 }
