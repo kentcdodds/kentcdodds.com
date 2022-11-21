@@ -32,7 +32,7 @@ const twitterHandlers: Array<
       // eslint-disable-next-line
       if (
         (await isConnectedToTheInternet()) &&
-        process.env.TWITTER_BEARER_TOKEN
+        process.env.TWITTER_BEARER_TOKEN !== 'MOCK_TWITTER_TOKEN'
       ) {
         return
       }
