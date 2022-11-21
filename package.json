@@ -42,7 +42,7 @@
     "test": "jest",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/.eslintcache --ext js,jsx,ts,tsx .",
     "format": "prettier --write \"**/*.+(js|jsx|json|yml|yaml|css|less|scss|ts|tsx|md|gql|graphql|mdx|vue)\"",
-    "typecheck": "tsc -b ./other/tsconfig-project.json",
+    "typecheck": "tsc -b .",
     "validate": "./other/validate",
     "setup": "npm install && docker compose up -d && prisma migrate reset --force && npm run validate && npm run prime-cache:mocks && npm run test:e2e:run"
   },
@@ -157,6 +157,7 @@
     "@types/dom-mediacapture-record": "^1.0.13",
     "@types/express-http-proxy": "^1.6.3",
     "@types/fs-extra": "^9.0.13",
+    "@types/jest": "^29.2.3",
     "@types/lodash": "^4.14.186",
     "@types/morgan": "^1.9.3",
     "@types/node": "^18.11.4",

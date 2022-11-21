@@ -1,5 +1,4 @@
 import type {TransformerOption} from '@cld-apis/types'
-import * as React from 'react'
 import clsx from 'clsx'
 import type {HTMLMotionProps} from 'framer-motion'
 import {motion, useReducedMotion} from 'framer-motion'

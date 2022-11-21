@@ -1,15 +1,28 @@
 {
-  "files": [],
-  "exclude": ["node_modules"],
-  "extends": "./other/shared-tsconfig.json",
-  "references": [
-    {"path": "./types"},
-    {"path": "./app"},
-    {"path": "./server"},
-    {"path": "./tests"},
-    {"path": "./mocks"},
-    {"path": "./content"},
-    {"path": "./prisma"},
-    {"path": "./e2e"}
-  ]
+  "include": ["./types", "**/*.ts", "**/*.tsx"],
+  "compilerOptions": {
+    "lib": ["DOM", "DOM.Iterable", "ES2021"],
+    "types": ["jest"],
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "module": "es2020",
+    "target": "es2020",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "noUncheckedIndexedAccess": true,
+    "strict": true,
+    "allowJs": true,
+    "importsNotUsedAsValues": "error",
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./app/*"]
+    },
+    "skipLibCheck": true,
+    "typeRoots": ["./types", "./node_modules/@types"],
+
+    // Remix takes care of building everything in `remix build`.
+    "noEmit": true
+  }
 }

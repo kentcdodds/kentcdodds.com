@@ -1,4 +1,3 @@
-import * as React from 'react'
 import {AppleIcon} from './icons/apple-icon'
 import {RssIcon} from './icons/rss-icon'
 import {SpotifyIcon} from './icons/spotify-icon'

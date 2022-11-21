@@ -1,4 +1,3 @@
-import * as React from 'react'
 import clsx from 'clsx'
 import {H2} from '../typography'
 import {ArrowLink} from '../arrow-button'

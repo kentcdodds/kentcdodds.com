@@ -22,6 +22,7 @@ module.exports = {
     'jsx-a11y/alt-text': 'off', // it's not smart enough...
     '@babel/new-cap': 'off',
     'react/jsx-filename-extension': 'off',
+    'react/react-in-jsx-scope': 'off',
     '@typescript-eslint/no-namespace': 'off',
 
     // I can't figure these out:

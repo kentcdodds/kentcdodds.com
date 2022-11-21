@@ -1,4 +1,3 @@
-import * as React from 'react'
 import clsx from 'clsx'
 import type {LinkProps} from '@remix-run/react'
 import {Link} from '@remix-run/react'
@@ -225,7 +224,7 @@ function BackLink({
     <MotionLink
       to={to}
       className={clsx(
-        'text-primary focus:outline-none flex space-x-4',
+        'text-primary flex space-x-4 focus:outline-none',
         className,
       )}
       ref={ref}
