@@ -153,6 +153,7 @@ async function waitForUpToDateTXNumber(sessionTXNumber: number) {
 }
 
 function getTXNumber() {
+  if (!process.env.FLY) return 0
   invariant(FLY_LITEFS_DIR, 'FLY_LITEFS_DIR is not defined')
   let dbPos = '0'
   try {

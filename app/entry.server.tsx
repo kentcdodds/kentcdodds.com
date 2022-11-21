@@ -98,6 +98,8 @@ export async function handleDataRequest(
 }
 
 function getTXNumber() {
+  if (!process.env.FLY) return 0
+
   const {FLY_LITEFS_DIR} = process.env
   invariant(FLY_LITEFS_DIR, 'FLY_LITEFS_DIR is not defined')
   let dbPos = '0'
