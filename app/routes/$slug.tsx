@@ -1,8 +1,8 @@
 import * as React from 'react'
-import type {HeadersFunction, LoaderFunction} from '@remix-run/node'
+import type {HeadersFunction, DataFunctionArgs} from '@remix-run/node'
 import {json} from '@remix-run/node'
 import {useCatch, useLoaderData} from '@remix-run/react'
-import type {MdxPage, MdxListItem, KCDHandle} from '~/types'
+import type {KCDHandle} from '~/types'
 import {
   getMdxPage,
   getMdxPagesInDirectory,
@@ -21,11 +21,6 @@ import {getImageBuilder, getImgProps} from '~/images'
 import {reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {BlurrableImage} from '~/components/blurrable-image'
 
-type LoaderData = {
-  page: MdxPage
-  blogRecommendations: Array<MdxListItem>
-}
-
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
     const pages = await getMdxPagesInDirectory('pages', {request})
@@ -37,32 +32,30 @@ export const handle: KCDHandle = {
   },
 }
 
-export const loader: LoaderFunction = async ({params, request}) => {
+export async function loader({params, request}: DataFunctionArgs) {
   if (!params.slug) {
     throw new Error('params.slug is not defined')
   }
   // because this is our catch-all thing, we'll do an early return for anything
   // that has a other route setup. The response will be handled there.
   if (pathedRoutes[new URL(request.url).pathname]) {
-    return new Response()
+    throw new Response('Use other route', {status: 404})
   }
 
-  const [page, blogRecommendations] = await Promise.all([
-    getMdxPage({contentDir: 'pages', slug: params.slug}, {request}).catch(
-      () => null,
-    ),
-    getBlogRecommendations(request),
-  ])
+  const page = await getMdxPage(
+    {contentDir: 'pages', slug: params.slug},
+    {request},
+  ).catch(() => null)
 
   const headers = {
     'Cache-Control': 'private, max-age=3600',
     Vary: 'Cookie',
   }
   if (!page) {
+    const blogRecommendations = await getBlogRecommendations(request)
     throw json({blogRecommendations}, {status: 404, headers})
   }
-  const data: LoaderData = {page, blogRecommendations}
-  return json(data, {status: 200, headers})
+  return json({page}, {status: 200, headers})
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
@@ -70,7 +63,7 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 export const meta = mdxPageMeta
 
 export default function MdxScreen() {
-  const data = useLoaderData<LoaderData>()
+  const data = useLoaderData<typeof loader>()
   const {code, frontmatter} = data.page
   const isDraft = Boolean(frontmatter.draft)
   const Component = useMdxComponent(code)

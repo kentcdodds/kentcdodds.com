@@ -1,9 +1,8 @@
 import path from 'path'
-import * as React from 'react'
 import type {ActionFunction} from '@remix-run/node'
 import {json, redirect} from '@remix-run/node'
 import {getRequiredServerEnvVar} from '~/utils/misc'
-import {redisCache} from '~/utils/redis.server'
+import {cache} from '~/utils/cache.server'
 import {getBlogMdxListItems, getMdxDirList, getMdxPage} from '~/utils/mdx'
 import {getTalksAndTags} from '~/utils/talks.server'
 import {getTestimonials} from '~/utils/testimonials.server'
@@ -13,6 +12,22 @@ import {getPeople} from '~/utils/credits.server'
 type Body =
   | {keys: Array<string>; commitSha?: string}
   | {contentPaths: Array<string>; commitSha?: string}
+
+export type RefreshShaInfo = {
+  sha: string
+  date: string
+}
+
+export function isRefreshShaInfo(value: any): value is RefreshShaInfo {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'sha' in value &&
+    typeof value.sha === 'string' &&
+    'date' in value &&
+    typeof value.date === 'string'
+  )
+}
 
 export const commitShaKey = 'meta:last-refresh-commit-sha'
 
@@ -29,19 +44,28 @@ export const action: ActionFunction = async ({request}) => {
 
   const body = (await request.json()) as Body
 
-  function setShaInRedis() {
-    if (body.commitSha) {
-      void redisCache.set(commitShaKey, {sha: body.commitSha, date: new Date()})
+  function setShaInCache() {
+    const {commitSha: sha} = body
+    if (sha) {
+      const value: RefreshShaInfo = {sha, date: new Date().toISOString()}
+      cache.set(commitShaKey, {
+        value,
+        metadata: {
+          createdTime: new Date().getTime(),
+          swr: Number.MAX_SAFE_INTEGER,
+          ttl: Number.MAX_SAFE_INTEGER,
+        },
+      })
     }
   }
 
   if ('keys' in body && Array.isArray(body.keys)) {
     for (const key of body.keys) {
-      void redisCache.del(key)
+      void cache.delete(key)
     }
-    setShaInRedis()
+    setShaInCache()
     return json({
-      message: 'Deleting redis cache keys',
+      message: 'Deleting cache keys',
       keys: body.keys,
       commitSha: body.commitSha,
     })
@@ -89,7 +113,7 @@ export const action: ActionFunction = async ({request}) => {
       void getMdxDirList('pages', {forceFresh: true})
     }
 
-    setShaInRedis()
+    setShaInCache()
     return json({
       message: 'Refreshing cache for content paths',
       contentPaths: refreshingContentPaths,
@@ -100,7 +124,3 @@ export const action: ActionFunction = async ({request}) => {
 }
 
 export const loader = () => redirect('/', {status: 404})
-
-export default function MarkRead() {
-  return <div>Oops... You should not see this.</div>
-}

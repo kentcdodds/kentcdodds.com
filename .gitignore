@@ -13,11 +13,12 @@ tsconfig.tsbuildinfo
 /app/styles/**/*.css
 other/postcss.ignored
 
-/cypress/videos
-/cypress/screenshots
 *.local.*
 
 .env
 .env.production
 .envrc
-
+/test-results/
+/playwright-report/
+/playwright/.cache/
+/other/cache.db

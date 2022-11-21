@@ -4,8 +4,8 @@ import type {Await} from '~/types'
 import {typedBoolean} from '~/utils/misc'
 import {markdownToHtml, stripHtml} from '~/utils/markdown.server'
 import {downloadFile} from '~/utils/github.server'
-import {cachified} from '~/utils/cache.server'
-import {redisCache} from '~/utils/redis.server'
+import {cachified} from 'cachified'
+import {cache, shouldForceFresh} from '~/utils/cache.server'
 
 type RawTalk = {
   title?: string
@@ -114,12 +114,13 @@ async function getTalksAndTags({
   const slugify = await getSlugify()
   slugify.reset()
 
+  const key = 'content:data:talks.yml'
   const talks = await cachified({
-    cache: redisCache,
-    key: 'content:data:talks.yml',
-    maxAge: 1000 * 60 * 60 * 24 * 14,
-    request,
-    forceFresh,
+    cache,
+    key,
+    ttl: 1000 * 60 * 60 * 24 * 14,
+    staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
+    forceFresh: await shouldForceFresh({forceFresh, request, key}),
     getFreshValue: async () => {
       const talksString = await downloadFile('content/data/talks.yml')
       const rawTalks = YAML.parse(talksString) as Array<RawTalk>

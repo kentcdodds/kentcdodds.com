@@ -1,21 +1,18 @@
 import {PrismaClient} from '@prisma/client'
-import chalk from 'chalk'
 import type {Session} from '~/types'
 import {encrypt, decrypt} from './encryption.server'
+import {ensurePrimary} from './fly.server'
 
 declare global {
   // This prevents us from making multiple connections to the db when the
   // require cache is cleared.
   // eslint-disable-next-line
-  var prismaRead: ReturnType<typeof getClient> | undefined
-  // eslint-disable-next-line
-  var prismaWrite: ReturnType<typeof getClient> | undefined
+  var __prisma: ReturnType<typeof getClient> | undefined
 }
 
 const logThreshold = 50
 
-const prismaRead = global.prismaRead ?? (global.prismaRead = getClient())
-const prismaWrite = prismaRead
+const prisma = global.__prisma ?? (global.__prisma = getClient())
 
 function getClient(): PrismaClient {
   // NOTE: during development if you change anything in this function, remember
@@ -31,6 +28,7 @@ function getClient(): PrismaClient {
   })
   client.$on('query', async e => {
     if (e.duration < logThreshold) return
+    const {default: chalk} = await import('chalk')
 
     const color =
       e.duration < 30
@@ -144,7 +142,8 @@ async function validateMagicLink(link: string, sessionMagicLink?: string) {
 async function createSession(
   sessionData: Omit<Session, 'id' | 'expirationDate' | 'createdAt'>,
 ) {
-  return prismaWrite.session.create({
+  await ensurePrimary()
+  return prisma.session.create({
     data: {
       ...sessionData,
       expirationDate: new Date(Date.now() + sessionExpirationTime),
@@ -153,7 +152,7 @@ async function createSession(
 }
 
 async function getUserFromSessionId(sessionId: string) {
-  const session = await prismaRead.session.findUnique({
+  const session = await prisma.session.findUnique({
     where: {id: sessionId},
     include: {user: true},
   })
@@ -162,15 +161,17 @@ async function getUserFromSessionId(sessionId: string) {
   }
 
   if (Date.now() > session.expirationDate.getTime()) {
-    await prismaWrite.session.delete({where: {id: sessionId}})
+    await ensurePrimary()
+    await prisma.session.delete({where: {id: sessionId}})
     throw new Error('Session expired. Please request a new magic link.')
   }
 
   // if there's less than ~six months left, extend the session
   const twoWeeks = 1000 * 60 * 60 * 24 * 30 * 6
   if (Date.now() + twoWeeks > session.expirationDate.getTime()) {
+    await ensurePrimary()
     const newExpirationDate = new Date(Date.now() + sessionExpirationTime)
-    await prismaWrite.session.update({
+    await prisma.session.update({
       data: {expirationDate: newExpirationDate},
       where: {id: sessionId},
     })
@@ -182,10 +183,10 @@ async function getUserFromSessionId(sessionId: string) {
 async function getAllUserData(userId: string) {
   const {default: pProps} = await import('p-props')
   return pProps({
-    user: prismaRead.user.findUnique({where: {id: userId}}),
-    calls: prismaRead.call.findMany({where: {userId}}),
-    postReads: prismaRead.postRead.findMany({where: {userId}}),
-    sessions: prismaRead.session.findMany({where: {userId}}),
+    user: prisma.user.findUnique({where: {id: userId}}),
+    calls: prisma.call.findMany({where: {userId}}),
+    postReads: prisma.postRead.findMany({where: {userId}}),
+    sessions: prisma.session.findMany({where: {userId}}),
   })
 }
 
@@ -198,7 +199,7 @@ async function addPostRead({
   | {userId?: undefined; clientId: string}
 )) {
   const id = userId ? {userId} : {clientId}
-  const readInLastWeek = await prismaRead.postRead.findFirst({
+  const readInLastWeek = await prisma.postRead.findFirst({
     select: {id: true},
     where: {
       ...id,
@@ -209,7 +210,8 @@ async function addPostRead({
   if (readInLastWeek) {
     return null
   } else {
-    const postRead = await prismaWrite.postRead.create({
+    await ensurePrimary()
+    const postRead = await prisma.postRead.create({
       data: {postSlug: slug, ...id},
       select: {id: true},
     })
@@ -218,8 +220,7 @@ async function addPostRead({
 }
 
 export {
-  prismaRead,
-  prismaWrite,
+  prisma,
   getMagicLink,
   validateMagicLink,
   linkExpirationTime,

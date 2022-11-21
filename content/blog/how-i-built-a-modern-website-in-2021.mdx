@@ -843,7 +843,7 @@ And oh, what if I wanted to also get all the posts this user has read? Do I need
 some graphql resolver magic? Nope! Check this out:
 
 ```ts
-const users = await prismaRead.user.findMany({
+const users = await prisma.user.findMany({
   select: {
     id: true,
     email: true,
@@ -876,8 +876,8 @@ Now _that's_ what I'm talking about! And with Remix, I can easily query directly
 in my `loader`, and then have that **typed** data available in my component:
 
 ```tsx
-export async function loader({request}: LoaderArgs) {
-  const users = await prismaRead.user.findMany({
+export async function loader({request}: DataFunctionArgs) {
+  const users = await prisma.user.findMany({
     select: {
       id: true,
       email: true,

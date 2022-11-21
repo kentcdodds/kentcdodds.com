@@ -7,7 +7,7 @@ import {format} from 'date-fns'
 import {useRootData, useUser} from '~/utils/use-root-data'
 import {CallRecorder} from '~/components/calls/recorder'
 import {requireAdminUser} from '~/utils/session.server'
-import {prismaWrite, prismaRead} from '~/utils/prisma.server'
+import {prisma} from '~/utils/prisma.server'
 import {
   getAvatarForUser,
   getErrorMessage,
@@ -45,10 +45,10 @@ export const action: ActionFunction = async ({request, params}) => {
   await requireAdminUser(request)
 
   if (request.method === 'DELETE') {
-    await prismaWrite.call.delete({where: {id: params.callId}})
+    await prisma.call.delete({where: {id: params.callId}})
     return redirect('/calls/admin')
   }
-  const call = await prismaRead.call.findFirst({
+  const call = await prisma.call.findFirst({
     where: {id: params.callId},
     include: {user: true},
   })
@@ -138,7 +138,7 @@ Thanks for your call. Kent just replied and the episode has been published to th
       }
     }
 
-    await prismaWrite.call.delete({
+    await prisma.call.delete({
       where: {id: call.id},
     })
 
@@ -154,7 +154,7 @@ type LoaderData = {
 }
 
 async function getCallInfo({callId}: {callId: string}) {
-  const call = await prismaRead.call.findFirst({
+  const call = await prisma.call.findFirst({
     where: {id: callId},
     select: {
       base64: true,

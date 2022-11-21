@@ -1,6 +1,7 @@
 import type {User, Team} from '~/types'
-import {prismaWrite} from './prisma.server'
+import {prisma} from './prisma.server'
 import {getRequiredServerEnvVar, getTeam} from './misc'
+import {ensurePrimary} from './fly.server'
 
 const DISCORD_CLIENT_ID = getRequiredServerEnvVar('DISCORD_CLIENT_ID')
 const DISCORD_CLIENT_SECRET = getRequiredServerEnvVar('DISCORD_CLIENT_SECRET')
@@ -123,7 +124,7 @@ async function updateDiscordRolesForUser(
   discordMember: DiscordMember,
   user: User,
 ) {
-  await prismaWrite.user.update({
+  await prisma.user.update({
     where: {id: user.id},
     data: {discordId: discordMember.user.id},
   })
@@ -179,6 +180,7 @@ async function connectDiscord({
   code: string
   domainUrl: string
 }) {
+  await ensurePrimary()
   const {discordUser, discordToken} = await getUserToken({code, domainUrl})
 
   await addUserToDiscordServer(discordUser, discordToken)

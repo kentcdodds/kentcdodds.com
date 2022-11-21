@@ -8,7 +8,7 @@ import type {
 import {json, redirect} from '@remix-run/node'
 import {Form, useActionData, useLoaderData} from '@remix-run/react'
 import clsx from 'clsx'
-import Dialog from '@reach/dialog'
+import {Dialog} from '@reach/dialog'
 import type {KCDHandle} from '~/types'
 import {useRootData} from '~/utils/use-root-data'
 import {getQrCodeDataURL} from '~/utils/qrcode.server'
@@ -25,7 +25,7 @@ import {
   deleteConvertKitCache,
   deleteDiscordCache,
 } from '~/utils/user-info.server'
-import {prismaRead, prismaWrite, getMagicLink} from '~/utils/prisma.server'
+import {prisma, getMagicLink} from '~/utils/prisma.server'
 import {
   deleteOtherSessions,
   getSession,
@@ -73,7 +73,7 @@ type LoaderData = {qrLoginCode: string; sessionCount: number}
 export const loader: LoaderFunction = async ({request}) => {
   const user = await requireUser(request)
 
-  const sessionCount = await prismaRead.session.count({
+  const sessionCount = await prisma.session.count({
     where: {userId: user.id},
   })
   const qrLoginCode = await getQrCodeDataURL(
@@ -125,7 +125,7 @@ export const action: ActionFunction = async ({request}) => {
   try {
     if (actionId === actionIds.logout) {
       const session = await getSession(request)
-      session.signOut()
+      await session.signOut()
       const searchParams = new URLSearchParams({
         message: `👋 See you again soon!`,
       })
@@ -135,7 +135,7 @@ export const action: ActionFunction = async ({request}) => {
     }
     if (actionId === actionIds.deleteDiscordConnection && user.discordId) {
       await deleteDiscordCache(user.discordId)
-      await prismaWrite.user.update({
+      await prisma.user.update({
         where: {id: user.id},
         data: {discordId: null},
       })
@@ -150,7 +150,7 @@ export const action: ActionFunction = async ({request}) => {
         validators: {firstName: getFirstNameError},
         handleFormValues: async ({firstName}) => {
           if (firstName && user.firstName !== firstName) {
-            await prismaWrite.user.update({
+            await prisma.user.update({
               where: {id: user.id},
               data: {firstName},
             })
@@ -171,11 +171,11 @@ export const action: ActionFunction = async ({request}) => {
     }
     if (actionId === actionIds.deleteAccount) {
       const session = await getSession(request)
-      session.signOut()
+      await session.signOut()
       if (user.discordId) await deleteDiscordCache(user.discordId)
       if (user.convertKitId) await deleteConvertKitCache(user.convertKitId)
 
-      await prismaWrite.user.delete({where: {id: user.id}})
+      await prisma.user.delete({where: {id: user.id}})
       const searchParams = new URLSearchParams({
         message: `✅ Your KCD account and all associated data has been completely deleted from the KCD database.`,
       })
@@ -346,7 +346,7 @@ function YouScreen() {
               readOnly
             />
 
-            <div className="relative col-span-full mb-3 rounded-lg bg-gray-100 ring-2 ring-team-current ring-offset-4 ring-offset-team-current ring-offset-team-current focus-within:outline-none focus-within:ring-2 dark:bg-gray-800 lg:col-span-4 lg:mb-0">
+            <div className="relative col-span-full mb-3 rounded-lg bg-gray-100 ring-2 ring-team-current ring-offset-4 ring-offset-team-current focus-within:outline-none focus-within:ring-2 dark:bg-gray-800 lg:col-span-4 lg:mb-0">
               <span className="absolute left-9 top-9 text-team-current">
                 <CheckCircledIcon />
               </span>

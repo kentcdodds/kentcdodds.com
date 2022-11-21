@@ -1,4 +1,5 @@
 import * as uuid from 'uuid'
+import {cachified} from 'cachified'
 import type {
   TransistorErrorResponse,
   TransistorCreateEpisodeData,
@@ -10,12 +11,10 @@ import type {
   TransistorUpdateEpisodeData,
 } from '~/types'
 import {getDomainUrl, getRequiredServerEnvVar, toBase64} from './misc'
-import {redisCache} from './redis.server'
-import {cachified} from './cache.server'
+import {cache, shouldForceFresh} from './cache.server'
 import {getEpisodePath} from './call-kent'
 import {getDirectAvatarForUser} from './user-info.server'
 import {stripHtml} from './markdown.server'
-import type {Team} from '@prisma/client'
 
 const transistorApiSecret = getRequiredServerEnvVar('TRANSISTOR_API_SECRET')
 const podcastId = getRequiredServerEnvVar('CALL_KENT_PODCAST_ID', '67890')
@@ -73,7 +72,7 @@ async function createEpisode({
   summary: string
   description: string
   keywords: string
-  user: {firstName: string; email: string; team: Team}
+  user: {firstName: string; email: string; team: string}
   request: Request
   avatar?: string | null
 }) {
@@ -253,12 +252,16 @@ async function getCachedEpisodes({
   forceFresh?: boolean
 }) {
   return cachified({
-    cache: redisCache,
+    cache,
     key: episodesCacheKey,
     getFreshValue: getEpisodes,
-    maxAge: 1000 * 60 * 60 * 24,
-    forceFresh,
-    request,
+    ttl: 1000 * 60 * 60 * 24,
+    staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
+    forceFresh: await shouldForceFresh({
+      forceFresh,
+      request,
+      key: episodesCacheKey,
+    }),
     checkValue: (value: unknown) =>
       Array.isArray(value) &&
       value.every(

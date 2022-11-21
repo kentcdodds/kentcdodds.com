@@ -12,7 +12,7 @@ import type {GitHubFile} from '~/types'
 import * as twitter from './twitter.server'
 
 function handleEmbedderError({url}: {url: string}) {
-  return `<p>Error embedding <a href="${url}">${url}</a>.`
+  return `<p>Error embedding <a href="${url}">${url}</a></p>.`
 }
 
 type GottenHTML = string | null
@@ -250,7 +250,11 @@ async function getQueue() {
   const {default: PQueue} = await import('p-queue')
   if (_queue) return _queue
 
-  _queue = new PQueue({concurrency: 1})
+  _queue = new PQueue({
+    concurrency: 1,
+    throwOnTimeout: true,
+    timeout: 1000 * 30,
+  })
   return _queue
 }
 

@@ -1,11 +1,10 @@
 import * as YAML from 'yaml'
 import {markdownToHtmlUnwrapped} from './markdown.server'
-import type {Timings} from './metrics.server'
-import {redisCache} from './redis.server'
-import {cachified} from './cache.server'
+import {cachified} from 'cachified'
 import {downloadDirList, downloadFile} from './github.server'
 import {typedBoolean} from './misc'
 import type {Workshop} from '~/types'
+import {cache, shouldForceFresh} from './cache.server'
 
 type RawWorkshop = {
   title?: string
@@ -20,22 +19,20 @@ type RawWorkshop = {
   prerequisite?: string
 }
 
-function getWorkshops({
+async function getWorkshops({
   request,
   forceFresh,
-  timings,
 }: {
   request?: Request
   forceFresh?: boolean
-  timings?: Timings
 }) {
+  const key = 'content:workshops'
   return cachified({
-    cache: redisCache,
-    key: 'content:workshops',
-    maxAge: 1000 * 60 * 60 * 24 * 7,
-    request,
-    forceFresh,
-    timings,
+    cache,
+    key,
+    ttl: 1000 * 60 * 60 * 24 * 7,
+    staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
+    forceFresh: await shouldForceFresh({forceFresh, request, key}),
     getFreshValue: async () => {
       const dirList = await downloadDirList(`content/workshops`)
       const workshopFileList = dirList

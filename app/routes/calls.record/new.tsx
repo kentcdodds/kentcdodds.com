@@ -8,7 +8,7 @@ import {CallRecorder} from '~/components/calls/recorder'
 import type {RecordingFormData} from '~/components/calls/submit-recording-form'
 import {RecordingForm} from '~/components/calls/submit-recording-form'
 import {requireUser} from '~/utils/session.server'
-import {prismaWrite} from '~/utils/prisma.server'
+import {prisma} from '~/utils/prisma.server'
 import {
   getDomainUrl,
   getErrorMessage,
@@ -72,7 +72,7 @@ export const action: ActionFunction = async ({request}) => {
       userId: user.id,
       base64: audio,
     }
-    const createdCall = await prismaWrite.call.create({data: call})
+    const createdCall = await prisma.call.create({data: call})
 
     try {
       const channelId = getRequiredServerEnvVar('DISCORD_PRIVATE_BOT_CHANNEL')

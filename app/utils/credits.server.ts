@@ -1,8 +1,8 @@
 import * as YAML from 'yaml'
 import {downloadFile} from './github.server'
 import {getErrorMessage, typedBoolean} from './misc'
-import {redisCache} from './redis.server'
-import {cachified} from './cache.server'
+import {cachified} from 'cachified'
+import {cache, shouldForceFresh} from './cache.server'
 
 export type Person = {
   name: string
@@ -120,12 +120,13 @@ async function getPeople({
   request?: Request
   forceFresh?: boolean
 }) {
+  const key = 'content:data:credits.yml'
   const allPeople = await cachified({
-    cache: redisCache,
-    key: 'content:data:credits.yml',
-    request,
-    forceFresh,
-    maxAge: 1000 * 60 * 60 * 24 * 30,
+    cache,
+    key,
+    forceFresh: await shouldForceFresh({forceFresh, request, key}),
+    ttl: 1000 * 60 * 60 * 24 * 30,
+    staleWhileRevalidate: 1000 * 60 * 60 * 24,
     getFreshValue: async () => {
       const creditsString = await downloadFile('content/data/credits.yml')
       const rawCredits = YAML.parse(creditsString)

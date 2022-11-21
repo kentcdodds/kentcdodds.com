@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import onFinished from 'on-finished'
 import express from 'express'
+import 'express-async-errors'
 import compression from 'compression'
 import morgan from 'morgan'
 import * as Sentry from '@sentry/node'
@@ -14,19 +15,22 @@ import {
 } from '@metronome-sh/express'
 import {addCloudinaryProxies} from './cloudinary'
 import {getRedirectsMiddleware} from './redirects'
-import {getReplayResponse} from './fly'
+import {getInstanceInfo, getReplayResponse, txMiddleware} from './fly'
 
 installGlobals()
 
 const here = (...d: Array<string>) => path.join(__dirname, ...d)
 
-if (process.env.FLY) {
+// TODO: enable this
+const enableSentry = false
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+if (enableSentry && process.env.FLY) {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
     tracesSampleRate: 0.3,
     environment: process.env.NODE_ENV,
   })
-  Sentry.setContext('region', {name: process.env.FLY_REGION ?? 'unknown'})
+  Sentry.setContext('region', {name: process.env.FLY_INSTANCE ?? 'unknown'})
 }
 
 const MODE = process.env.NODE_ENV
@@ -35,8 +39,18 @@ const BUILD_DIR = path.join(process.cwd(), 'build')
 const app = express()
 
 app.use((req, res, next) => {
+  const {currentInstance, primaryInstance} = getInstanceInfo()
   res.set('X-Powered-By', 'Kody the Koala')
   res.set('X-Fly-Region', process.env.FLY_REGION ?? 'unknown')
+  res.set('X-Fly-App', process.env.FLY_APP_NAME ?? 'unknown')
+  res.set('X-Fly-Instance', currentInstance)
+  res.set('X-Fly-Primary-Instance', primaryInstance)
+
+  const host = req.get('X-Forwarded-Host') ?? req.get('host')
+  if (!host?.endsWith('kentcdodds.com')) {
+    res.set('X-Robots-Tag', 'noindex')
+  }
+
   // if they connect once with HTTPS, then they'll connect with HTTPS for the next hundred years
   res.set('Strict-Transport-Security', `max-age=${60 * 60 * 24 * 365 * 100}`)
   next()
@@ -132,6 +146,8 @@ function getRequestHandlerOptions(): Parameters<
   }
   return {build, mode: MODE}
 }
+
+app.all('*', txMiddleware)
 
 app.all(
   '*',

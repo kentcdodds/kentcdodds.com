@@ -237,6 +237,9 @@ function getDiscordAuthorizeURL(domainUrl: string) {
   return url.toString()
 }
 
+/**
+ * @returns domain URL (without a ending slash)
+ */
 function getDomainUrl(request: Request) {
   const host =
     request.headers.get('X-Forwarded-Host') ?? request.headers.get('host')

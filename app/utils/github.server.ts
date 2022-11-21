@@ -3,6 +3,8 @@ import {Octokit as createOctokit} from '@octokit/rest'
 import {throttling} from '@octokit/plugin-throttling'
 import type {GitHubFile} from '~/types'
 
+const ref = process.env.GITHUB_REF ?? 'main'
+
 const Octokit = createOctokit.plugin(throttling)
 
 type ThrottleOptions = {
@@ -144,6 +146,7 @@ async function downloadFile(path: string) {
       owner: 'kentcdodds',
       repo: 'kentcdodds.com',
       path,
+      ref,
     },
   )
 
@@ -169,6 +172,7 @@ async function downloadDirList(path: string) {
     owner: 'kentcdodds',
     repo: 'kentcdodds.com',
     path,
+    ref,
   })
   const data = resp.data
 

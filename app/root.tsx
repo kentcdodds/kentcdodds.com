@@ -48,8 +48,6 @@ import {
 import {getEnv} from './utils/env.server'
 import {getUserInfo} from './utils/user-info.server'
 import {getClientSession} from './utils/client.server'
-import type {Timings} from './utils/metrics.server'
-import {time, getServerTimeHeader} from './utils/metrics.server'
 import {Navbar} from './components/navbar'
 import {Spacer} from './components/spacer'
 import {Footer} from './components/footer'
@@ -159,18 +157,12 @@ export const loader: LoaderFunction = async ({request}) => {
     return new Response()
   }
 
-  const timings: Timings = {}
   const session = await getSession(request)
   const themeSession = await getThemeSession(request)
   const clientSession = await getClientSession(request)
   const loginInfoSession = await getLoginInfoSession(request)
 
-  const user = await time({
-    name: 'getUser in root loader',
-    type: 'postgres read',
-    timings,
-    fn: () => session.getUser(),
-  })
+  const user = await session.getUser()
 
   const randomFooterImageKeys = Object.keys(illustrationImages)
   const randomFooterImageKey = randomFooterImageKeys[
@@ -179,14 +171,7 @@ export const loader: LoaderFunction = async ({request}) => {
 
   const data: LoaderData = {
     user,
-    userInfo: user
-      ? await time({
-          name: 'getUserInfo in root loader',
-          type: 'convertkit and discord read',
-          timings,
-          fn: () => getUserInfo(user, {request, timings}),
-        })
-      : null,
+    userInfo: user ? await getUserInfo(user, {request}) : null,
     ENV: getEnv(),
     randomFooterImageKey,
     requestInfo: {
@@ -201,7 +186,6 @@ export const loader: LoaderFunction = async ({request}) => {
   }
 
   const headers: HeadersInit = new Headers()
-  headers.append('Server-Timing', getServerTimeHeader(timings))
   // this can lead to race conditions if a child route is also trying to commit
   // the cookie as well. This is a bug in remix that will hopefully be fixed.
   // we reduce the likelihood of a problem by only committing if the value is

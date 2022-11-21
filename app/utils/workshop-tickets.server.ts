@@ -1,5 +1,5 @@
-import {cachified} from './cache.server'
-import {redisCache} from './redis.server'
+import {cachified} from 'cachified'
+import {cache, shouldForceFresh} from './cache.server'
 
 type TiToDiscount = {
   code: string
@@ -156,14 +156,15 @@ async function getCachedScheduledEvents({
   request: Request
   forceFresh?: boolean
 }) {
+  const key = 'tito:scheduled-events'
   const scheduledEvents = await cachified({
-    key: 'tito:scheduled-events',
-    cache: redisCache,
+    key,
+    cache,
     getFreshValue: getScheduledEvents,
     checkValue: (value: unknown) => Array.isArray(value),
-    request,
-    forceFresh,
-    maxAge: 1000 * 60 * 24,
+    forceFresh: await shouldForceFresh({forceFresh, request, key}),
+    ttl: 1000 * 60 * 24,
+    staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
   })
   return scheduledEvents
 }

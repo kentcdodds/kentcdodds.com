@@ -13,8 +13,8 @@ import type * as M from 'mdast'
 import type * as H from 'hast'
 import {getRequiredServerEnvVar, typedBoolean} from './misc'
 import {markdownToHtml, stripHtml} from './markdown.server'
-import {redisCache} from './redis.server'
-import {cachified} from './cache.server'
+import {cache, shouldForceFresh} from './cache.server'
+import {cachified} from 'cachified'
 
 const SIMPLECAST_KEY = getRequiredServerEnvVar('SIMPLECAST_KEY')
 const CHATS_WITH_KENT_PODCAST_ID = getRequiredServerEnvVar(
@@ -43,12 +43,16 @@ const getCachedSeasons = async ({
   forceFresh?: boolean
 }) =>
   cachified({
-    cache: redisCache,
+    cache,
     key: seasonsCacheKey,
-    maxAge: 1000 * 60 * 60 * 24 * 7,
+    ttl: 1000 * 60 * 60 * 24 * 7,
+    staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
     getFreshValue: () => getSeasons({request, forceFresh}),
-    request,
-    forceFresh,
+    forceFresh: await shouldForceFresh({
+      forceFresh,
+      request,
+      key: seasonsCacheKey,
+    }),
     checkValue: (value: unknown) =>
       Array.isArray(value) &&
       value.length > 0 &&
@@ -57,7 +61,7 @@ const getCachedSeasons = async ({
       ),
   })
 
-const getCachedEpisode = async (
+async function getCachedEpisode(
   episodeId: string,
   {
     request,
@@ -66,17 +70,19 @@ const getCachedEpisode = async (
     request: Request
     forceFresh?: boolean
   },
-) =>
-  cachified({
-    cache: redisCache,
-    key: `simplecast:episode:${episodeId}`,
-    maxAge: 1000 * 60 * 60 * 24 * 7,
+) {
+  const key = `simplecast:episode:${episodeId}`
+  return cachified({
+    cache,
+    key,
+    ttl: 1000 * 60 * 60 * 24 * 7,
+    staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
     getFreshValue: () => getEpisode(episodeId),
-    request,
-    forceFresh,
+    forceFresh: await shouldForceFresh({forceFresh, request, key}),
     checkValue: (value: unknown) =>
       typeof value === 'object' && value !== null && 'title' in value,
   })
+}
 
 async function getSeasons({
   request,

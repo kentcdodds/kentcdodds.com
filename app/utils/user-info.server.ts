@@ -2,10 +2,9 @@ import type {User} from '~/types'
 import {getImageBuilder, images} from '../images'
 import * as ck from '../convertkit/convertkit.server'
 import * as discord from './discord.server'
-import type {Timings} from './metrics.server'
 import {getAvatar, getDomainUrl, getOptionalTeam} from './misc'
-import {redisCache} from './redis.server'
-import {cachified} from './cache.server'
+import {cache, shouldForceFresh} from './cache.server'
+import cachified from 'cachified'
 
 type UserInfo = {
   avatar: {
@@ -56,20 +55,20 @@ const getDiscordCacheKey = (discordId: string) => `discord:${discordId}`
 
 async function getUserInfo(
   user: User,
-  {
-    request,
-    forceFresh,
-    timings,
-  }: {request: Request; forceFresh?: boolean; timings?: Timings},
+  {request, forceFresh}: {request: Request; forceFresh?: boolean},
 ) {
   const {discordId, convertKitId, email} = user
   const [discordUser, convertKitInfo] = await Promise.all([
     discordId
       ? cachified({
-          cache: redisCache,
-          request,
-          forceFresh,
-          maxAge: 1000 * 60 * 60 * 24 * 30,
+          cache,
+          forceFresh: await shouldForceFresh({
+            forceFresh,
+            request,
+            key: getDiscordCacheKey(discordId),
+          }),
+          ttl: 1000 * 60 * 60 * 24 * 30,
+          staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
           key: getDiscordCacheKey(discordId),
           checkValue: (value: unknown) =>
             typeof value === 'object' && value !== null && 'id' in value,
@@ -81,11 +80,14 @@ async function getUserInfo(
       : null,
     convertKitId
       ? cachified({
-          cache: redisCache,
-          request,
-          forceFresh,
-          maxAge: 1000 * 60 * 60 * 24 * 30,
-          timings,
+          cache,
+          forceFresh: await shouldForceFresh({
+            forceFresh,
+            request,
+            key: getConvertKitCacheKey(convertKitId),
+          }),
+          ttl: 1000 * 60 * 60 * 24 * 30,
+          staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
           key: getConvertKitCacheKey(convertKitId),
           checkValue: (value: unknown) =>
             typeof value === 'object' && value !== null && 'tags' in value,
@@ -121,12 +123,12 @@ async function getUserInfo(
   return userInfo
 }
 
-function deleteConvertKitCache(convertKitId: string | number) {
-  return redisCache.del(getConvertKitCacheKey(String(convertKitId)))
+async function deleteConvertKitCache(convertKitId: string | number) {
+  await cache.delete(getConvertKitCacheKey(String(convertKitId)))
 }
 
-function deleteDiscordCache(discordId: string) {
-  return redisCache.del(getDiscordCacheKey(discordId))
+async function deleteDiscordCache(discordId: string) {
+  await cache.delete(getDiscordCacheKey(discordId))
 }
 
 export {

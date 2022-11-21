@@ -30,7 +30,12 @@ const twitterHandlers: Array<
     async (req, res, ctx) => {
       // if you want to mock out specific tweets, comment out this next line
       // eslint-disable-next-line
-      if (await isConnectedToTheInternet()) return
+      if (
+        (await isConnectedToTheInternet()) &&
+        process.env.TWITTER_BEARER_TOKEN
+      ) {
+        return
+      }
       // uncomment this and send whatever tweet you want to work with...
       // return res(ctx.json(tweets.linkWithMetadata))
 

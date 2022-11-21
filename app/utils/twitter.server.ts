@@ -10,6 +10,8 @@ import {
   getRequiredServerEnvVar,
   typedBoolean,
 } from './misc'
+import cachified from 'cachified'
+import {cache, lruCache} from './cache.server'
 
 const token = getRequiredServerEnvVar('TWITTER_BEARER_TOKEN')
 
@@ -130,8 +132,23 @@ type TweetErrorJsonResponse = {
   }>
 }
 
-// fetch tweet from API
+type TweetRateLimitErrorJsonResponse = {
+  title: 'Too Many Requests'
+  detail: 'Too Many Requests'
+  type: 'about:blank'
+  status: 429
+}
+
 async function getTweet(tweetId: string) {
+  return cachified({
+    key: `tweet:${tweetId}`,
+    cache: lruCache,
+    ttl: 1000 * 60,
+    getFreshValue: () => getTweetImpl(tweetId),
+  })
+}
+
+async function getTweetImpl(tweetId: string) {
   const url = new URL(`https://api.twitter.com/2/tweets/${tweetId}`)
   const params = {
     'tweet.fields': 'public_metrics,created_at',
@@ -150,7 +167,10 @@ async function getTweet(tweetId: string) {
     },
   })
   const tweetJson = await response.json()
-  return tweetJson as TweetJsonResponse | TweetErrorJsonResponse
+  return tweetJson as
+    | TweetJsonResponse
+    | TweetErrorJsonResponse
+    | TweetRateLimitErrorJsonResponse
 }
 
 const playSvg = `<svg width="75" height="75" viewBox="0 0 75 75" xmlns="http://www.w3.org/2000/svg"><circle cx="37.4883" cy="37.8254" r="37" fill="white" /><path fillRule="evenodd" clipRule="evenodd" d="M35.2643 33.025L41.0017 36.9265C41.6519 37.369 41.6499 38.3118 40.9991 38.7518L35.2616 42.6276C34.5113 43.1349 33.4883 42.6077 33.4883 41.7143V33.9364C33.4883 33.0411 34.5146 32.5151 35.2643 33.025" /></svg>`
@@ -358,6 +378,16 @@ async function buildTweetHTML(
 }
 
 async function getTweetEmbedHTML(urlString: string) {
+  return cachified({
+    key: `tweet:embed:${urlString}`,
+    ttl: 1000 * 60 * 60 * 24,
+    cache,
+    staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30 * 6,
+    getFreshValue: () => getTweetEmbedHTMLImpl(urlString),
+  })
+}
+
+async function getTweetEmbedHTMLImpl(urlString: string) {
   const url = new URL(urlString)
   const tweetId = url.pathname.split('/').pop()
 
@@ -368,6 +398,10 @@ async function getTweetEmbedHTML(urlString: string) {
   let tweet
   try {
     tweet = await getTweet(tweetId)
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if ('status' in tweet && tweet.status === 429) {
+      throw new Error(`Rate limited: ${tweetId}`)
+    }
     if (!('data' in tweet)) {
       throw new Error('Oh no, tweet has no data.')
     }
@@ -381,7 +415,7 @@ async function getTweetEmbedHTML(urlString: string) {
         console.error(er)
       }
     }
-    return ''
+    throw error
   }
 }
 

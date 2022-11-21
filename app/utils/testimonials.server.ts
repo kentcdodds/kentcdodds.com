@@ -1,9 +1,9 @@
 import * as YAML from 'yaml'
 import {pick} from 'lodash'
+import {cachified} from 'cachified'
 import {downloadFile} from './github.server'
 import {getErrorMessage, typedBoolean} from './misc'
-import {redisCache} from './redis.server'
-import {cachified} from './cache.server'
+import {cache, shouldForceFresh} from './cache.server'
 
 const allCategories = [
   'teaching',
@@ -150,12 +150,13 @@ async function getAllTestimonials({
   request?: Request
   forceFresh?: boolean
 }) {
+  const key = 'content:data:testimonials.yml'
   const allTestimonials = await cachified({
-    cache: redisCache,
-    key: 'content:data:testimonials.yml',
-    request,
-    forceFresh,
-    maxAge: 1000 * 60 * 60 * 24,
+    cache,
+    key,
+    forceFresh: await shouldForceFresh({forceFresh, request, key}),
+    ttl: 1000 * 60 * 60 * 24,
+    staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
     getFreshValue: async (): Promise<Array<TestimonialWithMetadata>> => {
       const talksString = await downloadFile('content/data/testimonials.yml')
       const rawTestimonials = YAML.parse(talksString)

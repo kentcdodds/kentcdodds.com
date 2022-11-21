@@ -1,4 +1,4 @@
-import type {LoaderFunction} from '@remix-run/node'
+import type {DataFunctionArgs} from '@remix-run/node'
 import {redirect} from '@remix-run/node'
 import type {KCDHandle} from '~/types'
 import * as React from 'react'
@@ -9,7 +9,7 @@ export const handle: KCDHandle = {
   getSitemapEntries: () => null,
 }
 
-export const loader: LoaderFunction = async ({request}) => {
+export async function loader({request}: DataFunctionArgs) {
   const loginInfoSession = await getLoginInfoSession(request)
   try {
     const session = await getUserSessionFromMagicLink(request)

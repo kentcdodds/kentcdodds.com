@@ -5,7 +5,7 @@ import {Link, Outlet, useLoaderData, useLocation} from '@remix-run/react'
 import type {Await} from '~/types'
 import {AnimatePresence, motion} from 'framer-motion'
 import {getUser} from '~/utils/session.server'
-import {prismaRead} from '~/utils/prisma.server'
+import {prisma} from '~/utils/prisma.server'
 import {Grid} from '~/components/grid'
 import {H2, Paragraph} from '~/components/typography'
 import {BackLink} from '~/components/arrow-button'
@@ -14,7 +14,7 @@ import {ButtonLink} from '~/components/button'
 import {useRootData} from '~/utils/use-root-data'
 
 function getCalls(userId: string) {
-  return prismaRead.call.findMany({
+  return prisma.call.findMany({
     where: {userId},
     select: {id: true, title: true},
   })
@@ -84,7 +84,7 @@ function Record({
     <Grid nested className="border-b border-gray-200 dark:border-gray-600">
       <Link
         to={active ? './' : slug}
-        className="text-primary focus:outline-none group relative col-span-full flex flex-col py-5 text-xl font-medium"
+        className="text-primary group relative col-span-full flex flex-col py-5 text-xl font-medium focus:outline-none"
       >
         <div className="bg-secondary absolute -inset-px -mx-6 hidden rounded-lg group-hover:block group-focus:block" />
         <span className="relative">{title}</span>

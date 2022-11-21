@@ -1,22 +1,16 @@
-app = "withered-frost-3196"
+app = "kcd"
 
 kill_signal = "SIGINT"
 kill_timeout = 5
 
-[env]
-  PORT = "8080"
-  CYPRESS_INSTALL_BINARY = "0"
-  HUSKY_SKIP_INSTALL = "1"
-  NODE_ENV = "production"
-  FLY = "true"
-  PRIMARY_REGION = "dfw"
-
-[deploy]
-  release_command = "npx prisma migrate deploy"
+[mounts]
+  source = "data"
+  destination = "/data"
 
 # IDEA: add back statics config here (fa0fbe9)
 
 [experimental]
+  enable_consul = true
   allowed_public_ports = []
   auto_rollback = true
 
@@ -33,6 +27,7 @@ kill_timeout = 5
   [[services.ports]]
     handlers = ["http"]
     port = 80
+    force_https = true
 
   [[services.ports]]
     handlers = ["tls", "http"]
@@ -46,10 +41,10 @@ kill_timeout = 5
 
   [[services.http_checks]]
     interval = 10000
-    grace_period = "20s"
+    grace_period = "600s"
     method = "get"
     path = "/healthcheck"
     protocol = "http"
-    timeout = 2000
+    timeout = 5000
     tls_skip_verify = false
     [services.http_checks.headers]
