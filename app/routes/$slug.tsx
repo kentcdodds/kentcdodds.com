@@ -66,6 +66,7 @@ export default function MdxScreen() {
   const data = useLoaderData<typeof loader>()
   const {code, frontmatter} = data.page
   const isDraft = Boolean(frontmatter.draft)
+  const isArchived = Boolean(frontmatter.archived)
   const Component = useMdxComponent(code)
 
   return (
@@ -84,6 +85,15 @@ export default function MdxScreen() {
                 'callout-warning',
                 {},
                 `This blog post is a draft. Please don't share it in its current state.`,
+              )}
+            </div>
+          ) : null}
+          {isArchived ? (
+            <div className="prose prose-light mb-6 max-w-full dark:prose-dark">
+              {React.createElement(
+                'callout-warning',
+                {},
+                `This blog post is archived. It's no longer maintained and may contain outdated information.`,
               )}
             </div>
           ) : null}

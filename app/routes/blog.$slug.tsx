@@ -400,6 +400,7 @@ export default function MdxScreen() {
 
   const readMarker = React.useRef<HTMLDivElement>(null)
   const isDraft = Boolean(data.page.frontmatter.draft)
+  const isArchived = Boolean(data.page.frontmatter.archived)
   const categoriesAndKeywords = [
     ...(data.page.frontmatter.categories ?? []),
     ...(data.page.frontmatter.meta?.keywords ?? []),
@@ -445,6 +446,15 @@ export default function MdxScreen() {
                 'callout-warning',
                 {},
                 `This blog post is a draft. Please don't share it in its current state.`,
+              )}
+            </div>
+          ) : null}
+          {isArchived ? (
+            <div className="prose prose-light mb-6 max-w-full dark:prose-dark">
+              {React.createElement(
+                'callout-warning',
+                {},
+                `This blog post is archived. It's no longer maintained and may contain outdated information.`,
               )}
             </div>
           ) : null}

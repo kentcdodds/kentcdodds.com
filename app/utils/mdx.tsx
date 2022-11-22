@@ -300,7 +300,7 @@ async function getBlogMdxListItems(options: CachifiedOptions) {
     key,
     getFreshValue: async () => {
       let pages = await getMdxPagesInDirectory('blog', options).then(allPosts =>
-        allPosts.filter(p => !p.frontmatter.draft),
+        allPosts.filter(p => !p.frontmatter.draft && !p.frontmatter.unlisted),
       )
 
       pages = pages.sort((a, z) => {
@@ -326,9 +326,10 @@ function mdxPageMeta({
     const {keywords = [], ...extraMeta} = data.page.frontmatter.meta ?? {}
     let title = data.page.frontmatter.title
     const isDraft = data.page.frontmatter.draft
+    const isUnlisted = data.page.frontmatter.unlisted
     if (isDraft) title = `(DRAFT) ${title ?? ''}`
     return {
-      ...(isDraft ? {robots: 'noindex'} : null),
+      ...(isDraft || isUnlisted ? {robots: 'noindex'} : null),
       ...getSocialMetas({
         origin: requestInfo.origin,
         title,

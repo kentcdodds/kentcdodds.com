@@ -39,7 +39,12 @@ async function getBlogRecommendations(
     new Set([
       ...externalExclude,
       ...allPosts
-        .filter(post => post.frontmatter.archived ?? post.frontmatter.draft)
+        .filter(
+          post =>
+            post.frontmatter.unlisted ??
+            post.frontmatter.archived ??
+            post.frontmatter.draft,
+        )
         .map(p => p.slug),
     ]),
   )
