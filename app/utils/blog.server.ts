@@ -188,12 +188,11 @@ async function getReaderCount(request: Request) {
     forceFresh: await shouldForceFresh({request, key}),
     checkValue: (value: unknown) => typeof value === 'number',
     getFreshValue: async () => {
+      // couldn't figure out how to do this in one query with out $queryRaw 🤷‍♂️
       const result = await prisma.$queryRaw`
-        SELECT
-          COUNT(DISTINCT "userId") +
-          COUNT(DISTINCT "clientId")
-        FROM "PostRead"
-      `
+      SELECT
+        (SELECT COUNT(DISTINCT "userId") FROM "PostRead" WHERE "userId" IS NOT NULL) +
+        (SELECT COUNT(DISTINCT "clientId") FROM "PostRead" WHERE "clientId" IS NOT NULL)`
       if (!isRawQueryResult(result)) {
         console.error(`Unexpected result from getReaderCount: ${result}`)
         return 0
