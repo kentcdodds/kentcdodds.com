@@ -56,7 +56,8 @@ FROM base
 
 ENV FLY="true"
 ENV FLY_LITEFS_DIR="/litefs/data"
-ENV DATABASE_URL="file:$FLY_LITEFS_DIR/sqlite.db"
+# ENV DATABASE_URL="file:$FLY_LITEFS_DIR/sqlite.db"
+ENV DATABASE_URL="file:/data/sqlite.db"
 ENV PORT="8080"
 ENV NODE_ENV="production"
 ENV CACHE_DATABASE_PATH=/data/cache.db
@@ -84,4 +85,5 @@ COPY --from=litefs /usr/local/bin/litefs /usr/local/bin/litefs
 ADD other/litefs.yml /etc/litefs.yml
 RUN mkdir -p /data ${FLY_LITEFS_DIR}
 
-CMD ["litefs", "mount", "--", "node", "./other/start.js"]
+# CMD ["litefs", "mount", "--", "node", "./other/start.js"]
+CMD ["node", "./other/start.js"]
