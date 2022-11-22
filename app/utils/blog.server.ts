@@ -1,6 +1,6 @@
 import type {Team, MdxListItem, Await, User} from '~/types'
 import {subYears, subMonths} from 'date-fns'
-import {cachified} from 'cachified'
+import {cachified, verboseReporter} from 'cachified'
 import {shuffle} from 'lodash'
 import {getBlogMdxListItems} from './mdx'
 import {prisma} from './prisma.server'
@@ -152,6 +152,7 @@ async function getMostPopularPostSlugs({
     ttl: 1000 * 60,
     staleWhileRevalidate: 1000 * 60 * 60 * 24,
     cache: lruCache,
+    reporter: verboseReporter(),
     getFreshValue,
     checkValue: (value: unknown) =>
       Array.isArray(value) && value.every(v => typeof v === 'string'),
@@ -163,6 +164,7 @@ async function getTotalPostReads(request: Request, slug?: string) {
   return cachified({
     key,
     cache: lruCache,
+    reporter: verboseReporter(),
     ttl: 1000 * 60,
     staleWhileRevalidate: 1000 * 60 * 60 * 24,
     forceFresh: await shouldForceFresh({request, key}),
@@ -183,6 +185,7 @@ async function getReaderCount(request: Request) {
   return cachified({
     key,
     cache: lruCache,
+    reporter: verboseReporter(),
     ttl: 1000 * 60 * 5,
     staleWhileRevalidate: 1000 * 60 * 60 * 24,
     forceFresh: await shouldForceFresh({request, key}),
@@ -219,6 +222,7 @@ async function getBlogReadRankings({
   const rankingObjs = await cachified({
     key,
     cache,
+    reporter: verboseReporter(),
     ttl: slug ? 1000 * 60 * 60 * 24 * 7 : 1000 * 60 * 60,
     staleWhileRevalidate: 1000 * 60 * 60 * 24,
     forceFresh: await shouldForceFresh({forceFresh, request, key}),
@@ -288,6 +292,7 @@ async function getAllBlogPostReadRankings({
   return cachified({
     key,
     cache,
+    reporter: verboseReporter(),
     forceFresh: await shouldForceFresh({forceFresh, request, key}),
     ttl: 1000 * 60 * 5, // the underlying caching should be able to handle this every 5 minues
     staleWhileRevalidate: 1000 * 60 * 60 * 24,

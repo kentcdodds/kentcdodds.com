@@ -1,6 +1,6 @@
 import * as YAML from 'yaml'
 import {markdownToHtmlUnwrapped} from './markdown.server'
-import {cachified} from 'cachified'
+import {cachified, verboseReporter} from 'cachified'
 import {downloadDirList, downloadFile} from './github.server'
 import {typedBoolean} from './misc'
 import type {Workshop} from '~/types'
@@ -29,6 +29,7 @@ async function getWorkshops({
   const key = 'content:workshops'
   return cachified({
     cache,
+    reporter: verboseReporter(),
     key,
     ttl: 1000 * 60 * 60 * 24 * 7,
     staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,

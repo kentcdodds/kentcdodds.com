@@ -1,7 +1,7 @@
 import * as YAML from 'yaml'
 import {downloadFile} from './github.server'
 import {getErrorMessage, typedBoolean} from './misc'
-import {cachified} from 'cachified'
+import {cachified, verboseReporter} from 'cachified'
 import {cache, shouldForceFresh} from './cache.server'
 
 export type Person = {
@@ -122,8 +122,9 @@ async function getPeople({
 }) {
   const key = 'content:data:credits.yml'
   const allPeople = await cachified({
-    cache,
     key,
+    cache,
+    reporter: verboseReporter(),
     forceFresh: await shouldForceFresh({forceFresh, request, key}),
     ttl: 1000 * 60 * 60 * 24 * 30,
     staleWhileRevalidate: 1000 * 60 * 60 * 24,

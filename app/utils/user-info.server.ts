@@ -4,7 +4,7 @@ import * as ck from '../convertkit/convertkit.server'
 import * as discord from './discord.server'
 import {getAvatar, getDomainUrl, getOptionalTeam} from './misc'
 import {cache, shouldForceFresh} from './cache.server'
-import cachified from 'cachified'
+import cachified, {verboseReporter} from 'cachified'
 
 type UserInfo = {
   avatar: {
@@ -62,6 +62,7 @@ async function getUserInfo(
     discordId
       ? cachified({
           cache,
+          reporter: verboseReporter(),
           forceFresh: await shouldForceFresh({
             forceFresh,
             request,
@@ -81,6 +82,7 @@ async function getUserInfo(
     convertKitId
       ? cachified({
           cache,
+          reporter: verboseReporter(),
           forceFresh: await shouldForceFresh({
             forceFresh,
             request,

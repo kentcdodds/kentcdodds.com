@@ -4,7 +4,7 @@ import type {Await} from '~/types'
 import {typedBoolean} from '~/utils/misc'
 import {markdownToHtml, stripHtml} from '~/utils/markdown.server'
 import {downloadFile} from '~/utils/github.server'
-import {cachified} from 'cachified'
+import {cachified, verboseReporter} from 'cachified'
 import {cache, shouldForceFresh} from '~/utils/cache.server'
 
 type RawTalk = {
@@ -117,6 +117,7 @@ async function getTalksAndTags({
   const key = 'content:data:talks.yml'
   const talks = await cachified({
     cache,
+    reporter: verboseReporter(),
     key,
     ttl: 1000 * 60 * 60 * 24 * 14,
     staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,

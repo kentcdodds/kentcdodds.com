@@ -1,5 +1,5 @@
 import * as uuid from 'uuid'
-import {cachified} from 'cachified'
+import {cachified, verboseReporter} from 'cachified'
 import type {
   TransistorErrorResponse,
   TransistorCreateEpisodeData,
@@ -253,6 +253,7 @@ async function getCachedEpisodes({
 }) {
   return cachified({
     cache,
+    reporter: verboseReporter(),
     key: episodesCacheKey,
     getFreshValue: getEpisodes,
     ttl: 1000 * 60 * 60 * 24,

@@ -1,6 +1,6 @@
 import * as YAML from 'yaml'
 import {pick} from 'lodash'
-import {cachified} from 'cachified'
+import {cachified, verboseReporter} from 'cachified'
 import {downloadFile} from './github.server'
 import {getErrorMessage, typedBoolean} from './misc'
 import {cache, shouldForceFresh} from './cache.server'
@@ -153,6 +153,7 @@ async function getAllTestimonials({
   const key = 'content:data:testimonials.yml'
   const allTestimonials = await cachified({
     cache,
+    reporter: verboseReporter(),
     key,
     forceFresh: await shouldForceFresh({forceFresh, request, key}),
     ttl: 1000 * 60 * 60 * 24,

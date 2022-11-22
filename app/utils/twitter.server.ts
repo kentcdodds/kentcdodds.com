@@ -10,7 +10,7 @@ import {
   getRequiredServerEnvVar,
   typedBoolean,
 } from './misc'
-import cachified from 'cachified'
+import cachified, {verboseReporter} from 'cachified'
 import {cache, lruCache} from './cache.server'
 
 const token = getRequiredServerEnvVar('TWITTER_BEARER_TOKEN')
@@ -143,6 +143,7 @@ async function getTweet(tweetId: string) {
   return cachified({
     key: `tweet:${tweetId}`,
     cache: lruCache,
+    reporter: verboseReporter(),
     ttl: 1000 * 60,
     getFreshValue: () => getTweetImpl(tweetId),
   })
@@ -382,6 +383,7 @@ async function getTweetEmbedHTML(urlString: string) {
     key: `tweet:embed:${urlString}`,
     ttl: 1000 * 60 * 60 * 24,
     cache,
+    reporter: verboseReporter(),
     staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30 * 6,
     getFreshValue: () => getTweetEmbedHTMLImpl(urlString),
   })

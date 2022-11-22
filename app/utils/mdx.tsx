@@ -47,13 +47,12 @@ async function getMdxPage(
   const {forceFresh, ttl = defaultTTL, request} = options
   const key = `mdx-page:${contentDir}:${slug}:compiled`
   const page = await cachified({
+    key,
     cache,
+    reporter: verboseReporter(),
     ttl,
     staleWhileRevalidate: defaultStaleWhileRevalidate,
     forceFresh: await shouldForceFresh({forceFresh, request, key}),
-    // reusing the same key as compiledMdxCached because we just return that
-    // exact same value. Cachifying this allows us to skip getting the cached files
-    key,
     checkValue: checkCompiledValue,
     getFreshValue: async () => {
       const pageFiles = await downloadMdxFilesCached(contentDir, slug, options)
@@ -110,6 +109,7 @@ async function getMdxDirList(contentDir: string, options?: CachifiedOptions) {
   const key = getDirListKey(contentDir)
   return cachified({
     cache,
+    reporter: verboseReporter(),
     ttl,
     staleWhileRevalidate: defaultStaleWhileRevalidate,
     forceFresh: await shouldForceFresh({forceFresh, request, key}),
@@ -139,6 +139,7 @@ export async function downloadMdxFilesCached(
   const key = `${contentDir}:${slug}:downloaded`
   const downloaded = await cachified({
     cache,
+    reporter: verboseReporter(),
     ttl,
     staleWhileRevalidate: defaultStaleWhileRevalidate,
     forceFresh: await shouldForceFresh({forceFresh, request, key}),
@@ -294,6 +295,7 @@ async function getBlogMdxListItems(options: CachifiedOptions) {
   const key = 'blog:mdx-list-items'
   return cachified({
     cache,
+    reporter: verboseReporter(),
     ttl,
     staleWhileRevalidate: defaultStaleWhileRevalidate,
     forceFresh: await shouldForceFresh({forceFresh, request, key}),

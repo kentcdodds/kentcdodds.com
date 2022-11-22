@@ -10,7 +10,7 @@ declare global {
   var __prisma: ReturnType<typeof getClient> | undefined
 }
 
-const logThreshold = 50
+const logThreshold = 300
 
 const prisma = global.__prisma ?? (global.__prisma = getClient())
 
@@ -31,13 +31,13 @@ function getClient(): PrismaClient {
     const {default: chalk} = await import('chalk')
 
     const color =
-      e.duration < 30
+      e.duration < logThreshold * 1.1
         ? 'green'
-        : e.duration < 50
+        : e.duration < logThreshold * 1.2
         ? 'blue'
-        : e.duration < 80
+        : e.duration < logThreshold * 1.3
         ? 'yellow'
-        : e.duration < 100
+        : e.duration < logThreshold * 1.4
         ? 'redBright'
         : 'red'
     const dur = chalk[color](`${e.duration}ms`)

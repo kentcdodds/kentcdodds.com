@@ -14,7 +14,7 @@ import type * as H from 'hast'
 import {getRequiredServerEnvVar, typedBoolean} from './misc'
 import {markdownToHtml, stripHtml} from './markdown.server'
 import {cache, shouldForceFresh} from './cache.server'
-import {cachified} from 'cachified'
+import {cachified, verboseReporter} from 'cachified'
 
 const SIMPLECAST_KEY = getRequiredServerEnvVar('SIMPLECAST_KEY')
 const CHATS_WITH_KENT_PODCAST_ID = getRequiredServerEnvVar(
@@ -44,6 +44,7 @@ const getCachedSeasons = async ({
 }) =>
   cachified({
     cache,
+    reporter: verboseReporter(),
     key: seasonsCacheKey,
     ttl: 1000 * 60 * 60 * 24 * 7,
     staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
@@ -74,6 +75,7 @@ async function getCachedEpisode(
   const key = `simplecast:episode:${episodeId}`
   return cachified({
     cache,
+    reporter: verboseReporter(),
     key,
     ttl: 1000 * 60 * 60 * 24 * 7,
     staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,

@@ -1,4 +1,4 @@
-import {cachified} from 'cachified'
+import {cachified, verboseReporter} from 'cachified'
 import {cache, shouldForceFresh} from './cache.server'
 
 type TiToDiscount = {
@@ -160,6 +160,7 @@ async function getCachedScheduledEvents({
   const scheduledEvents = await cachified({
     key,
     cache,
+    reporter: verboseReporter(),
     getFreshValue: getScheduledEvents,
     checkValue: (value: unknown) => Array.isArray(value),
     forceFresh: await shouldForceFresh({forceFresh, request, key}),
