@@ -59,4 +59,7 @@ model PostRead {
   userId    String?
   clientId  String?
   postSlug  String
+
+  @@index(userId)
+  @@index(clientId)
 }
