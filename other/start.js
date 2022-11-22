@@ -19,7 +19,6 @@ async function go() {
     console.log(
       `Instance (${currentInstance}) in ${process.env.FLY_REGION} is not primary (the primary instance is ${primaryInstance}). Skipping migrations.`,
     )
-    console.log('Downloading the cache database from a running instance...')
 
     const {CACHE_DATABASE_PATH} = process.env
     invariant(CACHE_DATABASE_PATH, 'CACHE_DATABASE_PATH is not defined')
