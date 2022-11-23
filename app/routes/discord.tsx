@@ -47,14 +47,17 @@ import LaptopIcon from '~/components/icons/laptop-icon'
 import {MessageIcon} from '~/components/icons/message-icon'
 import type {LoaderData as RootLoaderData} from '../root'
 import {getSocialMetas} from '~/utils/seo'
+import {getServerTimeHeader} from '~/utils/timing.server'
 
 type LoaderData = {
   testimonials: Array<Testimonial>
 }
 
 export const loader: LoaderFunction = async ({request}) => {
+  const timings = {}
   const testimonials = await getTestimonials({
     request,
+    timings,
     subjects: ['Discord Community'],
     categories: ['community'],
   })
@@ -64,6 +67,7 @@ export const loader: LoaderFunction = async ({request}) => {
     headers: {
       'Cache-Control': 'public, max-age=3600',
       Vary: 'Cookie',
+      'Server-Timing': getServerTimeHeader(timings),
     },
   })
 }
@@ -101,7 +105,7 @@ function CategoryCardContent({title, description, number}: CategoryCardProps) {
   return (
     <>
       <H5 as="div" className="text-primary w-full transition">
-        <AccordionButton className="focus:outline-none relative w-full text-left">
+        <AccordionButton className="relative w-full text-left focus:outline-none">
           <div className="absolute -bottom-12 -left-8 -right-8 -top-12 rounded-lg lg:-left-28 lg:-right-20" />
 
           <span className="absolute -left-16 top-0 hidden text-lg lg:block">

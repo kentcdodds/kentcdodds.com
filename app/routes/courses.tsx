@@ -20,13 +20,16 @@ import {Spacer} from '~/components/spacer'
 import {getDisplayUrl, getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import type {LoaderData as RootLoaderData} from '../root'
 import {getSocialMetas} from '~/utils/seo'
+import {getServerTimeHeader} from '~/utils/timing.server'
 
 type LoaderData = {
   testimonials: Array<Testimonial>
 }
 
 export const loader: LoaderFunction = async ({request}) => {
+  const timings = {}
   const testimonials = await getTestimonials({
+    timings,
     request,
     categories: ['courses', 'teaching'],
   })
@@ -35,6 +38,7 @@ export const loader: LoaderFunction = async ({request}) => {
   return json(data, {
     headers: {
       'Cache-Control': 'public, max-age=3600',
+      'Server-Timing': getServerTimeHeader(timings),
     },
   })
 }

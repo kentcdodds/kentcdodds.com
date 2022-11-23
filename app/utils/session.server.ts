@@ -12,6 +12,7 @@ import {
 import {getRequiredServerEnvVar} from './misc'
 import {getLoginInfoSession} from './login.server'
 import {ensurePrimary} from './fly.server'
+import type {Timings} from './timing.server'
 
 const sessionIdKey = '__session_id__'
 
@@ -68,11 +69,11 @@ async function getSession(request: Request) {
   }
   return {
     session,
-    getUser: async () => {
+    getUser: async ({timings}: {timings?: Timings} = {}) => {
       const token = getSessionId()
       if (!token) return null
 
-      return getUserFromSessionId(token).catch((error: unknown) => {
+      return getUserFromSessionId(token, {timings}).catch((error: unknown) => {
         unsetSessionId()
         console.error(`Failure getting user from session ID:`, error)
         return null
@@ -134,13 +135,13 @@ async function deleteOtherSessions(request: Request) {
   })
 }
 
-async function getUser(request: Request) {
+async function getUser(request: Request, {timings}: {timings?: Timings} = {}) {
   const {session} = await getSession(request)
 
   const token = session.get(sessionIdKey) as string | undefined
   if (!token) return null
 
-  return getUserFromSessionId(token).catch((error: unknown) => {
+  return getUserFromSessionId(token, {timings}).catch((error: unknown) => {
     console.error(`Failure getting user from session ID:`, error)
     return null
   })
@@ -174,8 +175,11 @@ async function requireAdminUser(request: Request): Promise<User> {
   return user
 }
 
-async function requireUser(request: Request): Promise<User> {
-  const user = await getUser(request)
+async function requireUser(
+  request: Request,
+  {timings}: {timings?: Timings} = {},
+): Promise<User> {
+  const user = await getUser(request, {timings})
   if (!user) {
     const session = await getSession(request)
     await session.signOut()

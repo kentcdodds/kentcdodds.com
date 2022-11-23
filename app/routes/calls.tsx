@@ -39,6 +39,7 @@ import {getEpisodeFromParams, getEpisodePath} from '~/utils/call-kent'
 import {PodcastSubs} from '~/components/podcast-subs'
 import {Spacer} from '~/components/spacer'
 import {getSocialMetas} from '~/utils/seo'
+import {getServerTimeHeader} from '~/utils/timing.server'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'calls',
@@ -51,9 +52,10 @@ export type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
+  const timings = {}
   const [blogRecommendations, episodes] = await Promise.all([
-    getBlogRecommendations(request),
-    getEpisodes({request}),
+    getBlogRecommendations({request, timings}),
+    getEpisodes({request, timings}),
   ])
 
   const data: LoaderData = {
@@ -64,6 +66,7 @@ export const loader: LoaderFunction = async ({request}) => {
     headers: {
       'Cache-Control': 'private, max-age=3600',
       Vary: 'Cookie',
+      'Server-Timing': getServerTimeHeader(timings),
     },
   })
 }

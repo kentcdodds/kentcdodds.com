@@ -61,6 +61,7 @@ import {getSocialMetas} from './utils/seo'
 import {getGenericSocialImage, illustrationImages, images} from './images'
 import {Grimmacing, MissingSomething} from './components/kifs'
 import {ArrowLink} from './components/arrow-button'
+import {getServerTimeHeader} from './utils/timing.server'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',
@@ -151,6 +152,7 @@ export type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
+  const timings = {}
   // because this is called for every route, we'll do an early return for anything
   // that has a other route setup. The response will be handled there.
   if (pathedRoutes[new URL(request.url).pathname]) {
@@ -162,7 +164,7 @@ export const loader: LoaderFunction = async ({request}) => {
   const clientSession = await getClientSession(request)
   const loginInfoSession = await getLoginInfoSession(request)
 
-  const user = await session.getUser()
+  const user = await session.getUser({timings})
 
   const randomFooterImageKeys = Object.keys(illustrationImages)
   const randomFooterImageKey = randomFooterImageKeys[
@@ -171,7 +173,7 @@ export const loader: LoaderFunction = async ({request}) => {
 
   const data: LoaderData = {
     user,
-    userInfo: user ? await getUserInfo(user, {request}) : null,
+    userInfo: user ? await getUserInfo(user, {request, timings}) : null,
     ENV: getEnv(),
     randomFooterImageKey,
     requestInfo: {
@@ -193,6 +195,7 @@ export const loader: LoaderFunction = async ({request}) => {
   await session.getHeaders(headers)
   await clientSession.getHeaders(headers)
   await loginInfoSession.getHeaders(headers)
+  headers.append('Server-Timing', getServerTimeHeader(timings))
 
   return json(data, {headers})
 }

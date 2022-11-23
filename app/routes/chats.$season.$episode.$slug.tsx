@@ -39,6 +39,7 @@ import {FourOhFour} from '~/components/errors'
 import {IconLink} from '~/components/icon-link'
 import {useRootData} from '~/utils/use-root-data'
 import {Spacer} from '~/components/spacer'
+import {getServerTimeHeader} from '~/utils/timing.server'
 
 export const handle: KCDHandle = {
   restoreScroll: true,
@@ -114,10 +115,11 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request, params}) => {
+  const timings = {}
   const seasonNumber = Number(params.season)
   const episodeNumber = Number(params.episode)
 
-  const seasons = await getSeasons({request})
+  const seasons = await getSeasons({request, timings})
   const season = seasons.find(s => s.seasonNumber === seasonNumber)
   if (!season) {
     throw new Response(`Season ${seasonNumber} not found`, {status: 404})
@@ -146,6 +148,7 @@ export const loader: LoaderFunction = async ({request, params}) => {
     headers: {
       'Cache-Control': 'public, max-age=600',
       Vary: 'Cookie',
+      'Server-Timing': getServerTimeHeader(timings),
     },
   })
 }

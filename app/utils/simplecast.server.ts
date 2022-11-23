@@ -13,8 +13,8 @@ import type * as M from 'mdast'
 import type * as H from 'hast'
 import {getRequiredServerEnvVar, typedBoolean} from './misc'
 import {markdownToHtml, stripHtml} from './markdown.server'
-import {cache, shouldForceFresh} from './cache.server'
-import {cachified, verboseReporter} from 'cachified'
+import {cache, cachified} from './cache.server'
+import type {Timings} from './timing.server'
 
 const SIMPLECAST_KEY = getRequiredServerEnvVar('SIMPLECAST_KEY')
 const CHATS_WITH_KENT_PODCAST_ID = getRequiredServerEnvVar(
@@ -38,22 +38,21 @@ function isTooManyRequests(json: unknown): json is SimplecastTooManyRequests {
 const getCachedSeasons = async ({
   request,
   forceFresh,
+  timings,
 }: {
   request: Request
   forceFresh?: boolean
+  timings?: Timings
 }) =>
   cachified({
     cache,
-    reporter: verboseReporter(),
+    request,
+    timings,
     key: seasonsCacheKey,
     ttl: 1000 * 60 * 60 * 24 * 7,
     staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
-    getFreshValue: () => getSeasons({request, forceFresh}),
-    forceFresh: await shouldForceFresh({
-      forceFresh,
-      request,
-      key: seasonsCacheKey,
-    }),
+    getFreshValue: () => getSeasons({request, forceFresh, timings}),
+    forceFresh,
     checkValue: (value: unknown) =>
       Array.isArray(value) &&
       value.length > 0 &&
@@ -67,20 +66,23 @@ async function getCachedEpisode(
   {
     request,
     forceFresh,
+    timings,
   }: {
     request: Request
     forceFresh?: boolean
+    timings?: Timings
   },
 ) {
   const key = `simplecast:episode:${episodeId}`
   return cachified({
     cache,
-    reporter: verboseReporter(),
+    request,
+    timings,
     key,
     ttl: 1000 * 60 * 60 * 24 * 7,
     staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
     getFreshValue: () => getEpisode(episodeId),
-    forceFresh: await shouldForceFresh({forceFresh, request, key}),
+    forceFresh,
     checkValue: (value: unknown) =>
       typeof value === 'object' && value !== null && 'title' in value,
   })
@@ -89,9 +91,11 @@ async function getCachedEpisode(
 async function getSeasons({
   request,
   forceFresh,
+  timings,
 }: {
   request: Request
   forceFresh?: boolean
+  timings?: Timings
 }) {
   const res = await fetch(
     `https://api.simplecast.com/podcasts/${CHATS_WITH_KENT_PODCAST_ID}/seasons`,
@@ -114,7 +118,11 @@ async function getSeasons({
         )
         return
       }
-      const episodes = await getEpisodes(seasonId, {request, forceFresh})
+      const episodes = await getEpisodes(seasonId, {
+        request,
+        forceFresh,
+        timings,
+      })
       if (!episodes.length) return null
 
       return {seasonNumber: number, episodes}
@@ -129,9 +137,11 @@ async function getEpisodes(
   {
     request,
     forceFresh,
+    timings,
   }: {
     request: Request
     forceFresh?: boolean
+    timings?: Timings
   },
 ) {
   const url = new URL(`https://api.simplecast.com/seasons/${seasonId}/episodes`)
@@ -148,7 +158,7 @@ async function getEpisodes(
   const episodes = await Promise.all(
     collection
       .filter(({status, is_hidden}) => status === 'published' && !is_hidden)
-      .map(({id}) => getCachedEpisode(id, {request, forceFresh})),
+      .map(({id}) => getCachedEpisode(id, {request, forceFresh, timings})),
   )
   return episodes.filter(typedBoolean)
 }
@@ -469,11 +479,13 @@ async function parseSummaryMarkdown(
 async function getSeasonListItems({
   request,
   forceFresh,
+  timings,
 }: {
   request: Request
   forceFresh?: boolean
+  timings?: Timings
 }) {
-  const seasons = await getCachedSeasons({request, forceFresh})
+  const seasons = await getCachedSeasons({request, forceFresh, timings})
   const listItemSeasons: Array<CWKSeason> = []
   for (const season of seasons) {
     listItemSeasons.push({

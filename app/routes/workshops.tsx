@@ -8,6 +8,7 @@ import type {WorkshopEvent} from '~/utils/workshop-tickets.server'
 import {getScheduledEvents} from '~/utils/workshop-tickets.server'
 import {reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {useMatchLoaderData} from '~/utils/providers'
+import {getServerTimeHeader} from '~/utils/timing.server'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'workshops',
@@ -20,9 +21,10 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
+  const timings = {}
   const [workshops, workshopEvents] = await Promise.all([
-    getWorkshops({request}),
-    getScheduledEvents({request}),
+    getWorkshops({request, timings}),
+    getScheduledEvents({request, timings}),
   ])
 
   const tags = new Set<string>()
@@ -40,6 +42,7 @@ export const loader: LoaderFunction = async ({request}) => {
   const headers = {
     'Cache-Control': 'public, max-age=3600',
     Vary: 'Cookie',
+    'Server-Timing': getServerTimeHeader(timings),
   }
   return json(data, {headers})
 }

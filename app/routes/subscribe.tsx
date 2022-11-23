@@ -16,6 +16,7 @@ import {useRootData} from '~/utils/use-root-data'
 import {getSocialMetas} from '~/utils/seo'
 import {getDisplayUrl, getUrl} from '~/utils/misc'
 import type {LoaderData as RootLoaderData} from '../root'
+import {getServerTimeHeader} from '~/utils/timing.server'
 
 export const meta: MetaFunction = ({parentsData}) => {
   const {requestInfo} = parentsData.root as RootLoaderData
@@ -40,13 +41,15 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  const blogRecommendations = await getBlogRecommendations(request)
+  const timings = {}
+  const blogRecommendations = await getBlogRecommendations({request, timings})
   const data: LoaderData = {blogRecommendations}
 
   return json(data, {
     headers: {
       'Cache-Control': 'private, max-age=3600',
       Vary: 'Cookie',
+      'Server-Timing': getServerTimeHeader(timings),
     },
   })
 }

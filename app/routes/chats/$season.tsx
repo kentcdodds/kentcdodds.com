@@ -13,6 +13,7 @@ import {TriangleIcon} from '~/components/icons/triangle-icon'
 import {MissingSomething} from '~/components/kifs'
 import {H3, Paragraph} from '~/components/typography'
 import {ServerError} from '~/components/errors'
+import {getServerTimeHeader} from '~/utils/timing.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
@@ -34,7 +35,8 @@ export const loader: LoaderFunction = async ({params, request}) => {
   if (!params.season) {
     throw new Error('params.season is not defined')
   }
-  const seasons = await getSeasonListItems({request})
+  const timings = {}
+  const seasons = await getSeasonListItems({request, timings})
   const seasonNumber = Number(params.season)
   const season = seasons.find(s => s.seasonNumber === seasonNumber)
   if (!season) {
@@ -45,6 +47,7 @@ export const loader: LoaderFunction = async ({params, request}) => {
   return json(data, {
     headers: {
       'Cache-Control': 'public, max-age=600',
+      'Server-Timing': getServerTimeHeader(timings),
     },
   })
 }

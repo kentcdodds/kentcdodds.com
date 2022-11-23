@@ -37,6 +37,7 @@ import type {LoaderData as RootLoaderData} from '../../root'
 import {getSocialMetas} from '~/utils/seo'
 import {getSocialImageWithPreTitle} from '~/images'
 import type {WorkshopEvent} from '~/utils/workshop-tickets.server'
+import {getServerTimeHeader} from '~/utils/timing.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
@@ -59,15 +60,12 @@ export const loader: LoaderFunction = async ({params, request}) => {
   if (!params.slug) {
     throw new Error('params.slug is not defined')
   }
+  const timings = {}
   const [workshops, blogRecommendations] = await Promise.all([
-    getWorkshops({request}),
-    getBlogRecommendations(request),
+    getWorkshops({request, timings}),
+    getBlogRecommendations({request, timings}),
   ])
   const workshop = workshops.find(w => w.slug === params.slug)
-  const headers = {
-    'Cache-Control': 'private, max-age=3600',
-    Vary: 'Cookie',
-  }
 
   if (!workshop) {
     throw json({blogRecommendations}, {status: 404})
@@ -75,6 +73,7 @@ export const loader: LoaderFunction = async ({params, request}) => {
 
   const testimonials = await getTestimonials({
     request,
+    timings,
     subjects: [`workshop: ${params.slug}` as TestimonialSubject],
     categories: [
       'workshop',
@@ -84,6 +83,11 @@ export const loader: LoaderFunction = async ({params, request}) => {
   const data: LoaderData = {
     testimonials,
     blogRecommendations,
+  }
+  const headers = {
+    'Cache-Control': 'private, max-age=3600',
+    Vary: 'Cookie',
+    'Server-Timings': getServerTimeHeader(timings),
   }
 
   return json(data, {status: 200, headers})

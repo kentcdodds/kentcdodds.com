@@ -3,14 +3,13 @@ import {buildImageUrl} from 'cloudinary-build-url'
 import type {LoaderData as RootLoaderData} from '../root'
 import type {GitHubFile, MdxListItem, MdxPage} from '~/types'
 import * as mdxBundler from 'mdx-bundler/client'
-import {cachified, verboseReporter} from 'cachified'
 import {compileMdx} from '~/utils/compile-mdx.server'
 import {
   downloadDirList,
   downloadMdxFileOrDirectory,
 } from '~/utils/github.server'
 import {AnchorOrLink, getDisplayUrl, getUrl, typedBoolean} from '~/utils/misc'
-import {cache, shouldForceFresh} from './cache.server'
+import {cache, cachified} from './cache.server'
 import {getSocialMetas} from './seo'
 import {
   getImageBuilder,
@@ -20,11 +19,13 @@ import {
 import {Themed} from './theme-provider'
 import {markdownToHtmlUnwrapped, stripHtml} from './markdown.server'
 import {ConvertKitForm} from '~/convertkit/form'
+import type {Timings} from './timing.server'
 
 type CachifiedOptions = {
   forceFresh?: boolean | string
   request?: Request
   ttl?: number
+  timings?: Timings
 }
 
 const defaultTTL = 1000 * 60 * 60 * 24
@@ -44,15 +45,16 @@ async function getMdxPage(
   },
   options: CachifiedOptions,
 ): Promise<MdxPage | null> {
-  const {forceFresh, ttl = defaultTTL, request} = options
+  const {forceFresh, ttl = defaultTTL, request, timings} = options
   const key = `mdx-page:${contentDir}:${slug}:compiled`
   const page = await cachified({
     key,
     cache,
-    reporter: verboseReporter(),
+    request,
+    timings,
     ttl,
     staleWhileRevalidate: defaultStaleWhileRevalidate,
-    forceFresh: await shouldForceFresh({forceFresh, request, key}),
+    forceFresh,
     checkValue: checkCompiledValue,
     getFreshValue: async () => {
       const pageFiles = await downloadMdxFilesCached(contentDir, slug, options)
@@ -105,14 +107,15 @@ async function getMdxPagesInDirectory(
 const getDirListKey = (contentDir: string) => `${contentDir}:dir-list`
 
 async function getMdxDirList(contentDir: string, options?: CachifiedOptions) {
-  const {forceFresh, ttl = defaultTTL, request} = options ?? {}
+  const {forceFresh, ttl = defaultTTL, request, timings} = options ?? {}
   const key = getDirListKey(contentDir)
   return cachified({
     cache,
-    reporter: verboseReporter(),
+    request,
+    timings,
     ttl,
     staleWhileRevalidate: defaultStaleWhileRevalidate,
-    forceFresh: await shouldForceFresh({forceFresh, request, key}),
+    forceFresh,
     key,
     checkValue: (value: unknown) => Array.isArray(value),
     getFreshValue: async () => {
@@ -135,14 +138,15 @@ export async function downloadMdxFilesCached(
   slug: string,
   options: CachifiedOptions,
 ) {
-  const {forceFresh, ttl = defaultTTL, request} = options
+  const {forceFresh, ttl = defaultTTL, request, timings} = options
   const key = `${contentDir}:${slug}:downloaded`
   const downloaded = await cachified({
     cache,
-    reporter: verboseReporter(),
+    request,
+    timings,
     ttl,
     staleWhileRevalidate: defaultStaleWhileRevalidate,
-    forceFresh: await shouldForceFresh({forceFresh, request, key}),
+    forceFresh,
     key,
     checkValue: (value: unknown) => {
       if (typeof value !== 'object') {
@@ -190,13 +194,7 @@ async function compileMdxCached({
     cache,
     ttl: defaultTTL,
     staleWhileRevalidate: defaultStaleWhileRevalidate,
-    reporter: verboseReporter(),
     ...options,
-    forceFresh: await shouldForceFresh({
-      forceFresh: options.forceFresh,
-      request: options.request,
-      key,
-    }),
     key,
     checkValue: checkCompiledValue,
     getFreshValue: async () => {
@@ -291,14 +289,15 @@ async function getDataUrlForImage(imageUrl: string) {
 }
 
 async function getBlogMdxListItems(options: CachifiedOptions) {
-  const {request, forceFresh, ttl = defaultTTL} = options
+  const {request, forceFresh, ttl = defaultTTL, timings} = options
   const key = 'blog:mdx-list-items'
   return cachified({
     cache,
-    reporter: verboseReporter(),
+    request,
+    timings,
     ttl,
     staleWhileRevalidate: defaultStaleWhileRevalidate,
-    forceFresh: await shouldForceFresh({forceFresh, request, key}),
+    forceFresh,
     key,
     getFreshValue: async () => {
       let pages = await getMdxPagesInDirectory('blog', options).then(allPosts =>

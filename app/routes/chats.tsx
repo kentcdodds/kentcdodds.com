@@ -44,6 +44,7 @@ import {HeroSection} from '~/components/sections/hero-section'
 import {Spacer} from '~/components/spacer'
 import {PodcastSubs} from '~/components/podcast-subs'
 import {getSocialMetas} from '~/utils/seo'
+import {getServerTimeHeader} from '~/utils/timing.server'
 
 export const handle: KCDHandle = {
   restoreScroll: false,
@@ -55,7 +56,8 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  const blogRecommendations = await getBlogRecommendations(request)
+  const timings = {}
+  const blogRecommendations = await getBlogRecommendations({request, timings})
   const data: LoaderData = {
     // we show the seasons in reverse order
     seasons: (await getSeasonListItems({request})).reverse(),
@@ -66,6 +68,7 @@ export const loader: LoaderFunction = async ({request}) => {
     headers: {
       'Cache-Control': 'private, max-age=3600',
       Vary: 'Cookie',
+      'Server-Timing': getServerTimeHeader(timings),
     },
   })
 }

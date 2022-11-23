@@ -1,5 +1,4 @@
 import * as uuid from 'uuid'
-import {cachified, verboseReporter} from 'cachified'
 import type {
   TransistorErrorResponse,
   TransistorCreateEpisodeData,
@@ -11,10 +10,11 @@ import type {
   TransistorUpdateEpisodeData,
 } from '~/types'
 import {getDomainUrl, getRequiredServerEnvVar, toBase64} from './misc'
-import {cache, shouldForceFresh} from './cache.server'
+import {cache, cachified} from './cache.server'
 import {getEpisodePath} from './call-kent'
 import {getDirectAvatarForUser} from './user-info.server'
 import {stripHtml} from './markdown.server'
+import type {Timings} from './timing.server'
 
 const transistorApiSecret = getRequiredServerEnvVar('TRANSISTOR_API_SECRET')
 const podcastId = getRequiredServerEnvVar('CALL_KENT_PODCAST_ID', '67890')
@@ -247,22 +247,21 @@ const episodesCacheKey = `transistor:episodes:${podcastId}`
 async function getCachedEpisodes({
   request,
   forceFresh,
+  timings,
 }: {
   request?: Request
   forceFresh?: boolean
+  timings?: Timings
 }) {
   return cachified({
     cache,
-    reporter: verboseReporter(),
+    request,
+    timings,
     key: episodesCacheKey,
     getFreshValue: getEpisodes,
     ttl: 1000 * 60 * 60 * 24,
     staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
-    forceFresh: await shouldForceFresh({
-      forceFresh,
-      request,
-      key: episodesCacheKey,
-    }),
+    forceFresh,
     checkValue: (value: unknown) =>
       Array.isArray(value) &&
       value.every(

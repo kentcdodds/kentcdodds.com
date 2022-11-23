@@ -2,6 +2,8 @@ import {PrismaClient} from '@prisma/client'
 import type {Session} from '~/types'
 import {encrypt, decrypt} from './encryption.server'
 import {ensurePrimary} from './fly.server'
+import type {Timings} from './timing.server'
+import {time} from './timing.server'
 
 declare global {
   // This prevents us from making multiple connections to the db when the
@@ -151,11 +153,17 @@ async function createSession(
   })
 }
 
-async function getUserFromSessionId(sessionId: string) {
-  const session = await prisma.session.findUnique({
-    where: {id: sessionId},
-    include: {user: true},
-  })
+async function getUserFromSessionId(
+  sessionId: string,
+  {timings}: {timings?: Timings} = {},
+) {
+  const session = await time(
+    prisma.session.findUnique({
+      where: {id: sessionId},
+      include: {user: true},
+    }),
+    {timings, type: 'getUserFromSessionId'},
+  )
   if (!session) {
     throw new Error('No user found')
   }

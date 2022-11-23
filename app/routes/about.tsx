@@ -39,6 +39,7 @@ import {BookIcon} from '~/components/icons/book-icon'
 import {FastForwardIcon} from '~/components/icons/fast-forward-icon'
 import {getSocialMetas} from '~/utils/seo'
 import type {LoaderData as RootLoaderData} from '../root'
+import {getServerTimeHeader} from '~/utils/timing.server'
 
 type LoaderData = {
   blogRecommendations: Array<MdxListItem>
@@ -46,10 +47,11 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
-  const {talks} = await getTalksAndTags({request})
+  const timings = {}
+  const {talks} = await getTalksAndTags({request, timings})
 
   const data: LoaderData = {
-    blogRecommendations: await getBlogRecommendations(request),
+    blogRecommendations: await getBlogRecommendations({request, timings}),
     // they're ordered by date, so we'll grab two random of the first 10.
     talkRecommendations: shuffle(talks.slice(0, 14)).slice(0, 4),
   }
@@ -57,6 +59,7 @@ export const loader: LoaderFunction = async ({request}) => {
     headers: {
       'Cache-Control': 'private, max-age=3600',
       Vary: 'Cookie',
+      'Server-Timing': getServerTimeHeader(timings),
     },
   })
 }

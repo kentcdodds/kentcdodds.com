@@ -1,9 +1,9 @@
 import * as YAML from 'yaml'
 import {pick} from 'lodash'
-import {cachified, verboseReporter} from 'cachified'
 import {downloadFile} from './github.server'
 import {getErrorMessage, typedBoolean} from './misc'
-import {cache, shouldForceFresh} from './cache.server'
+import {cache, cachified} from './cache.server'
+import type {Timings} from './timing.server'
 
 const allCategories = [
   'teaching',
@@ -146,16 +146,19 @@ function mapTestimonial(rawTestimonial: UnknownObj) {
 async function getAllTestimonials({
   request,
   forceFresh,
+  timings,
 }: {
   request?: Request
   forceFresh?: boolean
+  timings?: Timings
 }) {
   const key = 'content:data:testimonials.yml'
   const allTestimonials = await cachified({
     cache,
-    reporter: verboseReporter(),
+    request,
+    timings,
     key,
-    forceFresh: await shouldForceFresh({forceFresh, request, key}),
+    forceFresh,
     ttl: 1000 * 60 * 60 * 24,
     staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
     getFreshValue: async (): Promise<Array<TestimonialWithMetadata>> => {
@@ -197,14 +200,20 @@ async function getTestimonials({
   subjects = [],
   categories = [],
   limit,
+  timings,
 }: {
   request?: Request
   forceFresh?: boolean
   subjects?: Array<TestimonialSubject>
   categories?: Array<TestimonialCategory>
   limit?: number
+  timings?: Timings
 }) {
-  const allTestimonials = await getAllTestimonials({request, forceFresh})
+  const allTestimonials = await getAllTestimonials({
+    request,
+    forceFresh,
+    timings,
+  })
 
   if (!(subjects.length + categories.length)) {
     // they must just want all the testimonials

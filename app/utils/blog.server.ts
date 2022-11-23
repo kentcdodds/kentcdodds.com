@@ -1,6 +1,5 @@
 import type {Team, MdxListItem, Await, User} from '~/types'
 import {subYears, subMonths} from 'date-fns'
-import {cachified, verboseReporter} from 'cachified'
 import {shuffle} from 'lodash'
 import {getBlogMdxListItems} from './mdx'
 import {prisma} from './prisma.server'
@@ -14,25 +13,28 @@ import {
 import {getSession, getUser} from './session.server'
 import {filterPosts} from './blog'
 import {getClientSession} from './client.server'
-import {cache, lruCache, shouldForceFresh} from './cache.server'
+import {cache, cachified, lruCache} from './cache.server'
 import {sendMessageFromDiscordBot} from './discord.server'
 import {teamEmoji} from './team-provider'
+import type {Timings} from './timing.server'
+import {time} from './timing.server'
 
-async function getBlogRecommendations(
-  request: Request,
-  {
-    limit = 3,
-    keywords = [],
-    exclude: externalExclude = [],
-  }: {
-    limit?: number | null
-    keywords?: Array<string>
-    exclude?: Array<string>
-  } = {},
-) {
+async function getBlogRecommendations({
+  request,
+  limit = 3,
+  keywords = [],
+  exclude: externalExclude = [],
+  timings,
+}: {
+  request: Request
+  limit?: number | null
+  keywords?: Array<string>
+  exclude?: Array<string>
+  timings?: Timings
+}) {
   // if we passed the request here, any "fresh" request on a post would
   // result in refreshing *all* blog posts which is probably not what we want.
-  const allPosts = await getBlogMdxListItems({forceFresh: false})
+  const allPosts = await getBlogMdxListItems({forceFresh: false, timings})
 
   // exclude what they want us to + any posts that are labeled as archived or draft.
   let exclude = Array.from(
@@ -56,10 +58,17 @@ async function getBlogRecommendations(
   const where = user
     ? {user: {id: user.id}, postSlug: {notIn: exclude.filter(Boolean)}}
     : {clientId, postSlug: {notIn: exclude.filter(Boolean)}}
-  const readPosts = await prisma.postRead.groupBy({
-    by: ['postSlug'],
-    where,
-  })
+  const readPosts = await time(
+    prisma.postRead.groupBy({
+      by: ['postSlug'],
+      where,
+    }),
+    {
+      timings,
+      type: 'getReadPosts',
+      desc: 'getting slugs of all posts read by user',
+    },
+  )
   exclude.push(...readPosts.map(p => p.postSlug))
 
   const recommendablePosts = allPosts.filter(
@@ -94,6 +103,8 @@ async function getBlogRecommendations(
     // get 4x the limit so we can have a little randomness
     limit: limitPerGroup * 4,
     exclude,
+    timings,
+    request,
   })
   const mostPopularRecommendations = shuffle(
     mostPopularRecommendationSlugs
@@ -122,12 +133,22 @@ async function getBlogRecommendations(
 async function getMostPopularPostSlugs({
   limit,
   exclude,
+  timings,
+  request,
 }: {
   limit: number
   exclude: Array<string>
+  timings?: Timings
+  request: Request
 }) {
   // don't bother caching if there's an exclude... Too many permutations
-  if (exclude.length) return getFreshValue()
+  if (exclude.length) {
+    return time(getFreshValue(), {
+      timings,
+      type: 'uncached-popular-slugs',
+      desc: `skipping cache due to exclude with ${exclude.length}`,
+    })
+  }
 
   async function getFreshValue() {
     const result = await prisma.postRead.groupBy({
@@ -152,22 +173,30 @@ async function getMostPopularPostSlugs({
     ttl: 1000 * 60,
     staleWhileRevalidate: 1000 * 60 * 60 * 24,
     cache: lruCache,
-    reporter: verboseReporter(),
+    request,
     getFreshValue,
     checkValue: (value: unknown) =>
       Array.isArray(value) && value.every(v => typeof v === 'string'),
   })
 }
 
-async function getTotalPostReads(request: Request, slug?: string) {
+async function getTotalPostReads({
+  request,
+  slug,
+  timings,
+}: {
+  request: Request
+  slug?: string
+  timings?: Timings
+}) {
   const key = `total-post-reads:${slug ?? '__all-posts__'}`
   return cachified({
     key,
     cache: lruCache,
-    reporter: verboseReporter(),
     ttl: 1000 * 60,
     staleWhileRevalidate: 1000 * 60 * 60 * 24,
-    forceFresh: await shouldForceFresh({request, key}),
+    request,
+    timings,
     checkValue: (value: unknown) => typeof value === 'number',
     getFreshValue: () =>
       prisma.postRead.count(slug ? {where: {postSlug: slug}} : undefined),
@@ -180,15 +209,21 @@ function isRawQueryResult(
   return Array.isArray(result) && result.every(r => typeof r === 'object')
 }
 
-async function getReaderCount(request: Request) {
+async function getReaderCount({
+  request,
+  timings,
+}: {
+  request: Request
+  timings?: Timings
+}) {
   const key = 'total-reader-count'
   return cachified({
     key,
     cache: lruCache,
-    reporter: verboseReporter(),
     ttl: 1000 * 60 * 5,
     staleWhileRevalidate: 1000 * 60 * 60 * 24,
-    forceFresh: await shouldForceFresh({request, key}),
+    request,
+    timings,
     checkValue: (value: unknown) => typeof value === 'number',
     getFreshValue: async () => {
       // couldn't figure out how to do this in one query with out $queryRaw 🤷‍♂️
@@ -213,19 +248,22 @@ async function getBlogReadRankings({
   slug,
   request,
   forceFresh,
+  timings,
 }: {
   slug?: string
   request?: Request
   forceFresh?: boolean
+  timings?: Timings
 }) {
   const key = slug ? `blog:${slug}:rankings` : `blog:rankings`
   const rankingObjs = await cachified({
     key,
     cache,
-    reporter: verboseReporter(),
+    request,
+    timings,
     ttl: slug ? 1000 * 60 * 60 * 24 * 7 : 1000 * 60 * 60,
     staleWhileRevalidate: 1000 * 60 * 60 * 24,
-    forceFresh: await shouldForceFresh({forceFresh, request, key}),
+    forceFresh,
     checkValue: (value: unknown) =>
       Array.isArray(value) &&
       value.every(v => typeof v === 'object' && 'team' in v),
@@ -240,8 +278,8 @@ async function getBlogReadRankings({
               user: {team},
             },
           })
-          const activeMembers = await getActiveMembers(team)
-          const recentReads = await getRecentReads(slug, team)
+          const activeMembers = await getActiveMembers({team, timings})
+          const recentReads = await getRecentReads({slug, team, timings})
           let ranking = 0
           if (activeMembers) {
             ranking = Number((recentReads / activeMembers).toFixed(4))
@@ -284,20 +322,23 @@ async function getBlogReadRankings({
 async function getAllBlogPostReadRankings({
   request,
   forceFresh,
+  timings,
 }: {
   request?: Request
   forceFresh?: boolean
+  timings?: Timings
 }) {
   const key = 'all-blog-post-read-rankings'
   return cachified({
     key,
     cache,
-    reporter: verboseReporter(),
-    forceFresh: await shouldForceFresh({forceFresh, request, key}),
+    request,
+    timings,
+    forceFresh,
     ttl: 1000 * 60 * 5, // the underlying caching should be able to handle this every 5 minues
     staleWhileRevalidate: 1000 * 60 * 60 * 24,
     getFreshValue: async () => {
-      const posts = await getBlogMdxListItems({request})
+      const posts = await getBlogMdxListItems({request, timings})
       const {default: pLimit} = await import('p-limit')
 
       // each of the getBlogReadRankings calls results in 9 database queries
@@ -312,6 +353,7 @@ async function getAllBlogPostReadRankings({
             allPostReadRankings[post.slug] = await getBlogReadRankings({
               request,
               slug: post.slug,
+              timings,
             })
           }),
         ),
@@ -321,43 +363,80 @@ async function getAllBlogPostReadRankings({
   })
 }
 
-async function getRecentReads(slug: string | undefined, team: Team) {
+async function getRecentReads({
+  slug,
+  team,
+  timings,
+}: {
+  slug: string | undefined
+  team: Team
+  timings?: Timings
+}) {
   const withinTheLastSixMonths = subMonths(new Date(), 6)
 
-  const count = await prisma.postRead.count({
-    where: {
-      postSlug: slug,
-      createdAt: {gt: withinTheLastSixMonths},
-      user: {team},
+  const count = await time(
+    prisma.postRead.count({
+      where: {
+        postSlug: slug,
+        createdAt: {gt: withinTheLastSixMonths},
+        user: {team},
+      },
+    }),
+    {
+      timings,
+      type: 'getRecentReads',
+      desc: `Getting reads of ${slug} by ${team} within the last 6 months`,
     },
-  })
+  )
   return count
 }
 
-async function getActiveMembers(team: Team) {
+async function getActiveMembers({
+  team,
+  timings,
+}: {
+  team: Team
+  timings?: Timings
+}) {
   const withinTheLastYear = subYears(new Date(), 1)
 
-  const count = await prisma.user.count({
-    where: {
-      team,
-      postReads: {
-        some: {
-          createdAt: {gt: withinTheLastYear},
+  const count = await time(
+    prisma.user.count({
+      where: {
+        team,
+        postReads: {
+          some: {
+            createdAt: {gt: withinTheLastYear},
+          },
         },
       },
+    }),
+    {
+      timings,
+      type: 'getActiveMembers',
+      desc: `Getting active members of ${team}`,
     },
-  })
+  )
 
   return count
 }
 
-async function getSlugReadsByUser(request: Request) {
+async function getSlugReadsByUser({
+  request,
+  timings,
+}: {
+  request: Request
+  timings?: Timings
+}) {
   const user = await getUser(request)
   if (!user) return []
-  const reads = await prisma.postRead.findMany({
-    where: {userId: user.id},
-    select: {postSlug: true},
-  })
+  const reads = await time(
+    prisma.postRead.findMany({
+      where: {userId: user.id},
+      select: {postSlug: true},
+    }),
+    {timings, type: 'getSlugReadsByUser', desc: `Getting reads by ${user.id}`},
+  )
   return Array.from(new Set(reads.map(read => read.postSlug)))
 }
 

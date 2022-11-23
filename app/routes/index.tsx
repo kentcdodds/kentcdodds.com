@@ -30,6 +30,7 @@ import {
 } from '~/utils/misc'
 import {getRankingLeader} from '~/utils/blog'
 import {getUser} from '~/utils/session.server'
+import {getServerTimeHeader} from '~/utils/timing.server'
 
 type LoaderData = {
   blogPostCount: string
@@ -41,6 +42,7 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
+  const timings = {}
   const [
     user,
     posts,
@@ -50,11 +52,11 @@ export const loader: LoaderFunction = async ({request}) => {
     blogRecommendations,
   ] = await Promise.all([
     getUser(request),
-    getBlogMdxListItems({request}),
-    getTotalPostReads(request),
-    getBlogReadRankings({request}),
-    getReaderCount(request),
-    getBlogRecommendations(request),
+    getBlogMdxListItems({request, timings}),
+    getTotalPostReads({request, timings}),
+    getBlogReadRankings({request, timings}),
+    getReaderCount({request, timings}),
+    getBlogRecommendations({request, timings}),
   ])
 
   const data: LoaderData = {
@@ -77,6 +79,7 @@ export const loader: LoaderFunction = async ({request}) => {
     headers: {
       'Cache-Control': 'private, max-age=3600',
       Vary: 'Cookie',
+      'Server-Timing': getServerTimeHeader(timings),
     },
   })
 }

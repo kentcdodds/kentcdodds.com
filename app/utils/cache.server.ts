@@ -1,9 +1,12 @@
 import LRU from 'lru-cache'
 import type {Cache as CachifiedCache, CacheEntry} from 'cachified'
-import {lruCacheAdapter} from 'cachified'
+import {verboseReporter, lruCacheAdapter} from 'cachified'
+import * as C from 'cachified'
 import Database from 'better-sqlite3'
 import {getUser} from './session.server'
 import {getRequiredServerEnvVar} from './misc'
+import type {Timings} from './timing.server'
+import {time} from './timing.server'
 
 const CACHE_DATABASE_PATH = getRequiredServerEnvVar('CACHE_DATABASE_PATH')
 
@@ -98,6 +101,46 @@ export async function shouldForceFresh({
   if (fresh === '') return true
 
   return fresh.split(',').includes(key)
+}
+
+export async function cachified<Value>({
+  request,
+  timings,
+  ...options
+}: Omit<C.CachifiedOptions<Value>, 'forceFresh'> & {
+  request?: Request
+  timings?: Timings
+  forceFresh?: boolean | string
+}): Promise<Value> {
+  let cachifiedResolved = false
+  const cachifiedPromise = C.cachified({
+    reporter: verboseReporter(),
+    ...options,
+    forceFresh: await shouldForceFresh({
+      forceFresh: options.forceFresh,
+      request,
+      key: options.key,
+    }),
+    getFreshValue: async () => {
+      // if we've already retrieved the cached value, then this may be called
+      // after the response has already been sent so there's no point in timing
+      // how long this is going to take
+      if (!cachifiedResolved && timings) {
+        return time(() => options.getFreshValue(), {
+          timings,
+          type: `getFreshValue:${options.key}`,
+          desc: `request forced to wait for a fresh ${options.key} value`,
+        })
+      }
+      return options.getFreshValue()
+    },
+  })
+  const result = await time(cachifiedPromise, {
+    timings,
+    type: `cache:${options.key}`,
+  })
+  cachifiedResolved = true
+  return result
 }
 
 /*

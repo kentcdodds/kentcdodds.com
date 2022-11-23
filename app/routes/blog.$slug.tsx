@@ -151,15 +151,18 @@ export async function loader({request, params}: DataFunctionArgs) {
   if (!params.slug) {
     throw new Error('params.slug is not defined')
   }
+  const timings = {}
 
   const page = await getMdxPage(
     {contentDir: 'blog', slug: params.slug},
-    {request},
+    {request, timings},
   )
 
   const [recommendations, readRankings, totalReads, workshops, workshopEvents] =
     await Promise.all([
-      getBlogRecommendations(request, {
+      getBlogRecommendations({
+        request,
+        timings,
         limit: 3,
         keywords: [
           ...(page?.frontmatter.categories ?? []),
@@ -167,10 +170,10 @@ export async function loader({request, params}: DataFunctionArgs) {
         ],
         exclude: [params.slug],
       }),
-      getBlogReadRankings({request, slug: params.slug}),
-      getTotalPostReads(request, params.slug),
-      getWorkshops({request}),
-      getScheduledEvents({request}),
+      getBlogReadRankings({request, slug: params.slug, timings}),
+      getTotalPostReads({request, slug: params.slug, timings}),
+      getWorkshops({request, timings}),
+      getScheduledEvents({request, timings}),
     ])
 
   const catchData: CatchData = {

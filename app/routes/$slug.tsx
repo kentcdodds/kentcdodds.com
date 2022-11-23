@@ -20,6 +20,7 @@ import {pathedRoutes} from '../other-routes.server'
 import {getImageBuilder, getImgProps} from '~/images'
 import {reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {BlurrableImage} from '~/components/blurrable-image'
+import {getServerTimeHeader} from '~/utils/timing.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
@@ -42,17 +43,19 @@ export async function loader({params, request}: DataFunctionArgs) {
     throw new Response('Use other route', {status: 404})
   }
 
+  const timings = {}
   const page = await getMdxPage(
     {contentDir: 'pages', slug: params.slug},
-    {request},
+    {request, timings},
   ).catch(() => null)
 
   const headers = {
     'Cache-Control': 'private, max-age=3600',
     Vary: 'Cookie',
+    'Server-Timing': getServerTimeHeader(timings),
   }
   if (!page) {
-    const blogRecommendations = await getBlogRecommendations(request)
+    const blogRecommendations = await getBlogRecommendations({request, timings})
     throw json({blogRecommendations}, {status: 404, headers})
   }
   return json({page}, {status: 200, headers})

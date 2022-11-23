@@ -54,6 +54,7 @@ import {useTeam} from '~/utils/team-provider'
 import type {LoaderData as RootLoaderData} from '../root'
 import {getSocialMetas} from '~/utils/seo'
 import {RssIcon} from '~/components/icons/rss-icon'
+import {getServerTimeHeader} from '~/utils/timing.server'
 
 const handleId = 'blog'
 export const handle: KCDHandle = {
@@ -62,6 +63,7 @@ export const handle: KCDHandle = {
 }
 
 export async function loader({request}: DataFunctionArgs) {
+  const timings = {}
   const [
     posts,
     [recommended],
@@ -74,12 +76,12 @@ export async function loader({request}: DataFunctionArgs) {
     getBlogMdxListItems({request}).then(allPosts =>
       allPosts.filter(p => !p.frontmatter.draft),
     ),
-    getBlogRecommendations(request, {limit: 1}),
-    getBlogReadRankings({request}),
-    getTotalPostReads(request),
-    getReaderCount(request),
-    getAllBlogPostReadRankings({request}),
-    getSlugReadsByUser(request),
+    getBlogRecommendations({request, limit: 1, timings}),
+    getBlogReadRankings({request, timings}),
+    getTotalPostReads({request, timings}),
+    getReaderCount({request, timings}),
+    getAllBlogPostReadRankings({request, timings}),
+    getSlugReadsByUser({request, timings}),
   ])
 
   const tags = new Set<string>()
@@ -105,6 +107,7 @@ export async function loader({request}: DataFunctionArgs) {
     headers: {
       'Cache-Control': 'private, max-age=3600',
       Vary: 'Cookie',
+      'Server-Timing': getServerTimeHeader(timings),
     },
   })
 }

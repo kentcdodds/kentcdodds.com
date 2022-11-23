@@ -45,6 +45,7 @@ import {Spacer} from '~/components/spacer'
 import {getSocialMetas} from '~/utils/seo'
 import type {LoaderData as RootLoaderData} from '../root'
 import {getGenericSocialImage, images} from '~/images'
+import {getServerTimeHeader} from '~/utils/timing.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -71,7 +72,8 @@ export const meta: MetaFunction = ({parentsData}) => {
 
 type LoaderData = {qrLoginCode: string; sessionCount: number}
 export const loader: LoaderFunction = async ({request}) => {
-  const user = await requireUser(request)
+  const timings = {}
+  const user = await requireUser(request, {timings})
 
   const sessionCount = await prisma.session.count({
     where: {userId: user.id},
@@ -88,6 +90,7 @@ export const loader: LoaderFunction = async ({request}) => {
     headers: {
       'Cache-Control': 'private, max-age=3600',
       Vary: 'Cookie',
+      'Server-Timing': getServerTimeHeader(timings),
     },
   })
 }

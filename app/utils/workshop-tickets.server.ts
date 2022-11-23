@@ -1,5 +1,5 @@
-import {cachified, verboseReporter} from 'cachified'
-import {cache, shouldForceFresh} from './cache.server'
+import {cache, cachified} from './cache.server'
+import type {Timings} from './timing.server'
 
 type TiToDiscount = {
   code: string
@@ -152,18 +152,21 @@ async function getScheduledEvents() {
 async function getCachedScheduledEvents({
   request,
   forceFresh,
+  timings,
 }: {
   request: Request
   forceFresh?: boolean
+  timings: Timings
 }) {
   const key = 'tito:scheduled-events'
   const scheduledEvents = await cachified({
     key,
     cache,
-    reporter: verboseReporter(),
+    request,
+    timings,
     getFreshValue: getScheduledEvents,
     checkValue: (value: unknown) => Array.isArray(value),
-    forceFresh: await shouldForceFresh({forceFresh, request, key}),
+    forceFresh,
     ttl: 1000 * 60 * 24,
     staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
   })
@@ -174,14 +177,18 @@ async function getCachedScheduledEvents({
 function getScheduledEventsIgnoreErrors({
   request,
   forceFresh,
+  timings,
 }: {
   request: Request
   forceFresh?: boolean
+  timings: Timings
 }) {
-  return getCachedScheduledEvents({request, forceFresh}).catch(error => {
-    console.error('There was a problem retrieving ti.to info', error)
-    return []
-  })
+  return getCachedScheduledEvents({request, forceFresh, timings}).catch(
+    error => {
+      console.error('There was a problem retrieving ti.to info', error)
+      return []
+    },
+  )
 }
 
 export {getScheduledEventsIgnoreErrors as getScheduledEvents}

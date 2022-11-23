@@ -3,8 +3,8 @@ import {getImageBuilder, images} from '../images'
 import * as ck from '../convertkit/convertkit.server'
 import * as discord from './discord.server'
 import {getAvatar, getDomainUrl, getOptionalTeam} from './misc'
-import {cache, shouldForceFresh} from './cache.server'
-import cachified, {verboseReporter} from 'cachified'
+import {cache, cachified} from './cache.server'
+import type {Timings} from './timing.server'
 
 type UserInfo = {
   avatar: {
@@ -55,19 +55,20 @@ const getDiscordCacheKey = (discordId: string) => `discord:${discordId}`
 
 async function getUserInfo(
   user: User,
-  {request, forceFresh}: {request: Request; forceFresh?: boolean},
+  {
+    request,
+    forceFresh,
+    timings,
+  }: {request: Request; forceFresh?: boolean; timings?: Timings},
 ) {
   const {discordId, convertKitId, email} = user
   const [discordUser, convertKitInfo] = await Promise.all([
     discordId
       ? cachified({
           cache,
-          reporter: verboseReporter(),
-          forceFresh: await shouldForceFresh({
-            forceFresh,
-            request,
-            key: getDiscordCacheKey(discordId),
-          }),
+          request,
+          timings,
+          forceFresh,
           ttl: 1000 * 60 * 60 * 24 * 30,
           staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
           key: getDiscordCacheKey(discordId),
@@ -82,12 +83,9 @@ async function getUserInfo(
     convertKitId
       ? cachified({
           cache,
-          reporter: verboseReporter(),
-          forceFresh: await shouldForceFresh({
-            forceFresh,
-            request,
-            key: getConvertKitCacheKey(convertKitId),
-          }),
+          request,
+          timings,
+          forceFresh,
           ttl: 1000 * 60 * 60 * 24 * 30,
           staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
           key: getConvertKitCacheKey(convertKitId),

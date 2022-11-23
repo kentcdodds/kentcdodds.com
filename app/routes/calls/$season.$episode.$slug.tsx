@@ -1,5 +1,9 @@
 import * as React from 'react'
-import type {LoaderFunction, MetaFunction} from '@remix-run/node'
+import type {
+  HeadersFunction,
+  LoaderFunction,
+  MetaFunction,
+} from '@remix-run/node'
 import {json, redirect} from '@remix-run/node'
 import {useParams} from '@remix-run/react'
 import type {LoaderData as RootLoaderData} from '../../root'
@@ -11,11 +15,12 @@ import {getEpisodeFromParams, getEpisodePath} from '~/utils/call-kent'
 import type {LoaderData as CallsLoaderData} from '../calls'
 import {useCallsData} from '../calls'
 import {getSocialMetas} from '~/utils/seo'
-import {getUrl} from '~/utils/misc'
+import {getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {H6, Paragraph} from '~/components/typography'
 import {IconLink} from '~/components/icon-link'
 import {useRootData} from '~/utils/use-root-data'
 import {TwitterIcon} from '~/components/icons/twitter-icon'
+import {getServerTimeHeader} from '~/utils/timing.server'
 
 export const handle: KCDHandle = {
   id: 'call-player',
@@ -77,13 +82,14 @@ export const meta: MetaFunction = ({parentsData, params}) => {
 }
 
 export const loader: LoaderFunction = async ({params, request}) => {
+  const timings = {}
   const {season, episode: episodeParam, slug} = params
   if (!season || !episodeParam || !slug) {
     throw new Error(
       'params.season or params.episode or params.slug is not defined',
     )
   }
-  const episodes = await getEpisodes({request})
+  const episodes = await getEpisodes({request, timings})
   const episode = getEpisodeFromParams(episodes, {
     season,
     episode: episodeParam,
@@ -105,8 +111,17 @@ export const loader: LoaderFunction = async ({params, request}) => {
   // wasteful to send it here. The parent sticks all the episodes in context
   // so we just use it in the component.
   // This loader is only here for the 404 case we need to handle.
-  return json({})
+  return json(
+    {},
+    {
+      headers: {
+        'Server-Timing': getServerTimeHeader(timings),
+      },
+    },
+  )
 }
+
+export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export default function Screen() {
   const params = useParams() as Params
