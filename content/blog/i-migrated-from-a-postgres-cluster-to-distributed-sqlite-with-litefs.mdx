@@ -593,7 +593,7 @@ out, with almost half a million records, using a naïve approach to migration
 takes quite some time. It would probably be much faster if I were smarter with
 databases, but here's what my script did:
 
-```ts filename prisma-postgres/migrate.ts
+```ts filename=prisma-postgres/migrate.ts
 import {PrismaClient as SqliteClient} from '@prisma/client'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import {PrismaClient as PostgresClient} from '@prisma/client-postgres'
