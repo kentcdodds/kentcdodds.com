@@ -55,8 +55,9 @@ RUN npm run build
 FROM base
 
 ENV FLY="true"
-ENV FLY_LITEFS_DIR="/litefs/data"
-ENV DATABASE_URL="file:$FLY_LITEFS_DIR/sqlite-2.db"
+ENV FLY_LITEFS_DIR="/litefs/data-2"
+ENV DATABASE_FILENAME="sqlite.db"
+ENV DATABASE_URL="file:$FLY_LITEFS_DIR/$DATABASE_FILENAME"
 ENV PORT="8080"
 ENV NODE_ENV="production"
 ENV CACHE_DATABASE_PATH=/data/cache.db

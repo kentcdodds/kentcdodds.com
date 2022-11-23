@@ -106,11 +106,15 @@ export async function handleDataRequest(
 function getTXNumber() {
   if (!process.env.FLY) return 0
 
-  const {FLY_LITEFS_DIR} = process.env
+  const {FLY_LITEFS_DIR, DATABASE_FILENAME} = process.env
   invariant(FLY_LITEFS_DIR, 'FLY_LITEFS_DIR is not defined')
+  invariant(DATABASE_FILENAME, 'DATABASE_FILENAME is not defined')
   let dbPos = '0'
   try {
-    dbPos = fs.readFileSync(path.join(FLY_LITEFS_DIR, `sqlite.db-pos`), 'utf-8')
+    dbPos = fs.readFileSync(
+      path.join(FLY_LITEFS_DIR, `${DATABASE_FILENAME}-pos`),
+      'utf-8',
+    )
   } catch {
     // ignore
   }

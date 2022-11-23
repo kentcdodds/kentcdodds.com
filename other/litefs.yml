@@ -4,6 +4,9 @@ mount-dir: '${FLY_LITEFS_DIR}'
 # The path to where the underlying volume mount is.
 data-dir: '/data'
 
+# TODO: remove this:
+exit-on-error: false
+
 # TODO: make "den" region's instance the primary
 # candidate: "${IS_PRIMARY_REGION}"
 

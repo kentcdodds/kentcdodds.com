@@ -107,11 +107,12 @@ export const txMiddleware: RequestHandler = async (req, res, next) => {
 }
 
 const txEmitter = new EventEmitter()
-const {FLY_LITEFS_DIR} = process.env
+const {FLY_LITEFS_DIR, DATABASE_FILENAME} = process.env
 if (process.env.FLY) {
   invariant(FLY_LITEFS_DIR, 'FLY_LITEFS_DIR is not defined')
+  invariant(DATABASE_FILENAME, 'DATABASE_FILENAME is not defined')
   chokidar
-    .watch(path.join(FLY_LITEFS_DIR, `sqlite.db-pos`), {
+    .watch(path.join(FLY_LITEFS_DIR, `${DATABASE_FILENAME}-pos`), {
       // disable this if/when fly supports watching this "virtual" file
       usePolling: true,
     })
@@ -121,7 +122,7 @@ if (process.env.FLY) {
       txEmitter.emit('change', txNumber)
     })
     .on('error', error => {
-      console.error(`Error watching sqlite.db-pos`, error)
+      console.error(`Error watching ${DATABASE_FILENAME}-pos`, error)
     })
 }
 
@@ -155,9 +156,13 @@ async function waitForUpToDateTXNumber(sessionTXNumber: number) {
 function getTXNumber() {
   if (!process.env.FLY) return 0
   invariant(FLY_LITEFS_DIR, 'FLY_LITEFS_DIR is not defined')
+  invariant(DATABASE_FILENAME, 'DATABASE_FILENAME is not defined')
   let dbPos = '0'
   try {
-    dbPos = fs.readFileSync(path.join(FLY_LITEFS_DIR, `sqlite.db-pos`), 'utf-8')
+    dbPos = fs.readFileSync(
+      path.join(FLY_LITEFS_DIR, `${DATABASE_FILENAME}-pos`),
+      'utf-8',
+    )
   } catch {
     // ignore
   }
