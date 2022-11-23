@@ -10,7 +10,7 @@ declare global {
   var __prisma: ReturnType<typeof getClient> | undefined
 }
 
-const logThreshold = 300
+const logThreshold = 500
 
 const prisma = global.__prisma ?? (global.__prisma = getClient())
 
