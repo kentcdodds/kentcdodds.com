@@ -134,7 +134,6 @@ const enableMetronome = false
 function getRequestHandlerOptions(): Parameters<
   typeof createRequestHandler
 >[0] {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const build = require('../build')
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (MODE === 'production' && enableMetronome) {
@@ -152,13 +151,14 @@ function getRequestHandlerOptions(): Parameters<
 
 app.all('*', txMiddleware)
 
-app.all('*', (req, res, next) => {
-  if (MODE === 'production') purgeRequireCache()
-
-  const ip = req.headers['x-forwarded-for'] ?? req.connection.remoteAddress
-  console.log(`REMIX: ${req.method} ${ip} -> ${req.path} ${req.get('referer')}`)
-  return createRequestHandler(getRequestHandlerOptions())(req, res, next)
-})
+if (MODE === 'production') {
+  app.all('*', createRequestHandler(getRequestHandlerOptions()))
+} else {
+  app.all('*', (req, res, next) => {
+    purgeRequireCache()
+    return createRequestHandler(getRequestHandlerOptions())(req, res, next)
+  })
+}
 
 const port = process.env.PORT ?? 3000
 app.listen(port, () => {
@@ -183,3 +183,8 @@ function purgeRequireCache() {
     }
   }
 }
+
+/*
+eslint
+  @typescript-eslint/no-var-requires: "off",
+*/
