@@ -143,7 +143,7 @@ async function getMostPopularPostSlugs({
 }) {
   const postsSortedByMostPopular = await cachified({
     key: `sorted-most-popular-post-slugs`,
-    ttl: 1000 * 60,
+    ttl: 1000 * 60 * 30,
     staleWhileRevalidate: 1000 * 60 * 60 * 24,
     cache: lruCache,
     request,
