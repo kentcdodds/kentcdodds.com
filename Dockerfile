@@ -56,7 +56,7 @@ FROM base
 
 ENV FLY="true"
 ENV FLY_LITEFS_DIR="/litefs/data"
-ENV DATABASE_URL="file:$FLY_LITEFS_DIR/sqlite.db"
+ENV DATABASE_URL="file:$FLY_LITEFS_DIR/sqlite-2.db"
 ENV PORT="8080"
 ENV NODE_ENV="production"
 ENV CACHE_DATABASE_PATH=/data/cache.db
