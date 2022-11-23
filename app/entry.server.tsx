@@ -26,6 +26,11 @@ export default async function handleRequest(
   responseHeaders: Headers,
   remixContext: EntryContext,
 ) {
+  console.log(
+    `handleRequestS: ${request.method} ${
+      new URL(request.url).pathname
+    } ${responseStatusCode}`,
+  )
   if (responseStatusCode >= 500) {
     // maybe we're just in trouble in this region... if we're not in the primary
     // region, then replay and hopefully it works next time.
@@ -62,6 +67,11 @@ export default async function handleRequest(
     '<https://res.cloudinary.com>; rel="preconnect"',
   )
 
+  console.log(
+    `handleRequestE: ${request.method} ${
+      new URL(request.url).pathname
+    } ${responseStatusCode}`,
+  )
   return new Response(html, {
     status: responseStatusCode,
     headers: responseHeaders,
@@ -72,6 +82,11 @@ export async function handleDataRequest(
   response: Response,
   {request}: Parameters<HandleDataRequestFunction>[1],
 ) {
+  console.log(
+    `handleDataRequestS: ${request.method} ${new URL(request.url).pathname} ${
+      response.status
+    }`,
+  )
   const {currentIsPrimary, primaryInstance} = await getInstanceInfo()
   if (response.status >= 500) {
     // maybe we're just in trouble in this instance... if we're not in the primary
@@ -100,6 +115,12 @@ export async function handleDataRequest(
       }
     }
   }
+
+  console.log(
+    `handleDataRequestE: ${request.method} ${new URL(request.url).pathname} ${
+      response.status
+    }`,
+  )
   return response
 }
 

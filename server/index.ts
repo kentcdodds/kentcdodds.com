@@ -38,6 +38,13 @@ const BUILD_DIR = path.join(process.cwd(), 'build')
 
 const app = express()
 
+app.use(morgan(':method :remote-addr -> :url :referrer', {immediate: true}))
+app.use(
+  morgan(
+    ':method :remote-addr <- :url :status :res[content-length] - :response-time ms',
+  ),
+)
+
 app.use((req, res, next) => {
   const {currentInstance, primaryInstance} = getInstanceInfo()
   res.set('X-Powered-By', 'Kody the Koala')
@@ -114,8 +121,6 @@ app.use(
   }),
 )
 
-app.use(morgan('tiny'))
-
 // log the referrer for 404s
 app.use((req, res, next) => {
   onFinished(res, () => {
@@ -149,15 +154,13 @@ function getRequestHandlerOptions(): Parameters<
 
 app.all('*', txMiddleware)
 
-app.all(
-  '*',
-  MODE === 'production'
-    ? createRequestHandler(getRequestHandlerOptions())
-    : (req, res, next) => {
-        purgeRequireCache()
-        return createRequestHandler(getRequestHandlerOptions())(req, res, next)
-      },
-)
+app.all('*', (req, res, next) => {
+  if (MODE === 'production') purgeRequireCache()
+
+  const ip = req.headers['x-forwarded-for'] ?? req.connection.remoteAddress
+  console.log(`REMIX: ${req.method} ${ip} -> ${req.path} ${req.get('referer')}`)
+  return createRequestHandler(getRequestHandlerOptions())(req, res, next)
+})
 
 const port = process.env.PORT ?? 3000
 app.listen(port, () => {
