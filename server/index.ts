@@ -38,13 +38,6 @@ const BUILD_DIR = path.join(process.cwd(), 'build')
 
 const app = express()
 
-app.use(morgan(':method :remote-addr -> :url :referrer', {immediate: true}))
-app.use(
-  morgan(
-    ':method :remote-addr <- :url :status :res[content-length] - :response-time ms',
-  ),
-)
-
 app.use((req, res, next) => {
   const {currentInstance, primaryInstance} = getInstanceInfo()
   res.set('X-Powered-By', 'Kody the Koala')
@@ -133,6 +126,13 @@ app.use((req, res, next) => {
   })
   next()
 })
+
+app.use(morgan(':method :remote-addr -> :url :referrer', {immediate: true}))
+app.use(
+  morgan(
+    ':method :remote-addr <- :url :status :res[content-length] - :response-time ms',
+  ),
+)
 
 const enableMetronome = false
 
