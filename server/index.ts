@@ -127,12 +127,7 @@ app.use((req, res, next) => {
   next()
 })
 
-app.use(morgan(':method :remote-addr -> :url :referrer', {immediate: true}))
-app.use(
-  morgan(
-    ':method :remote-addr <- :url :status :res[content-length] - :response-time ms',
-  ),
-)
+app.use(morgan('tiny'))
 
 const enableMetronome = false
 
