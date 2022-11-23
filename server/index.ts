@@ -129,11 +129,14 @@ app.use((req, res, next) => {
 
 app.use(morgan('tiny'))
 
+const enableMetronome = false
+
 function getRequestHandlerOptions(): Parameters<
   typeof createRequestHandler
 >[0] {
   const build = require('../build')
-  if (MODE === 'production') {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (MODE === 'production' && enableMetronome) {
     const buildWithMetronome = registerMetronome(build)
     const metronomeGetLoadContext =
       createMetronomeGetLoadContext(buildWithMetronome)
