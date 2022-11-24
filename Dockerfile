@@ -7,7 +7,8 @@ FROM node:18-bullseye-slim as base
 # install open ssl and sqlite3 for prisma
 # ffmpeg for the call kent functionality
 # ca-certificates and fuse for litefs
-RUN apt-get update && apt-get install -y fuse openssl ffmpeg sqlite3 ca-certificates
+# procps for "tops" command to see which processes are hogging memory (it's node)
+RUN apt-get update && apt-get install -y fuse openssl ffmpeg sqlite3 ca-certificates procps
 
 # install all node_modules, including dev
 FROM base as deps
