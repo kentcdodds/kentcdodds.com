@@ -2,7 +2,7 @@ import * as React from 'react'
 import {Link} from '@remix-run/react'
 import {motion, useReducedMotion} from 'framer-motion'
 import clsx from 'clsx'
-import {useRootData} from '~/utils/use-root-data'
+import {useRootData, useOptionalUser} from '~/utils/use-root-data'
 import {useTeam} from '~/utils/team-provider'
 import {kodyProfiles} from '~/images'
 import {formatNumber, getOptionalTeam} from '~/utils/misc'
@@ -155,6 +155,7 @@ function TeamStats({
   pull: 'left' | 'right'
   onStatClick?: (team: Team) => void
 }) {
+  const optionalUser = useOptionalUser()
   const [altDown, setAltDown] = React.useState(false)
   const [team] = useTeam()
 
@@ -167,6 +168,19 @@ function TeamStats({
       document.removeEventListener('keydown', set)
     }
   }, [])
+
+  const loginLink = optionalUser ? null : (
+    <div
+      className={clsx('text-center', {
+        'mb-2': direction === 'down',
+        'mt-2': direction === 'up',
+      })}
+    >
+      <Link to="/login" className="underlined">
+        Login
+      </Link>
+    </div>
+  )
 
   return (
     <div
@@ -186,7 +200,8 @@ function TeamStats({
             'right-0': pull === 'right',
             'left-0': pull === 'left',
             '-top-9': direction === 'down',
-            '-bottom-20': direction === 'up',
+            '-bottom-20': !loginLink && direction === 'up',
+            '-bottom-9': loginLink && direction === 'up',
           },
         )}
       >
@@ -200,6 +215,7 @@ function TeamStats({
           {`what's this?`}
         </Link>
       </div>
+      {direction === 'down' ? loginLink : null}
       <ul
         className={clsx(
           'relative flex h-0 overflow-visible border-team-current px-4',
@@ -224,6 +240,7 @@ function TeamStats({
           </li>
         ))}
       </ul>
+      {direction === 'up' ? loginLink : null}
     </div>
   )
 }

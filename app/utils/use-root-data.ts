@@ -11,3 +11,8 @@ export function useUser() {
   if (!user) throw new Error('User is required when using useUser')
   return user
 }
+
+export function useOptionalUser() {
+  const {user} = useRootData()
+  return user
+}
