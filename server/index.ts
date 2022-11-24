@@ -129,7 +129,7 @@ app.use((req, res, next) => {
 
 app.use(morgan('tiny'))
 
-const enableMetronome = false
+const enableMetronome = true
 
 function getRequestHandlerOptions(): Parameters<
   typeof createRequestHandler
