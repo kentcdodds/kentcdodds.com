@@ -238,7 +238,7 @@ function getDiscordAuthorizeURL(domainUrl: string) {
 }
 
 /**
- * @returns domain URL (without a ending slash)
+ * @returns domain URL (without a ending slash, like: https://kentcdodds.com)
  */
 function getDomainUrl(request: Request) {
   const host =
