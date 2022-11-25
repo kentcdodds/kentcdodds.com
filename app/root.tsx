@@ -3,7 +3,8 @@ import type {
   HeadersFunction,
   LinksFunction,
   MetaFunction,
-  LoaderFunction,
+  DataFunctionArgs,
+  SerializeFrom,
 } from '@remix-run/node'
 import {json} from '@remix-run/node'
 
@@ -24,13 +25,12 @@ import {
 import {MetronomeLinks} from '@metronome-sh/react'
 import {AnimatePresence, motion} from 'framer-motion'
 import {useSpinDelay} from 'spin-delay'
-import type {Await, KCDHandle, User} from '~/types'
+import type {KCDHandle} from '~/types'
 import tailwindStyles from './styles/tailwind.css'
 import vendorStyles from './styles/vendors.css'
 import appStyles from './styles/app.css'
 import proseStyles from './styles/prose.css'
 import noScriptStyles from './styles/no-script.css'
-import type {Theme} from './utils/theme-provider'
 import {
   useTheme,
   ThemeProvider,
@@ -62,13 +62,14 @@ import {getGenericSocialImage, illustrationImages, images} from './images'
 import {Grimmacing, MissingSomething} from './components/kifs'
 import {ArrowLink} from './components/arrow-button'
 import {getServerTimeHeader} from './utils/timing.server'
+import {PartyIcon} from './components/icons/party-icon'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',
 }
 
 export const meta: MetaFunction = ({data}) => {
-  const requestInfo = (data as LoaderData | undefined)?.requestInfo
+  const requestInfo = data?.requestInfo
   const title = 'Kent C. Dodds'
   const description =
     'Come check out how Kent C. Dodds can help you level up your career as a software engineer.'
@@ -135,30 +136,10 @@ export const links: LinksFunction = () => {
   ]
 }
 
-export type LoaderData = {
-  user: User | null
-  userInfo: Await<ReturnType<typeof getUserInfo>> | null
-  ENV: ReturnType<typeof getEnv>
-  randomFooterImageKey: keyof typeof illustrationImages
-  requestInfo: {
-    origin: string
-    path: string
-    session: {
-      email: string | undefined
-      magicLinkVerified: boolean | undefined
-      theme: Theme | null
-    }
-  }
-}
+export type LoaderData = SerializeFrom<typeof loader>
 
-export const loader: LoaderFunction = async ({request}) => {
+async function loader({request}: DataFunctionArgs) {
   const timings = {}
-  // because this is called for every route, we'll do an early return for anything
-  // that has a other route setup. The response will be handled there.
-  if (pathedRoutes[new URL(request.url).pathname]) {
-    return new Response()
-  }
-
   const session = await getSession(request)
   const themeSession = await getThemeSession(request)
   const clientSession = await getClientSession(request)
@@ -171,7 +152,7 @@ export const loader: LoaderFunction = async ({request}) => {
     Math.floor(Math.random() * randomFooterImageKeys.length)
   ] as keyof typeof illustrationImages
 
-  const data: LoaderData = {
+  const data = {
     user,
     userInfo: user ? await getUserInfo(user, {request, timings}) : null,
     ENV: getEnv(),
@@ -198,6 +179,18 @@ export const loader: LoaderFunction = async ({request}) => {
   headers.append('Server-Timing', getServerTimeHeader(timings))
 
   return json(data, {headers})
+}
+
+export {loaderImpl as loader}
+
+async function loaderImpl({request, ...rest}: DataFunctionArgs) {
+  // because this is called for every route, we'll do an early return for anything
+  // that has a other route setup. The response will be handled there.
+  if (pathedRoutes[new URL(request.url).pathname]) {
+    return new Response()
+  }
+  const result = await loader({request, ...rest})
+  return result
 }
 
 export const headers: HeadersFunction = ({loaderHeaders}) => {
@@ -332,7 +325,7 @@ function CanonicalLink({
 }
 
 function App() {
-  const data = useLoaderData<LoaderData>()
+  const data = useLoaderData<typeof loader>()
   const matches = useMatches()
   let shouldRestoreScroll = true
   for (const match of matches.reverse()) {
@@ -373,6 +366,50 @@ function App() {
       <body className="bg-white transition duration-500 dark:bg-gray-900">
         <PageLoadingMessage />
         <NotificationMessage queryStringKey="message" delay={0.3} />
+        <NotificationMessage autoClose={false}>
+          <div className="mb-4 flex items-center text-xl">
+            <strong>Black Friday Sale:</strong>
+            <PartyIcon />
+          </div>
+          <ol className="text-lg">
+            <li>
+              <a
+                href="https://EpicReact.dev"
+                className="flex items-center gap-1"
+              >
+                <img
+                  src="/images/er-favicon.png"
+                  className="inline-block h-4 w-4"
+                />{' '}
+                <span>EpicReact.dev: 40% off</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://TestingJavaScript.com"
+                className="flex items-center gap-1"
+              >
+                <img
+                  src="/images/tjs-favicon.png"
+                  className="inline-block h-4 w-4"
+                />{' '}
+                <span>TestingJavaScript.com: 40% off</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://KCDBundle.com"
+                className="flex items-center gap-1"
+              >
+                <img
+                  src="/images/kcd-favicon.png"
+                  className="inline-block h-4 w-4"
+                />{' '}
+                <span>Together: 50% off</span>
+              </a>
+            </li>
+          </ol>
+        </NotificationMessage>
         <Navbar />
         <Outlet />
         <Spacer size="base" />

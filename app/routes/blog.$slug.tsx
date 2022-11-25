@@ -51,6 +51,7 @@ import {WorkshopCard} from '~/components/workshop-card'
 import {Spacer} from '~/components/spacer'
 import clsx from 'clsx'
 import {HeaderSection} from '~/components/sections/header-section'
+import {CourseCard} from '~/components/course-card'
 
 const handleId = 'blog-post'
 export const handle: KCDHandle = {
@@ -572,19 +573,30 @@ export default function MdxScreen() {
         </Grid>
       </main>
 
-      {isNonRemixReact ? (
-        <Grid className="mb-24">
-          <div className="col-span-full lg:col-start-2 lg:col-end-12">
-            <div className="prose prose-light mb-6 max-w-full dark:prose-dark">
-              {React.createElement(
-                'callout-warning',
-                {},
-                `💿 Don't forget to checkout `,
-                <Link to="/blog/remix-the-yang-to-react-s-yin">{`Remix: The Yang to React's Yin ☯`}</Link>,
-              )}
+      {categoriesAndKeywords.includes('react') ||
+      categoriesAndKeywords.includes('testing') ? (
+        <div className="mx-auto mb-24 flex max-w-lg flex-col items-center justify-center gap-8 md:max-w-none md:flex-row">
+          {categoriesAndKeywords.includes('react') ? (
+            <div className="w-full max-w-lg md:w-auto">
+              <CourseCard
+                title="Epic React"
+                description="Get Really Good at React"
+                imageBuilder={images.courseEpicReact}
+                courseUrl="https://epicreact.dev"
+              />
             </div>
-          </div>
-        </Grid>
+          ) : null}
+          {categoriesAndKeywords.includes('testing') ? (
+            <div className="w-full max-w-lg md:w-auto">
+              <CourseCard
+                title="Testing JavaScript"
+                description="Ship Apps with Confidence"
+                imageBuilder={images.courseTestingJS}
+                courseUrl="https://testingjavascript.com"
+              />
+            </div>
+          ) : null}
+        </div>
       ) : null}
 
       <Grid className="mb-24">

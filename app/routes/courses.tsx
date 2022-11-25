@@ -8,10 +8,9 @@ import {json} from '@remix-run/node'
 import {Link, useLoaderData} from '@remix-run/react'
 import {Grid} from '~/components/grid'
 import {getImgProps, getGenericSocialImage, images} from '~/images'
-import {H2, H3, H6, Paragraph} from '~/components/typography'
+import {H2, H6, Paragraph} from '~/components/typography'
 import {ArrowLink} from '~/components/arrow-button'
-import type {CourseCardProps} from '~/components/course-card'
-import {CourseCard} from '~/components/course-card'
+import {SmallCourseCard, CourseCard} from '~/components/course-card'
 import {HeroSection} from '~/components/sections/hero-section'
 import {TestimonialSection} from '~/components/sections/testimonial-section'
 import {getTestimonials} from '~/utils/testimonials.server'
@@ -61,34 +60,6 @@ export const meta: MetaFunction = ({parentsData}) => {
       }),
     }),
   }
-}
-
-function SmallCourseCard({
-  title,
-  description,
-  imageBuilder,
-  courseUrl,
-}: CourseCardProps) {
-  return (
-    <div className="bg-secondary relative col-span-full mt-12 flex flex-col items-start rounded-lg px-8 py-12 lg:col-span-4 lg:mt-0 lg:px-12">
-      <img
-        loading="lazy"
-        className="h-32 w-auto flex-none object-contain"
-        {...getImgProps(imageBuilder, {
-          widths: [128, 256, 384],
-          sizes: ['8rem'],
-        })}
-      />
-      <div className="mb-4 flex h-48 flex-none items-end">
-        <H3>{title}</H3>
-      </div>
-      <Paragraph className="mb-16 max-w-sm flex-auto">{description}</Paragraph>
-
-      <ArrowLink href={courseUrl} className="flex-none">
-        Visit course
-      </ArrowLink>
-    </div>
-  )
 }
 
 function CoursesHome() {
