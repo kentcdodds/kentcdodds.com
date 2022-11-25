@@ -24,6 +24,7 @@ module.exports = {
     'react/jsx-filename-extension': 'off',
     'react/react-in-jsx-scope': 'off',
     '@typescript-eslint/no-namespace': 'off',
+    '@typescript-eslint/prefer-nullish-coalescing': 'off',
 
     // I can't figure these out:
     '@typescript-eslint/no-unsafe-call': 'off',

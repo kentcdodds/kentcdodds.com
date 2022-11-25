@@ -12,6 +12,7 @@ function NotificationMessage({
   autoClose,
   children,
   position = 'bottom-right',
+  onDismiss,
   /* how long to wait before the message is shown, after mount 0 to 1 */
   delay = typeof controlledVisible === 'undefined' ? 1 : 0,
 }: {
@@ -21,6 +22,7 @@ function NotificationMessage({
   // make the visibility controlled
   visible?: boolean
   delay?: number
+  onDismiss?: () => void
 } & (
   | {autoClose: false; visibleMs?: never}
   | {visibleMs?: number; autoClose?: never}
@@ -108,10 +110,13 @@ function NotificationMessage({
             })}
           >
             <div className="bg-inverse text-inverse pointer-events-auto relative max-w-xl rounded-lg p-8 pr-14 shadow-md">
-              {typeof controlledVisible === 'undefined' ? (
+              {typeof controlledVisible === 'undefined' || onDismiss ? (
                 <button
                   aria-label="dismiss message"
-                  onClick={() => setIsVisible(false)}
+                  onClick={() => {
+                    setIsVisible(false)
+                    onDismiss?.()
+                  }}
                   className="text-secondary hover:text-inverse focus:text-inverse absolute right-4 top-8 rotate-45 transform"
                 >
                   <PlusIcon />

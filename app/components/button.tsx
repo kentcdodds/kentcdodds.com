@@ -69,6 +69,9 @@ function Button({
   )
 }
 
+/**
+ * A button that looks like a link
+ */
 function LinkButton({
   className,
   underlined,
@@ -80,14 +83,18 @@ function LinkButton({
       className={clsx(
         className,
         underlined
-          ? 'underlined focus:outline-none whitespace-nowrap'
+          ? 'underlined whitespace-nowrap focus:outline-none'
           : 'underline',
-        'text-primary inline-block',
+        className?.includes('block') ? '' : 'inline-block',
+        'text-primary',
       )}
     />
   )
 }
 
+/**
+ * A link that looks like a button
+ */
 const ButtonLink = React.forwardRef<
   HTMLAnchorElement,
   React.ComponentPropsWithRef<typeof AnchorOrLink> & ButtonProps
