@@ -42,6 +42,14 @@ export async function action({request}: DataFunctionArgs) {
 
 type NotificationMessageProps = Parameters<typeof NotificationMessage>[0]
 
+function ShowTime({ time, typeTime }: { time: number, typeTime: string }) {
+  return (
+    <span className='italic'>
+      {time} {typeTime}{time === 1 ? '' : 's'}
+    </span>
+  )
+}
+
 export function Promotification({
   children,
   promoName,
@@ -90,18 +98,10 @@ export function Promotification({
               <div>{`Time's up. The sale is over`}</div>
             ) : (
               <div className="flex flex-wrap gap-3 tabular-nums">
-                <span>
-                  {days} day{days === 1 ? '' : 's'}
-                </span>
-                <span>
-                  {hours} hour{hours === 1 ? '' : 's'}
-                </span>
-                <span>
-                  {mins} min{mins === 1 ? '' : 's'}
-                </span>
-                <span>
-                  {secs} sec{secs === 1 ? '' : 's'}
-                </span>
+                <ShowTime time={days} typeTime='day' />
+                <ShowTime time={hours} typeTime='hour' />
+                <ShowTime time={mins} typeTime='min' />
+                <ShowTime time={secs} typeTime='sec' />
               </div>
             )
           }
