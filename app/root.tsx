@@ -367,15 +367,17 @@ function App() {
         <PageLoadingMessage />
         <NotificationMessage queryStringKey="message" delay={0.3} />
         <NotificationMessage autoClose={false}>
-          <div className="mb-4 flex items-center text-xl">
+          <div className="text-inverse mb-4 flex items-center text-xl">
             <strong>Black Friday Sale:</strong>
-            <PartyIcon />
+            <span className="text-team-current" style={{zoom: 1.5}}>
+              <PartyIcon />
+            </span>
           </div>
           <ol className="text-lg">
             <li>
               <a
                 href="https://EpicReact.dev"
-                className="flex items-center gap-1"
+                className="flex items-center gap-1 underline"
               >
                 <img
                   src="/images/er-favicon.png"
@@ -387,7 +389,7 @@ function App() {
             <li>
               <a
                 href="https://TestingJavaScript.com"
-                className="flex items-center gap-1"
+                className="flex items-center gap-1 underline"
               >
                 <img
                   src="/images/tjs-favicon.png"
@@ -399,7 +401,7 @@ function App() {
             <li>
               <a
                 href="https://KCDBundle.com"
-                className="flex items-center gap-1"
+                className="flex items-center gap-1 underline"
               >
                 <img
                   src="/images/kcd-favicon.png"

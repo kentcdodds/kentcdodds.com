@@ -28,7 +28,8 @@
   --color-yellow-500-inverted: #ffd644;
 }
 
-.light {
+.light,
+.dark .text-inverse {
   --color-team-unknown: var(--color-black);
   --bg-primary: var(--color-white);
   --bg-secondary: var(--color-gray-100);
@@ -39,7 +40,8 @@
   color-scheme: light;
 }
 
-.dark {
+.dark,
+.light .text-inverse {
   --color-team-yellow: #ffd644;
   --color-yellow-500: #ffd644;
   --color-yellow-500-inverted: #a08600;
@@ -65,8 +67,12 @@
   --color-team-current: var(--color-team-blue);
 }
 
-.set-color-team-current-unknown {
-  --color-team-current: var(--color-team-unknown);
+.dark .set-color-team-current-unknown {
+  --color-team-current: var(--color-white);
+}
+
+.light .set-color-team-current-unknown {
+  --color-team-current: var(--color-black);
 }
 
 :focus:not(:focus-visible) {

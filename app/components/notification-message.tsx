@@ -94,7 +94,7 @@ function NotificationMessage({
           exit={{y: initialY, opacity: 0}}
           transition={{ease: 'easeInOut', duration: 0.3}}
           className={clsx(
-            'pointer-events-none fixed left-0 right-0 z-50 px-5vw',
+            'text-inverse pointer-events-none fixed left-0 right-0 z-50 px-5vw',
             {
               'bottom-8': position === 'bottom-right',
               'top-8': position === 'top-center',
