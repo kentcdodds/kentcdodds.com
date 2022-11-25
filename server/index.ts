@@ -22,7 +22,7 @@ installGlobals()
 const here = (...d: Array<string>) => path.join(__dirname, ...d)
 
 // TODO: enable this
-const enableSentry = false
+const enableSentry = true
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 if (enableSentry && process.env.FLY) {
   Sentry.init({
