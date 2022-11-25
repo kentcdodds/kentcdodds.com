@@ -16,7 +16,6 @@ import {
   useAnimation,
   useReducedMotion,
 } from 'framer-motion'
-import type {User} from '@prisma/client'
 import {kodyProfiles} from '~/images'
 import {Theme, Themed, useTheme} from '~/utils/theme-provider'
 import type {OptionalTeam} from '~/utils/misc'
@@ -25,7 +24,7 @@ import {MoonIcon} from './icons/moon-icon'
 import {TeamCircle} from './team-circle'
 import {useElementState} from './hooks/use-element-state'
 import {useTeam} from '~/utils/team-provider'
-import {useRootData} from '~/utils/use-root-data'
+import {useOptionalUser, useRootData} from '~/utils/use-root-data'
 
 const LINKS = [
   {name: 'Blog', to: '/blog'},
@@ -52,7 +51,7 @@ function NavLink({
       <Link
         prefetch="intent"
         className={clsx(
-          'underlined focus:outline-none block whitespace-nowrap text-lg font-medium hover:text-team-current focus:text-team-current',
+          'underlined block whitespace-nowrap text-lg font-medium hover:text-team-current focus:text-team-current focus:outline-none',
           {
             'active text-team-current': isSelected,
             'text-secondary': !isSelected,
@@ -76,7 +75,7 @@ function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
         )
       }}
       className={clsx(
-        'border-secondary hover:border-primary focus:border-primary focus:outline-none inline-flex h-14 items-center justify-center overflow-hidden rounded-full border-2 p-1 transition',
+        'border-secondary hover:border-primary focus:border-primary inline-flex h-14 items-center justify-center overflow-hidden rounded-full border-2 p-1 transition focus:outline-none',
         {
           'w-14': variant === 'icon',
           'px-8': variant === 'labelled',
@@ -196,7 +195,7 @@ function MobileMenu() {
         const state = isExpanded ? 'open' : 'closed'
         return (
           <>
-            <MenuButton className="focus:border-primary hover:border-primary border-secondary text-primary focus:outline-none inline-flex h-14 w-14 items-center justify-center rounded-full border-2 p-1 transition">
+            <MenuButton className="focus:border-primary hover:border-primary border-secondary text-primary inline-flex h-14 w-14 items-center justify-center rounded-full border-2 p-1 transition focus:outline-none">
               <svg
                 width="32"
                 height="32"
@@ -261,15 +260,14 @@ function ProfileButton({
   imageUrl,
   imageAlt,
   team,
-  user,
   magicLinkVerified,
 }: {
   imageUrl: string
   imageAlt: string
   team: OptionalTeam
-  user: User | null
   magicLinkVerified: boolean | undefined
 }) {
+  const user = useOptionalUser()
   const controls = useAnimation()
   const [ref, state] = useElementState()
   const shouldReduceMotion = useReducedMotion()
@@ -304,7 +302,7 @@ function ProfileButton({
         user ? 'My Account' : magicLinkVerified ? 'Finish signing up' : 'Login'
       }
       className={clsx(
-        'focus:outline-none ml-4 inline-flex h-14 w-14 items-center justify-center rounded-full',
+        'ml-4 inline-flex h-14 w-14 items-center justify-center rounded-full focus:outline-none',
       )}
       ref={ref}
     >
@@ -322,7 +320,7 @@ function ProfileButton({
 
 function Navbar() {
   const [team] = useTeam()
-  const {requestInfo, userInfo, user} = useRootData()
+  const {requestInfo, userInfo} = useRootData()
   const avatar = userInfo ? userInfo.avatar : kodyProfiles[team]
 
   return (
@@ -332,7 +330,7 @@ function Navbar() {
           <Link
             prefetch="intent"
             to="/"
-            className="text-primary underlined focus:outline-none block whitespace-nowrap text-2xl font-medium transition"
+            className="text-primary underlined block whitespace-nowrap text-2xl font-medium transition focus:outline-none"
           >
             <h1>Kent C. Dodds</h1>
           </Link>
@@ -359,7 +357,6 @@ function Navbar() {
             imageUrl={avatar.src}
             imageAlt={avatar.alt}
             team={team}
-            user={user}
           />
         </div>
       </nav>
