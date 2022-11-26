@@ -127,7 +127,7 @@ app.use((req, res, next) => {
   next()
 })
 
-app.use(morgan('tiny'))
+app.use(morgan('tiny', {immediate: true}))
 
 const enableMetronome = true
 
