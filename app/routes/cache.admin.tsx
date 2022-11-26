@@ -7,8 +7,13 @@ import {
   useLoaderData,
   useSearchParams,
 } from '@remix-run/react'
-import {H2} from '~/components/typography'
-import {cache, getAllCacheKeys, searchCacheKeys} from '~/utils/cache.server'
+import {H2, H3} from '~/components/typography'
+import {
+  cache,
+  getAllCacheKeys,
+  lruCache,
+  searchCacheKeys,
+} from '~/utils/cache.server'
 import {requireAdminUser} from '~/utils/session.server'
 import {Spacer} from '~/components/spacer'
 import invariant from 'tiny-invariant'
@@ -32,7 +37,7 @@ export async function loader({request}: DataFunctionArgs) {
     })
   }
 
-  let cacheKeys: Array<string>
+  let cacheKeys: {sqlite: Array<string>; lru: Array<string>}
   if (typeof query === 'string') {
     cacheKeys = await searchCacheKeys(query, limit)
   } else {
@@ -46,6 +51,7 @@ export async function action({request}: DataFunctionArgs) {
   const formData = await request.formData()
   const key = formData.get('cacheKey')
   const region = formData.get('region') ?? process.env.FLY_REGION
+  const type = formData.get('type')
   if (process.env.FLY && region !== process.env.FLY_REGION) {
     throw new Response('Fly Replay', {
       status: 409,
@@ -56,7 +62,20 @@ export async function action({request}: DataFunctionArgs) {
   }
 
   invariant(typeof key === 'string', 'cacheKey must be a string')
-  await cache.delete(key)
+  invariant(typeof type === 'string', 'type must be a string')
+  switch (type) {
+    case 'sqlite': {
+      await cache.delete(key)
+      break
+    }
+    case 'lru': {
+      lruCache.delete(key)
+      break
+    }
+    default: {
+      throw new Error(`Unknown cache type: ${type}`)
+    }
+  }
   return json({success: true})
 }
 
@@ -89,7 +108,9 @@ export default function CacheAdminRoute() {
                 className="text-primary bg-primary border-secondary focus:bg-secondary w-full rounded-full border py-6 pl-14 pr-6 text-lg font-medium hover:border-team-current focus:border-team-current focus:outline-none md:pr-24"
               />
               <div className="absolute right-2 top-0 flex h-full w-14 items-center justify-between text-lg font-medium text-slate-500">
-                <span title="Total results shown">{data.cacheKeys.length}</span>
+                <span title="Total results shown">
+                  {data.cacheKeys.sqlite.length + data.cacheKeys.lru.length}
+                </span>
               </div>
             </div>
           </div>
@@ -115,15 +136,31 @@ export default function CacheAdminRoute() {
       </Form>
       <Spacer size="2xs" />
       <div className="flex flex-col gap-4">
-        {data.cacheKeys.map(key => (
-          <CacheKeyRow key={key} cacheKey={key} region={region} />
+        <H3>LRU Cache:</H3>
+        {data.cacheKeys.lru.map(key => (
+          <CacheKeyRow key={key} cacheKey={key} region={region} type="lru" />
+        ))}
+      </div>
+      <Spacer size="3xs" />
+      <div className="flex flex-col gap-4">
+        <H3>SQLite Cache:</H3>
+        {data.cacheKeys.sqlite.map(key => (
+          <CacheKeyRow key={key} cacheKey={key} region={region} type="sqlite" />
         ))}
       </div>
     </div>
   )
 }
 
-function CacheKeyRow({cacheKey, region}: {cacheKey: string; region?: string}) {
+function CacheKeyRow({
+  cacheKey,
+  region,
+  type,
+}: {
+  cacheKey: string
+  region?: string
+  type: string
+}) {
   const fetcher = useFetcher()
   const dc = useDoubleCheck()
   return (
@@ -131,6 +168,7 @@ function CacheKeyRow({cacheKey, region}: {cacheKey: string; region?: string}) {
       <fetcher.Form method="post">
         <input type="hidden" name="cacheKey" value={cacheKey} />
         <input type="hidden" name="region" value={region} />
+        <input type="hidden" name="type" value={type} />
         <Button
           size="small"
           variant="danger"
@@ -143,7 +181,7 @@ function CacheKeyRow({cacheKey, region}: {cacheKey: string; region?: string}) {
             : 'Deleting...'}
         </Button>
       </fetcher.Form>
-      <a href={`/resources/cache/${encodeURIComponent(cacheKey)}`}>
+      <a href={`/resources/cache/${type}/${encodeURIComponent(cacheKey)}`}>
         {cacheKey}
       </a>
     </div>
