@@ -1,4 +1,3 @@
-import * as React from 'react'
 import {H6, Paragraph} from './typography'
 
 type NumberedPanelProps = {

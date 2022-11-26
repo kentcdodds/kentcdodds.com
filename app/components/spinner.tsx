@@ -1,4 +1,4 @@
-import {SpinnerIcon} from './icons/spinner-icon'
+import {SpinnerIcon} from './icons'
 
 export function Spinner({
   showSpinner,

@@ -1,4 +1,3 @@
-import * as React from 'react'
 import {Link, useSearchParams} from '@remix-run/react'
 import {getImgProps, images} from '~/images'
 import {H2, H3} from '../typography'

@@ -1,4 +1,3 @@
-import * as React from 'react'
 import {Link} from '@remix-run/react'
 import clsx from 'clsx'
 import type {MdxListItem, Team} from '~/types'

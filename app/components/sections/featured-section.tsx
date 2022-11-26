@@ -1,4 +1,3 @@
-import * as React from 'react'
 import clsx from 'clsx'
 import type {ImageBuilder} from '~/images'
 import {getImgProps} from '~/images'

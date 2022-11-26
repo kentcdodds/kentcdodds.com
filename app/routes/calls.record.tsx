@@ -1,4 +1,3 @@
-import * as React from 'react'
 import type {HeadersFunction, LoaderFunction} from '@remix-run/node'
 import {json} from '@remix-run/node'
 import {Link, Outlet, useLoaderData, useLocation} from '@remix-run/react'

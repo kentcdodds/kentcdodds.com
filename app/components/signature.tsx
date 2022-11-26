@@ -1,5 +1,3 @@
-import * as React from 'react'
-
 function Signature({className}: {className?: string}) {
   return (
     <svg

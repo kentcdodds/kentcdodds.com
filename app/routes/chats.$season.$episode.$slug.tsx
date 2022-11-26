@@ -13,16 +13,18 @@ import type {LoaderData as RootLoaderData} from '../root'
 import {getSeasons} from '~/utils/simplecast.server'
 import {H2, H3, H6, Paragraph} from '~/components/typography'
 import {Grid} from '~/components/grid'
-import {ArrowIcon} from '~/components/icons/arrow-icon'
-import {ClipboardIcon} from '~/components/icons/clipboard-icon'
-import {CheckCircledIcon} from '~/components/icons/check-circled-icon'
-import {GithubIcon} from '~/components/icons/github-icon'
-import {TwitterIcon} from '~/components/icons/twitter-icon'
-import {PlusIcon} from '~/components/icons/plus-icon'
+import {
+  ArrowIcon,
+  ClipboardIcon,
+  CheckCircledIcon,
+  GithubIcon,
+  TwitterIcon,
+  PlusIcon,
+  ChevronRightIcon,
+  ChevronLeftIcon,
+} from '~/components/icons'
 import {FeaturedSection} from '~/components/sections/featured-section'
 import {ArrowLink, BackLink} from '~/components/arrow-button'
-import {ChevronRightIcon} from '~/components/icons/chevron-right-icon'
-import {ChevronLeftIcon} from '~/components/icons/chevron-left-icon'
 import {
   formatDuration,
   getDisplayUrl,

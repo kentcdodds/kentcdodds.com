@@ -1,19 +1,14 @@
-import * as React from 'react'
 import {externalLinks} from '../external-links'
 import {AnchorOrLink} from '~/utils/misc'
 import {useRootData} from '~/utils/use-root-data'
 import {ConvertKitForm} from '../convertkit/form'
 import {H4, H6, Paragraph} from './typography'
-import {GithubIcon} from './icons/github-icon'
-import {TwitterIcon} from './icons/twitter-icon'
-import {YoutubeIcon} from './icons/youtube-icon'
+import {GithubIcon, TwitterIcon, YoutubeIcon, ArrowIcon, RssIcon} from './icons'
 import {Signature} from './signature'
 import {Link} from '@remix-run/react'
-import {ArrowIcon} from './icons/arrow-icon'
 import type {ImageBuilder} from '~/images'
 import {getImgProps} from '~/images'
 import {IconLink} from './icon-link'
-import {RssIcon} from './icons/rss-icon'
 
 function NewsletterSection() {
   return (

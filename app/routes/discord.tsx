@@ -1,9 +1,7 @@
-import * as React from 'react'
-import {motion} from 'framer-motion'
 import {
   Accordion,
-  AccordionItem,
   AccordionButton,
+  AccordionItem,
   AccordionPanel,
   useAccordionItemContext,
 } from '@reach/accordion'
@@ -14,40 +12,43 @@ import type {
 } from '@remix-run/node'
 import {json} from '@remix-run/node'
 import {useLoaderData} from '@remix-run/react'
-import {useRootData} from '~/utils/use-root-data'
+import {motion} from 'framer-motion'
+import {ArrowLink} from '~/components/arrow-button'
+import {ButtonLink} from '~/components/button'
+import {FeatureCard} from '~/components/feature-card'
+import {Grid} from '~/components/grid'
+import {
+  BriefcaseIcon,
+  CodeIcon,
+  DiscordLogo,
+  EmojiHappyIcon,
+  HeartIcon,
+  LaptopIcon,
+  MessageIcon,
+  RocketIcon,
+  TrophyIcon,
+  UsersIcon,
+} from '~/components/icons'
+import {NumberedPanel} from '~/components/numbered-panel'
+import {CourseSection} from '~/components/sections/course-section'
+import {HeaderSection} from '~/components/sections/header-section'
+import {HeroSection} from '~/components/sections/hero-section'
+import {TestimonialSection} from '~/components/sections/testimonial-section'
+import {H2, H5, H6, Paragraph} from '~/components/typography'
+import {getGenericSocialImage, getImgProps, images} from '~/images'
 import {
   getDiscordAuthorizeURL,
   getDisplayUrl,
   getUrl,
   reuseUsefulLoaderHeaders,
 } from '~/utils/misc'
-import {ArrowLink} from '~/components/arrow-button'
-import {ButtonLink} from '~/components/button'
-import {H2, H5, H6, Paragraph} from '~/components/typography'
-import {getGenericSocialImage, getImgProps, images} from '~/images'
-import {Grid} from '~/components/grid'
-import {externalLinks} from '../external-links'
-import {UsersIcon} from '~/components/icons/users-icon'
-import {CodeIcon} from '~/components/icons/code-icon'
-import {NumberedPanel} from '~/components/numbered-panel'
-import {TestimonialSection} from '~/components/sections/testimonial-section'
-import {CourseSection} from '~/components/sections/course-section'
-import {FeatureCard} from '~/components/feature-card'
-import {HeroSection} from '~/components/sections/hero-section'
-import {HeaderSection} from '~/components/sections/header-section'
-import {getTestimonials} from '~/utils/testimonials.server'
-import type {Testimonial} from '~/utils/testimonials.server'
-import {DiscordLogo} from '~/components/icons/discord-logo'
-import {HeartIcon} from '~/components/icons/heart-icon'
-import {EmojiHappyIcon} from '~/components/icons/emoji-happy-icon'
-import {BriefcaseIcon} from '~/components/icons/briefcase-icon'
-import {RocketIcon} from '~/components/icons/rocket-icon'
-import {TrophyIcon} from '~/components/icons/trophy-icon'
-import LaptopIcon from '~/components/icons/laptop-icon'
-import {MessageIcon} from '~/components/icons/message-icon'
-import type {LoaderData as RootLoaderData} from '../root'
 import {getSocialMetas} from '~/utils/seo'
+import type {Testimonial} from '~/utils/testimonials.server'
+import {getTestimonials} from '~/utils/testimonials.server'
 import {getServerTimeHeader} from '~/utils/timing.server'
+import {useRootData} from '~/utils/use-root-data'
+import {externalLinks} from '../external-links'
+import type {LoaderData as RootLoaderData} from '../root'
 
 type LoaderData = {
   testimonials: Array<Testimonial>

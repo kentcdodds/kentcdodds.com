@@ -25,9 +25,7 @@ import {Grid} from '~/components/grid'
 import {getBlogRecommendations} from '~/utils/blog.server'
 import {BlogSection} from '~/components/sections/blog-section'
 import {H4, H6, Paragraph} from '~/components/typography'
-import {ChevronUpIcon} from '~/components/icons/chevron-up-icon'
-import {ChevronDownIcon} from '~/components/icons/chevron-down-icon'
-import {TriangleIcon} from '~/components/icons/triangle-icon'
+import {ChevronUpIcon, ChevronDownIcon, TriangleIcon} from '~/components/icons'
 import {
   formatDuration,
   getDisplayUrl,

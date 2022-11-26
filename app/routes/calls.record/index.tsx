@@ -1,4 +1,3 @@
-import * as React from 'react'
 import type {HeadersFunction} from '@remix-run/node'
 
 export const headers: HeadersFunction = ({parentHeaders}) => parentHeaders

@@ -1,9 +1,8 @@
-import * as React from 'react'
 import {getImgProps, images} from '~/images'
 import {H2} from '../typography'
 import {ArrowLink} from '../arrow-button'
 import {Grid} from '../grid'
-import {DiscordLogo} from '../icons/discord-logo'
+import {DiscordLogo} from '../icons'
 
 function DiscordSection() {
   return (

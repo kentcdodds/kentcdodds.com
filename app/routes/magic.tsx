@@ -1,7 +1,7 @@
 import type {DataFunctionArgs} from '@remix-run/node'
 import {redirect} from '@remix-run/node'
 import type {KCDHandle} from '~/types'
-import * as React from 'react'
+
 import {getLoginInfoSession} from '~/utils/login.server'
 import {getUserSessionFromMagicLink} from '~/utils/session.server'
 import {getErrorMessage} from '~/utils/misc'

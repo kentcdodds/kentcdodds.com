@@ -1,7 +1,6 @@
 import {Dialog} from '@reach/dialog'
 import * as React from 'react'
-import {PlayIcon} from './icons/play-icon'
-import {PlusIcon} from './icons/plus-icon'
+import {PlayIcon, PlusIcon} from './icons'
 
 function YouTubeEmbed({
   onCloseClick,

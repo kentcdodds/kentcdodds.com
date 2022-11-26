@@ -1,6 +1,3 @@
-import * as React from 'react'
-import {Link, useLocation} from '@remix-run/react'
-import clsx from 'clsx'
 import {
   Menu,
   MenuButton,
@@ -9,22 +6,24 @@ import {
   MenuPopover,
   useMenuButtonContext,
 } from '@reach/menu-button'
-import {useEffect} from 'react'
+import {Link, useLocation} from '@remix-run/react'
+import clsx from 'clsx'
 import {
   AnimatePresence,
   motion,
   useAnimation,
   useReducedMotion,
 } from 'framer-motion'
+import * as React from 'react'
+import {useEffect} from 'react'
 import {kodyProfiles} from '~/images'
-import {Theme, Themed, useTheme} from '~/utils/theme-provider'
 import type {OptionalTeam} from '~/utils/misc'
-import {SunIcon} from './icons/sun-icon'
-import {MoonIcon} from './icons/moon-icon'
-import {TeamCircle} from './team-circle'
-import {useElementState} from './hooks/use-element-state'
 import {useTeam} from '~/utils/team-provider'
+import {Theme, Themed, useTheme} from '~/utils/theme-provider'
 import {useOptionalUser, useRootData} from '~/utils/use-root-data'
+import {useElementState} from './hooks/use-element-state'
+import {MoonIcon, SunIcon} from './icons'
+import {TeamCircle} from './team-circle'
 
 const LINKS = [
   {name: 'Blog', to: '/blog'},

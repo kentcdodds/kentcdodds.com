@@ -1,4 +1,3 @@
-import * as React from 'react'
 import type {
   HeadersFunction,
   LinksFunction,
@@ -16,7 +15,14 @@ import {ArrowLink} from '~/components/arrow-button'
 import {Grid} from '~/components/grid'
 import {HeaderSection} from '~/components/sections/header-section'
 import {FeatureCard} from '~/components/feature-card'
-import {UsersIcon} from '~/components/icons/users-icon'
+import {
+  UsersIcon,
+  AwardIcon,
+  MugIcon,
+  BadgeIcon,
+  BookIcon,
+  FastForwardIcon,
+} from '~/components/icons'
 import {BlogSection} from '~/components/sections/blog-section'
 import {getBlogRecommendations} from '~/utils/blog.server'
 import {HeroSection} from '~/components/sections/hero-section'
@@ -32,11 +38,6 @@ import {
   links as youTubeEmbedLinks,
 } from '~/components/fullscreen-yt-embed'
 import {getTalksAndTags} from '~/utils/talks.server'
-import {AwardIcon} from '~/components/icons/award-icon'
-import {MugIcon} from '~/components/icons/mug-icon'
-import {BadgeIcon} from '~/components/icons/badge-icon'
-import {BookIcon} from '~/components/icons/book-icon'
-import {FastForwardIcon} from '~/components/icons/fast-forward-icon'
 import {getSocialMetas} from '~/utils/seo'
 import type {LoaderData as RootLoaderData} from '../root'
 import {getServerTimeHeader} from '~/utils/timing.server'

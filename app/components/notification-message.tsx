@@ -3,7 +3,7 @@ import {useState} from 'react'
 import {useSearchParams} from '@remix-run/react'
 import {AnimatePresence, motion} from 'framer-motion'
 import clsx from 'clsx'
-import {PlusIcon} from './icons/plus-icon'
+import {PlusIcon} from './icons'
 
 function NotificationMessage({
   queryStringKey,

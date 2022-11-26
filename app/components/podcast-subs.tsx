@@ -1,7 +1,4 @@
-import {AppleIcon} from './icons/apple-icon'
-import {RssIcon} from './icons/rss-icon'
-import {SpotifyIcon} from './icons/spotify-icon'
-import {GoogleIcon} from './icons/google-icon'
+import {AppleIcon, RssIcon, SpotifyIcon, GoogleIcon} from './icons'
 
 function PodcastAppLink({
   icon,

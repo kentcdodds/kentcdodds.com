@@ -1,4 +1,3 @@
-import * as React from 'react'
 import type {DataFunctionArgs} from '@remix-run/node'
 import {json} from '@remix-run/node'
 import {
@@ -20,7 +19,7 @@ import invariant from 'tiny-invariant'
 import {Button} from '~/components/button'
 import {useDoubleCheck} from '~/utils/misc'
 import {Field} from '~/components/form-elements'
-import {SearchIcon} from '~/components/icons/search-icon'
+import {SearchIcon} from '~/components/icons'
 
 export async function loader({request}: DataFunctionArgs) {
   await requireAdminUser(request)

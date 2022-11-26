@@ -1,5 +1,5 @@
 // this is just here to test the error page
-import * as React from 'react'
+
 import type {LoaderFunction} from '@remix-run/node'
 import type {KCDHandle} from '~/types'
 import {ServerError} from '~/components/errors'

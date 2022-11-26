@@ -1,4 +1,3 @@
-import * as React from 'react'
 import type {
   HeadersFunction,
   LoaderFunction,
@@ -19,7 +18,7 @@ import {getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {H6, Paragraph} from '~/components/typography'
 import {IconLink} from '~/components/icon-link'
 import {useRootData} from '~/utils/use-root-data'
-import {TwitterIcon} from '~/components/icons/twitter-icon'
+import {TwitterIcon} from '~/components/icons'
 import {getServerTimeHeader} from '~/utils/timing.server'
 
 export const handle: KCDHandle = {

@@ -35,12 +35,14 @@ import {H2, H3, H6, Paragraph} from '~/components/typography'
 import {Grid} from '~/components/grid'
 import {Field, InputError, Label} from '~/components/form-elements'
 import {Button, ButtonLink} from '~/components/button'
-import {CheckCircledIcon} from '~/components/icons/check-circled-icon'
-import {LogoutIcon} from '~/components/icons/logout-icon'
+import {
+  CheckCircledIcon,
+  LogoutIcon,
+  EyeIcon,
+  PlusIcon,
+} from '~/components/icons'
 import {TEAM_MAP} from '~/utils/onboarding'
 import {handleFormSubmission} from '~/utils/actions.server'
-import {EyeIcon} from '~/components/icons/eye-icon'
-import {PlusIcon} from '~/components/icons/plus-icon'
 import {Spacer} from '~/components/spacer'
 import {getSocialMetas} from '~/utils/seo'
 import type {LoaderData as RootLoaderData} from '../root'

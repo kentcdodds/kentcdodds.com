@@ -3,7 +3,7 @@ import {useFetcher} from '@remix-run/react'
 import {useRootData} from '~/utils/use-root-data'
 import {ArrowButton} from '~/components/arrow-button'
 import {Field} from '~/components/form-elements'
-import {CheckIcon} from '~/components/icons/check-icon'
+import {CheckIcon} from '~/components/icons'
 import type {ActionData} from './types'
 
 function ConvertKitForm({

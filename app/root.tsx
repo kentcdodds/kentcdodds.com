@@ -62,11 +62,11 @@ import {getGenericSocialImage, illustrationImages, images} from './images'
 import {Grimmacing, MissingSomething} from './components/kifs'
 import {ArrowLink} from './components/arrow-button'
 import {getServerTimeHeader} from './utils/timing.server'
-import {PartyIcon} from './components/icons/party-icon'
 import {
   getPromoCookieValue,
   Promotification,
 } from './routes/resources/promotification'
+import {PartyIcon} from './components/icons'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',

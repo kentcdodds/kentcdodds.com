@@ -1,4 +1,3 @@
-import * as React from 'react'
 import type {
   HeadersFunction,
   LoaderFunction,
@@ -7,34 +6,37 @@ import type {
 import {json} from '@remix-run/node'
 import {useLoaderData} from '@remix-run/react'
 import {shuffle} from 'lodash'
-import {
-  getImageBuilder,
-  images,
-  getImgProps,
-  getSocialImageWithPreTitle,
-} from '~/images'
-import {H2, H3, H6, Paragraph} from '~/components/typography'
+import * as React from 'react'
 import {Grid} from '~/components/grid'
+import {
+  BehanceIcon,
+  CodepenIcon,
+  DribbbleIcon,
+  GithubIcon,
+  GlobeIcon,
+  InstagramIcon,
+  LinkedInIcon,
+  TwitchIcon,
+  TwitterIcon,
+} from '~/components/icons'
 import {HeaderSection} from '~/components/sections/header-section'
 import {
   getHeroImageProps,
   HeroSection,
 } from '~/components/sections/hero-section'
-import {GithubIcon} from '~/components/icons/github-icon'
-import {TwitterIcon} from '~/components/icons/twitter-icon'
 import {Spacer} from '~/components/spacer'
-import {getPeople} from '~/utils/credits.server'
+import {H2, H3, H6, Paragraph} from '~/components/typography'
+import {
+  getImageBuilder,
+  getImgProps,
+  getSocialImageWithPreTitle,
+  images,
+} from '~/images'
 import type {Await} from '~/types'
+import {getPeople} from '~/utils/credits.server'
 import {getDisplayUrl, getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc'
-import {GlobeIcon} from '~/components/icons/globe-icon'
-import {DribbbleIcon} from '~/components/icons/dribbble-icon'
-import {InstagramIcon} from '~/components/icons/instagram-icon'
-import {LinkedInIcon} from '~/components/icons/linkedin-icon'
 import {getSocialMetas} from '~/utils/seo'
 import type {LoaderData as RootLoaderData} from '../root'
-import {TwitchIcon} from '~/components/icons/twitch-icon'
-import {CodepenIcon} from '~/components/icons/codepen-icon'
-import BehanceIcon from '~/components/icons/behance-icon'
 
 export type LoaderData = {people: Await<ReturnType<typeof getPeople>>}
 

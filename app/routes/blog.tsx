@@ -19,7 +19,7 @@ import {
   images,
 } from '~/images'
 import {H2, H3, H6, Paragraph} from '~/components/typography'
-import {SearchIcon} from '~/components/icons/search-icon'
+import {SearchIcon, PlusIcon, RssIcon} from '~/components/icons'
 import {ArticleCard} from '~/components/article-card'
 import {ArrowLink} from '~/components/arrow-button'
 import {FeaturedSection} from '~/components/sections/featured-section'
@@ -27,7 +27,6 @@ import {Tag} from '~/components/tag'
 import {getBlogMdxListItems, getBannerAltProp} from '~/utils/mdx'
 import {filterPosts, getRankingLeader} from '~/utils/blog'
 import {HeroSection} from '~/components/sections/hero-section'
-import {PlusIcon} from '~/components/icons/plus-icon'
 import {Button} from '~/components/button'
 import {ServerError} from '~/components/errors'
 import {
@@ -53,7 +52,6 @@ import {
 import {useTeam} from '~/utils/team-provider'
 import type {LoaderData as RootLoaderData} from '../root'
 import {getSocialMetas} from '~/utils/seo'
-import {RssIcon} from '~/components/icons/rss-icon'
 import {getServerTimeHeader} from '~/utils/timing.server'
 
 const handleId = 'blog'

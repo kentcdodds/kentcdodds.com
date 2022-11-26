@@ -1,4 +1,3 @@
-import * as React from 'react'
 import type {LoaderFunction} from '@remix-run/node'
 import {redirect} from '@remix-run/node'
 import {getSeasonListItems} from '~/utils/simplecast.server'

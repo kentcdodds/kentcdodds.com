@@ -12,7 +12,7 @@ import {teamTextColorClasses} from '~/utils/misc'
 import {Grid} from '../grid'
 import {H2, H3, Paragraph} from '../typography'
 import {ArrowLink} from '../arrow-button'
-import {ArrowIcon} from '../icons/arrow-icon'
+import {ArrowIcon} from '../icons'
 
 function Tab({isSelected, children}: TabProps & {isSelected?: boolean}) {
   return (

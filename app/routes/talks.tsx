@@ -29,7 +29,7 @@ import {Tag} from '~/components/tag'
 import {Grid} from '~/components/grid'
 import {H3, H6, Paragraph} from '~/components/typography'
 import {CourseSection} from '~/components/sections/course-section'
-import {YoutubeIcon} from '~/components/icons/youtube-icon'
+import {YoutubeIcon} from '~/components/icons'
 import {getTalksAndTags} from '~/utils/talks.server'
 import {getSocialMetas} from '~/utils/seo'
 

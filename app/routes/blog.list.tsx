@@ -1,4 +1,3 @@
-import * as React from 'react'
 import type {LoaderFunction} from '@remix-run/node'
 import {json} from '@remix-run/node'
 import {Link, useLoaderData} from '@remix-run/react'
@@ -8,7 +7,7 @@ import {Grid} from '~/components/grid'
 import {H3} from '~/components/typography'
 import {Spacer} from '~/components/spacer'
 import {HeroSection} from '~/components/sections/hero-section'
-import {RssIcon} from '~/components/icons/rss-icon'
+import {RssIcon} from '~/components/icons'
 import {markdownToHtmlUnwrapped} from '~/utils/markdown.server'
 
 type LoaderData = {

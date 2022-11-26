@@ -1,4 +1,3 @@
-import * as React from 'react'
 import type {ActionFunction} from '@remix-run/node'
 import {Link} from '@remix-run/react'
 import {Grid} from '~/components/grid'

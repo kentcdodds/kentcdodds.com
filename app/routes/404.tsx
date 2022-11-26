@@ -1,4 +1,3 @@
-import * as React from 'react'
 import type {KCDHandle} from '~/types'
 import {HeroSection} from '~/components/sections/hero-section'
 import {images} from '~/images'

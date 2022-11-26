@@ -24,11 +24,9 @@ import {
 } from '~/utils/misc'
 import {Button} from '~/components/button'
 import clsx from 'clsx'
-import {SearchIcon} from '~/components/icons/search-icon'
+import {SearchIcon, ChevronUpIcon, ChevronDownIcon} from '~/components/icons'
 import {Spacer} from '~/components/spacer'
 import {Field} from '~/components/form-elements'
-import {ChevronUpIcon} from '~/components/icons/chevron-up-icon'
-import {ChevronDownIcon} from '~/components/icons/chevron-down-icon'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,

@@ -1,4 +1,3 @@
-import * as React from 'react'
 import type {OptionalTeam} from '~/utils/misc'
 
 function polarToCartesian(x: number, y: number, r: number, degrees: number) {

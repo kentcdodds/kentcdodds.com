@@ -1,4 +1,3 @@
-import * as React from 'react'
 import type {DataFunctionArgs} from '@remix-run/node'
 import {json, redirect} from '@remix-run/node'
 import {Link, useLoaderData, useParams} from '@remix-run/react'

@@ -1,4 +1,3 @@
-import * as React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import cookie from 'cookie'
 import type {EntryContext, HandleDataRequestFunction} from '@remix-run/node'

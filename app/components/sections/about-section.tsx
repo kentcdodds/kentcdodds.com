@@ -1,4 +1,3 @@
-import * as React from 'react'
 import {getImgProps, images} from '~/images'
 import {H2, Paragraph} from '../typography'
 import {ArrowLink} from '../arrow-button'

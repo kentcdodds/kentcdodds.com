@@ -1,4 +1,3 @@
-import * as React from 'react'
 import type {KCDHandle} from '~/types'
 
 export const handle: KCDHandle = {

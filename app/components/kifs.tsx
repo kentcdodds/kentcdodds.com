@@ -1,5 +1,3 @@
-import * as React from 'react'
-
 type CloudinaryVideoProps = {
   className?: string
   width?: number
