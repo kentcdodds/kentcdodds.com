@@ -15,10 +15,9 @@ export async function time<ReturnType>(
     timings?: Timings
   },
 ): Promise<ReturnType> {
+  const start = performance.now()
   const promise = typeof fn === 'function' ? fn() : fn
   if (!timings) return promise
-
-  const start = performance.now()
   const result = await promise
   type = type.replaceAll(' ', '_')
   let timingType = timings[type]

@@ -54,6 +54,7 @@ export default async function handleRequest(
     },
     {timings, type: 'react rendering', desc: 'renderToString'},
   )
+  responseHeaders.append('Server-Timing', getServerTimeHeader(timings))
 
   if (process.env.NODE_ENV !== 'production') {
     responseHeaders.set('Cache-Control', 'no-store')
@@ -68,7 +69,6 @@ export default async function handleRequest(
     'Link',
     '<https://res.cloudinary.com>; rel="preconnect"',
   )
-  responseHeaders.append('Server-Timing', getServerTimeHeader(timings))
 
   return new Response(html, {
     status: responseStatusCode,
