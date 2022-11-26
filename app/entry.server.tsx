@@ -9,6 +9,7 @@ import {getFlyReplayResponse, getInstanceInfo} from './utils/fly.server'
 import invariant from 'tiny-invariant'
 import fs from 'fs'
 import path from 'path'
+import {getServerTimeHeader, time} from './utils/timing.server'
 
 if (process.env.NODE_ENV === 'development') {
   try {
@@ -44,8 +45,14 @@ export default async function handleRequest(
     if (otherRouteResponse) return otherRouteResponse
   }
 
-  const markup = ReactDOMServer.renderToString(
-    <Remix context={remixContext} url={request.url} />,
+  const timings = {}
+  const markup = await time(
+    () => {
+      return ReactDOMServer.renderToString(
+        <Remix context={remixContext} url={request.url} />,
+      )
+    },
+    {timings, type: 'react rendering', desc: 'renderToString'},
   )
 
   if (process.env.NODE_ENV !== 'production') {
@@ -61,6 +68,7 @@ export default async function handleRequest(
     'Link',
     '<https://res.cloudinary.com>; rel="preconnect"',
   )
+  responseHeaders.append('Server-Timing', getServerTimeHeader(timings))
 
   return new Response(html, {
     status: responseStatusCode,
