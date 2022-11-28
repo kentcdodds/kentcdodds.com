@@ -73,7 +73,6 @@ export async function action({params, request}: DataFunctionArgs) {
       const {slug} = params
       const session = await getSession(request)
       const user = await session.getUser()
-      const headers = new Headers()
       // TODO: remove these logs when https://community.fly.io/t/site-falls-over-every-few-hours-before-rebooting/8907 is resolved
       console.log(`mark-as-read: getting current read count for ${slug}`)
 
@@ -87,7 +86,6 @@ export async function action({params, request}: DataFunctionArgs) {
           slug,
           userId: user.id,
         })
-        await session.getHeaders(headers)
       } else {
         const client = await getClientSession(request)
         console.log(
@@ -97,12 +95,7 @@ export async function action({params, request}: DataFunctionArgs) {
           slug,
           clientId: client.getClientId(),
         })
-        await client.getHeaders(headers)
       }
-      console.log(
-        `mark-as-read: headers set. Do we actually need to do this?`,
-        headers,
-      )
       console.log(`mark-as-read: triggering update to ranking cache ${slug}`)
 
       // trigger an update to the ranking cache and notify when the leader changed
@@ -152,7 +145,7 @@ export async function action({params, request}: DataFunctionArgs) {
       console.log(
         `mark-as-read: successfully finished mark-as-read for ${slug}. Responding.`,
       )
-      return json({success: true, headers})
+      return json({success: true})
     }
     default: {
       throw new Error(`Unknown intent: ${intent}`)
