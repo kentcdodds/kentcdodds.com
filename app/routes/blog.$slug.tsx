@@ -1,9 +1,5 @@
 import * as React from 'react'
-import type {
-  HeadersFunction,
-  ActionFunction,
-  DataFunctionArgs,
-} from '@remix-run/node'
+import type {HeadersFunction, DataFunctionArgs} from '@remix-run/node'
 import {json} from '@remix-run/node'
 import {
   Link,
@@ -66,7 +62,7 @@ export const handle: KCDHandle = {
   },
 }
 
-export const action: ActionFunction = async ({params, request}) => {
+export async function action({params, request}: DataFunctionArgs) {
   if (!params.slug) {
     throw new Error('params.slug is not defined')
   }
@@ -78,12 +74,15 @@ export const action: ActionFunction = async ({params, request}) => {
       const session = await getSession(request)
       const user = await session.getUser()
       const headers = new Headers()
+      // TODO: remove these logs when https://community.fly.io/t/site-falls-over-every-few-hours-before-rebooting/8907 is resolved
+      console.log(`mark-as-read: getting current read count for ${slug}`)
 
       const [beforePostLeader, beforeOverallLeader] = await Promise.all([
         getBlogReadRankings({request, slug}).then(getRankingLeader),
         getBlogReadRankings({request}).then(getRankingLeader),
       ])
       if (user) {
+        console.log(`mark-as-read: adding read for ${slug} by ${user.id}`)
         await addPostRead({
           slug,
           userId: user.id,
@@ -91,12 +90,20 @@ export const action: ActionFunction = async ({params, request}) => {
         await session.getHeaders(headers)
       } else {
         const client = await getClientSession(request)
+        console.log(
+          `mark-as-read: adding read for ${slug} by ${client.getClientId()}`,
+        )
         await addPostRead({
           slug,
           clientId: client.getClientId(),
         })
         await client.getHeaders(headers)
       }
+      console.log(
+        `mark-as-read: headers set. Do we actually need to do this?`,
+        headers,
+      )
+      console.log(`mark-as-read: triggering update to ranking cache ${slug}`)
 
       // trigger an update to the ranking cache and notify when the leader changed
       const [afterPostLeader, afterOverallLeader] = await Promise.all([
@@ -107,12 +114,17 @@ export const action: ActionFunction = async ({params, request}) => {
         }).then(getRankingLeader),
         getBlogReadRankings({request, forceFresh: true}).then(getRankingLeader),
       ])
+      console.log(`mark-as-read: ranking update finished`)
 
       if (
         afterPostLeader?.team &&
         afterPostLeader.team !== beforePostLeader?.team
       ) {
-        await notifyOfTeamLeaderChangeOnPost({
+        console.log(
+          `mark-as-read: notifyOfTeamLeaderChangeOnPost because ${slug} team leader changed`,
+        )
+        // fire and forget notification because the user doesn't care whether this finishes
+        void notifyOfTeamLeaderChangeOnPost({
           request,
           postSlug: slug,
           reader: user,
@@ -124,7 +136,11 @@ export const action: ActionFunction = async ({params, request}) => {
         afterOverallLeader?.team &&
         afterOverallLeader.team !== beforeOverallLeader?.team
       ) {
-        await notifyOfOverallTeamLeaderChange({
+        console.log(
+          `mark-as-read: notifyOfOverallTeamLeaderChange because overall team leader changed`,
+        )
+        // fire and forget notification because the user doesn't care whether this finishes
+        void notifyOfOverallTeamLeaderChange({
           request,
           postSlug: slug,
           reader: user,
@@ -133,6 +149,9 @@ export const action: ActionFunction = async ({params, request}) => {
         })
       }
 
+      console.log(
+        `mark-as-read: successfully finished mark-as-read for ${slug}. Responding.`,
+      )
       return json({success: true, headers})
     }
     default: {
