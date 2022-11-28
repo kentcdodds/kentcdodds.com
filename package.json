@@ -39,12 +39,13 @@
     "test:e2e:dev": "cross-env PORT=3000 playwright test",
     "pretest:e2e:run": "npm run build",
     "test:e2e:run": "cross-env PORT=8811 playwright test",
+    "test:e2e:install": "npx playwright install chromium --with-deps",
     "test": "jest",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/.eslintcache --ext js,jsx,ts,tsx .",
     "format": "prettier --write \"**/*.+(js|jsx|json|yml|yaml|css|less|scss|ts|tsx|md|gql|graphql|mdx|vue)\"",
     "typecheck": "tsc -b .",
     "validate": "./other/validate",
-    "setup": "npm install && docker compose up -d && prisma migrate reset --force && npm run validate && npm run prime-cache:mocks && npm run test:e2e:run"
+    "setup": "npm install && prisma migrate reset --force && npm run validate && npm run prime-cache:mocks && npm run test:e2e:install && npm run test:e2e:run"
   },
   "prisma": {
     "seed": "tsx other/runfile prisma/seed.ts"

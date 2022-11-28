@@ -66,7 +66,27 @@ instructions:
 
 ### Setup steps
 
-First, fork the repo, then do this:
+1.  Fork and clone the repo
+2.  Copy `.env.example` into `.env`
+3.  Run `npm run setup -s` to install dependencies and run validation
+4.  Create a branch for your PR with `git checkout -b pr/your-branch-name`
+
+> Tip: Keep your `main` branch pointing at the original repository and make pull
+> requests from branches on your fork. To do this, run:
+>
+> ```
+> git remote add upstream https://github.com/kentcdodds/kentcdodds.com.git
+> git fetch upstream
+> git branch --set-upstream-to=upstream/main main
+> ```
+>
+> This will add the original repository as a "remote" called "upstream," Then
+> fetch the git information from that remote, then set your local `main` branch
+> to use the upstream main branch whenever you run `git pull`. Then you can make
+> all of your pull request branches based on this `main` branch. Whenever you
+> want to update your version of `main`, do a regular `git pull`.
+
+If the setup script doesn't work, you can try to run the commands manually:
 
 ```sh
 git clone <your-fork>
@@ -77,29 +97,22 @@ cd ./kentcdodds.com
 #   change any of these values unless you want to hit real environments.
 cp .env.example .env
 
-npm run setup
-```
-
-That should do everything for you... If it doesn't work, here's basically what
-it does, go ahead and try each of these commands one at a time:
-
-```sh
+# Install deps
 npm install
 
-# make sure you have docker installed
-# The `-d` tells docker to run this in the background
-docker compose up -d
+# setup database
+prisma migrate reset --force
 
-# get the DB initialized to match our prisma schema.
-npx prisma migrate reset --force
-
-# Run type checking, linting, and unit tests
+# run build, typecheck, linting
 npm run validate
 
-# Prime the cache with the mock data
+# setup cache database
 npm run prime-cache:mocks
 
-# Run the E2E tests
+# Install playwright browsers
+npm run test:e2e:install
+
+# run e2e tests
 npm run test:e2e:run
 ```
 
