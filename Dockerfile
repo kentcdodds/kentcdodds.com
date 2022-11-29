@@ -56,8 +56,11 @@ RUN npm run build
 FROM base
 
 ENV FLY="true"
-ENV FLY_LITEFS_DIR="/litefs/data-2"
-ENV DATABASE_FILENAME="sqlite.db"
+# TODO: bring back LiteFS
+# ENV FLY_LITEFS_DIR="/litefs/data-2"
+# ENV DATABASE_FILENAME="sqlite.db"
+ENV FLY_LITEFS_DIR="/data/dbs/sqlite.db"
+ENV DATABASE_FILENAME="database"
 ENV DATABASE_URL="file:$FLY_LITEFS_DIR/$DATABASE_FILENAME"
 ENV PORT="8080"
 ENV NODE_ENV="production"
@@ -86,4 +89,6 @@ COPY --from=litefs /usr/local/bin/litefs /usr/local/bin/litefs
 ADD other/litefs.yml /etc/litefs.yml
 RUN mkdir -p /data ${FLY_LITEFS_DIR}
 
-CMD ["litefs", "mount", "--", "node", "./other/start.js"]
+# TODO: bring back LiteFS
+# CMD ["litefs", "mount", "--", "node", "./other/start.js"]
+CMD ["node", "./other/start.js"]
