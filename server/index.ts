@@ -55,21 +55,6 @@ app.get('/build/info.json', (req, res, next) => {
   next()
 })
 
-if (process.env.FLY) {
-  app.use((req, res, next) => {
-    const host = getHost(req)
-    const allowedHosts = [primaryHost, 'kcd.fly.dev', 'kcd-staging.fly.dev']
-    // TODO: figure out if we can determine the IP address that fly uses for the healthcheck
-    const isIPAddress = /\d+\.\d+\.\d+\.\d+/.test(host)
-    if (allowedHosts.some(h => host.endsWith(h)) || isIPAddress) {
-      return next()
-    } else {
-      console.log(`👺 disallowed host redirected: ${host}${req.originalUrl}`)
-      return res.redirect(`https://${primaryHost}${req.originalUrl}`)
-    }
-  })
-}
-
 app.use((req, res, next) => {
   const {currentInstance, primaryInstance} = getInstanceInfo()
   res.set('X-Powered-By', 'Kody the Koala')
@@ -89,6 +74,34 @@ app.use((req, res, next) => {
   res.set('Strict-Transport-Security', `max-age=${60 * 60 * 24 * 365 * 100}`)
   next()
 })
+
+if (process.env.FLY) {
+  app.use((req, res, next) => {
+    const host = getHost(req)
+    const allowedHosts = [primaryHost, 'kcd.fly.dev', 'kcd-staging.fly.dev']
+    // TODO: figure out if we can determine the IP address that fly uses for the healthcheck
+    const isIPAddress = /\d+\.\d+\.\d+\.\d+/.test(host)
+    if (!allowedHosts.some(h => host.endsWith(h)) && !isIPAddress) {
+      console.log(`👺 disallowed host redirected: ${host}${req.originalUrl}`)
+      return res.redirect(`https://${primaryHost}${req.originalUrl}`)
+    }
+
+    const flyClientIp = req.get('Fly-Client-IP')
+    const xForwardedFor = req.get('X-Forwarded-For')
+    if (!flyClientIp || !xForwardedFor) {
+      // this should never happen, but just in case...
+      return next()
+    }
+
+    if (xForwardedFor.includes(flyClientIp)) {
+      return next()
+    } else {
+      return res.send(
+        'Please go to https://kentcdodds.com instead! Ping Kent if you think you should not be seeing this...',
+      )
+    }
+  })
+}
 
 app.use((req, res, next) => {
   const proto = req.get('X-Forwarded-Proto')
