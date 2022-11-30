@@ -16,7 +16,13 @@ import {
 import requestIp from 'request-ip'
 import {addCloudinaryProxies} from './cloudinary'
 import {getRedirectsMiddleware} from './redirects'
-import {getInstanceInfo, getReplayResponse, txMiddleware} from './fly'
+import {
+  getInstanceInfo,
+  getReplayResponse,
+  proxyRedirectMiddleware,
+  txMiddleware,
+} from './fly'
+import {getHost, primaryHost} from './utils'
 
 installGlobals()
 
@@ -40,10 +46,6 @@ const BUILD_DIR = path.join(process.cwd(), 'build')
 const app = express()
 
 app.use(requestIp.mw())
-
-const primaryHost = 'kentcdodds.com'
-const getHost = (req: {get: (key: string) => string | undefined}) =>
-  req.get('X-Forwarded-Host') ?? req.get('host') ?? ''
 
 app.get('/build/info.json', (req, res, next) => {
   console.log(
@@ -76,31 +78,7 @@ app.use((req, res, next) => {
 })
 
 if (process.env.FLY) {
-  app.use((req, res, next) => {
-    const host = getHost(req)
-    const allowedHosts = [primaryHost, 'kcd.fly.dev', 'kcd-staging.fly.dev']
-    // TODO: figure out if we can determine the IP address that fly uses for the healthcheck
-    const isIPAddress = /\d+\.\d+\.\d+\.\d+/.test(host)
-    if (!allowedHosts.some(h => host.endsWith(h)) && !isIPAddress) {
-      console.log(`👺 disallowed host redirected: ${host}${req.originalUrl}`)
-      return res.redirect(`https://${primaryHost}${req.originalUrl}`)
-    }
-
-    const flyClientIp = req.get('Fly-Client-IP')
-    const xForwardedFor = req.get('X-Forwarded-For')
-    if (!flyClientIp || !xForwardedFor) {
-      // this should never happen, but just in case...
-      return next()
-    }
-
-    if (xForwardedFor.includes(flyClientIp)) {
-      return next()
-    } else {
-      return res.send(
-        'Please go to https://kentcdodds.com instead! Ping Kent if you think you should not be seeing this...',
-      )
-    }
-  })
+  app.use(proxyRedirectMiddleware)
 }
 
 app.use((req, res, next) => {
