@@ -189,12 +189,15 @@ export const proxyRedirectMiddleware: RequestHandler = (req, res, next) => {
   if (xForwardedFor.includes(flyClientIp)) {
     return next()
   } else {
+    // https://fly.io/docs/reference/runtime-environment/#fly-client-ip
+    // the fly-client-ip header is the IP address of the client that initiated the request
+    // and if it's not found in the x-forwarded-for header, then we know something fishy is going on 🐟
     console.log(`👺 disallowed ip address replied to:`, {
       xForwardedFor,
       flyClientIp,
     })
     return res.send(
-      'Please go to https://kentcdodds.com instead! Ping Kent if you think you should not be seeing this...',
+      'Please go to https://kcd.dev instead! Ping Kent if you think you should not be seeing this...',
     )
   }
 }
