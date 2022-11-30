@@ -6,7 +6,6 @@ import cookie from 'cookie'
 import invariant from 'tiny-invariant'
 import chokidar from 'chokidar'
 import EventEmitter from 'events'
-import {allowedHosts, getHost, primaryHost} from './utils'
 
 export const getReplayResponse: RequestHandler = function getReplayResponse(
   req,
@@ -171,14 +170,6 @@ function getTXNumber() {
 }
 
 export const proxyRedirectMiddleware: RequestHandler = (req, res, next) => {
-  const host = getHost(req)
-  // TODO: figure out if we can determine the IP address that fly uses for the healthcheck
-  const isIPAddress = /\d+\.\d+\.\d+\.\d+/.test(host)
-  if (!allowedHosts.some(h => host.endsWith(h)) && !isIPAddress) {
-    console.log(`👺 disallowed host redirected: ${host}${req.originalUrl}`)
-    return res.redirect(`https://${primaryHost}${req.originalUrl}`)
-  }
-
   const flyClientIp = req.get('Fly-Client-IP')
   const xForwardedFor = req.get('X-Forwarded-For')
   if (!flyClientIp || !xForwardedFor) {

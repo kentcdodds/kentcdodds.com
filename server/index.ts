@@ -13,7 +13,6 @@ import {
   createMetronomeGetLoadContext,
   registerMetronome,
 } from '@metronome-sh/express'
-import requestIp from 'request-ip'
 import {addCloudinaryProxies} from './cloudinary'
 import {getRedirectsMiddleware} from './redirects'
 import {
@@ -22,11 +21,13 @@ import {
   proxyRedirectMiddleware,
   txMiddleware,
 } from './fly'
-import {getHost, primaryHost} from './utils'
 
 installGlobals()
 
 const here = (...d: Array<string>) => path.join(__dirname, ...d)
+const primaryHost = 'kentcdodds.com'
+const getHost = (req: {get: (key: string) => string | undefined}) =>
+  req.get('X-Forwarded-Host') ?? req.get('host') ?? ''
 
 // TODO: enable this
 const enableSentry = true
@@ -44,18 +45,6 @@ const MODE = process.env.NODE_ENV
 const BUILD_DIR = path.join(process.cwd(), 'build')
 
 const app = express()
-
-app.use(requestIp.mw())
-
-app.get('/build/info.json', (req, res, next) => {
-  console.log(
-    `build info requested`,
-    {ipAddress: req.clientIp},
-    'headers:',
-    req.headers,
-  )
-  next()
-})
 
 app.use((req, res, next) => {
   const {currentInstance, primaryInstance} = getInstanceInfo()

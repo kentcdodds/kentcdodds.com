@@ -130,15 +130,6 @@ export default function ContactRoute() {
           aria-describedby="contact-form-error"
         >
           <Grid>
-            {user ? null : (
-              <div className="col-span-full mb-12 lg:col-span-8 lg:col-start-3">
-                <Paragraph>
-                  Note: due to spam issues, you have to confirm your email by{' '}
-                  <Link to="/login">signing up for an account</Link> on my
-                  website first.
-                </Paragraph>
-              </div>
-            )}
             <div className="col-span-full mb-12 lg:col-span-8 lg:col-start-3">
               <H2>Email me</H2>
               <Paragraph>
@@ -160,63 +151,77 @@ export default function ContactRoute() {
             </div>
 
             <div className="col-span-full lg:col-span-8 lg:col-start-3">
-              <Field
-                name="name"
-                label="Name"
-                placeholder="Your name"
-                disabled={true}
-                defaultValue={user?.firstName ?? ''}
-              />
-              <Field
-                type="email"
-                label="Email"
-                placeholder="person.doe@example.com"
-                disabled={true}
-                defaultValue={user?.email ?? ''}
-                name="email"
-              />
-              <Field
-                name="subject"
-                label="Subject"
-                placeholder="No subject"
-                defaultValue={contactFetcher.data?.fields.subject ?? ''}
-                error={contactFetcher.data?.errors.subject}
-              />
-              <Field
-                name="body"
-                label="Body"
-                type="textarea"
-                placeholder="A clear and concise message works wonders."
-                rows={8}
-                defaultValue={contactFetcher.data?.fields.body ?? ''}
-                error={contactFetcher.data?.errors.body}
-              />
-              {emailSuccessfullySent ? (
+              {user ? (
                 <>
-                  {`Hooray, email sent! `}
-                  <span role="img" aria-label="party popper emoji">
-                    🎉
-                  </span>
+                  <Field
+                    name="name"
+                    label="Name"
+                    placeholder="Your name"
+                    disabled={true}
+                    defaultValue={user.firstName}
+                  />
+                  <Field
+                    type="email"
+                    label="Email"
+                    placeholder="person.doe@example.com"
+                    disabled={true}
+                    defaultValue={user.email}
+                    name="email"
+                  />
+                  <Field
+                    name="subject"
+                    label="Subject"
+                    placeholder="No subject"
+                    defaultValue={contactFetcher.data?.fields.subject ?? ''}
+                    error={contactFetcher.data?.errors.subject}
+                  />
+                  <Field
+                    name="body"
+                    label="Body"
+                    type="textarea"
+                    placeholder="A clear and concise message works wonders."
+                    rows={8}
+                    defaultValue={contactFetcher.data?.fields.body ?? ''}
+                    error={contactFetcher.data?.errors.body}
+                  />
+                  {emailSuccessfullySent ? (
+                    <>
+                      {`Hooray, email sent! `}
+                      <span role="img" aria-label="party popper emoji">
+                        🎉
+                      </span>
+                    </>
+                  ) : (
+                    // IDEA: show a loading state here
+                    <ButtonGroup>
+                      <Button
+                        type="submit"
+                        disabled={contactFetcher.state !== 'idle'}
+                      >
+                        Send message
+                      </Button>
+                      <Button variant="secondary" type="reset">
+                        Reset form
+                      </Button>
+                    </ButtonGroup>
+                  )}
+                  {contactFetcher.data?.errors.generalError ? (
+                    <ErrorPanel id="contact-form-error">
+                      {contactFetcher.data.errors.generalError}
+                    </ErrorPanel>
+                  ) : null}
                 </>
               ) : (
-                // IDEA: show a loading state here
-                <ButtonGroup>
-                  <Button
-                    type="submit"
-                    disabled={!user || contactFetcher.state !== 'idle'}
-                  >
-                    Send message
-                  </Button>
-                  <Button variant="secondary" type="reset">
-                    Reset form
-                  </Button>
-                </ButtonGroup>
+                <div className="col-span-full mb-12 lg:col-span-8 lg:col-start-3">
+                  <Paragraph>
+                    Note: due to spam issues, you have to confirm your email by{' '}
+                    <Link to="/login" className="underline">
+                      signing up for an account
+                    </Link>{' '}
+                    on my website first.
+                  </Paragraph>
+                </div>
               )}
-              {contactFetcher.data?.errors.generalError ? (
-                <ErrorPanel id="contact-form-error">
-                  {contactFetcher.data.errors.generalError}
-                </ErrorPanel>
-              ) : null}
             </div>
           </Grid>
         </contactFetcher.Form>
