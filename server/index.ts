@@ -38,6 +38,20 @@ const BUILD_DIR = path.join(process.cwd(), 'build')
 
 const app = express()
 
+const primaryHost = 'kentcdodds.com'
+
+if (process.env.FLY) {
+  app.use((req, res, next) => {
+    const host = req.get('X-Forwarded-Host') ?? req.get('host') ?? ''
+    const allowedHosts = [primaryHost, 'kcd-staging.fly.dev']
+    if (allowedHosts.some(h => host.endsWith(h))) {
+      return next()
+    } else {
+      return res.redirect(`https://${primaryHost}${req.originalUrl}`)
+    }
+  })
+}
+
 app.use((req, res, next) => {
   const {currentInstance, primaryInstance} = getInstanceInfo()
   res.set('X-Powered-By', 'Kody the Koala')
@@ -46,8 +60,8 @@ app.use((req, res, next) => {
   res.set('X-Fly-Instance', currentInstance)
   res.set('X-Fly-Primary-Instance', primaryInstance)
 
-  const host = req.get('X-Forwarded-Host') ?? req.get('host')
-  if (!host?.endsWith('kentcdodds.com')) {
+  const host = req.get('X-Forwarded-Host') ?? req.get('host') ?? ''
+  if (!host.endsWith(primaryHost)) {
     res.set('X-Robots-Tag', 'noindex')
   }
 
@@ -127,7 +141,7 @@ app.use((req, res, next) => {
   next()
 })
 
-app.use(morgan('tiny', {immediate: true}))
+app.use(morgan('tiny'))
 
 const enableMetronome = true
 
