@@ -46,11 +46,13 @@ const getHost = (req: {get: (key: string) => string | undefined}) =>
 if (process.env.FLY) {
   app.use((req, res, next) => {
     const host = getHost(req)
-    const allowedHosts = [primaryHost, 'kcd-staging.fly.dev']
-    if (allowedHosts.some(h => host.endsWith(h))) {
+    const allowedHosts = [primaryHost, 'kcd.fly.dev', 'kcd-staging.fly.dev']
+    // TODO: figure out if we can determine the IP address that fly uses for the healthcheck
+    const isIPAddress = /\d+\.\d+\.\d+\.\d+/.test(host)
+    if (allowedHosts.some(h => host.endsWith(h)) || isIPAddress) {
       return next()
     } else {
-      console.log(`👺 Host rejected: ${host}`)
+      console.log(`👺 disallowed host redirected: ${host}${req.originalUrl}`)
       return res.redirect(`https://${primaryHost}${req.originalUrl}`)
     }
   })
