@@ -81,7 +81,9 @@ async function getPrimaryInstanceHostname() {
 }
 
 async function deployMigrations() {
-  const command = 'npx prisma migrate deploy'
+  const command = `sqlite3 /data/dbs/sqlite.db/database ".dump" > /tmp/dump.sql && sqlite3 /litefs/sqlite.db < /tmp/dump.sql`
+  // TODO: bring me back asap
+  // const command = 'npx prisma migrate deploy'
   const child = spawn(command, {shell: true, stdio: 'inherit'})
   await new Promise((res, rej) => {
     child.on('exit', code => {
