@@ -59,6 +59,7 @@ app.use((req, res, next) => {
   res.set('X-Fly-App', process.env.FLY_APP_NAME ?? 'unknown')
   res.set('X-Fly-Instance', currentInstance)
   res.set('X-Fly-Primary-Instance', primaryInstance)
+  res.set('X-Frame-Options', 'SAMEORIGIN')
 
   const host = req.get('X-Forwarded-Host') ?? req.get('host') ?? ''
   if (!host.endsWith(primaryHost)) {
