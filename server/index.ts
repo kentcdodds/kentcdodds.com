@@ -71,7 +71,7 @@ app.use((req, res, next) => {
   if (!host.endsWith(primaryHost)) {
     res.set('X-Robots-Tag', 'noindex')
   }
-  res.set('Access-Control-Allow-Origin', host)
+  res.set('Access-Control-Allow-Origin', `https://${host}`)
 
   // if they connect once with HTTPS, then they'll connect with HTTPS for the next hundred years
   res.set('Strict-Transport-Security', `max-age=${60 * 60 * 24 * 365 * 100}`)
