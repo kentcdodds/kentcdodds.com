@@ -74,30 +74,23 @@ export async function action({params, request}: DataFunctionArgs) {
       const {slug} = params
       const session = await getSession(request)
       const user = await session.getUser()
-      // TODO: remove these logs when https://community.fly.io/t/site-falls-over-every-few-hours-before-rebooting/8907 is resolved
-      console.log(`mark-as-read: getting current read count for ${slug}`)
 
       const [beforePostLeader, beforeOverallLeader] = await Promise.all([
         getBlogReadRankings({request, slug}).then(getRankingLeader),
         getBlogReadRankings({request}).then(getRankingLeader),
       ])
       if (user) {
-        console.log(`mark-as-read: adding read for ${slug} by ${user.id}`)
         await addPostRead({
           slug,
           userId: user.id,
         })
       } else {
         const client = await getClientSession(request)
-        console.log(
-          `mark-as-read: adding read for ${slug} by ${client.getClientId()}`,
-        )
         await addPostRead({
           slug,
           clientId: client.getClientId(),
         })
       }
-      console.log(`mark-as-read: triggering update to ranking cache ${slug}`)
 
       // trigger an update to the ranking cache and notify when the leader changed
       const [afterPostLeader, afterOverallLeader] = await Promise.all([
@@ -108,15 +101,11 @@ export async function action({params, request}: DataFunctionArgs) {
         }).then(getRankingLeader),
         getBlogReadRankings({request, forceFresh: true}).then(getRankingLeader),
       ])
-      console.log(`mark-as-read: ranking update finished`)
 
       if (
         afterPostLeader?.team &&
         afterPostLeader.team !== beforePostLeader?.team
       ) {
-        console.log(
-          `mark-as-read: notifyOfTeamLeaderChangeOnPost because ${slug} team leader changed`,
-        )
         // fire and forget notification because the user doesn't care whether this finishes
         void notifyOfTeamLeaderChangeOnPost({
           request,
@@ -130,9 +119,6 @@ export async function action({params, request}: DataFunctionArgs) {
         afterOverallLeader?.team &&
         afterOverallLeader.team !== beforeOverallLeader?.team
       ) {
-        console.log(
-          `mark-as-read: notifyOfOverallTeamLeaderChange because overall team leader changed`,
-        )
         // fire and forget notification because the user doesn't care whether this finishes
         void notifyOfOverallTeamLeaderChange({
           request,
@@ -143,9 +129,6 @@ export async function action({params, request}: DataFunctionArgs) {
         })
       }
 
-      console.log(
-        `mark-as-read: successfully finished mark-as-read for ${slug}. Responding.`,
-      )
       return json({success: true})
     }
     default: {
