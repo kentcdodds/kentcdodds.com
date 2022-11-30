@@ -40,13 +40,17 @@ const app = express()
 
 const primaryHost = 'kentcdodds.com'
 
+const getHost = (req: {get: (key: string) => string | undefined}) =>
+  req.get('X-Forwarded-Host') ?? req.get('host') ?? ''
+
 if (process.env.FLY) {
   app.use((req, res, next) => {
-    const host = req.get('X-Forwarded-Host') ?? req.get('host') ?? ''
+    const host = getHost(req)
     const allowedHosts = [primaryHost, 'kcd-staging.fly.dev']
     if (allowedHosts.some(h => host.endsWith(h))) {
       return next()
     } else {
+      console.log(`👺 Host rejected: ${host}`)
       return res.redirect(`https://${primaryHost}${req.originalUrl}`)
     }
   })
@@ -61,7 +65,7 @@ app.use((req, res, next) => {
   res.set('X-Fly-Primary-Instance', primaryInstance)
   res.set('X-Frame-Options', 'SAMEORIGIN')
 
-  const host = req.get('X-Forwarded-Host') ?? req.get('host') ?? ''
+  const host = getHost(req)
   if (!host.endsWith(primaryHost)) {
     res.set('X-Robots-Tag', 'noindex')
   }
@@ -73,7 +77,7 @@ app.use((req, res, next) => {
 
 app.use((req, res, next) => {
   const proto = req.get('X-Forwarded-Proto')
-  const host = req.get('X-Forwarded-Host') ?? req.get('host')
+  const host = getHost(req)
   if (proto === 'http') {
     res.set('X-Forwarded-Proto', 'https')
     res.redirect(`https://${host}${req.originalUrl}`)
@@ -142,7 +146,20 @@ app.use((req, res, next) => {
   next()
 })
 
-app.use(morgan('tiny'))
+app.use(
+  morgan((tokens, req, res) => {
+    const host = getHost(req)
+    return [
+      tokens.method?.(req, res),
+      `${host}${tokens.url?.(req, res)}`,
+      tokens.status?.(req, res),
+      tokens.res?.(req, res, 'content-length'),
+      '-',
+      tokens['response-time']?.(req, res),
+      'ms',
+    ].join(' ')
+  }),
+)
 
 const enableMetronome = true
 
