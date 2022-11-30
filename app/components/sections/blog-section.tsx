@@ -18,6 +18,8 @@ function BlogSection({
   description,
   showArrowButton = true,
 }: BlogSectionProps) {
+  if (!articles.length) return null
+
   return (
     <>
       <HeaderSection
