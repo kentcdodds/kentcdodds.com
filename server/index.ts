@@ -13,6 +13,7 @@ import {
   createMetronomeGetLoadContext,
   registerMetronome,
 } from '@metronome-sh/express'
+import requestIp from 'request-ip'
 import {addCloudinaryProxies} from './cloudinary'
 import {getRedirectsMiddleware} from './redirects'
 import {getInstanceInfo, getReplayResponse, txMiddleware} from './fly'
@@ -38,10 +39,21 @@ const BUILD_DIR = path.join(process.cwd(), 'build')
 
 const app = express()
 
-const primaryHost = 'kentcdodds.com'
+app.use(requestIp.mw())
 
+const primaryHost = 'kentcdodds.com'
 const getHost = (req: {get: (key: string) => string | undefined}) =>
   req.get('X-Forwarded-Host') ?? req.get('host') ?? ''
+
+app.get('/build/info.json', (req, res, next) => {
+  console.log(
+    `build info requested`,
+    {ipAddress: req.clientIp},
+    'headers:',
+    req.headers,
+  )
+  next()
+})
 
 if (process.env.FLY) {
   app.use((req, res, next) => {
