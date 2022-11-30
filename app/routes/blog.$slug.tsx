@@ -48,6 +48,7 @@ import {Spacer} from '~/components/spacer'
 import clsx from 'clsx'
 import {HeaderSection} from '~/components/sections/header-section'
 import {CourseCard} from '~/components/course-card'
+import {getServerTimeHeader} from '~/utils/timing.server'
 
 const handleId = 'blog-post'
 export const handle: KCDHandle = {
@@ -198,6 +199,7 @@ export async function loader({request, params}: DataFunctionArgs) {
   const headers = {
     'Cache-Control': 'private, max-age=3600',
     Vary: 'Cookie',
+    'Server-Timing': getServerTimeHeader(timings),
   }
   if (!page) {
     throw json(catchData, {status: 404, headers})
