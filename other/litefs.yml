@@ -6,7 +6,7 @@ data-dir: '/data/litefs'
 
 exit-on-error: false
 
-candidate: "${FLY_REGION == 'den'}"
+# candidate: "${FLY_REGION == 'den'}"
 
 # These environment variables will be available in your Fly.io application.
 # You must specify "experiement.enable_consul" for FLY_CONSUL_URL to be available.
