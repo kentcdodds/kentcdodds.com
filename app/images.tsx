@@ -299,7 +299,7 @@ function getImgProps(
 ) {
   const averageSize = Math.ceil(widths.reduce((a, s) => a + s) / widths.length)
 
-  const props: JSX.IntrinsicElements['img'] = {
+  return {
     alt: imageBuilder.alt,
     src: imageBuilder({
       quality: 'auto',
@@ -323,7 +323,6 @@ function getImgProps(
     sizes: sizes.join(', '),
     crossOrigin: 'anonymous',
   }
-  return props
 }
 
 function getSocialImageWithPreTitle({
