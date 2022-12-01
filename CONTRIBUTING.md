@@ -195,6 +195,39 @@ npx prisma migrate reset --force
 In addition to resetting your database to the latest schema, it'll also run the
 seed script which will populate the database with some example data.
 
+## Maintenance Tips
+
+We use LiteFS to proxy the file system for SQLite for multi-regional SQLite. If
+things go wrong, this is what you do:
+
+In one terminal, ssh into fly:
+
+```
+fly ssh console -C bash
+
+# make a backup of the database
+cp /data/litefs/dbs/sqlite.db/database /data/sqlite.db.bkp
+# make a gzip copy so it downloads faster
+gzip -c /data/sqlite.db.bkp > /data/sqlite.db.bkp.gz
+```
+
+In another tab, download that backup (just in case):
+
+```
+fly sftp get /data/sqlite.db.bkp.gz ./sqlite.db.bkp.gz
+```
+
+Then, in the first tab (while still ssh-ed into Fly):
+
+```
+# delete the litefs database
+rm -rf /data/litefs/dbs/sqlite.db
+# import the backup
+litefs -name sqlite.db import /data/sqlite.db.bkp
+```
+
+Then you should be good to go again.
+
 ## Help needed
 
 Please checkout [the open issues][issues]
