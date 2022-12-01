@@ -85,7 +85,7 @@ app.use(
           'images.transistor.fm',
           'i2.wp.com',
         ],
-        'media-src': ["'self'", 'res.cloudinary.com'],
+        'media-src': ["'self'", 'res.cloudinary.com', 'data:'],
         'script-src': [
           "'strict-dynamic'",
           // @ts-expect-error middleware is the worst
