@@ -64,6 +64,8 @@ app.use(
         'frame-src': [
           "'self'",
           'youtube.com',
+          'www.youtube.com',
+          'youtu.be',
           'player.simplecast.com',
           'egghead.io',
           'calendar.google.com',
