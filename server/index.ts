@@ -68,6 +68,7 @@ app.use(
           'youtu.be',
           'player.simplecast.com',
           'egghead.io',
+          'app.egghead.io',
           'calendar.google.com',
           'codesandbox.io',
           'share.transistor.fm',
