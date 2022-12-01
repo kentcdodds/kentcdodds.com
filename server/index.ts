@@ -82,6 +82,7 @@ app.use(
           'i.ytimg.com',
           'image.simplecastcdn.com',
           'images.transistor.fm',
+          'i2.wp.com',
         ],
         'media-src': ["'self'", 'res.cloudinary.com'],
         'script-src': [
