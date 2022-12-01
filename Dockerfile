@@ -1,6 +1,3 @@
-# Fetch the LiteFS binary using a multi-stage build.
-FROM flyio/litefs:sha-de5639e AS litefs
-
 # base node image
 FROM node:18-bullseye-slim as base
 
@@ -82,7 +79,7 @@ COPY --from=build /app/prisma /app/prisma
 ADD . .
 
 # prepare for litefs
-COPY --from=litefs /usr/local/bin/litefs /usr/local/bin/litefs
+COPY --from=litefs:sha-de5639e /usr/local/bin/litefs /usr/local/bin/litefs
 ADD other/litefs.yml /etc/litefs.yml
 RUN mkdir -p /data ${FLY_LITEFS_DIR}
 
