@@ -406,9 +406,6 @@ export default function MdxScreen() {
     ...(data.page.frontmatter.categories ?? []),
     ...(data.page.frontmatter.meta?.keywords ?? []),
   ]
-  const isNonRemixReact =
-    categoriesAndKeywords.includes('react') &&
-    !categoriesAndKeywords.includes('remix')
   useOnRead({
     parentElRef: readMarker,
     time: data.page.readTime?.time,
@@ -547,22 +544,6 @@ export default function MdxScreen() {
               )}
             </div>
           </div>
-
-          {isNonRemixReact ? (
-            <div className="col-span-full lg:col-start-2 lg:col-end-12">
-              <div className="prose prose-light mt-12 max-w-full dark:prose-dark">
-                {React.createElement(
-                  'callout-success',
-                  {},
-                  `💿 This blog post involves React, but was written before `,
-                  <a href="https://remix.run">Remix</a>,
-                  ` was launched. Learn how Remix drastically simplifies React applications from the post:`,
-                  <br />,
-                  <Link to="/blog/remix-the-yang-to-react-s-yin">{`Remix: The Yang to React's Yin ☯`}</Link>,
-                )}
-              </div>
-            </div>
-          ) : null}
         </Grid>
 
         <Grid className="prose prose-light mb-24 break-words dark:prose-dark">
