@@ -50,26 +50,6 @@ const BUILD_DIR = path.join(process.cwd(), 'build')
 const app = express()
 
 app.use((req, res, next) => {
-  const {currentInstance, primaryInstance} = getInstanceInfo()
-  res.set('X-Powered-By', 'Kody the Koala')
-  res.set('X-Fly-Region', process.env.FLY_REGION ?? 'unknown')
-  res.set('X-Fly-App', process.env.FLY_APP_NAME ?? 'unknown')
-  res.set('X-Fly-Instance', currentInstance)
-  res.set('X-Fly-Primary-Instance', primaryInstance)
-  res.set('X-Frame-Options', 'SAMEORIGIN')
-
-  const host = getHost(req)
-  if (!host.endsWith(primaryHost)) {
-    res.set('X-Robots-Tag', 'noindex')
-  }
-  res.set('Access-Control-Allow-Origin', `https://${host}`)
-
-  // if they connect once with HTTPS, then they'll connect with HTTPS for the next hundred years
-  res.set('Strict-Transport-Security', `max-age=${60 * 60 * 24 * 365 * 100}`)
-  next()
-})
-
-app.use((req, res, next) => {
   res.locals.cspNonce = crypto.randomBytes(16).toString('hex')
   next()
 })
@@ -107,6 +87,26 @@ app.use(
     },
   }),
 )
+
+app.use((req, res, next) => {
+  const {currentInstance, primaryInstance} = getInstanceInfo()
+  res.set('X-Powered-By', 'Kody the Koala')
+  res.set('X-Fly-Region', process.env.FLY_REGION ?? 'unknown')
+  res.set('X-Fly-App', process.env.FLY_APP_NAME ?? 'unknown')
+  res.set('X-Fly-Instance', currentInstance)
+  res.set('X-Fly-Primary-Instance', primaryInstance)
+  res.set('X-Frame-Options', 'SAMEORIGIN')
+
+  const host = getHost(req)
+  if (!host.endsWith(primaryHost)) {
+    res.set('X-Robots-Tag', 'noindex')
+  }
+  res.set('Access-Control-Allow-Origin', `https://${host}`)
+
+  // if they connect once with HTTPS, then they'll connect with HTTPS for the next hundred years
+  res.set('Strict-Transport-Security', `max-age=${60 * 60 * 24 * 365 * 100}`)
+  next()
+})
 
 if (process.env.FLY) {
   app.use(proxyRedirectMiddleware)
