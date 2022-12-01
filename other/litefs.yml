@@ -4,11 +4,9 @@ mount-dir: '${FLY_LITEFS_DIR}'
 # The path to where the underlying volume mount is.
 data-dir: '/data/litefs'
 
-# TODO: remove this:
 exit-on-error: false
 
-# TODO: make "den" region's instance the primary
-# candidate: "${IS_PRIMARY_REGION}"
+candidate: "${FLY_REGION == 'den'}"
 
 # These environment variables will be available in your Fly.io application.
 # You must specify "experiement.enable_consul" for FLY_CONSUL_URL to be available.
