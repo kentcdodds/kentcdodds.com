@@ -57,6 +57,7 @@ app.use((req, res, next) => {
 app.use(
   helmet({
     contentSecurityPolicy: {
+      reportOnly: true,
       directives: {
         'connect-src': MODE === 'development' ? ['ws:', "'self'"] : null,
         'font-src': ["'self'"],
