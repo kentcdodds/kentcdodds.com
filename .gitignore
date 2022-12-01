@@ -22,3 +22,5 @@ other/postcss.ignored
 /playwright-report/
 /playwright/.cache/
 /other/cache.db
+
+*.bkp.*

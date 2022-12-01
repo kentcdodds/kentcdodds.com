@@ -223,7 +223,7 @@ Then, in the first tab (while still ssh-ed into Fly):
 # delete the litefs database
 rm -rf /data/litefs/dbs/sqlite.db
 # import the backup
-litefs -name sqlite.db import /data/sqlite.db.bkp
+litefs import -name sqlite.db /data/sqlite.db.bkp
 ```
 
 Then you should be good to go again.
