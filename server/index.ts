@@ -76,6 +76,7 @@ app.use(
           'data:',
           'res.cloudinary.com',
           'www.gravatar.com',
+          'sailfish.kentcdodds.com',
         ],
         'media-src': ["'self'", 'res.cloudinary.com'],
         'script-src': [
