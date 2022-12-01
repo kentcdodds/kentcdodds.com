@@ -1,13 +1,7 @@
 import * as React from 'react'
 import type {HeadersFunction, DataFunctionArgs} from '@remix-run/node'
 import {json} from '@remix-run/node'
-import {
-  Link,
-  useCatch,
-  useFetcher,
-  useLoaderData,
-  useParams,
-} from '@remix-run/react'
+import {useCatch, useFetcher, useLoaderData, useParams} from '@remix-run/react'
 import type {KCDHandle, MdxListItem, Team} from '~/types'
 import {useRootData} from '~/utils/use-root-data'
 import {getImageBuilder, getImgProps, images} from '~/images'
