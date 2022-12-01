@@ -207,6 +207,10 @@ fly ssh console -C bash
 
 # make a backup of the database
 cp /data/litefs/dbs/sqlite.db/database /data/sqlite.db.bkp
+
+# do an integrity check
+sqlite3 /data/sqlite.db.bkp "PRAGMA integrity_check;"
+
 # make a gzip copy so it downloads faster
 gzip -c /data/sqlite.db.bkp > /data/sqlite.db.bkp.gz
 ```
