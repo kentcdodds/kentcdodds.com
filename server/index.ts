@@ -58,7 +58,6 @@ app.use(
   helmet({
     crossOriginEmbedderPolicy: false,
     contentSecurityPolicy: {
-      reportOnly: true,
       directives: {
         'connect-src': MODE === 'development' ? ['ws:', "'self'"] : null,
         'font-src': ["'self'"],
@@ -84,6 +83,7 @@ app.use(
           // @ts-expect-error middleware is the worst
           (req, res) => `'nonce-${res.locals.cspNonce}'`,
           'https:',
+          "'unsafe-eval'",
         ],
         'upgrade-insecure-requests': null,
       },
