@@ -26,6 +26,8 @@ import {verifyEmailAddress} from '~/utils/verifier.server'
 import type {LoaderData as RootLoaderData} from '../root'
 import {getSocialMetas} from '~/utils/seo'
 import {Grid} from '~/components/grid'
+import {prisma} from '~/utils/prisma.server'
+import {getConvertKitSubscriber} from '~/convertkit/convertkit.server'
 
 type LoaderData = {
   email?: string
@@ -102,9 +104,9 @@ export const action: ActionFunction = async ({request}) => {
   }
 
   try {
-    const verifierResult = await verifyEmailAddress(emailAddress)
-    if (!verifierResult.status) {
-      const errorMessage = `I tried to verify that email and got this error message: "${verifierResult.error.message}". If you think this is wrong, shoot an email to team@kentcdodds.com.`
+    const verifiedStatus = await isEmailVerified(emailAddress)
+    if (!verifiedStatus.verified) {
+      const errorMessage = `I tried to verify that email and got this error message: "${verifiedStatus.message}". If you think this is wrong, shoot an email to team@kentcdodds.com.`
       loginSession.flashError(errorMessage)
       return redirect(`/login`, {
         status: 400,
@@ -131,6 +133,24 @@ export const action: ActionFunction = async ({request}) => {
       headers: await loginSession.getHeaders(),
     })
   }
+}
+
+async function isEmailVerified(
+  email: string,
+): Promise<{verified: true} | {verified: false; message: string}> {
+  const verifierResult = await verifyEmailAddress(email)
+  if (verifierResult.status) return {verified: true}
+  const userExists = Boolean(
+    await prisma.user.findUnique({
+      select: {id: true},
+      where: {email},
+    }),
+  )
+  if (userExists) return {verified: true}
+  const convertKitSubscriber = await getConvertKitSubscriber(email)
+  if (convertKitSubscriber) return {verified: true}
+
+  return {verified: false, message: verifierResult.error.message}
 }
 
 function Login() {
