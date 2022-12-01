@@ -7,7 +7,6 @@ import type {
   SerializeFrom,
 } from '@remix-run/node'
 import {json} from '@remix-run/node'
-
 import {
   Links,
   LiveReload,
@@ -143,7 +142,7 @@ export const links: LinksFunction = () => {
 export type LoaderData = SerializeFrom<typeof loader>
 
 const blackFridayPromoName = 'black-friday-2022'
-async function loader({request}: DataFunctionArgs) {
+async function loader({request, context}: DataFunctionArgs) {
   const timings = {}
   const session = await getSession(request)
   const themeSession = await getThemeSession(request)
@@ -158,6 +157,7 @@ async function loader({request}: DataFunctionArgs) {
   ] as keyof typeof illustrationImages
 
   const data = {
+    cspNonce: context.cspNonce,
     user,
     userInfo: user ? await getUserInfo(user, {request, timings}) : null,
     ENV: getEnv(),
@@ -364,11 +364,15 @@ function App() {
         />
 
         <Links />
-        {ENV.NODE_ENV === 'production' ? <MetronomeLinks /> : null}
+        {ENV.NODE_ENV === 'production' ? (
+          // @ts-expect-error nonce not yet supported
+          <MetronomeLinks nonce={data.cspNonce} />
+        ) : null}
         <noscript>
           <link rel="stylesheet" href={noScriptStyles} />
         </noscript>
         <NonFlashOfWrongThemeEls
+          nonce={data.cspNonce}
           ssrTheme={Boolean(data.requestInfo.session.theme)}
         />
       </head>
@@ -437,9 +441,12 @@ function App() {
         <Outlet />
         <Spacer size="base" />
         <Footer image={images[data.randomFooterImageKey]} />
-        {shouldRestoreScroll ? <ScrollRestoration /> : null}
+        {shouldRestoreScroll ? (
+          <ScrollRestoration nonce={data.cspNonce} />
+        ) : null}
         {ENV.NODE_ENV === 'development' ? null : (
           <script
+            nonce={data.cspNonce}
             src="https://sailfish.kentcdodds.com/script.js"
             data-site="HJUUDKMT"
             data-spa="history"
@@ -459,13 +466,16 @@ function App() {
             }}
           />
         )}
-        <Scripts />
+        <Scripts nonce={data.cspNonce} />
         <script
+          nonce={data.cspNonce}
           dangerouslySetInnerHTML={{
             __html: `window.ENV = ${JSON.stringify(data.ENV)};`,
           }}
         />
-        {ENV.NODE_ENV === 'development' ? <LiveReload /> : null}
+        {ENV.NODE_ENV === 'development' ? (
+          <LiveReload nonce={data.cspNonce} />
+        ) : null}
       </body>
     </html>
   )

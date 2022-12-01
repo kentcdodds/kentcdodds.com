@@ -1,4 +1,5 @@
 import fs from 'fs'
+import crypto from 'crypto'
 import path from 'path'
 import onFinished from 'on-finished'
 import express from 'express'
@@ -10,6 +11,7 @@ import {createRequestHandler} from '@remix-run/express'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import {installGlobals} from '@remix-run/node/dist/globals'
 import {
+  combineGetLoadContexts,
   createMetronomeGetLoadContext,
   registerMetronome,
 } from '@metronome-sh/express'
@@ -21,6 +23,7 @@ import {
   proxyRedirectMiddleware,
   txMiddleware,
 } from './fly'
+import helmet from 'helmet'
 
 installGlobals()
 
@@ -65,6 +68,45 @@ app.use((req, res, next) => {
   res.set('Strict-Transport-Security', `max-age=${60 * 60 * 24 * 365 * 100}`)
   next()
 })
+
+app.use((req, res, next) => {
+  res.locals.cspNonce = crypto.randomBytes(16).toString('hex')
+  next()
+})
+
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        'connect-src': MODE === 'development' ? ['ws:', "'self'"] : null,
+        'font-src': ["'self'"],
+        'frame-src': [
+          "'self'",
+          'youtube.com',
+          'player.simplecast.com',
+          'egghead.io',
+          'calendar.google.com',
+          'codesandbox.io',
+          'share.transistor.fm',
+        ],
+        'img-src': [
+          "'self'",
+          'data:',
+          'res.cloudinary.com',
+          'www.gravatar.com',
+        ],
+        'media-src': ["'self'", 'res.cloudinary.com'],
+        'script-src': [
+          "'strict-dynamic'",
+          // @ts-expect-error middleware is the worst
+          (req, res) => `'nonce-${res.locals.cspNonce}'`,
+          'https:',
+        ],
+        'upgrade-insecure-requests': null,
+      },
+    },
+  }),
+)
 
 if (process.env.FLY) {
   app.use(proxyRedirectMiddleware)
@@ -162,6 +204,9 @@ function getRequestHandlerOptions(): Parameters<
   typeof createRequestHandler
 >[0] {
   const build = require('../build')
+  function getLoadContext(req: any, res: any) {
+    return {cspNonce: res.locals.cspNonce}
+  }
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (MODE === 'production' && enableMetronome) {
     const buildWithMetronome = registerMetronome(build)
@@ -169,11 +214,15 @@ function getRequestHandlerOptions(): Parameters<
       createMetronomeGetLoadContext(buildWithMetronome)
     return {
       build: buildWithMetronome,
-      getLoadContext: metronomeGetLoadContext,
+      getLoadContext: combineGetLoadContexts(
+        getLoadContext,
+        // @ts-expect-error huh... metronome isn't happy with itself.
+        metronomeGetLoadContext,
+      ),
       mode: MODE,
     }
   }
-  return {build, mode: MODE}
+  return {build, mode: MODE, getLoadContext}
 }
 
 app.all('*', txMiddleware)

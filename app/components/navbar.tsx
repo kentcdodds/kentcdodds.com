@@ -312,6 +312,7 @@ function ProfileButton({
         className={clsx('inline w-10 select-none rounded-full')}
         src={imageUrl}
         alt={imageAlt}
+        crossOrigin="anonymous"
       />
     </Link>
   )

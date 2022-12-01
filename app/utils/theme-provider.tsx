@@ -143,7 +143,13 @@ function handleDarkAndLightModeEls() {
   }
 }
 
-function NonFlashOfWrongThemeEls({ssrTheme}: {ssrTheme: boolean}) {
+function NonFlashOfWrongThemeEls({
+  ssrTheme,
+  nonce,
+}: {
+  ssrTheme: boolean
+  nonce?: string
+}) {
   const [theme] = useTheme()
   return (
     <>
@@ -161,6 +167,7 @@ function NonFlashOfWrongThemeEls({ssrTheme}: {ssrTheme: boolean}) {
       */}
       {ssrTheme ? null : (
         <script
+          nonce={nonce}
           // NOTE: we cannot use type="module" because that automatically makes
           // the script "defer". That doesn't work for us because we need
           // this script to run synchronously before the rest of the document
