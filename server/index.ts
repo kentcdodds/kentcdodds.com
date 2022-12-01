@@ -78,6 +78,10 @@ app.use(
           'res.cloudinary.com',
           'www.gravatar.com',
           'sailfish.kentcdodds.com',
+          'pbs.twimg.com',
+          'i.ytimg.com',
+          'image.simplecastcdn.com',
+          'images.transistor.fm',
         ],
         'media-src': ["'self'", 'res.cloudinary.com'],
         'script-src': [
