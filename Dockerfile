@@ -79,7 +79,7 @@ COPY --from=build /app/prisma /app/prisma
 ADD . .
 
 # prepare for litefs
-COPY --from=flyio/litefs:sha-13d1f35 /usr/local/bin/litefs /usr/local/bin/litefs
+COPY --from=flyio/litefs:sha-de5639e /usr/local/bin/litefs /usr/local/bin/litefs
 ADD other/litefs.yml /etc/litefs.yml
 RUN mkdir -p /data ${FLY_LITEFS_DIR}
 
