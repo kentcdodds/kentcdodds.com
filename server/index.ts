@@ -246,9 +246,7 @@ if (MODE === 'production') {
   const middleware = createRequestHandler(getRequestHandlerOptions())
   app.all('*', async (req, res, next) => {
     res.startTime('remix', 'Remix request handler')
-    const result = await middleware(req, res, next)
-    res.endTime('remix')
-    return result
+    return middleware(req, res, next)
   })
 } else {
   app.all('*', (req, res, next) => {
