@@ -7,6 +7,7 @@ import 'express-async-errors'
 import compression from 'compression'
 import morgan from 'morgan'
 import * as Sentry from '@sentry/node'
+import serverTiming from 'server-timing'
 import {createRequestHandler} from '@remix-run/express'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import {installGlobals} from '@remix-run/node/dist/globals'
@@ -16,7 +17,7 @@ import {
   registerMetronome,
 } from '@metronome-sh/express'
 import {addCloudinaryProxies} from './cloudinary'
-import {getRedirectsMiddleware} from './redirects'
+import {getRedirectsMiddleware, rickRollMiddleware} from './redirects'
 import {
   getInstanceInfo,
   getReplayResponse,
@@ -48,6 +49,7 @@ const MODE = process.env.NODE_ENV
 const BUILD_DIR = path.join(process.cwd(), 'build')
 
 const app = express()
+app.use(serverTiming())
 
 app.use((req, res, next) => {
   res.locals.cspNonce = crypto.randomBytes(16).toString('hex')
@@ -145,6 +147,8 @@ app.all(
   }),
 )
 
+app.get('/redirect.html', rickRollMiddleware)
+
 app.use((req, res, next) => {
   if (req.path.endsWith('/') && req.path.length > 1) {
     const query = req.url.slice(req.path.length)
@@ -209,6 +213,8 @@ app.use(
   }),
 )
 
+app.all('*', txMiddleware)
+
 const enableMetronome = true
 
 function getRequestHandlerOptions(): Parameters<
@@ -236,13 +242,18 @@ function getRequestHandlerOptions(): Parameters<
   return {build, mode: MODE, getLoadContext}
 }
 
-app.all('*', txMiddleware)
-
 if (MODE === 'production') {
-  app.all('*', createRequestHandler(getRequestHandlerOptions()))
+  const middleware = createRequestHandler(getRequestHandlerOptions())
+  app.all('*', async (req, res, next) => {
+    res.startTime('remix', 'Remix request handler')
+    const result = await middleware(req, res, next)
+    res.endTime('remix')
+    return result
+  })
 } else {
   app.all('*', (req, res, next) => {
     purgeRequireCache()
+    res.startTime('remix', 'Remix request handler')
     return createRequestHandler(getRequestHandlerOptions())(req, res, next)
   })
 }

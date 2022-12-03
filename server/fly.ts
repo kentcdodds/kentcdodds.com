@@ -12,24 +12,32 @@ export const getReplayResponse: RequestHandler = function getReplayResponse(
   res,
   next,
 ) {
-  if (!process.env.FLY) return next()
+  function endNext() {
+    res.endTime('fly-replay')
+    next()
+  }
+  res.startTime(
+    'fly-replay',
+    'Determine whether the request should be replayed',
+  )
+  if (!process.env.FLY) return endNext()
 
   const {method, path: pathname} = req
   if (method === 'GET' || method === 'OPTIONS' || method === 'HEAD') {
-    return next()
+    return endNext()
   }
 
   const {currentInstance, currentIsPrimary, primaryInstance} = getInstanceInfo()
-  if (currentIsPrimary) return next()
+  if (currentIsPrimary) return endNext()
 
   if (pathname.includes('__metronome')) {
     // metronome doesn't need to be replayed...
-    return next()
+    return endNext()
   }
 
   if (pathname.includes('/cache/admin')) {
     // so we can clear the cache in other regions
-    return next()
+    return endNext()
   }
 
   const logInfo = {
@@ -170,26 +178,16 @@ function getTXNumber() {
 }
 
 export const proxyRedirectMiddleware: RequestHandler = (req, res, next) => {
-  const flyClientIp = req.get('Fly-Client-IP')
-  const xForwardedFor = req.get('X-Forwarded-For')
-  if (!flyClientIp || !xForwardedFor) {
-    // this should never happen, but just in case...
-    return next()
-  }
-
-  if (xForwardedFor.includes(flyClientIp)) {
-    return next()
-  } else {
+  if (req.get('cf-visitor')) {
     // https://fly.io/docs/reference/runtime-environment/#fly-client-ip
     // the fly-client-ip header is the IP address of the client that initiated the request
     // and if it's not found in the x-forwarded-for header, then we know something fishy is going on 🐟
-    console.log(`👺 disallowed ip address replied to:`, {
-      xForwardedFor,
-      flyClientIp,
-    })
+    console.log(`👺 disallowed cf-visitor`, req.headers)
     return res.send(
       'Please go to https://kcd.dev instead! Ping Kent if you think you should not be seeing this...',
     )
+  } else {
+    return next()
   }
 }
 

@@ -125,4 +125,25 @@ function getRedirectsMiddleware({
   }
 }
 
+export const rickRollMiddleware: RequestHandler = (req, res) => {
+  return res.set('Content-Type', 'text/html').send(`
+<!--
+  this page is a joke. It allows me to do a client-side redirect so twitter
+  won't show when I'm rick-rolling someone 🤭
+-->
+<script nonce=${res.locals.cspNonce}>
+  var urlToRedirectTo = getQueryStringParam(location.href, 'url') || '/'
+  window.location.replace(urlToRedirectTo)
+  function getQueryStringParam(url, name) {
+    var regexReadyName = name.replace(/[\\[]/, '\\[').replace(/[\\]]/, '\\]')
+    var regex = new RegExp(\`[\\\\?&]\${regexReadyName}=([^&#]*)\`)
+    var results = regex.exec(url)
+    return results === null
+      ? ''
+      : decodeURIComponent(results[1].replace(/\\+/g, ' '))
+  }
+</script>
+  `)
+}
+
 export {getRedirectsMiddleware}
