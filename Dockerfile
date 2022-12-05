@@ -5,7 +5,8 @@ FROM node:18-bullseye-slim as base
 # ffmpeg for the call kent functionality
 # ca-certificates and fuse for litefs
 # procps for "tops" command to see which processes are hogging memory (it's node)
-RUN apt-get update && apt-get install -y fuse openssl ffmpeg sqlite3 ca-certificates procps
+# python & make for node-gyp
+RUN apt-get update && apt-get install -y fuse openssl ffmpeg sqlite3 ca-certificates procps python3 make g++
 
 # install all node_modules, including dev
 FROM base as deps
@@ -71,12 +72,7 @@ WORKDIR /app/
 
 COPY --from=production-deps /app/node_modules /app/node_modules
 COPY --from=build /app/node_modules/.prisma /app/node_modules/.prisma
-COPY --from=build /app/build /app/build
-COPY --from=build /app/public /app/public
-COPY --from=build /app/server-build /app/server-build
-COPY --from=build /app/other/runfile.js /app/other/runfile.js
-COPY --from=build /app/other/start.js /app/other/start.js
-COPY --from=build /app/prisma /app/prisma
+COPY --from=build /app/build /app/server-build /app/public /app/other /app/prisma /app/
 
 ADD . .
 
