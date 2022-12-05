@@ -197,12 +197,9 @@ seed script which will populate the database with some example data.
 
 ## Maintenance Tips
 
-We use LiteFS to proxy the file system for SQLite for multi-regional SQLite. If
-things go wrong, this is what you do:
+## Backup the database
 
-In one terminal, ssh into fly:
-
-```
+```sh
 fly ssh console -C bash
 
 # make a backup of the database
@@ -215,15 +212,21 @@ sqlite3 /data/sqlite.db.bkp "PRAGMA integrity_check;"
 gzip -c /data/sqlite.db.bkp > /data/sqlite.db.bkp.gz
 ```
 
-In another tab, download that backup (just in case):
+In another tab, download that backup:
 
-```
+```sh
 fly sftp get /data/sqlite.db.bkp.gz ./sqlite.db.bkp.gz
 ```
 
-Then, in the first tab (while still ssh-ed into Fly):
+## Handle LiteFS checksum errors
 
-```
+We use LiteFS to proxy the file system for SQLite for multi-regional SQLite. If
+things go wrong, this is what you do. First, backup the database, then:
+
+```sh
+# ssh into fly console
+fly ssh console -C bash
+
 # delete the litefs database
 rm -rf /data/litefs/dbs/sqlite.db
 # import the backup
@@ -231,6 +234,56 @@ litefs import -name sqlite.db /data/sqlite.db.bkp
 ```
 
 Then you should be good to go again.
+
+### Disabling LiteFS
+
+If LiteFS is giving you grief. Then you may want to disable it. To do that,
+first backup the database.
+
+In one terminal, ssh into fly:
+
+```sh
+fly ssh console -C bash
+
+# make a copy of the database
+cp /data/litefs/dbs/sqlite.db/database /data/sqlite.db
+
+# do an integrity check
+sqlite3 /data/sqlite.db "PRAGMA integrity_check;"
+```
+
+Then make sure to scale down to a single region:
+
+```sh
+fly vol list
+# grab the ID for all but the primary you want to keep
+vol vol delete {id}
+fly scale count 1
+```
+
+Update the Dockerfile:
+
+```Dockerfile
+# TODO: enable litefs
+# ENV FLY_LITEFS_DIR="/litefs"
+ENV FLY_LITEFS_DIR="/data"
+
+...
+
+# prepare for litefs
+# TODO: enable litefs
+# COPY --from=flyio/litefs:sha-7e5287a /usr/local/bin/litefs /usr/local/bin/litefs
+# ADD other/litefs.yml /etc/litefs.yml
+# RUN mkdir -p /data ${FLY_LITEFS_DIR}
+
+# CMD ["litefs", "mount", "--", "node", "./other/start.js"]
+CMD ["node", "./other/start.js"]
+```
+
+Then push that to fly.
+
+You'll lose any data created between when you did the backup and when the deploy
+finishes, but hopefully you won't have LiteFS issues.
 
 ## Help needed
 
