@@ -54,7 +54,8 @@ const miscHandlers = [
       return res(ctx.status(404))
     },
   ),
-  rest.get(/http:\/\/localhost:5555\/.*/, async req => req.passthrough()),
+  rest.get(/http:\/\/localhost:\d+\/.*/, async req => req.passthrough()),
+  rest.post(/http:\/\/localhost:\d+\/.*/, async req => req.passthrough()),
   rest.get('https://verifier.meetchopra.com/verify/:email', (req, res, ctx) => {
     return res(ctx.json({status: true}))
   }),

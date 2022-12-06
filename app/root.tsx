@@ -355,7 +355,6 @@ function App() {
 
         <Links />
         {ENV.NODE_ENV === 'production' ? (
-          // @ts-expect-error nonce not yet supported
           <MetronomeLinks nonce={data.cspNonce} />
         ) : null}
         <noscript>

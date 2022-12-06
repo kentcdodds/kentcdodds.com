@@ -25,6 +25,7 @@ import {
   txMiddleware,
 } from './fly'
 import helmet from 'helmet'
+import type {ServerBuild} from '@remix-run/node'
 
 installGlobals()
 
@@ -33,10 +34,7 @@ const primaryHost = 'kentcdodds.com'
 const getHost = (req: {get: (key: string) => string | undefined}) =>
   req.get('X-Forwarded-Host') ?? req.get('host') ?? ''
 
-// TODO: enable this
-const enableSentry = true
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-if (enableSentry && process.env.FLY) {
+if (process.env.FLY) {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
     tracesSampleRate: 0.3,
@@ -138,6 +136,24 @@ app.use((req, res, next) => {
 
 app.all('*', getReplayResponse)
 
+// make sure prisma-studio requests proxy to Remix properly
+app.all('*', (req, res, next) => {
+  if (
+    req.headers.referer?.includes('prisma-studio') &&
+    !req.url.includes('prisma-studio') &&
+    !req.path.includes('prisma-studio')
+  ) {
+    req.url = `/prisma-studio${req.path}`
+  }
+  return next()
+})
+
+app.get(
+  '/prisma-studio',
+  helmet.contentSecurityPolicy({useDefaults: false}),
+  helmet.referrerPolicy({policy: 'same-origin'}),
+)
+
 addCloudinaryProxies(app)
 
 app.all(
@@ -215,8 +231,6 @@ app.use(
 
 app.all('*', txMiddleware)
 
-const enableMetronome = true
-
 function getRequestHandlerOptions(): Parameters<
   typeof createRequestHandler
 >[0] {
@@ -224,9 +238,9 @@ function getRequestHandlerOptions(): Parameters<
   function getLoadContext(req: any, res: any) {
     return {cspNonce: res.locals.cspNonce}
   }
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (MODE === 'production' && enableMetronome) {
-    const buildWithMetronome = registerMetronome(build)
+  if (MODE === 'production') {
+    // @ts-expect-error 🤷‍♂️ it returns ServerBuild from @remix-run/server-runtime
+    const buildWithMetronome = registerMetronome(build) as ServerBuild
     const metronomeGetLoadContext =
       createMetronomeGetLoadContext(buildWithMetronome)
     return {
