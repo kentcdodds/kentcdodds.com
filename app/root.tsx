@@ -61,11 +61,6 @@ import {getGenericSocialImage, illustrationImages, images} from './images'
 import {Grimmacing, MissingSomething} from './components/kifs'
 import {ArrowLink} from './components/arrow-button'
 import {getServerTimeHeader} from './utils/timing.server'
-import {
-  getPromoCookieValue,
-  Promotification,
-} from './routes/resources/promotification'
-import {PartyIcon} from './components/icons'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',
@@ -141,7 +136,6 @@ export const links: LinksFunction = () => {
 
 export type LoaderData = SerializeFrom<typeof loader>
 
-const blackFridayPromoName = 'black-friday-2022'
 async function loader({request, context}: DataFunctionArgs) {
   const timings = {}
   const session = await getSession(request)
@@ -162,10 +156,6 @@ async function loader({request, context}: DataFunctionArgs) {
     userInfo: user ? await getUserInfo(user, {request, timings}) : null,
     ENV: getEnv(),
     randomFooterImageKey,
-    blackFriday2022CookieValue: getPromoCookieValue({
-      promoName: blackFridayPromoName,
-      request,
-    }),
     requestInfo: {
       origin: getDomainUrl(request),
       path: new URL(request.url).pathname,
@@ -379,64 +369,6 @@ function App() {
       <body className="bg-white transition duration-500 dark:bg-gray-900">
         <PageLoadingMessage />
         <NotificationMessage queryStringKey="message" delay={0.3} />
-        <Promotification
-          position="top-center"
-          promoName={blackFridayPromoName}
-          dismissTimeSeconds={60 * 60 * 24}
-          cookieValue={data.blackFriday2022CookieValue}
-          promoEndTime={new Date('2022-12-03T07:59:59.999Z')}
-        >
-          <div className="text-inverse mb-4 flex items-center text-xl">
-            <strong>Black Friday Sale:</strong>
-            <span className="text-team-current">
-              <PartyIcon size={40} />
-            </span>
-          </div>
-          <ol className="text-lg">
-            <li>
-              {/*eslint-disable-next-line react/jsx-no-target-blank*/}
-              <a
-                href="https://EpicReact.dev"
-                className="flex items-center gap-2 underline"
-                target="_blank"
-              >
-                <img
-                  src="/images/er-favicon.png"
-                  className="inline-block h-4 w-4"
-                />{' '}
-                <span>EpicReact.dev: 40% off</span>
-              </a>
-            </li>
-            <li>
-              {/*eslint-disable-next-line react/jsx-no-target-blank*/}
-              <a
-                href="https://TestingJavaScript.com"
-                className="flex items-center gap-2 underline"
-                target="_blank"
-              >
-                <img
-                  src="/images/tjs-favicon.png"
-                  className="inline-block h-4 w-4"
-                />{' '}
-                <span>TestingJavaScript.com: 40% off</span>
-              </a>
-            </li>
-            <li>
-              {/*eslint-disable-next-line react/jsx-no-target-blank*/}
-              <a
-                href="https://KCDBundle.com"
-                className="flex items-center gap-2 underline"
-                target="_blank"
-              >
-                <img
-                  src="/images/kcd-favicon.png"
-                  className="inline-block h-4 w-4"
-                />{' '}
-                <span>Together: 50% off</span>
-              </a>
-            </li>
-          </ol>
-        </Promotification>
         <Navbar />
         <Outlet />
         <Spacer size="base" />
