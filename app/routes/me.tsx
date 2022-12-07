@@ -9,7 +9,7 @@ import {json, redirect} from '@remix-run/node'
 import {Form, useActionData, useLoaderData} from '@remix-run/react'
 import clsx from 'clsx'
 import {Dialog} from '@reach/dialog'
-import type {KCDHandle} from '~/types'
+import type {KCDHandle, Team} from '~/types'
 import {useRootData} from '~/utils/use-root-data'
 import {getQrCodeDataURL} from '~/utils/qrcode.server'
 import {
@@ -196,6 +196,12 @@ export const action: ActionFunction = async ({request}) => {
 
 const SHOW_QR_DURATION = 15_000
 
+const teamShirts: Record<Team, string> = {
+  RED: 'https://cottonbureau.com/p/6ZE96D',
+  BLUE: 'https://cottonbureau.com/p/BT8VUW',
+  YELLOW: 'https://cottonbureau.com/p/4AAW9M',
+}
+
 function YouScreen() {
   const data = useLoaderData<LoaderData>()
   const otherSessionsCount = data.sessionCount - 1
@@ -338,9 +344,20 @@ function YouScreen() {
           </div>
 
           <div className="col-span-full lg:col-span-4 lg:col-start-8">
-            <Label className="mb-4" htmlFor="chosen-team">
-              Chosen team
-            </Label>
+            <div className="flex justify-between gap-2 align-bottom">
+              <Label className="mb-4" htmlFor="chosen-team">
+                Chosen team
+              </Label>
+              <a
+                className="underlined mb-5 animate-pulse text-lg hover:animate-none focus:animate-none"
+                href={teamShirts[team]}
+              >
+                Get your team shirt{' '}
+                <span className="inline-block" role="img" aria-label="t-shirt">
+                  👕
+                </span>
+              </a>
+            </div>
 
             <input
               className="sr-only"
