@@ -86,6 +86,7 @@ app.use(
           'image.simplecastcdn.com',
           'images.transistor.fm',
           'i2.wp.com',
+          ...(MODE === 'development' ? ['cloudflare-ipfs.com'] : []),
         ],
         'media-src': ["'self'", 'res.cloudinary.com', 'data:', 'blob:'],
         'script-src': [

@@ -156,19 +156,22 @@ function PodcastHome() {
         />
       </Grid>
 
-      <Spacer size="xs" />
-
-      <FeaturedSection
-        cta="Listen to this episode"
-        caption="Featured episode"
-        subTitle={`Season ${featured.seasonNumber} Episode ${
-          featured.episodeNumber
-        } — ${formatDuration(featured.duration)}`}
-        title={featured.title}
-        href={getCWKEpisodePath(featured)}
-        imageUrl={featured.image}
-        imageAlt={listify(featured.guests.map(g => g.name))}
-      />
+      {featured ? (
+        <>
+          <Spacer size="xs" />
+          <FeaturedSection
+            cta="Listen to this episode"
+            caption="Featured episode"
+            subTitle={`Season ${featured.seasonNumber} Episode ${
+              featured.episodeNumber
+            } — ${formatDuration(featured.duration)}`}
+            title={featured.title}
+            href={getCWKEpisodePath(featured)}
+            imageUrl={featured.image}
+            imageAlt={listify(featured.guests.map(g => g.name))}
+          />
+        </>
+      ) : null}
 
       <Spacer size="base" />
 

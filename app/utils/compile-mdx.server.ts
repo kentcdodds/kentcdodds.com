@@ -80,11 +80,8 @@ function optimizeCloudinaryImages() {
         return
       }
       const newUrl = handleImageUrl(urlString)
-      console.log({urlString, newUrl})
       if (newUrl) {
-        console.log('before', node.properties)
         node.properties.src = newUrl
-        console.log('after', node.properties)
       }
     })
   }
@@ -101,7 +98,7 @@ function optimizeCloudinaryImages() {
       }
       // don't add transforms if they're already included
       if (transforms) return
-      const defaultTransforms = 'f_auto,q_auto,dpr_2.0'
+      const defaultTransforms = 'f_auto,q_auto,dpr_2.0,w_1600'
       return [
         `https://res.cloudinary.com/${cloudName}/image/upload`,
         defaultTransforms,

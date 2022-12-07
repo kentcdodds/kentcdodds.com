@@ -238,34 +238,25 @@ function removeEls<ItemType>(array: Array<ItemType>, ...els: Array<ItemType>) {
   return array.filter(el => !els.includes(el))
 }
 
-interface Link extends H.Parent {
-  /**
-   * Represents this variant of a Node.
-   */
-  type: 'link'
-
-  /**
-   * Represents the destination of the link.
-   */
-  url: string
-}
-
 function autoAffiliates() {
   return async function affiliateTransformer(tree: H.Root) {
     const {visit} = await import('unist-util-visit')
-    visit(tree, 'link', function visitor(linkNode: Link) {
-      if (linkNode.url.includes('amazon.com')) {
-        const amazonUrl = new URL(linkNode.url)
+    visit(tree, 'element', function visitor(linkNode: H.Element) {
+      if (linkNode.tagName !== 'a') return
+      if (!linkNode.properties) return
+      if (typeof linkNode.properties.href !== 'string') return
+      if (linkNode.properties.href.includes('amazon.com')) {
+        const amazonUrl = new URL(linkNode.properties.href)
         if (!amazonUrl.searchParams.has('tag')) {
           amazonUrl.searchParams.set('tag', 'kentcdodds-20')
-          linkNode.url = amazonUrl.toString()
+          linkNode.properties.href = amazonUrl.toString()
         }
       }
-      if (linkNode.url.includes('egghead.io')) {
-        const eggheadUrl = new URL(linkNode.url)
+      if (linkNode.properties.href.includes('egghead.io')) {
+        const eggheadUrl = new URL(linkNode.properties.href)
         if (!eggheadUrl.searchParams.has('af')) {
           eggheadUrl.searchParams.set('af', '5236ad')
-          linkNode.url = eggheadUrl.toString()
+          linkNode.properties.href = eggheadUrl.toString()
         }
       }
     })
@@ -297,7 +288,6 @@ async function parseSummaryMarkdown(
     // @ts-expect-error not sure why typescript doesn't like these plugins
     .use(isHTMLInput ? parseHtml : parseMarkdown)
     .use(isHTMLInput ? rehype2remark : () => {})
-    .use(autoAffiliates)
     .use(function extractMetaData() {
       return function transformer(tree) {
         type Section = {
@@ -464,6 +454,7 @@ async function parseSummaryMarkdown(
       }
     })
     .use(remark2rehype)
+    .use(autoAffiliates)
     .use(rehypeStringify)
     .process(summaryInput)
 

@@ -21,7 +21,8 @@ function getCWKEpisodePath({
 
 function getFeaturedEpisode<EpisodeType>(
   episodes: Array<EpisodeType>,
-): EpisodeType {
+): EpisodeType | null {
+  if (!episodes.length) return null
   const weeksSinceMyBirthday = differenceInWeeks(
     new Date(),
     new Date('1988-10-18'),

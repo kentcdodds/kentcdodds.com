@@ -87,6 +87,12 @@ for (const seasonListItem of seasonListItems) {
         long_description: `
 ${faker.lorem.paragraphs(3)}
 
+<!-- these links are for testing auto-affiliates -->
+
+[egghead.io](https://egghead.io)
+
+[amazon](https://amazon.com)
+
 * * *
 
 ### Homework
