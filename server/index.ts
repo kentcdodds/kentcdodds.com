@@ -67,6 +67,7 @@ app.use(
           'www.youtube.com',
           'youtu.be',
           'youtube-nocookie.com',
+          'www.youtube-nocookie.com',
           'player.simplecast.com',
           'egghead.io',
           'app.egghead.io',
