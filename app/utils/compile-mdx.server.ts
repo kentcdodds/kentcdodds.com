@@ -156,7 +156,6 @@ function removePreContainerDivs() {
 }
 
 const remarkPlugins: U.PluggableList = [
-  remarkCodeBlocksShiki,
   optimizeCloudinaryImages,
   [
     remarkEmbedder,
@@ -169,7 +168,7 @@ const remarkPlugins: U.PluggableList = [
   autoAffiliates,
 ]
 
-const rehypePlugins: U.PluggableList = [removePreContainerDivs]
+const rehypePlugins: U.PluggableList = [remarkCodeBlocksShiki, removePreContainerDivs]
 
 async function compileMdx<FrontmatterType extends Record<string, unknown>>(
   slug: string,
