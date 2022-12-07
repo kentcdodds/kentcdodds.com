@@ -19,6 +19,7 @@ import {
 import {Themed} from './theme-provider'
 import {markdownToHtmlUnwrapped, stripHtml} from './markdown.server'
 import {ConvertKitForm} from '~/convertkit/form'
+import {CloudinaryVideo} from '~/components/cloudinary-video'
 import type {Timings} from './timing.server'
 import {useOptionalUser} from './use-root-data'
 
@@ -384,6 +385,7 @@ function OptionalUser({
 const mdxComponents = {
   a: AnchorOrLink,
   Themed,
+  CloudinaryVideo,
   ThemedBlogImage,
   BlogImage,
   SubscribeForm,

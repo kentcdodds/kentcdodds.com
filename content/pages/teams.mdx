@@ -33,12 +33,25 @@ bannerCredit:
 When you sign up for an account on [kentcdodds.com](https://kentcdodds.com), you
 can choose between the Red, Yellow, or Blue team.
 
-<ThemedBlogImage
-  darkCloudinaryId="kentcdodds.com/content/teams/team-chooser-dark"
-  lightCloudinaryId="kentcdodds.com/content/teams/team-chooser-light"
-  imgProps={{
-    alt: 'UI for choosing a team showing three Koala options: Red, Blue, and Yellow',
-  }}
+<Themed
+  dark={
+    <CloudinaryVideo
+      cloudinaryId="kentcdodds.com/content/teams/team-chooser-dark"
+      aspectRatio="16:9"
+      crop="fit"
+      height={452}
+      width={1000}
+    />
+  }
+  light={
+    <CloudinaryVideo
+      cloudinaryId="kentcdodds.com/content/teams/team-chooser-light"
+      aspectRatio="16:9"
+      crop="fit"
+      height={452}
+      width={1000}
+    />
+  }
 />
 
 When you connect your KCD account to your Discord account, your username will be

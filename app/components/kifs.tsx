@@ -1,37 +1,6 @@
-type CloudinaryVideoProps = {
-  className?: string
-  width?: number
-  aspectRatio?: '16:9' | '4:3' | '3:4'
-  cloudinaryId: string
-}
+import {CloudinaryVideo} from './cloudinary-video'
 
-function CloudinaryVideo({
-  className,
-  width = 1000,
-  aspectRatio,
-  cloudinaryId,
-}: CloudinaryVideoProps) {
-  const transforms = [
-    `f_auto`,
-    `q_auto`,
-    `c_fill`,
-    `ac_none`,
-    ...(aspectRatio ? [`ar_${aspectRatio}`, 'c_fill'] : []),
-    `w_${width}`,
-  ]
-    .filter(Boolean)
-    .join(',')
-  return (
-    <video
-      className={className}
-      autoPlay
-      src={`https://res.cloudinary.com/kentcdodds-com/video/upload/${transforms}/${cloudinaryId}`}
-      muted
-      loop
-      controls={false}
-    />
-  )
-}
+type CloudinaryVideoProps = Parameters<typeof CloudinaryVideo>[0]
 
 function MissingSomething(props: Omit<CloudinaryVideoProps, 'cloudinaryId'>) {
   return (
