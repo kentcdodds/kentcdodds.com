@@ -2,6 +2,7 @@ import {bundleMDX} from 'mdx-bundler'
 import type * as U from 'unified'
 import type * as M from 'mdast'
 import type * as H from 'hast'
+import type * as MDX from 'mdast-util-mdx-jsx'
 import {remarkCodeBlocksShiki} from '@kentcdodds/md-temp'
 import remarkEmbedder from '@remark-embedder/core'
 import type {TransformerInfo} from '@remark-embedder/core'
@@ -44,39 +45,72 @@ function makeEmbed(html: string, type: string, heightRatio = '56.25%') {
 
 // yes, I did write this myself 😬
 const cloudinaryUrlRegex =
-  /^https?:\/\/res\.cloudinary\.com\/(?<cloudName>.+?)\/image\/upload(\/(?<transforms>(?!v\d+).+?))?(\/(?<version>v\d+))?\/(?<publicId>.+$)/
+  /^https?:\/\/res\.cloudinary\.com\/(?<cloudName>.+?)\/image\/upload\/((?<transforms>(.+?_.+?)+?)\/)?(\/?(?<version>v\d+)\/)?(?<publicId>.+$)/
 
 function optimizeCloudinaryImages() {
-  return async function transformer(tree: M.Root) {
+  return async function transformer(tree: H.Root) {
     const {visit} = await import('unist-util-visit')
-    visit(tree, 'image', function visitor(node: M.Image) {
-      if (!node.url) {
+    visit(
+      tree,
+      'mdxJsxFlowElement',
+      function visitor(node: MDX.MdxJsxFlowElement) {
+        if (node.name !== 'img') return
+        const srcAttr = node.attributes.find(
+          attr => attr.type === 'mdxJsxAttribute' && attr.name === 'src',
+        )
+        const urlString = srcAttr?.value ? String(srcAttr.value) : null
+        if (!srcAttr || !urlString) {
+          console.error('image without url?', node)
+          return
+        }
+        const newUrl = handleImageUrl(urlString)
+        if (newUrl) {
+          srcAttr.value = newUrl
+        }
+      },
+    )
+
+    visit(tree, 'element', function visitor(node: H.Element) {
+      if (node.tagName !== 'img') return
+      const urlString = node.properties?.src
+        ? String(node.properties.src)
+        : null
+      if (!node.properties?.src || !urlString) {
         console.error('image without url?', node)
         return
       }
-      const urlString = String(node.url)
-      const match = urlString.match(cloudinaryUrlRegex)
-      const groups = match?.groups
-      if (groups) {
-        const {cloudName, transforms, version, publicId} = groups as {
-          cloudName: string
-          transforms?: string
-          version?: string
-          publicId: string
-        }
-        // don't add transforms if they're already included
-        if (transforms) return
-        const defaultTransforms = 'f_auto,q_auto,dpr_2.0'
-        node.url = [
-          `https://res.cloudinary.com/${cloudName}/image/upload`,
-          defaultTransforms,
-          version,
-          publicId,
-        ]
-          .filter(Boolean)
-          .join('/')
+      const newUrl = handleImageUrl(urlString)
+      console.log({urlString, newUrl})
+      if (newUrl) {
+        console.log('before', node.properties)
+        node.properties.src = newUrl
+        console.log('after', node.properties)
       }
     })
+  }
+
+  function handleImageUrl(urlString: string) {
+    const match = urlString.match(cloudinaryUrlRegex)
+    const groups = match?.groups
+    if (groups) {
+      const {cloudName, transforms, version, publicId} = groups as {
+        cloudName: string
+        transforms?: string
+        version?: string
+        publicId: string
+      }
+      // don't add transforms if they're already included
+      if (transforms) return
+      const defaultTransforms = 'f_auto,q_auto,dpr_2.0'
+      return [
+        `https://res.cloudinary.com/${cloudName}/image/upload`,
+        defaultTransforms,
+        version,
+        publicId,
+      ]
+        .filter(Boolean)
+        .join('/')
+    }
   }
 }
 
@@ -156,7 +190,6 @@ function removePreContainerDivs() {
 }
 
 const remarkPlugins: U.PluggableList = [
-  optimizeCloudinaryImages,
   [
     remarkEmbedder,
     {
@@ -168,7 +201,11 @@ const remarkPlugins: U.PluggableList = [
   autoAffiliates,
 ]
 
-const rehypePlugins: U.PluggableList = [remarkCodeBlocksShiki, removePreContainerDivs]
+const rehypePlugins: U.PluggableList = [
+  optimizeCloudinaryImages,
+  remarkCodeBlocksShiki,
+  removePreContainerDivs,
+]
 
 async function compileMdx<FrontmatterType extends Record<string, unknown>>(
   slug: string,
