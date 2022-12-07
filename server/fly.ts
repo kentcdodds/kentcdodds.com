@@ -177,12 +177,15 @@ function getTXNumber() {
   return parseInt(dbPos.trim().split('/')[0] ?? '0', 16)
 }
 
-export const proxyRedirectMiddleware: RequestHandler = (req, res, next) => {
+export const proxyRedirectMiddleware: RequestHandler = async (
+  req,
+  res,
+  next,
+) => {
   if (req.get('cf-visitor')) {
-    // https://fly.io/docs/reference/runtime-environment/#fly-client-ip
-    // the fly-client-ip header is the IP address of the client that initiated the request
-    // and if it's not found in the x-forwarded-for header, then we know something fishy is going on 🐟
-    console.log(`👺 disallowed cf-visitor`, req.headers)
+    // console.log(`👺 disallowed cf-visitor`, req.headers) // <-- this can be kinda noisy
+    // make them wait for it... Which should cost them money...
+    await new Promise(resolve => setTimeout(resolve, 90_000))
     return res.send(
       'Please go to https://kcd.dev instead! Ping Kent if you think you should not be seeing this...',
     )
