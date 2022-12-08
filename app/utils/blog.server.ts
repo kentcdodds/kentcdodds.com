@@ -52,9 +52,9 @@ async function getBlogRecommendations({
   )
   // filter out what they've already read
   const session = await getSession(request)
-  const client = await getClientSession(request)
-  const clientId = client.getClientId()
   const user = await session.getUser()
+  const client = await getClientSession(request, user)
+  const clientId = client.getClientId()
   const where = user
     ? {user: {id: user.id}, postSlug: {notIn: exclude.filter(Boolean)}}
     : {clientId, postSlug: {notIn: exclude.filter(Boolean)}}
@@ -421,13 +421,18 @@ async function getSlugReadsByUser({
   timings?: Timings
 }) {
   const user = await getUser(request)
-  if (!user) return []
+  const clientSession = await getClientSession(request, user)
+  const clientId = clientSession.getClientId()
   const reads = await time(
     prisma.postRead.findMany({
-      where: {userId: user.id},
+      where: user ? {userId: user.id} : {clientId},
       select: {postSlug: true},
     }),
-    {timings, type: 'getSlugReadsByUser', desc: `Getting reads by ${user.id}`},
+    {
+      timings,
+      type: 'getSlugReadsByUser',
+      desc: `Getting reads by ${user ? user.id : clientId}`,
+    },
   )
   return Array.from(new Set(reads.map(read => read.postSlug)))
 }

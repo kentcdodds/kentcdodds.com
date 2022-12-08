@@ -79,11 +79,11 @@ export async function action({params, request}: DataFunctionArgs) {
           userId: user.id,
         })
       } else {
-        const client = await getClientSession(request)
-        await addPostRead({
-          slug,
-          clientId: client.getClientId(),
-        })
+        const client = await getClientSession(request, user)
+        const clientId = client.getClientId()
+        if (clientId) {
+          await addPostRead({slug, clientId})
+        }
       }
 
       // trigger an update to the ranking cache and notify when the leader changed

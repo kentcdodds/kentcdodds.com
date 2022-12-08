@@ -16,18 +16,30 @@ const clientStorage = createCookieSessionStorage({
   },
 })
 
-async function getClientSession(request: Request) {
+async function getClientSession(request: Request, user: {} | null) {
   const session = await clientStorage.getSession(request.headers.get('Cookie'))
 
   // no client ID for you on my 100th birthday! 😂
   const expires = new Date('2088-10-18')
-  const initialValue = await clientStorage.commitSession(session, {expires})
+  const initialValue = user
+    ? null
+    : await clientStorage.commitSession(session, {expires})
   async function commit() {
-    const currentValue = await clientStorage.commitSession(session, {expires})
-    return currentValue === initialValue ? null : currentValue
+    if (user) {
+      if (initialValue) {
+        const value = await clientStorage.destroySession(session)
+        return value
+      } else {
+        return null
+      }
+    } else {
+      const currentValue = await clientStorage.commitSession(session, {expires})
+      return currentValue === initialValue ? null : currentValue
+    }
   }
 
   function getClientId() {
+    if (user) return null
     let clientId = session.get('clientId') as string | undefined
     if (typeof clientId === 'string') return clientId
     clientId = uuid.v4()
@@ -41,6 +53,9 @@ async function getClientSession(request: Request) {
   return {
     getClientId,
     commit,
+    setUser(usr: {} | null) {
+      user = usr
+    },
     /**
      * This will initialize a Headers object if one is not provided.
      * It will set the 'Set-Cookie' header value on that headers object.

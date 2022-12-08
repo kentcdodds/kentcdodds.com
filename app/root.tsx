@@ -139,11 +139,12 @@ export type LoaderData = SerializeFrom<typeof loader>
 async function loader({request, context}: DataFunctionArgs) {
   const timings = {}
   const session = await getSession(request)
+  const user = await session.getUser({timings})
   const themeSession = await getThemeSession(request)
-  const clientSession = await getClientSession(request)
+  const clientSession = await getClientSession(request, user)
   const loginInfoSession = await getLoginInfoSession(request)
 
-  const user = await session.getUser({timings})
+  console.log('clientId:', clientSession.getClientId())
 
   const randomFooterImageKeys = Object.keys(illustrationImages)
   const randomFooterImageKey = randomFooterImageKeys[

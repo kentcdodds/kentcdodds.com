@@ -21,6 +21,7 @@ import {TEAM_MAP} from '~/utils/onboarding'
 import {HeaderSection} from '~/components/sections/header-section'
 import {handleFormSubmission} from '~/utils/actions.server'
 import {Spacer} from '~/components/spacer'
+import {getClientSession} from '~/utils/client.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -118,10 +119,18 @@ export const action: ActionFunction = async ({request}) => {
           data: {convertKitId: String(sub.id)},
           where: {id: user.id},
         })
+        const clientSession = await getClientSession(request, user)
+        const clientId = clientSession.getClientId()
+        // update all PostReads from clientId to userId
+        await prisma.postRead.updateMany({
+          data: {userId: user.id, clientId: null},
+          where: {clientId},
+        })
 
         const headers = new Headers()
         await session.signIn(user)
         await session.getHeaders(headers)
+        await clientSession.getHeaders(headers)
         // IDEA: try using destroy... Didn't seem to work last time I tried though.
         loginInfoSession.clean()
         await loginInfoSession.getHeaders(headers)
