@@ -9,6 +9,27 @@ bannerCredit:
   'Photo by [aboodi vesakaran](https://unsplash.com/photos/tDb65c90-qY)'
 ---
 
+<OptionalUser>
+  {maybeUser =>
+    maybeUser ? (
+      <p>
+        Hey <span className="text-team-current">{maybeUser.firstName}</span>!{' '}
+        Remember when you signed up for an account and chose your team. Have you
+        wondered what that was all about? Let's talk about it?
+      </p>
+    ) : (
+      <p>
+        Hey Visitor! Did you know you can{' '}
+        <a href="/login" className="underline">
+          create an account
+        </a>{' '}
+        on this site? Well you can. This page talks about some reasons you may
+        want to.
+      </p>
+    )
+  }
+</OptionalUser>
+
 When you sign up for an account on [kentcdodds.com](https://kentcdodds.com), you
 can choose between the Red, Yellow, or Blue team.
 

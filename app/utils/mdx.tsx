@@ -20,6 +20,7 @@ import {Themed} from './theme-provider'
 import {markdownToHtmlUnwrapped, stripHtml} from './markdown.server'
 import {ConvertKitForm} from '~/convertkit/form'
 import type {Timings} from './timing.server'
+import {useOptionalUser} from './use-root-data'
 
 type CachifiedOptions = {
   forceFresh?: boolean | string
@@ -371,12 +372,22 @@ function mapFromMdxPageToMdxListItem(page: MdxPage): MdxListItem {
   return mdxListItem
 }
 
+function OptionalUser({
+  children,
+}: {
+  children: (user: ReturnType<typeof useOptionalUser>) => React.ReactElement
+}) {
+  const user = useOptionalUser()
+  return children(user)
+}
+
 const mdxComponents = {
   a: AnchorOrLink,
   Themed,
   ThemedBlogImage,
   BlogImage,
   SubscribeForm,
+  OptionalUser,
 }
 /**
  * This should be rendered within a useMemo

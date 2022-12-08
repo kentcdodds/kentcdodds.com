@@ -25,7 +25,6 @@ import {
   txMiddleware,
 } from './fly'
 import helmet from 'helmet'
-import type {ServerBuild} from '@remix-run/node'
 
 installGlobals()
 
@@ -242,8 +241,7 @@ function getRequestHandlerOptions(): Parameters<
     return {cspNonce: res.locals.cspNonce}
   }
   if (MODE === 'production') {
-    // @ts-expect-error 🤷‍♂️ it returns ServerBuild from @remix-run/server-runtime
-    const buildWithMetronome = registerMetronome(build) as ServerBuild
+    const buildWithMetronome = registerMetronome(build)
     const metronomeGetLoadContext =
       createMetronomeGetLoadContext(buildWithMetronome)
     return {
