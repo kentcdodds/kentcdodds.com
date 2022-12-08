@@ -122,10 +122,12 @@ export const action: ActionFunction = async ({request}) => {
         const clientSession = await getClientSession(request, user)
         const clientId = clientSession.getClientId()
         // update all PostReads from clientId to userId
-        await prisma.postRead.updateMany({
-          data: {userId: user.id, clientId: null},
-          where: {clientId},
-        })
+        if (clientId) {
+          await prisma.postRead.updateMany({
+            data: {userId: user.id, clientId: null},
+            where: {clientId},
+          })
+        }
 
         const headers = new Headers()
         await session.signIn(user)
