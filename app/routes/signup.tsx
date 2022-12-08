@@ -119,7 +119,7 @@ export const action: ActionFunction = async ({request}) => {
           data: {convertKitId: String(sub.id)},
           where: {id: user.id},
         })
-        const clientSession = await getClientSession(request)
+        const clientSession = await getClientSession(request, null)
         const clientId = clientSession.getClientId()
         // update all PostReads from clientId to userId
         if (clientId) {
