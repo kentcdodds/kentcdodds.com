@@ -119,7 +119,7 @@ export const action: ActionFunction = async ({request}) => {
           data: {convertKitId: String(sub.id)},
           where: {id: user.id},
         })
-        const clientSession = await getClientSession(request, user)
+        const clientSession = await getClientSession(request)
         const clientId = clientSession.getClientId()
         // update all PostReads from clientId to userId
         if (clientId) {
@@ -128,6 +128,7 @@ export const action: ActionFunction = async ({request}) => {
             where: {clientId},
           })
         }
+        clientSession.setUser(user)
 
         const headers = new Headers()
         await session.signIn(user)
