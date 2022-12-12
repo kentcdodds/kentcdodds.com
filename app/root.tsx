@@ -144,8 +144,6 @@ async function loader({request, context}: DataFunctionArgs) {
   const clientSession = await getClientSession(request, user)
   const loginInfoSession = await getLoginInfoSession(request)
 
-  console.log('clientId:', clientSession.getClientId())
-
   const randomFooterImageKeys = Object.keys(illustrationImages)
   const randomFooterImageKey = randomFooterImageKeys[
     Math.floor(Math.random() * randomFooterImageKeys.length)
