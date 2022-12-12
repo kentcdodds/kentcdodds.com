@@ -62,6 +62,11 @@ module.exports = {
       },
     },
 
+    animation: {
+      'spin-slow': 'spin 3s linear infinite',
+      'spin-xslow': 'spin 7s linear infinite',
+    },
+
     extend: {
       zIndex: {
         '-10': '-10',
