@@ -24,3 +24,5 @@ other/postcss.ignored
 /other/cache.db
 
 *.bkp.*
+
+*.heapsnapshot
