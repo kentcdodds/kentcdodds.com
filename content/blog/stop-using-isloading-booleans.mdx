@@ -297,7 +297,7 @@ Everything is a state machine, and this one is particularly noticeable.
 machines in code, so I thought I'd show you what that could be like:
 
 ```js
-import {Machine, assign} from 'xstate'
+import {createMachine, assign} from 'xstate'
 import {useMachine} from '@xstate/react'
 
 const context = {position: null, error: null}
@@ -309,7 +309,7 @@ const REJECT = {
   target: 'rejected',
   actions: 'setError',
 }
-const geoPositionMachine = Machine(
+const geoPositionMachine = createMachine(
   {
     id: 'geoposition',
     initial: 'idle',
@@ -390,18 +390,17 @@ Here's how we would use that (with as minimal changes as possible):
 ```tsx
 function YourPosition() {
   const state = useGeoPosition()
-  const status = state.value
   const {position, error} = state.context
 
-  if (status === 'rejectedNotSupported') {
+  if (state.matches('rejectedNotSupported')) {
     return <div>This browser does not support Geolocation</div>
   }
 
-  if (status === 'idle' || status === 'pending') {
+  if (state.matches('idle') || state.matches('pending')) {
     return <div>Loading your position...</div>
   }
 
-  if (status === 'resolved') {
+  if (state.matches('resolved')) {
     return (
       <div>
         Lat: {position.coords.latitude}, Long: {position.coords.longitude}
@@ -409,7 +408,7 @@ function YourPosition() {
     )
   }
 
-  if (status === 'rejected') {
+  if (state.matches('rejected')) {
     return (
       <div>
         <div>Oh no, there was a problem getting your position:</div>
