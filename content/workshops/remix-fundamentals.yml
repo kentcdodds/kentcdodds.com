@@ -11,6 +11,11 @@ meta:
 categories:
   - react
   - remix
+events:
+  - title: Remix Fundamentals in London
+    url: https://london.cityjsconf.org/buytickets
+    quantity: 40
+    date: March 30th, 2022
 convertKitTag: '2568112'
 problemStatements:
   part1: Building modern web applications is riddled with complexity
