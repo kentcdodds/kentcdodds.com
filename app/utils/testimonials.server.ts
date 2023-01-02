@@ -15,6 +15,7 @@ const allCategories = [
   'podcast',
   'youtube',
   'talk',
+  'blog',
 ] as const
 export type TestimonialCategory = typeof allCategories[number]
 
@@ -28,6 +29,7 @@ const allSubjects = [
   'YouTube Live Streams',
   'KCD Office Hours',
   'Talk',
+  'Blog',
   'Frontend Masters',
   'Egghead.io',
   'workshop: react-fundamentals',
@@ -71,6 +73,7 @@ const categoriesBySubject: Record<
   'YouTube Live Streams': ['youtube'],
   'KCD Office Hours': ['youtube'],
   Talk: ['talk'],
+  Blog: ['blog'],
   'Frontend Masters': ['courses'],
   'Egghead.io': ['courses'],
   'workshop: react-fundamentals': ['workshop', 'react'],
