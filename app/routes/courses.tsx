@@ -207,7 +207,7 @@ function CoursesHome() {
         />
       </Grid>
 
-      <Spacer size="base" />
+      {data.testimonials.length ? <Spacer size="base" /> : null}
 
       <TestimonialSection testimonials={data.testimonials} />
 

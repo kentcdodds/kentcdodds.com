@@ -34,6 +34,7 @@ import {CourseSection} from '~/components/sections/course-section'
 import {HeaderSection} from '~/components/sections/header-section'
 import {HeroSection} from '~/components/sections/hero-section'
 import {TestimonialSection} from '~/components/sections/testimonial-section'
+import {Spacer} from '~/components/spacer'
 import {H2, H5, H6, Paragraph} from '~/components/typography'
 import {getGenericSocialImage, getImgProps, images} from '~/images'
 import {
@@ -452,10 +453,11 @@ export default function Discord() {
           </Grid>
         </div>
 
-        <TestimonialSection
-          testimonials={data.testimonials}
-          className="mb-24 lg:mb-64"
-        />
+        {data.testimonials.length ? <Spacer size="base" /> : null}
+
+        <TestimonialSection testimonials={data.testimonials} />
+
+        <Spacer size="base" />
 
         <HeaderSection
           title="Here's a quick look at all categories."

@@ -407,10 +407,11 @@ export default function WorkshopScreen() {
         </div>
       </Grid>
 
-      <Spacer size="base" />
-
       {data.testimonials.length ? (
-        <TestimonialSection testimonials={data.testimonials} />
+        <>
+          <Spacer size="base" />
+          <TestimonialSection testimonials={data.testimonials} />
+        </>
       ) : null}
 
       <Spacer size="base" />
