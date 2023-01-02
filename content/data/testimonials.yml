@@ -463,3 +463,28 @@
     knowledge gaps and after applying the information from the courses to my
     projects, I was able to get my first full-time software engineer role.
     Highly recommend!
+
+- author: Michael Tedla
+  priority: 5
+  subjects:
+    - EpicReact.dev
+  cloudinaryId: kentcdodds.com/testimonials/michael-tedla
+  company: Software Engineer at Levitate
+  link: https://github.com/mickykebe
+  testimonial: >-
+    Even as a dev with many years of experience building production apps in
+    React, I still learned a lot from EpicReact. The advanced patterns was
+    especially useful to me as it formalized some patterns I've seen in the wild
+    but never really understood. I'd seen prop collections in use, but my
+    understanding was inchoate. My attempts to build on that pattern would often
+    devolve into a mishmash of prop getters and normal props where it wasn't
+    obvious why one way of doing it was better than the other. I was just using
+    it for the sake of using a pattern without understanding what problem it's
+    meant to solve. In that respect there's a lot of stuff in this course I keep
+    coming back to. The biggest takeaway for me has been how much it's helped me
+    formalize my understanding in React. Sometimes we get into a pattern of
+    building things from muscle memory based on how it's worked for us before.
+    This can lead us into a blind alley where we're accumulating tech debt
+    without realizing it. Kent offers a way out by offering first principles of
+    React fundamentals and systematizing React composition patterns that help
+    get a handle on increasingly complex component trees.
