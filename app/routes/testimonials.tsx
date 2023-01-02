@@ -1,6 +1,11 @@
-import type {DataFunctionArgs, MetaFunction} from '@remix-run/node'
+import type {
+  DataFunctionArgs,
+  HeadersFunction,
+  MetaFunction,
+} from '@remix-run/node'
 import {json} from '@remix-run/node'
 import {useLoaderData} from '@remix-run/react'
+import {ArrowLink} from '~/components/arrow-button'
 import {ButtonLink} from '~/components/button'
 import {Grid} from '~/components/grid'
 import {
@@ -8,8 +13,10 @@ import {
   HeroSection,
 } from '~/components/sections/hero-section'
 import {TestimonialCard} from '~/components/sections/testimonial-card'
-import {getGenericSocialImage, images} from '~/images'
-import {getDisplayUrl, getUrl} from '~/utils/misc'
+import {Spacer} from '~/components/spacer'
+import {H2} from '~/components/typography'
+import {getGenericSocialImage, getImgProps, images} from '~/images'
+import {getDisplayUrl, getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {getSocialMetas} from '~/utils/seo'
 import {getTestimonials} from '~/utils/testimonials.server'
 import {getServerTimeHeader} from '~/utils/timing.server'
@@ -36,16 +43,19 @@ export const meta: MetaFunction<typeof loader> = ({data, parentsData}) => {
   }
 }
 
+export const headers: HeadersFunction = reuseUsefulLoaderHeaders
+
 export async function loader({request}: DataFunctionArgs) {
   const timings = {}
-  const headers = {
-    'Cache-Control': 'private, max-age=3600',
-    'Server-Timings': getServerTimeHeader(timings),
-  }
 
   return json(
     {testimonials: await getTestimonials({request, timings})},
-    {headers},
+    {
+      headers: {
+        'Cache-Control': 'private, max-age=3600',
+        'Server-Timings': getServerTimeHeader(timings),
+      },
+    },
   )
 }
 
@@ -89,6 +99,33 @@ export default function Testimonials() {
             testimonial={testimonial}
           />
         ))}
+      </Grid>
+
+      <Spacer size="base" />
+
+      <Grid>
+        <div className="col-span-1 md:col-span-2 lg:col-span-3">
+          <img
+            {...getImgProps(images.microphone, {
+              widths: [350, 512, 1024, 1536],
+              sizes: [
+                '20vw',
+                '(min-width: 1024px) 30vw',
+                '(min-width:1620px) 530px',
+              ],
+            })}
+          />
+        </div>
+
+        <div className="col-span-7 col-start-3 md:col-span-6 md:col-start-4 lg:col-span-8 lg:col-start-5">
+          <H2 className="mb-8">{`More of a listener?`}</H2>
+          <H2 className="mb-16" variant="secondary" as="p">
+            {`
+              Check out my Call Kent podcast and join in the conversation with your own call.
+            `}
+          </H2>
+          <ArrowLink to="/calls">{`Check out the podcast`}</ArrowLink>
+        </div>
       </Grid>
     </>
   )

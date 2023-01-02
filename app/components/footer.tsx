@@ -75,6 +75,7 @@ function SitemapSection() {
         <FooterLink name="Chats Podcast" href="/chats" />
         <FooterLink name="Workshops" href="/workshops" />
         <FooterLink name="Talks" href="/talks" />
+        <FooterLink name="Testimonials" href="/testimonials" />
         <FooterLink name="About" href="/about" />
         <FooterLink name="Credits" href="/credits" />
         <FooterLink name="Sitemap.xml" reload href="/sitemap.xml" />
