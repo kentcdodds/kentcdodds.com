@@ -12,6 +12,9 @@ const allCategories = [
   'courses',
   'workshop',
   'community',
+  'podcast',
+  'youtube',
+  'talk',
 ] as const
 export type TestimonialCategory = typeof allCategories[number]
 
@@ -19,6 +22,14 @@ const allSubjects = [
   'EpicReact.dev',
   'TestingJavaScript.com',
   'Discord Community',
+  'Workshop',
+  'Call Kent Podcast',
+  'Chats with Kent Podcast',
+  'YouTube Live Streams',
+  'KCD Office Hours',
+  'Talk',
+  'Frontend Masters',
+  'Egghead.io',
   'workshop: react-fundamentals',
   'workshop: react-hooks',
   'workshop: advanced-react-hooks',
@@ -43,7 +54,7 @@ export type Testimonial = {
 
 export type TestimonialWithMetadata = Testimonial & {
   priority: 0 | 1 | 2 | 3 | 4 | 5
-  subject: TestimonialSubject
+  subjects: Array<TestimonialSubject>
   categories: Array<TestimonialCategory>
 }
 
@@ -54,6 +65,14 @@ const categoriesBySubject: Record<
   'Discord Community': ['community'],
   'EpicReact.dev': ['teaching', 'courses', 'react'],
   'TestingJavaScript.com': ['teaching', 'courses', 'testing'],
+  Workshop: ['workshop'],
+  'Call Kent Podcast': ['podcast'],
+  'Chats with Kent Podcast': ['podcast'],
+  'YouTube Live Streams': ['youtube'],
+  'KCD Office Hours': ['youtube'],
+  Talk: ['talk'],
+  'Frontend Masters': ['courses'],
+  'Egghead.io': ['courses'],
   'workshop: react-fundamentals': ['workshop', 'react'],
   'workshop: react-hooks': ['workshop', 'react'],
   'workshop: advanced-react-hooks': ['workshop', 'react'],
@@ -84,7 +103,8 @@ function getValueWithFallback<PropertyType>(
   const value = obj[key]
   if (validateType(value)) {
     return value as PropertyType
-  } else if (fallback) {
+    // eslint-disable-next-line no-negated-condition
+  } else if (typeof fallback !== 'undefined') {
     if (warnOnFallback) console.warn(`Had to use fallback`, {obj, key, value})
     return fallback
   } else {
@@ -97,36 +117,37 @@ function getValueWithFallback<PropertyType>(
 const isString = (v: unknown) => typeof v === 'string'
 const isOneOf = (validValues: ReadonlyArray<unknown>) => (v: unknown) =>
   validValues.includes(v)
+const areOneOf = (validValues: ReadonlyArray<unknown>) => (v: unknown) =>
+  Array.isArray(v) && v.every(isOneOf(validValues))
 
 function mapTestimonial(rawTestimonial: UnknownObj) {
   try {
-    const link: string | null = rawTestimonial.link
-      ? getValueWithFallback(rawTestimonial, 'link', {
-          validateType: isString,
-        })
-      : null
-    const subject: TestimonialSubject = getValueWithFallback(
+    const link: string | null = getValueWithFallback(rawTestimonial, 'link', {
+      warnOnFallback: false,
+      fallback: null,
+      validateType: isString,
+    })
+    const subjects: Array<TestimonialSubject> = getValueWithFallback(
       rawTestimonial,
-      'subject',
-      {
-        fallback: 'Other',
-        validateType: isOneOf(allSubjects),
-      },
+      'subjects',
+      {fallback: ['Other'], validateType: areOneOf(allSubjects)},
     )
     const categories: Array<TestimonialCategory> = getValueWithFallback(
       rawTestimonial,
       'categories',
       {
         warnOnFallback: false,
-        fallback: categoriesBySubject[subject],
-        validateType: isOneOf(allCategories),
+        fallback: Array.from(
+          new Set(subjects.flatMap(s => categoriesBySubject[s])),
+        ),
+        validateType: areOneOf(allCategories),
       },
     )
     const testimonial: TestimonialWithMetadata = {
       author: getValueWithFallback(rawTestimonial, 'author', {
         validateType: isString,
       }),
-      subject,
+      subjects,
       categories,
       link,
       priority: getValueWithFallback(rawTestimonial, 'priority', {
@@ -229,7 +250,7 @@ async function getTestimonials({
   }
 
   const subjectTestimonials = allTestimonials
-    .filter(testimonial => subjects.includes(testimonial.subject))
+    .filter(testimonial => testimonial.subjects.some(s => subjects.includes(s)))
     .sort(sortByWithPriorityWeight)
 
   const fillerTestimonials = allTestimonials

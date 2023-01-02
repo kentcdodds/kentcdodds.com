@@ -31,11 +31,9 @@ export function TestimonialCard({
     />
   )
   return (
-    <div className="bg-secondary col-span-4 mb-8 flex flex-col justify-between rounded-lg p-16 lg:mb-0">
-      <p className="text-primary mb-14 text-base">
-        “{testimonial.testimonial}”
-      </p>
-      <div className="flex items-center">
+    <div className="bg-secondary col-span-4 mb-8 flex flex-col justify-between gap-2 rounded-lg p-16 lg:mb-0">
+      <p className="text-primary mb-6 text-base">“{testimonial.testimonial}”</p>
+      <div className="flex items-center gap-2">
         {testimonial.link ? (
           <a href={testimonial.link} target="_blank" rel="noreferrer">
             {img}
