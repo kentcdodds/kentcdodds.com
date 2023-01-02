@@ -1,10 +1,8 @@
-import clsx from 'clsx'
 import * as React from 'react'
 import type {Testimonial} from '~/utils/testimonials.server'
-import {getImageBuilder, getImgProps} from '~/images'
-import {H2} from '../typography'
 import {ArrowButton} from '../arrow-button'
 import {Grid} from '../grid'
+import {H2} from '../typography'
 import {TestimonialCard} from './testimonial-card'
 
 function TestimonialSection({
