@@ -1,3 +1,4 @@
+import {Link} from '@remix-run/react'
 import * as React from 'react'
 import type {Testimonial} from '~/utils/testimonials.server'
 import {ArrowButton} from '../arrow-button'
@@ -22,7 +23,11 @@ function TestimonialSection({
         <div className="space-y-2 lg:space-y-0">
           <H2>{`Don't just take my word for it.`}</H2>
           <H2 variant="secondary" as="p">
-            {`What participants have to say.`}
+            What{' '}
+            <Link to="/testimonials" className="underline">
+              others
+            </Link>{' '}
+            have to say
           </H2>
         </div>
 
