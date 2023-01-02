@@ -85,7 +85,7 @@ export function SmallCourseCard({
           sizes: ['8rem'],
         })}
       />
-      <div className="mb-4 flex h-48 flex-none items-end">
+      <div className="mb-4 flex h-28 flex-none items-end">
         <H3>{title}</H3>
       </div>
       <Paragraph className="mb-16 max-w-sm flex-auto">{description}</Paragraph>

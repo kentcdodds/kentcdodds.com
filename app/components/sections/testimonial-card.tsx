@@ -10,7 +10,7 @@ export function TestimonialCard({
 }) {
   const img = (
     <img
-      className={`mr-8 h-16 w-16 flex-none rounded-full object-cover ${className}`}
+      className="mr-8 h-16 w-16 flex-none rounded-full object-cover"
       {...getImgProps(
         getImageBuilder(
           testimonial.cloudinaryId,
@@ -31,7 +31,9 @@ export function TestimonialCard({
     />
   )
   return (
-    <div className="bg-secondary col-span-4 mb-8 flex flex-col justify-between gap-2 rounded-lg p-16 lg:mb-0">
+    <div
+      className={`bg-secondary col-span-4 flex flex-col justify-between gap-2 rounded-lg p-16 ${className}`}
+    >
       <p className="text-primary mb-6 text-base">“{testimonial.testimonial}”</p>
       <div className="flex items-center gap-2">
         {testimonial.link ? (

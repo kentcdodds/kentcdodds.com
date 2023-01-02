@@ -92,14 +92,17 @@ export default function Testimonials() {
         }
       />
 
-      <Grid className="mb-14 gap-6" id="list">
+      <div
+        className="mx-10vw mb-14 grid grid-cols-4 gap-6 lg:grid-cols-8 xl:grid-cols-12"
+        id="list"
+      >
         {data.testimonials.map(testimonial => (
           <TestimonialCard
             key={testimonial.testimonial}
             testimonial={testimonial}
           />
         ))}
-      </Grid>
+      </div>
 
       <Spacer size="base" />
 
