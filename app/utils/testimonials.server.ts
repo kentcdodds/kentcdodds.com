@@ -38,6 +38,7 @@ export type Testimonial = {
   cloudinaryId: string
   company: string
   testimonial: string
+  link: string | null
 }
 
 export type TestimonialWithMetadata = Testimonial & {
@@ -99,6 +100,11 @@ const isOneOf = (validValues: ReadonlyArray<unknown>) => (v: unknown) =>
 
 function mapTestimonial(rawTestimonial: UnknownObj) {
   try {
+    const link: string | null = rawTestimonial.link
+      ? getValueWithFallback(rawTestimonial, 'link', {
+          validateType: isString,
+        })
+      : null
     const subject: TestimonialSubject = getValueWithFallback(
       rawTestimonial,
       'subject',
@@ -122,6 +128,7 @@ function mapTestimonial(rawTestimonial: UnknownObj) {
       }),
       subject,
       categories,
+      link,
       priority: getValueWithFallback(rawTestimonial, 'priority', {
         fallback: 0,
         validateType: isOneOf([0, 1, 2, 3, 4, 5]),
@@ -191,6 +198,7 @@ function mapOutMetadata(
     'cloudinaryId',
     'company',
     'testimonial',
+    'link',
   ])
 }
 

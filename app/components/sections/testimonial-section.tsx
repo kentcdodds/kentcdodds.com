@@ -5,6 +5,7 @@ import {getImageBuilder, getImgProps} from '~/images'
 import {H2} from '../typography'
 import {ArrowButton} from '../arrow-button'
 import {Grid} from '../grid'
+import {TestimonialCard} from './testimonial-card'
 
 function TestimonialSection({
   testimonials,
@@ -16,6 +17,7 @@ function TestimonialSection({
   nested?: boolean
 }) {
   const [page, setPage] = React.useState(0)
+  if (!testimonials.length) return null
 
   return (
     <Grid className={className} nested={nested}>
@@ -44,50 +46,13 @@ function TestimonialSection({
         const testimonialIndex = (page * 3 + index) % testimonials.length
         const testimonial = testimonials[testimonialIndex]
         if (!testimonial) return null
+
         return (
-          <div
+          <TestimonialCard
             key={testimonialIndex}
-            className={clsx(
-              'bg-secondary col-span-4 mb-8 flex flex-col justify-between rounded-lg p-16 lg:mb-0',
-              {
-                'hidden lg:flex': index >= 2,
-              },
-            )}
-          >
-            <p className="text-primary mb-14 text-base">
-              “{testimonial.testimonial}”
-            </p>
-            <div className="flex items-center">
-              <img
-                className="mr-8 h-16 w-16 flex-none rounded-full object-cover"
-                {...getImgProps(
-                  getImageBuilder(
-                    testimonial.cloudinaryId,
-                    `${testimonial.author} profile`,
-                  ),
-                  {
-                    widths: [64, 128, 256],
-                    sizes: ['4rem'],
-                    transformations: {
-                      gravity: 'face:center',
-                      resize: {
-                        aspectRatio: '1:1',
-                        type: 'fill',
-                      },
-                    },
-                  },
-                )}
-              />
-              <div>
-                <p className="text-primary mb-2 text-lg font-medium leading-none">
-                  {testimonial.author}
-                </p>
-                <p className="text-secondary text-sm leading-none">
-                  {testimonial.company}
-                </p>
-              </div>
-            </div>
-          </div>
+            testimonial={testimonial}
+            className={index >= 2 ? 'hidden lg:flex' : ''}
+          />
         )
       })}
     </Grid>
