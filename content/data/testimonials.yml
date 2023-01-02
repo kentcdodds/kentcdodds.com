@@ -7,10 +7,11 @@
 # - Good photos
 
 - author: Vasilis Drosatos
-  priority: 2
+  priority: 3
   subject: EpicReact.dev
   cloudinaryId: kentcdodds.com/testimonials/vasileios-drosatos
   company: Senior Frontend Developer
+  link: https://www.linkedin.com/in/billdrosatos/?originalSubdomain=gr
   testimonial: >-
     Even with nearly 2 years of React experience, EpicReact.dev helped me to
     refresh and even learn better the basic stuff and apply more advanced
@@ -20,7 +21,8 @@
   priority: 3
   subject: Discord Community
   cloudinaryId: kentcdodds.com/testimonials/efeisikgor
-  company: JavaScript Developer at Byte24
+  company: JavaScript Developer at
+  link: https://www.mertisikgor.com/
   testimonial: >-
     I've never been in such a helpful community before. The people there are
     truly sharing what they know without holding back and answering questions
@@ -32,6 +34,7 @@
   subject: EpicReact.dev
   cloudinaryId: kentcdodds.com/testimonials/josh-payette
   company: Software Developer
+  link: https://joshpayette.dev/
   testimonial: >-
     EpicReact.dev is amazing! I knew almost immediately that the cost was
     justified. I'm self-taught, and Kent clearly and concisely filled in gaps in
@@ -42,6 +45,7 @@
   subject: Discord Community
   cloudinaryId: kentcdodds.com/testimonials/ashwin-khode
   company: Student
+  link: https://ashwinkhode.codes/
   testimonial: >-
     KCD Discord Community is the best community out there. When I first joined
     the server I was amazed by the environment that I was in! Curated channels,
@@ -53,6 +57,7 @@
   subject: TestingJavaScript.com
   cloudinaryId: kentcdodds.com/testimonials/bernard-baker
   company: Front End Engineer
+  link: https://bernard-baker.netlify.app/
   testimonial: >-
     This course gave me insight to testing like never before. We learned how to
     build an assertion library! And I haven't even finished it yet. The videos
@@ -64,6 +69,7 @@
   subject: Discord Community
   cloudinaryId: kentcdodds.com/testimonials/arpanchattopadhyay
   company: Software Engineer, Healthifyme
+  link: https://twitter.com/Arpan____
   testimonial: >-
     This community helped me land my first software engineering job! Being
     active in the community, discussing problems and helping people has been the
@@ -73,10 +79,11 @@
     experience it.
 
 - author: Jared Jardine
-  priority: 2
+  priority: 3
   subject: TestingJavaScript.com
   cloudinaryId: kentcdodds.com/testimonials/jared-jardine
   company: Senior Software Engineer - Frontend
+  link: https://www.linkedin.com/in/jaredjardine/
   testimonial: >-
     Incredibly good training videos. Kent C. Dodds not only shows you how, he
     explains why and does so in a way that is easy to consume without ever being
@@ -87,6 +94,7 @@
   subject: EpicReact.dev
   cloudinaryId: kentcdodds.com/testimonials/conor-gaughan
   company: Forge Labs LLC
+  link: https://www.linkedin.com/in/conorgaughan/
   testimonial: >-
     I can't say enough positive things about Epic React. I've not only improved
     so many gaps I've had with React but have finally found how I learn best,
@@ -99,6 +107,7 @@
   subject: EpicReact.dev
   cloudinaryId: kentcdodds.com/testimonials/diego-alvarez
   company: Ssr React Developer
+  link: https://twitter.com/doctordalvarez
   testimonial: >-
     The confidence and the solid concepts that I ve learned in EpicReact made me
     land my first react job this month. I nailed the technical interview and
@@ -109,6 +118,7 @@
   subject: EpicReact.dev
   cloudinaryId: kentcdodds.com/testimonials/jacob-m-g-evans
   company: Sr. FullStack Engineer
+  link: https://twitter.com/jacobmgevans
   testimonial: >-
     I used Epic React not to just upskill myself but I took the knowledge gained
     from the course and added them to patterns I showed coworkers and mentees.
@@ -145,6 +155,7 @@
   subject: EpicReact.dev
   cloudinaryId: kentcdodds.com/testimonials/kevin-bailey
   company: Senior Front End Developer
+  link: https://www.linkedin.com/in/kevin-bailey-53416971/
   testimonial: >-
     EpicReact.dev has completely changed the way I approach writing React. It
     gave me a deeper understanding which has resulted in better performance,
@@ -155,6 +166,7 @@
   subject: EpicReact.dev
   cloudinaryId: kentcdodds.com/testimonials/apoorv-kansal
   company: Lead Front End Developer
+  link: https://apoorv.page/
   testimonial: >-
     Kent is a great teacher. Coming to JavaScript world and learning and
     implementing React in daily life was made so easy by this course. The hands
@@ -166,6 +178,7 @@
   categories: [teaching, community]
   cloudinaryId: kentcdodds.com/testimonials/bouwe
   company: Software Engineer @ WebinarGeek
+  link: https://bouwe.io/
   testimonial: >-
     There is more to Kent than just being a great teacher and a knowledgeable
     person. He is kind, authentic and inspiring. He inspired me to learn new
@@ -178,6 +191,7 @@
   categories: [teaching]
   cloudinaryId: kentcdodds.com/testimonials/johannes
   company: Supreme Commander @ ProPro Productions
+  link: https://twitter.com/jo_HH_oe
   testimonial: >-
     Thanks to Kent, I‘m very happy about how I use state management (with React
     Query) and many other tricks that make me a better programmer.
@@ -186,7 +200,8 @@
   priority: 3
   subject: Discord Community
   cloudinaryId: kentcdodds.com/testimonials/azizbek-jonibekov
-  company: Software Engineer at Epam
+  company: Software Engineer at
+  link: https://twitter.com/jonybekov
   testimonial: >-
     I was surprised of how KCD community is so friendly and supportive. I have
     had some troubles with testing library and discovered KCD discord channel
@@ -206,6 +221,7 @@
   subject: 'workshop: advanced-react-hooks'
   cloudinaryId: kentcdodds.com/testimonials/pramod-jingade
   company: INSCALE Asia Sdn. Bhd
+  link: https://pramod-profile.net
   testimonial: >-
     I've had the pleasure to attend Kent's - Advanced React Hooks, back in 2020
     and it was such a insightful course. Kent has a knack of breaking complex
@@ -219,6 +235,7 @@
   subject: 'workshop: advanced-react-hooks'
   cloudinaryId: kentcdodds.com/testimonials/cameron-pak
   company: YouVersion Bible
+  link: https://campak.super.site/
   testimonial: >-
     Because of Kent's teachings, my team and I are proficient and comfortable in
     React best practices. Our code is consistent and clean, and our applications
@@ -229,6 +246,7 @@
   subject: 'workshop: advanced-react-hooks'
   cloudinaryId: kentcdodds.com/testimonials/david-han
   company: Engineer at Greenhouse Software
+  link: https://www.linkedin.com/in/davidhan527/
   testimonial: >-
     Advanced React Hooks was crucial in solidifying my understanding of React.
     This workshop was so good that I couldn't help but write a blog post about
@@ -240,6 +258,7 @@
   subject: Discord Community
   cloudinaryId: kentcdodds.com/testimonials/yago-pereira-azevedo
   company: Software Engineer @BitGo
+  link: https://twitter.com/yagopereiraaz
   testimonial: >-
     Kent's Discord community is amazing! Together with the Epic React workshop
     it took me too a different level in my career. The amount of knowledge
@@ -254,6 +273,7 @@
   subject: EpicReact.dev
   cloudinaryId: kentcdodds.com/testimonials/yago-pereira-azevedo
   company: Software Engineer @BitGo
+  link: https://twitter.com/yagopereiraaz
   testimonial: >-
     You can call me an Epic React 🥑 (Advocate), there is no better React course
     around. Kent's approach to teaching is the one that resonates the most with
@@ -267,6 +287,7 @@
   subject: TestingJavaScript.com
   cloudinaryId: kentcdodds.com/testimonials/praveen-senadheera
   company: Software Engineer
+  link: https://twitter.com/Pro542
   testimonial: >-
     I was able to use what I learned from TestingJavaScript.com to make
     productive changes in the testing culture in the team. The small video
@@ -278,6 +299,7 @@
   subject: Discord Community
   cloudinaryId: kentcdodds.com/testimonials/ricardo-busquet
   company: Software Engineer @ Carta
+  link: https://www.ricardobusquet.com/
   testimonial: >-
     Kent’s Discord community is filled with incredible people that are eager to
     learn and to help others. I learn so much everyday and I was also able to
@@ -288,6 +310,7 @@
   subject: EpicReact.dev
   cloudinaryId: kentcdodds.com/testimonials/ricardo-busquet
   company: Software Enginner @ Carta
+  link: https://www.ricardobusquet.com/
   testimonial: >-
     Most of my knowledge of React came from hands on experience at work, but
     there was so much to learn in Kent’s epicreact.dev! It was extremely
@@ -313,6 +336,7 @@
   subject: EpicReact.dev
   cloudinaryId: kentcdodds.com/testimonials/sergio-xalambrí
   company: Web Developer at Daffy
+  link: Sergio Xalambrí
   testimonial: >-
     The content is so good that anyone who completed Epic React is a safe hire
     from a tech knowledge perspective.
@@ -322,6 +346,7 @@
   subject: Discord Community
   cloudinaryId: kentcdodds.com/testimonials/sandrina-pereira
   company: Lead Frontend Engineer
+  link: https://www.sandrina-p.net/
   testimonial: >-
     KCD meetup group was my entry point to the world of streaming! There I
     shared topics related with Accessibility, which was very interesting in a
@@ -335,6 +360,7 @@
   subject: EpicReact.dev
   cloudinaryId: kentcdodds.com/testimonials/eddie-hinkle
   company: Lead Front-End Engineer, Glassdoor
+  link: https://eddiehinkle.com/
   testimonial: >-
     I went from developing in Angular to React in weeks. Epic React gave me
     everything I needed to know to walk into my new company and be on par with
@@ -347,6 +373,7 @@
   subject: EpicReact.dev
   cloudinaryId: kentcdodds.com/testimonials/tiger
   company: Frontend Developer
+  link: https://www.tigerabrodi.tech/
   testimonial: >-
     I started working as a Junior Frontend Developer in July 2020. Being a high
     school dropout, I was desperate for the best resources out there, that would
@@ -360,6 +387,7 @@
   subject: Discord Community
   cloudinaryId: kentcdodds.com/testimonials/tiger
   company: Frontend Developer
+  link: https://www.tigerabrodi.tech/
   testimonial: >-
     I'm a part of Discord Community, where I've learned a lot. Not just by
     getting help from great friends over there, but also helping others and in
@@ -371,7 +399,17 @@
   subject: EpicReact.dev
   cloudinaryId: kentcdodds.com/testimonials/nikolaj-ivancic
   company: Congral, LLC
+  link: https://www.linkedin.com/in/nikolaj-ivancic-6ab948a8/
   testimonial: >-
     I have to state for the record that Kent's Epicreact.dev site is incredibly
     well thought-through and user experience is unmatched (note that I have
     nearly 40 years of experience with user experience).
+
+- author: Wes Bos
+  priority: 4
+  subject: Other
+  cloudinaryId: kentcdodds.com/testimonials/wes-bos
+  company: Fullstack Dev
+  link: https://twitter.com/wesbos/status/1609939724981911554
+  testimonial: >-
+    Kent is gooda** at JS.
