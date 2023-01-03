@@ -44,7 +44,7 @@
     my knowledge and corrected assumptions I incorrectly relied on.
 
 - author: Ashwin Khode
-  priority: 1
+  priority: 2
   subjects:
     - Discord Community
   cloudinaryId: kentcdodds.com/testimonials/ashwin-khode
@@ -507,3 +507,18 @@
     down-to-earth human. He doesn't hesitate a second to share his invaluable
     knowledge. He is my true inspiration and mentor, and I'm truly grateful for
     everything he has done. Thank you very much, Kent!
+
+- author: Judicaël Andriamahandry
+  priority: 1
+  subjects:
+    - TestingJavaScript.com
+    - Discord Community
+    - Talk
+    - Blog
+    - YouTube Live Streams
+    - KCD Office Hours
+  cloudinaryId: kentcdodds.com/testimonials/judi
+  company: Frontend Engineer
+  link: https://read.cv/judicaelandria
+  testimonial: >-
+    I love how Kent teaches. He makes a complex topic easy to understand.
