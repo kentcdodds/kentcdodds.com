@@ -522,3 +522,16 @@
   link: https://read.cv/judicaelandria
   testimonial: >-
     I love how Kent teaches. He makes a complex topic easy to understand.
+
+- author: Robin Wieruch
+  priority: 4
+  subjects:
+    - Blog
+  cloudinaryId: kentcdodds.com/testimonials/robin-wieruch
+  company: Software Engineer
+  link: https://www.robinwieruch.de
+  testimonial: >-
+    If it's anything to do with JavaScript and it's written or recorded by Kent,
+    you can trust that it'll be world-class. I've been following Kent's journey
+    since his early days on his Angular.js podcast and I can confirm that he is
+    the full package when it comes to teaching excellence in web development.
