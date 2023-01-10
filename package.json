@@ -51,7 +51,7 @@
     "seed": "tsx other/runfile prisma/seed.ts"
   },
   "dependencies": {
-    "@kentcdodds/md-temp": "^2.0.2",
+    "@kentcdodds/md-temp": "^3.0.3",
     "@metronome-sh/express": "^5.7.2",
     "@metronome-sh/react": "^5.7.2",
     "@octokit/plugin-throttling": "^4.3.2",
@@ -140,6 +140,7 @@
     "spin-delay": "^1.2.0",
     "tailwindcss": "^3.2.4",
     "tiny-invariant": "^1.3.1",
+    "tinypool": "^0.3.0",
     "unified": "^10.1.2",
     "unist-util-visit": "4.1.1",
     "uuid": "^9.0.0",
