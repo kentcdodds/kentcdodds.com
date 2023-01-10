@@ -3,6 +3,7 @@ import {buildImageUrl} from 'cloudinary-build-url'
 import type {LoaderData as RootLoaderData} from '../root'
 import type {GitHubFile, MdxListItem, MdxPage} from '~/types'
 import * as mdxBundler from 'mdx-bundler/client'
+import LRU from 'lru-cache'
 import {compileMdx} from '~/utils/compile-mdx.server'
 import {
   downloadDirList,
@@ -477,8 +478,21 @@ function SubscribeForm(props: Record<string, unknown>) {
   )
 }
 
+// This exists so we don't have to call new Function for the given code
+// for every request for a given blog post/mdx file.
+const mdxComponentCache = new LRU<string, ReturnType<typeof getMdxComponent>>({
+  max: 1000,
+})
+
 function useMdxComponent(code: string) {
-  return React.useMemo(() => getMdxComponent(code), [code])
+  return React.useMemo(() => {
+    if (mdxComponentCache.has(code)) {
+      return mdxComponentCache.get(code)!
+    }
+    const component = getMdxComponent(code)
+    mdxComponentCache.set(code, component)
+    return component
+  }, [code])
 }
 
 export {
