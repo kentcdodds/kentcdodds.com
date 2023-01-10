@@ -9,7 +9,7 @@ pre {
   --base05: #d6deeb; /* fallback font color */
   --base06: #c8c8c8; /* unused (currently) */
   --base07: #fafafa; /* unused (currently) */
-  --base08: #d7dbe0; /* variable references */
+  --base08: #7fdbca; /* variable references */
   --base09: #f78c6c; /* numbers */
   --base0A: #c792ea; /* keywords */
   --base0B: #ecc48d; /* strings */
@@ -28,7 +28,7 @@ pre {
   --base05: #2e3039; /* fallback font color */
   --base06: #282a2e; /* unused (currently) */
   --base07: #1d1f21; /* unused (currently) */
-  --base08: #403f53; /* variable references */
+  --base08: #0c969b; /* variable references */
   --base09: #aa0982; /* numbers */
   --base0A: #994cc3; /* keywords */
   --base0B: #c96765; /* strings */
