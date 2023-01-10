@@ -73,6 +73,7 @@ app.use(
           'calendar.google.com',
           'codesandbox.io',
           'share.transistor.fm',
+          'codepen.io',
         ],
         'img-src': [
           "'self'",
