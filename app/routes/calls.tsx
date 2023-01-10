@@ -41,7 +41,6 @@ import {getServerTimeHeader} from '~/utils/timing.server'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'calls',
-  restoreScroll: false,
 }
 
 export type LoaderData = {
@@ -260,7 +259,11 @@ export default function CallHomeScreen() {
                 className="border-b border-gray-200 dark:border-gray-600"
                 key={path}
               >
-                <Link to={path} className="group focus:outline-none">
+                <Link
+                  preventScrollReset
+                  to={path}
+                  className="group focus:outline-none"
+                >
                   <Grid nested className="relative py-10 lg:py-5">
                     <div className="bg-secondary absolute -inset-px -mx-6 hidden rounded-lg group-hover:block group-focus:block" />
                     <div className="relative col-span-1 flex-none">

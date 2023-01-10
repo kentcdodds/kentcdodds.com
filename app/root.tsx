@@ -17,7 +17,6 @@ import {
   useCatch,
   useLoaderData,
   useLocation,
-  useMatches,
   useTransition,
 } from '@remix-run/react'
 
@@ -324,16 +323,6 @@ function CanonicalLink({
 
 function App() {
   const data = useLoaderData<typeof loader>()
-  const matches = useMatches()
-  let shouldRestoreScroll = true
-  for (const match of matches.reverse()) {
-    const matchHandle = match.handle as KCDHandle | undefined
-    if (!matchHandle) continue
-    if ('restoreScroll' in matchHandle) {
-      shouldRestoreScroll = Boolean(matchHandle.restoreScroll)
-      break
-    }
-  }
   const [team] = useTeam()
   const [theme] = useTheme()
   const fathomQueue = React.useRef<FathomQueue>([])
@@ -371,9 +360,7 @@ function App() {
         <Outlet />
         <Spacer size="base" />
         <Footer image={images[data.randomFooterImageKey]} />
-        {shouldRestoreScroll ? (
-          <ScrollRestoration nonce={data.cspNonce} />
-        ) : null}
+        <ScrollRestoration nonce={data.cspNonce} />
         {ENV.NODE_ENV === 'development' ? null : (
           <script
             nonce={data.cspNonce}

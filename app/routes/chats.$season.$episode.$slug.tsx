@@ -44,7 +44,6 @@ import {Spacer} from '~/components/spacer'
 import {getServerTimeHeader} from '~/utils/timing.server'
 
 export const handle: KCDHandle = {
-  restoreScroll: true,
   getSitemapEntries: async request => {
     const seasons = await getSeasons({request})
     return seasons.flatMap(season => {
@@ -358,6 +357,7 @@ function PrevNextButton({
       whileFocus="hover"
       whileTap={direction === 'next' ? 'tapRight' : 'tapLeft'}
       animate="initial"
+      preventScrollReset
       to={getCWKEpisodePath(episodeListItem)}
       className={clsx('flex items-start focus:outline-none', {
         'flex-row-reverse': direction === 'next',

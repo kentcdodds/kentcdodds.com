@@ -15,7 +15,7 @@ import {
 import clsx from 'clsx'
 import {Tab, TabList, TabPanel, TabPanels, Tabs} from '@reach/tabs'
 import type {LoaderData as RootLoaderData} from '../root'
-import type {Await, KCDHandle} from '~/types'
+import type {Await} from '~/types'
 import {ChatsEpisodeUIStateProvider} from '~/utils/providers'
 import {Grid} from '~/components/grid'
 import {
@@ -44,10 +44,6 @@ import {Spacer} from '~/components/spacer'
 import {PodcastSubs} from '~/components/podcast-subs'
 import {getSocialMetas} from '~/utils/seo'
 import {getServerTimeHeader} from '~/utils/timing.server'
-
-export const handle: KCDHandle = {
-  restoreScroll: false,
-}
 
 type LoaderData = {
   seasons: Await<ReturnType<typeof getSeasonListItems>>
@@ -127,7 +123,9 @@ function PodcastHome() {
   function handleTabChange(index: number) {
     const chosenSeason = data.seasons[index]
     if (chosenSeason) {
-      navigate(String(chosenSeason.seasonNumber).padStart(2, '0'))
+      navigate(String(chosenSeason.seasonNumber).padStart(2, '0'), {
+        preventScrollReset: true,
+      })
     }
   }
 
@@ -263,6 +261,7 @@ function PodcastHome() {
                 off, but more importantly it'll allow people to meta-click it.
               */}
               <Link
+                preventScrollReset
                 className={clsx(
                   'hover:text-primary focus:text-primary focus:outline-none',
                   {
