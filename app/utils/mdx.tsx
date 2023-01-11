@@ -31,7 +31,7 @@ type CachifiedOptions = {
   timings?: Timings
 }
 
-const defaultTTL = 1000 * 60 * 60 * 24
+const defaultTTL = 1000 * 60 * 60 * 24 * 14
 const defaultStaleWhileRevalidate = 1000 * 60 * 60 * 24 * 30
 
 const checkCompiledValue = (value: unknown) =>
