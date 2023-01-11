@@ -98,7 +98,15 @@ function optimizeCloudinaryImages() {
       }
       // don't add transforms if they're already included
       if (transforms) return
-      const defaultTransforms = 'f_auto,q_auto,dpr_2.0,w_1600'
+      const defaultTransforms = [
+        'f_auto',
+        'q_auto',
+        // gifs can't do dpr transforms
+        publicId.endsWith('.gif') ? '' : 'dpr_2.0',
+        'w_1600',
+      ]
+        .filter(Boolean)
+        .join(',')
       return [
         `https://res.cloudinary.com/${cloudName}/image/upload`,
         defaultTransforms,
