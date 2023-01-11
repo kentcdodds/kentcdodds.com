@@ -4,16 +4,13 @@ export function getSocialMetas({
   url,
   title = 'Helping people make the world a better place through quality software',
   description = 'Make the world better with software',
-  origin,
   image = getGenericSocialImage({
-    origin,
     url,
     words: title,
     featuredImage: 'kentcdodds.com/illustrations/kody-flying_blue',
   }),
   keywords = '',
 }: {
-  origin: string
   image?: string
   url: string
   title?: string

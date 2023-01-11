@@ -118,7 +118,6 @@ export const meta: MetaFunction = ({data, parentsData}) => {
 
   return {
     ...getSocialMetas({
-      origin: requestInfo.origin,
       title: 'The Kent C. Dodds Blog',
       description: `Join ${totalBlogReaders} people who have read Kent's ${formatNumber(
         posts.length,
@@ -127,7 +126,6 @@ export const meta: MetaFunction = ({data, parentsData}) => {
         'JavaScript, TypeScript, React, Testing, Career, Software Development, Kent C. Dodds Blog',
       url: getUrl(requestInfo),
       image: getSocialImageWithPreTitle({
-        origin: requestInfo.origin,
         url: getDisplayUrl(requestInfo),
         featuredImage: images.skis.id,
         preTitle: 'Check out this Blog',

@@ -108,7 +108,6 @@ export const meta: MetaFunction = ({parentsData, params}) => {
 
   return {
     ...getSocialMetas({
-      origin: requestInfo.origin,
       title: workshop ? workshop.title : 'Workshop not found',
       description: workshop ? workshop.description : 'No workshop here :(',
       ...workshop?.meta,
@@ -118,7 +117,6 @@ export const meta: MetaFunction = ({parentsData, params}) => {
         '',
       url: getUrl(requestInfo),
       image: getSocialImageWithPreTitle({
-        origin: requestInfo.origin,
         url: getDisplayUrl(requestInfo),
         featuredImage: 'kent/kent-workshopping-at-underbelly',
         preTitle: 'Check out this workshop',

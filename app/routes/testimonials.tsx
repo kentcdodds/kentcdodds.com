@@ -29,12 +29,10 @@ export const meta: MetaFunction<typeof loader> = ({data, parentsData}) => {
   const title = `${testimonialCount} testimonials about Kent C. Dodds`
   return {
     ...getSocialMetas({
-      origin: requestInfo.origin,
       title,
       description: `Check out ${testimonialCount} testimonials about Kent C. Dodds and how the things he's done has helped people in their goals.`,
       url: getUrl(requestInfo),
       image: getGenericSocialImage({
-        origin: requestInfo.origin,
         url: getDisplayUrl(requestInfo),
         featuredImage: images.kentHoldingOutCody.id,
         words: title,

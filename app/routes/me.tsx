@@ -58,12 +58,10 @@ export const meta: MetaFunction = ({parentsData}) => {
   const domain = new URL(requestInfo.origin).host
   return {
     ...getSocialMetas({
-      origin: requestInfo.origin,
       title: `Your account on ${domain}`,
       description: `Personal account information on ${domain}.`,
       url: getUrl(requestInfo),
       image: getGenericSocialImage({
-        origin: requestInfo.origin,
         url: getDisplayUrl(requestInfo),
         featuredImage: images.kodySnowboardingWhite(),
         words: `View your account info on ${domain}`,
@@ -349,7 +347,7 @@ function YouScreen() {
                 Chosen team
               </Label>
               <a
-                className="underlined mb-5 animate-pulse text-lg hover:animate-none focus:animate-none"
+                className="underlined animate-pulse hover:animate-none focus:animate-none mb-5 text-lg"
                 href={teamShirts[team]}
               >
                 Get your team shirt{' '}

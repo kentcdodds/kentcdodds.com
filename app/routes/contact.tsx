@@ -88,12 +88,10 @@ export const meta: MetaFunction = ({parentsData}) => {
   const {requestInfo} = parentsData.root as RootLoaderData
   return {
     ...getSocialMetas({
-      origin: requestInfo.origin,
       title: 'Contact Kent C. Dodds',
       description: 'Send Kent C. Dodds a personal email.',
       url: getUrl(requestInfo),
       image: getGenericSocialImage({
-        origin: requestInfo.origin,
         url: getDisplayUrl(requestInfo),
         featuredImage: 'unsplash/photo-1563225409-127c18758bd5',
         words: `Shoot Kent an email`,

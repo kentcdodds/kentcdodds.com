@@ -42,12 +42,10 @@ export const meta: MetaFunction = ({data, parentsData}) => {
   const topicsList = listify(tags.slice(0, 6))
   return {
     ...getSocialMetas({
-      origin: requestInfo.origin,
       title,
       description: `Check out Kent's ${talkCount} talks he's delivered ${deliveryCount} times. Topics include: ${topicsList}`,
       url: getUrl(requestInfo),
       image: getGenericSocialImage({
-        origin: requestInfo.origin,
         url: getDisplayUrl(requestInfo),
         featuredImage: images.teslaY.id,
         words: title,

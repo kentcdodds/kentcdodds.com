@@ -36,7 +36,6 @@ export const meta: MetaFunction = ({parentsData}) => {
 
   return {
     ...getSocialMetas({
-      origin: requestInfo.origin,
       title: 'Workshops with Kent C. Dodds',
       description: `Get really good at making software with Kent C. Dodds' ${
         data.workshops.length
@@ -44,7 +43,6 @@ export const meta: MetaFunction = ({parentsData}) => {
       keywords: Array.from(tagsSet).join(', '),
       url: getUrl(requestInfo),
       image: getSocialImageWithPreTitle({
-        origin: requestInfo.origin,
         url: getDisplayUrl(requestInfo),
         featuredImage: 'kent/kent-workshopping-at-underbelly',
         preTitle: 'Check out these workshops',

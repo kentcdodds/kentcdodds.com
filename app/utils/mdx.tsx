@@ -335,13 +335,11 @@ function mdxPageMeta({
     return {
       ...(isDraft || isUnlisted ? {robots: 'noindex'} : null),
       ...getSocialMetas({
-        origin: requestInfo.origin,
         title,
         description: data.page.frontmatter.description,
         keywords: keywords.join(', '),
         url: getUrl(requestInfo),
         image: getSocialImageWithPreTitle({
-          origin: requestInfo.origin,
           url: getDisplayUrl(requestInfo),
           featuredImage:
             data.page.frontmatter.bannerCloudinaryId ??

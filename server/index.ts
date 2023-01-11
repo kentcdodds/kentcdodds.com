@@ -16,7 +16,6 @@ import {
   createMetronomeGetLoadContext,
   registerMetronome,
 } from '@metronome-sh/express'
-import {addCloudinaryProxies} from './cloudinary'
 import {getRedirectsMiddleware, rickRollMiddleware} from './redirects'
 import {
   getInstanceInfo,
@@ -156,8 +155,6 @@ app.get(
   helmet.contentSecurityPolicy({useDefaults: false}),
   helmet.referrerPolicy({policy: 'same-origin'}),
 )
-
-addCloudinaryProxies(app)
 
 app.all(
   '*',

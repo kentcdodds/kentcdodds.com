@@ -47,12 +47,10 @@ export const meta: MetaFunction = ({parentsData}) => {
   const {requestInfo} = parentsData.root as RootLoaderData
   return {
     ...getSocialMetas({
-      origin: requestInfo.origin,
       title: 'Courses by Kent C. Dodds',
       description: 'Get really good at making software with Kent C. Dodds',
       url: getUrl(requestInfo),
       image: getGenericSocialImage({
-        origin: requestInfo.origin,
         url: getDisplayUrl(requestInfo),
         featuredImage: images.onewheel.id,
         words: `Level up your skills with self-paced courses from Kent C. Dodds`,

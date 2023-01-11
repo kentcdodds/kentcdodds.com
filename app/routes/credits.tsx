@@ -59,12 +59,10 @@ export const meta: MetaFunction = ({parentsData}) => {
   const domain = new URL(requestInfo.origin).host
   return {
     ...getSocialMetas({
-      origin: requestInfo.origin,
       title: `Who built ${domain}`,
       description: `It took a team of people to create ${domain}. This page will tell you a little bit about them.`,
       url: getUrl(requestInfo),
       image: getSocialImageWithPreTitle({
-        origin: requestInfo.origin,
         url: getDisplayUrl(requestInfo),
         featuredImage: images.kentCodingOnCouch.id,
         title: `The fantastic people who built ${domain}`,

@@ -63,7 +63,6 @@ export const meta: MetaFunction = ({parentsData, params}) => {
   const playerUrl = episode.embedHtml.match(/src="(?<src>.+)"/)?.groups?.src
   return {
     ...getSocialMetas({
-      origin: requestInfo.origin,
       title,
       description: episode.description,
       keywords: `call kent, kent c. dodds, ${episode.keywords}`,

@@ -1,6 +1,8 @@
 import type {TransformerOption} from '@cld-apis/types'
 import {setConfig, buildImageUrl} from 'cloudinary-build-url'
+import emojiRegex from 'emoji-regex'
 import type {OptionalTeam} from './utils/misc'
+import {toBase64} from './utils/misc'
 
 setConfig({
   cloudName: 'kentcdodds-com',
@@ -326,46 +328,106 @@ function getImgProps(
 }
 
 function getSocialImageWithPreTitle({
-  origin,
   title,
   preTitle,
   featuredImage: img,
   url,
 }: {
-  origin: string
   title: string
   preTitle: string
   featuredImage: string
   url: string
 }) {
-  const params = new URLSearchParams({
-    type: '2',
-    title,
-    preTitle,
-    img,
-    url,
-  })
-  return `${origin}/img/social?${params.toString()}`
+  const vars = `$th_1256,$tw_2400,$gw_$tw_div_24,$gh_$th_div_12`
+
+  const encodedPreTitle = doubleEncode(emojiStrip(preTitle))
+  const preTitleSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_14,h_$gh,x_$gw_mul_1.5,y_$gh_mul_1.3,l_text:kentcdodds.com:Matter-Regular.woff2_50:${encodedPreTitle}`
+
+  const encodedTitle = doubleEncode(emojiStrip(title))
+  const titleSection = `co_white,c_fit,g_north_west,w_$gw_mul_13.5,h_$gh_mul_7,x_$gw_mul_1.5,y_$gh_mul_2.3,l_text:kentcdodds.com:Matter-Regular.woff2_110:${encodedTitle}`
+
+  const kentProfileSection = `c_fit,g_north_west,r_max,w_$gw_mul_4,h_$gh_mul_3,x_$gw,y_$gh_mul_8,l_kent:profile-transparent`
+  const kentNameSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_5.5,h_$gh_mul_4,x_$gw_mul_4.5,y_$gh_mul_9,l_text:kentcdodds.com:Matter-Regular.woff2_70:Kent%20C.%20Dodds`
+
+  const encodedUrl = doubleEncode(emojiStrip(url))
+  const urlSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_9,x_$gw_mul_4.5,y_$gh_mul_9.8,l_text:kentcdodds.com:Matter-Regular.woff2_40:${encodedUrl}`
+
+  const featuredImageIsRemote = img.startsWith('http')
+  const featuredImageCloudinaryId = featuredImageIsRemote
+    ? toBase64(img)
+    : img.replace(/\//g, ':')
+  const featuredImageLayerType = featuredImageIsRemote ? 'l_fetch:' : 'l_'
+  const featuredImageSection = `c_fill,ar_3:4,r_12,g_east,h_$gh_mul_10,x_$gw,${featuredImageLayerType}${featuredImageCloudinaryId}`
+
+  return [
+    `https://res.cloudinary.com/kentcdodds-com/image/upload`,
+    vars,
+    preTitleSection,
+    titleSection,
+    kentProfileSection,
+    kentNameSection,
+    urlSection,
+    featuredImageSection,
+    `c_fill,w_$tw,h_$th/kentcdodds.com/social-background.png`,
+  ].join('/')
 }
 
 function getGenericSocialImage({
-  origin,
   words,
   featuredImage: img,
   url,
 }: {
-  origin: string
   words: string
   featuredImage: string
   url: string
 }) {
-  const params = new URLSearchParams({
-    type: '1',
-    words,
-    img,
-    url,
-  })
-  return `${origin}/img/social?${params.toString()}`
+  const vars = `$th_1256,$tw_2400,$gw_$tw_div_24,$gh_$th_div_12`
+
+  const encodedWords = doubleEncode(emojiStrip(words))
+  const primaryWordsSection = `co_white,c_fit,g_north_west,w_$gw_mul_10,h_$gh_mul_7,x_$gw_mul_1.3,y_$gh_mul_1.5,l_text:kentcdodds.com:Matter-Regular.woff2_110:${encodedWords}`
+
+  const kentProfileSection = `c_fit,g_north_west,r_max,w_$gw_mul_4,h_$gh_mul_3,x_$gw,y_$gh_mul_8,l_kent:profile-transparent`
+  const kentNameSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_5.5,h_$gh_mul_4,x_$gw_mul_4.5,y_$gh_mul_9,l_text:kentcdodds.com:Matter-Regular.woff2_70:Kent%20C.%20Dodds`
+
+  const encodedUrl = doubleEncode(emojiStrip(url))
+  const urlSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_5.5,x_$gw_mul_4.5,y_$gh_mul_9.8,l_text:kentcdodds.com:Matter-Regular.woff2_40:${encodedUrl}`
+
+  const featuredImageIsRemote = img.startsWith('http')
+  const featuredImageCloudinaryId = featuredImageIsRemote
+    ? toBase64(img)
+    : img.replace(/\//g, ':')
+  const featuredImageLayerType = featuredImageIsRemote ? 'l_fetch:' : 'l_'
+
+  const featureImageSection = `c_fit,g_east,w_$gw_mul_11,h_$gh_mul_11,x_$gw,${featuredImageLayerType}${featuredImageCloudinaryId}`
+
+  const backgroundSection = `c_fill,w_$tw,h_$th/kentcdodds.com/social-background.png`
+  return [
+    `kentcdodds-com/image/upload`,
+    vars,
+    primaryWordsSection,
+    kentProfileSection,
+    kentNameSection,
+    urlSection,
+    featureImageSection,
+    backgroundSection,
+  ].join('/')
+}
+
+function emojiStrip(string: string) {
+  return (
+    string
+      .replace(emojiRegex(), '')
+      // get rid of double spaces:
+      .split(' ')
+      .filter(Boolean)
+      .join(' ')
+      .trim()
+  )
+}
+
+// cloudinary needs double-encoding
+function doubleEncode(s: string) {
+  return encodeURIComponent(encodeURIComponent(s))
 }
 
 export {

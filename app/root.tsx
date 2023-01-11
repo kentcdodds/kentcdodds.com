@@ -74,12 +74,10 @@ export const meta: MetaFunction = ({data}) => {
     viewport: 'width=device-width,initial-scale=1,viewport-fit=cover',
     'theme-color': requestInfo?.session.theme === 'dark' ? '#1F2028' : '#FFF',
     ...getSocialMetas({
-      origin: requestInfo?.origin ?? '',
       keywords:
         'Learn React, React Workshops, Testing JavaScript Training, React Training, Learn JavaScript, Learn TypeScript',
       url: getUrl(requestInfo),
       image: getGenericSocialImage({
-        origin: requestInfo?.origin ?? '',
         url: getDisplayUrl(requestInfo),
         words:
           'Helping people make the world a better place through quality software.',
