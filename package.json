@@ -51,7 +51,7 @@
     "seed": "tsx other/runfile prisma/seed.ts"
   },
   "dependencies": {
-    "@kentcdodds/md-temp": "^3.0.5",
+    "@kentcdodds/md-temp": "^3.0.6",
     "@metronome-sh/express": "^5.8.0",
     "@metronome-sh/react": "^5.8.0",
     "@octokit/plugin-throttling": "^4.3.2",
