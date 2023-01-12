@@ -33,7 +33,7 @@
     "runfile": "tsx ./other/runfile.js",
     "start": "cross-env NODE_ENV=production node ./index.js",
     "start:mocks": "cross-env NODE_ENV=production MOCKS=true tsx ./index.js",
-    "curl:blog": "curl --HEAD --silent http://localhost:$PORT/blog > /dev/null",
+    "curl:blog": "curl --HEAD --silent http://localhost:$PORT/blog > /dev/null || true",
     "prime-cache:prod": "cross-env PORT=4001 npx start-server-and-test start http-get://localhost:4001/build/info.json curl:blog && echo cache primed ⚡️",
     "prime-cache:mocks": "cross-env PORT=4001 npx start-server-and-test start:mocks http-get://localhost:4001/build/info.json curl:blog && echo cache primed ⚡️",
     "test:e2e:dev": "cross-env PORT=3000 playwright test",
