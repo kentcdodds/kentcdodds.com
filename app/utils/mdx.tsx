@@ -412,9 +412,11 @@ function getMdxComponent(code: string) {
 function BlogImage({
   cloudinaryId,
   imgProps,
+  transparentBackground,
 }: {
   cloudinaryId: string
   imgProps: JSX.IntrinsicElements['img']
+  transparentBackground?: boolean
 }) {
   return (
     <img
@@ -426,7 +428,9 @@ function BlogImage({
           '(min-width:1024px) and (max-width:1620px) 50vw',
           '850px',
         ],
-        transformations: {background: 'rgb:e6e9ee'},
+        transformations: {
+          background: transparentBackground ? undefined : 'rgb:e6e9ee',
+        },
       })}
       {...imgProps}
     />
@@ -437,15 +441,29 @@ function ThemedBlogImage({
   darkCloudinaryId,
   lightCloudinaryId,
   imgProps,
+  transparentBackground,
 }: {
   darkCloudinaryId: string
   lightCloudinaryId: string
   imgProps: JSX.IntrinsicElements['img']
+  transparentBackground?: boolean
 }) {
   return (
     <Themed
-      light={<BlogImage cloudinaryId={lightCloudinaryId} imgProps={imgProps} />}
-      dark={<BlogImage cloudinaryId={darkCloudinaryId} imgProps={imgProps} />}
+      light={
+        <BlogImage
+          cloudinaryId={lightCloudinaryId}
+          imgProps={imgProps}
+          transparentBackground={transparentBackground}
+        />
+      }
+      dark={
+        <BlogImage
+          cloudinaryId={darkCloudinaryId}
+          imgProps={imgProps}
+          transparentBackground={transparentBackground}
+        />
+      }
     />
   )
 }

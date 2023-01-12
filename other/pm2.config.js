@@ -2,17 +2,10 @@ module.exports = {
   apps: [
     {
       name: 'Server',
-      script: [
-        'tsx',
-        '--inspect',
-        '--require ./node_modules/dotenv/config',
-        '--require ./mocks',
-        './index.js',
-      ]
-        .filter(Boolean)
-        .join(' '),
+      script: 'tsx --inspect ./index.js',
       watch: ['./mocks/**/*.ts', './index.js', './server/**/*.ts', './.env'],
       env: {
+        MOCKS: 'true',
         NODE_ENV: process.env.NODE_ENV ?? 'development',
         FORCE_COLOR: '1',
       },

@@ -43,6 +43,35 @@ function makeEmbed(html: string, type: string, heightRatio = '56.25%') {
 `
 }
 
+function trimCodeBlocks() {
+  return async function transformer(tree: H.Root) {
+    const {visit} = await import('unist-util-visit')
+    visit(tree, 'element', (preNode: H.Element) => {
+      if (preNode.tagName !== 'pre' || !preNode.children.length) {
+        return
+      }
+      const codeNode = preNode.children[0]
+      if (
+        !codeNode ||
+        codeNode.type !== 'element' ||
+        codeNode.tagName !== 'code'
+      ) {
+        return
+      }
+      const [codeStringNode] = codeNode.children
+      if (!codeStringNode) return
+
+      if (codeStringNode.type !== 'text') {
+        console.warn(
+          `trimCodeBlocks: Unexpected: codeStringNode type is not "text": ${codeStringNode.type}`,
+        )
+        return
+      }
+      codeStringNode.value = codeStringNode.value.trim()
+    })
+  }
+}
+
 // yes, I did write this myself 😬
 const cloudinaryUrlRegex =
   /^https?:\/\/res\.cloudinary\.com\/(?<cloudName>.+?)\/image\/upload\/((?<transforms>(.+?_.+?)+?)\/)?(\/?(?<version>v\d+)\/)?(?<publicId>.+$)/
@@ -208,6 +237,7 @@ const remarkPlugins: U.PluggableList = [
 
 const rehypePlugins: U.PluggableList = [
   optimizeCloudinaryImages,
+  trimCodeBlocks,
   remarkCodeBlocksShiki,
   removePreContainerDivs,
 ]
