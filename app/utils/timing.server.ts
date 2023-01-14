@@ -19,7 +19,6 @@ export async function time<ReturnType>(
   const promise = typeof fn === 'function' ? fn() : fn
   if (!timings) return promise
   const result = await promise
-  type = type.replaceAll(' ', '_')
   let timingType = timings[type]
   if (!timingType) {
     // eslint-disable-next-line no-multi-assign
@@ -41,8 +40,8 @@ export function getServerTimeHeader(timings: Timings) {
         .filter(Boolean)
         .join(' & ')
       return [
-        key.replaceAll(':', '_'),
-        desc ? `desc="${desc}"` : null,
+        key.replaceAll(/(:| |@|=|;|,)/g, '_'),
+        desc ? `desc=${JSON.stringify(desc)}` : null,
         `dur=${dur}`,
       ]
         .filter(Boolean)

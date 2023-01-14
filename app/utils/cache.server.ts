@@ -144,6 +144,7 @@ export async function cachified<Value>({
   const result = await time(cachifiedPromise, {
     timings,
     type: `cache:${options.key}`,
+    desc: `${options.key} cache retrieval`,
   })
   cachifiedResolved = true
   return result

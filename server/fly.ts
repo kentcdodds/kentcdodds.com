@@ -12,32 +12,24 @@ export const getReplayResponse: RequestHandler = function getReplayResponse(
   res,
   next,
 ) {
-  function endNext() {
-    res.endTime('fly-replay')
-    next()
-  }
-  res.startTime(
-    'fly-replay',
-    'Determine whether the request should be replayed',
-  )
-  if (!process.env.FLY) return endNext()
+  if (!process.env.FLY) return next()
 
   const {method, path: pathname} = req
   if (method === 'GET' || method === 'OPTIONS' || method === 'HEAD') {
-    return endNext()
+    return next()
   }
 
   const {currentInstance, currentIsPrimary, primaryInstance} = getInstanceInfo()
-  if (currentIsPrimary) return endNext()
+  if (currentIsPrimary) return next()
 
   if (pathname.includes('__metronome')) {
     // metronome doesn't need to be replayed...
-    return endNext()
+    return next()
   }
 
   if (pathname.includes('/cache/admin')) {
     // so we can clear the cache in other regions
-    return endNext()
+    return next()
   }
 
   const logInfo = {

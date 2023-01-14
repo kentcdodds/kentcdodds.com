@@ -256,15 +256,10 @@ function getRequestHandlerOptions(): Parameters<
 }
 
 if (MODE === 'production') {
-  const middleware = createRequestHandler(getRequestHandlerOptions())
-  app.all('*', async (req, res, next) => {
-    res.startTime('remix', 'Remix request handler')
-    return middleware(req, res, next)
-  })
+  app.all('*', createRequestHandler(getRequestHandlerOptions()))
 } else {
   app.all('*', (req, res, next) => {
     purgeRequireCache()
-    res.startTime('remix', 'Remix request handler')
     return createRequestHandler(getRequestHandlerOptions())(req, res, next)
   })
 }
