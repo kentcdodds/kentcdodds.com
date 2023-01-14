@@ -36,7 +36,7 @@ function createDatabase() {
 
 const lru = (global.__lruCache = global.__lruCache
   ? global.__lruCache
-  : new LRU<string, CacheEntry<unknown>>({max: 1000}))
+  : new LRU<string, CacheEntry<unknown>>({max: 5000}))
 
 export const lruCache = lruCacheAdapter(lru)
 

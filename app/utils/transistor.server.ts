@@ -9,7 +9,7 @@ import type {
   CallKentEpisode,
   TransistorUpdateEpisodeData,
 } from '~/types'
-import {getDomainUrl, getRequiredServerEnvVar, toBase64} from './misc'
+import {getRequiredServerEnvVar, toBase64} from './misc'
 import {cache, cachified} from './cache.server'
 import {getEpisodePath} from './call-kent'
 import {getDirectAvatarForUser} from './user-info.server'
@@ -158,7 +158,8 @@ async function createEpisode({
     } else {
       const {hasGravatar, avatar} = await getDirectAvatarForUser(user, {
         size: 1400,
-        origin: getDomainUrl(request),
+        request,
+        forceFresh: true,
       })
       encodedAvatar = toBase64(avatar)
       radius = hasGravatar ? ',r_max' : ''

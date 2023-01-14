@@ -23,7 +23,10 @@ function getAvatar(
     size = defaultAvatarSize,
     fallback = images.kodyProfileWhite({resize: {width: size}}),
     origin,
-  }: {size?: number; fallback?: string | null; origin?: string} = {},
+  }: {size?: number} & (
+    | {fallback?: null; origin?: null}
+    | {fallback: string; origin?: string}
+  ) = {},
 ) {
   const hash = md5(email)
   const url = new URL(`https://www.gravatar.com/avatar/${hash}`)

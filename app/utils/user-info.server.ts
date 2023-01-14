@@ -1,9 +1,9 @@
 import type {User} from '~/types'
-import {getImageBuilder, images} from '../images'
 import * as ck from '../convertkit/convertkit.server'
+import {getImageBuilder, images} from '../images'
+import {cache, cachified, lruCache} from './cache.server'
 import * as discord from './discord.server'
-import {getAvatar, getDomainUrl, getOptionalTeam} from './misc'
-import {cache, cachified} from './cache.server'
+import {getAvatar, getOptionalTeam} from './misc'
 import type {Timings} from './timing.server'
 
 type UserInfo = {
@@ -20,13 +20,49 @@ type UserInfo = {
   } | null
 }
 
+async function gravatarExistsForEmail({
+  email,
+  request,
+  timings,
+  forceFresh,
+}: {
+  email: string
+  request: Request
+  timings?: Timings
+  forceFresh?: boolean
+}) {
+  return cachified({
+    key: `gravatar-exists-for:${email}`,
+    cache: lruCache,
+    request,
+    timings,
+    forceFresh,
+    ttl: 1000 * 20,
+    staleWhileRevalidate: 1000 * 60 * 60 * 24 * 365,
+    checkValue: prevValue => typeof prevValue === 'boolean',
+    getFreshValue: async () => {
+      const gravatarUrl = getAvatar(email, {fallback: '404'})
+      const avatarResponse = await fetch(gravatarUrl, {method: 'HEAD'})
+      return avatarResponse.status === 200
+    },
+  })
+}
+
 async function getDirectAvatarForUser(
   {email, team}: Pick<User, 'email' | 'team'>,
-  {size = 128, origin}: {size: number; origin?: string},
+  {
+    size = 128,
+    request,
+    timings,
+    forceFresh,
+  }: {size: number; request: Request; timings?: Timings; forceFresh?: boolean},
 ) {
-  const gravatarUrl = getAvatar(email, {fallback: '404', origin})
-  const avatarResponse = await fetch(gravatarUrl, {method: 'HEAD'})
-  const hasGravatar = avatarResponse.status === 200
+  const hasGravatar = await gravatarExistsForEmail({
+    email,
+    request,
+    timings,
+    forceFresh,
+  })
   if (hasGravatar) {
     return {hasGravatar, avatar: getAvatar(email, {size, fallback: null})}
   } else {
@@ -109,7 +145,8 @@ async function getUserInfo(
 
   const {avatar, hasGravatar} = await getDirectAvatarForUser(user, {
     size: 128,
-    origin: getDomainUrl(request),
+    request,
+    timings,
   })
   const userInfo: UserInfo = {
     avatar: {
