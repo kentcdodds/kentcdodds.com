@@ -402,7 +402,7 @@ function getGenericSocialImage({
 
   const backgroundSection = `c_fill,w_$tw,h_$th/kentcdodds.com/social-background.png`
   return [
-    `kentcdodds-com/image/upload`,
+    `https://res.cloudinary.com/kentcdodds-com/image/upload`,
     vars,
     primaryWordsSection,
     kentProfileSection,
