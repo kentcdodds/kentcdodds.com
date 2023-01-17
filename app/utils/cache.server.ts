@@ -1,7 +1,9 @@
 import LRU from 'lru-cache'
+import fs from 'fs'
 import type {Cache as CachifiedCache, CacheEntry} from 'cachified'
 import {verboseReporter, lruCacheAdapter} from 'cachified'
 import * as C from 'cachified'
+import type BetterSqlite3 from 'better-sqlite3'
 import Database from 'better-sqlite3'
 import {getUser} from './session.server'
 import {getRequiredServerEnvVar} from './misc'
@@ -21,16 +23,24 @@ const cacheDb = (global.__cacheDb = global.__cacheDb
   ? global.__cacheDb
   : createDatabase())
 
-function createDatabase() {
+function createDatabase(tryAgain = true): BetterSqlite3.Database {
   const db = new Database(CACHE_DATABASE_PATH)
-  // create cache table with metadata JSON column and value JSON column if it does not exist already
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS cache (
-      key TEXT PRIMARY KEY,
-      metadata TEXT,
-      value TEXT
-    )
-  `)
+  try {
+    // create cache table with metadata JSON column and value JSON column if it does not exist already
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS cache (
+        key TEXT PRIMARY KEY,
+        metadata TEXT,
+        value TEXT
+      )
+    `)
+  } catch (error: unknown) {
+    fs.unlinkSync(CACHE_DATABASE_PATH)
+    if (tryAgain) {
+      return createDatabase(false)
+    }
+    throw error
+  }
   return db
 }
 
