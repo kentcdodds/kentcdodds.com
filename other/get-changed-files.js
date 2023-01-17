@@ -23,7 +23,7 @@ function fetchJson(url, {timoutTime} = {}) {
         reject(e)
       })
     if (timoutTime) {
-      setTimout(() => {
+      setTimeout(() => {
         request.destroy(new Error('Request timed out'))
       }, timoutTime)
     }
