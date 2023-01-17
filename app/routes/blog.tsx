@@ -4,6 +4,7 @@ import type {
   DataFunctionArgs,
   MetaFunction,
   SerializeFrom,
+  LinksFunction,
 } from '@remix-run/node'
 import {json} from '@remix-run/node'
 import {Link, useLoaderData, useSearchParams} from '@remix-run/react'
@@ -58,6 +59,17 @@ const handleId = 'blog'
 export const handle: KCDHandle = {
   id: handleId,
   getSitemapEntries: () => [{route: `/blog`, priority: 0.7}],
+}
+
+export const links: LinksFunction = () => {
+  return [
+    {
+      rel: 'alternate',
+      type: 'application/rss+xml',
+      title: 'Kent C. Dodds Blog',
+      href: '/blog/rss.xml',
+    },
+  ]
 }
 
 export async function loader({request}: DataFunctionArgs) {
