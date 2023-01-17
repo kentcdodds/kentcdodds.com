@@ -8,7 +8,9 @@ const baseUrl =
     : 'https://kentcdodds.com'
 
 async function go() {
-  const buildInfo = await fetchJson(`${baseUrl}/build/info.json`)
+  const buildInfo = await fetchJson(`${baseUrl}/build/info.json`, {
+    timoutTime: 10_000,
+  })
   const compareCommitSha = buildInfo.commit.sha
   const changedFiles = await getChangedFiles(currentCommitSha, compareCommitSha)
   console.error('Determining whether the changed files are deployable', {

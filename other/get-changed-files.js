@@ -2,9 +2,9 @@
 const execSync = require('child_process').execSync
 const https = require('https')
 
-function fetchJson(url) {
+function fetchJson(url, {timoutTime} = {}) {
   return new Promise((resolve, reject) => {
-    https
+    const request = https
       .get(url, res => {
         let data = ''
         res.on('data', d => {
@@ -22,6 +22,11 @@ function fetchJson(url) {
       .on('error', e => {
         reject(e)
       })
+    if (timoutTime) {
+      setTimout(() => {
+        request.destroy(new Error('Request timed out'))
+      }, timoutTime)
+    }
   })
 }
 
