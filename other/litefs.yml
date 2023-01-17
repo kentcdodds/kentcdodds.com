@@ -9,7 +9,7 @@ fuse:
 
   # The debug flag enables debug logging of all FUSE API calls.
   # This will produce a lot of logging. Not for general use.
-  debug: true
+  debug: false
 
 # The data section specifies where internal LiteFS data is stored
 # and how long to retain the transaction files.

@@ -10,10 +10,14 @@ const baseUrl =
     : 'https://kentcdodds.com'
 
 async function go() {
-  const shaInfo = await fetchJson(`${baseUrl}/refresh-commit-sha.json`)
+  const shaInfo = await fetchJson(`${baseUrl}/refresh-commit-sha.json`, {
+    timeoutTime: 10_000,
+  })
   let compareSha = shaInfo?.sha
   if (!compareSha) {
-    const buildInfo = await fetchJson(`${baseUrl}/build/info.json`)
+    const buildInfo = await fetchJson(`${baseUrl}/build/info.json`, {
+      timeoutTime: 10_000,
+    })
     compareSha = buildInfo.commit.sha
     console.log(
       `No compare sha found, using build sha: ${buildInfo.commit.sha}`,
