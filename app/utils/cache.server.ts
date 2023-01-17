@@ -37,6 +37,9 @@ function createDatabase(tryAgain = true): BetterSqlite3.Database {
   } catch (error: unknown) {
     fs.unlinkSync(CACHE_DATABASE_PATH)
     if (tryAgain) {
+      console.error(
+        `Error creating cache database, deleting the file at "${CACHE_DATABASE_PATH}" and trying again...`,
+      )
       return createDatabase(false)
     }
     throw error
