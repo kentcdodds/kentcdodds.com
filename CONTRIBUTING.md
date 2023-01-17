@@ -257,7 +257,7 @@ Then make sure to scale down to a single region:
 ```sh
 fly vol list
 # grab the ID for all but the primary you want to keep
-vol vol delete {id}
+fly vol delete {id}
 fly scale count 1
 ```
 
