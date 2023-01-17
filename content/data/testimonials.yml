@@ -546,3 +546,20 @@
     I was speechless the moment Kent C Dodds started teaching me about Compound
     Components, In Epic React Course. The quality of content he puts on for the
     community is incredible.
+
+- author: MURAT K OZCAN
+  priority: 3
+  subjects:
+    - EpicReact.dev
+    - TestingJavaScript.com
+    - Discord Community
+    - KCD Office Hours
+  cloudinaryId: kentcdodds.com/testimonials/murat-ozcan
+  company: Staff Engineer, Test Architect - Extend
+  link: https://github.com/muratkeremozcan
+  testimonial: >-
+    Before meeting Kent, I was well versed in JS and intermediate in React.
+    After going through his content (EpicReact + TestingJavaScript), asking
+    questions in Discord and office hours, I learned so much that at the end I
+    wrote [my own book](https://muratkerem.gitbook.io/cctdd/) on React & test
+    driven design!

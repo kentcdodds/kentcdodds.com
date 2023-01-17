@@ -34,7 +34,11 @@ export function TestimonialCard({
     <div
       className={`bg-secondary col-span-4 flex flex-col justify-between gap-2 rounded-lg p-16 ${className}`}
     >
-      <p className="text-primary mb-6 text-base">“{testimonial.testimonial}”</p>
+      <div
+        className="text-primary quote-child mb-6 text-base"
+        dangerouslySetInnerHTML={{__html: testimonial.testimonial}}
+      />
+
       <div className="flex items-center gap-2">
         {testimonial.link ? (
           <a href={testimonial.link} target="_blank" rel="noreferrer">

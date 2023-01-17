@@ -197,3 +197,10 @@ a {
 .lyt-activated {
   background-image: none !important;
 }
+
+.quote-child > *:first-child:before {
+  content: '“';
+}
+.quote-child > *:last-child:after {
+  content: '”';
+}

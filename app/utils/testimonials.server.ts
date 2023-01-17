@@ -4,6 +4,7 @@ import {downloadFile} from './github.server'
 import {getErrorMessage, typedBoolean} from './misc'
 import {cache, cachified} from './cache.server'
 import type {Timings} from './timing.server'
+import {markdownToHtml} from './markdown.server'
 
 const allCategories = [
   'teaching',
@@ -17,7 +18,7 @@ const allCategories = [
   'talk',
   'blog',
 ] as const
-export type TestimonialCategory = typeof allCategories[number]
+export type TestimonialCategory = (typeof allCategories)[number]
 
 const allSubjects = [
   'EpicReact.dev',
@@ -44,7 +45,7 @@ const allSubjects = [
   'workshop: testing-node-apps',
   'Other',
 ] as const
-export type TestimonialSubject = typeof allSubjects[number]
+export type TestimonialSubject = (typeof allSubjects)[number]
 
 export type Testimonial = {
   author: string
@@ -123,7 +124,7 @@ const isOneOf = (validValues: ReadonlyArray<unknown>) => (v: unknown) =>
 const areOneOf = (validValues: ReadonlyArray<unknown>) => (v: unknown) =>
   Array.isArray(v) && v.every(isOneOf(validValues))
 
-function mapTestimonial(rawTestimonial: UnknownObj) {
+async function mapTestimonial(rawTestimonial: UnknownObj) {
   try {
     const link: string | null = getValueWithFallback(rawTestimonial, 'link', {
       warnOnFallback: false,
@@ -146,6 +147,11 @@ function mapTestimonial(rawTestimonial: UnknownObj) {
         validateType: areOneOf(allCategories),
       },
     )
+    const rawTestimonialContent = getValueWithFallback<string>(
+      rawTestimonial,
+      'testimonial',
+      {validateType: isString},
+    )
     const testimonial: TestimonialWithMetadata = {
       author: getValueWithFallback(rawTestimonial, 'author', {
         validateType: isString,
@@ -163,9 +169,7 @@ function mapTestimonial(rawTestimonial: UnknownObj) {
       company: getValueWithFallback(rawTestimonial, 'company', {
         validateType: isString,
       }),
-      testimonial: getValueWithFallback(rawTestimonial, 'testimonial', {
-        validateType: isString,
-      }),
+      testimonial: await markdownToHtml(rawTestimonialContent),
     }
     return testimonial
   } catch (error: unknown) {
@@ -200,7 +204,9 @@ async function getAllTestimonials({
         throw new Error('Testimonials is not an array.')
       }
 
-      return rawTestimonials.map(mapTestimonial).filter(typedBoolean)
+      return (await Promise.all(rawTestimonials.map(mapTestimonial))).filter(
+        typedBoolean,
+      )
     },
     checkValue: (value: unknown) => Array.isArray(value),
   })
