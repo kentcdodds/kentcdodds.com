@@ -704,7 +704,7 @@ The whole thing took about an hour and fifteen minutes to run the migration
 script. But once that was finished, everything else went off pretty much without
 issue.
 
-## To be continued
+## The Memory Leak
 
 "Went off pretty much without issue" that is... Until I realized I had a hard
 core memory leak... Read more about that in
@@ -718,3 +718,10 @@ development is simpler thanks to just using SQLite as well.
 
 And I'm hopeful that the site will be noticeably faster. I may add real numbers
 to this section of the post once the new site gets some more traffic.
+
+## P.S.
+
+After I fixed the memory leak I decided to try deploying to multiple regions. I
+did and it's fantastic. Now, if you're outside the US, you'll get a much faster
+kentcdodds.com because my app and data are side-by-side in a region as close to
+you as possible. That's just brilliant.
