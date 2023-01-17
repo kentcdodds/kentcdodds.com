@@ -54,8 +54,7 @@ RUN npm run build
 FROM base
 
 ENV FLY="true"
-# TODO: enable litefs
-# ENV FLY_LITEFS_DIR="/litefs"
+ENV FLY_LITEFS_DIR="/litefs"
 ENV FLY_LITEFS_DIR="/data"
 ENV DATABASE_FILENAME="sqlite.db"
 ENV DATABASE_URL="file:$FLY_LITEFS_DIR/$DATABASE_FILENAME"
@@ -82,10 +81,8 @@ COPY --from=build /app/prisma /app/prisma
 ADD . .
 
 # prepare for litefs
-# TODO: enable litefs
-# COPY --from=flyio/litefs:sha-7e5287a /usr/local/bin/litefs /usr/local/bin/litefs
-# ADD other/litefs.yml /etc/litefs.yml
-# RUN mkdir -p /data ${FLY_LITEFS_DIR}
+COPY --from=flyio/litefs:0.3 /usr/local/bin/litefs /usr/local/bin/litefs
+ADD other/litefs.yml /etc/litefs.yml
+RUN mkdir -p /data ${FLY_LITEFS_DIR}
 
-# CMD ["litefs", "mount", "--", "node", "./other/start.js"]
-CMD ["node", "./other/start.js"]
+CMD ["litefs", "mount", "--", "node", "./other/start.js"]
