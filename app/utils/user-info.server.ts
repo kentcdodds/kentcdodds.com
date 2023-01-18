@@ -42,8 +42,13 @@ async function gravatarExistsForEmail({
     checkValue: prevValue => typeof prevValue === 'boolean',
     getFreshValue: async () => {
       const gravatarUrl = getAvatar(email, {fallback: '404'})
-      const avatarResponse = await fetch(gravatarUrl, {method: 'HEAD'})
-      return avatarResponse.status === 200
+      try {
+        const avatarResponse = await fetch(gravatarUrl, {method: 'HEAD'})
+        return avatarResponse.status === 200
+      } catch {
+        // 🤷‍♂️
+        return false
+      }
     },
   })
 }
