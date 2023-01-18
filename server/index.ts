@@ -53,6 +53,13 @@ app.use(serverTiming())
 
 app.get('/img/social', oldImgSocial)
 
+if (process.env.DISABLE_METRONOME) {
+  app.post('/__metronome', (req, res) => {
+    res.status(503)
+    return res.send('Metronome is disabled')
+  })
+}
+
 app.use((req, res, next) => {
   res.locals.cspNonce = crypto.randomBytes(16).toString('hex')
   next()
