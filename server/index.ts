@@ -16,7 +16,11 @@ import {
   createMetronomeGetLoadContext,
   registerMetronome,
 } from '@metronome-sh/express'
-import {getRedirectsMiddleware, rickRollMiddleware} from './redirects'
+import {
+  getRedirectsMiddleware,
+  oldImgSocial,
+  rickRollMiddleware,
+} from './redirects'
 import {
   getInstanceInfo,
   getReplayResponse,
@@ -46,6 +50,8 @@ const BUILD_DIR = path.join(process.cwd(), 'build')
 
 const app = express()
 app.use(serverTiming())
+
+app.get('/img/social', oldImgSocial)
 
 app.use((req, res, next) => {
   res.locals.cspNonce = crypto.randomBytes(16).toString('hex')
