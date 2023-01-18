@@ -238,7 +238,7 @@ function getRequestHandlerOptions(): Parameters<
   function getLoadContext(req: any, res: any) {
     return {cspNonce: res.locals.cspNonce}
   }
-  if (MODE === 'production') {
+  if (MODE === 'production' && !process.env.DISABLE_METRONOME) {
     const buildWithMetronome = registerMetronome(build)
     const metronomeGetLoadContext =
       createMetronomeGetLoadContext(buildWithMetronome)

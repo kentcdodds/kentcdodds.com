@@ -340,7 +340,7 @@ function App() {
         />
 
         <Links />
-        {ENV.NODE_ENV === 'production' ? (
+        {ENV.NODE_ENV === 'production' && !ENV.DISABLE_METRONOME ? (
           <MetronomeLinks nonce={data.cspNonce} />
         ) : null}
         <noscript>
