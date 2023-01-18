@@ -109,7 +109,6 @@ function getRedirectsMiddleware({
         for (const [key, value] of reqUrl.searchParams.entries()) {
           toUrl.searchParams.append(key, value)
         }
-        console.log({redirect, toUrl, params})
         toUrl.pathname = redirect.toPathname(params)
         res.redirect(307, toUrl.toString())
         return
