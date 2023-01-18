@@ -20,6 +20,14 @@ type UserInfo = {
   } | null
 }
 
+function abortTimeoutSignal(timeMs: number) {
+  const abortController = new AbortController()
+  void new Promise(resolve => setTimeout(resolve, timeMs)).then(() => {
+    abortController.abort()
+  })
+  return abortController.signal
+}
+
 async function gravatarExistsForEmail({
   email,
   request,
@@ -43,10 +51,13 @@ async function gravatarExistsForEmail({
     getFreshValue: async () => {
       const gravatarUrl = getAvatar(email, {fallback: '404'})
       try {
-        const avatarResponse = await fetch(gravatarUrl, {method: 'HEAD'})
+        const avatarResponse = await fetch(gravatarUrl, {
+          method: 'HEAD',
+          signal: abortTimeoutSignal(1000 * 2),
+        })
         return avatarResponse.status === 200
-      } catch {
-        // 🤷‍♂️
+      } catch (error: unknown) {
+        console.error(`Error getting gravatar for ${email}:`, error)
         return false
       }
     },
