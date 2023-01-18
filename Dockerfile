@@ -59,7 +59,7 @@ ENV DATABASE_FILENAME="sqlite.db"
 ENV DATABASE_URL="file:$FLY_LITEFS_DIR/$DATABASE_FILENAME"
 ENV PORT="8080"
 ENV NODE_ENV="production"
-ENV DISABLE_METRONOME="true"
+# ENV DISABLE_METRONOME="true"
 ENV CACHE_DATABASE_PATH=/data/cache.db
 # Make SQLite CLI accessible
 RUN echo "#!/bin/sh\nset -x\nsqlite3 \$DATABASE_URL" > /usr/local/bin/database-cli && chmod +x /usr/local/bin/database-cli
