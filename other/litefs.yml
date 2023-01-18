@@ -35,6 +35,7 @@ exit-on-error: false
 # You must specify "experiement.enable_consul" for FLY_CONSUL_URL to be available.
 lease:
   type: 'consul'
+  candidate: "${FLY_REGION == 'den'}"
   advertise-url: 'http://${HOSTNAME}.vm.${FLY_APP_NAME}.internal:20202'
 
   consul:
