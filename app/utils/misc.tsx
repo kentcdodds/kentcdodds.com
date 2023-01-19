@@ -306,7 +306,7 @@ function useUpdateQueryStringValueWithoutNavigation(
   }, [queryKey, queryValue])
 }
 
-function debounce<Callback extends (...args: Array<unknown>) => void>(
+function debounce<Callback extends (...args: Parameters<Callback>) => void>(
   fn: Callback,
   delay: number,
 ) {
@@ -319,16 +319,19 @@ function debounce<Callback extends (...args: Array<unknown>) => void>(
   }
 }
 
-function useDebounce<Callback extends (...args: Array<unknown>) => unknown>(
-  callback: Callback,
-  delay: number,
-) {
+function useDebounce<
+  Callback extends (...args: Parameters<Callback>) => ReturnType<Callback>,
+>(callback: Callback, delay: number) {
   const callbackRef = React.useRef(callback)
   React.useEffect(() => {
     callbackRef.current = callback
   })
   return React.useMemo(
-    () => debounce((...args) => callbackRef.current(...args), delay),
+    () =>
+      debounce(
+        (...args: Parameters<Callback>) => callbackRef.current(...args),
+        delay,
+      ),
     [delay],
   )
 }

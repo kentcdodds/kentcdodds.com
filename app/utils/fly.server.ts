@@ -1,4 +1,5 @@
 import fs from 'fs'
+import dns from 'dns'
 import os from 'os'
 import path from 'path'
 import invariant from 'tiny-invariant'
@@ -14,6 +15,18 @@ export async function ensurePrimary() {
     throw new Response('Fly Replay', {
       status: 409,
       headers: {'fly-replay': `instance=${primaryInstance}`},
+    })
+  }
+}
+
+export async function ensureInstance(instance: string) {
+  const {currentInstance} = await getInstanceInfo()
+  if (process.env.FLY && instance !== currentInstance) {
+    throw new Response('Fly Replay', {
+      status: 409,
+      headers: {
+        'fly-replay': `instance=${instance}`,
+      },
     })
   }
 }
@@ -48,4 +61,23 @@ export async function getFlyReplayResponse(instance?: string) {
       }`,
     },
   })
+}
+
+export async function getAllInstances() {
+  try {
+    const rawTxts = await dns.promises.resolveTxt(`vms.kcd.internal`)
+    const instances = rawTxts
+      .flat()
+      .flatMap(r => r.split(','))
+      .map(vm => vm.split(' '))
+      .reduce<Record<string, string>>(
+        (all, [instanceId, region]) =>
+          instanceId && region ? {...all, [instanceId]: region} : all,
+        {},
+      )
+    return instances
+  } catch (error: unknown) {
+    console.error('Error getting all instances', error)
+    return {[process.env.FLY_REGION ?? 'local']: os.hostname()}
+  }
 }

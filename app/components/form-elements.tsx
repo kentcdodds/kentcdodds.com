@@ -1,6 +1,5 @@
 import * as React from 'react'
 import clsx from 'clsx'
-import {useId} from '@reach/auto-id'
 
 function Label({className, ...labelProps}: JSX.IntrinsicElements['label']) {
   return (
@@ -18,14 +17,13 @@ type InputProps =
   | ({type: 'textarea'} & JSX.IntrinsicElements['textarea'])
   | JSX.IntrinsicElements['input']
 
+export const inputClassName =
+  'placeholder-gray-500 dark:disabled:text-slate-500 focus-ring px-11 py-8 w-full text-black disabled:text-gray-400 dark:text-white text-lg font-medium bg-gray-100 dark:bg-gray-800 rounded-lg'
 const Input = React.forwardRef<HTMLInputElement, InputProps>(function Input(
   props,
   ref,
 ) {
-  const className = clsx(
-    'placeholder-gray-500 dark:disabled:text-slate-500 focus-ring px-11 py-8 w-full text-black disabled:text-gray-400 dark:text-white text-lg font-medium bg-gray-100 dark:bg-gray-800 rounded-lg',
-    props.className,
-  )
+  const className = clsx(inputClassName, props.className)
 
   if (props.type === 'textarea') {
     return (
@@ -76,8 +74,54 @@ const Field = React.forwardRef<
   {defaultValue, error, name, label, className, description, id, ...props},
   ref,
 ) {
-  const prefix = useId()
-  const inputId = id ?? `${prefix}-${name}`
+  return (
+    <FieldContainer
+      id={id}
+      label={label}
+      className={className}
+      error={error}
+      description={description}
+    >
+      {({inputProps}) => (
+        <Input
+          // @ts-expect-error no idea 🤷‍♂️
+          ref={ref}
+          required
+          {...props}
+          {...inputProps}
+          name={name}
+          autoComplete={name}
+          defaultValue={defaultValue}
+        />
+      )}
+    </FieldContainer>
+  )
+})
+
+type FieldContainerRenderProp = (props: {
+  inputProps: {
+    id: string
+    'aria-describedby'?: string
+  }
+}) => React.ReactNode
+
+export function FieldContainer({
+  error,
+  label,
+  className,
+  description,
+  id,
+  children,
+}: {
+  id?: string
+  label: string
+  className?: string
+  error?: string | null
+  description?: React.ReactNode
+  children: FieldContainerRenderProp
+}) {
+  const defaultId = React.useId()
+  const inputId = id ?? defaultId
   const errorId = `${inputId}-error`
   const descriptionId = `${inputId}-description`
 
@@ -94,22 +138,19 @@ const Field = React.forwardRef<
         ) : null}
       </div>
 
-      <Input
-        // @ts-expect-error no idea 🤷‍♂️
-        ref={ref}
-        required
-        {...props}
-        name={name}
-        id={inputId}
-        autoComplete={name}
-        defaultValue={defaultValue}
-        aria-describedby={
-          error ? errorId : description ? descriptionId : undefined
-        }
-      />
+      {children({
+        inputProps: {
+          id: inputId,
+          'aria-describedby': error
+            ? errorId
+            : description
+            ? descriptionId
+            : undefined,
+        },
+      })}
     </div>
   )
-})
+}
 
 function ButtonGroup({
   children,
