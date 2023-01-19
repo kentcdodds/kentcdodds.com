@@ -16,7 +16,7 @@ export function CloudinaryVideo({
   cloudinaryId,
 }: CloudinaryVideoProps) {
   const transforms = [
-    `f_auto`,
+    `f_auto:video`,
     `q_auto`,
     `c_${crop}`,
     `ac_none`,
