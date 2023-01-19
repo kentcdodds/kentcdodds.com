@@ -45,6 +45,8 @@ export async function loader({request}: DataFunctionArgs) {
       })
     }
   } catch (error: unknown) {
+    if (error instanceof Response) throw error
+
     console.error(error)
     loginInfoSession.clean()
     loginInfoSession.flashError(
