@@ -4,8 +4,6 @@ import type {RequestHandler} from 'express'
 import path from 'path'
 import cookie from 'cookie'
 import invariant from 'tiny-invariant'
-import chokidar from 'chokidar'
-import EventEmitter from 'events'
 
 export const getReplayResponse: RequestHandler = function getReplayResponse(
   req,
@@ -106,60 +104,40 @@ export const txMiddleware: RequestHandler = async (req, res, next) => {
   return next()
 }
 
-const txEmitter = new EventEmitter()
-const {FLY_LITEFS_DIR, DATABASE_FILENAME} = process.env
-if (process.env.FLY) {
-  invariant(FLY_LITEFS_DIR, 'FLY_LITEFS_DIR is not defined')
-  invariant(DATABASE_FILENAME, 'DATABASE_FILENAME is not defined')
-  chokidar
-    .watch(path.join(FLY_LITEFS_DIR, `${DATABASE_FILENAME}-pos`), {
-      // disable this if/when fly supports watching this "virtual" file
-      usePolling: true,
-    })
-    .on('change', () => {
-      const txNumber = getTXNumber()
-      console.log('txNumber changed', {txNumber})
-      txEmitter.emit('change', txNumber)
-    })
-    .on('error', error => {
-      console.error(`Error watching ${DATABASE_FILENAME}-pos`, error)
-    })
-}
-
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 /**
  * @param sessionTXNumber
  * @returns true if it's safe to continue. false if the request should be replayed on the primary
  */
 async function waitForUpToDateTXNumber(sessionTXNumber: number) {
-  const currentTXNumber = getTXNumber()
+  let currentTXNumber = await getTXNumber()
   if (currentTXNumber >= sessionTXNumber) return true
 
-  return new Promise(resolve => {
-    const MAX_WAITING_TIME = 500
-    const timeout = setTimeout(() => {
-      console.error(`Timed out waiting for tx number! Call Kent!`)
-      txEmitter.off('change', handleTxNumberChange)
-      resolve(false)
-    }, MAX_WAITING_TIME)
+  const MAX_WAITING_TIME = 500
+  const stopTime = Date.now() + MAX_WAITING_TIME
+  await sleep(100)
 
-    function handleTxNumberChange(newTXNumber: number) {
-      if (newTXNumber >= sessionTXNumber) {
-        txEmitter.off('change', handleTxNumberChange)
-        clearTimeout(timeout)
-        resolve(true)
-      }
-    }
-    txEmitter.on('change', handleTxNumberChange)
-  })
+  do {
+    await sleep(30)
+    currentTXNumber = await getTXNumber()
+  } while (currentTXNumber >= sessionTXNumber && Date.now() < stopTime)
+
+  if (currentTXNumber >= sessionTXNumber) {
+    return true
+  } else {
+    console.error(`Timed out waiting for tx number 🚨`)
+    return false
+  }
 }
 
-function getTXNumber() {
+async function getTXNumber() {
   if (!process.env.FLY) return 0
+  const {FLY_LITEFS_DIR, DATABASE_FILENAME} = process.env
   invariant(FLY_LITEFS_DIR, 'FLY_LITEFS_DIR is not defined')
   invariant(DATABASE_FILENAME, 'DATABASE_FILENAME is not defined')
   let dbPos = '0'
   try {
-    dbPos = fs.readFileSync(
+    dbPos = await fs.promises.readFile(
       path.join(FLY_LITEFS_DIR, `${DATABASE_FILENAME}-pos`),
       'utf-8',
     )

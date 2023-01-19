@@ -93,7 +93,7 @@ export async function handleDataRequest(
 
   if (request.method === 'POST') {
     if (currentIsPrimary) {
-      const txnum = getTXNumber()
+      const txnum = await getTXNumber()
       if (txnum) {
         response.headers.append(
           'Set-Cookie',
@@ -111,7 +111,7 @@ export async function handleDataRequest(
   return response
 }
 
-function getTXNumber() {
+async function getTXNumber() {
   if (!process.env.FLY) return 0
 
   const {FLY_LITEFS_DIR, DATABASE_FILENAME} = process.env
@@ -119,7 +119,7 @@ function getTXNumber() {
   invariant(DATABASE_FILENAME, 'DATABASE_FILENAME is not defined')
   let dbPos = '0'
   try {
-    dbPos = fs.readFileSync(
+    dbPos = await fs.promises.readFile(
       path.join(FLY_LITEFS_DIR, `${DATABASE_FILENAME}-pos`),
       'utf-8',
     )
