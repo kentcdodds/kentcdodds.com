@@ -41,6 +41,8 @@ export async function loader({request}: DataFunctionArgs) {
     )
     return redirect(url.toString())
   } catch (error: unknown) {
+    if (error instanceof Request) throw error
+
     const errorMessage = getErrorMessage(error)
     if (error instanceof Error) {
       console.error(error.stack)
