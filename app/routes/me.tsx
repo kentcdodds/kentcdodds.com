@@ -24,6 +24,7 @@ import {
 import {
   deleteConvertKitCache,
   deleteDiscordCache,
+  gravatarExistsForEmail,
 } from '~/utils/user-info.server'
 import {prisma, getMagicLink} from '~/utils/prisma.server'
 import {
@@ -40,6 +41,7 @@ import {
   LogoutIcon,
   EyeIcon,
   PlusIcon,
+  RefreshIcon,
 } from '~/components/icons'
 import {TEAM_MAP} from '~/utils/onboarding'
 import {handleFormSubmission} from '~/utils/actions.server'
@@ -103,6 +105,7 @@ const actionIds = {
   deleteDiscordConnection: 'delete discord connection',
   deleteAccount: 'delete account',
   deleteSessions: 'delete sessions',
+  refreshGravatar: 'refresh gravatar',
 }
 
 function getFirstNameError(firstName: string | null) {
@@ -186,6 +189,9 @@ export const action: ActionFunction = async ({request}) => {
         headers: await session.getHeaders(),
       })
     }
+    if (actionId === actionIds.refreshGravatar) {
+      await gravatarExistsForEmail({email: user.email, forceFresh: true})
+    }
     return redirect('/me')
   } catch (error: unknown) {
     return json({generalError: getErrorMessage(error)}, 500)
@@ -253,17 +259,11 @@ function YouScreen() {
 
           <div className="col-span-full mb-24 lg:col-span-5 lg:mb-0">
             <Form
-              id="profile-form"
               action="/me"
               method="post"
               noValidate
               aria-describedby="general-error"
             >
-              <input
-                type="hidden"
-                name="actionId"
-                value={actionIds.changeDetails}
-              />
               <Field
                 name="firstName"
                 label="First name"
@@ -272,73 +272,84 @@ function YouScreen() {
                 required
                 error={actionData?.errors.firstName}
               />
-            </Form>
-            <Field
-              name="email"
-              label="Email address"
-              autoComplete="email"
-              required
-              defaultValue={user.email}
-              description={
-                <span>
-                  {`This controls your avatar via `}
-                  <a
-                    className="underlined font-bold"
-                    href="https://gravatar.com"
-                    target="_blank"
-                    rel="noreferrer noopener"
-                  >
-                    Gravatar
-                  </a>
-                  {'.'}
-                </span>
-              }
-              readOnly
-              disabled
-            />
-
-            <Field
-              name="discord"
-              label="Discord"
-              defaultValue={userInfo.discord?.username ?? user.discordId ?? ''}
-              placeholder="n/a"
-              readOnly
-              disabled
-              description={
-                user.discordId ? (
-                  <div className="flex gap-2">
-                    <a
-                      className="underlined"
-                      href={`https://discord.com/users/${user.discordId}`}
+              <Field
+                name="email"
+                label="Email address"
+                autoComplete="email"
+                required
+                defaultValue={user.email}
+                description={
+                  <div className="flex gap-1">
+                    <span>
+                      {`This controls your avatar via `}
+                      <a
+                        className="underlined font-bold"
+                        href="https://gravatar.com"
+                        target="_blank"
+                        rel="noreferrer noopener"
+                      >
+                        Gravatar
+                      </a>
+                      {'.'}
+                    </span>
+                    <button
+                      type="submit"
+                      name="actionId"
+                      value={actionIds.refreshGravatar}
                     >
-                      connected
-                    </a>
-                    <Form action="/me" method="post">
-                      <input
-                        type="hidden"
+                      <RefreshIcon />
+                    </button>
+                  </div>
+                }
+                readOnly
+                disabled
+              />
+
+              <Field
+                name="discord"
+                label="Discord"
+                defaultValue={
+                  userInfo.discord?.username ?? user.discordId ?? ''
+                }
+                placeholder="n/a"
+                readOnly
+                disabled
+                description={
+                  user.discordId ? (
+                    <div className="flex gap-2">
+                      <a
+                        className="underlined"
+                        href={`https://discord.com/users/${user.discordId}`}
+                      >
+                        connected
+                      </a>
+                      <button
                         name="actionId"
                         value={actionIds.deleteDiscordConnection}
-                      />
-                      <button
                         type="submit"
                         aria-label="remove connection"
                         className="text-secondary rotate-45 outline-none hover:scale-150 focus:scale-150"
                       >
                         <PlusIcon />
                       </button>
-                    </Form>
-                  </div>
-                ) : (
-                  <a className="underlined" href={authorizeURL}>
-                    Connect to Discord
-                  </a>
-                )
-              }
-            />
+                    </div>
+                  ) : (
+                    <a className="underlined" href={authorizeURL}>
+                      Connect to Discord
+                    </a>
+                  )
+                }
+              />
 
-            <Button className="mt-8" type="submit" form="profile-form">
-              Save changes
-            </Button>
+              <Button
+                className="mt-8"
+                type="submit"
+                name="actionId"
+                value={actionIds.changeDetails}
+              >
+                Save changes
+              </Button>
+            </Form>
           </div>
 
           <div className="col-span-full lg:col-span-4 lg:col-start-8">
@@ -430,21 +441,17 @@ function YouScreen() {
             Download Your Data
           </ButtonLink>
           <Form
-            id="profile-form"
             action="/me"
             method="post"
             noValidate
             aria-describedby="general-error"
           >
-            <input
-              type="hidden"
-              name="actionId"
-              value={actionIds.deleteSessions}
-            />
             <Button
               disabled={otherSessionsCount < 1}
               variant="danger"
               type="submit"
+              name="actionId"
+              value={actionIds.deleteSessions}
             >
               Sign out of {otherSessionsCount}{' '}
               {otherSessionsCount === 1 ? 'session' : 'sessions'}
@@ -468,22 +475,22 @@ function YouScreen() {
         </Paragraph>
         <Spacer size="2xs" />
         <Form
-          id="profile-form"
           action="/me"
           method="post"
           noValidate
           aria-describedby="general-error"
         >
-          <input
-            type="hidden"
-            name="actionId"
-            value={actionIds.deleteAccount}
-          />
           <div className="flex flex-wrap gap-4">
             <Button type="button" onClick={() => setDeleteModalOpen(false)}>
               Nevermind
             </Button>
-            <Button variant="danger" size="medium" type="submit">
+            <Button
+              variant="danger"
+              name="actionId"
+              value={actionIds.deleteAccount}
+              size="medium"
+              type="submit"
+            >
               Delete Account
             </Button>
           </div>

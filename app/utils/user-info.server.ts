@@ -1,7 +1,7 @@
 import type {User} from '~/types'
 import * as ck from '../convertkit/convertkit.server'
 import {getImageBuilder, images} from '../images'
-import {cache, cachified, lruCache} from './cache.server'
+import {cache, cachified} from './cache.server'
 import * as discord from './discord.server'
 import {getAvatar, getOptionalTeam} from './misc'
 import type {Timings} from './timing.server'
@@ -28,24 +28,24 @@ function abortTimeoutSignal(timeMs: number) {
   return abortController.signal
 }
 
-async function gravatarExistsForEmail({
+export async function gravatarExistsForEmail({
   email,
   request,
   timings,
   forceFresh,
 }: {
   email: string
-  request: Request
+  request?: Request
   timings?: Timings
   forceFresh?: boolean
 }) {
   return cachified({
     key: `gravatar-exists-for:${email}`,
-    cache: lruCache,
+    cache,
     request,
     timings,
     forceFresh,
-    ttl: 1000 * 20,
+    ttl: 1000 * 60 * 60 * 24 * 90,
     staleWhileRevalidate: 1000 * 60 * 60 * 24 * 365,
     checkValue: prevValue => typeof prevValue === 'boolean',
     getFreshValue: async () => {
