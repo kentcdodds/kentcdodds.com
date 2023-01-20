@@ -11,7 +11,7 @@ import type {
   MetaFunction,
 } from '@remix-run/node'
 import {json} from '@remix-run/node'
-import {useLoaderData} from '@remix-run/react'
+import {Outlet, useLoaderData} from '@remix-run/react'
 import {motion} from 'framer-motion'
 import {ArrowLink} from '~/components/arrow-button'
 import {ButtonLink} from '~/components/button'
@@ -178,11 +178,7 @@ export default function Discord() {
         imageBuilder={images.helmet}
         arrowUrl="#reasons-to-join"
         arrowLabel="Is this something for me?"
-        action={
-          <ButtonLink variant="primary" href={authorizeURL} className="mr-auto">
-            Join Discord
-          </ButtonLink>
-        }
+        action={<Outlet />}
       />
       <main>
         <Grid className="mb-24 lg:mb-64">

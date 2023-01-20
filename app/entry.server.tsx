@@ -27,10 +27,9 @@ if (process.env.NODE_ENV === 'development') {
 global.ENV = getEnv()
 
 const ABORT_DELAY = 5000
+type DocRequestArgs = Parameters<HandleDocumentRequestFunction>
 
-export default async function handleRequest(
-  ...args: Parameters<HandleDocumentRequestFunction>
-) {
+export default async function handleRequest(...args: DocRequestArgs) {
   const [request, responseStatusCode, responseHeaders, remixContext] = args
   if (responseStatusCode >= 500) {
     // maybe we're just in trouble in this region... if we're not in the primary
@@ -79,7 +78,7 @@ export default async function handleRequest(
   )
 }
 
-function serveTheBots(...args: Parameters<HandleDocumentRequestFunction>) {
+function serveTheBots(...args: DocRequestArgs) {
   const [request, responseStatusCode, responseHeaders, remixContext] = args
   return new Promise((resolve, reject) => {
     const stream = renderToPipeableStream(
@@ -110,7 +109,7 @@ function serveTheBots(...args: Parameters<HandleDocumentRequestFunction>) {
   })
 }
 
-function serveBrowsers(...args: Parameters<HandleDocumentRequestFunction>) {
+function serveBrowsers(...args: DocRequestArgs) {
   const [request, responseStatusCode, responseHeaders, remixContext] = args
   return new Promise((resolve, reject) => {
     let didError = false

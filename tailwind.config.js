@@ -62,12 +62,20 @@ module.exports = {
       },
     },
 
-    animation: {
-      'spin-slow': 'spin 3s linear infinite',
-      'spin-xslow': 'spin 7s linear infinite',
-    },
-
     extend: {
+      animation: {
+        'spin-slow': 'spin 3s linear infinite',
+        'spin-xslow': 'spin 7s linear infinite',
+        'reverse-spin': 'reverse-spin 1s linear infinite',
+      },
+      keyframes: {
+        'reverse-spin': {
+          from: {
+            transform: 'rotate(360deg)',
+          },
+        },
+      },
+
       zIndex: {
         '-10': '-10',
       },
