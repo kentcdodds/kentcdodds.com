@@ -1,14 +1,20 @@
-import ReactDOMServer from 'react-dom/server'
+import {
+  Response,
+  type HandleDataRequestFunction,
+  type HandleDocumentRequestFunction,
+} from '@remix-run/node'
+import {RemixServer} from '@remix-run/react'
 import cookie from 'cookie'
-import type {EntryContext, HandleDataRequestFunction} from '@remix-run/node'
-import {RemixServer as Remix} from '@remix-run/react'
-import {getEnv} from './utils/env.server'
+import isbot from 'isbot'
+import {renderToPipeableStream} from 'react-dom/server'
+import {PassThrough} from 'stream'
 import {routes as otherRoutes} from './other-routes.server'
-import {getFlyReplayResponse, getInstanceInfo} from './utils/fly.server'
-import invariant from 'tiny-invariant'
-import fs from 'fs'
-import path from 'path'
-import {getServerTimeHeader, time} from './utils/timing.server'
+import {getEnv} from './utils/env.server'
+import {
+  getFlyReplayResponse,
+  getInstanceInfo,
+  getTXNumber,
+} from './utils/fly.server'
 
 if (process.env.NODE_ENV === 'development') {
   try {
@@ -20,12 +26,12 @@ if (process.env.NODE_ENV === 'development') {
 
 global.ENV = getEnv()
 
+const ABORT_DELAY = 5000
+
 export default async function handleRequest(
-  request: Request,
-  responseStatusCode: number,
-  responseHeaders: Headers,
-  remixContext: EntryContext,
+  ...args: Parameters<HandleDocumentRequestFunction>
 ) {
+  const [request, responseStatusCode, responseHeaders, remixContext] = args
   if (responseStatusCode >= 500) {
     // maybe we're just in trouble in this region... if we're not in the primary
     // region, then replay and hopefully it works next time.
@@ -44,34 +50,99 @@ export default async function handleRequest(
     if (otherRouteResponse) return otherRouteResponse
   }
 
-  const timings = {}
-  const markup = await time(
-    () => {
-      return ReactDOMServer.renderToString(
-        <Remix context={remixContext} url={request.url} />,
-      )
-    },
-    {timings, type: 'react rendering', desc: 'renderToString'},
-  )
-  responseHeaders.append('Server-Timing', getServerTimeHeader(timings))
-
   if (process.env.NODE_ENV !== 'production') {
     responseHeaders.set('Cache-Control', 'no-store')
   }
-
-  const html = `<!DOCTYPE html>${markup}`
-
-  responseHeaders.set('Content-Type', 'text/html')
-  responseHeaders.set('Content-Length', String(Buffer.byteLength(html)))
 
   responseHeaders.append(
     'Link',
     '<https://res.cloudinary.com>; rel="preconnect"',
   )
 
-  return new Response(html, {
-    status: responseStatusCode,
-    headers: responseHeaders,
+  // If the request is from a bot, we want to wait for the full
+  // response to render before sending it to the client. This
+  // ensures that bots can see the full page content.
+  if (isbot(request.headers.get('user-agent'))) {
+    return serveTheBots(
+      request,
+      responseStatusCode,
+      responseHeaders,
+      remixContext,
+    )
+  }
+
+  return serveBrowsers(
+    request,
+    responseStatusCode,
+    responseHeaders,
+    remixContext,
+  )
+}
+
+function serveTheBots(...args: Parameters<HandleDocumentRequestFunction>) {
+  const [request, responseStatusCode, responseHeaders, remixContext] = args
+  return new Promise((resolve, reject) => {
+    const stream = renderToPipeableStream(
+      <RemixServer
+        context={remixContext}
+        url={request.url}
+        abortDelay={ABORT_DELAY}
+      />,
+      {
+        // Use onAllReady to wait for the entire document to be ready
+        onAllReady() {
+          responseHeaders.set('Content-Type', 'text/html')
+          const body = new PassThrough()
+          stream.pipe(body)
+          resolve(
+            new Response(body, {
+              status: responseStatusCode,
+              headers: responseHeaders,
+            }),
+          )
+        },
+        onShellError(err: unknown) {
+          reject(err)
+        },
+      },
+    )
+    setTimeout(() => stream.abort(), ABORT_DELAY)
+  })
+}
+
+function serveBrowsers(...args: Parameters<HandleDocumentRequestFunction>) {
+  const [request, responseStatusCode, responseHeaders, remixContext] = args
+  return new Promise((resolve, reject) => {
+    let didError = false
+    const stream = renderToPipeableStream(
+      <RemixServer
+        context={remixContext}
+        url={request.url}
+        abortDelay={ABORT_DELAY}
+      />,
+      {
+        // use onShellReady to wait until a suspense boundary is triggered
+        onShellReady() {
+          responseHeaders.set('Content-Type', 'text/html')
+          const body = new PassThrough()
+          stream.pipe(body)
+          resolve(
+            new Response(body, {
+              status: didError ? 500 : responseStatusCode,
+              headers: responseHeaders,
+            }),
+          )
+        },
+        onShellError(err: unknown) {
+          reject(err)
+        },
+        onError(err: unknown) {
+          didError = true
+          console.error(err)
+        },
+      },
+    )
+    setTimeout(() => stream.abort(), ABORT_DELAY)
   })
 }
 
@@ -109,22 +180,4 @@ export async function handleDataRequest(
   }
 
   return response
-}
-
-async function getTXNumber() {
-  if (!process.env.FLY) return 0
-
-  const {FLY_LITEFS_DIR, DATABASE_FILENAME} = process.env
-  invariant(FLY_LITEFS_DIR, 'FLY_LITEFS_DIR is not defined')
-  invariant(DATABASE_FILENAME, 'DATABASE_FILENAME is not defined')
-  let dbPos = '0'
-  try {
-    dbPos = await fs.promises.readFile(
-      path.join(FLY_LITEFS_DIR, `${DATABASE_FILENAME}-pos`),
-      'utf-8',
-    )
-  } catch {
-    // ignore
-  }
-  return parseInt(dbPos.trim().split('/')[0] ?? '0', 16)
 }

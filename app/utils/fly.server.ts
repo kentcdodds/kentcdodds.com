@@ -81,3 +81,21 @@ export async function getAllInstances() {
     return {[process.env.FLY_REGION ?? 'local']: os.hostname()}
   }
 }
+
+export async function getTXNumber() {
+  if (!process.env.FLY) return 0
+
+  const {FLY_LITEFS_DIR, DATABASE_FILENAME} = process.env
+  invariant(FLY_LITEFS_DIR, 'FLY_LITEFS_DIR is not defined')
+  invariant(DATABASE_FILENAME, 'DATABASE_FILENAME is not defined')
+  let dbPos = '0'
+  try {
+    dbPos = await fs.promises.readFile(
+      path.join(FLY_LITEFS_DIR, `${DATABASE_FILENAME}-pos`),
+      'utf-8',
+    )
+  } catch {
+    // ignore
+  }
+  return parseInt(dbPos.trim().split('/')[0] ?? '0', 16)
+}
