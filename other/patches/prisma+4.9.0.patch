@@ -19,3 +19,7 @@ index 1842de8..ddcf6d6 100644
 @@ -1 +1 @@
 -import"../assets/index.js";import"../assets/vendor.js";window.splash({transport:{type:"http",url:`${window.location.origin}/api`}});
 +import"../assets/index.js";import"../assets/vendor.js";window.splash({transport:{type:"http",url:`${window.location.origin}${window.location.pathname}${window.location.pathname.endsWith('/') ? '' : '/'}/api`}});
+diff --git a/node_modules/prisma/libquery_engine-darwin-arm64.dylib.node b/node_modules/prisma/libquery_engine-darwin-arm64.dylib.node
+new file mode 100755
+index 0000000..85a0453
+Binary files /dev/null and b/node_modules/prisma/libquery_engine-darwin-arm64.dylib.node differ
