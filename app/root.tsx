@@ -321,6 +321,7 @@ function CanonicalLink({
 
 function App() {
   const data = useLoaderData<typeof loader>()
+  const nonce = typeof document === 'undefined' ? data.cspNonce : ''
   const [team] = useTeam()
   const [theme] = useTheme()
   const fathomQueue = React.useRef<FathomQueue>([])
@@ -341,13 +342,13 @@ function App() {
 
         <Links />
         {ENV.NODE_ENV === 'production' && !ENV.DISABLE_METRONOME ? (
-          <MetronomeLinks nonce={data.cspNonce} />
+          <MetronomeLinks nonce={nonce} />
         ) : null}
         <noscript>
           <link rel="stylesheet" href={noScriptStyles} />
         </noscript>
         <NonFlashOfWrongThemeEls
-          nonce={data.cspNonce}
+          nonce={nonce}
           ssrTheme={Boolean(data.requestInfo.session.theme)}
         />
       </head>
@@ -358,10 +359,10 @@ function App() {
         <Outlet />
         <Spacer size="base" />
         <Footer image={images[data.randomFooterImageKey]} />
-        <ScrollRestoration nonce={data.cspNonce} />
+        <ScrollRestoration nonce={nonce} />
         {ENV.NODE_ENV === 'development' ? null : (
           <script
-            nonce={data.cspNonce}
+            nonce={nonce}
             src="https://sailfish.kentcdodds.com/script.js"
             data-site="HJUUDKMT"
             data-spa="history"
@@ -381,16 +382,15 @@ function App() {
             }}
           />
         )}
-        <Scripts nonce={data.cspNonce} />
+        <Scripts nonce={nonce} />
         <script
-          nonce={data.cspNonce}
+          nonce={nonce}
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `window.ENV = ${JSON.stringify(data.ENV)};`,
           }}
         />
-        {ENV.NODE_ENV === 'development' ? (
-          <LiveReload nonce={data.cspNonce} />
-        ) : null}
+        {ENV.NODE_ENV === 'development' ? <LiveReload nonce={nonce} /> : null}
       </body>
     </html>
   )

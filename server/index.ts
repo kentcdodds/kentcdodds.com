@@ -102,15 +102,12 @@ app.use(
         ],
         'media-src': ["'self'", 'res.cloudinary.com', 'data:', 'blob:'],
         'script-src': [
-          // TODO: once React streaming supports nonce, add this back:
-          // "'strict-dynamic'",
-          // // @ts-expect-error middleware is the worst
-          // (req, res) => `'nonce-${res.locals.cspNonce}'`,
+          "'strict-dynamic'",
           "'unsafe-eval'",
           "'self'",
           'sailfish.kentcdodds.com',
-          // TODO: once React streaming supports nonce, remove this:
-          "'unsafe-inline'",
+          // @ts-expect-error middleware is the worst
+          (req, res) => `'nonce-${res.locals.cspNonce}'`,
         ],
         'upgrade-insecure-requests': null,
       },

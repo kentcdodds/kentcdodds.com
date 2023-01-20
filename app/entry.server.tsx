@@ -9,6 +9,7 @@ import isbot from 'isbot'
 import {renderToPipeableStream} from 'react-dom/server'
 import {PassThrough} from 'stream'
 import {routes as otherRoutes} from './other-routes.server'
+import type {LoaderData as RootLoaderData} from './root'
 import {getEnv} from './utils/env.server'
 import {
   getFlyReplayResponse,
@@ -80,6 +81,8 @@ export default async function handleRequest(...args: DocRequestArgs) {
 
 function serveTheBots(...args: DocRequestArgs) {
   const [request, responseStatusCode, responseHeaders, remixContext] = args
+  const rootLoaderData = remixContext.staticHandlerContext.loaderData
+    .root as RootLoaderData
   return new Promise((resolve, reject) => {
     const stream = renderToPipeableStream(
       <RemixServer
@@ -88,6 +91,7 @@ function serveTheBots(...args: DocRequestArgs) {
         abortDelay={ABORT_DELAY}
       />,
       {
+        nonce: rootLoaderData.cspNonce,
         // Use onAllReady to wait for the entire document to be ready
         onAllReady() {
           responseHeaders.set('Content-Type', 'text/html')
@@ -111,6 +115,8 @@ function serveTheBots(...args: DocRequestArgs) {
 
 function serveBrowsers(...args: DocRequestArgs) {
   const [request, responseStatusCode, responseHeaders, remixContext] = args
+  const rootLoaderData = remixContext.staticHandlerContext.loaderData
+    .root as RootLoaderData
   return new Promise((resolve, reject) => {
     let didError = false
     const stream = renderToPipeableStream(
@@ -120,6 +126,7 @@ function serveBrowsers(...args: DocRequestArgs) {
         abortDelay={ABORT_DELAY}
       />,
       {
+        nonce: rootLoaderData.cspNonce,
         // use onShellReady to wait until a suspense boundary is triggered
         onShellReady() {
           responseHeaders.set('Content-Type', 'text/html')
