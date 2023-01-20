@@ -42,13 +42,9 @@ export async function loader({request}: DataFunctionArgs) {
     return redirect(url.toString())
   } catch (error: unknown) {
     if (error instanceof Request) throw error
+    console.error(error)
 
     const errorMessage = getErrorMessage(error)
-    if (error instanceof Error) {
-      console.error(error.stack)
-    } else {
-      console.error(errorMessage)
-    }
 
     url.searchParams.set('message', `🚨 ${errorMessage}`)
     return redirect(url.toString())
