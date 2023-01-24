@@ -12,7 +12,7 @@ import {requireAdminUser} from '~/utils/session.server'
 export async function loader({request, params}: DataFunctionArgs) {
   await requireAdminUser(request)
   const searchParams = new URL(request.url).searchParams
-  const currentInstanceInfo = await getInstanceInfo()
+  const currentInstanceInfo = getInstanceInfo()
   const allInstances = await getAllInstances()
   const instance =
     searchParams.get('instance') ?? currentInstanceInfo.currentInstance
