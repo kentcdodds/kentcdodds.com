@@ -10,7 +10,7 @@ import {getRequiredServerEnvVar} from './misc'
 import type {Timings} from './timing.server'
 import {time} from './timing.server'
 import {getInstanceInfo} from './fly.server'
-import {updatePrimaryCacheValue} from '~/routes/resources/cache.sqlite.$cacheKey'
+import {updatePrimaryCacheValue} from '~/routes/resources/cache.sqlite'
 
 const CACHE_DATABASE_PATH = getRequiredServerEnvVar('CACHE_DATABASE_PATH')
 
@@ -71,7 +71,8 @@ export const cache: CachifiedCache = {
     }
   },
   set(key, {value, metadata}) {
-    const {currentIsPrimary} = getInstanceInfo()
+    const {currentIsPrimary, primaryInstance, currentInstance} =
+      getInstanceInfo()
     if (currentIsPrimary) {
       cacheDb
         .prepare(
@@ -83,14 +84,21 @@ export const cache: CachifiedCache = {
           metadata: JSON.stringify(metadata),
         })
     } else {
+      console.log(
+        `Updating cache value for key "${key}" on non-primary instance "${currentInstance}." Sending to primary instance (${primaryInstance})...`,
+      )
       // fire-and-forget cache update
       void updatePrimaryCacheValue({
         key,
         value: JSON.stringify(value),
       }).then(response => () => {
-        if (!response.ok) {
+        if (response.ok) {
+          console.log(
+            `Successfully updated cache value for key "${key}" on non-primary instance "${currentInstance}." By sending to primary instance (${primaryInstance})...`,
+          )
+        } else {
           console.error(
-            `Error updating cache value for key "${key}" on primary instance: ${response.status} ${response.statusText}`,
+            `Error updating cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
           )
         }
       })
