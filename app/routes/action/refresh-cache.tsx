@@ -1,5 +1,5 @@
 import path from 'path'
-import type {ActionFunction} from '@remix-run/node'
+import type {DataFunctionArgs} from '@remix-run/node'
 import {json, redirect} from '@remix-run/node'
 import {getRequiredServerEnvVar} from '~/utils/misc'
 import {cache} from '~/utils/cache.server'
@@ -8,6 +8,7 @@ import {getTalksAndTags} from '~/utils/talks.server'
 import {getTestimonials} from '~/utils/testimonials.server'
 import {getWorkshops} from '~/utils/workshops.server'
 import {getPeople} from '~/utils/credits.server'
+import {ensurePrimary} from '~/utils/fly.server'
 
 type Body =
   | {keys: Array<string>; commitSha?: string}
@@ -31,10 +32,10 @@ export function isRefreshShaInfo(value: any): value is RefreshShaInfo {
 
 export const commitShaKey = 'meta:last-refresh-commit-sha'
 
-export const action: ActionFunction = async ({request}) => {
+export async function action({request}: DataFunctionArgs) {
+  await ensurePrimary()
   // Everything in this function is fire and forget, so we don't need to await
   // anything.
-
   if (
     request.headers.get('auth') !==
     getRequiredServerEnvVar('REFRESH_CACHE_SECRET')
@@ -73,11 +74,15 @@ export const action: ActionFunction = async ({request}) => {
   if ('contentPaths' in body && Array.isArray(body.contentPaths)) {
     const refreshingContentPaths = []
     for (const contentPath of body.contentPaths) {
-      if (typeof contentPath !== 'string') continue
+      if (typeof contentPath !== 'string') {
+        continue
+      }
 
       if (contentPath.startsWith('blog') || contentPath.startsWith('pages')) {
         const [contentDir, dirOrFilename] = contentPath.split('/')
-        if (!contentDir || !dirOrFilename) continue
+        if (!contentDir || !dirOrFilename) {
+          continue
+        }
         const slug = path.parse(dirOrFilename).name
 
         refreshingContentPaths.push(contentPath)

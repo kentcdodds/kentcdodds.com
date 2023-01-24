@@ -9,6 +9,8 @@ import {getUser} from './session.server'
 import {getRequiredServerEnvVar} from './misc'
 import type {Timings} from './timing.server'
 import {time} from './timing.server'
+import {getInstanceInfo} from './fly.server'
+import {updatePrimaryCacheValue} from '~/routes/resources/cache.sqlite.$cacheKey'
 
 const CACHE_DATABASE_PATH = getRequiredServerEnvVar('CACHE_DATABASE_PATH')
 
@@ -25,6 +27,9 @@ const cacheDb = (global.__cacheDb = global.__cacheDb
 
 function createDatabase(tryAgain = true): BetterSqlite3.Database {
   const db = new Database(CACHE_DATABASE_PATH)
+  const {currentIsPrimary} = getInstanceInfo()
+  if (!currentIsPrimary) return db
+
   try {
     // create cache table with metadata JSON column and value JSON column if it does not exist already
     db.exec(`
@@ -66,15 +71,30 @@ export const cache: CachifiedCache = {
     }
   },
   set(key, {value, metadata}) {
-    cacheDb
-      .prepare(
-        'INSERT OR REPLACE INTO cache (key, value, metadata) VALUES (@key, @value, @metadata)',
-      )
-      .run({
+    const {currentIsPrimary} = getInstanceInfo()
+    if (currentIsPrimary) {
+      cacheDb
+        .prepare(
+          'INSERT OR REPLACE INTO cache (key, value, metadata) VALUES (@key, @value, @metadata)',
+        )
+        .run({
+          key,
+          value: JSON.stringify(value),
+          metadata: JSON.stringify(metadata),
+        })
+    } else {
+      // fire-and-forget cache update
+      void updatePrimaryCacheValue({
         key,
         value: JSON.stringify(value),
-        metadata: JSON.stringify(metadata),
+      }).then(response => () => {
+        if (!response.ok) {
+          console.error(
+            `Error updating cache value for key "${key}" on primary instance: ${response.status} ${response.statusText}`,
+          )
+        }
       })
+    }
   },
   async delete(key) {
     cacheDb.prepare('DELETE FROM cache WHERE key = ?').run(key)

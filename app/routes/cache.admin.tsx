@@ -33,7 +33,7 @@ export async function loader({request}: DataFunctionArgs) {
   const query = searchParams.get('query')
   const limit = Number(searchParams.get('limit') ?? 100)
 
-  const currentInstanceInfo = await getInstanceInfo()
+  const currentInstanceInfo = getInstanceInfo()
   const instance =
     searchParams.get('instance') ?? currentInstanceInfo.currentInstance
   const instances = await getAllInstances()
@@ -52,7 +52,7 @@ export async function action({request}: DataFunctionArgs) {
   await requireAdminUser(request)
   const formData = await request.formData()
   const key = formData.get('cacheKey')
-  const {currentInstance} = await getInstanceInfo()
+  const {currentInstance} = getInstanceInfo()
   const instance = formData.get('instance') ?? currentInstance
   const type = formData.get('type')
 

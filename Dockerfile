@@ -60,7 +60,8 @@ ENV DATABASE_URL="file:$FLY_LITEFS_DIR/$DATABASE_FILENAME"
 ENV PORT="8080"
 ENV NODE_ENV="production"
 ENV DISABLE_METRONOME="true"
-ENV CACHE_DATABASE_PATH=/data/cache.db
+ENV CACHE_DATABASE_FILENAME="cache.db"
+ENV CACHE_DATABASE_PATH="/$FLY_LITEFS_DIR/$CACHE_DATABASE_FILENAME"
 # Make SQLite CLI accessible
 RUN echo "#!/bin/sh\nset -x\nsqlite3 \$DATABASE_URL" > /usr/local/bin/database-cli && chmod +x /usr/local/bin/database-cli
 RUN echo "#!/bin/sh\nset -x\nsqlite3 \$CACHE_DATABASE_PATH" > /usr/local/bin/cache-database-cli && chmod +x /usr/local/bin/cache-database-cli

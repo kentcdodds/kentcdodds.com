@@ -5,8 +5,7 @@ import path from 'path'
 import invariant from 'tiny-invariant'
 
 export async function ensurePrimary() {
-  const {currentIsPrimary, currentInstance, primaryInstance} =
-    await getInstanceInfo()
+  const {currentIsPrimary, currentInstance, primaryInstance} = getInstanceInfo()
 
   if (!currentIsPrimary) {
     console.log(
@@ -20,7 +19,7 @@ export async function ensurePrimary() {
 }
 
 export async function ensureInstance(instance: string) {
-  const {currentInstance} = await getInstanceInfo()
+  const {currentInstance} = getInstanceInfo()
   if (process.env.FLY && instance !== currentInstance) {
     throw new Response('Fly Replay', {
       status: 409,
@@ -31,13 +30,13 @@ export async function ensureInstance(instance: string) {
   }
 }
 
-export async function getInstanceInfo() {
+export function getInstanceInfo() {
   const currentInstance = os.hostname()
   let primaryInstance
   try {
     const {FLY_LITEFS_DIR} = process.env
     invariant(FLY_LITEFS_DIR, 'FLY_LITEFS_DIR is not defined')
-    primaryInstance = await fs.promises.readFile(
+    primaryInstance = fs.readFileSync(
       path.join(FLY_LITEFS_DIR, '.primary'),
       'utf8',
     )
@@ -52,13 +51,15 @@ export async function getInstanceInfo() {
   }
 }
 
+export function getInternalInstanceDomain(instance: string) {
+  return `${instance}.vm.${process.env.FLY_APP_NAME}.internal`
+}
+
 export async function getFlyReplayResponse(instance?: string) {
   return new Response('Fly Replay', {
     status: 409,
     headers: {
-      'fly-replay': `instance=${
-        instance ?? (await getInstanceInfo()).primaryInstance
-      }`,
+      'fly-replay': `instance=${instance ?? getInstanceInfo().primaryInstance}`,
     },
   })
 }

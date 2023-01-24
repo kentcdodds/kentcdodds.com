@@ -3,7 +3,6 @@ const {spawn} = require('child_process')
 const os = require('os')
 const path = require('path')
 const invariant = require('tiny-invariant')
-const stream = require('node:stream')
 
 async function go() {
   const currentInstance = os.hostname()
@@ -14,45 +13,15 @@ async function go() {
     console.log(
       `Instance (${currentInstance}) in ${process.env.FLY_REGION} is primary. Deploying migrations.`,
     )
-    await deployMigrations()
+    await exec('npx prisma migrate deploy')
   } else {
     console.log(
       `Instance (${currentInstance}) in ${process.env.FLY_REGION} is not primary (the primary instance is ${primaryInstance}). Skipping migrations.`,
     )
-
-    const {CACHE_DATABASE_PATH} = process.env
-    invariant(CACHE_DATABASE_PATH, 'CACHE_DATABASE_PATH is not defined')
-    const cacheDatabaseExists = await fs.promises
-      .access(CACHE_DATABASE_PATH)
-      .then(() => true)
-      .catch(() => false)
-    if (!cacheDatabaseExists) {
-      console.log(
-        'Cache database does not exist. Downloading from a running instance...',
-      )
-      await fetch(
-        `https://${process.env.FLY_APP_NAME}.fly.dev/resources/copy-cache`,
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.INTERNAL_COMMAND_TOKEN}`,
-          },
-        },
-      )
-        .then(response => {
-          return new Promise((res, rej) => {
-            stream.Readable.fromWeb(response.body)
-              .pipe(fs.createWriteStream(process.env.CACHE_DATABASE_PATH))
-              .on('finish', res)
-          })
-        })
-        .catch(error => {
-          console.log('Error fetching cache database:', error)
-        })
-    }
   }
 
   console.log('Starting app...')
-  await startApp()
+  await exec('npm start')
 }
 go()
 
@@ -80,23 +49,8 @@ async function getPrimaryInstanceHostname() {
   }
 }
 
-async function deployMigrations() {
-  const command = 'npx prisma migrate deploy'
-  const child = spawn(command, {shell: true, stdio: 'inherit'})
-  await new Promise((res, rej) => {
-    child.on('exit', code => {
-      if (code === 0) {
-        res()
-      } else {
-        rej()
-      }
-    })
-  })
-}
-
-async function startApp() {
-  const command = 'npm start'
-  const child = spawn(command, {shell: true, stdio: 'inherit'})
+async function exec(command, options) {
+  const child = spawn(command, {shell: true, stdio: 'inherit', ...options})
   await new Promise((res, rej) => {
     child.on('exit', code => {
       if (code === 0) {

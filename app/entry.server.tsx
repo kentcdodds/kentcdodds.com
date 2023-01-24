@@ -35,7 +35,7 @@ export default async function handleRequest(...args: DocRequestArgs) {
   if (responseStatusCode >= 500) {
     // maybe we're just in trouble in this region... if we're not in the primary
     // region, then replay and hopefully it works next time.
-    const {currentIsPrimary, primaryInstance} = await getInstanceInfo()
+    const {currentIsPrimary, primaryInstance} = getInstanceInfo()
     if (!currentIsPrimary) {
       console.error(
         `Replaying request in ${process.env.FLY_REGION} to primary instance (${primaryInstance}) because of error`,
@@ -156,7 +156,7 @@ export async function handleDataRequest(
   response: Response,
   {request}: Parameters<HandleDataRequestFunction>[1],
 ) {
-  const {currentIsPrimary, primaryInstance} = await getInstanceInfo()
+  const {currentIsPrimary, primaryInstance} = getInstanceInfo()
   if (response.status >= 500) {
     // maybe we're just in trouble in this instance... if we're not in the primary
     // instance, then replay and hopefully it works next time.
