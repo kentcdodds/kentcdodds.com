@@ -52,7 +52,8 @@ export function getInstanceInfo() {
 }
 
 export function getInternalInstanceDomain(instance: string) {
-  return `${instance}.vm.${process.env.FLY_APP_NAME}.internal`
+  // http and specify port for internal vm requests
+  return `http://${instance}.vm.${process.env.FLY_APP_NAME}.internal:${process.env.PORT}`
 }
 
 export async function getFlyReplayResponse(instance?: string) {

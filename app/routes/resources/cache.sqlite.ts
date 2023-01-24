@@ -46,7 +46,7 @@ export async function updatePrimaryCacheValue({
   }
   const domain = getInternalInstanceDomain(primaryInstance)
   const token = getRequiredServerEnvVar('INTERNAL_COMMAND_TOKEN')
-  return fetch(`https://${domain}/resources/cache/sqlite`, {
+  return fetch(`${domain}/resources/cache/sqlite`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
