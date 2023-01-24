@@ -61,11 +61,6 @@ if (process.env.DISABLE_METRONOME) {
 }
 
 app.use((req, res, next) => {
-  res.locals.cspNonce = crypto.randomBytes(16).toString('hex')
-  next()
-})
-
-app.use((req, res, next) => {
   const {currentInstance, primaryInstance} = getInstanceInfo()
   res.set('X-Powered-By', 'Kody the Koala')
   res.set('X-Fly-Region', process.env.FLY_REGION ?? 'unknown')
@@ -108,8 +103,6 @@ app.all(
     redirectsString: fs.readFileSync(here('./_redirects.txt'), 'utf8'),
   }),
 )
-
-app.get('/redirect.html', rickRollMiddleware)
 
 app.use((req, res, next) => {
   if (req.path.endsWith('/') && req.path.length > 1) {
@@ -177,29 +170,10 @@ app.use(
 
 app.all('*', txMiddleware)
 
-function getRequestHandlerOptions(): Parameters<
-  typeof createRequestHandler
->[0] {
-  const build = require('../build')
-  function getLoadContext(req: any, res: any) {
-    return {cspNonce: res.locals.cspNonce}
-  }
-  if (MODE === 'production' && !process.env.DISABLE_METRONOME) {
-    const buildWithMetronome = registerMetronome(build)
-    const metronomeGetLoadContext =
-      createMetronomeGetLoadContext(buildWithMetronome)
-    return {
-      build: buildWithMetronome,
-      getLoadContext: combineGetLoadContexts(
-        getLoadContext,
-        // @ts-expect-error huh... metronome isn't happy with itself.
-        metronomeGetLoadContext,
-      ),
-      mode: MODE,
-    }
-  }
-  return {build, mode: MODE, getLoadContext}
-}
+app.use((req, res, next) => {
+  res.locals.cspNonce = crypto.randomBytes(16).toString('hex')
+  next()
+})
 
 app.use(
   helmet({
@@ -268,6 +242,32 @@ app.get(
   helmet.contentSecurityPolicy({useDefaults: false}),
   helmet.referrerPolicy({policy: 'same-origin'}),
 )
+
+app.get('/redirect.html', rickRollMiddleware)
+
+function getRequestHandlerOptions(): Parameters<
+  typeof createRequestHandler
+>[0] {
+  const build = require('../build')
+  function getLoadContext(req: any, res: any) {
+    return {cspNonce: res.locals.cspNonce}
+  }
+  if (MODE === 'production' && !process.env.DISABLE_METRONOME) {
+    const buildWithMetronome = registerMetronome(build)
+    const metronomeGetLoadContext =
+      createMetronomeGetLoadContext(buildWithMetronome)
+    return {
+      build: buildWithMetronome,
+      getLoadContext: combineGetLoadContexts(
+        getLoadContext,
+        // @ts-expect-error huh... metronome isn't happy with itself.
+        metronomeGetLoadContext,
+      ),
+      mode: MODE,
+    }
+  }
+  return {build, mode: MODE, getLoadContext}
+}
 
 if (MODE === 'production') {
   app.all('*', createRequestHandler(getRequestHandlerOptions()))
