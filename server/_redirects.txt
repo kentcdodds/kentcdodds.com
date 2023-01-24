@@ -16,6 +16,7 @@
 /ads.txt                                                                https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /boaform(.*)                                                            https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /setup.cgi                                                              https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/cgi-bin(.*)                                                            https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /s3cmd.ini                                                              https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /HNAP1(.*)                                                              https://www.youtube.com/watch?v=dQw4w9WgXcQ
 # this is for phpmyadmin and php-my-admin stuff:
