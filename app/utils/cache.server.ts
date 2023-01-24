@@ -71,8 +71,7 @@ export const cache: CachifiedCache = {
     }
   },
   set(key, {value, metadata}) {
-    const {currentIsPrimary, primaryInstance, currentInstance} =
-      getInstanceInfo()
+    const {currentIsPrimary, primaryInstance} = getInstanceInfo()
     if (currentIsPrimary) {
       cacheDb
         .prepare(
@@ -84,19 +83,12 @@ export const cache: CachifiedCache = {
           metadata: JSON.stringify(metadata),
         })
     } else {
-      console.log(
-        `Updating cache value for key "${key}" on non-primary instance "${currentInstance}." Sending to primary instance (${primaryInstance})...`,
-      )
       // fire-and-forget cache update
       void updatePrimaryCacheValue({
         key,
         value: JSON.stringify(value),
-      }).then(response => () => {
-        if (response.ok) {
-          console.log(
-            `Successfully updated cache value for key "${key}" on non-primary instance "${currentInstance}." By sending to primary instance (${primaryInstance})...`,
-          )
-        } else {
+      }).then(response => {
+        if (!response.ok) {
           console.error(
             `Error updating cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
           )
@@ -105,24 +97,16 @@ export const cache: CachifiedCache = {
     }
   },
   delete(key) {
-    const {currentIsPrimary, primaryInstance, currentInstance} =
-      getInstanceInfo()
+    const {currentIsPrimary, primaryInstance} = getInstanceInfo()
     if (currentIsPrimary) {
       cacheDb.prepare('DELETE FROM cache WHERE key = ?').run(key)
     } else {
-      console.log(
-        `Deleting cache value for key "${key}" on non-primary instance "${currentInstance}." Sending to primary instance (${primaryInstance})...`,
-      )
       // fire-and-forget cache update
       void updatePrimaryCacheValue({
         key,
         value: undefined,
-      }).then(response => () => {
-        if (response.ok) {
-          console.log(
-            `Successfully deleted cache value for key "${key}" on non-primary instance "${currentInstance}." By sending to primary instance (${primaryInstance})...`,
-          )
-        } else {
+      }).then(response => {
+        if (!response.ok) {
           console.error(
             `Error deleting cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
           )

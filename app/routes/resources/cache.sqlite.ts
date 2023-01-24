@@ -20,9 +20,6 @@ export async function action({request}: DataFunctionArgs) {
     return redirect('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
   }
   const {key, value} = await request.json()
-  console.log(
-    `setting cache value for "${key}" for ${request.headers.get('referer')}`,
-  )
   if (value === undefined) {
     await cache.delete(key)
   } else {
