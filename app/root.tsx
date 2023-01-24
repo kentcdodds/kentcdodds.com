@@ -60,6 +60,7 @@ import {getGenericSocialImage, illustrationImages, images} from './images'
 import {Grimmacing, MissingSomething} from './components/kifs'
 import {ArrowLink} from './components/arrow-button'
 import {getServerTimeHeader} from './utils/timing.server'
+import {useNonce} from './utils/nonce-provider'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',
@@ -133,7 +134,7 @@ export const links: LinksFunction = () => {
 
 export type LoaderData = SerializeFrom<typeof loader>
 
-async function loader({request, context}: DataFunctionArgs) {
+async function loader({request}: DataFunctionArgs) {
   const timings = {}
   const session = await getSession(request)
   const user = await session.getUser({timings})
@@ -147,7 +148,6 @@ async function loader({request, context}: DataFunctionArgs) {
   ] as keyof typeof illustrationImages
 
   const data = {
-    cspNonce: context.cspNonce,
     user,
     userInfo: user ? await getUserInfo(user, {request, timings}) : null,
     ENV: getEnv(),
@@ -321,7 +321,7 @@ function CanonicalLink({
 
 function App() {
   const data = useLoaderData<typeof loader>()
-  const nonce = typeof document === 'undefined' ? data.cspNonce : ''
+  const nonce = useNonce()
   const [team] = useTeam()
   const [theme] = useTheme()
   const fathomQueue = React.useRef<FathomQueue>([])

@@ -9,13 +9,13 @@ import isbot from 'isbot'
 import {renderToPipeableStream} from 'react-dom/server'
 import {PassThrough} from 'stream'
 import {routes as otherRoutes} from './other-routes.server'
-import type {LoaderData as RootLoaderData} from './root'
 import {getEnv} from './utils/env.server'
 import {
   getFlyReplayResponse,
   getInstanceInfo,
   getTXNumber,
 } from './utils/fly.server'
+import {NonceProvider} from './utils/nonce-provider'
 
 if (process.env.NODE_ENV === 'development') {
   try {
@@ -28,10 +28,20 @@ if (process.env.NODE_ENV === 'development') {
 global.ENV = getEnv()
 
 const ABORT_DELAY = 5000
+
+// NOTE: we've got a patch-package on Remix that adds the loadContext argument
+// so we can access the cspNonce in the entry. Hopefully this gets supported:
+// https://github.com/remix-run/remix/discussions/4603
 type DocRequestArgs = Parameters<HandleDocumentRequestFunction>
 
 export default async function handleRequest(...args: DocRequestArgs) {
-  const [request, responseStatusCode, responseHeaders, remixContext] = args
+  const [
+    request,
+    responseStatusCode,
+    responseHeaders,
+    remixContext,
+    loadContext,
+  ] = args
   if (responseStatusCode >= 500) {
     // maybe we're just in trouble in this region... if we're not in the primary
     // region, then replay and hopefully it works next time.
@@ -68,6 +78,7 @@ export default async function handleRequest(...args: DocRequestArgs) {
       responseStatusCode,
       responseHeaders,
       remixContext,
+      loadContext,
     )
   }
 
@@ -76,22 +87,30 @@ export default async function handleRequest(...args: DocRequestArgs) {
     responseStatusCode,
     responseHeaders,
     remixContext,
+    loadContext,
   )
 }
 
 function serveTheBots(...args: DocRequestArgs) {
-  const [request, responseStatusCode, responseHeaders, remixContext] = args
-  const rootLoaderData = remixContext.staticHandlerContext.loaderData
-    .root as RootLoaderData
+  const [
+    request,
+    responseStatusCode,
+    responseHeaders,
+    remixContext,
+    loadContext,
+  ] = args
+  const nonce = loadContext.cspNonce ? String(loadContext.cspNonce) : undefined
   return new Promise((resolve, reject) => {
     const stream = renderToPipeableStream(
-      <RemixServer
-        context={remixContext}
-        url={request.url}
-        abortDelay={ABORT_DELAY}
-      />,
+      <NonceProvider value={nonce}>
+        <RemixServer
+          context={remixContext}
+          url={request.url}
+          abortDelay={ABORT_DELAY}
+        />
+      </NonceProvider>,
       {
-        nonce: rootLoaderData.cspNonce,
+        nonce,
         // Use onAllReady to wait for the entire document to be ready
         onAllReady() {
           responseHeaders.set('Content-Type', 'text/html')
@@ -114,19 +133,26 @@ function serveTheBots(...args: DocRequestArgs) {
 }
 
 function serveBrowsers(...args: DocRequestArgs) {
-  const [request, responseStatusCode, responseHeaders, remixContext] = args
-  const rootLoaderData = remixContext.staticHandlerContext.loaderData
-    .root as RootLoaderData
+  const [
+    request,
+    responseStatusCode,
+    responseHeaders,
+    remixContext,
+    loadContext,
+  ] = args
+  const nonce = loadContext.cspNonce ? String(loadContext.cspNonce) : undefined
   return new Promise((resolve, reject) => {
     let didError = false
     const stream = renderToPipeableStream(
-      <RemixServer
-        context={remixContext}
-        url={request.url}
-        abortDelay={ABORT_DELAY}
-      />,
+      <NonceProvider value={nonce}>
+        <RemixServer
+          context={remixContext}
+          url={request.url}
+          abortDelay={ABORT_DELAY}
+        />
+      </NonceProvider>,
       {
-        nonce: rootLoaderData.cspNonce,
+        nonce,
         // use onShellReady to wait until a suspense boundary is triggered
         onShellReady() {
           responseHeaders.set('Content-Type', 'text/html')

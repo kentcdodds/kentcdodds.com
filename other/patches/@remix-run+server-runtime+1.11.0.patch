@@ -1,0 +1,43 @@
+diff --git a/node_modules/@remix-run/server-runtime/dist/build.d.ts b/node_modules/@remix-run/server-runtime/dist/build.d.ts
+index 0b24119..56fc7d0 100644
+--- a/node_modules/@remix-run/server-runtime/dist/build.d.ts
++++ b/node_modules/@remix-run/server-runtime/dist/build.d.ts
+@@ -1,6 +1,7 @@
+ import type { DataFunctionArgs } from "./routeModules";
+ import type { AssetsManifest, EntryContext, FutureConfig } from "./entry";
+ import type { ServerRouteManifest } from "./routes";
++import type { AppLoadContext } from "./data";
+ /**
+  * The output of the compiler for the server build.
+  */
+@@ -15,7 +16,7 @@ export interface ServerBuild {
+     future: FutureConfig;
+ }
+ export interface HandleDocumentRequestFunction {
+-    (request: Request, responseStatusCode: number, responseHeaders: Headers, context: EntryContext): Promise<Response> | Response;
++    (request: Request, responseStatusCode: number, responseHeaders: Headers, context: EntryContext, loadContext: AppLoadContext): Promise<Response> | Response;
+ }
+ export interface HandleDataRequestFunction {
+     (response: Response, args: DataFunctionArgs): Promise<Response> | Response;
+diff --git a/node_modules/@remix-run/server-runtime/dist/server.js b/node_modules/@remix-run/server-runtime/dist/server.js
+index 5085c89..edab7e9 100644
+--- a/node_modules/@remix-run/server-runtime/dist/server.js
++++ b/node_modules/@remix-run/server-runtime/dist/server.js
+@@ -183,7 +183,7 @@ async function handleDocumentRequestRR(serverMode, build, staticHandler, request
+   };
+   let handleDocumentRequestFunction = build.entry.module.default;
+   try {
+-    return await handleDocumentRequestFunction(request, context.statusCode, headers$1, entryContext);
++    return await handleDocumentRequestFunction(request, context.statusCode, headers$1, entryContext, loadContext);
+   } catch (error) {
+     // Get a new StaticHandlerContext that contains the error at the right boundary
+     context = router.getStaticContextFromError(staticHandler.dataRoutes, context, error);
+@@ -207,7 +207,7 @@ async function handleDocumentRequestRR(serverMode, build, staticHandler, request
+       })
+     };
+     try {
+-      return await handleDocumentRequestFunction(request, context.statusCode, headers$1, entryContext);
++      return await handleDocumentRequestFunction(request, context.statusCode, headers$1, entryContext, loadContext);
+     } catch (error) {
+       return returnLastResortErrorResponse(error, serverMode);
+     }
