@@ -23,7 +23,11 @@ export async function action({request}: DataFunctionArgs) {
   console.log(
     `setting cache value for "${key}" for ${request.headers.get('referer')}`,
   )
-  await cache.set(key, value)
+  if (value === undefined) {
+    await cache.delete(key)
+  } else {
+    await cache.set(key, value)
+  }
   return json({success: true})
 }
 

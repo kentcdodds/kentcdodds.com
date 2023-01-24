@@ -104,8 +104,31 @@ export const cache: CachifiedCache = {
       })
     }
   },
-  async delete(key) {
-    cacheDb.prepare('DELETE FROM cache WHERE key = ?').run(key)
+  delete(key) {
+    const {currentIsPrimary, primaryInstance, currentInstance} =
+      getInstanceInfo()
+    if (currentIsPrimary) {
+      cacheDb.prepare('DELETE FROM cache WHERE key = ?').run(key)
+    } else {
+      console.log(
+        `Deleting cache value for key "${key}" on non-primary instance "${currentInstance}." Sending to primary instance (${primaryInstance})...`,
+      )
+      // fire-and-forget cache update
+      void updatePrimaryCacheValue({
+        key,
+        value: undefined,
+      }).then(response => () => {
+        if (response.ok) {
+          console.log(
+            `Successfully deleted cache value for key "${key}" on non-primary instance "${currentInstance}." By sending to primary instance (${primaryInstance})...`,
+          )
+        } else {
+          console.error(
+            `Error deleting cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
+          )
+        }
+      })
+    }
   },
 }
 
