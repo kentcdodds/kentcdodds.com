@@ -65,56 +65,6 @@ app.use((req, res, next) => {
   next()
 })
 
-app.use(
-  helmet({
-    crossOriginEmbedderPolicy: false,
-    contentSecurityPolicy: {
-      directives: {
-        'connect-src': MODE === 'development' ? ['ws:', "'self'"] : null,
-        'font-src': ["'self'"],
-        'frame-src': [
-          "'self'",
-          'youtube.com',
-          'www.youtube.com',
-          'youtu.be',
-          'youtube-nocookie.com',
-          'www.youtube-nocookie.com',
-          'player.simplecast.com',
-          'egghead.io',
-          'app.egghead.io',
-          'calendar.google.com',
-          'codesandbox.io',
-          'share.transistor.fm',
-          'codepen.io',
-        ],
-        'img-src': [
-          "'self'",
-          'data:',
-          'res.cloudinary.com',
-          'www.gravatar.com',
-          'sailfish.kentcdodds.com',
-          'pbs.twimg.com',
-          'i.ytimg.com',
-          'image.simplecastcdn.com',
-          'images.transistor.fm',
-          'i2.wp.com',
-          ...(MODE === 'development' ? ['cloudflare-ipfs.com'] : []),
-        ],
-        'media-src': ["'self'", 'res.cloudinary.com', 'data:', 'blob:'],
-        'script-src': [
-          "'strict-dynamic'",
-          "'unsafe-eval'",
-          "'self'",
-          'sailfish.kentcdodds.com',
-          // @ts-expect-error middleware is the worst
-          (req, res) => `'nonce-${res.locals.cspNonce}'`,
-        ],
-        'upgrade-insecure-requests': null,
-      },
-    },
-  }),
-)
-
 app.use((req, res, next) => {
   const {currentInstance, primaryInstance} = getInstanceInfo()
   res.set('X-Powered-By', 'Kody the Koala')
@@ -151,24 +101,6 @@ app.use((req, res, next) => {
 })
 
 app.all('*', getReplayResponse)
-
-// make sure prisma-studio requests proxy to Remix properly
-app.all('*', (req, res, next) => {
-  if (
-    req.headers.referer?.includes('prisma-studio') &&
-    !req.url.includes('prisma-studio') &&
-    !req.path.includes('prisma-studio')
-  ) {
-    req.url = `/prisma-studio${req.path}`
-  }
-  return next()
-})
-
-app.get(
-  '/prisma-studio',
-  helmet.contentSecurityPolicy({useDefaults: false}),
-  helmet.referrerPolicy({policy: 'same-origin'}),
-)
 
 app.all(
   '*',
@@ -268,6 +200,74 @@ function getRequestHandlerOptions(): Parameters<
   }
   return {build, mode: MODE, getLoadContext}
 }
+
+app.use(
+  helmet({
+    crossOriginEmbedderPolicy: false,
+    contentSecurityPolicy: {
+      directives: {
+        'connect-src': MODE === 'development' ? ['ws:', "'self'"] : null,
+        'font-src': ["'self'"],
+        'frame-src': [
+          "'self'",
+          'youtube.com',
+          'www.youtube.com',
+          'youtu.be',
+          'youtube-nocookie.com',
+          'www.youtube-nocookie.com',
+          'player.simplecast.com',
+          'egghead.io',
+          'app.egghead.io',
+          'calendar.google.com',
+          'codesandbox.io',
+          'share.transistor.fm',
+          'codepen.io',
+        ],
+        'img-src': [
+          "'self'",
+          'data:',
+          'res.cloudinary.com',
+          'www.gravatar.com',
+          'sailfish.kentcdodds.com',
+          'pbs.twimg.com',
+          'i.ytimg.com',
+          'image.simplecastcdn.com',
+          'images.transistor.fm',
+          'i2.wp.com',
+          ...(MODE === 'development' ? ['cloudflare-ipfs.com'] : []),
+        ],
+        'media-src': ["'self'", 'res.cloudinary.com', 'data:', 'blob:'],
+        'script-src': [
+          "'strict-dynamic'",
+          "'unsafe-eval'",
+          "'self'",
+          'sailfish.kentcdodds.com',
+          // @ts-expect-error middleware is the worst
+          (req, res) => `'nonce-${res.locals.cspNonce}'`,
+        ],
+        'upgrade-insecure-requests': null,
+      },
+    },
+  }),
+)
+
+// make sure prisma-studio requests proxy to Remix properly
+app.all('*', (req, res, next) => {
+  if (
+    req.headers.referer?.includes('prisma-studio') &&
+    !req.url.includes('prisma-studio') &&
+    !req.path.includes('prisma-studio')
+  ) {
+    req.url = `/prisma-studio${req.path}`
+  }
+  return next()
+})
+
+app.get(
+  '/prisma-studio',
+  helmet.contentSecurityPolicy({useDefaults: false}),
+  helmet.referrerPolicy({policy: 'same-origin'}),
+)
 
 if (MODE === 'production') {
   app.all('*', createRequestHandler(getRequestHandlerOptions()))
