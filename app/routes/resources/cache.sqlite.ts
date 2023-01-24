@@ -19,21 +19,21 @@ export async function action({request}: DataFunctionArgs) {
     // rick roll them
     return redirect('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
   }
-  const {key, value} = await request.json()
-  if (value === undefined) {
+  const {key, cacheValue} = await request.json()
+  if (cacheValue === undefined) {
     await cache.delete(key)
   } else {
-    await cache.set(key, value)
+    await cache.set(key, cacheValue)
   }
   return json({success: true})
 }
 
 export async function updatePrimaryCacheValue({
   key,
-  value,
+  cacheValue,
 }: {
   key: string
-  value: any
+  cacheValue: any
 }) {
   const {currentIsPrimary, primaryInstance} = getInstanceInfo()
   if (currentIsPrimary) {
@@ -49,6 +49,6 @@ export async function updatePrimaryCacheValue({
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({key, value}),
+    body: JSON.stringify({key, cacheValue}),
   })
 }

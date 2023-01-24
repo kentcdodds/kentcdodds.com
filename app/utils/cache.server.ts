@@ -86,7 +86,7 @@ export const cache: CachifiedCache = {
       // fire-and-forget cache update
       void updatePrimaryCacheValue({
         key,
-        value: JSON.stringify(value),
+        cacheValue: JSON.stringify({value, metadata}),
       }).then(response => {
         if (!response.ok) {
           console.error(
@@ -104,7 +104,7 @@ export const cache: CachifiedCache = {
       // fire-and-forget cache update
       void updatePrimaryCacheValue({
         key,
-        value: undefined,
+        cacheValue: undefined,
       }).then(response => {
         if (!response.ok) {
           console.error(
