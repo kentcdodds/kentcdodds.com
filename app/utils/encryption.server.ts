@@ -1,39 +1,34 @@
 import crypto from 'crypto'
+import {getRequiredServerEnvVar} from './misc'
 
-const algorithm = 'aes-256-ctr'
+const algorithm = 'aes-256-gcm'
 
-let secret = 'not-at-all-secret'
-if (process.env.MAGIC_LINK_SECRET) {
-  secret = process.env.MAGIC_LINK_SECRET
-} else if (process.env.NODE_ENV === 'production') {
-  throw new Error('Must set MAGIC_LINK_SECRET')
-}
-
+const secret = getRequiredServerEnvVar('MAGIC_LINK_SECRET')
 const ENCRYPTION_KEY = crypto.scryptSync(secret, 'salt', 32)
+const IV_LENGTH = 12
+const UTF8 = 'utf8'
+const HEX = 'hex'
 
-const IV_LENGTH = 16
-
-function encrypt(text: string) {
+export function encrypt(text: string) {
   const iv = crypto.randomBytes(IV_LENGTH)
   const cipher = crypto.createCipheriv(algorithm, ENCRYPTION_KEY, iv)
-  const encrypted = Buffer.concat([cipher.update(text), cipher.final()])
-  return `${iv.toString('hex')}:${encrypted.toString('hex')}`
+  let encrypted = cipher.update(text, UTF8, HEX)
+  encrypted += cipher.final(HEX)
+  const authTag = cipher.getAuthTag()
+  return `${iv.toString(HEX)}:${authTag.toString(HEX)}:${encrypted}`
 }
 
-function decrypt(text: string) {
-  const [ivPart, encryptedPart] = text.split(':')
-  if (!ivPart || !encryptedPart) {
+export function decrypt(text: string) {
+  const [ivPart, authTagPart, encryptedText] = text.split(':')
+  if (!ivPart || !authTagPart || !encryptedText) {
     throw new Error('Invalid text.')
   }
 
-  const iv = Buffer.from(ivPart, 'hex')
-  const encryptedText = Buffer.from(encryptedPart, 'hex')
+  const iv = Buffer.from(ivPart, HEX)
+  const authTag = Buffer.from(authTagPart, HEX)
   const decipher = crypto.createDecipheriv(algorithm, ENCRYPTION_KEY, iv)
-  const decrypted = Buffer.concat([
-    decipher.update(encryptedText),
-    decipher.final(),
-  ])
-  return decrypted.toString()
+  decipher.setAuthTag(authTag)
+  let decrypted = decipher.update(encryptedText, HEX, UTF8)
+  decrypted += decipher.final(UTF8)
+  return decrypted
 }
-
-export {encrypt, decrypt}
