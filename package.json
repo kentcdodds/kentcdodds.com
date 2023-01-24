@@ -75,7 +75,7 @@
     "@xstate/react": "^3.0.2",
     "bcrypt": "^5.1.0",
     "better-sqlite3": "^8.0.1",
-    "cachified": "^3.0.1",
+    "cachified": "^3.1.0-context-info.1",
     "chalk": "^5.2.0",
     "cloudinary-build-url": "^0.2.4",
     "clsx": "^1.2.1",

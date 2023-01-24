@@ -175,18 +175,18 @@ export async function cachified<Value>({
       request,
       key: options.key,
     }),
-    getFreshValue: async () => {
+    getFreshValue: async context => {
       // if we've already retrieved the cached value, then this may be called
       // after the response has already been sent so there's no point in timing
       // how long this is going to take
       if (!cachifiedResolved && timings) {
-        return time(() => options.getFreshValue(), {
+        return time(() => options.getFreshValue(context), {
           timings,
           type: `getFreshValue:${options.key}`,
           desc: `request forced to wait for a fresh ${options.key} value`,
         })
       }
-      return options.getFreshValue()
+      return options.getFreshValue(context)
     },
   })
   const result = await time(cachifiedPromise, {

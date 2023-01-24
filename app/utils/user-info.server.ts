@@ -48,16 +48,25 @@ export async function gravatarExistsForEmail({
     ttl: 1000 * 60 * 60 * 24 * 90,
     staleWhileRevalidate: 1000 * 60 * 60 * 24 * 365,
     checkValue: prevValue => typeof prevValue === 'boolean',
-    getFreshValue: async () => {
+    getFreshValue: async context => {
       const gravatarUrl = getAvatar(email, {fallback: '404'})
       try {
         const avatarResponse = await fetch(gravatarUrl, {
           method: 'HEAD',
-          signal: abortTimeoutSignal(1000 * 2),
+          signal: abortTimeoutSignal(
+            context.background || forceFresh ? 1000 * 10 : 100,
+          ),
         })
-        return avatarResponse.status === 200
+        if (avatarResponse.status === 200) {
+          context.metadata.ttl = 1000 * 60 * 60 * 24 * 365
+          return true
+        } else {
+          context.metadata.ttl = 1000 * 60
+          return false
+        }
       } catch (error: unknown) {
         console.error(`Error getting gravatar for ${email}:`, error)
+        context.metadata.ttl = 1000 * 60
         return false
       }
     },
