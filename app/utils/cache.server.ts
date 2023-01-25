@@ -65,10 +65,14 @@ export const cache: CachifiedCache = {
       .prepare('SELECT value, metadata FROM cache WHERE key = ?')
       .get(key)
     if (!result) return null
-    return {
+    const entry = {
       metadata: JSON.parse(result.metadata),
       value: JSON.parse(result.value),
     }
+    if (!entry.metadata) {
+      console.error(`entry.metadata is null for "${key}"`, result)
+    }
+    return entry
   },
   set(key, {value, metadata}) {
     const {currentIsPrimary, primaryInstance} = getInstanceInfo()
