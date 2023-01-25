@@ -51,6 +51,7 @@ export async function gravatarExistsForEmail({
     getFreshValue: async context => {
       const gravatarUrl = getAvatar(email, {fallback: '404'})
       try {
+        console.log(`Fetching gravatar for ${email}... ${gravatarUrl}`)
         const avatarResponse = await fetch(gravatarUrl, {
           method: 'HEAD',
           signal: abortTimeoutSignal(
