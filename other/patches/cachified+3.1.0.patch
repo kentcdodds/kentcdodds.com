@@ -1,0 +1,15 @@
+diff --git a/node_modules/cachified/dist/index.cjs b/node_modules/cachified/dist/index.cjs
+index 73be68b..ba6a9fa 100644
+--- a/node_modules/cachified/dist/index.cjs
++++ b/node_modules/cachified/dist/index.cjs
+@@ -427,8 +427,9 @@ function assertCacheEntry(entry, key) {
+     );
+   }
+   if (!isRecord(entry.metadata) || typeof entry.metadata.createdTime !== "number" || entry.metadata.ttl != null && typeof entry.metadata.ttl !== "number" || entry.metadata.swr != null && typeof entry.metadata.swr !== "number") {
++    console.error(entry)
+     throw new Error(
+-      `Cache entry ${logKey(key)}does not have valid metadata property`
++      `Cache entry ${logKey(key)}does not have valid metadata property (see previous log)`
+     );
+   }
+   if (!("value" in entry)) {
