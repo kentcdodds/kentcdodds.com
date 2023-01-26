@@ -132,7 +132,7 @@ POST,DELETE,PATCH,PUT  /                                                https://
 
 # Old workshops
 /workshops/advanced-react-hooks                                         https://epicreact.dev/advanced-hooks
-/workshops/advanced-react-patterns                                      https://epicreact.dev/patterns
+# /workshops/advanced-react-patterns                                      https://epicreact.dev/patterns
 /workshops/cypress-fundamentals                                         https://testingjavascript.com/playlists/install-configure-and-script-cypress-for-javascript-web-applications-fca9
 /workshops/react-fundamentals                                           https://epicreact.dev/fundamentals
 /workshops/react-hooks                                                  https://epicreact.dev/hooks
