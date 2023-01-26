@@ -100,7 +100,7 @@ export const cache: CachifiedCache = {
       // fire-and-forget cache update
       void updatePrimaryCacheValue({
         key,
-        cacheValue: JSON.stringify(entry),
+        cacheValue: entry,
       }).then(response => {
         if (!response.ok) {
           console.error(
