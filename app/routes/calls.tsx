@@ -261,6 +261,7 @@ export default function CallHomeScreen() {
                   preventScrollReset
                   to={path}
                   className="group focus:outline-none"
+                  prefetch="intent"
                 >
                   <Grid nested className="relative py-10 lg:py-5">
                     <div className="bg-secondary absolute -inset-px -mx-6 hidden rounded-lg group-hover:block group-focus:block" />
