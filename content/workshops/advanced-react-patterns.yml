@@ -1,0 +1,54 @@
+title: Advanced React Patterns
+description: >-
+  Let's learn great patterns you can use, and also the strengths and weaknesses
+  of each, so you know which to reach for to provide your components the
+  flexibility and power you need.
+meta:
+  keywords:
+    - react
+    - react patterns
+categories:
+  - react
+convertKitTag: '896446'
+problemStatements:
+  part1: Building reusable hooks and components can be tricky
+  part2:
+    Just like any other kind of abstraction, you can easily find yourself
+    captive to its maintenance
+  part3:
+    Whether it's the dreaded "apropcalypse" of a component with tons of props,
+    or a custom hook with too many options, it's not fun for maintainers or
+    users alike.
+  part4:
+    Inevitably, the incidentally-abstracted "reusable" React hooks and
+    components will ultimately slow you down or be abandoned for duplication. It
+    doesn't have to be like this.
+keyTakeaways:
+  - title: Create components that work together
+    description:
+      The compound components pattern used by libraries like ReachUI and
+      MaterialUI is a proven design technique that you'll definitely want in
+      your personal arsenal of patterns.
+  - title: Expose the right level of control
+    description:
+      The beauty of hooks and components is how well they compose. You'll learn
+      how to take full advantage of this by building abstractions on top of one
+      another giving both flexibility and ease of use in a single package.
+  - title: Invert control
+    description:
+      If you don't get your abstraction right, you'll be adding features to the
+      end of your days. With the state reducer pattern, you'll eliminate a huge
+      number of those requests. And with control props, you'll be able to ditch
+      the rest of them and rest easy.
+topics:
+  - Maintain referential equality with the latest ref pattern
+  - Use the Compound Components Pattern to write React components that
+    implicitly share state while giving rendering flexibility to the user
+  - Handle common use cases for your hooks and components with the prop getter
+    pattern
+  - Give simple control of state updates with a State Reducer
+  - Provide total logic control with the Controlled Props
+
+prerequisite: >-
+  You should be experienced with `useContext` and `useReducer` (experience with
+  `useMemo` and `useCallback` is a bonus).
