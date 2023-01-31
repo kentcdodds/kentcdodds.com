@@ -189,3 +189,17 @@ index 98e66be..ead040f 100644
      dangerouslySetInnerHTML: {
        __html: `__remixContext.r(${JSON.stringify(routeId)}, ${JSON.stringify(dataKey)}, !1, ${escapeHtml(JSON.stringify(toSerialize))});`
      }
+diff --git a/node_modules/@remix-run/react/dist/esm/data.js b/node_modules/@remix-run/react/dist/esm/data.js
+index 7a11996..cfc7d75 100644
+--- a/node_modules/@remix-run/react/dist/esm/data.js
++++ b/node_modules/@remix-run/react/dist/esm/data.js
+@@ -27,7 +27,8 @@ async function fetchData(request, routeId) {
+   let url = new URL(request.url);
+   url.searchParams.set("_data", routeId);
+   let init = {
+-    signal: request.signal
++    signal: request.signal,
++    headers: request.headers
+   };
+   if (request.method !== "GET") {
+     init.method = request.method;

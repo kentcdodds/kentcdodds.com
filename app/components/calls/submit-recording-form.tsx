@@ -1,5 +1,6 @@
 import * as React from 'react'
 import {Form, useSubmit} from '@remix-run/react'
+import {useRootData} from '~/utils/use-root-data'
 import {Field} from '../form-elements'
 import {Button} from '../button'
 
@@ -30,6 +31,9 @@ function RecordingForm({
   data?: RecordingFormData
   additionalFields?: React.ReactElement
 }) {
+  const {
+    requestInfo: {flyPrimaryInstance},
+  } = useRootData()
   const audioURL = React.useMemo(() => {
     return window.URL.createObjectURL(audio)
   }, [audio])
@@ -46,7 +50,12 @@ function RecordingForm({
       () => {
         if (typeof reader.result === 'string') {
           form.append('audio', reader.result)
-          submit(form, {method: 'post'})
+          submit(form, {
+            method: 'post',
+            headers: flyPrimaryInstance
+              ? {'fly-force-instance-id': flyPrimaryInstance}
+              : undefined,
+          })
         }
       },
       {once: true},
