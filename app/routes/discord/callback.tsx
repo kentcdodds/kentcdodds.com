@@ -6,6 +6,7 @@ import {
   getDiscordAuthorizeURL,
   getDomainUrl,
   getErrorMessage,
+  isResponse,
 } from '~/utils/misc'
 import {connectDiscord} from '~/utils/discord.server'
 import {deleteDiscordCache} from '~/utils/user-info.server'
@@ -54,7 +55,7 @@ export async function loader({request}: DataFunctionArgs) {
 
     return defer({discordMember: discordMemberPromise})
   } catch (error: unknown) {
-    if (error instanceof Response) throw error
+    if (isResponse(error)) throw error
     console.error(error)
 
     return defer({discordMember: Promise.reject(error)})
