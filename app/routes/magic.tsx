@@ -39,6 +39,10 @@ export async function loader({request}: DataFunctionArgs) {
       } else {
         // This shouldn't happen, but if it does, we'll handle it when we redirect to /me
       }
+      console.log(
+        'Successful login. Sending to /me with these headers:',
+        headers,
+      )
       return redirect('/me', {headers})
     } else {
       loginInfoSession.setMagicLink(request.url)
