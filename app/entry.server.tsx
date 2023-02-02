@@ -1,20 +1,11 @@
-import {
-  Response,
-  type HandleDataRequestFunction,
-  type HandleDocumentRequestFunction,
-} from '@remix-run/node'
+import {Response, type HandleDocumentRequestFunction} from '@remix-run/node'
 import {RemixServer} from '@remix-run/react'
-import cookie from 'cookie'
 import isbot from 'isbot'
+import {ensurePrimary} from 'litefs-js/remix'
 import {renderToPipeableStream} from 'react-dom/server'
 import {PassThrough} from 'stream'
 import {routes as otherRoutes} from './other-routes.server'
 import {getEnv} from './utils/env.server'
-import {
-  getFlyReplayResponse,
-  getInstanceInfo,
-  getTXNumber,
-} from './utils/fly.server'
 import {NonceProvider} from './utils/nonce-provider'
 
 if (process.env.NODE_ENV === 'development') {
@@ -34,7 +25,7 @@ const ABORT_DELAY = 5000
 // https://github.com/remix-run/remix/discussions/4603
 type DocRequestArgs = Parameters<HandleDocumentRequestFunction>
 
-export default async function handleRequest(...args: DocRequestArgs) {
+export default async function handleDocumentRequest(...args: DocRequestArgs) {
   const [
     request,
     responseStatusCode,
@@ -43,15 +34,9 @@ export default async function handleRequest(...args: DocRequestArgs) {
     loadContext,
   ] = args
   if (responseStatusCode >= 500) {
-    // maybe we're just in trouble in this region... if we're not in the primary
-    // region, then replay and hopefully it works next time.
-    const {currentIsPrimary, primaryInstance} = getInstanceInfo()
-    if (!currentIsPrimary) {
-      console.error(
-        `Replaying request in ${process.env.FLY_REGION} to primary instance (${primaryInstance}) because of error`,
-      )
-      return getFlyReplayResponse(primaryInstance)
-    }
+    // if we had an error, let's just send this over to the primary and see
+    // if it can handle it.
+    await ensurePrimary()
   }
 
   for (const handler of otherRoutes) {
@@ -178,37 +163,9 @@ function serveBrowsers(...args: DocRequestArgs) {
   })
 }
 
-export async function handleDataRequest(
-  response: Response,
-  {request}: Parameters<HandleDataRequestFunction>[1],
-) {
-  const {currentIsPrimary, primaryInstance} = getInstanceInfo()
+export async function handleDataRequest(response: Response) {
   if (response.status >= 500) {
-    // maybe we're just in trouble in this instance... if we're not in the primary
-    // instance, then replay and hopefully it works next time.
-    if (!currentIsPrimary) {
-      console.error(
-        `Replaying request in ${process.env.FLY_REGION} to primary instance (${primaryInstance}) because of error`,
-      )
-      return getFlyReplayResponse(primaryInstance)
-    }
-  }
-
-  if (request.method === 'POST') {
-    if (currentIsPrimary) {
-      const txnum = await getTXNumber()
-      if (txnum) {
-        response.headers.append(
-          'Set-Cookie',
-          cookie.serialize('txnum', txnum.toString(), {
-            path: '/',
-            httpOnly: true,
-            sameSite: 'lax',
-            secure: true,
-          }),
-        )
-      }
-    }
+    await ensurePrimary()
   }
 
   return response

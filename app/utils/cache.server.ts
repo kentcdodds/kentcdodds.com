@@ -9,8 +9,8 @@ import {getUser} from './session.server'
 import {getRequiredServerEnvVar} from './misc'
 import type {Timings} from './timing.server'
 import {time} from './timing.server'
-import {getInstanceInfo} from './fly.server'
 import {updatePrimaryCacheValue} from '~/routes/resources/cache.sqlite'
+import {getInstanceInfo, getInstanceInfoSync} from 'litefs-js'
 
 const CACHE_DATABASE_PATH = getRequiredServerEnvVar('CACHE_DATABASE_PATH')
 
@@ -27,7 +27,7 @@ const cacheDb = (global.__cacheDb = global.__cacheDb
 
 function createDatabase(tryAgain = true): BetterSqlite3.Database {
   const db = new Database(CACHE_DATABASE_PATH)
-  const {currentIsPrimary} = getInstanceInfo()
+  const {currentIsPrimary} = getInstanceInfoSync()
   if (!currentIsPrimary) return db
 
   try {
@@ -70,9 +70,9 @@ export const cache: CachifiedCache = {
       value: JSON.parse(result.value),
     }
   },
-  set(key, entry) {
+  async set(key, entry) {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    const {currentIsPrimary, primaryInstance} = getInstanceInfo()
+    const {currentIsPrimary, primaryInstance} = await getInstanceInfo()
     if (currentIsPrimary) {
       cacheDb
         .prepare(
@@ -98,8 +98,8 @@ export const cache: CachifiedCache = {
       })
     }
   },
-  delete(key) {
-    const {currentIsPrimary, primaryInstance} = getInstanceInfo()
+  async delete(key) {
+    const {currentIsPrimary, primaryInstance} = await getInstanceInfo()
     if (currentIsPrimary) {
       cacheDb.prepare('DELETE FROM cache WHERE key = ?').run(key)
     } else {

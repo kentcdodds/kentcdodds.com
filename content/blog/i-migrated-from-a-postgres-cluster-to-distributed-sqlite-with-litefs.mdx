@@ -333,61 +333,8 @@ object and Remix will catch that and send the response. This made option 2
 _much_ easier. Had we been able to do this before, I would have gone with this
 option originally!
 
-So, I made a util file for interacting with fly:
-
-```ts filename=app/utils/fly.server.ts
-import fs from 'fs'
-import os from 'os'
-import path from 'path'
-import invariant from 'tiny-invariant'
-
-export async function ensurePrimary() {
-  const {currentIsPrimary, currentInstance, primaryInstance} =
-    await getInstanceInfo()
-
-  if (!currentIsPrimary) {
-    console.log(
-      `Instance (${currentInstance}) in ${process.env.FLY_REGION} is not primary (primary is: ${primaryInstance}), sending fly replay response`,
-    )
-    throw new Response('Fly Replay', {
-      status: 409,
-      headers: {'fly-replay': `instance=${primaryInstance}`},
-    })
-  }
-}
-
-export async function getInstanceInfo() {
-  const currentInstance = os.hostname()
-  let primaryInstance
-  try {
-    const {FLY_LITEFS_DIR} = process.env
-    invariant(FLY_LITEFS_DIR, 'FLY_LITEFS_DIR is not defined')
-    primaryInstance = await fs.promises.readFile(
-      path.join(FLY_LITEFS_DIR, '.primary'),
-      'utf8',
-    )
-    primaryInstance = primaryInstance.trim()
-  } catch (error: unknown) {
-    primaryInstance = currentInstance
-  }
-  return {
-    primaryInstance,
-    currentInstance,
-    currentIsPrimary: currentInstance === primaryInstance,
-  }
-}
-
-export async function getFlyReplayResponse(instance?: string) {
-  return new Response('Fly Replay', {
-    status: 409,
-    headers: {
-      'fly-replay': `instance=${
-        instance ?? (await getInstanceInfo()).primaryInstance
-      }`,
-    },
-  })
-}
-```
+So, I made a util for interacting with fly, which was later expanded into an
+official library: [`litefs-js`](https://github.com/fly-apps/lite-fs):
 
 With that, I could simply add `ensurePrimary()` in the few situations I needed
 to do a write on a GET request:

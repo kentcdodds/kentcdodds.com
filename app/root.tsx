@@ -23,6 +23,8 @@ import {
 import {MetronomeLinks} from '@metronome-sh/react'
 import {AnimatePresence, motion} from 'framer-motion'
 import {useSpinDelay} from 'spin-delay'
+import clsx from 'clsx'
+import {getInstanceInfo} from 'litefs-js'
 import type {KCDHandle} from '~/types'
 import tailwindStyles from './styles/tailwind.css'
 import vendorStyles from './styles/vendors.css'
@@ -54,14 +56,12 @@ import {NotificationMessage} from './components/notification-message'
 import {pathedRoutes} from './other-routes.server'
 import {ErrorPage} from './components/errors'
 import {TeamProvider, useTeam} from './utils/team-provider'
-import clsx from 'clsx'
 import {getSocialMetas} from './utils/seo'
 import {getGenericSocialImage, illustrationImages, images} from './images'
 import {Grimmacing, MissingSomething} from './components/kifs'
 import {ArrowLink} from './components/arrow-button'
 import {getServerTimeHeader} from './utils/timing.server'
 import {useNonce} from './utils/nonce-provider'
-import {getInstanceInfo} from './utils/fly.server'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',
@@ -142,7 +142,7 @@ async function loader({request}: DataFunctionArgs) {
   const themeSession = await getThemeSession(request)
   const clientSession = await getClientSession(request, user)
   const loginInfoSession = await getLoginInfoSession(request)
-  const {primaryInstance} = getInstanceInfo()
+  const {primaryInstance} = await getInstanceInfo()
 
   const randomFooterImageKeys = Object.keys(illustrationImages)
   const randomFooterImageKey = randomFooterImageKeys[

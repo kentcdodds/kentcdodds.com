@@ -7,6 +7,9 @@ import {
   useSearchParams,
   useSubmit,
 } from '@remix-run/react'
+import invariant from 'tiny-invariant'
+import {getAllInstances, getInstanceInfo} from 'litefs-js'
+import {ensureInstance} from 'litefs-js/remix'
 import {H2, H3} from '~/components/typography'
 import {
   cache,
@@ -16,16 +19,10 @@ import {
 } from '~/utils/cache.server'
 import {requireAdminUser} from '~/utils/session.server'
 import {Spacer} from '~/components/spacer'
-import invariant from 'tiny-invariant'
 import {Button} from '~/components/button'
 import {useDebounce, useDoubleCheck} from '~/utils/misc'
 import {Field, FieldContainer, inputClassName} from '~/components/form-elements'
 import {SearchIcon} from '~/components/icons'
-import {
-  ensureInstance,
-  getAllInstances,
-  getInstanceInfo,
-} from '~/utils/fly.server'
 
 export async function loader({request}: DataFunctionArgs) {
   await requireAdminUser(request)
@@ -33,7 +30,7 @@ export async function loader({request}: DataFunctionArgs) {
   const query = searchParams.get('query')
   const limit = Number(searchParams.get('limit') ?? 100)
 
-  const currentInstanceInfo = getInstanceInfo()
+  const currentInstanceInfo = await getInstanceInfo()
   const instance =
     searchParams.get('instance') ?? currentInstanceInfo.currentInstance
   const instances = await getAllInstances()
@@ -52,7 +49,7 @@ export async function action({request}: DataFunctionArgs) {
   await requireAdminUser(request)
   const formData = await request.formData()
   const key = formData.get('cacheKey')
-  const {currentInstance} = getInstanceInfo()
+  const {currentInstance} = await getInstanceInfo()
   const instance = formData.get('instance') ?? currentInstance
   const type = formData.get('type')
 

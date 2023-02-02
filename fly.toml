@@ -15,6 +15,7 @@ kill_timeout = 5
   auto_rollback = true
 
 [[services]]
+  # This is set to the INTERNAL_PORT env variable in the Dockerfile
   internal_port = 8080
   protocol = "tcp"
   script_checks = []

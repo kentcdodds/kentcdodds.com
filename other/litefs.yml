@@ -23,6 +23,14 @@ data:
   # Path to internal data storage.
   dir: '/data/litefs'
 
+proxy:
+  # matches the internal_port in fly.toml
+  addr: ':${INTERNAL_PORT}'
+  # PORT is set in the Dockerfile
+  target: 'localhost:${PORT}'
+  db: '${DATABASE_FILENAME}'
+  debug: false
+
 # This flag ensure that LiteFS continues to run if there is an issue on starup.
 # It makes it easy to ssh in and debug any issues you might be having rather
 # than continually restarting on initialization failure.
