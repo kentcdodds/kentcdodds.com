@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-router-dom/dist/dom.d.ts b/node_modules/react-router-dom/dist/dom.d.ts
-index fe602a9..ec13389 100644
+index c7b6421..95463f1 100644
 --- a/node_modules/react-router-dom/dist/dom.d.ts
 +++ b/node_modules/react-router-dom/dist/dom.d.ts
 @@ -68,6 +68,11 @@ export interface SubmitOptions {
@@ -15,10 +15,10 @@ index fe602a9..ec13389 100644
  export declare function getFormSubmissionInfo(target: HTMLFormElement | HTMLButtonElement | HTMLInputElement | FormData | URLSearchParams | {
      [name: string]: string;
 diff --git a/node_modules/react-router-dom/dist/index.js b/node_modules/react-router-dom/dist/index.js
-index d06f63b..114055b 100644
+index ab16fb3..3cf0125 100644
 --- a/node_modules/react-router-dom/dist/index.js
 +++ b/node_modules/react-router-dom/dist/index.js
-@@ -677,7 +677,8 @@ function useSubmitImpl(fetcherKey, routeId) {
+@@ -705,7 +705,8 @@ function useSubmitImpl(fetcherKey, routeId) {
        preventScrollReset: options.preventScrollReset,
        formData,
        formMethod: method,

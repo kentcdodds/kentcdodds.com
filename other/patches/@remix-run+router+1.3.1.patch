@@ -11,10 +11,10 @@ index 6519370..9fee4b0 100644
  /**
   * Options to pass to navigate() for either a Link or Form navigation
 diff --git a/node_modules/@remix-run/router/dist/router.js b/node_modules/@remix-run/router/dist/router.js
-index 18509c0..4889322 100644
+index ceeb4ee..96d87ba 100644
 --- a/node_modules/@remix-run/router/dist/router.js
 +++ b/node_modules/@remix-run/router/dist/router.js
-@@ -3310,7 +3310,8 @@ function normalizeNavigateOptions(to, opts, isFetcher) {
+@@ -3297,7 +3297,8 @@ function normalizeNavigateOptions(to, opts, isFetcher) {
        formMethod: opts.formMethod || "get",
        formAction: stripHashFromPath(path),
        formEncType: opts && opts.formEncType || "application/x-www-form-urlencoded",
@@ -24,7 +24,7 @@ index 18509c0..4889322 100644
      };
  
      if (isMutationMethod(submission.formMethod)) {
-@@ -3602,10 +3603,12 @@ function createClientSideRequest(history, location, signal, submission) {
+@@ -3605,10 +3606,12 @@ function createClientSideRequest(history, location, signal, submission) {
      let {
        formMethod,
        formEncType,
