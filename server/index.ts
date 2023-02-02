@@ -1,3 +1,4 @@
+import './init'
 import fs from 'fs'
 import crypto from 'crypto'
 import path from 'path'
@@ -10,7 +11,6 @@ import * as Sentry from '@sentry/node'
 import serverTiming from 'server-timing'
 import {createRequestHandler} from '@remix-run/express'
 // eslint-disable-next-line import/no-extraneous-dependencies
-import {installGlobals} from '@remix-run/node/dist/globals'
 import {
   combineGetLoadContexts,
   createMetronomeGetLoadContext,
@@ -23,8 +23,6 @@ import {
   rickRollMiddleware,
 } from './redirects'
 import helmet from 'helmet'
-
-installGlobals()
 
 const here = (...d: Array<string>) => path.join(__dirname, ...d)
 const primaryHost = 'kentcdodds.com'
