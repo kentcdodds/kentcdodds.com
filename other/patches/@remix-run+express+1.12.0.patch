@@ -1,0 +1,14 @@
+diff --git a/node_modules/@remix-run/express/dist/server.js b/node_modules/@remix-run/express/dist/server.js
+index c7f863c..5bd12a5 100644
+--- a/node_modules/@remix-run/express/dist/server.js
++++ b/node_modules/@remix-run/express/dist/server.js
+@@ -37,6 +37,9 @@ function createRequestHandler({
+       let request = createRemixRequest(req, res);
+       let loadContext = getLoadContext === null || getLoadContext === void 0 ? void 0 : getLoadContext(req, res);
+       let response = await handleRequest(request, loadContext);
++      if (req.url.includes('/magic')) {
++        console.log(`magic headers:`, response.headers)
++      }
+       await sendRemixResponse(res, response);
+     } catch (error) {
+       // Express doesn't support async functions, so we have to pass along the
