@@ -1,0 +1,40 @@
+diff --git a/node_modules/@remix-run/router/dist/router.d.ts b/node_modules/@remix-run/router/dist/router.d.ts
+index 6519370..9fee4b0 100644
+--- a/node_modules/@remix-run/router/dist/router.d.ts
++++ b/node_modules/@remix-run/router/dist/router.d.ts
+@@ -310,6 +310,7 @@ declare type SubmissionNavigateOptions = {
+     formMethod?: FormMethod;
+     formEncType?: FormEncType;
+     formData: FormData;
++    headers?: Headers | Record<string, string> | Array<[string, string]>;
+ };
+ /**
+  * Options to pass to navigate() for either a Link or Form navigation
+diff --git a/node_modules/@remix-run/router/dist/router.js b/node_modules/@remix-run/router/dist/router.js
+index 18509c0..4889322 100644
+--- a/node_modules/@remix-run/router/dist/router.js
++++ b/node_modules/@remix-run/router/dist/router.js
+@@ -3310,7 +3310,8 @@ function normalizeNavigateOptions(to, opts, isFetcher) {
+       formMethod: opts.formMethod || "get",
+       formAction: stripHashFromPath(path),
+       formEncType: opts && opts.formEncType || "application/x-www-form-urlencoded",
+-      formData: opts.formData
++      formData: opts.formData,
++      headers: opts.headers,
+     };
+ 
+     if (isMutationMethod(submission.formMethod)) {
+@@ -3602,10 +3603,12 @@ function createClientSideRequest(history, location, signal, submission) {
+     let {
+       formMethod,
+       formEncType,
+-      formData
++      formData,
++      headers
+     } = submission;
+     init.method = formMethod.toUpperCase();
+     init.body = formEncType === "application/x-www-form-urlencoded" ? convertFormDataToSearchParams(formData) : formData;
++    init.headers = headers ? new Headers(headers) : undefined;
+   } // Content-Type is inferred (https://fetch.spec.whatwg.org/#dom-request)
+ 
+ 

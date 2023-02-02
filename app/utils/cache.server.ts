@@ -65,26 +65,13 @@ export const cache: CachifiedCache = {
       .prepare('SELECT value, metadata FROM cache WHERE key = ?')
       .get(key)
     if (!result) return null
-    const entry = {
+    return {
       metadata: JSON.parse(result.metadata),
       value: JSON.parse(result.value),
     }
-    if (!entry.metadata) {
-      console.error(`entry.metadata is null for "${key}"`, {entry, result})
-    }
-    return entry
   },
   set(key, entry) {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (!entry.metadata) {
-      console.error(
-        new Error(
-          `Someone's trying to set entry.metadata to null for "${key}"`,
-        ),
-        {entry},
-      )
-      return
-    }
     const {currentIsPrimary, primaryInstance} = getInstanceInfo()
     if (currentIsPrimary) {
       cacheDb
@@ -105,6 +92,7 @@ export const cache: CachifiedCache = {
         if (!response.ok) {
           console.error(
             `Error updating cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
+            {entry},
           )
         }
       })

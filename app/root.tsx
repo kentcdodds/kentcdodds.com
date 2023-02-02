@@ -61,6 +61,7 @@ import {Grimmacing, MissingSomething} from './components/kifs'
 import {ArrowLink} from './components/arrow-button'
 import {getServerTimeHeader} from './utils/timing.server'
 import {useNonce} from './utils/nonce-provider'
+import {getInstanceInfo} from './utils/fly.server'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',
@@ -141,6 +142,7 @@ async function loader({request}: DataFunctionArgs) {
   const themeSession = await getThemeSession(request)
   const clientSession = await getClientSession(request, user)
   const loginInfoSession = await getLoginInfoSession(request)
+  const {primaryInstance} = getInstanceInfo()
 
   const randomFooterImageKeys = Object.keys(illustrationImages)
   const randomFooterImageKey = randomFooterImageKeys[
@@ -155,6 +157,7 @@ async function loader({request}: DataFunctionArgs) {
     requestInfo: {
       origin: getDomainUrl(request),
       path: new URL(request.url).pathname,
+      flyPrimaryInstance: primaryInstance,
       session: {
         email: loginInfoSession.getEmail(),
         magicLinkVerified: loginInfoSession.getMagicLinkVerified(),
