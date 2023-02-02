@@ -416,6 +416,7 @@ export default function AppWithProviders() {
 export function ErrorBoundary({error}: {error: Error}) {
   console.error(error)
   const location = useLocation()
+  const nonce = useNonce()
   return (
     <html lang="en" className="dark">
       <head>
@@ -431,7 +432,7 @@ export function ErrorBoundary({error}: {error: Error}) {
             action: <ArrowLink href="/">Go home</ArrowLink>,
           }}
         />
-        <Scripts />
+        <Scripts nonce={nonce} />
       </body>
     </html>
   )
@@ -440,6 +441,7 @@ export function ErrorBoundary({error}: {error: Error}) {
 export function CatchBoundary() {
   const caught = useCatch()
   const location = useLocation()
+  const nonce = useNonce()
   console.error('CatchBoundary', caught)
   if (caught.status === 404) {
     return (
@@ -459,7 +461,28 @@ export function CatchBoundary() {
               action: <ArrowLink href="/">Go home</ArrowLink>,
             }}
           />
-          <Scripts />
+          <Scripts nonce={nonce} />
+        </body>
+      </html>
+    )
+  }
+  if (caught.status === 409) {
+    return (
+      <html lang="en" className="dark">
+        <head>
+          <title>Oh no...</title>
+          <Links />
+        </head>
+        <body className="bg-white transition duration-500 dark:bg-gray-900">
+          <ErrorPage
+            heroProps={{
+              title: '409 - Oh no, you should never see this.',
+              subtitle: `"${location.pathname}" tried telling fly to replay your request and missed this one.`,
+              image: <Grimmacing className="rounded-lg" aspectRatio="3:4" />,
+              action: <ArrowLink href="/">Go home</ArrowLink>,
+            }}
+          />
+          <Scripts nonce={nonce} />
         </body>
       </html>
     )
