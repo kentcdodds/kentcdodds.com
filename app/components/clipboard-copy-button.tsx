@@ -46,7 +46,7 @@ function ClipboardCopyButton({
       switch (state) {
         case State.Copy: {
           const res = await copyToClipboard(value)
-          console.log('copied', res)
+          console.info('copied', res)
           setState(State.Copied)
           break
         }

@@ -1,7 +1,7 @@
 import {PrismaClient} from '@prisma/client'
 import type {Session} from '~/types'
 import {encrypt, decrypt} from './encryption.server'
-import {ensurePrimary} from 'litefs-js/remix'
+import {ensurePrimary} from '~/utils/fly.server'
 import type {Timings} from './timing.server'
 import {time} from './timing.server'
 
@@ -43,7 +43,7 @@ function getClient(): PrismaClient {
         ? 'redBright'
         : 'red'
     const dur = chalk[color](`${e.duration}ms`)
-    console.log(`prisma:query - ${dur} - ${e.query}`)
+    console.info(`prisma:query - ${dur} - ${e.query}`)
   })
   // make the connection eagerly so the first request doesn't have to wait
   void client.$connect()

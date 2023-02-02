@@ -1,7 +1,7 @@
 import {Response, type HandleDocumentRequestFunction} from '@remix-run/node'
 import {RemixServer} from '@remix-run/react'
 import isbot from 'isbot'
-import {ensurePrimary} from 'litefs-js/remix'
+import {ensurePrimary} from '~/utils/fly.server'
 import {renderToPipeableStream} from 'react-dom/server'
 import {PassThrough} from 'stream'
 import {routes as otherRoutes} from './other-routes.server'

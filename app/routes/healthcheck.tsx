@@ -18,7 +18,7 @@ export async function loader({request}: DataFunctionArgs) {
     ])
     return new Response('OK')
   } catch (error: unknown) {
-    console.log(request.url, 'healthcheck ❌', {error})
+    console.error(request.url, 'healthcheck ❌', {error})
     return new Response('ERROR', {status: 500})
   }
 }
