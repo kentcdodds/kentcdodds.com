@@ -200,7 +200,8 @@ seed script which will populate the database with some example data.
 ## Backup the database
 
 ```sh
-fly ssh console -C bash
+fly ssh console -C bash -s
+# select a specific instance
 
 # make a backup of the database
 cp /data/litefs/dbs/sqlite.db/database /data/sqlite.db.bkp
@@ -215,17 +216,33 @@ gzip -c /data/sqlite.db.bkp > /data/sqlite.db.bkp.gz
 In another tab, download that backup:
 
 ```sh
-fly sftp get /data/sqlite.db.bkp.gz ./sqlite.db.bkp.gz
+fly sftp get -s /data/sqlite.db.bkp.gz ./sqlite.db.bkp.gz
+# select the same instance as above
 ```
 
 ## Handle LiteFS checksum errors
 
 We use LiteFS to proxy the file system for SQLite for multi-regional SQLite. If
-things go wrong, this is what you do. First, backup the database, then:
+things go wrong, this is what you do. First, backup the database, then scale
+down to a single region (one that's a primary candidate):
+
+```sh
+fly vol list
+# delete all but one in a primary candidate instance
+fly vol delete <id>
+```
+
+Then scale down:
+
+```sh
+fly scale count 1
+```
+
+Then delete the litefs database and import the backup:
 
 ```sh
 # ssh into fly console
-fly ssh console -C bash
+fly ssh console -C bash -s
 
 # delete the litefs database
 rm -rf /data/litefs/dbs/sqlite.db
@@ -265,8 +282,8 @@ Update the Dockerfile:
 
 ```Dockerfile
 # TODO: enable litefs
-# ENV FLY_LITEFS_DIR="/litefs"
-ENV FLY_LITEFS_DIR="/data"
+# ENV LITEFS_DIR="/litefs"
+ENV LITEFS_DIR="/data"
 
 ...
 
@@ -274,7 +291,7 @@ ENV FLY_LITEFS_DIR="/data"
 # TODO: enable litefs
 # COPY --from=flyio/litefs:sha-7e5287a /usr/local/bin/litefs /usr/local/bin/litefs
 # ADD other/litefs.yml /etc/litefs.yml
-# RUN mkdir -p /data ${FLY_LITEFS_DIR}
+# RUN mkdir -p /data ${LITEFS_DIR}
 
 # CMD ["litefs", "mount", "--", "node", "./other/start.js"]
 CMD ["node", "./other/start.js"]

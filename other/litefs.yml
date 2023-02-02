@@ -5,7 +5,7 @@
 fuse:
   # Required. This is the mount directory that applications will
   # use to access their SQLite databases.
-  dir: '${FLY_LITEFS_DIR}'
+  dir: '${LITEFS_DIR}'
 
   # The debug flag enables debug logging of all FUSE API calls.
   # This will produce a lot of logging. Not for general use.
