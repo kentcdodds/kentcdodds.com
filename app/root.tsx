@@ -410,12 +410,7 @@ export default function AppWithProviders() {
   )
 }
 
-// best effort, last ditch error boundary. This should only catch root errors
-// all other errors should be caught by the index route which will include
-// the footer and stuff, which is much better.
-export function ErrorBoundary({error}: {error: Error}) {
-  console.error(error)
-  const location = useLocation()
+function ErrorDoc({children}: {children: React.ReactNode}) {
   const nonce = useNonce()
   return (
     <html lang="en" className="dark">
@@ -424,67 +419,79 @@ export function ErrorBoundary({error}: {error: Error}) {
         <Links />
       </head>
       <body className="bg-white transition duration-500 dark:bg-gray-900">
-        <ErrorPage
-          heroProps={{
-            title: '500 - Oh no, something did not go well.',
-            subtitle: `"${location.pathname}" is currently not working. So sorry.`,
-            image: <Grimmacing className="rounded-lg" aspectRatio="3:4" />,
-            action: <ArrowLink href="/">Go home</ArrowLink>,
-          }}
-        />
+        {children}
         <Scripts nonce={nonce} />
       </body>
     </html>
   )
 }
 
+// best effort, last ditch error boundary. This should only catch root errors
+// all other errors should be caught by the index route which will include
+// the footer and stuff, which is much better.
+export function ErrorBoundary({error}: {error: Error}) {
+  console.error(error)
+  const location = useLocation()
+  return (
+    <ErrorDoc>
+      <ErrorPage
+        heroProps={{
+          title: '500 - Oh no, something did not go well.',
+          subtitle: `"${location.pathname}" is currently not working. So sorry.`,
+          image: <Grimmacing className="rounded-lg" aspectRatio="3:4" />,
+          action: <ArrowLink href="/">Go home</ArrowLink>,
+        }}
+      />
+    </ErrorDoc>
+  )
+}
+
 export function CatchBoundary() {
   const caught = useCatch()
   const location = useLocation()
-  const nonce = useNonce()
   console.error('CatchBoundary', caught)
   if (caught.status === 404) {
     return (
-      <html lang="en" className="dark">
-        <head>
-          <title>Oh no...</title>
-          <Links />
-        </head>
-        <body className="bg-white transition duration-500 dark:bg-gray-900">
-          <ErrorPage
-            heroProps={{
-              title: "404 - Oh no, you found a page that's missing stuff.",
-              subtitle: `"${location.pathname}" is not a page on kentcdodds.com. So sorry.`,
-              image: (
-                <MissingSomething className="rounded-lg" aspectRatio="3:4" />
-              ),
-              action: <ArrowLink href="/">Go home</ArrowLink>,
-            }}
-          />
-          <Scripts nonce={nonce} />
-        </body>
-      </html>
+      <ErrorDoc>
+        <ErrorPage
+          heroProps={{
+            title: "404 - Oh no, you found a page that's missing stuff.",
+            subtitle: `"${location.pathname}" is not a page on kentcdodds.com. So sorry.`,
+            image: (
+              <MissingSomething className="rounded-lg" aspectRatio="3:4" />
+            ),
+            action: <ArrowLink href="/">Go home</ArrowLink>,
+          }}
+        />
+      </ErrorDoc>
     )
   }
   if (caught.status === 409) {
     return (
-      <html lang="en" className="dark">
-        <head>
-          <title>Oh no...</title>
-          <Links />
-        </head>
-        <body className="bg-white transition duration-500 dark:bg-gray-900">
-          <ErrorPage
-            heroProps={{
-              title: '409 - Oh no, you should never see this.',
-              subtitle: `"${location.pathname}" tried telling fly to replay your request and missed this one.`,
-              image: <Grimmacing className="rounded-lg" aspectRatio="3:4" />,
-              action: <ArrowLink href="/">Go home</ArrowLink>,
-            }}
-          />
-          <Scripts nonce={nonce} />
-        </body>
-      </html>
+      <ErrorDoc>
+        <ErrorPage
+          heroProps={{
+            title: '409 - Oh no, you should never see this.',
+            subtitle: `"${location.pathname}" tried telling fly to replay your request and missed this one.`,
+            image: <Grimmacing className="rounded-lg" aspectRatio="3:4" />,
+            action: <ArrowLink href="/">Go home</ArrowLink>,
+          }}
+        />
+      </ErrorDoc>
+    )
+  }
+  if (caught.status !== 500) {
+    return (
+      <ErrorDoc>
+        <ErrorPage
+          heroProps={{
+            title: `${caught.status} - Oh no, something did not go well.`,
+            subtitle: `"${location.pathname}" is currently not working. So sorry.`,
+            image: <Grimmacing className="rounded-lg" aspectRatio="3:4" />,
+            action: <ArrowLink href="/">Go home</ArrowLink>,
+          }}
+        />
+      </ErrorDoc>
     )
   }
   throw new Error(`Unhandled error: ${caught.status}`)
