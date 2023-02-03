@@ -57,9 +57,8 @@ ENV FLY="true"
 ENV LITEFS_DIR="/litefs"
 ENV DATABASE_FILENAME="sqlite.db"
 ENV DATABASE_URL="file:$LITEFS_DIR/$DATABASE_FILENAME"
-# ENV INTERNAL_PORT="8080"
-# ENV PORT="8081"
-ENV PORT="8080"
+ENV INTERNAL_PORT="8080"
+ENV PORT="8081"
 ENV NODE_ENV="production"
 # ENV DISABLE_METRONOME="true"
 ENV CACHE_DATABASE_FILENAME="cache.db"
@@ -83,7 +82,7 @@ COPY --from=build /app/prisma /app/prisma
 ADD . .
 
 # prepare for litefs
-COPY --from=flyio/litefs:sha-ec7ccd5 /usr/local/bin/litefs /usr/local/bin/litefs
+COPY --from=flyio/litefs:sha-a1fabcd /usr/local/bin/litefs /usr/local/bin/litefs
 ADD other/litefs.yml /etc/litefs.yml
 RUN mkdir -p /data ${LITEFS_DIR}
 
