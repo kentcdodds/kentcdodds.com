@@ -8,7 +8,7 @@ import {getTalksAndTags} from '~/utils/talks.server'
 import {getTestimonials} from '~/utils/testimonials.server'
 import {getWorkshops} from '~/utils/workshops.server'
 import {getPeople} from '~/utils/credits.server'
-import {ensurePrimary} from '~/utils/fly.server'
+import {ensurePrimary} from 'litefs-js/remix'
 
 type Body =
   | {keys: Array<string>; commitSha?: string}

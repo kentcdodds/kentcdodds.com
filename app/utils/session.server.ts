@@ -11,7 +11,7 @@ import {
 } from './prisma.server'
 import {getRequiredServerEnvVar} from './misc'
 import {getLoginInfoSession} from './login.server'
-import {ensurePrimary} from '~/utils/fly.server'
+import {ensurePrimary} from 'litefs-js/remix'
 import type {Timings} from './timing.server'
 
 const sessionIdKey = '__session_id__'

@@ -96,7 +96,7 @@
     "hast-util-to-string": "^2.0.0",
     "helmet": "^6.0.1",
     "isbot": "^3.6.5",
-    "litefs-js": "^1.1.1",
+    "litefs-js": "^1.1.2",
     "lodash": "^4.17.21",
     "lru-cache": "^7.14.1",
     "match-sorter": "^6.3.1",

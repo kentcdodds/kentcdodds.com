@@ -1,7 +1,7 @@
 import {PrismaClient} from '@prisma/client'
 import type {Session} from '~/types'
 import {encrypt, decrypt} from './encryption.server'
-import {ensurePrimary} from '~/utils/fly.server'
+import {ensurePrimary} from 'litefs-js/remix'
 import type {Timings} from './timing.server'
 import {time} from './timing.server'
 

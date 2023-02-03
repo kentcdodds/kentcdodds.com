@@ -7,7 +7,7 @@ import {getUserSessionFromMagicLink} from '~/utils/session.server'
 import {getErrorMessage, isResponse} from '~/utils/misc'
 import {getClientSession} from '~/utils/client.server'
 import {prisma} from '~/utils/prisma.server'
-import {ensurePrimary} from '~/utils/fly.server'
+import {ensurePrimary} from 'litefs-js/remix'
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
 }
