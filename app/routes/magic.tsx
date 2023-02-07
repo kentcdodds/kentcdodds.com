@@ -4,14 +4,16 @@ import type {KCDHandle} from '~/types'
 
 import {getLoginInfoSession} from '~/utils/login.server'
 import {getUserSessionFromMagicLink} from '~/utils/session.server'
-import {getErrorMessage} from '~/utils/misc'
+import {getErrorMessage, isResponse} from '~/utils/misc'
 import {getClientSession} from '~/utils/client.server'
 import {prisma} from '~/utils/prisma.server'
+import {ensurePrimary} from 'litefs-js/remix'
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
 }
 
 export async function loader({request}: DataFunctionArgs) {
+  await ensurePrimary()
   const loginInfoSession = await getLoginInfoSession(request)
   try {
     const session = await getUserSessionFromMagicLink(request)
@@ -45,7 +47,7 @@ export async function loader({request}: DataFunctionArgs) {
       })
     }
   } catch (error: unknown) {
-    if (error instanceof Response) throw error
+    if (isResponse(error)) throw error
 
     console.error(error)
     loginInfoSession.clean()

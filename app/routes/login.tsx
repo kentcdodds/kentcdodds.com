@@ -92,7 +92,7 @@ export const action: ActionFunction = async ({request}) => {
   // this is our honeypot. Our login is passwordless.
   const failedHoneypot = Boolean(formData.get('password'))
   if (failedHoneypot) {
-    console.log(
+    console.info(
       `FAILED HONEYPOT ON LOGIN`,
       Object.fromEntries(formData.entries()),
     )

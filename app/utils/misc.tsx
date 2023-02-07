@@ -253,6 +253,16 @@ function getDomainUrl(request: Request) {
   return `${protocol}://${host}`
 }
 
+export function isResponse(response: unknown): response is Response {
+  return (
+    typeof response === 'object' &&
+    response !== null &&
+    'status' in response &&
+    'headers' in response &&
+    'body' in response
+  )
+}
+
 function removeTrailingSlash(s: string) {
   return s.endsWith('/') ? s.slice(0, -1) : s
 }

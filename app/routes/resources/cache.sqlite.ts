@@ -1,12 +1,11 @@
 import type {DataFunctionArgs} from '@remix-run/node'
 import {json, redirect} from '@remix-run/node'
-import {getInstanceInfo} from 'server/fly'
 import {cache} from '~/utils/cache.server'
-import {getInternalInstanceDomain} from '~/utils/fly.server'
+import {getInternalInstanceDomain, getInstanceInfo} from 'litefs-js'
 import {getRequiredServerEnvVar} from '~/utils/misc'
 
 export async function action({request}: DataFunctionArgs) {
-  const {currentIsPrimary, primaryInstance} = getInstanceInfo()
+  const {currentIsPrimary, primaryInstance} = await getInstanceInfo()
   if (!currentIsPrimary) {
     throw new Error(
       `${request.url} should only be called on the primary instance (${primaryInstance})}`,
@@ -35,7 +34,7 @@ export async function updatePrimaryCacheValue({
   key: string
   cacheValue: any
 }) {
-  const {currentIsPrimary, primaryInstance} = getInstanceInfo()
+  const {currentIsPrimary, primaryInstance} = await getInstanceInfo()
   if (currentIsPrimary) {
     throw new Error(
       `updatePrimaryCacheValue should not be called on the primary instance (${primaryInstance})}`,

@@ -73,7 +73,7 @@ async function handleConvertKitFormSubmission(request: Request) {
 
   const failedHoneypot = Boolean(fields.url)
   if (failedHoneypot) {
-    console.log(`FAILED HONEYPOT`, fields)
+    console.info(`FAILED HONEYPOT`, fields)
     return json({status: 'success'})
   }
 

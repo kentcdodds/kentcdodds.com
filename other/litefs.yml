@@ -5,7 +5,7 @@
 fuse:
   # Required. This is the mount directory that applications will
   # use to access their SQLite databases.
-  dir: '${FLY_LITEFS_DIR}'
+  dir: '${LITEFS_DIR}'
 
   # The debug flag enables debug logging of all FUSE API calls.
   # This will produce a lot of logging. Not for general use.
@@ -22,6 +22,24 @@ fuse:
 data:
   # Path to internal data storage.
   dir: '/data/litefs'
+
+proxy:
+  # matches the internal_port in fly.toml
+  addr: ':${INTERNAL_PORT}'
+  # PORT is set in the Dockerfile
+  target: 'localhost:${PORT}'
+  db: '${DATABASE_FILENAME}'
+  debug: false
+  passthrough:
+    - '/build/*'
+    - '/favicons/*'
+    - '/images/*'
+    - '/fonts/*'
+    - '/*.png'
+    - '/*.ico'
+    - '/*.txt'
+    - '/*.webmanifest'
+    - '__metronome'
 
 # This flag ensure that LiteFS continues to run if there is an issue on starup.
 # It makes it easy to ssh in and debug any issues you might be having rather

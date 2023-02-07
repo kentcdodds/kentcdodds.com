@@ -6,7 +6,7 @@ FROM node:18-bullseye-slim as base
 # ca-certificates and fuse for litefs
 # procps for "tops" command to see which processes are hogging memory (it's node)
 # python & make for node-gyp
-RUN apt-get update && apt-get install -y fuse openssl ffmpeg sqlite3 ca-certificates procps python3 make g++
+RUN apt-get update && apt-get install -y fuse3 openssl ffmpeg sqlite3 ca-certificates procps python3 make g++
 
 # install all node_modules, including dev
 FROM base as deps
@@ -54,14 +54,15 @@ RUN npm run build
 FROM base
 
 ENV FLY="true"
-ENV FLY_LITEFS_DIR="/litefs"
+ENV LITEFS_DIR="/litefs"
 ENV DATABASE_FILENAME="sqlite.db"
-ENV DATABASE_URL="file:$FLY_LITEFS_DIR/$DATABASE_FILENAME"
-ENV PORT="8080"
+ENV DATABASE_URL="file:$LITEFS_DIR/$DATABASE_FILENAME"
+ENV INTERNAL_PORT="8080"
+ENV PORT="8081"
 ENV NODE_ENV="production"
 # ENV DISABLE_METRONOME="true"
 ENV CACHE_DATABASE_FILENAME="cache.db"
-ENV CACHE_DATABASE_PATH="/$FLY_LITEFS_DIR/$CACHE_DATABASE_FILENAME"
+ENV CACHE_DATABASE_PATH="/$LITEFS_DIR/$CACHE_DATABASE_FILENAME"
 # Make SQLite CLI accessible
 RUN echo "#!/bin/sh\nset -x\nsqlite3 \$DATABASE_URL" > /usr/local/bin/database-cli && chmod +x /usr/local/bin/database-cli
 RUN echo "#!/bin/sh\nset -x\nsqlite3 \$CACHE_DATABASE_PATH" > /usr/local/bin/cache-database-cli && chmod +x /usr/local/bin/cache-database-cli
@@ -81,8 +82,8 @@ COPY --from=build /app/prisma /app/prisma
 ADD . .
 
 # prepare for litefs
-COPY --from=flyio/litefs:0.3 /usr/local/bin/litefs /usr/local/bin/litefs
+COPY --from=flyio/litefs:sha-9ff02a3 /usr/local/bin/litefs /usr/local/bin/litefs
 ADD other/litefs.yml /etc/litefs.yml
-RUN mkdir -p /data ${FLY_LITEFS_DIR}
+RUN mkdir -p /data ${LITEFS_DIR}
 
 CMD ["litefs", "mount", "--", "node", "./other/start.js"]

@@ -10,26 +10,18 @@ import * as Sentry from '@sentry/node'
 import serverTiming from 'server-timing'
 import {createRequestHandler} from '@remix-run/express'
 // eslint-disable-next-line import/no-extraneous-dependencies
-import {installGlobals} from '@remix-run/node/dist/globals'
 import {
   combineGetLoadContexts,
   createMetronomeGetLoadContext,
   registerMetronome,
 } from '@metronome-sh/express'
+import {getInstanceInfo} from 'litefs-js'
 import {
   getRedirectsMiddleware,
   oldImgSocial,
   rickRollMiddleware,
 } from './redirects'
-import {
-  getInstanceInfo,
-  getReplayResponse,
-  proxyRedirectMiddleware,
-  txMiddleware,
-} from './fly'
 import helmet from 'helmet'
-
-installGlobals()
 
 const here = (...d: Array<string>) => path.join(__dirname, ...d)
 const primaryHost = 'kentcdodds.com'
@@ -60,8 +52,8 @@ if (process.env.DISABLE_METRONOME) {
   })
 }
 
-app.use((req, res, next) => {
-  const {currentInstance, primaryInstance} = getInstanceInfo()
+app.use(async (req, res, next) => {
+  const {currentInstance, primaryInstance} = await getInstanceInfo()
   res.set('X-Powered-By', 'Kody the Koala')
   res.set('X-Fly-Region', process.env.FLY_REGION ?? 'unknown')
   res.set('X-Fly-App', process.env.FLY_APP_NAME ?? 'unknown')
@@ -80,9 +72,18 @@ app.use((req, res, next) => {
   next()
 })
 
-if (process.env.FLY) {
-  app.use(proxyRedirectMiddleware)
-}
+app.use(async (req, res, next) => {
+  if (req.get('cf-visitor')) {
+    // console.log(`👺 disallowed cf-visitor`, req.headers) // <-- this can be kinda noisy
+    // make them wait for it... Which should cost them money...
+    await new Promise(resolve => setTimeout(resolve, 90_000))
+    return res.send(
+      'Please go to https://kcd.dev instead! Ping Kent if you think you should not be seeing this...',
+    )
+  } else {
+    return next()
+  }
+})
 
 app.use((req, res, next) => {
   const proto = req.get('X-Forwarded-Proto')
@@ -94,8 +95,6 @@ app.use((req, res, next) => {
   }
   next()
 })
-
-app.all('*', getReplayResponse)
 
 app.all(
   '*',
@@ -167,8 +166,6 @@ app.use(
     ].join(' ')
   }),
 )
-
-app.all('*', txMiddleware)
 
 app.use((req, res, next) => {
   res.locals.cspNonce = crypto.randomBytes(16).toString('hex')
