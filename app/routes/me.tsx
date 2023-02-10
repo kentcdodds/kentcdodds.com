@@ -205,12 +205,6 @@ export const action: ActionFunction = async ({request}) => {
 
 const SHOW_QR_DURATION = 15_000
 
-const teamShirts: Record<Team, string> = {
-  RED: 'https://cottonbureau.com/p/6ZE96D',
-  BLUE: 'https://cottonbureau.com/p/BT8VUW',
-  YELLOW: 'https://cottonbureau.com/p/4AAW9M',
-}
-
 function YouScreen() {
   const data = useLoaderData<typeof loader>()
   const teamMap = {skiing: TEAM_SKIING_MAP, snowboarding: TEAM_SNOWBOARD_MAP}[
@@ -367,7 +361,7 @@ function YouScreen() {
               </Label>
               <a
                 className="underlined mb-5 animate-pulse text-lg hover:animate-none focus:animate-none"
-                href={teamShirts[team]}
+                href="https://kcd.im/shirts"
               >
                 Get your team shirt{' '}
                 <span className="inline-block" role="img" aria-label="t-shirt">
