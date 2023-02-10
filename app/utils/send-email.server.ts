@@ -1,6 +1,7 @@
+import {getRandomSportyKody} from '~/images'
 import type {User} from '~/types'
 import {markdownToHtmlDocument} from './markdown.server'
-import {teams} from './misc'
+import {getOptionalTeam} from './misc'
 
 let mailgunDomain = 'mg.example.com'
 if (process.env.MAILGUN_DOMAIN) {
@@ -65,10 +66,9 @@ async function sendMagicLinkEmail({
   const {hostname} = new URL(domainUrl)
   const userExists = Boolean(user)
 
-  const teamColor =
-    user?.team.toLowerCase() ??
-    teams[Math.floor(Math.random() * teams.length)]?.toLowerCase() ??
-    'white'
+  const randomSportyKody = getRandomSportyKody(
+    user ? getOptionalTeam(user.team) : undefined,
+  )
 
   const text = `
 Here's your sign-in link for ${hostname}:
@@ -125,7 +125,9 @@ P.S. If you did not request this email, you can safely ignore it.
           : `Hey ${emailAddress}! Welcome to ${hostname}`
       }</h2>
 
-      <center><img src="https://res.cloudinary.com/kentcdodds-com/image/upload/w_800,q_auto,f_auto/kentcdodds.com/illustrations/kody-flying_${teamColor}" style="max-width: 80%"></center>
+      <center><img src="https://res.cloudinary.com/kentcdodds-com/image/upload/w_800,q_auto,f_auto/${
+        randomSportyKody.id
+      }" style="max-width: 80%"></center>
       
       <h3 style="text-align: center">Click the button below to login to ${hostname}</h3>
 
@@ -136,6 +138,7 @@ P.S. If you did not request this email, you can safely ignore it.
       <div style="text-align: center; margin-top: 1rem; font-size: .9rem">
         <div style="color: grey">This link is valid for 30 minutes.</div>
         <a href="${domainUrl}/login" style="margin-top: .4rem; display: block">Click here to request a new link.</a>
+        <div style="color: grey">Be certain the link opens in the same browser you requested it from.</div>
       </div>
         
       <hr style="width: 20%; height: 0px; border: 1px solid lightgrey; margin-top: 2rem; margin-bottom: 2rem">

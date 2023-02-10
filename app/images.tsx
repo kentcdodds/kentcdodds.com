@@ -330,7 +330,7 @@ const kodyFlyingSkiingImages: Record<OptionalTeam, ImageBuilder> = {
   UNKNOWN: images.kodyFlyingSkiingGray,
 }
 
-export function getRandomSportyKody(team?: OptionalTeam) {
+export function getRandomSportyKody(team?: OptionalTeam | undefined) {
   const set = Math.random() > 0.5 ? kodySnowboardingImages : kodySkiingImages
   if (team) {
     return set[team]
@@ -342,7 +342,7 @@ export function getRandomSportyKody(team?: OptionalTeam) {
   }
 }
 
-export function getRandomFlyingKody(team?: OptionalTeam) {
+export function getRandomFlyingKody(team?: OptionalTeam | undefined) {
   const set =
     Math.random() > 0.5 ? kodyFlyingSnowboardingImages : kodyFlyingSkiingImages
   if (team) {
