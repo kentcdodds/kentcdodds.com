@@ -1,4 +1,4 @@
-import {getRandomSportyKody} from '~/images'
+import {getRandomFlyingKody} from '~/images'
 import type {User} from '~/types'
 import {markdownToHtmlDocument} from './markdown.server'
 import {getOptionalTeam} from './misc'
@@ -66,7 +66,7 @@ async function sendMagicLinkEmail({
   const {hostname} = new URL(domainUrl)
   const userExists = Boolean(user)
 
-  const randomSportyKody = getRandomSportyKody(
+  const randomSportyKody = getRandomFlyingKody(
     user ? getOptionalTeam(user.team) : undefined,
   )
 
