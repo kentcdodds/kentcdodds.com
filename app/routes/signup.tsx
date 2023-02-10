@@ -1,5 +1,5 @@
 import * as React from 'react'
-import type {ActionFunction, LoaderFunction} from '@remix-run/node'
+import type {ActionFunction, DataFunctionArgs} from '@remix-run/node'
 import {json, redirect} from '@remix-run/node'
 import {Form, useActionData, useLoaderData} from '@remix-run/react'
 import clsx from 'clsx'
@@ -17,7 +17,7 @@ import {Field, InputError} from '~/components/form-elements'
 import {Button} from '~/components/button'
 import {CheckCircledIcon} from '~/components/icons'
 import {getImgProps, images} from '~/images'
-import {TEAM_MAP} from '~/utils/onboarding'
+import {TEAM_SKIING_MAP, TEAM_SNOWBOARD_MAP} from '~/utils/onboarding'
 import {HeaderSection} from '~/components/sections/header-section'
 import {handleFormSubmission} from '~/utils/actions.server'
 import {Spacer} from '~/components/spacer'
@@ -38,11 +38,6 @@ type ActionData = {
     firstName: string | null
     team: string | null
   }
-}
-
-type LoaderData = {
-  email: string
-  teamsInOrder: Array<Team>
 }
 
 function getErrorForFirstName(name: string | null) {
@@ -152,7 +147,7 @@ export const action: ActionFunction = async ({request}) => {
   })
 }
 
-export const loader: LoaderFunction = async ({request}) => {
+export async function loader({request}: DataFunctionArgs) {
   const user = await getUser(request)
   if (user) return redirect('/me')
 
@@ -183,24 +178,30 @@ export const loader: LoaderFunction = async ({request}) => {
     })
   }
 
-  const values: LoaderData = {
-    email,
-    // have to put this shuffle in the loader to ensure server render is the same as the client one.
-    teamsInOrder: shuffle(teams),
-  }
-  return json(values, {
-    headers: await loginInfoSession.getHeaders(),
-  })
+  return json(
+    {
+      email,
+      // have to put this shuffle in the loader to ensure server render is the same as the client one.
+      teamsInOrder: shuffle(teams),
+      teamMap: Math.random() > 0.5 ? 'skiing' : 'snowboarding',
+    } as const,
+    {
+      headers: await loginInfoSession.getHeaders(),
+    },
+  )
 }
 
 interface TeamOptionProps {
+  teamMap: 'skiing' | 'snowboarding'
   team: Team
   error?: string | null
   selected: boolean
 }
 
-function TeamOption({team: value, error, selected}: TeamOptionProps) {
-  const team = TEAM_MAP[value]
+function TeamOption({teamMap, team: value, error, selected}: TeamOptionProps) {
+  const team = {skiing: TEAM_SKIING_MAP, snowboarding: TEAM_SNOWBOARD_MAP}[
+    teamMap
+  ][value]
 
   return (
     <div
@@ -244,7 +245,7 @@ function TeamOption({team: value, error, selected}: TeamOptionProps) {
 }
 
 export default function NewAccount() {
-  const data = useLoaderData<LoaderData>()
+  const data = useLoaderData<typeof loader>()
   const actionData = useActionData<ActionData>()
   const [, setTeam] = useTeam()
   const [formValues, setFormValues] = React.useState<{
@@ -298,6 +299,7 @@ export default function NewAccount() {
               {data.teamsInOrder.map(teamOption => (
                 <TeamOption
                   key={teamOption}
+                  teamMap={data.teamMap}
                   team={teamOption}
                   error={actionData?.errors.team}
                   selected={formValues.team === teamOption}

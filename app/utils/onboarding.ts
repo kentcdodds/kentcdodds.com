@@ -1,22 +1,76 @@
 import type {Team} from '../../types'
-import {images} from '~/images'
+import {images, getRandomSportyKody} from '~/images'
 
 export const TEAM_MAP: Record<
   Team,
-  {image: typeof images.kodyBlue; label: string; focusClassName: string}
+  {
+    image: () => typeof images.kodySnowboardingBlue
+    label: string
+    focusClassName: string
+  }
 > = {
   BLUE: {
-    image: images.kodyBlue,
+    image: () => getRandomSportyKody('BLUE'),
     label: 'Blue Team',
     focusClassName: 'ring-team-blue',
   },
   RED: {
-    image: images.kodyRed,
+    image: () => getRandomSportyKody('RED'),
     label: 'Red Team',
     focusClassName: 'ring-team-red',
   },
   YELLOW: {
-    image: images.kodyYellow,
+    image: () => getRandomSportyKody('YELLOW'),
+    label: 'Yellow Team',
+    focusClassName: 'ring-team-yellow',
+  },
+}
+
+export const TEAM_SNOWBOARD_MAP: Record<
+  Team,
+  {
+    image: typeof images.kodySnowboardingBlue
+    label: string
+    focusClassName: string
+  }
+> = {
+  BLUE: {
+    image: images.kodySnowboardingBlue,
+    label: 'Blue Team',
+    focusClassName: 'ring-team-blue',
+  },
+  RED: {
+    image: images.kodySnowboardingRed,
+    label: 'Red Team',
+    focusClassName: 'ring-team-red',
+  },
+  YELLOW: {
+    image: images.kodySnowboardingYellow,
+    label: 'Yellow Team',
+    focusClassName: 'ring-team-yellow',
+  },
+}
+
+export const TEAM_SKIING_MAP: Record<
+  Team,
+  {
+    image: typeof images.kodySkiingBlue
+    label: string
+    focusClassName: string
+  }
+> = {
+  BLUE: {
+    image: images.kodySkiingBlue,
+    label: 'Blue Team',
+    focusClassName: 'ring-team-blue',
+  },
+  RED: {
+    image: images.kodySkiingRed,
+    label: 'Red Team',
+    focusClassName: 'ring-team-red',
+  },
+  YELLOW: {
+    image: images.kodySkiingYellow,
     label: 'Yellow Team',
     focusClassName: 'ring-team-yellow',
   },

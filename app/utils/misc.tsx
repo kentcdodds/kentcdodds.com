@@ -9,6 +9,7 @@ import {images} from '../images'
 import type {getEnv} from './env.server'
 
 const teams: Array<Team> = ['RED', 'BLUE', 'YELLOW']
+export const optionalTeams: Array<OptionalTeam> = [...teams, 'UNKNOWN']
 const roles: Array<Role> = ['ADMIN', 'MEMBER']
 const isTeam = (team?: string): team is Team => teams.includes(team as Team)
 const isRole = (role?: string): role is Role => roles.includes(role as Role)
@@ -21,7 +22,7 @@ function getAvatar(
   email: string,
   {
     size = defaultAvatarSize,
-    fallback = images.kodyProfileWhite({resize: {width: size}}),
+    fallback = images.kodyProfileGray({resize: {width: size}}),
     origin,
   }: {size?: number} & (
     | {fallback?: null; origin?: null}
@@ -44,7 +45,7 @@ const avatarFallbacks: Record<OptionalTeam, (width: number) => string> = {
   BLUE: (width: number) => images.kodyProfileBlue({resize: {width}}),
   RED: (width: number) => images.kodyProfileRed({resize: {width}}),
   YELLOW: (width: number) => images.kodyProfileYellow({resize: {width}}),
-  UNKNOWN: (width: number) => images.kodyProfileWhite({resize: {width}}),
+  UNKNOWN: (width: number) => images.kodyProfileGray({resize: {width}}),
 }
 
 function getAvatarForUser(

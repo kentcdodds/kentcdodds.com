@@ -95,7 +95,7 @@ async function getDirectAvatarForUser(
       RED: images.kodyProfileRed.id,
       BLUE: images.kodyProfileBlue.id,
       YELLOW: images.kodyProfileYellow.id,
-      UNKNOWN: images.kodyProfileWhite.id,
+      UNKNOWN: images.kodyProfileGray.id,
     }
     return {
       hasGravatar,

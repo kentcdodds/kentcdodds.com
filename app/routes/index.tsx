@@ -16,7 +16,7 @@ import {IntroductionSection} from '~/components/sections/introduction-section'
 import {ProblemSolutionSection} from '~/components/sections/problem-solution-section'
 import {Spacer} from '~/components/spacer'
 import {HeroSection} from '~/components/sections/hero-section'
-import {kodySnowboardingImages} from '~/images'
+import {getRandomFlyingKody} from '~/images'
 import {ButtonLink} from '~/components/button'
 import {ServerError} from '~/components/errors'
 import {getBlogMdxListItems} from '~/utils/mdx'
@@ -87,12 +87,12 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export default function IndexRoute() {
   const data = useLoaderData<LoaderData>()
-  const kodySnowboarding = kodySnowboardingImages[data.kodyTeam]
+  const kodyFlying = getRandomFlyingKody(data.kodyTeam)
   return (
     <div>
       <HeroSection
         title="Helping people make the world a better place through quality software."
-        imageBuilder={kodySnowboarding}
+        imageBuilder={kodyFlying}
         imageSize="giant"
         arrowUrl="#intro"
         arrowLabel="Learn more about Kent"

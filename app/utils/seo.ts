@@ -1,4 +1,4 @@
-import {getGenericSocialImage} from '~/images'
+import {getGenericSocialImage, images} from '~/images'
 
 export function getSocialMetas({
   url,
@@ -7,7 +7,7 @@ export function getSocialMetas({
   image = getGenericSocialImage({
     url,
     words: title,
-    featuredImage: 'kentcdodds.com/illustrations/kody-flying_blue',
+    featuredImage: images.kodyFlyingSnowboardingBlue.id,
   }),
   keywords = '',
 }: {

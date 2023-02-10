@@ -2,7 +2,7 @@ import type {TransformerOption} from '@cld-apis/types'
 import {setConfig, buildImageUrl} from 'cloudinary-build-url'
 import emojiRegex from 'emoji-regex'
 import type {OptionalTeam} from './utils/misc'
-import {toBase64} from './utils/misc'
+import {optionalTeams, toBase64} from './utils/misc'
 
 setConfig({
   cloudName: 'kentcdodds-com',
@@ -123,22 +123,21 @@ const images = createImages({
     id: 'kent/video-stills/get-to-know-kent-video-thumbnail',
     alt: 'Kent in the air on a snowboard with the words "Get to know Kent C. Dodds"',
   },
-
   kodyProfileYellow: {
-    id: 'kentcdodds.com/illustrations/kody_profile_yellow',
+    id: 'kentcdodds.com/illustrations/kody/kody_profile_yellow',
     alt: 'Kody Profile in Yellow',
   },
   kodyProfileBlue: {
-    id: 'kentcdodds.com/illustrations/kody_profile_blue',
+    id: 'kentcdodds.com/illustrations/kody/kody_profile_blue',
     alt: 'Kody Profile in Blue',
   },
   kodyProfileRed: {
-    id: 'kentcdodds.com/illustrations/kody_profile_red',
+    id: 'kentcdodds.com/illustrations/kody/kody_profile_red',
     alt: 'Kody Profile in Red',
   },
-  kodyProfileWhite: {
-    id: 'kentcdodds.com/illustrations/kody_profile_white',
-    alt: 'Kody Profile in White',
+  kodyProfileGray: {
+    id: 'kentcdodds.com/illustrations/kody/kody_profile_gray',
+    alt: 'Kody Profile in Gray',
   },
   teslaY: {
     id: 'kentcdodds.com/illustrations/tesla_y2_j8kti2',
@@ -168,37 +167,73 @@ const images = createImages({
     id: 'kentcdodds.com/illustrations/mic',
     alt: 'Illustration of a microphone',
   },
-  kodySnowboardingWhite: {
-    id: 'kentcdodds.com/illustrations/kody-flying_white',
+  kodySkiingBlue: {
+    id: 'kentcdodds.com/illustrations/kody/kody_skiing_blue',
+    alt: 'Illustration of Kody the Koala on skis in blue',
+  },
+  kodySkiingGray: {
+    id: 'kentcdodds.com/illustrations/kody/kody_skiing_gray',
+    alt: 'Illustration of Kody the Koala on skis in gray',
+  },
+  kodySkiingYellow: {
+    id: 'kentcdodds.com/illustrations/kody/kody_skiing_yellow',
+    alt: 'Illustration of Kody the Koala on skis in yellow',
+  },
+  kodySkiingRed: {
+    id: 'kentcdodds.com/illustrations/kody/kody_skiing_red',
+    alt: 'Illustration of Kody the Koala on skis in red',
+  },
+  kodyFlyingSkiingBlue: {
+    id: 'kentcdodds.com/illustrations/kody/kody_skiing_flying_blue',
+    alt: 'Illustration of Kody the Koala skiing surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+  },
+  kodyFlyingSkiingGray: {
+    id: 'kentcdodds.com/illustrations/kody/kody_skiing_flying_gray',
+    alt: 'Illustration of Kody the Koala skiing surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+  },
+  kodyFlyingSkiingYellow: {
+    id: 'kentcdodds.com/illustrations/kody/kody_skiing_flying_yellow',
+    alt: 'Illustration of Kody the Koala skiing surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+  },
+  kodyFlyingSkiingRed: {
+    id: 'kentcdodds.com/illustrations/kody/kody_skiing_flying_red',
+    alt: 'Illustration of Kody the Koala skiing surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+  },
+  kodyFlyingSnowboardingGray: {
+    id: 'kentcdodds.com/illustrations/kody/kody_snowboarding_flying_gray',
+    alt: 'Illustration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+  },
+  kodyFlyingSnowboardingYellow: {
+    id: 'kentcdodds.com/illustrations/kody/kody_snowboarding_flying_yellow',
+    alt: 'Illustration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+  },
+  kodyFlyingSnowboardingRed: {
+    id: 'kentcdodds.com/illustrations/kody/kody_snowboarding_flying_red',
+    alt: 'Illustration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+  },
+  kodyFlyingSnowboardingBlue: {
+    id: 'kentcdodds.com/illustrations/kody/kody_snowboarding_flying_blue',
     alt: 'Illustration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
   },
   kodySnowboardingYellow: {
-    id: 'kentcdodds.com/illustrations/kody-flying_yellow',
-    alt: 'Illustration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+    id: 'kentcdodds.com/illustrations/kody/kody_snowboarding_yellow',
+    alt: 'Illustration of Kody the Koala on a snowboard in yellow',
   },
   kodySnowboardingRed: {
-    id: 'kentcdodds.com/illustrations/kody-flying_red',
-    alt: 'Illustration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+    id: 'kentcdodds.com/illustrations/kody/kody_snowboarding_red',
+    alt: 'Illustration of Kody the Koala on a snowboard in red',
   },
   kodySnowboardingBlue: {
-    id: 'kentcdodds.com/illustrations/kody-flying_blue',
-    alt: 'Illustration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+    id: 'kentcdodds.com/illustrations/kody/kody_snowboarding_blue',
+    alt: 'Illustration of Kody the Koala on a snowboard in blue',
+  },
+  kodySnowboardingGray: {
+    id: 'kentcdodds.com/illustrations/kody/kody_snowboarding_gray',
+    alt: 'Illustration of Kody the Koala on a snowboard in gray',
   },
   helmet: {
     id: 'kentcdodds.com/illustrations/helmet',
     alt: 'Illustration of a helmet',
-  },
-  kodyYellow: {
-    id: 'kentcdodds.com/illustrations/kody_yellow',
-    alt: 'Illustration of snowboarder in yellow',
-  },
-  kodyRed: {
-    id: 'kentcdodds.com/illustrations/kody_red',
-    alt: 'Illustration of snowboarder in red',
-  },
-  kodyBlue: {
-    id: 'kentcdodds.com/illustrations/kody_blue',
-    alt: 'Illustration of snowboarder in blue',
   },
   bustedOnewheel: {
     id: 'kentcdodds.com/illustrations/404_2_sprold',
@@ -266,14 +301,58 @@ const kodyProfiles: Record<OptionalTeam, {src: string; alt: string}> = {
   RED: {src: images.kodyProfileRed(), alt: images.kodyProfileRed.alt},
   BLUE: {src: images.kodyProfileBlue(), alt: images.kodyProfileBlue.alt},
   YELLOW: {src: images.kodyProfileYellow(), alt: images.kodyProfileYellow.alt},
-  UNKNOWN: {src: images.kodyProfileWhite(), alt: images.kodyProfileWhite.alt},
+  UNKNOWN: {src: images.kodyProfileGray(), alt: images.kodyProfileGray.alt},
 }
 
 const kodySnowboardingImages: Record<OptionalTeam, ImageBuilder> = {
   RED: images.kodySnowboardingRed,
   YELLOW: images.kodySnowboardingYellow,
   BLUE: images.kodySnowboardingBlue,
-  UNKNOWN: images.kodySnowboardingWhite,
+  UNKNOWN: images.kodySnowboardingGray,
+}
+const kodySkiingImages: Record<OptionalTeam, ImageBuilder> = {
+  RED: images.kodySkiingRed,
+  YELLOW: images.kodySkiingYellow,
+  BLUE: images.kodySkiingBlue,
+  UNKNOWN: images.kodySkiingGray,
+}
+
+const kodyFlyingSnowboardingImages: Record<OptionalTeam, ImageBuilder> = {
+  RED: images.kodyFlyingSnowboardingRed,
+  YELLOW: images.kodyFlyingSnowboardingYellow,
+  BLUE: images.kodyFlyingSnowboardingBlue,
+  UNKNOWN: images.kodyFlyingSnowboardingGray,
+}
+const kodyFlyingSkiingImages: Record<OptionalTeam, ImageBuilder> = {
+  RED: images.kodyFlyingSkiingRed,
+  YELLOW: images.kodyFlyingSkiingYellow,
+  BLUE: images.kodyFlyingSkiingBlue,
+  UNKNOWN: images.kodyFlyingSkiingGray,
+}
+
+export function getRandomSportyKody(team?: OptionalTeam) {
+  const set = Math.random() > 0.5 ? kodySnowboardingImages : kodySkiingImages
+  if (team) {
+    return set[team]
+  } else {
+    const randomTeam =
+      optionalTeams[Math.floor(Math.random() * optionalTeams.length)] ??
+      'UNKNOWN'
+    return set[randomTeam]
+  }
+}
+
+export function getRandomFlyingKody(team?: OptionalTeam) {
+  const set =
+    Math.random() > 0.5 ? kodyFlyingSnowboardingImages : kodyFlyingSkiingImages
+  if (team) {
+    return set[team]
+  } else {
+    const randomTeam =
+      optionalTeams[Math.floor(Math.random() * optionalTeams.length)] ??
+      'UNKNOWN'
+    return set[randomTeam]
+  }
 }
 
 const illustrationImages = {
@@ -437,7 +516,6 @@ export {
   getImageBuilder,
   getGenericSocialImage,
   getSocialImageWithPreTitle,
-  kodySnowboardingImages,
   illustrationImages,
 }
 export type {ImageBuilder}

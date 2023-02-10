@@ -74,13 +74,13 @@ export default function SearchRoute() {
           subtitle="Try something a bit more specific next time."
           arrowUrl="#results"
           arrowLabel={`${data.total} Results`}
-          imageBuilder={images.kodyProfileWhite}
+          imageBuilder={images.kodyProfileGray}
         />
       ) : (
         <HeroSection
           title="No matches found"
           subtitle="Try being less specific."
-          imageBuilder={images.kodyProfileWhite}
+          imageBuilder={images.kodyProfileGray}
         />
       )}
       <Grid as="main">

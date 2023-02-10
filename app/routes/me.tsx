@@ -1,8 +1,8 @@
 import * as React from 'react'
 import type {
   ActionFunction,
+  DataFunctionArgs,
   HeadersFunction,
-  LoaderFunction,
   MetaFunction,
 } from '@remix-run/node'
 import {json, redirect} from '@remix-run/node'
@@ -43,7 +43,7 @@ import {
   PlusIcon,
   RefreshIcon,
 } from '~/components/icons'
-import {TEAM_MAP} from '~/utils/onboarding'
+import {TEAM_SKIING_MAP, TEAM_SNOWBOARD_MAP} from '~/utils/onboarding'
 import {handleFormSubmission} from '~/utils/actions.server'
 import {Spacer} from '~/components/spacer'
 import {getSocialMetas} from '~/utils/seo'
@@ -65,15 +65,14 @@ export const meta: MetaFunction = ({parentsData}) => {
       url: getUrl(requestInfo),
       image: getGenericSocialImage({
         url: getDisplayUrl(requestInfo),
-        featuredImage: images.kodySnowboardingWhite(),
+        featuredImage: images.kodySnowboardingGray(),
         words: `View your account info on ${domain}`,
       }),
     }),
   }
 }
 
-type LoaderData = {qrLoginCode: string; sessionCount: number}
-export const loader: LoaderFunction = async ({request}) => {
+export async function loader({request}: DataFunctionArgs) {
   const timings = {}
   const user = await requireUser(request, {timings})
 
@@ -87,14 +86,20 @@ export const loader: LoaderFunction = async ({request}) => {
       domainUrl: getDomainUrl(request),
     }),
   )
-  const loaderData: LoaderData = {qrLoginCode, sessionCount}
-  return json(loaderData, {
-    headers: {
-      'Cache-Control': 'private, max-age=3600',
-      Vary: 'Cookie',
-      'Server-Timing': getServerTimeHeader(timings),
+  return json(
+    {
+      qrLoginCode,
+      sessionCount,
+      teamType: Math.random() > 0.5 ? 'skiing' : 'snowboarding',
+    } as const,
+    {
+      headers: {
+        'Cache-Control': 'private, max-age=3600',
+        Vary: 'Cookie',
+        'Server-Timing': getServerTimeHeader(timings),
+      },
     },
-  })
+  )
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
@@ -207,7 +212,10 @@ const teamShirts: Record<Team, string> = {
 }
 
 function YouScreen() {
-  const data = useLoaderData<LoaderData>()
+  const data = useLoaderData<typeof loader>()
+  const teamMap = {skiing: TEAM_SKIING_MAP, snowboarding: TEAM_SNOWBOARD_MAP}[
+    data.teamType
+  ]
   const otherSessionsCount = data.sessionCount - 1
   const actionData = useActionData<ActionData>()
   const {requestInfo, userInfo, user} = useRootData()
@@ -358,7 +366,7 @@ function YouScreen() {
                 Chosen team
               </Label>
               <a
-                className="underlined animate-pulse hover:animate-none focus:animate-none mb-5 text-lg"
+                className="underlined mb-5 animate-pulse text-lg hover:animate-none focus:animate-none"
                 href={teamShirts[team]}
               >
                 Get your team shirt{' '}
@@ -385,10 +393,10 @@ function YouScreen() {
               <div className="block px-12 pb-12 pt-20 text-center">
                 <img
                   className="mb-16 block"
-                  src={TEAM_MAP[team].image()}
-                  alt={TEAM_MAP[team].image.alt}
+                  src={teamMap[team].image()}
+                  alt={teamMap[team].image.alt}
                 />
-                <H6 as="span">{TEAM_MAP[team].label}</H6>
+                <H6 as="span">{teamMap[team].label}</H6>
               </div>
             </div>
           </div>
