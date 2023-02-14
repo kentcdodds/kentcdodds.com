@@ -82,7 +82,7 @@ export const action: ActionFunction = async ({request, params}) => {
     }
 
     if (Object.values(actionData.errors).some(err => err !== null)) {
-      return json(actionData, 401)
+      return json(actionData, 400)
     }
 
     const {audio: response, title, description, keywords} = getNonNull(formData)

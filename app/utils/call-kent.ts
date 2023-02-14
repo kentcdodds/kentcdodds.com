@@ -4,7 +4,7 @@ function getErrorForDescription(description: string | null) {
   if (!description) return `Description is required`
 
   const minLength = 20
-  const maxLength = 1000
+  const maxLength = 2000
   if (description.length < minLength) {
     return `Description must be at least ${minLength} characters`
   }
