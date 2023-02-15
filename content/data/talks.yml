@@ -127,7 +127,8 @@
 
 - title: Bringing Back Progressive Enhancement
   resources:
-    - '[slides and demo](https://github.com/kentcdodds/remix-todomvc)'
+    - '[demo](https://github.com/kentcdodds/remix-todomvc)'
+    - '[slides](https://slides.com/kentcdodds/bringing-back-progressive-enhancement)'
   deliveries:
     - event: '[RenderATL](https://www.renderatl.com/)'
       date: 2022-06-01
