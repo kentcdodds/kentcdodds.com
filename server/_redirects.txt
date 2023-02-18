@@ -82,7 +82,7 @@ POST,DELETE,PATCH,PUT  /                                                https://
 /chats-with-kent-podcast/seasons/:seasonNumber/:path*       /chats/:seasonNumber
 
 /workshops/past                                            /workshops
-/workshops/remix-fundamentals                              /web-app-fundamentals
+/workshops/remix-fundamentals                              /workshops/web-app-fundamentals
 
 # some people go to this page for some reason:
 /post/:slug*                                                             /blog/:slug*
