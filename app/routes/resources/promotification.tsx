@@ -53,7 +53,7 @@ export function Promotification({
   promoName: string
   /** maxAge for the cookie */
   dismissTimeSeconds?: number
-  cookieValue?: string
+  cookieValue: string | undefined
   promoEndTime?: Date
 } & NotificationMessageProps & {
     queryStringKey?: never

@@ -369,6 +369,7 @@ function App() {
         <Promotification
           promoName={WORKSHOP_PROMO_NAME}
           promoEndTime={new Date('2023-03-22 21:30:00 GMT-0600')}
+          cookieValue={data.webAppWorkshopPromo}
         >
           <div>
             {`Hey! I'm running a workshop on March 23rd.`}
