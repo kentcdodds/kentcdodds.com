@@ -366,7 +366,10 @@ function App() {
         />
       </head>
       <body className="bg-white transition duration-500 dark:bg-gray-900">
-        <Promotification promoName={WORKSHOP_PROMO_NAME}>
+        <Promotification
+          promoName={WORKSHOP_PROMO_NAME}
+          promoEndTime={new Date('2023-03-22 21:30:00 GMT-0600')}
+        >
           <div>
             {`Hey! I'm running a workshop on March 23rd.`}
             <br />
