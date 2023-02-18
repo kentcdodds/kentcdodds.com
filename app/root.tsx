@@ -8,6 +8,7 @@ import type {
 } from '@remix-run/node'
 import {json} from '@remix-run/node'
 import {
+  Link,
   Links,
   LiveReload,
   Meta,
@@ -62,6 +63,10 @@ import {Grimmacing, MissingSomething} from './components/kifs'
 import {ArrowLink} from './components/arrow-button'
 import {getServerTimeHeader} from './utils/timing.server'
 import {useNonce} from './utils/nonce-provider'
+import {
+  getPromoCookieValue,
+  Promotification,
+} from './routes/resources/promotification'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',
@@ -135,6 +140,7 @@ export const links: LinksFunction = () => {
 
 export type LoaderData = SerializeFrom<typeof loader>
 
+const WORKSHOP_PROMO_NAME = 'web-apps-march-2023'
 async function loader({request}: DataFunctionArgs) {
   const timings = {}
   const session = await getSession(request)
@@ -154,6 +160,10 @@ async function loader({request}: DataFunctionArgs) {
     userInfo: user ? await getUserInfo(user, {request, timings}) : null,
     ENV: getEnv(),
     randomFooterImageKey,
+    webAppWorkshopPromo: getPromoCookieValue({
+      promoName: WORKSHOP_PROMO_NAME,
+      request,
+    }),
     requestInfo: {
       origin: getDomainUrl(request),
       path: new URL(request.url).pathname,
@@ -356,6 +366,20 @@ function App() {
         />
       </head>
       <body className="bg-white transition duration-500 dark:bg-gray-900">
+        <Promotification promoName={WORKSHOP_PROMO_NAME}>
+          <div>
+            {`Hey! I'm running a workshop on March 23rd.`}
+            <br />
+            {`I'd love for you to join!`}
+            <br />
+            <Link
+              to="/workshops/web-app-fundamentals"
+              className="text-team-current underline"
+            >
+              {`Learn more 🌌`}
+            </Link>
+          </div>
+        </Promotification>
         <PageLoadingMessage />
         <NotificationMessage queryStringKey="message" delay={0.3} />
         <Navbar />
