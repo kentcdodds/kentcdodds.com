@@ -1,7 +1,10 @@
-title: Remix Fundamentals
-description: Learn how you can use Remix to build faster apps... faster.
+title: Web App Fundamentals
+description:
+  Learn the fundamental tools for building web applications of any level of
+  complexity.
 meta:
   keywords:
+    - web
     - react
     - remix
     - ssr
@@ -9,10 +12,11 @@ meta:
     - seo
     - accessibility
 categories:
+  - web
   - react
   - remix
 events:
-  - title: Remix Fundamentals in London
+  - title: Web App Fundamentals in London
     url: https://london.cityjsconf.org/buytickets
     quantity: 40
     date: March 30th, 2023
@@ -28,12 +32,12 @@ problemStatements:
     layouts_ with intelligent and performance optimized data management that
     just works™?
   part4: >-
-    Remix solves some of these problems, and completely eliminates the rest.
-    **You don't even have to think** about server cache management or global CSS
-    namespace clashes. It's not that Remix has APIs to avoid these problems,
-    they simply don't exist when you're using Remix. Oh, and you don't need that
-    huge complex graphql client when you're using Remix. They've got you
-    covered. Ready to build faster apps faster?
+    Modern tools solve some of these problems, and completely eliminate the
+    rest. With modern tools like Remix, **you don't even have to think** about
+    server cache management or global CSS namespace clashes. Rather than
+    creating special APIs to avoid these problems, the problems simply don't
+    exist when you're using Remix. They've got you covered. Ready to build
+    faster apps faster?
 keyTakeaways:
   - title: Take advantage of nested routing
     description:

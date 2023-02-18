@@ -58,11 +58,23 @@ if (!titoSecret && process.env.NODE_ENV === 'production') {
   )
 }
 
+async function getTitoAccounts<
+  JsonResponse extends Record<string, unknown>,
+>(): Promise<JsonResponse> {
+  const response = await fetch(`https://api.tito.io/v3/hello`, {
+    headers: {Authorization: `Bearer ${titoSecret}`},
+  })
+  return response.json()
+}
+
 async function getTito<JsonResponse extends Record<string, unknown>>(
+  account: string,
   endpoint: string,
 ): Promise<JsonResponse> {
   const response = await fetch(
-    `https://api.tito.io/v3/kent-c-dodds/${endpoint}`,
+    `https://api.tito.io/v3/${encodeURIComponent(account)}/${encodeURIComponent(
+      endpoint,
+    )}`,
     {headers: {Authorization: `Bearer ${titoSecret}`}},
   )
   return response.json()
@@ -87,7 +99,16 @@ function getDiscounts(codes: Array<TiToDiscount>) {
 async function getScheduledEvents() {
   if (!titoSecret) return []
 
+  const accounts = await getTitoAccounts<{accounts: Array<string>}>()
+  const events = await Promise.all(
+    accounts.accounts.map(getScheduledEventsForAccount),
+  )
+  return events.flat()
+}
+
+async function getScheduledEventsForAccount(account: string) {
   const {events: allEvents} = await getTito<{events: Array<TiToEvent>}>(
+    account,
     'events',
   )
   const liveEvents = allEvents.filter(event => {
@@ -107,13 +128,17 @@ async function getScheduledEvents() {
         metadata,
       }): Promise<WorkshopEvent> => {
         const [event, discounts, activity] = await Promise.all([
-          getTito<{event: TiToEventDetails}>(`${slug}`).then(r => r.event),
+          getTito<{event: TiToEventDetails}>(account, `${slug}`).then(
+            r => r.event,
+          ),
           getTito<{discount_codes: Array<TiToDiscount>}>(
+            account,
             `${slug}/discount_codes`,
           ).then(r => getDiscounts(r.discount_codes)),
-          getTito<{activities: Array<TiToActivity>}>(`${slug}/activities`).then(
-            r => r.activities[0],
-          ),
+          getTito<{activities: Array<TiToActivity>}>(
+            account,
+            `${slug}/activities`,
+          ).then(r => r.activities[0]),
         ])
 
         const eventInfo = {
