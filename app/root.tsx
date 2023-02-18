@@ -142,8 +142,8 @@ export type LoaderData = SerializeFrom<typeof loader>
 
 const WORKSHOP_PROMO_NAME = 'web-apps-march-2023'
 const WORKSHOP_DISCOUNT_PROMO_NAME = 'web-apps-march-2023-discount'
-const DISCOUNT_PROMO_END_DATE = new Date('2023-03-09 12:00:00 GMT-0600')
-const WORKSHOP_PROMO_END_DATE = new Date('2023-03-22 21:30:00 GMT-0600')
+const DISCOUNT_PROMO_END_DATE = 1678384800000 // new Date('2023-03-09 12:00:00 GMT-0600')
+const WORKSHOP_PROMO_END_DATE = 1679542200000 // new Date('2023-03-22 21:30:00 GMT-0600')
 async function loader({request}: DataFunctionArgs) {
   const timings = {}
   const session = await getSession(request)
@@ -163,7 +163,7 @@ async function loader({request}: DataFunctionArgs) {
     userInfo: user ? await getUserInfo(user, {request, timings}) : null,
     ENV: getEnv(),
     randomFooterImageKey,
-    afterDiscountDate: new Date() > DISCOUNT_PROMO_END_DATE,
+    afterDiscountDate: new Date().getTime() > DISCOUNT_PROMO_END_DATE,
     webAppWorkshopPromo: getPromoCookieValue({
       promoName: WORKSHOP_PROMO_NAME,
       request,
@@ -377,7 +377,7 @@ function App() {
         {data.afterDiscountDate ? (
           <Promotification
             promoName={WORKSHOP_PROMO_NAME}
-            promoEndTime={WORKSHOP_PROMO_END_DATE}
+            promoEndTime={new Date(WORKSHOP_PROMO_END_DATE)}
             cookieValue={data.webAppWorkshopPromo}
           >
             <div>
@@ -396,7 +396,7 @@ function App() {
         ) : (
           <Promotification
             promoName={WORKSHOP_DISCOUNT_PROMO_NAME}
-            promoEndTime={DISCOUNT_PROMO_END_DATE}
+            promoEndTime={new Date(DISCOUNT_PROMO_END_DATE)}
             cookieValue={data.webAppWorkshopDiscountPromo}
           >
             <div>
