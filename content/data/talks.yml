@@ -25,6 +25,15 @@
   description: >-
     This talk is yet to be announced
 
+- title: QCon London Talk (TBA)
+  deliveries:
+    - event: '[QCon London](https://qconlondon.com/)'
+      date: 2023-03-27
+  tags:
+    - tba
+  description: >-
+    This talk is yet to be announced
+
 - title: Full Stack Components
   deliveries:
     - event:
