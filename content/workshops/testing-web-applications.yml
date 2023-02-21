@@ -11,6 +11,11 @@ categories:
   - remix
   - testing
 convertKitTag: '3660595'
+events:
+  - title: Testing Web Apps (at Remix Conf)
+    url: https://ti.to/remix-conf/2023
+    quantity: 50
+    date: May 9, 2023
 problemStatements:
   part1: Congratulations, you've built an amazing web application!
   part2: But people hate it because you keep shipping bugs.
