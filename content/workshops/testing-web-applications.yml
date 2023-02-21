@@ -1,0 +1,74 @@
+title: Testing Web Applications
+description: TODO
+meta:
+  keywords:
+    - react
+    - testing
+    - remix
+    - e2e
+categories:
+  - react
+  - remix
+  - testing
+convertKitTag: '3660595'
+problemStatements:
+  part1: Congratulations, you've built an amazing web application!
+  part2: But people hate it because you keep shipping bugs.
+  part3: >-
+    You have only so much time to dedicate to your project. Even if you're
+    spending 100% of your waking moments working on your product, you'll always
+    have this limiting factor: time. You need to focus on activities that will
+    give you the biggest return on your investment of time.
+  part4: >-
+    If you skip on testing, you'll inevitably spend more time fixing bugs. The
+    bugs shipped will also result in customer churn, so you'll spend more time
+    looking for customers you won't be able to retain. Writing automated tests
+    is just as important as writing the code that makes your app work. It
+    operates under the same currency (your time), and pays for itself in time
+    saved. That is... if you do it right.
+keyTakeaways:
+  - title: Automated Testing Strategies
+    description:
+      There are a lot of different levels of testing. Knowing which ones to use
+      when is critical to your success. We'll learn about the different types of
+      automated tests and how to use them effectively to make efficient use of
+      your time.
+  - title: Testing Library
+    description:
+      Testing Library is a great tool for testing your web applications. It
+      encourages you to write tests that are more maintainable and less brittle.
+      We'll learn how to use Testing Library to write tests that are more
+      resilient to changes in your application.
+  - title: Avoiding the Test User
+    description:
+      It can be really easy to write tests that do things your users don't care
+      about. When you do this it feels like you're just writing tests for the
+      sake of writing tests. Almost like you're re-implementing your app in your
+      tests. By avoiding the test user, you can keep your tests implementation
+      detail free and refactor friendly.
+  - title: Testing Databases
+    description:
+      There's something to be said for mocking out downstream APIs, but at some
+      point in every application, there's going to be persistence and you want
+      to make sure that your application can connect to and use it. We'll learn
+      how to efficiently setup and use a test database.
+  - title: Writing authenticated tests
+    description:
+      Pulling up your app and clicking around is one thing, but most apps
+      require a logged in user, and setting that up can be a challenge. In this
+      workshop we'll see how to do this efficiently to avoid over-testing, and
+      encourage your co-workers to contribute tests (because it's easy to do).
+topics:
+  - Writing properly scoped unit tests
+  - Testing component integration
+  - Testing full app end-to-end
+  - Using a test database
+  - Writing authenticated tests
+  - Using Testing Library queries to navigate the app
+prerequisite: >-
+  You should have experience with [these JavaScript
+  features](/blog/javascript-to-know-for-react) and watch my [Beginner's Guide
+  to React](https://kcd.im/beginner-react) or have the equivalent experience.
+  Experience with Remix is a bonus, but not a requirement. This workshop will
+  use TypeScript, but should be completable if you do not have experience with
+  TypeScript.
