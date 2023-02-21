@@ -25,15 +25,6 @@
   description: >-
     This talk is yet to be announced
 
-- title: QCon London Talk (TBA)
-  deliveries:
-    - event: '[QCon London](https://qconlondon.com/)'
-      date: 2023-03-27
-  tags:
-    - tba
-  description: >-
-    This talk is yet to be announced
-
 - title: Full Stack Components
   deliveries:
     - event:
@@ -76,6 +67,8 @@
       recording: 'https://www.youtube.com/watch?v=5v5g0c9Wqkw&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf'
     - event: '[Modern Frontends Live](https://www.modernfrontends.live/)'
       date: 2022-11-17
+    - event: '[QCon London](https://qconlondon.com/)'
+      date: 2023-03-27
   tags:
     - keynote
     - remix
