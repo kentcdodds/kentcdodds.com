@@ -329,6 +329,12 @@ pre {
   border: 1px solid var(--border-secondary);
 }
 
+.prose .tweet-embed.deleted .tweet-time:after {
+  content: '(deleted)';
+  margin-left: 6px;
+  font-size: 0.8rem;
+}
+
 .prose .tweet-embed blockquote {
   font-size: 1.125rem;
   margin: 1rem 0;

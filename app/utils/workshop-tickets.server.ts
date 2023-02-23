@@ -80,7 +80,7 @@ async function getTito<JsonResponse extends Record<string, unknown>>(
   return response.json()
 }
 
-function getDiscounts(codes: Array<TiToDiscount>) {
+function getDiscounts(codes: Array<TiToDiscount> = []) {
   const dis: Record<string, {url: string; ends: string}> = {}
   for (const discount of codes) {
     const isEarly = discount.code === 'early'
@@ -131,14 +131,14 @@ async function getScheduledEventsForAccount(account: string) {
           getTito<{event: TiToEventDetails}>(account, `${slug}`).then(
             r => r.event,
           ),
-          getTito<{discount_codes: Array<TiToDiscount>}>(
+          getTito<{discount_codes?: Array<TiToDiscount>}>(
             account,
             `${slug}/discount_codes`,
           ).then(r => getDiscounts(r.discount_codes)),
-          getTito<{activities: Array<TiToActivity>}>(
+          getTito<{activities?: Array<TiToActivity>}>(
             account,
             `${slug}/activities`,
-          ).then(r => r.activities[0]),
+          ).then(r => r.activities?.[0]),
         ])
 
         const eventInfo = {
