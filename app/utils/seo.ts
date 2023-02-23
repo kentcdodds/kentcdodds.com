@@ -32,6 +32,6 @@ export function getSocialMetas({
     'twitter:title': title,
     'twitter:description': description,
     'twitter:image': image,
-    'twitter:alt': title,
+    'twitter:image:alt': title,
   }
 }
