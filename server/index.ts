@@ -217,6 +217,13 @@ app.use(
           // @ts-expect-error middleware is the worst
           (req, res) => `'nonce-${res.locals.cspNonce}'`,
         ],
+        'script-src-attr': [
+          "'unsafe-inline'",
+          // TODO: figure out how to make the nonce work instead of
+          // unsafe-inline. I tried adding a nonce attribute where we're using
+          // inline attributes, but that didn't work. I still got that it
+          // violated the CSP.
+        ],
         'upgrade-insecure-requests': null,
       },
     },

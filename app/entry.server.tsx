@@ -2,7 +2,7 @@ import {Response, type HandleDocumentRequestFunction} from '@remix-run/node'
 import {RemixServer} from '@remix-run/react'
 import isbot from 'isbot'
 import {renderToPipeableStream} from 'react-dom/server'
-import {PassThrough} from 'stream'
+import {PassThrough, Transform} from 'stream'
 import {ensurePrimary} from 'litefs-js/remix'
 import {routes as otherRoutes} from './other-routes.server'
 import {getEnv} from './utils/env.server'
@@ -100,7 +100,19 @@ function serveTheBots(...args: DocRequestArgs) {
         onAllReady() {
           responseHeaders.set('Content-Type', 'text/html')
           const body = new PassThrough()
-          stream.pipe(body)
+
+          // find/replace all instances of the string "data-evt-" with ""
+          // this is a bit of a hack because React won't render the "onload"
+          // prop, which we use for blurrable image
+          const dataEvtTransform = new Transform({
+            transform(chunk, encoding, callback) {
+              const string = chunk.toString()
+              const replaced = string.replace(/data-evt-/g, `nonce="${nonce}" `)
+              callback(null, replaced)
+            },
+          })
+
+          stream.pipe(dataEvtTransform).pipe(body)
           resolve(
             new Response(body, {
               status: responseStatusCode,
@@ -142,7 +154,19 @@ function serveBrowsers(...args: DocRequestArgs) {
         onShellReady() {
           responseHeaders.set('Content-Type', 'text/html')
           const body = new PassThrough()
-          stream.pipe(body)
+
+          // find/replace all instances of the string "data-evt-" with ""
+          // this is a bit of a hack because React won't render the "onload"
+          // prop, which we use for blurrable image
+          const dataEvtTransform = new Transform({
+            transform(chunk, encoding, callback) {
+              const string = chunk.toString()
+              const replaced = string.replace(/data-evt-/g, `nonce="${nonce}" `)
+              callback(null, replaced)
+            },
+          })
+
+          stream.pipe(dataEvtTransform).pipe(body)
           resolve(
             new Response(body, {
               status: didError ? 500 : responseStatusCode,

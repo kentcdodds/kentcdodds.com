@@ -1,6 +1,7 @@
 import * as React from 'react'
 import clsx from 'clsx'
-import {useSSRLayoutEffect} from '~/utils/misc'
+
+const isServer = typeof document === 'undefined'
 
 function BlurrableImage({
   img,
@@ -11,14 +12,20 @@ function BlurrableImage({
     React.ReactElement<React.ImgHTMLAttributes<HTMLImageElement>>
   blurDataUrl?: string
 } & React.HTMLAttributes<HTMLDivElement>) {
-  const [visible, setVisible] = React.useState(false)
-  const jsImgElRef = React.useRef<HTMLImageElement>(null)
+  const id = React.useId()
+  const [visible, setVisible] = React.useState(() => {
+    if (isServer) return false
 
-  // make this happen asap
-  // if it's alrady loaded, don't bother fading it in.
-  useSSRLayoutEffect(() => {
-    if (jsImgElRef.current?.complete) setVisible(true)
-  }, [])
+    // on the client, it's possible the images has already finished loading.
+    // we've got the data-evt-onload attribute on the image
+    // (which our entry.server replaces with simply "onload") which will remove
+    // the class "opacity-0" from the image once it's loaded. So we'll check
+    // if the image is already loaded and if so, we know that visible should
+    // initialize to true.
+    const el = document.getElementById(id)
+    return el instanceof HTMLImageElement && el.complete
+  })
+  const jsImgElRef = React.useRef<HTMLImageElement>(null)
 
   React.useEffect(() => {
     if (!jsImgElRef.current) return
@@ -39,6 +46,19 @@ function BlurrableImage({
 
   const jsImgEl = React.cloneElement(img, {
     ref: jsImgElRef,
+    id,
+
+    // React doesn't like the extra onload prop the server's going to send,
+    // but it also doesn't like an onload prop and recommends onLoad instead.
+    // but we want to use the onload prop because it's a bit more performant
+    // and as a result it's possible the user will never see the blurred image
+    // at all which would be great. So we suppress the warning here and we use
+    // this funny data-evt-prefixed attribute which our server renderer will
+    // remove for us (check entry.server).
+    suppressHydrationWarning: true,
+    'data-evt-onload': isServer
+      ? "this.classList.remove('opacity-0')"
+      : undefined,
     className: clsx(img.props.className, 'transition-opacity', {
       'opacity-0': !visible,
     }),
