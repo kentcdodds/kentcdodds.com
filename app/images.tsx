@@ -231,6 +231,22 @@ const images = createImages({
     id: 'kentcdodds.com/illustrations/kody/kody_snowboarding_gray',
     alt: 'Illustration of Kody the Koala on a snowboard in gray',
   },
+  kodyOnewheelingYellow: {
+    id: 'kentcdodds.com/illustrations/kody/kody_onewheeling_yellow',
+    alt: 'Illustration of Kody the Koala on a snowboard in yellow',
+  },
+  kodyOnewheelingRed: {
+    id: 'kentcdodds.com/illustrations/kody/kody_onewheeling_red',
+    alt: 'Illustration of Kody the Koala on a snowboard in red',
+  },
+  kodyOnewheelingBlue: {
+    id: 'kentcdodds.com/illustrations/kody/kody_onewheeling_blue',
+    alt: 'Illustration of Kody the Koala on a snowboard in blue',
+  },
+  kodyOnewheelingGray: {
+    id: 'kentcdodds.com/illustrations/kody/kody_onewheeling_gray',
+    alt: 'Illustration of Kody the Koala on a snowboard in gray',
+  },
   helmet: {
     id: 'kentcdodds.com/illustrations/helmet',
     alt: 'Illustration of a helmet',
@@ -316,6 +332,12 @@ const kodySkiingImages: Record<OptionalTeam, ImageBuilder> = {
   BLUE: images.kodySkiingBlue,
   UNKNOWN: images.kodySkiingGray,
 }
+const kodyOnewheelingImages: Record<OptionalTeam, ImageBuilder> = {
+  RED: images.kodyOnewheelingRed,
+  YELLOW: images.kodyOnewheelingYellow,
+  BLUE: images.kodyOnewheelingBlue,
+  UNKNOWN: images.kodyOnewheelingGray,
+}
 
 const kodyFlyingSnowboardingImages: Record<OptionalTeam, ImageBuilder> = {
   RED: images.kodyFlyingSnowboardingRed,
@@ -331,7 +353,14 @@ const kodyFlyingSkiingImages: Record<OptionalTeam, ImageBuilder> = {
 }
 
 export function getRandomSportyKody(team?: OptionalTeam | undefined) {
-  const set = Math.random() > 0.5 ? kodySnowboardingImages : kodySkiingImages
+  const activities = [
+    kodySnowboardingImages,
+    kodySkiingImages,
+    kodyOnewheelingImages,
+  ]
+  const set =
+    activities[Math.floor(Math.random() * activities.length)] ??
+    kodySnowboardingImages
   if (team) {
     return set[team]
   } else {
