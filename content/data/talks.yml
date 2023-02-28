@@ -7,23 +7,20 @@
   description: >-
     This talk is yet to be announced
 
-- title: JSDay Canarias 2023 Keynote
+- title: Making Felix Felicis
   deliveries:
     - event: '[JSDays Canarias](https://jsdaycanarias.com/)'
       date: 2023-05-25
   tags:
     - keynote
   description: >-
-    This talk is yet to be announced
-
-- title: Infobip Shift Africa
-  deliveries:
-    - event: 'Infobip Shift Africa 2023'
-      date: 2023-01-26
-  tags:
-    - keynote
-  description: >-
-    This talk is yet to be announced
+    Bring your wand and potions ingredients, because we're going to make liquid
+    luck! In my career, I've worked extremely hard, but I've also experienced a
+    lot of what some might call "luck." Some of what I've done is reproduceable,
+    and some of it is not. But I've learned a lot about how to increase my "luck
+    surface area" and then make the most of the opportunities that come my way.
+    In this talk, I'll share the ingredients I've used to make my own luck, and
+    I hope it can help you make yours. Don't forget to bring your spell book!
 
 - title: Full Stack Components
   deliveries:
