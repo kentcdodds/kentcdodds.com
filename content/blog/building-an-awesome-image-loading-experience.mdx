@@ -400,7 +400,7 @@ import * as React from 'react'
 import clsx from 'clsx'
 import {useSSRLayoutEffect} from '~/utils/misc'
 
-function BlurrableImage({
+export function BlurrableImage({
   img,
   blurDataUrl,
   ...rest
@@ -453,8 +453,6 @@ function BlurrableImage({
     </div>
   )
 }
-
-export {BlurrableImage}
 ```
 
 Alright, that's a bit to take in... Let me walk you through it...
@@ -496,6 +494,50 @@ fade in.
 
 And really that's it.
 
+... except now it's 2023 and I decided to improve one more thing...
+
+## Fading faster
+
+One problem with our implementation is that the image won't fade in until after
+the JavaScript has been loaded. This is annoying because if the image is already
+in the browser cache, we'll still see the blurred image for a fraction of a
+second before the JS is loaded, parsed, and executed. I wanted it to be faster!
+
+So I decided to add an `onload` prop 😱. Inline JavaScript in HTML is normally
+not something you want to do, but in this case it's perfect. So this is what I
+wanted to do:
+
+```tsx lines=5
+// ...
+const jsImgEl = React.cloneElement(img, {
+  // @ts-expect-error no idea 🤷‍♂️
+  ref: jsImgElRef,
+  onload: "this.classList.remove('opacity-0')",
+  className: clsx(img.props.className, 'transition-opacity', {
+    'opacity-0': !visible,
+  }),
+})
+// ...
+```
+
+This works great because it means that the inline JS will run as soon as the
+image finishes loading (the JS doesn't need to "load" because it's inline!).
+
+Unfortunately, doing that doesn't work because React throw a big stink about
+wanting you to use `onLoad` instead (with inline function handler instead of an
+inline string of JS).
+
+So I had to go with a bit of a more complicated route to make this work.
+
+This post is already quite long, so I'm not going to go into the details, but
+you can look at
+[the commit](https://github.com/kentcdodds/kentcdodds.com/commit/54d11cefd15ece5a3ff0f1ab7233dfe2422fead8)
+which fixed all this. Here's the difference:
+
+https://twitter.com/kentcdodds/status/1630362305409216512
+
+Nice win there!
+
 ## Conclusion
 
 So in review, to make an excellent image loading experience I'm doing a few
@@ -514,3 +556,8 @@ important to remember that user experience is not all about performance. It's
 also about the experience. And I feel like the trade-offs I've made here are
 solid for the user experience I want to provide you as you navigate this site. I
 hope you love it :)
+
+P.S. I'm eyeing [`unpic-img`](https://github.com/ascorbic/unpic-img) which
+promises to be a framework agnostic solution to this and includes nice
+placeholder support that has support for server rendering as well. May be
+something to look at!
