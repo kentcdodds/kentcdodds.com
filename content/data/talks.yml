@@ -22,6 +22,28 @@
     In this talk, I'll share the ingredients I've used to make my own luck, and
     I hope it can help you make yours. Don't forget to bring your spell book!
 
+- title: Caching for Cash 🤑
+  deliveries:
+    - event:
+        '[JS Fwdays Europe](https://fwdays.com/en/event/javascript-fwdays-2023)'
+      date: 2023-05-18
+  tags:
+    - caching
+    - remix
+    - web
+  description: >-
+    It's often said that the two hardest problems in programming are caching,
+    naming things, and off by one errors. Some degree of caching is required in
+    almost every application to drastically improve performance. Unfortunately,
+    not only is it easy to get wrong, there are also lots of different layers
+    and methods to implement caching with different trade-offs.
+
+
+    In this talk, Kent will explain the key principles of caching. We'll go
+    through several real world examples of issues where caching is a great
+    solution. We'll also explore different approaches and their associated
+    trade-offs. We'll cover a ton of ground here. This one's gonna be fun!
+
 - title: Full Stack Components
   deliveries:
     - event:
