@@ -17,7 +17,11 @@ import {Field, InputError} from '~/components/form-elements'
 import {Button} from '~/components/button'
 import {CheckCircledIcon} from '~/components/icons'
 import {getImgProps, images} from '~/images'
-import {TEAM_SKIING_MAP, TEAM_SNOWBOARD_MAP} from '~/utils/onboarding'
+import {
+  TEAM_ONEWHEELING_MAP,
+  TEAM_SKIING_MAP,
+  TEAM_SNOWBOARD_MAP,
+} from '~/utils/onboarding'
 import {HeaderSection} from '~/components/sections/header-section'
 import {handleFormSubmission} from '~/utils/actions.server'
 import {Spacer} from '~/components/spacer'
@@ -178,12 +182,15 @@ export async function loader({request}: DataFunctionArgs) {
     })
   }
 
+  const activities = ['skiing', 'snowboarding', 'onewheeling'] as const
+  const activity: 'skiing' | 'snowboarding' | 'onewheeling' =
+    activities[Math.floor(Math.random() * activities.length)] ?? 'skiing'
   return json(
     {
       email,
       // have to put this shuffle in the loader to ensure server render is the same as the client one.
       teamsInOrder: shuffle(teams),
-      teamMap: Math.random() > 0.5 ? 'skiing' : 'snowboarding',
+      teamMap: activity,
     } as const,
     {
       headers: await loginInfoSession.getHeaders(),
@@ -192,16 +199,18 @@ export async function loader({request}: DataFunctionArgs) {
 }
 
 interface TeamOptionProps {
-  teamMap: 'skiing' | 'snowboarding'
+  teamMap: 'skiing' | 'snowboarding' | 'onewheeling'
   team: Team
   error?: string | null
   selected: boolean
 }
 
 function TeamOption({teamMap, team: value, error, selected}: TeamOptionProps) {
-  const team = {skiing: TEAM_SKIING_MAP, snowboarding: TEAM_SNOWBOARD_MAP}[
-    teamMap
-  ][value]
+  const team = {
+    skiing: TEAM_SKIING_MAP,
+    snowboarding: TEAM_SNOWBOARD_MAP,
+    onewheeling: TEAM_ONEWHEELING_MAP,
+  }[teamMap][value]
 
   return (
     <div

@@ -43,7 +43,11 @@ import {
   PlusIcon,
   RefreshIcon,
 } from '~/components/icons'
-import {TEAM_SKIING_MAP, TEAM_SNOWBOARD_MAP} from '~/utils/onboarding'
+import {
+  TEAM_ONEWHEELING_MAP,
+  TEAM_SKIING_MAP,
+  TEAM_SNOWBOARD_MAP,
+} from '~/utils/onboarding'
 import {handleFormSubmission} from '~/utils/actions.server'
 import {Spacer} from '~/components/spacer'
 import {getSocialMetas} from '~/utils/seo'
@@ -86,11 +90,14 @@ export async function loader({request}: DataFunctionArgs) {
       domainUrl: getDomainUrl(request),
     }),
   )
+  const activities = ['skiing', 'snowboarding', 'onewheeling'] as const
+  const activity: 'skiing' | 'snowboarding' | 'onewheeling' =
+    activities[Math.floor(Math.random() * activities.length)] ?? 'skiing'
   return json(
     {
       qrLoginCode,
       sessionCount,
-      teamType: Math.random() > 0.5 ? 'skiing' : 'snowboarding',
+      teamType: activity,
     } as const,
     {
       headers: {
@@ -207,9 +214,11 @@ const SHOW_QR_DURATION = 15_000
 
 function YouScreen() {
   const data = useLoaderData<typeof loader>()
-  const teamMap = {skiing: TEAM_SKIING_MAP, snowboarding: TEAM_SNOWBOARD_MAP}[
-    data.teamType
-  ]
+  const teamMap = {
+    skiing: TEAM_SKIING_MAP,
+    snowboarding: TEAM_SNOWBOARD_MAP,
+    onewheeling: TEAM_ONEWHEELING_MAP,
+  }[data.teamType]
   const otherSessionsCount = data.sessionCount - 1
   const actionData = useActionData<ActionData>()
   const {requestInfo, userInfo, user} = useRootData()

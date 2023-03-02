@@ -51,6 +51,31 @@ export const TEAM_SNOWBOARD_MAP: Record<
   },
 }
 
+export const TEAM_ONEWHEELING_MAP: Record<
+  Team,
+  {
+    image: typeof images.kodyOnewheelingBlue
+    label: string
+    focusClassName: string
+  }
+> = {
+  BLUE: {
+    image: images.kodyOnewheelingBlue,
+    label: 'Blue Team',
+    focusClassName: 'ring-team-blue',
+  },
+  RED: {
+    image: images.kodyOnewheelingRed,
+    label: 'Red Team',
+    focusClassName: 'ring-team-red',
+  },
+  YELLOW: {
+    image: images.kodyOnewheelingYellow,
+    label: 'Yellow Team',
+    focusClassName: 'ring-team-yellow',
+  },
+}
+
 export const TEAM_SKIING_MAP: Record<
   Team,
   {
