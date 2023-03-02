@@ -215,6 +215,22 @@ const images = createImages({
     id: 'kentcdodds.com/illustrations/kody/kody_snowboarding_flying_blue',
     alt: 'Illustration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
   },
+  kodyFlyingOnewheelingGray: {
+    id: 'kentcdodds.com/illustrations/kody/kody_onewheeling_flying_gray',
+    alt: 'Illustration of Kody the Koala standing on a onewheel surrounded by green leaves, a battery, two skies, a snowboard, a solar panel, and a recycle logo.',
+  },
+  kodyFlyingOnewheelingYellow: {
+    id: 'kentcdodds.com/illustrations/kody/kody_onewheeling_flying_yellow',
+    alt: 'Illustration of Kody the Koala standing on a onewheel surrounded by green leaves, a battery, two skies, a snowboard, a solar panel, and a recycle logo.',
+  },
+  kodyFlyingOnewheelingRed: {
+    id: 'kentcdodds.com/illustrations/kody/kody_onewheeling_flying_red',
+    alt: 'Illustration of Kody the Koala standing on a onewheel surrounded by green leaves, a battery, two skies, a snowboard, a solar panel, and a recycle logo.',
+  },
+  kodyFlyingOnewheelingBlue: {
+    id: 'kentcdodds.com/illustrations/kody/kody_onewheeling_flying_blue',
+    alt: 'Illustration of Kody the Koala standing on a onewheel surrounded by green leaves, a battery, two skies, a snowboard, a solar panel, and a recycle logo.',
+  },
   kodySnowboardingYellow: {
     id: 'kentcdodds.com/illustrations/kody/kody_snowboarding_yellow',
     alt: 'Illustration of Kody the Koala on a snowboard in yellow',
@@ -351,6 +367,12 @@ const kodyFlyingSkiingImages: Record<OptionalTeam, ImageBuilder> = {
   BLUE: images.kodyFlyingSkiingBlue,
   UNKNOWN: images.kodyFlyingSkiingGray,
 }
+const kodyFlyingOnewheelingImages: Record<OptionalTeam, ImageBuilder> = {
+  RED: images.kodyFlyingOnewheelingRed,
+  YELLOW: images.kodyFlyingOnewheelingYellow,
+  BLUE: images.kodyFlyingOnewheelingBlue,
+  UNKNOWN: images.kodyFlyingOnewheelingGray,
+}
 
 export function getRandomSportyKody(team?: OptionalTeam | undefined) {
   const activities = [
@@ -372,8 +394,14 @@ export function getRandomSportyKody(team?: OptionalTeam | undefined) {
 }
 
 export function getRandomFlyingKody(team?: OptionalTeam | undefined) {
+  const activities = [
+    kodyFlyingSnowboardingImages,
+    kodyFlyingSkiingImages,
+    kodyFlyingOnewheelingImages,
+  ]
   const set =
-    Math.random() > 0.5 ? kodyFlyingSnowboardingImages : kodyFlyingSkiingImages
+    activities[Math.floor(Math.random() * activities.length)] ??
+    kodySnowboardingImages
   if (team) {
     return set[team]
   } else {
