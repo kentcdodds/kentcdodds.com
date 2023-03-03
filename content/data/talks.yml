@@ -1,16 +1,9 @@
-- title: Front Conf 2023 Keynote
-  deliveries:
-    - event: '[Front Conf](https://frontconference.com/)'
-      date: 2023-08-31
-  tags:
-    - keynote
-  description: >-
-    This talk is yet to be announced
-
 - title: Making Felix Felicis
   deliveries:
     - event: '[JSDays Canarias](https://jsdaycanarias.com/)'
       date: 2023-05-27
+    - event: '[Front Conf](https://frontconference.com/)'
+      date: 2023-08-31
   tags:
     - keynote
   description: >-
