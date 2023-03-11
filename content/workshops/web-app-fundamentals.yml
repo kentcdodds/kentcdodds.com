@@ -64,9 +64,9 @@ keyTakeaways:
   - title: Completely eliminate pending states
     description:
       Look. It's important to show you users that something's going on, and some
-      of these things take time. But what if we could cheat a little bit? Yup,
-      I'm talking about optimistic UI. But you've never seen optimistic UI done
-      this easily and reliably, I promise you.
+      of these things take time. No matter how hard you try to make your app
+      fast, there's always the network that you have no control over. But we're
+      going to see how easy it is to give the user an awesome experience anyway.
   - title: Handle errors
     description:
       Unfortunately, we can't get our data immediately and getting our data
@@ -78,7 +78,6 @@ topics:
   - Data loading and mutations
   - Styling
   - Error Handling
-  - Optimistic UI
   - Accessibility
   - SEO optimization
 prerequisite: >-
