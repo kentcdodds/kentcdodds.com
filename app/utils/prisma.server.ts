@@ -175,8 +175,8 @@ async function getUserFromSessionId(
   }
 
   // if there's less than ~six months left, extend the session
-  const twoWeeks = 1000 * 60 * 60 * 24 * 30 * 6
-  if (Date.now() + twoWeeks > session.expirationDate.getTime()) {
+  const sessionExtensionTime = 1000 * 60 * 60 * 24 * 30 * 6
+  if (Date.now() + sessionExtensionTime > session.expirationDate.getTime()) {
     await ensurePrimary()
     const newExpirationDate = new Date(Date.now() + sessionExpirationTime)
     await prisma.session.update({
