@@ -1,0 +1,297 @@
+---
+title: RSC with Dan Abramov and Joe Savona Live Stream
+date: 2023-03-14
+description:
+  I had a live streamed conversation with Joe Savona and Dan Abramov. Here's a
+  summary of our discussion.
+categories:
+  - react
+meta:
+  keywords:
+    - react
+    - server components
+    - remix
+bannerCloudinaryId: kentcdodds.com/content/blog/rsc-with-dan-abramov-and-joe-savona-live-stream/thumbnail
+bannerAlt:
+  The words "React Server Components" with photos of Dan Abramov, Joe Savona,
+  and Kent C. Dodds
+bannerCredit:
+  Thumbnail by [Lucas
+  Soren](https://twitter.com/yourboysoren/status/1634707317521260544)
+---
+
+Last week, I had a live streamed conversation with Joe Savona and Dan Abramov.
+I've had many questions and concerns about React Server Components and Dan and
+Joe were kind enough to give me some time on a live stream to ask about them.
+
+https://www.youtube.com/watch?v=h7tur48JSaw&list=PLV5CVI1eNcJi8sor_aQ2AzOeQ3On3suOr
+
+I used [summarize.tech](https://summarize.tech) to generate this summary of our
+live stream. I suggest watching the whole thing if you'd really like to dive
+deeper!
+
+---
+
+### [00:00:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=0) - [01:00:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=3600)
+
+React Server Components are a solution to having all components on the server
+and sending their results to the client, allowing any number of components to be
+used on a page regardless of its size. They have automatic bundle splitting,
+where unused components are not included in the page, making it an optimal
+architecture. However, it is essential to understand that this is not the
+primary problem that server components solve, and the pitch should depend on the
+audience's needs. React Server Components expand the React model, allowing each
+component to fetch the data it needs, reducing the amount of client-side
+components. The architecture presents benefits, such as co-locating data
+dependencies and writing code in a request response model, and can use both the
+server and client. To avoid waterfall issues, the speakers suggest putting SSR
+on the edge and server components close to the data layer. The speakers also
+discuss the trade-offs of RSC, including the n plus one problem, which can be
+solved with other solutions like Remix. They also discuss the runtime
+characteristics of React Server Components, such as deduping and overloading
+standards, and how frameworks like Next.js can improve potential duplication of
+data in server-side rendering. The consensus is that Next.js and Remix both
+provide similar ways of accessing request and response objects. Finally, the
+speakers discuss the use of streaming as the default behavior and the importance
+of coordinating fetches to decide what to do with multiple loadings.
+
+- **[00:00:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=0)** In this
+  section, Kent C Dodds introduces the topic of React server components and the
+  guests on the stream, Joseph Savona and Dan Abramov. Kent has been following
+  the progress with suspense and server components and has been using remix for
+  the last two and a half years. He struggled to understand the benefits of
+  server components initially. However, he feels that he now has a good idea of
+  how they solve the problems that other solutions like CMS cannot, and the
+  guest speakers will correct his misunderstandings. The purpose of the stream
+  is to discuss the use cases and benefits of React server components.
+- **[00:05:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=300)** In this
+  section, the team discusses the use case of React server components, primarily
+  formulating the idea that the solution to the problem lies in having all the
+  components on the server and sending their result to the client, so that any
+  number of components can be used on a page, regardless of its size.
+  Additionally, server components have automatic bundle splitting, where if a
+  page does not use some of the components that are sent to the client, they are
+  not included, making it a beneficial architecture to optimize. While the
+  architecture presents many optimizations and benefits, the team clarifies that
+  it is vital to understand that this is not the main problem that server
+  components are solving, and the pitch should be dependent on the audience's
+  needs, be it for single-page apps or multi-page apps.
+- **[00:10:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=600)** In this
+  section, the speakers discuss the differences between React Server Components
+  and other frameworks, such as Remix and Astro, and highlight how React Server
+  Components expands the React model. They explain that with server components,
+  each component can fetch the data it needs, allowing for co-location of data
+  dependencies and reducing the amount of client-side components needed.
+  Additionally, when navigating with React Server Components, state is retained,
+  making for a more cohesive experience. They also discuss the potential for
+  reusable components, like a tweet component that can pull data from the
+  Twitter API, to be shared via npm.
+- **[00:15:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=900)** In this
+  section, the speakers discuss the benefits and use cases of server components,
+  such as writing code in a request response model and having the ability to
+  fully use the server and the client. They also note that while remix offers
+  some of these features, server components provide more flexibility in
+  composing server code. However, the speakers acknowledge that server
+  components can cause waterfall issues and may require manual preloading to
+  avoid them. They suggest putting SSR on the edge and server components closer
+  to the data layer to minimize latency.
+- **[00:20:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=1200)** In this
+  section, the speakers discuss the challenges of server rendering with server
+  components and Remix. They mention the importance of doing everything in a
+  single query and how pushing data to the edge can help mitigate some of the
+  issues. The speakers also talk about the difficulties of writing JavaScript to
+  avoid triggering waterfalls and how Remix and server components each have
+  their own unique approaches to handling the problem. They also clarify that
+  route segments can be fetched in parallel with Remix, much like server
+  components. Additionally, they explain that server components may see
+  performance problems if they don't do parallel data load for route segments
+  but argue that waterfalls may not be the root problem in these cases.
+- **[00:25:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=1500)** In this
+  section, the speakers discuss the potential problem of the n plus one problem
+  when rendering a list with multiple child items, which can cause unnecessary
+  data loading and make the system slow. They suggest two common solutions to
+  this problem - using the data loader pattern to batch up queries or cashing
+  the data - and emphasize the importance of observability to detect performance
+  problems. Additionally, they clarify that waterfall problems may occur even in
+  parallel execution, since it depends on the system's capacity to handle those
+  parallel queries.
+- **[00:30:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=1800)** In this
+  section, the speakers discuss the benefits of co-locating data dependencies
+  with components and how server components can address this. They explain that
+  this approach has been attempted for years, but it wasn't until GraphQL and
+  Relay that it was executed successfully. However, GraphQL is not the right fit
+  for every application, and server components take the best ideas from GraphQL
+  and Relay and allow developers to co-locate data dependencies with components.
+  This creates a scalable structure for writing applications while effectively
+  removing the co-dependency on the server. The speakers go further to explain
+  how RSC presents several trade-offs, including the N+1 problem, which can be
+  avoided with other solutions like Remix.
+- **[00:35:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=2100)** In this
+  section, the discussion is on the use of server components and whether they
+  can solve the problem of duplicated fetches when rendering components that
+  make requests. The speakers argue that while server components can deduplicate
+  fetch requests when rendering the same component multiple times, it is not the
+  way things should be done in a remix app. In a remix or next app, the fetch
+  request should be made at the route layer or in a layout, so it only happens
+  once and is passed as props. They discuss a scenario where it is necessary to
+  make the same fetch request multiple times for each component instance. The
+  speakers differ in their opinions, with one arguing that server components do
+  not completely solve this problem, while the other argues that this kind of
+  problem should not exist in a remix app.
+- **[00:40:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=2400)** In this
+  section, the speakers discuss the runtime characteristics of React Server
+  Components and clarify that it is not slower than the client counterpart,
+  especially since the deduping problem is already solved. They also touch on
+  the potential issue of overloading standards and not using standards in some
+  situations, such as overloading fetch to dedupe automatically. The speakers
+  point out that React does not patch fetch, and the plan is to provide its own
+  version that works with identification and hydration. However, they suggest
+  that frameworks may need to patch fetch if necessary. Additionally, the
+  section discusses the mechanism of deduping to ensure that it only happens
+  within a specific user's request and not across multiple users. React Server
+  Components provide an async context that allows for this per-request deduping.
+- **[00:45:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=2700)** In this
+  section, the speakers discuss how frameworks like Next.js can improve upon the
+  potential duplication of data in server-side rendering. Next.js, for example,
+  offers options like cash keys to specify whether data is static and can be
+  shared between users, or if it should be built during the build process.
+  Server components also have the ability to create payloads that let users
+  navigate without losing state, and these payloads can be cached if a fetch
+  option is specified. Additionally, the speakers touch on accessing
+  request-specific data like cookies and cache headers from a server component.
+  While this is framework-specific, Next.js offers an import function for
+  accessing cookies directly. The idea of importing data like this is still
+  considered non-standard, as many developers prefer working with the request
+  object directly.
+- **[00:50:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=3000)** In this
+  section, the focus is on accessing request and response objects. The consensus
+  is that Next.js and Remix both provide similar ways of doing so by skipping
+  unnecessary steps through utility functions. However, in Remix, there’s an
+  ‘expert current get request function’ that makes it easy to access the
+  underlying request object. Regarding response objects, it largely depends on
+  how they are set up in the framework. In Remix, since the loaders are called
+  before the stream starts rendering, fetch headers can be set to control
+  caching behaviours accordingly.
+- **[00:55:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=3300)** In this
+  section, the participants discuss the use of streaming as the default behavior
+  in React server components. They mention that streaming implies that every
+  component is like an implicitly deferred loader, but if someone is using defer
+  in remix, that ability is lost. They also discuss how in a server components
+  world, the focus is on streaming and getting stuff out of the request, and the
+  core question is how to get stuff into the response from a server component.
+  Nevertheless, there is some controversy around this issue since different
+  fetches can have different headers, so a system that coordinates them and
+  decides what to do with several loadings is necessary.
+
+### [01:00:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=3600) - [01:40:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=6000)
+
+In this YouTube video, Dan Abramov, Joe Savona, and Kent C. Dodds discuss the
+workings and benefits of React Server Components (RSC). They explore the idea of
+a pluggable and customizable framework for caching and discuss the benefits of
+breaking components down into smaller pieces. The speakers also talk about the
+separation of server and client code and how it benefits developers. Another
+topic they cover is the limitations of interacting with databases in server
+files and how mutations can solve some performance problems. The speakers
+emphasize the mental model shift required for working with RSC and discuss the
+role of client components. They also highlight the benefits of co-location and
+granular trade-offs on the component level. They recommend checking out the
+documentation and the implementation of RSC in Next.js 13 for those interested
+in trying it out. The speakers also discuss the potential benefits of RSC for
+users on either the technical or client-side and express excitement about the
+upcoming documentation release.
+
+- **[01:00:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=3600)** In this
+  section, the speakers discuss the idea of caching and how it relates to React
+  Server Components. They explore the possibility of a pluggable and
+  customizable framework that could automatically combine fetch instrument data
+  and decide what the right thing is for caching. There is a focus on the
+  importance of caching and how server components architecture can cache output
+  itself, rather than just reducing the cache fund for the client. The speakers
+  also touch on the topic of breaking components down into smaller pieces, which
+  is becoming more commonplace with hooks, suspense boundaries, error
+  boundaries, and server components. There is a discussion about the trade-offs
+  of breaking components down into smaller pieces and how it relates to the
+  learning aspect and ergonomics of React.
+- **[01:05:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=3900)** In this
+  section, the speakers discuss the trade-offs of using separate files for
+  server and client code in React Server Components (RSC). While some may prefer
+  the ability to interleave code, using separate files helps prevent mistakes
+  such as exposing secrets meant for the server to the client. One speaker notes
+  that while the separation of files may be seen as a limitation of RSC, it's
+  not a fundamental limitation, and RSC is not prescriptive about how to
+  structure your app. Overall, the decision to separate files for server and
+  client code is seen as a good trade-off for the benefits it provides,
+  including better developer experience and helping prevent mistakes.
+- **[01:10:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=4200)** In this
+  section, the speakers discuss the limitations of interacting with databases in
+  server files and the clunkiness of adding event handlers for interactions.
+  They mention Remix ahead in this regard with its nice Progressive Enhancement
+  story with forms and handlers, and how the team is working on mutations to
+  allow one to pass functions from the server to the client in a product
+  integration, allowing behavior change with a network boundary automatically
+  integrated without having to add it for every interaction. The speakers go on
+  to say that restructuring the apps in the future with the use of server
+  components will bring about different ways of creating new apps.
+- **[01:15:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=4500)** In this
+  section, the speakers discuss how mutations are essential to building modern
+  applications and how the lack of them in Remix caused issues for its paid
+  website. They also touch upon how the structure of server components is still
+  unclear, but it's crucial to solidify patterns so that it becomes the norm for
+  developers. Additionally, the metaphor of bone and muscle is discussed, which
+  helps in understanding where server components fit and how they serve as an
+  optimization, avoiding the need to run a lot of code on the client to connect
+  with the server.
+- **[01:20:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=4800)** In this
+  section, the speakers discuss the mental model shift required for working with
+  React Server Components. The concept of treating Server Components as a
+  skeleton to be fleshed out with client-side interactivity is explored, where
+  the interactive parts have holes that the parent component fills in. This
+  approach is compared to the traditional method of thinking about React apps as
+  an entire tree. They go on to explain the practical application of this
+  approach, including how it can solve some performance problems and make props
+  plumbing easier.
+- **[01:25:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=5100)** In this
+  section, the speakers discussed the goal of an app using server components and
+  the role of the client components. The aim is to have the server components go
+  as deep into the tree as possible, while the client component accepts slots
+  that can further the depth of the server components when there's
+  interactivity. However, mutations need to be fully established before
+  exploring this direction. Client components are still vital, and some client
+  components can be better than server components, such as in situations where
+  server components generate bloated HTML for lengthy pages, making the overhead
+  not worth it.
+- **[01:30:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=5400)** In this
+  section, the speakers discuss the benefits of server components, with
+  co-location being a major one. The ability to write a single technology,
+  language, framework and set of idioms across client and server makes it easier
+  to bring composability to the server. The speakers highlight an example of a
+  code highlighter component that could be a server component rendering a client
+  component. They also highlight how this approach allows for granular
+  trade-offs on the component level, with no need to change the API of
+  components or load parsers on the client.
+- **[01:35:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=5700)** In this
+  section, Dan Abramov and Joe Savona discuss how the optimizations of React
+  Server Components naturally fall out of the componentization and npm
+  integration of the code, which is exciting for developers. They recommend
+  checking out the new docs site and the original presentation for a conceptual
+  model of server components. For those who want to dive into the code, they
+  suggest looking at Next.js 13 app router since it has the most comprehensive
+  implementation of server components. While they are currently working with
+  bundlers such as The Parcel Bundler and Webpack Plugin, they hope to see React
+  Server Components become a first-class feature in other libraries as well.
+- **[01:40:00](https://www.youtube.com/watch?v=h7tur48JSaw&t=6000)** In this
+  section, the speakers discuss the separation between React Server Components
+  and how it can benefit different users on either the technical or client-side.
+  They direct users to check out the RFC that Joe wrote, which details how the
+  components work and the benefits that can be obtained from them. Additionally,
+  they mentioned that the plan is to upstream the React components into the
+  React documentation while considering the balance between explaining these
+  components with or without frameworks. The speakers conclude by thanking the
+  host and expressing excitement for the upcoming documentation release and the
+  opportunity to see the server component stocks published.
+
+---
+
+I hope the discussion was helpful to you. The goal of the conversation was
+purely to answer my own questions about server components. I hope it was
+incidentally helpful to you as well.
