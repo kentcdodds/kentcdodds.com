@@ -56,6 +56,15 @@
     solution. We'll also explore different approaches and their associated
     trade-offs. We'll cover a ton of ground here. This one's gonna be fun!
 
+- title: Remix Conf Keynote
+  deliveries:
+    - event: '[Remix Conf 2023](https://remix.run/conf/2023)'
+      date: 2023-05-11
+  tags:
+    - keynote
+  description: >-
+    This talk will be announced soon!
+
 - title: Full Stack Components
   deliveries:
     - event:
