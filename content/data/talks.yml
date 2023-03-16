@@ -1,3 +1,21 @@
+- title: React Summit US Keynote
+  deliveries:
+    - event: '[React Summit US 2023](https://reactsummit.us/)'
+      date: 2023-11-13
+  tags:
+    - keynote
+  description: >-
+    This talk will be announced soon!
+
+- title: DevWorld Keynote
+  deliveries:
+    - event: '[Dev World 2023](https://devworldconference.com/)'
+      date: 2023-09-28
+  tags:
+    - keynote
+  description: >-
+    This talk will be announced soon!
+
 - title: Making Felix Felicis
   deliveries:
     - event: '[JSDays Canarias](https://jsdaycanarias.com/)'
@@ -6,6 +24,7 @@
       date: 2023-08-31
   tags:
     - keynote
+    - career
   description: >-
     Bring your wand and potions ingredients, because we're going to make liquid
     luck! In my career, I've worked extremely hard, but I've also experienced a
@@ -81,6 +100,8 @@
       date: 2022-11-17
     - event: '[QCon London](https://qconlondon.com/)'
       date: 2023-03-27
+    - event: '[React Miami 2023](https://reactmiami.com/)'
+      date: 2023-04-20
   tags:
     - keynote
     - remix
