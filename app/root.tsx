@@ -8,7 +8,6 @@ import type {
 } from '@remix-run/node'
 import {json} from '@remix-run/node'
 import {
-  Link,
   Links,
   LiveReload,
   Meta,
@@ -63,10 +62,6 @@ import {Grimmacing, MissingSomething} from './components/kifs'
 import {ArrowLink} from './components/arrow-button'
 import {getServerTimeHeader} from './utils/timing.server'
 import {useNonce} from './utils/nonce-provider'
-import {
-  getPromoCookieValue,
-  Promotification,
-} from './routes/resources/promotification'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',
@@ -140,10 +135,6 @@ export const links: LinksFunction = () => {
 
 export type LoaderData = SerializeFrom<typeof loader>
 
-const WORKSHOP_PROMO_NAME = 'web-apps-march-2023'
-const WORKSHOP_DISCOUNT_PROMO_NAME = 'web-apps-march-2023-discount'
-const DISCOUNT_PROMO_END_DATE = 1678384800000 // new Date('2023-03-09 12:00:00 GMT-0600')
-const WORKSHOP_PROMO_END_DATE = 1679542200000 // new Date('2023-03-22 21:30:00 GMT-0600')
 async function loader({request}: DataFunctionArgs) {
   const timings = {}
   const session = await getSession(request)
@@ -163,15 +154,6 @@ async function loader({request}: DataFunctionArgs) {
     userInfo: user ? await getUserInfo(user, {request, timings}) : null,
     ENV: getEnv(),
     randomFooterImageKey,
-    afterDiscountDate: new Date().getTime() > DISCOUNT_PROMO_END_DATE,
-    webAppWorkshopPromo: getPromoCookieValue({
-      promoName: WORKSHOP_PROMO_NAME,
-      request,
-    }),
-    webAppWorkshopDiscountPromo: getPromoCookieValue({
-      promoName: WORKSHOP_DISCOUNT_PROMO_NAME,
-      request,
-    }),
     requestInfo: {
       origin: getDomainUrl(request),
       path: new URL(request.url).pathname,
@@ -374,47 +356,6 @@ function App() {
         />
       </head>
       <body className="bg-white transition duration-500 dark:bg-gray-900">
-        {data.afterDiscountDate ? (
-          <Promotification
-            promoName={WORKSHOP_PROMO_NAME}
-            promoEndTime={new Date(WORKSHOP_PROMO_END_DATE)}
-            cookieValue={data.webAppWorkshopPromo}
-          >
-            <div>
-              {`Hey! I'm running a remote workshop on March 23rd.`}
-              <br />
-              {`I'd love for you to join!`}
-              <br />
-              <Link
-                to="/workshops/web-app-fundamentals"
-                className="text-team-current underline"
-              >
-                {`Learn more 🌌`}
-              </Link>
-            </div>
-          </Promotification>
-        ) : (
-          <Promotification
-            promoName={WORKSHOP_DISCOUNT_PROMO_NAME}
-            promoEndTime={new Date(DISCOUNT_PROMO_END_DATE)}
-            cookieValue={data.webAppWorkshopDiscountPromo}
-          >
-            <div>
-              {`Hey! I'm running a remote workshop on March 23rd.`}
-              <br />
-              {`I'd love for you to join!`}
-              <br />
-              {`Early bird discount ends on March 9th...`}
-              <br />
-              <Link
-                to="/workshops/web-app-fundamentals"
-                className="text-team-current underline"
-              >
-                {`Learn more 🌌`}
-              </Link>
-            </div>
-          </Promotification>
-        )}
         <PageLoadingMessage />
         <NotificationMessage queryStringKey="message" delay={0.3} />
         <Navbar />
