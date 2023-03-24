@@ -327,7 +327,10 @@ function mdxPageMeta({
 }) {
   const {requestInfo} = parentsData.root
   if (data?.page) {
-    const {keywords = [], ...extraMeta} = data.page.frontmatter.meta ?? {}
+    // NOTE: keyword metadata is not used because it was used and abused by
+    // spammers. We use them for sorting on our own site, but we don't list
+    // it in the meta tags because it's possible to be penalized for doing so.
+    const {keywords, ...extraMeta} = data.page.frontmatter.meta ?? {}
     let title = data.page.frontmatter.title
     const isDraft = data.page.frontmatter.draft
     const isUnlisted = data.page.frontmatter.unlisted
@@ -337,7 +340,6 @@ function mdxPageMeta({
       ...getSocialMetas({
         title,
         description: data.page.frontmatter.description,
-        keywords: keywords.join(', '),
         url: getUrl(requestInfo),
         image: getSocialImageWithPreTitle({
           url: getDisplayUrl(requestInfo),

@@ -1,0 +1,86 @@
+title: Web App Fundamentals (Part 1)
+description:
+  Learn the fundamental tools for building web applications of any level of
+  complexity.
+meta:
+  keywords:
+    - web
+    - react
+    - remix
+    - ssr
+    - styling
+    - nested routing
+    - data loading
+    - data mutations
+    - seo optimization
+categories:
+  - web
+  - react
+  - remix
+events:
+  - title: Web App Fundamentals in London
+    url: https://london.cityjsconf.org/buytickets
+    quantity: 40
+    date: March 30th, 2023
+convertKitTag: '2568112'
+problemStatements:
+  part1: The web is a powerful tool for building applications
+  part2: And too many web developers don't know how to use it
+  part3: >-
+    Since the beginning, the web platform has had primitives for building
+    applications that can reach the increasing number of people on the planet
+    with an internet connection. Tools exist to help you do this, but a lack of
+    understanding in the web primitives they're built upon has led many web
+    developers to build applications that are **slow**, **inaccessible**, and
+    **difficult to maintain**.
+  part4: >-
+    Understanding the **foundational primitives** of the web will make you a
+    better web developer, _regardless of the tools you use_. In this workshop
+    we'll be working in a _real-world_ application that uses a framework, but do
+    so through the lense of the web platform primitives to make sure we're
+    taking **full advantage of the web**. And then we'll come back in [Web App
+    Fundamentals (Part 2)](web-app-fundamentals-part-2) to take it even further.
+keyTakeaways:
+  - title: Load CSS and use modern authoring techniques
+    description:
+      Learn how to optimize your web application's styling by loading CSS
+      efficiently and using modern authoring techniques that can **save you and
+      your team time** and effort in the long run.
+  - title: Take full advantage of the power of the URL
+    description:
+      The URL is a powerful tool for building web applications. It's one of the
+      super-powers of the web that other platforms don't have. In this workshop,
+      you'll learn how to use it effectively to improve both the user experience
+      as well as the developer experience and the **usability** of your web
+      application.
+  - title: Load your data efficiently
+    description:
+      One of the keys to building a high-quality web application is loading your
+      data efficiently. In this workshop, you'll learn how to **optimize your
+      data loading**, including using platform standard caching techniques.
+  - title: Use simple forms to build complex interactions
+    description:
+      Forms are a key component of most web applications, and in this workshop,
+      you'll learn the **fundamental technology** of the web for enabling your
+      users to perform data mutations. Just because your application allows
+      complex user interactions doesn't mean your code for managing that has to
+      be complex. And if you embrace the web platform, it doesn't have to be.
+  - title: Optimize your application for search engines and social media
+    description:
+      Websites live and die by their findability and shareability. It's more
+      important than ever to optimize your web application for search engines
+      and social media. In this workshop, you'll learn about Search Engine
+      Optimization techniques and how to **make your application more
+      shareable** on social media.
+topics:
+  - Styling
+  - Nested routing
+  - Data loading
+  - Data mutations
+  - SEO optimization
+prerequisite: >-
+  You should have experience with [these JavaScript
+  features](/blog/javascript-to-know-for-react) and attend my [React Hooks
+  Workshop](/workshops/react-hooks) or have the equivalent experience. This
+  workshop will use TypeScript, but should be completable if you do not have
+  experience with TypeScript.

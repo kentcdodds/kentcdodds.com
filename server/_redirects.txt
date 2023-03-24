@@ -117,6 +117,7 @@ POST,DELETE,PATCH,PUT  /                                                https://
 /workshops/hooks                                                        /workshops/react-hooks
 /workshops/build-react-apps                                             /workshops/build-react-apps-1
 /workshops/build-react-apps-advanced                                    /workshops/build-react-apps-3
+/workshops/web-app-fundamentals                                         /workshops/web-app-fundamentals-part-1
 /blog/make-test-utils-for-your-app                                      /blog/test-utils
 /blog/what-code-comments-can-teach-us-about-scaling-a-codebase          /blog/colocation
 /blog/avoid-nesting-in-tests                                            /blog/avoid-nesting-when-youre-testing

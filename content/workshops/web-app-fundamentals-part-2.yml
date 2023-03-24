@@ -1,0 +1,77 @@
+title: Web App Fundamentals (Part 2)
+description:
+  Learn the fundamental tools for building web applications of any level of
+  complexity.
+meta:
+  keywords:
+    - web
+    - react
+    - remix
+    - ssr
+    - scripting
+    - pending ui
+    - prefetching
+    - error handling
+    - form validation
+    - accessibility
+categories:
+  - web
+  - react
+  - remix
+convertKitTag: '2568112'
+problemStatements:
+  part1:
+    Over half the world's population (~5 billion people) are on the internet
+  part2: Using the web effectively is how you reach them
+  part3: >-
+    Building web applications includes a lot of interesting and challenging
+    problems. Libraries and frameworks are necessary in helping you develop the
+    kinds of experiences users of web applications expect, but they can also
+    **hide the core primitives** of the web platform from you which leads you to
+    make **poor decisions**.
+  part4: >-
+    In this workshop, we'll continue our work on [Web App Fundamentals (Part
+    1)](web-app-fundamentals-part-1), and work in a _real-world application_
+    that is taking advantage of a framework. But we'll do so through the lense
+    of the web platform primitives that each feature is built upon to ensure
+    we're taking **full advantage of the platform**.
+keyTakeaways:
+  - title: Use JavaScript to enhance the experience, not enable it
+    description:
+      JavaScript can add a lot of value to your web application, but it's
+      important to use it wisely. In this workshop, you'll learn how to **use
+      JavaScript to enhance** the user experience, rather than relying on it to
+      enable core functionality. This will make your application more accessible
+      and maintainable in the long run. We're going to make JavaScript pay for
+      it's weight.
+  - title: Gracefully handling errors leads to happier users
+    description:
+      No web application is perfect, and errors are inevitable. However, how you
+      handle errors can make a big difference in the user experience. In this
+      workshop, you'll learn how to gracefully handle errors and provide helpful
+      feedback to users (and search engines), which can **improve their
+      satisfaction** with your application.
+  - title: Take advantage of the browser's built-in form validation
+    description:
+      No matter what we do, we need to validate user input on the server. So
+      we'll learn how to do that, but we'll also learn how to use the built-in
+      form validations modern browsers provide that can help you **create more
+      user-friendly forms**.
+  - title: Care about people, and don't get sued
+    description: >-
+      Accessibility is an important consideration for any web application. In
+      this workshop, you'll learn about the basics of web accessibility and how
+      to ensure that your application is accessible to as many people as
+      possible. It's the **decent human** thing to do, but it also helps you
+      **avoid getting sued**.
+topics:
+  - Scripting (Pending UI and prefetching)
+  - Error Handling
+  - Form Validation
+  - Accessibility
+prerequisite: >-
+  You should have experience with [these JavaScript
+  features](/blog/javascript-to-know-for-react) and attend my [React Hooks
+  Workshop](/workshops/react-hooks) or have the equivalent experience. This
+  workshop will use TypeScript, but should be completable if you do not have
+  experience with TypeScript.
