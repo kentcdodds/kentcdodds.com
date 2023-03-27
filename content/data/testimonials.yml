@@ -563,3 +563,17 @@
     questions in Discord and office hours, I learned so much that at the end I
     wrote [my own book](https://muratkerem.gitbook.io/cctdd/) on React & test
     driven design!
+
+- author: Gwen Shapira
+  priority: 4
+  subjects:
+    - Workshop
+    - 'workshop: web-app-fundamentals-part-1'
+    - 'workshop: web-app-fundamentals-part-2'
+  cloudinaryId: kentcdodds.com/testimonials/gwen-shapira
+  company: Co-founder @ Nile
+  link: https://bento.me/gwenshap
+  testimonial: >-
+    It was 🤯. A lot of fun, and I learned so much in one day. My understanding
+    of how the web actually works is now more and I got excited about Remix too.
+    Pumped to put it all into practice. 13/10.

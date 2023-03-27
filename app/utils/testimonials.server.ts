@@ -17,6 +17,7 @@ const allCategories = [
   'youtube',
   'talk',
   'blog',
+  'remix',
 ] as const
 export type TestimonialCategory = (typeof allCategories)[number]
 
@@ -43,6 +44,8 @@ const allSubjects = [
   'workshop: build-an-epic-react-app',
   'workshop: testing-fundamentals',
   'workshop: testing-node-apps',
+  'workshop: web-app-fundamentals-part-1',
+  'workshop: web-app-fundamentals-part-2',
   'Other',
 ] as const
 export type TestimonialSubject = (typeof allSubjects)[number]
@@ -87,6 +90,8 @@ const categoriesBySubject: Record<
   'workshop: build-an-epic-react-app': ['workshop', 'react', 'testing'],
   'workshop: testing-fundamentals': ['workshop', 'react', 'testing'],
   'workshop: testing-node-apps': ['workshop', 'react', 'testing'],
+  'workshop: web-app-fundamentals-part-1': ['workshop', 'remix'],
+  'workshop: web-app-fundamentals-part-2': ['workshop', 'remix'],
   Other: [],
 }
 
