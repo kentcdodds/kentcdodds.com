@@ -8,12 +8,12 @@ meta:
     - react
     - remix
     - ssr
-    - scripting
     - pending ui
     - prefetching
     - error handling
     - form validation
     - accessibility
+    - seo optimization
 categories:
   - web
   - react
@@ -36,14 +36,13 @@ problemStatements:
     of the web platform primitives that each feature is built upon to ensure
     we're taking **full advantage of the platform**.
 keyTakeaways:
-  - title: Use JavaScript to enhance the experience, not enable it
+  - title: Optimize your application for search engines and social media
     description:
-      JavaScript can add a lot of value to your web application, but it's
-      important to use it wisely. In this workshop, you'll learn how to **use
-      JavaScript to enhance** the user experience, rather than relying on it to
-      enable core functionality. This will make your application more accessible
-      and maintainable in the long run. We're going to make JavaScript pay for
-      it's weight.
+      Websites live and die by their findability and shareability. It's more
+      important than ever to optimize your web application for search engines
+      and social media. In this workshop, you'll learn about Search Engine
+      Optimization techniques and how to **make your application more
+      shareable** on social media.
   - title: Gracefully handling errors leads to happier users
     description:
       No web application is perfect, and errors are inevitable. However, how you
@@ -65,10 +64,10 @@ keyTakeaways:
       possible. It's the **decent human** thing to do, but it also helps you
       **avoid getting sued**.
 topics:
-  - Scripting (Pending UI and prefetching)
   - Error Handling
   - Form Validation
   - Accessibility
+  - Search Engine Optimization
 prerequisite: >-
   You should have experience with [these JavaScript
   features](/blog/javascript-to-know-for-react) and attend my [React Hooks
