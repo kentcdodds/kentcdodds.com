@@ -25,6 +25,8 @@ type TiToEvent = {
 type TiToRelease = {
   quantity: number
   tickets_count: number
+  end_at?: string
+  expired: boolean
 }
 type TiToEventDetails = {
   location: string
@@ -49,6 +51,8 @@ type WorkshopEvent = Pick<TiToEvent, 'description' | 'title' | 'url'> &
     date: TiToEventDetails['date_or_range']
     startTime: TiToActivity['start_at']
     endTime: TiToActivity['end_at']
+    expired: boolean
+    salesEndTime: string | undefined
   }
 
 const titoSecret = process.env.TITO_API_SECRET
@@ -158,6 +162,12 @@ async function getScheduledEventsForAccount(account: string) {
           date: event.date_or_range,
           startTime: activity?.start_at,
           endTime: activity?.end_at,
+          expired: event.releases.every(release => release.expired),
+          salesEndTime: event.releases
+            .map(release => release.end_at)
+            .filter(Boolean)
+            .sort()
+            .pop(),
         }
 
         for (const release of event.releases) {

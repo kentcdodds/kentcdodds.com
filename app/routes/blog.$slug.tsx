@@ -604,7 +604,7 @@ export default function MdxScreen() {
               <Grid nested rowGap>
                 {data.workshops.map((workshop, idx) => (
                   <div
-                    key={workshop.slug}
+                    key={idx}
                     className={clsx('col-span-4', {
                       'hidden lg:block': idx >= 2,
                     })}

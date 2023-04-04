@@ -18,7 +18,9 @@ const tiToHandlers: Array<
         events: [
           {
             live: true,
-            title: "TESTING (this isn't a real event)",
+            title: `TESTING (this isn't a real ${
+              req.params.account ?? ''
+            } event)`,
             description: 'This is a short description',
             banner: {url: null, thumb: {url: null}},
             slug,

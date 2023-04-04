@@ -8,6 +8,7 @@ import type {
 } from '@remix-run/node'
 import {json} from '@remix-run/node'
 import {
+  Link,
   Links,
   LiveReload,
   Meta,
@@ -43,7 +44,9 @@ import {
   getDisplayUrl,
   getDomainUrl,
   getUrl,
+  parseDate,
   removeTrailingSlash,
+  typedBoolean,
 } from './utils/misc'
 import {getEnv} from './utils/env.server'
 import {getUserInfo} from './utils/user-info.server'
@@ -62,6 +65,14 @@ import {Grimmacing, MissingSomething} from './components/kifs'
 import {ArrowLink} from './components/arrow-button'
 import {getServerTimeHeader} from './utils/timing.server'
 import {useNonce} from './utils/nonce-provider'
+import {
+  Promotification,
+  getPromoCookieValue,
+} from './routes/resources/promotification'
+import {getWorkshops} from './utils/workshops.server'
+import {getScheduledEvents} from './utils/workshop-tickets.server'
+import {isFuture} from 'date-fns'
+import {ArrowIcon, LaptopIcon} from './components/icons'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',
@@ -135,14 +146,28 @@ export const links: LinksFunction = () => {
 
 export type LoaderData = SerializeFrom<typeof loader>
 
+const WORKSHOP_PROMO_NAME = 'workshop-promo'
+
 async function loader({request}: DataFunctionArgs) {
   const timings = {}
   const session = await getSession(request)
-  const user = await session.getUser({timings})
-  const themeSession = await getThemeSession(request)
-  const clientSession = await getClientSession(request, user)
-  const loginInfoSession = await getLoginInfoSession(request)
-  const {primaryInstance} = await getInstanceInfo()
+  const [
+    user,
+    themeSession,
+    clientSession,
+    loginInfoSession,
+    primaryInstance,
+    workshops,
+    workshopEvents,
+  ] = await Promise.all([
+    session.getUser({timings}),
+    getThemeSession(request),
+    getClientSession(request, session.getUser({timings})),
+    getLoginInfoSession(request),
+    getInstanceInfo().then(i => i.primaryInstance),
+    getWorkshops({request, timings}),
+    getScheduledEvents({request, timings}),
+  ])
 
   const randomFooterImageKeys = Object.keys(illustrationImages)
   const randomFooterImageKey = randomFooterImageKeys[
@@ -154,6 +179,73 @@ async function loader({request}: DataFunctionArgs) {
     userInfo: user ? await getUserInfo(user, {request, timings}) : null,
     ENV: getEnv(),
     randomFooterImageKey,
+    workshopPromotifications: workshopEvents
+      .map(e => {
+        const workshop = workshops.find(w => w.slug === e.metadata.workshopSlug)
+        if (!workshop) return null
+
+        const discounts = Object.entries(e.discounts)
+          .filter(([, discount]) => isFuture(parseDate(discount.ends)))
+          .sort(([, a], [, b]) => {
+            return parseDate(a.ends).getTime() - parseDate(b.ends).getTime()
+          })
+
+        // the promoEndTime should be the earliest of:
+        // 1. earliest discount end
+        // 2. the end of ticket sales
+        // 3. the start of the event
+        const promoEndTime = [
+          discounts[0]
+            ? {
+                type: 'discount' as const,
+                time: parseDate(discounts[0][1].ends).getTime(),
+                url: discounts[0][1].url,
+              }
+            : null,
+          e.salesEndTime
+            ? {
+                type: 'sales' as const,
+                time: parseDate(e.salesEndTime).getTime(),
+                url: e.url,
+              }
+            : null,
+          e.startTime
+            ? {
+                type: 'start' as const,
+                time: parseDate(e.startTime).getTime(),
+                url: e.url,
+              }
+            : null,
+        ]
+          .filter(typedBoolean)
+          .sort((a, b) => a.time - b.time)[0]
+
+        if (!promoEndTime) return null
+
+        const promoName = `${WORKSHOP_PROMO_NAME}-${workshop.slug}`
+
+        return {
+          title: e.title,
+          slug: workshop.slug,
+          promoName,
+          dismissTimeSeconds: Math.min(
+            Math.max(
+              // one quarter of the time until the salesEndTime (in seconds)
+              (promoEndTime.time - Date.now()) / 4 / 1000,
+              // Minimum of 3 hours (in seconds)
+              60 * 60 * 3,
+            ),
+            // Maximum of 1 week (in seconds)
+            60 * 60 * 24 * 7,
+          ),
+          cookieValue: getPromoCookieValue({
+            promoName,
+            request,
+          }),
+          promoEndTime,
+        }
+      })
+      .filter(typedBoolean),
     requestInfo: {
       origin: getDomainUrl(request),
       path: new URL(request.url).pathname,
@@ -357,6 +449,56 @@ function App() {
       </head>
       <body className="bg-white transition duration-500 dark:bg-gray-900">
         <PageLoadingMessage />
+        {data.workshopPromotifications.map(e => (
+          <Promotification
+            key={e.slug}
+            cookieValue={e.cookieValue}
+            promoName={e.promoName}
+            promoEndTime={new Date(e.promoEndTime.time)}
+            dismissTimeSeconds={e.dismissTimeSeconds}
+          >
+            <div className="flex flex-col">
+              <p className="flex items-center gap-1">
+                <LaptopIcon />
+                <span>
+                  Join Kent for an interactive{' '}
+                  <Link to="/workshops" className="underline">
+                    live workshop
+                  </Link>
+                </span>
+              </p>
+              <Link
+                className="mt-3 text-lg underline"
+                to={`/workshops/${e.slug}`}
+              >
+                {e.title}
+              </Link>
+              {e.promoEndTime.type === 'discount' ? (
+                <p className="mt-1 text-sm text-gray-500">
+                  Limited time{' '}
+                  <a
+                    href={e.promoEndTime.url}
+                    className="inline-flex items-center gap-1 underline"
+                  >
+                    <span>discount available</span>
+                    <ArrowIcon direction="top-right" size={16} />
+                  </a>
+                </p>
+              ) : e.promoEndTime.type === 'sales' ? (
+                <p className="mt-1 text-sm text-gray-500">
+                  Limited time{' '}
+                  <a
+                    href={e.promoEndTime.url}
+                    className="inline-flex items-center gap-1 underline"
+                  >
+                    <span>tickets available</span>
+                    <ArrowIcon direction="top-right" size={16} />
+                  </a>
+                </p>
+              ) : null}
+            </div>
+          </Promotification>
+        ))}
         <NotificationMessage queryStringKey="message" delay={0.3} />
         <Navbar />
         <Outlet />

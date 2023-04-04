@@ -12,6 +12,7 @@ import {useSpinDelay} from 'spin-delay'
 
 import {LinkButton} from '~/components/button'
 import {Spinner} from '~/components/spinner'
+import {AlarmIcon} from '~/components/icons'
 
 export function getPromoCookieValue({
   promoName,
@@ -45,7 +46,7 @@ type NotificationMessageProps = Parameters<typeof NotificationMessage>[0]
 export function Promotification({
   children,
   promoName,
-  dismissTimeSeconds = 60 * 60 * 24 * 7 * 2,
+  dismissTimeSeconds = 60 * 60 * 24 * 4,
   cookieValue,
   promoEndTime,
   ...props
@@ -112,15 +113,13 @@ export function Promotification({
           <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
             <LinkButton
               type="submit"
-              className={`text-inverse block transition-opacity ${
+              className={`text-inverse flex items-center gap-1 transition-opacity ${
                 showSpinner ? 'opacity-50' : ''
               }`}
               disabled={disableLink}
             >
-              Remind me later{' '}
-              <span role="img" aria-label="alarm clock">
-                ⏰
-              </span>
+              <span>Remind me later</span>
+              <AlarmIcon />
             </LinkButton>
             <Spinner size={16} showSpinner={showSpinner} />
           </div>

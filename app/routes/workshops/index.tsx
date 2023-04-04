@@ -119,7 +119,7 @@ function WorkshopsHome() {
           <H3 className="col-span-full">Currently Scheduled Workshops</H3>
           <div className="col-span-full mt-6">
             {workshopEvents.map((workshopEvent, index) => (
-              <React.Fragment key={workshopEvent.date}>
+              <React.Fragment key={index}>
                 <RegistrationPanel workshopEvent={workshopEvent} />
                 {index === workshopEvents.length - 1 ? null : (
                   <Spacer size="2xs" />
@@ -167,11 +167,8 @@ function WorkshopsHome() {
                     : -1
                   : 1,
               )
-              .map(workshop => (
-                <div
-                  key={workshop.slug}
-                  className="col-span-full md:col-span-4"
-                >
+              .map((workshop, idx) => (
+                <div key={idx} className="col-span-full md:col-span-4">
                   <WorkshopCard
                     workshop={workshop}
                     titoEvents={data.workshopEvents.filter(
