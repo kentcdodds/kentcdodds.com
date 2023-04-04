@@ -23,13 +23,16 @@ function BlurrableImage({
     // if the image is already loaded and if so, we know that visible should
     // initialize to true.
     const el = document.getElementById(id)
-    return el instanceof HTMLImageElement && el.complete
+    return el instanceof HTMLImageElement && !el.classList.contains('opacity-0')
   })
   const jsImgElRef = React.useRef<HTMLImageElement>(null)
 
   React.useEffect(() => {
     if (!jsImgElRef.current) return
-    if (jsImgElRef.current.complete) return
+    if (jsImgElRef.current.complete) {
+      setVisible(true)
+      return
+    }
 
     let current = true
     jsImgElRef.current.addEventListener('load', () => {
