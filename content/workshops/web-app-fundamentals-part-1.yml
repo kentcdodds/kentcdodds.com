@@ -17,11 +17,6 @@ categories:
   - web
   - react
   - remix
-events:
-  - title: Web App Fundamentals in London
-    url: https://london.cityjsconf.org/buytickets
-    quantity: 40
-    date: March 30th, 2023
 convertKitTag: '2568112'
 problemStatements:
   part1: The web is a powerful tool for building applications
