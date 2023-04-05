@@ -32,7 +32,6 @@ import {Button} from '~/components/button'
 import {ServerError} from '~/components/errors'
 import {
   formatAbbreviatedNumber,
-  formatDate,
   formatNumber,
   getDisplayUrl,
   getUrl,
@@ -507,13 +506,12 @@ function BlogHome() {
       {!isSearching && data.recommended ? (
         <div className="mb-10">
           <FeaturedSection
-            subTitle={
-              data.recommended.frontmatter.date
-                ? `${formatDate(data.recommended.frontmatter.date)} — ${
-                    data.recommended.readTime?.text ?? 'quick read'
-                  }`
-                : 'TBA'
-            }
+            subTitle={[
+              data.recommended.dateDisplay,
+              data.recommended.readTime?.text ?? 'quick read',
+            ]
+              .filter(Boolean)
+              .join(' — ')}
             title={data.recommended.frontmatter.title}
             blurDataUrl={data.recommended.frontmatter.bannerBlurDataUrl}
             imageBuilder={

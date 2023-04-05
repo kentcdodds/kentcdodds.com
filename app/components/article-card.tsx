@@ -8,16 +8,15 @@ import {MissingSomething} from './kifs'
 import {BlurrableImage} from './blurrable-image'
 import {useRootData} from '~/utils/use-root-data'
 import {getBannerAltProp, getBannerTitleProp} from '~/utils/mdx'
-import {formatDate} from '~/utils/misc'
 
 function ArticleCard({
   leadingTeam,
   article: {
     readTime,
+    dateDisplay,
     slug,
     frontmatter,
     frontmatter: {
-      date,
       title = 'Untitled Post',
       bannerCloudinaryId,
       bannerBlurDataUrl,
@@ -88,7 +87,9 @@ function ArticleCard({
         )}
 
         <div className="mt-8 text-xl font-medium text-slate-500">
-          {formatDate(date ?? new Date())} — {readTime?.text ?? 'quick read'}
+          {[dateDisplay, readTime?.text ?? 'quick read']
+            .filter(Boolean)
+            .join(' — ')}
         </div>
         <H3 as="div" className="mt-4">
           {title}

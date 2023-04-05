@@ -26,12 +26,7 @@ import {
 import {BlogSection} from '~/components/sections/blog-section'
 import {getBlogRecommendations} from '~/utils/blog.server'
 import {HeroSection} from '~/components/sections/hero-section'
-import {
-  formatDate,
-  getDisplayUrl,
-  getUrl,
-  reuseUsefulLoaderHeaders,
-} from '~/utils/misc'
+import {getDisplayUrl, getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {
   FullScreenYouTubeEmbed,
   LiteYouTubeEmbed,
@@ -303,7 +298,7 @@ function AboutIndex() {
           <div key={talk.slug} className="col-span-full lg:col-span-6">
             <TalkCard
               tags={talk.tags}
-              date={talk.deliveries[0]?.date}
+              dateDisplay={talk.deliveries[0]?.dateDisplay}
               title={talk.title}
               talkUrl={`/talks/${talk.slug}`}
             />
@@ -429,14 +424,17 @@ function AboutIndex() {
   )
 }
 
-interface TalkCardProps {
+function TalkCard({
+  tags,
+  dateDisplay,
+  title,
+  talkUrl,
+}: {
   tags: string[]
-  date?: string
+  dateDisplay?: string
   title: string
   talkUrl: string
-}
-
-function TalkCard({tags, date, title, talkUrl}: TalkCardProps) {
+}) {
   return (
     <div className="bg-secondary text-primary flex h-full w-full flex-col justify-between rounded-lg p-16 pt-20">
       <div>
@@ -452,7 +450,7 @@ function TalkCard({tags, date, title, talkUrl}: TalkCardProps) {
         </div>
 
         <Paragraph as="span" className="mb-5">
-          {date ? formatDate(date) : 'to be determined'}
+          {dateDisplay ?? 'TBA'}
         </Paragraph>
 
         <H3 className="mb-5">{title}</H3>

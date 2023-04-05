@@ -14,6 +14,7 @@ type MdxPage = {
   slug: string
   editLink: string
   readTime?: ReturnType<typeof calculateReadingTime>
+  dateDisplay?: string
 
   /**
    * It's annoying that all these are set to optional I know, but there's

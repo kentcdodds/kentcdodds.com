@@ -79,12 +79,15 @@ function Card({
   resourceHTMLs,
   active,
 }: LoaderData['talks'][0] & {active: boolean}) {
-  const latestDate = deliveries
+  const latestDelivery = deliveries
     .filter(x => x.date)
-    .map(x => parseDate(x.date as string))
-    .sort((l, r) => r.getTime() - l.getTime())[0] as Date
+    .sort(
+      (l, r) => parseDate(r.date!).getTime() - parseDate(l.date!).getTime(),
+    )[0]
 
-  const isInFuture = latestDate.getTime() > Date.now()
+  const isInFuture = latestDelivery?.date
+    ? parseDate(latestDelivery.date).getTime() > Date.now()
+    : true
 
   return (
     <div
@@ -105,9 +108,11 @@ function Card({
           ) : (
             <div className="block h-3 w-3 flex-none rounded-full bg-gray-400 dark:bg-gray-600" />
           )}
-          <H6 as="p" className="pl-4">
-            {formatDate(latestDate)}
-          </H6>
+          {latestDelivery ? (
+            <H6 as="p" className="pl-4">
+              {latestDelivery.dateDisplay}
+            </H6>
+          ) : null}
         </div>
 
         <div className="mt-8 flex space-x-2 md:mt-0">

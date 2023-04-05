@@ -1,7 +1,7 @@
 import * as YAML from 'yaml'
 import type {CountableSlugify} from '@sindresorhus/slugify'
 import type {Await} from '~/types'
-import {typedBoolean} from '~/utils/misc'
+import {formatDate, typedBoolean} from '~/utils/misc'
 import {markdownToHtml, stripHtml} from '~/utils/markdown.server'
 import {downloadFile} from '~/utils/github.server'
 import {cache, cachified} from '~/utils/cache.server'
@@ -53,6 +53,7 @@ async function getTalk(rawTalk: RawTalk, allTags: Array<string>) {
               eventHTML: d.event ? await markdownToHtml(d.event) : undefined,
               date: d.date,
               recording: d.recording,
+              dateDisplay: d.date ? formatDate(d.date) : 'TBA',
             }
           }),
         )

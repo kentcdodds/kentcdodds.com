@@ -27,7 +27,7 @@ import {
 } from '~/utils/blog.server'
 import {FourOhFour, ServerError} from '~/components/errors'
 import {TeamStats} from '~/components/team-stats'
-import {formatDate, formatNumber, reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {formatNumber, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {BlurrableImage} from '~/components/blurrable-image'
 import {getSession} from '~/utils/session.server'
 import {addPostRead} from '~/utils/prisma.server'
@@ -381,7 +381,7 @@ export default function MdxScreen() {
   const data = useLoaderData<typeof loader>()
   const {requestInfo} = useRootData()
 
-  const {code, frontmatter} = data.page
+  const {code, dateDisplay, frontmatter} = data.page
   const params = useParams()
   const markAsRead = useFetcher()
   const markAsReadRef = React.useRef(markAsRead)
@@ -452,10 +452,8 @@ export default function MdxScreen() {
           ) : null}
           <H2>{frontmatter.title}</H2>
           <H6 as="p" variant="secondary" className="mt-2">
-            {frontmatter.date
-              ? formatDate(frontmatter.date)
-              : 'some day in the past'}{' '}
-            — {data.page.readTime?.text ?? 'a quick read'}
+            {dateDisplay ?? 'some day in the past'} —{' '}
+            {data.page.readTime?.text ?? 'a quick read'}
           </H6>
         </div>
         {frontmatter.bannerCloudinaryId ? (

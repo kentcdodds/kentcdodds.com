@@ -9,7 +9,13 @@ import {
   downloadDirList,
   downloadMdxFileOrDirectory,
 } from '~/utils/github.server'
-import {AnchorOrLink, getDisplayUrl, getUrl, typedBoolean} from '~/utils/misc'
+import {
+  AnchorOrLink,
+  formatDate,
+  getDisplayUrl,
+  getUrl,
+  typedBoolean,
+} from '~/utils/misc'
 import {cache, cachified} from './cache.server'
 import {getSocialMetas} from './seo'
 import {
@@ -234,6 +240,9 @@ async function compileMdxCached({
           }
         }
         return {
+          dateDisplay: compiledPage.frontmatter.date
+            ? formatDate(compiledPage.frontmatter.date)
+            : undefined,
           ...compiledPage,
           slug,
           editLink: `https://github.com/kentcdodds/kentcdodds.com/edit/main/${entry}`,
