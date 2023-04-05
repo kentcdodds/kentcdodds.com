@@ -452,8 +452,9 @@ export default function MdxScreen() {
           ) : null}
           <H2>{frontmatter.title}</H2>
           <H6 as="p" variant="secondary" className="mt-2">
-            {dateDisplay ?? 'some day in the past'} —{' '}
-            {data.page.readTime?.text ?? 'a quick read'}
+            {[dateDisplay, data.page.readTime?.text ?? 'quick read']
+              .filter(Boolean)
+              .join(' — ')}
           </H6>
         </div>
         {frontmatter.bannerCloudinaryId ? (
