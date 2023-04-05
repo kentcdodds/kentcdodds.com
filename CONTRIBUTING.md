@@ -197,7 +197,7 @@ seed script which will populate the database with some example data.
 
 ## Maintenance Tips
 
-## Backup the database
+### Backup the database
 
 ```sh
 fly ssh console -C bash -s
@@ -220,7 +220,7 @@ fly sftp get -s /data/sqlite.db.bkp.gz ./sqlite.db.bkp.gz
 # select the same instance as above
 ```
 
-## Handle LiteFS checksum errors
+### Handle LiteFS checksum errors
 
 We use LiteFS to proxy the file system for SQLite for multi-regional SQLite. If
 things go wrong, this is what you do. First, backup the database, then scale
@@ -301,6 +301,49 @@ Then push that to fly.
 
 You'll lose any data created between when you did the backup and when the deploy
 finishes, but hopefully you won't have LiteFS issues.
+
+### Adding more regions
+
+When doing stuff like this it's not a bad idea to do a database backup first
+(even though Fly backs-up your volumes daily for you).
+
+Even though fly has a specific command for adding and removing regions, when
+regions have volumes, you instead control the regions by adding more volumes to
+specific regions and then scaling up. For example:
+
+```sh
+fly vol create data --size 3 --region ams
+fly scale count 2
+```
+
+### Removing regions
+
+Similar to adding regions, maybe backup the data.
+
+First, you should know which volume is the current primary region. It's kinda
+hard to tell without SSH-ing into the boxes and looking for the `.primary` file,
+but instead you can hit the site and check the `x-fly-primary-instance` header
+which will be the hostname of the primary instance. Just make sure you don't
+take that one down. If you need to change the primary, make sure to update
+`litefs.yml` first so another region can take over as candidate.
+
+Now that you know the volume you _don't_ want to delete, run:
+
+```sh
+fly vol list
+```
+
+That'll show you all the volumes, then run:
+
+```sh
+fly vol destroy <VOL_ID>
+```
+
+And when you're finished, scale down to the number of volumes you have:
+
+```sh
+fly scale count <COUNT>
+```
 
 ## Help needed
 
