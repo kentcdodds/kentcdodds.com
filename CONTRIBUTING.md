@@ -64,6 +64,7 @@ instructions:
 - [git](https://git-scm.com/) >= 2.7.0
 - [Docker](https://www.docker.com/)
 
+
 ### Setup steps
 
 1.  Fork and clone the repo
@@ -191,6 +192,13 @@ One common command you might need to run is to re-seed the database:
 ```sh
 npx prisma migrate reset --force
 ```
+### Apple Silicon Only  
+If running on Apple Silicon you might need to uninstall better-sqlite3 and reinstall better-sqlite3 with the command below. It is trying to use the x86_64 and you will want the arm64 binary. This will resolve that issue for users that have Apple Silicon processors.
+
+```sh
+npm install better-sqlite3@8.0.1 --build-from-source --target_arch=arm64 --fallback-to-build
+```
+
 
 In addition to resetting your database to the latest schema, it'll also run the
 seed script which will populate the database with some example data.
