@@ -146,12 +146,21 @@ Let's say that we're working on adding the ability for multiple accordion
 elements to be opened at once, so we're changing our internal state from
 `openIndex` to `openIndexes`:
 
-```tsx remove=2-3,7,16 add=4-5,8,17
+```tsx remove=2-3,16,25 add=4-14,17,26
 class Accordion extends React.Component {
   state = {openIndex: 0}
   setOpenIndex = openIndex => this.setState({openIndex})
   state = {openIndexes: [0]}
-  setOpenIndex = openIndex => this.setState({openIndexes: [openIndex]})
+  setOpenIndex = (openIndex) => {
+    const { openIndexes } = this.state;
+    if (openIndexes.includes(openIndex))
+      this.setState({
+        openIndexes: openIndexes.filter((index) => index !== openIndex)
+      });
+    else {
+      this.setState({ openIndexes: [...openIndexes, openIndex] });
+    }
+  };
   render() {
     const {openIndex} = this.state
     const {openIndexes} = this.state
