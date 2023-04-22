@@ -259,7 +259,15 @@ export default function TalksScreen() {
     <>
       <HeroSection
         title="Check out these talks."
-        subtitle="Mostly on location, sometimes remote."
+        subtitle={
+          <>
+            Mostly on{' '}
+            <a href="https://kcd.im/map" className="underline">
+              location
+            </a>
+            , sometimes remote.
+          </>
+        }
         imageBuilder={images.teslaY}
         imageSize="large"
       />
