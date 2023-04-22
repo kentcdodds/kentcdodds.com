@@ -150,13 +150,17 @@ function Card({
               Presentations
             </H6>
             <ul className="space-y-1">
-              {deliveries.map(delivery => (
-                <li key={`${delivery.recording}-${delivery.date}`}>
-                  <div className="flex w-full">
+              {deliveries.map((delivery, index) => (
+                <li key={index}>
+                  <div className="flex w-full items-center gap-2">
+                    {delivery.date &&
+                    parseDate(delivery.date).getTime() > Date.now() ? (
+                      <div className="block h-2 w-2 flex-none animate-pulse rounded-full bg-green-600" />
+                    ) : null}
                     <Paragraph
                       as="div"
                       className="html"
-                      prose={false}
+                      prose={true}
                       dangerouslySetInnerHTML={{
                         __html: delivery.eventHTML ?? '',
                       }}

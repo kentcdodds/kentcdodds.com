@@ -1,12 +1,3 @@
-- title: React Summit US Keynote
-  deliveries:
-    - event: '[React Summit US 2023](https://reactsummit.us/)'
-      date: 2023-11-13
-  tags:
-    - keynote
-  description: >-
-    This talk will be announced soon!
-
 - title: DevWorld Keynote
   deliveries:
     - event: '[Dev World 2023](https://devworldconference.com/)'

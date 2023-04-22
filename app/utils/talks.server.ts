@@ -46,7 +46,7 @@ async function getTalk(rawTalk: RawTalk, allTags: Array<string>) {
       : [],
     descriptionHTML,
     description: descriptionHTML ? await stripHtml(descriptionHTML) : '',
-    deliveries: rawTalk.deliveries
+    deliveries: (rawTalk.deliveries
       ? await Promise.all(
           rawTalk.deliveries.map(async d => {
             return {
@@ -57,7 +57,10 @@ async function getTalk(rawTalk: RawTalk, allTags: Array<string>) {
             }
           }),
         )
-      : [],
+      : []
+    ).sort((a, b) => {
+      return a.date && b.date ? (moreRecent(a.date, b.date) ? -1 : 1) : 0
+    }),
   }
 }
 
