@@ -1,553 +1,1529 @@
 {
   "video": {
-    "data": {
-      "attachments": {"media_keys": ["7_1420669327901003776"]},
-      "author_id": "2972744345",
-      "id": "1420669402932932611",
-      "public_metrics": {
-        "retweet_count": 1,
-        "reply_count": 0,
-        "like_count": 22,
-        "quote_count": 1
-      },
-      "text": "Improved my ray tracer's perf!\n1600x900 pixels * 10 rays per pixel * 6 bounces per ray * 24 spheres collision checks per bounce = 2 BILLION collision checks, at 60fps! Go go GPU =D\n\nhttps://t.co/m6fbsqeGXR https://t.co/ukZELKLf1S",
-      "created_at": "2021-07-29T08:55:55.000Z"
-    },
-    "includes": {
-      "media": [
+    "__typename": "Tweet",
+    "lang": "en",
+    "favorite_count": 33,
+    "possibly_sensitive": false,
+    "created_at": "2021-07-29T08:55:55.000Z",
+    "display_text_range": [0, 205],
+    "entities": {
+      "hashtags": [],
+      "urls": [
         {
-          "media_key": "7_1420669327901003776",
-          "preview_image_url": "https://pbs.twimg.com/ext_tw_video_thumb/1420669327901003776/pu/img/N9U2FnTT423ZjOqH.jpg",
-          "type": "video"
+          "display_url": "shadertoy.com/view/7tBXDh",
+          "expanded_url": "https://shadertoy.com/view/7tBXDh",
+          "indices": [182, 205],
+          "url": "https://t.co/m6fbsqeGXR"
         }
       ],
-      "users": [
+      "user_mentions": [],
+      "symbols": [],
+      "media": [
         {
-          "profile_image_url": "https://pbs.twimg.com/profile_images/554199709909131265/Y5qUDaCB_normal.jpeg",
-          "url": "https://t.co/opn3GOx0jf",
-          "name": "Cheng Lou",
-          "username": "_chenglou",
-          "id": "2972744345"
+          "display_url": "pic.twitter.com/ukZELKLf1S",
+          "expanded_url": "https://twitter.com/_chenglou/status/1420669402932932611/video/1",
+          "indices": [206, 229],
+          "url": "https://t.co/ukZELKLf1S"
         }
       ]
-    }
+    },
+    "id_str": "1420669402932932611",
+    "text": "Improved my ray tracer's perf!\n1600x900 pixels * 10 rays per pixel * 6 bounces per ray * 24 spheres collision checks per bounce = 2 BILLION collision checks, at 60fps! Go go GPU =D\n\nhttps://t.co/m6fbsqeGXR https://t.co/ukZELKLf1S",
+    "user": {
+      "id_str": "2972744345",
+      "name": "Cheng Lou",
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/554199709909131265/Y5qUDaCB_normal.jpeg",
+      "screen_name": "_chenglou",
+      "verified": false,
+      "is_blue_verified": false
+    },
+    "edit_control": {
+      "edit_tweet_ids": ["1420669402932932611"],
+      "editable_until_msecs": "1627550755077",
+      "is_edit_eligible": true,
+      "edits_remaining": "5"
+    },
+    "mediaDetails": [
+      {
+        "additional_media_info": {},
+        "display_url": "pic.twitter.com/ukZELKLf1S",
+        "expanded_url": "https://twitter.com/_chenglou/status/1420669402932932611/video/1",
+        "ext_media_availability": {"status": "Available"},
+        "ext_media_stats": {"view_count": 1277},
+        "indices": [206, 229],
+        "media_url_https": "https://pbs.twimg.com/ext_tw_video_thumb/1420669327901003776/pu/img/N9U2FnTT423ZjOqH.jpg",
+        "original_info": {"height": 720, "width": 1280},
+        "sizes": {
+          "large": {"h": 720, "resize": "fit", "w": 1280},
+          "medium": {"h": 675, "resize": "fit", "w": 1200},
+          "small": {"h": 383, "resize": "fit", "w": 680},
+          "thumb": {"h": 150, "resize": "crop", "w": 150}
+        },
+        "type": "video",
+        "url": "https://t.co/ukZELKLf1S",
+        "video_info": {
+          "aspect_ratio": [16, 9],
+          "duration_millis": 6228,
+          "variants": [
+            {
+              "bitrate": 256000,
+              "content_type": "video/mp4",
+              "url": "https://video.twimg.com/ext_tw_video/1420669327901003776/pu/vid/480x270/wzrEK_IbwD2FVoET.mp4?tag=12"
+            },
+            {
+              "bitrate": 832000,
+              "content_type": "video/mp4",
+              "url": "https://video.twimg.com/ext_tw_video/1420669327901003776/pu/vid/640x360/-_5iOKbi2qwQxG9K.mp4?tag=12"
+            },
+            {
+              "bitrate": 2176000,
+              "content_type": "video/mp4",
+              "url": "https://video.twimg.com/ext_tw_video/1420669327901003776/pu/vid/1280x720/zJ7S9YJPea51I1xY.mp4?tag=12"
+            },
+            {
+              "content_type": "application/x-mpegURL",
+              "url": "https://video.twimg.com/ext_tw_video/1420669327901003776/pu/pl/3C4qy004htETnkHN.m3u8?tag=12&container=fmp4"
+            }
+          ]
+        }
+      }
+    ],
+    "photos": [],
+    "video": {
+      "aspectRatio": [16, 9],
+      "contentType": "media_entity",
+      "durationMs": 6228,
+      "mediaAvailability": {"status": "available"},
+      "poster": "https://pbs.twimg.com/ext_tw_video_thumb/1420669327901003776/pu/img/N9U2FnTT423ZjOqH.jpg",
+      "variants": [
+        {
+          "type": "video/mp4",
+          "src": "https://video.twimg.com/ext_tw_video/1420669327901003776/pu/vid/480x270/wzrEK_IbwD2FVoET.mp4?tag=12"
+        },
+        {
+          "type": "video/mp4",
+          "src": "https://video.twimg.com/ext_tw_video/1420669327901003776/pu/vid/640x360/-_5iOKbi2qwQxG9K.mp4?tag=12"
+        },
+        {
+          "type": "video/mp4",
+          "src": "https://video.twimg.com/ext_tw_video/1420669327901003776/pu/vid/1280x720/zJ7S9YJPea51I1xY.mp4?tag=12"
+        },
+        {
+          "type": "application/x-mpegURL",
+          "src": "https://video.twimg.com/ext_tw_video/1420669327901003776/pu/pl/3C4qy004htETnkHN.m3u8?tag=12&container=fmp4"
+        }
+      ],
+      "videoId": {"type": "tweet", "id": "1420669402932932611"},
+      "viewCount": 1277
+    },
+    "conversation_count": 0,
+    "news_action_type": "conversation",
+    "isEdited": false,
+    "isStaleEdit": false
   },
   "onePhoto": {
-    "data": {
-      "id": "1418928039069511682",
-      "created_at": "2021-07-24T13:36:21.000Z",
-      "attachments": {"media_keys": ["3_1418928036129423369"]},
-      "text": "🚨 We've got an IST-friendly KCD Learning club looking for new members \"To learn React the epic way!\"\n\nGo through https://t.co/VFTzpCWpTr together with others! Learn how to join here: https://t.co/boWSztgAKM https://t.co/nyggsvsjHz",
-      "public_metrics": {
-        "retweet_count": 2,
-        "reply_count": 2,
-        "like_count": 32,
-        "quote_count": 0
-      },
-      "author_id": "389681470"
-    },
-    "includes": {
-      "media": [
+    "__typename": "Tweet",
+    "lang": "en",
+    "favorite_count": 30,
+    "possibly_sensitive": false,
+    "created_at": "2021-07-24T13:36:21.000Z",
+    "display_text_range": [0, 207],
+    "entities": {
+      "hashtags": [],
+      "urls": [
         {
-          "media_key": "3_1418928036129423369",
-          "type": "photo",
-          "url": "https://pbs.twimg.com/media/E7ELh_NWQAkEmgA.jpg"
+          "display_url": "EpicReact.dev",
+          "expanded_url": "https://EpicReact.dev",
+          "indices": [113, 136],
+          "url": "https://t.co/VFTzpCWpTr"
+        },
+        {
+          "display_url": "kcd.im/clubs",
+          "expanded_url": "https://kcd.im/clubs",
+          "indices": [183, 206],
+          "url": "https://t.co/boWSztgAKM"
         }
       ],
-      "users": [
+      "user_mentions": [],
+      "symbols": [],
+      "media": [
         {
-          "url": "https://t.co/F3SmzPLcfn",
-          "id": "389681470",
-          "username": "kentcdodds",
-          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg",
-          "name": "Kent C. Dodds"
+          "display_url": "pic.twitter.com/nyggsvsjHz",
+          "expanded_url": "https://twitter.com/kentcdodds/status/1418928039069511682/photo/1",
+          "indices": [207, 230],
+          "url": "https://t.co/nyggsvsjHz"
         }
       ]
-    }
+    },
+    "id_str": "1418928039069511682",
+    "text": "🚨 We've got an IST-friendly KCD Learning club looking for new members \"To learn React the epic way!\"\n\nGo through https://t.co/VFTzpCWpTr together with others! Learn how to join here: https://t.co/boWSztgAKM https://t.co/nyggsvsjHz",
+    "user": {
+      "id_str": "389681470",
+      "name": "Kent C. Dodds 🌌",
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1567269493608714241/6ACZo99k_normal.jpg",
+      "screen_name": "kentcdodds",
+      "verified": false,
+      "is_blue_verified": true
+    },
+    "edit_control": {
+      "edit_tweet_ids": ["1418928039069511682"],
+      "editable_until_msecs": "1627135581579",
+      "is_edit_eligible": true,
+      "edits_remaining": "5"
+    },
+    "mediaDetails": [
+      {
+        "display_url": "pic.twitter.com/nyggsvsjHz",
+        "expanded_url": "https://twitter.com/kentcdodds/status/1418928039069511682/photo/1",
+        "ext_alt_text": "confetti_ball New club looking for members tada\n\nKCD Learning Club\n\nClub Curriculum: https://epicreact.dev/\n\nClub Captain: @Saphal 🚀\n\nLearning Goal Summary: To learn React the epic way!\n\nRequirements:\n      - Basic Javascript\n      - Willingness to learn\n\nClub Schedule:\n      Wednesday at 18:00 +5:30 (IST)\n      - Week 0 (before the first meeting): Welcome to Epic React (watch the intro and setup videos)\n      - Week 1: React Fundamentals\n      - Week 2: React Hooks\n      - Week 3: Build an Epic React App Part 1:\n        - Render a React App\n        - Add Styles\n        - Make HTTP Requests\n      - Week 4: Advanced React Hooks\n      - Week 5: Build an Epic React App Part 2:\n        - Authentication\n        - Routing\n      - Week 6: Advanced React Patterns\n      - Week 7: Build an Epic React App Part 3:\n        - Cache Management\n      - Week 8: Build an Epic React App Part 4:\n        - Context\n        - Compound Components\n      - Week 9: React Performance\n      - Week 10: Build an Ep",
+        "ext_media_availability": {"status": "Available"},
+        "indices": [207, 230],
+        "media_url_https": "https://pbs.twimg.com/media/E7ELh_NWQAkEmgA.jpg",
+        "original_info": {
+          "height": 2048,
+          "width": 945,
+          "focus_rects": [
+            {"x": 0, "y": 93, "w": 945, "h": 529},
+            {"x": 0, "y": 0, "w": 945, "h": 945},
+            {"x": 0, "y": 0, "w": 945, "h": 1077},
+            {"x": 0, "y": 0, "w": 945, "h": 1890},
+            {"x": 0, "y": 0, "w": 945, "h": 2048}
+          ]
+        },
+        "sizes": {
+          "large": {"h": 2048, "resize": "fit", "w": 945},
+          "medium": {"h": 1200, "resize": "fit", "w": 554},
+          "small": {"h": 680, "resize": "fit", "w": 314},
+          "thumb": {"h": 150, "resize": "crop", "w": 150}
+        },
+        "type": "photo",
+        "url": "https://t.co/nyggsvsjHz"
+      }
+    ],
+    "photos": [
+      {
+        "accessibilityLabel": "confetti_ball New club looking for members tada\n\nKCD Learning Club\n\nClub Curriculum: https://epicreact.dev/\n\nClub Captain: @Saphal 🚀\n\nLearning Goal Summary: To learn React the epic way!\n\nRequirements:\n      - Basic Javascript\n      - Willingness to learn\n\nClub Schedule:\n      Wednesday at 18:00 +5:30 (IST)\n      - Week 0 (before the first meeting): Welcome to Epic React (watch the intro and setup videos)\n      - Week 1: React Fundamentals\n      - Week 2: React Hooks\n      - Week 3: Build an Epic React App Part 1:\n        - Render a React App\n        - Add Styles\n        - Make HTTP Requests\n      - Week 4: Advanced React Hooks\n      - Week 5: Build an Epic React App Part 2:\n        - Authentication\n        - Routing\n      - Week 6: Advanced React Patterns\n      - Week 7: Build an Epic React App Part 3:\n        - Cache Management\n      - Week 8: Build an Epic React App Part 4:\n        - Context\n        - Compound Components\n      - Week 9: React Performance\n      - Week 10: Build an Ep",
+        "backgroundColor": {"red": 204, "green": 214, "blue": 221},
+        "cropCandidates": [
+          {"x": 0, "y": 93, "w": 945, "h": 529},
+          {"x": 0, "y": 0, "w": 945, "h": 945},
+          {"x": 0, "y": 0, "w": 945, "h": 1077},
+          {"x": 0, "y": 0, "w": 945, "h": 1890},
+          {"x": 0, "y": 0, "w": 945, "h": 2048}
+        ],
+        "expandedUrl": "https://twitter.com/kentcdodds/status/1418928039069511682/photo/1",
+        "url": "https://pbs.twimg.com/media/E7ELh_NWQAkEmgA.jpg",
+        "width": 945,
+        "height": 2048
+      }
+    ],
+    "conversation_count": 2,
+    "news_action_type": "conversation",
+    "isEdited": false,
+    "isStaleEdit": false
   },
   "twoPhotos": {
-    "data": {
-      "created_at": "2021-07-01T21:18:08.000Z",
-      "id": "1410709329951354880",
-      "text": "Took a different approach that allowed me to add data attributes to the lines nodes specifically.\n\nWorks great! https://t.co/2W86iwjs4L",
-      "in_reply_to_user_id": "389681470",
-      "author_id": "389681470",
-      "referenced_tweets": [
-        {"type": "replied_to", "id": "1410686542058688512"}
-      ],
-      "attachments": {
-        "media_keys": ["3_1410709026610958337", "3_1410709101118582785"]
-      },
-      "public_metrics": {
-        "retweet_count": 0,
-        "reply_count": 3,
-        "like_count": 21,
-        "quote_count": 0
-      }
-    },
-    "includes": {
+    "__typename": "Tweet",
+    "in_reply_to_screen_name": "kentcdodds",
+    "in_reply_to_status_id_str": "1410686542058688512",
+    "in_reply_to_user_id_str": "389681470",
+    "lang": "en",
+    "favorite_count": 18,
+    "self_thread": {"id_str": "1410684669671006208"},
+    "possibly_sensitive": false,
+    "created_at": "2021-07-01T21:18:08.000Z",
+    "display_text_range": [0, 111],
+    "entities": {
+      "hashtags": [],
+      "urls": [],
+      "user_mentions": [],
+      "symbols": [],
       "media": [
         {
-          "media_key": "3_1410709026610958337",
-          "type": "photo",
-          "url": "https://pbs.twimg.com/media/E5PYYqyVUAELnKh.jpg"
-        },
-        {
-          "media_key": "3_1410709101118582785",
-          "type": "photo",
-          "url": "https://pbs.twimg.com/media/E5PYdAWVcAE4bbl.png"
-        }
-      ],
-      "users": [
-        {
-          "url": "https://t.co/F3SmzPLcfn",
-          "username": "kentcdodds",
-          "name": "Kent C. Dodds",
-          "id": "389681470",
-          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg"
-        }
-      ],
-      "tweets": [
-        {
-          "created_at": "2021-07-01T19:47:35.000Z",
-          "id": "1410686542058688512",
-          "text": "Please disregard. This is definitely impossible. I'll need to change my approach...",
-          "in_reply_to_user_id": "389681470",
-          "author_id": "389681470",
-          "referenced_tweets": [
-            {"type": "replied_to", "id": "1410684669671006208"}
-          ],
-          "public_metrics": {
-            "retweet_count": 0,
-            "reply_count": 2,
-            "like_count": 15,
-            "quote_count": 0
-          }
+          "display_url": "pic.twitter.com/2W86iwjs4L",
+          "expanded_url": "https://twitter.com/kentcdodds/status/1410709329951354880/photo/1",
+          "indices": [112, 135],
+          "url": "https://t.co/2W86iwjs4L"
         }
       ]
-    }
+    },
+    "id_str": "1410709329951354880",
+    "text": "Took a different approach that allowed me to add data attributes to the lines nodes specifically.\n\nWorks great! https://t.co/2W86iwjs4L",
+    "user": {
+      "id_str": "389681470",
+      "name": "Kent C. Dodds 🌌",
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1567269493608714241/6ACZo99k_normal.jpg",
+      "screen_name": "kentcdodds",
+      "verified": false,
+      "is_blue_verified": true
+    },
+    "edit_control": {
+      "edit_tweet_ids": ["1410709329951354880"],
+      "editable_until_msecs": "1625176088629",
+      "is_edit_eligible": true,
+      "edits_remaining": "5"
+    },
+    "mediaDetails": [
+      {
+        "display_url": "pic.twitter.com/2W86iwjs4L",
+        "expanded_url": "https://twitter.com/kentcdodds/status/1410709329951354880/photo/1",
+        "ext_alt_text": "HTML code showing a pre, code, and span tags with data attributes signifying whether a line should be added or removed",
+        "ext_media_availability": {"status": "Available"},
+        "indices": [112, 135],
+        "media_url_https": "https://pbs.twimg.com/media/E5PYYqyVUAELnKh.jpg",
+        "original_info": {
+          "height": 278,
+          "width": 1866,
+          "focus_rects": [
+            {"x": 1095, "y": 0, "w": 496, "h": 278},
+            {"x": 1204, "y": 0, "w": 278, "h": 278},
+            {"x": 1221, "y": 0, "w": 244, "h": 278},
+            {"x": 1274, "y": 0, "w": 139, "h": 278},
+            {"x": 0, "y": 0, "w": 1866, "h": 278}
+          ]
+        },
+        "sizes": {
+          "large": {"h": 278, "resize": "fit", "w": 1866},
+          "medium": {"h": 179, "resize": "fit", "w": 1200},
+          "small": {"h": 101, "resize": "fit", "w": 680},
+          "thumb": {"h": 150, "resize": "crop", "w": 150}
+        },
+        "type": "photo",
+        "url": "https://t.co/2W86iwjs4L"
+      },
+      {
+        "display_url": "pic.twitter.com/2W86iwjs4L",
+        "expanded_url": "https://twitter.com/kentcdodds/status/1410709329951354880/photo/1",
+        "ext_alt_text": "A snippet of code showing lines added and removed",
+        "ext_media_availability": {"status": "Available"},
+        "indices": [112, 135],
+        "media_url_https": "https://pbs.twimg.com/media/E5PYdAWVcAE4bbl.png",
+        "original_info": {
+          "height": 494,
+          "width": 824,
+          "focus_rects": [
+            {"x": 0, "y": 0, "w": 824, "h": 461},
+            {"x": 0, "y": 0, "w": 494, "h": 494},
+            {"x": 10, "y": 0, "w": 433, "h": 494},
+            {"x": 103, "y": 0, "w": 247, "h": 494},
+            {"x": 0, "y": 0, "w": 824, "h": 494}
+          ]
+        },
+        "sizes": {
+          "large": {"h": 494, "resize": "fit", "w": 824},
+          "medium": {"h": 494, "resize": "fit", "w": 824},
+          "small": {"h": 408, "resize": "fit", "w": 680},
+          "thumb": {"h": 150, "resize": "crop", "w": 150}
+        },
+        "type": "photo",
+        "url": "https://t.co/2W86iwjs4L"
+      }
+    ],
+    "photos": [
+      {
+        "accessibilityLabel": "HTML code showing a pre, code, and span tags with data attributes signifying whether a line should be added or removed",
+        "backgroundColor": {"red": 204, "green": 214, "blue": 221},
+        "cropCandidates": [
+          {"x": 1095, "y": 0, "w": 496, "h": 278},
+          {"x": 1204, "y": 0, "w": 278, "h": 278},
+          {"x": 1221, "y": 0, "w": 244, "h": 278},
+          {"x": 1274, "y": 0, "w": 139, "h": 278},
+          {"x": 0, "y": 0, "w": 1866, "h": 278}
+        ],
+        "expandedUrl": "https://twitter.com/kentcdodds/status/1410709329951354880/photo/1",
+        "url": "https://pbs.twimg.com/media/E5PYYqyVUAELnKh.jpg",
+        "width": 1866,
+        "height": 278
+      },
+      {
+        "accessibilityLabel": "A snippet of code showing lines added and removed",
+        "backgroundColor": {"red": 204, "green": 214, "blue": 221},
+        "cropCandidates": [
+          {"x": 0, "y": 0, "w": 824, "h": 461},
+          {"x": 0, "y": 0, "w": 494, "h": 494},
+          {"x": 10, "y": 0, "w": 433, "h": 494},
+          {"x": 103, "y": 0, "w": 247, "h": 494},
+          {"x": 0, "y": 0, "w": 824, "h": 494}
+        ],
+        "expandedUrl": "https://twitter.com/kentcdodds/status/1410709329951354880/photo/1",
+        "url": "https://pbs.twimg.com/media/E5PYdAWVcAE4bbl.png",
+        "width": 824,
+        "height": 494
+      }
+    ],
+    "conversation_count": 3,
+    "news_action_type": "conversation",
+    "parent": {
+      "in_reply_to_screen_name": "kentcdodds",
+      "in_reply_to_status_id_str": "1410684669671006208",
+      "in_reply_to_user_id_str": "389681470",
+      "lang": "en",
+      "reply_count": 2,
+      "retweet_count": 0,
+      "favorite_count": 14,
+      "self_thread": {"id_str": "1410684669671006208"},
+      "created_at": "2021-07-01T19:47:35.000Z",
+      "display_text_range": [0, 83],
+      "entities": {
+        "hashtags": [],
+        "urls": [],
+        "user_mentions": [],
+        "symbols": []
+      },
+      "id_str": "1410686542058688512",
+      "text": "Please disregard. This is definitely impossible. I'll need to change my approach...",
+      "user": {
+        "id_str": "389681470",
+        "name": "Kent C. Dodds 🌌",
+        "profile_image_url_https": "https://pbs.twimg.com/profile_images/1567269493608714241/6ACZo99k_normal.jpg",
+        "screen_name": "kentcdodds",
+        "verified": false,
+        "is_blue_verified": true
+      },
+      "edit_control": {
+        "edit_tweet_ids": ["1410686542058688512"],
+        "editable_until_msecs": "1625170655572",
+        "is_edit_eligible": true,
+        "edits_remaining": "5"
+      },
+      "isEdited": false,
+      "isStaleEdit": false
+    },
+    "isEdited": false,
+    "isStaleEdit": false
   },
   "fourPhotos": {
-    "data": {
-      "author_id": "377036506",
-      "created_at": "2021-06-14T12:01:57.000Z",
-      "attachments": {"media_keys": ["3_1404408763960987648"]},
-      "id": "1404408769551994880",
-      "text": "accessibility dot jpeg https://t.co/lAbUQ1QGtk",
-      "public_metrics": {
-        "retweet_count": 21092,
-        "reply_count": 117,
-        "like_count": 121676,
-        "quote_count": 572
-      }
-    },
-    "includes": {
+    "__typename": "Tweet",
+    "lang": "tl",
+    "favorite_count": 113525,
+    "self_thread": {"id_str": "1404408769551994880"},
+    "possibly_sensitive": false,
+    "created_at": "2021-06-14T12:01:57.000Z",
+    "display_text_range": [0, 22],
+    "entities": {
+      "hashtags": [],
+      "urls": [],
+      "user_mentions": [],
+      "symbols": [],
       "media": [
         {
-          "media_key": "3_1404408763960987648",
-          "type": "photo",
-          "url": "https://pbs.twimg.com/media/E312VHdXEAAGO86.jpg"
-        }
-      ],
-      "users": [
-        {
-          "username": "philosophequeer",
-          "id": "377036506",
-          "profile_image_url": "https://pbs.twimg.com/profile_images/1372478405401264128/yczc9Zf-_normal.jpg",
-          "name": "aaron",
-          "url": "https://t.co/PcKHddAUS7"
+          "display_url": "pic.twitter.com/lAbUQ1QGtk",
+          "expanded_url": "https://twitter.com/philosophequeer/status/1404408769551994880/photo/1",
+          "indices": [23, 46],
+          "url": "https://t.co/lAbUQ1QGtk"
         }
       ]
-    }
+    },
+    "id_str": "1404408769551994880",
+    "text": "accessibility dot jpeg https://t.co/lAbUQ1QGtk",
+    "user": {
+      "id_str": "377036506",
+      "name": "aaron gabriel",
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1372478405401264128/yczc9Zf-_normal.jpg",
+      "screen_name": "philosophequeer",
+      "verified": false,
+      "is_blue_verified": false
+    },
+    "edit_control": {
+      "edit_tweet_ids": ["1404408769551994880"],
+      "editable_until_msecs": "1623673917971",
+      "is_edit_eligible": true,
+      "edits_remaining": "5"
+    },
+    "mediaDetails": [
+      {
+        "display_url": "pic.twitter.com/lAbUQ1QGtk",
+        "expanded_url": "https://twitter.com/philosophequeer/status/1404408769551994880/photo/1",
+        "ext_alt_text": "There are four images that are screenshots of an exchange between two Star Wars characters, Anakin and Padmé. In the first, Anakin is saying, “I’ve added subtitles to make my content accessible.” In the second, Padmé is saying “But not automatically generated ones, right?” In the third, Anakin is not speaking, but has a facial expression that suggests he has added automated subtitles. In the fourth, Padmé is saying “But not or tomato call he gem her eight it ones, write?”",
+        "ext_media_availability": {"status": "Available"},
+        "indices": [23, 46],
+        "media_url_https": "https://pbs.twimg.com/media/E312VHdXEAAGO86.jpg",
+        "original_info": {
+          "height": 748,
+          "width": 750,
+          "focus_rects": [
+            {"x": 0, "y": 146, "w": 750, "h": 420},
+            {"x": 0, "y": 0, "w": 748, "h": 748},
+            {"x": 0, "y": 0, "w": 656, "h": 748},
+            {"x": 19, "y": 0, "w": 374, "h": 748},
+            {"x": 0, "y": 0, "w": 750, "h": 748}
+          ]
+        },
+        "sizes": {
+          "large": {"h": 748, "resize": "fit", "w": 750},
+          "medium": {"h": 748, "resize": "fit", "w": 750},
+          "small": {"h": 678, "resize": "fit", "w": 680},
+          "thumb": {"h": 150, "resize": "crop", "w": 150}
+        },
+        "type": "photo",
+        "url": "https://t.co/lAbUQ1QGtk"
+      }
+    ],
+    "photos": [
+      {
+        "accessibilityLabel": "There are four images that are screenshots of an exchange between two Star Wars characters, Anakin and Padmé. In the first, Anakin is saying, “I’ve added subtitles to make my content accessible.” In the second, Padmé is saying “But not automatically generated ones, right?” In the third, Anakin is not speaking, but has a facial expression that suggests he has added automated subtitles. In the fourth, Padmé is saying “But not or tomato call he gem her eight it ones, write?”",
+        "backgroundColor": {"red": 204, "green": 214, "blue": 221},
+        "cropCandidates": [
+          {"x": 0, "y": 146, "w": 750, "h": 420},
+          {"x": 0, "y": 0, "w": 748, "h": 748},
+          {"x": 0, "y": 0, "w": 656, "h": 748},
+          {"x": 19, "y": 0, "w": 374, "h": 748},
+          {"x": 0, "y": 0, "w": 750, "h": 748}
+        ],
+        "expandedUrl": "https://twitter.com/philosophequeer/status/1404408769551994880/photo/1",
+        "url": "https://pbs.twimg.com/media/E312VHdXEAAGO86.jpg",
+        "width": 750,
+        "height": 748
+      }
+    ],
+    "conversation_count": 105,
+    "news_action_type": "conversation",
+    "isEdited": false,
+    "isStaleEdit": false
   },
   "threePhotos": {
-    "data": {
-      "id": "1420726342996271105",
-      "created_at": "2021-07-29T12:42:10.000Z",
-      "text": "This tweet has three images...\n\nI'm testing something and couldn't easily find a tweet with three photos, so here you go. https://t.co/okUhem8zC7",
-      "attachments": {
-        "media_keys": [
-          "3_1420726187618291714",
-          "3_1420726187609841667",
-          "3_1420726187630813184"
-        ]
-      },
-      "public_metrics": {
-        "retweet_count": 0,
-        "reply_count": 0,
-        "like_count": 8,
-        "quote_count": 0
-      },
-      "author_id": "389681470"
-    },
-    "includes": {
+    "__typename": "Tweet",
+    "lang": "en",
+    "favorite_count": 68,
+    "possibly_sensitive": false,
+    "created_at": "2021-07-29T12:42:10.000Z",
+    "display_text_range": [0, 121],
+    "entities": {
+      "hashtags": [],
+      "urls": [],
+      "user_mentions": [],
+      "symbols": [],
       "media": [
         {
-          "media_key": "3_1420726187618291714",
-          "type": "photo",
-          "url": "https://pbs.twimg.com/media/E7du8LgVUAI_dK-.jpg"
-        },
-        {
-          "media_key": "3_1420726187609841667",
-          "type": "photo",
-          "url": "https://pbs.twimg.com/media/E7du8LeUYAMbo6P.jpg"
-        },
-        {
-          "media_key": "3_1420726187630813184",
-          "type": "photo",
-          "url": "https://pbs.twimg.com/media/E7du8LjUYAAD_CM.jpg"
-        }
-      ],
-      "users": [
-        {
-          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg",
-          "id": "389681470",
-          "name": "Kent C. Dodds",
-          "url": "https://t.co/F3SmzPLcfn",
-          "username": "kentcdodds"
+          "display_url": "pic.twitter.com/okUhem8zC7",
+          "expanded_url": "https://twitter.com/kentcdodds/status/1420726342996271105/photo/1",
+          "indices": [122, 145],
+          "url": "https://t.co/okUhem8zC7"
         }
       ]
-    }
+    },
+    "id_str": "1420726342996271105",
+    "text": "This tweet has three images...\n\nI'm testing something and couldn't easily find a tweet with three photos, so here you go. https://t.co/okUhem8zC7",
+    "user": {
+      "id_str": "389681470",
+      "name": "Kent C. Dodds 🌌",
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1567269493608714241/6ACZo99k_normal.jpg",
+      "screen_name": "kentcdodds",
+      "verified": false,
+      "is_blue_verified": true
+    },
+    "edit_control": {
+      "edit_tweet_ids": ["1420726342996271105"],
+      "editable_until_msecs": "1627564330646",
+      "is_edit_eligible": true,
+      "edits_remaining": "5"
+    },
+    "mediaDetails": [
+      {
+        "display_url": "pic.twitter.com/okUhem8zC7",
+        "expanded_url": "https://twitter.com/kentcdodds/status/1420726342996271105/photo/1",
+        "ext_alt_text": "Kent on a onewheel through the trees",
+        "ext_media_availability": {"status": "Available"},
+        "indices": [122, 145],
+        "media_url_https": "https://pbs.twimg.com/media/E7du8LgVUAI_dK-.jpg",
+        "original_info": {
+          "height": 2731,
+          "width": 4096,
+          "focus_rects": [
+            {"x": 0, "y": 184, "w": 4096, "h": 2294},
+            {"x": 1195, "y": 0, "w": 2731, "h": 2731},
+            {"x": 1362, "y": 0, "w": 2396, "h": 2731},
+            {"x": 1877, "y": 0, "w": 1366, "h": 2731},
+            {"x": 0, "y": 0, "w": 4096, "h": 2731}
+          ]
+        },
+        "sizes": {
+          "large": {"h": 1366, "resize": "fit", "w": 2048},
+          "medium": {"h": 800, "resize": "fit", "w": 1200},
+          "small": {"h": 453, "resize": "fit", "w": 680},
+          "thumb": {"h": 150, "resize": "crop", "w": 150}
+        },
+        "type": "photo",
+        "url": "https://t.co/okUhem8zC7"
+      },
+      {
+        "display_url": "pic.twitter.com/okUhem8zC7",
+        "expanded_url": "https://twitter.com/kentcdodds/status/1420726342996271105/photo/1",
+        "ext_alt_text": "Kent speeding past on a onewheel",
+        "ext_media_availability": {"status": "Available"},
+        "indices": [122, 145],
+        "media_url_https": "https://pbs.twimg.com/media/E7du8LeUYAMbo6P.jpg",
+        "original_info": {
+          "height": 2531,
+          "width": 4096,
+          "focus_rects": [
+            {"x": 0, "y": 0, "w": 4096, "h": 2294},
+            {"x": 1291, "y": 0, "w": 2531, "h": 2531},
+            {"x": 1446, "y": 0, "w": 2220, "h": 2531},
+            {"x": 1923, "y": 0, "w": 1266, "h": 2531},
+            {"x": 0, "y": 0, "w": 4096, "h": 2531}
+          ]
+        },
+        "sizes": {
+          "large": {"h": 1266, "resize": "fit", "w": 2048},
+          "medium": {"h": 742, "resize": "fit", "w": 1200},
+          "small": {"h": 420, "resize": "fit", "w": 680},
+          "thumb": {"h": 150, "resize": "crop", "w": 150}
+        },
+        "type": "photo",
+        "url": "https://t.co/okUhem8zC7"
+      },
+      {
+        "display_url": "pic.twitter.com/okUhem8zC7",
+        "expanded_url": "https://twitter.com/kentcdodds/status/1420726342996271105/photo/1",
+        "ext_alt_text": "Blurred image of Kent on a onewheel",
+        "ext_media_availability": {"status": "Available"},
+        "indices": [122, 145],
+        "media_url_https": "https://pbs.twimg.com/media/E7du8LjUYAAD_CM.jpg",
+        "original_info": {
+          "height": 2731,
+          "width": 4096,
+          "focus_rects": [
+            {"x": 0, "y": 437, "w": 4096, "h": 2294},
+            {"x": 1365, "y": 0, "w": 2731, "h": 2731},
+            {"x": 1566, "y": 0, "w": 2396, "h": 2731},
+            {"x": 2081, "y": 0, "w": 1366, "h": 2731},
+            {"x": 0, "y": 0, "w": 4096, "h": 2731}
+          ]
+        },
+        "sizes": {
+          "large": {"h": 1366, "resize": "fit", "w": 2048},
+          "medium": {"h": 800, "resize": "fit", "w": 1200},
+          "small": {"h": 453, "resize": "fit", "w": 680},
+          "thumb": {"h": 150, "resize": "crop", "w": 150}
+        },
+        "type": "photo",
+        "url": "https://t.co/okUhem8zC7"
+      }
+    ],
+    "photos": [
+      {
+        "accessibilityLabel": "Kent on a onewheel through the trees",
+        "backgroundColor": {"red": 204, "green": 214, "blue": 221},
+        "cropCandidates": [
+          {"x": 0, "y": 184, "w": 4096, "h": 2294},
+          {"x": 1195, "y": 0, "w": 2731, "h": 2731},
+          {"x": 1362, "y": 0, "w": 2396, "h": 2731},
+          {"x": 1877, "y": 0, "w": 1366, "h": 2731},
+          {"x": 0, "y": 0, "w": 4096, "h": 2731}
+        ],
+        "expandedUrl": "https://twitter.com/kentcdodds/status/1420726342996271105/photo/1",
+        "url": "https://pbs.twimg.com/media/E7du8LgVUAI_dK-.jpg",
+        "width": 4096,
+        "height": 2731
+      },
+      {
+        "accessibilityLabel": "Kent speeding past on a onewheel",
+        "backgroundColor": {"red": 204, "green": 214, "blue": 221},
+        "cropCandidates": [
+          {"x": 0, "y": 0, "w": 4096, "h": 2294},
+          {"x": 1291, "y": 0, "w": 2531, "h": 2531},
+          {"x": 1446, "y": 0, "w": 2220, "h": 2531},
+          {"x": 1923, "y": 0, "w": 1266, "h": 2531},
+          {"x": 0, "y": 0, "w": 4096, "h": 2531}
+        ],
+        "expandedUrl": "https://twitter.com/kentcdodds/status/1420726342996271105/photo/1",
+        "url": "https://pbs.twimg.com/media/E7du8LeUYAMbo6P.jpg",
+        "width": 4096,
+        "height": 2531
+      },
+      {
+        "accessibilityLabel": "Blurred image of Kent on a onewheel",
+        "backgroundColor": {"red": 204, "green": 214, "blue": 221},
+        "cropCandidates": [
+          {"x": 0, "y": 437, "w": 4096, "h": 2294},
+          {"x": 1365, "y": 0, "w": 2731, "h": 2731},
+          {"x": 1566, "y": 0, "w": 2396, "h": 2731},
+          {"x": 2081, "y": 0, "w": 1366, "h": 2731},
+          {"x": 0, "y": 0, "w": 4096, "h": 2731}
+        ],
+        "expandedUrl": "https://twitter.com/kentcdodds/status/1420726342996271105/photo/1",
+        "url": "https://pbs.twimg.com/media/E7du8LjUYAAD_CM.jpg",
+        "width": 4096,
+        "height": 2731
+      }
+    ],
+    "conversation_count": 4,
+    "news_action_type": "conversation",
+    "isEdited": false,
+    "isStaleEdit": false
   },
   "quote": {
-    "data": {
-      "id": "1420720925868052486",
-      "referenced_tweets": [{"type": "quoted", "id": "1420683483660185601"}],
-      "public_metrics": {
-        "retweet_count": 1,
-        "reply_count": 1,
-        "like_count": 8,
-        "quote_count": 0
-      },
-      "attachments": {"media_keys": ["16_1420720837376679936"]},
-      "created_at": "2021-07-29T12:20:39.000Z",
-      "text": "I knew we'd make it. Good job everyone 👏👏👏 https://t.co/zBfFwCVjjx https://t.co/P4kqPBw4eV",
-      "author_id": "389681470"
-    },
-    "includes": {
+    "__typename": "Tweet",
+    "lang": "en",
+    "favorite_count": 18,
+    "possibly_sensitive": false,
+    "created_at": "2021-07-29T12:20:39.000Z",
+    "display_text_range": [0, 45],
+    "entities": {
+      "hashtags": [],
+      "urls": [],
+      "user_mentions": [],
+      "symbols": [],
       "media": [
         {
-          "media_key": "16_1420720837376679936",
-          "preview_image_url": "https://pbs.twimg.com/tweet_video_thumb/E7dqEwTVIAAUpoG.jpg",
-          "type": "animated_gif"
-        }
-      ],
-      "users": [
-        {
-          "url": "https://t.co/F3SmzPLcfn",
-          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg",
-          "name": "Kent C. Dodds",
-          "id": "389681470",
-          "username": "kentcdodds"
-        },
-        {
-          "url": "https://t.co/q7v0DjHk9o",
-          "profile_image_url": "https://pbs.twimg.com/profile_images/1392967452338704385/y8ts7dxh_normal.png",
-          "name": "Jane Manchun Wong",
-          "id": "337119125",
-          "username": "wongmjane"
-        }
-      ],
-      "tweets": [
-        {
-          "id": "1420683483660185601",
-          "public_metrics": {
-            "retweet_count": 77,
-            "reply_count": 42,
-            "like_count": 381,
-            "quote_count": 26
-          },
-          "attachments": {"media_keys": ["3_1420683478438342660"]},
-          "created_at": "2021-07-29T09:51:52.000Z",
-          "text": "“Never Gonna Give You Up” has reached one billion views on YouTube\n\nTo celebrate, YouTube has added a special feature to the video:\n\nhttps://t.co/uzikTJJlmf https://t.co/kH1jsTb0Ck",
-          "author_id": "337119125"
+          "display_url": "pic.twitter.com/zBfFwCVjjx",
+          "expanded_url": "https://twitter.com/kentcdodds/status/1420720925868052486/photo/1",
+          "indices": [43, 66],
+          "url": "https://t.co/zBfFwCVjjx"
         }
       ]
-    }
-  },
-  "simpleWithMention": {
-    "data": {
-      "id": "1420508470726463489",
-      "created_at": "2021-07-28T22:16:25.000Z",
-      "text": "Discord threads: I'm a fan\n\nWell done @discord developers 👏",
-      "entities": {
-        "mentions": [
-          {"start": 38, "end": 46, "username": "discord", "id": "3065618342"}
-        ]
-      },
-      "public_metrics": {
-        "retweet_count": 3,
-        "reply_count": 5,
-        "like_count": 143,
-        "quote_count": 0
-      },
-      "author_id": "389681470"
     },
-    "includes": {
-      "users": [
-        {
-          "url": "https://t.co/F3SmzPLcfn",
-          "id": "389681470",
-          "username": "kentcdodds",
-          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg",
-          "name": "Kent C. Dodds"
-        },
-        {
-          "url": "https://t.co/cNrYsYvfIi",
-          "id": "3065618342",
-          "username": "discord",
-          "profile_image_url": "https://pbs.twimg.com/profile_images/1392864511669854217/dBymBmGq_normal.jpg",
-          "name": "Discord"
-        }
-      ]
-    }
-  },
-  "reply": {
-    "data": {
-      "public_metrics": {
-        "retweet_count": 0,
-        "reply_count": 4,
-        "like_count": 22,
-        "quote_count": 2
-      },
-      "in_reply_to_user_id": "389681470",
-      "created_at": "2021-07-24T03:19:51.000Z",
-      "author_id": "389681470",
-      "id": "1418772893190606852",
-      "referenced_tweets": [
-        {"type": "replied_to", "id": "1418770182084784128"}
-      ],
-      "text": "It's working now and I don't know why 🤷‍♂️ 🙃"
+    "id_str": "1420720925868052486",
+    "text": "I knew we'd make it. Good job everyone 👏👏👏 https://t.co/zBfFwCVjjx",
+    "user": {
+      "id_str": "389681470",
+      "name": "Kent C. Dodds 🌌",
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1567269493608714241/6ACZo99k_normal.jpg",
+      "screen_name": "kentcdodds",
+      "verified": false,
+      "is_blue_verified": true
     },
-    "includes": {
-      "users": [
-        {
-          "username": "kentcdodds",
-          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg",
-          "id": "389681470",
-          "url": "https://t.co/F3SmzPLcfn",
-          "name": "Kent C. Dodds"
-        }
-      ],
-      "tweets": [
-        {
-          "public_metrics": {
-            "retweet_count": 2,
-            "reply_count": 5,
-            "like_count": 37,
-            "quote_count": 0
-          },
-          "created_at": "2021-07-24T03:09:05.000Z",
-          "author_id": "389681470",
-          "id": "1418770182084784128",
-          "text": "Has anyone ever had trouble embedding tweets? I've been debugging twitter's widgets code and it seems to fire off a promise to get \"settings\" which never resolves."
-        }
-      ]
-    }
-  },
-  "quoteOfQuote": {
-    "data": {
-      "id": "1420020360293011456",
-      "referenced_tweets": [{"type": "quoted", "id": "1420008083779096585"}],
-      "created_at": "2021-07-27T13:56:51.000Z",
-      "text": "Same https://t.co/RkjItSX4LZ",
-      "public_metrics": {
-        "retweet_count": 0,
-        "reply_count": 0,
-        "like_count": 17,
-        "quote_count": 0
-      },
-      "author_id": "389681470"
+    "edit_control": {
+      "edit_tweet_ids": ["1420720925868052486"],
+      "editable_until_msecs": "1627563039102",
+      "is_edit_eligible": true,
+      "edits_remaining": "5"
     },
-    "includes": {
-      "users": [
-        {
-          "url": "https://t.co/F3SmzPLcfn",
-          "id": "389681470",
-          "username": "kentcdodds",
-          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg",
-          "name": "Kent C. Dodds"
+    "mediaDetails": [
+      {
+        "display_url": "pic.twitter.com/zBfFwCVjjx",
+        "expanded_url": "https://twitter.com/kentcdodds/status/1420720925868052486/photo/1",
+        "ext_alt_text": "Kent dancing with the words \"Never gonna give you up\"",
+        "ext_media_availability": {"status": "Available"},
+        "indices": [43, 66],
+        "media_url_https": "https://pbs.twimg.com/tweet_video_thumb/E7dqEwTVIAAUpoG.jpg",
+        "original_info": {"height": 270, "width": 480},
+        "sizes": {
+          "large": {"h": 270, "resize": "fit", "w": 480},
+          "medium": {"h": 270, "resize": "fit", "w": 480},
+          "small": {"h": 270, "resize": "fit", "w": 480},
+          "thumb": {"h": 150, "resize": "crop", "w": 150}
         },
-        {
-          "url": "https://t.co/k2A00HIDSX",
-          "id": "2308474213",
-          "username": "JoshWComeau",
-          "profile_image_url": "https://pbs.twimg.com/profile_images/1362432748011536385/vRY-trfG_normal.jpg",
-          "name": "Josh W. Comeau"
+        "type": "animated_gif",
+        "url": "https://t.co/zBfFwCVjjx",
+        "video_info": {
+          "aspect_ratio": [16, 9],
+          "variants": [
+            {
+              "bitrate": 0,
+              "content_type": "video/mp4",
+              "url": "https://video.twimg.com/tweet_video/E7dqEwTVIAAUpoG.mp4"
+            }
+          ]
         }
-      ],
-      "tweets": [
-        {
-          "id": "1420008083779096585",
-          "referenced_tweets": [
-            {"type": "quoted", "id": "1419801602546970627"}
-          ],
-          "created_at": "2021-07-27T13:08:04.000Z",
-          "text": "Yup!  I've spent thousands of hours at this point learning and practicing how to teach. \n\nHaving a skill is only half of the equation. https://t.co/VwhEOSHlnD",
-          "public_metrics": {
-            "retweet_count": 9,
-            "reply_count": 2,
-            "like_count": 79,
-            "quote_count": 2
-          },
-          "author_id": "2308474213"
-        }
-      ]
-    }
-  },
-  "poll": {
-    "data": {
-      "created_at": "2021-07-15T01:59:53.000Z",
-      "id": "1415491278008033280",
-      "text": "Let's say a site supports both dark and light mode. Which should it use by default for your first visit?",
-      "author_id": "389681470",
-      "public_metrics": {
-        "retweet_count": 2,
-        "reply_count": 24,
-        "like_count": 27,
-        "quote_count": 0
       }
-    },
-    "includes": {
-      "users": [
+    ],
+    "photos": [],
+    "video": {
+      "aspectRatio": [16, 9],
+      "contentType": "gif",
+      "durationMs": 0,
+      "mediaAvailability": {"status": "available"},
+      "poster": "https://pbs.twimg.com/tweet_video_thumb/E7dqEwTVIAAUpoG.jpg",
+      "variants": [
         {
-          "username": "kentcdodds",
-          "id": "389681470",
-          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg",
-          "name": "Kent C. Dodds",
-          "url": "https://t.co/F3SmzPLcfn"
+          "type": "video/mp4",
+          "src": "https://video.twimg.com/tweet_video/E7dqEwTVIAAUpoG.mp4"
         }
-      ]
-    }
-  },
-  "linkWithMetadata": {
-    "data": {
-      "id": "1414579379422711809",
-      "created_at": "2021-07-12T13:36:20.000Z",
-      "text": "Today's the last day of that https://t.co/LoU6y2wvVV is 25% off.\n\nIt'd be awesome to become the team React expert. But what's even better than one React expert on the team, is an entire team of React experts! 💪\n\nTo get that, send your boss this: https://t.co/e7c3mMKkmQ 🚀",
-      "public_metrics": {
-        "retweet_count": 13,
-        "reply_count": 5,
-        "like_count": 30,
-        "quote_count": 4
-      },
-      "author_id": "389681470"
+      ],
+      "videoId": {"type": "tweet", "id": "1420720925868052486"},
+      "viewCount": 0
     },
-    "includes": {
-      "users": [
-        {
-          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg",
-          "id": "389681470",
-          "name": "Kent C. Dodds",
-          "url": "https://t.co/F3SmzPLcfn",
-          "username": "kentcdodds"
-        }
-      ]
-    }
-  },
-  "textOnly": {
-    "data": {
-      "id": "1413326124969459714",
-      "created_at": "2021-07-09T02:36:21.000Z",
-      "text": "When I do a big refactor to a data structure I like to start by changing the type definitions. Then I fix the red squiggles until they're gone.\n\nThe joy of things *just working* when I finally run the code will never get old.",
-      "public_metrics": {
-        "retweet_count": 19,
-        "reply_count": 16,
-        "like_count": 488,
-        "quote_count": 7
-      },
-      "author_id": "389681470"
-    },
-    "includes": {
-      "users": [
-        {
-          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg",
-          "id": "389681470",
-          "name": "Kent C. Dodds",
-          "url": "https://t.co/F3SmzPLcfn",
-          "username": "kentcdodds"
-        }
-      ]
-    }
-  },
-  "quoteOfDeletedTweet": {
-    "data": {
-      "id": "1406244165529137159",
-      "author_id": "389681470",
-      "created_at": "2021-06-19T13:35:10.000Z",
-      "text": "One of the things I loved most when starting to learn React was that I felt myself getting better at JavaScript.\n\n@remix_run is making me better at the web platform. Not just the DOM, but the browser-to-server-to-browser communication too. https://t.co/2uOyEDPAUG",
-      "public_metrics": {
-        "retweet_count": 8,
-        "reply_count": 12,
-        "like_count": 143,
-        "quote_count": 0
-      },
+    "conversation_count": 2,
+    "news_action_type": "conversation",
+    "quoted_tweet": {
+      "lang": "en",
+      "reply_count": 46,
+      "retweet_count": 122,
+      "favorite_count": 671,
+      "conversation_control": {"policy": "ByInvitation"},
+      "possibly_sensitive": false,
+      "created_at": "2021-07-29T09:51:52.000Z",
+      "display_text_range": [0, 156],
       "entities": {
-        "mentions": [
+        "hashtags": [],
+        "urls": [
           {
-            "start": 114,
-            "end": 124,
-            "username": "remix_run",
-            "id": "1250847387062419456"
+            "display_url": "youtu.be/dQw4w9WgXcQ",
+            "expanded_url": "https://youtu.be/dQw4w9WgXcQ",
+            "indices": [133, 156],
+            "url": "https://t.co/uzikTJJlmf"
+          }
+        ],
+        "user_mentions": [],
+        "symbols": [],
+        "media": [
+          {
+            "display_url": "pic.twitter.com/kH1jsTb0Ck",
+            "expanded_url": "https://twitter.com/wongmjane/status/1420683483660185601/photo/1",
+            "indices": [157, 180],
+            "url": "https://t.co/kH1jsTb0Ck"
           }
         ]
+      },
+      "id_str": "1420683483660185601",
+      "text": "“Never Gonna Give You Up” has reached one billion views on YouTube\n\nTo celebrate, YouTube has added a special feature to the video:\n\nhttps://t.co/uzikTJJlmf https://t.co/kH1jsTb0Ck",
+      "user": {
+        "id_str": "337119125",
+        "name": "Jane Manchun Wong",
+        "profile_image_url_https": "https://pbs.twimg.com/profile_images/1649138990770180096/L_Ei6tdf_normal.jpg",
+        "screen_name": "wongmjane",
+        "verified": false,
+        "is_blue_verified": false
+      },
+      "edit_control": {
+        "edit_tweet_ids": ["1420683483660185601"],
+        "editable_until_msecs": "1627554112184",
+        "is_edit_eligible": true,
+        "edits_remaining": "5"
+      },
+      "mediaDetails": [
+        {
+          "display_url": "pic.twitter.com/kH1jsTb0Ck",
+          "expanded_url": "https://twitter.com/wongmjane/status/1420683483660185601/photo/1",
+          "ext_media_availability": {"status": "Available"},
+          "indices": [157, 180],
+          "media_url_https": "https://pbs.twimg.com/media/E7dIGLaVcAQAMht.jpg",
+          "original_info": {
+            "height": 937,
+            "width": 1125,
+            "focus_rects": [
+              {"x": 0, "y": 307, "w": 1125, "h": 630},
+              {"x": 0, "y": 0, "w": 937, "h": 937},
+              {"x": 0, "y": 0, "w": 822, "h": 937},
+              {"x": 0, "y": 0, "w": 469, "h": 937},
+              {"x": 0, "y": 0, "w": 1125, "h": 937}
+            ]
+          },
+          "sizes": {
+            "large": {"h": 937, "resize": "fit", "w": 1125},
+            "medium": {"h": 937, "resize": "fit", "w": 1125},
+            "small": {"h": 566, "resize": "fit", "w": 680},
+            "thumb": {"h": 150, "resize": "crop", "w": 150}
+          },
+          "type": "photo",
+          "url": "https://t.co/kH1jsTb0Ck"
+        }
+      ],
+      "photos": [
+        {
+          "backgroundColor": {"red": 204, "green": 214, "blue": 221},
+          "cropCandidates": [
+            {"x": 0, "y": 307, "w": 1125, "h": 630},
+            {"x": 0, "y": 0, "w": 937, "h": 937},
+            {"x": 0, "y": 0, "w": 822, "h": 937},
+            {"x": 0, "y": 0, "w": 469, "h": 937},
+            {"x": 0, "y": 0, "w": 1125, "h": 937}
+          ],
+          "expandedUrl": "https://twitter.com/wongmjane/status/1420683483660185601/photo/1",
+          "url": "https://pbs.twimg.com/media/E7dIGLaVcAQAMht.jpg",
+          "width": 1125,
+          "height": 937
+        }
+      ],
+      "isEdited": false,
+      "isStaleEdit": false
+    },
+    "isEdited": false,
+    "isStaleEdit": false
+  },
+  "simpleWithMention": {
+    "__typename": "Tweet",
+    "lang": "en",
+    "favorite_count": 179,
+    "created_at": "2021-07-28T22:16:25.000Z",
+    "display_text_range": [0, 60],
+    "entities": {
+      "hashtags": [],
+      "urls": [],
+      "user_mentions": [
+        {
+          "id_str": "3065618342",
+          "indices": [38, 46],
+          "name": "Discord",
+          "screen_name": "discord"
+        }
+      ],
+      "symbols": []
+    },
+    "id_str": "1420508470726463489",
+    "text": "Discord threads: I'm a fan\n\nWell done @discord developers 👏",
+    "user": {
+      "id_str": "389681470",
+      "name": "Kent C. Dodds 🌌",
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1567269493608714241/6ACZo99k_normal.jpg",
+      "screen_name": "kentcdodds",
+      "verified": false,
+      "is_blue_verified": true
+    },
+    "edit_control": {
+      "edit_tweet_ids": ["1420508470726463489"],
+      "editable_until_msecs": "1627512385849",
+      "is_edit_eligible": true,
+      "edits_remaining": "5"
+    },
+    "conversation_count": 4,
+    "news_action_type": "conversation",
+    "isEdited": false,
+    "isStaleEdit": false
+  },
+  "reply": {
+    "__typename": "Tweet",
+    "in_reply_to_screen_name": "kentcdodds",
+    "in_reply_to_status_id_str": "1418770182084784128",
+    "in_reply_to_user_id_str": "389681470",
+    "lang": "en",
+    "favorite_count": 20,
+    "self_thread": {"id_str": "1418770182084784128"},
+    "created_at": "2021-07-24T03:19:51.000Z",
+    "display_text_range": [0, 46],
+    "entities": {
+      "hashtags": [],
+      "urls": [],
+      "user_mentions": [],
+      "symbols": []
+    },
+    "id_str": "1418772893190606852",
+    "text": "It's working now and I don't know why 🤷‍♂️ 🙃",
+    "user": {
+      "id_str": "389681470",
+      "name": "Kent C. Dodds 🌌",
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1567269493608714241/6ACZo99k_normal.jpg",
+      "screen_name": "kentcdodds",
+      "verified": false,
+      "is_blue_verified": true
+    },
+    "edit_control": {
+      "edit_tweet_ids": ["1418772893190606852"],
+      "editable_until_msecs": "1627098591919",
+      "is_edit_eligible": true,
+      "edits_remaining": "5"
+    },
+    "conversation_count": 3,
+    "news_action_type": "conversation",
+    "parent": {
+      "lang": "en",
+      "reply_count": 5,
+      "retweet_count": 2,
+      "favorite_count": 34,
+      "self_thread": {"id_str": "1418770182084784128"},
+      "created_at": "2021-07-24T03:09:05.000Z",
+      "display_text_range": [0, 163],
+      "entities": {
+        "hashtags": [],
+        "urls": [],
+        "user_mentions": [],
+        "symbols": []
+      },
+      "id_str": "1418770182084784128",
+      "text": "Has anyone ever had trouble embedding tweets? I've been debugging twitter's widgets code and it seems to fire off a promise to get \"settings\" which never resolves.",
+      "user": {
+        "id_str": "389681470",
+        "name": "Kent C. Dodds 🌌",
+        "profile_image_url_https": "https://pbs.twimg.com/profile_images/1567269493608714241/6ACZo99k_normal.jpg",
+        "screen_name": "kentcdodds",
+        "verified": false,
+        "is_blue_verified": true
+      },
+      "edit_control": {
+        "edit_tweet_ids": ["1418770182084784128"],
+        "editable_until_msecs": "1627097945541",
+        "is_edit_eligible": true,
+        "edits_remaining": "5"
+      },
+      "isEdited": false,
+      "isStaleEdit": false
+    },
+    "isEdited": false,
+    "isStaleEdit": false
+  },
+  "quoteOfQuote": {
+    "__typename": "Tweet",
+    "lang": "en",
+    "favorite_count": 17,
+    "created_at": "2021-07-27T13:56:51.000Z",
+    "display_text_range": [0, 4],
+    "entities": {
+      "hashtags": [],
+      "urls": [],
+      "user_mentions": [],
+      "symbols": []
+    },
+    "id_str": "1420020360293011456",
+    "text": "Same",
+    "user": {
+      "id_str": "389681470",
+      "name": "Kent C. Dodds 🌌",
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1567269493608714241/6ACZo99k_normal.jpg",
+      "screen_name": "kentcdodds",
+      "verified": false,
+      "is_blue_verified": true
+    },
+    "edit_control": {
+      "edit_tweet_ids": ["1420020360293011456"],
+      "editable_until_msecs": "1627396011253",
+      "is_edit_eligible": true,
+      "edits_remaining": "5"
+    },
+    "conversation_count": 0,
+    "news_action_type": "conversation",
+    "quoted_tweet": {
+      "lang": "en",
+      "reply_count": 2,
+      "retweet_count": 6,
+      "favorite_count": 73,
+      "self_thread": {"id_str": "1420008083779096585"},
+      "created_at": "2021-07-27T13:08:04.000Z",
+      "display_text_range": [0, 134],
+      "entities": {
+        "hashtags": [],
+        "urls": [],
+        "user_mentions": [],
+        "symbols": []
+      },
+      "id_str": "1420008083779096585",
+      "text": "Yup!  I’ve spent thousands of hours at this point learning and practicing how to teach. \n\nHaving a skill is only half of the equation.",
+      "user": {
+        "id_str": "2308474213",
+        "name": "Josh W. Comeau",
+        "profile_image_url_https": "https://pbs.twimg.com/profile_images/1588928652452003840/NzvDjlrh_normal.jpg",
+        "screen_name": "JoshWComeau",
+        "verified": false,
+        "is_blue_verified": false
+      },
+      "edit_control": {
+        "edit_tweet_ids": ["1420008083779096585"],
+        "editable_until_msecs": "1627393084304",
+        "is_edit_eligible": true,
+        "edits_remaining": "5"
+      },
+      "isEdited": false,
+      "isStaleEdit": false
+    },
+    "isEdited": false,
+    "isStaleEdit": false
+  },
+  "poll": {
+    "__typename": "Tweet",
+    "lang": "en",
+    "favorite_count": 26,
+    "self_thread": {"id_str": "1415491278008033280"},
+    "possibly_sensitive": false,
+    "created_at": "2021-07-15T01:59:53.000Z",
+    "display_text_range": [0, 104],
+    "entities": {
+      "hashtags": [],
+      "urls": [],
+      "user_mentions": [],
+      "symbols": []
+    },
+    "id_str": "1415491278008033280",
+    "text": "Let's say a site supports both dark and light mode. Which should it use by default for your first visit?",
+    "user": {
+      "id_str": "389681470",
+      "name": "Kent C. Dodds 🌌",
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1567269493608714241/6ACZo99k_normal.jpg",
+      "screen_name": "kentcdodds",
+      "verified": false,
+      "is_blue_verified": true
+    },
+    "edit_control": {
+      "edit_tweet_ids": ["1415491278008033280"],
+      "editable_until_msecs": "1626316193890",
+      "is_edit_eligible": true,
+      "edits_remaining": "5"
+    },
+    "conversation_count": 23,
+    "news_action_type": "conversation",
+    "card": {
+      "card_platform": {
+        "platform": {
+          "audience": {"name": "production"},
+          "device": {"name": "Swift", "version": "12"}
+        }
+      },
+      "name": "poll4choice_text_only",
+      "url": "card://1415491277131374593",
+      "binding_values": {
+        "choice1_label": {"string_value": "Light mode", "type": "STRING"},
+        "choice2_label": {"string_value": "Dark mode", "type": "STRING"},
+        "end_datetime_utc": {
+          "string_value": "2021-07-16T01:59:53Z",
+          "type": "STRING"
+        },
+        "counts_are_final": {"boolean_value": true, "type": "BOOLEAN"},
+        "choice2_count": {"string_value": "1101", "type": "STRING"},
+        "choice1_count": {"string_value": "869", "type": "STRING"},
+        "choice4_label": {"string_value": "🤷‍♂️", "type": "STRING"},
+        "last_updated_datetime_utc": {
+          "string_value": "2021-07-16T01:59:57Z",
+          "type": "STRING"
+        },
+        "duration_minutes": {"string_value": "1440", "type": "STRING"},
+        "choice3_count": {"string_value": "3123", "type": "STRING"},
+        "choice4_count": {"string_value": "121", "type": "STRING"},
+        "choice3_label": {
+          "string_value": "Use my system setting",
+          "type": "STRING"
+        },
+        "api": {"string_value": "capi://passthrough/1", "type": "STRING"},
+        "card_url": {
+          "scribe_key": "card_url",
+          "string_value": "https://twitter.com",
+          "type": "STRING"
+        }
       }
     },
-    "includes": {
-      "users": [
+    "isEdited": false,
+    "isStaleEdit": false
+  },
+  "linkWithMetadata": {
+    "__typename": "Tweet",
+    "lang": "en",
+    "favorite_count": 28,
+    "possibly_sensitive": false,
+    "created_at": "2021-07-12T13:36:20.000Z",
+    "display_text_range": [0, 273],
+    "entities": {
+      "hashtags": [],
+      "urls": [
         {
-          "name": "Kent C. Dodds",
-          "username": "kentcdodds",
-          "id": "389681470",
-          "url": "https://t.co/F3SmzPLcfn",
-          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg"
+          "display_url": "EpicReact.dev",
+          "expanded_url": "http://EpicReact.dev",
+          "indices": [29, 52],
+          "url": "https://t.co/LoU6y2wvVV"
         },
         {
-          "name": "Remix 💿",
-          "username": "remix_run",
-          "id": "1250847387062419456",
-          "url": "https://t.co/CIkPzYfePh",
-          "profile_image_url": "https://pbs.twimg.com/profile_images/1250847865565442053/5EfyvSwf_normal.jpg"
+          "display_url": "EpicReact.dev/boss",
+          "expanded_url": "https://EpicReact.dev/boss",
+          "indices": [246, 269],
+          "url": "https://t.co/e7c3mMKkmQ"
         }
-      ]
-    }
-  },
-  "deletedTweet": {
-    "errors": [
-      {
-        "value": "1406128033216356353",
-        "detail": "Could not find tweet with id: [1406128033216356353].",
-        "title": "Not Found Error",
-        "resource_type": "tweet",
-        "parameter": "id",
-        "resource_id": "1406128033216356353",
-        "type": "https://api.twitter.com/2/problems/resource-not-found"
-      }
-    ]
-  },
-  "streamEmbed": {
-    "data": {
-      "id": "1403018951639113733",
-      "author_id": "389681470",
-      "created_at": "2021-06-10T15:59:19.000Z",
-      "text": "Prisma is amazing https://t.co/gmCkT93byp",
-      "public_metrics": {
-        "retweet_count": 7,
-        "reply_count": 0,
-        "like_count": 60,
-        "quote_count": 0
+      ],
+      "user_mentions": [],
+      "symbols": []
+    },
+    "id_str": "1414579379422711809",
+    "text": "Today's the last day of that https://t.co/LoU6y2wvVV is 25% off.\n\nIt'd be awesome to become the team React expert. But what's even better than one React expert on the team, is an entire team of React experts! 💪\n\nTo get that, send your boss this: https://t.co/e7c3mMKkmQ 🚀",
+    "user": {
+      "id_str": "389681470",
+      "name": "Kent C. Dodds 🌌",
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1567269493608714241/6ACZo99k_normal.jpg",
+      "screen_name": "kentcdodds",
+      "verified": false,
+      "is_blue_verified": true
+    },
+    "edit_control": {
+      "edit_tweet_ids": ["1414579379422711809"],
+      "editable_until_msecs": "1626098780325",
+      "is_edit_eligible": true,
+      "edits_remaining": "5"
+    },
+    "conversation_count": 6,
+    "news_action_type": "conversation",
+    "card": {
+      "card_platform": {
+        "platform": {
+          "audience": {"name": "production"},
+          "device": {"name": "Swift", "version": "12"}
+        }
+      },
+      "name": "summary_large_image",
+      "url": "https://t.co/e7c3mMKkmQ",
+      "binding_values": {
+        "photo_image_full_size_large": {
+          "image_value": {
+            "height": 419,
+            "width": 800,
+            "url": "https://pbs.twimg.com/card_img/1649548167300390913/lFc0jt3o?format=png&name=800x419"
+          },
+          "type": "IMAGE"
+        },
+        "thumbnail_image": {
+          "image_value": {
+            "height": 147,
+            "width": 280,
+            "url": "https://pbs.twimg.com/card_img/1649548167300390913/lFc0jt3o?format=png&name=280x150"
+          },
+          "type": "IMAGE"
+        },
+        "description": {
+          "string_value": "The team really needs Epic React so that we can all have a shared common understanding of how to build high-quality, performant, React apps that scale.",
+          "type": "STRING"
+        },
+        "domain": {"string_value": "epicreact.dev", "type": "STRING"},
+        "thumbnail_image_large": {
+          "image_value": {
+            "height": 314,
+            "width": 600,
+            "url": "https://pbs.twimg.com/card_img/1649548167300390913/lFc0jt3o?format=png&name=600x600"
+          },
+          "type": "IMAGE"
+        },
+        "summary_photo_image_small": {
+          "image_value": {
+            "height": 202,
+            "width": 386,
+            "url": "https://pbs.twimg.com/card_img/1649548167300390913/lFc0jt3o?format=png&name=386x202"
+          },
+          "type": "IMAGE"
+        },
+        "thumbnail_image_original": {
+          "image_value": {
+            "height": 628,
+            "width": 1200,
+            "url": "https://pbs.twimg.com/card_img/1649548167300390913/lFc0jt3o?format=png&name=orig"
+          },
+          "type": "IMAGE"
+        },
+        "photo_image_full_size_small": {
+          "image_value": {
+            "height": 202,
+            "width": 386,
+            "url": "https://pbs.twimg.com/card_img/1649548167300390913/lFc0jt3o?format=png&name=386x202"
+          },
+          "type": "IMAGE"
+        },
+        "summary_photo_image_large": {
+          "image_value": {
+            "height": 419,
+            "width": 800,
+            "url": "https://pbs.twimg.com/card_img/1649548167300390913/lFc0jt3o?format=png&name=800x419"
+          },
+          "type": "IMAGE"
+        },
+        "thumbnail_image_small": {
+          "image_value": {
+            "height": 75,
+            "width": 144,
+            "url": "https://pbs.twimg.com/card_img/1649548167300390913/lFc0jt3o?format=png&name=144x144"
+          },
+          "type": "IMAGE"
+        },
+        "thumbnail_image_x_large": {
+          "image_value": {
+            "height": 628,
+            "width": 1200,
+            "url": "https://pbs.twimg.com/card_img/1649548167300390913/lFc0jt3o?format=png&name=2048x2048_2_exp"
+          },
+          "type": "IMAGE"
+        },
+        "photo_image_full_size_original": {
+          "image_value": {
+            "height": 628,
+            "width": 1200,
+            "url": "https://pbs.twimg.com/card_img/1649548167300390913/lFc0jt3o?format=png&name=orig"
+          },
+          "type": "IMAGE"
+        },
+        "vanity_url": {
+          "scribe_key": "vanity_url",
+          "string_value": "epicreact.dev",
+          "type": "STRING"
+        },
+        "photo_image_full_size": {
+          "image_value": {
+            "height": 314,
+            "width": 600,
+            "url": "https://pbs.twimg.com/card_img/1649548167300390913/lFc0jt3o?format=png&name=600x314"
+          },
+          "type": "IMAGE"
+        },
+        "thumbnail_image_color": {
+          "image_color_value": {
+            "palette": [
+              {
+                "rgb": {"blue": 43, "green": 24, "red": 14},
+                "percentage": 86.95
+              },
+              {
+                "rgb": {"blue": 111, "green": 56, "red": 28},
+                "percentage": 5.91
+              },
+              {
+                "rgb": {"blue": 189, "green": 183, "red": 180},
+                "percentage": 2.82
+              },
+              {"rgb": {"blue": 43, "green": 58, "red": 60}, "percentage": 0.9},
+              {"rgb": {"blue": 44, "green": 85, "red": 99}, "percentage": 0.54}
+            ]
+          },
+          "type": "IMAGE_COLOR"
+        },
+        "title": {"string_value": "Why we need Epic React", "type": "STRING"},
+        "summary_photo_image_color": {
+          "image_color_value": {
+            "palette": [
+              {
+                "rgb": {"blue": 43, "green": 24, "red": 14},
+                "percentage": 86.95
+              },
+              {
+                "rgb": {"blue": 111, "green": 56, "red": 28},
+                "percentage": 5.91
+              },
+              {
+                "rgb": {"blue": 189, "green": 183, "red": 180},
+                "percentage": 2.82
+              },
+              {"rgb": {"blue": 43, "green": 58, "red": 60}, "percentage": 0.9},
+              {"rgb": {"blue": 44, "green": 85, "red": 99}, "percentage": 0.54}
+            ]
+          },
+          "type": "IMAGE_COLOR"
+        },
+        "summary_photo_image_x_large": {
+          "image_value": {
+            "height": 628,
+            "width": 1200,
+            "url": "https://pbs.twimg.com/card_img/1649548167300390913/lFc0jt3o?format=png&name=2048x2048_2_exp"
+          },
+          "type": "IMAGE"
+        },
+        "summary_photo_image": {
+          "image_value": {
+            "height": 314,
+            "width": 600,
+            "url": "https://pbs.twimg.com/card_img/1649548167300390913/lFc0jt3o?format=png&name=600x314"
+          },
+          "type": "IMAGE"
+        },
+        "photo_image_full_size_color": {
+          "image_color_value": {
+            "palette": [
+              {
+                "rgb": {"blue": 43, "green": 24, "red": 14},
+                "percentage": 86.95
+              },
+              {
+                "rgb": {"blue": 111, "green": 56, "red": 28},
+                "percentage": 5.91
+              },
+              {
+                "rgb": {"blue": 189, "green": 183, "red": 180},
+                "percentage": 2.82
+              },
+              {"rgb": {"blue": 43, "green": 58, "red": 60}, "percentage": 0.9},
+              {"rgb": {"blue": 44, "green": 85, "red": 99}, "percentage": 0.54}
+            ]
+          },
+          "type": "IMAGE_COLOR"
+        },
+        "photo_image_full_size_x_large": {
+          "image_value": {
+            "height": 628,
+            "width": 1200,
+            "url": "https://pbs.twimg.com/card_img/1649548167300390913/lFc0jt3o?format=png&name=2048x2048_2_exp"
+          },
+          "type": "IMAGE"
+        },
+        "card_url": {
+          "scribe_key": "card_url",
+          "string_value": "https://t.co/e7c3mMKkmQ",
+          "type": "STRING"
+        },
+        "summary_photo_image_original": {
+          "image_value": {
+            "height": 628,
+            "width": 1200,
+            "url": "https://pbs.twimg.com/card_img/1649548167300390913/lFc0jt3o?format=png&name=orig"
+          },
+          "type": "IMAGE"
+        }
       }
     },
-    "includes": {
-      "users": [
+    "isEdited": false,
+    "isStaleEdit": false
+  },
+  "textOnly": {
+    "__typename": "Tweet",
+    "lang": "en",
+    "favorite_count": 466,
+    "created_at": "2021-07-09T02:36:21.000Z",
+    "display_text_range": [0, 225],
+    "entities": {
+      "hashtags": [],
+      "urls": [],
+      "user_mentions": [],
+      "symbols": []
+    },
+    "id_str": "1413326124969459714",
+    "text": "When I do a big refactor to a data structure I like to start by changing the type definitions. Then I fix the red squiggles until they're gone.\n\nThe joy of things *just working* when I finally run the code will never get old.",
+    "user": {
+      "id_str": "389681470",
+      "name": "Kent C. Dodds 🌌",
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1567269493608714241/6ACZo99k_normal.jpg",
+      "screen_name": "kentcdodds",
+      "verified": false,
+      "is_blue_verified": true
+    },
+    "edit_control": {
+      "edit_tweet_ids": ["1413326124969459714"],
+      "editable_until_msecs": "1625799981179",
+      "is_edit_eligible": true,
+      "edits_remaining": "5"
+    },
+    "conversation_count": 15,
+    "news_action_type": "conversation",
+    "isEdited": false,
+    "isStaleEdit": false
+  },
+  "quoteOfDeletedTweet": {
+    "__typename": "Tweet",
+    "lang": "en",
+    "favorite_count": 135,
+    "created_at": "2021-06-19T13:35:10.000Z",
+    "display_text_range": [0, 239],
+    "entities": {
+      "hashtags": [],
+      "urls": [],
+      "user_mentions": [
         {
-          "name": "Kent C. Dodds",
-          "username": "kentcdodds",
-          "id": "389681470",
-          "url": "https://t.co/F3SmzPLcfn",
-          "profile_image_url": "https://pbs.twimg.com/profile_images/759557613445001216/6M2E1l4q_normal.jpg"
+          "id_str": "1250847387062419456",
+          "indices": [114, 124],
+          "name": "Remix 💿",
+          "screen_name": "remix_run"
         }
-      ]
-    }
+      ],
+      "symbols": []
+    },
+    "id_str": "1406244165529137159",
+    "text": "One of the things I loved most when starting to learn React was that I felt myself getting better at JavaScript.\n\n@remix_run is making me better at the web platform. Not just the DOM, but the browser-to-server-to-browser communication too.",
+    "user": {
+      "id_str": "389681470",
+      "name": "Kent C. Dodds 🌌",
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1567269493608714241/6ACZo99k_normal.jpg",
+      "screen_name": "kentcdodds",
+      "verified": false,
+      "is_blue_verified": true
+    },
+    "edit_control": {
+      "edit_tweet_ids": ["1406244165529137159"],
+      "editable_until_msecs": "1624111510472",
+      "is_edit_eligible": true,
+      "edits_remaining": "5"
+    },
+    "conversation_count": 11,
+    "news_action_type": "conversation",
+    "isEdited": false,
+    "isStaleEdit": false
+  },
+  "streamEmbed": {
+    "__typename": "Tweet",
+    "lang": "en",
+    "favorite_count": 57,
+    "possibly_sensitive": false,
+    "created_at": "2021-06-10T15:59:19.000Z",
+    "display_text_range": [0, 41],
+    "entities": {
+      "hashtags": [],
+      "urls": [
+        {
+          "display_url": "briefs.fm/3-minutes-with…",
+          "expanded_url": "http://www.briefs.fm/3-minutes-with-kent/235",
+          "indices": [18, 41],
+          "url": "https://t.co/gmCkT93byp"
+        }
+      ],
+      "user_mentions": [],
+      "symbols": []
+    },
+    "id_str": "1403018951639113733",
+    "text": "Prisma is amazing https://t.co/gmCkT93byp",
+    "user": {
+      "id_str": "389681470",
+      "name": "Kent C. Dodds 🌌",
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1567269493608714241/6ACZo99k_normal.jpg",
+      "screen_name": "kentcdodds",
+      "verified": false,
+      "is_blue_verified": true
+    },
+    "edit_control": {
+      "edit_tweet_ids": ["1403018951639113733"],
+      "editable_until_msecs": "1623342559559",
+      "is_edit_eligible": true,
+      "edits_remaining": "5"
+    },
+    "conversation_count": 0,
+    "news_action_type": "conversation",
+    "card": {
+      "card_platform": {
+        "platform": {
+          "audience": {"name": "production"},
+          "device": {"name": "Swift", "version": "12"}
+        }
+      },
+      "name": "player",
+      "url": "https://t.co/gmCkT93byp",
+      "binding_values": {
+        "player_url": {
+          "string_value": "https://www.briefs.fm/3-minutes-with-kent/235/embed",
+          "type": "STRING"
+        },
+        "player_image_large": {
+          "image_value": {
+            "height": 197,
+            "width": 351,
+            "url": "https://pbs.twimg.com/cards/player-placeholder.png"
+          },
+          "type": "IMAGE"
+        },
+        "player_image": {
+          "image_value": {
+            "height": 197,
+            "width": 351,
+            "url": "https://pbs.twimg.com/cards/player-placeholder.png"
+          },
+          "type": "IMAGE"
+        },
+        "description": {
+          "string_value": "Hey there friends. So yesterday I was just a fanboying I guess about Prisma. If you haven't heard of Prisma, it is a Oh what does that? It's ORN, I can't remember what what the word for that is but...",
+          "type": "STRING"
+        },
+        "player_width": {"string_value": "400", "type": "STRING"},
+        "domain": {"string_value": "www.briefs.fm", "type": "STRING"},
+        "site": {
+          "scribe_key": "publisher_id",
+          "type": "USER",
+          "user_value": {"id_str": "4851140197", "path": []}
+        },
+        "player_height": {"string_value": "93", "type": "STRING"},
+        "vanity_url": {
+          "scribe_key": "vanity_url",
+          "string_value": "briefs.fm",
+          "type": "STRING"
+        },
+        "player_image_small": {
+          "image_value": {
+            "height": 197,
+            "width": 351,
+            "url": "https://pbs.twimg.com/cards/player-placeholder.png"
+          },
+          "type": "IMAGE"
+        },
+        "title": {"string_value": "Prisma is amazing", "type": "STRING"},
+        "card_url": {
+          "scribe_key": "card_url",
+          "string_value": "https://t.co/gmCkT93byp",
+          "type": "STRING"
+        },
+        "player_image_x_large": {
+          "image_value": {
+            "height": 197,
+            "width": 351,
+            "url": "https://pbs.twimg.com/cards/player-placeholder.png"
+          },
+          "type": "IMAGE"
+        }
+      }
+    },
+    "isEdited": false,
+    "isStaleEdit": false
   }
 }

@@ -415,6 +415,7 @@ pre {
   height: 100%;
   object-fit: cover;
   overflow: hidden;
+  max-height: 366px;
 }
 
 .prose .tweet-embed .tweet-media-container .tweet-media-with-play-button {

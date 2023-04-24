@@ -206,6 +206,8 @@ app.use(
           'images.transistor.fm',
           'i2.wp.com',
           'i1.wp.com',
+          'og-image-react-egghead.now.sh',
+          'og-image-react-egghead.vercel.app',
           ...(MODE === 'development' ? ['cloudflare-ipfs.com'] : []),
         ],
         'media-src': ["'self'", 'res.cloudinary.com', 'data:', 'blob:'],

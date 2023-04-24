@@ -4,16 +4,11 @@ import makeMetascraper from 'metascraper'
 import mImage from 'metascraper-image'
 import mTitle from 'metascraper-title'
 import mDescription from 'metascraper-description'
-import {
-  formatDate,
-  formatNumber,
-  getRequiredServerEnvVar,
-  typedBoolean,
-} from './misc'
+import {formatDate, formatNumber, typedBoolean} from './misc'
 import cachified, {verboseReporter} from 'cachified'
 import {cache, lruCache} from './cache.server'
-
-const token = getRequiredServerEnvVar('TWITTER_BEARER_TOKEN')
+import {getTweet} from './twitter/get-tweet'
+import type {Tweet} from './twitter/types'
 
 const metascraper = makeMetascraper([mTitle(), mDescription(), mImage()])
 
@@ -60,127 +55,26 @@ function unshorten(
   })
 }
 
-type Latitude = number
-type Longitude = number
-type Media = {
-  media_key: string
-  type: 'photo' | 'animated_gif' | 'video'
-  url: string
-  preview_image_url?: string
-}
-type TweetData = {
-  id: string
-  author_id: string
-  text: string
-  created_at: string
-  public_metrics: {
-    retweet_count: number
-    reply_count: number
-    like_count: number
-    quote_count: number
-  }
-  in_reply_to_user_id?: string
-  attachments?: {media_keys: Array<string>}
-  referenced_tweets?: Array<{
-    type: 'replied_to' | 'retweeted' | 'quoted'
-    id: string
-  }>
-  entities?: {
-    mentions: Array<{
-      start: number
-      end: number
-      username: string
-      id: string
-    }>
-  }
-
-  geo?: {
-    place_id: string
-    full_name: string
-    geo: {
-      type: 'Feature'
-      bbox: [Latitude, Longitude, Latitude, Longitude]
-      properties: {}
-    }
-  }
-}
-type User = {
-  id: string
-  url: string
-  name: string
-  username: string
-  profile_image_url: string
-}
-type TweetJsonResponse = {
-  data: TweetData
-  includes: {
-    users?: Array<User>
-    media?: Array<Media>
-    tweets: Array<TweetData>
-  }
-}
-
-type TweetErrorJsonResponse = {
-  errors: Array<{
-    value: string
-    detail: string
-    title: 'Not Found Error'
-    resource_type: 'tweet'
-    parameter: 'id'
-    resource_id: string
-    type: string
-  }>
-}
-
-type TweetRateLimitErrorJsonResponse = {
-  title: 'Too Many Requests'
-  detail: 'Too Many Requests'
-  type: 'about:blank'
-  status: 429
-}
-
-async function getTweet(tweetId: string) {
+async function getTweetCached(tweetId: string) {
   return cachified({
     key: `tweet:${tweetId}`,
     cache: lruCache,
     reporter: verboseReporter(),
     ttl: 1000 * 60,
-    getFreshValue: () => getTweetImpl(tweetId),
+    getFreshValue: () => getTweet(tweetId),
   })
-}
-
-async function getTweetImpl(tweetId: string) {
-  const url = new URL(`https://api.twitter.com/2/tweets/${tweetId}`)
-  const params = {
-    'tweet.fields': 'public_metrics,created_at',
-    expansions:
-      'author_id,attachments.media_keys,entities.mentions.username,in_reply_to_user_id,referenced_tweets.id,referenced_tweets.id.author_id,geo.place_id',
-    'user.fields': 'name,username,url,profile_image_url',
-    'media.fields': 'preview_image_url,url,type',
-    'place.fields': 'full_name,geo',
-  }
-  for (const [key, value] of Object.entries(params)) {
-    url.searchParams.append(key, value)
-  }
-  const response = await fetch(url.toString(), {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-  const tweetJson = await response.json()
-  return tweetJson as
-    | TweetJsonResponse
-    | TweetErrorJsonResponse
-    | TweetRateLimitErrorJsonResponse
 }
 
 const playSvg = `<svg width="75" height="75" viewBox="0 0 75 75" xmlns="http://www.w3.org/2000/svg"><circle cx="37.4883" cy="37.8254" r="37" fill="white" /><path fillRule="evenodd" clipRule="evenodd" d="M35.2643 33.025L41.0017 36.9265C41.6519 37.369 41.6499 38.3118 40.9991 38.7518L35.2616 42.6276C34.5113 43.1349 33.4883 42.6077 33.4883 41.7143V33.9364C33.4883 33.0411 34.5146 32.5151 35.2643 33.025" /></svg>`
 
-function buildMediaList(medias: Array<Media>, link?: string) {
-  const width = medias.length > 1 ? '50%' : '100%'
-  const imgs = medias
+function buildMediaList(
+  mediaDetails: NonNullable<Tweet['mediaDetails']>,
+  link?: string,
+) {
+  const width = mediaDetails.length > 1 ? '50%' : '100%'
+  const imgs = mediaDetails
     .map(media => {
-      const src = media.preview_image_url ?? media.url
+      const src = media.media_url_https
       const imgHTML = `<img src="${src}" width="${width}" loading="lazy" alt="Tweet media" />`
       if (media.type === 'animated_gif' || media.type === 'video') {
         return `<div class="tweet-media-with-play-button"><div class="tweet-media-play-button">${playSvg}</div>${imgHTML}</div>`
@@ -189,7 +83,7 @@ function buildMediaList(medias: Array<Media>, link?: string) {
       }
     })
     .join('')
-  const grid = `<div class="tweet-media-container"><div class="tweet-media-grid" data-count="${medias.length}">${imgs}</div></div>`
+  const grid = `<div class="tweet-media-container"><div class="tweet-media-grid" data-count="${mediaDetails.length}">${imgs}</div></div>`
   if (link) {
     return `<a href="${link}" target="_blank" rel="noreferrer noopener">${grid}</a>`
   } else {
@@ -207,35 +101,25 @@ const arrowSvg = `<svg width="24" height="24" fill="none" viewBox="0 0 24 24">
 </svg>
 `
 
-async function buildTweetHTML(
-  tweet: TweetJsonResponse,
-  expandQuotedTweet: boolean,
-) {
-  const author = tweet.includes.users?.find(
-    user => user.id === tweet.data.author_id,
-  )
-  if (!author) {
-    console.error(tweet.data.author_id, tweet.includes.users)
-    throw new Error('unable to find tweet author')
-  }
-
-  const tweetURL = `https://twitter.com/${author.username}/status/${tweet.data.id}`
+async function buildTweetHTML(tweet: Tweet, expandQuotedTweet: boolean) {
+  const author = tweet.user
+  const tweetURL = `https://twitter.com/${author.screen_name}/status/${tweet.id_str}`
 
   // _normal is only 48x48 which looks bad on high-res displays
   // _bigger is 73x73 which looks better...
-  const authorImg = author.profile_image_url.replace('_normal', '_bigger')
+  const authorImg = author.profile_image_url_https.replace('_normal', '_bigger')
   const authorHTML = `
-    <a class="tweet-author" href="https://twitter.com/${author.username}" target="_blank" rel="noreferrer noopener">
+    <a class="tweet-author" href="https://twitter.com/${author.screen_name}" target="_blank" rel="noreferrer noopener">
       <img src="${authorImg}" loading="lazy" alt="${author.name} avatar" />
       <div>
         <span class="tweet-author-name">${author.name}</span>
-        <span class="tweet-author-handle">@${author.username}</span>
+        <span class="tweet-author-handle">@${author.screen_name}</span>
       </div>
     </a>`
 
   const links = (
     await Promise.all(
-      [...tweet.data.text.matchAll(/https:\/\/t.co\/\w+/g)].map(
+      [...tweet.text.matchAll(/https:\/\/t.co\/\w+/g)].map(
         async ([shortLink], index, array) => {
           if (!shortLink) return
           const isLast = index === array.length - 1
@@ -245,9 +129,9 @@ async function buildTweetHTML(
           let replacement = `<a href="${longLink}" target="_blank" rel="noreferrer noopener">${
             longUrl.hostname + longUrl.pathname
           }</a>`
-          const isReferenced = (tweet.data.referenced_tweets ?? []).some(r =>
-            longLink.includes(r.id),
-          )
+          const isReferenced =
+            tweet.quoted_tweet?.id_str &&
+            longLink.includes(tweet.quoted_tweet.id_str)
           let metadata: Metadata | null = null
           if (isReferenced) {
             // we'll handle the referenced tweet later
@@ -266,7 +150,7 @@ async function buildTweetHTML(
           }
 
           if (metadata) {
-            if (isLast && !tweet.includes.media?.length) {
+            if (isLast && !tweet.mediaDetails?.length) {
               // We put the embed at the end
               replacement = ''
             } else {
@@ -288,7 +172,7 @@ async function buildTweetHTML(
     )
   ).filter(typedBoolean)
 
-  let blockquote = tweet.data.text
+  let blockquote = tweet.text
   for (let index = 0; index < links.length; index++) {
     const linkInfo = links[index]
     if (!linkInfo) continue
@@ -297,23 +181,18 @@ async function buildTweetHTML(
   }
 
   let expandedQuoteTweetHTML = ''
-  if (expandQuotedTweet) {
-    const referencedTweetHTMLs = await Promise.all(
-      (tweet.data.referenced_tweets ?? []).map(async referencedTweet => {
-        if (referencedTweet.type !== 'quoted') return ''
-        const quotedTweet = await getTweet(referencedTweet.id).catch(() => {})
-        if (!quotedTweet || !('data' in quotedTweet)) return ''
-
-        const quotedHTML = await buildTweetHTML(quotedTweet, false).catch(
-          () => {},
-        )
-        if (!quotedHTML) return ''
-
-        return `<div class="tweet-quoted">${quotedHTML}</div>`
-      }),
+  if (expandQuotedTweet && tweet.quoted_tweet) {
+    const quotedTweet = await getTweetCached(tweet.quoted_tweet.id_str).catch(
+      () => {},
     )
-
-    expandedQuoteTweetHTML = referencedTweetHTMLs.join('')
+    if (quotedTweet) {
+      const quotedHTML = await buildTweetHTML(quotedTweet, false).catch(
+        () => {},
+      )
+      if (quotedHTML) {
+        expandedQuoteTweetHTML = `<div class="tweet-quoted">${quotedHTML}</div>`
+      }
+    }
   }
 
   // twitterify @mentions
@@ -324,42 +203,51 @@ async function buildTweetHTML(
 
   const tweetHTML = `<blockquote>${blockquote.trim()}</blockquote>`
 
-  const mediaHTML = tweet.includes.media
-    ? buildMediaList(tweet.includes.media, tweetURL)
+  const mediaHTML = tweet.mediaDetails?.length
+    ? buildMediaList(tweet.mediaDetails, tweetURL)
     : ''
 
   const lastMetadataLink = links.reverse().find(l => l.metadata)
   let linkMetadataHTML = ''
   if (lastMetadataLink && !mediaHTML) {
     const {metadata: md, longLink, longUrl} = lastMetadataLink
-    linkMetadataHTML = `
-        <a href="${longLink}" class="tweet-ref-metadata" target="_blank" rel="noreferrer noopener">
-          <img class="tweet-ref-metadata-image" src="${md?.image}" loading="lazy" alt="Referenced media" />
-          <div class="tweet-ref-metadata-title">${md?.title}</div>
-          <div class="tweet-ref-metadata-description">${md?.description}</div>
-          <div class="tweet-ref-metadata-domain">${linkSvg}<span>${longUrl.hostname}</span></div>
-        </a>
-      `
+    if (md) {
+      const title = md.title ?? 'Unknown title'
+      const titleHtml = `<div class="tweet-ref-metadata-title">${title}</div>`
+      const imgHtml = md.image
+        ? `<img class="tweet-ref-metadata-image" src="${md.image}" loading="lazy" alt="Referenced media" />`
+        : ''
+      const descHtml = md.description
+        ? `<div class="tweet-ref-metadata-description">${md.description}</div>`
+        : ''
+      const urlHtml = `<div class="tweet-ref-metadata-domain">${linkSvg}<span>${longUrl.hostname}</span></div>`
+      linkMetadataHTML = `
+<a href="${longLink}" class="tweet-ref-metadata" target="_blank" rel="noreferrer noopener">
+  ${imgHtml}
+  ${titleHtml}
+  ${descHtml}
+  ${urlHtml}
+</a>
+      `.trim()
+    }
   }
 
   const createdAtHTML = `<div class="tweet-time"><a href="${tweetURL}" target="_blank" rel="noreferrer noopener">${formatDate(
-    tweet.data.created_at,
+    tweet.created_at,
     'h:mm a',
-  )} (UTC) · ${formatDate(new Date(tweet.data.created_at))}</a></div>`
+  )} (UTC) · ${formatDate(new Date(tweet.created_at))}</a></div>`
 
-  const likeIntent = `https://twitter.com/intent/like?tweet_id=${tweet.data.id}`
-  const retweetIntent = `https://twitter.com/intent/retweet?tweet_id=${tweet.data.id}`
+  const likeIntent = `https://twitter.com/intent/like?tweet_id=${tweet.id_str}`
+  const retweetIntent = `https://twitter.com/intent/retweet?tweet_id=${tweet.id_str}`
   const replyIntent = tweetURL
 
-  const {like_count, reply_count, retweet_count, quote_count} =
-    tweet.data.public_metrics
-  const likeCount = formatNumber(like_count)
-  const replyCount = formatNumber(reply_count)
-  const totalRetweets = formatNumber(retweet_count + quote_count)
+  const {favorite_count, conversation_count} = tweet
+  const likeCount = formatNumber(favorite_count)
+  const replyCount = formatNumber(conversation_count)
   const statsHTML = `
     <div class="tweet-stats">
       <a href="${replyIntent}" class="tweet-reply" target="_blank" rel="noreferrer noopener">${repliesSVG}<span>${replyCount}</span></a>
-      <a href="${retweetIntent}" class="tweet-retweet" target="_blank" rel="noreferrer noopener">${retweetSVG}<span>${totalRetweets}</span></a>
+      <a href="${retweetIntent}" class="tweet-retweet" target="_blank" rel="noreferrer noopener">${retweetSVG}</a>
       <a href="${likeIntent}" class="tweet-like" target="_blank" rel="noreferrer noopener">${likesSVG}<span>${likeCount}</span></a>
       <a href="${tweetURL}" class="tweet-link" target="_blank" rel="noreferrer noopener">${arrowSvg}<span></span></a>
     </div>
@@ -397,26 +285,16 @@ async function getTweetEmbedHTMLImpl(urlString: string) {
     console.error('TWEET ID NOT FOUND', urlString, tweetId)
     return ''
   }
-  let tweet
+  let tweet: Awaited<ReturnType<typeof getTweet>>
   try {
-    tweet = await getTweet(tweetId)
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if ('status' in tweet && tweet.status === 429) {
-      throw new Error(`Rate limited: ${tweetId}`)
-    }
-    if (!('data' in tweet)) {
+    tweet = await getTweetCached(tweetId)
+    if (!tweet) {
       throw new Error('Oh no, tweet has no data.')
     }
     const html = await buildTweetHTML(tweet, true)
     return html
   } catch (error: unknown) {
     console.error('Error processing tweet', {urlString, tweetId, error, tweet})
-    if (tweet && 'errors' in tweet) {
-      console.error('Tweet errors:')
-      for (const er of tweet.errors) {
-        console.error(er)
-      }
-    }
     throw error
   }
 }
