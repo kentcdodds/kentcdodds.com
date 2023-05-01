@@ -33,6 +33,7 @@ export function TestimonialCard({
   return (
     <div
       className={`bg-secondary col-span-4 flex flex-col justify-between gap-2 rounded-lg p-16 ${className}`}
+      id={testimonial.id}
     >
       <div
         className="quote-child prose-base mb-6"

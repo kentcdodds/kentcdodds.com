@@ -51,6 +51,7 @@ const allSubjects = [
 export type TestimonialSubject = (typeof allSubjects)[number]
 
 export type Testimonial = {
+  id: string
   author: string
   cloudinaryId: string
   company: string
@@ -106,12 +107,12 @@ function getValueWithFallback<PropertyType>(
   }: {
     fallback?: PropertyType
     warnOnFallback?: boolean
-    validateType: (v: unknown) => boolean
+    validateType(v: unknown): v is PropertyType
   },
 ) {
   const value = obj[key]
   if (validateType(value)) {
-    return value as PropertyType
+    return value
     // eslint-disable-next-line no-negated-condition
   } else if (typeof fallback !== 'undefined') {
     if (warnOnFallback) console.warn(`Had to use fallback`, {obj, key, value})
@@ -123,11 +124,15 @@ function getValueWithFallback<PropertyType>(
   }
 }
 
-const isString = (v: unknown) => typeof v === 'string'
-const isOneOf = (validValues: ReadonlyArray<unknown>) => (v: unknown) =>
-  validValues.includes(v)
-const areOneOf = (validValues: ReadonlyArray<unknown>) => (v: unknown) =>
-  Array.isArray(v) && v.every(isOneOf(validValues))
+const isString = (v: any): v is string => typeof v === 'string'
+const isOneOf =
+  <ValidValue>(validValues: ReadonlyArray<ValidValue>) =>
+  (v: any): v is ValidValue =>
+    validValues.includes(v)
+const areOneOf =
+  <ValidValue>(validValues: ReadonlyArray<ValidValue>) =>
+  (v: any): v is Array<ValidValue> =>
+    Array.isArray(v) && v.every(isOneOf(validValues))
 
 async function mapTestimonial(rawTestimonial: UnknownObj) {
   try {
@@ -157,10 +162,13 @@ async function mapTestimonial(rawTestimonial: UnknownObj) {
       'testimonial',
       {validateType: isString},
     )
+    const author = getValueWithFallback(rawTestimonial, 'author', {
+      validateType: isString,
+    })
+    const {default: slugify} = await import('@sindresorhus/slugify')
     const testimonial: TestimonialWithMetadata = {
-      author: getValueWithFallback(rawTestimonial, 'author', {
-        validateType: isString,
-      }),
+      id: slugify(author),
+      author,
       subjects,
       categories,
       link,
@@ -229,6 +237,7 @@ function mapOutMetadata(
   testimonialWithMetadata: TestimonialWithMetadata,
 ): Testimonial {
   return pick(testimonialWithMetadata, [
+    'id',
     'author',
     'cloudinaryId',
     'company',
