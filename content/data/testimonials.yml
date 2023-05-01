@@ -579,12 +579,11 @@
     Pumped to put it all into practice. 13/10.
 
 - author: Lydia Hendriks
-  priority: 4
+  priority: 5
   subjects:
-    - Workshop
-    - 'workshop: web-app-fundamentals-part-1'
-    - 'workshop: web-app-fundamentals-part-2'
-  cloudinaryId: kentcdodds.com/testimonials/gwen-shapira
+    - EpicReact.dev
+    - KCD Office Hours
+  cloudinaryId: kentcdodds.com/testimonials/lydia-hendriks
   company: Software Engineer
   link: https://twitter.com/LydiaHendriks
   testimonial: >-
