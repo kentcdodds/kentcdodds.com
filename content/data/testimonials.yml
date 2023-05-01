@@ -146,9 +146,12 @@
     Whilst job searching, I knew I had to improve my React skills beyond what
     I'd picked up doing my own projects. Thanks to Kent's workshop, I was able
     to fill in any gaps in my knowledge, which led to me being hired for my
-    first Software Engineering role. His teachings are cohesive and objective,
-    pointing out best practices and their inevitable drawbacks. I look forward
-    to seeing his future work for the developer community!
+    first Software Engineering role.
+
+
+    His teachings are cohesive and objective, pointing out best practices and
+    their inevitable drawbacks. I look forward to seeing his future work for the
+    developer community!
 
 - author: Fares Essayeh
   priority: 3
@@ -245,10 +248,13 @@
   testimonial: >-
     I've had the pleasure to attend Kent's - Advanced React Hooks, back in 2020
     and it was such a insightful course. Kent has a knack of breaking complex
-    subjects which are easier for every developer to understand. His workshops
-    are worth the investment Even topics like - Concurrency, memo, callbacks &
-    effects, which would otherwise be daunting to completely comprehend, are
-    simplified. Highly recommend his workshops and his website - epicreact.dev
+    subjects which are easier for every developer to understand.
+
+
+    His workshops are worth the investment Even topics like - Concurrency, memo,
+    callbacks & effects, which would otherwise be daunting to completely
+    comprehend, are simplified. Highly recommend his workshops and his website -
+    epicreact.dev
 
 - author: Cameron Pak
   priority: 5
@@ -301,10 +307,12 @@
   testimonial: >-
     You can call me an Epic React 🥑 (Advocate), there is no better React course
     around. Kent's approach to teaching is the one that resonates the most with
-    me. The pacing is amazing and he really focus on practice. This course
-    helped me understand React at a much deeper level. It builds up in the
-    fundamentals and progress extremely well into the advanced topics. Best
-    course investment I made to date.
+    me. The pacing is amazing and he really focus on practice.
+
+
+    This course helped me understand React at a much deeper level. It builds up
+    in the fundamentals and progress extremely well into the advanced topics.
+    Best course investment I made to date.
 
 - author: Praveen Senadheera
   priority: 4
@@ -342,9 +350,12 @@
     Most of my knowledge of React came from hands on experience at work, but
     there was so much to learn in Kent’s epicreact.dev! It was extremely
     impactful in my career. I find myself coming back to the materials many
-    times to review and tune up my skills. We were able to implement multiple of
-    the patterns and concepts from the workshop, increasing test coverage, code
-    quality, and overall user experience in multiple products.
+    times to review and tune up my skills.
+
+
+    We were able to implement multiple of the patterns and concepts from the
+    workshop, increasing test coverage, code quality, and overall user
+    experience in multiple products.
 
 - author: Alan Medina
   priority: 4
@@ -356,9 +367,12 @@
   testimonial: >-
     After signing up to EpicReact, I gained a lot of knowledge regarding
     advanced things in React, and that helped me to double my salary in less
-    than 2 years. Now I feel confident to use fancy things like compound
-    components, context module functions or prop collectors. EpicReact was the
-    little push that I needed.
+    than 2 years.
+
+
+    Now I feel confident to use fancy things like compound components, context
+    module functions or prop collectors. EpicReact was the little push that I
+    needed.
 
 - author: Sergio Xalambrí
   priority: 4
@@ -382,9 +396,11 @@
     KCD meetup group was my entry point to the world of streaming! There I
     shared topics related with Accessibility, which was very interesting in a
     community mostly focus on JS/React. A lot of interesting topics were
-    explored after each meetup. These meetups also gave me the confidence I
-    needed to start streaming on other platforms (eg Twitch). Thank you Kent for
-    that open door!
+    explored after each meetup.
+
+
+    These meetups also gave me the confidence I needed to start streaming on
+    other platforms (eg Twitch). Thank you Kent for that open door!
 
 - author: Eddie Hinkle
   priority: 4
@@ -461,10 +477,12 @@
   testimonial: >-
     Epic React and Testing JavaScript are amazing resources. Coming out of a
     coding bootcamp, I felt like I had gaps in my depth of knowledge
-    regarding  React and Testing principles. Kent's courses filled in those
-    knowledge gaps and after applying the information from the courses to my
-    projects, I was able to get my first full-time software engineer role.
-    Highly recommend!
+    regarding  React and Testing principles.
+
+
+    Kent's courses filled in those knowledge gaps and after applying the
+    information from the courses to my projects, I was able to get my first
+    full-time software engineer role. Highly recommend!
 
 - author: Michael Tedla
   priority: 3
@@ -477,11 +495,13 @@
     Even as a dev with many years of experience building production apps in
     React, I still learned a lot from EpicReact. The advanced patterns was
     especially useful to me as it formalized some patterns I've seen in the wild
-    but never really understood. There's a lot of stuff in this course I keep
-    coming back to. The biggest takeaway for me has been how much it's helped me
-    formalize my understanding in React. Kent offers first principles of React
-    fundamentals and systematizing React composition patterns that help get a
-    handle on React.
+    but never really understood.
+
+
+    There's a lot of stuff in this course I keep coming back to. The biggest
+    takeaway for me has been how much it's helped me formalize my understanding
+    in React. Kent offers first principles of React fundamentals and
+    systematizing React composition patterns that help get a handle on React.
 
 - author: Amir Ziaei
   priority: 4
@@ -502,11 +522,14 @@
     I feel incredibly fortunate to have discovered Kent and his work through a
     colleague. His content and materials have been a true game-changer for me,
     and I cannot overstate the wealth of knowledge and guidance he has provided
-    to people like me and the entire industry. In my interactions with Kent,
-    whether online or in person, I have found him to be an incredibly kind and
-    down-to-earth human. He doesn't hesitate a second to share his invaluable
-    knowledge. He is my true inspiration and mentor, and I'm truly grateful for
-    everything he has done. Thank you very much, Kent!
+    to people like me and the entire industry.
+
+
+    In my interactions with Kent, whether online or in person, I have found him
+    to be an incredibly kind and down-to-earth human. He doesn't hesitate a
+    second to share his invaluable knowledge. He is my true inspiration and
+    mentor, and I'm truly grateful for everything he has done. Thank you very
+    much, Kent!
 
 - author: Judicaël Andriamahandry
   priority: 1
@@ -590,8 +613,11 @@
     Epic React gave me a lot more confidence as a developer and I was able to
     directly apply what I learned at my job. Not only do I produce higher
     quality code, but I'm also more capable at code reviews and better at
-    sharing knowledge with others. If you are self-motivated and want to deepen
-    your understanding then this is a phenomenal workshop that will pay off
-    tenfold. I had about 3 years of experience working with React prior to
-    taking the workshop and not long after completing it I got a promotion - I
-    attribute a lot of my success to the things I learned in Epic React!
+    sharing knowledge with others.
+
+
+    If you are self-motivated and want to deepen your understanding then this is
+    a phenomenal workshop that will pay off tenfold. I had about 3 years of
+    experience working with React prior to taking the workshop and not long
+    after completing it I got a promotion - I attribute a lot of my success to
+    the things I learned in Epic React!

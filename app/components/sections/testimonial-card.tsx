@@ -35,7 +35,7 @@ export function TestimonialCard({
       className={`bg-secondary col-span-4 flex flex-col justify-between gap-2 rounded-lg p-16 ${className}`}
     >
       <div
-        className="text-primary quote-child mb-6 text-base"
+        className="quote-child prose-base mb-6"
         dangerouslySetInnerHTML={{__html: testimonial.testimonial}}
       />
 
