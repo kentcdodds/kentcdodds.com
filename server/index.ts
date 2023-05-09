@@ -199,7 +199,7 @@ app.use(
           'data:',
           'res.cloudinary.com',
           'www.gravatar.com',
-          'sailfish.kentcdodds.com',
+          'cdn.usefathom.com',
           'pbs.twimg.com',
           'i.ytimg.com',
           'image.simplecastcdn.com',
@@ -215,7 +215,7 @@ app.use(
           "'strict-dynamic'",
           "'unsafe-eval'",
           "'self'",
-          'sailfish.kentcdodds.com',
+          'cdn.usefathom.com',
           // @ts-expect-error middleware is the worst
           (req, res) => `'nonce-${res.locals.cspNonce}'`,
         ],

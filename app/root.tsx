@@ -508,7 +508,7 @@ function App() {
         {ENV.NODE_ENV === 'development' ? null : (
           <script
             nonce={nonce}
-            src="https://sailfish.kentcdodds.com/script.js"
+            src="https://cdn.usefathom.com/script.js"
             data-site="HJUUDKMT"
             data-spa="history"
             data-auto="false" // prevent tracking visit twice on initial page load
