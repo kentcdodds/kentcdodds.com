@@ -57,6 +57,7 @@
   deliveries:
     - event: '[Remix Conf 2023](https://remix.run/conf/2023)'
       date: 2023-05-11
+      recording: https://www.youtube.com/watch?v=qVkRyjSrhXs&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
   tags:
     - keynote
     - web
