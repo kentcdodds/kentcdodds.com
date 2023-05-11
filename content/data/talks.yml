@@ -26,6 +26,8 @@
     I hope it can help you make yours. Don't forget to bring your spell book!
 
 - title: Caching for Cash 🤑
+  resources:
+    - '[slides](https://slides.com/kentcdodds/caching-for-cash)'
   deliveries:
     - event:
         '[JS Fwdays Europe](https://fwdays.com/en/event/javascript-fwdays-2023)'
@@ -49,14 +51,35 @@
     solution. We'll also explore different approaches and their associated
     trade-offs. We'll cover a ton of ground here. This one's gonna be fun!
 
-- title: Remix Conf Keynote
+- title: The Epic Stack
+  resources:
+    - '[slides](https://slides.com/kentcdodds/the-epic-stack)'
   deliveries:
     - event: '[Remix Conf 2023](https://remix.run/conf/2023)'
       date: 2023-05-11
   tags:
     - keynote
+    - web
+    - remix
   description: >-
-    This talk will be announced soon!
+    Modern web development is fantastic. There are so many great tools
+    available!
+
+
+    Modern web development is exhausting. There are so many great tools
+    available!
+
+
+    Each of these sentiments is true. What's great is that most of the time,
+    it's hard to make a choice that is wrong. Seriously. The trade-offs of most
+    of the frameworks and tools you could use to build your application fit
+    within the constraints of the vast majority of apps.
+
+
+    Despite this, engineers consistently struggle with analysis paralysis.
+
+
+    Let's talk about this, and a solution I am working on for it.
 
 - title: Full Stack Components
   deliveries:
