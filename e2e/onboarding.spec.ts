@@ -4,10 +4,10 @@ import invariant from 'tiny-invariant'
 import {deleteUserByEmail, extractUrl, readEmail} from './utils'
 
 test('A new user can create an account', async ({page}) => {
-  const firstName = faker.name.firstName()
+  const firstName = faker.person.firstName()
   const emailAddress = faker.internet.email(
     firstName,
-    faker.name.lastName(),
+    faker.person.lastName(),
     'example.com',
   )
   await page.goto('/')

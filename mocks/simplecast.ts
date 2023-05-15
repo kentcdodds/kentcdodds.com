@@ -33,23 +33,23 @@ for (const seasonListItem of seasonListItems) {
   const seasonId = seasonListItem.href.split('/').slice(-1)[0]
   if (!seasonId) throw new Error(`no id for ${seasonListItem.href}`)
   const episodes: Array<SimplecastEpisode> = Array.from(
-    {length: faker.datatype.number({min: 10, max: 24})},
+    {length: faker.number.int({min: 10, max: 24})},
     (v, index) => {
       const id = faker.datatype.uuid()
       const title = faker.lorem.words()
       const homework = Array.from(
-        {length: faker.datatype.number({min: 1, max: 3})},
+        {length: faker.number.int({min: 1, max: 3})},
         () => faker.lorem.sentence(),
       )
       const resources = Array.from(
-        {length: faker.datatype.number({min: 2, max: 7})},
+        {length: faker.number.int({min: 2, max: 7})},
         () =>
           `[${faker.lorem.sentence()}](https://example.com/${faker.lorem.word()})`,
       )
       const guests = Array.from(
-        {length: faker.datatype.number({min: 1, max: 3})},
+        {length: faker.number.int({min: 1, max: 3})},
         () => {
-          const name = faker.name.fullName()
+          const name = faker.person.fullName()
           const username = faker.internet.userName()
           const website = faker.internet.url()
           const links = [
@@ -73,7 +73,7 @@ for (const seasonListItem of seasonListItems) {
         id,
         title,
         is_hidden: false,
-        duration: faker.datatype.number({min: 1700, max: 2500}),
+        duration: faker.number.int({min: 1700, max: 2500}),
         number: index + 1,
         transcription: faker.lorem.paragraphs(30),
         status: 'published',

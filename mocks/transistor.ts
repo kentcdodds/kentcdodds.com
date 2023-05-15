@@ -16,9 +16,9 @@ function makeEpisode(
     attributes?: Partial<TransistorEpisodeData['attributes']>
   } = {},
 ): TransistorEpisodeData {
-  const publishedAt = faker.datatype.datetime({
-    max: Date.now() - 1000 * 60 * 60 * 24,
-    min: Date.now() - 1000 * 60 * 60 * 24 * 7 * 6,
+  const publishedAt = faker.datatype.between({
+    from: Date.now() - 1000 * 60 * 60 * 24 * 7 * 6,
+    to: Date.now() - 1000 * 60 * 60 * 24,
   })
   return {
     id: faker.datatype.uuid(),
@@ -28,7 +28,7 @@ function makeEpisode(
       number: 0,
       season: 1,
       title: faker.lorem.words(),
-      duration: faker.datatype.number({min: 180, max: 900}),
+      duration: faker.number.float({min: 180, max: 900}),
       summary: faker.lorem.sentence(),
       description: faker.lorem.paragraphs(2),
       keywords: faker.lorem.words().split(' ').join(','),

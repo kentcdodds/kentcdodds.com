@@ -3,7 +3,7 @@ import {faker} from '@faker-js/faker'
 
 export function createUser(): Omit<P.User, 'id' | 'createdAt' | 'updatedAt'> {
   const gender = faker.helpers.arrayElement(['female', 'male'])
-  const firstName = faker.name.firstName(gender as 'female' | 'male')
+  const firstName = faker.person.firstName(gender as 'female' | 'male')
   const username = faker.internet.userName(firstName).toLowerCase()
   return {
     firstName,
