@@ -1,4 +1,4 @@
-import type {LoaderFunction} from '@remix-run/node'
+import {type LoaderFunction} from '@remix-run/node'
 import {getPostJson} from '~/utils/blog.server'
 
 export const loader: LoaderFunction = async ({request}) => {

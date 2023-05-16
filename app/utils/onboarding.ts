@@ -1,5 +1,5 @@
-import type {Team} from '../../types'
-import {images, getRandomSportyKody} from '~/images'
+import {getRandomSportyKody, images} from '~/images'
+import {type Team} from '../../types'
 
 export const TEAM_MAP: Record<
   Team,

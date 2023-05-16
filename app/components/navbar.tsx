@@ -17,7 +17,7 @@ import {
 import * as React from 'react'
 import {useEffect} from 'react'
 import {kodyProfiles} from '~/images'
-import type {OptionalTeam} from '~/utils/misc'
+import {type OptionalTeam} from '~/utils/misc'
 import {useTeam} from '~/utils/team-provider'
 import {Theme, Themed, useTheme} from '~/utils/theme-provider'
 import {useOptionalUser, useRootData} from '~/utils/use-root-data'
@@ -171,8 +171,8 @@ function MobileMenuList() {
 }
 
 const topVariants = {
-  open: {rotate: 45, y: 7, originX: '16px', originY: '10px' },
-  closed: {rotate: 0, y: 0, originX: 0, originY: 0 },
+  open: {rotate: 45, y: 7, originX: '16px', originY: '10px'},
+  closed: {rotate: 0, y: 0, originX: 0, originY: 0},
 }
 
 const centerVariants = {
@@ -181,8 +181,8 @@ const centerVariants = {
 }
 
 const bottomVariants = {
-  open: {rotate: -45, y: -5, originX: '16px', originY: '22px' },
-  closed: {rotate: 0, y: 0, originX: 0, originY: 0 },
+  open: {rotate: -45, y: -5, originX: '16px', originY: '22px'},
+  closed: {rotate: 0, y: 0, originX: 0, originY: 0},
 }
 
 function MobileMenu() {

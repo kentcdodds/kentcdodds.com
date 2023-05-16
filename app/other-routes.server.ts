@@ -1,4 +1,4 @@
-import type {EntryContext} from '@remix-run/node'
+import {type EntryContext} from '@remix-run/node'
 import {getSitemapXml} from './utils/sitemap.server'
 
 type Handler = (

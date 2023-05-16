@@ -1,18 +1,23 @@
-import * as React from 'react'
+import {
+  Tab as ReachTab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  type TabProps,
+} from '@reach/tabs'
 import {Link} from '@remix-run/react'
 import clsx from 'clsx'
-import type {TabProps} from '@reach/tabs'
-import {Tabs, Tab as ReachTab, TabList, TabPanels, TabPanel} from '@reach/tabs'
 import {differenceInYears} from 'date-fns'
-import {motion, AnimatePresence} from 'framer-motion'
-import type {Team} from '~/types'
-import {images, getImgProps} from '~/images'
-import type {ImageBuilder} from '~/images'
+import {AnimatePresence, motion} from 'framer-motion'
+import * as React from 'react'
+import {getImgProps, images, type ImageBuilder} from '~/images'
+import {type Team} from '~/types'
 import {teamTextColorClasses} from '~/utils/misc'
-import {Grid} from '../grid'
-import {H2, H3, Paragraph} from '../typography'
 import {ArrowLink} from '../arrow-button'
+import {Grid} from '../grid'
 import {ArrowIcon} from '../icons'
+import {H2, H3, Paragraph} from '../typography'
 
 function Tab({isSelected, children}: TabProps & {isSelected?: boolean}) {
   return (

@@ -1,6 +1,6 @@
-import type {User, Team} from '~/types'
-import {prisma} from './prisma.server'
+import {type Team, type User} from '~/types'
 import {getRequiredServerEnvVar, getTeam} from './misc'
+import {prisma} from './prisma.server'
 
 const DISCORD_CLIENT_ID = getRequiredServerEnvVar('DISCORD_CLIENT_ID')
 const DISCORD_CLIENT_SECRET = getRequiredServerEnvVar('DISCORD_CLIENT_SECRET')

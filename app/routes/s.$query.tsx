@@ -1,11 +1,10 @@
-import type {DataFunctionArgs} from '@remix-run/node'
-import {json, redirect} from '@remix-run/node'
+import {json, redirect, type DataFunctionArgs} from '@remix-run/node'
 import {Link, useLoaderData, useParams} from '@remix-run/react'
-import {images} from '~/images'
-import {H3, H4} from '~/components/typography'
-import {HeroSection} from '~/components/sections/hero-section'
 import {Grid} from '~/components/grid'
+import {HeroSection} from '~/components/sections/hero-section'
 import {Spacer} from '~/components/spacer'
+import {H3, H4} from '~/components/typography'
+import {images} from '~/images'
 import {searchKCD} from '~/utils/search.server'
 
 type NormalizedItemGroup = {

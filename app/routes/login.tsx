@@ -1,13 +1,22 @@
-import * as React from 'react'
-import type {
-  ActionFunction,
-  HeadersFunction,
-  LoaderFunction,
-  MetaFunction,
+import {
+  json,
+  redirect,
+  type ActionFunction,
+  type HeadersFunction,
+  type LoaderFunction,
+  type MetaFunction,
 } from '@remix-run/node'
-import {json, redirect} from '@remix-run/node'
 import {Form, useLoaderData} from '@remix-run/react'
+import * as React from 'react'
 import invariant from 'tiny-invariant'
+import {Button, LinkButton} from '~/components/button'
+import {Input, InputError, Label} from '~/components/form-elements'
+import {Grid} from '~/components/grid'
+import {HeroSection} from '~/components/sections/hero-section'
+import {Paragraph} from '~/components/typography'
+import {getConvertKitSubscriber} from '~/convertkit/convertkit.server'
+import {getGenericSocialImage, images} from '~/images'
+import {getLoginInfoSession} from '~/utils/login.server'
 import {
   getDisplayUrl,
   getDomainUrl,
@@ -15,19 +24,11 @@ import {
   getUrl,
   reuseUsefulLoaderHeaders,
 } from '~/utils/misc'
-import {sendToken, getUser} from '~/utils/session.server'
-import {getLoginInfoSession} from '~/utils/login.server'
-import {getGenericSocialImage, images} from '~/images'
-import {Paragraph} from '~/components/typography'
-import {Button, LinkButton} from '~/components/button'
-import {Input, InputError, Label} from '~/components/form-elements'
-import {HeroSection} from '~/components/sections/hero-section'
-import {verifyEmailAddress} from '~/utils/verifier.server'
-import type {LoaderData as RootLoaderData} from '../root'
-import {getSocialMetas} from '~/utils/seo'
-import {Grid} from '~/components/grid'
 import {prisma} from '~/utils/prisma.server'
-import {getConvertKitSubscriber} from '~/convertkit/convertkit.server'
+import {getSocialMetas} from '~/utils/seo'
+import {getUser, sendToken} from '~/utils/session.server'
+import {verifyEmailAddress} from '~/utils/verifier.server'
+import {type LoaderData as RootLoaderData} from '../root'
 
 type LoaderData = {
   email?: string
@@ -244,10 +245,7 @@ function Login() {
                     id="success-message"
                     className="text-lg text-gray-500 dark:text-slate-500"
                   >
-                    <span role="img" aria-label="sparkles">
-                      ✨
-                    </span>
-                    {` A magic link has been sent to ${data.email}.`}
+                    {`✨ A magic link has been sent to ${data.email}.`}
                   </p>
                 ) : null}
               </div>

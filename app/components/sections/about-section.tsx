@@ -1,7 +1,7 @@
 import {getImgProps, images} from '~/images'
-import {H2, Paragraph} from '../typography'
 import {ArrowLink} from '../arrow-button'
 import {Grid} from '../grid'
+import {H2, Paragraph} from '../typography'
 
 function AboutSection() {
   return (

@@ -1,7 +1,6 @@
-import type {DataFunctionArgs} from '@remix-run/node'
-import {json, redirect} from '@remix-run/node'
+import {json, redirect, type DataFunctionArgs} from '@remix-run/node'
+import {getInstanceInfo, getInternalInstanceDomain} from 'litefs-js'
 import {cache} from '~/utils/cache.server'
-import {getInternalInstanceDomain, getInstanceInfo} from 'litefs-js'
 import {getRequiredServerEnvVar} from '~/utils/misc'
 
 export async function action({request}: DataFunctionArgs) {

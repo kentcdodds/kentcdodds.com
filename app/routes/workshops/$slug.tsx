@@ -1,43 +1,43 @@
-import * as React from 'react'
-import type {
-  HeadersFunction,
-  LoaderFunction,
-  MetaFunction,
+import {
+  json,
+  type HeadersFunction,
+  type LoaderFunction,
+  type MetaFunction,
 } from '@remix-run/node'
-import {json} from '@remix-run/node'
 import {Link, useCatch, useLoaderData, useParams} from '@remix-run/react'
-import type {KCDHandle, MdxListItem, Workshop} from '~/types'
-import {Grid} from '~/components/grid'
-import {H2, H5, H6, Paragraph} from '~/components/typography'
-import {ButtonLink} from '~/components/button'
+import * as React from 'react'
 import {ArrowLink, BackLink} from '~/components/arrow-button'
-import {WorkshopCard} from '~/components/workshop-card'
-import {NumberedPanel} from '~/components/numbered-panel'
-import {Spacer} from '~/components/spacer'
-import {TestimonialSection} from '~/components/sections/testimonial-section'
+import {ButtonLink} from '~/components/button'
 import {FourOhFour} from '~/components/errors'
+import {Grid} from '~/components/grid'
+import {NumberedPanel} from '~/components/numbered-panel'
+import {TestimonialSection} from '~/components/sections/testimonial-section'
+import {Spacer} from '~/components/spacer'
+import {H2, H5, H6, Paragraph} from '~/components/typography'
+import {WorkshopCard} from '~/components/workshop-card'
+import {RegistrationPanel} from '~/components/workshop-registration-panel'
+import {getSocialImageWithPreTitle} from '~/images'
+import {type KCDHandle, type MdxListItem, type Workshop} from '~/types'
 import {getBlogRecommendations} from '~/utils/blog.server'
-import {getWorkshops} from '~/utils/workshops.server'
-import {useWorkshopsData} from '../workshops'
-import {ConvertKitForm} from '../../convertkit/form'
-import {getTestimonials} from '~/utils/testimonials.server'
-import type {
-  Testimonial,
-  TestimonialSubject,
-  TestimonialCategory,
-} from '~/utils/testimonials.server'
 import {
   getDisplayUrl,
   getUrl,
   listify,
   reuseUsefulLoaderHeaders,
 } from '~/utils/misc'
-import {RegistrationPanel} from '~/components/workshop-registration-panel'
-import type {LoaderData as RootLoaderData} from '../../root'
 import {getSocialMetas} from '~/utils/seo'
-import {getSocialImageWithPreTitle} from '~/images'
-import type {WorkshopEvent} from '~/utils/workshop-tickets.server'
+import {
+  getTestimonials,
+  type Testimonial,
+  type TestimonialCategory,
+  type TestimonialSubject,
+} from '~/utils/testimonials.server'
 import {getServerTimeHeader} from '~/utils/timing.server'
+import {type WorkshopEvent} from '~/utils/workshop-tickets.server'
+import {getWorkshops} from '~/utils/workshops.server'
+import {ConvertKitForm} from '../../convertkit/form'
+import {type LoaderData as RootLoaderData} from '../../root'
+import {useWorkshopsData} from '../workshops'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {

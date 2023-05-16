@@ -1,9 +1,9 @@
 import clsx from 'clsx'
-import type {MdxListItem} from '~/types'
-import {Grid} from '../grid'
+import {type MdxListItem} from '~/types'
 import {ArticleCard} from '../article-card'
-import {HeaderSection} from './header-section'
+import {Grid} from '../grid'
 import {Spacer} from '../spacer'
+import {HeaderSection} from './header-section'
 
 interface BlogSectionProps {
   articles: Array<MdxListItem>

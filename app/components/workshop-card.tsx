@@ -1,6 +1,6 @@
 import {Link} from '@remix-run/react'
-import type {Workshop} from '~/types'
-import type {WorkshopEvent} from '~/utils/workshop-tickets.server'
+import {type Workshop} from '~/types'
+import {type WorkshopEvent} from '~/utils/workshop-tickets.server'
 import {Spacer} from './spacer'
 import {H3, H6, Paragraph} from './typography'
 

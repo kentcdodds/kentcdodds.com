@@ -1,5 +1,4 @@
-import type {LoaderFunction} from '@remix-run/node'
-import {redirect} from '@remix-run/node'
+import {redirect, type LoaderFunction} from '@remix-run/node'
 import {getSeasonListItems} from '~/utils/simplecast.server'
 
 export const loader: LoaderFunction = async ({request}) => {

@@ -1,26 +1,29 @@
-import * as React from 'react'
-import type {HeadersFunction, DataFunctionArgs} from '@remix-run/node'
-import {json} from '@remix-run/node'
-import {useCatch, useLoaderData} from '@remix-run/react'
-import type {KCDHandle} from '~/types'
 import {
+  json,
+  type DataFunctionArgs,
+  type HeadersFunction,
+} from '@remix-run/node'
+import {useCatch, useLoaderData} from '@remix-run/react'
+import * as React from 'react'
+import {BackLink} from '~/components/arrow-button'
+import {BlurrableImage} from '~/components/blurrable-image'
+import {FourOhFour} from '~/components/errors'
+import {Grid} from '~/components/grid'
+import {H2, H6} from '~/components/typography'
+import {getImageBuilder, getImgProps} from '~/images'
+import {type KCDHandle} from '~/types'
+import {getBlogRecommendations} from '~/utils/blog.server'
+import {
+  getBannerAltProp,
+  getBannerTitleProp,
   getMdxPage,
   getMdxPagesInDirectory,
   mdxPageMeta,
   useMdxComponent,
-  getBannerTitleProp,
-  getBannerAltProp,
 } from '~/utils/mdx'
-import {getBlogRecommendations} from '~/utils/blog.server'
-import {FourOhFour} from '~/components/errors'
-import {Grid} from '~/components/grid'
-import {BackLink} from '~/components/arrow-button'
-import {H2, H6} from '~/components/typography'
-import {pathedRoutes} from '../other-routes.server'
-import {getImageBuilder, getImgProps} from '~/images'
 import {reuseUsefulLoaderHeaders} from '~/utils/misc'
-import {BlurrableImage} from '~/components/blurrable-image'
 import {getServerTimeHeader} from '~/utils/timing.server'
+import {pathedRoutes} from '../other-routes.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
@@ -112,7 +115,7 @@ export default function MdxScreen() {
             <BlurrableImage
               key={frontmatter.bannerCloudinaryId}
               blurDataUrl={frontmatter.bannerBlurDataUrl}
-              className="aspect-h-4 aspect-w-3 md:aspect-w-3 md:aspect-h-2"
+              className="aspect-h-4 aspect-w-3 md:aspect-h-2 md:aspect-w-3"
               img={
                 <img
                   className="rounded-lg object-cover object-center"

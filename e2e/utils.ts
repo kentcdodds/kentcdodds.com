@@ -1,11 +1,10 @@
-import '../app/entry.server'
 import {test as base} from '@playwright/test'
-import type {User} from '@prisma/client'
+import {PrismaClient, type User} from '@prisma/client'
 import {parse} from 'cookie'
-import {PrismaClient} from '@prisma/client'
+import invariant from 'tiny-invariant'
+import '../app/entry.server'
 import {getSession} from '../app/utils/session.server'
 import {createUser} from '../prisma/seed-utils'
-import invariant from 'tiny-invariant'
 
 type MSWData = {
   email: Record<string, Email>

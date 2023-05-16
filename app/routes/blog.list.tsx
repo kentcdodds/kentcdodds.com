@@ -1,14 +1,13 @@
-import type {LoaderFunction} from '@remix-run/node'
-import {json} from '@remix-run/node'
+import {json, type LoaderFunction} from '@remix-run/node'
 import {Link, useLoaderData} from '@remix-run/react'
-import {getBlogMdxListItems} from '~/utils/mdx'
-import {images} from '~/images'
 import {Grid} from '~/components/grid'
-import {H3} from '~/components/typography'
-import {Spacer} from '~/components/spacer'
-import {HeroSection} from '~/components/sections/hero-section'
 import {RssIcon} from '~/components/icons'
+import {HeroSection} from '~/components/sections/hero-section'
+import {Spacer} from '~/components/spacer'
+import {H3} from '~/components/typography'
+import {images} from '~/images'
 import {markdownToHtmlUnwrapped} from '~/utils/markdown.server'
+import {getBlogMdxListItems} from '~/utils/mdx'
 
 type LoaderData = {
   posts: Array<{title: string; descriptionHTML: string; slug: string}>

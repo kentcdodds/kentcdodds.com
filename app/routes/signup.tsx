@@ -1,31 +1,35 @@
-import * as React from 'react'
-import type {ActionFunction, DataFunctionArgs} from '@remix-run/node'
-import {json, redirect} from '@remix-run/node'
+import {
+  json,
+  redirect,
+  type ActionFunction,
+  type DataFunctionArgs,
+} from '@remix-run/node'
 import {Form, useActionData, useLoaderData} from '@remix-run/react'
 import clsx from 'clsx'
 import {shuffle} from 'lodash'
-import type {KCDHandle, Team} from '~/types'
-import {useTeam} from '~/utils/team-provider'
-import {getSession, getUser} from '~/utils/session.server'
-import {getLoginInfoSession} from '~/utils/login.server'
-import {prisma, validateMagicLink} from '~/utils/prisma.server'
-import {getErrorStack, isTeam, teams} from '~/utils/misc'
-import {tagKCDSiteSubscriber} from '../convertkit/convertkit.server'
-import {Grid} from '~/components/grid'
-import {H2, H6, Paragraph} from '~/components/typography'
-import {Field, InputError} from '~/components/form-elements'
+import * as React from 'react'
 import {Button} from '~/components/button'
+import {Field, InputError} from '~/components/form-elements'
+import {Grid} from '~/components/grid'
 import {CheckCircledIcon} from '~/components/icons'
+import {HeaderSection} from '~/components/sections/header-section'
+import {Spacer} from '~/components/spacer'
+import {H2, H6, Paragraph} from '~/components/typography'
 import {getImgProps, images} from '~/images'
+import {type KCDHandle, type Team} from '~/types'
+import {handleFormSubmission} from '~/utils/actions.server'
+import {getClientSession} from '~/utils/client.server'
+import {getLoginInfoSession} from '~/utils/login.server'
+import {getErrorStack, isTeam, teams} from '~/utils/misc'
 import {
   TEAM_ONEWHEELING_MAP,
   TEAM_SKIING_MAP,
   TEAM_SNOWBOARD_MAP,
 } from '~/utils/onboarding'
-import {HeaderSection} from '~/components/sections/header-section'
-import {handleFormSubmission} from '~/utils/actions.server'
-import {Spacer} from '~/components/spacer'
-import {getClientSession} from '~/utils/client.server'
+import {prisma, validateMagicLink} from '~/utils/prisma.server'
+import {getSession, getUser} from '~/utils/session.server'
+import {useTeam} from '~/utils/team-provider'
+import {tagKCDSiteSubscriber} from '../convertkit/convertkit.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,

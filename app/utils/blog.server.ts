@@ -1,8 +1,11 @@
-import type {Team, MdxListItem, Await, User} from '~/types'
-import {subYears, subMonths} from 'date-fns'
+import {subMonths, subYears} from 'date-fns'
 import {shuffle} from 'lodash'
+import {type Await, type MdxListItem, type Team, type User} from '~/types'
+import {filterPosts} from './blog'
+import {cache, cachified, lruCache} from './cache.server'
+import {getClientSession} from './client.server'
+import {sendMessageFromDiscordBot} from './discord.server'
 import {getBlogMdxListItems} from './mdx'
-import {prisma} from './prisma.server'
 import {
   getDomainUrl,
   getOptionalTeam,
@@ -10,14 +13,10 @@ import {
   teams,
   typedBoolean,
 } from './misc'
+import {prisma} from './prisma.server'
 import {getSession, getUser} from './session.server'
-import {filterPosts} from './blog'
-import {getClientSession} from './client.server'
-import {cache, cachified, lruCache} from './cache.server'
-import {sendMessageFromDiscordBot} from './discord.server'
 import {teamEmoji} from './team-provider'
-import type {Timings} from './timing.server'
-import {time} from './timing.server'
+import {time, type Timings} from './timing.server'
 
 async function getBlogRecommendations({
   request,

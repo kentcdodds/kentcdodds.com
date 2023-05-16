@@ -1,5 +1,4 @@
-import type {DataFunctionArgs} from '@remix-run/node'
-import {json} from '@remix-run/node'
+import {json, type DataFunctionArgs} from '@remix-run/node'
 import {getDomainUrl} from '~/utils/misc'
 import {searchKCD} from '~/utils/search.server'
 

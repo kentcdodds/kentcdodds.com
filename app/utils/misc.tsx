@@ -1,12 +1,17 @@
-import * as React from 'react'
-import type {HeadersFunction} from '@remix-run/node'
-import type {LinkProps} from '@remix-run/react'
-import {Link} from '@remix-run/react'
-import type {NonNullProperties, User, Team, Role, OptionalTeam} from '~/types'
+import {type HeadersFunction} from '@remix-run/node'
+import {Link, type LinkProps} from '@remix-run/react'
 import * as dateFns from 'date-fns'
 import md5 from 'md5-hash'
+import * as React from 'react'
+import {
+  type NonNullProperties,
+  type OptionalTeam,
+  type Role,
+  type Team,
+  type User,
+} from '~/types'
 import {images} from '../images'
-import type {getEnv} from './env.server'
+import {type getEnv} from './env.server'
 
 const teams: Array<Team> = ['RED', 'BLUE', 'YELLOW']
 export const optionalTeams: Array<OptionalTeam> = [...teams, 'UNKNOWN']
@@ -404,6 +409,7 @@ function useDoubleCheck() {
   return {doubleCheck, getButtonProps}
 }
 
+export {listify} from './listify'
 export {
   getAvatar,
   getAvatarForUser,
@@ -439,5 +445,4 @@ export {
   formatNumber,
   formatAbbreviatedNumber,
 }
-export {listify} from './listify'
 export type {OptionalTeam}

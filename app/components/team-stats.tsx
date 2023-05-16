@@ -1,12 +1,12 @@
-import * as React from 'react'
 import {Link} from '@remix-run/react'
-import {motion, useReducedMotion} from 'framer-motion'
 import clsx from 'clsx'
-import {useRootData, useOptionalUser} from '~/utils/use-root-data'
-import {useTeam} from '~/utils/team-provider'
+import {motion, useReducedMotion} from 'framer-motion'
+import * as React from 'react'
 import {kodyProfiles} from '~/images'
+import {type Team} from '~/types'
 import {formatNumber, getOptionalTeam} from '~/utils/misc'
-import type {Team} from '~/types'
+import {useTeam} from '~/utils/team-provider'
+import {useOptionalUser, useRootData} from '~/utils/use-root-data'
 
 const barColors: Record<Team, string> = {
   RED: 'bg-team-red',

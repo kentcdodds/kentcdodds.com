@@ -1,12 +1,10 @@
-import type {TransformerOption} from '@cld-apis/types'
+import {type TransformerOption} from '@cld-apis/types'
 import clsx from 'clsx'
-import type {HTMLMotionProps} from 'framer-motion'
-import {motion, useReducedMotion} from 'framer-motion'
-import type {ImageBuilder} from '~/images'
-import {getImgProps} from '~/images'
-import {H2} from '../typography'
+import {motion, useReducedMotion, type HTMLMotionProps} from 'framer-motion'
+import {getImgProps, type ImageBuilder} from '~/images'
 import {ArrowLink} from '../arrow-button'
 import {Grid} from '../grid'
+import {H2} from '../typography'
 
 export type HeroSectionProps = {
   title: string | React.ReactNode
@@ -88,7 +86,7 @@ function HeroSection({
             'px-10 lg:col-span-5 lg:col-start-7': imageSize === 'medium',
             'flex items-start justify-end pl-10 lg:col-span-6 lg:col-start-6':
               imageSize === 'large',
-            'flex items-center justify-center lg:col-span-7 lg:col-start-6 lg:-mt-24 lg:-mr-5vw lg:px-0':
+            'flex items-center justify-center lg:col-span-7 lg:col-start-6 lg:-mr-5vw lg:-mt-24 lg:px-0':
               imageSize === 'giant',
           })}
         >

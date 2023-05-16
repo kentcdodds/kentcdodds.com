@@ -1,10 +1,7 @@
-import type {LinkProps} from '@remix-run/react'
-import {Link} from '@remix-run/react'
+import {Link, type LinkProps} from '@remix-run/react'
 import clsx from 'clsx'
-import type {Variant} from 'framer-motion'
-import {motion, useReducedMotion} from 'framer-motion'
-import type {ElementState} from './hooks/use-element-state'
-import {useElementState} from './hooks/use-element-state'
+import {motion, useReducedMotion, type Variant} from 'framer-motion'
+import {useElementState, type ElementState} from './hooks/use-element-state'
 import {ArrowIcon} from './icons'
 import {H6} from './typography'
 

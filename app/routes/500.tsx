@@ -1,8 +1,8 @@
 // this is just here to test the error page
 
-import type {LoaderFunction} from '@remix-run/node'
-import type {KCDHandle} from '~/types'
+import {type LoaderFunction} from '@remix-run/node'
 import {ServerError} from '~/components/errors'
+import {type KCDHandle} from '~/types'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,

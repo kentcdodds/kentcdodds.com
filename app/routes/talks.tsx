@@ -1,37 +1,37 @@
-import * as React from 'react'
-import type {
-  HeadersFunction,
-  LoaderFunction,
-  MetaFunction,
+import {
+  json,
+  type HeadersFunction,
+  type LoaderFunction,
+  type MetaFunction,
 } from '@remix-run/node'
-import {json} from '@remix-run/node'
 import {
   Link,
   useLoaderData,
   useLocation,
   useSearchParams,
 } from '@remix-run/react'
-import type {Await} from '~/types'
 import clsx from 'clsx'
+import * as React from 'react'
+import {Grid} from '~/components/grid'
+import {YoutubeIcon} from '~/components/icons'
+import {CourseSection} from '~/components/sections/course-section'
+import {HeroSection} from '~/components/sections/hero-section'
+import {Tag} from '~/components/tag'
+import {H3, H6, Paragraph} from '~/components/typography'
+import {getGenericSocialImage, images} from '~/images'
+import {type Await} from '~/types'
 import {
-  getUrl,
+  formatDate,
   getDisplayUrl,
+  getUrl,
+  listify,
+  parseDate,
   reuseUsefulLoaderHeaders,
   useUpdateQueryStringValueWithoutNavigation,
-  listify,
-  formatDate,
-  parseDate,
 } from '~/utils/misc'
-import type {LoaderData as RootLoaderData} from '../root'
-import {HeroSection} from '~/components/sections/hero-section'
-import {getGenericSocialImage, images} from '~/images'
-import {Tag} from '~/components/tag'
-import {Grid} from '~/components/grid'
-import {H3, H6, Paragraph} from '~/components/typography'
-import {CourseSection} from '~/components/sections/course-section'
-import {YoutubeIcon} from '~/components/icons'
-import {getTalksAndTags} from '~/utils/talks.server'
 import {getSocialMetas} from '~/utils/seo'
+import {getTalksAndTags} from '~/utils/talks.server'
+import {type LoaderData as RootLoaderData} from '../root'
 
 export const meta: MetaFunction = ({data, parentsData}) => {
   const {talks = [], tags = []} = (data as LoaderData | undefined) ?? {}

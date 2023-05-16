@@ -1,29 +1,24 @@
-import LRU from 'lru-cache'
-import fs from 'fs'
-import type {Cache as CachifiedCache, CacheEntry} from 'cachified'
-import {verboseReporter, lruCacheAdapter} from 'cachified'
-import * as C from 'cachified'
 import type BetterSqlite3 from 'better-sqlite3'
 import Database from 'better-sqlite3'
-import {getUser} from './session.server'
-import {getRequiredServerEnvVar} from './misc'
-import type {Timings} from './timing.server'
-import {time} from './timing.server'
-import {updatePrimaryCacheValue} from '~/routes/resources/cache.sqlite'
+import * as C from 'cachified'
+import {
+  lruCacheAdapter,
+  verboseReporter,
+  type CacheEntry,
+  type Cache as CachifiedCache,
+} from 'cachified'
+import fs from 'fs'
 import {getInstanceInfo, getInstanceInfoSync} from 'litefs-js'
+import LRU from 'lru-cache'
+import {updatePrimaryCacheValue} from '~/routes/resources/cache.sqlite'
+import {getRequiredServerEnvVar} from './misc'
+import {getUser} from './session.server'
+import {time, type Timings} from './timing.server'
+import {singleton} from './singleton.server'
 
 const CACHE_DATABASE_PATH = getRequiredServerEnvVar('CACHE_DATABASE_PATH')
 
-declare global {
-  // This preserves the LRU cache during development
-  // eslint-disable-next-line
-  var __lruCache: LRU<string, CacheEntry<unknown>> | undefined,
-    __cacheDb: ReturnType<typeof Database> | undefined
-}
-
-const cacheDb = (global.__cacheDb = global.__cacheDb
-  ? global.__cacheDb
-  : createDatabase())
+const cacheDb = singleton('cacheDb', createDatabase)
 
 function createDatabase(tryAgain = true): BetterSqlite3.Database {
   const db = new Database(CACHE_DATABASE_PATH)
@@ -52,9 +47,10 @@ function createDatabase(tryAgain = true): BetterSqlite3.Database {
   return db
 }
 
-const lru = (global.__lruCache = global.__lruCache
-  ? global.__lruCache
-  : new LRU<string, CacheEntry<unknown>>({max: 5000}))
+const lru = singleton(
+  'lru-cache',
+  () => new LRU<string, CacheEntry<unknown>>({max: 5000}),
+)
 
 export const lruCache = lruCacheAdapter(lru)
 
@@ -63,7 +59,7 @@ export const cache: CachifiedCache = {
   get(key) {
     const result = cacheDb
       .prepare('SELECT value, metadata FROM cache WHERE key = ?')
-      .get(key)
+      .get(key) as unknown as any // TODO: fix this with zod or something
     if (!result) return null
     return {
       metadata: JSON.parse(result.metadata),
@@ -123,7 +119,7 @@ export async function getAllCacheKeys(limit: number) {
     sqlite: cacheDb
       .prepare('SELECT key FROM cache LIMIT ?')
       .all(limit)
-      .map(row => row.key),
+      .map(row => (row as {key: string}).key),
     lru: [...lru.keys()],
   }
 }
@@ -133,7 +129,7 @@ export async function searchCacheKeys(search: string, limit: number) {
     sqlite: cacheDb
       .prepare('SELECT key FROM cache WHERE key LIKE ? LIMIT ?')
       .all(`%${search}%`, limit)
-      .map(row => row.key),
+      .map(row => (row as {key: string}).key),
     lru: [...lru.keys()].filter(key => key.includes(search)),
   }
 }

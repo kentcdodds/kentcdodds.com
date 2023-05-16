@@ -1,10 +1,10 @@
 import * as YAML from 'yaml'
-import {markdownToHtmlUnwrapped} from './markdown.server'
-import {downloadDirList, downloadFile} from './github.server'
-import {typedBoolean} from './misc'
-import type {Workshop} from '~/types'
+import {type Workshop} from '~/types'
 import {cache, cachified} from './cache.server'
-import type {Timings} from './timing.server'
+import {downloadDirList, downloadFile} from './github.server'
+import {markdownToHtmlUnwrapped} from './markdown.server'
+import {typedBoolean} from './misc'
+import {type Timings} from './timing.server'
 
 type RawWorkshop = {
   title?: string

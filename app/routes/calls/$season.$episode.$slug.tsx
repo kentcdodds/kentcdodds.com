@@ -1,25 +1,28 @@
-import type {
-  HeadersFunction,
-  LoaderFunction,
-  MetaFunction,
+import {
+  json,
+  redirect,
+  type HeadersFunction,
+  type LoaderFunction,
+  type MetaFunction,
 } from '@remix-run/node'
-import {json, redirect} from '@remix-run/node'
 import {useParams} from '@remix-run/react'
-import type {LoaderData as RootLoaderData} from '../../root'
-import type {KCDHandle} from '~/types'
-import {getEpisodes} from '~/utils/transistor.server'
-import {Themed} from '~/utils/theme-provider'
-import type {Params} from '~/utils/call-kent'
-import {getEpisodeFromParams, getEpisodePath} from '~/utils/call-kent'
-import type {LoaderData as CallsLoaderData} from '../calls'
-import {useCallsData} from '../calls'
-import {getSocialMetas} from '~/utils/seo'
-import {getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc'
-import {H6, Paragraph} from '~/components/typography'
 import {IconLink} from '~/components/icon-link'
-import {useRootData} from '~/utils/use-root-data'
 import {TwitterIcon} from '~/components/icons'
+import {H6, Paragraph} from '~/components/typography'
+import {type KCDHandle} from '~/types'
+import {
+  getEpisodeFromParams,
+  getEpisodePath,
+  type Params,
+} from '~/utils/call-kent'
+import {getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc'
+import {getSocialMetas} from '~/utils/seo'
+import {Themed} from '~/utils/theme-provider'
 import {getServerTimeHeader} from '~/utils/timing.server'
+import {getEpisodes} from '~/utils/transistor.server'
+import {useRootData} from '~/utils/use-root-data'
+import {type LoaderData as RootLoaderData} from '../../root'
+import {useCallsData, type LoaderData as CallsLoaderData} from '../calls'
 
 export const handle: KCDHandle = {
   id: 'call-player',

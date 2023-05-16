@@ -1,7 +1,11 @@
-import type {DefaultRequestMultipartBody, MockedRequest, RestHandler} from 'msw'
-import {rest} from 'msw'
-import tweets from './data/tweets.json'
+import {
+  rest,
+  type DefaultRequestMultipartBody,
+  type MockedRequest,
+  type RestHandler,
+} from 'msw'
 import siteMetadata from './data/site-metadata.json'
+import tweets from './data/tweets.json'
 import {isConnectedToTheInternet} from './utils'
 
 const tweetsArray = Object.values(tweets)

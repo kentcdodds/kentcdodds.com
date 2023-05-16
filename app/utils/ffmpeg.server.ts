@@ -1,8 +1,8 @@
-import fs from 'fs'
 import {spawn} from 'child_process'
+import fs from 'fs'
+import fsExtra from 'fs-extra'
 import path from 'path'
 import * as uuid from 'uuid'
-import fsExtra from 'fs-extra'
 
 const asset = (...p: Array<string>) =>
   path.join(process.cwd(), 'app/assets', ...p)

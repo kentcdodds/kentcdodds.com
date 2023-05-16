@@ -1,16 +1,16 @@
-import type {
-  DataFunctionArgs,
-  HeadersFunction,
-  MetaFunction,
+import {
+  json,
+  type DataFunctionArgs,
+  type HeadersFunction,
+  type MetaFunction,
 } from '@remix-run/node'
-import {json} from '@remix-run/node'
 import {useLoaderData} from '@remix-run/react'
 import {ArrowLink} from '~/components/arrow-button'
 import {ButtonLink} from '~/components/button'
 import {Grid} from '~/components/grid'
 import {
-  getHeroImageProps,
   HeroSection,
+  getHeroImageProps,
 } from '~/components/sections/hero-section'
 import {TestimonialCard} from '~/components/sections/testimonial-card'
 import {Spacer} from '~/components/spacer'
@@ -20,7 +20,7 @@ import {getDisplayUrl, getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {getSocialMetas} from '~/utils/seo'
 import {getTestimonials} from '~/utils/testimonials.server'
 import {getServerTimeHeader} from '~/utils/timing.server'
-import type {LoaderData as RootLoaderData} from '../root'
+import {type LoaderData as RootLoaderData} from '../root'
 
 export const meta: MetaFunction<typeof loader> = ({data, parentsData}) => {
   const {testimonials} = data

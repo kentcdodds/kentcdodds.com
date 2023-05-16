@@ -1,6 +1,6 @@
-import type {EntryContext} from '@remix-run/node'
-import type {KCDHandle, KCDSitemapEntry} from '~/types'
+import {type EntryContext} from '@remix-run/node'
 import {isEqual} from 'lodash'
+import {type KCDHandle, type KCDSitemapEntry} from '~/types'
 import {getDomainUrl, removeTrailingSlash, typedBoolean} from './misc'
 
 async function getSitemapXml(request: Request, remixContext: EntryContext) {

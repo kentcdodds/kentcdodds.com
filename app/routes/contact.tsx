@@ -1,26 +1,26 @@
-import type {
-  ActionFunction,
-  HeadersFunction,
-  MetaFunction,
-} from '@remix-run/node'
-import {json} from '@remix-run/node'
-import {Link, useFetcher} from '@remix-run/react'
-import {useRootData} from '~/utils/use-root-data'
 import {
-  getHeroImageProps,
-  HeroSection,
-} from '~/components/sections/hero-section'
-import {getGenericSocialImage, images} from '~/images'
-import {H2, Paragraph} from '~/components/typography'
+  json,
+  type ActionFunction,
+  type HeadersFunction,
+  type MetaFunction,
+} from '@remix-run/node'
+import {Link, useFetcher} from '@remix-run/react'
+import {Button} from '~/components/button'
 import {ButtonGroup, ErrorPanel, Field} from '~/components/form-elements'
 import {Grid} from '~/components/grid'
+import {
+  HeroSection,
+  getHeroImageProps,
+} from '~/components/sections/hero-section'
+import {H2, Paragraph} from '~/components/typography'
+import {getGenericSocialImage, images} from '~/images'
 import {handleFormSubmission} from '~/utils/actions.server'
-import {sendEmail} from '~/utils/send-email.server'
-import {Button} from '~/components/button'
-import type {LoaderData as RootLoaderData} from '../root'
-import {getSocialMetas} from '~/utils/seo'
 import {getDisplayUrl, getUrl} from '~/utils/misc'
+import {sendEmail} from '~/utils/send-email.server'
+import {getSocialMetas} from '~/utils/seo'
 import {requireUser} from '~/utils/session.server'
+import {useRootData} from '~/utils/use-root-data'
+import {type LoaderData as RootLoaderData} from '../root'
 
 function getErrorForSubject(subject: string | null) {
   if (!subject) return `Subject is required`
@@ -115,7 +115,7 @@ export default function ContactRoute() {
         subtitle="Like in the old days."
         image={
           <img
-            className="max-h-50vh rounded-br-[25%] rounded-tl-[25%] rounded-bl-3xl rounded-tr-3xl"
+            className="max-h-50vh rounded-bl-3xl rounded-br-[25%] rounded-tl-[25%] rounded-tr-3xl"
             {...getHeroImageProps(images.kentProfile)}
           />
         }
@@ -183,12 +183,7 @@ export default function ContactRoute() {
                     error={contactFetcher.data?.errors.body}
                   />
                   {emailSuccessfullySent ? (
-                    <>
-                      {`Hooray, email sent! `}
-                      <span role="img" aria-label="party popper emoji">
-                        🎉
-                      </span>
-                    </>
+                    `Hooray, email sent! 🎉`
                   ) : (
                     // IDEA: show a loading state here
                     <ButtonGroup>

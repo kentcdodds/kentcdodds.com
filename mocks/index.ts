@@ -1,14 +1,14 @@
 import {rest} from 'msw'
 import {setupServer} from 'msw/node'
-import {githubHandlers} from './github'
-import {tiToHandlers} from './tito'
-import {oembedHandlers} from './oembed'
-import {twitterHandlers} from './twitter'
-import {transistorHandlers} from './transistor'
-import {discordHandlers} from './discord'
 import {convertKitHandlers} from './convert-kit'
+import {discordHandlers} from './discord'
+import {githubHandlers} from './github'
+import {oembedHandlers} from './oembed'
 import {simplecastHandlers} from './simplecast'
-import {isConnectedToTheInternet, updateFixture, readFixture} from './utils'
+import {tiToHandlers} from './tito'
+import {transistorHandlers} from './transistor'
+import {twitterHandlers} from './twitter'
+import {isConnectedToTheInternet, readFixture, updateFixture} from './utils'
 
 // put one-off handlers that don't really need an entire file to themselves here
 const miscHandlers = [

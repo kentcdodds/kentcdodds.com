@@ -1,43 +1,46 @@
-import * as React from 'react'
-import type {
-  HeadersFunction,
-  LoaderFunction,
-  MetaFunction,
+import {
+  json,
+  type HeadersFunction,
+  type LoaderFunction,
+  type MetaFunction,
 } from '@remix-run/node'
-import {json} from '@remix-run/node'
 import {Link, Outlet, useLoaderData, useMatches} from '@remix-run/react'
-import {AnimatePresence, motion, useReducedMotion} from 'framer-motion'
 import clsx from 'clsx'
-import type {LoaderData as RootLoaderData} from '../root'
-import type {Await, CallKentEpisode, KCDHandle} from '~/types'
-import {externalLinks} from '~/external-links'
-import {getEpisodes} from '~/utils/transistor.server'
-import {useMatchLoaderData} from '~/utils/providers'
+import {AnimatePresence, motion, useReducedMotion} from 'framer-motion'
+import * as React from 'react'
+import {ButtonLink} from '~/components/button'
+import {Grid} from '~/components/grid'
+import {ChevronDownIcon, ChevronUpIcon, TriangleIcon} from '~/components/icons'
+import {PodcastSubs} from '~/components/podcast-subs'
+import {BlogSection} from '~/components/sections/blog-section'
 import {HeroSection} from '~/components/sections/hero-section'
+import {Spacer} from '~/components/spacer'
+import {H4, H6, Paragraph} from '~/components/typography'
+import {externalLinks} from '~/external-links'
 import {
   getGenericSocialImage,
   getImageBuilder,
   getImgProps,
   images,
 } from '~/images'
-import {ButtonLink} from '~/components/button'
-import {Grid} from '~/components/grid'
+import {type Await, type CallKentEpisode, type KCDHandle} from '~/types'
 import {getBlogRecommendations} from '~/utils/blog.server'
-import {BlogSection} from '~/components/sections/blog-section'
-import {H4, H6, Paragraph} from '~/components/typography'
-import {ChevronUpIcon, ChevronDownIcon, TriangleIcon} from '~/components/icons'
+import {
+  getEpisodeFromParams,
+  getEpisodePath,
+  type Params as CallPlayerParams,
+} from '~/utils/call-kent'
 import {
   formatDuration,
   getDisplayUrl,
   getUrl,
   reuseUsefulLoaderHeaders,
 } from '~/utils/misc'
-import type {Params as CallPlayerParams} from '~/utils/call-kent'
-import {getEpisodeFromParams, getEpisodePath} from '~/utils/call-kent'
-import {PodcastSubs} from '~/components/podcast-subs'
-import {Spacer} from '~/components/spacer'
+import {useMatchLoaderData} from '~/utils/providers'
 import {getSocialMetas} from '~/utils/seo'
 import {getServerTimeHeader} from '~/utils/timing.server'
+import {getEpisodes} from '~/utils/transistor.server'
+import {type LoaderData as RootLoaderData} from '../root'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'calls',

@@ -1,9 +1,15 @@
-import * as React from 'react'
 import {buildImageUrl} from 'cloudinary-build-url'
-import type {LoaderData as RootLoaderData} from '../root'
-import type {GitHubFile, MdxListItem, MdxPage} from '~/types'
-import * as mdxBundler from 'mdx-bundler/client'
 import LRU from 'lru-cache'
+import * as mdxBundler from 'mdx-bundler/client'
+import * as React from 'react'
+import {CloudinaryVideo} from '~/components/cloudinary-video'
+import {ConvertKitForm} from '~/convertkit/form'
+import {
+  getImageBuilder,
+  getImgProps,
+  getSocialImageWithPreTitle,
+} from '~/images'
+import {type GitHubFile, type MdxListItem, type MdxPage} from '~/types'
 import {compileMdx} from '~/utils/compile-mdx.server'
 import {
   downloadDirList,
@@ -16,18 +22,12 @@ import {
   getUrl,
   typedBoolean,
 } from '~/utils/misc'
+import {type LoaderData as RootLoaderData} from '../root'
 import {cache, cachified} from './cache.server'
-import {getSocialMetas} from './seo'
-import {
-  getImageBuilder,
-  getImgProps,
-  getSocialImageWithPreTitle,
-} from '~/images'
-import {Themed} from './theme-provider'
 import {markdownToHtmlUnwrapped, stripHtml} from './markdown.server'
-import {ConvertKitForm} from '~/convertkit/form'
-import {CloudinaryVideo} from '~/components/cloudinary-video'
-import type {Timings} from './timing.server'
+import {getSocialMetas} from './seo'
+import {Themed} from './theme-provider'
+import {type Timings} from './timing.server'
 import {useOptionalUser} from './use-root-data'
 
 type CachifiedOptions = {
@@ -495,7 +495,7 @@ function SubscribeForm(props: Record<string, unknown>) {
   }
 
   return (
-    <div className="mb-12 border-t-2 border-b-2 border-team-current p-5">
+    <div className="mb-12 border-b-2 border-t-2 border-team-current p-5">
       <ConvertKitForm
         formId={formId}
         convertKitFormId={convertKitFormId}

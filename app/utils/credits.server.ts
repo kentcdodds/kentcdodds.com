@@ -1,8 +1,8 @@
+import {cachified, verboseReporter} from 'cachified'
 import * as YAML from 'yaml'
+import {cache, shouldForceFresh} from './cache.server'
 import {downloadFile} from './github.server'
 import {getErrorMessage, typedBoolean} from './misc'
-import {cachified, verboseReporter} from 'cachified'
-import {cache, shouldForceFresh} from './cache.server'
 
 export type Person = {
   name: string

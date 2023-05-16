@@ -1,6 +1,9 @@
-import type {RequestHandler} from 'express'
-import type {Key} from 'path-to-regexp'
-import {pathToRegexp, compile as compileRedirectPath} from 'path-to-regexp'
+import {type RequestHandler} from 'express'
+import {
+  compile as compileRedirectPath,
+  pathToRegexp,
+  type Key,
+} from 'path-to-regexp'
 
 function typedBoolean<T>(
   value: T,

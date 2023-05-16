@@ -1,14 +1,18 @@
-import type {DefaultRequestMultipartBody, MockedRequest, RestHandler} from 'msw'
-import {rest} from 'msw'
-import type {
-  TransistorEpisodesJson,
-  TransistorPublishedJson,
-  TransistorAuthorizedJson,
-  TransistorCreatedJson,
-  TransistorEpisodeData,
-} from '~/types'
 import {faker} from '@faker-js/faker'
-import {requiredParam, requiredHeader, requiredProperty} from './utils'
+import {
+  rest,
+  type DefaultRequestMultipartBody,
+  type MockedRequest,
+  type RestHandler,
+} from 'msw'
+import {
+  type TransistorAuthorizedJson,
+  type TransistorCreatedJson,
+  type TransistorEpisodeData,
+  type TransistorEpisodesJson,
+  type TransistorPublishedJson,
+} from '~/types'
+import {requiredHeader, requiredParam, requiredProperty} from './utils'
 
 function makeEpisode(
   overrides: {
@@ -16,12 +20,12 @@ function makeEpisode(
     attributes?: Partial<TransistorEpisodeData['attributes']>
   } = {},
 ): TransistorEpisodeData {
-  const publishedAt = faker.datatype.between({
+  const publishedAt = faker.date.between({
     from: Date.now() - 1000 * 60 * 60 * 24 * 7 * 6,
     to: Date.now() - 1000 * 60 * 60 * 24,
   })
   return {
-    id: faker.datatype.uuid(),
+    id: faker.string.uuid(),
     type: 'episode',
     ...overrides,
     attributes: {

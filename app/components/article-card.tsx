@@ -1,13 +1,13 @@
 import {Link} from '@remix-run/react'
 import clsx from 'clsx'
-import type {MdxListItem, Team} from '~/types'
 import {getImageBuilder, getImgProps} from '~/images'
-import {H3} from './typography'
+import {type MdxListItem, type Team} from '~/types'
+import {getBannerAltProp, getBannerTitleProp} from '~/utils/mdx'
+import {useRootData} from '~/utils/use-root-data'
+import {BlurrableImage} from './blurrable-image'
 import {ClipboardCopyButton} from './clipboard-copy-button'
 import {MissingSomething} from './kifs'
-import {BlurrableImage} from './blurrable-image'
-import {useRootData} from '~/utils/use-root-data'
-import {getBannerAltProp, getBannerTitleProp} from '~/utils/mdx'
+import {H3} from './typography'
 
 function ArticleCard({
   leadingTeam,

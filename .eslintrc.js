@@ -43,5 +43,8 @@ module.exports = {
 
     // this auto-fixes and it's nice to have types and actual stuff separate
     '@typescript-eslint/consistent-type-imports': 'warn',
+
+    // conflicts with jsx-a11y/prefer-tag-over-role
+    'jsx-a11y/accessible-emoji': 'off',
   },
 }

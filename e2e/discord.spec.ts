@@ -1,5 +1,5 @@
-import {test, expect} from './utils'
 import invariant from 'tiny-invariant'
+import {expect, test} from './utils'
 
 test('A new user can create an account', async ({page, login}) => {
   await login()

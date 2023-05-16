@@ -36,12 +36,7 @@ function Poll() {
   return (
     <div style={{margin: '20px 0 50px 0'}}>
       {isRight ? (
-        <div>
-          You are correct!{' '}
-          <span role="img" aria-label="partying">
-            🥳
-          </span>
-        </div>
+        <div>You are correct! 🥳</div>
       ) : (
         <div>
           <div style={{marginBottom: 10}}>

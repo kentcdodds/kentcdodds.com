@@ -1,8 +1,8 @@
 import {getImgProps, images} from '~/images'
-import {H2} from '../typography'
 import {ArrowLink} from '../arrow-button'
 import {Grid} from '../grid'
 import {DiscordLogo} from '../icons'
+import {H2} from '../typography'
 
 function DiscordSection() {
   return (
@@ -62,9 +62,7 @@ function DiscordSection() {
           </div>
           <div className="self-start rounded-full bg-blue-100 px-12 py-6 text-lg">
             {`Let me know `}
-            <span role="img" aria-label="victory hand emoji">
-              ✌️
-            </span>
+            ✌️
           </div>
         </div>
 
@@ -78,9 +76,7 @@ function DiscordSection() {
           </div>
           <div className="self-end rounded-full bg-green-100 px-12 py-6 text-lg">
             {`Let me show you what I'm working on...`}
-            <span role="img" aria-label="technologist emoji">
-              🧑‍💻
-            </span>
+            🧑‍💻
           </div>
         </div>
       </div>

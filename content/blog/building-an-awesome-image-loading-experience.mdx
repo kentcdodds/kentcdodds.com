@@ -55,7 +55,7 @@ do this by specifying the size of the area that holds the image via
 TL;DR:
 
 ```html
-<div class="aspect-h-4 aspect-w-3 md:aspect-w-3 md:aspect-h-2">
+<div class="aspect-h-4 aspect-w-3 md:aspect-h-2 md:aspect-w-3">
   <img src="..." alt="..." class="..." />
 </div>
 ```
@@ -356,7 +356,7 @@ function BlogScreen() {
         <BlurrableImage
           key={frontmatter.bannerCloudinaryId}
           blurDataUrl={frontmatter.bannerBlurDataUrl}
-          className="aspect-h-4 aspect-w-3 md:aspect-w-3 md:aspect-h-2"
+          className="aspect-h-4 aspect-w-3 md:aspect-h-2 md:aspect-w-3"
           img={
             <img
               key={frontmatter.bannerCloudinaryId}

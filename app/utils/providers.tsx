@@ -1,6 +1,6 @@
-import * as React from 'react'
 import {useMatches} from '@remix-run/react'
-import type {KCDHandle} from '~/types'
+import * as React from 'react'
+import {type KCDHandle} from '~/types'
 
 function createSimpleContext<ContextType>(name: string) {
   const defaultValue = Symbol(`Default ${name} context value`)

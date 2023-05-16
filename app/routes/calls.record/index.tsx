@@ -1,4 +1,4 @@
-import type {HeadersFunction} from '@remix-run/node'
+import {type HeadersFunction} from '@remix-run/node'
 
 export const headers: HeadersFunction = ({parentHeaders}) => parentHeaders
 

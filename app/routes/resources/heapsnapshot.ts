@@ -1,12 +1,11 @@
-import path from 'path'
-import os from 'os'
+import {Response, type DataFunctionArgs} from '@remix-run/node'
 import fs from 'fs'
-import v8 from 'v8'
-import {Response} from '@remix-run/node'
+import os from 'os'
+import path from 'path'
 import {PassThrough} from 'stream'
-import type {DataFunctionArgs} from '@remix-run/node'
-import {requireAdminUser} from '~/utils/session.server'
+import v8 from 'v8'
 import {formatDate} from '~/utils/misc'
+import {requireAdminUser} from '~/utils/session.server'
 
 export async function loader({request}: DataFunctionArgs) {
   await requireAdminUser(request)

@@ -1,9 +1,11 @@
-import React from 'react'
-import type {HeadersFunction, LoaderFunction} from '@remix-run/node'
-import {redirect} from '@remix-run/node'
+import {
+  redirect,
+  type HeadersFunction,
+  type LoaderFunction,
+} from '@remix-run/node'
+import {reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {getSeasons} from '~/utils/simplecast.server'
 import {getServerTimeHeader} from '~/utils/timing.server'
-import {reuseUsefulLoaderHeaders} from '~/utils/misc'
 
 export const loader: LoaderFunction = async ({request, params}) => {
   const timings = {}

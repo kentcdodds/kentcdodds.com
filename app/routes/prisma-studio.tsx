@@ -1,5 +1,5 @@
+import {type DataFunctionArgs} from '@remix-run/node'
 import {spawn} from 'child_process'
-import type {DataFunctionArgs} from '@remix-run/node'
 import {requireAdminUser} from '~/utils/session.server'
 
 declare global {
@@ -8,7 +8,7 @@ declare global {
   var __prismaSubprocess: ReturnType<typeof spawn> | null
 }
 
-global.__prismaSubprocess = global.__prismaSubprocess ?? null
+global.__prismaSubprocess ??= null
 
 async function ensurePrismaStudioIsRunning() {
   if (global.__prismaSubprocess) return

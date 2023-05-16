@@ -1,8 +1,8 @@
+import {useSearchParams} from '@remix-run/react'
+import clsx from 'clsx'
+import {AnimatePresence, motion} from 'framer-motion'
 import * as React from 'react'
 import {useState} from 'react'
-import {useSearchParams} from '@remix-run/react'
-import {AnimatePresence, motion} from 'framer-motion'
-import clsx from 'clsx'
 import {PlusIcon} from './icons'
 
 function NotificationMessage({

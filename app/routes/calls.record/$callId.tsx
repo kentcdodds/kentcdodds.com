@@ -1,17 +1,18 @@
-import * as React from 'react'
-import type {
-  ActionFunction,
-  HeadersFunction,
-  LoaderFunction,
+import {
+  json,
+  redirect,
+  type ActionFunction,
+  type HeadersFunction,
+  type LoaderFunction,
 } from '@remix-run/node'
-import {json, redirect} from '@remix-run/node'
 import {Form, useLoaderData} from '@remix-run/react'
-import type {Call, KCDHandle} from '~/types'
-import {requireUser} from '~/utils/session.server'
-import {prisma} from '~/utils/prisma.server'
-import {Paragraph} from '~/components/typography'
-import {reuseUsefulLoaderHeaders, useDoubleCheck} from '~/utils/misc'
+import * as React from 'react'
 import {Button} from '~/components/button'
+import {Paragraph} from '~/components/typography'
+import {type Call, type KCDHandle} from '~/types'
+import {reuseUsefulLoaderHeaders, useDoubleCheck} from '~/utils/misc'
+import {prisma} from '~/utils/prisma.server'
+import {requireUser} from '~/utils/session.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,

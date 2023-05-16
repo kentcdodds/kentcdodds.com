@@ -1,11 +1,11 @@
+import {type CountableSlugify} from '@sindresorhus/slugify'
 import * as YAML from 'yaml'
-import type {CountableSlugify} from '@sindresorhus/slugify'
-import type {Await} from '~/types'
-import {formatDate, typedBoolean} from '~/utils/misc'
-import {markdownToHtml, stripHtml} from '~/utils/markdown.server'
-import {downloadFile} from '~/utils/github.server'
+import {type Await} from '~/types'
 import {cache, cachified} from '~/utils/cache.server'
-import type {Timings} from './timing.server'
+import {downloadFile} from '~/utils/github.server'
+import {markdownToHtml, stripHtml} from '~/utils/markdown.server'
+import {formatDate, typedBoolean} from '~/utils/misc'
+import {type Timings} from './timing.server'
 
 type RawTalk = {
   title?: string

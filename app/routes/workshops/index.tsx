@@ -1,27 +1,27 @@
-import * as React from 'react'
-import type {HeadersFunction, MetaFunction} from '@remix-run/node'
+import {type HeadersFunction, type MetaFunction} from '@remix-run/node'
 import {useSearchParams} from '@remix-run/react'
+import * as React from 'react'
 import {Grid} from '~/components/grid'
-import {getSocialImageWithPreTitle, images} from '~/images'
-import {H3, H6} from '~/components/typography'
-import {Tag} from '~/components/tag'
-import {Spacer} from '~/components/spacer'
 import {CourseSection} from '~/components/sections/course-section'
-import {WorkshopCard} from '~/components/workshop-card'
 import {HeroSection} from '~/components/sections/hero-section'
-import {useWorkshopsData} from '../workshops'
-import {
-  useUpdateQueryStringValueWithoutNavigation,
-  listify,
-  getUrl,
-  getDisplayUrl,
-  typedBoolean,
-} from '~/utils/misc'
+import {Spacer} from '~/components/spacer'
+import {Tag} from '~/components/tag'
+import {H3, H6} from '~/components/typography'
+import {WorkshopCard} from '~/components/workshop-card'
 import {RegistrationPanel} from '~/components/workshop-registration-panel'
+import {getSocialImageWithPreTitle, images} from '~/images'
+import {type Workshop} from '~/types'
+import {
+  getDisplayUrl,
+  getUrl,
+  listify,
+  typedBoolean,
+  useUpdateQueryStringValueWithoutNavigation,
+} from '~/utils/misc'
 import {getSocialMetas} from '~/utils/seo'
-import type {LoaderData as RootLoaderData} from '../../root'
-import type {Workshop} from '~/types'
-import type {WorkshopEvent} from '~/utils/workshop-tickets.server'
+import {type WorkshopEvent} from '~/utils/workshop-tickets.server'
+import {type LoaderData as RootLoaderData} from '../../root'
+import {useWorkshopsData} from '../workshops'
 
 export const meta: MetaFunction = ({parentsData}) => {
   const {requestInfo} = parentsData.root as RootLoaderData

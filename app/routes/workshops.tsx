@@ -1,13 +1,14 @@
-import type {HeadersFunction, LoaderFunction} from '@remix-run/node'
-import {json} from '@remix-run/node'
+import {json, type HeadersFunction, type LoaderFunction} from '@remix-run/node'
 import {Outlet} from '@remix-run/react'
-import type {KCDHandle, Workshop} from '~/types'
-import {getWorkshops} from '~/utils/workshops.server'
-import type {WorkshopEvent} from '~/utils/workshop-tickets.server'
-import {getScheduledEvents} from '~/utils/workshop-tickets.server'
+import {type KCDHandle, type Workshop} from '~/types'
 import {reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {useMatchLoaderData} from '~/utils/providers'
 import {getServerTimeHeader} from '~/utils/timing.server'
+import {
+  getScheduledEvents,
+  type WorkshopEvent,
+} from '~/utils/workshop-tickets.server'
+import {getWorkshops} from '~/utils/workshops.server'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'workshops',

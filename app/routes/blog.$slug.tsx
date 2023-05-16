@@ -1,48 +1,51 @@
-import * as React from 'react'
-import type {HeadersFunction, DataFunctionArgs} from '@remix-run/node'
-import {json} from '@remix-run/node'
-import {useCatch, useFetcher, useLoaderData, useParams} from '@remix-run/react'
-import type {KCDHandle, MdxListItem, Team} from '~/types'
-import {useRootData} from '~/utils/use-root-data'
-import {getImageBuilder, getImgProps, images} from '~/images'
 import {
+  json,
+  type DataFunctionArgs,
+  type HeadersFunction,
+} from '@remix-run/node'
+import {useCatch, useFetcher, useLoaderData, useParams} from '@remix-run/react'
+import clsx from 'clsx'
+import * as React from 'react'
+import {ArrowLink, BackLink} from '~/components/arrow-button'
+import {BlurrableImage} from '~/components/blurrable-image'
+import {CourseCard} from '~/components/course-card'
+import {FourOhFour, ServerError} from '~/components/errors'
+import {Grid} from '~/components/grid'
+import {BlogSection} from '~/components/sections/blog-section'
+import {HeaderSection} from '~/components/sections/header-section'
+import {Spacer} from '~/components/spacer'
+import {TeamStats} from '~/components/team-stats'
+import {H2, H6, Paragraph} from '~/components/typography'
+import {WorkshopCard} from '~/components/workshop-card'
+import {getImageBuilder, getImgProps, images} from '~/images'
+import {type KCDHandle, type MdxListItem, type Team} from '~/types'
+import {getRankingLeader} from '~/utils/blog'
+import {
+  getBlogReadRankings,
+  getBlogRecommendations,
+  getTotalPostReads,
+  notifyOfOverallTeamLeaderChange,
+  notifyOfTeamLeaderChangeOnPost,
+  type ReadRankings,
+} from '~/utils/blog.server'
+import {getClientSession} from '~/utils/client.server'
+import {
+  getBannerAltProp,
+  getBannerTitleProp,
   getBlogMdxListItems,
   getMdxPage,
   mdxPageMeta,
   useMdxComponent,
-  getBannerTitleProp,
-  getBannerAltProp,
 } from '~/utils/mdx'
-import {H2, H6, Paragraph} from '~/components/typography'
-import {Grid} from '~/components/grid'
-import {ArrowLink, BackLink} from '~/components/arrow-button'
-import {BlogSection} from '~/components/sections/blog-section'
-import type {ReadRankings} from '~/utils/blog.server'
-import {
-  getBlogReadRankings,
-  getTotalPostReads,
-  getBlogRecommendations,
-  notifyOfOverallTeamLeaderChange,
-  notifyOfTeamLeaderChangeOnPost,
-} from '~/utils/blog.server'
-import {FourOhFour, ServerError} from '~/components/errors'
-import {TeamStats} from '~/components/team-stats'
 import {formatNumber, reuseUsefulLoaderHeaders} from '~/utils/misc'
-import {BlurrableImage} from '~/components/blurrable-image'
-import {getSession} from '~/utils/session.server'
 import {addPostRead} from '~/utils/prisma.server'
-import {getClientSession} from '~/utils/client.server'
-import {getRankingLeader} from '~/utils/blog'
-import {externalLinks} from '../external-links'
+import {getSession} from '~/utils/session.server'
 import {teamEmoji, useTeam} from '~/utils/team-provider'
-import {getWorkshops} from '~/utils/workshops.server'
-import {getScheduledEvents} from '~/utils/workshop-tickets.server'
-import {WorkshopCard} from '~/components/workshop-card'
-import {Spacer} from '~/components/spacer'
-import clsx from 'clsx'
-import {HeaderSection} from '~/components/sections/header-section'
-import {CourseCard} from '~/components/course-card'
 import {getServerTimeHeader} from '~/utils/timing.server'
+import {useRootData} from '~/utils/use-root-data'
+import {getScheduledEvents} from '~/utils/workshop-tickets.server'
+import {getWorkshops} from '~/utils/workshops.server'
+import {externalLinks} from '../external-links'
 
 const handleId = 'blog-post'
 export const handle: KCDHandle = {
@@ -462,7 +465,7 @@ export default function MdxScreen() {
             <BlurrableImage
               key={frontmatter.bannerCloudinaryId}
               blurDataUrl={frontmatter.bannerBlurDataUrl}
-              className="aspect-h-4 aspect-w-3 md:aspect-w-3 md:aspect-h-2"
+              className="aspect-h-4 aspect-w-3 md:aspect-h-2 md:aspect-w-3"
               img={
                 <img
                   key={frontmatter.bannerCloudinaryId}

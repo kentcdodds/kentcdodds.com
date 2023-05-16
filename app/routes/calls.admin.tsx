@@ -1,10 +1,14 @@
-import type {ActionFunction, LoaderFunction} from '@remix-run/node'
-import {json, redirect} from '@remix-run/node'
+import {
+  json,
+  redirect,
+  type ActionFunction,
+  type LoaderFunction,
+} from '@remix-run/node'
 import {Link, Outlet, useLoaderData} from '@remix-run/react'
-import type {Await, KCDHandle} from '~/types'
-import {requireAdminUser} from '~/utils/session.server'
-import {prisma} from '~/utils/prisma.server'
+import {type Await, type KCDHandle} from '~/types'
 import {getAvatarForUser} from '~/utils/misc'
+import {prisma} from '~/utils/prisma.server'
+import {requireAdminUser} from '~/utils/session.server'
 import {useRootData} from '~/utils/use-root-data'
 
 export const handle: KCDHandle = {

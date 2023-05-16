@@ -1,5 +1,9 @@
-import type {DefaultRequestMultipartBody, MockedRequest, RestHandler} from 'msw'
-import {rest} from 'msw'
+import {
+  rest,
+  type DefaultRequestMultipartBody,
+  type MockedRequest,
+  type RestHandler,
+} from 'msw'
 
 const oembedHandlers: Array<
   RestHandler<MockedRequest<DefaultRequestMultipartBody>>

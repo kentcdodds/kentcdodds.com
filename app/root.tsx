@@ -1,12 +1,11 @@
-import * as React from 'react'
-import type {
-  HeadersFunction,
-  LinksFunction,
-  MetaFunction,
-  DataFunctionArgs,
-  SerializeFrom,
+import {
+  json,
+  type DataFunctionArgs,
+  type HeadersFunction,
+  type LinksFunction,
+  type MetaFunction,
+  type SerializeFrom,
 } from '@remix-run/node'
-import {json} from '@remix-run/node'
 import {
   Link,
   Links,
@@ -20,25 +19,37 @@ import {
   useLocation,
   useTransition,
 } from '@remix-run/react'
+import * as React from 'react'
 
 import {MetronomeLinks} from '@metronome-sh/react'
-import {AnimatePresence, motion} from 'framer-motion'
-import {useSpinDelay} from 'spin-delay'
 import clsx from 'clsx'
+import {isFuture} from 'date-fns'
+import {AnimatePresence, motion} from 'framer-motion'
 import {getInstanceInfo} from 'litefs-js'
-import type {KCDHandle} from '~/types'
+import {useSpinDelay} from 'spin-delay'
+import {type KCDHandle} from '~/types'
+import {ArrowLink} from './components/arrow-button'
+import {ErrorPage} from './components/errors'
+import {Footer} from './components/footer'
+import {ArrowIcon, LaptopIcon} from './components/icons'
+import {Grimmacing, MissingSomething} from './components/kifs'
+import {Navbar} from './components/navbar'
+import {NotificationMessage} from './components/notification-message'
+import {Spacer} from './components/spacer'
+import {TeamCircle} from './components/team-circle'
+import {getGenericSocialImage, illustrationImages, images} from './images'
+import {pathedRoutes} from './other-routes.server'
+import {
+  Promotification,
+  getPromoCookieValue,
+} from './routes/resources/promotification'
+import appStyles from './styles/app.css'
+import noScriptStyles from './styles/no-script.css'
+import proseStyles from './styles/prose.css'
 import tailwindStyles from './styles/tailwind.css'
 import vendorStyles from './styles/vendors.css'
-import appStyles from './styles/app.css'
-import proseStyles from './styles/prose.css'
-import noScriptStyles from './styles/no-script.css'
-import {
-  useTheme,
-  ThemeProvider,
-  NonFlashOfWrongThemeEls,
-} from './utils/theme-provider'
-import {getThemeSession} from './utils/theme.server'
-import {getSession} from './utils/session.server'
+import {getClientSession} from './utils/client.server'
+import {getEnv} from './utils/env.server'
 import {getLoginInfoSession} from './utils/login.server'
 import {
   getDisplayUrl,
@@ -48,31 +59,20 @@ import {
   removeTrailingSlash,
   typedBoolean,
 } from './utils/misc'
-import {getEnv} from './utils/env.server'
-import {getUserInfo} from './utils/user-info.server'
-import {getClientSession} from './utils/client.server'
-import {Navbar} from './components/navbar'
-import {Spacer} from './components/spacer'
-import {Footer} from './components/footer'
-import {TeamCircle} from './components/team-circle'
-import {NotificationMessage} from './components/notification-message'
-import {pathedRoutes} from './other-routes.server'
-import {ErrorPage} from './components/errors'
-import {TeamProvider, useTeam} from './utils/team-provider'
-import {getSocialMetas} from './utils/seo'
-import {getGenericSocialImage, illustrationImages, images} from './images'
-import {Grimmacing, MissingSomething} from './components/kifs'
-import {ArrowLink} from './components/arrow-button'
-import {getServerTimeHeader} from './utils/timing.server'
 import {useNonce} from './utils/nonce-provider'
+import {getSocialMetas} from './utils/seo'
+import {getSession} from './utils/session.server'
+import {TeamProvider, useTeam} from './utils/team-provider'
 import {
-  Promotification,
-  getPromoCookieValue,
-} from './routes/resources/promotification'
-import {getWorkshops} from './utils/workshops.server'
+  NonFlashOfWrongThemeEls,
+  ThemeProvider,
+  useTheme,
+} from './utils/theme-provider'
+import {getThemeSession} from './utils/theme.server'
+import {getServerTimeHeader} from './utils/timing.server'
+import {getUserInfo} from './utils/user-info.server'
 import {getScheduledEvents} from './utils/workshop-tickets.server'
-import {isFuture} from 'date-fns'
-import {ArrowIcon, LaptopIcon} from './components/icons'
+import {getWorkshops} from './utils/workshops.server'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',

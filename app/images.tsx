@@ -1,8 +1,7 @@
-import type {TransformerOption} from '@cld-apis/types'
-import {setConfig, buildImageUrl} from 'cloudinary-build-url'
+import {type TransformerOption} from '@cld-apis/types'
+import {buildImageUrl, setConfig} from 'cloudinary-build-url'
 import emojiRegex from 'emoji-regex'
-import type {OptionalTeam} from './utils/misc'
-import {optionalTeams, toBase64} from './utils/misc'
+import {optionalTeams, toBase64, type OptionalTeam} from './utils/misc'
 
 setConfig({
   cloudName: 'kentcdodds-com',

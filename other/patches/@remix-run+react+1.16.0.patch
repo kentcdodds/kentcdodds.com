@@ -1,8 +1,8 @@
 diff --git a/node_modules/@remix-run/react/dist/components.js b/node_modules/@remix-run/react/dist/components.js
-index 6872657..1ccfd56 100644
+index 79b255b..cf5b030 100644
 --- a/node_modules/@remix-run/react/dist/components.js
 +++ b/node_modules/@remix-run/react/dist/components.js
-@@ -609,7 +609,8 @@ function Scripts(props) {
+@@ -675,7 +675,8 @@ function Scripts(props) {
              key: `${routeId} | ${key}`,
              deferredData: deferredData,
              routeId: routeId,
@@ -12,7 +12,7 @@ index 6872657..1ccfd56 100644
            }));
            return `${JSON.stringify(key)}:__remixContext.n(${JSON.stringify(routeId)}, ${JSON.stringify(key)})`;
          } else {
-@@ -639,6 +640,7 @@ window.__remixRouteModules = {${matches.map((match, index) => `${JSON.stringify(
+@@ -705,10 +706,12 @@ window.__remixRouteModules = {${matches.map((match, index) => `${JSON.stringify(
  
  import(${JSON.stringify(manifest.entry.module)});`;
      return /*#__PURE__*/React__namespace.createElement(React__namespace.Fragment, null, /*#__PURE__*/React__namespace.createElement("script", _rollupPluginBabelHelpers["extends"]({}, props, {
@@ -20,15 +20,12 @@ index 6872657..1ccfd56 100644
        suppressHydrationWarning: true,
        dangerouslySetInnerHTML: markup.createHtml(contextScript),
        type: undefined
-@@ -646,6 +648,7 @@ import(${JSON.stringify(manifest.entry.module)});`;
+     })), /*#__PURE__*/React__namespace.createElement("script", _rollupPluginBabelHelpers["extends"]({}, props, {
++      nonce: props.nonce,
        suppressHydrationWarning: true,
        dangerouslySetInnerHTML: markup.createHtml(routeModulesScript),
        type: "module",
-+      nonce: props.nonce,
-       async: true
-     })));
-     // disabled deps array because we are purposefully only rendering this once
-@@ -656,6 +659,7 @@ import(${JSON.stringify(manifest.entry.module)});`;
+@@ -722,6 +725,7 @@ import(${JSON.stringify(manifest.entry.module)});`;
    if (!isStatic && typeof __remixContext === "object" && __remixContext.a) {
      for (let i = 0; i < __remixContext.a; i++) {
        deferredScripts.push( /*#__PURE__*/React__namespace.createElement(DeferredHydrationScript, {
@@ -36,17 +33,15 @@ index 6872657..1ccfd56 100644
          key: i
        }));
      }
-@@ -694,7 +698,8 @@ import(${JSON.stringify(manifest.entry.module)});`;
+@@ -758,6 +762,7 @@ import(${JSON.stringify(manifest.entry.module)});`;
+   })), !isHydrated && initialScripts, !isHydrated && deferredScripts);
+ }
  function DeferredHydrationScript({
++  nonce,
    dataKey,
    deferredData,
--  routeId
-+  routeId,
-+  nonce
- }) {
-   if (typeof document === "undefined" && deferredData && dataKey && routeId) {
-     invariant(deferredData.pendingKeys.includes(dataKey), `Deferred data for route ${routeId} with key ${dataKey} was not pending but tried to render a script for it.`);
-@@ -707,6 +712,7 @@ function DeferredHydrationScript({
+   routeId
+@@ -773,6 +778,7 @@ function DeferredHydrationScript({
      typeof document === "undefined" && deferredData && dataKey && routeId ? null : /*#__PURE__*/React__namespace.createElement("script", {
        async: true,
        suppressHydrationWarning: true,
@@ -54,94 +49,97 @@ index 6872657..1ccfd56 100644
        dangerouslySetInnerHTML: {
          __html: " "
        }
-@@ -715,10 +721,12 @@ function DeferredHydrationScript({
+@@ -780,10 +786,12 @@ function DeferredHydrationScript({
+   }, typeof document === "undefined" && deferredData && dataKey && routeId ? /*#__PURE__*/React__namespace.createElement(Await, {
      resolve: deferredData.data[dataKey],
      errorElement: /*#__PURE__*/React__namespace.createElement(ErrorDeferredHydrationScript, {
-       dataKey: dataKey,
--      routeId: routeId
-+      routeId: routeId,
 +      nonce,
+       dataKey: dataKey,
+       routeId: routeId
      }),
      children: data => /*#__PURE__*/React__namespace.createElement("script", {
-       async: true,
 +      nonce,
+       async: true,
        suppressHydrationWarning: true,
        dangerouslySetInnerHTML: {
-         __html: `__remixContext.r(${JSON.stringify(routeId)}, ${JSON.stringify(dataKey)}, ${markup.escapeHtml(JSON.stringify(data))});`
-@@ -726,6 +734,7 @@ function DeferredHydrationScript({
+@@ -791,6 +799,7 @@ function DeferredHydrationScript({
+       }
      })
    }) : /*#__PURE__*/React__namespace.createElement("script", {
-     async: true,
 +    nonce,
+     async: true,
      suppressHydrationWarning: true,
      dangerouslySetInnerHTML: {
-       __html: " "
-@@ -734,7 +743,8 @@ function DeferredHydrationScript({
+@@ -799,6 +808,7 @@ function DeferredHydrationScript({
+   }));
  }
  function ErrorDeferredHydrationScript({
++  nonce,
    dataKey,
--  routeId
-+  routeId,
-+  nonce
+   routeId
  }) {
-   let error = reactRouterDom.useAsyncError();
-   let toSerialize = {
-@@ -746,6 +756,7 @@ function ErrorDeferredHydrationScript({
-   }
+@@ -811,6 +821,7 @@ function ErrorDeferredHydrationScript({
+     stack: undefined
+   };
    return /*#__PURE__*/React__namespace.createElement("script", {
-     suppressHydrationWarning: true,
 +    nonce,
+     suppressHydrationWarning: true,
      dangerouslySetInnerHTML: {
        __html: `__remixContext.r(${JSON.stringify(routeId)}, ${JSON.stringify(dataKey)}, !1, ${markup.escapeHtml(JSON.stringify(toSerialize))});`
-     }
+diff --git a/node_modules/@remix-run/react/dist/data.js b/node_modules/@remix-run/react/dist/data.js
+index be82389..1e28941 100644
+--- a/node_modules/@remix-run/react/dist/data.js
++++ b/node_modules/@remix-run/react/dist/data.js
+@@ -37,6 +37,7 @@ async function fetchData(request, routeId) {
+   let url = new URL(request.url);
+   url.searchParams.set("_data", routeId);
+   let init = {
++    headers: request.headers,
+     signal: request.signal
+   };
+   if (request.method !== "GET") {
 diff --git a/node_modules/@remix-run/react/dist/esm/components.js b/node_modules/@remix-run/react/dist/esm/components.js
-index 1d2db41..fd5b4f1 100644
+index f7e66b5..81686c0 100644
 --- a/node_modules/@remix-run/react/dist/esm/components.js
 +++ b/node_modules/@remix-run/react/dist/esm/components.js
-@@ -585,7 +585,8 @@ function Scripts(props) {
+@@ -649,6 +649,7 @@ function Scripts(props) {
+         if (pendingKeys.has(key)) {
+           deferredScripts.push( /*#__PURE__*/React.createElement(DeferredHydrationScript, {
              key: `${routeId} | ${key}`,
++            nonce: props.nonce,
              deferredData: deferredData,
              routeId: routeId,
--            dataKey: key
-+            dataKey: key,
-+            nonce: props.nonce
-           }));
-           return `${JSON.stringify(key)}:__remixContext.n(${JSON.stringify(routeId)}, ${JSON.stringify(key)})`;
-         } else {
-@@ -616,10 +617,12 @@ window.__remixRouteModules = {${matches.map((match, index) => `${JSON.stringify(
+             dataKey: key
+@@ -681,10 +682,12 @@ window.__remixRouteModules = {${matches.map((match, index) => `${JSON.stringify(
+ 
  import(${JSON.stringify(manifest.entry.module)});`;
      return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("script", _extends({}, props, {
-       suppressHydrationWarning: true,
 +      nonce: props.nonce,
+       suppressHydrationWarning: true,
        dangerouslySetInnerHTML: createHtml(contextScript),
        type: undefined
      })), /*#__PURE__*/React.createElement("script", _extends({}, props, {
-       suppressHydrationWarning: true,
 +      nonce: props.nonce,
+       suppressHydrationWarning: true,
        dangerouslySetInnerHTML: createHtml(routeModulesScript),
        type: "module",
-       async: true
-@@ -632,7 +635,8 @@ import(${JSON.stringify(manifest.entry.module)});`;
+@@ -698,6 +701,7 @@ import(${JSON.stringify(manifest.entry.module)});`;
    if (!isStatic && typeof __remixContext === "object" && __remixContext.a) {
      for (let i = 0; i < __remixContext.a; i++) {
        deferredScripts.push( /*#__PURE__*/React.createElement(DeferredHydrationScript, {
--        key: i
-+        key: i,
-+        nonce: props.nonce
++        nonce: props.nonce,
+         key: i
        }));
      }
-   }
-@@ -670,7 +674,8 @@ import(${JSON.stringify(manifest.entry.module)});`;
+@@ -734,6 +738,7 @@ import(${JSON.stringify(manifest.entry.module)});`;
+   })), !isHydrated && initialScripts, !isHydrated && deferredScripts);
+ }
  function DeferredHydrationScript({
++  nonce,
    dataKey,
    deferredData,
--  routeId
-+  routeId,
-+  nonce
- }) {
-   if (typeof document === "undefined" && deferredData && dataKey && routeId) {
-     invariant(deferredData.pendingKeys.includes(dataKey), `Deferred data for route ${routeId} with key ${dataKey} was not pending but tried to render a script for it.`);
-@@ -682,6 +687,7 @@ function DeferredHydrationScript({
+   routeId
+@@ -748,6 +753,7 @@ function DeferredHydrationScript({
      // To reproduce a hydration mismatch, just render null as a fallback.
      typeof document === "undefined" && deferredData && dataKey && routeId ? null : /*#__PURE__*/React.createElement("script", {
        async: true,
@@ -149,13 +147,13 @@ index 1d2db41..fd5b4f1 100644
        suppressHydrationWarning: true,
        dangerouslySetInnerHTML: {
          __html: " "
-@@ -691,10 +697,12 @@ function DeferredHydrationScript({
+@@ -756,11 +762,13 @@ function DeferredHydrationScript({
+   }, typeof document === "undefined" && deferredData && dataKey && routeId ? /*#__PURE__*/React.createElement(Await, {
      resolve: deferredData.data[dataKey],
      errorElement: /*#__PURE__*/React.createElement(ErrorDeferredHydrationScript, {
-       dataKey: dataKey,
--      routeId: routeId
-+      routeId: routeId,
 +      nonce,
+       dataKey: dataKey,
+       routeId: routeId
      }),
      children: data => /*#__PURE__*/React.createElement("script", {
        async: true,
@@ -163,7 +161,7 @@ index 1d2db41..fd5b4f1 100644
        suppressHydrationWarning: true,
        dangerouslySetInnerHTML: {
          __html: `__remixContext.r(${JSON.stringify(routeId)}, ${JSON.stringify(dataKey)}, ${escapeHtml(JSON.stringify(data))});`
-@@ -702,6 +710,7 @@ function DeferredHydrationScript({
+@@ -768,6 +776,7 @@ function DeferredHydrationScript({
      })
    }) : /*#__PURE__*/React.createElement("script", {
      async: true,
@@ -171,35 +169,39 @@ index 1d2db41..fd5b4f1 100644
      suppressHydrationWarning: true,
      dangerouslySetInnerHTML: {
        __html: " "
-@@ -710,7 +719,8 @@ function DeferredHydrationScript({
+@@ -775,6 +784,7 @@ function DeferredHydrationScript({
+   }));
  }
  function ErrorDeferredHydrationScript({
++  nonce,
    dataKey,
--  routeId
-+  routeId,
-+  nonce
+   routeId
  }) {
-   let error = useAsyncError();
-   let toSerialize = {
-@@ -722,6 +732,7 @@ function ErrorDeferredHydrationScript({
-   }
+@@ -787,6 +797,7 @@ function ErrorDeferredHydrationScript({
+     stack: undefined
+   };
    return /*#__PURE__*/React.createElement("script", {
-     suppressHydrationWarning: true,
 +    nonce,
+     suppressHydrationWarning: true,
      dangerouslySetInnerHTML: {
        __html: `__remixContext.r(${JSON.stringify(routeId)}, ${JSON.stringify(dataKey)}, !1, ${escapeHtml(JSON.stringify(toSerialize))});`
-     }
+@@ -1236,6 +1247,7 @@ const LiveReload = process.env.NODE_ENV !== "development" ? () => null : functio
+   let js = String.raw;
+   return /*#__PURE__*/React.createElement("script", {
+     nonce: nonce,
++    nonce,
+     suppressHydrationWarning: true,
+     dangerouslySetInnerHTML: {
+       __html: js`
 diff --git a/node_modules/@remix-run/react/dist/esm/data.js b/node_modules/@remix-run/react/dist/esm/data.js
-index ca015b8..9a11c2d 100644
+index 173eb98..2436ad8 100644
 --- a/node_modules/@remix-run/react/dist/esm/data.js
 +++ b/node_modules/@remix-run/react/dist/esm/data.js
-@@ -27,7 +27,8 @@ async function fetchData(request, routeId) {
+@@ -33,6 +33,7 @@ async function fetchData(request, routeId) {
    let url = new URL(request.url);
    url.searchParams.set("_data", routeId);
    let init = {
--    signal: request.signal
-+    signal: request.signal,
-+    headers: request.headers
++    headers: request.headers,
+     signal: request.signal
    };
    if (request.method !== "GET") {
-     init.method = request.method;

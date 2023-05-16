@@ -1,5 +1,5 @@
 import {getImageBuilder, getImgProps} from '~/images'
-import type {Testimonial} from '~/utils/testimonials.server'
+import {type Testimonial} from '~/utils/testimonials.server'
 
 export function TestimonialCard({
   testimonial,

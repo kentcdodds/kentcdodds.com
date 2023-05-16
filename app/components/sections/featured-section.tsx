@@ -1,12 +1,11 @@
 import clsx from 'clsx'
-import type {ImageBuilder} from '~/images'
-import {getImgProps} from '~/images'
+import {getImgProps, type ImageBuilder} from '~/images'
+import {type Team} from '~/types'
+import {ArrowLink} from '../arrow-button'
+import {BlurrableImage} from '../blurrable-image'
+import {ClipboardCopyButton} from '../clipboard-copy-button'
 import {Grid} from '../grid'
 import {H2, H6} from '../typography'
-import {ArrowLink} from '../arrow-button'
-import {ClipboardCopyButton} from '../clipboard-copy-button'
-import type {Team} from '~/types'
-import {BlurrableImage} from '../blurrable-image'
 
 type FeaturedSectionProps = {
   caption?: string
@@ -103,10 +102,10 @@ function FeaturedSection({
                 <BlurrableImage
                   blurDataUrl={blurDataUrl}
                   img={img}
-                  className="aspect-w-4 aspect-h-3 lg:aspect-h-5 lg:aspect-w-4"
+                  className="aspect-h-3 aspect-w-4 lg:aspect-h-5 lg:aspect-w-4"
                 />
               ) : (
-                <div className="aspect-w-4 aspect-h-3 lg:aspect-h-5 lg:aspect-w-4">
+                <div className="aspect-h-3 aspect-w-4 lg:aspect-h-5 lg:aspect-w-4">
                   {img}
                 </div>
               )}

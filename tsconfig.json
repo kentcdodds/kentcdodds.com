@@ -13,7 +13,6 @@
     "noUncheckedIndexedAccess": true,
     "strict": true,
     "allowJs": true,
-    "importsNotUsedAsValues": "error",
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {

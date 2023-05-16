@@ -1,5 +1,5 @@
-import * as React from 'react'
 import clsx from 'clsx'
+import * as React from 'react'
 
 function Label({className, ...labelProps}: JSX.IntrinsicElements['label']) {
   return (

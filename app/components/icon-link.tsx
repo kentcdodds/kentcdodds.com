@@ -9,7 +9,7 @@ const IconLink = React.forwardRef<
       {...props}
       className={`${
         props.className ?? ''
-      } text-primary focus:outline-none hover:text-team-current focus:text-team-current`}
+      } text-primary hover:text-team-current focus:text-team-current focus:outline-none`}
       ref={ref}
     >
       {props.children}

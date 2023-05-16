@@ -1,9 +1,9 @@
 import {Link, useSearchParams} from '@remix-run/react'
 import {getImgProps, images} from '~/images'
-import {H2, H3} from '../typography'
 import {ArrowLink} from '../arrow-button'
-import {Grid} from '../grid'
 import {FullScreenYouTubeEmbed, LiteYouTubeEmbed} from '../fullscreen-yt-embed'
+import {Grid} from '../grid'
+import {H2, H3} from '../typography'
 
 function IntroductionSection() {
   const [searchParams] = useSearchParams()

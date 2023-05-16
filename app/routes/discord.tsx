@@ -5,12 +5,12 @@ import {
   AccordionPanel,
   useAccordionItemContext,
 } from '@reach/accordion'
-import type {
-  HeadersFunction,
-  LoaderFunction,
-  MetaFunction,
+import {
+  json,
+  type HeadersFunction,
+  type LoaderFunction,
+  type MetaFunction,
 } from '@remix-run/node'
-import {json} from '@remix-run/node'
 import {Outlet, useLoaderData} from '@remix-run/react'
 import {motion} from 'framer-motion'
 import {ArrowLink} from '~/components/arrow-button'
@@ -44,12 +44,11 @@ import {
   reuseUsefulLoaderHeaders,
 } from '~/utils/misc'
 import {getSocialMetas} from '~/utils/seo'
-import type {Testimonial} from '~/utils/testimonials.server'
-import {getTestimonials} from '~/utils/testimonials.server'
+import {getTestimonials, type Testimonial} from '~/utils/testimonials.server'
 import {getServerTimeHeader} from '~/utils/timing.server'
 import {useRootData} from '~/utils/use-root-data'
 import {externalLinks} from '../external-links'
-import type {LoaderData as RootLoaderData} from '../root'
+import {type LoaderData as RootLoaderData} from '../root'
 
 type LoaderData = {
   testimonials: Array<Testimonial>

@@ -1,5 +1,3 @@
-import * as React from 'react'
-
 function TheSpectrumOfAbstraction() {
   return (
     <div style={{width: '100%', marginTop: 10, marginBottom: 40}}>

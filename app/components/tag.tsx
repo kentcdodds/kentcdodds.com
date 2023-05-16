@@ -1,7 +1,6 @@
-import * as React from 'react'
-import clsx from 'clsx'
-import type {ChangeEventHandler} from 'react'
 import {CustomCheckboxContainer, CustomCheckboxInput} from '@reach/checkbox'
+import clsx from 'clsx'
+import {type ChangeEventHandler} from 'react'
 
 interface TagProps {
   tag: string

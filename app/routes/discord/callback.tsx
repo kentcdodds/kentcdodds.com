@@ -1,24 +1,23 @@
-import type {DataFunctionArgs} from '@remix-run/node'
-import {defer, redirect} from '@remix-run/node'
-import type {KCDHandle} from '~/types'
-import {requireUser} from '~/utils/session.server'
+import {defer, redirect, type DataFunctionArgs} from '@remix-run/node'
+import {Await, Link, useAsyncError, useLoaderData} from '@remix-run/react'
+import {ensurePrimary} from 'litefs-js/remix'
+import React, {Suspense} from 'react'
+import {ArrowLink} from '~/components/arrow-button'
+import {ErrorPanel} from '~/components/form-elements'
+import {PartyIcon, RefreshIcon} from '~/components/icons'
+import {tagKCDSiteSubscriber} from '~/convertkit/convertkit.server'
+import {externalLinks} from '~/external-links'
+import {type KCDHandle} from '~/types'
+import {connectDiscord} from '~/utils/discord.server'
 import {
   getDiscordAuthorizeURL,
   getDomainUrl,
   getErrorMessage,
   isResponse,
 } from '~/utils/misc'
-import {connectDiscord} from '~/utils/discord.server'
-import {deleteDiscordCache} from '~/utils/user-info.server'
-import {tagKCDSiteSubscriber} from '~/convertkit/convertkit.server'
-import {Await, Link, useAsyncError, useLoaderData} from '@remix-run/react'
-import React, {Suspense} from 'react'
-import {ErrorPanel} from '~/components/form-elements'
-import {PartyIcon, RefreshIcon} from '~/components/icons'
-import {ensurePrimary} from 'litefs-js/remix'
+import {requireUser} from '~/utils/session.server'
 import {useRootData} from '~/utils/use-root-data'
-import {externalLinks} from '~/external-links'
-import {ArrowLink} from '~/components/arrow-button'
+import {deleteDiscordCache} from '~/utils/user-info.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -128,12 +127,7 @@ function DiscordConnectionError() {
 
   return (
     <ErrorPanel>
-      <div>
-        Whoops! Sorry, there was an error{' '}
-        <span role="img" aria-label="grimace">
-          😬
-        </span>
-      </div>
+      <div>Whoops! Sorry, there was an error 😬</div>
       <hr className="my-2" />
       <pre className="whitespace-pre-wrap">{getErrorMessage(error)}</pre>
       <hr className="my-2" />

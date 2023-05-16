@@ -1,20 +1,13 @@
 import {PrismaClient} from '@prisma/client'
-import type {Session} from '~/types'
-import {encrypt, decrypt} from './encryption.server'
 import {ensurePrimary} from 'litefs-js/remix'
-import type {Timings} from './timing.server'
-import {time} from './timing.server'
-
-declare global {
-  // This prevents us from making multiple connections to the db when the
-  // require cache is cleared.
-  // eslint-disable-next-line
-  var __prisma: ReturnType<typeof getClient> | undefined
-}
+import {type Session} from '~/types'
+import {decrypt, encrypt} from './encryption.server'
+import {time, type Timings} from './timing.server'
+import {singleton} from './singleton.server'
 
 const logThreshold = 500
 
-const prisma = global.__prisma ?? (global.__prisma = getClient())
+const prisma = singleton('prisma', getClient)
 
 function getClient(): PrismaClient {
   // NOTE: during development if you change anything in this function, remember

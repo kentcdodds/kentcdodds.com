@@ -1,5 +1,5 @@
 import {cache, cachified} from './cache.server'
-import type {Timings} from './timing.server'
+import {type Timings} from './timing.server'
 
 type TiToDiscount = {
   code: string

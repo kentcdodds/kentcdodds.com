@@ -1,7 +1,6 @@
-import * as React from 'react'
-import {Grid} from '../grid'
 import {images} from '~/images'
 import {CourseCard} from '../course-card'
+import {Grid} from '../grid'
 import {HeaderSection} from './header-section'
 
 function CourseSection() {

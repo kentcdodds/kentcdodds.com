@@ -1,35 +1,44 @@
-import * as React from 'react'
-import type {
-  HeadersFunction,
-  DataFunctionArgs,
-  MetaFunction,
-  SerializeFrom,
-  LinksFunction,
+import {MixedCheckbox} from '@reach/checkbox'
+import {
+  json,
+  type DataFunctionArgs,
+  type HeadersFunction,
+  type LinksFunction,
+  type MetaFunction,
+  type SerializeFrom,
 } from '@remix-run/node'
-import {json} from '@remix-run/node'
 import {Link, useLoaderData, useSearchParams} from '@remix-run/react'
 import clsx from 'clsx'
-import {MixedCheckbox} from '@reach/checkbox'
-import type {KCDHandle, Team} from '~/types'
-import {useRootData} from '~/utils/use-root-data'
+import * as React from 'react'
+import {ArrowLink} from '~/components/arrow-button'
+import {ArticleCard} from '~/components/article-card'
+import {Button} from '~/components/button'
+import {ServerError} from '~/components/errors'
 import {Grid} from '~/components/grid'
+import {PlusIcon, RssIcon, SearchIcon} from '~/components/icons'
+import {FeaturedSection} from '~/components/sections/featured-section'
+import {HeroSection} from '~/components/sections/hero-section'
+import {Spacer} from '~/components/spacer'
+import {Tag} from '~/components/tag'
+import {TeamStats} from '~/components/team-stats'
+import {H2, H3, H6, Paragraph} from '~/components/typography'
 import {
   getImageBuilder,
   getImgProps,
   getSocialImageWithPreTitle,
   images,
 } from '~/images'
-import {H2, H3, H6, Paragraph} from '~/components/typography'
-import {SearchIcon, PlusIcon, RssIcon} from '~/components/icons'
-import {ArticleCard} from '~/components/article-card'
-import {ArrowLink} from '~/components/arrow-button'
-import {FeaturedSection} from '~/components/sections/featured-section'
-import {Tag} from '~/components/tag'
-import {getBlogMdxListItems, getBannerAltProp} from '~/utils/mdx'
+import {type KCDHandle, type Team} from '~/types'
 import {filterPosts, getRankingLeader} from '~/utils/blog'
-import {HeroSection} from '~/components/sections/hero-section'
-import {Button} from '~/components/button'
-import {ServerError} from '~/components/errors'
+import {
+  getAllBlogPostReadRankings,
+  getBlogReadRankings,
+  getBlogRecommendations,
+  getReaderCount,
+  getSlugReadsByUser,
+  getTotalPostReads,
+} from '~/utils/blog.server'
+import {getBannerAltProp, getBlogMdxListItems} from '~/utils/mdx'
 import {
   formatAbbreviatedNumber,
   formatNumber,
@@ -39,20 +48,11 @@ import {
   reuseUsefulLoaderHeaders,
   useUpdateQueryStringValueWithoutNavigation,
 } from '~/utils/misc'
-import {TeamStats} from '~/components/team-stats'
-import {Spacer} from '~/components/spacer'
-import {
-  getAllBlogPostReadRankings,
-  getBlogReadRankings,
-  getBlogRecommendations,
-  getReaderCount,
-  getSlugReadsByUser,
-  getTotalPostReads,
-} from '~/utils/blog.server'
-import {useTeam} from '~/utils/team-provider'
-import type {LoaderData as RootLoaderData} from '../root'
 import {getSocialMetas} from '~/utils/seo'
+import {useTeam} from '~/utils/team-provider'
 import {getServerTimeHeader} from '~/utils/timing.server'
+import {useRootData} from '~/utils/use-root-data'
+import {type LoaderData as RootLoaderData} from '../root'
 
 const handleId = 'blog'
 export const handle: KCDHandle = {

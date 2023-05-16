@@ -1,30 +1,34 @@
-import React, {useState} from 'react'
-import type {
-  HeadersFunction,
-  LoaderFunction,
-  MetaFunction,
+import {
+  json,
+  redirect,
+  type HeadersFunction,
+  type LoaderFunction,
+  type MetaFunction,
 } from '@remix-run/node'
-import {json, redirect} from '@remix-run/node'
 import {Link, useCatch, useLoaderData, useLocation} from '@remix-run/react'
-import type {CWKEpisode, CWKListItem, KCDHandle} from '~/types'
 import clsx from 'clsx'
 import {motion} from 'framer-motion'
-import type {LoaderData as RootLoaderData} from '../root'
-import {getSeasons} from '~/utils/simplecast.server'
-import {H2, H3, H6, Paragraph} from '~/components/typography'
+import React, {useState} from 'react'
+import {ArrowLink, BackLink} from '~/components/arrow-button'
+import {FourOhFour} from '~/components/errors'
 import {Grid} from '~/components/grid'
+import {IconLink} from '~/components/icon-link'
 import {
   ArrowIcon,
-  ClipboardIcon,
   CheckCircledIcon,
-  GithubIcon,
-  TwitterIcon,
-  PlusIcon,
-  ChevronRightIcon,
   ChevronLeftIcon,
+  ChevronRightIcon,
+  ClipboardIcon,
+  GithubIcon,
+  PlusIcon,
+  TwitterIcon,
 } from '~/components/icons'
 import {FeaturedSection} from '~/components/sections/featured-section'
-import {ArrowLink, BackLink} from '~/components/arrow-button'
+import {Spacer} from '~/components/spacer'
+import {H2, H3, H6, Paragraph} from '~/components/typography'
+import {getSocialImageWithPreTitle} from '~/images'
+import {type CWKEpisode, type CWKListItem, type KCDHandle} from '~/types'
+import {getCWKEpisodePath, getFeaturedEpisode} from '~/utils/chats-with-kent'
 import {
   formatDuration,
   getDisplayUrl,
@@ -33,15 +37,12 @@ import {
   reuseUsefulLoaderHeaders,
   typedBoolean,
 } from '~/utils/misc'
-import {getCWKEpisodePath, getFeaturedEpisode} from '~/utils/chats-with-kent'
-import {Themed} from '~/utils/theme-provider'
-import {getSocialImageWithPreTitle} from '~/images'
 import {getSocialMetas} from '~/utils/seo'
-import {FourOhFour} from '~/components/errors'
-import {IconLink} from '~/components/icon-link'
-import {useRootData} from '~/utils/use-root-data'
-import {Spacer} from '~/components/spacer'
+import {getSeasons} from '~/utils/simplecast.server'
+import {Themed} from '~/utils/theme-provider'
 import {getServerTimeHeader} from '~/utils/timing.server'
+import {useRootData} from '~/utils/use-root-data'
+import {type LoaderData as RootLoaderData} from '../root'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {

@@ -1,14 +1,13 @@
-import {externalLinks} from '../external-links'
+import {Link} from '@remix-run/react'
+import {getImgProps, type ImageBuilder} from '~/images'
 import {AnchorOrLink} from '~/utils/misc'
 import {useRootData} from '~/utils/use-root-data'
 import {ConvertKitForm} from '../convertkit/form'
-import {H4, H6, Paragraph} from './typography'
-import {GithubIcon, TwitterIcon, YoutubeIcon, ArrowIcon, RssIcon} from './icons'
-import {Signature} from './signature'
-import {Link} from '@remix-run/react'
-import type {ImageBuilder} from '~/images'
-import {getImgProps} from '~/images'
+import {externalLinks} from '../external-links'
 import {IconLink} from './icon-link'
+import {ArrowIcon, GithubIcon, RssIcon, TwitterIcon, YoutubeIcon} from './icons'
+import {Signature} from './signature'
+import {H4, H6, Paragraph} from './typography'
 
 function NewsletterSection() {
   return (
@@ -149,7 +148,7 @@ function Footer({image}: {image: ImageBuilder}) {
       ({name}) => name === 'Subscribed: general newsletter',
     )
   const featuredImg = (
-    <div className="aspect-w-4 aspect-h-3">
+    <div className="aspect-h-3 aspect-w-4">
       <img
         loading="lazy"
         className="w-full rounded-sm object-contain"

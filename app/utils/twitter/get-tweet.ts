@@ -1,4 +1,4 @@
-import type { Tweet } from './types/index.js'
+import {type Tweet} from './types/index.js'
 
 const SYNDICATION_URL = 'https://cdn.syndication.twimg.com'
 
@@ -47,7 +47,7 @@ export async function getTweet(id: string): Promise<Tweet | undefined> {
       'tfw_show_gov_verified_badge:on',
       'tfw_show_business_affiliate_badge:on',
       'tfw_tweet_edit_frontend:on',
-    ].join(';')
+    ].join(';'),
   )
 
   const res = await fetch(url.toString())

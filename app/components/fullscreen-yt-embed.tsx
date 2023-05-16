@@ -75,8 +75,8 @@ function FullScreenYouTubeEmbed({
   )
 }
 
-export {FullScreenYouTubeEmbed}
 export {default as LiteYouTubeEmbed} from 'react-lite-youtube-embed'
+export {FullScreenYouTubeEmbed}
 
 export const links = () => {
   // for the youtube embed

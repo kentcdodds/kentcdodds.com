@@ -1,11 +1,9 @@
-import type {Variants} from 'framer-motion'
-import {motion, useReducedMotion} from 'framer-motion'
-import type {ImageBuilder} from '~/images'
-import {getImgProps} from '~/images'
+import {motion, useReducedMotion, type Variants} from 'framer-motion'
+import {getImgProps, type ImageBuilder} from '~/images'
+import {ArrowLink} from './arrow-button'
+import {ButtonLink} from './button'
 import {ArrowIcon} from './icons'
 import {H2, H3, Paragraph} from './typography'
-import {ButtonLink} from './button'
-import {ArrowLink} from './arrow-button'
 
 const MotionButtonLink = motion(ButtonLink)
 

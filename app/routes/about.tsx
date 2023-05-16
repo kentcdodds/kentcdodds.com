@@ -1,41 +1,41 @@
-import type {
-  HeadersFunction,
-  LinksFunction,
-  LoaderFunction,
-  MetaFunction,
+import {
+  json,
+  type HeadersFunction,
+  type LinksFunction,
+  type LoaderFunction,
+  type MetaFunction,
 } from '@remix-run/node'
-import {json} from '@remix-run/node'
 import {useLoaderData, useSearchParams} from '@remix-run/react'
 import {shuffle} from 'lodash'
-import type {Await, MdxListItem} from '~/types'
-import {useRootData} from '~/utils/use-root-data'
-import {getImgProps, getSocialImageWithPreTitle, images} from '~/images'
-import {H2, H3, H6, Paragraph} from '~/components/typography'
 import {ArrowLink} from '~/components/arrow-button'
-import {Grid} from '~/components/grid'
-import {HeaderSection} from '~/components/sections/header-section'
 import {FeatureCard} from '~/components/feature-card'
-import {
-  UsersIcon,
-  AwardIcon,
-  MugIcon,
-  BadgeIcon,
-  BookIcon,
-  FastForwardIcon,
-} from '~/components/icons'
-import {BlogSection} from '~/components/sections/blog-section'
-import {getBlogRecommendations} from '~/utils/blog.server'
-import {HeroSection} from '~/components/sections/hero-section'
-import {getDisplayUrl, getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {
   FullScreenYouTubeEmbed,
   LiteYouTubeEmbed,
   links as youTubeEmbedLinks,
 } from '~/components/fullscreen-yt-embed'
-import {getTalksAndTags} from '~/utils/talks.server'
+import {Grid} from '~/components/grid'
+import {
+  AwardIcon,
+  BadgeIcon,
+  BookIcon,
+  FastForwardIcon,
+  MugIcon,
+  UsersIcon,
+} from '~/components/icons'
+import {BlogSection} from '~/components/sections/blog-section'
+import {HeaderSection} from '~/components/sections/header-section'
+import {HeroSection} from '~/components/sections/hero-section'
+import {H2, H3, H6, Paragraph} from '~/components/typography'
+import {getImgProps, getSocialImageWithPreTitle, images} from '~/images'
+import {type Await, type MdxListItem} from '~/types'
+import {getBlogRecommendations} from '~/utils/blog.server'
+import {getDisplayUrl, getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {getSocialMetas} from '~/utils/seo'
-import type {LoaderData as RootLoaderData} from '../root'
+import {getTalksAndTags} from '~/utils/talks.server'
 import {getServerTimeHeader} from '~/utils/timing.server'
+import {useRootData} from '~/utils/use-root-data'
+import {type LoaderData as RootLoaderData} from '../root'
 
 type LoaderData = {
   blogRecommendations: Array<MdxListItem>

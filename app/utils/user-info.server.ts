@@ -1,10 +1,10 @@
-import type {User} from '~/types'
+import {type User} from '~/types'
 import * as ck from '../convertkit/convertkit.server'
 import {getImageBuilder, images} from '../images'
 import {cache, cachified} from './cache.server'
 import * as discord from './discord.server'
 import {getAvatar, getOptionalTeam} from './misc'
-import type {Timings} from './timing.server'
+import {type Timings} from './timing.server'
 
 type UserInfo = {
   avatar: {

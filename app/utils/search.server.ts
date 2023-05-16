@@ -1,13 +1,13 @@
 import {matchSorter, rankings} from 'match-sorter'
+import {getEpisodePath as getCKEpisodePath} from '~/utils/call-kent'
+import {getCWKEpisodePath} from '~/utils/chats-with-kent'
+import {stripHtml} from '~/utils/markdown.server'
 import {getBlogMdxListItems} from '~/utils/mdx'
+import {typedBoolean} from '~/utils/misc'
 import {getSeasons as getChatsWithKentSeasons} from '~/utils/simplecast.server'
 import {getTalksAndTags} from '~/utils/talks.server'
 import {getEpisodes as getCallKentEpisodes} from '~/utils/transistor.server'
 import {getWorkshops} from '~/utils/workshops.server'
-import {stripHtml} from '~/utils/markdown.server'
-import {typedBoolean} from '~/utils/misc'
-import {getCWKEpisodePath} from '~/utils/chats-with-kent'
-import {getEpisodePath as getCKEpisodePath} from '~/utils/call-kent'
 
 type NormalizedItemGroup = {
   prefix: string

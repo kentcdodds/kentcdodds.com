@@ -1,10 +1,10 @@
-import * as YAML from 'yaml'
 import {pick} from 'lodash'
-import {downloadFile} from './github.server'
-import {getErrorMessage, typedBoolean} from './misc'
+import * as YAML from 'yaml'
 import {cache, cachified} from './cache.server'
-import type {Timings} from './timing.server'
+import {downloadFile} from './github.server'
 import {markdownToHtml} from './markdown.server'
+import {getErrorMessage, typedBoolean} from './misc'
+import {type Timings} from './timing.server'
 
 const allCategories = [
   'teaching',

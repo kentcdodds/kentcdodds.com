@@ -1,4 +1,4 @@
-import type {DataFunctionArgs} from '@remix-run/node'
+import {type DataFunctionArgs} from '@remix-run/node'
 import {requireAdminUser} from '~/utils/session.server'
 
 export async function loader({request}: DataFunctionArgs) {

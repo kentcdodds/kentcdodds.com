@@ -1,5 +1,4 @@
-import type {DataFunctionArgs} from '@remix-run/node'
-import {json} from '@remix-run/node'
+import {json, type DataFunctionArgs} from '@remix-run/node'
 import {
   Form,
   useFetcher,
@@ -7,9 +6,13 @@ import {
   useSearchParams,
   useSubmit,
 } from '@remix-run/react'
-import invariant from 'tiny-invariant'
 import {getAllInstances, getInstanceInfo} from 'litefs-js'
 import {ensureInstance} from 'litefs-js/remix'
+import invariant from 'tiny-invariant'
+import {Button} from '~/components/button'
+import {Field, FieldContainer, inputClassName} from '~/components/form-elements'
+import {SearchIcon} from '~/components/icons'
+import {Spacer} from '~/components/spacer'
 import {H2, H3} from '~/components/typography'
 import {
   cache,
@@ -17,12 +20,8 @@ import {
   lruCache,
   searchCacheKeys,
 } from '~/utils/cache.server'
-import {requireAdminUser} from '~/utils/session.server'
-import {Spacer} from '~/components/spacer'
-import {Button} from '~/components/button'
 import {useDebounce, useDoubleCheck} from '~/utils/misc'
-import {Field, FieldContainer, inputClassName} from '~/components/form-elements'
-import {SearchIcon} from '~/components/icons'
+import {requireAdminUser} from '~/utils/session.server'
 
 export async function loader({request}: DataFunctionArgs) {
   await requireAdminUser(request)

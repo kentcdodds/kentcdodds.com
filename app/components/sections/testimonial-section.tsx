@@ -1,6 +1,6 @@
 import {Link} from '@remix-run/react'
 import * as React from 'react'
-import type {Testimonial} from '~/utils/testimonials.server'
+import {type Testimonial} from '~/utils/testimonials.server'
 import {ArrowButton} from '../arrow-button'
 import {H2} from '../typography'
 import {TestimonialCard} from './testimonial-card'

@@ -1,10 +1,10 @@
 // this is a placeholder to make /routes/talks catch nested paths
 
-import type {MetaFunction} from '@remix-run/node'
+import {type MetaFunction} from '@remix-run/node'
 import {getSocialImageWithPreTitle} from '~/images'
 import {getDisplayUrl, getUrl} from '~/utils/misc'
 import {getSocialMetas} from '~/utils/seo'
-import type {LoaderData as TalksLoaderData} from '../talks'
+import {type LoaderData as TalksLoaderData} from '../talks'
 
 export const meta: MetaFunction = ({parentsData, params}) => {
   const {talks = []} =

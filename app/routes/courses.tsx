@@ -1,24 +1,23 @@
-import type {
-  HeadersFunction,
-  LoaderFunction,
-  MetaFunction,
+import {
+  json,
+  type HeadersFunction,
+  type LoaderFunction,
+  type MetaFunction,
 } from '@remix-run/node'
-import {json} from '@remix-run/node'
 import {Link, useLoaderData} from '@remix-run/react'
-import {Grid} from '~/components/grid'
-import {getImgProps, getGenericSocialImage, images} from '~/images'
-import {H2, H6, Paragraph} from '~/components/typography'
 import {ArrowLink} from '~/components/arrow-button'
-import {SmallCourseCard, CourseCard} from '~/components/course-card'
+import {CourseCard, SmallCourseCard} from '~/components/course-card'
+import {Grid} from '~/components/grid'
 import {HeroSection} from '~/components/sections/hero-section'
 import {TestimonialSection} from '~/components/sections/testimonial-section'
-import {getTestimonials} from '~/utils/testimonials.server'
-import type {Testimonial} from '~/utils/testimonials.server'
 import {Spacer} from '~/components/spacer'
+import {H2, H6, Paragraph} from '~/components/typography'
+import {getGenericSocialImage, getImgProps, images} from '~/images'
 import {getDisplayUrl, getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc'
-import type {LoaderData as RootLoaderData} from '../root'
 import {getSocialMetas} from '~/utils/seo'
+import {getTestimonials, type Testimonial} from '~/utils/testimonials.server'
 import {getServerTimeHeader} from '~/utils/timing.server'
+import {type LoaderData as RootLoaderData} from '../root'
 
 type LoaderData = {
   testimonials: Array<Testimonial>

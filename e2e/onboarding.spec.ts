@@ -1,5 +1,5 @@
-import {test, expect} from '@playwright/test'
 import {faker} from '@faker-js/faker'
+import {expect, test} from '@playwright/test'
 import invariant from 'tiny-invariant'
 import {deleteUserByEmail, extractUrl, readEmail} from './utils'
 

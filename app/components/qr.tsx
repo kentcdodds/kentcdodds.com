@@ -1,5 +1,5 @@
-import * as React from 'react'
 import {toCanvas as qrToCanvas} from 'qrcode'
+import * as React from 'react'
 
 function QRCode({text}: {text: string}) {
   const canvasRef = React.useRef<HTMLCanvasElement>(null)

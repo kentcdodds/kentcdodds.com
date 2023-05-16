@@ -1,6 +1,6 @@
 import * as React from 'react'
 // eslint-disable-next-line
-import {MemoryRouter as Router, Link} from 'react-router-dom'
+import {Link, MemoryRouter as Router} from 'react-router-dom'
 import {getDog, getDogs} from './dogs.jsx'
 
 function DogList() {

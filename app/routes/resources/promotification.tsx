@@ -1,18 +1,17 @@
 // This is a full stack component that controls showing a notification message
 // which the user can dismiss for a period of time.
-import type {DataFunctionArgs} from '@remix-run/node'
-import {useEffect, useRef, useState} from 'react'
-import cookie from 'cookie'
-import {json} from '@remix-run/node'
-import invariant from 'tiny-invariant'
-import Countdown from 'react-countdown'
-import {NotificationMessage} from '~/components/notification-message'
+import {json, type DataFunctionArgs} from '@remix-run/node'
 import {useFetcher} from '@remix-run/react'
+import cookie from 'cookie'
+import {useEffect, useRef, useState} from 'react'
+import Countdown from 'react-countdown'
 import {useSpinDelay} from 'spin-delay'
+import invariant from 'tiny-invariant'
+import {NotificationMessage} from '~/components/notification-message'
 
 import {LinkButton} from '~/components/button'
-import {Spinner} from '~/components/spinner'
 import {AlarmIcon} from '~/components/icons'
+import {Spinner} from '~/components/spinner'
 
 export function getPromoCookieValue({
   promoName,

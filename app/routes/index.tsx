@@ -1,33 +1,32 @@
-import type {HeadersFunction, LoaderFunction} from '@remix-run/node'
-import {json} from '@remix-run/node'
+import {json, type HeadersFunction, type LoaderFunction} from '@remix-run/node'
 import {useLoaderData} from '@remix-run/react'
-import type {MdxListItem, Team} from '~/types'
+import {ButtonLink} from '~/components/button'
+import {ServerError} from '~/components/errors'
+import {AboutSection} from '~/components/sections/about-section'
+import {BlogSection} from '~/components/sections/blog-section'
+import {CourseSection} from '~/components/sections/course-section'
+import {DiscordSection} from '~/components/sections/discord-section'
+import {HeroSection} from '~/components/sections/hero-section'
+import {IntroductionSection} from '~/components/sections/introduction-section'
+import {ProblemSolutionSection} from '~/components/sections/problem-solution-section'
+import {Spacer} from '~/components/spacer'
+import {getRandomFlyingKody} from '~/images'
+import {type MdxListItem, type Team} from '~/types'
+import {getRankingLeader} from '~/utils/blog'
 import {
   getBlogReadRankings,
   getBlogRecommendations,
   getReaderCount,
   getTotalPostReads,
 } from '~/utils/blog.server'
-import {AboutSection} from '~/components/sections/about-section'
-import {BlogSection} from '~/components/sections/blog-section'
-import {CourseSection} from '~/components/sections/course-section'
-import {DiscordSection} from '~/components/sections/discord-section'
-import {IntroductionSection} from '~/components/sections/introduction-section'
-import {ProblemSolutionSection} from '~/components/sections/problem-solution-section'
-import {Spacer} from '~/components/spacer'
-import {HeroSection} from '~/components/sections/hero-section'
-import {getRandomFlyingKody} from '~/images'
-import {ButtonLink} from '~/components/button'
-import {ServerError} from '~/components/errors'
 import {getBlogMdxListItems} from '~/utils/mdx'
-import type {OptionalTeam} from '~/utils/misc'
 import {
-  getOptionalTeam,
   formatNumber,
+  getOptionalTeam,
   reuseUsefulLoaderHeaders,
   teams,
+  type OptionalTeam,
 } from '~/utils/misc'
-import {getRankingLeader} from '~/utils/blog'
 import {getUser} from '~/utils/session.server'
 import {getServerTimeHeader} from '~/utils/timing.server'
 

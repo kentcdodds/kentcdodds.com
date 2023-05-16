@@ -1,8 +1,8 @@
 diff --git a/node_modules/react-router-dom/dist/dom.d.ts b/node_modules/react-router-dom/dist/dom.d.ts
-index c7b6421..95463f1 100644
+index f0780a2..3f49e3e 100644
 --- a/node_modules/react-router-dom/dist/dom.d.ts
 +++ b/node_modules/react-router-dom/dist/dom.d.ts
-@@ -68,6 +68,11 @@ export interface SubmitOptions {
+@@ -64,6 +64,11 @@ export interface SubmitOptions {
       * navigation when using the <ScrollRestoration> component
       */
      preventScrollReset?: boolean;
@@ -15,16 +15,16 @@ index c7b6421..95463f1 100644
  export declare function getFormSubmissionInfo(target: HTMLFormElement | HTMLButtonElement | HTMLInputElement | FormData | URLSearchParams | {
      [name: string]: string;
 diff --git a/node_modules/react-router-dom/dist/index.js b/node_modules/react-router-dom/dist/index.js
-index ab16fb3..3cf0125 100644
+index 498eee5..2dc2672 100644
 --- a/node_modules/react-router-dom/dist/index.js
 +++ b/node_modules/react-router-dom/dist/index.js
-@@ -705,7 +705,8 @@ function useSubmitImpl(fetcherKey, routeId) {
+@@ -738,7 +738,8 @@ function useSubmitImpl(fetcherKey, fetcherRouteId) {
        preventScrollReset: options.preventScrollReset,
        formData,
        formMethod: method,
 -      formEncType: encType
 +      formEncType: encType,
-+      headers: options.headers
++      headers: options.headers,
      };
  
      if (fetcherKey) {

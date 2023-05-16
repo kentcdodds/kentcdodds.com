@@ -1,27 +1,27 @@
-import fs from 'fs'
+import {createRequestHandler} from '@remix-run/express'
+import * as Sentry from '@sentry/node'
+import compression from 'compression'
 import crypto from 'crypto'
-import path from 'path'
-import onFinished from 'on-finished'
 import express from 'express'
 import 'express-async-errors'
-import compression from 'compression'
+import fs from 'fs'
 import morgan from 'morgan'
-import * as Sentry from '@sentry/node'
+import onFinished from 'on-finished'
+import path from 'path'
 import serverTiming from 'server-timing'
-import {createRequestHandler} from '@remix-run/express'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import {
   combineGetLoadContexts,
   createMetronomeGetLoadContext,
   registerMetronome,
 } from '@metronome-sh/express'
+import helmet from 'helmet'
 import {getInstanceInfo} from 'litefs-js'
 import {
   getRedirectsMiddleware,
   oldImgSocial,
   rickRollMiddleware,
 } from './redirects'
-import helmet from 'helmet'
 
 const here = (...d: Array<string>) => path.join(__dirname, ...d)
 const primaryHost = 'kentcdodds.com'

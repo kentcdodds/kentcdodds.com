@@ -1,4 +1,4 @@
-import type {KCDHandle} from '~/types'
+import {type KCDHandle} from '~/types'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,

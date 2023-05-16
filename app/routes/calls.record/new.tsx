@@ -1,14 +1,22 @@
-import * as React from 'react'
-import type {ActionFunction} from '@remix-run/node'
-import {json, redirect} from '@remix-run/node'
+import {json, redirect, type ActionFunction} from '@remix-run/node'
 import {Link, useActionData} from '@remix-run/react'
-import type {KCDHandle} from '~/types'
-import {useRootData} from '~/utils/use-root-data'
+import * as React from 'react'
 import {CallRecorder} from '~/components/calls/recorder'
-import type {RecordingFormData} from '~/components/calls/submit-recording-form'
-import {RecordingForm} from '~/components/calls/submit-recording-form'
-import {requireUser} from '~/utils/session.server'
-import {prisma} from '~/utils/prisma.server'
+import {
+  RecordingForm,
+  type RecordingFormData,
+} from '~/components/calls/submit-recording-form'
+import {Grid} from '~/components/grid'
+import {Grimmacing} from '~/components/kifs'
+import {H4, Paragraph} from '~/components/typography'
+import {type KCDHandle} from '~/types'
+import {
+  getErrorForAudio,
+  getErrorForDescription,
+  getErrorForKeywords,
+  getErrorForTitle,
+} from '~/utils/call-kent'
+import {sendMessageFromDiscordBot} from '~/utils/discord.server'
 import {
   getDomainUrl,
   getErrorMessage,
@@ -16,17 +24,10 @@ import {
   getOptionalTeam,
   getRequiredServerEnvVar,
 } from '~/utils/misc'
-import {
-  getErrorForAudio,
-  getErrorForTitle,
-  getErrorForDescription,
-  getErrorForKeywords,
-} from '~/utils/call-kent'
-import {H4, Paragraph} from '~/components/typography'
-import {Grimmacing} from '~/components/kifs'
-import {Grid} from '~/components/grid'
-import {sendMessageFromDiscordBot} from '~/utils/discord.server'
+import {prisma} from '~/utils/prisma.server'
+import {requireUser} from '~/utils/session.server'
 import {teamEmoji} from '~/utils/team-provider'
+import {useRootData} from '~/utils/use-root-data'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,

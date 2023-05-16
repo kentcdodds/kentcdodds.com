@@ -1,6 +1,5 @@
 import * as React from 'react'
-import type {OptionalTeam} from './misc'
-import {isTeam} from './misc'
+import {isTeam, type OptionalTeam} from './misc'
 import {createSimpleContext} from './providers'
 import {useRootData} from './use-root-data'
 

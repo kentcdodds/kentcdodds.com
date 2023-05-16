@@ -1,14 +1,14 @@
+import cachified, {verboseReporter} from 'cachified'
 import http from 'http'
 import https from 'https'
 import makeMetascraper from 'metascraper'
+import mDescription from 'metascraper-description'
 import mImage from 'metascraper-image'
 import mTitle from 'metascraper-title'
-import mDescription from 'metascraper-description'
-import {formatDate, formatNumber, typedBoolean} from './misc'
-import cachified, {verboseReporter} from 'cachified'
 import {cache, lruCache} from './cache.server'
+import {formatDate, formatNumber, typedBoolean} from './misc'
 import {getTweet} from './twitter/get-tweet'
-import type {Tweet} from './twitter/types'
+import {type Tweet} from './twitter/types'
 
 const metascraper = makeMetascraper([mTitle(), mDescription(), mImage()])
 

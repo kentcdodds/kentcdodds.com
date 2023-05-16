@@ -1,9 +1,9 @@
 import {json} from '@remix-run/node'
 import {cache} from '~/utils/cache.server'
-import type {RefreshShaInfo} from './action/refresh-cache'
 import {
-  commitShaKey as refreshCacheCommitShaKey,
   isRefreshShaInfo,
+  commitShaKey as refreshCacheCommitShaKey,
+  type RefreshShaInfo,
 } from './action/refresh-cache'
 
 export async function loader() {

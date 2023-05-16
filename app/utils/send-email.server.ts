@@ -1,5 +1,5 @@
 import {getRandomFlyingKody} from '~/images'
-import type {User} from '~/types'
+import {type User} from '~/types'
 import {markdownToHtmlDocument} from './markdown.server'
 import {getOptionalTeam} from './misc'
 

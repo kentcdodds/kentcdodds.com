@@ -1,17 +1,30 @@
-import * as React from 'react'
-import type {
-  ActionFunction,
-  DataFunctionArgs,
-  HeadersFunction,
-  MetaFunction,
+import {Dialog} from '@reach/dialog'
+import {
+  json,
+  redirect,
+  type ActionFunction,
+  type DataFunctionArgs,
+  type HeadersFunction,
+  type MetaFunction,
 } from '@remix-run/node'
-import {json, redirect} from '@remix-run/node'
 import {Form, useActionData, useLoaderData} from '@remix-run/react'
 import clsx from 'clsx'
-import {Dialog} from '@reach/dialog'
-import type {KCDHandle} from '~/types'
-import {useRootData} from '~/utils/use-root-data'
-import {getQrCodeDataURL} from '~/utils/qrcode.server'
+import * as React from 'react'
+import {Button, ButtonLink} from '~/components/button'
+import {Field, InputError, Label} from '~/components/form-elements'
+import {Grid} from '~/components/grid'
+import {
+  CheckCircledIcon,
+  EyeIcon,
+  LogoutIcon,
+  PlusIcon,
+  RefreshIcon,
+} from '~/components/icons'
+import {Spacer} from '~/components/spacer'
+import {H2, H3, H6, Paragraph} from '~/components/typography'
+import {getGenericSocialImage, images} from '~/images'
+import {type KCDHandle} from '~/types'
+import {handleFormSubmission} from '~/utils/actions.server'
 import {
   getDiscordAuthorizeURL,
   getDisplayUrl,
@@ -22,38 +35,26 @@ import {
   reuseUsefulLoaderHeaders,
 } from '~/utils/misc'
 import {
-  deleteConvertKitCache,
-  deleteDiscordCache,
-  gravatarExistsForEmail,
-} from '~/utils/user-info.server'
-import {prisma, getMagicLink} from '~/utils/prisma.server'
+  TEAM_ONEWHEELING_MAP,
+  TEAM_SKIING_MAP,
+  TEAM_SNOWBOARD_MAP,
+} from '~/utils/onboarding'
+import {getMagicLink, prisma} from '~/utils/prisma.server'
+import {getQrCodeDataURL} from '~/utils/qrcode.server'
+import {getSocialMetas} from '~/utils/seo'
 import {
   deleteOtherSessions,
   getSession,
   requireUser,
 } from '~/utils/session.server'
-import {H2, H3, H6, Paragraph} from '~/components/typography'
-import {Grid} from '~/components/grid'
-import {Field, InputError, Label} from '~/components/form-elements'
-import {Button, ButtonLink} from '~/components/button'
-import {
-  CheckCircledIcon,
-  LogoutIcon,
-  EyeIcon,
-  PlusIcon,
-  RefreshIcon,
-} from '~/components/icons'
-import {
-  TEAM_ONEWHEELING_MAP,
-  TEAM_SKIING_MAP,
-  TEAM_SNOWBOARD_MAP,
-} from '~/utils/onboarding'
-import {handleFormSubmission} from '~/utils/actions.server'
-import {Spacer} from '~/components/spacer'
-import {getSocialMetas} from '~/utils/seo'
-import type {LoaderData as RootLoaderData} from '../root'
-import {getGenericSocialImage, images} from '~/images'
 import {getServerTimeHeader} from '~/utils/timing.server'
+import {useRootData} from '~/utils/use-root-data'
+import {
+  deleteConvertKitCache,
+  deleteDiscordCache,
+  gravatarExistsForEmail,
+} from '~/utils/user-info.server'
+import {type LoaderData as RootLoaderData} from '../root'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -372,10 +373,7 @@ function YouScreen() {
                 className="underlined mb-5 animate-pulse text-lg hover:animate-none focus:animate-none"
                 href="https://kcd.im/shirts"
               >
-                Get your team shirt{' '}
-                <span className="inline-block" role="img" aria-label="t-shirt">
-                  👕
-                </span>
+                Get your team shirt 👕
               </a>
             </div>
 

@@ -1,28 +1,32 @@
-import type {DefaultRequestMultipartBody, MockedRequest, RestHandler} from 'msw'
-import {rest} from 'msw'
-import type {
-  SimplecastCollectionResponse,
-  SimpelcastSeasonListItem,
-  SimplecastEpisode,
-  SimplecastEpisodeListItem,
-} from '~/types'
 import {faker} from '@faker-js/faker'
+import {
+  rest,
+  type DefaultRequestMultipartBody,
+  type MockedRequest,
+  type RestHandler,
+} from 'msw'
+import {
+  type SimpelcastSeasonListItem,
+  type SimplecastCollectionResponse,
+  type SimplecastEpisode,
+  type SimplecastEpisodeListItem,
+} from '~/types'
 
 const seasonListItems: Array<SimpelcastSeasonListItem> = [
   {
-    href: `https://api.simplecast.com/seasons/${faker.datatype.uuid()}`,
+    href: `https://api.simplecast.com/seasons/${faker.string.uuid()}`,
     number: 1,
   },
   {
-    href: `https://api.simplecast.com/seasons/${faker.datatype.uuid()}`,
+    href: `https://api.simplecast.com/seasons/${faker.string.uuid()}`,
     number: 2,
   },
   {
-    href: `https://api.simplecast.com/seasons/${faker.datatype.uuid()}`,
+    href: `https://api.simplecast.com/seasons/${faker.string.uuid()}`,
     number: 3,
   },
   {
-    href: `https://api.simplecast.com/seasons/${faker.datatype.uuid()}`,
+    href: `https://api.simplecast.com/seasons/${faker.string.uuid()}`,
     number: 4,
   },
 ]
@@ -35,7 +39,7 @@ for (const seasonListItem of seasonListItems) {
   const episodes: Array<SimplecastEpisode> = Array.from(
     {length: faker.number.int({min: 10, max: 24})},
     (v, index) => {
-      const id = faker.datatype.uuid()
+      const id = faker.string.uuid()
       const title = faker.lorem.words()
       const homework = Array.from(
         {length: faker.number.int({min: 1, max: 3})},

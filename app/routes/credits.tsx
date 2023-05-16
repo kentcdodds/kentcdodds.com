@@ -1,9 +1,9 @@
-import type {
-  HeadersFunction,
-  LoaderFunction,
-  MetaFunction,
+import {
+  json,
+  type HeadersFunction,
+  type LoaderFunction,
+  type MetaFunction,
 } from '@remix-run/node'
-import {json} from '@remix-run/node'
 import {useLoaderData} from '@remix-run/react'
 import {shuffle} from 'lodash'
 import * as React from 'react'
@@ -21,8 +21,8 @@ import {
 } from '~/components/icons'
 import {HeaderSection} from '~/components/sections/header-section'
 import {
-  getHeroImageProps,
   HeroSection,
+  getHeroImageProps,
 } from '~/components/sections/hero-section'
 import {Spacer} from '~/components/spacer'
 import {H2, H3, H6, Paragraph} from '~/components/typography'
@@ -32,11 +32,11 @@ import {
   getSocialImageWithPreTitle,
   images,
 } from '~/images'
-import type {Await} from '~/types'
+import {type Await} from '~/types'
 import {getPeople} from '~/utils/credits.server'
 import {getDisplayUrl, getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {getSocialMetas} from '~/utils/seo'
-import type {LoaderData as RootLoaderData} from '../root'
+import {type LoaderData as RootLoaderData} from '../root'
 
 export type LoaderData = {people: Await<ReturnType<typeof getPeople>>}
 
@@ -93,7 +93,7 @@ const icons: Record<Socials, React.ReactElement> = {
 function ProfileCard({person}: {person: Person}) {
   return (
     <div className="relative flex w-full flex-col">
-      <div className="aspect-w-3 aspect-h-4 mb-8 w-full flex-none">
+      <div className="aspect-h-4 aspect-w-3 mb-8 w-full flex-none">
         <img
           className="rounded-lg object-cover"
           {...getImgProps(getImageBuilder(person.cloudinaryId), {

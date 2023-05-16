@@ -1,9 +1,8 @@
-import * as React from 'react'
 import {isFuture, parseISO} from 'date-fns'
-import type {WorkshopEvent} from '~/utils/workshop-tickets.server'
+import {type Workshop} from '~/types'
+import {type WorkshopEvent} from '~/utils/workshop-tickets.server'
 import {ButtonLink} from './button'
 import {H6} from './typography'
-import type {Workshop} from '~/types'
 
 function RegistrationPanel({
   workshopEvent,

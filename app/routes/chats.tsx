@@ -1,10 +1,10 @@
-import * as React from 'react'
-import type {
-  HeadersFunction,
-  LoaderFunction,
-  MetaFunction,
+import {Tab, TabList, TabPanel, TabPanels, Tabs} from '@reach/tabs'
+import {
+  json,
+  type HeadersFunction,
+  type LoaderFunction,
+  type MetaFunction,
 } from '@remix-run/node'
-import {json} from '@remix-run/node'
 import {
   Link,
   Outlet,
@@ -13,37 +13,37 @@ import {
   useNavigate,
 } from '@remix-run/react'
 import clsx from 'clsx'
-import {Tab, TabList, TabPanel, TabPanels, Tabs} from '@reach/tabs'
-import type {LoaderData as RootLoaderData} from '../root'
-import type {Await} from '~/types'
-import {ChatsEpisodeUIStateProvider} from '~/utils/providers'
+import * as React from 'react'
 import {Grid} from '~/components/grid'
+import {ChevronDownIcon, ChevronUpIcon} from '~/components/icons'
+import {PodcastSubs} from '~/components/podcast-subs'
+import {BlogSection} from '~/components/sections/blog-section'
+import {FeaturedSection} from '~/components/sections/featured-section'
+import {HeroSection} from '~/components/sections/hero-section'
+import {Spacer} from '~/components/spacer'
+import {H4, H6, Paragraph} from '~/components/typography'
 import {
   getGenericSocialImage,
   getImageBuilder,
   getImgProps,
   images,
 } from '~/images'
-import {H4, H6, Paragraph} from '~/components/typography'
-import {externalLinks} from '../external-links'
-import {ChevronDownIcon, ChevronUpIcon} from '~/components/icons'
-import {BlogSection} from '~/components/sections/blog-section'
+import {type Await} from '~/types'
 import {getBlogRecommendations} from '~/utils/blog.server'
-import {getSeasonListItems} from '~/utils/simplecast.server'
-import {FeaturedSection} from '~/components/sections/featured-section'
-import {
-  listify,
-  formatDuration,
-  reuseUsefulLoaderHeaders,
-  getUrl,
-  getDisplayUrl,
-} from '~/utils/misc'
 import {getCWKEpisodePath, getFeaturedEpisode} from '~/utils/chats-with-kent'
-import {HeroSection} from '~/components/sections/hero-section'
-import {Spacer} from '~/components/spacer'
-import {PodcastSubs} from '~/components/podcast-subs'
+import {
+  formatDuration,
+  getDisplayUrl,
+  getUrl,
+  listify,
+  reuseUsefulLoaderHeaders,
+} from '~/utils/misc'
+import {ChatsEpisodeUIStateProvider} from '~/utils/providers'
 import {getSocialMetas} from '~/utils/seo'
+import {getSeasonListItems} from '~/utils/simplecast.server'
 import {getServerTimeHeader} from '~/utils/timing.server'
+import {externalLinks} from '../external-links'
+import {type LoaderData as RootLoaderData} from '../root'
 
 type LoaderData = {
   seasons: Await<ReturnType<typeof getSeasonListItems>>
