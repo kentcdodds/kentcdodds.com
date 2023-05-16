@@ -123,7 +123,7 @@ export default function ContactRoute() {
 
       <main>
         <contactFetcher.Form
-          method="post"
+          method="POST"
           noValidate
           aria-describedby="contact-form-error"
         >

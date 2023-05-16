@@ -179,7 +179,7 @@ function Login() {
               }}
               onSubmit={() => setSubmitted(true)}
               action="/login"
-              method="post"
+              method="POST"
               className="mb-10 lg:mb-12"
             >
               <div className="mb-6">

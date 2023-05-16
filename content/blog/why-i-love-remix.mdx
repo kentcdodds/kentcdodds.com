@@ -168,12 +168,12 @@ stick this wherever you want the pending UI to show up (whether global or
 local):
 
 ```tsx
-const transition = useTransition()
+const navigation = useNavigation()
 
 const text =
-  transition.state === 'submitting'
+  navigation.state === 'submitting'
     ? 'Saving...'
-    : transition.state === 'loading'
+    : navigation.state === 'loading'
     ? 'Saved!'
     : 'Ready'
 ```
@@ -248,7 +248,7 @@ export default function AttendeesRoute() {
   // look mah! No event handler or useEffect necessary!
   // race conditions handled.
   return (
-    <Form method="post">
+    <Form method="POST">
       <div>
         <label htmlFor="name-input">Name: </label>
         <input id="name-input" name="name" />

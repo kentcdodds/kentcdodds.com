@@ -19,6 +19,10 @@ test('A new user can create an account', async ({page, login}) => {
   nextLocation.searchParams.set('code', 'test_discord_auth_code')
   await page.goto(nextLocation.toString())
 
+  await page.getByRole('link', {name: /your account/i}).click()
+
+  await expect(page).toHaveURL('/me')
+
   await expect(page.getByRole('link', {name: /connected/i})).toHaveAttribute(
     'href',
     'https://discord.com/users/test_discord_id',

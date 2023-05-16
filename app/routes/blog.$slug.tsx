@@ -408,7 +408,7 @@ export default function MdxScreen() {
     time: data.page.readTime?.time,
     onRead: React.useCallback(() => {
       if (isDraft) return
-      markAsReadRef.current.submit({intent: 'mark-as-read'}, {method: 'post'})
+      markAsReadRef.current.submit({intent: 'mark-as-read'}, {method: 'POST'})
     }, [isDraft]),
   })
 

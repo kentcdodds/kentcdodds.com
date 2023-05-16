@@ -49,6 +49,8 @@ test('calls updateUsername with the new username', async () => {
   expect(handleUpdateUsername).toHaveBeenCalledWith(fakeUsername)
   await defer.resolve()
   await clickPromise
+  // TODO: figure out why this is necessary with the latest testing lib version 😵
+  await new Promise(res => setTimeout(res, 0))
   expect(screen.queryByText(/saving/i)).not.toBeInTheDocument()
 })
 

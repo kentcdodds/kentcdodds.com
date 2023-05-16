@@ -59,7 +59,7 @@ export const cache: CachifiedCache = {
   get(key) {
     const result = cacheDb
       .prepare('SELECT value, metadata FROM cache WHERE key = ?')
-      .get(key) as unknown as any // TODO: fix this with zod or something
+      .get(key) as any // TODO: fix this with zod or something
     if (!result) return null
     return {
       metadata: JSON.parse(result.metadata),

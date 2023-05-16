@@ -45,7 +45,7 @@ function ConvertKitForm({
     <convertKit.Form
       ref={formRef}
       action="/action/convert-kit"
-      method="post"
+      method="POST"
       noValidate
     >
       <div style={{position: 'absolute', left: '-9999px'}}>

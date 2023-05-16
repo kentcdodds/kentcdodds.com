@@ -180,7 +180,7 @@ function Cell({
       </Form>
     ) : (
       <Form
-        method="post"
+        method="POST"
         onSubmit={() => setIsEditing(false)}
         onBlur={() => setIsEditing(false)}
         onKeyUp={e => {

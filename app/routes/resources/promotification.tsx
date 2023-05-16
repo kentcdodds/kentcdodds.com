@@ -106,7 +106,7 @@ export function Promotification({
             )
           }
         />
-        <fetcher.Form action="/resources/promotification" method="post">
+        <fetcher.Form action="/resources/promotification" method="POST">
           <input type="hidden" name="promoName" value={promoName} />
           <input type="hidden" name="maxAge" value={dismissTimeSeconds} />
           <div className="mt-4 flex flex-wrap items-center justify-end gap-2">

@@ -17,7 +17,7 @@ import {
   useCatch,
   useLoaderData,
   useLocation,
-  useTransition,
+  useNavigation,
 } from '@remix-run/react'
 import * as React from 'react'
 
@@ -313,32 +313,32 @@ const ACTION_WORDS = [
 let firstRender = true
 
 function PageLoadingMessage() {
-  const transition = useTransition()
+  const navigation = useNavigation()
   const [words, setWords] = React.useState<Array<string>>([])
   const [pendingPath, setPendingPath] = React.useState('')
-  const showLoader = useSpinDelay(Boolean(transition.state !== 'idle'), {
+  const showLoader = useSpinDelay(Boolean(navigation.state !== 'idle'), {
     delay: 400,
     minDuration: 1000,
   })
 
   React.useEffect(() => {
     if (firstRender) return
-    if (transition.state === 'idle') return
-    if (transition.state === 'loading') setWords(LOADER_WORDS)
-    if (transition.state === 'submitting') setWords(ACTION_WORDS)
+    if (navigation.state === 'idle') return
+    if (navigation.state === 'loading') setWords(LOADER_WORDS)
+    if (navigation.state === 'submitting') setWords(ACTION_WORDS)
 
     const interval = setInterval(() => {
       setWords(([first, ...rest]) => [...rest, first] as Array<string>)
     }, 2000)
 
     return () => clearInterval(interval)
-  }, [pendingPath, transition.state])
+  }, [pendingPath, navigation.state])
 
   React.useEffect(() => {
     if (firstRender) return
-    if (transition.state === 'idle') return
-    setPendingPath(transition.location.pathname)
-  }, [transition])
+    if (navigation.state === 'idle') return
+    setPendingPath(navigation.location.pathname)
+  }, [navigation])
 
   React.useEffect(() => {
     firstRender = false

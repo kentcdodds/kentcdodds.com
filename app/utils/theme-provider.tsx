@@ -67,7 +67,7 @@ function ThemeProvider({
       if (newTheme) {
         persistThemeRef.current.submit(
           {theme: newTheme},
-          {action: 'action/set-theme', method: 'post'},
+          {action: 'action/set-theme', method: 'POST'},
         )
       }
       setThemeState(newTheme)

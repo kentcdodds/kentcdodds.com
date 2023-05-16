@@ -29,7 +29,7 @@ export default function GuestInfo() {
     <div>
       {`TODO: make this a thing...`}
       <pre>{JSON.stringify(data, null, 2)}</pre>
-      <Form method="post" noValidate>
+      <Form method="POST" noValidate>
         <button type="submit">submit</button>
       </Form>
     </div>

@@ -288,7 +288,7 @@ export default function NewAccount() {
       />
       <main>
         <Form
-          method="post"
+          method="POST"
           onChange={event => {
             const form = event.currentTarget
             setFormValues({
@@ -381,7 +381,7 @@ export default function NewAccount() {
         </Form>
         <Spacer size="2xs" />
         <Grid>
-          <Form method="post">
+          <Form method="POST">
             <input type="hidden" name="actionId" value={actionIds.cancel} />
             <Button type="submit" variant="danger">
               {`Cancel`}

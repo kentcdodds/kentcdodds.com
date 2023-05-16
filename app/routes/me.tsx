@@ -256,7 +256,7 @@ function YouScreen() {
                   {`Edit as you wish.`}
                 </H2>
               </div>
-              <Form action="/me" method="post">
+              <Form action="/me" method="POST">
                 <input type="hidden" name="actionId" value={actionIds.logout} />
                 <Button variant="secondary">
                   <LogoutIcon />
@@ -272,7 +272,7 @@ function YouScreen() {
           <div className="col-span-full mb-24 lg:col-span-5 lg:mb-0">
             <Form
               action="/me"
-              method="post"
+              method="POST"
               noValidate
               aria-describedby="general-error"
             >
@@ -451,7 +451,7 @@ function YouScreen() {
           </ButtonLink>
           <Form
             action="/me"
-            method="post"
+            method="POST"
             noValidate
             aria-describedby="general-error"
           >
@@ -485,7 +485,7 @@ function YouScreen() {
         <Spacer size="2xs" />
         <Form
           action="/me"
-          method="post"
+          method="POST"
           noValidate
           aria-describedby="general-error"
         >

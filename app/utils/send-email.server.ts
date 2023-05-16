@@ -43,7 +43,7 @@ async function sendEmail({to, from, subject, text, html}: MailgunMessage) {
   })
 
   await fetch(`https://api.mailgun.net/v3/${mailgunDomain}/messages`, {
-    method: 'post',
+    method: 'POST',
     body,
     headers: {
       Authorization: `Basic ${auth}`,

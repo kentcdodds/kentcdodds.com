@@ -51,7 +51,7 @@ function RecordingForm({
         if (typeof reader.result === 'string') {
           form.append('audio', reader.result)
           submit(form, {
-            method: 'post',
+            method: 'POST',
             headers: flyPrimaryInstance
               ? {'fly-force-instance-id': flyPrimaryInstance}
               : undefined,
