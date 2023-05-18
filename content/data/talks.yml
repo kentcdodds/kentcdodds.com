@@ -128,6 +128,7 @@
       date: 2023-03-27
     - event: '[React Miami 2023](https://reactmiami.com/)'
       date: 2023-04-20
+      recording: 'https://www.youtube.com/watch?v=Ie7SJEzPtPo&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf'
     - event: '[React Rally 2023](https://reactrally.com/)'
       date: 2023-08-17
   tags:
