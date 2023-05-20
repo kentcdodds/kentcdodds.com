@@ -30,6 +30,8 @@ model User {
   calls        Call[]
   sessions     Session[]
   postReads    PostRead[]
+
+  @@index([team])
 }
 
 model Session {
@@ -60,6 +62,8 @@ model PostRead {
   clientId  String?
   postSlug  String
 
-  @@index(userId)
-  @@index(clientId)
+  @@index([userId, postSlug])
+  @@index([clientId, postSlug])
+  @@index([postSlug, createdAt])
+  @@index([createdAt, userId])
 }
