@@ -209,18 +209,6 @@ in those methods. But if those methods are idempotent, then calling them
 multiple times shouldn't cause any trouble. If they are not idempotent, then you
 should notice funny things which you should hopefully be able to notice and fix.
 
-<callout-info>
-
-Note that `useEffect` and `useLayoutEffect` callbacks are _not_ called twice
-even in dev mode + strict mode because the entire point of those callbacks _is_
-to perform side-effects.
-
-Note that I also observed that the `reducer` you pass to `React.useReducer` is
-_not_ called twice in dev mode. I'm not sure why this is because I feel like
-that could also benefit from this kind of warning.
-
-</callout-info>
-
 You'll note that if you download either of my codesandbox projects and run the
 `build` script (which enables production mode), all of the warnings go away and
 the callbacks are only called once. This is because these are only there to help
