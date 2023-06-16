@@ -58,13 +58,6 @@ keyTakeaways:
       One of the keys to building a high-quality web application is loading your
       data efficiently. In this workshop, you'll learn how to **optimize your
       data loading**, including using platform standard caching techniques.
-  - title: Use simple forms to build complex interactions
-    description:
-      Forms are a key component of most web applications, and in this workshop,
-      you'll learn the **fundamental technology** of the web for enabling your
-      users to perform data mutations. Just because your application allows
-      complex user interactions doesn't mean your code for managing that has to
-      be complex. And if you embrace the web platform, it doesn't have to be.
   - title: Use JavaScript to enhance the experience, not enable it
     description:
       JavaScript can add a lot of value to your web application, but it's
