@@ -13,6 +13,11 @@ meta:
     - data loading
     - data mutations
     - scripting
+events:
+  - title: Web App Fundamentals - Remix at React Rally
+    url: https://reactrally.com/workshop
+    quantity: 40
+    date: August 16, 2023
 categories:
   - web
   - react
