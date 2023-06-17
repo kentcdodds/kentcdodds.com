@@ -176,10 +176,8 @@ plugins you have so it should work as you working as well.
 
 ## Styles
 
-We use Tailwind for our styles. That's all configured in the
-`tailwind.config.js` file. We use the jit feature. The source files are in
-`styles` and they build to the `app/styles` directory where our app picks them
-up from there.
+We use Tailwind and PostCSS for our styles. That's all configured in the
+`tailwind.config.js` and `postcss.config.js` files.
 
 ## Database
 
