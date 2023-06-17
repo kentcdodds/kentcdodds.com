@@ -1,8 +1,8 @@
 diff --git a/node_modules/@remix-run/react/dist/components.js b/node_modules/@remix-run/react/dist/components.js
-index 79b255b..cf5b030 100644
+index 4735144..e70ea2a 100644
 --- a/node_modules/@remix-run/react/dist/components.js
 +++ b/node_modules/@remix-run/react/dist/components.js
-@@ -675,7 +675,8 @@ function Scripts(props) {
+@@ -674,7 +674,8 @@ function Scripts(props) {
              key: `${routeId} | ${key}`,
              deferredData: deferredData,
              routeId: routeId,
@@ -12,7 +12,7 @@ index 79b255b..cf5b030 100644
            }));
            return `${JSON.stringify(key)}:__remixContext.n(${JSON.stringify(routeId)}, ${JSON.stringify(key)})`;
          } else {
-@@ -705,10 +706,12 @@ window.__remixRouteModules = {${matches.map((match, index) => `${JSON.stringify(
+@@ -704,10 +705,12 @@ window.__remixRouteModules = {${matches.map((match, index) => `${JSON.stringify(
  
  import(${JSON.stringify(manifest.entry.module)});`;
      return /*#__PURE__*/React__namespace.createElement(React__namespace.Fragment, null, /*#__PURE__*/React__namespace.createElement("script", _rollupPluginBabelHelpers["extends"]({}, props, {
@@ -25,7 +25,7 @@ index 79b255b..cf5b030 100644
        suppressHydrationWarning: true,
        dangerouslySetInnerHTML: markup.createHtml(routeModulesScript),
        type: "module",
-@@ -722,6 +725,7 @@ import(${JSON.stringify(manifest.entry.module)});`;
+@@ -721,6 +724,7 @@ import(${JSON.stringify(manifest.entry.module)});`;
    if (!isStatic && typeof __remixContext === "object" && __remixContext.a) {
      for (let i = 0; i < __remixContext.a; i++) {
        deferredScripts.push( /*#__PURE__*/React__namespace.createElement(DeferredHydrationScript, {
@@ -33,15 +33,15 @@ index 79b255b..cf5b030 100644
          key: i
        }));
      }
-@@ -758,6 +762,7 @@ import(${JSON.stringify(manifest.entry.module)});`;
-   })), !isHydrated && initialScripts, !isHydrated && deferredScripts);
+@@ -753,6 +757,7 @@ import(${JSON.stringify(manifest.entry.module)});`;
+   })), initialScripts, deferredScripts);
  }
  function DeferredHydrationScript({
 +  nonce,
    dataKey,
    deferredData,
    routeId
-@@ -773,6 +778,7 @@ function DeferredHydrationScript({
+@@ -768,6 +773,7 @@ function DeferredHydrationScript({
      typeof document === "undefined" && deferredData && dataKey && routeId ? null : /*#__PURE__*/React__namespace.createElement("script", {
        async: true,
        suppressHydrationWarning: true,
@@ -49,7 +49,7 @@ index 79b255b..cf5b030 100644
        dangerouslySetInnerHTML: {
          __html: " "
        }
-@@ -780,10 +786,12 @@ function DeferredHydrationScript({
+@@ -775,10 +781,12 @@ function DeferredHydrationScript({
    }, typeof document === "undefined" && deferredData && dataKey && routeId ? /*#__PURE__*/React__namespace.createElement(Await, {
      resolve: deferredData.data[dataKey],
      errorElement: /*#__PURE__*/React__namespace.createElement(ErrorDeferredHydrationScript, {
@@ -62,7 +62,7 @@ index 79b255b..cf5b030 100644
        async: true,
        suppressHydrationWarning: true,
        dangerouslySetInnerHTML: {
-@@ -791,6 +799,7 @@ function DeferredHydrationScript({
+@@ -786,6 +794,7 @@ function DeferredHydrationScript({
        }
      })
    }) : /*#__PURE__*/React__namespace.createElement("script", {
@@ -70,7 +70,7 @@ index 79b255b..cf5b030 100644
      async: true,
      suppressHydrationWarning: true,
      dangerouslySetInnerHTML: {
-@@ -799,6 +808,7 @@ function DeferredHydrationScript({
+@@ -794,6 +803,7 @@ function DeferredHydrationScript({
    }));
  }
  function ErrorDeferredHydrationScript({
@@ -78,7 +78,7 @@ index 79b255b..cf5b030 100644
    dataKey,
    routeId
  }) {
-@@ -811,6 +821,7 @@ function ErrorDeferredHydrationScript({
+@@ -806,6 +816,7 @@ function ErrorDeferredHydrationScript({
      stack: undefined
    };
    return /*#__PURE__*/React__namespace.createElement("script", {
@@ -87,10 +87,10 @@ index 79b255b..cf5b030 100644
      dangerouslySetInnerHTML: {
        __html: `__remixContext.r(${JSON.stringify(routeId)}, ${JSON.stringify(dataKey)}, !1, ${markup.escapeHtml(JSON.stringify(toSerialize))});`
 diff --git a/node_modules/@remix-run/react/dist/data.js b/node_modules/@remix-run/react/dist/data.js
-index be82389..1e28941 100644
+index 9dc24be..9e7d7ea 100644
 --- a/node_modules/@remix-run/react/dist/data.js
 +++ b/node_modules/@remix-run/react/dist/data.js
-@@ -37,6 +37,7 @@ async function fetchData(request, routeId) {
+@@ -37,6 +37,7 @@ async function fetchData(request, routeId, retry = 0) {
    let url = new URL(request.url);
    url.searchParams.set("_data", routeId);
    let init = {
@@ -99,10 +99,10 @@ index be82389..1e28941 100644
    };
    if (request.method !== "GET") {
 diff --git a/node_modules/@remix-run/react/dist/esm/components.js b/node_modules/@remix-run/react/dist/esm/components.js
-index f7e66b5..81686c0 100644
+index db1e6de..ee69f4b 100644
 --- a/node_modules/@remix-run/react/dist/esm/components.js
 +++ b/node_modules/@remix-run/react/dist/esm/components.js
-@@ -649,6 +649,7 @@ function Scripts(props) {
+@@ -648,6 +648,7 @@ function Scripts(props) {
          if (pendingKeys.has(key)) {
            deferredScripts.push( /*#__PURE__*/React.createElement(DeferredHydrationScript, {
              key: `${routeId} | ${key}`,
@@ -110,7 +110,7 @@ index f7e66b5..81686c0 100644
              deferredData: deferredData,
              routeId: routeId,
              dataKey: key
-@@ -681,10 +682,12 @@ window.__remixRouteModules = {${matches.map((match, index) => `${JSON.stringify(
+@@ -680,10 +681,12 @@ window.__remixRouteModules = {${matches.map((match, index) => `${JSON.stringify(
  
  import(${JSON.stringify(manifest.entry.module)});`;
      return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("script", _extends({}, props, {
@@ -123,7 +123,7 @@ index f7e66b5..81686c0 100644
        suppressHydrationWarning: true,
        dangerouslySetInnerHTML: createHtml(routeModulesScript),
        type: "module",
-@@ -698,6 +701,7 @@ import(${JSON.stringify(manifest.entry.module)});`;
+@@ -697,6 +700,7 @@ import(${JSON.stringify(manifest.entry.module)});`;
    if (!isStatic && typeof __remixContext === "object" && __remixContext.a) {
      for (let i = 0; i < __remixContext.a; i++) {
        deferredScripts.push( /*#__PURE__*/React.createElement(DeferredHydrationScript, {
@@ -131,15 +131,15 @@ index f7e66b5..81686c0 100644
          key: i
        }));
      }
-@@ -734,6 +738,7 @@ import(${JSON.stringify(manifest.entry.module)});`;
-   })), !isHydrated && initialScripts, !isHydrated && deferredScripts);
+@@ -729,6 +733,7 @@ import(${JSON.stringify(manifest.entry.module)});`;
+   })), initialScripts, deferredScripts);
  }
  function DeferredHydrationScript({
 +  nonce,
    dataKey,
    deferredData,
    routeId
-@@ -748,6 +753,7 @@ function DeferredHydrationScript({
+@@ -743,6 +748,7 @@ function DeferredHydrationScript({
      // To reproduce a hydration mismatch, just render null as a fallback.
      typeof document === "undefined" && deferredData && dataKey && routeId ? null : /*#__PURE__*/React.createElement("script", {
        async: true,
@@ -147,7 +147,7 @@ index f7e66b5..81686c0 100644
        suppressHydrationWarning: true,
        dangerouslySetInnerHTML: {
          __html: " "
-@@ -756,11 +762,13 @@ function DeferredHydrationScript({
+@@ -751,11 +757,13 @@ function DeferredHydrationScript({
    }, typeof document === "undefined" && deferredData && dataKey && routeId ? /*#__PURE__*/React.createElement(Await, {
      resolve: deferredData.data[dataKey],
      errorElement: /*#__PURE__*/React.createElement(ErrorDeferredHydrationScript, {
@@ -161,7 +161,7 @@ index f7e66b5..81686c0 100644
        suppressHydrationWarning: true,
        dangerouslySetInnerHTML: {
          __html: `__remixContext.r(${JSON.stringify(routeId)}, ${JSON.stringify(dataKey)}, ${escapeHtml(JSON.stringify(data))});`
-@@ -768,6 +776,7 @@ function DeferredHydrationScript({
+@@ -763,6 +771,7 @@ function DeferredHydrationScript({
      })
    }) : /*#__PURE__*/React.createElement("script", {
      async: true,
@@ -169,7 +169,7 @@ index f7e66b5..81686c0 100644
      suppressHydrationWarning: true,
      dangerouslySetInnerHTML: {
        __html: " "
-@@ -775,6 +784,7 @@ function DeferredHydrationScript({
+@@ -770,6 +779,7 @@ function DeferredHydrationScript({
    }));
  }
  function ErrorDeferredHydrationScript({
@@ -177,7 +177,7 @@ index f7e66b5..81686c0 100644
    dataKey,
    routeId
  }) {
-@@ -787,6 +797,7 @@ function ErrorDeferredHydrationScript({
+@@ -782,6 +792,7 @@ function ErrorDeferredHydrationScript({
      stack: undefined
    };
    return /*#__PURE__*/React.createElement("script", {
@@ -185,19 +185,16 @@ index f7e66b5..81686c0 100644
      suppressHydrationWarning: true,
      dangerouslySetInnerHTML: {
        __html: `__remixContext.r(${JSON.stringify(routeId)}, ${JSON.stringify(dataKey)}, !1, ${escapeHtml(JSON.stringify(toSerialize))});`
-@@ -1236,6 +1247,7 @@ const LiveReload = process.env.NODE_ENV !== "development" ? () => null : functio
-   let js = String.raw;
-   return /*#__PURE__*/React.createElement("script", {
-     nonce: nonce,
-+    nonce,
-     suppressHydrationWarning: true,
-     dangerouslySetInnerHTML: {
-       __html: js`
+@@ -1319,3 +1330,4 @@ const LiveReload = process.env.NODE_ENV !== "development" ? () => null : functio
+ };
+ 
+ export { Await, Link, Links, LiveReload, Meta, NavLink, PrefetchPageLinks, RemixContext, RemixRoute, RemixRouteError, Scripts, composeEventHandlers, useActionData, useFetcher, useFetchers, useLoaderData, useMatches, useTransition };
++
 diff --git a/node_modules/@remix-run/react/dist/esm/data.js b/node_modules/@remix-run/react/dist/esm/data.js
-index 173eb98..2436ad8 100644
+index 45628c7..b3043e9 100644
 --- a/node_modules/@remix-run/react/dist/esm/data.js
 +++ b/node_modules/@remix-run/react/dist/esm/data.js
-@@ -33,6 +33,7 @@ async function fetchData(request, routeId) {
+@@ -33,6 +33,7 @@ async function fetchData(request, routeId, retry = 0) {
    let url = new URL(request.url);
    url.searchParams.set("_data", routeId);
    let init = {
