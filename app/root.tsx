@@ -1,3 +1,4 @@
+import {cssBundleHref} from '@remix-run/css-bundle/dist/index'
 import {
   json,
   type DataFunctionArgs,
@@ -141,6 +142,7 @@ export const links: LinksFunction = () => {
     {rel: 'stylesheet', href: tailwindStyles},
     {rel: 'stylesheet', href: proseStyles},
     {rel: 'stylesheet', href: appStyles},
+    ...(cssBundleHref ? [{rel: 'stylesheet', href: cssBundleHref}] : []),
   ]
 }
 

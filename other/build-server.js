@@ -1,11 +1,11 @@
 const fsExtra = require('fs-extra')
 const path = require('path')
-const glob = require('glob')
+const {globSync} = require('glob')
 const pkg = require('../package.json')
 
 const here = (...s) => path.join(__dirname, ...s)
 
-const allFiles = glob.sync(here('../server/**/*.*'), {
+const allFiles = globSync(here('../server/**/*.*'), {
   ignore: ['**/tsconfig.json', '**/eslint*', '**/__tests__/**'],
 })
 

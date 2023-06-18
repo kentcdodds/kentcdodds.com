@@ -93,6 +93,7 @@ function HeroSection({
           {imageProps ? (
             <motion.img
               {...imageProps}
+              suppressHydrationWarning={true}
               className={clsx(
                 'h-auto w-full object-contain',
                 {
@@ -112,6 +113,7 @@ function HeroSection({
                 'max-h-75vh': imageSize === 'giant',
               })}
               {...getHeroImageProps(imageBuilder)}
+              suppressHydrationWarning={true}
               initial={{scale: shouldReduceMotion ? 1 : 1.5, opacity: 0}}
               animate={{scale: 1, opacity: 1}}
               transition={{duration: 0.75}}
