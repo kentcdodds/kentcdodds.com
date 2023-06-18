@@ -5,11 +5,11 @@ import {deleteUserByEmail, extractUrl, readEmail} from './utils'
 
 test('A new user can create an account', async ({page}) => {
   const firstName = faker.person.firstName()
-  const emailAddress = faker.internet.email(
+  const emailAddress = faker.internet.email({
     firstName,
-    faker.person.lastName(),
-    'example.com',
-  )
+    lastName: faker.person.lastName(),
+    provider: 'example.com',
+  })
   await page.goto('/')
   await page.getByRole('navigation').getByRole('link', {name: 'Login'}).click()
   await expect(page).toHaveURL(/.*login/)
