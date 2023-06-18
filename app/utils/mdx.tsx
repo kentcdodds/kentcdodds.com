@@ -133,6 +133,7 @@ async function getMdxDirList(contentDir: string, options?: CachifiedOptions) {
         .map(({name, path}) => ({
           name,
           slug: path
+            .replace(/\\/g, '/')
             .replace(`${fullContentDirPath}/`, '')
             .replace(/\.mdx$/, ''),
         }))

@@ -5,6 +5,8 @@ import {type GitHubFile} from '~/types'
 
 const ref = process.env.GITHUB_REF ?? 'main'
 
+const safePath = (s: string) => s.replace(/\\/g, '/')
+
 const Octokit = createOctokit.plugin(throttling)
 
 const octokit = new Octokit({
@@ -76,7 +78,9 @@ async function downloadMdxFileOrDirectory(
     // /content/about.mdx => entry is about.mdx, but compileMdx needs
     // the entry to be called "/content/index.mdx" so we'll set it to that
     // because this is the entry for this path
-    files = [{path: nodePath.join(mdxFileOrDirectory, 'index.mdx'), content}]
+    files = [
+      {path: safePath(nodePath.join(mdxFileOrDirectory, 'index.mdx')), content},
+    ]
   } else if (dirPotential) {
     entry = dirPotential.path
     files = await downloadDirectory(mdxFileOrDirectory)
@@ -99,7 +103,7 @@ async function downloadDirectory(dir: string): Promise<Array<GitHubFile>> {
       switch (type) {
         case 'file': {
           const content = await downloadFileBySha(sha)
-          return {path: fileDir, content}
+          return {path: safePath(fileDir), content}
         }
         case 'dir': {
           return downloadDirectory(fileDir)

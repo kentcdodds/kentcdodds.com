@@ -137,7 +137,7 @@ const githubHandlers: Array<
       if (typeof req.params.sha !== 'string') {
         throw new Error('req.params.sha must be a string')
       }
-      const sha = decodeURIComponent(req.params.sha).trim()
+      const sha = decodeURIComponent(req.params.sha).trim().replace(/\\/g, '/')
       // if the sha includes a "/" that means it's not a sha but a relativePath
       // and therefore the client is getting content it got from the local
       // mock environment, not the actual github API.
