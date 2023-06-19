@@ -2,7 +2,7 @@ import {
   json,
   type HeadersFunction,
   type LoaderFunction,
-  type MetaFunction,
+  type V2_MetaFunction,
 } from '@remix-run/node'
 import {Link, Outlet, useLoaderData, useMatches} from '@remix-run/react'
 import clsx from 'clsx'
@@ -33,6 +33,7 @@ import {
 import {
   formatDuration,
   getDisplayUrl,
+  getOrigin,
   getUrl,
   reuseUsefulLoaderHeaders,
 } from '~/utils/misc'
@@ -40,7 +41,7 @@ import {useMatchLoaderData} from '~/utils/providers'
 import {getSocialMetas} from '~/utils/seo'
 import {getServerTimeHeader} from '~/utils/timing.server'
 import {getEpisodes} from '~/utils/transistor.server'
-import {type LoaderData as RootLoaderData} from '../root'
+import {type RootLoaderType} from '~/root'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'calls',
@@ -73,32 +74,33 @@ export const loader: LoaderFunction = async ({request}) => {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction = ({parentsData}) => {
-  const {requestInfo} = parentsData.root as RootLoaderData
-  return {
-    ...getSocialMetas({
-      title: 'Call Kent Podcast',
-      description: `Leave Kent an audio message here, then your message and Kent's response are published in the podcast.`,
-      keywords: 'podcast, call kent, call kent c. dodds, the call kent podcast',
-      url: getUrl(requestInfo),
-      image: getGenericSocialImage({
-        words: 'Listen to the Call Kent Podcast and make your own call.',
-        featuredImage: images.microphone({
-          // if we don't do this resize, the narrow microphone appears on the
-          // far right of the social image
-          resize: {
-            type: 'pad',
-            width: 1200,
-            height: 1200,
-          },
-        }),
-        url: getDisplayUrl({
-          origin: requestInfo.origin,
-          path: '/calls',
-        }),
+export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
+  matches,
+}) => {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
+  return getSocialMetas({
+    title: 'Call Kent Podcast',
+    description: `Leave Kent an audio message here, then your message and Kent's response are published in the podcast.`,
+    keywords: 'podcast, call kent, call kent c. dodds, the call kent podcast',
+    url: getUrl(requestInfo),
+    image: getGenericSocialImage({
+      words: 'Listen to the Call Kent Podcast and make your own call.',
+      featuredImage: images.microphone({
+        // if we don't do this resize, the narrow microphone appears on the
+        // far right of the social image
+        resize: {
+          type: 'pad',
+          width: 1200,
+          height: 1200,
+        },
+      }),
+      url: getDisplayUrl({
+        origin: getOrigin(requestInfo),
+        path: '/calls',
       }),
     }),
-  }
+  })
 }
 
 export default function CallHomeScreen() {
