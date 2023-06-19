@@ -2,7 +2,7 @@ import {
   json,
   type ActionFunction,
   type HeadersFunction,
-  type MetaFunction,
+  type V2_MetaFunction,
 } from '@remix-run/node'
 import {Link, useFetcher} from '@remix-run/react'
 import {Button} from '~/components/button'
@@ -20,7 +20,7 @@ import {sendEmail} from '~/utils/send-email.server'
 import {getSocialMetas} from '~/utils/seo'
 import {requireUser} from '~/utils/session.server'
 import {useRootData} from '~/utils/use-root-data'
-import {type LoaderData as RootLoaderData} from '../root'
+import {type RootLoaderType} from '~/root'
 
 function getErrorForSubject(subject: string | null) {
   if (!subject) return `Subject is required`
@@ -84,20 +84,21 @@ export const headers: HeadersFunction = () => ({
   Vary: 'Cookie',
 })
 
-export const meta: MetaFunction = ({parentsData}) => {
-  const {requestInfo} = parentsData.root as RootLoaderData
-  return {
-    ...getSocialMetas({
-      title: 'Contact Kent C. Dodds',
-      description: 'Send Kent C. Dodds a personal email.',
-      url: getUrl(requestInfo),
-      image: getGenericSocialImage({
-        url: getDisplayUrl(requestInfo),
-        featuredImage: 'unsplash/photo-1563225409-127c18758bd5',
-        words: `Shoot Kent an email`,
-      }),
+export const meta: V2_MetaFunction<{}, {root: RootLoaderType}> = ({
+  matches,
+}) => {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
+  return getSocialMetas({
+    title: 'Contact Kent C. Dodds',
+    description: 'Send Kent C. Dodds a personal email.',
+    url: getUrl(requestInfo),
+    image: getGenericSocialImage({
+      url: getDisplayUrl(requestInfo),
+      featuredImage: 'unsplash/photo-1563225409-127c18758bd5',
+      words: `Shoot Kent an email`,
     }),
-  }
+  })
 }
 
 export default function ContactRoute() {

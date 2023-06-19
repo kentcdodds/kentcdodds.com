@@ -3,7 +3,7 @@ import {
   type DataFunctionArgs,
   type HeadersFunction,
   type LinksFunction,
-  type MetaFunction,
+  type V2_MetaFunction,
   type SerializeFrom,
 } from '@remix-run/node'
 import {
@@ -78,14 +78,14 @@ export const handle: KCDHandle & {id: string} = {
   id: 'root',
 }
 
-export const meta: MetaFunction = ({data}) => {
-  const requestInfo = data?.requestInfo
+export const meta: V2_MetaFunction<typeof loader> = ({data}) => {
+  const requestInfo = data.requestInfo
   const title = 'Kent C. Dodds'
   const description =
     'Come check out how Kent C. Dodds can help you level up your career as a software engineer.'
-  return {
-    viewport: 'width=device-width,initial-scale=1,viewport-fit=cover',
-    'theme-color': requestInfo?.session.theme === 'dark' ? '#1F2028' : '#FFF',
+  return [
+    {viewport: 'width=device-width,initial-scale=1,viewport-fit=cover'},
+    {'theme-color': requestInfo.session.theme === 'dark' ? '#1F2028' : '#FFF'},
     ...getSocialMetas({
       keywords:
         'Learn React, React Workshops, Testing JavaScript Training, React Training, Learn JavaScript, Learn TypeScript',
@@ -99,7 +99,7 @@ export const meta: MetaFunction = ({data}) => {
       title,
       description,
     }),
-  }
+  ]
 }
 
 export const links: LinksFunction = () => {
@@ -271,6 +271,7 @@ async function loader({request}: DataFunctionArgs) {
   return json(data, {headers})
 }
 
+export type RootLoaderType = typeof loader
 export {loaderImpl as loader}
 
 async function loaderImpl({request, ...rest}: DataFunctionArgs) {

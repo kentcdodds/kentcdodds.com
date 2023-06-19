@@ -1,4 +1,4 @@
-import {json, type LoaderFunction, type MetaFunction} from '@remix-run/node'
+import {json, type LoaderFunction, type V2_MetaFunction} from '@remix-run/node'
 import {Link, useLoaderData} from '@remix-run/react'
 import {ButtonLink} from '~/components/button'
 import {Grid} from '~/components/grid'
@@ -14,22 +14,23 @@ import {getDisplayUrl, getUrl} from '~/utils/misc'
 import {getSocialMetas} from '~/utils/seo'
 import {getServerTimeHeader} from '~/utils/timing.server'
 import {useRootData} from '~/utils/use-root-data'
-import {type LoaderData as RootLoaderData} from '../root'
+import {type RootLoaderType} from '~/root'
 
-export const meta: MetaFunction = ({parentsData}) => {
-  const {requestInfo} = parentsData.root as RootLoaderData
-  return {
-    ...getSocialMetas({
-      title: `Subscribe to the KCD Mailing List`,
-      description: `Get weekly insights, ideas, and proven coding practices from the KCD Mailing List`,
-      url: getUrl(requestInfo),
-      image: getGenericSocialImage({
-        url: getDisplayUrl(requestInfo),
-        featuredImage: images.snowboard(),
-        words: `Subscribe to the KCD Mailing List`,
-      }),
+export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
+  matches,
+}) => {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
+  return getSocialMetas({
+    title: `Subscribe to the KCD Mailing List`,
+    description: `Get weekly insights, ideas, and proven coding practices from the KCD Mailing List`,
+    url: getUrl(requestInfo),
+    image: getGenericSocialImage({
+      url: getDisplayUrl(requestInfo),
+      featuredImage: images.snowboard(),
+      words: `Subscribe to the KCD Mailing List`,
     }),
-  }
+  })
 }
 
 type LoaderData = {

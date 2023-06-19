@@ -2,7 +2,7 @@ import {
   json,
   type HeadersFunction,
   type LoaderFunction,
-  type MetaFunction,
+  type V2_MetaFunction,
 } from '@remix-run/node'
 import {
   Link,
@@ -31,27 +31,29 @@ import {
 } from '~/utils/misc'
 import {getSocialMetas} from '~/utils/seo'
 import {getTalksAndTags} from '~/utils/talks.server'
-import {type LoaderData as RootLoaderData} from '../root'
+import {type RootLoaderType} from '~/root'
 
-export const meta: MetaFunction = ({data, parentsData}) => {
+export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
+  data,
+  matches,
+}) => {
   const {talks = [], tags = []} = (data as LoaderData | undefined) ?? {}
-  const {requestInfo} = parentsData.root as RootLoaderData
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
   const talkCount = talks.length
   const deliveryCount = talks.flatMap(t => t.deliveries).length
   const title = `${talkCount} talks by Kent all about software development`
   const topicsList = listify(tags.slice(0, 6))
-  return {
-    ...getSocialMetas({
-      title,
-      description: `Check out Kent's ${talkCount} talks he's delivered ${deliveryCount} times. Topics include: ${topicsList}`,
-      url: getUrl(requestInfo),
-      image: getGenericSocialImage({
-        url: getDisplayUrl(requestInfo),
-        featuredImage: images.teslaY.id,
-        words: title,
-      }),
+  return getSocialMetas({
+    title,
+    description: `Check out Kent's ${talkCount} talks he's delivered ${deliveryCount} times. Topics include: ${topicsList}`,
+    url: getUrl(requestInfo),
+    image: getGenericSocialImage({
+      url: getDisplayUrl(requestInfo),
+      featuredImage: images.teslaY.id,
+      words: title,
     }),
-  }
+  })
 }
 
 export type LoaderData = Await<ReturnType<typeof getTalksAndTags>>
