@@ -3,7 +3,7 @@ import {
   redirect,
   type HeadersFunction,
   type LoaderFunction,
-  type MetaFunction,
+  type V2_MetaFunction,
 } from '@remix-run/node'
 import {useParams} from '@remix-run/react'
 import {IconLink} from '~/components/icon-link'
@@ -21,8 +21,12 @@ import {Themed} from '~/utils/theme-provider'
 import {getServerTimeHeader} from '~/utils/timing.server'
 import {getEpisodes} from '~/utils/transistor.server'
 import {useRootData} from '~/utils/use-root-data'
-import {type LoaderData as RootLoaderData} from '../../root'
-import {useCallsData, type LoaderData as CallsLoaderData} from '../calls'
+import {type RootLoaderType, type LoaderData as RootLoaderData} from '~/root'
+import {
+  useCallsData,
+  type loader as callsLoader,
+  type LoaderData as CallsLoaderData,
+} from '../calls'
 
 export const handle: KCDHandle = {
   id: 'call-player',
@@ -39,32 +43,31 @@ export const handle: KCDHandle = {
   },
 }
 
-export const meta: MetaFunction = ({parentsData, params}) => {
-  const callsData = parentsData['routes/calls'] as CallsLoaderData | undefined
-  const {requestInfo} = parentsData.root as RootLoaderData
-  const metadata = {}
+export const meta: V2_MetaFunction<
+  typeof loader,
+  {root: RootLoaderType; 'routes/calls': typeof callsLoader}
+> = ({matches, params}) => {
+  const {requestInfo} = matches.find(m => m.id === 'root')
+    ?.data as RootLoaderData
+  const callsData = matches.find(m => m.id === 'routes/calls')?.data as
+    | CallsLoaderData
+    | undefined
   if (!callsData) {
     console.error(
       `A call was unable to retrieve the parent's data by routes/calls`,
     )
-    // the TS defs for MetaFunction are kinda weird...
-    return Object.assign(metadata, {
-      title: 'Call not found',
-    })
+    return [{title: 'Call not found'}]
   }
   const episode = getEpisodeFromParams(callsData.episodes, params as Params)
   if (!episode) {
     console.error(
       `A call was unable to retrieve the parent's data by routes/calls`,
     )
-    // the TS defs for MetaFunction are kinda weird...
-    return Object.assign(metadata, {
-      title: 'Call not found',
-    })
+    return [{title: 'Call not found'}]
   }
   const title = `${episode.title} | Call Kent Podcast | ${episode.episodeNumber}`
   const playerUrl = episode.embedHtml.match(/src="(?<src>.+)"/)?.groups?.src
-  return {
+  return [
     ...getSocialMetas({
       title,
       description: episode.description,
@@ -73,13 +76,13 @@ export const meta: MetaFunction = ({parentsData, params}) => {
       image: episode.imageUrl,
     }),
 
-    'twitter:card': 'player',
-    'twitter:player': playerUrl ?? '',
-    'twitter:player:width': '500',
-    'twitter:player:height': '180',
-    'twitter:player:stream': episode.mediaUrl,
-    'twitter:player:stream:content_type': 'audio/mpeg',
-  }
+    {'twitter:card': 'player'},
+    {'twitter:player': playerUrl ?? ''},
+    {'twitter:player:width': '500'},
+    {'twitter:player:height': '180'},
+    {'twitter:player:stream': episode.mediaUrl},
+    {'twitter:player:stream:content_type': 'audio/mpeg'},
+  ]
 }
 
 export const loader: LoaderFunction = async ({params, request}) => {

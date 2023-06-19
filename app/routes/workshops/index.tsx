@@ -1,4 +1,4 @@
-import {type HeadersFunction, type MetaFunction} from '@remix-run/node'
+import {type HeadersFunction, type V2_MetaFunction} from '@remix-run/node'
 import {useSearchParams} from '@remix-run/react'
 import * as React from 'react'
 import {Grid} from '~/components/grid'
@@ -20,12 +20,21 @@ import {
 } from '~/utils/misc'
 import {getSocialMetas} from '~/utils/seo'
 import {type WorkshopEvent} from '~/utils/workshop-tickets.server'
-import {type LoaderData as RootLoaderData} from '../../root'
-import {useWorkshopsData} from '../workshops'
+import {type RootLoaderType, type LoaderData as RootLoaderData} from '~/root'
+import {
+  useWorkshopsData,
+  type loader as WorkshopLoader,
+  type LoaderData as WorkshopLoaderData,
+} from '../workshops'
 
-export const meta: MetaFunction = ({parentsData}) => {
-  const {requestInfo} = parentsData.root as RootLoaderData
-  const data = parentsData['routes/workshops']
+export const meta: V2_MetaFunction<
+  {},
+  {root: RootLoaderType; 'routes/workshops': typeof WorkshopLoader}
+> = ({matches}) => {
+  const {requestInfo} = matches.find(m => m.id === 'root')
+    ?.data as RootLoaderData
+  const data = matches.find(m => m.id === 'routes/workshops')
+    ?.data as WorkshopLoaderData
 
   const tagsSet = new Set<string>()
   for (const workshop of data.workshops) {
@@ -34,22 +43,20 @@ export const meta: MetaFunction = ({parentsData}) => {
     }
   }
 
-  return {
-    ...getSocialMetas({
-      title: 'Workshops with Kent C. Dodds',
-      description: `Get really good at making software with Kent C. Dodds' ${
-        data.workshops.length
-      } workshops on ${listify([...tagsSet])}`,
-      keywords: Array.from(tagsSet).join(', '),
-      url: getUrl(requestInfo),
-      image: getSocialImageWithPreTitle({
-        url: getDisplayUrl(requestInfo),
-        featuredImage: 'kent/kent-workshopping-at-underbelly',
-        preTitle: 'Check out these workshops',
-        title: `Live and remote React, TypeScript, and Testing workshops with instructor Kent C. Dodds`,
-      }),
+  return getSocialMetas({
+    title: 'Workshops with Kent C. Dodds',
+    description: `Get really good at making software with Kent C. Dodds' ${
+      data.workshops.length
+    } workshops on ${listify([...tagsSet])}`,
+    keywords: Array.from(tagsSet).join(', '),
+    url: getUrl(requestInfo),
+    image: getSocialImageWithPreTitle({
+      url: getDisplayUrl(requestInfo),
+      featuredImage: 'kent/kent-workshopping-at-underbelly',
+      preTitle: 'Check out these workshops',
+      title: `Live and remote React, TypeScript, and Testing workshops with instructor Kent C. Dodds`,
     }),
-  }
+  })
 }
 
 export const headers: HeadersFunction = ({parentHeaders}) => parentHeaders
