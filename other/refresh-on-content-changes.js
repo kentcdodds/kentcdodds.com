@@ -11,6 +11,7 @@ const chokidar = require('chokidar')
 const {postRefreshCache} = require('./utils')
 
 const refreshPath = path.join(__dirname, '../app/refresh.ignored.js')
+const safePath = s => s.replace(/\\/g, '/')
 
 chokidar
   .watch(path.join(__dirname, '../content'))
@@ -23,7 +24,12 @@ chokidar
         port: 3000,
       },
       postData: {
-        contentPaths: [updatedFile.replace(`${process.cwd()}/content/`, '')],
+        contentPaths: [
+          safePath(updatedFile).replace(
+            `${safePath(process.cwd())}/content/`,
+            '',
+          ),
+        ],
       },
     }).then(
       response => console.log(`Content change request finished.`, {response}),
