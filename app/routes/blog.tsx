@@ -5,7 +5,7 @@ import {
   type HeadersFunction,
   type LinksFunction,
   type V2_MetaFunction,
-  SerializeFrom,
+  type SerializeFrom,
 } from '@remix-run/node'
 import {Link, useLoaderData, useSearchParams} from '@remix-run/react'
 import clsx from 'clsx'
