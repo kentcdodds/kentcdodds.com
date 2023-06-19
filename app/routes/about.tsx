@@ -3,7 +3,7 @@ import {
   type HeadersFunction,
   type LinksFunction,
   type LoaderFunction,
-  type MetaFunction,
+  type V2_MetaFunction,
 } from '@remix-run/node'
 import {useLoaderData, useSearchParams} from '@remix-run/react'
 import {shuffle} from 'lodash'
@@ -35,7 +35,7 @@ import {getSocialMetas} from '~/utils/seo'
 import {getTalksAndTags} from '~/utils/talks.server'
 import {getServerTimeHeader} from '~/utils/timing.server'
 import {useRootData} from '~/utils/use-root-data'
-import {type LoaderData as RootLoaderData} from '../root'
+import {type RootLoaderType} from '~/root'
 
 type LoaderData = {
   blogRecommendations: Array<MdxListItem>
@@ -62,22 +62,23 @@ export const loader: LoaderFunction = async ({request}) => {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction = ({parentsData}) => {
-  const {requestInfo} = parentsData.root as RootLoaderData
-  return {
-    ...getSocialMetas({
-      title: 'About Kent C. Dodds',
-      description: 'Get to know Kent C. Dodds',
-      keywords: 'about, kent, kent c. dodds, kent dodds',
-      url: getUrl(requestInfo),
-      image: getSocialImageWithPreTitle({
-        url: getDisplayUrl(requestInfo),
-        featuredImage: 'kent/video-stills/snowboard-butter',
-        preTitle: 'Get to know',
-        title: `Kent C. Dodds`,
-      }),
+export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
+  matches,
+}) => {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
+  return getSocialMetas({
+    title: 'About Kent C. Dodds',
+    description: 'Get to know Kent C. Dodds',
+    keywords: 'about, kent, kent c. dodds, kent dodds',
+    url: getUrl(requestInfo),
+    image: getSocialImageWithPreTitle({
+      url: getDisplayUrl(requestInfo),
+      featuredImage: 'kent/video-stills/snowboard-butter',
+      preTitle: 'Get to know',
+      title: `Kent C. Dodds`,
     }),
-  }
+  })
 }
 
 export const links: LinksFunction = () => {
