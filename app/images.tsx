@@ -392,20 +392,23 @@ export function getRandomSportyKody(team?: OptionalTeam | undefined) {
   }
 }
 
-export function getRandomFlyingKody(team?: OptionalTeam | undefined) {
+export function getRandomFlyingKody(
+  team?: OptionalTeam | undefined,
+  randomImageNo: number = Math.random(),
+) {
   const activities = [
     kodyFlyingSnowboardingImages,
     kodyFlyingSkiingImages,
     kodyFlyingOnewheelingImages,
   ]
   const set =
-    activities[Math.floor(Math.random() * activities.length)] ??
+    activities[Math.floor(randomImageNo * activities.length)] ??
     kodySnowboardingImages
   if (team) {
     return set[team]
   } else {
     const randomTeam =
-      optionalTeams[Math.floor(Math.random() * optionalTeams.length)] ??
+      optionalTeams[Math.floor(randomImageNo * optionalTeams.length)] ??
       'UNKNOWN'
     return set[randomTeam]
   }
