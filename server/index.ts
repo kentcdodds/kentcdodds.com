@@ -17,6 +17,7 @@ import {
 import {broadcastDevReady, type ServerBuild} from '@remix-run/node'
 import chokidar from 'chokidar'
 import closeWithGrace from 'close-with-grace'
+import {type WebSocketServer} from 'ws'
 import helmet from 'helmet'
 import {getInstanceInfo} from 'litefs-js'
 import {
@@ -294,10 +295,27 @@ const server = app.listen(port, () => {
   }
 })
 
-closeWithGrace(async () => {
-  await new Promise((resolve, reject) => {
-    server.close(e => (e ? reject(e) : resolve('ok')))
+let wss: WebSocketServer | undefined
+async function startContentWatcher() {
+  const {contentWatcher} = await import('./content-watcher')
+  wss = contentWatcher(server)
+}
+
+if (process.env.NODE_ENV === 'development') {
+  startContentWatcher().catch((err: unknown) => {
+    console.error('unable to start content watcher', err)
   })
+}
+
+closeWithGrace(() => {
+  return Promise.all([
+    new Promise((resolve, reject) => {
+      server.close(e => (e ? reject(e) : resolve('ok')))
+    }),
+    new Promise((resolve, reject) => {
+      wss?.close(e => (e ? reject(e) : resolve('ok')))
+    }),
+  ])
 })
 
 // during dev, we'll keep the build module up to date with the changes
