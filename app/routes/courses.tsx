@@ -2,7 +2,7 @@ import {
   json,
   type HeadersFunction,
   type LoaderFunction,
-  type V2_MetaFunction,
+  type MetaFunction,
 } from '@remix-run/node'
 import {Link, useLoaderData} from '@remix-run/react'
 import {ArrowLink} from '~/components/arrow-button'
@@ -17,7 +17,7 @@ import {getDisplayUrl, getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {getSocialMetas} from '~/utils/seo'
 import {getTestimonials, type Testimonial} from '~/utils/testimonials.server'
 import {getServerTimeHeader} from '~/utils/timing.server'
-import {type RootLoaderType} from '~/root'
+import {type LoaderData as RootLoaderData} from '../root'
 
 type LoaderData = {
   testimonials: Array<Testimonial>
@@ -42,21 +42,20 @@ export const loader: LoaderFunction = async ({request}) => {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
-  matches,
-}) => {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
-  return getSocialMetas({
-    title: 'Courses by Kent C. Dodds',
-    description: 'Get really good at making software with Kent C. Dodds',
-    url: getUrl(requestInfo),
-    image: getGenericSocialImage({
-      url: getDisplayUrl(requestInfo),
-      featuredImage: images.onewheel.id,
-      words: `Level up your skills with self-paced courses from Kent C. Dodds`,
+export const meta: MetaFunction = ({parentsData}) => {
+  const {requestInfo} = parentsData.root as RootLoaderData
+  return {
+    ...getSocialMetas({
+      title: 'Courses by Kent C. Dodds',
+      description: 'Get really good at making software with Kent C. Dodds',
+      url: getUrl(requestInfo),
+      image: getGenericSocialImage({
+        url: getDisplayUrl(requestInfo),
+        featuredImage: images.onewheel.id,
+        words: `Level up your skills with self-paced courses from Kent C. Dodds`,
+      }),
     }),
-  })
+  }
 }
 
 function CoursesHome() {

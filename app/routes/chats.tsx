@@ -3,7 +3,7 @@ import {
   json,
   type HeadersFunction,
   type LoaderFunction,
-  type V2_MetaFunction,
+  type MetaFunction,
 } from '@remix-run/node'
 import {
   Link,
@@ -34,7 +34,6 @@ import {getCWKEpisodePath, getFeaturedEpisode} from '~/utils/chats-with-kent'
 import {
   formatDuration,
   getDisplayUrl,
-  getOrigin,
   getUrl,
   listify,
   reuseUsefulLoaderHeaders,
@@ -44,7 +43,7 @@ import {getSocialMetas} from '~/utils/seo'
 import {getSeasonListItems} from '~/utils/simplecast.server'
 import {getServerTimeHeader} from '~/utils/timing.server'
 import {externalLinks} from '../external-links'
-import {type RootLoaderType} from '~/root'
+import {type LoaderData as RootLoaderData} from '../root'
 
 type LoaderData = {
   seasons: Await<ReturnType<typeof getSeasonListItems>>
@@ -71,35 +70,35 @@ export const loader: LoaderFunction = async ({request}) => {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
-  data,
-  matches,
-}) => {
+export const meta: MetaFunction = ({data, parentsData}) => {
   const {seasons} = (data as LoaderData | undefined) ?? {}
   if (!seasons) {
-    return [{title: 'Chats with Kent Seasons not found'}]
+    return {
+      title: 'Chats with Kent Seasons not found',
+    }
   }
   const episodeCount = seasons.reduce(
     (acc, season) => acc + season.episodes.length,
     0,
   )
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
+  const {requestInfo} = parentsData.root as RootLoaderData
 
-  return getSocialMetas({
-    title: 'Chats with Kent C. Dodds Podcast',
-    description: `Become a better person with ${episodeCount} interesting and actionable conversations with interesting people.`,
-    keywords: `chats with kent, kent c. dodds`,
-    url: getUrl(requestInfo),
-    image: getGenericSocialImage({
-      words: 'Listen to the Chats with Kent Podcast',
-      featuredImage: images.kayak.id,
-      url: getDisplayUrl({
-        origin: getOrigin(requestInfo),
-        path: '/chats',
+  return {
+    ...getSocialMetas({
+      title: 'Chats with Kent C. Dodds Podcast',
+      description: `Become a better person with ${episodeCount} interesting and actionable conversations with interesting people.`,
+      keywords: `chats with kent, kent c. dodds`,
+      url: getUrl(requestInfo),
+      image: getGenericSocialImage({
+        words: 'Listen to the Chats with Kent Podcast',
+        featuredImage: images.kayak.id,
+        url: getDisplayUrl({
+          origin: requestInfo.origin,
+          path: '/chats',
+        }),
       }),
     }),
-  })
+  }
 }
 
 function PodcastHome() {

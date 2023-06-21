@@ -5,7 +5,7 @@ import {
   type ActionFunction,
   type DataFunctionArgs,
   type HeadersFunction,
-  type V2_MetaFunction,
+  type MetaFunction,
 } from '@remix-run/node'
 import {Form, useActionData, useLoaderData} from '@remix-run/react'
 import clsx from 'clsx'
@@ -30,7 +30,6 @@ import {
   getDisplayUrl,
   getDomainUrl,
   getErrorMessage,
-  getOrigin,
   getTeam,
   getUrl,
   reuseUsefulLoaderHeaders,
@@ -55,28 +54,27 @@ import {
   deleteDiscordCache,
   gravatarExistsForEmail,
 } from '~/utils/user-info.server'
-import {type RootLoaderType} from '~/root'
+import {type LoaderData as RootLoaderData} from '../root'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
 }
 
-export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
-  matches,
-}) => {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
-  const domain = new URL(getOrigin(requestInfo)).host
-  return getSocialMetas({
-    title: `Your account on ${domain}`,
-    description: `Personal account information on ${domain}.`,
-    url: getUrl(requestInfo),
-    image: getGenericSocialImage({
-      url: getDisplayUrl(requestInfo),
-      featuredImage: images.kodySnowboardingGray(),
-      words: `View your account info on ${domain}`,
+export const meta: MetaFunction = ({parentsData}) => {
+  const {requestInfo} = parentsData.root as RootLoaderData
+  const domain = new URL(requestInfo.origin).host
+  return {
+    ...getSocialMetas({
+      title: `Your account on ${domain}`,
+      description: `Personal account information on ${domain}.`,
+      url: getUrl(requestInfo),
+      image: getGenericSocialImage({
+        url: getDisplayUrl(requestInfo),
+        featuredImage: images.kodySnowboardingGray(),
+        words: `View your account info on ${domain}`,
+      }),
     }),
-  })
+  }
 }
 
 export async function loader({request}: DataFunctionArgs) {

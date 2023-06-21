@@ -4,7 +4,8 @@ import {
   type DataFunctionArgs,
   type HeadersFunction,
   type LinksFunction,
-  type V2_MetaFunction,
+  type MetaFunction,
+  type SerializeFrom,
 } from '@remix-run/node'
 import {Link, useLoaderData, useSearchParams} from '@remix-run/react'
 import clsx from 'clsx'
@@ -51,7 +52,7 @@ import {getSocialMetas} from '~/utils/seo'
 import {useTeam} from '~/utils/team-provider'
 import {getServerTimeHeader} from '~/utils/timing.server'
 import {useRootData} from '~/utils/use-root-data'
-import {type RootLoaderType} from '~/root'
+import {type LoaderData as RootLoaderData} from '../root'
 
 const handleId = 'blog'
 export const handle: KCDHandle = {
@@ -122,29 +123,27 @@ export async function loader({request}: DataFunctionArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
-  data,
-  matches,
-}) => {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
-  const {totalBlogReaders, posts} = data
+export const meta: MetaFunction = ({data, parentsData}) => {
+  const {requestInfo} = parentsData.root as RootLoaderData
+  const {totalBlogReaders, posts} = data as SerializeFrom<typeof loader>
 
-  return getSocialMetas({
-    title: 'The Kent C. Dodds Blog',
-    description: `Join ${totalBlogReaders} people who have read Kent's ${formatNumber(
-      posts.length,
-    )} articles on JavaScript, TypeScript, React, Testing, Career, and more.`,
-    keywords:
-      'JavaScript, TypeScript, React, Testing, Career, Software Development, Kent C. Dodds Blog',
-    url: getUrl(requestInfo),
-    image: getSocialImageWithPreTitle({
-      url: getDisplayUrl(requestInfo),
-      featuredImage: images.skis.id,
-      preTitle: 'Check out this Blog',
-      title: `Priceless insights, ideas, and experiences for your dev work`,
+  return {
+    ...getSocialMetas({
+      title: 'The Kent C. Dodds Blog',
+      description: `Join ${totalBlogReaders} people who have read Kent's ${formatNumber(
+        posts.length,
+      )} articles on JavaScript, TypeScript, React, Testing, Career, and more.`,
+      keywords:
+        'JavaScript, TypeScript, React, Testing, Career, Software Development, Kent C. Dodds Blog',
+      url: getUrl(requestInfo),
+      image: getSocialImageWithPreTitle({
+        url: getDisplayUrl(requestInfo),
+        featuredImage: images.skis.id,
+        preTitle: 'Check out this Blog',
+        title: `Priceless insights, ideas, and experiences for your dev work`,
+      }),
     }),
-  })
+  }
 }
 
 // should be divisible by 3 and 2 (large screen, and medium screen).

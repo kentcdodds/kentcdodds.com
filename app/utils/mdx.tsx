@@ -22,14 +22,13 @@ import {
   getUrl,
   typedBoolean,
 } from '~/utils/misc'
-import {type RootLoaderType} from '~/root'
+import {type LoaderData as RootLoaderData} from '../root'
 import {cache, cachified} from './cache.server'
 import {markdownToHtmlUnwrapped, stripHtml} from './markdown.server'
 import {getSocialMetas} from './seo'
 import {Themed} from './theme-provider'
 import {type Timings} from './timing.server'
 import {useOptionalUser} from './use-root-data'
-import {type V2_MetaArgs} from '@remix-run/node'
 
 type CachifiedOptions = {
   forceFresh?: boolean | string
@@ -328,34 +327,25 @@ async function getBlogMdxListItems(options: CachifiedOptions) {
   })
 }
 
-type ExtraMeta = Array<{[key: string]: string}>
-
 function mdxPageMeta({
   data,
-  matches,
+  parentsData,
 }: {
   data: {page: MdxPage | null} | null
-  matches: V2_MetaArgs<{}, {root: RootLoaderType}>['matches']
+  parentsData: {root: RootLoaderData}
 }) {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
+  const {requestInfo} = parentsData.root
   if (data?.page) {
     // NOTE: keyword metadata is not used because it was used and abused by
     // spammers. We use them for sorting on our own site, but we don't list
     // it in the meta tags because it's possible to be penalized for doing so.
-    const {keywords, ...extraMetaInfo} = data.page.frontmatter.meta ?? {}
-    const extraMeta: ExtraMeta = Object.entries(extraMetaInfo).reduce(
-      (acc: ExtraMeta, [key, val]) => [...acc, {[key]: String(val)}],
-      [],
-    )
-
+    const {keywords, ...extraMeta} = data.page.frontmatter.meta ?? {}
     let title = data.page.frontmatter.title
     const isDraft = data.page.frontmatter.draft
     const isUnlisted = data.page.frontmatter.unlisted
     if (isDraft) title = `(DRAFT) ${title ?? ''}`
-
-    return [
-      isDraft || isUnlisted ? {robots: 'noindex'} : null,
+    return {
+      ...(isDraft || isUnlisted ? {robots: 'noindex'} : null),
       ...getSocialMetas({
         title,
         description: data.page.frontmatter.description,
@@ -375,15 +365,13 @@ function mdxPageMeta({
         }),
       }),
       ...extraMeta,
-    ].filter(typedBoolean)
+    }
   } else {
-    return [
-      {title: 'Not found'},
-      {
-        description:
-          'You landed on a page that Kody the Coding Koala could not find 🐨😢',
-      },
-    ]
+    return {
+      title: 'Not found',
+      description:
+        'You landed on a page that Kody the Coding Koala could not find 🐨😢',
+    }
   }
 }
 

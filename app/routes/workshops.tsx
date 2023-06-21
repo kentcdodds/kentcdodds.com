@@ -14,7 +14,7 @@ export const handle: KCDHandle & {id: string} = {
   id: 'workshops',
 }
 
-export type LoaderData = {
+type LoaderData = {
   workshops: Array<Workshop>
   workshopEvents: Array<WorkshopEvent>
   tags: Array<string>

@@ -2,7 +2,7 @@ import {
   json,
   type HeadersFunction,
   type LoaderFunction,
-  type V2_MetaFunction,
+  type MetaFunction,
 } from '@remix-run/node'
 import {useLoaderData} from '@remix-run/react'
 import {shuffle} from 'lodash'
@@ -34,14 +34,9 @@ import {
 } from '~/images'
 import {type Await} from '~/types'
 import {getPeople} from '~/utils/credits.server'
-import {
-  getDisplayUrl,
-  getOrigin,
-  getUrl,
-  reuseUsefulLoaderHeaders,
-} from '~/utils/misc'
+import {getDisplayUrl, getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {getSocialMetas} from '~/utils/seo'
-import {type RootLoaderType} from '~/root'
+import {type LoaderData as RootLoaderData} from '../root'
 
 export type LoaderData = {people: Await<ReturnType<typeof getPeople>>}
 
@@ -59,23 +54,22 @@ export const loader: LoaderFunction = async ({request}) => {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
-  matches,
-}) => {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
-  const domain = new URL(getOrigin(requestInfo)).host
-  return getSocialMetas({
-    title: `Who built ${domain}`,
-    description: `It took a team of people to create ${domain}. This page will tell you a little bit about them.`,
-    url: getUrl(requestInfo),
-    image: getSocialImageWithPreTitle({
-      url: getDisplayUrl(requestInfo),
-      featuredImage: images.kentCodingOnCouch.id,
-      title: `The fantastic people who built ${domain}`,
-      preTitle: 'Check out these people',
+export const meta: MetaFunction = ({parentsData}) => {
+  const {requestInfo} = parentsData.root as RootLoaderData
+  const domain = new URL(requestInfo.origin).host
+  return {
+    ...getSocialMetas({
+      title: `Who built ${domain}`,
+      description: `It took a team of people to create ${domain}. This page will tell you a little bit about them.`,
+      url: getUrl(requestInfo),
+      image: getSocialImageWithPreTitle({
+        url: getDisplayUrl(requestInfo),
+        featuredImage: images.kentCodingOnCouch.id,
+        title: `The fantastic people who built ${domain}`,
+        preTitle: 'Check out these people',
+      }),
     }),
-  })
+  }
 }
 
 type Person = LoaderData['people'][number]

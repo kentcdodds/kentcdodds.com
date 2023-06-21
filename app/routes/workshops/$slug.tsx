@@ -2,7 +2,7 @@ import {
   json,
   type HeadersFunction,
   type LoaderFunction,
-  type V2_MetaFunction,
+  type MetaFunction,
 } from '@remix-run/node'
 import {Link, useCatch, useLoaderData, useParams} from '@remix-run/react'
 import * as React from 'react'
@@ -36,12 +36,8 @@ import {getServerTimeHeader} from '~/utils/timing.server'
 import {type WorkshopEvent} from '~/utils/workshop-tickets.server'
 import {getWorkshops} from '~/utils/workshops.server'
 import {ConvertKitForm} from '../../convertkit/form'
-import {type RootLoaderType, type LoaderData as RootLoaderData} from '~/root'
-import {
-  useWorkshopsData,
-  type loader as WorkshopLoader,
-  type LoaderData as WorkshopLoaderData,
-} from '../workshops'
+import {type LoaderData as RootLoaderData} from '../../root'
+import {useWorkshopsData} from '../workshops'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
@@ -99,38 +95,35 @@ export const loader: LoaderFunction = async ({params, request}) => {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: V2_MetaFunction<
-  {},
-  {root: RootLoaderType; 'routes/workshops': typeof WorkshopLoader}
-> = ({matches, params}) => {
-  const {requestInfo} = matches.find(m => m.id === 'root')
-    ?.data as RootLoaderData
+export const meta: MetaFunction = ({parentsData, params}) => {
+  const {requestInfo} = parentsData.root as RootLoaderData
+
   let workshop: Workshop | undefined
-  const workshopsData = matches.find(m => m.id === 'routes/workshops')?.data as
-    | WorkshopLoaderData
-    | undefined
+  const workshopsData = parentsData['routes/workshops']
   if (Array.isArray(workshopsData?.workshops)) {
     workshop = workshopsData?.workshops.find(
       (w: {slug?: string}) => w.slug === params.slug,
     )
   }
 
-  return getSocialMetas({
-    title: workshop ? workshop.title : 'Workshop not found',
-    description: workshop ? workshop.description : 'No workshop here :(',
-    ...workshop?.meta,
-    keywords:
-      workshop?.meta.keywords?.join(',') ??
-      workshop?.categories.join(',') ??
-      '',
-    url: getUrl(requestInfo),
-    image: getSocialImageWithPreTitle({
-      url: getDisplayUrl(requestInfo),
-      featuredImage: 'kent/kent-workshopping-at-underbelly',
-      preTitle: 'Check out this workshop',
+  return {
+    ...getSocialMetas({
       title: workshop ? workshop.title : 'Workshop not found',
+      description: workshop ? workshop.description : 'No workshop here :(',
+      ...workshop?.meta,
+      keywords:
+        workshop?.meta.keywords?.join(',') ??
+        workshop?.categories.join(',') ??
+        '',
+      url: getUrl(requestInfo),
+      image: getSocialImageWithPreTitle({
+        url: getDisplayUrl(requestInfo),
+        featuredImage: 'kent/kent-workshopping-at-underbelly',
+        preTitle: 'Check out this workshop',
+        title: workshop ? workshop.title : 'Workshop not found',
+      }),
     }),
-  })
+  }
 }
 
 interface TopicRowProps {

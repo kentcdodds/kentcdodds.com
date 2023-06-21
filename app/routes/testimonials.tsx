@@ -2,7 +2,7 @@ import {
   json,
   type DataFunctionArgs,
   type HeadersFunction,
-  type V2_MetaFunction,
+  type MetaFunction,
 } from '@remix-run/node'
 import {useLoaderData} from '@remix-run/react'
 import {ArrowLink} from '~/components/arrow-button'
@@ -20,26 +20,25 @@ import {getDisplayUrl, getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {getSocialMetas} from '~/utils/seo'
 import {getTestimonials} from '~/utils/testimonials.server'
 import {getServerTimeHeader} from '~/utils/timing.server'
-import {type RootLoaderType} from '~/root'
+import {type LoaderData as RootLoaderData} from '../root'
 
-export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
-  data,
-  matches,
-}) => {
-  const testimonials = data.testimonials
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
-  const title = `${testimonials.length} testimonials about Kent C. Dodds`
-  return getSocialMetas({
-    title,
-    description: `Check out ${testimonials.length} testimonials about Kent C. Dodds and how the things he's done has helped people in their goals.`,
-    url: getUrl(requestInfo),
-    image: getGenericSocialImage({
-      url: getDisplayUrl(requestInfo),
-      featuredImage: images.kentHoldingOutCody.id,
-      words: title,
+export const meta: MetaFunction<typeof loader> = ({data, parentsData}) => {
+  const {testimonials} = data
+  const {requestInfo} = parentsData.root as RootLoaderData
+  const testimonialCount = testimonials.length
+  const title = `${testimonialCount} testimonials about Kent C. Dodds`
+  return {
+    ...getSocialMetas({
+      title,
+      description: `Check out ${testimonialCount} testimonials about Kent C. Dodds and how the things he's done has helped people in their goals.`,
+      url: getUrl(requestInfo),
+      image: getGenericSocialImage({
+        url: getDisplayUrl(requestInfo),
+        featuredImage: images.kentHoldingOutCody.id,
+        words: title,
+      }),
     }),
-  })
+  }
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders

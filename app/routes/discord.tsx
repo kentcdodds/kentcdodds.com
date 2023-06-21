@@ -9,7 +9,7 @@ import {
   json,
   type HeadersFunction,
   type LoaderFunction,
-  type V2_MetaFunction,
+  type MetaFunction,
 } from '@remix-run/node'
 import {Outlet, useLoaderData} from '@remix-run/react'
 import {motion} from 'framer-motion'
@@ -48,7 +48,7 @@ import {getTestimonials, type Testimonial} from '~/utils/testimonials.server'
 import {getServerTimeHeader} from '~/utils/timing.server'
 import {useRootData} from '~/utils/use-root-data'
 import {externalLinks} from '../external-links'
-import {type RootLoaderType} from '~/root'
+import {type LoaderData as RootLoaderData} from '../root'
 
 type LoaderData = {
   testimonials: Array<Testimonial>
@@ -75,22 +75,21 @@ export const loader: LoaderFunction = async ({request}) => {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
-  matches,
-}) => {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
-  return getSocialMetas({
-    title: 'The KCD Community on Discord',
-    description:
-      'Make friends, share ideas, connect, network, and improve yourself in the KCD Community on Discord',
-    url: getUrl(requestInfo),
-    image: getGenericSocialImage({
-      url: getDisplayUrl(requestInfo),
-      featuredImage: images.helmet.id,
-      words: `Join the KCD Community on Discord`,
+export const meta: MetaFunction = ({parentsData}) => {
+  const {requestInfo} = parentsData.root as RootLoaderData
+  return {
+    ...getSocialMetas({
+      title: 'The KCD Community on Discord',
+      description:
+        'Make friends, share ideas, connect, network, and improve yourself in the KCD Community on Discord',
+      url: getUrl(requestInfo),
+      image: getGenericSocialImage({
+        url: getDisplayUrl(requestInfo),
+        featuredImage: images.helmet.id,
+        words: `Join the KCD Community on Discord`,
+      }),
     }),
-  })
+  }
 }
 
 export interface CategoryCardProps {

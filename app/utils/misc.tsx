@@ -277,13 +277,11 @@ function getDisplayUrl(requestInfo?: {origin: string; path: string}) {
   return getUrl(requestInfo).replace(/^https?:\/\//, '')
 }
 
-function getOrigin(requestInfo?: {origin?: string; path: string}) {
-  return requestInfo?.origin ?? 'https://kentcdodds.com'
-}
-
 function getUrl(requestInfo?: {origin: string; path: string}) {
   return removeTrailingSlash(
-    `${getOrigin(requestInfo)}${requestInfo?.path ?? ''}`,
+    `${requestInfo?.origin ?? 'https://kentcdodds.com'}${
+      requestInfo?.path ?? ''
+    }`,
   )
 }
 
@@ -431,7 +429,6 @@ export {
   getDomainUrl,
   getUrl,
   getDisplayUrl,
-  getOrigin,
   toBase64,
   removeTrailingSlash,
   reuseUsefulLoaderHeaders,

@@ -2,7 +2,6 @@ import {
   json,
   type DataFunctionArgs,
   type HeadersFunction,
-  type V2_MetaFunction,
 } from '@remix-run/node'
 import {useCatch, useLoaderData} from '@remix-run/react'
 import * as React from 'react'
@@ -67,7 +66,7 @@ export async function loader({params, request}: DataFunctionArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: V2_MetaFunction = mdxPageMeta
+export const meta = mdxPageMeta
 
 export default function MdxScreen() {
   const data = useLoaderData<typeof loader>()

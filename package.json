@@ -22,7 +22,7 @@
     "postinstall": "patch-package --patch-dir other/patches",
     "prepare": "husky install || true",
     "css:watch": "npm run build:css -- --w",
-    "clean": "rimraf ./node_modules/.cache ./server/dist ./build ./public/build  --glob \"./app/styles/**/*.css\"",
+    "clean": "rimraf ./node_modules/.cache ./server/dist ./build ./public/build \"./app/styles/**/*.css\"",
     "prebuild": "npm run clean && echo All clean ✨",
     "build:css": "postcss styles/**/*.css --base styles --dir app/styles",
     "build:css:prod": "npm run build:css -- --env production",
