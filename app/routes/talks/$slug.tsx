@@ -12,10 +12,10 @@ import {type RootLoaderType, type LoaderData as RootLoaderData} from '~/root'
 
 export const meta: V2_MetaFunction<
   {},
-  {root: RootLoaderType; 'routes/calls': typeof TalkLoader}
+  {root: RootLoaderType; 'routes/talks': typeof TalkLoader}
 > = ({matches, params}) => {
   const {talks = []} =
-    (matches.find(m => m.id === 'routes/calls')?.data as
+    (matches.find(m => m.id === 'routes/talks')?.data as
       | TalksLoaderData
       | undefined) ?? {}
   const {requestInfo} = matches.find(m => m.id === 'root')

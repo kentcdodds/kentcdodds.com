@@ -430,8 +430,9 @@ function App() {
       className={clsx(theme, `set-color-team-current-${team.toLowerCase()}`)}
     >
       <head>
-        <meta charSet="utf-8" />
         <Meta />
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 
         <CanonicalLink
           origin={data.requestInfo.origin}
