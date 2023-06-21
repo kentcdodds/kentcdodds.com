@@ -3,7 +3,7 @@ import {
   redirect,
   type HeadersFunction,
   type LoaderFunction,
-  type MetaFunction,
+  type V2_MetaFunction,
 } from '@remix-run/node'
 import {Link, useCatch, useLoaderData, useLocation} from '@remix-run/react'
 import clsx from 'clsx'
@@ -32,6 +32,7 @@ import {getCWKEpisodePath, getFeaturedEpisode} from '~/utils/chats-with-kent'
 import {
   formatDuration,
   getDisplayUrl,
+  getOrigin,
   getUrl,
   listify,
   reuseUsefulLoaderHeaders,
@@ -42,7 +43,7 @@ import {getSeasons} from '~/utils/simplecast.server'
 import {Themed} from '~/utils/theme-provider'
 import {getServerTimeHeader} from '~/utils/timing.server'
 import {useRootData} from '~/utils/use-root-data'
-import {type LoaderData as RootLoaderData} from '../root'
+import {type RootLoaderType} from '~/root'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
@@ -62,13 +63,15 @@ export const handle: KCDHandle = {
   },
 }
 
-export const meta: MetaFunction = ({data, parentsData}) => {
+export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
+  data,
+  matches,
+}) => {
   const episode = (data as LoaderData | undefined)?.episode
-  const {requestInfo} = parentsData.root as RootLoaderData
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
   if (!episode) {
-    return {
-      title: 'Chats with Kent Episode not found',
-    }
+    return [{title: 'Chats with Kent Episode not found'}]
   }
   const {
     description,
@@ -80,7 +83,7 @@ export const meta: MetaFunction = ({data, parentsData}) => {
   } = episode
   const title = `${episode.title} | Chats with Kent Podcast | ${episodeNumber}`
   const playerUrl = `https://player.simplecast.com/${simpleCastId}`
-  return {
+  return [
     ...getSocialMetas({
       title,
       description,
@@ -93,18 +96,18 @@ export const meta: MetaFunction = ({data, parentsData}) => {
         preTitle: 'Check out this Podcast',
         featuredImage: image,
         url: getDisplayUrl({
-          origin: requestInfo.origin,
+          origin: getOrigin(requestInfo),
           path: getCWKEpisodePath({seasonNumber, episodeNumber}),
         }),
       }),
     }),
-    'twitter:card': 'player',
-    'twitter:player': playerUrl,
-    'twitter:player:width': '436',
-    'twitter:player:height': '196',
-    'twitter:player:stream': mediaUrl,
-    'twitter:player:stream:content_type': 'audio/mpeg',
-  }
+    {'twitter:card': 'player'},
+    {'twitter:player': playerUrl},
+    {'twitter:player:width': '436'},
+    {'twitter:player:height': '196'},
+    {'twitter:player:stream': mediaUrl},
+    {'twitter:player:stream:content_type': 'audio/mpeg'},
+  ]
 }
 
 type LoaderData = {

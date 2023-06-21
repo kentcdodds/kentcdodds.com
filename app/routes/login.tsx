@@ -4,7 +4,7 @@ import {
   type ActionFunction,
   type HeadersFunction,
   type LoaderFunction,
-  type MetaFunction,
+  type V2_MetaFunction,
 } from '@remix-run/node'
 import {Form, useLoaderData} from '@remix-run/react'
 import * as React from 'react'
@@ -21,6 +21,7 @@ import {
   getDisplayUrl,
   getDomainUrl,
   getErrorMessage,
+  getOrigin,
   getUrl,
   reuseUsefulLoaderHeaders,
 } from '~/utils/misc'
@@ -28,7 +29,7 @@ import {prisma} from '~/utils/prisma.server'
 import {getSocialMetas} from '~/utils/seo'
 import {getUser, sendToken} from '~/utils/session.server'
 import {verifyEmailAddress} from '~/utils/verifier.server'
-import {type LoaderData as RootLoaderData} from '../root'
+import {type RootLoaderType} from '~/root'
 
 type LoaderData = {
   email?: string
@@ -57,21 +58,22 @@ export const loader: LoaderFunction = async ({request}) => {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction = ({parentsData}) => {
-  const {requestInfo} = parentsData.root as RootLoaderData
-  const domain = new URL(requestInfo.origin).host
-  return {
-    ...getSocialMetas({
-      title: `Login to ${domain}`,
-      description: `Sign up or login to ${domain} to join a team and learn together.`,
-      url: getUrl(requestInfo),
-      image: getGenericSocialImage({
-        url: getDisplayUrl(requestInfo),
-        featuredImage: images.skis.id,
-        words: `Login to your account on ${domain}`,
-      }),
+export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
+  matches,
+}) => {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
+  const domain = new URL(getOrigin(requestInfo)).host
+  return getSocialMetas({
+    title: `Login to ${domain}`,
+    description: `Sign up or login to ${domain} to join a team and learn together.`,
+    url: getUrl(requestInfo),
+    image: getGenericSocialImage({
+      url: getDisplayUrl(requestInfo),
+      featuredImage: images.skis.id,
+      words: `Login to your account on ${domain}`,
     }),
-  }
+  })
 }
 
 export const action: ActionFunction = async ({request}) => {
