@@ -5,6 +5,7 @@ import {
   type HeadersFunction,
   type LinksFunction,
   type V2_MetaFunction,
+  type SerializeFrom,
 } from '@remix-run/node'
 import {Link, useLoaderData, useSearchParams} from '@remix-run/react'
 import clsx from 'clsx'
@@ -128,8 +129,7 @@ export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
 }) => {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
-  const {totalBlogReaders, posts} = data
-
+  const {totalBlogReaders, posts} = data as SerializeFrom<typeof loader>
   return getSocialMetas({
     title: 'The Kent C. Dodds Blog',
     description: `Join ${totalBlogReaders} people who have read Kent's ${formatNumber(

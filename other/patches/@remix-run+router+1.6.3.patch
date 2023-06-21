@@ -1,0 +1,28 @@
+diff --git a/node_modules/@remix-run/router/dist/router.js b/node_modules/@remix-run/router/dist/router.js
+index 3ca3a69..4866aad 100644
+--- a/node_modules/@remix-run/router/dist/router.js
++++ b/node_modules/@remix-run/router/dist/router.js
+@@ -3051,6 +3051,7 @@ function normalizeNavigateOptions(normalizeFormMethod, isFetcher, path, opts) {
+       formMethod: normalizeFormMethod ? formMethod.toUpperCase() : formMethod.toLowerCase(),
+       formAction: stripHashFromPath(path),
+       formEncType: opts && opts.formEncType || "application/x-www-form-urlencoded",
++      headers: opts.headers,
+       formData: opts.formData
+     };
+     if (isMutationMethod(submission.formMethod)) {
+@@ -3440,6 +3441,7 @@ function createClientSideRequest(history, location, signal, submission) {
+     let {
+       formMethod,
+       formEncType,
++      headers,
+       formData
+     } = submission;
+     // Didn't think we needed this but it turns out unlike other methods, patch
+@@ -3447,6 +3449,7 @@ function createClientSideRequest(history, location, signal, submission) {
+     // See: https://fetch.spec.whatwg.org/#concept-method
+     init.method = formMethod.toUpperCase();
+     init.body = formEncType === "application/x-www-form-urlencoded" ? convertFormDataToSearchParams(formData) : formData;
++    init.headers = headers ? new Headers(headers) : undefined;
+   }
+   // Content-Type is inferred (https://fetch.spec.whatwg.org/#dom-request)
+   return new Request(url, init);

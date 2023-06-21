@@ -37,6 +37,7 @@ type LoaderData = {
   currentBlogLeaderTeam: Team | undefined
   blogRecommendations: Array<MdxListItem>
   kodyTeam: OptionalTeam
+  randomImageNo: number
 }
 
 export const loader: LoaderFunction = async ({request}) => {
@@ -72,6 +73,7 @@ export const loader: LoaderFunction = async ({request}) => {
     kodyTeam: getOptionalTeam(
       user?.team ?? teams[Math.floor(Math.random() * teams.length)],
     ),
+    randomImageNo: Math.random(),
   }
   return json(data, {
     headers: {
@@ -86,7 +88,7 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export default function IndexRoute() {
   const data = useLoaderData<LoaderData>()
-  const kodyFlying = getRandomFlyingKody(data.kodyTeam)
+  const kodyFlying = getRandomFlyingKody(data.kodyTeam, data.randomImageNo)
   return (
     <div>
       <HeroSection

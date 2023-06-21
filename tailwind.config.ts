@@ -1,10 +1,13 @@
-const path = require('path')
-const defaultTheme = require('tailwindcss/defaultTheme')
-const fromRoot = p => path.join(__dirname, p)
+import path from 'path'
+import {type Config} from 'tailwindcss'
+import defaultTheme from 'tailwindcss/defaultTheme.js'
+import typography from '@tailwindcss/typography'
+import aspectRatio from '@tailwindcss/aspect-ratio'
 
-module.exports = {
-  // the NODE_ENV thing is for https://github.com/Acidic9/prettier-plugin-tailwind/issues/29
-  mode: process.env.NODE_ENV ? 'jit' : undefined,
+const fromRoot = (p: string) => path.join(__dirname, p)
+
+export default {
+  mode: 'jit',
   content: [fromRoot('./app/**/*.+(js|jsx|ts|tsx|mdx|md)')],
   darkMode: 'class',
   corePlugins: {
@@ -114,9 +117,9 @@ module.exports = {
         135: '135deg',
       },
 
-      typography: theme => {
+      typography: (theme: any) => {
         // some fontSizes return [size, props], others just size :/
-        const fontSize = size => {
+        const fontSize = (size: string) => {
           const result = theme(`fontSize.${size}`)
           return Array.isArray(result) ? result[0] : result
         }
@@ -326,9 +329,5 @@ module.exports = {
       },
     },
   },
-  plugins: [
-    require('@tailwindcss/typography'),
-    require('@tailwindcss/aspect-ratio'),
-    require('@tailwindcss/line-clamp'),
-  ],
-}
+  plugins: [typography, aspectRatio],
+} satisfies Config

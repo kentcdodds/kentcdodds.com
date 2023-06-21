@@ -8,14 +8,6 @@ import {routes as otherRoutes} from './other-routes.server'
 import {getEnv} from './utils/env.server'
 import {NonceProvider} from './utils/nonce-provider'
 
-if (process.env.NODE_ENV === 'development') {
-  try {
-    require('./refresh.ignored')
-  } catch {
-    // ignore
-  }
-}
-
 global.ENV = getEnv()
 
 const ABORT_DELAY = 5000

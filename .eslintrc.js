@@ -9,6 +9,7 @@ module.exports = {
   parserOptions: {
     tsconfigRootDir: __dirname,
     project: './tsconfig.json',
+    ecmaVersion: 2022,
   },
   rules: {
     'no-console': 'off',

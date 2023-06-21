@@ -33,8 +33,6 @@ export const commitShaKey = 'meta:last-refresh-commit-sha'
 
 export async function action({request}: DataFunctionArgs) {
   await ensurePrimary()
-  // Everything in this function is fire and forget, so we don't need to await
-  // anything.
   if (
     request.headers.get('auth') !==
     getRequiredServerEnvVar('REFRESH_CACHE_SECRET')
@@ -72,6 +70,7 @@ export async function action({request}: DataFunctionArgs) {
   }
   if ('contentPaths' in body && Array.isArray(body.contentPaths)) {
     const refreshingContentPaths = []
+    const promises = []
     for (const contentPath of body.contentPaths) {
       if (typeof contentPath !== 'string') {
         continue
@@ -85,36 +84,42 @@ export async function action({request}: DataFunctionArgs) {
         const slug = path.parse(dirOrFilename).name
 
         refreshingContentPaths.push(contentPath)
-        void getMdxPage({contentDir, slug}, {forceFresh: true})
+        promises.push(getMdxPage({contentDir, slug}, {forceFresh: true}))
       }
       if (contentPath.startsWith('workshops')) {
         refreshingContentPaths.push(contentPath)
-        void getWorkshops({forceFresh: true})
+        promises.push(getWorkshops({forceFresh: true}))
       }
       if (contentPath === 'data/testimonials.yml') {
         refreshingContentPaths.push(contentPath)
-        void getTestimonials({forceFresh: true})
+        promises.push(getTestimonials({forceFresh: true}))
       }
       if (contentPath === 'data/talks.yml') {
         refreshingContentPaths.push(contentPath)
-        void getTalksAndTags({forceFresh: true})
+        promises.push(getTalksAndTags({forceFresh: true}))
       }
       if (contentPath === 'data/credits.yml') {
         refreshingContentPaths.push(contentPath)
-        void getPeople({forceFresh: true})
+        promises.push(getPeople({forceFresh: true}))
       }
     }
 
     // if any blog contentPaths were changed then let's update the dir list
     // so it will appear on the blog page.
     if (refreshingContentPaths.some(p => p.startsWith('blog'))) {
-      void getBlogMdxListItems({
-        request,
-        forceFresh: 'blog:dir-list,blog:mdx-list-items',
-      })
+      promises.push(
+        getBlogMdxListItems({
+          request,
+          forceFresh: 'blog:dir-list,blog:mdx-list-items',
+        }),
+      )
     }
     if (refreshingContentPaths.some(p => p.startsWith('pages'))) {
-      void getMdxDirList('pages', {forceFresh: true})
+      promises.push(getMdxDirList('pages', {forceFresh: true}))
+    }
+
+    if (promises.length) {
+      await Promise.all(promises)
     }
 
     setShaInCache()

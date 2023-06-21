@@ -1,23 +1,32 @@
 const fsExtra = require('fs-extra')
 const path = require('path')
-const glob = require('glob')
+const {globSync} = require('glob')
 const pkg = require('../package.json')
 
-const here = (...s) => path.join(__dirname, ...s)
+const globsafe = s => s.replace(/\\/g, '/')
+const here = (...s) => globsafe(path.join(__dirname, ...s))
 
-const allFiles = glob.sync(here('../server/**/*.*'), {
-  ignore: ['**/tsconfig.json', '**/eslint*', '**/__tests__/**'],
+const allFiles = globSync(here('../server/**/*.*'), {
+  ignore: [
+    'server/dev-server.js', // for development only
+    'server/content-watcher.ts', // for development only
+    '**/tsconfig.json',
+    '**/eslint*',
+    '**/__tests__/**',
+  ],
 })
 
 const entries = []
+const outdir = here('../server-build')
 for (const file of allFiles) {
   if (/\.(ts|js|tsx|jsx)$/.test(file)) {
     entries.push(file)
   } else {
-    const dest = file.replace(here('../server'), here('../server-build'))
-    fsExtra.ensureDir(path.parse(dest).dir)
+    const filename = path.basename(file)
+    const dest = path.join(outdir, filename)
+    fsExtra.ensureDirSync(outdir)
     fsExtra.copySync(file, dest)
-    console.log(`copied: ${file.replace(`${here('../server')}/`, '')}`)
+    console.log(`copied: ${filename}`)
   }
 }
 
@@ -26,10 +35,11 @@ console.log('building...')
 
 require('esbuild')
   .build({
-    entryPoints: glob.sync(here('../server/**/*.+(ts|js|tsx|jsx)')),
-    outdir: here('../server-build'),
+    entryPoints: entries,
+    outdir,
     target: [`node${pkg.engines.node}`],
     platform: 'node',
+    sourcemap: true,
     format: 'cjs',
     logLevel: 'info',
   })

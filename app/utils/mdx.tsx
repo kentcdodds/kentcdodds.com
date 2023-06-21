@@ -1,5 +1,5 @@
 import {buildImageUrl} from 'cloudinary-build-url'
-import LRU from 'lru-cache'
+import {LRUCache} from 'lru-cache'
 import * as mdxBundler from 'mdx-bundler/client'
 import * as React from 'react'
 import {CloudinaryVideo} from '~/components/cloudinary-video'
@@ -134,6 +134,7 @@ async function getMdxDirList(contentDir: string, options?: CachifiedOptions) {
         .map(({name, path}) => ({
           name,
           slug: path
+            .replace(/\\/g, '/')
             .replace(`${fullContentDirPath}/`, '')
             .replace(/\.mdx$/, ''),
         }))
@@ -519,7 +520,10 @@ function SubscribeForm(props: Record<string, unknown>) {
 
 // This exists so we don't have to call new Function for the given code
 // for every request for a given blog post/mdx file.
-const mdxComponentCache = new LRU<string, ReturnType<typeof getMdxComponent>>({
+const mdxComponentCache = new LRUCache<
+  string,
+  ReturnType<typeof getMdxComponent>
+>({
   max: 1000,
 })
 

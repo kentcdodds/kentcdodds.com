@@ -9,7 +9,7 @@ import {
 } from 'cachified'
 import fs from 'fs'
 import {getInstanceInfo, getInstanceInfoSync} from 'litefs-js'
-import LRU from 'lru-cache'
+import {LRUCache} from 'lru-cache'
 import {updatePrimaryCacheValue} from '~/routes/resources/cache.sqlite'
 import {getRequiredServerEnvVar} from './misc'
 import {getUser} from './session.server'
@@ -49,7 +49,7 @@ function createDatabase(tryAgain = true): BetterSqlite3.Database {
 
 const lru = singleton(
   'lru-cache',
-  () => new LRU<string, CacheEntry<unknown>>({max: 5000}),
+  () => new LRUCache<string, CacheEntry<unknown>>({max: 5000}),
 )
 
 export const lruCache = lruCacheAdapter(lru)

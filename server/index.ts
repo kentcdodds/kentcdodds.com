@@ -1,4 +1,4 @@
-import {createRequestHandler} from '@remix-run/express'
+import {createRequestHandler, type RequestHandler} from '@remix-run/express'
 import * as Sentry from '@sentry/node'
 import compression from 'compression'
 import crypto from 'crypto'
@@ -9,12 +9,15 @@ import morgan from 'morgan'
 import onFinished from 'on-finished'
 import path from 'path'
 import serverTiming from 'server-timing'
-// eslint-disable-next-line import/no-extraneous-dependencies
 import {
   combineGetLoadContexts,
   createMetronomeGetLoadContext,
   registerMetronome,
 } from '@metronome-sh/express'
+import {broadcastDevReady, type ServerBuild} from '@remix-run/node'
+import chokidar from 'chokidar'
+import closeWithGrace from 'close-with-grace'
+import {type WebSocketServer} from 'ws'
 import helmet from 'helmet'
 import {getInstanceInfo} from 'litefs-js'
 import {
@@ -22,6 +25,11 @@ import {
   oldImgSocial,
   rickRollMiddleware,
 } from './redirects'
+
+const BUILD_DIR = path.join(process.cwd(), 'build')
+
+const build = require(BUILD_DIR) as unknown as ServerBuild
+let devBuild = build
 
 const here = (...d: Array<string>) => path.join(__dirname, ...d)
 const primaryHost = 'kentcdodds.com'
@@ -38,7 +46,6 @@ if (process.env.FLY) {
 }
 
 const MODE = process.env.NODE_ENV
-const BUILD_DIR = path.join(process.cwd(), 'build')
 
 const app = express()
 app.use(serverTiming())
@@ -157,7 +164,7 @@ app.use(
     const host = getHost(req)
     return [
       tokens.method?.(req, res),
-      `${host}${tokens.url?.(req, res)}`,
+      `${host}${decodeURIComponent(tokens.url?.(req, res) ?? '')}`,
       tokens.status?.(req, res),
       tokens.res?.(req, res, 'content-length'),
       '-',
@@ -252,10 +259,7 @@ app.get(
 
 app.get('/redirect.html', rickRollMiddleware)
 
-function getRequestHandlerOptions(): Parameters<
-  typeof createRequestHandler
->[0] {
-  const build = require('../build')
+function getRequestHandler(build: ServerBuild): RequestHandler {
   function getLoadContext(req: any, res: any) {
     return {cspNonce: res.locals.cspNonce}
   }
@@ -263,7 +267,7 @@ function getRequestHandlerOptions(): Parameters<
     const buildWithMetronome = registerMetronome(build)
     const metronomeGetLoadContext =
       createMetronomeGetLoadContext(buildWithMetronome)
-    return {
+    return createRequestHandler({
       build: buildWithMetronome,
       getLoadContext: combineGetLoadContexts(
         getLoadContext,
@@ -271,45 +275,76 @@ function getRequestHandlerOptions(): Parameters<
         metronomeGetLoadContext,
       ),
       mode: MODE,
-    }
+    })
   }
-  return {build, mode: MODE, getLoadContext}
+  return createRequestHandler({build, mode: MODE, getLoadContext})
 }
 
 if (MODE === 'production') {
-  app.all('*', createRequestHandler(getRequestHandlerOptions()))
+  app.all('*', getRequestHandler(build))
 } else {
-  app.all('*', (req, res, next) => {
-    purgeRequireCache()
-    return createRequestHandler(getRequestHandlerOptions())(req, res, next)
-  })
+  app.all('*', (...args) => getRequestHandler(devBuild)(...args))
 }
 
 const port = process.env.PORT ?? 3000
-app.listen(port, () => {
-  // preload the build so we're ready for the first request
-  // we want the server to start accepting requests asap, so we wait until now
-  // to preload the build
-  require('../build')
+const server = app.listen(port, () => {
   console.log(`Express server listening on port ${port}`)
+
+  if (process.env.NODE_ENV === 'development') {
+    broadcastDevReady(build)
+  }
 })
 
-////////////////////////////////////////////////////////////////////////////////
-function purgeRequireCache() {
-  // purge require cache on requests for "server side HMR" this won't const
-  // you have in-memory objects between requests in development,
-  // alternatively you can set up nodemon/pm2-dev to restart the server on
-  // file changes, we prefer the DX of this though, so we've included it
-  // for you by default
-  for (const key in require.cache) {
-    if (key.startsWith(BUILD_DIR)) {
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-      delete require.cache[key]
+let wss: WebSocketServer | undefined
+async function startContentWatcher() {
+  const {contentWatcher} = await import('./content-watcher')
+  wss = contentWatcher(server)
+}
+
+if (process.env.NODE_ENV === 'development') {
+  startContentWatcher().catch((err: unknown) => {
+    console.error('unable to start content watcher', err)
+  })
+}
+
+closeWithGrace(() => {
+  return Promise.all([
+    new Promise((resolve, reject) => {
+      server.close(e => (e ? reject(e) : resolve('ok')))
+    }),
+    new Promise((resolve, reject) => {
+      wss?.close(e => (e ? reject(e) : resolve('ok')))
+    }),
+  ])
+})
+
+// during dev, we'll keep the build module up to date with the changes
+if (process.env.NODE_ENV === 'development') {
+  async function reloadBuild() {
+    for (const key in require.cache) {
+      if (key.startsWith(BUILD_DIR)) {
+        delete require.cache[key]
+      }
     }
+    devBuild = require(BUILD_DIR)
+    broadcastDevReady(devBuild)
   }
+
+  const watchPath = BUILD_DIR.replace(/\\/g, '/')
+  const watcher = chokidar.watch(watchPath, {
+    ignored: ['**/**.map'],
+    ignoreInitial: true,
+  })
+  watcher.on('all', reloadBuild)
 }
 
 /*
 eslint
+  @typescript-eslint/ban-ts-comment: "off",
+  @typescript-eslint/prefer-ts-expect-error: "off",
+  @typescript-eslint/no-dynamic-delete: "off",
+  @typescript-eslint/no-shadow: "off",
   @typescript-eslint/no-var-requires: "off",
+  no-inner-declarations: "off",
+  import/namespace: "off",
 */

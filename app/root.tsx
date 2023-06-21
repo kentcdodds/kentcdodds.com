@@ -1,3 +1,4 @@
+import {cssBundleHref} from '@remix-run/css-bundle'
 import {
   json,
   type DataFunctionArgs,
@@ -79,12 +80,13 @@ export const handle: KCDHandle & {id: string} = {
 }
 
 export const meta: V2_MetaFunction<typeof loader> = ({data}) => {
-  const requestInfo = data.requestInfo
+  const requestInfo = data?.requestInfo
   const title = 'Kent C. Dodds'
   const description =
     'Come check out how Kent C. Dodds can help you level up your career as a software engineer.'
   return [
-    {'theme-color': requestInfo.session.theme === 'dark' ? '#1F2028' : '#FFF'},
+    {viewport: 'width=device-width,initial-scale=1,viewport-fit=cover'},
+    {'theme-color': requestInfo?.session.theme === 'dark' ? '#1F2028' : '#FFF'},
     ...getSocialMetas({
       keywords:
         'Learn React, React Workshops, Testing JavaScript Training, React Training, Learn JavaScript, Learn TypeScript',
@@ -140,6 +142,7 @@ export const links: LinksFunction = () => {
     {rel: 'stylesheet', href: tailwindStyles},
     {rel: 'stylesheet', href: proseStyles},
     {rel: 'stylesheet', href: appStyles},
+    ...(cssBundleHref ? [{rel: 'stylesheet', href: cssBundleHref}] : []),
   ]
 }
 
@@ -536,7 +539,16 @@ function App() {
             __html: `window.ENV = ${JSON.stringify(data.ENV)};`,
           }}
         />
-        {ENV.NODE_ENV === 'development' ? <LiveReload nonce={nonce} /> : null}
+        {ENV.NODE_ENV === 'development' ? (
+          <>
+            <LiveReload nonce={nonce} />
+            <script
+              nonce={nonce}
+              suppressHydrationWarning
+              dangerouslySetInnerHTML={{__html: getWebsocketJS()}}
+            />
+          </>
+        ) : null}
       </body>
     </html>
   )
@@ -638,6 +650,54 @@ export function CatchBoundary() {
     )
   }
   throw new Error(`Unhandled error: ${caught.status}`)
+}
+
+function kcdLiveReloadConnect(config?: {onOpen: () => void}) {
+  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
+  const host = location.hostname
+  const port = location.port
+  const socketPath = `${protocol}//${host}:${port}/__ws`
+  const ws = new WebSocket(socketPath)
+  ws.onmessage = message => {
+    const event = JSON.parse(message.data)
+    if (
+      event.type === 'kentcdodds.com:file-change' &&
+      event.data.relativePath === location.pathname
+    ) {
+      window.location.reload()
+    }
+  }
+  ws.onopen = () => {
+    if (config && typeof config.onOpen === 'function') {
+      config.onOpen()
+    }
+  }
+  ws.onclose = event => {
+    if (event.code === 1006) {
+      console.log(
+        'kentcdodds.com dev server web socket closed. Reconnecting...',
+      )
+      setTimeout(
+        () =>
+          kcdLiveReloadConnect({
+            onOpen: () => window.location.reload(),
+          }),
+        1000,
+      )
+    }
+  }
+  ws.onerror = error => {
+    console.log('kentcdodds.com dev server web socket error:')
+    console.error(error)
+  }
+}
+
+function getWebsocketJS() {
+  const js = /* javascript */ `
+  ${kcdLiveReloadConnect.toString()}
+  kcdLiveReloadConnect();
+  `
+  return js
 }
 
 /*

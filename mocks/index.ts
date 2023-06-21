@@ -10,8 +10,13 @@ import {transistorHandlers} from './transistor'
 import {twitterHandlers} from './twitter'
 import {isConnectedToTheInternet, readFixture, updateFixture} from './utils'
 
+const remix = process.env.REMIX_DEV_HTTP_ORIGIN as string
+
 // put one-off handlers that don't really need an entire file to themselves here
 const miscHandlers = [
+  rest.post(`${remix}/ping`, req => {
+    return req.passthrough()
+  }),
   rest.get(
     'https://res.cloudinary.com/kentcdodds-com/image/upload/w_100,q_auto,f_webp,e_blur:1000/unsplash/:photoId',
     async (req, res, ctx) => {

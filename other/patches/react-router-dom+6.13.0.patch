@@ -15,10 +15,10 @@ index f0780a2..3f49e3e 100644
  export declare function getFormSubmissionInfo(target: HTMLFormElement | HTMLButtonElement | HTMLInputElement | FormData | URLSearchParams | {
      [name: string]: string;
 diff --git a/node_modules/react-router-dom/dist/index.js b/node_modules/react-router-dom/dist/index.js
-index 498eee5..2dc2672 100644
+index 1995bd4..a77b7ab 100644
 --- a/node_modules/react-router-dom/dist/index.js
 +++ b/node_modules/react-router-dom/dist/index.js
-@@ -738,7 +738,8 @@ function useSubmitImpl(fetcherKey, fetcherRouteId) {
+@@ -683,7 +683,8 @@ function useSubmitImpl(fetcherKey, fetcherRouteId) {
        preventScrollReset: options.preventScrollReset,
        formData,
        formMethod: method,
@@ -26,5 +26,5 @@ index 498eee5..2dc2672 100644
 +      formEncType: encType,
 +      headers: options.headers,
      };
- 
      if (fetcherKey) {
+       !(fetcherRouteId != null) ? process.env.NODE_ENV !== "production" ? UNSAFE_invariant(false, "No routeId available for useFetcher()") : UNSAFE_invariant(false) : void 0;
