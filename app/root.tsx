@@ -84,7 +84,6 @@ export const meta: V2_MetaFunction<typeof loader> = ({data}) => {
   const description =
     'Come check out how Kent C. Dodds can help you level up your career as a software engineer.'
   return [
-    {viewport: 'width=device-width,initial-scale=1,viewport-fit=cover'},
     {'theme-color': requestInfo.session.theme === 'dark' ? '#1F2028' : '#FFF'},
     ...getSocialMetas({
       keywords:
@@ -428,8 +427,9 @@ function App() {
       className={clsx(theme, `set-color-team-current-${team.toLowerCase()}`)}
     >
       <head>
-        <meta charSet="utf-8" />
         <Meta />
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 
         <CanonicalLink
           origin={data.requestInfo.origin}
