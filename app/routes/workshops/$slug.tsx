@@ -4,7 +4,13 @@ import {
   type LoaderFunction,
   type V2_MetaFunction,
 } from '@remix-run/node'
-import {Link, useCatch, useLoaderData, useParams} from '@remix-run/react'
+import {
+  isRouteErrorResponse,
+  Link,
+  useLoaderData,
+  useParams,
+  useRouteError,
+} from '@remix-run/react'
 import * as React from 'react'
 import {ArrowLink, BackLink} from '~/components/arrow-button'
 import {ButtonLink} from '~/components/button'
@@ -468,11 +474,13 @@ export default function WorkshopScreen() {
   )
 }
 
-export function CatchBoundary() {
-  const caught = useCatch()
-  console.error('CatchBoundary', caught)
-  if (caught.status === 404) {
-    return <FourOhFour articles={caught.data.blogRecommendations} />
+export function ErrorBoundary() {
+  const error = useRouteError()
+  if (isRouteErrorResponse(error)) {
+    console.error('CatchBoundary', error)
+    if (error.status === 404) {
+      return <FourOhFour articles={error.data.blogRecommendations} />
+    }
+    throw new Error(`Unhandled error: ${error.status}`)
   }
-  throw new Error(`Unhandled error: ${caught.status}`)
 }

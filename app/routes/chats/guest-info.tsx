@@ -4,7 +4,7 @@ import {
   type ActionFunction,
   type LoaderFunction,
 } from '@remix-run/node'
-import {Form, useLoaderData} from '@remix-run/react'
+import {Form, useLoaderData, useRouteError} from '@remix-run/react'
 import {type KCDHandle} from '~/types'
 
 export const handle: KCDHandle = {
@@ -36,12 +36,17 @@ export default function GuestInfo() {
   )
 }
 
-export function ErrorBoundary({error}: {error: Error}) {
+export function ErrorBoundary() {
+  const error = useRouteError()
   console.error(error)
-  return (
-    <div>
-      <h1>Error</h1>
-      <pre>{error.stack}</pre>
-    </div>
-  )
+  if (error instanceof Error) {
+    return (
+      <div>
+        <h2>Error</h2>
+        <pre>{error.stack}</pre>
+      </div>
+    )
+  } else {
+    return <h2>Unknown Error</h2>
+  }
 }

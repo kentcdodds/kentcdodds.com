@@ -4,7 +4,11 @@ import {
   type HeadersFunction,
   type V2_MetaFunction,
 } from '@remix-run/node'
-import {useCatch, useLoaderData} from '@remix-run/react'
+import {
+  isRouteErrorResponse,
+  useLoaderData,
+  useRouteError,
+} from '@remix-run/react'
 import * as React from 'react'
 import {BackLink} from '~/components/arrow-button'
 import {BlurrableImage} from '~/components/blurrable-image'
@@ -152,11 +156,13 @@ export default function MdxScreen() {
   )
 }
 
-export function CatchBoundary() {
-  const caught = useCatch()
-  console.error('CatchBoundary', caught)
-  if (caught.data.blogRecommendations) {
-    return <FourOhFour articles={caught.data.blogRecommendations} />
+export function ErrorBoundary() {
+  const error = useRouteError()
+  if (isRouteErrorResponse(error)) {
+    console.error('CatchBoundary', error)
+    if (error.data.blogRecommendations) {
+      return <FourOhFour articles={error.data.blogRecommendations} />
+    }
+    throw new Error(`Unhandled error: ${error.status}`)
   }
-  throw new Error(`Unhandled error: ${caught.status}`)
 }

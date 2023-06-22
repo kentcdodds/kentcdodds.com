@@ -11,7 +11,7 @@ import {
   type LoaderFunction,
   type V2_MetaFunction,
 } from '@remix-run/node'
-import {Outlet, useLoaderData} from '@remix-run/react'
+import {Outlet, useLoaderData, useRouteError} from '@remix-run/react'
 import {motion} from 'framer-motion'
 import {ArrowLink} from '~/components/arrow-button'
 import {ButtonLink} from '~/components/button'
@@ -231,7 +231,7 @@ export default function Discord() {
                 We're better when we work together. Discord allows us to have
                 meaningful and nuanced conversations about building software.
                 If you want to ask questions or provide your own opinions, this
-                discord community is for you. We'll celebrate your sucesses and
+                discord community is for you. We'll celebrate your successes and
                 lament your misfortunes and failures. This community is focused
                 on software development primarily, but we're humans and we
                 embrace that (we even have a channel on parenting!).
@@ -551,12 +551,17 @@ export default function Discord() {
   )
 }
 
-export function ErrorBoundary({error}: {error: Error}) {
+export function ErrorBoundary() {
+  const error = useRouteError()
   console.error(error)
-  return (
-    <div>
-      <h2>Error</h2>
-      <pre>{error.stack}</pre>
-    </div>
-  )
+  if (error instanceof Error) {
+    return (
+      <div>
+        <h2>Error</h2>
+        <pre>{error.stack}</pre>
+      </div>
+    )
+  } else {
+    return <h2>Unknown Error</h2>
+  }
 }

@@ -5,7 +5,13 @@ import {
   type LoaderFunction,
   type V2_MetaFunction,
 } from '@remix-run/node'
-import {Link, useCatch, useLoaderData, useLocation} from '@remix-run/react'
+import {
+  isRouteErrorResponse,
+  Link,
+  useLoaderData,
+  useLocation,
+  useRouteError,
+} from '@remix-run/react'
 import clsx from 'clsx'
 import {motion} from 'framer-motion'
 import React, {useState} from 'react'
@@ -272,7 +278,7 @@ function Transcript({
 }) {
   const [collapsed, setCollapsed] = useState(true)
 
-  // re-collapse the trascript when changing the episode
+  // re-collapse the transcript when changing the episode
   const location = useLocation()
   React.useEffect(() => {
     setCollapsed(true)
@@ -543,11 +549,13 @@ export default function PodcastDetail() {
   )
 }
 
-export function CatchBoundary() {
-  const caught = useCatch()
-  console.error('CatchBoundary', caught)
-  if (caught.status === 404) {
-    return <FourOhFour />
+export function ErrorBoundary() {
+  const error = useRouteError()
+  if (isRouteErrorResponse(error)) {
+    console.error('CatchBoundary', error)
+    if (error.status === 404) {
+      return <FourOhFour />
+    }
+    throw new Error(`Unhandled error: ${error.status}`)
   }
-  throw new Error(`Unhandled error: ${caught.status}`)
 }

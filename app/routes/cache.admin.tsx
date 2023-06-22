@@ -3,6 +3,7 @@ import {
   Form,
   useFetcher,
   useLoaderData,
+  useRouteError,
   useSearchParams,
   useSubmit,
 } from '@remix-run/react'
@@ -224,8 +225,13 @@ function CacheKeyRow({
   )
 }
 
-export function ErrorBoundary({error}: {error: Error}) {
+export function ErrorBoundary() {
+  const error = useRouteError()
   console.error(error)
 
-  return <div>An unexpected error occurred: {error.message}</div>
+  if (error instanceof Error) {
+    return <div>An unexpected error occurred: {error.message}</div>
+  } else {
+    return <div>Unknown error</div>
+  }
 }

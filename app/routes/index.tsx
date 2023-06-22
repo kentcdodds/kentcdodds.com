@@ -1,5 +1,5 @@
 import {json, type HeadersFunction, type LoaderFunction} from '@remix-run/node'
-import {useLoaderData} from '@remix-run/react'
+import {useLoaderData, useRouteError} from '@remix-run/react'
 import {ButtonLink} from '~/components/button'
 import {ServerError} from '~/components/errors'
 import {AboutSection} from '~/components/sections/about-section'
@@ -135,7 +135,8 @@ export default function IndexRoute() {
   )
 }
 
-export function ErrorBoundary({error}: {error: Error}) {
+export function ErrorBoundary() {
+  const error = useRouteError()
   console.error(error)
   return <ServerError />
 }

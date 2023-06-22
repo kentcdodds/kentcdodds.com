@@ -7,7 +7,12 @@ import {
   type V2_MetaFunction,
   type SerializeFrom,
 } from '@remix-run/node'
-import {Link, useLoaderData, useSearchParams} from '@remix-run/react'
+import {
+  Link,
+  useLoaderData,
+  useRouteError,
+  useSearchParams,
+} from '@remix-run/react'
 import clsx from 'clsx'
 import * as React from 'react'
 import {ArrowLink} from '~/components/arrow-button'
@@ -600,7 +605,8 @@ function BlogHome() {
 
 export default BlogHome
 
-export function ErrorBoundary({error}: {error: Error}) {
+export function ErrorBoundary() {
+  const error = useRouteError()
   console.error(error)
   return <ServerError />
 }
