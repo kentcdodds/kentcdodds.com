@@ -8,6 +8,7 @@ import {
   type SerializeFrom,
 } from '@remix-run/node'
 import {
+  isRouteErrorResponse,
   Link,
   Links,
   LiveReload,
@@ -15,10 +16,10 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useCatch,
   useLoaderData,
   useLocation,
   useNavigation,
+  useRouteError,
 } from '@remix-run/react'
 import * as React from 'react'
 
@@ -432,7 +433,10 @@ function App() {
       <head>
         <Meta />
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+        <meta
+          name="viewport"
+          content="width=device-width,initial-scale=1,viewport-fit=cover"
+        />
 
         <CanonicalLink
           origin={data.requestInfo.origin}
@@ -584,9 +588,60 @@ function ErrorDoc({children}: {children: React.ReactNode}) {
 // best effort, last ditch error boundary. This should only catch root errors
 // all other errors should be caught by the index route which will include
 // the footer and stuff, which is much better.
-export function ErrorBoundary({error}: {error: Error}) {
-  console.error(error)
+export function ErrorBoundary() {
+  const error = useRouteError()
   const location = useLocation()
+
+  if (isRouteErrorResponse(error)) {
+    console.error('CatchBoundary', error)
+    if (error.status === 404) {
+      return (
+        <ErrorDoc>
+          <ErrorPage
+            heroProps={{
+              title: "404 - Oh no, you found a page that's missing stuff.",
+              subtitle: `"${location.pathname}" is not a page on kentcdodds.com. So sorry.`,
+              image: (
+                <MissingSomething className="rounded-lg" aspectRatio="3:4" />
+              ),
+              action: <ArrowLink href="/">Go home</ArrowLink>,
+            }}
+          />
+        </ErrorDoc>
+      )
+    }
+    if (error.status === 409) {
+      return (
+        <ErrorDoc>
+          <ErrorPage
+            heroProps={{
+              title: '409 - Oh no, you should never see this.',
+              subtitle: `"${location.pathname}" tried telling fly to replay your request and missed this one.`,
+              image: <Grimmacing className="rounded-lg" aspectRatio="3:4" />,
+              action: <ArrowLink href="/">Go home</ArrowLink>,
+            }}
+          />
+        </ErrorDoc>
+      )
+    }
+    if (error.status !== 500) {
+      return (
+        <ErrorDoc>
+          <ErrorPage
+            heroProps={{
+              title: `${error.status} - Oh no, something did not go well.`,
+              subtitle: `"${location.pathname}" is currently not working. So sorry.`,
+              image: <Grimmacing className="rounded-lg" aspectRatio="3:4" />,
+              action: <ArrowLink href="/">Go home</ArrowLink>,
+            }}
+          />
+        </ErrorDoc>
+      )
+    }
+    throw new Error(`Unhandled error: ${error.status}`)
+  }
+
+  console.error(error)
   return (
     <ErrorDoc>
       <ErrorPage
@@ -599,57 +654,6 @@ export function ErrorBoundary({error}: {error: Error}) {
       />
     </ErrorDoc>
   )
-}
-
-export function CatchBoundary() {
-  const caught = useCatch()
-  const location = useLocation()
-  console.error('CatchBoundary', caught)
-  if (caught.status === 404) {
-    return (
-      <ErrorDoc>
-        <ErrorPage
-          heroProps={{
-            title: "404 - Oh no, you found a page that's missing stuff.",
-            subtitle: `"${location.pathname}" is not a page on kentcdodds.com. So sorry.`,
-            image: (
-              <MissingSomething className="rounded-lg" aspectRatio="3:4" />
-            ),
-            action: <ArrowLink href="/">Go home</ArrowLink>,
-          }}
-        />
-      </ErrorDoc>
-    )
-  }
-  if (caught.status === 409) {
-    return (
-      <ErrorDoc>
-        <ErrorPage
-          heroProps={{
-            title: '409 - Oh no, you should never see this.',
-            subtitle: `"${location.pathname}" tried telling fly to replay your request and missed this one.`,
-            image: <Grimmacing className="rounded-lg" aspectRatio="3:4" />,
-            action: <ArrowLink href="/">Go home</ArrowLink>,
-          }}
-        />
-      </ErrorDoc>
-    )
-  }
-  if (caught.status !== 500) {
-    return (
-      <ErrorDoc>
-        <ErrorPage
-          heroProps={{
-            title: `${caught.status} - Oh no, something did not go well.`,
-            subtitle: `"${location.pathname}" is currently not working. So sorry.`,
-            image: <Grimmacing className="rounded-lg" aspectRatio="3:4" />,
-            action: <ArrowLink href="/">Go home</ArrowLink>,
-          }}
-        />
-      </ErrorDoc>
-    )
-  }
-  throw new Error(`Unhandled error: ${caught.status}`)
 }
 
 function kcdLiveReloadConnect(config?: {onOpen: () => void}) {

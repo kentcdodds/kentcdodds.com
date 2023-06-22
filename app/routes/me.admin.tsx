@@ -8,6 +8,7 @@ import {
   Form,
   useActionData,
   useLoaderData,
+  useRouteError,
   useSearchParams,
 } from '@remix-run/react'
 import clsx from 'clsx'
@@ -416,14 +417,19 @@ export default function MeAdmin() {
   )
 }
 
-export function ErrorBoundary({error}: {error: Error}) {
+export function ErrorBoundary() {
+  const error = useRouteError()
   console.error(error)
-  return (
-    <div>
-      <h1>Error</h1>
-      <pre>{error.stack}</pre>
-    </div>
-  )
+  if (error instanceof Error) {
+    return (
+      <div>
+        <h2>Error</h2>
+        <pre>{error.stack}</pre>
+      </div>
+    )
+  } else {
+    return <h2>Unknown Error</h2>
+  }
 }
 
 /*

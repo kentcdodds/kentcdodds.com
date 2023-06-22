@@ -1,5 +1,11 @@
 import {json, type HeadersFunction, type LoaderFunction} from '@remix-run/node'
-import {Link, useCatch, useLoaderData, useParams} from '@remix-run/react'
+import {
+  isRouteErrorResponse,
+  Link,
+  useLoaderData,
+  useParams,
+  useRouteError,
+} from '@remix-run/react'
 import {orderBy} from 'lodash'
 import {ServerError} from '~/components/errors'
 import {Grid} from '~/components/grid'
@@ -97,29 +103,30 @@ export default function ChatsSeason() {
   ))
 }
 
-export function ErrorBoundary({error}: {error: Error}) {
+export function ErrorBoundary() {
+  const error = useRouteError()
+  const params = useParams()
+
+  if (isRouteErrorResponse(error)) {
+    console.error('CatchBoundary', error)
+    if (error.status === 404) {
+      return (
+        <Grid nested className="mt-3">
+          <div className="col-span-full md:col-span-5">
+            <H3>{`Season not found`}</H3>
+            <Paragraph>{`Are you sure ${
+              params.season ? `season ${params.season}` : 'this season'
+            } exists?`}</Paragraph>
+          </div>
+          <div className="md:col-span-start-6 col-span-full md:col-span-5">
+            <MissingSomething className="rounded-lg" aspectRatio="3:4" />
+          </div>
+        </Grid>
+      )
+    }
+    throw new Error(`Unhandled error: ${error.status}`)
+  }
+
   console.error(error)
   return <ServerError />
-}
-
-export function CatchBoundary() {
-  const caught = useCatch()
-  const params = useParams()
-  console.error('CatchBoundary', caught)
-  if (caught.status === 404) {
-    return (
-      <Grid nested className="mt-3">
-        <div className="col-span-full md:col-span-5">
-          <H3>{`Season not found`}</H3>
-          <Paragraph>{`Are you sure ${
-            params.season ? `season ${params.season}` : 'this season'
-          } exists?`}</Paragraph>
-        </div>
-        <div className="md:col-span-start-6 col-span-full md:col-span-5">
-          <MissingSomething className="rounded-lg" aspectRatio="3:4" />
-        </div>
-      </Grid>
-    )
-  }
-  throw new Error(`Unhandled error: ${caught.status}`)
 }

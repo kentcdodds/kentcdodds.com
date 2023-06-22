@@ -153,13 +153,13 @@ export default function AttendeesRoute() {
   return <div>{/* render the data */}</div>
 }
 
-export function ErrorBoundary({error}) {
+export function ErrorBoundary() {
+  const error = useRouteError()
+  // when true, this is what used to go to `CatchBoundary` in Remix v1
+  if (isRouteErrorResponse(error)) {
+    return <div>{/* render the error for 400-status level responses */}</div>
+  }
   return <div>{/* render an "unexpected error" message */}</div>
-}
-
-export function CatchBoundary() {
-  const caught = useCatch()
-  return <div>{/* render the error for 400-status level responses */}</div>
 }
 ```
 

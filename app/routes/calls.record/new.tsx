@@ -1,5 +1,5 @@
 import {json, redirect, type ActionFunction} from '@remix-run/node'
-import {Link, useActionData} from '@remix-run/react'
+import {Link, useActionData, useRouteError} from '@remix-run/react'
 import * as React from 'react'
 import {CallRecorder} from '~/components/calls/recorder'
 import {
@@ -143,7 +143,8 @@ export default function RecordScreen() {
   )
 }
 
-export function ErrorBoundary({error}: {error: Error}) {
+export function ErrorBoundary() {
+  const error = useRouteError()
   console.error(error)
   return (
     <div>

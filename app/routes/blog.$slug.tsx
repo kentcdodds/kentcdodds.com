@@ -4,7 +4,13 @@ import {
   type HeadersFunction,
   type V2_MetaFunction,
 } from '@remix-run/node'
-import {useCatch, useFetcher, useLoaderData, useParams} from '@remix-run/react'
+import {
+  isRouteErrorResponse,
+  useFetcher,
+  useLoaderData,
+  useParams,
+  useRouteError,
+} from '@remix-run/react'
 import clsx from 'clsx'
 import * as React from 'react'
 import {ArrowLink, BackLink} from '~/components/arrow-button'
@@ -615,7 +621,7 @@ export default function MdxScreen() {
                     <WorkshopCard
                       workshop={workshop}
                       // @ts-expect-error need to figure out a better way to
-                      // handle the fact that this is a SeralizeObject type...
+                      // handle the fact that this is a SerializeObject type...
                       titoEvents={data.workshopEvents.filter(
                         e => e.metadata.workshopSlug === workshop.slug,
                       )}
@@ -640,16 +646,17 @@ export default function MdxScreen() {
   )
 }
 
-export function ErrorBoundary({error}: {error: Error}) {
+export function ErrorBoundary() {
+  const error = useRouteError()
+
+  if (isRouteErrorResponse(error)) {
+    console.error('CatchBoundary', error)
+    if (error.data.recommendations) {
+      return <FourOhFour articles={error.data.recommendations} />
+    }
+    throw new Error(`Unhandled error: ${error.status}`)
+  }
+
   console.error(error)
   return <ServerError />
-}
-
-export function CatchBoundary() {
-  const caught = useCatch()
-  console.error('CatchBoundary', caught)
-  if (caught.data.recommendations) {
-    return <FourOhFour articles={caught.data.recommendations} />
-  }
-  throw new Error(`Unhandled error: ${caught.status}`)
 }
