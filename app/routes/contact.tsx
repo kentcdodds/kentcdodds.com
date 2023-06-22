@@ -105,9 +105,9 @@ export default function ContactRoute() {
   const contactFetcher = useFetcher()
   const {user} = useRootData()
 
+  const isDone = contactFetcher.state === 'idle' && contactFetcher.data != null
   const emailSuccessfullySent =
-    contactFetcher.type === 'done' &&
-    (contactFetcher.data as ActionData).status === 'success'
+    isDone && (contactFetcher.data as ActionData).status === 'success'
 
   return (
     <div>

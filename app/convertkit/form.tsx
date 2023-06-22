@@ -18,7 +18,8 @@ function ConvertKitForm({
   const websiteId = React.useId()
   const convertKit = useFetcher<ActionData>()
   const formRef = React.useRef<HTMLFormElement>(null)
-  const convertKitData = convertKit.type === 'done' ? convertKit.data : null
+  const isDone = convertKit.state === 'idle' && convertKit.data != null
+  const convertKitData = isDone ? convertKit.data : null
   React.useEffect(() => {
     if (formRef.current && convertKitData?.status === 'success') {
       formRef.current.reset()
@@ -37,8 +38,7 @@ function ConvertKitForm({
     )
   }
 
-  const success =
-    convertKit.type === 'done' && convertKitData?.status === 'success'
+  const success = isDone && convertKitData?.status === 'success'
 
   return (
     <convertKit.Form
