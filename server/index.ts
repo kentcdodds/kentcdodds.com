@@ -161,16 +161,21 @@ app.use((req, res, next) => {
 
 app.use(
   morgan((tokens, req, res) => {
-    const host = getHost(req)
-    return [
-      tokens.method?.(req, res),
-      `${host}${decodeURIComponent(tokens.url?.(req, res) ?? '')}`,
-      tokens.status?.(req, res),
-      tokens.res?.(req, res, 'content-length'),
-      '-',
-      tokens['response-time']?.(req, res),
-      'ms',
-    ].join(' ')
+    try {
+      const host = getHost(req)
+      return [
+        tokens.method?.(req, res),
+        `${host}${decodeURIComponent(tokens.url?.(req, res) ?? '')}`,
+        tokens.status?.(req, res),
+        tokens.res?.(req, res, 'content-length'),
+        '-',
+        tokens['response-time']?.(req, res),
+        'ms',
+      ].join(' ')
+    } catch (error: unknown) {
+      console.error(`Error generating morgan log line`, error, req.originalUrl)
+      return ''
+    }
   }),
 )
 
