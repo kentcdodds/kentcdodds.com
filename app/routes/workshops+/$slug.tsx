@@ -41,13 +41,13 @@ import {
 import {getServerTimeHeader} from '~/utils/timing.server'
 import {type WorkshopEvent} from '~/utils/workshop-tickets.server'
 import {getWorkshops} from '~/utils/workshops.server'
-import {ConvertKitForm} from '../../convertkit/form'
+import {ConvertKitForm} from '~/convertkit/form'
 import {type RootLoaderType, type LoaderData as RootLoaderData} from '~/root'
 import {
   useWorkshopsData,
   type loader as WorkshopLoader,
   type LoaderData as WorkshopLoaderData,
-} from '../workshops'
+} from './_workshops'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {
@@ -107,14 +107,14 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export const meta: V2_MetaFunction<
   {},
-  {root: RootLoaderType; 'routes/workshops': typeof WorkshopLoader}
+  {root: RootLoaderType; 'routes/workshops+/_workshops': typeof WorkshopLoader}
 > = ({matches, params}) => {
   const {requestInfo} = matches.find(m => m.id === 'root')
     ?.data as RootLoaderData
   let workshop: Workshop | undefined
-  const workshopsData = matches.find(m => m.id === 'routes/workshops')?.data as
-    | WorkshopLoaderData
-    | undefined
+  const workshopsData = matches.find(
+    m => m.id === 'routes/workshops+/_workshops',
+  )?.data as WorkshopLoaderData | undefined
   if (Array.isArray(workshopsData?.workshops)) {
     workshop = workshopsData?.workshops.find(
       (w: {slug?: string}) => w.slug === params.slug,

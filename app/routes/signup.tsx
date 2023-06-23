@@ -15,6 +15,7 @@ import {CheckCircledIcon} from '~/components/icons'
 import {HeaderSection} from '~/components/sections/header-section'
 import {Spacer} from '~/components/spacer'
 import {H2, H6, Paragraph} from '~/components/typography'
+import {tagKCDSiteSubscriber} from '~/convertkit/convertkit.server'
 import {getImgProps, images} from '~/images'
 import {type KCDHandle, type Team} from '~/types'
 import {handleFormSubmission} from '~/utils/actions.server'
@@ -29,7 +30,6 @@ import {
 import {prisma, validateMagicLink} from '~/utils/prisma.server'
 import {getSession, getUser} from '~/utils/session.server'
 import {useTeam} from '~/utils/team-provider'
-import {tagKCDSiteSubscriber} from '../convertkit/convertkit.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,

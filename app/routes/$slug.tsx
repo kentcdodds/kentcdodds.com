@@ -16,6 +16,7 @@ import {FourOhFour} from '~/components/errors'
 import {Grid} from '~/components/grid'
 import {H2, H6} from '~/components/typography'
 import {getImageBuilder, getImgProps} from '~/images'
+import {pathedRoutes} from '~/other-routes.server'
 import {type KCDHandle} from '~/types'
 import {getBlogRecommendations} from '~/utils/blog.server'
 import {
@@ -28,7 +29,6 @@ import {
 } from '~/utils/mdx'
 import {reuseUsefulLoaderHeaders} from '~/utils/misc'
 import {getServerTimeHeader} from '~/utils/timing.server'
-import {pathedRoutes} from '../other-routes.server'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {

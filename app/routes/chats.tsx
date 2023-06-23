@@ -43,7 +43,7 @@ import {ChatsEpisodeUIStateProvider} from '~/utils/providers'
 import {getSocialMetas} from '~/utils/seo'
 import {getSeasonListItems} from '~/utils/simplecast.server'
 import {getServerTimeHeader} from '~/utils/timing.server'
-import {externalLinks} from '../external-links'
+import {externalLinks} from '~/external-links'
 import {type RootLoaderType} from '~/root'
 
 type LoaderData = {

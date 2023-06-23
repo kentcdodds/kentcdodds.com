@@ -10,7 +10,7 @@ import {
 import fs from 'fs'
 import {getInstanceInfo, getInstanceInfoSync} from 'litefs-js'
 import {LRUCache} from 'lru-cache'
-import {updatePrimaryCacheValue} from '~/routes/resources/cache.sqlite'
+import {updatePrimaryCacheValue} from '~/routes/resources+/cache.sqlite'
 import {getRequiredServerEnvVar} from './misc'
 import {getUser} from './session.server'
 import {time, type Timings} from './timing.server'

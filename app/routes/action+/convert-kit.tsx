@@ -5,7 +5,7 @@ import {CloudinaryVideo} from '~/components/kifs'
 import {HeroSection} from '~/components/sections/hero-section'
 import {Spacer} from '~/components/spacer'
 import {Paragraph} from '~/components/typography'
-import {handleConvertKitFormSubmission} from '../../convertkit/remix.server'
+import {handleConvertKitFormSubmission} from '~/convertkit/remix.server'
 
 export const action: ActionFunction = async ({request}) => {
   return handleConvertKitFormSubmission(request)
