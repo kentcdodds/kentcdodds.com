@@ -1,4 +1,4 @@
-// this is a placeholder to make /routes/talks catch nested paths
+// this is a placeholder to make /routes/talks+/_talks catch nested paths
 
 import {type V2_MetaFunction} from '@remix-run/node'
 import {getSocialImageWithPreTitle} from '~/images'
@@ -7,15 +7,15 @@ import {getSocialMetas} from '~/utils/seo'
 import {
   type loader as TalkLoader,
   type LoaderData as TalksLoaderData,
-} from '../talks'
+} from './_talks'
 import {type RootLoaderType, type LoaderData as RootLoaderData} from '~/root'
 
 export const meta: V2_MetaFunction<
   {},
-  {root: RootLoaderType; 'routes/talks': typeof TalkLoader}
+  {root: RootLoaderType; 'routes/talks+/_talks': typeof TalkLoader}
 > = ({matches, params}) => {
   const {talks = []} =
-    (matches.find(m => m.id === 'routes/talks')?.data as
+    (matches.find(m => m.id === 'routes/talks+/_talks')?.data as
       | TalksLoaderData
       | undefined) ?? {}
   const {requestInfo} = matches.find(m => m.id === 'root')

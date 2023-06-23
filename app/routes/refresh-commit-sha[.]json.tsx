@@ -4,7 +4,7 @@ import {
   isRefreshShaInfo,
   commitShaKey as refreshCacheCommitShaKey,
   type RefreshShaInfo,
-} from './action/refresh-cache'
+} from './action+/refresh-cache'
 
 export async function loader() {
   const result = await cache.get(refreshCacheCommitShaKey)

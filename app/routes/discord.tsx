@@ -47,7 +47,7 @@ import {getSocialMetas} from '~/utils/seo'
 import {getTestimonials, type Testimonial} from '~/utils/testimonials.server'
 import {getServerTimeHeader} from '~/utils/timing.server'
 import {useRootData} from '~/utils/use-root-data'
-import {externalLinks} from '../external-links'
+import {externalLinks} from '~/external-links'
 import {type RootLoaderType} from '~/root'
 
 type LoaderData = {

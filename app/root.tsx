@@ -44,7 +44,7 @@ import {pathedRoutes} from './other-routes.server'
 import {
   Promotification,
   getPromoCookieValue,
-} from './routes/resources/promotification'
+} from './routes/resources+/promotification'
 import appStyles from './styles/app.css'
 import noScriptStyles from './styles/no-script.css'
 import proseStyles from './styles/prose.css'
