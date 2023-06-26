@@ -1,5 +1,5 @@
 import {type LoaderFunction} from '@remix-run/node'
-import {getPostJson} from '~/utils/blog.server'
+import {getPostJson} from '~/utils/blog.server.ts'
 
 export const loader: LoaderFunction = async ({request}) => {
   const data = await getPostJson(request)

@@ -1,4 +1,4 @@
-import {CloudinaryVideo} from './cloudinary-video'
+import {CloudinaryVideo} from './cloudinary-video.tsx'
 
 type CloudinaryVideoProps = Parameters<typeof CloudinaryVideo>[0]
 

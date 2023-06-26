@@ -1,7 +1,7 @@
-import clsx from 'clsx'
-import {ArrowLink} from '../arrow-button'
-import {Grid} from '../grid'
-import {H2} from '../typography'
+import {clsx} from 'clsx'
+import {ArrowLink} from '../arrow-button.tsx'
+import {Grid} from '../grid.tsx'
+import {H2} from '../typography.tsx'
 
 interface HeaderSectionProps {
   ctaUrl?: string

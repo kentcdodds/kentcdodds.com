@@ -1,14 +1,14 @@
 import {rest} from 'msw'
 import {setupServer} from 'msw/node'
-import {convertKitHandlers} from './convert-kit'
-import {discordHandlers} from './discord'
-import {githubHandlers} from './github'
-import {oembedHandlers} from './oembed'
-import {simplecastHandlers} from './simplecast'
-import {tiToHandlers} from './tito'
-import {transistorHandlers} from './transistor'
-import {twitterHandlers} from './twitter'
-import {isConnectedToTheInternet, readFixture, updateFixture} from './utils'
+import {convertKitHandlers} from './convert-kit.ts'
+import {discordHandlers} from './discord.ts'
+import {githubHandlers} from './github.ts'
+import {oembedHandlers} from './oembed.ts'
+import {simplecastHandlers} from './simplecast.ts'
+import {tiToHandlers} from './tito.ts'
+import {transistorHandlers} from './transistor.ts'
+import {twitterHandlers} from './twitter.ts'
+import {isConnectedToTheInternet, readFixture, updateFixture} from './utils.ts'
 
 const remix = process.env.REMIX_DEV_HTTP_ORIGIN as string
 

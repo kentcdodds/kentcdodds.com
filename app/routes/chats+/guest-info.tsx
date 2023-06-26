@@ -5,7 +5,7 @@ import {
   type LoaderFunction,
 } from '@remix-run/node'
 import {Form, useLoaderData, useRouteError} from '@remix-run/react'
-import {type KCDHandle} from '~/types'
+import {type KCDHandle} from '~/types.ts'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,

@@ -5,43 +5,47 @@ import {
   type V2_MetaFunction,
 } from '@remix-run/node'
 import {Link, Outlet, useLoaderData, useMatches} from '@remix-run/react'
-import clsx from 'clsx'
+import {clsx} from 'clsx'
 import {AnimatePresence, motion, useReducedMotion} from 'framer-motion'
 import * as React from 'react'
-import {ButtonLink} from '~/components/button'
-import {Grid} from '~/components/grid'
-import {ChevronDownIcon, ChevronUpIcon, TriangleIcon} from '~/components/icons'
-import {PodcastSubs} from '~/components/podcast-subs'
-import {BlogSection} from '~/components/sections/blog-section'
-import {HeroSection} from '~/components/sections/hero-section'
-import {Spacer} from '~/components/spacer'
-import {H4, H6, Paragraph} from '~/components/typography'
-import {externalLinks} from '~/external-links'
+import {ButtonLink} from '~/components/button.tsx'
+import {Grid} from '~/components/grid.tsx'
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  TriangleIcon,
+} from '~/components/icons.tsx'
+import {PodcastSubs} from '~/components/podcast-subs.tsx'
+import {BlogSection} from '~/components/sections/blog-section.tsx'
+import {HeroSection} from '~/components/sections/hero-section.tsx'
+import {Spacer} from '~/components/spacer.tsx'
+import {H4, H6, Paragraph} from '~/components/typography.tsx'
+import {externalLinks} from '~/external-links.tsx'
 import {
   getGenericSocialImage,
   getImageBuilder,
   getImgProps,
   images,
-} from '~/images'
-import {type Await, type CallKentEpisode, type KCDHandle} from '~/types'
-import {getBlogRecommendations} from '~/utils/blog.server'
+} from '~/images.tsx'
+import {type Await, type CallKentEpisode, type KCDHandle} from '~/types.ts'
+import {getBlogRecommendations} from '~/utils/blog.server.ts'
 import {
   getEpisodeFromParams,
   getEpisodePath,
   type Params as CallPlayerParams,
-} from '~/utils/call-kent'
+} from '~/utils/call-kent.ts'
 import {
   formatDuration,
   getDisplayUrl,
   getOrigin,
   getUrl,
   reuseUsefulLoaderHeaders,
-} from '~/utils/misc'
-import {useMatchLoaderData} from '~/utils/providers'
-import {getSocialMetas} from '~/utils/seo'
-import {getServerTimeHeader} from '~/utils/timing.server'
-import {getEpisodes} from '~/utils/transistor.server'
-import {type RootLoaderType} from '~/root'
+} from '~/utils/misc.tsx'
+import {useMatchLoaderData} from '~/utils/providers.tsx'
+import {getSocialMetas} from '~/utils/seo.ts'
+import {getServerTimeHeader} from '~/utils/timing.server.ts'
+import {getEpisodes} from '~/utils/transistor.server.ts'
+import {type RootLoaderType} from '~/root.tsx'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'calls',

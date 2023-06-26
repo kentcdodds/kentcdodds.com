@@ -202,8 +202,8 @@ type Team = 'RED' | 'BLUE' | 'YELLOW'
 type Role = 'ADMIN' | 'MEMBER'
 type OptionalTeam = Team | 'UNKNOWN'
 
-export * from './simplecast'
-export * from './transistor'
+export * from './simplecast.ts'
+export * from './transistor.ts'
 export {
   NonNullProperties,
   Await,

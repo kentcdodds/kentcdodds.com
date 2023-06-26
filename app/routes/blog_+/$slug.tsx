@@ -11,23 +11,23 @@ import {
   useParams,
   useRouteError,
 } from '@remix-run/react'
-import clsx from 'clsx'
+import {clsx} from 'clsx'
 import * as React from 'react'
-import {ArrowLink, BackLink} from '~/components/arrow-button'
-import {BlurrableImage} from '~/components/blurrable-image'
-import {CourseCard} from '~/components/course-card'
-import {FourOhFour, ServerError} from '~/components/errors'
-import {Grid} from '~/components/grid'
-import {BlogSection} from '~/components/sections/blog-section'
-import {HeaderSection} from '~/components/sections/header-section'
-import {Spacer} from '~/components/spacer'
-import {TeamStats} from '~/components/team-stats'
-import {H2, H6, Paragraph} from '~/components/typography'
-import {WorkshopCard} from '~/components/workshop-card'
-import {externalLinks} from '~/external-links'
-import {getImageBuilder, getImgProps, images} from '~/images'
-import {type KCDHandle, type MdxListItem, type Team} from '~/types'
-import {getRankingLeader} from '~/utils/blog'
+import {ArrowLink, BackLink} from '~/components/arrow-button.tsx'
+import {BlurrableImage} from '~/components/blurrable-image.tsx'
+import {CourseCard} from '~/components/course-card.tsx'
+import {FourOhFour, ServerError} from '~/components/errors.tsx'
+import {Grid} from '~/components/grid.tsx'
+import {BlogSection} from '~/components/sections/blog-section.tsx'
+import {HeaderSection} from '~/components/sections/header-section.tsx'
+import {Spacer} from '~/components/spacer.tsx'
+import {TeamStats} from '~/components/team-stats.tsx'
+import {H2, H6, Paragraph} from '~/components/typography.tsx'
+import {WorkshopCard} from '~/components/workshop-card.tsx'
+import {externalLinks} from '~/external-links.tsx'
+import {getImageBuilder, getImgProps, images} from '~/images.tsx'
+import {type KCDHandle, type MdxListItem, type Team} from '~/types.ts'
+import {getRankingLeader} from '~/utils/blog.ts'
 import {
   getBlogReadRankings,
   getBlogRecommendations,
@@ -35,8 +35,8 @@ import {
   notifyOfOverallTeamLeaderChange,
   notifyOfTeamLeaderChangeOnPost,
   type ReadRankings,
-} from '~/utils/blog.server'
-import {getClientSession} from '~/utils/client.server'
+} from '~/utils/blog.server.ts'
+import {getClientSession} from '~/utils/client.server.ts'
 import {
   getBannerAltProp,
   getBannerTitleProp,
@@ -44,15 +44,15 @@ import {
   getMdxPage,
   mdxPageMeta,
   useMdxComponent,
-} from '~/utils/mdx'
-import {formatNumber, reuseUsefulLoaderHeaders} from '~/utils/misc'
-import {addPostRead} from '~/utils/prisma.server'
-import {getSession} from '~/utils/session.server'
-import {teamEmoji, useTeam} from '~/utils/team-provider'
-import {getServerTimeHeader} from '~/utils/timing.server'
-import {useRootData} from '~/utils/use-root-data'
-import {getScheduledEvents} from '~/utils/workshop-tickets.server'
-import {getWorkshops} from '~/utils/workshops.server'
+} from '~/utils/mdx.tsx'
+import {formatNumber, reuseUsefulLoaderHeaders} from '~/utils/misc.tsx'
+import {addPostRead} from '~/utils/prisma.server.ts'
+import {getSession} from '~/utils/session.server.ts'
+import {teamEmoji, useTeam} from '~/utils/team-provider.tsx'
+import {getServerTimeHeader} from '~/utils/timing.server.ts'
+import {useRootData} from '~/utils/use-root-data.ts'
+import {getScheduledEvents} from '~/utils/workshop-tickets.server.ts'
+import {getWorkshops} from '~/utils/workshops.server.ts'
 
 const handleId = 'blog-post'
 export const handle: KCDHandle = {

@@ -1,9 +1,11 @@
 import {PrismaClient} from '@prisma/client'
-import {ensurePrimary} from 'litefs-js/remix'
-import {type Session} from '~/types'
-import {decrypt, encrypt} from './encryption.server'
-import {time, type Timings} from './timing.server'
-import {singleton} from './singleton.server'
+import chalk from 'chalk'
+import {ensurePrimary} from 'litefs-js/remix.js'
+import pProps from 'p-props'
+import {type Session} from '~/types.ts'
+import {decrypt, encrypt} from './encryption.server.ts'
+import {singleton} from './singleton.server.ts'
+import {time, type Timings} from './timing.server.ts'
 
 const logThreshold = 500
 
@@ -23,8 +25,6 @@ function getClient(): PrismaClient {
   })
   client.$on('query', async e => {
     if (e.duration < logThreshold) return
-    const {default: chalk} = await import('chalk')
-
     const color =
       e.duration < logThreshold * 1.1
         ? 'green'
@@ -182,7 +182,6 @@ async function getUserFromSessionId(
 }
 
 async function getAllUserData(userId: string) {
-  const {default: pProps} = await import('p-props')
   return pProps({
     user: prisma.user.findUnique({where: {id: userId}}),
     calls: prisma.call.findMany({where: {userId}}),
@@ -220,13 +219,13 @@ async function addPostRead({
 }
 
 export {
-  prisma,
-  getMagicLink,
-  validateMagicLink,
-  linkExpirationTime,
-  sessionExpirationTime,
-  createSession,
-  getUserFromSessionId,
-  getAllUserData,
   addPostRead,
+  createSession,
+  getAllUserData,
+  getMagicLink,
+  getUserFromSessionId,
+  linkExpirationTime,
+  prisma,
+  sessionExpirationTime,
+  validateMagicLink,
 }

@@ -1,7 +1,15 @@
 import type * as H from 'hast'
-import {omit, sortBy} from 'lodash'
+import {toHtml as hastToHtml} from 'hast-util-to-html'
 import type * as M from 'mdast'
+import {toHast as mdastToHast} from 'mdast-util-to-hast'
+import parseHtml from 'rehype-parse'
+import rehype2remark from 'rehype-remark'
+import rehypeStringify from 'rehype-stringify'
+import parseMarkdown from 'remark-parse'
+import remark2rehype from 'remark-rehype'
+import {unified} from 'unified'
 import type * as U from 'unist'
+import {visit} from 'unist-util-visit'
 import {
   type CWKEpisode,
   type CWKSeason,
@@ -10,11 +18,12 @@ import {
   type SimplecastEpisode,
   type SimplecastEpisodeListItem,
   type SimplecastTooManyRequests,
-} from '~/types'
-import {cache, cachified} from './cache.server'
-import {markdownToHtml, stripHtml} from './markdown.server'
-import {getRequiredServerEnvVar, typedBoolean} from './misc'
-import {type Timings} from './timing.server'
+} from '~/types.ts'
+import {omit, sortBy} from '~/utils/cjs/lodash.js'
+import {cache, cachified} from './cache.server.ts'
+import {markdownToHtml, stripHtml} from './markdown.server.ts'
+import {getRequiredServerEnvVar, typedBoolean} from './misc.tsx'
+import {type Timings} from './timing.server.ts'
 
 const SIMPLECAST_KEY = getRequiredServerEnvVar('SIMPLECAST_KEY')
 const CHATS_WITH_KENT_PODCAST_ID = getRequiredServerEnvVar(
@@ -240,7 +249,6 @@ function removeEls<ItemType>(array: Array<ItemType>, ...els: Array<ItemType>) {
 
 function autoAffiliates() {
   return async function affiliateTransformer(tree: H.Root) {
-    const {visit} = await import('unist-util-visit')
     visit(tree, 'element', function visitor(linkNode: H.Element) {
       if (linkNode.tagName !== 'a') return
       if (!linkNode.properties) return
@@ -269,16 +277,6 @@ async function parseSummaryMarkdown(
 ): Promise<
   Pick<CWKEpisode, 'summaryHTML' | 'resources' | 'guests' | 'homeworkHTMLs'>
 > {
-  const {unified} = await import('unified')
-  const {default: parseHtml} = await import('rehype-parse')
-  const {default: parseMarkdown} = await import('remark-parse')
-  const {default: remark2rehype} = await import('remark-rehype')
-  const {default: rehype2remark} = await import('rehype-remark')
-  const {default: rehypeStringify} = await import('rehype-stringify')
-  const {toHast: mdastToHast} = await import('mdast-util-to-hast')
-  const {toHtml: hastToHtml} = await import('hast-util-to-html')
-  const {visit} = await import('unist-util-visit')
-
   const isHTMLInput = summaryInput.trim().startsWith('<')
   const resources: CWKEpisode['resources'] = []
   const guests: CWKEpisode['guests'] = []
@@ -497,4 +495,4 @@ async function getSeasonListItems({
   return listItemSeasons
 }
 
-export {getCachedSeasons as getSeasons, getSeasonListItems}
+export {getSeasonListItems, getCachedSeasons as getSeasons}

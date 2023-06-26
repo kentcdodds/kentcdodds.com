@@ -9,14 +9,14 @@ import {
 import {Form, useLoaderData} from '@remix-run/react'
 import * as React from 'react'
 import invariant from 'tiny-invariant'
-import {Button, LinkButton} from '~/components/button'
-import {Input, InputError, Label} from '~/components/form-elements'
-import {Grid} from '~/components/grid'
-import {HeroSection} from '~/components/sections/hero-section'
-import {Paragraph} from '~/components/typography'
-import {getConvertKitSubscriber} from '~/convertkit/convertkit.server'
-import {getGenericSocialImage, images} from '~/images'
-import {getLoginInfoSession} from '~/utils/login.server'
+import {Button, LinkButton} from '~/components/button.tsx'
+import {Input, InputError, Label} from '~/components/form-elements.tsx'
+import {Grid} from '~/components/grid.tsx'
+import {HeroSection} from '~/components/sections/hero-section.tsx'
+import {Paragraph} from '~/components/typography.tsx'
+import {getConvertKitSubscriber} from '~/convertkit/convertkit.server.ts'
+import {getGenericSocialImage, images} from '~/images.tsx'
+import {getLoginInfoSession} from '~/utils/login.server.ts'
 import {
   getDisplayUrl,
   getDomainUrl,
@@ -24,12 +24,12 @@ import {
   getOrigin,
   getUrl,
   reuseUsefulLoaderHeaders,
-} from '~/utils/misc'
-import {prisma} from '~/utils/prisma.server'
-import {getSocialMetas} from '~/utils/seo'
-import {getUser, sendToken} from '~/utils/session.server'
-import {verifyEmailAddress} from '~/utils/verifier.server'
-import {type RootLoaderType} from '~/root'
+} from '~/utils/misc.tsx'
+import {prisma} from '~/utils/prisma.server.ts'
+import {getSocialMetas} from '~/utils/seo.ts'
+import {getUser, sendToken} from '~/utils/session.server.ts'
+import {verifyEmailAddress} from '~/utils/verifier.server.ts'
+import {type RootLoaderType} from '~/root.tsx'
 
 type LoaderData = {
   email?: string

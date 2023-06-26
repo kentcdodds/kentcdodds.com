@@ -1,9 +1,9 @@
 import {Link} from '@remix-run/react'
 import * as React from 'react'
-import {type Testimonial} from '~/utils/testimonials.server'
-import {ArrowButton} from '../arrow-button'
-import {H2} from '../typography'
-import {TestimonialCard} from './testimonial-card'
+import {type Testimonial} from '~/utils/testimonials.server.ts'
+import {ArrowButton} from '../arrow-button.tsx'
+import {H2} from '../typography.tsx'
+import {TestimonialCard} from './testimonial-card.tsx'
 
 function TestimonialSection({
   testimonials,

@@ -4,8 +4,8 @@ import os from 'os'
 import path from 'path'
 import {PassThrough} from 'stream'
 import v8 from 'v8'
-import {formatDate} from '~/utils/misc'
-import {requireAdminUser} from '~/utils/session.server'
+import {formatDate} from '~/utils/misc.tsx'
+import {requireAdminUser} from '~/utils/session.server.ts'
 
 export async function loader({request}: DataFunctionArgs) {
   await requireAdminUser(request)

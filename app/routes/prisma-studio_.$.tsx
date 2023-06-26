@@ -1,5 +1,5 @@
 import {type DataFunctionArgs} from '@remix-run/node'
-import {requireAdminUser} from '~/utils/session.server'
+import {requireAdminUser} from '~/utils/session.server.ts'
 
 export async function loader({request}: DataFunctionArgs) {
   await requireAdminUser(request)

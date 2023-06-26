@@ -1,9 +1,9 @@
 import {json, type DataFunctionArgs} from '@remix-run/node'
 import {getAllInstances, getInstanceInfo} from 'litefs-js'
-import {ensureInstance} from 'litefs-js/remix'
+import {ensureInstance} from 'litefs-js/remix.js'
 import invariant from 'tiny-invariant'
-import {cache} from '~/utils/cache.server'
-import {requireAdminUser} from '~/utils/session.server'
+import {cache} from '~/utils/cache.server.ts'
+import {requireAdminUser} from '~/utils/session.server.ts'
 
 export async function loader({request, params}: DataFunctionArgs) {
   await requireAdminUser(request)

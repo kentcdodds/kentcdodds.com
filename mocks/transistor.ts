@@ -11,8 +11,8 @@ import {
   type TransistorEpisodeData,
   type TransistorEpisodesJson,
   type TransistorPublishedJson,
-} from '~/types'
-import {requiredHeader, requiredParam, requiredProperty} from './utils'
+} from '~/types.ts'
+import {requiredHeader, requiredParam, requiredProperty} from './utils.ts'
 
 function makeEpisode(
   overrides: {

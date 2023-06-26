@@ -24,35 +24,35 @@ import {
 import * as React from 'react'
 
 import {MetronomeLinks} from '@metronome-sh/react'
-import clsx from 'clsx'
+import {clsx} from 'clsx'
 import {isFuture} from 'date-fns'
 import {AnimatePresence, motion} from 'framer-motion'
-import {getInstanceInfo} from 'litefs-js'
+import {getInstanceInfo} from '~/utils/cjs/litefs-js.js'
 import {useSpinDelay} from 'spin-delay'
-import {type KCDHandle} from '~/types'
-import {ArrowLink} from './components/arrow-button'
-import {ErrorPage} from './components/errors'
-import {Footer} from './components/footer'
-import {ArrowIcon, LaptopIcon} from './components/icons'
-import {Grimmacing, MissingSomething} from './components/kifs'
-import {Navbar} from './components/navbar'
-import {NotificationMessage} from './components/notification-message'
-import {Spacer} from './components/spacer'
-import {TeamCircle} from './components/team-circle'
-import {getGenericSocialImage, illustrationImages, images} from './images'
-import {pathedRoutes} from './other-routes.server'
+import {type KCDHandle} from '~/types.ts'
+import {ArrowLink} from './components/arrow-button.tsx'
+import {ErrorPage} from './components/errors.tsx'
+import {Footer} from './components/footer.tsx'
+import {ArrowIcon, LaptopIcon} from './components/icons.tsx'
+import {Grimmacing, MissingSomething} from './components/kifs.tsx'
+import {Navbar} from './components/navbar.tsx'
+import {NotificationMessage} from './components/notification-message.tsx'
+import {Spacer} from './components/spacer.tsx'
+import {TeamCircle} from './components/team-circle.tsx'
+import {getGenericSocialImage, illustrationImages, images} from './images.tsx'
+import {pathedRoutes} from './other-routes.server.ts'
 import {
   Promotification,
   getPromoCookieValue,
-} from './routes/resources+/promotification'
+} from './routes/resources+/promotification.tsx'
 import appStyles from './styles/app.css'
 import noScriptStyles from './styles/no-script.css'
 import proseStyles from './styles/prose.css'
 import tailwindStyles from './styles/tailwind.css'
 import vendorStyles from './styles/vendors.css'
-import {getClientSession} from './utils/client.server'
-import {getEnv} from './utils/env.server'
-import {getLoginInfoSession} from './utils/login.server'
+import {getClientSession} from './utils/client.server.ts'
+import {getEnv} from './utils/env.server.ts'
+import {getLoginInfoSession} from './utils/login.server.ts'
 import {
   getDisplayUrl,
   getDomainUrl,
@@ -60,21 +60,21 @@ import {
   parseDate,
   removeTrailingSlash,
   typedBoolean,
-} from './utils/misc'
-import {useNonce} from './utils/nonce-provider'
-import {getSocialMetas} from './utils/seo'
-import {getSession} from './utils/session.server'
-import {TeamProvider, useTeam} from './utils/team-provider'
+} from './utils/misc.tsx'
+import {useNonce} from './utils/nonce-provider.ts'
+import {getSocialMetas} from './utils/seo.ts'
+import {getSession} from './utils/session.server.ts'
+import {TeamProvider, useTeam} from './utils/team-provider.tsx'
 import {
   NonFlashOfWrongThemeEls,
   ThemeProvider,
   useTheme,
-} from './utils/theme-provider'
-import {getThemeSession} from './utils/theme.server'
-import {getServerTimeHeader} from './utils/timing.server'
-import {getUserInfo} from './utils/user-info.server'
-import {getScheduledEvents} from './utils/workshop-tickets.server'
-import {getWorkshops} from './utils/workshops.server'
+} from './utils/theme-provider.tsx'
+import {getThemeSession} from './utils/theme.server.ts'
+import {getServerTimeHeader} from './utils/timing.server.ts'
+import {getUserInfo} from './utils/user-info.server.ts'
+import {getScheduledEvents} from './utils/workshop-tickets.server.ts'
+import {getWorkshops} from './utils/workshops.server.ts'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',

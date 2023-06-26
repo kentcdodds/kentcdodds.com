@@ -6,18 +6,18 @@ import {
   useParams,
   useRouteError,
 } from '@remix-run/react'
-import {orderBy} from 'lodash'
-import {ServerError} from '~/components/errors'
-import {Grid} from '~/components/grid'
-import {TriangleIcon} from '~/components/icons'
-import {MissingSomething} from '~/components/kifs'
-import {H3, Paragraph} from '~/components/typography'
-import {type CWKSeason, type KCDHandle} from '~/types'
-import {getCWKEpisodePath} from '~/utils/chats-with-kent'
-import {formatDuration, reuseUsefulLoaderHeaders} from '~/utils/misc'
-import {useChatsEpisodeUIState} from '~/utils/providers'
-import {getSeasonListItems} from '~/utils/simplecast.server'
-import {getServerTimeHeader} from '~/utils/timing.server'
+import {orderBy} from '~/utils/cjs/lodash.js'
+import {ServerError} from '~/components/errors.tsx'
+import {Grid} from '~/components/grid.tsx'
+import {TriangleIcon} from '~/components/icons.tsx'
+import {MissingSomething} from '~/components/kifs.tsx'
+import {H3, Paragraph} from '~/components/typography.tsx'
+import {type CWKSeason, type KCDHandle} from '~/types.ts'
+import {getCWKEpisodePath} from '~/utils/chats-with-kent.ts'
+import {formatDuration, reuseUsefulLoaderHeaders} from '~/utils/misc.tsx'
+import {useChatsEpisodeUIState} from '~/utils/providers.tsx'
+import {getSeasonListItems} from '~/utils/simplecast.server.ts'
+import {getServerTimeHeader} from '~/utils/timing.server.ts'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {

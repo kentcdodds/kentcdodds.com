@@ -1,3 +1,5 @@
+import * as nodePath from 'path'
+import {fileURLToPath} from 'url'
 import {promises as fs} from 'fs'
 import {
   rest,
@@ -5,7 +7,8 @@ import {
   type MockedRequest,
   type RestHandler,
 } from 'msw'
-import * as nodePath from 'path'
+
+const __dirname = nodePath.dirname(fileURLToPath(import.meta.url))
 
 async function isDirectory(d: string) {
   try {

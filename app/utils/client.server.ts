@@ -3,7 +3,7 @@
 
 import {createCookieSessionStorage} from '@remix-run/node'
 import * as uuid from 'uuid'
-import {getRequiredServerEnvVar} from './misc'
+import {getRequiredServerEnvVar} from './misc.tsx'
 
 const clientStorage = createCookieSessionStorage({
   cookie: {

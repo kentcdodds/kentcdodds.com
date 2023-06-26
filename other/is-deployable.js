@@ -1,5 +1,5 @@
 // try to keep this dep-free so we don't have to install deps
-const {getChangedFiles, fetchJson} = require('./get-changed-files')
+import {getChangedFiles, fetchJson} from './get-changed-files.js'
 const [currentCommitSha] = process.argv.slice(2)
 
 const baseUrl =

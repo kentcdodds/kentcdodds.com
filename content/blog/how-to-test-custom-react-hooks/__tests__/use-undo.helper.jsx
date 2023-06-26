@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {render, act} from '@testing-library/react'
-import useUndo from '../use-undo'
+import useUndo from '../use-undo.js'
 
 function setup(...args) {
   const returnVal = {}

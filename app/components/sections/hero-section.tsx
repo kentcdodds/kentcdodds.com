@@ -1,10 +1,10 @@
 import {type TransformerOption} from '@cld-apis/types'
-import clsx from 'clsx'
+import {clsx} from 'clsx'
 import {motion, useReducedMotion, type HTMLMotionProps} from 'framer-motion'
-import {getImgProps, type ImageBuilder} from '~/images'
-import {ArrowLink} from '../arrow-button'
-import {Grid} from '../grid'
-import {H2} from '../typography'
+import {getImgProps, type ImageBuilder} from '~/images.tsx'
+import {ArrowLink} from '../arrow-button.tsx'
+import {Grid} from '../grid.tsx'
+import {H2} from '../typography.tsx'
 
 export type HeroSectionProps = {
   title: string | React.ReactNode

@@ -1,4 +1,4 @@
-import {SpinnerIcon} from './icons'
+import {SpinnerIcon} from './icons.tsx'
 
 export function Spinner({
   showSpinner,

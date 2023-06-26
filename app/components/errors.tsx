@@ -1,12 +1,12 @@
 import {useMatches} from '@remix-run/react'
-import clsx from 'clsx'
+import {clsx} from 'clsx'
 import errorStack from 'error-stack-parser'
 import * as React from 'react'
-import {type MdxListItem} from '~/types'
-import {Grimmacing, MissingSomething} from './kifs'
-import {BlogSection} from './sections/blog-section'
-import {HeroSection, type HeroSectionProps} from './sections/hero-section'
-import {H2, H6} from './typography'
+import {type MdxListItem} from '~/types.ts'
+import {Grimmacing, MissingSomething} from './kifs.tsx'
+import {BlogSection} from './sections/blog-section.tsx'
+import {HeroSection, type HeroSectionProps} from './sections/hero-section.tsx'
+import {H2, H6} from './typography.tsx'
 
 function RedBox({error}: {error: Error}) {
   const [isVisible, setIsVisible] = React.useState(true)

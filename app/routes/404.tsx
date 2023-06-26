@@ -1,6 +1,6 @@
-import {HeroSection} from '~/components/sections/hero-section'
-import {images} from '~/images'
-import {type KCDHandle} from '~/types'
+import {HeroSection} from '~/components/sections/hero-section.tsx'
+import {images} from '~/images.tsx'
+import {type KCDHandle} from '~/types.ts'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,

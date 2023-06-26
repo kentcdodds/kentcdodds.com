@@ -5,22 +5,22 @@ import {
   type V2_MetaFunction,
 } from '@remix-run/node'
 import {useLoaderData} from '@remix-run/react'
-import {ArrowLink} from '~/components/arrow-button'
-import {ButtonLink} from '~/components/button'
-import {Grid} from '~/components/grid'
+import {ArrowLink} from '~/components/arrow-button.tsx'
+import {ButtonLink} from '~/components/button.tsx'
+import {Grid} from '~/components/grid.tsx'
 import {
   HeroSection,
   getHeroImageProps,
-} from '~/components/sections/hero-section'
-import {TestimonialCard} from '~/components/sections/testimonial-card'
-import {Spacer} from '~/components/spacer'
-import {H2} from '~/components/typography'
-import {getGenericSocialImage, getImgProps, images} from '~/images'
-import {getDisplayUrl, getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc'
-import {getSocialMetas} from '~/utils/seo'
-import {getTestimonials} from '~/utils/testimonials.server'
-import {getServerTimeHeader} from '~/utils/timing.server'
-import {type RootLoaderType} from '~/root'
+} from '~/components/sections/hero-section.tsx'
+import {TestimonialCard} from '~/components/sections/testimonial-card.tsx'
+import {Spacer} from '~/components/spacer.tsx'
+import {H2} from '~/components/typography.tsx'
+import {getGenericSocialImage, getImgProps, images} from '~/images.tsx'
+import {getDisplayUrl, getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc.tsx'
+import {getSocialMetas} from '~/utils/seo.ts'
+import {getTestimonials} from '~/utils/testimonials.server.ts'
+import {getServerTimeHeader} from '~/utils/timing.server.ts'
+import {type RootLoaderType} from '~/root.tsx'
 
 export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
   data,

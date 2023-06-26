@@ -1,6 +1,6 @@
 // verifier is an email verification service
 
-import {getRequiredServerEnvVar} from './misc'
+import {getRequiredServerEnvVar} from './misc.tsx'
 
 const VERIFIER_API_KEY = getRequiredServerEnvVar('VERIFIER_API_KEY')
 

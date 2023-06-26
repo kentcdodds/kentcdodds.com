@@ -1,10 +1,12 @@
 import {test as base} from '@playwright/test'
 import {PrismaClient, type User} from '@prisma/client'
 import {parse} from 'cookie'
+import fsExtra from 'fs-extra'
+import path from 'path'
 import invariant from 'tiny-invariant'
-import '../app/entry.server'
-import {getSession} from '../app/utils/session.server'
-import {createUser} from '../prisma/seed-utils'
+import '../app/entry.server.tsx'
+import {getSession} from '../app/utils/session.server.ts'
+import {createUser} from '../prisma/seed-utils.ts'
 
 type MSWData = {
   email: Record<string, Email>
@@ -22,8 +24,9 @@ export async function readEmail(
   recipientOrFilter: string | ((email: Email) => boolean),
 ) {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const mswOutput = require('../mocks/msw.local.json') as MSWData
+    const mswOutput = fsExtra.readJsonSync(
+      path.join(process.cwd(), './mocks/msw.local.json'),
+    ) as unknown as MSWData
     const emails = Object.values(mswOutput.email).reverse() // reverse so we get the most recent email first
     // TODO: add validation
     if (typeof recipientOrFilter === 'string') {

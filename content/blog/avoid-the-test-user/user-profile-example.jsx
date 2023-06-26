@@ -1,7 +1,7 @@
 // React Context
 
 import * as React from 'react'
-import {isEqual} from 'lodash'
+import {isEqual} from '../../../app/utils/cjs/lodash.js'
 
 // ./context/user-context.js
 

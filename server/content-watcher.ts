@@ -2,13 +2,14 @@ import type http from 'http'
 import path from 'path'
 import chokidar from 'chokidar'
 import {WebSocket, WebSocketServer} from 'ws'
-import {postRefreshCache} from '../other/utils'
+import {postRefreshCache} from '../other/utils.js'
 
 const safePath = (s: string) => s.replace(/\\/g, '/')
 
-function refreshOnContentChanges(filePath: string) {
+async function refreshOnContentChanges(filePath: string) {
+  const http = await import('http')
   return postRefreshCache({
-    http: require('http'),
+    http,
     options: {
       // @ts-expect-error - postRefreshCache is not typed
       hostname: 'localhost',

@@ -1,10 +1,11 @@
-import {pick} from 'lodash'
+import slugify from '@sindresorhus/slugify'
 import * as YAML from 'yaml'
-import {cache, cachified} from './cache.server'
-import {downloadFile} from './github.server'
-import {markdownToHtml} from './markdown.server'
-import {getErrorMessage, typedBoolean} from './misc'
-import {type Timings} from './timing.server'
+import {pick} from '~/utils/cjs/lodash.js'
+import {cache, cachified} from './cache.server.ts'
+import {downloadFile} from './github.server.ts'
+import {markdownToHtml} from './markdown.server.ts'
+import {getErrorMessage, typedBoolean} from './misc.tsx'
+import {type Timings} from './timing.server.ts'
 
 const allCategories = [
   'teaching',
@@ -165,7 +166,6 @@ async function mapTestimonial(rawTestimonial: UnknownObj) {
     const author = getValueWithFallback(rawTestimonial, 'author', {
       validateType: isString,
     })
-    const {default: slugify} = await import('@sindresorhus/slugify')
     const testimonial: TestimonialWithMetadata = {
       id: slugify(author),
       author,

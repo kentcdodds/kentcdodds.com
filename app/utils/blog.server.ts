@@ -1,22 +1,23 @@
 import {subMonths, subYears} from 'date-fns'
-import {shuffle} from 'lodash'
-import {type Await, type MdxListItem, type Team, type User} from '~/types'
-import {filterPosts} from './blog'
-import {cache, cachified, lruCache} from './cache.server'
-import {getClientSession} from './client.server'
-import {sendMessageFromDiscordBot} from './discord.server'
-import {getBlogMdxListItems} from './mdx'
+import {shuffle} from '~/utils/cjs/lodash.js'
+import {type Await, type MdxListItem, type Team, type User} from '~/types.ts'
+import {filterPosts} from './blog.ts'
+import {cache, cachified, lruCache} from './cache.server.ts'
+import {getClientSession} from './client.server.ts'
+import {sendMessageFromDiscordBot} from './discord.server.ts'
+import {getBlogMdxListItems} from './mdx.tsx'
 import {
   getDomainUrl,
   getOptionalTeam,
   getRequiredServerEnvVar,
   teams,
   typedBoolean,
-} from './misc'
-import {prisma} from './prisma.server'
-import {getSession, getUser} from './session.server'
-import {teamEmoji} from './team-provider'
-import {time, type Timings} from './timing.server'
+} from './misc.tsx'
+import {prisma} from './prisma.server.ts'
+import {getSession, getUser} from './session.server.ts'
+import {teamEmoji} from './team-provider.tsx'
+import {time, type Timings} from './timing.server.ts'
+import pLimit from 'p-limit'
 
 async function getBlogRecommendations({
   request,
@@ -330,7 +331,6 @@ async function getAllBlogPostReadRankings({
     staleWhileRevalidate: 1000 * 60 * 60 * 24,
     getFreshValue: async () => {
       const posts = await getBlogMdxListItems({request, timings})
-      const {default: pLimit} = await import('p-limit')
 
       // each of the getBlogReadRankings calls results in 9 database queries
       // and we don't want to hit the limit of connections so we limit this

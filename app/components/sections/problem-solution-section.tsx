@@ -7,17 +7,17 @@ import {
   type TabProps,
 } from '@reach/tabs'
 import {Link} from '@remix-run/react'
-import clsx from 'clsx'
+import {clsx} from 'clsx'
 import {differenceInYears} from 'date-fns'
 import {AnimatePresence, motion} from 'framer-motion'
 import * as React from 'react'
-import {getImgProps, images, type ImageBuilder} from '~/images'
-import {type Team} from '~/types'
-import {teamTextColorClasses} from '~/utils/misc'
-import {ArrowLink} from '../arrow-button'
-import {Grid} from '../grid'
-import {ArrowIcon} from '../icons'
-import {H2, H3, Paragraph} from '../typography'
+import {getImgProps, images, type ImageBuilder} from '~/images.tsx'
+import {type Team} from '~/types.ts'
+import {teamTextColorClasses} from '~/utils/misc.tsx'
+import {ArrowLink} from '../arrow-button.tsx'
+import {Grid} from '../grid.tsx'
+import {ArrowIcon} from '../icons.tsx'
+import {H2, H3, Paragraph} from '../typography.tsx'
 
 function Tab({isSelected, children}: TabProps & {isSelected?: boolean}) {
   return (

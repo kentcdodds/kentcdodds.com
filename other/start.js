@@ -1,8 +1,8 @@
-const fs = require('fs')
-const {spawn} = require('child_process')
-const os = require('os')
-const path = require('path')
-const invariant = require('tiny-invariant')
+import fs from 'fs'
+import {spawn} from 'child_process'
+import os from 'os'
+import path from 'path'
+import invariant from 'tiny-invariant'
 
 async function go() {
   const currentInstance = os.hostname()

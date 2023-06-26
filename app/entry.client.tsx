@@ -1,8 +1,8 @@
 import {RemixBrowser} from '@remix-run/react'
 import * as React from 'react'
 import {hydrateRoot} from 'react-dom/client'
-import './bootstrap.client'
-import {handleDarkAndLightModeEls} from './utils/theme-provider'
+import './bootstrap.client.tsx'
+import {handleDarkAndLightModeEls} from './utils/theme-provider.tsx'
 
 // fixup stuff before hydration
 function hydrate() {

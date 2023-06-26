@@ -9,9 +9,9 @@ import {
   type Role,
   type Team,
   type User,
-} from '~/types'
-import {images} from '../images'
-import {type getEnv} from './env.server'
+} from '~/types.ts'
+import {images} from '../images.tsx'
+import {type getEnv} from './env.server.ts'
 
 const teams: Array<Team> = ['RED', 'BLUE', 'YELLOW']
 export const optionalTeams: Array<OptionalTeam> = [...teams, 'UNKNOWN']
@@ -34,7 +34,7 @@ function getAvatar(
     | {fallback: string; origin?: string}
   ) = {},
 ) {
-  const hash = md5(email)
+  const hash = md5.default(email)
   const url = new URL(`https://www.gravatar.com/avatar/${hash}`)
   url.searchParams.set('size', String(size))
   if (fallback) {
@@ -411,7 +411,7 @@ function useDoubleCheck() {
   return {doubleCheck, getButtonProps}
 }
 
-export {listify} from './listify'
+export {listify} from './listify.ts'
 export {
   getAvatar,
   getAvatarForUser,

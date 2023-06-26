@@ -91,9 +91,9 @@ const clientThemeCode = `
   const theme = window.matchMedia(${JSON.stringify(prefersLightMQ)}).matches
     ? 'light'
     : 'dark';
-  
+
   const cl = document.documentElement.classList;
-  
+
   const themeAlreadyApplied = cl.contains('light') || cl.contains('dark');
   if (themeAlreadyApplied) {
     // this script shouldn't exist if the theme is already applied!
@@ -103,7 +103,7 @@ const clientThemeCode = `
   } else {
     cl.add(theme);
   }
-  
+
   // the <dark-mode> and <light-mode> approach won't work for meta tags,
   // so we have to do it manually.
   const meta = document.querySelector('meta[name=color-scheme]');

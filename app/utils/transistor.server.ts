@@ -1,3 +1,4 @@
+import slugify from '@sindresorhus/slugify'
 import * as uuid from 'uuid'
 import {
   type CallKentEpisode,
@@ -8,13 +9,13 @@ import {
   type TransistorErrorResponse,
   type TransistorPublishedJson,
   type TransistorUpdateEpisodeData,
-} from '~/types'
-import {cache, cachified} from './cache.server'
-import {getEpisodePath} from './call-kent'
-import {stripHtml} from './markdown.server'
-import {getRequiredServerEnvVar, toBase64} from './misc'
-import {type Timings} from './timing.server'
-import {getDirectAvatarForUser} from './user-info.server'
+} from '~/types.ts'
+import {cache, cachified} from './cache.server.ts'
+import {getEpisodePath} from './call-kent.ts'
+import {stripHtml} from './markdown.server.ts'
+import {getRequiredServerEnvVar, toBase64} from './misc.tsx'
+import {type Timings} from './timing.server.ts'
+import {getDirectAvatarForUser} from './user-info.server.ts'
 
 const transistorApiSecret = getRequiredServerEnvVar('TRANSISTOR_API_SECRET')
 const podcastId = getRequiredServerEnvVar('CALL_KENT_PODCAST_ID', '67890')
@@ -125,7 +126,6 @@ async function createEpisode({
   // set the alternate_url if we have enough info for it.
   const {number, season} = created.data.attributes
   if (typeof number === 'number' && typeof season === 'number') {
-    const {default: slugify} = await import('@sindresorhus/slugify')
     const slug = slugify(created.data.attributes.title)
     const episodePath = getEpisodePath({
       episodeNumber: number,
@@ -197,7 +197,6 @@ async function createEpisode({
 }
 
 async function getEpisodes() {
-  const {default: slugify} = await import('@sindresorhus/slugify')
   const transistorEpisodes = await fetchTransitor<TransistorEpisodesJson>({
     endpoint: `/v1/episodes`,
     query: {'pagination[per]': '5000'},

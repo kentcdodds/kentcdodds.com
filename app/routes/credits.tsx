@@ -5,9 +5,9 @@ import {
   type V2_MetaFunction,
 } from '@remix-run/node'
 import {useLoaderData} from '@remix-run/react'
-import {shuffle} from 'lodash'
+import {shuffle} from '~/utils/cjs/lodash.js'
 import * as React from 'react'
-import {Grid} from '~/components/grid'
+import {Grid} from '~/components/grid.tsx'
 import {
   BehanceIcon,
   CodepenIcon,
@@ -18,30 +18,30 @@ import {
   LinkedInIcon,
   TwitchIcon,
   TwitterIcon,
-} from '~/components/icons'
-import {HeaderSection} from '~/components/sections/header-section'
+} from '~/components/icons.tsx'
+import {HeaderSection} from '~/components/sections/header-section.tsx'
 import {
   HeroSection,
   getHeroImageProps,
-} from '~/components/sections/hero-section'
-import {Spacer} from '~/components/spacer'
-import {H2, H3, H6, Paragraph} from '~/components/typography'
+} from '~/components/sections/hero-section.tsx'
+import {Spacer} from '~/components/spacer.tsx'
+import {H2, H3, H6, Paragraph} from '~/components/typography.tsx'
 import {
   getImageBuilder,
   getImgProps,
   getSocialImageWithPreTitle,
   images,
-} from '~/images'
-import {type Await} from '~/types'
-import {getPeople} from '~/utils/credits.server'
+} from '~/images.tsx'
+import {type Await} from '~/types.ts'
+import {getPeople} from '~/utils/credits.server.ts'
 import {
   getDisplayUrl,
   getOrigin,
   getUrl,
   reuseUsefulLoaderHeaders,
-} from '~/utils/misc'
-import {getSocialMetas} from '~/utils/seo'
-import {type RootLoaderType} from '~/root'
+} from '~/utils/misc.tsx'
+import {getSocialMetas} from '~/utils/seo.ts'
+import {type RootLoaderType} from '~/root.tsx'
 
 export type LoaderData = {people: Await<ReturnType<typeof getPeople>>}
 

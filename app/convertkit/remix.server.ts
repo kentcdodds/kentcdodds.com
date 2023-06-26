@@ -1,8 +1,8 @@
 import {json} from '@remix-run/node'
-import {getErrorMessage} from '~/utils/misc'
-import {deleteConvertKitCache} from '~/utils/user-info.server'
-import * as ck from './convertkit.server'
-import {type ActionData, type Errors, type Fields} from './types'
+import {getErrorMessage} from '~/utils/misc.tsx'
+import {deleteConvertKitCache} from '~/utils/user-info.server.ts'
+import * as ck from './convertkit.server.ts'
+import {type ActionData, type Errors, type Fields} from './types.ts'
 
 function getErrorForFirstName(name: string | null) {
   if (!name) return `Name is required`

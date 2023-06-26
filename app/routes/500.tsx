@@ -2,8 +2,8 @@
 
 import {type LoaderFunction} from '@remix-run/node'
 import {useRouteError} from 'react-router-dom'
-import {ServerError} from '~/components/errors'
-import {type KCDHandle} from '~/types'
+import {ServerError} from '~/components/errors.tsx'
+import {type KCDHandle} from '~/types.ts'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,

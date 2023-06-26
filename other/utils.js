@@ -4,15 +4,17 @@ const hostname =
     : 'kentcdodds.com'
 
 // try to keep this dep-free so we don't have to install deps
-function postRefreshCache({
-  http = require('https'),
+export async function postRefreshCache({
+  http,
   postData,
   options: {headers: headersOverrides, ...optionsOverrides} = {},
 }) {
+  if (!http) {
+    http = await import('https')
+  }
   return new Promise((resolve, reject) => {
     try {
       const postDataString = JSON.stringify(postData)
-      const searchParams = new URLSearchParams()
       const options = {
         hostname,
         port: 443,
@@ -51,5 +53,3 @@ function postRefreshCache({
     }
   })
 }
-
-module.exports = {postRefreshCache}

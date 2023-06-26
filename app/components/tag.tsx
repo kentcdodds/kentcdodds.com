@@ -1,5 +1,5 @@
 import {CustomCheckboxContainer, CustomCheckboxInput} from '@reach/checkbox'
-import clsx from 'clsx'
+import {clsx} from 'clsx'
 import {type ChangeEventHandler} from 'react'
 
 interface TagProps {

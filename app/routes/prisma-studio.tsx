@@ -1,6 +1,6 @@
 import {type DataFunctionArgs} from '@remix-run/node'
 import {spawn} from 'child_process'
-import {requireAdminUser} from '~/utils/session.server'
+import {requireAdminUser} from '~/utils/session.server.ts'
 
 declare global {
   // avoids issues with the purgeCache

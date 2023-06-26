@@ -1,10 +1,10 @@
-import {type User} from '~/types'
-import * as ck from '../convertkit/convertkit.server'
-import {getImageBuilder, images} from '../images'
-import {cache, cachified} from './cache.server'
-import * as discord from './discord.server'
-import {getAvatar, getOptionalTeam} from './misc'
-import {type Timings} from './timing.server'
+import {type User} from '~/types.ts'
+import * as ck from '../convertkit/convertkit.server.ts'
+import {getImageBuilder, images} from '../images.tsx'
+import {cache, cachified} from './cache.server.ts'
+import * as discord from './discord.server.ts'
+import {getAvatar, getOptionalTeam} from './misc.tsx'
+import {type Timings} from './timing.server.ts'
 
 type UserInfo = {
   avatar: {

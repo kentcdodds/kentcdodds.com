@@ -10,15 +10,15 @@ import {
   useRouteError,
 } from '@remix-run/react'
 import * as React from 'react'
-import {BackLink} from '~/components/arrow-button'
-import {BlurrableImage} from '~/components/blurrable-image'
-import {FourOhFour} from '~/components/errors'
-import {Grid} from '~/components/grid'
-import {H2, H6} from '~/components/typography'
-import {getImageBuilder, getImgProps} from '~/images'
-import {pathedRoutes} from '~/other-routes.server'
-import {type KCDHandle} from '~/types'
-import {getBlogRecommendations} from '~/utils/blog.server'
+import {BackLink} from '~/components/arrow-button.tsx'
+import {BlurrableImage} from '~/components/blurrable-image.tsx'
+import {FourOhFour} from '~/components/errors.tsx'
+import {Grid} from '~/components/grid.tsx'
+import {H2, H6} from '~/components/typography.tsx'
+import {getImageBuilder, getImgProps} from '~/images.tsx'
+import {pathedRoutes} from '~/other-routes.server.ts'
+import {type KCDHandle} from '~/types.ts'
+import {getBlogRecommendations} from '~/utils/blog.server.ts'
 import {
   getBannerAltProp,
   getBannerTitleProp,
@@ -26,9 +26,9 @@ import {
   getMdxPagesInDirectory,
   mdxPageMeta,
   useMdxComponent,
-} from '~/utils/mdx'
-import {reuseUsefulLoaderHeaders} from '~/utils/misc'
-import {getServerTimeHeader} from '~/utils/timing.server'
+} from '~/utils/mdx.tsx'
+import {reuseUsefulLoaderHeaders} from '~/utils/misc.tsx'
+import {getServerTimeHeader} from '~/utils/timing.server.ts'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {

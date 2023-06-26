@@ -1,6 +1,6 @@
 import {Dialog} from '@reach/dialog'
 import * as React from 'react'
-import {PlayIcon, PlusIcon} from './icons'
+import {PlayIcon, PlusIcon} from './icons.tsx'
 
 function YouTubeEmbed({
   onCloseClick,
@@ -75,7 +75,15 @@ function FullScreenYouTubeEmbed({
   )
 }
 
-export {default as LiteYouTubeEmbed} from 'react-lite-youtube-embed'
+/**
+ *  in order to prevent this error when running native ESM in production
+ *  TypeError: Unknown file extension ".jsx" for
+ *  kentcdodds.com/node_modules/react-lite-youtube-embed/dist/index.es.jsx
+ *
+ *  we import it here from 'react-lite-youtube-embed/dist/index.es.jsx' and add
+ *  it to serverDependenciesToBundle in remix.config.js
+ */
+export {default as LiteYouTubeEmbed} from 'react-lite-youtube-embed/dist/index.es.jsx'
 export {FullScreenYouTubeEmbed}
 
 export const links = () => {

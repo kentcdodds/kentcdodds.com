@@ -1,8 +1,8 @@
 import {Form, useSubmit} from '@remix-run/react'
 import * as React from 'react'
-import {useRootData} from '~/utils/use-root-data'
-import {Button} from '../button'
-import {Field} from '../form-elements'
+import {useRootData} from '~/utils/use-root-data.ts'
+import {Button} from '../button.tsx'
+import {Field} from '../form-elements.tsx'
 
 type RecordingFormData = {
   fields: {

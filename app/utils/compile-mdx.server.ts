@@ -8,8 +8,13 @@ import {bundleMDX} from 'mdx-bundler'
 import type TPQueue from 'p-queue'
 import calculateReadingTime from 'reading-time'
 import type * as U from 'unified'
-import {type GitHubFile} from '~/types'
-import * as twitter from './twitter.server'
+import {type GitHubFile} from '~/types.ts'
+import * as twitter from './twitter.server.ts'
+import {visit} from 'unist-util-visit'
+import remarkAutolinkHeadings from 'remark-autolink-headings'
+import remarkSlug from 'remark-slug'
+import gfm from 'remark-gfm'
+import PQueue from 'p-queue'
 
 function handleEmbedderError({url}: {url: string}) {
   return `<p>Error embedding <a href="${url}">${url}</a></p>.`
@@ -44,7 +49,6 @@ function makeEmbed(html: string, type: string, heightRatio = '56.25%') {
 
 function trimCodeBlocks() {
   return async function transformer(tree: H.Root) {
-    const {visit} = await import('unist-util-visit')
     visit(tree, 'element', (preNode: H.Element) => {
       if (preNode.tagName !== 'pre' || !preNode.children.length) {
         return
@@ -77,7 +81,6 @@ const cloudinaryUrlRegex =
 
 function optimizeCloudinaryImages() {
   return async function transformer(tree: H.Root) {
-    const {visit} = await import('unist-util-visit')
     visit(
       tree,
       'mdxJsxFlowElement',
@@ -186,7 +189,6 @@ const eggheadTransformer = {
 
 function autoAffiliates() {
   return async function affiliateTransformer(tree: M.Root) {
-    const {visit} = await import('unist-util-visit')
     visit(tree, 'link', function visitor(linkNode: M.Link) {
       if (linkNode.url.includes('amazon.com')) {
         const amazonUrl = new URL(linkNode.url)
@@ -208,7 +210,6 @@ function autoAffiliates() {
 
 function removePreContainerDivs() {
   return async function preContainerDivsTransformer(tree: H.Root) {
-    const {visit} = await import('unist-util-visit')
     visit(
       tree,
       {type: 'element', tagName: 'pre'},
@@ -245,12 +246,6 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
   slug: string,
   githubFiles: Array<GitHubFile>,
 ) {
-  const {default: remarkAutolinkHeadings} = await import(
-    'remark-autolink-headings'
-  )
-  const {default: remarkSlug} = await import('remark-slug')
-  const {default: gfm} = await import('remark-gfm')
-
   const indexRegex = new RegExp(`${slug}\\/index.mdx?$`)
   const indexFile = githubFiles.find(({path}) => indexRegex.test(path))
   if (!indexFile) return null
@@ -317,7 +312,6 @@ function arrayToObj<ItemType extends Record<string, unknown>>(
 
 let _queue: TPQueue | null = null
 async function getQueue() {
-  const {default: PQueue} = await import('p-queue')
   if (_queue) return _queue
 
   _queue = new PQueue({

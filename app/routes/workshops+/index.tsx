@@ -1,31 +1,34 @@
 import {type HeadersFunction, type V2_MetaFunction} from '@remix-run/node'
 import {useSearchParams} from '@remix-run/react'
 import * as React from 'react'
-import {Grid} from '~/components/grid'
-import {CourseSection} from '~/components/sections/course-section'
-import {HeroSection} from '~/components/sections/hero-section'
-import {Spacer} from '~/components/spacer'
-import {Tag} from '~/components/tag'
-import {H3, H6} from '~/components/typography'
-import {WorkshopCard} from '~/components/workshop-card'
-import {RegistrationPanel} from '~/components/workshop-registration-panel'
-import {getSocialImageWithPreTitle, images} from '~/images'
-import {type Workshop} from '~/types'
+import {Grid} from '~/components/grid.tsx'
+import {CourseSection} from '~/components/sections/course-section.tsx'
+import {HeroSection} from '~/components/sections/hero-section.tsx'
+import {Spacer} from '~/components/spacer.tsx'
+import {Tag} from '~/components/tag.tsx'
+import {H3, H6} from '~/components/typography.tsx'
+import {WorkshopCard} from '~/components/workshop-card.tsx'
+import {RegistrationPanel} from '~/components/workshop-registration-panel.tsx'
+import {getSocialImageWithPreTitle, images} from '~/images.tsx'
+import {type Workshop} from '~/types.ts'
 import {
   getDisplayUrl,
   getUrl,
   listify,
   typedBoolean,
   useUpdateQueryStringValueWithoutNavigation,
-} from '~/utils/misc'
-import {getSocialMetas} from '~/utils/seo'
-import {type WorkshopEvent} from '~/utils/workshop-tickets.server'
-import {type RootLoaderType, type LoaderData as RootLoaderData} from '~/root'
+} from '~/utils/misc.tsx'
+import {getSocialMetas} from '~/utils/seo.ts'
+import {type WorkshopEvent} from '~/utils/workshop-tickets.server.ts'
+import {
+  type RootLoaderType,
+  type LoaderData as RootLoaderData,
+} from '~/root.tsx'
 import {
   useWorkshopsData,
   type loader as WorkshopLoader,
   type LoaderData as WorkshopLoaderData,
-} from './_workshops'
+} from './_workshops.tsx'
 
 export const meta: V2_MetaFunction<
   {},

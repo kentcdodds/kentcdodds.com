@@ -1,11 +1,11 @@
-import {type CountableSlugify} from '@sindresorhus/slugify'
+import {slugifyWithCounter, type CountableSlugify} from '@sindresorhus/slugify'
 import * as YAML from 'yaml'
-import {type Await} from '~/types'
-import {cache, cachified} from '~/utils/cache.server'
-import {downloadFile} from '~/utils/github.server'
-import {markdownToHtml, stripHtml} from '~/utils/markdown.server'
-import {formatDate, typedBoolean} from '~/utils/misc'
-import {type Timings} from './timing.server'
+import {type Await} from '~/types.ts'
+import {cache, cachified} from '~/utils/cache.server.ts'
+import {downloadFile} from '~/utils/github.server.ts'
+import {markdownToHtml, stripHtml} from '~/utils/markdown.server.ts'
+import {formatDate, typedBoolean} from '~/utils/misc.tsx'
+import {type Timings} from './timing.server.ts'
 
 type RawTalk = {
   title?: string
@@ -24,8 +24,6 @@ let _slugify: CountableSlugify
 async function getSlugify() {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!_slugify) {
-    const {slugifyWithCounter} = await import('@sindresorhus/slugify')
-
     _slugify = slugifyWithCounter()
   }
   return _slugify

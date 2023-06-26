@@ -5,11 +5,11 @@ import {
   type LoaderFunction,
 } from '@remix-run/node'
 import {Link, Outlet, useLoaderData} from '@remix-run/react'
-import {type Await, type KCDHandle} from '~/types'
-import {getAvatarForUser} from '~/utils/misc'
-import {prisma} from '~/utils/prisma.server'
-import {requireAdminUser} from '~/utils/session.server'
-import {useRootData} from '~/utils/use-root-data'
+import {type Await, type KCDHandle} from '~/types.ts'
+import {getAvatarForUser} from '~/utils/misc.tsx'
+import {prisma} from '~/utils/prisma.server.ts'
+import {requireAdminUser} from '~/utils/session.server.ts'
+import {useRootData} from '~/utils/use-root-data.ts'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
