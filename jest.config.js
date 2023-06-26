@@ -1,7 +1,9 @@
-const path = require('path')
+import path from 'path'
+import {fileURLToPath} from 'url'
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const fromRoot = d => path.join(__dirname, d)
-module.exports = {
+export default {
   roots: [fromRoot('app'), fromRoot('content')],
   resetMocks: true,
   coveragePathIgnorePatterns: [],

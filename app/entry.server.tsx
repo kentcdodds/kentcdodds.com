@@ -1,12 +1,12 @@
 import {Response, type HandleDocumentRequestFunction} from '@remix-run/node'
 import {RemixServer} from '@remix-run/react'
 import isbot from 'isbot'
-import {ensurePrimary} from 'litefs-js/remix'
+import {ensurePrimary} from 'litefs-js/remix.js'
 import {renderToPipeableStream} from 'react-dom/server'
 import {PassThrough, Transform} from 'stream'
-import {routes as otherRoutes} from './other-routes.server'
-import {getEnv} from './utils/env.server'
-import {NonceProvider} from './utils/nonce-provider'
+import {routes as otherRoutes} from './other-routes.server.ts'
+import {getEnv} from './utils/env.server.ts'
+import {NonceProvider} from './utils/nonce-provider.ts'
 
 global.ENV = getEnv()
 

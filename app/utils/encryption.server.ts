@@ -1,5 +1,5 @@
 import crypto from 'crypto'
-import {getRequiredServerEnvVar} from './misc'
+import {getRequiredServerEnvVar} from './misc.tsx'
 
 const algorithm = 'aes-256-gcm'
 

@@ -1,8 +1,8 @@
 import {type User} from '@prisma/client'
 import {createCookieSessionStorage, redirect} from '@remix-run/node'
-import {ensurePrimary} from 'litefs-js/remix'
-import {getLoginInfoSession} from './login.server'
-import {getRequiredServerEnvVar} from './misc'
+import {ensurePrimary} from 'litefs-js/remix.js'
+import {getLoginInfoSession} from './login.server.ts'
+import {getRequiredServerEnvVar} from './misc.tsx'
 import {
   createSession,
   getMagicLink,
@@ -10,9 +10,9 @@ import {
   prisma,
   sessionExpirationTime,
   validateMagicLink,
-} from './prisma.server'
-import {sendMagicLinkEmail} from './send-email.server'
-import {type Timings} from './timing.server'
+} from './prisma.server.ts'
+import {sendMagicLinkEmail} from './send-email.server.ts'
+import {type Timings} from './timing.server.ts'
 
 const sessionIdKey = '__session_id__'
 

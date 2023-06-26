@@ -1,7 +1,7 @@
 import {json, type LoaderFunction} from '@remix-run/node'
-import {getAllUserData} from '~/utils/prisma.server'
-import {requireUser} from '~/utils/session.server'
-import {getUserInfo} from '~/utils/user-info.server'
+import {getAllUserData} from '~/utils/prisma.server.ts'
+import {requireUser} from '~/utils/session.server.ts'
+import {getUserInfo} from '~/utils/user-info.server.ts'
 
 export const loader: LoaderFunction = async ({request}) => {
   const user = await requireUser(request)

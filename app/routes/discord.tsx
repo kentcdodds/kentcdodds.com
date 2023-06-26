@@ -13,10 +13,10 @@ import {
 } from '@remix-run/node'
 import {Outlet, useLoaderData, useRouteError} from '@remix-run/react'
 import {motion} from 'framer-motion'
-import {ArrowLink} from '~/components/arrow-button'
-import {ButtonLink} from '~/components/button'
-import {FeatureCard} from '~/components/feature-card'
-import {Grid} from '~/components/grid'
+import {ArrowLink} from '~/components/arrow-button.tsx'
+import {ButtonLink} from '~/components/button.tsx'
+import {FeatureCard} from '~/components/feature-card.tsx'
+import {Grid} from '~/components/grid.tsx'
 import {
   BriefcaseIcon,
   CodeIcon,
@@ -28,27 +28,27 @@ import {
   RocketIcon,
   TrophyIcon,
   UsersIcon,
-} from '~/components/icons'
-import {NumberedPanel} from '~/components/numbered-panel'
-import {CourseSection} from '~/components/sections/course-section'
-import {HeaderSection} from '~/components/sections/header-section'
-import {HeroSection} from '~/components/sections/hero-section'
-import {TestimonialSection} from '~/components/sections/testimonial-section'
-import {Spacer} from '~/components/spacer'
-import {H2, H5, H6, Paragraph} from '~/components/typography'
-import {getGenericSocialImage, getImgProps, images} from '~/images'
+} from '~/components/icons.tsx'
+import {NumberedPanel} from '~/components/numbered-panel.tsx'
+import {CourseSection} from '~/components/sections/course-section.tsx'
+import {HeaderSection} from '~/components/sections/header-section.tsx'
+import {HeroSection} from '~/components/sections/hero-section.tsx'
+import {TestimonialSection} from '~/components/sections/testimonial-section.tsx'
+import {Spacer} from '~/components/spacer.tsx'
+import {H2, H5, H6, Paragraph} from '~/components/typography.tsx'
+import {getGenericSocialImage, getImgProps, images} from '~/images.tsx'
 import {
   getDiscordAuthorizeURL,
   getDisplayUrl,
   getUrl,
   reuseUsefulLoaderHeaders,
-} from '~/utils/misc'
-import {getSocialMetas} from '~/utils/seo'
-import {getTestimonials, type Testimonial} from '~/utils/testimonials.server'
-import {getServerTimeHeader} from '~/utils/timing.server'
-import {useRootData} from '~/utils/use-root-data'
-import {externalLinks} from '~/external-links'
-import {type RootLoaderType} from '~/root'
+} from '~/utils/misc.tsx'
+import {getSocialMetas} from '~/utils/seo.ts'
+import {getTestimonials, type Testimonial} from '~/utils/testimonials.server.ts'
+import {getServerTimeHeader} from '~/utils/timing.server.ts'
+import {useRootData} from '~/utils/use-root-data.ts'
+import {externalLinks} from '~/external-links.tsx'
+import {type RootLoaderType} from '~/root.tsx'
 
 type LoaderData = {
   testimonials: Array<Testimonial>

@@ -1,13 +1,13 @@
 import {json, redirect, type DataFunctionArgs} from '@remix-run/node'
-import {ensurePrimary} from 'litefs-js/remix'
+import {ensurePrimary} from 'litefs-js/remix.js'
 import path from 'path'
-import {cache} from '~/utils/cache.server'
-import {getPeople} from '~/utils/credits.server'
-import {getBlogMdxListItems, getMdxDirList, getMdxPage} from '~/utils/mdx'
-import {getRequiredServerEnvVar} from '~/utils/misc'
-import {getTalksAndTags} from '~/utils/talks.server'
-import {getTestimonials} from '~/utils/testimonials.server'
-import {getWorkshops} from '~/utils/workshops.server'
+import {cache} from '~/utils/cache.server.ts'
+import {getPeople} from '~/utils/credits.server.ts'
+import {getBlogMdxListItems, getMdxDirList, getMdxPage} from '~/utils/mdx.tsx'
+import {getRequiredServerEnvVar} from '~/utils/misc.tsx'
+import {getTalksAndTags} from '~/utils/talks.server.ts'
+import {getTestimonials} from '~/utils/testimonials.server.ts'
+import {getWorkshops} from '~/utils/workshops.server.ts'
 
 type Body =
   | {keys: Array<string>; commitSha?: string}

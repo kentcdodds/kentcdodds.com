@@ -1,9 +1,9 @@
 import {Link, type LinkProps} from '@remix-run/react'
-import clsx from 'clsx'
+import {clsx} from 'clsx'
 import {motion, useReducedMotion, type Variant} from 'framer-motion'
-import {useElementState, type ElementState} from './hooks/use-element-state'
-import {ArrowIcon} from './icons'
-import {H6} from './typography'
+import {useElementState, type ElementState} from './hooks/use-element-state.tsx'
+import {ArrowIcon} from './icons.tsx'
+import {H6} from './typography.tsx'
 
 type ArrowIconProps = React.ComponentProps<typeof ArrowIcon>
 

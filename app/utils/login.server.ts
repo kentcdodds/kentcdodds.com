@@ -1,7 +1,7 @@
 import {createCookieSessionStorage} from '@remix-run/node'
-import {decrypt, encrypt} from './encryption.server'
-import {getRequiredServerEnvVar} from './misc'
-import {linkExpirationTime} from './prisma.server'
+import {decrypt, encrypt} from './encryption.server.ts'
+import {getRequiredServerEnvVar} from './misc.tsx'
+import {linkExpirationTime} from './prisma.server.ts'
 
 const loginInfoStorage = createCookieSessionStorage({
   cookie: {

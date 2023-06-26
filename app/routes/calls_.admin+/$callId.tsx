@@ -7,25 +7,25 @@ import {
 import {Form, useActionData, useLoaderData} from '@remix-run/react'
 import {format} from 'date-fns'
 import * as React from 'react'
-import {Button} from '~/components/button'
-import {CallRecorder} from '~/components/calls/recorder'
+import {Button} from '~/components/button.tsx'
+import {CallRecorder} from '~/components/calls/recorder.tsx'
 import {
   RecordingForm,
   type RecordingFormData,
-} from '~/components/calls/submit-recording-form'
-import {Field} from '~/components/form-elements'
-import {Spacer} from '~/components/spacer'
-import {Paragraph} from '~/components/typography'
-import {type Await, type KCDHandle} from '~/types'
+} from '~/components/calls/submit-recording-form.tsx'
+import {Field} from '~/components/form-elements.tsx'
+import {Spacer} from '~/components/spacer.tsx'
+import {Paragraph} from '~/components/typography.tsx'
+import {type Await, type KCDHandle} from '~/types.ts'
 import {
   getErrorForAudio,
   getErrorForDescription,
   getErrorForKeywords,
   getErrorForTitle,
-} from '~/utils/call-kent'
-import {sendMessageFromDiscordBot} from '~/utils/discord.server'
-import {createEpisodeAudio} from '~/utils/ffmpeg.server'
-import {markdownToHtml} from '~/utils/markdown.server'
+} from '~/utils/call-kent.ts'
+import {sendMessageFromDiscordBot} from '~/utils/discord.server.ts'
+import {createEpisodeAudio} from '~/utils/ffmpeg.server.ts'
+import {markdownToHtml} from '~/utils/markdown.server.ts'
 import {
   getAvatarForUser,
   getErrorMessage,
@@ -33,13 +33,13 @@ import {
   getOptionalTeam,
   getRequiredServerEnvVar,
   useDoubleCheck,
-} from '~/utils/misc'
-import {prisma} from '~/utils/prisma.server'
-import {sendEmail} from '~/utils/send-email.server'
-import {requireAdminUser} from '~/utils/session.server'
-import {teamEmoji} from '~/utils/team-provider'
-import {createEpisode} from '~/utils/transistor.server'
-import {useRootData, useUser} from '~/utils/use-root-data'
+} from '~/utils/misc.tsx'
+import {prisma} from '~/utils/prisma.server.ts'
+import {sendEmail} from '~/utils/send-email.server.ts'
+import {requireAdminUser} from '~/utils/session.server.ts'
+import {teamEmoji} from '~/utils/team-provider.tsx'
+import {createEpisode} from '~/utils/transistor.server.ts'
+import {useRootData, useUser} from '~/utils/use-root-data.ts'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,

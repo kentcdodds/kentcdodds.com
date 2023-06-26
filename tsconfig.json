@@ -1,14 +1,14 @@
 {
-  "include": ["./types", "**/*.ts", "**/*.tsx"],
+  "include": ["**/*.ts", "**/*.tsx"],
   "compilerOptions": {
-    "lib": ["DOM", "DOM.Iterable", "ES2021"],
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "types": ["jest"],
     "isolatedModules": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",
-    "module": "es2020",
-    "target": "es2020",
-    "moduleResolution": "node",
+    "module": "nodenext",
+    "target": "ES2022",
+    "moduleResolution": "nodenext",
     "resolveJsonModule": true,
     "noUncheckedIndexedAccess": true,
     "strict": true,
@@ -19,6 +19,7 @@
       "~/*": ["./app/*"]
     },
     "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
     "typeRoots": ["./types", "./node_modules/@types"],
 
     // Remix takes care of building everything in `remix build`.

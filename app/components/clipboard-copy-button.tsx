@@ -1,6 +1,6 @@
-import clsx from 'clsx'
+import {clsx} from 'clsx'
 import * as React from 'react'
-import {CheckIcon, CopyIcon} from './icons'
+import {CheckIcon, CopyIcon} from './icons.tsx'
 
 async function copyToClipboard(value: string) {
   try {

@@ -1,7 +1,7 @@
 import {faker} from '@faker-js/faker'
 import {expect, test} from '@playwright/test'
 import invariant from 'tiny-invariant'
-import {deleteUserByEmail, extractUrl, readEmail} from './utils'
+import {deleteUserByEmail, extractUrl, readEmail} from './utils.ts'
 
 test('A new user can create an account', async ({page}) => {
   const firstName = faker.person.firstName()

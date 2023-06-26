@@ -1,6 +1,6 @@
 // try to keep this dep-free so we don't have to install deps
-const {getChangedFiles, fetchJson} = require('./get-changed-files')
-const {postRefreshCache} = require('./utils')
+import {getChangedFiles, fetchJson} from './get-changed-files.js'
+import {postRefreshCache} from './utils.js'
 
 const [currentCommitSha] = process.argv.slice(2)
 

@@ -121,7 +121,7 @@ function Rendered(props) {
 export {WorkingContact, BrokenContact, Rendered, CounterParent}
 
 /*
-eslint 
+eslint
   jsx-a11y/label-has-associated-control: off,
   no-console: off
 */

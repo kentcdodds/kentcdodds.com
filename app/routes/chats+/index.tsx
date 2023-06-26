@@ -1,5 +1,5 @@
 import {redirect, type LoaderFunction} from '@remix-run/node'
-import {getSeasonListItems} from '~/utils/simplecast.server'
+import {getSeasonListItems} from '~/utils/simplecast.server.ts'
 
 export const loader: LoaderFunction = async ({request}) => {
   const seasons = await getSeasonListItems({request})

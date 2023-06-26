@@ -4,7 +4,7 @@ import {
   type MockedRequest,
   type RestHandler,
 } from 'msw'
-import {requiredHeader, requiredParam} from './utils'
+import {requiredHeader, requiredParam} from './utils.ts'
 
 const discordHandlers: Array<
   RestHandler<MockedRequest<DefaultRequestMultipartBody>>

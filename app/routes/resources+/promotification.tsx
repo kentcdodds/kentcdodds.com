@@ -7,11 +7,11 @@ import {useEffect, useRef, useState} from 'react'
 import Countdown from 'react-countdown'
 import {useSpinDelay} from 'spin-delay'
 import invariant from 'tiny-invariant'
-import {NotificationMessage} from '~/components/notification-message'
+import {NotificationMessage} from '~/components/notification-message.tsx'
 
-import {LinkButton} from '~/components/button'
-import {AlarmIcon} from '~/components/icons'
-import {Spinner} from '~/components/spinner'
+import {LinkButton} from '~/components/button.tsx'
+import {AlarmIcon} from '~/components/icons.tsx'
+import {Spinner} from '~/components/spinner.tsx'
 
 export function getPromoCookieValue({
   promoName,
@@ -54,13 +54,13 @@ export function Promotification({
   /** maxAge for the cookie */
   dismissTimeSeconds?: number
   cookieValue: string | undefined
-  promoEndTime?: Date
+  promoEndTime: Date
 } & NotificationMessageProps & {
     queryStringKey?: never
     autoClose?: never
     visibleMs?: never
   } & Required<Pick<NotificationMessageProps, 'children'>>) {
-  const isPastEndTime = useRef(promoEndTime ? promoEndTime < new Date() : false)
+  const isPastEndTime = useRef(promoEndTime < new Date())
 
   const [visible, setVisible] = useState(cookieValue !== 'hidden')
   const fetcher = useFetcher<typeof action>()

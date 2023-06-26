@@ -1,36 +1,45 @@
 import {createRequestHandler, type RequestHandler} from '@remix-run/express'
+import {broadcastDevReady, type ServerBuild} from '@remix-run/node'
 import * as Sentry from '@sentry/node'
+import address from 'address'
+import chalk from 'chalk'
+import chokidar from 'chokidar'
+import closeWithGrace from 'close-with-grace'
 import compression from 'compression'
 import crypto from 'crypto'
 import express from 'express'
 import 'express-async-errors'
 import fs from 'fs'
+import getPort, {portNumbers} from 'get-port'
+import helmet from 'helmet'
 import morgan from 'morgan'
 import onFinished from 'on-finished'
 import path from 'path'
 import serverTiming from 'server-timing'
+import {fileURLToPath} from 'url'
+import {type WebSocketServer} from 'ws'
+import {getInstanceInfo} from '../app/utils/cjs/litefs-js.js'
 import {
   combineGetLoadContexts,
   createMetronomeGetLoadContext,
   registerMetronome,
-} from '@metronome-sh/express'
-import {broadcastDevReady, type ServerBuild} from '@remix-run/node'
-import chokidar from 'chokidar'
-import closeWithGrace from 'close-with-grace'
-import {type WebSocketServer} from 'ws'
-import helmet from 'helmet'
-import {getInstanceInfo} from 'litefs-js'
+} from '../app/utils/cjs/metronome-sh-express.js'
 import {
   getRedirectsMiddleware,
   oldImgSocial,
   rickRollMiddleware,
-} from './redirects'
+} from './redirects.js'
 
-const BUILD_DIR = path.join(process.cwd(), 'build')
+// @ts-ignore - this file may not exist if you haven't built yet, but it will
+// definitely exist by the time the dev or prod server actually runs.
+import * as remixBuild from '../build/index.js'
 
-const build = require(BUILD_DIR) as unknown as ServerBuild
+const BUILD_PATH = '../build/index.js'
+
+const build = remixBuild as unknown as ServerBuild
 let devBuild = build
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const here = (...d: Array<string>) => path.join(__dirname, ...d)
 const primaryHost = 'kentcdodds.com'
 const getHost = (req: {get: (key: string) => string | undefined}) =>
@@ -291,9 +300,45 @@ if (MODE === 'production') {
   app.all('*', (...args) => getRequestHandler(devBuild)(...args))
 }
 
-const port = process.env.PORT ?? 3000
-const server = app.listen(port, () => {
-  console.log(`Express server listening on port ${port}`)
+const desiredPort = Number(process.env.PORT || 3000)
+const portToUse = await getPort({
+  port: portNumbers(desiredPort, desiredPort + 100),
+})
+
+const server = app.listen(portToUse, () => {
+  const addy = server.address()
+  const portUsed =
+    desiredPort === portToUse
+      ? desiredPort
+      : addy && typeof addy === 'object'
+      ? addy.port
+      : 0
+
+  if (portUsed !== desiredPort) {
+    console.warn(
+      chalk.yellow(
+        `⚠️  Port ${desiredPort} is not available, using ${portUsed} instead.`,
+      ),
+    )
+  }
+  console.log(`\n🐨  let's get rolling!`)
+  const localUrl = `http://localhost:${portUsed}`
+  let lanUrl: string | null = null
+  const localIp = address.ip()
+  // Check if the address is a private ip
+  // https://en.wikipedia.org/wiki/Private_network#Private_IPv4_address_spaces
+  // https://github.com/facebook/create-react-app/blob/d960b9e38c062584ff6cfb1a70e1512509a966e7/packages/react-dev-utils/WebpackDevServerUtils.js#LL48C9-L54C10
+  if (/^10[.]|^172[.](1[6-9]|2[0-9]|3[0-1])[.]|^192[.]168[.]/.test(localIp)) {
+    lanUrl = `http://${localIp}:${portUsed}`
+  }
+
+  console.log(
+    `
+${chalk.bold('Local:')}            ${chalk.cyan(localUrl)}
+${lanUrl ? `${chalk.bold('On Your Network:')}  ${chalk.cyan(lanUrl)}` : ''}
+${chalk.bold('Press Ctrl+C to stop')}
+		`.trim(),
+  )
 
   if (process.env.NODE_ENV === 'development') {
     broadcastDevReady(build)
@@ -301,15 +346,13 @@ const server = app.listen(port, () => {
 })
 
 let wss: WebSocketServer | undefined
-async function startContentWatcher() {
-  const {contentWatcher} = await import('./content-watcher')
-  wss = contentWatcher(server)
-}
-
 if (process.env.NODE_ENV === 'development') {
-  startContentWatcher().catch((err: unknown) => {
-    console.error('unable to start content watcher', err)
-  })
+  try {
+    const {contentWatcher} = await import('./content-watcher.js')
+    wss = contentWatcher(server)
+  } catch (error: unknown) {
+    console.error('unable to start content watcher', error)
+  }
 }
 
 closeWithGrace(() => {
@@ -326,20 +369,13 @@ closeWithGrace(() => {
 // during dev, we'll keep the build module up to date with the changes
 if (process.env.NODE_ENV === 'development') {
   async function reloadBuild() {
-    for (const key in require.cache) {
-      if (key.startsWith(BUILD_DIR)) {
-        delete require.cache[key]
-      }
-    }
-    devBuild = require(BUILD_DIR)
+    devBuild = await import(`${BUILD_PATH}?update=${Date.now()}`)
     broadcastDevReady(devBuild)
   }
 
-  const watchPath = BUILD_DIR.replace(/\\/g, '/')
-  const watcher = chokidar.watch(watchPath, {
-    ignored: ['**/**.map'],
-    ignoreInitial: true,
-  })
+  const dirname = path.dirname(fileURLToPath(import.meta.url))
+  const watchPath = path.join(dirname, BUILD_PATH).replace(/\\/g, '/')
+  const watcher = chokidar.watch(watchPath, {ignoreInitial: true})
   watcher.on('all', reloadBuild)
 }
 
@@ -347,9 +383,7 @@ if (process.env.NODE_ENV === 'development') {
 eslint
   @typescript-eslint/ban-ts-comment: "off",
   @typescript-eslint/prefer-ts-expect-error: "off",
-  @typescript-eslint/no-dynamic-delete: "off",
   @typescript-eslint/no-shadow: "off",
-  @typescript-eslint/no-var-requires: "off",
-  no-inner-declarations: "off",
   import/namespace: "off",
+  no-inner-declarations: "off",
 */

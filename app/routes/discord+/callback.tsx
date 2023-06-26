@@ -1,23 +1,23 @@
 import {defer, redirect, type DataFunctionArgs} from '@remix-run/node'
 import {Await, Link, useAsyncError, useLoaderData} from '@remix-run/react'
-import {ensurePrimary} from 'litefs-js/remix'
+import {ensurePrimary} from 'litefs-js/remix.js'
 import React, {Suspense} from 'react'
-import {ArrowLink} from '~/components/arrow-button'
-import {ErrorPanel} from '~/components/form-elements'
-import {PartyIcon, RefreshIcon} from '~/components/icons'
-import {tagKCDSiteSubscriber} from '~/convertkit/convertkit.server'
-import {externalLinks} from '~/external-links'
-import {type KCDHandle} from '~/types'
-import {connectDiscord} from '~/utils/discord.server'
+import {ArrowLink} from '~/components/arrow-button.tsx'
+import {ErrorPanel} from '~/components/form-elements.tsx'
+import {PartyIcon, RefreshIcon} from '~/components/icons.tsx'
+import {tagKCDSiteSubscriber} from '~/convertkit/convertkit.server.ts'
+import {externalLinks} from '~/external-links.tsx'
+import {type KCDHandle} from '~/types.ts'
+import {connectDiscord} from '~/utils/discord.server.ts'
 import {
   getDiscordAuthorizeURL,
   getDomainUrl,
   getErrorMessage,
   isResponse,
-} from '~/utils/misc'
-import {requireUser} from '~/utils/session.server'
-import {useRootData} from '~/utils/use-root-data'
-import {deleteDiscordCache} from '~/utils/user-info.server'
+} from '~/utils/misc.tsx'
+import {requireUser} from '~/utils/session.server.ts'
+import {useRootData} from '~/utils/use-root-data.ts'
+import {deleteDiscordCache} from '~/utils/user-info.server.ts'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,

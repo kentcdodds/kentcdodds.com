@@ -3,11 +3,11 @@ import {
   type HeadersFunction,
   type LoaderFunction,
 } from '@remix-run/node'
-import {type KCDHandle} from '~/types'
-import {getEpisodeFromParams, getEpisodePath} from '~/utils/call-kent'
-import {reuseUsefulLoaderHeaders} from '~/utils/misc'
-import {getServerTimeHeader} from '~/utils/timing.server'
-import {getEpisodes} from '~/utils/transistor.server'
+import {type KCDHandle} from '~/types.ts'
+import {getEpisodeFromParams, getEpisodePath} from '~/utils/call-kent.ts'
+import {reuseUsefulLoaderHeaders} from '~/utils/misc.tsx'
+import {getServerTimeHeader} from '~/utils/timing.server.ts'
+import {getEpisodes} from '~/utils/transistor.server.ts'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,

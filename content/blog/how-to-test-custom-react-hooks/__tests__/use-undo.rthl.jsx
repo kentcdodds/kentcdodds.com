@@ -1,5 +1,5 @@
 import {renderHook, act} from '@testing-library/react'
-import useUndo from '../use-undo'
+import useUndo from '../use-undo.js'
 
 test('allows you to undo and redo', () => {
   const {result} = renderHook(() => useUndo('one'))

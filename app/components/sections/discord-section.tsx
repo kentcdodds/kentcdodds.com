@@ -1,8 +1,8 @@
-import {getImgProps, images} from '~/images'
-import {ArrowLink} from '../arrow-button'
-import {Grid} from '../grid'
-import {DiscordLogo} from '../icons'
-import {H2} from '../typography'
+import {getImgProps, images} from '~/images.tsx'
+import {ArrowLink} from '../arrow-button.tsx'
+import {Grid} from '../grid.tsx'
+import {DiscordLogo} from '../icons.tsx'
+import {H2} from '../typography.tsx'
 
 function DiscordSection() {
   return (

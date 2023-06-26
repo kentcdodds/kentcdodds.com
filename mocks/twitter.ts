@@ -1,12 +1,22 @@
+import path from 'path'
+import fsExtra from 'fs-extra'
 import {
   rest,
   type DefaultRequestMultipartBody,
   type MockedRequest,
   type RestHandler,
 } from 'msw'
-import siteMetadata from './data/site-metadata.json'
-import tweets from './data/tweets.json'
-import {isConnectedToTheInternet} from './utils'
+import type SiteMetadata from './data/site-metadata.json'
+import type Tweets from './data/tweets.json'
+import {isConnectedToTheInternet} from './utils.ts'
+
+// use readJson as long as Import assertions is experimental
+// import siteMetadata from './data/site-metadata.json' assert {type: 'json'}
+// import type tweets from './data/tweets.json' assert {type: 'json'}
+const here = (s: string) => path.join(process.cwd(), './mocks/data', s)
+const read = (s: string) => fsExtra.readJsonSync(here(s))
+const tweets = read('tweets.json') as typeof Tweets
+const siteMetadata = read('site-metadata.json') as typeof SiteMetadata
 
 const tweetsArray = Object.values(tweets)
 const siteMetadataArray = Object.values(siteMetadata)

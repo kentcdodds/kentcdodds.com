@@ -1,8 +1,8 @@
 import {isFuture, parseISO} from 'date-fns'
-import {type Workshop} from '~/types'
-import {type WorkshopEvent} from '~/utils/workshop-tickets.server'
-import {ButtonLink} from './button'
-import {H6} from './typography'
+import {type Workshop} from '~/types.ts'
+import {type WorkshopEvent} from '~/utils/workshop-tickets.server.ts'
+import {ButtonLink} from './button.tsx'
+import {H6} from './typography.tsx'
 
 function RegistrationPanel({
   workshopEvent,

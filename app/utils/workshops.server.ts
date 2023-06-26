@@ -1,10 +1,11 @@
+import pProps from 'p-props'
 import * as YAML from 'yaml'
-import {type Workshop} from '~/types'
-import {cache, cachified} from './cache.server'
-import {downloadDirList, downloadFile} from './github.server'
-import {markdownToHtmlUnwrapped} from './markdown.server'
-import {typedBoolean} from './misc'
-import {type Timings} from './timing.server'
+import {type Workshop} from '~/types.ts'
+import {cache, cachified} from './cache.server.ts'
+import {downloadDirList, downloadFile} from './github.server.ts'
+import {markdownToHtmlUnwrapped} from './markdown.server.ts'
+import {typedBoolean} from './misc.tsx'
+import {type Timings} from './timing.server.ts'
 
 type RawWorkshop = {
   title?: string
@@ -54,8 +55,6 @@ async function getWorkshops({
 }
 
 async function getWorkshop(slug: string): Promise<null | Workshop> {
-  const {default: pProps} = await import('p-props')
-
   const rawWorkshopString = await downloadFile(
     `content/workshops/${slug}.yml`,
   ).catch(() => null)

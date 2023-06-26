@@ -1,34 +1,34 @@
 import {buildImageUrl} from 'cloudinary-build-url'
 import {LRUCache} from 'lru-cache'
-import * as mdxBundler from 'mdx-bundler/client'
+import * as mdxBundler from 'mdx-bundler/client/index.js'
 import * as React from 'react'
-import {CloudinaryVideo} from '~/components/cloudinary-video'
-import {ConvertKitForm} from '~/convertkit/form'
+import {CloudinaryVideo} from '~/components/cloudinary-video.tsx'
+import {ConvertKitForm} from '~/convertkit/form.tsx'
 import {
   getImageBuilder,
   getImgProps,
   getSocialImageWithPreTitle,
-} from '~/images'
-import {type GitHubFile, type MdxListItem, type MdxPage} from '~/types'
-import {compileMdx} from '~/utils/compile-mdx.server'
+} from '~/images.tsx'
+import {type GitHubFile, type MdxListItem, type MdxPage} from '~/types.ts'
+import {compileMdx} from '~/utils/compile-mdx.server.ts'
 import {
   downloadDirList,
   downloadMdxFileOrDirectory,
-} from '~/utils/github.server'
+} from '~/utils/github.server.ts'
 import {
   AnchorOrLink,
   formatDate,
   getDisplayUrl,
   getUrl,
   typedBoolean,
-} from '~/utils/misc'
-import {type RootLoaderType} from '~/root'
-import {cache, cachified} from './cache.server'
-import {markdownToHtmlUnwrapped, stripHtml} from './markdown.server'
-import {getSocialMetas} from './seo'
-import {Themed} from './theme-provider'
-import {type Timings} from './timing.server'
-import {useOptionalUser} from './use-root-data'
+} from '~/utils/misc.tsx'
+import {type RootLoaderType} from '~/root.tsx'
+import {cache, cachified} from './cache.server.ts'
+import {markdownToHtmlUnwrapped, stripHtml} from './markdown.server.ts'
+import {getSocialMetas} from './seo.ts'
+import {Themed} from './theme-provider.tsx'
+import {type Timings} from './timing.server.ts'
+import {useOptionalUser} from './use-root-data.ts'
 import {type V2_MetaArgs} from '@remix-run/node'
 
 type CachifiedOptions = {

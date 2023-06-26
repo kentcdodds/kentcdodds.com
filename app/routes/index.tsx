@@ -1,34 +1,34 @@
 import {json, type HeadersFunction, type LoaderFunction} from '@remix-run/node'
 import {useLoaderData, useRouteError} from '@remix-run/react'
-import {ButtonLink} from '~/components/button'
-import {ServerError} from '~/components/errors'
-import {AboutSection} from '~/components/sections/about-section'
-import {BlogSection} from '~/components/sections/blog-section'
-import {CourseSection} from '~/components/sections/course-section'
-import {DiscordSection} from '~/components/sections/discord-section'
-import {HeroSection} from '~/components/sections/hero-section'
-import {IntroductionSection} from '~/components/sections/introduction-section'
-import {ProblemSolutionSection} from '~/components/sections/problem-solution-section'
-import {Spacer} from '~/components/spacer'
-import {getRandomFlyingKody} from '~/images'
-import {type MdxListItem, type Team} from '~/types'
-import {getRankingLeader} from '~/utils/blog'
+import {ButtonLink} from '~/components/button.tsx'
+import {ServerError} from '~/components/errors.tsx'
+import {AboutSection} from '~/components/sections/about-section.tsx'
+import {BlogSection} from '~/components/sections/blog-section.tsx'
+import {CourseSection} from '~/components/sections/course-section.tsx'
+import {DiscordSection} from '~/components/sections/discord-section.tsx'
+import {HeroSection} from '~/components/sections/hero-section.tsx'
+import {IntroductionSection} from '~/components/sections/introduction-section.tsx'
+import {ProblemSolutionSection} from '~/components/sections/problem-solution-section.tsx'
+import {Spacer} from '~/components/spacer.tsx'
+import {getRandomFlyingKody} from '~/images.tsx'
+import {type MdxListItem, type Team} from '~/types.ts'
+import {getRankingLeader} from '~/utils/blog.ts'
 import {
   getBlogReadRankings,
   getBlogRecommendations,
   getReaderCount,
   getTotalPostReads,
-} from '~/utils/blog.server'
-import {getBlogMdxListItems} from '~/utils/mdx'
+} from '~/utils/blog.server.ts'
+import {getBlogMdxListItems} from '~/utils/mdx.tsx'
 import {
   formatNumber,
   getOptionalTeam,
   reuseUsefulLoaderHeaders,
   teams,
   type OptionalTeam,
-} from '~/utils/misc'
-import {getUser} from '~/utils/session.server'
-import {getServerTimeHeader} from '~/utils/timing.server'
+} from '~/utils/misc.tsx'
+import {getUser} from '~/utils/session.server.ts'
+import {getServerTimeHeader} from '~/utils/timing.server.ts'
 
 type LoaderData = {
   blogPostCount: string

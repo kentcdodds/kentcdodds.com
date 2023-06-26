@@ -8,23 +8,23 @@ import {
   type V2_MetaFunction,
 } from '@remix-run/node'
 import {Form, useActionData, useLoaderData} from '@remix-run/react'
-import clsx from 'clsx'
+import {clsx} from 'clsx'
 import * as React from 'react'
-import {Button, ButtonLink} from '~/components/button'
-import {Field, InputError, Label} from '~/components/form-elements'
-import {Grid} from '~/components/grid'
+import {Button, ButtonLink} from '~/components/button.tsx'
+import {Field, InputError, Label} from '~/components/form-elements.tsx'
+import {Grid} from '~/components/grid.tsx'
 import {
   CheckCircledIcon,
   EyeIcon,
   LogoutIcon,
   PlusIcon,
   RefreshIcon,
-} from '~/components/icons'
-import {Spacer} from '~/components/spacer'
-import {H2, H3, H6, Paragraph} from '~/components/typography'
-import {getGenericSocialImage, images} from '~/images'
-import {type KCDHandle} from '~/types'
-import {handleFormSubmission} from '~/utils/actions.server'
+} from '~/components/icons.tsx'
+import {Spacer} from '~/components/spacer.tsx'
+import {H2, H3, H6, Paragraph} from '~/components/typography.tsx'
+import {getGenericSocialImage, images} from '~/images.tsx'
+import {type KCDHandle} from '~/types.ts'
+import {handleFormSubmission} from '~/utils/actions.server.ts'
 import {
   getDiscordAuthorizeURL,
   getDisplayUrl,
@@ -34,28 +34,28 @@ import {
   getTeam,
   getUrl,
   reuseUsefulLoaderHeaders,
-} from '~/utils/misc'
+} from '~/utils/misc.tsx'
 import {
   TEAM_ONEWHEELING_MAP,
   TEAM_SKIING_MAP,
   TEAM_SNOWBOARD_MAP,
-} from '~/utils/onboarding'
-import {getMagicLink, prisma} from '~/utils/prisma.server'
-import {getQrCodeDataURL} from '~/utils/qrcode.server'
-import {getSocialMetas} from '~/utils/seo'
+} from '~/utils/onboarding.ts'
+import {getMagicLink, prisma} from '~/utils/prisma.server.ts'
+import {getQrCodeDataURL} from '~/utils/qrcode.server.ts'
+import {getSocialMetas} from '~/utils/seo.ts'
 import {
   deleteOtherSessions,
   getSession,
   requireUser,
-} from '~/utils/session.server'
-import {getServerTimeHeader} from '~/utils/timing.server'
-import {useRootData} from '~/utils/use-root-data'
+} from '~/utils/session.server.ts'
+import {getServerTimeHeader} from '~/utils/timing.server.ts'
+import {useRootData} from '~/utils/use-root-data.ts'
 import {
   deleteConvertKitCache,
   deleteDiscordCache,
   gravatarExistsForEmail,
-} from '~/utils/user-info.server'
-import {type RootLoaderType} from '~/root'
+} from '~/utils/user-info.server.ts'
+import {type RootLoaderType} from '~/root.tsx'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,

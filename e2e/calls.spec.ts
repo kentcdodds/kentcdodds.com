@@ -1,6 +1,6 @@
 import {faker} from '@faker-js/faker'
 import invariant from 'tiny-invariant'
-import {expect, readEmail, test} from './utils'
+import {expect, readEmail, test} from './utils.ts'
 
 test('Call Kent recording flow', async ({page, login}) => {
   const user = await login()

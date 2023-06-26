@@ -1,20 +1,21 @@
 import type BetterSqlite3 from 'better-sqlite3'
 import Database from 'better-sqlite3'
-import * as C from 'cachified'
 import {
+  cachified as baseCachified,
   lruCacheAdapter,
   verboseReporter,
   type CacheEntry,
   type Cache as CachifiedCache,
+  type CachifiedOptions,
 } from 'cachified'
 import fs from 'fs'
 import {getInstanceInfo, getInstanceInfoSync} from 'litefs-js'
 import {LRUCache} from 'lru-cache'
-import {updatePrimaryCacheValue} from '~/routes/resources+/cache.sqlite'
-import {getRequiredServerEnvVar} from './misc'
-import {getUser} from './session.server'
-import {time, type Timings} from './timing.server'
-import {singleton} from './singleton.server'
+import {updatePrimaryCacheValue} from '~/routes/resources+/cache.sqlite.ts'
+import {getRequiredServerEnvVar} from './misc.tsx'
+import {getUser} from './session.server.ts'
+import {time, type Timings} from './timing.server.ts'
+import {singleton} from './singleton.server.ts'
 
 const CACHE_DATABASE_PATH = getRequiredServerEnvVar('CACHE_DATABASE_PATH')
 
@@ -159,13 +160,13 @@ export async function cachified<Value>({
   request,
   timings,
   ...options
-}: Omit<C.CachifiedOptions<Value>, 'forceFresh'> & {
+}: Omit<CachifiedOptions<Value>, 'forceFresh'> & {
   request?: Request
   timings?: Timings
   forceFresh?: boolean | string
 }): Promise<Value> {
   let cachifiedResolved = false
-  const cachifiedPromise = C.cachified({
+  const cachifiedPromise = baseCachified({
     reporter: verboseReporter(),
     ...options,
     forceFresh: await shouldForceFresh({

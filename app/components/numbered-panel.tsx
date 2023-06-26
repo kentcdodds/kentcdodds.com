@@ -1,4 +1,4 @@
-import {H6, Paragraph} from './typography'
+import {H6, Paragraph} from './typography.tsx'
 
 type NumberedPanelProps = {
   number: number

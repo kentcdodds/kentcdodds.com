@@ -10,16 +10,16 @@ import {
   useLocation,
   useSearchParams,
 } from '@remix-run/react'
-import clsx from 'clsx'
+import {clsx} from 'clsx'
 import * as React from 'react'
-import {Grid} from '~/components/grid'
-import {YoutubeIcon} from '~/components/icons'
-import {CourseSection} from '~/components/sections/course-section'
-import {HeroSection} from '~/components/sections/hero-section'
-import {Tag} from '~/components/tag'
-import {H3, H6, Paragraph} from '~/components/typography'
-import {getGenericSocialImage, images} from '~/images'
-import {type Await} from '~/types'
+import {Grid} from '~/components/grid.tsx'
+import {YoutubeIcon} from '~/components/icons.tsx'
+import {CourseSection} from '~/components/sections/course-section.tsx'
+import {HeroSection} from '~/components/sections/hero-section.tsx'
+import {Tag} from '~/components/tag.tsx'
+import {H3, H6, Paragraph} from '~/components/typography.tsx'
+import {getGenericSocialImage, images} from '~/images.tsx'
+import {type Await} from '~/types.ts'
 import {
   formatDate,
   getDisplayUrl,
@@ -28,10 +28,10 @@ import {
   parseDate,
   reuseUsefulLoaderHeaders,
   useUpdateQueryStringValueWithoutNavigation,
-} from '~/utils/misc'
-import {getSocialMetas} from '~/utils/seo'
-import {getTalksAndTags} from '~/utils/talks.server'
-import {type RootLoaderType} from '~/root'
+} from '~/utils/misc.tsx'
+import {getSocialMetas} from '~/utils/seo.ts'
+import {getTalksAndTags} from '~/utils/talks.server.ts'
+import {type RootLoaderType} from '~/root.tsx'
 
 export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
   data,

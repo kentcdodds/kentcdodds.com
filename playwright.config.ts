@@ -1,10 +1,5 @@
-import {devices, type PlaywrightTestConfig} from '@playwright/test'
-
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// require('dotenv').config();
+import {defineConfig, devices} from '@playwright/test'
+import 'dotenv/config'
 
 // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 const PORT = Number(process.env.PORT || 3000)
@@ -16,7 +11,7 @@ if (!PORT) {
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
-const config: PlaywrightTestConfig = {
+export default defineConfig({
   testDir: './e2e',
   /* Maximum time one test can run for. */
   timeout: 30 * 1000,
@@ -74,6 +69,4 @@ const config: PlaywrightTestConfig = {
     port: Number(PORT),
     reuseExistingServer: true,
   },
-}
-
-export default config
+})

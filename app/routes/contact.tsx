@@ -5,22 +5,22 @@ import {
   type V2_MetaFunction,
 } from '@remix-run/node'
 import {Link, useFetcher} from '@remix-run/react'
-import {Button} from '~/components/button'
-import {ButtonGroup, ErrorPanel, Field} from '~/components/form-elements'
-import {Grid} from '~/components/grid'
+import {Button} from '~/components/button.tsx'
+import {ButtonGroup, ErrorPanel, Field} from '~/components/form-elements.tsx'
+import {Grid} from '~/components/grid.tsx'
 import {
   HeroSection,
   getHeroImageProps,
-} from '~/components/sections/hero-section'
-import {H2, Paragraph} from '~/components/typography'
-import {getGenericSocialImage, images} from '~/images'
-import {handleFormSubmission} from '~/utils/actions.server'
-import {getDisplayUrl, getUrl} from '~/utils/misc'
-import {sendEmail} from '~/utils/send-email.server'
-import {getSocialMetas} from '~/utils/seo'
-import {requireUser} from '~/utils/session.server'
-import {useRootData} from '~/utils/use-root-data'
-import {type RootLoaderType} from '~/root'
+} from '~/components/sections/hero-section.tsx'
+import {H2, Paragraph} from '~/components/typography.tsx'
+import {getGenericSocialImage, images} from '~/images.tsx'
+import {handleFormSubmission} from '~/utils/actions.server.ts'
+import {getDisplayUrl, getUrl} from '~/utils/misc.tsx'
+import {sendEmail} from '~/utils/send-email.server.ts'
+import {getSocialMetas} from '~/utils/seo.ts'
+import {requireUser} from '~/utils/session.server.ts'
+import {useRootData} from '~/utils/use-root-data.ts'
+import {type RootLoaderType} from '~/root.tsx'
 
 function getErrorForSubject(subject: string | null) {
   if (!subject) return `Subject is required`

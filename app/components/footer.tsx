@@ -1,13 +1,19 @@
 import {Link} from '@remix-run/react'
-import {getImgProps, type ImageBuilder} from '~/images'
-import {AnchorOrLink} from '~/utils/misc'
-import {useRootData} from '~/utils/use-root-data'
-import {ConvertKitForm} from '../convertkit/form'
-import {externalLinks} from '../external-links'
-import {IconLink} from './icon-link'
-import {ArrowIcon, GithubIcon, RssIcon, TwitterIcon, YoutubeIcon} from './icons'
-import {Signature} from './signature'
-import {H4, H6, Paragraph} from './typography'
+import {getImgProps, type ImageBuilder} from '~/images.tsx'
+import {AnchorOrLink} from '~/utils/misc.tsx'
+import {useRootData} from '~/utils/use-root-data.ts'
+import {ConvertKitForm} from '../convertkit/form.tsx'
+import {externalLinks} from '../external-links.tsx'
+import {IconLink} from './icon-link.tsx'
+import {
+  ArrowIcon,
+  GithubIcon,
+  RssIcon,
+  TwitterIcon,
+  YoutubeIcon,
+} from './icons.tsx'
+import {Signature} from './signature.tsx'
+import {H4, H6, Paragraph} from './typography.tsx'
 
 function NewsletterSection() {
   return (

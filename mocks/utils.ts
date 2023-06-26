@@ -1,6 +1,7 @@
 import dns from 'dns'
 import fs from 'fs'
 import path from 'path'
+import {fileURLToPath} from 'url'
 
 let connected: boolean | null = null
 
@@ -15,6 +16,7 @@ async function isConnectedToTheInternet() {
   return connected
 }
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const mswDataPath = path.join(__dirname, `./msw.local.json`)
 
 // !! side effect !!

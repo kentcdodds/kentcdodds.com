@@ -13,28 +13,28 @@ import {
   useRouteError,
   useSearchParams,
 } from '@remix-run/react'
-import clsx from 'clsx'
+import {clsx} from 'clsx'
 import * as React from 'react'
-import {ArrowLink} from '~/components/arrow-button'
-import {ArticleCard} from '~/components/article-card'
-import {Button} from '~/components/button'
-import {ServerError} from '~/components/errors'
-import {Grid} from '~/components/grid'
-import {PlusIcon, RssIcon, SearchIcon} from '~/components/icons'
-import {FeaturedSection} from '~/components/sections/featured-section'
-import {HeroSection} from '~/components/sections/hero-section'
-import {Spacer} from '~/components/spacer'
-import {Tag} from '~/components/tag'
-import {TeamStats} from '~/components/team-stats'
-import {H2, H3, H6, Paragraph} from '~/components/typography'
+import {ArrowLink} from '~/components/arrow-button.tsx'
+import {ArticleCard} from '~/components/article-card.tsx'
+import {Button} from '~/components/button.tsx'
+import {ServerError} from '~/components/errors.tsx'
+import {Grid} from '~/components/grid.tsx'
+import {PlusIcon, RssIcon, SearchIcon} from '~/components/icons.tsx'
+import {FeaturedSection} from '~/components/sections/featured-section.tsx'
+import {HeroSection} from '~/components/sections/hero-section.tsx'
+import {Spacer} from '~/components/spacer.tsx'
+import {Tag} from '~/components/tag.tsx'
+import {TeamStats} from '~/components/team-stats.tsx'
+import {H2, H3, H6, Paragraph} from '~/components/typography.tsx'
 import {
   getImageBuilder,
   getImgProps,
   getSocialImageWithPreTitle,
   images,
-} from '~/images'
-import {type KCDHandle, type Team} from '~/types'
-import {filterPosts, getRankingLeader} from '~/utils/blog'
+} from '~/images.tsx'
+import {type KCDHandle, type Team} from '~/types.ts'
+import {filterPosts, getRankingLeader} from '~/utils/blog.ts'
 import {
   getAllBlogPostReadRankings,
   getBlogReadRankings,
@@ -42,8 +42,8 @@ import {
   getReaderCount,
   getSlugReadsByUser,
   getTotalPostReads,
-} from '~/utils/blog.server'
-import {getBannerAltProp, getBlogMdxListItems} from '~/utils/mdx'
+} from '~/utils/blog.server.ts'
+import {getBannerAltProp, getBlogMdxListItems} from '~/utils/mdx.tsx'
 import {
   formatAbbreviatedNumber,
   formatNumber,
@@ -52,12 +52,12 @@ import {
   isTeam,
   reuseUsefulLoaderHeaders,
   useUpdateQueryStringValueWithoutNavigation,
-} from '~/utils/misc'
-import {getSocialMetas} from '~/utils/seo'
-import {useTeam} from '~/utils/team-provider'
-import {getServerTimeHeader} from '~/utils/timing.server'
-import {useRootData} from '~/utils/use-root-data'
-import {type RootLoaderType} from '~/root'
+} from '~/utils/misc.tsx'
+import {getSocialMetas} from '~/utils/seo.ts'
+import {useTeam} from '~/utils/team-provider.tsx'
+import {getServerTimeHeader} from '~/utils/timing.server.ts'
+import {useRootData} from '~/utils/use-root-data.ts'
+import {type RootLoaderType} from '~/root.tsx'
 
 const handleId = 'blog'
 export const handle: KCDHandle = {

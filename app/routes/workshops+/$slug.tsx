@@ -12,42 +12,45 @@ import {
   useRouteError,
 } from '@remix-run/react'
 import * as React from 'react'
-import {ArrowLink, BackLink} from '~/components/arrow-button'
-import {ButtonLink} from '~/components/button'
-import {FourOhFour} from '~/components/errors'
-import {Grid} from '~/components/grid'
-import {NumberedPanel} from '~/components/numbered-panel'
-import {TestimonialSection} from '~/components/sections/testimonial-section'
-import {Spacer} from '~/components/spacer'
-import {H2, H5, H6, Paragraph} from '~/components/typography'
-import {WorkshopCard} from '~/components/workshop-card'
-import {RegistrationPanel} from '~/components/workshop-registration-panel'
-import {getSocialImageWithPreTitle} from '~/images'
-import {type KCDHandle, type MdxListItem, type Workshop} from '~/types'
-import {getBlogRecommendations} from '~/utils/blog.server'
+import {ArrowLink, BackLink} from '~/components/arrow-button.tsx'
+import {ButtonLink} from '~/components/button.tsx'
+import {FourOhFour} from '~/components/errors.tsx'
+import {Grid} from '~/components/grid.tsx'
+import {NumberedPanel} from '~/components/numbered-panel.tsx'
+import {TestimonialSection} from '~/components/sections/testimonial-section.tsx'
+import {Spacer} from '~/components/spacer.tsx'
+import {H2, H5, H6, Paragraph} from '~/components/typography.tsx'
+import {WorkshopCard} from '~/components/workshop-card.tsx'
+import {RegistrationPanel} from '~/components/workshop-registration-panel.tsx'
+import {getSocialImageWithPreTitle} from '~/images.tsx'
+import {type KCDHandle, type MdxListItem, type Workshop} from '~/types.ts'
+import {getBlogRecommendations} from '~/utils/blog.server.ts'
 import {
   getDisplayUrl,
   getUrl,
   listify,
   reuseUsefulLoaderHeaders,
-} from '~/utils/misc'
-import {getSocialMetas} from '~/utils/seo'
+} from '~/utils/misc.tsx'
+import {getSocialMetas} from '~/utils/seo.ts'
 import {
   getTestimonials,
   type Testimonial,
   type TestimonialCategory,
   type TestimonialSubject,
-} from '~/utils/testimonials.server'
-import {getServerTimeHeader} from '~/utils/timing.server'
-import {type WorkshopEvent} from '~/utils/workshop-tickets.server'
-import {getWorkshops} from '~/utils/workshops.server'
-import {ConvertKitForm} from '~/convertkit/form'
-import {type RootLoaderType, type LoaderData as RootLoaderData} from '~/root'
+} from '~/utils/testimonials.server.ts'
+import {getServerTimeHeader} from '~/utils/timing.server.ts'
+import {type WorkshopEvent} from '~/utils/workshop-tickets.server.ts'
+import {getWorkshops} from '~/utils/workshops.server.ts'
+import {ConvertKitForm} from '~/convertkit/form.tsx'
+import {
+  type RootLoaderType,
+  type LoaderData as RootLoaderData,
+} from '~/root.tsx'
 import {
   useWorkshopsData,
   type loader as WorkshopLoader,
   type LoaderData as WorkshopLoaderData,
-} from './_workshops'
+} from './_workshops.tsx'
 
 export const handle: KCDHandle = {
   getSitemapEntries: async request => {

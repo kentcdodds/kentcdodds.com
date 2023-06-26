@@ -7,22 +7,26 @@ import {
   useSearchParams,
   useSubmit,
 } from '@remix-run/react'
-import {getAllInstances, getInstanceInfo} from 'litefs-js'
-import {ensureInstance} from 'litefs-js/remix'
+import {getAllInstances, getInstanceInfo} from '~/utils/cjs/litefs-js.js'
+import {ensureInstance} from 'litefs-js/remix.js'
 import invariant from 'tiny-invariant'
-import {Button} from '~/components/button'
-import {Field, FieldContainer, inputClassName} from '~/components/form-elements'
-import {SearchIcon} from '~/components/icons'
-import {Spacer} from '~/components/spacer'
-import {H2, H3} from '~/components/typography'
+import {Button} from '~/components/button.tsx'
+import {
+  Field,
+  FieldContainer,
+  inputClassName,
+} from '~/components/form-elements.tsx'
+import {SearchIcon} from '~/components/icons.tsx'
+import {Spacer} from '~/components/spacer.tsx'
+import {H2, H3} from '~/components/typography.tsx'
 import {
   cache,
   getAllCacheKeys,
   lruCache,
   searchCacheKeys,
-} from '~/utils/cache.server'
-import {useDebounce, useDoubleCheck} from '~/utils/misc'
-import {requireAdminUser} from '~/utils/session.server'
+} from '~/utils/cache.server.ts'
+import {useDebounce, useDoubleCheck} from '~/utils/misc.tsx'
+import {requireAdminUser} from '~/utils/session.server.ts'
 
 export async function loader({request}: DataFunctionArgs) {
   await requireAdminUser(request)

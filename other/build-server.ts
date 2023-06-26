@@ -1,10 +1,14 @@
-const fsExtra = require('fs-extra')
-const path = require('path')
-const {globSync} = require('glob')
-const pkg = require('../package.json')
+import fsExtra from 'fs-extra'
+import path from 'path'
+import {fileURLToPath} from 'url'
+import {globSync} from 'glob'
+import esbuild from 'esbuild'
 
-const globsafe = s => s.replace(/\\/g, '/')
-const here = (...s) => globsafe(path.join(__dirname, ...s))
+const pkg = fsExtra.readJsonSync(path.join(process.cwd(), 'package.json'))
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+const globsafe = (s: string) => s.replace(/\\/g, '/')
+const here = (...s: Array<string>) => globsafe(path.join(__dirname, ...s))
 
 const allFiles = globSync(here('../server/**/*.*'), {
   ignore: [
@@ -33,17 +37,17 @@ for (const file of allFiles) {
 console.log()
 console.log('building...')
 
-require('esbuild')
+esbuild
   .build({
     entryPoints: entries,
     outdir,
     target: [`node${pkg.engines.node}`],
     platform: 'node',
     sourcemap: true,
-    format: 'cjs',
+    format: 'esm',
     logLevel: 'info',
   })
-  .catch(error => {
+  .catch((error: unknown) => {
     console.error(error)
     process.exit(1)
   })
