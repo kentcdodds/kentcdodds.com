@@ -21,11 +21,6 @@ declare module 'md5-hash' {
   export default md5
 }
 
-declare module 'react-countdown' {
-  import {type CountdownProps} from 'react-countdown/dist/Countdown.d.ts'
-  export default function Countdown(props: CountdownProps): JSX.Element
-}
-
 declare module 'react-lite-youtube-embed/dist/index.es.jsx' {
   import LiteYouTubeEmbed, {type LiteYouTube} from 'react-lite-youtube-embed'
   export default function LiteYouTubeEmbed(props: LiteYouTube): JSX.Element

@@ -4,7 +4,7 @@ import {json, type DataFunctionArgs} from '@remix-run/node'
 import {useFetcher} from '@remix-run/react'
 import cookie from 'cookie'
 import {useEffect, useRef, useState} from 'react'
-import Countdown from 'react-countdown'
+import useCountDown from 'react-countdown-hook'
 import {useSpinDelay} from 'spin-delay'
 import invariant from 'tiny-invariant'
 import {NotificationMessage} from '~/components/notification-message.tsx'
@@ -60,6 +60,7 @@ export function Promotification({
     autoClose?: never
     visibleMs?: never
   } & Required<Pick<NotificationMessageProps, 'children'>>) {
+  const initialTime = promoEndTime.getTime() - new Date().getTime()
   const isPastEndTime = useRef(promoEndTime < new Date())
 
   const [visible, setVisible] = useState(cookieValue !== 'hidden')
@@ -72,6 +73,17 @@ export function Promotification({
     }
   }, [fetcher.data])
 
+  const [timeLeft, {start}] = useCountDown(initialTime, 1000)
+  useEffect(() => {
+    if (isPastEndTime.current) return
+    start()
+  }, [start])
+  const completed = timeLeft <= 0
+  const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24))
+  const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24)
+  const minutes = Math.floor((timeLeft / 1000 / 60) % 60)
+  const seconds = Math.floor((timeLeft / 1000) % 60)
+
   if (isPastEndTime.current) return null
 
   return (
@@ -83,29 +95,24 @@ export function Promotification({
     >
       {children}
       <div className="mt-4">
-        <Countdown
-          date={promoEndTime}
-          renderer={({completed, days, hours, minutes: mins, seconds: secs}) =>
-            completed ? (
-              <div>{`Time's up. The sale is over`}</div>
-            ) : (
-              <div className="flex flex-wrap gap-3 tabular-nums">
-                <span>
-                  {days} day{days === 1 ? '' : 's'}
-                </span>
-                <span>
-                  {hours} hour{hours === 1 ? '' : 's'}
-                </span>
-                <span>
-                  {mins} min{mins === 1 ? '' : 's'}
-                </span>
-                <span>
-                  {secs} sec{secs === 1 ? '' : 's'}
-                </span>
-              </div>
-            )
-          }
-        />
+        {completed ? (
+          <div>{`Time's up. The sale is over`}</div>
+        ) : (
+          <div className="flex flex-wrap gap-3 tabular-nums">
+            <span>
+              {days} day{days === 1 ? '' : 's'}
+            </span>
+            <span>
+              {hours} hour{hours === 1 ? '' : 's'}
+            </span>
+            <span>
+              {minutes} min{minutes === 1 ? '' : 's'}
+            </span>
+            <span>
+              {seconds} sec{seconds === 1 ? '' : 's'}
+            </span>
+          </div>
+        )}
         <fetcher.Form action="/resources/promotification" method="POST">
           <input type="hidden" name="promoName" value={promoName} />
           <input type="hidden" name="maxAge" value={dismissTimeSeconds} />

@@ -150,6 +150,8 @@ export const links: LinksFunction = () => {
 export type LoaderData = SerializeFrom<typeof loader>
 
 const WORKSHOP_PROMO_NAME = 'workshop-promo'
+const EPIC_WEB_DEV_WORKSHOP_PROMO_NAME = 'epic-web-dev-workshop-promo'
+const EPIC_WEB_DEV_WORKSHOP_PROMO_END_DATE = parseDate('2023-07-18T00:00:00Z')
 
 async function loader({request}: DataFunctionArgs) {
   const timings = {}
@@ -182,6 +184,26 @@ async function loader({request}: DataFunctionArgs) {
     userInfo: user ? await getUserInfo(user, {request, timings}) : null,
     ENV: getEnv(),
     randomFooterImageKey,
+    epicWebDevWorkshopPromo: {
+      promoName: EPIC_WEB_DEV_WORKSHOP_PROMO_NAME,
+      dismissTimeSeconds: Math.min(
+        Math.max(
+          // one quarter of the time until the salesEndTime (in seconds)
+          (EPIC_WEB_DEV_WORKSHOP_PROMO_END_DATE.getTime() - Date.now()) /
+            4 /
+            1000,
+          // Minimum of 3 hours (in seconds)
+          60 * 60 * 3,
+        ),
+        // Maximum of 1 week (in seconds)
+        60 * 60 * 24 * 7,
+      ),
+      cookieValue: getPromoCookieValue({
+        promoName: EPIC_WEB_DEV_WORKSHOP_PROMO_NAME,
+        request,
+      }),
+      promoEndTime: EPIC_WEB_DEV_WORKSHOP_PROMO_END_DATE.getTime(),
+    },
     workshopPromotifications: workshopEvents
       .map(e => {
         const workshop = workshops.find(w => w.slug === e.metadata.workshopSlug)
@@ -457,6 +479,43 @@ function App() {
       </head>
       <body className="bg-white transition duration-500 dark:bg-gray-900">
         <PageLoadingMessage />
+        <Promotification
+          cookieValue={data.epicWebDevWorkshopPromo.cookieValue}
+          promoName={data.epicWebDevWorkshopPromo.promoName}
+          promoEndTime={new Date(data.epicWebDevWorkshopPromo.promoEndTime)}
+          dismissTimeSeconds={data.epicWebDevWorkshopPromo.dismissTimeSeconds}
+        >
+          <div className="flex flex-col">
+            <p className="flex items-center gap-1">
+              <LaptopIcon />
+              <span>
+                Join Kent for an epic{' '}
+                <a
+                  href="https://www.epicweb.dev/full-stack-workshop-series-vol-1"
+                  className="underline"
+                >
+                  live workshop
+                </a>
+              </span>
+            </p>
+            <a
+              className="mt-3 text-lg underline"
+              href="https://www.epicweb.dev/full-stack-workshop-series-vol-1"
+            >
+              Full Stack Workshop Series Vol. 1
+            </a>
+            <p className="mt-1 text-sm text-gray-500">
+              Limited time{' '}
+              <a
+                href="https://www.epicweb.dev/full-stack-workshop-series-vol-1"
+                className="inline-flex items-center gap-1 underline"
+              >
+                <span>tickets available</span>
+                <ArrowIcon direction="top-right" size={16} />
+              </a>
+            </p>
+          </div>
+        </Promotification>
         {data.workshopPromotifications.map(e => (
           <Promotification
             key={e.slug}
