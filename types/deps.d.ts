@@ -13,6 +13,14 @@ declare module '@remark-embedder/core' {
   export {type TransformerInfo}
 }
 
+declare module 'md5-hash' {
+  import md5Hash from 'md5-hash'
+  const md5 = md5Hash as unknown as {
+    default: (str: string) => string
+  }
+  export default md5
+}
+
 declare module 'react-countdown' {
   import {type CountdownProps} from 'react-countdown/dist/Countdown.d.ts'
   export default function Countdown(props: CountdownProps): JSX.Element
