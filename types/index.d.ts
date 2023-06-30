@@ -154,6 +154,11 @@ type CWKSeason = {
   episodes: Array<CWKListItem>
 }
 
+type CallKentSeason = {
+  seasonNumber: number
+  episodes: Array<CallKentEpisode>
+}
+
 type CallKentEpisode = {
   episodeNumber: number
   seasonNumber: number
@@ -219,6 +224,7 @@ export {
   CWKEpisode,
   CWKListItem,
   CWKSeason,
+  CallKentSeason,
   CallKentEpisode,
   KCDHandle,
   KCDSitemapEntry,
