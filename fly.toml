@@ -1,51 +1,50 @@
+# fly.toml app configuration file generated for kcd on 2023-06-30T11:21:22-06:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
 app = "kcd"
-
+primary_region = "den"
 kill_signal = "SIGINT"
-kill_timeout = 5
-
-[mounts]
-  source = "data"
-  destination = "/data"
-
-# IDEA: add back statics config here (fa0fbe9)
+kill_timeout = "5s"
 
 [experimental]
-  enable_consul = true
-  allowed_public_ports = []
   auto_rollback = true
+  enable_consul = true
+
+[[mounts]]
+  source = "data_machines"
+  destination = "/data"
+  processes = ["app"]
 
 [[services]]
-  # This is set to the INTERNAL_PORT env variable in the Dockerfile
-  internal_port = 8080
   protocol = "tcp"
-  script_checks = []
-
-  [services.concurrency]
-    hard_limit = 200
-    soft_limit = 150
-    type = "requests"
+  internal_port = 8080
 
   [[services.ports]]
-    handlers = ["http"]
     port = 80
+    handlers = ["http"]
     force_https = true
 
   [[services.ports]]
-    handlers = ["tls", "http"]
     port = 443
+    handlers = ["tls", "http"]
+  [services.concurrency]
+    type = "requests"
+    hard_limit = 200
+    soft_limit = 150
 
   [[services.tcp_checks]]
-    grace_period = "10s"
     interval = "15s"
-    restart_limit = 6
     timeout = "2s"
+    grace_period = "10s"
+    restart_limit = 6
 
   [[services.http_checks]]
-    interval = 10000
-    grace_period = "600s"
+    interval = "10s"
+    timeout = "5s"
+    grace_period = "1m0s"
+    restart_limit = 0
     method = "get"
     path = "/healthcheck"
     protocol = "http"
-    timeout = 5000
-    tls_skip_verify = false
-    [services.http_checks.headers]
