@@ -39,7 +39,7 @@ type CachifiedOptions = {
 }
 
 const defaultTTL = 1000 * 60 * 60 * 24 * 14
-const defaultStaleWhileRevalidate = 1000 * 60 * 60 * 24 * 30
+const defaultStaleWhileRevalidate = 1000 * 60 * 60 * 24 * 365 * 100
 
 const checkCompiledValue = (value: unknown) =>
   typeof value === 'object' &&
