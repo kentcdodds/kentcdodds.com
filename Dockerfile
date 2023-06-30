@@ -75,9 +75,6 @@ COPY --from=build /app/node_modules/.prisma /app/node_modules/.prisma
 COPY --from=build /app/build /app/build
 COPY --from=build /app/public /app/public
 COPY --from=build /app/server-build /app/server-build
-COPY --from=build /app/other/runfile.js /app/other/runfile.js
-COPY --from=build /app/other/start.js /app/other/start.js
-COPY --from=build /app/prisma /app/prisma
 
 ADD . .
 
