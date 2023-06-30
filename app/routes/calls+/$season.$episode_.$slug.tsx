@@ -29,7 +29,7 @@ import {
   useCallsData,
   type loader as callsLoader,
   type LoaderData as CallsLoaderData,
-} from './_calls.tsx'
+} from '../calls.tsx'
 
 export const handle: KCDHandle = {
   id: 'call-player',

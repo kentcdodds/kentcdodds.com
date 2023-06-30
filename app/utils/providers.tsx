@@ -41,6 +41,14 @@ const {
   useValue: useChatsEpisodeUIState,
 } = createSimpleContext<ChatsEpisodeUIState>('ChatsEpisodeUIState')
 
+type CallsEpisodeUIState = {
+  sortOrder: 'desc' | 'asc'
+}
+const {
+  Provider: CallsEpisodeUIStateProvider,
+  useValue: useCallsEpisodeUIState,
+} = createSimpleContext<CallsEpisodeUIState>('CallsEpisodeUIState')
+
 function useMatchLoaderData<LoaderData>(handleId: string) {
   const matches = useMatches()
   const match = matches.find(
@@ -62,6 +70,8 @@ export {
   createSimpleContext,
   ChatsEpisodeUIStateProvider,
   useChatsEpisodeUIState,
+  CallsEpisodeUIStateProvider,
+  useCallsEpisodeUIState,
   useMatchLoaderData,
   useOptionalMatchLoaderData,
 }
