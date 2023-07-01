@@ -84,6 +84,15 @@ async function createEpisode({
   })
   const {upload_url, audio_url, content_type} = authorized.data.attributes
 
+  const totalEpisodes = await fetchTransitor<TransistorEpisodesJson>({
+    endpoint: `/v1/episodes`,
+    // query: {'pagination[per]': '5000'},
+  })
+
+  const episodesPerSeason = 50;
+
+  const currentSeason = Math.ceil(totalEpisodes.data.length / episodesPerSeason);
+
   await fetch(upload_url, {
     method: 'PUT',
     body: audio,
@@ -96,7 +105,7 @@ async function createEpisode({
       // IDEA: set the season automatically based on the year
       // new Date().getFullYear() - 2020
       // need to support multiple seasons in the UI first though.
-      season: 1,
+      season: currentSeason,
       audio_url,
       title,
       summary,
@@ -124,11 +133,21 @@ async function createEpisode({
 
   const returnValue: {episodeUrl?: string; imageUrl?: string} = {}
   // set the alternate_url if we have enough info for it.
-  const {number, season} = created.data.attributes
+  const {number} = created.data.attributes
+  let season = currentSeason
+  let episodeNumber = 1
   if (typeof number === 'number' && typeof season === 'number') {
+    //reset episode to 1 if it exceeds 50
+    if(number > 50) {
+      season += 1
+      episodeNumber = 1
+    }else {
+      episodeNumber = number
+    }
+
     const slug = slugify(created.data.attributes.title)
     const episodePath = getEpisodePath({
-      episodeNumber: number,
+      episodeNumber,
       seasonNumber: season,
       slug,
     })
@@ -180,6 +199,7 @@ async function createEpisode({
         alternate_url: returnValue.episodeUrl,
         image_url: imageUrl,
         description: `${description}\n\n<a href="${returnValue.episodeUrl}">${title}</a>`,
+        number: episodeNumber
       },
     }
 
