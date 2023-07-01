@@ -144,6 +144,9 @@ export default function CallHomeScreen() {
     })
   })
 
+  //show latest season first.
+  seasons.reverse();
+
   const matches = useMatches()
   const last = matches[matches.length - 1]
 
