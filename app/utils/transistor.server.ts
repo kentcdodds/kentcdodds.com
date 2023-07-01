@@ -83,15 +83,11 @@ async function createEpisode({
     query: {filename: `${id}.mp3`},
   })
   const {upload_url, audio_url, content_type} = authorized.data.attributes
-
-  const totalEpisodes = await fetchTransitor<TransistorEpisodesJson>({
-    endpoint: `/v1/episodes`,
-    // query: {'pagination[per]': '5000'},
-  })
-
+ 
   const episodesPerSeason = 50;
 
-  const currentSeason = Math.ceil(totalEpisodes.data.length / episodesPerSeason);
+  
+  const currentSeason = await getCurrentSeason();
 
   await fetch(upload_url, {
     method: 'PUT',
@@ -261,6 +257,19 @@ async function getEpisodes() {
     })
   }
   return episodes
+}
+
+async function getCurrentSeason() {
+  const episodesResponse = await fetchTransitor<TransistorEpisodesJson>({
+    endpoint: `/v1/episodes`,
+    query: {
+      'pagination[per]': '1', 
+      'order': 'desc' 
+    },
+  })
+
+  const lastEpisode = episodesResponse.data[0]
+  return lastEpisode?.attributes.season
 }
 
 const episodesCacheKey = `transistor:episodes:${podcastId}`
