@@ -222,7 +222,7 @@ it('should call onSubmit with the username and password', () => {
 Where is `handleSubmit` coming from and what's its value? Where is `user` coming
 from? What's _its_ value? Oh sure, you can go find where it's defined:
 
-```js [3-4]
+```js lines=3-4
 describe('Login', () => {
   let utils,
     handleSubmit,
@@ -236,7 +236,7 @@ describe('Login', () => {
 
 But then you _also_ have to figure out where it's assigned:
 
-```js [2-3]
+```js lines=2-3
 beforeEach(() => {
   handleSubmit = jest.fn()
   user = {username: 'michelle', password: 'smith'}

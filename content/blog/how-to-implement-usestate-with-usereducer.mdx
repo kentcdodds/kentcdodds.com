@@ -148,7 +148,7 @@ setCount(count + 1)
 So we need to make the `dispatch` function actually update the state value. To
 do that, we make our reducer take the `dispatchArg` and return that.
 
-```js [1]
+```js lines=1
 const useStateReducer = (prevState, dispatchArg) => dispatchArg
 
 function useState() {
@@ -158,7 +158,7 @@ function useState() {
 
 With that it actually makes more sense to call `dispatchArg` `newState` instead:
 
-```js [1]
+```js lines=1
 const useStateReducer = (prevState, newState) => newState
 
 function useState() {
@@ -180,7 +180,7 @@ If we want to continue to support the previous API, we'll need to do some
 it with the previous state. Otherwise we'll just return it. Ternaries to the
 rescue!
 
-```js [1-2]
+```js lines=1-2
 const useStateReducer = (prevState, newState) =>
   typeof newState === 'function' ? newState(prevState) : newState
 
@@ -194,7 +194,7 @@ function useState() {
 Nice! Now let's move on to that initial value! For the simple `useState(0)`
 case, it's actually really straightforward:
 
-```js [4,5]
+```js lines=4,5
 const useStateReducer = (prevState, newState) =>
   typeof newState === 'function' ? newState(prevState) : newState
 
@@ -208,7 +208,7 @@ little more tricky because the `useReducer` API is slightly different here.
 Let's iterate to that first. Here's another way we could implement the non-lazy
 `useState(0)` use case:
 
-```js [4,7]
+```js lines=4,7
 const useStateReducer = (prevState, newState) =>
   typeof newState === 'function' ? newState(prevState) : newState
 
@@ -225,7 +225,7 @@ easier to support the lazy initializer version of the API. We simply need to
 determine whether the `initialArg` is a function and if it is, we'll call it,
 otherwise we'll return it.
 
-```js [5]
+```js lines=5
 const useStateReducer = (prevState, newState) =>
   typeof newState === 'function' ? newState(prevState) : newState
 

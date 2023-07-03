@@ -512,7 +512,7 @@ When we call the `increment` and `decrement` functions from our hook, that
 triggers a state update and because we're not in the React callstack we're going
 to get an `act(...)` warning. So, let's wrap that in `act(...)`!
 
-```js [2,9,12]
+```js lines=2,9,12
 import * as React from 'react'
 import {renderHook, act} from '@testing-library/react'
 import useCount from '../use-count'

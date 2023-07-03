@@ -63,7 +63,7 @@ that:
 
 I'll highlight the areas where we're interacting with the state:
 
-```js [2-7,11]
+```js lines=2-7,11
 function useDarkMode() {
   const preferDarkQuery = '(prefers-color-scheme: dark)'
   const [mode, setMode] = React.useState(
@@ -98,7 +98,7 @@ system preferences) we'll keep that value set in `localStorage` for future use.
 There are several ways you could write this with `useReducer`. I'll start out
 with the typical way most people write reducers:
 
-```js [3-17,21-27,30-35,40-43,56-59]
+```js lines=3-17,21-27,30-35,40-43,56-59
 const preferDarkQuery = '(prefers-color-scheme: dark)'
 
 function darkModeReducer(state, action) {
@@ -167,7 +167,7 @@ Wow, I think we can both agree that the `useState` version was WAY simpler! But
 wait! We can drastically simplify the `useReducer` version by going against the
 "grain" and not writing your typical redux-style reducer. Let's try that:
 
-```js [3-10,14]
+```js lines=3-10,14
 function useDarkMode() {
   const preferDarkQuery = '(prefers-color-scheme: dark)'
   const [mode, setMode] = React.useReducer(

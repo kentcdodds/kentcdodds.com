@@ -152,7 +152,7 @@ can open the webpack config here:
 
 Then locate the code that looks like this and add the noted lines:
 
-```js [8-9]
+```js lines=8-9
 // ... config ...
 resolve: {
   // ... config ...
@@ -236,7 +236,7 @@ preserve the function and class names.
 So in that same webpack configuration file, scroll down to where the plugin is
 configured and modify it like this:
 
-```js [8-9]
+```js lines=8-9
 // ... some config ...
 new TerserPlugin({
   terserOptions: {
