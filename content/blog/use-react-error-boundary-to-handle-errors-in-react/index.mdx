@@ -72,7 +72,7 @@ for us to handle runtime errors like this.
 
 The naive approach to handling this kind of error would be to add a `try/catch`:
 
-```tsx [4-11,14-18,22-26]
+```tsx lines=4-11,14-18,22-26
 import * as React from 'react'
 import ReactDOM from 'react-dom'
 
@@ -124,7 +124,7 @@ component in my app in a `try/catch` block? In regular JavaScript, you can
 simply wrap the calling function in a `try/catch` and it'll catch any errors in
 the functions it calls. Let's try that here:
 
-```tsx [22-31]
+```tsx lines=22-31
 import * as React from 'react'
 import ReactDOM from 'react-dom'
 
@@ -189,7 +189,7 @@ React apps.
 So let's add [`react-error-boundary`](https://npm.im/react-error-boundary) and
 render the `ErrorBoundary` component:
 
-```tsx [25-28]
+```tsx lines=25-28
 import * as React from 'react'
 import ReactDOM from 'react-dom'
 import {ErrorBoundary} from 'react-error-boundary'
@@ -242,7 +242,7 @@ tools we need to manage this as well.
 
 Here's a more complex example:
 
-```tsx [6,36-40]
+```tsx lines=6,36-40
 function ErrorFallback({error, resetErrorBoundary}) {
   return (
     <div role="alert">
@@ -365,7 +365,7 @@ Luckily, [`react-error-boundary`](https://npm.im/react-error-boundary) also
 exposes a simple hook to help with these situations as well. Here's how you
 could use that to side-step this entirely:
 
-```tsx [6,14]
+```tsx lines=6,14
 function Greeting() {
   const [{status, greeting}, setState] = React.useState({
     status: 'idle',

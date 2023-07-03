@@ -47,7 +47,7 @@ function (`add(2, 3)`) you use JSX syntax (`<Add n1={2} n2={3} />`). The
 together in a single object and passed to the `Add` component function as the
 first argument like so:
 
-```tsx [1]
+```tsx lines=1
 function Add(props) {
   return (
     <div>
@@ -135,7 +135,7 @@ say I wanted to build something like this:
 
 Without state, here's how I might try to accomplish that:
 
-```tsx [5]
+```tsx lines=5
 function AddWithInput(props) {
   function handleInputChange(event) {
     const input = event.target
@@ -165,7 +165,7 @@ This is where state comes in.
 
 State is data that changes over time, and that's perfect for our situation:
 
-```tsx [2, 7]
+```tsx lines=2, 7
 function AddWithInput(props) {
   const [n2, setN2] = React.useState(0)
 
@@ -215,7 +215,7 @@ time.
 
 Let me just clean this component up a little bit and I'll explain my changes:
 
-```tsx [1, 2]
+```tsx lines=1, 2
 function AddWithInput({n1, initialN2 = 0}) {
   const [n2, setN2] = React.useState(initialN2)
 

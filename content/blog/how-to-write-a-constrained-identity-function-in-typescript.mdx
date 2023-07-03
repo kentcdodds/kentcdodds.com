@@ -93,7 +93,7 @@ be `string`. Ugh 😩
 
 Here's what we could do to fix this:
 
-```tsx [2-3]
+```tsx lines=2-3
 type OperationFn = (left: number, right: number) => number
 type Operator = '+' | '-' | '/' | '*'
 const operations: Record<Operator, OperationFn> = {
@@ -162,7 +162,7 @@ And an "identity function" is a function that accepts a value and returns that
 value. I sometimes use these kinds of functions as the default value for
 callbacks:
 
-```tsx [1]
+```tsx lines=1
 const identity = <Type extends unknown>(item: Type) => item
 
 type ModifyConfigFn = (config: ConfigType) => ConfigType
@@ -364,7 +364,7 @@ progress!
 Here's the final version of our calculator component with everything typed with
 our CIF:
 
-```tsx [2-4]
+```tsx lines=2-4
 type OperationFn = (left: number, right: number) => number
 const createOperations = <OperationsType extends Record<string, OperationFn>>(
   opts: OperationsType,

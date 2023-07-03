@@ -100,7 +100,7 @@ we provided an empty array of dependencies, our effect is not re-running.
 
 So let's add that dependency:
 
-```tsx [7]
+```tsx lines=7
 function DogInfo({dogId}) {
   const [dog, setDog] = useState(null)
   // imagine you also have loading/error states. omitting to save space...

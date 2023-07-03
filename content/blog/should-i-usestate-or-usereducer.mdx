@@ -334,7 +334,7 @@ So what happened to `"second"` in our situation? Ah! Turns out we're missing our
 dependency on `set` in the effect dependency array. Silly goose. Let's add
 those:
 
-```tsx [6,10]
+```tsx lines=6,10
 function Example() {
   const [state, {set}] = useUndo('first')
 

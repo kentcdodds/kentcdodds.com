@@ -410,7 +410,7 @@ of the `CountButton`s anyway.
 
 So this is the other situation where `useCallback` and `useMemo` can be of help:
 
-```tsx [7, 10]
+```tsx lines=7, 10
 const CountButton = React.memo(function CountButton({onClick, count}) {
   return <button onClick={onClick}>{count}</button>
 })

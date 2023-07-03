@@ -472,7 +472,7 @@ type IteratorNextType = {
 If you want type safety for the `yield` expression completion value, add a type
 annotation to the variable you assign it to:
 
-```ts [2]
+```ts lines=2
 function* generator(start: number) {
   const newStart: number = yield start + 1
   yield newStart + 2
@@ -619,7 +619,7 @@ a sufficient type guard. I'd argue this is a limitation on TypeScript's part.
 Hey, no tech is perfect. Anyway, we can help TypeScript out a bit by telling it
 that our function makes an assertion:
 
-```ts [8]
+```ts lines=8
 type User = {
   name: string
   displayName: string | null

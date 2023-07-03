@@ -92,7 +92,7 @@ forgiving when it comes to this kind of thing and it'll add the `html` and
 Alright, we're going to create DOM nodes using JavaScript and put them into a
 container or "root" DOM node. So let's add that:
 
-```html [3]
+```html lines=3
 <html>
   <body>
     <div id="root"></div>
@@ -103,7 +103,7 @@ container or "root" DOM node. So let's add that:
 We give it the `id` of `root` to make it easy to find that DOM node in our
 JavaScript. Let's add that next:
 
-```html [4-6]
+```html lines=4-6
 <html>
   <body>
     <div id="root"></div>
@@ -117,7 +117,7 @@ JavaScript. Let's add that next:
 Great, now that we have the `rootElement`, let's create a DOM element to put
 inside it:
 
-```html [6-9]
+```html lines=6-9
 <html>
   <body>
     <div id="root"></div>
@@ -146,7 +146,7 @@ Alright, let's add React to the page. It's a third party library, with
 JavaScript of its own, so we need to add separate script tags to the page for
 the browser to load that JavaScript for us:
 
-```html [4]
+```html lines=4
 <html>
   <body>
     <div id="root"></div>
@@ -165,7 +165,7 @@ the browser to load that JavaScript for us:
 Great, with React on the page (as the global variable `React`), we can now start
 creating React elements:
 
-```html [7-16]
+```html lines=7-16
 <html>
   <body>
     <div id="root"></div>
@@ -213,7 +213,7 @@ Now we've got to have something that can take that react element and turn it
 into a DOM node and then put that DOM node in our `root`. That's what
 `react-dom` is for. So let's add that:
 
-```html [5,13]
+```html lines=5,13
 <html>
   <body>
     <div id="root"></div>
@@ -253,7 +253,7 @@ JSX to `React.createElement`? That's precisely what the
 As it happens, Babel is written completely in JavaScript and can actually run in
 the browser! So let's add it to our page:
 
-```html [6]
+```html lines=6
 <html>
   <body>
     <div id="root"></div>
@@ -276,7 +276,7 @@ the browser! So let's add it to our page:
 And with that, now we can tell babel that we want it to compile the code we have
 in the `script` tag. We do this by changing the `type` to `text/babel`:
 
-```html [7]
+```html lines=7
 <html>
   <body>
     <div id="root"></div>
@@ -298,7 +298,7 @@ in the `script` tag. We do this by changing the `type` to `text/babel`:
 
 Now that we've got that set up, we can start using JSX!
 
-```html [9-14]
+```html lines=9-14
 <html>
   <body>
     <div id="root"></div>

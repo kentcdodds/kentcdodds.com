@@ -495,7 +495,7 @@ test('example 2', () => {
 Fixing this is pretty simple, you need to execute the `cleanup` method from
 `@testing-library/react` after each test.
 
-```tsx [1,13,21]
+```tsx lines=1,13,21
 import {cleanup, render} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import * as React from 'react'
@@ -523,7 +523,7 @@ test('example 2', () => {
 However, if you _don't_ use `afterEach` to do this then if a test fails your
 cleanup wont run, like this:
 
-```tsx [5-7]
+```tsx lines=5-7
 test('example 1', () => {
   const handleSubmit = jest.fn()
   const {getByLabelText} = render(<Login onSubmit={handleSubmit} />)

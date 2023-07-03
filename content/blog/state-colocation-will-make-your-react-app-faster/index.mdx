@@ -105,7 +105,7 @@ used by every component in the App, which is why it was
 the `dog` state is only used by one component, so let's move that state to be
 colocated (updated lines are highlighted):
 
-```tsx [1,2,7,18]
+```tsx lines=1,2,7,18
 function DogName({time}) {
   const [dog, setDog] = React.useState('')
   return (

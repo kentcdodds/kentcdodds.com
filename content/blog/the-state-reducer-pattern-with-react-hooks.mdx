@@ -123,7 +123,7 @@ Now, let's say we wanted to adjust the `<Toggle />` component so the user
 couldn't click the `<Switch />` more than 4 times in a row unless they click a
 "Reset" button:
 
-```tsx [2-3,7-10,16-19]
+```tsx lines=2-3,7-10,16-19
 function Toggle() {
   const [clicksSinceReset, setClicksSinceReset] = React.useState(0)
   const tooManyClicks = clicksSinceReset >= 4
@@ -157,7 +157,7 @@ Let's think about the API first, then the implementation second. As a user, it'd
 be cool if I could hook into every state update before it actually happens and
 modify it, like so:
 
-```tsx [6-14]
+```tsx lines=6-14
 function Toggle() {
   const [clicksSinceReset, setClicksSinceReset] = React.useState(0)
   const tooManyClicks = clicksSinceReset >= 4
@@ -202,7 +202,7 @@ accepts an `action` as the second argument? Then the `action` could have a
 `changes` from the `toggleReducer` which would be exported by our `useToggle`
 hook. We'll just say that the `type` for clicking the switch is `TOGGLE`.
 
-```tsx [6-8]
+```tsx lines=6-8
 function Toggle() {
   const [clicksSinceReset, setClicksSinceReset] = React.useState(0)
   const tooManyClicks = clicksSinceReset >= 4
@@ -243,7 +243,7 @@ the string `'TOGGLE'` for the type. Instead we'll have an object of all the
 change types that people can reference instead. This'll help avoid typos and
 improve editor autocompletion (for folks not using TypeScript):
 
-```tsx [8]
+```tsx lines=8
 function Toggle() {
   const [clicksSinceReset, setClicksSinceReset] = React.useState(0)
   const tooManyClicks = clicksSinceReset >= 4
@@ -335,7 +335,7 @@ Ok, cool. Really quick, let's add that `types` property to our `useToggle` to
 avoid the strings thing. And we'll export that so users of our hook can
 reference them:
 
-```tsx [1-5,8,11,14,26-28,33]
+```tsx lines=1-5,8,11,14,26-28,33
 const actionTypes = {
   toggle: 'TOGGLE',
   on: 'ON',
@@ -374,7 +374,7 @@ export {useToggle, actionTypes}
 Cool, so now, users are going to pass `reducer` as a configuration object to our
 `useToggle` function, so let's accept that:
 
-```tsx [1]
+```tsx lines=1
 function useToggle({reducer}) {
   const [{on}, dispatch] = React.useReducer(toggleReducer, {on: false})
 
@@ -392,7 +392,7 @@ our hook, we don't want to call our own `reducer`. Instead, let's expose our own
 reducer and they can use it themselves if they want to, so let's export it, and
 then we'll use the `reducer` they give us instead of our own:
 
-```tsx [2, 11]
+```tsx lines=2, 11
 function useToggle({reducer}) {
   const [{on}, dispatch] = React.useReducer(reducer, {on: false})
 
@@ -411,7 +411,7 @@ not really what we want. We want to enable inversion of control for people who
 _do_ want control, but for the more common case, they shouldn't have to do
 anything special, so let's add some defaults:
 
-```tsx [1]
+```tsx lines=1
 function useToggle({reducer = toggleReducer} = {}) {
   const [{on}, dispatch] = React.useReducer(reducer, {on: false})
 

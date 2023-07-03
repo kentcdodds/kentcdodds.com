@@ -121,7 +121,7 @@ why is this causing a problem for us in this case?
 
 Well, let's rewrite our original example slightly:
 
-```tsx [14-16]
+```tsx lines=14-16
 function Counter() {
   const [count, setCount] = React.useState(0)
   const increment = () => setCount(c => c + 1)
@@ -147,7 +147,7 @@ function App() {
 And you'll notice that we're making a function that's just calling another
 function so let's inline that:
 
-```tsx [8-12]
+```tsx lines=8-12
 function App() {
   const [items, setItems] = React.useState([])
   const addItem = () => setItems(i => [...i, {id: i.length}])

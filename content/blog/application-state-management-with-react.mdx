@@ -107,7 +107,7 @@ location. Instead, you let each individual component manage that and it ends up
 being a really effective way to build your UI. You can do this with your state
 as well, and it's very likely that you do today:
 
-```tsx [2]
+```tsx lines=2
 function Counter() {
   const [count, setCount] = React.useState(0)
   const increment = () => setCount(c => c + 1)
@@ -125,7 +125,7 @@ Note that everything I'm talking about here works with class components as well.
 Hooks just make things a bit easier (especially context which we'll get into in
 a minute).
 
-```tsx [2]
+```tsx lines=2
 class Counter extends React.Component {
   state = {count: 0}
   increment = () => this.setState(({count}) => ({count: count + 1}))
@@ -139,7 +139,7 @@ class Counter extends React.Component {
 is easy, but what do you do when I need to share that state across components?
 For example, what if I wanted to do this:"
 
-```tsx [3]
+```tsx lines=3
 function CountDisplay() {
   // where does `count` come from?
   return <div>The current counter count is {count}</div>
