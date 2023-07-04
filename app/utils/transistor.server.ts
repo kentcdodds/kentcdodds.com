@@ -83,6 +83,11 @@ async function createEpisode({
     query: {filename: `${id}.mp3`},
   })
   const {upload_url, audio_url, content_type} = authorized.data.attributes
+ 
+  const episodesPerSeason = 50;
+
+  
+  const currentSeason = await getCurrentSeason();
 
   await fetch(upload_url, {
     method: 'PUT',
@@ -93,10 +98,7 @@ async function createEpisode({
   const createData: TransistorCreateEpisodeData = {
     episode: {
       show_id: podcastId,
-      // IDEA: set the season automatically based on the year
-      // new Date().getFullYear() - 2020
-      // need to support multiple seasons in the UI first though.
-      season: 1,
+      season: currentSeason,
       audio_url,
       title,
       summary,
@@ -124,11 +126,21 @@ async function createEpisode({
 
   const returnValue: {episodeUrl?: string; imageUrl?: string} = {}
   // set the alternate_url if we have enough info for it.
-  const {number, season} = created.data.attributes
+  const {number} = created.data.attributes
+  let season = currentSeason
+  let episodeNumber = 1
   if (typeof number === 'number' && typeof season === 'number') {
+    //reset episode to 1 if it exceeds episodesPerSeason (50)
+    if(number > episodesPerSeason) {
+      season += 1
+      episodeNumber = 1
+    }else {
+      episodeNumber = number
+    }
+
     const slug = slugify(created.data.attributes.title)
     const episodePath = getEpisodePath({
-      episodeNumber: number,
+      episodeNumber,
       seasonNumber: season,
       slug,
     })
@@ -180,6 +192,8 @@ async function createEpisode({
         alternate_url: returnValue.episodeUrl,
         image_url: imageUrl,
         description: `${description}\n\n<a href="${returnValue.episodeUrl}">${title}</a>`,
+        number: episodeNumber,
+        season
       },
     }
 
@@ -240,6 +254,19 @@ async function getEpisodes() {
     })
   }
   return episodes
+}
+
+async function getCurrentSeason() {
+  const episodesResponse = await fetchTransitor<TransistorEpisodesJson>({
+    endpoint: `/v1/episodes`,
+    query: {
+      'pagination[per]': '1', 
+      'order': 'desc' 
+    },
+  })
+
+  const lastEpisode = episodesResponse.data[0]
+  return lastEpisode?.attributes.season
 }
 
 const episodesCacheKey = `transistor:episodes:${podcastId}`

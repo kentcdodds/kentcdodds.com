@@ -58,8 +58,11 @@ function makeEpisode(
 }
 
 const episodes: Array<TransistorEpisodeData> = Array.from(
-  {length: 35},
-  (item, index) => makeEpisode({attributes: {number: index + 1}}),
+  {length: 99},
+  (item, index) => makeEpisode({attributes: {
+    season: Math.ceil((index + 1) / 50),
+    number: ((index % 50) + 1)
+  }}),
 )
 
 const transistorHandlers: Array<

@@ -56,7 +56,7 @@ test('Call Kent recording flow', async ({page, login}) => {
 
   await page.getByRole('button', {name: /accept/i}).click()
   await page.getByRole('button', {name: /submit/i}).click()
-  await expect(page).toHaveURL(/.*calls$/)
+  await expect(page).toHaveURL(/.*calls\/\d+/)
 
   // processing the audio takes a while, so let the timeout run
   await expect(
