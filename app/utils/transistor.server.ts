@@ -83,11 +83,10 @@ async function createEpisode({
     query: {filename: `${id}.mp3`},
   })
   const {upload_url, audio_url, content_type} = authorized.data.attributes
- 
-  const episodesPerSeason = 50;
 
-  
-  const currentSeason = await getCurrentSeason();
+  const episodesPerSeason = 50
+
+  const currentSeason = await getCurrentSeason()
 
   await fetch(upload_url, {
     method: 'PUT',
@@ -131,10 +130,10 @@ async function createEpisode({
   let episodeNumber = 1
   if (typeof number === 'number' && typeof season === 'number') {
     //reset episode to 1 if it exceeds episodesPerSeason (50)
-    if(number > episodesPerSeason) {
+    if (number > episodesPerSeason) {
       season += 1
       episodeNumber = 1
-    }else {
+    } else {
       episodeNumber = number
     }
 
@@ -193,7 +192,7 @@ async function createEpisode({
         image_url: imageUrl,
         description: `${description}\n\n<a href="${returnValue.episodeUrl}">${title}</a>`,
         number: episodeNumber,
-        season
+        season,
       },
     }
 
@@ -260,8 +259,8 @@ async function getCurrentSeason() {
   const episodesResponse = await fetchTransitor<TransistorEpisodesJson>({
     endpoint: `/v1/episodes`,
     query: {
-      'pagination[per]': '1', 
-      'order': 'desc' 
+      'pagination[per]': '1',
+      order: 'desc',
     },
   })
 
