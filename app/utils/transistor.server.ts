@@ -98,9 +98,6 @@ async function createEpisode({
   const createData: TransistorCreateEpisodeData = {
     episode: {
       show_id: podcastId,
-      // IDEA: set the season automatically based on the year
-      // new Date().getFullYear() - 2020
-      // need to support multiple seasons in the UI first though.
       season: currentSeason,
       audio_url,
       title,
