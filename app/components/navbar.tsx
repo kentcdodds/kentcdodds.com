@@ -30,7 +30,7 @@ const LINKS = [
   {name: 'Courses', to: '/courses'},
   {name: 'Discord', to: '/discord'},
   {name: 'Chats', to: '/chats/04'},
-  {name: 'Calls', to: '/calls/01'},
+  {name: 'Calls', to: '/calls/04'},
   {name: 'Workshops', to: '/workshops'},
   {name: 'About', to: '/about'},
 ]
