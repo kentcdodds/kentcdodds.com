@@ -107,7 +107,7 @@ export const action: ActionFunction = async ({request}) => {
   try {
     const verifiedStatus = await isEmailVerified(emailAddress)
     if (!verifiedStatus.verified) {
-      const errorMessage = `I tried to verify that email and got this error message: "${verifiedStatus.message}". If you think this is wrong, shoot an email to team@kentcdodds.com.`
+      const errorMessage = `I tried to verify that email and got this error message: "${verifiedStatus.message}". If you think this is wrong, sign up for Kent's mailing list first (using the form on the bottom of the page) and once that's confirmed you'll be able to sign up.`
       loginSession.flashError(errorMessage)
       return redirect(`/login`, {
         status: 400,
