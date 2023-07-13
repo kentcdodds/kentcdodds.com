@@ -48,11 +48,11 @@ export const handle: KCDHandle = {
 
 export const meta: V2_MetaFunction<
   typeof loader,
-  {root: RootLoaderType; 'routes/calls+/_calls': typeof callsLoader}
+  {root: RootLoaderType; 'routes/calls': typeof callsLoader}
 > = ({matches, params}) => {
   const {requestInfo} = matches.find(m => m.id === 'root')
     ?.data as RootLoaderData
-  const callsData = matches.find(m => m.id === 'routes/calls+/_calls')?.data as
+  const callsData = matches.find(m => m.id === 'routes/calls')?.data as
     | CallsLoaderData
     | undefined
   if (!callsData) {
