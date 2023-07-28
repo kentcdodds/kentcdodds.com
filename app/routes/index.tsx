@@ -92,18 +92,18 @@ export default function IndexRoute() {
   return (
     <div>
       <HeroSection
-        title="Helping people make the world a better place through quality software."
+        title="Transformez totalement votre vie grâce au code, au design et aux nouvelles expériences !"
         imageBuilder={kodyFlying}
         imageSize="giant"
         arrowUrl="#intro"
-        arrowLabel="Learn more about Kent"
+        arrowLabel="Apprendre plus de moi ! "
         action={
           <div className="mr-auto flex flex-col gap-4">
             <ButtonLink to="/blog" variant="primary" prefetch="intent">
-              Read the blog
+              Visiter le blog !
             </ButtonLink>
             <ButtonLink to="/courses" variant="secondary" prefetch="intent">
-              Take a course
+              Suivre un cours
             </ButtonLink>
           </div>
         }
@@ -121,8 +121,8 @@ export default function IndexRoute() {
         <Spacer size="base" />
         <BlogSection
           articles={data.blogRecommendations}
-          title="Blog recommendations"
-          description="Prepared especially for you."
+          title="Recommandation de la semaine"
+          description="Les articles préparés pour vous"
         />
         <Spacer size="lg" />
         <CourseSection />

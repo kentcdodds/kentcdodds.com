@@ -4,7 +4,7 @@ import * as React from 'react'
 function Label({className, ...labelProps}: JSX.IntrinsicElements['label']) {
   return (
     <label
-      {...labelProps}
+    {...labelProps}
       className={clsx(
         'inline-block text-lg text-gray-500 dark:text-slate-500',
         className,

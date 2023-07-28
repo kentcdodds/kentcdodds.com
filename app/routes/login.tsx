@@ -65,13 +65,13 @@ export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
   const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
   const domain = new URL(getOrigin(requestInfo)).host
   return getSocialMetas({
-    title: `Login to ${domain}`,
-    description: `Sign up or login to ${domain} to join a team and learn together.`,
+    title: `Se connecter sur ${domain}`,
+    description: `Se connecter ou s'enregister sur '${domain} pour rejoindre l'équipe et apprendre ensemble`,
     url: getUrl(requestInfo),
     image: getGenericSocialImage({
       url: getDisplayUrl(requestInfo),
       featuredImage: images.skis.id,
-      words: `Login to your account on ${domain}`,
+      words: `Se connecter sur ${domain}`,
     }),
   })
 }
@@ -81,11 +81,11 @@ export const action: ActionFunction = async ({request}) => {
   const loginSession = await getLoginInfoSession(request)
 
   const emailAddress = formData.get('email')
-  invariant(typeof emailAddress === 'string', 'Form submitted incorrectly')
+  invariant(typeof emailAddress === 'string', 'Oups, mauvais remplissage !')
   if (emailAddress) loginSession.setEmail(emailAddress)
 
   if (!emailAddress.match(/.+@.+/)) {
-    loginSession.flashError('A valid email is required')
+    loginSession.flashError('Entrez une adresse mail valide !')
     return redirect(`/login`, {
       status: 400,
       headers: await loginSession.getHeaders(),
@@ -107,7 +107,7 @@ export const action: ActionFunction = async ({request}) => {
   try {
     const verifiedStatus = await isEmailVerified(emailAddress)
     if (!verifiedStatus.verified) {
-      const errorMessage = `I tried to verify that email and got this error message: "${verifiedStatus.message}". If you think this is wrong, sign up for Kent's mailing list first (using the form on the bottom of the page) and once that's confirmed you'll be able to sign up.`
+      const errorMessage = `I tried to verify that email and got this error message: "${verifiedStatus.message}". If you think this is wrong, sign up for Faust's mailing list first (using the form on the bottom of the page) and once that's confirmed you'll be able to sign up.`
       loginSession.flashError(errorMessage)
       return redirect(`/login`, {
         status: 400,
@@ -115,7 +115,7 @@ export const action: ActionFunction = async ({request}) => {
       })
     }
   } catch (error: unknown) {
-    console.error(`There was an error verifying an email address:`, error)
+    console.error(`Nous avons une erreur de vérification de votre mail:`, error)
     // continue on... This was probably our fault...
     // IDEA: notify me of this issue...
   }
@@ -170,8 +170,8 @@ function Login() {
       <HeroSection
         imageBuilder={images.skis}
         imageSize="medium"
-        title="Log in to your account."
-        subtitle="Or sign up for an account."
+        title="Se connecter"
+        subtitle="Ou créer un compte."
         action={
           <main>
             <Form
@@ -186,7 +186,7 @@ function Login() {
             >
               <div className="mb-6">
                 <div className="mb-4 flex flex-wrap items-baseline justify-between">
-                  <Label htmlFor="email-address">Email address</Label>
+                  <Label htmlFor="email-address">Adresse mail</Label>
                 </div>
 
                 <Input
@@ -219,7 +219,7 @@ function Login() {
 
               <div className="flex flex-wrap gap-4">
                 <Button type="submit" disabled={!formIsValid || submitted}>
-                  Email a login link
+                  Lien de connexion
                 </Button>
                 <LinkButton
                   type="reset"
@@ -229,7 +229,7 @@ function Login() {
                     inputRef.current?.focus()
                   }}
                 >
-                  Reset
+                  Modifier 
                 </LinkButton>
               </div>
 
@@ -258,9 +258,8 @@ function Login() {
       <Grid>
         <Paragraph className="col-span-full mb-10 md:col-span-4">
           {`
-              To sign in to your account or to create a new one fill in your
-              email above and we'll send you an email with a magic link to get
-              you started.
+
+           Pour vous connecter à votre compte ou en créer un nouveau, indiquez votre adresse e-mail ci-dessus et nous vous enverrons un e-mail avec un lien magique pour commencer.
             `}
         </Paragraph>
 
@@ -268,28 +267,7 @@ function Login() {
           className="col-span-full mb-10 text-sm md:col-span-4 lg:col-start-7"
           prose={false}
         >
-          {`Tip: this account is a completely different account from your `}
-          <a
-            href="https://testingjavascript.com"
-            className="underlined text-yellow-500"
-            target="_blank"
-            rel="noreferrer noopener"
-          >
-            TestingJavaScript.com
-          </a>
-          {` and `}
-          <a
-            href="https://epicreact.dev"
-            className="underlined text-blue-500"
-            target="_blank"
-            rel="noreferrer noopener"
-          >
-            EpicReact.dev
-          </a>
-          {`
-            accounts, but I recommend you use the same email address for all of
-            them because they all feed into my mailing list.
-          `}
+          {`Ce compte est complètement unique et indépendant de tout les autres ! `}
         </Paragraph>
       </Grid>
     </>

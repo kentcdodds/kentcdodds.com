@@ -30,10 +30,10 @@ export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
   const testimonialCount = testimonials ? `${testimonials.length} ` : ''
-  const title = `${testimonialCount}testimonials about Kent C. Dodds`
+  const title = `${testimonialCount}temoignages à propos de Oswald Faust`
   return getSocialMetas({
     title,
-    description: `Check out ${testimonialCount}testimonials about Kent C. Dodds and how the things he's done has helped people in their goals.`,
+    description: `Regarde les ${testimonialCount}témoignages à propos de Faust Oswald et comment les choses qu'il réalise aident les autres et transforment leurs vies et les aide dans leurs objectifs`,
     url: getUrl(requestInfo),
     image: getGenericSocialImage({
       url: getDisplayUrl(requestInfo),
@@ -65,8 +65,8 @@ export default function Testimonials() {
   return (
     <>
       <HeroSection
-        title="Curious to read what people are saying?"
-        subtitle="Checkout KCD testimonials below."
+        title="Interessé de lire ce que disent les gens?"
+        subtitle="Regarde les témoignages sur moi !"
         image={
           <img
             className="rounded-lg"
@@ -80,14 +80,14 @@ export default function Testimonials() {
           />
         }
         arrowUrl="#list"
-        arrowLabel="Start reading..."
+        arrowLabel="Commence à lire..."
         action={
           <ButtonLink
             variant="primary"
-            to="https://kcd.im/testimonial"
+            to="mettre-le-lien-témoin"
             className="mr-auto"
           >
-            Submit your own
+            Soumettre le sien
           </ButtonLink>
         }
       />
@@ -121,13 +121,13 @@ export default function Testimonials() {
         </div>
 
         <div className="col-span-7 col-start-3 md:col-span-6 md:col-start-4 lg:col-span-8 lg:col-start-5">
-          <H2 className="mb-8">{`More of a listener?`}</H2>
+          <H2 className="mb-8">{`Besoin d'écouter plus?`}</H2>
           <H2 className="mb-16" variant="secondary" as="p">
             {`
-              Check out my Call Kent podcast and join in the conversation with your own call.
+             Ecoute mon podcast et participe à mes recording si tu as une histoire à raconter !
             `}
           </H2>
-          <ArrowLink to="/calls">{`Check out the podcast`}</ArrowLink>
+          <ArrowLink to="/calls">{`Ecouter le podcast !`}</ArrowLink>
         </div>
       </Grid>
     </>

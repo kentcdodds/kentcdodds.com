@@ -21,13 +21,13 @@ function TestimonialSection({
     >
       <div className="col-span-full mb-20 flex flex-col space-y-10 lg:flex-row lg:items-end lg:justify-between lg:space-y-0">
         <div className="space-y-2 lg:space-y-0">
-          <H2>{`Don't just take my word for it.`}</H2>
+          <H2>{`Ne me croyez pas sur parole !`}</H2>
           <H2 variant="secondary" as="p">
-            What{' '}
+            Ce que pensent{' '}
             <Link to="/testimonials" className="underline">
-              others
+              les autres
             </Link>{' '}
-            have to say
+            formés
           </H2>
         </div>
 

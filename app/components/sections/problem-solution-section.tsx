@@ -105,14 +105,14 @@ function ProblemSolutionSection({
     <Tabs as={Grid} featured onChange={index => setActiveTabIndex(index)}>
       <div className="col-span-full lg:col-span-5">
         <H2 className="mb-4 lg:mb-0">
-          Having a hard time keeping up with JavaScript?
+          Besoin de passer du bon temps et d'en apprendre plus sur moi et même le monde ?
         </H2>
       </div>
       <div className="col-span-full lg:col-span-5 lg:col-start-7">
         <H2 variant="secondary" as="p">
           {`
-            Well, you're in the right place. My website is your one stop shop
-            for everything you need to build JavaScript apps.
+            Vous êtes au meilleur endroit ! Chaque semaine, on discute cinéma, musique, culture 
+            et surtout partage d'expérience en dehors du web ! 
           `}
         </H2>
       </div>
@@ -121,67 +121,51 @@ function ProblemSolutionSection({
 
       <div className="order-1 col-span-full col-start-1 lg:order-3 lg:col-span-5 lg:mt-52 lg:pt-2">
         <TabList className="inline-flex flex-row space-x-8 bg-transparent text-xl leading-snug text-white lg:flex-col lg:space-x-0 lg:text-7xl">
-          <Tab>blog</Tab>
-          <Tab>courses</Tab>
-          <Tab>podcasts</Tab>
+          <Tab>Blog</Tab>
+          <Tab>Se former</Tab>
+          <Tab>Podcasts</Tab>
         </TabList>
       </div>
 
       <TabPanels className="order-4 col-span-full mt-16 grid lg:col-span-5 lg:col-start-7 lg:mt-0">
         <ContentPanel active={activeTabIndex === 0} imageBuilder={images.skis}>
-          <H3>Educational blog</H3>
+          <H3>Talk about us </H3>
 
           <Paragraph className="mt-8">
-            {`My `}
+            {`Mes `}
             <strong>{blogPostCount}</strong>
-            {` blog posts (and counting) have been `}
+            {` articles de blogs (and counting) sont lus plus de `}
             <Link prefetch="intent" to="/teams#read-rankings">
               read
             </Link>
-            {` ${totalBlogReads} times by ${totalBlogReaders} people. There you'll find blogs about `}
+            {` ${totalBlogReads} fois par plus de ${totalBlogReaders} de gens. Sur notre blog, nous parlons de sujets comme `}
             <Link prefetch="intent" to="/blog?q=javascript">
-              JavaScript
+              le développement web
             </Link>
             {`, `}
             <Link prefetch="intent" to="/blog?q=typescript">
-              TypeScript
+              l'actualité cinéma
             </Link>
             {`, `}
             <Link prefetch="intent" to="/blog?q=react">
-              React
+              les dernières tendances musicales
             </Link>
             {`, `}
             <Link prefetch="intent" to="/blog?q=testing">
-              Testing
+              le domaine de la tech
             </Link>
             {`, `}
             <Link prefetch="intent" to="/blog?q=career">
-              your career
+              l'amour
             </Link>
-            {`, and `}
+            {`, et `}
             <Link prefetch="intent" to="/blog">
-              and more
+             bien plus encore
             </Link>
             .
           </Paragraph>
-          {currentBlogLeaderTeam ? (
-            <Paragraph
-              prose={false}
-              textColorClassName={teamTextColorClasses[currentBlogLeaderTeam]}
-            >
-              {`The `}
-              <Link
-                to="/teams"
-                className={`${teamTextColorClasses[currentBlogLeaderTeam]} underlined`}
-              >
-                <strong>{currentBlogLeaderTeam.toLowerCase()}</strong>
-              </Link>
-              {` team is winning.`}
-            </Paragraph>
-          ) : null}
-
           <ArrowLink to="/blog" className="mt-14">
-            Start reading the blog
+            Commencer à lire le blog
           </ArrowLink>
         </ContentPanel>
 
@@ -189,68 +173,53 @@ function ProblemSolutionSection({
           active={activeTabIndex === 1}
           imageBuilder={images.onewheel}
         >
-          <H3>Courses</H3>
+          <H3>Formations</H3>
 
           <Paragraph className="mt-8">
             {`
-              I've been teaching people just like you how to build better
-              software for over ${differenceInYears(
+              Apprendre aux gens à savoir construire des systèmes innovants, mieux 
+              développer leurs talents d'écrivains et bien plus reste une passion pour moi depuis plus 
+              de ${differenceInYears(
                 Date.now(),
                 new Date(2014, 0, 0),
               )}
-              years. Tens of thousands of people have increased their confidence
-              in shipping software with
+              years. En ses nombreuses années d'accompagnement des jeunes avec le CVADD
             `}
             <a href="https://testingjavascript.com">TestingJavaScript.com</a>
             {`
-              and even more have improved the performance and maintainability
-              of their React applications from what they've learned from
-            `}
-            <a href="https://epicreact.dev">EpicReact.dev</a>.
+              notamment à la gestion de projets, je suis capable de vous aider à atteindre vos objectifs... Mais cette
+              fois avec l'IA !          `}
           </Paragraph>
 
           <ArrowLink to="/courses" className="mt-14">
-            Explore the courses
+            Voir les cours
           </ArrowLink>
         </ContentPanel>
 
         <ContentPanel active={activeTabIndex === 2} imageBuilder={images.kayak}>
-          <H3>Podcast</H3>
+          <H3>Mon podcast !</H3>
 
           <Paragraph className="mt-8">
             {`
-              I really enjoy chatting with people about software development and
-              life as a software developer. So I have several podcasts for you
-              to enjoy like
+              En lançant l'un des meilleurs podcasts du milieu de l'innovation et du milieu tech en Afrique, j'espérais 
+              mettre la lumière sur les talents existants, mais pas que. Il s'agissait de pouvoir inspirer les personnes de
+              tout horizon et de pouvoir changer leur vie. Au programme, un mythique rendez vous sur 
             `}
             <Link prefetch="intent" to="/chats">
-              Chats with Kent
+              l'importance des systèmes innovants
             </Link>
             {`, `}
             <Link prefetch="intent" to="/calls">
-              Call Kent
+              le choix de sa carrière dans la tech
             </Link>
-            {`, and `}
-            <a href="https://epicreact.dev/podcast">
-              the EpicReact.dev podcast
-            </a>
-            .
-          </Paragraph>
-
-          <Paragraph>
-            {`
-              I've also had the pleasure to be a guest on many other podcasts
-              where I've been able to share my thoughts on webdev. You can find
-              those on my
-            `}
-            <Link prefetch="intent" to="/appearances">
-              appearances
+            {` et même une interview intime avec `}
+             <Link prefetch="intent" to="/calls">
+             Dekelly
             </Link>
-            {` page.`}
           </Paragraph>
 
           <ArrowLink to="/chats" className="mt-14">
-            Start listening to chats with Kent
+            Allons écouter mon podcast !
           </ArrowLink>
         </ContentPanel>
       </TabPanels>

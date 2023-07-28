@@ -332,7 +332,7 @@ function ArticleFooter({
               text: tweetMessage,
             })}`}
           >
-            Tweet this article
+            Tweeter cet article
           </a>
         </div>
 
@@ -348,7 +348,7 @@ function ArticleFooter({
               q: permalink,
             })}`}
           >
-            Discuss on Twitter
+            En parler sur Twitter
           </a>
           <span className={clsx('mx-3 self-center text-xs', {hidden: isDraft})}>
             •
@@ -359,7 +359,7 @@ function ArticleFooter({
             rel="noreferrer noopener"
             href={editLink}
           >
-            Edit on GitHub
+            Ecrire sur Gihub
           </a>
         </div>
       </div>
@@ -376,12 +376,11 @@ function ArticleFooter({
         <H6 as="div">Written by Kent C. Dodds</H6>
         <Paragraph className="mb-12 mt-3">
           {`
-Kent C. Dodds is a JavaScript software engineer and teacher. Kent's taught hundreds
-of thousands of people how to make the world a better place with quality software
-development tools and practices. He lives with his wife and four kids in Utah.
+Faust Oswald est un développeur front-end et software engineer. Builder de SaaS et innovateur tech et social à seulement
+18 ans, il a un but : Aider son entourage à exploiter les talents dont ils disposent pour évoluer. Aujourd'hui étudiant à Epitech, il continue de se former pour aider sa communauté'
           `.trim()}
         </Paragraph>
-        <ArrowLink to="/about">Learn more about Kent</ArrowLink>
+        <ArrowLink to="/about">En apprendre plus sur moi</ArrowLink>
       </div>
     </Grid>
   )
@@ -603,8 +602,8 @@ export default function MdxScreen() {
       {data.workshops.length > 0 ? (
         <>
           <HeaderSection
-            title="Want to learn more?"
-            subTitle="Join Kent in a live workshop"
+            title="En savoir plus sur moi ?"
+            subTitle="Rejoins moi sur mes canaux !"
           />
           <Spacer size="2xs" />
 

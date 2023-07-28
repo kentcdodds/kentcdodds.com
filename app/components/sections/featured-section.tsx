@@ -33,8 +33,8 @@ type FeaturedSectionProps = {
 function FeaturedSection({
   slug,
   href,
-  caption = 'Featured article',
-  cta = 'Read full article',
+  caption = 'Article en vedette',
+  cta = "Lire tout l'article",
   imageBuilder,
   imageUrl,
   imageAlt,

@@ -52,7 +52,7 @@ export async function loader({request}: DataFunctionArgs) {
     loginInfoSession.clean()
     loginInfoSession.flashError(
       getErrorMessage(error) ||
-        'Sign in link invalid. Please request a new one.',
+        'Lien invalide ! Veuillez-réessayer une fois encore.',
     )
     return redirect('/login', {
       headers: await loginInfoSession.getHeaders(),
@@ -63,7 +63,8 @@ export async function loader({request}: DataFunctionArgs) {
 export default function Magic() {
   return (
     <div>
-      {`Congrats! You're seeing something you shouldn't ever be able to see because you should have been redirected. Good job!`}
+      {`
+      Congrats! You're seeing something you shouldn't ever be able to see because you should have been redirected. Good job!`}
     </div>
   )
 }

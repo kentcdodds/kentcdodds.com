@@ -44,22 +44,21 @@ function IntroductionSection() {
             />
           }
         />
-        <p className="text-secondary text-xl">{`Introduction video (2:13)`}</p>
+        <p className="text-secondary text-xl">{`Petite introduction`}</p>
         <Link
           prefetch="intent"
           className="underlined"
           to="/about?autoplay"
-        >{`or, watch the full video here (8:05)`}</Link>
+        >{`ou regarder ma vidéo de présentation ici `}</Link>
       </div>
       <div className="col-span-full mt-12 lg:col-span-6 lg:col-start-6 lg:mt-0">
         <H2 id="intro">
-          {`Hi, I'm Kent C. Dodds. I help people make the world better through quality software.`}
+          {`Bienvenue, Je suis Faust et je développe des stratégies UX et web ! `}
         </H2>
         <H3 variant="secondary" as="p" className="mt-12">
           {`
-            I'm also a big extreme sports enthusiast. When I'm not hanging out
-            with my family or at the computer you can find me cruising around on
-            my onewheel or hitting the slopes on my snowboard when it's cold.
+            Mais pas que ! Je suis aussi un adolescent passioné de musique UK, d'innovation et de créativité. Je donne 
+            mes avis sur mes passions et je vous aide à saisir les meilleurs opportunités ;)
           `}
         </H3>
         <ArrowLink
@@ -68,7 +67,7 @@ function IntroductionSection() {
           className="mt-20"
           prefetch="intent"
         >
-          Learn more about me
+          Savoir plus sur moi !
         </ArrowLink>
       </div>
     </Grid>

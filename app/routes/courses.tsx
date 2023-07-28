@@ -64,18 +64,18 @@ function CoursesHome() {
   return (
     <>
       <HeroSection
-        title="Level up as a developer."
-        subtitle="Invest in yourself with a premium dev course."
+        title="Devenez meilleur dans votre domaine"
+        subtitle="Investissez dans un accompagnement unique"
         imageBuilder={images.onewheel}
       />
 
       <Grid as="main" className="mb-48">
         <div className="col-span-full mb-12 hidden lg:col-span-4 lg:mb-0 lg:block">
-          <H6 as="h2">{`Reasons to invest in yourself`}</H6>
+          <H6 as="h2">{`Il faut investir en vous-même !`}</H6>
         </div>
         <div className="col-span-full mb-8 lg:col-span-4 lg:mb-20">
           <H6 as="h3" className="mb-4">
-            {`Become a more confident developer`}
+            {`Devenez le meilleur Project Manager !`}
           </H6>
           <Paragraph className="mb-20">
             {`
@@ -89,7 +89,7 @@ function CoursesHome() {
             {` this way, trust me 🥳`}
           </Paragraph>
           <H6 as="h3" className="mb-4">
-            {`Earn more money as a developer`}
+            {`Gagnez plus d'argent dans votre passion !`}
           </H6>
           <Paragraph>
             {`
@@ -110,11 +110,11 @@ function CoursesHome() {
         Courses
       </h2>
 
-      <Grid className="gap-y-4">
+      <Grid>
         <div className="col-span-full lg:col-span-6">
           <CourseCard
-            title="Epic React"
-            description="The most comprehensive guide for pros."
+            title="Master Writer"
+            description="Affranchis toi et captive ton audience."
             imageBuilder={images.courseEpicReact}
             courseUrl="https://epicreact.dev"
           />
@@ -122,8 +122,8 @@ function CoursesHome() {
 
         <div className="col-span-full mt-12 lg:col-span-6 lg:mt-0">
           <CourseCard
-            title="Testing JavaScript"
-            description="Learn smart, efficient testing methods."
+            title=" Project Expert"
+            description="Gère tes projets efficamentet rapidement !"
             imageBuilder={images.courseTestingJS}
             courseUrl="https://testingjavascript.com"
           />
@@ -231,16 +231,16 @@ function CoursesHome() {
 
         <div className="col-span-full mt-4 lg:col-span-6 lg:col-start-7 lg:mt-0">
           <H2 as="p" className="mb-8">
-            {`Do you want to work through one of these courses with peers?`}
+            {`Voulez-vous rejoindre une communauté de personnes passionées ?`}
           </H2>
           <H2 variant="secondary" as="p" className="mb-16">
-            {`Check out our discord where we have `}
+            {`Rejoins notre Discord officiel pour des `}
             <Link className="underline" to="/clubs">
-              learning clubs
+                sessions privées
             </Link>
             {`.`}
           </H2>
-          <ArrowLink to="/discord">{`Learn more about the discord`}</ArrowLink>
+          <ArrowLink to="/discord">{`En apprendre plus sur le serveur`}</ArrowLink>
         </div>
       </Grid>
     </>

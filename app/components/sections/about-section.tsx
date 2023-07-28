@@ -43,16 +43,15 @@ function AboutSection() {
           })}
         />
 
-        <H2 className="mt-12">{`Big extreme sports enthusiast.`}</H2>
+        <H2 className="mt-12">{`Amoureux de la culture générale et de musique !`}</H2>
         <H2 className="mt-2" variant="secondary" as="p">
-          {`With a big heart for helping people.`}
+          {`et prêt à en discuter !`}
         </H2>
 
         <Paragraph className="mt-8">
           {`
-            I'm a JavaScript engineer and teacher and I'm active in the open
-            source community. And I'm also a husband, father, and an extreme
-            sports and sustainability enthusiast.
+            J'écris régulièrement sur des sujets de découverte, de musique anglaise et rap, mais aussi
+            sur la télévision. L'objectif : Discuter et apprendre !
           `}
         </Paragraph>
 
@@ -62,11 +61,10 @@ function AboutSection() {
           className="mt-14"
           prefetch="intent"
         >
-          Learn more about me
+         Apprendre plus sur moi !
         </ArrowLink>
       </div>
     </Grid>
   )
 }
-
 export {AboutSection}

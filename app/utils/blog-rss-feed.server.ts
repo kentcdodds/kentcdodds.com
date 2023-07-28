@@ -9,9 +9,9 @@ async function getRssFeedXml(request: Request) {
   return `
     <rss xmlns:blogChannel="${blogUrl}" version="2.0">
       <channel>
-        <title>Kent C. Dodds Blog</title>
+        <title>Oswald Faust Blog</title>
         <link>${blogUrl}</link>
-        <description>The Kent C. Dodds Blog</description>
+        <description>Oswald Faust Blog</description>
         <language>en-us</language>
         <generator>Kody the Koala</generator>
         <ttl>40</ttl>

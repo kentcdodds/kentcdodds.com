@@ -68,15 +68,15 @@ export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
   return getSocialMetas({
-    title: 'About Kent C. Dodds',
-    description: 'Get to know Kent C. Dodds',
-    keywords: 'about, kent, kent c. dodds, kent dodds',
+    title: 'A propos de Fasut Oswald',
+    description: 'En apprendre plus de moi !',
+    keywords: 'about, parlons, faust, faust oswald, oswald, frank',
     url: getUrl(requestInfo),
     image: getSocialImageWithPreTitle({
       url: getDisplayUrl(requestInfo),
       featuredImage: 'kent/video-stills/snowboard-butter',
-      preTitle: 'Get to know',
-      title: `Kent C. Dodds`,
+      preTitle: 'En apprendre plus',
+      title: `Oswald Faust`,
     }),
   })
 }
@@ -94,11 +94,11 @@ function AboutIndex() {
   return (
     <>
       <HeroSection
-        title="Hi, I'm Kent C. Dodds, I'm a full time educator."
-        subtitle="I make the world a better place by teaching people like you how to make quality software."
+        title="Hello ! Je suis Oswald Faust, votre jeune développeur et designer UI & UX !"
+        subtitle=" Mon talent ? Je vous aide à mettre sur place des projets qui vous ressemblent, mais ce n'est pas tout !"
         imageBuilder={images.snowboard}
         arrowUrl="#about-me"
-        arrowLabel="Get to know more about me"
+        arrowLabel="En savoir plus sur moi"
       />
 
       <Grid as="main" className="mb-24 mt-16 lg:mb-48">
@@ -130,17 +130,17 @@ function AboutIndex() {
               />
             }
           />
-          <p className="text-xl text-slate-500">{`Get to know me in this full introduction video (8:05)`}</p>
+          <p className="text-xl text-slate-500">{`En savoir plus sur moi sur cette vidéo d'intro ! (8:05)`}</p>
           <a
             className="underlined"
             target="_blank"
             rel="noreferrer noopener"
             href={`https://twitter.com/intent/tweet?${new URLSearchParams({
               url: permalinkAutoplay,
-              text: `I just watched @kentcdodds' life flash before my eyes.`,
+              text: `Je viens juste d'en apprendre plus sur @OswaldFaust2, et j'adore ça !`,
             })}`}
           >
-            {`Share this video.`}
+            {`Partager mon contenu !`}
           </a>
         </div>
       </Grid>

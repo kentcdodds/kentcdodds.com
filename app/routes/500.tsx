@@ -10,7 +10,7 @@ export const handle: KCDHandle = {
 }
 
 export const loader: LoaderFunction = async () => {
-  throw new Error('Oh no!')
+  throw new Error('Désolé !')
 }
 
 export default function Screen() {

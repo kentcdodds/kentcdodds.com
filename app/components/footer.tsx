@@ -18,19 +18,18 @@ import {H4, H6, Paragraph} from './typography.tsx'
 function NewsletterSection() {
   return (
     <div>
-      <H6 as="div">Stay up to date</H6>
+      <H6 as="div">Reste en contact de tout !</H6>
       <div className="mt-4 max-w-md">
         <Paragraph prose={false}>
           {`
-            Subscribe to the newsletter to stay up to date with articles,
-            courses and much more!
+            Inscris-toi à ma newsletter pour recevoir des mises à jour sur mes projets, mes articles et mes cours !
           `}
           <Link
             prefetch="intent"
             to="/subscribe"
             className="text-secondary underlined hover:text-team-current focus:text-team-current"
           >
-            {`Learn more`}{' '}
+            {`En apprendre plus`}{' '}
             <ArrowIcon className="inline-block" direction="top-right" />
           </Link>
         </Paragraph>
@@ -47,9 +46,9 @@ function ContactSection() {
     <div>
       <H6 as="div">Contact</H6>
       <ul className="mt-4">
-        <FooterLink name="Email Kent" href="/contact" />
-        <FooterLink name="Call Kent" href="/calls" />
-        <FooterLink name="Office hours" href="/office-hours" />
+        <FooterLink name="Faust Email" href="/contact" />
+        <FooterLink name="Appeler Faust" href="/calls" />
+        <FooterLink name="Mes horaires" href="/office-hours" />
       </ul>
     </div>
   )
@@ -59,10 +58,10 @@ function GeneralSection() {
     <div>
       <H6 as="div">General</H6>
       <ul className="mt-4">
-        <FooterLink name="My Mission" href="/transparency" />
+        <FooterLink name="Mes Missions" href="/transparency" />
         <FooterLink name="Privacy policy" href="/transparency#privacy" />
-        <FooterLink name="Terms of use" href="/transparency#terms" />
-        <FooterLink name="Code of conduct" href="/conduct" />
+        <FooterLink name="Terms d'usage" href="/transparency#terms" />
+        <FooterLink name="Code de conduite" href="/conduct" />
       </ul>
     </div>
   )
@@ -71,20 +70,17 @@ function GeneralSection() {
 function SitemapSection() {
   return (
     <div>
-      <H6 as="div">Sitemap</H6>
+      <H6 as="div">Rodmap !</H6>
       <ul className="mt-4">
         <FooterLink name="Home" href="/" />
         <FooterLink name="Blog" href="/blog" />
-        <FooterLink name="Courses" href="/courses" />
+        <FooterLink name="Cours" href="/courses" />
         <FooterLink name="Discord" href="/discord" />
         <FooterLink name="Chats Podcast" href="/chats" />
-        <FooterLink name="Workshops" href="/workshops" />
-        <FooterLink name="Talks" href="/talks" />
-        <FooterLink name="Testimony" href="/testimony" />
-        <FooterLink name="Testimonials" href="/testimonials" />
+        <FooterLink name="Conférences" href="/talks" />
+        <FooterLink name="Témognages" href="/testimonials" />
         <FooterLink name="About" href="/about" />
         <FooterLink name="Credits" href="/credits" />
-        <FooterLink name="Sitemap.xml" reload href="/sitemap.xml" />
       </ul>
     </div>
   )
@@ -93,10 +89,10 @@ function SitemapSection() {
 function AboutSection() {
   return (
     <div>
-      <H4 as="div">Kent C. Dodds</H4>
+      <H4 as="div">Faust T. Oswald</H4>
 
       <p className="text-secondary mt-6 max-w-md text-2xl">
-        Full time educator making our world better
+        Le p'tit dev' prêt à impacter le monde !
       </p>
 
       <div className="text-secondary mt-6 flex items-center justify-between gap-4 xl:flex-col xl:items-start">
@@ -210,8 +206,8 @@ function Footer({image}: {image: ImageBuilder}) {
           </div>
 
           <div className="col-span-full mt-24 text-lg text-gray-500 dark:text-slate-500 md:mt-44">
-            <span>All rights reserved</span>{' '}
-            <span className="block md:inline">{`© Kent C. Dodds ${new Date().getFullYear()}`}</span>
+            <span>Tout droits réservés</span>{' '}
+            <span className="block md:inline">{`© Faust T Oswald ${new Date().getFullYear()}`}</span>
           </div>
         </div>
       </div>

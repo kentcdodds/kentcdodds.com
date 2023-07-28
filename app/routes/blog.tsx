@@ -70,7 +70,7 @@ export const links: LinksFunction = () => {
     {
       rel: 'alternate',
       type: 'application/rss+xml',
-      title: 'Kent C. Dodds Blog',
+      title: 'Faust Oswald Blog',
       href: '/blog/rss.xml',
     },
   ]
@@ -136,10 +136,10 @@ export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
   const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
   const {totalBlogReaders, posts} = data as SerializeFrom<typeof loader>
   return getSocialMetas({
-    title: 'The Kent C. Dodds Blog',
-    description: `Join ${totalBlogReaders} people who have read Kent's ${formatNumber(
+    title: 'Le Blog de Faust Oswald',
+    description: `Rejoins les ${totalBlogReaders} personnes qui lisent mes ${formatNumber(
       posts.length,
-    )} articles on JavaScript, TypeScript, React, Testing, Career, and more.`,
+    )} articles sur le web, sur les carrières, les innovations et même la musique !.`,
     keywords:
       'JavaScript, TypeScript, React, Testing, Career, Software Development, Kent C. Dodds Blog',
     url: getUrl(requestInfo),
@@ -337,16 +337,16 @@ function BlogHome() {
       }
     >
       <HeroSection
-        title="Learn development with great articles."
+        title="Découvre et discute sur ce les meilleurs sujets d'intérêts !"
         subtitle={
           <>
-            <span>{`Find the latest of my writing here.`}</span>
+            <span>{`Trouve mes derniers points d'axes ici !`}</span>
             <Link
               reloadDocument
               to="rss.xml"
               className="text-secondary underlined ml-2 inline-block hover:text-team-current focus:text-team-current"
             >
-              <RssIcon title="Get my blog as RSS" />
+              <RssIcon title="Le flux RSS de mon blog !" />
             </Link>
           </>
         }
@@ -360,7 +360,7 @@ function BlogHome() {
             >
               <div className="relative">
                 <button
-                  title={query === '' ? 'Search' : 'Clear search'}
+                  title={query === '' ? 'search' : 'Clear search'}
                   type="button"
                   onClick={() => {
                     setQuery('')
@@ -453,16 +453,16 @@ function BlogHome() {
               >
                 {data.overallLeadingTeam.toLowerCase()}
               </strong>
-              {` team is in the lead. `}
+              {` équipe à la tête `}
               {userTeam === 'UNKNOWN' ? (
                 <>
                   <Link to="/login" className="underlined">
-                    Login or sign up
+                    Connectez-vous ou inscrivez-vous
                   </Link>
-                  {` to choose your team!`}
+                  {` pour choisir votre équipe`}
                 </>
               ) : userTeam === data.overallLeadingTeam ? (
-                `That's your team! Keep your lead!`
+                `C'est votre équipe, les gars ! Gardez la tête !`
               ) : (
                 <>
                   {`Keep reading to get the `}
@@ -471,12 +471,12 @@ function BlogHome() {
                   >
                     {userTeam.toLowerCase()}
                   </strong>{' '}
-                  {` team on top!`}
+                  {` Cette équipe mène la danse!`}
                 </>
               )}
             </>
           ) : (
-            `No team is in the lead! Read read read!`
+            `Aucune équipe ne mène... Lisez, lisez, lisez !`
           )}
         </Paragraph>
 
@@ -485,7 +485,7 @@ function BlogHome() {
         {data.tags.length > 0 ? (
           <>
             <H6 as="div" className="col-span-full mb-6">
-              Search blog by topics
+              Rechercher par les sujets !
             </H6>
             <div className="col-span-full -mb-4 -mr-4 flex flex-wrap lg:col-span-10">
               {data.tags.map(tag => {
@@ -528,8 +528,8 @@ function BlogHome() {
                   )
                 : undefined
             }
-            caption="Featured article"
-            cta="Read full article"
+            caption="Article en vedette"
+            cta="Lire tout l'article"
             slug={data.recommended.slug}
             permalink={recommendedPermalink}
             leadingTeam={getLeadingTeamForSlug(data.recommended.slug)}
@@ -569,7 +569,7 @@ function BlogHome() {
             variant="secondary"
             onClick={() => setIndexToShow(i => i + PAGE_SIZE)}
           >
-            <span>Load more articles</span> <PlusIcon />
+            <span>Actualiser plus d'articles</span> <PlusIcon />
           </Button>
         </div>
       ) : null}
@@ -589,14 +589,14 @@ function BlogHome() {
         </div>
 
         <div className="col-span-full mt-4 lg:col-span-6 lg:col-start-7 lg:mt-0">
-          <H2 className="mb-8">{`More of a listener?`}</H2>
+          <H2 className="mb-8">{`Vous aimez le contenu ?`}</H2>
           <H2 className="mb-16" variant="secondary" as="p">
             {`
-              Check out my podcast Chats with Kent and learn about software
-              development, career, life, and more.
+             Ecoute mon podcast quotidien 'Not Broke' pour en apprendre plus sur les 
+             projets, la vie, votre carrière et les sujets de vie.
             `}
           </H2>
-          <ArrowLink to="/chats">{`Check out the podcast`}</ArrowLink>
+          <ArrowLink to="/chats">{`Va écouter mon podcast !`}</ArrowLink>
         </div>
       </Grid>
     </div>

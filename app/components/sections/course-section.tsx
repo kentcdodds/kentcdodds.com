@@ -7,28 +7,28 @@ function CourseSection() {
   return (
     <>
       <HeaderSection
-        title="Are you ready to level up?"
-        subTitle="Checkout some of my courses"
-        cta="See all courses"
+        title="Prêts à opérer un changement ?"
+        subTitle="Lance-toi sur mes formations !"
+        cta="Voir les formations"
         ctaUrl="/courses"
         className="mb-16"
       />
       <Grid>
         <div className="col-span-full lg:col-span-6">
           <CourseCard
-            title="Epic React"
-            description="The most comprehensive guide for pros."
+            title="Master Writer"
+            description="Affranchis toi et captive ton audience."
             imageBuilder={images.courseEpicReact}
-            courseUrl="https://epicreact.dev"
+            courseUrl="ss"
           />
         </div>
 
         <div className="col-span-full mt-12 lg:col-span-6 lg:mt-0">
           <CourseCard
-            title="Testing JavaScript"
-            description="Learn smart, efficient testing methods."
+            title=" Project Expert"
+            description="Gère tes projets efficamentet rapidement !"
             imageBuilder={images.courseTestingJS}
-            courseUrl="https://testingjavascript.com"
+            courseUrl=""
           />
         </div>
       </Grid>

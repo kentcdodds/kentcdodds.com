@@ -22,13 +22,13 @@ export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
   return getSocialMetas({
-    title: `Subscribe to the KCD Mailing List`,
-    description: `Get weekly insights, ideas, and proven coding practices from the KCD Mailing List`,
+    title: `Rejoins la newsletter de Faust Oswald `,
+    description: `Chaque semaine, des idées, des projets, des discussions... Une véritable évolution !`,
     url: getUrl(requestInfo),
     image: getGenericSocialImage({
       url: getDisplayUrl(requestInfo),
       featuredImage: images.snowboard(),
-      words: `Subscribe to the KCD Mailing List`,
+      words: `S'inscrire sur la newsletter`,
     }),
   })
 }
@@ -55,16 +55,16 @@ export default function SubscribeScreen() {
   const data = useLoaderData<LoaderData>()
   const {userInfo} = useRootData()
   const subscribedToNewsletter = userInfo?.convertKit?.tags.some(
-    ({name}) => name === 'Subscribed: general newsletter',
+    ({name}) => name === 'Souscrire: general newsletter',
   )
   return (
     <>
       <HeroSection
-        title="Increase your knowledge"
-        subtitle="With valuable insights emailed to you each week"
+        title="Développe toute ta vie "
+        subtitle="avec des valeurs puissantes chaque semaine !"
         imageBuilder={images.snowboard}
         arrowUrl="#why"
-        arrowLabel="Why should I?"
+        arrowLabel="Pourquoi devrais-tu ?"
         action={
           <ButtonLink variant="primary" href="#subscribe-form">
             <MailIcon /> Subscribe
@@ -97,7 +97,7 @@ export default function SubscribeScreen() {
 
           <div className="col-span-full lg:col-span-5 lg:col-start-8 lg:row-start-1">
             <H2 id="why" className="mb-10">
-              {`Here's what you get out of subscribing.`}
+              {`Voici ce que vous obtenez une fois dans le cercle fermé !`}
             </H2>
 
             <ButtonLink
@@ -105,7 +105,7 @@ export default function SubscribeScreen() {
               variant="primary"
               href="#subscribe-form"
             >
-              <MailIcon /> Subscribe
+              <MailIcon /> S'enregistrer
             </ButtonLink>
 
             <H6 as="h3" className="mb-4">
@@ -159,14 +159,14 @@ export default function SubscribeScreen() {
 
           {subscribedToNewsletter ? (
             <div className="col-span-full" id="subscribe-form">
-              <H3>{`Hey, you're already subscribed`}</H3>
-              <Paragraph>{`Good job! There's nothing for you to do here`}</Paragraph>
+              <H3>{`Hey ! Mais tu fais déjà partie de l'élite !`}</H3>
+              <Paragraph>{`Il n'y a pas grand chose pour toi, ici hehe. On se voit au site !`}</Paragraph>
             </div>
           ) : (
             <>
               <div className="col-span-full lg:col-span-5">
-                <H3>{`Sign up here`}</H3>
-                <Paragraph>{`And get your first email this week!`}</Paragraph>
+                <H3>{`Se lancer ici !`}</H3>
+                <Paragraph>{`Et reçoit ton premier mail ce week-end !`}</Paragraph>
               </div>
               <div
                 id="subscribe-form"
@@ -179,8 +179,8 @@ export default function SubscribeScreen() {
         </Grid>
         <BlogSection
           articles={data.blogRecommendations}
-          title="Want a taste of what to expect?"
-          description="Checkout these articles."
+          title="Un avant-goût avant de vous lancer ?"
+          description="Lis ses quelques articles "
         />
       </main>
     </>

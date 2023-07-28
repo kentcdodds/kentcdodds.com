@@ -49,8 +49,8 @@ type ActionData = {
 }
 
 function getErrorForFirstName(name: string | null) {
-  if (!name) return `Name is required`
-  if (name.length > 60) return `Name is too long`
+  if (!name) return `Inscrivez votre nom !`
+  if (name.length > 60) return `Votre nom est très long...`
   return null
 }
 
@@ -61,9 +61,11 @@ function getErrorForTeam(team: string | null) {
 }
 
 const actionIds = {
-  cancel: 'cancel',
-  signUp: 'sign up',
+  cancel: 'annuler',
+  signUp: "se lancer"
 }
+
+/*continuer son inscription*/
 
 export const action: ActionFunction = async ({request}) => {
   const loginInfoSession = await getLoginInfoSession(request)
@@ -91,7 +93,7 @@ export const action: ActionFunction = async ({request}) => {
 
     loginInfoSession.clean()
     loginInfoSession.flashError(
-      'Sign in link invalid. Please request a new one.',
+      "Lien d'inscription invalide, veuillez recommencer",
     )
     return redirect('/login', {
       headers: await loginInfoSession.getHeaders(),
@@ -145,7 +147,7 @@ export const action: ActionFunction = async ({request}) => {
         console.error(getErrorStack(error))
 
         loginInfoSession.flashError(
-          'There was a problem creating your account. Please try again.',
+          'Il y a un problème lors de la création de votre compte. Réessayez plus tard',
         )
         return redirect('/login', {
           headers: await loginInfoSession.getHeaders(),
@@ -282,8 +284,8 @@ export default function NewAccount() {
     <div className="mt-24 pt-6">
       <HeaderSection
         as="header"
-        title="Let's start with choosing a team."
-        subTitle="You can't change this later."
+        title="Commence en choisssant ton équipe !"
+        subTitle="Vous pourrez le changer plus tard"
         className="mb-16"
       />
       <main>
@@ -331,7 +333,7 @@ export default function NewAccount() {
 
             <div className="col-span-full mb-12 lg:col-span-5 lg:mb-20">
               <Field
-                name="firstName"
+                name="Nom"
                 label="First name"
                 error={actionData?.errors.firstName}
                 autoComplete="given-name"
@@ -366,7 +368,7 @@ export default function NewAccount() {
 
             <div className="col-span-full">
               <Button type="submit" disabled={!formIsValid}>
-                {`Create account`}
+                {`Créer son compte`}
               </Button>
             </div>
             <p className="text-primary col-span-4 mt-10 text-xs font-medium tracking-wider">

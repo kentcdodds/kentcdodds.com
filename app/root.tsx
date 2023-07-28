@@ -82,7 +82,7 @@ export const handle: KCDHandle & {id: string} = {
 
 export const meta: V2_MetaFunction<typeof loader> = ({data}) => {
   const requestInfo = data?.requestInfo
-  const title = 'Kent C. Dodds'
+  const title = 'Faust Oswald'
   const description =
     'Come check out how Kent C. Dodds can help you level up your career as a software engineer.'
   return [
@@ -599,12 +599,12 @@ export function ErrorBoundary() {
         <ErrorDoc>
           <ErrorPage
             heroProps={{
-              title: "404 - Oh no, you found a page that's missing stuff.",
-              subtitle: `"${location.pathname}" is not a page on kentcdodds.com. So sorry.`,
+              title: "404 - Eh zut, tu as trouvé une page qui n'existe pas.",
+              subtitle: `"${location.pathname}" n'est pas une page de faustoswald.com`,
               image: (
                 <MissingSomething className="rounded-lg" aspectRatio="3:4" />
               ),
-              action: <ArrowLink href="/">Go home</ArrowLink>,
+              action: <ArrowLink href="/">Se retrouver</ArrowLink>,
             }}
           />
         </ErrorDoc>
@@ -615,8 +615,8 @@ export function ErrorBoundary() {
         <ErrorDoc>
           <ErrorPage
             heroProps={{
-              title: '409 - Oh no, you should never see this.',
-              subtitle: `"${location.pathname}" tried telling fly to replay your request and missed this one.`,
+              title: '409 - Mais non ! Tu ne devrais pas voir ceci .',
+              subtitle: `"${location.pathname}" essaie de répondre à ta requête, mais il y a un problème.`,
               image: <Grimmacing className="rounded-lg" aspectRatio="3:4" />,
               action: <ArrowLink href="/">Go home</ArrowLink>,
             }}
@@ -629,8 +629,8 @@ export function ErrorBoundary() {
         <ErrorDoc>
           <ErrorPage
             heroProps={{
-              title: `${error.status} - Oh no, something did not go well.`,
-              subtitle: `"${location.pathname}" is currently not working. So sorry.`,
+              title: `${error.status} - Oh non, quelque chose c'est réellement mal passé !f.`,
+              subtitle: `"${location.pathname}" ne marche pas correctemet. Désolé !`,
               image: <Grimmacing className="rounded-lg" aspectRatio="3:4" />,
               action: <ArrowLink href="/">Go home</ArrowLink>,
             }}
@@ -646,8 +646,8 @@ export function ErrorBoundary() {
     <ErrorDoc>
       <ErrorPage
         heroProps={{
-          title: '500 - Oh no, something did not go well.',
-          subtitle: `"${location.pathname}" is currently not working. So sorry.`,
+          title: '500 - Oh, zut ! Quelque chose a dû mal passer.',
+          subtitle: `"${location.pathname}" ne marche pas actuellement. Désolé !`,
           image: <Grimmacing className="rounded-lg" aspectRatio="3:4" />,
           action: <ArrowLink href="/">Go home</ArrowLink>,
         }}
@@ -665,7 +665,7 @@ function kcdLiveReloadConnect(config?: {onOpen: () => void}) {
   ws.onmessage = message => {
     const event = JSON.parse(message.data)
     if (
-      event.type === 'kentcdodds.com:file-change' &&
+      event.type === 'faustoswald.com:file-change' &&
       event.data.relativePath === location.pathname
     ) {
       window.location.reload()
@@ -679,7 +679,7 @@ function kcdLiveReloadConnect(config?: {onOpen: () => void}) {
   ws.onclose = event => {
     if (event.code === 1006) {
       console.log(
-        'kentcdodds.com dev server web socket closed. Reconnecting...',
+        'faustoswald.com dev server web socket closed. Reconnecting...',
       )
       setTimeout(
         () =>
@@ -691,7 +691,7 @@ function kcdLiveReloadConnect(config?: {onOpen: () => void}) {
     }
   }
   ws.onerror = error => {
-    console.log('kentcdodds.com dev server web socket error:')
+    console.log('faustoswald.com dev server web socket error:')
     console.error(error)
   }
 }

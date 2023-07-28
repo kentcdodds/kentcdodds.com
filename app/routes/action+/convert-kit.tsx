@@ -15,8 +15,8 @@ export default function ConvertKit() {
   return (
     <>
       <HeroSection
-        title="Huzzah!"
-        subtitle="You've signed up"
+        title="Super !"
+        subtitle="Vous êtes "
         image={
           <CloudinaryVideo
             cloudinaryId="kentcdodds.com/misc/approve"

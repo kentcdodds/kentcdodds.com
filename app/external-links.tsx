@@ -16,7 +16,7 @@ const externalLinks = {
     'https://github.com/kentcdodds/kentcdodds.com/blob/main/CONTRIBUTING.md#translation-contributions',
   github: 'https://github.com/kentcdodds',
   youtube: 'https://youtube.com/c/KentCDodds-vids/videos',
-  twitter: 'https://twitter.com/kentcdodds',
+  twitter: 'https://twitter.com/OswaldFaust2',
   rss: 'https://kentcdodds.com/blog/rss.xml',
 }
 

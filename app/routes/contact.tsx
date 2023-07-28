@@ -162,7 +162,7 @@ export default function ContactRoute() {
                   <Field
                     type="email"
                     label="Email"
-                    placeholder="person.doe@example.com"
+                    placeholder="person.faust@example.com"
                     disabled={true}
                     defaultValue={user.email}
                     name="email"
@@ -184,7 +184,7 @@ export default function ContactRoute() {
                     error={contactFetcher.data?.errors.body}
                   />
                   {emailSuccessfullySent ? (
-                    `Hooray, email sent! 🎉`
+                    `Super ! L'email a été bien envoyé ! 🎉`
                   ) : (
                     // IDEA: show a loading state here
                     <ButtonGroup>
@@ -208,11 +208,11 @@ export default function ContactRoute() {
               ) : (
                 <div className="col-span-full mb-12 lg:col-span-8 lg:col-start-3">
                   <Paragraph>
-                    Note: due to spam issues, you have to confirm your email by{' '}
+                  Pour éviter le spam, tu devrais confirmer ton mail en{' '}
                     <Link to="/login" className="underline">
-                      signing up for an account
+                      te connectant à ton compte !
                     </Link>{' '}
-                    on my website first.
+                    sur le site internet !
                   </Paragraph>
                 </div>
               )}

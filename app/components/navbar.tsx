@@ -26,13 +26,13 @@ import {MoonIcon, SunIcon} from './icons.tsx'
 import {TeamCircle} from './team-circle.tsx'
 
 const LINKS = [
+   {name: 'Qui suis-je ?', to: '/about'},
   {name: 'Blog', to: '/blog'},
   {name: 'Courses', to: '/courses'},
-  {name: 'Discord', to: '/discord'},
-  {name: 'Chats', to: '/chats/04'},
-  {name: 'Calls', to: '/calls/04'},
+  {name: 'Communauté', to: '/discord'},
+  {name: 'Podcast', to: '/chats/04'},
+  {name: 'Analyse', to: '/calls/04'},
   {name: 'Workshops', to: '/workshops'},
-  {name: 'About', to: '/about'},
 ]
 
 const MOBILE_LINKS = [{name: 'Home', to: '/'}, ...LINKS]
@@ -332,7 +332,7 @@ function Navbar() {
             to="/"
             className="text-primary underlined block whitespace-nowrap text-2xl font-medium transition focus:outline-none"
           >
-            <h1>Kent C. Dodds</h1>
+            <h1>Faust Oswald</h1>
           </Link>
         </div>
 

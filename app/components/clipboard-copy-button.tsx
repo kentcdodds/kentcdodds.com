@@ -73,7 +73,7 @@ function ClipboardCopyButton({
       )}
     >
       <span className={clsx('hidden', {'lg:inline': variant === 'responsive'})}>
-        {state === State.Copied ? 'Copied to clipboard' : 'Click to copy url'}
+        {state === State.Copied ? 'Lien copié' : 'Copie le lien'}
       </span>
       <span className={clsx('inline', {'lg:hidden': variant === 'responsive'})}>
         {state === State.Copied ? <CheckIcon /> : <CopyIcon />}

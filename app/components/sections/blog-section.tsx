@@ -25,7 +25,7 @@ function BlogSection({
       <HeaderSection
         title={title}
         subTitle={description}
-        cta={showArrowButton ? 'See the full blog' : undefined}
+        cta={showArrowButton ? 'Voir tout le blog' : undefined}
         ctaUrl="/blog"
       />
       <Spacer size="2xs" />

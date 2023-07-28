@@ -13,10 +13,10 @@ function DiscordSection() {
         </div>
 
         <H2 className="mt-12">
-          Meet like minded people who face similar challenges.
+          Rencontre des personnes qui partagent les mêmes passions que toi !
         </H2>
         <H2 variant="secondary" className="mt-8" as="p">
-          Join the discord and get better at building software together.
+          Rejoins le serveur discord de la communauté et échange avec des passionés de SaaS et d'innovation !
         </H2>
 
         <ArrowLink
@@ -25,7 +25,7 @@ function DiscordSection() {
           className="mt-20"
           prefetch="intent"
         >
-          Learn more about the KCD Community on Discord
+          En apprendre plus à propos de la BuidTeam
         </ArrowLink>
       </div>
 
@@ -58,10 +58,10 @@ function DiscordSection() {
           style={{color: '#006ece'}}
         >
           <div className="self-start rounded-full bg-blue-100 px-12 py-6 text-lg">
-            {`Want to learn react together?`}
+            {`Tu veux discuter avec des amoureux de la créativité ?`}
           </div>
           <div className="self-start rounded-full bg-blue-100 px-12 py-6 text-lg">
-            {`Let me know `}
+            {`Fais moi savoir `}
             ✌️
           </div>
         </div>
@@ -72,10 +72,10 @@ function DiscordSection() {
           style={{color: '#008300'}}
         >
           <div className="self-end rounded-full bg-green-100 px-12 py-6 text-lg">
-            {`For sure! Let's do it!`}
+            {`Interessé ? Dis-le moi`}
           </div>
           <div className="self-end rounded-full bg-green-100 px-12 py-6 text-lg">
-            {`Let me show you what I'm working on...`}
+            {`Travailler et collaborer ensemble sera un plaisir..`}
             🧑‍💻
           </div>
         </div>
