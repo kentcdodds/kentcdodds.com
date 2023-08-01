@@ -1,5 +1,9 @@
 import {createRequestHandler, type RequestHandler} from '@remix-run/express'
-import {broadcastDevReady, type ServerBuild} from '@remix-run/node'
+import {
+  broadcastDevReady,
+  installGlobals,
+  type ServerBuild,
+} from '@remix-run/node'
 import * as Sentry from '@sentry/node'
 import address from 'address'
 import chalk from 'chalk'
@@ -16,6 +20,7 @@ import morgan from 'morgan'
 import onFinished from 'on-finished'
 import path from 'path'
 import serverTiming from 'server-timing'
+import sourceMapSupport from 'source-map-support'
 import {fileURLToPath} from 'url'
 import {type WebSocketServer} from 'ws'
 import {getInstanceInfo} from '../app/utils/cjs/litefs-js.js'
@@ -33,6 +38,9 @@ import {
 // @ts-ignore - this file may not exist if you haven't built yet, but it will
 // definitely exist by the time the dev or prod server actually runs.
 import * as remixBuild from '../build/index.js'
+
+sourceMapSupport.install()
+installGlobals()
 
 const BUILD_PATH = '../build/index.js'
 
