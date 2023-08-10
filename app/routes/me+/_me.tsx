@@ -278,6 +278,13 @@ function YouScreen() {
               noValidate
               aria-describedby="general-error"
             >
+              {/* This ensures that hitting "enter" on a field sends the expected submission */}
+              <button
+                hidden
+                type="submit"
+                name="actionId"
+                value={actionIds.changeDetails}
+              />
               <Field
                 name="firstName"
                 label="First name"
