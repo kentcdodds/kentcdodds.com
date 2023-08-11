@@ -111,6 +111,16 @@ function CoursesHome() {
       </h2>
 
       <Grid className="gap-y-4">
+        <div className="col-span-full">
+          <CourseCard
+            title="Epic Web"
+            description="The best way to learn how to build Epic, full stack web applications you'll love to work on and your users will love to use."
+            // this swap is intentional. The dark looks nicer on light and vice versa
+            darkImageBuilder={images.courseEpicWebLight}
+            lightImageBuilder={images.courseEpicWebDark}
+            courseUrl="https://www.epicweb.dev"
+          />
+        </div>
         <div className="col-span-full lg:col-span-6">
           <CourseCard
             title="Epic React"

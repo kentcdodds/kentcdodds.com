@@ -201,12 +201,24 @@ function ProblemSolutionSection({
               years. Tens of thousands of people have increased their confidence
               in shipping software with
             `}
-            <a href="https://testingjavascript.com">TestingJavaScript.com</a>
+            <a
+              href="https://testingjavascript.com"
+              className="!text-yellow-500"
+            >
+              TestingJavaScript.com
+            </a>
             {`
               and even more have improved the performance and maintainability
               of their React applications from what they've learned from
             `}
-            <a href="https://epicreact.dev">EpicReact.dev</a>.
+            <a href="https://epicreact.dev" className="!text-blue-500">
+              EpicReact.dev
+            </a>
+            {`. My latest efforts are pushing things to the whole stack with `}
+            <a href="https://www.epicstack.dev" className="!text-red-500">
+              EpicWeb.dev
+            </a>
+            .
           </Paragraph>
 
           <ArrowLink to="/courses" className="mt-14">

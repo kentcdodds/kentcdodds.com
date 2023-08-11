@@ -314,6 +314,14 @@ const images = createImages({
     id: 'kentcdodds.com/pages/courses/rocket',
     alt: 'Illustration of a Rocket',
   },
+  courseEpicWebLight: {
+    id: 'kentcdodds.com/pages/courses/epic-web-light',
+    alt: 'The EpicWeb.dev logo',
+  },
+  courseEpicWebDark: {
+    id: 'kentcdodds.com/pages/courses/epic-web-dark',
+    alt: 'The EpicWeb.dev logo',
+  },
   courseHowToContributeToAnOpenSourceProjectOnGitHub: {
     id: 'kentcdodds.com/pages/courses/how-to-contribute-to-an-open-source-project-on-github',
     alt: 'Illustration for How to Contribute to an Open Source Project on GitHub',
