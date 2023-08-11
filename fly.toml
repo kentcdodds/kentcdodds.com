@@ -48,3 +48,10 @@ kill_timeout = "5s"
     method = "get"
     path = "/healthcheck"
     protocol = "http"
+
+  [[services.http_checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    timeout = "5s"
+    path = "/litefs/health"
