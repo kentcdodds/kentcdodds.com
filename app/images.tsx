@@ -230,6 +230,22 @@ const images = createImages({
     id: 'kentcdodds.com/illustrations/kody/kody_onewheeling_flying_blue',
     alt: 'Illustration of Kody the Koala standing on a onewheel surrounded by green leaves, a battery, two skies, a snowboard, a solar panel, and a recycle logo.',
   },
+  kodyFlyingPlayingSoccerGray: {
+    id: 'kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_gray',
+    alt: 'Illustration of Kody the Koala kicking a soccer ball surrounded by green leaves, a battery, a onewheel, a snowboard, a solar panel, and a recycle logo.',
+  },
+  kodyFlyingPlayingSoccerYellow: {
+    id: 'kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_yellow',
+    alt: 'Illustration of Kody the Koala kicking a soccer ball surrounded by green leaves, a battery, a onewheel, a snowboard, a solar panel, and a recycle logo.',
+  },
+  kodyFlyingPlayingSoccerRed: {
+    id: 'kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_red',
+    alt: 'Illustration of Kody the Koala kicking a soccer ball surrounded by green leaves, a battery, a onewheel, a snowboard, a solar panel, and a recycle logo.',
+  },
+  kodyFlyingPlayingSoccerBlue: {
+    id: 'kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_blue',
+    alt: 'Illustration of Kody the Koala kicking a soccer ball surrounded by green leaves, a battery, a onewheel, a snowboard, a solar panel, and a recycle logo.',
+  },
   kodySnowboardingYellow: {
     id: 'kentcdodds.com/illustrations/kody/kody_snowboarding_yellow',
     alt: 'Illustration of Kody the Koala on a snowboard in yellow',
@@ -261,6 +277,22 @@ const images = createImages({
   kodyOnewheelingGray: {
     id: 'kentcdodds.com/illustrations/kody/kody_onewheeling_gray',
     alt: 'Illustration of Kody the Koala on a snowboard in gray',
+  },
+  kodyPlayingSoccerYellow: {
+    id: 'kentcdodds.com/illustrations/kody/kody_playing_soccer_yellow',
+    alt: 'Illustration of Kody the Koala kicking a soccer ball in yellow',
+  },
+  kodyPlayingSoccerRed: {
+    id: 'kentcdodds.com/illustrations/kody/kody_playing_soccer_red',
+    alt: 'Illustration of Kody the Koala kicking a soccer ball in red',
+  },
+  kodyPlayingSoccerBlue: {
+    id: 'kentcdodds.com/illustrations/kody/kody_playing_soccer_blue',
+    alt: 'Illustration of Kody the Koala kicking a soccer ball in blue',
+  },
+  kodyPlayingSoccerGray: {
+    id: 'kentcdodds.com/illustrations/kody/kody_playing_soccer_gray',
+    alt: 'Illustration of Kody the Koala kicking a soccer ball in gray',
   },
   helmet: {
     id: 'kentcdodds.com/illustrations/helmet',
@@ -353,6 +385,12 @@ const kodyOnewheelingImages: Record<OptionalTeam, ImageBuilder> = {
   BLUE: images.kodyOnewheelingBlue,
   UNKNOWN: images.kodyOnewheelingGray,
 }
+const kodyPlayingSoccerImages: Record<OptionalTeam, ImageBuilder> = {
+  RED: images.kodyPlayingSoccerRed,
+  YELLOW: images.kodyPlayingSoccerYellow,
+  BLUE: images.kodyPlayingSoccerBlue,
+  UNKNOWN: images.kodyPlayingSoccerGray,
+}
 
 const kodyFlyingSnowboardingImages: Record<OptionalTeam, ImageBuilder> = {
   RED: images.kodyFlyingSnowboardingRed,
@@ -372,12 +410,19 @@ const kodyFlyingOnewheelingImages: Record<OptionalTeam, ImageBuilder> = {
   BLUE: images.kodyFlyingOnewheelingBlue,
   UNKNOWN: images.kodyFlyingOnewheelingGray,
 }
+const kodyFlyingPlayingSoccerImages: Record<OptionalTeam, ImageBuilder> = {
+  RED: images.kodyFlyingPlayingSoccerRed,
+  YELLOW: images.kodyFlyingPlayingSoccerYellow,
+  BLUE: images.kodyFlyingPlayingSoccerBlue,
+  UNKNOWN: images.kodyFlyingPlayingSoccerGray,
+}
 
 export function getRandomSportyKody(team?: OptionalTeam | undefined) {
   const activities = [
     kodySnowboardingImages,
     kodySkiingImages,
     kodyOnewheelingImages,
+    kodyPlayingSoccerImages,
   ]
   const set =
     activities[Math.floor(Math.random() * activities.length)] ??
@@ -400,6 +445,7 @@ export function getRandomFlyingKody(
     kodyFlyingSnowboardingImages,
     kodyFlyingSkiingImages,
     kodyFlyingOnewheelingImages,
+    kodyFlyingPlayingSoccerImages,
   ]
   const set =
     activities[Math.floor(randomImageNo * activities.length)] ??
