@@ -1,3 +1,12 @@
+- title: DevWorld Keynote
+  deliveries:
+    - event: '[Dev World 2024](https://devworldconference.com/)'
+      date: 2024-02-29
+  tags:
+    - keynote
+  description: >-
+    This talk will be announced soon!
+
 - title: React Router + Vite is a framework
   deliveries:
     - event: '[Vite Conf](https://viteconf.org/23/)'
@@ -8,15 +17,6 @@
     - react router
   description: >-
     More details TBA
-
-- title: DevWorld Keynote
-  deliveries:
-    - event: '[Dev World 2023](https://devworldconference.com/)'
-      date: 2023-09-28
-  tags:
-    - keynote
-  description: >-
-    This talk will be announced soon!
 
 - title: Making Felix Felicis
   deliveries:
@@ -67,6 +67,8 @@
     - event: '[Remix Conf 2023](https://remix.run/conf/2023)'
       date: 2023-05-11
       recording: https://www.youtube.com/watch?v=yMK5SVRASxM&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
+    - event: '[React Live](https://reactlive.nl/)'
+      date: 2023-09-29
   tags:
     - keynote
     - web
