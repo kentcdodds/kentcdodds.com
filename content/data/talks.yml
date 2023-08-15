@@ -1,3 +1,14 @@
+- title: React Router + Vite is a framework
+  deliveries:
+    - event: '[Vite Conf](https://viteconf.org/23/)'
+      date: 2023-10-05
+  tags:
+    - react
+    - vite
+    - react router
+  description: >-
+    More details TBA
+
 - title: DevWorld Keynote
   deliveries:
     - event: '[Dev World 2023](https://devworldconference.com/)'
@@ -11,8 +22,6 @@
   deliveries:
     - event: '[JSDays Canarias](https://jsdaycanarias.com/)'
       date: 2023-05-27
-    - event: '[Front Conf](https://frontconference.com/)'
-      date: 2023-08-31
   tags:
     - keynote
     - career
