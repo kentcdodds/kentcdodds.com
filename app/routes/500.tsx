@@ -1,7 +1,7 @@
 // this is just here to test the error page
 
 import {type LoaderFunction} from '@remix-run/node'
-import {useRouteError} from 'react-router-dom'
+import {useRouteError} from '@remix-run/react'
 import {ServerError} from '~/components/errors.tsx'
 import {type KCDHandle} from '~/types.ts'
 
