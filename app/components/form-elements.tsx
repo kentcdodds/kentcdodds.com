@@ -19,29 +19,28 @@ type InputProps =
 
 export const inputClassName =
   'placeholder-gray-500 dark:disabled:text-slate-500 focus-ring px-11 py-8 w-full text-black disabled:text-gray-400 dark:text-white text-lg font-medium bg-gray-100 dark:bg-gray-800 rounded-lg'
-const Input = React.forwardRef<HTMLInputElement, InputProps>(function Input(
-  props,
-  ref,
-) {
-  const className = clsx(inputClassName, props.className)
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  function Input(props, ref) {
+    const className = clsx(inputClassName, props.className)
 
-  if (props.type === 'textarea') {
+    if (props.type === 'textarea') {
+      return (
+        <textarea
+          {...(props as JSX.IntrinsicElements['textarea'])}
+          className={className}
+        />
+      )
+    }
+
     return (
-      <textarea
-        {...(props as JSX.IntrinsicElements['textarea'])}
+      <input
+        {...(props as JSX.IntrinsicElements['input'])}
         className={className}
+        ref={ref}
       />
     )
-  }
-
-  return (
-    <input
-      {...(props as JSX.IntrinsicElements['input'])}
-      className={className}
-      ref={ref}
-    />
-  )
-})
+  },
+)
 
 interface InputErrorProps {
   id: string

@@ -261,9 +261,11 @@ async function getBlogReadRankings({
       value.every(v => typeof v === 'object' && 'team' in v),
     getFreshValue: async () => {
       const rawRankingData = await Promise.all(
-        teams.map(async function getRankingsForTeam(
-          team,
-        ): Promise<{team: Team; totalReads: number; ranking: number}> {
+        teams.map(async function getRankingsForTeam(team): Promise<{
+          team: Team
+          totalReads: number
+          ranking: number
+        }> {
           const totalReads = await prisma.postRead.count({
             where: {
               postSlug: slug,

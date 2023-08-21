@@ -1,4 +1,3 @@
-process.env.RUNNING_PRETTIER = 'true'
 module.exports = {
   arrowParens: 'avoid',
   bracketSpacing: false,

@@ -575,7 +575,9 @@ pre {
   position: absolute;
   left: -9px;
   z-index: 0;
-  transition: background-color 0.1s linear, transform 0.1s linear;
+  transition:
+    background-color 0.1s linear,
+    transform 0.1s linear;
   transform: scale(0.5);
 }
 

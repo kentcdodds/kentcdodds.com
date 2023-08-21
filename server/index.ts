@@ -261,24 +261,6 @@ app.use(
   }),
 )
 
-// make sure prisma-studio requests proxy to Remix properly
-app.all('*', (req, res, next) => {
-  if (
-    req.headers.referer?.includes('prisma-studio') &&
-    !req.url.includes('prisma-studio') &&
-    !req.path.includes('prisma-studio')
-  ) {
-    req.url = `/prisma-studio${req.path}`
-  }
-  return next()
-})
-
-app.get(
-  '/prisma-studio',
-  helmet.contentSecurityPolicy({useDefaults: false}),
-  helmet.referrerPolicy({policy: 'same-origin'}),
-)
-
 app.get('/redirect.html', rickRollMiddleware)
 
 function getRequestHandler(build: ServerBuild): RequestHandler {
