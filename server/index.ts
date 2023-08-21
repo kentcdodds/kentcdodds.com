@@ -349,7 +349,7 @@ ${chalk.bold('Press Ctrl+C to stop')}
   )
 
   if (process.env.NODE_ENV === 'development') {
-    broadcastDevReady(build)
+    void broadcastDevReady(build)
   }
 })
 
@@ -378,7 +378,7 @@ closeWithGrace(() => {
 if (process.env.NODE_ENV === 'development') {
   async function reloadBuild() {
     devBuild = await import(`${BUILD_PATH}?update=${Date.now()}`)
-    broadcastDevReady(devBuild)
+    void broadcastDevReady(devBuild)
   }
 
   const dirname = path.dirname(fileURLToPath(import.meta.url))

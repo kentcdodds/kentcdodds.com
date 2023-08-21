@@ -1,0 +1,27 @@
+diff --git a/node_modules/@remix-run/router/dist/router.js b/node_modules/@remix-run/router/dist/router.js
+index a79c5cc..aa995c0 100644
+--- a/node_modules/@remix-run/router/dist/router.js
++++ b/node_modules/@remix-run/router/dist/router.js
+@@ -3122,6 +3122,7 @@ function normalizeNavigateOptions(normalizeFormMethod, isFetcher, path, opts) {
+     formAction,
+     formEncType: opts && opts.formEncType || "application/x-www-form-urlencoded",
+     formData,
++    headers: opts.headers,
+     json: undefined,
+     text: undefined
+   };
+@@ -3513,12 +3514,14 @@ function createClientSideRequest(history, location, signal, submission) {
+   if (submission && isMutationMethod(submission.formMethod)) {
+     let {
+       formMethod,
++      headers,
+       formEncType
+     } = submission;
+     // Didn't think we needed this but it turns out unlike other methods, patch
+     // won't be properly normalized to uppercase and results in a 405 error.
+     // See: https://fetch.spec.whatwg.org/#concept-method
+     init.method = formMethod.toUpperCase();
++    init.headers = headers ? new Headers(headers) : undefined;
+     if (formEncType === "application/json") {
+       init.headers = new Headers({
+         "Content-Type": formEncType
