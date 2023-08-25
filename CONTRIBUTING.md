@@ -27,7 +27,7 @@ post you translated. It should look like this:
 title: Some great post
 ... other stuff ...
 translations:
-  - language: Español
+  - language: English
     link: https://example.com/your/translation/link/here
     author:
       name: Your name
