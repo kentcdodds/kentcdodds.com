@@ -67,6 +67,8 @@
     - event: '[Remix Conf 2023](https://remix.run/conf/2023)'
       date: 2023-05-11
       recording: https://www.youtube.com/watch?v=yMK5SVRASxM&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
+    - event: '[React Summit US](https://reactsummit.us/)'
+      date: 2023-11-13
     - event: '[React Live](https://reactlive.nl/)'
       date: 2023-09-29
   tags:
