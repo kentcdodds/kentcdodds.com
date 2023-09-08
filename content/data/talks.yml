@@ -8,6 +8,8 @@
     This talk will be announced soon!
 
 - title: React Router + Vite is a framework
+  resources:
+    - '[slides & demo](https://stackblitz.com/github/kentcdodds/viteconf-2023)'
   deliveries:
     - event: '[Vite Conf](https://viteconf.org/23/)'
       date: 2023-10-05
@@ -16,7 +18,11 @@
     - vite
     - react router
   description: >-
-    More details TBA
+    I once [posted](https://twitter.com/kentcdodds/status/1678762503420153857):
+    "React Router + Vite is a framework". In this talk I'll explain what I mean.
+    We'll talk about a couple different ways you can define "framework" and
+    where the "React Router + Vite" combo fits in complete with an example you
+    can poke around at.
 
 - title: Making Felix Felicis
   deliveries:
