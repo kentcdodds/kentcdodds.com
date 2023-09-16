@@ -3,7 +3,7 @@ import {
   type HeadersFunction,
   type LinksFunction,
   type LoaderFunction,
-  type V2_MetaFunction,
+  type MetaFunction,
 } from '@remix-run/node'
 import {useLoaderData, useSearchParams} from '@remix-run/react'
 import {shuffle} from '~/utils/cjs/lodash.js'
@@ -62,7 +62,7 @@ export const loader: LoaderFunction = async ({request}) => {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
+export const meta: MetaFunction<typeof loader, {root: RootLoaderType}> = ({
   matches,
 }) => {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

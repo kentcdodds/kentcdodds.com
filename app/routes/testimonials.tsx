@@ -2,7 +2,7 @@ import {
   json,
   type DataFunctionArgs,
   type HeadersFunction,
-  type V2_MetaFunction,
+  type MetaFunction,
 } from '@remix-run/node'
 import {useLoaderData} from '@remix-run/react'
 import {ArrowLink} from '~/components/arrow-button.tsx'
@@ -22,7 +22,7 @@ import {getTestimonials} from '~/utils/testimonials.server.ts'
 import {getServerTimeHeader} from '~/utils/timing.server.ts'
 import {type RootLoaderType} from '~/root.tsx'
 
-export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
+export const meta: MetaFunction<typeof loader, {root: RootLoaderType}> = ({
   data,
   matches,
 }) => {

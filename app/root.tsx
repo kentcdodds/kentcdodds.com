@@ -4,7 +4,7 @@ import {
   type DataFunctionArgs,
   type HeadersFunction,
   type LinksFunction,
-  type V2_MetaFunction,
+  type MetaFunction,
   type SerializeFrom,
 } from '@remix-run/node'
 import {
@@ -27,7 +27,7 @@ import {MetronomeLinks} from '@metronome-sh/react'
 import {clsx} from 'clsx'
 import {isFuture} from 'date-fns'
 import {AnimatePresence, motion} from 'framer-motion'
-import {getInstanceInfo} from '~/utils/cjs/litefs-js.js'
+import {getInstanceInfo} from '~/utils/cjs/litefs-js.server.js'
 import {useSpinDelay} from 'spin-delay'
 import {type KCDHandle} from '~/types.ts'
 import {ArrowLink} from './components/arrow-button.tsx'
@@ -80,7 +80,7 @@ export const handle: KCDHandle & {id: string} = {
   id: 'root',
 }
 
-export const meta: V2_MetaFunction<typeof loader> = ({data}) => {
+export const meta: MetaFunction<typeof loader> = ({data}) => {
   const requestInfo = data?.requestInfo
   const title = 'Kent C. Dodds'
   const description =
@@ -562,7 +562,12 @@ export default function AppWithProviders() {
   const data = useLoaderData<LoaderData>()
   return (
     <TeamProvider>
-      <ThemeProvider specifiedTheme={data.requestInfo.session.theme}>
+      <ThemeProvider
+        specifiedTheme={
+          // @ts-expect-error I've really gotta use the epic stack's theme stuff...
+          data.requestInfo.session.theme
+        }
+      >
         <App />
       </ThemeProvider>
     </TeamProvider>

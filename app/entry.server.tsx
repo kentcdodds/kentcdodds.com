@@ -1,7 +1,10 @@
-import {Response, type HandleDocumentRequestFunction} from '@remix-run/node'
+import {
+  createReadableStreamFromReadable,
+  type HandleDocumentRequestFunction,
+} from '@remix-run/node'
 import {RemixServer} from '@remix-run/react'
 import isbot from 'isbot'
-import {ensurePrimary} from 'litefs-js/remix.js'
+import {ensurePrimary} from '~/utils/cjs/litefs-js.server.js'
 import {renderToPipeableStream} from 'react-dom/server'
 import {PassThrough, Transform} from 'stream'
 import {routes as otherRoutes} from './other-routes.server.ts'
@@ -106,7 +109,7 @@ function serveTheBots(...args: DocRequestArgs) {
 
           stream.pipe(dataEvtTransform).pipe(body)
           resolve(
-            new Response(body, {
+            new Response(createReadableStreamFromReadable(body), {
               status: responseStatusCode,
               headers: responseHeaders,
             }),
@@ -160,7 +163,7 @@ function serveBrowsers(...args: DocRequestArgs) {
 
           stream.pipe(dataEvtTransform).pipe(body)
           resolve(
-            new Response(body, {
+            new Response(createReadableStreamFromReadable(body), {
               status: didError ? 500 : responseStatusCode,
               headers: responseHeaders,
             }),

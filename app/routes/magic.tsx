@@ -1,7 +1,7 @@
 import {redirect, type DataFunctionArgs} from '@remix-run/node'
 import {type KCDHandle} from '~/types.ts'
 
-import {ensurePrimary} from 'litefs-js/remix.js'
+import {ensurePrimary} from '~/utils/cjs/litefs-js.server.js'
 import {getClientSession} from '~/utils/client.server.ts'
 import {getLoginInfoSession} from '~/utils/login.server.ts'
 import {getErrorMessage, isResponse} from '~/utils/misc.tsx'

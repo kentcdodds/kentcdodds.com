@@ -287,7 +287,7 @@ async function parseSummaryMarkdown(
     .use(isHTMLInput ? parseHtml : parseMarkdown)
     .use(isHTMLInput ? rehype2remark : () => {})
     .use(function extractMetaData() {
-      return function transformer(tree) {
+      return function transformer(tree: M.Root) {
         type Section = {
           children: Array<U.Node>
           remove: () => void

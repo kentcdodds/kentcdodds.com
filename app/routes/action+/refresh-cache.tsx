@@ -1,5 +1,5 @@
 import {json, redirect, type DataFunctionArgs} from '@remix-run/node'
-import {ensurePrimary} from 'litefs-js/remix.js'
+import {ensurePrimary} from '~/utils/cjs/litefs-js.server.js'
 import path from 'path'
 import {cache} from '~/utils/cache.server.ts'
 import {getPeople} from '~/utils/credits.server.ts'

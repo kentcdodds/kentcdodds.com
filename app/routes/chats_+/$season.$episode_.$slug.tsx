@@ -3,7 +3,7 @@ import {
   redirect,
   type HeadersFunction,
   type LoaderFunction,
-  type V2_MetaFunction,
+  type MetaFunction,
 } from '@remix-run/node'
 import {
   isRouteErrorResponse,
@@ -69,7 +69,7 @@ export const handle: KCDHandle = {
   },
 }
 
-export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
+export const meta: MetaFunction<typeof loader, {root: RootLoaderType}> = ({
   data,
   matches,
 }) => {

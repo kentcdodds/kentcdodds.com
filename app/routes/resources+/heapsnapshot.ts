@@ -1,4 +1,7 @@
-import {Response, type DataFunctionArgs} from '@remix-run/node'
+import {
+  createReadableStreamFromReadable,
+  type DataFunctionArgs,
+} from '@remix-run/node'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
@@ -29,7 +32,7 @@ export async function loader({request}: DataFunctionArgs) {
   stream.on('error', err => body.end(err))
   stream.on('end', () => body.end())
 
-  return new Response(body, {
+  return new Response(createReadableStreamFromReadable(body), {
     status: 200,
     headers: {
       'Content-Type': 'application/octet-stream',

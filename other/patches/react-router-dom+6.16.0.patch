@@ -15,10 +15,10 @@ index 0cfa784..10b5922 100644
  export declare function getFormSubmissionInfo(target: SubmitTarget, basename: string): {
      action: string | null;
 diff --git a/node_modules/react-router-dom/dist/index.js b/node_modules/react-router-dom/dist/index.js
-index 98c71a6..28271c0 100644
+index cf5f123..54b1d8a 100644
 --- a/node_modules/react-router-dom/dist/index.js
 +++ b/node_modules/react-router-dom/dist/index.js
-@@ -752,6 +752,7 @@ function useSubmit() {
+@@ -757,6 +757,7 @@ function useSubmit() {
        body,
        formMethod: options.method || method,
        formEncType: options.encType || encType,

@@ -2,7 +2,6 @@ import {
   json,
   type DataFunctionArgs,
   type HeadersFunction,
-  type V2_MetaFunction,
 } from '@remix-run/node'
 import {
   isRouteErrorResponse,
@@ -221,7 +220,7 @@ export async function loader({request, params}: DataFunctionArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: V2_MetaFunction = mdxPageMeta
+export const meta = mdxPageMeta
 
 function useOnRead({
   parentElRef,

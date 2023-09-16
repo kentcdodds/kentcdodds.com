@@ -4,7 +4,7 @@ import {
   type ActionFunction,
   type HeadersFunction,
   type LoaderFunction,
-  type V2_MetaFunction,
+  type MetaFunction,
 } from '@remix-run/node'
 import {Form, useLoaderData} from '@remix-run/react'
 import * as React from 'react'
@@ -58,7 +58,7 @@ export const loader: LoaderFunction = async ({request}) => {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
+export const meta: MetaFunction<typeof loader, {root: RootLoaderType}> = ({
   matches,
 }) => {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

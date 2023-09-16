@@ -1,6 +1,6 @@
 import {type User} from '@prisma/client'
 import {createCookieSessionStorage, redirect} from '@remix-run/node'
-import {ensurePrimary} from 'litefs-js/remix.js'
+import {ensurePrimary} from '~/utils/cjs/litefs-js.server.js'
 import {getLoginInfoSession} from './login.server.ts'
 import {getRequiredServerEnvVar} from './misc.tsx'
 import {

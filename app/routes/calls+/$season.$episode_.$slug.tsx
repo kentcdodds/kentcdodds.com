@@ -3,7 +3,7 @@ import {
   redirect,
   type HeadersFunction,
   type LoaderFunction,
-  type V2_MetaFunction,
+  type MetaFunction,
 } from '@remix-run/node'
 import {useParams} from '@remix-run/react'
 import {IconLink} from '~/components/icon-link.tsx'
@@ -46,7 +46,7 @@ export const handle: KCDHandle = {
   },
 }
 
-export const meta: V2_MetaFunction<
+export const meta: MetaFunction<
   typeof loader,
   {root: RootLoaderType; 'routes/calls': typeof callsLoader}
 > = ({matches, params}) => {

@@ -23,7 +23,7 @@ import serverTiming from 'server-timing'
 import sourceMapSupport from 'source-map-support'
 import {fileURLToPath} from 'url'
 import {type WebSocketServer} from 'ws'
-import {getInstanceInfo} from '../app/utils/cjs/litefs-js.js'
+import {getInstanceInfo} from '../app/utils/cjs/litefs-js.server.js'
 import {
   combineGetLoadContexts,
   createMetronomeGetLoadContext,

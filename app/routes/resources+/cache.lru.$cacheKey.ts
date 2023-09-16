@@ -1,6 +1,6 @@
 import {json, type DataFunctionArgs} from '@remix-run/node'
 import {getAllInstances, getInstanceInfo} from 'litefs-js'
-import {ensureInstance} from 'litefs-js/remix.js'
+import {ensureInstance} from '~/utils/cjs/litefs-js.server.js'
 import invariant from 'tiny-invariant'
 import {lruCache} from '~/utils/cache.server.ts'
 import {requireAdminUser} from '~/utils/session.server.ts'

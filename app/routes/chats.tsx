@@ -3,7 +3,7 @@ import {
   json,
   type HeadersFunction,
   type LoaderFunction,
-  type V2_MetaFunction,
+  type MetaFunction,
 } from '@remix-run/node'
 import {
   Link,
@@ -71,7 +71,7 @@ export const loader: LoaderFunction = async ({request}) => {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
+export const meta: MetaFunction<typeof loader, {root: RootLoaderType}> = ({
   data,
   matches,
 }) => {

@@ -21,7 +21,7 @@ const octokit = new Octokit({
 
       return true
     },
-    onAbuseLimit: (retryAfter, options) => {
+    onSecondaryRateLimit: (retryAfter, options) => {
       const method = 'method' in options ? options.method : 'METHOD_UNKNOWN'
       const url = 'url' in options ? options.url : 'URL_UNKNOWN'
       // does not retry, only logs a warning

@@ -1,4 +1,4 @@
-import {type V2_MetaFunction} from '@remix-run/node'
+import {type MetaFunction} from '@remix-run/node'
 import {HeroSection} from '~/components/sections/hero-section.tsx'
 import {images} from '~/images.tsx'
 import {type KCDHandle} from '~/types.ts'
@@ -7,7 +7,7 @@ export const handle: KCDHandle = {
   getSitemapEntries: () => null,
 }
 
-export const meta: V2_MetaFunction = () => {
+export const meta: MetaFunction = () => {
   return [{title: "Ain't nothing here"}]
 }
 

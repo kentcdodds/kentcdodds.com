@@ -2,7 +2,7 @@ import {
   json,
   type HeadersFunction,
   type LoaderFunction,
-  type V2_MetaFunction,
+  type MetaFunction,
 } from '@remix-run/node'
 import {
   Link,
@@ -33,7 +33,7 @@ import {getSocialMetas} from '~/utils/seo.ts'
 import {getTalksAndTags} from '~/utils/talks.server.ts'
 import {type RootLoaderType} from '~/root.tsx'
 
-export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
+export const meta: MetaFunction<typeof loader, {root: RootLoaderType}> = ({
   data,
   matches,
 }) => {

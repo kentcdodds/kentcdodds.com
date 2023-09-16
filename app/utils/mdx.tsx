@@ -29,7 +29,7 @@ import {getSocialMetas} from './seo.ts'
 import {Themed} from './theme-provider.tsx'
 import {type Timings} from './timing.server.ts'
 import {useOptionalUser} from './use-root-data.ts'
-import {type V2_MetaArgs} from '@remix-run/node'
+import {MetaFunction, TypedResponse} from '@remix-run/node'
 
 type CachifiedOptions = {
   forceFresh?: boolean | string
@@ -331,13 +331,16 @@ async function getBlogMdxListItems(options: CachifiedOptions) {
 
 type ExtraMeta = Array<{[key: string]: string}>
 
-function mdxPageMeta({
+type MetaLoader = () => Promise<
+  TypedResponse<{
+    page: MdxPage
+  }>
+>
+
+const mdxPageMeta: MetaFunction<MetaLoader, {root: RootLoaderType}> = ({
   data,
   matches,
-}: {
-  data: {page: MdxPage | null} | null
-  matches: V2_MetaArgs<{}, {root: RootLoaderType}>['matches']
-}) {
+}) => {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
   if (data?.page) {

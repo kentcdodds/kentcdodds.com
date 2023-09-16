@@ -5,7 +5,7 @@ import {
   type ActionFunction,
   type DataFunctionArgs,
   type HeadersFunction,
-  type V2_MetaFunction,
+  type MetaFunction,
 } from '@remix-run/node'
 import {Form, useActionData, useLoaderData} from '@remix-run/react'
 import {clsx} from 'clsx'
@@ -61,7 +61,7 @@ export const handle: KCDHandle = {
   getSitemapEntries: () => null,
 }
 
-export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
+export const meta: MetaFunction<typeof loader, {root: RootLoaderType}> = ({
   matches,
 }) => {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

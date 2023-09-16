@@ -7,8 +7,11 @@ import {
   useSearchParams,
   useSubmit,
 } from '@remix-run/react'
-import {getAllInstances, getInstanceInfo} from '~/utils/cjs/litefs-js.js'
-import {ensureInstance} from 'litefs-js/remix.js'
+import {
+  ensureInstance,
+  getAllInstances,
+  getInstanceInfo,
+} from '~/utils/cjs/litefs-js.server.js'
 import invariant from 'tiny-invariant'
 import {Button} from '~/components/button.tsx'
 import {

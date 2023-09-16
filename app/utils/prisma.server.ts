@@ -1,6 +1,6 @@
 import {PrismaClient} from '@prisma/client'
 import chalk from 'chalk'
-import {ensurePrimary} from 'litefs-js/remix.js'
+import {ensurePrimary} from '~/utils/cjs/litefs-js.server.js'
 import pProps from 'p-props'
 import {type Session} from '~/types.ts'
 import {decrypt, encrypt} from './encryption.server.ts'

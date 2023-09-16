@@ -2,7 +2,7 @@ import {
   json,
   type HeadersFunction,
   type LoaderFunction,
-  type V2_MetaFunction,
+  type MetaFunction,
 } from '@remix-run/node'
 import {
   isRouteErrorResponse,
@@ -108,7 +108,7 @@ export const loader: LoaderFunction = async ({params, request}) => {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: V2_MetaFunction<
+export const meta: MetaFunction<
   {},
   {root: RootLoaderType; 'routes/workshops+/_workshops': typeof WorkshopLoader}
 > = ({matches, params}) => {

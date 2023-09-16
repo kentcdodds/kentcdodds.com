@@ -1,5 +1,8 @@
 import {json, redirect, type DataFunctionArgs} from '@remix-run/node'
-import {getInstanceInfo, getInternalInstanceDomain} from 'litefs-js'
+import {
+  getInstanceInfo,
+  getInternalInstanceDomain,
+} from '~/utils/cjs/litefs-js.server.js'
 import {cache} from '~/utils/cache.server.ts'
 import {getRequiredServerEnvVar} from '~/utils/misc.tsx'
 

@@ -1,4 +1,4 @@
-import {type HeadersFunction, type V2_MetaFunction} from '@remix-run/node'
+import {type HeadersFunction, type MetaFunction} from '@remix-run/node'
 import {useSearchParams} from '@remix-run/react'
 import * as React from 'react'
 import {Grid} from '~/components/grid.tsx'
@@ -30,7 +30,7 @@ import {
   type LoaderData as WorkshopLoaderData,
 } from './_workshops.tsx'
 
-export const meta: V2_MetaFunction<
+export const meta: MetaFunction<
   {},
   {root: RootLoaderType; 'routes/workshops+/_workshops': typeof WorkshopLoader}
 > = ({matches}) => {

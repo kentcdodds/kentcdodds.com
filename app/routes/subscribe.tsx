@@ -1,4 +1,4 @@
-import {json, type LoaderFunction, type V2_MetaFunction} from '@remix-run/node'
+import {json, type LoaderFunction, type MetaFunction} from '@remix-run/node'
 import {Link, useLoaderData} from '@remix-run/react'
 import {ButtonLink} from '~/components/button.tsx'
 import {Grid} from '~/components/grid.tsx'
@@ -16,7 +16,7 @@ import {getServerTimeHeader} from '~/utils/timing.server.ts'
 import {useRootData} from '~/utils/use-root-data.ts'
 import {type RootLoaderType} from '~/root.tsx'
 
-export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
+export const meta: MetaFunction<typeof loader, {root: RootLoaderType}> = ({
   matches,
 }) => {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

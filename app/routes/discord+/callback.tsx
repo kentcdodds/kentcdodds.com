@@ -1,6 +1,6 @@
 import {defer, redirect, type DataFunctionArgs} from '@remix-run/node'
 import {Await, Link, useAsyncError, useLoaderData} from '@remix-run/react'
-import {ensurePrimary} from 'litefs-js/remix.js'
+import {ensurePrimary} from '~/utils/cjs/litefs-js.server.js'
 import React, {Suspense} from 'react'
 import {ArrowLink} from '~/components/arrow-button.tsx'
 import {ErrorPanel} from '~/components/form-elements.tsx'

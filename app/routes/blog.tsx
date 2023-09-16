@@ -4,7 +4,7 @@ import {
   type DataFunctionArgs,
   type HeadersFunction,
   type LinksFunction,
-  type V2_MetaFunction,
+  type MetaFunction,
   type SerializeFrom,
 } from '@remix-run/node'
 import {
@@ -128,7 +128,7 @@ export async function loader({request}: DataFunctionArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: V2_MetaFunction<typeof loader, {root: RootLoaderType}> = ({
+export const meta: MetaFunction<typeof loader, {root: RootLoaderType}> = ({
   data,
   matches,
 }) => {

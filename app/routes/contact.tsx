@@ -1,8 +1,8 @@
 import {
   json,
-  type ActionFunction,
   type HeadersFunction,
-  type V2_MetaFunction,
+  type MetaFunction,
+  type DataFunctionArgs,
 } from '@remix-run/node'
 import {Link, useFetcher} from '@remix-run/react'
 import {Button} from '~/components/button.tsx'
@@ -49,7 +49,7 @@ type ActionData = {
   }
 }
 
-export const action: ActionFunction = async ({request}) => {
+export const action = async ({request}: DataFunctionArgs) => {
   const user = await requireUser(request)
   return handleFormSubmission<ActionData>({
     request,
@@ -84,9 +84,7 @@ export const headers: HeadersFunction = () => ({
   Vary: 'Cookie',
 })
 
-export const meta: V2_MetaFunction<{}, {root: RootLoaderType}> = ({
-  matches,
-}) => {
+export const meta: MetaFunction<{}, {root: RootLoaderType}> = ({matches}) => {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
   return getSocialMetas({
@@ -102,7 +100,7 @@ export const meta: V2_MetaFunction<{}, {root: RootLoaderType}> = ({
 }
 
 export default function ContactRoute() {
-  const contactFetcher = useFetcher()
+  const contactFetcher = useFetcher<typeof action>()
   const {user} = useRootData()
 
   const isDone = contactFetcher.state === 'idle' && contactFetcher.data != null

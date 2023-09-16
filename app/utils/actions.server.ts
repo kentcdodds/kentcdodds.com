@@ -1,4 +1,4 @@
-import {json} from '@remix-run/node'
+import {type TypedResponse, json} from '@remix-run/node'
 import {type NonNullProperties} from '~/types.ts'
 import {getErrorMessage, getNonNull} from './misc.tsx'
 
@@ -29,7 +29,7 @@ async function handleFormSubmission<
   actionData?: ActionData
   handleFormValues: (
     formValues: NonNullProperties<ActionData['fields']>,
-  ) => Response | Promise<Response>
+  ) => TypedResponse<ActionData> | Promise<TypedResponse<ActionData>>
 } & (
   | {
       form: URLSearchParams
@@ -39,7 +39,7 @@ async function handleFormSubmission<
       form?: never
       request: Request
     }
-)): Promise<Response> {
+)): Promise<TypedResponse<ActionData>> {
   try {
     if (!form) {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
