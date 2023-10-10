@@ -7,6 +7,9 @@ import {
   type MetaFunction,
   type SerializeFrom,
 } from '@remix-run/node'
+import {parse} from '@conform-to/zod'
+import {z} from 'zod'
+
 import {
   isRouteErrorResponse,
   Link,
@@ -16,6 +19,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useFetchers,
   useLoaderData,
   useLocation,
   useNavigation,
@@ -68,13 +72,15 @@ import {TeamProvider, useTeam} from './utils/team-provider.tsx'
 import {
   NonFlashOfWrongThemeEls,
   ThemeProvider,
-  useTheme,
 } from './utils/theme-provider.tsx'
-import {getThemeSession} from './utils/theme.server.ts'
+import {ClientHintCheck, getHints, useHints} from './utils/client-hints.tsx'
+// import {getThemeSession} from './utils/theme.server.ts'
 import {getServerTimeHeader} from './utils/timing.server.ts'
 import {getUserInfo} from './utils/user-info.server.ts'
 import {getScheduledEvents} from './utils/workshop-tickets.server.ts'
 import {getWorkshops} from './utils/workshops.server.ts'
+import {useRequestInfo} from './utils/request-info.ts'
+import {getTheme} from './utils/theme.server.ts'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',
@@ -87,7 +93,10 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
     'Come check out how Kent C. Dodds can help you level up your career as a software engineer.'
   return [
     {viewport: 'width=device-width,initial-scale=1,viewport-fit=cover'},
-    {'theme-color': requestInfo?.session.theme === 'dark' ? '#1F2028' : '#FFF'},
+    {
+      'theme-color':
+        requestInfo?.userPrefs.theme === 'dark' ? '#1F2028' : '#FFF',
+    },
     ...getSocialMetas({
       keywords:
         'Learn React, React Workshops, Testing JavaScript Training, React Training, Learn JavaScript, Learn TypeScript',
@@ -156,7 +165,7 @@ async function loader({request}: DataFunctionArgs) {
   const session = await getSession(request)
   const [
     user,
-    themeSession,
+
     clientSession,
     loginInfoSession,
     primaryInstance,
@@ -164,7 +173,7 @@ async function loader({request}: DataFunctionArgs) {
     workshopEvents,
   ] = await Promise.all([
     session.getUser({timings}),
-    getThemeSession(request),
+    // getThemeSession(request),
     getClientSession(request, session.getUser({timings})),
     getLoginInfoSession(request),
     getInstanceInfo().then(i => i.primaryInstance),
@@ -253,13 +262,17 @@ async function loader({request}: DataFunctionArgs) {
       })
       .filter(typedBoolean),
     requestInfo: {
+      hints: getHints(request),
       origin: getDomainUrl(request),
       path: new URL(request.url).pathname,
       flyPrimaryInstance: primaryInstance,
+      userPrefs: {
+        theme: getTheme(request),
+      },
       session: {
         email: loginInfoSession.getEmail(),
         magicLinkVerified: loginInfoSession.getMagicLinkVerified(),
-        theme: themeSession.getTheme(),
+        // theme: themeSession.getTheme(),
       },
     },
   }
@@ -434,6 +447,7 @@ function App() {
       className={clsx(theme, `set-color-team-current-${team.toLowerCase()}`)}
     >
       <head>
+        <ClientHintCheck nonce={nonce} />
         <Meta />
         <meta charSet="utf-8" />
         <meta
@@ -455,7 +469,7 @@ function App() {
         </noscript>
         <NonFlashOfWrongThemeEls
           nonce={nonce}
-          ssrTheme={Boolean(data.requestInfo.session.theme)}
+          ssrTheme={Boolean(data.requestInfo.userPrefs.theme)}
         />
       </head>
       <body className="bg-white transition duration-500 dark:bg-gray-900">
@@ -746,7 +760,40 @@ function getWebsocketJS() {
   `
   return js
 }
+/**
+ * @returns the user's theme preference, or the client hint theme if the user
+ * has not set a preference.
+ */
+export function useTheme() {
+  const hints = useHints()
+  const requestInfo =
+    // {userPrefs: {theme: 'light', timeZone: 'UTC'}}
+    useRequestInfo()
+  const optimisticMode = useOptimisticThemeMode()
+  if (optimisticMode) {
+    return optimisticMode === 'system' ? hints.theme : optimisticMode
+  }
+  return requestInfo.userPrefs.theme ?? hints.theme
+}
 
+/**
+ * If the user's changing their theme mode preference, this will return the
+ * value it's being changed to.
+ */
+export function useOptimisticThemeMode() {
+  const fetchers = useFetchers()
+  const themeFetcher = fetchers.find(f => f.formAction === '/')
+
+  if (themeFetcher && themeFetcher.formData) {
+    const submission = parse(themeFetcher.formData, {
+      schema: ThemeFormSchema,
+    })
+    return submission.value?.theme
+  }
+}
+export const ThemeFormSchema = z.object({
+  theme: z.enum(['system', 'light', 'dark']),
+})
 /*
 eslint
   @typescript-eslint/no-use-before-define: "off",
