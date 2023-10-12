@@ -20,12 +20,11 @@ import {useEffect} from 'react'
 import {kodyProfiles} from '~/images.tsx'
 import {type OptionalTeam} from '~/utils/misc.tsx'
 import {useTeam} from '~/utils/team-provider.tsx'
-import {Themed} from '~/utils/theme-provider.tsx'
+import {useOptimisticThemeMode} from '~/utils/theme-utils.tsx'
 import {useOptionalUser, useRootData} from '~/utils/use-root-data.ts'
 import {useElementState} from './hooks/use-element-state.tsx'
 import {LaptopIcon, MoonIcon, SunIcon} from './icons.tsx'
 import {TeamCircle} from './team-circle.tsx'
-import {useOptimisticThemeMode} from '~/root.tsx'
 import {useRequestInfo} from '~/utils/request-info.ts'
 
 const LINKS = [
@@ -133,7 +132,13 @@ function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
             'sr-only': variant === 'icon',
           })}
         >
-          <Themed dark="switch to light mode" light="switch to dark mode" />
+          {`Switch to ${
+            nextMode === 'system'
+              ? 'system'
+              : nextMode === 'light'
+              ? 'light'
+              : 'dark'
+          } mode`}
         </span>
       </button>
     </fetcher.Form>

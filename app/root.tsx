@@ -7,8 +7,6 @@ import {
   type MetaFunction,
   type SerializeFrom,
 } from '@remix-run/node'
-import {parse} from '@conform-to/zod'
-import {z} from 'zod'
 
 import {
   isRouteErrorResponse,
@@ -19,7 +17,6 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useFetchers,
   useLoaderData,
   useLocation,
   useNavigation,
@@ -69,18 +66,13 @@ import {useNonce} from './utils/nonce-provider.ts'
 import {getSocialMetas} from './utils/seo.ts'
 import {getSession} from './utils/session.server.ts'
 import {TeamProvider, useTeam} from './utils/team-provider.tsx'
-import {
-  NonFlashOfWrongThemeEls,
-  ThemeProvider,
-} from './utils/theme-provider.tsx'
-import {ClientHintCheck, getHints, useHints} from './utils/client-hints.tsx'
-// import {getThemeSession} from './utils/theme.server.ts'
+import {ClientHintCheck, getHints} from './utils/client-hints.tsx'
 import {getServerTimeHeader} from './utils/timing.server.ts'
 import {getUserInfo} from './utils/user-info.server.ts'
 import {getScheduledEvents} from './utils/workshop-tickets.server.ts'
 import {getWorkshops} from './utils/workshops.server.ts'
-import {useRequestInfo} from './utils/request-info.ts'
 import {getTheme} from './utils/theme.server.ts'
+import {useTheme} from './utils/theme-utils.tsx'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',
@@ -464,10 +456,6 @@ function App() {
         <noscript>
           <link rel="stylesheet" href={noScriptStyles} />
         </noscript>
-        <NonFlashOfWrongThemeEls
-          nonce={nonce}
-          ssrTheme={Boolean(data.requestInfo.userPrefs.theme)}
-        />
       </head>
       <body className="bg-white transition duration-500 dark:bg-gray-900">
         <PageLoadingMessage />
@@ -511,11 +499,7 @@ function App() {
             key={e.slug}
             cookieValue={e.cookieValue}
             promoName={e.promoName}
-            // @ts-expect-error: For some reason TS doesn't like this
-            // TODO: Remove this before making it ready for merge
             promoEndTime={new Date(e.promoEndTime.time)}
-            // TODO: Remove this before making it ready for merge
-            // @ts-expect-error: For some reason TS doesn't like this
             dismissTimeSeconds={e.dismissTimeSeconds}
           >
             <div className="flex flex-col">
@@ -612,17 +596,9 @@ function App() {
 }
 
 export default function AppWithProviders() {
-  const data = useLoaderData<LoaderData>()
   return (
     <TeamProvider>
-      <ThemeProvider
-        specifiedTheme={
-          // @ts-expect-error I've really gotta use the epic stack's theme stuff...
-          data.requestInfo.session.theme
-        }
-      >
-        <App />
-      </ThemeProvider>
+      <App />
     </TeamProvider>
   )
 }
@@ -761,38 +737,7 @@ function getWebsocketJS() {
   `
   return js
 }
-/**
- * @returns the user's theme preference, or the client hint theme if the user
- * has not set a preference.
- */
-export function useTheme() {
-  const hints = useHints()
-  const requestInfo = useRequestInfo()
-  const optimisticMode = useOptimisticThemeMode()
-  if (optimisticMode) {
-    return optimisticMode === 'system' ? hints.theme : optimisticMode
-  }
-  return requestInfo.userPrefs.theme ?? hints.theme
-}
 
-/**
- * If the user's changing their theme mode preference, this will return the
- * value it's being changed to.
- */
-export function useOptimisticThemeMode() {
-  const fetchers = useFetchers()
-  const themeFetcher = fetchers.find(f => f.formAction === '/')
-
-  if (themeFetcher?.formData) {
-    const submission = parse(themeFetcher.formData, {
-      schema: ThemeFormSchema,
-    })
-    return submission.value?.theme
-  }
-}
-export const ThemeFormSchema = z.object({
-  theme: z.enum(['system', 'light', 'dark']),
-})
 /*
 eslint
   @typescript-eslint/no-use-before-define: "off",
