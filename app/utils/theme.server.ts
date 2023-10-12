@@ -40,6 +40,10 @@ export function getTheme(request: Request): Theme | null {
   return null
 }
 
-export function setTheme(theme: Theme) {
-  return cookie.serialize(cookieName, theme, {path: '/'})
+export function setTheme(theme: Theme | 'system') {
+  if (theme === 'system') {
+    return cookie.serialize(cookieName, '', {path: '/', maxAge: -1})
+  } else {
+    return cookie.serialize(cookieName, theme, {path: '/'})
+  }
 }

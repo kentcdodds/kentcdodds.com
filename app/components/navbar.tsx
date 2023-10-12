@@ -20,10 +20,10 @@ import {useEffect} from 'react'
 import {kodyProfiles} from '~/images.tsx'
 import {type OptionalTeam} from '~/utils/misc.tsx'
 import {useTeam} from '~/utils/team-provider.tsx'
-import {Theme, Themed, useTheme} from '~/utils/theme-provider.tsx'
+import {Themed} from '~/utils/theme-provider.tsx'
 import {useOptionalUser, useRootData} from '~/utils/use-root-data.ts'
 import {useElementState} from './hooks/use-element-state.tsx'
-import {MoonIcon, SunIcon} from './icons.tsx'
+import {LaptopIcon, MoonIcon, SunIcon} from './icons.tsx'
 import {TeamCircle} from './team-circle.tsx'
 import {useOptimisticThemeMode} from '~/root.tsx'
 import {useRequestInfo} from '~/utils/request-info.ts'
@@ -78,7 +78,8 @@ function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
 
   const optimisticMode = useOptimisticThemeMode()
   const mode = optimisticMode ?? requestInfo.userPrefs.theme ?? 'system'
-  const nextMode = mode === 'light' ? 'dark' : 'light'
+  const nextMode =
+    mode === 'system' ? 'light' : mode === 'light' ? 'dark' : 'system'
 
   return (
     <fetcher.Form method="POST" {...form.props} action="action/set-theme">
@@ -97,16 +98,34 @@ function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
         {/* note that the duration is longer then the one on body, controlling the bg-color */}
         <div className="relative h-8 w-8">
           <span
-            className="absolute inset-0 rotate-90 transform text-black transition duration-1000 motion-reduce:duration-[0s] dark:rotate-0 dark:text-white"
+            className={clsx(
+              'absolute inset-0  transform text-black transition duration-1000 motion-reduce:duration-[0s] dark:text-white',
+
+              mode === 'dark' ? 'rotate-0' : 'rotate-90',
+            )}
             style={iconTransformOrigin}
           >
             <MoonIcon />
           </span>
           <span
-            className="absolute inset-0 rotate-0 transform text-black transition duration-1000 motion-reduce:duration-[0s] dark:-rotate-90 dark:text-white"
+            className={clsx(
+              'absolute inset-0  transform text-black transition duration-1000 motion-reduce:duration-[0s] dark:text-white',
+
+              mode === 'light' ? 'rotate-0' : '-rotate-90',
+            )}
             style={iconTransformOrigin}
           >
             <SunIcon />
+          </span>
+
+          <span
+            className={clsx(
+              'absolute inset-0  transform text-black transition duration-1000 motion-reduce:duration-[0s] dark:text-white',
+              mode === 'system' ? 'translate-y-0' : 'translate-y-10',
+            )}
+            style={iconTransformOrigin}
+          >
+            <LaptopIcon size={32} />
           </span>
         </div>
         <span
