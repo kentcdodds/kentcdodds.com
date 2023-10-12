@@ -66,54 +66,8 @@ function NavLink({
   )
 }
 
-// const iconTransformOrigin = {transformOrigin: '50% 100px'}
-function DarkModeToggle({
-  variant = 'icon',
-  userPreference,
-}: {
-  variant?: 'icon' | 'labelled'
-  userPreference?: Theme | null
-}) {
-  // const [, setTheme] = useTheme()
-  // return (
-  //   <button
-  //     onClick={() => {
-  //       setTheme(previousTheme =>
-  //         previousTheme === Theme.DARK ? Theme.LIGHT : Theme.DARK,
-  //       )
-  //     }}
-  //     className={clsx(
-  //       'border-secondary hover:border-primary focus:border-primary inline-flex h-14 items-center justify-center overflow-hidden rounded-full border-2 p-1 transition focus:outline-none',
-  //       {
-  //         'w-14': variant === 'icon',
-  //         'px-8': variant === 'labelled',
-  //       },
-  //     )}
-  //   >
-  //     {/* note that the duration is longer then the one on body, controlling the bg-color */}
-  //     <div className="relative h-8 w-8">
-  //       <span
-  //         className="absolute inset-0 rotate-90 transform text-black transition duration-1000 motion-reduce:duration-[0s] dark:rotate-0 dark:text-white"
-  //         style={iconTransformOrigin}
-  //       >
-  //         <MoonIcon />
-  //       </span>
-  //       <span
-  //         className="absolute inset-0 rotate-0 transform text-black transition duration-1000 motion-reduce:duration-[0s] dark:-rotate-90 dark:text-white"
-  //         style={iconTransformOrigin}
-  //       >
-  //         <SunIcon />
-  //       </span>
-  //     </div>
-  //     <span
-  //       className={clsx('ml-4 text-black dark:text-white', {
-  //         'sr-only': variant === 'icon',
-  //       })}
-  //     >
-  //       <Themed dark="switch to light mode" light="switch to dark mode" />
-  //     </span>
-  //   </button>
-  // )
+const iconTransformOrigin = {transformOrigin: '50% 100px'}
+function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
   const requestInfo = useRequestInfo()
   const fetcher = useFetcher()
 
@@ -124,26 +78,45 @@ function DarkModeToggle({
 
   const optimisticMode = useOptimisticThemeMode()
   const mode = optimisticMode ?? requestInfo.userPrefs.theme ?? 'system'
-  console.log('MODE', mode)
   const nextMode = mode === 'light' ? 'dark' : 'light'
-  const modeLabel = {
-    light: <span className="sr-only">Light</span>,
-    dark: <span className="sr-only">Dark</span>,
-    system: <span className="sr-only">System</span>,
-  }
 
   return (
     <fetcher.Form method="POST" {...form.props} action="action/set-theme">
       <input type="hidden" name="theme" value={nextMode} />
-      <div className="flex gap-2">
-        <button
-          type="submit"
-          className="flex h-8 w-8 cursor-pointer items-center justify-center"
+
+      <button
+        type="submit"
+        className={clsx(
+          'border-secondary hover:border-primary focus:border-primary inline-flex h-14 items-center justify-center overflow-hidden rounded-full border-2 p-1 transition focus:outline-none',
+          {
+            'w-14': variant === 'icon',
+            'px-8': variant === 'labelled',
+          },
+        )}
+      >
+        {/* note that the duration is longer then the one on body, controlling the bg-color */}
+        <div className="relative h-8 w-8">
+          <span
+            className="absolute inset-0 rotate-90 transform text-black transition duration-1000 motion-reduce:duration-[0s] dark:rotate-0 dark:text-white"
+            style={iconTransformOrigin}
+          >
+            <MoonIcon />
+          </span>
+          <span
+            className="absolute inset-0 rotate-0 transform text-black transition duration-1000 motion-reduce:duration-[0s] dark:-rotate-90 dark:text-white"
+            style={iconTransformOrigin}
+          >
+            <SunIcon />
+          </span>
+        </div>
+        <span
+          className={clsx('ml-4 text-black dark:text-white', {
+            'sr-only': variant === 'icon',
+          })}
         >
-          Changer
-          {modeLabel[mode]}
-        </button>
-      </div>
+          <Themed dark="switch to light mode" light="switch to dark mode" />
+        </span>
+      </button>
     </fetcher.Form>
   )
 }

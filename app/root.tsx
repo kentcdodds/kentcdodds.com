@@ -173,7 +173,6 @@ async function loader({request}: DataFunctionArgs) {
     workshopEvents,
   ] = await Promise.all([
     session.getUser({timings}),
-    // getThemeSession(request),
     getClientSession(request, session.getUser({timings})),
     getLoginInfoSession(request),
     getInstanceInfo().then(i => i.primaryInstance),
@@ -272,7 +271,6 @@ async function loader({request}: DataFunctionArgs) {
       session: {
         email: loginInfoSession.getEmail(),
         magicLinkVerified: loginInfoSession.getMagicLinkVerified(),
-        // theme: themeSession.getTheme(),
       },
     },
   }
@@ -438,9 +436,8 @@ function App() {
   const data = useLoaderData<typeof loader>()
   const nonce = useNonce()
   const [team] = useTeam()
-  const [theme] = useTheme()
+  const theme = useTheme()
   const fathomQueue = React.useRef<FathomQueue>([])
-
   return (
     <html
       lang="en"
@@ -514,7 +511,11 @@ function App() {
             key={e.slug}
             cookieValue={e.cookieValue}
             promoName={e.promoName}
+            // @ts-expect-error: For some reason TS doesn't like this
+            // TODO: Remove this before making it ready for merge
             promoEndTime={new Date(e.promoEndTime.time)}
+            // TODO: Remove this before making it ready for merge
+            // @ts-expect-error: For some reason TS doesn't like this
             dismissTimeSeconds={e.dismissTimeSeconds}
           >
             <div className="flex flex-col">
@@ -766,9 +767,7 @@ function getWebsocketJS() {
  */
 export function useTheme() {
   const hints = useHints()
-  const requestInfo =
-    // {userPrefs: {theme: 'light', timeZone: 'UTC'}}
-    useRequestInfo()
+  const requestInfo = useRequestInfo()
   const optimisticMode = useOptimisticThemeMode()
   if (optimisticMode) {
     return optimisticMode === 'system' ? hints.theme : optimisticMode
@@ -784,7 +783,7 @@ export function useOptimisticThemeMode() {
   const fetchers = useFetchers()
   const themeFetcher = fetchers.find(f => f.formAction === '/')
 
-  if (themeFetcher && themeFetcher.formData) {
+  if (themeFetcher?.formData) {
     const submission = parse(themeFetcher.formData, {
       schema: ThemeFormSchema,
     })
