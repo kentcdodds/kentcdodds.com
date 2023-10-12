@@ -590,6 +590,7 @@
 - author: Gwen Shapira
   priority: 4
   subjects:
+    - EpicWeb.dev
     - Workshop
     - 'workshop: web-app-fundamentals-part-1'
     - 'workshop: web-app-fundamentals-part-2'
@@ -649,3 +650,52 @@
   testimonial: >-
     Kent C. Dodds has a remarkable ability to dive deep into the core of React
     while maintaining crystal-clear explanations.
+
+- author: Rowin Hernandez
+  priority: 4
+  subjects:
+    - EpicReact.dev
+    - TestingJavaScript.com
+    - Discord Community
+    - Workshop
+    - Talk
+    - Blog
+    - Frontend Masters
+    - Egghead.io
+    - YouTube Live Streams
+  cloudinaryId: kentcdodds.com/testimonials/rowin-hernandez
+  company: Synphonyte, Senior SWE
+  link: https://rowinbot.com
+  testimonial: >-
+    Coming from a Ruby on Rails background, I had to pretty much learn React on
+    the job and it was always hard to find the right patterns and don't even get
+    me started on testing! After taking both EpicReact and TestingJs courses I
+    got a much better understanding of the tradeoffs and benefits of each
+    pattern and on the road I also had fun learning fundamental web things I
+    inadvertedly had been neglecting. KCD takes you back from Tutorial Hell!
+
+- author: Paweł Pawłowski
+  priority: 4
+  subjects:
+    - EpicWeb.dev
+  cloudinaryId: kentcdodds.com/testimonials/pawel-pawlowski
+  company: Senior Frontend Developer
+  link: https://www.linkedin.com/in/pawel-pawlowski-dev
+  testimonial: >-
+    Kent's EpicWeb.dev workshops redefine frontend development. Boasting a
+    curriculum that spans from Full Stack essentials to specialized areas like
+    data modeling, it's the pinnacle of tech education. Kent's cutting-edge
+    platform merges real-world coding exercises into the learning experience.
+    Skip the theory; this is hands-on, practical wisdom. For anyone committed to
+    mastering frontend, the value here is unbeatable.
+
+- author: Michaël De Boey
+  priority: 4
+  subjects:
+    - EpicWeb.dev
+  cloudinaryId: kentcdodds.com/testimonials/michaël-de-boey
+  company: Freelance full stack JavaScript/TypeScript & React engineer
+  link: https://twitter.com/MichaelDeBoey93
+  testimonial: >-
+    Getting 14 days worth of full blown workshops for less than the price of 2
+    days of workshops, EpicWeb.dev is worth every penny!

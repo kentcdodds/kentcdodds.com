@@ -23,6 +23,7 @@ const allCategories = [
 export type TestimonialCategory = (typeof allCategories)[number]
 
 const allSubjects = [
+  'EpicWeb.dev',
   'EpicReact.dev',
   'TestingJavaScript.com',
   'Discord Community',
@@ -70,6 +71,7 @@ const categoriesBySubject: Record<
   TestimonialSubject,
   Array<TestimonialCategory>
 > = {
+  'EpicWeb.dev': ['teaching', 'courses', 'testing', 'workshop'],
   'Discord Community': ['community'],
   'EpicReact.dev': ['teaching', 'courses', 'react'],
   'TestingJavaScript.com': ['teaching', 'courses', 'testing'],
