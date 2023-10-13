@@ -43,12 +43,12 @@ function getCookieValue(cookieString: string, name: ClientHintNames) {
  * @returns an object with the client hints and their values
  */
 export function getHints(request?: Request) {
-  const cookieString =
-    typeof document !== 'undefined'
-      ? document.cookie
-      : typeof request !== 'undefined'
-      ? request.headers.get('Cookie') ?? ''
-      : ''
+  let cookieString = ''
+  if (typeof document !== 'undefined') {
+    cookieString = document.cookie
+  } else if (typeof request !== 'undefined' && request.headers.has('Cookie')) {
+    cookieString = request.headers.get('Cookie')!
+  }
 
   return Object.entries(clientHints).reduce(
     (acc, [name, hint]) => {
