@@ -72,7 +72,7 @@ import {getUserInfo} from './utils/user-info.server.ts'
 import {getScheduledEvents} from './utils/workshop-tickets.server.ts'
 import {getWorkshops} from './utils/workshops.server.ts'
 import {getTheme} from './utils/theme.server.ts'
-import {useTheme} from './utils/theme-utils.tsx'
+import {useTheme} from './utils/theme.tsx'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',

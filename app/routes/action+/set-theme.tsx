@@ -1,6 +1,6 @@
 import {parse} from '@conform-to/zod'
 import {type DataFunctionArgs, json} from '@remix-run/server-runtime'
-import {ThemeFormSchema} from '~/utils/theme-utils.tsx'
+import {ThemeFormSchema} from '~/utils/theme.tsx'
 import {setTheme} from '~/utils/theme.server.ts'
 
 export async function action({request}: DataFunctionArgs) {
