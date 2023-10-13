@@ -1,4 +1,3 @@
-import {useForm} from '@conform-to/react'
 import {
   Menu,
   MenuButton,
@@ -70,18 +69,13 @@ function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
   const requestInfo = useRequestInfo()
   const fetcher = useFetcher()
 
-  const [form] = useForm({
-    id: 'theme-switch',
-    lastSubmission: fetcher.data?.submission,
-  })
-
   const optimisticMode = useOptimisticThemeMode()
   const mode = optimisticMode ?? requestInfo.userPrefs.theme ?? 'system'
   const nextMode =
     mode === 'system' ? 'light' : mode === 'light' ? 'dark' : 'system'
 
   return (
-    <fetcher.Form method="POST" {...form.props} action="action/set-theme">
+    <fetcher.Form method="POST" action="action/set-theme">
       <input type="hidden" name="theme" value={nextMode} />
 
       <button
