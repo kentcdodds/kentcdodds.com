@@ -33,7 +33,7 @@ import {type KCDHandle} from '~/types.ts'
 import {ArrowLink} from './components/arrow-button.tsx'
 import {ErrorPage} from './components/errors.tsx'
 import {Footer} from './components/footer.tsx'
-import {ArrowIcon, LaptopIcon} from './components/icons.tsx'
+import {ArrowIcon, CodeIcon, LaptopIcon} from './components/icons.tsx'
 import {Grimmacing, MissingSomething} from './components/kifs.tsx'
 import {Navbar} from './components/navbar.tsx'
 import {NotificationMessage} from './components/notification-message.tsx'
@@ -182,6 +182,9 @@ async function loader({request}: DataFunctionArgs) {
     userInfo: user ? await getUserInfo(user, {request, timings}) : null,
     ENV: getEnv(),
     randomFooterImageKey,
+    epicWebPromotification: {
+      cookieName: 'epic-web',
+    },
     workshopPromotifications: workshopEvents
       .map(e => {
         const workshop = workshops.find(w => w.slug === e.metadata.workshopSlug)
@@ -457,6 +460,41 @@ function App() {
       </head>
       <body className="bg-white transition duration-500 dark:bg-gray-900">
         <PageLoadingMessage />
+
+        <Promotification
+          cookieValue={data.epicWebPromotification.cookieName}
+          promoName="EpicWeb.dev"
+          promoEndTime={new Date('2023-11-07T06:59:59.000Z')}
+        >
+          <div className="flex flex-col">
+            <p className="flex items-center gap-1">
+              <CodeIcon />
+              <span>
+                <a href="https://www.epicweb.dev" className="underline">
+                  EpicWeb.dev is{' '}
+                  {Date.now() > new Date('2023-10-18T06:59:59.000Z').getTime()
+                    ? 'almost'
+                    : 'now'}{' '}
+                  live!
+                </a>
+              </span>
+            </p>
+            <p className="mt-1 text-sm text-gray-500">
+              Limited time{' '}
+              <a
+                href="https://www.epicweb.dev"
+                className="inline-flex items-center gap-1 underline"
+              >
+                <span>discount available</span>
+                <ArrowIcon direction="top-right" size={16} />
+              </a>
+            </p>
+            <p>
+              Learn everything you need to know to build{' '}
+              <strong>modern full stack</strong> web applications.
+            </p>
+          </div>
+        </Promotification>
         {data.workshopPromotifications.map(e => (
           <Promotification
             key={e.slug}
