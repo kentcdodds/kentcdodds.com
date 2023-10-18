@@ -473,8 +473,8 @@ function App() {
                 <a href="https://www.epicweb.dev" className="underline">
                   EpicWeb.dev is{' '}
                   {Date.now() > new Date('2023-10-18T06:59:59.000Z').getTime()
-                    ? 'almost'
-                    : 'now'}{' '}
+                    ? 'now'
+                    : 'almost'}{' '}
                   live!
                 </a>
               </span>
