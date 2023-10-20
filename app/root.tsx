@@ -183,7 +183,7 @@ async function loader({request}: DataFunctionArgs) {
     ENV: getEnv(),
     randomFooterImageKey,
     epicWebPromotification: {
-      cookieName: 'epic-web',
+      cookieName: getPromoCookieValue({request, promoName: 'EpicWeb.dev'}),
     },
     workshopPromotifications: workshopEvents
       .map(e => {
