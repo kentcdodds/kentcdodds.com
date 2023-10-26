@@ -54,7 +54,11 @@ export async function getTweet(id: string): Promise<Tweet | undefined> {
   const isJson = res.headers.get('content-type')?.includes('application/json')
   const data = isJson ? await res.json() : undefined
 
-  if (res.ok) return data
+  if (res.ok) {
+    if (Object.keys(data).length) return data
+    console.error('Empty response from Twitter API', data)
+    return
+  }
   if (res.status === 404) return
 
   throw new TwitterApiError({

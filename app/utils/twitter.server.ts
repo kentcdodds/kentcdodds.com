@@ -103,10 +103,6 @@ const arrowSvg = `<svg width="24" height="24" fill="none" viewBox="0 0 24 24">
 
 async function buildTweetHTML(tweet: Tweet, expandQuotedTweet: boolean) {
   const author = tweet.user
-  if (!author) {
-    console.error('TWEET HAS NO AUTHOR', tweet)
-    return `ERROR EMBEDDING TWEET: ${tweet.text}`
-  }
   const tweetURL = `https://twitter.com/${author.screen_name}/status/${tweet.id_str}`
 
   // _normal is only 48x48 which looks bad on high-res displays
@@ -293,7 +289,7 @@ async function getTweetEmbedHTMLImpl(urlString: string) {
   try {
     tweet = await getTweetCached(tweetId)
     if (!tweet) {
-      throw new Error('Oh no, tweet has no data.')
+      return `<callout-danger>𝕏 post data not available: <a href="${urlString}">${urlString}</a></callout-danger>`
     }
     const html = await buildTweetHTML(tweet, true)
     return html
