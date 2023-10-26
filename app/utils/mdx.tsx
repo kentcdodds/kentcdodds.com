@@ -29,7 +29,7 @@ import {getSocialMetas} from './seo.ts'
 import {Themed} from './theme-provider.tsx'
 import {type Timings} from './timing.server.ts'
 import {useOptionalUser} from './use-root-data.ts'
-import {MetaFunction, TypedResponse} from '@remix-run/node'
+import {type MetaFunction, type TypedResponse} from '@remix-run/node'
 
 type CachifiedOptions = {
   forceFresh?: boolean | string
