@@ -4,7 +4,7 @@ import {hydrateRoot} from 'react-dom/client'
 import './bootstrap.client.tsx'
 import {handleDarkAndLightModeEls} from './utils/theme-provider.tsx'
 
-// fixup stuff before hydration
+// fixup stuff before hydrating
 function hydrate() {
   handleDarkAndLightModeEls()
   React.startTransition(() => {
