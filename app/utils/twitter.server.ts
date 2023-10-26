@@ -286,16 +286,17 @@ async function getTweetEmbedHTMLImpl(urlString: string) {
     return ''
   }
   let tweet: Awaited<ReturnType<typeof getTweet>>
+  const failureHtml = `<callout-danger>𝕏 post data not available: <a href="${urlString}">${urlString}</a></callout-danger>`
   try {
     tweet = await getTweetCached(tweetId)
     if (!tweet) {
-      return `<callout-danger>𝕏 post data not available: <a href="${urlString}">${urlString}</a></callout-danger>`
+      return failureHtml
     }
     const html = await buildTweetHTML(tweet, true)
     return html
   } catch (error: unknown) {
     console.error('Error processing tweet', {urlString, tweetId, error, tweet})
-    throw error
+    return failureHtml
   }
 }
 
