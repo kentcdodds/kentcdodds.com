@@ -12,7 +12,7 @@ interface TweetBase {
   entities: TweetEntities
   id_str: string
   text: string
-  user: TweetUser
+  user?: TweetUser
   edit_control: TweetEditControl
   isEdited: boolean
   isStaleEdit: boolean
