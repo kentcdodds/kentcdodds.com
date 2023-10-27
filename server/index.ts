@@ -163,6 +163,11 @@ app.use(
   }),
 )
 
+app.get(['/build/*', '/images/*', '/fonts/*', '/favicons/*'], (req, res) => {
+  // if we made it past the express.static for /build, then we're missing something. No bueno.
+  return res.status(404).send('Not found')
+})
+
 // log the referrer for 404s
 app.use((req, res, next) => {
   onFinished(res, () => {
