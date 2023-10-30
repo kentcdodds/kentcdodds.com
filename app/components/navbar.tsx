@@ -75,7 +75,7 @@ function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
     mode === 'system' ? 'light' : mode === 'light' ? 'dark' : 'system'
 
   return (
-    <fetcher.Form method="POST" action="action/set-theme">
+    <fetcher.Form method="POST" action="/action/set-theme">
       <input type="hidden" name="theme" value={nextMode} />
 
       <button
