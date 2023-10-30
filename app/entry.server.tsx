@@ -80,7 +80,7 @@ function serveTheBots(...args: DocRequestArgs) {
     loadContext,
   ] = args
 
-  const nonce = String(loadContext.cspNonce)
+  const nonce = loadContext.cspNonce ? String(loadContext.cspNonce) : undefined
 
   return new Promise((resolve, reject) => {
     const stream = renderToPipeableStream(
