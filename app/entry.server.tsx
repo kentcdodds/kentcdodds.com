@@ -134,7 +134,7 @@ function serveBrowsers(...args: DocRequestArgs) {
     remixContext,
     loadContext,
   ] = args
-  const nonce = String(loadContext.cspNonce)
+  const nonce = loadContext.cspNonce ? String(loadContext.cspNonce) : undefined
   return new Promise((resolve, reject) => {
     let didError = false
     const stream = renderToPipeableStream(
