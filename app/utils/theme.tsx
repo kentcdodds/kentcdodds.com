@@ -45,11 +45,6 @@ function useOptimisticThemeMode() {
   }
 }
 
-/**
- * This allows you to render something that depends on the theme without
- * worrying about whether it'll SSR properly when we don't actually know
- * the user's preferred theme.
- */
 function Themed({
   dark,
   light,
@@ -62,20 +57,8 @@ function Themed({
   const [theme] = useTheme()
   const [initialTheme] = React.useState(theme)
   const themeToReference = initialOnly ? initialTheme : theme
-  const serverRenderWithUnknownTheme = !theme && typeof window !== 'object'
-  if (serverRenderWithUnknownTheme) {
-    // stick them both in and our little script will update the DOM to match
-    // what we'll render in the client during hydration.
-    return (
-      <>
-        {React.createElement('dark-mode', null, dark)}
-        {React.createElement('light-mode', null, light)}
-      </>
-    )
-  } else {
-    // eslint-disable-next-line react/jsx-no-useless-fragment
-    return <>{themeToReference === 'light' ? light : dark}</>
-  }
+  // eslint-disable-next-line react/jsx-no-useless-fragment
+  return <>{themeToReference === 'light' ? light : dark}</>
 }
 
 function isTheme(value: unknown): value is Theme {
