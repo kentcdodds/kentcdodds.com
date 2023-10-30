@@ -44,7 +44,11 @@ import {
   mdxPageMeta,
   useMdxComponent,
 } from '~/utils/mdx.tsx'
-import {formatNumber, reuseUsefulLoaderHeaders} from '~/utils/misc.tsx'
+import {
+  formatNumber,
+  reuseUsefulLoaderHeaders,
+  typedBoolean,
+} from '~/utils/misc.tsx'
 import {addPostRead} from '~/utils/prisma.server.ts'
 import {getSession} from '~/utils/session.server.ts'
 import {teamEmoji, useTeam} from '~/utils/team-provider.tsx'
@@ -621,9 +625,9 @@ export default function MdxScreen() {
                       workshop={workshop}
                       // @ts-expect-error need to figure out a better way to
                       // handle the fact that this is a SerializeObject type...
-                      titoEvents={data.workshopEvents.filter(
-                        e => e.metadata.workshopSlug === workshop.slug,
-                      )}
+                      titoEvents={data.workshopEvents
+                        .filter(typedBoolean)
+                        .filter(e => e.metadata.workshopSlug === workshop.slug)}
                     />
                   </div>
                 ))}
