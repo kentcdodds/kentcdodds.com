@@ -6,7 +6,7 @@ import {
   MenuPopover,
   useMenuButtonContext,
 } from '@reach/menu-button'
-import {Link, useLocation} from '@remix-run/react'
+import {Link, useFetcher, useLocation} from '@remix-run/react'
 import {clsx} from 'clsx'
 import {
   AnimatePresence,
@@ -19,11 +19,12 @@ import {useEffect} from 'react'
 import {kodyProfiles} from '~/images.tsx'
 import {type OptionalTeam} from '~/utils/misc.tsx'
 import {useTeam} from '~/utils/team-provider.tsx'
-import {Theme, Themed, useTheme} from '~/utils/theme-provider.tsx'
+import {useOptimisticThemeMode} from '~/utils/theme.tsx'
 import {useOptionalUser, useRootData} from '~/utils/use-root-data.ts'
 import {useElementState} from './hooks/use-element-state.tsx'
-import {MoonIcon, SunIcon} from './icons.tsx'
+import {LaptopIcon, MoonIcon, SunIcon} from './icons.tsx'
 import {TeamCircle} from './team-circle.tsx'
+import {useRequestInfo} from '~/utils/request-info.ts'
 
 const LINKS = [
   {name: 'Blog', to: '/blog'},
@@ -65,45 +66,72 @@ function NavLink({
 
 const iconTransformOrigin = {transformOrigin: '50% 100px'}
 function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
-  const [, setTheme] = useTheme()
+  const requestInfo = useRequestInfo()
+  const fetcher = useFetcher()
+
+  const optimisticMode = useOptimisticThemeMode()
+  const mode = optimisticMode ?? requestInfo.userPrefs.theme ?? 'system'
+  const nextMode =
+    mode === 'system' ? 'light' : mode === 'light' ? 'dark' : 'system'
+
+  const iconSpanClassName =
+    'absolute inset-0 transform transition-transform duration-700 motion-reduce:duration-[0s]'
   return (
-    <button
-      onClick={() => {
-        setTheme(previousTheme =>
-          previousTheme === Theme.DARK ? Theme.LIGHT : Theme.DARK,
-        )
-      }}
-      className={clsx(
-        'border-secondary hover:border-primary focus:border-primary inline-flex h-14 items-center justify-center overflow-hidden rounded-full border-2 p-1 transition focus:outline-none',
-        {
-          'w-14': variant === 'icon',
-          'px-8': variant === 'labelled',
-        },
-      )}
-    >
-      {/* note that the duration is longer then the one on body, controlling the bg-color */}
-      <div className="relative h-8 w-8">
-        <span
-          className="absolute inset-0 rotate-90 transform text-black transition duration-1000 motion-reduce:duration-[0s] dark:rotate-0 dark:text-white"
-          style={iconTransformOrigin}
-        >
-          <MoonIcon />
-        </span>
-        <span
-          className="absolute inset-0 rotate-0 transform text-black transition duration-1000 motion-reduce:duration-[0s] dark:-rotate-90 dark:text-white"
-          style={iconTransformOrigin}
-        >
-          <SunIcon />
-        </span>
-      </div>
-      <span
-        className={clsx('ml-4 text-black dark:text-white', {
-          'sr-only': variant === 'icon',
-        })}
+    <fetcher.Form method="POST" action="/action/set-theme">
+      <input type="hidden" name="theme" value={nextMode} />
+
+      <button
+        type="submit"
+        className={clsx(
+          'border-secondary hover:border-primary focus:border-primary inline-flex h-14 items-center justify-center overflow-hidden rounded-full border-2 p-1 transition focus:outline-none',
+          {
+            'w-14': variant === 'icon',
+            'px-8': variant === 'labelled',
+          },
+        )}
       >
-        <Themed dark="switch to light mode" light="switch to dark mode" />
-      </span>
-    </button>
+        {/* note that the duration is longer then the one on body, controlling the bg-color */}
+        <div className="relative h-8 w-8">
+          <span
+            className={clsx(
+              iconSpanClassName,
+              mode === 'dark' ? 'rotate-0' : 'rotate-90',
+            )}
+            style={iconTransformOrigin}
+          >
+            <MoonIcon />
+          </span>
+          <span
+            className={clsx(
+              iconSpanClassName,
+              mode === 'light' ? 'rotate-0' : '-rotate-90',
+            )}
+            style={iconTransformOrigin}
+          >
+            <SunIcon />
+          </span>
+
+          <span
+            className={clsx(
+              iconSpanClassName,
+              mode === 'system' ? 'translate-y-0' : 'translate-y-10',
+            )}
+            style={iconTransformOrigin}
+          >
+            <LaptopIcon size={32} />
+          </span>
+        </div>
+        <span className={clsx('ml-4', {'sr-only': variant === 'icon'})}>
+          {`Switch to ${
+            nextMode === 'system'
+              ? 'system'
+              : nextMode === 'light'
+              ? 'light'
+              : 'dark'
+          } mode`}
+        </span>
+      </button>
+    </fetcher.Form>
   )
 }
 

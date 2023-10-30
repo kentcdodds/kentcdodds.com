@@ -1,30 +1,19 @@
-import {createCookieSessionStorage} from '@remix-run/node'
-import {getRequiredServerEnvVar} from './misc.tsx'
-import {Theme, isTheme} from './theme-provider.tsx'
+import * as cookie from 'cookie'
 
-const themeStorage = createCookieSessionStorage({
-  cookie: {
-    name: 'KCD_theme',
-    secure: true,
-    secrets: [getRequiredServerEnvVar('SESSION_SECRET')],
-    sameSite: 'lax',
-    path: '/',
-    httpOnly: true,
-  },
-})
+const cookieName = 'en_theme'
+export type Theme = 'light' | 'dark'
 
-async function getThemeSession(request: Request) {
-  const session = await themeStorage.getSession(request.headers.get('Cookie'))
-  return {
-    getTheme: () => {
-      const themeValue = session.get('theme')
-      return isTheme(themeValue) ? themeValue : Theme.DARK
-    },
-    setTheme: (theme: Theme) => session.set('theme', theme),
-    commit: () =>
-      // no theme for you on my 100th birthday! 😂
-      themeStorage.commitSession(session, {expires: new Date('2088-10-18')}),
-  }
+export function getTheme(request: Request): Theme | null {
+  const cookieHeader = request.headers.get('cookie')
+  const parsed = cookieHeader ? cookie.parse(cookieHeader)[cookieName] : 'light'
+  if (parsed === 'light' || parsed === 'dark') return parsed
+  return null
 }
 
-export {getThemeSession}
+export function setTheme(theme: Theme | 'system') {
+  if (theme === 'system') {
+    return cookie.serialize(cookieName, '', {path: '/', maxAge: -1})
+  } else {
+    return cookie.serialize(cookieName, theme, {path: '/'})
+  }
+}

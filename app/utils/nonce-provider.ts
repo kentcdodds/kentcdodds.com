@@ -6,6 +6,6 @@ import * as React from 'react'
 // nonce attribute from scripts and things anyway so if we hydrated with a nonce
 // we'd get a hydration warning.
 
-export const NonceContext = React.createContext<string | undefined>(undefined)
+export const NonceContext = React.createContext<string>('')
 export const NonceProvider = NonceContext.Provider
 export const useNonce = () => React.useContext(NonceContext)

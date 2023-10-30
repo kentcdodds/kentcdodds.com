@@ -17,7 +17,7 @@ import {
 } from '~/utils/call-kent.ts'
 import {getUrl, reuseUsefulLoaderHeaders} from '~/utils/misc.tsx'
 import {getSocialMetas} from '~/utils/seo.ts'
-import {Themed} from '~/utils/theme-provider.tsx'
+import {Themed} from '~/utils/theme.tsx'
 import {getServerTimeHeader} from '~/utils/timing.server.ts'
 import {getEpisodes} from '~/utils/transistor.server.ts'
 import {useRootData} from '~/utils/use-root-data.ts'

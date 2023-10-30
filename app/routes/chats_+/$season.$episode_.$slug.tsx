@@ -46,7 +46,7 @@ import {
 } from '~/utils/misc.tsx'
 import {getSocialMetas} from '~/utils/seo.ts'
 import {getSeasons} from '~/utils/simplecast.server.ts'
-import {Themed} from '~/utils/theme-provider.tsx'
+import {Themed} from '~/utils/theme.tsx'
 import {getServerTimeHeader} from '~/utils/timing.server.ts'
 import {useRootData} from '~/utils/use-root-data.ts'
 import {type RootLoaderType} from '~/root.tsx'

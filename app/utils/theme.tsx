@@ -1,0 +1,68 @@
+import {useFetchers} from '@remix-run/react'
+import {parse} from '@conform-to/zod'
+
+import * as React from 'react'
+import {z} from 'zod'
+import {useHints} from './client-hints.tsx'
+import {useRequestInfo} from './request-info.ts'
+
+enum Theme {
+  DARK = 'dark',
+  LIGHT = 'light',
+}
+const themes: Array<Theme> = Object.values(Theme)
+
+export const ThemeFormSchema = z.object({
+  theme: z.enum(['system', 'light', 'dark']),
+})
+/**
+ * @returns the user's theme preference, or the client hint theme if the user
+ * has not set a preference.
+ */
+function useTheme() {
+  const hints = useHints()
+  const requestInfo = useRequestInfo()
+  const optimisticMode = useOptimisticThemeMode()
+  if (optimisticMode) {
+    return optimisticMode === 'system' ? hints.theme : optimisticMode
+  }
+  return requestInfo.userPrefs.theme ?? hints.theme
+}
+
+/**
+ * If the user's changing their theme mode preference, this will return the
+ * value it's being changed to.
+ */
+function useOptimisticThemeMode() {
+  const fetchers = useFetchers()
+  const themeFetcher = fetchers.find(f => f.formAction === '/')
+
+  if (themeFetcher?.formData) {
+    const submission = parse(themeFetcher.formData, {
+      schema: ThemeFormSchema,
+    })
+    return submission.value?.theme
+  }
+}
+
+function Themed({
+  dark,
+  light,
+  initialOnly = false,
+}: {
+  dark: React.ReactNode | string
+  light: React.ReactNode | string
+  initialOnly?: boolean
+}) {
+  const [theme] = useTheme()
+  const [initialTheme] = React.useState(theme)
+  const themeToReference = initialOnly ? initialTheme : theme
+  // eslint-disable-next-line react/jsx-no-useless-fragment
+  return <>{themeToReference === 'light' ? light : dark}</>
+}
+
+function isTheme(value: unknown): value is Theme {
+  return typeof value === 'string' && themes.includes(value as Theme)
+}
+
+export {useTheme, useOptimisticThemeMode, themes, Theme, isTheme, Themed}

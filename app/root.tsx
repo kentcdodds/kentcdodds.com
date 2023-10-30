@@ -7,6 +7,7 @@ import {
   type MetaFunction,
   type SerializeFrom,
 } from '@remix-run/node'
+
 import {
   isRouteErrorResponse,
   Link,
@@ -40,7 +41,6 @@ import {NotificationMessage} from './components/notification-message.tsx'
 import {Spacer} from './components/spacer.tsx'
 import {TeamCircle} from './components/team-circle.tsx'
 import {getGenericSocialImage, illustrationImages, images} from './images.tsx'
-import {pathedRoutes} from './other-routes.server.ts'
 import {
   Promotification,
   getPromoCookieValue,
@@ -65,16 +65,13 @@ import {useNonce} from './utils/nonce-provider.ts'
 import {getSocialMetas} from './utils/seo.ts'
 import {getSession} from './utils/session.server.ts'
 import {TeamProvider, useTeam} from './utils/team-provider.tsx'
-import {
-  NonFlashOfWrongThemeEls,
-  ThemeProvider,
-  useTheme,
-} from './utils/theme-provider.tsx'
-import {getThemeSession} from './utils/theme.server.ts'
+import {ClientHintCheck, getHints} from './utils/client-hints.tsx'
 import {getServerTimeHeader} from './utils/timing.server.ts'
 import {getUserInfo} from './utils/user-info.server.ts'
 import {getScheduledEvents} from './utils/workshop-tickets.server.ts'
 import {getWorkshops} from './utils/workshops.server.ts'
+import {getTheme} from './utils/theme.server.ts'
+import {useTheme} from './utils/theme.tsx'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',
@@ -87,7 +84,10 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
     'Come check out how Kent C. Dodds can help you level up your career as a software engineer.'
   return [
     {viewport: 'width=device-width,initial-scale=1,viewport-fit=cover'},
-    {'theme-color': requestInfo?.session.theme === 'dark' ? '#1F2028' : '#FFF'},
+    {
+      'theme-color':
+        requestInfo?.userPrefs.theme === 'dark' ? '#1F2028' : '#FFF',
+    },
     ...getSocialMetas({
       keywords:
         'Learn React, React Workshops, Testing JavaScript Training, React Training, Learn JavaScript, Learn TypeScript',
@@ -151,12 +151,12 @@ export type LoaderData = SerializeFrom<typeof loader>
 
 const WORKSHOP_PROMO_NAME = 'workshop-promo'
 
-async function loader({request}: DataFunctionArgs) {
+export async function loader({request}: DataFunctionArgs) {
   const timings = {}
   const session = await getSession(request)
   const [
     user,
-    themeSession,
+
     clientSession,
     loginInfoSession,
     primaryInstance,
@@ -164,7 +164,6 @@ async function loader({request}: DataFunctionArgs) {
     workshopEvents,
   ] = await Promise.all([
     session.getUser({timings}),
-    getThemeSession(request),
     getClientSession(request, session.getUser({timings})),
     getLoginInfoSession(request),
     getInstanceInfo().then(i => i.primaryInstance),
@@ -253,13 +252,16 @@ async function loader({request}: DataFunctionArgs) {
       })
       .filter(typedBoolean),
     requestInfo: {
+      hints: getHints(request),
       origin: getDomainUrl(request),
       path: new URL(request.url).pathname,
       flyPrimaryInstance: primaryInstance,
+      userPrefs: {
+        theme: getTheme(request),
+      },
       session: {
         email: loginInfoSession.getEmail(),
         magicLinkVerified: loginInfoSession.getMagicLinkVerified(),
-        theme: themeSession.getTheme(),
       },
     },
   }
@@ -278,17 +280,6 @@ async function loader({request}: DataFunctionArgs) {
 }
 
 export type RootLoaderType = typeof loader
-export {loaderImpl as loader}
-
-async function loaderImpl({request, ...rest}: DataFunctionArgs) {
-  // because this is called for every route, we'll do an early return for anything
-  // that has a other route setup. The response will be handled there.
-  if (pathedRoutes[new URL(request.url).pathname]) {
-    return new Response()
-  }
-  const result = await loader({request, ...rest})
-  return result
-}
 
 export const headers: HeadersFunction = ({loaderHeaders}) => {
   return {
@@ -425,15 +416,15 @@ function App() {
   const data = useLoaderData<typeof loader>()
   const nonce = useNonce()
   const [team] = useTeam()
-  const [theme] = useTheme()
+  const theme = useTheme()
   const fathomQueue = React.useRef<FathomQueue>([])
-
   return (
     <html
       lang="en"
       className={clsx(theme, `set-color-team-current-${team.toLowerCase()}`)}
     >
       <head>
+        <ClientHintCheck nonce={nonce} />
         <Meta />
         <meta charSet="utf-8" />
         <meta
@@ -453,10 +444,6 @@ function App() {
         <noscript>
           <link rel="stylesheet" href={noScriptStyles} />
         </noscript>
-        <NonFlashOfWrongThemeEls
-          nonce={nonce}
-          ssrTheme={Boolean(data.requestInfo.session.theme)}
-        />
       </head>
       <body className="bg-white transition duration-500 dark:bg-gray-900">
         <PageLoadingMessage />
@@ -597,17 +584,9 @@ function App() {
 }
 
 export default function AppWithProviders() {
-  const data = useLoaderData<LoaderData>()
   return (
     <TeamProvider>
-      <ThemeProvider
-        specifiedTheme={
-          // @ts-expect-error I've really gotta use the epic stack's theme stuff...
-          data.requestInfo.session.theme
-        }
-      >
-        <App />
-      </ThemeProvider>
+      <App />
     </TeamProvider>
   )
 }

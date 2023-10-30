@@ -79,7 +79,7 @@ function serveTheBots(...args: DocRequestArgs) {
     remixContext,
     loadContext,
   ] = args
-  const nonce = loadContext.cspNonce ? String(loadContext.cspNonce) : undefined
+  const nonce = loadContext.cspNonce ? String(loadContext.cspNonce) : ''
   return new Promise((resolve, reject) => {
     const stream = renderToPipeableStream(
       <NonceProvider value={nonce}>
@@ -132,7 +132,7 @@ function serveBrowsers(...args: DocRequestArgs) {
     remixContext,
     loadContext,
   ] = args
-  const nonce = loadContext.cspNonce ? String(loadContext.cspNonce) : undefined
+  const nonce = loadContext.cspNonce ? String(loadContext.cspNonce) : ''
   return new Promise((resolve, reject) => {
     let didError = false
     const stream = renderToPipeableStream(
