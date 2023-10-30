@@ -41,7 +41,6 @@ import {NotificationMessage} from './components/notification-message.tsx'
 import {Spacer} from './components/spacer.tsx'
 import {TeamCircle} from './components/team-circle.tsx'
 import {getGenericSocialImage, illustrationImages, images} from './images.tsx'
-import {pathedRoutes} from './other-routes.server.ts'
 import {
   Promotification,
   getPromoCookieValue,
@@ -152,7 +151,7 @@ export type LoaderData = SerializeFrom<typeof loader>
 
 const WORKSHOP_PROMO_NAME = 'workshop-promo'
 
-async function loader({request}: DataFunctionArgs) {
+export async function loader({request}: DataFunctionArgs) {
   const timings = {}
   const session = await getSession(request)
   const [
@@ -281,17 +280,6 @@ async function loader({request}: DataFunctionArgs) {
 }
 
 export type RootLoaderType = typeof loader
-export {loaderImpl as loader}
-
-async function loaderImpl({request, ...rest}: DataFunctionArgs) {
-  // because this is called for every route, we'll do an early return for anything
-  // that has a other route setup. The response will be handled there.
-  if (pathedRoutes[new URL(request.url).pathname]) {
-    return new Response()
-  }
-  const result = await loader({request, ...rest})
-  return result
-}
 
 export const headers: HeadersFunction = ({loaderHeaders}) => {
   return {

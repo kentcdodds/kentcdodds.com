@@ -74,6 +74,8 @@ function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
   const nextMode =
     mode === 'system' ? 'light' : mode === 'light' ? 'dark' : 'system'
 
+  const iconSpanClassName =
+    'absolute inset-0 transform transition-transform duration-700 motion-reduce:duration-[0s]'
   return (
     <fetcher.Form method="POST" action="/action/set-theme">
       <input type="hidden" name="theme" value={nextMode} />
@@ -92,8 +94,7 @@ function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
         <div className="relative h-8 w-8">
           <span
             className={clsx(
-              'absolute inset-0  transform text-black transition duration-1000 motion-reduce:duration-[0s] dark:text-white',
-
+              iconSpanClassName,
               mode === 'dark' ? 'rotate-0' : 'rotate-90',
             )}
             style={iconTransformOrigin}
@@ -102,8 +103,7 @@ function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
           </span>
           <span
             className={clsx(
-              'absolute inset-0  transform text-black transition duration-1000 motion-reduce:duration-[0s] dark:text-white',
-
+              iconSpanClassName,
               mode === 'light' ? 'rotate-0' : '-rotate-90',
             )}
             style={iconTransformOrigin}
@@ -113,7 +113,7 @@ function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
 
           <span
             className={clsx(
-              'absolute inset-0  transform text-black transition duration-1000 motion-reduce:duration-[0s] dark:text-white',
+              iconSpanClassName,
               mode === 'system' ? 'translate-y-0' : 'translate-y-10',
             )}
             style={iconTransformOrigin}
@@ -121,11 +121,7 @@ function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
             <LaptopIcon size={32} />
           </span>
         </div>
-        <span
-          className={clsx('ml-4 text-black dark:text-white', {
-            'sr-only': variant === 'icon',
-          })}
-        >
+        <span className={clsx('ml-4', {'sr-only': variant === 'icon'})}>
           {`Switch to ${
             nextMode === 'system'
               ? 'system'
