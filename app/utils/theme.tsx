@@ -1,4 +1,4 @@
-import {useFetchers} from '@remix-run/react'
+import {useFetcher} from '@remix-run/react'
 import {parse} from '@conform-to/zod'
 
 import * as React from 'react'
@@ -11,6 +11,8 @@ enum Theme {
   LIGHT = 'light',
 }
 const themes: Array<Theme> = Object.values(Theme)
+
+export const THEME_FETCHER_KEY = 'THEME_FETCHER'
 
 export const ThemeFormSchema = z.object({
   theme: z.enum(['system', 'light', 'dark']),
@@ -34,10 +36,9 @@ function useTheme() {
  * value it's being changed to.
  */
 function useOptimisticThemeMode() {
-  const fetchers = useFetchers()
-  const themeFetcher = fetchers.find(f => f.formAction === '/')
+  const themeFetcher = useFetcher({key: THEME_FETCHER_KEY})
 
-  if (themeFetcher?.formData) {
+  if (themeFetcher.formData) {
     const submission = parse(themeFetcher.formData, {
       schema: ThemeFormSchema,
     })
