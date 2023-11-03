@@ -19,7 +19,7 @@ import {useEffect} from 'react'
 import {kodyProfiles} from '~/images.tsx'
 import {type OptionalTeam} from '~/utils/misc.tsx'
 import {useTeam} from '~/utils/team-provider.tsx'
-import {useOptimisticThemeMode} from '~/utils/theme.tsx'
+import {THEME_FETCHER_KEY, useOptimisticThemeMode} from '~/utils/theme.tsx'
 import {useOptionalUser, useRootData} from '~/utils/use-root-data.ts'
 import {useElementState} from './hooks/use-element-state.tsx'
 import {LaptopIcon, MoonIcon, SunIcon} from './icons.tsx'
@@ -67,7 +67,7 @@ function NavLink({
 const iconTransformOrigin = {transformOrigin: '50% 100px'}
 function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
   const requestInfo = useRequestInfo()
-  const fetcher = useFetcher()
+  const fetcher = useFetcher({key: THEME_FETCHER_KEY})
 
   const optimisticMode = useOptimisticThemeMode()
   const mode = optimisticMode ?? requestInfo.userPrefs.theme ?? 'system'
