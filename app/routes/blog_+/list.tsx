@@ -50,7 +50,7 @@ export default function BlogList() {
             <span>{`For folks wanting something a bit more scrollable.`}</span>
             <Link
               reloadDocument
-              to="rss.xml"
+              to="/blog/rss.xml"
               className="text-secondary underlined ml-2 inline-block hover:text-team-current focus:text-team-current"
             >
               <RssIcon title="Get my blog as RSS" />
