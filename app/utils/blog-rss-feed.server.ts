@@ -1,4 +1,4 @@
-import {getBlogMdxListItems} from './mdx.tsx'
+import {getBlogMdxListItems} from './mdx.server.tsx'
 import {formatDate, getDomainUrl} from './misc.tsx'
 
 async function getRssFeedXml(request: Request) {

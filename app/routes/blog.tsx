@@ -38,7 +38,8 @@ import {
   getSlugReadsByUser,
   getTotalPostReads,
 } from '~/utils/blog.server.ts'
-import {getBannerAltProp, getBlogMdxListItems} from '~/utils/mdx.tsx'
+import {getBannerAltProp} from '~/utils/mdx.tsx'
+import {getBlogMdxListItems} from '~/utils/mdx.server.tsx'
 import {
   formatAbbreviatedNumber,
   formatNumber,

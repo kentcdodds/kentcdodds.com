@@ -3,7 +3,11 @@ import {ensurePrimary} from '~/utils/cjs/litefs-js.server.js'
 import path from 'path'
 import {cache} from '~/utils/cache.server.ts'
 import {getPeople} from '~/utils/credits.server.ts'
-import {getBlogMdxListItems, getMdxDirList, getMdxPage} from '~/utils/mdx.tsx'
+import {
+  getBlogMdxListItems,
+  getMdxDirList,
+  getMdxPage,
+} from '~/utils/mdx.server.tsx'
 import {getRequiredServerEnvVar} from '~/utils/misc.tsx'
 import {getTalksAndTags} from '~/utils/talks.server.ts'
 import {getTestimonials} from '~/utils/testimonials.server.ts'

@@ -52,21 +52,23 @@ import {useRootData} from '~/utils/use-root-data.ts'
 import {type RootLoaderType} from '~/root.tsx'
 
 export const handle: KCDHandle = {
-  getSitemapEntries: async request => {
-    const seasons = await getSeasons({request})
-    return seasons.flatMap(season => {
-      return season.episodes.map(episode => {
-        const s = String(season.seasonNumber).padStart(2, '0')
-        const e = String(episode.episodeNumber).padStart(2, '0')
-        return {
-          route: `/chats/${s}/${e}/${episode.slug}`,
-          changefreq: 'weekly',
-          lastmod: new Date(episode.updatedAt).toISOString(),
-          priority: 0.4,
-        }
-      })
-    })
-  },
+  getSitemapEntries: import.meta.env.SSR
+    ? async request => {
+        const seasons = await getSeasons({request})
+        return seasons.flatMap(season => {
+          return season.episodes.map(episode => {
+            const s = String(season.seasonNumber).padStart(2, '0')
+            const e = String(episode.episodeNumber).padStart(2, '0')
+            return {
+              route: `/chats/${s}/${e}/${episode.slug}`,
+              changefreq: 'weekly',
+              lastmod: new Date(episode.updatedAt).toISOString(),
+              priority: 0.4,
+            }
+          })
+        })
+      }
+    : null,
 }
 
 export const meta: MetaFunction<typeof loader, {root: RootLoaderType}> = ({

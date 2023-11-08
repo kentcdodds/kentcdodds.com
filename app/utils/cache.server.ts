@@ -198,10 +198,3 @@ export async function cachified<Value>({
   cachifiedResolved = true
   return result
 }
-
-/*
-eslint
-  max-depth: "off",
-  no-multi-assign: "off",
-  @typescript-eslint/no-explicit-any: "off",
-*/

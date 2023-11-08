@@ -1,10 +1,10 @@
 // This is a full stack component that controls showing a notification message
 // which the user can dismiss for a period of time.
+import * as React from 'react'
 import {json, type DataFunctionArgs} from '@remix-run/node'
 import {useFetcher} from '@remix-run/react'
 import cookie from 'cookie'
 import {useEffect, useRef, useState} from 'react'
-import useCountDown from 'react-countdown-hook'
 import {useSpinDelay} from 'spin-delay'
 import invariant from 'tiny-invariant'
 import {NotificationMessage} from '~/components/notification-message.tsx'
@@ -133,4 +133,105 @@ export function Promotification({
       </div>
     </NotificationMessage>
   )
+}
+
+function useCountDown(timeToCount = 60 * 1000, interval = 1000) {
+  const [timeLeft, setTimeLeft] = React.useState(0)
+  const timer = React.useRef<{
+    started?: number | null
+    lastInterval?: number | null
+    timeToCount?: number
+    requestId?: number
+    timeLeft?: number
+  }>({})
+
+  const run = React.useCallback(
+    (ts: number) => {
+      if (!timer.current.started) {
+        timer.current.started = ts
+        timer.current.lastInterval = ts
+      }
+      timer.current.lastInterval ??= 0
+
+      const localInterval = Math.min(
+        interval,
+        timer.current.timeLeft || Infinity,
+      )
+      if (ts - timer.current.lastInterval >= localInterval) {
+        timer.current.lastInterval += localInterval
+        setTimeLeft(prevTimeLeft => {
+          timer.current.timeLeft = prevTimeLeft - localInterval
+          return timer.current.timeLeft
+        })
+      }
+
+      if (ts - timer.current.started < (timer.current.timeToCount ?? 0)) {
+        timer.current.requestId = window.requestAnimationFrame(run)
+      } else {
+        timer.current = {}
+        setTimeLeft(0)
+      }
+    },
+    [interval],
+  )
+
+  const start = React.useCallback(
+    (ttc?: number) => {
+      if (timer.current.requestId) {
+        window.cancelAnimationFrame(timer.current.requestId)
+      }
+
+      const newTimeToCount = ttc ?? timeToCount
+      timer.current.started = null
+      timer.current.lastInterval = null
+      timer.current.timeToCount = newTimeToCount
+      timer.current.requestId = window.requestAnimationFrame(run)
+
+      setTimeLeft(newTimeToCount || 0)
+    },
+    [run, timeToCount],
+  )
+
+  const pause = React.useCallback(() => {
+    if (timer.current.requestId) {
+      window.cancelAnimationFrame(timer.current.requestId)
+    }
+    timer.current.started = null
+    timer.current.lastInterval = null
+    timer.current.timeToCount = timer.current.timeLeft
+  }, [])
+
+  const resume = React.useCallback(() => {
+    if (!timer.current.started && (timer.current.timeLeft ?? 0) > 0) {
+      if (timer.current.requestId) {
+        window.cancelAnimationFrame(timer.current.requestId)
+      }
+      timer.current.requestId = window.requestAnimationFrame(run)
+    }
+  }, [run])
+
+  const reset = React.useCallback(() => {
+    if (timer.current.timeLeft) {
+      if (timer.current.requestId) {
+        window.cancelAnimationFrame(timer.current.requestId)
+      }
+      timer.current = {}
+      setTimeLeft(0)
+    }
+  }, [])
+
+  const actions = React.useMemo(
+    () => ({start, pause, resume, reset}),
+    [pause, reset, resume, start],
+  )
+
+  React.useEffect(() => {
+    return () => {
+      if (timer.current.requestId) {
+        window.cancelAnimationFrame(timer.current.requestId)
+      }
+    }
+  }, [])
+
+  return [timeLeft, actions] as const
 }

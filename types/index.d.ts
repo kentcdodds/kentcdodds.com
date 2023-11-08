@@ -1,5 +1,5 @@
-/// <reference types="@remix-run/dev" />
-/// <reference types="@remix-run/node/globals" />
+/// <reference types="@remix-run/node" />
+/// <reference types="vite/client" />
 
 import {type Call, type Session, type User} from '@prisma/client'
 import type calculateReadingTime from 'reading-time'
@@ -194,11 +194,13 @@ type KCDSitemapEntry = {
 type KCDHandle = {
   /** this just allows us to identify routes more directly rather than relying on pathnames */
   id?: string
-  getSitemapEntries?: (
-    request: Request,
-  ) =>
-    | Promise<Array<KCDSitemapEntry | null> | null>
-    | Array<KCDSitemapEntry | null>
+  getSitemapEntries?:
+    | ((
+        request: Request,
+      ) =>
+        | Promise<Array<KCDSitemapEntry | null> | null>
+        | Array<KCDSitemapEntry | null>
+        | null)
     | null
 }
 

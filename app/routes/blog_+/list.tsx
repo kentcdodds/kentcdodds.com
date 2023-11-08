@@ -7,7 +7,7 @@ import {Spacer} from '~/components/spacer.tsx'
 import {H3} from '~/components/typography.tsx'
 import {images} from '~/images.tsx'
 import {markdownToHtmlUnwrapped} from '~/utils/markdown.server.ts'
-import {getBlogMdxListItems} from '~/utils/mdx.tsx'
+import {getBlogMdxListItems} from '~/utils/mdx.server.tsx'
 
 type LoaderData = {
   posts: Array<{title: string; descriptionHTML: string; slug: string}>

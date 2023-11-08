@@ -53,15 +53,17 @@ import {
 } from './_workshops.tsx'
 
 export const handle: KCDHandle = {
-  getSitemapEntries: async request => {
-    const workshops = await getWorkshops({request})
-    return workshops.map(workshop => {
-      return {
-        route: `/workshops/${workshop.slug}`,
-        priority: 0.4,
+  getSitemapEntries: import.meta.env.SSR
+    ? async request => {
+        const workshops = await getWorkshops({request})
+        return workshops.map(workshop => {
+          return {
+            route: `/workshops/${workshop.slug}`,
+            priority: 0.4,
+          }
+        })
       }
-    })
-  },
+    : null,
 }
 
 type LoaderData = {

@@ -1,5 +1,5 @@
 import {type LoaderFunction} from '@remix-run/node'
-import {getBlogMdxListItems} from '~/utils/mdx.tsx'
+import {getBlogMdxListItems} from '~/utils/mdx.server.tsx'
 import {formatDate, getDomainUrl} from '~/utils/misc.tsx'
 
 export const loader: LoaderFunction = async ({request}) => {

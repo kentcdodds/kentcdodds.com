@@ -14,11 +14,10 @@ import {getImageBuilder, getImgProps} from '~/images.tsx'
 import {pathedRoutes} from '~/other-routes.server.ts'
 import {type KCDHandle} from '~/types.ts'
 import {getBlogRecommendations} from '~/utils/blog.server.ts'
+import {getMdxPage, getMdxPagesInDirectory} from '~/utils/mdx.server'
 import {
   getBannerAltProp,
   getBannerTitleProp,
-  getMdxPage,
-  getMdxPagesInDirectory,
   mdxPageMeta,
   useMdxComponent,
 } from '~/utils/mdx.tsx'
@@ -26,14 +25,16 @@ import {reuseUsefulLoaderHeaders, useCapturedRouteError} from '~/utils/misc.tsx'
 import {getServerTimeHeader} from '~/utils/timing.server.ts'
 
 export const handle: KCDHandle = {
-  getSitemapEntries: async request => {
-    const pages = await getMdxPagesInDirectory('pages', {request})
-    return pages
-      .filter(page => !page.frontmatter.draft)
-      .map(page => {
-        return {route: `/${page.slug}`, priority: 0.6}
-      })
-  },
+  getSitemapEntries: import.meta.env.SSR
+    ? async request => {
+        const pages = await getMdxPagesInDirectory('pages', {request})
+        return pages
+          .filter(page => !page.frontmatter.draft)
+          .map(page => {
+            return {route: `/${page.slug}`, priority: 0.6}
+          })
+      }
+    : null,
 }
 
 export async function loader({params, request}: DataFunctionArgs) {
