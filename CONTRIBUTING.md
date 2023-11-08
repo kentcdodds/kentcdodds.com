@@ -156,9 +156,6 @@ npm run test:e2e:dev
 npm run test:e2e:run
 ```
 
-Jest runs on changed files as part of the husky git commit hook. Playwright runs
-only on CI.
-
 ## Running static tests (Formatting/Linting/Typing)
 
 Everything's set up with TypeScript/Prettier/ESLint. These should all run on

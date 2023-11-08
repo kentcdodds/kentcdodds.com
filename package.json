@@ -21,7 +21,6 @@
   "type": "module",
   "scripts": {
     "postinstall": "patch-package --patch-dir other/patches",
-    "prepare": "husky install || true",
     "clean": "rimraf ./node_modules/.cache ./server/dist ./build ./public/build",
     "prebuild": "npm run clean && echo All clean ✨",
     "build": "run-s build:*",
@@ -197,7 +196,6 @@
     "eslint": "^8.49.0",
     "eslint-config-kentcdodds": "^20.5.0",
     "glob": "^10.3.4",
-    "husky": "^8.0.3",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "jest-watch-typeahead": "^2.2.2",
