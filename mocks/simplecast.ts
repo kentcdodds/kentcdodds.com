@@ -1,9 +1,9 @@
 import {faker} from '@faker-js/faker'
 import {
-  rest,
+  http,
   type DefaultRequestMultipartBody,
-  type MockedRequest,
-  type RestHandler,
+  type HttpHandler,
+  HttpResponse,
 } from 'msw'
 import {
   type SimpelcastSeasonListItem,
@@ -141,27 +141,25 @@ ${guest.links.length ? `* ${guest.links.join('\n* ')}` : ''}
   }
 }
 
-const simplecastHandlers: Array<
-  RestHandler<MockedRequest<DefaultRequestMultipartBody>>
-> = [
-  rest.get(
+const simplecastHandlers: Array<HttpHandler> = [
+  http.get<any, DefaultRequestMultipartBody>(
     'https://api.simplecast.com/podcasts/:podcastId/seasons',
-    (req, res, ctx) => {
+    () => {
       const response: SimplecastCollectionResponse<SimpelcastSeasonListItem> = {
         collection: seasonListItems,
       }
-      return res(ctx.json(response))
+      return HttpResponse.json(response)
     },
   ),
-  rest.get(
+  http.get<any, DefaultRequestMultipartBody>(
     'https://api.simplecast.com/seasons/:seasonId/episodes',
-    (req, res, ctx) => {
-      if (typeof req.params.seasonId !== 'string') {
+    ({params}) => {
+      if (typeof params.seasonId !== 'string') {
         throw new Error('req.params.seasonId is not a string')
       }
-      const episodes = episodesBySeasonId[req.params.seasonId]
+      const episodes = episodesBySeasonId[params.seasonId]
       if (!episodes) {
-        throw new Error(`No mock episodes by season ID: ${req.params.seasonId}`)
+        throw new Error(`No mock episodes by season ID: ${params.seasonId}`)
       }
       const episodeListItemsResponse: SimplecastCollectionResponse<SimplecastEpisodeListItem> =
         {
@@ -172,16 +170,16 @@ const simplecastHandlers: Array<
             is_published: e.is_published,
           })),
         }
-      return res(ctx.json(episodeListItemsResponse))
+      return HttpResponse.json(episodeListItemsResponse)
     },
   ),
-  rest.get(
+  http.get<any, DefaultRequestMultipartBody>(
     `https://api.simplecast.com/episodes/:episodeId`,
-    (req, res, ctx) => {
-      if (typeof req.params.episodeId !== 'string') {
+    ({params}) => {
+      if (typeof params.episodeId !== 'string') {
         throw new Error('req.params.episodeId is not a string')
       }
-      return res(ctx.json(episodesById[req.params.episodeId]))
+      return HttpResponse.json(episodesById[params.episodeId])
     },
   ),
 ]
