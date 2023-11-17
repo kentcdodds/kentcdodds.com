@@ -1,10 +1,5 @@
 import {faker} from '@faker-js/faker'
-import {
-  http,
-  type DefaultRequestMultipartBody,
-  type HttpHandler,
-  HttpResponse,
-} from 'msw'
+import {HttpResponse, http, type DefaultBodyType, type HttpHandler} from 'msw'
 import {
   type TransistorAuthorizedJson,
   type TransistorCreatedJson,
@@ -69,7 +64,7 @@ const episodes: Array<TransistorEpisodeData> = Array.from(
 )
 
 const transistorHandlers: Array<HttpHandler> = [
-  http.get<any, DefaultRequestMultipartBody>(
+  http.get<any, DefaultBodyType>(
     'https://api.transistor.fm/v1/episodes/authorize_upload',
     async ({request}) => {
       const url = new URL(request.url)
@@ -91,7 +86,7 @@ const transistorHandlers: Array<HttpHandler> = [
     },
   ),
 
-  http.put<any, DefaultRequestMultipartBody>(
+  http.put<any, DefaultBodyType>(
     'https://transistorupload.s3.amazonaws.com/uploads/api/:bucketId/:fileId',
     async ({request}) => {
       const body = await request.json()
@@ -106,7 +101,7 @@ const transistorHandlers: Array<HttpHandler> = [
     },
   ),
 
-  http.post<any, DefaultRequestMultipartBody>(
+  http.post<any, DefaultBodyType>(
     'https://api.transistor.fm/v1/episodes',
     async ({request}) => {
       const body = await request.json()
@@ -134,7 +129,7 @@ const transistorHandlers: Array<HttpHandler> = [
     },
   ),
 
-  http.patch<any, DefaultRequestMultipartBody>(
+  http.patch<any, DefaultBodyType>(
     'https://api.transistor.fm/v1/episodes/:episodeId/publish',
     async ({request, params}) => {
       const body = await request.json()
@@ -159,7 +154,7 @@ const transistorHandlers: Array<HttpHandler> = [
     },
   ),
 
-  http.patch<any, DefaultRequestMultipartBody>(
+  http.patch<any, DefaultBodyType>(
     'https://api.transistor.fm/v1/episodes/:episodeId',
     async ({request, params}) => {
       const body = await request.json()
@@ -179,7 +174,7 @@ const transistorHandlers: Array<HttpHandler> = [
     },
   ),
 
-  http.get<any, DefaultRequestMultipartBody>(
+  http.get<any, DefaultBodyType>(
     'https://api.transistor.fm/v1/episodes',
     async ({request}) => {
       requiredHeader(request.headers, 'x-api-key')

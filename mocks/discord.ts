@@ -1,13 +1,8 @@
-import {
-  http,
-  type DefaultRequestMultipartBody,
-  type HttpHandler,
-  HttpResponse,
-} from 'msw'
+import {HttpResponse, http, type DefaultBodyType, type HttpHandler} from 'msw'
 import {requiredHeader, requiredParam} from './utils.ts'
 
 const discordHandlers: Array<HttpHandler> = [
-  http.post<any, DefaultRequestMultipartBody>(
+  http.post<any, DefaultBodyType>(
     'https://discord.com/api/oauth2/token',
     async ({request}) => {
       const body = await request.text()
@@ -35,7 +30,7 @@ const discordHandlers: Array<HttpHandler> = [
     },
   ),
 
-  http.get<any, DefaultRequestMultipartBody>(
+  http.get<any, DefaultBodyType>(
     'https://discord.com/api/users/:userId',
     async ({request}) => {
       requiredHeader(request.headers, 'Authorization')
@@ -47,7 +42,7 @@ const discordHandlers: Array<HttpHandler> = [
     },
   ),
 
-  http.get<any, DefaultRequestMultipartBody>(
+  http.get<any, DefaultBodyType>(
     'https://discord.com/api/guilds/:guildId/members/:userId',
     async ({request, params}) => {
       requiredHeader(request.headers, 'Authorization')
@@ -64,7 +59,7 @@ const discordHandlers: Array<HttpHandler> = [
     },
   ),
 
-  http.put<any, DefaultRequestMultipartBody>(
+  http.put<any, DefaultBodyType>(
     'https://discord.com/api/guilds/:guildId/members/:userId',
     async ({request}) => {
       requiredHeader(request.headers, 'Authorization')
@@ -85,7 +80,7 @@ const discordHandlers: Array<HttpHandler> = [
     },
   ),
 
-  http.patch<any, DefaultRequestMultipartBody>(
+  http.patch<any, DefaultBodyType>(
     'https://discord.com/api/guilds/:guildId/members/:userId',
     async ({request}) => {
       requiredHeader(request.headers, 'Authorization')
@@ -104,7 +99,7 @@ const discordHandlers: Array<HttpHandler> = [
     },
   ),
 
-  http.get<any, DefaultRequestMultipartBody>(
+  http.get<any, DefaultBodyType>(
     'https://discord.com/api/guilds/:guildId/members/:userId',
     async ({request}) => {
       requiredHeader(request.headers, 'Authorization')
@@ -115,7 +110,7 @@ const discordHandlers: Array<HttpHandler> = [
     },
   ),
 
-  http.post<any, DefaultRequestMultipartBody>(
+  http.post<any, DefaultBodyType>(
     'https://discord.com/api/channels/:channelId/messages',
     async ({request, params}) => {
       requiredHeader(request.headers, 'Authorization')

@@ -34,8 +34,8 @@ const miscHandlers = [
   http.post(
     'https://api.mailgun.net/v3/:domain/messages',
     async ({request, params}) => {
-      const reqBody = await request.json()
-      const body = Object.fromEntries(new URLSearchParams(reqBody?.toString()))
+      const reqBody = await request.text()
+      const body = Object.fromEntries(new URLSearchParams(reqBody))
       console.info('🔶 mocked email contents:', body)
 
       if (body.text && body.to) {
