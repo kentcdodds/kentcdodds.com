@@ -1,15 +1,15 @@
 import {
-  rest,
+  http,
   type DefaultRequestMultipartBody,
   type MockedRequest,
-  type RestHandler,
+  type HttpHandler,
 } from 'msw'
 import {requiredHeader, requiredParam} from './utils.ts'
 
 const discordHandlers: Array<
-  RestHandler<MockedRequest<DefaultRequestMultipartBody>>
+  HttpHandler<MockedRequest<DefaultRequestMultipartBody>>
 > = [
-  rest.post('https://discord.com/api/oauth2/token', async (req, res, ctx) => {
+  http.post('https://discord.com/api/oauth2/token', async (req, res, ctx) => {
     const body = await req.text()
     if (typeof body !== 'string') {
       throw new Error('request body must be a string of URLSearchParams')
@@ -35,7 +35,7 @@ const discordHandlers: Array<
     )
   }),
 
-  rest.get('https://discord.com/api/users/:userId', async (req, res, ctx) => {
+  http.get('https://discord.com/api/users/:userId', async (req, res, ctx) => {
     requiredHeader(req.headers, 'Authorization')
     return res(
       ctx.json({
@@ -46,7 +46,7 @@ const discordHandlers: Array<
     )
   }),
 
-  rest.get(
+  http.get(
     'https://discord.com/api/guilds/:guildId/members/:userId',
     async (req, res, ctx) => {
       requiredHeader(req.headers, 'Authorization')
@@ -65,7 +65,7 @@ const discordHandlers: Array<
     },
   ),
 
-  rest.put(
+  http.put(
     'https://discord.com/api/guilds/:guildId/members/:userId',
     async (req, res, ctx) => {
       requiredHeader(req.headers, 'Authorization')
@@ -88,7 +88,7 @@ const discordHandlers: Array<
     },
   ),
 
-  rest.patch(
+  http.patch(
     'https://discord.com/api/guilds/:guildId/members/:userId',
     async (req, res, ctx) => {
       requiredHeader(req.headers, 'Authorization')
@@ -109,7 +109,7 @@ const discordHandlers: Array<
     },
   ),
 
-  rest.get(
+  http.get(
     'https://discord.com/api/guilds/:guildId/members/:userId',
     async (req, res, ctx) => {
       requiredHeader(req.headers, 'Authorization')
@@ -122,7 +122,7 @@ const discordHandlers: Array<
     },
   ),
 
-  rest.post(
+  http.post(
     'https://discord.com/api/channels/:channelId/messages',
     async (req, res, ctx) => {
       requiredHeader(req.headers, 'Authorization')

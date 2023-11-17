@@ -1,21 +1,21 @@
 import {
-  rest,
+  http,
   type DefaultRequestMultipartBody,
   type MockedRequest,
-  type RestHandler,
+  type HttpHandler,
 } from 'msw'
 
 const tiToHandlers: Array<
-  RestHandler<MockedRequest<DefaultRequestMultipartBody>>
+  HttpHandler<MockedRequest<DefaultRequestMultipartBody>>
 > = [
-  rest.get('https://api.tito.io/v3/hello', async (req, res, ctx) => {
+  http.get('https://api.tito.io/v3/hello', async (req, res, ctx) => {
     return res(
       ctx.json({
         accounts: ['kent-c-dodds', 'epic-web'],
       }),
     )
   }),
-  rest.get('https://api.tito.io/v3/:account/events', async (req, res, ctx) => {
+  http.get('https://api.tito.io/v3/:account/events', async (req, res, ctx) => {
     const slug = 'testing-this-isn-t-a-real-event'
     return res(
       ctx.json({
@@ -37,7 +37,7 @@ const tiToHandlers: Array<
     )
   }),
 
-  rest.get(
+  http.get(
     'https://api.tito.io/v3/:account/:eventSlug',
     async (req, res, ctx) => {
       return res(
@@ -57,7 +57,7 @@ const tiToHandlers: Array<
     },
   ),
 
-  rest.get(
+  http.get(
     'https://api.tito.io/v3/:account/:eventSlug/discount_codes',
     async (req, res, ctx) => {
       const code = 'early'
@@ -79,7 +79,7 @@ const tiToHandlers: Array<
     },
   ),
 
-  rest.get(
+  http.get(
     'https://api.tito.io/v3/:account/:eventSlug/activities',
     async (req, res, ctx) => {
       return res(

@@ -2,10 +2,10 @@ import * as nodePath from 'path'
 import {fileURLToPath} from 'url'
 import {promises as fs} from 'fs'
 import {
-  rest,
+  http,
   type DefaultRequestMultipartBody,
   type MockedRequest,
-  type RestHandler,
+  type HttpHandler,
 } from 'msw'
 
 const __dirname = nodePath.dirname(fileURLToPath(import.meta.url))
@@ -52,9 +52,9 @@ type GHContent = {
 }
 
 const githubHandlers: Array<
-  RestHandler<MockedRequest<DefaultRequestMultipartBody>>
+  HttpHandler<MockedRequest<DefaultRequestMultipartBody>>
 > = [
-  rest.get(
+  http.get(
     `https://api.github.com/repos/:owner/:repo/contents/:path`,
     async (req, res, ctx) => {
       const {owner, repo} = req.params
@@ -133,7 +133,7 @@ const githubHandlers: Array<
       return res(ctx.json(contentDescriptions))
     },
   ),
-  rest.get(
+  http.get(
     `https://api.github.com/repos/:owner/:repo/git/blobs/:sha`,
     async (req, res, ctx) => {
       const {owner, repo} = req.params
@@ -169,7 +169,7 @@ const githubHandlers: Array<
       return res(ctx.json(resource))
     },
   ),
-  rest.get(
+  http.get(
     `https://api.github.com/repos/:owner/:repo/contents/:path*`,
     async (req, res, ctx) => {
       const {owner, repo} = req.params

@@ -1,8 +1,8 @@
 import {
-  rest,
+  http,
   type DefaultRequestMultipartBody,
   type MockedRequest,
-  type RestHandler,
+  type HttpHandler,
 } from 'msw'
 
 type RequestBody = {
@@ -12,9 +12,9 @@ type RequestBody = {
 }
 
 const convertKitHandlers: Array<
-  RestHandler<MockedRequest<DefaultRequestMultipartBody>>
+  HttpHandler<MockedRequest<DefaultRequestMultipartBody>>
 > = [
-  rest.get('https://api.convertkit.com/v3/subscribers', (req, res, ctx) => {
+  http.get('https://api.convertkit.com/v3/subscribers', (req, res, ctx) => {
     return res(
       ctx.json({
         total_subscribers: 0,
@@ -24,7 +24,7 @@ const convertKitHandlers: Array<
       }),
     )
   }),
-  rest.get(
+  http.get(
     'https://api.convertkit.com/v3/subscribers/:subscriberId/tags',
     (req, res, ctx) => {
       return res(
@@ -40,7 +40,7 @@ const convertKitHandlers: Array<
       )
     },
   ),
-  rest.post(
+  http.post(
     'https://api.convertkit.com/v3/forms/:formId/subscribe',
     (req, res, ctx) => {
       const {formId} = req.params
@@ -68,7 +68,7 @@ const convertKitHandlers: Array<
       )
     },
   ),
-  rest.post(
+  http.post(
     'https://api.convertkit.com/v3/tags/:tagId/subscribe',
     (req, res, ctx) => {
       const {tagId} = req.params

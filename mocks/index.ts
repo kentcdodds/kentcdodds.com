@@ -1,4 +1,4 @@
-import {rest} from 'msw'
+import {http} from 'msw'
 import {setupServer} from 'msw/node'
 import {convertKitHandlers} from './convert-kit.ts'
 import {discordHandlers} from './discord.ts'
@@ -14,10 +14,10 @@ const remix = process.env.REMIX_DEV_HTTP_ORIGIN as string
 
 // put one-off handlers that don't really need an entire file to themselves here
 const miscHandlers = [
-  rest.post(`${remix}/ping`, req => {
+  http.post(`${remix}/ping`, req => {
     return req.passthrough()
   }),
-  rest.get(
+  http.get(
     'https://res.cloudinary.com/kentcdodds-com/image/upload/w_100,q_auto,f_webp,e_blur:1000/unsplash/:photoId',
     async (req, res, ctx) => {
       if (await isConnectedToTheInternet()) return req.passthrough()
@@ -28,10 +28,10 @@ const miscHandlers = [
       return res(ctx.body(buffer))
     },
   ),
-  rest.get(/res.cloudinary.com\/kentcdodds-com\//, req => {
+  http.get(/res.cloudinary.com\/kentcdodds-com\//, req => {
     return req.passthrough()
   }),
-  rest.post(
+  http.post(
     'https://api.mailgun.net/v3/:domain/messages',
     async (req, res, ctx) => {
       const body = Object.fromEntries(new URLSearchParams(req.body?.toString()))
@@ -51,7 +51,7 @@ const miscHandlers = [
       return res(ctx.json({id, message: 'Queued. Thank you.'}))
     },
   ),
-  rest.head(
+  http.head(
     'https://www.gravatar.com/avatar/:md5Hash',
     async (req, res, ctx) => {
       if (await isConnectedToTheInternet()) return req.passthrough()
@@ -59,9 +59,9 @@ const miscHandlers = [
       return res(ctx.status(404))
     },
   ),
-  rest.get(/http:\/\/localhost:\d+\/.*/, async req => req.passthrough()),
-  rest.post(/http:\/\/localhost:\d+\/.*/, async req => req.passthrough()),
-  rest.get('https://verifier.meetchopra.com/verify/:email', (req, res, ctx) => {
+  http.get(/http:\/\/localhost:\d+\/.*/, async req => req.passthrough()),
+  http.post(/http:\/\/localhost:\d+\/.*/, async req => req.passthrough()),
+  http.get('https://verifier.meetchopra.com/verify/:email', (req, res, ctx) => {
     return res(ctx.json({status: true}))
   }),
 ]

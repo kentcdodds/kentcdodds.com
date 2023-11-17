@@ -1,14 +1,14 @@
 import {
-  rest,
+  http,
   type DefaultRequestMultipartBody,
   type MockedRequest,
-  type RestHandler,
+  type HttpHandler,
 } from 'msw'
 
 const oembedHandlers: Array<
-  RestHandler<MockedRequest<DefaultRequestMultipartBody>>
+  HttpHandler<MockedRequest<DefaultRequestMultipartBody>>
 > = [
-  rest.get('https://oembed.com/providers.json', async (req, res, ctx) => {
+  http.get('https://oembed.com/providers.json', async (req, res, ctx) => {
     return res(
       ctx.json([
         {
@@ -59,7 +59,7 @@ const oembedHandlers: Array<
     )
   }),
 
-  rest.get('https://publish.twitter.com/oembed', async (req, res, ctx) => {
+  http.get('https://publish.twitter.com/oembed', async (req, res, ctx) => {
     return res(
       ctx.json({
         html: '<blockquote class="twitter-tweet" data-dnt="true" data-theme="dark"><p lang="en" dir="ltr">I spent a few minutes working on this, just for you all. I promise, it wont disappoint. Though it may surprise 🎉<br><br>🙏 <a href="https://t.co/wgTJYYHOzD">https://t.co/wgTJYYHOzD</a></p>— Kent C. Dodds (@kentcdodds) <a href="https://twitter.com/kentcdodds/status/783161196945944580?ref_src=twsrc%5Etfw">October 4, 2016</a></blockquote>',
@@ -67,7 +67,7 @@ const oembedHandlers: Array<
     )
   }),
 
-  rest.get('https://codesandbox.io/oembed', async (req, res, ctx) => {
+  http.get('https://codesandbox.io/oembed', async (req, res, ctx) => {
     return res(
       ctx.json({
         html: '<iframe width="1000" height="500" src="https://codesandbox.io/embed/ynn88nx9x?view=editor" sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin" style="width: 1000px; height: 500px; border: 0px; border-radius: 4px; overflow: hidden;"></iframe>',
@@ -75,7 +75,7 @@ const oembedHandlers: Array<
     )
   }),
 
-  rest.get('https://www.youtube.com/oembed', async (req, res, ctx) => {
+  http.get('https://www.youtube.com/oembed', async (req, res, ctx) => {
     return res(
       ctx.json({
         html: '<iframe width="200" height="113" src="https://www.youtube.com/embed/dQw4w9WgXcQ?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',

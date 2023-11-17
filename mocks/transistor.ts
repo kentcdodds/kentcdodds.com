@@ -1,9 +1,9 @@
 import {faker} from '@faker-js/faker'
 import {
-  rest,
+  http,
   type DefaultRequestMultipartBody,
   type MockedRequest,
-  type RestHandler,
+  type HttpHandler,
 } from 'msw'
 import {
   type TransistorAuthorizedJson,
@@ -69,9 +69,9 @@ const episodes: Array<TransistorEpisodeData> = Array.from(
 )
 
 const transistorHandlers: Array<
-  RestHandler<MockedRequest<DefaultRequestMultipartBody>>
+  HttpHandler<MockedRequest<DefaultRequestMultipartBody>>
 > = [
-  rest.get(
+  http.get(
     'https://api.transistor.fm/v1/episodes/authorize_upload',
     async (req, res, ctx) => {
       requiredParam(req.url.searchParams, 'filename')
@@ -91,7 +91,7 @@ const transistorHandlers: Array<
     },
   ),
 
-  rest.put(
+  http.put(
     'https://transistorupload.s3.amazonaws.com/uploads/api/:bucketId/:fileId',
     async (req, res, ctx) => {
       if (!req.body) {
@@ -106,7 +106,7 @@ const transistorHandlers: Array<
     },
   ),
 
-  rest.post('https://api.transistor.fm/v1/episodes', async (req, res, ctx) => {
+  http.post('https://api.transistor.fm/v1/episodes', async (req, res, ctx) => {
     if (!req.body || typeof req.body !== 'object') {
       throw new Error('req.body must be an object')
     }
@@ -129,7 +129,7 @@ const transistorHandlers: Array<
     return res(ctx.json(data))
   }),
 
-  rest.patch(
+  http.patch(
     'https://api.transistor.fm/v1/episodes/:episodeId/publish',
     async (req, res, ctx) => {
       if (!req.body || typeof req.body !== 'object') {
@@ -154,7 +154,7 @@ const transistorHandlers: Array<
     },
   ),
 
-  rest.patch(
+  http.patch(
     'https://api.transistor.fm/v1/episodes/:episodeId',
     async (req, res, ctx) => {
       if (!req.body || typeof req.body !== 'object') {
@@ -174,7 +174,7 @@ const transistorHandlers: Array<
     },
   ),
 
-  rest.get('https://api.transistor.fm/v1/episodes', async (req, res, ctx) => {
+  http.get('https://api.transistor.fm/v1/episodes', async (req, res, ctx) => {
     requiredHeader(req.headers, 'x-api-key')
     const data: TransistorEpisodesJson = {data: episodes}
     return res(ctx.json(data))

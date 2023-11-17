@@ -1,10 +1,10 @@
 import path from 'path'
 import fsExtra from 'fs-extra'
 import {
-  rest,
+  http,
   type DefaultRequestMultipartBody,
   type MockedRequest,
-  type RestHandler,
+  type HttpHandler,
 } from 'msw'
 import type SiteMetadata from './data/site-metadata.json'
 import type Tweets from './data/tweets.json'
@@ -37,9 +37,9 @@ function getSiteMetadata(tweetUrlId: string) {
 }
 
 const twitterHandlers: Array<
-  RestHandler<MockedRequest<DefaultRequestMultipartBody>>
+  HttpHandler<MockedRequest<DefaultRequestMultipartBody>>
 > = [
-  rest.get(
+  http.get(
     'https://cdn.syndication.twimg.com/tweet-result',
     async (req, res, ctx) => {
       // if you want to mock out specific tweets, comment out this next line
@@ -75,10 +75,10 @@ const twitterHandlers: Array<
       return res(ctx.json(tweet))
     },
   ),
-  rest.get('https://t.co/:tweetUrlId', async (req, res, ctx) => {
+  http.get('https://t.co/:tweetUrlId', async (req, res, ctx) => {
     return res(ctx.text(getSiteMetadata(req.params.tweetUrlId as string)))
   }),
-  rest.head('https://t.co/:tweetUrlId', async (req, res, ctx) => {
+  http.head('https://t.co/:tweetUrlId', async (req, res, ctx) => {
     return res(ctx.set('x-head-mock', 'true'))
   }),
 ]
