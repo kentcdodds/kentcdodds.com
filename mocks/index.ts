@@ -34,7 +34,8 @@ const miscHandlers = [
   http.post(
     'https://api.mailgun.net/v3/:domain/messages',
     async (req, res, ctx) => {
-      const body = Object.fromEntries(new URLSearchParams(req.body?.toString()))
+      const reqBody = await request.json()
+      const body = Object.fromEntries(new URLSearchParams(reqBody?.toString()))
       console.info('🔶 mocked email contents:', body)
 
       if (body.text && body.to) {
@@ -47,7 +48,7 @@ const miscHandlers = [
         })
       }
       const randomId = '20210321210543.1.E01B8B612C44B41B'
-      const id = `<${randomId}>@${req.params.domain}`
+      const id = `<${randomId}>@${params.domain}`
       return res(ctx.json({id, message: 'Queued. Thank you.'}))
     },
   ),

@@ -149,12 +149,12 @@ const simplecastHandlers: Array<HttpHandler> = [
   http.get<any, DefaultRequestMultipartBody>(
     'https://api.simplecast.com/seasons/:seasonId/episodes',
     (req, res, ctx) => {
-      if (typeof req.params.seasonId !== 'string') {
+      if (typeof params.seasonId !== 'string') {
         throw new Error('req.params.seasonId is not a string')
       }
-      const episodes = episodesBySeasonId[req.params.seasonId]
+      const episodes = episodesBySeasonId[params.seasonId]
       if (!episodes) {
-        throw new Error(`No mock episodes by season ID: ${req.params.seasonId}`)
+        throw new Error(`No mock episodes by season ID: ${params.seasonId}`)
       }
       const episodeListItemsResponse: SimplecastCollectionResponse<SimplecastEpisodeListItem> =
         {
@@ -171,10 +171,10 @@ const simplecastHandlers: Array<HttpHandler> = [
   http.get<any, DefaultRequestMultipartBody>(
     `https://api.simplecast.com/episodes/:episodeId`,
     (req, res, ctx) => {
-      if (typeof req.params.episodeId !== 'string') {
+      if (typeof params.episodeId !== 'string') {
         throw new Error('req.params.episodeId is not a string')
       }
-      return res(ctx.json(episodesById[req.params.episodeId]))
+      return res(ctx.json(episodesById[params.episodeId]))
     },
   ),
 ]

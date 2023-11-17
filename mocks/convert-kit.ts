@@ -38,9 +38,10 @@ const convertKitHandlers: Array<HttpHandler> = [
   ),
   http.post<any, RequestBody>(
     'https://api.convertkit.com/v3/forms/:formId/subscribe',
-    (req, res, ctx) => {
-      const {formId} = req.params
-      const {first_name, email, fields} = req.body
+    async (req, res, ctx) => {
+      const body = await request.json()
+      const {formId} = params
+      const {first_name, email, fields} = body
       return res(
         ctx.json({
           subscription: {
@@ -66,9 +67,10 @@ const convertKitHandlers: Array<HttpHandler> = [
   ),
   http.post<any, RequestBody>(
     'https://api.convertkit.com/v3/tags/:tagId/subscribe',
-    (req, res, ctx) => {
-      const {tagId} = req.params
-      const {first_name, email, fields} = req.body
+    async (req, res, ctx) => {
+      const body = await request.json()
+      const {tagId} = params
+      const {first_name, email, fields} = body
       return res(
         ctx.json({
           subscription: {

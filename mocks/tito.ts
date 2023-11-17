@@ -21,7 +21,7 @@ const tiToHandlers: Array<HttpHandler> = [
             {
               live: true,
               title: `TESTING (this isn't a real ${
-                req.params.account ?? ''
+                params.account ?? ''
               } event)`,
               description: 'This is a short description',
               banner: {url: null, thumb: {url: null}},
@@ -68,7 +68,7 @@ const tiToHandlers: Array<HttpHandler> = [
               end_at: '2024-03-23T06:00:00.000-06:00',
               quantity: 10,
               quantity_used: 0,
-              share_url: `https://ti.to/kent-c-dodds/${req.params.eventSlug}/discount/${code}`,
+              share_url: `https://ti.to/kent-c-dodds/${params.eventSlug}/discount/${code}`,
               state: 'current',
             },
           ],

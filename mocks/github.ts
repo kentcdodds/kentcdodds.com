@@ -50,11 +50,12 @@ const githubHandlers: Array<HttpHandler> = [
   http.get<any, DefaultRequestMultipartBody>(
     `https://api.github.com/repos/:owner/:repo/contents/:path`,
     async (req, res, ctx) => {
-      const {owner, repo} = req.params
-      if (typeof req.params.path !== 'string') {
+      const url = new URL(request.url)
+      const {owner, repo} = params
+      if (typeof params.path !== 'string') {
         throw new Error('req.params.path must be a string')
       }
-      const path = decodeURIComponent(req.params.path).trim()
+      const path = decodeURIComponent(params.path).trim()
       const isMockable =
         owner === 'kentcdodds' &&
         repo === 'kentcdodds.com' &&
@@ -109,13 +110,13 @@ const githubHandlers: Array<HttpHandler> = [
             path: relativePath,
             sha,
             size,
-            url: `https://api.github.com/repos/${owner}/${repo}/contents/${path}?${req.url.searchParams}`,
+            url: `https://api.github.com/repos/${owner}/${repo}/contents/${path}?${url.searchParams}`,
             html_url: `https://github.com/${owner}/${repo}/tree/main/${path}`,
             git_url: `https://api.github.com/repos/${owner}/${repo}/git/trees/${sha}`,
             download_url: null,
             type: isDir ? 'dir' : 'file',
             _links: {
-              self: `https://api.github.com/repos/${owner}/${repo}/contents/${path}${req.url.searchParams}`,
+              self: `https://api.github.com/repos/${owner}/${repo}/contents/${path}${url.searchParams}`,
               git: `https://api.github.com/repos/${owner}/${repo}/git/trees/${sha}`,
               html: `https://github.com/${owner}/${repo}/tree/main/${path}`,
             },
@@ -129,11 +130,11 @@ const githubHandlers: Array<HttpHandler> = [
   http.get<any, DefaultRequestMultipartBody>(
     `https://api.github.com/repos/:owner/:repo/git/blobs/:sha`,
     async (req, res, ctx) => {
-      const {owner, repo} = req.params
-      if (typeof req.params.sha !== 'string') {
+      const {owner, repo} = params
+      if (typeof params.sha !== 'string') {
         throw new Error('req.params.sha must be a string')
       }
-      const sha = decodeURIComponent(req.params.sha).trim().replace(/\\/g, '/')
+      const sha = decodeURIComponent(params.sha).trim().replace(/\\/g, '/')
       // if the sha includes a "/" that means it's not a sha but a relativePath
       // and therefore the client is getting content it got from the local
       // mock environment, not the actual github API.
@@ -165,9 +166,9 @@ const githubHandlers: Array<HttpHandler> = [
   http.get<any, DefaultRequestMultipartBody>(
     `https://api.github.com/repos/:owner/:repo/contents/:path*`,
     async (req, res, ctx) => {
-      const {owner, repo} = req.params
+      const {owner, repo} = params
 
-      const relativePath = req.params.path
+      const relativePath = params.path
       if (typeof relativePath !== 'string') {
         throw new Error('req.params.path must be a string')
       }
@@ -179,7 +180,7 @@ const githubHandlers: Array<HttpHandler> = [
 
       const resource: GHContent = {
         sha,
-        node_id: `${req.params.path}_node_id`,
+        node_id: `${params.path}_node_id`,
         size,
         url: `https://api.github.com/repos/${owner}/${repo}/git/blobs/${sha}`,
         content: Buffer.from(content, 'utf-8').toString(encoding),

@@ -50,8 +50,8 @@ const discordHandlers: Array<HttpHandler> = [
     async (req, res, ctx) => {
       requiredHeader(req.headers, 'Authorization')
       const user = {
-        id: req.params.userId,
-        username: `${req.params.userId}username`,
+        id: params.userId,
+        username: `${params.userId}username`,
         discriminator: '0000',
       }
       return res(
@@ -132,7 +132,7 @@ const discordHandlers: Array<HttpHandler> = [
       }
 
       console.log(
-        `🤖 Sending bot message to ${req.params.channelId}:\n`,
+        `🤖 Sending bot message to ${params.channelId}:\n`,
         body?.content,
       )
 

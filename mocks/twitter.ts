@@ -35,6 +35,8 @@ const twitterHandlers: Array<HttpHandler> = [
   http.get<any, DefaultRequestMultipartBody>(
     'https://cdn.syndication.twimg.com/tweet-result',
     async (req, res, ctx) => {
+      const url = new URL(request.url)
+
       // if you want to mock out specific tweets, comment out this next line
       // eslint-disable-next-line
       if (
@@ -43,7 +45,7 @@ const twitterHandlers: Array<HttpHandler> = [
       ) {
         return
       }
-      const tweetId = req.url.searchParams.get('tweet_id')
+      const tweetId = url.searchParams.get('tweet_id')
       // uncomment this and send whatever tweet you want to work with...
       // return res(ctx.json(tweets.linkWithMetadata))
 
@@ -71,7 +73,7 @@ const twitterHandlers: Array<HttpHandler> = [
   http.get<any, DefaultRequestMultipartBody>(
     'https://t.co/:tweetUrlId',
     async (req, res, ctx) => {
-      return res(ctx.text(getSiteMetadata(req.params.tweetUrlId as string)))
+      return res(ctx.text(getSiteMetadata(params.tweetUrlId as string)))
     },
   ),
   http.head<any, DefaultRequestMultipartBody>(
