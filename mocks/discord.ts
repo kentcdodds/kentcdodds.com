@@ -1,8 +1,14 @@
-import {HttpResponse, http, type DefaultBodyType, type HttpHandler} from 'msw'
+import {
+  HttpResponse,
+  http,
+  type DefaultBodyType,
+  type HttpHandler,
+  type DefaultRequestMultipartBody,
+} from 'msw'
 import {requiredHeader, requiredParam} from './utils.ts'
 
 const discordHandlers: Array<HttpHandler> = [
-  http.post<any, DefaultBodyType>(
+  http.post<any, DefaultRequestMultipartBody>(
     'https://discord.com/api/oauth2/token',
     async ({request}) => {
       const body = await request.text()

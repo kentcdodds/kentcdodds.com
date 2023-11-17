@@ -1,5 +1,11 @@
 import {faker} from '@faker-js/faker'
-import {HttpResponse, http, type DefaultBodyType, type HttpHandler} from 'msw'
+import {
+  http,
+  type DefaultRequestMultipartBody,
+  type HttpHandler,
+  HttpResponse,
+  type DefaultBodyType,
+} from 'msw'
 import {
   type TransistorAuthorizedJson,
   type TransistorCreatedJson,
@@ -64,7 +70,7 @@ const episodes: Array<TransistorEpisodeData> = Array.from(
 )
 
 const transistorHandlers: Array<HttpHandler> = [
-  http.get<any, DefaultBodyType>(
+  http.get<any, DefaultRequestMultipartBody>(
     'https://api.transistor.fm/v1/episodes/authorize_upload',
     async ({request}) => {
       const url = new URL(request.url)
@@ -86,13 +92,13 @@ const transistorHandlers: Array<HttpHandler> = [
     },
   ),
 
-  http.put<any, DefaultBodyType>(
+  http.put<any, DefaultRequestMultipartBody>(
     'https://transistorupload.s3.amazonaws.com/uploads/api/:bucketId/:fileId',
     async ({request}) => {
-      const body = await request.json()
+      const body = await request.blob()
 
-      if (!body) {
-        throw new Error('req.body is required')
+      if (!body.size) {
+        throw new Error('body is required')
       }
 
       return HttpResponse.json({
@@ -174,7 +180,7 @@ const transistorHandlers: Array<HttpHandler> = [
     },
   ),
 
-  http.get<any, DefaultBodyType>(
+  http.get<any, DefaultRequestMultipartBody>(
     'https://api.transistor.fm/v1/episodes',
     async ({request}) => {
       requiredHeader(request.headers, 'x-api-key')
