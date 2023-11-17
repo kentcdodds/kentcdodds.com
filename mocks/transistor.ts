@@ -1,10 +1,5 @@
 import {faker} from '@faker-js/faker'
-import {
-  http,
-  type DefaultRequestMultipartBody,
-  type MockedRequest,
-  type HttpHandler,
-} from 'msw'
+import {http, type DefaultRequestMultipartBody, type HttpHandler} from 'msw'
 import {
   type TransistorAuthorizedJson,
   type TransistorCreatedJson,
@@ -68,10 +63,8 @@ const episodes: Array<TransistorEpisodeData> = Array.from(
     }),
 )
 
-const transistorHandlers: Array<
-  HttpHandler<MockedRequest<DefaultRequestMultipartBody>>
-> = [
-  http.get(
+const transistorHandlers: Array<HttpHandler> = [
+  http.get<any, DefaultRequestMultipartBody>(
     'https://api.transistor.fm/v1/episodes/authorize_upload',
     async (req, res, ctx) => {
       requiredParam(req.url.searchParams, 'filename')
@@ -91,7 +84,7 @@ const transistorHandlers: Array<
     },
   ),
 
-  http.put(
+  http.put<any, DefaultRequestMultipartBody>(
     'https://transistorupload.s3.amazonaws.com/uploads/api/:bucketId/:fileId',
     async (req, res, ctx) => {
       if (!req.body) {
@@ -106,30 +99,33 @@ const transistorHandlers: Array<
     },
   ),
 
-  http.post('https://api.transistor.fm/v1/episodes', async (req, res, ctx) => {
-    if (!req.body || typeof req.body !== 'object') {
-      throw new Error('req.body must be an object')
-    }
-    requiredHeader(req.headers, 'x-api-key')
-    requiredProperty(req.body, 'episode')
-    requiredProperty(req.body.episode, 'show_id')
-    requiredProperty(req.body.episode, 'season')
-    requiredProperty(req.body.episode, 'audio_url')
-    requiredProperty(req.body.episode, 'title')
-    requiredProperty(req.body.episode, 'summary')
-    requiredProperty(req.body.episode, 'description')
-    const episode: TransistorEpisodeData = makeEpisode({
-      attributes: {
-        number: Math.max(...episodes.map(e => e.attributes.number ?? 0)) + 1,
-        ...req.body.episode,
-      },
-    })
-    const data: TransistorCreatedJson = {data: episode}
-    episodes.push(episode)
-    return res(ctx.json(data))
-  }),
+  http.post<any, DefaultRequestMultipartBody>(
+    'https://api.transistor.fm/v1/episodes',
+    async (req, res, ctx) => {
+      if (!req.body || typeof req.body !== 'object') {
+        throw new Error('req.body must be an object')
+      }
+      requiredHeader(req.headers, 'x-api-key')
+      requiredProperty(req.body, 'episode')
+      requiredProperty(req.body.episode, 'show_id')
+      requiredProperty(req.body.episode, 'season')
+      requiredProperty(req.body.episode, 'audio_url')
+      requiredProperty(req.body.episode, 'title')
+      requiredProperty(req.body.episode, 'summary')
+      requiredProperty(req.body.episode, 'description')
+      const episode: TransistorEpisodeData = makeEpisode({
+        attributes: {
+          number: Math.max(...episodes.map(e => e.attributes.number ?? 0)) + 1,
+          ...req.body.episode,
+        },
+      })
+      const data: TransistorCreatedJson = {data: episode}
+      episodes.push(episode)
+      return res(ctx.json(data))
+    },
+  ),
 
-  http.patch(
+  http.patch<any, DefaultRequestMultipartBody>(
     'https://api.transistor.fm/v1/episodes/:episodeId/publish',
     async (req, res, ctx) => {
       if (!req.body || typeof req.body !== 'object') {
@@ -154,7 +150,7 @@ const transistorHandlers: Array<
     },
   ),
 
-  http.patch(
+  http.patch<any, DefaultRequestMultipartBody>(
     'https://api.transistor.fm/v1/episodes/:episodeId',
     async (req, res, ctx) => {
       if (!req.body || typeof req.body !== 'object') {
@@ -174,11 +170,14 @@ const transistorHandlers: Array<
     },
   ),
 
-  http.get('https://api.transistor.fm/v1/episodes', async (req, res, ctx) => {
-    requiredHeader(req.headers, 'x-api-key')
-    const data: TransistorEpisodesJson = {data: episodes}
-    return res(ctx.json(data))
-  }),
+  http.get<any, DefaultRequestMultipartBody>(
+    'https://api.transistor.fm/v1/episodes',
+    async (req, res, ctx) => {
+      requiredHeader(req.headers, 'x-api-key')
+      const data: TransistorEpisodesJson = {data: episodes}
+      return res(ctx.json(data))
+    },
+  ),
 ]
 
 export {transistorHandlers}

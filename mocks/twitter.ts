@@ -1,11 +1,6 @@
 import path from 'path'
 import fsExtra from 'fs-extra'
-import {
-  http,
-  type DefaultRequestMultipartBody,
-  type MockedRequest,
-  type HttpHandler,
-} from 'msw'
+import {http, type DefaultRequestMultipartBody, type HttpHandler} from 'msw'
 import type SiteMetadata from './data/site-metadata.json'
 import type Tweets from './data/tweets.json'
 import {isConnectedToTheInternet} from './utils.ts'
@@ -36,10 +31,8 @@ function getSiteMetadata(tweetUrlId: string) {
   return metadata
 }
 
-const twitterHandlers: Array<
-  HttpHandler<MockedRequest<DefaultRequestMultipartBody>>
-> = [
-  http.get(
+const twitterHandlers: Array<HttpHandler> = [
+  http.get<any, DefaultRequestMultipartBody>(
     'https://cdn.syndication.twimg.com/tweet-result',
     async (req, res, ctx) => {
       // if you want to mock out specific tweets, comment out this next line
@@ -75,12 +68,18 @@ const twitterHandlers: Array<
       return res(ctx.json(tweet))
     },
   ),
-  http.get('https://t.co/:tweetUrlId', async (req, res, ctx) => {
-    return res(ctx.text(getSiteMetadata(req.params.tweetUrlId as string)))
-  }),
-  http.head('https://t.co/:tweetUrlId', async (req, res, ctx) => {
-    return res(ctx.set('x-head-mock', 'true'))
-  }),
+  http.get<any, DefaultRequestMultipartBody>(
+    'https://t.co/:tweetUrlId',
+    async (req, res, ctx) => {
+      return res(ctx.text(getSiteMetadata(req.params.tweetUrlId as string)))
+    },
+  ),
+  http.head<any, DefaultRequestMultipartBody>(
+    'https://t.co/:tweetUrlId',
+    async (req, res, ctx) => {
+      return res(ctx.set('x-head-mock', 'true'))
+    },
+  ),
 ]
 
 export {twitterHandlers}

@@ -1,10 +1,5 @@
 import {faker} from '@faker-js/faker'
-import {
-  http,
-  type DefaultRequestMultipartBody,
-  type MockedRequest,
-  type HttpHandler,
-} from 'msw'
+import {http, type DefaultRequestMultipartBody, type HttpHandler} from 'msw'
 import {
   type SimpelcastSeasonListItem,
   type SimplecastCollectionResponse,
@@ -141,10 +136,8 @@ ${guest.links.length ? `* ${guest.links.join('\n* ')}` : ''}
   }
 }
 
-const simplecastHandlers: Array<
-  HttpHandler<MockedRequest<DefaultRequestMultipartBody>>
-> = [
-  http.get(
+const simplecastHandlers: Array<HttpHandler> = [
+  http.get<any, DefaultRequestMultipartBody>(
     'https://api.simplecast.com/podcasts/:podcastId/seasons',
     (req, res, ctx) => {
       const response: SimplecastCollectionResponse<SimpelcastSeasonListItem> = {
@@ -153,7 +146,7 @@ const simplecastHandlers: Array<
       return res(ctx.json(response))
     },
   ),
-  http.get(
+  http.get<any, DefaultRequestMultipartBody>(
     'https://api.simplecast.com/seasons/:seasonId/episodes',
     (req, res, ctx) => {
       if (typeof req.params.seasonId !== 'string') {
@@ -175,7 +168,7 @@ const simplecastHandlers: Array<
       return res(ctx.json(episodeListItemsResponse))
     },
   ),
-  http.get(
+  http.get<any, DefaultRequestMultipartBody>(
     `https://api.simplecast.com/episodes/:episodeId`,
     (req, res, ctx) => {
       if (typeof req.params.episodeId !== 'string') {

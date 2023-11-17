@@ -1,52 +1,51 @@
-import {
-  http,
-  type DefaultRequestMultipartBody,
-  type MockedRequest,
-  type HttpHandler,
-} from 'msw'
+import {http, type DefaultRequestMultipartBody, type HttpHandler} from 'msw'
 import {requiredHeader, requiredParam} from './utils.ts'
 
-const discordHandlers: Array<
-  HttpHandler<MockedRequest<DefaultRequestMultipartBody>>
-> = [
-  http.post('https://discord.com/api/oauth2/token', async (req, res, ctx) => {
-    const body = await req.text()
-    if (typeof body !== 'string') {
-      throw new Error('request body must be a string of URLSearchParams')
-    }
-    if (
-      req.headers.get('Content-Type') !== 'application/x-www-form-urlencoded'
-    ) {
-      throw new Error(
-        'Content-Type header must be "application/x-www-form-urlencoded"',
+const discordHandlers: Array<HttpHandler> = [
+  http.post<any, DefaultRequestMultipartBody>(
+    'https://discord.com/api/oauth2/token',
+    async (req, res, ctx) => {
+      const body = await req.text()
+      if (typeof body !== 'string') {
+        throw new Error('request body must be a string of URLSearchParams')
+      }
+      if (
+        req.headers.get('Content-Type') !== 'application/x-www-form-urlencoded'
+      ) {
+        throw new Error(
+          'Content-Type header must be "application/x-www-form-urlencoded"',
+        )
+      }
+      const params = new URLSearchParams(body)
+      requiredParam(params, 'client_id')
+      requiredParam(params, 'client_secret')
+      requiredParam(params, 'grant_type')
+      requiredParam(params, 'redirect_uri')
+      requiredParam(params, 'scope')
+      return res(
+        ctx.json({
+          token_type: 'test_token_type',
+          access_token: 'test_access_token',
+        }),
       )
-    }
-    const params = new URLSearchParams(body)
-    requiredParam(params, 'client_id')
-    requiredParam(params, 'client_secret')
-    requiredParam(params, 'grant_type')
-    requiredParam(params, 'redirect_uri')
-    requiredParam(params, 'scope')
-    return res(
-      ctx.json({
-        token_type: 'test_token_type',
-        access_token: 'test_access_token',
-      }),
-    )
-  }),
+    },
+  ),
 
-  http.get('https://discord.com/api/users/:userId', async (req, res, ctx) => {
-    requiredHeader(req.headers, 'Authorization')
-    return res(
-      ctx.json({
-        id: 'test_discord_id',
-        username: 'test_discord_username',
-        discriminator: '0000',
-      }),
-    )
-  }),
+  http.get<any, DefaultRequestMultipartBody>(
+    'https://discord.com/api/users/:userId',
+    async (req, res, ctx) => {
+      requiredHeader(req.headers, 'Authorization')
+      return res(
+        ctx.json({
+          id: 'test_discord_id',
+          username: 'test_discord_username',
+          discriminator: '0000',
+        }),
+      )
+    },
+  ),
 
-  http.get(
+  http.get<any, DefaultRequestMultipartBody>(
     'https://discord.com/api/guilds/:guildId/members/:userId',
     async (req, res, ctx) => {
       requiredHeader(req.headers, 'Authorization')
@@ -65,7 +64,7 @@ const discordHandlers: Array<
     },
   ),
 
-  http.put(
+  http.put<any, DefaultRequestMultipartBody>(
     'https://discord.com/api/guilds/:guildId/members/:userId',
     async (req, res, ctx) => {
       requiredHeader(req.headers, 'Authorization')
@@ -88,7 +87,7 @@ const discordHandlers: Array<
     },
   ),
 
-  http.patch(
+  http.patch<any, DefaultRequestMultipartBody>(
     'https://discord.com/api/guilds/:guildId/members/:userId',
     async (req, res, ctx) => {
       requiredHeader(req.headers, 'Authorization')
@@ -109,7 +108,7 @@ const discordHandlers: Array<
     },
   ),
 
-  http.get(
+  http.get<any, DefaultRequestMultipartBody>(
     'https://discord.com/api/guilds/:guildId/members/:userId',
     async (req, res, ctx) => {
       requiredHeader(req.headers, 'Authorization')
@@ -122,7 +121,7 @@ const discordHandlers: Array<
     },
   ),
 
-  http.post(
+  http.post<any, DefaultRequestMultipartBody>(
     'https://discord.com/api/channels/:channelId/messages',
     async (req, res, ctx) => {
       requiredHeader(req.headers, 'Authorization')

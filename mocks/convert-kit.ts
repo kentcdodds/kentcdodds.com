@@ -1,9 +1,4 @@
-import {
-  http,
-  type DefaultRequestMultipartBody,
-  type MockedRequest,
-  type HttpHandler,
-} from 'msw'
+import {http, type DefaultRequestMultipartBody, type HttpHandler} from 'msw'
 
 type RequestBody = {
   first_name: string
@@ -11,20 +6,21 @@ type RequestBody = {
   fields: Array<string>
 }
 
-const convertKitHandlers: Array<
-  HttpHandler<MockedRequest<DefaultRequestMultipartBody>>
-> = [
-  http.get('https://api.convertkit.com/v3/subscribers', (req, res, ctx) => {
-    return res(
-      ctx.json({
-        total_subscribers: 0,
-        page: 1,
-        total_pages: 1,
-        subscribers: [],
-      }),
-    )
-  }),
-  http.get(
+const convertKitHandlers: Array<HttpHandler> = [
+  http.get<any, DefaultRequestMultipartBody>(
+    'https://api.convertkit.com/v3/subscribers',
+    (req, res, ctx) => {
+      return res(
+        ctx.json({
+          total_subscribers: 0,
+          page: 1,
+          total_pages: 1,
+          subscribers: [],
+        }),
+      )
+    },
+  ),
+  http.get<any, DefaultRequestMultipartBody>(
     'https://api.convertkit.com/v3/subscribers/:subscriberId/tags',
     (req, res, ctx) => {
       return res(
@@ -40,11 +36,11 @@ const convertKitHandlers: Array<
       )
     },
   ),
-  http.post(
+  http.post<any, RequestBody>(
     'https://api.convertkit.com/v3/forms/:formId/subscribe',
     (req, res, ctx) => {
       const {formId} = req.params
-      const {first_name, email, fields} = req.body as RequestBody
+      const {first_name, email, fields} = req.body
       return res(
         ctx.json({
           subscription: {
@@ -68,11 +64,11 @@ const convertKitHandlers: Array<
       )
     },
   ),
-  http.post(
+  http.post<any, RequestBody>(
     'https://api.convertkit.com/v3/tags/:tagId/subscribe',
     (req, res, ctx) => {
       const {tagId} = req.params
-      const {first_name, email, fields} = req.body as RequestBody
+      const {first_name, email, fields} = req.body
       return res(
         ctx.json({
           subscription: {

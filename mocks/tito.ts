@@ -1,43 +1,42 @@
-import {
-  http,
-  type DefaultRequestMultipartBody,
-  type MockedRequest,
-  type HttpHandler,
-} from 'msw'
+import {http, type DefaultRequestMultipartBody, type HttpHandler} from 'msw'
 
-const tiToHandlers: Array<
-  HttpHandler<MockedRequest<DefaultRequestMultipartBody>>
-> = [
-  http.get('https://api.tito.io/v3/hello', async (req, res, ctx) => {
-    return res(
-      ctx.json({
-        accounts: ['kent-c-dodds', 'epic-web'],
-      }),
-    )
-  }),
-  http.get('https://api.tito.io/v3/:account/events', async (req, res, ctx) => {
-    const slug = 'testing-this-isn-t-a-real-event'
-    return res(
-      ctx.json({
-        events: [
-          {
-            live: true,
-            title: `TESTING (this isn't a real ${
-              req.params.account ?? ''
-            } event)`,
-            description: 'This is a short description',
-            banner: {url: null, thumb: {url: null}},
-            slug,
-            metadata: {workshopSlug: 'react-hooks'},
-            url: `https://ti.to/kent-c-dodds/${slug}`,
-          },
-        ],
-        meta: {},
-      }),
-    )
-  }),
+const tiToHandlers: Array<HttpHandler> = [
+  http.get<any, DefaultRequestMultipartBody>(
+    'https://api.tito.io/v3/hello',
+    async (req, res, ctx) => {
+      return res(
+        ctx.json({
+          accounts: ['kent-c-dodds', 'epic-web'],
+        }),
+      )
+    },
+  ),
+  http.get<any, DefaultRequestMultipartBody>(
+    'https://api.tito.io/v3/:account/events',
+    async (req, res, ctx) => {
+      const slug = 'testing-this-isn-t-a-real-event'
+      return res(
+        ctx.json({
+          events: [
+            {
+              live: true,
+              title: `TESTING (this isn't a real ${
+                req.params.account ?? ''
+              } event)`,
+              description: 'This is a short description',
+              banner: {url: null, thumb: {url: null}},
+              slug,
+              metadata: {workshopSlug: 'react-hooks'},
+              url: `https://ti.to/kent-c-dodds/${slug}`,
+            },
+          ],
+          meta: {},
+        }),
+      )
+    },
+  ),
 
-  http.get(
+  http.get<any, DefaultRequestMultipartBody>(
     'https://api.tito.io/v3/:account/:eventSlug',
     async (req, res, ctx) => {
       return res(
@@ -57,7 +56,7 @@ const tiToHandlers: Array<
     },
   ),
 
-  http.get(
+  http.get<any, DefaultRequestMultipartBody>(
     'https://api.tito.io/v3/:account/:eventSlug/discount_codes',
     async (req, res, ctx) => {
       const code = 'early'
@@ -79,7 +78,7 @@ const tiToHandlers: Array<
     },
   ),
 
-  http.get(
+  http.get<any, DefaultRequestMultipartBody>(
     'https://api.tito.io/v3/:account/:eventSlug/activities',
     async (req, res, ctx) => {
       return res(
