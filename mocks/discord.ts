@@ -9,13 +9,14 @@ import {requiredHeader, requiredParam} from './utils.ts'
 const discordHandlers: Array<HttpHandler> = [
   http.post<any, DefaultRequestMultipartBody>(
     'https://discord.com/api/oauth2/token',
-    async (req, res, ctx) => {
-      const body = await req.text()
+    async ({request}) => {
+      const body = await request.text()
       if (typeof body !== 'string') {
         throw new Error('request body must be a string of URLSearchParams')
       }
       if (
-        req.headers.get('Content-Type') !== 'application/x-www-form-urlencoded'
+        request.headers.get('Content-Type') !==
+        'application/x-www-form-urlencoded'
       ) {
         throw new Error(
           'Content-Type header must be "application/x-www-form-urlencoded"',
@@ -36,8 +37,8 @@ const discordHandlers: Array<HttpHandler> = [
 
   http.get<any, DefaultRequestMultipartBody>(
     'https://discord.com/api/users/:userId',
-    async (req, res, ctx) => {
-      requiredHeader(req.headers, 'Authorization')
+    async ({request}) => {
+      requiredHeader(request.headers, 'Authorization')
       return HttpResponse.json({
         id: 'test_discord_id',
         username: 'test_discord_username',
@@ -48,8 +49,8 @@ const discordHandlers: Array<HttpHandler> = [
 
   http.get<any, DefaultRequestMultipartBody>(
     'https://discord.com/api/guilds/:guildId/members/:userId',
-    async (req, res, ctx) => {
-      requiredHeader(req.headers, 'Authorization')
+    async ({request, params}) => {
+      requiredHeader(request.headers, 'Authorization')
       const user = {
         id: params.userId,
         username: `${params.userId}username`,
@@ -65,9 +66,9 @@ const discordHandlers: Array<HttpHandler> = [
 
   http.put<any, DefaultRequestMultipartBody>(
     'https://discord.com/api/guilds/:guildId/members/:userId',
-    async (req, res, ctx) => {
-      requiredHeader(req.headers, 'Authorization')
-      const body = await req.json()
+    async ({request}) => {
+      requiredHeader(request.headers, 'Authorization')
+      const body = await request.json()
       if (typeof body !== 'object') {
         console.error('Request body:', body)
         throw new Error('Request body must be a JSON object')
@@ -86,9 +87,9 @@ const discordHandlers: Array<HttpHandler> = [
 
   http.patch<any, DefaultRequestMultipartBody>(
     'https://discord.com/api/guilds/:guildId/members/:userId',
-    async (req, res, ctx) => {
-      requiredHeader(req.headers, 'Authorization')
-      const body = await req.json()
+    async ({request}) => {
+      requiredHeader(request.headers, 'Authorization')
+      const body = await request.json()
       if (typeof body !== 'object') {
         throw new Error('patch request to member must have a JSON body')
       }
@@ -105,8 +106,8 @@ const discordHandlers: Array<HttpHandler> = [
 
   http.get<any, DefaultRequestMultipartBody>(
     'https://discord.com/api/guilds/:guildId/members/:userId',
-    async (req, res, ctx) => {
-      requiredHeader(req.headers, 'Authorization')
+    async ({request}) => {
+      requiredHeader(request.headers, 'Authorization')
       return HttpResponse.json({
         user: {id: 'test_discord_id', username: 'test_username'},
         roles: [],
@@ -116,9 +117,9 @@ const discordHandlers: Array<HttpHandler> = [
 
   http.post<any, DefaultRequestMultipartBody>(
     'https://discord.com/api/channels/:channelId/messages',
-    async (req, res, ctx) => {
-      requiredHeader(req.headers, 'Authorization')
-      const body = await req.json()
+    async ({request, params}) => {
+      requiredHeader(request.headers, 'Authorization')
+      const body = await request.json()
       if (typeof body !== 'object') {
         console.error('Request body:', body)
         throw new Error('Request body must be a JSON object')

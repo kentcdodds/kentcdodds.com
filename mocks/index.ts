@@ -14,12 +14,12 @@ const remix = process.env.REMIX_DEV_HTTP_ORIGIN as string
 
 // put one-off handlers that don't really need an entire file to themselves here
 const miscHandlers = [
-  http.post(`${remix}/ping`, req => {
+  http.post(`${remix}/ping`, () => {
     return passthrough()
   }),
   http.get(
     'https://res.cloudinary.com/kentcdodds-com/image/upload/w_100,q_auto,f_webp,e_blur:1000/unsplash/:photoId',
-    async (req, res, ctx) => {
+    async () => {
       if (await isConnectedToTheInternet()) return passthrough()
 
       const base64 =
@@ -28,12 +28,12 @@ const miscHandlers = [
       return HttpResponse.json(buffer)
     },
   ),
-  http.get(/res.cloudinary.com\/kentcdodds-com\//, req => {
+  http.get(/res.cloudinary.com\/kentcdodds-com\//, () => {
     return passthrough()
   }),
   http.post(
     'https://api.mailgun.net/v3/:domain/messages',
-    async (req, res, ctx) => {
+    async ({request, params}) => {
       const reqBody = await request.json()
       const body = Object.fromEntries(new URLSearchParams(reqBody?.toString()))
       console.info('🔶 mocked email contents:', body)
@@ -52,17 +52,14 @@ const miscHandlers = [
       return HttpResponse.json({id, message: 'Queued. Thank you.'})
     },
   ),
-  http.head(
-    'https://www.gravatar.com/avatar/:md5Hash',
-    async (req, res, ctx) => {
-      if (await isConnectedToTheInternet()) return passthrough()
+  http.head('https://www.gravatar.com/avatar/:md5Hash', async () => {
+    if (await isConnectedToTheInternet()) return passthrough()
 
-      return HttpResponse.json(null, {status: 404})
-    },
-  ),
-  http.get(/http:\/\/localhost:\d+\/.*/, async req => passthrough()),
-  http.post(/http:\/\/localhost:\d+\/.*/, async req => passthrough()),
-  http.get('https://verifier.meetchopra.com/verify/:email', (req, res, ctx) => {
+    return HttpResponse.json(null, {status: 404})
+  }),
+  http.get(/http:\/\/localhost:\d+\/.*/, async () => passthrough()),
+  http.post(/http:\/\/localhost:\d+\/.*/, async () => passthrough()),
+  http.get('https://verifier.meetchopra.com/verify/:email', () => {
     return HttpResponse.json({status: true})
   }),
 ]

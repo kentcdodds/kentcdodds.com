@@ -144,7 +144,7 @@ ${guest.links.length ? `* ${guest.links.join('\n* ')}` : ''}
 const simplecastHandlers: Array<HttpHandler> = [
   http.get<any, DefaultRequestMultipartBody>(
     'https://api.simplecast.com/podcasts/:podcastId/seasons',
-    (req, res, ctx) => {
+    () => {
       const response: SimplecastCollectionResponse<SimpelcastSeasonListItem> = {
         collection: seasonListItems,
       }
@@ -153,7 +153,7 @@ const simplecastHandlers: Array<HttpHandler> = [
   ),
   http.get<any, DefaultRequestMultipartBody>(
     'https://api.simplecast.com/seasons/:seasonId/episodes',
-    (req, res, ctx) => {
+    ({params}) => {
       if (typeof params.seasonId !== 'string') {
         throw new Error('req.params.seasonId is not a string')
       }
@@ -175,7 +175,7 @@ const simplecastHandlers: Array<HttpHandler> = [
   ),
   http.get<any, DefaultRequestMultipartBody>(
     `https://api.simplecast.com/episodes/:episodeId`,
-    (req, res, ctx) => {
+    ({params}) => {
       if (typeof params.episodeId !== 'string') {
         throw new Error('req.params.episodeId is not a string')
       }

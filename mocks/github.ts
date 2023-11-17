@@ -54,7 +54,7 @@ type GHContent = {
 const githubHandlers: Array<HttpHandler> = [
   http.get<any, DefaultRequestMultipartBody>(
     `https://api.github.com/repos/:owner/:repo/contents/:path`,
-    async (req, res, ctx) => {
+    async ({request, params}) => {
       const url = new URL(request.url)
       const {owner, repo} = params
       if (typeof params.path !== 'string') {
@@ -134,7 +134,7 @@ const githubHandlers: Array<HttpHandler> = [
   ),
   http.get<any, DefaultRequestMultipartBody>(
     `https://api.github.com/repos/:owner/:repo/git/blobs/:sha`,
-    async (req, res, ctx) => {
+    async ({params}) => {
       const {owner, repo} = params
       if (typeof params.sha !== 'string') {
         throw new Error('req.params.sha must be a string')
@@ -170,7 +170,7 @@ const githubHandlers: Array<HttpHandler> = [
   ),
   http.get<any, DefaultRequestMultipartBody>(
     `https://api.github.com/repos/:owner/:repo/contents/:path*`,
-    async (req, res, ctx) => {
+    async ({params}) => {
       const {owner, repo} = params
 
       const relativePath = params.path

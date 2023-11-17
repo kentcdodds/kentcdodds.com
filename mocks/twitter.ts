@@ -39,7 +39,7 @@ function getSiteMetadata(tweetUrlId: string) {
 const twitterHandlers: Array<HttpHandler> = [
   http.get<any, DefaultRequestMultipartBody>(
     'https://cdn.syndication.twimg.com/tweet-result',
-    async (req, res, ctx) => {
+    async ({request}) => {
       const url = new URL(request.url)
 
       // if you want to mock out specific tweets, comment out this next line
@@ -77,13 +77,13 @@ const twitterHandlers: Array<HttpHandler> = [
   ),
   http.get<any, DefaultRequestMultipartBody>(
     'https://t.co/:tweetUrlId',
-    async (req, res, ctx) => {
+    async ({params}) => {
       return HttpResponse.text(getSiteMetadata(params.tweetUrlId as string))
     },
   ),
   http.head<any, DefaultRequestMultipartBody>(
     'https://t.co/:tweetUrlId',
-    async (req, res, ctx) => {
+    async () => {
       return HttpResponse.json(null, {headers: {'x-head-mock': 'true'}})
     },
   ),

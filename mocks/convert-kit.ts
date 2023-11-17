@@ -14,7 +14,7 @@ type RequestBody = {
 const convertKitHandlers: Array<HttpHandler> = [
   http.get<any, DefaultRequestMultipartBody>(
     'https://api.convertkit.com/v3/subscribers',
-    (req, res, ctx) => {
+    () => {
       return HttpResponse.json({
         total_subscribers: 0,
         page: 1,
@@ -25,7 +25,7 @@ const convertKitHandlers: Array<HttpHandler> = [
   ),
   http.get<any, DefaultRequestMultipartBody>(
     'https://api.convertkit.com/v3/subscribers/:subscriberId/tags',
-    (req, res, ctx) => {
+    () => {
       return HttpResponse.json({
         tags: [
           {
@@ -39,7 +39,7 @@ const convertKitHandlers: Array<HttpHandler> = [
   ),
   http.post<any, RequestBody>(
     'https://api.convertkit.com/v3/forms/:formId/subscribe',
-    async (req, res, ctx) => {
+    async ({request, params}) => {
       const body = await request.json()
       const {formId} = params
       const {first_name, email, fields} = body
@@ -66,7 +66,7 @@ const convertKitHandlers: Array<HttpHandler> = [
   ),
   http.post<any, RequestBody>(
     'https://api.convertkit.com/v3/tags/:tagId/subscribe',
-    async (req, res, ctx) => {
+    async ({request, params}) => {
       const body = await request.json()
       const {tagId} = params
       const {first_name, email, fields} = body

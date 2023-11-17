@@ -8,7 +8,7 @@ import {
 const tiToHandlers: Array<HttpHandler> = [
   http.get<any, DefaultRequestMultipartBody>(
     'https://api.tito.io/v3/hello',
-    async (req, res, ctx) => {
+    async () => {
       return HttpResponse.json({
         accounts: ['kent-c-dodds', 'epic-web'],
       })
@@ -16,7 +16,7 @@ const tiToHandlers: Array<HttpHandler> = [
   ),
   http.get<any, DefaultRequestMultipartBody>(
     'https://api.tito.io/v3/:account/events',
-    async (req, res, ctx) => {
+    async ({params}) => {
       const slug = 'testing-this-isn-t-a-real-event'
       return HttpResponse.json({
         events: [
@@ -37,7 +37,7 @@ const tiToHandlers: Array<HttpHandler> = [
 
   http.get<any, DefaultRequestMultipartBody>(
     'https://api.tito.io/v3/:account/:eventSlug',
-    async (req, res, ctx) => {
+    async () => {
       return HttpResponse.json({
         event: {
           location: 'Zoom',
@@ -55,7 +55,7 @@ const tiToHandlers: Array<HttpHandler> = [
 
   http.get<any, DefaultRequestMultipartBody>(
     'https://api.tito.io/v3/:account/:eventSlug/discount_codes',
-    async (req, res, ctx) => {
+    async ({params}) => {
       const code = 'early'
       return HttpResponse.json({
         discount_codes: [
@@ -75,7 +75,7 @@ const tiToHandlers: Array<HttpHandler> = [
 
   http.get<any, DefaultRequestMultipartBody>(
     'https://api.tito.io/v3/:account/:eventSlug/activities',
-    async (req, res, ctx) => {
+    async () => {
       return HttpResponse.json({
         activities: [
           {
