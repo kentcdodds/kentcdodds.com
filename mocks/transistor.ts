@@ -1,5 +1,10 @@
 import {faker} from '@faker-js/faker'
-import {http, type DefaultRequestMultipartBody, type HttpHandler} from 'msw'
+import {
+  http,
+  type DefaultRequestMultipartBody,
+  type HttpHandler,
+  HttpResponse,
+} from 'msw'
 import {
   type TransistorAuthorizedJson,
   type TransistorCreatedJson,
@@ -82,7 +87,7 @@ const transistorHandlers: Array<HttpHandler> = [
           },
         },
       }
-      return res(ctx.json(data))
+      return HttpResponse.json(data)
     },
   ),
 
@@ -95,11 +100,9 @@ const transistorHandlers: Array<HttpHandler> = [
         throw new Error('req.body is required')
       }
 
-      return res(
-        ctx.json({
-          // we don't use the response so no need to put something real here.
-        }),
-      )
+      return HttpResponse.json({
+        // we don't use the response so no need to put something real here.
+      })
     },
   ),
 
@@ -127,7 +130,7 @@ const transistorHandlers: Array<HttpHandler> = [
       })
       const data: TransistorCreatedJson = {data: episode}
       episodes.push(episode)
-      return res(ctx.json(data))
+      return HttpResponse.json(data)
     },
   ),
 
@@ -152,7 +155,7 @@ const transistorHandlers: Array<HttpHandler> = [
       }
       episode.attributes.status = 'published'
       const data: TransistorPublishedJson = {data: episode}
-      return res(ctx.json(data))
+      return HttpResponse.json(data)
     },
   ),
 
@@ -172,7 +175,7 @@ const transistorHandlers: Array<HttpHandler> = [
       }
       Object.assign(episode, body.episode)
       const data: TransistorPublishedJson = {data: episode}
-      return res(ctx.json(data))
+      return HttpResponse.json(data)
     },
   ),
 
@@ -181,7 +184,7 @@ const transistorHandlers: Array<HttpHandler> = [
     async (req, res, ctx) => {
       requiredHeader(req.headers, 'x-api-key')
       const data: TransistorEpisodesJson = {data: episodes}
-      return res(ctx.json(data))
+      return HttpResponse.json(data)
     },
   ),
 ]

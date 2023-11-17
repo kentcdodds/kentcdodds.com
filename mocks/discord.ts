@@ -1,4 +1,9 @@
-import {http, type DefaultRequestMultipartBody, type HttpHandler} from 'msw'
+import {
+  http,
+  type DefaultRequestMultipartBody,
+  type HttpHandler,
+  HttpResponse,
+} from 'msw'
 import {requiredHeader, requiredParam} from './utils.ts'
 
 const discordHandlers: Array<HttpHandler> = [
@@ -22,12 +27,10 @@ const discordHandlers: Array<HttpHandler> = [
       requiredParam(params, 'grant_type')
       requiredParam(params, 'redirect_uri')
       requiredParam(params, 'scope')
-      return res(
-        ctx.json({
-          token_type: 'test_token_type',
-          access_token: 'test_access_token',
-        }),
-      )
+      return HttpResponse.json({
+        token_type: 'test_token_type',
+        access_token: 'test_access_token',
+      })
     },
   ),
 
@@ -35,13 +38,11 @@ const discordHandlers: Array<HttpHandler> = [
     'https://discord.com/api/users/:userId',
     async (req, res, ctx) => {
       requiredHeader(req.headers, 'Authorization')
-      return res(
-        ctx.json({
-          id: 'test_discord_id',
-          username: 'test_discord_username',
-          discriminator: '0000',
-        }),
-      )
+      return HttpResponse.json({
+        id: 'test_discord_id',
+        username: 'test_discord_username',
+        discriminator: '0000',
+      })
     },
   ),
 
@@ -54,13 +55,11 @@ const discordHandlers: Array<HttpHandler> = [
         username: `${params.userId}username`,
         discriminator: '0000',
       }
-      return res(
-        ctx.json({
-          user,
-          roles: [],
-          ...user,
-        }),
-      )
+      return HttpResponse.json({
+        user,
+        roles: [],
+        ...user,
+      })
     },
   ),
 
@@ -79,11 +78,9 @@ const discordHandlers: Array<HttpHandler> = [
           `access_token required in the body, but not found in ${bodyString}`,
         )
       }
-      return res(
-        ctx.json({
-          // We don't use this response for now so we'll leave this empty
-        }),
-      )
+      return HttpResponse.json({
+        // We don't use this response for now so we'll leave this empty
+      })
     },
   ),
 
@@ -100,11 +97,9 @@ const discordHandlers: Array<HttpHandler> = [
           'patch request to member must include a roles array with the new role',
         )
       }
-      return res(
-        ctx.json({
-          // We don't use this response for now so we'll leave this empty
-        }),
-      )
+      return HttpResponse.json({
+        // We don't use this response for now so we'll leave this empty
+      })
     },
   ),
 
@@ -112,12 +107,10 @@ const discordHandlers: Array<HttpHandler> = [
     'https://discord.com/api/guilds/:guildId/members/:userId',
     async (req, res, ctx) => {
       requiredHeader(req.headers, 'Authorization')
-      return res(
-        ctx.json({
-          user: {id: 'test_discord_id', username: 'test_username'},
-          roles: [],
-        }),
-      )
+      return HttpResponse.json({
+        user: {id: 'test_discord_id', username: 'test_username'},
+        roles: [],
+      })
     },
   ),
 
@@ -136,11 +129,9 @@ const discordHandlers: Array<HttpHandler> = [
         body?.content,
       )
 
-      return res(
-        ctx.json({
-          /* we ignore the response */
-        }),
-      )
+      return HttpResponse.json({
+        /* we ignore the response */
+      })
     },
   ),
 ]

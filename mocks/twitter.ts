@@ -1,6 +1,11 @@
 import path from 'path'
 import fsExtra from 'fs-extra'
-import {http, type DefaultRequestMultipartBody, type HttpHandler} from 'msw'
+import {
+  http,
+  type DefaultRequestMultipartBody,
+  type HttpHandler,
+  HttpResponse,
+} from 'msw'
 import type SiteMetadata from './data/site-metadata.json'
 import type Tweets from './data/tweets.json'
 import {isConnectedToTheInternet} from './utils.ts'
@@ -67,19 +72,19 @@ const twitterHandlers: Array<HttpHandler> = [
           `no tweet found for id ${tweetId}. This should be impossible...`,
         )
       }
-      return res(ctx.json(tweet))
+      return HttpResponse.json(tweet)
     },
   ),
   http.get<any, DefaultRequestMultipartBody>(
     'https://t.co/:tweetUrlId',
     async (req, res, ctx) => {
-      return res(ctx.text(getSiteMetadata(params.tweetUrlId as string)))
+      return HttpResponse.text(getSiteMetadata(params.tweetUrlId as string))
     },
   ),
   http.head<any, DefaultRequestMultipartBody>(
     'https://t.co/:tweetUrlId',
     async (req, res, ctx) => {
-      return res(ctx.set('x-head-mock', 'true'))
+      return HttpResponse.json(null, {headers: {'x-head-mock': 'true'}})
     },
   ),
 ]

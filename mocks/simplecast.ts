@@ -1,5 +1,10 @@
 import {faker} from '@faker-js/faker'
-import {http, type DefaultRequestMultipartBody, type HttpHandler} from 'msw'
+import {
+  http,
+  type DefaultRequestMultipartBody,
+  type HttpHandler,
+  HttpResponse,
+} from 'msw'
 import {
   type SimpelcastSeasonListItem,
   type SimplecastCollectionResponse,
@@ -143,7 +148,7 @@ const simplecastHandlers: Array<HttpHandler> = [
       const response: SimplecastCollectionResponse<SimpelcastSeasonListItem> = {
         collection: seasonListItems,
       }
-      return res(ctx.json(response))
+      return HttpResponse.json(response)
     },
   ),
   http.get<any, DefaultRequestMultipartBody>(
@@ -165,7 +170,7 @@ const simplecastHandlers: Array<HttpHandler> = [
             is_published: e.is_published,
           })),
         }
-      return res(ctx.json(episodeListItemsResponse))
+      return HttpResponse.json(episodeListItemsResponse)
     },
   ),
   http.get<any, DefaultRequestMultipartBody>(
@@ -174,7 +179,7 @@ const simplecastHandlers: Array<HttpHandler> = [
       if (typeof params.episodeId !== 'string') {
         throw new Error('req.params.episodeId is not a string')
       }
-      return res(ctx.json(episodesById[params.episodeId]))
+      return HttpResponse.json(episodesById[params.episodeId])
     },
   ),
 ]

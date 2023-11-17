@@ -1,7 +1,12 @@
 import * as nodePath from 'path'
 import {fileURLToPath} from 'url'
 import {promises as fs} from 'fs'
-import {http, type DefaultRequestMultipartBody, type HttpHandler} from 'msw'
+import {
+  http,
+  type DefaultRequestMultipartBody,
+  type HttpHandler,
+  HttpResponse,
+} from 'msw'
 
 const __dirname = nodePath.dirname(fileURLToPath(import.meta.url))
 
@@ -72,25 +77,25 @@ const githubHandlers: Array<HttpHandler> = [
       const isLocalFile = await isFile(localPath)
 
       if (!isLocalDir && !isLocalFile) {
-        return res(
-          ctx.status(404),
-          ctx.json({
+        return HttpResponse.json(
+          {
             message: 'Not Found',
             documentation_url:
               'https://docs.github.com/rest/reference/repos#get-repository-content',
-          }),
+          },
+          {status: 404},
         )
       }
 
       if (isLocalFile) {
         const encoding = 'base64' as const
         const content = await fs.readFile(localPath, {encoding: 'utf-8'})
-        return res(
-          ctx.status(200),
-          ctx.json({
+        return HttpResponse.json(
+          {
             content: Buffer.from(content, 'utf-8').toString(encoding),
             encoding,
-          }),
+          },
+          {status: 200},
         )
       }
 
@@ -124,7 +129,7 @@ const githubHandlers: Array<HttpHandler> = [
         }),
       )
 
-      return res(ctx.json(contentDescriptions))
+      return HttpResponse.json(contentDescriptions)
     },
   ),
   http.get<any, DefaultRequestMultipartBody>(
@@ -160,7 +165,7 @@ const githubHandlers: Array<HttpHandler> = [
         encoding,
       }
 
-      return res(ctx.json(resource))
+      return HttpResponse.json(resource)
     },
   ),
   http.get<any, DefaultRequestMultipartBody>(
@@ -187,7 +192,7 @@ const githubHandlers: Array<HttpHandler> = [
         encoding,
       }
 
-      return res(ctx.json(resource))
+      return HttpResponse.json(resource)
     },
   ),
 ]
