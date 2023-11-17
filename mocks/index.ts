@@ -1,4 +1,4 @@
-import {http} from 'msw'
+import {http, passthrough} from 'msw'
 import {setupServer} from 'msw/node'
 import {convertKitHandlers} from './convert-kit.ts'
 import {discordHandlers} from './discord.ts'
@@ -15,12 +15,12 @@ const remix = process.env.REMIX_DEV_HTTP_ORIGIN as string
 // put one-off handlers that don't really need an entire file to themselves here
 const miscHandlers = [
   http.post(`${remix}/ping`, req => {
-    return req.passthrough()
+    return passthrough()
   }),
   http.get(
     'https://res.cloudinary.com/kentcdodds-com/image/upload/w_100,q_auto,f_webp,e_blur:1000/unsplash/:photoId',
     async (req, res, ctx) => {
-      if (await isConnectedToTheInternet()) return req.passthrough()
+      if (await isConnectedToTheInternet()) return passthrough()
 
       const base64 =
         'UklGRhoBAABXRUJQVlA4IA4BAABwCgCdASpkAEMAPqVInUq5sy+hqvqpuzAUiWcG+BsvrZQel/iYPLGE154ZiYwzeF8UJRAKZ0oAzLdTpjlp8qBuGwW1ntMTe6iQZbxzyP4gBeg7X7SH7NwyBcUDAAD+8MrTwbAD8OLmsoaL1QDPwEE+GrfqLQPn6xkgFHCB8lyjV3K2RvcQ7pSvgA87LOVuDtMrtkm+tTV0x1RcIe4Uvb6J+yygkV48DSejuyrMWrYgoZyjkf/0/L9+bAZgCam6+oHqjBSWTq5jF7wzBxYwfoGY7OdYZOdeGb4euuuLaCzDHz/QRbDCaIsJWJW3Jo4bkbz44AI/8UfFTGX4tMTRcKLXTDIviU+/u7UnlVaDQAA='
@@ -29,7 +29,7 @@ const miscHandlers = [
     },
   ),
   http.get(/res.cloudinary.com\/kentcdodds-com\//, req => {
-    return req.passthrough()
+    return passthrough()
   }),
   http.post(
     'https://api.mailgun.net/v3/:domain/messages',
@@ -55,13 +55,13 @@ const miscHandlers = [
   http.head(
     'https://www.gravatar.com/avatar/:md5Hash',
     async (req, res, ctx) => {
-      if (await isConnectedToTheInternet()) return req.passthrough()
+      if (await isConnectedToTheInternet()) return passthrough()
 
       return res(ctx.status(404))
     },
   ),
-  http.get(/http:\/\/localhost:\d+\/.*/, async req => req.passthrough()),
-  http.post(/http:\/\/localhost:\d+\/.*/, async req => req.passthrough()),
+  http.get(/http:\/\/localhost:\d+\/.*/, async req => passthrough()),
+  http.post(/http:\/\/localhost:\d+\/.*/, async req => passthrough()),
   http.get('https://verifier.meetchopra.com/verify/:email', (req, res, ctx) => {
     return res(ctx.json({status: true}))
   }),
