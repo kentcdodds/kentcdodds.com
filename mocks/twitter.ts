@@ -1,10 +1,10 @@
 import path from 'path'
 import fsExtra from 'fs-extra'
 import {
-  rest,
+  http,
   type DefaultRequestMultipartBody,
-  type MockedRequest,
-  type RestHandler,
+  type HttpHandler,
+  HttpResponse,
 } from 'msw'
 import type SiteMetadata from './data/site-metadata.json'
 import type Tweets from './data/tweets.json'
@@ -36,12 +36,12 @@ function getSiteMetadata(tweetUrlId: string) {
   return metadata
 }
 
-const twitterHandlers: Array<
-  RestHandler<MockedRequest<DefaultRequestMultipartBody>>
-> = [
-  rest.get(
+const twitterHandlers: Array<HttpHandler> = [
+  http.get<any, DefaultRequestMultipartBody>(
     'https://cdn.syndication.twimg.com/tweet-result',
-    async (req, res, ctx) => {
+    async ({request}) => {
+      const url = new URL(request.url)
+
       // if you want to mock out specific tweets, comment out this next line
       // eslint-disable-next-line
       if (
@@ -50,7 +50,7 @@ const twitterHandlers: Array<
       ) {
         return
       }
-      const tweetId = req.url.searchParams.get('tweet_id')
+      const tweetId = url.searchParams.get('tweet_id')
       // uncomment this and send whatever tweet you want to work with...
       // return res(ctx.json(tweets.linkWithMetadata))
 
@@ -72,15 +72,21 @@ const twitterHandlers: Array<
           `no tweet found for id ${tweetId}. This should be impossible...`,
         )
       }
-      return res(ctx.json(tweet))
+      return HttpResponse.json(tweet)
     },
   ),
-  rest.get('https://t.co/:tweetUrlId', async (req, res, ctx) => {
-    return res(ctx.text(getSiteMetadata(req.params.tweetUrlId as string)))
-  }),
-  rest.head('https://t.co/:tweetUrlId', async (req, res, ctx) => {
-    return res(ctx.set('x-head-mock', 'true'))
-  }),
+  http.get<any, DefaultRequestMultipartBody>(
+    'https://t.co/:tweetUrlId',
+    async ({params}) => {
+      return HttpResponse.text(getSiteMetadata(params.tweetUrlId as string))
+    },
+  ),
+  http.head<any, DefaultRequestMultipartBody>(
+    'https://t.co/:tweetUrlId',
+    async () => {
+      return HttpResponse.json(null, {headers: {'x-head-mock': 'true'}})
+    },
+  ),
 ]
 
 export {twitterHandlers}
