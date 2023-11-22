@@ -404,7 +404,7 @@ export default function MeAdmin() {
                       <td
                         {...cell.getCellProps({
                           className:
-                            'p-3 bg-opacity-30 bg-gray-800 border-2 border-slate-500',
+                            'p-3 bg-opacity-30 bg-gray-100 border-slate-100 dark:bg-gray-800 border-2 dark:border-slate-500',
                         })}
                       >
                         {cell.render('Cell')}

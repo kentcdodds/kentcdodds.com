@@ -182,23 +182,39 @@ app.use((req, res, next) => {
 })
 
 app.use(
-  morgan((tokens, req, res) => {
-    try {
-      const host = getHost(req)
-      return [
-        tokens.method?.(req, res),
-        `${host}${decodeURIComponent(tokens.url?.(req, res) ?? '')}`,
-        tokens.status?.(req, res),
-        tokens.res?.(req, res, 'content-length'),
-        '-',
-        tokens['response-time']?.(req, res),
-        'ms',
-      ].join(' ')
-    } catch (error: unknown) {
-      console.error(`Error generating morgan log line`, error, req.originalUrl)
-      return ''
-    }
-  }),
+  morgan(
+    (tokens, req, res) => {
+      try {
+        const host = getHost(req)
+        return [
+          tokens.method?.(req, res),
+          `${host}${decodeURIComponent(tokens.url?.(req, res) ?? '')}`,
+          tokens.status?.(req, res),
+          tokens.res?.(req, res, 'content-length'),
+          '-',
+          tokens['response-time']?.(req, res),
+          'ms',
+        ].join(' ')
+      } catch (error: unknown) {
+        console.error(
+          `Error generating morgan log line`,
+          error,
+          req.originalUrl,
+        )
+        return ''
+      }
+    },
+    {
+      skip: (req, res) => {
+        if (res.statusCode !== 200) return false
+        // skip health check related requests
+        const headToRoot = req.method === 'HEAD' && req.originalUrl === '/'
+        const getToHealthcheck =
+          req.method === 'GET' && req.originalUrl === '/healthcheck'
+        return headToRoot || getToHealthcheck
+      },
+    },
+  ),
 )
 
 app.use((req, res, next) => {
