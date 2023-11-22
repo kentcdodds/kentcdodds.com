@@ -54,6 +54,8 @@
   "dependencies": {
     "@conform-to/react": "^0.9.0",
     "@conform-to/zod": "^0.9.0",
+    "@epic-web/client-hints": "^1.2.0",
+    "@epic-web/remember": "^1.0.2",
     "@kentcdodds/md-temp": "^5.0.0",
     "@metronome-sh/express": "^6.0.1",
     "@metronome-sh/react": "^6.0.1",

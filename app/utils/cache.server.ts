@@ -1,3 +1,4 @@
+import {remember} from '@epic-web/remember'
 import type BetterSqlite3 from 'better-sqlite3'
 import Database from 'better-sqlite3'
 import {
@@ -15,11 +16,10 @@ import {updatePrimaryCacheValue} from '~/routes/resources+/cache.sqlite.ts'
 import {getRequiredServerEnvVar} from './misc.tsx'
 import {getUser} from './session.server.ts'
 import {time, type Timings} from './timing.server.ts'
-import {singleton} from './singleton.server.ts'
 
 const CACHE_DATABASE_PATH = getRequiredServerEnvVar('CACHE_DATABASE_PATH')
 
-const cacheDb = singleton('cacheDb', createDatabase)
+const cacheDb = remember('cacheDb', createDatabase)
 
 function createDatabase(tryAgain = true): BetterSqlite3.Database {
   const db = new Database(CACHE_DATABASE_PATH)
@@ -48,7 +48,7 @@ function createDatabase(tryAgain = true): BetterSqlite3.Database {
   return db
 }
 
-const lru = singleton(
+const lru = remember(
   'lru-cache',
   () => new LRUCache<string, CacheEntry<unknown>>({max: 5000}),
 )

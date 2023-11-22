@@ -1,15 +1,15 @@
+import {remember} from '@epic-web/remember'
 import {PrismaClient} from '@prisma/client'
 import chalk from 'chalk'
 import {ensurePrimary} from '~/utils/cjs/litefs-js.server.js'
 import pProps from 'p-props'
 import {type Session} from '~/types.ts'
 import {decrypt, encrypt} from './encryption.server.ts'
-import {singleton} from './singleton.server.ts'
 import {time, type Timings} from './timing.server.ts'
 
 const logThreshold = 500
 
-const prisma = singleton('prisma', getClient)
+const prisma = remember('prisma', getClient)
 
 function getClient(): PrismaClient {
   // NOTE: during development if you change anything in this function, remember
