@@ -8,7 +8,6 @@ import {
   Form,
   useActionData,
   useLoaderData,
-  useRouteError,
   useSearchParams,
 } from '@remix-run/react'
 import {clsx} from 'clsx'
@@ -32,6 +31,7 @@ import {
   typedBoolean,
   useDebounce,
   useDoubleCheck,
+  useCapturedRouteError,
 } from '~/utils/misc.tsx'
 import {prisma} from '~/utils/prisma.server.ts'
 import {requireAdminUser} from '~/utils/session.server.ts'
@@ -422,7 +422,7 @@ export default function MeAdmin() {
 }
 
 export function ErrorBoundary() {
-  const error = useRouteError()
+  const error = useCapturedRouteError()
   console.error(error)
   if (error instanceof Error) {
     return (

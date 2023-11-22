@@ -1,5 +1,5 @@
 import {json, type HeadersFunction, type LoaderFunction} from '@remix-run/node'
-import {useLoaderData, useRouteError} from '@remix-run/react'
+import {useLoaderData} from '@remix-run/react'
 import {ButtonLink} from '~/components/button.tsx'
 import {ServerError} from '~/components/errors.tsx'
 import {AboutSection} from '~/components/sections/about-section.tsx'
@@ -25,6 +25,7 @@ import {
   getOptionalTeam,
   reuseUsefulLoaderHeaders,
   teams,
+  useCapturedRouteError,
   type OptionalTeam,
 } from '~/utils/misc.tsx'
 import {getUser} from '~/utils/session.server.ts'
@@ -136,7 +137,7 @@ export default function IndexRoute() {
 }
 
 export function ErrorBoundary() {
-  const error = useRouteError()
+  const error = useCapturedRouteError()
   console.error(error)
   return <ServerError />
 }

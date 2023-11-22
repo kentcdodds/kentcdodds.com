@@ -3,11 +3,7 @@ import {
   type DataFunctionArgs,
   type HeadersFunction,
 } from '@remix-run/node'
-import {
-  isRouteErrorResponse,
-  useLoaderData,
-  useRouteError,
-} from '@remix-run/react'
+import {isRouteErrorResponse, useLoaderData} from '@remix-run/react'
 import * as React from 'react'
 import {BackLink} from '~/components/arrow-button.tsx'
 import {BlurrableImage} from '~/components/blurrable-image.tsx'
@@ -26,7 +22,7 @@ import {
   mdxPageMeta,
   useMdxComponent,
 } from '~/utils/mdx.tsx'
-import {reuseUsefulLoaderHeaders} from '~/utils/misc.tsx'
+import {reuseUsefulLoaderHeaders, useCapturedRouteError} from '~/utils/misc.tsx'
 import {getServerTimeHeader} from '~/utils/timing.server.ts'
 
 export const handle: KCDHandle = {
@@ -156,7 +152,7 @@ export default function MdxScreen() {
 }
 
 export function ErrorBoundary() {
-  const error = useRouteError()
+  const error = useCapturedRouteError()
   if (isRouteErrorResponse(error)) {
     console.error('CatchBoundary', error)
     if (error.data.blogRecommendations) {

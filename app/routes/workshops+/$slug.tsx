@@ -9,7 +9,6 @@ import {
   Link,
   useLoaderData,
   useParams,
-  useRouteError,
 } from '@remix-run/react'
 import * as React from 'react'
 import {ArrowLink, BackLink} from '~/components/arrow-button.tsx'
@@ -30,6 +29,7 @@ import {
   getUrl,
   listify,
   reuseUsefulLoaderHeaders,
+  useCapturedRouteError,
 } from '~/utils/misc.tsx'
 import {getSocialMetas} from '~/utils/seo.ts'
 import {
@@ -476,9 +476,8 @@ export default function WorkshopScreen() {
     </>
   )
 }
-
 export function ErrorBoundary() {
-  const error = useRouteError()
+  const error = useCapturedRouteError()
   if (isRouteErrorResponse(error)) {
     console.error('CatchBoundary', error)
     if (error.status === 404) {

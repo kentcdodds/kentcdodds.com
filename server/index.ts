@@ -1,10 +1,13 @@
-import {createRequestHandler, type RequestHandler} from '@remix-run/express'
+import {
+  createRequestHandler as _createRequestHandler,
+  type RequestHandler,
+} from '@remix-run/express'
 import {
   broadcastDevReady,
   installGlobals,
   type ServerBuild,
 } from '@remix-run/node'
-import * as Sentry from '@sentry/node'
+import * as Sentry from '@sentry/remix'
 import address from 'address'
 import chalk from 'chalk'
 import chokidar from 'chokidar'
@@ -53,7 +56,13 @@ const primaryHost = 'kentcdodds.com'
 const getHost = (req: {get: (key: string) => string | undefined}) =>
   req.get('X-Forwarded-Host') ?? req.get('host') ?? ''
 
-if (process.env.FLY) {
+const MODE = process.env.NODE_ENV
+
+const createRequestHandler = Sentry.wrapExpressCreateRequestHandler(
+  _createRequestHandler,
+)
+
+if (MODE === 'production') {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
     tracesSampleRate: 0.3,
@@ -61,8 +70,6 @@ if (process.env.FLY) {
   })
   Sentry.setContext('region', {name: process.env.FLY_INSTANCE ?? 'unknown'})
 }
-
-const MODE = process.env.NODE_ENV
 
 const app = express()
 app.use(serverTiming())
@@ -95,6 +102,9 @@ app.use(async (req, res, next) => {
   res.set('Strict-Transport-Security', `max-age=${60 * 60 * 24 * 365 * 100}`)
   next()
 })
+
+app.use(Sentry.Handlers.requestHandler())
+app.use(Sentry.Handlers.tracingHandler())
 
 app.use(async (req, res, next) => {
   if (req.get('cf-visitor')) {
@@ -227,7 +237,11 @@ app.use(
     crossOriginEmbedderPolicy: false,
     contentSecurityPolicy: {
       directives: {
-        'connect-src': MODE === 'development' ? ['ws:', "'self'"] : null,
+        'connect-src': [
+          ...(MODE === 'development' ? ['ws:'] : []),
+          ...(process.env.SENTRY_DSN ? ['*.ingest.sentry.io'] : []),
+          "'self'",
+        ].filter(Boolean),
         'font-src': ["'self'"],
         'frame-src': [
           "'self'",

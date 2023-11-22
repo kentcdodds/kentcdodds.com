@@ -1,5 +1,5 @@
 import {json, redirect, type ActionFunction} from '@remix-run/node'
-import {Link, useActionData, useRouteError} from '@remix-run/react'
+import {Link, useActionData} from '@remix-run/react'
 import * as React from 'react'
 import {CallRecorder} from '~/components/calls/recorder.tsx'
 import {
@@ -23,6 +23,7 @@ import {
   getNonNull,
   getOptionalTeam,
   getRequiredServerEnvVar,
+  useCapturedRouteError,
 } from '~/utils/misc.tsx'
 import {prisma} from '~/utils/prisma.server.ts'
 import {requireUser} from '~/utils/session.server.ts'
@@ -142,9 +143,8 @@ export default function RecordScreen() {
     </div>
   )
 }
-
 export function ErrorBoundary() {
-  const error = useRouteError()
+  const error = useCapturedRouteError()
   console.error(error)
   return (
     <div>

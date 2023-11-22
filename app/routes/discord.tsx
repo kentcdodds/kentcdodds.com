@@ -11,7 +11,7 @@ import {
   type LoaderFunction,
   type MetaFunction,
 } from '@remix-run/node'
-import {Outlet, useLoaderData, useRouteError} from '@remix-run/react'
+import {Outlet, useLoaderData} from '@remix-run/react'
 import {motion} from 'framer-motion'
 import {ArrowLink} from '~/components/arrow-button.tsx'
 import {ButtonLink} from '~/components/button.tsx'
@@ -42,6 +42,7 @@ import {
   getDisplayUrl,
   getUrl,
   reuseUsefulLoaderHeaders,
+  useCapturedRouteError,
 } from '~/utils/misc.tsx'
 import {getSocialMetas} from '~/utils/seo.ts'
 import {getTestimonials, type Testimonial} from '~/utils/testimonials.server.ts'
@@ -552,7 +553,7 @@ export default function Discord() {
 }
 
 export function ErrorBoundary() {
-  const error = useRouteError()
+  const error = useCapturedRouteError()
   console.error(error)
   if (error instanceof Error) {
     return (

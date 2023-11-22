@@ -1,5 +1,6 @@
 import {type HeadersFunction} from '@remix-run/node'
-import {Link, type LinkProps} from '@remix-run/react'
+import {captureRemixErrorBoundaryError} from '@sentry/remix'
+import {Link, useRouteError, type LinkProps} from '@remix-run/react'
 import * as dateFns from 'date-fns'
 import md5 from 'md5-hash'
 import * as React from 'react'
@@ -434,6 +435,40 @@ export function invariant(
   if (!condition) {
     throw new Error(typeof message === 'function' ? message() : message)
   }
+}
+
+/**
+ * Provide a condition and if that condition is falsey, this throws a 400
+ * Response with the given message.
+ *
+ * inspired by invariant from 'tiny-invariant'
+ *
+ * @example
+ * invariantResponse(typeof value === 'string', `value must be a string`)
+ *
+ * @param condition The condition to check
+ * @param message The message to throw (or a callback to generate the message)
+ * @param responseInit Additional response init options if a response is thrown
+ *
+ * @throws {Response} if condition is falsey
+ */
+export function invariantResponse(
+  condition: any,
+  message: string | (() => string),
+  responseInit?: ResponseInit,
+): asserts condition {
+  if (!condition) {
+    throw new Response(typeof message === 'function' ? message() : message, {
+      status: 400,
+      ...responseInit,
+    })
+  }
+}
+
+export function useCapturedRouteError() {
+  const error = useRouteError()
+  captureRemixErrorBoundaryError(error)
+  return error
 }
 
 export {listify} from './listify.ts'

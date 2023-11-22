@@ -8,7 +8,6 @@ import {
   useFetcher,
   useLoaderData,
   useParams,
-  useRouteError,
 } from '@remix-run/react'
 import {clsx} from 'clsx'
 import * as React from 'react'
@@ -48,6 +47,7 @@ import {
   formatNumber,
   reuseUsefulLoaderHeaders,
   typedBoolean,
+  useCapturedRouteError,
 } from '~/utils/misc.tsx'
 import {addPostRead} from '~/utils/prisma.server.ts'
 import {getSession} from '~/utils/session.server.ts'
@@ -648,9 +648,8 @@ export default function MdxScreen() {
     </div>
   )
 }
-
 export function ErrorBoundary() {
-  const error = useRouteError()
+  const error = useCapturedRouteError()
 
   if (isRouteErrorResponse(error)) {
     console.error('CatchBoundary', error)

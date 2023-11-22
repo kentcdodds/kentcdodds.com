@@ -1,9 +1,9 @@
 // this is just here to test the error page
 
 import {type LoaderFunction} from '@remix-run/node'
-import {useRouteError} from '@remix-run/react'
 import {ServerError} from '~/components/errors.tsx'
 import {type KCDHandle} from '~/types.ts'
+import {useCapturedRouteError} from '~/utils/misc.tsx'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -18,7 +18,7 @@ export default function Screen() {
 }
 
 export function ErrorBoundary() {
-  const error = useRouteError()
+  const error = useCapturedRouteError()
   console.error(error)
   return <ServerError />
 }

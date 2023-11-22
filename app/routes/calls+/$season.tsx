@@ -7,7 +7,6 @@ import {
   Outlet,
   useMatches,
   useParams,
-  useRouteError,
 } from '@remix-run/react'
 import {clsx} from 'clsx'
 import {
@@ -31,7 +30,11 @@ import {getEpisodes} from '~/utils/transistor.server.ts'
 import {getServerTimeHeader} from '~/utils/timing.server.ts'
 import {useCallsEpisodeUIState} from '~/utils/providers.tsx'
 
-import {formatDuration, reuseUsefulLoaderHeaders} from '~/utils/misc.tsx'
+import {
+  formatDuration,
+  reuseUsefulLoaderHeaders,
+  useCapturedRouteError,
+} from '~/utils/misc.tsx'
 import {getEpisodesBySeason} from '../calls.tsx'
 
 export const handle: KCDHandle = {
@@ -193,7 +196,7 @@ export default function CallsSeason() {
 }
 
 export function ErrorBoundary() {
-  const error = useRouteError()
+  const error = useCapturedRouteError()
   const params = useParams()
 
   if (isRouteErrorResponse(error)) {

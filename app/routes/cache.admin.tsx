@@ -3,7 +3,6 @@ import {
   Form,
   useFetcher,
   useLoaderData,
-  useRouteError,
   useSearchParams,
   useSubmit,
 } from '@remix-run/react'
@@ -28,7 +27,11 @@ import {
   lruCache,
   searchCacheKeys,
 } from '~/utils/cache.server.ts'
-import {useDebounce, useDoubleCheck} from '~/utils/misc.tsx'
+import {
+  useDebounce,
+  useDoubleCheck,
+  useCapturedRouteError,
+} from '~/utils/misc.tsx'
 import {requireAdminUser} from '~/utils/session.server.ts'
 
 export async function loader({request}: DataFunctionArgs) {
@@ -233,7 +236,7 @@ function CacheKeyRow({
 }
 
 export function ErrorBoundary() {
-  const error = useRouteError()
+  const error = useCapturedRouteError()
   console.error(error)
 
   if (error instanceof Error) {

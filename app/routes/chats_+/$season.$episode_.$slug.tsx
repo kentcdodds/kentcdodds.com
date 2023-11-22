@@ -10,7 +10,6 @@ import {
   Link,
   useLoaderData,
   useLocation,
-  useRouteError,
 } from '@remix-run/react'
 import {clsx} from 'clsx'
 import {motion} from 'framer-motion'
@@ -43,6 +42,7 @@ import {
   listify,
   reuseUsefulLoaderHeaders,
   typedBoolean,
+  useCapturedRouteError,
 } from '~/utils/misc.tsx'
 import {getSocialMetas} from '~/utils/seo.ts'
 import {getSeasons} from '~/utils/simplecast.server.ts'
@@ -550,7 +550,7 @@ export default function PodcastDetail() {
 }
 
 export function ErrorBoundary() {
-  const error = useRouteError()
+  const error = useCapturedRouteError()
   if (isRouteErrorResponse(error)) {
     console.error('CatchBoundary', error)
     if (error.status === 404) {

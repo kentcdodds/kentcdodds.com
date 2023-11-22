@@ -2,7 +2,10 @@ import {RemixBrowser} from '@remix-run/react'
 import * as React from 'react'
 import {hydrateRoot} from 'react-dom/client'
 
-// fixup stuff before hydrating
+if (ENV.MODE === 'production' && ENV.SENTRY_DSN) {
+  void import('./utils/monitoring.client.tsx').then(({init}) => init())
+}
+
 function hydrate() {
   React.startTransition(() => {
     hydrateRoot(document, <RemixBrowser />)

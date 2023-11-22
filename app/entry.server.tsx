@@ -13,6 +13,10 @@ import {NonceProvider} from './utils/nonce-provider.ts'
 
 global.ENV = getEnv()
 
+if (ENV.MODE === 'production' && ENV.SENTRY_DSN) {
+  void import('./utils/monitoring.server.ts').then(({init}) => init())
+}
+
 const ABORT_DELAY = 5000
 
 // NOTE: we've got a patch-package on Remix that adds the loadContext argument

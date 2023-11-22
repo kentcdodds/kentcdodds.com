@@ -4,7 +4,6 @@ import {
   Link,
   useLoaderData,
   useParams,
-  useRouteError,
 } from '@remix-run/react'
 import {orderBy} from '~/utils/cjs/lodash.js'
 import {ServerError} from '~/components/errors.tsx'
@@ -14,7 +13,11 @@ import {MissingSomething} from '~/components/kifs.tsx'
 import {H3, Paragraph} from '~/components/typography.tsx'
 import {type CWKSeason, type KCDHandle} from '~/types.ts'
 import {getCWKEpisodePath} from '~/utils/chats-with-kent.ts'
-import {formatDuration, reuseUsefulLoaderHeaders} from '~/utils/misc.tsx'
+import {
+  formatDuration,
+  reuseUsefulLoaderHeaders,
+  useCapturedRouteError,
+} from '~/utils/misc.tsx'
 import {useChatsEpisodeUIState} from '~/utils/providers.tsx'
 import {getSeasonListItems} from '~/utils/simplecast.server.ts'
 import {getServerTimeHeader} from '~/utils/timing.server.ts'
@@ -104,7 +107,7 @@ export default function ChatsSeason() {
 }
 
 export function ErrorBoundary() {
-  const error = useRouteError()
+  const error = useCapturedRouteError()
   const params = useParams()
 
   if (isRouteErrorResponse(error)) {

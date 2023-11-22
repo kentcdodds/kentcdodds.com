@@ -1,4 +1,5 @@
 import {cssBundleHref} from '@remix-run/css-bundle'
+import {withSentry} from '@sentry/remix'
 import {
   json,
   type DataFunctionArgs,
@@ -20,7 +21,6 @@ import {
   useLoaderData,
   useLocation,
   useNavigation,
-  useRouteError,
 } from '@remix-run/react'
 import * as React from 'react'
 
@@ -72,6 +72,7 @@ import {getScheduledEvents} from './utils/workshop-tickets.server.ts'
 import {getWorkshops} from './utils/workshops.server.ts'
 import {getTheme} from './utils/theme.server.ts'
 import {useTheme} from './utils/theme.tsx'
+import {useCapturedRouteError} from '~/utils/misc.tsx'
 
 export const handle: KCDHandle & {id: string} = {
   id: 'root',
@@ -583,13 +584,14 @@ function App() {
   )
 }
 
-export default function AppWithProviders() {
+function AppWithProviders() {
   return (
     <TeamProvider>
       <App />
     </TeamProvider>
   )
 }
+export default withSentry(AppWithProviders)
 
 function ErrorDoc({children}: {children: React.ReactNode}) {
   const nonce = useNonce()
@@ -611,7 +613,7 @@ function ErrorDoc({children}: {children: React.ReactNode}) {
 // all other errors should be caught by the index route which will include
 // the footer and stuff, which is much better.
 export function ErrorBoundary() {
-  const error = useRouteError()
+  const error = useCapturedRouteError()
   const location = useLocation()
 
   if (isRouteErrorResponse(error)) {

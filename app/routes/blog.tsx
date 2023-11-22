@@ -7,12 +7,7 @@ import {
   type MetaFunction,
   type SerializeFrom,
 } from '@remix-run/node'
-import {
-  Link,
-  useLoaderData,
-  useRouteError,
-  useSearchParams,
-} from '@remix-run/react'
+import {Link, useLoaderData, useSearchParams} from '@remix-run/react'
 import {clsx} from 'clsx'
 import * as React from 'react'
 import {ArrowLink} from '~/components/arrow-button.tsx'
@@ -52,6 +47,7 @@ import {
   isTeam,
   reuseUsefulLoaderHeaders,
   useUpdateQueryStringValueWithoutNavigation,
+  useCapturedRouteError,
 } from '~/utils/misc.tsx'
 import {getSocialMetas} from '~/utils/seo.ts'
 import {useTeam} from '~/utils/team-provider.tsx'
@@ -604,9 +600,8 @@ function BlogHome() {
 }
 
 export default BlogHome
-
 export function ErrorBoundary() {
-  const error = useRouteError()
+  const error = useCapturedRouteError()
   console.error(error)
   return <ServerError />
 }

@@ -4,8 +4,9 @@ import {
   type ActionFunction,
   type LoaderFunction,
 } from '@remix-run/node'
-import {Form, useLoaderData, useRouteError} from '@remix-run/react'
+import {Form, useLoaderData} from '@remix-run/react'
 import {type KCDHandle} from '~/types.ts'
+import {useCapturedRouteError} from '~/utils/misc.tsx'
 
 export const handle: KCDHandle = {
   getSitemapEntries: () => null,
@@ -37,7 +38,7 @@ export default function GuestInfo() {
 }
 
 export function ErrorBoundary() {
-  const error = useRouteError()
+  const error = useCapturedRouteError()
   console.error(error)
   if (error instanceof Error) {
     return (
