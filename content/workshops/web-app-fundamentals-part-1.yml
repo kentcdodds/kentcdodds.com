@@ -70,6 +70,6 @@ topics:
 prerequisite: >-
   You should have experience with [these JavaScript
   features](/blog/javascript-to-know-for-react) and attend my [React Hooks
-  Workshop](/workshops/react-hooks) or have the equivalent experience. This
+  Workshop](https://epicreact.dev/hooks) or have the equivalent experience. This
   workshop will use TypeScript, but should be completable if you do not have
   experience with TypeScript.
