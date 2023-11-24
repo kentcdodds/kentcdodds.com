@@ -3,12 +3,7 @@ import {
   type DataFunctionArgs,
   type HeadersFunction,
 } from '@remix-run/node'
-import {
-  isRouteErrorResponse,
-  useFetcher,
-  useLoaderData,
-  useParams,
-} from '@remix-run/react'
+import {isRouteErrorResponse, useLoaderData, useParams} from '@remix-run/react'
 import {clsx} from 'clsx'
 import * as React from 'react'
 import {ArrowLink, BackLink} from '~/components/arrow-button.tsx'
@@ -30,11 +25,8 @@ import {
   getBlogReadRankings,
   getBlogRecommendations,
   getTotalPostReads,
-  notifyOfOverallTeamLeaderChange,
-  notifyOfTeamLeaderChangeOnPost,
   type ReadRankings,
 } from '~/utils/blog.server.ts'
-import {getClientSession} from '~/utils/client.server.ts'
 import {
   getBannerAltProp,
   getBannerTitleProp,
@@ -49,13 +41,12 @@ import {
   typedBoolean,
   useCapturedRouteError,
 } from '~/utils/misc.tsx'
-import {addPostRead} from '~/utils/prisma.server.ts'
-import {getSession} from '~/utils/session.server.ts'
 import {teamEmoji, useTeam} from '~/utils/team-provider.tsx'
 import {getServerTimeHeader} from '~/utils/timing.server.ts'
 import {useRootData} from '~/utils/use-root-data.ts'
 import {getScheduledEvents} from '~/utils/workshop-tickets.server.ts'
 import {getWorkshops} from '~/utils/workshops.server.ts'
+import {markAsRead} from '../action+/mark-as-read.tsx'
 
 const handleId = 'blog-post'
 export const handle: KCDHandle = {
@@ -68,80 +59,6 @@ export const handle: KCDHandle = {
         return {route: `/blog/${page.slug}`, priority: 0.7}
       })
   },
-}
-
-export async function action({params, request}: DataFunctionArgs) {
-  if (!params.slug) {
-    throw new Error('params.slug is not defined')
-  }
-  const formData = await request.formData()
-  const intent = formData.get('intent')
-  switch (intent) {
-    case 'mark-as-read': {
-      const {slug} = params
-      const session = await getSession(request)
-      const user = await session.getUser()
-
-      const [beforePostLeader, beforeOverallLeader] = await Promise.all([
-        getBlogReadRankings({request, slug}).then(getRankingLeader),
-        getBlogReadRankings({request}).then(getRankingLeader),
-      ])
-      if (user) {
-        await addPostRead({
-          slug,
-          userId: user.id,
-        })
-      } else {
-        const client = await getClientSession(request, user)
-        const clientId = client.getClientId()
-        if (clientId) {
-          await addPostRead({slug, clientId})
-        }
-      }
-
-      // trigger an update to the ranking cache and notify when the leader changed
-      const [afterPostLeader, afterOverallLeader] = await Promise.all([
-        getBlogReadRankings({
-          request,
-          slug,
-          forceFresh: true,
-        }).then(getRankingLeader),
-        getBlogReadRankings({request, forceFresh: true}).then(getRankingLeader),
-      ])
-
-      if (
-        afterPostLeader?.team &&
-        afterPostLeader.team !== beforePostLeader?.team
-      ) {
-        // fire and forget notification because the user doesn't care whether this finishes
-        void notifyOfTeamLeaderChangeOnPost({
-          request,
-          postSlug: slug,
-          reader: user,
-          newLeader: afterPostLeader.team,
-          prevLeader: beforePostLeader?.team,
-        })
-      }
-      if (
-        afterOverallLeader?.team &&
-        afterOverallLeader.team !== beforeOverallLeader?.team
-      ) {
-        // fire and forget notification because the user doesn't care whether this finishes
-        void notifyOfOverallTeamLeaderChange({
-          request,
-          postSlug: slug,
-          reader: user,
-          newLeader: afterOverallLeader.team,
-          prevLeader: beforeOverallLeader?.team,
-        })
-      }
-
-      return json({success: true})
-    }
-    default: {
-      throw new Error(`Unknown intent: ${intent}`)
-    }
-  }
 }
 
 type CatchData = {
@@ -396,11 +313,6 @@ export default function MdxScreen() {
 
   const {code, dateDisplay, frontmatter} = data.page
   const params = useParams()
-  const markAsRead = useFetcher()
-  const markAsReadRef = React.useRef(markAsRead)
-  React.useEffect(() => {
-    markAsReadRef.current = markAsRead
-  }, [markAsRead])
   const {slug} = params
   const Component = useMdxComponent(code)
 
@@ -418,8 +330,8 @@ export default function MdxScreen() {
     time: data.page.readTime?.time,
     onRead: React.useCallback(() => {
       if (isDraft) return
-      markAsReadRef.current.submit({intent: 'mark-as-read'}, {method: 'POST'})
-    }, [isDraft]),
+      if (slug) void markAsRead({slug})
+    }, [isDraft, slug]),
   })
 
   return (
