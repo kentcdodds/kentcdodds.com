@@ -6,6 +6,12 @@ export function init() {
   Sentry.init({
     dsn: ENV.SENTRY_DSN,
     environment: ENV.MODE,
+    beforeSend(event, hint) {
+      if (isBrowserExtensionError(hint.originalException)) {
+        return null
+      }
+      return event
+    },
     integrations: [
       new Sentry.BrowserTracing({
         routingInstrumentation: Sentry.remixRouterInstrumentation(
@@ -29,4 +35,14 @@ export function init() {
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
   })
+}
+
+function isBrowserExtensionError(exception: unknown): boolean {
+  if (exception instanceof Error && exception.stack) {
+    const extensionPattern =
+      /chrome-extension:|moz-extension:|extensions|anonymous scripts/
+    return extensionPattern.test(exception.stack)
+  }
+
+  return false
 }
