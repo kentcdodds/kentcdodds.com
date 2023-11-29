@@ -395,31 +395,33 @@ well. There were just a few different (better) option names and I needed to
 write a SQLite adapter:
 
 ```ts
+const preparedGet = cacheDb.prepare(
+  'SELECT value, metadata FROM cache WHERE key = ?'
+)
+const preparedSet = cacheDb.prepare(
+  'INSERT OR REPLACE INTO cache (key, value, metadata) VALUES (@key, @value, @metadata)'
+)
+const preparedDelete = cacheDb.prepare('DELETE FROM cache WHERE key = ?')
+
 export const cache: CachifiedCache = {
   name: 'SQLite cache',
   get(key) {
-    const result = cacheDb
-      .prepare('SELECT value, metadata FROM cache WHERE key = ?')
-      .get(key)
+    const result = preparedGet.get(key)
     if (!result) return null
     return {
       metadata: JSON.parse(result.metadata),
       value: JSON.parse(result.value),
     }
   },
-  set(key, {value, metadata}) {
-    cacheDb
-      .prepare(
-        'INSERT OR REPLACE INTO cache (key, value, metadata) VALUES (@key, @value, @metadata)',
-      )
-      .run({
-        key,
-        value: JSON.stringify(value),
-        metadata: JSON.stringify(metadata),
-      })
+  set(key, { value, metadata }) {
+    preparedSet.run({
+      key,
+      value: JSON.stringify(value),
+      metadata: JSON.stringify(metadata),
+    })
   },
-  async delete(key) {
-    cacheDb.prepare('DELETE FROM cache WHERE key = ?').run(key)
+  delete(key) {
+    preparedDelete.run(key)
   },
 }
 ```
