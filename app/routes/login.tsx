@@ -277,7 +277,7 @@ function Login() {
           >
             TestingJavaScript.com
           </a>
-          {` and `}
+          {`, `}
           <a
             href="https://epicreact.dev"
             className="underlined text-blue-500"
@@ -285,6 +285,15 @@ function Login() {
             rel="noreferrer noopener"
           >
             EpicReact.dev
+          </a>
+          {`, and `}
+          <a
+            href="https://epicweb.dev"
+            className="underlined text-red-500"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            EpicWeb.dev
           </a>
           {`
             accounts, but I recommend you use the same email address for all of
