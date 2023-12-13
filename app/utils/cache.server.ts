@@ -55,12 +55,18 @@ const lru = remember(
 
 export const lruCache = lruCacheAdapter(lru)
 
+const preparedGet = cacheDb.prepare(
+  'SELECT value, metadata FROM cache WHERE key = ?',
+)
+const preparedSet = cacheDb.prepare(
+  'INSERT OR REPLACE INTO cache (key, value, metadata) VALUES (@key, @value, @metadata)',
+)
+const preparedDelete = cacheDb.prepare('DELETE FROM cache WHERE key = ?')
+
 export const cache: CachifiedCache = {
   name: 'SQLite cache',
   get(key) {
-    const result = cacheDb
-      .prepare('SELECT value, metadata FROM cache WHERE key = ?')
-      .get(key) as any // TODO: fix this with zod or something
+    const result = preparedGet.get(key) as any // TODO: fix this with zod or something
     if (!result) return null
     return {
       metadata: JSON.parse(result.metadata),
@@ -71,15 +77,11 @@ export const cache: CachifiedCache = {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const {currentIsPrimary, primaryInstance} = await getInstanceInfo()
     if (currentIsPrimary) {
-      cacheDb
-        .prepare(
-          'INSERT OR REPLACE INTO cache (key, value, metadata) VALUES (@key, @value, @metadata)',
-        )
-        .run({
-          key,
-          value: JSON.stringify(entry.value),
-          metadata: JSON.stringify(entry.metadata),
-        })
+      preparedSet.run({
+        key,
+        value: JSON.stringify(entry.value),
+        metadata: JSON.stringify(entry.metadata),
+      })
     } else {
       // fire-and-forget cache update
       void updatePrimaryCacheValue({
@@ -98,7 +100,7 @@ export const cache: CachifiedCache = {
   async delete(key) {
     const {currentIsPrimary, primaryInstance} = await getInstanceInfo()
     if (currentIsPrimary) {
-      cacheDb.prepare('DELETE FROM cache WHERE key = ?').run(key)
+      preparedDelete.run(key)
     } else {
       // fire-and-forget cache update
       void updatePrimaryCacheValue({
@@ -115,20 +117,20 @@ export const cache: CachifiedCache = {
   },
 }
 
+const preparedAllKeys = cacheDb.prepare('SELECT key FROM cache LIMIT ?')
 export async function getAllCacheKeys(limit: number) {
   return {
-    sqlite: cacheDb
-      .prepare('SELECT key FROM cache LIMIT ?')
-      .all(limit)
-      .map(row => (row as {key: string}).key),
+    sqlite: preparedAllKeys.all(limit).map(row => (row as {key: string}).key),
     lru: [...lru.keys()],
   }
 }
 
+const preparedKeySearch = cacheDb.prepare(
+  'SELECT key FROM cache WHERE key LIKE ? LIMIT ?',
+)
 export async function searchCacheKeys(search: string, limit: number) {
   return {
-    sqlite: cacheDb
-      .prepare('SELECT key FROM cache WHERE key LIKE ? LIMIT ?')
+    sqlite: preparedKeySearch
       .all(`%${search}%`, limit)
       .map(row => (row as {key: string}).key),
     lru: [...lru.keys()].filter(key => key.includes(search)),

@@ -396,10 +396,10 @@ write a SQLite adapter:
 
 ```ts
 const preparedGet = cacheDb.prepare(
-  'SELECT value, metadata FROM cache WHERE key = ?'
+  'SELECT value, metadata FROM cache WHERE key = ?',
 )
 const preparedSet = cacheDb.prepare(
-  'INSERT OR REPLACE INTO cache (key, value, metadata) VALUES (@key, @value, @metadata)'
+  'INSERT OR REPLACE INTO cache (key, value, metadata) VALUES (@key, @value, @metadata)',
 )
 const preparedDelete = cacheDb.prepare('DELETE FROM cache WHERE key = ?')
 
@@ -413,7 +413,7 @@ export const cache: CachifiedCache = {
       value: JSON.parse(result.value),
     }
   },
-  set(key, { value, metadata }) {
+  set(key, {value, metadata}) {
     preparedSet.run({
       key,
       value: JSON.stringify(value),
