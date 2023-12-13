@@ -212,7 +212,7 @@
     "remix-flat-routes": "^0.5.10",
     "rimraf": "^5.0.1",
     "start-server-and-test": "^2.0.0",
-    "tsx": "^3.12.10",
+    "tsx": "^4.6.2",
     "typescript": "^5.2.2"
   },
   "eslintIgnore": [
