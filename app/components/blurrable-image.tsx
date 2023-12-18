@@ -62,26 +62,37 @@ function BlurrableImage({
     'data-evt-onload': isServer
       ? "this.classList.remove('opacity-0')"
       : undefined,
-    className: clsx(img.props.className, 'transition-opacity', {
-      'opacity-0': !visible,
-    }),
+    className: clsx(
+      'absolute h-full w-full',
+      img.props.className,
+      'transition-opacity',
+      {
+        'opacity-0': !visible,
+      },
+    ),
   })
 
   return (
-    <div {...rest}>
+    <div {...rest} className={clsx('relative', rest.className)}>
       {blurDataUrl ? (
         <>
           <img
             key={blurDataUrl}
             src={blurDataUrl}
-            className={img.props.className}
+            className={clsx('absolute w-full h-full', img.props.className)}
             alt={img.props.alt}
           />
-          <div className={clsx(img.props.className, 'backdrop-blur-xl')} />
+          <div
+            className={clsx(
+              'absolute w-full h-full',
+              img.props.className,
+              'backdrop-blur-xl',
+            )}
+          />
         </>
       ) : null}
       {jsImgEl}
-      <noscript>{img}</noscript>
+      <noscript className="absolute z-10 w-full h-full">{img}</noscript>
     </div>
   )
 }

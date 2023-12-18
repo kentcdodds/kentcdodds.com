@@ -155,7 +155,7 @@ function Footer({image}: {image: ImageBuilder}) {
       ({name}) => name === 'Subscribed: general newsletter',
     )
   const featuredImg = (
-    <div className="aspect-h-3 aspect-w-4">
+    <div className="aspect-[4/3]">
       <img
         loading="lazy"
         className="w-full rounded-sm object-contain"

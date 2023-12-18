@@ -74,7 +74,7 @@ export default function SubscribeScreen() {
       <main>
         <Grid className="mb-24 lg:mb-64">
           <div className="col-span-full lg:col-span-6 lg:col-start-1">
-            <div className="aspect-h-3 aspect-w-4 mb-12 lg:mb-0">
+            <div className="aspect-[4/3] mb-12 lg:mb-0">
               <img
                 className="rounded-lg object-cover"
                 {...getImgProps(images.kentCodingWithSkates, {

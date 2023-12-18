@@ -99,7 +99,7 @@ const icons: Record<Socials, React.ReactElement> = {
 function ProfileCard({person}: {person: Person}) {
   return (
     <div className="relative flex w-full flex-col">
-      <div className="aspect-h-4 aspect-w-3 mb-8 w-full flex-none">
+      <div className="aspect-[3/4] mb-8 w-full flex-none">
         <img
           className="rounded-lg object-cover"
           {...getImgProps(getImageBuilder(person.cloudinaryId), {

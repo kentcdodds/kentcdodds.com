@@ -102,12 +102,10 @@ function FeaturedSection({
                 <BlurrableImage
                   blurDataUrl={blurDataUrl}
                   img={img}
-                  className="aspect-h-3 aspect-w-4 lg:aspect-h-5 lg:aspect-w-4"
+                  className="aspect-[4/3] lg:aspect-[4/5]"
                 />
               ) : (
-                <div className="aspect-h-3 aspect-w-4 lg:aspect-h-5 lg:aspect-w-4">
-                  {img}
-                </div>
+                <div className="aspect-[4/3] lg:aspect-[4/5]">{img}</div>
               )}
               {leadingTeam ? (
                 <div className="absolute left-6 top-6 z-20 h-4 w-4 rounded-full bg-team-current p-1" />

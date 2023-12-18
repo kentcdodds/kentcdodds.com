@@ -79,7 +79,6 @@
     "@sentry/profiling-node": "^1.2.6",
     "@sentry/remix": "^7.81.1",
     "@sindresorhus/slugify": "^2.2.1",
-    "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/typography": "^0.5.10",
     "@xstate/react": "^3.2.2",
     "address": "^1.2.2",

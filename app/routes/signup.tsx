@@ -428,7 +428,7 @@ export default function NewAccount() {
           </div>
 
           <div className="col-span-full lg:col-span-6 lg:col-start-1 lg:row-start-1">
-            <div className="aspect-h-6 aspect-w-4">
+            <div className="aspect-[4/6]">
               <img
                 className="rounded-lg object-cover"
                 {...getImgProps(images.kentPalmingSoccerBall, {

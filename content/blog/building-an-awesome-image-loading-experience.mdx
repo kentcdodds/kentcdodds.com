@@ -49,13 +49,13 @@ First of all, you'll notice that the image doesn't pop into place and cause a
 reflow/layout shift. In fact, I've got a [100/100](https://kcd.im/kcd-metronome)
 on [the "Cumulative Layout Shift"](https://web.dev/cls/) web vitals score 😊. I
 do this by specifying the size of the area that holds the image via
-[the aspect-ratio plugin for tailwind](https://github.com/tailwindlabs/tailwindcss-aspect-ratio)
+[the aspect-ratio support in tailwind](https://tailwindcss.com/docs/aspect-ratio)
 (my site uses tailwind btw 😅).
 
 TL;DR:
 
 ```html
-<div class="aspect-h-4 aspect-w-3 md:aspect-h-2 md:aspect-w-3">
+<div class="aspect-[3/4] md:aspect-[3/2]">
   <img src="..." alt="..." class="..." />
 </div>
 ```
@@ -356,7 +356,7 @@ function BlogScreen() {
         <BlurrableImage
           key={frontmatter.bannerCloudinaryId}
           blurDataUrl={frontmatter.bannerBlurDataUrl}
-          className="aspect-h-4 aspect-w-3 md:aspect-h-2 md:aspect-w-3"
+          className="aspect-[3/4] md:aspect-[3/2]"
           img={
             <img
               key={frontmatter.bannerCloudinaryId}

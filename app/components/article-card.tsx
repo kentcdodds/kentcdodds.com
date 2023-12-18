@@ -47,7 +47,7 @@ function ArticleCard({
           <BlurrableImage
             key={bannerCloudinaryId}
             blurDataUrl={bannerBlurDataUrl}
-            className="aspect-h-4 aspect-w-3 rounded-lg"
+            className="aspect-[3/4] rounded-lg"
             img={
               <img
                 title={frontmatter.title ?? getBannerTitleProp(frontmatter)}
@@ -79,7 +79,7 @@ function ArticleCard({
             }
           />
         ) : (
-          <div className="aspect-h-4 aspect-w-3">
+          <div className="aspect-[3/4]">
             <div className="focus-ring w-full rounded-lg transition">
               <MissingSomething aspectRatio="3:4" />
             </div>
