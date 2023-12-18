@@ -107,10 +107,15 @@ function HeroSection({
             />
           ) : imageBuilder ? (
             <motion.img
-              className={clsx('h-auto w-full object-contain', {
-                'max-h-50vh': imageSize === 'medium',
-                'max-h-75vh': imageSize === 'giant',
-              })}
+              className={clsx(
+                'h-auto w-full object-contain',
+                {
+                  'max-h-50vh': imageSize === 'medium',
+                  'max-h-75vh': imageSize === 'giant',
+                },
+                imageBuilder.className,
+              )}
+              style={imageBuilder.style}
               {...getHeroImageProps(imageBuilder)}
               initial={{scale: shouldReduceMotion ? 1 : 1.5, opacity: 0}}
               animate={{scale: 1, opacity: 1}}

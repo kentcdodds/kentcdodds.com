@@ -2,6 +2,7 @@ import {type TransformerOption} from '@cld-apis/types'
 import {buildImageUrl, setConfig} from 'cloudinary-build-url'
 import emojiRegex from 'emoji-regex'
 import {optionalTeams, toBase64, type OptionalTeam} from './utils/misc.tsx'
+import {type CSSProperties} from 'react'
 
 setConfig({
   cloudName: 'kentcdodds-com',
@@ -11,27 +12,40 @@ type ImageBuilder = {
   (transformations?: TransformerOption): string
   alt: string
   id: string
+  className?: string
+  style?: CSSProperties
 }
 const createImages = <
-  ImageType extends Record<string, {id: string; alt: string}>,
+  ImageType extends Record<
+    string,
+    Pick<ImageBuilder, 'id' | 'alt' | 'className' | 'style'>
+  >,
 >(
   images: ImageType,
 ) => {
   const imageBuilders: Record<string, ImageBuilder> = {}
-  for (const [name, {id, alt}] of Object.entries(images)) {
-    imageBuilders[name] = getImageBuilder(id, alt)
+  for (const [name, {id, alt, className, style}] of Object.entries(images)) {
+    imageBuilders[name] = getImageBuilder(id, alt, {className, style})
   }
   return imageBuilders as {[Name in keyof ImageType]: ImageBuilder}
 }
 
-function getImageBuilder(id: string, alt: string = ''): ImageBuilder {
+function getImageBuilder(
+  id: string,
+  alt: string = '',
+  {className, style}: {className?: string; style?: CSSProperties} = {},
+): ImageBuilder {
   function imageBuilder(transformations?: TransformerOption) {
     return buildImageUrl(id, {transformations})
   }
   imageBuilder.alt = alt
   imageBuilder.id = id
+  imageBuilder.className = className
+  imageBuilder.style = style
   return imageBuilder
 }
+
+const square = {aspectRatio: '1/1'} satisfies CSSProperties
 
 const images = createImages({
   kentSignatureDarkMode: {
@@ -121,6 +135,7 @@ const images = createImages({
   getToKnowKentVideoThumbnail: {
     id: 'kent/video-stills/get-to-know-kent-video-thumbnail',
     alt: 'Kent in the air on a snowboard with the words "Get to know Kent C. Dodds"',
+    style: {aspectRatio: '16/9'},
   },
   kodyProfileYellow: {
     id: 'kentcdodds.com/illustrations/kody/kody_profile_yellow',
@@ -141,6 +156,7 @@ const images = createImages({
   teslaY: {
     id: 'kentcdodds.com/illustrations/tesla_y2_j8kti2',
     alt: 'Illustration of a Tesla Model Y',
+    style: {aspectRatio: '1.61'},
   },
   solarPanels: {
     id: 'kentcdodds.com/illustrations/solar_panels_2_ftbwvb',
@@ -149,134 +165,167 @@ const images = createImages({
   snowboard: {
     id: 'kentcdodds.com/illustrations/snowboard_nqqlyr',
     alt: 'Illustration of a snowboard',
+    style: {aspectRatio: '1.764'},
   },
   skis: {
     id: 'kentcdodds.com/illustrations/skis_z5lkc3',
     alt: 'Illustration of skis',
+    style: {aspectRatio: '5/75'},
   },
   kayak: {
     id: 'kentcdodds.com/illustrations/rowing',
     alt: 'Illustration of a kayak',
+    style: square,
   },
   onewheel: {
     id: 'kentcdodds.com/illustrations/one_wheel',
     alt: 'Illustration of a onewheel',
+    style: square,
   },
   microphone: {
     id: 'kentcdodds.com/illustrations/mic',
     alt: 'Illustration of a microphone',
+    style: {aspectRatio: '0.553'},
   },
   kodySkiingBlue: {
     id: 'kentcdodds.com/illustrations/kody/kody_skiing_blue',
     alt: 'Illustration of Kody the Koala on skis in blue',
+    style: square,
   },
   kodySkiingGray: {
     id: 'kentcdodds.com/illustrations/kody/kody_skiing_gray',
     alt: 'Illustration of Kody the Koala on skis in gray',
+    style: square,
   },
   kodySkiingYellow: {
     id: 'kentcdodds.com/illustrations/kody/kody_skiing_yellow',
     alt: 'Illustration of Kody the Koala on skis in yellow',
+    style: square,
   },
   kodySkiingRed: {
     id: 'kentcdodds.com/illustrations/kody/kody_skiing_red',
     alt: 'Illustration of Kody the Koala on skis in red',
+    style: square,
   },
   kodyFlyingSkiingBlue: {
     id: 'kentcdodds.com/illustrations/kody/kody_skiing_flying_blue',
     alt: 'Illustration of Kody the Koala skiing surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+    style: square,
   },
   kodyFlyingSkiingGray: {
     id: 'kentcdodds.com/illustrations/kody/kody_skiing_flying_gray',
     alt: 'Illustration of Kody the Koala skiing surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+    style: square,
   },
   kodyFlyingSkiingYellow: {
     id: 'kentcdodds.com/illustrations/kody/kody_skiing_flying_yellow',
     alt: 'Illustration of Kody the Koala skiing surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+    style: square,
   },
   kodyFlyingSkiingRed: {
     id: 'kentcdodds.com/illustrations/kody/kody_skiing_flying_red',
     alt: 'Illustration of Kody the Koala skiing surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+    style: square,
   },
   kodyFlyingSnowboardingGray: {
     id: 'kentcdodds.com/illustrations/kody/kody_snowboarding_flying_gray',
     alt: 'Illustration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+    style: square,
   },
   kodyFlyingSnowboardingYellow: {
     id: 'kentcdodds.com/illustrations/kody/kody_snowboarding_flying_yellow',
     alt: 'Illustration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+    style: square,
   },
   kodyFlyingSnowboardingRed: {
     id: 'kentcdodds.com/illustrations/kody/kody_snowboarding_flying_red',
     alt: 'Illustration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+    style: square,
   },
   kodyFlyingSnowboardingBlue: {
     id: 'kentcdodds.com/illustrations/kody/kody_snowboarding_flying_blue',
     alt: 'Illustration of Kody the Koala standing on a snowboard surrounded by green leaves, a battery, two skies, a one-wheel, a solar panel, and a recycle logo.',
+    style: square,
   },
   kodyFlyingOnewheelingGray: {
     id: 'kentcdodds.com/illustrations/kody/kody_onewheeling_flying_gray',
     alt: 'Illustration of Kody the Koala standing on a onewheel surrounded by green leaves, a battery, two skies, a snowboard, a solar panel, and a recycle logo.',
+    style: square,
   },
   kodyFlyingOnewheelingYellow: {
     id: 'kentcdodds.com/illustrations/kody/kody_onewheeling_flying_yellow',
     alt: 'Illustration of Kody the Koala standing on a onewheel surrounded by green leaves, a battery, two skies, a snowboard, a solar panel, and a recycle logo.',
+    style: square,
   },
   kodyFlyingOnewheelingRed: {
     id: 'kentcdodds.com/illustrations/kody/kody_onewheeling_flying_red',
     alt: 'Illustration of Kody the Koala standing on a onewheel surrounded by green leaves, a battery, two skies, a snowboard, a solar panel, and a recycle logo.',
+    style: square,
   },
   kodyFlyingOnewheelingBlue: {
     id: 'kentcdodds.com/illustrations/kody/kody_onewheeling_flying_blue',
     alt: 'Illustration of Kody the Koala standing on a onewheel surrounded by green leaves, a battery, two skies, a snowboard, a solar panel, and a recycle logo.',
+    style: square,
   },
   kodyFlyingPlayingSoccerGray: {
     id: 'kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_gray',
     alt: 'Illustration of Kody the Koala kicking a soccer ball surrounded by green leaves, a battery, a onewheel, a snowboard, a solar panel, and a recycle logo.',
+    style: square,
   },
   kodyFlyingPlayingSoccerYellow: {
     id: 'kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_yellow',
     alt: 'Illustration of Kody the Koala kicking a soccer ball surrounded by green leaves, a battery, a onewheel, a snowboard, a solar panel, and a recycle logo.',
+    style: square,
   },
   kodyFlyingPlayingSoccerRed: {
     id: 'kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_red',
     alt: 'Illustration of Kody the Koala kicking a soccer ball surrounded by green leaves, a battery, a onewheel, a snowboard, a solar panel, and a recycle logo.',
+    style: square,
   },
   kodyFlyingPlayingSoccerBlue: {
     id: 'kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_blue',
     alt: 'Illustration of Kody the Koala kicking a soccer ball surrounded by green leaves, a battery, a onewheel, a snowboard, a solar panel, and a recycle logo.',
+    style: square,
   },
   kodySnowboardingYellow: {
     id: 'kentcdodds.com/illustrations/kody/kody_snowboarding_yellow',
     alt: 'Illustration of Kody the Koala on a snowboard in yellow',
+    style: square,
   },
   kodySnowboardingRed: {
     id: 'kentcdodds.com/illustrations/kody/kody_snowboarding_red',
     alt: 'Illustration of Kody the Koala on a snowboard in red',
+    style: square,
   },
   kodySnowboardingBlue: {
     id: 'kentcdodds.com/illustrations/kody/kody_snowboarding_blue',
     alt: 'Illustration of Kody the Koala on a snowboard in blue',
+    style: square,
   },
   kodySnowboardingGray: {
     id: 'kentcdodds.com/illustrations/kody/kody_snowboarding_gray',
     alt: 'Illustration of Kody the Koala on a snowboard in gray',
+    style: square,
   },
   kodyOnewheelingYellow: {
     id: 'kentcdodds.com/illustrations/kody/kody_onewheeling_yellow',
     alt: 'Illustration of Kody the Koala on a snowboard in yellow',
+    style: square,
   },
   kodyOnewheelingRed: {
     id: 'kentcdodds.com/illustrations/kody/kody_onewheeling_red',
     alt: 'Illustration of Kody the Koala on a snowboard in red',
+    style: square,
   },
   kodyOnewheelingBlue: {
     id: 'kentcdodds.com/illustrations/kody/kody_onewheeling_blue',
     alt: 'Illustration of Kody the Koala on a snowboard in blue',
+    style: square,
   },
   kodyOnewheelingGray: {
     id: 'kentcdodds.com/illustrations/kody/kody_onewheeling_gray',
     alt: 'Illustration of Kody the Koala on a snowboard in gray',
+    style: square,
   },
   kodyPlayingSoccerYellow: {
     id: 'kentcdodds.com/illustrations/kody/kody_playing_soccer_yellow',
@@ -297,6 +346,7 @@ const images = createImages({
   helmet: {
     id: 'kentcdodds.com/illustrations/helmet',
     alt: 'Illustration of a helmet',
+    style: square,
   },
   bustedOnewheel: {
     id: 'kentcdodds.com/illustrations/404_2_sprold',

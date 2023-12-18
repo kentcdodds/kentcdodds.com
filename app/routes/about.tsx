@@ -36,6 +36,7 @@ import {getTalksAndTags} from '~/utils/talks.server.ts'
 import {getServerTimeHeader} from '~/utils/timing.server.ts'
 import {useRootData} from '~/utils/use-root-data.ts'
 import {type RootLoaderType} from '~/root.tsx'
+import clsx from 'clsx'
 
 type LoaderData = {
   blogRecommendations: Array<MdxListItem>
@@ -108,11 +109,15 @@ function AboutIndex() {
             img={
               <img
                 id="about-me"
-                className="rounded-lg object-cover"
+                className={clsx(
+                  images.getToKnowKentVideoThumbnail.className,
+                  'rounded-lg object-cover w-full',
+                )}
                 {...getImgProps(images.getToKnowKentVideoThumbnail, {
                   widths: [280, 560, 840, 1100, 1300, 2600, 3900],
                   sizes: ['(min-width:1620px) 1280px', '80vw'],
                 })}
+                style={images.getToKnowKentVideoThumbnail.style}
               />
             }
             ytLiteEmbed={

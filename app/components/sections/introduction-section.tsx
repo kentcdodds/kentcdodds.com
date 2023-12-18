@@ -7,6 +7,7 @@ import {
 } from '../fullscreen-yt-embed.tsx'
 import {Grid} from '../grid.tsx'
 import {H2, H3} from '../typography.tsx'
+import clsx from 'clsx'
 
 function IntroductionSection() {
   const [searchParams] = useSearchParams()
@@ -26,7 +27,11 @@ function IntroductionSection() {
                   '850px',
                 ],
               })}
-              className="rounded-lg object-cover"
+              style={images.getToKnowKentVideoThumbnail.style}
+              className={clsx(
+                images.getToKnowKentVideoThumbnail.className,
+                'rounded-lg object-cover w-full',
+              )}
             />
           }
           ytLiteEmbed={

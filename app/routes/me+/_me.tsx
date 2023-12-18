@@ -402,9 +402,13 @@ function YouScreen() {
 
               <div className="block px-12 pb-12 pt-20 text-center">
                 <img
-                  className="mb-16 block"
+                  className={clsx(
+                    'mb-16 block w-full',
+                    teamMap[team].image.className,
+                  )}
                   src={teamMap[team].image()}
                   alt={teamMap[team].image.alt}
+                  style={teamMap[team].image.style}
                 />
                 <H6 as="span">{teamMap[team].label}</H6>
               </div>

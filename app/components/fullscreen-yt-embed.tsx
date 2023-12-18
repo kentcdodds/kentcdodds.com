@@ -60,7 +60,10 @@ function FullScreenYouTubeEmbed({
       </Dialog>
 
       {showPlayer ? null : (
-        <button className="group relative" onClick={() => setShowPlayer(true)}>
+        <button
+          className="group relative w-full"
+          onClick={() => setShowPlayer(true)}
+        >
           {img}
           <span className="absolute left-0 top-0 h-full w-full">
             <span className="flex h-full w-full items-center justify-center">
