@@ -24,6 +24,12 @@ export class TwitterApiError extends Error {
 
 const TWEET_ID = /^[0-9]+$/
 
+function getToken(id: string) {
+  return ((Number(id) / 1e15) * Math.PI)
+    .toString(6 ** 2)
+    .replace(/(0+|\.)/g, '')
+}
+
 export async function getTweet(id: string): Promise<Tweet | undefined> {
   if (id.length > 40 || !TWEET_ID.test(id)) {
     throw new Error(`Invalid tweet id: ${id}`)
@@ -33,6 +39,7 @@ export async function getTweet(id: string): Promise<Tweet | undefined> {
 
   url.searchParams.set('id', id)
   url.searchParams.set('lang', 'en')
+  url.searchParams.set('token', getToken(id))
   url.searchParams.set(
     'features',
     [
@@ -55,7 +62,7 @@ export async function getTweet(id: string): Promise<Tweet | undefined> {
   const data = isJson ? await res.json() : undefined
 
   if (res.ok) {
-    if (Object.keys(data).length) return data
+    if (data && Object.keys(data).length) return data
     console.error('Empty response from Twitter API', data)
     return
   }
