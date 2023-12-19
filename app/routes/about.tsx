@@ -356,7 +356,7 @@ function AboutIndex() {
         <div className="col-span-full lg:col-span-6">
           <FeatureCard
             title="I have 11 brothers and sisters"
-            description="Yup! There are 6 boys and 6 girls in my family. I'm second to last. No twins. We all have the same mom and dad. Yes my parents are super heros 🦸‍♀️ 🦸"
+            description="Yup! There are 6 boys and 6 girls in my family. I'm second to last. No twins. We all have the same mom and dad. Yes my parents are super heroes 🦸‍♀️ 🦸"
             icon={<UsersIcon size={48} />}
           />
         </div>
