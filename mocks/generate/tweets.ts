@@ -28,7 +28,7 @@ const tweets = {
   deletedTweet: '1406128033216356353',
   streamEmbed: '1403018951639113733',
 }
-const tweetDatas: Record<string, Tweet | undefined> = {}
+const tweetDatas: Record<string, Tweet | null> = {}
 for (const [key, value] of Object.entries(tweets)) {
   // eslint-disable-next-line no-await-in-loop
   tweetDatas[key] = await getTweet(value)
