@@ -135,9 +135,8 @@ async function buildTweetHTML(tweet: Tweet, expandQuotedTweet: boolean) {
   const links = (
     await Promise.all(
       [...tweet.text.matchAll(/https:\/\/t.co\/\w+/g)].map(
-        async ([shortLink], index, array) => {
+        async ([shortLink]) => {
           if (!shortLink) return
-          const isLast = index === array.length - 1
           const longLink = await unshorten(shortLink).catch(() => shortLink)
           const longUrl = new URL(longLink)
           const isTwitterLink = longUrl.host === 'twitter.com'
@@ -165,14 +164,9 @@ async function buildTweetHTML(tweet: Tweet, expandQuotedTweet: boolean) {
           }
 
           if (metadata) {
-            if (isLast && !tweet.mediaDetails?.length) {
-              // We put the embed at the end
-              replacement = ''
-            } else {
-              replacement = `<a href="${longLink}" target="_blank" rel="noreferrer noopener">${
-                metadata.title ?? longUrl.hostname + longUrl.pathname
-              }</a>`
-            }
+            replacement = `<a href="${longLink}" target="_blank" rel="noreferrer noopener">${
+              metadata.title?.trim() || longUrl.hostname + longUrl.pathname
+            }</a>`
           }
           return {
             shortLink,
