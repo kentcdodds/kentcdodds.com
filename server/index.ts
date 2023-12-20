@@ -272,6 +272,7 @@ app.use(
           'i1.wp.com',
           'og-image-react-egghead.now.sh',
           'og-image-react-egghead.vercel.app',
+          'www.epicweb.dev',
           ...(MODE === 'development' ? ['cloudflare-ipfs.com'] : []),
         ],
         'media-src': ["'self'", 'res.cloudinary.com', 'data:', 'blob:'],
