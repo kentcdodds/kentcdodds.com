@@ -158,7 +158,7 @@ function ProblemSolutionSection({
             <Link prefetch="intent" to="/blog?q=career">
               your career
             </Link>
-            {`, and `}
+            {`, `}
             <Link prefetch="intent" to="/blog">
               and more
             </Link>
