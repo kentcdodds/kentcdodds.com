@@ -30,7 +30,7 @@ function NewsletterSection() {
             to="/subscribe"
             className="text-secondary underlined hover:text-team-current focus:text-team-current"
           >
-            {`Learn more`}{' '}
+            {`Learn more about the newsletter`}{' '}
             <ArrowIcon className="inline-block" direction="top-right" />
           </Link>
         </Paragraph>

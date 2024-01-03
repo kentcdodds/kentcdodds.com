@@ -419,10 +419,30 @@ const images = createImages({
 })
 
 const kodyProfiles: Record<OptionalTeam, {src: string; alt: string}> = {
-  RED: {src: images.kodyProfileRed(), alt: images.kodyProfileRed.alt},
-  BLUE: {src: images.kodyProfileBlue(), alt: images.kodyProfileBlue.alt},
-  YELLOW: {src: images.kodyProfileYellow(), alt: images.kodyProfileYellow.alt},
-  UNKNOWN: {src: images.kodyProfileGray(), alt: images.kodyProfileGray.alt},
+  RED: {
+    src: images.kodyProfileRed({
+      resize: {width: 80, type: 'pad', aspectRatio: '1/1'},
+    }),
+    alt: images.kodyProfileRed.alt,
+  },
+  BLUE: {
+    src: images.kodyProfileBlue({
+      resize: {width: 80, height: 80, type: 'pad'},
+    }),
+    alt: images.kodyProfileBlue.alt,
+  },
+  YELLOW: {
+    src: images.kodyProfileYellow({
+      resize: {width: 80, height: 80, type: 'pad'},
+    }),
+    alt: images.kodyProfileYellow.alt,
+  },
+  UNKNOWN: {
+    src: images.kodyProfileGray({
+      resize: {width: 80, height: 80, type: 'pad'},
+    }),
+    alt: images.kodyProfileGray.alt,
+  },
 }
 
 const kodySnowboardingImages: Record<OptionalTeam, ImageBuilder> = {

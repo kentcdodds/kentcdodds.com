@@ -222,7 +222,10 @@ function MobileMenu() {
         const state = isExpanded ? 'open' : 'closed'
         return (
           <>
-            <MenuButton className="focus:border-primary hover:border-primary border-secondary text-primary inline-flex h-14 w-14 items-center justify-center rounded-full border-2 p-1 transition focus:outline-none">
+            <MenuButton
+              title="Site Menu"
+              className="focus:border-primary hover:border-primary border-secondary text-primary inline-flex h-14 w-14 items-center justify-center rounded-full border-2 p-1 transition focus:outline-none"
+            >
               <svg
                 width="32"
                 height="32"
@@ -337,7 +340,7 @@ function ProfileButton({
         <TeamCircle size={56} team={team} />
       </motion.div>
       <img
-        className={clsx('inline w-10 select-none rounded-full')}
+        className={clsx('inline w-10 h-10 select-none rounded-full')}
         src={imageUrl}
         alt={imageAlt}
         crossOrigin="anonymous"
