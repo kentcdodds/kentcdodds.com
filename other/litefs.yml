@@ -46,7 +46,7 @@ tracing:
   enabled: true
 
   # Output path on disk.
-  path: '/var/log/lifefs/trace.log'
+  path: '/var/log/litefs/trace.log'
 
   # Maximum size of a single trace log before rolling.
   # Specified in megabytes.
