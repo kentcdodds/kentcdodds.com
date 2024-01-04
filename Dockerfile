@@ -54,12 +54,16 @@ RUN npm run build
 FROM base
 
 ENV FLY="true"
-ENV LITEFS_DIR="/litefs"
+# TODO: enable litefs
+# ENV LITEFS_DIR="/litefs"
+ENV LITEFS_DIR="/data/litefs-disabled"
 
 ENV DATABASE_FILENAME="sqlite.db"
 ENV DATABASE_URL="file:$LITEFS_DIR/$DATABASE_FILENAME"
 ENV INTERNAL_PORT="8080"
-ENV PORT="8081"
+# TODO: enable litefs proxy
+# ENV PORT="8081"
+ENV PORT="8080"
 ENV NODE_ENV="production"
 # ENV DISABLE_METRONOME="true"
 ENV CACHE_DATABASE_FILENAME="cache.db"
@@ -80,8 +84,10 @@ COPY --from=build /app/server-build /app/server-build
 ADD . .
 
 # prepare for litefs
-COPY --from=flyio/litefs:0.5.10 /usr/local/bin/litefs /usr/local/bin/litefs
-ADD other/litefs.yml /etc/litefs.yml
-RUN mkdir -p /data ${LITEFS_DIR}
+# TODO: enable litefs
+# COPY --from=flyio/litefs:0.5.10 /usr/local/bin/litefs /usr/local/bin/litefs
+# ADD other/litefs.yml /etc/litefs.yml
+# RUN mkdir -p /data ${LITEFS_DIR}
 
-CMD ["litefs", "mount"]
+# CMD ["litefs", "mount"]
+CMD ["npm", "start"]
