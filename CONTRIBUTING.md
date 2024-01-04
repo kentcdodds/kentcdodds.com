@@ -298,6 +298,10 @@ ENV PORT="8080"
 CMD ["npm", "start"]
 ```
 
+> NOTE: this will **not** run migrations or setup the swap file like it does in
+> the current startup process. But hopefully what you're doing is temporary
+> anyway.
+
 And disable the litefs proxy healthcheck in `fly.toml`:
 
 ```toml
