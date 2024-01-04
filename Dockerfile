@@ -90,4 +90,4 @@ ADD . .
 # RUN mkdir -p /data ${LITEFS_DIR}
 
 # CMD ["litefs", "mount"]
-CMD ["node", "./other/start.js"]
+CMD ["npm", "start"]

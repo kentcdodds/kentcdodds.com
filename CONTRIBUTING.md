@@ -295,7 +295,7 @@ ENV PORT="8080"
 # RUN mkdir -p /data ${LITEFS_DIR}
 
 # CMD ["litefs", "mount"]
-CMD ["node", "./other/start.js"]
+CMD ["npm", "start"]
 ```
 
 And disable the litefs proxy healthcheck in `fly.toml`:
