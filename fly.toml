@@ -52,6 +52,7 @@ kill_timeout = "5s"
     path = "/healthcheck"
     protocol = "http"
 
+# TODO: enable litefs proxy
 #   [[services.http_checks]]
 #     grace_period = "10s"
 #     interval = "30s"
