@@ -80,6 +80,12 @@ lease:
 exec:
   - cmd: node ./other/setup-swap.js
 
+  - cmd: sqlite3 $DATABASE_PATH "PRAGMA journal_mode = WAL;"
+    if-candidate: true
+
+  - cmd: sqlite3 $CACHE_DATABASE_PATH "PRAGMA journal_mode = WAL;"
+    if-candidate: true
+
   - cmd: npx prisma migrate deploy
     if-candidate: true
 
