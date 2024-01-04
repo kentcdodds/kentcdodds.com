@@ -41,6 +41,23 @@ proxy:
     - '/*.webmanifest'
     - '/__metronome'
 
+tracing:
+  # Toggles tracing if 'path' is also set. Defaults to true.
+  enabled: true
+
+  # Output path on disk.
+  path: '/var/log/lifefs/trace.log'
+
+  # Maximum size of a single trace log before rolling.
+  # Specified in megabytes.
+  max-size: 64
+
+  # Maximum number of trace logs to retain.
+  max-count: 3
+
+  # If true, historical logs will be compressed using gzip.
+  compress: true
+
 # This flag ensure that LiteFS continues to run if there is an issue on starup.
 # It makes it easy to ssh in and debug any issues you might be having rather
 # than continually restarting on initialization failure.
