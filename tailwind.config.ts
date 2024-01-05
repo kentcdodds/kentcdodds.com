@@ -69,11 +69,22 @@ export default {
         'spin-slow': 'spin 3s linear infinite',
         'spin-xslow': 'spin 7s linear infinite',
         'reverse-spin': 'reverse-spin 1s linear infinite',
+        'hero-reveal': 'hero-reveal 750ms',
       },
       keyframes: {
         'reverse-spin': {
           from: {
             transform: 'rotate(360deg)',
+          },
+        },
+        'hero-reveal': {
+          from: {
+            opacity: '0',
+            transform: 'scale(1.5)',
+          },
+          to: {
+            opacity: '1',
+            transform: 'scale(1)',
           },
         },
       },
