@@ -20,6 +20,10 @@ kill_timeout = "5s"
   destination = "/data"
   processes = ["app"]
 
+[[statics]]
+  guest_path = "/app/public"
+  url_prefix = "/public"
+
 [[services]]
   protocol = "tcp"
   internal_port = 8080
