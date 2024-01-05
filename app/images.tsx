@@ -170,7 +170,7 @@ const images = createImages({
   skis: {
     id: 'kentcdodds.com/illustrations/skis_z5lkc3',
     alt: 'Illustration of skis',
-    style: {aspectRatio: '5/75'},
+    style: {aspectRatio: '0.7'},
   },
   kayak: {
     id: 'kentcdodds.com/illustrations/rowing',
@@ -330,18 +330,22 @@ const images = createImages({
   kodyPlayingSoccerYellow: {
     id: 'kentcdodds.com/illustrations/kody/kody_playing_soccer_yellow',
     alt: 'Illustration of Kody the Koala kicking a soccer ball in yellow',
+    style: {aspectRatio: '0.892'},
   },
   kodyPlayingSoccerRed: {
     id: 'kentcdodds.com/illustrations/kody/kody_playing_soccer_red',
     alt: 'Illustration of Kody the Koala kicking a soccer ball in red',
+    style: {aspectRatio: '0.892'},
   },
   kodyPlayingSoccerBlue: {
     id: 'kentcdodds.com/illustrations/kody/kody_playing_soccer_blue',
     alt: 'Illustration of Kody the Koala kicking a soccer ball in blue',
+    style: {aspectRatio: '0.892'},
   },
   kodyPlayingSoccerGray: {
     id: 'kentcdodds.com/illustrations/kody/kody_playing_soccer_gray',
     alt: 'Illustration of Kody the Koala kicking a soccer ball in gray',
+    style: {aspectRatio: '0.892'},
   },
   helmet: {
     id: 'kentcdodds.com/illustrations/helmet',
@@ -355,66 +359,82 @@ const images = createImages({
   courseAdvancedReactComponentPatterns: {
     id: 'kentcdodds.com/pages/courses/advanced-react-component-patterns',
     alt: 'Illustration for React Class Component Patterns',
+    style: square,
   },
   courseAsts: {
     id: 'kentcdodds.com/pages/courses/asts',
     alt: 'Illustration for Code Transformation and Linting with ASTs',
+    style: square,
   },
   courseEpicReact: {
     id: 'kentcdodds.com/pages/courses/rocket',
     alt: 'Illustration of a Rocket',
+    style: square,
   },
   courseEpicWebLight: {
     id: 'kentcdodds.com/pages/courses/epic-web-light',
     alt: 'The EpicWeb.dev logo',
+    style: square,
   },
   courseEpicWebDark: {
     id: 'kentcdodds.com/pages/courses/epic-web-dark',
     alt: 'The EpicWeb.dev logo',
+    style: square,
   },
   courseHowToContributeToAnOpenSourceProjectOnGitHub: {
     id: 'kentcdodds.com/pages/courses/how-to-contribute-to-an-open-source-project-on-github',
     alt: 'Illustration for How to Contribute to an Open Source Project on GitHub',
+    style: square,
   },
   courseHowToWriteAnOpenSourceJavaScriptLibrary: {
     id: 'kentcdodds.com/pages/courses/how-to-write-an-open-source-javascript-library',
     alt: 'Illustration for How to Write an Open Source JavaScript Library',
+    style: square,
   },
   courseSimplifyReactAppsWithReactHooks: {
     id: 'kentcdodds.com/pages/courses/simplify-react-apps-with-react-hooks',
     alt: 'Illustration for Simplify React Apps with React Hooks',
+    style: square,
   },
   courseTestingJS: {
     id: 'kentcdodds.com/pages/courses/testing-trophy',
     alt: 'Illustration of a trophy',
+    style: square,
   },
   courseTestingPrinciples: {
     id: 'kentcdodds.com/pages/courses/testing-principles',
     alt: 'Illustration for JavaScript Testing Practices and Principles',
+    style: square,
   },
   courseTestingReact: {
     id: 'kentcdodds.com/pages/courses/testing-react',
     alt: 'Illustration for Testing React Applications, v2',
+    style: square,
   },
   courseTheBeginnersGuideToReact: {
     id: 'kentcdodds.com/pages/courses/the-beginners-guide-to-react',
     alt: `Illustration for The Beginner's Guide to React`,
+    style: square,
   },
   courseUpAndRunningWithRemix: {
     id: 'kentcdodds.com/pages/courses/up-and-running-with-remix',
     alt: `Illustration for Up and Running with Remix`,
+    style: square,
   },
   courseUseSuspenseToSimplifyYourAsyncUI: {
     id: 'kentcdodds.com/pages/courses/use-suspense-to-simplify-your-async-ui',
     alt: 'Illustration for Use Suspense to Simplify Your Async UI',
+    style: square,
   },
   courseFEMAdvancedRemix: {
     id: 'kentcdodds.com/pages/courses/fem-advanced-remix',
     alt: 'Illustration of the Remix logo R with the word "Advanced"',
+    style: square,
   },
   courseFEMRemixFundamentals: {
     id: 'kentcdodds.com/pages/courses/fem-remix-fundamentals',
     alt: 'Illustration of the Remix logo R with the word "Fundamentals"',
+    style: square,
   },
 })
 

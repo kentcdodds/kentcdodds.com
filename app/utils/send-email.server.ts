@@ -125,15 +125,19 @@ P.S. If you did not request this email, you can safely ignore it.
           : `Hey ${emailAddress}! Welcome to ${hostname}`
       }</h2>
 
-      <center><img src="https://res.cloudinary.com/kentcdodds-com/image/upload/w_800,q_auto,f_auto/${
-        randomSportyKody.id
-      }" style="max-width: 80%"></center>
-      
-      <h3 style="text-align: center">Click the button below to login to ${hostname}</h3>
-
       <a href="${magicLink}" style="display: block; margin: 0 auto; width: 80%; padding: 1.5rem; background: #A6DEE4; border-radius: 7px; border-width: 0; font-size: 1.1rem; text-align: center; font-family: sans-serif; text-decoration: none; color: black">
         ${userExists ? 'Login' : 'Create Account'}
       </a>
+
+      <center><img src="https://res.cloudinary.com/kentcdodds-com/image/upload/w_800,q_auto,f_auto/${
+        randomSportyKody.id
+      }" style="max-width: 80%;${
+        randomSportyKody.style?.aspectRatio
+          ? `aspect-ratio: ${randomSportyKody.style.aspectRatio};`
+          : ''
+      }"></center>
+
+      <h3 style="text-align: center">Click the button above to login to ${hostname}</h3>
 
       <div style="text-align: center; margin-top: 1rem; font-size: .9rem">
         <div style="color: grey">This link is valid for 30 minutes.</div>

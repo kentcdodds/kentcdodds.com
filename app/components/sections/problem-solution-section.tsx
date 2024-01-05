@@ -66,7 +66,8 @@ function ContentPanel({
               animate={{x: 0, opacity: 1}}
               exit={{x: 40, opacity: 0}}
               transition={{damping: 0, duration: 0.25}}
-              className="mb-6 h-44 lg:mb-14"
+              style={imageBuilder.style}
+              className={clsx('mb-6 h-44 lg:mb-14', imageBuilder.className)}
               {...getImgProps(imageBuilder, {
                 widths: [180, 360, 540],
                 sizes: ['11rem'],

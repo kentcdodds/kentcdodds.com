@@ -10,7 +10,7 @@ function AboutSection() {
         <div className="table-cell text-center align-middle">
           <div>
             <img
-              className="rounded-lg object-cover"
+              className="rounded-lg object-cover w-full h-full"
               {...getImgProps(images.kentSnowSports, {
                 widths: [300, 650, 1300, 1800, 2600],
                 sizes: [
@@ -32,14 +32,10 @@ function AboutSection() {
 
       <div className="col-span-full flex flex-col justify-center lg:col-span-4 lg:col-start-8 lg:mt-0">
         <img
-          className="mt-20 w-auto self-start lg:mt-0"
+          className="mt-20 w-full h-full object-contain self-start lg:mt-0"
           {...getImgProps(images.snowboard, {
             widths: [300, 600, 850, 1600, 2550],
-            sizes: [
-              '(max-width: 1023px) 80vw',
-              '(min-width:1024px) and (max-width:1620px) 25vw',
-              '410px',
-            ],
+            sizes: ['(min-width:1024px) and (max-width:1620px) 25vw', '410px'],
           })}
         />
 

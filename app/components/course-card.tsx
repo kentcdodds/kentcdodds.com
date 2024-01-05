@@ -5,6 +5,7 @@ import {ButtonLink} from './button.tsx'
 import {ArrowIcon} from './icons.tsx'
 import {H2, H3, Paragraph} from './typography.tsx'
 import {Themed} from '~/utils/theme.tsx'
+import clsx from 'clsx'
 
 const MotionButtonLink = motion(ButtonLink)
 
@@ -43,7 +44,8 @@ export function CourseCard({
   function getImg(builder: ImageBuilder) {
     return (
       <img
-        className="h-32 w-auto object-contain"
+        style={builder.style}
+        className={clsx('h-32 object-contain', builder.className)}
         {...getImgProps(builder, {
           widths: [128, 256, 384],
           sizes: ['8rem'],
