@@ -44,6 +44,7 @@ export function CourseCard({
   function getImg(builder: ImageBuilder) {
     return (
       <img
+        loading="lazy"
         style={builder.style}
         className={clsx('h-32 object-contain', builder.className)}
         {...getImgProps(builder, {

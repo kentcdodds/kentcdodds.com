@@ -129,6 +129,8 @@ P.S. If you did not request this email, you can safely ignore it.
         ${userExists ? 'Login' : 'Create Account'}
       </a>
 
+      <br />
+
       <center><img src="https://res.cloudinary.com/kentcdodds-com/image/upload/w_800,q_auto,f_auto/${
         randomSportyKody.id
       }" style="max-width: 80%;${

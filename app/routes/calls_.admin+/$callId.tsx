@@ -2,9 +2,10 @@ import {
   json,
   redirect,
   type ActionFunction,
-  type LoaderFunction,
+  type SerializeFrom,
 } from '@remix-run/node'
 import {Form, useActionData, useLoaderData} from '@remix-run/react'
+import {type LoaderFunctionArgs} from '@remix-run/router'
 import {format} from 'date-fns'
 import * as React from 'react'
 import {Button} from '~/components/button.tsx'
@@ -16,7 +17,7 @@ import {
 import {Field} from '~/components/form-elements.tsx'
 import {Spacer} from '~/components/spacer.tsx'
 import {Paragraph} from '~/components/typography.tsx'
-import {type Await, type KCDHandle} from '~/types.ts'
+import {type KCDHandle} from '~/types.ts'
 import {
   getErrorForAudio,
   getErrorForDescription,
@@ -27,6 +28,7 @@ import {sendMessageFromDiscordBot} from '~/utils/discord.server.ts'
 import {createEpisodeAudio} from '~/utils/ffmpeg.server.ts'
 import {markdownToHtml} from '~/utils/markdown.server.ts'
 import {
+  formatDate,
   getAvatarForUser,
   getErrorMessage,
   getNonNull,
@@ -155,14 +157,16 @@ Thanks for your call. Kent just replied and the episode has been published to th
   }
 }
 
-type LoaderData = {
-  call: Await<ReturnType<typeof getCallInfo>>
-}
+export async function loader({request, params}: LoaderFunctionArgs) {
+  if (!params.callId) {
+    throw new Error('params.callId is not defined')
+  }
+  await requireAdminUser(request)
 
-async function getCallInfo({callId}: {callId: string}) {
   const call = await prisma.call.findFirst({
-    where: {id: callId},
+    where: {id: params.callId},
     select: {
+      createdAt: true,
       base64: true,
       description: true,
       keywords: true,
@@ -174,29 +178,15 @@ async function getCallInfo({callId}: {callId: string}) {
     },
   })
   if (!call) {
-    throw new Error(`No call by the ID of ${callId}`)
-  }
-  return call
-}
-
-export const loader: LoaderFunction = async ({request, params}) => {
-  if (!params.callId) {
-    throw new Error('params.callId is not defined')
-  }
-  await requireAdminUser(request)
-
-  const call = await getCallInfo({callId: params.callId}).catch(() => null)
-  if (!call) {
     console.error(`No call found at ${params.callId}`)
     const searchParams = new URLSearchParams()
     searchParams.set('message', 'Call not found')
     return redirect(`/calls/admin?${searchParams.toString()}`)
   }
-  const data: LoaderData = {call}
-  return json(data)
+  return json({call: {...call, formattedCreatedAt: formatDate(call.createdAt)}})
 }
 
-function CallListing({call}: {call: LoaderData['call']}) {
+function CallListing({call}: {call: SerializeFrom<typeof loader>['call']}) {
   const [audioURL, setAudioURL] = React.useState<string | null>(null)
   const [audioEl, setAudioEl] = React.useState<HTMLAudioElement | null>(null)
   const [playbackRate, setPlaybackRate] = React.useState(2)
@@ -215,7 +205,10 @@ function CallListing({call}: {call: LoaderData['call']}) {
     <section
       className={`set-color-team-current-${call.user.team.toLowerCase()}`}
     >
-      <strong className="text-team-current">{call.user.firstName}</strong>{' '}
+      <strong className="text-team-current">{call.user.firstName}</strong> (
+      <a href={`mailto:${call.user.email}`}>{call.user.email}</a>) asked on{' '}
+      {call.formattedCreatedAt}
+      <br />
       <strong>{call.title}</strong>
       <Paragraph>{call.description}</Paragraph>
       {audioURL ? (
@@ -252,7 +245,7 @@ function CallListing({call}: {call: LoaderData['call']}) {
 
 function RecordingDetailScreen() {
   const [responseAudio, setResponseAudio] = React.useState<Blob | null>(null)
-  const data = useLoaderData<LoaderData>()
+  const data = useLoaderData<typeof loader>()
   const actionData = useActionData<ActionData>()
   const user = useUser()
   const {requestInfo} = useRootData()
@@ -299,9 +292,7 @@ function RecordingDetailScreen() {
   )
 }
 
-// IDEA: maybe suggest to the remix team that this would be a good default?
-// where params is a key for the route. Got a few spots like this...
 export default function RecordDetailScreenContainer() {
-  const data = useLoaderData<LoaderData>()
+  const data = useLoaderData<typeof loader>()
   return <RecordingDetailScreen key={data.call.id} />
 }
