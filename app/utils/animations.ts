@@ -19,10 +19,10 @@ function generateAnimation({
   initial: {opacity?: number; x?: string; y?: string}
   visible: {opacity?: number; x?: string; y?: string}
 }) {
-  const keyframes = new Map()
+  const keyframes = new Map<string, {opacity: string; transform: string}>()
 
   keyframes.set('0%', {
-    opacity: initial.opacity ?? 0,
+    opacity: (initial.opacity ?? 0).toString(),
     transform: `translate(${initial.x ?? 0}, ${initial.y ?? 0})`,
   })
 
@@ -35,12 +35,12 @@ function generateAnimation({
 
   function getVariables(activeStep: number) {
     const variables = new Map<string, string | number>()
-    new Array(steps).fill(0).forEach((_, step) => {
+    for (let step = 0; step < steps; step++) {
       const value = step >= activeStep ? visible : initial
       variables.set(`--${name}-opacity-step-${step}`, value.opacity ?? 0)
       variables.set(`--${name}-x-step-${step}`, value.x ?? 0)
       variables.set(`--${name}-y-step-${step}`, value.y ?? 0)
-    })
+    }
     return Object.fromEntries(variables)
   }
 
