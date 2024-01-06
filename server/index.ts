@@ -281,6 +281,7 @@ app.use(
           'data:',
           'blob:',
           'www.dropbox.com',
+          '*.dropboxusercontent.com',
         ],
         'script-src': [
           "'strict-dynamic'",
