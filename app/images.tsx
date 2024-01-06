@@ -170,7 +170,7 @@ const images = createImages({
   skis: {
     id: 'kentcdodds.com/illustrations/skis_z5lkc3',
     alt: 'Illustration of skis',
-    style: {aspectRatio: '0.7'},
+    style: {aspectRatio: '0.71'},
   },
   kayak: {
     id: 'kentcdodds.com/illustrations/rowing',
