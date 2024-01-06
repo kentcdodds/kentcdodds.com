@@ -13,7 +13,7 @@ const generateAnimation = ({
   initial: {opacity?: number; x?: string; y?: string}
   visible: {opacity?: number; x?: string; y?: string}
 }) => {
-  const keyframes = new Map<string, React.CSSProperties>()
+  const keyframes = new Map()
 
   keyframes.set('0%', {
     opacity: initial.opacity ?? 0,
