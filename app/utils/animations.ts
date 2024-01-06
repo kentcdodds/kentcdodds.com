@@ -4,11 +4,11 @@
  * Main problem it solves is implementing a sequence of animations with static keyframes
  * and allowing it to be controlled with CSS variables.
  * @param name Name of the animation, will be used as a prefix for CSS variables
- * @param steps Maximum amount of steps the animatio will have including all conditional steps
+ * @param steps Maximum amount of steps the animation will have including all conditional steps
  * @param initial Initial style for the animation
  * @param visible Visible style for the animation
  */
-const generateAnimation = ({
+function generateAnimation({
   name,
   steps,
   initial,
@@ -18,7 +18,7 @@ const generateAnimation = ({
   steps: number
   initial: {opacity?: number; x?: string; y?: string}
   visible: {opacity?: number; x?: string; y?: string}
-}) => {
+}) {
   const keyframes = new Map()
 
   keyframes.set('0%', {
@@ -26,15 +26,14 @@ const generateAnimation = ({
     transform: `translate(${initial.x ?? 0}, ${initial.y ?? 0})`,
   })
 
-  new Array(steps).fill(0).forEach((_, step) => {
+  for (let step = 0; step < steps; step++) {
     keyframes.set(`${(100 * (step + 1)) / steps}%`, {
       opacity: `var(--${name}-opacity-step-${step})`,
       transform: `translate(var(--${name}-x-step-${step}), var(--${name}-y-step-${step}))`,
     })
-    return keyframes
-  }, keyframes)
+  }
 
-  const getVariables = (activeStep: number) => {
+  function getVariables(activeStep: number) {
     const variables = new Map<string, string | number>()
     new Array(steps).fill(0).forEach((_, step) => {
       const value = step >= activeStep ? visible : initial
