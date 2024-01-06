@@ -6,6 +6,7 @@ type TitleProps = {
   as?: React.ElementType
   className?: string
   id?: string
+  style?: React.CSSProperties
 } & (
   | {children: React.ReactNode}
   | {
