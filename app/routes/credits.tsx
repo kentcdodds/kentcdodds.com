@@ -101,8 +101,8 @@ function ProfileCard({person}: {person: Person}) {
     <div className="relative flex w-full flex-col">
       <div className="aspect-[3/4] mb-8 w-full flex-none">
         <img
-          className="rounded-lg object-cover"
           {...getImgProps(getImageBuilder(person.cloudinaryId), {
+            className: 'rounded-lg object-cover',
             widths: [280, 560, 840, 1100, 1300, 1650],
             sizes: [
               '(max-width:639px) 80vw',
@@ -149,13 +149,15 @@ function CreditsIndex() {
         subtitle="Start scrolling to learn more about everyone involved."
         image={
           <img
-            className="rounded-lg"
             {...getHeroImageProps(images.kentCodingOnCouch, {
-              resize: {
-                aspectRatio: '3:4',
-                type: 'crop',
+              className: 'rounded-lg',
+              transformations: {
+                resize: {
+                  aspectRatio: '3:4',
+                  type: 'crop',
+                },
+                gravity: 'face',
               },
-              gravity: 'face',
             })}
           />
         }

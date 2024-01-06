@@ -286,8 +286,8 @@ function ArticleFooter({
       <div className="col-span-full lg:col-span-2 lg:col-start-3">
         <img
           loading="lazy"
-          className="mb-8 w-32 rounded-lg"
           {...getImgProps(images.kentTransparentProfile, {
+            className: 'mb-8 w-32 aspect-square rounded-lg',
             widths: [128, 256, 512],
             sizes: ['8rem'],
           })}
@@ -394,13 +394,13 @@ export default function MdxScreen() {
                   loading="eager"
                   key={frontmatter.bannerCloudinaryId}
                   title={getBannerTitleProp(frontmatter)}
-                  className="rounded-lg object-cover object-center"
                   {...getImgProps(
                     getImageBuilder(
                       frontmatter.bannerCloudinaryId,
                       getBannerAltProp(frontmatter),
                     ),
                     {
+                      className: 'rounded-lg object-cover object-center',
                       widths: [280, 560, 840, 1100, 1650, 2500, 2100, 3100],
                       sizes: [
                         '(max-width:1023px) 80vw',

@@ -202,7 +202,6 @@ export default function CallHomeScreen() {
       <Grid>
         <div className="col-span-full lg:col-span-6">
           <img
-            className="w-full rounded-lg object-cover"
             title="Photo by Luke Southern"
             {...getImgProps(
               getImageBuilder(
@@ -210,6 +209,7 @@ export default function CallHomeScreen() {
                 'Phone sitting on a stool',
               ),
               {
+                className: 'w-full rounded-lg object-cover',
                 widths: [512, 650, 840, 1024, 1300, 1680, 2000, 2520],
                 sizes: [
                   '(max-width: 1023px) 80vw',

@@ -3,6 +3,7 @@ import {buildImageUrl, setConfig} from 'cloudinary-build-url'
 import emojiRegex from 'emoji-regex'
 import {optionalTeams, toBase64, type OptionalTeam} from './utils/misc.tsx'
 import {type CSSProperties} from 'react'
+import clsx from 'clsx'
 
 setConfig({
   cloudName: 'kentcdodds-com',
@@ -51,86 +52,107 @@ const images = createImages({
   kentSignatureDarkMode: {
     id: 'kent/signature-dark-mode',
     alt: `Kent's signature`,
+    style: {aspectRatio: '1.891'},
   },
   kentSignatureLightMode: {
     id: 'kent/signature-light-mode',
     alt: `Kent's signature`,
+    style: {aspectRatio: '1.891'},
   },
   kentTransparentProfile: {
     id: 'kent/profile-transparent',
     alt: 'Kent C. Dodds',
+    style: square,
   },
   kentProfile: {
     id: 'kent/profile',
     alt: 'Kent C. Dodds',
+    style: square,
   },
   kentSnowSports: {
     id: 'kent/snow-sports',
     alt: 'Kent wearing snow clothes with skis and a snowboard',
+    style: {aspectRatio: '0.8194'},
   },
   kentCodingWithKody: {
     id: 'kent/coding-with-kody',
     alt: 'Kent sitting with his laptop on a bench next to Kody the Koala',
+    style: {aspectRatio: '1.405'},
   },
   kentRidingOnewheelOutdoors: {
     id: 'kent/riding-onewheel-outdoors',
     alt: 'Kent riding a onewheel outdoors',
+    style: {aspectRatio: '1.5014'},
   },
   kentRidingOnewheelOutdoorsFast: {
     id: 'kent/riding-onewheel-outdoors-fast',
     alt: 'Kent riding a onewheel outdoors fast',
+    style: {aspectRatio: '1.5014'},
   },
   kentWorkingInNature: {
     id: 'kent/working-in-nature',
     alt: 'Kent working in nature',
+    style: {aspectRatio: '1.5014'},
   },
   kentPalmingSoccerBall: {
     id: 'kent/palming-soccer-ball',
     alt: 'Kent holding a soccer ball',
+    style: {aspectRatio: '0.7112'},
   },
   kentCodingWithSkates: {
     id: 'kent/rollerblade-coding-checking-watch',
     alt: 'Kent checking his watch while sitting in rollerblades with a laptop',
+    style: {aspectRatio: '0.7112'},
   },
   kentHoldingOutCody: {
     id: 'kent/holding-out-kody',
     alt: 'Kent holding out Kody the Koala',
+    style: {aspectRatio: '0.7112'},
   },
   kentCodingOnCouch: {
     id: 'kent/coding-on-couch',
     alt: 'Kent coding on a couch',
+    style: {aspectRatio: '1.4052'},
   },
   kentSmilingWithLaptop: {
     id: 'kent/smiling-with-laptop-on-couch',
     alt: 'Kent smiling with laptop on a couch',
+    style: {aspectRatio: '1.4052'},
   },
   kentWithOnewheel: {
     id: 'kent/walking-away-with-onewheel',
     alt: 'Kent walking away with a onewheel',
+    style: {aspectRatio: '0.7112'},
   },
   kentSkatingGear: {
     id: 'kent/skating-gear',
     alt: 'Kent with skating gear',
+    style: {aspectRatio: '0.7112'},
   },
   kentSpeakingAllThingsOpen: {
     id: 'kent/kent-speaking-all-things-open',
     alt: 'Kent speaking all things open',
+    style: {aspectRatio: '1.4993'},
   },
   mrRogersBeKind: {
     id: 'kent/video-stills/mr-rogers-be-kind',
     alt: 'Laptop with a sticker with a photo of Mr. Rogers and the words "Be kind"',
+    style: {aspectRatio: '1.7798'},
   },
   microphoneWithHands: {
     id: 'kent/video-stills/microphone-with-hands',
     alt: 'A microphone and hands',
+    style: {aspectRatio: '1.7798'},
   },
   happySnowboarder: {
     id: 'kent/video-stills/happy-snowboarder',
     alt: 'Kent smiling covered in snow',
+    style: {aspectRatio: '1.7798'},
   },
   kentListeningAtReactRally: {
     id: 'kent/kent-listening-at-react-rally',
     alt: 'Kent sitting as an audience member at React Rally',
+    style: {aspectRatio: '1.5035'},
   },
   getToKnowKentVideoThumbnail: {
     id: 'kent/video-stills/get-to-know-kent-video-thumbnail',
@@ -140,18 +162,22 @@ const images = createImages({
   kodyProfileYellow: {
     id: 'kentcdodds.com/illustrations/kody/kody_profile_yellow',
     alt: 'Kody Profile in Yellow',
+    style: {aspectRatio: '1.2632'},
   },
   kodyProfileBlue: {
     id: 'kentcdodds.com/illustrations/kody/kody_profile_blue',
     alt: 'Kody Profile in Blue',
+    style: {aspectRatio: '1.2632'},
   },
   kodyProfileRed: {
     id: 'kentcdodds.com/illustrations/kody/kody_profile_red',
     alt: 'Kody Profile in Red',
+    style: {aspectRatio: '1.2632'},
   },
   kodyProfileGray: {
     id: 'kentcdodds.com/illustrations/kody/kody_profile_gray',
     alt: 'Kody Profile in Gray',
+    style: {aspectRatio: '1.2632'},
   },
   teslaY: {
     id: 'kentcdodds.com/illustrations/tesla_y2_j8kti2',
@@ -161,6 +187,7 @@ const images = createImages({
   solarPanels: {
     id: 'kentcdodds.com/illustrations/solar_panels_2_ftbwvb',
     alt: 'Illustration of Solar Panels',
+    style: {aspectRatio: '1.5468'},
   },
   snowboard: {
     id: 'kentcdodds.com/illustrations/snowboard_nqqlyr',
@@ -575,15 +602,30 @@ function getImgProps(
     widths,
     sizes,
     transformations,
+    className,
+    style,
   }: {
     widths: Array<number>
     sizes: Array<string>
     transformations?: TransformerOption
+    className?: string
+    style?: CSSProperties
   },
 ) {
   const averageSize = Math.ceil(widths.reduce((a, s) => a + s) / widths.length)
+  const aspectRatio = transformations?.resize?.aspectRatio
+    ? transformations.resize.aspectRatio.replace(':', '/')
+    : transformations?.resize?.height && transformations.resize.width
+    ? `${transformations.resize.width}/${transformations.resize.height}`
+    : imageBuilder.style?.aspectRatio
 
   return {
+    style: {
+      ...imageBuilder.style,
+      aspectRatio,
+      ...style,
+    },
+    className: clsx(imageBuilder.className, className),
     alt: imageBuilder.alt,
     src: imageBuilder({
       quality: 'auto',

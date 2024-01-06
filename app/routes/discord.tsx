@@ -186,8 +186,8 @@ export default function Discord() {
           <div className="col-span-full lg:col-span-6 lg:col-start-1">
             <div className="aspect-[4/6] mb-12 lg:mb-0">
               <img
-                className="rounded-lg object-cover"
                 {...getImgProps(images.kentListeningAtReactRally, {
+                  className: 'rounded-lg object-cover',
                   widths: [410, 650, 820, 1230, 1640, 2460],
                   sizes: [
                     '(max-width: 1023px) 80vw',
@@ -518,8 +518,8 @@ export default function Discord() {
         <Grid className="mb-24 lg:mb-64">
           <div className="col-span-full lg:col-span-4 lg:col-start-2">
             <img
-              className="object-contain"
               {...getImgProps(images.helmet, {
+                className: 'object-contain',
                 widths: [420, 512, 840, 1260, 1024, 1680, 2520],
                 sizes: [
                   '(max-width: 1023px) 80vw',

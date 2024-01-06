@@ -537,8 +537,8 @@ function BlogHome() {
         {posts.length === 0 ? (
           <div className="col-span-full flex flex-col items-center">
             <img
-              className="mt-24 h-auto w-full max-w-lg"
               {...getImgProps(images.bustedOnewheel, {
+                className: 'mt-24 h-auto w-full max-w-lg',
                 widths: [350, 512, 1024, 1536],
                 sizes: ['(max-width: 639px) 80vw', '512px'],
               })}

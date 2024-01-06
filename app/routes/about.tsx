@@ -36,7 +36,6 @@ import {getTalksAndTags} from '~/utils/talks.server.ts'
 import {getServerTimeHeader} from '~/utils/timing.server.ts'
 import {useRootData} from '~/utils/use-root-data.ts'
 import {type RootLoaderType} from '~/root.tsx'
-import clsx from 'clsx'
 
 type LoaderData = {
   blogRecommendations: Array<MdxListItem>
@@ -109,15 +108,11 @@ function AboutIndex() {
             img={
               <img
                 id="about-me"
-                className={clsx(
-                  images.getToKnowKentVideoThumbnail.className,
-                  'rounded-lg object-cover w-full',
-                )}
                 {...getImgProps(images.getToKnowKentVideoThumbnail, {
+                  className: 'rounded-lg object-cover w-full',
                   widths: [280, 560, 840, 1100, 1300, 2600, 3900],
                   sizes: ['(min-width:1620px) 1280px', '80vw'],
                 })}
-                style={images.getToKnowKentVideoThumbnail.style}
               />
             }
             ytLiteEmbed={
@@ -173,8 +168,8 @@ function AboutIndex() {
 
           <div className="w-full lg:pr-12">
             <img
-              className="w-full rounded-lg object-cover"
               {...getImgProps(images.kentWorkingInNature, {
+                className: 'w-full rounded-lg object-cover',
                 widths: [512, 840, 1024, 1680, 2520],
                 sizes: [
                   '(max-width: 1023px) 80vw',
@@ -218,8 +213,8 @@ function AboutIndex() {
         <div className="col-span-full lg:col-span-6 lg:col-start-7">
           <div className="mb-12 lg:mb-0">
             <img
-              className="rounded-lg object-cover"
               {...getImgProps(images.happySnowboarder, {
+                className: 'rounded-lg object-cover',
                 widths: [512, 650, 840, 1024, 1300, 1680, 2000, 2520],
                 sizes: [
                   '(max-width: 1023px) 80vw',
@@ -293,8 +288,8 @@ function AboutIndex() {
         <div className="col-span-full mb-12 lg:mb-20">
           <img
             id="about-me"
-            className="rounded-lg object-cover"
             {...getImgProps(images.kentSpeakingAllThingsOpen, {
+              className: 'rounded-lg object-cover',
               widths: [280, 560, 840, 1100, 1300, 2600, 3900],
               sizes: ['(min-width:1620px) 1280px', '80vw'],
             })}
@@ -316,8 +311,8 @@ function AboutIndex() {
         <div className="col-span-full lg:col-span-6 lg:col-start-1">
           <div className="mb-12 lg:mb-0">
             <img
-              className="rounded-lg object-cover"
               {...getImgProps(images.microphoneWithHands, {
+                className: 'rounded-lg object-cover',
                 widths: [512, 650, 840, 1024, 1300, 1680, 2000, 2520],
                 sizes: [
                   '(max-width: 1023px) 80vw',
@@ -400,8 +395,8 @@ function AboutIndex() {
       <Grid className="mb-24 lg:mb-64">
         <div className="col-span-full mb-10 lg:col-span-6 lg:col-start-1 lg:mb-0">
           <img
-            className="rounded-lg object-contain"
             {...getImgProps(images.teslaY, {
+              className: 'rounded-lg object-contain',
               widths: [420, 512, 840, 1260, 1024, 1680, 2520],
               sizes: [
                 '(max-width: 1023px) 80vw',

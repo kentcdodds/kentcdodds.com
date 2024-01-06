@@ -104,16 +104,15 @@ function HeroSection({
           ) : imageBuilder ? (
             <img
               loading="eager"
-              className={clsx(
-                'h-auto w-full object-contain motion-safe:animate-hero-image-reveal',
-                {
-                  'max-h-50vh': imageSize === 'medium',
-                  'max-h-75vh': imageSize === 'giant',
-                },
-                imageBuilder.className,
-              )}
-              style={imageBuilder.style}
-              {...getHeroImageProps(imageBuilder)}
+              {...getHeroImageProps(imageBuilder, {
+                className: clsx(
+                  'h-auto w-full object-contain motion-safe:animate-hero-image-reveal',
+                  {
+                    'max-h-50vh': imageSize === 'medium',
+                    'max-h-75vh': imageSize === 'giant',
+                  },
+                ),
+              })}
             />
           ) : (
             image
@@ -174,9 +173,19 @@ function HeroSection({
 
 function getHeroImageProps(
   imageBuilder: ImageBuilder,
-  transformations?: TransformerOption,
+  {
+    transformations,
+    style,
+    className,
+  }: {
+    transformations?: TransformerOption
+    style?: React.CSSProperties
+    className?: string
+  } = {},
 ) {
   return getImgProps(imageBuilder, {
+    style,
+    className,
     widths: [256, 550, 700, 900, 1300, 1800],
     sizes: [
       '(max-width: 1023px) 80vw',

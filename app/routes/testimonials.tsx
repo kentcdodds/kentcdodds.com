@@ -69,13 +69,15 @@ export default function Testimonials() {
         subtitle="Checkout KCD testimonials below."
         image={
           <img
-            className="rounded-lg"
             {...getHeroImageProps(images.kentHoldingOutCody, {
-              resize: {
-                aspectRatio: '3:4',
-                type: 'crop',
+              className: 'rounded-lg',
+              transformations: {
+                resize: {
+                  aspectRatio: '3:4',
+                  type: 'crop',
+                },
+                gravity: 'face',
               },
-              gravity: 'face',
             })}
           />
         }

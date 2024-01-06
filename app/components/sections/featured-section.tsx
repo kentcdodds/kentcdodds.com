@@ -46,8 +46,8 @@ function FeaturedSection({
 }: FeaturedSectionProps) {
   const img = imageBuilder ? (
     <img
-      className="rounded-lg object-cover object-center"
       {...getImgProps(imageBuilder, {
+        className: 'rounded-lg object-cover object-center',
         widths: [300, 600, 900, 1700, 2500],
         sizes: [
           '(max-width: 1023px) 80vw',

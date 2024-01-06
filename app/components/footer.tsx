@@ -14,7 +14,6 @@ import {
 } from './icons.tsx'
 import {Signature} from './signature.tsx'
 import {H4, H6, Paragraph} from './typography.tsx'
-import clsx from 'clsx'
 
 function NewsletterSection() {
   return (
@@ -159,12 +158,9 @@ function Footer({image}: {image: ImageBuilder}) {
     <div className="aspect-[4/3]">
       <img
         loading="lazy"
-        className={clsx(
-          'w-full rounded-sm object-contain max-w-[400px] max-h-[400px]',
-          image.className,
-        )}
-        style={image.style}
         {...getImgProps(image, {
+          className:
+            'w-full rounded-sm object-contain max-w-[400px] max-h-[400px]',
           widths: [300, 800],
           sizes: ['(max-width: 639px) 80vw', '400px'],
           transformations: {

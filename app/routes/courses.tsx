@@ -226,8 +226,8 @@ function CoursesHome() {
           <div className="col-span-full mb-12 px-10 lg:col-span-5 lg:col-start-1 lg:mb-0">
             <img
               loading="lazy"
-              className="object-contain"
               {...getImgProps(images.helmet, {
+                className: 'object-contain',
                 widths: [420, 512, 840, 1260, 1024, 1680, 2520],
                 sizes: [
                   '(max-width: 1023px) 80vw',

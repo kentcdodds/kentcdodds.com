@@ -241,8 +241,8 @@ function TeamOption({teamMap, team: value, error, selected}: TeamOptionProps) {
           aria-describedby={error ? 'team-error' : undefined}
         />
         <img
-          className="mx-auto mb-16 block"
           {...getImgProps(team.image, {
+            className: 'mx-auto mb-16 block',
             widths: [350, 512, 685, 1370, 2055],
             sizes: [
               '(max-width: 1023px) 65vw',
@@ -430,8 +430,8 @@ export default function NewAccount() {
           <div className="col-span-full lg:col-span-6 lg:col-start-1 lg:row-start-1">
             <div className="aspect-[4/6]">
               <img
-                className="rounded-lg object-cover"
                 {...getImgProps(images.kentPalmingSoccerBall, {
+                  className: 'rounded-lg object-cover',
                   widths: [512, 650, 840, 1024, 1300, 1680, 2000, 2520],
                   sizes: [
                     '(max-width: 1023px) 80vw',

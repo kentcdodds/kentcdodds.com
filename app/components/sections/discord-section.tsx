@@ -32,8 +32,8 @@ function DiscordSection() {
       <div className="relative hidden lg:col-span-6 lg:col-start-7 lg:block">
         <div className="h-full w-full">
           <img
-            className="h-full w-full rounded-lg object-cover"
             {...getImgProps(images.kentCodingWithKody, {
+              className: 'h-full w-full rounded-lg object-cover',
               // this image is hidden at max-width of 1023px
               // so we set that to 0px and have a width for 1px
               // to save data on the request

@@ -175,7 +175,6 @@ function PodcastHome() {
       <Grid>
         <div className="col-span-full lg:col-span-6">
           <img
-            className="rounded-lg object-cover"
             title="Photo by Jukka Aalho / Kertojan ääni: https://kertojanaani.fi"
             {...getImgProps(
               getImageBuilder(
@@ -183,6 +182,7 @@ function PodcastHome() {
                 'A SM7B Microphone',
               ),
               {
+                className: 'rounded-lg object-cover',
                 widths: [512, 650, 840, 1024, 1300, 1680, 2000, 2520],
                 sizes: [
                   '(max-width: 1023px) 80vw',

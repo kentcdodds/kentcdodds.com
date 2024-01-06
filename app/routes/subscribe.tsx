@@ -76,8 +76,8 @@ export default function SubscribeScreen() {
           <div className="col-span-full lg:col-span-6 lg:col-start-1">
             <div className="aspect-[4/3] mb-12 lg:mb-0">
               <img
-                className="rounded-lg object-cover"
                 {...getImgProps(images.kentCodingWithSkates, {
+                  className: 'rounded-lg object-cover',
                   widths: [410, 650, 820, 1230, 1640, 2460],
                   sizes: [
                     '(max-width: 1023px) 80vw',

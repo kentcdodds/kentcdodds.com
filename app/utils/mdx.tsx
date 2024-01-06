@@ -30,6 +30,7 @@ import {Themed} from './theme.tsx'
 import {type Timings} from './timing.server.ts'
 import {useOptionalUser} from './use-root-data.ts'
 import {type MetaFunction, type TypedResponse} from '@remix-run/node'
+import clsx from 'clsx'
 
 type CachifiedOptions = {
   forceFresh?: boolean | string
@@ -438,7 +439,7 @@ function getMdxComponent(code: string) {
 
 function BlogImage({
   cloudinaryId,
-  imgProps,
+  imgProps: {className, style, ...imgProps},
   transparentBackground,
 }: {
   cloudinaryId: string
@@ -447,8 +448,9 @@ function BlogImage({
 }) {
   return (
     <img
-      className="w-full rounded-lg object-cover py-8"
       {...getImgProps(getImageBuilder(cloudinaryId, imgProps.alt), {
+        className: clsx('w-full rounded-lg object-cover py-8', className),
+        style,
         widths: [350, 550, 700, 845, 1250, 1700, 2550],
         sizes: [
           '(max-width:1023px) 80vw',

@@ -119,7 +119,6 @@ export default function MdxScreen() {
               img={
                 <img
                   loading="eager"
-                  className="rounded-lg object-cover object-center w-full"
                   title={getBannerTitleProp(frontmatter)}
                   {...getImgProps(
                     getImageBuilder(
@@ -127,6 +126,7 @@ export default function MdxScreen() {
                       getBannerAltProp(frontmatter),
                     ),
                     {
+                      className: 'rounded-lg object-cover object-center w-full',
                       widths: [280, 560, 840, 1100, 1650, 2500, 2100, 3100],
                       sizes: [
                         '(max-width:1023px) 80vw',

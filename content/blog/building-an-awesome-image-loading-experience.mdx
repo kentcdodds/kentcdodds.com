@@ -175,13 +175,13 @@ Then I use it like so:
 <img
   key={frontmatter.bannerCloudinaryId}
   title={frontmatter.bannerCredit}
-  className="rounded-lg object-cover object-center"
   {...getImgProps(
     getImageBuilder(
       frontmatter.bannerCloudinaryId,
       getBannerAltProp(frontmatter),
     ),
     {
+      className: 'rounded-lg object-cover object-center',
       widths: [280, 560, 840, 1100, 1650, 2500, 2100, 3100],
       sizes: [
         '(max-width:1023px) 80vw',
@@ -361,7 +361,6 @@ function BlogScreen() {
             <img
               key={frontmatter.bannerCloudinaryId}
               title={frontmatter.bannerCredit}
-              className="rounded-lg object-cover object-center"
               {...getImgProps(
                 getImageBuilder(
                   frontmatter.bannerCloudinaryId,
@@ -371,6 +370,7 @@ function BlogScreen() {
                     'Post banner',
                 ),
                 {
+                  className: 'rounded-lg object-cover object-center',
                   widths: [280, 560, 840, 1100, 1650, 2500, 2100, 3100],
                   sizes: [
                     '(max-width:1023px) 80vw',
