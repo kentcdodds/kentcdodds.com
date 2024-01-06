@@ -287,7 +287,7 @@ function ArticleFooter({
         <img
           loading="lazy"
           {...getImgProps(images.kentTransparentProfile, {
-            className: 'mb-8 w-32 aspect-square rounded-lg',
+            className: 'mb-8 w-32',
             widths: [128, 256, 512],
             sizes: ['8rem'],
           })}
