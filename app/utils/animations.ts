@@ -1,7 +1,13 @@
-// This file generates keyframes for any animation, you can extend it with more properties if needed.
-// It is designed to be used with Tailwind config and CSS variables.
-// Main problem it solves is implementing a sequence of animations with static keyframes
-// and allowing it to be controlled with CSS variables.
+/**
+ * This file generates keyframes for any animation, you can extend it with more properties if needed.
+ * It is designed to be used with Tailwind config and CSS variables.
+ * Main problem it solves is implementing a sequence of animations with static keyframes
+ * and allowing it to be controlled with CSS variables.
+ * @param name Name of the animation, will be used as a prefix for CSS variables
+ * @param steps Maximum amount of steps the animatio will have including all conditional steps
+ * @param initial Initial style for the animation
+ * @param visible Visible style for the animation
+ */
 const generateAnimation = ({
   name,
   steps,
