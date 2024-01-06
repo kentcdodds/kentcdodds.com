@@ -275,7 +275,13 @@ app.use(
           'www.epicweb.dev',
           ...(MODE === 'development' ? ['cloudflare-ipfs.com'] : []),
         ],
-        'media-src': ["'self'", 'res.cloudinary.com', 'data:', 'blob:'],
+        'media-src': [
+          "'self'",
+          'res.cloudinary.com',
+          'data:',
+          'blob:',
+          'www.dropbox.com',
+        ],
         'script-src': [
           "'strict-dynamic'",
           "'unsafe-eval'",
