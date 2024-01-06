@@ -5,6 +5,7 @@ import {getImgProps, type ImageBuilder} from '~/images.tsx'
 import {ArrowLink} from '../arrow-button.tsx'
 import {Grid} from '../grid.tsx'
 import {H2} from '../typography.tsx'
+import {heroTextAnimation} from '~/utils/animations.ts'
 
 export type HeroSectionProps = {
   title: string | React.ReactNode
@@ -66,12 +67,7 @@ function HeroSection({
 }: HeroSectionProps) {
   const hasImage = Boolean(image ?? imageProps ?? imageBuilder)
   const shouldReduceMotion = useReducedMotion()
-
-  const childVariants = {
-    initial: {opacity: 0, y: shouldReduceMotion ? 0 : 25},
-    visible: {opacity: 1, y: 0, transition: {duration: 0.5}},
-  }
-
+  let animationStep = 0
   return (
     <Grid
       as={as}
@@ -108,7 +104,7 @@ function HeroSection({
           ) : imageBuilder ? (
             <img
               className={clsx(
-                'h-auto w-full object-contain motion-safe:animate-hero-reveal',
+                'h-auto w-full object-contain motion-safe:animate-hero-image-reveal',
                 {
                   'max-h-50vh': imageSize === 'medium',
                   'max-h-75vh': imageSize === 'giant',
@@ -133,46 +129,42 @@ function HeroSection({
           },
         )}
       >
-        <motion.div
-          className="flex flex-auto flex-col"
-          initial="initial"
-          animate="visible"
-          variants={{
-            initial: {opacity: 0},
-            visible: {opacity: 1, transition: {staggerChildren: 0.2}},
-          }}
-        >
-          <motion.div variants={childVariants}>
-            <H2 as="h2">{title}</H2>
-          </motion.div>
-
+        <div className="flex flex-auto flex-col">
+          <H2
+            as="h2"
+            className="motion-safe:animate-hero-text-reveal"
+            style={heroTextAnimation.getVariables(animationStep++)}
+          >
+            {title}
+          </H2>
           {subtitle ? (
-            <motion.div variants={childVariants}>
-              <H2 as="p" variant="secondary" className="mt-3">
-                {subtitle}
-              </H2>
-            </motion.div>
+            <H2
+              as="p"
+              variant="secondary"
+              className="mt-3 motion-safe:animate-hero-text-reveal"
+              style={heroTextAnimation.getVariables(animationStep++)}
+            >
+              {subtitle}
+            </H2>
           ) : null}
           {action ? (
-            <motion.div
-              variants={childVariants}
-              className="mt-14 flex flex-col space-y-4"
+            <div
+              className="mt-14 flex flex-col space-y-4 motion-safe:animate-hero-text-reveal"
+              style={heroTextAnimation.getVariables(animationStep++)}
             >
               {action}
-            </motion.div>
+            </div>
           ) : null}
-        </motion.div>
+        </div>
         {arrowUrl ? (
-          <motion.div
-            initial={{opacity: 0}}
-            animate={{opacity: 1}}
-            transition={{delay: 1}}
-            className="hidden pt-12 lg:block"
+          <div
+            className="hidden pt-12 lg:block motion-safe:animate-hero-text-reveal"
+            style={heroTextAnimation.getVariables(animationStep++)}
           >
             <ArrowLink to={arrowUrl} direction="down" textSize="small">
               {arrowLabel}
             </ArrowLink>
-          </motion.div>
+          </div>
         ) : null}
       </div>
     </Grid>
