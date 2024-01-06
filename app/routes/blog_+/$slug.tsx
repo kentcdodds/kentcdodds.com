@@ -285,6 +285,7 @@ function ArticleFooter({
       </div>
       <div className="col-span-full lg:col-span-2 lg:col-start-3">
         <img
+          loading="lazy"
           className="mb-8 w-32 rounded-lg"
           {...getImgProps(images.kentTransparentProfile, {
             widths: [128, 256, 512],
@@ -390,6 +391,7 @@ export default function MdxScreen() {
               className="aspect-[3/4] md:aspect-[3/2]"
               img={
                 <img
+                  loading="eager"
                   key={frontmatter.bannerCloudinaryId}
                   title={getBannerTitleProp(frontmatter)}
                   className="rounded-lg object-cover object-center"

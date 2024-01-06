@@ -103,6 +103,7 @@ function HeroSection({
             />
           ) : imageBuilder ? (
             <img
+              loading="eager"
               className={clsx(
                 'h-auto w-full object-contain motion-safe:animate-hero-image-reveal',
                 {
