@@ -100,6 +100,7 @@ function HeroSection({
               initial={{scale: shouldReduceMotion ? 1 : 1.5, opacity: 0}}
               animate={{scale: 1, opacity: 1}}
               transition={{duration: 0.75}}
+              loading="eager"
             />
           ) : imageBuilder ? (
             <img
@@ -112,6 +113,7 @@ function HeroSection({
                 imageBuilder.className,
               )}
               style={imageBuilder.style}
+              loading="eager"
               {...getHeroImageProps(imageBuilder)}
             />
           ) : (
