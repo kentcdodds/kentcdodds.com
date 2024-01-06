@@ -89,7 +89,6 @@ function HeroSection({
           {imageProps ? (
             <motion.img
               {...imageProps}
-              loading="eager"
               className={clsx(
                 'h-auto w-full object-contain',
                 {
@@ -104,7 +103,6 @@ function HeroSection({
             />
           ) : imageBuilder ? (
             <img
-              loading="eager"
               {...getHeroImageProps(imageBuilder, {
                 className: clsx(
                   'h-auto w-full object-contain motion-safe:animate-hero-image-reveal',

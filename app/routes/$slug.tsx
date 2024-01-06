@@ -118,7 +118,6 @@ export default function MdxScreen() {
               className="aspect-[3/4] md:aspect-[3/2] md:aspect-1"
               img={
                 <img
-                  loading="eager"
                   title={getBannerTitleProp(frontmatter)}
                   {...getImgProps(
                     getImageBuilder(
