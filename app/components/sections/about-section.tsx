@@ -10,6 +10,7 @@ function AboutSection() {
         <div className="table-cell text-center align-middle">
           <div>
             <img
+              loading="lazy"
               className="rounded-lg object-cover w-full h-full"
               {...getImgProps(images.kentSnowSports, {
                 widths: [300, 650, 1300, 1800, 2600],
