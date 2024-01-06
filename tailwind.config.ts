@@ -71,7 +71,7 @@ export default {
         'spin-xslow': 'spin 7s linear infinite',
         'reverse-spin': 'reverse-spin 1s linear infinite',
         'hero-image-reveal': 'hero-image-reveal 750ms',
-        [heroTextAnimation.name]: `${heroTextAnimation.name} 2s`,
+        [heroTextAnimation.name]: `${heroTextAnimation.name} 1.3s`,
       },
       keyframes: {
         'reverse-spin': {
