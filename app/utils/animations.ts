@@ -1,0 +1,60 @@
+// This file generates keyframes for any animation, you can extend it with more properties if needed.
+// It is designed to be used with Tailwind config and CSS variables.
+// Main problem it solves is implementing a sequence of animations with static keyframes
+// and allowing it to be controlled with CSS variables.
+const generateAnimation = ({
+  name,
+  steps,
+  initial,
+  visible,
+}: {
+  name: string
+  steps: number
+  initial: {opacity?: number; x?: string; y?: string}
+  visible: {opacity?: number; x?: string; y?: string}
+}) => {
+  const keyframes = new Map<string, React.CSSProperties>()
+
+  keyframes.set('0%', {
+    opacity: initial.opacity ?? 0,
+    transform: `translate(${initial.x ?? 0}, ${initial.y ?? 0})`,
+  })
+
+  new Array(steps).fill(0).forEach((_, step) => {
+    keyframes.set(`${(100 * (step + 1)) / steps}%`, {
+      opacity: `var(--${name}-opacity-step-${step})`,
+      transform: `translate(var(--${name}-x-step-${step}), var(--${name}-y-step-${step}))`,
+    })
+    return keyframes
+  }, keyframes)
+
+  const getVariables = (activeStep: number) => {
+    const variables = new Map<string, string | number>()
+    new Array(steps).fill(0).forEach((_, step) => {
+      const value = step >= activeStep ? visible : initial
+      variables.set(`--${name}-opacity-step-${step}`, value.opacity ?? 0)
+      variables.set(`--${name}-x-step-${step}`, value.x ?? 0)
+      variables.set(`--${name}-y-step-${step}`, value.y ?? 0)
+    })
+    return Object.fromEntries(variables)
+  }
+
+  return {
+    name,
+    keyframes: Object.fromEntries(keyframes),
+    getVariables,
+  }
+}
+
+export const heroTextAnimation = generateAnimation({
+  name: 'hero-text-reveal',
+  steps: 4,
+  initial: {
+    opacity: 0,
+    y: '25px',
+  },
+  visible: {
+    opacity: 1,
+    y: '0px',
+  },
+})

@@ -3,6 +3,7 @@ import path from 'path'
 import {type Config} from 'tailwindcss'
 import defaultTheme from 'tailwindcss/defaultTheme.js'
 import typography from '@tailwindcss/typography'
+import {heroTextAnimation} from './app/utils/animations.ts'
 
 // const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // TODO: check why prettier reports that __dirname already declared
@@ -69,7 +70,8 @@ export default {
         'spin-slow': 'spin 3s linear infinite',
         'spin-xslow': 'spin 7s linear infinite',
         'reverse-spin': 'reverse-spin 1s linear infinite',
-        'hero-reveal': 'hero-reveal 750ms',
+        'hero-image-reveal': 'hero-image-reveal 750ms',
+        [heroTextAnimation.name]: `${heroTextAnimation.name} 2s`,
       },
       keyframes: {
         'reverse-spin': {
@@ -77,7 +79,7 @@ export default {
             transform: 'rotate(360deg)',
           },
         },
-        'hero-reveal': {
+        'hero-image-reveal': {
           from: {
             opacity: '0',
             transform: 'scale(1.5)',
@@ -87,6 +89,7 @@ export default {
             transform: 'scale(1)',
           },
         },
+        [heroTextAnimation.name]: heroTextAnimation.keyframes,
       },
 
       zIndex: {
