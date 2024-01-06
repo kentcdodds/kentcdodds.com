@@ -425,7 +425,6 @@ function App() {
       className={clsx(theme, `set-color-team-current-${team.toLowerCase()}`)}
     >
       <head>
-        <meta charSet="utf-8" />
         <ClientHintCheck nonce={nonce} />
         <Meta />
         <meta

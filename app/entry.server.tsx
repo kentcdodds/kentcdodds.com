@@ -97,7 +97,7 @@ function serveTheBots(...args: DocRequestArgs) {
         nonce,
         // Use onAllReady to wait for the entire document to be ready
         onAllReady() {
-          responseHeaders.set('Content-Type', 'text/html')
+          responseHeaders.set('Content-Type', 'text/html; charset=UTF-8')
           const body = new PassThrough()
 
           // find/replace all instances of the string "data-evt-" with ""
@@ -151,7 +151,7 @@ function serveBrowsers(...args: DocRequestArgs) {
         nonce,
         // use onShellReady to wait until a suspense boundary is triggered
         onShellReady() {
-          responseHeaders.set('Content-Type', 'text/html')
+          responseHeaders.set('Content-Type', 'text/html; charset=UTF-8')
           const body = new PassThrough()
 
           // find/replace all instances of the string "data-evt-" with ""
