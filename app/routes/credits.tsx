@@ -149,6 +149,7 @@ function CreditsIndex() {
         subtitle="Start scrolling to learn more about everyone involved."
         image={
           <img
+            loading="eager"
             {...getHeroImageProps(images.kentCodingOnCouch, {
               className: 'rounded-lg',
               transformations: {

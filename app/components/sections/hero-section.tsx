@@ -89,6 +89,7 @@ function HeroSection({
           {imageProps ? (
             <motion.img
               {...imageProps}
+              loading="eager"
               className={clsx(
                 'h-auto w-full object-contain',
                 {

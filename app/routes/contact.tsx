@@ -114,6 +114,7 @@ export default function ContactRoute() {
         subtitle="Like in the old days."
         image={
           <img
+            loading="eager"
             {...getHeroImageProps(images.kentProfile, {
               className:
                 'max-h-50vh rounded-bl-3xl rounded-br-[25%] rounded-tl-[25%] rounded-tr-3xl',

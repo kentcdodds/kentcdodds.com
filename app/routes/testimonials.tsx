@@ -69,6 +69,7 @@ export default function Testimonials() {
         subtitle="Checkout KCD testimonials below."
         image={
           <img
+            loading="eager"
             {...getHeroImageProps(images.kentHoldingOutCody, {
               className: 'rounded-lg',
               transformations: {
