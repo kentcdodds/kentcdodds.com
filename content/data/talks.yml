@@ -1,7 +1,61 @@
-- title: DevWorld Keynote
+- title: React Native EU Keynote
   deliveries:
-    - event: '[Dev World 2024](https://devworldconference.com/)'
-      date: 2024-02-29
+    - event: '[React Native EU](https://www.react-native.eu/)'
+      date: 2024-09-05
+  tags:
+    - keynote
+  description: >-
+    This talk will be announced soon!
+
+- title: THAT Conf Wisconsin Keynote
+  deliveries:
+    - event:
+        '[THAT Conf Wisconsin](https://feature.thatconference.com/wi/2024/)'
+      date: 2024-07-29
+  tags:
+    - keynote
+  description: >-
+    This talk will be announced soon!
+
+- title: React Summit Keynote
+  deliveries:
+    - event: '[React Summit 2024](https://reactsummit.com/)'
+      date: 2024-06-14
+  tags:
+    - keynote
+  description: >-
+    This talk will be announced soon!
+
+- title: Break Through the UX Ceiling
+  deliveries:
+    - event: '[React Miami 2024](https://www.reactmiami.com/)'
+      date: 2024-04-19
+  tags:
+    - keynote
+    - react
+    - remix
+    - web
+  description: >-
+    You're building a web application and you want to give your users the best
+    experience possible. But is your application architecture putting a ceiling
+    on the level of experience you can provide? In this talk, we'll explore how
+    that happens, and what you can do to break through that ceiling and give
+    your users an even better experience (while giving yourself a better
+    development experience at the same time).
+
+- title: Epic Web Conf Keynote
+  deliveries:
+    - event: '[Epic Web Conf](https://epicweb.dev/conf)'
+      date: 2024-04-11
+  tags:
+    - keynote
+  description: >-
+    This talk will be announced soon!
+
+- title: Epic Web Conf Keynote
+  deliveries:
+    - event: '[Epic Web Conf](https://epicweb.dev/conf)'
+      date: 2024-04-11
   tags:
     - keynote
   description: >-
