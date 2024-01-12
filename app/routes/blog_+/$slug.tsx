@@ -33,7 +33,7 @@ import {
   mdxPageMeta,
   useMdxComponent,
 } from '~/utils/mdx.tsx'
-import {getMdxPage} from '~/utils/mdx.server.tsx'
+import {getMdxPage} from '~/utils/mdx.server.ts'
 import {
   formatNumber,
   reuseUsefulLoaderHeaders,
@@ -55,7 +55,7 @@ export const handle: KCDHandle = {
     if (!import.meta.env.SSR) {
       throw Error('tried calling server-only function from client')
     }
-    const {getBlogMdxListItems} = await import('~/utils/mdx.server.tsx')
+    const {getBlogMdxListItems} = await import('~/utils/mdx.server.ts')
     const pages = await getBlogMdxListItems({request})
     return pages
       .filter(page => !page.frontmatter.draft)

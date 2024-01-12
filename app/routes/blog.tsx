@@ -39,7 +39,7 @@ import {
   getTotalPostReads,
 } from '~/utils/blog.server.ts'
 import {getBannerAltProp} from '~/utils/mdx.tsx'
-import {getBlogMdxListItems} from '~/utils/mdx.server.tsx'
+import {getBlogMdxListItems} from '~/utils/mdx.server.ts'
 import {
   formatAbbreviatedNumber,
   formatNumber,

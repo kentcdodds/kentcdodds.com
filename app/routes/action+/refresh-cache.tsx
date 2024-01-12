@@ -7,7 +7,7 @@ import {
   getBlogMdxListItems,
   getMdxDirList,
   getMdxPage,
-} from '~/utils/mdx.server.tsx'
+} from '~/utils/mdx.server.ts'
 import {getRequiredServerEnvVar} from '~/utils/misc.tsx'
 import {getTalksAndTags} from '~/utils/talks.server.ts'
 import {getTestimonials} from '~/utils/testimonials.server.ts'
