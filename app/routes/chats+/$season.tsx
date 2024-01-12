@@ -21,19 +21,18 @@ import {
 import {useChatsEpisodeUIState} from '~/utils/providers.tsx'
 import {getSeasonListItems} from '~/utils/simplecast.server.ts'
 import {getServerTimeHeader} from '~/utils/timing.server.ts'
+import {serverOnly$} from 'vite-env-only'
 
 export const handle: KCDHandle = {
-  getSitemapEntries: import.meta.env.SSR
-    ? async request => {
-        const seasons = await getSeasonListItems({request})
-        return seasons.map(season => {
-          return {
-            route: `/chats/${season.seasonNumber.toString().padStart(2, '0')}`,
-            priority: 0.4,
-          }
-        })
+  getSitemapEntries: serverOnly$(async request => {
+    const seasons = await getSeasonListItems({request})
+    return seasons.map(season => {
+      return {
+        route: `/chats/${season.seasonNumber.toString().padStart(2, '0')}`,
+        priority: 0.4,
       }
-    : null,
+    })
+  }),
 }
 
 type LoaderData = {

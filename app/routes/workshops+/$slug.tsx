@@ -51,19 +51,18 @@ import {
   type loader as WorkshopLoader,
   type LoaderData as WorkshopLoaderData,
 } from './_workshops.tsx'
+import {serverOnly$} from 'vite-env-only'
 
 export const handle: KCDHandle = {
-  getSitemapEntries: import.meta.env.SSR
-    ? async request => {
-        const workshops = await getWorkshops({request})
-        return workshops.map(workshop => {
-          return {
-            route: `/workshops/${workshop.slug}`,
-            priority: 0.4,
-          }
-        })
+  getSitemapEntries: serverOnly$(async request => {
+    const workshops = await getWorkshops({request})
+    return workshops.map(workshop => {
+      return {
+        route: `/workshops/${workshop.slug}`,
+        priority: 0.4,
       }
-    : null,
+    })
+  }),
 }
 
 type LoaderData = {

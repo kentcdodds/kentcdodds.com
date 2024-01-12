@@ -36,9 +36,10 @@ import {
   useCapturedRouteError,
 } from '~/utils/misc.tsx'
 import {getEpisodesBySeason} from '../calls.tsx'
+import {serverOnly$} from 'vite-env-only'
 
 export const handle: KCDHandle = {
-  getSitemapEntries: async request => {
+  getSitemapEntries: serverOnly$(async request => {
     const episodes = await getEpisodes({request})
     const seasons = getEpisodesBySeason(episodes)
 
@@ -48,7 +49,7 @@ export const handle: KCDHandle = {
         priority: 0.4,
       }
     })
-  },
+  }),
 }
 
 type LoaderData = {

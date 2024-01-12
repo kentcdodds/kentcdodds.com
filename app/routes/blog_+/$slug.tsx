@@ -46,11 +46,12 @@ import {useRootData} from '~/utils/use-root-data.ts'
 import {getScheduledEvents} from '~/utils/workshop-tickets.server.ts'
 import {getWorkshops} from '~/utils/workshops.server.ts'
 import {markAsRead} from '../action+/mark-as-read.tsx'
+import {serverOnly$} from 'vite-env-only'
 
 const handleId = 'blog-post'
 export const handle: KCDHandle = {
   id: handleId,
-  getSitemapEntries: async request => {
+  getSitemapEntries: serverOnly$(async request => {
     if (!import.meta.env.SSR) {
       throw Error('tried calling server-only function from client')
     }
@@ -61,7 +62,7 @@ export const handle: KCDHandle = {
       .map(page => {
         return {route: `/blog/${page.slug}`, priority: 0.7}
       })
-  },
+  }),
 }
 
 type CatchData = {

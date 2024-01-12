@@ -30,10 +30,11 @@ import {
   type loader as callsLoader,
   type LoaderData as CallsLoaderData,
 } from '../calls.tsx'
+import {serverOnly$} from 'vite-env-only'
 
 export const handle: KCDHandle = {
   id: 'call-player',
-  getSitemapEntries: async request => {
+  getSitemapEntries: serverOnly$(async request => {
     const episodes = await getEpisodes({request})
     return episodes.map(episode => {
       return {
@@ -43,7 +44,7 @@ export const handle: KCDHandle = {
         priority: 0.3,
       }
     })
-  },
+  }),
 }
 
 export const meta: MetaFunction<

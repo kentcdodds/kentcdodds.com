@@ -23,18 +23,17 @@ import {
 } from '~/utils/mdx.tsx'
 import {reuseUsefulLoaderHeaders, useCapturedRouteError} from '~/utils/misc.tsx'
 import {getServerTimeHeader} from '~/utils/timing.server.ts'
+import {serverOnly$} from 'vite-env-only'
 
 export const handle: KCDHandle = {
-  getSitemapEntries: import.meta.env.SSR
-    ? async request => {
-        const pages = await getMdxPagesInDirectory('pages', {request})
-        return pages
-          .filter(page => !page.frontmatter.draft)
-          .map(page => {
-            return {route: `/${page.slug}`, priority: 0.6}
-          })
-      }
-    : null,
+  getSitemapEntries: serverOnly$(async request => {
+    const pages = await getMdxPagesInDirectory('pages', {request})
+    return pages
+      .filter(page => !page.frontmatter.draft)
+      .map(page => {
+        return {route: `/${page.slug}`, priority: 0.6}
+      })
+  }),
 }
 
 export async function loader({params, request}: DataFunctionArgs) {

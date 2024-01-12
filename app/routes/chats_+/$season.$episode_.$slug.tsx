@@ -50,25 +50,24 @@ import {Themed} from '~/utils/theme.tsx'
 import {getServerTimeHeader} from '~/utils/timing.server.ts'
 import {useRootData} from '~/utils/use-root-data.ts'
 import {type RootLoaderType} from '~/root.tsx'
+import {serverOnly$} from 'vite-env-only'
 
 export const handle: KCDHandle = {
-  getSitemapEntries: import.meta.env.SSR
-    ? async request => {
-        const seasons = await getSeasons({request})
-        return seasons.flatMap(season => {
-          return season.episodes.map(episode => {
-            const s = String(season.seasonNumber).padStart(2, '0')
-            const e = String(episode.episodeNumber).padStart(2, '0')
-            return {
-              route: `/chats/${s}/${e}/${episode.slug}`,
-              changefreq: 'weekly',
-              lastmod: new Date(episode.updatedAt).toISOString(),
-              priority: 0.4,
-            }
-          })
-        })
-      }
-    : null,
+  getSitemapEntries: serverOnly$(async request => {
+    const seasons = await getSeasons({request})
+    return seasons.flatMap(season => {
+      return season.episodes.map(episode => {
+        const s = String(season.seasonNumber).padStart(2, '0')
+        const e = String(episode.episodeNumber).padStart(2, '0')
+        return {
+          route: `/chats/${s}/${e}/${episode.slug}`,
+          changefreq: 'weekly',
+          lastmod: new Date(episode.updatedAt).toISOString(),
+          priority: 0.4,
+        }
+      })
+    })
+  }),
 }
 
 export const meta: MetaFunction<typeof loader, {root: RootLoaderType}> = ({
