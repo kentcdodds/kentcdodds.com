@@ -84,7 +84,7 @@ export const cache: CachifiedCache = {
       })
     } else {
       // fire-and-forget cache update
-      void updatePrimaryCacheValue({
+      void updatePrimaryCacheValue!({
         key,
         cacheValue: entry,
       }).then(response => {
@@ -103,7 +103,7 @@ export const cache: CachifiedCache = {
       preparedDelete.run(key)
     } else {
       // fire-and-forget cache update
-      void updatePrimaryCacheValue({
+      void updatePrimaryCacheValue!({
         key,
         cacheValue: undefined,
       }).then(response => {
