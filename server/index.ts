@@ -40,12 +40,12 @@ import {
 
 // @ts-ignore - this file may not exist if you haven't built yet, but it will
 // definitely exist by the time the dev or prod server actually runs.
-import * as remixBuild from '../build/index.js'
+import * as remixBuild from '../build/server/index.js'
 
 sourceMapSupport.install()
 installGlobals()
 
-const BUILD_PATH = '../build/index.js'
+const BUILD_PATH = '../build/server/index.js'
 
 const build = remixBuild as unknown as ServerBuild
 let devBuild = build
@@ -149,7 +149,7 @@ app.use((req, res, next) => {
 
 app.use(compression())
 
-const publicAbsolutePath = here('../public')
+const publicAbsolutePath = here('../build/client')
 
 app.use(
   express.static(publicAbsolutePath, {
