@@ -10,7 +10,6 @@ export default defineConfig(() => {
       envOnly(),
       remix({
         ignoredRouteFiles: ['**/*'],
-        serverModuleFormat: 'esm',
         routes: async defineRoutes => {
           return flatRoutes('routes', defineRoutes, {
             ignoredRouteFiles: [

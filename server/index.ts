@@ -2,15 +2,10 @@ import {
   createRequestHandler as _createRequestHandler,
   type RequestHandler,
 } from '@remix-run/express'
-import {
-  broadcastDevReady,
-  installGlobals,
-  type ServerBuild,
-} from '@remix-run/node'
+import {installGlobals, type ServerBuild} from '@remix-run/node'
 import * as Sentry from '@sentry/remix'
 import address from 'address'
 import chalk from 'chalk'
-import chokidar from 'chokidar'
 import closeWithGrace from 'close-with-grace'
 import compression from 'compression'
 import crypto from 'crypto'
@@ -38,17 +33,24 @@ import {
   rickRollMiddleware,
 } from './redirects.js'
 
-// @ts-ignore - this file may not exist if you haven't built yet, but it will
-// definitely exist by the time the dev or prod server actually runs.
-import * as remixBuild from '../build/server/index.js'
-
 sourceMapSupport.install()
 installGlobals()
 
-const BUILD_PATH = '../build/server/index.js'
+const viteDevServer =
+  process.env.NODE_ENV === 'production'
+    ? undefined
+    : await import('vite').then(vite =>
+        vite.createServer({
+          server: {middlewareMode: true},
+        }),
+      )
 
-const build = remixBuild as unknown as ServerBuild
-let devBuild = build
+const getBuild = async (): Promise<ServerBuild> => {
+  if (viteDevServer) {
+    return viteDevServer.ssrLoadModule('virtual:remix/server-build') as any
+  }
+  return import('../build/server/index.js') as any
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const here = (...d: Array<string>) => path.join(__dirname, ...d)
@@ -58,9 +60,10 @@ const getHost = (req: {get: (key: string) => string | undefined}) =>
 
 const MODE = process.env.NODE_ENV
 
-const createRequestHandler = Sentry.wrapExpressCreateRequestHandler(
-  _createRequestHandler,
-)
+const createRequestHandler =
+  MODE === 'production'
+    ? Sentry.wrapExpressCreateRequestHandler(_createRequestHandler)
+    : _createRequestHandler
 
 if (MODE === 'production') {
   Sentry.init({
@@ -151,27 +154,31 @@ app.use(compression())
 
 const publicAbsolutePath = here('../build/client')
 
-app.use(
-  express.static(publicAbsolutePath, {
-    maxAge: '1w',
-    setHeaders(res, resourcePath) {
-      const relativePath = resourcePath.replace(`${publicAbsolutePath}/`, '')
-      if (relativePath.startsWith('build/info.json')) {
-        res.setHeader('cache-control', 'no-cache')
-        return
-      }
-      // If we ever change our font (which we quite possibly never will)
-      // then we'll just want to change the filename or something...
-      // Remix fingerprints its assets so we can cache forever
-      if (
-        relativePath.startsWith('fonts') ||
-        relativePath.startsWith('build')
-      ) {
-        res.setHeader('cache-control', 'public, max-age=31536000, immutable')
-      }
-    },
-  }),
-)
+if (viteDevServer) {
+  app.use(viteDevServer.middlewares)
+} else {
+  app.use(
+    express.static(publicAbsolutePath, {
+      maxAge: '1w',
+      setHeaders(res, resourcePath) {
+        const relativePath = resourcePath.replace(`${publicAbsolutePath}/`, '')
+        if (relativePath.startsWith('build/info.json')) {
+          res.setHeader('cache-control', 'no-cache')
+          return
+        }
+        // If we ever change our font (which we quite possibly never will)
+        // then we'll just want to change the filename or something...
+        // Remix fingerprints its assets so we can cache forever
+        if (
+          relativePath.startsWith('fonts') ||
+          relativePath.startsWith('build')
+        ) {
+          res.setHeader('cache-control', 'public, max-age=31536000, immutable')
+        }
+      },
+    }),
+  )
+}
 
 app.get(['/build/*', '/images/*', '/fonts/*', '/favicons/*'], (req, res) => {
   // if we made it past the express.static for /build, then we're missing something. No bueno.
@@ -306,11 +313,12 @@ app.use(
 
 app.get('/redirect.html', rickRollMiddleware)
 
-function getRequestHandler(build: ServerBuild): RequestHandler {
+async function getRequestHandler(): Promise<RequestHandler> {
   function getLoadContext(req: any, res: any) {
     return {cspNonce: res.locals.cspNonce}
   }
   if (MODE === 'production' && !process.env.DISABLE_METRONOME) {
+    const build = await getBuild()
     const buildWithMetronome = registerMetronome(build)
     const metronomeGetLoadContext =
       createMetronomeGetLoadContext(buildWithMetronome)
@@ -324,14 +332,10 @@ function getRequestHandler(build: ServerBuild): RequestHandler {
       mode: MODE,
     })
   }
-  return createRequestHandler({build, mode: MODE, getLoadContext})
+  return createRequestHandler({build: getBuild, mode: MODE, getLoadContext})
 }
 
-if (MODE === 'production') {
-  app.all('*', getRequestHandler(build))
-} else {
-  app.all('*', (...args) => getRequestHandler(devBuild)(...args))
-}
+app.all('*', await getRequestHandler())
 
 const desiredPort = Number(process.env.PORT || 3000)
 const portToUse = await getPort({
@@ -372,10 +376,6 @@ ${lanUrl ? `${chalk.bold('On Your Network:')}  ${chalk.cyan(lanUrl)}` : ''}
 ${chalk.bold('Press Ctrl+C to stop')}
 		`.trim(),
   )
-
-  if (process.env.NODE_ENV === 'development') {
-    void broadcastDevReady(build)
-  }
 })
 
 let wss: WebSocketServer | undefined
@@ -398,19 +398,6 @@ closeWithGrace(() => {
     }),
   ])
 })
-
-// during dev, we'll keep the build module up to date with the changes
-if (process.env.NODE_ENV === 'development') {
-  async function reloadBuild() {
-    devBuild = await import(`${BUILD_PATH}?update=${Date.now()}`)
-    void broadcastDevReady(devBuild)
-  }
-
-  const dirname = path.dirname(fileURLToPath(import.meta.url))
-  const watchPath = path.join(dirname, BUILD_PATH).replace(/\\/g, '/')
-  const watcher = chokidar.watch(watchPath, {ignoreInitial: true})
-  watcher.on('all', reloadBuild)
-}
 
 /*
 eslint

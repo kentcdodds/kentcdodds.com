@@ -30,7 +30,7 @@
     "build:remix": "vite build && vite build --ssr",
     "build:server": "tsx ./other/build-server.ts",
     "build:info": "tsx ./other/generate-build-info",
-    "dev": "remix dev -c \"node ./server/dev-server.js\" --manual",
+    "dev": "node ./server/dev-server.js",
     "runfile": "tsx ./other/runfile.js",
     "start": "cross-env NODE_ENV=production node ./index.js",
     "start:mocks": "cross-env NODE_ENV=production MOCKS=true tsx ./index.js",
