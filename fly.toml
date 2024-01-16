@@ -21,12 +21,24 @@ kill_timeout = "5s"
   processes = ["app"]
 
 [[statics]]
-  guest_path = "/app/public/build"
-  url_prefix = "/build"
+  guest_path = "/app/build/client/.vite"
+  url_prefix = "/.vite"
 
 [[statics]]
-  guest_path = "/app/public/fonts"
+  guest_path = "/app/build/client/assets"
+  url_prefix = "/assets"
+
+[[statics]]
+  guest_path = "/app/build/client/fonts"
   url_prefix = "/fonts"
+
+[[statics]]
+  guest_path = "/app/build/client/images"
+  url_prefix = "/images"
+
+[[statics]]
+  guest_path = "/app/build/client/favicons"
+  url_prefix = "/favicons"
 
 [[services]]
   protocol = "tcp"
