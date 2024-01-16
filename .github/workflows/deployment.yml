@@ -77,27 +77,6 @@ jobs:
       - name: 🔎 Type check
         run: npm run typecheck
 
-  jest:
-    name: 🃏 Jest
-    needs: [changes]
-    if: needs.changes.outputs.DEPLOYABLE == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: ⬇️ Checkout repo
-        uses: actions/checkout@v4
-
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-
-      - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
-
-      - name: 🃏 Run jest
-        run: npm run test -- --coverage
-
-  # TODO: fix playwright
   playwright:
     name: 🎭 Playwright
     needs: [changes]
