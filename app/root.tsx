@@ -44,11 +44,11 @@ import {
   Promotification,
   getPromoCookieValue,
 } from './routes/resources+/promotification.tsx'
-import './styles/vendors.css'
-import './styles/tailwind.css'
-import './styles/prose.css'
-import './styles/app.css'
-import noScriptStyles from './styles/no-script.css?inline'
+import appStyles from './styles/app.css?url'
+import noScriptStyles from './styles/no-script.css?url'
+import proseStyles from './styles/prose.css?url'
+import tailwindStyles from './styles/tailwind.css?url'
+import vendorStyles from './styles/vendors.css?url'
 import {getClientSession} from './utils/client.server.ts'
 import {getEnv} from './utils/env.server.ts'
 import {getLoginInfoSession} from './utils/login.server.ts'
@@ -139,6 +139,10 @@ export const links: LinksFunction = () => {
     },
     {rel: 'manifest', href: '/site.webmanifest'},
     {rel: 'icon', href: '/favicon.ico'},
+    {rel: 'stylesheet', href: vendorStyles},
+    {rel: 'stylesheet', href: tailwindStyles},
+    {rel: 'stylesheet', href: proseStyles},
+    {rel: 'stylesheet', href: appStyles},
   ]
 }
 
@@ -436,7 +440,7 @@ function App() {
           <MetronomeLinks nonce={nonce} />
         ) : null}
         <noscript>
-          <style dangerouslySetInnerHTML={{__html: noScriptStyles}} />
+          <link rel="stylesheet" href={noScriptStyles} />
         </noscript>
       </head>
       <body className="bg-white transition duration-500 dark:bg-gray-900">
