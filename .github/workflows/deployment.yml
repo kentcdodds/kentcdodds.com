@@ -161,6 +161,12 @@ jobs:
       - name: 🎈 Setup Fly
         uses: superfly/flyctl-actions/setup-flyctl@v1.4
 
+      - name: 🤖 update robots
+        if: ${{ github.ref == 'refs/heads/dev' }}
+        run:
+          # replace "Allow" with "Disallow" in public/robots.txt for staging
+          sed -i 's/Allow/Disallow/g' public/robots.txt
+
       - name: 🚀 Deploy Staging
         if: ${{ github.ref == 'refs/heads/dev' }}
         run:
