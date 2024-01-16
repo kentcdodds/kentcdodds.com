@@ -1,0 +1,12 @@
+diff --git a/node_modules/@kentcdodds/md-temp/package.json b/node_modules/@kentcdodds/md-temp/package.json
+index 1f7db2e..f63b06a 100644
+--- a/node_modules/@kentcdodds/md-temp/package.json
++++ b/node_modules/@kentcdodds/md-temp/package.json
+@@ -2,7 +2,6 @@
+   "name": "@kentcdodds/md-temp",
+   "version": "5.0.0",
+   "main": "dist/index.js",
+-  "module": "dist/index.mjs",
+   "types": "dist/index.d.ts",
+   "scripts": {
+     "test": "vitest",

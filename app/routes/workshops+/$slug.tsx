@@ -51,9 +51,10 @@ import {
   type loader as WorkshopLoader,
   type LoaderData as WorkshopLoaderData,
 } from './_workshops.tsx'
+import {serverOnly$} from 'vite-env-only'
 
 export const handle: KCDHandle = {
-  getSitemapEntries: async request => {
+  getSitemapEntries: serverOnly$(async request => {
     const workshops = await getWorkshops({request})
     return workshops.map(workshop => {
       return {
@@ -61,7 +62,7 @@ export const handle: KCDHandle = {
         priority: 0.4,
       }
     })
-  },
+  }),
 }
 
 type LoaderData = {

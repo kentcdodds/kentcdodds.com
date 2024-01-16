@@ -5,7 +5,7 @@ import {filterPosts} from './blog.ts'
 import {cache, cachified, lruCache} from './cache.server.ts'
 import {getClientSession} from './client.server.ts'
 import {sendMessageFromDiscordBot} from './discord.server.ts'
-import {getBlogMdxListItems} from './mdx.tsx'
+import {getBlogMdxListItems} from './mdx.server.ts'
 import {
   getDomainUrl,
   getOptionalTeam,

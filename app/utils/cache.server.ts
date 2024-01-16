@@ -84,7 +84,7 @@ export const cache: CachifiedCache = {
       })
     } else {
       // fire-and-forget cache update
-      void updatePrimaryCacheValue({
+      void updatePrimaryCacheValue!({
         key,
         cacheValue: entry,
       }).then(response => {
@@ -103,7 +103,7 @@ export const cache: CachifiedCache = {
       preparedDelete.run(key)
     } else {
       // fire-and-forget cache update
-      void updatePrimaryCacheValue({
+      void updatePrimaryCacheValue!({
         key,
         cacheValue: undefined,
       }).then(response => {
@@ -198,10 +198,3 @@ export async function cachified<Value>({
   cachifiedResolved = true
   return result
 }
-
-/*
-eslint
-  max-depth: "off",
-  no-multi-assign: "off",
-  @typescript-eslint/no-explicit-any: "off",
-*/

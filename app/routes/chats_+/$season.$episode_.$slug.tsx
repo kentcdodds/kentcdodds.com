@@ -50,9 +50,10 @@ import {Themed} from '~/utils/theme.tsx'
 import {getServerTimeHeader} from '~/utils/timing.server.ts'
 import {useRootData} from '~/utils/use-root-data.ts'
 import {type RootLoaderType} from '~/root.tsx'
+import {serverOnly$} from 'vite-env-only'
 
 export const handle: KCDHandle = {
-  getSitemapEntries: async request => {
+  getSitemapEntries: serverOnly$(async request => {
     const seasons = await getSeasons({request})
     return seasons.flatMap(season => {
       return season.episodes.map(episode => {
@@ -66,7 +67,7 @@ export const handle: KCDHandle = {
         }
       })
     })
-  },
+  }),
 }
 
 export const meta: MetaFunction<typeof loader, {root: RootLoaderType}> = ({

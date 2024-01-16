@@ -21,9 +21,10 @@ import {
 import {useChatsEpisodeUIState} from '~/utils/providers.tsx'
 import {getSeasonListItems} from '~/utils/simplecast.server.ts'
 import {getServerTimeHeader} from '~/utils/timing.server.ts'
+import {serverOnly$} from 'vite-env-only'
 
 export const handle: KCDHandle = {
-  getSitemapEntries: async request => {
+  getSitemapEntries: serverOnly$(async request => {
     const seasons = await getSeasonListItems({request})
     return seasons.map(season => {
       return {
@@ -31,7 +32,7 @@ export const handle: KCDHandle = {
         priority: 0.4,
       }
     })
-  },
+  }),
 }
 
 type LoaderData = {

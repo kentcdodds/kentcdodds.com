@@ -19,7 +19,7 @@ import {
   getReaderCount,
   getTotalPostReads,
 } from '~/utils/blog.server.ts'
-import {getBlogMdxListItems} from '~/utils/mdx.tsx'
+import {getBlogMdxListItems} from '~/utils/mdx.server.ts'
 import {
   formatNumber,
   getOptionalTeam,

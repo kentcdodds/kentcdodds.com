@@ -226,15 +226,11 @@ function removePreContainerDivs() {
 
 const remarkPlugins: U.PluggableList = [
   [
-    remarkEmbedder.default,
+    remarkEmbedder,
     {
       handleError: handleEmbedderError,
       handleHTML: handleEmbedderHtml,
-      transformers: [
-        twitterTransformer,
-        eggheadTransformer,
-        oembedTransformer.default,
-      ],
+      transformers: [twitterTransformer, eggheadTransformer, oembedTransformer],
     },
   ],
   autoAffiliates,

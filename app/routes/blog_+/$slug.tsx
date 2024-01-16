@@ -30,11 +30,10 @@ import {
 import {
   getBannerAltProp,
   getBannerTitleProp,
-  getBlogMdxListItems,
-  getMdxPage,
   mdxPageMeta,
   useMdxComponent,
 } from '~/utils/mdx.tsx'
+import {getBlogMdxListItems, getMdxPage} from '~/utils/mdx.server.ts'
 import {
   formatNumber,
   reuseUsefulLoaderHeaders,
@@ -47,18 +46,19 @@ import {useRootData} from '~/utils/use-root-data.ts'
 import {getScheduledEvents} from '~/utils/workshop-tickets.server.ts'
 import {getWorkshops} from '~/utils/workshops.server.ts'
 import {markAsRead} from '../action+/mark-as-read.tsx'
+import {serverOnly$} from 'vite-env-only'
 
 const handleId = 'blog-post'
 export const handle: KCDHandle = {
   id: handleId,
-  getSitemapEntries: async request => {
+  getSitemapEntries: serverOnly$(async request => {
     const pages = await getBlogMdxListItems({request})
     return pages
       .filter(page => !page.frontmatter.draft)
       .map(page => {
         return {route: `/blog/${page.slug}`, priority: 0.7}
       })
-  },
+  }),
 }
 
 type CatchData = {
