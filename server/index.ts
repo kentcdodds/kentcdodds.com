@@ -49,7 +49,8 @@ const getBuild = async (): Promise<ServerBuild> => {
   if (viteDevServer) {
     return viteDevServer.ssrLoadModule('virtual:remix/server-build') as any
   }
-  return import('../build/server/index.js') as any
+  // @ts-ignore (this file may or may not exist yet)
+  return import('../build/server/index.js') as Promise<ServerBuild>
 }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -348,8 +349,8 @@ const server = app.listen(portToUse, () => {
     desiredPort === portToUse
       ? desiredPort
       : addy && typeof addy === 'object'
-      ? addy.port
-      : 0
+        ? addy.port
+        : 0
 
   if (portUsed !== desiredPort) {
     console.warn(
