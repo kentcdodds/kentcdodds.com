@@ -1,4 +1,3 @@
-import * as React from 'react'
 import useUndo from './use-undo'
 
 function UseUndoExample() {

@@ -1,5 +1,3 @@
-import * as React from 'react'
-
 export {App as BoundaryApp} from './boundary.jsx'
 export {App as TryCatchApp} from './try-catch.jsx'
 export {App as RecoveryApp} from './recovery.jsx'

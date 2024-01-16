@@ -120,7 +120,7 @@ export const meta: MetaFunction<
     m => m.id === 'routes/workshops+/_workshops',
   )?.data as WorkshopLoaderData | undefined
   if (Array.isArray(workshopsData?.workshops)) {
-    workshop = workshopsData?.workshops.find(
+    workshop = workshopsData.workshops.find(
       (w: {slug?: string}) => w.slug === params.slug,
     )
   }

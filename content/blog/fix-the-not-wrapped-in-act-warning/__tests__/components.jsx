@@ -1,4 +1,3 @@
-import * as React from 'react'
 import user from '@testing-library/user-event'
 import {render, screen, act} from '@testing-library/react'
 import {UsernameForm} from '../components.jsx'

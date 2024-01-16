@@ -1,4 +1,3 @@
-import * as React from 'react'
 import {render, act} from '@testing-library/react'
 import useUndo from '../use-undo.js'
 

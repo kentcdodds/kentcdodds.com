@@ -41,6 +41,7 @@ module.exports = {
     // for CatchBoundaries
     '@typescript-eslint/no-throw-literal': 'off',
     'testing-library/no-await-sync-events': 'off',
+    'testing-library/prefer-implicit-assert': 'off',
 
     // this auto-fixes and it's nice to have types and actual stuff separate
     '@typescript-eslint/consistent-type-imports': 'warn',

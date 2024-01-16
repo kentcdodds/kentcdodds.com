@@ -94,7 +94,7 @@ const discordHandlers: Array<HttpHandler> = [
       if (typeof body !== 'object') {
         throw new Error('patch request to member must have a JSON body')
       }
-      if (!Array.isArray(body?.roles) || !body || body.roles.length < 1) {
+      if (!body || !Array.isArray(body.roles) || body.roles.length < 1) {
         throw new Error(
           'patch request to member must include a roles array with the new role',
         )
