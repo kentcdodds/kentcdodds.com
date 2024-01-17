@@ -5,6 +5,8 @@ import {flatRoutes} from 'remix-flat-routes'
 import envOnly from 'vite-env-only'
 import {cjsInterop} from 'vite-plugin-cjs-interop'
 
+const MODE = process.env.NODE_ENV
+
 export default defineConfig(() => {
   return {
     plugins: [
@@ -31,6 +33,7 @@ export default defineConfig(() => {
       tsconfigPaths(),
     ],
     build: {
+      cssMinify: MODE === 'production',
       rollupOptions: {
         external: [/node:.*/, 'stream', 'crypto'],
       },
