@@ -30,8 +30,12 @@ const buildInfo = {
 }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const destDir = path.join(__dirname, '../build/client/build')
+if (!fs.existsSync(destDir)) {
+  fs.mkdirSync(destDir, {recursive: true})
+}
 fs.writeFileSync(
-  path.join(__dirname, '../build/client/build/info.json'),
+  path.join(__dirname, destDir, 'info.json'),
   JSON.stringify(buildInfo, null, 2),
 )
 console.log('build info generated', buildInfo)
