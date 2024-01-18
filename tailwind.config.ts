@@ -1,7 +1,5 @@
 import path from 'path'
-// import {fileURLToPath} from 'url'
 import {type Config} from 'tailwindcss'
-import defaultTheme from 'tailwindcss/defaultTheme.js'
 import typography from '@tailwindcss/typography'
 import {heroTextAnimation} from './app/utils/animations.ts'
 
