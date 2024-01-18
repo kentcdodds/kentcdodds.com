@@ -21,7 +21,11 @@ import {
   mdxPageMeta,
   useMdxComponent,
 } from '~/utils/mdx.tsx'
-import {reuseUsefulLoaderHeaders, useCapturedRouteError} from '~/utils/misc.tsx'
+import {
+  requireValidSlug,
+  reuseUsefulLoaderHeaders,
+  useCapturedRouteError,
+} from '~/utils/misc.tsx'
 import {getServerTimeHeader} from '~/utils/timing.server.ts'
 import {serverOnly$} from 'vite-env-only'
 
@@ -37,9 +41,7 @@ export const handle: KCDHandle = {
 }
 
 export async function loader({params, request}: DataFunctionArgs) {
-  if (!params.slug) {
-    throw new Error('params.slug is not defined')
-  }
+  requireValidSlug(params.slug)
   // because this is our catch-all thing, we'll do an early return for anything
   // that has a other route setup. The response will be handled there.
   if (pathedRoutes[new URL(request.url).pathname]) {

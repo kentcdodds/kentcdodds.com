@@ -36,6 +36,7 @@ import {
 import {getBlogMdxListItems, getMdxPage} from '~/utils/mdx.server.ts'
 import {
   formatNumber,
+  requireValidSlug,
   reuseUsefulLoaderHeaders,
   typedBoolean,
   useCapturedRouteError,
@@ -69,9 +70,7 @@ type CatchData = {
 }
 
 export async function loader({request, params}: DataFunctionArgs) {
-  if (!params.slug) {
-    throw new Error('params.slug is not defined')
-  }
+  requireValidSlug(params.slug)
   const timings = {}
 
   const page = await getMdxPage(

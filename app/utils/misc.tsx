@@ -154,12 +154,12 @@ function formatAbbreviatedNumber(num: number) {
   return num < 1_000
     ? formatNumber(num)
     : num < 1_000_000
-    ? `${formatNumber(Number((num / 1_000).toFixed(2)))}k`
-    : num < 1_000_000_000
-    ? `${formatNumber(Number((num / 1_000_000).toFixed(2)))}m`
-    : num < 1_000_000_000_000
-    ? `${formatNumber(Number((num / 1_000_000_000).toFixed(2)))}b`
-    : 'a lot'
+      ? `${formatNumber(Number((num / 1_000).toFixed(2)))}k`
+      : num < 1_000_000_000
+        ? `${formatNumber(Number((num / 1_000_000).toFixed(2)))}m`
+        : num < 1_000_000_000_000
+          ? `${formatNumber(Number((num / 1_000_000_000).toFixed(2)))}b`
+          : 'a lot'
 }
 
 function formatDate(dateString: string | Date, format = 'PPP') {
@@ -469,6 +469,12 @@ export function useCapturedRouteError() {
   const error = useRouteError()
   captureRemixErrorBoundaryError(error)
   return error
+}
+
+export function requireValidSlug(slug: unknown): asserts slug is string {
+  if (typeof slug !== 'string' || !/^[a-zA-Z0-9-_.]+$/.test(slug)) {
+    throw new Response('Invalid slug', {status: 400})
+  }
 }
 
 export {listify} from './listify.ts'

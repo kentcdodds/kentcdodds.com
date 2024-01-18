@@ -28,6 +28,7 @@ import {
   getDisplayUrl,
   getUrl,
   listify,
+  requireValidSlug,
   reuseUsefulLoaderHeaders,
   useCapturedRouteError,
 } from '~/utils/misc.tsx'
@@ -71,9 +72,7 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({params, request}) => {
-  if (!params.slug) {
-    throw new Error('params.slug is not defined')
-  }
+  requireValidSlug(params.slug)
   const timings = {}
   const [workshops, blogRecommendations] = await Promise.all([
     getWorkshops({request, timings}),
