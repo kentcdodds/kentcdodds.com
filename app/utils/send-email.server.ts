@@ -98,25 +98,19 @@ P.S. If you did not request this email, you can safely ignore it.
     <meta http-equiv="Content-Type" content="text/html charset=UTF-8" />
     <style type="text/css">
       @font-face {
-        font-family: 'Matter';
-        src: url('https://kcd-img.netlify.app/Matter-Medium.woff2') format('woff2'),
-          url('https://kcd-img.netlify.app/Matter-Medium.woff') format('woff');
         font-weight: 500;
         font-style: normal;
         font-display: swap;
       }
 
       @font-face {
-        font-family: 'Matter';
-        src: url('https://kcd-img.netlify.app/Matter-Regular.woff2') format('woff2'),
-          url('https://kcd-img.netlify.app/Matter-Regular.woff') format('woff');
         font-weight: normal;
         font-style: normal;
         font-display: swap;
       }
     </style>
   </head>
-  <body style="font-family:Matter, sans-serif;">
+  <body style="font-family:ui-sans-serif, sans-serif;">
     <div style="margin: 0 auto; max-width: 450px;">
 
       <h2 style="text-align: center">${
