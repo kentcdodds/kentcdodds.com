@@ -95,9 +95,6 @@ export default {
       zIndex: {
         '-10': '-10',
       },
-      fontFamily: {
-        sans: ['Matter', ...defaultTheme.fontFamily.sans],
-      },
       fontSize: {
         xl: '1.375rem', // 22px
         '2xl': '1.5625rem', // 25px
