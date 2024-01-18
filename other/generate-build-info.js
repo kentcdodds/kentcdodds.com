@@ -35,7 +35,7 @@ if (!fs.existsSync(destDir)) {
   fs.mkdirSync(destDir, {recursive: true})
 }
 fs.writeFileSync(
-  path.join(__dirname, destDir, 'info.json'),
+  path.join(destDir, 'info.json'),
   JSON.stringify(buildInfo, null, 2),
 )
 console.log('build info generated', buildInfo)
