@@ -24,7 +24,6 @@ import {
   getErrorForKeywords,
   getErrorForTitle,
 } from '~/utils/call-kent.ts'
-import {sendMessageFromDiscordBot} from '~/utils/discord.server.ts'
 import {createEpisodeAudio} from '~/utils/ffmpeg.server.ts'
 import {markdownToHtml} from '~/utils/markdown.server.ts'
 import {
@@ -32,14 +31,11 @@ import {
   getAvatarForUser,
   getErrorMessage,
   getNonNull,
-  getOptionalTeam,
-  getRequiredServerEnvVar,
   useDoubleCheck,
 } from '~/utils/misc.tsx'
 import {prisma} from '~/utils/prisma.server.ts'
 import {sendEmail} from '~/utils/send-email.server.ts'
 import {requireAdminUser} from '~/utils/session.server.ts'
-import {teamEmoji} from '~/utils/team-provider.tsx'
 import {createEpisode} from '~/utils/transistor.server.ts'
 import {useRootData, useUser} from '~/utils/use-root-data.ts'
 
@@ -128,19 +124,6 @@ Thanks for your call. Kent just replied and the episode has been published to th
       } catch (error: unknown) {
         console.error(
           `Problem sending email about a call: ${episodeUrl}`,
-          error,
-        )
-      }
-      try {
-        const channelId = getRequiredServerEnvVar('DISCORD_CALL_KENT_CHANNEL')
-        const {firstName, team, discordId} = call.user
-        const userMention = discordId ? `<@!${discordId}>` : firstName
-        const emoji = teamEmoji[getOptionalTeam(team)]
-        const message = `📳 ring ring! New Call Kent Podcast episode from ${userMention} ${emoji}: "${title}"\n\n${description}\n\n${episodeUrl}`
-        void sendMessageFromDiscordBot(channelId, message)
-      } catch (error: unknown) {
-        console.error(
-          `Problem sending discord message about a call: ${episodeUrl}`,
           error,
         )
       }
