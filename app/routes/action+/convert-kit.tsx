@@ -1,7 +1,7 @@
 import {type ActionFunction} from '@remix-run/node'
 import {Link} from '@remix-run/react'
+import {CloudinaryVideo} from '~/components/cloudinary-video'
 import {Grid} from '~/components/grid.tsx'
-import {CloudinaryVideo} from '~/components/kifs.tsx'
 import {HeroSection} from '~/components/sections/hero-section.tsx'
 import {Spacer} from '~/components/spacer.tsx'
 import {Paragraph} from '~/components/typography.tsx'
