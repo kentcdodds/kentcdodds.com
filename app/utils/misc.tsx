@@ -175,16 +175,16 @@ function parseDate(dateString: string) {
   })
 }
 
-function getErrorMessage(error: unknown) {
+function getErrorMessage(error: unknown, fallback: string = 'Unknown Error') {
   if (typeof error === 'string') return error
   if (error instanceof Error) return error.message
-  return 'Unknown Error'
+  return fallback
 }
 
-function getErrorStack(error: unknown) {
+function getErrorStack(error: unknown, fallback: string = 'Unknown Error') {
   if (typeof error === 'string') return error
   if (error instanceof Error) return error.stack
-  return 'Unknown Error'
+  return fallback
 }
 
 function getNonNull<Type extends Record<string, null | undefined | unknown>>(
@@ -473,7 +473,7 @@ export function useCapturedRouteError() {
 
 export function requireValidSlug(slug: unknown): asserts slug is string {
   if (typeof slug !== 'string' || !/^[a-zA-Z0-9-_.]+$/.test(slug)) {
-    throw new Response('Invalid slug', {status: 400})
+    throw new Response(`This is not a valid slug: "${slug}"`, {status: 400})
   }
 }
 

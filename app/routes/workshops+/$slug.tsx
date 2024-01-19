@@ -5,54 +5,53 @@ import {
   type MetaFunction,
 } from '@remix-run/node'
 import {
-  isRouteErrorResponse,
   Link,
   useLoaderData,
-  useParams,
+  useParams
 } from '@remix-run/react'
 import * as React from 'react'
-import {ArrowLink, BackLink} from '~/components/arrow-button.tsx'
-import {ButtonLink} from '~/components/button.tsx'
-import {FourOhFour} from '~/components/errors.tsx'
-import {Grid} from '~/components/grid.tsx'
-import {NumberedPanel} from '~/components/numbered-panel.tsx'
-import {TestimonialSection} from '~/components/sections/testimonial-section.tsx'
-import {Spacer} from '~/components/spacer.tsx'
-import {H2, H5, H6, Paragraph} from '~/components/typography.tsx'
-import {WorkshopCard} from '~/components/workshop-card.tsx'
-import {RegistrationPanel} from '~/components/workshop-registration-panel.tsx'
-import {getSocialImageWithPreTitle} from '~/images.tsx'
-import {type KCDHandle, type MdxListItem, type Workshop} from '~/types.ts'
-import {getBlogRecommendations} from '~/utils/blog.server.ts'
+import { serverOnly$ } from 'vite-env-only'
+import { ArrowLink, BackLink } from '~/components/arrow-button.tsx'
+import { ButtonLink } from '~/components/button.tsx'
+import { GeneralErrorBoundary } from '~/components/error-boundary.tsx'
+import { FourHundred, FourOhFour } from '~/components/errors.tsx'
+import { Grid } from '~/components/grid.tsx'
+import { NumberedPanel } from '~/components/numbered-panel.tsx'
+import { TestimonialSection } from '~/components/sections/testimonial-section.tsx'
+import { Spacer } from '~/components/spacer.tsx'
+import { H2, H5, H6, Paragraph } from '~/components/typography.tsx'
+import { WorkshopCard } from '~/components/workshop-card.tsx'
+import { RegistrationPanel } from '~/components/workshop-registration-panel.tsx'
+import { ConvertKitForm } from '~/convertkit/form.tsx'
+import { getSocialImageWithPreTitle } from '~/images.tsx'
+import {
+  type LoaderData as RootLoaderData,
+  type RootLoaderType,
+} from '~/root.tsx'
+import { type KCDHandle, type MdxListItem, type Workshop } from '~/types.ts'
+import { getBlogRecommendations } from '~/utils/blog.server.ts'
 import {
   getDisplayUrl,
   getUrl,
   listify,
   requireValidSlug,
-  reuseUsefulLoaderHeaders,
-  useCapturedRouteError,
+  reuseUsefulLoaderHeaders
 } from '~/utils/misc.tsx'
-import {getSocialMetas} from '~/utils/seo.ts'
+import { getSocialMetas } from '~/utils/seo.ts'
 import {
   getTestimonials,
   type Testimonial,
   type TestimonialCategory,
   type TestimonialSubject,
 } from '~/utils/testimonials.server.ts'
-import {getServerTimeHeader} from '~/utils/timing.server.ts'
-import {type WorkshopEvent} from '~/utils/workshop-tickets.server.ts'
-import {getWorkshops} from '~/utils/workshops.server.ts'
-import {ConvertKitForm} from '~/convertkit/form.tsx'
-import {
-  type RootLoaderType,
-  type LoaderData as RootLoaderData,
-} from '~/root.tsx'
+import { getServerTimeHeader } from '~/utils/timing.server.ts'
+import { type WorkshopEvent } from '~/utils/workshop-tickets.server.ts'
+import { getWorkshops } from '~/utils/workshops.server.ts'
 import {
   useWorkshopsData,
   type loader as WorkshopLoader,
   type LoaderData as WorkshopLoaderData,
 } from './_workshops.tsx'
-import {serverOnly$} from 'vite-env-only'
 
 export const handle: KCDHandle = {
   getSitemapEntries: serverOnly$(async request => {
@@ -476,13 +475,14 @@ export default function WorkshopScreen() {
     </>
   )
 }
+
 export function ErrorBoundary() {
-  const error = useCapturedRouteError()
-  if (isRouteErrorResponse(error)) {
-    console.error('CatchBoundary', error)
-    if (error.status === 404) {
-      return <FourOhFour articles={error.data.blogRecommendations} />
-    }
-    throw new Error(`Unhandled error: ${error.status}`)
-  }
+  return (
+    <GeneralErrorBoundary
+      statusHandlers={{
+        400: ({error}) => <FourHundred error={error.data} />,
+        404: ({error}) => <FourOhFour articles={error.data.recommendations} />,
+      }}
+    />
+  )
 }

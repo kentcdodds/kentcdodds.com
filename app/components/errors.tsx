@@ -3,10 +3,12 @@ import {clsx} from 'clsx'
 import errorStack from 'error-stack-parser'
 import * as React from 'react'
 import {type MdxListItem} from '~/types.ts'
-import {Grimmacing, MissingSomething} from './kifs.tsx'
+import {Facepalm, Grimmacing, MissingSomething} from './kifs.tsx'
 import {BlogSection} from './sections/blog-section.tsx'
 import {HeroSection, type HeroSectionProps} from './sections/hero-section.tsx'
 import {H2, H6} from './typography.tsx'
+import {ArrowLink} from './arrow-button.tsx'
+import {getErrorMessage} from '~/utils/misc.tsx'
 
 function RedBox({error}: {error: Error}) {
   const [isVisible, setIsVisible] = React.useState(true)
@@ -114,6 +116,23 @@ function FourOhFour({articles}: {articles?: Array<MdxListItem>}) {
         title: "404 - Oh no, you found a page that's missing stuff.",
         subtitle: `"${pathname}" is not a page on kentcdodds.com. So sorry.`,
         image: <MissingSomething className="rounded-lg" aspectRatio="3:4" />,
+        action: <ArrowLink href="/">Go home</ArrowLink>,
+      }}
+    />
+  )
+}
+
+export function FourHundred({error}: {error?: unknown}) {
+  return (
+    <ErrorPage
+      heroProps={{
+        title: '400 - Oh no, you did something wrong.',
+        subtitle: getErrorMessage(
+          error,
+          `If you think I made a mistake, let me know...`,
+        ),
+        image: <Facepalm className="rounded-lg" aspectRatio="3:4" />,
+        action: <ArrowLink href="/">Go home</ArrowLink>,
       }}
     />
   )
@@ -138,6 +157,7 @@ function ServerError({
         title: '500 - Oh no, something did not go well.',
         subtitle: `"${pathname}" is currently not working. So sorry.`,
         image: <Grimmacing className="rounded-lg" aspectRatio="3:4" />,
+        action: <ArrowLink href="/">Go home</ArrowLink>,
       }}
     />
   )

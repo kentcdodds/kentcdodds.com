@@ -31,7 +31,7 @@ import {getInstanceInfo} from '~/utils/cjs/litefs-js.server.js'
 import {useSpinDelay} from 'spin-delay'
 import {type KCDHandle} from '~/types.ts'
 import {ArrowLink} from './components/arrow-button.tsx'
-import {ErrorPage} from './components/errors.tsx'
+import {ErrorPage, FourHundred} from './components/errors.tsx'
 import {Footer} from './components/footer.tsx'
 import {ArrowIcon, CodeIcon, LaptopIcon} from './components/icons.tsx'
 import {Grimmacing, MissingSomething} from './components/kifs.tsx'
@@ -614,6 +614,13 @@ export function ErrorBoundary() {
               action: <ArrowLink href="/">Go home</ArrowLink>,
             }}
           />
+        </ErrorDoc>
+      )
+    }
+    if (error.status === 400) {
+      return (
+        <ErrorDoc>
+          <FourHundred error={error.data} />
         </ErrorDoc>
       )
     }

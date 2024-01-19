@@ -3,13 +3,15 @@ import {
   type DataFunctionArgs,
   type HeadersFunction,
 } from '@remix-run/node'
-import {isRouteErrorResponse, useLoaderData, useParams} from '@remix-run/react'
+import {useLoaderData, useParams} from '@remix-run/react'
 import {clsx} from 'clsx'
 import * as React from 'react'
+import {serverOnly$} from 'vite-env-only'
 import {ArrowLink, BackLink} from '~/components/arrow-button.tsx'
 import {BlurrableImage} from '~/components/blurrable-image.tsx'
 import {CourseCard} from '~/components/course-card.tsx'
-import {FourOhFour, ServerError} from '~/components/errors.tsx'
+import {GeneralErrorBoundary} from '~/components/error-boundary.tsx'
+import {FourHundred, FourOhFour} from '~/components/errors.tsx'
 import {Grid} from '~/components/grid.tsx'
 import {BlogSection} from '~/components/sections/blog-section.tsx'
 import {HeaderSection} from '~/components/sections/header-section.tsx'
@@ -20,26 +22,25 @@ import {WorkshopCard} from '~/components/workshop-card.tsx'
 import {externalLinks} from '~/external-links.tsx'
 import {getImageBuilder, getImgProps, images} from '~/images.tsx'
 import {type KCDHandle, type MdxListItem, type Team} from '~/types.ts'
-import {getRankingLeader} from '~/utils/blog.ts'
 import {
   getBlogReadRankings,
   getBlogRecommendations,
   getTotalPostReads,
   type ReadRankings,
 } from '~/utils/blog.server.ts'
+import {getRankingLeader} from '~/utils/blog.ts'
+import {getBlogMdxListItems, getMdxPage} from '~/utils/mdx.server.ts'
 import {
   getBannerAltProp,
   getBannerTitleProp,
   mdxPageMeta,
   useMdxComponent,
 } from '~/utils/mdx.tsx'
-import {getBlogMdxListItems, getMdxPage} from '~/utils/mdx.server.ts'
 import {
   formatNumber,
   requireValidSlug,
   reuseUsefulLoaderHeaders,
   typedBoolean,
-  useCapturedRouteError,
 } from '~/utils/misc.tsx'
 import {teamEmoji, useTeam} from '~/utils/team-provider.tsx'
 import {getServerTimeHeader} from '~/utils/timing.server.ts'
@@ -47,7 +48,6 @@ import {useRootData} from '~/utils/use-root-data.ts'
 import {getScheduledEvents} from '~/utils/workshop-tickets.server.ts'
 import {getWorkshops} from '~/utils/workshops.server.ts'
 import {markAsRead} from '../action+/mark-as-read.tsx'
-import {serverOnly$} from 'vite-env-only'
 
 const handleId = 'blog-post'
 export const handle: KCDHandle = {
@@ -560,17 +560,14 @@ export default function MdxScreen() {
     </div>
   )
 }
+
 export function ErrorBoundary() {
-  const error = useCapturedRouteError()
-
-  if (isRouteErrorResponse(error)) {
-    console.error('CatchBoundary', error)
-    if (error.data.recommendations) {
-      return <FourOhFour articles={error.data.recommendations} />
-    }
-    throw new Error(`Unhandled error: ${error.status}`)
-  }
-
-  console.error(error)
-  return <ServerError />
+  return (
+    <GeneralErrorBoundary
+      statusHandlers={{
+        400: ({error}) => <FourHundred error={error.statusText} />,
+        404: ({error}) => <FourOhFour articles={error.data.recommendations} />,
+      }}
+    />
+  )
 }

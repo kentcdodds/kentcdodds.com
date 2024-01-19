@@ -9,7 +9,7 @@ import {useLocation} from '@remix-run/react'
 import {ArrowLink} from '~/components/arrow-button.tsx'
 import {GeneralErrorBoundary} from '~/components/error-boundary.tsx'
 import {ErrorPage} from '~/components/errors.tsx'
-import {MissingSomething} from '~/components/kifs.tsx'
+import {Facepalm, MissingSomething} from '~/components/kifs.tsx'
 
 export async function loader() {
   throw new Response('Not found', {status: 404})
@@ -26,6 +26,16 @@ export function ErrorBoundary() {
   return (
     <GeneralErrorBoundary
       statusHandlers={{
+        400: () => (
+          <ErrorPage
+            heroProps={{
+              title: '400 - Oh no, you did something wrong.',
+              subtitle: `If you think I did something wrong, let me know...`,
+              image: <Facepalm className="rounded-lg" aspectRatio="3:4" />,
+              action: <ArrowLink href="/">Go home</ArrowLink>,
+            }}
+          />
+        ),
         404: () => (
           <ErrorPage
             heroProps={{
