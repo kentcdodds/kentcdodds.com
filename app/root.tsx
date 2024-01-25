@@ -33,7 +33,7 @@ import {type KCDHandle} from '~/types.ts'
 import {ArrowLink} from './components/arrow-button.tsx'
 import {ErrorPage, FourHundred} from './components/errors.tsx'
 import {Footer} from './components/footer.tsx'
-import {ArrowIcon, CodeIcon, LaptopIcon} from './components/icons.tsx'
+import {ArrowIcon, LaptopIcon, PartyIcon} from './components/icons.tsx'
 import {Grimmacing, MissingSomething} from './components/kifs.tsx'
 import {Navbar} from './components/navbar.tsx'
 import {NotificationMessage} from './components/notification-message.tsx'
@@ -135,6 +135,20 @@ export const links: LinksFunction = () => {
 export type LoaderData = SerializeFrom<typeof loader>
 
 const WORKSHOP_PROMO_NAME = 'workshop-promo'
+const EPIC_WEB_CONF_EARLY_BIRD_PROMO_NAME = 'epic-web-conf-early-bird-promo'
+const EPIC_WEB_CONF_EARLY_BIRD_START_DATE = '2024-01-24T19:00:00.000Z'
+const EPIC_WEB_CONF_EARLY_BIRD_END_DATE = '2024-02-16T19:00:00.000Z'
+const EPIC_WEB_CONF_REGULAR_TICKET_NAME = 'epic-web-conf-regular-ticket'
+const EPIC_WEB_CONF_REGULAR_TICKET_START_DATE =
+  EPIC_WEB_CONF_EARLY_BIRD_END_DATE
+const EPIC_WEB_CONF_REGULAR_TICKET_END_DATE = '2024-03-15T19:00:00.000Z'
+const EPIC_WEB_CONF_LATE_TICKET_NAME = 'epic-web-conf-late-ticket'
+const EPIC_WEB_CONF_LATE_TICKET_START_DATE =
+  EPIC_WEB_CONF_REGULAR_TICKET_END_DATE
+const EPIC_WEB_CONF_LATE_TICKET_END_DATE = '2024-04-10T19:00:00.000Z'
+const EPIC_WEB_CONF_LIVE = 'epic-web-conf-live'
+const EPIC_WEB_CONF_LIVE_START_DATE = '2024-04-11T13:00:00.000Z'
+const EPIC_WEB_CONF_LIVE_END_DATE = '2024-04-12T00:00:00.000Z'
 
 export async function loader({request}: DataFunctionArgs) {
   const timings = {}
@@ -166,8 +180,47 @@ export async function loader({request}: DataFunctionArgs) {
     userInfo: user ? await getUserInfo(user, {request, timings}) : null,
     ENV: getEnv(),
     randomFooterImageKey,
-    epicWebPromotification: {
-      cookieName: getPromoCookieValue({request, promoName: 'EpicWeb.dev'}),
+    epicWebPromotifications: {
+      earlyBird: {
+        cookieValue: getPromoCookieValue({
+          request,
+          promoName: EPIC_WEB_CONF_EARLY_BIRD_PROMO_NAME,
+        }),
+        startDate: EPIC_WEB_CONF_EARLY_BIRD_START_DATE,
+        endDate: EPIC_WEB_CONF_EARLY_BIRD_END_DATE,
+        text: 'early bird sale is going on right now!',
+        ticketLinkText: 'Limited time discount available',
+      },
+      regularTicket: {
+        cookieValue: getPromoCookieValue({
+          request,
+          promoName: EPIC_WEB_CONF_REGULAR_TICKET_NAME,
+        }),
+        startDate: EPIC_WEB_CONF_REGULAR_TICKET_START_DATE,
+        endDate: EPIC_WEB_CONF_REGULAR_TICKET_END_DATE,
+        text: 'regular tickets are available now!',
+        ticketLinkText: 'Prices go up soon',
+      },
+      lateTicket: {
+        cookieValue: getPromoCookieValue({
+          request,
+          promoName: EPIC_WEB_CONF_LATE_TICKET_NAME,
+        }),
+        startDate: EPIC_WEB_CONF_LATE_TICKET_START_DATE,
+        endDate: EPIC_WEB_CONF_LATE_TICKET_END_DATE,
+        text: 'late-bird tickets are available now, hurry!',
+        ticketLinkText: 'Get your tickets here',
+      },
+      live: {
+        cookieValue: getPromoCookieValue({
+          request,
+          promoName: EPIC_WEB_CONF_LIVE,
+        }),
+        startDate: EPIC_WEB_CONF_LIVE_START_DATE,
+        endDate: EPIC_WEB_CONF_LIVE_END_DATE,
+        text: 'is live right now!',
+        ticketLinkText: null,
+      },
     },
     workshopPromotifications: workshopEvents
       .map(e => {
@@ -432,40 +485,44 @@ function App() {
       <body className="bg-white transition duration-500 dark:bg-gray-900">
         <PageLoadingMessage />
 
-        <Promotification
-          cookieValue={data.epicWebPromotification.cookieName}
-          promoName="EpicWeb.dev"
-          promoEndTime={new Date('2023-11-07T06:59:59.000Z')}
-        >
-          <div className="flex flex-col">
-            <p className="flex items-center gap-1">
-              <CodeIcon />
-              <span>
-                <a href="https://www.epicweb.dev" className="underline">
-                  EpicWeb.dev is{' '}
-                  {Date.now() > new Date('2023-10-18T06:59:59.000Z').getTime()
-                    ? 'now'
-                    : 'almost'}{' '}
-                  live!
-                </a>
-              </span>
-            </p>
-            <p className="mt-1 text-sm text-gray-500">
-              Limited time{' '}
-              <a
-                href="https://www.epicweb.dev"
-                className="inline-flex items-center gap-1 underline"
+        {Object.entries(data.epicWebPromotifications).map(
+          ([name, {cookieValue, startDate, endDate, text, ticketLinkText}]) =>
+            new Date(startDate).getTime() < Date.now() ? (
+              <Promotification
+                key={name}
+                cookieValue={cookieValue}
+                promoName={`epic-web-conf-2024-${name}`}
+                promoEndTime={new Date(endDate)}
               >
-                <span>discount available</span>
-                <ArrowIcon direction="top-right" size={16} />
-              </a>
-            </p>
-            <p>
-              Learn everything you need to know to build{' '}
-              <strong>modern full stack</strong> web applications.
-            </p>
-          </div>
-        </Promotification>
+                <div className="flex flex-col">
+                  <p className="flex items-center gap-1">
+                    <PartyIcon />
+                    <span>
+                      <a href="https://www.epicweb.dev" className="underline">
+                        Epic Web Conf
+                      </a>{' '}
+                      {text}
+                    </span>
+                  </p>
+                  {ticketLinkText ? (
+                    <p className="mt-1 text-sm">
+                      <a
+                        href="https://www.epicweb.dev"
+                        className="inline-flex items-center gap-1 underline"
+                      >
+                        <span>{ticketLinkText}</span>
+                        <ArrowIcon direction="top-right" size={16} />
+                      </a>
+                    </p>
+                  ) : null}
+                  <p className="mt-2 text-sm">
+                    Join the community and network with other great web devs.
+                  </p>
+                </div>
+              </Promotification>
+            ) : null,
+        )}
+
         {data.workshopPromotifications.map(e => (
           <Promotification
             key={e.slug}
