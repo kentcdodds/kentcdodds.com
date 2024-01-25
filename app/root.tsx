@@ -498,7 +498,7 @@ function App() {
                   <p className="flex items-center gap-1">
                     <PartyIcon />
                     <span>
-                      <a href="https://www.epicweb.dev" className="underline">
+                      <a href="https://www.epicweb.dev/conf" className="underline">
                         Epic Web Conf
                       </a>{' '}
                       {text}
@@ -507,7 +507,7 @@ function App() {
                   {ticketLinkText ? (
                     <p className="mt-1 text-sm">
                       <a
-                        href="https://www.epicweb.dev"
+                        href="https://www.epicweb.dev/conf"
                         className="inline-flex items-center gap-1 underline"
                       >
                         <span>{ticketLinkText}</span>
