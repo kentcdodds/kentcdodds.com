@@ -182,6 +182,7 @@ export async function loader({request}: DataFunctionArgs) {
     randomFooterImageKey,
     epicWebPromotifications: {
       earlyBird: {
+        promoName: EPIC_WEB_CONF_EARLY_BIRD_PROMO_NAME,
         cookieValue: getPromoCookieValue({
           request,
           promoName: EPIC_WEB_CONF_EARLY_BIRD_PROMO_NAME,
@@ -192,6 +193,7 @@ export async function loader({request}: DataFunctionArgs) {
         ticketLinkText: 'Limited time discount available',
       },
       regularTicket: {
+        promoName: EPIC_WEB_CONF_REGULAR_TICKET_NAME,
         cookieValue: getPromoCookieValue({
           request,
           promoName: EPIC_WEB_CONF_REGULAR_TICKET_NAME,
@@ -202,6 +204,7 @@ export async function loader({request}: DataFunctionArgs) {
         ticketLinkText: 'Prices go up soon',
       },
       lateTicket: {
+        promoName: EPIC_WEB_CONF_LATE_TICKET_NAME,
         cookieValue: getPromoCookieValue({
           request,
           promoName: EPIC_WEB_CONF_LATE_TICKET_NAME,
@@ -212,6 +215,7 @@ export async function loader({request}: DataFunctionArgs) {
         ticketLinkText: 'Get your tickets here',
       },
       live: {
+        promoName: EPIC_WEB_CONF_LIVE,
         cookieValue: getPromoCookieValue({
           request,
           promoName: EPIC_WEB_CONF_LIVE,
@@ -485,20 +489,30 @@ function App() {
       <body className="bg-white transition duration-500 dark:bg-gray-900">
         <PageLoadingMessage />
 
-        {Object.entries(data.epicWebPromotifications).map(
-          ([name, {cookieValue, startDate, endDate, text, ticketLinkText}]) =>
+        {Object.values(data.epicWebPromotifications).map(
+          ({
+            promoName,
+            cookieValue,
+            startDate,
+            endDate,
+            text,
+            ticketLinkText,
+          }) =>
             new Date(startDate).getTime() < Date.now() ? (
               <Promotification
-                key={name}
+                key={promoName}
                 cookieValue={cookieValue}
-                promoName={`epic-web-conf-2024-${name}`}
+                promoName={promoName}
                 promoEndTime={new Date(endDate)}
               >
                 <div className="flex flex-col">
                   <p className="flex items-center gap-1">
                     <PartyIcon />
                     <span>
-                      <a href="https://www.epicweb.dev/conf" className="underline">
+                      <a
+                        href="https://www.epicweb.dev/conf"
+                        className="underline"
+                      >
                         Epic Web Conf
                       </a>{' '}
                       {text}
