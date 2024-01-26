@@ -12,6 +12,7 @@ export default defineConfig(() => {
     plugins: [
       cjsInterop({
         dependencies: [
+          'md5-hash',
           '@remark-embedder/core',
           '@remark-embedder/transformer-oembed',
         ],

@@ -35,7 +35,7 @@ function getAvatar(
     | {fallback: string; origin?: string}
   ) = {},
 ) {
-  const hash = md5.default(email)
+  const hash = md5(email)
   const url = new URL(`https://www.gravatar.com/avatar/${hash}`)
   url.searchParams.set('size', String(size))
   if (fallback) {
