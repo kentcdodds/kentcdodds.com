@@ -320,11 +320,12 @@ async function getRequestHandler(): Promise<RequestHandler> {
   }
   if (MODE === 'production' && !process.env.DISABLE_METRONOME) {
     const build = await getBuild()
-    const buildWithMetronome = registerMetronome(build)
-    const metronomeGetLoadContext =
-      createMetronomeGetLoadContext(buildWithMetronome)
+    const buildWithMetronome = registerMetronome(build as any)
+    const metronomeGetLoadContext = createMetronomeGetLoadContext(
+      buildWithMetronome as any,
+    )
     return createRequestHandler({
-      build: buildWithMetronome,
+      build: buildWithMetronome as any,
       getLoadContext: combineGetLoadContexts(
         getLoadContext,
         // @ts-expect-error huh... metronome isn't happy with itself.
