@@ -1,8 +1,8 @@
 diff --git a/node_modules/@remix-run/react/dist/data.js b/node_modules/@remix-run/react/dist/data.js
-index a8d8f78..071621e 100644
+index 98e87d4..4658d6b 100644
 --- a/node_modules/@remix-run/react/dist/data.js
 +++ b/node_modules/@remix-run/react/dist/data.js
-@@ -50,6 +50,7 @@ async function fetchData(request, routeId, retry = 0) {
+@@ -54,6 +54,7 @@ async function fetchData(request, routeId, retry = 0) {
    let url = new URL(request.url);
    url.searchParams.set("_data", routeId);
    let init = {
@@ -11,10 +11,10 @@ index a8d8f78..071621e 100644
    };
    if (request.method !== "GET") {
 diff --git a/node_modules/@remix-run/react/dist/esm/data.js b/node_modules/@remix-run/react/dist/esm/data.js
-index b93b27f..72acb9a 100644
+index c6728c9..6e32d62 100644
 --- a/node_modules/@remix-run/react/dist/esm/data.js
 +++ b/node_modules/@remix-run/react/dist/esm/data.js
-@@ -46,6 +46,7 @@ async function fetchData(request, routeId, retry = 0) {
+@@ -50,6 +50,7 @@ async function fetchData(request, routeId, retry = 0) {
    let url = new URL(request.url);
    url.searchParams.set("_data", routeId);
    let init = {
