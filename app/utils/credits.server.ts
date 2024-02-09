@@ -1,4 +1,4 @@
-import {cachified, verboseReporter} from 'cachified'
+import {cachified, verboseReporter} from '@epic-web/cachified'
 import * as YAML from 'yaml'
 import {cache, shouldForceFresh} from './cache.server.ts'
 import {downloadFile} from './github.server.ts'
@@ -121,25 +121,27 @@ async function getPeople({
   forceFresh?: boolean
 }) {
   const key = 'content:data:credits.yml'
-  const allPeople = await cachified({
-    key,
-    cache,
-    reporter: verboseReporter(),
-    forceFresh: await shouldForceFresh({forceFresh, request, key}),
-    ttl: 1000 * 60 * 60 * 24 * 30,
-    staleWhileRevalidate: 1000 * 60 * 60 * 24,
-    getFreshValue: async () => {
-      const creditsString = await downloadFile('content/data/credits.yml')
-      const rawCredits = YAML.parse(creditsString)
-      if (!Array.isArray(rawCredits)) {
-        console.error('Credits is not an array', rawCredits)
-        throw new Error('Credits is not an array.')
-      }
+  const allPeople = await cachified(
+    {
+      key,
+      cache,
+      forceFresh: await shouldForceFresh({forceFresh, request, key}),
+      ttl: 1000 * 60 * 60 * 24 * 30,
+      staleWhileRevalidate: 1000 * 60 * 60 * 24,
+      getFreshValue: async () => {
+        const creditsString = await downloadFile('content/data/credits.yml')
+        const rawCredits = YAML.parse(creditsString)
+        if (!Array.isArray(rawCredits)) {
+          console.error('Credits is not an array', rawCredits)
+          throw new Error('Credits is not an array.')
+        }
 
-      return rawCredits.map(mapPerson).filter(typedBoolean)
+        return rawCredits.map(mapPerson).filter(typedBoolean)
+      },
+      checkValue: (value: unknown) => Array.isArray(value),
     },
-    checkValue: (value: unknown) => Array.isArray(value),
-  })
+    verboseReporter(),
+  )
   return allPeople
 }
 

@@ -1,4 +1,4 @@
-import {cachified, verboseReporter} from 'cachified'
+import {cachified, verboseReporter} from '@epic-web/cachified'
 import http from 'http'
 import https from 'https'
 import makeMetascraper from 'metascraper'
@@ -56,22 +56,24 @@ function unshorten(
 }
 
 async function getTweetCached(tweetId: string) {
-  const result = await cachified<Tweet | null>({
-    key: `tweet:${tweetId}`,
-    cache: lruCache,
-    reporter: verboseReporter(),
-    ttl: 1000 * 60,
-    swr: 1000 * 60 * 60 * 24 * 30 * 6,
-    async getFreshValue({background}) {
-      const tweet = await getTweet(tweetId)
-      if (tweet) return tweet
-      if (background) {
-        // throw an error so this fallsback to the cache
-        throw new Error(`Tweet not found: ${tweetId}`)
-      }
-      return null
+  const result = await cachified<Tweet | null>(
+    {
+      key: `tweet:${tweetId}`,
+      cache: lruCache,
+      ttl: 1000 * 60,
+      swr: 1000 * 60 * 60 * 24 * 30 * 6,
+      async getFreshValue({background}) {
+        const tweet = await getTweet(tweetId)
+        if (tweet) return tweet
+        if (background) {
+          // throw an error so this fallsback to the cache
+          throw new Error(`Tweet not found: ${tweetId}`)
+        }
+        return null
+      },
     },
-  }).catch(e => {
+    verboseReporter(),
+  ).catch(e => {
     // catch the error so things don't crash if there's no cache to fallback to.
     console.error('Error getting tweet', tweetId, e)
     return null
@@ -276,14 +278,16 @@ async function buildTweetHTML(tweet: Tweet, expandQuotedTweet: boolean) {
 }
 
 async function getTweetEmbedHTML(urlString: string) {
-  return cachified({
-    key: `tweet:embed:${urlString}`,
-    ttl: 1000 * 60 * 60 * 24,
-    cache,
-    reporter: verboseReporter(),
-    staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30 * 6,
-    getFreshValue: () => getTweetEmbedHTMLImpl(urlString),
-  })
+  return cachified(
+    {
+      key: `tweet:embed:${urlString}`,
+      ttl: 1000 * 60 * 60 * 24,
+      cache,
+      staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30 * 6,
+      getFreshValue: () => getTweetEmbedHTMLImpl(urlString),
+    },
+    verboseReporter(),
+  )
 }
 
 async function getTweetEmbedHTMLImpl(urlString: string) {

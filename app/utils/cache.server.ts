@@ -2,13 +2,14 @@ import {remember} from '@epic-web/remember'
 import type BetterSqlite3 from 'better-sqlite3'
 import Database from 'better-sqlite3'
 import {
+  type Cache,
   cachified as baseCachified,
-  lruCacheAdapter,
   verboseReporter,
   type CacheEntry,
   type Cache as CachifiedCache,
   type CachifiedOptions,
-} from 'cachified'
+  totalTtl,
+} from '@epic-web/cachified'
 import fs from 'fs'
 import {getInstanceInfo, getInstanceInfoSync} from 'litefs-js'
 import {LRUCache} from 'lru-cache'
@@ -48,12 +49,26 @@ function createDatabase(tryAgain = true): BetterSqlite3.Database {
   return db
 }
 
-const lru = remember(
+const lruInstance = remember(
   'lru-cache',
   () => new LRUCache<string, CacheEntry<unknown>>({max: 5000}),
 )
 
-export const lruCache = lruCacheAdapter(lru)
+export const lruCache: Cache = {
+  set(key, value) {
+    const ttl = totalTtl(value.metadata)
+    return lruInstance.set(key, value, {
+      ttl: ttl === Infinity ? undefined : ttl,
+      start: value.metadata.createdTime,
+    })
+  },
+  get(key) {
+    return lruInstance.get(key)
+  },
+  delete(key) {
+    return lruInstance.delete(key)
+  },
+}
 
 const preparedGet = cacheDb.prepare(
   'SELECT value, metadata FROM cache WHERE key = ?',
@@ -121,7 +136,7 @@ const preparedAllKeys = cacheDb.prepare('SELECT key FROM cache LIMIT ?')
 export async function getAllCacheKeys(limit: number) {
   return {
     sqlite: preparedAllKeys.all(limit).map(row => (row as {key: string}).key),
-    lru: [...lru.keys()],
+    lru: [...lruInstance.keys()],
   }
 }
 
@@ -133,7 +148,7 @@ export async function searchCacheKeys(search: string, limit: number) {
     sqlite: preparedKeySearch
       .all(`%${search}%`, limit)
       .map(row => (row as {key: string}).key),
-    lru: [...lru.keys()].filter(key => key.includes(search)),
+    lru: [...lruInstance.keys()].filter(key => key.includes(search)),
   }
 }
 
@@ -168,28 +183,30 @@ export async function cachified<Value>({
   forceFresh?: boolean | string
 }): Promise<Value> {
   let cachifiedResolved = false
-  const cachifiedPromise = baseCachified({
-    reporter: verboseReporter(),
-    ...options,
-    forceFresh: await shouldForceFresh({
-      forceFresh: options.forceFresh,
-      request,
-      key: options.key,
-    }),
-    getFreshValue: async context => {
-      // if we've already retrieved the cached value, then this may be called
-      // after the response has already been sent so there's no point in timing
-      // how long this is going to take
-      if (!cachifiedResolved && timings) {
-        return time(() => options.getFreshValue(context), {
-          timings,
-          type: `getFreshValue:${options.key}`,
-          desc: `request forced to wait for a fresh ${options.key} value`,
-        })
-      }
-      return options.getFreshValue(context)
+  const cachifiedPromise = baseCachified(
+    {
+      ...options,
+      forceFresh: await shouldForceFresh({
+        forceFresh: options.forceFresh,
+        request,
+        key: options.key,
+      }),
+      getFreshValue: async context => {
+        // if we've already retrieved the cached value, then this may be called
+        // after the response has already been sent so there's no point in timing
+        // how long this is going to take
+        if (!cachifiedResolved && timings) {
+          return time(() => options.getFreshValue(context), {
+            timings,
+            type: `getFreshValue:${options.key}`,
+            desc: `request forced to wait for a fresh ${options.key} value`,
+          })
+        }
+        return options.getFreshValue(context)
+      },
     },
-  })
+    verboseReporter(),
+  )
   const result = await time(cachifiedPromise, {
     timings,
     type: `cache:${options.key}`,
