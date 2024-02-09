@@ -1,4 +1,4 @@
-import {AppleIcon, GoogleIcon, RssIcon, SpotifyIcon} from './icons.tsx'
+import {AppleIcon, PocketCastsIcon, RssIcon, SpotifyIcon} from './icons.tsx'
 
 function PodcastAppLink({
   icon,
@@ -18,12 +18,12 @@ function PodcastAppLink({
 
 function PodcastSubs({
   apple,
-  google,
+  pocketCasts,
   spotify,
   rss,
 }: {
   apple: string
-  google: string
+  pocketCasts: string
   spotify: string
   rss: string
 }) {
@@ -32,8 +32,8 @@ function PodcastSubs({
       <PodcastAppLink icon={<AppleIcon />} href={apple}>
         Apple podcasts
       </PodcastAppLink>
-      <PodcastAppLink icon={<GoogleIcon />} href={google}>
-        Google podcasts
+      <PodcastAppLink icon={<PocketCastsIcon />} href={pocketCasts}>
+        Pocket Casts
       </PodcastAppLink>
       <div className="flex-no-wrap flex">
         <PodcastAppLink icon={<SpotifyIcon />} href={spotify}>

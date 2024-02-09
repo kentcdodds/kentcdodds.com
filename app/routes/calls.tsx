@@ -191,7 +191,7 @@ export default function CallHomeScreen() {
 
         <PodcastSubs
           apple={externalLinks.callKentApple}
-          google={externalLinks.callKentGoogle}
+          pocketCasts={externalLinks.callKentPocketCasts}
           spotify={externalLinks.callKentSpotify}
           rss={externalLinks.callKentRSS}
         />

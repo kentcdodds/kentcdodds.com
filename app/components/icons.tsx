@@ -613,25 +613,6 @@ export function GlobeIcon({
   )
 }
 
-export function GoogleIcon() {
-  return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M12.4371 20.52C17.1467 20.52 20.2754 17.2795 20.2754 12.7058C20.2754 12.1823 20.2202 11.7776 20.1429 11.3745H12.4383V14.1243H17.071C16.8813 15.2925 15.6677 17.5728 12.4383 17.5728C9.65598 17.5728 7.38356 15.3134 7.38356 12.5198C7.38356 9.72662 9.65477 7.46601 12.4383 7.46601C14.0305 7.46601 15.0881 8.13203 15.6899 8.69936L17.9051 6.61522C16.4789 5.30606 14.6419 4.52002 12.4371 4.52002C7.9277 4.52002 4.27539 8.09966 4.27539 12.5198C4.27539 16.9408 7.9277 20.52 12.4371 20.52"
-        fill="currentColor"
-      />
-    </svg>
-  )
-}
-
 export function HeartIcon({size = 24}: {size?: number} = {}) {
   return (
     <svg width={size} height={size} fill="none" viewBox="0 0 24 24">
@@ -1240,20 +1221,38 @@ export function XIcon({
   title?: string
 }) {
   return (
-    <div
-      title={title}
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        fontSize: size,
-        height: size,
-        width: size,
-        lineHeight: `${size}px`,
-      }}
+    <svg
+      width={size}
+      height={size}
+      fill="currentColor"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
     >
-      𝕏
-    </div>
+      <title>{title}</title>
+      <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+    </svg>
+  )
+}
+
+export function PocketCastsIcon({
+  size = 24,
+  title = 'Pocket Casts',
+}: {
+  size?: number
+  title?: string
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      fill="currentColor"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <title>{title}</title>
+      <title>Pocket Casts</title>
+      <path d="M12,0C5.372,0,0,5.372,0,12c0,6.628,5.372,12,12,12c6.628,0,12-5.372,12-12 C24,5.372,18.628,0,12,0z M15.564,12c0-1.968-1.596-3.564-3.564-3.564c-1.968,0-3.564,1.595-3.564,3.564 c0,1.968,1.595,3.564,3.564,3.564V17.6c-3.093,0-5.6-2.507-5.6-5.6c0-3.093,2.507-5.6,5.6-5.6c3.093,0,5.6,2.507,5.6,5.6H15.564z M19,12c0-3.866-3.134-7-7-7c-3.866,0-7,3.134-7,7c0,3.866,3.134,7,7,7v2.333c-5.155,0-9.333-4.179-9.333-9.333 c0-5.155,4.179-9.333,9.333-9.333c5.155,0,9.333,4.179,9.333,9.333H19z" />
+    </svg>
   )
 }
 

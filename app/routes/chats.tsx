@@ -147,7 +147,7 @@ function PodcastHome() {
 
         <PodcastSubs
           apple={externalLinks.applePodcast}
-          google={externalLinks.googlePodcast}
+          pocketCasts={externalLinks.pocketCasts}
           spotify={externalLinks.spotify}
           rss={externalLinks.simpleCast}
         />
