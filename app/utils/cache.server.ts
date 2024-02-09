@@ -54,7 +54,7 @@ const lruInstance = remember(
   () => new LRUCache<string, CacheEntry<unknown>>({max: 5000}),
 )
 
-export const lruCache: Cache = {
+export const lruCache = {
   set(key, value) {
     const ttl = totalTtl(value.metadata)
     return lruInstance.set(key, value, {
@@ -68,7 +68,7 @@ export const lruCache: Cache = {
   delete(key) {
     return lruInstance.delete(key)
   },
-}
+} satisfies Cache
 
 const preparedGet = cacheDb.prepare(
   'SELECT value, metadata FROM cache WHERE key = ?',
