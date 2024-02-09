@@ -58,7 +58,10 @@ const getCachedSeasons = async ({
     request,
     timings,
     key: seasonsCacheKey,
-    ttl: 1000 * 60 * 60 * 24 * 7,
+    // while we're actively publishing the podcast, let's have the cache be
+    // shorter
+    ttl: 1000 * 60 * 5,
+    // ttl: 1000 * 60 * 60 * 24 * 7,
     staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
     getFreshValue: () => getSeasons({request, forceFresh, timings}),
     forceFresh,
