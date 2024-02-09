@@ -7,7 +7,7 @@ import {
 } from '@remix-run/node'
 import {useParams} from '@remix-run/react'
 import {IconLink} from '~/components/icon-link.tsx'
-import {TwitterIcon} from '~/components/icons.tsx'
+import {XIcon} from '~/components/icons.tsx'
 import {H6, Paragraph} from '~/components/typography.tsx'
 import {type KCDHandle} from '~/types.ts'
 import {
@@ -160,16 +160,18 @@ export default function Screen() {
           </H6>
           <Paragraph className="mb-8 flex">{keywords.join(', ')}</Paragraph>
         </div>
-        <IconLink
-          target="_blank"
-          rel="noreferrer noopener"
-          href={`https://twitter.com/intent/tweet?${new URLSearchParams({
-            url: `${requestInfo.origin}${path}`,
-            text: `I just listened to "${episode.title}" on the Chats with Kent Podcast 🎙 by @kentcdodds`,
-          })}`}
-        >
-          <TwitterIcon title="Tweet this" />
-        </IconLink>
+        <div>
+          <IconLink
+            target="_blank"
+            rel="noreferrer noopener"
+            href={`https://x.com/intent/tweet?${new URLSearchParams({
+              url: `${requestInfo.origin}${path}`,
+              text: `I just listened to "${episode.title}" on the Chats with Kent Podcast 🎙 by @kentcdodds`,
+            })}`}
+          >
+            <XIcon title="Post this" />
+          </IconLink>
+        </div>
       </div>
 
       <H6 as="div">Description</H6>

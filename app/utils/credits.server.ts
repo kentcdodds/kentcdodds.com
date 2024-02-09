@@ -10,7 +10,7 @@ export type Person = {
   role: string
   description: string
   github: string
-  twitter: string
+  x: string
 }
 
 type UnknownObj = Record<string, unknown>
@@ -66,7 +66,7 @@ function mapPerson(rawPerson: UnknownObj) {
         warnOnFallback: false,
         validateType: isString,
       }),
-      twitter: getValueWithFallback(rawPerson, 'twitter', {
+      x: getValueWithFallback(rawPerson, 'x', {
         fallback: null,
         warnOnFallback: false,
         validateType: isString,

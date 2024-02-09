@@ -17,7 +17,7 @@ import {
   InstagramIcon,
   LinkedInIcon,
   TwitchIcon,
-  TwitterIcon,
+  XIcon,
 } from '~/components/icons.tsx'
 import {HeaderSection} from '~/components/sections/header-section.tsx'
 import {
@@ -87,7 +87,7 @@ type Socials = keyof Omit<
 const icons: Record<Socials, React.ReactElement> = {
   website: <GlobeIcon title="Website" />,
   github: <GithubIcon />,
-  twitter: <TwitterIcon />,
+  x: <XIcon />,
   instagram: <InstagramIcon />,
   dribbble: <DribbbleIcon />,
   codepen: <CodepenIcon />,

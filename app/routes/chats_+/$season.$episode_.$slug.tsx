@@ -26,7 +26,7 @@ import {
   ClipboardIcon,
   GithubIcon,
   PlusIcon,
-  TwitterIcon,
+  XIcon,
 } from '~/components/icons.tsx'
 import {FeaturedSection} from '~/components/sections/featured-section.tsx'
 import {Spacer} from '~/components/spacer.tsx'
@@ -251,7 +251,7 @@ function Guests({episode}: {episode: CWKEpisode}) {
                 href={`https://twitter.com/${guest.twitter}`}
                 aria-label="twitter profile"
               >
-                <TwitterIcon size={32} />
+                <XIcon size={32} />
               </a>
             ) : null}
 
@@ -489,8 +489,8 @@ export default function PodcastDetail() {
               )} on the Call Kent Podcast 🎙 by @kentcdodds`,
             })}`}
           >
-            <TwitterIcon title="Tweet this" />
-            <span>Tweet this episode</span>
+            <XIcon title="Post this" />
+            <span>Post this episode</span>
           </IconLink>
         </div>
 

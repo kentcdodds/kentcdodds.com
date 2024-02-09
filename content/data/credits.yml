@@ -8,7 +8,7 @@
 #   description: >-
 #     Summary of what they did here
 #   github: https://github.com/username
-#   twitter: https://twitter.com/username
+#   x: https://x.com/username
 #   website: https://example.com
 #   dribbble: https://dribbble.com/username
 #   instagram: https://www.instagram.com/username
@@ -22,7 +22,7 @@
     egghead and I implemented the vast majority of the code on this site and
     made architectural decisions. I'm also the long-term maintainer.
   github: https://github.com/kentcdodds
-  twitter: https://twitter.com/kentcdodds
+  x: https://x.com/kentcdodds
 
 - name: Stephan Meijer
   cloudinaryId: kentcdodds.com/content/credits/stephan
@@ -33,7 +33,7 @@
     requirements popped up.
   website: http://meijer.ws
   github: https://github.com/smeijer
-  twitter: https://twitter.com/meijer_s
+  x: https://x.com/meijer_s
 
 - name: Gil Huybrecht
   cloudinaryId: kentcdodds.com/content/credits/gil
@@ -44,7 +44,7 @@
     website and visual design.
   website: https://www.gilhuybrecht.com
   dribbble: https://dribbble.com/gilhuybrecht
-  twitter: https://twitter.com/gilhuybrecht
+  x: https://x.com/gilhuybrecht
   instagram: https://www.instagram.com/gil.huybrecht
 
 - name: Daniel Miller
@@ -68,14 +68,14 @@
   role: Video Editing
   description: >-
     Haze did additional video editing.
-  twitter: https://twitter.com/hazeprovinsal
+  x: https://x.com/hazeprovinsal
 
 - name: Cree Provinsal
   cloudinaryId: kentcdodds.com/content/credits/cree
   role: Podcast Production
   description: >-
     Cree helped produce and edit the new season of Chats with Kent.
-  twitter: https://twitter.com/CProvinsal
+  x: https://x.com/CProvinsal
 
 - name: Maggie Appleton
   cloudinaryId: kentcdodds.com/content/credits/maggie
@@ -84,7 +84,7 @@
     Maggie led the production of illustrations for the site as well as  the
     overall design.
   website: https://maggieappleton.com/
-  twitter: https://twitter.com/Mappletons
+  x: https://x.com/Mappletons
 
 - name: Jhey Tompkins
   cloudinaryId: kentcdodds.com/content/credits/jhey
@@ -94,7 +94,7 @@
     In particular he built the audio recorder visualizer and the parallax
     experience on the homepage.
   github: https://github.com/jh3y
-  twitter: https://twitter.com/jh3yy
+  x: https://x.com/jh3yy
   website: https://jhey.dev/links
   twitch: https://twitch.tv/jh3yy
   codepen: https://codepen.io/jh3y
@@ -106,7 +106,7 @@
     All these beautiful illustrations you see on the website were created by
     Mohamed.
   behance: https://www.behance.net/MChahin
-  twitter: https://twitter.com/beastochahin
+  x: https://x.com/beastochahin
   dribbble: https://dribbble.com/MohChahin
 
 - name: Sean Olszewski
@@ -115,7 +115,7 @@
   description: >-
     Sean worked on the audio for the launch video as well as the Chats with Kent
     podcast.
-  twitter: https://twitter.com/__chefski__
+  x: https://x.com/__chefski__
   github: https://github.com/SeanROlszewski
 
 - name: Daniel Nisttahuz
@@ -123,6 +123,6 @@
   role: Launch Video
   description: >-
     Daniel was the guy behind the amazing launch video.
-  twitter: https://twitter.com/dnisttahuz
+  x: https://x.com/dnisttahuz
   linkedin: https://www.linkedin.com/in/danielnisttahuz
   website: https://www.dniel.io/

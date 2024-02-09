@@ -5,13 +5,7 @@ import {useRootData} from '~/utils/use-root-data.ts'
 import {ConvertKitForm} from '../convertkit/form.tsx'
 import {externalLinks} from '../external-links.tsx'
 import {IconLink} from './icon-link.tsx'
-import {
-  ArrowIcon,
-  GithubIcon,
-  RssIcon,
-  TwitterIcon,
-  YoutubeIcon,
-} from './icons.tsx'
+import {ArrowIcon, GithubIcon, RssIcon, XIcon, YoutubeIcon} from './icons.tsx'
 import {Signature} from './signature.tsx'
 import {H4, H6, Paragraph} from './typography.tsx'
 
@@ -108,7 +102,7 @@ function AboutSection() {
             <YoutubeIcon size={32} />
           </IconLink>
           <IconLink href={externalLinks.twitter}>
-            <TwitterIcon size={32} />
+            <XIcon size={32} />
           </IconLink>
           <IconLink href={externalLinks.rss}>
             <RssIcon size={32} />
