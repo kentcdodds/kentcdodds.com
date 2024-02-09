@@ -30,7 +30,7 @@ const LINKS = [
   {name: 'Blog', to: '/blog'},
   {name: 'Courses', to: '/courses'},
   {name: 'Discord', to: '/discord'},
-  {name: 'Chats', to: '/chats/04'},
+  {name: 'Chats', to: '/chats/05'},
   {name: 'Calls', to: '/calls/04'},
   {name: 'Workshops', to: '/workshops'},
   {name: 'About', to: '/about'},
@@ -126,8 +126,8 @@ function DarkModeToggle({variant = 'icon'}: {variant?: 'icon' | 'labelled'}) {
             nextMode === 'system'
               ? 'system'
               : nextMode === 'light'
-              ? 'light'
-              : 'dark'
+                ? 'light'
+                : 'dark'
           } mode`}
         </span>
       </button>
