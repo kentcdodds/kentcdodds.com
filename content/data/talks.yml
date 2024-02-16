@@ -132,6 +132,9 @@
       date: 2023-11-13
     - event: '[React Live](https://reactlive.nl/)'
       date: 2023-09-29
+    - event: '[DevsNorte](https://www.youtube.com/@DevsNorte)'
+      date: 2023-08-26
+      recording: https://www.youtube.com/watch?v=sr4xC7T4r08&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
   tags:
     - keynote
     - web
