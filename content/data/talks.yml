@@ -1,3 +1,24 @@
+- title: Stop Lying to your Users
+  deliveries:
+    - event: '[WebStep](https://webstep.se/)'
+      date: 2024-02-21
+  tags:
+    - meetup
+    - web
+    - performance
+  description: >-
+    Chances are your app is lying to your users. I know you don't mean it.
+    Building truthful apps is hard. But you've been lied to by so many other
+    apps you use and it is extremely frustrating. This frustration not only
+    makes everyone's day worse, but it also makes users get out of that app as
+    quickly as possible which for most apps is bad for the bottom line.
+
+
+    So what's the lie? Well you'll have to come to the talk to find out! Don't
+    worry though, I'll not only explain to you what the lie is, but I'll also
+    show you how to correct it and delight your users in a way that moves the
+    needle.
+
 - title: React Native EU Keynote
   deliveries:
     - event: '[React Native EU](https://www.react-native.eu/)'
