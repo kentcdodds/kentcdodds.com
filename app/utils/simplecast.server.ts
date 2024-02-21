@@ -388,7 +388,7 @@ async function parseSummaryMarkdown(
           if (/^guest/i.test(sectionTitle)) {
             remove()
             for (const child of children) {
-              let company, github, twitter
+              let company, github, x
               visit(child, 'listItem', (listItem: M.ListItem) => {
                 // this error handling makes me laugh and cry
                 // definitely better error messages than we'd get
@@ -435,14 +435,20 @@ async function parseSummaryMarkdown(
                   github = name.replace('@', '')
                 }
                 if (/twitter/i.test(type)) {
-                  twitter = name.replace('@', '')
+                  x = name.replace('@', '')
+                }
+                if (/x/i.test(type)) {
+                  x = name.replace('@', '')
+                }
+                if (/𝕏/i.test(type)) {
+                  x = name.replace('@', '')
                 }
               })
               guests.push({
                 name: sectionTitle.replace(/^guest:?/i, '').trim(),
                 company,
                 github,
-                twitter,
+                x,
               })
             }
           }

@@ -126,7 +126,7 @@ type CWKEpisode = {
     name: string
     company?: string
     github?: string
-    twitter?: string
+    x?: string
   }>
   duration: number
   transcriptHTML: string

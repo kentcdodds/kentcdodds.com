@@ -99,7 +99,7 @@ export async function searchKCD({
             values: {
               priority: [
                 e.title,
-                ...e.guests.flatMap(g => [g.name, g.twitter, g.github]),
+                ...e.guests.flatMap(g => [g.name, g.x, g.github]),
               ],
               other: [
                 e.description,

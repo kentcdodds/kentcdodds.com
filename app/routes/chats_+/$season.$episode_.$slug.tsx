@@ -244,12 +244,12 @@ function Guests({episode}: {episode: CWKEpisode}) {
             <p className="text-xl leading-none">{guest.company}</p>
           </div>
           <div className="flex flex-none space-x-4">
-            {guest.twitter ? (
+            {guest.x ? (
               <a
                 target="_blank"
                 rel="noreferrer noopener"
-                href={`https://twitter.com/${guest.twitter}`}
-                aria-label="twitter profile"
+                href={`https://x.com/${guest.x}`}
+                aria-label="𝕏 profile"
               >
                 <XIcon size={32} />
               </a>
@@ -484,7 +484,7 @@ export default function PodcastDetail() {
               url: permalink,
               text: `I just listened to "${episode.title}" with ${listify(
                 episode.guests
-                  .map(g => (g.twitter ? `@${g.twitter}` : null))
+                  .map(g => (g.x ? `@${g.x}` : null))
                   .filter(typedBoolean),
               )} on the Call Kent Podcast 🎙 by @kentcdodds`,
             })}`}

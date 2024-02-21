@@ -251,7 +251,7 @@ function ArticleFooter({
               text: tweetMessage,
             })}`}
           >
-            Tweet this article
+            Post this article
           </a>
         </div>
 
@@ -267,7 +267,7 @@ function ArticleFooter({
               q: permalink,
             })}`}
           >
-            Discuss on Twitter
+            Discuss on 𝕏
           </a>
           <span className={clsx('mx-3 self-center text-xs', {hidden: isDraft})}>
             •
