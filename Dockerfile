@@ -62,6 +62,8 @@ ENV DATABASE_URL="file:$DATABASE_PATH"
 ENV INTERNAL_PORT="8080"
 ENV PORT="8081"
 ENV NODE_ENV="production"
+# For WAL support: https://github.com/prisma/prisma-engines/issues/4675#issuecomment-1914383246
+ENV PRISMA_SCHEMA_DISABLE_ADVISORY_LOCK = "1"
 # ENV DISABLE_METRONOME="true"
 ENV CACHE_DATABASE_FILENAME="cache.db"
 ENV CACHE_DATABASE_PATH="$LITEFS_DIR/$CACHE_DATABASE_FILENAME"
@@ -81,7 +83,7 @@ COPY --from=build /app/server-build /app/server-build
 ADD . .
 
 # prepare for litefs
-COPY --from=flyio/litefs:0.5.10 /usr/local/bin/litefs /usr/local/bin/litefs
+COPY --from=flyio/litefs:0.5.11 /usr/local/bin/litefs /usr/local/bin/litefs
 ADD other/litefs.yml /etc/litefs.yml
 RUN mkdir -p /data ${LITEFS_DIR}
 
