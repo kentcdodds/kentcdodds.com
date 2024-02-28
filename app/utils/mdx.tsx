@@ -117,6 +117,11 @@ const mdxComponents = {
   SubscribeForm,
   OptionalUser,
 }
+
+declare global {
+  type MDXProvidedComponents = typeof mdxComponents
+}
+
 /**
  * This should be rendered within a useMemo
  * @param code the code to get the component from
