@@ -122,6 +122,23 @@ declare global {
   type MDXProvidedComponents = typeof mdxComponents
 }
 
+interface CalloutProps {
+  children: React.ReactNode
+  class?: string
+}
+
+declare module 'react' {
+  namespace JSX {
+    interface IntrinsicElements {
+      'callout-danger': CalloutProps
+      'callout-info': CalloutProps
+      'callout-muted': CalloutProps
+      'callout-success': CalloutProps
+      'callout-warning': CalloutProps
+    }
+  }
+}
+
 /**
  * This should be rendered within a useMemo
  * @param code the code to get the component from
