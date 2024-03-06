@@ -1,6 +1,7 @@
 /* code syntax highlighting */
 /* dark is default: */
 pre {
+  /* TODO: delete the base** variables when the cache has finished updating after April 15th 2024 */
   --base00: #011627; /* editor background */
   --base01: #2d2d2d; /* unused (currently) */
   --base02: #424242; /* unused (currently) */
@@ -17,9 +18,22 @@ pre {
   --base0D: #82aaff; /* function calls */
   --base0E: #c792ea; /* operators */
   --base0F: #d3423e; /* "Embedded" (whatever that means) */
+
+  --shiki-foreground: #d6deeb;
+  --shiki-background: #011627;
+  --shiki-token-constant: #7fdbca;
+  --shiki-token-string: #ecc48d;
+  --shiki-token-comment: #637777;
+  --shiki-token-keyword: #c792ea;
+  --shiki-token-parameter: #7fdbca;
+  --shiki-token-function: #82aaff;
+  --shiki-token-string-expression: #ecc48d;
+  --shiki-token-punctuation: #c8c8c8;
+  --shiki-token-link: #82aaff;
 }
 
 .light pre {
+  /* TODO: delete the base** variables when the cache has finished updating after April 15th 2024 */
   --base00: #f3f3f3; /* editor background */
   --base01: #e0e0e0; /* unused (currently) */
   --base02: #d6d6d6; /* unused (currently) */
@@ -36,6 +50,18 @@ pre {
   --base0D: #4876d6; /* function calls */
   --base0E: #994cc3; /* operators */
   --base0F: #d3423e; /* "Embedded" (whatever that means) */
+
+  --shiki-foreground: #2e3039;
+  --shiki-background: #f3f3f3;
+  --shiki-token-constant: #0c969b;
+  --shiki-token-string: #c96765;
+  --shiki-token-comment: #989fb1;
+  --shiki-token-keyword: #994cc3;
+  --shiki-token-parameter: #0c969b;
+  --shiki-token-function: #4876d6;
+  --shiki-token-string-expression: #c96765;
+  --shiki-token-punctuation: #282a2e;
+  --shiki-token-link: #4876d6;
 }
 
 /*
