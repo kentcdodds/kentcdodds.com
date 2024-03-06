@@ -57,7 +57,7 @@
     "@epic-web/cachified": "^5.1.1",
     "@epic-web/client-hints": "^1.2.2",
     "@epic-web/remember": "^1.0.2",
-    "@kentcdodds/md-temp": "^8.0.0",
+    "@kentcdodds/md-temp": "^8.0.1",
     "@metronome-sh/express": "^6.0.1",
     "@metronome-sh/react": "^6.0.1",
     "@octokit/plugin-throttling": "^7.0.0",
