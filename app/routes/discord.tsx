@@ -82,14 +82,14 @@ export const meta: MetaFunction<typeof loader, {root: RootLoaderType}> = ({
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
   return getSocialMetas({
-    title: 'The KCD Community on Discord',
+    title: 'The Epic Web Community on Discord',
     description:
-      'Make friends, share ideas, connect, network, and improve yourself in the KCD Community on Discord',
+      'Make friends, share ideas, connect, network, and improve yourself in the Epic Web Community on Discord',
     url: getUrl(requestInfo),
     image: getGenericSocialImage({
       url: getDisplayUrl(requestInfo),
       featuredImage: images.helmet.id,
-      words: `Join the KCD Community on Discord`,
+      words: `Join the Epic Web Community on Discord`,
     }),
   })
 }
@@ -219,7 +219,7 @@ export default function Discord() {
             </H6>
             <Paragraph className="mb-12">
               {`
-                Discord is a chat application. The KCD Community on Discord is
+                Discord is a chat application. The Epic Web Community on Discord is
                 a community of people who want to make connections, share ideas,
                 and use software to help make the world a better place.
               `}
@@ -387,7 +387,7 @@ export default function Discord() {
             </H6>
             <Paragraph className="mb-16">
               {`
-                The KCD Community on Discord is full of friendly people. When
+                The Epic Web Community on Discord is full of friendly people. When
                 you put together a learning club here, in addition to learning
                 better, you'll develop new friendships.
               `}
@@ -398,7 +398,7 @@ export default function Discord() {
             </H6>
             <Paragraph className="mb-16">
               {`
-                By joining the KCD Community on Discord, you can ask questions
+                By joining the Epic Web Community on Discord, you can ask questions
                 that I'll answer during office hours. Often these questions come
                 from discussions you and your fellow learners have during your
                 learning club meetings. So if you all get stuck on the same
@@ -407,46 +407,6 @@ export default function Discord() {
             </Paragraph>
           </div>
         </Grid>
-
-        <div className="mb-24 lg:mb-48">
-          <Grid featured>
-            <div className="col-span-full mb-40 flex flex-col items-stretch lg:col-span-5 lg:mb-0 lg:items-start">
-              <H2 className="mb-8">
-                {`Enjoy community meetups in the discord server (and host your own!).`}
-              </H2>
-              <H2 className="mb-16" variant="secondary" as="p">
-                Voice and video chats hosted and managed on the KCD Discord
-                server.
-              </H2>
-              <ButtonLink variant="primary" href={authorizeURL}>
-                Join Discord
-              </ButtonLink>
-            </div>
-
-            <div className="col-span-full lg:col-span-5 lg:col-start-8 lg:mr-12">
-              <ol className="space-y-24 lg:space-y-16">
-                <NumberedPanel
-                  number={1}
-                  title={`What are "meetups"?`}
-                  description={`It's an event. It can be about anything and have any format.`}
-                />
-                <NumberedPanel
-                  number={2}
-                  title="So, how do I use them?"
-                  description={`You go to the meetups channel to see who's hosting meetups and let the bot know which you'd like to be notified about.`}
-                />
-                <NumberedPanel
-                  number={3}
-                  title="Can I organize meetups myself or are there only curated meetups?"
-                  description={`Anyone can host a meetup. Simply tell the bot about what you want to do and it'll let everyone know about it in the meetups channel.`}
-                />
-                <ArrowLink to="/meetups" direction="right">
-                  Learn more about meetups
-                </ArrowLink>
-              </ol>
-            </div>
-          </Grid>
-        </div>
 
         {data.testimonials.length ? <Spacer size="base" /> : null}
 
@@ -478,13 +438,13 @@ export default function Discord() {
             />
             <CategoryCard
               number={3}
-              title="Meetups"
-              description="This is where all meetup activity happens. Go here to chat during meetups, follow meetup hosts, and sign up to be notified of new meetups."
+              title="Epic Web Conf"
+              description="This is where we discuss stuff going on with Epic Web Conference!"
             />
             <CategoryCard
               number={4}
-              title="Clubs"
-              description="Here's where you can coordinate setting up a new KCD Learning Club. Club captains also get access to a special channel for captains to talk about how to make the most of the experience for everyone."
+              title="Epic Stack"
+              description="Talk with others who are buildings applications using the Epic Stack."
             />
           </Accordion>
           <Accordion
@@ -504,13 +464,13 @@ export default function Discord() {
             />
             <CategoryCard
               number={7}
-              title="EpicReact.dev"
-              description={`Are you trying to learn React? It can help a lot to have others to help you go through the material. Ask questions about the material in these channels and people will know what you're talking about and jump in to help if they can.`}
+              title="Courses"
+              description="Exclusive channels for folks going through the Epic Web Courses. Ask and answer questions, share your progress, and get help from others."
             />
             <CategoryCard
               number={8}
-              title="TestingJavaScript.com"
-              description={`Testing can be a tricky subject, so we've got channels for every module in TestingJavaScript.com for you to ask and answer questions about the material.`}
+              title="Clubs"
+              description="Here's where you can coordinate setting up a new KCD Learning Club. Club captains also get access to a special channel for captains to talk about how to make the most of the experience for everyone."
             />
           </Accordion>
         </Grid>

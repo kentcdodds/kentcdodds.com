@@ -25,7 +25,7 @@ function DiscordSection() {
           className="mt-20"
           prefetch="intent"
         >
-          Learn more about the KCD Community on Discord
+          Learn more about the Epic Web Community on Discord
         </ArrowLink>
       </div>
 
