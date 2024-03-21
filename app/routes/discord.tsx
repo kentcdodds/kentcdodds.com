@@ -13,6 +13,7 @@ import {
 } from '@remix-run/node'
 import {Outlet, useLoaderData} from '@remix-run/react'
 import {motion} from 'framer-motion'
+import {ArrowLink} from '~/components/arrow-button.tsx'
 import {ButtonLink} from '~/components/button.tsx'
 import {FeatureCard} from '~/components/feature-card.tsx'
 import {Grid} from '~/components/grid.tsx'
@@ -28,6 +29,7 @@ import {
   TrophyIcon,
   UsersIcon,
 } from '~/components/icons.tsx'
+import {NumberedPanel} from '~/components/numbered-panel.tsx'
 import {CourseSection} from '~/components/sections/course-section.tsx'
 import {HeaderSection} from '~/components/sections/header-section.tsx'
 import {HeroSection} from '~/components/sections/hero-section.tsx'
