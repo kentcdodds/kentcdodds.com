@@ -314,6 +314,26 @@ const images = createImages({
     alt: 'Illustration of Kody the Koala kicking a soccer ball surrounded by green leaves, a battery, a onewheel, a snowboard, a solar panel, and a recycle logo.',
     style: square,
   },
+  kodyFlyingBackFlippingGray: {
+    id: 'kentcdodds.com/illustrations/kody/kody_flipping_flying_gray',
+    alt: 'Illustration of Kody the Koala back flipping surrounded by green leaves, a battery, a onewheel, a snowboard, a solar panel, and a recycle logo.',
+    style: square,
+  },
+  kodyFlyingBackFlippingYellow: {
+    id: 'kentcdodds.com/illustrations/kody/kody_flipping_flying_yellow',
+    alt: 'Illustration of Kody the Koala back flipping surrounded by green leaves, a battery, a onewheel, a snowboard, a solar panel, and a recycle logo.',
+    style: square,
+  },
+  kodyFlyingBackFlippingRed: {
+    id: 'kentcdodds.com/illustrations/kody/kody_flipping_flying_red',
+    alt: 'Illustration of Kody the Koala back flipping surrounded by green leaves, a battery, a onewheel, a snowboard, a solar panel, and a recycle logo.',
+    style: square,
+  },
+  kodyFlyingBackFlippingBlue: {
+    id: 'kentcdodds.com/illustrations/kody/kody_flipping_flying_blue',
+    alt: 'Illustration of Kody the Koala back flipping surrounded by green leaves, a battery, a onewheel, a snowboard, a solar panel, and a recycle logo.',
+    style: square,
+  },
   kodySnowboardingYellow: {
     id: 'kentcdodds.com/illustrations/kody/kody_snowboarding_yellow',
     alt: 'Illustration of Kody the Koala on a snowboard in yellow',
@@ -373,6 +393,26 @@ const images = createImages({
     id: 'kentcdodds.com/illustrations/kody/kody_playing_soccer_gray',
     alt: 'Illustration of Kody the Koala kicking a soccer ball in gray',
     style: {aspectRatio: '0.892'},
+  },
+  kodyBackFlippingYellow: {
+    id: 'kentcdodds.com/illustrations/kody/kody_flipping_yellow',
+    alt: 'Illustration of Kody the Koala back flipping in yellow',
+    style: {aspectRatio: '0.563'},
+  },
+  kodyBackFlippingRed: {
+    id: 'kentcdodds.com/illustrations/kody/kody_flipping_red',
+    alt: 'Illustration of Kody the Koala back flipping in red',
+    style: {aspectRatio: '0.563'},
+  },
+  kodyBackFlippingBlue: {
+    id: 'kentcdodds.com/illustrations/kody/kody_flipping_blue',
+    alt: 'Illustration of Kody the Koala back flipping in blue',
+    style: {aspectRatio: '0.563'},
+  },
+  kodyBackFlippingGray: {
+    id: 'kentcdodds.com/illustrations/kody/kody_flipping_gray',
+    alt: 'Illustration of Kody the Koala back flipping in gray',
+    style: {aspectRatio: '0.563'},
   },
   helmet: {
     id: 'kentcdodds.com/illustrations/helmet',
@@ -516,6 +556,12 @@ const kodyPlayingSoccerImages: Record<OptionalTeam, ImageBuilder> = {
   BLUE: images.kodyPlayingSoccerBlue,
   UNKNOWN: images.kodyPlayingSoccerGray,
 }
+const kodyBackFlippingImages: Record<OptionalTeam, ImageBuilder> = {
+  RED: images.kodyBackFlippingRed,
+  YELLOW: images.kodyBackFlippingYellow,
+  BLUE: images.kodyBackFlippingBlue,
+  UNKNOWN: images.kodyBackFlippingGray,
+}
 
 const kodyFlyingSnowboardingImages: Record<OptionalTeam, ImageBuilder> = {
   RED: images.kodyFlyingSnowboardingRed,
@@ -541,6 +587,12 @@ const kodyFlyingPlayingSoccerImages: Record<OptionalTeam, ImageBuilder> = {
   BLUE: images.kodyFlyingPlayingSoccerBlue,
   UNKNOWN: images.kodyFlyingPlayingSoccerGray,
 }
+const kodyFlyingBackFlippingImages: Record<OptionalTeam, ImageBuilder> = {
+  RED: images.kodyFlyingBackFlippingRed,
+  YELLOW: images.kodyFlyingBackFlippingYellow,
+  BLUE: images.kodyFlyingBackFlippingBlue,
+  UNKNOWN: images.kodyFlyingBackFlippingGray,
+}
 
 export function getRandomSportyKody(team?: OptionalTeam | undefined) {
   const activities = [
@@ -548,6 +600,7 @@ export function getRandomSportyKody(team?: OptionalTeam | undefined) {
     kodySkiingImages,
     kodyOnewheelingImages,
     kodyPlayingSoccerImages,
+    kodyBackFlippingImages,
   ]
   const set =
     activities[Math.floor(Math.random() * activities.length)] ??
@@ -571,6 +624,7 @@ export function getRandomFlyingKody(
     kodyFlyingSkiingImages,
     kodyFlyingOnewheelingImages,
     kodyFlyingPlayingSoccerImages,
+    kodyFlyingBackFlippingImages,
   ]
   const set =
     activities[Math.floor(randomImageNo * activities.length)] ??
@@ -616,8 +670,8 @@ function getImgProps(
   const aspectRatio = transformations?.resize?.aspectRatio
     ? transformations.resize.aspectRatio.replace(':', '/')
     : transformations?.resize?.height && transformations.resize.width
-    ? `${transformations.resize.width}/${transformations.resize.height}`
-    : imageBuilder.style?.aspectRatio
+      ? `${transformations.resize.width}/${transformations.resize.height}`
+      : imageBuilder.style?.aspectRatio
 
   return {
     style: {
