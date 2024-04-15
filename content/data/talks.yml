@@ -21,6 +21,15 @@
     show you how to correct it and delight your users in a way that moves the
     needle.
 
+- title: React India Keynote
+  deliveries:
+    - event: '[React India](https://www.reactindia.io/)'
+      date: 2024-10-18
+  tags:
+    - keynote
+  description: >-
+    This talk will be announced soon!
+
 - title: React Native EU Keynote
   deliveries:
     - event: '[React Native EU](https://www.react-native.eu/)'
@@ -49,14 +58,47 @@
   description: >-
     This talk will be announced soon!
 
-- title: Epic Web Conf Keynote
+- title: And Now You Understand React Server Components
+  deliveries:
+    - event: '[React Conf](https://conf.react.dev/)'
+      date: 2024-05-16
+    - event: '[React Summit](https://reactsummit.com)'
+      date: 2024-06-14
+    - event: '[UtahJS Conf](https://utahjs.com/conference)'
+      date: 2024-09-13
+  tags:
+    - web
+  description: >-
+    You want to keep up with the future of React. React has evolved over the
+    years and continues to push the component model further and further. Out of
+    all the evolutions of React, server components are certainly the biggest
+    advancement. It expands the component model further than ever before and as
+    a result, requires some rethinking. Seasoned React developers need to
+    unlearn the way we used to do things to be able to understand the
+    improvements that React Server Components offer.
+
+
+    In this talk, Kent will guide you through React Server Components start to
+    finish so you can understand how React Server Components work and set you
+    off on your journey into the future of components everywhere!
+
+- title: What Makes the Web Epic
   deliveries:
     - event: '[Epic Web Conf](https://epicweb.dev/conf)'
       date: 2024-04-11
   tags:
     - keynote
+    - web
   description: >-
-    This talk will be announced soon!
+    The web is a special platform. It's different from anything else you can
+    build on as a result of its openness and freedom from a central authority.
+    It's about collaboration and cooperation. As a result, there's a degree of
+    freedom we have on the web despite its weaknesses.
+
+
+    In this talk, I want to explain why you should double-down your investment
+    in web technologies in your own career and company offerings. If you do, we
+    can keep the web epic for many years to come.
 
 - title: React Router + Vite is a framework
   resources:
@@ -76,7 +118,11 @@
     can poke around at.
 
 - title: Making Felix Felicis
+  resources:
+    - '[slides](https://slides.com/kentcdodds/making-felix-felicis)'
   deliveries:
+    - event: 'BYU Guest Lecture'
+      date: 2024-04-15
     - event: '[JSDays Canarias](https://jsdaycanarias.com/)'
       date: 2023-05-27
   tags:
@@ -95,6 +141,9 @@
   resources:
     - '[slides](https://slides.com/kentcdodds/caching-for-cash)'
   deliveries:
+    - event: '[EpicWeb.dev special recording](https://www.epicweb.dev/talks)'
+      date: 2023-10-21
+      recording: https://www.epicweb.dev/talks/caching-for-cash
     - event:
         '[JS Fwdays Europe](https://fwdays.com/en/event/javascript-fwdays-2023)'
       date: 2023-05-18
@@ -132,6 +181,9 @@
     - event: '[DevsNorte](https://www.youtube.com/@DevsNorte)'
       date: 2023-08-26
       recording: https://www.youtube.com/watch?v=sr4xC7T4r08&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
+    - event: '[EpicWeb.dev special recording](https://www.epicweb.dev/talks)'
+      date: 2021-10-24
+      recording: https://www.epicweb.dev/talks/the-epic-stack
   tags:
     - keynote
     - web
@@ -555,6 +607,9 @@
     - career
     - software
   deliveries:
+    - event: '[EpicWeb.dev special recording](https://www.epicweb.dev/talks)'
+      date: 2021-11-01
+      recording: https://www.epicweb.dev/talks/dont-solve-problems-eliminate-them
     - event: '[Shift Dev Conf 2021](https://shift.infobip.com/)'
       date: 2021-09-07
       recording: https://www.youtube.com/watch?v=EETYrR8TOoc&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
