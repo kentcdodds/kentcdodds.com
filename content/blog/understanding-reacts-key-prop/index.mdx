@@ -170,7 +170,7 @@ function Counter() {
 
 function CounterParent() {
   // using useReducer this way basically ensures that any time you call
-  // setCounterKey, the `counterKey` is set to a new object which will
+  // setCounterKey, the `counterKey` is set to a new value which will
   // make the `key` different resulting in React unmounting the previous
   // component and mounting a new one.
   const [counterKey, setCounterKey] = React.useReducer(c => c + 1, 0)
