@@ -150,6 +150,7 @@
       recording: https://www.youtube.com/watch?v=amflVh0CZ78&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
     - event: '[UtahJS Conf 2023](https://utahjs.com/conference)'
       date: 2023-09-15
+      recording: https://www.youtube.com/watch?v=Zo9zSwrMARE&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
   tags:
     - caching
     - remix
@@ -176,8 +177,10 @@
       recording: https://www.youtube.com/watch?v=yMK5SVRASxM&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
     - event: '[React Summit US](https://reactsummit.us/)'
       date: 2023-11-13
+      recording: https://www.youtube.com/watch?v=OrF8FZrrayE&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
     - event: '[React Live](https://reactlive.nl/)'
       date: 2023-09-29
+      recording: https://www.youtube.com/watch?v=3IJTm1uROOc&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
     - event: '[DevsNorte](https://www.youtube.com/@DevsNorte)'
       date: 2023-08-26
       recording: https://www.youtube.com/watch?v=sr4xC7T4r08&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
@@ -239,6 +242,7 @@
     - '[slides and demo](https://github.com/kentcdodds/the-webs-next-transition)'
   deliveries:
     - event: '[React India](https://www.reactindia.io)'
+      recording: 'https://www.youtube.com/watch?v=AVSizZxecXc&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf'
       date: 2022-09-23
     - event: '[infoShare](https://infoshare.pl/)'
       date: 2022-10-06
@@ -257,6 +261,7 @@
       recording: 'https://www.youtube.com/watch?v=Ie7SJEzPtPo&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf'
     - event: '[React Rally 2023](https://reactrally.com/)'
       date: 2023-08-17
+      recording: 'https://www.youtube.com/watch?v=VXR-994OkCM&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf'
   tags:
     - keynote
     - remix
