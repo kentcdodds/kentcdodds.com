@@ -395,7 +395,7 @@ const tinypool = new Tinypool({
 
 // ...
 
-const {tokens, fgColor, bgColor} = (await tokenizePool.run({
+const {tokens, fgColor, bgColor} = (await tinypool.run({
   code: codeString,
   language,
 })) as {
