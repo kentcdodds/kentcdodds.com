@@ -182,7 +182,7 @@ export async function loader({request}: DataFunctionArgs) {
 
 The one thing you need to know about this, is that it is synchronous and also
 quite slow. Also, you need twice as much memory on the server as what is being
-used because to make a snapshot, v8 needs to make a copy of everything in memory
+used to make a snapshot, because v8 needs to make a copy of everything in memory
 to save it to disk. Oh, and it turns out that after v8 takes that memory from
 your machine, it keeps it. I didn't know this originally and it kinda freaked me
 out:
