@@ -3,6 +3,7 @@
     - event: '[WebStep](https://webstep.se/)'
       date: 2024-02-21
     - event: '[React Miami 2024](https://www.reactmiami.com/)'
+      recording: https://www.youtube.com/watch?v=bAqtQtZ0Su0&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
       date: 2024-04-19
   tags:
     - meetup
