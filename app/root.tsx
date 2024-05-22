@@ -182,20 +182,30 @@ export async function loader({ request }: DataFunctionArgs) {
 				.map(event => {
 					const promoName = `${WORKSHOP_PROMO_NAME}-${event.date}-${workshop.slug}`
 
+					const promoEndTime = {
+						type: 'event' as const,
+						time: parseDate(event.date).getTime(),
+						url: event.url,
+					}
 					return {
 						title: workshop.title,
 						slug: workshop.slug,
 						promoName,
-						dismissTimeSeconds: 60 * 60 * 24 * 7,
+						dismissTimeSeconds: Math.min(
+							Math.max(
+								// one quarter of the time until the promoEndTime (in seconds)
+								(promoEndTime.time - Date.now()) / 4 / 1000,
+								// Minimum of 3 hours (in seconds)
+								60 * 60 * 3,
+							),
+							// Maximum of 1 week (in seconds)
+							60 * 60 * 24 * 7,
+						),
 						cookieValue: getPromoCookieValue({
 							promoName,
 							request,
 						}),
-						promoEndTime: {
-							type: 'event' as const,
-							time: parseDate(event.date).getTime(),
-							url: event.url,
-						},
+						promoEndTime,
 					}
 				})
 		})
@@ -251,7 +261,7 @@ export async function loader({ request }: DataFunctionArgs) {
 				promoName,
 				dismissTimeSeconds: Math.min(
 					Math.max(
-						// one quarter of the time until the salesEndTime (in seconds)
+						// one quarter of the time until the promoEndTime (in seconds)
 						(promoEndTime.time - Date.now()) / 4 / 1000,
 						// Minimum of 3 hours (in seconds)
 						60 * 60 * 3,
