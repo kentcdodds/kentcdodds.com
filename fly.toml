@@ -9,9 +9,6 @@ kill_signal = "SIGINT"
 kill_timeout = "5s"
 swap_size_mb = 512
 
-[deploy]
-  release_command = "node ./other/sentry-create-release"
-
 [experimental]
   auto_rollback = true
   enable_consul = true

@@ -77,6 +77,7 @@
     "@sentry/node": "^8.3.0",
     "@sentry/profiling-node": "^8.2.1",
     "@sentry/remix": "^8.2.1",
+    "@sentry/vite-plugin": "^2.16.1",
     "@sindresorhus/slugify": "^2.2.1",
     "@tailwindcss/typography": "^0.5.13",
     "@vitejs/plugin-react": "^4.2.1",

@@ -1,4 +1,7 @@
+import 'dotenv/config'
 import { vitePlugin as remix } from '@remix-run/dev'
+import { sentryVitePlugin } from '@sentry/vite-plugin'
+import { glob } from 'glob'
 import { defineConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import { flatRoutes } from 'remix-flat-routes'
@@ -8,7 +11,7 @@ import { cjsInterop } from 'vite-plugin-cjs-interop'
 
 const MODE = process.env.NODE_ENV
 
-export default defineConfig(() => {
+export default defineConfig(async () => {
 	return {
 		plugins: [
 			cjsInterop({
@@ -34,6 +37,26 @@ export default defineConfig(() => {
 			}),
 			tsconfigPaths(),
 			metronome(),
+			process.env.SENTRY_AUTH_TOKEN
+				? sentryVitePlugin({
+						disable: MODE !== 'production',
+						authToken: process.env.SENTRY_AUTH_TOKEN,
+						org: process.env.SENTRY_ORG,
+						project: process.env.SENTRY_PROJECT,
+						release: {
+							name: process.env.COMMIT_SHA,
+							setCommits: {
+								auto: true,
+							},
+						},
+						sourcemaps: {
+							filesToDeleteAfterUpload: await glob([
+								'./build/**/*.map',
+								'.server-build/**/*.map',
+							]),
+						},
+					})
+				: null,
 		],
 		build: {
 			cssMinify: MODE === 'production',
