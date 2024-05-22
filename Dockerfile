@@ -33,6 +33,7 @@ FROM base as build
 
 ARG COMMIT_SHA
 ENV COMMIT_SHA=$COMMIT_SHA
+ENV SENTRY_UPLOAD="true"
 
 RUN mkdir /app/
 WORKDIR /app/

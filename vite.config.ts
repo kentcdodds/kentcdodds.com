@@ -37,7 +37,7 @@ export default defineConfig(async () => {
 			}),
 			tsconfigPaths(),
 			metronome(),
-			process.env.SENTRY_AUTH_TOKEN
+			process.env.SENTRY_UPLOAD
 				? sentryVitePlugin({
 						disable: MODE !== 'production',
 						authToken: process.env.SENTRY_AUTH_TOKEN,
