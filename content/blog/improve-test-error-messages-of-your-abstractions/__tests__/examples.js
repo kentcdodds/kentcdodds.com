@@ -1,3 +1,5 @@
+import {test, expect} from 'vitest'
+
 const add = (a, b) => a + b
 
 function assertAdd(inputs, output) {

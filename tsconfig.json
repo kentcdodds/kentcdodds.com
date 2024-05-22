@@ -2,7 +2,6 @@
   "include": ["**/*.mdx", "**/*.ts", "**/*.tsx"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
-    "types": ["jest"],
     "isolatedModules": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",

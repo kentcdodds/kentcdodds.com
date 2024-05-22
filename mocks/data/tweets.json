@@ -1250,8 +1250,14 @@
                 "rgb": {"blue": 189, "green": 183, "red": 180},
                 "percentage": 2.82
               },
-              {"rgb": {"blue": 43, "green": 58, "red": 60}, "percentage": 0.9},
-              {"rgb": {"blue": 44, "green": 85, "red": 99}, "percentage": 0.54}
+              {
+                "rgb": {"blue": 43, "green": 58, "red": 60},
+                "percentage": 0.9
+              },
+              {
+                "rgb": {"blue": 44, "green": 85, "red": 99},
+                "percentage": 0.54
+              }
             ]
           },
           "type": "IMAGE_COLOR"
@@ -1272,8 +1278,14 @@
                 "rgb": {"blue": 189, "green": 183, "red": 180},
                 "percentage": 2.82
               },
-              {"rgb": {"blue": 43, "green": 58, "red": 60}, "percentage": 0.9},
-              {"rgb": {"blue": 44, "green": 85, "red": 99}, "percentage": 0.54}
+              {
+                "rgb": {"blue": 43, "green": 58, "red": 60},
+                "percentage": 0.9
+              },
+              {
+                "rgb": {"blue": 44, "green": 85, "red": 99},
+                "percentage": 0.54
+              }
             ]
           },
           "type": "IMAGE_COLOR"
@@ -1309,8 +1321,14 @@
                 "rgb": {"blue": 189, "green": 183, "red": 180},
                 "percentage": 2.82
               },
-              {"rgb": {"blue": 43, "green": 58, "red": 60}, "percentage": 0.9},
-              {"rgb": {"blue": 44, "green": 85, "red": 99}, "percentage": 0.54}
+              {
+                "rgb": {"blue": 43, "green": 58, "red": 60},
+                "percentage": 0.9
+              },
+              {
+                "rgb": {"blue": 44, "green": 85, "red": 99},
+                "percentage": 0.54
+              }
             ]
           },
           "type": "IMAGE_COLOR"

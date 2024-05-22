@@ -4,49 +4,45 @@ import {
   type LoaderFunction,
   type MetaFunction,
 } from '@remix-run/node'
-import {
-  Link,
-  useLoaderData,
-  useParams
-} from '@remix-run/react'
+import {Link, useLoaderData, useParams} from '@remix-run/react'
 import * as React from 'react'
-import { serverOnly$ } from 'vite-env-only'
-import { ArrowLink, BackLink } from '~/components/arrow-button.tsx'
-import { ButtonLink } from '~/components/button.tsx'
-import { GeneralErrorBoundary } from '~/components/error-boundary.tsx'
-import { FourHundred, FourOhFour } from '~/components/errors.tsx'
-import { Grid } from '~/components/grid.tsx'
-import { NumberedPanel } from '~/components/numbered-panel.tsx'
-import { TestimonialSection } from '~/components/sections/testimonial-section.tsx'
-import { Spacer } from '~/components/spacer.tsx'
-import { H2, H5, H6, Paragraph } from '~/components/typography.tsx'
-import { WorkshopCard } from '~/components/workshop-card.tsx'
-import { RegistrationPanel } from '~/components/workshop-registration-panel.tsx'
-import { ConvertKitForm } from '~/convertkit/form.tsx'
-import { getSocialImageWithPreTitle } from '~/images.tsx'
+import {serverOnly$} from 'vite-env-only'
+import {ArrowLink, BackLink} from '~/components/arrow-button.tsx'
+import {ButtonLink} from '~/components/button.tsx'
+import {GeneralErrorBoundary} from '~/components/error-boundary.tsx'
+import {FourHundred, FourOhFour} from '~/components/errors.tsx'
+import {Grid} from '~/components/grid.tsx'
+import {NumberedPanel} from '~/components/numbered-panel.tsx'
+import {TestimonialSection} from '~/components/sections/testimonial-section.tsx'
+import {Spacer} from '~/components/spacer.tsx'
+import {H2, H5, H6, Paragraph} from '~/components/typography.tsx'
+import {WorkshopCard} from '~/components/workshop-card.tsx'
+import {RegistrationPanel} from '~/components/workshop-registration-panel.tsx'
+import {ConvertKitForm} from '~/convertkit/form.tsx'
+import {getSocialImageWithPreTitle} from '~/images.tsx'
 import {
   type LoaderData as RootLoaderData,
   type RootLoaderType,
 } from '~/root.tsx'
-import { type KCDHandle, type MdxListItem, type Workshop } from '~/types.ts'
-import { getBlogRecommendations } from '~/utils/blog.server.ts'
+import {type KCDHandle, type MdxListItem, type Workshop} from '~/types.ts'
+import {getBlogRecommendations} from '~/utils/blog.server.ts'
 import {
   getDisplayUrl,
   getUrl,
   listify,
   requireValidSlug,
-  reuseUsefulLoaderHeaders
+  reuseUsefulLoaderHeaders,
 } from '~/utils/misc.tsx'
-import { getSocialMetas } from '~/utils/seo.ts'
+import {getSocialMetas} from '~/utils/seo.ts'
 import {
   getTestimonials,
   type Testimonial,
   type TestimonialCategory,
   type TestimonialSubject,
 } from '~/utils/testimonials.server.ts'
-import { getServerTimeHeader } from '~/utils/timing.server.ts'
-import { type WorkshopEvent } from '~/utils/workshop-tickets.server.ts'
-import { getWorkshops } from '~/utils/workshops.server.ts'
+import {getServerTimeHeader} from '~/utils/timing.server.ts'
+import {type WorkshopEvent} from '~/utils/workshop-tickets.server.ts'
+import {getWorkshops} from '~/utils/workshops.server.ts'
 import {
   useWorkshopsData,
   type loader as WorkshopLoader,
@@ -109,7 +105,10 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export const meta: MetaFunction<
   {},
-  {root: RootLoaderType; 'routes/workshops+/_workshops': typeof WorkshopLoader}
+  {
+    root: RootLoaderType
+    'routes/workshops+/_workshops': typeof WorkshopLoader
+  }
 > = ({matches, params}) => {
   const {requestInfo} = matches.find(m => m.id === 'root')
     ?.data as RootLoaderData

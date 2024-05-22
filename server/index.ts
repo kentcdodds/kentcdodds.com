@@ -94,7 +94,7 @@ app.use(async (req, res, next) => {
   res.set('X-Fly-Instance', currentInstance)
   res.set('X-Fly-Primary-Instance', primaryInstance)
   res.set('X-Frame-Options', 'SAMEORIGIN')
-  const proto = req.get('X-Forwarded-Proto') ?? req.protocol ?? 'http'
+  const proto = req.get('X-Forwarded-Proto') ?? req.protocol
 
   const host = getHost(req)
   if (!host.endsWith(primaryHost)) {

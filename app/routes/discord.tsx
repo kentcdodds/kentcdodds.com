@@ -182,7 +182,7 @@ export default function Discord() {
       <main>
         <Grid className="mb-24 lg:mb-64">
           <div className="col-span-full lg:col-span-6 lg:col-start-1">
-            <div className="aspect-[4/6] mb-12 lg:mb-0">
+            <div className="mb-12 aspect-[4/6] lg:mb-0">
               <img
                 {...getImgProps(images.kentListeningAtReactRally, {
                   className: 'rounded-lg object-cover',

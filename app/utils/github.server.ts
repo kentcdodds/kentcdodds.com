@@ -79,7 +79,10 @@ async function downloadMdxFileOrDirectory(
     // the entry to be called "/content/index.mdx" so we'll set it to that
     // because this is the entry for this path
     files = [
-      {path: safePath(nodePath.join(mdxFileOrDirectory, 'index.mdx')), content},
+      {
+        path: safePath(nodePath.join(mdxFileOrDirectory, 'index.mdx')),
+        content,
+      },
     ]
   } else if (dirPotential) {
     entry = dirPotential.path

@@ -79,12 +79,12 @@ function BlurrableImage({
           <img
             key={blurDataUrl}
             src={blurDataUrl}
-            className={clsx('absolute w-full h-full', img.props.className)}
+            className={clsx('absolute h-full w-full', img.props.className)}
             alt={img.props.alt}
           />
           <div
             className={clsx(
-              'absolute w-full h-full',
+              'absolute h-full w-full',
               img.props.className,
               'backdrop-blur-xl',
             )}
@@ -92,7 +92,7 @@ function BlurrableImage({
         </>
       ) : null}
       {jsImgEl}
-      <noscript className="absolute z-10 w-full h-full">{img}</noscript>
+      <noscript className="absolute z-10 h-full w-full">{img}</noscript>
     </div>
   )
 }

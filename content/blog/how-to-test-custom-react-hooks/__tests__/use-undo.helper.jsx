@@ -1,4 +1,5 @@
 import {render, act} from '@testing-library/react'
+import {test, expect} from 'vitest'
 import useUndo from '../use-undo.js'
 
 function setup(...args) {

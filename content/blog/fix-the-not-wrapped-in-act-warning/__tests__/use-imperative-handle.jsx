@@ -1,4 +1,5 @@
 import * as React from 'react'
+import {test, expect} from 'vitest'
 import {render, screen, act} from '@testing-library/react'
 
 function ImperativeCounter(props, ref) {

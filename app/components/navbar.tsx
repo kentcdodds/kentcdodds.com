@@ -340,7 +340,7 @@ function ProfileButton({
         <TeamCircle size={56} team={team} />
       </motion.div>
       <img
-        className={clsx('inline w-10 h-10 select-none rounded-full')}
+        className={clsx('inline h-10 w-10 select-none rounded-full')}
         src={imageUrl}
         alt={imageAlt}
         crossOrigin="anonymous"

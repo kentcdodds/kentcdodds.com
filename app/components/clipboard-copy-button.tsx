@@ -63,11 +63,11 @@ export function ClipboardCopyButton({
     <button
       onClick={() => setState(State.Copy)}
       className={clsx(
-        'lg:px-8 lg:py-4 whitespace-nowrap rounded-lg bg-white p-3 text-lg font-medium text-black shadow ring-team-current transition hover:opacity-100 hover:shadow-md hover:ring-4 focus:opacity-100 focus:outline-none focus:ring-4 group-hover:opacity-100 peer-hover:opacity-100 peer-focus:opacity-100 lg:opacity-0',
+        'whitespace-nowrap rounded-lg bg-white p-3 text-lg font-medium text-black shadow ring-team-current transition hover:opacity-100 hover:shadow-md hover:ring-4 focus:opacity-100 focus:outline-none focus:ring-4 group-hover:opacity-100 peer-hover:opacity-100 peer-focus:opacity-100 lg:px-8 lg:py-4 lg:opacity-0',
         className,
       )}
     >
-      <span className="sr-only lg:inline lg:not-sr-only">
+      <span className="sr-only lg:not-sr-only lg:inline">
         {state === State.Copied ? 'Copied to clipboard' : 'Click to copy url'}
       </span>
       <span className="inline lg:sr-only">

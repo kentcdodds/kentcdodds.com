@@ -315,15 +315,15 @@ function BlogHome() {
     userReadsState === 'read'
       ? 'Showing only posts you have not read'
       : userReadsState === 'unread'
-      ? `Showing only posts you have read`
-      : `Showing all posts`
+        ? `Showing only posts you have read`
+        : `Showing all posts`
 
   const searchInputPlaceholder =
     userReadsState === 'read'
       ? 'Search posts you have read'
       : userReadsState === 'unread'
-      ? 'Search posts you have not read'
-      : 'Search posts'
+        ? 'Search posts you have not read'
+        : 'Search posts'
 
   return (
     <div

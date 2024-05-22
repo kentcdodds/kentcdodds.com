@@ -33,7 +33,9 @@ async function getClientSession(request: Request, user: {} | null) {
         return null
       }
     } else {
-      const currentValue = await clientStorage.commitSession(session, {expires})
+      const currentValue = await clientStorage.commitSession(session, {
+        expires,
+      })
       return currentValue === initialValue ? null : currentValue
     }
   }

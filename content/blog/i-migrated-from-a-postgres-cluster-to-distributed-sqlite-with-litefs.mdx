@@ -576,7 +576,11 @@ async function main() {
     console.log(`Found ${users.length} users. Upserting them into SQLite ⤴️`)
     for (const user of users) {
       // eslint-disable-next-line no-await-in-loop
-      await sq.user.upsert({where: {id: user.id}, update: user, create: user})
+      await sq.user.upsert({
+        where: {id: user.id},
+        update: user,
+        create: user,
+      })
     }
     console.timeEnd('users 👥')
   }
@@ -633,7 +637,11 @@ async function main() {
     console.log(`Found ${calls.length} calls. Upserting them into SQLite ⤴️`)
     for (const call of calls) {
       // eslint-disable-next-line no-await-in-loop
-      await sq.call.upsert({where: {id: call.id}, update: call, create: call})
+      await sq.call.upsert({
+        where: {id: call.id},
+        update: call,
+        create: call,
+      })
     }
     console.timeEnd('calls 📞')
   }

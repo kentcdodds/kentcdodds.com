@@ -1,11 +1,12 @@
 import user from '@testing-library/user-event'
 import {render, screen, act} from '@testing-library/react'
 import {UsernameForm} from '../components.jsx'
+import {test, expect, vi, beforeEach, afterEach} from 'vitest'
 
-jest.mock('../api')
+vi.mock('../api')
 
 beforeEach(() => {
-  jest.spyOn(console, 'error').mockImplementation(() => {})
+  vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
 afterEach(() => {
@@ -13,7 +14,7 @@ afterEach(() => {
 })
 
 test('calls updateUsername with the new username (with act warning)', async () => {
-  const handleUpdateUsername = jest.fn()
+  const handleUpdateUsername = vi.fn()
   const fakeUsername = 'sonicthehedgehog'
 
   render(<UsernameForm updateUsername={handleUpdateUsername} />)
@@ -36,7 +37,7 @@ function deferred() {
 
 test('calls updateUsername with the new username', async () => {
   const defer = deferred()
-  const handleUpdateUsername = jest.fn(() => defer.promise)
+  const handleUpdateUsername = vi.fn(() => defer.promise)
   const fakeUsername = 'sonicthehedgehog'
 
   render(<UsernameForm updateUsername={handleUpdateUsername} />)
@@ -55,7 +56,7 @@ test('calls updateUsername with the new username', async () => {
 
 test('calls updateUsername with the new username (with manual act and promise)', async () => {
   const promise = Promise.resolve()
-  const handleUpdateUsername = jest.fn(() => promise)
+  const handleUpdateUsername = vi.fn(() => promise)
   const fakeUsername = 'sonicthehedgehog'
 
   render(<UsernameForm updateUsername={handleUpdateUsername} />)

@@ -166,7 +166,9 @@ export async function loader({request, params}: LoaderFunctionArgs) {
     searchParams.set('message', 'Call not found')
     return redirect(`/calls/admin?${searchParams.toString()}`)
   }
-  return json({call: {...call, formattedCreatedAt: formatDate(call.createdAt)}})
+  return json({
+    call: {...call, formattedCreatedAt: formatDate(call.createdAt)},
+  })
 }
 
 function CallListing({call}: {call: SerializeFrom<typeof loader>['call']}) {

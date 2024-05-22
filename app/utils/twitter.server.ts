@@ -308,7 +308,12 @@ async function getTweetEmbedHTMLImpl(urlString: string) {
     const html = await buildTweetHTML(tweet, true)
     return html
   } catch (error: unknown) {
-    console.error('Error processing tweet', {urlString, tweetId, error, tweet})
+    console.error('Error processing tweet', {
+      urlString,
+      tweetId,
+      error,
+      tweet,
+    })
     return failureHtml
   }
 }

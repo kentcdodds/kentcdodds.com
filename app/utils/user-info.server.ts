@@ -80,7 +80,12 @@ async function getDirectAvatarForUser(
     request,
     timings,
     forceFresh,
-  }: {size: number; request: Request; timings?: Timings; forceFresh?: boolean},
+  }: {
+    size: number
+    request: Request
+    timings?: Timings
+    forceFresh?: boolean
+  },
 ) {
   const hasGravatar = await gravatarExistsForEmail({
     email,

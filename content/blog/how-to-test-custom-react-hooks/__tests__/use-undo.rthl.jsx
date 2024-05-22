@@ -1,4 +1,5 @@
 import {renderHook, act} from '@testing-library/react'
+import {test, expect} from 'vitest'
 import useUndo from '../use-undo.js'
 
 test('allows you to undo and redo', () => {

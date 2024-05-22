@@ -157,7 +157,7 @@ function HeroSection({
         </div>
         {arrowUrl ? (
           <div
-            className="hidden pt-12 lg:block motion-safe:animate-hero-text-reveal"
+            className="hidden pt-12 motion-safe:animate-hero-text-reveal lg:block"
             style={heroTextAnimation.getVariables(animationStep++)}
           >
             <ArrowLink to={arrowUrl} direction="down" textSize="small">

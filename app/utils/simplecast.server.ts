@@ -369,6 +369,7 @@ async function parseSummaryMarkdown(
                     .map(c => {
                       // @ts-expect-error not sure...
                       const hastC = mdastToHast(c)
+                      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                       if (!hastC) {
                         console.error(
                           `${errorKey}: list item child that returned no hAST.`,

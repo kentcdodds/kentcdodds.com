@@ -26,7 +26,7 @@ of analyzing code for potential errors without actually running the code.
 Consider this code:
 
 ```js
-if (!'serviceWorker' in navigator) {
+if ((!'serviceWorker') in navigator) {
   // the user's using an old browser :-(
 }
 ```

@@ -143,8 +143,8 @@ export function FieldContainer({
           'aria-describedby': error
             ? errorId
             : description
-            ? descriptionId
-            : undefined,
+              ? descriptionId
+              : undefined,
         },
       })}
     </div>

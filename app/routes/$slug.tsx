@@ -57,7 +57,10 @@ export async function loader({params, request}: DataFunctionArgs) {
     'Server-Timing': getServerTimeHeader(timings),
   }
   if (!page) {
-    const blogRecommendations = await getBlogRecommendations({request, timings})
+    const blogRecommendations = await getBlogRecommendations({
+      request,
+      timings,
+    })
     throw json({blogRecommendations}, {status: 404, headers})
   }
   return json({page}, {status: 200, headers})
@@ -114,7 +117,7 @@ export default function MdxScreen() {
             <BlurrableImage
               key={frontmatter.bannerCloudinaryId}
               blurDataUrl={frontmatter.bannerBlurDataUrl}
-              className="aspect-[3/4] md:aspect-[3/2] md:aspect-1"
+              className="md:aspect-1 aspect-[3/4] md:aspect-[3/2]"
               img={
                 <img
                   title={getBannerTitleProp(frontmatter)}

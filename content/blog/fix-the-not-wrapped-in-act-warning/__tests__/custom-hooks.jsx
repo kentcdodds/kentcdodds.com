@@ -1,4 +1,5 @@
 import * as React from 'react'
+import {test, expect} from 'vitest'
 import {renderHook, act} from '@testing-library/react'
 
 function useCount() {

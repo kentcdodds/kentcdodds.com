@@ -32,7 +32,10 @@ import {
 
 export const meta: MetaFunction<
   {},
-  {root: RootLoaderType; 'routes/workshops+/_workshops': typeof WorkshopLoader}
+  {
+    root: RootLoaderType
+    'routes/workshops+/_workshops': typeof WorkshopLoader
+  }
 > = ({matches}) => {
   const {requestInfo} = matches.find(m => m.id === 'root')
     ?.data as RootLoaderData

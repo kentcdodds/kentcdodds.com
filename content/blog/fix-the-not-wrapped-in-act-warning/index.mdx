@@ -317,8 +317,8 @@ test('calls updateUsername with the new username', async () => {
 ```
 
 Note that we're manually calling `act` here and you can get that from
-`react-dom/test-utils` or React Testing Library re-exports it so you can 
-grab it from the import you already have. You're welcome.
+`react-dom/test-utils` or React Testing Library re-exports it so you can grab it
+from the import you already have. You're welcome.
 
 This isn't preferable because it's still not going to catch the bug we
 demonstrated earlier by commenting out that `setState` call, but it does make
@@ -370,10 +370,10 @@ function OrderStatus({orderId}) {
         {status === 'idle' || status === 'pending'
           ? '...'
           : status === 'error'
-          ? error.message
-          : status === 'fulfilled'
-          ? data.orderStatus
-          : null}
+            ? error.message
+            : status === 'fulfilled'
+              ? data.orderStatus
+              : null}
       </span>
     </div>
   )
