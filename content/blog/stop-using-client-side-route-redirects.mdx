@@ -22,12 +22,12 @@ First, let's make sure we're talking about the same thing:
 
 ```tsx
 function App() {
-  return (
-    <BrowserRouter>
-      <Redirect from="/old-route" to="/new-route" />
-      {/* ... more routes etc... */}
-    </BrowserRouter>
-  )
+	return (
+		<BrowserRouter>
+			<Redirect from="/old-route" to="/new-route" />
+			{/* ... more routes etc... */}
+		</BrowserRouter>
+	)
 }
 ```
 
@@ -37,7 +37,7 @@ I'm _NOT_ talking about this kind of usage (example borrowed from the docs):
 
 ```tsx
 <Route exact path="/">
-  {loggedIn ? <Redirect to="/dashboard" /> : <PublicHomePage />}
+	{loggedIn ? <Redirect to="/dashboard" /> : <PublicHomePage />}
 </Route>
 ```
 
@@ -72,9 +72,9 @@ good you are at code splitting, they're going to need at _least_ `react`,
 - react-router-dom@5.1.2 - 28.4kB
 
 <callout-info class="aside">
-  These sizes are minified but uncompressed, because compression depends on too
-  many variables for accurate comparisons. Also, I realize that React Router v6
-  is coming soon and will reduce the bundle size significantly, but hear me out!
+	These sizes are minified but uncompressed, because compression depends on too
+	many variables for accurate comparisons. Also, I realize that React Router v6
+	is coming soon and will reduce the bundle size significantly, but hear me out!
 </callout-info>
 
 And that doesn't even include your own code!
@@ -150,13 +150,13 @@ Once I've built the bookshelf app, if I want to run it locally, I use
 
 ```json
 {
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "/list",
-      "type": 302
-    }
-  ]
+	"redirects": [
+		{
+			"source": "/",
+			"destination": "/list",
+			"type": 302
+		}
+	]
 }
 ```
 
@@ -177,7 +177,7 @@ route is requested:
 
 ```js
 function proxy(app) {
-  app.get(/^\/$/, (req, res) => res.redirect('/list'))
+	app.get(/^\/$/, (req, res) => res.redirect('/list'))
 }
 
 module.exports = proxy

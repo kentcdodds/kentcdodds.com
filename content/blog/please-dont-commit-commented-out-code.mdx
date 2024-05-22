@@ -15,14 +15,14 @@ I often find stuff like this in codebases I review:
 
 ```js
 function foo(bar) {
-  const baz = bar(false)
-  // we no longer do this for some good reason
-  // if (baz === 'foobar') {
-  // return baz
-  // } else {
-  // return bar.foobar()
-  // }
-  return baz
+	const baz = bar(false)
+	// we no longer do this for some good reason
+	// if (baz === 'foobar') {
+	// return baz
+	// } else {
+	// return bar.foobar()
+	// }
+	return baz
 }
 ```
 
@@ -30,7 +30,7 @@ This function should look like this:
 
 ```js
 function foo(bar) {
-  return bar(false)
+	return bar(false)
 }
 ```
 

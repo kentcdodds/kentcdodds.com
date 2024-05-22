@@ -34,23 +34,23 @@ https://egghead.io/lessons/react-fix-the-not-wrapped-in-act-warning-when-testing
 https://egghead.io/lessons/react-fix-the-not-wrapped-in-act-warning-when-testing-the-useimperativehandle-hook?pl=kent-s-blog-posts-as-screencasts-eefa540c
 
 import {
-  Rendered,
-  UsernameForm,
-  UsernameFormClass,
-  UsernameFormClassWithBug,
+	Rendered,
+	UsernameForm,
+	UsernameFormClass,
+	UsernameFormClassWithBug,
 } from './components'
 
 Imagine you have a component like this:
 
 <Rendered>
-  <UsernameFormClass
-    updateUsername={u =>
-      new Promise(resolve => {
-        alert(`You typed ${u}! Updating the database...`)
-        setTimeout(() => resolve(), 2000)
-      })
-    }
-  />
+	<UsernameFormClass
+		updateUsername={u =>
+			new Promise(resolve => {
+				alert(`You typed ${u}! Updating the database...`)
+				setTimeout(() => resolve(), 2000)
+			})
+		}
+	/>
 </Rendered>
 
 Here's the code for that (if you were to do it with class components, don't
@@ -58,31 +58,31 @@ worry a function version is coming later in the post):
 
 ```tsx
 class UsernameFormClass extends React.Component {
-  state = {status: 'idle', error: null}
-  handleSubmit = async event => {
-    event.preventDefault()
-    const newUsername = event.target.elements.username.value
-    this.setState({status: 'pending'})
-    try {
-      await this.props.updateUsername(newUsername)
-      this.setState({status: 'fulfilled'})
-    } catch (e) {
-      this.setState({status: 'rejected', error: e})
-    }
-  }
-  render() {
-    const {error, status} = this.state
+	state = { status: 'idle', error: null }
+	handleSubmit = async event => {
+		event.preventDefault()
+		const newUsername = event.target.elements.username.value
+		this.setState({ status: 'pending' })
+		try {
+			await this.props.updateUsername(newUsername)
+			this.setState({ status: 'fulfilled' })
+		} catch (e) {
+			this.setState({ status: 'rejected', error: e })
+		}
+	}
+	render() {
+		const { error, status } = this.state
 
-    return (
-      <form onSubmit={this.handleSubmit}>
-        <label htmlFor="username">Username</label>
-        <input id="username" />
-        <button type="submit">Submit</button>
-        <span>{status === 'pending' ? 'Saving...' : null}</span>
-        <span>{status === 'rejected' ? error.message : null}</span>
-      </form>
-    )
-  }
+		return (
+			<form onSubmit={this.handleSubmit}>
+				<label htmlFor="username">Username</label>
+				<input id="username" />
+				<button type="submit">Submit</button>
+				<span>{status === 'pending' ? 'Saving...' : null}</span>
+				<span>{status === 'rejected' ? error.message : null}</span>
+			</form>
+		)
+	}
 }
 ```
 
@@ -92,19 +92,19 @@ to verify that the component is working properly:
 ```tsx
 import * as React from 'react'
 import user from '@testing-library/user-event'
-import {render, screen} from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 
 test('calls updateUsername with the new username', async () => {
-  const handleUpdateUsername = jest.fn()
-  const fakeUsername = 'sonicthehedgehog'
+	const handleUpdateUsername = jest.fn()
+	const fakeUsername = 'sonicthehedgehog'
 
-  render(<UsernameForm updateUsername={handleUpdateUsername} />)
+	render(<UsernameForm updateUsername={handleUpdateUsername} />)
 
-  const usernameInput = screen.getByLabelText(/username/i)
-  user.type(usernameInput, fakeUsername)
-  user.click(screen.getByText(/submit/i))
+	const usernameInput = screen.getByLabelText(/username/i)
+	user.type(usernameInput, fakeUsername)
+	user.click(screen.getByText(/submit/i))
 
-  expect(handleUpdateUsername).toHaveBeenCalledWith(fakeUsername)
+	expect(handleUpdateUsername).toHaveBeenCalledWith(fakeUsername)
 })
 ```
 
@@ -115,33 +115,33 @@ and it provides us value.
 But, what if we rewrite this to a function component with hooks? Let's try that:
 
 ```tsx
-function UsernameForm({updateUsername}) {
-  const [{status, error}, setState] = React.useState({
-    status: 'idle',
-    error: null,
-  })
+function UsernameForm({ updateUsername }) {
+	const [{ status, error }, setState] = React.useState({
+		status: 'idle',
+		error: null,
+	})
 
-  async function handleSubmit(event) {
-    event.preventDefault()
-    const newUsername = event.target.elements.username.value
-    setState({status: 'pending'})
-    try {
-      await updateUsername(newUsername)
-      setState({status: 'fulfilled'})
-    } catch (e) {
-      setState({status: 'rejected', error: e})
-    }
-  }
+	async function handleSubmit(event) {
+		event.preventDefault()
+		const newUsername = event.target.elements.username.value
+		setState({ status: 'pending' })
+		try {
+			await updateUsername(newUsername)
+			setState({ status: 'fulfilled' })
+		} catch (e) {
+			setState({ status: 'rejected', error: e })
+		}
+	}
 
-  return (
-    <form onSubmit={handleSubmit}>
-      <label htmlFor="username">Username</label>
-      <input id="username" />
-      <button type="submit">Submit</button>
-      <span>{status === 'pending' ? 'Saving...' : null}</span>
-      <span>{status === 'rejected' ? error.message : null}</span>
-    </form>
-  )
+	return (
+		<form onSubmit={handleSubmit}>
+			<label htmlFor="username">Username</label>
+			<input id="username" />
+			<button type="submit">Submit</button>
+			<span>{status === 'pending' ? 'Saving...' : null}</span>
+			<span>{status === 'rejected' ? error.message : null}</span>
+		</form>
+	)
 }
 ```
 
@@ -176,31 +176,31 @@ important line of code:
 
 ```tsx lines=9
 class UsernameFormClass extends React.Component {
-  state = {status: 'idle', error: null}
-  handleSubmit = async event => {
-    event.preventDefault()
-    const newUsername = event.target.elements.username.value
-    this.setState({status: 'pending'})
-    try {
-      await this.props.updateUsername(newUsername)
-      // this.setState({status: 'fulfilled'})
-    } catch (e) {
-      this.setState({status: 'rejected', error: e})
-    }
-  }
-  render() {
-    const {error, status} = this.state
+	state = { status: 'idle', error: null }
+	handleSubmit = async event => {
+		event.preventDefault()
+		const newUsername = event.target.elements.username.value
+		this.setState({ status: 'pending' })
+		try {
+			await this.props.updateUsername(newUsername)
+			// this.setState({status: 'fulfilled'})
+		} catch (e) {
+			this.setState({ status: 'rejected', error: e })
+		}
+	}
+	render() {
+		const { error, status } = this.state
 
-    return (
-      <form onSubmit={this.handleSubmit}>
-        <label htmlFor="username">Username</label>
-        <input id="username" />
-        <button type="submit">Submit</button>
-        <span>{status === 'pending' ? 'Saving...' : null}</span>
-        <span>{status === 'rejected' ? error.message : null}</span>
-      </form>
-    )
-  }
+		return (
+			<form onSubmit={this.handleSubmit}>
+				<label htmlFor="username">Username</label>
+				<input id="username" />
+				<button type="submit">Submit</button>
+				<span>{status === 'pending' ? 'Saving...' : null}</span>
+				<span>{status === 'rejected' ? error.message : null}</span>
+			</form>
+		)
+	}
 }
 ```
 
@@ -208,14 +208,14 @@ Guess what! Our tests still pass! But, the `Saving...` loading indicator next to
 our submit button never goes away:
 
 <Rendered>
-  <UsernameFormClassWithBug
-    updateUsername={u =>
-      new Promise(resolve => {
-        alert(`You typed ${u}! Updating the database...`)
-        setTimeout(() => resolve(), 2000)
-      })
-    }
-  />
+	<UsernameFormClassWithBug
+		updateUsername={u =>
+			new Promise(resolve => {
+				alert(`You typed ${u}! Updating the database...`)
+				setTimeout(() => resolve(), 2000)
+			})
+		}
+	/>
 </Rendered>
 
 Oh no! It sure would've been nice if we'd had some warning that we weren't
@@ -247,17 +247,17 @@ time around:
 
 ```tsx lines=12
 test('calls updateUsername with the new username', async () => {
-  const handleUpdateUsername = jest.fn()
-  const fakeUsername = 'sonicthehedgehog'
+	const handleUpdateUsername = jest.fn()
+	const fakeUsername = 'sonicthehedgehog'
 
-  render(<UsernameForm updateUsername={handleUpdateUsername} />)
+	render(<UsernameForm updateUsername={handleUpdateUsername} />)
 
-  const usernameInput = screen.getByLabelText(/username/i)
-  user.type(usernameInput, fakeUsername)
-  user.click(screen.getByText(/submit/i))
+	const usernameInput = screen.getByLabelText(/username/i)
+	user.type(usernameInput, fakeUsername)
+	user.click(screen.getByText(/submit/i))
 
-  expect(handleUpdateUsername).toHaveBeenCalledWith(fakeUsername)
-  await waitForElementToBeRemoved(() => screen.queryByText(/saving/i))
+	expect(handleUpdateUsername).toHaveBeenCalledWith(fakeUsername)
+	await waitForElementToBeRemoved(() => screen.queryByText(/saving/i))
 })
 ```
 
@@ -298,21 +298,21 @@ to await that promise resolution:
 
 ```tsx lines=2,3,13
 test('calls updateUsername with the new username', async () => {
-  const promise = Promise.resolve() // You can also resolve with a mocked return value if necessary
-  const handleUpdateUsername = jest.fn(() => promise)
-  const fakeUsername = 'sonicthehedgehog'
+	const promise = Promise.resolve() // You can also resolve with a mocked return value if necessary
+	const handleUpdateUsername = jest.fn(() => promise)
+	const fakeUsername = 'sonicthehedgehog'
 
-  render(<UsernameForm updateUsername={handleUpdateUsername} />)
+	render(<UsernameForm updateUsername={handleUpdateUsername} />)
 
-  const usernameInput = screen.getByLabelText(/username/i)
-  user.type(usernameInput, fakeUsername)
-  user.click(screen.getByText(/submit/i))
+	const usernameInput = screen.getByLabelText(/username/i)
+	user.type(usernameInput, fakeUsername)
+	user.click(screen.getByText(/submit/i))
 
-  expect(handleUpdateUsername).toHaveBeenCalledWith(fakeUsername)
-  // we await the promise instead of returning directly, because act expects a "void" result
-  await act(async () => {
-    await promise
-  })
+	expect(handleUpdateUsername).toHaveBeenCalledWith(fakeUsername)
+	// we await the promise instead of returning directly, because act expects a "void" result
+	await act(async () => {
+		await promise
+	})
 })
 ```
 
@@ -337,46 +337,46 @@ examples:
 Let's say you have a component that's checking against an API on an interval:
 
 ```tsx
-function OrderStatus({orderId}) {
-  const [{status, data, error}, setState] = React.useReducer(
-    (s, a) => ({...s, ...a}),
-    {status: 'idle', data: null, error: null},
-  )
+function OrderStatus({ orderId }) {
+	const [{ status, data, error }, setState] = React.useReducer(
+		(s, a) => ({ ...s, ...a }),
+		{ status: 'idle', data: null, error: null },
+	)
 
-  React.useEffect(() => {
-    let current = true
-    function tick() {
-      setState({status: 'pending'})
-      checkStatus(orderId).then(
-        d => {
-          if (current) setState({status: 'fulfilled', data: d})
-        },
-        e => {
-          if (current) setState({status: 'rejected', error: e})
-        },
-      )
-    }
-    const id = setInterval(tick, 1000)
-    return () => {
-      current = false
-      clearInterval(id)
-    }
-  }, [orderId])
+	React.useEffect(() => {
+		let current = true
+		function tick() {
+			setState({ status: 'pending' })
+			checkStatus(orderId).then(
+				d => {
+					if (current) setState({ status: 'fulfilled', data: d })
+				},
+				e => {
+					if (current) setState({ status: 'rejected', error: e })
+				},
+			)
+		}
+		const id = setInterval(tick, 1000)
+		return () => {
+			current = false
+			clearInterval(id)
+		}
+	}, [orderId])
 
-  return (
-    <div>
-      Order Status:{' '}
-      <span>
-        {status === 'idle' || status === 'pending'
-          ? '...'
-          : status === 'error'
-            ? error.message
-            : status === 'fulfilled'
-              ? data.orderStatus
-              : null}
-      </span>
-    </div>
-  )
+	return (
+		<div>
+			Order Status:{' '}
+			<span>
+				{status === 'idle' || status === 'pending'
+					? '...'
+					: status === 'error'
+						? error.message
+						: status === 'fulfilled'
+							? data.orderStatus
+							: null}
+			</span>
+		</div>
+	)
 }
 ```
 
@@ -385,38 +385,38 @@ when we write our test for it, we're going to get the `act` warning again:
 
 ```tsx
 import * as React from 'react'
-import {render, screen} from '@testing-library/react'
-import {checkStatus} from '../api'
+import { render, screen } from '@testing-library/react'
+import { checkStatus } from '../api'
 
 jest.mock('../api')
 
 beforeAll(() => {
-  // we're using fake timers because we don't want to
-  // wait a full second for this test to run.
-  jest.useFakeTimers()
+	// we're using fake timers because we don't want to
+	// wait a full second for this test to run.
+	jest.useFakeTimers()
 })
 
 afterAll(() => {
-  jest.useRealTimers()
+	jest.useRealTimers()
 })
 
 test('polling backend on an interval', async () => {
-  const orderId = 'abc123'
-  const orderStatus = 'Order Received'
-  checkStatus.mockResolvedValue({orderStatus})
+	const orderId = 'abc123'
+	const orderStatus = 'Order Received'
+	checkStatus.mockResolvedValue({ orderStatus })
 
-  render(<OrderStatus orderId={orderId} />)
+	render(<OrderStatus orderId={orderId} />)
 
-  expect(screen.getByText(/\.\.\./i)).toBeInTheDocument()
-  expect(checkStatus).toHaveBeenCalledTimes(0)
+	expect(screen.getByText(/\.\.\./i)).toBeInTheDocument()
+	expect(checkStatus).toHaveBeenCalledTimes(0)
 
-  // advance the timers by a second to kick off the first request
-  jest.advanceTimersByTime(1000)
+	// advance the timers by a second to kick off the first request
+	jest.advanceTimersByTime(1000)
 
-  expect(await screen.findByText(orderStatus)).toBeInTheDocument()
+	expect(await screen.findByText(orderStatus)).toBeInTheDocument()
 
-  expect(checkStatus).toHaveBeenCalledWith(orderId)
-  expect(checkStatus).toHaveBeenCalledTimes(1)
+	expect(checkStatus).toHaveBeenCalledWith(orderId)
+	expect(checkStatus).toHaveBeenCalledTimes(1)
 })
 ```
 
@@ -439,28 +439,28 @@ timer advancement in `act` ourselves, like this:
 
 ```tsx lines=2,18
 import * as React from 'react'
-import {render, screen, act} from '@testing-library/react'
-import {checkStatus} from '../api'
+import { render, screen, act } from '@testing-library/react'
+import { checkStatus } from '../api'
 
 jest.mock('../api')
 
 test('polling backend on an interval', async () => {
-  const orderId = 'abc123'
-  const orderStatus = 'Order Received'
-  checkStatus.mockResolvedValue({orderStatus})
+	const orderId = 'abc123'
+	const orderStatus = 'Order Received'
+	checkStatus.mockResolvedValue({ orderStatus })
 
-  render(<OrderStatus orderId={orderId} />)
+	render(<OrderStatus orderId={orderId} />)
 
-  expect(screen.getByText(/\.\.\./i)).toBeInTheDocument()
-  expect(checkStatus).toHaveBeenCalledTimes(0)
+	expect(screen.getByText(/\.\.\./i)).toBeInTheDocument()
+	expect(checkStatus).toHaveBeenCalledTimes(0)
 
-  // advance the timers by a second to kick off the first request
-  act(() => jest.advanceTimersByTime(1000))
+	// advance the timers by a second to kick off the first request
+	act(() => jest.advanceTimersByTime(1000))
 
-  expect(await screen.findByText(orderStatus)).toBeInTheDocument()
+	expect(await screen.findByText(orderStatus)).toBeInTheDocument()
 
-  expect(checkStatus).toHaveBeenCalledWith(orderId)
-  expect(checkStatus).toHaveBeenCalledTimes(1)
+	expect(checkStatus).toHaveBeenCalledWith(orderId)
+	expect(checkStatus).toHaveBeenCalledTimes(1)
 })
 ```
 
@@ -480,10 +480,10 @@ simple example of that:
 import * as React from 'react'
 
 function useCount() {
-  const [count, setCount] = React.useState(0)
-  const increment = () => setCount(c => c + 1)
-  const decrement = () => setCount(c => c - 1)
-  return {count, increment, decrement}
+	const [count, setCount] = React.useState(0)
+	const increment = () => setCount(c => c + 1)
+	const decrement = () => setCount(c => c - 1)
+	return { count, increment, decrement }
 }
 
 export default useCount
@@ -493,18 +493,18 @@ Here, we'll use `@testing-library/react` to validate our hook works:
 
 ```js
 import * as React from 'react'
-import {renderHook} from '@testing-library/react'
+import { renderHook } from '@testing-library/react'
 import useCount from '../use-count'
 
 test('increment and decrement updates the count', () => {
-  const {result} = renderHook(() => useCount())
-  expect(result.current.count).toBe(0)
+	const { result } = renderHook(() => useCount())
+	expect(result.current.count).toBe(0)
 
-  result.current.increment()
-  expect(result.current.count).toBe(1)
+	result.current.increment()
+	expect(result.current.count).toBe(1)
 
-  result.current.decrement()
-  expect(result.current.count).toBe(0)
+	result.current.decrement()
+	expect(result.current.count).toBe(0)
 })
 ```
 
@@ -514,18 +514,18 @@ to get an `act(...)` warning. So, let's wrap that in `act(...)`!
 
 ```js lines=2,9,12
 import * as React from 'react'
-import {renderHook, act} from '@testing-library/react'
+import { renderHook, act } from '@testing-library/react'
 import useCount from '../use-count'
 
 test('increment and decrement updates the count', () => {
-  const {result} = renderHook(() => useCount())
-  expect(result.current.count).toBe(0)
+	const { result } = renderHook(() => useCount())
+	expect(result.current.count).toBe(0)
 
-  act(() => result.current.increment())
-  expect(result.current.count).toBe(1)
+	act(() => result.current.increment())
+	expect(result.current.count).toBe(1)
 
-  act(() => result.current.decrement())
-  expect(result.current.count).toBe(0)
+	act(() => result.current.decrement())
+	expect(result.current.count).toBe(0)
 })
 ```
 
@@ -546,12 +546,12 @@ decisions any time you use this hook anyway:
 
 ```tsx
 function ImperativeCounter(props, ref) {
-  const [count, setCount] = React.useState(0)
-  React.useImperativeHandle(ref, () => ({
-    increment: () => setCount(c => c + 1),
-    decrement: () => setCount(c => c - 1),
-  }))
-  return <div>The count is: {count}</div>
+	const [count, setCount] = React.useState(0)
+	React.useImperativeHandle(ref, () => ({
+		increment: () => setCount(c => c + 1),
+		decrement: () => setCount(c => c - 1),
+	}))
+	return <div>The count is: {count}</div>
 }
 ImperativeCounter = React.forwardRef(ImperativeCounter)
 ```
@@ -560,19 +560,19 @@ Here's how you might test this:
 
 ```tsx
 import * as React from 'react'
-import {render, screen, act} from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 import ImperativeCounter from '../imperative-counter'
 
 test('can call imperative methods on counter component', () => {
-  const counterRef = React.createRef()
-  render(<ImperativeCounter ref={counterRef} />)
-  expect(screen.getByText('The count is: 0')).toBeInTheDocument()
+	const counterRef = React.createRef()
+	render(<ImperativeCounter ref={counterRef} />)
+	expect(screen.getByText('The count is: 0')).toBeInTheDocument()
 
-  counterRef.current.increment()
-  expect(screen.getByText('The count is: 1')).toBeInTheDocument()
+	counterRef.current.increment()
+	expect(screen.getByText('The count is: 1')).toBeInTheDocument()
 
-  counterRef.current.decrement()
-  expect(screen.getByText('The count is: 0')).toBeInTheDocument()
+	counterRef.current.decrement()
+	expect(screen.getByText('The count is: 0')).toBeInTheDocument()
 })
 ```
 
@@ -581,19 +581,19 @@ they're happening outside the React callstack. So, let's wrap them in `act`:
 
 ```tsx lines=2,10,13
 import * as React from 'react'
-import {render, screen, act} from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 import ImperativeCounter from '../imperative-counter'
 
 test('can call imperative methods on counter component', () => {
-  const counterRef = React.createRef()
-  render(<ImperativeCounter ref={counterRef} />)
-  expect(screen.getByText('The count is: 0')).toBeInTheDocument()
+	const counterRef = React.createRef()
+	render(<ImperativeCounter ref={counterRef} />)
+	expect(screen.getByText('The count is: 0')).toBeInTheDocument()
 
-  act(() => counterRef.current.increment())
-  expect(screen.getByText('The count is: 1')).toBeInTheDocument()
+	act(() => counterRef.current.increment())
+	expect(screen.getByText('The count is: 1')).toBeInTheDocument()
 
-  act(() => counterRef.current.decrement())
-  expect(screen.getByText('The count is: 0')).toBeInTheDocument()
+	act(() => counterRef.current.decrement())
+	expect(screen.getByText('The count is: 0')).toBeInTheDocument()
 })
 ```
 

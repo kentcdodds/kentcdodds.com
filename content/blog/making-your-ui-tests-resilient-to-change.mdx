@@ -28,21 +28,21 @@ you're writing some tests to make sure you don't. Let's get a quick look at
 
 ```tsx
 const form = (
-  <form onSubmit={handleSubmit}>
-    <div>
-      <label htmlFor="username">Username</label>
-      <input id="username" className="username-field" />
-    </div>
-    <div>
-      <label htmlFor="password">Password</label>
-      <input id="password" type="password" className="password-field" />
-    </div>
-    <div>
-      <button type="submit" className="btn">
-        Login
-      </button>
-    </div>
-  </form>
+	<form onSubmit={handleSubmit}>
+		<div>
+			<label htmlFor="username">Username</label>
+			<input id="username" className="username-field" />
+		</div>
+		<div>
+			<label htmlFor="password">Password</label>
+			<input id="password" type="password" className="password-field" />
+		</div>
+		<div>
+			<button type="submit" className="btn">
+				Login
+			</button>
+		</div>
+	</form>
 )
 ```
 
@@ -62,24 +62,24 @@ What if we added a "Sign up" button before the "Login" button?
 
 ```tsx lines=12-14
 const form = (
-  <form onSubmit={handleSubmit}>
-    <div>
-      <label htmlFor="username">Username</label>
-      <input id="username" className="username-field" />
-    </div>
-    <div>
-      <label htmlFor="password">Password</label>
-      <input id="password" type="password" className="password-field" />
-    </div>
-    <div>
-      <button type="submit" className="btn">
-        Sign up
-      </button>
-      <button type="submit" className="btn">
-        Login
-      </button>
-    </div>
-  </form>
+	<form onSubmit={handleSubmit}>
+		<div>
+			<label htmlFor="username">Username</label>
+			<input id="username" className="username-field" />
+		</div>
+		<div>
+			<label htmlFor="password">Password</label>
+			<input id="password" type="password" className="password-field" />
+		</div>
+		<div>
+			<button type="submit" className="btn">
+				Sign up
+			</button>
+			<button type="submit" className="btn">
+				Login
+			</button>
+		</div>
+	</form>
 )
 ```
 
@@ -143,9 +143,9 @@ like this:
 3. Click on the button that has text `sign in`
 
 ```js
-const usernameField = rootNode.getByRole('textbox', {name: /username/i})
+const usernameField = rootNode.getByRole('textbox', { name: /username/i })
 const passwordField = rootNode.getByLabelText('password')
-const submitButton = rootNode.getByRole('button', {name: /sign in/i})
+const submitButton = rootNode.getByRole('button', { name: /sign in/i })
 ```
 
 And that would help to ensure that you are testing your software as closely to
@@ -176,8 +176,8 @@ solve the problem. Well guess what! There's actually an existing API for this!
 It's `data-` attributes! For example:
 
 ```tsx
-function UsernameDisplay({user}) {
-  return <strong data-testid="username">{user.username}</strong>
+function UsernameDisplay({ user }) {
+	return <strong data-testid="username">{user.username}</strong>
 }
 ```
 

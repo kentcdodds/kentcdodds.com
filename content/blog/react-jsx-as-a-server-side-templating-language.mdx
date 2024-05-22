@@ -30,10 +30,10 @@ and then the client-side React app kicks in to load the rest of the
 data/interactivity needed on the page.
 
 <callout-info>
-  You should use [Remix](https://remix.run), not just the skeleton `index.html`
-  as we're doing on [paypal.me](http://paypal.me). We have our reasons (there's
-  nuance in everything and I'm not going to get into this). Of course, Remix
-  didn't exist at the time we were working on this so 🤷‍♂️
+	You should use [Remix](https://remix.run), not just the skeleton `index.html`
+	as we're doing on [paypal.me](http://paypal.me). We have our reasons (there's
+	nuance in everything and I'm not going to get into this). Of course, Remix
+	didn't exist at the time we were working on this so 🤷‍♂️
 </callout-info>
 
 Before my PR, we actually had two systems in place. We used
@@ -96,7 +96,7 @@ protection. Let's use that:
 
 ```tsx
 <head>
-  <div dangerouslySetInnerHTML={{__html: polyfill.headHTML}} />
+	<div dangerouslySetInnerHTML={{ __html: polyfill.headHTML }} />
 </head>
 ```
 
@@ -104,9 +104,9 @@ So this would result in:
 
 ```tsx
 <head>
-  <div>
-    <script src="hello.js" />
-  </div>
+	<div>
+		<script src="hello.js" />
+	</div>
 </head>
 ```
 
@@ -119,15 +119,15 @@ So here's the solution I came up with that I don't hate:
 
 ```tsx
 <head>
-  <RawText>{polyfill.headHTML}</RawText>
+	<RawText>{polyfill.headHTML}</RawText>
 </head>
 ```
 
 The implementation of that `RawText` component is pretty simple:
 
 ```tsx
-function RawText({children}) {
-  return <raw-text dangerouslySetInnerHTML={{__html: children}} />
+function RawText({ children }) {
+	return <raw-text dangerouslySetInnerHTML={{ __html: children }} />
 }
 ```
 
@@ -135,9 +135,9 @@ So this will result in:
 
 ```html
 <head>
-  <raw-text>
-    <script src="hello.js" />
-  </raw-text>
+	<raw-text>
+		<script src="hello.js" />
+	</raw-text>
 </head>
 ```
 
@@ -158,7 +158,7 @@ and looks like this:
 
 ```js
 function removeRawText(string) {
-  return string.replace(/<\/?raw-text>/g, '')
+	return string.replace(/<\/?raw-text>/g, '')
 }
 ```
 
@@ -166,7 +166,7 @@ So, effectively what our `rendered` string looks like is this:
 
 ```html
 <head>
-  <script src="hello.js"></script>
+	<script src="hello.js"></script>
 </head>
 ```
 
@@ -181,11 +181,11 @@ this problem would be for React to
 [on Fragments](https://github.com/facebook/react/issues/12014)).
 
 <callout-info>
-  **NOTE:** The fact that this logic lives in a function right next to the
-  definition of the `RawText` component rather than just hard-coding the
-  replacement where it happens is IMPORTANT. Anyone coming to the codebase and
-  seeing `RawText` or `removeRawText` will be able to find out what's going on
-  much more quickly.
+	**NOTE:** The fact that this logic lives in a function right next to the
+	definition of the `RawText` component rather than just hard-coding the
+	replacement where it happens is IMPORTANT. Anyone coming to the codebase and
+	seeing `RawText` or `removeRawText` will be able to find out what's going on
+	much more quickly.
 </callout-info>
 
 ### Localization

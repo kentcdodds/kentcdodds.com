@@ -60,11 +60,11 @@ destructure the pieces out of that object I needed, like so:
 
 ```js
 // foo.js
-const foo = {baz: 42, bar: false}
+const foo = { baz: 42, bar: false }
 export default foo
 
 // bar.js
-import {baz} from './foo'
+import { baz } from './foo'
 ```
 
 Babel 5 allowed this because of how it transpiled the export default statement.
@@ -96,7 +96,7 @@ export default foo
 somethingAsync().then(result => (foo[result.key] = result.value))
 
 // bar.js
-import {foobar} from './foo'
+import { foobar } from './foo'
 ```
 
 We'll assume that _result.key_ is 'foobar'. In CommonJS this would work just
@@ -109,12 +109,12 @@ module.exports = foo
 somethingAsync().then(result => result => (foo[result.key] = result.value))
 
 // bar.js
-const {foobar} = require('./foo')
+const { foobar } = require('./foo')
 ```
 
 <callout-warning>
-  However, because the ES6 specification states that imports and exports must be
-  statically analyzable, you can't accomplish this dynamic behavior in ES6.
+	However, because the ES6 specification states that imports and exports must be
+	statically analyzable, you can't accomplish this dynamic behavior in ES6.
 </callout-warning>
 
 So that's the _why_ for Babel's change. It's no longer possible to do this and

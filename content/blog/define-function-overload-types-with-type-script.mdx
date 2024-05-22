@@ -30,9 +30,9 @@ Here's how you'd implement this API using regular JavaScript:
 
 ```js
 function asyncAdd(a, b, cb) {
-  const result = a + b
-  if (cb) return cb(result)
-  else return Promise.resolve(result)
+	const result = a + b
+	if (cb) return cb(result)
+	else return Promise.resolve(result)
 }
 ```
 
@@ -56,9 +56,9 @@ function asyncAdd(a: number, b: number, cb: asyncAddCb): void
 // notice cb is optional
 // also notice that the return type is inferred, but it could be specified as `void | Promise<number>`
 function asyncAdd(a: number, b: number, cb?: asyncAddCb) {
-  const result = a + b
-  if (cb) return cb(result)
-  else return Promise.resolve(result)
+	const result = a + b
+	if (cb) return cb(result)
+	else return Promise.resolve(result)
 }
 ```
 
@@ -79,8 +79,8 @@ file with the following code:
 const fs = require('fs')
 const fruits = fs.readFileSync('./fruit.txt', 'utf8').toString().split('\n')
 module.exports = fruits
-  .map(fruit => `export const ${fruit} = '${fruit}';`)
-  .join('')
+	.map(fruit => `export const ${fruit} = '${fruit}';`)
+	.join('')
 ```
 
 Assuming `fruit.txt` contains a list of fruits, this is what that'll compile to:
@@ -153,11 +153,11 @@ So we'll define our types and then make sure that we cast the macro function
 like a regular function.
 
 ```ts
-import {createMacro} from 'babel-plugin-macros'
-import type {MacroHandler} from 'babel-plugin-macros'
+import { createMacro } from 'babel-plugin-macros'
+import type { MacroHandler } from 'babel-plugin-macros'
 
 const codegenMacro: MacroHandler = function codegenMacro(/* some args */) {
-  // the implementation here is irrelevant
+	// the implementation here is irrelevant
 }
 
 // use the `createMacro` utility to turn the codegenMacro into a babel macro
@@ -173,8 +173,8 @@ type definitions and everyone will be happy. So let's define those:
 ```ts
 // This handles the tagged template literal API:
 declare function codegen(
-  literals: TemplateStringsArray,
-  ...interpolations: Array<unknown>
+	literals: TemplateStringsArray,
+	...interpolations: Array<unknown>
 ): any
 
 // this handles the function call API:
@@ -182,7 +182,7 @@ declare function codegen(code: string): any
 
 // this handles the `codegen.require` API:
 declare namespace codegen {
-  function require(modulePath: string, ...args: Array<unknown>): any
+	function require(modulePath: string, ...args: Array<unknown>): any
 }
 
 // Unfortunately I couldn't figure out how to add TS support for the JSX form

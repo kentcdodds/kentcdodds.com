@@ -5,4 +5,4 @@ import pick from 'lodash/pick.js'
 import shuffle from 'lodash/shuffle.js'
 import sortBy from 'lodash/sortBy.js'
 import groupBy from 'lodash/groupBy.js'
-export {isEqual, omit, orderBy, pick, shuffle, sortBy, groupBy}
+export { isEqual, omit, orderBy, pick, shuffle, sortBy, groupBy }

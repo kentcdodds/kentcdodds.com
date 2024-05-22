@@ -47,11 +47,13 @@ Here's a typical usage of `react-toggled`:
 
 ```tsx
 function App() {
-  return (
-    <Toggle>
-      {({on, toggle}) => <button onClick={toggle}>{on ? 'on' : 'off'}</button>}
-    </Toggle>
-  )
+	return (
+		<Toggle>
+			{({ on, toggle }) => (
+				<button onClick={toggle}>{on ? 'on' : 'off'}</button>
+			)}
+		</Toggle>
+	)
 }
 ```
 
@@ -59,9 +61,9 @@ If all we wanted was simple toggle functionality, our hook version would be:
 
 ```js
 function useToggle(initialOn = false) {
-  const [on, setOn] = useState(initialOn)
-  const toggle = () => setOn(!on)
-  return {on, toggle}
+	const [on, setOn] = useState(initialOn)
+	const toggle = () => setOn(!on)
+	return { on, toggle }
 }
 ```
 
@@ -69,8 +71,8 @@ Then people could use that like so:
 
 ```tsx
 function App() {
-  const {on, toggle} = useToggle()
-  return <button onClick={toggle}>{on ? 'on' : 'off'}</button>
+	const { on, toggle } = useToggle()
+	return <button onClick={toggle}>{on ? 'on' : 'off'}</button>
 }
 ```
 
@@ -82,24 +84,24 @@ will give you the correct props you need for a toggler to work (including
 ```js
 // returns a function which calls all the given functions
 const callAll =
-  (...fns) =>
-  (...args) =>
-    fns.forEach(fn => fn && fn(...args))
+	(...fns) =>
+	(...args) =>
+		fns.forEach(fn => fn && fn(...args))
 
 function useToggle(initialOn = false) {
-  const [on, setOn] = useState(initialOn)
-  const toggle = () => setOn(!on)
-  const getTogglerProps = (props = {}) => ({
-    'aria-expanded': on,
-    tabIndex: 0,
-    ...props,
-    onClick: callAll(props.onClick, toggle),
-  })
-  return {
-    on,
-    toggle,
-    getTogglerProps,
-  }
+	const [on, setOn] = useState(initialOn)
+	const toggle = () => setOn(!on)
+	const getTogglerProps = (props = {}) => ({
+		'aria-expanded': on,
+		tabIndex: 0,
+		...props,
+		onClick: callAll(props.onClick, toggle),
+	})
+	return {
+		on,
+		toggle,
+		getTogglerProps,
+	}
 }
 ```
 
@@ -107,8 +109,8 @@ And now our `useToggle` hook can use the `getTogglerProps`:
 
 ```tsx
 function App() {
-  const {on, getTogglerProps} = useToggle()
-  return <button {...getTogglerProps()}>{on ? 'on' : 'off'}</button>
+	const { on, getTogglerProps } = useToggle()
+	return <button {...getTogglerProps()}>{on ? 'on' : 'off'}</button>
 }
 ```
 
@@ -118,25 +120,25 @@ And it's more accessible and stuff. Neat right? Well, what if I don't need the
 ```js
 // returns a function which calls all the given functions
 const callAll =
-  (...fns) =>
-  (...args) =>
-    fns.forEach(fn => fn && fn(...args))
+	(...fns) =>
+	(...args) =>
+		fns.forEach(fn => fn && fn(...args))
 
 function useToggle(initialOn = false) {
-  const [on, setOn] = useState(initialOn)
-  const toggle = () => setOn(!on)
-  return {on, toggle}
+	const [on, setOn] = useState(initialOn)
+	const toggle = () => setOn(!on)
+	return { on, toggle }
 }
 
 function useToggleWithPropGetter(initialOn) {
-  const {on, toggle} = useToggle(initialOn)
-  const getTogglerProps = (props = {}) => ({
-    'aria-expanded': on,
-    tabIndex: 0,
-    ...props,
-    onClick: callAll(props.onClick, toggle),
-  })
-  return {on, toggle, getTogglerProps}
+	const { on, toggle } = useToggle(initialOn)
+	const getTogglerProps = (props = {}) => ({
+		'aria-expanded': on,
+		tabIndex: 0,
+		...props,
+		onClick: callAll(props.onClick, toggle),
+	})
+	return { on, toggle, getTogglerProps }
 }
 ```
 
@@ -152,7 +154,7 @@ the render prop API to use the new hooks API!!
 Never fear! Check this out:
 
 ```js
-const Toggle = ({children, ...props}) => children(useToggle(props))
+const Toggle = ({ children, ...props }) => children(useToggle(props))
 ```
 
 There's your render prop component. You can use that just like you were using
@@ -182,12 +184,12 @@ Here's the relevant bit:
 
 ```tsx
 <List
-  // ... some props
-  rowRenderer={({key, index, style}) => (
-    <div
-    // ... some props
-    />
-  )}
+	// ... some props
+	rowRenderer={({ key, index, style }) => (
+		<div
+		// ... some props
+		/>
+	)}
 />
 ```
 

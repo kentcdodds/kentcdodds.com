@@ -60,121 +60,121 @@ import * as blogPostController from '../blog-post'
 jest.mock('../../lib/db')
 
 test('lists blog posts for the logged in user', async () => {
-  const req = {
-    locale: {
-      source: 'default',
-      language: 'en',
-      region: 'GB',
-    },
-    user: {
-      guid: '0336397b-e29d-4b63-b94d-7e68a6fa3747',
-      isActive: false,
-      picture: 'http://placehold.it/32x32',
-      age: 30,
-      name: {
-        first: 'Francine',
-        last: 'Oconnor',
-      },
-      company: 'ACME',
-      email: 'francine.oconnor@ac.me',
-      latitude: 51.507351,
-      longitude: -0.127758,
-      favoriteFruit: 'banana',
-    },
-    body: {},
-    cookies: {},
-    query: {},
-    params: {
-      bucket: 'photography',
-    },
-    header(name) {
-      return {
-        Authorization: 'Bearer TEST_TOKEN',
-      }[name]
-    },
-  }
-  const res = {
-    clearCookie: jest.fn(),
-    cookie: jest.fn(),
-    end: jest.fn(),
-    locals: {
-      content: {},
-    },
-    json: jest.fn(),
-    send: jest.fn(),
-    sendStatus: jest.fn(),
-    set: jest.fn(),
-  }
-  const next = jest.fn()
+	const req = {
+		locale: {
+			source: 'default',
+			language: 'en',
+			region: 'GB',
+		},
+		user: {
+			guid: '0336397b-e29d-4b63-b94d-7e68a6fa3747',
+			isActive: false,
+			picture: 'http://placehold.it/32x32',
+			age: 30,
+			name: {
+				first: 'Francine',
+				last: 'Oconnor',
+			},
+			company: 'ACME',
+			email: 'francine.oconnor@ac.me',
+			latitude: 51.507351,
+			longitude: -0.127758,
+			favoriteFruit: 'banana',
+		},
+		body: {},
+		cookies: {},
+		query: {},
+		params: {
+			bucket: 'photography',
+		},
+		header(name) {
+			return {
+				Authorization: 'Bearer TEST_TOKEN',
+			}[name]
+		},
+	}
+	const res = {
+		clearCookie: jest.fn(),
+		cookie: jest.fn(),
+		end: jest.fn(),
+		locals: {
+			content: {},
+		},
+		json: jest.fn(),
+		send: jest.fn(),
+		sendStatus: jest.fn(),
+		set: jest.fn(),
+	}
+	const next = jest.fn()
 
-  await blogPostController.loadBlogPosts(req, res, next)
+	await blogPostController.loadBlogPosts(req, res, next)
 
-  expect(res.json).toHaveBeenCalledTimes(1)
-  expect(res.json).toHaveBeenCalledWith({
-    posts: expect.arrayContaining([
-      expect.objectContaining({
-        title: 'Test Post 1',
-        subtitle: 'This is the subtitle of Test Post 1',
-        body: 'The is the body of Test Post 1',
-      }),
-    ]),
-  })
+	expect(res.json).toHaveBeenCalledTimes(1)
+	expect(res.json).toHaveBeenCalledWith({
+		posts: expect.arrayContaining([
+			expect.objectContaining({
+				title: 'Test Post 1',
+				subtitle: 'This is the subtitle of Test Post 1',
+				body: 'The is the body of Test Post 1',
+			}),
+		]),
+	})
 })
 
 test('returns an empty list when there are no blog posts', async () => {
-  const req = {
-    locale: {
-      source: 'default',
-      language: 'en',
-      region: 'GB',
-    },
-    user: {
-      guid: '0336397b-e29d-4b63-b94d-7e68a6fa3747',
-      isActive: false,
-      picture: 'http://placehold.it/32x32',
-      age: 30,
-      name: {
-        first: 'Francine',
-        last: 'Oconnor',
-      },
-      company: 'ACME',
-      email: 'francine.oconnor@ac.me',
-      latitude: 31.230416,
-      longitude: 121.473701,
-      favoriteFruit: 'banana',
-    },
-    body: {},
-    cookies: {},
-    query: {},
-    params: {
-      bucket: 'photography',
-    },
-    header(name) {
-      return {
-        Authorization: 'Bearer TEST_TOKEN',
-      }[name]
-    },
-  }
-  const res = {
-    clearCookie: jest.fn(),
-    cookie: jest.fn(),
-    end: jest.fn(),
-    locals: {
-      content: {},
-    },
-    json: jest.fn(),
-    send: jest.fn(),
-    sendStatus: jest.fn(),
-    set: jest.fn(),
-  }
-  const next = jest.fn()
+	const req = {
+		locale: {
+			source: 'default',
+			language: 'en',
+			region: 'GB',
+		},
+		user: {
+			guid: '0336397b-e29d-4b63-b94d-7e68a6fa3747',
+			isActive: false,
+			picture: 'http://placehold.it/32x32',
+			age: 30,
+			name: {
+				first: 'Francine',
+				last: 'Oconnor',
+			},
+			company: 'ACME',
+			email: 'francine.oconnor@ac.me',
+			latitude: 31.230416,
+			longitude: 121.473701,
+			favoriteFruit: 'banana',
+		},
+		body: {},
+		cookies: {},
+		query: {},
+		params: {
+			bucket: 'photography',
+		},
+		header(name) {
+			return {
+				Authorization: 'Bearer TEST_TOKEN',
+			}[name]
+		},
+	}
+	const res = {
+		clearCookie: jest.fn(),
+		cookie: jest.fn(),
+		end: jest.fn(),
+		locals: {
+			content: {},
+		},
+		json: jest.fn(),
+		send: jest.fn(),
+		sendStatus: jest.fn(),
+		set: jest.fn(),
+	}
+	const next = jest.fn()
 
-  await blogPostController.loadBlogPosts(req, res, next)
+	await blogPostController.loadBlogPosts(req, res, next)
 
-  expect(res.json).toHaveBeenCalledTimes(1)
-  expect(res.json).toHaveBeenCalledWith({
-    posts: [],
-  })
+	expect(res.json).toHaveBeenCalledTimes(1)
+	expect(res.json).toHaveBeenCalledWith({
+		posts: [],
+	})
 })
 ```
 
@@ -204,8 +204,8 @@ I've seen it a lot. Here's how it gets this way:
 Here's your litmus test:
 
 <callout-success class="important">
-  How easy is it to determine the difference between assertions of two similar
-  tests and what causes that difference?
+	How easy is it to determine the difference between assertions of two similar
+	tests and what causes that difference?
 </callout-success>
 
 Absolutely No Abstraction testing makes this very difficult.
@@ -243,86 +243,86 @@ import * as blogPostController from '../blog-post'
 jest.mock('../../lib/db')
 
 function setup(overrides = {}) {
-  const req = {
-    locale: {
-      source: 'default',
-      language: 'en',
-      region: 'GB',
-    },
-    user: {
-      guid: '0336397b-e29d-4b63-b94d-7e68a6fa3747',
-      isActive: false,
-      picture: 'http://placehold.it/32x32',
-      age: 30,
-      name: {
-        first: 'Francine',
-        last: 'Oconnor',
-      },
-      company: 'ACME',
-      email: 'francine.oconnor@ac.me',
-      latitude: 51.507351,
-      longitude: -0.127758,
-      favoriteFruit: 'banana',
-    },
-    body: {},
-    cookies: {},
-    query: {},
-    params: {
-      bucket: 'photography',
-    },
-    header(name) {
-      return {
-        Authorization: 'Bearer TEST_TOKEN',
-      }[name]
-    },
-    ...overrides,
-  }
+	const req = {
+		locale: {
+			source: 'default',
+			language: 'en',
+			region: 'GB',
+		},
+		user: {
+			guid: '0336397b-e29d-4b63-b94d-7e68a6fa3747',
+			isActive: false,
+			picture: 'http://placehold.it/32x32',
+			age: 30,
+			name: {
+				first: 'Francine',
+				last: 'Oconnor',
+			},
+			company: 'ACME',
+			email: 'francine.oconnor@ac.me',
+			latitude: 51.507351,
+			longitude: -0.127758,
+			favoriteFruit: 'banana',
+		},
+		body: {},
+		cookies: {},
+		query: {},
+		params: {
+			bucket: 'photography',
+		},
+		header(name) {
+			return {
+				Authorization: 'Bearer TEST_TOKEN',
+			}[name]
+		},
+		...overrides,
+	}
 
-  const res = {
-    clearCookie: jest.fn(),
-    cookie: jest.fn(),
-    end: jest.fn(),
-    locals: {
-      content: {},
-    },
-    json: jest.fn(),
-    send: jest.fn(),
-    sendStatus: jest.fn(),
-    set: jest.fn(),
-  }
-  const next = jest.fn()
+	const res = {
+		clearCookie: jest.fn(),
+		cookie: jest.fn(),
+		end: jest.fn(),
+		locals: {
+			content: {},
+		},
+		json: jest.fn(),
+		send: jest.fn(),
+		sendStatus: jest.fn(),
+		set: jest.fn(),
+	}
+	const next = jest.fn()
 
-  return {req, res, next}
+	return { req, res, next }
 }
 
 test('lists blog posts for the logged in user', async () => {
-  const {req, res, next} = setup()
+	const { req, res, next } = setup()
 
-  await blogPostController.loadBlogPosts(req, res, next)
+	await blogPostController.loadBlogPosts(req, res, next)
 
-  expect(res.json).toHaveBeenCalledTimes(1)
-  expect(res.json).toHaveBeenCalledWith({
-    posts: expect.arrayContaining([
-      expect.objectContaining({
-        title: 'Test Post 1',
-        subtitle: 'This is the subtitle of Test Post 1',
-        body: 'The is the body of Test Post 1',
-      }),
-    ]),
-  })
+	expect(res.json).toHaveBeenCalledTimes(1)
+	expect(res.json).toHaveBeenCalledWith({
+		posts: expect.arrayContaining([
+			expect.objectContaining({
+				title: 'Test Post 1',
+				subtitle: 'This is the subtitle of Test Post 1',
+				body: 'The is the body of Test Post 1',
+			}),
+		]),
+	})
 })
 
 test('returns an empty list when there are no blog posts', async () => {
-  const {req, res, next} = setup()
-  req.user.latitude = 31.230416
-  req.user.longitude = 121.473701
+	const { req, res, next } = setup()
+	req.user.latitude = 31.230416
+	req.user.longitude = 121.473701
 
-  await blogPostController.loadBlogPosts(req, res, next)
+	await blogPostController.loadBlogPosts(req, res, next)
 
-  expect(res.json).toHaveBeenCalledTimes(1)
-  expect(res.json).toHaveBeenCalledWith({
-    posts: [],
-  })
+	expect(res.json).toHaveBeenCalledTimes(1)
+	expect(res.json).toHaveBeenCalledWith({
+		posts: [],
+	})
 })
 ```
 
@@ -343,45 +343,45 @@ the `setup` function here. Here's a simple example:
 
 ```tsx
 import * as React from 'react'
-import {render, screen} from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import LoginForm from '../login-form'
 
 function renderLoginForm(props) {
-  render(<LoginForm {...props} />)
-  const usernameInput = screen.getByLabelText(/username/i)
-  const passwordInput = screen.getByLabelText(/password/i)
-  const submitButton = screen.getByText(/submit/i)
-  return {
-    usernameInput,
-    passwordInput,
-    submitButton,
-    changeUsername: value => userEvent.type(usernameInput, value),
-    changePassword: value => userEvent.type(passwordInput, value),
-    submitForm: () => userEvent.click(submitButton),
-  }
+	render(<LoginForm {...props} />)
+	const usernameInput = screen.getByLabelText(/username/i)
+	const passwordInput = screen.getByLabelText(/password/i)
+	const submitButton = screen.getByText(/submit/i)
+	return {
+		usernameInput,
+		passwordInput,
+		submitButton,
+		changeUsername: value => userEvent.type(usernameInput, value),
+		changePassword: value => userEvent.type(passwordInput, value),
+		submitForm: () => userEvent.click(submitButton),
+	}
 }
 
 test('submit calls the submit handler', () => {
-  const handleSubmit = jest.fn()
-  const {changeUsername, changePassword, submitForm} = renderLoginForm({
-    onSubmit: handleSubmit,
-  })
-  const username = 'chucknorris'
-  const password = 'ineednopassword'
-  changeUsername(username)
-  changePassword(password)
-  submitForm()
-  expect(handleSubmit).toHaveBeenCalledTimes(1)
-  expect(handleSubmit).toHaveBeenCalledWith({username, password})
+	const handleSubmit = jest.fn()
+	const { changeUsername, changePassword, submitForm } = renderLoginForm({
+		onSubmit: handleSubmit,
+	})
+	const username = 'chucknorris'
+	const password = 'ineednopassword'
+	changeUsername(username)
+	changePassword(password)
+	submitForm()
+	expect(handleSubmit).toHaveBeenCalledTimes(1)
+	expect(handleSubmit).toHaveBeenCalledWith({ username, password })
 })
 ```
 
 <callout-warning>
-  Note: I would consider this pre-mature abstraction if you've only got two or
-  three tests in the file that is using it and those tests are short. But if
-  you've got some nuance you're testing (like error states for example), then
-  this kind of abstraction is great.
+	Note: I would consider this pre-mature abstraction if you've only got two or
+	three tests in the file that is using it and those tests are short. But if
+	you've got some nuance you're testing (like error states for example), then
+	this kind of abstraction is great.
 </callout-warning>
 
 ## Nesting
@@ -401,15 +401,15 @@ For (contrived) example:
 import add from '../add'
 
 test('adds one and two to equal three', () => {
-  expect(add(1, 2)).toBe(3)
+	expect(add(1, 2)).toBe(3)
 })
 
 test('adds three and four to equal seven', () => {
-  expect(add(3, 4)).toBe(7)
+	expect(add(3, 4)).toBe(7)
 })
 
 test('adds one hundred and two to equal one hundred two', () => {
-  expect(add(100, 2)).toBe(102)
+	expect(add(100, 2)).toBe(102)
 })
 ```
 
@@ -420,15 +420,15 @@ import cases from 'jest-in-case'
 import add from '../add'
 
 cases(
-  'add',
-  ({first, second, result}) => {
-    expect(add(first, second)).toBe(result)
-  },
-  [
-    {first: 1, second: 2, result: 3},
-    {first: 3, second: 4, result: 7},
-    {first: 100, second: 2, result: 102},
-  ],
+	'add',
+	({ first, second, result }) => {
+		expect(add(first, second)).toBe(result)
+	},
+	[
+		{ first: 1, second: 2, result: 3 },
+		{ first: 3, second: 4, result: 7 },
+		{ first: 100, second: 2, result: 102 },
+	],
 )
 ```
 

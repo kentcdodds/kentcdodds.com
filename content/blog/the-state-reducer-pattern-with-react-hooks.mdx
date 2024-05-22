@@ -26,11 +26,11 @@ API for people who wanted to make changes to how downshift updates state
 internally.
 
 <callout-info class="aside">
-  If you're unfamiliar with downshift, just know that it's an "enhanced input"
-  component that allows you to build things like accessible
-  autocomplete/typeahead/dropdown components. It's important to know that it
-  manages the following items of state: `isOpen`, `selectedItem`,
-  `highlightedIndex`, and `inputValue`.
+	If you're unfamiliar with downshift, just know that it's an "enhanced input"
+	component that allows you to build things like accessible
+	autocomplete/typeahead/dropdown components. It's important to know that it
+	manages the following items of state: `isOpen`, `selectedItem`,
+	`highlightedIndex`, and `inputValue`.
 </callout-info>
 
 Downshift is currently implemented as a render prop component, because at the
@@ -56,7 +56,7 @@ this, I strongly recommend you give my React Rally 2018 talk a watch:
 https://youtu.be/AiJ8tRRH0f8?list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
 
 <callout-info class="aside">
-  Read also on my blog: ["Inversion of Control"](/blog/inversion-of-control)
+	Read also on my blog: ["Inversion of Control"](/blog/inversion-of-control)
 </callout-info>
 
 So in the downshift example, I had made the decision that when an end user
@@ -91,29 +91,29 @@ it's applied to complex hooks and components (like downshift).
 
 ```tsx
 function useToggle() {
-  const [on, setOnState] = React.useState(false)
+	const [on, setOnState] = React.useState(false)
 
-  const toggle = () => setOnState(o => !o)
-  const setOn = () => setOnState(true)
-  const setOff = () => setOnState(false)
+	const toggle = () => setOnState(o => !o)
+	const setOn = () => setOnState(true)
+	const setOff = () => setOnState(false)
 
-  return {on, toggle, setOn, setOff}
+	return { on, toggle, setOn, setOff }
 }
 
 function Toggle() {
-  const {on, toggle, setOn, setOff} = useToggle()
+	const { on, toggle, setOn, setOff } = useToggle()
 
-  return (
-    <div>
-      <button onClick={setOff}>Switch Off</button>
-      <button onClick={setOn}>Switch On</button>
-      <Switch on={on} onClick={toggle} />
-    </div>
-  )
+	return (
+		<div>
+			<button onClick={setOff}>Switch Off</button>
+			<button onClick={setOn}>Switch On</button>
+			<Switch on={on} onClick={toggle} />
+		</div>
+	)
 }
 
 function App() {
-  return <Toggle />
+	return <Toggle />
 }
 
 ReactDOM.render(<App />, document.getElementById('root'))
@@ -125,26 +125,26 @@ couldn't click the `<Switch />` more than 4 times in a row unless they click a
 
 ```tsx lines=2-3,7-10,16-19
 function Toggle() {
-  const [clicksSinceReset, setClicksSinceReset] = React.useState(0)
-  const tooManyClicks = clicksSinceReset >= 4
+	const [clicksSinceReset, setClicksSinceReset] = React.useState(0)
+	const tooManyClicks = clicksSinceReset >= 4
 
-  const {on, toggle, setOn, setOff} = useToggle()
+	const { on, toggle, setOn, setOff } = useToggle()
 
-  function handleClick() {
-    toggle()
-    setClicksSinceReset(count => count + 1)
-  }
+	function handleClick() {
+		toggle()
+		setClicksSinceReset(count => count + 1)
+	}
 
-  return (
-    <div>
-      <button onClick={setOff}>Switch Off</button>
-      <button onClick={setOn}>Switch On</button>
-      <Switch on={on} onClick={handleClick} />
-      {tooManyClicks ? (
-        <button onClick={() => setClicksSinceReset(0)}>Reset</button>
-      ) : null}
-    </div>
-  )
+	return (
+		<div>
+			<button onClick={setOff}>Switch Off</button>
+			<button onClick={setOn}>Switch On</button>
+			<Switch on={on} onClick={handleClick} />
+			{tooManyClicks ? (
+				<button onClick={() => setClicksSinceReset(0)}>Reset</button>
+			) : null}
+		</div>
+	)
 }
 ```
 
@@ -159,36 +159,36 @@ modify it, like so:
 
 ```tsx lines=6-14
 function Toggle() {
-  const [clicksSinceReset, setClicksSinceReset] = React.useState(0)
-  const tooManyClicks = clicksSinceReset >= 4
+	const [clicksSinceReset, setClicksSinceReset] = React.useState(0)
+	const tooManyClicks = clicksSinceReset >= 4
 
-  const {on, toggle, setOn, setOff} = useToggle({
-    modifyStateChange(currentState, changes) {
-      if (tooManyClicks) {
-        // other changes are fine, but on needs to be unchanged
-        return {...changes, on: currentState.on}
-      } else {
-        // the changes are fine
-        return changes
-      }
-    },
-  })
+	const { on, toggle, setOn, setOff } = useToggle({
+		modifyStateChange(currentState, changes) {
+			if (tooManyClicks) {
+				// other changes are fine, but on needs to be unchanged
+				return { ...changes, on: currentState.on }
+			} else {
+				// the changes are fine
+				return changes
+			}
+		},
+	})
 
-  function handleClick() {
-    toggle()
-    setClicksSinceReset(count => count + 1)
-  }
+	function handleClick() {
+		toggle()
+		setClicksSinceReset(count => count + 1)
+	}
 
-  return (
-    <div>
-      <button onClick={setOff}>Switch Off</button>
-      <button onClick={setOn}>Switch On</button>
-      <Switch on={on} onClick={handleClick} />
-      {tooManyClicks ? (
-        <button onClick={() => setClicksSinceReset(0)}>Reset</button>
-      ) : null}
-    </div>
-  )
+	return (
+		<div>
+			<button onClick={setOff}>Switch Off</button>
+			<button onClick={setOn}>Switch On</button>
+			<Switch on={on} onClick={handleClick} />
+			{tooManyClicks ? (
+				<button onClick={() => setClicksSinceReset(0)}>Reset</button>
+			) : null}
+		</div>
+	)
 }
 ```
 
@@ -204,37 +204,37 @@ hook. We'll just say that the `type` for clicking the switch is `TOGGLE`.
 
 ```tsx lines=6-8
 function Toggle() {
-  const [clicksSinceReset, setClicksSinceReset] = React.useState(0)
-  const tooManyClicks = clicksSinceReset >= 4
+	const [clicksSinceReset, setClicksSinceReset] = React.useState(0)
+	const tooManyClicks = clicksSinceReset >= 4
 
-  const {on, toggle, setOn, setOff} = useToggle({
-    reducer(currentState, action) {
-      const changes = toggleReducer(currentState, action)
-      if (tooManyClicks && action.type === 'TOGGLE') {
-        // other changes are fine, but on needs to be unchanged
-        return {...changes, on: currentState.on}
-      } else {
-        // the changes are fine
-        return changes
-      }
-    },
-  })
+	const { on, toggle, setOn, setOff } = useToggle({
+		reducer(currentState, action) {
+			const changes = toggleReducer(currentState, action)
+			if (tooManyClicks && action.type === 'TOGGLE') {
+				// other changes are fine, but on needs to be unchanged
+				return { ...changes, on: currentState.on }
+			} else {
+				// the changes are fine
+				return changes
+			}
+		},
+	})
 
-  function handleClick() {
-    toggle()
-    setClicksSinceReset(count => count + 1)
-  }
+	function handleClick() {
+		toggle()
+		setClicksSinceReset(count => count + 1)
+	}
 
-  return (
-    <div>
-      <button onClick={setOff}>Switch Off</button>
-      <button onClick={setOn}>Switch On</button>
-      <Switch on={on} onClick={handleClick} />
-      {tooManyClicks ? (
-        <button onClick={() => setClicksSinceReset(0)}>Reset</button>
-      ) : null}
-    </div>
-  )
+	return (
+		<div>
+			<button onClick={setOff}>Switch Off</button>
+			<button onClick={setOn}>Switch On</button>
+			<Switch on={on} onClick={handleClick} />
+			{tooManyClicks ? (
+				<button onClick={() => setClicksSinceReset(0)}>Reset</button>
+			) : null}
+		</div>
+	)
 }
 ```
 
@@ -245,37 +245,37 @@ improve editor autocompletion (for folks not using TypeScript):
 
 ```tsx lines=8
 function Toggle() {
-  const [clicksSinceReset, setClicksSinceReset] = React.useState(0)
-  const tooManyClicks = clicksSinceReset >= 4
+	const [clicksSinceReset, setClicksSinceReset] = React.useState(0)
+	const tooManyClicks = clicksSinceReset >= 4
 
-  const {on, toggle, setOn, setOff} = useToggle({
-    reducer(currentState, action) {
-      const changes = toggleReducer(currenState, action)
-      if (tooManyClicks && action.type === actionTypes.toggle) {
-        // other changes are fine, but on needs to be unchanged
-        return {...changes, on: currentState.on}
-      } else {
-        // the changes are fine
-        return changes
-      }
-    },
-  })
+	const { on, toggle, setOn, setOff } = useToggle({
+		reducer(currentState, action) {
+			const changes = toggleReducer(currenState, action)
+			if (tooManyClicks && action.type === actionTypes.toggle) {
+				// other changes are fine, but on needs to be unchanged
+				return { ...changes, on: currentState.on }
+			} else {
+				// the changes are fine
+				return changes
+			}
+		},
+	})
 
-  function handleClick() {
-    toggle()
-    setClicksSinceReset(count => count + 1)
-  }
+	function handleClick() {
+		toggle()
+		setClicksSinceReset(count => count + 1)
+	}
 
-  return (
-    <div>
-      <button onClick={setOff}>Switch Off</button>
-      <button onClick={setOn}>Switch On</button>
-      <Switch on={on} onClick={handleClick} />
-      {tooManyClicks ? (
-        <button onClick={() => setClicksSinceReset(0)}>Reset</button>
-      ) : null}
-    </div>
-  )
+	return (
+		<div>
+			<button onClick={setOff}>Switch Off</button>
+			<button onClick={setOn}>Switch On</button>
+			<Switch on={on} onClick={handleClick} />
+			{tooManyClicks ? (
+				<button onClick={() => setClicksSinceReset(0)}>Reset</button>
+			) : null}
+		</div>
+	)
 }
 ```
 
@@ -287,13 +287,13 @@ code for that:
 
 ```tsx
 function useToggle() {
-  const [on, setOnState] = React.useState(false)
+	const [on, setOnState] = React.useState(false)
 
-  const toggle = () => setOnState(o => !o)
-  const setOn = () => setOnState(true)
-  const setOff = () => setOnState(false)
+	const toggle = () => setOnState(o => !o)
+	const setOn = () => setOnState(true)
+	const setOff = () => setOnState(false)
 
-  return {on, toggle, setOn, setOff}
+	return { on, toggle, setOn, setOff }
 }
 ```
 
@@ -304,30 +304,30 @@ simple hook. Instead, we're going to rewrite this from `useState` to
 
 ```tsx
 function toggleReducer(state, action) {
-  switch (action.type) {
-    case 'TOGGLE': {
-      return {on: !state.on}
-    }
-    case 'ON': {
-      return {on: true}
-    }
-    case 'OFF': {
-      return {on: false}
-    }
-    default: {
-      throw new Error(`Unhandled type: ${action.type}`)
-    }
-  }
+	switch (action.type) {
+		case 'TOGGLE': {
+			return { on: !state.on }
+		}
+		case 'ON': {
+			return { on: true }
+		}
+		case 'OFF': {
+			return { on: false }
+		}
+		default: {
+			throw new Error(`Unhandled type: ${action.type}`)
+		}
+	}
 }
 
 function useToggle() {
-  const [{on}, dispatch] = React.useReducer(toggleReducer, {on: false})
+	const [{ on }, dispatch] = React.useReducer(toggleReducer, { on: false })
 
-  const toggle = () => dispatch({type: 'TOGGLE'})
-  const setOn = () => dispatch({type: 'ON'})
-  const setOff = () => dispatch({type: 'OFF'})
+	const toggle = () => dispatch({ type: 'TOGGLE' })
+	const setOn = () => dispatch({ type: 'ON' })
+	const setOff = () => dispatch({ type: 'OFF' })
 
-  return {on, toggle, setOn, setOff}
+	return { on, toggle, setOn, setOff }
 }
 ```
 
@@ -337,52 +337,52 @@ reference them:
 
 ```tsx lines=1-5,8,11,14,26-28,33
 const actionTypes = {
-  toggle: 'TOGGLE',
-  on: 'ON',
-  off: 'OFF',
+	toggle: 'TOGGLE',
+	on: 'ON',
+	off: 'OFF',
 }
 function toggleReducer(state, action) {
-  switch (action.type) {
-    case actionTypes.toggle: {
-      return {on: !state.on}
-    }
-    case actionTypes.on: {
-      return {on: true}
-    }
-    case actionTypes.off: {
-      return {on: false}
-    }
-    default: {
-      throw new Error(`Unhandled type: ${action.type}`)
-    }
-  }
+	switch (action.type) {
+		case actionTypes.toggle: {
+			return { on: !state.on }
+		}
+		case actionTypes.on: {
+			return { on: true }
+		}
+		case actionTypes.off: {
+			return { on: false }
+		}
+		default: {
+			throw new Error(`Unhandled type: ${action.type}`)
+		}
+	}
 }
 
 function useToggle() {
-  const [{on}, dispatch] = React.useReducer(toggleReducer, {on: false})
+	const [{ on }, dispatch] = React.useReducer(toggleReducer, { on: false })
 
-  const toggle = () => dispatch({type: actionTypes.toggle})
-  const setOn = () => dispatch({type: actionTypes.on})
-  const setOff = () => dispatch({type: actionTypes.off})
+	const toggle = () => dispatch({ type: actionTypes.toggle })
+	const setOn = () => dispatch({ type: actionTypes.on })
+	const setOff = () => dispatch({ type: actionTypes.off })
 
-  return {on, toggle, setOn, setOff}
+	return { on, toggle, setOn, setOff }
 }
 
-export {useToggle, actionTypes}
+export { useToggle, actionTypes }
 ```
 
 Cool, so now, users are going to pass `reducer` as a configuration object to our
 `useToggle` function, so let's accept that:
 
 ```tsx lines=1
-function useToggle({reducer}) {
-  const [{on}, dispatch] = React.useReducer(toggleReducer, {on: false})
+function useToggle({ reducer }) {
+	const [{ on }, dispatch] = React.useReducer(toggleReducer, { on: false })
 
-  const toggle = () => dispatch({type: actionTypes.toggle})
-  const setOn = () => dispatch({type: actionTypes.on})
-  const setOff = () => dispatch({type: actionTypes.off})
+	const toggle = () => dispatch({ type: actionTypes.toggle })
+	const setOn = () => dispatch({ type: actionTypes.on })
+	const setOff = () => dispatch({ type: actionTypes.off })
 
-  return {on, toggle, setOn, setOff}
+	return { on, toggle, setOn, setOff }
 }
 ```
 
@@ -393,17 +393,17 @@ reducer and they can use it themselves if they want to, so let's export it, and
 then we'll use the `reducer` they give us instead of our own:
 
 ```tsx lines=2, 11
-function useToggle({reducer}) {
-  const [{on}, dispatch] = React.useReducer(reducer, {on: false})
+function useToggle({ reducer }) {
+	const [{ on }, dispatch] = React.useReducer(reducer, { on: false })
 
-  const toggle = () => dispatch({type: actionTypes.toggle})
-  const setOn = () => dispatch({type: actionTypes.on})
-  const setOff = () => dispatch({type: actionTypes.off})
+	const toggle = () => dispatch({ type: actionTypes.toggle })
+	const setOn = () => dispatch({ type: actionTypes.on })
+	const setOff = () => dispatch({ type: actionTypes.off })
 
-  return {on, toggle, setOn, setOff}
+	return { on, toggle, setOn, setOff }
 }
 
-export {useToggle, actionTypes, toggleReducer}
+export { useToggle, actionTypes, toggleReducer }
 ```
 
 Great, but now everyone using our component has to provide a reducer which is
@@ -412,17 +412,17 @@ _do_ want control, but for the more common case, they shouldn't have to do
 anything special, so let's add some defaults:
 
 ```tsx lines=1
-function useToggle({reducer = toggleReducer} = {}) {
-  const [{on}, dispatch] = React.useReducer(reducer, {on: false})
+function useToggle({ reducer = toggleReducer } = {}) {
+	const [{ on }, dispatch] = React.useReducer(reducer, { on: false })
 
-  const toggle = () => dispatch({type: actionTypes.toggle})
-  const setOn = () => dispatch({type: actionTypes.on})
-  const setOff = () => dispatch({type: actionTypes.off})
+	const toggle = () => dispatch({ type: actionTypes.toggle })
+	const setOn = () => dispatch({ type: actionTypes.on })
+	const setOff = () => dispatch({ type: actionTypes.off })
 
-  return {on, toggle, setOn, setOff}
+	return { on, toggle, setOn, setOff }
 }
 
-export {useToggle, actionTypes, toggleReducer}
+export { useToggle, actionTypes, toggleReducer }
 ```
 
 Sweet, so now people can use our `useToggle` hook with their own reducer or they
@@ -438,77 +438,77 @@ import ReactDOM from 'react-dom'
 import Switch from './switch'
 
 const actionTypes = {
-  toggle: 'TOGGLE',
-  on: 'ON',
-  off: 'OFF',
+	toggle: 'TOGGLE',
+	on: 'ON',
+	off: 'OFF',
 }
 
 function toggleReducer(state, action) {
-  switch (action.type) {
-    case actionTypes.toggle: {
-      return {on: !state.on}
-    }
-    case actionTypes.on: {
-      return {on: true}
-    }
-    case actionTypes.off: {
-      return {on: false}
-    }
-    default: {
-      throw new Error(`Unhandled type: ${action.type}`)
-    }
-  }
+	switch (action.type) {
+		case actionTypes.toggle: {
+			return { on: !state.on }
+		}
+		case actionTypes.on: {
+			return { on: true }
+		}
+		case actionTypes.off: {
+			return { on: false }
+		}
+		default: {
+			throw new Error(`Unhandled type: ${action.type}`)
+		}
+	}
 }
 
-function useToggle({reducer = toggleReducer} = {}) {
-  const [{on}, dispatch] = React.useReducer(reducer, {on: false})
+function useToggle({ reducer = toggleReducer } = {}) {
+	const [{ on }, dispatch] = React.useReducer(reducer, { on: false })
 
-  const toggle = () => dispatch({type: actionTypes.toggle})
-  const setOn = () => dispatch({type: actionTypes.on})
-  const setOff = () => dispatch({type: actionTypes.off})
+	const toggle = () => dispatch({ type: actionTypes.toggle })
+	const setOn = () => dispatch({ type: actionTypes.on })
+	const setOff = () => dispatch({ type: actionTypes.off })
 
-  return {on, toggle, setOn, setOff}
+	return { on, toggle, setOn, setOff }
 }
 
 // export {useToggle, actionTypes, toggleReducer}
 
 function Toggle() {
-  const [clicksSinceReset, setClicksSinceReset] = React.useState(0)
-  const tooManyClicks = clicksSinceReset >= 4
+	const [clicksSinceReset, setClicksSinceReset] = React.useState(0)
+	const tooManyClicks = clicksSinceReset >= 4
 
-  const {on, toggle, setOn, setOff} = useToggle({
-    reducer(currentState, action) {
-      const changes = toggleReducer(currentState, action)
-      if (tooManyClicks && action.type === actionTypes.toggle) {
-        // other changes are fine, but on needs to be unchanged
-        return {...changes, on: currentState.on}
-      } else {
-        // the changes are fine
-        return changes
-      }
-    },
-  })
+	const { on, toggle, setOn, setOff } = useToggle({
+		reducer(currentState, action) {
+			const changes = toggleReducer(currentState, action)
+			if (tooManyClicks && action.type === actionTypes.toggle) {
+				// other changes are fine, but on needs to be unchanged
+				return { ...changes, on: currentState.on }
+			} else {
+				// the changes are fine
+				return changes
+			}
+		},
+	})
 
-  return (
-    <div>
-      <button onClick={setOff}>Switch Off</button>
-      <button onClick={setOn}>Switch On</button>
-      <Switch
-        onClick={() => {
-          toggle()
-          setClicksSinceReset(count => count + 1)
-        }}
-        on={on}
-      />
-      {tooManyClicks ? (
-        <button onClick={() => setClicksSinceReset(0)}>Reset</button>
-      ) : null}
-    </div>
-  )
+	return (
+		<div>
+			<button onClick={setOff}>Switch Off</button>
+			<button onClick={setOn}>Switch On</button>
+			<Switch
+				onClick={() => {
+					toggle()
+					setClicksSinceReset(count => count + 1)
+				}}
+				on={on}
+			/>
+			{tooManyClicks ? (
+				<button onClick={() => setClicksSinceReset(0)}>Reset</button>
+			) : null}
+		</div>
+	)
 }
 
 function App() {
-  return <Toggle />
+	return <Toggle />
 }
 
 ReactDOM.render(<App />, document.getElementById('root'))

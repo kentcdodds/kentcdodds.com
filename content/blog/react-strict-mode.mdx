@@ -16,11 +16,11 @@ Here's how to start using it in your app today:
 
 ```tsx remove=2 add=3-5
 ReactDOM.render(
-  <App />,
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root'),
+	<App />,
+	<React.StrictMode>
+		<App />
+	</React.StrictMode>,
+	document.getElementById('root'),
 )
 ```
 
@@ -179,10 +179,10 @@ make it much easier for you to upgrade to concurrent react bug-free when it
 comes along.
 
 <callout-info class="aside">
-  That said, don't freak out if you have a ton of warnings in your app. Your
-  code will continue to work in the future. There's also an `UNSAFE_` prefix for
-  those lifecycle methods you can use to silence the warning if you need. React
-  wont leave you in the dust here.
+	That said, don't freak out if you have a ton of warnings in your app. Your
+	code will continue to work in the future. There's also an `UNSAFE_` prefix for
+	those lifecycle methods you can use to silence the warning if you need. React
+	wont leave you in the dust here.
 </callout-info>
 
 ## It runs code TWICE
@@ -199,9 +199,9 @@ run twice in Strict Mode (in DEV mode ONLY):
 - The `React.useMemo` callback
 
 <callout-info>
-  Checkout [this codesandbox](https://codesandbox.io/s/xvv55893mp) which logs to
-  the console in hook callbacks and class methods to show you that certain
-  things happen twice.
+	Checkout [this codesandbox](https://codesandbox.io/s/xvv55893mp) which logs to
+	the console in hook callbacks and class methods to show you that certain
+	things happen twice.
 </callout-info>
 
 React does this because it cannot reliably warn you against side-effects you do
@@ -238,15 +238,15 @@ app:
 
 ```tsx
 function App() {
-  return (
-    <div>
-      <OldPartOfTheApp />
-      <React.StrictMode>
-        <SomeNewFeature />
-      </React.StrictMode>
-      <AnotherOlderPartOfTheApp />
-    </div>
-  )
+	return (
+		<div>
+			<OldPartOfTheApp />
+			<React.StrictMode>
+				<SomeNewFeature />
+			</React.StrictMode>
+			<AnotherOlderPartOfTheApp />
+		</div>
+	)
 }
 ```
 
@@ -259,6 +259,6 @@ I hope that doing this will help you catch bugs in your React codebases!
 See you around 💯
 
 <callout-info>
-  Read more about Strict Mode from [the react
-  docs](https://reactjs.org/docs/strict-mode.html)
+	Read more about Strict Mode from [the react
+	docs](https://reactjs.org/docs/strict-mode.html)
 </callout-info>

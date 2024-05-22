@@ -58,12 +58,12 @@ by another and then another. **You don't need any tools to write a simple
 test.** Here's an example:
 
 ```js
-const {sum} = require('../math')
+const { sum } = require('../math')
 
 const result = sum(3, 7)
 const expected = 10
 if (result !== expected) {
-  throw new Error(`${result} is not equal to ${expected}`)
+	throw new Error(`${result} is not equal to ${expected}`)
 }
 ```
 

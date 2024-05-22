@@ -30,26 +30,26 @@ Let's start in the `package.json`. Here are the relevant bits:
 
 ```json
 {
-  "main": "index.js",
-  "engines": {
-    "node": "12.18.2"
-  },
-  "dependencies": {
-    "express": "^4.17.1",
-    "express-async-errors": "^3.1.1",
-    "loglevel": "^1.6.8"
-  },
-  "devDependencies": {
-    "@babel/cli": "^7.10.4",
-    "@babel/core": "^7.10.4",
-    "@babel/preset-env": "^7.10.4",
-    "@babel/register": "^7.10.4",
-    "nodemon": "^2.0.4"
-  },
-  "scripts": {
-    "start": "node .",
-    "build": "babel --delete-dir-on-start --out-dir dist --copy-files --ignore \"**/__tests__/**,**/__mocks__/**\" --no-copy-ignored src"
-  }
+	"main": "index.js",
+	"engines": {
+		"node": "12.18.2"
+	},
+	"dependencies": {
+		"express": "^4.17.1",
+		"express-async-errors": "^3.1.1",
+		"loglevel": "^1.6.8"
+	},
+	"devDependencies": {
+		"@babel/cli": "^7.10.4",
+		"@babel/core": "^7.10.4",
+		"@babel/preset-env": "^7.10.4",
+		"@babel/register": "^7.10.4",
+		"nodemon": "^2.0.4"
+	},
+	"scripts": {
+		"start": "node .",
+		"build": "babel --delete-dir-on-start --out-dir dist --copy-files --ignore \"**/__tests__/**,**/__mocks__/**\" --no-copy-ignored src"
+	}
 }
 ```
 
@@ -129,16 +129,16 @@ Here's what the `.babelrc.js` looks like:
 const pkg = require('./package.json')
 
 module.exports = {
-  presets: [
-    [
-      '@babel/preset-env',
-      {
-        targets: {
-          node: pkg.engines.node,
-        },
-      },
-    ],
-  ],
+	presets: [
+		[
+			'@babel/preset-env',
+			{
+				targets: {
+					node: pkg.engines.node,
+				},
+			},
+		],
+	],
 }
 ```
 
@@ -155,9 +155,9 @@ Here's our entry file for the module (this is the `main` from `package.json`):
 
 ```js
 if (process.env.NODE_ENV === 'production') {
-  require('./dist')
+	require('./dist')
 } else {
-  require('nodemon')({script: 'dev.js'})
+	require('nodemon')({ script: 'dev.js' })
 }
 ```
 
@@ -194,7 +194,7 @@ This file is pretty simple:
 
 ```js
 import logger from 'loglevel'
-import {startServer} from './start'
+import { startServer } from './start'
 
 logger.setLevel('info')
 
@@ -220,101 +220,103 @@ import 'express-async-errors'
 import logger from 'loglevel'
 
 // all the routes for my app are retrieved from the src/routes/index.js module
-import {getRoutes} from './routes'
+import { getRoutes } from './routes'
 
-function startServer({port = process.env.PORT} = {}) {
-  const app = express()
+function startServer({ port = process.env.PORT } = {}) {
+	const app = express()
 
-  // I mount my entire app to the /api route (or you could just do "/" if you want)
-  app.use('/api', getRoutes())
+	// I mount my entire app to the /api route (or you could just do "/" if you want)
+	app.use('/api', getRoutes())
 
-  // add the generic error handler just in case errors are missed by middleware
-  app.use(errorMiddleware)
+	// add the generic error handler just in case errors are missed by middleware
+	app.use(errorMiddleware)
 
-  // I prefer dealing with promises. It makes testing easier, among other things.
-  // So this block of code allows me to start the express app and resolve the
-  // promise with the express server
-  return new Promise(resolve => {
-    const server = app.listen(port, () => {
-      logger.info(`Listening on port ${server.address().port}`)
+	// I prefer dealing with promises. It makes testing easier, among other things.
+	// So this block of code allows me to start the express app and resolve the
+	// promise with the express server
+	return new Promise(resolve => {
+		const server = app.listen(port, () => {
+			logger.info(`Listening on port ${server.address().port}`)
 
-      // this block of code turns `server.close` into a promise API
-      const originalClose = server.close.bind(server)
-      server.close = () => {
-        return new Promise(resolveClose => {
-          originalClose(resolveClose)
-        })
-      }
+			// this block of code turns `server.close` into a promise API
+			const originalClose = server.close.bind(server)
+			server.close = () => {
+				return new Promise(resolveClose => {
+					originalClose(resolveClose)
+				})
+			}
 
-      // this ensures that we properly close the server when the program exists
-      setupCloseOnExit(server)
+			// this ensures that we properly close the server when the program exists
+			setupCloseOnExit(server)
 
-      // resolve the whole promise with the express server
-      resolve(server)
-    })
-  })
+			// resolve the whole promise with the express server
+			resolve(server)
+		})
+	})
 }
 
 // here's our generic error handler for situations where we didn't handle
 // errors properly
 function errorMiddleware(error, req, res, next) {
-  if (res.headersSent) {
-    next(error)
-  } else {
-    logger.error(error)
-    res.status(500)
-    res.json({
-      message: error.message,
-      // we only add a `stack` property in non-production environments
-      ...(process.env.NODE_ENV === 'production' ? null : {stack: error.stack}),
-    })
-  }
+	if (res.headersSent) {
+		next(error)
+	} else {
+		logger.error(error)
+		res.status(500)
+		res.json({
+			message: error.message,
+			// we only add a `stack` property in non-production environments
+			...(process.env.NODE_ENV === 'production'
+				? null
+				: { stack: error.stack }),
+		})
+	}
 }
 
 // ensures we close the server in the event of an error.
 function setupCloseOnExit(server) {
-  // thank you stack overflow
-  // https://stackoverflow.com/a/14032965/971592
-  async function exitHandler(options = {}) {
-    await server
-      .close()
-      .then(() => {
-        logger.info('Server successfully closed')
-      })
-      .catch(e => {
-        logger.warn('Something went wrong closing the server', e.stack)
-      })
+	// thank you stack overflow
+	// https://stackoverflow.com/a/14032965/971592
+	async function exitHandler(options = {}) {
+		await server
+			.close()
+			.then(() => {
+				logger.info('Server successfully closed')
+			})
+			.catch(e => {
+				logger.warn('Something went wrong closing the server', e.stack)
+			})
 
-    if (options.exit) process.exit()
-  }
+		if (options.exit) process.exit()
+	}
 
-  // do something when app is closing
-  process.on('exit', exitHandler)
+	// do something when app is closing
+	process.on('exit', exitHandler)
 
-  // catches ctrl+c event
-  process.on('SIGINT', exitHandler.bind(null, {exit: true}))
+	// catches ctrl+c event
+	process.on('SIGINT', exitHandler.bind(null, { exit: true }))
 
-  // catches "kill pid" (for example: nodemon restart)
-  process.on('SIGUSR1', exitHandler.bind(null, {exit: true}))
-  process.on('SIGUSR2', exitHandler.bind(null, {exit: true}))
+	// catches "kill pid" (for example: nodemon restart)
+	process.on('SIGUSR1', exitHandler.bind(null, { exit: true }))
+	process.on('SIGUSR2', exitHandler.bind(null, { exit: true }))
 
-  // catches uncaught exceptions
-  process.on('uncaughtException', exitHandler.bind(null, {exit: true}))
+	// catches uncaught exceptions
+	process.on('uncaughtException', exitHandler.bind(null, { exit: true }))
 }
 
-export {startServer}
+export { startServer }
 ```
 
 Doing things this way makes it easier to test. For example, an integration test
 could simply do this:
 
 ```js
-import {startServer} from '../start'
+import { startServer } from '../start'
 
 let server, baseURL
 beforeAll(async () => {
-  server = await startServer()
-  baseURL = `http://localhost:${server.address().port}/api`
+	server = await startServer()
+	baseURL = `http://localhost:${server.address().port}/api`
 })
 
 afterAll(() => server.close())
@@ -332,19 +334,19 @@ This is where all the routes for my app come together:
 ```js
 import express from 'express'
 // any other routes imports would go here
-import {getMathRoutes} from './math'
+import { getMathRoutes } from './math'
 
 function getRoutes() {
-  // create a router for all the routes of our app
-  const router = express.Router()
+	// create a router for all the routes of our app
+	const router = express.Router()
 
-  router.use('/math', getMathRoutes())
-  // any additional routes would go here
+	router.use('/math', getMathRoutes())
+	// any additional routes would go here
 
-  return router
+	return router
 }
 
-export {getRoutes}
+export { getRoutes }
 ```
 
 ## src/routes/math.js
@@ -358,24 +360,24 @@ import express from 'express'
 // That way all the route definitions are in one place which I like.
 // This is the only thing that's exported
 function getMathRoutes() {
-  const router = express.Router()
-  router.get('/add', add)
-  router.get('/subtract', subtract)
-  return router
+	const router = express.Router()
+	router.get('/add', add)
+	router.get('/subtract', subtract)
+	return router
 }
 
 // all the controller and utility functions here:
 async function add(req, res) {
-  const sum = Number(req.query.a) + Number(req.query.c)
-  res.send(sum.toString())
+	const sum = Number(req.query.a) + Number(req.query.c)
+	res.send(sum.toString())
 }
 
 async function subtract(req, res) {
-  const difference = Number(req.query.a) - Number(req.query.b)
-  res.send(difference.toString())
+	const difference = Number(req.query.a) - Number(req.query.b)
+	res.send(difference.toString())
 }
 
-export {getMathRoutes}
+export { getMathRoutes }
 ```
 
 ## Conclusion

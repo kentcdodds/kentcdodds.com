@@ -66,14 +66,14 @@ well. Let's build it together:
 
 ```js
 function client(endpoint, customConfig) {
-  const config = {
-    method: 'GET',
-    ...customConfig,
-  }
+	const config = {
+		method: 'GET',
+		...customConfig,
+	}
 
-  return window
-    .fetch(`${process.env.REACT_APP_API_URL}/${endpoint}`, config)
-    .then(response => response.json())
+	return window
+		.fetch(`${process.env.REACT_APP_API_URL}/${endpoint}`, config)
+		.then(response => response.json())
 }
 ```
 
@@ -81,12 +81,12 @@ This `client` function allows me to make calls to my app's API like so:
 
 ```js
 client(`books?query=${encodeURIComponent(query)}`).then(
-  data => {
-    console.log('here are the books', data.books)
-  },
-  error => {
-    console.error('oh no, an error happened', error)
-  },
+	data => {
+		console.log('here are the books', data.books)
+	},
+	error => {
+		console.error('oh no, an error happened', error)
+	},
 )
 ```
 
@@ -99,21 +99,21 @@ which we can use to reject the promise in our wrapper:
 
 ```js lines=9-16
 function client(endpoint, customConfig = {}) {
-  const config = {
-    method: 'GET',
-    ...customConfig,
-  }
+	const config = {
+		method: 'GET',
+		...customConfig,
+	}
 
-  return window
-    .fetch(`${process.env.REACT_APP_API_URL}/${endpoint}`, config)
-    .then(async response => {
-      if (response.ok) {
-        return await response.json()
-      } else {
-        const errorMessage = await response.text()
-        return Promise.reject(new Error(errorMessage))
-      }
-    })
+	return window
+		.fetch(`${process.env.REACT_APP_API_URL}/${endpoint}`, config)
+		.then(async response => {
+			if (response.ok) {
+				return await response.json()
+			} else {
+				const errorMessage = await response.text()
+				return Promise.reject(new Error(errorMessage))
+			}
+		})
 }
 ```
 
@@ -123,43 +123,43 @@ The next thing we want to do is be able to send data to the backend. We _can_ do
 this with our current API, but let's make it easier:
 
 ```js lines=2-13
-function client(endpoint, {body, ...customConfig} = {}) {
-  const headers = {'Content-Type': 'application/json'}
-  const config = {
-    method: body ? 'POST' : 'GET',
-    ...customConfig,
-    headers: {
-      ...headers,
-      ...customConfig.headers,
-    },
-  }
-  if (body) {
-    config.body = JSON.stringify(body)
-  }
+function client(endpoint, { body, ...customConfig } = {}) {
+	const headers = { 'Content-Type': 'application/json' }
+	const config = {
+		method: body ? 'POST' : 'GET',
+		...customConfig,
+		headers: {
+			...headers,
+			...customConfig.headers,
+		},
+	}
+	if (body) {
+		config.body = JSON.stringify(body)
+	}
 
-  return window
-    .fetch(`${process.env.REACT_APP_API_URL}/${endpoint}`, config)
-    .then(async response => {
-      if (response.ok) {
-        return await response.json()
-      } else {
-        const errorMessage = await response.text()
-        return Promise.reject(new Error(errorMessage))
-      }
-    })
+	return window
+		.fetch(`${process.env.REACT_APP_API_URL}/${endpoint}`, config)
+		.then(async response => {
+			if (response.ok) {
+				return await response.json()
+			} else {
+				const errorMessage = await response.text()
+				return Promise.reject(new Error(errorMessage))
+			}
+		})
 }
 ```
 
 Sweet, so now we can do stuff like this:
 
 ```js
-client('login', {body: {username, password}}).then(
-  data => {
-    console.log('here the logged in user data', data)
-  },
-  error => {
-    console.error('oh no, login failed', error)
-  },
+client('login', { body: { username, password } }).then(
+	data => {
+		console.log('here the logged in user data', data)
+	},
+	error => {
+		console.error('oh no, login failed', error)
+	},
 )
 ```
 
@@ -169,34 +169,34 @@ approaches for doing this, but here's how I do it in the bookshelf app:
 ```js lines=1,4-8
 const localStorageKey = '__bookshelf_token__'
 
-function client(endpoint, {body, ...customConfig} = {}) {
-  const token = window.localStorage.getItem(localStorageKey)
-  const headers = {'Content-Type': 'application/json'}
-  if (token) {
-    headers.Authorization = `Bearer ${token}`
-  }
-  const config = {
-    method: body ? 'POST' : 'GET',
-    ...customConfig,
-    headers: {
-      ...headers,
-      ...customConfig.headers,
-    },
-  }
-  if (body) {
-    config.body = JSON.stringify(body)
-  }
+function client(endpoint, { body, ...customConfig } = {}) {
+	const token = window.localStorage.getItem(localStorageKey)
+	const headers = { 'Content-Type': 'application/json' }
+	if (token) {
+		headers.Authorization = `Bearer ${token}`
+	}
+	const config = {
+		method: body ? 'POST' : 'GET',
+		...customConfig,
+		headers: {
+			...headers,
+			...customConfig.headers,
+		},
+	}
+	if (body) {
+		config.body = JSON.stringify(body)
+	}
 
-  return window
-    .fetch(`${process.env.REACT_APP_API_URL}/${endpoint}`, config)
-    .then(async response => {
-      if (response.ok) {
-        return await response.json()
-      } else {
-        const errorMessage = await response.text()
-        return Promise.reject(new Error(errorMessage))
-      }
-    })
+	return window
+		.fetch(`${process.env.REACT_APP_API_URL}/${endpoint}`, config)
+		.then(async response => {
+			if (response.ok) {
+				return await response.json()
+			} else {
+				const errorMessage = await response.text()
+				return Promise.reject(new Error(errorMessage))
+			}
+		})
 }
 ```
 
@@ -212,43 +212,43 @@ automatically log the user out and refresh the page for them:
 ```js lines=24-28,38-40
 const localStorageKey = '__bookshelf_token__'
 
-function client(endpoint, {body, ...customConfig} = {}) {
-  const token = window.localStorage.getItem(localStorageKey)
-  const headers = {'content-type': 'application/json'}
-  if (token) {
-    headers.Authorization = `Bearer ${token}`
-  }
-  const config = {
-    method: body ? 'POST' : 'GET',
-    ...customConfig,
-    headers: {
-      ...headers,
-      ...customConfig.headers,
-    },
-  }
-  if (body) {
-    config.body = JSON.stringify(body)
-  }
+function client(endpoint, { body, ...customConfig } = {}) {
+	const token = window.localStorage.getItem(localStorageKey)
+	const headers = { 'content-type': 'application/json' }
+	if (token) {
+		headers.Authorization = `Bearer ${token}`
+	}
+	const config = {
+		method: body ? 'POST' : 'GET',
+		...customConfig,
+		headers: {
+			...headers,
+			...customConfig.headers,
+		},
+	}
+	if (body) {
+		config.body = JSON.stringify(body)
+	}
 
-  return window
-    .fetch(`${process.env.REACT_APP_API_URL}/${endpoint}`, config)
-    .then(async response => {
-      if (response.status === 401) {
-        logout()
-        window.location.assign(window.location)
-        return
-      }
-      if (response.ok) {
-        return await response.json()
-      } else {
-        const errorMessage = await response.text()
-        return Promise.reject(new Error(errorMessage))
-      }
-    })
+	return window
+		.fetch(`${process.env.REACT_APP_API_URL}/${endpoint}`, config)
+		.then(async response => {
+			if (response.status === 401) {
+				logout()
+				window.location.assign(window.location)
+				return
+			}
+			if (response.ok) {
+				return await response.json()
+			} else {
+				const errorMessage = await response.text()
+				return Promise.reject(new Error(errorMessage))
+			}
+		})
 }
 
 function logout() {
-  window.localStorage.removeItem(localStorageKey)
+	window.localStorage.removeItem(localStorageKey)
 }
 ```
 
@@ -259,28 +259,28 @@ On top of this, the bookshelf app has a few other wrappers for making requests.
 Like the `list-items-client.js`:
 
 ```js
-import {client} from './api-client'
+import { client } from './api-client'
 
 function create(listItemData) {
-  return client('list-items', {body: listItemData})
+	return client('list-items', { body: listItemData })
 }
 
 function read() {
-  return client('list-items')
+	return client('list-items')
 }
 
 function update(listItemId, updates) {
-  return client(`list-items/${listItemId}`, {
-    method: 'PUT',
-    body: updates,
-  })
+	return client(`list-items/${listItemId}`, {
+		method: 'PUT',
+		body: updates,
+	})
 }
 
 function remove(listItemId) {
-  return client(`list-items/${listItemId}`, {method: 'DELETE'})
+	return client(`list-items/${listItemId}`, { method: 'DELETE' })
 }
 
-export {create, read, remove, update}
+export { create, read, remove, update }
 ```
 
 ## Conclusion

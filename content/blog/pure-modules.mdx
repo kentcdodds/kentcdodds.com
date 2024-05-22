@@ -49,11 +49,11 @@ import './b'
 console.log('ready')
 
 // b.js
-import {serverData} from './c'
+import { serverData } from './c'
 
 if (!serverData.user) {
-  // redirect to login
-  location.assign('/login')
+	// redirect to login
+	location.assign('/login')
 }
 
 // c.js
@@ -67,7 +67,7 @@ something like:
 
 ```html
 <script type="application/json" id="server-data">
-  {"user": null}
+	{ "user": null }
 </script>
 ```
 
@@ -142,10 +142,10 @@ weird things with the module system to re-import those modules again after
 initializing the DOM differently.
 
 <callout-info>
-  With jest, you have
-  [`jest.resetModules()`](https://facebook.github.io/jest/docs/en/jest-object.html#jestresetmodules)
-  which makes this much easier, but it's still not super simple, nor is it
-  straightforward for anyone maintaining those tests.
+	With jest, you have
+	[`jest.resetModules()`](https://facebook.github.io/jest/docs/en/jest-object.html#jestresetmodules)
+	which makes this much easier, but it's still not super simple, nor is it
+	straightforward for anyone maintaining those tests.
 </callout-info>
 
 ### The Alternative
@@ -156,27 +156,27 @@ themselves):
 
 ```js
 // a.js
-import {init} from './b'
+import { init } from './b'
 init()
 console.log('ready')
 
 // b.js
-import {serverData, init as initC} from './c'
+import { serverData, init as initC } from './c'
 
 export function init() {
-  initC()
-  if (!serverData.user) {
-    // redirect to login
-    location.assign('/login')
-  }
+	initC()
+	if (!serverData.user) {
+		// redirect to login
+		location.assign('/login')
+	}
 }
 
 // c.js
 export const serverData = {}
 export function init() {
-  const el = document.getElementById('server-data')
-  const json = el.textContent
-  Object.assign(serverData, JSON.parse(json))
+	const el = document.getElementById('server-data')
+	const json = el.textContent
+	Object.assign(serverData, JSON.parse(json))
 }
 ```
 
@@ -196,10 +196,10 @@ How does this resolve the above problems?
   we need without any trouble or hacks. 🎉
 
 <callout-info>
-  Note that the `a.js` module is not pure. At some point one of your modules
-  needs to do something to kick everything off. This is the purpose the `a.js`
-  module is serving. These modules should normally be very small (and often
-  it'll be your `index.js` entry module).
+	Note that the `a.js` module is not pure. At some point one of your modules
+	needs to do something to kick everything off. This is the purpose the `a.js`
+	module is serving. These modules should normally be very small (and often
+	it'll be your `index.js` entry module).
 </callout-info>
 
 ### Conclusion

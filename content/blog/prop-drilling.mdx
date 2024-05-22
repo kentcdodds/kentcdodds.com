@@ -31,14 +31,14 @@ example):
 
 ```tsx
 function Toggle() {
-  const [on, setOn] = React.useState(false)
-  const toggle = () => setOn(o => !o)
-  return (
-    <div>
-      <div>The button is {on ? 'on' : 'off'}</div>
-      <button onClick={toggle}>Toggle</button>
-    </div>
-  )
+	const [on, setOn] = React.useState(false)
+	const toggle = () => setOn(o => !o)
+	return (
+		<div>
+			<div>The button is {on ? 'on' : 'off'}</div>
+			<button onClick={toggle}>Toggle</button>
+		</div>
+	)
 }
 ```
 
@@ -46,18 +46,18 @@ Let's refactor this into two components now:
 
 ```tsx
 function Toggle() {
-  const [on, setOn] = React.useState(false)
-  const toggle = () => setOn(o => !o)
-  return <Switch on={on} onToggle={toggle} />
+	const [on, setOn] = React.useState(false)
+	const toggle = () => setOn(o => !o)
+	return <Switch on={on} onToggle={toggle} />
 }
 
-function Switch({on, onToggle}) {
-  return (
-    <div>
-      <div>The button is {on ? 'on' : 'off'}</div>
-      <button onClick={onToggle}>Toggle</button>
-    </div>
-  )
+function Switch({ on, onToggle }) {
+	return (
+		<div>
+			<div>The button is {on ? 'on' : 'off'}</div>
+			<button onClick={onToggle}>Toggle</button>
+		</div>
+	)
 }
 ```
 
@@ -67,26 +67,26 @@ in our component tree:
 
 ```tsx
 function Toggle() {
-  const [on, setOn] = React.useState(false)
-  const toggle = () => setOn(o => !o)
-  return <Switch on={on} onToggle={toggle} />
+	const [on, setOn] = React.useState(false)
+	const toggle = () => setOn(o => !o)
+	return <Switch on={on} onToggle={toggle} />
 }
 
-function Switch({on, onToggle}) {
-  return (
-    <div>
-      <SwitchMessage on={on} />
-      <SwitchButton onToggle={onToggle} />
-    </div>
-  )
+function Switch({ on, onToggle }) {
+	return (
+		<div>
+			<SwitchMessage on={on} />
+			<SwitchButton onToggle={onToggle} />
+		</div>
+	)
 }
 
-function SwitchMessage({on}) {
-  return <div>The button is {on ? 'on' : 'off'}</div>
+function SwitchMessage({ on }) {
+	return <div>The button is {on ? 'on' : 'off'}</div>
 }
 
-function SwitchButton({onToggle}) {
-  return <button onClick={onToggle}>Toggle</button>
+function SwitchButton({ onToggle }) {
+	return <button onClick={onToggle}>Toggle</button>
 }
 ```
 
@@ -150,10 +150,10 @@ really need to reuse a block before breaking it out. Then you won't need to pass
 props anyway!
 
 <callout-info class="aside">
-  Fun fact, there's nothing technically stopping you from writing your entire
-  application as a single React Component. It can manage the state of your whole
-  application and you'd have one giant render method... I am not advocating this
-  though... Just something to think about :)
+	Fun fact, there's nothing technically stopping you from writing your entire
+	application as a single React Component. It can manage the state of your whole
+	application and you'd have one giant render method... I am not advocating this
+	though... Just something to think about :)
 </callout-info>
 
 _Note: I've written a blog post about this concept called

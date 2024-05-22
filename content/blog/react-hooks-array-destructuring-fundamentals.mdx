@@ -24,18 +24,18 @@ bannerCredit:
 This is the first example on the https://reactjs.org/hooks documentation:
 
 ```js
-import {useState} from 'react'
+import { useState } from 'react'
 
 function Example() {
-  // Declare a new state variable, which we'll call "count"
-  const [count, setCount] = useState(0)
+	// Declare a new state variable, which we'll call "count"
+	const [count, setCount] = useState(0)
 
-  return (
-    <div>
-      <p>You clicked {count} times</p>
-      <button onClick={() => setCount(count + 1)}>Click me</button>
-    </div>
-  )
+	return (
+		<div>
+			<p>You clicked {count} times</p>
+			<button onClick={() => setCount(count + 1)}>Click me</button>
+		</div>
+	)
 }
 ```
 
@@ -98,50 +98,50 @@ what the result looks like:
 'use strict'
 
 var _slicedToArray = (function () {
-  function sliceIterator(arr, i) {
-    var _arr = []
-    var _n = true
-    var _d = false
-    var _e = undefined
-    try {
-      for (
-        var _i = arr[Symbol.iterator](), _s;
-        !(_n = (_s = _i.next()).done);
-        _n = true
-      ) {
-        _arr.push(_s.value)
-        if (i && _arr.length === i) break
-      }
-    } catch (err) {
-      _d = true
-      _e = err
-    } finally {
-      try {
-        if (!_n && _i['return']) _i['return']()
-      } finally {
-        if (_d) throw _e
-      }
-    }
-    return _arr
-  }
-  return function (arr, i) {
-    if (Array.isArray(arr)) {
-      return arr
-    } else if (Symbol.iterator in Object(arr)) {
-      return sliceIterator(arr, i)
-    } else {
-      throw new TypeError(
-        'Invalid attempt to destructure non-iterable instance',
-      )
-    }
-  }
+	function sliceIterator(arr, i) {
+		var _arr = []
+		var _n = true
+		var _d = false
+		var _e = undefined
+		try {
+			for (
+				var _i = arr[Symbol.iterator](), _s;
+				!(_n = (_s = _i.next()).done);
+				_n = true
+			) {
+				_arr.push(_s.value)
+				if (i && _arr.length === i) break
+			}
+		} catch (err) {
+			_d = true
+			_e = err
+		} finally {
+			try {
+				if (!_n && _i['return']) _i['return']()
+			} finally {
+				if (_d) throw _e
+			}
+		}
+		return _arr
+	}
+	return function (arr, i) {
+		if (Array.isArray(arr)) {
+			return arr
+		} else if (Symbol.iterator in Object(arr)) {
+			return sliceIterator(arr, i)
+		} else {
+			throw new TypeError(
+				'Invalid attempt to destructure non-iterable instance',
+			)
+		}
+	}
 })()
 
 // const [count, setCount] = useState(0);
 var _useState = useState(0),
-  _useState2 = _slicedToArray(_useState, 2),
-  count = _useState2[0],
-  setCount = _useState2[1]
+	_useState2 = _slicedToArray(_useState, 2),
+	count = _useState2[0],
+	setCount = _useState2[1]
 ```
 
 😬 YIKES! Hmmm... Ok, so sometimes Babel uses utilities which both make it more
@@ -152,8 +152,8 @@ understand. Luckily, there's an option on the Babel Repl's "Env Preset" called
 ```js
 // const [count, setCount] = useState(0);
 var _useState = useState(0),
-  count = _useState[0],
-  setCount = _useState[1]
+	count = _useState[0],
+	setCount = _useState[1]
 ```
 
 😌 Phew, that's better. Ok, so what's going on here. Babel's taking our one line
@@ -169,8 +169,8 @@ Can I call the values whatever I want?
 ```js
 // const [whateverIWant, reallyICanChooseWhatItIsCalled] = useState(0);
 var _useState = useState(0),
-  whateverIWant = _useState[0],
-  reallyICanChooseWhatItIsCalled = _useState[1]
+	whateverIWant = _useState[0],
+	reallyICanChooseWhatItIsCalled = _useState[1]
 ```
 
 Can I add more elements?
@@ -178,9 +178,9 @@ Can I add more elements?
 ```js
 // const [count, setCount, somethingElse] = useState(0);
 var _useState = useState(0),
-  count = _useState[0],
-  setCount = _useState[1],
-  somethingElse = _useState[2]
+	count = _useState[0],
+	setCount = _useState[1],
+	somethingElse = _useState[2]
 ```
 
 Can I pull out fewer?
@@ -188,7 +188,7 @@ Can I pull out fewer?
 ```js
 // const [count] = useState(0);
 var _useState = useState(0),
-  count = _useState[0]
+	count = _useState[0]
 ```
 
 Can I skip one?
@@ -196,7 +196,7 @@ Can I skip one?
 ```js
 // const [, setCount] = useState(0);
 var _useState = useState(0),
-  setCount = _useState[1]
+	setCount = _useState[1]
 ```
 
 Can I skip more?
@@ -204,8 +204,8 @@ Can I skip more?
 ```js
 // const [,,, wow,, neat] = useState(0);
 var _useState = useState(0),
-  wow = _useState[3],
-  neat = _useState[5]
+	wow = _useState[3],
+	neat = _useState[5]
 ```
 
 I saw someone put a weird `=` sign in there, what does that do?
@@ -213,18 +213,18 @@ I saw someone put a weird `=` sign in there, what does that do?
 ```js
 // const [count = 3, setCount] = useState(0);
 var _useState = useState(0),
-  _useState$ = _useState[0],
-  count = _useState$ === undefined ? 3 : _useState$,
-  setCount = _useState[1]
+	_useState$ = _useState[0],
+	count = _useState$ === undefined ? 3 : _useState$,
+	setCount = _useState[1]
 ```
 
 Oooh, fancy, so if the first element of the array is undefined, then we'll set
 `count` to `3` instead. Default values! Sweet.
 
 <callout-info class="aside">
-  Note: most of the things above you would never need to do with `useState`
-  because we can always rely on `useState` returning an array of two elements!
-  We'll look at that more next.
+	Note: most of the things above you would never need to do with `useState`
+	because we can always rely on `useState` returning an array of two elements!
+	We'll look at that more next.
 </callout-info>
 
 Ok cool, so this helps us understand what's actually going on. There's nothing
@@ -247,11 +247,11 @@ Another interesting thing about `useState` is that the implementation in
 
 ```js
 function useState(initialState) {
-  return useReducer(
-    basicStateReducer,
-    // useReducer has a special case to support lazy useState initializers
-    initialState,
-  )
+	return useReducer(
+		basicStateReducer,
+		// useReducer has a special case to support lazy useState initializers
+		initialState,
+	)
 }
 ```
 
@@ -260,7 +260,7 @@ that `basicStateReducer` thing huh?
 
 ```js
 function basicStateReducer(state, action) {
-  return typeof action === 'function' ? action(state) : action
+	return typeof action === 'function' ? action(state) : action
 }
 ```
 

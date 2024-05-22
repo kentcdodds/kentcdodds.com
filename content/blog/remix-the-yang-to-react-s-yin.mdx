@@ -83,32 +83,32 @@ development that React doesn't have a built-in answer for:
 Here's what I mean by the network chasm:
 
 <Themed
-  dark={
-    <a
-      href="https://res.cloudinary.com/kentcdodds-com/image/upload/v2/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/network-chasm-dark"
-      target="_blank"
-    >
-      <BlogImage
-        cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/network-chasm-dark"
-        imgProps={{
-          alt: 'Excalidraw diagram showing a box labeled client and a box labeled server with the words "Network Chasm" between them',
-        }}
-      />
-    </a>
-  }
-  light={
-    <a
-      href="https://res.cloudinary.com/kentcdodds-com/image/upload/v2/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/network-chasm-light"
-      target="_blank"
-    >
-      <BlogImage
-        cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/network-chasm-light"
-        imgProps={{
-          alt: 'Excalidraw diagram showing a box labeled client and a box labeled server with the words "Network Chasm" between them',
-        }}
-      />
-    </a>
-  }
+	dark={
+		<a
+			href="https://res.cloudinary.com/kentcdodds-com/image/upload/v2/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/network-chasm-dark"
+			target="_blank"
+		>
+			<BlogImage
+				cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/network-chasm-dark"
+				imgProps={{
+					alt: 'Excalidraw diagram showing a box labeled client and a box labeled server with the words "Network Chasm" between them',
+				}}
+			/>
+		</a>
+	}
+	light={
+		<a
+			href="https://res.cloudinary.com/kentcdodds-com/image/upload/v2/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/network-chasm-light"
+			target="_blank"
+		>
+			<BlogImage
+				cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/network-chasm-light"
+				imgProps={{
+					alt: 'Excalidraw diagram showing a box labeled client and a box labeled server with the words "Network Chasm" between them',
+				}}
+			/>
+		</a>
+	}
 />
 
 As web developers, we get to write code that runs in the client (the browser)
@@ -130,32 +130,32 @@ libraries, we shoot a grappling hook over the network chasm via HTTP to get data
 to and from the backend:
 
 <Themed
-  dark={
-    <a
-      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/client-side-apps-only-dark"
-      target="_blank"
-    >
-      <BlogImage
-        cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/client-side-apps-only-dark"
-        imgProps={{
-          alt: 'Similar diagram as above with a box above "Client" that says "SPA" and an arrow from that over the network chasm pointing to a box that says "Node/Rails/PHP/Java/.Net". The row is labeled "Client-side apps"',
-        }}
-      />
-    </a>
-  }
-  light={
-    <a
-      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/client-side-apps-only-light"
-      target="_blank"
-    >
-      <BlogImage
-        cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/client-side-apps-only-light"
-        imgProps={{
-          alt: 'Similar diagram as above with a box above "Client" that says "SPA" and an arrow from that over the network chasm pointing to a box that says "Node/Rails/PHP/Java/.Net". The row is labeled "Client-side apps"',
-        }}
-      />
-    </a>
-  }
+	dark={
+		<a
+			href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/client-side-apps-only-dark"
+			target="_blank"
+		>
+			<BlogImage
+				cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/client-side-apps-only-dark"
+				imgProps={{
+					alt: 'Similar diagram as above with a box above "Client" that says "SPA" and an arrow from that over the network chasm pointing to a box that says "Node/Rails/PHP/Java/.Net". The row is labeled "Client-side apps"',
+				}}
+			/>
+		</a>
+	}
+	light={
+		<a
+			href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/client-side-apps-only-light"
+			target="_blank"
+		>
+			<BlogImage
+				cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/client-side-apps-only-light"
+				imgProps={{
+					alt: 'Similar diagram as above with a box above "Client" that says "SPA" and an arrow from that over the network chasm pointing to a box that says "Node/Rails/PHP/Java/.Net". The row is labeled "Client-side apps"',
+				}}
+			/>
+		</a>
+	}
 />
 
 The code required for this grappling hook to work all exists on the frontend.
@@ -192,8 +192,8 @@ component in this case, but because of the nature of nested layout routes, it's
 pretty darn close.
 
 <callout-success>
-  With these features, we go from "I have to render to know data requirements"
-  to "I know data requirements from the URL."
+	With these features, we go from "I have to render to know data requirements"
+	to "I know data requirements from the URL."
 </callout-success>
 
 On top of this, React Router is now managing some of that network chasm for you,
@@ -205,32 +205,32 @@ experiences (like optimistic UI patterns) has never been easier. This
 effectively narrows the network chasm for you a bit:
 
 <Themed
-  dark={
-    <a
-      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/remixed-router-apps-dark"
-      target="_blank"
-    >
-      <BlogImage
-        cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/remixed-router-apps-dark"
-        imgProps={{
-          alt: 'Similar diagram as before except now the SPA box extends slightly further over the network chasm and the row is labeled "Remixed Router apps"',
-        }}
-      />
-    </a>
-  }
-  light={
-    <a
-      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/remixed-router-apps-light"
-      target="_blank"
-    >
-      <BlogImage
-        cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/remixed-router-apps-light"
-        imgProps={{
-          alt: 'Similar diagram as before except now the SPA box extends slightly further over the network chasm and the row is labeled "Remixed Router apps"',
-        }}
-      />
-    </a>
-  }
+	dark={
+		<a
+			href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/remixed-router-apps-dark"
+			target="_blank"
+		>
+			<BlogImage
+				cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/remixed-router-apps-dark"
+				imgProps={{
+					alt: 'Similar diagram as before except now the SPA box extends slightly further over the network chasm and the row is labeled "Remixed Router apps"',
+				}}
+			/>
+		</a>
+	}
+	light={
+		<a
+			href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/remixed-router-apps-light"
+			target="_blank"
+		>
+			<BlogImage
+				cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/remixed-router-apps-light"
+				imgProps={{
+					alt: 'Similar diagram as before except now the SPA box extends slightly further over the network chasm and the row is labeled "Remixed Router apps"',
+				}}
+			/>
+		</a>
+	}
 />
 
 ## Can we do better?
@@ -267,32 +267,32 @@ sudden all of that code stays on the server and Remix handles the entire network
 chasm for you:
 
 <Themed
-  dark={
-    <a
-      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/backend-for-frontend-dark"
-      target="_blank"
-    >
-      <BlogImage
-        cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/backend-for-frontend-dark"
-        imgProps={{
-          alt: 'Similar to the diagrams before with the addition of a "Backend for frontend" row that shows Remix spanning over the client and network boundary into the Server and an arrow pointing to "Rails/PHP/Java/.Net"',
-        }}
-      />
-    </a>
-  }
-  light={
-    <a
-      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/backend-for-frontend-light"
-      target="_blank"
-    >
-      <BlogImage
-        cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/backend-for-frontend-light"
-        imgProps={{
-          alt: 'Similar to the diagrams before with the addition of a "Backend for frontend" row that shows Remix spanning over the client and network boundary into the Server and an arrow pointing to "Rails/PHP/Java/.Net"',
-        }}
-      />
-    </a>
-  }
+	dark={
+		<a
+			href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/backend-for-frontend-dark"
+			target="_blank"
+		>
+			<BlogImage
+				cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/backend-for-frontend-dark"
+				imgProps={{
+					alt: 'Similar to the diagrams before with the addition of a "Backend for frontend" row that shows Remix spanning over the client and network boundary into the Server and an arrow pointing to "Rails/PHP/Java/.Net"',
+				}}
+			/>
+		</a>
+	}
+	light={
+		<a
+			href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/backend-for-frontend-light"
+			target="_blank"
+		>
+			<BlogImage
+				cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/backend-for-frontend-light"
+				imgProps={{
+					alt: 'Similar to the diagrams before with the addition of a "Backend for frontend" row that shows Remix spanning over the client and network boundary into the Server and an arrow pointing to "Rails/PHP/Java/.Net"',
+				}}
+			/>
+		</a>
+	}
 />
 
 Now your app can really fly ⚡ because the user no longer has to wait for the
@@ -313,32 +313,32 @@ because you've got a backend that can talk directly to databases and third party
 services, you can make your app structure look more like this:
 
 <Themed
-  dark={
-    <a
-      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/full-stack-dark"
-      target="_blank"
-    >
-      <BlogImage
-        cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/full-stack-dark"
-        imgProps={{
-          alt: 'Similar to the diagrams before with the addition of a "Full Stack" row that shows Remix spanning over the entire client, network chasm, and server',
-        }}
-      />
-    </a>
-  }
-  light={
-    <a
-      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/full-stack-light"
-      target="_blank"
-    >
-      <BlogImage
-        cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/full-stack-light"
-        imgProps={{
-          alt: 'Similar to the diagrams before with the addition of a "Full Stack" row that shows Remix spanning over the entire client, network chasm, and server',
-        }}
-      />
-    </a>
-  }
+	dark={
+		<a
+			href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/full-stack-dark"
+			target="_blank"
+		>
+			<BlogImage
+				cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/full-stack-dark"
+				imgProps={{
+					alt: 'Similar to the diagrams before with the addition of a "Full Stack" row that shows Remix spanning over the entire client, network chasm, and server',
+				}}
+			/>
+		</a>
+	}
+	light={
+		<a
+			href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/full-stack-light"
+			target="_blank"
+		>
+			<BlogImage
+				cloudinaryId="kentcdodds.com/content/blog/remix-the-yang-to-react-s-yin/full-stack-light"
+				imgProps={{
+					alt: 'Similar to the diagrams before with the addition of a "Full Stack" row that shows Remix spanning over the entire client, network chasm, and server',
+				}}
+			/>
+		</a>
+	}
 />
 
 The cool thing is, you get all the benefits of a fully managed network chasm by

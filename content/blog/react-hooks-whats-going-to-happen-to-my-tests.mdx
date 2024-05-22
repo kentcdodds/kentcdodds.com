@@ -22,10 +22,10 @@ this:
 // borrowed from a previous blog post:
 // https://kcd.im/implementation-details
 test('setOpenIndex sets the open index state properly', () => {
-  const wrapper = mount(<Accordion items={[]} />)
-  expect(wrapper.state('openIndex')).toBe(0)
-  wrapper.instance().setOpenIndex(1)
-  expect(wrapper.state('openIndex')).toBe(1)
+	const wrapper = mount(<Accordion items={[]} />)
+	expect(wrapper.state('openIndex')).toBe(0)
+	wrapper.instance().setOpenIndex(1)
+	expect(wrapper.state('openIndex')).toBe(1)
 })
 ```
 
@@ -50,11 +50,11 @@ Let's look at a simpler example of a class component. My favorite example is a
 import * as React from 'react'
 
 class Counter extends React.Component {
-  state = {count: 0}
-  increment = () => this.setState(({count}) => ({count: count + 1}))
-  render() {
-    return <button onClick={this.increment}>{this.state.count}</button>
-  }
+	state = { count: 0 }
+	increment = () => this.setState(({ count }) => ({ count: count + 1 }))
+	render() {
+		return <button onClick={this.increment}>{this.state.count}</button>
+	}
 }
 
 export default Counter
@@ -65,16 +65,16 @@ use hooks:
 
 ```tsx
 // __tests__/counter.js
-import {render, screen} from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import * as React from 'react'
 
 test('counter increments the count', () => {
-  render(<Counter />)
-  const button = screen.getByRole('button')
-  expect(button).toHaveTextContent('0')
-  userEvent.click(button)
-  expect(button).toHaveTextContent('1')
+	render(<Counter />)
+	const button = screen.getByRole('button')
+	expect(button).toHaveTextContent('0')
+	userEvent.click(button)
+	expect(button).toHaveTextContent('1')
 })
 ```
 
@@ -86,9 +86,9 @@ component:
 import * as React from 'react'
 
 function Counter() {
-  const [count, setCount] = useState(0)
-  const incrementCount = () => setCount(c => c + 1)
-  return <button onClick={incrementCount}>{count}</button>
+	const [count, setCount] = useState(0)
+	const incrementCount = () => setCount(c => c + 1)
+	return <button onClick={incrementCount}>{count}</button>
 }
 
 export default Counter
@@ -156,21 +156,21 @@ of our counter component as a class with a new feature:
 
 ```tsx
 class Counter extends React.Component {
-  state = {
-    count: Number(window.localStorage.getItem('count') || 0),
-  }
-  increment = () => this.setState(({count}) => ({count: count + 1}))
-  componentDidMount() {
-    window.localStorage.setItem('count', this.state.count)
-  }
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.count !== this.state.count) {
-      window.localStorage.setItem('count', this.state.count)
-    }
-  }
-  render() {
-    return <button onClick={this.increment}>{this.state.count}</button>
-  }
+	state = {
+		count: Number(window.localStorage.getItem('count') || 0),
+	}
+	increment = () => this.setState(({ count }) => ({ count: count + 1 }))
+	componentDidMount() {
+		window.localStorage.setItem('count', this.state.count)
+	}
+	componentDidUpdate(prevProps, prevState) {
+		if (prevState.count !== this.state.count) {
+			window.localStorage.setItem('count', this.state.count)
+		}
+	}
+	render() {
+		return <button onClick={this.increment}>{this.state.count}</button>
+	}
 }
 ```
 
@@ -180,32 +180,32 @@ implementation-details-free test would look like:
 
 ```tsx
 // __tests__/counter.js
-import {render, screen} from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import * as React from 'react'
 
 import Counter from '../counter'
 
 afterEach(() => {
-  window.localStorage.removeItem('count')
+	window.localStorage.removeItem('count')
 })
 
 test('counter increments the count', () => {
-  render(<Counter />)
-  const button = screen.getByRole('button')
-  expect(button).toHaveTextContent('0')
-  userEvent.click(button)
-  expect(button).toHaveTextContent('1')
+	render(<Counter />)
+	const button = screen.getByRole('button')
+	expect(button).toHaveTextContent('0')
+	userEvent.click(button)
+	expect(button).toHaveTextContent('1')
 })
 
 test('reads and updates localStorage', () => {
-  window.localStorage.setItem('count', 3)
-  render(<Counter />)
-  const button = screen.getByRole('button')
-  expect(button).toHaveTextContent('3')
-  userEvent.click(button)
-  expect(button).toHaveTextContent('4')
-  expect(window.localStorage.getItem('count')).toBe('4')
+	window.localStorage.setItem('count', 3)
+	render(<Counter />)
+	const button = screen.getByRole('button')
+	expect(button).toHaveTextContent('3')
+	userEvent.click(button)
+	expect(button).toHaveTextContent('4')
+	expect(window.localStorage.getItem('count')).toBe('4')
 })
 ```
 
@@ -213,17 +213,17 @@ That test passes! Woo! Now let's "refactor" this to hooks again with these new
 features:
 
 ```tsx
-import React, {useState, useEffect} from 'react'
+import React, { useState, useEffect } from 'react'
 
 function Counter() {
-  const [count, setCount] = useState(() =>
-    Number(window.localStorage.getItem('count') || 0),
-  )
-  const incrementCount = () => setCount(c => c + 1)
-  useEffect(() => {
-    window.localStorage.setItem('count', count)
-  }, [count])
-  return <button onClick={incrementCount}>{count}</button>
+	const [count, setCount] = useState(() =>
+		Number(window.localStorage.getItem('count') || 0),
+	)
+	const incrementCount = () => setCount(c => c + 1)
+	useEffect(() => {
+		window.localStorage.setItem('count', count)
+	}, [count])
+	return <button onClick={incrementCount}>{count}</button>
 }
 
 export default Counter
@@ -269,14 +269,14 @@ component:
 
 ```js
 class Counter extends React.Component {
-  state = {count: 0}
-  increment = () => this.setState(({count}) => ({count: count + 1}))
-  render() {
-    return this.props.children({
-      count: this.state.count,
-      increment: this.increment,
-    })
-  }
+	state = { count: 0 }
+	increment = () => this.setState(({ count }) => ({ count: count + 1 }))
+	render() {
+		return this.props.children({
+			count: this.state.count,
+			increment: this.increment,
+		})
+	}
 }
 // usage:
 // <Counter>
@@ -289,29 +289,29 @@ Here's how I would test this:
 ```tsx
 // __tests__/counter.js
 import * as React from 'react'
-import {render} from '@testing-library/react'
+import { render } from '@testing-library/react'
 
 import Counter from '../counter'
 
 function renderCounter(props) {
-  let utils
-  const children = jest.fn(stateAndHelpers => {
-    utils = stateAndHelpers
-    return null
-  })
-  return {
-    ...render(<Counter {...props}>{children}</Counter>),
-    children,
-    // this will give us access to increment and count
-    ...utils,
-  }
+	let utils
+	const children = jest.fn(stateAndHelpers => {
+		utils = stateAndHelpers
+		return null
+	})
+	return {
+		...render(<Counter {...props}>{children}</Counter>),
+		children,
+		// this will give us access to increment and count
+		...utils,
+	}
 }
 
 test('counter increments the count', () => {
-  const {children, increment} = renderCounter()
-  expect(children).toHaveBeenCalledWith(expect.objectContaining({count: 0}))
-  increment()
-  expect(children).toHaveBeenCalledWith(expect.objectContaining({count: 1}))
+	const { children, increment } = renderCounter()
+	expect(children).toHaveBeenCalledWith(expect.objectContaining({ count: 0 }))
+	increment()
+	expect(children).toHaveBeenCalledWith(expect.objectContaining({ count: 1 }))
 })
 ```
 
@@ -319,12 +319,12 @@ Ok, so let's refactor the counter to a component that uses hooks:
 
 ```js
 function Counter(props) {
-  const [count, setCount] = useState(0)
-  const increment = () => setCount(currentCount => currentCount + 1)
-  return props.children({
-    count: count,
-    increment,
-  })
+	const [count, setCount] = useState(0)
+	const increment = () => setCount(currentCount => currentCount + 1)
+	return props.children({
+		count: count,
+		increment,
+	})
 }
 ```
 
@@ -336,9 +336,9 @@ this to a custom hook:
 
 ```js
 function useCounter() {
-  const [count, setCount] = useState(0)
-  const increment = () => setCount(currentCount => currentCount + 1)
-  return {count, increment}
+	const [count, setCount] = useState(0)
+	const increment = () => setCount(currentCount => currentCount + 1)
+	return { count, increment }
 }
 
 export default useCounter
@@ -358,15 +358,15 @@ Nah, I got you. Do this instead:
 
 ```js
 function useCounter() {
-  const [count, setCount] = useState(0)
-  const increment = () => setCount(currentCount => currentCount + 1)
-  return {count, increment}
+	const [count, setCount] = useState(0)
+	const increment = () => setCount(currentCount => currentCount + 1)
+	return { count, increment }
 }
 
-const Counter = ({children, ...props}) => children(useCounter(props))
+const Counter = ({ children, ...props }) => children(useCounter(props))
 
 export default Counter
-export {useCounter}
+export { useCounter }
 ```
 
 Our new `<Counter />` render-prop based component there is actually _exactly_

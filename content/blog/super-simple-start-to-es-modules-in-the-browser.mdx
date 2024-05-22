@@ -42,20 +42,20 @@ First, we need a JavaScript file that we want to load into our site:
 ```js
 // append-div.js
 function appendDiv(message) {
-  const div = document.createElement('div')
-  div.textContent = message
-  document.body.appendChild(div)
+	const div = document.createElement('div')
+	div.textContent = message
+	document.body.appendChild(div)
 }
 
-export {appendDiv}
+export { appendDiv }
 ```
 
 Next, let's make an HTML file to load that file:
 
 ```html filename=index.html
 <script type="module">
-  import {appendDiv} from './append-div.js'
-  appendDiv('Hello from inline script')
+	import { appendDiv } from './append-div.js'
+	appendDiv('Hello from inline script')
 </script>
 ```
 
@@ -88,7 +88,7 @@ let's load a module from a file:
 
 ```js
 // script-src.js
-import {appendDiv} from './append-div.js'
+import { appendDiv } from './append-div.js'
 
 appendDiv('Hello from external script')
 ```
@@ -97,8 +97,8 @@ To load that up, we just add another script tag to our HTML:
 
 ```html filename=index.html lines=6
 <script type="module">
-  import {appendDiv} from './append-div.js'
-  appendDiv('Hello from inline script')
+	import { appendDiv } from './append-div.js'
+	appendDiv('Hello from inline script')
 </script>
 <script type="module" src="./script-src.js"></script>
 ```
@@ -115,31 +115,31 @@ add another file:
 
 ```js
 // async-script.js
-import {appendDiv} from './append-div.js'
+import { appendDiv } from './append-div.js'
 
 function go() {
-  appendDiv('Hello from async script')
+	appendDiv('Hello from async script')
 }
 
-export {go}
+export { go }
 ```
 
 Then we can load that using a dynamic `import` statement:
 
 ```js lines=6-14
 // script-src.js
-import {appendDiv} from './append-div.js'
+import { appendDiv } from './append-div.js'
 
 appendDiv('Hello from external script')
 
 import('./async-script.js').then(
-  moduleExports => {
-    moduleExports.go()
-  },
-  error => {
-    console.error('there was an error loading the script')
-    throw error
-  },
+	moduleExports => {
+		moduleExports.go()
+	},
+	error => {
+		console.error('there was an error loading the script')
+		throw error
+	},
 )
 ```
 

@@ -24,23 +24,23 @@ What's wrong with this test?
 ```tsx
 // __tests__/checkout.js
 import * as React from 'react'
-import {render, screen} from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import {client} from '~/utils/api-client'
+import { client } from '~/utils/api-client'
 
 jest.mock('~/utils/api-client')
 
 test('clicking "confirm" submits payment', async () => {
-  const shoppingCart = buildShoppingCart()
-  render(<Checkout shoppingCart={shoppingCart} />)
+	const shoppingCart = buildShoppingCart()
+	render(<Checkout shoppingCart={shoppingCart} />)
 
-  client.mockResolvedValueOnce(() => ({success: true}))
+	client.mockResolvedValueOnce(() => ({ success: true }))
 
-  userEvent.click(screen.getByRole('button', {name: /confirm/i}))
+	userEvent.click(screen.getByRole('button', { name: /confirm/i }))
 
-  expect(client).toHaveBeenCalledWith('checkout', {data: shoppingCart})
-  expect(client).toHaveBeenCalledTimes(1)
-  expect(await screen.findByText(/success/i)).toBeInTheDocument()
+	expect(client).toHaveBeenCalledWith('checkout', { data: shoppingCart })
+	expect(client).toHaveBeenCalledTimes(1)
+	expect(await screen.findByText(/success/i)).toBeInTheDocument()
 })
 ```
 
@@ -66,7 +66,7 @@ But we don't want to _actually_ make `fetch` requests right? So let's mock out
 ```tsx
 // __tests__/checkout.js
 import * as React from 'react'
-import {render, screen} from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 beforeAll(() => jest.spyOn(window, 'fetch'))
@@ -75,25 +75,25 @@ beforeAll(() => jest.spyOn(window, 'fetch'))
 // this also assumes that you've loaded a fetch polyfill like `whatwg-fetch`
 
 test('clicking "confirm" submits payment', async () => {
-  const shoppingCart = buildShoppingCart()
-  render(<Checkout shoppingCart={shoppingCart} />)
+	const shoppingCart = buildShoppingCart()
+	render(<Checkout shoppingCart={shoppingCart} />)
 
-  window.fetch.mockResolvedValueOnce({
-    ok: true,
-    json: async () => ({success: true}),
-  })
+	window.fetch.mockResolvedValueOnce({
+		ok: true,
+		json: async () => ({ success: true }),
+	})
 
-  userEvent.click(screen.getByRole('button', {name: /confirm/i}))
+	userEvent.click(screen.getByRole('button', { name: /confirm/i }))
 
-  expect(window.fetch).toHaveBeenCalledWith(
-    '/checkout',
-    expect.objectContaining({
-      method: 'POST',
-      body: JSON.stringify(shoppingCart),
-    }),
-  )
-  expect(window.fetch).toHaveBeenCalledTimes(1)
-  expect(await screen.findByText(/success/i)).toBeInTheDocument()
+	expect(window.fetch).toHaveBeenCalledWith(
+		'/checkout',
+		expect.objectContaining({
+			method: 'POST',
+			body: JSON.stringify(shoppingCart),
+		}),
+	)
+	expect(window.fetch).toHaveBeenCalledTimes(1)
+	expect(await screen.findByText(/success/i)).toBeInTheDocument()
 })
 ```
 
@@ -142,36 +142,36 @@ well. You can think of it like this:
 import * as users from './users'
 
 async function mockFetch(url, config) {
-  switch (url) {
-    case '/login': {
-      const user = await users.login(JSON.parse(config.body))
-      return {
-        ok: true,
-        status: 200,
-        json: async () => ({user}),
-      }
-    }
-    case '/checkout': {
-      const isAuthorized = user.authorize(config.headers.Authorization)
-      if (!isAuthorized) {
-        return Promise.reject({
-          ok: false,
-          status: 401,
-          json: async () => ({message: 'Not authorized'}),
-        })
-      }
-      const shoppingCart = JSON.parse(config.body)
-      // do whatever other things you need to do with this shopping cart
-      return {
-        ok: true,
-        status: 200,
-        json: async () => ({success: true}),
-      }
-    }
-    default: {
-      throw new Error(`Unhandled request: ${url}`)
-    }
-  }
+	switch (url) {
+		case '/login': {
+			const user = await users.login(JSON.parse(config.body))
+			return {
+				ok: true,
+				status: 200,
+				json: async () => ({ user }),
+			}
+		}
+		case '/checkout': {
+			const isAuthorized = user.authorize(config.headers.Authorization)
+			if (!isAuthorized) {
+				return Promise.reject({
+					ok: false,
+					status: 401,
+					json: async () => ({ message: 'Not authorized' }),
+				})
+			}
+			const shoppingCart = JSON.parse(config.body)
+			// do whatever other things you need to do with this shopping cart
+			return {
+				ok: true,
+				status: 200,
+				json: async () => ({ success: true }),
+			}
+		}
+		default: {
+			throw new Error(`Unhandled request: ${url}`)
+		}
+	}
 }
 
 beforeAll(() => jest.spyOn(window, 'fetch'))
@@ -183,16 +183,16 @@ Now my test can look like this:
 ```tsx
 // __tests__/checkout.js
 import * as React from 'react'
-import {render, screen} from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 test('clicking "confirm" submits payment', async () => {
-  const shoppingCart = buildShoppingCart()
-  render(<Checkout shoppingCart={shoppingCart} />)
+	const shoppingCart = buildShoppingCart()
+	render(<Checkout shoppingCart={shoppingCart} />)
 
-  userEvent.click(screen.getByRole('button', {name: /confirm/i}))
+	userEvent.click(screen.getByRole('button', { name: /confirm/i }))
 
-  expect(await screen.findByText(/success/i)).toBeInTheDocument()
+	expect(await screen.findByText(/success/i)).toBeInTheDocument()
 })
 ```
 
@@ -243,43 +243,43 @@ mock server:
 // server-handlers.js
 // this is put into here so I can share these same handlers between my tests
 // as well as my development in the browser. Pretty sweet!
-import {rest} from 'msw' // msw supports graphql too!
+import { rest } from 'msw' // msw supports graphql too!
 import * as users from './users'
 
 const handlers = [
-  rest.get('/login', async (req, res, ctx) => {
-    const user = await users.login(JSON.parse(req.body))
-    return res(ctx.json({user}))
-  }),
-  rest.post('/checkout', async (req, res, ctx) => {
-    const user = await users.login(JSON.parse(req.body))
-    const isAuthorized = user.authorize(req.headers.Authorization)
-    if (!isAuthorized) {
-      return res(ctx.status(401), ctx.json({message: 'Not authorized'}))
-    }
-    const shoppingCart = JSON.parse(req.body)
-    // do whatever other things you need to do with this shopping cart
-    return res(ctx.json({success: true}))
-  }),
+	rest.get('/login', async (req, res, ctx) => {
+		const user = await users.login(JSON.parse(req.body))
+		return res(ctx.json({ user }))
+	}),
+	rest.post('/checkout', async (req, res, ctx) => {
+		const user = await users.login(JSON.parse(req.body))
+		const isAuthorized = user.authorize(req.headers.Authorization)
+		if (!isAuthorized) {
+			return res(ctx.status(401), ctx.json({ message: 'Not authorized' }))
+		}
+		const shoppingCart = JSON.parse(req.body)
+		// do whatever other things you need to do with this shopping cart
+		return res(ctx.json({ success: true }))
+	}),
 ]
 
-export {handlers}
+export { handlers }
 ```
 
 ```js
 // test/server.js
-import {rest} from 'msw'
-import {setupServer} from 'msw/node'
-import {handlers} from './server-handlers'
+import { rest } from 'msw'
+import { setupServer } from 'msw/node'
+import { handlers } from './server-handlers'
 
 const server = setupServer(...handlers)
-export {server, rest}
+export { server, rest }
 ```
 
 ```js
 // test/setup-env.js
 // add this to your setupFilesAfterEnv config in jest so it's imported for every test file
-import {server} from './server.js'
+import { server } from './server.js'
 
 beforeAll(() => server.listen())
 // if you need to add a handler after calling setupServer for some specific test
@@ -294,16 +294,16 @@ Now my test can look like this:
 ```tsx
 // __tests__/checkout.js
 import * as React from 'react'
-import {render, screen} from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 test('clicking "confirm" submits payment', async () => {
-  const shoppingCart = buildShoppingCart()
-  render(<Checkout shoppingCart={shoppingCart} />)
+	const shoppingCart = buildShoppingCart()
+	render(<Checkout shoppingCart={shoppingCart} />)
 
-  userEvent.click(screen.getByRole('button', {name: /confirm/i}))
+	userEvent.click(screen.getByRole('button', { name: /confirm/i }))
 
-  expect(await screen.findByText(/success/i)).toBeInTheDocument()
+	expect(await screen.findByText(/success/i)).toBeInTheDocument()
 })
 ```
 
@@ -338,36 +338,36 @@ preserve test isolation. Here's an example:
 ```tsx
 // __tests__/checkout.js
 import * as React from 'react'
-import {server, rest} from 'test/server'
-import {render, screen} from '@testing-library/react'
+import { server, rest } from 'test/server'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 // happy path test, no special server stuff
 test('clicking "confirm" submits payment', async () => {
-  const shoppingCart = buildShoppingCart()
-  render(<Checkout shoppingCart={shoppingCart} />)
+	const shoppingCart = buildShoppingCart()
+	render(<Checkout shoppingCart={shoppingCart} />)
 
-  userEvent.click(screen.getByRole('button', {name: /confirm/i}))
+	userEvent.click(screen.getByRole('button', { name: /confirm/i }))
 
-  expect(await screen.findByText(/success/i)).toBeInTheDocument()
+	expect(await screen.findByText(/success/i)).toBeInTheDocument()
 })
 
 // edge/error case, special server stuff
 // note that the afterEach(() => server.resetHandlers()) we have in our
 // setup file will ensure that the special handler is removed for other tests
 test('shows server error if the request fails', async () => {
-  const testErrorMessage = 'THIS IS A TEST FAILURE'
-  server.use(
-    rest.post('/checkout', async (req, res, ctx) => {
-      return res(ctx.status(500), ctx.json({message: testErrorMessage}))
-    }),
-  )
-  const shoppingCart = buildShoppingCart()
-  render(<Checkout shoppingCart={shoppingCart} />)
+	const testErrorMessage = 'THIS IS A TEST FAILURE'
+	server.use(
+		rest.post('/checkout', async (req, res, ctx) => {
+			return res(ctx.status(500), ctx.json({ message: testErrorMessage }))
+		}),
+	)
+	const shoppingCart = buildShoppingCart()
+	render(<Checkout shoppingCart={shoppingCart} />)
 
-  userEvent.click(screen.getByRole('button', {name: /confirm/i}))
+	userEvent.click(screen.getByRole('button', { name: /confirm/i }))
 
-  expect(await screen.findByRole('alert')).toHaveTextContent(testErrorMessage)
+	expect(await screen.findByRole('alert')).toHaveTextContent(testErrorMessage)
 })
 ```
 

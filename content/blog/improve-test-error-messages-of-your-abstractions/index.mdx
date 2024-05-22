@@ -24,7 +24,7 @@ Let's say you've got this test:
 const add = (a, b) => a + b
 
 if (add(1, 2) !== 4) {
-  throw new Error('Expected 3 to be 4')
+	throw new Error('Expected 3 to be 4')
 }
 ```
 
@@ -56,7 +56,7 @@ resulting error is much more helpful:
 
 ```js
 test('sums numbers', () => {
-  expect(add(1, 2)).toBe(4)
+	expect(add(1, 2)).toBe(4)
 })
 ```
 
@@ -97,20 +97,20 @@ can use it in a bunch of different tests? Let's try that:
 const add = (a, b) => a + b
 
 function assertAdd(inputs, output) {
-  expect(add(...inputs)).toBe(output)
+	expect(add(...inputs)).toBe(output)
 }
 
 test('sums numbers', () => {
-  assertAdd([1, 2], 4)
+	assertAdd([1, 2], 4)
 })
 ```
 
 <callout-warning>
-  Please keep in mind, I am _not_ recommending you create useless abstractions
-  like the one above. As with everything, you should be applying [AHA
-  Programming](/blog/aha-programming) (and [for testing](/blog/aha-testing)).
-  This blog post is just useful for situations where the abstraction is clear
-  and you want to include assertions in your abstraction.
+	Please keep in mind, I am _not_ recommending you create useless abstractions
+	like the one above. As with everything, you should be applying [AHA
+	Programming](/blog/aha-programming) (and [for testing](/blog/aha-testing)).
+	This blog post is just useful for situations where the abstraction is clear
+	and you want to include assertions in your abstraction.
 </callout-warning>
 
 Alright, with this little abstraction, here's the error we get:
@@ -178,12 +178,12 @@ as well. Let's take the contents of our `assertAdd` function and put it in a
 
 ```js
 function assertAdd(inputs, output) {
-  try {
-    expect(add(...inputs)).toBe(output)
-  } catch (error) {
-    console.log(error.stack)
-    throw error
-  }
+	try {
+		expect(add(...inputs)).toBe(output)
+	} catch (error) {
+		console.log(error.stack)
+		throw error
+	}
 }
 ```
 
@@ -208,9 +208,9 @@ That `error.stack` has already gotten some helpful treatment from Jest's
 `expect` assertion library (it's even got helpful colors at this point).
 
 <callout-info>
-  Note that `error.stack` is actually a combination of the `error.message` + the
-  stack trace, so the error message that `expect` provides is everything above
-  the first "at" line which is where the stack trace actually starts.
+	Note that `error.stack` is actually a combination of the `error.message` + the
+	stack trace, so the error message that `expect` provides is everything above
+	the first "at" line which is where the stack trace actually starts.
 </callout-info>
 
 Ok, so you'll notice that the stack trace we've got here is very different from
@@ -249,18 +249,18 @@ So, what we need to do, is filter out the one that includes the function
 
 ```js
 function assertAdd(inputs, output) {
-  try {
-    expect(add(...inputs)).toBe(output)
-  } catch (error) {
-    error.stack = error.stack
-      // error.stack is a string, so let's split it into lines
-      .split('\n')
-      // filter out the line that includes assertAdd (you could make this more robust by using your test utils filename instead).
-      .filter(line => !line.includes('assertAdd'))
-      // join the lines back up into a single (multiline) string
-      .join('\n')
-    throw error
-  }
+	try {
+		expect(add(...inputs)).toBe(output)
+	} catch (error) {
+		error.stack = error.stack
+			// error.stack is a string, so let's split it into lines
+			.split('\n')
+			// filter out the line that includes assertAdd (you could make this more robust by using your test utils filename instead).
+			.filter(line => !line.includes('assertAdd'))
+			// join the lines back up into a single (multiline) string
+			.join('\n')
+		throw error
+	}
 }
 ```
 
@@ -279,12 +279,12 @@ Let's try that:
 
 ```js
 function assertAdd(inputs, output) {
-  try {
-    expect(add(...inputs)).toBe(output)
-  } catch (error) {
-    Error.captureStackTrace(error, assertAdd)
-    throw error
-  }
+	try {
+		expect(add(...inputs)).toBe(output)
+	} catch (error) {
+		Error.captureStackTrace(error, assertAdd)
+		throw error
+	}
 }
 ```
 
@@ -294,9 +294,9 @@ function we want removed from the stack trace. That argument is called the
 [According to the Node.js docs](https://nodejs.org/api/errors.html#errors_error_capturestacktrace_targetobject_constructoropt):
 
 <callout-info>
-  The optional `constructorOpt` argument accepts a function. If given, all
-  frames above `constructorOpt`, including `constructorOpt`, will be omitted
-  from the generated stack trace.
+	The optional `constructorOpt` argument accepts a function. If given, all
+	frames above `constructorOpt`, including `constructorOpt`, will be omitted
+	from the generated stack trace.
 </callout-info>
 
 It's almost as if this were created for our exact use case!
@@ -309,16 +309,16 @@ So here it is all together:
 const add = (a, b) => a + b
 
 function assertAdd(inputs, output) {
-  try {
-    expect(add(...inputs)).toBe(output)
-  } catch (error) {
-    Error.captureStackTrace(error, assertAdd)
-    throw error
-  }
+	try {
+		expect(add(...inputs)).toBe(output)
+	} catch (error) {
+		Error.captureStackTrace(error, assertAdd)
+		throw error
+	}
 }
 
 test('sums numbers', () => {
-  assertAdd([1, 2], 4)
+	assertAdd([1, 2], 4)
 })
 ```
 

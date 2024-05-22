@@ -33,17 +33,17 @@ Ok, so here you go. Your quick-start to custom properties:
 
 ```html
 <html>
-  <style>
-    :root {
-      --color: blue;
-    }
-    .my-text {
-      color: var(--color);
-    }
-  </style>
-  <body>
-    <div class="my-text">This will be blue</div>
-  </body>
+	<style>
+		:root {
+			--color: blue;
+		}
+		.my-text {
+			color: var(--color);
+		}
+	</style>
+	<body>
+		<div class="my-text">This will be blue</div>
+	</body>
 </html>
 ```
 
@@ -58,25 +58,25 @@ selectors:
 
 ```html
 <html>
-  <style>
-    .blue-text {
-      --color: blue;
-    }
-    .red-text {
-      --color: red;
-    }
-    .my-text {
-      color: var(--color);
-    }
-  </style>
-  <body>
-    <div class="blue-text">
-      <div class="my-text">This will be blue</div>
-    </div>
-    <div class="red-text">
-      <div class="my-text">This will be red</div>
-    </div>
-  </body>
+	<style>
+		.blue-text {
+			--color: blue;
+		}
+		.red-text {
+			--color: red;
+		}
+		.my-text {
+			color: var(--color);
+		}
+	</style>
+	<body>
+		<div class="blue-text">
+			<div class="my-text">This will be blue</div>
+		</div>
+		<div class="red-text">
+			<div class="my-text">This will be red</div>
+		</div>
+	</body>
 </html>
 ```
 
@@ -86,28 +86,28 @@ The cascade also applies here:
 
 ```html
 <html>
-  <style>
-    .blue-text {
-      --color: blue;
-    }
-    .red-text {
-      --color: red;
-    }
-    .my-text {
-      color: var(--color);
-    }
-  </style>
-  <body>
-    <div class="blue-text">
-      <div class="my-text">This will be blue</div>
-      <div class="red-text">
-        <div class="my-text">
-          This will be red (even though it's within the blue-text div, the
-          red-text is more specific).
-        </div>
-      </div>
-    </div>
-  </body>
+	<style>
+		.blue-text {
+			--color: blue;
+		}
+		.red-text {
+			--color: red;
+		}
+		.my-text {
+			color: var(--color);
+		}
+	</style>
+	<body>
+		<div class="blue-text">
+			<div class="my-text">This will be blue</div>
+			<div class="red-text">
+				<div class="my-text">
+					This will be red (even though it's within the blue-text div, the
+					red-text is more specific).
+				</div>
+			</div>
+		</div>
+	</body>
 </html>
 ```
 
@@ -117,34 +117,34 @@ And you can even change the custom property value using JavaScript:
 
 ```html
 <html>
-  <style>
-    .blue-text {
-      --color: blue;
-    }
-    .red-text {
-      --color: red;
-    }
-    .my-text {
-      color: var(--color);
-    }
-  </style>
-  <body>
-    <div class="blue-text">
-      <div class="my-text">
-        This will be green (because the JS will change the color property)
-      </div>
-      <div class="red-text">
-        <div class="my-text">
-          This will be red (even though it's within the blue-text div, the
-          red-text is more specific).
-        </div>
-      </div>
-    </div>
-    <script>
-      const blueTextDiv = document.querySelector('.blue-text')
-      blueTextDiv.style.setProperty('--color', 'green')
-    </script>
-  </body>
+	<style>
+		.blue-text {
+			--color: blue;
+		}
+		.red-text {
+			--color: red;
+		}
+		.my-text {
+			color: var(--color);
+		}
+	</style>
+	<body>
+		<div class="blue-text">
+			<div class="my-text">
+				This will be green (because the JS will change the color property)
+			</div>
+			<div class="red-text">
+				<div class="my-text">
+					This will be red (even though it's within the blue-text div, the
+					red-text is more specific).
+				</div>
+			</div>
+		</div>
+		<script>
+			const blueTextDiv = document.querySelector('.blue-text')
+			blueTextDiv.style.setProperty('--color', 'green')
+		</script>
+	</body>
 </html>
 ```
 

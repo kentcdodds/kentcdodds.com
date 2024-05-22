@@ -26,10 +26,10 @@ bannerCredit:
 ---
 
 import {
-  TryCatchApp,
-  BoundaryApp,
-  RecoveryApp,
-  Layout,
+	TryCatchApp,
+	BoundaryApp,
+	RecoveryApp,
+	Layout,
 } from './components/index.jsx'
 
 What's wrong with this code?
@@ -38,21 +38,21 @@ What's wrong with this code?
 import * as React from 'react'
 import ReactDOM from 'react-dom'
 
-function Greeting({subject}) {
-  return <div>Hello {subject.toUpperCase()}</div>
+function Greeting({ subject }) {
+	return <div>Hello {subject.toUpperCase()}</div>
 }
 
-function Farewell({subject}) {
-  return <div>Goodbye {subject.toUpperCase()}</div>
+function Farewell({ subject }) {
+	return <div>Goodbye {subject.toUpperCase()}</div>
 }
 
 function App() {
-  return (
-    <div>
-      <Greeting />
-      <Farewell />
-    </div>
-  )
+	return (
+		<div>
+			<Greeting />
+			<Farewell />
+		</div>
+	)
 }
 
 ReactDOM.render(<App />, document.getElementById('root'))
@@ -82,38 +82,38 @@ The naive approach to handling this kind of error would be to add a `try/catch`:
 import * as React from 'react'
 import ReactDOM from 'react-dom'
 
-function ErrorFallback({error}) {
-  return (
-    <div role="alert">
-      <p>Something went wrong:</p>
-      <pre style={{color: 'red'}}>{error.message}</pre>
-    </div>
-  )
+function ErrorFallback({ error }) {
+	return (
+		<div role="alert">
+			<p>Something went wrong:</p>
+			<pre style={{ color: 'red' }}>{error.message}</pre>
+		</div>
+	)
 }
 
-function Greeting({subject}) {
-  try {
-    return <div>Hello {subject.toUpperCase()}</div>
-  } catch (error) {
-    return <ErrorFallback error={error} />
-  }
+function Greeting({ subject }) {
+	try {
+		return <div>Hello {subject.toUpperCase()}</div>
+	} catch (error) {
+		return <ErrorFallback error={error} />
+	}
 }
 
-function Farewell({subject}) {
-  try {
-    return <div>Goodbye {subject.toUpperCase()}</div>
-  } catch (error) {
-    return <ErrorFallback error={error} />
-  }
+function Farewell({ subject }) {
+	try {
+		return <div>Goodbye {subject.toUpperCase()}</div>
+	} catch (error) {
+		return <ErrorFallback error={error} />
+	}
 }
 
 function App() {
-  return (
-    <div>
-      <Greeting />
-      <Farewell />
-    </div>
-  )
+	return (
+		<div>
+			<Greeting />
+			<Farewell />
+		</div>
+	)
 }
 
 ReactDOM.render(<App />, document.getElementById('root'))
@@ -122,7 +122,7 @@ ReactDOM.render(<App />, document.getElementById('root'))
 That "works":
 
 <Layout>
-  <TryCatchApp />
+	<TryCatchApp />
 </Layout>
 
 But, it may be ridiculous of me, but what if I don't want to wrap _every_
@@ -134,34 +134,34 @@ the functions it calls. Let's try that here:
 import * as React from 'react'
 import ReactDOM from 'react-dom'
 
-function ErrorFallback({error}) {
-  return (
-    <div role="alert">
-      <p>Something went wrong:</p>
-      <pre style={{color: 'red'}}>{error.message}</pre>
-    </div>
-  )
+function ErrorFallback({ error }) {
+	return (
+		<div role="alert">
+			<p>Something went wrong:</p>
+			<pre style={{ color: 'red' }}>{error.message}</pre>
+		</div>
+	)
 }
 
-function Greeting({subject}) {
-  return <div>Hello {subject.toUpperCase()}</div>
+function Greeting({ subject }) {
+	return <div>Hello {subject.toUpperCase()}</div>
 }
 
-function Farewell({subject}) {
-  return <div>Goodbye {subject.toUpperCase()}</div>
+function Farewell({ subject }) {
+	return <div>Goodbye {subject.toUpperCase()}</div>
 }
 
 function App() {
-  try {
-    return (
-      <div>
-        <Greeting />
-        <Farewell />
-      </div>
-    )
-  } catch (error) {
-    return <ErrorFallback error={error} />
-  }
+	try {
+		return (
+			<div>
+				<Greeting />
+				<Farewell />
+			</div>
+		)
+	} catch (error) {
+		return <ErrorFallback error={error} />
+	}
 }
 
 ReactDOM.render(<App />, document.getElementById('root'))
@@ -198,34 +198,34 @@ render the `ErrorBoundary` component:
 ```tsx lines=25-28
 import * as React from 'react'
 import ReactDOM from 'react-dom'
-import {ErrorBoundary} from 'react-error-boundary'
+import { ErrorBoundary } from 'react-error-boundary'
 
-function ErrorFallback({error}) {
-  return (
-    <div role="alert">
-      <p>Something went wrong:</p>
-      <pre style={{color: 'red'}}>{error.message}</pre>
-    </div>
-  )
+function ErrorFallback({ error }) {
+	return (
+		<div role="alert">
+			<p>Something went wrong:</p>
+			<pre style={{ color: 'red' }}>{error.message}</pre>
+		</div>
+	)
 }
 
-function Greeting({subject}) {
-  return <div>Hello {subject.toUpperCase()}</div>
+function Greeting({ subject }) {
+	return <div>Hello {subject.toUpperCase()}</div>
 }
 
-function Farewell({subject}) {
-  return <div>Goodbye {subject.toUpperCase()}</div>
+function Farewell({ subject }) {
+	return <div>Goodbye {subject.toUpperCase()}</div>
 }
 
 function App() {
-  return (
-    <div>
-      <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <Greeting />
-        <Farewell />
-      </ErrorBoundary>
-    </div>
-  )
+	return (
+		<div>
+			<ErrorBoundary FallbackComponent={ErrorFallback}>
+				<Greeting />
+				<Farewell />
+			</ErrorBoundary>
+		</div>
+	)
 }
 
 ReactDOM.render(<App />, document.getElementById('root'))
@@ -234,7 +234,7 @@ ReactDOM.render(<App />, document.getElementById('root'))
 And that works perfectly:
 
 <Layout>
-  <BoundaryApp />
+	<BoundaryApp />
 </Layout>
 
 ## Error Recovery
@@ -249,59 +249,59 @@ tools we need to manage this as well.
 Here's a more complex example:
 
 ```tsx lines=6,36-40
-function ErrorFallback({error, resetErrorBoundary}) {
-  return (
-    <div role="alert">
-      <p>Something went wrong:</p>
-      <pre style={{color: 'red'}}>{error.message}</pre>
-      <button onClick={resetErrorBoundary}>Try again</button>
-    </div>
-  )
+function ErrorFallback({ error, resetErrorBoundary }) {
+	return (
+		<div role="alert">
+			<p>Something went wrong:</p>
+			<pre style={{ color: 'red' }}>{error.message}</pre>
+			<button onClick={resetErrorBoundary}>Try again</button>
+		</div>
+	)
 }
 
-function Bomb({username}) {
-  if (username === 'bomb') {
-    throw new Error('💥 CABOOM 💥')
-  }
-  return `Hi ${username}`
+function Bomb({ username }) {
+	if (username === 'bomb') {
+		throw new Error('💥 CABOOM 💥')
+	}
+	return `Hi ${username}`
 }
 
 function App() {
-  const [username, setUsername] = React.useState('')
-  const usernameRef = React.useRef(null)
+	const [username, setUsername] = React.useState('')
+	const usernameRef = React.useRef(null)
 
-  return (
-    <div>
-      <label>
-        {`Username (don't type "bomb"): `}
-        <input
-          placeholder={`type "bomb"`}
-          value={username}
-          onChange={e => setUsername(e.target.value)}
-          ref={usernameRef}
-        />
-      </label>
-      <div>
-        <ErrorBoundary
-          FallbackComponent={ErrorFallback}
-          onReset={() => {
-            setUsername('')
-            usernameRef.current.focus()
-          }}
-          resetKeys={[username]}
-        >
-          <Bomb username={username} />
-        </ErrorBoundary>
-      </div>
-    </div>
-  )
+	return (
+		<div>
+			<label>
+				{`Username (don't type "bomb"): `}
+				<input
+					placeholder={`type "bomb"`}
+					value={username}
+					onChange={e => setUsername(e.target.value)}
+					ref={usernameRef}
+				/>
+			</label>
+			<div>
+				<ErrorBoundary
+					FallbackComponent={ErrorFallback}
+					onReset={() => {
+						setUsername('')
+						usernameRef.current.focus()
+					}}
+					resetKeys={[username]}
+				>
+					<Bomb username={username} />
+				</ErrorBoundary>
+			</div>
+		</div>
+	)
 }
 ```
 
 Here's what that experience is like:
 
 <Layout>
-  <RecoveryApp />
+	<RecoveryApp />
 </Layout>
 
 You'll notice that if you type "bomb", the `Bomb` component is replaced by the
@@ -329,35 +329,35 @@ different in the event of an error, like so:
 
 ```tsx
 function Greeting() {
-  const [{status, greeting, error}, setState] = React.useState({
-    status: 'idle',
-    greeting: null,
-    error: null,
-  })
+	const [{ status, greeting, error }, setState] = React.useState({
+		status: 'idle',
+		greeting: null,
+		error: null,
+	})
 
-  function handleSubmit(event) {
-    event.preventDefault()
-    const name = event.target.elements.name.value
-    setState({status: 'pending'})
-    fetchGreeting(name).then(
-      newGreeting => setState({greeting: newGreeting, status: 'resolved'}),
-      newError => setState({error: newError, status: 'rejected'}),
-    )
-  }
+	function handleSubmit(event) {
+		event.preventDefault()
+		const name = event.target.elements.name.value
+		setState({ status: 'pending' })
+		fetchGreeting(name).then(
+			newGreeting => setState({ greeting: newGreeting, status: 'resolved' }),
+			newError => setState({ error: newError, status: 'rejected' }),
+		)
+	}
 
-  return status === 'rejected' ? (
-    <ErrorFallback error={error} />
-  ) : status === 'resolved' ? (
-    <div>{greeting}</div>
-  ) : (
-    <form onSubmit={handleSubmit}>
-      <label>Name</label>
-      <input id="name" />
-      <button type="submit" onClick={handleClick}>
-        get a greeting
-      </button>
-    </form>
-  )
+	return status === 'rejected' ? (
+		<ErrorFallback error={error} />
+	) : status === 'resolved' ? (
+		<div>{greeting}</div>
+	) : (
+		<form onSubmit={handleSubmit}>
+			<label>Name</label>
+			<input id="name" />
+			<button type="submit" onClick={handleClick}>
+				get a greeting
+			</button>
+		</form>
+	)
 }
 ```
 
@@ -373,33 +373,33 @@ could use that to side-step this entirely:
 
 ```tsx lines=6,14
 function Greeting() {
-  const [{status, greeting}, setState] = React.useState({
-    status: 'idle',
-    greeting: null,
-  })
-  const {showBoundary} = useErrorBoundary()
+	const [{ status, greeting }, setState] = React.useState({
+		status: 'idle',
+		greeting: null,
+	})
+	const { showBoundary } = useErrorBoundary()
 
-  function handleSubmit(event) {
-    event.preventDefault()
-    const name = event.target.elements.name.value
-    setState({status: 'pending'})
-    fetchGreeting(name).then(
-      newGreeting => setState({greeting: newGreeting, status: 'resolved'}),
-      error => showBoundary(error),
-    )
-  }
+	function handleSubmit(event) {
+		event.preventDefault()
+		const name = event.target.elements.name.value
+		setState({ status: 'pending' })
+		fetchGreeting(name).then(
+			newGreeting => setState({ greeting: newGreeting, status: 'resolved' }),
+			error => showBoundary(error),
+		)
+	}
 
-  return status === 'resolved' ? (
-    <div>{greeting}</div>
-  ) : (
-    <form onSubmit={handleSubmit}>
-      <label>Name</label>
-      <input id="name" />
-      <button type="submit" onClick={handleClick}>
-        get a greeting
-      </button>
-    </form>
-  )
+	return status === 'resolved' ? (
+		<div>{greeting}</div>
+	) : (
+		<form onSubmit={handleSubmit}>
+			<label>Name</label>
+			<input id="name" />
+			<button type="submit" onClick={handleClick}>
+				get a greeting
+			</button>
+		</form>
+	)
 }
 ```
 
@@ -411,27 +411,27 @@ Alternatively, let's say you're using a hook that gives you the error:
 
 ```tsx
 function Greeting() {
-  const [name, setName] = React.useState('')
-  const {status, greeting, error} = useGreeting(name)
-  if (error) throw error
+	const [name, setName] = React.useState('')
+	const { status, greeting, error } = useGreeting(name)
+	if (error) throw error
 
-  function handleSubmit(event) {
-    event.preventDefault()
-    const name = event.target.elements.name.value
-    setName(name)
-  }
+	function handleSubmit(event) {
+		event.preventDefault()
+		const name = event.target.elements.name.value
+		setName(name)
+	}
 
-  return status === 'resolved' ? (
-    <div>{greeting}</div>
-  ) : (
-    <form onSubmit={handleSubmit}>
-      <label>Name</label>
-      <input id="name" />
-      <button type="submit" onClick={handleClick}>
-        get a greeting
-      </button>
-    </form>
-  )
+	return status === 'resolved' ? (
+		<div>{greeting}</div>
+	) : (
+		<form onSubmit={handleSubmit}>
+			<label>Name</label>
+			<input id="name" />
+			<button type="submit" onClick={handleClick}>
+				get a greeting
+			</button>
+		</form>
+	)
 }
 ```
 
@@ -442,9 +442,9 @@ In either case, you could handle those errors like this:
 
 ```tsx
 const ui = (
-  <ErrorBoundary FallbackComponent={ErrorFallback}>
-    <Greeting />
-  </ErrorBoundary>
+	<ErrorBoundary FallbackComponent={ErrorFallback}>
+		<Greeting />
+	</ErrorBoundary>
 )
 ```
 

@@ -31,23 +31,23 @@ from [youmightnotneedjquery.com](http://youmightnotneedjquery.com):
 // $(el).toggleClass(className);
 
 function toggleClass(el, className) {
-  if (el.classList) {
-    el.classList.toggle(className)
-  } else {
-    var classes = el.className.split(' ')
-    var existingIndex = -1
-    for (var i = classes.length; i--; ) {
-      if (classes[i] === className) existingIndex = i
-    }
+	if (el.classList) {
+		el.classList.toggle(className)
+	} else {
+		var classes = el.className.split(' ')
+		var existingIndex = -1
+		for (var i = classes.length; i--; ) {
+			if (classes[i] === className) existingIndex = i
+		}
 
-    if (existingIndex >= 0) {
-      classes.splice(existingIndex, 1)
-    } else {
-      classes.push(className)
-    }
+		if (existingIndex >= 0) {
+			classes.splice(existingIndex, 1)
+		} else {
+			classes.push(className)
+		}
 
-    el.className = classes.join(' ')
-  }
+		el.className = classes.join(' ')
+	}
 }
 ```
 
@@ -58,7 +58,7 @@ you can actually change that to:
 // $(el).toggleClass(className)
 
 function toggleClass(el, className) {
-  el.classList.toggle(className)
+	el.classList.toggle(className)
 }
 ```
 
@@ -83,10 +83,10 @@ overwhelmed by too much to learn at once and using abstractions effectively.
 For more on this, check out [AHA Programming 💡](/blog/aha-programming).
 
 <callout-info>
-  Side note... Want to just play around with stuff? Want to just ship stuff?
-  That's totally cool. Just recognize you don't know the trade-offs and that
-  could bite you in the future. If the future doesn't matter that much then
-  don't worry about it!
+	Side note... Want to just play around with stuff? Want to just ship stuff?
+	That's totally cool. Just recognize you don't know the trade-offs and that
+	could bite you in the future. If the future doesn't matter that much then
+	don't worry about it!
 </callout-info>
 
 ## Start with JavaScript + Modern JS
@@ -196,8 +196,8 @@ then I suggest you give my blog post
 a read through.
 
 <callout-info class="aside">
-  TL;DR: React is an Application State Management library and you don't need
-  Redux
+	TL;DR: React is an Application State Management library and you don't need
+	Redux
 </callout-info>
 
 ## Component Styling

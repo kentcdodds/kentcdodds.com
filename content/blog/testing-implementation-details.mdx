@@ -50,13 +50,13 @@ details. Tests which test implementation details:
 2. May not fail when you break application code. **False positives**
 
 <callout-warning>
-  To be clear, the test is: "does the software work". If the test passes, then
-  that means the test came back "positive" (found working software). If it does
-  not, that means the test comes back "negative" (did not find working
-  software). The term "False" refers to when the test came back with an
-  incorrect result, meaning the software is actually broken but the test passes
-  (false positive) or the software is actually working but the test fails (false
-  negative).
+	To be clear, the test is: "does the software work". If the test passes, then
+	that means the test came back "positive" (found working software). If it does
+	not, that means the test comes back "negative" (did not find working
+	software). The term "False" refers to when the test came back with an
+	incorrect result, meaning the software is actually broken but the test passes
+	(false positive) or the software is actually working but the test fails (false
+	negative).
 </callout-warning>
 
 Let's take a look at each of these in turn, using the following simple accordion
@@ -68,25 +68,25 @@ import * as React from 'react'
 import AccordionContents from './accordion-contents'
 
 class Accordion extends React.Component {
-  state = {openIndex: 0}
-  setOpenIndex = openIndex => this.setState({openIndex})
-  render() {
-    const {openIndex} = this.state
-    return (
-      <div>
-        {this.props.items.map((item, index) => (
-          <>
-            <button onClick={() => this.setOpenIndex(index)}>
-              {item.title}
-            </button>
-            {index === openIndex ? (
-              <AccordionContents>{item.contents}</AccordionContents>
-            ) : null}
-          </>
-        ))}
-      </div>
-    )
-  }
+	state = { openIndex: 0 }
+	setOpenIndex = openIndex => this.setState({ openIndex })
+	render() {
+		const { openIndex } = this.state
+		return (
+			<div>
+				{this.props.items.map((item, index) => (
+					<>
+						<button onClick={() => this.setOpenIndex(index)}>
+							{item.title}
+						</button>
+						{index === openIndex ? (
+							<AccordionContents>{item.contents}</AccordionContents>
+						) : null}
+					</>
+				))}
+			</div>
+		)
+	}
 }
 
 export default Accordion
@@ -104,28 +104,28 @@ And here's a test that tests implementation details:
 import * as React from 'react'
 // if you're wondering why not shallow,
 // then please read https://kcd.im/shallow
-import Enzyme, {mount} from 'enzyme'
+import Enzyme, { mount } from 'enzyme'
 import EnzymeAdapter from 'enzyme-adapter-react-16'
 import Accordion from '../accordion'
 
 // Setup enzyme's react adapter
-Enzyme.configure({adapter: new EnzymeAdapter()})
+Enzyme.configure({ adapter: new EnzymeAdapter() })
 
 test('setOpenIndex sets the open index state properly', () => {
-  const wrapper = mount(<Accordion items={[]} />)
-  expect(wrapper.state('openIndex')).toBe(0)
-  wrapper.instance().setOpenIndex(1)
-  expect(wrapper.state('openIndex')).toBe(1)
+	const wrapper = mount(<Accordion items={[]} />)
+	expect(wrapper.state('openIndex')).toBe(0)
+	wrapper.instance().setOpenIndex(1)
+	expect(wrapper.state('openIndex')).toBe(1)
 })
 
 test('Accordion renders AccordionContents with the item contents', () => {
-  const hats = {title: 'Favorite Hats', contents: 'Fedoras are classy'}
-  const footware = {
-    title: 'Favorite Footware',
-    contents: 'Flipflops are the best',
-  }
-  const wrapper = mount(<Accordion items={[hats, footware]} />)
-  expect(wrapper.find('AccordionContents').props().children).toBe(hats.contents)
+	const hats = { title: 'Favorite Hats', contents: 'Fedoras are classy' }
+	const footware = {
+		title: 'Favorite Footware',
+		contents: 'Flipflops are the best',
+	}
+	const wrapper = mount(<Accordion items={[hats, footware]} />)
+	expect(wrapper.find('AccordionContents').props().children).toBe(hats.contents)
 })
 ```
 
@@ -205,12 +205,12 @@ our test:
 
 ```tsx remove=3,6 add=4,7
 test('setOpenIndex sets the open index state properly', () => {
-  const wrapper = mount(<Accordion items={[]} />)
-  expect(wrapper.state('openIndex')).toEqual(0)
-  expect(wrapper.state('openIndexes')).toEqual([0])
-  wrapper.instance().setOpenIndex(1)
-  expect(wrapper.state('openIndex')).toEqual(1)
-  expect(wrapper.state('openIndexes')).toEqual([1])
+	const wrapper = mount(<Accordion items={[]} />)
+	expect(wrapper.state('openIndex')).toEqual(0)
+	expect(wrapper.state('openIndexes')).toEqual([0])
+	wrapper.instance().setOpenIndex(1)
+	expect(wrapper.state('openIndex')).toEqual(1)
+	expect(wrapper.state('openIndexes')).toEqual([1])
 })
 ```
 
@@ -277,25 +277,25 @@ Let's check that out now!
 // __tests__/accordion.rtl.js
 import '@testing-library/jest-dom/extend-expect'
 import * as React from 'react'
-import {render, screen} from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Accordion from '../accordion'
 
 test('can open accordion items to see the contents', () => {
-  const hats = {title: 'Favorite Hats', contents: 'Fedoras are classy'}
-  const footware = {
-    title: 'Favorite Footware',
-    contents: 'Flipflops are the best',
-  }
-  render(<Accordion items={[hats, footware]} />)
+	const hats = { title: 'Favorite Hats', contents: 'Fedoras are classy' }
+	const footware = {
+		title: 'Favorite Footware',
+		contents: 'Flipflops are the best',
+	}
+	render(<Accordion items={[hats, footware]} />)
 
-  expect(screen.getByText(hats.contents)).toBeInTheDocument()
-  expect(screen.queryByText(footware.contents)).not.toBeInTheDocument()
+	expect(screen.getByText(hats.contents)).toBeInTheDocument()
+	expect(screen.queryByText(footware.contents)).not.toBeInTheDocument()
 
-  userEvent.click(screen.getByText(footware.title))
+	userEvent.click(screen.getByText(footware.title))
 
-  expect(screen.getByText(footware.contents)).toBeInTheDocument()
-  expect(screen.queryByText(hats.contents)).not.toBeInTheDocument()
+	expect(screen.getByText(footware.contents)).toBeInTheDocument()
+	expect(screen.queryByText(hats.contents)).not.toBeInTheDocument()
 })
 ```
 
@@ -312,8 +312,8 @@ accordion is working as the user wants it too.
 Here's the simplest definition I can come up with:
 
 <callout-success class="important">
-  Implementation details are things which users of your code will not typically
-  use, see, or even know about.
+	Implementation details are things which users of your code will not typically
+	use, see, or even know about.
 </callout-success>
 
 So the first question we need an answer to is: "Who is the user of this code."
@@ -356,7 +356,7 @@ that the application code works for the production users._
 >  — me
 
 <callout-info class="aside">
-  Read more about this in [Avoid the Test User](/blog/avoid-the-test-user).
+	Read more about this in [Avoid the Test User](/blog/avoid-the-test-user).
 </callout-info>
 
 ## So, what about hooks
@@ -373,7 +373,7 @@ codesandbox link at the end to see it in action. I like to call tests you write
 with React Testing Library:
 
 <callout-success class="important">
-  Implementation detail free and refactor friendly.
+	Implementation detail free and refactor friendly.
 </callout-success>
 
 ![happy goats](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033409/kentcdodds.com/content/blog/testing-implementation-details/0.gif)

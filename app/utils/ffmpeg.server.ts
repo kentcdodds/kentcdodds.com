@@ -1,31 +1,31 @@
-import {spawn} from 'child_process'
+import { spawn } from 'child_process'
 import fs from 'fs'
 import fsExtra from 'fs-extra'
 import path from 'path'
 import * as uuid from 'uuid'
 
 const asset = (...p: Array<string>) =>
-  path.join(process.cwd(), 'app/assets', ...p)
+	path.join(process.cwd(), 'app/assets', ...p)
 const cache = (...p: Array<string>) =>
-  path.join(process.cwd(), '.cache/calls', ...p)
+	path.join(process.cwd(), '.cache/calls', ...p)
 
 async function createEpisodeAudio(callBase64: string, responseBase64: string) {
-  const id = uuid.v4()
-  const cacheDir = cache(id)
-  fsExtra.ensureDirSync(cacheDir)
-  const callPath = cache(id, 'call.mp3')
-  const responsePath = cache(id, 'response.mp3')
-  const outputPath = cache(id, 'output.mp3')
+	const id = uuid.v4()
+	const cacheDir = cache(id)
+	fsExtra.ensureDirSync(cacheDir)
+	const callPath = cache(id, 'call.mp3')
+	const responsePath = cache(id, 'response.mp3')
+	const outputPath = cache(id, 'output.mp3')
 
-  const callBuffer = Buffer.from(callBase64.split(',')[1]!, 'base64')
-  const responseBuffer = Buffer.from(responseBase64.split(',')[1]!, 'base64')
+	const callBuffer = Buffer.from(callBase64.split(',')[1]!, 'base64')
+	const responseBuffer = Buffer.from(responseBase64.split(',')[1]!, 'base64')
 
-  await fs.promises.writeFile(callPath, callBuffer)
-  await fs.promises.writeFile(responsePath, responseBuffer)
+	await fs.promises.writeFile(callPath, callBuffer)
+	await fs.promises.writeFile(responsePath, responseBuffer)
 
-  await new Promise((resolve, reject) => {
-    // prettier-ignore
-    const args = [
+	await new Promise((resolve, reject) => {
+		// prettier-ignore
+		const args = [
       '-i', asset('call-kent/intro.mp3'),
       '-i', callPath,
       '-i', asset('call-kent/interstitial.mp3'),
@@ -48,15 +48,15 @@ async function createEpisodeAudio(callBase64: string, responseBase64: string) {
       `,
       outputPath,
     ]
-    spawn('ffmpeg', args, {stdio: 'inherit'}).on('close', code => {
-      if (code === 0) resolve(null)
-      else reject(null)
-    })
-  })
+		spawn('ffmpeg', args, { stdio: 'inherit' }).on('close', code => {
+			if (code === 0) resolve(null)
+			else reject(null)
+		})
+	})
 
-  const buffer = await fs.promises.readFile(outputPath)
-  await fs.promises.rmdir(cacheDir, {recursive: true})
-  return buffer
+	const buffer = await fs.promises.readFile(outputPath)
+	await fs.promises.rmdir(cacheDir, { recursive: true })
+	return buffer
 }
 
-export {createEpisodeAudio}
+export { createEpisodeAudio }

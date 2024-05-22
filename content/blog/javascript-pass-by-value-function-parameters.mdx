@@ -18,10 +18,10 @@ Why doesn't this work?
 
 ```js
 function getLogger(arg) {
-  function logger() {
-    console.log(arg)
-  }
-  return logger
+	function logger() {
+		console.log(arg)
+	}
+	return logger
 }
 
 let fruit = 'raspberry'
@@ -58,10 +58,10 @@ Let me briefly describe what's going on here:
 
 ```js
 function getLogger(arg) {
-  function logger() {
-    console.log(arg)
-  }
-  return logger
+	function logger() {
+		console.log(arg)
+	}
+	return logger
 }
 
 // side-note, this could be written like this too
@@ -128,7 +128,7 @@ where the arrows (variables) point, you can change what they're pointing to! For
 example:
 
 ```js
-let a = {current: 1}
+let a = { current: 1 }
 let b = a
 
 console.log(a.current, b.current) // 1, 1
@@ -145,13 +145,13 @@ So, let's apply this solution to our `logger` problem:
 
 ```js
 function getLatestLogger(argRef) {
-  function logger() {
-    console.log(argRef.current)
-  }
-  return logger
+	function logger() {
+		console.log(argRef.current)
+	}
+	return logger
 }
 
-const fruitRef = {current: 'raspberry'}
+const fruitRef = { current: 'raspberry' }
 
 const latestLogger = getLatestLogger(fruitRef)
 

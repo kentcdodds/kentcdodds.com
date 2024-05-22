@@ -35,15 +35,15 @@ bannerCredit: Photo by [傅甬 华](https://unsplash.com/photos/tEMU4lzAL0w)
 Alrighty, let's talk about this:
 
 ```js
-const reportError = ({message}) => {
-  // send the error to our logging service...
+const reportError = ({ message }) => {
+	// send the error to our logging service...
 }
 
 try {
-  throw new Error('Oh no!')
+	throw new Error('Oh no!')
 } catch (error) {
-  // we'll proceed, but let's report it
-  reportError({message: error.message})
+	// we'll proceed, but let's report it
+	reportError({ message: error.message })
 }
 ```
 
@@ -51,15 +51,15 @@ Good so far? Well, that's because this is JavaScript. Let's throw TypeScript at
 this:
 
 ```ts lines=9
-const reportError = ({message}: {message: string}) => {
-  // send the error to our logging service...
+const reportError = ({ message }: { message: string }) => {
+	// send the error to our logging service...
 }
 
 try {
-  throw new Error('Oh no!')
+	throw new Error('Oh no!')
 } catch (error) {
-  // we'll proceed, but let's report it
-  reportError({message: error.message})
+	// we'll proceed, but let's report it
+	reportError({ message: error.message })
 }
 ```
 
@@ -76,7 +76,7 @@ anything:
 ```ts
 throw 'What the!?'
 throw 7
-throw {wut: 'is this'}
+throw { wut: 'is this' }
 throw null
 throw new Promise(() => {})
 throw undefined
@@ -88,10 +88,10 @@ error right?
 
 ```ts lines=3
 try {
-  throw new Error('Oh no!')
+	throw new Error('Oh no!')
 } catch (error: Error) {
-  // we'll proceed, but let's report it
-  reportError({message: error.message})
+	// we'll proceed, but let's report it
+	reportError({ message: error.message })
 }
 ```
 
@@ -108,7 +108,7 @@ monkey-patching the error constructor to throw something different:
 
 ```ts
 Error = function () {
-  throw 'Flowers'
+	throw 'Flowers'
 } as any
 ```
 
@@ -116,12 +116,12 @@ So what's a dev to do? The very best they can! So how about this:
 
 ```ts lines=4-5,7
 try {
-  throw new Error('Oh no!')
+	throw new Error('Oh no!')
 } catch (error) {
-  let message = 'Unknown Error'
-  if (error instanceof Error) message = error.message
-  // we'll proceed, but let's report it
-  reportError({message})
+	let message = 'Unknown Error'
+	if (error instanceof Error) message = error.message
+	// we'll proceed, but let's report it
+	reportError({ message })
 }
 ```
 
@@ -131,13 +131,13 @@ Maybe we could do even better though:
 
 ```ts lines=4,6
 try {
-  throw new Error('Oh no!')
+	throw new Error('Oh no!')
 } catch (error) {
-  let message
-  if (error instanceof Error) message = error.message
-  else message = String(error)
-  // we'll proceed, but let's report it
-  reportError({message})
+	let message
+	if (error instanceof Error) message = error.message
+	else message = String(error)
+	// we'll proceed, but let's report it
+	reportError({ message })
 }
 ```
 
@@ -148,19 +148,19 @@ Then we can turn this into a utility for use in all our catch blocks:
 
 ```ts lines=1-4,14
 function getErrorMessage(error: unknown) {
-  if (error instanceof Error) return error.message
-  return String(error)
+	if (error instanceof Error) return error.message
+	return String(error)
 }
 
-const reportError = ({message}: {message: string}) => {
-  // send the error to our logging service...
+const reportError = ({ message }: { message: string }) => {
+	// send the error to our logging service...
 }
 
 try {
-  throw new Error('Oh no!')
+	throw new Error('Oh no!')
 } catch (error) {
-  // we'll proceed, but let's report it
-  reportError({message: getErrorMessage(error)})
+	// we'll proceed, but let's report it
+	reportError({ message: getErrorMessage(error) })
 }
 ```
 
@@ -176,32 +176,32 @@ suggestions looks like this:
 
 ```ts
 type ErrorWithMessage = {
-  message: string
+	message: string
 }
 
 function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'message' in error &&
-    typeof (error as Record<string, unknown>).message === 'string'
-  )
+	return (
+		typeof error === 'object' &&
+		error !== null &&
+		'message' in error &&
+		typeof (error as Record<string, unknown>).message === 'string'
+	)
 }
 
 function toErrorWithMessage(maybeError: unknown): ErrorWithMessage {
-  if (isErrorWithMessage(maybeError)) return maybeError
+	if (isErrorWithMessage(maybeError)) return maybeError
 
-  try {
-    return new Error(JSON.stringify(maybeError))
-  } catch {
-    // fallback in case there's an error stringifying the maybeError
-    // like with circular references for example.
-    return new Error(String(maybeError))
-  }
+	try {
+		return new Error(JSON.stringify(maybeError))
+	} catch {
+		// fallback in case there's an error stringifying the maybeError
+		// like with circular references for example.
+		return new Error(String(maybeError))
+	}
 }
 
 function getErrorMessage(error: unknown) {
-  return toErrorWithMessage(error).message
+	return toErrorWithMessage(error).message
 }
 ```
 

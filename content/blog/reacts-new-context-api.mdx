@@ -14,14 +14,14 @@ bannerCredit: Photo by [JJ Ying](https://unsplash.com/photos/7JX0-bfiuxQ)
 ---
 
 <callout-danger>
-  This article is only kept around for historical purposes. The context API
-  isn't "new" and there are better ways to use it (via hooks).
+	This article is only kept around for historical purposes. The context API
+	isn't "new" and there are better ways to use it (via hooks).
 </callout-danger>
 
 <callout-info>
-  Curious about happend to the context API when [React
-  hooks](https://reactjs.org/hooks) were released? Read all about it here:
-  [https://kentcdodds.com/blog/react-hooks-whats-going-to-happen-to-react-context](/blog/react-hooks-whats-going-to-happen-to-react-context)
+	Curious about happend to the context API when [React
+	hooks](https://reactjs.org/hooks) were released? Read all about it here:
+	[https://kentcdodds.com/blog/react-hooks-whats-going-to-happen-to-react-context](/blog/react-hooks-whats-going-to-happen-to-react-context)
 </callout-info>
 
 Have you heard of the context API in React? If you've heard of it, are you like
@@ -99,24 +99,24 @@ Here's an even simpler version so you don't have to open the codesandbox:
 ```tsx
 const ThemeContext = React.createContext('light')
 class ThemeProvider extends React.Component {
-  state = {theme: 'light'}
-  render() {
-    return (
-      <ThemeContext.Provider value={this.state.theme}>
-        {this.props.children}
-      </ThemeContext.Provider>
-    )
-  }
+	state = { theme: 'light' }
+	render() {
+		return (
+			<ThemeContext.Provider value={this.state.theme}>
+				{this.props.children}
+			</ThemeContext.Provider>
+		)
+	}
 }
 
 class App extends React.Component {
-  render() {
-    return (
-      <ThemeProvider>
-        <ThemeContext.Consumer>{val => <div>{val}</div>}</ThemeContext.Consumer>
-      </ThemeProvider>
-    )
-  }
+	render() {
+		return (
+			<ThemeProvider>
+				<ThemeContext.Consumer>{val => <div>{val}</div>}</ThemeContext.Consumer>
+			</ThemeProvider>
+		)
+	}
 }
 ```
 
@@ -171,47 +171,47 @@ functions/components. Here's an example:
 ```tsx
 const ThemeContext = React.createContext('light')
 class ThemeProvider extends React.Component {
-  /* code */
+	/* code */
 }
 const ThemeConsumer = ThemeContext.Consumer
 const LanguageContext = React.createContext('en')
 class LanguageProvider extends React.Component {
-  /* code */
+	/* code */
 }
 const LanguageConsumer = LanguageContext.Consumer
 
-function AppProviders({children}) {
-  return (
-    <LanguageProvider>
-      <ThemeProvider>{children}</ThemeProvider>
-    </LanguageProvider>
-  )
+function AppProviders({ children }) {
+	return (
+		<LanguageProvider>
+			<ThemeProvider>{children}</ThemeProvider>
+		</LanguageProvider>
+	)
 }
 
-function ThemeAndLanguageConsumer({children}) {
-  return (
-    <LanguageConsumer>
-      {language => (
-        <ThemeConsumer>{theme => children({language, theme})}</ThemeConsumer>
-      )}
-    </LanguageConsumer>
-  )
+function ThemeAndLanguageConsumer({ children }) {
+	return (
+		<LanguageConsumer>
+			{language => (
+				<ThemeConsumer>{theme => children({ language, theme })}</ThemeConsumer>
+			)}
+		</LanguageConsumer>
+	)
 }
 
 class App extends React.Component {
-  render() {
-    return (
-      <AppProviders>
-        <ThemeAndLanguageConsumer>
-          {({theme, language}) => (
-            <div>
-              {theme} and {language}
-            </div>
-          )}
-        </ThemeAndLanguageConsumer>
-      </AppProviders>
-    )
-  }
+	render() {
+		return (
+			<AppProviders>
+				<ThemeAndLanguageConsumer>
+					{({ theme, language }) => (
+						<div>
+							{theme} and {language}
+						</div>
+					)}
+				</ThemeAndLanguageConsumer>
+			</AppProviders>
+		)
+	}
 }
 ```
 

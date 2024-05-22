@@ -95,18 +95,18 @@ And with the `getBrowserPolyfill` is a typical express route handler:
 import polyfill from 'polyfill-service'
 
 async function getBrowserPolyfill(req, res) {
-  const script = await polyfill.getPolyfillString({
-    /* options */
-  })
-  res.set({
-    'Content-Type': 'application/javascript;charset=utf-8',
-    'Content-Length': script.length,
-  })
-  if (shouldCacheAggressively) {
-    res.setHeader('Cache-Control', 'immutable')
-  }
-  res.write(script)
-  res.end()
+	const script = await polyfill.getPolyfillString({
+		/* options */
+	})
+	res.set({
+		'Content-Type': 'application/javascript;charset=utf-8',
+		'Content-Length': script.length,
+	})
+	if (shouldCacheAggressively) {
+		res.setHeader('Cache-Control', 'immutable')
+	}
+	res.write(script)
+	res.end()
 }
 ```
 

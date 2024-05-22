@@ -27,7 +27,7 @@ Consider this code:
 
 ```js
 if ((!'serviceWorker') in navigator) {
-  // the user's using an old browser :-(
+	// the user's using an old browser :-(
 }
 ```
 
@@ -83,13 +83,13 @@ Can you spot the bug in this code?
 
 ```js
 function getFullName(user) {
-  const {
-    name: {first, middle, last},
-  } = user
-  return [first, middle, last].filter(Boolean).join(' ')
+	const {
+		name: { first, middle, last },
+	} = user
+	return [first, middle, last].filter(Boolean).join(' ')
 }
 
-getFullName({first: 'Joe', middle: 'Bud', last: 'Matthews'})
+getFullName({ first: 'Joe', middle: 'Bud', last: 'Matthews' })
 ```
 
 Maybe you can, maybe you can't. Maybe your coworkers can, maybe they can't. In

@@ -112,14 +112,14 @@ First, here's a super contrived example:
 ```js
 // let's pretend that Array.prototype.filter does not exist
 function filter(array) {
-  let newArray = []
-  for (let index = 0; index < array.length; index++) {
-    const element = array[index]
-    if (element !== null && element !== undefined) {
-      newArray[newArray.length] = element
-    }
-  }
-  return newArray
+	let newArray = []
+	for (let index = 0; index < array.length; index++) {
+		const element = array[index]
+		if (element !== null && element !== undefined) {
+			newArray[newArray.length] = element
+		}
+	}
+	return newArray
 }
 
 // use case:
@@ -135,44 +135,44 @@ support those new use cases:
 ```js
 // let's pretend that Array.prototype.filter does not exist
 function filter(
-  array,
-  {
-    filterNull = true,
-    filterUndefined = true,
-    filterZero = false,
-    filterEmptyString = false,
-  } = {},
+	array,
+	{
+		filterNull = true,
+		filterUndefined = true,
+		filterZero = false,
+		filterEmptyString = false,
+	} = {},
 ) {
-  let newArray = []
-  for (let index = 0; index < array.length; index++) {
-    const element = array[index]
-    if (
-      (filterNull && element === null) ||
-      (filterUndefined && element === undefined) ||
-      (filterZero && element === 0) ||
-      (filterEmptyString && element === '')
-    ) {
-      continue
-    }
+	let newArray = []
+	for (let index = 0; index < array.length; index++) {
+		const element = array[index]
+		if (
+			(filterNull && element === null) ||
+			(filterUndefined && element === undefined) ||
+			(filterZero && element === 0) ||
+			(filterEmptyString && element === '')
+		) {
+			continue
+		}
 
-    newArray[newArray.length] = element
-  }
-  return newArray
+		newArray[newArray.length] = element
+	}
+	return newArray
 }
 
 filter([0, 1, undefined, 2, null, 3, 'four', ''])
 // [0, 1, 2, 3, 'four', '']
 
-filter([0, 1, undefined, 2, null, 3, 'four', ''], {filterNull: false})
+filter([0, 1, undefined, 2, null, 3, 'four', ''], { filterNull: false })
 // [0, 1, 2, null, 3, 'four', '']
 
-filter([0, 1, undefined, 2, null, 3, 'four', ''], {filterUndefined: false})
+filter([0, 1, undefined, 2, null, 3, 'four', ''], { filterUndefined: false })
 // [0, 1, 2, undefined, 3, 'four', '']
 
-filter([0, 1, undefined, 2, null, 3, 'four', ''], {filterZero: true})
+filter([0, 1, undefined, 2, null, 3, 'four', ''], { filterZero: true })
 // [1, 2, 3, 'four', '']
 
-filter([0, 1, undefined, 2, null, 3, 'four', ''], {filterEmptyString: true})
+filter([0, 1, undefined, 2, null, 3, 'four', ''], { filterEmptyString: true })
 // [0, 1, 2, 3, 'four']
 ```
 
@@ -200,19 +200,19 @@ apply inversion of control to support all these use cases:
 ```js
 // let's pretend that Array.prototype.filter does not exist
 function filter(array, filterFn) {
-  let newArray = []
-  for (let index = 0; index < array.length; index++) {
-    const element = array[index]
-    if (filterFn(element)) {
-      newArray[newArray.length] = element
-    }
-  }
-  return newArray
+	let newArray = []
+	for (let index = 0; index < array.length; index++) {
+		const element = array[index]
+		if (filterFn(element)) {
+			newArray[newArray.length] = element
+		}
+	}
+	return newArray
 }
 
 filter(
-  [0, 1, undefined, 2, null, 3, 'four', ''],
-  el => el !== null && el !== undefined,
+	[0, 1, undefined, 2, null, 3, 'four', ''],
+	el => el !== null && el !== undefined,
 )
 // [0, 1, 2, 3, 'four', '']
 
@@ -223,14 +223,14 @@ filter([0, 1, undefined, 2, null, 3, 'four', ''], el => el !== null)
 // [0, 1, 2, undefined, 3, 'four', '']
 
 filter(
-  [0, 1, undefined, 2, null, 3, 'four', ''],
-  el => el !== undefined && el !== null && el !== 0,
+	[0, 1, undefined, 2, null, 3, 'four', ''],
+	el => el !== undefined && el !== null && el !== 0,
 )
 // [1, 2, 3, 'four', '']
 
 filter(
-  [0, 1, undefined, 2, null, 3, 'four', ''],
-  el => el !== undefined && el !== null && el !== '',
+	[0, 1, undefined, 2, null, 3, 'four', ''],
+	el => el !== undefined && el !== null && el !== '',
 )
 // [0, 1, 2, 3, 'four']
 ```
@@ -246,16 +246,16 @@ because we've inverted control, we can now support much more unique use cases:
 
 ```js
 filter(
-  [
-    {name: 'dog', legs: 4, mammal: true},
-    {name: 'dolphin', legs: 0, mammal: true},
-    {name: 'eagle', legs: 2, mammal: false},
-    {name: 'elephant', legs: 4, mammal: true},
-    {name: 'robin', legs: 2, mammal: false},
-    {name: 'cat', legs: 4, mammal: true},
-    {name: 'salmon', legs: 0, mammal: false},
-  ],
-  animal => animal.legs === 0,
+	[
+		{ name: 'dog', legs: 4, mammal: true },
+		{ name: 'dolphin', legs: 0, mammal: true },
+		{ name: 'eagle', legs: 2, mammal: false },
+		{ name: 'elephant', legs: 4, mammal: true },
+		{ name: 'robin', legs: 2, mammal: false },
+		{ name: 'cat', legs: 4, mammal: true },
+		{ name: 'salmon', legs: 0, mammal: false },
+	],
+	animal => animal.legs === 0,
 )
 // [
 //   {name: 'dolphin', legs: 0, mammal: true},
@@ -278,8 +278,8 @@ filter([0, 1, undefined, 2, null, 3, 'four', ''])
 
 // after
 filter(
-  [0, 1, undefined, 2, null, 3, 'four', ''],
-  el => el !== null && el !== undefined,
+	[0, 1, undefined, 2, null, 3, 'four', ''],
+	el => el !== null && el !== undefined,
 )
 ```
 
@@ -289,24 +289,24 @@ it's typically pretty trivial to do so. For example:
 
 ```js
 function filterWithOptions(
-  array,
-  {
-    filterNull = true,
-    filterUndefined = true,
-    filterZero = false,
-    filterEmptyString = false,
-  } = {},
+	array,
+	{
+		filterNull = true,
+		filterUndefined = true,
+		filterZero = false,
+		filterEmptyString = false,
+	} = {},
 ) {
-  return filter(
-    array,
-    element =>
-      !(
-        (filterNull && element === null) ||
-        (filterUndefined && element === undefined) ||
-        (filterZero && element === 0) ||
-        (filterEmptyString && element === '')
-      ),
-  )
+	return filter(
+		array,
+		element =>
+			!(
+				(filterNull && element === null) ||
+				(filterUndefined && element === undefined) ||
+				(filterZero && element === 0) ||
+				(filterEmptyString && element === '')
+			),
+	)
 }
 ```
 
@@ -323,20 +323,20 @@ Oh, and just for fun:
 
 ```js
 function filterByLegCount(array, legCount) {
-  return filter(array, animal => animal.legs === legCount)
+	return filter(array, animal => animal.legs === legCount)
 }
 
 filterByLegCount(
-  [
-    {name: 'dog', legs: 4, mammal: true},
-    {name: 'dolphin', legs: 0, mammal: true},
-    {name: 'eagle', legs: 2, mammal: false},
-    {name: 'elephant', legs: 4, mammal: true},
-    {name: 'robin', legs: 2, mammal: false},
-    {name: 'cat', legs: 4, mammal: true},
-    {name: 'salmon', legs: 0, mammal: false},
-  ],
-  0,
+	[
+		{ name: 'dog', legs: 4, mammal: true },
+		{ name: 'dolphin', legs: 0, mammal: true },
+		{ name: 'eagle', legs: 2, mammal: false },
+		{ name: 'elephant', legs: 4, mammal: true },
+		{ name: 'robin', legs: 2, mammal: false },
+		{ name: 'cat', legs: 4, mammal: true },
+		{ name: 'salmon', legs: 0, mammal: false },
+	],
+	0,
 )
 // [
 //   {name: 'dolphin', legs: 0, mammal: true},
@@ -371,20 +371,20 @@ component is to create props for each of these things:
 
 ```tsx
 function App() {
-  return (
-    <Menu
-      buttonContents={
-        <>
-          Actions <span aria-hidden>▾</span>
-        </>
-      }
-      items={[
-        {contents: 'Download', onSelect: () => alert('Download')},
-        {contents: 'Create a Copy', onSelect: () => alert('Create a Copy')},
-        {contents: 'Delete', onSelect: () => alert('Delete')},
-      ]}
-    />
-  )
+	return (
+		<Menu
+			buttonContents={
+				<>
+					Actions <span aria-hidden>▾</span>
+				</>
+			}
+			items={[
+				{ contents: 'Download', onSelect: () => alert('Download') },
+				{ contents: 'Create a Copy', onSelect: () => alert('Create a Copy') },
+				{ contents: 'Delete', onSelect: () => alert('Delete') },
+			]}
+		/>
+	)
 }
 ```
 
@@ -403,18 +403,18 @@ React's greatest strengths of composibility:
 
 ```tsx
 function App() {
-  return (
-    <Menu>
-      <MenuButton>
-        Actions <span aria-hidden>▾</span>
-      </MenuButton>
-      <MenuList>
-        <MenuItem onSelect={() => alert('Download')}>Download</MenuItem>
-        <MenuItem onSelect={() => alert('Copy')}>Create a Copy</MenuItem>
-        <MenuItem onSelect={() => alert('Delete')}>Delete</MenuItem>
-      </MenuList>
-    </Menu>
-  )
+	return (
+		<Menu>
+			<MenuButton>
+				Actions <span aria-hidden>▾</span>
+			</MenuButton>
+			<MenuList>
+				<MenuItem onSelect={() => alert('Download')}>Download</MenuItem>
+				<MenuItem onSelect={() => alert('Copy')}>Create a Copy</MenuItem>
+				<MenuItem onSelect={() => alert('Delete')}>Delete</MenuItem>
+			</MenuList>
+		</Menu>
+	)
 }
 ```
 
@@ -455,19 +455,19 @@ the menu after the user selects an item:
 
 ```js
 function stateReducer(state, changes) {
-  switch (changes.type) {
-    case Downshift.stateChangeTypes.keyDownEnter:
-    case Downshift.stateChangeTypes.clickItem:
-      return {
-        ...changes,
-        // we're fine with any changes Downshift wants to make
-        // except we're going to leave isOpen and highlightedIndex as-is.
-        isOpen: state.isOpen,
-        highlightedIndex: state.highlightedIndex,
-      }
-    default:
-      return changes
-  }
+	switch (changes.type) {
+		case Downshift.stateChangeTypes.keyDownEnter:
+		case Downshift.stateChangeTypes.clickItem:
+			return {
+				...changes,
+				// we're fine with any changes Downshift wants to make
+				// except we're going to leave isOpen and highlightedIndex as-is.
+				isOpen: state.isOpen,
+				highlightedIndex: state.highlightedIndex,
+			}
+		default:
+			return changes
+	}
 }
 
 // then when you render the component
@@ -497,14 +497,14 @@ example really quick:
 ```js
 // let's pretend that Array.prototype.filter does not exist
 function filter(array) {
-  let newArray = []
-  for (let index = 0; index < array.length; index++) {
-    const element = array[index]
-    if (element !== null && element !== undefined) {
-      newArray[newArray.length] = element
-    }
-  }
-  return newArray
+	let newArray = []
+	for (let index = 0; index < array.length; index++) {
+		const element = array[index]
+		if (element !== null && element !== undefined) {
+			newArray[newArray.length] = element
+		}
+	}
+	return newArray
 }
 
 // use case:

@@ -15,8 +15,8 @@ bannerCredit: Photo by [paul morris](https://unsplash.com/photos/Ovn1hyBge38)
 ---
 
 <callout-danger>
-  This "feature" was removed from React 16, so please don't rely on it. That
-  said, this is kinda fun so keep reading!
+	This "feature" was removed from React 16, so please don't rely on it. That
+	said, this is kinda fun so keep reading!
 </callout-danger>
 
 This week I was working on an internal module at PayPal and
@@ -24,9 +24,9 @@ This week I was working on an internal module at PayPal and
 I thought You'd be interested to hear what I learned.
 
 <callout-warning>
-  No, this isn't about [render
-  props](https://cdb.reacttraining.com/use-a-render-prop-50de598f11ce). If you
-  were hoping for that... callback later 😉
+	No, this isn't about [render
+	props](https://cdb.reacttraining.com/use-a-render-prop-50de598f11ce). If you
+	were hoping for that... callback later 😉
 </callout-warning>
 
 ![I see what you did there](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033311/kentcdodds.com/content/blog/rendering-a-function-with-react/0.gif)
@@ -40,18 +40,18 @@ API that I call "sorta-curried". I wrote about it a bit in
 So here's an example:
 
 ```js
-import getContent, {init} from 'react-i18n'
+import getContent, { init } from 'react-i18n'
 init({
-  content: {
-    pages: {
-      home: {
-        nav: {
-          about: 'About',
-          contactUs: 'Contact us',
-        },
-      },
-    },
-  },
+	content: {
+		pages: {
+			home: {
+				nav: {
+					about: 'About',
+					contactUs: 'Contact us',
+				},
+			},
+		},
+	},
 })
 
 // here's the sorta-curried part...
@@ -64,11 +64,11 @@ getContent('pages')('home.nav')('about')
 ```
 
 <callout-warning>
-  There are reasons the API is this way, and I'm not going to go over them all.
-  If you're not a fan of the API, [you're not
-  alone](https://twitter.com/dan_abramov/status/923326332020449280)_. But there
-  are reasons for the API as it is and that's not what we're going over in this
-  post... In retrospect, it's a bad API and I shouldn't have done it this way 😅
+	There are reasons the API is this way, and I'm not going to go over them all.
+	If you're not a fan of the API, [you're not
+	alone](https://twitter.com/dan_abramov/status/923326332020449280)_. But there
+	are reasons for the API as it is and that's not what we're going over in this
+	post... In retrospect, it's a bad API and I shouldn't have done it this way 😅
 </callout-warning>
 
 ### With React
@@ -204,20 +204,20 @@ So... I made my function iterable 😉
 
 ```js
 const ITERATOR_SYMBOL =
-  (typeof Symbol === 'function' && Symbol.iterator) || '@@iterator'
+	(typeof Symbol === 'function' && Symbol.iterator) || '@@iterator'
 
 // ...
 
 function iterator() {
-  let timesCalled = 0
-  // useful logging happens here...
-  return {
-    next() {
-      // this is called twice. Once to get the value, and the second time
-      // will report that it's done.
-      return {done: timesCalled++ > 0, value: pathAsString}
-    },
-  }
+	let timesCalled = 0
+	// useful logging happens here...
+	return {
+		next() {
+			// this is called twice. Once to get the value, and the second time
+			// will report that it's done.
+			return { done: timesCalled++ > 0, value: pathAsString }
+		},
+	}
 }
 
 // ...

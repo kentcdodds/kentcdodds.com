@@ -28,11 +28,11 @@ this:
 const utils = render(<Foo />)
 
 test('test 1', () => {
-  // use utils here
+	// use utils here
 })
 
 test('test 2', () => {
-  // use utils here too
+	// use utils here too
 })
 ```
 
@@ -43,29 +43,29 @@ the code, and increase the confidence your tests and provide as well.
 Let's take this simple component as an example:
 
 ```tsx
-import React, {useRef} from 'react'
+import React, { useRef } from 'react'
 
 function Counter(props) {
-  const initialProps = useRef(props).current
-  const {initialCount = 0, maxClicks = 3} = props
+	const initialProps = useRef(props).current
+	const { initialCount = 0, maxClicks = 3 } = props
 
-  const [count, setCount] = React.useState(initialCount)
-  const tooMany = count >= maxClicks
+	const [count, setCount] = React.useState(initialCount)
+	const tooMany = count >= maxClicks
 
-  const handleReset = () => setCount(initialProps.initialCount)
-  const handleClick = () => setCount(currentCount => currentCount + 1)
+	const handleReset = () => setCount(initialProps.initialCount)
+	const handleClick = () => setCount(currentCount => currentCount + 1)
 
-  return (
-    <div>
-      <button onClick={handleClick} disabled={tooMany}>
-        Count: {count}
-      </button>
-      {tooMany ? <button onClick={handleReset}>reset</button> : null}
-    </div>
-  )
+	return (
+		<div>
+			<button onClick={handleClick} disabled={tooMany}>
+				Count: {count}
+			</button>
+			{tooMany ? <button onClick={handleReset}>reset</button> : null}
+		</div>
+	)
 }
 
-export {Counter}
+export { Counter }
 ```
 
 Here's a rendered version of the component:
@@ -79,44 +79,44 @@ Let's start with a test suite like the one that inspired this post:
 ```tsx
 // gives us the toHaveTextContent/toHaveAttribute matchers
 import '@testing-library/jest-dom/extend-expect'
-import {render} from '@testing-library/react'
+import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import * as React from 'react'
 
-import {Counter} from '../counter'
+import { Counter } from '../counter'
 
-const {getByText} = render(<Counter maxClicks={4} initialCount={3} />)
+const { getByText } = render(<Counter maxClicks={4} initialCount={3} />)
 const counterButton = getByText(/^count/i)
 
 test('the counter is initialized to the initialCount', () => {
-  expect(counterButton).toHaveTextContent('3')
+	expect(counterButton).toHaveTextContent('3')
 })
 
 test('when clicked, the counter increments the click', () => {
-  userEvent.click(counterButton)
-  expect(counterButton).toHaveTextContent('4')
+	userEvent.click(counterButton)
+	expect(counterButton).toHaveTextContent('4')
 })
 
 test(`the counter button is disabled when it's hit the maxClicks`, () => {
-  userEvent.click(counterButton)
-  expect(counterButton).toHaveAttribute('disabled')
+	userEvent.click(counterButton)
+	expect(counterButton).toHaveAttribute('disabled')
 })
 
 test(`the counter button does not increment the count when clicked when it's hit the maxClicks`, () => {
-  expect(counterButton).toHaveTextContent('4')
+	expect(counterButton).toHaveTextContent('4')
 })
 
 test(`the reset button has been rendered and resets the count when it's hit the maxClicks`, () => {
-  userEvent.click(getByText(/reset/i))
-  expect(counterButton).toHaveTextContent('3')
+	userEvent.click(getByText(/reset/i))
+	expect(counterButton).toHaveTextContent('3')
 })
 ```
 
 <callout-info>
-  First of all, as of
-  [@testing-library/react@9.0.0](https://github.com/testing-library/react-testing-library/releases/tag/v9.0.0)
-  this style of testing won't even work properly, but let's imagine that it
-  would.
+	First of all, as of
+	[@testing-library/react@9.0.0](https://github.com/testing-library/react-testing-library/releases/tag/v9.0.0)
+	this style of testing won't even work properly, but let's imagine that it
+	would.
 </callout-info>
 
 These tests give us 100% coverage of the component and verify exactly what they
@@ -140,44 +140,44 @@ So let's try something else and see how that changes things:
 
 ```tsx
 import '@testing-library/jest-dom/extend-expect'
-import {render} from '@testing-library/react'
+import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import * as React from 'react'
 
-import {Counter} from '../counter'
+import { Counter } from '../counter'
 
 let getByText, counterButton
 
 beforeEach(() => {
-  const utils = render(<Counter maxClicks={4} initialCount={3} />)
-  getByText = utils.getByText
-  counterButton = utils.getByText(/^count/i)
+	const utils = render(<Counter maxClicks={4} initialCount={3} />)
+	getByText = utils.getByText
+	counterButton = utils.getByText(/^count/i)
 })
 
 test('the counter is initialized to the initialCount', () => {
-  expect(counterButton).toHaveTextContent('3')
+	expect(counterButton).toHaveTextContent('3')
 })
 
 test('when clicked, the counter increments the click', () => {
-  userEvent.click(counterButton)
-  expect(counterButton).toHaveTextContent('4')
+	userEvent.click(counterButton)
+	expect(counterButton).toHaveTextContent('4')
 })
 
 test(`the counter button is disabled when it's hit the maxClicks`, () => {
-  userEvent.click(counterButton)
-  expect(counterButton).toHaveAttribute('disabled')
+	userEvent.click(counterButton)
+	expect(counterButton).toHaveAttribute('disabled')
 })
 
 test(`the counter button does not increment the count when clicked when it's hit the maxClicks`, () => {
-  userEvent.click(counterButton)
-  userEvent.click(counterButton)
-  expect(counterButton).toHaveTextContent('4')
+	userEvent.click(counterButton)
+	userEvent.click(counterButton)
+	expect(counterButton).toHaveTextContent('4')
 })
 
 test(`the reset button has been rendered and resets the count when it's hit the maxClicks`, () => {
-  userEvent.click(counterButton)
-  userEvent.click(getByText(/reset/i))
-  expect(counterButton).toHaveTextContent('3')
+	userEvent.click(counterButton)
+	userEvent.click(getByText(/reset/i))
+	expect(counterButton).toHaveTextContent('3')
 })
 ```
 
@@ -206,51 +206,51 @@ Let's try again:
 
 ```tsx
 import '@testing-library/jest-dom/extend-expect'
-import {render} from '@testing-library/react'
+import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import * as React from 'react'
 
-import {Counter} from '../counter'
+import { Counter } from '../counter'
 
 function renderCounter(props) {
-  const utils = render(<Counter maxClicks={4} initialCount={3} {...props} />)
-  const counterButton = utils.getByText(/^count/i)
-  return {...utils, counterButton}
+	const utils = render(<Counter maxClicks={4} initialCount={3} {...props} />)
+	const counterButton = utils.getByText(/^count/i)
+	return { ...utils, counterButton }
 }
 
 test('the counter is initialized to the initialCount', () => {
-  const {counterButton} = renderCounter()
-  expect(counterButton).toHaveTextContent('3')
+	const { counterButton } = renderCounter()
+	expect(counterButton).toHaveTextContent('3')
 })
 
 test('when clicked, the counter increments the click', () => {
-  const {counterButton} = renderCounter()
-  userEvent.click(counterButton)
-  expect(counterButton).toHaveTextContent('4')
+	const { counterButton } = renderCounter()
+	userEvent.click(counterButton)
+	expect(counterButton).toHaveTextContent('4')
 })
 
 test(`the counter button is disabled when it's hit the maxClicks`, () => {
-  const {counterButton} = renderCounter({
-    maxClicks: 4,
-    initialCount: 4,
-  })
-  expect(counterButton).toHaveAttribute('disabled')
+	const { counterButton } = renderCounter({
+		maxClicks: 4,
+		initialCount: 4,
+	})
+	expect(counterButton).toHaveAttribute('disabled')
 })
 
 test(`the counter button does not increment the count when clicked when it's hit the maxClicks`, () => {
-  const {counterButton} = renderCounter({
-    maxClicks: 4,
-    initialCount: 4,
-  })
-  userEvent.click(counterButton)
-  expect(counterButton).toHaveTextContent('4')
+	const { counterButton } = renderCounter({
+		maxClicks: 4,
+		initialCount: 4,
+	})
+	userEvent.click(counterButton)
+	expect(counterButton).toHaveTextContent('4')
 })
 
 test(`the reset button has been rendered and resets the count when it's hit the maxClicks`, () => {
-  const {getByText, counterButton} = renderCounter()
-  userEvent.click(counterButton)
-  userEvent.click(getByText(/reset/i))
-  expect(counterButton).toHaveTextContent('3')
+	const { getByText, counterButton } = renderCounter()
+	userEvent.click(counterButton)
+	userEvent.click(getByText(/reset/i))
+	expect(counterButton).toHaveTextContent('3')
 })
 ```
 
@@ -273,38 +273,38 @@ more with the use case than the individual functionality?
 
 ```tsx
 import '@testing-library/jest-dom/extend-expect'
-import {render} from '@testing-library/react'
+import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import * as React from 'react'
 
-import {Counter} from '../counter'
+import { Counter } from '../counter'
 
 test('allows clicks until the maxClicks is reached, then requires a reset', () => {
-  const {getByText} = render(<Counter maxClicks={4} initialCount={3} />)
-  const counterButton = getByText(/^count/i)
+	const { getByText } = render(<Counter maxClicks={4} initialCount={3} />)
+	const counterButton = getByText(/^count/i)
 
-  // the counter is initialized to the initialCount
-  expect(counterButton).toHaveTextContent('3')
+	// the counter is initialized to the initialCount
+	expect(counterButton).toHaveTextContent('3')
 
-  // when clicked, the counter increments the click
-  userEvent.click(counterButton)
-  expect(counterButton).toHaveTextContent('4')
+	// when clicked, the counter increments the click
+	userEvent.click(counterButton)
+	expect(counterButton).toHaveTextContent('4')
 
-  // the counter button is disabled when it's hit the maxClicks
-  expect(counterButton).toHaveAttribute('disabled')
-  // the counter button no longer increments the count when clicked.
-  userEvent.click(counterButton)
-  expect(counterButton).toHaveTextContent('4')
+	// the counter button is disabled when it's hit the maxClicks
+	expect(counterButton).toHaveAttribute('disabled')
+	// the counter button no longer increments the count when clicked.
+	userEvent.click(counterButton)
+	expect(counterButton).toHaveTextContent('4')
 
-  // the reset button has been rendered and is clickable
-  userEvent.click(getByText(/reset/i))
+	// the reset button has been rendered and is clickable
+	userEvent.click(getByText(/reset/i))
 
-  // the counter is reset to the initialCount
-  expect(counterButton).toHaveTextContent('3')
+	// the counter is reset to the initialCount
+	expect(counterButton).toHaveTextContent('3')
 
-  // the counter can be clicked and increment the count again
-  userEvent.click(counterButton)
-  expect(counterButton).toHaveTextContent('4')
+	// the counter can be clicked and increment the count again
+	userEvent.click(counterButton)
+	expect(counterButton).toHaveTextContent('4')
 })
 ```
 

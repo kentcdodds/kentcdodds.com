@@ -24,7 +24,7 @@ solutions people have come up with to make it easier to deal with. The biggest
 challenge with CSS is this:
 
 <callout-danger class="important">
-  How can you be sure your CSS changes aren't having an unexpected impact?
+	How can you be sure your CSS changes aren't having an unexpected impact?
 </callout-danger>
 
 This is due to the "C" part of CSS: "Cascading Style Sheets". I've been doing
@@ -53,7 +53,7 @@ want to do something like this:
 
 ```css
 .about-page h1 {
-  color: blue;
+	color: blue;
 }
 ```
 
@@ -90,20 +90,20 @@ Let me take it a step further though. Just in case it's not clear how profound
 this is. Here's how this works from a code standpoint:
 
 ```tsx lines=4-6 filename=app/routes/about.tsx
-import type {LinksFunction} from 'remix'
+import type { LinksFunction } from 'remix'
 import aboutStyles from '~/styles/routes/about.css'
 
 export const links: LinksFunction = () => {
-  return [{rel: 'stylesheet', href: aboutStyles}]
+	return [{ rel: 'stylesheet', href: aboutStyles }]
 }
 
 export default function AboutScreen() {
-  return <stuff />
+	return <stuff />
 }
 ```
 
 <callout-info class="aside">
-  In remix, when you import a `.css` file, it gives you back a URL.
+	In remix, when you import a `.css` file, it gives you back a URL.
 </callout-info>
 
 What this route module does is tell Remix: "When this route is active on the
@@ -140,9 +140,9 @@ pages your CSS file is active on.
 The point of this post is more to call out this fact:
 
 <callout-success class="important">
-  With Remix, it's possible to be explicit about the pages upon which your CSS
-  file is active and it's possible to statically determine those pages for a
-  given CSS file.
+	With Remix, it's possible to be explicit about the pages upon which your CSS
+	file is active and it's possible to statically determine those pages for a
+	given CSS file.
 </callout-success>
 
 Having a [predictable](https://www.youtube.com/watch?v=hwJUuN3JUPE) outcome to

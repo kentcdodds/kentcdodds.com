@@ -19,11 +19,11 @@ https://egghead.io/lessons/javascript-reduce-cognitive-load-for-readers-of-your-
 If I come across code like this:
 
 ```js
-function getDisplayName({firstName, lastName}) {
-  const upperFirstCharacter = string =>
-    string.slice(0, 1).toUpperCase() + string.slice(1)
+function getDisplayName({ firstName, lastName }) {
+	const upperFirstCharacter = string =>
+		string.slice(0, 1).toUpperCase() + string.slice(1)
 
-  return `${upperFirstCharacter(firstName)} ${upperFirstCharacter(lastName)}`
+	return `${upperFirstCharacter(firstName)} ${upperFirstCharacter(lastName)}`
 }
 ```
 
@@ -31,10 +31,10 @@ Chances are, I'll refactor it to this:
 
 ```js
 const upperFirstCharacter = string =>
-  string.slice(0, 1).toUpperCase() + string.slice(1)
+	string.slice(0, 1).toUpperCase() + string.slice(1)
 
-function getDisplayName({firstName, lastName}) {
-  return `${upperFirstCharacter(firstName)} ${upperFirstCharacter(lastName)}`
+function getDisplayName({ firstName, lastName }) {
+	return `${upperFirstCharacter(firstName)} ${upperFirstCharacter(lastName)}`
 }
 ```
 
@@ -84,8 +84,8 @@ variables. For example:
 
 ```js
 function addThings(additive, ...numbers) {
-  const add = n => n + additive
-  return numbers.map(add)
+	const add = n => n + additive
+	return numbers.map(add)
 }
 
 addThings(3, 1, 2, 3, 4)

@@ -35,27 +35,27 @@ testing implementation details:
 import * as React from 'react'
 
 export class Counter extends React.Component {
-  state = {count: 0}
-  increment = () => this.setState(({count}) => ({count: count + 1}))
-  render() {
-    const {count} = this.state
-    return <button onClick={this.increment}>{count}</button>
-  }
+	state = { count: 0 }
+	increment = () => this.setState(({ count }) => ({ count: count + 1 }))
+	render() {
+		const { count } = this.state
+		return <button onClick={this.increment}>{count}</button>
+	}
 }
 
 // __tests__/counter.js
 import * as React from 'react'
 // (it's hard to test implementation details with React Testing Library,
 //  so we'll use enzyme in this example 😅)
-import {mount} from 'enzyme'
-import {Counter} from '../counter'
+import { mount } from 'enzyme'
+import { Counter } from '../counter'
 
 test('the increment method increments count', () => {
-  const wrapper = mount(<Counter />)
-  // don't ever do this:
-  expect(wrapper.instance().state.count).toBe(0)
-  wrapper.instance().increment()
-  expect(wrapper.instance().state.count).toBe(1)
+	const wrapper = mount(<Counter />)
+	// don't ever do this:
+	expect(wrapper.instance().state.count).toBe(0)
+	wrapper.instance().increment()
+	expect(wrapper.instance().state.count).toBe(1)
 })
 ```
 
@@ -109,10 +109,10 @@ helps me to know if I'm missing some edge cases the code is covering but my
 tests are not.
 
 <callout-info>
-  I should note that for open source modules, going for 100% code coverage is
-  totally appropriate because they're generally a lot easier to keep at 100%
-  (because they're smaller and more isolated) and they're really important code
-  due to the fact that they're shared in multiple projects.
+	I should note that for open source modules, going for 100% code coverage is
+	totally appropriate because they're generally a lot easier to keep at 100%
+	(because they're smaller and more isolated) and they're really important code
+	due to the fact that they're shared in multiple projects.
 </callout-info>
 
 I talked a bit about this in

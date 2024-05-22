@@ -28,45 +28,45 @@ APIs into a single function component and consume that:
 ```tsx
 const ThemeContext = React.createContext('light')
 class ThemeProvider extends React.Component {
-  /* code */
+	/* code */
 }
 const ThemeConsumer = ThemeContext.Consumer
 const LanguageContext = React.createContext('en')
 class LanguageProvider extends React.Component {
-  /* code */
+	/* code */
 }
 const LanguageConsumer = LanguageContext.Consumer
 
-function AppProviders({children}) {
-  return (
-    <LanguageProvider>
-      <ThemeProvider>{children}</ThemeProvider>
-    </LanguageProvider>
-  )
+function AppProviders({ children }) {
+	return (
+		<LanguageProvider>
+			<ThemeProvider>{children}</ThemeProvider>
+		</LanguageProvider>
+	)
 }
 
-function ThemeAndLanguageConsumer({children}) {
-  return (
-    <LanguageConsumer>
-      {language => (
-        <ThemeConsumer>{theme => children({language, theme})}</ThemeConsumer>
-      )}
-    </LanguageConsumer>
-  )
+function ThemeAndLanguageConsumer({ children }) {
+	return (
+		<LanguageConsumer>
+			{language => (
+				<ThemeConsumer>{theme => children({ language, theme })}</ThemeConsumer>
+			)}
+		</LanguageConsumer>
+	)
 }
 
 function App() {
-  return (
-    <AppProviders>
-      <ThemeAndLanguageConsumer>
-        {({theme, language}) => (
-          <div>
-            {theme} and {language}
-          </div>
-        )}
-      </ThemeAndLanguageConsumer>
-    </AppProviders>
-  )
+	return (
+		<AppProviders>
+			<ThemeAndLanguageConsumer>
+				{({ theme, language }) => (
+					<div>
+						{theme} and {language}
+					</div>
+				)}
+			</ThemeAndLanguageConsumer>
+		</AppProviders>
+	)
 }
 ```
 
@@ -91,36 +91,36 @@ rewrite what we have above with the upcoming (ALPHA!) `useContext` hook:
 ```tsx
 const ThemeContext = React.createContext('light')
 class ThemeProvider extends React.Component {
-  /* code */
+	/* code */
 }
 const LanguageContext = React.createContext('en')
 class LanguageProvider extends React.Component {
-  /* code */
+	/* code */
 }
 
-function AppProviders({children}) {
-  return (
-    <LanguageProvider>
-      <ThemeProvider>{children}</ThemeProvider>
-    </LanguageProvider>
-  )
+function AppProviders({ children }) {
+	return (
+		<LanguageProvider>
+			<ThemeProvider>{children}</ThemeProvider>
+		</LanguageProvider>
+	)
 }
 
 function App() {
-  const theme = useContext(ThemeContext)
-  const language = useContext(LanguageContext)
-  return (
-    <div>
-      {theme} and {language}
-    </div>
-  )
+	const theme = useContext(ThemeContext)
+	const language = useContext(LanguageContext)
+	return (
+		<div>
+			{theme} and {language}
+		</div>
+	)
 }
 
 ReactDOM.render(
-  <AppProviders>
-    <App />
-  </AppProviders>,
-  document.getElementById('root'),
+	<AppProviders>
+		<App />
+	</AppProviders>,
+	document.getElementById('root'),
 )
 ```
 

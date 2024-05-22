@@ -36,20 +36,20 @@ Here's a simple reproduction of that error
 import * as React from 'react'
 
 function Counter() {
-  const [count, setCount] = React.useState(0)
-  const increment = () => setCount(c => c + 1)
-  return <button onClick={increment}>{count}</button>
+	const [count, setCount] = React.useState(0)
+	const increment = () => setCount(c => c + 1)
+	return <button onClick={increment}>{count}</button>
 }
 
 function App() {
-  const [items, setItems] = React.useState([])
-  const addItem = () => setItems(i => [...i, {id: i.length}])
-  return (
-    <div>
-      <button onClick={addItem}>Add Item</button>
-      <div>{items.map(Counter)}</div>
-    </div>
-  )
+	const [items, setItems] = React.useState([])
+	const addItem = () => setItems(i => [...i, { id: i.length }])
+	return (
+		<div>
+			<button onClick={addItem}>Add Item</button>
+			<div>{items.map(Counter)}</div>
+		</div>
+	)
 }
 ```
 
@@ -57,7 +57,7 @@ And here's how that behaves when rendered (with an error boundary around it so
 we don't crash this page):
 
 <Comps.Rendered>
-  <Comps.BadApp />
+	<Comps.BadApp />
 </Comps.Rendered>
 
 In the console, there are more details in a message like this:
@@ -85,25 +85,25 @@ First off, I'll just tell you the solution:
 ```
 
 <callout-warning class="aside">
-  Before you start thinking it has to do with the `key` prop, let me just tell
-  you it doesn't. But the key prop is important in general and you can learn
-  about that from my other blog post: [Understanding React's key
-  prop](/blog/understanding-reacts-key-prop)
+	Before you start thinking it has to do with the `key` prop, let me just tell
+	you it doesn't. But the key prop is important in general and you can learn
+	about that from my other blog post: [Understanding React's key
+	prop](/blog/understanding-reacts-key-prop)
 </callout-warning>
 
 Here's another way to make this same kind of error happen:
 
 ```tsx
 function Example() {
-  const [count, setCount] = React.useState(0)
-  let otherState
-  if (count > 0) {
-    React.useEffect(() => {
-      console.log('count', count)
-    })
-  }
-  const increment = () => setCount(c => c + 1)
-  return <button onClick={increment}>{count}</button>
+	const [count, setCount] = React.useState(0)
+	let otherState
+	if (count > 0) {
+		React.useEffect(() => {
+			console.log('count', count)
+		})
+	}
+	const increment = () => setCount(c => c + 1)
+	return <button onClick={increment}>{count}</button>
 }
 ```
 
@@ -123,24 +123,24 @@ Well, let's rewrite our original example slightly:
 
 ```tsx lines=14-16
 function Counter() {
-  const [count, setCount] = React.useState(0)
-  const increment = () => setCount(c => c + 1)
-  return <button onClick={increment}>{count}</button>
+	const [count, setCount] = React.useState(0)
+	const increment = () => setCount(c => c + 1)
+	return <button onClick={increment}>{count}</button>
 }
 
 function App() {
-  const [items, setItems] = React.useState([])
-  const addItem = () => setItems(i => [...i, {id: i.length}])
-  return (
-    <div>
-      <button onClick={addItem}>Add Item</button>
-      <div>
-        {items.map(() => {
-          return Counter()
-        })}
-      </div>
-    </div>
-  )
+	const [items, setItems] = React.useState([])
+	const addItem = () => setItems(i => [...i, { id: i.length }])
+	return (
+		<div>
+			<button onClick={addItem}>Add Item</button>
+			<div>
+				{items.map(() => {
+					return Counter()
+				})}
+			</div>
+		</div>
+	)
 }
 ```
 
@@ -149,20 +149,20 @@ function so let's inline that:
 
 ```tsx lines=8-12
 function App() {
-  const [items, setItems] = React.useState([])
-  const addItem = () => setItems(i => [...i, {id: i.length}])
-  return (
-    <div>
-      <button onClick={addItem}>Add Item</button>
-      <div>
-        {items.map(() => {
-          const [count, setCount] = React.useState(0)
-          const increment = () => setCount(c => c + 1)
-          return <button onClick={increment}>{count}</button>
-        })}
-      </div>
-    </div>
-  )
+	const [items, setItems] = React.useState([])
+	const addItem = () => setItems(i => [...i, { id: i.length }])
+	return (
+		<div>
+			<button onClick={addItem}>Add Item</button>
+			<div>
+				{items.map(() => {
+					const [count, setCount] = React.useState(0)
+					const increment = () => setCount(c => c + 1)
+					return <button onClick={increment}>{count}</button>
+				})}
+			</div>
+		</div>
+	)
 }
 ```
 
@@ -190,18 +190,18 @@ components. Like so:
 
 ```tsx
 function Counter() {
-  const [count, setCount] = React.useState(0)
-  const increment = () => setCount(c => c + 1)
-  return <button onClick={increment}>{count}</button>
+	const [count, setCount] = React.useState(0)
+	const increment = () => setCount(c => c + 1)
+	return <button onClick={increment}>{count}</button>
 }
 
 function App() {
-  return (
-    <div>
-      <div>Here is a counter:</div>
-      {Counter()}
-    </div>
-  )
+	return (
+		<div>
+			<div>Here is a counter:</div>
+			{Counter()}
+		</div>
+	)
 }
 ```
 

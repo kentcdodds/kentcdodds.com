@@ -9,7 +9,7 @@ bannerCloudinaryId: kentcdodds.com/content/blog/newspaper-code-structure/banner
 ---
 
 <callout-warning>
-  This post has been archived because I don't do this anymore.
+	This post has been archived because I don't do this anymore.
 </callout-warning>
 
 Your code should read like a newspaper article. Important stuff at the top,
@@ -24,47 +24,47 @@ to use this module. See how fast you can find out what the api to this module is
 
 ```js
 export const bar = {
-  some: 'property',
-  someFunction() {
-    // with plenty of lines
-    // and more stuff
-    // because... reasons...
-  },
-  someOtherFunction() {
-    // because we need it
-    // it's really important...
-  },
-  someOtherProperty: true,
-  anotherFunction() {
-    // forgot about this one...
-    // why is it here, instead of at top?
-    // who knows... Doesn't affect functionality right?
-    // but it might impact readability...
-    // especially if it gets long and stuff
-  },
-  dontForgetMe: '!!!!',
-  ohWaitNeedThisToo() {
-    // yet another function
-    // man, I need a few of these don't I?
-    // what other functions does this "bar" thing have?
-    // does this file export anything else? I guess I'll have to search around and find out...
-  },
+	some: 'property',
+	someFunction() {
+		// with plenty of lines
+		// and more stuff
+		// because... reasons...
+	},
+	someOtherFunction() {
+		// because we need it
+		// it's really important...
+	},
+	someOtherProperty: true,
+	anotherFunction() {
+		// forgot about this one...
+		// why is it here, instead of at top?
+		// who knows... Doesn't affect functionality right?
+		// but it might impact readability...
+		// especially if it gets long and stuff
+	},
+	dontForgetMe: '!!!!',
+	ohWaitNeedThisToo() {
+		// yet another function
+		// man, I need a few of these don't I?
+		// what other functions does this "bar" thing have?
+		// does this file export anything else? I guess I'll have to search around and find out...
+	},
 }
 
 export function longFunction() {
-  // I could really use a doughnut right now...
-  // Sometimes functions need to do a lot of things
-  // You should keep these functions short
-  // Otherwise your code is hard for a reader to consume...
-  // and that makes me sad :-(
-  // and confused
+	// I could really use a doughnut right now...
+	// Sometimes functions need to do a lot of things
+	// You should keep these functions short
+	// Otherwise your code is hard for a reader to consume...
+	// and that makes me sad :-(
+	// and confused
 }
 
 export function meToo() {
-  // make sure you scroll around the file
-  // so you know EVERYTHING that this module exports
-  // Because with this method, discovering that is a little difficult.
-  // There's gotta be a better way!
+	// make sure you scroll around the file
+	// so you know EVERYTHING that this module exports
+	// Because with this method, discovering that is a little difficult.
+	// There's gotta be a better way!
 }
 
 export const thereIsABetterWay = true
@@ -96,63 +96,63 @@ comments different, so read those too):
 const bar = getBar()
 const thereIsABetterWay = true
 
-export {bar, longFunction, meToo, thereIsABetterWay}
+export { bar, longFunction, meToo, thereIsABetterWay }
 
 // function declarations
 function getBar() {
-  // main "export" for the function
-  return {
-    some: 'property',
-    someFunction,
-    someOtherFunction,
-    someOtherProperty: true,
-    anotherFunction,
-    dontForgetMe: '!!!!',
-    ohWaitNeedThisToo,
-  }
+	// main "export" for the function
+	return {
+		some: 'property',
+		someFunction,
+		someOtherFunction,
+		someOtherProperty: true,
+		anotherFunction,
+		dontForgetMe: '!!!!',
+		ohWaitNeedThisToo,
+	}
 
-  // function declarations
-  function someFunction() {
-    // with plenty of lines
-    // and more stuff
-    // but I don't mind anymore, because I only read this if I'm interested in it
-  }
+	// function declarations
+	function someFunction() {
+		// with plenty of lines
+		// and more stuff
+		// but I don't mind anymore, because I only read this if I'm interested in it
+	}
 
-  function someOtherFunction() {
-    // because we need it
-    // it's really important...
-  }
+	function someOtherFunction() {
+		// because we need it
+		// it's really important...
+	}
 
-  function anotherFunction() {
-    // forgot about this one...
-    // why is it here, instead of at top?
-    // who knows... Doesn't affect functionality right?
-    // it doesn't actually make a difference
-    // even if it gets long and stuff
-  }
+	function anotherFunction() {
+		// forgot about this one...
+		// why is it here, instead of at top?
+		// who knows... Doesn't affect functionality right?
+		// it doesn't actually make a difference
+		// even if it gets long and stuff
+	}
 
-  function ohWaitNeedThisToo() {
-    // yet another function
-    // man, I need a few of these don't I?
-    // what other functions does this "bar" thing have?
-    // I know just by looking at the top of the enclosing function... It's obvious... Important stuff at top, details at bottom
-  }
+	function ohWaitNeedThisToo() {
+		// yet another function
+		// man, I need a few of these don't I?
+		// what other functions does this "bar" thing have?
+		// I know just by looking at the top of the enclosing function... It's obvious... Important stuff at top, details at bottom
+	}
 }
 
 function longFunction() {
-  // I could really use a doughnut right now...
-  // Sometimes functions need to do a lot of things
-  // You should keep these functions short
-  // Otherwise your code is hard for a reader to consume...
-  // and that makes me sad :-(
-  // and confused... But at least I know what the API is and it'll make consuming and maintaining this file much easier
+	// I could really use a doughnut right now...
+	// Sometimes functions need to do a lot of things
+	// You should keep these functions short
+	// Otherwise your code is hard for a reader to consume...
+	// and that makes me sad :-(
+	// and confused... But at least I know what the API is and it'll make consuming and maintaining this file much easier
 }
 
 function meToo() {
-  // Don't need to make sure you scroll around the file
-  // so you know EVERYTHING that this module exports
-  // Because with this method, discovering the exports is obvious
-  // It's just at the top of the file. What I see when I first open it up
+	// Don't need to make sure you scroll around the file
+	// so you know EVERYTHING that this module exports
+	// Because with this method, discovering the exports is obvious
+	// It's just at the top of the file. What I see when I first open it up
 }
 ```
 
@@ -174,9 +174,9 @@ This kind of breaks down with Classes because they must be structured like this:
 
 ```js
 export default class Person {
-  constructor() {}
-  walk() {}
-  talk() {}
+	constructor() {}
+	walk() {}
+	talk() {}
 }
 ```
 

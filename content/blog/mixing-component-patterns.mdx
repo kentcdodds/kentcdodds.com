@@ -46,73 +46,73 @@ Here's the implementation without any comments just to spark your interest:
 
 ```tsx
 import * as React from 'react'
-import {render} from 'react-dom'
+import { render } from 'react-dom'
 import hoistNonReactStatics from 'hoist-non-react-statics'
-import {Switch} from './switch'
+import { Switch } from './switch'
 
 const callAll =
-  (...fns) =>
-  (...args) =>
-    fns.forEach(fn => fn && fn(...args))
+	(...fns) =>
+	(...args) =>
+		fns.forEach(fn => fn && fn(...args))
 const ToggleContext = React.createContext({
-  on: false,
-  toggle: () => {},
-  getTogglerProps: props => props,
+	on: false,
+	toggle: () => {},
+	getTogglerProps: props => props,
 })
 
 class Toggle extends React.Component {
-  static Consumer = props => (
-    <ToggleContext.Consumer {...props}>
-      {state => Toggle.getUI(props.children, state)}
-    </ToggleContext.Consumer>
-  )
-  static On = ({children}) => (
-    <Toggle.Consumer>{({on}) => (on ? children : null)}</Toggle.Consumer>
-  )
-  static Off = ({children}) => (
-    <Toggle.Consumer>{({on}) => (on ? null : children)}</Toggle.Consumer>
-  )
-  static Button = props => (
-    <Toggle.Consumer>
-      {({getTogglerProps}) => <Switch {...getTogglerProps(props)} />}
-    </Toggle.Consumer>
-  )
-  static getUI(children, state) {
-    let ui
-    if (Array.isArray(children) || React.isValidElement(children)) {
-      ui = children
-    } else if (children.prototype && children.prototype.isReactComponent) {
-      ui = React.createElement(children, state)
-    } else if (typeof children === 'function') {
-      ui = children(state)
-    } else {
-      throw new Error('Please use one of the supported APIs for children')
-    }
-    return ui
-  }
-  toggle = () =>
-    this.setState(
-      ({on}) => ({on: !on}),
-      () => this.props.onToggle(this.state.on),
-    )
-  getTogglerProps = ({onClick, ...props} = {}) => ({
-    onClick: callAll(onClick, this.toggle),
-    'aria-pressed': this.state.on,
-    ...props,
-  })
-  state = {
-    on: false,
-    toggle: this.toggle,
-    getTogglerProps: this.getTogglerProps,
-  }
-  render() {
-    const {children, ...rest} = this.props
-    return (
-      <ToggleContext.Provider value={this.state} {...rest}>
-        {Toggle.getUI(children, this.state)}
-      </ToggleContext.Provider>
-    )
-  }
+	static Consumer = props => (
+		<ToggleContext.Consumer {...props}>
+			{state => Toggle.getUI(props.children, state)}
+		</ToggleContext.Consumer>
+	)
+	static On = ({ children }) => (
+		<Toggle.Consumer>{({ on }) => (on ? children : null)}</Toggle.Consumer>
+	)
+	static Off = ({ children }) => (
+		<Toggle.Consumer>{({ on }) => (on ? null : children)}</Toggle.Consumer>
+	)
+	static Button = props => (
+		<Toggle.Consumer>
+			{({ getTogglerProps }) => <Switch {...getTogglerProps(props)} />}
+		</Toggle.Consumer>
+	)
+	static getUI(children, state) {
+		let ui
+		if (Array.isArray(children) || React.isValidElement(children)) {
+			ui = children
+		} else if (children.prototype && children.prototype.isReactComponent) {
+			ui = React.createElement(children, state)
+		} else if (typeof children === 'function') {
+			ui = children(state)
+		} else {
+			throw new Error('Please use one of the supported APIs for children')
+		}
+		return ui
+	}
+	toggle = () =>
+		this.setState(
+			({ on }) => ({ on: !on }),
+			() => this.props.onToggle(this.state.on),
+		)
+	getTogglerProps = ({ onClick, ...props } = {}) => ({
+		onClick: callAll(onClick, this.toggle),
+		'aria-pressed': this.state.on,
+		...props,
+	})
+	state = {
+		on: false,
+		toggle: this.toggle,
+		getTogglerProps: this.getTogglerProps,
+	}
+	render() {
+		const { children, ...rest } = this.props
+		return (
+			<ToggleContext.Provider value={this.state} {...rest}>
+				{Toggle.getUI(children, this.state)}
+			</ToggleContext.Provider>
+		)
+	}
 }
 Toggle.Consumer.displayName = 'Toggle.Consumer'
 Toggle.On.displayName = 'Toggle.On'
@@ -120,20 +120,20 @@ Toggle.Off.displayName = 'Toggle.Off'
 Toggle.Button.displayName = 'Toggle.Button'
 
 function withToggle(Component) {
-  function Wrapper(props, ref) {
-    return (
-      <Toggle.Consumer>
-        {toggleState => <Component {...props} toggle={toggleState} ref={ref} />}
-      </Toggle.Consumer>
-    )
-  }
-  Wrapper.displayName = `withToggle(${Component.displayName || Component.name})`
-  const WrapperWithRef = React.forwardRef(Wrapper)
-  hoistNonReactStatics(WrapperWithRef, Component)
-  return WrapperWithRef
+	function Wrapper(props, ref) {
+		return (
+			<Toggle.Consumer>
+				{toggleState => <Component {...props} toggle={toggleState} ref={ref} />}
+			</Toggle.Consumer>
+		)
+	}
+	Wrapper.displayName = `withToggle(${Component.displayName || Component.name})`
+	const WrapperWithRef = React.forwardRef(Wrapper)
+	hoistNonReactStatics(WrapperWithRef, Component)
+	return WrapperWithRef
 }
 
-export {Toggle, withToggle}
+export { Toggle, withToggle }
 ```
 
 That's pretty much it for the newsletter today actually. I spent a good chunk of

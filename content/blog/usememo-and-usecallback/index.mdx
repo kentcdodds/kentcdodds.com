@@ -34,49 +34,49 @@ bannerCloudinaryId: unsplash/photo-1554672723-b208dc85134f
 bannerCredit: Photo by [Jp Valery](https://unsplash.com/photos/mQTTDA_kY_8)
 ---
 
-import {CandyDispenser, Poll} from './components.tsx'
+import { CandyDispenser, Poll } from './components.tsx'
 
 Here's a candy dispenser:
 
 <div
-  style={{
-    padding: 20,
-    border: '2px solid var(--border-secondary)',
-    borderRadius: 5,
-    marginBottom: 20,
-  }}
+	style={{
+		padding: 20,
+		border: '2px solid var(--border-secondary)',
+		borderRadius: 5,
+		marginBottom: 20,
+	}}
 >
-  <CandyDispenser />
+	<CandyDispenser />
 </div>
 
 Here's how it's implemented:
 
 ```tsx
 function CandyDispenser() {
-  const initialCandies = ['snickers', 'skittles', 'twix', 'milky way']
-  const [candies, setCandies] = React.useState(initialCandies)
-  const dispense = candy => {
-    setCandies(allCandies => allCandies.filter(c => c !== candy))
-  }
-  return (
-    <div>
-      <h1>Candy Dispenser</h1>
-      <div>
-        <div>Available Candy</div>
-        {candies.length === 0 ? (
-          <button onClick={() => setCandies(initialCandies)}>refill</button>
-        ) : (
-          <ul>
-            {candies.map(candy => (
-              <li key={candy}>
-                <button onClick={() => dispense(candy)}>grab</button> {candy}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
-  )
+	const initialCandies = ['snickers', 'skittles', 'twix', 'milky way']
+	const [candies, setCandies] = React.useState(initialCandies)
+	const dispense = candy => {
+		setCandies(allCandies => allCandies.filter(c => c !== candy))
+	}
+	return (
+		<div>
+			<h1>Candy Dispenser</h1>
+			<div>
+				<div>Available Candy</div>
+				{candies.length === 0 ? (
+					<button onClick={() => setCandies(initialCandies)}>refill</button>
+				) : (
+					<ul>
+						{candies.map(candy => (
+							<li key={candy}>
+								<button onClick={() => dispense(candy)}>grab</button> {candy}
+							</li>
+						))}
+					</ul>
+				)}
+			</div>
+		</div>
+	)
 }
 ```
 
@@ -89,7 +89,7 @@ The only thing I'm going to change is wrap the `dispense` function inside
 
 ```js
 const dispense = React.useCallback(candy => {
-  setCandies(allCandies => allCandies.filter(c => c !== candy))
+	setCandies(allCandies => allCandies.filter(c => c !== candy))
 }, [])
 ```
 
@@ -97,7 +97,7 @@ Here's the original again:
 
 ```js
 const dispense = candy => {
-  setCandies(allCandies => allCandies.filter(c => c !== candy))
+	setCandies(allCandies => allCandies.filter(c => c !== candy))
 }
 ```
 
@@ -108,11 +108,11 @@ performance? Go ahead and submit your guess (this is not recorded anywhere):
 
 _Let me give you some space to not spoil the answer for you..._
 
-<div style={{height: 400}} />
+<div style={{ height: 400 }} />
 
 _Keep scrolling... You did answer, didn't you?_
 
-<div style={{height: 400}} />
+<div style={{ height: 400 }} />
 
 _There, that should do it..._
 
@@ -129,7 +129,7 @@ things around) to illustrate things more clearly:
 
 ```js
 const dispense = candy => {
-  setCandies(allCandies => allCandies.filter(c => c !== candy))
+	setCandies(allCandies => allCandies.filter(c => c !== candy))
 }
 const dispenseCallback = React.useCallback(dispense, [])
 ```
@@ -138,7 +138,7 @@ And here's the original again:
 
 ```js
 const dispense = candy => {
-  setCandies(allCandies => allCandies.filter(c => c !== candy))
+	setCandies(allCandies => allCandies.filter(c => c !== candy))
 }
 ```
 
@@ -146,7 +146,7 @@ Notice anything about these? Let's look at the diff:
 
 ```tsx add=4
 const dispense = candy => {
-  setCandies(allCandies => allCandies.filter(c => c !== candy))
+	setCandies(allCandies => allCandies.filter(c => c !== candy))
 }
 const dispenseCallback = React.useCallback(dispense, [])
 ```
@@ -165,8 +165,8 @@ poll here:
 https://twitter.com/kentcdodds/status/1135943012410830848
 
 <callout-info class="aside">
-  Granted, I had several people tell me that was worded poorly, so my apologies
-  if you got the wrong answer but actually knew the correct answer.
+	Granted, I had several people tell me that was worded poorly, so my apologies
+	if you got the wrong answer but actually knew the correct answer.
 </callout-info>
 
 I'd like to mention also that on the second render of the component, the
@@ -197,8 +197,8 @@ I could make this change:
 ```tsx remove=1 add=2-5
 const initialCandies = ['snickers', 'skittles', 'twix', 'milky way']
 const initialCandies = React.useMemo(
-  () => ['snickers', 'skittles', 'twix', 'milky way'],
-  [],
+	() => ['snickers', 'skittles', 'twix', 'milky way'],
+	[],
 )
 ```
 
@@ -273,21 +273,21 @@ through them one at a time.
 Let's review an example.
 
 <callout-warning class="aside">
-  Warning, you're about to see some seriously contrived code. Please don't
-  nit-pick that and just focus on the concepts please, thank you.
+	Warning, you're about to see some seriously contrived code. Please don't
+	nit-pick that and just focus on the concepts please, thank you.
 </callout-warning>
 
 ```tsx
-function Foo({bar, baz}) {
-  const options = {bar, baz}
-  React.useEffect(() => {
-    buzz(options)
-  }, [options]) // we want this to re-run if bar or baz change
-  return <div>foobar</div>
+function Foo({ bar, baz }) {
+	const options = { bar, baz }
+	React.useEffect(() => {
+		buzz(options)
+	}, [options]) // we want this to re-run if bar or baz change
+	return <div>foobar</div>
 }
 
 function Blub() {
-  return <Foo bar="bar value" baz={3} />
+	return <Foo bar="bar value" baz={3} />
 }
 ```
 
@@ -302,12 +302,12 @@ There are two things we can do to fix this:
 
 ```tsx
 // option 1
-function Foo({bar, baz}) {
-  React.useEffect(() => {
-    const options = {bar, baz}
-    buzz(options)
-  }, [bar, baz]) // we want this to re-run if bar or baz change
-  return <div>foobar</div>
+function Foo({ bar, baz }) {
+	React.useEffect(() => {
+		const options = { bar, baz }
+		buzz(options)
+	}, [bar, baz]) // we want this to re-run if bar or baz change
+	return <div>foobar</div>
 }
 ```
 
@@ -318,9 +318,9 @@ But there's one situation when this isn't a practical solution: If `bar` or
 
 ```tsx
 function Blub() {
-  const bar = () => {}
-  const baz = [1, 2, 3]
-  return <Foo bar={bar} baz={baz} />
+	const bar = () => {}
+	const baz = [1, 2, 3]
+	return <Foo bar={bar} baz={baz} />
 }
 ```
 
@@ -328,53 +328,53 @@ This is precisely the reason why `useCallback` and `useMemo` exist. So here's
 how you'd fix that (all together now):
 
 ```tsx
-function Foo({bar, baz}) {
-  React.useEffect(() => {
-    const options = {bar, baz}
-    buzz(options)
-  }, [bar, baz])
-  return <div>foobar</div>
+function Foo({ bar, baz }) {
+	React.useEffect(() => {
+		const options = { bar, baz }
+		buzz(options)
+	}, [bar, baz])
+	return <div>foobar</div>
 }
 
 function Blub() {
-  const bar = React.useCallback(() => {}, [])
-  const baz = React.useMemo(() => [1, 2, 3], [])
-  return <Foo bar={bar} baz={baz} />
+	const bar = React.useCallback(() => {}, [])
+	const baz = React.useMemo(() => [1, 2, 3], [])
+	return <Foo bar={bar} baz={baz} />
 }
 ```
 
 <callout-info>
-  Note that this same thing applies for the dependencies array passed to
-  `useEffect`, `useLayoutEffect`, `useCallback`, and `useMemo`.
+	Note that this same thing applies for the dependencies array passed to
+	`useEffect`, `useLayoutEffect`, `useCallback`, and `useMemo`.
 </callout-info>
 
 ### `React.memo` (and friends)
 
 <callout-warning class="aside">
-  Warning, you're about to see some more contrived code. Please be advised to
-  not nit-pick this either but focus on the concepts, thanks.
+	Warning, you're about to see some more contrived code. Please be advised to
+	not nit-pick this either but focus on the concepts, thanks.
 </callout-warning>
 
 Check this out:
 
 ```tsx
-function CountButton({onClick, count}) {
-  return <button onClick={onClick}>{count}</button>
+function CountButton({ onClick, count }) {
+	return <button onClick={onClick}>{count}</button>
 }
 
 function DualCounter() {
-  const [count1, setCount1] = React.useState(0)
-  const increment1 = () => setCount1(c => c + 1)
+	const [count1, setCount1] = React.useState(0)
+	const increment1 = () => setCount1(c => c + 1)
 
-  const [count2, setCount2] = React.useState(0)
-  const increment2 = () => setCount2(c => c + 1)
+	const [count2, setCount2] = React.useState(0)
+	const increment2 = () => setCount2(c => c + 1)
 
-  return (
-    <>
-      <CountButton count={count1} onClick={increment1} />
-      <CountButton count={count2} onClick={increment2} />
-    </>
-  )
+	return (
+		<>
+			<CountButton count={count1} onClick={increment1} />
+			<CountButton count={count2} onClick={increment2} />
+		</>
+	)
 }
 ```
 
@@ -396,8 +396,8 @@ time (think highly interactive Graphs/Charts/Animations/etc.). Thanks to the
 pragmatistic nature of React, there's an escape hatch:
 
 ```tsx
-const CountButton = React.memo(function CountButton({onClick, count}) {
-  return <button onClick={onClick}>{count}</button>
+const CountButton = React.memo(function CountButton({ onClick, count }) {
+	return <button onClick={onClick}>{count}</button>
 })
 ```
 
@@ -411,23 +411,23 @@ of the `CountButton`s anyway.
 So this is the other situation where `useCallback` and `useMemo` can be of help:
 
 ```tsx lines=7, 10
-const CountButton = React.memo(function CountButton({onClick, count}) {
-  return <button onClick={onClick}>{count}</button>
+const CountButton = React.memo(function CountButton({ onClick, count }) {
+	return <button onClick={onClick}>{count}</button>
 })
 
 function DualCounter() {
-  const [count1, setCount1] = React.useState(0)
-  const increment1 = React.useCallback(() => setCount1(c => c + 1), [])
+	const [count1, setCount1] = React.useState(0)
+	const increment1 = React.useCallback(() => setCount1(c => c + 1), [])
 
-  const [count2, setCount2] = React.useState(0)
-  const increment2 = React.useCallback(() => setCount2(c => c + 1), [])
+	const [count2, setCount2] = React.useState(0)
+	const increment2 = React.useCallback(() => setCount2(c => c + 1), [])
 
-  return (
-    <>
-      <CountButton count={count1} onClick={increment1} />
-      <CountButton count={count2} onClick={increment2} />
-    </>
-  )
+	return (
+		<>
+			<CountButton count={count1} onClick={increment1} />
+			<CountButton count={count2} onClick={increment2} />
+		</>
+	)
 }
 ```
 
@@ -448,13 +448,13 @@ this one does not apply to `useCallback`). The benefit to `useMemo` is that you
 can take a value like:
 
 ```js
-const a = {b: props.b}
+const a = { b: props.b }
 ```
 
 And get it lazily:
 
 ```tsx
-const a = React.useMemo(() => ({b: props.b}), [props.b])
+const a = React.useMemo(() => ({ b: props.b }), [props.b])
 ```
 
 This isn't really useful for that case above, but imagine that you've got a
@@ -464,9 +464,9 @@ expensive to calculate (I mean how many apps actually need to
 ever, but that's an example):
 
 ```tsx
-function RenderPrimes({iterations, multiplier}) {
-  const primes = calculatePrimes(iterations, multiplier)
-  return <div>Primes! {primes}</div>
+function RenderPrimes({ iterations, multiplier }) {
+	const primes = calculatePrimes(iterations, multiplier)
+	return <div>Primes! {primes}</div>
 }
 ```
 
@@ -477,12 +477,12 @@ calculate the same value twice in a row, which is what `useMemo` will do for
 you:
 
 ```tsx
-function RenderPrimes({iterations, multiplier}) {
-  const primes = React.useMemo(
-    () => calculatePrimes(iterations, multiplier),
-    [iterations, multiplier],
-  )
-  return <div>Primes! {primes}</div>
+function RenderPrimes({ iterations, multiplier }) {
+	const primes = React.useMemo(
+		() => calculatePrimes(iterations, multiplier),
+		[iterations, multiplier],
+	)
+	return <div>Primes! {primes}</div>
 }
 ```
 
@@ -522,17 +522,17 @@ since day one... For example:
 
 ```tsx
 class FavoriteNumbers extends React.Component {
-  render() {
-    return (
-      <ul>
-        {this.props.favoriteNumbers.map(number => (
-          // TADA! This is a function defined in the render method!
-          // Hooks did not introduce this concept.
-          // We've been doing this all along.
-          <li key={number}>{number}</li>
-        ))}
-      </ul>
-    )
-  }
+	render() {
+		return (
+			<ul>
+				{this.props.favoriteNumbers.map(number => (
+					// TADA! This is a function defined in the render method!
+					// Hooks did not introduce this concept.
+					// We've been doing this all along.
+					<li key={number}>{number}</li>
+				))}
+			</ul>
+		)
+	}
 }
 ```

@@ -1,17 +1,17 @@
-import {expect, test} from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
-test('App loads and nav works', async ({page}) => {
-  await page.goto('/')
+test('App loads and nav works', async ({ page }) => {
+	await page.goto('/')
 
-  const nav = page.getByRole('navigation')
-  const blogLink = nav.getByRole('link', {name: 'Blog'})
-  await blogLink.click()
+	const nav = page.getByRole('navigation')
+	const blogLink = nav.getByRole('link', { name: 'Blog' })
+	await blogLink.click()
 
-  await expect(blogLink).toHaveClass(/underlined/)
+	await expect(blogLink).toHaveClass(/underlined/)
 
-  // Expects the URL to contain intro.
-  await expect(page).toHaveURL(/.*blog/)
-  await expect(
-    page.getByRole('heading', {level: 1, name: 'Kent C. Dodds'}),
-  ).toBeVisible()
+	// Expects the URL to contain intro.
+	await expect(page).toHaveURL(/.*blog/)
+	await expect(
+		page.getByRole('heading', { level: 1, name: 'Kent C. Dodds' }),
+	).toBeVisible()
 })

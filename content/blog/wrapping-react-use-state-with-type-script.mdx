@@ -24,32 +24,32 @@ type DarkModeState = 'dark' | 'light'
 type SetDarkModeState = React.Dispatch<React.SetStateAction<DarkModeState>>
 
 function useDarkMode() {
-  const preferDarkQuery = '(prefers-color-scheme: dark)'
-  const [mode, setMode] = React.useState<DarkModeState>(() => {
-    const lsVal = window.localStorage.getItem('colorMode')
-    if (lsVal) {
-      return lsVal === 'dark' ? 'dark' : 'light'
-    } else {
-      return window.matchMedia(preferDarkQuery).matches ? 'dark' : 'light'
-    }
-  })
+	const preferDarkQuery = '(prefers-color-scheme: dark)'
+	const [mode, setMode] = React.useState<DarkModeState>(() => {
+		const lsVal = window.localStorage.getItem('colorMode')
+		if (lsVal) {
+			return lsVal === 'dark' ? 'dark' : 'light'
+		} else {
+			return window.matchMedia(preferDarkQuery).matches ? 'dark' : 'light'
+		}
+	})
 
-  React.useEffect(() => {
-    const mediaQuery = window.matchMedia(preferDarkQuery)
-    const handleChange = () => {
-      setMode(mediaQuery.matches ? 'dark' : 'light')
-    }
-    mediaQuery.addEventListener('change', handleChange)
-    return () => mediaQuery.removeEventListener('change', handleChange)
-  }, [])
+	React.useEffect(() => {
+		const mediaQuery = window.matchMedia(preferDarkQuery)
+		const handleChange = () => {
+			setMode(mediaQuery.matches ? 'dark' : 'light')
+		}
+		mediaQuery.addEventListener('change', handleChange)
+		return () => mediaQuery.removeEventListener('change', handleChange)
+	}, [])
 
-  React.useEffect(() => {
-    window.localStorage.setItem('colorMode', mode)
-  }, [mode])
+	React.useEffect(() => {
+		window.localStorage.setItem('colorMode', mode)
+	}, [mode])
 
-  // we're doing it this way instead of as an effect so we only
-  // set the localStorage value if they explicitly change the default
-  return [mode, setMode] as const
+	// we're doing it this way instead of as an effect so we only
+	// set the localStorage value if they explicitly change the default
+	return [mode, setMode] as const
 }
 ```
 
@@ -202,7 +202,7 @@ Let's take a quick look at their type definition for `useState`:
 
 ```ts
 function useState<S>(
-  initialState: S | (() => S),
+	initialState: S | (() => S),
 ): [S, Dispatch<SetStateAction<S>>]
 ```
 
@@ -217,8 +217,8 @@ our function:
 
 ```ts
 function useDarkMode(): [string, React.Dispatch<React.SetStateAction<string>>] {
-  // ...
-  return [mode, setMode]
+	// ...
+	return [mode, setMode]
 }
 ```
 
@@ -226,12 +226,12 @@ Or we could make a specific type for a variable:
 
 ```ts
 function useDarkMode() {
-  // ...
-  const returnValue: [string, React.Dispatch<React.SetStateAction<string>>] = [
-    mode,
-    setMode,
-  ]
-  return returnValue
+	// ...
+	const returnValue: [string, React.Dispatch<React.SetStateAction<string>>] = [
+		mode,
+		setMode,
+	]
+	return returnValue
 }
 ```
 
@@ -241,8 +241,8 @@ for this value is constant" so we can cast our value as a `const`:
 
 ```ts
 function useDarkMode() {
-  // ...
-  return [mode, setMode] as const
+	// ...
+	return [mode, setMode] as const
 }
 ```
 
@@ -255,14 +255,14 @@ inference and pass the possible values explicitly:
 
 ```ts
 function useDarkMode() {
-  const [mode, setMode] = React.useState<'dark' | 'light'>(() => {
-    // ...
-    return 'light'
-  })
+	const [mode, setMode] = React.useState<'dark' | 'light'>(() => {
+		// ...
+		return 'light'
+	})
 
-  // ...
+	// ...
 
-  return [mode, setMode] as const
+	return [mode, setMode] as const
 }
 ```
 

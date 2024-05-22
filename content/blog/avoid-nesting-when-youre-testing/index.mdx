@@ -29,9 +29,9 @@ principle, applied to a React component test. So even though the example is a
 React one, hopefully it helps communicate the concept properly.
 
 <callout-info class="aside">
-  Note: my point isn't that nesting is bad by itself, but rather that it
-  naturally encourages using test hooks (such as `beforeEach`) as a mechanism
-  for code reuse which does lead to unmaintainable tests. Please read on...
+	Note: my point isn't that nesting is bad by itself, but rather that it
+	naturally encourages using test hooks (such as `beforeEach`) as a mechanism
+	for code reuse which does lead to unmaintainable tests. Please read on...
 </callout-info>
 
 Here's a React component that I want to test:
@@ -40,42 +40,42 @@ Here's a React component that I want to test:
 // login.js
 import * as React from 'react'
 
-function Login({onSubmit}) {
-  const [error, setError] = React.useState('')
+function Login({ onSubmit }) {
+	const [error, setError] = React.useState('')
 
-  function handleSubmit(event) {
-    event.preventDefault()
-    const {
-      usernameInput: {value: username},
-      passwordInput: {value: password},
-    } = event.target.elements
+	function handleSubmit(event) {
+		event.preventDefault()
+		const {
+			usernameInput: { value: username },
+			passwordInput: { value: password },
+		} = event.target.elements
 
-    if (!username) {
-      setError('username is required')
-    } else if (!password) {
-      setError('password is required')
-    } else {
-      setError('')
-      onSubmit({username, password})
-    }
-  }
+		if (!username) {
+			setError('username is required')
+		} else if (!password) {
+			setError('password is required')
+		} else {
+			setError('')
+			onSubmit({ username, password })
+		}
+	}
 
-  return (
-    <div>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="usernameInput">Username</label>
-          <input id="usernameInput" />
-        </div>
-        <div>
-          <label htmlFor="passwordInput">Password</label>
-          <input id="passwordInput" type="password" />
-        </div>
-        <button type="submit">Submit</button>
-      </form>
-      {error ? <div role="alert">{error}</div> : null}
-    </div>
-  )
+	return (
+		<div>
+			<form onSubmit={handleSubmit}>
+				<div>
+					<label htmlFor="usernameInput">Username</label>
+					<input id="usernameInput" />
+				</div>
+				<div>
+					<label htmlFor="passwordInput">Password</label>
+					<input id="passwordInput" type="password" />
+				</div>
+				<button type="submit">Submit</button>
+			</form>
+			{error ? <div role="alert">{error}</div> : null}
+		</div>
+	)
 }
 
 export default Login
@@ -83,105 +83,105 @@ export default Login
 
 And here's what that renders (it actually works, try it):
 
-import {Login} from './components'
+import { Login } from './components'
 
 <div
-  style={{
-    padding: 14,
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: 4,
-    marginBottom: 20,
-  }}
+	style={{
+		padding: 14,
+		backgroundColor: 'rgba(0,0,0,0.05)',
+		borderRadius: 4,
+		marginBottom: 20,
+	}}
 >
-  <Login
-    onSubmit={({username, password}) =>
-      alert(`Username is "${username}" and Password is "${password}"`)
-    }
-  />
+	<Login
+		onSubmit={({ username, password }) =>
+			alert(`Username is "${username}" and Password is "${password}"`)
+		}
+	/>
 </div>
 
 Here's a test suite that resembles the kind of testing I've seen over the years.
 
 ```tsx
 // __tests__/login.js
-import {render} from '@testing-library/react'
+import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import * as React from 'react'
 
 import Login from '../login'
 
 describe('Login', () => {
-  let utils,
-    handleSubmit,
-    user,
-    changeUsernameInput,
-    changePasswordInput,
-    clickSubmit
+	let utils,
+		handleSubmit,
+		user,
+		changeUsernameInput,
+		changePasswordInput,
+		clickSubmit
 
-  beforeEach(() => {
-    handleSubmit = jest.fn()
-    user = {username: 'michelle', password: 'smith'}
-    utils = render(<Login onSubmit={handleSubmit} />)
-    changeUsernameInput = value =>
-      userEvent.type(utils.getByLabelText(/username/i), value)
-    changePasswordInput = value =>
-      userEvent.type(utils.getByLabelText(/password/i), value)
-    clickSubmit = () => userEvent.click(utils.getByText(/submit/i))
-  })
+	beforeEach(() => {
+		handleSubmit = jest.fn()
+		user = { username: 'michelle', password: 'smith' }
+		utils = render(<Login onSubmit={handleSubmit} />)
+		changeUsernameInput = value =>
+			userEvent.type(utils.getByLabelText(/username/i), value)
+		changePasswordInput = value =>
+			userEvent.type(utils.getByLabelText(/password/i), value)
+		clickSubmit = () => userEvent.click(utils.getByText(/submit/i))
+	})
 
-  describe('when username and password is provided', () => {
-    beforeEach(() => {
-      changeUsernameInput(user.username)
-      changePasswordInput(user.password)
-    })
+	describe('when username and password is provided', () => {
+		beforeEach(() => {
+			changeUsernameInput(user.username)
+			changePasswordInput(user.password)
+		})
 
-    describe('when the submit button is clicked', () => {
-      beforeEach(() => {
-        clickSubmit()
-      })
+		describe('when the submit button is clicked', () => {
+			beforeEach(() => {
+				clickSubmit()
+			})
 
-      it('should call onSubmit with the username and password', () => {
-        expect(handleSubmit).toHaveBeenCalledTimes(1)
-        expect(handleSubmit).toHaveBeenCalledWith(user)
-      })
-    })
-  })
+			it('should call onSubmit with the username and password', () => {
+				expect(handleSubmit).toHaveBeenCalledTimes(1)
+				expect(handleSubmit).toHaveBeenCalledWith(user)
+			})
+		})
+	})
 
-  describe('when the password is not provided', () => {
-    beforeEach(() => {
-      changeUsernameInput(user.username)
-    })
+	describe('when the password is not provided', () => {
+		beforeEach(() => {
+			changeUsernameInput(user.username)
+		})
 
-    describe('when the submit button is clicked', () => {
-      let errorMessage
-      beforeEach(() => {
-        clickSubmit()
-        errorMessage = utils.getByRole('alert')
-      })
+		describe('when the submit button is clicked', () => {
+			let errorMessage
+			beforeEach(() => {
+				clickSubmit()
+				errorMessage = utils.getByRole('alert')
+			})
 
-      it('should show an error message', () => {
-        expect(errorMessage).toHaveTextContent(/password is required/i)
-      })
-    })
-  })
+			it('should show an error message', () => {
+				expect(errorMessage).toHaveTextContent(/password is required/i)
+			})
+		})
+	})
 
-  describe('when the username is not provided', () => {
-    beforeEach(() => {
-      changePasswordInput(user.password)
-    })
+	describe('when the username is not provided', () => {
+		beforeEach(() => {
+			changePasswordInput(user.password)
+		})
 
-    describe('when the submit button is clicked', () => {
-      let errorMessage
-      beforeEach(() => {
-        clickSubmit()
-        errorMessage = utils.getByRole('alert')
-      })
+		describe('when the submit button is clicked', () => {
+			let errorMessage
+			beforeEach(() => {
+				clickSubmit()
+				errorMessage = utils.getByRole('alert')
+			})
 
-      it('should show an error message', () => {
-        expect(errorMessage).toHaveTextContent(/username is required/i)
-      })
-    })
-  })
+			it('should show an error message', () => {
+				expect(errorMessage).toHaveTextContent(/username is required/i)
+			})
+		})
+	})
 })
 ```
 
@@ -214,8 +214,8 @@ What makes it so complex? Take this bit for example:
 
 ```js
 it('should call onSubmit with the username and password', () => {
-  expect(handleSubmit).toHaveBeenCalledTimes(1)
-  expect(handleSubmit).toHaveBeenCalledWith(user)
+	expect(handleSubmit).toHaveBeenCalledTimes(1)
+	expect(handleSubmit).toHaveBeenCalledWith(user)
 })
 ```
 
@@ -224,13 +224,13 @@ from? What's _its_ value? Oh sure, you can go find where it's defined:
 
 ```js lines=3-4
 describe('Login', () => {
-  let utils,
-    handleSubmit,
-    user,
-    changeUsernameInput,
-    changePasswordInput,
-    clickSubmit
-  // ...
+	let utils,
+		handleSubmit,
+		user,
+		changeUsernameInput,
+		changePasswordInput,
+		clickSubmit
+	// ...
 })
 ```
 
@@ -238,9 +238,9 @@ But then you _also_ have to figure out where it's assigned:
 
 ```js lines=2-3
 beforeEach(() => {
-  handleSubmit = jest.fn()
-  user = {username: 'michelle', password: 'smith'}
-  // ...
+	handleSubmit = jest.fn()
+	user = { username: 'michelle', password: 'smith' }
+	// ...
 })
 ```
 
@@ -264,57 +264,59 @@ abstraction as possible. Check this out:
 
 ```tsx
 // __tests__/login.js
-import {render} from '@testing-library/react'
+import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import * as React from 'react'
 
 import Login from '../login'
 
 test('calls onSubmit with the username and password when submit is clicked', () => {
-  const handleSubmit = jest.fn()
-  const {getByLabelText, getByText} = render(<Login onSubmit={handleSubmit} />)
-  const user = {username: 'michelle', password: 'smith'}
+	const handleSubmit = jest.fn()
+	const { getByLabelText, getByText } = render(
+		<Login onSubmit={handleSubmit} />,
+	)
+	const user = { username: 'michelle', password: 'smith' }
 
-  userEvent.type(getByLabelText(/username/i), user.username)
-  userEvent.type(getByLabelText(/password/i), user.password)
-  userEvent.click(getByText(/submit/i))
+	userEvent.type(getByLabelText(/username/i), user.username)
+	userEvent.type(getByLabelText(/password/i), user.password)
+	userEvent.click(getByText(/submit/i))
 
-  expect(handleSubmit).toHaveBeenCalledTimes(1)
-  expect(handleSubmit).toHaveBeenCalledWith(user)
+	expect(handleSubmit).toHaveBeenCalledTimes(1)
+	expect(handleSubmit).toHaveBeenCalledWith(user)
 })
 
 test('shows an error message when submit is clicked and no username is provided', () => {
-  const handleSubmit = jest.fn()
-  const {getByLabelText, getByText, getByRole} = render(
-    <Login onSubmit={handleSubmit} />,
-  )
+	const handleSubmit = jest.fn()
+	const { getByLabelText, getByText, getByRole } = render(
+		<Login onSubmit={handleSubmit} />,
+	)
 
-  userEvent.type(getByLabelText(/password/i), 'anything')
-  userEvent.click(getByText(/submit/i))
+	userEvent.type(getByLabelText(/password/i), 'anything')
+	userEvent.click(getByText(/submit/i))
 
-  const errorMessage = getByRole('alert')
-  expect(errorMessage).toHaveTextContent(/username is required/i)
-  expect(handleSubmit).not.toHaveBeenCalled()
+	const errorMessage = getByRole('alert')
+	expect(errorMessage).toHaveTextContent(/username is required/i)
+	expect(handleSubmit).not.toHaveBeenCalled()
 })
 
 test('shows an error message when submit is clicked and no password is provided', () => {
-  const handleSubmit = jest.fn()
-  const {getByLabelText, getByText, getByRole} = render(
-    <Login onSubmit={handleSubmit} />,
-  )
+	const handleSubmit = jest.fn()
+	const { getByLabelText, getByText, getByRole } = render(
+		<Login onSubmit={handleSubmit} />,
+	)
 
-  userEvent.type(getByLabelText(/username/i), 'anything')
-  userEvent.click(getByText(/submit/i))
+	userEvent.type(getByLabelText(/username/i), 'anything')
+	userEvent.click(getByText(/submit/i))
 
-  const errorMessage = getByRole('alert')
-  expect(errorMessage).toHaveTextContent(/password is required/i)
-  expect(handleSubmit).not.toHaveBeenCalled()
+	const errorMessage = getByRole('alert')
+	expect(errorMessage).toHaveTextContent(/password is required/i)
+	expect(handleSubmit).not.toHaveBeenCalled()
 })
 ```
 
 <callout-info class="aside">
-  Note: `test` is an alias for `it` and I just prefer using `test` when I'm not
-  nested in a `describe`.
+	Note: `test` is an alias for `it` and I just prefer using `test` when I'm not
+	nested in a `describe`.
 </callout-info>
 
 You'll notice that there is a bit of duplication there (we'll get to that), but
@@ -344,7 +346,7 @@ assignments again and we'd like to avoid that. How else could we share code
 between our tests? AHA! We could use functions!
 
 ```tsx
-import {render} from '@testing-library/react'
+import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import * as React from 'react'
 
@@ -355,64 +357,64 @@ import Login from '../login'
 // I'm including it here only as an example. These tests don't necessitate this
 // much abstraction. Read more: https://kcd.im/aha-testing
 function setup() {
-  const handleSubmit = jest.fn()
-  const utils = render(<Login onSubmit={handleSubmit} />)
-  const user = {username: 'michelle', password: 'smith'}
-  const changeUsernameInput = value =>
-    userEvent.type(utils.getByLabelText(/username/i), value)
-  const changePasswordInput = value =>
-    userEvent.type(utils.getByLabelText(/password/i), value)
-  const clickSubmit = () => userEvent.click(utils.getByText(/submit/i))
-  return {
-    ...utils,
-    handleSubmit,
-    user,
-    changeUsernameInput,
-    changePasswordInput,
-    clickSubmit,
-  }
+	const handleSubmit = jest.fn()
+	const utils = render(<Login onSubmit={handleSubmit} />)
+	const user = { username: 'michelle', password: 'smith' }
+	const changeUsernameInput = value =>
+		userEvent.type(utils.getByLabelText(/username/i), value)
+	const changePasswordInput = value =>
+		userEvent.type(utils.getByLabelText(/password/i), value)
+	const clickSubmit = () => userEvent.click(utils.getByText(/submit/i))
+	return {
+		...utils,
+		handleSubmit,
+		user,
+		changeUsernameInput,
+		changePasswordInput,
+		clickSubmit,
+	}
 }
 
 function setupSuccessCase() {
-  const utils = setup()
-  utils.changeUsernameInput(utils.user.username)
-  utils.changePasswordInput(utils.user.password)
-  utils.clickSubmit()
-  return utils
+	const utils = setup()
+	utils.changeUsernameInput(utils.user.username)
+	utils.changePasswordInput(utils.user.password)
+	utils.clickSubmit()
+	return utils
 }
 
 function setupWithNoPassword() {
-  const utils = setup()
-  utils.changeUsernameInput(utils.user.username)
-  utils.clickSubmit()
-  const errorMessage = utils.getByRole('alert')
-  return {...utils, errorMessage}
+	const utils = setup()
+	utils.changeUsernameInput(utils.user.username)
+	utils.clickSubmit()
+	const errorMessage = utils.getByRole('alert')
+	return { ...utils, errorMessage }
 }
 
 function setupWithNoUsername() {
-  const utils = setup()
-  utils.changePasswordInput(utils.user.password)
-  utils.clickSubmit()
-  const errorMessage = utils.getByRole('alert')
-  return {...utils, errorMessage}
+	const utils = setup()
+	utils.changePasswordInput(utils.user.password)
+	utils.clickSubmit()
+	const errorMessage = utils.getByRole('alert')
+	return { ...utils, errorMessage }
 }
 
 test('calls onSubmit with the username and password', () => {
-  const {handleSubmit, user} = setupSuccessCase()
-  expect(handleSubmit).toHaveBeenCalledTimes(1)
-  expect(handleSubmit).toHaveBeenCalledWith(user)
+	const { handleSubmit, user } = setupSuccessCase()
+	expect(handleSubmit).toHaveBeenCalledTimes(1)
+	expect(handleSubmit).toHaveBeenCalledWith(user)
 })
 
 test('shows an error message when submit is clicked and no username is provided', () => {
-  const {handleSubmit, errorMessage} = setupWithNoUsername()
-  expect(errorMessage).toHaveTextContent(/username is required/i)
-  expect(handleSubmit).not.toHaveBeenCalled()
+	const { handleSubmit, errorMessage } = setupWithNoUsername()
+	expect(errorMessage).toHaveTextContent(/username is required/i)
+	expect(handleSubmit).not.toHaveBeenCalled()
 })
 
 test('shows an error message when password is not provided', () => {
-  const {handleSubmit, errorMessage} = setupWithNoPassword()
-  expect(errorMessage).toHaveTextContent(/password is required/i)
-  expect(handleSubmit).not.toHaveBeenCalled()
+	const { handleSubmit, errorMessage } = setupWithNoPassword()
+	expect(errorMessage).toHaveTextContent(/password is required/i)
+	expect(handleSubmit).not.toHaveBeenCalled()
 })
 ```
 
@@ -456,9 +458,9 @@ tests failing, ultimately resulting in a lot of error output that is harder to
 debug.
 
 <callout-info class="aside">
-  NOTE: This example was written before `@testing-library/react@9` which made
-  cleanup automatic. But the concept still applies and I didn't want to rewrite
-  the example 😅
+	NOTE: This example was written before `@testing-library/react@9` which made
+	cleanup automatic. But the concept still applies and I didn't want to rewrite
+	the example 😅
 </callout-info>
 
 For example, React Testing Library will insert your component into the document,
@@ -466,29 +468,29 @@ and if you don't cleanup after each test, then your tests can run over
 themselves:
 
 ```tsx
-import {render} from '@testing-library/react'
+import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import * as React from 'react'
 
 import Login from '../login'
 
 test('example 1', () => {
-  const handleSubmit = jest.fn()
-  const {getByLabelText} = render(<Login onSubmit={handleSubmit} />)
-  userEvent.type(getByLabelText(/username/i), 'kentcdodds')
-  userEvent.type(getByLabelText(/password/i), 'ilovetwix')
-  // more test here
+	const handleSubmit = jest.fn()
+	const { getByLabelText } = render(<Login onSubmit={handleSubmit} />)
+	userEvent.type(getByLabelText(/username/i), 'kentcdodds')
+	userEvent.type(getByLabelText(/password/i), 'ilovetwix')
+	// more test here
 })
 
 test('example 2', () => {
-  const handleSubmit = jest.fn()
-  const {getByLabelText} = render(<Login onSubmit={handleSubmit} />)
-  // 💣 this will blow up because the `getByLabelText` is actually querying the
-  // entire document, and because we didn't cleanup after the previous test
-  // we'll get an error indicating that RTL found more than one field with the
-  // label "username"
-  userEvent.type(getByLabelText(/username/i), 'kentcdodds')
-  // more test here
+	const handleSubmit = jest.fn()
+	const { getByLabelText } = render(<Login onSubmit={handleSubmit} />)
+	// 💣 this will blow up because the `getByLabelText` is actually querying the
+	// entire document, and because we didn't cleanup after the previous test
+	// we'll get an error indicating that RTL found more than one field with the
+	// label "username"
+	userEvent.type(getByLabelText(/username/i), 'kentcdodds')
+	// more test here
 })
 ```
 
@@ -496,27 +498,27 @@ Fixing this is pretty simple, you need to execute the `cleanup` method from
 `@testing-library/react` after each test.
 
 ```tsx lines=1,13,21
-import {cleanup, render} from '@testing-library/react'
+import { cleanup, render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import * as React from 'react'
 
 import Login from '../login'
 
 test('example 1', () => {
-  const handleSubmit = jest.fn()
-  const {getByLabelText} = render(<Login onSubmit={handleSubmit} />)
-  userEvent.type(getByLabelText(/username/i), 'kentcdodds')
-  userEvent.type(getByLabelText(/password/i), 'ilovetwix')
-  // more test here
-  cleanup()
+	const handleSubmit = jest.fn()
+	const { getByLabelText } = render(<Login onSubmit={handleSubmit} />)
+	userEvent.type(getByLabelText(/username/i), 'kentcdodds')
+	userEvent.type(getByLabelText(/password/i), 'ilovetwix')
+	// more test here
+	cleanup()
 })
 
 test('example 2', () => {
-  const handleSubmit = jest.fn()
-  const {getByLabelText} = render(<Login onSubmit={handleSubmit} />)
-  userEvent.type(getByLabelText(/username/i), 'kentcdodds')
-  // more test here
-  cleanup()
+	const handleSubmit = jest.fn()
+	const { getByLabelText } = render(<Login onSubmit={handleSubmit} />)
+	userEvent.type(getByLabelText(/username/i), 'kentcdodds')
+	// more test here
+	cleanup()
 })
 ```
 
@@ -525,14 +527,14 @@ cleanup wont run, like this:
 
 ```tsx lines=5-7
 test('example 1', () => {
-  const handleSubmit = jest.fn()
-  const {getByLabelText} = render(<Login onSubmit={handleSubmit} />)
-  userEvent.type(getByLabelText(/username/i), 'kentcdodds')
-  // 💣 the following typo will result in a error thrown:
-  //   "no field with the label matching passssword"
-  userEvent.type(getByLabelText(/passssword/i), 'ilovetwix')
-  // more test here
-  cleanup()
+	const handleSubmit = jest.fn()
+	const { getByLabelText } = render(<Login onSubmit={handleSubmit} />)
+	userEvent.type(getByLabelText(/username/i), 'kentcdodds')
+	// 💣 the following typo will result in a error thrown:
+	//   "no field with the label matching passssword"
+	userEvent.type(getByLabelText(/passssword/i), 'ilovetwix')
+	// more test here
+	cleanup()
 })
 ```
 
@@ -544,7 +546,7 @@ So instead, you should use `afterEach` and that will ensure that even if your
 test fails, you can cleanup:
 
 ```tsx
-import {cleanup, render} from '@testing-library/react'
+import { cleanup, render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import * as React from 'react'
 
@@ -553,26 +555,26 @@ import Login from '../login'
 afterEach(() => cleanup())
 
 test('example 1', () => {
-  const handleSubmit = jest.fn()
-  const {getByLabelText} = render(<Login onSubmit={handleSubmit} />)
-  userEvent.type(getByLabelText(/username/i), 'kentcdodds')
-  userEvent.type(getByLabelText(/password/i), 'ilovetwix')
-  // more test here
+	const handleSubmit = jest.fn()
+	const { getByLabelText } = render(<Login onSubmit={handleSubmit} />)
+	userEvent.type(getByLabelText(/username/i), 'kentcdodds')
+	userEvent.type(getByLabelText(/password/i), 'ilovetwix')
+	// more test here
 })
 
 test('example 2', () => {
-  const handleSubmit = jest.fn()
-  const {getByLabelText} = render(<Login onSubmit={handleSubmit} />)
-  userEvent.type(getByLabelText(/username/i), 'kentcdodds')
-  // more test here
+	const handleSubmit = jest.fn()
+	const { getByLabelText } = render(<Login onSubmit={handleSubmit} />)
+	userEvent.type(getByLabelText(/username/i), 'kentcdodds')
+	// more test here
 })
 ```
 
 <callout-info class="aside">
-  Even better, with React Testing Library,
-  [`cleanup`](https://testing-library.com/docs/react-testing-library/api#cleanup)
-  is called after each test automatically by default. Learn more [in the
-  docs](https://testing-library.com/docs/react-testing-library/setup#skipping-auto-cleanup)
+	Even better, with React Testing Library,
+	[`cleanup`](https://testing-library.com/docs/react-testing-library/api#cleanup)
+	is called after each test automatically by default. Learn more [in the
+	docs](https://testing-library.com/docs/react-testing-library/setup#skipping-auto-cleanup)
 </callout-info>
 
 In addition, sometimes there are definitely good use cases for `before*`, but
@@ -582,7 +584,7 @@ starting and stopping a server:
 ```js
 let server
 beforeAll(async () => {
-  server = await startServer()
+	server = await startServer()
 })
 afterAll(() => server.close())
 ```
@@ -592,15 +594,15 @@ think of that I've used these hooks is for testing `console.error` calls:
 
 ```js
 beforeAll(() => {
-  jest.spyOn(console, 'error').mockImplementation(() => {})
+	jest.spyOn(console, 'error').mockImplementation(() => {})
 })
 
 afterEach(() => {
-  console.error.mockClear()
+	console.error.mockClear()
 })
 
 afterAll(() => {
-  console.error.mockRestore()
+	console.error.mockRestore()
 })
 ```
 

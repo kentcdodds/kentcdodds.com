@@ -28,7 +28,7 @@ bannerCredit: Photo by [Samuel Zeller](https://unsplash.com/photos/j0g8taxHZa0)
 
 https://egghead.io/lessons/react-lifting-and-colocating-react-state
 
-import {Layout, App, FastApp} from './components'
+import { Layout, App, FastApp } from './components'
 
 One of the leading causes to slow React applications is global state, especially
 the rapidly changing variety. Allow me to illustrate my point with a super
@@ -36,57 +36,57 @@ contrived example, then I'll give you a slightly more realistic example so you
 can determine how it can be more practically applicable in your own app.
 
 <Layout>
-  <App />
+	<App />
 </Layout>
 
 Here's the code for that
 
 ```tsx
 function sleep(time) {
-  const done = Date.now() + time
-  while (done > Date.now()) {
-    // sleep...
-  }
+	const done = Date.now() + time
+	while (done > Date.now()) {
+		// sleep...
+	}
 }
 
 // imagine that this slow component is actually slow because it's rendering a
 // lot of data (for example).
-function SlowComponent({time, onChange}) {
-  sleep(time)
-  return (
-    <div>
-      Wow, that was{' '}
-      <input
-        value={time}
-        type="number"
-        onChange={e => onChange(Number(e.target.value))}
-      />
-      ms slow
-    </div>
-  )
+function SlowComponent({ time, onChange }) {
+	sleep(time)
+	return (
+		<div>
+			Wow, that was{' '}
+			<input
+				value={time}
+				type="number"
+				onChange={e => onChange(Number(e.target.value))}
+			/>
+			ms slow
+		</div>
+	)
 }
 
-function DogName({time, dog, onChange}) {
-  return (
-    <div>
-      <label htmlFor="dog">Dog Name</label>
-      <br />
-      <input id="dog" value={dog} onChange={e => onChange(e.target.value)} />
-      <p>{dog ? `${dog}'s favorite number is ${time}.` : 'enter a dog name'}</p>
-    </div>
-  )
+function DogName({ time, dog, onChange }) {
+	return (
+		<div>
+			<label htmlFor="dog">Dog Name</label>
+			<br />
+			<input id="dog" value={dog} onChange={e => onChange(e.target.value)} />
+			<p>{dog ? `${dog}'s favorite number is ${time}.` : 'enter a dog name'}</p>
+		</div>
+	)
 }
 
 function App() {
-  // this is "global state"
-  const [dog, setDog] = React.useState('')
-  const [time, setTime] = React.useState(200)
-  return (
-    <div>
-      <DogName time={time} dog={dog} onChange={setDog} />
-      <SlowComponent time={time} onChange={setTime} />
-    </div>
-  )
+	// this is "global state"
+	const [dog, setDog] = React.useState('')
+	const [time, setTime] = React.useState(200)
+	return (
+		<div>
+			<DogName time={time} dog={dog} onChange={setDog} />
+			<SlowComponent time={time} onChange={setTime} />
+		</div>
+	)
 }
 ```
 
@@ -106,34 +106,34 @@ the `dog` state is only used by one component, so let's move that state to be
 colocated (updated lines are highlighted):
 
 ```tsx lines=1,2,7,18
-function DogName({time}) {
-  const [dog, setDog] = React.useState('')
-  return (
-    <div>
-      <label htmlFor="dog">Dog Name</label>
-      <br />
-      <input id="dog" value={dog} onChange={e => setDog(e.target.value)} />
-      <p>{dog ? `${dog}'s favorite number is ${time}.` : 'enter a dog name'}</p>
-    </div>
-  )
+function DogName({ time }) {
+	const [dog, setDog] = React.useState('')
+	return (
+		<div>
+			<label htmlFor="dog">Dog Name</label>
+			<br />
+			<input id="dog" value={dog} onChange={e => setDog(e.target.value)} />
+			<p>{dog ? `${dog}'s favorite number is ${time}.` : 'enter a dog name'}</p>
+		</div>
+	)
 }
 
 function App() {
-  // this is "global state"
-  const [time, setTime] = React.useState(200)
-  return (
-    <div>
-      <DogName time={time} />
-      <SlowComponent time={time} onChange={setTime} />
-    </div>
-  )
+	// this is "global state"
+	const [time, setTime] = React.useState(200)
+	return (
+		<div>
+			<DogName time={time} />
+			<SlowComponent time={time} onChange={setTime} />
+		</div>
+	)
 }
 ```
 
 And here's the result:
 
 <Layout>
-  <FastApp />
+	<FastApp />
 </Layout>
 
 Wow! Typing in the dog name input is WAY better now. And what's more, the
@@ -193,22 +193,22 @@ If you'd like to play around with a slightly less contrived example,
 [The principle of colocation](https://kentcdodds.com/blog/colocation) is:
 
 <callout-success class="important">
-  Place code as close to where it's relevant as possible
+	Place code as close to where it's relevant as possible
 </callout-success>
 
 So, to accomplish this, we had our `dog` state _inside_ the `DogName` component:
 
 ```tsx
-function DogName({time}) {
-  const [dog, setDog] = React.useState('')
-  return (
-    <div>
-      <label htmlFor="dog">Dog Name</label>
-      <br />
-      <input id="dog" value={dog} onChange={e => setDog(e.target.value)} />
-      <p>{dog ? `${dog}'s favorite number is ${time}.` : 'enter a dog name'}</p>
-    </div>
-  )
+function DogName({ time }) {
+	const [dog, setDog] = React.useState('')
+	return (
+		<div>
+			<label htmlFor="dog">Dog Name</label>
+			<br />
+			<input id="dog" value={dog} onChange={e => setDog(e.target.value)} />
+			<p>{dog ? `${dog}'s favorite number is ${time}.` : 'enter a dog name'}</p>
+		</div>
+	)
 }
 ```
 
@@ -218,30 +218,30 @@ the same: "as close to where it's relevant as possible." That would be the
 so the `input` and the `p` show up in different components:
 
 ```tsx
-function DogName({time}) {
-  const [dog, setDog] = React.useState('')
-  return (
-    <div>
-      <DogInput dog={dog} onChange={setDog} />
-      <DogFavoriteNumberDisplay time={time} dog={dog} />
-    </div>
-  )
+function DogName({ time }) {
+	const [dog, setDog] = React.useState('')
+	return (
+		<div>
+			<DogInput dog={dog} onChange={setDog} />
+			<DogFavoriteNumberDisplay time={time} dog={dog} />
+		</div>
+	)
 }
 
-function DogInput({dog, onChange}) {
-  return (
-    <>
-      <label htmlFor="dog">Dog Name</label>
-      <br />
-      <input id="dog" value={dog} onChange={e => onChange(e.target.value)} />
-    </>
-  )
+function DogInput({ dog, onChange }) {
+	return (
+		<>
+			<label htmlFor="dog">Dog Name</label>
+			<br />
+			<input id="dog" value={dog} onChange={e => onChange(e.target.value)} />
+		</>
+	)
 }
 
-function DogFavoriteNumberDisplay({time, dog}) {
-  return (
-    <p>{dog ? `${dog}'s favorite number is ${time}.` : 'enter a dog name'}</p>
-  )
+function DogFavoriteNumberDisplay({ time, dog }) {
+	return (
+		<p>{dog ? `${dog}'s favorite number is ${time}.` : 'enter a dog name'}</p>
+	)
 }
 ```
 
@@ -303,10 +303,10 @@ I made this decision tree chart to help:
 ![where to put react state](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033349/kentcdodds.com/content/blog/state-colocation-will-make-your-react-app-faster/where-to-put-state.png)
 
 <small>
-  Chart perfected by{' '}
-  <a href="https://twitter.com/meijer_s/status/1176776537322020867">
-    Stephan Meijer
-  </a>
+	Chart perfected by{' '}
+	<a href="https://twitter.com/meijer_s/status/1176776537322020867">
+		Stephan Meijer
+	</a>
 </small>
 <br />
 

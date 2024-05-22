@@ -13,15 +13,15 @@ So let's make it work without JavaScript as much as possible.
 
 /* This is mostly for the hero image */
 [style*='opacity:0'] {
-  opacity: unset !important;
-  transform: unset !important;
+	opacity: unset !important;
+	transform: unset !important;
 }
 a:not(.underlined):hover,
 a:not(.underlined):focus {
-  text-decoration: underline !important;
+	text-decoration: underline !important;
 }
 
 /* This is for anything that just won't work without JavaScript */
 .noscript-hidden {
-  display: none !important;
+	display: none !important;
 }

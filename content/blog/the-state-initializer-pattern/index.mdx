@@ -49,20 +49,20 @@ of your state. The state initializer pattern allows you to do that.
 Take this for example:
 
 <div className="demo">
-  <C.SimpleCounter />
+	<C.SimpleCounter />
 </div>
 
 ```tsx
 function Counter() {
-  const [count, setCount] = React.useState(0)
-  const increment = () => setCount(c => c + 1)
-  const reset = () => setCount(0)
-  return (
-    <div>
-      <button onClick={increment}>{count}</button>
-      <button onClick={reset}>Reset</button>
-    </div>
-  )
+	const [count, setCount] = React.useState(0)
+	const increment = () => setCount(c => c + 1)
+	const reset = () => setCount(0)
+	return (
+		<div>
+			<button onClick={increment}>{count}</button>
+			<button onClick={reset}>Reset</button>
+		</div>
+	)
 }
 ```
 
@@ -78,33 +78,33 @@ count off as `1` they might want to do this:
 ```
 
 <callout-info class="aside">
-  Some libraries that implement this pattern use the prefix `default` instead of
-  `initial` to match the `defaultValue` from the `input` element. While this
-  makes sense, I still prefer the prefix `initial` since I feel like it
-  communicates the purpose and use case more clearly.
+	Some libraries that implement this pattern use the prefix `default` instead of
+	`initial` to match the `defaultValue` from the `input` element. While this
+	makes sense, I still prefer the prefix `initial` since I feel like it
+	communicates the purpose and use case more clearly.
 </callout-info>
 
 To support the `initialCount` prop, here's all we need to do:
 
 ```tsx
-function Counter({initialCount = 0}: {initialCount?: number}) {
-  //              ^^^ accept the prop with a default value so it's optional
-  const [count, setCount] = React.useState(initialCount) // <-- pass it to your state
-  const increment = () => setCount(c => c + 1)
-  const reset = () => setCount(initialCount) // <-- pass that initialCount value to the reset function
-  return (
-    <div>
-      <button onClick={increment}>{count}</button>
-      <button onClick={reset}>Reset</button>
-    </div>
-  )
+function Counter({ initialCount = 0 }: { initialCount?: number }) {
+	//              ^^^ accept the prop with a default value so it's optional
+	const [count, setCount] = React.useState(initialCount) // <-- pass it to your state
+	const increment = () => setCount(c => c + 1)
+	const reset = () => setCount(initialCount) // <-- pass that initialCount value to the reset function
+	return (
+		<div>
+			<button onClick={increment}>{count}</button>
+			<button onClick={reset}>Reset</button>
+		</div>
+	)
 }
 ```
 
 And here's that with an initial count of `8`:
 
 <div className="demo">
-  <C.InitialCounterAlmostThere initialCount={8} />
+	<C.InitialCounterAlmostThere initialCount={8} />
 </div>
 
 That's the core bit for the pattern. But it is missing one important edge case.
@@ -115,7 +115,7 @@ after your component is mounted? Wouldn't that defeat the purpose of the whole
 our count is changing the `initialCount` after the initial mount every 500ms:
 
 <div className="demo">
-  <C.BugReproduced />
+	<C.BugReproduced />
 </div>
 
 Clicking "reset" above will reset our component to a different state from its
@@ -131,9 +131,9 @@ an `isMounted` boolean or whatever. It's actually pretty simple. And there are a
 few ways we could do it:
 
 ```tsx
-const {current: initialState} = React.useRef({count: initialCount})
-const [initialState] = React.useState({count: initialCount})
-const [initialState] = React.useReducer(s => s, {count: initialCount})
+const { current: initialState } = React.useRef({ count: initialCount })
+const [initialState] = React.useState({ count: initialCount })
+const [initialState] = React.useReducer(s => s, { count: initialCount })
 
 // actual initial count is: initialState.count
 ```
@@ -142,7 +142,7 @@ Between those options, I prefer the `useRef`, but you do you my friend. Let's do
 it! Here's that with the `initialCount` set to `2`:
 
 <div className="demo">
-  <C.FinishedCounter initialCount={2} />
+	<C.FinishedCounter initialCount={2} />
 </div>
 
 And even if someone were to randomly change the `initialCount` value, our
@@ -151,9 +151,9 @@ component wouldn't care.
 ## Resetting state via `key`
 
 <callout-warning>
-  If you've not already read [Understanding React's key
-  prop](/blog/understanding-reacts-key-prop), I recommend you give that a quick
-  read right now. You done? Great, let's continue
+	If you've not already read [Understanding React's key
+	prop](/blog/understanding-reacts-key-prop), I recommend you give that a quick
+	read right now. You done? Great, let's continue
 </callout-warning>
 
 One other thing I want to call out is you can actually reset a component pretty
@@ -164,22 +164,22 @@ component brand new. Here's the code for that:
 
 ```tsx
 function KeyPropReset() {
-  const [key, setKey] = React.useState(0)
-  const resetCounter = () => setKey(k => k + 1)
-  return <KeyPropResetCounter key={key} reset={resetCounter} />
+	const [key, setKey] = React.useState(0)
+	const resetCounter = () => setKey(k => k + 1)
+	return <KeyPropResetCounter key={key} reset={resetCounter} />
 }
 
-function KeyPropResetCounter({reset}) {
-  const [count, setCount] = React.useState(0)
-  const increment = () => setCount(c => c + 1)
-  return <CountUI count={count} increment={increment} reset={reset} />
+function KeyPropResetCounter({ reset }) {
+	const [count, setCount] = React.useState(0)
+	const increment = () => setCount(c => c + 1)
+	return <CountUI count={count} increment={increment} reset={reset} />
 }
 ```
 
 And here's that rendered:
 
 <div className="demo">
-  <C.KeyPropReset initialCount={10} />
+	<C.KeyPropReset initialCount={10} />
 </div>
 
 You'll notice that we had to restructure the code a bit to support this. In some

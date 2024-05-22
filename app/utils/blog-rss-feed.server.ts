@@ -1,12 +1,12 @@
-import {getBlogMdxListItems} from './mdx.server.ts'
-import {formatDate, getDomainUrl} from './misc.tsx'
+import { getBlogMdxListItems } from './mdx.server.ts'
+import { formatDate, getDomainUrl } from './misc.tsx'
 
 async function getRssFeedXml(request: Request) {
-  const posts = await getBlogMdxListItems({request})
+	const posts = await getBlogMdxListItems({ request })
 
-  const blogUrl = `${getDomainUrl(request)}/blog`
+	const blogUrl = `${getDomainUrl(request)}/blog`
 
-  return `
+	return `
     <rss xmlns:blogChannel="${blogUrl}" version="2.0">
       <channel>
         <title>Kent C. Dodds Blog</title>
@@ -16,30 +16,30 @@ async function getRssFeedXml(request: Request) {
         <generator>Kody the Koala</generator>
         <ttl>40</ttl>
         ${posts
-          .map(post =>
-            `
+					.map(post =>
+						`
             <item>
               <title>${cdata(post.frontmatter.title ?? 'Untitled Post')}</title>
               <description>${cdata(
-                post.frontmatter.description ?? 'This post is... indescribable',
-              )}</description>
+								post.frontmatter.description ?? 'This post is... indescribable',
+							)}</description>
               <pubDate>${formatDate(
-                post.frontmatter.date ?? new Date(),
-                'yyyy-MM-ii',
-              )}</pubDate>
+								post.frontmatter.date ?? new Date(),
+								'yyyy-MM-ii',
+							)}</pubDate>
               <link>${blogUrl}/${post.slug}</link>
               <guid>${blogUrl}/${post.slug}</guid>
             </item>
           `.trim(),
-          )
-          .join('\n')}
+					)
+					.join('\n')}
       </channel>
     </rss>
   `.trim()
 }
 
 function cdata(s: string) {
-  return `<![CDATA[${s}]]>`
+	return `<![CDATA[${s}]]>`
 }
 
-export {getRssFeedXml}
+export { getRssFeedXml }

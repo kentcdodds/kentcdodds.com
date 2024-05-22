@@ -1,13 +1,13 @@
-import {type LoaderFunction} from '@remix-run/node'
-import {getBlogMdxListItems} from '~/utils/mdx.server.ts'
-import {formatDate, getDomainUrl} from '~/utils/misc.tsx'
+import { type LoaderFunction } from '@remix-run/node'
+import { getBlogMdxListItems } from '~/utils/mdx.server.ts'
+import { formatDate, getDomainUrl } from '~/utils/misc.tsx'
 
-export const loader: LoaderFunction = async ({request}) => {
-  const posts = await getBlogMdxListItems({request})
+export const loader: LoaderFunction = async ({ request }) => {
+	const posts = await getBlogMdxListItems({ request })
 
-  const blogUrl = `${getDomainUrl(request)}/blog`
+	const blogUrl = `${getDomainUrl(request)}/blog`
 
-  const rss = `
+	const rss = `
     <rss xmlns:blogChannel="${blogUrl}" version="2.0">
       <channel>
         <title>Kent C. Dodds Blog</title>
@@ -17,35 +17,35 @@ export const loader: LoaderFunction = async ({request}) => {
         <generator>Kody the Koala</generator>
         <ttl>40</ttl>
         ${posts
-          .map(post =>
-            `
+					.map(post =>
+						`
             <item>
               <title>${cdata(post.frontmatter.title ?? 'Untitled Post')}</title>
               <description>${cdata(
-                post.frontmatter.description ?? 'This post is... indescribable',
-              )}</description>
+								post.frontmatter.description ?? 'This post is... indescribable',
+							)}</description>
               <pubDate>${formatDate(
-                post.frontmatter.date ?? new Date(),
-                'yyyy-MM-ii',
-              )}</pubDate>
+								post.frontmatter.date ?? new Date(),
+								'yyyy-MM-ii',
+							)}</pubDate>
               <link>${blogUrl}/${post.slug}</link>
               <guid>${blogUrl}/${post.slug}</guid>
             </item>
           `.trim(),
-          )
-          .join('\n')}
+					)
+					.join('\n')}
       </channel>
     </rss>
   `.trim()
 
-  return new Response(rss, {
-    headers: {
-      'Content-Type': 'application/xml',
-      'Content-Length': String(Buffer.byteLength(rss)),
-    },
-  })
+	return new Response(rss, {
+		headers: {
+			'Content-Type': 'application/xml',
+			'Content-Length': String(Buffer.byteLength(rss)),
+		},
+	})
 }
 
 function cdata(s: string) {
-  return `<![CDATA[${s}]]>`
+	return `<![CDATA[${s}]]>`
 }

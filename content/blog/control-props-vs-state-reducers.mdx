@@ -33,17 +33,17 @@ selected:
 
 ```tsx
 function stateReducer(state, changes) {
-  if (changes.type === Downshift.stateChangeTypes.clickItem) {
-    // when the user clicks an item, prevent
-    // keep the isOpen to true
-    return {...changes, isOpen: true}
-  }
-  return changes
+	if (changes.type === Downshift.stateChangeTypes.clickItem) {
+		// when the user clicks an item, prevent
+		// keep the isOpen to true
+		return { ...changes, isOpen: true }
+	}
+	return changes
 }
 const ui = (
-  <Downshift stateReducer={stateReducer}>
-    {() => <div>{/* some ui stuff */}</div>}
-  </Downshift>
+	<Downshift stateReducer={stateReducer}>
+		{() => <div>{/* some ui stuff */}</div>}
+	</Downshift>
 )
 ```
 
@@ -61,35 +61,35 @@ as an example:
 
 ```tsx
 class Example extends React.Component {
-  state = {on: false, inputValue: 'off'}
-  handleToggle = on => {
-    this.setState({on, inputValue: on ? 'on' : 'off'})
-  }
-  handleChange = ({target: {value}}) => {
-    if (value === 'on') {
-      this.setState({on: true})
-    } else if (value === 'off') {
-      this.setState({on: false})
-    }
-    this.setState({inputValue: value})
-  }
-  render() {
-    const {on} = this.state
-    return (
-      <div>
-        {/*
+	state = { on: false, inputValue: 'off' }
+	handleToggle = on => {
+		this.setState({ on, inputValue: on ? 'on' : 'off' })
+	}
+	handleChange = ({ target: { value } }) => {
+		if (value === 'on') {
+			this.setState({ on: true })
+		} else if (value === 'off') {
+			this.setState({ on: false })
+		}
+		this.setState({ inputValue: value })
+	}
+	render() {
+		const { on } = this.state
+		return (
+			<div>
+				{/*
           here we're using the `value` control prop
           exposed by the <input /> component
         */}
-        <input value={this.state.inputValue} onChange={this.handleChange} />
-        {/*
+				<input value={this.state.inputValue} onChange={this.handleChange} />
+				{/*
           here we're using the `on` control prop
           exposed by the <Toggle /> component.
         */}
-        <Toggle on={on} onToggle={this.handleToggle} />
-      </div>
-    )
-  }
+				<Toggle on={on} onToggle={this.handleToggle} />
+			</div>
+		)
+	}
 }
 ```
 
@@ -112,42 +112,42 @@ state reducer:
 
 ```tsx
 class Example extends React.Component {
-  initialState = {timesClicked: 0}
-  state = this.initialState
-  handleToggle = (...args) => {
-    this.setState(({timesClicked}) => ({
-      timesClicked: timesClicked + 1,
-    }))
-  }
-  handleReset = (...args) => {
-    this.setState(this.initialState)
-  }
-  toggleStateReducer = (state, changes) => {
-    if (this.state.timesClicked >= 4) {
-      return {...changes, on: false}
-    }
-    return changes
-  }
-  render() {
-    const {timesClicked} = this.state
-    return (
-      <div>
-        <Toggle
-          stateReducer={this.toggleStateReducer}
-          onToggle={this.handleToggle}
-          onReset={this.handleReset}
-        />
-        {timesClicked > 4 ? (
-          <div>
-            Whoa, you clicked too much!
-            <br />
-          </div>
-        ) : (
-          <div>Click count: {timesClicked}</div>
-        )}
-      </div>
-    )
-  }
+	initialState = { timesClicked: 0 }
+	state = this.initialState
+	handleToggle = (...args) => {
+		this.setState(({ timesClicked }) => ({
+			timesClicked: timesClicked + 1,
+		}))
+	}
+	handleReset = (...args) => {
+		this.setState(this.initialState)
+	}
+	toggleStateReducer = (state, changes) => {
+		if (this.state.timesClicked >= 4) {
+			return { ...changes, on: false }
+		}
+		return changes
+	}
+	render() {
+		const { timesClicked } = this.state
+		return (
+			<div>
+				<Toggle
+					stateReducer={this.toggleStateReducer}
+					onToggle={this.handleToggle}
+					onReset={this.handleReset}
+				/>
+				{timesClicked > 4 ? (
+					<div>
+						Whoa, you clicked too much!
+						<br />
+					</div>
+				) : (
+					<div>Click count: {timesClicked}</div>
+				)}
+			</div>
+		)
+	}
 }
 ```
 

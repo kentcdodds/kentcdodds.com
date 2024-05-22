@@ -10,46 +10,46 @@ bannerCredit:
 ---
 
 <OptionalUser>
-  {maybeUser =>
-    maybeUser ? (
-      <p>
-        Hey <span className="text-team-current">{maybeUser.firstName}</span>!{' '}
-        Remember when you signed up for an account and chose your team? Have you
-        wondered what that was all about? Let's talk about it!
-      </p>
-    ) : (
-      <p>
-        Hey Visitor! Did you know you can{' '}
-        <a href="/login" className="underline">
-          create an account
-        </a>{' '}
-        on this site? Well you can. This page talks about some reasons you may
-        want to.
-      </p>
-    )
-  }
+	{maybeUser =>
+		maybeUser ? (
+			<p>
+				Hey <span className="text-team-current">{maybeUser.firstName}</span>!{' '}
+				Remember when you signed up for an account and chose your team? Have you
+				wondered what that was all about? Let's talk about it!
+			</p>
+		) : (
+			<p>
+				Hey Visitor! Did you know you can{' '}
+				<a href="/login" className="underline">
+					create an account
+				</a>{' '}
+				on this site? Well you can. This page talks about some reasons you may
+				want to.
+			</p>
+		)
+	}
 </OptionalUser>
 
 When you sign up for an account on [kentcdodds.com](https://kentcdodds.com), you
 can choose between the Red, Yellow, or Blue team.
 
 <Themed
-  dark={
-    <CloudinaryVideo
-      cloudinaryId="kentcdodds.com/content/teams/team-chooser-dark"
-      aspectRatio="250:113"
-      crop="fit"
-      width={1600}
-    />
-  }
-  light={
-    <CloudinaryVideo
-      cloudinaryId="kentcdodds.com/content/teams/team-chooser-light"
-      aspectRatio="250:113"
-      crop="fit"
-      width={1600}
-    />
-  }
+	dark={
+		<CloudinaryVideo
+			cloudinaryId="kentcdodds.com/content/teams/team-chooser-dark"
+			aspectRatio="250:113"
+			crop="fit"
+			width={1600}
+		/>
+	}
+	light={
+		<CloudinaryVideo
+			cloudinaryId="kentcdodds.com/content/teams/team-chooser-light"
+			aspectRatio="250:113"
+			crop="fit"
+			width={1600}
+		/>
+	}
 />
 
 When you connect your KCD account to your Discord account, your username will be
@@ -62,41 +62,41 @@ points as described below.
 You can even take it to the next level and grab a team t-shirt (sold at-cost)!
 
 <div className="flex gap-4">
-  <a href="https://cottonbureau.com/p/4AAW9M">
-    <img
-      src="https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0,ar_1:1,w_560/v1670441444/kentcdodds.com/content/teams/shirt-yellow"
-      alt="Yellow T-Shirt with a Koala"
-      style={{aspectRatio: '1/1'}}
-    />
-  </a>
-  <a href="https://cottonbureau.com/p/BT8VUW">
-    <img
-      src="https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0,ar_1:1,w_560/v1670441444/kentcdodds.com/content/teams/shirt-blue"
-      alt="Blue T-Shirt with a Koala"
-      style={{aspectRatio: '1/1'}}
-    />
-  </a>
-  <a href="https://cottonbureau.com/p/6ZE96D">
-    <img
-      src="https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0,ar_1:1,w_560/v1670441444/kentcdodds.com/content/teams/shirt-red"
-      alt="Red T-Shirt with a Koala"
-      style={{aspectRatio: '1/1'}}
-    />
-  </a>
+	<a href="https://cottonbureau.com/p/4AAW9M">
+		<img
+			src="https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0,ar_1:1,w_560/v1670441444/kentcdodds.com/content/teams/shirt-yellow"
+			alt="Yellow T-Shirt with a Koala"
+			style={{ aspectRatio: '1/1' }}
+		/>
+	</a>
+	<a href="https://cottonbureau.com/p/BT8VUW">
+		<img
+			src="https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0,ar_1:1,w_560/v1670441444/kentcdodds.com/content/teams/shirt-blue"
+			alt="Blue T-Shirt with a Koala"
+			style={{ aspectRatio: '1/1' }}
+		/>
+	</a>
+	<a href="https://cottonbureau.com/p/6ZE96D">
+		<img
+			src="https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0,ar_1:1,w_560/v1670441444/kentcdodds.com/content/teams/shirt-red"
+			alt="Red T-Shirt with a Koala"
+			style={{ aspectRatio: '1/1' }}
+		/>
+	</a>
 </div>
 
 ## Why the Koala?
 
 <img
-  src="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/illustrations/kody_profile_white"
-  alt="Koala"
-  style={{
-    display: 'block',
-    margin: '0 auto 30px auto',
-    maxWidth: '250px',
-    width: '100%',
-    borderRadius: '0 0 50% 50%',
-  }}
+	src="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/illustrations/kody_profile_white"
+	alt="Koala"
+	style={{
+		display: 'block',
+		margin: '0 auto 30px auto',
+		maxWidth: '250px',
+		width: '100%',
+		borderRadius: '0 0 50% 50%',
+	}}
 />
 
 The Koala's name is Kody. He's the mascot for the KCD Community. If you've gone

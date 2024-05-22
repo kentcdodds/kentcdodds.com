@@ -194,14 +194,14 @@ component:
 
 ```js
 function AwesomeAppComponent() {
-  return <div>Awesome</div>
+	return <div>Awesome</div>
 }
 console.log(AwesomeAppComponent.name) // <-- logs "AwesomeAppComponent"
 
 class LessAwesomeAppComponent extends React.Component {
-  render() {
-    return <div>Less Awesome</div>
-  }
+	render() {
+		return <div>Less Awesome</div>
+	}
 }
 console.log(LessAwesomeAppComponent.name) // <-- logs "LessAwesomeAppComponent"
 ```
@@ -213,14 +213,14 @@ performance:
 
 ```js
 function a() {
-  return <div>Awesome</div>
+	return <div>Awesome</div>
 }
 console.log(a.name) // <-- logs "a"
 
 class b extends React.Component {
-  render() {
-    return <div>Less Awesome</div>
-  }
+	render() {
+		return <div>Less Awesome</div>
+	}
 }
 console.log(b.name) // <-- logs "b"
 ```
@@ -239,16 +239,16 @@ configured and modify it like this:
 ```js lines=8-9
 // ... some config ...
 new TerserPlugin({
-  terserOptions: {
-    // ... some other config ...
-    mangle: {
-      safari10: true,
-    },
-    keep_classnames: true,
-    keep_fnames: true,
-    // ... some more config ...
-  },
-  // ... even more config ...
+	terserOptions: {
+		// ... some other config ...
+		mangle: {
+			safari10: true,
+		},
+		keep_classnames: true,
+		keep_fnames: true,
+		// ... some more config ...
+	},
+	// ... even more config ...
 })
 ```
 

@@ -18,16 +18,20 @@ bannerCredit:
   Photo by [Michael Dziedzic](https://unsplash.com/photos/dSyhpTGhNHg)
 ---
 
-import {Rendered, DelayedCounterBug, DelayedCounterWorking} from './components'
+import {
+	Rendered,
+	DelayedCounterBug,
+	DelayedCounterWorking,
+} from './components'
 
 If you've been working with React for a while, you've probably used `useState`.
 Here's a quick example of the API:
 
 ```tsx
 function Counter() {
-  const [count, setCount] = React.useState(0)
-  const increment = () => setCount(count + 1)
-  return <button onClick={increment}>{count}</button>
+	const [count, setCount] = React.useState(0)
+	const increment = () => setCount(count + 1)
+	return <button onClick={increment}>{count}</button>
 }
 ```
 
@@ -46,9 +50,9 @@ that can be useful at times:
 
 ```tsx
 function Counter() {
-  const [count, setCount] = React.useState(() => 0)
-  const increment = () => setCount(previousCount => previousCount + 1)
-  return <button onClick={increment}>{count}</button>
+	const [count, setCount] = React.useState(() => 0)
+	const increment = () => setCount(previousCount => previousCount + 1)
+	return <button onClick={increment}>{count}</button>
 }
 ```
 
@@ -125,12 +129,12 @@ state, we need to do something async:
 
 ```tsx
 function DelayedCounter() {
-  const [count, setCount] = React.useState(0)
-  const increment = async () => {
-    await doSomethingAsync()
-    setCount(count + 1)
-  }
-  return <button onClick={increment}>{count}</button>
+	const [count, setCount] = React.useState(0)
+	const increment = async () => {
+		await doSomethingAsync()
+		setCount(count + 1)
+	}
+	return <button onClick={increment}>{count}</button>
 }
 ```
 
@@ -138,7 +142,7 @@ Let's say that async thing takes 500ms. That's rendered here, click this button
 three times really fast:
 
 <Rendered>
-  <DelayedCounterBug />
+	<DelayedCounterBug />
 </Rendered>
 
 If you clicked it fast enough, you'll notice that the count was only incremented
@@ -192,19 +196,19 @@ So here's the solution:
 
 ```tsx
 function DelayedCounter() {
-  const [count, setCount] = React.useState(0)
-  const increment = async () => {
-    await doSomethingAsync()
-    setCount(previousCount => previousCount + 1)
-  }
-  return <button onClick={increment}>{count}</button>
+	const [count, setCount] = React.useState(0)
+	const increment = async () => {
+		await doSomethingAsync()
+		setCount(previousCount => previousCount + 1)
+	}
+	return <button onClick={increment}>{count}</button>
 }
 ```
 
 Try that here:
 
 <Rendered>
-  <DelayedCounterWorking />
+	<DelayedCounterWorking />
 </Rendered>
 
 You can click that as frequently as you like and it'll manage updating the count

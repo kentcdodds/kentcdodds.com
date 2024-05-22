@@ -40,8 +40,8 @@ want to tell you about some of it.
 Here's the core reason I love using Remix to build websites:
 
 <callout-success class="important">
-  Remix enables me to build amazing user experiences and still be happy with the
-  code I had to write to get there.
+	Remix enables me to build amazing user experiences and still be happy with the
+	code I had to write to get there.
 </callout-success>
 
 That's it. So what does that mean? Let's dig deeper...
@@ -99,11 +99,11 @@ nested routing and what you get is the ability to render a contextual error
 without breaking the rest of the app.
 
 <ThemedBlogImage
-  darkCloudinaryId="kentcdodds.com/content/blog/why-i-love-remix/nested-errors-dark"
-  lightCloudinaryId="kentcdodds.com/content/blog/why-i-love-remix/nested-errors-light"
-  imgProps={{
-    alt: 'Excalidraw wireframe of a nested user interface with only one part that is broken and the rest is working',
-  }}
+	darkCloudinaryId="kentcdodds.com/content/blog/why-i-love-remix/nested-errors-dark"
+	lightCloudinaryId="kentcdodds.com/content/blog/why-i-love-remix/nested-errors-light"
+	imgProps={{
+		alt: 'Excalidraw wireframe of a nested user interface with only one part that is broken and the rest is working',
+	}}
 />
 
 And also this works on the server as well (which is unique to Remix), so users
@@ -111,8 +111,8 @@ will get the same experience whether the error happened during a client
 transition or a full document download.
 
 <callout-success>
-  Remix makes a terrific user experience the default. And that's one of the
-  primary reasons I love Remix.
+	Remix makes a terrific user experience the default. And that's one of the
+	primary reasons I love Remix.
 </callout-success>
 
 ## The Code
@@ -127,7 +127,7 @@ that Remix (and React) give me, to build my app and the user experience is good
 by default.
 
 <callout-danger>
-  When I'm using Remix, I can leave my _hacks_ at home.
+	When I'm using Remix, I can leave my _hacks_ at home.
 </callout-danger>
 
 Honestly that's the biggest thing I have to say about the code portion. You know
@@ -140,26 +140,26 @@ states. But the APIs that Remix gives me for those things are simple and
 declarative. I mean, here it is:
 
 ```tsx filename=app/events/$eventId/attendees.tsx
-const loader: LoaderFunction = async ({request, params}) => {
-  // this runs on the server
-  // unexpected runtime errors will trigger the ErrorBoundary to be rendered
-  // expected errors (like 401s, 404s, etc) will render the CatchBoundary
-  // otherwise I can return a response and that'll render the default component
-  return json(data)
+const loader: LoaderFunction = async ({ request, params }) => {
+	// this runs on the server
+	// unexpected runtime errors will trigger the ErrorBoundary to be rendered
+	// expected errors (like 401s, 404s, etc) will render the CatchBoundary
+	// otherwise I can return a response and that'll render the default component
+	return json(data)
 }
 
 export default function AttendeesRoute() {
-  const data = useLoaderData()
-  return <div>{/* render the data */}</div>
+	const data = useLoaderData()
+	return <div>{/* render the data */}</div>
 }
 
 export function ErrorBoundary() {
-  const error = useRouteError()
-  // when true, this is what used to go to `CatchBoundary` in Remix v1
-  if (isRouteErrorResponse(error)) {
-    return <div>{/* render the error for 400-status level responses */}</div>
-  }
-  return <div>{/* render an "unexpected error" message */}</div>
+	const error = useRouteError()
+	// when true, this is what used to go to `CatchBoundary` in Remix v1
+	if (isRouteErrorResponse(error)) {
+		return <div>{/* render the error for 400-status level responses */}</div>
+	}
+	return <div>{/* render an "unexpected error" message */}</div>
 }
 ```
 
@@ -171,11 +171,11 @@ local):
 const navigation = useNavigation()
 
 const text =
-  navigation.state === 'submitting'
-    ? 'Saving...'
-    : navigation.state === 'loading'
-      ? 'Saved!'
-      : 'Ready'
+	navigation.state === 'submitting'
+		? 'Saving...'
+		: navigation.state === 'loading'
+			? 'Saved!'
+			: 'Ready'
 ```
 
 This drastically simplifies the React code that I write to the point that I
@@ -194,8 +194,8 @@ on [the remix docs](https://docs.remix.run) and this brings me to another thing
 I love about Remix:
 
 <callout-success>
-  The better I get at building sites with Remix, the better I get at building
-  sites for the web.
+	The better I get at building sites with Remix, the better I get at building
+	sites for the web.
 </callout-success>
 
 This happens naturally thanks to the fact that Remix uses so much of the web
@@ -210,8 +210,8 @@ adapter you're using. Whether you want to run on serverless or in a docker
 container, Remix has got you covered.
 
 <callout-success>
-  Remix is the jQuery of hosting platforms. It normalizes their differences so
-  you can write once, host anywhere.
+	Remix is the jQuery of hosting platforms. It normalizes their differences so
+	you can write once, host anywhere.
 </callout-success>
 
 Another awesome part of the `loader` thing is that because it runs on the server
@@ -237,29 +237,29 @@ management, and cache invalidation code. Well, with Remix, all that goes away
 and I'm left with a declarative mutations API:
 
 ```tsx filename=app/events/$eventId/attendees.tsx
-const action: ActionFunction = async ({request}) => {
-  // this runs on the server and I can handle the request form data here
-  // whether that be a direct database interaction or calling a downstream
-  // service to perform the actual mutation. It's just brilliant.
-  return redirect(/* send the user wherever you like after this */)
+const action: ActionFunction = async ({ request }) => {
+	// this runs on the server and I can handle the request form data here
+	// whether that be a direct database interaction or calling a downstream
+	// service to perform the actual mutation. It's just brilliant.
+	return redirect(/* send the user wherever you like after this */)
 }
 
 export default function AttendeesRoute() {
-  // look mah! No event handler or useEffect necessary!
-  // race conditions handled.
-  return (
-    <Form method="POST">
-      <div>
-        <label htmlFor="name-input">Name: </label>
-        <input id="name-input" name="name" />
-      </div>
-      <div>
-        <label htmlFor="email-input">Email: </label>
-        <input id="email-input" name="email" type="email" />
-      </div>
-      <button type="submit">Add Attendee</button>
-    </Form>
-  )
+	// look mah! No event handler or useEffect necessary!
+	// race conditions handled.
+	return (
+		<Form method="POST">
+			<div>
+				<label htmlFor="name-input">Name: </label>
+				<input id="name-input" name="name" />
+			</div>
+			<div>
+				<label htmlFor="email-input">Email: </label>
+				<input id="email-input" name="email" type="email" />
+			</div>
+			<button type="submit">Add Attendee</button>
+		</Form>
+	)
 }
 ```
 
@@ -280,8 +280,8 @@ I'll get to all that eventually I promise.
 At the end of the day, it comes back to this:
 
 <callout-success class="important">
-  I love Remix because it enables me to build amazing user experiences and still
-  be happy with the code I had to write to get there.
+	I love Remix because it enables me to build amazing user experiences and still
+	be happy with the code I had to write to get there.
 </callout-success>
 
 And that's just something I can get behind and push on. Care to join me?

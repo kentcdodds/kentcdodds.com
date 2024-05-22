@@ -31,12 +31,12 @@ request:
 
 ```ts
 const formatDate = date =>
-  `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')} ${String(
-    date.getSeconds(),
-  ).padStart(2, '0')}.${String(date.getMilliseconds()).padStart(3, '0')}`
+	`${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')} ${String(
+		date.getSeconds(),
+	).padStart(2, '0')}.${String(date.getMilliseconds()).padStart(3, '0')}`
 
 async function fetchPokemon(name) {
-  const pokemonQuery = `
+	const pokemonQuery = `
     query PokemonInfo($name: String) {
       pokemon(name: $name) {
         id
@@ -54,33 +54,33 @@ async function fetchPokemon(name) {
     }
   `
 
-  const response = await window.fetch('https://graphql-pokemon2.vercel.app/', {
-    // learn more about this API here: https://graphql-pokemon2.vercel.app/
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json;charset=UTF-8',
-    },
-    body: JSON.stringify({
-      query: pokemonQuery,
-      variables: {name: name.toLowerCase()},
-    }),
-  })
+	const response = await window.fetch('https://graphql-pokemon2.vercel.app/', {
+		// learn more about this API here: https://graphql-pokemon2.vercel.app/
+		method: 'POST',
+		headers: {
+			'content-type': 'application/json;charset=UTF-8',
+		},
+		body: JSON.stringify({
+			query: pokemonQuery,
+			variables: { name: name.toLowerCase() },
+		}),
+	})
 
-  const {data, errors} = await response.json()
-  if (response.ok) {
-    const pokemon = data?.pokemon
-    if (pokemon) {
-      // add fetchedAt helper (used in the UI to help differentiate requests)
-      pokemon.fetchedAt = formatDate(new Date())
-      return pokemon
-    } else {
-      return Promise.reject(new Error(`No pokemon with the name "${name}"`))
-    }
-  } else {
-    // handle the graphql errors
-    const error = new Error(errors?.map(e => e.message).join('\n') ?? 'unknown')
-    return Promise.reject(error)
-  }
+	const { data, errors } = await response.json()
+	if (response.ok) {
+		const pokemon = data?.pokemon
+		if (pokemon) {
+			// add fetchedAt helper (used in the UI to help differentiate requests)
+			pokemon.fetchedAt = formatDate(new Date())
+			return pokemon
+		} else {
+			return Promise.reject(new Error(`No pokemon with the name "${name}"`))
+		}
+	} else {
+		// handle the graphql errors
+		const error = new Error(errors?.map(e => e.message).join('\n') ?? 'unknown')
+		return Promise.reject(error)
+	}
 }
 ```
 
@@ -94,30 +94,30 @@ this logs:
 
 ```json
 {
-  "id": "UG9rZW1vbjowMjU=",
-  "number": "025",
-  "name": "Pikachu",
-  "image": "https://img.pokemondb.net/artwork/pikachu.jpg",
-  "attacks": {
-    "special": [
-      {
-        "name": "Discharge",
-        "type": "Electric",
-        "damage": 35
-      },
-      {
-        "name": "Thunder",
-        "type": "Electric",
-        "damage": 100
-      },
-      {
-        "name": "Thunderbolt",
-        "type": "Electric",
-        "damage": 55
-      }
-    ]
-  },
-  "fetchedAt": "16:18 39.159"
+	"id": "UG9rZW1vbjowMjU=",
+	"number": "025",
+	"name": "Pikachu",
+	"image": "https://img.pokemondb.net/artwork/pikachu.jpg",
+	"attacks": {
+		"special": [
+			{
+				"name": "Discharge",
+				"type": "Electric",
+				"damage": 35
+			},
+			{
+				"name": "Thunder",
+				"type": "Electric",
+				"damage": 100
+			},
+			{
+				"name": "Thunderbolt",
+				"type": "Electric",
+				"damage": 55
+			}
+		]
+	},
+	"fetchedAt": "16:18 39.159"
 }
 ```
 
@@ -133,7 +133,7 @@ get:
 
 ```json
 {
-  "message": "Cannot query field \"imag\" on type \"Pokemon\". Did you mean \"image\"?"
+	"message": "Cannot query field \"imag\" on type \"Pokemon\". Did you mean \"image\"?"
 }
 ```
 
@@ -162,21 +162,22 @@ So we fix all of those:
 
 ```ts lines=1,5,13
 const formatDate = (date: Date) => {
-  // ...
+	// ...
 }
 
 async function fetchPokemon(name: string) {
-  // ...
-  if (response.ok) {
-    // ...
-  } else {
-    // NOTE: Having to explicitly type the argument to `.map` means that
-    // the array you're maping over isn't typed properly! We'll fix this later...
-    const error = new Error(
-      errors?.map((e: {message: string}) => e.message).join('\n') ?? 'unknown',
-    )
-    // ...
-  }
+	// ...
+	if (response.ok) {
+		// ...
+	} else {
+		// NOTE: Having to explicitly type the argument to `.map` means that
+		// the array you're maping over isn't typed properly! We'll fix this later...
+		const error = new Error(
+			errors?.map((e: { message: string }) => e.message).join('\n') ??
+				'unknown',
+		)
+		// ...
+	}
 }
 ```
 
@@ -188,8 +189,8 @@ Sweet, so let's use this thing:
 
 ```ts
 async function pikachuIChooseYou() {
-  const pikachu = await fetchPokemon('pikachu')
-  console.log(pikachu.attacks.special.name)
+	const pikachu = await fetchPokemon('pikachu')
+	console.log(pikachu.attacks.special.name)
 }
 ```
 
@@ -201,18 +202,18 @@ expected `PokemonData` return value:
 
 ```ts
 type PokemonData = {
-  id: string
-  number: string
-  name: string
-  image: string
-  fetchedAt: string
-  attacks: {
-    special: Array<{
-      name: string
-      type: string
-      damage: number
-    }>
-  }
+	id: string
+	number: string
+	name: string
+	image: string
+	fetchedAt: string
+	attacks: {
+		special: Array<{
+			name: string
+			type: string
+			damage: number
+		}>
+	}
 }
 ```
 
@@ -220,7 +221,7 @@ Cool, so with that, now we can be more explicit about our return value:
 
 ```ts
 async function fetchPokemon(name: string): Promise<PokemonData> {
-  // ...
+	// ...
 }
 ```
 
@@ -236,7 +237,7 @@ typed.
 A quick review will show that both `data` and `errors` is `any`:
 
 ```ts
-const {data, errors} = await response.json()
+const { data, errors } = await response.json()
 ```
 
 This is because the return type for `response.json` is `Promise<any>`. When I
@@ -247,12 +248,12 @@ a little type annotation:
 
 ```ts
 type JSONResponse = {
-  data?: {
-    pokemon: Omit<PokemonData, 'fetchedAt'>
-  }
-  errors?: Array<{message: string}>
+	data?: {
+		pokemon: Omit<PokemonData, 'fetchedAt'>
+	}
+	errors?: Array<{ message: string }>
 }
-const {data, errors}: JSONResponse = await response.json()
+const { data, errors }: JSONResponse = await response.json()
 ```
 
 And now we can remove the explicit type on the `errors.map` which is great!
@@ -299,7 +300,7 @@ We could always tell TypeScript to pipe down and use a type assertion to cast
 
 ```ts
 // add fetchedAt helper (used in the UI to help differentiate requests)
-return Object.assign(pokemon, {fetchedAt: formatDate(new Date())})
+return Object.assign(pokemon, { fetchedAt: formatDate(new Date()) })
 ```
 
 This made both errors go away. `Object.assign` will combine object properties
@@ -328,11 +329,11 @@ Turns out this is related to another frustration of mine:
 
 ```ts
 try {
-  throw new Error('oh no')
+	throw new Error('oh no')
 } catch (error: Error) {
-  //            ^^^^^ Catch clause variable type annotation
-  //                  must be 'any' or 'unknown' if specified.
-  //                  ts(1196)
+	//            ^^^^^ Catch clause variable type annotation
+	//                  must be 'any' or 'unknown' if specified.
+	//                  ts(1196)
 }
 ```
 
@@ -348,27 +349,27 @@ Alrighty, so here's the final version:
 
 ```ts
 const formatDate = (date: Date) =>
-  `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')} ${String(
-    date.getSeconds(),
-  ).padStart(2, '0')}.${String(date.getMilliseconds()).padStart(3, '0')}`
+	`${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')} ${String(
+		date.getSeconds(),
+	).padStart(2, '0')}.${String(date.getMilliseconds()).padStart(3, '0')}`
 
 type PokemonData = {
-  id: string
-  number: string
-  name: string
-  image: string
-  fetchedAt: string
-  attacks: {
-    special: Array<{
-      name: string
-      type: string
-      damage: number
-    }>
-  }
+	id: string
+	number: string
+	name: string
+	image: string
+	fetchedAt: string
+	attacks: {
+		special: Array<{
+			name: string
+			type: string
+			damage: number
+		}>
+	}
 }
 
 async function fetchPokemon(name: string): Promise<PokemonData> {
-  const pokemonQuery = `
+	const pokemonQuery = `
     query PokemonInfo($name: String) {
       pokemon(name: $name) {
         id
@@ -386,38 +387,38 @@ async function fetchPokemon(name: string): Promise<PokemonData> {
     }
   `
 
-  const response = await window.fetch('https://graphql-pokemon2.vercel.app/', {
-    // learn more about this API here: https://graphql-pokemon2.vercel.app/
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json;charset=UTF-8',
-    },
-    body: JSON.stringify({
-      query: pokemonQuery,
-      variables: {name: name.toLowerCase()},
-    }),
-  })
+	const response = await window.fetch('https://graphql-pokemon2.vercel.app/', {
+		// learn more about this API here: https://graphql-pokemon2.vercel.app/
+		method: 'POST',
+		headers: {
+			'content-type': 'application/json;charset=UTF-8',
+		},
+		body: JSON.stringify({
+			query: pokemonQuery,
+			variables: { name: name.toLowerCase() },
+		}),
+	})
 
-  type JSONResponse = {
-    data?: {
-      pokemon: Omit<PokemonData, 'fetchedAt'>
-    }
-    errors?: Array<{message: string}>
-  }
-  const {data, errors}: JSONResponse = await response.json()
-  if (response.ok) {
-    const pokemon = data?.pokemon
-    if (pokemon) {
-      // add fetchedAt helper (used in the UI to help differentiate requests)
-      return Object.assign(pokemon, {fetchedAt: formatDate(new Date())})
-    } else {
-      return Promise.reject(new Error(`No pokemon with the name "${name}"`))
-    }
-  } else {
-    // handle the graphql errors
-    const error = new Error(errors?.map(e => e.message).join('\n') ?? 'unknown')
-    return Promise.reject(error)
-  }
+	type JSONResponse = {
+		data?: {
+			pokemon: Omit<PokemonData, 'fetchedAt'>
+		}
+		errors?: Array<{ message: string }>
+	}
+	const { data, errors }: JSONResponse = await response.json()
+	if (response.ok) {
+		const pokemon = data?.pokemon
+		if (pokemon) {
+			// add fetchedAt helper (used in the UI to help differentiate requests)
+			return Object.assign(pokemon, { fetchedAt: formatDate(new Date()) })
+		} else {
+			return Promise.reject(new Error(`No pokemon with the name "${name}"`))
+		}
+	} else {
+		// handle the graphql errors
+		const error = new Error(errors?.map(e => e.message).join('\n') ?? 'unknown')
+		return Promise.reject(error)
+	}
 }
 ```
 

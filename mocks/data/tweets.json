@@ -48,16 +48,16 @@
         "additional_media_info": {},
         "display_url": "pic.twitter.com/ukZELKLf1S",
         "expanded_url": "https://twitter.com/_chenglou/status/1420669402932932611/video/1",
-        "ext_media_availability": {"status": "Available"},
-        "ext_media_stats": {"view_count": 1277},
+        "ext_media_availability": { "status": "Available" },
+        "ext_media_stats": { "view_count": 1277 },
         "indices": [206, 229],
         "media_url_https": "https://pbs.twimg.com/ext_tw_video_thumb/1420669327901003776/pu/img/N9U2FnTT423ZjOqH.jpg",
-        "original_info": {"height": 720, "width": 1280},
+        "original_info": { "height": 720, "width": 1280 },
         "sizes": {
-          "large": {"h": 720, "resize": "fit", "w": 1280},
-          "medium": {"h": 675, "resize": "fit", "w": 1200},
-          "small": {"h": 383, "resize": "fit", "w": 680},
-          "thumb": {"h": 150, "resize": "crop", "w": 150}
+          "large": { "h": 720, "resize": "fit", "w": 1280 },
+          "medium": { "h": 675, "resize": "fit", "w": 1200 },
+          "small": { "h": 383, "resize": "fit", "w": 680 },
+          "thumb": { "h": 150, "resize": "crop", "w": 150 }
         },
         "type": "video",
         "url": "https://t.co/ukZELKLf1S",
@@ -93,7 +93,7 @@
       "aspectRatio": [16, 9],
       "contentType": "media_entity",
       "durationMs": 6228,
-      "mediaAvailability": {"status": "available"},
+      "mediaAvailability": { "status": "available" },
       "poster": "https://pbs.twimg.com/ext_tw_video_thumb/1420669327901003776/pu/img/N9U2FnTT423ZjOqH.jpg",
       "variants": [
         {
@@ -113,7 +113,7 @@
           "src": "https://video.twimg.com/ext_tw_video/1420669327901003776/pu/pl/3C4qy004htETnkHN.m3u8?tag=12&container=fmp4"
         }
       ],
-      "videoId": {"type": "tweet", "id": "1420669402932932611"},
+      "videoId": { "type": "tweet", "id": "1420669402932932611" },
       "viewCount": 1277
     },
     "conversation_count": 0,
@@ -176,25 +176,25 @@
         "display_url": "pic.twitter.com/nyggsvsjHz",
         "expanded_url": "https://twitter.com/kentcdodds/status/1418928039069511682/photo/1",
         "ext_alt_text": "confetti_ball New club looking for members tada\n\nKCD Learning Club\n\nClub Curriculum: https://epicreact.dev/\n\nClub Captain: @Saphal 🚀\n\nLearning Goal Summary: To learn React the epic way!\n\nRequirements:\n      - Basic Javascript\n      - Willingness to learn\n\nClub Schedule:\n      Wednesday at 18:00 +5:30 (IST)\n      - Week 0 (before the first meeting): Welcome to Epic React (watch the intro and setup videos)\n      - Week 1: React Fundamentals\n      - Week 2: React Hooks\n      - Week 3: Build an Epic React App Part 1:\n        - Render a React App\n        - Add Styles\n        - Make HTTP Requests\n      - Week 4: Advanced React Hooks\n      - Week 5: Build an Epic React App Part 2:\n        - Authentication\n        - Routing\n      - Week 6: Advanced React Patterns\n      - Week 7: Build an Epic React App Part 3:\n        - Cache Management\n      - Week 8: Build an Epic React App Part 4:\n        - Context\n        - Compound Components\n      - Week 9: React Performance\n      - Week 10: Build an Ep",
-        "ext_media_availability": {"status": "Available"},
+        "ext_media_availability": { "status": "Available" },
         "indices": [207, 230],
         "media_url_https": "https://pbs.twimg.com/media/E7ELh_NWQAkEmgA.jpg",
         "original_info": {
           "height": 2048,
           "width": 945,
           "focus_rects": [
-            {"x": 0, "y": 93, "w": 945, "h": 529},
-            {"x": 0, "y": 0, "w": 945, "h": 945},
-            {"x": 0, "y": 0, "w": 945, "h": 1077},
-            {"x": 0, "y": 0, "w": 945, "h": 1890},
-            {"x": 0, "y": 0, "w": 945, "h": 2048}
+            { "x": 0, "y": 93, "w": 945, "h": 529 },
+            { "x": 0, "y": 0, "w": 945, "h": 945 },
+            { "x": 0, "y": 0, "w": 945, "h": 1077 },
+            { "x": 0, "y": 0, "w": 945, "h": 1890 },
+            { "x": 0, "y": 0, "w": 945, "h": 2048 }
           ]
         },
         "sizes": {
-          "large": {"h": 2048, "resize": "fit", "w": 945},
-          "medium": {"h": 1200, "resize": "fit", "w": 554},
-          "small": {"h": 680, "resize": "fit", "w": 314},
-          "thumb": {"h": 150, "resize": "crop", "w": 150}
+          "large": { "h": 2048, "resize": "fit", "w": 945 },
+          "medium": { "h": 1200, "resize": "fit", "w": 554 },
+          "small": { "h": 680, "resize": "fit", "w": 314 },
+          "thumb": { "h": 150, "resize": "crop", "w": 150 }
         },
         "type": "photo",
         "url": "https://t.co/nyggsvsjHz"
@@ -203,13 +203,13 @@
     "photos": [
       {
         "accessibilityLabel": "confetti_ball New club looking for members tada\n\nKCD Learning Club\n\nClub Curriculum: https://epicreact.dev/\n\nClub Captain: @Saphal 🚀\n\nLearning Goal Summary: To learn React the epic way!\n\nRequirements:\n      - Basic Javascript\n      - Willingness to learn\n\nClub Schedule:\n      Wednesday at 18:00 +5:30 (IST)\n      - Week 0 (before the first meeting): Welcome to Epic React (watch the intro and setup videos)\n      - Week 1: React Fundamentals\n      - Week 2: React Hooks\n      - Week 3: Build an Epic React App Part 1:\n        - Render a React App\n        - Add Styles\n        - Make HTTP Requests\n      - Week 4: Advanced React Hooks\n      - Week 5: Build an Epic React App Part 2:\n        - Authentication\n        - Routing\n      - Week 6: Advanced React Patterns\n      - Week 7: Build an Epic React App Part 3:\n        - Cache Management\n      - Week 8: Build an Epic React App Part 4:\n        - Context\n        - Compound Components\n      - Week 9: React Performance\n      - Week 10: Build an Ep",
-        "backgroundColor": {"red": 204, "green": 214, "blue": 221},
+        "backgroundColor": { "red": 204, "green": 214, "blue": 221 },
         "cropCandidates": [
-          {"x": 0, "y": 93, "w": 945, "h": 529},
-          {"x": 0, "y": 0, "w": 945, "h": 945},
-          {"x": 0, "y": 0, "w": 945, "h": 1077},
-          {"x": 0, "y": 0, "w": 945, "h": 1890},
-          {"x": 0, "y": 0, "w": 945, "h": 2048}
+          { "x": 0, "y": 93, "w": 945, "h": 529 },
+          { "x": 0, "y": 0, "w": 945, "h": 945 },
+          { "x": 0, "y": 0, "w": 945, "h": 1077 },
+          { "x": 0, "y": 0, "w": 945, "h": 1890 },
+          { "x": 0, "y": 0, "w": 945, "h": 2048 }
         ],
         "expandedUrl": "https://twitter.com/kentcdodds/status/1418928039069511682/photo/1",
         "url": "https://pbs.twimg.com/media/E7ELh_NWQAkEmgA.jpg",
@@ -229,7 +229,7 @@
     "in_reply_to_user_id_str": "389681470",
     "lang": "en",
     "favorite_count": 18,
-    "self_thread": {"id_str": "1410684669671006208"},
+    "self_thread": { "id_str": "1410684669671006208" },
     "possibly_sensitive": false,
     "created_at": "2021-07-01T21:18:08.000Z",
     "display_text_range": [0, 111],
@@ -268,25 +268,25 @@
         "display_url": "pic.twitter.com/2W86iwjs4L",
         "expanded_url": "https://twitter.com/kentcdodds/status/1410709329951354880/photo/1",
         "ext_alt_text": "HTML code showing a pre, code, and span tags with data attributes signifying whether a line should be added or removed",
-        "ext_media_availability": {"status": "Available"},
+        "ext_media_availability": { "status": "Available" },
         "indices": [112, 135],
         "media_url_https": "https://pbs.twimg.com/media/E5PYYqyVUAELnKh.jpg",
         "original_info": {
           "height": 278,
           "width": 1866,
           "focus_rects": [
-            {"x": 1095, "y": 0, "w": 496, "h": 278},
-            {"x": 1204, "y": 0, "w": 278, "h": 278},
-            {"x": 1221, "y": 0, "w": 244, "h": 278},
-            {"x": 1274, "y": 0, "w": 139, "h": 278},
-            {"x": 0, "y": 0, "w": 1866, "h": 278}
+            { "x": 1095, "y": 0, "w": 496, "h": 278 },
+            { "x": 1204, "y": 0, "w": 278, "h": 278 },
+            { "x": 1221, "y": 0, "w": 244, "h": 278 },
+            { "x": 1274, "y": 0, "w": 139, "h": 278 },
+            { "x": 0, "y": 0, "w": 1866, "h": 278 }
           ]
         },
         "sizes": {
-          "large": {"h": 278, "resize": "fit", "w": 1866},
-          "medium": {"h": 179, "resize": "fit", "w": 1200},
-          "small": {"h": 101, "resize": "fit", "w": 680},
-          "thumb": {"h": 150, "resize": "crop", "w": 150}
+          "large": { "h": 278, "resize": "fit", "w": 1866 },
+          "medium": { "h": 179, "resize": "fit", "w": 1200 },
+          "small": { "h": 101, "resize": "fit", "w": 680 },
+          "thumb": { "h": 150, "resize": "crop", "w": 150 }
         },
         "type": "photo",
         "url": "https://t.co/2W86iwjs4L"
@@ -295,25 +295,25 @@
         "display_url": "pic.twitter.com/2W86iwjs4L",
         "expanded_url": "https://twitter.com/kentcdodds/status/1410709329951354880/photo/1",
         "ext_alt_text": "A snippet of code showing lines added and removed",
-        "ext_media_availability": {"status": "Available"},
+        "ext_media_availability": { "status": "Available" },
         "indices": [112, 135],
         "media_url_https": "https://pbs.twimg.com/media/E5PYdAWVcAE4bbl.png",
         "original_info": {
           "height": 494,
           "width": 824,
           "focus_rects": [
-            {"x": 0, "y": 0, "w": 824, "h": 461},
-            {"x": 0, "y": 0, "w": 494, "h": 494},
-            {"x": 10, "y": 0, "w": 433, "h": 494},
-            {"x": 103, "y": 0, "w": 247, "h": 494},
-            {"x": 0, "y": 0, "w": 824, "h": 494}
+            { "x": 0, "y": 0, "w": 824, "h": 461 },
+            { "x": 0, "y": 0, "w": 494, "h": 494 },
+            { "x": 10, "y": 0, "w": 433, "h": 494 },
+            { "x": 103, "y": 0, "w": 247, "h": 494 },
+            { "x": 0, "y": 0, "w": 824, "h": 494 }
           ]
         },
         "sizes": {
-          "large": {"h": 494, "resize": "fit", "w": 824},
-          "medium": {"h": 494, "resize": "fit", "w": 824},
-          "small": {"h": 408, "resize": "fit", "w": 680},
-          "thumb": {"h": 150, "resize": "crop", "w": 150}
+          "large": { "h": 494, "resize": "fit", "w": 824 },
+          "medium": { "h": 494, "resize": "fit", "w": 824 },
+          "small": { "h": 408, "resize": "fit", "w": 680 },
+          "thumb": { "h": 150, "resize": "crop", "w": 150 }
         },
         "type": "photo",
         "url": "https://t.co/2W86iwjs4L"
@@ -322,13 +322,13 @@
     "photos": [
       {
         "accessibilityLabel": "HTML code showing a pre, code, and span tags with data attributes signifying whether a line should be added or removed",
-        "backgroundColor": {"red": 204, "green": 214, "blue": 221},
+        "backgroundColor": { "red": 204, "green": 214, "blue": 221 },
         "cropCandidates": [
-          {"x": 1095, "y": 0, "w": 496, "h": 278},
-          {"x": 1204, "y": 0, "w": 278, "h": 278},
-          {"x": 1221, "y": 0, "w": 244, "h": 278},
-          {"x": 1274, "y": 0, "w": 139, "h": 278},
-          {"x": 0, "y": 0, "w": 1866, "h": 278}
+          { "x": 1095, "y": 0, "w": 496, "h": 278 },
+          { "x": 1204, "y": 0, "w": 278, "h": 278 },
+          { "x": 1221, "y": 0, "w": 244, "h": 278 },
+          { "x": 1274, "y": 0, "w": 139, "h": 278 },
+          { "x": 0, "y": 0, "w": 1866, "h": 278 }
         ],
         "expandedUrl": "https://twitter.com/kentcdodds/status/1410709329951354880/photo/1",
         "url": "https://pbs.twimg.com/media/E5PYYqyVUAELnKh.jpg",
@@ -337,13 +337,13 @@
       },
       {
         "accessibilityLabel": "A snippet of code showing lines added and removed",
-        "backgroundColor": {"red": 204, "green": 214, "blue": 221},
+        "backgroundColor": { "red": 204, "green": 214, "blue": 221 },
         "cropCandidates": [
-          {"x": 0, "y": 0, "w": 824, "h": 461},
-          {"x": 0, "y": 0, "w": 494, "h": 494},
-          {"x": 10, "y": 0, "w": 433, "h": 494},
-          {"x": 103, "y": 0, "w": 247, "h": 494},
-          {"x": 0, "y": 0, "w": 824, "h": 494}
+          { "x": 0, "y": 0, "w": 824, "h": 461 },
+          { "x": 0, "y": 0, "w": 494, "h": 494 },
+          { "x": 10, "y": 0, "w": 433, "h": 494 },
+          { "x": 103, "y": 0, "w": 247, "h": 494 },
+          { "x": 0, "y": 0, "w": 824, "h": 494 }
         ],
         "expandedUrl": "https://twitter.com/kentcdodds/status/1410709329951354880/photo/1",
         "url": "https://pbs.twimg.com/media/E5PYdAWVcAE4bbl.png",
@@ -361,7 +361,7 @@
       "reply_count": 2,
       "retweet_count": 0,
       "favorite_count": 14,
-      "self_thread": {"id_str": "1410684669671006208"},
+      "self_thread": { "id_str": "1410684669671006208" },
       "created_at": "2021-07-01T19:47:35.000Z",
       "display_text_range": [0, 83],
       "entities": {
@@ -396,7 +396,7 @@
     "__typename": "Tweet",
     "lang": "tl",
     "favorite_count": 113525,
-    "self_thread": {"id_str": "1404408769551994880"},
+    "self_thread": { "id_str": "1404408769551994880" },
     "possibly_sensitive": false,
     "created_at": "2021-06-14T12:01:57.000Z",
     "display_text_range": [0, 22],
@@ -435,25 +435,25 @@
         "display_url": "pic.twitter.com/lAbUQ1QGtk",
         "expanded_url": "https://twitter.com/philosophequeer/status/1404408769551994880/photo/1",
         "ext_alt_text": "There are four images that are screenshots of an exchange between two Star Wars characters, Anakin and Padmé. In the first, Anakin is saying, “I’ve added subtitles to make my content accessible.” In the second, Padmé is saying “But not automatically generated ones, right?” In the third, Anakin is not speaking, but has a facial expression that suggests he has added automated subtitles. In the fourth, Padmé is saying “But not or tomato call he gem her eight it ones, write?”",
-        "ext_media_availability": {"status": "Available"},
+        "ext_media_availability": { "status": "Available" },
         "indices": [23, 46],
         "media_url_https": "https://pbs.twimg.com/media/E312VHdXEAAGO86.jpg",
         "original_info": {
           "height": 748,
           "width": 750,
           "focus_rects": [
-            {"x": 0, "y": 146, "w": 750, "h": 420},
-            {"x": 0, "y": 0, "w": 748, "h": 748},
-            {"x": 0, "y": 0, "w": 656, "h": 748},
-            {"x": 19, "y": 0, "w": 374, "h": 748},
-            {"x": 0, "y": 0, "w": 750, "h": 748}
+            { "x": 0, "y": 146, "w": 750, "h": 420 },
+            { "x": 0, "y": 0, "w": 748, "h": 748 },
+            { "x": 0, "y": 0, "w": 656, "h": 748 },
+            { "x": 19, "y": 0, "w": 374, "h": 748 },
+            { "x": 0, "y": 0, "w": 750, "h": 748 }
           ]
         },
         "sizes": {
-          "large": {"h": 748, "resize": "fit", "w": 750},
-          "medium": {"h": 748, "resize": "fit", "w": 750},
-          "small": {"h": 678, "resize": "fit", "w": 680},
-          "thumb": {"h": 150, "resize": "crop", "w": 150}
+          "large": { "h": 748, "resize": "fit", "w": 750 },
+          "medium": { "h": 748, "resize": "fit", "w": 750 },
+          "small": { "h": 678, "resize": "fit", "w": 680 },
+          "thumb": { "h": 150, "resize": "crop", "w": 150 }
         },
         "type": "photo",
         "url": "https://t.co/lAbUQ1QGtk"
@@ -462,13 +462,13 @@
     "photos": [
       {
         "accessibilityLabel": "There are four images that are screenshots of an exchange between two Star Wars characters, Anakin and Padmé. In the first, Anakin is saying, “I’ve added subtitles to make my content accessible.” In the second, Padmé is saying “But not automatically generated ones, right?” In the third, Anakin is not speaking, but has a facial expression that suggests he has added automated subtitles. In the fourth, Padmé is saying “But not or tomato call he gem her eight it ones, write?”",
-        "backgroundColor": {"red": 204, "green": 214, "blue": 221},
+        "backgroundColor": { "red": 204, "green": 214, "blue": 221 },
         "cropCandidates": [
-          {"x": 0, "y": 146, "w": 750, "h": 420},
-          {"x": 0, "y": 0, "w": 748, "h": 748},
-          {"x": 0, "y": 0, "w": 656, "h": 748},
-          {"x": 19, "y": 0, "w": 374, "h": 748},
-          {"x": 0, "y": 0, "w": 750, "h": 748}
+          { "x": 0, "y": 146, "w": 750, "h": 420 },
+          { "x": 0, "y": 0, "w": 748, "h": 748 },
+          { "x": 0, "y": 0, "w": 656, "h": 748 },
+          { "x": 19, "y": 0, "w": 374, "h": 748 },
+          { "x": 0, "y": 0, "w": 750, "h": 748 }
         ],
         "expandedUrl": "https://twitter.com/philosophequeer/status/1404408769551994880/photo/1",
         "url": "https://pbs.twimg.com/media/E312VHdXEAAGO86.jpg",
@@ -523,25 +523,25 @@
         "display_url": "pic.twitter.com/okUhem8zC7",
         "expanded_url": "https://twitter.com/kentcdodds/status/1420726342996271105/photo/1",
         "ext_alt_text": "Kent on a onewheel through the trees",
-        "ext_media_availability": {"status": "Available"},
+        "ext_media_availability": { "status": "Available" },
         "indices": [122, 145],
         "media_url_https": "https://pbs.twimg.com/media/E7du8LgVUAI_dK-.jpg",
         "original_info": {
           "height": 2731,
           "width": 4096,
           "focus_rects": [
-            {"x": 0, "y": 184, "w": 4096, "h": 2294},
-            {"x": 1195, "y": 0, "w": 2731, "h": 2731},
-            {"x": 1362, "y": 0, "w": 2396, "h": 2731},
-            {"x": 1877, "y": 0, "w": 1366, "h": 2731},
-            {"x": 0, "y": 0, "w": 4096, "h": 2731}
+            { "x": 0, "y": 184, "w": 4096, "h": 2294 },
+            { "x": 1195, "y": 0, "w": 2731, "h": 2731 },
+            { "x": 1362, "y": 0, "w": 2396, "h": 2731 },
+            { "x": 1877, "y": 0, "w": 1366, "h": 2731 },
+            { "x": 0, "y": 0, "w": 4096, "h": 2731 }
           ]
         },
         "sizes": {
-          "large": {"h": 1366, "resize": "fit", "w": 2048},
-          "medium": {"h": 800, "resize": "fit", "w": 1200},
-          "small": {"h": 453, "resize": "fit", "w": 680},
-          "thumb": {"h": 150, "resize": "crop", "w": 150}
+          "large": { "h": 1366, "resize": "fit", "w": 2048 },
+          "medium": { "h": 800, "resize": "fit", "w": 1200 },
+          "small": { "h": 453, "resize": "fit", "w": 680 },
+          "thumb": { "h": 150, "resize": "crop", "w": 150 }
         },
         "type": "photo",
         "url": "https://t.co/okUhem8zC7"
@@ -550,25 +550,25 @@
         "display_url": "pic.twitter.com/okUhem8zC7",
         "expanded_url": "https://twitter.com/kentcdodds/status/1420726342996271105/photo/1",
         "ext_alt_text": "Kent speeding past on a onewheel",
-        "ext_media_availability": {"status": "Available"},
+        "ext_media_availability": { "status": "Available" },
         "indices": [122, 145],
         "media_url_https": "https://pbs.twimg.com/media/E7du8LeUYAMbo6P.jpg",
         "original_info": {
           "height": 2531,
           "width": 4096,
           "focus_rects": [
-            {"x": 0, "y": 0, "w": 4096, "h": 2294},
-            {"x": 1291, "y": 0, "w": 2531, "h": 2531},
-            {"x": 1446, "y": 0, "w": 2220, "h": 2531},
-            {"x": 1923, "y": 0, "w": 1266, "h": 2531},
-            {"x": 0, "y": 0, "w": 4096, "h": 2531}
+            { "x": 0, "y": 0, "w": 4096, "h": 2294 },
+            { "x": 1291, "y": 0, "w": 2531, "h": 2531 },
+            { "x": 1446, "y": 0, "w": 2220, "h": 2531 },
+            { "x": 1923, "y": 0, "w": 1266, "h": 2531 },
+            { "x": 0, "y": 0, "w": 4096, "h": 2531 }
           ]
         },
         "sizes": {
-          "large": {"h": 1266, "resize": "fit", "w": 2048},
-          "medium": {"h": 742, "resize": "fit", "w": 1200},
-          "small": {"h": 420, "resize": "fit", "w": 680},
-          "thumb": {"h": 150, "resize": "crop", "w": 150}
+          "large": { "h": 1266, "resize": "fit", "w": 2048 },
+          "medium": { "h": 742, "resize": "fit", "w": 1200 },
+          "small": { "h": 420, "resize": "fit", "w": 680 },
+          "thumb": { "h": 150, "resize": "crop", "w": 150 }
         },
         "type": "photo",
         "url": "https://t.co/okUhem8zC7"
@@ -577,25 +577,25 @@
         "display_url": "pic.twitter.com/okUhem8zC7",
         "expanded_url": "https://twitter.com/kentcdodds/status/1420726342996271105/photo/1",
         "ext_alt_text": "Blurred image of Kent on a onewheel",
-        "ext_media_availability": {"status": "Available"},
+        "ext_media_availability": { "status": "Available" },
         "indices": [122, 145],
         "media_url_https": "https://pbs.twimg.com/media/E7du8LjUYAAD_CM.jpg",
         "original_info": {
           "height": 2731,
           "width": 4096,
           "focus_rects": [
-            {"x": 0, "y": 437, "w": 4096, "h": 2294},
-            {"x": 1365, "y": 0, "w": 2731, "h": 2731},
-            {"x": 1566, "y": 0, "w": 2396, "h": 2731},
-            {"x": 2081, "y": 0, "w": 1366, "h": 2731},
-            {"x": 0, "y": 0, "w": 4096, "h": 2731}
+            { "x": 0, "y": 437, "w": 4096, "h": 2294 },
+            { "x": 1365, "y": 0, "w": 2731, "h": 2731 },
+            { "x": 1566, "y": 0, "w": 2396, "h": 2731 },
+            { "x": 2081, "y": 0, "w": 1366, "h": 2731 },
+            { "x": 0, "y": 0, "w": 4096, "h": 2731 }
           ]
         },
         "sizes": {
-          "large": {"h": 1366, "resize": "fit", "w": 2048},
-          "medium": {"h": 800, "resize": "fit", "w": 1200},
-          "small": {"h": 453, "resize": "fit", "w": 680},
-          "thumb": {"h": 150, "resize": "crop", "w": 150}
+          "large": { "h": 1366, "resize": "fit", "w": 2048 },
+          "medium": { "h": 800, "resize": "fit", "w": 1200 },
+          "small": { "h": 453, "resize": "fit", "w": 680 },
+          "thumb": { "h": 150, "resize": "crop", "w": 150 }
         },
         "type": "photo",
         "url": "https://t.co/okUhem8zC7"
@@ -604,13 +604,13 @@
     "photos": [
       {
         "accessibilityLabel": "Kent on a onewheel through the trees",
-        "backgroundColor": {"red": 204, "green": 214, "blue": 221},
+        "backgroundColor": { "red": 204, "green": 214, "blue": 221 },
         "cropCandidates": [
-          {"x": 0, "y": 184, "w": 4096, "h": 2294},
-          {"x": 1195, "y": 0, "w": 2731, "h": 2731},
-          {"x": 1362, "y": 0, "w": 2396, "h": 2731},
-          {"x": 1877, "y": 0, "w": 1366, "h": 2731},
-          {"x": 0, "y": 0, "w": 4096, "h": 2731}
+          { "x": 0, "y": 184, "w": 4096, "h": 2294 },
+          { "x": 1195, "y": 0, "w": 2731, "h": 2731 },
+          { "x": 1362, "y": 0, "w": 2396, "h": 2731 },
+          { "x": 1877, "y": 0, "w": 1366, "h": 2731 },
+          { "x": 0, "y": 0, "w": 4096, "h": 2731 }
         ],
         "expandedUrl": "https://twitter.com/kentcdodds/status/1420726342996271105/photo/1",
         "url": "https://pbs.twimg.com/media/E7du8LgVUAI_dK-.jpg",
@@ -619,13 +619,13 @@
       },
       {
         "accessibilityLabel": "Kent speeding past on a onewheel",
-        "backgroundColor": {"red": 204, "green": 214, "blue": 221},
+        "backgroundColor": { "red": 204, "green": 214, "blue": 221 },
         "cropCandidates": [
-          {"x": 0, "y": 0, "w": 4096, "h": 2294},
-          {"x": 1291, "y": 0, "w": 2531, "h": 2531},
-          {"x": 1446, "y": 0, "w": 2220, "h": 2531},
-          {"x": 1923, "y": 0, "w": 1266, "h": 2531},
-          {"x": 0, "y": 0, "w": 4096, "h": 2531}
+          { "x": 0, "y": 0, "w": 4096, "h": 2294 },
+          { "x": 1291, "y": 0, "w": 2531, "h": 2531 },
+          { "x": 1446, "y": 0, "w": 2220, "h": 2531 },
+          { "x": 1923, "y": 0, "w": 1266, "h": 2531 },
+          { "x": 0, "y": 0, "w": 4096, "h": 2531 }
         ],
         "expandedUrl": "https://twitter.com/kentcdodds/status/1420726342996271105/photo/1",
         "url": "https://pbs.twimg.com/media/E7du8LeUYAMbo6P.jpg",
@@ -634,13 +634,13 @@
       },
       {
         "accessibilityLabel": "Blurred image of Kent on a onewheel",
-        "backgroundColor": {"red": 204, "green": 214, "blue": 221},
+        "backgroundColor": { "red": 204, "green": 214, "blue": 221 },
         "cropCandidates": [
-          {"x": 0, "y": 437, "w": 4096, "h": 2294},
-          {"x": 1365, "y": 0, "w": 2731, "h": 2731},
-          {"x": 1566, "y": 0, "w": 2396, "h": 2731},
-          {"x": 2081, "y": 0, "w": 1366, "h": 2731},
-          {"x": 0, "y": 0, "w": 4096, "h": 2731}
+          { "x": 0, "y": 437, "w": 4096, "h": 2294 },
+          { "x": 1365, "y": 0, "w": 2731, "h": 2731 },
+          { "x": 1566, "y": 0, "w": 2396, "h": 2731 },
+          { "x": 2081, "y": 0, "w": 1366, "h": 2731 },
+          { "x": 0, "y": 0, "w": 4096, "h": 2731 }
         ],
         "expandedUrl": "https://twitter.com/kentcdodds/status/1420726342996271105/photo/1",
         "url": "https://pbs.twimg.com/media/E7du8LjUYAAD_CM.jpg",
@@ -695,15 +695,15 @@
         "display_url": "pic.twitter.com/zBfFwCVjjx",
         "expanded_url": "https://twitter.com/kentcdodds/status/1420720925868052486/photo/1",
         "ext_alt_text": "Kent dancing with the words \"Never gonna give you up\"",
-        "ext_media_availability": {"status": "Available"},
+        "ext_media_availability": { "status": "Available" },
         "indices": [43, 66],
         "media_url_https": "https://pbs.twimg.com/tweet_video_thumb/E7dqEwTVIAAUpoG.jpg",
-        "original_info": {"height": 270, "width": 480},
+        "original_info": { "height": 270, "width": 480 },
         "sizes": {
-          "large": {"h": 270, "resize": "fit", "w": 480},
-          "medium": {"h": 270, "resize": "fit", "w": 480},
-          "small": {"h": 270, "resize": "fit", "w": 480},
-          "thumb": {"h": 150, "resize": "crop", "w": 150}
+          "large": { "h": 270, "resize": "fit", "w": 480 },
+          "medium": { "h": 270, "resize": "fit", "w": 480 },
+          "small": { "h": 270, "resize": "fit", "w": 480 },
+          "thumb": { "h": 150, "resize": "crop", "w": 150 }
         },
         "type": "animated_gif",
         "url": "https://t.co/zBfFwCVjjx",
@@ -724,7 +724,7 @@
       "aspectRatio": [16, 9],
       "contentType": "gif",
       "durationMs": 0,
-      "mediaAvailability": {"status": "available"},
+      "mediaAvailability": { "status": "available" },
       "poster": "https://pbs.twimg.com/tweet_video_thumb/E7dqEwTVIAAUpoG.jpg",
       "variants": [
         {
@@ -732,7 +732,7 @@
           "src": "https://video.twimg.com/tweet_video/E7dqEwTVIAAUpoG.mp4"
         }
       ],
-      "videoId": {"type": "tweet", "id": "1420720925868052486"},
+      "videoId": { "type": "tweet", "id": "1420720925868052486" },
       "viewCount": 0
     },
     "conversation_count": 2,
@@ -742,7 +742,7 @@
       "reply_count": 46,
       "retweet_count": 122,
       "favorite_count": 671,
-      "conversation_control": {"policy": "ByInvitation"},
+      "conversation_control": { "policy": "ByInvitation" },
       "possibly_sensitive": false,
       "created_at": "2021-07-29T09:51:52.000Z",
       "display_text_range": [0, 156],
@@ -787,25 +787,25 @@
         {
           "display_url": "pic.twitter.com/kH1jsTb0Ck",
           "expanded_url": "https://twitter.com/wongmjane/status/1420683483660185601/photo/1",
-          "ext_media_availability": {"status": "Available"},
+          "ext_media_availability": { "status": "Available" },
           "indices": [157, 180],
           "media_url_https": "https://pbs.twimg.com/media/E7dIGLaVcAQAMht.jpg",
           "original_info": {
             "height": 937,
             "width": 1125,
             "focus_rects": [
-              {"x": 0, "y": 307, "w": 1125, "h": 630},
-              {"x": 0, "y": 0, "w": 937, "h": 937},
-              {"x": 0, "y": 0, "w": 822, "h": 937},
-              {"x": 0, "y": 0, "w": 469, "h": 937},
-              {"x": 0, "y": 0, "w": 1125, "h": 937}
+              { "x": 0, "y": 307, "w": 1125, "h": 630 },
+              { "x": 0, "y": 0, "w": 937, "h": 937 },
+              { "x": 0, "y": 0, "w": 822, "h": 937 },
+              { "x": 0, "y": 0, "w": 469, "h": 937 },
+              { "x": 0, "y": 0, "w": 1125, "h": 937 }
             ]
           },
           "sizes": {
-            "large": {"h": 937, "resize": "fit", "w": 1125},
-            "medium": {"h": 937, "resize": "fit", "w": 1125},
-            "small": {"h": 566, "resize": "fit", "w": 680},
-            "thumb": {"h": 150, "resize": "crop", "w": 150}
+            "large": { "h": 937, "resize": "fit", "w": 1125 },
+            "medium": { "h": 937, "resize": "fit", "w": 1125 },
+            "small": { "h": 566, "resize": "fit", "w": 680 },
+            "thumb": { "h": 150, "resize": "crop", "w": 150 }
           },
           "type": "photo",
           "url": "https://t.co/kH1jsTb0Ck"
@@ -813,13 +813,13 @@
       ],
       "photos": [
         {
-          "backgroundColor": {"red": 204, "green": 214, "blue": 221},
+          "backgroundColor": { "red": 204, "green": 214, "blue": 221 },
           "cropCandidates": [
-            {"x": 0, "y": 307, "w": 1125, "h": 630},
-            {"x": 0, "y": 0, "w": 937, "h": 937},
-            {"x": 0, "y": 0, "w": 822, "h": 937},
-            {"x": 0, "y": 0, "w": 469, "h": 937},
-            {"x": 0, "y": 0, "w": 1125, "h": 937}
+            { "x": 0, "y": 307, "w": 1125, "h": 630 },
+            { "x": 0, "y": 0, "w": 937, "h": 937 },
+            { "x": 0, "y": 0, "w": 822, "h": 937 },
+            { "x": 0, "y": 0, "w": 469, "h": 937 },
+            { "x": 0, "y": 0, "w": 1125, "h": 937 }
           ],
           "expandedUrl": "https://twitter.com/wongmjane/status/1420683483660185601/photo/1",
           "url": "https://pbs.twimg.com/media/E7dIGLaVcAQAMht.jpg",
@@ -880,7 +880,7 @@
     "in_reply_to_user_id_str": "389681470",
     "lang": "en",
     "favorite_count": 20,
-    "self_thread": {"id_str": "1418770182084784128"},
+    "self_thread": { "id_str": "1418770182084784128" },
     "created_at": "2021-07-24T03:19:51.000Z",
     "display_text_range": [0, 46],
     "entities": {
@@ -912,7 +912,7 @@
       "reply_count": 5,
       "retweet_count": 2,
       "favorite_count": 34,
-      "self_thread": {"id_str": "1418770182084784128"},
+      "self_thread": { "id_str": "1418770182084784128" },
       "created_at": "2021-07-24T03:09:05.000Z",
       "display_text_range": [0, 163],
       "entities": {
@@ -978,7 +978,7 @@
       "reply_count": 2,
       "retweet_count": 6,
       "favorite_count": 73,
-      "self_thread": {"id_str": "1420008083779096585"},
+      "self_thread": { "id_str": "1420008083779096585" },
       "created_at": "2021-07-27T13:08:04.000Z",
       "display_text_range": [0, 134],
       "entities": {
@@ -1013,7 +1013,7 @@
     "__typename": "Tweet",
     "lang": "en",
     "favorite_count": 26,
-    "self_thread": {"id_str": "1415491278008033280"},
+    "self_thread": { "id_str": "1415491278008033280" },
     "possibly_sensitive": false,
     "created_at": "2021-07-15T01:59:53.000Z",
     "display_text_range": [0, 104],
@@ -1044,35 +1044,35 @@
     "card": {
       "card_platform": {
         "platform": {
-          "audience": {"name": "production"},
-          "device": {"name": "Swift", "version": "12"}
+          "audience": { "name": "production" },
+          "device": { "name": "Swift", "version": "12" }
         }
       },
       "name": "poll4choice_text_only",
       "url": "card://1415491277131374593",
       "binding_values": {
-        "choice1_label": {"string_value": "Light mode", "type": "STRING"},
-        "choice2_label": {"string_value": "Dark mode", "type": "STRING"},
+        "choice1_label": { "string_value": "Light mode", "type": "STRING" },
+        "choice2_label": { "string_value": "Dark mode", "type": "STRING" },
         "end_datetime_utc": {
           "string_value": "2021-07-16T01:59:53Z",
           "type": "STRING"
         },
-        "counts_are_final": {"boolean_value": true, "type": "BOOLEAN"},
-        "choice2_count": {"string_value": "1101", "type": "STRING"},
-        "choice1_count": {"string_value": "869", "type": "STRING"},
-        "choice4_label": {"string_value": "🤷‍♂️", "type": "STRING"},
+        "counts_are_final": { "boolean_value": true, "type": "BOOLEAN" },
+        "choice2_count": { "string_value": "1101", "type": "STRING" },
+        "choice1_count": { "string_value": "869", "type": "STRING" },
+        "choice4_label": { "string_value": "🤷‍♂️", "type": "STRING" },
         "last_updated_datetime_utc": {
           "string_value": "2021-07-16T01:59:57Z",
           "type": "STRING"
         },
-        "duration_minutes": {"string_value": "1440", "type": "STRING"},
-        "choice3_count": {"string_value": "3123", "type": "STRING"},
-        "choice4_count": {"string_value": "121", "type": "STRING"},
+        "duration_minutes": { "string_value": "1440", "type": "STRING" },
+        "choice3_count": { "string_value": "3123", "type": "STRING" },
+        "choice4_count": { "string_value": "121", "type": "STRING" },
         "choice3_label": {
           "string_value": "Use my system setting",
           "type": "STRING"
         },
-        "api": {"string_value": "capi://passthrough/1", "type": "STRING"},
+        "api": { "string_value": "capi://passthrough/1", "type": "STRING" },
         "card_url": {
           "scribe_key": "card_url",
           "string_value": "https://twitter.com",
@@ -1130,8 +1130,8 @@
     "card": {
       "card_platform": {
         "platform": {
-          "audience": {"name": "production"},
-          "device": {"name": "Swift", "version": "12"}
+          "audience": { "name": "production" },
+          "device": { "name": "Swift", "version": "12" }
         }
       },
       "name": "summary_large_image",
@@ -1157,7 +1157,7 @@
           "string_value": "The team really needs Epic React so that we can all have a shared common understanding of how to build high-quality, performant, React apps that scale.",
           "type": "STRING"
         },
-        "domain": {"string_value": "epicreact.dev", "type": "STRING"},
+        "domain": { "string_value": "epicreact.dev", "type": "STRING" },
         "thumbnail_image_large": {
           "image_value": {
             "height": 314,
@@ -1239,51 +1239,51 @@
           "image_color_value": {
             "palette": [
               {
-                "rgb": {"blue": 43, "green": 24, "red": 14},
+                "rgb": { "blue": 43, "green": 24, "red": 14 },
                 "percentage": 86.95
               },
               {
-                "rgb": {"blue": 111, "green": 56, "red": 28},
+                "rgb": { "blue": 111, "green": 56, "red": 28 },
                 "percentage": 5.91
               },
               {
-                "rgb": {"blue": 189, "green": 183, "red": 180},
+                "rgb": { "blue": 189, "green": 183, "red": 180 },
                 "percentage": 2.82
               },
               {
-                "rgb": {"blue": 43, "green": 58, "red": 60},
+                "rgb": { "blue": 43, "green": 58, "red": 60 },
                 "percentage": 0.9
               },
               {
-                "rgb": {"blue": 44, "green": 85, "red": 99},
+                "rgb": { "blue": 44, "green": 85, "red": 99 },
                 "percentage": 0.54
               }
             ]
           },
           "type": "IMAGE_COLOR"
         },
-        "title": {"string_value": "Why we need Epic React", "type": "STRING"},
+        "title": { "string_value": "Why we need Epic React", "type": "STRING" },
         "summary_photo_image_color": {
           "image_color_value": {
             "palette": [
               {
-                "rgb": {"blue": 43, "green": 24, "red": 14},
+                "rgb": { "blue": 43, "green": 24, "red": 14 },
                 "percentage": 86.95
               },
               {
-                "rgb": {"blue": 111, "green": 56, "red": 28},
+                "rgb": { "blue": 111, "green": 56, "red": 28 },
                 "percentage": 5.91
               },
               {
-                "rgb": {"blue": 189, "green": 183, "red": 180},
+                "rgb": { "blue": 189, "green": 183, "red": 180 },
                 "percentage": 2.82
               },
               {
-                "rgb": {"blue": 43, "green": 58, "red": 60},
+                "rgb": { "blue": 43, "green": 58, "red": 60 },
                 "percentage": 0.9
               },
               {
-                "rgb": {"blue": 44, "green": 85, "red": 99},
+                "rgb": { "blue": 44, "green": 85, "red": 99 },
                 "percentage": 0.54
               }
             ]
@@ -1310,23 +1310,23 @@
           "image_color_value": {
             "palette": [
               {
-                "rgb": {"blue": 43, "green": 24, "red": 14},
+                "rgb": { "blue": 43, "green": 24, "red": 14 },
                 "percentage": 86.95
               },
               {
-                "rgb": {"blue": 111, "green": 56, "red": 28},
+                "rgb": { "blue": 111, "green": 56, "red": 28 },
                 "percentage": 5.91
               },
               {
-                "rgb": {"blue": 189, "green": 183, "red": 180},
+                "rgb": { "blue": 189, "green": 183, "red": 180 },
                 "percentage": 2.82
               },
               {
-                "rgb": {"blue": 43, "green": 58, "red": 60},
+                "rgb": { "blue": 43, "green": 58, "red": 60 },
                 "percentage": 0.9
               },
               {
-                "rgb": {"blue": 44, "green": 85, "red": 99},
+                "rgb": { "blue": 44, "green": 85, "red": 99 },
                 "percentage": 0.54
               }
             ]
@@ -1473,8 +1473,8 @@
     "card": {
       "card_platform": {
         "platform": {
-          "audience": {"name": "production"},
-          "device": {"name": "Swift", "version": "12"}
+          "audience": { "name": "production" },
+          "device": { "name": "Swift", "version": "12" }
         }
       },
       "name": "player",
@@ -1504,14 +1504,14 @@
           "string_value": "Hey there friends. So yesterday I was just a fanboying I guess about Prisma. If you haven't heard of Prisma, it is a Oh what does that? It's ORN, I can't remember what what the word for that is but...",
           "type": "STRING"
         },
-        "player_width": {"string_value": "400", "type": "STRING"},
-        "domain": {"string_value": "www.briefs.fm", "type": "STRING"},
+        "player_width": { "string_value": "400", "type": "STRING" },
+        "domain": { "string_value": "www.briefs.fm", "type": "STRING" },
         "site": {
           "scribe_key": "publisher_id",
           "type": "USER",
-          "user_value": {"id_str": "4851140197", "path": []}
+          "user_value": { "id_str": "4851140197", "path": [] }
         },
-        "player_height": {"string_value": "93", "type": "STRING"},
+        "player_height": { "string_value": "93", "type": "STRING" },
         "vanity_url": {
           "scribe_key": "vanity_url",
           "string_value": "briefs.fm",
@@ -1525,7 +1525,7 @@
           },
           "type": "IMAGE"
         },
-        "title": {"string_value": "Prisma is amazing", "type": "STRING"},
+        "title": { "string_value": "Prisma is amazing", "type": "STRING" },
         "card_url": {
           "scribe_key": "card_url",
           "string_value": "https://t.co/gmCkT93byp",

@@ -24,7 +24,7 @@ bannerCredit:
   Photo by [Pascal van de Vendel](https://unsplash.com/photos/J3pkJFnpDkM)
 ---
 
-import {Counter, Layout} from './components'
+import { Counter, Layout } from './components'
 
 Performance is a serious issue and we should make our apps as fast as possible.
 How we go about doing that will make a big impact on not only the effectiveness
@@ -37,14 +37,14 @@ the same thing:
 
 ```tsx
 function Counter() {
-  const [count, setCount] = React.useState(0)
-  const increment = () => setCount(c => c + 1)
-  return <button onClick={increment}>{count}</button>
+	const [count, setCount] = React.useState(0)
+	const increment = () => setCount(c => c + 1)
+	return <button onClick={increment}>{count}</button>
 }
 ```
 
 <Layout>
-  <Counter />
+	<Counter />
 </Layout>
 
 Every time we click on that button, we're triggering a re-render. But what is a
@@ -117,18 +117,18 @@ update. Here's a quick contrived example of that:
 
 ```js
 function Foo() {
-  return <div>FOO!</div>
+	return <div>FOO!</div>
 }
 
 function Counter() {
-  const [count, setCount] = React.useState(0)
-  const increment = () => setCount(c => c + 1)
-  return (
-    <>
-      <Foo />
-      <button onClick={increment}>{count}</button>
-    </>
-  )
+	const [count, setCount] = React.useState(0)
+	const increment = () => setCount(c => c + 1)
+	return (
+		<>
+			<Foo />
+			<button onClick={increment}>{count}</button>
+		</>
+	)
 }
 ```
 

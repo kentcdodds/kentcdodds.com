@@ -1,5 +1,5 @@
 function checkStatus() {
-  throw new Error('this needs to be mocked')
+	throw new Error('this needs to be mocked')
 }
 
-export {checkStatus}
+export { checkStatus }

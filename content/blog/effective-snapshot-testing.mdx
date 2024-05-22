@@ -268,15 +268,15 @@ for you:
 
 ```tsx
 const React = require('react')
-const {toMatchDiffSnapshot} = require('snapshot-diff')
+const { toMatchDiffSnapshot } = require('snapshot-diff')
 const Component = require('./Component')
 
-expect.extend({toMatchDiffSnapshot})
+expect.extend({ toMatchDiffSnapshot })
 
 test('snapshot difference between 2 React components state', () => {
-  expect(<Component test="say" />).toMatchDiffSnapshot(
-    <Component test="my name" />,
-  )
+	expect(<Component test="say" />).toMatchDiffSnapshot(
+		<Component test="my name" />,
+	)
 })
 ```
 

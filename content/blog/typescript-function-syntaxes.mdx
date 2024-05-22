@@ -49,14 +49,14 @@ type FnType = (arg: ArgType) => ReturnType
 
 // Every other time, use :
 type FnAsObjType = {
-  (arg: ArgType): ReturnType
+	(arg: ArgType): ReturnType
 }
 interface InterfaceWithFn {
-  fn(arg: ArgType): ReturnType
+	fn(arg: ArgType): ReturnType
 }
 
 const fnImplementation = (arg: ArgType): ReturnType => {
-  /* implementation */
+	/* implementation */
 }
 ```
 
@@ -72,14 +72,14 @@ examples.
 ```ts
 // inferred return type
 function sum(a: number, b: number) {
-  return a + b
+	return a + b
 }
 ```
 
 ```ts
 // defined return type
 function sum(a: number, b: number): number {
-  return a + b
+	return a + b
 }
 ```
 
@@ -91,21 +91,21 @@ don't have to specify this.
 ```ts
 // named function expression
 const sum = function sum(a: number, b: number): number {
-  return a + b
+	return a + b
 }
 ```
 
 ```ts
 // annonymous function expression
 const sum = function (a: number, b: number): number {
-  return a + b
+	return a + b
 }
 ```
 
 ```ts
 // arrow function
 const sum = (a: number, b: number): number => {
-  return a + b
+	return a + b
 }
 ```
 
@@ -116,7 +116,7 @@ const sum = (a: number, b: number): number => a + b
 
 ```ts
 // implicit return of an object requires parentheses to disambiguate the curly braces
-const sum = (a: number, b: number): {result: number} => ({result: a + b})
+const sum = (a: number, b: number): { result: number } => ({ result: a + b })
 ```
 
 You can also add a type annotation next to the variable, and then the function
@@ -137,7 +137,7 @@ Or you can use the object type syntax:
 
 ```ts
 type MathFn = {
-  (a: number, b: number): number
+	(a: number, b: number): number
 }
 const sum: MathFn = (a, b) => a + b
 ```
@@ -146,8 +146,8 @@ Which can be useful if you want to add a typed property to the function:
 
 ```ts
 type MathFn = {
-  (a: number, b: number): number
-  operator: string
+	(a: number, b: number): number
+	operator: string
 }
 const sum: MathFn = (a, b) => a + b
 sum.operator = '+'
@@ -157,8 +157,8 @@ This can also be done with an interface:
 
 ```ts
 interface MathFn {
-  (a: number, b: number): number
-  operator: string
+	(a: number, b: number): number
+	operator: string
 }
 const sum: MathFn = (a, b) => a + b
 sum.operator = '+'
@@ -173,7 +173,7 @@ libraries.
 ```ts
 declare function MathFn(a: number, b: number): number
 declare namespace MathFn {
-  let operator: '+'
+	let operator: '+'
 }
 const sum: typeof MathFn = (a, b) => a + b
 sum.operator = '+'
@@ -248,7 +248,7 @@ _last_ parameter.
 
 ```ts
 const sum = (a: number = 0, ...rest: Array<number>): number => {
-  return rest.reduce((acc, n) => acc + n, a)
+	return rest.reduce((acc, n) => acc + n, a)
 }
 ```
 
@@ -265,9 +265,9 @@ Object method:
 
 ```ts
 const math = {
-  sum(a: number, b: number): number {
-    return a + b
-  },
+	sum(a: number, b: number): number {
+		return a + b
+	},
 }
 ```
 
@@ -275,9 +275,9 @@ Property as function expression:
 
 ```ts
 const math = {
-  sum: function sum(a: number, b: number): number {
-    return a + b
-  },
+	sum: function sum(a: number, b: number): number {
+		return a + b
+	},
 }
 ```
 
@@ -285,7 +285,7 @@ Property as arrow function expression (with implicit return):
 
 ```ts
 const math = {
-  sum: (a: number, b: number): number => a + b,
+	sum: (a: number, b: number): number => a + b,
 }
 ```
 
@@ -296,8 +296,8 @@ itself when it's defined within the object literal:
 ```ts
 type MathFn = (a: number, b: number) => number
 
-const math: {sum: MathFn} = {
-  sum: (a, b) => a + b,
+const math: { sum: MathFn } = {
+	sum: (a, b) => a + b,
 }
 ```
 
@@ -307,13 +307,13 @@ extract the function definition completely:
 
 ```ts
 type MathFn = {
-  (a: number, b: number): number
-  operator: string
+	(a: number, b: number): number
+	operator: string
 }
 const sum: MathFn = (a, b) => a + b
 sum.operator = '+'
 
-const math = {sum}
+const math = { sum }
 ```
 
 You may have noticed that this example is identical to an example above with
@@ -330,9 +330,9 @@ Here's a regular method, the most common form of a function in a class body:
 
 ```ts
 class MathUtils {
-  sum(a: number, b: number): number {
-    return a + b
-  }
+	sum(a: number, b: number): number {
+		return a + b
+	}
 }
 
 const math = new MathUtils()
@@ -344,9 +344,9 @@ specific instance of the class:
 
 ```ts
 class MathUtils {
-  sum = (a: number, b: number): number => {
-    return a + b
-  }
+	sum = (a: number, b: number): number => {
+		return a + b
+	}
 }
 
 // doing things this way this allows you to do this:
@@ -363,13 +363,13 @@ version in the first example:
 
 ```ts
 interface MathUtilsInterface {
-  sum(a: number, b: number): number
+	sum(a: number, b: number): number
 }
 
 class MathUtils implements MathUtilsInterface {
-  sum(a: number, b: number): number {
-    return a + b
-  }
+	sum(a: number, b: number): number {
+		return a + b
+	}
 }
 ```
 
@@ -399,8 +399,8 @@ Here's what we'd do assuming we export it as the default:
 
 ```ts
 declare const sum: {
-  (a: number, b: number): number
-  operator: string
+	(a: number, b: number): number
+	operator: string
 }
 export default sum
 ```
@@ -409,10 +409,10 @@ And if we want it to be a named export:
 
 ```ts
 declare const sum: {
-  (a: number, b: number): number
-  operator: string
+	(a: number, b: number): number
+	operator: string
 }
-export {sum}
+export { sum }
 ```
 
 ## Overloads
@@ -431,9 +431,9 @@ function asyncSum(a: number, b: number, cb: asyncSumCb): void
 // also notice that the return type is inferred, but it could be specified
 // as `void | Promise<number>`
 function asyncSum(a: number, b: number, cb?: asyncSumCb) {
-  const result = a + b
-  if (cb) return cb(result)
-  else return Promise.resolve(result)
+	const result = a + b
+	if (cb) return cb(result)
+	else return Promise.resolve(result)
 }
 ```
 
@@ -449,8 +449,8 @@ simple case:
 
 ```ts
 function* generator(start: number) {
-  yield start + 1
-  yield start + 2
+	yield start + 1
+	yield start + 2
 }
 
 var iterator = generator(0)
@@ -464,8 +464,8 @@ following type:
 
 ```ts
 type IteratorNextType = {
-  value: number | void
-  done: boolean
+	value: number | void
+	done: boolean
 }
 ```
 
@@ -474,8 +474,8 @@ annotation to the variable you assign it to:
 
 ```ts lines=2
 function* generator(start: number) {
-  const newStart: number = yield start + 1
-  yield newStart + 2
+	const newStart: number = yield start + 1
+	yield newStart + 2
 }
 
 var iterator = generator(0)
@@ -499,7 +499,7 @@ const sum = async (a: number, b: number): Promise<number> => a + b
 
 ```ts
 async function sum(a: number, b: number): Promise<number> {
-  return a + b
+	return a + b
 }
 ```
 
@@ -509,7 +509,7 @@ With a function declaration:
 
 ```ts
 function arrayify2<Type>(a: Type): Array<Type> {
-  return [a]
+	return [a]
 }
 ```
 
@@ -560,9 +560,9 @@ one of the falsy value types.
 ```ts
 type FalsyType = false | null | undefined | '' | 0
 function typedBoolean<ValueType>(
-  value: ValueType,
+	value: ValueType,
 ): value is Exclude<ValueType, FalsyType> {
-  return Boolean(value)
+	return Boolean(value)
 }
 ```
 
@@ -584,13 +584,13 @@ might do something like that:
 
 ```ts
 type User = {
-  name: string
-  displayName: string | null
+	name: string
+	displayName: string | null
 }
 
 function logUserDisplayNameUpper(user: User) {
-  if (!user.displayName) throw new Error('Oh no, user has no displayName')
-  console.log(user.displayName.toUpperCase())
+	if (!user.displayName) throw new Error('Oh no, user has no displayName')
+	console.log(user.displayName.toUpperCase())
 }
 ```
 
@@ -600,17 +600,17 @@ that `if` check and put it in a function:
 
 ```ts
 type User = {
-  name: string
-  displayName: string | null
+	name: string
+	displayName: string | null
 }
 
 function assertDisplayName(user: User) {
-  if (!user.displayName) throw new Error('Oh no, user has no displayName')
+	if (!user.displayName) throw new Error('Oh no, user has no displayName')
 }
 
 function logUserDisplayName(user: User) {
-  assertDisplayName(user)
-  console.log(user.displayName.toUpperCase())
+	assertDisplayName(user)
+	console.log(user.displayName.toUpperCase())
 }
 ```
 
@@ -621,19 +621,19 @@ that our function makes an assertion:
 
 ```ts lines=8
 type User = {
-  name: string
-  displayName: string | null
+	name: string
+	displayName: string | null
 }
 
 function assertDisplayName(
-  user: User,
-): asserts user is User & {displayName: string} {
-  if (!user.displayName) throw new Error('Oh no, user has no displayName')
+	user: User,
+): asserts user is User & { displayName: string } {
+	if (!user.displayName) throw new Error('Oh no, user has no displayName')
 }
 
 function logUserDisplayName(user: User) {
-  assertDisplayName(user)
-  console.log(user.displayName.toUpperCase())
+	assertDisplayName(user)
+	console.log(user.displayName.toUpperCase())
 }
 ```
 

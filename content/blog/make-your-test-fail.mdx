@@ -33,30 +33,30 @@ Consider the following tests:
 
 ```js
 // __tests__/utils.js
-import {isPasswordAllowed} from '~/utils'
+import { isPasswordAllowed } from '~/utils'
 
 test('allows passwords that are good', () => {
-  expect(isPasswordAllowed('Ab3.efgh')).toBe(true)
+	expect(isPasswordAllowed('Ab3.efgh')).toBe(true)
 })
 
 test('disallows passwords less than 7 characters', () => {
-  expect(isPasswordAllowed('Ab3.ef')).toBe(false)
+	expect(isPasswordAllowed('Ab3.ef')).toBe(false)
 })
 
 test('disallows passwords that do not contain a non-alphanumeric character', () => {
-  expect(isPasswordAllowed('Ab3')).toBe(false)
+	expect(isPasswordAllowed('Ab3')).toBe(false)
 })
 
 test('disallows passwords that do not contain a digit', () => {
-  expect(isPasswordAllowed('Ab.')).toBe(false)
+	expect(isPasswordAllowed('Ab.')).toBe(false)
 })
 
 test('disallows passwords that do not contain an uppercase letter', () => {
-  expect(isPasswordAllowed('b3.')).toBe(false)
+	expect(isPasswordAllowed('b3.')).toBe(false)
 })
 
 test('disallows passwords that do not contain a lowercase letter', () => {
-  expect(isPasswordAllowed('A3.')).toBe(false)
+	expect(isPasswordAllowed('A3.')).toBe(false)
 })
 ```
 
@@ -69,20 +69,20 @@ showing you the implementation of our function:
 ```js
 // utils.js
 function isPasswordAllowed(password) {
-  return (
-    password.length > 6 &&
-    // non-alphanumeric
-    /\W/.test(password) &&
-    // digit
-    /\d/.test(password) &&
-    // uppercase letter
-    /[A-Z]/.test(password) &&
-    // lowercase letter
-    /[a-z]/.test(password)
-  )
+	return (
+		password.length > 6 &&
+		// non-alphanumeric
+		/\W/.test(password) &&
+		// digit
+		/\d/.test(password) &&
+		// uppercase letter
+		/[A-Z]/.test(password) &&
+		// lowercase letter
+		/[a-z]/.test(password)
+	)
 }
 
-export {isPasswordAllowed}
+export { isPasswordAllowed }
 ```
 
 Can you tell what's wrong now? The problem is that for all these tests, the
@@ -93,20 +93,20 @@ lines, my tests would continue to pass anyway:
 ```js lines=8
 // utils.js
 function isPasswordAllowed(password) {
-  return (
-    password.length > 6 &&
-    // non-alphanumeric
-    /\W/.test(password) &&
-    // digit
-    // /\d/.test(password) &&
-    // uppercase letter
-    /[A-Z]/.test(password) &&
-    // lowercase letter
-    /[a-z]/.test(password)
-  )
+	return (
+		password.length > 6 &&
+		// non-alphanumeric
+		/\W/.test(password) &&
+		// digit
+		// /\d/.test(password) &&
+		// uppercase letter
+		/[A-Z]/.test(password) &&
+		// lowercase letter
+		/[a-z]/.test(password)
+	)
 }
 
-export {isPasswordAllowed}
+export { isPasswordAllowed }
 ```
 
 ✅ All green! ✅
@@ -147,30 +147,30 @@ Here's what a good test for that `isPasswordAllowed` function would be like:
 
 ```js
 // __tests__/utils.js
-import {isPasswordAllowed} from '~/utils'
+import { isPasswordAllowed } from '~/utils'
 
 test('allows passwords that are good', () => {
-  expect(isPasswordAllowed('Ab3.efgh')).toBe(true)
+	expect(isPasswordAllowed('Ab3.efgh')).toBe(true)
 })
 
 test('disallows passwords less than 7 characters', () => {
-  expect(isPasswordAllowed('Ab3.ef')).toBe(false)
+	expect(isPasswordAllowed('Ab3.ef')).toBe(false)
 })
 
 test('disallows passwords that do not contain a non-alphanumeric character', () => {
-  expect(isPasswordAllowed('Ab3efgh')).toBe(false)
+	expect(isPasswordAllowed('Ab3efgh')).toBe(false)
 })
 
 test('disallows passwords that do not contain a digit', () => {
-  expect(isPasswordAllowed('Ab.efgh')).toBe(false)
+	expect(isPasswordAllowed('Ab.efgh')).toBe(false)
 })
 
 test('disallows passwords that do not contain an uppercase letter', () => {
-  expect(isPasswordAllowed('b3.efgh')).toBe(false)
+	expect(isPasswordAllowed('b3.efgh')).toBe(false)
 })
 
 test('disallows passwords that do not contain a lowercase letter', () => {
-  expect(isPasswordAllowed('A3.EFGH')).toBe(false)
+	expect(isPasswordAllowed('A3.EFGH')).toBe(false)
 })
 ```
 

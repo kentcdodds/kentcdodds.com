@@ -42,50 +42,50 @@ language.
 
 ```js
 function geoPositionReducer(state, action) {
-  switch (action.type) {
-    case 'error': {
-      return {
-        ...state,
-        isLoading: false,
-        error: action.error,
-      }
-    }
-    case 'success': {
-      return {
-        ...state,
-        isLoading: false,
-        position: action.position,
-      }
-    }
-    default: {
-      throw new Error(`Unhandled action type: ${action.type}`)
-    }
-  }
+	switch (action.type) {
+		case 'error': {
+			return {
+				...state,
+				isLoading: false,
+				error: action.error,
+			}
+		}
+		case 'success': {
+			return {
+				...state,
+				isLoading: false,
+				position: action.position,
+			}
+		}
+		default: {
+			throw new Error(`Unhandled action type: ${action.type}`)
+		}
+	}
 }
 
 function useGeoPosition() {
-  const [state, dispatch] = React.useReducer(geoPositionReducer, {
-    isLoading: true,
-    position: null,
-    error: null,
-  })
+	const [state, dispatch] = React.useReducer(geoPositionReducer, {
+		isLoading: true,
+		position: null,
+		error: null,
+	})
 
-  React.useEffect(() => {
-    if (!navigator.geolocation) {
-      dispatch({
-        type: 'error',
-        error: new Error('Geolocation is not supported'),
-      })
-      return
-    }
-    const geoWatch = navigator.geolocation.watchPosition(
-      position => dispatch({type: 'success', position}),
-      error => dispatch({type: 'error', error}),
-    )
-    return () => navigator.geolocation.clearWatch(geoWatch)
-  }, [])
+	React.useEffect(() => {
+		if (!navigator.geolocation) {
+			dispatch({
+				type: 'error',
+				error: new Error('Geolocation is not supported'),
+			})
+			return
+		}
+		const geoWatch = navigator.geolocation.watchPosition(
+			position => dispatch({ type: 'success', position }),
+			error => dispatch({ type: 'error', error }),
+		)
+		return () => navigator.geolocation.clearWatch(geoWatch)
+	}, [])
 
-  return state
+	return state
 }
 ```
 
@@ -96,28 +96,28 @@ me show you how a developer might use this particular hook:
 
 ```tsx
 function YourPosition() {
-  const {isLoading, position, error} = useGeoPosition()
+	const { isLoading, position, error } = useGeoPosition()
 
-  if (isLoading) {
-    return <div>Loading your position...</div>
-  }
+	if (isLoading) {
+		return <div>Loading your position...</div>
+	}
 
-  if (position) {
-    return (
-      <div>
-        Lat: {position.coords.latitude}, Long: {position.coords.longitude}
-      </div>
-    )
-  }
+	if (position) {
+		return (
+			<div>
+				Lat: {position.coords.latitude}, Long: {position.coords.longitude}
+			</div>
+		)
+	}
 
-  if (error) {
-    return (
-      <div>
-        <div>Oh no, there was a problem getting your position:</div>
-        <pre>{error.message}</pre>
-      </div>
-    )
-  }
+	if (error) {
+		return (
+			<div>
+				<div>Oh no, there was a problem getting your position:</div>
+				<pre>{error.message}</pre>
+			</div>
+		)
+	}
 }
 ```
 
@@ -159,57 +159,57 @@ So let's go with option #3:
 
 ```js lines=6,13,17-22,31,44
 function geoPositionReducer(state, action) {
-  switch (action.type) {
-    case 'error': {
-      return {
-        ...state,
-        status: 'rejected',
-        error: action.error,
-      }
-    }
-    case 'success': {
-      return {
-        ...state,
-        status: 'resolved',
-        position: action.position,
-      }
-    }
-    case 'started': {
-      return {
-        ...state,
-        status: 'pending',
-      }
-    }
-    default: {
-      throw new Error(`Unhandled action type: ${action.type}`)
-    }
-  }
+	switch (action.type) {
+		case 'error': {
+			return {
+				...state,
+				status: 'rejected',
+				error: action.error,
+			}
+		}
+		case 'success': {
+			return {
+				...state,
+				status: 'resolved',
+				position: action.position,
+			}
+		}
+		case 'started': {
+			return {
+				...state,
+				status: 'pending',
+			}
+		}
+		default: {
+			throw new Error(`Unhandled action type: ${action.type}`)
+		}
+	}
 }
 
 function useGeoPosition() {
-  const [state, dispatch] = React.useReducer(geoPositionReducer, {
-    status: 'idle',
-    position: null,
-    error: null,
-  })
+	const [state, dispatch] = React.useReducer(geoPositionReducer, {
+		status: 'idle',
+		position: null,
+		error: null,
+	})
 
-  React.useEffect(() => {
-    if (!navigator.geolocation) {
-      dispatch({
-        type: 'error',
-        error: new Error('Geolocation is not supported'),
-      })
-      return
-    }
-    dispatch({type: 'started'})
-    const geoWatch = navigator.geolocation.watchPosition(
-      position => dispatch({type: 'success', position}),
-      error => dispatch({type: 'error', error}),
-    )
-    return () => navigator.geolocation.clearWatch(geoWatch)
-  }, [])
+	React.useEffect(() => {
+		if (!navigator.geolocation) {
+			dispatch({
+				type: 'error',
+				error: new Error('Geolocation is not supported'),
+			})
+			return
+		}
+		dispatch({ type: 'started' })
+		const geoWatch = navigator.geolocation.watchPosition(
+			position => dispatch({ type: 'success', position }),
+			error => dispatch({ type: 'error', error }),
+		)
+		return () => navigator.geolocation.clearWatch(geoWatch)
+	}, [])
 
-  return state
+	return state
 }
 ```
 
@@ -224,30 +224,30 @@ Awesome, now users can use the `status` to render instead:
 
 ```tsx
 function YourPosition() {
-  const {status, position, error} = useGeoPosition()
+	const { status, position, error } = useGeoPosition()
 
-  if (status === 'idle' || status === 'pending') {
-    return <div>Loading your position...</div>
-  }
+	if (status === 'idle' || status === 'pending') {
+		return <div>Loading your position...</div>
+	}
 
-  if (status === 'resolved') {
-    return (
-      <div>
-        Lat: {position.coords.latitude}, Long: {position.coords.longitude}
-      </div>
-    )
-  }
+	if (status === 'resolved') {
+		return (
+			<div>
+				Lat: {position.coords.latitude}, Long: {position.coords.longitude}
+			</div>
+		)
+	}
 
-  if (status === 'rejected') {
-    return (
-      <div>
-        <div>Oh no, there was a problem getting your position:</div>
-        <pre>{error.message}</pre>
-      </div>
-    )
-  }
+	if (status === 'rejected') {
+		return (
+			<div>
+				<div>Oh no, there was a problem getting your position:</div>
+				<pre>{error.message}</pre>
+			</div>
+		)
+	}
 
-  // could also use a switch or nested ternary if that's your jam...
+	// could also use a switch or nested ternary if that's your jam...
 }
 ```
 
@@ -261,7 +261,7 @@ Now, if you'd like to ditch those `variable === 'string'` expressions in those
 that's simple enough:
 
 ```js
-const {status, position, error} = useGeoPosition()
+const { status, position, error } = useGeoPosition()
 const isLoading = status === 'idle' || status === 'pending'
 const isResolved = status === 'resolved'
 const isRejected = status === 'rejected'
@@ -278,15 +278,15 @@ convenience if you want to:
 
 ```js
 function useGeoPosition() {
-  // ... clipped out for brevity ...
-  return {
-    isLoading: status === 'idle' || status === 'pending',
-    isIdle: status === 'idle',
-    isPending: status === 'pending',
-    isResolved: status === 'resolved',
-    isRejected: status === 'rejected',
-    ...state,
-  }
+	// ... clipped out for brevity ...
+	return {
+		isLoading: status === 'idle' || status === 'pending',
+		isIdle: status === 'idle',
+		isPending: status === 'pending',
+		isResolved: status === 'resolved',
+		isRejected: status === 'rejected',
+		...state,
+	}
 }
 ```
 
@@ -297,71 +297,71 @@ Everything is a state machine, and this one is particularly noticeable.
 machines in code, so I thought I'd show you what that could be like:
 
 ```js
-import {createMachine, assign} from 'xstate'
-import {useMachine} from '@xstate/react'
+import { createMachine, assign } from 'xstate'
+import { useMachine } from '@xstate/react'
 
-const context = {position: null, error: null}
+const context = { position: null, error: null }
 const RESOLVE = {
-  target: 'resolved',
-  actions: 'setPosition',
+	target: 'resolved',
+	actions: 'setPosition',
 }
 const REJECT = {
-  target: 'rejected',
-  actions: 'setError',
+	target: 'rejected',
+	actions: 'setError',
 }
 const geoPositionMachine = createMachine(
-  {
-    id: 'geoposition',
-    initial: 'idle',
-    context,
-    states: {
-      idle: {
-        on: {
-          START: 'pending',
-          REJECT_NOT_SUPPORTED: 'rejectedNotSupported',
-        },
-      },
-      pending: {
-        on: {RESOLVE, REJECT},
-      },
-      resolved: {
-        on: {RESOLVE, REJECT},
-      },
-      rejected: {
-        on: {RESOLVE, REJECT},
-      },
-      rejectedNotSupported: {},
-    },
-  },
-  {
-    actions: {
-      setPosition: assign({
-        position: (context, event) => event.position,
-      }),
-      setError: assign({
-        error: (context, event) => event.error,
-      }),
-    },
-  },
+	{
+		id: 'geoposition',
+		initial: 'idle',
+		context,
+		states: {
+			idle: {
+				on: {
+					START: 'pending',
+					REJECT_NOT_SUPPORTED: 'rejectedNotSupported',
+				},
+			},
+			pending: {
+				on: { RESOLVE, REJECT },
+			},
+			resolved: {
+				on: { RESOLVE, REJECT },
+			},
+			rejected: {
+				on: { RESOLVE, REJECT },
+			},
+			rejectedNotSupported: {},
+		},
+	},
+	{
+		actions: {
+			setPosition: assign({
+				position: (context, event) => event.position,
+			}),
+			setError: assign({
+				error: (context, event) => event.error,
+			}),
+		},
+	},
 )
 
 function useGeoPosition() {
-  const [state, send] = useMachine(geoPositionMachine)
+	const [state, send] = useMachine(geoPositionMachine)
 
-  React.useEffect(() => {
-    if (!navigator.geolocation) {
-      send('REJECT_NOT_SUPPORTED')
-      return
-    }
-    send('START')
-    const geoWatch = navigator.geolocation.watchPosition(
-      position => send({type: 'RESOLVE', position}),
-      error => send({type: 'REJECT', error}),
-    )
-    return () => navigator.geolocation.clearWatch(geoWatch)
-  }, [send])
+	React.useEffect(() => {
+		if (!navigator.geolocation) {
+			send('REJECT_NOT_SUPPORTED')
+			return
+		}
+		send('START')
+		const geoWatch = navigator.geolocation.watchPosition(
+			position => send({ type: 'RESOLVE', position }),
+			error => send({ type: 'REJECT', error }),
+		)
+		return () => navigator.geolocation.clearWatch(geoWatch)
+	}, [send])
 
-  return state
+	return state
 }
 ```
 
@@ -389,33 +389,33 @@ Here's how we would use that (with as minimal changes as possible):
 
 ```tsx
 function YourPosition() {
-  const state = useGeoPosition()
-  const {position, error} = state.context
+	const state = useGeoPosition()
+	const { position, error } = state.context
 
-  if (state.matches('rejectedNotSupported')) {
-    return <div>This browser does not support Geolocation</div>
-  }
+	if (state.matches('rejectedNotSupported')) {
+		return <div>This browser does not support Geolocation</div>
+	}
 
-  if (state.matches('idle') || state.matches('pending')) {
-    return <div>Loading your position...</div>
-  }
+	if (state.matches('idle') || state.matches('pending')) {
+		return <div>Loading your position...</div>
+	}
 
-  if (state.matches('resolved')) {
-    return (
-      <div>
-        Lat: {position.coords.latitude}, Long: {position.coords.longitude}
-      </div>
-    )
-  }
+	if (state.matches('resolved')) {
+		return (
+			<div>
+				Lat: {position.coords.latitude}, Long: {position.coords.longitude}
+			</div>
+		)
+	}
 
-  if (state.matches('rejected')) {
-    return (
-      <div>
-        <div>Oh no, there was a problem getting your position:</div>
-        <pre>{error.message}</pre>
-      </div>
-    )
-  }
+	if (state.matches('rejected')) {
+		return (
+			<div>
+				<div>Oh no, there was a problem getting your position:</div>
+				<pre>{error.message}</pre>
+			</div>
+		)
+	}
 }
 ```
 
@@ -423,9 +423,9 @@ And if we liked the previous API, we could preserve that API:
 
 ```js
 function useGeoPosition() {
-  const [state, send] = useMachine(geoPositionMachine)
-  // ... clipped out for brevity ...
-  return {status: state.value, ...state.context}
+	const [state, send] = useMachine(geoPositionMachine)
+	// ... clipped out for brevity ...
+	return { status: state.value, ...state.context }
 }
 ```
 

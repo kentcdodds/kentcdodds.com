@@ -24,13 +24,13 @@ Here's the TL;DR:
 
 ```js
 const useStateReducer = (prevState, newState) =>
-  typeof newState === 'function' ? newState(prevState) : newState
+	typeof newState === 'function' ? newState(prevState) : newState
 
 const useStateInitializer = initialValue =>
-  typeof initialValue === 'function' ? initialValue() : initialValue
+	typeof initialValue === 'function' ? initialValue() : initialValue
 
 function useState(initialValue) {
-  return React.useReducer(useStateReducer, initialValue, useStateInitializer)
+	return React.useReducer(useStateReducer, initialValue, useStateInitializer)
 }
 ```
 
@@ -68,8 +68,8 @@ useState(() => initialValue) // a lazy initial value
 ```
 
 <callout-info class="aside">
-  [Read more about lazy initial
-  state](https://reactjs.org/docs/hooks-reference.html#lazy-initial-state)
+	[Read more about lazy initial
+	state](https://reactjs.org/docs/hooks-reference.html#lazy-initial-state)
 </callout-info>
 
 So our new `useReducer`-based `useState` will need to support all of these
@@ -132,7 +132,7 @@ Here's our starting point:
 const useStateReducer = () => {}
 
 function useState() {
-  return React.useReducer(useStateReducer)
+	return React.useReducer(useStateReducer)
 }
 ```
 
@@ -152,7 +152,7 @@ do that, we make our reducer take the `dispatchArg` and return that.
 const useStateReducer = (prevState, dispatchArg) => dispatchArg
 
 function useState() {
-  return React.useReducer(useStateReducer)
+	return React.useReducer(useStateReducer)
 }
 ```
 
@@ -162,7 +162,7 @@ With that it actually makes more sense to call `dispatchArg` `newState` instead:
 const useStateReducer = (prevState, newState) => newState
 
 function useState() {
-  return React.useReducer(useStateReducer)
+	return React.useReducer(useStateReducer)
 }
 ```
 
@@ -182,10 +182,10 @@ rescue!
 
 ```js lines=1-2
 const useStateReducer = (prevState, newState) =>
-  typeof newState === 'function' ? newState(prevState) : newState
+	typeof newState === 'function' ? newState(prevState) : newState
 
 function useState() {
-  return React.useReducer(useStateReducer)
+	return React.useReducer(useStateReducer)
 }
 ```
 
@@ -196,10 +196,10 @@ case, it's actually really straightforward:
 
 ```js lines=4,5
 const useStateReducer = (prevState, newState) =>
-  typeof newState === 'function' ? newState(prevState) : newState
+	typeof newState === 'function' ? newState(prevState) : newState
 
 function useState(initialValue) {
-  return React.useReducer(useStateReducer, initialValue)
+	return React.useReducer(useStateReducer, initialValue)
 }
 ```
 
@@ -210,12 +210,12 @@ Let's iterate to that first. Here's another way we could implement the non-lazy
 
 ```js lines=4,7
 const useStateReducer = (prevState, newState) =>
-  typeof newState === 'function' ? newState(prevState) : newState
+	typeof newState === 'function' ? newState(prevState) : newState
 
 const useStateInitializer = initialArg => initialArg
 
 function useState(initialValue) {
-  return React.useReducer(useStateReducer, initialValue, useStateInitializer)
+	return React.useReducer(useStateReducer, initialValue, useStateInitializer)
 }
 ```
 
@@ -227,13 +227,13 @@ otherwise we'll return it.
 
 ```js lines=5
 const useStateReducer = (prevState, newState) =>
-  typeof newState === 'function' ? newState(prevState) : newState
+	typeof newState === 'function' ? newState(prevState) : newState
 
 const useStateInitializer = initialValue =>
-  typeof initialValue === 'function' ? initialValue() : initialValue
+	typeof initialValue === 'function' ? initialValue() : initialValue
 
 function useState(initialValue) {
-  return React.useReducer(useStateReducer, initialValue, useStateInitializer)
+	return React.useReducer(useStateReducer, initialValue, useStateInitializer)
 }
 ```
 

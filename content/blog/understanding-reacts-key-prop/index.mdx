@@ -19,16 +19,16 @@ bannerCredit: Photo by [Florian Berger](https://unsplash.com/photos/SzG0ncGBOeo)
 https://egghead.io/lessons/react-use-the-key-prop-when-rendering-a-list-with-react-3a0661b6
 
 import {
-  WorkingContact,
-  BrokenContact,
-  CounterParent,
-  Rendered,
+	WorkingContact,
+	BrokenContact,
+	CounterParent,
+	Rendered,
 } from './components'
 
 Play around with this form:
 
 <Rendered>
-  <BrokenContact />
+	<BrokenContact />
 </Rendered>
 
 Specifically, try changing the subject, then switch the topic and notice that
@@ -40,7 +40,7 @@ subject to a better default.
 Now try this one:
 
 <Rendered>
-  <WorkingContact />
+	<WorkingContact />
 </Rendered>
 
 That's working as expected now. Here's the implementation, and I'll highlight
@@ -48,32 +48,32 @@ the difference:
 
 ```tsx lines=21
 const defaultValuesByTopic = {
-  training: 'I would like some training',
-  consulting: 'I have consulting needs',
-  question: 'I have some questions',
+	training: 'I would like some training',
+	consulting: 'I have consulting needs',
+	question: 'I have some questions',
 }
 
 function Contact() {
-  const [topic, setTopic] = React.useState('training')
+	const [topic, setTopic] = React.useState('training')
 
-  return (
-    <form>
-      <label htmlFor="topic">Topic</label>
-      <select id="topic" value={topic} onChange={e => setTopic(e.target.value)}>
-        <option value="training">Training</option>
-        <option value="consulting">Consulting</option>
-        <option value="question">Question</option>
-      </select>
-      <label htmlFor="subject">Email Subject</label>
-      <input
-        id="subject"
-        key={topic}
-        defaultValue={defaultValuesByTopic[topic]}
-      />
-      <label htmlFor="body">Email body</label>
-      <textarea id="body" />
-    </form>
-  )
+	return (
+		<form>
+			<label htmlFor="topic">Topic</label>
+			<select id="topic" value={topic} onChange={e => setTopic(e.target.value)}>
+				<option value="training">Training</option>
+				<option value="consulting">Consulting</option>
+				<option value="question">Question</option>
+			</select>
+			<label htmlFor="subject">Email Subject</label>
+			<input
+				id="subject"
+				key={topic}
+				defaultValue={defaultValuesByTopic[topic]}
+			/>
+			<label htmlFor="body">Email body</label>
+			<textarea id="body" />
+		</form>
+	)
 }
 ```
 
@@ -99,9 +99,9 @@ demonstration, let's use something really simple:
 
 ```tsx
 function Counter() {
-  const [count, setCount] = React.useState(0)
-  const increment = () => setCount(c => c + 1)
-  return <button onClick={increment}>{count}</button>
+	const [count, setCount] = React.useState(0)
+	const increment = () => setCount(c => c + 1)
+	return <button onClick={increment}>{count}</button>
 }
 ```
 
@@ -114,10 +114,10 @@ You may know that React's `key` prop is something you need to put on elements
 when you map over an array (otherwise React will get mad at you).
 
 <callout-info class="aside">
-  Side note: If you'd like to know why this is necessary and what can happen if
-  you ignore it or simply put the `index` as the key, watch ["Use the key prop
-  when Rendering a List with
-  React"](https://egghead.io/lessons/react-use-the-key-prop-when-rendering-a-list-with-react)
+	Side note: If you'd like to know why this is necessary and what can happen if
+	you ignore it or simply put the `index` as the key, watch ["Use the key prop
+	when Rendering a List with
+	React"](https://egghead.io/lessons/react-use-the-key-prop-when-rendering-a-list-with-react)
 </callout-info>
 
 React's `key` prop gives you the ability to control component instances. Each
@@ -127,8 +127,8 @@ element types, it keeps those components/DOM nodes around, even if all the props
 changed.
 
 <callout-info class="aside">
-  For more on this, read [One simple trick to optimize React
-  re-renders](/blog/optimize-react-re-renders)
+	For more on this, read [One simple trick to optimize React
+	re-renders](/blog/optimize-react-re-renders)
 </callout-info>
 
 That asterisk on the word "all" above is what I want to talk about here. The
@@ -141,52 +141,52 @@ purposes. For components, this means that React will run cleanup on effects (or
 `constructor`) and effect callbacks (or `componentDidMount`).
 
 <callout-info class="aside">
-  NOTE: effect cleanup actually happens _after_ the new component has been
-  mounted, but before the next effect callback is run.
+	NOTE: effect cleanup actually happens _after_ the new component has been
+	mounted, but before the next effect callback is run.
 </callout-info>
 
 Here's a simple example of this working in a counter:
 
 ```tsx
 function Counter() {
-  console.log('Counter called')
+	console.log('Counter called')
 
-  const [count, setCount] = React.useState(() => {
-    console.log('Counter useState initializer')
-    return 0
-  })
-  const increment = () => setCount(c => c + 1)
+	const [count, setCount] = React.useState(() => {
+		console.log('Counter useState initializer')
+		return 0
+	})
+	const increment = () => setCount(c => c + 1)
 
-  React.useEffect(() => {
-    console.log('Counter useEffect callback')
-    return () => {
-      console.log('Counter useEffect cleanup')
-    }
-  }, [])
+	React.useEffect(() => {
+		console.log('Counter useEffect callback')
+		return () => {
+			console.log('Counter useEffect cleanup')
+		}
+	}, [])
 
-  console.log('Counter returning react elements')
-  return <button onClick={increment}>{count}</button>
+	console.log('Counter returning react elements')
+	return <button onClick={increment}>{count}</button>
 }
 
 function CounterParent() {
-  // using useReducer this way basically ensures that any time you call
-  // setCounterKey, the `counterKey` is set to a new value which will
-  // make the `key` different resulting in React unmounting the previous
-  // component and mounting a new one.
-  const [counterKey, setCounterKey] = React.useReducer(c => c + 1, 0)
-  return (
-    <div>
-      <button onClick={setCounterKey}>reset</button>
-      <Counter key={counterKey} />
-    </div>
-  )
+	// using useReducer this way basically ensures that any time you call
+	// setCounterKey, the `counterKey` is set to a new value which will
+	// make the `key` different resulting in React unmounting the previous
+	// component and mounting a new one.
+	const [counterKey, setCounterKey] = React.useReducer(c => c + 1, 0)
+	return (
+		<div>
+			<button onClick={setCounterKey}>reset</button>
+			<Counter key={counterKey} />
+		</div>
+	)
 }
 ```
 
 And here's that rendered out:
 
 <Rendered>
-  <CounterParent />
+	<CounterParent />
 </Rendered>
 
 Here's an annotated example of what would be logged if I click the counter

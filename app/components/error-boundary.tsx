@@ -1,43 +1,43 @@
 import {
-  type ErrorResponse,
-  isRouteErrorResponse,
-  useParams,
+	type ErrorResponse,
+	isRouteErrorResponse,
+	useParams,
 } from '@remix-run/react'
-import {getErrorMessage, useCapturedRouteError} from '~/utils/misc.tsx'
+import { getErrorMessage, useCapturedRouteError } from '~/utils/misc.tsx'
 
 type StatusHandler = (info: {
-  error: ErrorResponse
-  params: Record<string, string | undefined>
+	error: ErrorResponse
+	params: Record<string, string | undefined>
 }) => JSX.Element | null
 
 export function GeneralErrorBoundary({
-  defaultStatusHandler = ({error}) => (
-    <p>
-      {error.status} {error.data}
-    </p>
-  ),
-  statusHandlers,
-  unexpectedErrorHandler = error => <p>{getErrorMessage(error)}</p>,
+	defaultStatusHandler = ({ error }) => (
+		<p>
+			{error.status} {error.data}
+		</p>
+	),
+	statusHandlers,
+	unexpectedErrorHandler = error => <p>{getErrorMessage(error)}</p>,
 }: {
-  defaultStatusHandler?: StatusHandler
-  statusHandlers?: Record<number, StatusHandler>
-  unexpectedErrorHandler?: (error: unknown) => JSX.Element | null
+	defaultStatusHandler?: StatusHandler
+	statusHandlers?: Record<number, StatusHandler>
+	unexpectedErrorHandler?: (error: unknown) => JSX.Element | null
 }) {
-  const error = useCapturedRouteError()
-  const params = useParams()
+	const error = useCapturedRouteError()
+	const params = useParams()
 
-  if (typeof document !== 'undefined') {
-    console.error(error)
-  }
+	if (typeof document !== 'undefined') {
+		console.error(error)
+	}
 
-  return (
-    <div className="text-h2 container mx-auto flex items-center justify-center p-20">
-      {isRouteErrorResponse(error)
-        ? (statusHandlers?.[error.status] ?? defaultStatusHandler)({
-            error,
-            params,
-          })
-        : unexpectedErrorHandler(error)}
-    </div>
-  )
+	return (
+		<div className="text-h2 container mx-auto flex items-center justify-center p-20">
+			{isRouteErrorResponse(error)
+				? (statusHandlers?.[error.status] ?? defaultStatusHandler)({
+						error,
+						params,
+					})
+				: unexpectedErrorHandler(error)}
+		</div>
+	)
 }

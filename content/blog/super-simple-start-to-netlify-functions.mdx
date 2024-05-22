@@ -93,11 +93,11 @@ Now that we've told Netlify where to find our functions files, let's make one:
 ```js
 // functions/hello.js
 exports.handler = async event => {
-  const subject = event.queryStringParameters.name || 'World'
-  return {
-    statusCode: 200,
-    body: `Hello ${subject}!`,
-  }
+	const subject = event.queryStringParameters.name || 'World'
+	return {
+		statusCode: 200,
+		body: `Hello ${subject}!`,
+	}
 }
 ```
 

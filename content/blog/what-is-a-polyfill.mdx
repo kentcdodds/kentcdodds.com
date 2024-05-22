@@ -38,7 +38,7 @@ which allows me to do this:
 ```js
 const addOne = num => num + 1
 if (addOne(2) > 2) {
-  console.log('Math. Wow!')
+	console.log('Math. Wow!')
 }
 ```
 
@@ -53,7 +53,7 @@ Some other of these new features rely on new APIs, like
 ```js
 const contacts = ['Brooke', 'Becca', 'Nathan', 'Adam', 'Michael']
 if (contacts.includes('Rachel')) {
-  console.log('You have a Rachel!')
+	console.log('You have a Rachel!')
 }
 ```
 
@@ -75,9 +75,9 @@ for a real polyfill):
 
 ```js
 if (!Array.prototype.includes) {
-  Array.prototype.includes = function includes(searchElement) {
-    return this.indexOf(searchElement) !== -1
-  }
+	Array.prototype.includes = function includes(searchElement) {
+		return this.indexOf(searchElement) !== -1
+	}
 }
 ```
 

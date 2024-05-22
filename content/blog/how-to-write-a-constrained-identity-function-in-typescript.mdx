@@ -24,36 +24,36 @@ I typed an example React component. Here's where we left off:
 
 ```tsx
 const operations = {
-  '+': (left: number, right: number): number => left + right,
-  '-': (left: number, right: number): number => left - right,
-  '*': (left: number, right: number): number => left * right,
-  '/': (left: number, right: number): number => left / right,
+	'+': (left: number, right: number): number => left + right,
+	'-': (left: number, right: number): number => left - right,
+	'*': (left: number, right: number): number => left * right,
+	'/': (left: number, right: number): number => left / right,
 }
 
 type CalculatorProps = {
-  left: number
-  operator: keyof typeof operations
-  right: number
+	left: number
+	operator: keyof typeof operations
+	right: number
 }
 
-function Calculator({left, operator, right}: CalculatorProps) {
-  const result = operations[operator](left, right)
-  return (
-    <div>
-      <code>
-        {left} {operator} {right} = <output>{result}</output>
-      </code>
-    </div>
-  )
+function Calculator({ left, operator, right }: CalculatorProps) {
+	const result = operations[operator](left, right)
+	return (
+		<div>
+			<code>
+				{left} {operator} {right} = <output>{result}</output>
+			</code>
+		</div>
+	)
 }
 
 const examples = (
-  <>
-    <Calculator left={1} operator="+" right={2} />
-    <Calculator left={1} operator="-" right={2} />
-    <Calculator left={1} operator="*" right={2} />
-    <Calculator left={1} operator="/" right={2} />
-  </>
+	<>
+		<Calculator left={1} operator="+" right={2} />
+		<Calculator left={1} operator="-" right={2} />
+		<Calculator left={1} operator="*" right={2} />
+		<Calculator left={1} operator="/" right={2} />
+	</>
 )
 ```
 
@@ -73,16 +73,16 @@ Let's try that:
 ```tsx
 type OperationFn = (left: number, right: number) => number
 const operations: Record<string, OperationFn> = {
-  '+': (left, right) => left + right,
-  '-': (left, right) => left - right,
-  '*': (left, right) => left * right,
-  '/': (left, right) => left / right,
+	'+': (left, right) => left + right,
+	'-': (left, right) => left - right,
+	'*': (left, right) => left * right,
+	'/': (left, right) => left / right,
 }
 
 type CalculatorProps = {
-  left: number
-  operator: keyof typeof operations
-  right: number
+	left: number
+	operator: keyof typeof operations
+	right: number
 }
 ```
 
@@ -97,16 +97,16 @@ Here's what we could do to fix this:
 type OperationFn = (left: number, right: number) => number
 type Operator = '+' | '-' | '/' | '*'
 const operations: Record<Operator, OperationFn> = {
-  '+': (left, right) => left + right,
-  '-': (left, right) => left - right,
-  '*': (left, right) => left * right,
-  '/': (left, right) => left / right,
+	'+': (left, right) => left + right,
+	'-': (left, right) => left - right,
+	'*': (left, right) => left * right,
+	'/': (left, right) => left / right,
 }
 
 type CalculatorProps = {
-  left: number
-  operator: keyof typeof operations
-  right: number
+	left: number
+	operator: keyof typeof operations
+	right: number
 }
 ```
 
@@ -128,10 +128,10 @@ First, let's keep in mind, we have 2 goals:
    keys
 
 <callout-success>
-  TypeScript version 4.9.0 introduces `satisfies` which ... eh... satisfies our
-  use cases here. Please feel free to [skip to the
-  end](#typescript-490---satisfies) if you're using TypeScript v4.9.0 or
-  greater.
+	TypeScript version 4.9.0 introduces `satisfies` which ... eh... satisfies our
+	use cases here. Please feel free to [skip to the
+	end](#typescript-490---satisfies) if you're using TypeScript v4.9.0 or
+	greater.
 </callout-success>
 
 With TypeScript, it's a challenge to have both of these. By default, we get the
@@ -145,12 +145,12 @@ So here's where the constrained identity function comes in. By the way,
 narrower version of an input than it's passed.Here's a simple example:
 
 ```tsx
-type NamedObject = {name: string}
+type NamedObject = { name: string }
 function getUserName<User extends NamedObject>(user: User) {
-  return user.name
+	return user.name
 }
 
-const obj = {name: 'Hannah', age: 3}
+const obj = { name: 'Hannah', age: 3 }
 getUserName(obj)
 ```
 
@@ -167,11 +167,11 @@ const identity = <Type extends unknown>(item: Type) => item
 
 type ModifyConfigFn = (config: ConfigType) => ConfigType
 function buildProject(modifyConfig: ModifyConfigFn = identity) {
-  const config: ConfigType = {
-    /* some config */
-  }
-  const modifiedConfig = modifyConfig(config)
-  // more stuff...
+	const config: ConfigType = {
+		/* some config */
+	}
+	const modifiedConfig = modifyConfig(config)
+	// more stuff...
 }
 ```
 
@@ -187,10 +187,10 @@ we can apply it more usefully to our more complicated example:
 ```tsx
 type Value = number
 const createNumbers = <ObjectType extends Record<string, Value>>(
-  obj: ObjectType,
+	obj: ObjectType,
 ) => obj
 
-const numbers = createNumbers({one: 1, two: 2, three: 3, four: 4})
+const numbers = createNumbers({ one: 1, two: 2, three: 3, four: 4 })
 
 // @ts-expect-error we don't have 'five' yet
 numbers['five']
@@ -203,7 +203,7 @@ constrain the type?
 Let me explain it this way. If we start with:
 
 ```tsx
-const numbers = {one: 1, two: 2, three: 3, four: 4}
+const numbers = { one: 1, two: 2, three: 3, four: 4 }
 // typeof numbers:
 // {
 //   one: number;
@@ -216,7 +216,7 @@ const numbers = {one: 1, two: 2, three: 3, four: 4}
 But in the future, someone could come to this code and change it like this:
 
 ```tsx
-const numbers = {one: 1, two: 2, three: 3, four: 4, five: '5'}
+const numbers = { one: 1, two: 2, three: 3, four: 4, five: '5' }
 // typeof numbers:
 // {
 //   one: number;
@@ -235,11 +235,11 @@ So, let's enforce our value types with a type annotation:
 ```tsx
 // @ts-expect-error HA! We gotcha! No strings in this object!
 const numbers: Record<string, number> = {
-  one: 1,
-  two: 2,
-  three: 3,
-  four: 4,
-  five: '5',
+	one: 1,
+	two: 2,
+	three: 3,
+	four: 4,
+	five: '5',
 }
 ```
 
@@ -264,20 +264,20 @@ Alrighty, so let's apply a CIF to our original situation:
 ```tsx
 type OperationFn = (left: number, right: number) => number
 const createOperations = <OperationsType extends Record<string, OperationFn>>(
-  operations: OperationsType,
+	operations: OperationsType,
 ) => operations
 
 const operations = createOperations({
-  '+': (left, right) => left + right,
-  '-': (left, right) => left - right,
-  '*': (left, right) => left * right,
-  '/': (left, right) => left / right,
+	'+': (left, right) => left + right,
+	'-': (left, right) => left - right,
+	'*': (left, right) => left * right,
+	'/': (left, right) => left / right,
 })
 
 type CalculatorProps = {
-  left: number
-  operator: keyof typeof operations
-  right: number
+	left: number
+	operator: keyof typeof operations
+	right: number
 }
 
 // @ts-expect-error we haven't added support
@@ -296,12 +296,12 @@ You may have noticed that we had two CIFs in the previous section:
 ```tsx
 type Value = number
 const createNumbers = <ObjectType extends Record<string, Value>>(
-  obj: ObjectType,
+	obj: ObjectType,
 ) => obj
 
 type OperationFn = (left: number, right: number) => number
 const createOperations = <OperationsType extends Record<string, OperationFn>>(
-  operations: OperationsType,
+	operations: OperationsType,
 ) => operations
 ```
 
@@ -312,7 +312,7 @@ to like it... Here's what I tried first:
 const constrain = <Given, Inferred extends Given>(item: Inferred) => item
 
 // @ts-expect-error Expected 2 type arguments, but got 1.(2558)
-const numbers = constrain<Record<string, number>>({one: 1 /* etc. */})
+const numbers = constrain<Record<string, number>>({ one: 1 /* etc. */ })
 ```
 
 Sad day. Unfortunately this is just not possible with TypeScript today. But
@@ -320,18 +320,18 @@ here's a workaround:
 
 ```tsx
 const constrain =
-  <Given extends unknown>() =>
-  <Inferred extends Given>(item: Inferred) =>
-    item
+	<Given extends unknown>() =>
+	<Inferred extends Given>(item: Inferred) =>
+		item
 
-const numbers = constrain<Record<string, number>>()({one: 1 /* etc. */})
+const numbers = constrain<Record<string, number>>()({ one: 1 /* etc. */ })
 ```
 
 ... yeah, I told you you wouldn't like it. It's marginally better like this:
 
 ```tsx
 const createNumbers = constrain<Record<string, number>>()
-const numbers = createNumbers({one: 1 /* etc. */})
+const numbers = createNumbers({ one: 1 /* etc. */ })
 ```
 
 But like, huh. Bummer.
@@ -349,10 +349,10 @@ pretty easily:
 type OperationFn = (left: number, right: number) => number
 
 const operations = {
-  '+': (left, right) => left + right,
-  '-': (left, right) => left - right,
-  '*': (left, right) => left * right,
-  '/': (left, right) => left / right,
+	'+': (left, right) => left + right,
+	'-': (left, right) => left - right,
+	'*': (left, right) => left * right,
+	'/': (left, right) => left / right,
 } satisfies Record<string, OperationFn>
 ```
 
@@ -367,39 +367,39 @@ our CIF:
 ```tsx lines=2-4
 type OperationFn = (left: number, right: number) => number
 const createOperations = <OperationsType extends Record<string, OperationFn>>(
-  opts: OperationsType,
+	opts: OperationsType,
 ) => opts
 
 const operations = createOperations({
-  '+': (left, right) => left + right,
-  '-': (left, right) => left - right,
-  '*': (left, right) => left * right,
-  '/': (left, right) => left / right,
+	'+': (left, right) => left + right,
+	'-': (left, right) => left - right,
+	'*': (left, right) => left * right,
+	'/': (left, right) => left / right,
 })
 
 type CalculatorProps = {
-  left: number
-  operator: keyof typeof operations
-  right: number
+	left: number
+	operator: keyof typeof operations
+	right: number
 }
-function Calculator({left, operator, right}: CalculatorProps) {
-  const result = operations[operator](left, right)
-  return (
-    <div>
-      <code>
-        {left} {operator} {right} = <output>{result}</output>
-      </code>
-    </div>
-  )
+function Calculator({ left, operator, right }: CalculatorProps) {
+	const result = operations[operator](left, right)
+	return (
+		<div>
+			<code>
+				{left} {operator} {right} = <output>{result}</output>
+			</code>
+		</div>
+	)
 }
 
 const examples = (
-  <>
-    <Calculator left={1} operator="+" right={2} />
-    <Calculator left={1} operator="-" right={2} />
-    <Calculator left={1} operator="*" right={2} />
-    <Calculator left={1} operator="/" right={2} />
-  </>
+	<>
+		<Calculator left={1} operator="+" right={2} />
+		<Calculator left={1} operator="-" right={2} />
+		<Calculator left={1} operator="*" right={2} />
+		<Calculator left={1} operator="/" right={2} />
+	</>
 )
 ```
 

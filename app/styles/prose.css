@@ -1,42 +1,42 @@
 /* code syntax highlighting */
 /* dark is default: */
 pre {
-  --base00: #011627; /* editor background */
-  --base01: #2d2d2d; /* unused (currently) */
-  --base02: #424242; /* unused (currently) */
-  --base03: #637777; /* code comments */
-  --base04: #555555; /* unused (currently) */
-  --base05: #d6deeb; /* fallback font color */
-  --base06: #c8c8c8; /* unused (currently) */
-  --base07: #fafafa; /* unused (currently) */
-  --base08: #7fdbca; /* variable references */
-  --base09: #f78c6c; /* numbers */
-  --base0A: #c792ea; /* keywords */
-  --base0B: #ecc48d; /* strings */
-  --base0C: #f78c6c; /* escape characters in strings */
-  --base0D: #82aaff; /* function calls */
-  --base0E: #c792ea; /* operators */
-  --base0F: #d3423e; /* "Embedded" (whatever that means) */
+	--base00: #011627; /* editor background */
+	--base01: #2d2d2d; /* unused (currently) */
+	--base02: #424242; /* unused (currently) */
+	--base03: #637777; /* code comments */
+	--base04: #555555; /* unused (currently) */
+	--base05: #d6deeb; /* fallback font color */
+	--base06: #c8c8c8; /* unused (currently) */
+	--base07: #fafafa; /* unused (currently) */
+	--base08: #7fdbca; /* variable references */
+	--base09: #f78c6c; /* numbers */
+	--base0A: #c792ea; /* keywords */
+	--base0B: #ecc48d; /* strings */
+	--base0C: #f78c6c; /* escape characters in strings */
+	--base0D: #82aaff; /* function calls */
+	--base0E: #c792ea; /* operators */
+	--base0F: #d3423e; /* "Embedded" (whatever that means) */
 }
 
 .light pre {
-  /* TODO: delete the base** variables when the cache has finished updating after April 15th 2024 */
-  --base00: #f3f3f3; /* editor background */
-  --base01: #e0e0e0; /* unused (currently) */
-  --base02: #d6d6d6; /* unused (currently) */
-  --base03: #989fb1; /* code comments */
-  --base04: #969896; /* unused (currently) */
-  --base05: #2e3039; /* fallback font color */
-  --base06: #282a2e; /* unused (currently) */
-  --base07: #1d1f21; /* unused (currently) */
-  --base08: #0c969b; /* variable references */
-  --base09: #aa0982; /* numbers */
-  --base0A: #994cc3; /* keywords */
-  --base0B: #c96765; /* strings */
-  --base0C: #aa0982; /* escape characters in strings */
-  --base0D: #4876d6; /* function calls */
-  --base0E: #994cc3; /* operators */
-  --base0F: #d3423e; /* "Embedded" (whatever that means) */
+	/* TODO: delete the base** variables when the cache has finished updating after April 15th 2024 */
+	--base00: #f3f3f3; /* editor background */
+	--base01: #e0e0e0; /* unused (currently) */
+	--base02: #d6d6d6; /* unused (currently) */
+	--base03: #989fb1; /* code comments */
+	--base04: #969896; /* unused (currently) */
+	--base05: #2e3039; /* fallback font color */
+	--base06: #282a2e; /* unused (currently) */
+	--base07: #1d1f21; /* unused (currently) */
+	--base08: #0c969b; /* variable references */
+	--base09: #aa0982; /* numbers */
+	--base0A: #994cc3; /* keywords */
+	--base0B: #c96765; /* strings */
+	--base0C: #aa0982; /* escape characters in strings */
+	--base0D: #4876d6; /* function calls */
+	--base0E: #994cc3; /* operators */
+	--base0F: #d3423e; /* "Embedded" (whatever that means) */
 }
 
 /*
@@ -44,125 +44,125 @@ pre {
 * list items to display like list items. (Like for the list of translations)
 */
 .prose ul.list-none > li {
-  padding-left: unset;
+	padding-left: unset;
 }
 .prose ul.list-none > li::before {
-  content: unset;
+	content: unset;
 }
 
 .dark .prose ol > li::before,
 .dark .prose ul > li::before {
-  color: var(--color-gray-300);
+	color: var(--color-gray-300);
 }
 
 /* I think this is a bug in the tailwind/typography thing */
 .dark .dark\:prose-dark thead {
-  color: var(--color-slate-500);
+	color: var(--color-slate-500);
 }
 
 .prose pre[data-line-numbers='true']:not([data-lang='sh']) {
-  padding-left: 0rem;
-  padding-right: 0rem;
+	padding-left: 0rem;
+	padding-right: 0rem;
 }
 
 .prose
-  pre[data-line-numbers='true']:not([data-lang='sh'])
-  [data-line-number]:before {
-  padding-left: 0rem;
-  content: attr(data-line-number);
-  text-align: right;
-  display: inline-block;
-  width: 3.5rem;
-  color: var(--base03);
-  padding-right: 1.5rem;
-  position: sticky;
-  left: 0;
-  background-color: var(--base00);
+	pre[data-line-numbers='true']:not([data-lang='sh'])
+	[data-line-number]:before {
+	padding-left: 0rem;
+	content: attr(data-line-number);
+	text-align: right;
+	display: inline-block;
+	width: 3.5rem;
+	color: var(--base03);
+	padding-right: 1.5rem;
+	position: sticky;
+	left: 0;
+	background-color: var(--base00);
 }
 
 .prose
-  pre[data-line-numbers='true']:not([data-lang='sh'])
-  [data-line-number]:before
-  .codeblock-line[data-highlight='true']:before {
-  background: var(--base0E);
+	pre[data-line-numbers='true']:not([data-lang='sh'])
+	[data-line-number]:before
+	.codeblock-line[data-highlight='true']:before {
+	background: var(--base0E);
 }
 
 .prose pre[data-add]:not([data-lang='sh']) [data-diff-line-number]:before,
 .prose pre[data-remove]:not([data-lang='sh']) [data-diff-line-number]:before {
-  content: attr(data-diff-line-number);
+	content: attr(data-diff-line-number);
 }
 
 .prose pre > code {
-  display: inline-block;
-  min-width: 100%;
+	display: inline-block;
+	min-width: 100%;
 }
 
 .codeblock-line {
-  display: block;
-  position: relative;
-  padding-right: 1rem;
+	display: block;
+	position: relative;
+	padding-right: 1rem;
 }
 
 .codeblock-line[data-highlight='true']:after,
 .prose pre[data-remove] .codeblock-line[data-remove='true']:after,
 .prose pre[data-add] .codeblock-line[data-add='true']:after {
-  content: ' ';
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  opacity: 0.15;
-  pointer-events: none;
+	content: ' ';
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	opacity: 0.15;
+	pointer-events: none;
 }
 
 .codeblock-line[data-highlight='true']:before {
-  border-left: 6px solid var(--base0E);
+	border-left: 6px solid var(--base0E);
 }
 
 .codeblock-line[data-highlight='true']:after {
-  background: var(--base0E);
+	background: var(--base0E);
 }
 
 .prose pre[data-remove] .codeblock-line[data-remove='true']:before {
-  content: '-';
+	content: '-';
 }
 
 .prose pre[data-remove] .codeblock-line[data-remove='true']:after {
-  background: var(--color-red-500);
+	background: var(--color-red-500);
 }
 
 .prose pre[data-add] .codeblock-line[data-add='true']:before {
-  content: '+';
+	content: '+';
 }
 
 .prose pre[data-add] .codeblock-line[data-add='true']:after {
-  background: var(--color-green-500);
+	background: var(--color-green-500);
 }
 
 .prose pre {
-  position: relative;
+	position: relative;
 }
 
 .prose pre[data-filename]:before {
-  content: attr(data-filename);
-  position: absolute;
-  left: 8px;
-  top: 4px;
-  font-size: 0.7rem;
-  opacity: 0.7;
+	content: attr(data-filename);
+	position: absolute;
+	left: 8px;
+	top: 4px;
+	font-size: 0.7rem;
+	opacity: 0.7;
 }
 
 .prose pre[data-lang]:after {
-  content: attr(data-lang);
-  position: sticky;
-  right: 0;
-  font-size: 0.7rem;
-  opacity: 0.7;
-  display: inline-block;
-  transform: translate(-16px, 24px);
-  text-align: right;
-  width: 200px;
-  margin-left: -200px;
+	content: attr(data-lang);
+	position: sticky;
+	right: 0;
+	font-size: 0.7rem;
+	opacity: 0.7;
+	display: inline-block;
+	transform: translate(-16px, 24px);
+	text-align: right;
+	width: 200px;
+	margin-left: -200px;
 }
 
 .prose callout-muted a,
@@ -170,7 +170,7 @@ pre {
 .prose callout-warning a,
 .prose callout-danger a,
 .prose callout-success a {
-  text-decoration: underline;
+	text-decoration: underline;
 }
 
 .prose callout-muted p,
@@ -178,7 +178,7 @@ pre {
 .prose callout-warning p,
 .prose callout-danger p,
 .prose callout-success p {
-  margin-bottom: 0;
+	margin-bottom: 0;
 }
 
 .prose callout-muted,
@@ -186,8 +186,8 @@ pre {
 .prose callout-warning,
 .prose callout-danger,
 .prose callout-success {
-  margin-top: 0;
-  margin-bottom: 2rem;
+	margin-top: 0;
+	margin-bottom: 2rem;
 }
 
 .prose callout-muted,
@@ -195,12 +195,12 @@ pre {
 .prose callout-warning,
 .prose callout-danger,
 .prose callout-success {
-  display: block;
-  border-left: solid 4px;
-  padding: 0.5rem 1rem;
-  position: relative;
-  border-top-right-radius: 0.5rem;
-  border-bottom-right-radius: 0.5rem;
+	display: block;
+	border-left: solid 4px;
+	padding: 0.5rem 1rem;
+	position: relative;
+	border-top-right-radius: 0.5rem;
+	border-bottom-right-radius: 0.5rem;
 }
 
 .prose callout-muted,
@@ -213,7 +213,7 @@ pre {
 .prose callout-warning *,
 .prose callout-danger *,
 .prose callout-success * {
-  font-size: 1.2rem;
+	font-size: 1.2rem;
 }
 
 .prose callout-muted.aside,
@@ -226,7 +226,7 @@ pre {
 .prose callout-warning.aside *,
 .prose callout-danger.aside *,
 .prose callout-success.aside * {
-  font-size: 0.875rem;
+	font-size: 0.875rem;
 }
 
 .prose callout-muted.important,
@@ -239,8 +239,8 @@ pre {
 .prose callout-warning.important *,
 .prose callout-danger.important *,
 .prose callout-success.important * {
-  font-size: 1.4rem;
-  font-weight: bold;
+	font-size: 1.4rem;
+	font-weight: bold;
 }
 
 .prose callout-muted:before,
@@ -248,411 +248,411 @@ pre {
 .prose callout-warning:before,
 .prose callout-danger:before,
 .prose callout-success:before {
-  border-top-right-radius: 0.5rem;
-  border-bottom-right-radius: 0.5rem;
-  content: '';
-  position: absolute;
-  inset: 0;
-  opacity: 0.1;
-  pointer-events: none;
+	border-top-right-radius: 0.5rem;
+	border-bottom-right-radius: 0.5rem;
+	content: '';
+	position: absolute;
+	inset: 0;
+	opacity: 0.1;
+	pointer-events: none;
 }
 
 /* the warning yellow is really inaccessible in light mode, so we have a special case for light mode */
 .light .prose callout-warning,
 .light .prose callout-warning ol > li:before {
-  color: #676000;
+	color: #676000;
 }
 .light .prose callout-warning:before {
-  background: #ffd800;
+	background: #ffd800;
 }
 .prose callout-warning,
 .prose callout-warning ol > li:before {
-  color: #ffd644;
+	color: #ffd644;
 }
 .prose callout-warning:before {
-  background: #ffd644;
+	background: #ffd644;
 }
 
 /* the muted gray is really inaccessible in light mode, so we have a special case for light mode */
 .light .prose callout-muted,
 .light .prose callout-muted ol > li:before {
-  color: #4c4b5e;
+	color: #4c4b5e;
 }
 .light .prose callout-muted:before {
-  background: #3c3e4d;
+	background: #3c3e4d;
 }
 
 .prose callout-muted,
 .prose callout-muted ol > li:before {
-  color: #b9b9c3;
+	color: #b9b9c3;
 }
 .prose callout-muted:before {
-  background: #3c3e4d;
+	background: #3c3e4d;
 }
 
 .prose callout-info,
 .prose callout-info ol > li:before {
-  color: #4b96ff;
+	color: #4b96ff;
 }
 .prose callout-info:before {
-  background: #4b96ff;
+	background: #4b96ff;
 }
 
 .prose callout-danger,
 .prose callout-danger ol > li:before {
-  color: #ff4545;
+	color: #ff4545;
 }
 .prose callout-danger:before {
-  background: #ff4545;
+	background: #ff4545;
 }
 
 .prose callout-success,
 .prose callout-success ol > li:before {
-  color: #30c85e;
+	color: #30c85e;
 }
 .prose callout-success:before {
-  background: #30c85e;
+	background: #30c85e;
 }
 
 /* The twitter embed HTML is custom-generated in our utils/twitter.server.ts */
 .prose .tweet-embed {
-  display: flex;
-  flex-direction: column;
-  max-width: 550px;
-  width: 100%;
-  margin: 0 auto 2.5rem;
-  padding: 2rem;
-  border-radius: 0.5rem;
-  background: var(--bg-secondary);
+	display: flex;
+	flex-direction: column;
+	max-width: 550px;
+	width: 100%;
+	margin: 0 auto 2.5rem;
+	padding: 2rem;
+	border-radius: 0.5rem;
+	background: var(--bg-secondary);
 }
 
 .dark .prose .tweet-embed {
-  border: 1px solid var(--border-secondary);
+	border: 1px solid var(--border-secondary);
 }
 
 .prose .tweet-embed.deleted .tweet-time:after {
-  content: '(deleted)';
-  margin-left: 6px;
-  font-size: 0.8rem;
+	content: '(deleted)';
+	margin-left: 6px;
+	font-size: 0.8rem;
 }
 
 .prose .tweet-embed blockquote {
-  font-size: 1.125rem;
-  margin: 1rem 0;
-  white-space: break-spaces;
-  padding: 0;
-  border: 0;
-  font-style: normal;
-  background-color: unset;
+	font-size: 1.125rem;
+	margin: 1rem 0;
+	white-space: break-spaces;
+	padding: 0;
+	border: 0;
+	font-style: normal;
+	background-color: unset;
 }
 
 .prose .tweet-embed blockquote a {
-  font-weight: normal;
+	font-weight: normal;
 }
 
 .prose .tweet-embed .tweet-author {
-  font-size: 1rem;
-  display: flex;
-  text-decoration: none;
-  align-items: center;
+	font-size: 1rem;
+	display: flex;
+	text-decoration: none;
+	align-items: center;
 }
 
 .prose .tweet-embed .tweet-author img {
-  float: left;
-  width: 48px;
-  height: 48px;
-  border-radius: 100%;
-  margin-right: 1rem;
-  margin-bottom: 0px;
+	float: left;
+	width: 48px;
+	height: 48px;
+	border-radius: 100%;
+	margin-right: 1rem;
+	margin-bottom: 0px;
 }
 
 .prose .tweet-embed .tweet-author div {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
+	display: flex;
+	flex-direction: column;
+	line-height: 1.2;
 }
 
 .prose .tweet-embed .tweet-author:hover .tweet-author-name,
 .prose .tweet-embed .tweet-author:focus .tweet-author-name {
-  text-decoration: underline;
+	text-decoration: underline;
 }
 
 .prose .tweet-embed .tweet-author .tweet-author-handle {
-  font-weight: normal;
-  color: var(--text-secondary);
+	font-weight: normal;
+	color: var(--text-secondary);
 }
 
 .prose .tweet-embed .tweet-media-container {
-  width: 100%;
-  overflow: hidden;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border-secondary);
-  margin-bottom: 1rem;
+	width: 100%;
+	overflow: hidden;
+	border-radius: 0.75rem;
+	border: 1px solid var(--border-secondary);
+	margin-bottom: 1rem;
 }
 .prose .tweet-embed .tweet-media-grid,
 .prose .tweet-embed .tweet-media-container {
-  max-height: 366px;
+	max-height: 366px;
 }
 .prose .tweet-embed .tweet-media-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-auto-rows: 1fr;
-  grid-gap: 0.25rem;
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-auto-rows: 1fr;
+	grid-gap: 0.25rem;
 }
 
 .prose .tweet-embed .tweet-media-grid[data-count='2'],
 .prose .tweet-embed .tweet-media-grid[data-count='3'],
 .prose .tweet-embed .tweet-media-grid[data-count='4'] {
-  grid-template-columns: repeat(2, 1fr);
+	grid-template-columns: repeat(2, 1fr);
 }
 
 .prose .tweet-embed .tweet-media-grid[data-count='3'] img:first-child {
-  grid-column: span 2 / span 2;
+	grid-column: span 2 / span 2;
 }
 
 .prose .tweet-embed .tweet-media-container img {
-  border-radius: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  overflow: hidden;
-  max-height: 366px;
+	border-radius: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	overflow: hidden;
+	max-height: 366px;
 }
 
 .prose .tweet-embed .tweet-media-container .tweet-media-with-play-button {
-  position: relative;
+	position: relative;
 }
 .prose
-  .tweet-embed
-  .tweet-media-container
-  .tweet-media-with-play-button
-  .tweet-media-play-button {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  opacity: 0.6;
-  transition: opacity 0.2s;
+	.tweet-embed
+	.tweet-media-container
+	.tweet-media-with-play-button
+	.tweet-media-play-button {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	opacity: 0.6;
+	transition: opacity 0.2s;
 }
 
 .prose
-  .tweet-embed
-  .tweet-media-container:hover
-  .tweet-media-with-play-button
-  .tweet-media-play-button,
+	.tweet-embed
+	.tweet-media-container:hover
+	.tweet-media-with-play-button
+	.tweet-media-play-button,
 .prose
-  .tweet-embed
-  .tweet-media-container:focus
-  .tweet-media-with-play-button
-  .tweet-media-play-button {
-  opacity: 1;
+	.tweet-embed
+	.tweet-media-container:focus
+	.tweet-media-with-play-button
+	.tweet-media-play-button {
+	opacity: 1;
 }
 
 .prose .tweet-embed .tweet-quoted {
-  margin-bottom: 1rem;
+	margin-bottom: 1rem;
 }
 
 .prose .tweet-embed .tweet-quoted .tweet-media-container {
-  max-height: 160px;
+	max-height: 160px;
 }
 .prose .tweet-embed .tweet-quoted .tweet-media-grid {
-  margin-top: -40px;
-  max-height: unset;
+	margin-top: -40px;
+	max-height: unset;
 }
 
 .prose .tweet-embed .tweet-quoted .tweet-embed {
-  margin: 0;
-  padding: 1rem 1rem 0 1rem;
+	margin: 0;
+	padding: 1rem 1rem 0 1rem;
 }
 
 .prose .tweet-embed .tweet-quoted .tweet-embed .tweet-stats,
 .prose .tweet-embed .tweet-quoted .tweet-embed .tweet-time {
-  display: none;
+	display: none;
 }
 
 .prose .tweet-embed .tweet-ref-metadata {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  border: 1px solid var(--border-secondary);
-  margin-bottom: 1rem;
-  border-radius: 0.75rem;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	border: 1px solid var(--border-secondary);
+	margin-bottom: 1rem;
+	border-radius: 0.75rem;
 }
 
 .prose .tweet-embed .tweet-ref-metadata .tweet-ref-metadata-title {
-  padding: 0.75rem 0.75rem 0 0.75rem;
-  font-size: 0.85rem;
+	padding: 0.75rem 0.75rem 0 0.75rem;
+	font-size: 0.85rem;
 }
 .prose .tweet-embed .tweet-ref-metadata .tweet-ref-metadata-description {
-  padding: 0 12px 4px 12px;
-  font-size: 0.85rem;
-  font-weight: normal;
-  color: var(--text-secondary);
+	padding: 0 12px 4px 12px;
+	font-size: 0.85rem;
+	font-weight: normal;
+	color: var(--text-secondary);
 }
 
 .prose .tweet-embed .tweet-ref-metadata .tweet-ref-metadata-image {
-  border-radius: 0.75rem 0.75rem 0 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  overflow: hidden;
+	border-radius: 0.75rem 0.75rem 0 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	overflow: hidden;
 }
 
 .prose .tweet-embed .tweet-ref-metadata .tweet-ref-metadata-domain {
-  padding: 0 12px 4px 12px;
-  font-size: 0.8rem;
-  display: inline-flex;
-  align-items: center;
+	padding: 0 12px 4px 12px;
+	font-size: 0.8rem;
+	display: inline-flex;
+	align-items: center;
 }
 
 .prose .tweet-embed .tweet-ref-metadata .tweet-ref-metadata-domain svg {
-  margin-right: 12px;
+	margin-right: 12px;
 }
 
 .prose .tweet-embed .tweet-ref-metadata:hover,
 .prose .tweet-embed .tweet-ref-metadata:focus {
-  text-decoration: none;
-  background-color: var(--bg-alt);
+	text-decoration: none;
+	background-color: var(--bg-alt);
 }
 
 .dark .prose .tweet-embed .tweet-ref-metadata {
-  border: 1px solid var(--border-secondary);
+	border: 1px solid var(--border-secondary);
 }
 
 .prose .tweet-embed .tweet-ref-metadata img {
-  max-height: 300px;
+	max-height: 300px;
 }
 
 .prose .tweet-embed .tweet-time {
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border-secondary);
+	padding-bottom: 1rem;
+	border-bottom: 1px solid var(--border-secondary);
 }
 
 .prose .tweet-embed .tweet-time a {
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  font-weight: normal;
-  text-decoration: none;
+	color: var(--text-secondary);
+	font-size: 0.85rem;
+	font-weight: normal;
+	text-decoration: none;
 }
 
 .prose .tweet-embed .tweet-time a:hover,
 .prose .tweet-embed .tweet-time a:focus {
-  text-decoration: underline;
-  color: var(--text-primary);
+	text-decoration: underline;
+	color: var(--text-primary);
 }
 
 .prose .tweet-embed .tweet-stats {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 1rem;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding-top: 1rem;
 }
 
 .prose .tweet-embed .tweet-stats svg {
-  height: 18px;
-  width: 18px;
-  z-index: 1;
-  fill: none;
+	height: 18px;
+	width: 18px;
+	z-index: 1;
+	fill: none;
 }
 
 .prose .tweet-embed .tweet-stats a {
-  display: flex;
-  font-size: 0.85rem;
-  font-weight: normal;
-  align-items: center;
-  color: inherit;
-  text-decoration: none;
-  position: relative;
-  transition: color 0.2s linear;
+	display: flex;
+	font-size: 0.85rem;
+	font-weight: normal;
+	align-items: center;
+	color: inherit;
+	text-decoration: none;
+	position: relative;
+	transition: color 0.2s linear;
 }
 
 .prose .tweet-embed .tweet-stats a:before {
-  content: '';
-  display: block;
-  width: 36px;
-  height: 36px;
-  border-radius: 18px;
-  background-color: rgba(0, 0, 0, 0);
-  position: absolute;
-  left: -9px;
-  z-index: 0;
-  transition:
-    background-color 0.1s linear,
-    transform 0.1s linear;
-  transform: scale(0.5);
+	content: '';
+	display: block;
+	width: 36px;
+	height: 36px;
+	border-radius: 18px;
+	background-color: rgba(0, 0, 0, 0);
+	position: absolute;
+	left: -9px;
+	z-index: 0;
+	transition:
+		background-color 0.1s linear,
+		transform 0.1s linear;
+	transform: scale(0.5);
 }
 
 .prose .tweet-embed .tweet-stats a:hover:before,
 .prose .tweet-embed .tweet-stats a:focus:before {
-  transform: scale(1);
+	transform: scale(1);
 }
 
 .prose .tweet-embed .tweet-stats a span {
-  margin: 0 0.75rem;
-  z-index: 1;
+	margin: 0 0.75rem;
+	z-index: 1;
 }
 
 .prose .tweet-embed .tweet-stats a.tweet-like:hover,
 .prose .tweet-embed .tweet-stats a.tweet-like:focus {
-  color: rgba(224, 36, 94, 1);
+	color: rgba(224, 36, 94, 1);
 }
 
 .prose .tweet-embed .tweet-stats a.tweet-reply:hover,
 .prose .tweet-embed .tweet-stats a.tweet-reply:focus {
-  color: rgba(29, 161, 242, 1);
+	color: rgba(29, 161, 242, 1);
 }
 
 .prose .tweet-embed .tweet-stats a.tweet-retweet:hover,
 .prose .tweet-embed .tweet-stats a.tweet-retweet:focus {
-  color: rgba(25, 207, 134, 1);
+	color: rgba(25, 207, 134, 1);
 }
 
 .prose .tweet-embed .tweet-stats a.tweet-link:hover,
 .prose .tweet-embed .tweet-stats a.tweet-link:focus {
-  color: rgba(29, 161, 242, 1);
+	color: rgba(29, 161, 242, 1);
 }
 
 .prose .tweet-embed .tweet-stats a.tweet-like:hover:before,
 .prose .tweet-embed .tweet-stats a.tweet-like:focus:before {
-  background-color: rgba(224, 36, 94, 0.1);
+	background-color: rgba(224, 36, 94, 0.1);
 }
 
 .prose .tweet-embed .tweet-stats a.tweet-reply:hover:before,
 .prose .tweet-embed .tweet-stats a.tweet-reply:focus:before {
-  background-color: rgba(29, 161, 242, 0.1);
+	background-color: rgba(29, 161, 242, 0.1);
 }
 
 .prose .tweet-embed .tweet-stats a.tweet-retweet:hover:before,
 .prose .tweet-embed .tweet-stats a.tweet-retweet:focus:before {
-  background-color: rgba(25, 207, 134, 0.1);
+	background-color: rgba(25, 207, 134, 0.1);
 }
 
 .prose .tweet-embed .tweet-stats a.tweet-link:hover:before,
 .prose .tweet-embed .tweet-stats a.tweet-link:focus:before {
-  background-color: rgba(29, 161, 242, 0.1);
+	background-color: rgba(29, 161, 242, 0.1);
 }
 
 .prose .tweet-embed .tweet-ref-metadata-domain svg path,
 .prose .tweet-embed .tweet-stats a:not(.tweet-link) svg path {
-  fill: currentColor;
+	fill: currentColor;
 }
 
 /* Some of our blog posts have inline demos that could use some nicer styling */
 /* IDEA: In the future, it would be nice for those blog posts to have a css file that the post could reference as a link */
 .prose .demo {
-  display: flex;
-  justify-content: center;
-  background-color: var(--bg-alt);
-  padding: 2rem;
+	display: flex;
+	justify-content: center;
+	background-color: var(--bg-alt);
+	padding: 2rem;
 }
 .prose .demo button,
 .prose .demo input {
-  padding: revert;
-  margin: revert;
-  display: revert;
-  border: revert;
-  background: revert;
-  appearance: revert;
-  line-height: revert;
-  color: revert;
+	padding: revert;
+	margin: revert;
+	display: revert;
+	border: revert;
+	background: revert;
+	appearance: revert;
+	line-height: revert;
+	color: revert;
 }

@@ -23,26 +23,26 @@ point:
 
 ```js
 class Person {
-  constructor(name) {
-    // common convention is to prefix properties with `_`
-    // if they're not supposed to be used. See the appendix
-    // if you want to see an alternative
-    this._name = name
-    this.greeting = 'Hey there!'
-  }
-  setName(strName) {
-    this._name = strName
-  }
-  getName() {
-    return this._getPrefixedName('Name')
-  }
-  getGreetingCallback() {
-    const {greeting, _name} = this
-    return subject => `${greeting} ${subject}, I'm ${_name}`
-  }
-  _getPrefixedName(prefix) {
-    return `${prefix}: ${this._name}`
-  }
+	constructor(name) {
+		// common convention is to prefix properties with `_`
+		// if they're not supposed to be used. See the appendix
+		// if you want to see an alternative
+		this._name = name
+		this.greeting = 'Hey there!'
+	}
+	setName(strName) {
+		this._name = strName
+	}
+	getName() {
+		return this._getPrefixedName('Name')
+	}
+	getGreetingCallback() {
+		const { greeting, _name } = this
+		return subject => `${greeting} ${subject}, I'm ${_name}`
+	}
+	_getPrefixedName(prefix) {
+		return `${prefix}: ${this._name}`
+	}
 }
 const person = new Person('Jane Doe')
 person.setName('Sarah Doe')
@@ -80,8 +80,8 @@ understand this code and how much complexity those concepts add to your code.
   JavaScript.
 
 <callout-warning>
-  My assertion is that `this` is hard to learn and can add unnecessary
-  complexity to your codebase.
+	My assertion is that `this` is hard to learn and can add unnecessary
+	complexity to your codebase.
 </callout-warning>
 
 ### The `this` keyword
@@ -123,9 +123,9 @@ getGreeting() // Uncaught TypeError: Cannot read property 'greeting' of undefine
 ```
 
 <callout-warning>
-  The core issue is that your function has been
-  "[complected](https://youtu.be/rI8tNMsozo0)" with wherever it is referenced
-  because it uses `this`.
+	The core issue is that your function has been
+	"[complected](https://youtu.be/rI8tNMsozo0)" with wherever it is referenced
+	because it uses `this`.
 </callout-warning>
 
 For a more real world example of the problem, you'll find that this is
@@ -134,17 +134,17 @@ probably made this mistake before as I have:
 
 ```tsx
 class Counter extends React.Component {
-  state = {clicks: 0}
-  increment() {
-    this.setState({clicks: this.state.clicks + 1})
-  }
-  render() {
-    return (
-      <button onClick={this.increment}>
-        You have clicked me {this.state.clicks} times
-      </button>
-    )
-  }
+	state = { clicks: 0 }
+	increment() {
+		this.setState({ clicks: this.state.clicks + 1 })
+	}
+	render() {
+		return (
+			<button onClick={this.increment}>
+				You have clicked me {this.state.clicks} times
+			</button>
+		)
+	}
 }
 ```
 
@@ -157,8 +157,8 @@ component. There are various ways to fix this
 ([watch this free 🆓 egghead.io video 💻 about how](https://egghead.io/lessons/javascript-public-class-fields-with-react-components)).
 
 <callout-success>
-  The fact that you have to think about `this` adds cognitive load that would be
-  nice to avoid.
+	The fact that you have to think about `this` adds cognitive load that would be
+	nice to avoid.
 </callout-success>
 
 ### How to avoid `this`
@@ -171,28 +171,28 @@ how things would look if we used
 
 ```js
 function setName(person, strName) {
-  return Object.assign({}, person, {name: strName})
+	return Object.assign({}, person, { name: strName })
 }
 
 // bonus function!
 function setGreeting(person, newGreeting) {
-  return Object.assign({}, person, {greeting: newGreeting})
+	return Object.assign({}, person, { greeting: newGreeting })
 }
 
 function getName(person) {
-  return getPrefixedName('Name', person.name)
+	return getPrefixedName('Name', person.name)
 }
 
 function getPrefixedName(prefix, name) {
-  return `${prefix}: ${name}`
+	return `${prefix}: ${name}`
 }
 
 function getGreetingCallback(person) {
-  const {greeting, name} = person
-  return subject => `${greeting} ${subject}, I'm ${name}`
+	const { greeting, name } = person
+	return subject => `${greeting} ${subject}, I'm ${name}`
 }
 
-const person = {greeting: 'Hey there!', name: 'Jane Doe'}
+const person = { greeting: 'Hey there!', name: 'Jane Doe' }
 const person2 = setName(person, 'Sarah Doe')
 const person3 = setGreeting(person2, 'Hello')
 getName(person3) // Name: Sarah Doe
@@ -262,24 +262,24 @@ Here's an implementation of our `person` class based on Addy's
 
 ```js
 function getPerson(initialName) {
-  let name = initialName
-  const person = {
-    setName(strName) {
-      name = strName
-    },
-    greeting: 'Hey there!',
-    getName() {
-      return getPrefixedName('Name')
-    },
-    getGreetingCallback() {
-      const {greeting} = person
-      return subject => `${greeting} ${subject}, I'm ${name}`
-    },
-  }
-  function getPrefixedName(prefix) {
-    return `${prefix}: ${name}`
-  }
-  return person
+	let name = initialName
+	const person = {
+		setName(strName) {
+			name = strName
+		},
+		greeting: 'Hey there!',
+		getName() {
+			return getPrefixedName('Name')
+		},
+		getGreetingCallback() {
+			const { greeting } = person
+			return subject => `${greeting} ${subject}, I'm ${name}`
+		},
+	}
+	function getPrefixedName(prefix) {
+		return `${prefix}: ${name}`
+	}
+	return person
 }
 
 const person = getPerson('Jane Doe')

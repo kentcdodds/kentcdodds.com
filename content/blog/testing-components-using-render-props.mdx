@@ -22,10 +22,10 @@ components. Until then, I've decided to write this about some approaches that
 could help you when testing a component that renders a render prop component :)
 
 <callout-info class="aside">
-  Note: This isn't about how to test components that implement [the render prop
-  pattern](https://cdb.reacttraining.com/use-a-render-prop-50de598f11ce).
-  Rather, this is about how to tests components that_ use _components that
-  implement the render prop pattern :)
+	Note: This isn't about how to test components that implement [the render prop
+	pattern](https://cdb.reacttraining.com/use-a-render-prop-50de598f11ce).
+	Rather, this is about how to tests components that_ use _components that
+	implement the render prop pattern :)
 </callout-info>
 
 In preparing this blog post, **I created**
@@ -36,54 +36,54 @@ implemented like so:
 
 ```tsx
 import * as React from 'react'
-import {render} from 'react-dom'
+import { render } from 'react-dom'
 import Downshift from 'downshift'
 
 const items = ['apple', 'pear', 'orange', 'grape', 'banana']
 
-function FruitAutocomplete({onChange}) {
-  return (
-    <Downshift
-      onChange={onChange}
-      render={({
-        getInputProps,
-        getItemProps,
-        getLabelProps,
-        isOpen,
-        inputValue,
-        highlightedIndex,
-        selectedItem,
-      }) => (
-        <div>
-          <label {...getLabelProps()}>Enter a fruit</label>
-          <input {...getInputProps()} />
-          {isOpen ? (
-            <div data-test="menu">
-              {items
-                .filter(i => !inputValue || i.includes(inputValue))
-                .map((item, index) => (
-                  <div
-                    {...getItemProps({
-                      key: item,
-                      'data-test': `item-${item}`,
-                      index,
-                      item,
-                      style: {
-                        backgroundColor:
-                          highlightedIndex === index ? 'lightgray' : 'white',
-                        fontWeight: selectedItem === item ? 'bold' : 'normal',
-                      },
-                    })}
-                  >
-                    {item}
-                  </div>
-                ))}
-            </div>
-          ) : null}
-        </div>
-      )}
-    />
-  )
+function FruitAutocomplete({ onChange }) {
+	return (
+		<Downshift
+			onChange={onChange}
+			render={({
+				getInputProps,
+				getItemProps,
+				getLabelProps,
+				isOpen,
+				inputValue,
+				highlightedIndex,
+				selectedItem,
+			}) => (
+				<div>
+					<label {...getLabelProps()}>Enter a fruit</label>
+					<input {...getInputProps()} />
+					{isOpen ? (
+						<div data-test="menu">
+							{items
+								.filter(i => !inputValue || i.includes(inputValue))
+								.map((item, index) => (
+									<div
+										{...getItemProps({
+											key: item,
+											'data-test': `item-${item}`,
+											index,
+											item,
+											style: {
+												backgroundColor:
+													highlightedIndex === index ? 'lightgray' : 'white',
+												fontWeight: selectedItem === item ? 'bold' : 'normal',
+											},
+										})}
+									>
+										{item}
+									</div>
+								))}
+						</div>
+					) : null}
+				</div>
+			)}
+		/>
+	)
 }
 
 export default FruitAutocomplete
@@ -114,7 +114,7 @@ a render prop component (an implementation detail):
 
 ```tsx
 import * as React from 'react'
-import {mount} from 'enzyme'
+import { mount } from 'enzyme'
 import FruitAutocomplete from '../fruit-autocomplete'
 
 // some handy utilities
@@ -124,28 +124,28 @@ const sel = id => `[data-test="${id}"]`
 const hasMenu = wrapper => wrapper.find(sel('menu')).length === 1
 
 test('menu is closed by default', () => {
-  const wrapper = mount(<FruitAutocomplete />)
-  expect(hasMenu(wrapper)).toBe(false)
+	const wrapper = mount(<FruitAutocomplete />)
+	expect(hasMenu(wrapper)).toBe(false)
 })
 
 test('lists fruit with a keydown of ArrowDown on the input', () => {
-  const wrapper = mount(<FruitAutocomplete />)
-  const input = wrapper.find('input')
-  input.simulate('keydown', {key: 'ArrowDown'})
-  expect(hasMenu(wrapper)).toBe(true)
+	const wrapper = mount(<FruitAutocomplete />)
+	const input = wrapper.find('input')
+	input.simulate('keydown', { key: 'ArrowDown' })
+	expect(hasMenu(wrapper)).toBe(true)
 })
 
 test('can search for and select "banana"', () => {
-  const onChange = jest.fn()
-  const wrapper = mount(<FruitAutocomplete onChange={onChange} />)
-  const input = wrapper.find('input')
-  input.simulate('change', {target: {value: 'banana'}})
-  input.simulate('keydown', {key: 'ArrowDown'})
-  input.simulate('keydown', {key: 'Enter'})
-  expect(onChange).toHaveBeenCalledTimes(1)
-  const downshift = expect.any(Object)
-  expect(onChange).toHaveBeenCalledWith('banana', downshift)
-  expect(input.instance().value).toBe('banana')
+	const onChange = jest.fn()
+	const wrapper = mount(<FruitAutocomplete onChange={onChange} />)
+	const input = wrapper.find('input')
+	input.simulate('change', { target: { value: 'banana' } })
+	input.simulate('keydown', { key: 'ArrowDown' })
+	input.simulate('keydown', { key: 'Enter' })
+	expect(onChange).toHaveBeenCalledTimes(1)
+	const downshift = expect.any(Object)
+	expect(onChange).toHaveBeenCalledWith('banana', downshift)
+	expect(input.instance().value).toBe('banana')
 })
 ```
 
@@ -168,18 +168,18 @@ The first and most obvious way to do this is to extract the `render`prop
 function and export that:
 
 ```tsx
-function FruitAutocomplete({onChange}) {
-  return <Downshift onChange={onChange} render={fruitAutocompleteRender} />
+function FruitAutocomplete({ onChange }) {
+	return <Downshift onChange={onChange} render={fruitAutocompleteRender} />
 }
 
 // NOTE: this is _not_ technically component, it's _like_ a function component
 // but it's not rendered with React.createElement, so it's simply
 // a function that returns JSX.
 function fruitAutocompleteRender(arg) {
-  return <div>{/* what you render */}</div>
+	return <div>{/* what you render */}</div>
 }
 
-export {fruitAutocompleteRender}
+export { fruitAutocompleteRender }
 export default FruitAutocomplete
 ```
 
@@ -188,38 +188,38 @@ render JSX like so:
 
 ```js
 import * as React from 'react'
-import {render} from 'enzyme'
+import { render } from 'enzyme'
 
 const downshiftStub = {
-  isOpen: false,
-  getLabelProps: p => p,
-  getInputProps: p => p,
-  getItemProps: p => p,
+	isOpen: false,
+	getLabelProps: p => p,
+	getInputProps: p => p,
+	getItemProps: p => p,
 }
 
 const sel = id => `[data-test="${id}"]`
 const hasMenu = wrapper => wrapper.find(sel('menu')).length === 1
 const hasItem = (wrapper, item) =>
-  wrapper.find(sel(`item-${item}`)).length === 1
+	wrapper.find(sel(`item-${item}`)).length === 1
 const renderFruitAutocompleteRenderer = props =>
-  render(fruitAutocompleteRender({...downshiftStub, ...props}))
+	render(fruitAutocompleteRender({ ...downshiftStub, ...props }))
 
 test('shows no menu when isOpen is false', () => {
-  const wrapper = renderFruitAutocompleteRenderer({isOpen: false})
-  expect(hasMenu(wrapper)).toBe(false)
+	const wrapper = renderFruitAutocompleteRenderer({ isOpen: false })
+	expect(hasMenu(wrapper)).toBe(false)
 })
 
 test('shows the menu when isOpen is true', () => {
-  const wrapper = renderFruitAutocompleteRenderer({isOpen: true})
-  expect(hasMenu(wrapper)).toBe(true)
+	const wrapper = renderFruitAutocompleteRenderer({ isOpen: true })
+	expect(hasMenu(wrapper)).toBe(true)
 })
 
 test('when the inputValue is banana, it shows banana', () => {
-  const wrapper = renderFruitAutocompleteRenderer({
-    isOpen: true,
-    inputValue: 'banana',
-  })
-  expect(hasItem(wrapper, 'banana')).toBe(true)
+	const wrapper = renderFruitAutocompleteRenderer({
+		isOpen: true,
+		inputValue: 'banana',
+	})
+	expect(hasItem(wrapper, 'banana')).toBe(true)
 })
 ```
 
@@ -235,29 +235,29 @@ implemented as if we didn't export the render prop function:
 
 ```tsx
 import * as React from 'react'
-import {mount, render} from 'enzyme'
+import { mount, render } from 'enzyme'
 import Downshift from 'downshift'
 import FruitAutocomplete from '../fruit-autocomplete'
 
 const downshiftStub = {
-  isOpen: false,
-  getLabelProps: p => p,
-  getInputProps: p => p,
-  getItemProps: p => p,
+	isOpen: false,
+	getLabelProps: p => p,
+	getInputProps: p => p,
+	getItemProps: p => p,
 }
 
 test('when the inputValue is banana, it shows banana', () => {
-  const fruitAutocompleteRender = mount(<FruitAutocomplete />)
-    .find(Downshift)
-    .prop('render')
-  const wrapper = render(
-    fruitAutocompleteRender({
-      ...downshiftStub,
-      isOpen: true,
-      inputValue: 'banana',
-    }),
-  )
-  expect(hasItem(wrapper, 'banana')).toBe(true)
+	const fruitAutocompleteRender = mount(<FruitAutocomplete />)
+		.find(Downshift)
+		.prop('render')
+	const wrapper = render(
+		fruitAutocompleteRender({
+			...downshiftStub,
+			isOpen: true,
+			inputValue: 'banana',
+		}),
+	)
+	expect(hasItem(wrapper, 'banana')).toBe(true)
 })
 ```
 

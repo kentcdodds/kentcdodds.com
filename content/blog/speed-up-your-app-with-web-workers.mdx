@@ -78,7 +78,7 @@ Here you go:
 const worker = new Worker('worker.js')
 worker.postMessage('Hello Worker')
 worker.onmessage = e => {
-  console.log('main.js: Message received from worker:', e.data)
+	console.log('main.js: Message received from worker:', e.data)
 }
 // if you want to "uninstall" the web worker then use:
 // worker.terminate()
@@ -87,8 +87,8 @@ worker.onmessage = e => {
 ```js
 // worker.js
 this.onmessage = e => {
-  console.log('worker.js: Message received from main script', e.data)
-  this.postMessage('Hello main')
+	console.log('worker.js: Message received from main script', e.data)
+	this.postMessage('Hello main')
 }
 ```
 
@@ -141,9 +141,9 @@ the code from my material:
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import makeFilterCitiesWorker from 'workerize!./filter-cities'
 
-const {getItems} = makeFilterCitiesWorker()
+const { getItems } = makeFilterCitiesWorker()
 
-export {getItems}
+export { getItems }
 ```
 
 The `workerize!` thing in the `import` statement is a fancy webpack syntax to

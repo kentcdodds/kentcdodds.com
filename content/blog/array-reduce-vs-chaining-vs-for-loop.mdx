@@ -38,13 +38,13 @@ if you wanna give it a read-through). Here's the bit I want to talk about
 const lines = execSync(`find "${searchPath}" -type f`).toString().split('\n')
 
 const commands = lines
-  .map(f => f.trim())
-  .filter(Boolean)
-  .map(file => {
-    const destFile = getDestFile(file)
-    const destFileDir = path.dirname(destFile)
-    return `mkdir -p "${destFileDir}" && mv "${file}" "${destFile}"`
-  })
+	.map(f => f.trim())
+	.filter(Boolean)
+	.map(file => {
+		const destFile = getDestFile(file)
+		const destFileDir = path.dirname(destFile)
+		return `mkdir -p "${destFileDir}" && mv "${file}" "${destFile}"`
+	})
 
 commands.forEach(command => execSync(command))
 ```
@@ -86,13 +86,13 @@ Here's what that same code would be like if we use `reduce`
 
 ```js
 const commands = lines.reduce((accumulator, line) => {
-  let file = line.trim()
-  if (file) {
-    const destFile = getDestFile(file)
-    const destFileDir = path.dirname(destFile)
-    accumulator.push(`mkdir -p "${destFileDir}" && mv "${file}" "${destFile}"`)
-  }
-  return accumulator
+	let file = line.trim()
+	if (file) {
+		const destFile = getDestFile(file)
+		const destFileDir = path.dirname(destFile)
+		accumulator.push(`mkdir -p "${destFileDir}" && mv "${file}" "${destFile}"`)
+	}
+	return accumulator
 }, [])
 ```
 
@@ -112,13 +112,13 @@ Ok, here you go:
 ```js
 const commands = []
 for (let index = 0; index < lines.length; index++) {
-  const line = lines[index]
-  const file = line.trim()
-  if (file) {
-    const destFile = getDestFile(file)
-    const destFileDir = path.dirname(destFile)
-    commands.push(`mkdir -p "${destFileDir}" && mv "${file}" "${destFile}"`)
-  }
+	const line = lines[index]
+	const file = line.trim()
+	if (file) {
+		const destFile = getDestFile(file)
+		const destFileDir = path.dirname(destFile)
+		commands.push(`mkdir -p "${destFileDir}" && mv "${file}" "${destFile}"`)
+	}
 }
 ```
 
@@ -129,12 +129,12 @@ That's not much simpler either.
 ```js
 const commands = []
 for (const line of lines) {
-  const file = line.trim()
-  if (!file) continue
+	const file = line.trim()
+	if (!file) continue
 
-  const destFile = getDestFile(file)
-  const destFileDir = path.dirname(destFile)
-  commands.push(`mkdir -p "${destFileDir}" && mv "${file}" "${destFile}"`)
+	const destFile = getDestFile(file)
+	const destFileDir = path.dirname(destFile)
+	commands.push(`mkdir -p "${destFileDir}" && mv "${file}" "${destFile}"`)
 }
 ```
 

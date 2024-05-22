@@ -37,16 +37,16 @@ Well, it's likely that this can do all you need and more. Let's take a look:
 
 ```ts
 const items = [
-  'Sojourner',
-  'Opportunity',
-  'Spirit',
-  'Curiosity',
-  'Perseverance',
+	'Sojourner',
+	'Opportunity',
+	'Spirit',
+	'Curiosity',
+	'Perseverance',
 ]
 
 const formatter = new Intl.ListFormat('en', {
-  style: 'long',
-  type: 'conjunction',
+	style: 'long',
+	type: 'conjunction',
 })
 console.log(formatter.format(items))
 // logs: "Sojourner, Opportunity, Spirit, Curiosity, and Perseverance"
@@ -84,13 +84,13 @@ locale):
 Interestingly, if we play around with the locale, things behave unexpectedly:
 
 ```js
-new Intl.ListFormat('en', {style: 'narrow', type: 'unit'}).format(items)
+new Intl.ListFormat('en', { style: 'narrow', type: 'unit' }).format(items)
 // Sojourner Opportunity Spirit Curiosity Perseverance
 
-new Intl.ListFormat('es', {style: 'narrow', type: 'unit'}).format(items)
+new Intl.ListFormat('es', { style: 'narrow', type: 'unit' }).format(items)
 // Sojourner Opportunity Spirit Curiosity Perseverance
 
-new Intl.ListFormat('de', {style: 'narrow', type: 'unit'}).format(items)
+new Intl.ListFormat('de', { style: 'narrow', type: 'unit' }).format(items)
 // Sojourner, Opportunity, Spirit, Curiosity und Perseverance
 ```
 
@@ -119,17 +119,17 @@ simpler. Feel free to take a whack at the for loop version though if you want.
 
 ```js
 function listify(
-  array,
-  {conjunction = 'and ', stringify = item => item.toString()} = {},
+	array,
+	{ conjunction = 'and ', stringify = item => item.toString() } = {},
 ) {
-  return array.reduce((list, item, index) => {
-    if (index === 0) return stringify(item)
-    if (index === array.length - 1) {
-      if (index === 1) return `${list} ${conjunction}${stringify(item)}`
-      else return `${list}, ${conjunction}${stringify(item)}`
-    }
-    return `${list}, ${stringify(item)}`
-  }, '')
+	return array.reduce((list, item, index) => {
+		if (index === 0) return stringify(item)
+		if (index === array.length - 1) {
+			if (index === 1) return `${list} ${conjunction}${stringify(item)}`
+			else return `${list}, ${conjunction}${stringify(item)}`
+		}
+		return `${list}, ${stringify(item)}`
+	}, '')
 }
 ```
 
@@ -139,7 +139,7 @@ In my codebase, is used like so:
 const to = `To: ${listify(mentionedMembersNicknames)}`
 // and
 const didYouMean = `Did you mean ${listify(closeMatches, {
-  conjunction: 'or ',
+	conjunction: 'or ',
 })}?`
 ```
 
@@ -151,16 +151,16 @@ on top of the standard:
 
 ```js
 function listify(
-  array,
-  {
-    type = 'conjunction',
-    style = 'long',
-    stringify = item => item.toString(),
-  } = {},
+	array,
+	{
+		type = 'conjunction',
+		style = 'long',
+		stringify = item => item.toString(),
+	} = {},
 ) {
-  const stringified = array.map(item => stringify(item))
-  const formatter = new Intl.ListFormat('en', {style, type})
-  return formatter.format(stringified)
+	const stringified = array.map(item => stringify(item))
+	const formatter = new Intl.ListFormat('en', { style, type })
+	return formatter.format(stringified)
 }
 ```
 
@@ -171,7 +171,7 @@ With that, now I do this:
 const to = `To: ${listify(mentionedMembersNicknames)}`
 // switch to using the "type" option rather than overloading/abusing the term "conjunction"
 const didYouMean = `Did you mean ${listify(closeMatches, {
-  type: 'disjunction',
+	type: 'disjunction',
 })}?`
 ```
 
@@ -186,33 +186,33 @@ finished code (I'm in the process of migrating this project to TypeScript).
 // unfortunately TypeScript doesn't have Intl.ListFormat yet 😢
 // so we'll just add it ourselves:
 type ListFormatOptions = {
-  type?: 'conjunction' | 'disjunction' | 'unit'
-  style?: 'long' | 'short' | 'narrow'
-  localeMatcher?: 'lookup' | 'best fit'
+	type?: 'conjunction' | 'disjunction' | 'unit'
+	style?: 'long' | 'short' | 'narrow'
+	localeMatcher?: 'lookup' | 'best fit'
 }
 declare namespace Intl {
-  class ListFormat {
-    constructor(locale: string, options: ListFormatOptions)
-    public format: (items: Array<string>) => string
-  }
+	class ListFormat {
+		constructor(locale: string, options: ListFormatOptions)
+		public format: (items: Array<string>) => string
+	}
 }
 
 type ListifyOptions<ItemType> = {
-  type?: ListFormatOptions['type']
-  style?: ListFormatOptions['style']
-  stringify?: (item: ItemType) => string
+	type?: ListFormatOptions['type']
+	style?: ListFormatOptions['style']
+	stringify?: (item: ItemType) => string
 }
 function listify<ItemType>(
-  array: Array<ItemType>,
-  {
-    type = 'conjunction',
-    style = 'long',
-    stringify = (thing: {toString(): string}) => thing.toString(),
-  }: ListifyOptions<ItemType> = {},
+	array: Array<ItemType>,
+	{
+		type = 'conjunction',
+		style = 'long',
+		stringify = (thing: { toString(): string }) => thing.toString(),
+	}: ListifyOptions<ItemType> = {},
 ) {
-  const stringified = array.map(item => stringify(item))
-  const formatter = new Intl.ListFormat('en', {style, type})
-  return formatter.format(stringified)
+	const stringified = array.map(item => stringify(item))
+	const formatter = new Intl.ListFormat('en', { style, type })
+	return formatter.format(stringified)
 }
 ```
 

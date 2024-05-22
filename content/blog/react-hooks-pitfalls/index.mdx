@@ -12,7 +12,7 @@ bannerCredit:
   Photo by [Simon Matzinger](https://unsplash.com/photos/twukN12EN7c)
 ---
 
-import {HiddenBugApp, RevealedBugApp, FixedBugApp} from './components'
+import { HiddenBugApp, RevealedBugApp, FixedBugApp } from './components'
 
 I've given this blog post as a talk which you can watch here:
 
@@ -73,15 +73,15 @@ Ok, so for the details page we make a `DogInfo` component which accepts a
 `dogId` prop and fetches the dog's information:
 
 ```js
-function DogInfo({dogId}) {
-  const [dog, setDog] = useState(null)
-  // imagine you also have loading/error states. omitting to save space...
+function DogInfo({ dogId }) {
+	const [dog, setDog] = useState(null)
+	// imagine you also have loading/error states. omitting to save space...
 
-  useEffect(() => {
-    getDog(dogId).then(d => setDog(d))
-  }, []) // 😱
+	useEffect(() => {
+		getDog(dogId).then(d => setDog(d))
+	}, []) // 😱
 
-  return <div>{/* render the dog info here */}</div>
+	return <div>{/* render the dog info here */}</div>
 }
 ```
 
@@ -101,15 +101,15 @@ we provided an empty array of dependencies, our effect is not re-running.
 So let's add that dependency:
 
 ```tsx lines=7
-function DogInfo({dogId}) {
-  const [dog, setDog] = useState(null)
-  // imagine you also have loading/error states. omitting to save space...
+function DogInfo({ dogId }) {
+	const [dog, setDog] = useState(null)
+	// imagine you also have loading/error states. omitting to save space...
 
-  useEffect(() => {
-    getDog(dogId).then(d => setDog(d))
-  }, [dogId]) // ✅
+	useEffect(() => {
+		getDog(dogId).then(d => setDog(d))
+	}, [dogId]) // ✅
 
-  return <div>{/* render the dog info here */}</div>
+	return <div>{/* render the dog info here */}</div>
 }
 ```
 
@@ -145,21 +145,21 @@ things:
 
 ```tsx
 class LifecycleComponent extends React.Component {
-  constructor() {
-    // initialize component instance
-  }
-  componentDidMount() {
-    // run this code when the component is first added to the page
-  }
-  componentDidUpdate(prevProps, prevState) {
-    // run this code when the component is updated on the page
-  }
-  componentWillUnmount() {
-    // run this code when the component is removed from the page
-  }
-  render() {
-    // call me anytime you need some react elements...
-  }
+	constructor() {
+		// initialize component instance
+	}
+	componentDidMount() {
+		// run this code when the component is first added to the page
+	}
+	componentDidUpdate(prevProps, prevState) {
+		// run this code when the component is updated on the page
+	}
+	componentWillUnmount() {
+		// run this code when the component is removed from the page
+	}
+	render() {
+		// call me anytime you need some react elements...
+	}
 }
 ```
 
@@ -174,26 +174,26 @@ So now we have:
 
 ```tsx
 function HookComponent() {
-  React.useEffect(() => {
-    // This side effect code is here to synchronize the state of the world
-    // with the state of this component.
-    return function cleanup() {
-      // And I need to cleanup the previous side-effect before running a new one
-    }
-    // So I need this side-effect and it's cleanup to be re-run...
-  }, [when, any, ofThese, change])
+	React.useEffect(() => {
+		// This side effect code is here to synchronize the state of the world
+		// with the state of this component.
+		return function cleanup() {
+			// And I need to cleanup the previous side-effect before running a new one
+		}
+		// So I need this side-effect and it's cleanup to be re-run...
+	}, [when, any, ofThese, change])
 
-  React.useEffect(() => {
-    // this side effect will re-run on every single time this component is
-    // re-rendered to make sure that what it does is never stale.
-  })
+	React.useEffect(() => {
+		// this side effect will re-run on every single time this component is
+		// re-rendered to make sure that what it does is never stale.
+	})
 
-  React.useEffect(() => {
-    // this side effect can never get stale because
-    // it legitimately has no dependencies
-  }, [])
+	React.useEffect(() => {
+		// this side effect can never get stale because
+		// it legitimately has no dependencies
+	}, [])
 
-  return /* some beautiful react elements */
+	return /* some beautiful react elements */
 }
 ```
 
@@ -310,10 +310,10 @@ For some reason when some people see this, they freak out:
 
 ```tsx
 function MyComponent() {
-  function handleClick() {
-    console.log('clicked some other component')
-  }
-  return <SomeOtherComponent onClick={handleClick} />
+	function handleClick() {
+		console.log('clicked some other component')
+	}
+	return <SomeOtherComponent onClick={handleClick} />
 }
 ```
 
@@ -369,11 +369,11 @@ if you've written your tests like this:
 
 ```tsx
 test('setOpenIndex sets the open index state properly', () => {
-  // using enzyme
-  const wrapper = mount(<Accordion items={[]} />)
-  expect(wrapper.state('openIndex')).toBe(0)
-  wrapper.instance().setOpenIndex(1)
-  expect(wrapper.state('openIndex')).toBe(1)
+	// using enzyme
+	const wrapper = mount(<Accordion items={[]} />)
+	expect(wrapper.state('openIndex')).toBe(0)
+	wrapper.instance().setOpenIndex(1)
+	expect(wrapper.state('openIndex')).toBe(1)
 })
 ```
 
@@ -382,22 +382,22 @@ definitely need to scrap that test and instead write it like this:
 
 ```tsx
 test('can open accordion items to see the contents', () => {
-  const hats = {title: 'Favorite Hats', contents: 'Fedoras are classy'}
-  const footware = {
-    title: 'Favorite Footware',
-    contents: 'Flipflops are the best',
-  }
-  const items = [hats, footware]
-  // using React Testing Library
-  render(<Accordion items={items} />)
+	const hats = { title: 'Favorite Hats', contents: 'Fedoras are classy' }
+	const footware = {
+		title: 'Favorite Footware',
+		contents: 'Flipflops are the best',
+	}
+	const items = [hats, footware]
+	// using React Testing Library
+	render(<Accordion items={items} />)
 
-  expect(screen.getByText(hats.contents)).toBeInTheDocument()
-  expect(screen.queryByText(footware.contents)).toBeNull()
+	expect(screen.getByText(hats.contents)).toBeInTheDocument()
+	expect(screen.queryByText(footware.contents)).toBeNull()
 
-  userEvent.click(screen.getByText(footware.title))
+	userEvent.click(screen.getByText(footware.title))
 
-  expect(screen.getByText(footware.contents)).toBeInTheDocument()
-  expect(screen.queryByText(hats.contents)).toBeNull()
+	expect(screen.getByText(footware.contents)).toBeInTheDocument()
+	expect(screen.queryByText(hats.contents)).toBeNull()
 })
 ```
 

@@ -40,27 +40,27 @@ Let's start with `useState`:
 
 ```tsx
 function Board() {
-  const [squares, setSquares] = React.useState(Array(9).fill(null))
-  const [nextValue, setNextValue] = React.useState(calculateNextValue(squares))
-  const [winner, setWinner] = React.useState(calculateWinner(squares))
-  const [status, setStatus] = React.useState(calculateStatus(squares))
+	const [squares, setSquares] = React.useState(Array(9).fill(null))
+	const [nextValue, setNextValue] = React.useState(calculateNextValue(squares))
+	const [winner, setWinner] = React.useState(calculateWinner(squares))
+	const [status, setStatus] = React.useState(calculateStatus(squares))
 
-  function selectSquare(square) {
-    if (winner || squares[square]) {
-      return
-    }
-    const squaresCopy = [...squares]
-    squaresCopy[square] = nextValue
-    const newNextValue = calculateNextValue(squaresCopy)
-    const newWinner = calculateWinner(squaresCopy)
-    const newStatus = calculateStatus(newWinner, squaresCopy, newNextValue)
-    setSquares(squaresCopy)
-    setNextValue(newNextValue)
-    setWinner(newWinner)
-    setStatus(newStatus)
-  }
+	function selectSquare(square) {
+		if (winner || squares[square]) {
+			return
+		}
+		const squaresCopy = [...squares]
+		squaresCopy[square] = nextValue
+		const newNextValue = calculateNextValue(squaresCopy)
+		const newWinner = calculateWinner(squaresCopy)
+		const newStatus = calculateStatus(newWinner, squaresCopy, newNextValue)
+		setSquares(squaresCopy)
+		setNextValue(newNextValue)
+		setWinner(newWinner)
+		setStatus(newStatus)
+	}
 
-  // return beautiful JSX
+	// return beautiful JSX
 }
 ```
 
@@ -70,45 +70,45 @@ What would we have to do to make that happen?
 
 ```tsx lines=23-38
 function Board() {
-  const [squares, setSquares] = React.useState(Array(9).fill(null))
-  const [nextValue, setNextValue] = React.useState(calculateNextValue(squares))
-  const [winner, setWinner] = React.useState(calculateWinner(squares))
-  const [status, setStatus] = React.useState(calculateStatus(squares))
+	const [squares, setSquares] = React.useState(Array(9).fill(null))
+	const [nextValue, setNextValue] = React.useState(calculateNextValue(squares))
+	const [winner, setWinner] = React.useState(calculateWinner(squares))
+	const [status, setStatus] = React.useState(calculateStatus(squares))
 
-  function selectSquare(square) {
-    if (winner || squares[square]) {
-      return
-    }
-    const squaresCopy = [...squares]
-    squaresCopy[square] = nextValue
+	function selectSquare(square) {
+		if (winner || squares[square]) {
+			return
+		}
+		const squaresCopy = [...squares]
+		squaresCopy[square] = nextValue
 
-    const newNextValue = calculateNextValue(squaresCopy)
-    const newWinner = calculateWinner(squaresCopy)
-    const newStatus = calculateStatus(newWinner, squaresCopy, newNextValue)
-    setSquares(squaresCopy)
-    setNextValue(newNextValue)
-    setWinner(newWinner)
-    setStatus(newStatus)
-  }
+		const newNextValue = calculateNextValue(squaresCopy)
+		const newWinner = calculateWinner(squaresCopy)
+		const newStatus = calculateStatus(newWinner, squaresCopy, newNextValue)
+		setSquares(squaresCopy)
+		setNextValue(newNextValue)
+		setWinner(newWinner)
+		setStatus(newStatus)
+	}
 
-  function selectTwoSquares(square1, square2) {
-    if (winner || squares[square1] || squares[square2]) {
-      return
-    }
-    const squaresCopy = [...squares]
-    squaresCopy[square1] = nextValue
-    squaresCopy[square2] = nextValue
+	function selectTwoSquares(square1, square2) {
+		if (winner || squares[square1] || squares[square2]) {
+			return
+		}
+		const squaresCopy = [...squares]
+		squaresCopy[square1] = nextValue
+		squaresCopy[square2] = nextValue
 
-    const newNextValue = calculateNextValue(squaresCopy)
-    const newWinner = calculateWinner(squaresCopy)
-    const newStatus = calculateStatus(newWinner, squaresCopy, newNextValue)
-    setSquares(squaresCopy)
-    setNextValue(newNextValue)
-    setWinner(newWinner)
-    setStatus(newStatus)
-  }
+		const newNextValue = calculateNextValue(squaresCopy)
+		const newWinner = calculateWinner(squaresCopy)
+		const newStatus = calculateStatus(newWinner, squaresCopy, newNextValue)
+		setSquares(squaresCopy)
+		setNextValue(newNextValue)
+		setWinner(newWinner)
+		setStatus(newStatus)
+	}
 
-  // return beautiful JSX
+	// return beautiful JSX
 }
 ```
 
@@ -123,41 +123,41 @@ updates happen in one place:
 
 ```tsx lines=7-15,23,33
 function Board() {
-  const [squares, setSquares] = React.useState(Array(9).fill(null))
-  const [nextValue, setNextValue] = React.useState(calculateNextValue(squares))
-  const [winner, setWinner] = React.useState(calculateWinner(squares))
-  const [status, setStatus] = React.useState(calculateStatus(squares))
+	const [squares, setSquares] = React.useState(Array(9).fill(null))
+	const [nextValue, setNextValue] = React.useState(calculateNextValue(squares))
+	const [winner, setWinner] = React.useState(calculateWinner(squares))
+	const [status, setStatus] = React.useState(calculateStatus(squares))
 
-  function setNewState(newSquares) {
-    const newNextValue = calculateNextValue(newSquares)
-    const newWinner = calculateWinner(newSquares)
-    const newStatus = calculateStatus(newWinner, newSquares, newNextValue)
-    setSquares(newSquares)
-    setNextValue(newNextValue)
-    setWinner(newWinner)
-    setStatus(newStatus)
-  }
+	function setNewState(newSquares) {
+		const newNextValue = calculateNextValue(newSquares)
+		const newWinner = calculateWinner(newSquares)
+		const newStatus = calculateStatus(newWinner, newSquares, newNextValue)
+		setSquares(newSquares)
+		setNextValue(newNextValue)
+		setWinner(newWinner)
+		setStatus(newStatus)
+	}
 
-  function selectSquare(square) {
-    if (winner || squares[square]) {
-      return
-    }
-    const squaresCopy = [...squares]
-    squaresCopy[square] = nextValue
-    setNewState(squaresCopy)
-  }
+	function selectSquare(square) {
+		if (winner || squares[square]) {
+			return
+		}
+		const squaresCopy = [...squares]
+		squaresCopy[square] = nextValue
+		setNewState(squaresCopy)
+	}
 
-  function selectTwoSquares(square1, square2) {
-    if (winner || squares[square1] || squares[square2]) {
-      return
-    }
-    const squaresCopy = [...squares]
-    squaresCopy[square1] = nextValue
-    squaresCopy[square2] = nextValue
-    setNewState(squaresCopy)
-  }
+	function selectTwoSquares(square1, square2) {
+		if (winner || squares[square1] || squares[square2]) {
+			return
+		}
+		const squaresCopy = [...squares]
+		squaresCopy[square1] = nextValue
+		squaresCopy[square2] = nextValue
+		setNewState(squaresCopy)
+	}
 
-  // return beautiful JSX
+	// return beautiful JSX
 }
 ```
 
@@ -175,21 +175,21 @@ it right here now:
 
 ```tsx
 function Board() {
-  const [squares, setSquares] = React.useState(Array(9).fill(null))
-  const nextValue = calculateNextValue(squares)
-  const winner = calculateWinner(squares)
-  const status = calculateStatus(winner, squares, nextValue)
+	const [squares, setSquares] = React.useState(Array(9).fill(null))
+	const nextValue = calculateNextValue(squares)
+	const winner = calculateWinner(squares)
+	const status = calculateStatus(winner, squares, nextValue)
 
-  function selectSquare(square) {
-    if (winner || squares[square]) {
-      return
-    }
-    const squaresCopy = [...squares]
-    squaresCopy[square] = nextValue
-    setSquares(squaresCopy)
-  }
+	function selectSquare(square) {
+		if (winner || squares[square]) {
+			return
+		}
+		const squaresCopy = [...squares]
+		squaresCopy[square] = nextValue
+		setSquares(squaresCopy)
+	}
 
-  // return beautiful JSX
+	// return beautiful JSX
 }
 ```
 
@@ -199,31 +199,31 @@ time feature:
 
 ```tsx lines=16-24
 function Board() {
-  const [squares, setSquares] = React.useState(Array(9).fill(null))
-  const nextValue = calculateNextValue(squares)
-  const winner = calculateWinner(squares)
-  const status = calculateStatus(winner, squares, nextValue)
+	const [squares, setSquares] = React.useState(Array(9).fill(null))
+	const nextValue = calculateNextValue(squares)
+	const winner = calculateWinner(squares)
+	const status = calculateStatus(winner, squares, nextValue)
 
-  function selectSquare(square) {
-    if (winner || squares[square]) {
-      return
-    }
-    const squaresCopy = [...squares]
-    squaresCopy[square] = nextValue
-    setSquares(squaresCopy)
-  }
+	function selectSquare(square) {
+		if (winner || squares[square]) {
+			return
+		}
+		const squaresCopy = [...squares]
+		squaresCopy[square] = nextValue
+		setSquares(squaresCopy)
+	}
 
-  function selectTwoSquares(square1, square2) {
-    if (winner || squares[square1] || squares[square2]) {
-      return
-    }
-    const squaresCopy = [...squares]
-    squaresCopy[square1] = nextValue
-    squaresCopy[square2] = nextValue
-    setSquares(squaresCopy)
-  }
+	function selectTwoSquares(square1, square2) {
+		if (winner || squares[square1] || squares[square2]) {
+			return
+		}
+		const squaresCopy = [...squares]
+		squaresCopy[square1] = nextValue
+		squaresCopy[square2] = nextValue
+		setSquares(squaresCopy)
+	}
 
-  // return beautiful JSX
+	// return beautiful JSX
 }
 ```
 
@@ -240,33 +240,33 @@ implement this using `useReducer`:
 
 ```tsx
 function calculateDerivedState(squares) {
-  const winner = calculateWinner(squares)
-  const nextValue = calculateNextValue(squares)
-  const status = calculateStatus(winner, squares, nextValue)
-  return {squares, nextValue, winner, status}
+	const winner = calculateWinner(squares)
+	const nextValue = calculateNextValue(squares)
+	const status = calculateStatus(winner, squares, nextValue)
+	return { squares, nextValue, winner, status }
 }
 
 function ticTacToeReducer(state, square) {
-  if (state.winner || state.squares[square]) {
-    // no state change needed.
-    // (returning the same object allows React to bail out of a re-render)
-    return state
-  }
+	if (state.winner || state.squares[square]) {
+		// no state change needed.
+		// (returning the same object allows React to bail out of a re-render)
+		return state
+	}
 
-  const squaresCopy = [...state.squares]
-  squaresCopy[square] = state.nextValue
+	const squaresCopy = [...state.squares]
+	squaresCopy[square] = state.nextValue
 
-  return {...calculateDerivedState(squaresCopy), squares: squaresCopy}
+	return { ...calculateDerivedState(squaresCopy), squares: squaresCopy }
 }
 
 function Board() {
-  const [{squares, status}, selectSquare] = React.useReducer(
-    ticTacToeReducer,
-    Array(9).fill(null),
-    calculateDerivedState,
-  )
+	const [{ squares, status }, selectSquare] = React.useReducer(
+		ticTacToeReducer,
+		Array(9).fill(null),
+		calculateDerivedState,
+	)
 
-  // return beautiful JSX
+	// return beautiful JSX
 }
 ```
 
@@ -287,38 +287,38 @@ synchronization problems. What if we had the `squares` state coming from a
 parent component? How would we synchronize that state?
 
 ```tsx
-function Board({squares, onSelectSquare}) {
-  const [nextValue, setNextValue] = React.useState(calculateNextValue(squares))
-  const [winner, setWinner] = React.useState(calculateWinner(squares))
-  const [status, setStatus] = React.useState(calculateStatus(squares))
+function Board({ squares, onSelectSquare }) {
+	const [nextValue, setNextValue] = React.useState(calculateNextValue(squares))
+	const [winner, setWinner] = React.useState(calculateWinner(squares))
+	const [status, setStatus] = React.useState(calculateStatus(squares))
 
-  // ... hmmm... we're no longer managing updating the squares state, so how
-  // do we keep these variables up to date? useEffect? useLayoutEffect?
-  // React.useEffect(() => {
-  //   setNextValue... etc... eh...
-  // }, [squares])
-  //
-  // Just call the state updaters when squares change
-  // right in the render method?
-  // if (prevSquares !== squares) {
-  //   setNextValue... etc... ugh...
-  // }
-  //
-  // I've seen people do all of these things... And none of them are great.
+	// ... hmmm... we're no longer managing updating the squares state, so how
+	// do we keep these variables up to date? useEffect? useLayoutEffect?
+	// React.useEffect(() => {
+	//   setNextValue... etc... eh...
+	// }, [squares])
+	//
+	// Just call the state updaters when squares change
+	// right in the render method?
+	// if (prevSquares !== squares) {
+	//   setNextValue... etc... ugh...
+	// }
+	//
+	// I've seen people do all of these things... And none of them are great.
 
-  // return beautiful JSX
+	// return beautiful JSX
 }
 ```
 
 The better way to do this is just to calculate it on the fly:
 
 ```js
-function Board({squares, onSelectSquare}) {
-  const nextValue = calculateNextValue(squares)
-  const winner = calculateWinner(squares)
-  const status = calculateStatus(squares)
+function Board({ squares, onSelectSquare }) {
+	const nextValue = calculateNextValue(squares)
+	const winner = calculateWinner(squares)
+	const status = calculateStatus(squares)
 
-  // return beautiful JSX
+	// return beautiful JSX
 }
 ```
 
@@ -341,9 +341,9 @@ you'll have other performance problems that will be lower hanging fruit for
 you).
 
 <callout-info class="aside">
-  Ok ok, I tried it on my phone and only got 4.3 million operations per second.
-  And then I tried with a CPU 6x slowdown on my laptop and only got 2 million...
-  I think we're still good.
+	Ok ok, I tried it on my phone and only got 4.3 million operations per second.
+	And then I tried with a CPU 6x slowdown on my laptop and only got 2 million...
+	I think we're still good.
 </callout-info>
 
 That said, if you _do_ happen to have a function which _is_ computationally
@@ -351,15 +351,15 @@ expensive, then that's what `useMemo` is for!
 
 ```tsx lines=3-8
 function Board() {
-  const [squares, setSquares] = React.useState(Array(9).fill(null))
-  const nextValue = React.useMemo(() => calculateNextValue(squares), [squares])
-  const winner = React.useMemo(() => calculateWinner(squares), [squares])
-  const status = React.useMemo(
-    () => calculateStatus(winner, squares, nextValue),
-    [winner, squares, nextValue],
-  )
+	const [squares, setSquares] = React.useState(Array(9).fill(null))
+	const nextValue = React.useMemo(() => calculateNextValue(squares), [squares])
+	const winner = React.useMemo(() => calculateWinner(squares), [squares])
+	const status = React.useMemo(
+		() => calculateStatus(winner, squares, nextValue),
+		[winner, squares, nextValue],
+	)
 
-  // return beautiful JSX
+	// return beautiful JSX
 }
 ```
 
@@ -372,7 +372,7 @@ functions will be run anyway, so we've actually not accomplished much with this
 "optimization." That's why I say: "Measure first!"
 
 <callout-info class="aside">
-  [Learn more about `useMemo` and `useCallback`](/blog/usememo-and-usecallback)
+	[Learn more about `useMemo` and `useCallback`](/blog/usememo-and-usecallback)
 </callout-info>
 
 Oh, and I'd like to mention that derived state can sometimes be even faster than
@@ -393,30 +393,30 @@ For (contrived) example:
 
 ```tsx lines=4
 function FavoriteNumber() {
-  const [name, setName] = React.useState('')
-  const [number, setNumber] = React.useState(0)
-  const numberWarning = getNumberWarning(number)
-  return (
-    <div>
-      <label>
-        Your name: <input onChange={e => setName(e.target.value)} />
-      </label>
-      <label>
-        Your favorite number:{' '}
-        <input
-          type="number"
-          onChange={e => setNumber(Number(e.target.value))}
-        />
-      </label>
-      <div>
-        {name
-          ? `${name}'s favorite number is ${number}`
-          : 'Please type your name'}
-      </div>
-      <div>{number > 10 ? numberWarning : null}</div>
-      <div>{number < 0 ? numberWarning : null}</div>
-    </div>
-  )
+	const [name, setName] = React.useState('')
+	const [number, setNumber] = React.useState(0)
+	const numberWarning = getNumberWarning(number)
+	return (
+		<div>
+			<label>
+				Your name: <input onChange={e => setName(e.target.value)} />
+			</label>
+			<label>
+				Your favorite number:{' '}
+				<input
+					type="number"
+					onChange={e => setNumber(Number(e.target.value))}
+				/>
+			</label>
+			<div>
+				{name
+					? `${name}'s favorite number is ${number}`
+					: 'Please type your name'}
+			</div>
+			<div>{number > 10 ? numberWarning : null}</div>
+			<div>{number < 0 ? numberWarning : null}</div>
+		</div>
+	)
 }
 ```
 
@@ -432,33 +432,33 @@ as well), but we can solve this specific situation pretty easily ourselves:
 
 ```tsx lines=4-7,25,26
 function FavoriteNumber() {
-  const [name, setName] = React.useState('')
-  const [number, setNumber] = React.useState(0)
-  const numberIsTooHigh = number > 10
-  const numberIsTooLow = number < 0
-  const numberWarning =
-    numberIsTooHigh || numberIsTooLow ? getNumberWarning(number) : null
-  return (
-    <div>
-      <label>
-        Your name: <input onChange={e => setName(e.target.value)} />
-      </label>
-      <label>
-        Your favorite number:{' '}
-        <input
-          type="number"
-          onChange={e => setNumber(Number(e.target.value))}
-        />
-      </label>
-      <div>
-        {name
-          ? `${name}'s favorite number is ${number}`
-          : 'Please type your name'}
-      </div>
-      <div>{numberIsTooHigh ? numberWarning : null}</div>
-      <div>{numberIsTooLow ? numberWarning : null}</div>
-    </div>
-  )
+	const [name, setName] = React.useState('')
+	const [number, setNumber] = React.useState(0)
+	const numberIsTooHigh = number > 10
+	const numberIsTooLow = number < 0
+	const numberWarning =
+		numberIsTooHigh || numberIsTooLow ? getNumberWarning(number) : null
+	return (
+		<div>
+			<label>
+				Your name: <input onChange={e => setName(e.target.value)} />
+			</label>
+			<label>
+				Your favorite number:{' '}
+				<input
+					type="number"
+					onChange={e => setNumber(Number(e.target.value))}
+				/>
+			</label>
+			<div>
+				{name
+					? `${name}'s favorite number is ${number}`
+					: 'Please type your name'}
+			</div>
+			<div>{numberIsTooHigh ? numberWarning : null}</div>
+			<div>{numberIsTooLow ? numberWarning : null}</div>
+		</div>
+	)
 }
 ```
 
@@ -474,33 +474,33 @@ It's sufficient to say that the custom hook allows us to do this:
 
 ```tsx lines=4-6,24,25
 function FavoriteNumber() {
-  const [name, setName] = React.useState('')
-  const [number, setNumber] = React.useState(0)
-  const numberWarning = useComputedValue(
-    () => getNumberWarning(number),
-    [number],
-  )
-  return (
-    <div>
-      <label>
-        Your name: <input onChange={e => setName(e.target.value)} />
-      </label>
-      <label>
-        Your favorite number:{' '}
-        <input
-          type="number"
-          onChange={e => setNumber(Number(e.target.value))}
-        />
-      </label>
-      <div>
-        {name
-          ? `${name}'s favorite number is ${number}`
-          : 'Please type your name'}
-      </div>
-      <div>{number > 10 ? numberWarning.result : null}</div>
-      <div>{number < 0 ? numberWarning.result : null}</div>
-    </div>
-  )
+	const [name, setName] = React.useState('')
+	const [number, setNumber] = React.useState(0)
+	const numberWarning = useComputedValue(
+		() => getNumberWarning(number),
+		[number],
+	)
+	return (
+		<div>
+			<label>
+				Your name: <input onChange={e => setName(e.target.value)} />
+			</label>
+			<label>
+				Your favorite number:{' '}
+				<input
+					type="number"
+					onChange={e => setNumber(Number(e.target.value))}
+				/>
+			</label>
+			<div>
+				{name
+					? `${name}'s favorite number is ${number}`
+					: 'Please type your name'}
+			</div>
+			<div>{number > 10 ? numberWarning.result : null}</div>
+			<div>{number < 0 ? numberWarning.result : null}</div>
+		</div>
+	)
 }
 ```
 

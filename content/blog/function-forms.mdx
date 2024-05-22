@@ -24,9 +24,9 @@ Here's how I write typical React components:
 
 ```tsx
 function Counter() {
-  const [count, setCount] = React.useState(0)
-  const increment = () => setCount(c => c + 1)
-  return <button onClick={increment}>{count}</button>
+	const [count, setCount] = React.useState(0)
+	const increment = () => setCount(c => c + 1)
+	return <button onClick={increment}>{count}</button>
 }
 ```
 
@@ -44,32 +44,32 @@ post:
 
 ```js
 function functionDeclaration() {
-  // do stuff
-  // return stuff
+	// do stuff
+	// return stuff
 }
 
 // using var because I'm feeling retro
 var functionExpression = function () {
-  // do stuff
-  // return stuff
+	// do stuff
+	// return stuff
 }
 
 var functionExpressionWithName = function someName() {
-  // do stuff
-  // return stuff
+	// do stuff
+	// return stuff
 }
 
 const arrowFunction = () => {
-  // do stuff
-  // return stuff
+	// do stuff
+	// return stuff
 }
 
 const arrowFunctionWithImplicitReturn = () => 'return stuff'
 
 const obj = {
-  functionExpressionProperty: function () {},
-  arrowFunctionProperty: () => {},
-  objectMethodFunction() {},
+	functionExpressionProperty: function () {},
+	arrowFunctionProperty: () => {},
+	objectMethodFunction() {},
 }
 ```
 

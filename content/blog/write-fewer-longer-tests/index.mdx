@@ -28,46 +28,46 @@ loaded:
 import * as React from 'react'
 import * as api from './api'
 
-function Course({courseId}) {
-  const [state, setState] = React.useState({
-    loading: false,
-    course: null,
-    error: null,
-  })
+function Course({ courseId }) {
+	const [state, setState] = React.useState({
+		loading: false,
+		course: null,
+		error: null,
+	})
 
-  const {loading, course, error} = state
+	const { loading, course, error } = state
 
-  React.useEffect(() => {
-    setState({loading: true, course: null, error: null})
-    api.getCourseInfo(courseId).then(
-      data => setState({loading: false, course: data, error: null}),
-      e => setState({loading: false, course: null, error: e}),
-    )
-  }, [courseId])
+	React.useEffect(() => {
+		setState({ loading: true, course: null, error: null })
+		api.getCourseInfo(courseId).then(
+			data => setState({ loading: false, course: data, error: null }),
+			e => setState({ loading: false, course: null, error: e }),
+		)
+	}, [courseId])
 
-  return (
-    <>
-      <div role="alert" aria-live="polite">
-        {loading ? 'Loading...' : error ? error.message : null}
-      </div>
-      {course ? <CourseInfo course={course} /> : null}
-    </>
-  )
+	return (
+		<>
+			<div role="alert" aria-live="polite">
+				{loading ? 'Loading...' : error ? error.message : null}
+			</div>
+			{course ? <CourseInfo course={course} /> : null}
+		</>
+	)
 }
 
-function CourseInfo({course}) {
-  const {title, subtitle, topics} = course
-  return (
-    <div>
-      <h1>{title}</h1>
-      <strong>{subtitle}</strong>
-      <ul>
-        {topics.map(t => (
-          <li key={t}>{t}</li>
-        ))}
-      </ul>
-    </div>
-  )
+function CourseInfo({ course }) {
+	const { title, subtitle, topics } = course
+	return (
+		<div>
+			<h1>{title}</h1>
+			<strong>{subtitle}</strong>
+			<ul>
+				{topics.map(t => (
+					<li key={t}>{t}</li>
+				))}
+			</ul>
+		</div>
+	)
 }
 
 export default Course
@@ -76,7 +76,7 @@ export default Course
 Here's what that would render (I added a "Re-mount" button so you can try making
 it re-load. I also made it fail 50% of the time):
 
-import {Example} from './components'
+import { Example } from './components'
 
 <Example />
 
@@ -104,89 +104,91 @@ per test best practice." Let's give that a try:
 ```tsx
 // 🛑 THIS IS AN EXAMPLE OF WHAT NOT TO DO...
 import * as React from 'react'
-import {render, wait, cleanup} from '@testing-library/react/pure'
-import {getCourseInfo} from '../api'
+import { render, wait, cleanup } from '@testing-library/react/pure'
+import { getCourseInfo } from '../api'
 import Course from '../course'
 
 jest.mock('../api')
 
 function buildCourse(overrides) {
-  return {
-    title: 'TEST_COURSE_TITLE',
-    subtitle: 'TEST_COURSE_SUBTITLE',
-    topics: ['TEST_COURSE_TOPIC'],
-    ...overrides,
-  }
+	return {
+		title: 'TEST_COURSE_TITLE',
+		subtitle: 'TEST_COURSE_SUBTITLE',
+		topics: ['TEST_COURSE_TOPIC'],
+		...overrides,
+	}
 }
 
 describe('Course success', () => {
-  const courseId = '123'
-  const title = 'My Awesome Course'
-  const subtitle = 'Learn super cool things'
-  const topics = ['topic 1', 'topic 2']
+	const courseId = '123'
+	const title = 'My Awesome Course'
+	const subtitle = 'Learn super cool things'
+	const topics = ['topic 1', 'topic 2']
 
-  let utils
-  beforeAll(() => {
-    getCourseInfo.mockResolvedValueOnce(buildCourse({title, subtitle, topics}))
-  })
+	let utils
+	beforeAll(() => {
+		getCourseInfo.mockResolvedValueOnce(
+			buildCourse({ title, subtitle, topics }),
+		)
+	})
 
-  afterAll(() => {
-    cleanup()
-    jest.resetAllMocks()
-  })
+	afterAll(() => {
+		cleanup()
+		jest.resetAllMocks()
+	})
 
-  it('should show a loading spinner', () => {
-    utils = render(<Course courseId={courseId} />)
-    expect(utils.getByRole('alert')).toHaveTextContent(/loading/i)
-  })
+	it('should show a loading spinner', () => {
+		utils = render(<Course courseId={courseId} />)
+		expect(utils.getByRole('alert')).toHaveTextContent(/loading/i)
+	})
 
-  it('should call the getCourseInfo function properly', () => {
-    expect(getCourseInfo).toHaveBeenCalledWith(courseId)
-  })
+	it('should call the getCourseInfo function properly', () => {
+		expect(getCourseInfo).toHaveBeenCalledWith(courseId)
+	})
 
-  it('should render the title', async () => {
-    expect(await utils.findByRole('heading')).toHaveTextContent(title)
-  })
+	it('should render the title', async () => {
+		expect(await utils.findByRole('heading')).toHaveTextContent(title)
+	})
 
-  it('should render the subtitle', () => {
-    expect(utils.getByText(subtitle)).toBeInTheDocument()
-  })
+	it('should render the subtitle', () => {
+		expect(utils.getByText(subtitle)).toBeInTheDocument()
+	})
 
-  it('should render the list of topics', () => {
-    const topicElsText = utils
-      .getAllByRole('listitem')
-      .map(el => el.textContent)
-    expect(topicElsText).toEqual(topics)
-  })
+	it('should render the list of topics', () => {
+		const topicElsText = utils
+			.getAllByRole('listitem')
+			.map(el => el.textContent)
+		expect(topicElsText).toEqual(topics)
+	})
 })
 
 describe('Course failure', () => {
-  const courseId = '321'
-  const message = 'TEST_ERROR_MESSAGE'
+	const courseId = '321'
+	const message = 'TEST_ERROR_MESSAGE'
 
-  let utils, alert
-  beforeAll(() => {
-    getCourseInfo.mockRejectedValueOnce({message})
-  })
+	let utils, alert
+	beforeAll(() => {
+		getCourseInfo.mockRejectedValueOnce({ message })
+	})
 
-  afterAll(() => {
-    cleanup()
-    jest.resetAllMocks()
-  })
+	afterAll(() => {
+		cleanup()
+		jest.resetAllMocks()
+	})
 
-  it('should show a loading spinner', () => {
-    utils = render(<Course courseId={courseId} />)
-    alert = utils.getByRole('alert')
-    expect(alert).toHaveTextContent(/loading/i)
-  })
+	it('should show a loading spinner', () => {
+		utils = render(<Course courseId={courseId} />)
+		alert = utils.getByRole('alert')
+		expect(alert).toHaveTextContent(/loading/i)
+	})
 
-  it('should call the getCourseInfo function properly', () => {
-    expect(getCourseInfo).toHaveBeenCalledWith(courseId)
-  })
+	it('should call the getCourseInfo function properly', () => {
+		expect(getCourseInfo).toHaveBeenCalledWith(courseId)
+	})
 
-  it('should render the error message', async () => {
-    await wait(() => expect(alert).toHaveTextContent(message))
-  })
+	it('should render the error message', async () => {
+		await wait(() => expect(alert).toHaveTextContent(message))
+	})
 })
 ```
 
@@ -201,76 +203,76 @@ problems with it:
    warnings (for this particular example)
 
 <callout-info>
-  It's notable that the first two points there are applicable regardless of what
-  you're testing. The third is a bit of an implementation detail between jest
-  and `act`.
+	It's notable that the first two points there are applicable regardless of what
+	you're testing. The third is a bit of an implementation detail between jest
+	and `act`.
 </callout-info>
 
 Instead, I suggest that we combine the tests like so:
 
 ```tsx
 // ✅ This is an example of what to do
-import {render, screen, wait} from '@testing-library/react'
+import { render, screen, wait } from '@testing-library/react'
 import * as React from 'react'
 
-import {getCourseInfo} from '../api'
+import { getCourseInfo } from '../api'
 import Course from '../course'
 
 jest.mock('../api')
 
 afterEach(() => {
-  jest.resetAllMocks()
+	jest.resetAllMocks()
 })
 
 function buildCourse(overrides) {
-  return {
-    title: 'TEST_COURSE_TITLE',
-    subtitle: 'TEST_COURSE_SUBTITLE',
-    topics: ['TEST_COURSE_TOPIC'],
-    ...overrides,
-  }
+	return {
+		title: 'TEST_COURSE_TITLE',
+		subtitle: 'TEST_COURSE_SUBTITLE',
+		topics: ['TEST_COURSE_TOPIC'],
+		...overrides,
+	}
 }
 
 test('course loads and renders the course information', async () => {
-  const courseId = '123'
-  const title = 'My Awesome Course'
-  const subtitle = 'Learn super cool things'
-  const topics = ['topic 1', 'topic 2']
+	const courseId = '123'
+	const title = 'My Awesome Course'
+	const subtitle = 'Learn super cool things'
+	const topics = ['topic 1', 'topic 2']
 
-  getCourseInfo.mockResolvedValueOnce(buildCourse({title, subtitle, topics}))
+	getCourseInfo.mockResolvedValueOnce(buildCourse({ title, subtitle, topics }))
 
-  render(<Course courseId={courseId} />)
+	render(<Course courseId={courseId} />)
 
-  expect(getCourseInfo).toHaveBeenCalledWith(courseId)
-  expect(getCourseInfo).toHaveBeenCalledTimes(1)
+	expect(getCourseInfo).toHaveBeenCalledWith(courseId)
+	expect(getCourseInfo).toHaveBeenCalledTimes(1)
 
-  const alert = screen.getByRole('alert')
-  expect(alert).toHaveTextContent(/loading/i)
+	const alert = screen.getByRole('alert')
+	expect(alert).toHaveTextContent(/loading/i)
 
-  const titleEl = await screen.findByRole('heading')
-  expect(titleEl).toHaveTextContent(title)
+	const titleEl = await screen.findByRole('heading')
+	expect(titleEl).toHaveTextContent(title)
 
-  expect(screen.getByText(subtitle)).toBeInTheDocument()
+	expect(screen.getByText(subtitle)).toBeInTheDocument()
 
-  const topicElsText = screen.getAllByRole('listitem').map(el => el.textContent)
-  expect(topicElsText).toEqual(topics)
+	const topicElsText = screen.getAllByRole('listitem').map(el => el.textContent)
+	expect(topicElsText).toEqual(topics)
 })
 
 test('an error is rendered if there is a problem getting course info', async () => {
-  const message = 'TEST_ERROR_MESSAGE'
-  const courseId = '321'
+	const message = 'TEST_ERROR_MESSAGE'
+	const courseId = '321'
 
-  getCourseInfo.mockRejectedValueOnce({message})
+	getCourseInfo.mockRejectedValueOnce({ message })
 
-  render(<Course courseId={courseId} />)
+	render(<Course courseId={courseId} />)
 
-  expect(getCourseInfo).toHaveBeenCalledWith(courseId)
-  expect(getCourseInfo).toHaveBeenCalledTimes(1)
+	expect(getCourseInfo).toHaveBeenCalledWith(courseId)
+	expect(getCourseInfo).toHaveBeenCalledTimes(1)
 
-  const alert = screen.getByRole('alert')
-  expect(alert).toHaveTextContent(/loading/i)
+	const alert = screen.getByRole('alert')
+	expect(alert).toHaveTextContent(/loading/i)
 
-  await wait(() => expect(alert).toHaveTextContent(message))
+	await wait(() => expect(alert).toHaveTextContent(message))
 })
 ```
 
@@ -350,9 +352,9 @@ on prop updates for example).
 **The principle:**
 
 <callout-success class="important">
-  Think of a test case workflow for a manual tester and try to make each of your
-  test cases include all parts to that workflow. This often results in multiple
-  actions and assertions which is fine.
+	Think of a test case workflow for a manual tester and try to make each of your
+	test cases include all parts to that workflow. This often results in multiple
+	actions and assertions which is fine.
 </callout-success>
 
 There's the old "Arrange" "Act" "Assert" model for structuring tests. I
@@ -361,8 +363,8 @@ and "Asserts" as necessary for the workflow you're trying to get confidence
 about.
 
 <callout-info class="aside">
-  [Find runnable code for these examples
-  here](https://github.com/kentcdodds/write-fewer-longer-tests-demo)
+	[Find runnable code for these examples
+	here](https://github.com/kentcdodds/write-fewer-longer-tests-demo)
 </callout-info>
 
 ## Appendix
@@ -389,10 +391,10 @@ this problem:
 ```tsx
 // 🛑 THIS IS AN EXAMPLE OF WHAT NOT TO DO...
 test('course shows loading screen', () => {
-  getCourseInfo.mockResolvedValueOnce(buildCourse())
-  render(<Course courseId="123" />)
-  const alert = screen.getByRole('alert')
-  expect(alert).toHaveTextContent(/loading/i)
+	getCourseInfo.mockResolvedValueOnce(buildCourse())
+	render(<Course courseId="123" />)
+	const alert = screen.getByRole('alert')
+	expect(alert).toHaveTextContent(/loading/i)
 })
 ```
 
@@ -414,12 +416,12 @@ There are three ways to fix this.
 // 1. Wait for the promise to resolve
 // ⚠️ this is an ok way to solve this problem, but there's a better way, read on
 test('course shows loading screen', async () => {
-  const promise = Promise.resolve(buildCourse())
-  getCourseInfo.mockImplementationOnce(() => promise)
-  render(<Course courseId="123" />)
-  const alert = screen.getByRole('alert')
-  expect(alert).toHaveTextContent(/loading/i)
-  await act(() => promise)
+	const promise = Promise.resolve(buildCourse())
+	getCourseInfo.mockImplementationOnce(() => promise)
+	render(<Course courseId="123" />)
+	const alert = screen.getByRole('alert')
+	expect(alert).toHaveTextContent(/loading/i)
+	await act(() => promise)
 })
 ```
 
@@ -432,11 +434,11 @@ the DOM.
 ```tsx
 // 2. Use React Testing Library's `wait` utility
 test('course shows loading screen', async () => {
-  getCourseInfo.mockResolvedValueOnce(buildCourse())
-  render(<Course courseId="123" />)
-  const alert = screen.getByRole('alert')
-  expect(alert).toHaveTextContent(/loading/i)
-  await wait()
+	getCourseInfo.mockResolvedValueOnce(buildCourse())
+	render(<Course courseId="123" />)
+	const alert = screen.getByRole('alert')
+	expect(alert).toHaveTextContent(/loading/i)
+	await wait()
 })
 ```
 

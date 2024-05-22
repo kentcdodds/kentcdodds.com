@@ -3,38 +3,38 @@
 // in the file we have this code in, so we leave it all by itself...
 // Like the outcast it is...
 type ListFormatOptions = {
-  type?: 'conjunction' | 'disjunction' | 'unit'
-  style?: 'long' | 'short' | 'narrow'
-  localeMatcher?: 'lookup' | 'best fit'
+	type?: 'conjunction' | 'disjunction' | 'unit'
+	style?: 'long' | 'short' | 'narrow'
+	localeMatcher?: 'lookup' | 'best fit'
 }
 declare namespace Intl {
-  class ListFormat {
-    constructor(locale: string, options: ListFormatOptions)
-    public format: (items: Array<string>) => string
-  }
+	class ListFormat {
+		constructor(locale: string, options: ListFormatOptions)
+		public format: (items: Array<string>) => string
+	}
 }
 
 type ToStringable = {
-  toString(): string
+	toString(): string
 }
 
 type ListifyOptions<ItemType extends ToStringable> = {
-  type?: ListFormatOptions['type']
-  style?: ListFormatOptions['style']
-  stringify?: (item: ItemType) => string
+	type?: ListFormatOptions['type']
+	style?: ListFormatOptions['style']
+	stringify?: (item: ItemType) => string
 }
 
 function listify<ItemType extends ToStringable>(
-  array: Array<ItemType>,
-  {
-    type = 'conjunction',
-    style = 'long',
-    stringify = thing => thing.toString(),
-  }: ListifyOptions<ItemType> = {},
+	array: Array<ItemType>,
+	{
+		type = 'conjunction',
+		style = 'long',
+		stringify = thing => thing.toString(),
+	}: ListifyOptions<ItemType> = {},
 ) {
-  const stringified = array.map(item => stringify(item))
-  const formatter = new Intl.ListFormat('en', {style, type})
-  return formatter.format(stringified)
+	const stringified = array.map(item => stringify(item))
+	const formatter = new Intl.ListFormat('en', { style, type })
+	return formatter.format(stringified)
 }
 
-export {listify}
+export { listify }

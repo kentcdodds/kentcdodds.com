@@ -31,19 +31,19 @@ bannerCredit: Photo by [Burst](https://unsplash.com/photos/aoN3HWLbhdI)
 What's wrong with this code?
 
 ```tsx
-function ContactList({contacts}) {
-  return (
-    <div>
-      <ul>
-        {contacts.length &&
-          contacts.map(contact => (
-            <li key={contact.id}>
-              {contact.firstName} {contact.lastName}
-            </li>
-          ))}
-      </ul>
-    </div>
-  )
+function ContactList({ contacts }) {
+	return (
+		<div>
+			<ul>
+				{contacts.length &&
+					contacts.map(contact => (
+						<li key={contact.id}>
+							{contact.firstName} {contact.lastName}
+						</li>
+					))}
+			</ul>
+		</div>
+	)
 }
 ```
 
@@ -67,28 +67,28 @@ The solution? Use a ternary to be explicit about what you want rendered in the
 falsy case. In our case, it was nothing (so using `null` is perfect):
 
 ```tsx
-function ContactList({contacts}) {
-  return (
-    <div>
-      <ul>
-        {contacts.length
-          ? contacts.map(contact => (
-              <li key={contact.id}>
-                {contact.firstName} {contact.lastName}
-              </li>
-            ))
-          : null}
-      </ul>
-    </div>
-  )
+function ContactList({ contacts }) {
+	return (
+		<div>
+			<ul>
+				{contacts.length
+					? contacts.map(contact => (
+							<li key={contact.id}>
+								{contact.firstName} {contact.lastName}
+							</li>
+						))
+					: null}
+			</ul>
+		</div>
+	)
 }
 ```
 
 What about this code? What's wrong here?
 
 ```tsx
-function Error({error}) {
-  return error && <div className="fancy-error">{error.message}</div>
+function Error({ error }) {
+	return error && <div className="fancy-error">{error.message}</div>
 }
 ```
 
@@ -118,9 +118,9 @@ So it'd be like trying to write this:
 
 ```js
 function throwTheCandy(candyNames) {
-  for (const candyName of candyNames) {
-    throwCandy(candyName)
-  }
+	for (const candyName of candyNames) {
+		throwCandy(candyName)
+	}
 }
 
 throwTheCandy(candies.length && candies.map(c => c.name))
@@ -159,21 +159,21 @@ I'm personally a fan of ternaries, but if you'd prefer `if` statements, that's
 cool too. Here's how I'd do the contacts thing with `if` statements:
 
 ```tsx
-function ContactList({contacts}) {
-  let contactsElements = null
-  if (contacts.length) {
-    contactsElements = contacts.map(contact => (
-      <li key={contact.id}>
-        {contact.firstName} {contact.lastName}
-      </li>
-    ))
-  }
+function ContactList({ contacts }) {
+	let contactsElements = null
+	if (contacts.length) {
+		contactsElements = contacts.map(contact => (
+			<li key={contact.id}>
+				{contact.firstName} {contact.lastName}
+			</li>
+		))
+	}
 
-  return (
-    <div>
-      <ul>{contactsElements}</ul>
-    </div>
-  )
+	return (
+		<div>
+			<ul>{contactsElements}</ul>
+		</div>
+	)
 }
 ```
 
@@ -196,26 +196,26 @@ To finish strong, if I had to write both of these components today, here's how
 I'd write them:
 
 ```tsx
-function ContactList({contacts}) {
-  return (
-    <div>
-      <ul>
-        {contacts.length
-          ? contacts.map(contact => (
-              <li key={contact.id}>
-                {contact.firstName} {contact.lastName}
-              </li>
-            ))
-          : null}
-      </ul>
-    </div>
-  )
+function ContactList({ contacts }) {
+	return (
+		<div>
+			<ul>
+				{contacts.length
+					? contacts.map(contact => (
+							<li key={contact.id}>
+								{contact.firstName} {contact.lastName}
+							</li>
+						))
+					: null}
+			</ul>
+		</div>
+	)
 }
 ```
 
 ```tsx
-function Error({error}) {
-  return error ? <div className="fancy-error">{error.message}</div> : null
+function Error({ error }) {
+	return error ? <div className="fancy-error">{error.message}</div> : null
 }
 ```
 

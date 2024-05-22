@@ -70,7 +70,7 @@ import App from './App'
 // is called synchronously so there's no penalty for including this
 // in production.
 loadDevTools(() => {
-  ReactDOM.render(<App />, document.getElementById('root'))
+	ReactDOM.render(<App />, document.getElementById('root'))
 })
 ```
 
@@ -78,29 +78,29 @@ And then:
 
 ```js filename=src/dev-tools/load.js
 function loadDevTools(callback) {
-  // this allows you to explicitly disable it in development for example
-  const explicitlyDisabled =
-    window.location.search.includes('dev-tools=false') ||
-    window.localStorage.getItem('dev-tools') === 'false'
+	// this allows you to explicitly disable it in development for example
+	const explicitlyDisabled =
+		window.location.search.includes('dev-tools=false') ||
+		window.localStorage.getItem('dev-tools') === 'false'
 
-  const explicitlyEnabled =
-    window.location.search.includes('dev-tools=true') ||
-    window.localStorage.getItem('dev-tools') === 'true'
+	const explicitlyEnabled =
+		window.location.search.includes('dev-tools=true') ||
+		window.localStorage.getItem('dev-tools') === 'true'
 
-  // we want it enabled by default everywhere but production and we also want
-  // to support the dev tools in production (to make us more productive triaging production issues).
-  // you can enable the DevTools via localStorage or the query string.
-  if (
-    !explicitlyDisabled &&
-    (process.env.NODE_ENV === 'development' || explicitlyEnabled)
-  ) {
-    // use a dynamic import so the dev-tools code isn't bundled with the regular
-    // app code so we don't worry about bundle size.
-    import('./dev-tools').then(devTools => devTools.install()).finally(callback)
-  } else {
-    // if we don't need the DevTools, call the callback immediately.
-    callback()
-  }
+	// we want it enabled by default everywhere but production and we also want
+	// to support the dev tools in production (to make us more productive triaging production issues).
+	// you can enable the DevTools via localStorage or the query string.
+	if (
+		!explicitlyDisabled &&
+		(process.env.NODE_ENV === 'development' || explicitlyEnabled)
+	) {
+		// use a dynamic import so the dev-tools code isn't bundled with the regular
+		// app code so we don't worry about bundle size.
+		import('./dev-tools').then(devTools => devTools.install()).finally(callback)
+	} else {
+		// if we don't need the DevTools, call the callback immediately.
+		callback()
+	}
 }
 
 export default loadDevTools
@@ -130,16 +130,16 @@ the races:
 import * as React from 'react'
 
 function install() {
-  function DevTools() {
-    return <div>Hi from the DevTools</div>
-  }
-  // add dev tools UI to the page
-  const devToolsRoot = document.createElement('div')
-  document.body.appendChild(devToolsRoot)
-  ReactDOM.render(<DevTools />, devToolsRoot)
+	function DevTools() {
+		return <div>Hi from the DevTools</div>
+	}
+	// add dev tools UI to the page
+	const devToolsRoot = document.createElement('div')
+	document.body.appendChild(devToolsRoot)
+	ReactDOM.render(<DevTools />, devToolsRoot)
 }
 
-export {install}
+export { install }
 ```
 
 You can check out
@@ -161,13 +161,13 @@ really helpful. So in the App DevTools script we have something like this:
 // if you're not using webpack, you might consider using
 // https://npm.im/preval.macro or https://npm.im/codegen.macro
 const requireDevToolsLocal = require.context(
-  './',
-  false,
-  /dev-tools\.local\.js/,
+	'./',
+	false,
+	/dev-tools\.local\.js/,
 )
 const local = requireDevToolsLocal.keys()[0]
 if (local) {
-  requireDevToolsLocal(local).default
+	requireDevToolsLocal(local).default
 }
 ```
 

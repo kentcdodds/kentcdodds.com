@@ -32,11 +32,11 @@ posts) that the images start as blurry and then the full image fades-in once
 it's loaded. Here's a video to demonstrate that experience:
 
 <video
-  autoPlay={true}
-  controls={true}
-  loop={true}
-  muted={true}
-  src="https://res.cloudinary.com/kentcdodds-com/video/upload/f_auto:video,q_auto/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/blurred-image-load_zzqqnt.mp4"
+	autoPlay={true}
+	controls={true}
+	loop={true}
+	muted={true}
+	src="https://res.cloudinary.com/kentcdodds-com/video/upload/f_auto:video,q_auto/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/blurred-image-load_zzqqnt.mp4"
 />
 
 I want to walk you through some of the things I had to do for this to work, and
@@ -56,7 +56,7 @@ TL;DR:
 
 ```html
 <div class="aspect-[3/4] md:aspect-[3/2]">
-  <img src="..." alt="..." class="..." />
+	<img src="..." alt="..." class="..." />
 </div>
 ```
 
@@ -82,13 +82,13 @@ queries (`sizes`). Here's the example from MDN:
 
 ```html
 <img
-  src="/files/16870/new-york-skyline-wide.jpg"
-  srcset="
-    /files/16870/new-york-skyline-wide.jpg 3724w,
-    /files/16869/new-york-skyline-4by3.jpg 1961w,
-    /files/16871/new-york-skyline-tall.jpg 1060w
-  "
-  sizes="((min-width: 50em) and (max-width: 60em)) 50em,
+	src="/files/16870/new-york-skyline-wide.jpg"
+	srcset="
+		/files/16870/new-york-skyline-wide.jpg 3724w,
+		/files/16869/new-york-skyline-4by3.jpg 1961w,
+		/files/16871/new-york-skyline-tall.jpg 1060w
+	"
+	sizes="((min-width: 50em) and (max-width: 60em)) 50em,
               ((min-width: 30em) and (max-width: 50em)) 30em,
               (max-width: 30em) 20em"
 />
@@ -107,21 +107,21 @@ Here's what my img tag looks like for a blog post:
 
 ```html
 <img
-  title="Photo by Kari Shea"
-  class="z-10 rounded-lg object-cover object-center transition-opacity"
-  alt="MacBook Pro on top of brown table"
-  src="https://res.cloudinary.com/kentcdodds-com/image/upload/w_1517,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop"
-  srcset="
-    https://res.cloudinary.com/kentcdodds-com/image/upload/w_280,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop   280w,
-    https://res.cloudinary.com/kentcdodds-com/image/upload/w_560,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop   560w,
-    https://res.cloudinary.com/kentcdodds-com/image/upload/w_840,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop   840w,
-    https://res.cloudinary.com/kentcdodds-com/image/upload/w_1100,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop 1100w,
-    https://res.cloudinary.com/kentcdodds-com/image/upload/w_1650,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop 1650w,
-    https://res.cloudinary.com/kentcdodds-com/image/upload/w_2500,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop 2500w,
-    https://res.cloudinary.com/kentcdodds-com/image/upload/w_2100,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop 2100w,
-    https://res.cloudinary.com/kentcdodds-com/image/upload/w_3100,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop 3100w
-  "
-  sizes="(max-width:1023px) 80vw, (min-width:1024px) and (max-width:1620px) 67vw, 1100px"
+	title="Photo by Kari Shea"
+	class="z-10 rounded-lg object-cover object-center transition-opacity"
+	alt="MacBook Pro on top of brown table"
+	src="https://res.cloudinary.com/kentcdodds-com/image/upload/w_1517,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop"
+	srcset="
+		https://res.cloudinary.com/kentcdodds-com/image/upload/w_280,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop   280w,
+		https://res.cloudinary.com/kentcdodds-com/image/upload/w_560,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop   560w,
+		https://res.cloudinary.com/kentcdodds-com/image/upload/w_840,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop   840w,
+		https://res.cloudinary.com/kentcdodds-com/image/upload/w_1100,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop 1100w,
+		https://res.cloudinary.com/kentcdodds-com/image/upload/w_1650,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop 1650w,
+		https://res.cloudinary.com/kentcdodds-com/image/upload/w_2500,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop 2500w,
+		https://res.cloudinary.com/kentcdodds-com/image/upload/w_2100,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop 2100w,
+		https://res.cloudinary.com/kentcdodds-com/image/upload/w_3100,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop 3100w
+	"
+	sizes="(max-width:1023px) 80vw, (min-width:1024px) and (max-width:1620px) 67vw, 1100px"
 />
 ```
 
@@ -130,42 +130,42 @@ these props for me:
 
 ```tsx
 function getImgProps(
-  imageBuilder: ImageBuilder,
-  {
-    widths,
-    sizes,
-    transformations,
-  }: {
-    widths: Array<number>
-    sizes: Array<string>
-    transformations?: TransformerOption
-  },
+	imageBuilder: ImageBuilder,
+	{
+		widths,
+		sizes,
+		transformations,
+	}: {
+		widths: Array<number>
+		sizes: Array<string>
+		transformations?: TransformerOption
+	},
 ) {
-  const averageSize = Math.ceil(widths.reduce((a, s) => a + s) / widths.length)
+	const averageSize = Math.ceil(widths.reduce((a, s) => a + s) / widths.length)
 
-  return {
-    alt: imageBuilder.alt,
-    src: imageBuilder({
-      quality: 'auto',
-      format: 'auto',
-      ...transformations,
-      resize: {width: averageSize, ...transformations?.resize},
-    }),
-    srcSet: widths
-      .map(width =>
-        [
-          imageBuilder({
-            quality: 'auto',
-            format: 'auto',
-            ...transformations,
-            resize: {width, ...transformations?.resize},
-          }),
-          `${width}w`,
-        ].join(' '),
-      )
-      .join(', '),
-    sizes: sizes.join(', '),
-  }
+	return {
+		alt: imageBuilder.alt,
+		src: imageBuilder({
+			quality: 'auto',
+			format: 'auto',
+			...transformations,
+			resize: { width: averageSize, ...transformations?.resize },
+		}),
+		srcSet: widths
+			.map(width =>
+				[
+					imageBuilder({
+						quality: 'auto',
+						format: 'auto',
+						...transformations,
+						resize: { width, ...transformations?.resize },
+					}),
+					`${width}w`,
+				].join(' '),
+			)
+			.join(', '),
+		sizes: sizes.join(', '),
+	}
 }
 ```
 
@@ -173,26 +173,26 @@ Then I use it like so:
 
 ```tsx
 <img
-  key={frontmatter.bannerCloudinaryId}
-  title={frontmatter.bannerCredit}
-  {...getImgProps(
-    getImageBuilder(
-      frontmatter.bannerCloudinaryId,
-      getBannerAltProp(frontmatter),
-    ),
-    {
-      className: 'rounded-lg object-cover object-center',
-      widths: [280, 560, 840, 1100, 1650, 2500, 2100, 3100],
-      sizes: [
-        '(max-width:1023px) 80vw',
-        '(min-width:1024px) and (max-width:1620px) 67vw',
-        '1100px',
-      ],
-      transformations: {
-        background: 'rgb:e6e9ee',
-      },
-    },
-  )}
+	key={frontmatter.bannerCloudinaryId}
+	title={frontmatter.bannerCredit}
+	{...getImgProps(
+		getImageBuilder(
+			frontmatter.bannerCloudinaryId,
+			getBannerAltProp(frontmatter),
+		),
+		{
+			className: 'rounded-lg object-cover object-center',
+			widths: [280, 560, 840, 1100, 1650, 2500, 2100, 3100],
+			sizes: [
+				'(max-width:1023px) 80vw',
+				'(min-width:1024px) and (max-width:1620px) 67vw',
+				'1100px',
+			],
+			transformations: {
+				background: 'rgb:e6e9ee',
+			},
+		},
+	)}
 />
 ```
 
@@ -217,11 +217,11 @@ your placeholder! As ridiculous as that sounds, this is actually what Unsplash
 does.
 
 <video
-  autoPlay={true}
-  controls={true}
-  loop={true}
-  muted={true}
-  src="https://res.cloudinary.com/kentcdodds-com/video/upload/f_auto:video,q_auto/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/unsplash-loading_l2ekrr.mp4"
+	autoPlay={true}
+	controls={true}
+	loop={true}
+	muted={true}
+	src="https://res.cloudinary.com/kentcdodds-com/video/upload/f_auto:video,q_auto/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/unsplash-loading_l2ekrr.mp4"
 />
 
 When you land on an unsplash image, there are three things that can happen in
@@ -348,48 +348,48 @@ needed to write some JavaScript. I think it's about time I show you my
 
 ```tsx filename=app/routes/blog.$slug.tsx
 function BlogScreen() {
-  // ...
-  return (
-    // ...
-    <div className="col-span-full mt-10 lg:col-span-10 lg:col-start-2 lg:mt-16">
-      {frontmatter.bannerCloudinaryId ? (
-        <BlurrableImage
-          key={frontmatter.bannerCloudinaryId}
-          blurDataUrl={frontmatter.bannerBlurDataUrl}
-          className="aspect-[3/4] md:aspect-[3/2]"
-          img={
-            <img
-              key={frontmatter.bannerCloudinaryId}
-              title={frontmatter.bannerCredit}
-              {...getImgProps(
-                getImageBuilder(
-                  frontmatter.bannerCloudinaryId,
-                  frontmatter.bannerAlt ??
-                    frontmatter.bannerCredit ??
-                    frontmatter.title ??
-                    'Post banner',
-                ),
-                {
-                  className: 'rounded-lg object-cover object-center',
-                  widths: [280, 560, 840, 1100, 1650, 2500, 2100, 3100],
-                  sizes: [
-                    '(max-width:1023px) 80vw',
-                    '(min-width:1024px) and (max-width:1620px) 67vw',
-                    '1100px',
-                  ],
-                  transformations: {
-                    background: 'rgb:e6e9ee',
-                  },
-                },
-              )}
-            />
-          }
-        />
-      ) : null}
-    </div>
-    // ...
-  )
-  // ...
+	// ...
+	return (
+		// ...
+		<div className="col-span-full mt-10 lg:col-span-10 lg:col-start-2 lg:mt-16">
+			{frontmatter.bannerCloudinaryId ? (
+				<BlurrableImage
+					key={frontmatter.bannerCloudinaryId}
+					blurDataUrl={frontmatter.bannerBlurDataUrl}
+					className="aspect-[3/4] md:aspect-[3/2]"
+					img={
+						<img
+							key={frontmatter.bannerCloudinaryId}
+							title={frontmatter.bannerCredit}
+							{...getImgProps(
+								getImageBuilder(
+									frontmatter.bannerCloudinaryId,
+									frontmatter.bannerAlt ??
+										frontmatter.bannerCredit ??
+										frontmatter.title ??
+										'Post banner',
+								),
+								{
+									className: 'rounded-lg object-cover object-center',
+									widths: [280, 560, 840, 1100, 1650, 2500, 2100, 3100],
+									sizes: [
+										'(max-width:1023px) 80vw',
+										'(min-width:1024px) and (max-width:1620px) 67vw',
+										'1100px',
+									],
+									transformations: {
+										background: 'rgb:e6e9ee',
+									},
+								},
+							)}
+						/>
+					}
+				/>
+			) : null}
+		</div>
+		// ...
+	)
+	// ...
 }
 ```
 
@@ -397,61 +397,61 @@ And here's the BlurrableImage component itself:
 
 ```tsx filename=app/components/blurrable-image.tsx
 import * as React from 'react'
-import {clsx} from 'clsx'
-import {useSSRLayoutEffect} from '~/utils/misc'
+import { clsx } from 'clsx'
+import { useSSRLayoutEffect } from '~/utils/misc'
 
 export function BlurrableImage({
-  img,
-  blurDataUrl,
-  ...rest
+	img,
+	blurDataUrl,
+	...rest
 }: {
-  img: React.ReactElement<React.ImgHTMLAttributes<HTMLImageElement>>
-  blurDataUrl?: string
+	img: React.ReactElement<React.ImgHTMLAttributes<HTMLImageElement>>
+	blurDataUrl?: string
 } & React.HTMLAttributes<HTMLDivElement>) {
-  const [visible, setVisible] = React.useState(false)
-  const jsImgElRef = React.useRef<HTMLImageElement>(null)
+	const [visible, setVisible] = React.useState(false)
+	const jsImgElRef = React.useRef<HTMLImageElement>(null)
 
-  React.useEffect(() => {
-    if (!jsImgElRef.current) return
-    if (jsImgElRef.current.complete) return
+	React.useEffect(() => {
+		if (!jsImgElRef.current) return
+		if (jsImgElRef.current.complete) return
 
-    let current = true
-    jsImgElRef.current.addEventListener('load', () => {
-      if (!jsImgElRef.current || !current) return
-      setTimeout(() => {
-        setVisible(true)
-      }, 0)
-    })
+		let current = true
+		jsImgElRef.current.addEventListener('load', () => {
+			if (!jsImgElRef.current || !current) return
+			setTimeout(() => {
+				setVisible(true)
+			}, 0)
+		})
 
-    return () => {
-      current = false
-    }
-  }, [])
+		return () => {
+			current = false
+		}
+	}, [])
 
-  const jsImgEl = React.cloneElement(img, {
-    // @ts-expect-error no idea 🤷‍♂️
-    ref: jsImgElRef,
-    className: clsx(img.props.className, 'transition-opacity', {
-      'opacity-0': !visible,
-    }),
-  })
+	const jsImgEl = React.cloneElement(img, {
+		// @ts-expect-error no idea 🤷‍♂️
+		ref: jsImgElRef,
+		className: clsx(img.props.className, 'transition-opacity', {
+			'opacity-0': !visible,
+		}),
+	})
 
-  return (
-    <div {...rest}>
-      {blurDataUrl ? (
-        <>
-          <img
-            src={blurDataUrl}
-            className={img.props.className}
-            alt={img.props.alt}
-          />
-          <div className={clsx(img.props.className, 'backdrop-blur-xl')} />
-        </>
-      ) : null}
-      {jsImgEl}
-      <noscript>{img}</noscript>
-    </div>
-  )
+	return (
+		<div {...rest}>
+			{blurDataUrl ? (
+				<>
+					<img
+						src={blurDataUrl}
+						className={img.props.className}
+						alt={img.props.alt}
+					/>
+					<div className={clsx(img.props.className, 'backdrop-blur-xl')} />
+				</>
+			) : null}
+			{jsImgEl}
+			<noscript>{img}</noscript>
+		</div>
+	)
 }
 ```
 
@@ -510,12 +510,12 @@ wanted to do:
 ```tsx lines=5
 // ...
 const jsImgEl = React.cloneElement(img, {
-  // @ts-expect-error no idea 🤷‍♂️
-  ref: jsImgElRef,
-  onload: "this.classList.remove('opacity-0')",
-  className: clsx(img.props.className, 'transition-opacity', {
-    'opacity-0': !visible,
-  }),
+	// @ts-expect-error no idea 🤷‍♂️
+	ref: jsImgElRef,
+	onload: "this.classList.remove('opacity-0')",
+	className: clsx(img.props.className, 'transition-opacity', {
+		'opacity-0': !visible,
+	}),
 })
 // ...
 ```

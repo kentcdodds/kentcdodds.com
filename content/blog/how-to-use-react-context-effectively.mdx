@@ -45,14 +45,14 @@ experience and maintainability of the context objects you create for your
 application and/or libraries.
 
 <callout-danger>
-  Please do read [Application State Management with
-  React](/blog/application-state-management-with-react) and follow the advice
-  that you shouldn't be reaching for context to solve every state sharing
-  problem that crosses your desk. But when you do need to reach for context,
-  hopefully this blog post will help you know how to do so effectively. Also,
-  remember that context does NOT have to be global to the whole app, but can be
-  applied to one part of your tree and you can (and probably should) have
-  multiple logically separated contexts in your app.
+	Please do read [Application State Management with
+	React](/blog/application-state-management-with-react) and follow the advice
+	that you shouldn't be reaching for context to solve every state sharing
+	problem that crosses your desk. But when you do need to reach for context,
+	hopefully this blog post will help you know how to do so effectively. Also,
+	remember that context does NOT have to be global to the whole app, but can be
+	applied to one part of your tree and you can (and probably should) have
+	multiple logically separated contexts in your app.
 </callout-danger>
 
 First, let's create a file at `src/count-context.js` and we'll create our
@@ -71,8 +71,8 @@ useful in a situation like this:
 
 ```tsx lines=2
 function CountDisplay() {
-  const {count} = React.useContext(CountContext)
-  return <div>{count}</div>
+	const { count } = React.useContext(CountContext)
+	return <div>{count}</div>
 }
 
 ReactDOM.render(<CountDisplay />, document.getElementById('⚛️'))
@@ -92,8 +92,8 @@ context consumers (those using `useContext`) to be rendered within a provider
 which can provide a useful value.
 
 <callout-info>
-  There are situations where default values are useful, but most of the time
-  they're not necessary or useful.
+	There are situations where default values are useful, but most of the time
+	they're not necessary or useful.
 </callout-info>
 
 [The React docs](https://reactjs.org/docs/context.html#reactcreatecontext)
@@ -106,9 +106,9 @@ you. [There are reasons to do this](/blog/the-merits-of-mocking), but that's not
 one of them.
 
 <callout-warning>
-  If you're using TypeScript, not providing a default value can be really
-  annoying for people who are using `React.useContext`, but I'll show you how to
-  avoid that problem altogether below. Keep reading!
+	If you're using TypeScript, not providing a default value can be really
+	annoying for people who are using `React.useContext`, but I'll show you how to
+	avoid that problem altogether below. Keep reading!
 </callout-warning>
 
 ## The Custom Provider Component
@@ -119,12 +119,12 @@ used like this:
 
 ```tsx lines=3,6
 function App() {
-  return (
-    <CountProvider>
-      <CountDisplay />
-      <Counter />
-    </CountProvider>
-  )
+	return (
+		<CountProvider>
+			<CountDisplay />
+			<Counter />
+		</CountProvider>
+	)
 }
 
 ReactDOM.render(<App />, document.getElementById('⚛️'))
@@ -138,36 +138,36 @@ import * as React from 'react'
 const CountContext = React.createContext()
 
 function countReducer(state, action) {
-  switch (action.type) {
-    case 'increment': {
-      return {count: state.count + 1}
-    }
-    case 'decrement': {
-      return {count: state.count - 1}
-    }
-    default: {
-      throw new Error(`Unhandled action type: ${action.type}`)
-    }
-  }
+	switch (action.type) {
+		case 'increment': {
+			return { count: state.count + 1 }
+		}
+		case 'decrement': {
+			return { count: state.count - 1 }
+		}
+		default: {
+			throw new Error(`Unhandled action type: ${action.type}`)
+		}
+	}
 }
 
-function CountProvider({children}) {
-  const [state, dispatch] = React.useReducer(countReducer, {count: 0})
-  // NOTE: you *might* need to memoize this value
-  // Learn more in http://kcd.im/optimize-context
-  const value = {state, dispatch}
-  return <CountContext.Provider value={value}>{children}</CountContext.Provider>
+function CountProvider({ children }) {
+	const [state, dispatch] = React.useReducer(countReducer, { count: 0 })
+	// NOTE: you *might* need to memoize this value
+	// Learn more in http://kcd.im/optimize-context
+	const value = { state, dispatch }
+	return <CountContext.Provider value={value}>{children}</CountContext.Provider>
 }
 
-export {CountProvider}
+export { CountProvider }
 ```
 
 <callout-success>
-  This is a contrived example that I'm intentionally over-engineering to show
-  you what a more real-world scenario would be like. **This does not mean it has
-  to be this complicated every time!** Feel free to use `useState` if that suits
-  your scenario. In addition, some providers are going to be short and simple
-  like this, and others are going to be MUCH more involved with many hooks.
+	This is a contrived example that I'm intentionally over-engineering to show
+	you what a more real-world scenario would be like. **This does not mean it has
+	to be this complicated every time!** Feel free to use `useState` if that suits
+	your scenario. In addition, some providers are going to be short and simple
+	like this, and others are going to be MUCH more involved with many hooks.
 </callout-success>
 
 ## The Custom Consumer Hook
@@ -177,10 +177,10 @@ this:
 
 ```tsx
 import * as React from 'react'
-import {SomethingContext} from 'some-context-package'
+import { SomethingContext } from 'some-context-package'
 
 function YourComponent() {
-  const something = React.useContext(SomethingContext)
+	const something = React.useContext(SomethingContext)
 }
 ```
 
@@ -189,10 +189,10 @@ Instead, I think it should be like this:
 
 ```tsx
 import * as React from 'react'
-import {useSomething} from 'some-context-package'
+import { useSomething } from 'some-context-package'
 
 function YourComponent() {
-  const something = useSomething()
+	const something = useSomething()
 }
 ```
 
@@ -205,36 +205,36 @@ import * as React from 'react'
 const CountContext = React.createContext()
 
 function countReducer(state, action) {
-  switch (action.type) {
-    case 'increment': {
-      return {count: state.count + 1}
-    }
-    case 'decrement': {
-      return {count: state.count - 1}
-    }
-    default: {
-      throw new Error(`Unhandled action type: ${action.type}`)
-    }
-  }
+	switch (action.type) {
+		case 'increment': {
+			return { count: state.count + 1 }
+		}
+		case 'decrement': {
+			return { count: state.count - 1 }
+		}
+		default: {
+			throw new Error(`Unhandled action type: ${action.type}`)
+		}
+	}
 }
 
-function CountProvider({children}) {
-  const [state, dispatch] = React.useReducer(countReducer, {count: 0})
-  // NOTE: you *might* need to memoize this value
-  // Learn more in http://kcd.im/optimize-context
-  const value = {state, dispatch}
-  return <CountContext.Provider value={value}>{children}</CountContext.Provider>
+function CountProvider({ children }) {
+	const [state, dispatch] = React.useReducer(countReducer, { count: 0 })
+	// NOTE: you *might* need to memoize this value
+	// Learn more in http://kcd.im/optimize-context
+	const value = { state, dispatch }
+	return <CountContext.Provider value={value}>{children}</CountContext.Provider>
 }
 
 function useCount() {
-  const context = React.useContext(CountContext)
-  if (context === undefined) {
-    throw new Error('useCount must be used within a CountProvider')
-  }
-  return context
+	const context = React.useContext(CountContext)
+	if (context === undefined) {
+		throw new Error('useCount must be used within a CountProvider')
+	}
+	return context
 }
 
-export {CountProvider, useCount}
+export { CountProvider, useCount }
 ```
 
 First, the `useCount` custom hook uses `React.useContext` to get the provided
@@ -252,17 +252,17 @@ class components, then here's how you could do something similar with the
 render-prop based API for context consumers:
 
 ```tsx
-function CountConsumer({children}) {
-  return (
-    <CountContext.Consumer>
-      {context => {
-        if (context === undefined) {
-          throw new Error('CountConsumer must be used within a CountProvider')
-        }
-        return children(context)
-      }}
-    </CountContext.Consumer>
-  )
+function CountConsumer({ children }) {
+	return (
+		<CountContext.Consumer>
+			{context => {
+				if (context === undefined) {
+					throw new Error('CountConsumer must be used within a CountProvider')
+				}
+				return children(context)
+			}}
+		</CountContext.Consumer>
+	)
 }
 ```
 
@@ -270,23 +270,23 @@ And here's how class components would use it:
 
 ```tsx
 class CounterThing extends React.Component {
-  render() {
-    return (
-      <CountConsumer>
-        {({state, dispatch}) => (
-          <div>
-            <div>{state.count}</div>
-            <button onClick={() => dispatch({type: 'decrement'})}>
-              Decrement
-            </button>
-            <button onClick={() => dispatch({type: 'increment'})}>
-              Increment
-            </button>
-          </div>
-        )}
-      </CountConsumer>
-    )
-  }
+	render() {
+		return (
+			<CountConsumer>
+				{({ state, dispatch }) => (
+					<div>
+						<div>{state.count}</div>
+						<button onClick={() => dispatch({ type: 'decrement' })}>
+							Decrement
+						</button>
+						<button onClick={() => dispatch({ type: 'increment' })}>
+							Increment
+						</button>
+					</div>
+				)}
+			</CountConsumer>
+		)
+	}
 }
 ```
 
@@ -303,47 +303,47 @@ problem by default! It's actually not a problem at all. Check it out:
 ```tsx lines=9-11,36-42,44 filename=src/count-context.tsx
 import * as React from 'react'
 
-type Action = {type: 'increment'} | {type: 'decrement'}
+type Action = { type: 'increment' } | { type: 'decrement' }
 type Dispatch = (action: Action) => void
-type State = {count: number}
-type CountProviderProps = {children: React.ReactNode}
+type State = { count: number }
+type CountProviderProps = { children: React.ReactNode }
 
 const CountStateContext = React.createContext<
-  {state: State; dispatch: Dispatch} | undefined
+	{ state: State; dispatch: Dispatch } | undefined
 >(undefined)
 
 function countReducer(state: State, action: Action) {
-  switch (action.type) {
-    case 'increment': {
-      return {count: state.count + 1}
-    }
-    default: {
-      throw new Error(`Unhandled action type: ${action.type}`)
-    }
-  }
+	switch (action.type) {
+		case 'increment': {
+			return { count: state.count + 1 }
+		}
+		default: {
+			throw new Error(`Unhandled action type: ${action.type}`)
+		}
+	}
 }
 
-function CountProvider({children}: CountProviderProps) {
-  const [state, dispatch] = React.useReducer(countReducer, {count: 0})
-  // NOTE: you *might* need to memoize this value
-  // Learn more in http://kcd.im/optimize-context
-  const value = {state, dispatch}
-  return (
-    <CountStateContext.Provider value={value}>
-      {children}
-    </CountStateContext.Provider>
-  )
+function CountProvider({ children }: CountProviderProps) {
+	const [state, dispatch] = React.useReducer(countReducer, { count: 0 })
+	// NOTE: you *might* need to memoize this value
+	// Learn more in http://kcd.im/optimize-context
+	const value = { state, dispatch }
+	return (
+		<CountStateContext.Provider value={value}>
+			{children}
+		</CountStateContext.Provider>
+	)
 }
 
 function useCount() {
-  const context = React.useContext(CountStateContext)
-  if (context === undefined) {
-    throw new Error('useCount must be used within a CountProvider')
-  }
-  return context
+	const context = React.useContext(CountStateContext)
+	if (context === undefined) {
+		throw new Error('useCount must be used within a CountProvider')
+	}
+	return context
 }
 
-export {CountProvider, useCount}
+export { CountProvider, useCount }
 ```
 
 With that, anyone can use `useCount` without having to do any undefined-checks,
@@ -387,32 +387,32 @@ responsible for dealing with all of that. Here's an example from
 
 ```jsx filename=user-context.js
 async function updateUser(dispatch, user, updates) {
-  dispatch({type: 'start update', updates})
-  try {
-    const updatedUser = await userClient.updateUser(user, updates)
-    dispatch({type: 'finish update', updatedUser})
-  } catch (error) {
-    dispatch({type: 'fail update', error})
-  }
+	dispatch({ type: 'start update', updates })
+	try {
+		const updatedUser = await userClient.updateUser(user, updates)
+		dispatch({ type: 'finish update', updatedUser })
+	} catch (error) {
+		dispatch({ type: 'fail update', error })
+	}
 }
 
-export {UserProvider, useUser, updateUser}
+export { UserProvider, useUser, updateUser }
 ```
 
 Then you can use that like this:
 
 ```jsx filename=user-profile.js
-import {useUser, updateUser} from './user-context'
+import { useUser, updateUser } from './user-context'
 
 function UserSettings() {
-  const [{user, status, error}, userDispatch] = useUser()
+	const [{ user, status, error }, userDispatch] = useUser()
 
-  function handleSubmit(event) {
-    event.preventDefault()
-    updateUser(userDispatch, user, formState)
-  }
+	function handleSubmit(event) {
+		event.preventDefault()
+		updateUser(userDispatch, user, formState)
+	}
 
-  // more code...
+	// more code...
 }
 ```
 
@@ -431,36 +431,36 @@ import * as React from 'react'
 const CountContext = React.createContext()
 
 function countReducer(state, action) {
-  switch (action.type) {
-    case 'increment': {
-      return {count: state.count + 1}
-    }
-    case 'decrement': {
-      return {count: state.count - 1}
-    }
-    default: {
-      throw new Error(`Unhandled action type: ${action.type}`)
-    }
-  }
+	switch (action.type) {
+		case 'increment': {
+			return { count: state.count + 1 }
+		}
+		case 'decrement': {
+			return { count: state.count - 1 }
+		}
+		default: {
+			throw new Error(`Unhandled action type: ${action.type}`)
+		}
+	}
 }
 
-function CountProvider({children}) {
-  const [state, dispatch] = React.useReducer(countReducer, {count: 0})
-  // NOTE: you *might* need to memoize this value
-  // Learn more in http://kcd.im/optimize-context
-  const value = {state, dispatch}
-  return <CountContext.Provider value={value}>{children}</CountContext.Provider>
+function CountProvider({ children }) {
+	const [state, dispatch] = React.useReducer(countReducer, { count: 0 })
+	// NOTE: you *might* need to memoize this value
+	// Learn more in http://kcd.im/optimize-context
+	const value = { state, dispatch }
+	return <CountContext.Provider value={value}>{children}</CountContext.Provider>
 }
 
 function useCount() {
-  const context = React.useContext(CountContext)
-  if (context === undefined) {
-    throw new Error('useCount must be used within a CountProvider')
-  }
-  return context
+	const context = React.useContext(CountContext)
+	if (context === undefined) {
+		throw new Error('useCount must be used within a CountProvider')
+	}
+	return context
 }
 
-export {CountProvider, useCount}
+export { CountProvider, useCount }
 ```
 
 [Here's a working codesandbox](https://codesandbox.io/s/react-codesandbox-je6cc).

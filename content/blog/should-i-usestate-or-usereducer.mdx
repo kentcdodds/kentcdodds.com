@@ -65,25 +65,25 @@ I'll highlight the areas where we're interacting with the state:
 
 ```js lines=2-7,11
 function useDarkMode() {
-  const preferDarkQuery = '(prefers-color-scheme: dark)'
-  const [mode, setMode] = React.useState(
-    () =>
-      window.localStorage.getItem('colorMode') ||
-      (window.matchMedia(preferDarkQuery).matches ? 'dark' : 'light'),
-  )
+	const preferDarkQuery = '(prefers-color-scheme: dark)'
+	const [mode, setMode] = React.useState(
+		() =>
+			window.localStorage.getItem('colorMode') ||
+			(window.matchMedia(preferDarkQuery).matches ? 'dark' : 'light'),
+	)
 
-  React.useEffect(() => {
-    const mediaQuery = window.matchMedia(preferDarkQuery)
-    const handleChange = () => setMode(mediaQuery.matches ? 'dark' : 'light')
-    mediaQuery.addListener(handleChange)
-    return () => mediaQuery.removeListener(handleChange)
-  }, [])
+	React.useEffect(() => {
+		const mediaQuery = window.matchMedia(preferDarkQuery)
+		const handleChange = () => setMode(mediaQuery.matches ? 'dark' : 'light')
+		mediaQuery.addListener(handleChange)
+		return () => mediaQuery.removeListener(handleChange)
+	}, [])
 
-  React.useEffect(() => {
-    window.localStorage.setItem('colorMode', mode)
-  }, [mode])
+	React.useEffect(() => {
+		window.localStorage.setItem('colorMode', mode)
+	}, [mode])
 
-  return [mode, setMode]
+	return [mode, setMode]
 }
 ```
 
@@ -102,64 +102,64 @@ with the typical way most people write reducers:
 const preferDarkQuery = '(prefers-color-scheme: dark)'
 
 function darkModeReducer(state, action) {
-  switch (action.type) {
-    case 'MEDIA_CHANGE': {
-      return {...state, mode: action.mode}
-    }
-    case 'SET_MODE': {
-      // make sure to spread that state just in case!
-      return {...state, mode: action.mode}
-    }
-    default: {
-      // helps us avoid typos!
-      throw new Error(`Unhandled action type: ${action.type}`)
-    }
-  }
+	switch (action.type) {
+		case 'MEDIA_CHANGE': {
+			return { ...state, mode: action.mode }
+		}
+		case 'SET_MODE': {
+			// make sure to spread that state just in case!
+			return { ...state, mode: action.mode }
+		}
+		default: {
+			// helps us avoid typos!
+			throw new Error(`Unhandled action type: ${action.type}`)
+		}
+	}
 }
 
 // use the init function to lazily initialize state so we don't read into
 // localstorage or call matchMedia every render
 function init() {
-  return {
-    mode:
-      window.localStorage.getItem('colorMode') ||
-      (window.matchMedia(preferDarkQuery).matches ? 'dark' : 'light'),
-  }
+	return {
+		mode:
+			window.localStorage.getItem('colorMode') ||
+			(window.matchMedia(preferDarkQuery).matches ? 'dark' : 'light'),
+	}
 }
 
 function useDarkMode() {
-  const [state, dispatch] = React.useReducer(
-    darkModeReducer,
-    {mode: 'light'},
-    init,
-  )
-  const {mode} = state
+	const [state, dispatch] = React.useReducer(
+		darkModeReducer,
+		{ mode: 'light' },
+		init,
+	)
+	const { mode } = state
 
-  React.useEffect(() => {
-    const mediaQuery = window.matchMedia(preferDarkQuery)
-    const handleChange = () =>
-      dispatch({
-        type: 'MEDIA_CHANGE',
-        mode: mediaQuery.matches ? 'dark' : 'light',
-      })
-    mediaQuery.addListener(handleChange)
-    return () => mediaQuery.removeListener(handleChange)
-  }, [])
+	React.useEffect(() => {
+		const mediaQuery = window.matchMedia(preferDarkQuery)
+		const handleChange = () =>
+			dispatch({
+				type: 'MEDIA_CHANGE',
+				mode: mediaQuery.matches ? 'dark' : 'light',
+			})
+		mediaQuery.addListener(handleChange)
+		return () => mediaQuery.removeListener(handleChange)
+	}, [])
 
-  React.useEffect(() => {
-    window.localStorage.setItem('colorMode', mode)
-  }, [mode])
+	React.useEffect(() => {
+		window.localStorage.setItem('colorMode', mode)
+	}, [mode])
 
-  // We like the API the way it is, so instead of returning the state object
-  // and the dispatch function, we'll return the `mode` property and we'll
-  // create a setMode helper (which we have to memoize in case someone wants
-  // to use it in a dependency list):
-  const setMode = React.useCallback(
-    newMode => dispatch({type: 'SET_MODE', mode: newMode}),
-    [],
-  )
+	// We like the API the way it is, so instead of returning the state object
+	// and the dispatch function, we'll return the `mode` property and we'll
+	// create a setMode helper (which we have to memoize in case someone wants
+	// to use it in a dependency list):
+	const setMode = React.useCallback(
+		newMode => dispatch({ type: 'SET_MODE', mode: newMode }),
+		[],
+	)
 
-  return [mode, setMode]
+	return [mode, setMode]
 }
 ```
 
@@ -169,28 +169,28 @@ wait! We can drastically simplify the `useReducer` version by going against the
 
 ```js lines=3-10,14
 function useDarkMode() {
-  const preferDarkQuery = '(prefers-color-scheme: dark)'
-  const [mode, setMode] = React.useReducer(
-    (prevMode, nextMode) =>
-      typeof nextMode === 'function' ? nextMode(prevMode) : nextMode,
-    'light',
-    () =>
-      window.localStorage.getItem('colorMode') ||
-      (window.matchMedia(preferDarkQuery).matches ? 'dark' : 'light'),
-  )
+	const preferDarkQuery = '(prefers-color-scheme: dark)'
+	const [mode, setMode] = React.useReducer(
+		(prevMode, nextMode) =>
+			typeof nextMode === 'function' ? nextMode(prevMode) : nextMode,
+		'light',
+		() =>
+			window.localStorage.getItem('colorMode') ||
+			(window.matchMedia(preferDarkQuery).matches ? 'dark' : 'light'),
+	)
 
-  React.useEffect(() => {
-    const mediaQuery = window.matchMedia(preferDarkQuery)
-    const handleChange = () => setMode(mediaQuery.matches ? 'dark' : 'light')
-    mediaQuery.addListener(handleChange)
-    return () => mediaQuery.removeListener(handleChange)
-  }, [])
+	React.useEffect(() => {
+		const mediaQuery = window.matchMedia(preferDarkQuery)
+		const handleChange = () => setMode(mediaQuery.matches ? 'dark' : 'light')
+		mediaQuery.addListener(handleChange)
+		return () => mediaQuery.removeListener(handleChange)
+	}, [])
 
-  React.useEffect(() => {
-    window.localStorage.setItem('colorMode', mode)
-  }, [mode])
+	React.useEffect(() => {
+		window.localStorage.setItem('colorMode', mode)
+	}, [mode])
 
-  return [mode, setMode]
+	return [mode, setMode]
 }
 ```
 
@@ -200,7 +200,7 @@ And even then, it's still less clear than our `useState` version. So at the end
 of the day, `useState` was a much better solution in this case.
 
 <callout-success class="important">
-  When it's just an independent element of state you're managing: `useState`
+	When it's just an independent element of state you're managing: `useState`
 </callout-success>
 
 ### Custom `useUndo` hook
@@ -216,57 +216,57 @@ inspiration from that for this example. Thank you
 
 ```js
 function useUndo(initialPresent) {
-  const [past, setPast] = React.useState([])
-  const [present, setPresent] = React.useState(initialPresent)
-  const [future, setFuture] = React.useState([])
+	const [past, setPast] = React.useState([])
+	const [present, setPresent] = React.useState(initialPresent)
+	const [future, setFuture] = React.useState([])
 
-  const canUndo = past.length !== 0
-  const canRedo = future.length !== 0
+	const canUndo = past.length !== 0
+	const canRedo = future.length !== 0
 
-  const undo = React.useCallback(() => {
-    if (!canUndo) return
+	const undo = React.useCallback(() => {
+		if (!canUndo) return
 
-    const previous = past[past.length - 1]
-    const newPast = past.slice(0, past.length - 1)
+		const previous = past[past.length - 1]
+		const newPast = past.slice(0, past.length - 1)
 
-    setPast(newPast)
-    setPresent(previous)
-    setFuture([present, ...future])
-  }, [canUndo, future, past, present])
+		setPast(newPast)
+		setPresent(previous)
+		setFuture([present, ...future])
+	}, [canUndo, future, past, present])
 
-  const redo = React.useCallback(() => {
-    if (!canRedo) return
+	const redo = React.useCallback(() => {
+		if (!canRedo) return
 
-    const next = future[0]
-    const newFuture = future.slice(1)
+		const next = future[0]
+		const newFuture = future.slice(1)
 
-    setPast([...past, present])
-    setPresent(next)
-    setFuture(newFuture)
-  }, [canRedo, future, past, present])
+		setPast([...past, present])
+		setPresent(next)
+		setFuture(newFuture)
+	}, [canRedo, future, past, present])
 
-  const set = React.useCallback(
-    newPresent => {
-      if (newPresent === present) {
-        return
-      }
-      setPast([...past, present])
-      setPresent(newPresent)
-      setFuture([])
-    },
-    [past, present],
-  )
+	const set = React.useCallback(
+		newPresent => {
+			if (newPresent === present) {
+				return
+			}
+			setPast([...past, present])
+			setPresent(newPresent)
+			setFuture([])
+		},
+		[past, present],
+	)
 
-  const reset = React.useCallback(newPresent => {
-    setPast([])
-    setPresent(newPresent)
-    setFuture([])
-  }, [])
+	const reset = React.useCallback(newPresent => {
+		setPast([])
+		setPresent(newPresent)
+		setFuture([])
+	}, [])
 
-  return [
-    {past, present, future},
-    {set, reset, undo, redo, canUndo, canRedo},
-  ]
+	return [
+		{ past, present, future },
+		{ set, reset, undo, redo, canUndo, canRedo },
+	]
 }
 ```
 
@@ -296,17 +296,17 @@ Here's a contrived example that would reveal this bug:
 
 ```tsx
 function Example() {
-  const [state, {set}] = useUndo('first')
+	const [state, { set }] = useUndo('first')
 
-  React.useEffect(() => {
-    set('second')
-  }, [])
+	React.useEffect(() => {
+		set('second')
+	}, [])
 
-  React.useEffect(() => {
-    set('third')
-  }, [])
+	React.useEffect(() => {
+		set('third')
+	}, [])
 
-  return <pre>{JSON.stringify(state, null, 2)}</pre>
+	return <pre>{JSON.stringify(state, null, 2)}</pre>
 }
 ```
 
@@ -314,9 +314,9 @@ The printed result here would be:
 
 ```json
 {
-  "past": ["first"],
-  "present": "third",
-  "future": []
+	"past": ["first"],
+	"present": "third",
+	"future": []
 }
 ```
 
@@ -324,9 +324,9 @@ It should be:
 
 ```json
 {
-  "past": ["first", "second"],
-  "present": "third",
-  "future": []
+	"past": ["first", "second"],
+	"present": "third",
+	"future": []
 }
 ```
 
@@ -336,17 +336,17 @@ those:
 
 ```tsx lines=6,10
 function Example() {
-  const [state, {set}] = useUndo('first')
+	const [state, { set }] = useUndo('first')
 
-  React.useEffect(() => {
-    set('second')
-  }, [set])
+	React.useEffect(() => {
+		set('second')
+	}, [set])
 
-  React.useEffect(() => {
-    set('third')
-  }, [set])
+	React.useEffect(() => {
+		set('third')
+	}, [set])
 
-  return <pre>{JSON.stringify(state, null, 2)}</pre>
+	return <pre>{JSON.stringify(state, null, 2)}</pre>
 }
 ```
 
@@ -354,38 +354,38 @@ Great, save, reload... Wait wut? Oh no! Here's what happened when I added those:
 
 ```json
 {
-  "past": [
-    "first",
-    "second",
-    "third",
-    "second",
-    "third",
-    "second",
-    "third",
-    "second",
-    "third",
-    "second",
-    "third",
-    "second",
-    "third",
-    "second",
-    "third",
-    "second",
-    "third",
-    "second",
-    "third",
-    "second",
-    "third",
-    "second",
-    "third",
-    "second",
-    "third",
-    "second",
-    "third",
-    "... this goes on forever..."
-  ],
-  "present": "third",
-  "future": []
+	"past": [
+		"first",
+		"second",
+		"third",
+		"second",
+		"third",
+		"second",
+		"third",
+		"second",
+		"third",
+		"second",
+		"third",
+		"second",
+		"third",
+		"second",
+		"third",
+		"second",
+		"third",
+		"second",
+		"third",
+		"second",
+		"third",
+		"second",
+		"third",
+		"second",
+		"third",
+		"second",
+		"third",
+		"... this goes on forever..."
+	],
+	"present": "third",
+	"future": []
 }
 ```
 
@@ -405,71 +405,71 @@ that, so here it is:
 
 ```js
 function useUndo(initialPresent) {
-  const [state, setState] = React.useState({
-    past: [],
-    present: initialPresent,
-    future: [],
-  })
+	const [state, setState] = React.useState({
+		past: [],
+		present: initialPresent,
+		future: [],
+	})
 
-  const canUndo = state.past.length !== 0
-  const canRedo = state.future.length !== 0
+	const canUndo = state.past.length !== 0
+	const canRedo = state.future.length !== 0
 
-  const undo = React.useCallback(() => {
-    setState(currentState => {
-      const {past, present, future} = currentState
+	const undo = React.useCallback(() => {
+		setState(currentState => {
+			const { past, present, future } = currentState
 
-      if (past.length === 0) return currentState
+			if (past.length === 0) return currentState
 
-      const previous = past[past.length - 1]
-      const newPast = past.slice(0, past.length - 1)
+			const previous = past[past.length - 1]
+			const newPast = past.slice(0, past.length - 1)
 
-      return {
-        past: newPast,
-        present: previous,
-        future: [present, ...future],
-      }
-    })
-  }, [])
+			return {
+				past: newPast,
+				present: previous,
+				future: [present, ...future],
+			}
+		})
+	}, [])
 
-  const redo = React.useCallback(() => {
-    setState(currentState => {
-      const {past, present, future} = currentState
+	const redo = React.useCallback(() => {
+		setState(currentState => {
+			const { past, present, future } = currentState
 
-      if (future.length === 0) return currentState
+			if (future.length === 0) return currentState
 
-      const next = future[0]
-      const newFuture = future.slice(1)
+			const next = future[0]
+			const newFuture = future.slice(1)
 
-      return {
-        past: [...past, present],
-        present: next,
-        future: newFuture,
-      }
-    })
-  }, [])
+			return {
+				past: [...past, present],
+				present: next,
+				future: newFuture,
+			}
+		})
+	}, [])
 
-  const set = React.useCallback(newPresent => {
-    setState(currentState => {
-      const {present, past} = currentState
-      if (newPresent === present) return currentState
+	const set = React.useCallback(newPresent => {
+		setState(currentState => {
+			const { present, past } = currentState
+			if (newPresent === present) return currentState
 
-      return {
-        past: [...past, present],
-        present: newPresent,
-        future: [],
-      }
-    })
-  }, [])
+			return {
+				past: [...past, present],
+				present: newPresent,
+				future: [],
+			}
+		})
+	}, [])
 
-  const reset = React.useCallback(newPresent => {
-    setState(() => ({
-      past: [],
-      present: newPresent,
-      future: [],
-    }))
-  }, [])
+	const reset = React.useCallback(newPresent => {
+		setState(() => ({
+			past: [],
+			present: newPresent,
+			future: [],
+		}))
+	}, [])
 
-  return [state, {set, reset, undo, redo, canUndo, canRedo}]
+	return [state, { set, reset, undo, redo, canUndo, canRedo }]
 }
 ```
 
@@ -498,77 +498,77 @@ const SET = 'SET'
 const RESET = 'RESET'
 
 function undoReducer(state, action) {
-  const {past, present, future} = state
-  const {type, newPresent} = action
+	const { past, present, future } = state
+	const { type, newPresent } = action
 
-  switch (type) {
-    case UNDO: {
-      if (past.length === 0) return state
+	switch (type) {
+		case UNDO: {
+			if (past.length === 0) return state
 
-      const previous = past[past.length - 1]
-      const newPast = past.slice(0, past.length - 1)
+			const previous = past[past.length - 1]
+			const newPast = past.slice(0, past.length - 1)
 
-      return {
-        past: newPast,
-        present: previous,
-        future: [present, ...future],
-      }
-    }
+			return {
+				past: newPast,
+				present: previous,
+				future: [present, ...future],
+			}
+		}
 
-    case REDO: {
-      if (future.length === 0) return state
+		case REDO: {
+			if (future.length === 0) return state
 
-      const next = future[0]
-      const newFuture = future.slice(1)
+			const next = future[0]
+			const newFuture = future.slice(1)
 
-      return {
-        past: [...past, present],
-        present: next,
-        future: newFuture,
-      }
-    }
+			return {
+				past: [...past, present],
+				present: next,
+				future: newFuture,
+			}
+		}
 
-    case SET: {
-      if (newPresent === present) return state
+		case SET: {
+			if (newPresent === present) return state
 
-      return {
-        past: [...past, present],
-        present: newPresent,
-        future: [],
-      }
-    }
+			return {
+				past: [...past, present],
+				present: newPresent,
+				future: [],
+			}
+		}
 
-    case RESET: {
-      return {
-        past: [],
-        present: newPresent,
-        future: [],
-      }
-    }
-  }
+		case RESET: {
+			return {
+				past: [],
+				present: newPresent,
+				future: [],
+			}
+		}
+	}
 }
 
 function useUndo(initialPresent) {
-  const [state, dispatch] = React.useReducer(undoReducer, {
-    past: [],
-    present: initialPresent,
-    future: [],
-  })
+	const [state, dispatch] = React.useReducer(undoReducer, {
+		past: [],
+		present: initialPresent,
+		future: [],
+	})
 
-  const canUndo = state.past.length !== 0
-  const canRedo = state.future.length !== 0
-  const undo = React.useCallback(() => dispatch({type: UNDO}), [])
-  const redo = React.useCallback(() => dispatch({type: REDO}), [])
-  const set = React.useCallback(
-    newPresent => dispatch({type: SET, newPresent}),
-    [],
-  )
-  const reset = React.useCallback(
-    newPresent => dispatch({type: RESET, newPresent}),
-    [],
-  )
+	const canUndo = state.past.length !== 0
+	const canRedo = state.future.length !== 0
+	const undo = React.useCallback(() => dispatch({ type: UNDO }), [])
+	const redo = React.useCallback(() => dispatch({ type: REDO }), [])
+	const set = React.useCallback(
+		newPresent => dispatch({ type: SET, newPresent }),
+		[],
+	)
+	const reset = React.useCallback(
+		newPresent => dispatch({ type: RESET, newPresent }),
+		[],
+	)
 
-  return [state, {set, reset, undo, redo, canUndo, canRedo}]
+	return [state, { set, reset, undo, redo, canUndo, canRedo }]
 }
 ```
 
@@ -582,8 +582,8 @@ You may find it interesting that the switch cases in our reducer are basically
 exactly what the contents of our functions were before we made the change.
 
 <callout-success class="important">
-  **When one element of your state relies on the value of another element of
-  your state in order to update: `useReducer`**
+	**When one element of your state relies on the value of another element of
+	your state in order to update: `useReducer`**
 </callout-success>
 
 ## Conclusion

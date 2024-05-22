@@ -104,12 +104,12 @@ almost everything (which is pretty cool, pop open your network tab and check it
 out).
 
 <ThemedBlogImage
-  transparentBackground
-  darkCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/server-timing"
-  lightCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/server-timing-light"
-  imgProps={{
-    alt: 'server timing ui in Chrome showing a bunch of times for data retrieval from caches, rendering, etc.',
-  }}
+	transparentBackground
+	darkCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/server-timing"
+	lightCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/server-timing-light"
+	imgProps={{
+		alt: 'server timing ui in Chrome showing a bunch of times for data retrieval from caches, rendering, etc.',
+	}}
 />
 
 Unfortunately, the logs were not helpful at all... So, I decided to try going
@@ -139,44 +139,44 @@ import path from 'path'
 import os from 'os'
 import fs from 'fs'
 import v8 from 'v8'
-import {Response} from '@remix-run/node'
-import {PassThrough} from 'stream'
-import type {DataFunctionArgs} from '@remix-run/node'
-import {requireAdminUser} from '~/utils/session.server'
-import {formatDate} from '~/utils/misc'
+import { Response } from '@remix-run/node'
+import { PassThrough } from 'stream'
+import type { DataFunctionArgs } from '@remix-run/node'
+import { requireAdminUser } from '~/utils/session.server'
+import { formatDate } from '~/utils/misc'
 
-export async function loader({request}: DataFunctionArgs) {
-  await requireAdminUser(request)
-  const host =
-    request.headers.get('X-Forwarded-Host') ?? request.headers.get('host')
+export async function loader({ request }: DataFunctionArgs) {
+	await requireAdminUser(request)
+	const host =
+		request.headers.get('X-Forwarded-Host') ?? request.headers.get('host')
 
-  const tempDir = os.tmpdir()
-  const filepath = path.join(
-    tempDir,
-    `${host}-${formatDate(new Date(), 'yyyy-MM-dd HH_mm_ss_SSS')}.heapsnapshot`,
-  )
+	const tempDir = os.tmpdir()
+	const filepath = path.join(
+		tempDir,
+		`${host}-${formatDate(new Date(), 'yyyy-MM-dd HH_mm_ss_SSS')}.heapsnapshot`,
+	)
 
-  const snapshotPath = v8.writeHeapSnapshot(filepath)
-  if (!snapshotPath) {
-    throw new Response('No snapshot saved', {status: 500})
-  }
+	const snapshotPath = v8.writeHeapSnapshot(filepath)
+	if (!snapshotPath) {
+		throw new Response('No snapshot saved', { status: 500 })
+	}
 
-  const body = new PassThrough()
-  const stream = fs.createReadStream(snapshotPath)
-  stream.on('open', () => stream.pipe(body))
-  stream.on('error', err => body.end(err))
-  stream.on('end', () => body.end())
+	const body = new PassThrough()
+	const stream = fs.createReadStream(snapshotPath)
+	stream.on('open', () => stream.pipe(body))
+	stream.on('error', err => body.end(err))
+	stream.on('end', () => body.end())
 
-  return new Response(body, {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/octet-stream',
-      'Content-Disposition': `attachment; filename="${path.basename(
-        snapshotPath,
-      )}"`,
-      'Content-Length': (await fs.promises.stat(snapshotPath)).size.toString(),
-    },
-  })
+	return new Response(body, {
+		status: 200,
+		headers: {
+			'Content-Type': 'application/octet-stream',
+			'Content-Disposition': `attachment; filename="${path.basename(
+				snapshotPath,
+			)}"`,
+			'Content-Length': (await fs.promises.stat(snapshotPath)).size.toString(),
+		},
+	})
 }
 ```
 
@@ -205,12 +205,12 @@ module called
 out:
 
 <ThemedBlogImage
-  transparentBackground
-  darkCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/heapf32"
-  lightCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/heapf32-light"
-  imgProps={{
-    alt: 'Memory tab of the Chrome DevTools showing a summary of a heap snapshot with an ArrayBuffer constructor selected and an object called HEAPF32 that has a retained size of 125,931,130',
-  }}
+	transparentBackground
+	darkCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/heapf32"
+	lightCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/heapf32-light"
+	imgProps={{
+		alt: 'Memory tab of the Chrome DevTools showing a summary of a heap snapshot with an ArrayBuffer constructor selected and an object called HEAPF32 that has a retained size of 125,931,130',
+	}}
 />
 
 That's an ArrayBuffer (bytes) that is over 125MBs 🤯 Something is definitely
@@ -330,12 +330,12 @@ https://www.youtube.com/watch?v=vkys6Wk-jYk
 One thing he noticed right up front was the TypedArray allocation was nuts:
 
 <ThemedBlogImage
-  transparentBackground
-  darkCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/typed-arrays"
-  lightCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/typed-arrays-light"
-  imgProps={{
-    alt: 'Memory tab of Chrome DevTools showing a heap snapshot on the statistics view with 358,159 kB of Typed arrays being a large chunk of a total of 573,329 kB',
-  }}
+	transparentBackground
+	darkCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/typed-arrays"
+	lightCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/typed-arrays-light"
+	imgProps={{
+		alt: 'Memory tab of Chrome DevTools showing a heap snapshot on the statistics view with 358,159 kB of Typed arrays being a large chunk of a total of 573,329 kB',
+	}}
 />
 
 This led him to the HEAPF32 object we'd discovered earlier and in the stream he
@@ -353,55 +353,55 @@ So after the stream, I placed my shiki usage in
 
 ```js filename=worker.js
 const path = require('path')
-const {getHighlighter, loadTheme} = require('shiki')
+const { getHighlighter, loadTheme } = require('shiki')
 
 const themeName = 'base16'
 let theme, highlighter
 
-module.exports = async function highlight({code, language}) {
-  theme = theme || (await loadTheme(path.resolve(__dirname, 'base16.json')))
-  highlighter = highlighter || (await getHighlighter({themes: [theme]}))
-  const fgColor = convertFakeHexToCustomProp(
-    highlighter.getForegroundColor(themeName) || '',
-  )
-  const bgColor = convertFakeHexToCustomProp(
-    highlighter.getBackgroundColor(themeName) || '',
-  )
+module.exports = async function highlight({ code, language }) {
+	theme = theme || (await loadTheme(path.resolve(__dirname, 'base16.json')))
+	highlighter = highlighter || (await getHighlighter({ themes: [theme] }))
+	const fgColor = convertFakeHexToCustomProp(
+		highlighter.getForegroundColor(themeName) || '',
+	)
+	const bgColor = convertFakeHexToCustomProp(
+		highlighter.getBackgroundColor(themeName) || '',
+	)
 
-  const tokens = highlighter.codeToThemedTokens(code, language, themeName)
-  return {
-    fgColor,
-    bgColor,
-    tokens: tokens.map(lineTokens =>
-      lineTokens.map(t => ({content: t.content, color: t.color})),
-    ),
-  }
+	const tokens = highlighter.codeToThemedTokens(code, language, themeName)
+	return {
+		fgColor,
+		bgColor,
+		tokens: tokens.map(lineTokens =>
+			lineTokens.map(t => ({ content: t.content, color: t.color })),
+		),
+	}
 }
 
 // The theme actually stores #FFFF${base-16-color-id} because vscode-textmate
 // requires colors to be valid hex codes, if they aren't, it changes them to a
 // default, so this is a mega hack to trick it.
 function convertFakeHexToCustomProp(color) {
-  return color.replace(/^#FFFF(.+)/, 'var(--base$1)')
+	return color.replace(/^#FFFF(.+)/, 'var(--base$1)')
 }
 ```
 
 ```ts filename=index.ts
 const tinypool = new Tinypool({
-  filename: require.resolve('./worker.js'),
-  minThreads: 0,
-  idleTimeout: 60,
+	filename: require.resolve('./worker.js'),
+	minThreads: 0,
+	idleTimeout: 60,
 })
 
 // ...
 
-const {tokens, fgColor, bgColor} = (await tinypool.run({
-  code: codeString,
-  language,
+const { tokens, fgColor, bgColor } = (await tinypool.run({
+	code: codeString,
+	language,
 })) as {
-  tokens: Array<Array<{content: string; color: string}>>
-  fgColor: string
-  bgColor: string
+	tokens: Array<Array<{ content: string; color: string }>>
+	fgColor: string
+	bgColor: string
 }
 ```
 
@@ -420,7 +420,7 @@ called `getMdxComponent` which accepts the `code` string and returns a component
 ready to render. Well, this is what `getMdxComponent` does:
 
 ```tsx lines=2
-const scope = {React, ReactDOM, _jsx_runtime, ...globals}
+const scope = { React, ReactDOM, _jsx_runtime, ...globals }
 const fn = new Function(...Object.keys(scope), code)
 return fn(...Object.values(scope))
 ```
@@ -439,7 +439,7 @@ Here's before:
 
 ```tsx
 function useMdxComponent(code: string) {
-  return React.useMemo(() => getMdxComponent(code), [code])
+	return React.useMemo(() => getMdxComponent(code), [code])
 }
 ```
 
@@ -449,18 +449,18 @@ And here's after:
 // This exists so we don't have to call new Function for the given code
 // for every request for a given blog post/mdx file.
 const mdxComponentCache = new LRU<string, ReturnType<typeof getMdxComponent>>({
-  max: 1000,
+	max: 1000,
 })
 
 function useMdxComponent(code: string) {
-  return React.useMemo(() => {
-    if (mdxComponentCache.has(code)) {
-      return mdxComponentCache.get(code)!
-    }
-    const component = getMdxComponent(code)
-    mdxComponentCache.set(code, component)
-    return component
-  }, [code])
+	return React.useMemo(() => {
+		if (mdxComponentCache.has(code)) {
+			return mdxComponentCache.get(code)!
+		}
+		const component = getMdxComponent(code)
+		mdxComponentCache.set(code, component)
+		return component
+	}, [code])
 }
 ```
 
@@ -486,24 +486,24 @@ good. Matteo did notice I had a bajillion strings in memory. I looked into those
 and found a lot of strings related to express requests and cloudinary:
 
 <ThemedBlogImage
-  transparentBackground
-  darkCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/cloudinary-strings"
-  lightCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/cloudinary-strings-light"
-  imgProps={{
-    alt: 'Memory tab of the Chrome DevTools showing a summary of a heap snapshot with a lot of strings related to Cloudinary',
-  }}
+	transparentBackground
+	darkCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/cloudinary-strings"
+	lightCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/cloudinary-strings-light"
+	imgProps={{
+		alt: 'Memory tab of the Chrome DevTools showing a summary of a heap snapshot with a lot of strings related to Cloudinary',
+	}}
 />
 
 And Matteo told me he found a TON of TLSSocket connections related to Cloudinary
 as well:
 
 <ThemedBlogImage
-  transparentBackground
-  darkCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/tls-connections"
-  lightCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/tls-connections-light"
-  imgProps={{
-    alt: 'Memory tab of the Chrome DevTools showing a summary of a heap snapshot with a filter on "TLS" showing a lot of TLSSocket objects',
-  }}
+	transparentBackground
+	darkCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/tls-connections"
+	lightCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/tls-connections-light"
+	imgProps={{
+		alt: 'Memory tab of the Chrome DevTools showing a summary of a heap snapshot with a filter on "TLS" showing a lot of TLSSocket objects',
+	}}
 />
 
 Then he noticed I was using

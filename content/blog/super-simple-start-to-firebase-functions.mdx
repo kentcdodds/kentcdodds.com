@@ -83,9 +83,9 @@ Here's all you need in that file:
 
 ```json filename=.firebaserc
 {
-  "projects": {
-    "default": "{your-project-id}"
-  }
+	"projects": {
+		"default": "{your-project-id}"
+	}
 }
 ```
 
@@ -101,13 +101,13 @@ Here's what you need in there:
 
 ```json filename=functions/package.json
 {
-  "engines": {
-    "node": "12"
-  },
-  "dependencies": {
-    "firebase-admin": "^9.3.0",
-    "firebase-functions": "^3.11.0"
-  }
+	"engines": {
+		"node": "12"
+	},
+	"dependencies": {
+		"firebase-admin": "^9.3.0",
+		"firebase-functions": "^3.11.0"
+	}
 }
 ```
 
@@ -151,10 +151,10 @@ Here's what you'll put in there:
 const functions = require('firebase-functions')
 
 module.exports = {
-  hello: functions.https.onRequest((req, res) => {
-    const subject = req.query.subject || 'World'
-    res.send(`Hello ${subject}!`)
-  }),
+	hello: functions.https.onRequest((req, res) => {
+		const subject = req.query.subject || 'World'
+		res.send(`Hello ${subject}!`)
+	}),
 }
 ```
 

@@ -48,9 +48,9 @@ can do for your learning and advancement as a software engineer by reading
 first.
 
 <callout-info>
-  I've migrated from Postgres/Redis to SQLite. Read about that in the post [I
-  Migrated from a Postgres Cluster to Distributed SQLite with
-  LiteFS](/blog/i-migrated-from-a-postgres-cluster-to-distributed-sqlite-with-litefs).
+	I've migrated from Postgres/Redis to SQLite. Read about that in the post [I
+	Migrated from a Postgres Cluster to Distributed SQLite with
+	LiteFS](/blog/i-migrated-from-a-postgres-cluster-to-distributed-sqlite-with-litefs).
 </callout-info>
 
 ## Context
@@ -142,28 +142,28 @@ Most development has taken place in the last 4-5 months. There are ~945 commits
 so far 🤯.
 
 <Themed
-  dark={
-    <a
-      href="https://github.com/kentcdodds/kentcdodds.com/graphs/contributors"
-      target="_blank"
-    >
-      <BlogImage
-        cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/contributor-graph-dark"
-        imgProps={{alt: 'GitHub contributor graph'}}
-      />
-    </a>
-  }
-  light={
-    <a
-      href="https://github.com/kentcdodds/kentcdodds.com/graphs/contributors"
-      target="_blank"
-    >
-      <BlogImage
-        cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/contributor-graph-light"
-        imgProps={{alt: 'GitHub contributor graph'}}
-      />
-    </a>
-  }
+	dark={
+		<a
+			href="https://github.com/kentcdodds/kentcdodds.com/graphs/contributors"
+			target="_blank"
+		>
+			<BlogImage
+				cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/contributor-graph-dark"
+				imgProps={{ alt: 'GitHub contributor graph' }}
+			/>
+		</a>
+	}
+	light={
+		<a
+			href="https://github.com/kentcdodds/kentcdodds.com/graphs/contributors"
+			target="_blank"
+		>
+			<BlogImage
+				cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/contributor-graph-light"
+				imgProps={{ alt: 'GitHub contributor graph' }}
+			/>
+		</a>
+	}
 />
 
 ## Technology overview
@@ -219,28 +219,28 @@ Here are the services this site uses:
 ### Deployment pipeline
 
 <Themed
-  dark={
-    <a
-      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/deployment-pipeline-dark"
-      target="_blank"
-    >
-      <BlogImage
-        cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/deployment-pipeline-dark"
-        imgProps={{alt: 'Excalidraw diagram of a deployment pipeline'}}
-      />
-    </a>
-  }
-  light={
-    <a
-      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/deployment-pipeline-light"
-      target="_blank"
-    >
-      <BlogImage
-        cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/deployment-pipeline-light"
-        imgProps={{alt: 'Excalidraw diagram of a deployment pipeline'}}
-      />
-    </a>
-  }
+	dark={
+		<a
+			href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/deployment-pipeline-dark"
+			target="_blank"
+		>
+			<BlogImage
+				cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/deployment-pipeline-dark"
+				imgProps={{ alt: 'Excalidraw diagram of a deployment pipeline' }}
+			/>
+		</a>
+	}
+	light={
+		<a
+			href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/deployment-pipeline-light"
+			target="_blank"
+		>
+			<BlogImage
+				cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/deployment-pipeline-light"
+				imgProps={{ alt: 'Excalidraw diagram of a deployment pipeline' }}
+			/>
+		</a>
+	}
 />
 
 I think it can be quite instructive of overall architecture to describe how an
@@ -288,10 +288,10 @@ computational resources as well because fixing a typo in my content doesn't
 necessitate a rebuild/redeploy/cache bust of the whole site.
 
 <callout-info class="aside">
-  I realize that using GitHub as my CMS is a little odd, but wonderful people
-  like you contribute improvements to my open source content all the time and I
-  appreciate that. So by keeping things in GitHub, that can continue. (Note the
-  edit link at the bottom of every post).
+	I realize that using GitHub as my CMS is a little odd, but wonderful people
+	like you contribute improvements to my open source content all the time and I
+	appreciate that. So by keeping things in GitHub, that can continue. (Note the
+	edit link at the bottom of every post).
 </callout-info>
 
 #### GitHub Actions: 🚀 Deploy
@@ -316,15 +316,15 @@ individual containers which split the tests between them to run them as quickly
 as possible.
 
 <callout-muted class="aside">
-  You might notice that there are no arrows coming out of the Cypress step. This
-  is intentional and temporary. Currently I do not fail the build if the E2E
-  tests fail. So far, I haven't been worried about deploying something that's
-  broken and I didn't want to hold up a deploy because I accidentally busted
-  something for the 0 users who expect things to be working. The E2E tests are
-  also the slowest part of the deployment pipeline and I want to get things
-  deployed quickly. Eventually I'll probably care more about whether I break the
-  site, but for now I'd rather have things deploy faster. I do know when those
-  tests fail.
+	You might notice that there are no arrows coming out of the Cypress step. This
+	is intentional and temporary. Currently I do not fail the build if the E2E
+	tests fail. So far, I haven't been worried about deploying something that's
+	broken and I didn't want to hold up a deploy because I accidentally busted
+	something for the 0 users who expect things to be working. The E2E tests are
+	also the slowest part of the deployment pipeline and I want to get things
+	deployed quickly. Eventually I'll probably care more about whether I break the
+	site, but for now I'd rather have things deploy faster. I do know when those
+	tests fail.
 </callout-muted>
 
 Once ESLint, TypeScript, Jest, and the Build all successfully complete, then we
@@ -347,32 +347,32 @@ And that's what happens when I say: `git push` or click the "Merge" button 😄
 ### Database Connectivity
 
 <Themed
-  dark={
-    <a
-      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/database-connectivity-dark"
-      target="_blank"
-    >
-      <BlogImage
-        cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/database-connectivity-dark"
-        imgProps={{
-          alt: 'Excalidraw diagram of a databases in different regions',
-        }}
-      />
-    </a>
-  }
-  light={
-    <a
-      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/database-connectivity-light"
-      target="_blank"
-    >
-      <BlogImage
-        cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/database-connectivity-light"
-        imgProps={{
-          alt: 'Excalidraw diagram of a databases in different regions',
-        }}
-      />
-    </a>
-  }
+	dark={
+		<a
+			href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/database-connectivity-dark"
+			target="_blank"
+		>
+			<BlogImage
+				cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/database-connectivity-dark"
+				imgProps={{
+					alt: 'Excalidraw diagram of a databases in different regions',
+				}}
+			/>
+		</a>
+	}
+	light={
+		<a
+			href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/database-connectivity-light"
+			target="_blank"
+		>
+			<BlogImage
+				cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/database-connectivity-light"
+				imgProps={{
+					alt: 'Excalidraw diagram of a databases in different regions',
+				}}
+			/>
+		</a>
+	}
 />
 
 One of the coolest parts of Fly.io (and the reason I chose Fly over alternative
@@ -415,32 +415,32 @@ one other problem this creates that we need to deal with.
 ### Fly Request Replays
 
 <Themed
-  dark={
-    <a
-      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/fly-request-replays-dark"
-      target="_blank"
-    >
-      <BlogImage
-        cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/fly-request-replays-dark"
-        imgProps={{
-          alt: 'Excalidraw diagram of a user POST request made to different regions being routed to the primary region',
-        }}
-      />
-    </a>
-  }
-  light={
-    <a
-      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/fly-request-replays-light"
-      target="_blank"
-    >
-      <BlogImage
-        cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/fly-request-replays-light"
-        imgProps={{
-          alt: 'Excalidraw diagram of a user POST request made to different regions being routed to the primary region',
-        }}
-      />
-    </a>
-  }
+	dark={
+		<a
+			href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/fly-request-replays-dark"
+			target="_blank"
+		>
+			<BlogImage
+				cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/fly-request-replays-dark"
+				imgProps={{
+					alt: 'Excalidraw diagram of a user POST request made to different regions being routed to the primary region',
+				}}
+			/>
+		</a>
+	}
+	light={
+		<a
+			href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/fly-request-replays-light"
+			target="_blank"
+		>
+			<BlogImage
+				cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/fly-request-replays-light"
+				imgProps={{
+					alt: 'Excalidraw diagram of a user POST request made to different regions being routed to the primary region',
+				}}
+			/>
+		</a>
+	}
 />
 
 One problem with the read/write connections I use to make multi-regional
@@ -542,7 +542,7 @@ real APIs, then all I have to do is _not_ `--require ./mocks` and everything's
 hitting real APIs.
 
 <callout-success class="important">
-  MSW is an enormous productivity and confidence booster for me.
+	MSW is an enormous productivity and confidence booster for me.
 </callout-success>
 
 ## Caching with Redis/LRU
@@ -574,71 +574,71 @@ Here's the API:
 
 ```ts
 type CacheMetadata = {
-  createdTime: number
-  maxAge: number | null
+	createdTime: number
+	maxAge: number | null
 }
 // it's the value/null/undefined or a promise that resolves to that
 type VNUP<Value> = Value | null | undefined | Promise<Value | null | undefined>
 
 async function cachified<
-  Value,
-  Cache extends {
-    name: string
-    get: (key: string) => VNUP<{
-      metadata: CacheMetadata
-      value: Value
-    }>
-    set: (
-      key: string,
-      value: {
-        metadata: CacheMetadata
-        value: Value
-      },
-    ) => unknown | Promise<unknown>
-    del: (key: string) => unknown | Promise<unknown>
-  },
+	Value,
+	Cache extends {
+		name: string
+		get: (key: string) => VNUP<{
+			metadata: CacheMetadata
+			value: Value
+		}>
+		set: (
+			key: string,
+			value: {
+				metadata: CacheMetadata
+				value: Value
+			},
+		) => unknown | Promise<unknown>
+		del: (key: string) => unknown | Promise<unknown>
+	},
 >(options: {
-  key: string
-  cache: Cache
-  getFreshValue: () => Promise<Value>
-  checkValue?: (value: Value) => boolean
-  forceFresh?: boolean | string
-  request?: Request
-  fallbackToCache?: boolean
-  timings?: Timings
-  timingType?: string
-  maxAge?: number
+	key: string
+	cache: Cache
+	getFreshValue: () => Promise<Value>
+	checkValue?: (value: Value) => boolean
+	forceFresh?: boolean | string
+	request?: Request
+	fallbackToCache?: boolean
+	timings?: Timings
+	timingType?: string
+	maxAge?: number
 }): Promise<Value> {
-  // do the stuff...
+	// do the stuff...
 }
 
 // here's an example of the cachified credits.yml that powers the /credits page:
 async function getPeople({
-  request,
-  forceFresh,
+	request,
+	forceFresh,
 }: {
-  request?: Request
-  forceFresh?: boolean | string
+	request?: Request
+	forceFresh?: boolean | string
 }) {
-  const allPeople = await cachified({
-    cache: redisCache,
-    key: 'content:data:credits.yml',
-    request,
-    forceFresh,
-    maxAge: 1000 * 60 * 60 * 24 * 30,
-    getFreshValue: async () => {
-      const creditsString = await downloadFile('content/data/credits.yml')
-      const rawCredits = YAML.parse(creditsString)
-      if (!Array.isArray(rawCredits)) {
-        console.error('Credits is not an array', rawCredits)
-        throw new Error('Credits is not an array.')
-      }
+	const allPeople = await cachified({
+		cache: redisCache,
+		key: 'content:data:credits.yml',
+		request,
+		forceFresh,
+		maxAge: 1000 * 60 * 60 * 24 * 30,
+		getFreshValue: async () => {
+			const creditsString = await downloadFile('content/data/credits.yml')
+			const rawCredits = YAML.parse(creditsString)
+			if (!Array.isArray(rawCredits)) {
+				console.error('Credits is not an array', rawCredits)
+				throw new Error('Credits is not an array.')
+			}
 
-      return rawCredits.map(mapPerson).filter(typedBoolean)
-    },
-    checkValue: (value: unknown) => Array.isArray(value),
-  })
-  return allPeople
+			return rawCredits.map(mapPerson).filter(typedBoolean)
+		},
+		checkValue: (value: unknown) => Array.isArray(value),
+	})
+	return allPeople
 }
 ```
 
@@ -694,9 +694,9 @@ is expired and if it is, then we call `cachified` again with `forceRefresh` set
 to `true`.
 
 <callout-success>
-  This has the effect of making it so no user ever actually has to wait for
-  `getFreshValue`. The trade-off is the last user to request the data after the
-  expiration time gets the old value. I think this is a reasonable trade-off.
+	This has the effect of making it so no user ever actually has to wait for
+	`getFreshValue`. The trade-off is the last user to request the data after the
+	expiration time gets the old value. I think this is a reasonable trade-off.
 </callout-success>
 
 I'm pretty happy with this abstraction and it's possible that I'll eventually
@@ -736,7 +736,7 @@ with CSS to smooth it out a bit from the upscale) and then fade-in the full-size
 image when it's finished loading. I'm pretty darn happy with this approach.
 
 <callout-success>
-  Cloudinary blows my mind and I'm happy to pay the cost for what I get from it.
+	Cloudinary blows my mind and I'm happy to pay the cost for what I get from it.
 </callout-success>
 
 ## MDX Compilation with mdx-bundler
@@ -803,11 +803,11 @@ and this is where things get really awesome. Here's a quick example of a query:
 
 ```ts
 const users = await prisma.user.findMany({
-  select: {
-    id: true,
-    email: true,
-    firstName: true,
-  },
+	select: {
+		id: true,
+		email: true,
+		firstName: true,
+	},
 })
 ```
 
@@ -815,9 +815,9 @@ const users = await prisma.user.findMany({
 // This is users type. To be clear, I don't have to write this myself,
 // the call above returns this type automatically:
 const users: Array<{
-  id: string
-  email: string
-  firstName: string
+	id: string
+	email: string
+	firstName: string
 }>
 ```
 
@@ -825,12 +825,12 @@ And if I wanted to get the `team` then:
 
 ```ts
 const users = await prisma.user.findMany({
-  select: {
-    id: true,
-    email: true,
-    firstName: true,
-    team: true, // <-- just add the field I want
-  },
+	select: {
+		id: true,
+		email: true,
+		firstName: true,
+		team: true, // <-- just add the field I want
+	},
 })
 ```
 
@@ -838,10 +838,10 @@ And now suddenly the `users` array is:
 
 ```ts
 const users: Array<{
-  id: string
-  email: string
-  firstName: string
-  team: Team
+	id: string
+	email: string
+	firstName: string
+	team: Team
 }>
 ```
 
@@ -850,17 +850,17 @@ some graphql resolver magic? Nope! Check this out:
 
 ```ts
 const users = await prisma.user.findMany({
-  select: {
-    id: true,
-    email: true,
-    firstName: true,
-    team: true,
-    postReads: {
-      select: {
-        postSlug: true,
-      },
-    },
-  },
+	select: {
+		id: true,
+		email: true,
+		firstName: true,
+		team: true,
+		postReads: {
+			select: {
+				postSlug: true,
+			},
+		},
+	},
 })
 ```
 
@@ -868,13 +868,13 @@ And now my `users` array is:
 
 ```ts
 const users: Array<{
-  firstName: string
-  email: string
-  id: string
-  team: Team
-  postReads: Array<{
-    postSlug: string
-  }>
+	firstName: string
+	email: string
+	id: string
+	team: Team
+	postReads: Array<{
+		postSlug: string
+	}>
 }>
 ```
 
@@ -882,38 +882,38 @@ Now _that's_ what I'm talking about! And with Remix, I can easily query directly
 in my `loader`, and then have that **typed** data available in my component:
 
 ```tsx
-export async function loader({request}: DataFunctionArgs) {
-  const users = await prisma.user.findMany({
-    select: {
-      id: true,
-      email: true,
-      firstName: true,
-      team: true,
-      postReads: {
-        select: {
-          postSlug: true,
-        },
-      },
-    },
-  })
-  return json({users})
+export async function loader({ request }: DataFunctionArgs) {
+	const users = await prisma.user.findMany({
+		select: {
+			id: true,
+			email: true,
+			firstName: true,
+			team: true,
+			postReads: {
+				select: {
+					postSlug: true,
+				},
+			},
+		},
+	})
+	return json({ users })
 }
 
 export default function UsersPage() {
-  const data = useLoaderData<typeof loader>()
-  return (
-    <div>
-      <h1>Users</h1>
-      <ul>
-        {/* all this auto-completes and type checks!! */}
-        {data.users.map(user => (
-          <li key={user.id}>
-            <div>{user.firstName}</div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
+	const data = useLoaderData<typeof loader>()
+	return (
+		<div>
+			<h1>Users</h1>
+			<ul>
+				{/* all this auto-completes and type checks!! */}
+				{data.users.map(user => (
+					<li key={user.id}>
+						<div>{user.firstName}</div>
+					</li>
+				))}
+			</ul>
+		</div>
+	)
 }
 ```
 
@@ -921,8 +921,8 @@ And if I decide I don't need some data on the client, I simply update the prisma
 query and TypeScript will make sure I didn't miss anything. It's just fantastic.
 
 <callout-success>
-  Prisma has made me, a frontend developer, feel empowered to work directly with
-  a database.
+	Prisma has made me, a frontend developer, feel empowered to work directly with
+	a database.
 </callout-success>
 
 ## Authentication with Magic Links
@@ -965,32 +965,32 @@ email address and no password. Do that.
 Ok, let's take a look at a diagram of the authentication flow:
 
 <Themed
-  dark={
-    <a
-      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/auth-flow-dark"
-      target="_blank"
-    >
-      <BlogImage
-        cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/auth-flow-dark"
-        imgProps={{
-          alt: 'Excalidraw diagram of a user going to the login screen, clicking the magic link, and getting authenticated',
-        }}
-      />
-    </a>
-  }
-  light={
-    <a
-      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/auth-flow-light"
-      target="_blank"
-    >
-      <BlogImage
-        cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/auth-flow-light"
-        imgProps={{
-          alt: 'Excalidraw diagram of a user going to the login screen, clicking the magic link, and getting authenticated',
-        }}
-      />
-    </a>
-  }
+	dark={
+		<a
+			href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/auth-flow-dark"
+			target="_blank"
+		>
+			<BlogImage
+				cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/auth-flow-dark"
+				imgProps={{
+					alt: 'Excalidraw diagram of a user going to the login screen, clicking the magic link, and getting authenticated',
+				}}
+			/>
+		</a>
+	}
+	light={
+		<a
+			href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/auth-flow-light"
+			target="_blank"
+		>
+			<BlogImage
+				cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/auth-flow-light"
+				imgProps={{
+					alt: 'Excalidraw diagram of a user going to the login screen, clicking the magic link, and getting authenticated',
+				}}
+			/>
+		</a>
+	}
 />
 
 Some things I want to point out with this flow is that there's no interaction
@@ -1001,32 +1001,32 @@ Now, let's take a look at what happens when a user navigates to an authenticated
 page.
 
 <Themed
-  dark={
-    <a
-      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/session-flow-dark"
-      target="_blank"
-    >
-      <BlogImage
-        cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/session-flow-dark"
-        imgProps={{
-          alt: 'Excalidraw diagram of a user going to an authenticated page and the session being resolved to a user or the user getting redirected to login',
-        }}
-      />
-    </a>
-  }
-  light={
-    <a
-      href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/session-flow-light"
-      target="_blank"
-    >
-      <BlogImage
-        cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/session-flow-light"
-        imgProps={{
-          alt: 'Excalidraw diagram of a user going to an authenticated page and the session being resolved to a user or the user getting redirected to login',
-        }}
-      />
-    </a>
-  }
+	dark={
+		<a
+			href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/session-flow-dark"
+			target="_blank"
+		>
+			<BlogImage
+				cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/session-flow-dark"
+				imgProps={{
+					alt: 'Excalidraw diagram of a user going to an authenticated page and the session being resolved to a user or the user getting redirected to login',
+				}}
+			/>
+		</a>
+	}
+	light={
+		<a
+			href="https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/session-flow-light"
+			target="_blank"
+		>
+			<BlogImage
+				cloudinaryId="kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/session-flow-light"
+				imgProps={{
+					alt: 'Excalidraw diagram of a user going to an authenticated page and the session being resolved to a user or the user getting redirected to login',
+				}}
+			/>
+		</a>
+	}
 />
 
 The basics of this is pretty simple:

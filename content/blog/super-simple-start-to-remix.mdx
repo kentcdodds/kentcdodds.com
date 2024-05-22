@@ -73,16 +73,16 @@ Let's add a `build` script to our `package.json`:
 
 ```json lines=2-4 filename=package.json
 {
-  "scripts": {
-    "build": "remix build"
-  },
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
-  },
-  "devDependencies": {
-    "@remix-run/dev": "^1.6.5"
-  }
+	"scripts": {
+		"build": "remix build"
+	},
+	"dependencies": {
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0"
+	},
+	"devDependencies": {
+		"@remix-run/dev": "^1.6.5"
+	}
 }
 ```
 
@@ -179,10 +179,10 @@ And once we run `npm run build` remix creates a few files for us:
 ```
 
 <callout-info>
-  Note: Remix supports TypeScript out of the box, but we're keeping this simple.
-  Also, because we plan to use JSX in these files, they need the `.jsx`
-  extension. Remix uses esbuild which requires a `.jsx` or `.tsx` extension if
-  you want to use JSX.
+	Note: Remix supports TypeScript out of the box, but we're keeping this simple.
+	Also, because we plan to use JSX in these files, they need the `.jsx`
+	extension. Remix uses esbuild which requires a `.jsx` or `.tsx` extension if
+	you want to use JSX.
 </callout-info>
 
 Sweet! We built it... Now what?
@@ -200,18 +200,18 @@ element Remix will render:
 import * as React from 'react'
 
 export default function App() {
-  const [count, setCount] = React.useState(0)
-  return (
-    <html>
-      <head>
-        <title>My First Remix App</title>
-      </head>
-      <body>
-        <p>This is a remix app. Hooray!</p>
-        <button onClick={() => setCount(c => c + 1)}>{count}</button>
-      </body>
-    </html>
-  )
+	const [count, setCount] = React.useState(0)
+	return (
+		<html>
+			<head>
+				<title>My First Remix App</title>
+			</head>
+			<body>
+				<p>This is a remix app. Hooray!</p>
+				<button onClick={() => setCount(c => c + 1)}>{count}</button>
+			</body>
+		</html>
+	)
 }
 ```
 
@@ -221,8 +221,8 @@ than you think it is I promise you.
 Ok, next, let's fill in the `entry.client.jsx`:
 
 ```tsx filename=app/entry.client.jsx
-import {RemixBrowser} from '@remix-run/react'
-import {hydrateRoot} from 'react-dom/client'
+import { RemixBrowser } from '@remix-run/react'
+import { hydrateRoot } from 'react-dom/client'
 
 hydrateRoot(document, <RemixBrowser />)
 ```
@@ -233,24 +233,24 @@ And finally, let's fill in the `entry.server.jsx`:
 
 ```tsx filename=app/entry.server.jsx
 import ReactDOMServer from 'react-dom/server'
-import {RemixServer} from '@remix-run/react'
+import { RemixServer } from '@remix-run/react'
 
 export default function handleRequest(
-  request,
-  responseStatusCode,
-  responseHeaders,
-  remixContext,
+	request,
+	responseStatusCode,
+	responseHeaders,
+	remixContext,
 ) {
-  const markup = ReactDOMServer.renderToString(
-    <RemixServer context={remixContext} url={request.url} />,
-  )
+	const markup = ReactDOMServer.renderToString(
+		<RemixServer context={remixContext} url={request.url} />,
+	)
 
-  responseHeaders.set('Content-Type', 'text/html')
+	responseHeaders.set('Content-Type', 'text/html')
 
-  return new Response(`<!DOCTYPE html>${markup}`, {
-    status: responseStatusCode,
-    headers: responseHeaders,
-  })
+	return new Response(`<!DOCTYPE html>${markup}`, {
+		status: responseStatusCode,
+		headers: responseHeaders,
+	})
 }
 ```
 
@@ -351,19 +351,19 @@ Alright, so we want to "develop" our app right? So let's add `dev` script to our
 
 ```json lines=4 filename=package.json
 {
-  "scripts": {
-    "build": "remix build",
-    "dev": "remix dev"
-  },
-  "dependencies": {
-    "@remix-run/react": "^1.6.5",
-    "@remix-run/serve": "^1.6.5",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
-  },
-  "devDependencies": {
-    "@remix-run/dev": "^1.6.5"
-  }
+	"scripts": {
+		"build": "remix build",
+		"dev": "remix dev"
+	},
+	"dependencies": {
+		"@remix-run/react": "^1.6.5",
+		"@remix-run/serve": "^1.6.5",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0"
+	},
+	"devDependencies": {
+		"@remix-run/dev": "^1.6.5"
+	}
 }
 ```
 
@@ -417,22 +417,22 @@ render that script tag:
 
 ```tsx lines=2,14 filename=app/root.jsx
 import * as React from 'react'
-import {Scripts} from '@remix-run/react'
+import { Scripts } from '@remix-run/react'
 
 export default function App() {
-  const [count, setCount] = React.useState(0)
-  return (
-    <html>
-      <head>
-        <title>My First Remix App</title>
-      </head>
-      <body>
-        <p>This is a remix app. Hooray!</p>
-        <button onClick={() => setCount(c => c + 1)}>{count}</button>
-        <Scripts />
-      </body>
-    </html>
-  )
+	const [count, setCount] = React.useState(0)
+	return (
+		<html>
+			<head>
+				<title>My First Remix App</title>
+			</head>
+			<body>
+				<p>This is a remix app. Hooray!</p>
+				<button onClick={() => setCount(c => c + 1)}>{count}</button>
+				<Scripts />
+			</body>
+		</html>
+	)
 }
 ```
 
@@ -440,14 +440,14 @@ Also that missing favicon thing is annoying so I'll add this cool CD as a
 favicon:
 
 <img
-  style={{
-    width: 60,
-    display: 'block',
-    marginLeft: 'auto',
-    marginRight: 'auto',
-  }}
-  alt="CD"
-  src="https://res.cloudinary.com/kentcdodds-com/image/upload/w_120,q_auto,dpr_2.0/v1620153603/kentcdodds.com/blog/super-simple-start-to-remix/favicon_vsvcsr.ico"
+	style={{
+		width: 60,
+		display: 'block',
+		marginLeft: 'auto',
+		marginRight: 'auto',
+	}}
+	alt="CD"
+	src="https://res.cloudinary.com/kentcdodds-com/image/upload/w_120,q_auto,dpr_2.0/v1620153603/kentcdodds.com/blog/super-simple-start-to-remix/favicon_vsvcsr.ico"
 />
 
 Just put that `.ico` file in the `public` directory. `@remix-run/serve` will
@@ -463,55 +463,55 @@ And if we "view source" on the document here's what we get (formatted):
 ```html
 <!doctype html>
 <html>
-  <head>
-    <title>My First Remix App</title>
-  </head>
-  <body>
-    <p>This is a remix app. Hooray!</p>
-    <button>0</button>
-    <link rel="modulepreload" href="/build/_shared/chunk-PYN2BJX3.js" />
-    <link rel="modulepreload" href="/build/root-FYPD7R2X.js" />
-    <script>
-      window.__remixContext = {
-        actionData: undefined,
-        appState: {
-          trackBoundaries: true,
-          trackCatchBoundaries: true,
-          catchBoundaryRouteId: null,
-          renderBoundaryRouteId: null,
-          loaderBoundaryRouteId: null,
-          error: undefined,
-          catch: undefined,
-        },
-        matches: [
-          {
-            params: {},
-            pathname: '/',
-            route: {
-              id: 'root',
-              parentId: undefined,
-              path: '',
-              index: undefined,
-              caseSensitive: undefined,
-              module: '/build/root-FYPD7R2X.js',
-              imports: undefined,
-              hasAction: false,
-              hasLoader: false,
-              hasCatchBoundary: false,
-              hasErrorBoundary: false,
-            },
-          },
-        ],
-        routeData: {},
-      }
-    </script>
-    <script src="/build/manifest-142295AD.js"></script>
-    <script type="module">
-      import * as route0 from '/build/root-FYPD7R2X.js'
-      window.__remixRouteModules = {root: route0}
-    </script>
-    <script src="/build/entry.client-UK7WD5HF.js" type="module"></script>
-  </body>
+	<head>
+		<title>My First Remix App</title>
+	</head>
+	<body>
+		<p>This is a remix app. Hooray!</p>
+		<button>0</button>
+		<link rel="modulepreload" href="/build/_shared/chunk-PYN2BJX3.js" />
+		<link rel="modulepreload" href="/build/root-FYPD7R2X.js" />
+		<script>
+			window.__remixContext = {
+				actionData: undefined,
+				appState: {
+					trackBoundaries: true,
+					trackCatchBoundaries: true,
+					catchBoundaryRouteId: null,
+					renderBoundaryRouteId: null,
+					loaderBoundaryRouteId: null,
+					error: undefined,
+					catch: undefined,
+				},
+				matches: [
+					{
+						params: {},
+						pathname: '/',
+						route: {
+							id: 'root',
+							parentId: undefined,
+							path: '',
+							index: undefined,
+							caseSensitive: undefined,
+							module: '/build/root-FYPD7R2X.js',
+							imports: undefined,
+							hasAction: false,
+							hasLoader: false,
+							hasCatchBoundary: false,
+							hasErrorBoundary: false,
+						},
+					},
+				],
+				routeData: {},
+			}
+		</script>
+		<script src="/build/manifest-142295AD.js"></script>
+		<script type="module">
+			import * as route0 from '/build/root-FYPD7R2X.js'
+			window.__remixRouteModules = { root: route0 }
+		</script>
+		<script src="/build/entry.client-UK7WD5HF.js" type="module"></script>
+	</body>
 </html>
 ```
 
@@ -537,20 +537,20 @@ Now, let's add a `start` script to run `remix-serve` for our `build` directory:
 
 ```json lines=5 filename=package.json
 {
-  "scripts": {
-    "build": "remix build",
-    "dev": "remix dev",
-    "start": "remix-serve ./build"
-  },
-  "dependencies": {
-    "@remix-run/react": "^1.6.5",
-    "@remix-run/serve": "^1.6.5",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
-  },
-  "devDependencies": {
-    "@remix-run/dev": "^1.6.5"
-  }
+	"scripts": {
+		"build": "remix build",
+		"dev": "remix dev",
+		"start": "remix-serve ./build"
+	},
+	"dependencies": {
+		"@remix-run/react": "^1.6.5",
+		"@remix-run/serve": "^1.6.5",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0"
+	},
+	"devDependencies": {
+		"@remix-run/dev": "^1.6.5"
+	}
 }
 ```
 
@@ -560,21 +560,21 @@ work as expected, so let's add `cross-env` and set the `NODE_ENV` with that:
 
 ```json lines=5,10 filename=package.json
 {
-  "scripts": {
-    "build": "remix build",
-    "dev": "remix dev",
-    "start": "cross-env NODE_ENV=production remix-serve ./build"
-  },
-  "dependencies": {
-    "@remix-run/react": "^1.6.5",
-    "@remix-run/serve": "^1.6.5",
-    "cross-env": "^7.0.3",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
-  },
-  "devDependencies": {
-    "@remix-run/dev": "^1.6.5"
-  }
+	"scripts": {
+		"build": "remix build",
+		"dev": "remix dev",
+		"start": "cross-env NODE_ENV=production remix-serve ./build"
+	},
+	"dependencies": {
+		"@remix-run/react": "^1.6.5",
+		"@remix-run/serve": "^1.6.5",
+		"cross-env": "^7.0.3",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0"
+	},
+	"devDependencies": {
+		"@remix-run/dev": "^1.6.5"
+	}
 }
 ```
 

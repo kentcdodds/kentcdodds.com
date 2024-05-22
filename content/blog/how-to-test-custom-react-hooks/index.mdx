@@ -18,7 +18,7 @@ bannerCredit: Photo by [Grant Durr](https://unsplash.com/photos/21ztbENjzeI)
 ---
 
 import * as Comps from './components'
-import {UseUndoExample} from './use-undo.example'
+import { UseUndoExample } from './use-undo.example'
 
 If you're using `react@>=16.8`, then you can use hooks and you've probably
 written several custom ones yourself. You may have wondered how to be confident
@@ -47,80 +47,80 @@ const SET = 'SET'
 const RESET = 'RESET'
 
 function undoReducer(state, action) {
-  const {past, present, future} = state
-  const {type, newPresent} = action
+	const { past, present, future } = state
+	const { type, newPresent } = action
 
-  switch (action.type) {
-    case UNDO: {
-      if (past.length === 0) return state
+	switch (action.type) {
+		case UNDO: {
+			if (past.length === 0) return state
 
-      const previous = past[past.length - 1]
-      const newPast = past.slice(0, past.length - 1)
+			const previous = past[past.length - 1]
+			const newPast = past.slice(0, past.length - 1)
 
-      return {
-        past: newPast,
-        present: previous,
-        future: [present, ...future],
-      }
-    }
+			return {
+				past: newPast,
+				present: previous,
+				future: [present, ...future],
+			}
+		}
 
-    case REDO: {
-      if (future.length === 0) return state
+		case REDO: {
+			if (future.length === 0) return state
 
-      const next = future[0]
-      const newFuture = future.slice(1)
+			const next = future[0]
+			const newFuture = future.slice(1)
 
-      return {
-        past: [...past, present],
-        present: next,
-        future: newFuture,
-      }
-    }
+			return {
+				past: [...past, present],
+				present: next,
+				future: newFuture,
+			}
+		}
 
-    case SET: {
-      if (newPresent === present) return state
+		case SET: {
+			if (newPresent === present) return state
 
-      return {
-        past: [...past, present],
-        present: newPresent,
-        future: [],
-      }
-    }
+			return {
+				past: [...past, present],
+				present: newPresent,
+				future: [],
+			}
+		}
 
-    case RESET: {
-      return {
-        past: [],
-        present: newPresent,
-        future: [],
-      }
-    }
-    default: {
-      throw new Error(`Unhandled action type: ${type}`)
-    }
-  }
+		case RESET: {
+			return {
+				past: [],
+				present: newPresent,
+				future: [],
+			}
+		}
+		default: {
+			throw new Error(`Unhandled action type: ${type}`)
+		}
+	}
 }
 
 function useUndo(initialPresent) {
-  const [state, dispatch] = React.useReducer(undoReducer, {
-    past: [],
-    present: initialPresent,
-    future: [],
-  })
+	const [state, dispatch] = React.useReducer(undoReducer, {
+		past: [],
+		present: initialPresent,
+		future: [],
+	})
 
-  const canUndo = state.past.length !== 0
-  const canRedo = state.future.length !== 0
-  const undo = React.useCallback(() => dispatch({type: UNDO}), [])
-  const redo = React.useCallback(() => dispatch({type: REDO}), [])
-  const set = React.useCallback(
-    newPresent => dispatch({type: SET, newPresent}),
-    [],
-  )
-  const reset = React.useCallback(
-    newPresent => dispatch({type: RESET, newPresent}),
-    [],
-  )
+	const canUndo = state.past.length !== 0
+	const canRedo = state.future.length !== 0
+	const undo = React.useCallback(() => dispatch({ type: UNDO }), [])
+	const redo = React.useCallback(() => dispatch({ type: REDO }), [])
+	const set = React.useCallback(
+		newPresent => dispatch({ type: SET, newPresent }),
+		[],
+	)
+	const reset = React.useCallback(
+		newPresent => dispatch({ type: RESET, newPresent }),
+		[],
+	)
 
-  return {...state, set, reset, undo, redo, canUndo, canRedo}
+	return { ...state, set, reset, undo, redo, canUndo, canRedo }
 }
 
 export default useUndo
@@ -174,46 +174,46 @@ import * as React from 'react'
 import useUndo from '../use-undo'
 
 function UseUndoExample() {
-  const {present, past, future, set, undo, redo, canUndo, canRedo} =
-    useUndo('one')
-  function handleSubmit(event) {
-    event.preventDefault()
-    const input = event.target.elements.newValue
-    set(input.value)
-    input.value = ''
-  }
+	const { present, past, future, set, undo, redo, canUndo, canRedo } =
+		useUndo('one')
+	function handleSubmit(event) {
+		event.preventDefault()
+		const input = event.target.elements.newValue
+		set(input.value)
+		input.value = ''
+	}
 
-  return (
-    <div>
-      <div>
-        <button onClick={undo} disabled={!canUndo}>
-          undo
-        </button>
-        <button onClick={redo} disabled={!canRedo}>
-          redo
-        </button>
-      </div>
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="newValue">New value</label>
-        <input type="text" id="newValue" />
-        <div>
-          <button type="submit">Submit</button>
-        </div>
-      </form>
-      <div>Present: {present}</div>
-      <div>Past: {past.join(', ')}</div>
-      <div>Future: {future.join(', ')}</div>
-    </div>
-  )
+	return (
+		<div>
+			<div>
+				<button onClick={undo} disabled={!canUndo}>
+					undo
+				</button>
+				<button onClick={redo} disabled={!canRedo}>
+					redo
+				</button>
+			</div>
+			<form onSubmit={handleSubmit}>
+				<label htmlFor="newValue">New value</label>
+				<input type="text" id="newValue" />
+				<div>
+					<button type="submit">Submit</button>
+				</div>
+			</form>
+			<div>Present: {present}</div>
+			<div>Past: {past.join(', ')}</div>
+			<div>Future: {future.join(', ')}</div>
+		</div>
+	)
 }
 
-export {UseUndoExample}
+export { UseUndoExample }
 ```
 
 Here's that rendered:
 
 <Comps.Rendered>
-  <UseUndoExample />
+	<UseUndoExample />
 </Comps.Rendered>
 
 Great, so now we can test that hook manually using the example component that's
@@ -331,100 +331,100 @@ Here's an example of what that would be like for our `useUndo` hook:
 
 ```js
 import * as React from 'react'
-import {render, act} from '@testing-library/react'
+import { render, act } from '@testing-library/react'
 import useUndo from '../use-undo'
 
 function setup(...args) {
-  const returnVal = {}
-  function TestComponent() {
-    Object.assign(returnVal, useUndo(...args))
-    return null
-  }
-  render(<TestComponent />)
-  return returnVal
+	const returnVal = {}
+	function TestComponent() {
+		Object.assign(returnVal, useUndo(...args))
+		return null
+	}
+	render(<TestComponent />)
+	return returnVal
 }
 
 test('allows you to undo and redo', () => {
-  const undoData = setup('one')
+	const undoData = setup('one')
 
-  // assert initial state
-  expect(undoData.canUndo).toBe(false)
-  expect(undoData.canRedo).toBe(false)
-  expect(undoData.past).toEqual([])
-  expect(undoData.present).toEqual('one')
-  expect(undoData.future).toEqual([])
+	// assert initial state
+	expect(undoData.canUndo).toBe(false)
+	expect(undoData.canRedo).toBe(false)
+	expect(undoData.past).toEqual([])
+	expect(undoData.present).toEqual('one')
+	expect(undoData.future).toEqual([])
 
-  // add second value
-  act(() => {
-    undoData.set('two')
-  })
+	// add second value
+	act(() => {
+		undoData.set('two')
+	})
 
-  // assert new state
-  expect(undoData.canUndo).toBe(true)
-  expect(undoData.canRedo).toBe(false)
-  expect(undoData.past).toEqual(['one'])
-  expect(undoData.present).toEqual('two')
-  expect(undoData.future).toEqual([])
+	// assert new state
+	expect(undoData.canUndo).toBe(true)
+	expect(undoData.canRedo).toBe(false)
+	expect(undoData.past).toEqual(['one'])
+	expect(undoData.present).toEqual('two')
+	expect(undoData.future).toEqual([])
 
-  // add third value
-  act(() => {
-    undoData.set('three')
-  })
+	// add third value
+	act(() => {
+		undoData.set('three')
+	})
 
-  // assert new state
-  expect(undoData.canUndo).toBe(true)
-  expect(undoData.canRedo).toBe(false)
-  expect(undoData.past).toEqual(['one', 'two'])
-  expect(undoData.present).toEqual('three')
-  expect(undoData.future).toEqual([])
+	// assert new state
+	expect(undoData.canUndo).toBe(true)
+	expect(undoData.canRedo).toBe(false)
+	expect(undoData.past).toEqual(['one', 'two'])
+	expect(undoData.present).toEqual('three')
+	expect(undoData.future).toEqual([])
 
-  // undo
-  act(() => {
-    undoData.undo()
-  })
+	// undo
+	act(() => {
+		undoData.undo()
+	})
 
-  // assert "undone" state
-  expect(undoData.canUndo).toBe(true)
-  expect(undoData.canRedo).toBe(true)
-  expect(undoData.past).toEqual(['one'])
-  expect(undoData.present).toEqual('two')
-  expect(undoData.future).toEqual(['three'])
+	// assert "undone" state
+	expect(undoData.canUndo).toBe(true)
+	expect(undoData.canRedo).toBe(true)
+	expect(undoData.past).toEqual(['one'])
+	expect(undoData.present).toEqual('two')
+	expect(undoData.future).toEqual(['three'])
 
-  // undo again
-  act(() => {
-    undoData.undo()
-  })
+	// undo again
+	act(() => {
+		undoData.undo()
+	})
 
-  // assert "double-undone" state
-  expect(undoData.canUndo).toBe(false)
-  expect(undoData.canRedo).toBe(true)
-  expect(undoData.past).toEqual([])
-  expect(undoData.present).toEqual('one')
-  expect(undoData.future).toEqual(['two', 'three'])
+	// assert "double-undone" state
+	expect(undoData.canUndo).toBe(false)
+	expect(undoData.canRedo).toBe(true)
+	expect(undoData.past).toEqual([])
+	expect(undoData.present).toEqual('one')
+	expect(undoData.future).toEqual(['two', 'three'])
 
-  // redo
-  act(() => {
-    undoData.redo()
-  })
+	// redo
+	act(() => {
+		undoData.redo()
+	})
 
-  // assert undo + undo + redo state
-  expect(undoData.canUndo).toBe(true)
-  expect(undoData.canRedo).toBe(true)
-  expect(undoData.past).toEqual(['one'])
-  expect(undoData.present).toEqual('two')
-  expect(undoData.future).toEqual(['three'])
+	// assert undo + undo + redo state
+	expect(undoData.canUndo).toBe(true)
+	expect(undoData.canRedo).toBe(true)
+	expect(undoData.past).toEqual(['one'])
+	expect(undoData.present).toEqual('two')
+	expect(undoData.future).toEqual(['three'])
 
-  // add fourth value
-  act(() => {
-    undoData.set('four')
-  })
+	// add fourth value
+	act(() => {
+		undoData.set('four')
+	})
 
-  // assert final state (note the lack of "third")
-  expect(undoData.canUndo).toBe(true)
-  expect(undoData.canRedo).toBe(false)
-  expect(undoData.past).toEqual(['one', 'two'])
-  expect(undoData.present).toEqual('four')
-  expect(undoData.future).toEqual([])
+	// assert final state (note the lack of "third")
+	expect(undoData.canUndo).toBe(true)
+	expect(undoData.canRedo).toBe(false)
+	expect(undoData.past).toEqual(['one', 'two'])
+	expect(undoData.present).toEqual('four')
+	expect(undoData.future).toEqual([])
 })
 ```
 
@@ -443,90 +443,90 @@ This is why `renderHook` from
 exists. Here's what this test would be like if we use `@testing-library/react`:
 
 ```js
-import {renderHook, act} from '@testing-library/react'
+import { renderHook, act } from '@testing-library/react'
 import useUndo from '../use-undo'
 
 test('allows you to undo and redo', () => {
-  const {result} = renderHook(() => useUndo('one'))
+	const { result } = renderHook(() => useUndo('one'))
 
-  // assert initial state
-  expect(result.current.canUndo).toBe(false)
-  expect(result.current.canRedo).toBe(false)
-  expect(result.current.past).toEqual([])
-  expect(result.current.present).toEqual('one')
-  expect(result.current.future).toEqual([])
+	// assert initial state
+	expect(result.current.canUndo).toBe(false)
+	expect(result.current.canRedo).toBe(false)
+	expect(result.current.past).toEqual([])
+	expect(result.current.present).toEqual('one')
+	expect(result.current.future).toEqual([])
 
-  // add second value
-  act(() => {
-    result.current.set('two')
-  })
+	// add second value
+	act(() => {
+		result.current.set('two')
+	})
 
-  // assert new state
-  expect(result.current.canUndo).toBe(true)
-  expect(result.current.canRedo).toBe(false)
-  expect(result.current.past).toEqual(['one'])
-  expect(result.current.present).toEqual('two')
-  expect(result.current.future).toEqual([])
+	// assert new state
+	expect(result.current.canUndo).toBe(true)
+	expect(result.current.canRedo).toBe(false)
+	expect(result.current.past).toEqual(['one'])
+	expect(result.current.present).toEqual('two')
+	expect(result.current.future).toEqual([])
 
-  // add third value
-  act(() => {
-    result.current.set('three')
-  })
+	// add third value
+	act(() => {
+		result.current.set('three')
+	})
 
-  // assert new state
-  expect(result.current.canUndo).toBe(true)
-  expect(result.current.canRedo).toBe(false)
-  expect(result.current.past).toEqual(['one', 'two'])
-  expect(result.current.present).toEqual('three')
-  expect(result.current.future).toEqual([])
+	// assert new state
+	expect(result.current.canUndo).toBe(true)
+	expect(result.current.canRedo).toBe(false)
+	expect(result.current.past).toEqual(['one', 'two'])
+	expect(result.current.present).toEqual('three')
+	expect(result.current.future).toEqual([])
 
-  // undo
-  act(() => {
-    result.current.undo()
-  })
+	// undo
+	act(() => {
+		result.current.undo()
+	})
 
-  // assert "undone" state
-  expect(result.current.canUndo).toBe(true)
-  expect(result.current.canRedo).toBe(true)
-  expect(result.current.past).toEqual(['one'])
-  expect(result.current.present).toEqual('two')
-  expect(result.current.future).toEqual(['three'])
+	// assert "undone" state
+	expect(result.current.canUndo).toBe(true)
+	expect(result.current.canRedo).toBe(true)
+	expect(result.current.past).toEqual(['one'])
+	expect(result.current.present).toEqual('two')
+	expect(result.current.future).toEqual(['three'])
 
-  // undo again
-  act(() => {
-    result.current.undo()
-  })
+	// undo again
+	act(() => {
+		result.current.undo()
+	})
 
-  // assert "double-undone" state
-  expect(result.current.canUndo).toBe(false)
-  expect(result.current.canRedo).toBe(true)
-  expect(result.current.past).toEqual([])
-  expect(result.current.present).toEqual('one')
-  expect(result.current.future).toEqual(['two', 'three'])
+	// assert "double-undone" state
+	expect(result.current.canUndo).toBe(false)
+	expect(result.current.canRedo).toBe(true)
+	expect(result.current.past).toEqual([])
+	expect(result.current.present).toEqual('one')
+	expect(result.current.future).toEqual(['two', 'three'])
 
-  // redo
-  act(() => {
-    result.current.redo()
-  })
+	// redo
+	act(() => {
+		result.current.redo()
+	})
 
-  // assert undo + undo + redo state
-  expect(result.current.canUndo).toBe(true)
-  expect(result.current.canRedo).toBe(true)
-  expect(result.current.past).toEqual(['one'])
-  expect(result.current.present).toEqual('two')
-  expect(result.current.future).toEqual(['three'])
+	// assert undo + undo + redo state
+	expect(result.current.canUndo).toBe(true)
+	expect(result.current.canRedo).toBe(true)
+	expect(result.current.past).toEqual(['one'])
+	expect(result.current.present).toEqual('two')
+	expect(result.current.future).toEqual(['three'])
 
-  // add fourth value
-  act(() => {
-    result.current.set('four')
-  })
+	// add fourth value
+	act(() => {
+		result.current.set('four')
+	})
 
-  // assert final state (note the lack of "third")
-  expect(result.current.canUndo).toBe(true)
-  expect(result.current.canRedo).toBe(false)
-  expect(result.current.past).toEqual(['one', 'two'])
-  expect(result.current.present).toEqual('four')
-  expect(result.current.future).toEqual([])
+	// assert final state (note the lack of "third")
+	expect(result.current.canUndo).toBe(true)
+	expect(result.current.canRedo).toBe(false)
+	expect(result.current.past).toEqual(['one', 'two'])
+	expect(result.current.present).toEqual('four')
+	expect(result.current.future).toEqual([])
 })
 ```
 
@@ -542,8 +542,8 @@ function above. A few other things we get from `@testing-library/react` are:
   logic)
 
 <callout-info class="aside">
-  Note, you _can_ test more than a single hook by simply calling all the hooks
-  you want in the callback function you pass to `renderHook`.
+	Note, you _can_ test more than a single hook by simply calling all the hooks
+	you want in the callback function you pass to `renderHook`.
 </callout-info>
 
 Writing a "test-only" component to support some of these requires a fair amount

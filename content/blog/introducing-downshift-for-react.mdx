@@ -86,8 +86,8 @@ This means that `downshift` doesn't need to expose nearly as many props as other
 solutions because there's no rendering to configure.
 
 <callout-success>
-  It turns out that rendering nothing increases simplicity, decreases bundle
-  size, and enhances flexibility.
+	It turns out that rendering nothing increases simplicity, decreases bundle
+	size, and enhances flexibility.
 </callout-success>
 
 ## So what does it look like?
@@ -96,61 +96,61 @@ Here's a bare-bones autocomplete component with `downshift`:
 
 ```js
 import * as React from 'react'
-import {render} from 'react-dom'
+import { render } from 'react-dom'
 import Downshift from 'downshift'
 
 const items = [
-  {value: 'apple'},
-  {value: 'pear'},
-  {value: 'orange'},
-  {value: 'grape'},
-  {value: 'banana'},
+	{ value: 'apple' },
+	{ value: 'pear' },
+	{ value: 'orange' },
+	{ value: 'grape' },
+	{ value: 'banana' },
 ]
 
 render(
-  <Downshift
-    onChange={selection => alert(`You selected ${selection.value}`)}
-    itemToString={item => (item ? item.value : '')}
-  >
-    {({
-      getInputProps,
-      getItemProps,
-      getLabelProps,
-      getMenuProps,
-      isOpen,
-      inputValue,
-      highlightedIndex,
-      selectedItem,
-    }) => (
-      <div>
-        <label {...getLabelProps()}>Enter a fruit</label>
-        <input {...getInputProps()} />
-        <ul {...getMenuProps()}>
-          {isOpen
-            ? items
-                .filter(item => !inputValue || item.value.includes(inputValue))
-                .map((item, index) => (
-                  <li
-                    {...getItemProps({
-                      key: item.value,
-                      index,
-                      item,
-                      style: {
-                        backgroundColor:
-                          highlightedIndex === index ? 'lightgray' : 'white',
-                        fontWeight: selectedItem === item ? 'bold' : 'normal',
-                      },
-                    })}
-                  >
-                    {item.value}
-                  </li>
-                ))
-            : null}
-        </ul>
-      </div>
-    )}
-  </Downshift>,
-  document.getElementById('root'),
+	<Downshift
+		onChange={selection => alert(`You selected ${selection.value}`)}
+		itemToString={item => (item ? item.value : '')}
+	>
+		{({
+			getInputProps,
+			getItemProps,
+			getLabelProps,
+			getMenuProps,
+			isOpen,
+			inputValue,
+			highlightedIndex,
+			selectedItem,
+		}) => (
+			<div>
+				<label {...getLabelProps()}>Enter a fruit</label>
+				<input {...getInputProps()} />
+				<ul {...getMenuProps()}>
+					{isOpen
+						? items
+								.filter(item => !inputValue || item.value.includes(inputValue))
+								.map((item, index) => (
+									<li
+										{...getItemProps({
+											key: item.value,
+											index,
+											item,
+											style: {
+												backgroundColor:
+													highlightedIndex === index ? 'lightgray' : 'white',
+												fontWeight: selectedItem === item ? 'bold' : 'normal',
+											},
+										})}
+									>
+										{item.value}
+									</li>
+								))
+						: null}
+				</ul>
+			</div>
+		)}
+	</Downshift>,
+	document.getElementById('root'),
 )
 ```
 
@@ -168,8 +168,8 @@ most of accessibility for us, and we're responsible for rendering things based
 on that state.**
 
 <callout-info>
-  Your autocomplete component is literally a function of the state of
-  `downshift`
+	Your autocomplete component is literally a function of the state of
+	`downshift`
 </callout-info>
 
 ## prop getters

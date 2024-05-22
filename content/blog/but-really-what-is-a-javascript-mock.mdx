@@ -14,8 +14,8 @@ bannerCredit: Photo by [Dmitri Popov](https://unsplash.com/photos/cnOlhGQY-SI)
 ---
 
 <callout-info>
-  This is a great follow-up to [But really, what is a JavaScript
-  test?](/blog/but-really-what-is-a-javascript-test) So here we go!
+	This is a great follow-up to [But really, what is a JavaScript
+	test?](/blog/but-really-what-is-a-javascript-test) So here we go!
 </callout-info>
 
 <br />
@@ -27,21 +27,21 @@ here's the module we'll be testing today:
 
 ```js
 // thumb-war.js
-import {getWinner} from './utils'
+import { getWinner } from './utils'
 
 function thumbWar(player1, player2) {
-  const numberToWin = 2
-  let player1Wins = 0
-  let player2Wins = 0
-  while (player1Wins < numberToWin && player2Wins < numberToWin) {
-    const winner = getWinner(player1, player2)
-    if (winner === player1) {
-      player1Wins++
-    } else if (winner === player2) {
-      player2Wins++
-    }
-  }
-  return player1Wins > player2Wins ? player1 : player2
+	const numberToWin = 2
+	let player1Wins = 0
+	let player2Wins = 0
+	while (player1Wins < numberToWin && player2Wins < numberToWin) {
+		const winner = getWinner(player1, player2)
+		if (winner === player1) {
+			player1Wins++
+		} else if (winner === player2) {
+			player2Wins++
+		}
+	}
+	return player1Wins > player2Wins ? player1 : player2
 }
 
 export default thumbWar
@@ -65,8 +65,8 @@ best our test can do:
 import thumbWar from '../thumb-war'
 
 test('returns winner', () => {
-  const winner = thumbWar('Ken Wheeler', 'Kent C. Dodds')
-  expect(['Ken Wheeler', 'Kent C. Dodds'].includes(winner)).toBe(true)
+	const winner = thumbWar('Ken Wheeler', 'Kent C. Dodds')
+	expect(['Ken Wheeler', 'Kent C. Dodds'].includes(winner)).toBe(true)
 })
 ```
 
@@ -85,15 +85,15 @@ import thumbWar from '../thumb-war'
 import * as utils from '~/utils'
 
 test('returns winner', () => {
-  const originalGetWinner = utils.getWinner
-  // eslint-disable-next-line import/namespace
-  utils.getWinner = (p1, p2) => p2
+	const originalGetWinner = utils.getWinner
+	// eslint-disable-next-line import/namespace
+	utils.getWinner = (p1, p2) => p2
 
-  const winner = thumbWar('Ken Wheeler', 'Kent C. Dodds')
-  expect(winner).toBe('Kent C. Dodds')
+	const winner = thumbWar('Ken Wheeler', 'Kent C. Dodds')
+	expect(winner).toBe('Kent C. Dodds')
 
-  // eslint-disable-next-line import/namespace
-  utils.getWinner = originalGetWinner
+	// eslint-disable-next-line import/namespace
+	utils.getWinner = originalGetWinner
 })
 ```
 
@@ -130,23 +130,23 @@ import thumbWar from '../thumb-war'
 import * as utils from '~/utils'
 
 test('returns winner', () => {
-  const originalGetWinner = utils.getWinner
-  // eslint-disable-next-line import/namespace
-  utils.getWinner = (...args) => {
-    utils.getWinner.mock.calls.push(args)
-    return args[1]
-  }
-  utils.getWinner.mock = {calls: []}
+	const originalGetWinner = utils.getWinner
+	// eslint-disable-next-line import/namespace
+	utils.getWinner = (...args) => {
+		utils.getWinner.mock.calls.push(args)
+		return args[1]
+	}
+	utils.getWinner.mock = { calls: [] }
 
-  const winner = thumbWar('Ken Wheeler', 'Kent C. Dodds')
-  expect(winner).toBe('Kent C. Dodds')
-  expect(utils.getWinner.mock.calls).toHaveLength(2)
-  utils.getWinner.mock.calls.forEach(args => {
-    expect(args).toEqual(['Ken Wheeler', 'Kent C. Dodds'])
-  })
+	const winner = thumbWar('Ken Wheeler', 'Kent C. Dodds')
+	expect(winner).toBe('Kent C. Dodds')
+	expect(utils.getWinner.mock.calls).toHaveLength(2)
+	utils.getWinner.mock.calls.forEach(args => {
+		expect(args).toEqual(['Ken Wheeler', 'Kent C. Dodds'])
+	})
 
-  // eslint-disable-next-line import/namespace
-  utils.getWinner = originalGetWinner
+	// eslint-disable-next-line import/namespace
+	utils.getWinner = originalGetWinner
 })
 ```
 
@@ -157,7 +157,7 @@ assertions:
 ```js
 expect(utils.getWinner.mock.calls).toHaveLength(2)
 utils.getWinner.mock.calls.forEach(args => {
-  expect(args).toEqual(['Ken Wheeler', 'Kent C. Dodds'])
+	expect(args).toEqual(['Ken Wheeler', 'Kent C. Dodds'])
 })
 ```
 
@@ -184,19 +184,19 @@ import thumbWar from '../thumb-war'
 import * as utils from '~/utils'
 
 test('returns winner', () => {
-  const originalGetWinner = utils.getWinner
-  // eslint-disable-next-line import/namespace
-  utils.getWinner = jest.fn((p1, p2) => p2)
+	const originalGetWinner = utils.getWinner
+	// eslint-disable-next-line import/namespace
+	utils.getWinner = jest.fn((p1, p2) => p2)
 
-  const winner = thumbWar('Ken Wheeler', 'Kent C. Dodds')
-  expect(winner).toBe('Kent C. Dodds')
-  expect(utils.getWinner).toHaveBeenCalledTimes(2)
-  utils.getWinner.mock.calls.forEach(args => {
-    expect(args).toEqual(['Ken Wheeler', 'Kent C. Dodds'])
-  })
+	const winner = thumbWar('Ken Wheeler', 'Kent C. Dodds')
+	expect(winner).toBe('Kent C. Dodds')
+	expect(utils.getWinner).toHaveBeenCalledTimes(2)
+	utils.getWinner.mock.calls.forEach(args => {
+		expect(args).toEqual(['Ken Wheeler', 'Kent C. Dodds'])
+	})
 
-  // eslint-disable-next-line import/namespace
-  utils.getWinner = originalGetWinner
+	// eslint-disable-next-line import/namespace
+	utils.getWinner = originalGetWinner
 })
 ```
 
@@ -226,13 +226,13 @@ import thumbWar from '../thumb-war'
 import * as utils from '~/utils'
 
 test('returns winner', () => {
-  jest.spyOn(utils, 'getWinner')
-  utils.getWinner.mockImplementation((p1, p2) => p2)
+	jest.spyOn(utils, 'getWinner')
+	utils.getWinner.mockImplementation((p1, p2) => p2)
 
-  const winner = thumbWar('Ken Wheeler', 'Kent C. Dodds')
-  expect(winner).toBe('Kent C. Dodds')
+	const winner = thumbWar('Ken Wheeler', 'Kent C. Dodds')
+	expect(winner).toBe('Kent C. Dodds')
 
-  utils.getWinner.mockRestore()
+	utils.getWinner.mockRestore()
 })
 ```
 
@@ -287,18 +287,18 @@ import thumbWar from '../thumb-war'
 import * as utilsMock from '~/utils'
 
 jest.mock('~/utils', () => {
-  return {
-    getWinner: jest.fn((p1, p2) => p2),
-  }
+	return {
+		getWinner: jest.fn((p1, p2) => p2),
+	}
 })
 
 test('returns winner', () => {
-  const winner = thumbWar('Ken Wheeler', 'Kent C. Dodds')
-  expect(winner).toBe('Kent C. Dodds')
-  expect(utilsMock.getWinner).toHaveBeenCalledTimes(2)
-  utilsMock.getWinner.mock.calls.forEach(args => {
-    expect(args).toEqual(['Ken Wheeler', 'Kent C. Dodds'])
-  })
+	const winner = thumbWar('Ken Wheeler', 'Kent C. Dodds')
+	expect(winner).toBe('Kent C. Dodds')
+	expect(utilsMock.getWinner).toHaveBeenCalledTimes(2)
+	utilsMock.getWinner.mock.calls.forEach(args => {
+		expect(args).toEqual(['Ken Wheeler', 'Kent C. Dodds'])
+	})
 })
 ```
 
@@ -309,10 +309,10 @@ communicate the intention that this should be importing a mocked version of the
 module, not the real thing.
 
 <callout-info class="aside">
-  Common question: If you only want to mock one of several functions in a
-  module, then you may like the
-  [`jest.requireActual`](https://jestjs.io/docs/jest-object#jestrequireactualmodulename)
-  API.
+	Common question: If you only want to mock one of several functions in a
+	module, then you may like the
+	[`jest.requireActual`](https://jestjs.io/docs/jest-object#jestrequireactualmodulename)
+	API.
 </callout-info>
 
 ### Step 6
@@ -351,12 +351,12 @@ import * as utilsMock from '~/utils'
 jest.mock('~/utils')
 
 test('returns winner', () => {
-  const winner = thumbWar('Ken Wheeler', 'Kent C. Dodds')
-  expect(winner).toBe('Kent C. Dodds')
-  expect(utilsMock.getWinner).toHaveBeenCalledTimes(2)
-  utilsMock.getWinner.mock.calls.forEach(args => {
-    expect(args).toEqual(['Ken Wheeler', 'Kent C. Dodds'])
-  })
+	const winner = thumbWar('Ken Wheeler', 'Kent C. Dodds')
+	expect(winner).toBe('Kent C. Dodds')
+	expect(utilsMock.getWinner).toHaveBeenCalledTimes(2)
+	utilsMock.getWinner.mock.calls.forEach(args => {
+		expect(args).toEqual(['Ken Wheeler', 'Kent C. Dodds'])
+	})
 })
 ```
 

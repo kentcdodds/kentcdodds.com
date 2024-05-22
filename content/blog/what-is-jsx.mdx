@@ -49,13 +49,13 @@ abstraction more powerfully.
 Here's our simplest example:
 
 <callout-info class="aside">
-  Note, all examples assign to a variable `ui` just to illustrate that these are
-  regular JavaScript expressions that you can assign to a variable.
+	Note, all examples assign to a variable `ui` just to illustrate that these are
+	regular JavaScript expressions that you can assign to a variable.
 </callout-info>
 
 ```tsx
 ui = <div id="root">Hello world</div>
-ui = React.createElement('div', {id: 'root'}, 'Hello world')
+ui = React.createElement('div', { id: 'root' }, 'Hello world')
 ```
 
 As shown above, the JSX is compiled to `React.createElement`. The API to
@@ -73,33 +73,33 @@ function createElement(elementType, props, ...children) {}
   just a convenience and we could write an equivalent to above with:
 
 ```js
-ui = React.createElement('div', {id: 'root', children: 'Hello world'})
+ui = React.createElement('div', { id: 'root', children: 'Hello world' })
 ```
 
 If you have more than one child then you use an array:
 
 ```tsx
 ui = (
-  <div>
-    <span>Hello</span> <span>World</span>
-  </div>
+	<div>
+		<span>Hello</span> <span>World</span>
+	</div>
 )
 ui = React.createElement('div', {
-  children: [
-    React.createElement('span', null, 'Hello'),
-    ' ',
-    React.createElement('span', null, 'World'),
-  ],
+	children: [
+		React.createElement('span', null, 'Hello'),
+		' ',
+		React.createElement('span', null, 'World'),
+	],
 })
 
 // Note: babel uses the third argument for children:
 ui = React.createElement(
-  'div', // type
-  null, // props
-  // children are the rest:
-  React.createElement('span', null, 'Hello'),
-  ' ',
-  React.createElement('span', null, 'World'),
+	'div', // type
+	null, // props
+	// children are the rest:
+	React.createElement('span', null, 'Hello'),
+	' ',
+	React.createElement('span', null, 'World'),
 )
 ```
 
@@ -128,35 +128,35 @@ ui = <div>Hello {subject}</div>
 ui = React.createElement('div', null, 'Hello ', subject)
 
 ui = (
-  <div>
-    {greeting} {subject}
-  </div>
+	<div>
+		{greeting} {subject}
+	</div>
 )
 ui = React.createElement('div', null, greeting, ' ', subject)
 
 ui = <button onClick={() => {}}>click me</button>
-ui = React.createElement('button', {onClick: () => {}}, 'click me')
+ui = React.createElement('button', { onClick: () => {} }, 'click me')
 
 ui = <div>{error ? <span>{error}</span> : <span>good to go</span>}</div>
 ui = React.createElement(
-  'div',
-  null,
-  error
-    ? React.createElement('span', null, error)
-    : React.createElement('span', null, 'good to go'),
+	'div',
+	null,
+	error
+		? React.createElement('span', null, error)
+		: React.createElement('span', null, 'good to go'),
 )
 
 ui = (
-  <div>
-    {items.map(i => (
-      <span key={i.id}>{i.content}</span>
-    ))}
-  </div>
+	<div>
+		{items.map(i => (
+			<span key={i.id}>{i.content}</span>
+		))}
+	</div>
 )
 ui = React.createElement(
-  'div',
-  null,
-  items.map(i => React.createElement('span', {key: i.id}, i.content)),
+	'div',
+	null,
+	items.map(i => React.createElement('span', { key: i.id }, i.content)),
 )
 ```
 

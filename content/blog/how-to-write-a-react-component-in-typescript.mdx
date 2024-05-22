@@ -24,30 +24,30 @@ Here's our component without types:
 
 ```tsx
 const operations = {
-  '+': (left, right) => left + right,
-  '-': (left, right) => left - right,
-  '*': (left, right) => left * right,
-  '/': (left, right) => left / right,
+	'+': (left, right) => left + right,
+	'-': (left, right) => left - right,
+	'*': (left, right) => left * right,
+	'/': (left, right) => left / right,
 }
 
-function Calculator({left, operator, right}) {
-  const result = operations[operator](left, right)
-  return (
-    <div>
-      <code>
-        {left} {operator} {right} = <output>{result}</output>
-      </code>
-    </div>
-  )
+function Calculator({ left, operator, right }) {
+	const result = operations[operator](left, right)
+	return (
+		<div>
+			<code>
+				{left} {operator} {right} = <output>{result}</output>
+			</code>
+		</div>
+	)
 }
 
 const examples = (
-  <>
-    <Calculator left={1} operator="+" right={2} />
-    <Calculator left={1} operator="-" right={2} />
-    <Calculator left={1} operator="*" right={2} />
-    <Calculator left={1} operator="/" right={2} />
-  </>
+	<>
+		<Calculator left={1} operator="+" right={2} />
+		<Calculator left={1} operator="-" right={2} />
+		<Calculator left={1} operator="*" right={2} />
+		<Calculator left={1} operator="/" right={2} />
+	</>
 )
 ```
 
@@ -55,13 +55,13 @@ Right there you may notice we do things a little differently. Maybe you prefer
 this instead:
 
 ```tsx
-const Calculator = ({left, operator, right}) => (
-  <div>
-    <code>
-      {left} {operator} {right} ={' '}
-      <output>{operations[operator](left, right)}</output>
-    </code>
-  </div>
+const Calculator = ({ left, operator, right }) => (
+	<div>
+		<code>
+			{left} {operator} {right} ={' '}
+			<output>{operations[operator](left, right)}</output>
+		</code>
+	</div>
 )
 ```
 
@@ -72,15 +72,15 @@ approach.
 Ok, so maybe you do this:
 
 ```tsx
-const Calculator = ({left, operator, right}) => {
-  const result = operations[operator](left, right)
-  return (
-    <div>
-      <code>
-        {left} {operator} {right} = <output>{result}</output>
-      </code>
-    </div>
-  )
+const Calculator = ({ left, operator, right }) => {
+	const result = operations[operator](left, right)
+	return (
+		<div>
+			<code>
+				{left} {operator} {right} = <output>{result}</output>
+			</code>
+		</div>
+	)
 }
 ```
 
@@ -94,9 +94,9 @@ start, let's go with a simple type for the props (we'll improve it later):
 
 ```tsx
 type CalculatorProps = {
-  left: number
-  operator: string
-  right: number
+	left: number
+	operator: string
+	right: number
 }
 ```
 
@@ -109,8 +109,8 @@ wrong?). Interestingly, you cannot type a function declaration this way, so
 we'll have to use a function expression:
 
 ```tsx
-const Calculator: React.FC<CalculatorProps> = ({left, right, operator}) => {
-  // implementation clipped for brevity
+const Calculator: React.FC<CalculatorProps> = ({ left, right, operator }) => {
+	// implementation clipped for brevity
 }
 ```
 
@@ -134,7 +134,7 @@ One of the things I love about React components is that they aren't all that
 special. Here's the definition of a React component:
 
 <callout-success class="important">
-  A React component is a function that returns something React can render.
+	A React component is a function that returns something React can render.
 </callout-success>
 
 Now, according to `@types/react`, we're limited to `null` and `JSX.Element`s,
@@ -146,8 +146,8 @@ You don't have to do anything special just because it's React.
 So here's how I'd type the props for this component:
 
 ```tsx
-function Calculator({left, operator, right}: CalculatorProps) {
-  // implementation clipped for brevity
+function Calculator({ left, operator, right }: CalculatorProps) {
+	// implementation clipped for brevity
 }
 ```
 
@@ -171,26 +171,26 @@ improve the `CalculatorProps` type. As a reminder, here's what we have so far:
 ```tsx
 // I took the liberty of typing each of these functions as well:
 const operations = {
-  '+': (left: number, right: number): number => left + right,
-  '-': (left: number, right: number): number => left - right,
-  '*': (left: number, right: number): number => left * right,
-  '/': (left: number, right: number): number => left / right,
+	'+': (left: number, right: number): number => left + right,
+	'-': (left: number, right: number): number => left - right,
+	'*': (left: number, right: number): number => left * right,
+	'/': (left: number, right: number): number => left / right,
 }
 
 type CalculatorProps = {
-  left: number
-  operator: string
-  right: number
+	left: number
+	operator: string
+	right: number
 }
-function Calculator({left, operator, right}: CalculatorProps) {
-  const result = operations[operator](left, right)
-  return (
-    <div>
-      <code>
-        {left} {operator} {right} = <output>{result}</output>
-      </code>
-    </div>
-  )
+function Calculator({ left, operator, right }: CalculatorProps) {
+	const result = operations[operator](left, right)
+	return (
+		<div>
+			<code>
+				{left} {operator} {right} = <output>{result}</output>
+			</code>
+		</div>
+	)
 }
 ```
 
@@ -214,9 +214,9 @@ type:
 
 ```tsx
 type CalculatorProps = {
-  left: number
-  operator: '+' | '-' | '*' | '/'
-  right: number
+	left: number
+	operator: '+' | '-' | '*' | '/'
+	right: number
 }
 ```
 
@@ -228,9 +228,9 @@ type for the `operator` based on the `operations` object? Why, yes there is!
 
 ```tsx
 type CalculatorProps = {
-  left: number
-  operator: keyof typeof operations
-  right: number
+	left: number
+	operator: keyof typeof operations
+	right: number
 }
 ```
 
@@ -239,10 +239,10 @@ object, which is roughly equal to:
 
 ```tsx
 type operations = {
-  '+': (left: number, right: number) => number
-  '-': (left: number, right: number) => number
-  '*': (left: number, right: number) => number
-  '/': (left: number, right: number) => number
+	'+': (left: number, right: number) => number
+	'-': (left: number, right: number) => number
+	'*': (left: number, right: number) => number
+	'/': (left: number, right: number) => number
 }
 ```
 
@@ -255,36 +255,36 @@ Here's the finished version (I typed the operations functions as well):
 
 ```tsx
 const operations = {
-  '+': (left: number, right: number): number => left + right,
-  '-': (left: number, right: number): number => left - right,
-  '*': (left: number, right: number): number => left * right,
-  '/': (left: number, right: number): number => left / right,
+	'+': (left: number, right: number): number => left + right,
+	'-': (left: number, right: number): number => left - right,
+	'*': (left: number, right: number): number => left * right,
+	'/': (left: number, right: number): number => left / right,
 }
 
 type CalculatorProps = {
-  left: number
-  operator: keyof typeof operations
-  right: number
+	left: number
+	operator: keyof typeof operations
+	right: number
 }
 
-function Calculator({left, operator, right}: CalculatorProps) {
-  const result = operations[operator](left, right)
-  return (
-    <div>
-      <code>
-        {left} {operator} {right} = <output>{result}</output>
-      </code>
-    </div>
-  )
+function Calculator({ left, operator, right }: CalculatorProps) {
+	const result = operations[operator](left, right)
+	return (
+		<div>
+			<code>
+				{left} {operator} {right} = <output>{result}</output>
+			</code>
+		</div>
+	)
 }
 
 const examples = (
-  <>
-    <Calculator left={1} operator="+" right={2} />
-    <Calculator left={1} operator="-" right={2} />
-    <Calculator left={1} operator="*" right={2} />
-    <Calculator left={1} operator="/" right={2} />
-  </>
+	<>
+		<Calculator left={1} operator="+" right={2} />
+		<Calculator left={1} operator="-" right={2} />
+		<Calculator left={1} operator="*" right={2} />
+		<Calculator left={1} operator="/" right={2} />
+	</>
 )
 ```
 

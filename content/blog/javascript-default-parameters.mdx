@@ -17,22 +17,22 @@ Consider the following code:
 
 ```js
 function getCandy(kind, size, upperKind, callback) {
-  if (!kind) {
-    requiredParam('kind')
-  }
-  if (!size) {
-    requiredParam('size')
-  }
-  upperKind = upperKind || kind.toUpperCase()
-  callback = callback || function noop() {}
+	if (!kind) {
+		requiredParam('kind')
+	}
+	if (!size) {
+		requiredParam('size')
+	}
+	upperKind = upperKind || kind.toUpperCase()
+	callback = callback || function noop() {}
 
-  const result = {kind, size, upperKind}
-  callback(result)
-  return result
+	const result = { kind, size, upperKind }
+	callback(result)
+	return result
 }
 
 function requiredParam(argName) {
-  throw new Error(`${argName} is required`)
+	throw new Error(`${argName} is required`)
 }
 ```
 
@@ -46,18 +46,18 @@ Let's checkout what the above would be like when using this feature.
 
 ```js
 function getCandy(
-  kind = requiredParam('kind'),
-  size = requiredParam('size'),
-  upperKind = kind.toUpperCase(),
-  callback = function noop() {},
+	kind = requiredParam('kind'),
+	size = requiredParam('size'),
+	upperKind = kind.toUpperCase(),
+	callback = function noop() {},
 ) {
-  const result = {kind, size, upperKind}
-  callback(result)
-  return result
+	const result = { kind, size, upperKind }
+	callback(result)
+	return result
 }
 
 function requiredParam(argName) {
-  throw new Error(`${argName} is required`)
+	throw new Error(`${argName} is required`)
 }
 ```
 
@@ -76,13 +76,13 @@ to be an options object:
 
 ```js
 function getCandy(options = {}) {
-  const {
-    kind = requiredParam('kind'),
-    size = requiredParam('size'),
-    upperKind = kind.toUpperCase(),
-    callback = function noop() {},
-  } = options
-  // etc...
+	const {
+		kind = requiredParam('kind'),
+		size = requiredParam('size'),
+		upperKind = kind.toUpperCase(),
+		callback = function noop() {},
+	} = options
+	// etc...
 }
 ```
 
@@ -90,12 +90,12 @@ Or, if we want to destructure the options object directly in the parameter list:
 
 ```js
 function getCandy({
-  kind = requiredParam('kind'),
-  size = requiredParam('size'),
-  upperKind = kind.toUpperCase(),
-  callback = function noop() {},
+	kind = requiredParam('kind'),
+	size = requiredParam('size'),
+	upperKind = kind.toUpperCase(),
+	callback = function noop() {},
 } = {}) {
-  // etc...
+	// etc...
 }
 ```
 
