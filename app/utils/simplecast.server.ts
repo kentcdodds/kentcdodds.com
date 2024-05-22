@@ -286,7 +286,6 @@ async function parseSummaryMarkdown(
   const homeworkHTMLs: CWKEpisode['homeworkHTMLs'] = []
 
   const result = await unified()
-    // @ts-expect-error not sure why typescript doesn't like these plugins
     .use(isHTMLInput ? parseHtml : parseMarkdown)
     .use(isHTMLInput ? rehype2remark : () => {})
     .use(function extractMetaData() {
@@ -368,6 +367,7 @@ async function parseSummaryMarkdown(
                 homeworkHTMLs.push(
                   listItem.children
                     .map(c => {
+                      // @ts-expect-error not sure...
                       const hastC = mdastToHast(c)
                       if (!hastC) {
                         console.error(

@@ -38,7 +38,7 @@ function makeEpisode(
       description: faker.lorem.paragraphs(2),
       keywords: faker.lorem.words().split(' ').join(','),
       status: 'published',
-      image_url: faker.internet.avatar(),
+      image_url: faker.image.avatar(),
       media_url: 'https://media.transistor.fm/1493e91f/10e5e65b.mp3',
       share_url: 'https://share.transistor.fm/s/1493e91f',
       embed_html:

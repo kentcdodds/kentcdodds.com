@@ -83,7 +83,7 @@ for (const seasonListItem of seasonListItems) {
         status: 'published',
         is_published: true,
         updated_at: faker.date.past().toISOString(),
-        image_url: faker.internet.avatar(),
+        image_url: faker.image.avatar(),
         audio_file_url: 'set audio_file_url to a real file if we ever use this',
         slug: title.split(' ').join('-'),
         description: faker.lorem.sentence(),

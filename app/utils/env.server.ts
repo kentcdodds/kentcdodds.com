@@ -4,7 +4,6 @@ function getEnv() {
     MODE: process.env.NODE_ENV,
     NODE_ENV: process.env.NODE_ENV,
     DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
-    DISABLE_METRONOME: process.env.DISABLE_METRONOME,
     SENTRY_DSN: process.env.SENTRY_DSN,
   }
 }

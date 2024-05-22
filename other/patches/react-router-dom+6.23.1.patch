@@ -15,10 +15,10 @@ index cc979fc..1ec7365 100644
       * Enable flushSync for this navigation's state updates
       */
 diff --git a/node_modules/react-router-dom/dist/index.js b/node_modules/react-router-dom/dist/index.js
-index acc4b69..c564bd7 100644
+index 1586c49..e1be510 100644
 --- a/node_modules/react-router-dom/dist/index.js
 +++ b/node_modules/react-router-dom/dist/index.js
-@@ -1064,6 +1064,7 @@ function useSubmit() {
+@@ -1067,6 +1067,7 @@ function useSubmit() {
      if (options.navigate === false) {
        let key = options.fetcherKey || getUniqueFetcherId();
        router.fetch(key, currentRouteId, options.action || action, {
@@ -26,7 +26,7 @@ index acc4b69..c564bd7 100644
          preventScrollReset: options.preventScrollReset,
          formData,
          body,
-@@ -1073,6 +1074,7 @@ function useSubmit() {
+@@ -1076,6 +1077,7 @@ function useSubmit() {
        });
      } else {
        router.navigate(options.action || action, {

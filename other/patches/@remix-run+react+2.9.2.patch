@@ -1,0 +1,60 @@
+diff --git a/node_modules/@remix-run/react/dist/data.js b/node_modules/@remix-run/react/dist/data.js
+index 98ab949..618442b 100644
+--- a/node_modules/@remix-run/react/dist/data.js
++++ b/node_modules/@remix-run/react/dist/data.js
+@@ -106,8 +106,25 @@ async function createRequestInit(request) {
+       init.body = await request.formData();
+     }
+   }
++  if (request.headers) {
++    init.headers = combineHeaders(init.headers, request.headers);
++  }
+   return init;
+ }
++
++function combineHeaders(
++	...headers
++) {
++	const combined = new Headers()
++	for (const header of headers) {
++		if (!header) continue
++		for (const [key, value] of new Headers(header).entries()) {
++			combined.append(key, value)
++		}
++	}
++	return combined
++}
++
+ const DEFERRED_VALUE_PLACEHOLDER_PREFIX = "__deferred_promise:";
+ async function parseDeferredReadableStream(stream) {
+   if (!stream) {
+diff --git a/node_modules/@remix-run/react/dist/esm/data.js b/node_modules/@remix-run/react/dist/esm/data.js
+index 3561432..2904ade 100644
+--- a/node_modules/@remix-run/react/dist/esm/data.js
++++ b/node_modules/@remix-run/react/dist/esm/data.js
+@@ -102,8 +102,25 @@ async function createRequestInit(request) {
+       init.body = await request.formData();
+     }
+   }
++  if (request.headers) {
++    init.headers = combineHeaders(init.headers, request.headers);
++  }
+   return init;
+ }
++
++function combineHeaders(
++	...headers
++) {
++	const combined = new Headers()
++	for (const header of headers) {
++		if (!header) continue
++		for (const [key, value] of new Headers(header).entries()) {
++			combined.append(key, value)
++		}
++	}
++	return combined
++}
++
+ const DEFERRED_VALUE_PLACEHOLDER_PREFIX = "__deferred_promise:";
+ async function parseDeferredReadableStream(stream) {
+   if (!stream) {

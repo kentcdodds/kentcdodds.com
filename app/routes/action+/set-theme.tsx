@@ -1,18 +1,18 @@
-import {parse} from '@conform-to/zod'
-import {type DataFunctionArgs, json} from '@remix-run/server-runtime'
+import {parseWithZod} from '@conform-to/zod'
+import {type ActionFunctionArgs, json} from '@remix-run/server-runtime'
 import {ThemeFormSchema} from '~/utils/theme.tsx'
 import {setTheme} from '~/utils/theme.server.ts'
 
-export async function action({request}: DataFunctionArgs) {
+export async function action({request}: ActionFunctionArgs) {
   const formData = await request.formData()
-  const submission = parse(formData, {
+  const submission = parseWithZod(formData, {
     schema: ThemeFormSchema,
   })
-  if (submission.intent !== 'submit') {
-    return json({status: 'idle', submission} as const)
-  }
-  if (!submission.value) {
-    return json({status: 'error', submission} as const, {status: 400})
+  if (submission.status !== 'success') {
+    return json(
+      {result: submission.reply()},
+      {status: submission.status === 'error' ? 400 : 200},
+    )
   }
   const {theme} = submission.value
 

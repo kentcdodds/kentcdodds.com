@@ -3,8 +3,12 @@ import {
   type RequestHandler,
 } from '@remix-run/express'
 import {installGlobals, type ServerBuild} from '@remix-run/node'
-import * as Sentry from '@sentry/remix'
-import address from 'address'
+import {
+  init as sentryInit,
+  setContext as sentrySetContext,
+  wrapExpressCreateRequestHandler,
+} from '@sentry/remix'
+import {ip as ipAddress} from 'address'
 import chalk from 'chalk'
 import closeWithGrace from 'close-with-grace'
 import compression from 'compression'
@@ -22,11 +26,6 @@ import sourceMapSupport from 'source-map-support'
 import {fileURLToPath} from 'url'
 import {type WebSocketServer} from 'ws'
 import {getInstanceInfo} from '../app/utils/cjs/litefs-js.server.js'
-import {
-  combineGetLoadContexts,
-  createMetronomeGetLoadContext,
-  registerMetronome,
-} from '../app/utils/cjs/metronome-sh-express.js'
 import {
   getRedirectsMiddleware,
   oldImgSocial,
@@ -63,16 +62,16 @@ const MODE = process.env.NODE_ENV
 
 const createRequestHandler =
   MODE === 'production'
-    ? Sentry.wrapExpressCreateRequestHandler(_createRequestHandler)
+    ? wrapExpressCreateRequestHandler(_createRequestHandler)
     : _createRequestHandler
 
 if (MODE === 'production') {
-  Sentry.init({
+  sentryInit({
     dsn: process.env.SENTRY_DSN,
     tracesSampleRate: 0.3,
     environment: process.env.NODE_ENV,
   })
-  Sentry.setContext('region', {name: process.env.FLY_INSTANCE ?? 'unknown'})
+  sentrySetContext('region', {name: process.env.FLY_INSTANCE ?? 'unknown'})
 }
 
 const app = express()
@@ -95,20 +94,18 @@ app.use(async (req, res, next) => {
   res.set('X-Fly-Instance', currentInstance)
   res.set('X-Fly-Primary-Instance', primaryInstance)
   res.set('X-Frame-Options', 'SAMEORIGIN')
+  const proto = req.get('X-Forwarded-Proto') ?? req.protocol ?? 'http'
 
   const host = getHost(req)
   if (!host.endsWith(primaryHost)) {
     res.set('X-Robots-Tag', 'noindex')
   }
-  res.set('Access-Control-Allow-Origin', `https://${host}`)
+  res.set('Access-Control-Allow-Origin', `${proto}://${host}`)
 
   // if they connect once with HTTPS, then they'll connect with HTTPS for the next hundred years
   res.set('Strict-Transport-Security', `max-age=${60 * 60 * 24 * 365 * 100}`)
   next()
 })
-
-app.use(Sentry.Handlers.requestHandler())
-app.use(Sentry.Handlers.tracingHandler())
 
 app.use(async (req, res, next) => {
   if (req.get('cf-visitor')) {
@@ -319,22 +316,6 @@ async function getRequestHandler(): Promise<RequestHandler> {
   function getLoadContext(req: any, res: any) {
     return {cspNonce: res.locals.cspNonce}
   }
-  if (MODE === 'production' && !process.env.DISABLE_METRONOME) {
-    const build = await getBuild()
-    const buildWithMetronome = registerMetronome(build as any)
-    const metronomeGetLoadContext = createMetronomeGetLoadContext(
-      buildWithMetronome as any,
-    )
-    return createRequestHandler({
-      build: buildWithMetronome as any,
-      getLoadContext: combineGetLoadContexts(
-        getLoadContext,
-        // @ts-expect-error huh... metronome isn't happy with itself.
-        metronomeGetLoadContext,
-      ),
-      mode: MODE,
-    })
-  }
   return createRequestHandler({build: getBuild, mode: MODE, getLoadContext})
 }
 
@@ -364,7 +345,7 @@ const server = app.listen(portToUse, () => {
   console.log(`\n🐨  let's get rolling!`)
   const localUrl = `http://localhost:${portUsed}`
   let lanUrl: string | null = null
-  const localIp = address.ip()
+  const localIp = ipAddress() ?? 'Unknown'
   // Check if the address is a private ip
   // https://en.wikipedia.org/wiki/Private_network#Private_IPv4_address_spaces
   // https://github.com/facebook/create-react-app/blob/d960b9e38c062584ff6cfb1a70e1512509a966e7/packages/react-dev-utils/WebpackDevServerUtils.js#LL48C9-L54C10

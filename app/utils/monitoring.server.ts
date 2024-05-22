@@ -1,9 +1,12 @@
-import {ProfilingIntegration} from '@sentry/profiling-node'
-import * as Sentry from '@sentry/remix'
-import {prisma} from './prisma.server.ts'
+import {nodeProfilingIntegration} from '@sentry/profiling-node'
+import {
+  init as sentryInit,
+  httpIntegration,
+  prismaIntegration,
+} from '@sentry/remix'
 
 export function init() {
-  Sentry.init({
+  sentryInit({
     dsn: ENV.SENTRY_DSN,
     environment: ENV.MODE,
     tracesSampleRate: ENV.MODE === 'production' ? 1 : 0,
@@ -20,9 +23,9 @@ export function init() {
       /\/site\.webmanifest/,
     ],
     integrations: [
-      new Sentry.Integrations.Http({tracing: true}),
-      new Sentry.Integrations.Prisma({client: prisma}),
-      new ProfilingIntegration(),
+      httpIntegration(),
+      prismaIntegration(),
+      nodeProfilingIntegration(),
     ],
     beforeSendTransaction(event) {
       // ignore all healthcheck related transactions

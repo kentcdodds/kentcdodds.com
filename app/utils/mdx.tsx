@@ -151,7 +151,6 @@ function getMdxComponent(code: string) {
     ...rest
   }: Parameters<typeof Component>['0']) {
     return (
-      // @ts-expect-error the types are wrong here
       <Component components={{...mdxComponents, ...components}} {...rest} />
     )
   }

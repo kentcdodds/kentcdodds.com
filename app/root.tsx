@@ -23,7 +23,6 @@ import {
 } from '@remix-run/react'
 import * as React from 'react'
 
-import {MetronomeLinks} from '@metronome-sh/react'
 import {clsx} from 'clsx'
 import {isFuture} from 'date-fns'
 import {AnimatePresence, motion} from 'framer-motion'
@@ -479,9 +478,6 @@ function App() {
         />
 
         <Links />
-        {ENV.NODE_ENV === 'production' && !ENV.DISABLE_METRONOME ? (
-          <MetronomeLinks nonce={nonce} />
-        ) : null}
         <noscript>
           <link rel="stylesheet" href={noScriptStyles} />
         </noscript>

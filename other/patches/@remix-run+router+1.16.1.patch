@@ -1,8 +1,8 @@
 diff --git a/node_modules/@remix-run/router/dist/router.js b/node_modules/@remix-run/router/dist/router.js
-index 3d64a32..a1cb1a0 100644
+index d70796d..46f2892 100644
 --- a/node_modules/@remix-run/router/dist/router.js
 +++ b/node_modules/@remix-run/router/dist/router.js
-@@ -3290,6 +3290,7 @@ function normalizeNavigateOptions(normalizeFormMethod, isFetcher, path, opts) {
+@@ -3366,6 +3366,7 @@ function normalizeNavigateOptions(normalizeFormMethod, isFetcher, path, opts) {
            formAction,
            formEncType: opts.formEncType,
            formData: undefined,
@@ -10,7 +10,7 @@ index 3d64a32..a1cb1a0 100644
            json: undefined,
            text
          }
-@@ -3778,6 +3779,7 @@ function createClientSideRequest(history, location, signal, submission) {
+@@ -3916,6 +3917,7 @@ function createClientSideRequest(history, location, signal, submission) {
      // won't be properly normalized to uppercase and results in a 405 error.
      // See: https://fetch.spec.whatwg.org/#concept-method
      init.method = formMethod.toUpperCase();

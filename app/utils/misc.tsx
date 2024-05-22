@@ -1,7 +1,11 @@
 import {type HeadersFunction} from '@remix-run/node'
 import {captureRemixErrorBoundaryError} from '@sentry/remix'
 import {Link, useRouteError, type LinkProps} from '@remix-run/react'
-import * as dateFns from 'date-fns'
+import {
+  format as dateFormat,
+  add as dateAdd,
+  parseISO as dateParseISO,
+} from 'date-fns'
 import md5 from 'md5-hash'
 import * as React from 'react'
 import {
@@ -166,11 +170,11 @@ function formatDate(dateString: string | Date, format = 'PPP') {
   if (typeof dateString !== 'string') {
     dateString = dateString.toISOString()
   }
-  return dateFns.format(parseDate(dateString), format)
+  return dateFormat(parseDate(dateString), format)
 }
 
 function parseDate(dateString: string) {
-  return dateFns.add(dateFns.parseISO(dateString), {
+  return dateAdd(dateParseISO(dateString), {
     minutes: new Date().getTimezoneOffset(),
   })
 }
