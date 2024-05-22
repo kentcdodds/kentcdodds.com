@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { render, screen, act } from '@testing-library/react'
 import { checkStatus } from '../api.js'
-import { test, expect, vi, beforeEach, beforeAll, afterAll } from 'vitest'
+import { test, expect, vi, beforeAll, afterAll } from 'vitest'
 
 function OrderStatus({ orderId }) {
 	const [{ status, data, error }, setState] = React.useReducer(
