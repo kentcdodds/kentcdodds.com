@@ -1,0 +1,66 @@
+title: React Server Components and Actions
+description:
+  Understand and experiment with the future of React components and actions to
+  enhance your app development.
+meta:
+  keywords:
+    - react
+    - server components
+    - server actions
+events:
+  - title: 'React Summit (remote)'
+    url: https://reactsummit.com/checkout#workshops
+    date: 2024-06-19
+categories:
+  - react
+convertKitTag: '5037938'
+problemStatements:
+  part1:
+    The React component model is powerful, but there's always room to push it
+    further.
+  part2:
+    Using brand new features can be daunting (especially low-level features),
+    but understanding them can give you a head start.
+  part3: >-
+    While you just play around with frameworks that implement these features,
+    diving deep into newer APIs allows you to grasp the underlying mechanics and
+    make informed decisions.
+  part4:
+    To effectively use your abstractions, you need to understand the layers
+    beneath. This workshop will equip you with the knowledge to leverage React
+    Server Components and Actions in any React app.
+keyTakeaways:
+  - title: React Element Serialization
+    description:
+      Learn how React serializes React elements to send them to the client.
+  - title: Client and Server Components
+    description:
+      Learn the relationship between client and server components and how their
+      module graphs interact to create a seamless user experience.
+  - title: Streaming Serialized React Elements
+    description:
+      Discover how to stream serialized React elements from the server to the
+      client to improve performance and user experience.
+  - title: Form Submissions to Server Actions
+    description:
+      Master the technique of submitting forms directly to server actions,
+      streamlining the process and enhancing security.
+  - title: Managing Pending State
+    description:
+      Understand how to manage pending states for server actions to ensure a
+      smooth and responsive user experience.
+  - title: Routing and Navigation
+    description:
+      Build out a solid foundation for routing and navigation to get updated
+      server components.
+topics:
+  - Client Components
+  - Server Components
+  - Streaming
+  - Form Submissions
+  - Pending State Management
+  - Routing and Navigation
+prerequisite: >-
+  You should have experience with [these JavaScript
+  features](/blog/javascript-to-know-for-react). This is definitely a very
+  advanced workshop, so you should be very comfortable with React as well.

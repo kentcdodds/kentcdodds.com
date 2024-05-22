@@ -174,6 +174,98 @@ export async function loader({ request }: DataFunctionArgs) {
 		Math.floor(Math.random() * randomFooterImageKeys.length)
 	] as keyof typeof illustrationImages
 
+	const manualWorkshopEventPromotifications = workshops
+		.filter(w => w.events.length)
+		.flatMap(workshop => {
+			return workshop.events.map(event => {
+				const promoName = `${WORKSHOP_PROMO_NAME}-${event.date}-${workshop.slug}`
+
+				return {
+					title: workshop.title,
+					slug: workshop.slug,
+					promoName,
+					dismissTimeSeconds: 60 * 60 * 24 * 7,
+					cookieValue: getPromoCookieValue({
+						promoName,
+						request,
+					}),
+					promoEndTime: {
+						type: 'event' as const,
+						time: parseDate(event.date).getTime(),
+						url: `/workshops/${workshop.slug}`,
+					},
+				}
+			})
+		})
+
+	const titoWorkshopEventPromotifications = workshopEvents
+		.map(e => {
+			const workshop = workshops.find(w => w.slug === e.metadata.workshopSlug)
+			if (!workshop) return null
+
+			const discounts = Object.entries(e.discounts)
+				.filter(([, discount]) => isFuture(parseDate(discount.ends)))
+				.sort(([, a], [, b]) => {
+					return parseDate(a.ends).getTime() - parseDate(b.ends).getTime()
+				})
+
+			// the promoEndTime should be the earliest of:
+			// 1. earliest discount end
+			// 2. the end of ticket sales
+			// 3. the start of the event
+			const promoEndTime = [
+				discounts[0]
+					? {
+							type: 'discount' as const,
+							time: parseDate(discounts[0][1].ends).getTime(),
+							url: discounts[0][1].url,
+						}
+					: null,
+				e.salesEndTime
+					? {
+							type: 'sales' as const,
+							time: parseDate(e.salesEndTime).getTime(),
+							url: e.url,
+						}
+					: null,
+				e.startTime
+					? {
+							type: 'start' as const,
+							time: parseDate(e.startTime).getTime(),
+							url: e.url,
+						}
+					: null,
+			]
+				.filter(typedBoolean)
+				.sort((a, b) => a.time - b.time)[0]
+
+			if (!promoEndTime) return null
+
+			const promoName = `${WORKSHOP_PROMO_NAME}-${workshop.slug}`
+
+			return {
+				title: e.title,
+				slug: workshop.slug,
+				promoName,
+				dismissTimeSeconds: Math.min(
+					Math.max(
+						// one quarter of the time until the salesEndTime (in seconds)
+						(promoEndTime.time - Date.now()) / 4 / 1000,
+						// Minimum of 3 hours (in seconds)
+						60 * 60 * 3,
+					),
+					// Maximum of 1 week (in seconds)
+					60 * 60 * 24 * 7,
+				),
+				cookieValue: getPromoCookieValue({
+					promoName,
+					request,
+				}),
+				promoEndTime,
+			}
+		})
+		.filter(typedBoolean)
+
 	const data = {
 		user,
 		userInfo: user ? await getUserInfo(user, { request, timings }) : null,
@@ -225,73 +317,10 @@ export async function loader({ request }: DataFunctionArgs) {
 				ticketLinkText: null,
 			},
 		},
-		workshopPromotifications: workshopEvents
-			.map(e => {
-				const workshop = workshops.find(w => w.slug === e.metadata.workshopSlug)
-				if (!workshop) return null
-
-				const discounts = Object.entries(e.discounts)
-					.filter(([, discount]) => isFuture(parseDate(discount.ends)))
-					.sort(([, a], [, b]) => {
-						return parseDate(a.ends).getTime() - parseDate(b.ends).getTime()
-					})
-
-				// the promoEndTime should be the earliest of:
-				// 1. earliest discount end
-				// 2. the end of ticket sales
-				// 3. the start of the event
-				const promoEndTime = [
-					discounts[0]
-						? {
-								type: 'discount' as const,
-								time: parseDate(discounts[0][1].ends).getTime(),
-								url: discounts[0][1].url,
-							}
-						: null,
-					e.salesEndTime
-						? {
-								type: 'sales' as const,
-								time: parseDate(e.salesEndTime).getTime(),
-								url: e.url,
-							}
-						: null,
-					e.startTime
-						? {
-								type: 'start' as const,
-								time: parseDate(e.startTime).getTime(),
-								url: e.url,
-							}
-						: null,
-				]
-					.filter(typedBoolean)
-					.sort((a, b) => a.time - b.time)[0]
-
-				if (!promoEndTime) return null
-
-				const promoName = `${WORKSHOP_PROMO_NAME}-${workshop.slug}`
-
-				return {
-					title: e.title,
-					slug: workshop.slug,
-					promoName,
-					dismissTimeSeconds: Math.min(
-						Math.max(
-							// one quarter of the time until the salesEndTime (in seconds)
-							(promoEndTime.time - Date.now()) / 4 / 1000,
-							// Minimum of 3 hours (in seconds)
-							60 * 60 * 3,
-						),
-						// Maximum of 1 week (in seconds)
-						60 * 60 * 24 * 7,
-					),
-					cookieValue: getPromoCookieValue({
-						promoName,
-						request,
-					}),
-					promoEndTime,
-				}
-			})
-			.filter(typedBoolean),
+		workshopPromotifications: [
+			...titoWorkshopEventPromotifications,
+			...manualWorkshopEventPromotifications,
+		],
 		requestInfo: {
 			hints: getHints(request),
 			origin: getDomainUrl(request),
