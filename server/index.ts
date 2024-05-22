@@ -316,7 +316,11 @@ async function getRequestHandler(): Promise<RequestHandler> {
 	function getLoadContext(req: any, res: any) {
 		return { cspNonce: res.locals.cspNonce }
 	}
-	return createRequestHandler({ build: getBuild, mode: MODE, getLoadContext })
+	return createRequestHandler({
+		build: MODE === 'development' ? getBuild : await getBuild(),
+		mode: MODE,
+		getLoadContext,
+	})
 }
 
 app.all('*', await getRequestHandler())

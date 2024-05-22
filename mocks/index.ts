@@ -66,6 +66,12 @@ const miscHandlers = [
 	http.get('https://verifier.meetchopra.com/verify/:email', () => {
 		return HttpResponse.json({ status: true })
 	}),
+	http.post('https://metrics.metronome.sh/telemetry/v5/metrics', () => {
+		return HttpResponse.json({ success: true })
+	}),
+	http.post('https://metrics.metronome.sh/telemetry/v5/spans', () => {
+		return HttpResponse.json({ success: true })
+	}),
 ]
 
 const server = setupServer(
@@ -80,7 +86,20 @@ const server = setupServer(
 	...miscHandlers,
 )
 
-server.listen({ onUnhandledRequest: 'warn' })
+server.listen({
+	onUnhandledRequest(request, print) {
+		// Do not print warnings on unhandled requests to https://<:userId>.ingest.us.sentry.io/api/
+		// Note: a request handler with passthrough is not suited with this type of url
+		//       until there is a more permissible url catching system
+		//       like requested at https://github.com/mswjs/msw/issues/1804
+		if (request.url.includes('.sentry.io')) {
+			return
+		}
+
+		// Print the regular MSW unhandled request warning otherwise.
+		print.warning()
+	},
+})
 console.info('🔶 Mock server installed')
 
 process.once('SIGINT', () => server.close())

@@ -74,6 +74,7 @@
     "@remix-run/react": "2.9.2",
     "@remix-run/router": "1.16.1",
     "@remix-run/server-runtime": "2.9.2",
+    "@sentry/node": "^8.3.0",
     "@sentry/profiling-node": "^8.2.1",
     "@sentry/remix": "^8.2.1",
     "@sindresorhus/slugify": "^2.2.1",

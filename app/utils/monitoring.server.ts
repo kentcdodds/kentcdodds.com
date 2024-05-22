@@ -1,12 +1,8 @@
 import { nodeProfilingIntegration } from '@sentry/profiling-node'
-import {
-	init as sentryInit,
-	httpIntegration,
-	prismaIntegration,
-} from '@sentry/remix'
+import Sentry from '@sentry/remix'
 
 export function init() {
-	sentryInit({
+	Sentry.init({
 		dsn: ENV.SENTRY_DSN,
 		environment: ENV.MODE,
 		tracesSampleRate: ENV.MODE === 'production' ? 1 : 0,
@@ -23,8 +19,8 @@ export function init() {
 			/\/site\.webmanifest/,
 		],
 		integrations: [
-			httpIntegration(),
-			prismaIntegration(),
+			Sentry.httpIntegration(),
+			Sentry.prismaIntegration(),
 			nodeProfilingIntegration(),
 		],
 		beforeSendTransaction(event) {

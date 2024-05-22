@@ -1,6 +1,8 @@
 import { execa } from 'execa'
 
 if (process.env.NODE_ENV === 'production') {
+	// the file may not be there yet
+	// eslint-disable-next-line import/no-unresolved
 	await import('../server-build/index.js')
 } else {
 	const command =
