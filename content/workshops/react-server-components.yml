@@ -8,7 +8,7 @@ meta:
     - server components
     - server actions
 events:
-  - title: 'React Summit (remote)'
+  - title: 'React Summit 2024 (remote)'
     url: https://reactsummit.com/checkout#workshops
     date: 2024-06-19
 categories:

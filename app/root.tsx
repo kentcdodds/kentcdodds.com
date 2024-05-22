@@ -177,25 +177,27 @@ export async function loader({ request }: DataFunctionArgs) {
 	const manualWorkshopEventPromotifications = workshops
 		.filter(w => w.events.length)
 		.flatMap(workshop => {
-			return workshop.events.map(event => {
-				const promoName = `${WORKSHOP_PROMO_NAME}-${event.date}-${workshop.slug}`
+			return workshop.events
+				.filter(e => e.remaining == null || e.remaining > 0)
+				.map(event => {
+					const promoName = `${WORKSHOP_PROMO_NAME}-${event.date}-${workshop.slug}`
 
-				return {
-					title: workshop.title,
-					slug: workshop.slug,
-					promoName,
-					dismissTimeSeconds: 60 * 60 * 24 * 7,
-					cookieValue: getPromoCookieValue({
+					return {
+						title: workshop.title,
+						slug: workshop.slug,
 						promoName,
-						request,
-					}),
-					promoEndTime: {
-						type: 'event' as const,
-						time: parseDate(event.date).getTime(),
-						url: `/workshops/${workshop.slug}`,
-					},
-				}
-			})
+						dismissTimeSeconds: 60 * 60 * 24 * 7,
+						cookieValue: getPromoCookieValue({
+							promoName,
+							request,
+						}),
+						promoEndTime: {
+							type: 'event' as const,
+							time: parseDate(event.date).getTime(),
+							url: event.url,
+						},
+					}
+				})
 		})
 
 	const titoWorkshopEventPromotifications = workshopEvents
