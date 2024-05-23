@@ -209,6 +209,19 @@ type Team = 'RED' | 'BLUE' | 'YELLOW'
 type Role = 'ADMIN' | 'MEMBER'
 type OptionalTeam = Team | 'UNKNOWN'
 
+declare module 'react' {
+	interface CSSProperties {
+		[key: `--${string}`]: string | number
+	}
+	interface HTMLAttributes<T> extends AriaAttributes, DOMAttributes<T> {
+		popoverTarget?: string
+		popoverTrigger?: 'hover' | 'focus'
+		popoverPlacement?: 'top' | 'right' | 'bottom' | 'left'
+		popover?: string
+		onToggle?: (event: ToggleEvent<T>) => void
+	}
+}
+
 export * from './simplecast.ts'
 export * from './transistor.ts'
 export {

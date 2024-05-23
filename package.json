@@ -65,7 +65,6 @@
     "@reach/auto-id": "^0.18.0",
     "@reach/checkbox": "^0.18.0",
     "@reach/dialog": "^0.18.0",
-    "@reach/menu-button": "^0.18.0",
     "@reach/tabs": "^0.18.0",
     "@remark-embedder/core": "^3.0.3",
     "@remark-embedder/transformer-oembed": "^5.0.0",

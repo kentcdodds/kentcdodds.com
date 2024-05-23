@@ -50,5 +50,8 @@ module.exports = {
 		'jsx-a11y/accessible-emoji': 'off',
 
 		'jest/no-deprecated-functions': 'off',
+
+		// typescript handles this:
+		'react/no-unknown-property': 'off',
 	},
 }
