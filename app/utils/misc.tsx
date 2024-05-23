@@ -93,14 +93,14 @@ type AnchorProps = React.DetailedHTMLProps<
 	HTMLAnchorElement
 >
 
-const AnchorOrLink = React.forwardRef<
-	HTMLAnchorElement,
-	AnchorProps & {
-		reload?: boolean
-		to?: LinkProps['to']
-		prefetch?: LinkProps['prefetch']
-	}
->(function AnchorOrLink(props, ref) {
+const AnchorOrLink = function AnchorOrLink({
+	ref,
+	...props
+}: AnchorProps & {
+	reload?: boolean
+	to?: LinkProps['to']
+	prefetch?: LinkProps['prefetch']
+}) {
 	const {
 		to,
 		href,
@@ -142,7 +142,7 @@ const AnchorOrLink = React.forwardRef<
 			</Link>
 		)
 	}
-})
+}
 
 function formatDuration(seconds: number) {
 	const mins = Math.floor(seconds / 60)
@@ -395,11 +395,11 @@ function callAll<Args extends Array<unknown>>(
 function useDoubleCheck() {
 	const [doubleCheck, setDoubleCheck] = React.useState(false)
 
-	function getButtonProps(props?: JSX.IntrinsicElements['button']) {
-		const onBlur: JSX.IntrinsicElements['button']['onBlur'] = () =>
+	function getButtonProps(props?: React.ComponentProps<'button'>) {
+		const onBlur: React.ComponentProps<'button'>['onBlur'] = () =>
 			setDoubleCheck(false)
 
-		const onClick: JSX.IntrinsicElements['button']['onClick'] = doubleCheck
+		const onClick: React.ComponentProps<'button'>['onClick'] = doubleCheck
 			? undefined
 			: e => {
 					e.preventDefault()

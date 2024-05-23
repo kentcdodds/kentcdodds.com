@@ -8,7 +8,7 @@ import { getErrorMessage, useCapturedRouteError } from '~/utils/misc.tsx'
 type StatusHandler = (info: {
 	error: ErrorResponse
 	params: Record<string, string | undefined>
-}) => JSX.Element | null
+}) => React.ReactNode | null
 
 export function GeneralErrorBoundary({
 	defaultStatusHandler = ({ error }) => (
@@ -21,7 +21,7 @@ export function GeneralErrorBoundary({
 }: {
 	defaultStatusHandler?: StatusHandler
 	statusHandlers?: Record<number, StatusHandler>
-	unexpectedErrorHandler?: (error: unknown) => JSX.Element | null
+	unexpectedErrorHandler?: (error: unknown) => React.ReactNode | null
 }) {
 	const error = useCapturedRouteError()
 	const params = useParams()

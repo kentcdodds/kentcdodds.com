@@ -7,7 +7,7 @@ interface CallbackRef {
 }
 
 export function useInterval(callback: CallbackFunction, delay: number) {
-	const savedCallback = useRef<CallbackRef>()
+	const savedCallback = useRef<CallbackRef>(null)
 
 	// Remember the latest callback.
 	useEffect(() => {

@@ -132,10 +132,9 @@
     "postcss-import": "^16.1.0",
     "prisma": "^5.14.0",
     "qrcode": "^1.5.3",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "19.0.0-rc-f994737d14-20240522",
+    "react-dom": "19.0.0-rc-f994737d14-20240522",
     "react-error-boundary": "^4.0.13",
-    "react-is": "^18.3.1",
     "react-lite-youtube-embed": "^2.4.0",
     "react-table": "^7.8.0",
     "reading-time": "^1.5.0",
@@ -186,8 +185,8 @@
     "@types/node": "^20.12.12",
     "@types/on-finished": "^2.3.4",
     "@types/qrcode": "^1.5.5",
-    "@types/react": "^18.3.2",
-    "@types/react-dom": "^18.3.0",
+    "@types/react": "npm:types-react@19.0.0-beta.1",
+    "@types/react-dom": "npm:types-react-dom@19.0.0-beta.1",
     "@types/react-table": "^7.7.20",
     "@types/request-ip": "^0.0.41",
     "@types/source-map-support": "^0.5.10",
@@ -216,6 +215,10 @@
     "vite-env-only": "^2.4.1",
     "vite-plugin-cjs-interop": "^2.1.0",
     "vite-tsconfig-paths": "^4.3.2"
+  },
+  "overrides": {
+    "@types/react": "$@types/react",
+    "@types/react-dom": "$@types/react-dom"
   },
   "eslintIgnore": [
     "node_modules",

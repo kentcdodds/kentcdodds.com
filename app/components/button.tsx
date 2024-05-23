@@ -59,7 +59,7 @@ function Button({
 	size = 'large',
 	className,
 	...buttonProps
-}: ButtonProps & JSX.IntrinsicElements['button']) {
+}: ButtonProps & React.ComponentProps<'button'>) {
 	return (
 		<button {...buttonProps} className={getClassName({ className })}>
 			<ButtonInner variant={variant} size={size}>
@@ -76,7 +76,7 @@ function LinkButton({
 	className,
 	underlined,
 	...buttonProps
-}: { underlined?: boolean } & JSX.IntrinsicElements['button']) {
+}: { underlined?: boolean } & React.ComponentProps<'button'>) {
 	return (
 		<button
 			{...buttonProps}
@@ -95,18 +95,18 @@ function LinkButton({
 /**
  * A link that looks like a button
  */
-const ButtonLink = React.forwardRef<
-	HTMLAnchorElement,
-	React.ComponentPropsWithRef<typeof AnchorOrLink> & ButtonProps
->(function ButtonLink(
-	{ children, variant = 'primary', className, ...rest },
+function ButtonLink({
+	children,
+	variant = 'primary',
+	className,
 	ref,
-) {
+	...rest
+}: React.ComponentPropsWithRef<typeof AnchorOrLink> & ButtonProps) {
 	return (
 		<AnchorOrLink ref={ref} className={getClassName({ className })} {...rest}>
 			<ButtonInner variant={variant}>{children}</ButtonInner>
 		</AnchorOrLink>
 	)
-})
+}
 
 export { Button, ButtonLink, LinkButton }

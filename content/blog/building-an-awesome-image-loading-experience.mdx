@@ -429,7 +429,6 @@ export function BlurrableImage({
 	}, [])
 
 	const jsImgEl = React.cloneElement(img, {
-		// @ts-expect-error no idea 🤷‍♂️
 		ref: jsImgElRef,
 		className: clsx(img.props.className, 'transition-opacity', {
 			'opacity-0': !visible,
@@ -510,7 +509,6 @@ wanted to do:
 ```tsx lines=5
 // ...
 const jsImgEl = React.cloneElement(img, {
-	// @ts-expect-error no idea 🤷‍♂️
 	ref: jsImgElRef,
 	onload: "this.classList.remove('opacity-0')",
 	className: clsx(img.props.className, 'transition-opacity', {

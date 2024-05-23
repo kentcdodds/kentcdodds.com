@@ -163,7 +163,7 @@ function BlogImage({
 	transparentBackground,
 }: {
 	cloudinaryId: string
-	imgProps: JSX.IntrinsicElements['img']
+	imgProps: React.ComponentProps<'img'>
 	transparentBackground?: boolean
 }) {
 	return (
@@ -194,7 +194,7 @@ function ThemedBlogImage({
 }: {
 	darkCloudinaryId: string
 	lightCloudinaryId: string
-	imgProps: JSX.IntrinsicElements['img']
+	imgProps: React.ComponentProps<'img'>
 	transparentBackground?: boolean
 }) {
 	return (

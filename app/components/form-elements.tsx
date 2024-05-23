@@ -1,7 +1,7 @@
 import { clsx } from 'clsx'
 import * as React from 'react'
 
-function Label({ className, ...labelProps }: JSX.IntrinsicElements['label']) {
+function Label({ className, ...labelProps }: React.ComponentProps<'label'>) {
 	return (
 		<label
 			{...labelProps}
@@ -14,33 +14,36 @@ function Label({ className, ...labelProps }: JSX.IntrinsicElements['label']) {
 }
 
 type InputProps =
-	| ({ type: 'textarea' } & JSX.IntrinsicElements['textarea'])
-	| JSX.IntrinsicElements['input']
+	| ({ type: 'textarea' } & React.ComponentProps<'textarea'>)
+	| React.ComponentProps<'input'>
 
 export const inputClassName =
 	'placeholder-gray-500 dark:disabled:text-slate-500 focus-ring px-11 py-8 w-full text-black disabled:text-gray-400 dark:text-white text-lg font-medium bg-gray-100 dark:bg-gray-800 rounded-lg'
-const Input = React.forwardRef<HTMLInputElement, InputProps>(
-	function Input(props, ref) {
-		const className = clsx(inputClassName, props.className)
+const Input = function Input({
+	ref,
+	...props
+}: InputProps & {
+	ref: React.RefObject<HTMLInputElement | null>
+}) {
+	const className = clsx(inputClassName, props.className)
 
-		if (props.type === 'textarea') {
-			return (
-				<textarea
-					{...(props as JSX.IntrinsicElements['textarea'])}
-					className={className}
-				/>
-			)
-		}
-
+	if (props.type === 'textarea') {
 		return (
-			<input
-				{...(props as JSX.IntrinsicElements['input'])}
+			<textarea
+				{...(props as React.ComponentProps<'textarea'>)}
 				className={className}
-				ref={ref}
 			/>
 		)
-	},
-)
+	}
+
+	return (
+		<input
+			{...(props as React.ComponentProps<'input'>)}
+			className={className}
+			ref={ref}
+		/>
+	)
+}
 
 interface InputErrorProps {
 	id: string
@@ -59,20 +62,24 @@ function InputError({ children, id }: InputErrorProps) {
 	)
 }
 
-const Field = React.forwardRef<
-	HTMLInputElement,
-	{
-		defaultValue?: string | null
-		name: string
-		label: string
-		className?: string
-		error?: string | null
-		description?: React.ReactNode
-	} & InputProps
->(function Field(
-	{ defaultValue, error, name, label, className, description, id, ...props },
+function Field({
 	ref,
-) {
+	defaultValue,
+	error,
+	name,
+	label,
+	className,
+	description,
+	id,
+	...props
+}: {
+	defaultValue?: string | null
+	name: string
+	label: string
+	className?: string
+	error?: string | null
+	description?: React.ReactNode
+} & InputProps) {
 	return (
 		<FieldContainer
 			id={id}
@@ -95,7 +102,7 @@ const Field = React.forwardRef<
 			)}
 		</FieldContainer>
 	)
-})
+}
 
 type FieldContainerRenderProp = (props: {
 	inputProps: {

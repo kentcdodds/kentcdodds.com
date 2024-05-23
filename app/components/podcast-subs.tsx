@@ -4,7 +4,7 @@ function PodcastAppLink({
 	icon,
 	children,
 	...props
-}: JSX.IntrinsicElements['a'] & { icon: React.ReactElement }) {
+}: React.ComponentProps<'a'> & { icon: React.ReactElement }) {
 	return (
 		<a
 			{...props}

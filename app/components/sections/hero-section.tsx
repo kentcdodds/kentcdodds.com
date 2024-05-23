@@ -14,7 +14,7 @@ export type HeroSectionProps = {
 	as?: React.ElementType
 } & (
 	| {
-			imageProps?: HTMLMotionProps<'img'>
+			imageProps?: HTMLMotionProps<'img'> & { className?: string }
 			imageSize?: 'medium' | 'large' | 'giant'
 			image?: never
 			imageBuilder?: never
@@ -89,6 +89,7 @@ function HeroSection({
 					{imageProps ? (
 						<motion.img
 							{...imageProps}
+							// @ts-expect-error framer-motion + latest typescript types has issues
 							className={clsx(
 								'h-auto w-full object-contain',
 								{

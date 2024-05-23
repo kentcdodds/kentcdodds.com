@@ -12,10 +12,18 @@ interface GridProps {
 	featured?: boolean
 }
 
-const Grid = React.forwardRef<HTMLElement, GridProps>(function Grid(
-	{ children, className, as: Tag = 'div', featured, nested, rowGap, id },
+const Grid = function Grid({
 	ref,
-) {
+	children,
+	className,
+	as: Tag = 'div',
+	featured,
+	nested,
+	rowGap,
+	id,
+}: GridProps & {
+	ref?: React.RefObject<HTMLElement | null>
+}) {
 	return (
 		<Tag
 			ref={ref}
@@ -46,7 +54,7 @@ const Grid = React.forwardRef<HTMLElement, GridProps>(function Grid(
 			</div>
 		</Tag>
 	)
-})
+}
 
 /**
  * Use for development only! It renders the grid columns and gaps as page overlay

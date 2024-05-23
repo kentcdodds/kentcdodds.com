@@ -10,5 +10,5 @@ declare module 'md5-hash' {
 
 declare module 'react-lite-youtube-embed/dist/index.es.jsx' {
 	import LiteYouTubeEmbed, { type LiteYouTube } from 'react-lite-youtube-embed'
-	export default function LiteYouTubeEmbed(props: LiteYouTube): JSX.Element
+	export default function LiteYouTubeEmbed(props: LiteYouTube): React.ReactNode
 }

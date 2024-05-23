@@ -284,6 +284,7 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
 		})
 		const readTime = calculateReadingTime(indexFile.content)
 
+		console.log(code)
 		return {
 			code,
 			readTime,

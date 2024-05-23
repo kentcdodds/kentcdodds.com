@@ -661,9 +661,9 @@ function StreamVis({
 }: {
 	stream?: MediaStream
 	paused?: boolean
-	playbackRef: React.MutableRefObject<HTMLAudioElement | null>
+	playbackRef: React.RefObject<HTMLAudioElement | null>
 	replay?: boolean
-	metadata: React.MutableRefObject<Array<number>>
+	metadata: React.RefObject<Array<number>>
 	team: string
 }) {
 	const colors = colorsByTeam[getOptionalTeam(team)]
@@ -676,13 +676,13 @@ function StreamVis({
 		}>
 	>([])
 	const startRef = React.useRef<number>(0)
-	const drawRef = React.useRef<ReturnType<typeof visualize>>()
+	const drawRef = React.useRef<ReturnType<typeof visualize>>(null)
 
 	/**
 	 * This is a GSAP timeline that either gets used by the recorder
 	 * or prefilled with the metadata
 	 */
-	const timelineRef = React.useRef<gsap.core.Timeline>()
+	const timelineRef = React.useRef<gsap.core.Timeline>(null)
 
 	/**
 	 * Effect handles playback of the GSAP timeline in sync

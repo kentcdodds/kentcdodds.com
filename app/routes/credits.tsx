@@ -84,7 +84,7 @@ type Socials = keyof Omit<
 	'name' | 'role' | 'cloudinaryId' | 'description'
 >
 
-const icons: Record<Socials, React.ReactElement> = {
+const icons = {
 	website: <GlobeIcon title="Website" />,
 	github: <GithubIcon />,
 	x: <XIcon />,
@@ -94,7 +94,7 @@ const icons: Record<Socials, React.ReactElement> = {
 	twitch: <TwitchIcon />,
 	linkedin: <LinkedInIcon />,
 	behance: <BehanceIcon />,
-} as const
+} satisfies Record<Socials, React.ReactElement>
 
 function ProfileCard({ person }: { person: Person }) {
 	return (

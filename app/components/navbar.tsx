@@ -178,6 +178,7 @@ function MobileMenuList() {
 							duration: shouldReduceMotion ? 0 : 0.15,
 							ease: 'linear',
 						}}
+						// @ts-expect-error framer-motion + latest typescript types has issues
 						className="bg-primary flex h-full flex-col overflow-y-scroll border-t border-gray-200 pb-12 dark:border-gray-600"
 					>
 						<MenuItems className="border-none bg-transparent p-0">
@@ -340,7 +341,11 @@ function ProfileButton({
 			)}
 			ref={ref}
 		>
-			<motion.div className="absolute" animate={controls}>
+			<motion.div
+				// @ts-expect-error framer-motion + latest typescript types has issues
+				className="absolute"
+				animate={controls}
+			>
 				<TeamCircle size={56} team={team} />
 			</motion.div>
 			<img

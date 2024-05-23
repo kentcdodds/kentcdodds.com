@@ -2,15 +2,14 @@ import * as React from 'react'
 import { test, expect } from 'vitest'
 import { render, screen, act } from '@testing-library/react'
 
-function ImperativeCounter(props, ref) {
+function ImperativeCounter(props) {
 	const [count, setCount] = React.useState(0)
-	React.useImperativeHandle(ref, () => ({
+	React.useImperativeHandle(props.ref, () => ({
 		increment: () => setCount(c => c + 1),
 		decrement: () => setCount(c => c - 1),
 	}))
 	return <div>The count is: {count}</div>
 }
-ImperativeCounter = React.forwardRef(ImperativeCounter)
 
 test('can call imperative methods on counter component', () => {
 	const counterRef = React.createRef()

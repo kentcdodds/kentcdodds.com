@@ -444,6 +444,7 @@ function PageLoadingMessage() {
 								animate={{ y: 0, opacity: 1 }}
 								exit={{ y: -15, opacity: 0 }}
 								transition={{ duration: 0.25 }}
+								// @ts-expect-error framer-motion + latest typescript types has issues
 								className="flex-none"
 							>
 								{action}
@@ -660,16 +661,6 @@ function App() {
 						__html: `window.ENV = ${JSON.stringify(data.ENV)};`,
 					}}
 				/>
-				{ENV.NODE_ENV === 'development' ? (
-					<>
-						<LiveReload nonce={nonce} />
-						<script
-							nonce={nonce}
-							suppressHydrationWarning
-							dangerouslySetInnerHTML={{ __html: getWebsocketJS() }}
-						/>
-					</>
-				) : null}
 			</body>
 		</html>
 	)

@@ -75,8 +75,8 @@ type ArrowLinkProps = {
 	ArrowButtonBaseProps & { prefetch?: 'intent' | 'render' | 'none' }
 
 type ArrowButtonProps = {
-	onClick?: JSX.IntrinsicElements['button']['onClick']
-	type?: JSX.IntrinsicElements['button']['type']
+	onClick?: React.ComponentProps<'button'>['onClick']
+	type?: React.ComponentProps<'button'>['type']
 } & ArrowButtonBaseProps
 
 // whileFocus takes precedence over whileTap, so while we can't move the arrow
@@ -168,6 +168,7 @@ function ArrowButton({ onClick, type, ...props }: ArrowButtonProps) {
 
 	return (
 		<motion.button
+			// @ts-expect-error framer-motion + latest typescript types has issues
 			onClick={onClick}
 			type={type}
 			{...getBaseProps(props)}
@@ -189,6 +190,7 @@ function ArrowLink({ to, href, ...props }: ArrowLinkProps) {
 	if (href) {
 		return (
 			<motion.a
+				// @ts-expect-error framer-motion + latest typescript types has issues
 				href={href}
 				{...getBaseProps(props)}
 				ref={ref}

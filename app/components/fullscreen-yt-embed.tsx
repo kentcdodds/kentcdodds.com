@@ -51,7 +51,7 @@ function FullScreenYouTubeEmbed({
 			<Dialog
 				isOpen={showPlayer}
 				onDismiss={() => setShowPlayer(false)}
-				aria-label={`Watch ${ytLiteEmbed.props.title ?? 'the video'}`}
+				aria-label={`Watch ${(ytLiteEmbed.props as any)?.title ?? 'the video'}`}
 			>
 				<YouTubeEmbed
 					onCloseClick={() => setShowPlayer(false)}

@@ -137,11 +137,11 @@ special. Here's the definition of a React component:
 	A React component is a function that returns something React can render.
 </callout-success>
 
-Now, according to `@types/react`, we're limited to `null` and `JSX.Element`s,
-but React can actually render strings, numbers, and booleans as well. In any
-case, because a React component is simply a function that returns something
-React can render, typing it can be just as straightforward as typing functions.
-You don't have to do anything special just because it's React.
+Now, according to `@types/react`, we're limited to `null` and
+`React.ReactNode`s, but React can actually render strings, numbers, and booleans
+as well. In any case, because a React component is simply a function that
+returns something React can render, typing it can be just as straightforward as
+typing functions. You don't have to do anything special just because it's React.
 
 So here's how I'd type the props for this component:
 
@@ -155,8 +155,8 @@ This doesn't have any of the shortcomings of `React.FC` and it's no more
 complicated than typing the arguments to a regular function.
 
 Ok, so what about the return value? Well, we could type it as
-`React.ReactElement` or even wider as a `JSX.Element`. But honestly, I side with
-my friend [Nick McCurdy](https://twitter.com/nickemccurdy) when
+`React.ReactElement` or even wider as a `React.ReactNode`. But honestly, I side
+with my friend [Nick McCurdy](https://twitter.com/nickemccurdy) when
 [he says](https://twitter.com/nickemccurdy/status/1365384372908621833) that
 mistakes can easily be made causing the return type to be too wide. So even
 outside a react context, I default to not specifying the return type (rely on
