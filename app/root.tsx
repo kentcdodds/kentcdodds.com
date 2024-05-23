@@ -12,7 +12,6 @@ import {
 	isRouteErrorResponse,
 	Link,
 	Links,
-	LiveReload,
 	Meta,
 	Outlet,
 	Scripts,
@@ -661,6 +660,13 @@ function App() {
 						__html: `window.ENV = ${JSON.stringify(data.ENV)};`,
 					}}
 				/>
+				{ENV.NODE_ENV === 'development' ? (
+					<script
+						nonce={nonce}
+						suppressHydrationWarning
+						dangerouslySetInnerHTML={{ __html: getWebsocketJS() }}
+					/>
+				) : null}
 			</body>
 		</html>
 	)
