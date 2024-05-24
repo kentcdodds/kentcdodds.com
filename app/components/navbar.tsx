@@ -176,7 +176,6 @@ function MobileMenu() {
 				id="mobile-menu"
 				ref={popoverRef}
 				popover=""
-				tabIndex={-1}
 				onToggle={() => window.scrollTo(0, 0)}
 				className="fixed bottom-0 left-0 right-0 top-[128px] m-0 h-[calc(100svh-128px)] w-full"
 			>
