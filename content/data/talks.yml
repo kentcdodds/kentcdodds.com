@@ -5,6 +5,8 @@
     - event: '[React Miami 2024](https://www.reactmiami.com/)'
       recording: https://www.youtube.com/watch?v=bAqtQtZ0Su0&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
       date: 2024-04-19
+    - event: '[Frontend Nation 2024](https://frontendnation.com/)'
+      date: 2024-06-04
   tags:
     - meetup
     - web
@@ -52,7 +54,7 @@
 
 - title: React Summit US Keynote
   deliveries:
-    - event: '[React Summit 2024](https://reactsummit.us/)'
+    - event: '[React Summit US 2024](https://reactsummit.us/)'
       date: 2024-11-20
   tags:
     - keynote
@@ -63,7 +65,9 @@
   deliveries:
     - event: '[React Conf](https://conf.react.dev/)'
       date: 2024-05-16
-    - event: '[React Summit](https://reactsummit.com)'
+    - event: '[React Rally](https://reactrally.com/)'
+      date: 2024-06-14
+    - event: '[React Summit 2024](https://reactsummit.com)'
       date: 2024-06-14
     - event: '[UtahJS Conf](https://utahjs.com/conference)'
       date: 2024-09-13
