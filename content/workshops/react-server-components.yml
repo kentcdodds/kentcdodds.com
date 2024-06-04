@@ -11,6 +11,12 @@ events:
   - title: 'React Summit 2024 (remote)'
     url: https://reactsummit.com/checkout#workshops
     date: 2024-06-19
+  - title: 'React Rally 2024 (Utah)'
+    url: https://reactrally.com/workshop
+    date: 2024-08-14
+  - title: 'React Universe 2024 (Poland)'
+    url: https://www.reactuniverseconf.com/workshops-2024#react-future
+    date: 2024-09-04
 categories:
   - react
 convertKitTag: '5037938'
