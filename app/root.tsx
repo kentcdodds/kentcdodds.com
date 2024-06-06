@@ -31,7 +31,7 @@ import { type KCDHandle } from '~/types.ts'
 import { ArrowLink } from './components/arrow-button.tsx'
 import { ErrorPage, FourHundred } from './components/errors.tsx'
 import { Footer } from './components/footer.tsx'
-import { ArrowIcon, LaptopIcon, PartyIcon } from './components/icons.tsx'
+import { ArrowIcon, LaptopIcon } from './components/icons.tsx'
 import { Grimmacing, MissingSomething } from './components/kifs.tsx'
 import { Navbar } from './components/navbar.tsx'
 import { NotificationMessage } from './components/notification-message.tsx'
@@ -133,20 +133,6 @@ export const links: LinksFunction = () => {
 export type LoaderData = SerializeFrom<typeof loader>
 
 const WORKSHOP_PROMO_NAME = 'workshop-promo'
-const EPIC_WEB_CONF_EARLY_BIRD_PROMO_NAME = 'epic-web-conf-early-bird-promo'
-const EPIC_WEB_CONF_EARLY_BIRD_START_DATE = '2024-01-24T19:00:00.000Z'
-const EPIC_WEB_CONF_EARLY_BIRD_END_DATE = '2024-02-16T19:00:00.000Z'
-const EPIC_WEB_CONF_REGULAR_TICKET_NAME = 'epic-web-conf-regular-ticket'
-const EPIC_WEB_CONF_REGULAR_TICKET_START_DATE =
-	EPIC_WEB_CONF_EARLY_BIRD_END_DATE
-const EPIC_WEB_CONF_REGULAR_TICKET_END_DATE = '2024-03-15T19:00:00.000Z'
-const EPIC_WEB_CONF_LATE_TICKET_NAME = 'epic-web-conf-late-ticket'
-const EPIC_WEB_CONF_LATE_TICKET_START_DATE =
-	EPIC_WEB_CONF_REGULAR_TICKET_END_DATE
-const EPIC_WEB_CONF_LATE_TICKET_END_DATE = '2024-04-10T19:00:00.000Z'
-const EPIC_WEB_CONF_LIVE = 'epic-web-conf-live'
-const EPIC_WEB_CONF_LIVE_START_DATE = '2024-04-11T13:00:00.000Z'
-const EPIC_WEB_CONF_LIVE_END_DATE = '2024-04-12T00:00:00.000Z'
 
 export async function loader({ request }: DataFunctionArgs) {
 	const timings = {}

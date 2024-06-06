@@ -28,7 +28,6 @@ import { createEpisodeAudio } from '~/utils/ffmpeg.server.ts'
 import { markdownToHtml } from '~/utils/markdown.server.ts'
 import {
 	formatDate,
-	getAvatarForUser,
 	getErrorMessage,
 	getNonNull,
 	useDoubleCheck,
@@ -37,7 +36,7 @@ import { prisma } from '~/utils/prisma.server.ts'
 import { sendEmail } from '~/utils/send-email.server.ts'
 import { requireAdminUser } from '~/utils/session.server.ts'
 import { createEpisode } from '~/utils/transistor.server.ts'
-import { useRootData, useUser } from '~/utils/use-root-data.ts'
+import { useUser } from '~/utils/use-root-data.ts'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
@@ -237,7 +236,6 @@ function RecordingDetailScreen() {
 	const data = useLoaderData<typeof loader>()
 	const actionData = useActionData<ActionData>()
 	const user = useUser()
-	const { requestInfo } = useRootData()
 
 	return (
 		<div key={data.call.id}>
