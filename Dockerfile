@@ -49,7 +49,14 @@ RUN npx prisma generate
 
 # app code changes all the time
 ADD . .
-RUN npm run build
+
+ENV SENTRY_ORG="kent-c-dodds-tech-llc"
+ENV SENTRY_PROJECT="kcd-node"
+
+# Mount the secret and set it as an environment variable and run the build
+RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
+    export SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN) && \
+    npm run build
 
 # build smaller image for running
 FROM base
