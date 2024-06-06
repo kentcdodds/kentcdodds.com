@@ -100,7 +100,6 @@ export const action: ActionFunction = async ({ request, params }) => {
 
 		const { episodeUrl, imageUrl } = await createEpisode({
 			request,
-			avatar: form.get('avatar'),
 			audio: episodeAudio,
 			title,
 			summary: `${call.user.firstName} asked this on ${format(
@@ -239,12 +238,6 @@ function RecordingDetailScreen() {
 	const actionData = useActionData<ActionData>()
 	const user = useUser()
 	const { requestInfo } = useRootData()
-	const [callerAvatar, setCallerAvatar] = React.useState(
-		getAvatarForUser(data.call.user, {
-			origin: requestInfo.origin,
-			size: 1400,
-		}).src,
-	)
 
 	return (
 		<div key={data.call.id}>
@@ -259,18 +252,6 @@ function RecordingDetailScreen() {
 						fields: { ...data.call, ...actionData?.fields },
 						errors: { ...actionData?.errors },
 					}}
-					additionalFields={
-						<>
-							<Field
-								label="Avatar"
-								description="Episode avatar URL"
-								name="avatar"
-								value={callerAvatar}
-								onChange={e => setCallerAvatar(e.currentTarget.value)}
-							/>
-							<img src={callerAvatar} alt="Caller avatar" className="w-32" />
-						</>
-					}
 				/>
 			) : (
 				<CallRecorder

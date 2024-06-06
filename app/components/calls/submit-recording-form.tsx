@@ -25,11 +25,9 @@ type RecordingFormData = {
 function RecordingForm({
 	audio,
 	data,
-	additionalFields,
 }: {
 	audio: Blob
 	data?: RecordingFormData
-	additionalFields?: React.ReactElement
 }) {
 	const {
 		requestInfo: { flyPrimaryInstance },
@@ -109,8 +107,6 @@ function RecordingForm({
 					name="keywords"
 					defaultValue={data?.fields.keywords ?? ''}
 				/>
-
-				{additionalFields}
 
 				<Button type="submit" className="mt-8">
 					Submit Recording

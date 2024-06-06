@@ -66,7 +66,6 @@ async function createEpisode({
 	keywords,
 	user,
 	request,
-	avatar: providedAvatar,
 }: {
 	audio: Buffer
 	title: string
@@ -75,7 +74,6 @@ async function createEpisode({
 	keywords: string
 	user: { firstName: string; email: string; team: string }
 	request: Request
-	avatar?: string | null
 }) {
 	const id = uuid.v4()
 	const authorized = await fetchTransitor<TransistorAuthorizedJson>({
@@ -162,19 +160,14 @@ async function createEpisode({
 		const encodedName = encodeURIComponent(
 			encodeURIComponent(`- ${user.firstName}`),
 		)
-		let radius: string, encodedAvatar: string
-		if (providedAvatar) {
-			encodedAvatar = toBase64(providedAvatar)
-			radius = ',r_max'
-		} else {
-			const { hasGravatar, avatar } = await getDirectAvatarForUser(user, {
-				size: 1400,
-				request,
-				forceFresh: true,
-			})
-			encodedAvatar = toBase64(avatar)
-			radius = hasGravatar ? ',r_max' : ''
-		}
+		const { hasGravatar, avatar } = await getDirectAvatarForUser(user, {
+			size: 1400,
+			request,
+			forceFresh: true,
+		})
+		const base64Avatar = toBase64(avatar)
+		const radius = hasGravatar ? ',r_max' : ''
+		const encodedAvatar = encodeURIComponent(base64Avatar)
 
 		const textLines = Number(
 			Math.ceil(Math.min(title.length, 50) / 18).toFixed(),
@@ -182,12 +175,6 @@ async function createEpisode({
 		const avatarYPosition = textLines + 0.6
 		const nameYPosition = -textLines + 5.2
 		const imageUrl = `https://res.cloudinary.com/kentcdodds-com/image/upload/$th_3000,$tw_3000,$gw_$tw_div_12,$gh_$th_div_12/w_$tw,h_$th,l_kentcdodds.com:social-background/co_white,c_fit,g_north_west,w_$gw_mul_6,h_$gh_mul_2.6,x_$gw_mul_0.8,y_$gh_mul_0.8,l_text:kentcdodds.com:Matter-Medium.woff2_180:${encodedTitle}/c_crop${radius},g_north_west,h_$gh_mul_5.5,w_$gh_mul_5.5,x_$gw_mul_0.8,y_$gh_mul_${avatarYPosition},l_fetch:${encodedAvatar}/co_rgb:a9adc1,c_fit,g_south_west,w_$gw_mul_8,h_$gh_mul_4,x_$gw_mul_0.8,y_$gh_mul_0.8,l_text:kentcdodds.com:Matter-Regular.woff2_120:${encodedUrl}/co_rgb:a9adc1,c_fit,g_south_west,w_$gw_mul_8,h_$gh_mul_4,x_$gw_mul_0.8,y_$gh_mul_${nameYPosition},l_text:kentcdodds.com:Matter-Regular.woff2_140:${encodedName}/c_fit,g_east,w_$gw_mul_11,h_$gh_mul_11,x_$gw,l_kentcdodds.com:illustrations:mic/c_fill,w_$tw,h_$th/kentcdodds.com/social-background.png`
-
-		// warm up the image on cloudinary
-		await fetch(imageUrl, {
-			method: 'HEAD',
-			signal: AbortSignal.timeout(10000),
-		}).catch(() => {})
 
 		returnValue.episodeUrl = `${domainUrl}${episodePath}`
 		returnValue.imageUrl = imageUrl

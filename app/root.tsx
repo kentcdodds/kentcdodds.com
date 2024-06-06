@@ -282,52 +282,6 @@ export async function loader({ request }: DataFunctionArgs) {
 		userInfo: user ? await getUserInfo(user, { request, timings }) : null,
 		ENV: getEnv(),
 		randomFooterImageKey,
-		epicWebPromotifications: {
-			earlyBird: {
-				promoName: EPIC_WEB_CONF_EARLY_BIRD_PROMO_NAME,
-				cookieValue: getPromoCookieValue({
-					request,
-					promoName: EPIC_WEB_CONF_EARLY_BIRD_PROMO_NAME,
-				}),
-				startDate: EPIC_WEB_CONF_EARLY_BIRD_START_DATE,
-				endDate: EPIC_WEB_CONF_EARLY_BIRD_END_DATE,
-				text: 'early bird sale is going on right now!',
-				ticketLinkText: 'Limited time discount available',
-			},
-			regularTicket: {
-				promoName: EPIC_WEB_CONF_REGULAR_TICKET_NAME,
-				cookieValue: getPromoCookieValue({
-					request,
-					promoName: EPIC_WEB_CONF_REGULAR_TICKET_NAME,
-				}),
-				startDate: EPIC_WEB_CONF_REGULAR_TICKET_START_DATE,
-				endDate: EPIC_WEB_CONF_REGULAR_TICKET_END_DATE,
-				text: 'regular tickets are available now!',
-				ticketLinkText: 'Prices go up soon',
-			},
-			lateTicket: {
-				promoName: EPIC_WEB_CONF_LATE_TICKET_NAME,
-				cookieValue: getPromoCookieValue({
-					request,
-					promoName: EPIC_WEB_CONF_LATE_TICKET_NAME,
-				}),
-				startDate: EPIC_WEB_CONF_LATE_TICKET_START_DATE,
-				endDate: EPIC_WEB_CONF_LATE_TICKET_END_DATE,
-				text: 'late-bird tickets are available now, hurry!',
-				ticketLinkText: 'Get your tickets here',
-			},
-			live: {
-				promoName: EPIC_WEB_CONF_LIVE,
-				cookieValue: getPromoCookieValue({
-					request,
-					promoName: EPIC_WEB_CONF_LIVE,
-				}),
-				startDate: EPIC_WEB_CONF_LIVE_START_DATE,
-				endDate: EPIC_WEB_CONF_LIVE_END_DATE,
-				text: 'is live right now!',
-				ticketLinkText: null,
-			},
-		},
 		workshopPromotifications: [
 			...titoWorkshopEventPromotifications,
 			...manualWorkshopEventPromotifications,
@@ -526,57 +480,9 @@ function App() {
 			<body className="bg-white transition duration-500 dark:bg-gray-900">
 				<PageLoadingMessage />
 
-				{Object.values(data.epicWebPromotifications).map(
-					({
-						promoName,
-						cookieValue,
-						startDate,
-						endDate,
-						text,
-						ticketLinkText,
-					}) =>
-						new Date(startDate).getTime() < Date.now() ? (
-							<Promotification
-								key={promoName}
-								cookieValue={cookieValue}
-								promoName={promoName}
-								promoEndTime={new Date(endDate)}
-							>
-								<div className="flex flex-col">
-									<p className="flex items-center gap-1">
-										<PartyIcon />
-										<span>
-											<a
-												href="https://www.epicweb.dev/conf"
-												className="underline"
-											>
-												Epic Web Conf
-											</a>{' '}
-											{text}
-										</span>
-									</p>
-									{ticketLinkText ? (
-										<p className="mt-1 text-sm">
-											<a
-												href="https://www.epicweb.dev/conf"
-												className="inline-flex items-center gap-1 underline"
-											>
-												<span>{ticketLinkText}</span>
-												<ArrowIcon direction="top-right" size={16} />
-											</a>
-										</p>
-									) : null}
-									<p className="mt-2 text-sm">
-										Join the community and network with other great web devs.
-									</p>
-								</div>
-							</Promotification>
-						) : null,
-				)}
-
 				{data.workshopPromotifications.map(e => (
 					<Promotification
-						key={e.slug}
+						key={e.slug + e.title + e.promoEndTime.time}
 						cookieValue={e.cookieValue}
 						promoName={e.promoName}
 						promoEndTime={new Date(e.promoEndTime.time)}
