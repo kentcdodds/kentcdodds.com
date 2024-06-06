@@ -186,7 +186,7 @@ async function createEpisode({
 		// warm up the image on cloudinary
 		await fetch(imageUrl, {
 			method: 'HEAD',
-			signal: AbortSignal.timeout(2000),
+			signal: AbortSignal.timeout(10000),
 		}).catch(() => {})
 
 		returnValue.episodeUrl = `${domainUrl}${episodePath}`
