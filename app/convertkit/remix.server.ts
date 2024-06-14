@@ -1,8 +1,8 @@
 import { json } from '@remix-run/node'
-import { getErrorMessage } from '~/utils/misc.tsx'
-import { deleteConvertKitCache } from '~/utils/user-info.server.ts'
 import * as ck from './convertkit.server.ts'
 import { type ActionData, type Errors, type Fields } from './types.ts'
+import { getErrorMessage } from '~/utils/misc.tsx'
+import { deleteConvertKitCache } from '~/utils/user-info.server.ts'
 
 function getErrorForFirstName(name: string | null) {
 	if (!name) return `Name is required`
@@ -79,7 +79,7 @@ async function handleConvertKitFormSubmission(request: Request) {
 
 	let data: ActionData
 
-	if (Object.values(errors).some(err => err !== null)) {
+	if (Object.values(errors).some((err) => err !== null)) {
 		data = { status: 'error', errors }
 		return json(data, 400)
 	}

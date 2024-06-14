@@ -87,7 +87,7 @@ import * as React from 'react'
 
 function Counter() {
 	const [count, setCount] = useState(0)
-	const incrementCount = () => setCount(c => c + 1)
+	const incrementCount = () => setCount((c) => c + 1)
 	return <button onClick={incrementCount}>{count}</button>
 }
 
@@ -219,7 +219,7 @@ function Counter() {
 	const [count, setCount] = useState(() =>
 		Number(window.localStorage.getItem('count') || 0),
 	)
-	const incrementCount = () => setCount(c => c + 1)
+	const incrementCount = () => setCount((c) => c + 1)
 	useEffect(() => {
 		window.localStorage.setItem('count', count)
 	}, [count])
@@ -295,7 +295,7 @@ import Counter from '../counter'
 
 function renderCounter(props) {
 	let utils
-	const children = jest.fn(stateAndHelpers => {
+	const children = jest.fn((stateAndHelpers) => {
 		utils = stateAndHelpers
 		return null
 	})
@@ -320,7 +320,7 @@ Ok, so let's refactor the counter to a component that uses hooks:
 ```js
 function Counter(props) {
 	const [count, setCount] = useState(0)
-	const increment = () => setCount(currentCount => currentCount + 1)
+	const increment = () => setCount((currentCount) => currentCount + 1)
 	return props.children({
 		count: count,
 		increment,
@@ -337,7 +337,7 @@ this to a custom hook:
 ```js
 function useCounter() {
 	const [count, setCount] = useState(0)
-	const increment = () => setCount(currentCount => currentCount + 1)
+	const increment = () => setCount((currentCount) => currentCount + 1)
 	return { count, increment }
 }
 
@@ -359,7 +359,7 @@ Nah, I got you. Do this instead:
 ```js
 function useCounter() {
 	const [count, setCount] = useState(0)
-	const increment = () => setCount(currentCount => currentCount + 1)
+	const increment = () => setCount((currentCount) => currentCount + 1)
 	return { count, increment }
 }
 

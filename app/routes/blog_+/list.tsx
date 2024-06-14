@@ -14,11 +14,11 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({ request }) => {
-	const posts = await getBlogMdxListItems({ request }).then(allPosts =>
+	const posts = await getBlogMdxListItems({ request }).then((allPosts) =>
 		Promise.all(
 			allPosts
-				.filter(p => !p.frontmatter.draft)
-				.map(async p => ({
+				.filter((p) => !p.frontmatter.draft)
+				.map(async (p) => ({
 					title: p.frontmatter.title ?? 'Untitled',
 					descriptionHTML: await markdownToHtmlUnwrapped(
 						p.frontmatter.description ?? 'No description',
@@ -67,7 +67,7 @@ export default function BlogList() {
 					<Spacer size="2xs" />
 					<div>
 						<ul className="list-inside list-disc">
-							{data.posts.map(post => (
+							{data.posts.map((post) => (
 								<li key={post.slug} className="leading-loose">
 									<Link to={`/blog/${post.slug}`} className="text-xl">
 										{post.title}

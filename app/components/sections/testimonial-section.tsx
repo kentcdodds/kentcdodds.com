@@ -1,9 +1,9 @@
 import { Link } from '@remix-run/react'
 import * as React from 'react'
-import { type Testimonial } from '~/utils/testimonials.server.ts'
 import { ArrowButton } from '../arrow-button.tsx'
 import { H2 } from '../typography.tsx'
 import { TestimonialCard } from './testimonial-card.tsx'
+import { type Testimonial } from '~/utils/testimonials.server.ts'
 
 function TestimonialSection({
 	testimonials,
@@ -33,10 +33,13 @@ function TestimonialSection({
 
 				{testimonials.length > 3 ? (
 					<div className="col-span-2 col-start-11 mb-16 items-end justify-end space-x-3">
-						<ArrowButton direction="left" onClick={() => setPage(p => p - 1)} />
+						<ArrowButton
+							direction="left"
+							onClick={() => setPage((p) => p - 1)}
+						/>
 						<ArrowButton
 							direction="right"
-							onClick={() => setPage(p => p + 1)}
+							onClick={() => setPage((p) => p + 1)}
 						/>
 					</div>
 				) : null}

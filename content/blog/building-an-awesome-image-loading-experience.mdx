@@ -23,8 +23,7 @@ meta:
     - gatsby-plugin-sharp
 bannerCloudinaryId: unsplash/photo-1541969358822-1567cdf1a2a4
 bannerAlt: frosted glass window
-bannerCredit:
-  Photo by [Danielle MacInnes](https://unsplash.com/photos/JhEzbxfNeMw)
+bannerCredit: Photo by [Danielle MacInnes](https://unsplash.com/photos/JhEzbxfNeMw)
 ---
 
 You may have noticed when opening various pages on my site (especially blog
@@ -152,7 +151,7 @@ function getImgProps(
 			resize: { width: averageSize, ...transformations?.resize },
 		}),
 		srcSet: widths
-			.map(width =>
+			.map((width) =>
 				[
 					imageBuilder({
 						quality: 'auto',

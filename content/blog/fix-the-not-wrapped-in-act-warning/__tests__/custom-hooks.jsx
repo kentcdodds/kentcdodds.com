@@ -1,11 +1,11 @@
+import { renderHook, act } from '@testing-library/react'
 import * as React from 'react'
 import { test, expect } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
 
 function useCount() {
 	const [count, setCount] = React.useState(0)
-	const increment = () => setCount(c => c + 1)
-	const decrement = () => setCount(c => c - 1)
+	const increment = () => setCount((c) => c + 1)
+	const decrement = () => setCount((c) => c - 1)
 	return { count, increment, decrement }
 }
 

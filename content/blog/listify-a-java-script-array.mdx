@@ -120,7 +120,7 @@ simpler. Feel free to take a whack at the for loop version though if you want.
 ```js
 function listify(
 	array,
-	{ conjunction = 'and ', stringify = item => item.toString() } = {},
+	{ conjunction = 'and ', stringify = (item) => item.toString() } = {},
 ) {
 	return array.reduce((list, item, index) => {
 		if (index === 0) return stringify(item)
@@ -155,10 +155,10 @@ function listify(
 	{
 		type = 'conjunction',
 		style = 'long',
-		stringify = item => item.toString(),
+		stringify = (item) => item.toString(),
 	} = {},
 ) {
-	const stringified = array.map(item => stringify(item))
+	const stringified = array.map((item) => stringify(item))
 	const formatter = new Intl.ListFormat('en', { style, type })
 	return formatter.format(stringified)
 }
@@ -210,7 +210,7 @@ function listify<ItemType>(
 		stringify = (thing: { toString(): string }) => thing.toString(),
 	}: ListifyOptions<ItemType> = {},
 ) {
-	const stringified = array.map(item => stringify(item))
+	const stringified = array.map((item) => stringify(item))
 	const formatter = new Intl.ListFormat('en', { style, type })
 	return formatter.format(stringified)
 }

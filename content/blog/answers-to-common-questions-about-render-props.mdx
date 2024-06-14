@@ -7,8 +7,7 @@ meta:
     - javascript
     - react
 bannerCloudinaryId: unsplash/photo-1516383074327-ac4841225abf
-bannerCredit:
-  Photo by [Sharon McCutcheon](https://unsplash.com/photos/gYxVSeZazXU)
+bannerCredit: Photo by [Sharon McCutcheon](https://unsplash.com/photos/gYxVSeZazXU)
 ---
 
 As I was preparing this article, I was getting ready to give a training to
@@ -58,7 +57,7 @@ prop function and perf implications of that, then don't inline the function! :)
 
 ```tsx
 class MyComp extends React.Component {
-	renderDownshift = downshift => <div>{/* Your UI stuff here */}</div>
+	renderDownshift = (downshift) => <div>{/* Your UI stuff here */}</div>
 	render() {
 		return <Downshift>{this.renderDownshift}</Downshift>
 	}
@@ -98,14 +97,14 @@ function App() {
 		<div>
 			<div>With a totally different component. Thanks React composibility!</div>
 			<RenderPropComp
-				render={arg => <JustARegularFunctionComponent {...arg} />}
+				render={(arg) => <JustARegularFunctionComponent {...arg} />}
 			/>
 			<hr />
 			<div>
 				Inline! You don't have to make it an implicit return arrow function 😉
 			</div>
 			<RenderPropComp
-				render={arg => {
+				render={(arg) => {
 					// <-- notice the curly brace!
 					// do whatever you want in here
 					return <div>{/* your stuff */}</div>
@@ -140,7 +139,7 @@ class RegularClassComponent extends React.Component {
 }
 
 function App() {
-	return <RenderPropComp render={arg => <RegularClassComponent {...arg} />} />
+	return <RenderPropComp render={(arg) => <RegularClassComponent {...arg} />} />
 }
 ```
 

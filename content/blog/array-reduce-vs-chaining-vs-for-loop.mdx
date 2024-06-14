@@ -38,15 +38,15 @@ if you wanna give it a read-through). Here's the bit I want to talk about
 const lines = execSync(`find "${searchPath}" -type f`).toString().split('\n')
 
 const commands = lines
-	.map(f => f.trim())
+	.map((f) => f.trim())
 	.filter(Boolean)
-	.map(file => {
+	.map((file) => {
 		const destFile = getDestFile(file)
 		const destFileDir = path.dirname(destFile)
 		return `mkdir -p "${destFileDir}" && mv "${file}" "${destFile}"`
 	})
 
-commands.forEach(command => execSync(command))
+commands.forEach((command) => execSync(command))
 ```
 
 Basically all this does is uses the linux `find` command to find a list of files

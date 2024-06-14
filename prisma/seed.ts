@@ -1,5 +1,5 @@
-import { subMonths } from 'date-fns'
 import { PrismaClient } from '@prisma/client'
+import { subMonths } from 'date-fns'
 
 const prisma = new PrismaClient()
 
@@ -92,7 +92,7 @@ async function main() {
 }
 
 main()
-	.catch(e => {
+	.catch((e) => {
 		console.error(e)
 		process.exit(1)
 	})

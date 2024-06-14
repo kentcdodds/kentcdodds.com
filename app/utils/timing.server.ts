@@ -21,7 +21,6 @@ export async function time<ReturnType>(
 	const result = await promise
 	let timingType = timings[type]
 	if (!timingType) {
-		// eslint-disable-next-line no-multi-assign
 		timingType = timings[type] = []
 	}
 
@@ -36,7 +35,7 @@ export function getServerTimeHeader(timings: Timings) {
 				.reduce((acc, timingInfo) => acc + timingInfo.time, 0)
 				.toFixed(1)
 			const desc = timingInfos
-				.map(t => t.desc)
+				.map((t) => t.desc)
 				.filter(Boolean)
 				.join(' & ')
 			return [

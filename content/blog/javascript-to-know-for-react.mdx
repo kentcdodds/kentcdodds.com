@@ -113,7 +113,7 @@ implicit returns, so you'll see and want to use arrow functions plenty.
 
 ```tsx lines=20-24
 const getFive = () => 5
-const addFive = a => a + 5
+const addFive = (a) => a + 5
 const divide = (a, b) => a / b
 
 // this is the same as:
@@ -131,7 +131,7 @@ function divide(a, b) {
 function TeddyBearList({ teddyBears }) {
 	return (
 		<ul>
-			{teddyBears.map(teddyBear => (
+			{teddyBears.map((teddyBear) => (
 				<li key={teddyBear.id}>
 					<span>{teddyBear.name}</span>
 				</li>
@@ -241,8 +241,8 @@ function add(a, b) {
 function useLocalStorageState({
 	key,
 	initialValue,
-	serialize = v => v,
-	deserialize = v => v,
+	serialize = (v) => v,
+	deserialize = (v) => v,
 }) {
 	const [state, setState] = React.useState(
 		() => deserialize(window.localStorage.getItem(key)) || initialValue,
@@ -355,13 +355,13 @@ export const now = new Date()
 
 // dynamic imports
 import('./some-module').then(
-	allModuleExports => {
+	(allModuleExports) => {
 		// the allModuleExports object will be the same object you get if you had
 		// used: import * as allModuleExports from './some-module'
 		// the only difference is this will be loaded asynchronously which can
 		// have performance benefits in some cases
 	},
-	error => {
+	(error) => {
 		// handle the error
 		// this will happen if there's an error loading or running the module
 	},
@@ -408,7 +408,7 @@ function TeddyBearList({ teddyBears }) {
 		<React.Fragment>
 			{teddyBears.length ? (
 				<ul>
-					{teddyBears.map(teddyBear => (
+					{teddyBears.map((teddyBear) => (
 						<li key={teddyBear.id}>
 							<span>{teddyBear.name}</span>
 						</li>
@@ -481,25 +481,25 @@ const dogs = [
 	},
 ]
 
-dogs.find(dog => dog.name === 'Bernese Mountain Dog')
+dogs.find((dog) => dog.name === 'Bernese Mountain Dog')
 // {id: 'dog-2', name: 'Bernese Mountain Dog', ...etc}
 
-dogs.some(dog => dog.temperament.includes('Aggressive'))
+dogs.some((dog) => dog.temperament.includes('Aggressive'))
 // false
 
-dogs.some(dog => dog.temperament.includes('Trusting'))
+dogs.some((dog) => dog.temperament.includes('Trusting'))
 // true
 
-dogs.every(dog => dog.temperament.includes('Trusting'))
+dogs.every((dog) => dog.temperament.includes('Trusting'))
 // false
 
-dogs.every(dog => dog.temperament.includes('Intelligent'))
+dogs.every((dog) => dog.temperament.includes('Intelligent'))
 // true
 
-dogs.map(dog => dog.name)
+dogs.map((dog) => dog.name)
 // ['Poodle', 'Bernese Mountain Dog', 'Labrador Retriever']
 
-dogs.filter(dog => dog.temperament.includes('Faithful'))
+dogs.filter((dog) => dog.temperament.includes('Faithful'))
 // [{id: 'dog-1', ..etc}, {id: 'dog-2', ...etc}]
 
 dogs.reduce((allTemperaments, dog) => {
@@ -512,8 +512,8 @@ function RepositoryList({ repositories, owner }) {
 	return (
 		<ul>
 			{repositories
-				.filter(repo => repo.owner === owner)
-				.map(repo => (
+				.filter((repo) => repo.owner === owner)
+				.map((repo) => (
 					<li key={repo.id}>{repo.name}</li>
 				))}
 		</ul>
@@ -619,13 +619,13 @@ dealing with promises. The two go hand-in-hand.
 
 ```tsx lines=71-81
 function promises() {
-	const successfulPromise = timeout(100).then(result => `success: ${result}`)
+	const successfulPromise = timeout(100).then((result) => `success: ${result}`)
 
-	const failingPromise = timeout(200, true).then(null, error =>
+	const failingPromise = timeout(200, true).then(null, (error) =>
 		Promise.reject(`failure: ${error}`),
 	)
 
-	const recoveredPromise = timeout(300, true).then(null, error =>
+	const recoveredPromise = timeout(300, true).then(null, (error) =>
 		Promise.resolve(`failed and recovered: ${error}`),
 	)
 

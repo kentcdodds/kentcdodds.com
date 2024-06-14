@@ -624,7 +624,7 @@ async function main() {
 					update: postRead,
 					create: postRead,
 				})
-				.catch(err => {
+				.catch((err) => {
 					console.error('error', err, postRead)
 				})
 		}
@@ -647,7 +647,7 @@ async function main() {
 	}
 }
 
-main().catch(e => {
+main().catch((e) => {
 	console.error(e)
 	process.exit(1)
 })

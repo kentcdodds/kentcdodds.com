@@ -5,7 +5,6 @@ import {
 	type MetaFunction,
 } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
-import { shuffle } from '~/utils/cjs/lodash.js'
 import * as React from 'react'
 import { Grid } from '~/components/grid.tsx'
 import {
@@ -32,7 +31,9 @@ import {
 	getSocialImageWithPreTitle,
 	images,
 } from '~/images.tsx'
+import { type RootLoaderType } from '~/root.tsx'
 import { type Await } from '~/types.ts'
+import { shuffle } from '~/utils/cjs/lodash.js'
 import { getPeople } from '~/utils/credits.server.ts'
 import {
 	getDisplayUrl,
@@ -41,7 +42,6 @@ import {
 	reuseUsefulLoaderHeaders,
 } from '~/utils/misc.tsx'
 import { getSocialMetas } from '~/utils/seo.ts'
-import { type RootLoaderType } from '~/root.tsx'
 
 export type LoaderData = { people: Await<ReturnType<typeof getPeople>> }
 
@@ -62,8 +62,7 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	matches,
 }) => {
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-	const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
+	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
 	const domain = new URL(getOrigin(requestInfo)).host
 	return getSocialMetas({
 		title: `Who built ${domain}`,
@@ -216,7 +215,7 @@ function CreditsIndex() {
 			/>
 
 			<Grid className="gap-y-20 lg:gap-y-32">
-				{data.people.map(person => (
+				{data.people.map((person) => (
 					<div key={person.name} className="col-span-4">
 						<ProfileCard person={person} />
 					</div>

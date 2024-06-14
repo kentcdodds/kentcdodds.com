@@ -37,7 +37,7 @@ ${bodyLorem}
 	await mainContent.getByRole('textbox', { name: /body/i }).fill(body)
 	await mainContent.getByRole('button', { name: /send/i }).click()
 	await expect(page.getByText(/email sent/i)).toBeVisible()
-	const email = await readEmail(em => em.to.includes('me@kentcdodds.com'))
+	const email = await readEmail((em) => em.to.includes('me@kentcdodds.com'))
 	invariant(email, 'Email not found')
 	expect(email.from).toMatch(user.email)
 	expect(email.subject).toMatch(subject)

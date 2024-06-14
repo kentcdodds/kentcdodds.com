@@ -1,7 +1,7 @@
-import { json, redirect, type DataFunctionArgs } from '@remix-run/node'
-import { ensurePrimary } from '~/utils/cjs/litefs-js.server.js'
 import path from 'path'
+import { json, redirect, type DataFunctionArgs } from '@remix-run/node'
 import { cache } from '~/utils/cache.server.ts'
+import { ensurePrimary } from '~/utils/cjs/litefs-js.server.js'
 import { getPeople } from '~/utils/credits.server.ts'
 import {
 	getBlogMdxListItems,
@@ -110,7 +110,7 @@ export async function action({ request }: DataFunctionArgs) {
 
 		// if any blog contentPaths were changed then let's update the dir list
 		// so it will appear on the blog page.
-		if (refreshingContentPaths.some(p => p.startsWith('blog'))) {
+		if (refreshingContentPaths.some((p) => p.startsWith('blog'))) {
 			promises.push(
 				getBlogMdxListItems({
 					request,
@@ -118,7 +118,7 @@ export async function action({ request }: DataFunctionArgs) {
 				}),
 			)
 		}
-		if (refreshingContentPaths.some(p => p.startsWith('pages'))) {
+		if (refreshingContentPaths.some((p) => p.startsWith('pages'))) {
 			promises.push(getMdxDirList('pages', { forceFresh: true }))
 		}
 

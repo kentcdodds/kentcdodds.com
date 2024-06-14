@@ -55,7 +55,7 @@ Take this for example:
 ```tsx
 function Counter() {
 	const [count, setCount] = React.useState(0)
-	const increment = () => setCount(c => c + 1)
+	const increment = () => setCount((c) => c + 1)
 	const reset = () => setCount(0)
 	return (
 		<div>
@@ -90,7 +90,7 @@ To support the `initialCount` prop, here's all we need to do:
 function Counter({ initialCount = 0 }: { initialCount?: number }) {
 	//              ^^^ accept the prop with a default value so it's optional
 	const [count, setCount] = React.useState(initialCount) // <-- pass it to your state
-	const increment = () => setCount(c => c + 1)
+	const increment = () => setCount((c) => c + 1)
 	const reset = () => setCount(initialCount) // <-- pass that initialCount value to the reset function
 	return (
 		<div>
@@ -133,7 +133,7 @@ few ways we could do it:
 ```tsx
 const { current: initialState } = React.useRef({ count: initialCount })
 const [initialState] = React.useState({ count: initialCount })
-const [initialState] = React.useReducer(s => s, { count: initialCount })
+const [initialState] = React.useReducer((s) => s, { count: initialCount })
 
 // actual initial count is: initialState.count
 ```
@@ -165,13 +165,13 @@ component brand new. Here's the code for that:
 ```tsx
 function KeyPropReset() {
 	const [key, setKey] = React.useState(0)
-	const resetCounter = () => setKey(k => k + 1)
+	const resetCounter = () => setKey((k) => k + 1)
 	return <KeyPropResetCounter key={key} reset={resetCounter} />
 }
 
 function KeyPropResetCounter({ reset }) {
 	const [count, setCount] = React.useState(0)
-	const increment = () => setCount(c => c + 1)
+	const increment = () => setCount((c) => c + 1)
 	return <CountUI count={count} increment={increment} reset={reset} />
 }
 ```

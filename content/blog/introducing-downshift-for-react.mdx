@@ -109,8 +109,8 @@ const items = [
 
 render(
 	<Downshift
-		onChange={selection => alert(`You selected ${selection.value}`)}
-		itemToString={item => (item ? item.value : '')}
+		onChange={(selection) => alert(`You selected ${selection.value}`)}
+		itemToString={(item) => (item ? item.value : '')}
 	>
 		{({
 			getInputProps,
@@ -128,7 +128,9 @@ render(
 				<ul {...getMenuProps()}>
 					{isOpen
 						? items
-								.filter(item => !inputValue || item.value.includes(inputValue))
+								.filter(
+									(item) => !inputValue || item.value.includes(inputValue),
+								)
 								.map((item, index) => (
 									<li
 										{...getItemProps({

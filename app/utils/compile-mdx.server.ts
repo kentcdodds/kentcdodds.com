@@ -5,16 +5,15 @@ import type * as H from 'hast'
 import type * as M from 'mdast'
 import type * as MDX from 'mdast-util-mdx-jsx'
 import { bundleMDX } from 'mdx-bundler'
-import type TPQueue from 'p-queue'
-import calculateReadingTime from 'reading-time'
-import type * as U from 'unified'
-import { type GitHubFile } from '~/types.ts'
-import * as twitter from './twitter.server.ts'
-import { visit } from 'unist-util-visit'
-import remarkAutolinkHeadings from 'remark-autolink-headings'
-import remarkSlug from 'remark-slug'
-import gfm from 'remark-gfm'
 import PQueue from 'p-queue'
+import calculateReadingTime from 'reading-time'
+import remarkAutolinkHeadings from 'remark-autolink-headings'
+import gfm from 'remark-gfm'
+import remarkSlug from 'remark-slug'
+import type * as U from 'unified'
+import { visit } from 'unist-util-visit'
+import * as twitter from './twitter.server.ts'
+import { type GitHubFile } from '~/types.ts'
 
 function handleEmbedderError({ url }: { url: string }) {
 	return `<p>Error embedding <a href="${url}">${url}</a></p>.`
@@ -88,7 +87,7 @@ function optimizeCloudinaryImages() {
 			function visitor(node: MDX.MdxJsxFlowElement) {
 				if (node.name !== 'img') return
 				const srcAttr = node.attributes.find(
-					attr => attr.type === 'mdxJsxAttribute' && attr.name === 'src',
+					(attr) => attr.type === 'mdxJsxAttribute' && attr.name === 'src',
 				)
 				const urlString = srcAttr?.value ? String(srcAttr.value) : null
 				if (!srcAttr || !urlString) {
@@ -315,7 +314,7 @@ function arrayToObj<ItemType extends Record<string, unknown>>(
 	return obj
 }
 
-let _queue: TPQueue | null = null
+let _queue: PQueue | null = null
 async function getQueue() {
 	if (_queue) return _queue
 

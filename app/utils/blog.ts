@@ -1,6 +1,6 @@
 import { matchSorter, rankings as matchSorterRankings } from 'match-sorter'
-import { type MdxListItem } from '~/types.ts'
 import { type ReadRankings } from './blog.server.ts'
+import { type MdxListItem } from '~/types.ts'
 
 function getRankingLeader(rankings?: ReadRankings) {
 	if (!rankings) return null
@@ -54,7 +54,7 @@ function filterPosts(posts: Array<MdxListItem>, searchString: string) {
 	}
 	const individualWordOptions = {
 		...options,
-		keys: options.keys.map(key => {
+		keys: options.keys.map((key) => {
 			return {
 				...key,
 				maxRanking: matchSorterRankings.CASE_SENSITIVE_EQUAL,
@@ -75,7 +75,7 @@ function filterPosts(posts: Array<MdxListItem>, searchString: string) {
 			word,
 			individualWordOptions,
 		)
-		individualWordResults = individualWordResults.filter(r =>
+		individualWordResults = individualWordResults.filter((r) =>
 			searchResult.includes(r),
 		)
 	}

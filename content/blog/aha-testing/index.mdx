@@ -1,8 +1,7 @@
 ---
 title: AHA Testing 💡
 date: 2019-04-07
-description:
-  How to apply the "Avoid Hasty Abstraction" principle to your test code.
+description: How to apply the "Avoid Hasty Abstraction" principle to your test code.
 categories:
   - testing
 meta:
@@ -18,8 +17,7 @@ translations:
   - language: 日本語
     link: https://makotot.dev/posts/aha-testing-translation-ja
 bannerCloudinaryId: unsplash/photo-1522424427542-e6fc86ff5253
-bannerCredit:
-  Photo by [Alexandru Goman](https://unsplash.com/photos/CM-qccHaQ04)
+bannerCredit: Photo by [Alexandru Goman](https://unsplash.com/photos/CM-qccHaQ04)
 ---
 
 import TheSpectrumOfAbstraction from './the-spectrum-of-abstraction.tsx'
@@ -356,8 +354,8 @@ function renderLoginForm(props) {
 		usernameInput,
 		passwordInput,
 		submitButton,
-		changeUsername: value => userEvent.type(usernameInput, value),
-		changePassword: value => userEvent.type(passwordInput, value),
+		changeUsername: (value) => userEvent.type(usernameInput, value),
+		changePassword: (value) => userEvent.type(passwordInput, value),
 		submitForm: () => userEvent.click(submitButton),
 	}
 }

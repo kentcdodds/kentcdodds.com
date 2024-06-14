@@ -3,13 +3,13 @@ import { ErrorBoundary } from 'react-error-boundary'
 
 function Counter() {
 	const [count, setCount] = React.useState(0)
-	const increment = () => setCount(c => c + 1)
+	const increment = () => setCount((c) => c + 1)
 	return <button onClick={increment}>{count}</button>
 }
 
 function BadCounterList() {
 	const [items, setItems] = React.useState([])
-	const addItem = () => setItems(i => [...i, { id: i.length }])
+	const addItem = () => setItems((i) => [...i, { id: i.length }])
 	return (
 		<div>
 			<button onClick={addItem}>Add Item</button>
@@ -20,12 +20,12 @@ function BadCounterList() {
 
 function GoodCounterList() {
 	const [items, setItems] = React.useState([])
-	const addItem = () => setItems(i => [...i, { id: i.length }])
+	const addItem = () => setItems((i) => [...i, { id: i.length }])
 	return (
 		<div>
 			<button onClick={addItem}>Add Item</button>
 			<div>
-				{items.map(i => (
+				{items.map((i) => (
 					<Counter key={i.id} />
 				))}
 			</div>

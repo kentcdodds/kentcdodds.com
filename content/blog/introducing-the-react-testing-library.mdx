@@ -1,8 +1,7 @@
 ---
 title: Introducing the react-testing-library 🐐
 date: 2018-04-02
-description:
-  A simpler replacement for enzyme that encourages good testing practices.
+description: A simpler replacement for enzyme that encourages good testing practices.
 meta:
   keywords:
     - react
@@ -95,7 +94,7 @@ function HiddenMessage({ children }) {
 			<input
 				id="toggle"
 				type="checkbox"
-				onChange={e => setShowMessage(e.target.checked)}
+				onChange={(e) => setShowMessage(e.target.checked)}
 				checked={showMessage}
 			/>
 			{showMessage ? children : null}
@@ -162,13 +161,13 @@ function Login() {
 					password: passwordInput.value,
 				}),
 			})
-			.then(r => r.json())
+			.then((r) => r.json())
 			.then(
-				user => {
+				(user) => {
 					setState({ loading: false, resolved: true, error: null })
 					window.localStorage.setItem('token', user.token)
 				},
-				error => {
+				(error) => {
 					setState({ loading: false, resolved: false, error: error.message })
 				},
 			)

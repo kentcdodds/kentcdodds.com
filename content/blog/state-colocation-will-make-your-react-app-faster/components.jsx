@@ -20,7 +20,7 @@ function SlowComponent({ time, onChange }) {
 				type="number"
 				min="0"
 				max="3000"
-				onChange={e => onChange(Number(e.target.value))}
+				onChange={(e) => onChange(Number(e.target.value))}
 			/>
 			{'ms slow'}
 		</div>
@@ -32,7 +32,7 @@ function DogName({ time, dog, onChange }) {
 		<div>
 			<label htmlFor="dog">Dog Name</label>
 			<br />
-			<input id="dog" value={dog} onChange={e => onChange(e.target.value)} />
+			<input id="dog" value={dog} onChange={(e) => onChange(e.target.value)} />
 			<p>{dog ? `${dog}'s favorite number is ${time}.` : 'enter a dog name'}</p>
 		</div>
 	)
@@ -56,7 +56,7 @@ function FastDogName({ time }) {
 		<div>
 			<label htmlFor="dog">Dog Name</label>
 			<br />
-			<input id="dog" value={dog} onChange={e => setDog(e.target.value)} />
+			<input id="dog" value={dog} onChange={(e) => setDog(e.target.value)} />
 			<p>{dog ? `${dog}'s favorite number is ${time}.` : 'enter a dog name'}</p>
 		</div>
 	)

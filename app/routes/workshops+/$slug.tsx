@@ -7,6 +7,11 @@ import {
 import { Link, useLoaderData, useParams } from '@remix-run/react'
 import * as React from 'react'
 import { serverOnly$ } from 'vite-env-only'
+import {
+	useWorkshopsData,
+	type loader as WorkshopLoader,
+	type LoaderData as WorkshopLoaderData,
+} from './_workshops.tsx'
 import { ArrowLink, BackLink } from '~/components/arrow-button.tsx'
 import { ButtonLink } from '~/components/button.tsx'
 import { GeneralErrorBoundary } from '~/components/error-boundary.tsx'
@@ -43,16 +48,11 @@ import {
 import { getServerTimeHeader } from '~/utils/timing.server.ts'
 import { type WorkshopEvent } from '~/utils/workshop-tickets.server.ts'
 import { getWorkshops } from '~/utils/workshops.server.ts'
-import {
-	useWorkshopsData,
-	type loader as WorkshopLoader,
-	type LoaderData as WorkshopLoaderData,
-} from './_workshops.tsx'
 
 export const handle: KCDHandle = {
-	getSitemapEntries: serverOnly$(async request => {
+	getSitemapEntries: serverOnly$(async (request) => {
 		const workshops = await getWorkshops({ request })
-		return workshops.map(workshop => {
+		return workshops.map((workshop) => {
 			return {
 				route: `/workshops/${workshop.slug}`,
 				priority: 0.4,
@@ -73,7 +73,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 		getWorkshops({ request, timings }),
 		getBlogRecommendations({ request, timings }),
 	])
-	const workshop = workshops.find(w => w.slug === params.slug)
+	const workshop = workshops.find((w) => w.slug === params.slug)
 
 	if (!workshop) {
 		throw json({ blogRecommendations }, { status: 404 })
@@ -110,11 +110,11 @@ export const meta: MetaFunction<
 		'routes/workshops+/_workshops': typeof WorkshopLoader
 	}
 > = ({ matches, params }) => {
-	const { requestInfo } = matches.find(m => m.id === 'root')
+	const { requestInfo } = matches.find((m) => m.id === 'root')
 		?.data as RootLoaderData
 	let workshop: Workshop | undefined
 	const workshopsData = matches.find(
-		m => m.id === 'routes/workshops+/_workshops',
+		(m) => m.id === 'routes/workshops+/_workshops',
 	)?.data as WorkshopLoaderData | undefined
 	if (Array.isArray(workshopsData?.workshops)) {
 		workshop = workshopsData.workshops.find(
@@ -175,7 +175,7 @@ export default function WorkshopScreen() {
 	const params = useParams()
 	const { workshopEvents: titoEvents, workshops } = useWorkshopsData()
 	const data = useLoaderData<LoaderData>()
-	const workshop = workshops.find(w => w.slug === params.slug)
+	const workshop = workshops.find((w) => w.slug === params.slug)
 
 	if (!workshop) {
 		console.error(
@@ -186,19 +186,19 @@ export default function WorkshopScreen() {
 
 	const workshopEvents: Array<Workshop['events'][number] | WorkshopEvent> = [
 		...workshop.events,
-		...titoEvents.filter(e => e.metadata.workshopSlug === params.slug),
+		...titoEvents.filter((e) => e.metadata.workshopSlug === params.slug),
 	]
 	// restartArray allows us to make sure that the same workshops don't always appear in the list
 	// without having to do something complicated to get a deterministic selection between server/client.
 	const otherWorkshops = restartArray(
-		workshops.filter(w => w.slug !== workshop.slug),
+		workshops.filter((w) => w.slug !== workshop.slug),
 		workshops.indexOf(workshop),
 	)
-	const scheduledWorkshops = otherWorkshops.filter(w =>
-		titoEvents.some(e => e.metadata.workshopSlug === w.slug),
+	const scheduledWorkshops = otherWorkshops.filter((w) =>
+		titoEvents.some((e) => e.metadata.workshopSlug === w.slug),
 	)
-	const similarWorkshops = otherWorkshops.filter(w =>
-		w.categories.some(c => workshop.categories.includes(c)),
+	const similarWorkshops = otherWorkshops.filter((w) =>
+		w.categories.some((c) => workshop.categories.includes(c)),
 	)
 
 	const alternateWorkshops = Array.from(
@@ -221,7 +221,7 @@ export default function WorkshopScreen() {
 
 					<H6 as="p" className="lg:mb-22 mb-16">
 						{workshopEvents.length
-							? listify(workshopEvents.map(w => w.date))
+							? listify(workshopEvents.map((w) => w.date))
 							: 'Not currently scheduled'}
 					</H6>
 
@@ -464,7 +464,7 @@ export default function WorkshopScreen() {
 							<WorkshopCard
 								workshop={altWorkshop}
 								titoEvents={titoEvents.filter(
-									e => e.metadata.workshopSlug === altWorkshop.slug,
+									(e) => e.metadata.workshopSlug === altWorkshop.slug,
 								)}
 							/>
 						</div>

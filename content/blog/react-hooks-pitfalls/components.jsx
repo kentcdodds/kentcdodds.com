@@ -1,12 +1,12 @@
 import * as React from 'react'
-// eslint-disable-next-line
+
 import { Link, MemoryRouter as Router } from 'react-router-dom'
 import { getDog, getDogs } from './dogs.jsx'
 
 function DogList() {
 	const [dogs, setDogs] = React.useState(null)
 	React.useEffect(() => {
-		getDogs().then(d => setDogs(d))
+		getDogs().then((d) => setDogs(d))
 	}, [])
 	if (!dogs) {
 		return null
@@ -15,7 +15,7 @@ function DogList() {
 		<div>
 			<h1>Pick a dog</h1>
 			<ul>
-				{dogs.map(d => (
+				{dogs.map((d) => (
 					<li key={d.id}>
 						<Link to={d.id}>{d.name}</Link>
 					</li>
@@ -29,7 +29,7 @@ function DogInfo({ dogId, displayRelated, bug }) {
 	const [dog, setDog] = React.useState(null)
 
 	React.useEffect(() => {
-		getDog(dogId).then(d => setDog(d))
+		getDog(dogId).then((d) => setDog(d))
 		// only doing this for demo purposes!
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [bug ? null : dogId])
@@ -46,7 +46,7 @@ function DogInfo({ dogId, displayRelated, bug }) {
 			<div>
 				<label htmlFor="temperament">Temperament</label>
 				<ul id="temperament">
-					{dog.temperament.map(t => (
+					{dog.temperament.map((t) => (
 						<li key={t}>{t}</li>
 					))}
 				</ul>
@@ -55,7 +55,7 @@ function DogInfo({ dogId, displayRelated, bug }) {
 				<div>
 					<label htmlFor="related">Related Dogs</label>
 					<ul id="related">
-						{dog.related.map(r => (
+						{dog.related.map((r) => (
 							<li key={r.id}>
 								<Link to={`/${r.id}`}>{r.name}</Link>
 							</li>

@@ -148,7 +148,7 @@ ui = React.createElement(
 
 ui = (
 	<div>
-		{items.map(i => (
+		{items.map((i) => (
 			<span key={i.id}>{i.content}</span>
 		))}
 	</div>
@@ -156,7 +156,7 @@ ui = (
 ui = React.createElement(
 	'div',
 	null,
-	items.map(i => React.createElement('span', { key: i.id }, i.content)),
+	items.map((i) => React.createElement('span', { key: i.id }, i.content)),
 )
 ```
 

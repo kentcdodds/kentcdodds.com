@@ -7,8 +7,8 @@ let connected: boolean | null = null
 
 async function isConnectedToTheInternet() {
 	if (connected === null) {
-		connected = await new Promise(resolve => {
-			dns.lookupService('8.8.8.8', 53, err => {
+		connected = await new Promise((resolve) => {
+			dns.lookupService('8.8.8.8', 53, (err) => {
 				resolve(!err)
 			})
 		})
@@ -32,7 +32,7 @@ export async function updateFixture(updates: Record<string, unknown>) {
 
 export async function readFixture() {
 	await clearingFixture
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 	let mswData: Record<string, any> = {}
 	try {
 		const contents = await fs.promises.readFile(mswDataPath)

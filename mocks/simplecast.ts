@@ -108,7 +108,7 @@ ${faker.lorem.paragraphs(3)}
 * ${resources.join('\n* ')}
 
 ### ${guests
-					.map(guest => {
+					.map((guest) => {
 						return `
 Guest: ${guest.name}
 
@@ -130,7 +130,7 @@ ${guest.links.length ? `* ${guest.links.join('\n* ')}` : ''}
 					collection: faker.lorem
 						.words()
 						.split(' ')
-						.map(value => ({ value })),
+						.map((value) => ({ value })),
 				},
 			}
 		},
@@ -163,7 +163,7 @@ const simplecastHandlers: Array<HttpHandler> = [
 			}
 			const episodeListItemsResponse: SimplecastCollectionResponse<SimplecastEpisodeListItem> =
 				{
-					collection: episodes.map(e => ({
+					collection: episodes.map((e) => ({
 						id: e.id,
 						is_hidden: e.is_hidden,
 						status: e.status,

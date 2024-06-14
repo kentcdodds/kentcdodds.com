@@ -4,7 +4,7 @@ import { getSeasonListItems } from '~/utils/simplecast.server.ts'
 export const loader: LoaderFunction = async ({ request }) => {
 	const seasons = await getSeasonListItems({ request })
 	const seasonNumber = seasons[seasons.length - 1]?.seasonNumber ?? 1
-	const season = seasons.find(s => s.seasonNumber === seasonNumber)
+	const season = seasons.find((s) => s.seasonNumber === seasonNumber)
 	if (!season) {
 		throw new Error(`oh no. season for ${seasonNumber}`)
 	}

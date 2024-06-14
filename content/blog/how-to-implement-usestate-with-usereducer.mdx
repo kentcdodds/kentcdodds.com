@@ -12,8 +12,7 @@ meta:
     - javascript
     - composability
 bannerCloudinaryId: unsplash/photo-1506591501018-9e93b4134ee6
-bannerCredit:
-  Photo by [Marc Sendra Martorell](https://unsplash.com/photos/7ajo0Vz98yU)
+bannerCredit: Photo by [Marc Sendra Martorell](https://unsplash.com/photos/7ajo0Vz98yU)
 ---
 
 **[Watch "Implement useState with useReducer" on egghead.io](https://egghead.io/lessons/react-implement-usestate-with-usereducer?pl=kent-s-blog-posts-as-screencasts-eefa540c)**
@@ -26,7 +25,7 @@ Here's the TL;DR:
 const useStateReducer = (prevState, newState) =>
 	typeof newState === 'function' ? newState(prevState) : newState
 
-const useStateInitializer = initialValue =>
+const useStateInitializer = (initialValue) =>
 	typeof initialValue === 'function' ? initialValue() : initialValue
 
 function useState(initialValue) {
@@ -86,7 +85,7 @@ both of these variations.
 ```js
 const [state, setState] = useState()
 setState(newState)
-setState(previousState => newState)
+setState((previousState) => newState)
 ```
 
 This is similar to what `useReducer` does as well, except the mechanism for
@@ -108,7 +107,7 @@ serves as an argument to that initialization function, so you can rename that to
 something like `initialArg`.
 
 ```js
-const initializationFn = initialArg => initialArg
+const initializationFn = (initialArg) => initialArg
 
 const [state, dispatch] = useReducer(reducerFn, initialArg, initializationFn)
 ```
@@ -172,7 +171,7 @@ Great! Next, let's support the function update version of the `useState` API:
 
 ```js
 const [count, setCount] = useState(0)
-setCount(previousCount => previousCount + 1)
+setCount((previousCount) => previousCount + 1)
 ```
 
 If we want to continue to support the previous API, we'll need to do some
@@ -212,7 +211,7 @@ Let's iterate to that first. Here's another way we could implement the non-lazy
 const useStateReducer = (prevState, newState) =>
 	typeof newState === 'function' ? newState(prevState) : newState
 
-const useStateInitializer = initialArg => initialArg
+const useStateInitializer = (initialArg) => initialArg
 
 function useState(initialValue) {
 	return React.useReducer(useStateReducer, initialValue, useStateInitializer)
@@ -229,7 +228,7 @@ otherwise we'll return it.
 const useStateReducer = (prevState, newState) =>
 	typeof newState === 'function' ? newState(prevState) : newState
 
-const useStateInitializer = initialValue =>
+const useStateInitializer = (initialValue) =>
 	typeof initialValue === 'function' ? initialValue() : initialValue
 
 function useState(initialValue) {

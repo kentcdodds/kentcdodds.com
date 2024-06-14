@@ -21,7 +21,7 @@ function WorkingContact() {
 					id="topic"
 					value={topic}
 					style={{ width: 300 }}
-					onChange={e => setTopic(e.target.value)}
+					onChange={(e) => setTopic(e.target.value)}
 				>
 					<option value="training">Training</option>
 					<option value="consulting">Consulting</option>
@@ -56,7 +56,7 @@ function BrokenContact() {
 					id="topic"
 					value={topic}
 					style={{ width: 300 }}
-					onChange={e => setTopic(e.target.value)}
+					onChange={(e) => setTopic(e.target.value)}
 				>
 					<option value="training">Training</option>
 					<option value="consulting">Consulting</option>
@@ -83,7 +83,7 @@ function Counter() {
 	const [count, setCount] = React.useState(() => {
 		return 0
 	})
-	const increment = () => setCount(c => c + 1)
+	const increment = () => setCount((c) => c + 1)
 
 	React.useEffect(() => {
 		return () => {}
@@ -93,7 +93,7 @@ function Counter() {
 }
 
 function CounterParent() {
-	const [keyCounterKey, setKeyCounterKey] = React.useReducer(c => c + 1, 0)
+	const [keyCounterKey, setKeyCounterKey] = React.useReducer((c) => c + 1, 0)
 	return (
 		<div>
 			<button style={{ marginRight: 10 }} onClick={setKeyCounterKey}>
@@ -119,9 +119,3 @@ function Rendered(props) {
 }
 
 export { WorkingContact, BrokenContact, Rendered, CounterParent }
-
-/*
-eslint
-  jsx-a11y/label-has-associated-control: off,
-  no-console: off
-*/

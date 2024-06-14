@@ -61,7 +61,7 @@ export const action: ActionFunction = async ({ request }) => {
 			keywords: getErrorForKeywords(formData.keywords),
 		}
 
-		if (Object.values(actionData.errors).some(err => err !== null)) {
+		if (Object.values(actionData.errors).some((err) => err !== null)) {
 			return json(actionData, 401)
 		}
 
@@ -135,7 +135,7 @@ export default function RecordScreen() {
 						</Paragraph>
 					)}
 					<CallRecorder
-						onRecordingComplete={recording => setAudio(recording)}
+						onRecordingComplete={(recording) => setAudio(recording)}
 						team={user.team}
 					/>
 				</div>

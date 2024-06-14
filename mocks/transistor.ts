@@ -6,6 +6,7 @@ import {
 	HttpResponse,
 	type DefaultBodyType,
 } from 'msw'
+import { requiredHeader, requiredParam, requiredProperty } from './utils.ts'
 import {
 	type TransistorAuthorizedJson,
 	type TransistorCreatedJson,
@@ -13,7 +14,6 @@ import {
 	type TransistorEpisodesJson,
 	type TransistorPublishedJson,
 } from '~/types.ts'
-import { requiredHeader, requiredParam, requiredProperty } from './utils.ts'
 
 function makeEpisode(
 	overrides: {
@@ -125,7 +125,8 @@ const transistorHandlers: Array<HttpHandler> = [
 			requiredProperty(body.episode, 'description')
 			const episode: TransistorEpisodeData = makeEpisode({
 				attributes: {
-					number: Math.max(...episodes.map(e => e.attributes.number ?? 0)) + 1,
+					number:
+						Math.max(...episodes.map((e) => e.attributes.number ?? 0)) + 1,
 					...body.episode,
 				},
 			})
@@ -150,7 +151,7 @@ const transistorHandlers: Array<HttpHandler> = [
 					`req.body.episode.status must be published. Was "${body.episode.status}"`,
 				)
 			}
-			const episode = episodes.find(e => e.id === params.episodeId)
+			const episode = episodes.find((e) => e.id === params.episodeId)
 			if (!episode) {
 				throw new Error(`No episode exists with the id of ${params.episodeId}`)
 			}
@@ -170,7 +171,7 @@ const transistorHandlers: Array<HttpHandler> = [
 			}
 			requiredProperty(body, 'episode')
 			requiredHeader(request.headers, 'x-api-key')
-			const episode = episodes.find(e => e.id === params.episodeId)
+			const episode = episodes.find((e) => e.id === params.episodeId)
 			if (!episode) {
 				throw new Error(`No episode exists with the id of ${params.episodeId}`)
 			}

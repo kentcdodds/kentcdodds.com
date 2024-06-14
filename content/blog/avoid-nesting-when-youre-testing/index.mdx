@@ -122,9 +122,9 @@ describe('Login', () => {
 		handleSubmit = jest.fn()
 		user = { username: 'michelle', password: 'smith' }
 		utils = render(<Login onSubmit={handleSubmit} />)
-		changeUsernameInput = value =>
+		changeUsernameInput = (value) =>
 			userEvent.type(utils.getByLabelText(/username/i), value)
-		changePasswordInput = value =>
+		changePasswordInput = (value) =>
 			userEvent.type(utils.getByLabelText(/password/i), value)
 		clickSubmit = () => userEvent.click(utils.getByText(/submit/i))
 	})
@@ -360,9 +360,9 @@ function setup() {
 	const handleSubmit = jest.fn()
 	const utils = render(<Login onSubmit={handleSubmit} />)
 	const user = { username: 'michelle', password: 'smith' }
-	const changeUsernameInput = value =>
+	const changeUsernameInput = (value) =>
 		userEvent.type(utils.getByLabelText(/username/i), value)
-	const changePasswordInput = value =>
+	const changePasswordInput = (value) =>
 		userEvent.type(utils.getByLabelText(/password/i), value)
 	const clickSubmit = () => userEvent.click(utils.getByText(/submit/i))
 	return {

@@ -144,7 +144,7 @@ export default function RecordScreen() {
 
 					{calls.length > 0 ? (
 						<ul className="col-span-full lg:col-span-8 lg:col-start-3">
-							{calls.map(call => (
+							{calls.map((call) => (
 								<li key={call.id}>
 									<Record
 										slug={`./${call.id}`}

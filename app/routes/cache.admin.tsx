@@ -6,11 +6,6 @@ import {
 	useSearchParams,
 	useSubmit,
 } from '@remix-run/react'
-import {
-	ensureInstance,
-	getAllInstances,
-	getInstanceInfo,
-} from '~/utils/cjs/litefs-js.server.js'
 import invariant from 'tiny-invariant'
 import { Button } from '~/components/button.tsx'
 import {
@@ -27,6 +22,11 @@ import {
 	lruCache,
 	searchCacheKeys,
 } from '~/utils/cache.server.ts'
+import {
+	ensureInstance,
+	getAllInstances,
+	getInstanceInfo,
+} from '~/utils/cjs/litefs-js.server.js'
 import {
 	useDebounce,
 	useDoubleCheck,
@@ -103,7 +103,7 @@ export default function CacheAdminRoute() {
 			<Form
 				method="get"
 				className="flex flex-col gap-4"
-				onChange={e => handleFormChange(e.currentTarget)}
+				onChange={(e) => handleFormChange(e.currentTarget)}
 			>
 				<div className="flex-1">
 					<div className="relative flex-1">
@@ -170,7 +170,7 @@ export default function CacheAdminRoute() {
 			<Spacer size="2xs" />
 			<div className="flex flex-col gap-4">
 				<H3>LRU Cache:</H3>
-				{data.cacheKeys.lru.map(key => (
+				{data.cacheKeys.lru.map((key) => (
 					<CacheKeyRow
 						key={key}
 						cacheKey={key}
@@ -182,7 +182,7 @@ export default function CacheAdminRoute() {
 			<Spacer size="3xs" />
 			<div className="flex flex-col gap-4">
 				<H3>SQLite Cache:</H3>
-				{data.cacheKeys.sqlite.map(key => (
+				{data.cacheKeys.sqlite.map((key) => (
 					<CacheKeyRow
 						key={key}
 						cacheKey={key}

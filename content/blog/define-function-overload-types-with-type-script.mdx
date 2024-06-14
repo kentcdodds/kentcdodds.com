@@ -10,8 +10,7 @@ meta:
     - javascript
     - functions
 bannerCloudinaryId: unsplash/photo-1429734956993-8a9b0555e122
-bannerCredit:
-  Photo by [Nick Scheerbart](https://unsplash.com/photos/8DMuvdp-vso)
+bannerCredit: Photo by [Nick Scheerbart](https://unsplash.com/photos/8DMuvdp-vso)
 ---
 
 Allow me to quickly answer to the "normal" use case of "How to define function
@@ -21,7 +20,7 @@ I want a function that accepts a callback or returns a promise if none is
 provided:
 
 ```ts
-const logResult = result => console.log(`result: ${result}`)
+const logResult = (result) => console.log(`result: ${result}`)
 asyncAdd(1, 2).then(logResult) // logs "result: 3"
 asyncAdd(3, 6, logResult) // logs "result: 9"
 ```
@@ -79,7 +78,7 @@ file with the following code:
 const fs = require('fs')
 const fruits = fs.readFileSync('./fruit.txt', 'utf8').toString().split('\n')
 module.exports = fruits
-	.map(fruit => `export const ${fruit} = '${fruit}';`)
+	.map((fruit) => `export const ${fruit} = '${fruit}';`)
 	.join('')
 ```
 

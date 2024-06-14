@@ -234,14 +234,14 @@ function startServer({ port = process.env.PORT } = {}) {
 	// I prefer dealing with promises. It makes testing easier, among other things.
 	// So this block of code allows me to start the express app and resolve the
 	// promise with the express server
-	return new Promise(resolve => {
+	return new Promise((resolve) => {
 		const server = app.listen(port, () => {
 			logger.info(`Listening on port ${server.address().port}`)
 
 			// this block of code turns `server.close` into a promise API
 			const originalClose = server.close.bind(server)
 			server.close = () => {
-				return new Promise(resolveClose => {
+				return new Promise((resolveClose) => {
 					originalClose(resolveClose)
 				})
 			}
@@ -283,7 +283,7 @@ function setupCloseOnExit(server) {
 			.then(() => {
 				logger.info('Server successfully closed')
 			})
-			.catch(e => {
+			.catch((e) => {
 				logger.warn('Something went wrong closing the server', e.stack)
 			})
 

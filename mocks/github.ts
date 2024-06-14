@@ -1,6 +1,6 @@
+import { promises as fs } from 'fs'
 import * as nodePath from 'path'
 import { fileURLToPath } from 'url'
-import { promises as fs } from 'fs'
 import {
 	http,
 	type DefaultRequestMultipartBody,

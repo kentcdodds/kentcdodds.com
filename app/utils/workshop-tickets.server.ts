@@ -115,7 +115,7 @@ async function getScheduledEventsForAccount(account: string) {
 		account,
 		'events',
 	)
-	const liveEvents = allEvents.filter(event => {
+	const liveEvents = allEvents.filter((event) => {
 		return (
 			(event.metadata as { workshopSlug?: string } | null)?.workshopSlug &&
 			event.live
@@ -133,16 +133,16 @@ async function getScheduledEventsForAccount(account: string) {
 			}): Promise<WorkshopEvent> => {
 				const [event, discounts, activity] = await Promise.all([
 					getTito<{ event: TiToEventDetails }>(account, `${slug}`).then(
-						r => r.event,
+						(r) => r.event,
 					),
 					getTito<{ discount_codes?: Array<TiToDiscount> }>(
 						account,
 						`${slug}/discount_codes`,
-					).then(r => getDiscounts(r.discount_codes)),
+					).then((r) => getDiscounts(r.discount_codes)),
 					getTito<{ activities?: Array<TiToActivity> }>(
 						account,
 						`${slug}/activities`,
-					).then(r => r.activities?.[0]),
+					).then((r) => r.activities?.[0]),
 				])
 
 				const eventInfo = {
@@ -162,9 +162,9 @@ async function getScheduledEventsForAccount(account: string) {
 					date: event.date_or_range,
 					startTime: activity?.start_at,
 					endTime: activity?.end_at,
-					expired: event.releases.every(release => release.expired),
+					expired: event.releases.every((release) => release.expired),
 					salesEndTime: event.releases
-						.map(release => release.end_at)
+						.map((release) => release.end_at)
 						.filter(Boolean)
 						.sort()
 						.pop(),
@@ -219,7 +219,7 @@ function getScheduledEventsIgnoreErrors({
 	timings: Timings
 }) {
 	return getCachedScheduledEvents({ request, forceFresh, timings }).catch(
-		error => {
+		(error) => {
 			console.error('There was a problem retrieving ti.to info', error)
 			return []
 		},

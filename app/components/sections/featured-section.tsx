@@ -1,11 +1,11 @@
 import { clsx } from 'clsx'
-import { getImgProps, type ImageBuilder } from '~/images.tsx'
-import { type Team } from '~/types.ts'
 import { ArrowLink } from '../arrow-button.tsx'
 import { BlurrableImage } from '../blurrable-image.tsx'
 import { ClipboardCopyButton } from '../clipboard-copy-button.tsx'
 import { Grid } from '../grid.tsx'
 import { H2, H6 } from '../typography.tsx'
+import { getImgProps, type ImageBuilder } from '~/images.tsx'
+import { type Team } from '~/types.ts'
 
 type FeaturedSectionProps = {
 	caption?: string
@@ -89,7 +89,7 @@ function FeaturedSection({
 							</div>
 
 							<div className="mt-12 flex items-center justify-between">
-								{/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
+								{}
 								<ArrowLink to={slug ?? href ?? '/'} prefetch="intent">
 									{cta}
 									<div className="focus-ring absolute inset-0 left-0 right-0 z-10 rounded-lg md:-left-12 md:-right-12 lg:left-0 lg:right-0" />

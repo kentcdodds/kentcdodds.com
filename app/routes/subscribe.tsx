@@ -8,19 +8,18 @@ import { HeroSection } from '~/components/sections/hero-section.tsx'
 import { H2, H3, H6, Paragraph } from '~/components/typography.tsx'
 import { ConvertKitForm } from '~/convertkit/form.tsx'
 import { getGenericSocialImage, getImgProps, images } from '~/images.tsx'
+import { type RootLoaderType } from '~/root.tsx'
 import { type Await } from '~/types.ts'
 import { getBlogRecommendations } from '~/utils/blog.server.ts'
 import { getDisplayUrl, getUrl } from '~/utils/misc.tsx'
 import { getSocialMetas } from '~/utils/seo.ts'
 import { getServerTimeHeader } from '~/utils/timing.server.ts'
 import { useRootData } from '~/utils/use-root-data.ts'
-import { type RootLoaderType } from '~/root.tsx'
 
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	matches,
 }) => {
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-	const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
+	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
 	return getSocialMetas({
 		title: `Subscribe to the KCD Mailing List`,
 		description: `Get weekly insights, ideas, and proven coding practices from the KCD Mailing List`,

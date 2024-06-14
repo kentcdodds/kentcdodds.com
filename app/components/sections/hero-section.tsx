@@ -1,10 +1,10 @@
 import { type TransformerOption } from '@cld-apis/types'
 import { clsx } from 'clsx'
 import { motion, useReducedMotion, type HTMLMotionProps } from 'framer-motion'
-import { getImgProps, type ImageBuilder } from '~/images.tsx'
 import { ArrowLink } from '../arrow-button.tsx'
 import { Grid } from '../grid.tsx'
 import { H2 } from '../typography.tsx'
+import { getImgProps, type ImageBuilder } from '~/images.tsx'
 import { heroTextAnimation } from '~/utils/animations.ts'
 
 export type HeroSectionProps = {

@@ -189,11 +189,11 @@ function createGreetingResource(name) {
 	let status = 'pending'
 	let result
 	let suspender = getGreeting(name).then(
-		greeting => {
+		(greeting) => {
 			status = 'success'
 			result = greeting
 		},
-		error => {
+		(error) => {
 			status = 'error'
 			result = error
 		},

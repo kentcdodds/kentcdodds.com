@@ -1,15 +1,15 @@
+import { PassThrough, Transform } from 'stream'
 import {
 	createReadableStreamFromReadable,
 	type HandleDocumentRequestFunction,
 } from '@remix-run/node'
 import { RemixServer } from '@remix-run/react'
 import { isbot } from 'isbot'
-import { ensurePrimary } from '~/utils/cjs/litefs-js.server.js'
 import { renderToPipeableStream } from 'react-dom/server'
-import { PassThrough, Transform } from 'stream'
 import { routes as otherRoutes } from './other-routes.server.ts'
 import { getEnv } from './utils/env.server.ts'
 import { NonceProvider } from './utils/nonce-provider.ts'
+import { ensurePrimary } from '~/utils/cjs/litefs-js.server.js'
 
 global.ENV = getEnv()
 
@@ -39,7 +39,6 @@ export default async function handleDocumentRequest(...args: DocRequestArgs) {
 	}
 
 	for (const handler of otherRoutes) {
-		// eslint-disable-next-line no-await-in-loop
 		const otherRouteResponse = await handler(request, remixContext)
 		if (otherRouteResponse) return otherRouteResponse
 	}

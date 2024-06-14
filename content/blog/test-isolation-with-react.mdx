@@ -53,7 +53,7 @@ function Counter(props) {
 	const tooMany = count >= maxClicks
 
 	const handleReset = () => setCount(initialProps.initialCount)
-	const handleClick = () => setCount(currentCount => currentCount + 1)
+	const handleClick = () => setCount((currentCount) => currentCount + 1)
 
 	return (
 		<div>

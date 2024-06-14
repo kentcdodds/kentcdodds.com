@@ -30,16 +30,16 @@ export async function postRefreshCache({
 			}
 
 			const req = http
-				.request(options, res => {
+				.request(options, (res) => {
 					let data = ''
-					res.on('data', d => {
+					res.on('data', (d) => {
 						data += d
 					})
 
 					res.on('end', () => {
 						try {
 							resolve(JSON.parse(data))
-						} catch (error) {
+						} catch {
 							reject(data)
 						}
 					})

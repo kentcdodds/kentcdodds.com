@@ -1,8 +1,7 @@
 ---
 title: Should I useState or useReducer?
 date: 2020-03-09
-description:
-  Two built-in React hooks that handle state, which one should you use?
+description: Two built-in React hooks that handle state, which one should you use?
 categories:
   - react
 meta:
@@ -155,7 +154,7 @@ function useDarkMode() {
 	// create a setMode helper (which we have to memoize in case someone wants
 	// to use it in a dependency list):
 	const setMode = React.useCallback(
-		newMode => dispatch({ type: 'SET_MODE', mode: newMode }),
+		(newMode) => dispatch({ type: 'SET_MODE', mode: newMode }),
 		[],
 	)
 
@@ -246,7 +245,7 @@ function useUndo(initialPresent) {
 	}, [canRedo, future, past, present])
 
 	const set = React.useCallback(
-		newPresent => {
+		(newPresent) => {
 			if (newPresent === present) {
 				return
 			}
@@ -257,7 +256,7 @@ function useUndo(initialPresent) {
 		[past, present],
 	)
 
-	const reset = React.useCallback(newPresent => {
+	const reset = React.useCallback((newPresent) => {
 		setPast([])
 		setPresent(newPresent)
 		setFuture([])
@@ -415,7 +414,7 @@ function useUndo(initialPresent) {
 	const canRedo = state.future.length !== 0
 
 	const undo = React.useCallback(() => {
-		setState(currentState => {
+		setState((currentState) => {
 			const { past, present, future } = currentState
 
 			if (past.length === 0) return currentState
@@ -432,7 +431,7 @@ function useUndo(initialPresent) {
 	}, [])
 
 	const redo = React.useCallback(() => {
-		setState(currentState => {
+		setState((currentState) => {
 			const { past, present, future } = currentState
 
 			if (future.length === 0) return currentState
@@ -448,8 +447,8 @@ function useUndo(initialPresent) {
 		})
 	}, [])
 
-	const set = React.useCallback(newPresent => {
-		setState(currentState => {
+	const set = React.useCallback((newPresent) => {
+		setState((currentState) => {
 			const { present, past } = currentState
 			if (newPresent === present) return currentState
 
@@ -461,7 +460,7 @@ function useUndo(initialPresent) {
 		})
 	}, [])
 
-	const reset = React.useCallback(newPresent => {
+	const reset = React.useCallback((newPresent) => {
 		setState(() => ({
 			past: [],
 			present: newPresent,
@@ -560,11 +559,11 @@ function useUndo(initialPresent) {
 	const undo = React.useCallback(() => dispatch({ type: UNDO }), [])
 	const redo = React.useCallback(() => dispatch({ type: REDO }), [])
 	const set = React.useCallback(
-		newPresent => dispatch({ type: SET, newPresent }),
+		(newPresent) => dispatch({ type: SET, newPresent }),
 		[],
 	)
 	const reset = React.useCallback(
-		newPresent => dispatch({ type: RESET, newPresent }),
+		(newPresent) => dispatch({ type: RESET, newPresent }),
 		[],
 	)
 

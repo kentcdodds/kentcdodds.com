@@ -1,6 +1,6 @@
 import { type HeadersFunction } from '@remix-run/node'
-import { captureRemixErrorBoundaryError } from '@sentry/remix'
 import { Link, useRouteError, type LinkProps } from '@remix-run/react'
+import { captureRemixErrorBoundaryError } from '@sentry/remix'
 import {
 	format as dateFormat,
 	add as dateAdd,
@@ -8,6 +8,8 @@ import {
 } from 'date-fns'
 import md5 from 'md5-hash'
 import * as React from 'react'
+import { images } from '../images.tsx'
+import { type getEnv } from './env.server.ts'
 import {
 	type NonNullProperties,
 	type OptionalTeam,
@@ -15,8 +17,6 @@ import {
 	type Team,
 	type User,
 } from '~/types.ts'
-import { images } from '../images.tsx'
-import { type getEnv } from './env.server.ts'
 
 const teams: Array<Team> = ['RED', 'BLUE', 'YELLOW']
 export const optionalTeams: Array<OptionalTeam> = [...teams, 'UNKNOWN']
@@ -389,7 +389,7 @@ const reuseUsefulLoaderHeaders: HeadersFunction = ({
 function callAll<Args extends Array<unknown>>(
 	...fns: Array<((...args: Args) => unknown) | undefined>
 ) {
-	return (...args: Args) => fns.forEach(fn => fn?.(...args))
+	return (...args: Args) => fns.forEach((fn) => fn?.(...args))
 }
 
 function useDoubleCheck() {
@@ -401,7 +401,7 @@ function useDoubleCheck() {
 
 		const onClick: React.ComponentProps<'button'>['onClick'] = doubleCheck
 			? undefined
-			: e => {
+			: (e) => {
 					e.preventDefault()
 					setDoubleCheck(true)
 				}

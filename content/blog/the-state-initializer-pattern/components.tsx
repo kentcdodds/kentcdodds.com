@@ -2,7 +2,7 @@ import * as React from 'react'
 
 function SimpleCounter() {
 	const [count, setCount] = React.useState(0)
-	const increment = () => setCount(c => c + 1)
+	const increment = () => setCount((c) => c + 1)
 	const reset = () => setCount(0)
 	return <CountUI count={count} increment={increment} reset={reset} />
 }
@@ -13,7 +13,7 @@ function InitialCounterAlmostThere({
 	initialCount?: number
 }) {
 	const [count, setCount] = React.useState(initialCount)
-	const increment = () => setCount(c => c + 1)
+	const increment = () => setCount((c) => c + 1)
 	const reset = () => setCount(initialCount)
 	return <CountUI count={count} increment={increment} reset={reset} />
 }
@@ -34,20 +34,20 @@ function BugReproduced() {
 function FinishedCounter({ initialCount = 0 }: { initialCount?: number }) {
 	const { current: initialState } = React.useRef({ count: initialCount })
 	const [count, setCount] = React.useState(initialState.count)
-	const increment = () => setCount(c => c + 1)
+	const increment = () => setCount((c) => c + 1)
 	const reset = () => setCount(initialState.count)
 	return <CountUI count={count} increment={increment} reset={reset} />
 }
 
 function KeyPropReset() {
 	const [key, setKey] = React.useState(0)
-	const resetCounter = () => setKey(k => k + 1)
+	const resetCounter = () => setKey((k) => k + 1)
 	return <KeyPropResetCounter key={key} reset={resetCounter} />
 }
 
 function KeyPropResetCounter({ reset }: { reset: () => void }) {
 	const [count, setCount] = React.useState(0)
-	const increment = () => setCount(c => c + 1)
+	const increment = () => setCount((c) => c + 1)
 	return <CountUI count={count} increment={increment} reset={reset} />
 }
 

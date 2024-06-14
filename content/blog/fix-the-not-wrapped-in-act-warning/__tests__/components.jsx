@@ -1,7 +1,7 @@
-import user from '@testing-library/user-event'
 import { render, screen, act } from '@testing-library/react'
-import { UsernameForm } from '../components.jsx'
+import user from '@testing-library/user-event'
 import { test, expect, vi, beforeEach, afterEach } from 'vitest'
+import { UsernameForm } from '../components.jsx'
 
 vi.mock('../api')
 
@@ -50,7 +50,7 @@ test('calls updateUsername with the new username', async () => {
 	await defer.resolve()
 	await clickPromise
 	// TODO: figure out why this is necessary with the latest testing lib version 😵
-	await new Promise(res => setTimeout(res, 0))
+	await new Promise((res) => setTimeout(res, 0))
 	expect(screen.queryByText(/saving/i)).not.toBeInTheDocument()
 })
 

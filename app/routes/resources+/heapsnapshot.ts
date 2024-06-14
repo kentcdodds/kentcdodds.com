@@ -1,12 +1,12 @@
-import {
-	createReadableStreamFromReadable,
-	type DataFunctionArgs,
-} from '@remix-run/node'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import { PassThrough } from 'stream'
 import v8 from 'v8'
+import {
+	createReadableStreamFromReadable,
+	type DataFunctionArgs,
+} from '@remix-run/node'
 import { formatDate } from '~/utils/misc.tsx'
 import { requireAdminUser } from '~/utils/session.server.ts'
 
@@ -29,7 +29,7 @@ export async function loader({ request }: DataFunctionArgs) {
 	const body = new PassThrough()
 	const stream = fs.createReadStream(snapshotPath)
 	stream.on('open', () => stream.pipe(body))
-	stream.on('error', err => body.end(err))
+	stream.on('error', (err) => body.end(err))
 	stream.on('end', () => body.end())
 
 	return new Response(createReadableStreamFromReadable(body), {

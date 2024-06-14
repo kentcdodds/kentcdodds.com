@@ -106,7 +106,7 @@ Here's how our `<Toggle>` compound components are going to be used:
 ```tsx
 function App() {
 	return (
-		<Toggle onToggle={on => console.log(on)}>
+		<Toggle onToggle={(on) => console.log(on)}>
 			<ToggleOn>The button is on</ToggleOn>
 			<ToggleOff>The button is off</ToggleOff>
 			<ToggleButton />
@@ -137,7 +137,7 @@ function useEffectAfterMount(cb, dependencies) {
 
 function Toggle(props) {
 	const [on, setOn] = React.useState(false)
-	const toggle = React.useCallback(() => setOn(oldOn => !oldOn), [])
+	const toggle = React.useCallback(() => setOn((oldOn) => !oldOn), [])
 	useEffectAfterMount(() => {
 		props.onToggle(on)
 	}, [on])

@@ -1,8 +1,7 @@
 ---
 title: Fix the "not wrapped in act(...)" warning
 date: 2020-02-03
-description:
-  There are a few reasons you're getting this warning. Here's how you fix it.
+description: There are a few reasons you're getting this warning. Here's how you fix it.
 categories:
   - testing
 meta:
@@ -44,8 +43,8 @@ Imagine you have a component like this:
 
 <Rendered>
 	<UsernameFormClass
-		updateUsername={u =>
-			new Promise(resolve => {
+		updateUsername={(u) =>
+			new Promise((resolve) => {
 				alert(`You typed ${u}! Updating the database...`)
 				setTimeout(() => resolve(), 2000)
 			})
@@ -59,7 +58,7 @@ worry a function version is coming later in the post):
 ```tsx
 class UsernameFormClass extends React.Component {
 	state = { status: 'idle', error: null }
-	handleSubmit = async event => {
+	handleSubmit = async (event) => {
 		event.preventDefault()
 		const newUsername = event.target.elements.username.value
 		this.setState({ status: 'pending' })
@@ -177,7 +176,7 @@ important line of code:
 ```tsx lines=9
 class UsernameFormClass extends React.Component {
 	state = { status: 'idle', error: null }
-	handleSubmit = async event => {
+	handleSubmit = async (event) => {
 		event.preventDefault()
 		const newUsername = event.target.elements.username.value
 		this.setState({ status: 'pending' })
@@ -209,8 +208,8 @@ our submit button never goes away:
 
 <Rendered>
 	<UsernameFormClassWithBug
-		updateUsername={u =>
-			new Promise(resolve => {
+		updateUsername={(u) =>
+			new Promise((resolve) => {
 				alert(`You typed ${u}! Updating the database...`)
 				setTimeout(() => resolve(), 2000)
 			})
@@ -348,10 +347,10 @@ function OrderStatus({ orderId }) {
 		function tick() {
 			setState({ status: 'pending' })
 			checkStatus(orderId).then(
-				d => {
+				(d) => {
 					if (current) setState({ status: 'fulfilled', data: d })
 				},
-				e => {
+				(e) => {
 					if (current) setState({ status: 'rejected', error: e })
 				},
 			)
@@ -481,8 +480,8 @@ import * as React from 'react'
 
 function useCount() {
 	const [count, setCount] = React.useState(0)
-	const increment = () => setCount(c => c + 1)
-	const decrement = () => setCount(c => c - 1)
+	const increment = () => setCount((c) => c + 1)
+	const decrement = () => setCount((c) => c - 1)
 	return { count, increment, decrement }
 }
 
@@ -548,8 +547,8 @@ decisions any time you use this hook anyway:
 function ImperativeCounter(props, ref) {
 	const [count, setCount] = React.useState(0)
 	React.useImperativeHandle(ref, () => ({
-		increment: () => setCount(c => c + 1),
-		decrement: () => setCount(c => c - 1),
+		increment: () => setCount((c) => c + 1),
+		decrement: () => setCount((c) => c - 1),
 	}))
 	return <div>The count is: {count}</div>
 }

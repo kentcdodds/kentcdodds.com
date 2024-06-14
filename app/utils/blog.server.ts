@@ -1,6 +1,5 @@
 import { subMonths, subYears } from 'date-fns'
-import { shuffle } from '~/utils/cjs/lodash.js'
-import { type Await, type MdxListItem, type Team, type User } from '~/types.ts'
+import pLimit from 'p-limit'
 import { filterPosts } from './blog.ts'
 import { cache, cachified, lruCache } from './cache.server.ts'
 import { getClientSession } from './client.server.ts'
@@ -17,7 +16,8 @@ import { prisma } from './prisma.server.ts'
 import { getSession, getUser } from './session.server.ts'
 import { teamEmoji } from './team-provider.tsx'
 import { time, type Timings } from './timing.server.ts'
-import pLimit from 'p-limit'
+import { type Await, type MdxListItem, type Team, type User } from '~/types.ts'
+import { shuffle } from '~/utils/cjs/lodash.js'
 
 async function getBlogRecommendations({
 	request,
@@ -42,12 +42,12 @@ async function getBlogRecommendations({
 			...externalExclude,
 			...allPosts
 				.filter(
-					post =>
+					(post) =>
 						post.frontmatter.unlisted ??
 						post.frontmatter.archived ??
 						post.frontmatter.draft,
 				)
-				.map(p => p.slug),
+				.map((p) => p.slug),
 		]),
 	)
 	// filter out what they've already read
@@ -69,10 +69,10 @@ async function getBlogRecommendations({
 			desc: 'getting slugs of all posts read by user',
 		},
 	)
-	exclude.push(...readPosts.map(p => p.postSlug))
+	exclude.push(...readPosts.map((p) => p.postSlug))
 
 	const recommendablePosts = allPosts.filter(
-		post => !exclude.includes(post.slug),
+		(post) => !exclude.includes(post.slug),
 	)
 
 	if (limit === null) return shuffle(recommendablePosts)
@@ -87,7 +87,7 @@ async function getBlogRecommendations({
 		// get best match posts
 		const postsByBestMatch = keywords.length
 			? Array.from(
-					new Set(...keywords.map(k => filterPosts(recommendablePosts, k))),
+					new Set(...keywords.map((k) => filterPosts(recommendablePosts, k))),
 				)
 			: recommendablePosts
 		const bestMatchRecommendations = shuffle(
@@ -108,7 +108,7 @@ async function getBlogRecommendations({
 	})
 	const mostPopularRecommendations = shuffle(
 		mostPopularRecommendationSlugs
-			.map(slug => recommendablePosts.find(({ slug: s }) => s === slug))
+			.map((slug) => recommendablePosts.find(({ slug: s }) => s === slug))
 			.filter(typedBoolean),
 	).slice(0, limitPerGroup)
 	recommendations.push(...mostPopularRecommendations)
@@ -158,17 +158,17 @@ async function getMostPopularPostSlugs({
 				},
 			})
 
-			return result.map(p => p.postSlug)
+			return result.map((p) => p.postSlug)
 		},
 		timings,
 		checkValue: (value: unknown) =>
-			Array.isArray(value) && value.every(v => typeof v === 'string'),
+			Array.isArray(value) && value.every((v) => typeof v === 'string'),
 	})
 	// NOTE: we're not using exclude and limit in the query itself because it's
 	// a slow query and quite hard to cache. It's not a lot of data that's returned
 	// anyway, so we can easily filter it out here.
 	return postsSortedByMostPopular
-		.filter(s => !exclude.includes(s))
+		.filter((s) => !exclude.includes(s))
 		.slice(0, limit)
 }
 
@@ -198,7 +198,7 @@ async function getTotalPostReads({
 function isRawQueryResult(
 	result: any,
 ): result is Array<Record<string, unknown>> {
-	return Array.isArray(result) && result.every(r => typeof r === 'object')
+	return Array.isArray(result) && result.every((r) => typeof r === 'object')
 }
 
 async function getReaderCount({
@@ -258,7 +258,7 @@ async function getBlogReadRankings({
 		forceFresh,
 		checkValue: (value: unknown) =>
 			Array.isArray(value) &&
-			value.every(v => typeof v === 'object' && 'team' in v),
+			value.every((v) => typeof v === 'object' && 'team' in v),
 		getFreshValue: async () => {
 			const rawRankingData = await Promise.all(
 				teams.map(async function getRankingsForTeam(team): Promise<{
@@ -281,7 +281,7 @@ async function getBlogReadRankings({
 					return { team, totalReads, ranking }
 				}),
 			)
-			const rankings = rawRankingData.map(r => r.ranking)
+			const rankings = rawRankingData.map((r) => r.ranking)
 			const maxRanking = Math.max(...rankings)
 			const minRanking = Math.min(...rankings)
 			const rankPercentages = rawRankingData.map(
@@ -341,7 +341,7 @@ async function getAllBlogPostReadRankings({
 			const limit = pLimit(2)
 			const allPostReadRankings: Record<string, ReadRankings> = {}
 			await Promise.all(
-				posts.map(post =>
+				posts.map((post) =>
 					limit(async () => {
 						allPostReadRankings[post.slug] = await getBlogReadRankings({
 							request,
@@ -435,7 +435,7 @@ async function getSlugReadsByUser({
 			desc: `Getting reads by ${user ? user.id : clientId}`,
 		},
 	)
-	return Array.from(new Set(reads.map(read => read.postSlug)))
+	return Array.from(new Set(reads.map((read) => read.postSlug)))
 }
 
 async function getPostJson(request: Request) {
@@ -443,7 +443,7 @@ async function getPostJson(request: Request) {
 
 	const blogUrl = `${getDomainUrl(request)}/blog`
 
-	return posts.map(post => {
+	return posts.map((post) => {
 		const {
 			slug,
 			frontmatter: {

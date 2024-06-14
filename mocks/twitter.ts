@@ -24,7 +24,7 @@ const siteMetadataArray = Object.values(siteMetadata)
 function getSiteMetadata(tweetUrlId: string) {
 	const urlIdNumber: number = tweetUrlId
 		.split('')
-		.map(c => c.charCodeAt(0))
+		.map((c) => c.charCodeAt(0))
 		.reduce((a, n) => a + n, 0)
 	const index = urlIdNumber % siteMetadataArray.length
 	const metadata = siteMetadataArray[index]
@@ -43,7 +43,7 @@ const twitterHandlers: Array<HttpHandler> = [
 			const url = new URL(request.url)
 
 			// if you want to mock out specific tweets, comment out this next line
-			// eslint-disable-next-line
+
 			if (
 				(await isConnectedToTheInternet()) &&
 				process.env.TWITTER_BEARER_TOKEN !== 'MOCK_TWITTER_TOKEN'
@@ -54,7 +54,7 @@ const twitterHandlers: Array<HttpHandler> = [
 			// uncomment this and send whatever tweet you want to work with...
 			// return res(ctx.json(tweets.linkWithMetadata))
 
-			let tweet = tweetsArray.find(t => {
+			let tweet = tweetsArray.find((t) => {
 				if ('data' in t) {
 					return tweetId === t.id_str
 				} else {

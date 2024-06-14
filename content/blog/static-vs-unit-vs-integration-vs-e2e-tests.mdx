@@ -43,8 +43,7 @@ translations:
       name: Jean-François Greffier
       link: https://jfgreffier.com
 bannerCloudinaryId: kentcdodds.com/content/blog/unit-vs-integration-vs-e2e-tests/banner
-bannerCredit:
-  Screenshot from [TestingJavaScript.com](https://testingjavascript.com)
+bannerCredit: Screenshot from [TestingJavaScript.com](https://testingjavascript.com)
 ---
 
 In my interview "Testing Practices with
@@ -165,8 +164,8 @@ import App from '../app'
 
 const buildLoginForm = build({
 	fields: {
-		username: fake(f => f.internet.userName()),
-		password: fake(f => f.internet.password()),
+		username: fake((f) => f.internet.userName()),
+		password: fake((f) => f.internet.password()),
 	},
 })
 

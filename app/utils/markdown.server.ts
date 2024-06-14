@@ -1,3 +1,4 @@
+import { toString as hastToString } from 'hast-util-to-string'
 import doc from 'rehype-document'
 import format from 'rehype-format'
 import rehypeParse from 'rehype-parse'
@@ -5,7 +6,6 @@ import rehypeStringify from 'rehype-stringify'
 import markdown from 'remark-parse'
 import remark2rehype from 'remark-rehype'
 import { unified } from 'unified'
-import { toString as hastToString } from 'hast-util-to-string'
 
 async function markdownToHtml(markdownString: string) {
 	const result = await unified()

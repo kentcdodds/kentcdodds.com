@@ -22,12 +22,14 @@ import { FeaturedSection } from '~/components/sections/featured-section.tsx'
 import { HeroSection } from '~/components/sections/hero-section.tsx'
 import { Spacer } from '~/components/spacer.tsx'
 import { H4, H6, Paragraph } from '~/components/typography.tsx'
+import { externalLinks } from '~/external-links.tsx'
 import {
 	getGenericSocialImage,
 	getImageBuilder,
 	getImgProps,
 	images,
 } from '~/images.tsx'
+import { type RootLoaderType } from '~/root.tsx'
 import { type Await } from '~/types.ts'
 import { getBlogRecommendations } from '~/utils/blog.server.ts'
 import {
@@ -46,8 +48,6 @@ import { ChatsEpisodeUIStateProvider } from '~/utils/providers.tsx'
 import { getSocialMetas } from '~/utils/seo.ts'
 import { getSeasonListItems } from '~/utils/simplecast.server.ts'
 import { getServerTimeHeader } from '~/utils/timing.server.ts'
-import { externalLinks } from '~/external-links.tsx'
-import { type RootLoaderType } from '~/root.tsx'
 
 type LoaderData = {
 	seasons: Await<ReturnType<typeof getSeasonListItems>>
@@ -86,8 +86,8 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 		(acc, season) => acc + season.episodes.length,
 		0,
 	)
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-	const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
+
+	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
 
 	return getSocialMetas({
 		title: 'Chats with Kent C. Dodds Podcast',
@@ -119,7 +119,9 @@ function PodcastHome() {
 			// in the event there's no season param. But it's just to be safe.
 			data.seasons[0]?.seasonNumber ?? 1
 
-	const currentSeason = data.seasons.find(s => s.seasonNumber === seasonNumber)
+	const currentSeason = data.seasons.find(
+		(s) => s.seasonNumber === seasonNumber,
+	)
 	const tabIndex = currentSeason ? data.seasons.indexOf(currentSeason) : 0
 
 	function handleTabChange(index: number) {
@@ -131,7 +133,7 @@ function PodcastHome() {
 		}
 	}
 
-	const allEpisodes = data.seasons.flatMap(s => s.episodes)
+	const allEpisodes = data.seasons.flatMap((s) => s.episodes)
 	const featured = getFeaturedEpisode(allEpisodes)
 
 	return (
@@ -168,7 +170,7 @@ function PodcastHome() {
 						title={featured.title}
 						href={getCWKEpisodePath(featured)}
 						imageUrl={featured.image}
-						imageAlt={listify(featured.guests.map(g => g.name))}
+						imageAlt={listify(featured.guests.map((g) => g.name))}
 					/>
 				</>
 			) : null}
@@ -248,7 +250,7 @@ function PodcastHome() {
 				onChange={handleTabChange}
 			>
 				<TabList className="col-span-full mb-20 flex flex-col items-start bg-transparent lg:flex-row lg:space-x-12">
-					{data.seasons.map(season => (
+					{data.seasons.map((season) => (
 						<Tab
 							key={season.seasonNumber}
 							// Because we have a link right under the tab, we'll keep this off
@@ -272,7 +274,7 @@ function PodcastHome() {
 									},
 								)}
 								to={String(season.seasonNumber).padStart(2, '0')}
-								onClick={e => {
+								onClick={(e) => {
 									if (e.metaKey) {
 										e.stopPropagation()
 									} else {
@@ -299,7 +301,9 @@ function PodcastHome() {
 
 						<button
 							className="text-primary group relative text-lg font-medium focus:outline-none"
-							onClick={() => setSortOrder(o => (o === 'asc' ? 'desc' : 'asc'))}
+							onClick={() =>
+								setSortOrder((o) => (o === 'asc' ? 'desc' : 'asc'))
+							}
 						>
 							<div className="bg-secondary absolute -bottom-2 -left-4 -right-4 -top-2 rounded-lg opacity-0 transition group-hover:opacity-100 group-focus:opacity-100" />
 							<span className="relative inline-flex items-center">
@@ -320,7 +324,7 @@ function PodcastHome() {
 				) : null}
 
 				<TabPanels className="col-span-full">
-					{data.seasons.map(season => (
+					{data.seasons.map((season) => (
 						<TabPanel
 							key={season.seasonNumber}
 							className="border-t border-gray-200 focus:outline-none dark:border-gray-600"

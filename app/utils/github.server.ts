@@ -1,6 +1,6 @@
+import nodePath from 'path'
 import { throttling } from '@octokit/plugin-throttling'
 import { Octokit as createOctokit } from '@octokit/rest'
-import nodePath from 'path'
 import { type GitHubFile } from '~/types.ts'
 
 const ref = process.env.GITHUB_REF ?? 'main'

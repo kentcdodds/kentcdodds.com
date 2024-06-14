@@ -46,7 +46,7 @@ export async function searchKCD({
 	const normalizedGroups: Array<NormalizedItemGroup> = [
 		{
 			prefix: 'b',
-			items: posts.map(p => ({
+			items: posts.map((p) => ({
 				route: `/blog/${p.slug}`,
 				segment: 'Blog Posts',
 				title: p.frontmatter.title ?? 'Untitled',
@@ -63,7 +63,7 @@ export async function searchKCD({
 		{
 			prefix: 't',
 			items: await Promise.all(
-				talks.map(async t => ({
+				talks.map(async (t) => ({
 					route: `/talks/${t.slug}`,
 					segment: 'Talks',
 					title: t.title,
@@ -74,7 +74,7 @@ export async function searchKCD({
 							...t.tags,
 							...(
 								await Promise.all(
-									t.deliveries.map(d =>
+									t.deliveries.map((d) =>
 										d.eventHTML ? stripHtml(d.eventHTML) : null,
 									),
 								)
@@ -88,8 +88,8 @@ export async function searchKCD({
 			prefix: 'cwk',
 			items: await Promise.all(
 				chatsWithKentEpisodes
-					.flatMap(s => s.episodes)
-					.map(async e => ({
+					.flatMap((s) => s.episodes)
+					.map(async (e) => ({
 						route: getCWKEpisodePath({
 							seasonNumber: e.seasonNumber,
 							episodeNumber: e.episodeNumber,
@@ -99,14 +99,16 @@ export async function searchKCD({
 						values: {
 							priority: [
 								e.title,
-								...e.guests.flatMap(g => [g.name, g.x, g.github]),
+								...e.guests.flatMap((g) => [g.name, g.x, g.github]),
 							],
 							other: [
 								e.description,
 								await stripHtml(e.summaryHTML),
-								...e.guests.map(g => g.company),
-								...(await Promise.all(e.homeworkHTMLs.map(h => stripHtml(h)))),
-								...e.resources.flatMap(r => [r.name, r.url]),
+								...e.guests.map((g) => g.company),
+								...(await Promise.all(
+									e.homeworkHTMLs.map((h) => stripHtml(h)),
+								)),
+								...e.resources.flatMap((r) => [r.name, r.url]),
 							],
 						},
 					})),
@@ -114,7 +116,7 @@ export async function searchKCD({
 		},
 		{
 			prefix: 'ck',
-			items: callKentEpisodes.map(e => ({
+			items: callKentEpisodes.map((e) => ({
 				route: getCKEpisodePath({
 					seasonNumber: e.seasonNumber,
 					episodeNumber: e.episodeNumber,
@@ -130,7 +132,7 @@ export async function searchKCD({
 		{
 			prefix: 'w',
 			items: await Promise.all(
-				workshops.map(async w => ({
+				workshops.map(async (w) => ({
 					route: `/workshops/${w.slug}`,
 					title: w.title,
 					segment: 'Workshops',
@@ -138,18 +140,18 @@ export async function searchKCD({
 						priority: w.title,
 						other: [
 							...w.categories,
-							...w.events.map(e => e.title),
+							...w.events.map((e) => e.title),
 							...(w.meta.keywords ?? []),
 							w.description,
 							...(
 								await Promise.all(
-									w.keyTakeawayHTMLs.map(async t => [
+									w.keyTakeawayHTMLs.map(async (t) => [
 										await stripHtml(t.title),
 										await stripHtml(t.description),
 									]),
 								)
-							).flatMap(s => s),
-							...(await Promise.all(w.topicHTMLs.flatMap(t => stripHtml(t)))),
+							).flatMap((s) => s),
+							...(await Promise.all(w.topicHTMLs.flatMap((t) => stripHtml(t)))),
 						],
 					},
 				})),
@@ -175,7 +177,7 @@ export async function searchKCD({
 		return findWinners(normalizedGroup.items, actualQuery)
 	}
 	return findWinners(
-		normalizedGroups.flatMap(n => n.items),
+		normalizedGroups.flatMap((n) => n.items),
 		query,
 	)
 

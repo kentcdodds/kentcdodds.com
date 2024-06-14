@@ -36,7 +36,7 @@ function NotificationMessage({
 	)
 	const messageFromQuery = queryStringKey && searchParams.get(queryStringKey)
 	// Eslint is wrong here, params.get can return an empty string
-	// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+
 	const message = messageFromQuery || children
 	const latestMessageRef = React.useRef(message)
 

@@ -1,9 +1,9 @@
 import { type TransformerOption } from '@cld-apis/types'
 import { buildImageUrl, setConfig } from 'cloudinary-build-url'
-import emojiRegex from 'emoji-regex'
-import { optionalTeams, toBase64, type OptionalTeam } from './utils/misc.tsx'
-import { type CSSProperties } from 'react'
 import clsx from 'clsx'
+import emojiRegex from 'emoji-regex'
+import { type CSSProperties } from 'react'
+import { optionalTeams, toBase64, type OptionalTeam } from './utils/misc.tsx'
 
 setConfig({
 	cloudName: 'kentcdodds-com',
@@ -688,7 +688,7 @@ function getImgProps(
 			resize: { width: averageSize, ...transformations?.resize },
 		}),
 		srcSet: widths
-			.map(width =>
+			.map((width) =>
 				[
 					imageBuilder({
 						quality: 'auto',

@@ -56,7 +56,7 @@ import PropTypes from 'prop-types'
 const callAll =
 	(...fns) =>
 	(...args) =>
-		fns.forEach(fn => fn && fn(...args))
+		fns.forEach((fn) => fn && fn(...args))
 
 class Toggle extends Component {
 	static propTypes = {
@@ -212,7 +212,7 @@ You'll notice that the `onClick` prop is assigned to
 const callAll =
 	(...fns) =>
 	(...args) =>
-		fns.forEach(fn => fn && fn(...args))
+		fns.forEach((fn) => fn && fn(...args))
 ```
 
 It does what it says. Calls all the functions it's given, if they exist. In our

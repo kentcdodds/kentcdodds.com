@@ -3,15 +3,15 @@ import { Link, useFetcher, useLocation } from '@remix-run/react'
 import { clsx } from 'clsx'
 import { motion, useAnimation, useReducedMotion } from 'framer-motion'
 import * as React from 'react'
-import { kodyProfiles } from '~/images.tsx'
-import { type OptionalTeam } from '~/utils/misc.tsx'
-import { useTeam } from '~/utils/team-provider.tsx'
-import { THEME_FETCHER_KEY, useOptimisticThemeMode } from '~/utils/theme.tsx'
-import { useOptionalUser, useRootData } from '~/utils/use-root-data.ts'
 import { useElementState } from './hooks/use-element-state.tsx'
 import { LaptopIcon, MoonIcon, SunIcon } from './icons.tsx'
 import { TeamCircle } from './team-circle.tsx'
+import { kodyProfiles } from '~/images.tsx'
+import { type OptionalTeam } from '~/utils/misc.tsx'
 import { useRequestInfo } from '~/utils/request-info.ts'
+import { useTeam } from '~/utils/team-provider.tsx'
+import { THEME_FETCHER_KEY, useOptimisticThemeMode } from '~/utils/theme.tsx'
+import { useOptionalUser, useRootData } from '~/utils/use-root-data.ts'
 
 const LINKS = [
 	{ name: 'Blog', to: '/blog' },
@@ -131,7 +131,7 @@ function MobileMenu() {
 	const popoverRef = React.useRef<HTMLDivElement>(null)
 	return (
 		<div
-			onBlur={event => {
+			onBlur={(event) => {
 				if (!popoverRef.current || !menuButtonRef.current) return
 				if (
 					popoverRef.current.matches(':popover-open') &&
@@ -180,7 +180,7 @@ function MobileMenu() {
 				className="fixed bottom-0 left-0 right-0 top-[128px] m-0 h-[calc(100svh-128px)] w-full"
 			>
 				<div className="bg-primary flex h-full flex-col overflow-y-scroll border-t border-gray-200 pb-12 dark:border-gray-600">
-					{MOBILE_LINKS.map(link => (
+					{MOBILE_LINKS.map((link) => (
 						<Link
 							className="hover:bg-secondary focus:bg-secondary text-primary border-b border-gray-200 px-5vw py-9 hover:text-team-current dark:border-gray-600"
 							key={link.to}
@@ -296,7 +296,7 @@ function Navbar() {
 				</div>
 
 				<ul className="hidden lg:flex">
-					{LINKS.map(link => (
+					{LINKS.map((link) => (
 						<NavLink key={link.to} to={link.to}>
 							{link.name}
 						</NavLink>

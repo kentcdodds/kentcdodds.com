@@ -16,6 +16,7 @@ import { HeroSection } from '~/components/sections/hero-section.tsx'
 import { Paragraph } from '~/components/typography.tsx'
 import { getConvertKitSubscriber } from '~/convertkit/convertkit.server.ts'
 import { getGenericSocialImage, images } from '~/images.tsx'
+import { type RootLoaderType } from '~/root.tsx'
 import { getLoginInfoSession } from '~/utils/login.server.ts'
 import {
 	getDisplayUrl,
@@ -29,7 +30,6 @@ import { prisma } from '~/utils/prisma.server.ts'
 import { getSocialMetas } from '~/utils/seo.ts'
 import { getUser, sendToken } from '~/utils/session.server.ts'
 import { verifyEmailAddress } from '~/utils/verifier.server.ts'
-import { type RootLoaderType } from '~/root.tsx'
 
 type LoaderData = {
 	email?: string
@@ -61,8 +61,7 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	matches,
 }) => {
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-	const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
+	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
 	const domain = new URL(getOrigin(requestInfo)).host
 	return getSocialMetas({
 		title: `Login to ${domain}`,
@@ -175,7 +174,7 @@ function Login() {
 				action={
 					<main>
 						<Form
-							onChange={event => {
+							onChange={(event) => {
 								const form = event.currentTarget
 								setFormValues({ email: form.email.value })
 							}}
@@ -207,7 +206,6 @@ function Login() {
 
 							<div style={{ position: 'absolute', left: '-9999px' }}>
 								<label htmlFor="password-field">Password</label>
-								{/* eslint-disable-next-line jsx-a11y/autocomplete-valid */}
 								<input
 									type="password"
 									id="password-field"

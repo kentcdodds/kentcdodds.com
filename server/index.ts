@@ -1,3 +1,7 @@
+import crypto from 'crypto'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import {
 	createRequestHandler as _createRequestHandler,
 	type RequestHandler,
@@ -12,18 +16,14 @@ import { ip as ipAddress } from 'address'
 import chalk from 'chalk'
 import closeWithGrace from 'close-with-grace'
 import compression from 'compression'
-import crypto from 'crypto'
 import express from 'express'
 import 'express-async-errors'
-import fs from 'fs'
 import getPort, { portNumbers } from 'get-port'
 import helmet from 'helmet'
 import morgan from 'morgan'
 import onFinished from 'on-finished'
-import path from 'path'
 import serverTiming from 'server-timing'
 import sourceMapSupport from 'source-map-support'
-import { fileURLToPath } from 'url'
 import { type WebSocketServer } from 'ws'
 import { getInstanceInfo } from '../app/utils/cjs/litefs-js.server.js'
 import {
@@ -38,7 +38,7 @@ installGlobals()
 const viteDevServer =
 	process.env.NODE_ENV === 'production'
 		? undefined
-		: await import('vite').then(vite =>
+		: await import('vite').then((vite) =>
 				vite.createServer({
 					server: { middlewareMode: true },
 				}),
@@ -111,7 +111,7 @@ app.use(async (req, res, next) => {
 	if (req.get('cf-visitor')) {
 		// console.log(`👺 disallowed cf-visitor`, req.headers) // <-- this can be kinda noisy
 		// make them wait for it... Which should cost them money...
-		await new Promise(resolve => setTimeout(resolve, 90_000))
+		await new Promise((resolve) => setTimeout(resolve, 90_000))
 		return res.send(
 			'Please go to https://kcd.dev instead! Ping Kent if you think you should not be seeing this...',
 		)
@@ -379,10 +379,10 @@ if (process.env.NODE_ENV === 'development') {
 closeWithGrace(() => {
 	return Promise.all([
 		new Promise((resolve, reject) => {
-			server.close(e => (e ? reject(e) : resolve('ok')))
+			server.close((e) => (e ? reject(e) : resolve('ok')))
 		}),
 		new Promise((resolve, reject) => {
-			wss?.close(e => (e ? reject(e) : resolve('ok')))
+			wss?.close((e) => (e ? reject(e) : resolve('ok')))
 		}),
 	])
 })

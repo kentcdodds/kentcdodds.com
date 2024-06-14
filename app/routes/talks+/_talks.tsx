@@ -19,6 +19,7 @@ import { HeroSection } from '~/components/sections/hero-section.tsx'
 import { Tag } from '~/components/tag.tsx'
 import { H3, H6, Paragraph } from '~/components/typography.tsx'
 import { getGenericSocialImage, images } from '~/images.tsx'
+import { type RootLoaderType } from '~/root.tsx'
 import { type Await } from '~/types.ts'
 import {
 	formatDate,
@@ -31,17 +32,16 @@ import {
 } from '~/utils/misc.tsx'
 import { getSocialMetas } from '~/utils/seo.ts'
 import { getTalksAndTags } from '~/utils/talks.server.ts'
-import { type RootLoaderType } from '~/root.tsx'
 
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	data,
 	matches,
 }) => {
 	const { talks = [], tags = [] } = (data as LoaderData | undefined) ?? {}
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-	const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
+
+	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
 	const talkCount = talks.length
-	const deliveryCount = talks.flatMap(t => t.deliveries).length
+	const deliveryCount = talks.flatMap((t) => t.deliveries).length
 	const title = `${talkCount} talks by Kent all about software development`
 	const topicsList = listify(tags.slice(0, 6))
 	return getSocialMetas({
@@ -82,7 +82,7 @@ function Card({
 	active,
 }: LoaderData['talks'][0] & { active: boolean }) {
 	const latestDelivery = deliveries
-		.filter(x => x.date)
+		.filter((x) => x.date)
 		.sort(
 			(l, r) => parseDate(r.date!).getTime() - parseDate(l.date!).getTime(),
 		)[0]
@@ -199,7 +199,7 @@ function Card({
 							Resources
 						</H6>
 						<ul className="space-y-1">
-							{resourceHTMLs.map(resource => (
+							{resourceHTMLs.map((resource) => (
 								<li key={resource}>
 									<Paragraph
 										as="div"
@@ -237,22 +237,22 @@ export default function TalksScreen() {
 	})
 
 	const talks = queryValue
-		? data.talks.filter(talk =>
-				queryValue.split(',').every(tag => talk.tags.includes(tag)),
+		? data.talks.filter((talk) =>
+				queryValue.split(',').every((tag) => talk.tags.includes(tag)),
 			)
 		: data.talks
 
-	const visibleTags = new Set(talks.flatMap(x => x.tags))
+	const visibleTags = new Set(talks.flatMap((x) => x.tags))
 
 	function toggleTag(tag: string) {
-		setQuery(q => {
+		setQuery((q) => {
 			const existing = q
 				.split(',')
-				.map(x => x.trim())
+				.map((x) => x.trim())
 				.filter(Boolean)
 
 			const newQuery = existing.includes(tag)
-				? existing.filter(t => t !== tag)
+				? existing.filter((t) => t !== tag)
 				: [...existing, tag]
 
 			return newQuery.join(',')
@@ -283,7 +283,7 @@ export default function TalksScreen() {
 					Search talks by topics
 				</H6>
 				<div className="col-span-full -mb-4 -mr-4 flex flex-wrap lg:col-span-10">
-					{data.tags.map(tag => (
+					{data.tags.map((tag) => (
 						<Tag
 							key={tag}
 							tag={tag}
@@ -308,7 +308,7 @@ export default function TalksScreen() {
 
 				<div className="col-span-full">
 					<Grid nested rowGap>
-						{talks.map(talk => {
+						{talks.map((talk) => {
 							return (
 								<div key={talk.slug} className="col-span-full lg:col-span-6">
 									{/* @ts-expect-error need to figure this out later... */}

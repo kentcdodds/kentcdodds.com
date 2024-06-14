@@ -25,8 +25,8 @@ function Course({ courseId }) {
 	React.useEffect(() => {
 		setState({ loading: true, course: null, error: null })
 		api.getCourseInfo(courseId).then(
-			data => setState({ loading: false, course: data, error: null }),
-			e => setState({ loading: false, course: null, error: e }),
+			(data) => setState({ loading: false, course: data, error: null }),
+			(e) => setState({ loading: false, course: null, error: e }),
 		)
 	}, [courseId])
 	return (
@@ -46,7 +46,7 @@ function CourseInfo({ course }) {
 			<h1>{title}</h1>
 			<strong>{subtitle}</strong>
 			<ul>
-				{topics.map(t => (
+				{topics.map((t) => (
 					<li key={t}>{t}</li>
 				))}
 			</ul>
@@ -60,7 +60,7 @@ function Remounter({ children }) {
 	return (
 		<div>
 			<div>
-				<button onClick={() => setKey(k => k + 1)}>Re-mount</button>
+				<button onClick={() => setKey((k) => k + 1)}>Re-mount</button>
 			</div>
 			<div key={key}>{children}</div>
 		</div>

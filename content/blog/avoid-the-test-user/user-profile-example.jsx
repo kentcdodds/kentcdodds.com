@@ -1,7 +1,7 @@
 // React Context
 
-import * as React from 'react'
 import { isEqual } from 'lodash'
+import * as React from 'react'
 
 // ./context/user-context.js
 
@@ -11,8 +11,8 @@ function useAuth() {
 	return { user: { username: 'jackiechan', tagline: '', bio: '' } }
 }
 
-const sleep = t =>
-	new Promise(resolve => {
+const sleep = (t) =>
+	new Promise((resolve) => {
 		setTimeout(resolve, t)
 	})
 
@@ -107,7 +107,7 @@ function UserSettings() {
 		asyncDispatch({ status: 'pending' })
 		updateUser(userDispatch, user, formState).then(
 			() => asyncDispatch({ status: 'resolved' }),
-			e => asyncDispatch({ status: 'rejected', error: e }),
+			(e) => asyncDispatch({ status: 'rejected', error: e }),
 		)
 	}
 

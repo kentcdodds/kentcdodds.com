@@ -17,7 +17,7 @@ export const loader: LoaderFunction = async ({ request }) => {
         <generator>Kody the Koala</generator>
         <ttl>40</ttl>
         ${posts
-					.map(post =>
+					.map((post) =>
 						`
             <item>
               <title>${cdata(post.frontmatter.title ?? 'Untitled Post')}</title>

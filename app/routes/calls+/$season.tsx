@@ -3,7 +3,6 @@ import {
 	type HeadersFunction,
 	type LoaderFunction,
 } from '@remix-run/node'
-import * as React from 'react'
 import {
 	isRouteErrorResponse,
 	Link,
@@ -13,41 +12,41 @@ import {
 	useParams,
 } from '@remix-run/react'
 import { clsx } from 'clsx'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import * as React from 'react'
+import { serverOnly$ } from 'vite-env-only'
+import { getEpisodesBySeason } from '../calls.tsx'
+import { ServerError } from '~/components/errors.tsx'
+import { Grid } from '~/components/grid.tsx'
+import { TriangleIcon } from '~/components/icons.tsx'
+import { MissingSomething } from '~/components/kifs.tsx'
+import { H3, Paragraph } from '~/components/typography.tsx'
 import {
 	type CallKentEpisode,
 	type CallKentSeason,
 	type KCDHandle,
 } from '~/types.ts'
-import { MissingSomething } from '~/components/kifs.tsx'
 import {
 	getEpisodeFromParams,
 	getEpisodePath,
 	type Params as CallPlayerParams,
 } from '~/utils/call-kent.ts'
-import { Grid } from '~/components/grid.tsx'
-import { H3, Paragraph } from '~/components/typography.tsx'
 import { orderBy } from '~/utils/cjs/lodash.js'
-import { ServerError } from '~/components/errors.tsx'
-import { TriangleIcon } from '~/components/icons.tsx'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { getEpisodes } from '~/utils/transistor.server.ts'
-import { getServerTimeHeader } from '~/utils/timing.server.ts'
-import { useCallsEpisodeUIState } from '~/utils/providers.tsx'
-
 import {
 	formatDuration,
 	reuseUsefulLoaderHeaders,
 	useCapturedRouteError,
 } from '~/utils/misc.tsx'
-import { getEpisodesBySeason } from '../calls.tsx'
-import { serverOnly$ } from 'vite-env-only'
+import { useCallsEpisodeUIState } from '~/utils/providers.tsx'
+import { getServerTimeHeader } from '~/utils/timing.server.ts'
+import { getEpisodes } from '~/utils/transistor.server.ts'
 
 export const handle: KCDHandle = {
-	getSitemapEntries: serverOnly$(async request => {
+	getSitemapEntries: serverOnly$(async (request) => {
 		const episodes = await getEpisodes({ request })
 		const seasons = getEpisodesBySeason(episodes)
 
-		return seasons.map(season => {
+		return seasons.map((season) => {
 			return {
 				route: `/calls/${season.seasonNumber.toString().padStart(2, '0')}`,
 				priority: 0.4,
@@ -68,7 +67,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 	const seasons = getEpisodesBySeason(episodes)
 
 	const seasonNumber = Number(params.season)
-	const season = seasons.find(s => s.seasonNumber === seasonNumber)
+	const season = seasons.find((s) => s.seasonNumber === seasonNumber)
 	if (!season) {
 		throw new Response(`No season for ${params.season}`, { status: 404 })
 	}
@@ -97,7 +96,7 @@ export default function CallsSeason() {
 	const episodes = orderBy(season.episodes, 'episodeNumber', sortOrder)
 
 	const callPlayerMatch = matches.find(
-		match => (match.handle as KCDHandle | undefined)?.id === 'call-player',
+		(match) => (match.handle as KCDHandle | undefined)?.id === 'call-player',
 	)
 	let selectedEpisode: CallKentEpisode | undefined
 	if (callPlayerMatch) {
@@ -116,7 +115,7 @@ export default function CallsSeason() {
 	let numberLength = episodes.length.toString().length
 	if (numberLength < 2) numberLength = 2
 
-	return episodes.map(episode => {
+	return episodes.map((episode) => {
 		const path = getEpisodePath(episode)
 
 		return (

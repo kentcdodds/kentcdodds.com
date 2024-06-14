@@ -60,7 +60,7 @@ function FruitAutocomplete({ onChange }) {
 					{isOpen ? (
 						<div data-test="menu">
 							{items
-								.filter(i => !inputValue || i.includes(inputValue))
+								.filter((i) => !inputValue || i.includes(inputValue))
 								.map((item, index) => (
 									<div
 										{...getItemProps({
@@ -120,8 +120,8 @@ import FruitAutocomplete from '../fruit-autocomplete'
 // some handy utilities
 // learn more about this `sel` function
 // from my other blog post: http://kcd.im/sel-util
-const sel = id => `[data-test="${id}"]`
-const hasMenu = wrapper => wrapper.find(sel('menu')).length === 1
+const sel = (id) => `[data-test="${id}"]`
+const hasMenu = (wrapper) => wrapper.find(sel('menu')).length === 1
 
 test('menu is closed by default', () => {
 	const wrapper = mount(<FruitAutocomplete />)
@@ -192,16 +192,16 @@ import { render } from 'enzyme'
 
 const downshiftStub = {
 	isOpen: false,
-	getLabelProps: p => p,
-	getInputProps: p => p,
-	getItemProps: p => p,
+	getLabelProps: (p) => p,
+	getInputProps: (p) => p,
+	getItemProps: (p) => p,
 }
 
-const sel = id => `[data-test="${id}"]`
-const hasMenu = wrapper => wrapper.find(sel('menu')).length === 1
+const sel = (id) => `[data-test="${id}"]`
+const hasMenu = (wrapper) => wrapper.find(sel('menu')).length === 1
 const hasItem = (wrapper, item) =>
 	wrapper.find(sel(`item-${item}`)).length === 1
-const renderFruitAutocompleteRenderer = props =>
+const renderFruitAutocompleteRenderer = (props) =>
 	render(fruitAutocompleteRender({ ...downshiftStub, ...props }))
 
 test('shows no menu when isOpen is false', () => {
@@ -241,9 +241,9 @@ import FruitAutocomplete from '../fruit-autocomplete'
 
 const downshiftStub = {
 	isOpen: false,
-	getLabelProps: p => p,
-	getInputProps: p => p,
-	getItemProps: p => p,
+	getLabelProps: (p) => p,
+	getInputProps: (p) => p,
+	getItemProps: (p) => p,
 }
 
 test('when the inputValue is banana, it shows banana', () => {

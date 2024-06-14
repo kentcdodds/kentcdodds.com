@@ -8,8 +8,7 @@ meta:
   keywords:
     - react hooks
 bannerCloudinaryId: unsplash/photo-1500964757637-c85e8a162699
-bannerCredit:
-  Photo by [Simon Matzinger](https://unsplash.com/photos/twukN12EN7c)
+bannerCredit: Photo by [Simon Matzinger](https://unsplash.com/photos/twukN12EN7c)
 ---
 
 import { HiddenBugApp, RevealedBugApp, FixedBugApp } from './components'
@@ -78,7 +77,7 @@ function DogInfo({ dogId }) {
 	// imagine you also have loading/error states. omitting to save space...
 
 	useEffect(() => {
-		getDog(dogId).then(d => setDog(d))
+		getDog(dogId).then((d) => setDog(d))
 	}, []) // 😱
 
 	return <div>{/* render the dog info here */}</div>
@@ -106,7 +105,7 @@ function DogInfo({ dogId }) {
 	// imagine you also have loading/error states. omitting to save space...
 
 	useEffect(() => {
-		getDog(dogId).then(d => setDog(d))
+		getDog(dogId).then((d) => setDog(d))
 	}, [dogId]) // ✅
 
 	return <div>{/* render the dog info here */}</div>

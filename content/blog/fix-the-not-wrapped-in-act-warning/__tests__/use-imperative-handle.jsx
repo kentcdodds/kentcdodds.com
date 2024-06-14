@@ -1,12 +1,12 @@
+import { render, screen, act } from '@testing-library/react'
 import * as React from 'react'
 import { test, expect } from 'vitest'
-import { render, screen, act } from '@testing-library/react'
 
 function ImperativeCounter(props) {
 	const [count, setCount] = React.useState(0)
 	React.useImperativeHandle(props.ref, () => ({
-		increment: () => setCount(c => c + 1),
-		decrement: () => setCount(c => c - 1),
+		increment: () => setCount((c) => c + 1),
+		decrement: () => setCount((c) => c - 1),
 	}))
 	return <div>The count is: {count}</div>
 }

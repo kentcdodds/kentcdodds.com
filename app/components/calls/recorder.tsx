@@ -2,8 +2,6 @@ import { useMachine } from '@xstate/react'
 import gsap from 'gsap'
 import * as React from 'react'
 import { assign, createMachine, send as sendUtil } from 'xstate'
-import { type OptionalTeam } from '~/types.ts'
-import { assertNonNull, getOptionalTeam } from '~/utils/misc.tsx'
 import { Button, LinkButton } from '../button.tsx'
 import { useInterval } from '../hooks/use-interval.tsx'
 import {
@@ -14,6 +12,8 @@ import {
 } from '../icons.tsx'
 import { Tag } from '../tag.tsx'
 import { Paragraph } from '../typography.tsx'
+import { type OptionalTeam } from '~/types.ts'
+import { assertNonNull, getOptionalTeam } from '~/utils/misc.tsx'
 
 // Play around with these values to affect the audio visualisation.
 // Should be able to stream the visualisation back no problem.
@@ -140,7 +140,7 @@ const recorderMachine = createMachine<RecorderContext>(
 				const devices = await navigator.mediaDevices.enumerateDevices()
 				return devices.filter(({ kind }) => kind === 'audioinput')
 			},
-			mediaRecorder: context => (sendBack, receive) => {
+			mediaRecorder: (context) => (sendBack, receive) => {
 				let mediaRecorder: MediaRecorder
 
 				async function go() {
@@ -153,7 +153,7 @@ const recorderMachine = createMachine<RecorderContext>(
 					mediaRecorder = new MediaRecorder(mediaStream)
 					sendBack({ type: 'mediaRecorderCreated', mediaRecorder })
 
-					mediaRecorder.ondataavailable = event => {
+					mediaRecorder.ondataavailable = (event) => {
 						chunks.push(event.data)
 						if (mediaRecorder.state === 'inactive') {
 							sendBack({
@@ -167,7 +167,7 @@ const recorderMachine = createMachine<RecorderContext>(
 
 					mediaRecorder.start()
 
-					receive(event => {
+					receive((event) => {
 						if (event.type === 'pause') {
 							mediaRecorder.pause()
 						} else if (event.type === 'resume') {
@@ -247,7 +247,7 @@ function CallRecorder({
 				<Paragraph className="mb-8">Select your device:</Paragraph>
 				<ul>
 					{state.context.audioDevices.length
-						? state.context.audioDevices.map(device => (
+						? state.context.audioDevices.map((device) => (
 								<li key={device.deviceId}>
 									<Tag
 										onClick={() => {

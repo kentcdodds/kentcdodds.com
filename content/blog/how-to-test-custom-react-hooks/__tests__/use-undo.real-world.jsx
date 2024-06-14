@@ -1,6 +1,6 @@
 import { render, screen, act } from '@testing-library/react'
-import { test, expect } from 'vitest'
 import userEvent from '@testing-library/user-event'
+import { test, expect } from 'vitest'
 
 import { UseUndoExample } from '../use-undo.example.jsx'
 

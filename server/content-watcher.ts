@@ -31,7 +31,7 @@ async function refreshOnContentChanges(filePath: string) {
 function addWatcher(wss: WebSocketServer) {
 	const contentDir = safePath(path.join(process.cwd(), 'content'))
 	const watcher = chokidar.watch(contentDir, { ignoreInitial: true })
-	watcher.on('change', async filePath => {
+	watcher.on('change', async (filePath) => {
 		await refreshOnContentChanges(filePath)
 		for (const client of wss.clients) {
 			if (client.readyState === WebSocket.OPEN) {

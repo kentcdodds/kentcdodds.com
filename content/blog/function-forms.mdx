@@ -1,8 +1,7 @@
 ---
 title: Function forms
 date: 2020-04-05
-description:
-  When I prefer to use function declarations instead of arrow functions
+description: When I prefer to use function declarations instead of arrow functions
 categories:
   - javascript
 meta:
@@ -25,7 +24,7 @@ Here's how I write typical React components:
 ```tsx
 function Counter() {
 	const [count, setCount] = React.useState(0)
-	const increment = () => setCount(c => c + 1)
+	const increment = () => setCount((c) => c + 1)
 	return <button onClick={increment}>{count}</button>
 }
 ```

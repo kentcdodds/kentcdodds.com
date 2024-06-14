@@ -16,6 +16,7 @@ import { TestimonialCard } from '~/components/sections/testimonial-card.tsx'
 import { Spacer } from '~/components/spacer.tsx'
 import { H2 } from '~/components/typography.tsx'
 import { getGenericSocialImage, getImgProps, images } from '~/images.tsx'
+import { type RootLoaderType } from '~/root.tsx'
 import {
 	getDisplayUrl,
 	getUrl,
@@ -24,15 +25,14 @@ import {
 import { getSocialMetas } from '~/utils/seo.ts'
 import { getTestimonials } from '~/utils/testimonials.server.ts'
 import { getServerTimeHeader } from '~/utils/timing.server.ts'
-import { type RootLoaderType } from '~/root.tsx'
 
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	data,
 	matches,
 }) => {
 	const testimonials = data?.testimonials
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-	const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
+
+	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
 	const testimonialCount = testimonials ? `${testimonials.length} ` : ''
 	const title = `${testimonialCount}testimonials about Kent C. Dodds`
 	return getSocialMetas({
@@ -102,7 +102,7 @@ export default function Testimonials() {
 				className="mx-10vw mb-14 grid grid-cols-4 gap-6 lg:grid-cols-8 xl:grid-cols-12"
 				id="list"
 			>
-				{data.testimonials.map(testimonial => (
+				{data.testimonials.map((testimonial) => (
 					<TestimonialCard
 						key={testimonial.testimonial}
 						testimonial={testimonial}

@@ -1,4 +1,3 @@
-import { withSentry } from '@sentry/remix'
 import {
 	json,
 	type DataFunctionArgs,
@@ -20,14 +19,13 @@ import {
 	useLocation,
 	useNavigation,
 } from '@remix-run/react'
-import * as React from 'react'
+import { withSentry } from '@sentry/remix'
 
 import { clsx } from 'clsx'
 import { isFuture } from 'date-fns'
 import { AnimatePresence, motion } from 'framer-motion'
-import { getInstanceInfo } from '~/utils/cjs/litefs-js.server.js'
+import * as React from 'react'
 import { useSpinDelay } from 'spin-delay'
-import { type KCDHandle } from '~/types.ts'
 import { ArrowLink } from './components/arrow-button.tsx'
 import { ErrorPage, FourHundred } from './components/errors.tsx'
 import { Footer } from './components/footer.tsx'
@@ -47,6 +45,7 @@ import noScriptStyles from './styles/no-script.css?url'
 import proseStyles from './styles/prose.css?url'
 import tailwindStyles from './styles/tailwind.css?url'
 import vendorStyles from './styles/vendors.css?url'
+import { ClientHintCheck, getHints } from './utils/client-hints.tsx'
 import { getClientSession } from './utils/client.server.ts'
 import { getEnv } from './utils/env.server.ts'
 import { getLoginInfoSession } from './utils/login.server.ts'
@@ -62,13 +61,14 @@ import { useNonce } from './utils/nonce-provider.ts'
 import { getSocialMetas } from './utils/seo.ts'
 import { getSession } from './utils/session.server.ts'
 import { TeamProvider, useTeam } from './utils/team-provider.tsx'
-import { ClientHintCheck, getHints } from './utils/client-hints.tsx'
+import { getTheme } from './utils/theme.server.ts'
+import { useTheme } from './utils/theme.tsx'
 import { getServerTimeHeader } from './utils/timing.server.ts'
 import { getUserInfo } from './utils/user-info.server.ts'
 import { getScheduledEvents } from './utils/workshop-tickets.server.ts'
 import { getWorkshops } from './utils/workshops.server.ts'
-import { getTheme } from './utils/theme.server.ts'
-import { useTheme } from './utils/theme.tsx'
+import { type KCDHandle } from '~/types.ts'
+import { getInstanceInfo } from '~/utils/cjs/litefs-js.server.js'
 import { useCapturedRouteError } from '~/utils/misc.tsx'
 
 export const handle: KCDHandle & { id: string } = {
@@ -149,7 +149,7 @@ export async function loader({ request }: DataFunctionArgs) {
 		session.getUser({ timings }),
 		getClientSession(request, session.getUser({ timings })),
 		getLoginInfoSession(request),
-		getInstanceInfo().then(i => i.primaryInstance),
+		getInstanceInfo().then((i) => i.primaryInstance),
 		getWorkshops({ request, timings }),
 		getScheduledEvents({ request, timings }),
 	])
@@ -160,11 +160,11 @@ export async function loader({ request }: DataFunctionArgs) {
 	] as keyof typeof illustrationImages
 
 	const manualWorkshopEventPromotifications = workshops
-		.filter(w => w.events.length)
-		.flatMap(workshop => {
+		.filter((w) => w.events.length)
+		.flatMap((workshop) => {
 			return workshop.events
-				.filter(e => e.remaining == null || e.remaining > 0)
-				.map(event => {
+				.filter((e) => e.remaining == null || e.remaining > 0)
+				.map((event) => {
 					const promoName = `${WORKSHOP_PROMO_NAME}-${event.date}-${workshop.slug}`
 
 					const promoEndTime = {
@@ -196,8 +196,8 @@ export async function loader({ request }: DataFunctionArgs) {
 		})
 
 	const titoWorkshopEventPromotifications = workshopEvents
-		.map(e => {
-			const workshop = workshops.find(w => w.slug === e.metadata.workshopSlug)
+		.map((e) => {
+			const workshop = workshops.find((w) => w.slug === e.metadata.workshopSlug)
 			if (!workshop) return null
 
 			const discounts = Object.entries(e.discounts)
@@ -466,7 +466,7 @@ function App() {
 			<body className="bg-white transition duration-500 dark:bg-gray-900">
 				<PageLoadingMessage />
 
-				{data.workshopPromotifications.map(e => (
+				{data.workshopPromotifications.map((e) => (
 					<Promotification
 						key={e.slug + e.title + e.promoEndTime.time}
 						cookieValue={e.cookieValue}
@@ -673,7 +673,7 @@ function kcdLiveReloadConnect(config?: { onOpen: () => void }) {
 	const port = location.port
 	const socketPath = `${protocol}//${host}:${port}/__ws`
 	const ws = new WebSocket(socketPath)
-	ws.onmessage = message => {
+	ws.onmessage = (message) => {
 		const event = JSON.parse(message.data)
 		if (
 			event.type === 'kentcdodds.com:file-change' &&
@@ -687,7 +687,7 @@ function kcdLiveReloadConnect(config?: { onOpen: () => void }) {
 			config.onOpen()
 		}
 	}
-	ws.onclose = event => {
+	ws.onclose = (event) => {
 		if (event.code === 1006) {
 			console.log(
 				'kentcdodds.com dev server web socket closed. Reconnecting...',
@@ -701,7 +701,7 @@ function kcdLiveReloadConnect(config?: { onOpen: () => void }) {
 			)
 		}
 	}
-	ws.onerror = error => {
+	ws.onerror = (error) => {
 		console.log('kentcdodds.com dev server web socket error:')
 		console.error(error)
 	}

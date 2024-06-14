@@ -1,8 +1,7 @@
 ---
 title: Super simple start to Netlify functions
 date: 2020-11-11
-description:
-  Easily create server code without worrying about managing servers yourself
+description: Easily create server code without worrying about managing servers yourself
 categories:
   - node
 meta:
@@ -92,7 +91,7 @@ Now that we've told Netlify where to find our functions files, let's make one:
 
 ```js
 // functions/hello.js
-exports.handler = async event => {
+exports.handler = async (event) => {
 	const subject = event.queryStringParameters.name || 'World'
 	return {
 		statusCode: 200,

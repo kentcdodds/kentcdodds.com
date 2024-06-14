@@ -107,11 +107,11 @@ imports with the line or column where it appears in the code:
 // line-column.macro
 module.exports = createMacro(lineColumnMacro)
 function lineColumnMacro({ references, babel }) {
-	references.line.forEach(referencePath => {
+	references.line.forEach((referencePath) => {
 		const num = referencePath.node.loc.start.line
 		referencePath.replaceWith(babel.types.numberLiteral(num))
 	})
-	references.column.forEach(referencePath => {
+	references.column.forEach((referencePath) => {
 		const num = referencePath.node.loc.start.column
 		referencePath.replaceWith(babel.types.numberLiteral(num))
 	})

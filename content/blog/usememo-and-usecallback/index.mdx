@@ -55,8 +55,8 @@ Here's how it's implemented:
 function CandyDispenser() {
 	const initialCandies = ['snickers', 'skittles', 'twix', 'milky way']
 	const [candies, setCandies] = React.useState(initialCandies)
-	const dispense = candy => {
-		setCandies(allCandies => allCandies.filter(c => c !== candy))
+	const dispense = (candy) => {
+		setCandies((allCandies) => allCandies.filter((c) => c !== candy))
 	}
 	return (
 		<div>
@@ -67,7 +67,7 @@ function CandyDispenser() {
 					<button onClick={() => setCandies(initialCandies)}>refill</button>
 				) : (
 					<ul>
-						{candies.map(candy => (
+						{candies.map((candy) => (
 							<li key={candy}>
 								<button onClick={() => dispense(candy)}>grab</button> {candy}
 							</li>
@@ -88,16 +88,16 @@ The only thing I'm going to change is wrap the `dispense` function inside
 `React.useCallback`:
 
 ```js
-const dispense = React.useCallback(candy => {
-	setCandies(allCandies => allCandies.filter(c => c !== candy))
+const dispense = React.useCallback((candy) => {
+	setCandies((allCandies) => allCandies.filter((c) => c !== candy))
 }, [])
 ```
 
 Here's the original again:
 
 ```js
-const dispense = candy => {
-	setCandies(allCandies => allCandies.filter(c => c !== candy))
+const dispense = (candy) => {
+	setCandies((allCandies) => allCandies.filter((c) => c !== candy))
 }
 ```
 
@@ -128,8 +128,8 @@ me refactor the `useCallback` example a bit (no actual changes, just moving
 things around) to illustrate things more clearly:
 
 ```js
-const dispense = candy => {
-	setCandies(allCandies => allCandies.filter(c => c !== candy))
+const dispense = (candy) => {
+	setCandies((allCandies) => allCandies.filter((c) => c !== candy))
 }
 const dispenseCallback = React.useCallback(dispense, [])
 ```
@@ -137,16 +137,16 @@ const dispenseCallback = React.useCallback(dispense, [])
 And here's the original again:
 
 ```js
-const dispense = candy => {
-	setCandies(allCandies => allCandies.filter(c => c !== candy))
+const dispense = (candy) => {
+	setCandies((allCandies) => allCandies.filter((c) => c !== candy))
 }
 ```
 
 Notice anything about these? Let's look at the diff:
 
 ```tsx add=4
-const dispense = candy => {
-	setCandies(allCandies => allCandies.filter(c => c !== candy))
+const dispense = (candy) => {
+	setCandies((allCandies) => allCandies.filter((c) => c !== candy))
 }
 const dispenseCallback = React.useCallback(dispense, [])
 ```
@@ -364,10 +364,10 @@ function CountButton({ onClick, count }) {
 
 function DualCounter() {
 	const [count1, setCount1] = React.useState(0)
-	const increment1 = () => setCount1(c => c + 1)
+	const increment1 = () => setCount1((c) => c + 1)
 
 	const [count2, setCount2] = React.useState(0)
-	const increment2 = () => setCount2(c => c + 1)
+	const increment2 = () => setCount2((c) => c + 1)
 
 	return (
 		<>
@@ -417,10 +417,10 @@ const CountButton = React.memo(function CountButton({ onClick, count }) {
 
 function DualCounter() {
 	const [count1, setCount1] = React.useState(0)
-	const increment1 = React.useCallback(() => setCount1(c => c + 1), [])
+	const increment1 = React.useCallback(() => setCount1((c) => c + 1), [])
 
 	const [count2, setCount2] = React.useState(0)
-	const increment2 = React.useCallback(() => setCount2(c => c + 1), [])
+	const increment2 = React.useCallback(() => setCount2((c) => c + 1), [])
 
 	return (
 		<>
@@ -525,7 +525,7 @@ class FavoriteNumbers extends React.Component {
 	render() {
 		return (
 			<ul>
-				{this.props.favoriteNumbers.map(number => (
+				{this.props.favoriteNumbers.map((number) => (
 					// TADA! This is a function defined in the render method!
 					// Hooks did not introduce this concept.
 					// We've been doing this all along.

@@ -48,8 +48,10 @@ function AppProviders({ children }) {
 function ThemeAndLanguageConsumer({ children }) {
 	return (
 		<LanguageConsumer>
-			{language => (
-				<ThemeConsumer>{theme => children({ language, theme })}</ThemeConsumer>
+			{(language) => (
+				<ThemeConsumer>
+					{(theme) => children({ language, theme })}
+				</ThemeConsumer>
 			)}
 		</LanguageConsumer>
 	)

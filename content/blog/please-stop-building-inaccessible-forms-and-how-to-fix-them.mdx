@@ -39,7 +39,8 @@ Ok, so let's talk about labels.
 I'm regularly confronted with a form control that's written like this:
 
 ```html
-Username: <input />
+Username:
+<input />
 ```
 
 To a seeing user, this looks fine, but to a blind user, they'll need to use a
@@ -50,7 +51,8 @@ But it takes more than just putting the label text in a `<label>` input. So this
 wont work:
 
 ```html
-<label>Username</label> <input />
+<label>Username</label>
+<input />
 ```
 
 <callout-info class="aside">
@@ -64,13 +66,15 @@ personal preference):
 ## label[for] ➡ input[id]
 
 ```html
-<label for="username">Username</label> <input id="username" />
+<label for="username">Username</label>
+<input id="username" />
 ```
 
 ## input[aria-labelledby] ➡ label[id]
 
 ```html
-<label id="username">Username</label> <input aria-labelledby="username" />
+<label id="username">Username</label>
+<input aria-labelledby="username" />
 ```
 
 ## label 🤗 input

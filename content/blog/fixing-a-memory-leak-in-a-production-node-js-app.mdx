@@ -164,7 +164,7 @@ export async function loader({ request }: DataFunctionArgs) {
 	const body = new PassThrough()
 	const stream = fs.createReadStream(snapshotPath)
 	stream.on('open', () => stream.pipe(body))
-	stream.on('error', err => body.end(err))
+	stream.on('error', (err) => body.end(err))
 	stream.on('end', () => body.end())
 
 	return new Response(body, {
@@ -372,8 +372,8 @@ module.exports = async function highlight({ code, language }) {
 	return {
 		fgColor,
 		bgColor,
-		tokens: tokens.map(lineTokens =>
-			lineTokens.map(t => ({ content: t.content, color: t.color })),
+		tokens: tokens.map((lineTokens) =>
+			lineTokens.map((t) => ({ content: t.content, color: t.color })),
 		),
 	}
 }

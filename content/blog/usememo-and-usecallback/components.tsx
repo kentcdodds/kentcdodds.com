@@ -4,7 +4,7 @@ function CandyDispenser() {
 	const initialCandies = ['snickers', 'skittles', 'twix', 'milky way']
 	const [candies, setCandies] = React.useState(initialCandies)
 	function dispense(candy: string) {
-		setCandies(allCandies => allCandies.filter(c => c !== candy))
+		setCandies((allCandies) => allCandies.filter((c) => c !== candy))
 	}
 	return (
 		<div>
@@ -15,7 +15,7 @@ function CandyDispenser() {
 					<button onClick={() => setCandies(initialCandies)}>refill</button>
 				) : (
 					<ul>
-						{candies.map(candy => (
+						{candies.map((candy) => (
 							<li key={candy}>
 								<button onClick={() => dispense(candy)}>grab</button> {candy}
 							</li>

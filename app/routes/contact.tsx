@@ -14,13 +14,13 @@ import {
 } from '~/components/sections/hero-section.tsx'
 import { H2, Paragraph } from '~/components/typography.tsx'
 import { getGenericSocialImage, images } from '~/images.tsx'
+import { type RootLoaderType } from '~/root.tsx'
 import { handleFormSubmission } from '~/utils/actions.server.ts'
 import { getDisplayUrl, getUrl } from '~/utils/misc.tsx'
 import { sendEmail } from '~/utils/send-email.server.ts'
 import { getSocialMetas } from '~/utils/seo.ts'
 import { requireUser } from '~/utils/session.server.ts'
 import { useRootData } from '~/utils/use-root-data.ts'
-import { type RootLoaderType } from '~/root.tsx'
 
 function getErrorForSubject(subject: string | null) {
 	if (!subject) return `Subject is required`
@@ -57,7 +57,7 @@ export const action = async ({ request }: DataFunctionArgs) => {
 			subject: getErrorForSubject,
 			body: getErrorForBody,
 		},
-		handleFormValues: async fields => {
+		handleFormValues: async (fields) => {
 			const { subject, body } = fields
 
 			const sender = `"${user.firstName}" <${user.email}>`
@@ -87,8 +87,7 @@ export const headers: HeadersFunction = () => ({
 export const meta: MetaFunction<{}, { root: RootLoaderType }> = ({
 	matches,
 }) => {
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-	const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
+	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
 	return getSocialMetas({
 		title: 'Contact Kent C. Dodds',
 		description: 'Send Kent C. Dodds a personal email.',

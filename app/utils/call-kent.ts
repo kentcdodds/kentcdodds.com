@@ -58,7 +58,7 @@ function getEpisodeFromParams(
 	params: Params,
 ) {
 	return episodes.find(
-		e =>
+		(e) =>
 			e.seasonNumber === Number(params.season) &&
 			e.episodeNumber === Number(params.episode),
 	)

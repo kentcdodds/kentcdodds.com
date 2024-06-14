@@ -14,6 +14,7 @@ import {
 import { clsx } from 'clsx'
 import { motion } from 'framer-motion'
 import React, { useState } from 'react'
+import { serverOnly$ } from 'vite-env-only'
 import { ArrowLink, BackLink } from '~/components/arrow-button.tsx'
 import { FourOhFour } from '~/components/errors.tsx'
 import { Grid } from '~/components/grid.tsx'
@@ -32,6 +33,7 @@ import { FeaturedSection } from '~/components/sections/featured-section.tsx'
 import { Spacer } from '~/components/spacer.tsx'
 import { H2, H3, H6, Paragraph } from '~/components/typography.tsx'
 import { getSocialImageWithPreTitle } from '~/images.tsx'
+import { type RootLoaderType } from '~/root.tsx'
 import { type CWKEpisode, type CWKListItem, type KCDHandle } from '~/types.ts'
 import {
 	getCWKEpisodePath,
@@ -52,14 +54,12 @@ import { getSeasons } from '~/utils/simplecast.server.ts'
 import { Themed } from '~/utils/theme.tsx'
 import { getServerTimeHeader } from '~/utils/timing.server.ts'
 import { useRootData } from '~/utils/use-root-data.ts'
-import { type RootLoaderType } from '~/root.tsx'
-import { serverOnly$ } from 'vite-env-only'
 
 export const handle: KCDHandle = {
-	getSitemapEntries: serverOnly$(async request => {
+	getSitemapEntries: serverOnly$(async (request) => {
 		const seasons = await getSeasons({ request })
-		return seasons.flatMap(season => {
-			return season.episodes.map(episode => {
+		return seasons.flatMap((season) => {
+			return season.episodes.map((episode) => {
 				const s = String(season.seasonNumber).padStart(2, '0')
 				const e = String(episode.episodeNumber).padStart(2, '0')
 				return {
@@ -78,8 +78,8 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	matches,
 }) => {
 	const episode = (data as LoaderData | undefined)?.episode
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-	const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
+
+	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
 	if (!episode) {
 		return [{ title: 'Chats with Kent Episode not found' }]
 	}
@@ -133,11 +133,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 	const episodeNumber = Number(params.episode)
 
 	const seasons = await getSeasons({ request, timings })
-	const season = seasons.find(s => s.seasonNumber === seasonNumber)
+	const season = seasons.find((s) => s.seasonNumber === seasonNumber)
 	if (!season) {
 		throw new Response(`Season ${seasonNumber} not found`, { status: 404 })
 	}
-	const episode = season.episodes.find(e => e.episodeNumber === episodeNumber)
+	const episode = season.episodes.find((e) => e.episodeNumber === episodeNumber)
 	if (!episode) {
 		throw new Response(`Episode ${episodeNumber} not found`, { status: 404 })
 	}
@@ -150,10 +150,12 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
 	const data: LoaderData = {
 		prevEpisode:
-			season.episodes.find(e => e.episodeNumber === episodeNumber - 1) ?? null,
+			season.episodes.find((e) => e.episodeNumber === episodeNumber - 1) ??
+			null,
 		nextEpisode:
-			season.episodes.find(e => e.episodeNumber === episodeNumber + 1) ?? null,
-		featured: getFeaturedEpisode(season.episodes.filter(e => episode !== e)),
+			season.episodes.find((e) => e.episodeNumber === episodeNumber + 1) ??
+			null,
+		featured: getFeaturedEpisode(season.episodes.filter((e) => episode !== e)),
 		episode,
 	}
 
@@ -181,7 +183,7 @@ function Homework({
 			</H6>
 
 			<ul className="text-primary html -mb-10 text-lg font-medium">
-				{homeworkHTMLs.map(homeworkHTML => (
+				{homeworkHTMLs.map((homeworkHTML) => (
 					<li
 						key={homeworkHTML}
 						className="border-secondary flex border-t pb-10 pt-8"
@@ -207,7 +209,7 @@ function Resources({ resources = [] }: { resources: CWKEpisode['resources'] }) {
 			</h4>
 
 			<ul className="text-secondary space-y-8 text-lg font-medium lg:space-y-2">
-				{resources.map(resource => (
+				{resources.map((resource) => (
 					<li key={resource.url}>
 						<a
 							href={resource.url}
@@ -230,7 +232,7 @@ function Guests({ episode }: { episode: CWKEpisode }) {
 		<>
 			<h4 className="sr-only">Guests</h4>
 
-			{episode.guests.map(guest => (
+			{episode.guests.map((guest) => (
 				<div
 					key={guest.name}
 					className="text-secondary bg-secondary flex flex-col rounded-lg p-10 pb-16 md:flex-row md:items-center md:pb-12"
@@ -440,7 +442,6 @@ export default function PodcastDetail() {
 						// which is annoying.
 						initialOnly={true}
 						dark={
-							// eslint-disable-next-line react/iframe-missing-sandbox
 							<iframe
 								className="mb-4"
 								title="player"
@@ -453,7 +454,6 @@ export default function PodcastDetail() {
 							/>
 						}
 						light={
-							// eslint-disable-next-line react/iframe-missing-sandbox
 							<iframe
 								className="mb-4"
 								title="player"
@@ -489,7 +489,7 @@ export default function PodcastDetail() {
 							url: permalink,
 							text: `I just listened to "${episode.title}" with ${listify(
 								episode.guests
-									.map(g => (g.x ? `@${g.x}` : null))
+									.map((g) => (g.x ? `@${g.x}` : null))
 									.filter(typedBoolean),
 							)} on the Call Kent Podcast 🎙 by @kentcdodds`,
 						})}`}
@@ -548,7 +548,7 @@ export default function PodcastDetail() {
 					title={featured.title}
 					href={getCWKEpisodePath(featured)}
 					imageUrl={featured.image}
-					imageAlt={listify(featured.guests.map(g => g.name))}
+					imageAlt={listify(featured.guests.map((g) => g.name))}
 				/>
 			) : null}
 		</>

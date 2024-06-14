@@ -1,10 +1,10 @@
-import { type User } from '~/types.ts'
 import * as ck from '../convertkit/convertkit.server.ts'
 import { getImageBuilder, images } from '../images.tsx'
 import { cache, cachified } from './cache.server.ts'
 import * as discord from './discord.server.ts'
 import { getAvatar, getOptionalTeam } from './misc.tsx'
 import { type Timings } from './timing.server.ts'
+import { type User } from '~/types.ts'
 
 type UserInfo = {
 	avatar: {
@@ -22,7 +22,7 @@ type UserInfo = {
 
 function abortTimeoutSignal(timeMs: number) {
 	const abortController = new AbortController()
-	void new Promise(resolve => setTimeout(resolve, timeMs)).then(() => {
+	void new Promise((resolve) => setTimeout(resolve, timeMs)).then(() => {
 		abortController.abort()
 	})
 	return abortController.signal
@@ -47,8 +47,8 @@ export async function gravatarExistsForEmail({
 		forceFresh,
 		ttl: 1000 * 60 * 60 * 24 * 90,
 		staleWhileRevalidate: 1000 * 60 * 60 * 24 * 365,
-		checkValue: prevValue => typeof prevValue === 'boolean',
-		getFreshValue: async context => {
+		checkValue: (prevValue) => typeof prevValue === 'boolean',
+		getFreshValue: async (context) => {
 			const gravatarUrl = getAvatar(email, { fallback: '404' })
 			try {
 				const avatarResponse = await fetch(gravatarUrl, {

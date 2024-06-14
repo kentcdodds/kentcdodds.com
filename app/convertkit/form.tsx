@@ -1,10 +1,10 @@
 import { useFetcher } from '@remix-run/react'
 import * as React from 'react'
+import { type ActionData } from './types.ts'
 import { ArrowButton } from '~/components/arrow-button.tsx'
 import { Field } from '~/components/form-elements.tsx'
 import { CheckIcon } from '~/components/icons.tsx'
 import { useRootData } from '~/utils/use-root-data.ts'
-import { type ActionData } from './types.ts'
 
 function ConvertKitForm({
 	formId,
@@ -49,7 +49,6 @@ function ConvertKitForm({
 		>
 			<div style={{ position: 'absolute', left: '-9999px' }}>
 				<label htmlFor={`website-url-${websiteId}`}>Your website</label>
-				{/* eslint-disable-next-line jsx-a11y/autocomplete-valid */}
 				<input
 					type="text"
 					id={`website-url-${websiteId}`}

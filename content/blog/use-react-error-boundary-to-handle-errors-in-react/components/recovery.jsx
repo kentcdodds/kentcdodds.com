@@ -29,7 +29,7 @@ function App() {
 				<input
 					placeholder={`type "bomb"`}
 					value={username}
-					onChange={e => setUsername(e.target.value)}
+					onChange={(e) => setUsername(e.target.value)}
 					ref={usernameRef}
 				/>
 			</label>

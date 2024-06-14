@@ -2,7 +2,7 @@ import * as React from 'react'
 
 class UsernameFormClass extends React.Component {
 	state = { status: 'idle', error: null }
-	handleSubmit = async event => {
+	handleSubmit = async (event) => {
 		event.preventDefault()
 		const newUsername = event.target.elements.username.value
 		this.setState({ status: 'pending' })
@@ -32,7 +32,7 @@ class UsernameFormClass extends React.Component {
 
 class UsernameFormClassWithBug extends React.Component {
 	state = { status: 'idle', error: null }
-	handleSubmit = async event => {
+	handleSubmit = async (event) => {
 		event.preventDefault()
 		const newUsername = event.target.elements.username.value
 		this.setState({ status: 'pending' })

@@ -25,12 +25,12 @@ function getRedirectsMiddleware({
 			let methods, from, to
 			const [one, two, three] = line
 				.split(' ')
-				.map(l => l.trim())
+				.map((l) => l.trim())
 				.filter(Boolean)
 			if (!one) return null
 
 			const splitOne = one.split(',')
-			if (possibleMethods.some(m => splitOne.includes(m))) {
+			if (possibleMethods.some((m) => splitOne.includes(m))) {
 				methods = splitOne
 				from = two
 				to = three
@@ -59,7 +59,7 @@ function getRedirectsMiddleware({
 					}),
 					toUrl,
 				}
-			} catch (error: unknown) {
+			} catch {
 				// if parsing the redirect fails, we'll warn, but we won't crash
 				console.error(
 					`Failed to parse redirect on line ${lineNumber}: "${line}"`,
@@ -75,7 +75,7 @@ function getRedirectsMiddleware({
 		let reqUrl
 		try {
 			reqUrl = new URL(`${protocol}://${host}${req.url}`)
-		} catch (error: unknown) {
+		} catch {
 			console.error(`Invalid URL: ${protocol}://${host}${req.url}`)
 			next()
 			return

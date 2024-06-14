@@ -1,11 +1,11 @@
 import { json, redirect, type DataFunctionArgs } from '@remix-run/node'
+import { serverOnly$ } from 'vite-env-only'
+import { cache } from '~/utils/cache.server.ts'
 import {
 	getInstanceInfo,
 	getInternalInstanceDomain,
 } from '~/utils/cjs/litefs-js.server.js'
-import { cache } from '~/utils/cache.server.ts'
 import { getRequiredServerEnvVar } from '~/utils/misc.tsx'
-import { serverOnly$ } from 'vite-env-only'
 
 export async function action({ request }: DataFunctionArgs) {
 	const { currentIsPrimary, primaryInstance } = await getInstanceInfo()

@@ -27,11 +27,11 @@ import { requireValidSlug, reuseUsefulLoaderHeaders } from '~/utils/misc.tsx'
 import { getServerTimeHeader } from '~/utils/timing.server.ts'
 
 export const handle: KCDHandle = {
-	getSitemapEntries: serverOnly$(async request => {
+	getSitemapEntries: serverOnly$(async (request) => {
 		const pages = await getMdxPagesInDirectory('pages', { request })
 		return pages
-			.filter(page => !page.frontmatter.draft)
-			.map(page => {
+			.filter((page) => !page.frontmatter.draft)
+			.map((page) => {
 				return { route: `/${page.slug}`, priority: 0.6 }
 			})
 	}),

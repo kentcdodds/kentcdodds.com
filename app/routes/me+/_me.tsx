@@ -23,6 +23,7 @@ import {
 import { Spacer } from '~/components/spacer.tsx'
 import { H2, H3, H6, Paragraph } from '~/components/typography.tsx'
 import { getGenericSocialImage, images } from '~/images.tsx'
+import { type RootLoaderType } from '~/root.tsx'
 import { type KCDHandle } from '~/types.ts'
 import { handleFormSubmission } from '~/utils/actions.server.ts'
 import {
@@ -55,7 +56,6 @@ import {
 	deleteDiscordCache,
 	gravatarExistsForEmail,
 } from '~/utils/user-info.server.ts'
-import { type RootLoaderType } from '~/root.tsx'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
@@ -64,8 +64,7 @@ export const handle: KCDHandle = {
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	matches,
 }) => {
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-	const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
+	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
 	const domain = new URL(getOrigin(requestInfo)).host
 	return getSocialMetas({
 		title: `Your account on ${domain}`,

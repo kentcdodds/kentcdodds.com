@@ -13,8 +13,7 @@ translations:
   - language: 한국어
     link: https://edykim.com/ko/post/react-hooks-whats-going-to-happen-to-render-props
 bannerCloudinaryId: unsplash/photo-1531871165793-30177cc75a44
-bannerCredit:
-  Photo by [Nadine Shaabana](https://unsplash.com/photos/anXB3AhQcJ0)
+bannerCredit: Photo by [Nadine Shaabana](https://unsplash.com/photos/anXB3AhQcJ0)
 ---
 
 About a year ago, I published
@@ -86,7 +85,7 @@ will give you the correct props you need for a toggler to work (including
 const callAll =
 	(...fns) =>
 	(...args) =>
-		fns.forEach(fn => fn && fn(...args))
+		fns.forEach((fn) => fn && fn(...args))
 
 function useToggle(initialOn = false) {
 	const [on, setOn] = useState(initialOn)
@@ -122,7 +121,7 @@ And it's more accessible and stuff. Neat right? Well, what if I don't need the
 const callAll =
 	(...fns) =>
 	(...args) =>
-		fns.forEach(fn => fn && fn(...args))
+		fns.forEach((fn) => fn && fn(...args))
 
 function useToggle(initialOn = false) {
 	const [on, setOn] = useState(initialOn)

@@ -2,12 +2,12 @@ import { useMatches } from '@remix-run/react'
 import { clsx } from 'clsx'
 import errorStack from 'error-stack-parser'
 import * as React from 'react'
-import { type MdxListItem } from '~/types.ts'
+import { ArrowLink } from './arrow-button.tsx'
 import { Facepalm, Grimmacing, MissingSomething } from './kifs.tsx'
 import { BlogSection } from './sections/blog-section.tsx'
 import { HeroSection, type HeroSectionProps } from './sections/hero-section.tsx'
 import { H2, H6 } from './typography.tsx'
-import { ArrowLink } from './arrow-button.tsx'
+import { type MdxListItem } from '~/types.ts'
 import { getErrorMessage } from '~/utils/misc.tsx'
 
 function RedBox({ error }: { error: Error }) {
@@ -30,7 +30,7 @@ function RedBox({ error }: { error: Error }) {
 			<div className="border-lg text-primary relative mx-5vw my-16 max-h-75vh overflow-y-auto rounded-lg bg-red-500 p-12">
 				<H2>{error.message}</H2>
 				<div>
-					{frames.map(frame => (
+					{frames.map((frame) => (
 						<div
 							key={[frame.fileName, frame.lineNumber, frame.columnNumber].join(
 								'-',

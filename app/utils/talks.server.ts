@@ -3,12 +3,12 @@ import {
 	type CountableSlugify,
 } from '@sindresorhus/slugify'
 import * as YAML from 'yaml'
+import { type Timings } from './timing.server.ts'
 import { type Await } from '~/types.ts'
 import { cache, cachified } from '~/utils/cache.server.ts'
 import { downloadFile } from '~/utils/github.server.ts'
 import { markdownToHtml, stripHtml } from '~/utils/markdown.server.ts'
 import { formatDate, typedBoolean } from '~/utils/misc.tsx'
-import { type Timings } from './timing.server.ts'
 
 type RawTalk = {
 	title?: string
@@ -25,7 +25,6 @@ type Talk = Await<ReturnType<typeof getTalk>>
 let _slugify: CountableSlugify
 
 async function getSlugify() {
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	if (!_slugify) {
 		_slugify = slugifyWithCounter()
 	}
@@ -39,17 +38,18 @@ async function getTalk(rawTalk: RawTalk, allTags: Array<string>) {
 		: ''
 	return {
 		title: rawTalk.title ?? 'TBA',
-		tag: allTags.find(tag => rawTalk.tags?.includes(tag)) ?? rawTalk.tags?.[0],
+		tag:
+			allTags.find((tag) => rawTalk.tags?.includes(tag)) ?? rawTalk.tags?.[0],
 		tags: rawTalk.tags ?? [],
 		slug: slugify(rawTalk.title ?? 'TBA'),
 		resourceHTMLs: rawTalk.resources
-			? await Promise.all(rawTalk.resources.map(r => markdownToHtml(r)))
+			? await Promise.all(rawTalk.resources.map((r) => markdownToHtml(r)))
 			: [],
 		descriptionHTML,
 		description: descriptionHTML ? await stripHtml(descriptionHTML) : '',
 		deliveries: (rawTalk.deliveries
 			? await Promise.all(
-					rawTalk.deliveries.map(async d => {
+					rawTalk.deliveries.map(async (d) => {
 						return {
 							eventHTML: d.event ? await markdownToHtml(d.event) : undefined,
 							date: d.date,
@@ -141,7 +141,7 @@ async function getTalksAndTags({
 			const allTags = getTags(rawTalks)
 
 			const allTalks = await Promise.all(
-				rawTalks.map(rawTalk => getTalk(rawTalk, allTags)),
+				rawTalks.map((rawTalk) => getTalk(rawTalk, allTags)),
 			)
 			allTalks.sort(sortByPresentationDate)
 

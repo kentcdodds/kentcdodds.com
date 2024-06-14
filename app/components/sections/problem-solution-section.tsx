@@ -11,13 +11,13 @@ import { clsx } from 'clsx'
 import { differenceInYears } from 'date-fns'
 import { AnimatePresence, motion } from 'framer-motion'
 import * as React from 'react'
-import { getImgProps, images, type ImageBuilder } from '~/images.tsx'
-import { type Team } from '~/types.ts'
-import { teamTextColorClasses } from '~/utils/misc.tsx'
 import { ArrowLink } from '../arrow-button.tsx'
 import { Grid } from '../grid.tsx'
 import { ArrowIcon } from '../icons.tsx'
 import { H2, H3, Paragraph } from '../typography.tsx'
+import { getImgProps, images, type ImageBuilder } from '~/images.tsx'
+import { type Team } from '~/types.ts'
+import { teamTextColorClasses } from '~/utils/misc.tsx'
 
 function Tab({ isSelected, children }: TabProps & { isSelected?: boolean }) {
 	return (
@@ -103,7 +103,7 @@ function ProblemSolutionSection({
 	const [activeTabIndex, setActiveTabIndex] = React.useState(0)
 
 	return (
-		<Tabs as={Grid} featured onChange={index => setActiveTabIndex(index)}>
+		<Tabs as={Grid} featured onChange={(index) => setActiveTabIndex(index)}>
 			<div className="col-span-full lg:col-span-5">
 				<H2 className="mb-4 lg:mb-0">
 					Having a hard time keeping up with JavaScript?

@@ -1,6 +1,11 @@
 import { type HeadersFunction, type MetaFunction } from '@remix-run/node'
 import { useSearchParams } from '@remix-run/react'
 import * as React from 'react'
+import {
+	useWorkshopsData,
+	type loader as WorkshopLoader,
+	type LoaderData as WorkshopLoaderData,
+} from './_workshops.tsx'
 import { Grid } from '~/components/grid.tsx'
 import { CourseSection } from '~/components/sections/course-section.tsx'
 import { HeroSection } from '~/components/sections/hero-section.tsx'
@@ -10,6 +15,10 @@ import { H3, H6 } from '~/components/typography.tsx'
 import { WorkshopCard } from '~/components/workshop-card.tsx'
 import { RegistrationPanel } from '~/components/workshop-registration-panel.tsx'
 import { getSocialImageWithPreTitle, images } from '~/images.tsx'
+import {
+	type RootLoaderType,
+	type LoaderData as RootLoaderData,
+} from '~/root.tsx'
 import { type Workshop } from '~/types.ts'
 import {
 	getDisplayUrl,
@@ -20,15 +29,6 @@ import {
 } from '~/utils/misc.tsx'
 import { getSocialMetas } from '~/utils/seo.ts'
 import { type WorkshopEvent } from '~/utils/workshop-tickets.server.ts'
-import {
-	type RootLoaderType,
-	type LoaderData as RootLoaderData,
-} from '~/root.tsx'
-import {
-	useWorkshopsData,
-	type loader as WorkshopLoader,
-	type LoaderData as WorkshopLoaderData,
-} from './_workshops.tsx'
 
 export const meta: MetaFunction<
 	{},
@@ -37,9 +37,9 @@ export const meta: MetaFunction<
 		'routes/workshops+/_workshops': typeof WorkshopLoader
 	}
 > = ({ matches }) => {
-	const { requestInfo } = matches.find(m => m.id === 'root')
+	const { requestInfo } = matches.find((m) => m.id === 'root')
 		?.data as RootLoaderData
-	const data = matches.find(m => m.id === 'routes/workshops+/_workshops')
+	const data = matches.find((m) => m.id === 'routes/workshops+/_workshops')
 		?.data as WorkshopLoaderData
 
 	const tagsSet = new Set<string>()
@@ -86,19 +86,19 @@ function WorkshopsHome() {
 		return searchParams.get('q') ?? ''
 	})
 	const workshops = queryValue
-		? data.workshops.filter(workshop =>
-				queryValue.split(' ').every(tag => workshop.categories.includes(tag)),
+		? data.workshops.filter((workshop) =>
+				queryValue.split(' ').every((tag) => workshop.categories.includes(tag)),
 			)
 		: data.workshops
 
 	const visibleTags = queryValue
 		? new Set(
-				workshops.flatMap(workshop => workshop.categories).filter(Boolean),
+				workshops.flatMap((workshop) => workshop.categories).filter(Boolean),
 			)
 		: new Set(tags)
 
 	function toggleTag(tag: string) {
-		setQuery(q => {
+		setQuery((q) => {
 			// create a regexp so that we can replace multiple occurrences (`react node react`)
 			const expression = new RegExp(tag, 'ig')
 
@@ -114,7 +114,7 @@ function WorkshopsHome() {
 	useUpdateQueryStringValueWithoutNavigation('q', queryValue)
 
 	const workshopEvents: Array<Workshop['events'][number] | WorkshopEvent> = [
-		...workshops.flatMap(w => w.events),
+		...workshops.flatMap((w) => w.events),
 		...data.workshopEvents,
 	].filter(typedBoolean)
 
@@ -147,7 +147,7 @@ function WorkshopsHome() {
 
 			<Grid className="mb-14">
 				<div className="col-span-full flex flex-wrap gap-4 lg:col-span-10">
-					{tags.map(tag => (
+					{tags.map((tag) => (
 						<Tag
 							key={tag}
 							tag={tag}
@@ -185,7 +185,7 @@ function WorkshopsHome() {
 									<WorkshopCard
 										workshop={workshop}
 										titoEvents={data.workshopEvents.filter(
-											e => e.metadata.workshopSlug === workshop.slug,
+											(e) => e.metadata.workshopSlug === workshop.slug,
 										)}
 									/>
 								</div>
@@ -205,7 +205,8 @@ function workshopHasEvents(
 ) {
 	return Boolean(
 		workshop.events.length ||
-			titoEvents.filter(e => e.metadata.workshopSlug === workshop.slug).length,
+			titoEvents.filter((e) => e.metadata.workshopSlug === workshop.slug)
+				.length,
 	)
 }
 

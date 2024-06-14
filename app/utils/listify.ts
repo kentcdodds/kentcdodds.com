@@ -29,10 +29,10 @@ function listify<ItemType extends ToStringable>(
 	{
 		type = 'conjunction',
 		style = 'long',
-		stringify = thing => thing.toString(),
+		stringify = (thing) => thing.toString(),
 	}: ListifyOptions<ItemType> = {},
 ) {
-	const stringified = array.map(item => stringify(item))
+	const stringified = array.map((item) => stringify(item))
 	const formatter = new Intl.ListFormat('en', { style, type })
 	return formatter.format(stringified)
 }

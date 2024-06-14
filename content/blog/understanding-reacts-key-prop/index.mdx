@@ -59,7 +59,11 @@ function Contact() {
 	return (
 		<form>
 			<label htmlFor="topic">Topic</label>
-			<select id="topic" value={topic} onChange={e => setTopic(e.target.value)}>
+			<select
+				id="topic"
+				value={topic}
+				onChange={(e) => setTopic(e.target.value)}
+			>
 				<option value="training">Training</option>
 				<option value="consulting">Consulting</option>
 				<option value="question">Question</option>
@@ -100,7 +104,7 @@ demonstration, let's use something really simple:
 ```tsx
 function Counter() {
 	const [count, setCount] = React.useState(0)
-	const increment = () => setCount(c => c + 1)
+	const increment = () => setCount((c) => c + 1)
 	return <button onClick={increment}>{count}</button>
 }
 ```
@@ -155,7 +159,7 @@ function Counter() {
 		console.log('Counter useState initializer')
 		return 0
 	})
-	const increment = () => setCount(c => c + 1)
+	const increment = () => setCount((c) => c + 1)
 
 	React.useEffect(() => {
 		console.log('Counter useEffect callback')
@@ -173,7 +177,7 @@ function CounterParent() {
 	// setCounterKey, the `counterKey` is set to a new value which will
 	// make the `key` different resulting in React unmounting the previous
 	// component and mounting a new one.
-	const [counterKey, setCounterKey] = React.useReducer(c => c + 1, 0)
+	const [counterKey, setCounterKey] = React.useReducer((c) => c + 1, 0)
 	return (
 		<div>
 			<button onClick={setCounterKey}>reset</button>

@@ -73,7 +73,7 @@ function client(endpoint, customConfig) {
 
 	return window
 		.fetch(`${process.env.REACT_APP_API_URL}/${endpoint}`, config)
-		.then(response => response.json())
+		.then((response) => response.json())
 }
 ```
 
@@ -81,10 +81,10 @@ This `client` function allows me to make calls to my app's API like so:
 
 ```js
 client(`books?query=${encodeURIComponent(query)}`).then(
-	data => {
+	(data) => {
 		console.log('here are the books', data.books)
 	},
-	error => {
+	(error) => {
 		console.error('oh no, an error happened', error)
 	},
 )
@@ -106,7 +106,7 @@ function client(endpoint, customConfig = {}) {
 
 	return window
 		.fetch(`${process.env.REACT_APP_API_URL}/${endpoint}`, config)
-		.then(async response => {
+		.then(async (response) => {
 			if (response.ok) {
 				return await response.json()
 			} else {
@@ -139,7 +139,7 @@ function client(endpoint, { body, ...customConfig } = {}) {
 
 	return window
 		.fetch(`${process.env.REACT_APP_API_URL}/${endpoint}`, config)
-		.then(async response => {
+		.then(async (response) => {
 			if (response.ok) {
 				return await response.json()
 			} else {
@@ -154,10 +154,10 @@ Sweet, so now we can do stuff like this:
 
 ```js
 client('login', { body: { username, password } }).then(
-	data => {
+	(data) => {
 		console.log('here the logged in user data', data)
 	},
-	error => {
+	(error) => {
 		console.error('oh no, login failed', error)
 	},
 )
@@ -189,7 +189,7 @@ function client(endpoint, { body, ...customConfig } = {}) {
 
 	return window
 		.fetch(`${process.env.REACT_APP_API_URL}/${endpoint}`, config)
-		.then(async response => {
+		.then(async (response) => {
 			if (response.ok) {
 				return await response.json()
 			} else {
@@ -232,7 +232,7 @@ function client(endpoint, { body, ...customConfig } = {}) {
 
 	return window
 		.fetch(`${process.env.REACT_APP_API_URL}/${endpoint}`, config)
-		.then(async response => {
+		.then(async (response) => {
 			if (response.status === 401) {
 				logout()
 				window.location.assign(window.location)

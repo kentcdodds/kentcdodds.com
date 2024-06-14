@@ -1,7 +1,6 @@
 import { defineConfig, devices } from '@playwright/test'
 import 'dotenv/config'
 
-// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 const PORT = Number(process.env.PORT || 3000)
 
 if (!PORT) {

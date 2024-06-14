@@ -65,7 +65,7 @@ test('Call Kent recording flow', async ({ page, login }) => {
 			.getByRole('heading', { level: 2, name: /calls with kent/i }),
 	).toBeVisible({ timeout: 10_000 })
 
-	const email = await readEmail(em => em.to.includes(user.email))
+	const email = await readEmail((em) => em.to.includes(user.email))
 	invariant(email, 'Notification email not found')
 	expect(email.subject).toMatch(/published/i)
 	// NOTE: domain is hard coded for image generation and stuff

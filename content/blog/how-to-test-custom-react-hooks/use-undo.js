@@ -71,11 +71,11 @@ function useUndo(initialPresent) {
 	const undo = React.useCallback(() => dispatch({ type: UNDO }), [])
 	const redo = React.useCallback(() => dispatch({ type: REDO }), [])
 	const set = React.useCallback(
-		newPresent => dispatch({ type: SET, newPresent }),
+		(newPresent) => dispatch({ type: SET, newPresent }),
 		[],
 	)
 	const reset = React.useCallback(
-		newPresent => dispatch({ type: RESET, newPresent }),
+		(newPresent) => dispatch({ type: RESET, newPresent }),
 		[],
 	)
 

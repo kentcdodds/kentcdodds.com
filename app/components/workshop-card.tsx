@@ -1,8 +1,8 @@
 import { Link } from '@remix-run/react'
-import { type Workshop } from '~/types.ts'
-import { type WorkshopEvent } from '~/utils/workshop-tickets.server.ts'
 import { Spacer } from './spacer.tsx'
 import { H3, H6, Paragraph } from './typography.tsx'
+import { type Workshop } from '~/types.ts'
+import { type WorkshopEvent } from '~/utils/workshop-tickets.server.ts'
 
 function truncate(text: string, length: number) {
 	if (!text || text.length <= length) {
@@ -36,7 +36,7 @@ function WorkshopCard({
 
 			{workshop.categories.length ? (
 				<div className="flex flex-none flex-wrap gap-2">
-					{workshop.categories.map(c => (
+					{workshop.categories.map((c) => (
 						<div
 							key={c}
 							className="mb-4 inline-block rounded-full bg-white px-8 py-4 text-lg text-black dark:bg-gray-600 dark:text-white"

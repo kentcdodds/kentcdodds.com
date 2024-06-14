@@ -38,7 +38,7 @@ class Person {
 	}
 	getGreetingCallback() {
 		const { greeting, _name } = this
-		return subject => `${greeting} ${subject}, I'm ${_name}`
+		return (subject) => `${greeting} ${subject}, I'm ${_name}`
 	}
 	_getPrefixedName(prefix) {
 		return `${prefix}: ${this._name}`
@@ -189,7 +189,7 @@ function getPrefixedName(prefix, name) {
 
 function getGreetingCallback(person) {
 	const { greeting, name } = person
-	return subject => `${greeting} ${subject}, I'm ${name}`
+	return (subject) => `${greeting} ${subject}, I'm ${name}`
 }
 
 const person = { greeting: 'Hey there!', name: 'Jane Doe' }
@@ -273,7 +273,7 @@ function getPerson(initialName) {
 		},
 		getGreetingCallback() {
 			const { greeting } = person
-			return subject => `${greeting} ${subject}, I'm ${name}`
+			return (subject) => `${greeting} ${subject}, I'm ${name}`
 		},
 	}
 	function getPrefixedName(prefix) {

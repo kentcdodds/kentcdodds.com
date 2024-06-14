@@ -93,7 +93,7 @@ my _import_ statement could import that dynamic property, like this:
 // foo.js
 const foo = {}
 export default foo
-somethingAsync().then(result => (foo[result.key] = result.value))
+somethingAsync().then((result) => (foo[result.key] = result.value))
 
 // bar.js
 import { foobar } from './foo'
@@ -106,7 +106,7 @@ fine because the require statements happen at runtime (when they're required):
 // foo.js
 const foo = {}
 module.exports = foo
-somethingAsync().then(result => result => (foo[result.key] = result.value))
+somethingAsync().then((result) => (result) => (foo[result.key] = result.value))
 
 // bar.js
 const { foobar } = require('./foo')

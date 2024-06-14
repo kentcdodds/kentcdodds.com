@@ -1,5 +1,11 @@
 import slugify from '@sindresorhus/slugify'
 import * as uuid from 'uuid'
+import { cache, cachified } from './cache.server.ts'
+import { getEpisodePath } from './call-kent.ts'
+import { stripHtml } from './markdown.server.ts'
+import { getRequiredServerEnvVar, toBase64 } from './misc.tsx'
+import { type Timings } from './timing.server.ts'
+import { getDirectAvatarForUser } from './user-info.server.ts'
 import {
 	type CallKentEpisode,
 	type TransistorAuthorizedJson,
@@ -10,12 +16,6 @@ import {
 	type TransistorPublishedJson,
 	type TransistorUpdateEpisodeData,
 } from '~/types.ts'
-import { cache, cachified } from './cache.server.ts'
-import { getEpisodePath } from './call-kent.ts'
-import { stripHtml } from './markdown.server.ts'
-import { getRequiredServerEnvVar, toBase64 } from './misc.tsx'
-import { type Timings } from './timing.server.ts'
-import { getDirectAvatarForUser } from './user-info.server.ts'
 
 const transistorApiSecret = getRequiredServerEnvVar('TRANSISTOR_API_SECRET')
 const podcastId = getRequiredServerEnvVar('CALL_KENT_PODCAST_ID', '67890')
@@ -52,7 +52,7 @@ async function fetchTransitor<JsonResponse>({
 	const json = await res.json()
 	if (json.errors) {
 		throw new Error(
-			(json as TransistorErrorResponse).errors.map(e => e.title).join('\n'),
+			(json as TransistorErrorResponse).errors.map((e) => e.title).join('\n'),
 		)
 	}
 	return json as JsonResponse
@@ -232,7 +232,7 @@ async function getEpisodes() {
 			title: episode.attributes.title,
 			summary: episode.attributes.summary,
 			descriptionHTML: episode.attributes.description,
-			// eslint-disable-next-line no-await-in-loop
+
 			description: await stripHtml(episode.attributes.description),
 			keywords: episode.attributes.keywords,
 			duration: episode.attributes.duration,
@@ -284,7 +284,7 @@ async function getCachedEpisodes({
 		checkValue: (value: unknown) =>
 			Array.isArray(value) &&
 			value.every(
-				v => typeof v.slug === 'string' && typeof v.title === 'string',
+				(v) => typeof v.slug === 'string' && typeof v.title === 'string',
 			),
 	})
 }

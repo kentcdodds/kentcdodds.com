@@ -17,7 +17,7 @@ function AddWithInput({ n1, initialN2 = 0 }) {
 				aria-label="n2"
 				type="number"
 				value={n2}
-				onChange={e => setN2(Number(e.target.value))}
+				onChange={(e) => setN2(Number(e.target.value))}
 			/>{' '}
 			= {n1 + n2}
 		</div>

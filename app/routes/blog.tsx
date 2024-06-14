@@ -28,8 +28,8 @@ import {
 	getSocialImageWithPreTitle,
 	images,
 } from '~/images.tsx'
+import { type RootLoaderType } from '~/root.tsx'
 import { type KCDHandle, type Team } from '~/types.ts'
-import { filterPosts, getRankingLeader } from '~/utils/blog.ts'
 import {
 	getAllBlogPostReadRankings,
 	getBlogReadRankings,
@@ -38,8 +38,9 @@ import {
 	getSlugReadsByUser,
 	getTotalPostReads,
 } from '~/utils/blog.server.ts'
-import { getBannerAltProp } from '~/utils/mdx.tsx'
+import { filterPosts, getRankingLeader } from '~/utils/blog.ts'
 import { getBlogMdxListItems } from '~/utils/mdx.server.ts'
+import { getBannerAltProp } from '~/utils/mdx.tsx'
 import {
 	formatAbbreviatedNumber,
 	formatNumber,
@@ -54,7 +55,6 @@ import { getSocialMetas } from '~/utils/seo.ts'
 import { useTeam } from '~/utils/team-provider.tsx'
 import { getServerTimeHeader } from '~/utils/timing.server.ts'
 import { useRootData } from '~/utils/use-root-data.ts'
-import { type RootLoaderType } from '~/root.tsx'
 
 const handleId = 'blog'
 export const handle: KCDHandle = {
@@ -84,8 +84,8 @@ export async function loader({ request }: DataFunctionArgs) {
 		allPostReadRankings,
 		userReads,
 	] = await Promise.all([
-		getBlogMdxListItems({ request }).then(allPosts =>
-			allPosts.filter(p => !p.frontmatter.draft),
+		getBlogMdxListItems({ request }).then((allPosts) =>
+			allPosts.filter((p) => !p.frontmatter.draft),
 		),
 		getBlogRecommendations({ request, limit: 1, timings }),
 		getBlogReadRankings({ request, timings }),
@@ -129,8 +129,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	data,
 	matches,
 }) => {
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-	const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
+	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
 	const { totalBlogReaders, posts } = data as SerializeFrom<typeof loader>
 	return getSocialMetas({
 		title: 'The Kent C. Dodds Blog',
@@ -215,7 +214,7 @@ function BlogHome() {
 		filteredPosts =
 			userReadsState === 'unset'
 				? filteredPosts
-				: filteredPosts.filter(post => {
+				: filteredPosts.filter((post) => {
 						const isRead = userReads.includes(post.slug)
 						if (userReadsState === 'read' && !isRead) return false
 						if (userReadsState === 'unread' && isRead) return false
@@ -224,7 +223,7 @@ function BlogHome() {
 
 		filteredPosts =
 			leaders.length || nonLeaders.length
-				? filteredPosts.filter(post => {
+				? filteredPosts.filter((post) => {
 						const leader = getLeadingTeamForSlug(post.slug)
 						if (leaders.length && leader && leaders.includes(leader)) {
 							return true
@@ -259,7 +258,7 @@ function BlogHome() {
 	// Next time we need to do work in here, let's make an abstraction for them
 
 	function toggleTag(tag: string) {
-		setQuery(q => {
+		setQuery((q) => {
 			// create a regexp so that we can replace multiple occurrences (`react node react`)
 			const expression = new RegExp(tag, 'ig')
 
@@ -290,7 +289,7 @@ function BlogHome() {
 	const posts = isSearching
 		? matchingPosts.slice(0, indexToShow)
 		: matchingPosts
-				.filter(p => p.slug !== data.recommended?.slug)
+				.filter((p) => p.slug !== data.recommended?.slug)
 				.slice(0, indexToShow)
 
 	const hasMorePosts = isSearching
@@ -300,13 +299,13 @@ function BlogHome() {
 	const visibleTags = isSearching
 		? new Set(
 				matchingPosts
-					.flatMap(post => post.frontmatter.categories)
+					.flatMap((post) => post.frontmatter.categories)
 					.filter(Boolean),
 			)
 		: new Set(data.tags)
 
 	// this is a remix bug
-	// eslint-disable-next-line
+
 	const recommendedPermalink = data.recommended
 		? `${requestInfo.origin}/blog/${data.recommended.slug}`
 		: undefined
@@ -353,7 +352,7 @@ function BlogHome() {
 						<form
 							action="/blog"
 							method="GET"
-							onSubmit={e => e.preventDefault()}
+							onSubmit={(e) => e.preventDefault()}
 						>
 							<div className="relative">
 								<button
@@ -384,10 +383,10 @@ function BlogHome() {
 									ref={searchInputRef}
 									type="search"
 									value={queryValue}
-									onChange={event =>
+									onChange={(event) =>
 										setQuery(event.currentTarget.value.toLowerCase())
 									}
-									onKeyUp={e => {
+									onKeyUp={(e) => {
 										if (!ignoreInputKeyUp.current && e.key === 'Enter') {
 											resultsRef.current
 												?.querySelector('a')
@@ -405,7 +404,7 @@ function BlogHome() {
 										title={checkboxLabel}
 										aria-label={checkboxLabel}
 										onChange={() => {
-											setUserReadsState(s => {
+											setUserReadsState((s) => {
 												if (s === 'unset') return 'unread'
 												if (s === 'unread') return 'read'
 												return 'unset'
@@ -485,7 +484,7 @@ function BlogHome() {
 							Search blog by topics
 						</H6>
 						<div className="col-span-full -mb-4 -mr-4 flex flex-wrap lg:col-span-10">
-							{data.tags.map(tag => {
+							{data.tags.map((tag) => {
 								const selected = regularQuery.includes(tag)
 								return (
 									<Tag
@@ -505,7 +504,7 @@ function BlogHome() {
 			</Grid>
 
 			{/* this is a remix bug */}
-			{/* eslint-disable-next-line */}
+			{}
 			{!isSearching && data.recommended ? (
 				<div className="mb-10">
 					<FeaturedSection
@@ -549,7 +548,7 @@ function BlogHome() {
 						</H3>
 					</div>
 				) : (
-					posts.map(article => (
+					posts.map((article) => (
 						<div key={article.slug} className="col-span-4 mb-10">
 							<ArticleCard
 								article={article}
@@ -564,7 +563,7 @@ function BlogHome() {
 				<div className="mb-64 flex w-full justify-center">
 					<Button
 						variant="secondary"
-						onClick={() => setIndexToShow(i => i + PAGE_SIZE)}
+						onClick={() => setIndexToShow((i) => i + PAGE_SIZE)}
 					>
 						<span>Load more articles</span> <PlusIcon />
 					</Button>

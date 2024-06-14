@@ -1,5 +1,5 @@
-import type * as P from '@prisma/client'
 import { faker } from '@faker-js/faker'
+import type * as P from '@prisma/client'
 
 export function createUser(): Omit<P.User, 'id' | 'createdAt' | 'updatedAt'> {
 	const gender = faker.helpers.arrayElement(['female', 'male'])

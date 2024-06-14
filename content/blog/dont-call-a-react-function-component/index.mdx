@@ -12,8 +12,7 @@ meta:
     - javascript
     - react elements
 bannerCloudinaryId: unsplash/photo-1498582750569-89914abe05e4
-bannerCredit:
-  Photo by [Alexander Andrews](https://unsplash.com/photos/bxhYCD7cdq8)
+bannerCredit: Photo by [Alexander Andrews](https://unsplash.com/photos/bxhYCD7cdq8)
 ---
 
 import * as Comps from './components'
@@ -37,13 +36,13 @@ import * as React from 'react'
 
 function Counter() {
 	const [count, setCount] = React.useState(0)
-	const increment = () => setCount(c => c + 1)
+	const increment = () => setCount((c) => c + 1)
 	return <button onClick={increment}>{count}</button>
 }
 
 function App() {
 	const [items, setItems] = React.useState([])
-	const addItem = () => setItems(i => [...i, { id: i.length }])
+	const addItem = () => setItems((i) => [...i, { id: i.length }])
 	return (
 		<div>
 			<button onClick={addItem}>Add Item</button>
@@ -102,7 +101,7 @@ function Example() {
 			console.log('count', count)
 		})
 	}
-	const increment = () => setCount(c => c + 1)
+	const increment = () => setCount((c) => c + 1)
 	return <button onClick={increment}>{count}</button>
 }
 ```
@@ -124,13 +123,13 @@ Well, let's rewrite our original example slightly:
 ```tsx lines=14-16
 function Counter() {
 	const [count, setCount] = React.useState(0)
-	const increment = () => setCount(c => c + 1)
+	const increment = () => setCount((c) => c + 1)
 	return <button onClick={increment}>{count}</button>
 }
 
 function App() {
 	const [items, setItems] = React.useState([])
-	const addItem = () => setItems(i => [...i, { id: i.length }])
+	const addItem = () => setItems((i) => [...i, { id: i.length }])
 	return (
 		<div>
 			<button onClick={addItem}>Add Item</button>
@@ -150,14 +149,14 @@ function so let's inline that:
 ```tsx lines=8-12
 function App() {
 	const [items, setItems] = React.useState([])
-	const addItem = () => setItems(i => [...i, { id: i.length }])
+	const addItem = () => setItems((i) => [...i, { id: i.length }])
 	return (
 		<div>
 			<button onClick={addItem}>Add Item</button>
 			<div>
 				{items.map(() => {
 					const [count, setCount] = React.useState(0)
-					const increment = () => setCount(c => c + 1)
+					const increment = () => setCount((c) => c + 1)
 					return <button onClick={increment}>{count}</button>
 				})}
 			</div>
@@ -191,7 +190,7 @@ components. Like so:
 ```tsx
 function Counter() {
 	const [count, setCount] = React.useState(0)
-	const increment = () => setCount(c => c + 1)
+	const increment = () => setCount((c) => c + 1)
 	return <button onClick={increment}>{count}</button>
 }
 

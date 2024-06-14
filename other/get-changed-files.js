@@ -5,9 +5,9 @@ import https from 'https'
 export function fetchJson(url, { timoutTime } = {}) {
 	return new Promise((resolve, reject) => {
 		const request = https
-			.get(url, res => {
+			.get(url, (res) => {
 				let data = ''
-				res.on('data', d => {
+				res.on('data', (d) => {
 					data += d
 				})
 
@@ -19,7 +19,7 @@ export function fetchJson(url, { timoutTime } = {}) {
 					}
 				})
 			})
-			.on('error', e => {
+			.on('error', (e) => {
 				reject(e)
 			})
 		if (timoutTime) {
@@ -45,7 +45,7 @@ export async function getChangedFiles(currentCommitSha, compareCommitSha) {
 		).toString()
 		const changedFiles = gitOutput
 			.split('\n')
-			.map(line => line.match(lineParser)?.groups)
+			.map((line) => line.match(lineParser)?.groups)
 			.filter(Boolean)
 		const changes = []
 		for (const { change, filename } of changedFiles) {

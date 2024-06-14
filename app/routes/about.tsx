@@ -6,7 +6,6 @@ import {
 	type MetaFunction,
 } from '@remix-run/node'
 import { useLoaderData, useSearchParams } from '@remix-run/react'
-import { shuffle } from '~/utils/cjs/lodash.js'
 import { ArrowLink } from '~/components/arrow-button.tsx'
 import { FeatureCard } from '~/components/feature-card.tsx'
 import {
@@ -28,8 +27,10 @@ import { HeaderSection } from '~/components/sections/header-section.tsx'
 import { HeroSection } from '~/components/sections/hero-section.tsx'
 import { H2, H3, H6, Paragraph } from '~/components/typography.tsx'
 import { getImgProps, getSocialImageWithPreTitle, images } from '~/images.tsx'
+import { type RootLoaderType } from '~/root.tsx'
 import { type Await, type MdxListItem } from '~/types.ts'
 import { getBlogRecommendations } from '~/utils/blog.server.ts'
+import { shuffle } from '~/utils/cjs/lodash.js'
 import {
 	getDisplayUrl,
 	getUrl,
@@ -39,7 +40,6 @@ import { getSocialMetas } from '~/utils/seo.ts'
 import { getTalksAndTags } from '~/utils/talks.server.ts'
 import { getServerTimeHeader } from '~/utils/timing.server.ts'
 import { useRootData } from '~/utils/use-root-data.ts'
-import { type RootLoaderType } from '~/root.tsx'
 
 type LoaderData = {
 	blogRecommendations: Array<MdxListItem>
@@ -69,8 +69,7 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	matches,
 }) => {
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-	const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
+	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
 	return getSocialMetas({
 		title: 'About Kent C. Dodds',
 		description: 'Get to know Kent C. Dodds',
@@ -300,7 +299,7 @@ function AboutIndex() {
 						})}
 					/>
 				</div>
-				{talkRecommendations.map(talk => (
+				{talkRecommendations.map((talk) => (
 					<div key={talk.slug} className="col-span-full lg:col-span-6">
 						<TalkCard
 							tags={talk.tags}
@@ -445,7 +444,7 @@ function TalkCard({
 		<div className="bg-secondary text-primary flex h-full w-full flex-col justify-between rounded-lg p-16 pt-20">
 			<div>
 				<div className="-mr-4 mb-12 flex flex-wrap">
-					{tags.map(tag => (
+					{tags.map((tag) => (
 						<div
 							className="text-primary mb-4 mr-4 rounded-full bg-gray-300 px-6 py-1 dark:bg-gray-700"
 							key={tag}

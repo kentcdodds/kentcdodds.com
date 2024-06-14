@@ -1,6 +1,6 @@
-import { cachified, verboseReporter } from '@epic-web/cachified'
 import http from 'http'
 import https from 'https'
+import { cachified, verboseReporter } from '@epic-web/cachified'
 import makeMetascraper from 'metascraper'
 import mDescription from 'metascraper-description'
 import mImage from 'metascraper-image'
@@ -20,7 +20,7 @@ type Metadata = {
 	image?: string
 }
 async function getMetadata(url: string): Promise<Metadata> {
-	const html = await fetch(url).then(res => res.text())
+	const html = await fetch(url).then((res) => res.text())
 	return metascraper({ html, url })
 }
 
@@ -33,7 +33,7 @@ function unshorten(
 			const url = new URL(urlString)
 			if (url.protocol) {
 				const { request } = url.protocol === 'https:' ? https : http
-				request(urlString, { method: 'HEAD' }, response => {
+				request(urlString, { method: 'HEAD' }, (response) => {
 					const {
 						headers: { location },
 					} = response
@@ -73,7 +73,7 @@ async function getTweetCached(tweetId: string) {
 			},
 		},
 		verboseReporter(),
-	).catch(e => {
+	).catch((e) => {
 		// catch the error so things don't crash if there's no cache to fallback to.
 		console.error('Error getting tweet', tweetId, e)
 		return null
@@ -90,7 +90,7 @@ function buildMediaList(
 ) {
 	const width = mediaDetails.length > 1 ? '50%' : '100%'
 	const imgs = mediaDetails
-		.map(media => {
+		.map((media) => {
 			const src = media.media_url_https
 			const imgHTML = `<img src="${src}" width="${width}" loading="lazy" alt="Tweet media" />`
 			if (media.type === 'animated_gif' || media.type === 'video') {
@@ -218,7 +218,7 @@ async function buildTweetHTML(tweet: Tweet, expandQuotedTweet: boolean) {
 		? buildMediaList(tweet.mediaDetails, tweetURL)
 		: ''
 
-	const lastMetadataLink = links.reverse().find(l => l.metadata)
+	const lastMetadataLink = links.reverse().find((l) => l.metadata)
 	let linkMetadataHTML = ''
 	if (lastMetadataLink && !mediaHTML) {
 		const { metadata: md, longLink, longUrl } = lastMetadataLink

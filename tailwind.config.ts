@@ -1,6 +1,6 @@
 import path from 'path'
-import { type Config } from 'tailwindcss'
 import typography from '@tailwindcss/typography'
+import { type Config } from 'tailwindcss'
 import { heroTextAnimation } from './app/utils/animations.ts'
 
 // const __dirname = path.dirname(fileURLToPath(import.meta.url))

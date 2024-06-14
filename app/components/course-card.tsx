@@ -1,9 +1,9 @@
 import { motion, useReducedMotion, type Variants } from 'framer-motion'
-import { getImgProps, type ImageBuilder } from '~/images.tsx'
 import { ArrowLink } from './arrow-button.tsx'
 import { ButtonLink } from './button.tsx'
 import { ArrowIcon } from './icons.tsx'
 import { H2, H3, Paragraph } from './typography.tsx'
+import { getImgProps, type ImageBuilder } from '~/images.tsx'
 import { Themed } from '~/utils/theme.tsx'
 
 const MotionButtonLink = motion(ButtonLink)

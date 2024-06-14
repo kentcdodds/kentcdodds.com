@@ -13,6 +13,7 @@ import { TestimonialSection } from '~/components/sections/testimonial-section.ts
 import { Spacer } from '~/components/spacer.tsx'
 import { H2, H6, Paragraph } from '~/components/typography.tsx'
 import { getGenericSocialImage, getImgProps, images } from '~/images.tsx'
+import { type RootLoaderType } from '~/root.tsx'
 import {
 	getDisplayUrl,
 	getUrl,
@@ -24,7 +25,6 @@ import {
 	type Testimonial,
 } from '~/utils/testimonials.server.ts'
 import { getServerTimeHeader } from '~/utils/timing.server.ts'
-import { type RootLoaderType } from '~/root.tsx'
 
 type LoaderData = {
 	testimonials: Array<Testimonial>
@@ -52,8 +52,7 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	matches,
 }) => {
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-	const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
+	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
 	return getSocialMetas({
 		title: 'Courses by Kent C. Dodds',
 		description: 'Get really good at making software with Kent C. Dodds',

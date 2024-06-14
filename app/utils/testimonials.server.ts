@@ -1,11 +1,11 @@
 import slugify from '@sindresorhus/slugify'
 import * as YAML from 'yaml'
-import { pick } from '~/utils/cjs/lodash.js'
 import { cache, cachified } from './cache.server.ts'
 import { downloadFile } from './github.server.ts'
 import { markdownToHtml } from './markdown.server.ts'
 import { getErrorMessage, typedBoolean } from './misc.tsx'
 import { type Timings } from './timing.server.ts'
+import { pick } from '~/utils/cjs/lodash.js'
 
 const allCategories = [
 	'teaching',
@@ -116,7 +116,6 @@ function getValueWithFallback<PropertyType>(
 	const value = obj[key]
 	if (validateType(value)) {
 		return value
-		// eslint-disable-next-line no-negated-condition
 	} else if (typeof fallback !== 'undefined') {
 		if (warnOnFallback) console.warn(`Had to use fallback`, { obj, key, value })
 		return fallback
@@ -155,7 +154,7 @@ async function mapTestimonial(rawTestimonial: UnknownObj) {
 			{
 				warnOnFallback: false,
 				fallback: Array.from(
-					new Set(subjects.flatMap(s => categoriesBySubject[s])),
+					new Set(subjects.flatMap((s) => categoriesBySubject[s])),
 				),
 				validateType: areOneOf(allCategories),
 			},
@@ -275,14 +274,16 @@ async function getTestimonials({
 	}
 
 	const subjectTestimonials = allTestimonials
-		.filter(testimonial => testimonial.subjects.some(s => subjects.includes(s)))
+		.filter((testimonial) =>
+			testimonial.subjects.some((s) => subjects.includes(s)),
+		)
 		.sort(sortByWithPriorityWeight)
 
 	const fillerTestimonials = allTestimonials
 		.filter(
-			t =>
+			(t) =>
 				!subjectTestimonials.includes(t) &&
-				t.categories.some(c => categories.includes(c)),
+				t.categories.some((c) => categories.includes(c)),
 		)
 		.sort((a, b) => {
 			// IDEA: one day, make this smarter...

@@ -1,16 +1,16 @@
 // This is a full stack component that controls showing a notification message
 // which the user can dismiss for a period of time.
-import * as React from 'react'
 import { json, type DataFunctionArgs } from '@remix-run/node'
 import { useFetcher } from '@remix-run/react'
 import cookie from 'cookie'
+import * as React from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { useSpinDelay } from 'spin-delay'
 import invariant from 'tiny-invariant'
-import { NotificationMessage } from '~/components/notification-message.tsx'
 
 import { LinkButton } from '~/components/button.tsx'
 import { AlarmIcon } from '~/components/icons.tsx'
+import { NotificationMessage } from '~/components/notification-message.tsx'
 import { Spinner } from '~/components/spinner.tsx'
 
 export function getPromoCookieValue({
@@ -159,7 +159,7 @@ function useCountDown(timeToCount = 60 * 1000, interval = 1000) {
 			)
 			if (ts - timer.current.lastInterval >= localInterval) {
 				timer.current.lastInterval += localInterval
-				setTimeLeft(prevTimeLeft => {
+				setTimeLeft((prevTimeLeft) => {
 					timer.current.timeLeft = prevTimeLeft - localInterval
 					return timer.current.timeLeft
 				})

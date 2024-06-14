@@ -1,6 +1,6 @@
-import { type Team, type User } from '~/types.ts'
 import { getRequiredServerEnvVar, getTeam } from './misc.tsx'
 import { prisma } from './prisma.server.ts'
+import { type Team, type User } from '~/types.ts'
 
 const DISCORD_CLIENT_ID = getRequiredServerEnvVar('DISCORD_CLIENT_ID')
 const DISCORD_CLIENT_SECRET = getRequiredServerEnvVar('DISCORD_CLIENT_SECRET')
@@ -187,7 +187,7 @@ async function connectDiscord({
 	// it's not a disaster if the bot doesn't manage to handle it
 	// faster, but it's better if the bot adds the right roles etc
 	// before we retrieve the member.
-	await new Promise(resolve => setTimeout(resolve, 300))
+	await new Promise((resolve) => setTimeout(resolve, 300))
 
 	const discordMember = await getMember(discordUser.id)
 	if ('user' in discordMember) {

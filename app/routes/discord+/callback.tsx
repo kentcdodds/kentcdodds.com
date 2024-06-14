@@ -1,6 +1,5 @@
 import { defer, redirect, type DataFunctionArgs } from '@remix-run/node'
 import { Await, Link, useAsyncError, useLoaderData } from '@remix-run/react'
-import { ensurePrimary } from '~/utils/cjs/litefs-js.server.js'
 import React, { Suspense } from 'react'
 import { ArrowLink } from '~/components/arrow-button.tsx'
 import { ErrorPanel } from '~/components/form-elements.tsx'
@@ -8,6 +7,7 @@ import { PartyIcon, RefreshIcon } from '~/components/icons.tsx'
 import { tagKCDSiteSubscriber } from '~/convertkit/convertkit.server.ts'
 import { externalLinks } from '~/external-links.tsx'
 import { type KCDHandle } from '~/types.ts'
+import { ensurePrimary } from '~/utils/cjs/litefs-js.server.js'
 import { connectDiscord } from '~/utils/discord.server.ts'
 import {
 	getDiscordAuthorizeURL,
@@ -37,7 +37,7 @@ export async function loader({ request }: DataFunctionArgs) {
 			throw redirect('/discord', { headers: { 'x-reason': 'no-code' } })
 		}
 		const discordMemberPromise = connectDiscord({ user, code, domainUrl }).then(
-			discordMember => {
+			(discordMember) => {
 				void tagKCDSiteSubscriber({
 					email: user.email,
 					firstName: user.firstName,
@@ -91,7 +91,7 @@ export default function DiscordCallback() {
 				resolve={data.discordMember}
 				errorElement={<DiscordConnectionError />}
 			>
-				{discordMember => (
+				{(discordMember) => (
 					<div className="flex flex-wrap gap-1">
 						<span className="text-team-current">
 							<PartyIcon />

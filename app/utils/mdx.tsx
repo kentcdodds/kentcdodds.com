@@ -2,6 +2,9 @@ import { type MetaFunction, type TypedResponse } from '@remix-run/node'
 import { LRUCache } from 'lru-cache'
 import * as mdxBundler from 'mdx-bundler/client/index.js'
 import * as React from 'react'
+import { getSocialMetas } from './seo.ts'
+import { Themed } from './theme.tsx'
+import { useOptionalUser } from './use-root-data.ts'
 import { CloudinaryVideo } from '~/components/cloudinary-video.tsx'
 import { ConvertKitForm } from '~/convertkit/form.tsx'
 import {
@@ -17,9 +20,6 @@ import {
 	getUrl,
 	typedBoolean,
 } from '~/utils/misc.tsx'
-import { getSocialMetas } from './seo.ts'
-import { Themed } from './theme.tsx'
-import { useOptionalUser } from './use-root-data.ts'
 
 function getBannerAltProp(frontmatter: MdxPage['frontmatter']) {
 	return (
@@ -49,8 +49,7 @@ const mdxPageMeta: MetaFunction<MetaLoader, { root: RootLoaderType }> = ({
 	data,
 	matches,
 }) => {
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-	const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
+	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
 	if (data?.page) {
 		// NOTE: keyword metadata is not used because it was used and abused by
 		// spammers. We use them for sorting on our own site, but we don't list

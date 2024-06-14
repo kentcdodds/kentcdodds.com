@@ -20,7 +20,7 @@ function useElementState(): [RefCallback<HTMLElement>, ElementState] {
 		active: false,
 	})
 
-	const setRef: RefCallback<HTMLElement> = useCallback(element => {
+	const setRef: RefCallback<HTMLElement> = useCallback((element) => {
 		ref.current = element
 	}, [])
 
@@ -28,12 +28,12 @@ function useElementState(): [RefCallback<HTMLElement>, ElementState] {
 		const el = ref.current
 		if (!el) return
 
-		const pointerenter = () => setState(s => ({ ...s, hover: true }))
-		const pointerleave = () => setState(s => ({ ...s, hover: false }))
-		const focus = () => setState(s => ({ ...s, focus: true }))
-		const blur = () => setState(s => ({ ...s, focus: false }))
+		const pointerenter = () => setState((s) => ({ ...s, hover: true }))
+		const pointerleave = () => setState((s) => ({ ...s, hover: false }))
+		const focus = () => setState((s) => ({ ...s, focus: true }))
+		const blur = () => setState((s) => ({ ...s, focus: false }))
 		const pointerdown = () => {
-			setState(s => ({ ...s, active: true }))
+			setState((s) => ({ ...s, active: true }))
 
 			// pointer events can be cancelled due to which el would never receive
 			// a pointerup nor pointercancel event. Listen on the window for those
@@ -41,7 +41,7 @@ function useElementState(): [RefCallback<HTMLElement>, ElementState] {
 			// not with { once: true }, because we want te remove both of them, once
 			// of them has been received.
 			const pointerup = () => {
-				setState(s => ({ ...s, active: false }))
+				setState((s) => ({ ...s, active: false }))
 				window.removeEventListener('pointerup', pointerup)
 				window.removeEventListener('pointercancel', pointerup)
 			}
@@ -55,11 +55,11 @@ function useElementState(): [RefCallback<HTMLElement>, ElementState] {
 				return
 			}
 
-			setState(s => ({ ...s, active: true }))
+			setState((s) => ({ ...s, active: true }))
 
 			// when clicking a link, the keyup doesn't need to come from the keydown
 			// element. We listen on the window instead, but only once.
-			const keyup = () => setState(s => ({ ...s, active: false }))
+			const keyup = () => setState((s) => ({ ...s, active: false }))
 			window.addEventListener('keyup', keyup, { once: true })
 		}
 

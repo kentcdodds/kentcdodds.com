@@ -1,3 +1,4 @@
+import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@reach/tabs'
 import {
 	json,
 	type HeadersFunction,
@@ -28,8 +29,10 @@ import {
 	getImgProps,
 	images,
 } from '~/images.tsx'
+import { type RootLoaderType } from '~/root.tsx'
 import { type CallKentSeason, type Await, type KCDHandle } from '~/types.ts'
 import { getBlogRecommendations } from '~/utils/blog.server.ts'
+import { groupBy } from '~/utils/cjs/lodash.js'
 import {
 	getDisplayUrl,
 	getOrigin,
@@ -43,9 +46,6 @@ import {
 import { getSocialMetas } from '~/utils/seo.ts'
 import { getServerTimeHeader } from '~/utils/timing.server.ts'
 import { getEpisodes } from '~/utils/transistor.server.ts'
-import { type RootLoaderType } from '~/root.tsx'
-import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@reach/tabs'
-import { groupBy } from '~/utils/cjs/lodash.js'
 
 export const handle: KCDHandle & { id: string } = {
 	id: 'calls',
@@ -80,7 +80,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 	const seasons = getEpisodesBySeason(episodes)
 
 	const seasonNumber = seasons[seasons.length - 1]?.seasonNumber ?? 1
-	const season = seasons.find(s => s.seasonNumber === seasonNumber)
+	const season = seasons.find((s) => s.seasonNumber === seasonNumber)
 	if (!season) {
 		throw new Error(`oh no. season for ${seasonNumber}`)
 	}
@@ -103,8 +103,7 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	matches,
 }) => {
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-	const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
+	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
 	return getSocialMetas({
 		title: 'Call Kent Podcast',
 		description: `Leave Kent an audio message here, then your message and Kent's response are published in the podcast.`,
@@ -157,7 +156,7 @@ export default function CallHomeScreen() {
 			// in the event there's no season param. But it's just to be safe.
 			seasons[0]?.seasonNumber ?? 1
 
-	const currentSeason = seasons.find(s => s.seasonNumber === seasonNumber)
+	const currentSeason = seasons.find((s) => s.seasonNumber === seasonNumber)
 	const tabIndex = currentSeason ? seasons.indexOf(currentSeason) : 0
 
 	function handleTabChange(index: number) {
@@ -259,7 +258,7 @@ export default function CallHomeScreen() {
 				onChange={handleTabChange}
 			>
 				<TabList className="col-span-full mb-20 flex flex-col items-start bg-transparent lg:flex-row lg:space-x-12">
-					{seasons.map(season => (
+					{seasons.map((season) => (
 						<Tab
 							key={season.seasonNumber}
 							tabIndex={-1}
@@ -275,7 +274,7 @@ export default function CallHomeScreen() {
 									},
 								)}
 								to={String(season.seasonNumber).padStart(2, '0')}
-								onClick={e => {
+								onClick={(e) => {
 									if (e.metaKey) {
 										e.stopPropagation()
 									} else {
@@ -303,7 +302,9 @@ export default function CallHomeScreen() {
 
 						<button
 							className="text-primary group relative text-lg font-medium focus:outline-none"
-							onClick={() => setSortOrder(o => (o === 'asc' ? 'desc' : 'asc'))}
+							onClick={() =>
+								setSortOrder((o) => (o === 'asc' ? 'desc' : 'asc'))
+							}
 						>
 							<div className="bg-secondary absolute -bottom-2 -left-4 -right-4 -top-2 rounded-lg opacity-0 transition group-hover:opacity-100 group-focus:opacity-100" />
 							<span className="relative inline-flex items-center">
@@ -324,7 +325,7 @@ export default function CallHomeScreen() {
 				) : null}
 
 				<TabPanels className="col-span-full">
-					{seasons.map(season => (
+					{seasons.map((season) => (
 						<TabPanel
 							key={season.seasonNumber}
 							className="border-t border-gray-200 focus:outline-none dark:border-gray-600"

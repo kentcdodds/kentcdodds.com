@@ -1,8 +1,7 @@
 ---
 title: Make your own DevTools
 date: 2020-02-17
-description:
-  How creating DevTools specific for your own app can improve your productivity
+description: How creating DevTools specific for your own app can improve your productivity
 categories:
   - productivity
 meta:
@@ -11,8 +10,7 @@ meta:
     - javascript
     - utilities
 bannerCloudinaryId: unsplash/photo-1453806839674-d1a9087ca1ed
-bannerCredit:
-  Photo by [Philip Swinburn](https://unsplash.com/photos/vS7LVkPyXJU)
+bannerCredit: Photo by [Philip Swinburn](https://unsplash.com/photos/vS7LVkPyXJU)
 ---
 
 **[Watch "Create App DevTools to enhance development productivity" on egghead.io](https://egghead.io/lessons/javascript-create-app-devtools-to-enhance-development-productivity?pl=kent-s-blog-posts-as-screencasts-eefa540c)**
@@ -96,7 +94,9 @@ function loadDevTools(callback) {
 	) {
 		// use a dynamic import so the dev-tools code isn't bundled with the regular
 		// app code so we don't worry about bundle size.
-		import('./dev-tools').then(devTools => devTools.install()).finally(callback)
+		import('./dev-tools')
+			.then((devTools) => devTools.install())
+			.finally(callback)
 	} else {
 		// if we don't need the DevTools, call the callback immediately.
 		callback()

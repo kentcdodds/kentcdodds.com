@@ -212,25 +212,25 @@ function filter(array, filterFn) {
 
 filter(
 	[0, 1, undefined, 2, null, 3, 'four', ''],
-	el => el !== null && el !== undefined,
+	(el) => el !== null && el !== undefined,
 )
 // [0, 1, 2, 3, 'four', '']
 
-filter([0, 1, undefined, 2, null, 3, 'four', ''], el => el !== undefined)
+filter([0, 1, undefined, 2, null, 3, 'four', ''], (el) => el !== undefined)
 // [0, 1, 2, null, 3, 'four', '']
 
-filter([0, 1, undefined, 2, null, 3, 'four', ''], el => el !== null)
+filter([0, 1, undefined, 2, null, 3, 'four', ''], (el) => el !== null)
 // [0, 1, 2, undefined, 3, 'four', '']
 
 filter(
 	[0, 1, undefined, 2, null, 3, 'four', ''],
-	el => el !== undefined && el !== null && el !== 0,
+	(el) => el !== undefined && el !== null && el !== 0,
 )
 // [1, 2, 3, 'four', '']
 
 filter(
 	[0, 1, undefined, 2, null, 3, 'four', ''],
-	el => el !== undefined && el !== null && el !== '',
+	(el) => el !== undefined && el !== null && el !== '',
 )
 // [0, 1, 2, 3, 'four']
 ```
@@ -255,7 +255,7 @@ filter(
 		{ name: 'cat', legs: 4, mammal: true },
 		{ name: 'salmon', legs: 0, mammal: false },
 	],
-	animal => animal.legs === 0,
+	(animal) => animal.legs === 0,
 )
 // [
 //   {name: 'dolphin', legs: 0, mammal: true},
@@ -279,7 +279,7 @@ filter([0, 1, undefined, 2, null, 3, 'four', ''])
 // after
 filter(
 	[0, 1, undefined, 2, null, 3, 'four', ''],
-	el => el !== null && el !== undefined,
+	(el) => el !== null && el !== undefined,
 )
 ```
 
@@ -299,7 +299,7 @@ function filterWithOptions(
 ) {
 	return filter(
 		array,
-		element =>
+		(element) =>
 			!(
 				(filterNull && element === null) ||
 				(filterUndefined && element === undefined) ||
@@ -323,7 +323,7 @@ Oh, and just for fun:
 
 ```js
 function filterByLegCount(array, legCount) {
-	return filter(array, animal => animal.legs === legCount)
+	return filter(array, (animal) => animal.legs === legCount)
 }
 
 filterByLegCount(

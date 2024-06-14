@@ -21,8 +21,7 @@ translations:
       name: Jung Wook Park
       link: https://github.com/hatchling13
 bannerCloudinaryId: kentcdodds.com/content/blog/use-react-error-boundary-to-handle-errors-in-react/banner
-bannerCredit:
-  Photo by [Debora Cardenas](https://unsplash.com/photos/yObRnRYfnmY)
+bannerCredit: Photo by [Debora Cardenas](https://unsplash.com/photos/yObRnRYfnmY)
 ---
 
 import {
@@ -277,7 +276,7 @@ function App() {
 				<input
 					placeholder={`type "bomb"`}
 					value={username}
-					onChange={e => setUsername(e.target.value)}
+					onChange={(e) => setUsername(e.target.value)}
 					ref={usernameRef}
 				/>
 			</label>
@@ -340,8 +339,8 @@ function Greeting() {
 		const name = event.target.elements.name.value
 		setState({ status: 'pending' })
 		fetchGreeting(name).then(
-			newGreeting => setState({ greeting: newGreeting, status: 'resolved' }),
-			newError => setState({ error: newError, status: 'rejected' }),
+			(newGreeting) => setState({ greeting: newGreeting, status: 'resolved' }),
+			(newError) => setState({ error: newError, status: 'rejected' }),
 		)
 	}
 
@@ -384,8 +383,8 @@ function Greeting() {
 		const name = event.target.elements.name.value
 		setState({ status: 'pending' })
 		fetchGreeting(name).then(
-			newGreeting => setState({ greeting: newGreeting, status: 'resolved' }),
-			error => showBoundary(error),
+			(newGreeting) => setState({ greeting: newGreeting, status: 'resolved' }),
+			(error) => showBoundary(error),
 		)
 	}
 

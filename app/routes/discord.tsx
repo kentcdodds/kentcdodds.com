@@ -34,7 +34,9 @@ import { HeroSection } from '~/components/sections/hero-section.tsx'
 import { TestimonialSection } from '~/components/sections/testimonial-section.tsx'
 import { Spacer } from '~/components/spacer.tsx'
 import { H2, H5, H6, Paragraph } from '~/components/typography.tsx'
+import { externalLinks } from '~/external-links.tsx'
 import { getGenericSocialImage, getImgProps, images } from '~/images.tsx'
+import { type RootLoaderType } from '~/root.tsx'
 import {
 	getDiscordAuthorizeURL,
 	getDisplayUrl,
@@ -49,8 +51,6 @@ import {
 } from '~/utils/testimonials.server.ts'
 import { getServerTimeHeader } from '~/utils/timing.server.ts'
 import { useRootData } from '~/utils/use-root-data.ts'
-import { externalLinks } from '~/external-links.tsx'
-import { type RootLoaderType } from '~/root.tsx'
 
 type LoaderData = {
 	testimonials: Array<Testimonial>
@@ -80,8 +80,7 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	matches,
 }) => {
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-	const requestInfo = matches.find(m => m.id === 'root')?.data.requestInfo
+	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
 	return getSocialMetas({
 		title: 'The Epic Web Community on Discord',
 		description:

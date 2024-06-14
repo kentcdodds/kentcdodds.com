@@ -10,8 +10,7 @@ meta:
     - performance
     - web workers
 bannerCloudinaryId: unsplash/photo-1508633069371-a735f885a1c7
-bannerCredit:
-  Photo by [Matthew Brodeur](https://unsplash.com/photos/eJ9mX6yEbAw)
+bannerCredit: Photo by [Matthew Brodeur](https://unsplash.com/photos/eJ9mX6yEbAw)
 ---
 
 **[Watch "Get started with Web Workers" on egghead.io](https://egghead.io/lessons/javascript-get-started-with-web-workers?pl=kent-s-blog-posts-as-screencasts-eefa540c)**
@@ -77,7 +76,7 @@ Here you go:
 // main.js
 const worker = new Worker('worker.js')
 worker.postMessage('Hello Worker')
-worker.onmessage = e => {
+worker.onmessage = (e) => {
 	console.log('main.js: Message received from worker:', e.data)
 }
 // if you want to "uninstall" the web worker then use:
@@ -86,7 +85,7 @@ worker.onmessage = e => {
 
 ```js
 // worker.js
-this.onmessage = e => {
+this.onmessage = (e) => {
 	console.log('worker.js: Message received from main script', e.data)
 	this.postMessage('Hello main')
 }

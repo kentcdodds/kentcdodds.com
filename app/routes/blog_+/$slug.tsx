@@ -7,6 +7,7 @@ import { useLoaderData, useParams } from '@remix-run/react'
 import { clsx } from 'clsx'
 import * as React from 'react'
 import { serverOnly$ } from 'vite-env-only'
+import { markAsRead } from '../action+/mark-as-read.tsx'
 import { ArrowLink, BackLink } from '~/components/arrow-button.tsx'
 import { BlurrableImage } from '~/components/blurrable-image.tsx'
 import { CourseCard } from '~/components/course-card.tsx'
@@ -47,16 +48,15 @@ import { getServerTimeHeader } from '~/utils/timing.server.ts'
 import { useRootData } from '~/utils/use-root-data.ts'
 import { getScheduledEvents } from '~/utils/workshop-tickets.server.ts'
 import { getWorkshops } from '~/utils/workshops.server.ts'
-import { markAsRead } from '../action+/mark-as-read.tsx'
 
 const handleId = 'blog-post'
 export const handle: KCDHandle = {
 	id: handleId,
-	getSitemapEntries: serverOnly$(async request => {
+	getSitemapEntries: serverOnly$(async (request) => {
 		const pages = await getBlogMdxListItems({ request })
 		return pages
-			.filter(page => !page.frontmatter.draft)
-			.map(page => {
+			.filter((page) => !page.frontmatter.draft)
+			.map((page) => {
 				return { route: `/blog/${page.slug}`, priority: 0.7 }
 			})
 	}),
@@ -115,16 +115,16 @@ export async function loader({ request, params }: DataFunctionArgs) {
 		...(page.frontmatter.categories ?? []),
 		...(page.frontmatter.meta?.keywords ?? []),
 	]
-	const relevantWorkshops = workshops.filter(workshop => {
+	const relevantWorkshops = workshops.filter((workshop) => {
 		const workshopTopics = [
 			...workshop.categories,
 			...(workshop.meta.keywords ?? []),
 		]
 		return (
-			workshopTopics.some(t => topics.includes(t)) &&
+			workshopTopics.some((t) => topics.includes(t)) &&
 			(workshop.events.length ||
 				workshopEvents.some(
-					event => event.metadata.workshopSlug === workshop.slug,
+					(event) => event.metadata.workshopSlug === workshop.slug,
 				))
 		)
 	})
@@ -158,8 +158,8 @@ function useOnRead({
 		const visibilityEl = document.createElement('div')
 
 		let scrolledTheMain = false
-		const observer = new IntersectionObserver(entries => {
-			const isVisible = entries.some(entry => {
+		const observer = new IntersectionObserver((entries) => {
+			const isVisible = entries.some((entry) => {
 				return entry.target === visibilityEl && entry.isIntersecting
 			})
 			if (isVisible) {
@@ -541,7 +541,9 @@ export default function MdxScreen() {
 											// handle the fact that this is a SerializeObject type...
 											titoEvents={data.workshopEvents
 												.filter(typedBoolean)
-												.filter(e => e.metadata.workshopSlug === workshop.slug)}
+												.filter(
+													(e) => e.metadata.workshopSlug === workshop.slug,
+												)}
 										/>
 									</div>
 								))}

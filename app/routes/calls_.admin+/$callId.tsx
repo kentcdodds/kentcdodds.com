@@ -84,7 +84,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 			keywords: getErrorForKeywords(formData.keywords),
 		}
 
-		if (Object.values(actionData.errors).some(err => err !== null)) {
+		if (Object.values(actionData.errors).some((err) => err !== null)) {
 			return json(actionData, 400)
 		}
 
@@ -204,14 +204,14 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 					<audio
 						className="flex-1"
 						style={{ minWidth: '300px' }}
-						ref={el => setAudioEl(el)}
+						ref={(el) => setAudioEl(el)}
 						src={audioURL}
 						controls
 						preload="metadata"
 					/>
 					<Field
 						value={playbackRate}
-						onChange={e => setPlaybackRate(Number(e.target.value))}
+						onChange={(e) => setPlaybackRate(Number(e.target.value))}
 						label="Playback rate"
 						name="playbackRate"
 						type="number"
@@ -253,7 +253,7 @@ function RecordingDetailScreen() {
 				/>
 			) : (
 				<CallRecorder
-					onRecordingComplete={recording => setResponseAudio(recording)}
+					onRecordingComplete={(recording) => setResponseAudio(recording)}
 					team={user.team}
 				/>
 			)}

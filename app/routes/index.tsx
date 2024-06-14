@@ -16,13 +16,13 @@ import { ProblemSolutionSection } from '~/components/sections/problem-solution-s
 import { Spacer } from '~/components/spacer.tsx'
 import { getRandomFlyingKody } from '~/images.tsx'
 import { type MdxListItem, type Team } from '~/types.ts'
-import { getRankingLeader } from '~/utils/blog.ts'
 import {
 	getBlogReadRankings,
 	getBlogRecommendations,
 	getReaderCount,
 	getTotalPostReads,
 } from '~/utils/blog.server.ts'
+import { getRankingLeader } from '~/utils/blog.ts'
 import { getBlogMdxListItems } from '~/utils/mdx.server.ts'
 import {
 	formatNumber,

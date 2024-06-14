@@ -1,5 +1,5 @@
-import { useFetcher } from '@remix-run/react'
 import { parseWithZod } from '@conform-to/zod'
+import { useFetcher } from '@remix-run/react'
 
 import * as React from 'react'
 import { z } from 'zod'
@@ -59,7 +59,7 @@ function Themed({
 	const [theme] = useTheme()
 	const [initialTheme] = React.useState(theme)
 	const themeToReference = initialOnly ? initialTheme : theme
-	// eslint-disable-next-line react/jsx-no-useless-fragment
+
 	return <>{themeToReference === 'light' ? light : dark}</>
 }
 

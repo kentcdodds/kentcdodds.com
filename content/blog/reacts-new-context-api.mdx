@@ -113,7 +113,9 @@ class App extends React.Component {
 	render() {
 		return (
 			<ThemeProvider>
-				<ThemeContext.Consumer>{val => <div>{val}</div>}</ThemeContext.Consumer>
+				<ThemeContext.Consumer>
+					{(val) => <div>{val}</div>}
+				</ThemeContext.Consumer>
 			</ThemeProvider>
 		)
 	}
@@ -191,8 +193,10 @@ function AppProviders({ children }) {
 function ThemeAndLanguageConsumer({ children }) {
 	return (
 		<LanguageConsumer>
-			{language => (
-				<ThemeConsumer>{theme => children({ language, theme })}</ThemeConsumer>
+			{(language) => (
+				<ThemeConsumer>
+					{(theme) => children({ language, theme })}
+				</ThemeConsumer>
 			)}
 		</LanguageConsumer>
 	)

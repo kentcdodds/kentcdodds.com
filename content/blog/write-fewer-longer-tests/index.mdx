@@ -40,8 +40,8 @@ function Course({ courseId }) {
 	React.useEffect(() => {
 		setState({ loading: true, course: null, error: null })
 		api.getCourseInfo(courseId).then(
-			data => setState({ loading: false, course: data, error: null }),
-			e => setState({ loading: false, course: null, error: e }),
+			(data) => setState({ loading: false, course: data, error: null }),
+			(e) => setState({ loading: false, course: null, error: e }),
 		)
 	}, [courseId])
 
@@ -62,7 +62,7 @@ function CourseInfo({ course }) {
 			<h1>{title}</h1>
 			<strong>{subtitle}</strong>
 			<ul>
-				{topics.map(t => (
+				{topics.map((t) => (
 					<li key={t}>{t}</li>
 				))}
 			</ul>
@@ -157,7 +157,7 @@ describe('Course success', () => {
 	it('should render the list of topics', () => {
 		const topicElsText = utils
 			.getAllByRole('listitem')
-			.map(el => el.textContent)
+			.map((el) => el.textContent)
 		expect(topicElsText).toEqual(topics)
 	})
 })
@@ -254,7 +254,9 @@ test('course loads and renders the course information', async () => {
 
 	expect(screen.getByText(subtitle)).toBeInTheDocument()
 
-	const topicElsText = screen.getAllByRole('listitem').map(el => el.textContent)
+	const topicElsText = screen
+		.getAllByRole('listitem')
+		.map((el) => el.textContent)
 	expect(topicElsText).toEqual(topics)
 })
 

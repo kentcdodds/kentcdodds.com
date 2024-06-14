@@ -2,12 +2,12 @@ import 'dotenv/config'
 import { vitePlugin as remix } from '@remix-run/dev'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 import { glob } from 'glob'
-import { defineConfig } from 'vite'
-import tsconfigPaths from 'vite-tsconfig-paths'
-import { flatRoutes } from 'remix-flat-routes'
-import envOnly from 'vite-env-only'
 import { metronome } from 'metronome-sh/vite'
+import { flatRoutes } from 'remix-flat-routes'
+import { defineConfig } from 'vite'
+import envOnly from 'vite-env-only'
 import { cjsInterop } from 'vite-plugin-cjs-interop'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 const MODE = process.env.NODE_ENV
 
@@ -24,7 +24,7 @@ export default defineConfig(async () => {
 			envOnly(),
 			remix({
 				ignoredRouteFiles: ['**/*'],
-				routes: async defineRoutes => {
+				routes: async (defineRoutes) => {
 					return flatRoutes('routes', defineRoutes, {
 						ignoredRouteFiles: [
 							'.*',

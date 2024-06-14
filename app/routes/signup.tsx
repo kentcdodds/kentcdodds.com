@@ -6,7 +6,6 @@ import {
 } from '@remix-run/node'
 import { Form, useActionData, useLoaderData } from '@remix-run/react'
 import { clsx } from 'clsx'
-import { shuffle } from '~/utils/cjs/lodash.js'
 import * as React from 'react'
 import { Button } from '~/components/button.tsx'
 import { Field, InputError } from '~/components/form-elements.tsx'
@@ -19,6 +18,7 @@ import { tagKCDSiteSubscriber } from '~/convertkit/convertkit.server.ts'
 import { getImgProps, images } from '~/images.tsx'
 import { type KCDHandle, type Team } from '~/types.ts'
 import { handleFormSubmission } from '~/utils/actions.server.ts'
+import { shuffle } from '~/utils/cjs/lodash.js'
 import { getClientSession } from '~/utils/client.server.ts'
 import { getLoginInfoSession } from '~/utils/login.server.ts'
 import { getErrorStack, isTeam, teams } from '~/utils/misc.tsx'
@@ -104,7 +104,7 @@ export const action: ActionFunction = async ({ request }) => {
 			firstName: getErrorForFirstName,
 			team: getErrorForTeam,
 		},
-		handleFormValues: async formData => {
+		handleFormValues: async (formData) => {
 			const { firstName, team } = formData
 
 			try {
@@ -294,7 +294,7 @@ export default function NewAccount() {
 			<main>
 				<Form
 					method="POST"
-					onChange={event => {
+					onChange={(event) => {
 						const form = event.currentTarget
 						setFormValues({
 							firstName: form.firstName.value,
@@ -314,7 +314,7 @@ export default function NewAccount() {
 
 						<fieldset className="contents">
 							<legend className="sr-only">Team</legend>
-							{data.teamsInOrder.map(teamOption => (
+							{data.teamsInOrder.map((teamOption) => (
 								<TeamOption
 									key={teamOption}
 									teamMap={data.teamMap}

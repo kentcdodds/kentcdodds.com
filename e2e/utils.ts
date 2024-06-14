@@ -1,8 +1,8 @@
+import path from 'path'
 import { test as base } from '@playwright/test'
 import { PrismaClient, type User } from '@prisma/client'
 import { parse } from 'cookie'
 import fsExtra from 'fs-extra'
-import path from 'path'
 import invariant from 'tiny-invariant'
 import '../app/entry.server.tsx'
 import { getSession } from '../app/utils/session.server.ts'
@@ -73,7 +73,7 @@ export const test = base.extend<{
 	login: [
 		async ({ page, baseURL }, use) => {
 			invariant(baseURL, 'baseURL is required playwright config')
-			return use(async userOverrides => {
+			return use(async (userOverrides) => {
 				const user = await insertNewUser(userOverrides)
 				const session = await getSession(new Request(baseURL))
 				await session.signIn(user)
@@ -106,7 +106,7 @@ export const { expect } = test
 test.afterEach(async () => {
 	const prisma = new PrismaClient()
 	await prisma.user.deleteMany({
-		where: { id: { in: [...users].map(u => u.id) } },
+		where: { id: { in: [...users].map((u) => u.id) } },
 	})
 	await prisma.$disconnect()
 })

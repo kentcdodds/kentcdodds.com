@@ -30,7 +30,7 @@ make HTTP requests, I use the GraphQL Pokemon API. Here's how we make that
 request:
 
 ```ts
-const formatDate = date =>
+const formatDate = (date) =>
 	`${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')} ${String(
 		date.getSeconds(),
 	).padStart(2, '0')}.${String(date.getMilliseconds()).padStart(3, '0')}`
@@ -78,7 +78,9 @@ async function fetchPokemon(name) {
 		}
 	} else {
 		// handle the graphql errors
-		const error = new Error(errors?.map(e => e.message).join('\n') ?? 'unknown')
+		const error = new Error(
+			errors?.map((e) => e.message).join('\n') ?? 'unknown',
+		)
 		return Promise.reject(error)
 	}
 }
@@ -87,7 +89,7 @@ async function fetchPokemon(name) {
 Here's an example usage/output:
 
 ```ts
-fetchPokemon('pikachu').then(data => console.log(data))
+fetchPokemon('pikachu').then((data) => console.log(data))
 ```
 
 this logs:
@@ -124,7 +126,7 @@ this logs:
 And for the error case:
 
 ```ts
-fetchPokemon('not-a-pokemon').catch(error => console.error(error))
+fetchPokemon('not-a-pokemon').catch((error) => console.error(error))
 // Logs: No pokemon with the name "not-a-pokemon"
 ```
 
@@ -259,7 +261,7 @@ const { data, errors }: JSONResponse = await response.json()
 And now we can remove the explicit type on the `errors.map` which is great!
 
 ```ts
-const error = new Error(errors?.map(e => e.message).join('\n') ?? 'unknown')
+const error = new Error(errors?.map((e) => e.message).join('\n') ?? 'unknown')
 ```
 
 Notice the use of `Omit` there. Because the `fetchedAt` property is in our
@@ -416,7 +418,9 @@ async function fetchPokemon(name: string): Promise<PokemonData> {
 		}
 	} else {
 		// handle the graphql errors
-		const error = new Error(errors?.map(e => e.message).join('\n') ?? 'unknown')
+		const error = new Error(
+			errors?.map((e) => e.message).join('\n') ?? 'unknown',
+		)
 		return Promise.reject(error)
 	}
 }

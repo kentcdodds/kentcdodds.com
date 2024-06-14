@@ -256,7 +256,7 @@ function assertAdd(inputs, output) {
 			// error.stack is a string, so let's split it into lines
 			.split('\n')
 			// filter out the line that includes assertAdd (you could make this more robust by using your test utils filename instead).
-			.filter(line => !line.includes('assertAdd'))
+			.filter((line) => !line.includes('assertAdd'))
 			// join the lines back up into a single (multiline) string
 			.join('\n')
 		throw error

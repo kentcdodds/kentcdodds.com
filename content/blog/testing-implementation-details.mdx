@@ -69,7 +69,7 @@ import AccordionContents from './accordion-contents'
 
 class Accordion extends React.Component {
 	state = { openIndex: 0 }
-	setOpenIndex = openIndex => this.setState({ openIndex })
+	setOpenIndex = (openIndex) => this.setState({ openIndex })
 	render() {
 		const { openIndex } = this.state
 		return (

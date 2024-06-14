@@ -33,7 +33,7 @@ function getSegmentPath(
 	const arc = Math.abs(start - end) > 180 ? 1 : 0
 	const point = (rad: number, deg: number) =>
 		polarToCartesian(center, center, rad, deg)
-			.map(n => n.toPrecision(5))
+			.map((n) => n.toPrecision(5))
 			.join(',')
 
 	return [
@@ -85,7 +85,7 @@ function TeamCircle({
 		)
 	}
 
-	const [teamOne, teamTwo] = Object.keys(colors).filter(x => x !== team) as [
+	const [teamOne, teamTwo] = Object.keys(colors).filter((x) => x !== team) as [
 		OptionalTeam,
 		OptionalTeam,
 	]

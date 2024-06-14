@@ -144,7 +144,7 @@ class Toggle extends React.Component {
 			{({ on }) => (on ? null : children)}
 		</ToggleContext.Consumer>
 	)
-	static Button = props => (
+	static Button = (props) => (
 		<ToggleContext.Consumer>
 			{({ on, toggle }) => <Switch on={on} onClick={toggle} {...props} />}
 		</ToggleContext.Consumer>

@@ -85,7 +85,7 @@ type ArrowButtonProps = {
 function getBaseProps({ textSize, className }: ArrowButtonBaseProps) {
 	return {
 		className: clsx(
-			'text-primary inline-flex items-center text-left font-medium focus:outline-none cursor-pointer transition',
+			'text-primary inline-flex cursor-pointer items-center text-left font-medium transition focus:outline-none',
 			{
 				'text-xl': textSize === 'medium',
 				'text-lg': textSize === 'small',

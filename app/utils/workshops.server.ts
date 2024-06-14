@@ -1,11 +1,11 @@
 import pProps from 'p-props'
 import * as YAML from 'yaml'
-import { type Workshop } from '~/types.ts'
 import { cache, cachified } from './cache.server.ts'
 import { downloadDirList, downloadFile } from './github.server.ts'
 import { markdownToHtmlUnwrapped } from './markdown.server.ts'
 import { typedBoolean } from './misc.tsx'
 import { type Timings } from './timing.server.ts'
+import { type Workshop } from '~/types.ts'
 
 type RawWorkshop = {
 	title?: string
@@ -42,11 +42,11 @@ async function getWorkshops({
 			const dirList = await downloadDirList(`content/workshops`)
 			const workshopFileList = dirList
 				.filter(
-					listing => listing.type === 'file' && listing.name.endsWith('.yml'),
+					(listing) => listing.type === 'file' && listing.name.endsWith('.yml'),
 				)
-				.map(listing => listing.name.replace(/\.yml$/, ''))
+				.map((listing) => listing.name.replace(/\.yml$/, ''))
 			const workshops = await Promise.all(
-				workshopFileList.map(slug => getWorkshop(slug)),
+				workshopFileList.map((slug) => getWorkshop(slug)),
 			)
 			return workshops.filter(typedBoolean)
 		},
@@ -99,14 +99,14 @@ async function getWorkshop(slug: string): Promise<null | Workshop> {
 				})
 			: { part1: '', part2: '', part3: '', part4: '' },
 		Promise.all(
-			rawWorkshop.keyTakeaways?.map(keyTakeaway =>
+			rawWorkshop.keyTakeaways?.map((keyTakeaway) =>
 				pProps({
 					title: markdownToHtmlUnwrapped(keyTakeaway.title),
 					description: markdownToHtmlUnwrapped(keyTakeaway.description),
 				}),
 			) ?? [],
 		),
-		Promise.all(topics?.map(r => markdownToHtmlUnwrapped(r)) ?? []),
+		Promise.all(topics?.map((r) => markdownToHtmlUnwrapped(r)) ?? []),
 		rawWorkshop.prerequisite
 			? markdownToHtmlUnwrapped(rawWorkshop.prerequisite)
 			: '',
@@ -115,7 +115,7 @@ async function getWorkshop(slug: string): Promise<null | Workshop> {
 	return {
 		slug,
 		title,
-		events: events.map(e => ({ type: 'manual', ...e })),
+		events: events.map((e) => ({ type: 'manual', ...e })),
 		meta,
 		description,
 		convertKitTag,

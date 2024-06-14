@@ -1,7 +1,7 @@
 import { spawn } from 'child_process'
 import fs from 'fs'
-import fsExtra from 'fs-extra'
 import path from 'path'
+import fsExtra from 'fs-extra'
 import * as uuid from 'uuid'
 
 const asset = (...p: Array<string>) =>
@@ -48,7 +48,7 @@ async function createEpisodeAudio(callBase64: string, responseBase64: string) {
       `,
       outputPath,
     ]
-		spawn('ffmpeg', args, { stdio: 'inherit' }).on('close', code => {
+		spawn('ffmpeg', args, { stdio: 'inherit' }).on('close', (code) => {
 			if (code === 0) resolve(null)
 			else reject(null)
 		})

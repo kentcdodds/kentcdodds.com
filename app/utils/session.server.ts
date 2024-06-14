@@ -1,6 +1,5 @@
 import { type User } from '@prisma/client'
 import { createCookieSessionStorage, redirect } from '@remix-run/node'
-import { ensurePrimary } from '~/utils/cjs/litefs-js.server.js'
 import { getLoginInfoSession } from './login.server.ts'
 import { getRequiredServerEnvVar } from './misc.tsx'
 import {
@@ -13,6 +12,7 @@ import {
 } from './prisma.server.ts'
 import { sendMagicLinkEmail } from './send-email.server.ts'
 import { type Timings } from './timing.server.ts'
+import { ensurePrimary } from '~/utils/cjs/litefs-js.server.js'
 
 const sessionIdKey = '__session_id__'
 

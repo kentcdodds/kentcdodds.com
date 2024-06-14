@@ -1,4 +1,7 @@
 import { buildImageUrl } from 'cloudinary-build-url'
+import { cache, cachified } from './cache.server.ts'
+import { markdownToHtmlUnwrapped, stripHtml } from './markdown.server.ts'
+import { type Timings } from './timing.server.ts'
 import { type GitHubFile, type MdxPage } from '~/types.ts'
 import { compileMdx } from '~/utils/compile-mdx.server.ts'
 import {
@@ -6,9 +9,6 @@ import {
 	downloadMdxFileOrDirectory,
 } from '~/utils/github.server.ts'
 import { formatDate, typedBoolean } from '~/utils/misc.tsx'
-import { cache, cachified } from './cache.server.ts'
-import { markdownToHtmlUnwrapped, stripHtml } from './markdown.server.ts'
-import { type Timings } from './timing.server.ts'
 
 type CachifiedOptions = {
 	forceFresh?: boolean | string
@@ -52,7 +52,7 @@ export async function getMdxPage(
 				slug,
 				...pageFiles,
 				options,
-			}).catch(err => {
+			}).catch((err) => {
 				console.error(`Failed to get a fresh value for mdx:`, {
 					contentDir,
 					slug,
@@ -86,7 +86,7 @@ export async function getMdxPagesInDirectory(
 	)
 
 	const pages = await Promise.all(
-		pageDatas.map(pageData =>
+		pageDatas.map((pageData) =>
 			compileMdxCached({ contentDir, ...pageData, options }),
 		),
 	)
@@ -138,8 +138,11 @@ export async function getBlogMdxListItems(options: CachifiedOptions) {
 		forceFresh,
 		key,
 		getFreshValue: async () => {
-			let pages = await getMdxPagesInDirectory('blog', options).then(allPosts =>
-				allPosts.filter(p => !p.frontmatter.draft && !p.frontmatter.unlisted),
+			let pages = await getMdxPagesInDirectory('blog', options).then(
+				(allPosts) =>
+					allPosts.filter(
+						(p) => !p.frontmatter.draft && !p.frontmatter.unlisted,
+					),
 			)
 
 			pages = pages.sort((a, z) => {

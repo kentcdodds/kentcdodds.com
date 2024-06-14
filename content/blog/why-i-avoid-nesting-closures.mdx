@@ -1,8 +1,7 @@
 ---
 title: Why I avoid nesting closures
 date: 2019-12-13
-description:
-  A little tendency I have to reduce cognitive load for readers of my code.
+description: A little tendency I have to reduce cognitive load for readers of my code.
 categories:
   - programming
 meta:
@@ -20,7 +19,7 @@ If I come across code like this:
 
 ```js
 function getDisplayName({ firstName, lastName }) {
-	const upperFirstCharacter = string =>
+	const upperFirstCharacter = (string) =>
 		string.slice(0, 1).toUpperCase() + string.slice(1)
 
 	return `${upperFirstCharacter(firstName)} ${upperFirstCharacter(lastName)}`
@@ -30,7 +29,7 @@ function getDisplayName({ firstName, lastName }) {
 Chances are, I'll refactor it to this:
 
 ```js
-const upperFirstCharacter = string =>
+const upperFirstCharacter = (string) =>
 	string.slice(0, 1).toUpperCase() + string.slice(1)
 
 function getDisplayName({ firstName, lastName }) {
@@ -84,7 +83,7 @@ variables. For example:
 
 ```js
 function addThings(additive, ...numbers) {
-	const add = n => n + additive
+	const add = (n) => n + additive
 	return numbers.map(add)
 }
 

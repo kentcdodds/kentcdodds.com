@@ -93,7 +93,7 @@ it's applied to complex hooks and components (like downshift).
 function useToggle() {
 	const [on, setOnState] = React.useState(false)
 
-	const toggle = () => setOnState(o => !o)
+	const toggle = () => setOnState((o) => !o)
 	const setOn = () => setOnState(true)
 	const setOff = () => setOnState(false)
 
@@ -132,7 +132,7 @@ function Toggle() {
 
 	function handleClick() {
 		toggle()
-		setClicksSinceReset(count => count + 1)
+		setClicksSinceReset((count) => count + 1)
 	}
 
 	return (
@@ -176,7 +176,7 @@ function Toggle() {
 
 	function handleClick() {
 		toggle()
-		setClicksSinceReset(count => count + 1)
+		setClicksSinceReset((count) => count + 1)
 	}
 
 	return (
@@ -222,7 +222,7 @@ function Toggle() {
 
 	function handleClick() {
 		toggle()
-		setClicksSinceReset(count => count + 1)
+		setClicksSinceReset((count) => count + 1)
 	}
 
 	return (
@@ -263,7 +263,7 @@ function Toggle() {
 
 	function handleClick() {
 		toggle()
-		setClicksSinceReset(count => count + 1)
+		setClicksSinceReset((count) => count + 1)
 	}
 
 	return (
@@ -289,7 +289,7 @@ code for that:
 function useToggle() {
 	const [on, setOnState] = React.useState(false)
 
-	const toggle = () => setOnState(o => !o)
+	const toggle = () => setOnState((o) => !o)
 	const setOn = () => setOnState(true)
 	const setOff = () => setOnState(false)
 
@@ -496,7 +496,7 @@ function Toggle() {
 			<Switch
 				onClick={() => {
 					toggle()
-					setClicksSinceReset(count => count + 1)
+					setClicksSinceReset((count) => count + 1)
 				}}
 				on={on}
 			/>

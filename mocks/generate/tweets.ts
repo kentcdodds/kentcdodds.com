@@ -1,7 +1,7 @@
 import 'dotenv/config'
+import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import fs from 'fs'
 import { installGlobals } from '@remix-run/node'
 // NOTE: run this with tsx ./mocks/generate/tweets
 import { getTweet } from '../../app/utils/twitter/get-tweet.ts'
@@ -30,7 +30,6 @@ const tweets = {
 }
 const tweetDatas: Record<string, Tweet | null> = {}
 for (const [key, value] of Object.entries(tweets)) {
-	// eslint-disable-next-line no-await-in-loop
 	tweetDatas[key] = await getTweet(value)
 }
 await fs.promises.writeFile(

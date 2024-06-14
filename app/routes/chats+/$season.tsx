@@ -9,7 +9,7 @@ import {
 	useLoaderData,
 	useParams,
 } from '@remix-run/react'
-import { orderBy } from '~/utils/cjs/lodash.js'
+import { serverOnly$ } from 'vite-env-only'
 import { ServerError } from '~/components/errors.tsx'
 import { Grid } from '~/components/grid.tsx'
 import { TriangleIcon } from '~/components/icons.tsx'
@@ -17,6 +17,7 @@ import { MissingSomething } from '~/components/kifs.tsx'
 import { H3, Paragraph } from '~/components/typography.tsx'
 import { type CWKSeason, type KCDHandle } from '~/types.ts'
 import { getCWKEpisodePath } from '~/utils/chats-with-kent.ts'
+import { orderBy } from '~/utils/cjs/lodash.js'
 import {
 	formatDuration,
 	reuseUsefulLoaderHeaders,
@@ -25,12 +26,11 @@ import {
 import { useChatsEpisodeUIState } from '~/utils/providers.tsx'
 import { getSeasonListItems } from '~/utils/simplecast.server.ts'
 import { getServerTimeHeader } from '~/utils/timing.server.ts'
-import { serverOnly$ } from 'vite-env-only'
 
 export const handle: KCDHandle = {
-	getSitemapEntries: serverOnly$(async request => {
+	getSitemapEntries: serverOnly$(async (request) => {
 		const seasons = await getSeasonListItems({ request })
-		return seasons.map(season => {
+		return seasons.map((season) => {
 			return {
 				route: `/chats/${season.seasonNumber.toString().padStart(2, '0')}`,
 				priority: 0.4,
@@ -50,7 +50,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 	const timings = {}
 	const seasons = await getSeasonListItems({ request, timings })
 	const seasonNumber = Number(params.season)
-	const season = seasons.find(s => s.seasonNumber === seasonNumber)
+	const season = seasons.find((s) => s.seasonNumber === seasonNumber)
 	if (!season) {
 		throw new Response(`No season for ${params.season}`, { status: 404 })
 	}
@@ -70,7 +70,7 @@ export default function ChatsSeason() {
 	const { season } = useLoaderData<LoaderData>()
 	const { sortOrder } = useChatsEpisodeUIState()
 	const episodes = orderBy(season.episodes, 'episodeNumber', sortOrder)
-	return episodes.map(episode => (
+	return episodes.map((episode) => (
 		<Link
 			className="group focus:outline-none"
 			key={episode.slug}

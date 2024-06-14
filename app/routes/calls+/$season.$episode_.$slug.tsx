@@ -6,9 +6,19 @@ import {
 	type MetaFunction,
 } from '@remix-run/node'
 import { useParams } from '@remix-run/react'
+import { serverOnly$ } from 'vite-env-only'
+import {
+	useCallsData,
+	type loader as callsLoader,
+	type LoaderData as CallsLoaderData,
+} from '../calls.tsx'
 import { IconLink } from '~/components/icon-link.tsx'
 import { XIcon } from '~/components/icons.tsx'
 import { H6, Paragraph } from '~/components/typography.tsx'
+import {
+	type RootLoaderType,
+	type LoaderData as RootLoaderData,
+} from '~/root.tsx'
 import { type KCDHandle } from '~/types.ts'
 import {
 	getEpisodeFromParams,
@@ -21,22 +31,12 @@ import { Themed } from '~/utils/theme.tsx'
 import { getServerTimeHeader } from '~/utils/timing.server.ts'
 import { getEpisodes } from '~/utils/transistor.server.ts'
 import { useRootData } from '~/utils/use-root-data.ts'
-import {
-	type RootLoaderType,
-	type LoaderData as RootLoaderData,
-} from '~/root.tsx'
-import {
-	useCallsData,
-	type loader as callsLoader,
-	type LoaderData as CallsLoaderData,
-} from '../calls.tsx'
-import { serverOnly$ } from 'vite-env-only'
 
 export const handle: KCDHandle = {
 	id: 'call-player',
-	getSitemapEntries: serverOnly$(async request => {
+	getSitemapEntries: serverOnly$(async (request) => {
 		const episodes = await getEpisodes({ request })
-		return episodes.map(episode => {
+		return episodes.map((episode) => {
 			return {
 				route: getEpisodePath(episode),
 				changefreq: 'weekly',
@@ -51,9 +51,9 @@ export const meta: MetaFunction<
 	typeof loader,
 	{ root: RootLoaderType; 'routes/calls': typeof callsLoader }
 > = ({ matches, params }) => {
-	const { requestInfo } = matches.find(m => m.id === 'root')
+	const { requestInfo } = matches.find((m) => m.id === 'root')
 		?.data as RootLoaderData
-	const callsData = matches.find(m => m.id === 'routes/calls')?.data as
+	const callsData = matches.find((m) => m.id === 'routes/calls')?.data as
 		| CallsLoaderData
 		| undefined
 	if (!callsData) {
@@ -146,7 +146,7 @@ export default function Screen() {
 		new Set(
 			episode.keywords
 				.split(/[,;\s]/g) // split into words
-				.map(x => x.trim()) // trim white spaces
+				.map((x) => x.trim()) // trim white spaces
 				.filter(Boolean), // remove empties
 		), // omit duplicates
 	).slice(0, 3) // keep first 3 only

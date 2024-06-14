@@ -13,11 +13,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 	const episodeNumber = Number(params.episode)
 
 	const seasons = await getSeasons({ request, timings })
-	const season = seasons.find(s => s.seasonNumber === seasonNumber)
+	const season = seasons.find((s) => s.seasonNumber === seasonNumber)
 	if (!season) {
 		return redirect('/chats')
 	}
-	const episode = season.episodes.find(e => e.episodeNumber === episodeNumber)
+	const episode = season.episodes.find((e) => e.episodeNumber === episodeNumber)
 	if (!episode) {
 		return redirect('/chats')
 	}

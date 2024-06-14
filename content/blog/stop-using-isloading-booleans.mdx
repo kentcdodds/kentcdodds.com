@@ -20,8 +20,7 @@ meta:
     - isResolved
     - isIdle
 bannerCloudinaryId: unsplash/photo-1533928298208-27ff66555d8d
-bannerCredit:
-  Photo by [Christophe Hautier](https://unsplash.com/photos/902vnYeoWS4)
+bannerCredit: Photo by [Christophe Hautier](https://unsplash.com/photos/902vnYeoWS4)
 ---
 
 **[Watch "Use a status enum instead of booleans" on egghead.io](https://egghead.io/lessons/javascript-use-a-status-enum-instead-of-booleans?pl=kent-s-blog-posts-as-screencasts-eefa540c)**
@@ -79,8 +78,8 @@ function useGeoPosition() {
 			return
 		}
 		const geoWatch = navigator.geolocation.watchPosition(
-			position => dispatch({ type: 'success', position }),
-			error => dispatch({ type: 'error', error }),
+			(position) => dispatch({ type: 'success', position }),
+			(error) => dispatch({ type: 'error', error }),
 		)
 		return () => navigator.geolocation.clearWatch(geoWatch)
 	}, [])
@@ -203,8 +202,8 @@ function useGeoPosition() {
 		}
 		dispatch({ type: 'started' })
 		const geoWatch = navigator.geolocation.watchPosition(
-			position => dispatch({ type: 'success', position }),
-			error => dispatch({ type: 'error', error }),
+			(position) => dispatch({ type: 'success', position }),
+			(error) => dispatch({ type: 'error', error }),
 		)
 		return () => navigator.geolocation.clearWatch(geoWatch)
 	}, [])
@@ -355,8 +354,8 @@ function useGeoPosition() {
 		}
 		send('START')
 		const geoWatch = navigator.geolocation.watchPosition(
-			position => send({ type: 'RESOLVE', position }),
-			error => send({ type: 'REJECT', error }),
+			(position) => send({ type: 'RESOLVE', position }),
+			(error) => send({ type: 'REJECT', error }),
 		)
 		return () => navigator.geolocation.clearWatch(geoWatch)
 	}, [send])

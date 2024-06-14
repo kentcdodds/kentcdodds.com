@@ -14,8 +14,7 @@ meta:
     - function updates
     - lazy initialization
 bannerCloudinaryId: unsplash/photo-1548691905-57c36cc8d935
-bannerCredit:
-  Photo by [Michael Dziedzic](https://unsplash.com/photos/dSyhpTGhNHg)
+bannerCredit: Photo by [Michael Dziedzic](https://unsplash.com/photos/dSyhpTGhNHg)
 ---
 
 import {
@@ -51,7 +50,7 @@ that can be useful at times:
 ```tsx
 function Counter() {
 	const [count, setCount] = React.useState(() => 0)
-	const increment = () => setCount(previousCount => previousCount + 1)
+	const increment = () => setCount((previousCount) => previousCount + 1)
 	return <button onClick={increment}>{count}</button>
 }
 ```
@@ -199,7 +198,7 @@ function DelayedCounter() {
 	const [count, setCount] = React.useState(0)
 	const increment = async () => {
 		await doSomethingAsync()
-		setCount(previousCount => previousCount + 1)
+		setCount((previousCount) => previousCount + 1)
 	}
 	return <button onClick={increment}>{count}</button>
 }

@@ -1,7 +1,7 @@
 import * as React from 'react'
 
-const sleep = t =>
-	new Promise(resolve => {
+const sleep = (t) =>
+	new Promise((resolve) => {
 		setTimeout(resolve, t)
 	})
 
@@ -18,7 +18,7 @@ function DelayedCounterWorking() {
 	const [count, setCount] = React.useState(0)
 	const increment = async () => {
 		await sleep(500)
-		setCount(previousCount => previousCount + 1)
+		setCount((previousCount) => previousCount + 1)
 	}
 	return <button onClick={increment}>{count}</button>
 }

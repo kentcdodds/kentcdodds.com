@@ -1,6 +1,4 @@
-import { remember } from '@epic-web/remember'
-import type BetterSqlite3 from 'better-sqlite3'
-import Database from 'better-sqlite3'
+import fs from 'fs'
 import {
 	type Cache,
 	cachified as baseCachified,
@@ -10,13 +8,14 @@ import {
 	type CachifiedOptions,
 	totalTtl,
 } from '@epic-web/cachified'
-import fs from 'fs'
+import { remember } from '@epic-web/remember'
+import Database, { type default as BetterSqlite3 } from 'better-sqlite3'
 import { getInstanceInfo, getInstanceInfoSync } from 'litefs-js'
 import { LRUCache } from 'lru-cache'
-import { updatePrimaryCacheValue } from '~/routes/resources+/cache.sqlite.ts'
 import { getRequiredServerEnvVar } from './misc.tsx'
 import { getUser } from './session.server.ts'
 import { time, type Timings } from './timing.server.ts'
+import { updatePrimaryCacheValue } from '~/routes/resources+/cache.sqlite.ts'
 
 const CACHE_DATABASE_PATH = getRequiredServerEnvVar('CACHE_DATABASE_PATH')
 
@@ -89,7 +88,6 @@ export const cache: CachifiedCache = {
 		}
 	},
 	async set(key, entry) {
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
 		if (currentIsPrimary) {
 			preparedSet.run({
@@ -102,7 +100,7 @@ export const cache: CachifiedCache = {
 			void updatePrimaryCacheValue!({
 				key,
 				cacheValue: entry,
-			}).then(response => {
+			}).then((response) => {
 				if (!response.ok) {
 					console.error(
 						`Error updating cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
@@ -121,7 +119,7 @@ export const cache: CachifiedCache = {
 			void updatePrimaryCacheValue!({
 				key,
 				cacheValue: undefined,
-			}).then(response => {
+			}).then((response) => {
 				if (!response.ok) {
 					console.error(
 						`Error deleting cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
@@ -135,7 +133,9 @@ export const cache: CachifiedCache = {
 const preparedAllKeys = cacheDb.prepare('SELECT key FROM cache LIMIT ?')
 export async function getAllCacheKeys(limit: number) {
 	return {
-		sqlite: preparedAllKeys.all(limit).map(row => (row as { key: string }).key),
+		sqlite: preparedAllKeys
+			.all(limit)
+			.map((row) => (row as { key: string }).key),
 		lru: [...lruInstance.keys()],
 	}
 }
@@ -147,8 +147,8 @@ export async function searchCacheKeys(search: string, limit: number) {
 	return {
 		sqlite: preparedKeySearch
 			.all(`%${search}%`, limit)
-			.map(row => (row as { key: string }).key),
-		lru: [...lruInstance.keys()].filter(key => key.includes(search)),
+			.map((row) => (row as { key: string }).key),
+		lru: [...lruInstance.keys()].filter((key) => key.includes(search)),
 	}
 }
 
@@ -191,7 +191,7 @@ export async function cachified<Value>({
 				request,
 				key: options.key,
 			}),
-			getFreshValue: async context => {
+			getFreshValue: async (context) => {
 				// if we've already retrieved the cached value, then this may be called
 				// after the response has already been sent so there's no point in timing
 				// how long this is going to take

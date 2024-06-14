@@ -1,8 +1,7 @@
 ---
 title: Don't Sync State. Derive It!
 date: 2019-09-30
-description:
-  How to avoid state synchronization bugs and complexity with derived state.
+description: How to avoid state synchronization bugs and complexity with derived state.
 categories:
   - react
 meta:
@@ -399,13 +398,13 @@ function FavoriteNumber() {
 	return (
 		<div>
 			<label>
-				Your name: <input onChange={e => setName(e.target.value)} />
+				Your name: <input onChange={(e) => setName(e.target.value)} />
 			</label>
 			<label>
 				Your favorite number:{' '}
 				<input
 					type="number"
-					onChange={e => setNumber(Number(e.target.value))}
+					onChange={(e) => setNumber(Number(e.target.value))}
 				/>
 			</label>
 			<div>
@@ -441,13 +440,13 @@ function FavoriteNumber() {
 	return (
 		<div>
 			<label>
-				Your name: <input onChange={e => setName(e.target.value)} />
+				Your name: <input onChange={(e) => setName(e.target.value)} />
 			</label>
 			<label>
 				Your favorite number:{' '}
 				<input
 					type="number"
-					onChange={e => setNumber(Number(e.target.value))}
+					onChange={(e) => setNumber(Number(e.target.value))}
 				/>
 			</label>
 			<div>
@@ -483,13 +482,13 @@ function FavoriteNumber() {
 	return (
 		<div>
 			<label>
-				Your name: <input onChange={e => setName(e.target.value)} />
+				Your name: <input onChange={(e) => setName(e.target.value)} />
 			</label>
 			<label>
 				Your favorite number:{' '}
 				<input
 					type="number"
-					onChange={e => setNumber(Number(e.target.value))}
+					onChange={(e) => setNumber(Number(e.target.value))}
 				/>
 			</label>
 			<div>

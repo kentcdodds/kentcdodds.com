@@ -60,7 +60,7 @@ And copy/paste this in the transform (bottom left) code panel:
 module.exports = createMacro(gemmafyMacro)
 
 function gemmafyMacro({ references, state, babel }) {
-	references.default.forEach(referencePath => {
+	references.default.forEach((referencePath) => {
 		const [firstArgumentPath] = referencePath.parentPath.get('arguments')
 		const stringValue = firstArgumentPath.node.value
 		const gemmafied = stringValue.split(' ').join(' 🐶 ')
@@ -136,7 +136,7 @@ function myMacro({ references, state, babel }) {
 	// references.JSXMacro refers to the named import of `JSXMacro`
 	const { JSXMacro = [], default: defaultImport = [] } = references
 
-	defaultImport.forEach(referencePath => {
+	defaultImport.forEach((referencePath) => {
 		if (referencePath.parentPath.type === 'TaggedTemplateExpression') {
 			console.log(
 				'template literal contents',
@@ -161,7 +161,7 @@ function myMacro({ references, state, babel }) {
 		}
 	})
 
-	JSXMacro.forEach(referencePath => {
+	JSXMacro.forEach((referencePath) => {
 		if (referencePath.parentPath.type === 'JSXOpeningElement') {
 			console.log('jsx props', {
 				attributes: referencePath.parentPath.get('attributes'),

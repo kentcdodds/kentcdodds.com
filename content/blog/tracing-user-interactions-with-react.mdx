@@ -136,7 +136,7 @@ function Greeting() {
 		if (!name) {
 			return
 		}
-		const onSuccess = newGreeting => setGreeting(newGreeting)
+		const onSuccess = (newGreeting) => setGreeting(newGreeting)
 		fetchGreeting(name).then(onSuccess)
 	}, [name])
 
@@ -178,7 +178,7 @@ function Greeting() {
 			return
 		}
 		trace('name updated', performance.now(), () => {
-			const onSuccess = wrap(newGreeting => setGreeting(newGreeting))
+			const onSuccess = wrap((newGreeting) => setGreeting(newGreeting))
 			fetchGreeting(name).then(onSuccess)
 		})
 	}, [name])

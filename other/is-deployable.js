@@ -36,7 +36,7 @@ async function go() {
 	console.log(isDeployable)
 }
 
-go().catch(e => {
+go().catch((e) => {
 	console.error(e)
 	console.log('true')
 })

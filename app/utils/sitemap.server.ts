@@ -1,7 +1,7 @@
 import { type EntryContext } from '@remix-run/node'
-import { isEqual } from '~/utils/cjs/lodash.js'
-import { type KCDHandle, type KCDSitemapEntry } from '~/types.ts'
 import { getDomainUrl, removeTrailingSlash, typedBoolean } from './misc.tsx'
+import { type KCDHandle, type KCDSitemapEntry } from '~/types.ts'
+import { isEqual } from '~/utils/cjs/lodash.js'
 
 async function getSitemapXml(request: Request, remixContext: EntryContext) {
 	const domainUrl = getDomainUrl(request)
@@ -69,13 +69,13 @@ async function getSitemapXml(request: Request, remixContext: EntryContext) {
 			}),
 		)
 	)
-		.flatMap(z => z)
+		.flatMap((z) => z)
 		.filter(typedBoolean)
 
 	const sitemapEntries: Array<KCDSitemapEntry> = []
 	for (const entry of rawSitemapEntries) {
 		const existingEntryForRoute = sitemapEntries.find(
-			e => e.route === entry.route,
+			(e) => e.route === entry.route,
 		)
 		if (existingEntryForRoute) {
 			if (!isEqual(existingEntryForRoute, entry)) {
@@ -96,7 +96,7 @@ async function getSitemapXml(request: Request, remixContext: EntryContext) {
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"
 >
-  ${sitemapEntries.map(entry => getEntry(entry)).join('')}
+  ${sitemapEntries.map((entry) => getEntry(entry)).join('')}
 </urlset>
   `.trim()
 }

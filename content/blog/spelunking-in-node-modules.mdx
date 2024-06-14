@@ -184,7 +184,7 @@ Then, to be doubly sure, I changed
 to this (added the `console.log`):
 
 ```js
-this.on('jsdomError', e => {
+this.on('jsdomError', (e) => {
 	console.log(anyConsole === console)
 	anyConsole.error(e.stack, e.detail)
 })
@@ -202,7 +202,7 @@ global.MY_CONSOLE = console
 And then changed the code again to this:
 
 ```js
-this.on('jsdomError', e => {
+this.on('jsdomError', (e) => {
 	console.log(anyConsole === global.MY_CONSOLE)
 	anyConsole.error(e.stack, e.detail)
 })

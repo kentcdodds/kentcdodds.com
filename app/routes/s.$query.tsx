@@ -31,7 +31,7 @@ function itemsToSegmentedItems(items: NormalizedItemGroup['items']) {
 	const init: Array<Segment> = []
 	return items.reduce((segmentedResults, item) => {
 		const listItem = { route: item.route, title: item.title }
-		const segment = segmentedResults.find(s => s.name === item.segment)
+		const segment = segmentedResults.find((s) => s.name === item.segment)
 		if (segment) {
 			segment.items.push(listItem)
 		} else {
@@ -91,7 +91,7 @@ export default function SearchRoute() {
 						<div key={name}>
 							<H4 className="mb-3">{name}</H4>
 							<ul className="list-inside list-disc">
-								{items.map(i => (
+								{items.map((i) => (
 									<li key={i.route} className="leading-loose">
 										<Link to={i.route}>{i.title}</Link>
 									</li>

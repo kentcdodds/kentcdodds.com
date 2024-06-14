@@ -14,8 +14,7 @@ translations:
   - language: Japanese
     link: https://zenn.dev/matazou/articles/9728f26b15de68
 bannerCloudinaryId: kentcdodds.com/content/blog/prop-drilling/banner
-bannerCredit:
-  Photo by [Simon Caspersen](https://unsplash.com/photos/oJ7SV6vQfBA)
+bannerCredit: Photo by [Simon Caspersen](https://unsplash.com/photos/oJ7SV6vQfBA)
 ---
 
 The goal of this post is to not only help you understand what prop drilling is
@@ -32,7 +31,7 @@ example):
 ```tsx
 function Toggle() {
 	const [on, setOn] = React.useState(false)
-	const toggle = () => setOn(o => !o)
+	const toggle = () => setOn((o) => !o)
 	return (
 		<div>
 			<div>The button is {on ? 'on' : 'off'}</div>
@@ -47,7 +46,7 @@ Let's refactor this into two components now:
 ```tsx
 function Toggle() {
 	const [on, setOn] = React.useState(false)
-	const toggle = () => setOn(o => !o)
+	const toggle = () => setOn((o) => !o)
 	return <Switch on={on} onToggle={toggle} />
 }
 
@@ -68,7 +67,7 @@ in our component tree:
 ```tsx
 function Toggle() {
 	const [on, setOn] = React.useState(false)
-	const toggle = () => setOn(o => !o)
+	const toggle = () => setOn((o) => !o)
 	return <Switch on={on} onToggle={toggle} />
 }
 

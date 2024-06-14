@@ -1,7 +1,7 @@
-import * as React from 'react'
 import { render, screen, act } from '@testing-library/react'
-import { checkStatus } from '../api.js'
+import * as React from 'react'
 import { test, expect, vi, beforeAll, afterAll } from 'vitest'
+import { checkStatus } from '../api.js'
 
 function OrderStatus({ orderId }) {
 	const [{ status, data, error }, setState] = React.useReducer(
@@ -13,10 +13,10 @@ function OrderStatus({ orderId }) {
 		function tick() {
 			setState({ status: 'pending' })
 			checkStatus(orderId).then(
-				d => {
+				(d) => {
 					if (current) setState({ status: 'fulfilled', data: d })
 				},
-				e => {
+				(e) => {
 					if (current) setState({ status: 'rejected', error: e })
 				},
 			)

@@ -74,7 +74,7 @@ export default function CallListScreen() {
 				<div className="w-52 overscroll-auto">
 					{data.calls.length ? (
 						<ul>
-							{data.calls.map(call => {
+							{data.calls.map((call) => {
 								const avatar = getAvatarForUser(call.user, {
 									origin: requestInfo.origin,
 								})

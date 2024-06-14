@@ -91,7 +91,7 @@ async function getLoaderData({ request }: { request: Request }) {
 		take: limit,
 	})
 	return {
-		users: users.map(user => ({
+		users: users.map((user) => ({
 			...user,
 			createdAt: formatDate(user.createdAt),
 		})),
@@ -169,7 +169,7 @@ function Cell({
 				method="delete"
 				onSubmit={() => setIsEditing(false)}
 				onBlur={() => setIsEditing(false)}
-				onKeyUp={e => {
+				onKeyUp={(e) => {
 					if (e.key === 'Escape') setIsEditing(false)
 				}}
 			>
@@ -188,7 +188,7 @@ function Cell({
 				method="POST"
 				onSubmit={() => setIsEditing(false)}
 				onBlur={() => setIsEditing(false)}
-				onKeyUp={e => {
+				onKeyUp={(e) => {
 					if (e.key === 'Escape') setIsEditing(false)
 				}}
 			>
@@ -314,7 +314,7 @@ export default function MeAdmin() {
 									ref={searchInputRef}
 									type="search"
 									value={query}
-									onChange={event => setQuery(event.currentTarget.value)}
+									onChange={(event) => setQuery(event.currentTarget.value)}
 									name="q"
 									placeholder="Filter users"
 									className="text-primary bg-primary border-secondary focus:bg-secondary w-full rounded-full border py-6 pl-14 pr-6 text-lg font-medium hover:border-team-current focus:border-team-current focus:outline-none md:pr-24"
@@ -332,7 +332,7 @@ export default function MeAdmin() {
 							step="1"
 							min="1"
 							max="10000"
-							onChange={event => setLimit(event.currentTarget.value)}
+							onChange={(event) => setLimit(event.currentTarget.value)}
 							placeholder="results limit"
 						/>
 					</div>
@@ -346,9 +346,9 @@ export default function MeAdmin() {
 					})}
 				>
 					<thead>
-						{headerGroups.map(headerGroup => (
+						{headerGroups.map((headerGroup) => (
 							<tr {...headerGroup.getHeaderGroupProps()}>
-								{headerGroup.headers.map(column => (
+								{headerGroup.headers.map((column) => (
 									<th
 										{...column.getHeaderProps({
 											className: 'border-b-4 border-blue-500 font-bold',
@@ -357,7 +357,7 @@ export default function MeAdmin() {
 										<button
 											className="flex w-full justify-center gap-1"
 											onClick={() => {
-												setOrdering(prev => {
+												setOrdering((prev) => {
 													const field = column.id
 													if (!isOrderField(field)) return prev
 
@@ -395,11 +395,11 @@ export default function MeAdmin() {
 						))}
 					</thead>
 					<tbody {...getTableBodyProps()}>
-						{rows.map(row => {
+						{rows.map((row) => {
 							prepareRow(row)
 							return (
 								<tr {...row.getRowProps()}>
-									{row.cells.map(cell => {
+									{row.cells.map((cell) => {
 										return (
 											<td
 												{...cell.getCellProps({

@@ -10,6 +10,10 @@ import remark2rehype from 'remark-rehype'
 import { unified } from 'unified'
 import type * as U from 'unist'
 import { visit } from 'unist-util-visit'
+import { cache, cachified } from './cache.server.ts'
+import { markdownToHtml, stripHtml } from './markdown.server.ts'
+import { getRequiredServerEnvVar, typedBoolean } from './misc.tsx'
+import { type Timings } from './timing.server.ts'
 import {
 	type CWKEpisode,
 	type CWKSeason,
@@ -20,10 +24,6 @@ import {
 	type SimplecastTooManyRequests,
 } from '~/types.ts'
 import { omit, sortBy } from '~/utils/cjs/lodash.js'
-import { cache, cachified } from './cache.server.ts'
-import { markdownToHtml, stripHtml } from './markdown.server.ts'
-import { getRequiredServerEnvVar, typedBoolean } from './misc.tsx'
-import { type Timings } from './timing.server.ts'
 
 const SIMPLECAST_KEY = getRequiredServerEnvVar('SIMPLECAST_KEY')
 const CHATS_WITH_KENT_PODCAST_ID = getRequiredServerEnvVar(
@@ -69,7 +69,7 @@ const getCachedSeasons = async ({
 			Array.isArray(value) &&
 			value.length > 0 &&
 			value.every(
-				v => typeof v.seasonNumber === 'number' && Array.isArray(v.episodes),
+				(v) => typeof v.seasonNumber === 'number' && Array.isArray(v.episodes),
 			),
 	})
 
@@ -139,9 +139,9 @@ async function getSeasons({
 
 			return { seasonNumber: number, episodes }
 		}),
-	).then(s => s.filter(typedBoolean))
+	).then((s) => s.filter(typedBoolean))
 
-	return sortBy(seasons, s => Number(s.seasonNumber))
+	return sortBy(seasons, (s) => Number(s.seasonNumber))
 }
 
 async function getEpisodes(
@@ -247,7 +247,7 @@ async function getEpisode(episodeId: string) {
 }
 
 function removeEls<ItemType>(array: Array<ItemType>, ...els: Array<ItemType>) {
-	return array.filter(el => !els.includes(el))
+	return array.filter((el) => !els.includes(el))
 }
 
 function autoAffiliates() {
@@ -305,8 +305,8 @@ async function parseSummaryMarkdown(
 					const nextHeading = parent.children
 						.slice((index ?? 0) + 1)
 						// the rule is wrong here...
-						// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-						.find(n => n.type === 'heading' && (n as M.Heading).depth >= 3)
+
+						.find((n) => n.type === 'heading' && (n as M.Heading).depth >= 3)
 					const endOfSection = nextHeading
 						? // @ts-expect-error no idea why typescript says something I found can't be indexed 🤷‍♂️
 							parent.children.indexOf(nextHeading)
@@ -366,10 +366,10 @@ async function parseSummaryMarkdown(
 							visit(child, 'listItem', (listItem: M.ListItem) => {
 								homeworkHTMLs.push(
 									listItem.children
-										.map(c => {
+										.map((c) => {
 											// @ts-expect-error not sure...
 											const hastC = mdastToHast(c)
-											// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
 											if (!hastC) {
 												console.error(
 													`${errorKey}: list item child that returned no hAST.`,
@@ -489,7 +489,7 @@ async function getSeasonListItems({
 	for (const season of seasons) {
 		listItemSeasons.push({
 			seasonNumber: season.seasonNumber,
-			episodes: season.episodes.map(episode => {
+			episodes: season.episodes.map((episode) => {
 				return omit(
 					episode,
 					'homeworkHTMLs',
