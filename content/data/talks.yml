@@ -65,6 +65,7 @@
   deliveries:
     - event: '[React Conf](https://conf.react.dev/)'
       date: 2024-05-16
+      recording: https://www.youtube.com/watch?v=7D3AnL0Sehg&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
     - event: '[React Rally](https://reactrally.com/)'
       date: 2024-06-14
     - event: '[React Summit 2024](https://reactsummit.com)'
