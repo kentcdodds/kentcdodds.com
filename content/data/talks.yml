@@ -33,14 +33,26 @@
   description: >-
     This talk will be announced soon!
 
-- title: React Universe Keynote
+- title: 'Abracadabra: The Vanishing Network'
   deliveries:
     - event: '[React Universe](https://www.reactuniverseconf.com)'
       date: 2024-09-05
   tags:
     - keynote
+    - react
   description: >-
-    This talk will be announced soon!
+    The network that stands between our server and the client is what causes the
+    most complexity in our development process. Whether it be the initial UI we
+    generate on the server, the API calls we make as the user navigates around,
+    or the form submissions our user makes, keeping the application responsive
+    and up-to-date is a massive chore.
+
+
+    What would it be like if all of that complexity just disappeared? Freaking
+    great, that's what it would be like. And React Server Components and Actions
+    are what's making that possible. In this talk we'll look into how that's
+    happening and how we can take advantage of this amazing developer experience
+    to deliver even better user experiences.
 
 - title: THAT Conf Wisconsin Keynote
   deliveries:
