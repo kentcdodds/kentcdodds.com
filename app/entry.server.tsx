@@ -47,6 +47,10 @@ export default async function handleDocumentRequest(...args: DocRequestArgs) {
 		responseHeaders.set('Cache-Control', 'no-store')
 	}
 
+	if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
+		responseHeaders.append('Document-Policy', 'js-profiling')
+	}
+
 	responseHeaders.append(
 		'Link',
 		'<https://res.cloudinary.com>; rel="preconnect"',
