@@ -12,7 +12,7 @@ export async function loader({ request }: DataFunctionArgs) {
 			getBlogReadRankings({ request }),
 			fetch(`${new URL(request.url).protocol}${host}`, {
 				method: 'HEAD',
-				headers: { 'X-Healthcheck': 'true' },
+				headers: { 'x-healthcheck': 'true' },
 			}).then((r) => {
 				if (!r.ok) return Promise.reject(r)
 			}),

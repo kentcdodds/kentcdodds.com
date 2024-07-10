@@ -2,15 +2,11 @@ import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import {
-	createRequestHandler as _createRequestHandler,
-	type RequestHandler,
-} from '@remix-run/express'
+import { createRequestHandler, type RequestHandler } from '@remix-run/express'
 import { installGlobals, type ServerBuild } from '@remix-run/node'
 import {
 	init as sentryInit,
 	setContext as sentrySetContext,
-	wrapExpressCreateRequestHandler,
 } from '@sentry/remix'
 import { ip as ipAddress } from 'address'
 import chalk from 'chalk'
@@ -60,10 +56,9 @@ const getHost = (req: { get: (key: string) => string | undefined }) =>
 
 const MODE = process.env.NODE_ENV
 
-const createRequestHandler =
-	MODE === 'production'
-		? wrapExpressCreateRequestHandler(_createRequestHandler)
-		: _createRequestHandler
+if (MODE === 'production' && process.env.SENTRY_DSN) {
+	import('./utils/monitoring.js').then(({ init }) => init())
+}
 
 if (MODE === 'production') {
 	sentryInit({
