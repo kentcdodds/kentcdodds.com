@@ -7,7 +7,7 @@ import { PartyIcon, RefreshIcon } from '#app/components/icons.tsx'
 import { tagKCDSiteSubscriber } from '#app/convertkit/convertkit.server.ts'
 import { externalLinks } from '#app/external-links.tsx'
 import { type KCDHandle } from '#app/types.ts'
-import { ensurePrimary } from '#app/utils/cjs/litefs-js.server.ts'
+import { ensurePrimary } from '#app/utils/cjs/litefs-js.server.js'
 import { connectDiscord } from '#app/utils/discord.server.ts'
 import {
 	getDiscordAuthorizeURL,
