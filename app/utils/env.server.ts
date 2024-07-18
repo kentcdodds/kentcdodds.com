@@ -38,6 +38,7 @@ const schema = z.object({
 	SENTRY_DSN: z.string(),
 	SENTRY_ORG: z.string(),
 	SENTRY_PROJECT: z.string(),
+	SENTRY_PROJECT_ID: z.string(),
 	SESSION_SECRET: z.string(),
 	SIMPLECAST_KEY: z.string(),
 	TITO_API_SECRET: z.string(),

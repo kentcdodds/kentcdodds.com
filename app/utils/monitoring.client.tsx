@@ -10,6 +10,7 @@ import { useEffect } from 'react'
 export function init() {
 	sentryInit({
 		dsn: ENV.SENTRY_DSN,
+		tunnel: '/resources/lookout',
 		environment: ENV.MODE,
 		beforeSend(event, hint) {
 			if (isBrowserExtensionError(hint.originalException)) {

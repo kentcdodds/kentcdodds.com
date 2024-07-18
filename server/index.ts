@@ -239,7 +239,6 @@ app.use(
 			directives: {
 				'connect-src': [
 					...(MODE === 'development' ? ['ws:'] : []),
-					...(process.env.SENTRY_DSN ? ['*.ingest.sentry.io'] : []),
 					"'self'",
 				].filter(Boolean),
 				'font-src': ["'self'"],
