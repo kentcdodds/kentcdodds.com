@@ -4,6 +4,7 @@ import Sentry from '@sentry/remix'
 export function init() {
 	Sentry.init({
 		dsn: process.env.SENTRY_DSN,
+		tunnel: '/lookout',
 		environment: process.env.NODE_ENV,
 		tracesSampleRate: process.env.NODE_ENV === 'production' ? 1 : 0,
 		autoInstrumentRemix: true,

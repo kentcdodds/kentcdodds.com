@@ -57,7 +57,7 @@ const getHost = (req: { get: (key: string) => string | undefined }) =>
 const MODE = process.env.NODE_ENV
 
 if (MODE === 'production' && process.env.SENTRY_DSN) {
-	import('./utils/monitoring.js').then(({ init }) => init())
+	void import('./utils/monitoring.js').then(({ init }) => init())
 }
 
 if (MODE === 'production') {
