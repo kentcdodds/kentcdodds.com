@@ -167,7 +167,7 @@ function CategoryCard(props: CategoryCardProps) {
 }
 
 export default function Discord() {
-	const data = useLoaderData<LoaderData>()
+	const data = useLoaderData<typeof loader>()
 	const { requestInfo, user } = useRootData()
 	const authorizeURL = user
 		? getDiscordAuthorizeURL(requestInfo.origin)

@@ -264,7 +264,7 @@ function TeamOption({
 
 export default function NewAccount() {
 	const data = useLoaderData<typeof loader>()
-	const actionData = useActionData<ActionData>()
+	const actionData = useActionData<typeof action>()
 	const [, setTeam] = useTeam()
 	const [formValues, setFormValues] = React.useState<{
 		firstName: string

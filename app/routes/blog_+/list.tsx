@@ -39,7 +39,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function BlogList() {
-	const data = useLoaderData<LoaderData>()
+	const data = useLoaderData<typeof loader>()
 
 	return (
 		<div>

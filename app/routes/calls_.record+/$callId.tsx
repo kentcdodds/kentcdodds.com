@@ -70,7 +70,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export default function Screen() {
-	const data = useLoaderData<LoaderData>()
+	const data = useLoaderData<typeof loader>()
 	const [audioURL, setAudioURL] = React.useState<string | null>(null)
 	const dc = useDoubleCheck()
 	React.useEffect(() => {

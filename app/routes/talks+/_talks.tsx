@@ -217,7 +217,7 @@ function Card({
 }
 
 export default function TalksScreen() {
-	const data = useLoaderData<LoaderData>()
+	const data = useLoaderData<typeof loader>()
 	const { pathname } = useLocation()
 	const [activeSlug] = pathname.split('/').slice(-1)
 

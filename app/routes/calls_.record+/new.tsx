@@ -98,7 +98,7 @@ export async function action({ request }: ActionFunctionArgs) {
 type ActionData = RecordingFormData
 
 export default function RecordScreen() {
-	const actionData = useActionData<ActionData>()
+	const actionData = useActionData<typeof action>()
 	const [audio, setAudio] = React.useState<Blob | null>(null)
 	const { user, userInfo } = useRootData()
 	// should be impossible...

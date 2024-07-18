@@ -100,7 +100,7 @@ function Record({
 export default function RecordScreen() {
 	const { pathname } = useLocation()
 	const { user } = useRootData()
-	const data = useLoaderData<LoaderData>()
+	const data = useLoaderData<typeof loader>()
 
 	const [activeSlug] = pathname.split('/').slice(-1)
 	const calls = data.calls

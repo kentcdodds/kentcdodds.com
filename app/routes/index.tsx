@@ -92,7 +92,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export default function IndexRoute() {
-	const data = useLoaderData<LoaderData>()
+	const data = useLoaderData<typeof loader>()
 	const kodyFlying = getRandomFlyingKody(data.kodyTeam, data.randomImageNo)
 	return (
 		<div>

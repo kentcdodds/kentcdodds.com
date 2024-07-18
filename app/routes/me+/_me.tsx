@@ -208,7 +208,13 @@ export async function action({ request }: ActionFunctionArgs) {
 		}
 		return redirect('/me')
 	} catch (error: unknown) {
-		return json({ generalError: getErrorMessage(error) }, 500)
+		return json(
+			{
+				fields: { firstName: null },
+				errors: { generalError: getErrorMessage(error), firstName: null },
+			},
+			500,
+		)
 	}
 }
 
@@ -222,7 +228,7 @@ function YouScreen() {
 		onewheeling: TEAM_ONEWHEELING_MAP,
 	}[data.teamType]
 	const otherSessionsCount = data.sessionCount - 1
-	const actionData = useActionData<ActionData>()
+	const actionData = useActionData<typeof action>()
 	const { requestInfo, userInfo, user } = useRootData()
 	const team = getTeam(user?.team)
 

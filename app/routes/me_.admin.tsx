@@ -208,7 +208,7 @@ const defaultColumn = {
 }
 
 export default function MeAdmin() {
-	const data = useLoaderData<LoaderData>()
+	const data = useLoaderData<typeof loader>()
 	const searchInputRef = React.useRef<HTMLInputElement>(null)
 	const [searchParams, setSearchParams] = useSearchParams()
 
@@ -222,7 +222,7 @@ export default function MeAdmin() {
 		order: isSortOrder(spOrder) ? spOrder : 'asc',
 		field: isOrderField(spOrderField) ? spOrderField : 'createdAt',
 	})
-	const actionData = useActionData<{ error: string }>()
+	const actionData = useActionData<typeof action>()
 
 	const syncSearchParams = useDebounce(() => {
 		if (

@@ -94,7 +94,7 @@ export const links: LinksFunction = () => {
 
 function AboutIndex() {
 	const { blogRecommendations, talkRecommendations } =
-		useLoaderData<LoaderData>()
+		useLoaderData<typeof loader>()
 	const [searchParams] = useSearchParams()
 	const { requestInfo } = useRootData()
 	const permalinkAutoplay = `${requestInfo.origin}/about?autoplay`

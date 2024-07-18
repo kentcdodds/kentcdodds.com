@@ -66,7 +66,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function CallListScreen() {
-	const data = useLoaderData<LoaderData>()
+	const data = useLoaderData<typeof loader>()
 	const { requestInfo } = useRootData()
 	return (
 		<div className="px-6">

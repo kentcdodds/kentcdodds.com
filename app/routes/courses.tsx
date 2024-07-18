@@ -66,7 +66,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 }
 
 function CoursesHome() {
-	const data = useLoaderData<LoaderData>()
+	const data = useLoaderData<typeof loader>()
 	return (
 		<>
 			<HeroSection

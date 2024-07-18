@@ -54,7 +54,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function SubscribeScreen() {
-	const data = useLoaderData<LoaderData>()
+	const data = useLoaderData<typeof loader>()
 	const { userInfo } = useRootData()
 	const subscribedToNewsletter = userInfo?.convertKit?.tags.some(
 		({ name }) => name === 'Subscribed: general newsletter',

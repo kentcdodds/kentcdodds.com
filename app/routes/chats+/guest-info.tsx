@@ -20,7 +20,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 // TODO: make this a thing...
 export default function GuestInfo() {
-	const data = useLoaderData<LoaderData>()
+	const data = useLoaderData<typeof loader>()
 	return (
 		<div>
 			{`TODO: make this a thing...`}

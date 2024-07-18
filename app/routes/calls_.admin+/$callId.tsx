@@ -234,7 +234,7 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 function RecordingDetailScreen() {
 	const [responseAudio, setResponseAudio] = React.useState<Blob | null>(null)
 	const data = useLoaderData<typeof loader>()
-	const actionData = useActionData<ActionData>()
+	const actionData = useActionData<typeof action>()
 	const user = useUser()
 
 	return (

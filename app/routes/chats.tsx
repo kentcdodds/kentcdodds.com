@@ -107,7 +107,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 function PodcastHome() {
 	const [sortOrder, setSortOrder] = React.useState<'desc' | 'asc'>('asc')
 	const navigate = useNavigate()
-	const data = useLoaderData<LoaderData>()
+	const data = useLoaderData<typeof loader>()
 	const matches = useMatches()
 	const last = matches[matches.length - 1]
 

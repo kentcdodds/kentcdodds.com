@@ -154,7 +154,7 @@ async function isEmailVerified(
 }
 
 function Login() {
-	const data = useLoaderData<LoaderData>()
+	const data = useLoaderData<typeof loader>()
 	const inputRef = React.useRef<HTMLInputElement>(null)
 	const [submitted, setSubmitted] = React.useState(false)
 

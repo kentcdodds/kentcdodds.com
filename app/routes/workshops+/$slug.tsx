@@ -174,7 +174,7 @@ function restartArray<ArrayType>(array: Array<ArrayType>, startIndex: number) {
 export default function WorkshopScreen() {
 	const params = useParams()
 	const { workshopEvents: titoEvents, workshops } = useWorkshopsData()
-	const data = useLoaderData<LoaderData>()
+	const data = useLoaderData<typeof loader>()
 	const workshop = workshops.find((w) => w.slug === params.slug)
 
 	if (!workshop) {

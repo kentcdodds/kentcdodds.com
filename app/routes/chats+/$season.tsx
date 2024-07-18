@@ -67,7 +67,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export default function ChatsSeason() {
-	const { season } = useLoaderData<LoaderData>()
+	const { season } = useLoaderData<typeof loader>()
 	const { sortOrder } = useChatsEpisodeUIState()
 	const episodes = orderBy(season.episodes, 'episodeNumber', sortOrder)
 	return episodes.map((episode) => (

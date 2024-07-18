@@ -139,7 +139,7 @@ function ProfileCard({ person }: { person: Person }) {
 }
 
 function CreditsIndex() {
-	const data = useLoaderData<LoaderData>()
+	const data = useLoaderData<typeof loader>()
 	return (
 		<>
 			<HeroSection

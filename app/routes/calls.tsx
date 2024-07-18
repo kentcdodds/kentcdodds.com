@@ -131,7 +131,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 export default function CallHomeScreen() {
 	const [sortOrder, setSortOrder] = React.useState<'desc' | 'asc'>('desc')
 
-	const data = useLoaderData<LoaderData>()
+	const data = useLoaderData<typeof loader>()
 	const navigate = useNavigate()
 
 	const groupedEpisodeBySeasons = groupBy(data.episodes, 'seasonNumber')

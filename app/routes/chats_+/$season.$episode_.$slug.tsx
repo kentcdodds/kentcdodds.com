@@ -418,7 +418,7 @@ function PrevNextButton({
 export default function PodcastDetail() {
 	const { requestInfo } = useRootData()
 	const { episode, featured, nextEpisode, prevEpisode } =
-		useLoaderData<LoaderData>()
+		useLoaderData<typeof loader>()
 	const permalink = `${requestInfo.origin}${getCWKEpisodePath(episode)}`
 
 	return (

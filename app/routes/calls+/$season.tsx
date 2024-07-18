@@ -89,7 +89,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export default function CallsSeason() {
-	const { season } = useLoaderData<LoaderData>()
+	const { season } = useLoaderData<typeof loader>()
 	const matches = useMatches()
 	const shouldReduceMotion = useReducedMotion()
 	const { sortOrder } = useCallsEpisodeUIState()
