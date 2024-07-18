@@ -4,8 +4,8 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { installGlobals } from '@remix-run/node'
 // NOTE: run this with tsx ./mocks/generate/tweets
+import { type Tweet } from '#app/utils/twitter/index.ts'
 import { getTweet } from '../../app/utils/twitter/get-tweet.ts'
-import { type Tweet } from '~/utils/twitter/index.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

@@ -1,10 +1,10 @@
+import { type User } from '#app/types.ts'
 import * as ck from '../convertkit/convertkit.server.ts'
 import { getImageBuilder, images } from '../images.tsx'
 import { cache, cachified } from './cache.server.ts'
 import * as discord from './discord.server.ts'
 import { getAvatar, getOptionalTeam } from './misc.tsx'
 import { type Timings } from './timing.server.ts'
-import { type User } from '~/types.ts'
 
 type UserInfo = {
 	avatar: {

@@ -12,15 +12,15 @@ import {
 } from '@remix-run/react'
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { Grid } from '~/components/grid.tsx'
-import { YoutubeIcon } from '~/components/icons.tsx'
-import { CourseSection } from '~/components/sections/course-section.tsx'
-import { HeroSection } from '~/components/sections/hero-section.tsx'
-import { Tag } from '~/components/tag.tsx'
-import { H3, H6, Paragraph } from '~/components/typography.tsx'
-import { getGenericSocialImage, images } from '~/images.tsx'
-import { type RootLoaderType } from '~/root.tsx'
-import { type Await } from '~/types.ts'
+import { Grid } from '#app/components/grid.tsx'
+import { YoutubeIcon } from '#app/components/icons.tsx'
+import { CourseSection } from '#app/components/sections/course-section.tsx'
+import { HeroSection } from '#app/components/sections/hero-section.tsx'
+import { Tag } from '#app/components/tag.tsx'
+import { H3, H6, Paragraph } from '#app/components/typography.tsx'
+import { getGenericSocialImage, images } from '#app/images.tsx'
+import { type RootLoaderType } from '#app/root.tsx'
+import { type Await } from '#app/types.ts'
 import {
 	formatDate,
 	getDisplayUrl,
@@ -29,9 +29,9 @@ import {
 	parseDate,
 	reuseUsefulLoaderHeaders,
 	useUpdateQueryStringValueWithoutNavigation,
-} from '~/utils/misc.tsx'
-import { getSocialMetas } from '~/utils/seo.ts'
-import { getTalksAndTags } from '~/utils/talks.server.ts'
+} from '#app/utils/misc.tsx'
+import { getSocialMetas } from '#app/utils/seo.ts'
+import { getTalksAndTags } from '#app/utils/talks.server.ts'
 
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	data,

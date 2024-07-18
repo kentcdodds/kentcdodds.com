@@ -82,7 +82,7 @@ what our test looks like when we do that:
 
 ```js
 import thumbWar from '../thumb-war'
-import * as utils from '~/utils'
+import * as utils from '#app/utils'
 
 test('returns winner', () => {
 	const originalGetWinner = utils.getWinner
@@ -127,7 +127,7 @@ and ensure it was called with the right arguments.
 
 ```js
 import thumbWar from '../thumb-war'
-import * as utils from '~/utils'
+import * as utils from '#app/utils'
 
 test('returns winner', () => {
 	const originalGetWinner = utils.getWinner
@@ -181,7 +181,7 @@ this. So let's simplify our code by using that!
 
 ```js
 import thumbWar from '../thumb-war'
-import * as utils from '~/utils'
+import * as utils from '#app/utils'
 
 test('returns winner', () => {
 	const originalGetWinner = utils.getWinner
@@ -223,7 +223,7 @@ which does exactly what we need:
 
 ```js
 import thumbWar from '../thumb-war'
-import * as utils from '~/utils'
+import * as utils from '#app/utils'
 
 test('returns winner', () => {
 	jest.spyOn(utils, 'getWinner')
@@ -284,9 +284,9 @@ now:
 
 ```js
 import thumbWar from '../thumb-war'
-import * as utilsMock from '~/utils'
+import * as utilsMock from '#app/utils'
 
-jest.mock('~/utils', () => {
+jest.mock('#app/utils', () => {
 	return {
 		getWinner: jest.fn((p1, p2) => p2),
 	}
@@ -346,9 +346,9 @@ And with that, we can update our test:
 ```js
 // __tests__/thumb-war.js
 import thumbWar from '../thumb-war'
-import * as utilsMock from '~/utils'
+import * as utilsMock from '#app/utils'
 
-jest.mock('~/utils')
+jest.mock('#app/utils')
 
 test('returns winner', () => {
 	const winner = thumbWar('Ken Wheeler', 'Kent C. Dodds')

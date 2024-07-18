@@ -1,6 +1,6 @@
 // this is a Sentry tunnel to proxy sentry requests so we don't get blocked by ad-blockers
 import { type ActionFunctionArgs } from '@remix-run/node'
-import { invariantResponse } from '~/utils/misc.js'
+import { invariantResponse } from '#app/utils/misc.js'
 
 const SENTRY_HOST = new URL(process.env.SENTRY_DSN).hostname
 const SENTRY_PROJECT_IDS = [process.env.SENTRY_PROJECT_ID]

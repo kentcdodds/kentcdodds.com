@@ -8,10 +8,10 @@ import { useEffect, useRef, useState } from 'react'
 import { useSpinDelay } from 'spin-delay'
 import invariant from 'tiny-invariant'
 
-import { LinkButton } from '~/components/button.tsx'
-import { AlarmIcon } from '~/components/icons.tsx'
-import { NotificationMessage } from '~/components/notification-message.tsx'
-import { Spinner } from '~/components/spinner.tsx'
+import { LinkButton } from '#app/components/button.tsx'
+import { AlarmIcon } from '#app/components/icons.tsx'
+import { NotificationMessage } from '#app/components/notification-message.tsx'
+import { Spinner } from '#app/components/spinner.tsx'
 
 export function getPromoCookieValue({
 	promoName,

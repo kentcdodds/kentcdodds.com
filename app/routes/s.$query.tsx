@@ -1,11 +1,11 @@
 import { json, redirect, type DataFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData, useParams } from '@remix-run/react'
-import { Grid } from '~/components/grid.tsx'
-import { HeroSection } from '~/components/sections/hero-section.tsx'
-import { Spacer } from '~/components/spacer.tsx'
-import { H3, H4 } from '~/components/typography.tsx'
-import { images } from '~/images.tsx'
-import { searchKCD } from '~/utils/search.server.ts'
+import { Grid } from '#app/components/grid.tsx'
+import { HeroSection } from '#app/components/sections/hero-section.tsx'
+import { Spacer } from '#app/components/spacer.tsx'
+import { H3, H4 } from '#app/components/typography.tsx'
+import { images } from '#app/images.tsx'
+import { searchKCD } from '#app/utils/search.server.ts'
 
 type NormalizedItemGroup = {
 	prefix: string

@@ -13,9 +13,9 @@ import {
 } from '@remix-run/node'
 import { Outlet, useLoaderData } from '@remix-run/react'
 import { motion } from 'framer-motion'
-import { ButtonLink } from '~/components/button.tsx'
-import { FeatureCard } from '~/components/feature-card.tsx'
-import { Grid } from '~/components/grid.tsx'
+import { ButtonLink } from '#app/components/button.tsx'
+import { FeatureCard } from '#app/components/feature-card.tsx'
+import { Grid } from '#app/components/grid.tsx'
 import {
 	BriefcaseIcon,
 	CodeIcon,
@@ -27,30 +27,30 @@ import {
 	RocketIcon,
 	TrophyIcon,
 	UsersIcon,
-} from '~/components/icons.tsx'
-import { CourseSection } from '~/components/sections/course-section.tsx'
-import { HeaderSection } from '~/components/sections/header-section.tsx'
-import { HeroSection } from '~/components/sections/hero-section.tsx'
-import { TestimonialSection } from '~/components/sections/testimonial-section.tsx'
-import { Spacer } from '~/components/spacer.tsx'
-import { H2, H5, H6, Paragraph } from '~/components/typography.tsx'
-import { externalLinks } from '~/external-links.tsx'
-import { getGenericSocialImage, getImgProps, images } from '~/images.tsx'
-import { type RootLoaderType } from '~/root.tsx'
+} from '#app/components/icons.tsx'
+import { CourseSection } from '#app/components/sections/course-section.tsx'
+import { HeaderSection } from '#app/components/sections/header-section.tsx'
+import { HeroSection } from '#app/components/sections/hero-section.tsx'
+import { TestimonialSection } from '#app/components/sections/testimonial-section.tsx'
+import { Spacer } from '#app/components/spacer.tsx'
+import { H2, H5, H6, Paragraph } from '#app/components/typography.tsx'
+import { externalLinks } from '#app/external-links.tsx'
+import { getGenericSocialImage, getImgProps, images } from '#app/images.tsx'
+import { type RootLoaderType } from '#app/root.tsx'
 import {
 	getDiscordAuthorizeURL,
 	getDisplayUrl,
 	getUrl,
 	reuseUsefulLoaderHeaders,
 	useCapturedRouteError,
-} from '~/utils/misc.tsx'
-import { getSocialMetas } from '~/utils/seo.ts'
+} from '#app/utils/misc.tsx'
+import { getSocialMetas } from '#app/utils/seo.ts'
 import {
 	getTestimonials,
 	type Testimonial,
-} from '~/utils/testimonials.server.ts'
-import { getServerTimeHeader } from '~/utils/timing.server.ts'
-import { useRootData } from '~/utils/use-root-data.ts'
+} from '#app/utils/testimonials.server.ts'
+import { getServerTimeHeader } from '#app/utils/timing.server.ts'
+import { useRootData } from '#app/utils/use-root-data.ts'
 
 type LoaderData = {
 	testimonials: Array<Testimonial>

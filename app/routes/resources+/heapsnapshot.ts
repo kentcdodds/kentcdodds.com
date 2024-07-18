@@ -7,8 +7,8 @@ import {
 	createReadableStreamFromReadable,
 	type DataFunctionArgs,
 } from '@remix-run/node'
-import { formatDate } from '~/utils/misc.tsx'
-import { requireAdminUser } from '~/utils/session.server.ts'
+import { formatDate } from '#app/utils/misc.tsx'
+import { requireAdminUser } from '#app/utils/session.server.ts'
 
 export async function loader({ request }: DataFunctionArgs) {
 	await requireAdminUser(request)

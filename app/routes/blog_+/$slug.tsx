@@ -7,47 +7,47 @@ import { useLoaderData, useParams } from '@remix-run/react'
 import { clsx } from 'clsx'
 import * as React from 'react'
 import { serverOnly$ } from 'vite-env-only'
-import { markAsRead } from '../action+/mark-as-read.tsx'
-import { ArrowLink, BackLink } from '~/components/arrow-button.tsx'
-import { BlurrableImage } from '~/components/blurrable-image.tsx'
-import { CourseCard } from '~/components/course-card.tsx'
-import { GeneralErrorBoundary } from '~/components/error-boundary.tsx'
-import { FourHundred, FourOhFour } from '~/components/errors.tsx'
-import { Grid } from '~/components/grid.tsx'
-import { BlogSection } from '~/components/sections/blog-section.tsx'
-import { HeaderSection } from '~/components/sections/header-section.tsx'
-import { Spacer } from '~/components/spacer.tsx'
-import { TeamStats } from '~/components/team-stats.tsx'
-import { H2, H6, Paragraph } from '~/components/typography.tsx'
-import { WorkshopCard } from '~/components/workshop-card.tsx'
-import { externalLinks } from '~/external-links.tsx'
-import { getImageBuilder, getImgProps, images } from '~/images.tsx'
-import { type KCDHandle, type MdxListItem, type Team } from '~/types.ts'
+import { ArrowLink, BackLink } from '#app/components/arrow-button.tsx'
+import { BlurrableImage } from '#app/components/blurrable-image.tsx'
+import { CourseCard } from '#app/components/course-card.tsx'
+import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import { FourHundred, FourOhFour } from '#app/components/errors.tsx'
+import { Grid } from '#app/components/grid.tsx'
+import { BlogSection } from '#app/components/sections/blog-section.tsx'
+import { HeaderSection } from '#app/components/sections/header-section.tsx'
+import { Spacer } from '#app/components/spacer.tsx'
+import { TeamStats } from '#app/components/team-stats.tsx'
+import { H2, H6, Paragraph } from '#app/components/typography.tsx'
+import { WorkshopCard } from '#app/components/workshop-card.tsx'
+import { externalLinks } from '#app/external-links.tsx'
+import { getImageBuilder, getImgProps, images } from '#app/images.tsx'
+import { type KCDHandle, type MdxListItem, type Team } from '#app/types.ts'
 import {
 	getBlogReadRankings,
 	getBlogRecommendations,
 	getTotalPostReads,
 	type ReadRankings,
-} from '~/utils/blog.server.ts'
-import { getRankingLeader } from '~/utils/blog.ts'
-import { getBlogMdxListItems, getMdxPage } from '~/utils/mdx.server.ts'
+} from '#app/utils/blog.server.ts'
+import { getRankingLeader } from '#app/utils/blog.ts'
+import { getBlogMdxListItems, getMdxPage } from '#app/utils/mdx.server.ts'
 import {
 	getBannerAltProp,
 	getBannerTitleProp,
 	mdxPageMeta,
 	useMdxComponent,
-} from '~/utils/mdx.tsx'
+} from '#app/utils/mdx.tsx'
 import {
 	formatNumber,
 	requireValidSlug,
 	reuseUsefulLoaderHeaders,
 	typedBoolean,
-} from '~/utils/misc.tsx'
-import { teamEmoji, useTeam } from '~/utils/team-provider.tsx'
-import { getServerTimeHeader } from '~/utils/timing.server.ts'
-import { useRootData } from '~/utils/use-root-data.ts'
-import { getScheduledEvents } from '~/utils/workshop-tickets.server.ts'
-import { getWorkshops } from '~/utils/workshops.server.ts'
+} from '#app/utils/misc.tsx'
+import { teamEmoji, useTeam } from '#app/utils/team-provider.tsx'
+import { getServerTimeHeader } from '#app/utils/timing.server.ts'
+import { useRootData } from '#app/utils/use-root-data.ts'
+import { getScheduledEvents } from '#app/utils/workshop-tickets.server.ts'
+import { getWorkshops } from '#app/utils/workshops.server.ts'
+import { markAsRead } from '../action+/mark-as-read.tsx'
 
 const handleId = 'blog-post'
 export const handle: KCDHandle = {

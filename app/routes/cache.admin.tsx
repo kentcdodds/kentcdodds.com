@@ -7,32 +7,32 @@ import {
 	useSubmit,
 } from '@remix-run/react'
 import invariant from 'tiny-invariant'
-import { Button } from '~/components/button.tsx'
+import { Button } from '#app/components/button.tsx'
 import {
 	Field,
 	FieldContainer,
 	inputClassName,
-} from '~/components/form-elements.tsx'
-import { SearchIcon } from '~/components/icons.tsx'
-import { Spacer } from '~/components/spacer.tsx'
-import { H2, H3 } from '~/components/typography.tsx'
+} from '#app/components/form-elements.tsx'
+import { SearchIcon } from '#app/components/icons.tsx'
+import { Spacer } from '#app/components/spacer.tsx'
+import { H2, H3 } from '#app/components/typography.tsx'
 import {
 	cache,
 	getAllCacheKeys,
 	lruCache,
 	searchCacheKeys,
-} from '~/utils/cache.server.ts'
+} from '#app/utils/cache.server.ts'
 import {
 	ensureInstance,
 	getAllInstances,
 	getInstanceInfo,
-} from '~/utils/cjs/litefs-js.server.js'
+} from '#app/utils/cjs/litefs-js.server.js'
 import {
 	useDebounce,
 	useDoubleCheck,
 	useCapturedRouteError,
-} from '~/utils/misc.tsx'
-import { requireAdminUser } from '~/utils/session.server.ts'
+} from '#app/utils/misc.tsx'
+import { requireAdminUser } from '#app/utils/session.server.ts'
 
 export async function loader({ request }: DataFunctionArgs) {
 	await requireAdminUser(request)

@@ -2,13 +2,13 @@ import { useMatches } from '@remix-run/react'
 import { clsx } from 'clsx'
 import errorStack from 'error-stack-parser'
 import * as React from 'react'
+import { type MdxListItem } from '#app/types.ts'
+import { getErrorMessage } from '#app/utils/misc.tsx'
 import { ArrowLink } from './arrow-button.tsx'
 import { Facepalm, Grimmacing, MissingSomething } from './kifs.tsx'
 import { BlogSection } from './sections/blog-section.tsx'
 import { HeroSection, type HeroSectionProps } from './sections/hero-section.tsx'
 import { H2, H6 } from './typography.tsx'
-import { type MdxListItem } from '~/types.ts'
-import { getErrorMessage } from '~/utils/misc.tsx'
 
 function RedBox({ error }: { error: Error }) {
 	const [isVisible, setIsVisible] = React.useState(true)

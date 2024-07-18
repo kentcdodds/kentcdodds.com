@@ -1,34 +1,34 @@
 import { type HeadersFunction, type MetaFunction } from '@remix-run/node'
 import { useSearchParams } from '@remix-run/react'
 import * as React from 'react'
-import {
-	useWorkshopsData,
-	type loader as WorkshopLoader,
-	type LoaderData as WorkshopLoaderData,
-} from './_workshops.tsx'
-import { Grid } from '~/components/grid.tsx'
-import { CourseSection } from '~/components/sections/course-section.tsx'
-import { HeroSection } from '~/components/sections/hero-section.tsx'
-import { Spacer } from '~/components/spacer.tsx'
-import { Tag } from '~/components/tag.tsx'
-import { H3, H6 } from '~/components/typography.tsx'
-import { WorkshopCard } from '~/components/workshop-card.tsx'
-import { RegistrationPanel } from '~/components/workshop-registration-panel.tsx'
-import { getSocialImageWithPreTitle, images } from '~/images.tsx'
+import { Grid } from '#app/components/grid.tsx'
+import { CourseSection } from '#app/components/sections/course-section.tsx'
+import { HeroSection } from '#app/components/sections/hero-section.tsx'
+import { Spacer } from '#app/components/spacer.tsx'
+import { Tag } from '#app/components/tag.tsx'
+import { H3, H6 } from '#app/components/typography.tsx'
+import { WorkshopCard } from '#app/components/workshop-card.tsx'
+import { RegistrationPanel } from '#app/components/workshop-registration-panel.tsx'
+import { getSocialImageWithPreTitle, images } from '#app/images.tsx'
 import {
 	type RootLoaderType,
 	type LoaderData as RootLoaderData,
-} from '~/root.tsx'
-import { type Workshop } from '~/types.ts'
+} from '#app/root.tsx'
+import { type Workshop } from '#app/types.ts'
 import {
 	getDisplayUrl,
 	getUrl,
 	listify,
 	typedBoolean,
 	useUpdateQueryStringValueWithoutNavigation,
-} from '~/utils/misc.tsx'
-import { getSocialMetas } from '~/utils/seo.ts'
-import { type WorkshopEvent } from '~/utils/workshop-tickets.server.ts'
+} from '#app/utils/misc.tsx'
+import { getSocialMetas } from '#app/utils/seo.ts'
+import { type WorkshopEvent } from '#app/utils/workshop-tickets.server.ts'
+import {
+	useWorkshopsData,
+	type loader as WorkshopLoader,
+	type LoaderData as WorkshopLoaderData,
+} from './_workshops.tsx'
 
 export const meta: MetaFunction<
 	{},

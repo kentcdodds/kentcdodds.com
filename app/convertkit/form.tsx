@@ -1,10 +1,10 @@
 import { useFetcher } from '@remix-run/react'
 import * as React from 'react'
+import { ArrowButton } from '#app/components/arrow-button.tsx'
+import { Field } from '#app/components/form-elements.tsx'
+import { CheckIcon } from '#app/components/icons.tsx'
+import { useRootData } from '#app/utils/use-root-data.ts'
 import { type ActionData } from './types.ts'
-import { ArrowButton } from '~/components/arrow-button.tsx'
-import { Field } from '~/components/form-elements.tsx'
-import { CheckIcon } from '~/components/icons.tsx'
-import { useRootData } from '~/utils/use-root-data.ts'
 
 function ConvertKitForm({
 	formId,

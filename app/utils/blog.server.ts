@@ -1,5 +1,12 @@
 import { subMonths, subYears } from 'date-fns'
 import pLimit from 'p-limit'
+import {
+	type Await,
+	type MdxListItem,
+	type Team,
+	type User,
+} from '#app/types.ts'
+import { shuffle } from '#app/utils/cjs/lodash.js'
 import { filterPosts } from './blog.ts'
 import { cache, cachified, lruCache } from './cache.server.ts'
 import { getClientSession } from './client.server.ts'
@@ -16,8 +23,6 @@ import { prisma } from './prisma.server.ts'
 import { getSession, getUser } from './session.server.ts'
 import { teamEmoji } from './team-provider.tsx'
 import { time, type Timings } from './timing.server.ts'
-import { type Await, type MdxListItem, type Team, type User } from '~/types.ts'
-import { shuffle } from '~/utils/cjs/lodash.js'
 
 async function getBlogRecommendations({
 	request,

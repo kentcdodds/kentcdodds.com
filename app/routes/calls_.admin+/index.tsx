@@ -1,4 +1,4 @@
-import { type KCDHandle } from '~/types.ts'
+import { type KCDHandle } from '#app/types.ts'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,

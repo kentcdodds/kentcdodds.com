@@ -1,8 +1,8 @@
 import { Link } from '@remix-run/react'
+import { type Workshop } from '#app/types.ts'
+import { type WorkshopEvent } from '#app/utils/workshop-tickets.server.ts'
 import { Spacer } from './spacer.tsx'
 import { H3, H6, Paragraph } from './typography.tsx'
-import { type Workshop } from '~/types.ts'
-import { type WorkshopEvent } from '~/utils/workshop-tickets.server.ts'
 
 function truncate(text: string, length: number) {
 	if (!text || text.length <= length) {

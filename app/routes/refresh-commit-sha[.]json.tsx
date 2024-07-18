@@ -1,10 +1,10 @@
 import { json } from '@remix-run/node'
+import { cache } from '#app/utils/cache.server.ts'
 import {
 	isRefreshShaInfo,
 	commitShaKey as refreshCacheCommitShaKey,
 	type RefreshShaInfo,
 } from './action+/refresh-cache.tsx'
-import { cache } from '~/utils/cache.server.ts'
 
 export async function loader() {
 	const result = await cache.get(refreshCacheCommitShaKey)

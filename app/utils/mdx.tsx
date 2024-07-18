@@ -2,24 +2,24 @@ import { type MetaFunction, type TypedResponse } from '@remix-run/node'
 import { LRUCache } from 'lru-cache'
 import * as mdxBundler from 'mdx-bundler/client/index.js'
 import * as React from 'react'
-import { getSocialMetas } from './seo.ts'
-import { Themed } from './theme.tsx'
-import { useOptionalUser } from './use-root-data.ts'
-import { CloudinaryVideo } from '~/components/cloudinary-video.tsx'
-import { ConvertKitForm } from '~/convertkit/form.tsx'
+import { CloudinaryVideo } from '#app/components/cloudinary-video.tsx'
+import { ConvertKitForm } from '#app/convertkit/form.tsx'
 import {
 	getImageBuilder,
 	getImgProps,
 	getSocialImageWithPreTitle,
-} from '~/images.tsx'
-import { type RootLoaderType } from '~/root.tsx'
-import { type MdxPage } from '~/types.ts'
+} from '#app/images.tsx'
+import { type RootLoaderType } from '#app/root.tsx'
+import { type MdxPage } from '#app/types.ts'
 import {
 	AnchorOrLink,
 	getDisplayUrl,
 	getUrl,
 	typedBoolean,
-} from '~/utils/misc.tsx'
+} from '#app/utils/misc.tsx'
+import { getSocialMetas } from './seo.ts'
+import { Themed } from './theme.tsx'
+import { useOptionalUser } from './use-root-data.ts'
 
 function getBannerAltProp(frontmatter: MdxPage['frontmatter']) {
 	return (

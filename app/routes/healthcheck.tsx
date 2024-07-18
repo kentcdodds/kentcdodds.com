@@ -1,6 +1,6 @@
 import { type DataFunctionArgs } from '@remix-run/node'
-import { getBlogReadRankings } from '~/utils/blog.server.ts'
-import { prisma } from '~/utils/prisma.server.ts'
+import { getBlogReadRankings } from '#app/utils/blog.server.ts'
+import { prisma } from '#app/utils/prisma.server.ts'
 
 export async function loader({ request }: DataFunctionArgs) {
 	const host =

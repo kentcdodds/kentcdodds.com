@@ -1,22 +1,22 @@
 import { json, redirect, type ActionFunction } from '@remix-run/node'
 import { Link, useActionData } from '@remix-run/react'
 import * as React from 'react'
-import { CallRecorder } from '~/components/calls/recorder.tsx'
+import { CallRecorder } from '#app/components/calls/recorder.tsx'
 import {
 	RecordingForm,
 	type RecordingFormData,
-} from '~/components/calls/submit-recording-form.tsx'
-import { Grid } from '~/components/grid.tsx'
-import { Grimmacing } from '~/components/kifs.tsx'
-import { H4, Paragraph } from '~/components/typography.tsx'
-import { type KCDHandle } from '~/types.ts'
+} from '#app/components/calls/submit-recording-form.tsx'
+import { Grid } from '#app/components/grid.tsx'
+import { Grimmacing } from '#app/components/kifs.tsx'
+import { H4, Paragraph } from '#app/components/typography.tsx'
+import { type KCDHandle } from '#app/types.ts'
 import {
 	getErrorForAudio,
 	getErrorForDescription,
 	getErrorForKeywords,
 	getErrorForTitle,
-} from '~/utils/call-kent.ts'
-import { sendMessageFromDiscordBot } from '~/utils/discord.server.ts'
+} from '#app/utils/call-kent.ts'
+import { sendMessageFromDiscordBot } from '#app/utils/discord.server.ts'
 import {
 	getDomainUrl,
 	getErrorMessage,
@@ -24,11 +24,11 @@ import {
 	getOptionalTeam,
 	getRequiredServerEnvVar,
 	useCapturedRouteError,
-} from '~/utils/misc.tsx'
-import { prisma } from '~/utils/prisma.server.ts'
-import { requireUser } from '~/utils/session.server.ts'
-import { teamEmoji } from '~/utils/team-provider.tsx'
-import { useRootData } from '~/utils/use-root-data.ts'
+} from '#app/utils/misc.tsx'
+import { prisma } from '#app/utils/prisma.server.ts'
+import { requireUser } from '#app/utils/session.server.ts'
+import { teamEmoji } from '#app/utils/team-provider.tsx'
+import { useRootData } from '#app/utils/use-root-data.ts'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,

@@ -8,15 +8,15 @@ import {
 } from 'date-fns'
 import md5 from 'md5-hash'
 import * as React from 'react'
-import { images } from '../images.tsx'
-import { type getEnv } from './env.server.ts'
 import {
 	type NonNullProperties,
 	type OptionalTeam,
 	type Role,
 	type Team,
 	type User,
-} from '~/types.ts'
+} from '#app/types.ts'
+import { images } from '../images.tsx'
+import { type getEnv } from './env.server.ts'
 
 const teams: Array<Team> = ['RED', 'BLUE', 'YELLOW']
 export const optionalTeams: Array<OptionalTeam> = [...teams, 'UNKNOWN']

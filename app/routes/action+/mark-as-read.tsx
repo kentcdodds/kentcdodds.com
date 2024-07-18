@@ -3,12 +3,12 @@ import {
 	getBlogReadRankings,
 	notifyOfOverallTeamLeaderChange,
 	notifyOfTeamLeaderChangeOnPost,
-} from '~/utils/blog.server.ts'
-import { getRankingLeader } from '~/utils/blog.ts'
-import { getClientSession } from '~/utils/client.server.ts'
-import { invariantResponse } from '~/utils/misc.tsx'
-import { addPostRead } from '~/utils/prisma.server.ts'
-import { getSession } from '~/utils/session.server.ts'
+} from '#app/utils/blog.server.ts'
+import { getRankingLeader } from '#app/utils/blog.ts'
+import { getClientSession } from '#app/utils/client.server.ts'
+import { invariantResponse } from '#app/utils/misc.tsx'
+import { addPostRead } from '#app/utils/prisma.server.ts'
+import { getSession } from '#app/utils/session.server.ts'
 
 export async function action({ request }: DataFunctionArgs) {
 	const formData = await request.formData()

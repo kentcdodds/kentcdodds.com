@@ -1,13 +1,13 @@
 import { Link } from '@remix-run/react'
 import { clsx } from 'clsx'
+import { getImageBuilder, getImgProps } from '#app/images.tsx'
+import { type MdxListItem, type Team } from '#app/types.ts'
+import { getBannerAltProp, getBannerTitleProp } from '#app/utils/mdx.tsx'
+import { useRootData } from '#app/utils/use-root-data.ts'
 import { BlurrableImage } from './blurrable-image.tsx'
 import { ClipboardCopyButton } from './clipboard-copy-button.tsx'
 import { MissingSomething } from './kifs.tsx'
 import { H3 } from './typography.tsx'
-import { getImageBuilder, getImgProps } from '~/images.tsx'
-import { type MdxListItem, type Team } from '~/types.ts'
-import { getBannerAltProp, getBannerTitleProp } from '~/utils/mdx.tsx'
-import { useRootData } from '~/utils/use-root-data.ts'
 
 function ArticleCard({
 	leadingTeam,

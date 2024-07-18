@@ -4,26 +4,26 @@ import {
 	type LoaderFunction,
 } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
-import { ButtonLink } from '~/components/button.tsx'
-import { ServerError } from '~/components/errors.tsx'
-import { AboutSection } from '~/components/sections/about-section.tsx'
-import { BlogSection } from '~/components/sections/blog-section.tsx'
-import { CourseSection } from '~/components/sections/course-section.tsx'
-import { DiscordSection } from '~/components/sections/discord-section.tsx'
-import { HeroSection } from '~/components/sections/hero-section.tsx'
-import { IntroductionSection } from '~/components/sections/introduction-section.tsx'
-import { ProblemSolutionSection } from '~/components/sections/problem-solution-section.tsx'
-import { Spacer } from '~/components/spacer.tsx'
-import { getRandomFlyingKody } from '~/images.tsx'
-import { type MdxListItem, type Team } from '~/types.ts'
+import { ButtonLink } from '#app/components/button.tsx'
+import { ServerError } from '#app/components/errors.tsx'
+import { AboutSection } from '#app/components/sections/about-section.tsx'
+import { BlogSection } from '#app/components/sections/blog-section.tsx'
+import { CourseSection } from '#app/components/sections/course-section.tsx'
+import { DiscordSection } from '#app/components/sections/discord-section.tsx'
+import { HeroSection } from '#app/components/sections/hero-section.tsx'
+import { IntroductionSection } from '#app/components/sections/introduction-section.tsx'
+import { ProblemSolutionSection } from '#app/components/sections/problem-solution-section.tsx'
+import { Spacer } from '#app/components/spacer.tsx'
+import { getRandomFlyingKody } from '#app/images.tsx'
+import { type MdxListItem, type Team } from '#app/types.ts'
 import {
 	getBlogReadRankings,
 	getBlogRecommendations,
 	getReaderCount,
 	getTotalPostReads,
-} from '~/utils/blog.server.ts'
-import { getRankingLeader } from '~/utils/blog.ts'
-import { getBlogMdxListItems } from '~/utils/mdx.server.ts'
+} from '#app/utils/blog.server.ts'
+import { getRankingLeader } from '#app/utils/blog.ts'
+import { getBlogMdxListItems } from '#app/utils/mdx.server.ts'
 import {
 	formatNumber,
 	getOptionalTeam,
@@ -31,9 +31,9 @@ import {
 	teams,
 	useCapturedRouteError,
 	type OptionalTeam,
-} from '~/utils/misc.tsx'
-import { getUser } from '~/utils/session.server.ts'
-import { getServerTimeHeader } from '~/utils/timing.server.ts'
+} from '#app/utils/misc.tsx'
+import { getUser } from '#app/utils/session.server.ts'
+import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 
 type LoaderData = {
 	blogPostCount: string

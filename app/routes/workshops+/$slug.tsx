@@ -7,47 +7,47 @@ import {
 import { Link, useLoaderData, useParams } from '@remix-run/react'
 import * as React from 'react'
 import { serverOnly$ } from 'vite-env-only'
-import {
-	useWorkshopsData,
-	type loader as WorkshopLoader,
-	type LoaderData as WorkshopLoaderData,
-} from './_workshops.tsx'
-import { ArrowLink, BackLink } from '~/components/arrow-button.tsx'
-import { ButtonLink } from '~/components/button.tsx'
-import { GeneralErrorBoundary } from '~/components/error-boundary.tsx'
-import { FourHundred, FourOhFour } from '~/components/errors.tsx'
-import { Grid } from '~/components/grid.tsx'
-import { NumberedPanel } from '~/components/numbered-panel.tsx'
-import { TestimonialSection } from '~/components/sections/testimonial-section.tsx'
-import { Spacer } from '~/components/spacer.tsx'
-import { H2, H5, H6, Paragraph } from '~/components/typography.tsx'
-import { WorkshopCard } from '~/components/workshop-card.tsx'
-import { RegistrationPanel } from '~/components/workshop-registration-panel.tsx'
-import { ConvertKitForm } from '~/convertkit/form.tsx'
-import { getSocialImageWithPreTitle } from '~/images.tsx'
+import { ArrowLink, BackLink } from '#app/components/arrow-button.tsx'
+import { ButtonLink } from '#app/components/button.tsx'
+import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import { FourHundred, FourOhFour } from '#app/components/errors.tsx'
+import { Grid } from '#app/components/grid.tsx'
+import { NumberedPanel } from '#app/components/numbered-panel.tsx'
+import { TestimonialSection } from '#app/components/sections/testimonial-section.tsx'
+import { Spacer } from '#app/components/spacer.tsx'
+import { H2, H5, H6, Paragraph } from '#app/components/typography.tsx'
+import { WorkshopCard } from '#app/components/workshop-card.tsx'
+import { RegistrationPanel } from '#app/components/workshop-registration-panel.tsx'
+import { ConvertKitForm } from '#app/convertkit/form.tsx'
+import { getSocialImageWithPreTitle } from '#app/images.tsx'
 import {
 	type LoaderData as RootLoaderData,
 	type RootLoaderType,
-} from '~/root.tsx'
-import { type KCDHandle, type MdxListItem, type Workshop } from '~/types.ts'
-import { getBlogRecommendations } from '~/utils/blog.server.ts'
+} from '#app/root.tsx'
+import { type KCDHandle, type MdxListItem, type Workshop } from '#app/types.ts'
+import { getBlogRecommendations } from '#app/utils/blog.server.ts'
 import {
 	getDisplayUrl,
 	getUrl,
 	listify,
 	requireValidSlug,
 	reuseUsefulLoaderHeaders,
-} from '~/utils/misc.tsx'
-import { getSocialMetas } from '~/utils/seo.ts'
+} from '#app/utils/misc.tsx'
+import { getSocialMetas } from '#app/utils/seo.ts'
 import {
 	getTestimonials,
 	type Testimonial,
 	type TestimonialCategory,
 	type TestimonialSubject,
-} from '~/utils/testimonials.server.ts'
-import { getServerTimeHeader } from '~/utils/timing.server.ts'
-import { type WorkshopEvent } from '~/utils/workshop-tickets.server.ts'
-import { getWorkshops } from '~/utils/workshops.server.ts'
+} from '#app/utils/testimonials.server.ts'
+import { getServerTimeHeader } from '#app/utils/timing.server.ts'
+import { type WorkshopEvent } from '#app/utils/workshop-tickets.server.ts'
+import { getWorkshops } from '#app/utils/workshops.server.ts'
+import {
+	useWorkshopsData,
+	type loader as WorkshopLoader,
+	type LoaderData as WorkshopLoaderData,
+} from './_workshops.tsx'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: serverOnly$(async (request) => {

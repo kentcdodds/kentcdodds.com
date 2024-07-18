@@ -1,9 +1,9 @@
 import { clsx } from 'clsx'
+import { type MdxListItem } from '#app/types.ts'
 import { ArticleCard } from '../article-card.tsx'
 import { Grid } from '../grid.tsx'
 import { Spacer } from '../spacer.tsx'
 import { HeaderSection } from './header-section.tsx'
-import { type MdxListItem } from '~/types.ts'
 
 interface BlogSectionProps {
 	articles: Array<MdxListItem>

@@ -10,22 +10,22 @@ import {
 	useParams,
 } from '@remix-run/react'
 import { serverOnly$ } from 'vite-env-only'
-import { ServerError } from '~/components/errors.tsx'
-import { Grid } from '~/components/grid.tsx'
-import { TriangleIcon } from '~/components/icons.tsx'
-import { MissingSomething } from '~/components/kifs.tsx'
-import { H3, Paragraph } from '~/components/typography.tsx'
-import { type CWKSeason, type KCDHandle } from '~/types.ts'
-import { getCWKEpisodePath } from '~/utils/chats-with-kent.ts'
-import { orderBy } from '~/utils/cjs/lodash.js'
+import { ServerError } from '#app/components/errors.tsx'
+import { Grid } from '#app/components/grid.tsx'
+import { TriangleIcon } from '#app/components/icons.tsx'
+import { MissingSomething } from '#app/components/kifs.tsx'
+import { H3, Paragraph } from '#app/components/typography.tsx'
+import { type CWKSeason, type KCDHandle } from '#app/types.ts'
+import { getCWKEpisodePath } from '#app/utils/chats-with-kent.ts'
+import { orderBy } from '#app/utils/cjs/lodash.js'
 import {
 	formatDuration,
 	reuseUsefulLoaderHeaders,
 	useCapturedRouteError,
-} from '~/utils/misc.tsx'
-import { useChatsEpisodeUIState } from '~/utils/providers.tsx'
-import { getSeasonListItems } from '~/utils/simplecast.server.ts'
-import { getServerTimeHeader } from '~/utils/timing.server.ts'
+} from '#app/utils/misc.tsx'
+import { useChatsEpisodeUIState } from '#app/utils/providers.tsx'
+import { getSeasonListItems } from '#app/utils/simplecast.server.ts'
+import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: serverOnly$(async (request) => {

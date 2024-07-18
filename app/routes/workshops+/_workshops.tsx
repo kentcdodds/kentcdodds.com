@@ -4,15 +4,15 @@ import {
 	type LoaderFunction,
 } from '@remix-run/node'
 import { Outlet } from '@remix-run/react'
-import { type KCDHandle, type Workshop } from '~/types.ts'
-import { reuseUsefulLoaderHeaders } from '~/utils/misc.tsx'
-import { useMatchLoaderData } from '~/utils/providers.tsx'
-import { getServerTimeHeader } from '~/utils/timing.server.ts'
+import { type KCDHandle, type Workshop } from '#app/types.ts'
+import { reuseUsefulLoaderHeaders } from '#app/utils/misc.tsx'
+import { useMatchLoaderData } from '#app/utils/providers.tsx'
+import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import {
 	getScheduledEvents,
 	type WorkshopEvent,
-} from '~/utils/workshop-tickets.server.ts'
-import { getWorkshops } from '~/utils/workshops.server.ts'
+} from '#app/utils/workshop-tickets.server.ts'
+import { getWorkshops } from '#app/utils/workshops.server.ts'
 
 export const handle: KCDHandle & { id: string } = {
 	id: 'workshops',

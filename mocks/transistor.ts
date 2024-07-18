@@ -6,14 +6,14 @@ import {
 	HttpResponse,
 	type DefaultBodyType,
 } from 'msw'
-import { requiredHeader, requiredParam, requiredProperty } from './utils.ts'
 import {
 	type TransistorAuthorizedJson,
 	type TransistorCreatedJson,
 	type TransistorEpisodeData,
 	type TransistorEpisodesJson,
 	type TransistorPublishedJson,
-} from '~/types.ts'
+} from '#app/types.ts'
+import { requiredHeader, requiredParam, requiredProperty } from './utils.ts'
 
 function makeEpisode(
 	overrides: {

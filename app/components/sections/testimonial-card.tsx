@@ -1,5 +1,5 @@
-import { getImageBuilder, getImgProps } from '~/images.tsx'
-import { type Testimonial } from '~/utils/testimonials.server.ts'
+import { getImageBuilder, getImgProps } from '#app/images.tsx'
+import { type Testimonial } from '#app/utils/testimonials.server.ts'
 
 export function TestimonialCard({
 	testimonial,

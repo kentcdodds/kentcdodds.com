@@ -142,8 +142,8 @@ import v8 from 'v8'
 import { Response } from '@remix-run/node'
 import { PassThrough } from 'stream'
 import type { DataFunctionArgs } from '@remix-run/node'
-import { requireAdminUser } from '~/utils/session.server'
-import { formatDate } from '~/utils/misc'
+import { requireAdminUser } from '#app/utils/session.server'
+import { formatDate } from '#app/utils/misc'
 
 export async function loader({ request }: DataFunctionArgs) {
 	await requireAdminUser(request)

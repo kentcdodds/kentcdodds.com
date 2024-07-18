@@ -13,17 +13,17 @@ import {
 import { clsx } from 'clsx'
 import * as React from 'react'
 import { useTable, type Column } from 'react-table'
-import { Button } from '~/components/button.tsx'
-import { Field } from '~/components/form-elements.tsx'
-import { Grid } from '~/components/grid.tsx'
+import { Button } from '#app/components/button.tsx'
+import { Field } from '#app/components/form-elements.tsx'
+import { Grid } from '#app/components/grid.tsx'
 import {
 	ChevronDownIcon,
 	ChevronUpIcon,
 	SearchIcon,
-} from '~/components/icons.tsx'
-import { Spacer } from '~/components/spacer.tsx'
-import { H1 } from '~/components/typography.tsx'
-import { type Await, type KCDHandle } from '~/types.ts'
+} from '#app/components/icons.tsx'
+import { Spacer } from '#app/components/spacer.tsx'
+import { H1 } from '#app/components/typography.tsx'
+import { type Await, type KCDHandle } from '#app/types.ts'
 import {
 	formatDate,
 	getErrorMessage,
@@ -32,9 +32,9 @@ import {
 	useDebounce,
 	useDoubleCheck,
 	useCapturedRouteError,
-} from '~/utils/misc.tsx'
-import { prisma } from '~/utils/prisma.server.ts'
-import { requireAdminUser } from '~/utils/session.server.ts'
+} from '#app/utils/misc.tsx'
+import { prisma } from '#app/utils/prisma.server.ts'
+import { requireAdminUser } from '#app/utils/session.server.ts'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,

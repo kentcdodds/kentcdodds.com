@@ -1,6 +1,6 @@
 import { type LoaderFunction } from '@remix-run/node'
-import { getBlogMdxListItems } from '~/utils/mdx.server.ts'
-import { formatDate, getDomainUrl } from '~/utils/misc.tsx'
+import { getBlogMdxListItems } from '#app/utils/mdx.server.ts'
+import { formatDate, getDomainUrl } from '#app/utils/misc.tsx'
 
 export const loader: LoaderFunction = async ({ request }) => {
 	const posts = await getBlogMdxListItems({ request })

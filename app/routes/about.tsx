@@ -6,14 +6,14 @@ import {
 	type MetaFunction,
 } from '@remix-run/node'
 import { useLoaderData, useSearchParams } from '@remix-run/react'
-import { ArrowLink } from '~/components/arrow-button.tsx'
-import { FeatureCard } from '~/components/feature-card.tsx'
+import { ArrowLink } from '#app/components/arrow-button.tsx'
+import { FeatureCard } from '#app/components/feature-card.tsx'
 import {
 	FullScreenYouTubeEmbed,
 	LiteYouTubeEmbed,
 	links as youTubeEmbedLinks,
-} from '~/components/fullscreen-yt-embed.tsx'
-import { Grid } from '~/components/grid.tsx'
+} from '#app/components/fullscreen-yt-embed.tsx'
+import { Grid } from '#app/components/grid.tsx'
 import {
 	AwardIcon,
 	BadgeIcon,
@@ -21,25 +21,29 @@ import {
 	FastForwardIcon,
 	MugIcon,
 	UsersIcon,
-} from '~/components/icons.tsx'
-import { BlogSection } from '~/components/sections/blog-section.tsx'
-import { HeaderSection } from '~/components/sections/header-section.tsx'
-import { HeroSection } from '~/components/sections/hero-section.tsx'
-import { H2, H3, H6, Paragraph } from '~/components/typography.tsx'
-import { getImgProps, getSocialImageWithPreTitle, images } from '~/images.tsx'
-import { type RootLoaderType } from '~/root.tsx'
-import { type Await, type MdxListItem } from '~/types.ts'
-import { getBlogRecommendations } from '~/utils/blog.server.ts'
-import { shuffle } from '~/utils/cjs/lodash.js'
+} from '#app/components/icons.tsx'
+import { BlogSection } from '#app/components/sections/blog-section.tsx'
+import { HeaderSection } from '#app/components/sections/header-section.tsx'
+import { HeroSection } from '#app/components/sections/hero-section.tsx'
+import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
+import {
+	getImgProps,
+	getSocialImageWithPreTitle,
+	images,
+} from '#app/images.tsx'
+import { type RootLoaderType } from '#app/root.tsx'
+import { type Await, type MdxListItem } from '#app/types.ts'
+import { getBlogRecommendations } from '#app/utils/blog.server.ts'
+import { shuffle } from '#app/utils/cjs/lodash.js'
 import {
 	getDisplayUrl,
 	getUrl,
 	reuseUsefulLoaderHeaders,
-} from '~/utils/misc.tsx'
-import { getSocialMetas } from '~/utils/seo.ts'
-import { getTalksAndTags } from '~/utils/talks.server.ts'
-import { getServerTimeHeader } from '~/utils/timing.server.ts'
-import { useRootData } from '~/utils/use-root-data.ts'
+} from '#app/utils/misc.tsx'
+import { getSocialMetas } from '#app/utils/seo.ts'
+import { getTalksAndTags } from '#app/utils/talks.server.ts'
+import { getServerTimeHeader } from '#app/utils/timing.server.ts'
+import { useRootData } from '#app/utils/use-root-data.ts'
 
 type LoaderData = {
 	blogRecommendations: Array<MdxListItem>

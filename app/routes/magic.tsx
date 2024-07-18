@@ -1,12 +1,12 @@
 import { redirect, type DataFunctionArgs } from '@remix-run/node'
-import { type KCDHandle } from '~/types.ts'
+import { type KCDHandle } from '#app/types.ts'
 
-import { ensurePrimary } from '~/utils/cjs/litefs-js.server.js'
-import { getClientSession } from '~/utils/client.server.ts'
-import { getLoginInfoSession } from '~/utils/login.server.ts'
-import { getErrorMessage, isResponse } from '~/utils/misc.tsx'
-import { prisma } from '~/utils/prisma.server.ts'
-import { getUserSessionFromMagicLink } from '~/utils/session.server.ts'
+import { ensurePrimary } from '#app/utils/cjs/litefs-js.server.js'
+import { getClientSession } from '#app/utils/client.server.ts'
+import { getLoginInfoSession } from '#app/utils/login.server.ts'
+import { getErrorMessage, isResponse } from '#app/utils/misc.tsx'
+import { prisma } from '#app/utils/prisma.server.ts'
+import { getUserSessionFromMagicLink } from '#app/utils/session.server.ts'
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
 }

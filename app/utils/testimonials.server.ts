@@ -1,11 +1,11 @@
 import slugify from '@sindresorhus/slugify'
 import * as YAML from 'yaml'
+import { pick } from '#app/utils/cjs/lodash.js'
 import { cache, cachified } from './cache.server.ts'
 import { downloadFile } from './github.server.ts'
 import { markdownToHtml } from './markdown.server.ts'
 import { getErrorMessage, typedBoolean } from './misc.tsx'
 import { type Timings } from './timing.server.ts'
-import { pick } from '~/utils/cjs/lodash.js'
 
 const allCategories = [
 	'teaching',

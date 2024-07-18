@@ -1,6 +1,6 @@
 import { type TypedResponse, json } from '@remix-run/node'
+import { type NonNullProperties } from '#app/types.ts'
 import { getErrorMessage, getNonNull } from './misc.tsx'
-import { type NonNullProperties } from '~/types.ts'
 
 type ErrorMessage = string
 type NoError = null

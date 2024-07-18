@@ -11,13 +11,13 @@ import { clsx } from 'clsx'
 import { differenceInYears } from 'date-fns'
 import { AnimatePresence, motion } from 'framer-motion'
 import * as React from 'react'
+import { getImgProps, images, type ImageBuilder } from '#app/images.tsx'
+import { type Team } from '#app/types.ts'
+import { teamTextColorClasses } from '#app/utils/misc.tsx'
 import { ArrowLink } from '../arrow-button.tsx'
 import { Grid } from '../grid.tsx'
 import { ArrowIcon } from '../icons.tsx'
 import { H2, H3, Paragraph } from '../typography.tsx'
-import { getImgProps, images, type ImageBuilder } from '~/images.tsx'
-import { type Team } from '~/types.ts'
-import { teamTextColorClasses } from '~/utils/misc.tsx'
 
 function Tab({ isSelected, children }: TabProps & { isSelected?: boolean }) {
 	return (

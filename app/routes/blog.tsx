@@ -10,26 +10,26 @@ import {
 import { Link, useLoaderData, useSearchParams } from '@remix-run/react'
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { ArrowLink } from '~/components/arrow-button.tsx'
-import { ArticleCard } from '~/components/article-card.tsx'
-import { Button } from '~/components/button.tsx'
-import { ServerError } from '~/components/errors.tsx'
-import { Grid } from '~/components/grid.tsx'
-import { PlusIcon, RssIcon, SearchIcon } from '~/components/icons.tsx'
-import { FeaturedSection } from '~/components/sections/featured-section.tsx'
-import { HeroSection } from '~/components/sections/hero-section.tsx'
-import { Spacer } from '~/components/spacer.tsx'
-import { Tag } from '~/components/tag.tsx'
-import { TeamStats } from '~/components/team-stats.tsx'
-import { H2, H3, H6, Paragraph } from '~/components/typography.tsx'
+import { ArrowLink } from '#app/components/arrow-button.tsx'
+import { ArticleCard } from '#app/components/article-card.tsx'
+import { Button } from '#app/components/button.tsx'
+import { ServerError } from '#app/components/errors.tsx'
+import { Grid } from '#app/components/grid.tsx'
+import { PlusIcon, RssIcon, SearchIcon } from '#app/components/icons.tsx'
+import { FeaturedSection } from '#app/components/sections/featured-section.tsx'
+import { HeroSection } from '#app/components/sections/hero-section.tsx'
+import { Spacer } from '#app/components/spacer.tsx'
+import { Tag } from '#app/components/tag.tsx'
+import { TeamStats } from '#app/components/team-stats.tsx'
+import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
 import {
 	getImageBuilder,
 	getImgProps,
 	getSocialImageWithPreTitle,
 	images,
-} from '~/images.tsx'
-import { type RootLoaderType } from '~/root.tsx'
-import { type KCDHandle, type Team } from '~/types.ts'
+} from '#app/images.tsx'
+import { type RootLoaderType } from '#app/root.tsx'
+import { type KCDHandle, type Team } from '#app/types.ts'
 import {
 	getAllBlogPostReadRankings,
 	getBlogReadRankings,
@@ -37,10 +37,10 @@ import {
 	getReaderCount,
 	getSlugReadsByUser,
 	getTotalPostReads,
-} from '~/utils/blog.server.ts'
-import { filterPosts, getRankingLeader } from '~/utils/blog.ts'
-import { getBlogMdxListItems } from '~/utils/mdx.server.ts'
-import { getBannerAltProp } from '~/utils/mdx.tsx'
+} from '#app/utils/blog.server.ts'
+import { filterPosts, getRankingLeader } from '#app/utils/blog.ts'
+import { getBlogMdxListItems } from '#app/utils/mdx.server.ts'
+import { getBannerAltProp } from '#app/utils/mdx.tsx'
 import {
 	formatAbbreviatedNumber,
 	formatNumber,
@@ -50,11 +50,11 @@ import {
 	reuseUsefulLoaderHeaders,
 	useUpdateQueryStringValueWithoutNavigation,
 	useCapturedRouteError,
-} from '~/utils/misc.tsx'
-import { getSocialMetas } from '~/utils/seo.ts'
-import { useTeam } from '~/utils/team-provider.tsx'
-import { getServerTimeHeader } from '~/utils/timing.server.ts'
-import { useRootData } from '~/utils/use-root-data.ts'
+} from '#app/utils/misc.tsx'
+import { getSocialMetas } from '#app/utils/seo.ts'
+import { useTeam } from '#app/utils/team-provider.tsx'
+import { getServerTimeHeader } from '#app/utils/timing.server.ts'
+import { useRootData } from '#app/utils/use-root-data.ts'
 
 const handleId = 'blog'
 export const handle: KCDHandle = {

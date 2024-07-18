@@ -3,7 +3,7 @@ import {
 	isRouteErrorResponse,
 	useParams,
 } from '@remix-run/react'
-import { getErrorMessage, useCapturedRouteError } from '~/utils/misc.tsx'
+import { getErrorMessage, useCapturedRouteError } from '#app/utils/misc.tsx'
 
 type StatusHandler = (info: {
 	error: ErrorResponse

@@ -1,6 +1,6 @@
 import { useMatches } from '@remix-run/react'
 import * as React from 'react'
-import { type KCDHandle } from '~/types.ts'
+import { type KCDHandle } from '#app/types.ts'
 
 // This utility is handy, but in Remix apps these days you really shouldn't need
 // context all that much. Instead you can useOutletContext: https://reactrouter.com/en/main/hooks/use-outlet-context

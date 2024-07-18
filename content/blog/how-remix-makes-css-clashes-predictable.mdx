@@ -91,7 +91,7 @@ this is. Here's how this works from a code standpoint:
 
 ```tsx lines=4-6 filename=app/routes/about.tsx
 import type { LinksFunction } from 'remix'
-import aboutStyles from '~/styles/routes/about.css'
+import aboutStyles from '#app/styles/routes/about.css'
 
 export const links: LinksFunction = () => {
 	return [{ rel: 'stylesheet', href: aboutStyles }]

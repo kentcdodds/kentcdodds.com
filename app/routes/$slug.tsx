@@ -6,25 +6,25 @@ import {
 import { useLoaderData } from '@remix-run/react'
 import * as React from 'react'
 import { serverOnly$ } from 'vite-env-only'
-import { BackLink } from '~/components/arrow-button.tsx'
-import { BlurrableImage } from '~/components/blurrable-image.tsx'
-import { GeneralErrorBoundary } from '~/components/error-boundary'
-import { FourHundred, FourOhFour } from '~/components/errors.tsx'
-import { Grid } from '~/components/grid.tsx'
-import { H2, H6 } from '~/components/typography.tsx'
-import { getImageBuilder, getImgProps } from '~/images.tsx'
-import { pathedRoutes } from '~/other-routes.server.ts'
-import { type KCDHandle } from '~/types.ts'
-import { getBlogRecommendations } from '~/utils/blog.server.ts'
-import { getMdxPage, getMdxPagesInDirectory } from '~/utils/mdx.server'
+import { BackLink } from '#app/components/arrow-button.tsx'
+import { BlurrableImage } from '#app/components/blurrable-image.tsx'
+import { GeneralErrorBoundary } from '#app/components/error-boundary'
+import { FourHundred, FourOhFour } from '#app/components/errors.tsx'
+import { Grid } from '#app/components/grid.tsx'
+import { H2, H6 } from '#app/components/typography.tsx'
+import { getImageBuilder, getImgProps } from '#app/images.tsx'
+import { pathedRoutes } from '#app/other-routes.server.ts'
+import { type KCDHandle } from '#app/types.ts'
+import { getBlogRecommendations } from '#app/utils/blog.server.ts'
+import { getMdxPage, getMdxPagesInDirectory } from '#app/utils/mdx.server'
 import {
 	getBannerAltProp,
 	getBannerTitleProp,
 	mdxPageMeta,
 	useMdxComponent,
-} from '~/utils/mdx.tsx'
-import { requireValidSlug, reuseUsefulLoaderHeaders } from '~/utils/misc.tsx'
-import { getServerTimeHeader } from '~/utils/timing.server.ts'
+} from '#app/utils/mdx.tsx'
+import { requireValidSlug, reuseUsefulLoaderHeaders } from '#app/utils/misc.tsx'
+import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: serverOnly$(async (request) => {

@@ -7,12 +7,12 @@ import {
 } from '@remix-run/node'
 import { Form, useLoaderData } from '@remix-run/react'
 import * as React from 'react'
-import { Button } from '~/components/button.tsx'
-import { Paragraph } from '~/components/typography.tsx'
-import { type Call, type KCDHandle } from '~/types.ts'
-import { reuseUsefulLoaderHeaders, useDoubleCheck } from '~/utils/misc.tsx'
-import { prisma } from '~/utils/prisma.server.ts'
-import { requireUser } from '~/utils/session.server.ts'
+import { Button } from '#app/components/button.tsx'
+import { Paragraph } from '#app/components/typography.tsx'
+import { type Call, type KCDHandle } from '#app/types.ts'
+import { reuseUsefulLoaderHeaders, useDoubleCheck } from '#app/utils/misc.tsx'
+import { prisma } from '#app/utils/prisma.server.ts'
+import { requireUser } from '#app/utils/session.server.ts'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,

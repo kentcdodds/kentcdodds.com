@@ -12,8 +12,8 @@ import gfm from 'remark-gfm'
 import remarkSlug from 'remark-slug'
 import type * as U from 'unified'
 import { visit } from 'unist-util-visit'
+import { type GitHubFile } from '#app/types.ts'
 import * as twitter from './twitter.server.ts'
-import { type GitHubFile } from '~/types.ts'
 
 function handleEmbedderError({ url }: { url: string }) {
 	return `<p>Error embedding <a href="${url}">${url}</a></p>.`

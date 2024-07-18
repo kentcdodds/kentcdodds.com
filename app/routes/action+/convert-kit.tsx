@@ -1,11 +1,11 @@
 import { type ActionFunction } from '@remix-run/node'
 import { Link } from '@remix-run/react'
-import { CloudinaryVideo } from '~/components/cloudinary-video'
-import { Grid } from '~/components/grid.tsx'
-import { HeroSection } from '~/components/sections/hero-section.tsx'
-import { Spacer } from '~/components/spacer.tsx'
-import { Paragraph } from '~/components/typography.tsx'
-import { handleConvertKitFormSubmission } from '~/convertkit/remix.server.ts'
+import { CloudinaryVideo } from '#app/components/cloudinary-video'
+import { Grid } from '#app/components/grid.tsx'
+import { HeroSection } from '#app/components/sections/hero-section.tsx'
+import { Spacer } from '#app/components/spacer.tsx'
+import { Paragraph } from '#app/components/typography.tsx'
+import { handleConvertKitFormSubmission } from '#app/convertkit/remix.server.ts'
 
 export const action: ActionFunction = async ({ request }) => {
 	return handleConvertKitFormSubmission(request)

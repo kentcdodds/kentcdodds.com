@@ -1,4 +1,4 @@
-import { type CallKentEpisode } from '~/types.ts'
+import { type CallKentEpisode } from '#app/types.ts'
 
 function getErrorForDescription(description: string | null) {
 	if (!description) return `Description is required`

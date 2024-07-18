@@ -2,6 +2,8 @@ import { useMachine } from '@xstate/react'
 import gsap from 'gsap'
 import * as React from 'react'
 import { assign, createMachine, send as sendUtil } from 'xstate'
+import { type OptionalTeam } from '#app/types.ts'
+import { assertNonNull, getOptionalTeam } from '#app/utils/misc.tsx'
 import { Button, LinkButton } from '../button.tsx'
 import { useInterval } from '../hooks/use-interval.tsx'
 import {
@@ -12,8 +14,6 @@ import {
 } from '../icons.tsx'
 import { Tag } from '../tag.tsx'
 import { Paragraph } from '../typography.tsx'
-import { type OptionalTeam } from '~/types.ts'
-import { assertNonNull, getOptionalTeam } from '~/utils/misc.tsx'
 
 // Play around with these values to affect the audio visualisation.
 // Should be able to stream the visualisation back no problem.

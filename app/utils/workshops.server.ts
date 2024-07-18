@@ -1,11 +1,11 @@
 import pProps from 'p-props'
 import * as YAML from 'yaml'
+import { type Workshop } from '#app/types.ts'
 import { cache, cachified } from './cache.server.ts'
 import { downloadDirList, downloadFile } from './github.server.ts'
 import { markdownToHtmlUnwrapped } from './markdown.server.ts'
 import { typedBoolean } from './misc.tsx'
 import { type Timings } from './timing.server.ts'
-import { type Workshop } from '~/types.ts'
 
 type RawWorkshop = {
 	title?: string

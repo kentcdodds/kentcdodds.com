@@ -9,15 +9,15 @@ import {
 import { Form, useLoaderData } from '@remix-run/react'
 import * as React from 'react'
 import invariant from 'tiny-invariant'
-import { Button, LinkButton } from '~/components/button.tsx'
-import { Input, InputError, Label } from '~/components/form-elements.tsx'
-import { Grid } from '~/components/grid.tsx'
-import { HeroSection } from '~/components/sections/hero-section.tsx'
-import { Paragraph } from '~/components/typography.tsx'
-import { getConvertKitSubscriber } from '~/convertkit/convertkit.server.ts'
-import { getGenericSocialImage, images } from '~/images.tsx'
-import { type RootLoaderType } from '~/root.tsx'
-import { getLoginInfoSession } from '~/utils/login.server.ts'
+import { Button, LinkButton } from '#app/components/button.tsx'
+import { Input, InputError, Label } from '#app/components/form-elements.tsx'
+import { Grid } from '#app/components/grid.tsx'
+import { HeroSection } from '#app/components/sections/hero-section.tsx'
+import { Paragraph } from '#app/components/typography.tsx'
+import { getConvertKitSubscriber } from '#app/convertkit/convertkit.server.ts'
+import { getGenericSocialImage, images } from '#app/images.tsx'
+import { type RootLoaderType } from '#app/root.tsx'
+import { getLoginInfoSession } from '#app/utils/login.server.ts'
 import {
 	getDisplayUrl,
 	getDomainUrl,
@@ -25,11 +25,11 @@ import {
 	getOrigin,
 	getUrl,
 	reuseUsefulLoaderHeaders,
-} from '~/utils/misc.tsx'
-import { prisma } from '~/utils/prisma.server.ts'
-import { getSocialMetas } from '~/utils/seo.ts'
-import { getUser, sendToken } from '~/utils/session.server.ts'
-import { verifyEmailAddress } from '~/utils/verifier.server.ts'
+} from '#app/utils/misc.tsx'
+import { prisma } from '#app/utils/prisma.server.ts'
+import { getSocialMetas } from '#app/utils/seo.ts'
+import { getUser, sendToken } from '#app/utils/session.server.ts'
+import { verifyEmailAddress } from '#app/utils/verifier.server.ts'
 
 type LoaderData = {
 	email?: string

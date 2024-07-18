@@ -5,26 +5,26 @@ import {
 	type MetaFunction,
 } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
-import { ArrowLink } from '~/components/arrow-button.tsx'
-import { CourseCard, SmallCourseCard } from '~/components/course-card.tsx'
-import { Grid } from '~/components/grid.tsx'
-import { HeroSection } from '~/components/sections/hero-section.tsx'
-import { TestimonialSection } from '~/components/sections/testimonial-section.tsx'
-import { Spacer } from '~/components/spacer.tsx'
-import { H2, H6, Paragraph } from '~/components/typography.tsx'
-import { getGenericSocialImage, getImgProps, images } from '~/images.tsx'
-import { type RootLoaderType } from '~/root.tsx'
+import { ArrowLink } from '#app/components/arrow-button.tsx'
+import { CourseCard, SmallCourseCard } from '#app/components/course-card.tsx'
+import { Grid } from '#app/components/grid.tsx'
+import { HeroSection } from '#app/components/sections/hero-section.tsx'
+import { TestimonialSection } from '#app/components/sections/testimonial-section.tsx'
+import { Spacer } from '#app/components/spacer.tsx'
+import { H2, H6, Paragraph } from '#app/components/typography.tsx'
+import { getGenericSocialImage, getImgProps, images } from '#app/images.tsx'
+import { type RootLoaderType } from '#app/root.tsx'
 import {
 	getDisplayUrl,
 	getUrl,
 	reuseUsefulLoaderHeaders,
-} from '~/utils/misc.tsx'
-import { getSocialMetas } from '~/utils/seo.ts'
+} from '#app/utils/misc.tsx'
+import { getSocialMetas } from '#app/utils/seo.ts'
 import {
 	getTestimonials,
 	type Testimonial,
-} from '~/utils/testimonials.server.ts'
-import { getServerTimeHeader } from '~/utils/timing.server.ts'
+} from '#app/utils/testimonials.server.ts'
+import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 
 type LoaderData = {
 	testimonials: Array<Testimonial>

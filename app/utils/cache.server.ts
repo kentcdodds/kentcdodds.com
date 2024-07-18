@@ -12,10 +12,10 @@ import { remember } from '@epic-web/remember'
 import Database, { type default as BetterSqlite3 } from 'better-sqlite3'
 import { getInstanceInfo, getInstanceInfoSync } from 'litefs-js'
 import { LRUCache } from 'lru-cache'
+import { updatePrimaryCacheValue } from '#app/routes/resources+/cache.sqlite.ts'
 import { getRequiredServerEnvVar } from './misc.tsx'
 import { getUser } from './session.server.ts'
 import { time, type Timings } from './timing.server.ts'
-import { updatePrimaryCacheValue } from '~/routes/resources+/cache.sqlite.ts'
 
 const CACHE_DATABASE_PATH = getRequiredServerEnvVar('CACHE_DATABASE_PATH')
 

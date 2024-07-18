@@ -1,17 +1,17 @@
 // this is a placeholder to make /routes/talks+/_talks catch nested paths
 
 import { type MetaFunction } from '@remix-run/node'
+import { getSocialImageWithPreTitle } from '#app/images.tsx'
+import {
+	type RootLoaderType,
+	type LoaderData as RootLoaderData,
+} from '#app/root.tsx'
+import { getDisplayUrl, getUrl } from '#app/utils/misc.tsx'
+import { getSocialMetas } from '#app/utils/seo.ts'
 import {
 	type loader as TalkLoader,
 	type LoaderData as TalksLoaderData,
 } from './_talks.tsx'
-import { getSocialImageWithPreTitle } from '~/images.tsx'
-import {
-	type RootLoaderType,
-	type LoaderData as RootLoaderData,
-} from '~/root.tsx'
-import { getDisplayUrl, getUrl } from '~/utils/misc.tsx'
-import { getSocialMetas } from '~/utils/seo.ts'
 
 export const meta: MetaFunction<
 	{},

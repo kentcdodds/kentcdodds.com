@@ -6,10 +6,10 @@
 // message for them than the Remix and/or browser default.
 
 import { useLocation } from '@remix-run/react'
-import { ArrowLink } from '~/components/arrow-button.tsx'
-import { GeneralErrorBoundary } from '~/components/error-boundary.tsx'
-import { ErrorPage } from '~/components/errors.tsx'
-import { Facepalm, MissingSomething } from '~/components/kifs.tsx'
+import { ArrowLink } from '#app/components/arrow-button.tsx'
+import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import { ErrorPage } from '#app/components/errors.tsx'
+import { Facepalm, MissingSomething } from '#app/components/kifs.tsx'
 
 export async function loader() {
 	throw new Response('Not found', { status: 404 })

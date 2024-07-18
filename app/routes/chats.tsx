@@ -14,28 +14,28 @@ import {
 } from '@remix-run/react'
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { Grid } from '~/components/grid.tsx'
-import { ChevronDownIcon, ChevronUpIcon } from '~/components/icons.tsx'
-import { PodcastSubs } from '~/components/podcast-subs.tsx'
-import { BlogSection } from '~/components/sections/blog-section.tsx'
-import { FeaturedSection } from '~/components/sections/featured-section.tsx'
-import { HeroSection } from '~/components/sections/hero-section.tsx'
-import { Spacer } from '~/components/spacer.tsx'
-import { H4, H6, Paragraph } from '~/components/typography.tsx'
-import { externalLinks } from '~/external-links.tsx'
+import { Grid } from '#app/components/grid.tsx'
+import { ChevronDownIcon, ChevronUpIcon } from '#app/components/icons.tsx'
+import { PodcastSubs } from '#app/components/podcast-subs.tsx'
+import { BlogSection } from '#app/components/sections/blog-section.tsx'
+import { FeaturedSection } from '#app/components/sections/featured-section.tsx'
+import { HeroSection } from '#app/components/sections/hero-section.tsx'
+import { Spacer } from '#app/components/spacer.tsx'
+import { H4, H6, Paragraph } from '#app/components/typography.tsx'
+import { externalLinks } from '#app/external-links.tsx'
 import {
 	getGenericSocialImage,
 	getImageBuilder,
 	getImgProps,
 	images,
-} from '~/images.tsx'
-import { type RootLoaderType } from '~/root.tsx'
-import { type Await } from '~/types.ts'
-import { getBlogRecommendations } from '~/utils/blog.server.ts'
+} from '#app/images.tsx'
+import { type RootLoaderType } from '#app/root.tsx'
+import { type Await } from '#app/types.ts'
+import { getBlogRecommendations } from '#app/utils/blog.server.ts'
 import {
 	getCWKEpisodePath,
 	getFeaturedEpisode,
-} from '~/utils/chats-with-kent.ts'
+} from '#app/utils/chats-with-kent.ts'
 import {
 	formatDuration,
 	getDisplayUrl,
@@ -43,11 +43,11 @@ import {
 	getUrl,
 	listify,
 	reuseUsefulLoaderHeaders,
-} from '~/utils/misc.tsx'
-import { ChatsEpisodeUIStateProvider } from '~/utils/providers.tsx'
-import { getSocialMetas } from '~/utils/seo.ts'
-import { getSeasonListItems } from '~/utils/simplecast.server.ts'
-import { getServerTimeHeader } from '~/utils/timing.server.ts'
+} from '#app/utils/misc.tsx'
+import { ChatsEpisodeUIStateProvider } from '#app/utils/providers.tsx'
+import { getSocialMetas } from '#app/utils/seo.ts'
+import { getSeasonListItems } from '#app/utils/simplecast.server.ts'
+import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 
 type LoaderData = {
 	seasons: Await<ReturnType<typeof getSeasonListItems>>

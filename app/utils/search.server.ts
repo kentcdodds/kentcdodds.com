@@ -1,13 +1,13 @@
 import { matchSorter, rankings } from 'match-sorter'
-import { getEpisodePath as getCKEpisodePath } from '~/utils/call-kent.ts'
-import { getCWKEpisodePath } from '~/utils/chats-with-kent.ts'
-import { stripHtml } from '~/utils/markdown.server.ts'
-import { getBlogMdxListItems } from '~/utils/mdx.server.ts'
-import { typedBoolean } from '~/utils/misc.tsx'
-import { getSeasons as getChatsWithKentSeasons } from '~/utils/simplecast.server.ts'
-import { getTalksAndTags } from '~/utils/talks.server.ts'
-import { getEpisodes as getCallKentEpisodes } from '~/utils/transistor.server.ts'
-import { getWorkshops } from '~/utils/workshops.server.ts'
+import { getEpisodePath as getCKEpisodePath } from '#app/utils/call-kent.ts'
+import { getCWKEpisodePath } from '#app/utils/chats-with-kent.ts'
+import { stripHtml } from '#app/utils/markdown.server.ts'
+import { getBlogMdxListItems } from '#app/utils/mdx.server.ts'
+import { typedBoolean } from '#app/utils/misc.tsx'
+import { getSeasons as getChatsWithKentSeasons } from '#app/utils/simplecast.server.ts'
+import { getTalksAndTags } from '#app/utils/talks.server.ts'
+import { getEpisodes as getCallKentEpisodes } from '#app/utils/transistor.server.ts'
+import { getWorkshops } from '#app/utils/workshops.server.ts'
 
 type NormalizedItemGroup = {
 	prefix: string

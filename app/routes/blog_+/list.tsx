@@ -1,13 +1,13 @@
 import { json, type LoaderFunction } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
-import { Grid } from '~/components/grid.tsx'
-import { RssIcon } from '~/components/icons.tsx'
-import { HeroSection } from '~/components/sections/hero-section.tsx'
-import { Spacer } from '~/components/spacer.tsx'
-import { H3 } from '~/components/typography.tsx'
-import { images } from '~/images.tsx'
-import { markdownToHtmlUnwrapped } from '~/utils/markdown.server.ts'
-import { getBlogMdxListItems } from '~/utils/mdx.server.ts'
+import { Grid } from '#app/components/grid.tsx'
+import { RssIcon } from '#app/components/icons.tsx'
+import { HeroSection } from '#app/components/sections/hero-section.tsx'
+import { Spacer } from '#app/components/spacer.tsx'
+import { H3 } from '#app/components/typography.tsx'
+import { images } from '#app/images.tsx'
+import { markdownToHtmlUnwrapped } from '#app/utils/markdown.server.ts'
+import { getBlogMdxListItems } from '#app/utils/mdx.server.ts'
 
 type LoaderData = {
 	posts: Array<{ title: string; descriptionHTML: string; slug: string }>

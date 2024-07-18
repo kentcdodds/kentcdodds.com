@@ -1,17 +1,17 @@
 import path from 'path'
 import { json, redirect, type DataFunctionArgs } from '@remix-run/node'
-import { cache } from '~/utils/cache.server.ts'
-import { ensurePrimary } from '~/utils/cjs/litefs-js.server.js'
-import { getPeople } from '~/utils/credits.server.ts'
+import { cache } from '#app/utils/cache.server.ts'
+import { ensurePrimary } from '#app/utils/cjs/litefs-js.server.js'
+import { getPeople } from '#app/utils/credits.server.ts'
 import {
 	getBlogMdxListItems,
 	getMdxDirList,
 	getMdxPage,
-} from '~/utils/mdx.server.ts'
-import { getRequiredServerEnvVar } from '~/utils/misc.tsx'
-import { getTalksAndTags } from '~/utils/talks.server.ts'
-import { getTestimonials } from '~/utils/testimonials.server.ts'
-import { getWorkshops } from '~/utils/workshops.server.ts'
+} from '#app/utils/mdx.server.ts'
+import { getRequiredServerEnvVar } from '#app/utils/misc.tsx'
+import { getTalksAndTags } from '#app/utils/talks.server.ts'
+import { getTestimonials } from '#app/utils/testimonials.server.ts'
+import { getWorkshops } from '#app/utils/workshops.server.ts'
 
 type Body =
 	| { keys: Array<string>; commitSha?: string }

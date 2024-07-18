@@ -15,10 +15,10 @@ import { clsx } from 'clsx'
 import { motion } from 'framer-motion'
 import React, { useState } from 'react'
 import { serverOnly$ } from 'vite-env-only'
-import { ArrowLink, BackLink } from '~/components/arrow-button.tsx'
-import { FourOhFour } from '~/components/errors.tsx'
-import { Grid } from '~/components/grid.tsx'
-import { IconLink } from '~/components/icon-link.tsx'
+import { ArrowLink, BackLink } from '#app/components/arrow-button.tsx'
+import { FourOhFour } from '#app/components/errors.tsx'
+import { Grid } from '#app/components/grid.tsx'
+import { IconLink } from '#app/components/icon-link.tsx'
 import {
 	ArrowIcon,
 	CheckCircledIcon,
@@ -28,17 +28,21 @@ import {
 	GithubIcon,
 	PlusIcon,
 	XIcon,
-} from '~/components/icons.tsx'
-import { FeaturedSection } from '~/components/sections/featured-section.tsx'
-import { Spacer } from '~/components/spacer.tsx'
-import { H2, H3, H6, Paragraph } from '~/components/typography.tsx'
-import { getSocialImageWithPreTitle } from '~/images.tsx'
-import { type RootLoaderType } from '~/root.tsx'
-import { type CWKEpisode, type CWKListItem, type KCDHandle } from '~/types.ts'
+} from '#app/components/icons.tsx'
+import { FeaturedSection } from '#app/components/sections/featured-section.tsx'
+import { Spacer } from '#app/components/spacer.tsx'
+import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
+import { getSocialImageWithPreTitle } from '#app/images.tsx'
+import { type RootLoaderType } from '#app/root.tsx'
+import {
+	type CWKEpisode,
+	type CWKListItem,
+	type KCDHandle,
+} from '#app/types.ts'
 import {
 	getCWKEpisodePath,
 	getFeaturedEpisode,
-} from '~/utils/chats-with-kent.ts'
+} from '#app/utils/chats-with-kent.ts'
 import {
 	formatDuration,
 	getDisplayUrl,
@@ -48,12 +52,12 @@ import {
 	reuseUsefulLoaderHeaders,
 	typedBoolean,
 	useCapturedRouteError,
-} from '~/utils/misc.tsx'
-import { getSocialMetas } from '~/utils/seo.ts'
-import { getSeasons } from '~/utils/simplecast.server.ts'
-import { Themed } from '~/utils/theme.tsx'
-import { getServerTimeHeader } from '~/utils/timing.server.ts'
-import { useRootData } from '~/utils/use-root-data.ts'
+} from '#app/utils/misc.tsx'
+import { getSocialMetas } from '#app/utils/seo.ts'
+import { getSeasons } from '#app/utils/simplecast.server.ts'
+import { Themed } from '#app/utils/theme.tsx'
+import { getServerTimeHeader } from '#app/utils/timing.server.ts'
+import { useRootData } from '#app/utils/use-root-data.ts'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: serverOnly$(async (request) => {
