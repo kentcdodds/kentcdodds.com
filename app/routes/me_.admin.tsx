@@ -3,6 +3,7 @@ import {
 	json,
 	redirect,
 	type LoaderFunctionArgs,
+	type SerializeFrom,
 } from '@remix-run/node'
 import {
 	Form,
@@ -40,8 +41,7 @@ export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
 }
 
-type LoaderData = Awaited<ReturnType<typeof getLoaderData>>
-type User = LoaderData['users'][number]
+type User = SerializeFrom<typeof loader>['users'][number]
 
 const DEFAULT_LIMIT = 100
 

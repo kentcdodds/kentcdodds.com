@@ -31,21 +31,11 @@ import { getSocialMetas } from '#app/utils/seo.ts'
 import { getUser, sendToken } from '#app/utils/session.server.ts'
 import { verifyEmailAddress } from '#app/utils/verifier.server.ts'
 
-type LoaderData = {
-	email?: string
-	error?: string
-}
-
 export async function loader({ request }: LoaderFunctionArgs) {
 	const user = await getUser(request)
 	if (user) return redirect('/me')
 
 	const loginSession = await getLoginInfoSession(request)
-
-	const data: LoaderData = {
-		email: loginSession.getEmail(),
-		error: loginSession.getError(),
-	}
 
 	const headers = new Headers({
 		'Cache-Control': 'private, max-age=3600',
@@ -53,7 +43,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	})
 	await loginSession.getHeaders(headers)
 
-	return json(data, { headers })
+	return json(
+		{
+			email: loginSession.getEmail(),
+			error: loginSession.getError(),
+		},
+		{ headers },
+	)
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders

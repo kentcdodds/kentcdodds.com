@@ -48,27 +48,24 @@ import { getSocialMetas } from '#app/utils/seo.ts'
 import { getSeasonListItems } from '#app/utils/simplecast.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 
-type LoaderData = {
-	seasons: Awaited<ReturnType<typeof getSeasonListItems>>
-	blogRecommendations: Awaited<ReturnType<typeof getBlogRecommendations>>
-}
-
 export async function loader({ request }: LoaderFunctionArgs) {
 	const timings = {}
 	const blogRecommendations = await getBlogRecommendations({ request, timings })
-	const data: LoaderData = {
-		// we show the seasons in reverse order
-		seasons: (await getSeasonListItems({ request })).reverse(),
-		blogRecommendations,
-	}
 
-	return json(data, {
-		headers: {
-			'Cache-Control': 'private, max-age=3600',
-			Vary: 'Cookie',
-			'Server-Timing': getServerTimeHeader(timings),
+	return json(
+		{
+			// we show the seasons in reverse order
+			seasons: (await getSeasonListItems({ request })).reverse(),
+			blogRecommendations,
 		},
-	})
+		{
+			headers: {
+				'Cache-Control': 'private, max-age=3600',
+				Vary: 'Cookie',
+				'Server-Timing': getServerTimeHeader(timings),
+			},
+		},
+	)
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
@@ -77,7 +74,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	data,
 	matches,
 }) => {
-	const { seasons } = (data as LoaderData | undefined) ?? {}
+	const { seasons } = data ?? {}
 	if (!seasons) {
 		return [{ title: 'Chats with Kent Seasons not found' }]
 	}

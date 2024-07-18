@@ -1,5 +1,6 @@
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@reach/tabs'
 import {
+	type SerializeFrom,
 	json,
 	type HeadersFunction,
 	type LoaderFunctionArgs,
@@ -51,11 +52,6 @@ export const handle: KCDHandle & { id: string } = {
 	id: 'calls',
 }
 
-export type LoaderData = {
-	episodes: Awaited<ReturnType<typeof getEpisodes>>
-	blogRecommendations: Awaited<ReturnType<typeof getBlogRecommendations>>
-}
-
 export const getEpisodesBySeason = (
 	episodes: Awaited<ReturnType<typeof getEpisodes>>,
 ) => {
@@ -85,17 +81,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		throw new Error(`oh no. season for ${seasonNumber}`)
 	}
 
-	const data: LoaderData = {
-		blogRecommendations,
-		episodes,
-	}
-	return json(data, {
-		headers: {
-			'Cache-Control': 'private, max-age=3600',
-			Vary: 'Cookie',
-			'Server-Timing': getServerTimeHeader(timings),
+	return json(
+		{ blogRecommendations, episodes },
+		{
+			headers: {
+				'Cache-Control': 'private, max-age=3600',
+				Vary: 'Cookie',
+				'Server-Timing': getServerTimeHeader(timings),
+			},
 		},
-	})
+	)
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
@@ -347,4 +342,5 @@ export default function CallHomeScreen() {
 	)
 }
 
-export const useCallsData = () => useMatchLoaderData<LoaderData>(handle.id)
+export const useCallsData = () =>
+	useMatchLoaderData<SerializeFrom<typeof loader>>(handle.id)

@@ -1,4 +1,5 @@
 import {
+	type SerializeFrom,
 	json,
 	type HeadersFunction,
 	type LoaderFunctionArgs,
@@ -42,18 +43,18 @@ import {
 } from '#app/utils/misc.tsx'
 import { getSocialMetas } from '#app/utils/seo.ts'
 
-export type LoaderData = { people: Awaited<ReturnType<typeof getPeople>> }
-
 export async function loader({ request }: LoaderFunctionArgs) {
 	const people = await getPeople({ request })
-	const data: LoaderData = { people: shuffle(people) }
 
-	return json(data, {
-		headers: {
-			'Cache-Control': 'public, max-age=3600',
-			Vary: 'Cookie',
+	return json(
+		{ people: shuffle(people) },
+		{
+			headers: {
+				'Cache-Control': 'public, max-age=3600',
+				Vary: 'Cookie',
+			},
 		},
-	})
+	)
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
@@ -76,7 +77,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	})
 }
 
-type Person = LoaderData['people'][number]
+type Person = SerializeFrom<typeof loader>['people'][number]
 type Socials = keyof Omit<
 	Person,
 	'name' | 'role' | 'cloudinaryId' | 'description'

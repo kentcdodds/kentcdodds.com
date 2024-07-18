@@ -35,22 +35,20 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	})
 }
 
-type LoaderData = {
-	blogRecommendations: Awaited<ReturnType<typeof getBlogRecommendations>>
-}
-
 export async function loader({ request }: LoaderFunctionArgs) {
 	const timings = {}
 	const blogRecommendations = await getBlogRecommendations({ request, timings })
-	const data: LoaderData = { blogRecommendations }
 
-	return json(data, {
-		headers: {
-			'Cache-Control': 'private, max-age=3600',
-			Vary: 'Cookie',
-			'Server-Timing': getServerTimeHeader(timings),
+	return json(
+		{ blogRecommendations },
+		{
+			headers: {
+				'Cache-Control': 'private, max-age=3600',
+				Vary: 'Cookie',
+				'Server-Timing': getServerTimeHeader(timings),
+			},
 		},
-	})
+	)
 }
 
 export default function SubscribeScreen() {

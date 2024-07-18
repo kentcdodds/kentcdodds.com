@@ -32,7 +32,6 @@ import {
 	images,
 } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
-import { type MdxListItem } from '#app/types.ts'
 import { getBlogRecommendations } from '#app/utils/blog.server.ts'
 import { shuffle } from '#app/utils/cjs/lodash.ts'
 import {
@@ -45,27 +44,24 @@ import { getTalksAndTags } from '#app/utils/talks.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 
-type LoaderData = {
-	blogRecommendations: Array<MdxListItem>
-	talkRecommendations: Awaited<ReturnType<typeof getTalksAndTags>>['talks']
-}
-
 export async function loader({ request }: LoaderFunctionArgs) {
 	const timings = {}
 	const { talks } = await getTalksAndTags({ request, timings })
 
-	const data: LoaderData = {
-		blogRecommendations: await getBlogRecommendations({ request, timings }),
-		// they're ordered by date, so we'll grab two random of the first 10.
-		talkRecommendations: shuffle(talks.slice(0, 14)).slice(0, 4),
-	}
-	return json(data, {
-		headers: {
-			'Cache-Control': 'private, max-age=3600',
-			Vary: 'Cookie',
-			'Server-Timing': getServerTimeHeader(timings),
+	return json(
+		{
+			blogRecommendations: await getBlogRecommendations({ request, timings }),
+			// they're ordered by date, so we'll grab two random of the first 10.
+			talkRecommendations: shuffle(talks.slice(0, 14)).slice(0, 4),
 		},
-	})
+		{
+			headers: {
+				'Cache-Control': 'private, max-age=3600',
+				Vary: 'Cookie',
+				'Server-Timing': getServerTimeHeader(timings),
+			},
+		},
+	)
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders

@@ -40,7 +40,9 @@ export async function action({ request }: ActionFunctionArgs) {
 	return redirect(new URL(request.url).pathname)
 }
 
-async function getAllCalls() {
+export async function loader({ request }: LoaderFunctionArgs) {
+	await requireAdminUser(request)
+
 	const calls = await prisma.call.findMany({
 		select: {
 			id: true,
@@ -51,18 +53,8 @@ async function getAllCalls() {
 		},
 		orderBy: { updatedAt: 'desc' },
 	})
-	return calls
-}
 
-type LoaderData = {
-	calls: Awaited<ReturnType<typeof getAllCalls>>
-}
-
-export async function loader({ request }: LoaderFunctionArgs) {
-	await requireAdminUser(request)
-
-	const data: LoaderData = { calls: await getAllCalls() }
-	return json(data)
+	return json({ calls })
 }
 
 export default function CallListScreen() {

@@ -1,4 +1,5 @@
 import {
+	type SerializeFrom,
 	json,
 	redirect,
 	type HeadersFunction,
@@ -10,10 +11,7 @@ import { serverOnly$ } from 'vite-env-only'
 import { IconLink } from '#app/components/icon-link.tsx'
 import { XIcon } from '#app/components/icons.tsx'
 import { H6, Paragraph } from '#app/components/typography.tsx'
-import {
-	type RootLoaderType,
-	type LoaderData as RootLoaderData,
-} from '#app/root.tsx'
+import { type RootLoaderType, type loader as rootLoader } from '#app/root.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import {
 	getEpisodeFromParams,
@@ -26,11 +24,7 @@ import { Themed } from '#app/utils/theme.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { getEpisodes } from '#app/utils/transistor.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
-import {
-	useCallsData,
-	type loader as callsLoader,
-	type LoaderData as CallsLoaderData,
-} from '../calls.tsx'
+import { useCallsData, type loader as callsLoader } from '../calls.tsx'
 
 export const handle: KCDHandle = {
 	id: 'call-player',
@@ -52,9 +46,9 @@ export const meta: MetaFunction<
 	{ root: RootLoaderType; 'routes/calls': typeof callsLoader }
 > = ({ matches, params }) => {
 	const { requestInfo } = matches.find((m) => m.id === 'root')
-		?.data as RootLoaderData
+		?.data as SerializeFrom<typeof rootLoader>
 	const callsData = matches.find((m) => m.id === 'routes/calls')?.data as
-		| CallsLoaderData
+		| SerializeFrom<typeof callsLoader>
 		| undefined
 	if (!callsData) {
 		console.error(

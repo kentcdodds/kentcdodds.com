@@ -4,7 +4,6 @@ import {
 	type HeadersFunction,
 	type LinksFunction,
 	type MetaFunction,
-	type SerializeFrom,
 } from '@remix-run/node'
 
 import {
@@ -129,8 +128,6 @@ export const links: LinksFunction = () => {
 		{ rel: 'stylesheet', href: appStyles },
 	]
 }
-
-export type LoaderData = SerializeFrom<typeof loader>
 
 const WORKSHOP_PROMO_NAME = 'workshop-promo'
 

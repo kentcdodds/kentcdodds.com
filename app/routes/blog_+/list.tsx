@@ -9,10 +9,6 @@ import { images } from '#app/images.tsx'
 import { markdownToHtmlUnwrapped } from '#app/utils/markdown.server.ts'
 import { getBlogMdxListItems } from '#app/utils/mdx.server.ts'
 
-type LoaderData = {
-	posts: Array<{ title: string; descriptionHTML: string; slug: string }>
-}
-
 export async function loader({ request }: LoaderFunctionArgs) {
 	const posts = await getBlogMdxListItems({ request }).then((allPosts) =>
 		Promise.all(
@@ -28,14 +24,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		),
 	)
 
-	const data: LoaderData = { posts }
-
-	return json(data, {
-		headers: {
-			'Cache-Control': 'private, max-age=3600',
-			Vary: 'Cookie',
+	return json(
+		{ posts },
+		{
+			headers: {
+				'Cache-Control': 'private, max-age=3600',
+				Vary: 'Cookie',
+			},
 		},
-	})
+	)
 }
 
 export default function BlogList() {

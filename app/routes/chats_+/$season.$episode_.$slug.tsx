@@ -81,7 +81,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	data,
 	matches,
 }) => {
-	const episode = (data as LoaderData | undefined)?.episode
+	const episode = data?.episode
 
 	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
 	if (!episode) {
@@ -124,13 +124,6 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	]
 }
 
-type LoaderData = {
-	prevEpisode: CWKListItem | null
-	nextEpisode: CWKListItem | null
-	featured: CWKListItem | null
-	episode: CWKEpisode
-}
-
 export async function loader({ request, params }: LoaderFunctionArgs) {
 	const timings = {}
 	const seasonNumber = Number(params.season)
@@ -152,24 +145,27 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 		return redirect(`/chats/${params.season}/${params.episode}/${episode.slug}`)
 	}
 
-	const data: LoaderData = {
-		prevEpisode:
-			season.episodes.find((e) => e.episodeNumber === episodeNumber - 1) ??
-			null,
-		nextEpisode:
-			season.episodes.find((e) => e.episodeNumber === episodeNumber + 1) ??
-			null,
-		featured: getFeaturedEpisode(season.episodes.filter((e) => episode !== e)),
-		episode,
-	}
-
-	return json(data, {
-		headers: {
-			'Cache-Control': 'public, max-age=600',
-			Vary: 'Cookie',
-			'Server-Timing': getServerTimeHeader(timings),
+	return json(
+		{
+			prevEpisode:
+				season.episodes.find((e) => e.episodeNumber === episodeNumber - 1) ??
+				null,
+			nextEpisode:
+				season.episodes.find((e) => e.episodeNumber === episodeNumber + 1) ??
+				null,
+			featured: getFeaturedEpisode(
+				season.episodes.filter((e) => episode !== e),
+			),
+			episode,
 		},
-	})
+		{
+			headers: {
+				'Cache-Control': 'public, max-age=600',
+				Vary: 'Cookie',
+				'Server-Timing': getServerTimeHeader(timings),
+			},
+		},
+	)
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders

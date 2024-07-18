@@ -49,10 +49,10 @@ type WorkshopEvent = Pick<TiToEvent, 'description' | 'title' | 'url'> &
 		discounts: Record<string, Discount>
 		metadata: { workshopSlug: string }
 		date: TiToEventDetails['date_or_range']
-		startTime: TiToActivity['start_at']
-		endTime: TiToActivity['end_at']
+		startTime?: TiToActivity['start_at']
+		endTime?: TiToActivity['end_at']
 		expired: boolean
-		salesEndTime: string | undefined
+		salesEndTime?: string | undefined
 	}
 
 const titoSecret = process.env.TITO_API_SECRET

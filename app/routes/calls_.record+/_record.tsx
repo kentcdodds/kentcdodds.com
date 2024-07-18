@@ -14,28 +14,23 @@ import { prisma } from '#app/utils/prisma.server.ts'
 import { getUser } from '#app/utils/session.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 
-function getCalls(userId: string) {
-	return prisma.call.findMany({
-		where: { userId },
-		select: { id: true, title: true },
-	})
-}
-
-type LoaderData = {
-	calls: Awaited<ReturnType<typeof getCalls>>
-}
-
 export async function loader({ request }: LoaderFunctionArgs) {
 	const user = await getUser(request)
-	const data: LoaderData = {
-		calls: user ? await getCalls(user.id) : [],
-	}
-	return json(data, {
-		headers: {
-			'Cache-Control': 'private, max-age=3600',
-			Vary: 'Cookie',
+	const calls = user
+		? await prisma.call.findMany({
+				where: { userId: user.id },
+				select: { id: true, title: true },
+			})
+		: []
+	return json(
+		{ calls },
+		{
+			headers: {
+				'Cache-Control': 'private, max-age=3600',
+				Vary: 'Cookie',
+			},
 		},
-	})
+	)
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders

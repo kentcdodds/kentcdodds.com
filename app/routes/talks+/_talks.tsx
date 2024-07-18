@@ -1,4 +1,5 @@
 import {
+	type SerializeFrom,
 	json,
 	type HeadersFunction,
 	type LoaderFunctionArgs,
@@ -36,7 +37,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	data,
 	matches,
 }) => {
-	const { talks = [], tags = [] } = (data as LoaderData | undefined) ?? {}
+	const { talks = [], tags = [] } = data ?? {}
 
 	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
 	const talkCount = talks.length
@@ -55,10 +56,8 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	})
 }
 
-export type LoaderData = Awaited<ReturnType<typeof getTalksAndTags>>
-
 export async function loader({ request }: LoaderFunctionArgs) {
-	const talksAndTags: LoaderData = await getTalksAndTags({ request })
+	const talksAndTags = await getTalksAndTags({ request })
 
 	return json(talksAndTags, {
 		headers: {
@@ -79,7 +78,7 @@ function Card({
 	descriptionHTML,
 	resourceHTMLs,
 	active,
-}: LoaderData['talks'][0] & { active: boolean }) {
+}: SerializeFrom<typeof loader>['talks'][0] & { active: boolean }) {
 	const latestDelivery = deliveries
 		.filter((x) => x.date)
 		.sort(
@@ -310,7 +309,6 @@ export default function TalksScreen() {
 						{talks.map((talk) => {
 							return (
 								<div key={talk.slug} className="col-span-full lg:col-span-6">
-									{/* @ts-expect-error need to figure this out later... */}
 									<Card active={activeSlug === talk.slug} {...talk} />
 								</div>
 							)

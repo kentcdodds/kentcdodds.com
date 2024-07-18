@@ -129,13 +129,15 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 		)
 	})
 
-	const data = {
-		page,
-		workshops: relevantWorkshops,
-		workshopEvents,
-		...catchData,
-	}
-	return json(data, { status: 200, headers })
+	return json(
+		{
+			page,
+			workshops: relevantWorkshops,
+			workshopEvents: workshopEvents.filter(typedBoolean),
+			...catchData,
+		},
+		{ status: 200, headers },
+	)
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
@@ -537,13 +539,9 @@ export default function MdxScreen() {
 									>
 										<WorkshopCard
 											workshop={workshop}
-											// @ts-expect-error need to figure out a better way to
-											// handle the fact that this is a SerializeObject type...
-											titoEvents={data.workshopEvents
-												.filter(typedBoolean)
-												.filter(
-													(e) => e.metadata.workshopSlug === workshop.slug,
-												)}
+											titoEvents={data.workshopEvents.filter(
+												(e) => e.metadata.workshopSlug === workshop.slug,
+											)}
 										/>
 									</div>
 								))}

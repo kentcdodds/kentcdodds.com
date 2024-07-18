@@ -15,7 +15,6 @@ import { IntroductionSection } from '#app/components/sections/introduction-secti
 import { ProblemSolutionSection } from '#app/components/sections/problem-solution-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { getRandomFlyingKody } from '#app/images.tsx'
-import { type MdxListItem, type Team } from '#app/types.ts'
 import {
 	getBlogReadRankings,
 	getBlogRecommendations,
@@ -30,20 +29,9 @@ import {
 	reuseUsefulLoaderHeaders,
 	teams,
 	useCapturedRouteError,
-	type OptionalTeam,
 } from '#app/utils/misc.tsx'
 import { getUser } from '#app/utils/session.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
-
-type LoaderData = {
-	blogPostCount: string
-	totalBlogReaders: string
-	totalBlogReads: string
-	currentBlogLeaderTeam: Team | undefined
-	blogRecommendations: Array<MdxListItem>
-	kodyTeam: OptionalTeam
-	randomImageNo: number
-}
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const timings = {}
@@ -63,30 +51,32 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		getBlogRecommendations({ request, timings }),
 	])
 
-	const data: LoaderData = {
-		blogRecommendations,
-		blogPostCount: formatNumber(posts.length),
-		totalBlogReaders:
-			totalBlogReaders < 10_000
-				? 'hundreds of thousands of'
-				: formatNumber(totalBlogReaders),
-		totalBlogReads:
-			totalBlogReads < 100_000
-				? 'hundreds of thousands of'
-				: formatNumber(totalBlogReads),
-		currentBlogLeaderTeam: getRankingLeader(blogRankings)?.team,
-		kodyTeam: getOptionalTeam(
-			user?.team ?? teams[Math.floor(Math.random() * teams.length)],
-		),
-		randomImageNo: Math.random(),
-	}
-	return json(data, {
-		headers: {
-			'Cache-Control': 'private, max-age=3600',
-			Vary: 'Cookie',
-			'Server-Timing': getServerTimeHeader(timings),
+	return json(
+		{
+			blogRecommendations,
+			blogPostCount: formatNumber(posts.length),
+			totalBlogReaders:
+				totalBlogReaders < 10_000
+					? 'hundreds of thousands of'
+					: formatNumber(totalBlogReaders),
+			totalBlogReads:
+				totalBlogReads < 100_000
+					? 'hundreds of thousands of'
+					: formatNumber(totalBlogReads),
+			currentBlogLeaderTeam: getRankingLeader(blogRankings)?.team,
+			kodyTeam: getOptionalTeam(
+				user?.team ?? teams[Math.floor(Math.random() * teams.length)],
+			),
+			randomImageNo: Math.random(),
 		},
-	})
+		{
+			headers: {
+				'Cache-Control': 'private, max-age=3600',
+				Vary: 'Cookie',
+				'Server-Timing': getServerTimeHeader(timings),
+			},
+		},
+	)
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders

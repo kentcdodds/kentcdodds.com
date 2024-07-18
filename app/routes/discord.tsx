@@ -45,16 +45,9 @@ import {
 	useCapturedRouteError,
 } from '#app/utils/misc.tsx'
 import { getSocialMetas } from '#app/utils/seo.ts'
-import {
-	getTestimonials,
-	type Testimonial,
-} from '#app/utils/testimonials.server.ts'
+import { getTestimonials } from '#app/utils/testimonials.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
-
-type LoaderData = {
-	testimonials: Array<Testimonial>
-}
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const timings = {}
@@ -65,14 +58,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		categories: ['community'],
 	})
 
-	const data: LoaderData = { testimonials }
-	return json(data, {
-		headers: {
-			'Cache-Control': 'public, max-age=3600',
-			Vary: 'Cookie',
-			'Server-Timing': getServerTimeHeader(timings),
+	return json(
+		{ testimonials },
+		{
+			headers: {
+				'Cache-Control': 'public, max-age=3600',
+				Vary: 'Cookie',
+				'Server-Timing': getServerTimeHeader(timings),
+			},
 		},
-	})
+	)
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders

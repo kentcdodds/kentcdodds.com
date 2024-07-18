@@ -1,4 +1,8 @@
-import { type HeadersFunction, type MetaFunction } from '@remix-run/node'
+import {
+	type HeadersFunction,
+	type MetaFunction,
+	type SerializeFrom,
+} from '@remix-run/node'
 import { useSearchParams } from '@remix-run/react'
 import * as React from 'react'
 import { Grid } from '#app/components/grid.tsx'
@@ -10,16 +14,12 @@ import { H3, H6 } from '#app/components/typography.tsx'
 import { WorkshopCard } from '#app/components/workshop-card.tsx'
 import { RegistrationPanel } from '#app/components/workshop-registration-panel.tsx'
 import { getSocialImageWithPreTitle, images } from '#app/images.tsx'
-import {
-	type RootLoaderType,
-	type LoaderData as RootLoaderData,
-} from '#app/root.tsx'
+import { type RootLoaderType } from '#app/root.tsx'
 import { type Workshop } from '#app/types.ts'
 import {
 	getDisplayUrl,
 	getUrl,
 	listify,
-	typedBoolean,
 	useUpdateQueryStringValueWithoutNavigation,
 } from '#app/utils/misc.tsx'
 import { getSocialMetas } from '#app/utils/seo.ts'
@@ -27,8 +27,10 @@ import { type WorkshopEvent } from '#app/utils/workshop-tickets.server.ts'
 import {
 	useWorkshopsData,
 	type loader as WorkshopLoader,
-	type LoaderData as WorkshopLoaderData,
 } from './_workshops.tsx'
+
+type RootLoaderData = SerializeFrom<RootLoaderType>
+type WorkshopLoaderData = SerializeFrom<typeof WorkshopLoader>
 
 export const meta: MetaFunction<
 	{},
@@ -116,7 +118,7 @@ function WorkshopsHome() {
 	const workshopEvents: Array<Workshop['events'][number] | WorkshopEvent> = [
 		...workshops.flatMap((w) => w.events),
 		...data.workshopEvents,
-	].filter(typedBoolean)
+	]
 
 	return (
 		<>

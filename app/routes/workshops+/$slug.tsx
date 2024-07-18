@@ -3,6 +3,7 @@ import {
 	type HeadersFunction,
 	type LoaderFunctionArgs,
 	type MetaFunction,
+	type SerializeFrom,
 } from '@remix-run/node'
 import { Link, useLoaderData, useParams } from '@remix-run/react'
 import * as React from 'react'
@@ -20,11 +21,8 @@ import { WorkshopCard } from '#app/components/workshop-card.tsx'
 import { RegistrationPanel } from '#app/components/workshop-registration-panel.tsx'
 import { ConvertKitForm } from '#app/convertkit/form.tsx'
 import { getSocialImageWithPreTitle } from '#app/images.tsx'
-import {
-	type LoaderData as RootLoaderData,
-	type RootLoaderType,
-} from '#app/root.tsx'
-import { type KCDHandle, type MdxListItem, type Workshop } from '#app/types.ts'
+import { type RootLoaderType } from '#app/root.tsx'
+import { type KCDHandle, type Workshop } from '#app/types.ts'
 import { getBlogRecommendations } from '#app/utils/blog.server.ts'
 import {
 	getDisplayUrl,
@@ -36,7 +34,6 @@ import {
 import { getSocialMetas } from '#app/utils/seo.ts'
 import {
 	getTestimonials,
-	type Testimonial,
 	type TestimonialCategory,
 	type TestimonialSubject,
 } from '#app/utils/testimonials.server.ts'
@@ -46,7 +43,6 @@ import { getWorkshops } from '#app/utils/workshops.server.ts'
 import {
 	useWorkshopsData,
 	type loader as WorkshopLoader,
-	type LoaderData as WorkshopLoaderData,
 } from './_workshops.tsx'
 
 export const handle: KCDHandle = {
@@ -59,11 +55,6 @@ export const handle: KCDHandle = {
 			}
 		})
 	}),
-}
-
-type LoaderData = {
-	testimonials: Array<Testimonial>
-	blogRecommendations: Array<MdxListItem>
 }
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -88,17 +79,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 			...(workshop.categories as Array<TestimonialCategory>),
 		],
 	})
-	const data: LoaderData = {
-		testimonials,
-		blogRecommendations,
-	}
 	const headers = {
 		'Cache-Control': 'private, max-age=3600',
 		Vary: 'Cookie',
 		'Server-Timings': getServerTimeHeader(timings),
 	}
 
-	return json(data, { status: 200, headers })
+	return json({ testimonials, blogRecommendations }, { status: 200, headers })
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
@@ -111,11 +98,11 @@ export const meta: MetaFunction<
 	}
 > = ({ matches, params }) => {
 	const { requestInfo } = matches.find((m) => m.id === 'root')
-		?.data as RootLoaderData
+		?.data as SerializeFrom<RootLoaderType>
 	let workshop: Workshop | undefined
 	const workshopsData = matches.find(
 		(m) => m.id === 'routes/workshops+/_workshops',
-	)?.data as WorkshopLoaderData | undefined
+	)?.data as SerializeFrom<typeof WorkshopLoader> | undefined
 	if (Array.isArray(workshopsData?.workshops)) {
 		workshop = workshopsData.workshops.find(
 			(w: { slug?: string }) => w.slug === params.slug,

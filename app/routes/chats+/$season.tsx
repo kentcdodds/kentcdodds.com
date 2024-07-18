@@ -15,7 +15,7 @@ import { Grid } from '#app/components/grid.tsx'
 import { TriangleIcon } from '#app/components/icons.tsx'
 import { MissingSomething } from '#app/components/kifs.tsx'
 import { H3, Paragraph } from '#app/components/typography.tsx'
-import { type CWKSeason, type KCDHandle } from '#app/types.ts'
+import { type KCDHandle } from '#app/types.ts'
 import { getCWKEpisodePath } from '#app/utils/chats-with-kent.ts'
 import { orderBy } from '#app/utils/cjs/lodash.ts'
 import {
@@ -39,10 +39,6 @@ export const handle: KCDHandle = {
 	}),
 }
 
-type LoaderData = {
-	season: CWKSeason
-}
-
 export async function loader({ params, request }: LoaderFunctionArgs) {
 	if (!params.season) {
 		throw new Error('params.season is not defined')
@@ -55,13 +51,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		throw new Response(`No season for ${params.season}`, { status: 404 })
 	}
 
-	const data: LoaderData = { season }
-	return json(data, {
-		headers: {
-			'Cache-Control': 'public, max-age=600',
-			'Server-Timing': getServerTimeHeader(timings),
+	return json(
+		{ season },
+		{
+			headers: {
+				'Cache-Control': 'public, max-age=600',
+				'Server-Timing': getServerTimeHeader(timings),
+			},
 		},
-	})
+	)
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders

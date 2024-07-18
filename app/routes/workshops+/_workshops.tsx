@@ -1,27 +1,19 @@
 import {
+	type SerializeFrom,
 	json,
 	type HeadersFunction,
 	type LoaderFunctionArgs,
 } from '@remix-run/node'
 import { Outlet } from '@remix-run/react'
-import { type KCDHandle, type Workshop } from '#app/types.ts'
-import { reuseUsefulLoaderHeaders } from '#app/utils/misc.tsx'
+import { type KCDHandle } from '#app/types.ts'
+import { reuseUsefulLoaderHeaders, typedBoolean } from '#app/utils/misc.tsx'
 import { useMatchLoaderData } from '#app/utils/providers.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
-import {
-	getScheduledEvents,
-	type WorkshopEvent,
-} from '#app/utils/workshop-tickets.server.ts'
+import { getScheduledEvents } from '#app/utils/workshop-tickets.server.ts'
 import { getWorkshops } from '#app/utils/workshops.server.ts'
 
 export const handle: KCDHandle & { id: string } = {
 	id: 'workshops',
-}
-
-export type LoaderData = {
-	workshops: Array<Workshop>
-	workshopEvents: Array<WorkshopEvent>
-	tags: Array<string>
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -38,17 +30,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		}
 	}
 
-	const data: LoaderData = {
-		workshops,
-		workshopEvents,
-		tags: Array.from(tags),
-	}
 	const headers = {
 		'Cache-Control': 'public, max-age=3600',
 		Vary: 'Cookie',
 		'Server-Timing': getServerTimeHeader(timings),
 	}
-	return json(data, { headers })
+	return json(
+		{
+			workshops: workshops.filter(typedBoolean),
+			workshopEvents: workshopEvents.filter(typedBoolean),
+			tags: Array.from(tags),
+		},
+		{ headers },
+	)
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
@@ -59,4 +53,5 @@ function WorkshopsHome() {
 
 export default WorkshopsHome
 
-export const useWorkshopsData = () => useMatchLoaderData<LoaderData>(handle.id)
+export const useWorkshopsData = () =>
+	useMatchLoaderData<SerializeFrom<typeof loader>>(handle.id)

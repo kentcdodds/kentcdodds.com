@@ -7,11 +7,8 @@ export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
 }
 
-type LoaderData = {}
-
 export async function loader() {
-	const data: LoaderData = {}
-	return json(data)
+	return json({})
 }
 
 export async function action({ request }: ActionFunctionArgs) {

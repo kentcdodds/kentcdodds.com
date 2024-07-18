@@ -20,11 +20,7 @@ import { Grid } from '#app/components/grid.tsx'
 import { TriangleIcon } from '#app/components/icons.tsx'
 import { MissingSomething } from '#app/components/kifs.tsx'
 import { H3, Paragraph } from '#app/components/typography.tsx'
-import {
-	type CallKentEpisode,
-	type CallKentSeason,
-	type KCDHandle,
-} from '#app/types.ts'
+import { type CallKentEpisode, type KCDHandle } from '#app/types.ts'
 import {
 	getEpisodeFromParams,
 	getEpisodePath,
@@ -55,11 +51,6 @@ export const handle: KCDHandle = {
 	}),
 }
 
-type LoaderData = {
-	//   episodes: Awaited<ReturnType<typeof getEpisodes>>
-	season: CallKentSeason
-}
-
 export async function loader({ params, request }: LoaderFunctionArgs) {
 	const timings = {}
 	const episodes = await getEpisodes({ request, timings })
@@ -72,18 +63,16 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		throw new Response(`No season for ${params.season}`, { status: 404 })
 	}
 
-	const data: LoaderData = {
-		//   episodes,
-		season,
-	}
-
-	return json(data, {
-		headers: {
-			'Cache-Control': 'private, max-age=3600',
-			Vary: 'Cookie',
-			'Server-Timing': getServerTimeHeader(timings),
+	return json(
+		{ season },
+		{
+			headers: {
+				'Cache-Control': 'private, max-age=3600',
+				Vary: 'Cookie',
+				'Server-Timing': getServerTimeHeader(timings),
+			},
 		},
-	})
+	)
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
