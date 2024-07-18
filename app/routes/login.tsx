@@ -152,7 +152,6 @@ async function isEmailVerified(
 function Login() {
 	const data = useLoaderData<typeof loader>()
 	const inputRef = React.useRef<HTMLInputElement>(null)
-	const [submitted, setSubmitted] = React.useState(false)
 
 	const [formValues, setFormValues] = React.useState({
 		email: data.email ?? '',
@@ -174,7 +173,6 @@ function Login() {
 								const form = event.currentTarget
 								setFormValues({ email: form.email.value })
 							}}
-							onSubmit={() => setSubmitted(true)}
 							action="/login"
 							method="POST"
 							className="mb-10 lg:mb-12"
@@ -212,14 +210,11 @@ function Login() {
 							</div>
 
 							<div className="flex flex-wrap gap-4">
-								<Button type="submit" disabled={!formIsValid || submitted}>
-									Email a login link
-								</Button>
+								<Button type="submit">Email a login link</Button>
 								<LinkButton
 									type="reset"
 									onClick={() => {
 										setFormValues({ email: '' })
-										setSubmitted(false)
 										inputRef.current?.focus()
 									}}
 								>
