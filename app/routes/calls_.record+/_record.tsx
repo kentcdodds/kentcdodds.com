@@ -9,7 +9,6 @@ import { BackLink } from '#app/components/arrow-button.tsx'
 import { ButtonLink } from '#app/components/button.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { H2, Paragraph } from '#app/components/typography.tsx'
-import { type Await } from '#app/types.ts'
 import { reuseUsefulLoaderHeaders } from '#app/utils/misc.tsx'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { getUser } from '#app/utils/session.server.ts'
@@ -23,7 +22,7 @@ function getCalls(userId: string) {
 }
 
 type LoaderData = {
-	calls: Await<ReturnType<typeof getCalls>>
+	calls: Awaited<ReturnType<typeof getCalls>>
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {

@@ -1,11 +1,6 @@
 import { subMonths, subYears } from 'date-fns'
 import pLimit from 'p-limit'
-import {
-	type Await,
-	type MdxListItem,
-	type Team,
-	type User,
-} from '#app/types.ts'
+import { type MdxListItem, type Team, type User } from '#app/types.ts'
 import { shuffle } from '#app/utils/cjs/lodash.ts'
 import { filterPosts } from './blog.ts'
 import { cache, cachified, lruCache } from './cache.server.ts'
@@ -239,7 +234,7 @@ async function getReaderCount({
 	})
 }
 
-export type ReadRankings = Await<ReturnType<typeof getBlogReadRankings>>
+export type ReadRankings = Awaited<ReturnType<typeof getBlogReadRankings>>
 
 async function getBlogReadRankings({
 	slug,

@@ -3,7 +3,6 @@ import {
 	type CountableSlugify,
 } from '@sindresorhus/slugify'
 import * as YAML from 'yaml'
-import { type Await } from '#app/types.ts'
 import { cache, cachified } from '#app/utils/cache.server.ts'
 import { downloadFile } from '#app/utils/github.server.ts'
 import { markdownToHtml, stripHtml } from '#app/utils/markdown.server.ts'
@@ -20,7 +19,7 @@ type RawTalk = {
 	deliveries?: Array<{ event?: string; date?: string; recording?: string }>
 }
 
-type Talk = Await<ReturnType<typeof getTalk>>
+type Talk = Awaited<ReturnType<typeof getTalk>>
 
 let _slugify: CountableSlugify
 

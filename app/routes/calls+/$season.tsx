@@ -56,7 +56,7 @@ export const handle: KCDHandle = {
 }
 
 type LoaderData = {
-	//   episodes: Await<ReturnType<typeof getEpisodes>>
+	//   episodes: Awaited<ReturnType<typeof getEpisodes>>
 	season: CallKentSeason
 }
 

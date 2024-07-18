@@ -30,7 +30,7 @@ import {
 	images,
 } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
-import { type CallKentSeason, type Await, type KCDHandle } from '#app/types.ts'
+import { type CallKentSeason, type KCDHandle } from '#app/types.ts'
 import { getBlogRecommendations } from '#app/utils/blog.server.ts'
 import { groupBy } from '#app/utils/cjs/lodash.ts'
 import {
@@ -52,12 +52,12 @@ export const handle: KCDHandle & { id: string } = {
 }
 
 export type LoaderData = {
-	episodes: Await<ReturnType<typeof getEpisodes>>
-	blogRecommendations: Await<ReturnType<typeof getBlogRecommendations>>
+	episodes: Awaited<ReturnType<typeof getEpisodes>>
+	blogRecommendations: Awaited<ReturnType<typeof getBlogRecommendations>>
 }
 
 export const getEpisodesBySeason = (
-	episodes: Await<ReturnType<typeof getEpisodes>>,
+	episodes: Awaited<ReturnType<typeof getEpisodes>>,
 ) => {
 	const groupedEpisodeBySeasons = groupBy(episodes, 'seasonNumber')
 	const seasons: Array<CallKentSeason> = []

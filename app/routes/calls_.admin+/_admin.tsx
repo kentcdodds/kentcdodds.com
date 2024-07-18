@@ -5,7 +5,7 @@ import {
 	type LoaderFunctionArgs,
 } from '@remix-run/node'
 import { Link, Outlet, useLoaderData } from '@remix-run/react'
-import { type Await, type KCDHandle } from '#app/types.ts'
+import { type KCDHandle } from '#app/types.ts'
 import { getAvatarForUser } from '#app/utils/misc.tsx'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
@@ -55,7 +55,7 @@ async function getAllCalls() {
 }
 
 type LoaderData = {
-	calls: Await<ReturnType<typeof getAllCalls>>
+	calls: Awaited<ReturnType<typeof getAllCalls>>
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {

@@ -32,7 +32,7 @@ import {
 	images,
 } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
-import { type Await, type MdxListItem } from '#app/types.ts'
+import { type MdxListItem } from '#app/types.ts'
 import { getBlogRecommendations } from '#app/utils/blog.server.ts'
 import { shuffle } from '#app/utils/cjs/lodash.ts'
 import {
@@ -47,7 +47,7 @@ import { useRootData } from '#app/utils/use-root-data.ts'
 
 type LoaderData = {
 	blogRecommendations: Array<MdxListItem>
-	talkRecommendations: Await<ReturnType<typeof getTalksAndTags>>['talks']
+	talkRecommendations: Awaited<ReturnType<typeof getTalksAndTags>>['talks']
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {

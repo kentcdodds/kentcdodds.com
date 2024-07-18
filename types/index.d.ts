@@ -7,8 +7,6 @@ import type calculateReadingTime from 'reading-time'
 type NonNullProperties<Type> = {
 	[Key in keyof Type]-?: Exclude<Type[Key], null | undefined>
 }
-type Await<Type> = Type extends Promise<infer Value> ? Await<Value> : Type
-
 type MdxPage = {
 	code: string
 	slug: string

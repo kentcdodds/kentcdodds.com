@@ -20,7 +20,6 @@ import { Tag } from '#app/components/tag.tsx'
 import { H3, H6, Paragraph } from '#app/components/typography.tsx'
 import { getGenericSocialImage, images } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
-import { type Await } from '#app/types.ts'
 import {
 	formatDate,
 	getDisplayUrl,
@@ -56,7 +55,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	})
 }
 
-export type LoaderData = Await<ReturnType<typeof getTalksAndTags>>
+export type LoaderData = Awaited<ReturnType<typeof getTalksAndTags>>
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const talksAndTags: LoaderData = await getTalksAndTags({ request })

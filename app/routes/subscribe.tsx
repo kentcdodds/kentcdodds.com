@@ -13,7 +13,6 @@ import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
 import { ConvertKitForm } from '#app/convertkit/form.tsx'
 import { getGenericSocialImage, getImgProps, images } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
-import { type Await } from '#app/types.ts'
 import { getBlogRecommendations } from '#app/utils/blog.server.ts'
 import { getDisplayUrl, getUrl } from '#app/utils/misc.tsx'
 import { getSocialMetas } from '#app/utils/seo.ts'
@@ -37,7 +36,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 }
 
 type LoaderData = {
-	blogRecommendations: Await<ReturnType<typeof getBlogRecommendations>>
+	blogRecommendations: Awaited<ReturnType<typeof getBlogRecommendations>>
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {

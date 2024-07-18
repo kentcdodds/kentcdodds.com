@@ -30,7 +30,6 @@ import {
 	images,
 } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
-import { type Await } from '#app/types.ts'
 import { getBlogRecommendations } from '#app/utils/blog.server.ts'
 import {
 	getCWKEpisodePath,
@@ -50,8 +49,8 @@ import { getSeasonListItems } from '#app/utils/simplecast.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 
 type LoaderData = {
-	seasons: Await<ReturnType<typeof getSeasonListItems>>
-	blogRecommendations: Await<ReturnType<typeof getBlogRecommendations>>
+	seasons: Awaited<ReturnType<typeof getSeasonListItems>>
+	blogRecommendations: Awaited<ReturnType<typeof getBlogRecommendations>>
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {

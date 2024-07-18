@@ -23,7 +23,7 @@ import {
 } from '#app/components/icons.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { H1 } from '#app/components/typography.tsx'
-import { type Await, type KCDHandle } from '#app/types.ts'
+import { type KCDHandle } from '#app/types.ts'
 import {
 	formatDate,
 	getErrorMessage,
@@ -40,7 +40,7 @@ export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
 }
 
-type LoaderData = Await<ReturnType<typeof getLoaderData>>
+type LoaderData = Awaited<ReturnType<typeof getLoaderData>>
 type User = LoaderData['users'][number]
 
 const DEFAULT_LIMIT = 100

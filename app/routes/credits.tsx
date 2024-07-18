@@ -32,7 +32,6 @@ import {
 	images,
 } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
-import { type Await } from '#app/types.ts'
 import { shuffle } from '#app/utils/cjs/lodash.ts'
 import { getPeople } from '#app/utils/credits.server.ts'
 import {
@@ -43,7 +42,7 @@ import {
 } from '#app/utils/misc.tsx'
 import { getSocialMetas } from '#app/utils/seo.ts'
 
-export type LoaderData = { people: Await<ReturnType<typeof getPeople>> }
+export type LoaderData = { people: Awaited<ReturnType<typeof getPeople>> }
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const people = await getPeople({ request })
