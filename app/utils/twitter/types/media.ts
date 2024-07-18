@@ -1,4 +1,4 @@
-import { type Indices } from './entities.js'
+import { type Indices } from './entities.ts'
 
 export type RGB = {
 	red: number

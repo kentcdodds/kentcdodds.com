@@ -6,7 +6,7 @@ import {
 	type Team,
 	type User,
 } from '#app/types.ts'
-import { shuffle } from '#app/utils/cjs/lodash.js'
+import { shuffle } from '#app/utils/cjs/lodash.ts'
 import { filterPosts } from './blog.ts'
 import { cache, cachified, lruCache } from './cache.server.ts'
 import { getClientSession } from './client.server.ts'

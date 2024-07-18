@@ -17,7 +17,7 @@ import { MissingSomething } from '#app/components/kifs.tsx'
 import { H3, Paragraph } from '#app/components/typography.tsx'
 import { type CWKSeason, type KCDHandle } from '#app/types.ts'
 import { getCWKEpisodePath } from '#app/utils/chats-with-kent.ts'
-import { orderBy } from '#app/utils/cjs/lodash.js'
+import { orderBy } from '#app/utils/cjs/lodash.ts'
 import {
 	formatDuration,
 	reuseUsefulLoaderHeaders,

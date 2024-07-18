@@ -1,4 +1,4 @@
-import { type Tweet } from './types/index.js'
+import { type Tweet } from './types/index.ts'
 
 const SYNDICATION_URL = 'https://cdn.syndication.twimg.com'
 

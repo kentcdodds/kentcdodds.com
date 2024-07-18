@@ -26,7 +26,7 @@ import {
 	ensureInstance,
 	getAllInstances,
 	getInstanceInfo,
-} from '#app/utils/cjs/litefs-js.server.js'
+} from '#app/utils/cjs/litefs-js.server.ts'
 import {
 	useDebounce,
 	useDoubleCheck,

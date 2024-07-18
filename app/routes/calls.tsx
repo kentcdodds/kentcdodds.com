@@ -32,7 +32,7 @@ import {
 import { type RootLoaderType } from '#app/root.tsx'
 import { type CallKentSeason, type Await, type KCDHandle } from '#app/types.ts'
 import { getBlogRecommendations } from '#app/utils/blog.server.ts'
-import { groupBy } from '#app/utils/cjs/lodash.js'
+import { groupBy } from '#app/utils/cjs/lodash.ts'
 import {
 	getDisplayUrl,
 	getOrigin,

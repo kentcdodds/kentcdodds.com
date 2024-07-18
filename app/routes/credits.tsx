@@ -33,7 +33,7 @@ import {
 } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
 import { type Await } from '#app/types.ts'
-import { shuffle } from '#app/utils/cjs/lodash.js'
+import { shuffle } from '#app/utils/cjs/lodash.ts'
 import { getPeople } from '#app/utils/credits.server.ts'
 import {
 	getDisplayUrl,

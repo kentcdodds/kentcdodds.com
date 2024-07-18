@@ -21,12 +21,12 @@ import onFinished from 'on-finished'
 import serverTiming from 'server-timing'
 import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
-import { getInstanceInfo } from '../app/utils/cjs/litefs-js.server.js'
+import { getInstanceInfo } from '../app/utils/cjs/litefs-js.server.ts'
 import {
 	getRedirectsMiddleware,
 	oldImgSocial,
 	rickRollMiddleware,
-} from './redirects.js'
+} from './redirects.ts'
 
 sourceMapSupport.install()
 installGlobals()
@@ -57,7 +57,7 @@ const getHost = (req: { get: (key: string) => string | undefined }) =>
 const MODE = process.env.NODE_ENV
 
 if (MODE === 'production' && process.env.SENTRY_DSN) {
-	void import('./utils/monitoring.js').then(({ init }) => init())
+	void import('./utils/monitoring.ts').then(({ init }) => init())
 }
 
 if (MODE === 'production') {
@@ -363,7 +363,7 @@ ${chalk.bold('Press Ctrl+C to stop')}
 let wss: WebSocketServer | undefined
 if (process.env.NODE_ENV === 'development') {
 	try {
-		const { contentWatcher } = await import('./content-watcher.js')
+		const { contentWatcher } = await import('./content-watcher.ts')
 		wss = contentWatcher(server)
 	} catch (error: unknown) {
 		console.error('unable to start content watcher', error)

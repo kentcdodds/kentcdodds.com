@@ -30,7 +30,7 @@ import {
 	getEpisodePath,
 	type Params as CallPlayerParams,
 } from '#app/utils/call-kent.ts'
-import { orderBy } from '#app/utils/cjs/lodash.js'
+import { orderBy } from '#app/utils/cjs/lodash.ts'
 import {
 	formatDuration,
 	reuseUsefulLoaderHeaders,

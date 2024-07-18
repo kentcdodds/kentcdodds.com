@@ -19,7 +19,7 @@ import {
 	type SimplecastEpisodeListItem,
 	type SimplecastTooManyRequests,
 } from '#app/types.ts'
-import { omit, sortBy } from '#app/utils/cjs/lodash.js'
+import { omit, sortBy } from '#app/utils/cjs/lodash.ts'
 import { cache, cachified } from './cache.server.ts'
 import { markdownToHtml, stripHtml } from './markdown.server.ts'
 import { getRequiredServerEnvVar, typedBoolean } from './misc.tsx'

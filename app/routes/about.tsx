@@ -34,7 +34,7 @@ import {
 import { type RootLoaderType } from '#app/root.tsx'
 import { type Await, type MdxListItem } from '#app/types.ts'
 import { getBlogRecommendations } from '#app/utils/blog.server.ts'
-import { shuffle } from '#app/utils/cjs/lodash.js'
+import { shuffle } from '#app/utils/cjs/lodash.ts'
 import {
 	getDisplayUrl,
 	getUrl,

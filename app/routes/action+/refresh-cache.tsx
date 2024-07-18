@@ -1,7 +1,7 @@
 import path from 'path'
 import { json, redirect, type DataFunctionArgs } from '@remix-run/node'
 import { cache } from '#app/utils/cache.server.ts'
-import { ensurePrimary } from '#app/utils/cjs/litefs-js.server.js'
+import { ensurePrimary } from '#app/utils/cjs/litefs-js.server.ts'
 import { getPeople } from '#app/utils/credits.server.ts'
 import {
 	getBlogMdxListItems,
