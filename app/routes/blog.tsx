@@ -1,7 +1,7 @@
 import { MixedCheckbox } from '@reach/checkbox'
 import {
+	type LoaderFunctionArgs,
 	json,
-	type DataFunctionArgs,
 	type HeadersFunction,
 	type LinksFunction,
 	type MetaFunction,
@@ -73,7 +73,7 @@ export const links: LinksFunction = () => {
 	]
 }
 
-export async function loader({ request }: DataFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const timings = {}
 	const [
 		posts,

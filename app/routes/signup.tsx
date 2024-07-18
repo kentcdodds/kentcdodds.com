@@ -1,8 +1,8 @@
 import {
+	type ActionFunctionArgs,
+	type LoaderFunctionArgs,
 	json,
 	redirect,
-	type ActionFunction,
-	type DataFunctionArgs,
 } from '@remix-run/node'
 import { Form, useActionData, useLoaderData } from '@remix-run/react'
 import { clsx } from 'clsx'
@@ -65,7 +65,7 @@ const actionIds = {
 	signUp: 'sign up',
 }
 
-export const action: ActionFunction = async ({ request }) => {
+export async function action({ request }: ActionFunctionArgs) {
 	const loginInfoSession = await getLoginInfoSession(request)
 
 	const requestText = await request.text()
@@ -155,7 +155,7 @@ export const action: ActionFunction = async ({ request }) => {
 	})
 }
 
-export async function loader({ request }: DataFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const user = await getUser(request)
 	if (user) return redirect('/me')
 

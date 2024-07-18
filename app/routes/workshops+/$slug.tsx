@@ -1,7 +1,7 @@
 import {
 	json,
 	type HeadersFunction,
-	type LoaderFunction,
+	type LoaderFunctionArgs,
 	type MetaFunction,
 } from '@remix-run/node'
 import { Link, useLoaderData, useParams } from '@remix-run/react'
@@ -66,7 +66,7 @@ type LoaderData = {
 	blogRecommendations: Array<MdxListItem>
 }
 
-export const loader: LoaderFunction = async ({ params, request }) => {
+export async function loader({ params, request }: LoaderFunctionArgs) {
 	requireValidSlug(params.slug)
 	const timings = {}
 	const [workshops, blogRecommendations] = await Promise.all([

@@ -1,4 +1,4 @@
-import { defer, redirect, type DataFunctionArgs } from '@remix-run/node'
+import { type LoaderFunctionArgs, defer, redirect } from '@remix-run/node'
 import { Await, Link, useAsyncError, useLoaderData } from '@remix-run/react'
 import React, { Suspense } from 'react'
 import { ArrowLink } from '#app/components/arrow-button.tsx'
@@ -23,7 +23,7 @@ export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
 }
 
-export async function loader({ request }: DataFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
 	await ensurePrimary()
 	const user = await requireUser(request)
 	const domainUrl = getDomainUrl(request)

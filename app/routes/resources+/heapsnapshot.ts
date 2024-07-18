@@ -4,13 +4,13 @@ import path from 'path'
 import { PassThrough } from 'stream'
 import v8 from 'v8'
 import {
+	type LoaderFunctionArgs,
 	createReadableStreamFromReadable,
-	type DataFunctionArgs,
 } from '@remix-run/node'
 import { formatDate } from '#app/utils/misc.tsx'
 import { requireAdminUser } from '#app/utils/session.server.ts'
 
-export async function loader({ request }: DataFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
 	await requireAdminUser(request)
 	const host =
 		request.headers.get('X-Forwarded-Host') ?? request.headers.get('host')

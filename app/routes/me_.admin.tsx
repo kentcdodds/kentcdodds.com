@@ -1,8 +1,8 @@
 import {
+	type ActionFunctionArgs,
 	json,
 	redirect,
-	type ActionFunction,
-	type LoaderFunction,
+	type LoaderFunctionArgs,
 } from '@remix-run/node'
 import {
 	Form,
@@ -98,13 +98,13 @@ async function getLoaderData({ request }: { request: Request }) {
 	}
 }
 
-export const loader: LoaderFunction = async ({ request }) => {
+export async function loader({ request }: LoaderFunctionArgs) {
 	await requireAdminUser(request)
 
 	return json(await getLoaderData({ request }))
 }
 
-export const action: ActionFunction = async ({ request }) => {
+export async function action({ request }: ActionFunctionArgs) {
 	await requireAdminUser(request)
 
 	const requestText = await request.text()

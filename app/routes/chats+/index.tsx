@@ -1,7 +1,7 @@
-import { redirect, type LoaderFunction } from '@remix-run/node'
+import { redirect, type LoaderFunctionArgs } from '@remix-run/node'
 import { getSeasonListItems } from '#app/utils/simplecast.server.ts'
 
-export const loader: LoaderFunction = async ({ request }) => {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const seasons = await getSeasonListItems({ request })
 	const seasonNumber = seasons[seasons.length - 1]?.seasonNumber ?? 1
 	const season = seasons.find((s) => s.seasonNumber === seasonNumber)

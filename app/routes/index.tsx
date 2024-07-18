@@ -1,7 +1,7 @@
 import {
 	json,
 	type HeadersFunction,
-	type LoaderFunction,
+	type LoaderFunctionArgs,
 } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import { ButtonLink } from '#app/components/button.tsx'
@@ -45,7 +45,7 @@ type LoaderData = {
 	randomImageNo: number
 }
 
-export const loader: LoaderFunction = async ({ request }) => {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const timings = {}
 	const [
 		user,

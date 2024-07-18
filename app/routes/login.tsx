@@ -1,9 +1,9 @@
 import {
+	type ActionFunctionArgs,
 	json,
 	redirect,
-	type ActionFunction,
 	type HeadersFunction,
-	type LoaderFunction,
+	type LoaderFunctionArgs,
 	type MetaFunction,
 } from '@remix-run/node'
 import { Form, useLoaderData } from '@remix-run/react'
@@ -36,7 +36,7 @@ type LoaderData = {
 	error?: string
 }
 
-export const loader: LoaderFunction = async ({ request }) => {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const user = await getUser(request)
 	if (user) return redirect('/me')
 
@@ -75,7 +75,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	})
 }
 
-export const action: ActionFunction = async ({ request }) => {
+export async function action({ request }: ActionFunctionArgs) {
 	const formData = await request.formData()
 	const loginSession = await getLoginInfoSession(request)
 

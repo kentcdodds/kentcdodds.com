@@ -1,4 +1,8 @@
-import { json, type DataFunctionArgs } from '@remix-run/node'
+import {
+	type ActionFunctionArgs,
+	json,
+	type LoaderFunctionArgs,
+} from '@remix-run/node'
 import {
 	Form,
 	useFetcher,
@@ -34,7 +38,7 @@ import {
 } from '#app/utils/misc.tsx'
 import { requireAdminUser } from '#app/utils/session.server.ts'
 
-export async function loader({ request }: DataFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
 	await requireAdminUser(request)
 	const searchParams = new URL(request.url).searchParams
 	const query = searchParams.get('query')
@@ -55,7 +59,7 @@ export async function loader({ request }: DataFunctionArgs) {
 	return json({ cacheKeys, instance, instances, currentInstanceInfo })
 }
 
-export async function action({ request }: DataFunctionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
 	await requireAdminUser(request)
 	const formData = await request.formData()
 	const key = formData.get('cacheKey')

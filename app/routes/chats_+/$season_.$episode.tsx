@@ -1,13 +1,13 @@
 import {
 	redirect,
 	type HeadersFunction,
-	type LoaderFunction,
+	type LoaderFunctionArgs,
 } from '@remix-run/node'
 import { reuseUsefulLoaderHeaders } from '#app/utils/misc.tsx'
 import { getSeasons } from '#app/utils/simplecast.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 
-export const loader: LoaderFunction = async ({ request, params }) => {
+export async function loader({ request, params }: LoaderFunctionArgs) {
 	const timings = {}
 	const seasonNumber = Number(params.season)
 	const episodeNumber = Number(params.episode)

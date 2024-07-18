@@ -140,7 +140,7 @@ states. But the APIs that Remix gives me for those things are simple and
 declarative. I mean, here it is:
 
 ```tsx filename=app/events/$eventId/attendees.tsx
-const loader: LoaderFunction = async ({ request, params }) => {
+export async function loader({ request, params }: LoaderFunctionArgs) {
 	// this runs on the server
 	// unexpected runtime errors will trigger the ErrorBoundary to be rendered
 	// expected errors (like 401s, 404s, etc) will render the CatchBoundary
@@ -237,7 +237,7 @@ management, and cache invalidation code. Well, with Remix, all that goes away
 and I'm left with a declarative mutations API:
 
 ```tsx filename=app/events/$eventId/attendees.tsx
-const action: ActionFunction = async ({ request }) => {
+export async function action({ request }: ActionFunctionArgs) {
 	// this runs on the server and I can handle the request form data here
 	// whether that be a direct database interaction or calling a downstream
 	// service to perform the actual mutation. It's just brilliant.

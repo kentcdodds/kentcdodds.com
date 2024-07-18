@@ -1,6 +1,6 @@
 // This is a full stack component that controls showing a notification message
 // which the user can dismiss for a period of time.
-import { json, type DataFunctionArgs } from '@remix-run/node'
+import { type ActionFunctionArgs, json } from '@remix-run/node'
 import { useFetcher } from '@remix-run/react'
 import cookie from 'cookie'
 import * as React from 'react'
@@ -24,7 +24,7 @@ export function getPromoCookieValue({
 	return cookies[promoName]
 }
 
-export async function action({ request }: DataFunctionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
 	const formData = await request.formData()
 	const maxAge = Number(formData.get('maxAge')) || 60 * 60 * 24 * 7 * 2
 	const promoName = formData.get('promoName')

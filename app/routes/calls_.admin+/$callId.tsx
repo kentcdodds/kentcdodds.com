@@ -1,7 +1,7 @@
 import {
+	type ActionFunctionArgs,
 	json,
 	redirect,
-	type ActionFunction,
 	type SerializeFrom,
 } from '@remix-run/node'
 import { Form, useActionData, useLoaderData } from '@remix-run/react'
@@ -44,7 +44,7 @@ export const handle: KCDHandle = {
 
 type ActionData = RecordingFormData
 
-export const action: ActionFunction = async ({ request, params }) => {
+export async function action({ request, params }: ActionFunctionArgs) {
 	await requireAdminUser(request)
 
 	if (request.method === 'DELETE') {

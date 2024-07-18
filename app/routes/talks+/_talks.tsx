@@ -1,7 +1,7 @@
 import {
 	json,
 	type HeadersFunction,
-	type LoaderFunction,
+	type LoaderFunctionArgs,
 	type MetaFunction,
 } from '@remix-run/node'
 import {
@@ -58,7 +58,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 
 export type LoaderData = Await<ReturnType<typeof getTalksAndTags>>
 
-export const loader: LoaderFunction = async ({ request }) => {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const talksAndTags: LoaderData = await getTalksAndTags({ request })
 
 	return json(talksAndTags, {

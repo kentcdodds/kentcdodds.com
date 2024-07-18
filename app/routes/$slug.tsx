@@ -1,6 +1,6 @@
 import {
+	type LoaderFunctionArgs,
 	json,
-	type DataFunctionArgs,
 	type HeadersFunction,
 } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
@@ -37,7 +37,7 @@ export const handle: KCDHandle = {
 	}),
 }
 
-export async function loader({ params, request }: DataFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
 	requireValidSlug(params.slug)
 	// because this is our catch-all thing, we'll do an early return for anything
 	// that has a other route setup. The response will be handled there.

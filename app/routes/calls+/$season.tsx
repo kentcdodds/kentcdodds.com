@@ -1,7 +1,7 @@
 import {
 	json,
 	type HeadersFunction,
-	type LoaderFunction,
+	type LoaderFunctionArgs,
 } from '@remix-run/node'
 import {
 	isRouteErrorResponse,
@@ -60,7 +60,7 @@ type LoaderData = {
 	season: CallKentSeason
 }
 
-export const loader: LoaderFunction = async ({ params, request }) => {
+export async function loader({ params, request }: LoaderFunctionArgs) {
 	const timings = {}
 	const episodes = await getEpisodes({ request, timings })
 

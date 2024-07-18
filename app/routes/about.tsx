@@ -2,7 +2,7 @@ import {
 	json,
 	type HeadersFunction,
 	type LinksFunction,
-	type LoaderFunction,
+	type LoaderFunctionArgs,
 	type MetaFunction,
 } from '@remix-run/node'
 import { useLoaderData, useSearchParams } from '@remix-run/react'
@@ -50,7 +50,7 @@ type LoaderData = {
 	talkRecommendations: Await<ReturnType<typeof getTalksAndTags>>['talks']
 }
 
-export const loader: LoaderFunction = async ({ request }) => {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const timings = {}
 	const { talks } = await getTalksAndTags({ request, timings })
 

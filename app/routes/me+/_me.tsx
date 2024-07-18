@@ -1,11 +1,11 @@
 import { Dialog } from '@reach/dialog'
 import {
+	type LoaderFunctionArgs,
 	json,
 	redirect,
-	type ActionFunction,
-	type DataFunctionArgs,
 	type HeadersFunction,
 	type MetaFunction,
+	type ActionFunctionArgs,
 } from '@remix-run/node'
 import { Form, useActionData, useLoaderData } from '@remix-run/react'
 import { clsx } from 'clsx'
@@ -78,7 +78,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	})
 }
 
-export async function loader({ request }: DataFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const timings = {}
 	const user = await requireUser(request, { timings })
 
@@ -137,7 +137,7 @@ type ActionData = {
 		firstName?: string | null
 	}
 }
-export const action: ActionFunction = async ({ request }) => {
+export async function action({ request }: ActionFunctionArgs) {
 	const user = await requireUser(request)
 	const form = new URLSearchParams(await request.text())
 	const actionId = form.get('actionId')

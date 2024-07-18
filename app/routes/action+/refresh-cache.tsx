@@ -1,5 +1,5 @@
 import path from 'path'
-import { json, redirect, type DataFunctionArgs } from '@remix-run/node'
+import { type ActionFunctionArgs, json, redirect } from '@remix-run/node'
 import { cache } from '#app/utils/cache.server.ts'
 import { ensurePrimary } from '#app/utils/cjs/litefs-js.server.ts'
 import { getPeople } from '#app/utils/credits.server.ts'
@@ -35,7 +35,7 @@ export function isRefreshShaInfo(value: any): value is RefreshShaInfo {
 
 export const commitShaKey = 'meta:last-refresh-commit-sha'
 
-export async function action({ request }: DataFunctionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
 	await ensurePrimary()
 	if (
 		request.headers.get('auth') !==

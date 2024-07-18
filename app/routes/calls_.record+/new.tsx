@@ -1,4 +1,4 @@
-import { json, redirect, type ActionFunction } from '@remix-run/node'
+import { type ActionFunctionArgs, json, redirect } from '@remix-run/node'
 import { Link, useActionData } from '@remix-run/react'
 import * as React from 'react'
 import { CallRecorder } from '#app/components/calls/recorder.tsx'
@@ -34,7 +34,7 @@ export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
 }
 
-export const action: ActionFunction = async ({ request }) => {
+export async function action({ request }: ActionFunctionArgs) {
 	const user = await requireUser(request)
 	const actionData: ActionData = { fields: {}, errors: {} }
 	const domainUrl = getDomainUrl(request)

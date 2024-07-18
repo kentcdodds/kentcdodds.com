@@ -1,6 +1,6 @@
 import {
+	type LoaderFunctionArgs,
 	json,
-	type DataFunctionArgs,
 	type HeadersFunction,
 } from '@remix-run/node'
 import { useLoaderData, useParams } from '@remix-run/react'
@@ -69,7 +69,7 @@ type CatchData = {
 	leadingTeam: Team | null
 }
 
-export async function loader({ request, params }: DataFunctionArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
 	requireValidSlug(params.slug)
 	const timings = {}
 

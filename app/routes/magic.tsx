@@ -1,4 +1,4 @@
-import { redirect, type DataFunctionArgs } from '@remix-run/node'
+import { type LoaderFunctionArgs, redirect } from '@remix-run/node'
 import { type KCDHandle } from '#app/types.ts'
 
 import { ensurePrimary } from '#app/utils/cjs/litefs-js.server.ts'
@@ -11,7 +11,7 @@ export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
 }
 
-export async function loader({ request }: DataFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
 	await ensurePrimary()
 	const loginInfoSession = await getLoginInfoSession(request)
 	try {

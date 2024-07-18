@@ -1,9 +1,9 @@
 import {
+	type ActionFunctionArgs,
 	json,
 	redirect,
-	type ActionFunction,
 	type HeadersFunction,
-	type LoaderFunction,
+	type LoaderFunctionArgs,
 } from '@remix-run/node'
 import { Form, useLoaderData } from '@remix-run/react'
 import * as React from 'react'
@@ -22,7 +22,7 @@ const actionTypes = {
 	DELETE_RECORDING: 'delete recording',
 }
 
-export const action: ActionFunction = async ({ params, request }) => {
+export async function action({ params, request }: ActionFunctionArgs) {
 	if (!params.callId) {
 		throw new Error('params.callId is not defined')
 	}
@@ -46,7 +46,7 @@ export const action: ActionFunction = async ({ params, request }) => {
 
 type LoaderData = { call: Call }
 
-export const loader: LoaderFunction = async ({ params, request }) => {
+export async function loader({ params, request }: LoaderFunctionArgs) {
 	if (!params.callId) {
 		throw new Error('params.callId is not defined')
 	}

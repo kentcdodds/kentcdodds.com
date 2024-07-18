@@ -2,7 +2,7 @@ import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@reach/tabs'
 import {
 	json,
 	type HeadersFunction,
-	type LoaderFunction,
+	type LoaderFunctionArgs,
 	type MetaFunction,
 } from '@remix-run/node'
 import {
@@ -70,7 +70,7 @@ export const getEpisodesBySeason = (
 	return seasons
 }
 
-export const loader: LoaderFunction = async ({ request }) => {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const timings = {}
 	const [blogRecommendations, episodes] = await Promise.all([
 		getBlogRecommendations({ request, timings }),

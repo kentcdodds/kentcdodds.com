@@ -1,7 +1,7 @@
 import {
 	json,
 	type HeadersFunction,
-	type LoaderFunction,
+	type LoaderFunctionArgs,
 	type MetaFunction,
 } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
@@ -45,7 +45,7 @@ import { getSocialMetas } from '#app/utils/seo.ts'
 
 export type LoaderData = { people: Await<ReturnType<typeof getPeople>> }
 
-export const loader: LoaderFunction = async ({ request }) => {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const people = await getPeople({ request })
 	const data: LoaderData = { people: shuffle(people) }
 

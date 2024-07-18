@@ -1,7 +1,7 @@
 import {
 	redirect,
 	type HeadersFunction,
-	type LoaderFunction,
+	type LoaderFunctionArgs,
 } from '@remix-run/node'
 import { type KCDHandle } from '#app/types.ts'
 import { getEpisodeFromParams, getEpisodePath } from '#app/utils/call-kent.ts'
@@ -13,7 +13,7 @@ export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
 }
 
-export const loader: LoaderFunction = async ({ params, request }) => {
+export async function loader({ params, request }: LoaderFunctionArgs) {
 	const timings = {}
 	const { season, episode: episodeParam } = params
 	if (!season || !episodeParam) {

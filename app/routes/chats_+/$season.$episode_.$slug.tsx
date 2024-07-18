@@ -2,7 +2,7 @@ import {
 	json,
 	redirect,
 	type HeadersFunction,
-	type LoaderFunction,
+	type LoaderFunctionArgs,
 	type MetaFunction,
 } from '@remix-run/node'
 import {
@@ -131,7 +131,7 @@ type LoaderData = {
 	episode: CWKEpisode
 }
 
-export const loader: LoaderFunction = async ({ request, params }) => {
+export async function loader({ request, params }: LoaderFunctionArgs) {
 	const timings = {}
 	const seasonNumber = Number(params.season)
 	const episodeNumber = Number(params.episode)

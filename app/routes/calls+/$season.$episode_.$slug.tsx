@@ -2,7 +2,7 @@ import {
 	json,
 	redirect,
 	type HeadersFunction,
-	type LoaderFunction,
+	type LoaderFunctionArgs,
 	type MetaFunction,
 } from '@remix-run/node'
 import { useParams } from '@remix-run/react'
@@ -89,7 +89,7 @@ export const meta: MetaFunction<
 	]
 }
 
-export const loader: LoaderFunction = async ({ params, request }) => {
+export async function loader({ params, request }: LoaderFunctionArgs) {
 	const timings = {}
 	const { season, episode: episodeParam, slug } = params
 	if (!season || !episodeParam || !slug) {

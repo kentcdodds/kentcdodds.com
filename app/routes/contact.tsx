@@ -1,8 +1,8 @@
 import {
+	type ActionFunctionArgs,
 	json,
 	type HeadersFunction,
 	type MetaFunction,
-	type DataFunctionArgs,
 } from '@remix-run/node'
 import { Link, useFetcher } from '@remix-run/react'
 import { Button } from '#app/components/button.tsx'
@@ -53,7 +53,7 @@ type ActionData = {
 	}
 }
 
-export const action = async ({ request }: DataFunctionArgs) => {
+export async function action({ request }: ActionFunctionArgs) {
 	const user = await requireUser(request)
 	return handleFormSubmission<ActionData>({
 		request,

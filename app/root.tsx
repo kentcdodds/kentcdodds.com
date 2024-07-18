@@ -1,6 +1,6 @@
 import {
 	json,
-	type DataFunctionArgs,
+	type LoaderFunctionArgs,
 	type HeadersFunction,
 	type LinksFunction,
 	type MetaFunction,
@@ -134,7 +134,7 @@ export type LoaderData = SerializeFrom<typeof loader>
 
 const WORKSHOP_PROMO_NAME = 'workshop-promo'
 
-export async function loader({ request }: DataFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const timings = {}
 	const session = await getSession(request)
 	const [

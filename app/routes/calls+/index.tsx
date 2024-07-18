@@ -1,8 +1,8 @@
-import { redirect, type LoaderFunction } from '@remix-run/node'
+import { redirect, type LoaderFunctionArgs } from '@remix-run/node'
 import { getEpisodes } from '#app/utils/transistor.server.ts'
 import { getEpisodesBySeason } from '../calls.tsx'
 
-export const loader: LoaderFunction = async ({ request }) => {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const episodes = await getEpisodes({ request })
 	const seasons = getEpisodesBySeason(episodes)
 	const seasonNumber = seasons[seasons.length - 1]?.seasonNumber ?? 1

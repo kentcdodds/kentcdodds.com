@@ -1,4 +1,4 @@
-import { json, type DataFunctionArgs } from '@remix-run/node'
+import { type ActionFunctionArgs, json } from '@remix-run/node'
 import {
 	getBlogReadRankings,
 	notifyOfOverallTeamLeaderChange,
@@ -10,7 +10,7 @@ import { invariantResponse } from '#app/utils/misc.tsx'
 import { addPostRead } from '#app/utils/prisma.server.ts'
 import { getSession } from '#app/utils/session.server.ts'
 
-export async function action({ request }: DataFunctionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
 	const formData = await request.formData()
 	const slug = formData.get('slug')
 	invariantResponse(typeof slug === 'string', 'Missing slug')

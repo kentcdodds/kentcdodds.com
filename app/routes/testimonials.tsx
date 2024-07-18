@@ -1,6 +1,6 @@
 import {
+	type LoaderFunctionArgs,
 	json,
-	type DataFunctionArgs,
 	type HeadersFunction,
 	type MetaFunction,
 } from '@remix-run/node'
@@ -49,7 +49,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export async function loader({ request }: DataFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const timings = {}
 
 	return json(

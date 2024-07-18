@@ -1,4 +1,8 @@
-import { json, type LoaderFunction, type MetaFunction } from '@remix-run/node'
+import {
+	type LoaderFunctionArgs,
+	json,
+	type MetaFunction,
+} from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
 import { ButtonLink } from '#app/components/button.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -36,7 +40,7 @@ type LoaderData = {
 	blogRecommendations: Await<ReturnType<typeof getBlogRecommendations>>
 }
 
-export const loader: LoaderFunction = async ({ request }) => {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const timings = {}
 	const blogRecommendations = await getBlogRecommendations({ request, timings })
 	const data: LoaderData = { blogRecommendations }

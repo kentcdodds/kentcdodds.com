@@ -1,8 +1,8 @@
 import {
+	type ActionFunctionArgs,
 	json,
 	redirect,
-	type ActionFunction,
-	type LoaderFunction,
+	type LoaderFunctionArgs,
 } from '@remix-run/node'
 import { Link, Outlet, useLoaderData } from '@remix-run/react'
 import { type Await, type KCDHandle } from '#app/types.ts'
@@ -15,7 +15,7 @@ export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
 }
 
-export const action: ActionFunction = async ({ request }) => {
+export async function action({ request }: ActionFunctionArgs) {
 	await requireAdminUser(request)
 
 	const requestText = await request.text()
@@ -58,7 +58,7 @@ type LoaderData = {
 	calls: Await<ReturnType<typeof getAllCalls>>
 }
 
-export const loader: LoaderFunction = async ({ request }) => {
+export async function loader({ request }: LoaderFunctionArgs) {
 	await requireAdminUser(request)
 
 	const data: LoaderData = { calls: await getAllCalls() }

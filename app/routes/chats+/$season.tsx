@@ -1,7 +1,7 @@
 import {
 	json,
 	type HeadersFunction,
-	type LoaderFunction,
+	type LoaderFunctionArgs,
 } from '@remix-run/node'
 import {
 	isRouteErrorResponse,
@@ -43,7 +43,7 @@ type LoaderData = {
 	season: CWKSeason
 }
 
-export const loader: LoaderFunction = async ({ params, request }) => {
+export async function loader({ params, request }: LoaderFunctionArgs) {
 	if (!params.season) {
 		throw new Error('params.season is not defined')
 	}

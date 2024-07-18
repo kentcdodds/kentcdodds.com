@@ -1,4 +1,4 @@
-import { json, redirect, type DataFunctionArgs } from '@remix-run/node'
+import { type LoaderFunctionArgs, json, redirect } from '@remix-run/node'
 import { Link, useLoaderData, useParams } from '@remix-run/react'
 import { Grid } from '#app/components/grid.tsx'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
@@ -41,7 +41,7 @@ function itemsToSegmentedItems(items: NormalizedItemGroup['items']) {
 	}, init)
 }
 
-export async function loader({ request, params }: DataFunctionArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
 	const query = params.query
 	if (typeof query !== 'string' || !query) return redirect('/')
 

@@ -1,8 +1,8 @@
-import { json, type DataFunctionArgs } from '@remix-run/node'
+import { type LoaderFunctionArgs, json } from '@remix-run/node'
 import { getDomainUrl } from '#app/utils/misc.tsx'
 import { searchKCD } from '#app/utils/search.server.ts'
 
-export async function loader({ request }: DataFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const query = new URL(request.url).searchParams.get('query')
 	const domainUrl = getDomainUrl(request)
 	if (typeof query !== 'string' || !query) {

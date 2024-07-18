@@ -2,7 +2,7 @@ import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@reach/tabs'
 import {
 	json,
 	type HeadersFunction,
-	type LoaderFunction,
+	type LoaderFunctionArgs,
 	type MetaFunction,
 } from '@remix-run/node'
 import {
@@ -54,7 +54,7 @@ type LoaderData = {
 	blogRecommendations: Await<ReturnType<typeof getBlogRecommendations>>
 }
 
-export const loader: LoaderFunction = async ({ request }) => {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const timings = {}
 	const blogRecommendations = await getBlogRecommendations({ request, timings })
 	const data: LoaderData = {

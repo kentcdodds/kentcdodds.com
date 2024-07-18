@@ -1,4 +1,4 @@
-import { type ActionFunction } from '@remix-run/node'
+import { type ActionFunctionArgs } from '@remix-run/node'
 import { Link } from '@remix-run/react'
 import { CloudinaryVideo } from '#app/components/cloudinary-video'
 import { Grid } from '#app/components/grid.tsx'
@@ -7,7 +7,7 @@ import { Spacer } from '#app/components/spacer.tsx'
 import { Paragraph } from '#app/components/typography.tsx'
 import { handleConvertKitFormSubmission } from '#app/convertkit/remix.server.ts'
 
-export const action: ActionFunction = async ({ request }) => {
+export async function action({ request }: ActionFunctionArgs) {
 	return handleConvertKitFormSubmission(request)
 }
 

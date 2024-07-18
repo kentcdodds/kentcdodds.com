@@ -1,7 +1,7 @@
 import {
 	json,
 	type HeadersFunction,
-	type LoaderFunction,
+	type LoaderFunctionArgs,
 } from '@remix-run/node'
 import { Link, Outlet, useLoaderData, useLocation } from '@remix-run/react'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -26,7 +26,7 @@ type LoaderData = {
 	calls: Await<ReturnType<typeof getCalls>>
 }
 
-export const loader: LoaderFunction = async ({ request }) => {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const user = await getUser(request)
 	const data: LoaderData = {
 		calls: user ? await getCalls(user.id) : [],

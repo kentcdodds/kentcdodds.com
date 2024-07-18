@@ -141,11 +141,11 @@ import fs from 'fs'
 import v8 from 'v8'
 import { Response } from '@remix-run/node'
 import { PassThrough } from 'stream'
-import type { DataFunctionArgs } from '@remix-run/node'
+import type { LoaderFunctionArgs } from '@remix-run/node'
 import { requireAdminUser } from '#app/utils/session.server'
 import { formatDate } from '#app/utils/misc'
 
-export async function loader({ request }: DataFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
 	await requireAdminUser(request)
 	const host =
 		request.headers.get('X-Forwarded-Host') ?? request.headers.get('host')

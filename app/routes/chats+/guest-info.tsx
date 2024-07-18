@@ -1,9 +1,4 @@
-import {
-	json,
-	redirect,
-	type ActionFunction,
-	type LoaderFunction,
-} from '@remix-run/node'
+import { type ActionFunctionArgs, json, redirect } from '@remix-run/node'
 import { Form, useLoaderData } from '@remix-run/react'
 import { type KCDHandle } from '#app/types.ts'
 import { useCapturedRouteError } from '#app/utils/misc.tsx'
@@ -14,12 +9,12 @@ export const handle: KCDHandle = {
 
 type LoaderData = {}
 
-export const loader: LoaderFunction = async () => {
+export async function loader() {
 	const data: LoaderData = {}
 	return json(data)
 }
 
-export const action: ActionFunction = async ({ request }) => {
+export async function action({ request }: ActionFunctionArgs) {
 	return redirect(new URL(request.url).pathname)
 }
 

@@ -1,7 +1,7 @@
 import {
 	json,
 	type HeadersFunction,
-	type LoaderFunction,
+	type LoaderFunctionArgs,
 } from '@remix-run/node'
 import { Outlet } from '@remix-run/react'
 import { type KCDHandle, type Workshop } from '#app/types.ts'
@@ -24,7 +24,7 @@ export type LoaderData = {
 	tags: Array<string>
 }
 
-export const loader: LoaderFunction = async ({ request }) => {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const timings = {}
 	const [workshops, workshopEvents] = await Promise.all([
 		getWorkshops({ request, timings }),

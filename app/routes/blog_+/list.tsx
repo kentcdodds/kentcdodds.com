@@ -1,4 +1,4 @@
-import { json, type LoaderFunction } from '@remix-run/node'
+import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
 import { Grid } from '#app/components/grid.tsx'
 import { RssIcon } from '#app/components/icons.tsx'
@@ -13,7 +13,7 @@ type LoaderData = {
 	posts: Array<{ title: string; descriptionHTML: string; slug: string }>
 }
 
-export const loader: LoaderFunction = async ({ request }) => {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const posts = await getBlogMdxListItems({ request }).then((allPosts) =>
 		Promise.all(
 			allPosts
