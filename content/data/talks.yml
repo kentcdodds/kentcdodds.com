@@ -55,15 +55,21 @@
     happening and how we can take advantage of this amazing developer experience
     to deliver even better user experiences.
 
-- title: THAT Conf Wisconsin Keynote
+- title: How to be an Epic Web Dev
   deliveries:
     - event:
-        '[THAT Conf Wisconsin](https://feature.thatconference.com/wi/2024/)'
+        '[THAT Conf
+        Wisconsin](https://feature.thatconference.com/activities/dM2bzsGT3z8NVO8L1KFD)'
       date: 2024-07-29
+      recording: 'https://www.youtube.com/live/C_E4xghf-8Y?t=1287s&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf'
   tags:
     - keynote
+    - personal
   description: >-
-    This talk will be announced soon!
+    In this Keynote, Kent C. Dodds will share key takeaways from his life
+    experience that enabled him to have an extraordinary industry impact and
+    success. You do not want to miss these key insights. Prepare to take notes
+    and find ways to apply his life lessons to your own life.
 
 - title: React Summit US Keynote
   deliveries:
