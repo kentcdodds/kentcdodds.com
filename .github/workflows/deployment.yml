@@ -161,7 +161,7 @@ jobs:
           field: 'app'
 
       - name: 🎈 Setup Fly
-        uses: superfly/flyctl-actions/setup-flyctl@v1.4
+        uses: superfly/flyctl-actions/setup-flyctl@v1.5
 
       - name: 🤖 update robots
         if: ${{ github.ref == 'refs/heads/dev' }}
