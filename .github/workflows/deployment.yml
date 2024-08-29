@@ -172,8 +172,8 @@ jobs:
       - name: 🚀 Deploy Staging
         if: ${{ github.ref == 'refs/heads/dev' }}
         run:
-          flyctl deploy --remote-only --build-arg COMMIT_SHA=${{ github.sha }}
-          --app ${{ steps.app_name.outputs.value }}-staging
+          flyctl deploy --depot --remote-only --build-arg COMMIT_SHA=${{
+          github.sha }} --app ${{ steps.app_name.outputs.value }}-staging
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
