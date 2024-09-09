@@ -12,8 +12,16 @@ export function init() {
 		dsn: ENV.SENTRY_DSN,
 		tunnel: '/resources/lookout',
 		environment: ENV.MODE,
+		ignoreErrors: [
+			// Add any other errors you want to ignore
+			'Request to /lookout failed',
+		],
 		beforeSend(event, hint) {
 			if (isBrowserExtensionError(hint.originalException)) {
+				return null
+			}
+			// Ignore events related to the /lookout endpoint
+			if (event.request?.url?.includes('/lookout')) {
 				return null
 			}
 			return event

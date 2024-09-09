@@ -41,5 +41,16 @@ export function init() {
 
 			return event
 		},
+		ignoreErrors: [
+			// Add any other errors you want to ignore
+			'Request to /lookout failed',
+		],
+		beforeSend(event) {
+			// Ignore events related to the /lookout endpoint
+			if (event.request?.url?.includes('/lookout')) {
+				return null
+			}
+			return event
+		},
 	})
 }
