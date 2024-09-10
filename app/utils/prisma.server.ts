@@ -98,12 +98,16 @@ async function validateMagicLink(link: string, sessionMagicLink?: string) {
 		validateSessionMagicLink = payload.validateSessionMagicLink
 	} catch (error: unknown) {
 		console.error(error)
-		throw new Error('Sign in link invalid. Please request a new one.')
+		throw new Error(
+			'Sign in link invalid (link payload is invalid). Please request a new one.',
+		)
 	}
 
 	if (typeof emailAddress !== 'string') {
 		console.error(`Email is not a string. Maybe wasn't set in the session?`)
-		throw new Error('Sign in link invalid. Please request a new one.')
+		throw new Error(
+			'Sign in link invalid (email is not a string). Please request a new one.',
+		)
 	}
 
 	if (validateSessionMagicLink) {
@@ -111,7 +115,9 @@ async function validateMagicLink(link: string, sessionMagicLink?: string) {
 			console.error(
 				'Must validate session magic link but no session link provided',
 			)
-			throw new Error('Sign in link invalid. Please request a new one.')
+			throw new Error(
+				'Sign in link invalid (no link validation cookie found). Please request a new link.',
+			)
 		}
 		if (linkCode !== sessionLinkCode) {
 			console.error(`Magic link does not match sessionMagicLink`)
@@ -123,7 +129,9 @@ async function validateMagicLink(link: string, sessionMagicLink?: string) {
 
 	if (typeof linkCreationDateString !== 'string') {
 		console.error('Link expiration is not a string.')
-		throw new Error('Sign in link invalid. Please request a new one.')
+		throw new Error(
+			'Sign in link invalid (link expiration is not a string). Please request a new one.',
+		)
 	}
 
 	const linkCreationDate = new Date(linkCreationDateString)
