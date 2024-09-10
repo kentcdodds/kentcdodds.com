@@ -116,7 +116,7 @@ async function validateMagicLink(link: string, sessionMagicLink?: string) {
 				'Must validate session magic link but no session link provided',
 			)
 			throw new Error(
-				'Sign in link invalid (no link validation cookie found). Please request a new link.',
+				'Sign in link invalid. No link validation cookie was found (does your browser block third-party cookies or did you open the link in a different browser?). Please request a new link.',
 			)
 		}
 		if (linkCode !== sessionLinkCode) {
