@@ -173,6 +173,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 						title: workshop.title,
 						slug: workshop.slug,
 						promoName,
+						location: event.location,
 						dismissTimeSeconds: Math.min(
 							Math.max(
 								// one quarter of the time until the promoEndTime (in seconds)
@@ -241,6 +242,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 				title: e.title,
 				slug: workshop.slug,
 				promoName,
+				location: e.location,
 				dismissTimeSeconds: Math.min(
 					Math.max(
 						// one quarter of the time until the promoEndTime (in seconds)
@@ -475,10 +477,15 @@ function App() {
 							<p className="flex items-center gap-1">
 								<LaptopIcon />
 								<span>
-									Join Kent for an interactive{' '}
+									Join Kent for a{' '}
 									<Link to="/workshops" className="underline">
 										live workshop
 									</Link>
+									{e.location
+										? e.location === 'Remote'
+											? null
+											: ` in ${e.location}`
+										: null}
 								</span>
 							</p>
 							<Link

@@ -15,6 +15,7 @@ events:
     quantity: 50
     url: https://www.reactindia.io/workshops
     date: 2024-10-17
+    location: 'Goa, India 🇮🇳'
 convertKitTag: '896447'
 problemStatements:
   part1:

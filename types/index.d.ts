@@ -65,6 +65,7 @@ type ManualWorkshopEvent = {
 	url: string
 	quantity?: number
 	remaining?: number
+	location?: string
 	date: string
 }
 
