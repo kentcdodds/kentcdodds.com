@@ -35,6 +35,11 @@ function RegistrationPanel({
 				<h5 className="text-2xl font-medium text-black dark:text-white">
 					{workshopEvent.title}
 				</h5>
+				{workshopEvent.location ? (
+					<p className="text-secondary inline-block">
+						Location: {workshopEvent.location}
+					</p>
+				) : null}
 				<div className="flex flex-wrap gap-2">
 					<p className="text-secondary inline-block">{workshopEvent.date}</p>
 					<span>{hasDiscounts ? ' | ' : null}</span>

@@ -69,7 +69,9 @@ function WorkshopCard({
 							title="Open for registration"
 						/>
 						{workshopEvents.length === 1
-							? workshopEvents[0]?.date
+							? [workshopEvents[0]?.date, workshopEvents[0]?.location]
+									.filter(Boolean)
+									.join(' | ')
 							: 'Multiple events scheduled'}
 					</>
 				) : (
