@@ -16,7 +16,7 @@ events:
     url: https://www.reactindia.io/workshops
     date: 2024-10-17
     location: 'Goa, India 🇮🇳'
-convertKitTag: '896447'
+convertKitTag: '896448'
 problemStatements:
   part1:
     Managing complex component state with basic hooks like useState can quickly
