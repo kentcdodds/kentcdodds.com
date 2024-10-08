@@ -38,6 +38,7 @@
   deliveries:
     - event: '[React Universe](https://www.reactuniverseconf.com)'
       date: 2024-09-05
+      recording: https://www.youtube.com/watch?v=E8LLty9rTWw&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
   tags:
     - keynote
     - react
