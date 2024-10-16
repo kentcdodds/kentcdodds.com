@@ -13,6 +13,7 @@ categories:
 events:
   - title: 'React India 2024'
     quantity: 50
+    remaining: 0
     url: https://www.reactindia.io/workshops
     date: 2024-10-17
     location: 'Goa, India 🇮🇳'
