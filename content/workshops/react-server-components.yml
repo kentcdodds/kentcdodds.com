@@ -12,6 +12,7 @@ categories:
 events:
   - title: 'React Summit US 2024'
     quantity: 50
+    sold: 45
     url: https://reactsummit.us/react-workshops
     date: 2024-11-20
     location: 'New York, USA 🗽'
