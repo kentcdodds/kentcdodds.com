@@ -66,12 +66,6 @@ const miscHandlers = [
 	http.get('https://verifier.meetchopra.com/verify/:email', () => {
 		return HttpResponse.json({ status: true })
 	}),
-	http.post('https://metrics.metronome.sh/telemetry/v5/metrics', () => {
-		return HttpResponse.json({ success: true })
-	}),
-	http.post('https://metrics.metronome.sh/telemetry/v5/spans', () => {
-		return HttpResponse.json({ success: true })
-	}),
 ]
 
 const server = setupServer(

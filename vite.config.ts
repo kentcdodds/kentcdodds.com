@@ -2,7 +2,6 @@ import 'dotenv/config'
 import { vitePlugin as remix } from '@remix-run/dev'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 import { glob } from 'glob'
-import { metronome } from 'metronome-sh/vite'
 import { flatRoutes } from 'remix-flat-routes'
 import { defineConfig } from 'vite'
 import envOnly from 'vite-env-only'
@@ -36,7 +35,6 @@ export default defineConfig(async () => {
 				},
 			}),
 			tsconfigPaths(),
-			metronome(),
 			process.env.SENTRY_UPLOAD
 				? sentryVitePlugin({
 						disable: MODE !== 'production',

@@ -74,12 +74,11 @@ app.use(serverTiming())
 
 app.get('/img/social', oldImgSocial)
 
-if (process.env.DISABLE_METRONOME) {
-	app.post('/__metronome', (req, res) => {
-		res.status(503)
-		return res.send('Metronome is disabled')
-	})
-}
+// TODO: remove this once all clients are updated
+app.post('/__metronome', (req, res) => {
+	res.status(503)
+	return res.send('Metronome is deprecated and no longer in use.')
+})
 
 app.use(async (req, res, next) => {
 	const { currentInstance, primaryInstance } = await getInstanceInfo()

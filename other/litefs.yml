@@ -39,7 +39,6 @@ proxy:
     - '/*.ico'
     - '/*.txt'
     - '/*.webmanifest'
-    - '/__metronome'
 
 tracing:
   # Toggles tracing if 'path' is also set. Defaults to true.

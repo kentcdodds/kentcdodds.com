@@ -119,7 +119,6 @@
     "metascraper-description": "^5.45.7",
     "metascraper-image": "^5.45.7",
     "metascraper-title": "^5.45.7",
-    "metronome-sh": "^8.5.2",
     "morgan": "^1.10.0",
     "node-fetch": "^3.3.2",
     "on-finished": "^2.4.1",

@@ -32,7 +32,6 @@ const schema = z.object({
 	MAGIC_LINK_SECRET: z.string(),
 	MAILGUN_DOMAIN: z.string(),
 	MAILGUN_SENDING_KEY: z.string(),
-	METRONOME_API_KEY: z.string(),
 	REFRESH_CACHE_SECRET: z.string(),
 	SENTRY_AUTH_TOKEN: z.string(),
 	SENTRY_DSN: z.string(),
