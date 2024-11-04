@@ -26,9 +26,11 @@ function RegistrationPanel({
 					<div className="block h-3 w-3 flex-none rounded-full bg-green-600" />
 					{workshopEvent.quantity ? (
 						<H6 as="p" className="pl-4">
-							{workshopEvent.remaining
-								? `${workshopEvent.remaining} of ${workshopEvent.quantity} spots left`
-								: `Only ${workshopEvent.quantity} spots total`}
+							{workshopEvent.remaining === undefined
+								? `Only ${workshopEvent.quantity} spots total`
+								: workshopEvent.remaining === 0
+									? 'Sold out'
+									: `${workshopEvent.remaining} of ${workshopEvent.quantity} spots left`}
 						</H6>
 					) : null}
 				</div>
