@@ -7,19 +7,46 @@
   description: >-
     To be announced.
 
-- title: React Paris 2025 Talk
+- title: Principles-Based Programming
   deliveries:
+    - event: '[Devoxx Greece](https://devoxx.gr/)'
+      date: 2025-04-11
     - event: '[React Paris](https://react.paris/)'
       date: 2025-03-20
+    - event: '[CityJS London](https://london.cityjsconf.org/)'
+      date: 2025-04-23
+  tags:
+    - principles
+    - life
+    - career
+  description: >-
+    Programming is often thought of as a purely technical endeavor—writing code
+    to solve specific problems. But what if there’s a deeper, more meaningful
+    way to approach it? Principles-Based Programming explores the foundational
+    philosophies that guide our decisions as developers. Using The Epic
+    Programming Principles as a starting point, this talk dives into what
+    principles are, why they matter, and how embracing them can transform the
+    way you think about and write code.
+
+
+    Attendees will leave with an understanding of how principles provide a
+    compass for navigating the complexities of software development. They’ll be
+    inspired to not only consider the principles shared but also craft their own
+    to guide their personal or team development processes.
+
+- title: RenderATL 2025 Talk
+  deliveries:
+    - event: '[Render ATL](https://www.renderatl.com/)'
+      date: 2025-06-11
   tags:
     - react
   description: >-
     To be announced.
 
-- title: RenderATL 2025 Talk
+- title: Epic Web Conf 2025 Talk
   deliveries:
-    - event: '[Render ATL](https://www.renderatl.com/)'
-      date: 2024-06-11
+    - event: '[Epic Web Conf](https://epicweb.dev/conf/2025)'
+      date: 2025-03-25
   tags:
     - react
   description: >-
@@ -123,7 +150,8 @@
 
 - title: What Makes the Web Epic
   deliveries:
-    - event: '[Epic Web Conf](https://epicweb.dev/conf)'
+    - event: '[Epic Web Conf](https://epicweb.dev/conf/2024)'
+      recording: https://www.epicweb.dev/talks/what-makes-the-web-epic
       date: 2024-04-11
   tags:
     - keynote
