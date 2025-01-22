@@ -139,7 +139,7 @@ function AboutIndex() {
 						className="underlined"
 						target="_blank"
 						rel="noreferrer noopener"
-						href={`https://twitter.com/intent/tweet?${new URLSearchParams({
+						href={`https://x.com/intent/tweet?${new URLSearchParams({
 							url: permalinkAutoplay,
 							text: `I just watched @kentcdodds' life flash before my eyes.`,
 						})}`}

@@ -231,7 +231,7 @@ function CreditsIndex() {
 			/>
 			<Grid className="prose prose-light gap-y-20 dark:prose-dark lg:gap-y-32">
 				<Paragraph className="col-span-4">
-					<a href="https://twitter.com/ryanflorence">Ryan Florence</a>
+					<a href="https://x.com/ryanflorence">Ryan Florence</a>
 					{` and other friends at `}
 					<a href="https://remix.run">Remix.run</a>
 					{`
@@ -242,7 +242,7 @@ function CreditsIndex() {
 				</Paragraph>
 				<Paragraph className="col-span-4">
 					The syntax highlighting theme in blog posts is inspired by{' '}
-					<a href="https://twitter.com/sarah_edo">Sarah Drasner&apos;s</a>{' '}
+					<a href="https://x.com/sarah_edo">Sarah Drasner&apos;s</a>{' '}
 					<a href="https://github.com/sdras/night-owl-vscode-theme">
 						Night Owl
 					</a>

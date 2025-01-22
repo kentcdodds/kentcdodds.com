@@ -314,7 +314,7 @@ pre {
 	background: #30c85e;
 }
 
-/* The twitter embed HTML is custom-generated in our utils/twitter.server.ts */
+/* The twitter embed HTML is custom-generated in our utils/x.server.ts */
 .prose .tweet-embed {
 	display: flex;
 	flex-direction: column;

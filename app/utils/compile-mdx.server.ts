@@ -13,7 +13,7 @@ import remarkSlug from 'remark-slug'
 import type * as U from 'unified'
 import { visit } from 'unist-util-visit'
 import { type GitHubFile } from '#app/types.ts'
-import * as twitter from './twitter.server.ts'
+import * as x from './x.server.ts'
 
 function handleEmbedderError({ url }: { url: string }) {
 	return `<p>Error embedding <a href="${url}">${url}</a></p>.`
@@ -151,8 +151,8 @@ function optimizeCloudinaryImages() {
 }
 
 const twitterTransformer = {
-	shouldTransform: twitter.isTwitterUrl,
-	getHTML: twitter.getTweetEmbedHTML,
+	shouldTransform: x.isXUrl,
+	getHTML: x.getTweetEmbedHTML,
 }
 
 const eggheadTransformer = {

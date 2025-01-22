@@ -58,7 +58,7 @@ for (const seasonListItem of seasonListItems) {
 					const website = faker.internet.url()
 					const links = [
 						faker.datatype.boolean()
-							? `Twitter: [@${username}](https://twitter.com/${username})`
+							? `𝕏: [@${username}](https://x.com/${username})`
 							: null,
 						faker.datatype.boolean()
 							? `Website: [${new URL(website).origin}](${website})`
@@ -120,7 +120,7 @@ ${guest.links.length ? `* ${guest.links.join('\n* ')}` : ''}
 ### Host: Kent C. Dodds
 
 * Website: [kentcdodds.com](https://kentcdodds.com/)
-* Twitter: [@kentcdodds](https://twitter.com/kentcdodds)
+* 𝕏: [@kentcdodds](https://x.com/kentcdodds)
 * GitHub: [@kentcdodds](https://github.com/kentcdodds)
 * Youtube: [Kent C. Dodds](https://www.youtube.com/channel/UCz-BYvuntVRt_VpfR6FKXJw)
         `.trim(),

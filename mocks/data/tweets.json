@@ -21,7 +21,7 @@
 			"media": [
 				{
 					"display_url": "pic.twitter.com/ukZELKLf1S",
-					"expanded_url": "https://twitter.com/_chenglou/status/1420669402932932611/video/1",
+					"expanded_url": "https://x.com/_chenglou/status/1420669402932932611/video/1",
 					"indices": [206, 229],
 					"url": "https://t.co/ukZELKLf1S"
 				}
@@ -47,7 +47,7 @@
 			{
 				"additional_media_info": {},
 				"display_url": "pic.twitter.com/ukZELKLf1S",
-				"expanded_url": "https://twitter.com/_chenglou/status/1420669402932932611/video/1",
+				"expanded_url": "https://x.com/_chenglou/status/1420669402932932611/video/1",
 				"ext_media_availability": { "status": "Available" },
 				"ext_media_stats": { "view_count": 1277 },
 				"indices": [206, 229],
@@ -149,7 +149,7 @@
 			"media": [
 				{
 					"display_url": "pic.twitter.com/nyggsvsjHz",
-					"expanded_url": "https://twitter.com/kentcdodds/status/1418928039069511682/photo/1",
+					"expanded_url": "https://x.com/kentcdodds/status/1418928039069511682/photo/1",
 					"indices": [207, 230],
 					"url": "https://t.co/nyggsvsjHz"
 				}
@@ -174,7 +174,7 @@
 		"mediaDetails": [
 			{
 				"display_url": "pic.twitter.com/nyggsvsjHz",
-				"expanded_url": "https://twitter.com/kentcdodds/status/1418928039069511682/photo/1",
+				"expanded_url": "https://x.com/kentcdodds/status/1418928039069511682/photo/1",
 				"ext_alt_text": "confetti_ball New club looking for members tada\n\nKCD Learning Club\n\nClub Curriculum: https://epicreact.dev/\n\nClub Captain: @Saphal 🚀\n\nLearning Goal Summary: To learn React the epic way!\n\nRequirements:\n      - Basic Javascript\n      - Willingness to learn\n\nClub Schedule:\n      Wednesday at 18:00 +5:30 (IST)\n      - Week 0 (before the first meeting): Welcome to Epic React (watch the intro and setup videos)\n      - Week 1: React Fundamentals\n      - Week 2: React Hooks\n      - Week 3: Build an Epic React App Part 1:\n        - Render a React App\n        - Add Styles\n        - Make HTTP Requests\n      - Week 4: Advanced React Hooks\n      - Week 5: Build an Epic React App Part 2:\n        - Authentication\n        - Routing\n      - Week 6: Advanced React Patterns\n      - Week 7: Build an Epic React App Part 3:\n        - Cache Management\n      - Week 8: Build an Epic React App Part 4:\n        - Context\n        - Compound Components\n      - Week 9: React Performance\n      - Week 10: Build an Ep",
 				"ext_media_availability": { "status": "Available" },
 				"indices": [207, 230],
@@ -211,7 +211,7 @@
 					{ "x": 0, "y": 0, "w": 945, "h": 1890 },
 					{ "x": 0, "y": 0, "w": 945, "h": 2048 }
 				],
-				"expandedUrl": "https://twitter.com/kentcdodds/status/1418928039069511682/photo/1",
+				"expandedUrl": "https://x.com/kentcdodds/status/1418928039069511682/photo/1",
 				"url": "https://pbs.twimg.com/media/E7ELh_NWQAkEmgA.jpg",
 				"width": 945,
 				"height": 2048
@@ -241,7 +241,7 @@
 			"media": [
 				{
 					"display_url": "pic.twitter.com/2W86iwjs4L",
-					"expanded_url": "https://twitter.com/kentcdodds/status/1410709329951354880/photo/1",
+					"expanded_url": "https://x.com/kentcdodds/status/1410709329951354880/photo/1",
 					"indices": [112, 135],
 					"url": "https://t.co/2W86iwjs4L"
 				}
@@ -266,7 +266,7 @@
 		"mediaDetails": [
 			{
 				"display_url": "pic.twitter.com/2W86iwjs4L",
-				"expanded_url": "https://twitter.com/kentcdodds/status/1410709329951354880/photo/1",
+				"expanded_url": "https://x.com/kentcdodds/status/1410709329951354880/photo/1",
 				"ext_alt_text": "HTML code showing a pre, code, and span tags with data attributes signifying whether a line should be added or removed",
 				"ext_media_availability": { "status": "Available" },
 				"indices": [112, 135],
@@ -293,7 +293,7 @@
 			},
 			{
 				"display_url": "pic.twitter.com/2W86iwjs4L",
-				"expanded_url": "https://twitter.com/kentcdodds/status/1410709329951354880/photo/1",
+				"expanded_url": "https://x.com/kentcdodds/status/1410709329951354880/photo/1",
 				"ext_alt_text": "A snippet of code showing lines added and removed",
 				"ext_media_availability": { "status": "Available" },
 				"indices": [112, 135],
@@ -330,7 +330,7 @@
 					{ "x": 1274, "y": 0, "w": 139, "h": 278 },
 					{ "x": 0, "y": 0, "w": 1866, "h": 278 }
 				],
-				"expandedUrl": "https://twitter.com/kentcdodds/status/1410709329951354880/photo/1",
+				"expandedUrl": "https://x.com/kentcdodds/status/1410709329951354880/photo/1",
 				"url": "https://pbs.twimg.com/media/E5PYYqyVUAELnKh.jpg",
 				"width": 1866,
 				"height": 278
@@ -345,7 +345,7 @@
 					{ "x": 103, "y": 0, "w": 247, "h": 494 },
 					{ "x": 0, "y": 0, "w": 824, "h": 494 }
 				],
-				"expandedUrl": "https://twitter.com/kentcdodds/status/1410709329951354880/photo/1",
+				"expandedUrl": "https://x.com/kentcdodds/status/1410709329951354880/photo/1",
 				"url": "https://pbs.twimg.com/media/E5PYdAWVcAE4bbl.png",
 				"width": 824,
 				"height": 494
@@ -408,7 +408,7 @@
 			"media": [
 				{
 					"display_url": "pic.twitter.com/lAbUQ1QGtk",
-					"expanded_url": "https://twitter.com/philosophequeer/status/1404408769551994880/photo/1",
+					"expanded_url": "https://x.com/philosophequeer/status/1404408769551994880/photo/1",
 					"indices": [23, 46],
 					"url": "https://t.co/lAbUQ1QGtk"
 				}
@@ -433,7 +433,7 @@
 		"mediaDetails": [
 			{
 				"display_url": "pic.twitter.com/lAbUQ1QGtk",
-				"expanded_url": "https://twitter.com/philosophequeer/status/1404408769551994880/photo/1",
+				"expanded_url": "https://x.com/philosophequeer/status/1404408769551994880/photo/1",
 				"ext_alt_text": "There are four images that are screenshots of an exchange between two Star Wars characters, Anakin and Padmé. In the first, Anakin is saying, “I’ve added subtitles to make my content accessible.” In the second, Padmé is saying “But not automatically generated ones, right?” In the third, Anakin is not speaking, but has a facial expression that suggests he has added automated subtitles. In the fourth, Padmé is saying “But not or tomato call he gem her eight it ones, write?”",
 				"ext_media_availability": { "status": "Available" },
 				"indices": [23, 46],
@@ -470,7 +470,7 @@
 					{ "x": 19, "y": 0, "w": 374, "h": 748 },
 					{ "x": 0, "y": 0, "w": 750, "h": 748 }
 				],
-				"expandedUrl": "https://twitter.com/philosophequeer/status/1404408769551994880/photo/1",
+				"expandedUrl": "https://x.com/philosophequeer/status/1404408769551994880/photo/1",
 				"url": "https://pbs.twimg.com/media/E312VHdXEAAGO86.jpg",
 				"width": 750,
 				"height": 748
@@ -496,7 +496,7 @@
 			"media": [
 				{
 					"display_url": "pic.twitter.com/okUhem8zC7",
-					"expanded_url": "https://twitter.com/kentcdodds/status/1420726342996271105/photo/1",
+					"expanded_url": "https://x.com/kentcdodds/status/1420726342996271105/photo/1",
 					"indices": [122, 145],
 					"url": "https://t.co/okUhem8zC7"
 				}
@@ -521,7 +521,7 @@
 		"mediaDetails": [
 			{
 				"display_url": "pic.twitter.com/okUhem8zC7",
-				"expanded_url": "https://twitter.com/kentcdodds/status/1420726342996271105/photo/1",
+				"expanded_url": "https://x.com/kentcdodds/status/1420726342996271105/photo/1",
 				"ext_alt_text": "Kent on a onewheel through the trees",
 				"ext_media_availability": { "status": "Available" },
 				"indices": [122, 145],
@@ -548,7 +548,7 @@
 			},
 			{
 				"display_url": "pic.twitter.com/okUhem8zC7",
-				"expanded_url": "https://twitter.com/kentcdodds/status/1420726342996271105/photo/1",
+				"expanded_url": "https://x.com/kentcdodds/status/1420726342996271105/photo/1",
 				"ext_alt_text": "Kent speeding past on a onewheel",
 				"ext_media_availability": { "status": "Available" },
 				"indices": [122, 145],
@@ -575,7 +575,7 @@
 			},
 			{
 				"display_url": "pic.twitter.com/okUhem8zC7",
-				"expanded_url": "https://twitter.com/kentcdodds/status/1420726342996271105/photo/1",
+				"expanded_url": "https://x.com/kentcdodds/status/1420726342996271105/photo/1",
 				"ext_alt_text": "Blurred image of Kent on a onewheel",
 				"ext_media_availability": { "status": "Available" },
 				"indices": [122, 145],
@@ -612,7 +612,7 @@
 					{ "x": 1877, "y": 0, "w": 1366, "h": 2731 },
 					{ "x": 0, "y": 0, "w": 4096, "h": 2731 }
 				],
-				"expandedUrl": "https://twitter.com/kentcdodds/status/1420726342996271105/photo/1",
+				"expandedUrl": "https://x.com/kentcdodds/status/1420726342996271105/photo/1",
 				"url": "https://pbs.twimg.com/media/E7du8LgVUAI_dK-.jpg",
 				"width": 4096,
 				"height": 2731
@@ -627,7 +627,7 @@
 					{ "x": 1923, "y": 0, "w": 1266, "h": 2531 },
 					{ "x": 0, "y": 0, "w": 4096, "h": 2531 }
 				],
-				"expandedUrl": "https://twitter.com/kentcdodds/status/1420726342996271105/photo/1",
+				"expandedUrl": "https://x.com/kentcdodds/status/1420726342996271105/photo/1",
 				"url": "https://pbs.twimg.com/media/E7du8LeUYAMbo6P.jpg",
 				"width": 4096,
 				"height": 2531
@@ -642,7 +642,7 @@
 					{ "x": 2081, "y": 0, "w": 1366, "h": 2731 },
 					{ "x": 0, "y": 0, "w": 4096, "h": 2731 }
 				],
-				"expandedUrl": "https://twitter.com/kentcdodds/status/1420726342996271105/photo/1",
+				"expandedUrl": "https://x.com/kentcdodds/status/1420726342996271105/photo/1",
 				"url": "https://pbs.twimg.com/media/E7du8LjUYAAD_CM.jpg",
 				"width": 4096,
 				"height": 2731
@@ -668,7 +668,7 @@
 			"media": [
 				{
 					"display_url": "pic.twitter.com/zBfFwCVjjx",
-					"expanded_url": "https://twitter.com/kentcdodds/status/1420720925868052486/photo/1",
+					"expanded_url": "https://x.com/kentcdodds/status/1420720925868052486/photo/1",
 					"indices": [43, 66],
 					"url": "https://t.co/zBfFwCVjjx"
 				}
@@ -693,7 +693,7 @@
 		"mediaDetails": [
 			{
 				"display_url": "pic.twitter.com/zBfFwCVjjx",
-				"expanded_url": "https://twitter.com/kentcdodds/status/1420720925868052486/photo/1",
+				"expanded_url": "https://x.com/kentcdodds/status/1420720925868052486/photo/1",
 				"ext_alt_text": "Kent dancing with the words \"Never gonna give you up\"",
 				"ext_media_availability": { "status": "Available" },
 				"indices": [43, 66],
@@ -761,7 +761,7 @@
 				"media": [
 					{
 						"display_url": "pic.twitter.com/kH1jsTb0Ck",
-						"expanded_url": "https://twitter.com/wongmjane/status/1420683483660185601/photo/1",
+						"expanded_url": "https://x.com/wongmjane/status/1420683483660185601/photo/1",
 						"indices": [157, 180],
 						"url": "https://t.co/kH1jsTb0Ck"
 					}
@@ -786,7 +786,7 @@
 			"mediaDetails": [
 				{
 					"display_url": "pic.twitter.com/kH1jsTb0Ck",
-					"expanded_url": "https://twitter.com/wongmjane/status/1420683483660185601/photo/1",
+					"expanded_url": "https://x.com/wongmjane/status/1420683483660185601/photo/1",
 					"ext_media_availability": { "status": "Available" },
 					"indices": [157, 180],
 					"media_url_https": "https://pbs.twimg.com/media/E7dIGLaVcAQAMht.jpg",
@@ -821,7 +821,7 @@
 						{ "x": 0, "y": 0, "w": 469, "h": 937 },
 						{ "x": 0, "y": 0, "w": 1125, "h": 937 }
 					],
-					"expandedUrl": "https://twitter.com/wongmjane/status/1420683483660185601/photo/1",
+					"expandedUrl": "https://x.com/wongmjane/status/1420683483660185601/photo/1",
 					"url": "https://pbs.twimg.com/media/E7dIGLaVcAQAMht.jpg",
 					"width": 1125,
 					"height": 937

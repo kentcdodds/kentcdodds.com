@@ -14,7 +14,7 @@ bannerCredit: Those are supposed to be_tears...
 ---
 
 On [October 29th, 2015](http://babeljs.io/blog/2015/10/29/6.0.0),
-[Sebastian McKenzie](https://twitter.com/sebmck),
+[Sebastian McKenzie](https://x.com/sebmck),
 [James Kyle](https://medium.com/@thejameskyle), and the rest of the Babel team
 dropped a huge major release for frontend developers everywhere: Babel 6.0.0.
 It's totally awesome. No longer just a transpiler, it's now a super pluggable
@@ -39,7 +39,7 @@ Upgrading for me would not have been that difficult if I had understood the ES6
 Modules specification correctly. Babel 5 allowed misuse of _export_ and _import_
 statements and Babel 6 fixed this problem. At first I thought this may be a bug.
 I asked about it on [Stack Overflow](http://stackoverflow.com/q/33505992/971592)
-and [Logan Smyth](https://twitter.com/loganfsmyth) informed me that I
+and [Logan Smyth](https://x.com/loganfsmyth) informed me that I
 fundamentally misunderstood ES6 modules and that Babel 5 had facilitated that
 misunderstanding (writing a transpiler is hard).
 
@@ -47,10 +47,10 @@ misunderstanding (writing a transpiler is hard).
 
 At first, I didn't quite understand what Logan meant, but when I had the time to
 dedicate to upgrading my app,
-[this happened](https://twitter.com/kentcdodds/status/671817302430515200)
+[this happened](https://x.com/kentcdodds/status/671817302430515200)
 
-[Tyler McGinnis](https://twitter.com/tylermcginnis),
-[Josh Manders](https://twitter.com/joshmanders), and I went back and forth quite
+[Tyler McGinnis](https://x.com/tylermcginnis),
+[Josh Manders](https://x.com/joshmanders), and I went back and forth quite
 a bit on this thread. It's probably hard to follow, but this is when I realized
 that the problem wasn't exporting the object as a default, but how I expected
 that I could import the object.
@@ -73,16 +73,16 @@ However this is technically incorrect according to the spec which is why Babel 6
 in my application at work.
 
 I finally figured out how things really work when I reviewed
-[Nicolás Bevacqua's](https://twitter.com/nzgb)
+[Nicolás Bevacqua's](https://x.com/nzgb)
 [blogpost](https://ponyfoo.com/articles/es6)
 
-https://twitter.com/kentcdodds/status/671831027787038721
+https://x.com/kentcdodds/status/671831027787038721
 
 And I discovered why what I had been doing wouldn't work when I read
-[Axel Rauschmayer](https://twitter.com/rauschma)'s
+[Axel Rauschmayer](https://x.com/rauschma)'s
 [blogpost](http://www.2ality.com/2014/09/es6-modules-final.html)
 
-https://twitter.com/kentcdodds/status/671830544129265664
+https://x.com/kentcdodds/status/671830544129265664
 
 Here's the basic idea: ES6 modules are supposed to be statically analyzable
 (runtime cannot change the exports/imports) so it can't be dynamic. In the

@@ -20,14 +20,14 @@ was on the rooftops of twitter telling people to give AVA a shot. I created
 about how to set up and use AVA, and a full blown workshop on how to test React
 with AVA:
 
-https://twitter.com/kentcdodds/status/699636857928179712
+https://x.com/kentcdodds/status/699636857928179712
 
 I actually had used Jest long before, but had a less than awesome experience:
 
-https://twitter.com/kentcdodds/status/687756147105730560
+https://x.com/kentcdodds/status/687756147105730560
 
 So,
-[I convinced my team at PayPal](https://twitter.com/kentcdodds/status/720359271469162496)
+[I convinced my team at PayPal](https://x.com/kentcdodds/status/720359271469162496)
 and we started using AVA for all our new React tests. I was getting ready to
 start migrating our existing UI tests and our server tests when I started to
 notice something about AVA that really put a wrench in the whole thing.
@@ -36,9 +36,9 @@ It turns out that AVA was created to be fast for lots of async tests. Not for
 large test suites of async and sync tests. So for the use cases in my
 application, I found this to be true:
 
-https://twitter.com/housecor/status/736530288952541185
+https://x.com/housecor/status/736530288952541185
 
-https://twitter.com/kentcdodds/status/749019087167041537
+https://x.com/kentcdodds/status/749019087167041537
 
 <figcaption>
 	On a thread where I'm talking about making a AVA ➡️ Mocha codemod
@@ -74,16 +74,16 @@ So, at this point, we had all our React tests with AVA, previous UI tests
 (mostly backbone) with Mocha, and server tests with Mocha. The natural choice
 was to move all our stuff to Mocha. But then I got involved in this thread:
 
-https://twitter.com/dan_abramov/status/760255553272705025
+https://x.com/dan_abramov/status/760255553272705025
 
 Which led to
 [this comment](https://github.com/facebook/create-react-app/pull/250#issuecomment-236980910)
-from [Trevor D. Miller](https://twitter.com/trevordmiller) which I
+from [Trevor D. Miller](https://x.com/trevordmiller) which I
 [responded to](https://github.com/facebook/create-react-app/pull/250#issuecomment-236985503)
 (in which I mention that I'd write this very blog post about me migrating from
 AVA to Mocha... I'd already started migrating my React Testing workshop to Mocha
 [here](https://github.com/kentcdodds/react-mocha-workshop). Hah). Then
-[Christoph Pojer](https://twitter.com/cpojer) responded with
+[Christoph Pojer](https://x.com/cpojer) responded with
 [this great comment](https://github.com/facebook/create-react-app/pull/250#issuecomment-237098619).
 That pretty much won my curiosity back and I decided to give it another go on a
 project.
@@ -91,23 +91,23 @@ project.
 Unfortunately, I didn't have time to look into it right away, even though I
 wanted to:
 
-https://twitter.com/kentcdodds/status/760668819140390913
+https://x.com/kentcdodds/status/760668819140390913
 
 <figcaption>😅</figcaption>
 
 But a few weeks later I gave it a go:
 
-https://twitter.com/kentcdodds/status/771455054947549184
+https://x.com/kentcdodds/status/771455054947549184
 
 I was impressed at how fast it was and even more how easy it was to set up.
 Especially since I'd tried Jest before and it was soooo slow. And I was really
-encouraged by this tweet from [Mike Nikles](https://twitter.com/mikenikles):
+encouraged by this tweet from [Mike Nikles](https://x.com/mikenikles):
 
-https://twitter.com/mikenikles/status/772234132436885504
+https://x.com/mikenikles/status/772234132436885504
 
 I was slowly discovering the truth of this statement:
 
-https://twitter.com/cpojer/status/795729029223616512
+https://x.com/cpojer/status/795729029223616512
 
 So I eventually
 [swapped AVA for Jest](https://github.com/kentcdodds/generator-kcd-oss/commit/23f8875358db204d16e040a14ee44aaa79681691)
@@ -118,7 +118,7 @@ As is the case for me, when I get excited about new tech, I really like to
 share! So I created [a bunch of videos](http://kcd.im/egghead-jest) for
 egghead.io about it, had a
 [tech chat](https://github.com/kentcdodds/ama/issues/125) with
-[Christoph Pojer](https://twitter.com/cpojer)
+[Christoph Pojer](https://x.com/cpojer)
 [on YouTube](https://youtu.be/i31VtyJSM-I?list=PLV5CVI1eNcJi8sor_aQ2AzOeQ3On3suOr&index=20)
 about Jest, and rewrote my React Testing Workshop **again** in
 [Jest](https://github.com/kentcdodds/react-jest-workshop).
@@ -127,10 +127,10 @@ about Jest, and rewrote my React Testing Workshop **again** in
 
 #### Client Side
 
-My coworker [Jamund Ferguson](https://twitter.com/xjamundx) did most of the work
+My coworker [Jamund Ferguson](https://x.com/xjamundx) did most of the work
 for migrating our React tests from AVA. We were really helped by
 [this codemod](https://github.com/skovhus/jest-codemods) by
-[Kenneth Skovhus](https://twitter.com/kenneth_skovhus). This saved us a ton of
+[Kenneth Skovhus](https://x.com/kenneth_skovhus). This saved us a ton of
 time manually updating our tests to work with Jest.
 
 There were still some places we had to work through and we definitely had to
@@ -180,15 +180,15 @@ stacktrace of any kind.
 I should also mention that my experience was not at all typical. Most people are
 able to migrate to Jest fairly quickly and seamlessly.
 
-https://twitter.com/iamsapegin/status/798096415075528704
+https://x.com/iamsapegin/status/798096415075528704
 
 ### Was it worth it?
 
 For the client-side stuff, I can say for sure absolutely positively YES:
 
-https://twitter.com/kentcdodds/status/785571364484755456
+https://x.com/kentcdodds/status/785571364484755456
 
-https://twitter.com/kentcdodds/status/786354753122947072
+https://x.com/kentcdodds/status/786354753122947072
 
 As for the server side. Well, my PR for the server changes was just merged
 yesterday, so I can only say I _think_ that it was worth it. Jest provides a ton
@@ -246,4 +246,4 @@ a solid look. Seriously. Oh, and don't forget to
 
 ![See you on twitter!](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033154/kentcdodds.com/content/blog/migrating-to-jest/1.png)
 
-See you on [twitter](https://twitter.com/kentcdodds)!
+See you on [twitter](https://x.com/kentcdodds)!

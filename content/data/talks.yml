@@ -179,11 +179,11 @@
     - vite
     - react router
   description: >-
-    I once [posted](https://twitter.com/kentcdodds/status/1678762503420153857):
-    "React Router + Vite is a framework". In this talk I'll explain what I mean.
-    We'll talk about a couple different ways you can define "framework" and
-    where the "React Router + Vite" combo fits in complete with an example you
-    can poke around at.
+    I once [posted](https://x.com/kentcdodds/status/1678762503420153857): "React
+    Router + Vite is a framework". In this talk I'll explain what I mean. We'll
+    talk about a couple different ways you can define "framework" and where the
+    "React Router + Vite" combo fits in complete with an example you can poke
+    around at.
 
 - title: Making Felix Felicis
   resources:
@@ -728,11 +728,11 @@
       recording: https://www.youtube.com/watch?v=sVMv3H7x8ew&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
   description: >-
     This should be a fun one, as Kent C. Dodds
-    ([@kentcdodds](https://twitter.com/kentcdodds)) is joining us to talk us
-    about Testing Library, and to give us a live demo. You should bring fun
-    questions, like, how did you come up with the name Testing Library? Maybe
-    bring some real questions too, as Testing Library is a pretty powerful
-    library you're probably using in production.
+    ([@kentcdodds](https://x.com/kentcdodds)) is joining us to talk us about
+    Testing Library, and to give us a live demo. You should bring fun questions,
+    like, how did you come up with the name Testing Library? Maybe bring some
+    real questions too, as Testing Library is a pretty powerful library you're
+    probably using in production.
 
 - title: Managing State Management
   resources:
@@ -905,9 +905,8 @@
     foundational fundamentals. To strip away all abstraction until what we're
     left with is the bare bones. [The better you understand an abstraction, the
     more effective you will be at using
-    it.](https://twitter.com/kentcdodds/status/1074724545003581440) In this
-    talk, we'll get more effective at using React Hooks, React Suspense, and
-    JSX.
+    it.](https://x.com/kentcdodds/status/1074724545003581440) In this talk,
+    we'll get more effective at using React Hooks, React Suspense, and JSX.
 
 - title: LIVE! Learn React Hooks with Kent C. Dodds
   resources:
@@ -1544,7 +1543,7 @@
 - title: Learning JavaScript and Staying Marketable
   resources:
     - '[slides](http://slides.com/kentcdodds/learning-javascript)'
-    - '[tweet](https://twitter.com/ngnebraska/status/669319695015673856)'
+    - '[tweet](https://x.com/ngnebraska/status/669319695015673856)'
   tags:
     - soft skills
   deliveries:

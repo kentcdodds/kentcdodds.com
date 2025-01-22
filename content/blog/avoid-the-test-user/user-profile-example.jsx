@@ -69,7 +69,7 @@ function useUserDispatch() {
 }
 
 // got this idea from Dan and I love it:
-// https://twitter.com/dan_abramov/status/1125773153584676864
+// https://x.com/dan_abramov/status/1125773153584676864
 async function updateUser(dispatch, user, updates) {
 	const updatedUser = await userClient.updateUser(user, updates)
 	dispatch({ type: 'update', updatedUser })

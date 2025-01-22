@@ -12,28 +12,28 @@ translations:
     link: https://medium.com/@enbonnet/juegos-de-herramientas-toolkits-8f3df94404e9
     author:
       name: Ender Bonnet
-      link: https://twitter.com/enBonnet
+      link: https://x.com/enBonnet
 bannerCloudinaryId: unsplash/photo-1478359900967-91ec0c6edc60
 bannerCredit: Photo by [elizabeth lies](https://unsplash.com/photos/LUP8Tnwy7Ro)
 ---
 
 About a month ago, I roped myself into a conversation about the merits of "zero
 config" tools when jumped into a twitter thread with
-[this](https://twitter.com/kentcdodds/status/941330985836208128):
+[this](https://x.com/kentcdodds/status/941330985836208128):
 
-https://twitter.com/kentcdodds/status/941330985836208128
+https://x.com/kentcdodds/status/941330985836208128
 
 There were some dissenting opinions about this. Because twitter is a pretty poor
 medium to build a case for your opinion, I've decided to write out my thoughts
 and justifications for "zero config" tools. Instead of "zero config" though,
 we're going to refer to these as "toolkits" 🛠 📦 as coined in
-[Dan Abramov](https://twitter.com/dan_abramov)'s
+[Dan Abramov](https://x.com/dan_abramov)'s
 [talk](https://youtu.be/G39lKaONAlA?list=PLBnKlKpPeagkaVtpmZNK6XiWw8yNZmCxL).
 
 ### So what's a toolkit? 🛠 📦
 
 Toolkits are "a set of tools in any form that allows you to create applications
-with no build configuration." (via [Ronald Rey](https://twitter.com/reyronald)
+with no build configuration." (via [Ronald Rey](https://x.com/reyronald)
 in [awesome-toolkits](https://github.com/reyronald/awesome-toolkits)). For a few
 examples:
 [react-scripts](https://github.com/facebook/create-react-app/tree/master/packages/react-scripts)
@@ -102,7 +102,7 @@ big improvements by way of features/performance/etc.
 
 That said, I don't think anyone's excited about actually updating their codebase
 to handle these changes. This is another reason toolkits are so great. Check out
-[this git diff](https://twitter.com/kentcdodds/status/906238861067657221):
+[this git diff](https://x.com/kentcdodds/status/906238861067657221):
 
 ![git diff](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032630/kentcdodds.com/content/blog/concerning-toolkits/0.jpg)
 
@@ -154,10 +154,10 @@ things that are important to PayPal.
 
 #### But... use cases!?
 
-In response to my tweet, [Sean T. Larkin](https://twitter.com/TheLarkInn)
-[said](https://twitter.com/TheLarkInn/status/941375505730715648):
+In response to my tweet, [Sean T. Larkin](https://x.com/TheLarkInn)
+[said](https://x.com/TheLarkInn/status/941375505730715648):
 
-https://twitter.com/TheLarkInn/status/941375505730715648
+https://x.com/TheLarkInn/status/941375505730715648
 
 This is a pretty common and legitimate rebuttal for toolkits. However, most
 toolkits are at least one of two things:
@@ -174,9 +174,9 @@ This covers the building, testing, and linting of your react application
 projects. It's fantastic and used in a
 [TON of projects on GitHub (180k search results)](https://github.com/search?l=JSON&q=react-scripts&type=Code&utf8=%E2%9C%93)
 and you'll find some real world applications mentioned from
-[my tweet question](https://twitter.com/kentcdodds/status/950924626317656064)
+[my tweet question](https://x.com/kentcdodds/status/950924626317656064)
 and
-[Dan's tweet question](https://twitter.com/dan_abramov/status/952248179478745089).
+[Dan's tweet question](https://x.com/dan_abramov/status/952248179478745089).
 
 While it's impressive that real-world production applications are built using
 `react-scripts`, that's actually not the core goal of the project. "The purpose
@@ -195,10 +195,10 @@ With most other tools however, you have another option...
 #### Still configurable
 
 Most other "zero config" tools (toolkits) are **actually still configurable.**
-As [I tweeted](https://twitter.com/kentcdodds/status/942177631981649921) a while
+As [I tweeted](https://x.com/kentcdodds/status/942177631981649921) a while
 back:
 
-https://twitter.com/kentcdodds/status/942177631981649921
+https://x.com/kentcdodds/status/942177631981649921
 
 This allows toolkits to cover even more use cases. For example, folks who don't
 want to eject from `react-scripts` (because they like all the aforementioned
@@ -210,7 +210,7 @@ use to tweak the default behavior. In fact, even
 [parcel](https://github.com/parcel-bundler/parcel) I assume) will soon enter the
 world of toolkits but still configurable tools:
 
-https://twitter.com/TheLarkInn/status/949050181261012992
+https://x.com/TheLarkInn/status/949050181261012992
 
 With `kcd-scripts` and `paypal-scripts`, I've made most of the underlying
 generated config "smart" in that it determines what configuration to use based
@@ -244,11 +244,11 @@ Oh, and if you'd rather use another testing framework, then you can do that too.
 Just don't use the `paypal-scripts test` script. Use whatever parts of the tool
 you want.
 
-One argument that [Rich Harris](https://twitter.com/Rich_Harris) made against
+One argument that [Rich Harris](https://x.com/Rich_Harris) made against
 the `paypal-scripts`approach is
-[this](https://twitter.com/Rich_Harris/status/941355856674934784):
+[this](https://x.com/Rich_Harris/status/941355856674934784):
 
-https://twitter.com/Rich_Harris/status/941355856674934784
+https://x.com/Rich_Harris/status/941355856674934784
 
 I can understand that for sure and it is a shame that you lose discoverability.
 But I think that's a fine trade-off for all the aforementioned benefits of not
@@ -261,11 +261,11 @@ Also, everyone of you reading this right now already understand how
 And just to drive the point home a little further... Most devs using these kinds
 of tools don't know or care how they work or are configured. They just want to
 ship stuff. I really appreciated the perspective
-[TJ Holowaychuk](https://twitter.com/tjholowaychuk)
-[gave](https://twitter.com/tjholowaychuk/status/941361591861223424) in the
+[TJ Holowaychuk](https://x.com/tjholowaychuk)
+[gave](https://x.com/tjholowaychuk/status/941361591861223424) in the
 thread:
 
-https://twitter.com/tjholowaychuk/status/941361591861223424
+https://x.com/tjholowaychuk/status/941361591861223424
 
 So while it's nice to think that everyone should just understand how the tools
 work so they can fix their own problems, the fact is that most of the time the
@@ -279,7 +279,7 @@ rules).
 
 I realize this post is a little bit more ranty than normal. I hope that it's
 helpful though. I'd like to finish with a quote from
-[Dan Abramov](https://twitter.com/dan_abramov)'s talk
+[Dan Abramov](https://x.com/dan_abramov)'s talk
 ["The Melting Pot of JavaScript" at Zeit Day](https://youtu.be/G39lKaONAlA?list=PLBnKlKpPeagkaVtpmZNK6XiWw8yNZmCxL):
 
 > I've heard from several people that they've consolidated their companies tool

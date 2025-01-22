@@ -248,7 +248,7 @@ function ArticleFooter({
 						)}
 						target="_blank"
 						rel="noreferrer noopener"
-						href={`https://twitter.com/intent/tweet?${new URLSearchParams({
+						href={`https://x.com/intent/tweet?${new URLSearchParams({
 							url: permalink,
 							text: tweetMessage,
 						})}`}
@@ -265,7 +265,7 @@ function ArticleFooter({
 						)}
 						target="_blank"
 						rel="noreferrer noopener"
-						href={`https://twitter.com/search?${new URLSearchParams({
+						href={`https://x.com/search?${new URLSearchParams({
 							q: permalink,
 						})}`}
 					>

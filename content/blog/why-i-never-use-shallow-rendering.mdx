@@ -167,13 +167,13 @@ that are returned by your custom components (like our `Fade` component).
 When I determined early on to never use shallow rendering, it was because I knew
 that there were better ways to get at the things that shallow rendering makes
 easy without making the trade-offs shallow rendering forces you to make.
-[I recently asked folks](https://twitter.com/kentcdodds/status/1016084196421296133)
+[I recently asked folks](https://x.com/kentcdodds/status/1016084196421296133)
 to tell me why they use shallow rendering. Here are a few of the things that
 shallow rendering makes easier:
 
-1.  [... for calling methods in React components](https://twitter.com/Raed667/status/1016095856481701888)
-2.  [... it seems like a waste to render all of the children of each component under test, for every test, hundreds/thousands of times...](https://twitter.com/MattTrifilo/status/1016101577667403778)
-3.  [For actual unit testing. Testing composed components introduces new dependencies that might trigger an error while the unit itself might still work as intended.](https://twitter.com/janhoogeveen/status/1016207627859251200)
+1.  [... for calling methods in React components](https://x.com/Raed667/status/1016095856481701888)
+2.  [... it seems like a waste to render all of the children of each component under test, for every test, hundreds/thousands of times...](https://x.com/MattTrifilo/status/1016101577667403778)
+3.  [For actual unit testing. Testing composed components introduces new dependencies that might trigger an error while the unit itself might still work as intended.](https://x.com/janhoogeveen/status/1016207627859251200)
 
 There were more responses, but these sum up the main arguments for using shallow
 rendering. Let's address each of these:
@@ -257,7 +257,7 @@ mocking to mock out the `<CSSTransition />` component.
 I should add that I generally am against mocking even third party components
 100% of the time. The argument for mocking third party components I often hear
 is
-[Testing composed components introduces new dependencies that might trigger an error while the unit itself might still work as intended.](https://twitter.com/janhoogeveen/status/1016207627859251200).
+[Testing composed components introduces new dependencies that might trigger an error while the unit itself might still work as intended.](https://x.com/janhoogeveen/status/1016207627859251200).
 But isn't the point of testing to be confident the application works? Who cares
 if your unit works if the app is broken? I _definitely_ want to know if the
 third party component I'm using breaks my use case. I mean, I'm not going to
@@ -278,7 +278,7 @@ mocks.
 I'm a huge believer of the guiding principle of
 [React Testing Library](https://github.com/testing-library/react-testing-library):
 
-> [The more your tests resemble the way your software is used, the more confidence they can give you.](https://twitter.com/kentcdodds/status/977018512689455106)
+> [The more your tests resemble the way your software is used, the more confidence they can give you.](https://x.com/kentcdodds/status/977018512689455106)
 >  — Kent C. Dodds 👋
 
 That's why I wrote the library in the first place. As a side-note to this

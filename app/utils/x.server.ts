@@ -120,13 +120,13 @@ const arrowSvg = `<svg width="24" height="24" fill="none" viewBox="0 0 24 24">
 
 async function buildTweetHTML(tweet: Tweet, expandQuotedTweet: boolean) {
 	const author = tweet.user
-	const tweetURL = `https://twitter.com/${author.screen_name}/status/${tweet.id_str}`
+	const postURL = `https://x.com/${author.screen_name}/status/${tweet.id_str}`
 
 	// _normal is only 48x48 which looks bad on high-res displays
 	// _bigger is 73x73 which looks better...
 	const authorImg = author.profile_image_url_https.replace('_normal', '_bigger')
 	const authorHTML = `
-    <a class="tweet-author" href="https://twitter.com/${author.screen_name}" target="_blank" rel="noreferrer noopener">
+    <a class="tweet-author" href="https://x.com/${author.screen_name}" target="_blank" rel="noreferrer noopener">
       <img src="${authorImg}" loading="lazy" alt="${author.name} avatar" />
       <div>
         <span class="tweet-author-name">${author.name}</span>
@@ -141,7 +141,8 @@ async function buildTweetHTML(tweet: Tweet, expandQuotedTweet: boolean) {
 					if (!shortLink) return
 					const longLink = await unshorten(shortLink).catch(() => shortLink)
 					const longUrl = new URL(longLink)
-					const isTwitterLink = longUrl.host === 'twitter.com'
+					const isXLink =
+						longUrl.host === 'twitter.com' || longUrl.host === 'x.com'
 					let replacement = `<a href="${longLink}" target="_blank" rel="noreferrer noopener">${
 						longUrl.hostname + longUrl.pathname
 					}</a>`
@@ -153,14 +154,14 @@ async function buildTweetHTML(tweet: Tweet, expandQuotedTweet: boolean) {
 						// we'll handle the referenced tweet later
 						replacement = ''
 					}
-					const isTwitterMediaLink =
-						isTwitterLink && /\/(video|photo)\//.test(longUrl.pathname)
-					if (isTwitterMediaLink) {
+					const isXMediaLink =
+						isXLink && /\/(video|photo)\//.test(longUrl.pathname)
+					if (isXMediaLink) {
 						// we just embed the media link as an href around the media
 						replacement = ''
 					}
 
-					if (!isTwitterLink) {
+					if (!isXLink) {
 						// we don't want to get metadata for tweets.
 						metadata = await getMetadata(longLink).catch(() => null)
 					}
@@ -172,7 +173,7 @@ async function buildTweetHTML(tweet: Tweet, expandQuotedTweet: boolean) {
 					}
 					return {
 						shortLink,
-						isTwitterLink,
+						isXLink,
 						longLink,
 						longUrl,
 						replacement,
@@ -206,16 +207,16 @@ async function buildTweetHTML(tweet: Tweet, expandQuotedTweet: boolean) {
 		}
 	}
 
-	// twitterify @mentions
+	// xify @mentions
 	blockquote = blockquote.replace(
 		/@(\w+)/g,
-		`<a href="https://twitter.com/$1" target="_blank" rel="noreferrer noopener">$&</a>`,
+		`<a href="https://x.com/$1" target="_blank" rel="noreferrer noopener">$&</a>`,
 	)
 
 	const tweetHTML = `<blockquote>${blockquote.trim()}</blockquote>`
 
 	const mediaHTML = tweet.mediaDetails?.length
-		? buildMediaList(tweet.mediaDetails, tweetURL)
+		? buildMediaList(tweet.mediaDetails, postURL)
 		: ''
 
 	const lastMetadataLink = links.reverse().find((l) => l.metadata)
@@ -243,14 +244,14 @@ async function buildTweetHTML(tweet: Tweet, expandQuotedTweet: boolean) {
 		}
 	}
 
-	const createdAtHTML = `<div class="tweet-time"><a href="${tweetURL}" target="_blank" rel="noreferrer noopener">${formatDate(
+	const createdAtHTML = `<div class="tweet-time"><a href="${postURL}" target="_blank" rel="noreferrer noopener">${formatDate(
 		tweet.created_at,
 		'h:mm a',
 	)} (UTC) · ${formatDate(new Date(tweet.created_at))}</a></div>`
 
-	const likeIntent = `https://twitter.com/intent/like?tweet_id=${tweet.id_str}`
-	const retweetIntent = `https://twitter.com/intent/retweet?tweet_id=${tweet.id_str}`
-	const replyIntent = tweetURL
+	const likeIntent = `https://x.com/intent/like?tweet_id=${tweet.id_str}`
+	const retweetIntent = `https://x.com/intent/retweet?tweet_id=${tweet.id_str}`
+	const replyIntent = postURL
 
 	const { favorite_count, conversation_count } = tweet
 	const likeCount = formatNumber(favorite_count)
@@ -260,7 +261,7 @@ async function buildTweetHTML(tweet: Tweet, expandQuotedTweet: boolean) {
       <a href="${replyIntent}" class="tweet-reply" target="_blank" rel="noreferrer noopener">${repliesSVG}<span>${replyCount}</span></a>
       <a href="${retweetIntent}" class="tweet-retweet" target="_blank" rel="noreferrer noopener">${retweetSVG}</a>
       <a href="${likeIntent}" class="tweet-like" target="_blank" rel="noreferrer noopener">${likesSVG}<span>${likeCount}</span></a>
-      <a href="${tweetURL}" class="tweet-link" target="_blank" rel="noreferrer noopener">${arrowSvg}<span></span></a>
+      <a href="${postURL}" class="tweet-link" target="_blank" rel="noreferrer noopener">${arrowSvg}<span></span></a>
     </div>
   `
 
@@ -318,9 +319,9 @@ async function getTweetEmbedHTMLImpl(urlString: string) {
 	}
 }
 
-function isTwitterUrl(urlString: string) {
+function isXUrl(urlString: string) {
 	const url = new URL(urlString)
-	return /\.?twitter\.com/.test(url.hostname)
+	return /\.?twitter\.com/.test(url.hostname) || /\.?x\.com/.test(url.hostname)
 }
 
-export { getTweetEmbedHTML, isTwitterUrl }
+export { getTweetEmbedHTML, isXUrl }

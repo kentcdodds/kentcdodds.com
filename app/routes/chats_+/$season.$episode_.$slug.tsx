@@ -485,7 +485,7 @@ export default function PodcastDetail() {
 						className="flex gap-2"
 						target="_blank"
 						rel="noreferrer noopener"
-						href={`https://twitter.com/intent/tweet?${new URLSearchParams({
+						href={`https://x.com/intent/post?${new URLSearchParams({
 							url: permalink,
 							text: `I just listened to "${episode.title}" with ${listify(
 								episode.guests

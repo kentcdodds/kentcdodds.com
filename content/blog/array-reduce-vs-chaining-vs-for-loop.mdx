@@ -55,7 +55,7 @@ to get rid of whitespace, remove empty lines, then map those to commands to move
 those files, and then run those commands.
 
 I shared the script
-[on twitter](https://twitter.com/kentcdodds/status/1215785900413599744) and had
+[on twitter](https://x.com/kentcdodds/status/1215785900413599744) and had
 several people critiquing the script and suggest that I could have used `reduce`
 instead. I'm pretty sure both of them were suggesting it as a performance
 optimization because you can reduce (no pun intended) the number of times
@@ -68,7 +68,7 @@ once and then you're done, performance should basically be the last thing to
 worry about (unless what you're doing really is super expensive). In my case, it
 ran plenty fast. The slow part wasn't iterating over the array of elements
 multiple times, but
-[running the commands](https://twitter.com/kentcdodds/status/1215810104261369856).
+[running the commands](https://x.com/kentcdodds/status/1215810104261369856).
 
 A few other people suggested that I use Node APIs or even open source modules
 from npm to help run these scripts because it would "probably be faster and work
@@ -97,7 +97,7 @@ const commands = lines.reduce((accumulator, line) => {
 ```
 
 Now, I'm not one of those people who think that
-[`reduce` is the spawn of the evil one](https://twitter.com/jaffathecake/status/1213077702300852224)
+[`reduce` is the spawn of the evil one](https://x.com/jaffathecake/status/1213077702300852224)
 (checkout that thread for interesting examples of reduce), but I do feel like I
 can recognize when code is actually simpler/more complex and I'd say that the
 reduce example here is definitely more complex than the chaining example.
@@ -155,4 +155,4 @@ much of coding is subjective so 🤷‍♂️
 I'd be interested to hear what you think. Reply to the tweet below and let me
 know. And feel free to retweet if that's something you're into.
 
-https://twitter.com/kentcdodds/status/1217088865212649477
+https://x.com/kentcdodds/status/1217088865212649477
