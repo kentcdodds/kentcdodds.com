@@ -12,9 +12,7 @@ type VerifierResult =
 	  }
 
 export async function verifyEmailAddress(emailAddress: string) {
-	const verifierUrl = new URL(
-		`https://verifier.meetchopra.com/verify/${emailAddress}`,
-	)
+	const verifierUrl = new URL(`https://verifyright.co/verify/${emailAddress}`)
 	verifierUrl.searchParams.append('token', VERIFIER_API_KEY)
 	const controller = new AbortController()
 	const timeoutId = setTimeout(() => controller.abort(), 2000)
