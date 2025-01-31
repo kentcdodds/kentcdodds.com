@@ -39,6 +39,6 @@ export async function verifyEmailAddress(emailAddress: string) {
 			status: true,
 			email: emailAddress,
 			domain: emailAddress.split('@')[1],
-		}
+		} as const
 	}
 }
