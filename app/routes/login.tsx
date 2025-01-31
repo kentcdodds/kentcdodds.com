@@ -134,8 +134,6 @@ export async function action({ request }: ActionFunctionArgs) {
 async function isEmailVerified(
 	email: string,
 ): Promise<{ verified: true } | { verified: false; message: string }> {
-	const verifierResult = await verifyEmailAddress(email)
-	if (verifierResult.status) return { verified: true }
 	const userExists = Boolean(
 		await prisma.user.findUnique({
 			select: { id: true },
@@ -145,6 +143,9 @@ async function isEmailVerified(
 	if (userExists) return { verified: true }
 	const convertKitSubscriber = await getConvertKitSubscriber(email)
 	if (convertKitSubscriber) return { verified: true }
+
+	const verifierResult = await verifyEmailAddress(email)
+	if (verifierResult.status) return { verified: true }
 
 	return { verified: false, message: verifierResult.error.message }
 }
