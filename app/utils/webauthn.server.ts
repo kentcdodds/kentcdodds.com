@@ -1,91 +1,107 @@
-import {
-	generateRegistrationOptions,
-	verifyRegistrationResponse,
-	generateAuthenticationOptions,
-	verifyAuthenticationResponse,
-} from '@simplewebauthn/server'
+import { createCookie } from '@remix-run/node'
+import { type RegistrationResponseJSON } from '@simplewebauthn/server'
+import { decodeAttestationObject } from '@simplewebauthn/server/helpers'
+import { z } from 'zod'
 
-const rpName = 'kentcdodds.com'
-const rpID = 'kentcdodds.com' // Must match your domain
-const origin = `https://${rpID}` // Or http://localhost:3000 for development
+export const passkeyCookie = createCookie('webauthn-challenge', {
+	path: '/',
+	sameSite: 'lax',
+	httpOnly: true,
+	maxAge: 60 * 60 * 2,
+	secure: process.env.NODE_ENV === 'production',
+	secrets: [process.env.SESSION_SECRET],
+})
 
-export async function generateRegistrationCredentials(email: string) {
-	const options = await generateRegistrationOptions({
-		rpName,
-		rpID,
-		userName: email,
-		userDisplayName: email,
-		attestationType: 'none',
-		authenticatorSelection: {
-			residentKey: 'preferred',
-			userVerification: 'preferred',
-		},
-	})
+export const PasskeyCookieSchema = z.object({
+	challenge: z.string(),
+	userId: z.string(),
+})
 
-	console.dir(
-		{ generateRegistrationCredentialsOptions: options },
-		{ depth: 6, colors: true },
+export const RegistrationResponseSchema = z.object({
+	id: z.string(),
+	rawId: z.string(),
+	response: z.object({
+		clientDataJSON: z.string(),
+		attestationObject: z.string(),
+		transports: z
+			.array(
+				z.enum([
+					'ble',
+					'cable',
+					'hybrid',
+					'internal',
+					'nfc',
+					'smart-card',
+					'usb',
+				]),
+			)
+			.optional(),
+	}),
+	authenticatorAttachment: z.enum(['cross-platform', 'platform']).optional(),
+	clientExtensionResults: z.object({
+		credProps: z
+			.object({
+				rk: z.boolean(),
+			})
+			.optional(),
+	}),
+	type: z.literal('public-key'),
+}) satisfies z.ZodType<RegistrationResponseJSON>
+
+function parseAuthData(authData: Uint8Array) {
+	let pointer = 0
+
+	// rpIdHash: SHA-256 hash of the RP ID
+	const rpIdHash = authData.slice(pointer, pointer + 32)
+	pointer += 32
+
+	// flags: Bit flags indicating various attributes
+	const flags = authData[pointer]
+	pointer += 1
+
+	// signCount: Signature counter, 32-bit unsigned big-endian integer
+	const signCount = new DataView(authData.buffer).getUint32(pointer, false)
+	pointer += 4
+
+	// aaguid: Authenticator Attestation GUID, identifies the type of the authenticator
+	const aaguid = authData.slice(pointer, pointer + 16)
+	pointer += 16
+
+	// credentialIdLength: Length of the credential ID, 16-bit unsigned big-endian integer
+	const credentialIdLength = new DataView(authData.buffer).getUint16(
+		pointer,
+		false,
 	)
+	pointer += 2
 
-	return options
-}
+	// credentialId: Credential identifier
+	const credentialId = authData.slice(pointer, pointer + credentialIdLength)
+	pointer += credentialIdLength
 
-export async function verifyRegistration(
-	credential: any,
-	expectedChallenge: string,
-) {
-	try {
-		const verification = await verifyRegistrationResponse({
-			response: credential,
-			expectedChallenge,
-			expectedOrigin: origin,
-			expectedRPID: rpID,
-		})
+	// credentialPublicKey: The credential public key in COSE_Key format
+	const credentialPublicKey = authData.slice(pointer)
 
-		return {
-			verified: verification.verified,
-			credentialID: verification.registrationInfo?.credentialID,
-			publicKey: verification.registrationInfo?.credentialPublicKey,
-		}
-	} catch (error) {
-		console.error(error)
-		return { verified: false }
+	return {
+		rpIdHash: Buffer.from(rpIdHash).toString('hex'),
+		flags,
+		signCount,
+		aaguid: Buffer.from(aaguid)
+			.toString('hex')
+			.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5'),
+		credentialId: Buffer.from(credentialId).toString('hex'),
+		credentialPublicKey: Buffer.from(credentialPublicKey),
 	}
 }
 
-export async function generateAuthenticationCredentials() {
-	const challenge = await generateChallenge()
+export function parseAttestationObject(attestationObject: string) {
+	const attestationBuffer = new Uint8Array(
+		Buffer.from(attestationObject, 'base64'),
+	)
+	const decodedAttestation = decodeAttestationObject(attestationBuffer)
 
-	const options = await generateAuthenticationOptions({
-		rpID,
-		challenge,
-		userVerification: 'preferred',
-	})
-
-	return options
-}
-
-export async function verifyAuthentication(
-	credential: any,
-	expectedChallenge: string,
-	publicKey: Buffer,
-) {
-	try {
-		const verification = await verifyAuthenticationResponse({
-			response: credential,
-			expectedChallenge,
-			expectedOrigin: origin,
-			expectedRPID: rpID,
-			authenticator: {
-				credentialPublicKey: publicKey,
-				credentialID: credential.id,
-				counter: 0,
-			},
-		})
-
-		return { verified: verification.verified }
-	} catch (error) {
-		console.error(error)
-		return { verified: false }
+	return {
+		fmt: decodedAttestation.get('fmt'),
+		attStmt: decodedAttestation.get('attStmt'),
+		authData: parseAuthData(decodedAttestation.get('authData')),
 	}
 }
