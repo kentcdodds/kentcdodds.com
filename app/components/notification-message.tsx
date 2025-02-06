@@ -40,6 +40,10 @@ function NotificationMessage({
 	const message = messageFromQuery || children
 	const latestMessageRef = React.useRef(message)
 
+	React.useEffect(() => {
+		if (!message) setIsVisible(false)
+	}, [message])
+
 	// if the query gets a message after the initial mount then we want to toggle visibility
 	React.useEffect(() => {
 		if (hasQueryStringValue) setIsVisible(true)

@@ -1,6 +1,7 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData, Form, useRevalidator } from '@remix-run/react'
 import { startRegistration } from '@simplewebauthn/browser'
+import { type PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/server'
 import { z } from 'zod'
 import { Button } from '#app/components/button.tsx'
 import { prisma } from '#app/utils/prisma.server.ts'
@@ -58,7 +59,7 @@ const RegistrationResultSchema = z.object({
 			}),
 		),
 	}),
-})
+}) satisfies z.ZodType<{ options: PublicKeyCredentialCreationOptionsJSON }>
 
 export default function PasskeysRoute() {
 	const revalidator = useRevalidator()

@@ -1,11 +1,11 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { generateRegistrationOptions } from '@simplewebauthn/server'
-import { getDomainUrl } from '#app/utils/misc.js'
 import { prisma } from '#app/utils/prisma.server.js'
 import { requireUser } from '#app/utils/session.server.js'
 import {
 	PasskeyCookieSchema,
 	passkeyCookie,
+	getWebAuthnConfig,
 } from '#app/utils/webauthn.server.js'
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -15,20 +15,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		select: { id: true },
 	})
 
-	const domain = new URL(getDomainUrl(request)).hostname
-
+	const config = getWebAuthnConfig(request)
 	const options = await generateRegistrationOptions({
-		rpName: `KCD (${domain})`,
-		rpID: domain,
+		rpName: config.rpName,
+		rpID: config.rpID,
 		userName: user.email,
 		userID: new TextEncoder().encode(user.id),
 		userDisplayName: user.firstName,
 		attestationType: 'none',
 		excludeCredentials: passkeys,
-		authenticatorSelection: {
-			residentKey: 'preferred',
-			userVerification: 'preferred',
-		},
+		authenticatorSelection: config.authenticatorSelection,
 	})
 
 	return json(

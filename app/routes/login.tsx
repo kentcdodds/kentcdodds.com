@@ -6,9 +6,19 @@ import {
 	type LoaderFunctionArgs,
 	type MetaFunction,
 } from '@remix-run/node'
-import { Form, useLoaderData } from '@remix-run/react'
+import {
+	Form,
+	useLoaderData,
+	useNavigate,
+	useRevalidator,
+} from '@remix-run/react'
+import { startAuthentication } from '@simplewebauthn/browser'
+import { type PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/server'
+import clsx from 'clsx'
+import { AnimatePresence, motion } from 'framer-motion'
 import * as React from 'react'
 import invariant from 'tiny-invariant'
+import { z } from 'zod'
 import { Button, LinkButton } from '#app/components/button.tsx'
 import { Input, InputError, Label } from '#app/components/form-elements.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -150,15 +160,68 @@ async function isEmailVerified(
 	return { verified: false, message: verifierResult.error.message }
 }
 
+const AuthenticationOptionsSchema = z.object({
+	options: z.object({ challenge: z.string() }),
+}) satisfies z.ZodType<{ options: PublicKeyCredentialRequestOptionsJSON }>
+
 function Login() {
 	const data = useLoaderData<typeof loader>()
 	const inputRef = React.useRef<HTMLInputElement>(null)
+	const navigate = useNavigate()
+	const { revalidate } = useRevalidator()
+	const [error, setError] = React.useState<string>()
+	const [passkeyMessage, setPasskeyMessage] = React.useState<null | string>(
+		null,
+	)
 
 	const [formValues, setFormValues] = React.useState({
 		email: data.email ?? '',
 	})
 
 	const formIsValid = formValues.email.match(/.+@.+/)
+
+	async function handlePasskeyLogin() {
+		try {
+			setPasskeyMessage('Generating Authentication Options')
+			// Get authentication options from the server
+			const optionsResponse = await fetch(
+				'/resources/webauthn/generate-authentication-options',
+				{ method: 'POST' },
+			)
+			const json = await optionsResponse.json()
+			const { options } = AuthenticationOptionsSchema.parse(json)
+
+			setPasskeyMessage('Requesting your authorization')
+			const authResponse = await startAuthentication({ optionsJSON: options })
+			setPasskeyMessage('Verifying your passkey')
+
+			// Verify the authentication with the server
+			const verificationResponse = await fetch(
+				'/resources/webauthn/verify-authentication',
+				{
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(authResponse),
+				},
+			)
+
+			const verificationJson = await verificationResponse.json()
+			if (verificationJson.status === 'error') {
+				throw new Error(verificationJson.error)
+			}
+
+			setPasskeyMessage("You're logged in! Navigating to your account page.")
+
+			revalidate()
+			navigate('/me')
+		} catch (e) {
+			setPasskeyMessage(null)
+			console.error(e)
+			setError(
+				e instanceof Error ? e.message : 'Failed to authenticate with passkey',
+			)
+		}
+	}
 
 	return (
 		<>
@@ -169,79 +232,144 @@ function Login() {
 				subtitle="Or sign up for an account."
 				action={
 					<main>
-						<Form
-							onChange={(event) => {
-								const form = event.currentTarget
-								setFormValues({ email: form.email.value })
-							}}
-							action="/login"
-							method="POST"
-							className="mb-10 lg:mb-12"
-						>
-							<div className="mb-6">
-								<div className="mb-4 flex flex-wrap items-baseline justify-between">
-									<Label htmlFor="email-address">Email address</Label>
+						<div className="mb-8">
+							<Button
+								onClick={handlePasskeyLogin}
+								id="passkey-login-button"
+								type="submit"
+								className="w-full justify-center"
+							>
+								Login with Passkey 🔑
+							</Button>
+							{error ? (
+								<div className="mt-2">
+									<InputError id="passkey-login-error">{error}</InputError>
+								</div>
+							) : null}
+						</div>
+
+						<div className="relative">
+							<div
+								className={clsx(
+									'transition-opacity duration-200',
+									passkeyMessage ? 'opacity-0' : 'opacity-100',
+								)}
+								{...(passkeyMessage ? { inert: true } : {})}
+							>
+								<div className="relative mb-8">
+									<div className="absolute inset-0 flex items-center">
+										<div className="w-full border-t border-gray-300" />
+									</div>
+									<div className="relative flex justify-center text-sm">
+										<span className="bg-white px-2 text-gray-500">
+											Or continue with email
+										</span>
+									</div>
 								</div>
 
-								<Input
-									ref={inputRef}
-									autoFocus
-									aria-describedby={
-										data.error ? 'error-message' : 'success-message'
-									}
-									id="email-address"
-									name="email"
-									type="email"
-									autoComplete="email"
-									defaultValue={formValues.email}
-									required
-									placeholder="Email address"
-								/>
-							</div>
-
-							<div style={{ position: 'absolute', left: '-9999px' }}>
-								<label htmlFor="password-field">Password</label>
-								<input
-									type="password"
-									id="password-field"
-									name="password"
-									tabIndex={-1}
-									autoComplete="nope"
-								/>
-							</div>
-
-							<div className="flex flex-wrap gap-4">
-								<Button type="submit">Email a login link</Button>
-								<LinkButton
-									type="reset"
-									onClick={() => {
-										setFormValues({ email: '' })
-										inputRef.current?.focus()
+								<Form
+									onChange={(event) => {
+										const form = event.currentTarget
+										setFormValues({ email: form.email.value })
 									}}
+									action="/login"
+									method="POST"
+									className="mb-10 lg:mb-12"
 								>
-									Reset
-								</LinkButton>
+									<div className="mb-6">
+										<div className="mb-4 flex flex-wrap items-baseline justify-between">
+											<Label htmlFor="email-address">Email address</Label>
+										</div>
+
+										<Input
+											ref={inputRef}
+											autoFocus
+											aria-describedby={
+												data.error ? 'error-message' : 'success-message'
+											}
+											id="email-address"
+											name="email"
+											type="email"
+											autoComplete="email"
+											defaultValue={formValues.email}
+											required
+											placeholder="Email address"
+										/>
+									</div>
+
+									<div style={{ position: 'absolute', left: '-9999px' }}>
+										<label htmlFor="password-field">Password</label>
+										<input
+											type="password"
+											id="password-field"
+											name="password"
+											tabIndex={-1}
+											autoComplete="nope"
+										/>
+									</div>
+
+									<div className="flex flex-wrap gap-4">
+										<Button type="submit">Email a login link</Button>
+										<LinkButton
+											type="reset"
+											onClick={() => {
+												setFormValues({ email: '' })
+												inputRef.current?.focus()
+											}}
+										>
+											Reset
+										</LinkButton>
+									</div>
+
+									<div className="sr-only" aria-live="polite">
+										{formIsValid
+											? 'Sign in form is now valid and ready to submit'
+											: 'Sign in form is now invalid.'}
+									</div>
+
+									<div className="mt-2">
+										{data.error ? (
+											<InputError id="error-message">{data.error}</InputError>
+										) : data.email ? (
+											<p
+												id="success-message"
+												className="text-lg text-gray-500 dark:text-slate-500"
+											>
+												{`✨ A magic link has been sent to ${data.email}.`}
+											</p>
+										) : null}
+									</div>
+								</Form>
 							</div>
 
-							<div className="sr-only" aria-live="polite">
-								{formIsValid
-									? 'Sign in form is now valid and ready to submit'
-									: 'Sign in form is now invalid.'}
-							</div>
-
-							<div className="mt-2">
-								{data.error ? (
-									<InputError id="error-message">{data.error}</InputError>
-								) : data.email ? (
-									<p
-										id="success-message"
-										className="text-lg text-gray-500 dark:text-slate-500"
+							<AnimatePresence>
+								{passkeyMessage ? (
+									<motion.div
+										// @ts-expect-error 🤷‍♂️
+										className="absolute inset-0 flex items-center justify-center"
+										initial={{ opacity: 0, y: 10 }}
+										animate={{ opacity: 1, y: 0 }}
+										exit={{ opacity: 0, y: -10 }}
+										transition={{ duration: 0.2 }}
 									>
-										{`✨ A magic link has been sent to ${data.email}.`}
-									</p>
+										<AnimatePresence mode="wait" initial={false}>
+											<motion.div
+												key={passkeyMessage}
+												// @ts-expect-error 🤷‍♂️
+												className="text-center text-lg"
+												initial={{ opacity: 0 }}
+												animate={{ opacity: 1 }}
+												exit={{ opacity: 0 }}
+												transition={{ duration: 0.15 }}
+												aria-live="polite"
+											>
+												{passkeyMessage}
+											</motion.div>
+										</AnimatePresence>
+									</motion.div>
 								) : null}
-							</div>
-						</Form>
+							</AnimatePresence>
+						</div>
 					</main>
 				}
 			/>

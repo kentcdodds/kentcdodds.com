@@ -2,6 +2,7 @@ import { createCookie } from '@remix-run/node'
 import { type RegistrationResponseJSON } from '@simplewebauthn/server'
 import { decodeAttestationObject } from '@simplewebauthn/server/helpers'
 import { z } from 'zod'
+import { getDomainUrl } from './misc.tsx'
 
 export const passkeyCookie = createCookie('webauthn-challenge', {
 	path: '/',
@@ -47,6 +48,20 @@ export const RegistrationResponseSchema = z.object({
 	}),
 	type: z.literal('public-key'),
 }) satisfies z.ZodType<RegistrationResponseJSON>
+
+export function getWebAuthnConfig(request: Request) {
+	const domain = new URL(getDomainUrl(request)).hostname
+	return {
+		rpName: `KCD (${domain})`,
+		rpID: domain,
+		origin: new URL(request.url).origin,
+		// Common options for both registration and authentication
+		authenticatorSelection: {
+			residentKey: 'preferred',
+			userVerification: 'preferred',
+		},
+	} as const
+}
 
 function parseAuthData(authData: Uint8Array) {
 	let pointer = 0
