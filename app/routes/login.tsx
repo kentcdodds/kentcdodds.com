@@ -22,6 +22,7 @@ import { z } from 'zod'
 import { Button, LinkButton } from '#app/components/button.tsx'
 import { Input, InputError, Label } from '#app/components/form-elements.tsx'
 import { Grid } from '#app/components/grid.tsx'
+import { PasskeyIcon } from '#app/components/icons.js'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { Paragraph } from '#app/components/typography.tsx'
 import { getConvertKitSubscriber } from '#app/convertkit/convertkit.server.ts'
@@ -239,7 +240,7 @@ function Login() {
 								type="submit"
 								className="w-full justify-center"
 							>
-								Login with Passkey 🔑
+								Login with Passkey <PasskeyIcon />
 							</Button>
 							{error ? (
 								<div className="mt-2">
