@@ -467,6 +467,9 @@ function YouScreen() {
 					>
 						Download Your Data
 					</ButtonLink>
+					<ButtonLink variant="secondary" to="passkeys">
+						Manage Passkeys
+					</ButtonLink>
 					<Form
 						action="/me"
 						method="POST"

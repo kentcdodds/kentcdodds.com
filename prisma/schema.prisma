@@ -14,8 +14,7 @@ datasource db {
 }
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["tracing"]
+  provider = "prisma-client-js"
 }
 
 model User {
@@ -28,6 +27,7 @@ model User {
   convertKitId String?
   role         String     @default("MEMBER")
   team         String
+  passkeys     Passkey[]
   calls        Call[]
   sessions     Session[]
   postReads    PostRead[]
@@ -67,4 +67,21 @@ model PostRead {
   @@index([clientId, postSlug])
   @@index([postSlug, createdAt])
   @@index([createdAt, userId])
+}
+
+model Passkey {
+  id             String   @id
+  aaguid         String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  publicKey      Bytes
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  webauthnUserId String
+  counter        BigInt
+  deviceType     String // 'singleDevice' or 'multiDevice'
+  backedUp       Boolean
+  transports     String? // Stored as comma-separated values
+
+  @@index(userId)
 }
