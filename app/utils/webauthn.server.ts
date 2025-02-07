@@ -50,11 +50,11 @@ export const RegistrationResponseSchema = z.object({
 }) satisfies z.ZodType<RegistrationResponseJSON>
 
 export function getWebAuthnConfig(request: Request) {
-	const domain = new URL(getDomainUrl(request)).hostname
+	const url = new URL(getDomainUrl(request))
 	return {
-		rpName: `KCD (${domain})`,
-		rpID: domain,
-		origin: new URL(request.url).origin,
+		rpName: `KCD (${url.hostname})`,
+		rpID: url.hostname,
+		origin: url.origin,
 		// Common options for both registration and authentication
 		authenticatorSelection: {
 			residentKey: 'preferred',
