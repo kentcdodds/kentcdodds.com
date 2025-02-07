@@ -54,31 +54,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
 		const config = getWebAuthnConfig(request)
 
-		// TODO: remove this log
-		const decodedResponseData = {
-			id: result.data.id,
-			rawId: result.data.rawId,
-			response: {
-				authenticatorData: result.data.response.authenticatorData,
-				clientDataJSON: JSON.parse(
-					Buffer.from(
-						result.data.response.clientDataJSON,
-						'base64url',
-					).toString(),
-				),
-				signature: Buffer.from(
-					result.data.response.signature,
-					'base64url',
-				).toString('hex'),
-				userHandle: result.data.response.userHandle
-					? Buffer.from(result.data.response.userHandle, 'base64url').toString()
-					: undefined,
-			},
-			type: result.data.type,
-			clientExtensionResults: result.data.clientExtensionResults,
-		}
-		console.log('Decoded authentication response:', decodedResponseData)
-
 		const verification = await verifyAuthenticationResponse({
 			response: result.data,
 			expectedChallenge: cookie.challenge,
