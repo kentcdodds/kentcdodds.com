@@ -6,7 +6,6 @@ import { requireUser } from '#app/utils/session.server.ts'
 import {
 	PasskeyCookieSchema,
 	RegistrationResponseSchema,
-	parseAttestationObject,
 	passkeyCookie,
 } from '#app/utils/webauthn.server.js'
 
@@ -27,23 +26,6 @@ export async function action({ request }: ActionFunctionArgs) {
 	}
 
 	const data = result.data
-	let aaguid: string
-
-	try {
-		const parsedAttestation = parseAttestationObject(
-			data.response.attestationObject,
-		)
-		aaguid = parsedAttestation.authData.aaguid
-	} catch (error) {
-		console.error(error)
-		return json(
-			{
-				status: 'error',
-				error: 'Failed to decode attestation object',
-			} as const,
-			400,
-		)
-	}
 
 	// Get challenge from cookie
 	const passkeyCookieData = await passkeyCookie.parse(
@@ -84,7 +66,7 @@ export async function action({ request }: ActionFunctionArgs) {
 			400,
 		)
 	}
-	const { credential, credentialDeviceType, credentialBackedUp } =
+	const { credential, credentialDeviceType, credentialBackedUp, aaguid } =
 		registrationInfo
 
 	const existingPasskey = await prisma.passkey.findUnique({
