@@ -97,7 +97,7 @@ export default function DiscordCallback() {
 							<PartyIcon />
 						</span>
 						<span className="text-team-current">
-							{discordMember.user.username}#{discordMember.user.discriminator}
+							{discordMember.user.username}
 						</span>
 						{` has been connected to `}
 						<span>
