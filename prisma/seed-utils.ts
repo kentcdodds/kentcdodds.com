@@ -8,7 +8,7 @@ export function createUser(): Omit<P.User, 'id' | 'createdAt' | 'updatedAt'> {
 	return {
 		firstName,
 		email: `${username}@example.com`,
-		convertKitId: null,
+		kitId: null,
 		discordId: null,
 		role: 'USER',
 		team: faker.helpers.arrayElement(['BLUE', 'RED', 'YELLOW']),

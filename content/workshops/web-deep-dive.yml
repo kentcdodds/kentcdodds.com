@@ -12,7 +12,7 @@ meta:
     - backend
 categories:
   - web
-convertKitTag: '3208567'
+kitTag: '3208567'
 problemStatements:
   part1: The web is the doorway to the world
   part2: Understanding it at a deep level is critical to building on it

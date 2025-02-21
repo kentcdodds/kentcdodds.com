@@ -25,8 +25,8 @@ import { Grid } from '#app/components/grid.tsx'
 import { PasskeyIcon } from '#app/components/icons.js'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { Paragraph } from '#app/components/typography.tsx'
-import { getConvertKitSubscriber } from '#app/convertkit/convertkit.server.ts'
 import { getGenericSocialImage, images } from '#app/images.tsx'
+import { getKitSubscriber } from '#app/kit/kit.server.ts'
 import { type RootLoaderType } from '#app/root.tsx'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
 import {
@@ -152,8 +152,8 @@ async function isEmailVerified(
 		}),
 	)
 	if (userExists) return { verified: true }
-	const convertKitSubscriber = await getConvertKitSubscriber(email)
-	if (convertKitSubscriber) return { verified: true }
+	const kitSubscriber = await getKitSubscriber(email)
+	if (kitSubscriber) return { verified: true }
 
 	const verifierResult = await verifyEmailAddress(email)
 	if (verifierResult.status) return { verified: true }

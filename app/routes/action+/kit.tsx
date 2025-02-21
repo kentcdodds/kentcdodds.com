@@ -5,13 +5,13 @@ import { Grid } from '#app/components/grid.tsx'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { Paragraph } from '#app/components/typography.tsx'
-import { handleConvertKitFormSubmission } from '#app/convertkit/remix.server.ts'
+import { handleKitFormSubmission } from '#app/kit/remix.server.ts'
 
 export async function action({ request }: ActionFunctionArgs) {
-	return handleConvertKitFormSubmission(request)
+	return handleKitFormSubmission(request)
 }
 
-export default function ConvertKit() {
+export default function Kit() {
 	return (
 		<>
 			<HeroSection

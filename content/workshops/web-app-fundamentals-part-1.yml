@@ -17,7 +17,7 @@ categories:
   - web
   - react
   - remix
-convertKitTag: '2568112'
+kitTag: '2568112'
 problemStatements:
   part1: The web is a powerful tool for building applications
   part2: And too many web developers don't know how to use it

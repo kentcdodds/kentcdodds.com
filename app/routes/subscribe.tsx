@@ -10,8 +10,8 @@ import { MailIcon } from '#app/components/icons.tsx'
 import { BlogSection } from '#app/components/sections/blog-section.tsx'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
-import { ConvertKitForm } from '#app/convertkit/form.tsx'
 import { getGenericSocialImage, getImgProps, images } from '#app/images.tsx'
+import { KitForm } from '#app/kit/form.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
 import { getBlogRecommendations } from '#app/utils/blog.server.ts'
 import { getDisplayUrl, getUrl } from '#app/utils/misc.tsx'
@@ -54,7 +54,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export default function SubscribeScreen() {
 	const data = useLoaderData<typeof loader>()
 	const { userInfo } = useRootData()
-	const subscribedToNewsletter = userInfo?.convertKit?.tags.some(
+	const subscribedToNewsletter = userInfo?.kit?.tags.some(
 		({ name }) => name === 'Subscribed: general newsletter',
 	)
 	return (
@@ -172,7 +172,7 @@ export default function SubscribeScreen() {
 								id="subscribe-form"
 								className="col-span-full mt-8 lg:col-span-7"
 							>
-								<ConvertKitForm formId="newsletter" convertKitFormId="827139" />
+								<KitForm formId="newsletter" KitFormId="827139" />
 							</div>
 						</>
 					)}

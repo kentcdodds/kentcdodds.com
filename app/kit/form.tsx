@@ -6,30 +6,30 @@ import { CheckIcon } from '#app/components/icons.tsx'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import { type ActionData } from './types.ts'
 
-function ConvertKitForm({
+function KitForm({
 	formId,
-	convertKitTagId,
-	convertKitFormId,
+	kitTagId,
+	KitFormId,
 }: { formId: string } & (
-	| { convertKitTagId?: never; convertKitFormId: string }
-	| { convertKitTagId: string; convertKitFormId?: never }
-	| { convertKitTagId: string; convertKitFormId: string }
+	| { kitTagId?: never; KitFormId: string }
+	| { kitTagId: string; KitFormId?: never }
+	| { kitTagId: string; KitFormId: string }
 )) {
 	const websiteId = React.useId()
-	const convertKit = useFetcher<ActionData>()
+	const kit = useFetcher<ActionData>()
 	const formRef = React.useRef<HTMLFormElement>(null)
-	const isDone = convertKit.state === 'idle' && convertKit.data != null
-	const convertKitData = isDone ? convertKit.data : null
+	const isDone = kit.state === 'idle' && kit.data != null
+	const kitData = isDone ? kit.data : null
 	React.useEffect(() => {
-		if (formRef.current && convertKitData?.status === 'success') {
+		if (formRef.current && kitData?.status === 'success') {
 			formRef.current.reset()
 		}
-	}, [convertKitData])
+	}, [kitData])
 
 	const { user, userInfo } = useRootData()
 
-	const alreadySubscribed = userInfo?.convertKit?.tags.some(
-		({ id }) => id === convertKitTagId,
+	const alreadySubscribed = userInfo?.kit?.tags.some(
+		({ id }) => id === kitTagId,
 	)
 
 	if (alreadySubscribed) {
@@ -38,15 +38,10 @@ function ConvertKitForm({
 		)
 	}
 
-	const success = isDone && convertKitData?.status === 'success'
+	const success = isDone && kitData?.status === 'success'
 
 	return (
-		<convertKit.Form
-			ref={formRef}
-			action="/action/convert-kit"
-			method="POST"
-			noValidate
-		>
+		<kit.Form ref={formRef} action="/action/kit" method="POST" noValidate>
 			<div style={{ position: 'absolute', left: '-9999px' }}>
 				<label htmlFor={`website-url-${websiteId}`}>Your website</label>
 				<input
@@ -58,40 +53,32 @@ function ConvertKitForm({
 				/>
 			</div>
 			<input type="hidden" name="formId" value={formId} />
-			<input type="hidden" name="convertKitTagId" value={convertKitTagId} />
-			<input type="hidden" name="convertKitFormId" value={convertKitFormId} />
+			<input type="hidden" name="kitTagId" value={kitTagId} />
+			<input type="hidden" name="KitFormId" value={KitFormId} />
 			<Field
 				name="firstName"
 				label="First name"
-				error={
-					convertKitData?.status === 'error'
-						? convertKitData.errors.firstName
-						: null
-				}
+				error={kitData?.status === 'error' ? kitData.errors.firstName : null}
 				autoComplete="given-name"
 				defaultValue={user?.firstName}
 				required
-				disabled={convertKit.state !== 'idle' || success}
+				disabled={kit.state !== 'idle' || success}
 			/>
 
 			<Field
 				name="email"
 				label="Email"
 				autoComplete="email"
-				error={
-					convertKitData?.status === 'error'
-						? convertKitData.errors.email
-						: null
-				}
+				error={kitData?.status === 'error' ? kitData.errors.email : null}
 				defaultValue={user?.email}
-				disabled={convertKit.state !== 'idle' || success}
+				disabled={kit.state !== 'idle' || success}
 			/>
 
 			{success ? (
 				<div className="flex">
 					<CheckIcon />
 					<p className="text-secondary">
-						{userInfo?.convertKit
+						{userInfo?.kit
 							? `Sweet, you're all set`
 							: `Sweet, check your email for confirmation.`}
 					</p>
@@ -101,8 +88,8 @@ function ConvertKitForm({
 					Sign me up
 				</ArrowButton>
 			)}
-		</convertKit.Form>
+		</kit.Form>
 	)
 }
 
-export { ConvertKitForm }
+export { KitForm }

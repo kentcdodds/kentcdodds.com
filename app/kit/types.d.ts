@@ -3,8 +3,8 @@ export type Fields = {
 	firstName: string
 	email: string
 	url: string | null
-	convertKitTagId: string
-	convertKitFormId: string
+	kitTagId: string
+	KitFormId: string
 }
 export type Errors = Record<keyof Fields | 'generalError', string | null>
 

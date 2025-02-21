@@ -1,8 +1,8 @@
 import { http, passthrough, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
-import { convertKitHandlers } from './convert-kit.ts'
 import { discordHandlers } from './discord.ts'
 import { githubHandlers } from './github.ts'
+import { kitHandlers } from './kit.ts'
 import { oembedHandlers } from './oembed.ts'
 import { simplecastHandlers } from './simplecast.ts'
 import { tiToHandlers } from './tito.ts'
@@ -75,7 +75,7 @@ const server = setupServer(
 	...tiToHandlers,
 	...transistorHandlers,
 	...discordHandlers,
-	...convertKitHandlers,
+	...kitHandlers,
 	...simplecastHandlers,
 	...miscHandlers,
 )

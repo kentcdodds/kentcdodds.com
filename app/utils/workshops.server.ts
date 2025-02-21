@@ -12,7 +12,7 @@ type RawWorkshop = {
 	description?: string
 	meta?: Record<string, unknown>
 	events?: Array<Omit<Workshop['events'][number], 'type'>>
-	convertKitTag?: string
+	kitTag?: string
 	categories?: Array<string>
 	problemStatements?: Workshop['problemStatementHTMLs']
 	keyTakeaways?: Workshop['keyTakeawayHTMLs']
@@ -72,7 +72,7 @@ async function getWorkshop(slug: string): Promise<null | Workshop> {
 	}
 	const {
 		title,
-		convertKitTag,
+		kitTag,
 		description = 'This workshop is... indescribeable',
 		categories = [],
 		events = [],
@@ -80,8 +80,8 @@ async function getWorkshop(slug: string): Promise<null | Workshop> {
 		meta = {},
 	} = rawWorkshop
 
-	if (!convertKitTag) {
-		throw new Error('All workshops must have a convertKitTag')
+	if (!kitTag) {
+		throw new Error('All workshops must have a kitTag')
 	}
 
 	const [
@@ -118,7 +118,7 @@ async function getWorkshop(slug: string): Promise<null | Workshop> {
 		events: events.map((e) => ({ type: 'manual', ...e })),
 		meta,
 		description,
-		convertKitTag,
+		kitTag,
 		categories,
 		problemStatementHTMLs,
 		keyTakeawayHTMLs,

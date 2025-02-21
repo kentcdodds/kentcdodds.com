@@ -1,9 +1,9 @@
 import { getRequiredServerEnvVar } from '../utils/misc.tsx'
 
-const CONVERT_KIT_API_SECRET = getRequiredServerEnvVar('CONVERT_KIT_API_SECRET')
-const CONVERT_KIT_API_KEY = getRequiredServerEnvVar('CONVERT_KIT_API_KEY')
+const KIT_API_SECRET = getRequiredServerEnvVar('KIT_API_SECRET')
+const KIT_API_KEY = getRequiredServerEnvVar('KIT_API_KEY')
 
-type ConvertKitSubscriber = {
+type KitSubscriber = {
 	id: number
 	first_name: string
 	email_address: string
@@ -12,37 +12,33 @@ type ConvertKitSubscriber = {
 	fields: Record<string, string | null>
 }
 
-type ConvertKitTag = {
+type KitTag = {
 	id: string
 	name: string
 	created_at: string
 }
 
-async function getConvertKitSubscriber(email: string) {
-	const url = new URL('https://api.convertkit.com/v3/subscribers')
-	url.searchParams.set('api_secret', CONVERT_KIT_API_SECRET)
+async function getKitSubscriber(email: string) {
+	const url = new URL('https://api.kit.com/v3/subscribers')
+	url.searchParams.set('api_secret', KIT_API_SECRET)
 	url.searchParams.set('email_address', email)
 
 	const resp = await fetch(url.toString())
 	const json = await resp.json()
 	const { subscribers: [subscriber = { state: 'inactive' }] = [] } = json as {
-		subscribers?: Array<ConvertKitSubscriber>
+		subscribers?: Array<KitSubscriber>
 	}
 
 	return subscriber.state === 'active' ? subscriber : null
 }
 
-async function getConvertKitSubscriberTags(
-	subscriberId: ConvertKitSubscriber['id'],
-) {
-	const url = new URL(
-		`https://api.convertkit.com/v3/subscribers/${subscriberId}/tags`,
-	)
-	url.searchParams.set('api_secret', CONVERT_KIT_API_SECRET)
+async function getKitSubscriberTags(subscriberId: KitSubscriber['id']) {
+	const url = new URL(`https://api.kit.com/v3/subscribers/${subscriberId}/tags`)
+	url.searchParams.set('api_secret', KIT_API_SECRET)
 
 	const resp = await fetch(url.toString())
 	const json = (await resp.json()) as {
-		tags: Array<ConvertKitTag>
+		tags: Array<KitTag>
 	}
 	return json.tags
 }
@@ -54,14 +50,14 @@ async function ensureSubscriber({
 	email: string
 	firstName: string
 }) {
-	let subscriber = await getConvertKitSubscriber(email)
+	let subscriber = await getKitSubscriber(email)
 	if (!subscriber) {
 		// this is a basic form that doesn't really do anything. It's just a way to
 		// get the users on the mailing list
 		subscriber = await addSubscriberToForm({
 			email,
 			firstName,
-			convertKitFormId: '2500372',
+			KitFormId: '2500372',
 		})
 	}
 
@@ -71,15 +67,15 @@ async function ensureSubscriber({
 async function addSubscriberToForm({
 	email,
 	firstName,
-	convertKitFormId,
+	KitFormId,
 }: {
 	email: string
 	firstName: string
-	convertKitFormId: string
+	KitFormId: string
 }) {
 	const subscriberData = {
-		api_key: CONVERT_KIT_API_KEY,
-		api_secret: CONVERT_KIT_API_SECRET,
+		api_key: KIT_API_KEY,
+		api_secret: KIT_API_SECRET,
 		first_name: firstName,
 		email,
 	}
@@ -87,7 +83,7 @@ async function addSubscriberToForm({
 	// this is a basic form that doesn't really do anything. It's just a way to
 	// get the users on the mailing list
 	const response = await fetch(
-		`https://api.convertkit.com/v3/forms/${convertKitFormId}/subscribe`,
+		`https://api.kit.com/v3/forms/${KitFormId}/subscribe`,
 		{
 			method: 'POST',
 			body: JSON.stringify(subscriberData),
@@ -95,7 +91,7 @@ async function addSubscriberToForm({
 		},
 	)
 	const json = (await response.json()) as {
-		subscription: { subscriber: ConvertKitSubscriber }
+		subscription: { subscriber: KitSubscriber }
 	}
 	return json.subscription.subscriber
 }
@@ -103,21 +99,21 @@ async function addSubscriberToForm({
 async function addTagToSubscriber({
 	email,
 	firstName,
-	convertKitTagId,
+	kitTagId,
 }: {
 	email: string
 	firstName: string
-	convertKitTagId: string
+	kitTagId: string
 }) {
 	await ensureSubscriber({ email, firstName })
 	const subscriberData = {
-		api_key: CONVERT_KIT_API_KEY,
-		api_secret: CONVERT_KIT_API_SECRET,
+		api_key: KIT_API_KEY,
+		api_secret: KIT_API_SECRET,
 		first_name: firstName,
 		email,
 	}
 
-	const subscribeUrl = `https://api.convertkit.com/v3/tags/${convertKitTagId}/subscribe`
+	const subscribeUrl = `https://api.kit.com/v3/tags/${kitTagId}/subscribe`
 	const response = await fetch(subscribeUrl, {
 		method: 'POST',
 		body: JSON.stringify(subscriberData),
@@ -126,7 +122,7 @@ async function addTagToSubscriber({
 		},
 	})
 	const json = (await response.json()) as {
-		subscription: { subscriber: ConvertKitSubscriber }
+		subscription: { subscriber: KitSubscriber }
 	}
 	return json.subscription.subscriber
 }
@@ -140,12 +136,12 @@ async function tagKCDSiteSubscriber({
 	firstName: string
 	fields: Record<string, string>
 }) {
-	const subscriber = await getConvertKitSubscriber(email)
+	const subscriber = await getKitSubscriber(email)
 	const kcdTagId = '2466369'
 	const kcdSiteForm = '2393887'
 	const subscriberData = {
-		api_key: CONVERT_KIT_API_KEY,
-		api_secret: CONVERT_KIT_API_SECRET,
+		api_key: KIT_API_KEY,
+		api_secret: KIT_API_SECRET,
 		first_name: firstName,
 		email,
 		fields,
@@ -156,8 +152,8 @@ async function tagKCDSiteSubscriber({
 	// tag to existing subscribers who have already confirmed.
 	// This form auto-adds the tag to new subscribers
 	const subscribeUrl = subscriber
-		? `https://api.convertkit.com/v3/tags/${kcdTagId}/subscribe`
-		: `https://api.convertkit.com/v3/forms/${kcdSiteForm}/subscribe`
+		? `https://api.kit.com/v3/tags/${kcdTagId}/subscribe`
+		: `https://api.kit.com/v3/forms/${kcdSiteForm}/subscribe`
 	const updatedRes = await fetch(subscribeUrl, {
 		method: 'POST',
 		body: JSON.stringify(subscriberData),
@@ -166,14 +162,14 @@ async function tagKCDSiteSubscriber({
 		},
 	})
 	const updatedJson = (await updatedRes.json()) as {
-		subscription: { subscriber: ConvertKitSubscriber }
+		subscription: { subscriber: KitSubscriber }
 	}
 	return updatedJson.subscription.subscriber
 }
 
 export {
-	getConvertKitSubscriber,
-	getConvertKitSubscriberTags,
+	getKitSubscriber,
+	getKitSubscriberTags,
 	tagKCDSiteSubscriber,
 	addTagToSubscriber,
 	addSubscriberToForm,

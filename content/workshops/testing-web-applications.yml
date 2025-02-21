@@ -12,7 +12,7 @@ categories:
   - react
   - remix
   - testing
-convertKitTag: '3660595'
+kitTag: '3660595'
 problemStatements:
   part1: Congratulations, you've built an amazing web application!
   part2: But people hate it because you keep shipping bugs.

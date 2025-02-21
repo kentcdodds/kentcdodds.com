@@ -2,8 +2,8 @@ import { Link } from '@remix-run/react'
 import { getImgProps, type ImageBuilder } from '#app/images.tsx'
 import { AnchorOrLink } from '#app/utils/misc.tsx'
 import { useRootData } from '#app/utils/use-root-data.ts'
-import { ConvertKitForm } from '../convertkit/form.tsx'
 import { externalLinks } from '../external-links.tsx'
+import { KitForm } from '../kit/form.tsx'
 import { IconLink } from './icon-link.tsx'
 import { ArrowIcon, GithubIcon, RssIcon, XIcon, YoutubeIcon } from './icons.tsx'
 import { Signature } from './signature.tsx'
@@ -31,7 +31,7 @@ function NewsletterSection() {
 			</div>
 
 			<div className="mt-8">
-				<ConvertKitForm formId="newsletter" convertKitFormId="827139" />
+				<KitForm formId="newsletter" KitFormId="827139" />
 			</div>
 		</div>
 	)
@@ -145,7 +145,7 @@ function Footer({ image }: { image: ImageBuilder }) {
 	const { userInfo } = useRootData()
 	const subscribedToNewsletter =
 		Boolean(userInfo) ||
-		userInfo?.convertKit?.tags.some(
+		userInfo?.kit?.tags.some(
 			({ name }) => name === 'Subscribed: general newsletter',
 		)
 	const featuredImg = (

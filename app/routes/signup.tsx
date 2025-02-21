@@ -14,8 +14,8 @@ import { CheckCircledIcon } from '#app/components/icons.tsx'
 import { HeaderSection } from '#app/components/sections/header-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { H2, H6, Paragraph } from '#app/components/typography.tsx'
-import { tagKCDSiteSubscriber } from '#app/convertkit/convertkit.server.ts'
 import { getImgProps, images } from '#app/images.tsx'
+import { tagKCDSiteSubscriber } from '#app/kit/kit.server.ts'
 import { type KCDHandle, type Team } from '#app/types.ts'
 import { handleFormSubmission } from '#app/utils/actions.server.ts'
 import { shuffle } from '#app/utils/cjs/lodash.ts'
@@ -119,7 +119,7 @@ export async function action({ request }: ActionFunctionArgs) {
 					fields: { kcd_team: team, kcd_site_id: user.id },
 				})
 				await prisma.user.update({
-					data: { convertKitId: String(sub.id) },
+					data: { kitId: String(sub.id) },
 					where: { id: user.id },
 				})
 				const clientSession = await getClientSession(request, null)

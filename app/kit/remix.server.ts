@@ -1,7 +1,7 @@
 import { json } from '@remix-run/node'
 import { getErrorMessage } from '#app/utils/misc.tsx'
-import { deleteConvertKitCache } from '#app/utils/user-info.server.ts'
-import * as ck from './convertkit.server.ts'
+import { deleteKitCache } from '#app/utils/user-info.server.ts'
+import * as ck from './kit.server.ts'
 import { type ActionData, type Errors, type Fields } from './types.ts'
 
 function getErrorForFirstName(name: string | null) {
@@ -16,24 +16,18 @@ function getErrorForEmail(email: string | null) {
 	return null
 }
 
-function getErrorForConvertKitTagId(
-	tagId: string | null,
-	form: URLSearchParams,
-) {
-	if (!form.get('convertKitFormId') && !tagId) {
-		return `convertKitTagId is required if convertKitFormId is not specified`
+function getErrorForkitTagId(tagId: string | null, form: URLSearchParams) {
+	if (!form.get('KitFormId') && !tagId) {
+		return `kitTagId is required if KitFormId is not specified`
 	}
 	if (!tagId) return null
 	if (tagId.length < 2) return `Convert Kit Tag ID is incorrect`
 	return null
 }
 
-function getErrorForConvertKitFormId(
-	formId: string | null,
-	form: URLSearchParams,
-) {
-	if (!form.get('convertKitTagId') && !formId) {
-		return `convertKitFormId is required if convertKitTagId is not specified`
+function getErrorForKitFormId(formId: string | null, form: URLSearchParams) {
+	if (!form.get('kitTagId') && !formId) {
+		return `KitFormId is required if kitTagId is not specified`
 	}
 	if (!formId) return null
 	if (formId.length < 2) return `Convert Kit Form ID is incorrect`
@@ -45,7 +39,7 @@ function getErrorForFormId(value: string | null) {
 	return null
 }
 
-async function handleConvertKitFormSubmission(request: Request) {
+async function handleKitFormSubmission(request: Request) {
 	const requestText = await request.text()
 	const form = new URLSearchParams(requestText)
 
@@ -53,8 +47,8 @@ async function handleConvertKitFormSubmission(request: Request) {
 		formId: form.get('formId') ?? '',
 		firstName: form.get('firstName') ?? '',
 		email: form.get('email') ?? '',
-		convertKitTagId: form.get('convertKitTagId') ?? '',
-		convertKitFormId: form.get('convertKitFormId') ?? '',
+		kitTagId: form.get('kitTagId') ?? '',
+		KitFormId: form.get('KitFormId') ?? '',
 		url: form.get('url'),
 	}
 
@@ -63,11 +57,8 @@ async function handleConvertKitFormSubmission(request: Request) {
 		formId: getErrorForFormId(fields.formId),
 		firstName: getErrorForFirstName(fields.firstName),
 		email: getErrorForEmail(fields.email),
-		convertKitTagId: getErrorForConvertKitTagId(fields.convertKitTagId, form),
-		convertKitFormId: getErrorForConvertKitFormId(
-			fields.convertKitFormId,
-			form,
-		),
+		kitTagId: getErrorForkitTagId(fields.kitTagId, form),
+		KitFormId: getErrorForKitFormId(fields.KitFormId, form),
 		url: null,
 	}
 
@@ -86,18 +77,18 @@ async function handleConvertKitFormSubmission(request: Request) {
 
 	try {
 		let subscriberId: number | null = null
-		if (fields.convertKitFormId) {
+		if (fields.KitFormId) {
 			const subscriber = await ck.addSubscriberToForm(fields)
 			subscriberId = subscriber.id
 		}
-		if (fields.convertKitTagId) {
+		if (fields.kitTagId) {
 			const subscriber = await ck.addTagToSubscriber(fields)
 			subscriberId = subscriber.id
 		}
 
 		if (subscriberId) {
 			// if this errors out it's not a big deal. The cache will expire eventually
-			await deleteConvertKitCache(subscriberId).catch(() => {})
+			await deleteKitCache(subscriberId).catch(() => {})
 		}
 	} catch (error: unknown) {
 		errors.generalError = getErrorMessage(error)
@@ -109,4 +100,4 @@ async function handleConvertKitFormSubmission(request: Request) {
 	return json(data)
 }
 
-export { handleConvertKitFormSubmission }
+export { handleKitFormSubmission }

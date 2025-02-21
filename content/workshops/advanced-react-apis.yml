@@ -10,7 +10,7 @@ meta:
     - react hooks
 categories:
   - react
-convertKitTag: '896448'
+kitTag: '896448'
 problemStatements:
   part1:
     Managing complex component state with basic hooks like useState can quickly

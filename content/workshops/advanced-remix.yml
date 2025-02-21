@@ -12,7 +12,7 @@ meta:
 categories:
   - react
   - remix
-convertKitTag: '2925780'
+kitTag: '2925780'
 problemStatements:
   part1: Remix is a terrific tool for building simple websites
   part2: And it's even better for building complex web applications

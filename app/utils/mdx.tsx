@@ -3,12 +3,12 @@ import { LRUCache } from 'lru-cache'
 import * as mdxBundler from 'mdx-bundler/client/index.js'
 import * as React from 'react'
 import { CloudinaryVideo } from '#app/components/cloudinary-video.tsx'
-import { ConvertKitForm } from '#app/convertkit/form.tsx'
 import {
 	getImageBuilder,
 	getImgProps,
 	getSocialImageWithPreTitle,
 } from '#app/images.tsx'
+import { KitForm } from '#app/kit/form.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
 import { type MdxPage } from '#app/types.ts'
 import {
@@ -217,15 +217,15 @@ function ThemedBlogImage({
 }
 
 function SubscribeForm(props: Record<string, unknown>) {
-	const { formId, convertKitTagId, convertKitFormId } = props
+	const { formId, kitTagId, KitFormId } = props
 
 	if (
 		typeof formId !== 'string' ||
-		typeof convertKitFormId !== 'string' ||
-		typeof convertKitTagId !== 'string'
+		typeof KitFormId !== 'string' ||
+		typeof kitTagId !== 'string'
 	) {
 		console.error(
-			`SubscribeForm improperly used. Must have a formId, convertKitFormId, and convertKitTagId`,
+			`SubscribeForm improperly used. Must have a formId, KitFormId, and kitTagId`,
 			props,
 		)
 		return null
@@ -233,11 +233,7 @@ function SubscribeForm(props: Record<string, unknown>) {
 
 	return (
 		<div className="mb-12 border-b-2 border-t-2 border-team-current p-5">
-			<ConvertKitForm
-				formId={formId}
-				convertKitFormId={convertKitFormId}
-				convertKitTagId={convertKitTagId}
-			/>
+			<KitForm formId={formId} KitFormId={KitFormId} kitTagId={kitTagId} />
 		</div>
 	)
 }

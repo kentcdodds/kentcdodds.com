@@ -16,7 +16,7 @@ events:
     url: https://reactsummit.us/react-workshops
     date: 2024-11-20
     location: 'New York, USA 🗽'
-convertKitTag: '5037938'
+kitTag: '5037938'
 problemStatements:
   part1:
     The React component model is powerful, but there's always room to push it

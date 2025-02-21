@@ -149,7 +149,7 @@ model User {
   email        String     @unique(map: "User.email_unique")
   firstName    String
   discordId    String?
-  convertKitId String?
+  kitId        String?
   role         Role       @default(MEMBER)
   team         Team
   calls        Call[]
@@ -244,7 +244,7 @@ model User {
   email        String     @unique(map: "User.email_unique")
   firstName    String
   discordId    String?
-  convertKitId String?
+  kitId        String?
   role         Role       @default(MEMBER)
   team         Team
   role         String     @default("MEMBER")

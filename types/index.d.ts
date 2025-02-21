@@ -91,7 +91,7 @@ type Workshop = {
 		keywords?: Array<string>
 		[key as string]: string
 	}
-	convertKitTag?: string
+	kitTag?: string
 	problemStatementHTMLs: ProblemStatements
 	keyTakeawayHTMLs: Array<KeyTakeaway>
 	topicHTMLs: Array<string>

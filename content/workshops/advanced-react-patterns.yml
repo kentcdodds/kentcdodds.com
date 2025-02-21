@@ -9,7 +9,7 @@ meta:
     - react patterns
 categories:
   - react
-convertKitTag: '896446'
+kitTag: '896446'
 problemStatements:
   part1: Building reusable hooks and components can be tricky
   part2:

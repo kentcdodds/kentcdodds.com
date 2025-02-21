@@ -1,6 +1,6 @@
 import { type User } from '#app/types.ts'
-import * as ck from '../convertkit/convertkit.server.ts'
 import { getImageBuilder, images } from '../images.tsx'
+import * as k from '../kit/kit.server.ts'
 import { cache, cachified } from './cache.server.ts'
 import * as discord from './discord.server.ts'
 import { getAvatar, getOptionalTeam } from './misc.tsx'
@@ -12,7 +12,7 @@ type UserInfo = {
 		alt: string
 		hasGravatar: boolean
 	}
-	convertKit: {
+	kit: {
 		tags: Array<{ id: string; name: string }>
 	} | null
 	discord: {
@@ -115,8 +115,7 @@ async function getDirectAvatarForUser(
 	}
 }
 
-const getConvertKitCacheKey = (convertKitId: string) =>
-	`convertkit:${convertKitId}`
+const getKitCacheKey = (kitId: string) => `kit:${kitId}`
 const getDiscordCacheKey = (discordId: string) => `discord:${discordId}`
 
 async function getUserInfo(
@@ -127,8 +126,8 @@ async function getUserInfo(
 		timings,
 	}: { request: Request; forceFresh?: boolean; timings?: Timings },
 ) {
-	const { discordId, convertKitId, email } = user
-	const [discordUser, convertKitInfo] = await Promise.all([
+	const { discordId, kitId, email } = user
+	const [discordUser, kitInfo] = await Promise.all([
 		discordId
 			? cachified({
 					cache,
@@ -146,7 +145,7 @@ async function getUserInfo(
 					},
 				})
 			: null,
-		convertKitId
+		kitId
 			? cachified({
 					cache,
 					request,
@@ -154,17 +153,17 @@ async function getUserInfo(
 					forceFresh,
 					ttl: 1000 * 60 * 60 * 24 * 30,
 					staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
-					key: getConvertKitCacheKey(convertKitId),
+					key: getKitCacheKey(kitId),
 					checkValue: (value: unknown) =>
 						typeof value === 'object' && value !== null && 'tags' in value,
 					getFreshValue: async () => {
-						const subscriber = await ck.getConvertKitSubscriber(email)
+						const subscriber = await k.getKitSubscriber(email)
 						if (!subscriber) {
 							return {
 								tags: [],
 							}
 						}
-						const tags = await ck.getConvertKitSubscriberTags(subscriber.id)
+						const tags = await k.getKitSubscriberTags(subscriber.id)
 						return {
 							tags: tags.map(({ name, id }) => ({ name, id })),
 						}
@@ -185,13 +184,13 @@ async function getUserInfo(
 			hasGravatar,
 		},
 		discord: discordUser,
-		convertKit: convertKitInfo,
+		kit: kitInfo,
 	}
 	return userInfo
 }
 
-async function deleteConvertKitCache(convertKitId: string | number) {
-	await cache.delete(getConvertKitCacheKey(String(convertKitId)))
+async function deleteKitCache(kitId: string | number) {
+	await cache.delete(getKitCacheKey(String(kitId)))
 }
 
 async function deleteDiscordCache(discordId: string) {
@@ -200,7 +199,7 @@ async function deleteDiscordCache(discordId: string) {
 
 export {
 	getUserInfo,
-	deleteConvertKitCache,
+	deleteKitCache,
 	deleteDiscordCache,
 	getDirectAvatarForUser,
 }

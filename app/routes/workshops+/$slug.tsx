@@ -19,8 +19,8 @@ import { Spacer } from '#app/components/spacer.tsx'
 import { H2, H5, H6, Paragraph } from '#app/components/typography.tsx'
 import { WorkshopCard } from '#app/components/workshop-card.tsx'
 import { RegistrationPanel } from '#app/components/workshop-registration-panel.tsx'
-import { ConvertKitForm } from '#app/convertkit/form.tsx'
 import { getSocialImageWithPreTitle } from '#app/images.tsx'
+import { KitForm } from '#app/kit/form.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
 import { type KCDHandle, type Workshop } from '#app/types.ts'
 import { getBlogRecommendations } from '#app/utils/blog.server.ts'
@@ -222,16 +222,13 @@ export default function WorkshopScreen() {
 									)}
 								</React.Fragment>
 							))
-						) : workshop.convertKitTag ? (
+						) : workshop.kitTag ? (
 							<>
 								<H6 as="p" className="mb-0">
 									Sign up to be notified when this workshop is scheduled
 								</H6>
 								<div className="mt-8">
-									<ConvertKitForm
-										formId="workshop-convert-kit"
-										convertKitTagId={workshop.convertKitTag}
-									/>
+									<KitForm formId="workshop-kit" kitTagId={workshop.kitTag} />
 								</div>
 							</>
 						) : null}

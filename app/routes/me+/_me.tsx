@@ -52,7 +52,7 @@ import {
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import {
-	deleteConvertKitCache,
+	deleteKitCache,
 	deleteDiscordCache,
 	gravatarExistsForEmail,
 } from '#app/utils/user-info.server.ts'
@@ -193,7 +193,7 @@ export async function action({ request }: ActionFunctionArgs) {
 			const session = await getSession(request)
 			await session.signOut()
 			if (user.discordId) await deleteDiscordCache(user.discordId)
-			if (user.convertKitId) await deleteConvertKitCache(user.convertKitId)
+			if (user.kitId) await deleteKitCache(user.kitId)
 
 			await prisma.user.delete({ where: { id: user.id } })
 			const searchParams = new URLSearchParams({

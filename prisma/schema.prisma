@@ -18,19 +18,19 @@ generator client {
 }
 
 model User {
-  id           String     @id @default(uuid())
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  email        String     @unique(map: "User.email_unique")
-  firstName    String
-  discordId    String?
-  convertKitId String?
-  role         String     @default("MEMBER")
-  team         String
-  passkeys     Passkey[]
-  calls        Call[]
-  sessions     Session[]
-  postReads    PostRead[]
+  id        String     @id @default(uuid())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  email     String     @unique(map: "User.email_unique")
+  firstName String
+  discordId String?
+  kitId     String?
+  role      String     @default("MEMBER")
+  team      String
+  passkeys  Passkey[]
+  calls     Call[]
+  sessions  Session[]
+  postReads PostRead[]
 
   @@index([team])
 }

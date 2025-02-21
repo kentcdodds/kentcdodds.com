@@ -9,7 +9,7 @@ meta:
 categories:
   - react
   - remix
-convertKitTag: '2569493'
+kitTag: '2569493'
 problemStatements:
   part1: Authenticating your users can be tricky business
   part2: And it can be pretty bad if you get it wrong
