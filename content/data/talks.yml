@@ -11,8 +11,6 @@
   deliveries:
     - event: '[Devoxx Greece](https://devoxx.gr/)'
       date: 2025-04-11
-    - event: '[React Paris](https://react.paris/)'
-      date: 2025-03-20
     - event: '[CityJS London](https://london.cityjsconf.org/)'
       date: 2025-04-23
   tags:
@@ -88,6 +86,9 @@
       date: 2024-10-18
     - event: '[React Summit US 2024](https://reactsummit.us/)'
       date: 2024-11-20
+    - event: '[React Paris](https://react.paris/)'
+      date: 2025-03-20
+      recording: https://www.youtube.com/watch?v=-W3_dxNDHVw&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
   tags:
     - keynote
     - react
