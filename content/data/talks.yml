@@ -41,14 +41,31 @@
   description: >-
     To be announced.
 
-- title: Epic Web Conf 2025 Talk
+- title: Of Things Epic
   deliveries:
     - event: '[Epic Web Conf](https://epicweb.dev/conf/2025)'
+      recording: 'https://www.youtube.com/live/SDuvi5eUqp0?si=NT7xv_1o6Rx_QprE&t=2100'
+      date: 2025-03-27
+  tags:
+    - react
+    - epic web
+    - epic stack
+  description: >-
+    Let's talk about how things are going in the world of Epic Web and the Epic
+    Stack.
+
+- title: Building Modern Web Apps with Epic Stack
+  deliveries:
+    - event: '[Remix Paris Meetup](https://www.meetup.com/remix-paris/)'
+      recording: 'https://www.youtube.com/watch?v=CovjyIGoHPg?list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf'
       date: 2025-03-25
   tags:
     - react
+    - remix
+    - epic stack
   description: >-
-    To be announced.
+    Learn about what the Epic Stack is, and how to use it to build modern web
+    apps.
 
 - title: Stop Lying to your Users
   deliveries:
