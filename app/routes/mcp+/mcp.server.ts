@@ -23,7 +23,7 @@ export const server = new McpServer(
 )
 
 server.tool(
-	'Find content',
+	'find_content',
 	'Search for content on kentcdodds.com',
 	{
 		query: z
@@ -91,7 +91,7 @@ server.tool(
 )
 
 server.tool(
-	'Get blog post',
+	'get_blog_post',
 	'Get the content of a specific blog post by its slug',
 	{ slug: z.string().describe('The slug of the blog post to retrieve') },
 	async ({ slug }) => {
@@ -118,7 +118,7 @@ server.tool(
 )
 
 server.tool(
-	'Get "Chats with Kent" Episode Details',
+	'get_chats_with_kent_episode_details',
 	'Get the details (title, description, transcript, etc.) for a specific episode of the Chats with Kent podcast by its season number and episode number',
 	{
 		seasonNumber: z.number().describe('The number of the season to retrieve'),
@@ -163,7 +163,7 @@ server.tool(
 )
 
 server.tool(
-	'Subscribe to newsletter',
+	'subscribe_to_newsletter',
 	'Subscribe to Kent C. Dodds newsletter and get regular updates about new articles, courses, and workshops',
 	{
 		email: z
