@@ -41,6 +41,47 @@
   description: >-
     To be announced.
 
+- title: The new "App Store"
+  deliveries:
+    - event:
+        '[GreeceJS Meetup
+        #52](https://www.meetup.com/greecejs/events/307030808/)'
+      date: 2025-04-09
+  tags:
+    - mcp
+    - ai
+  description: >-
+    We are entering a new era of user interaction. It's being built right before
+    our very eyes and changing rapidly. As crazy as it sounds, soon each one of
+    us will get our own Jarvis capable of performing actually useful tasks for
+    us with a completely different user interaction mechanism than we're used
+    to.
+
+
+    But someone's gotta give Jarvis the tools to perform these tasks, and that's
+    where we come in.
+
+
+    In this talk, Kent will live code an MCP server and use it with an AI
+    assistant to help us catch the vision of what this future could look like
+    and our role in it.
+
+- title: 'Let AI talk to your app'
+  deliveries:
+    - event:
+        '[Remix Utah Meetup](https://www.meetup.com/remix-utah/events/307050493)'
+      date: 2025-04-03
+  tags:
+    - mcp
+    - ai
+    - remix
+    - react router
+  description: >-
+    MCP (Model Context Protocol) is a major step in the disruptive changes we're
+    seeing in the industry. In this talk, Kent will show you how to add an MCP
+    endpoint so AI clients can interact with their data in your existing
+    application.
+
 - title: Of Things Epic
   deliveries:
     - event: '[Epic Web Conf](https://epicweb.dev/conf/2025)'
