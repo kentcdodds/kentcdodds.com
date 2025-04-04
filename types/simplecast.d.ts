@@ -8,7 +8,7 @@ type SimplecastEpisode = {
 	id: string
 	duration: number
 	number: number
-	transcription: string
+	transcription: string | null
 	status: 'draft' | 'published'
 	is_published: boolean
 	updated_at: string
@@ -17,7 +17,7 @@ type SimplecastEpisode = {
 	slug: string
 	description?: string
 	season: SimpelcastSeasonListItem
-	long_description: string
+	long_description: string | null
 	title: string
 	keywords: SimplecastCollectionResponse<{ value: string }>
 	enclosure_url: string

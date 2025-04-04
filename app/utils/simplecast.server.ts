@@ -213,13 +213,24 @@ async function getEpisode(episodeId: string) {
 		descriptionHTML,
 		{ summaryHTML, homeworkHTMLs, resources, guests },
 	] = await Promise.all([
-		transcriptMarkdown.trim().startsWith('<')
-			? transcriptMarkdown
-			: markdownToHtml(transcriptMarkdown),
-		descriptionMarkdown.trim().startsWith('<')
-			? descriptionMarkdown
-			: markdownToHtml(descriptionMarkdown),
-		parseSummaryMarkdown(summaryMarkdown, `${id}-${slug}`),
+		transcriptMarkdown
+			? transcriptMarkdown.trim().startsWith('<')
+				? transcriptMarkdown
+				: markdownToHtml(transcriptMarkdown)
+			: '',
+		descriptionMarkdown
+			? descriptionMarkdown.trim().startsWith('<')
+				? descriptionMarkdown
+				: markdownToHtml(descriptionMarkdown)
+			: '',
+		summaryMarkdown
+			? parseSummaryMarkdown(summaryMarkdown, `${id}-${slug}`)
+			: {
+					summaryHTML: '',
+					homeworkHTMLs: [],
+					resources: [],
+					guests: [],
+				},
 	])
 
 	const cwkEpisode: CWKEpisode = {
