@@ -17,17 +17,17 @@ function getErrorForEmail(email: string | null) {
 }
 
 function getErrorForkitTagId(tagId: string | null, form: URLSearchParams) {
-	if (!form.get('KitFormId') && !tagId) {
-		return `kitTagId is required if KitFormId is not specified`
+	if (!form.get('kitFormId') && !tagId) {
+		return `kitTagId is required if kitFormId is not specified`
 	}
 	if (!tagId) return null
 	if (tagId.length < 2) return `Convert Kit Tag ID is incorrect`
 	return null
 }
 
-function getErrorForKitFormId(formId: string | null, form: URLSearchParams) {
+function getErrorForkitFormId(formId: string | null, form: URLSearchParams) {
 	if (!form.get('kitTagId') && !formId) {
-		return `KitFormId is required if kitTagId is not specified`
+		return `kitFormId is required if kitTagId is not specified`
 	}
 	if (!formId) return null
 	if (formId.length < 2) return `Convert Kit Form ID is incorrect`
@@ -48,7 +48,7 @@ async function handleKitFormSubmission(request: Request) {
 		firstName: form.get('firstName') ?? '',
 		email: form.get('email') ?? '',
 		kitTagId: form.get('kitTagId') ?? '',
-		KitFormId: form.get('KitFormId') ?? '',
+		kitFormId: form.get('kitFormId') ?? '',
 		url: form.get('url'),
 	}
 
@@ -58,7 +58,7 @@ async function handleKitFormSubmission(request: Request) {
 		firstName: getErrorForFirstName(fields.firstName),
 		email: getErrorForEmail(fields.email),
 		kitTagId: getErrorForkitTagId(fields.kitTagId, form),
-		KitFormId: getErrorForKitFormId(fields.KitFormId, form),
+		kitFormId: getErrorForkitFormId(fields.kitFormId, form),
 		url: null,
 	}
 
@@ -77,7 +77,7 @@ async function handleKitFormSubmission(request: Request) {
 
 	try {
 		let subscriberId: number | null = null
-		if (fields.KitFormId) {
+		if (fields.kitFormId) {
 			const subscriber = await ck.addSubscriberToForm(fields)
 			subscriberId = subscriber.id
 		}

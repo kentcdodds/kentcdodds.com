@@ -172,7 +172,7 @@ export default function SubscribeScreen() {
 								id="subscribe-form"
 								className="col-span-full mt-8 lg:col-span-7"
 							>
-								<KitForm formId="newsletter" KitFormId="827139" />
+								<KitForm formId="newsletter" kitFormId="827139" />
 							</div>
 						</>
 					)}

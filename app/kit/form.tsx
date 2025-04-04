@@ -9,11 +9,11 @@ import { type ActionData } from './types.ts'
 function KitForm({
 	formId,
 	kitTagId,
-	KitFormId,
+	kitFormId,
 }: { formId: string } & (
-	| { kitTagId?: never; KitFormId: string }
-	| { kitTagId: string; KitFormId?: never }
-	| { kitTagId: string; KitFormId: string }
+	| { kitTagId?: never; kitFormId: string }
+	| { kitTagId: string; kitFormId?: never }
+	| { kitTagId: string; kitFormId: string }
 )) {
 	const websiteId = React.useId()
 	const kit = useFetcher<ActionData>()
@@ -54,7 +54,7 @@ function KitForm({
 			</div>
 			<input type="hidden" name="formId" value={formId} />
 			<input type="hidden" name="kitTagId" value={kitTagId} />
-			<input type="hidden" name="KitFormId" value={KitFormId} />
+			<input type="hidden" name="kitFormId" value={kitFormId} />
 			<Field
 				name="firstName"
 				label="First name"

@@ -4,7 +4,7 @@ export type Fields = {
 	email: string
 	url: string | null
 	kitTagId: string
-	KitFormId: string
+	kitFormId: string
 }
 export type Errors = Record<keyof Fields | 'generalError', string | null>
 

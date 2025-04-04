@@ -31,7 +31,7 @@ function NewsletterSection() {
 			</div>
 
 			<div className="mt-8">
-				<KitForm formId="newsletter" KitFormId="827139" />
+				<KitForm formId="newsletter" kitFormId="827139" />
 			</div>
 		</div>
 	)

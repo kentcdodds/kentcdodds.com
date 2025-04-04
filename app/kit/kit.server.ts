@@ -57,7 +57,7 @@ async function ensureSubscriber({
 		subscriber = await addSubscriberToForm({
 			email,
 			firstName,
-			KitFormId: '2500372',
+			kitFormId: '2500372',
 		})
 	}
 
@@ -67,11 +67,11 @@ async function ensureSubscriber({
 async function addSubscriberToForm({
 	email,
 	firstName,
-	KitFormId,
+	kitFormId,
 }: {
 	email: string
 	firstName: string
-	KitFormId: string
+	kitFormId: string
 }) {
 	const subscriberData = {
 		api_key: KIT_API_KEY,
@@ -83,7 +83,7 @@ async function addSubscriberToForm({
 	// this is a basic form that doesn't really do anything. It's just a way to
 	// get the users on the mailing list
 	const response = await fetch(
-		`https://api.kit.com/v3/forms/${KitFormId}/subscribe`,
+		`https://api.kit.com/v3/forms/${kitFormId}/subscribe`,
 		{
 			method: 'POST',
 			body: JSON.stringify(subscriberData),
