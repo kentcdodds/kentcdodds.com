@@ -9,22 +9,35 @@ import { getTalksAndTags } from '#app/utils/talks.server.ts'
 import { getEpisodes as getCallKentEpisodes } from '#app/utils/transistor.server.ts'
 import { getWorkshops } from '#app/utils/workshops.server.ts'
 
+type Item = {
+	route: string
+	title: string
+	values: {
+		priority: string | Array<string | undefined>
+		other: Array<string | undefined>
+	}
+} & (
+	| {
+			segment: 'Blog Posts' | 'Talks' | 'Workshops'
+			metadata: {
+				slug: string
+				seasonNumber?: never
+				episodeNumber?: never
+			}
+	  }
+	| {
+			segment: 'Call Kent Podcast Episodes' | 'Chats with Kent Episodes'
+			metadata: {
+				slug?: never
+				seasonNumber: number
+				episodeNumber: number
+			}
+	  }
+)
+
 type NormalizedItemGroup = {
-	prefix: string
-	items: Array<{
-		route: string
-		title: string
-		segment:
-			| 'Blog Posts'
-			| 'Chats with Kent Episodes'
-			| 'Talks'
-			| 'Call Kent Podcast Episodes'
-			| 'Workshops'
-		values: {
-			priority: string | Array<string | undefined>
-			other: Array<string | undefined>
-		}
-	}>
+	prefix: 'b' | 't' | 'cwk' | 'ck' | 'w'
+	items: Array<Item>
 }
 
 export async function searchKCD({
@@ -50,6 +63,7 @@ export async function searchKCD({
 				route: `/blog/${p.slug}`,
 				segment: 'Blog Posts',
 				title: p.frontmatter.title ?? 'Untitled',
+				metadata: { slug: p.slug },
 				values: {
 					priority: p.frontmatter.title ?? '',
 					other: [
@@ -67,6 +81,7 @@ export async function searchKCD({
 					route: `/talks/${t.slug}`,
 					segment: 'Talks',
 					title: t.title,
+					metadata: { slug: t.slug },
 					values: {
 						priority: t.title,
 						other: [
@@ -96,6 +111,10 @@ export async function searchKCD({
 						}),
 						title: e.title,
 						segment: 'Chats with Kent Episodes',
+						metadata: {
+							seasonNumber: e.seasonNumber,
+							episodeNumber: e.episodeNumber,
+						},
 						values: {
 							priority: [
 								e.title,
@@ -123,6 +142,10 @@ export async function searchKCD({
 				}),
 				title: e.title,
 				segment: 'Call Kent Podcast Episodes',
+				metadata: {
+					seasonNumber: e.seasonNumber,
+					episodeNumber: e.episodeNumber,
+				},
 				values: {
 					priority: e.title,
 					other: [e.description, ...e.keywords],
@@ -136,6 +159,7 @@ export async function searchKCD({
 					route: `/workshops/${w.slug}`,
 					title: w.title,
 					segment: 'Workshops',
+					metadata: { slug: w.slug },
 					values: {
 						priority: w.title,
 						other: [

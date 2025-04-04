@@ -156,7 +156,7 @@ export async function getBlogMdxListItems(options: CachifiedOptions) {
 	})
 }
 
-async function downloadMdxFilesCached(
+export async function downloadMdxFilesCached(
 	contentDir: string,
 	slug: string,
 	options: CachifiedOptions,

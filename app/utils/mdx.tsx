@@ -217,15 +217,15 @@ function ThemedBlogImage({
 }
 
 function SubscribeForm(props: Record<string, unknown>) {
-	const { formId, kitTagId, KitFormId } = props
+	const { formId, kitTagId, kitFormId } = props
 
 	if (
 		typeof formId !== 'string' ||
-		typeof KitFormId !== 'string' ||
+		typeof kitFormId !== 'string' ||
 		typeof kitTagId !== 'string'
 	) {
 		console.error(
-			`SubscribeForm improperly used. Must have a formId, KitFormId, and kitTagId`,
+			`SubscribeForm improperly used. Must have a formId, kitFormId, and kitTagId`,
 			props,
 		)
 		return null
@@ -233,7 +233,7 @@ function SubscribeForm(props: Record<string, unknown>) {
 
 	return (
 		<div className="mb-12 border-b-2 border-t-2 border-team-current p-5">
-			<KitForm formId={formId} KitFormId={KitFormId} kitTagId={kitTagId} />
+			<KitForm formId={formId} kitFormId={kitFormId} kitTagId={kitTagId} />
 		</div>
 	)
 }
