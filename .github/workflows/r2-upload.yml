@@ -20,11 +20,12 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          aws-region: auto
-          endpoint-url: https://a41d50ecaf0ae0f86dd1824ef6729cb2.r2.cloudflarestorage.com
+          aws-region: us-east-1
 
       - name: Sync content directory to R2
+        env:
+          AWS_ENDPOINT_URL: https://a41d50ecaf0ae0f86dd1824ef6729cb2.r2.cloudflarestorage.com
         run: |
           aws s3 sync content/ s3://kcd-rag/content/ \
-            --endpoint-url https://a41d50ecaf0ae0f86dd1824ef6729cb2.r2.cloudflarestorage.com \
+            --endpoint-url $AWS_ENDPOINT_URL \
             --size-only --delete
