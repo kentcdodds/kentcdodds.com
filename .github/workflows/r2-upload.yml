@@ -15,6 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install AWS CLI
+        uses: unfor19/install-aws-cli-action@v1.0.7
+
       - name: Sync content directory to R2
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
