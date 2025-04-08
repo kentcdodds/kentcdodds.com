@@ -18,6 +18,20 @@ jobs:
       - name: Install AWS CLI
         uses: unfor19/install-aws-cli-action@v1.0.7
 
+      - name: Verify R2 Access
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_ENDPOINT_URL: https://a41d50ecaf0ae0f86dd1824ef6729cb2.r2.cloudflarestorage.com
+          AWS_DEFAULT_REGION: auto
+        run: |
+          echo "Testing bucket access..."
+          aws s3 ls s3://kcd-rag/ --endpoint-url $AWS_ENDPOINT_URL
+          echo "Testing bucket write..."
+          echo "test" > test.txt
+          aws s3 cp test.txt s3://kcd-rag/test.txt --endpoint-url $AWS_ENDPOINT_URL
+          aws s3 rm s3://kcd-rag/test.txt --endpoint-url $AWS_ENDPOINT_URL
+
       - name: Sync content directory to R2
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
@@ -25,6 +39,13 @@ jobs:
           AWS_ENDPOINT_URL: https://a41d50ecaf0ae0f86dd1824ef6729cb2.r2.cloudflarestorage.com
           AWS_DEFAULT_REGION: auto
         run: |
+          echo "Files to be synced:"
+          find content -type f | wc -l
+
+          echo "Starting sync..."
           aws s3 sync content/ s3://kcd-rag/content/ \
             --endpoint-url $AWS_ENDPOINT_URL \
             --size-only --delete
+
+          echo "Verifying upload..."
+          aws s3 ls s3://kcd-rag/content/ --endpoint-url $AWS_ENDPOINT_URL --recursive
