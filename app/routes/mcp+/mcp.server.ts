@@ -225,12 +225,13 @@ function createServer() {
 	return server
 }
 
+const server = createServer()
+
 export async function connect(sessionId?: string | null) {
 	const transport = new FetchSSEServerTransport('/mcp', sessionId)
 	transport.onclose = () => {
 		transports.delete(transport.sessionId)
 	}
-	const server = createServer()
 	await server.connect(transport)
 	transports.set(transport.sessionId, transport)
 	return transport
