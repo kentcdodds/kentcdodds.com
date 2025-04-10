@@ -41,12 +41,14 @@
   description: >-
     To be announced.
 
-- title: The new "App Store"
+- title: Letting AI Interface with Your App with MCPs
   deliveries:
     - event:
         '[GreeceJS Meetup
         #52](https://www.meetup.com/greecejs/events/307030808/)'
       date: 2025-04-09
+    - event: '[Devoxx Greece](https://devoxx.gr/)'
+      date: 2025-04-11
   tags:
     - mcp
     - ai
