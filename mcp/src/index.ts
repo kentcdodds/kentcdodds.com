@@ -66,7 +66,7 @@ export class MyMCP extends McpAgent {
 				if (category) params.append('category', category)
 
 				const response = await fetch(
-					`https://kentcdodds.com/api/find-content?${params}`,
+					`https://kentcdodds.com/resources/mcp/find-content?${params}`,
 				)
 				const results = (await response.json()) as SearchResult[]
 
@@ -95,7 +95,7 @@ export class MyMCP extends McpAgent {
 			},
 			async ({ slug }) => {
 				const response = await fetch(
-					`https://kentcdodds.com/api/blog-post/${slug}`,
+					`https://kentcdodds.com/resources/mcp/blog-post/${slug}`,
 				)
 
 				if (!response.ok) {
@@ -135,7 +135,7 @@ export class MyMCP extends McpAgent {
 			},
 			async ({ seasonNumber, episodeNumber }) => {
 				const response = await fetch(
-					`https://kentcdodds.com/api/chats-with-kent-episode/${seasonNumber}/${episodeNumber}`,
+					`https://kentcdodds.com/resources/mcp/chats-with-kent-episode/${seasonNumber}/${episodeNumber}`,
 				)
 
 				if (!response.ok) {
@@ -198,7 +198,7 @@ export class MyMCP extends McpAgent {
 				if (firstName) formData.append('firstName', firstName)
 
 				const response = await fetch(
-					'https://kentcdodds.com/api/subscribe-to-newsletter',
+					'https://kentcdodds.com/resources/mcp/subscribe-to-newsletter',
 					{
 						method: 'POST',
 						body: formData,
