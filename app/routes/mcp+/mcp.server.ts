@@ -2,6 +2,11 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 import { addSubscriberToForm } from '#app/kit/kit.server.js'
+import { cache, cachified } from '#app/utils/cache.server.js'
+import {
+	ensureInstance,
+	getInstanceInfo,
+} from '#app/utils/cjs/litefs-js.server.js'
 import { downloadMdxFilesCached } from '#app/utils/mdx.server.js'
 import { getDomainUrl, getErrorMessage } from '#app/utils/misc.js'
 import { searchKCD } from '#app/utils/search.server.js'
@@ -228,15 +233,39 @@ function createServer() {
 const server = createServer()
 
 export async function connect(sessionId?: string | null) {
+	const { currentInstance } = await getInstanceInfo()
 	const transport = new FetchSSEServerTransport('/mcp', sessionId)
 	transport.onclose = () => {
 		transports.delete(transport.sessionId)
 	}
 	await server.connect(transport)
 	transports.set(transport.sessionId, transport)
+
+	// we're cheating to get this sessionId into the cache so it's accessible in
+	// every instance.
+	await cachified({
+		key: `mcp-${sessionId}`,
+		cache,
+		ttl: 60 * 60 * 24 * 30,
+		getFreshValue() {
+			return {
+				sessionId,
+				instance: currentInstance,
+			}
+		},
+	})
 	return transport
 }
 
 export async function getTransport(sessionId: string) {
+	const { instance } = await cachified({
+		key: `mcp-${sessionId}`,
+		cache,
+		getFreshValue() {
+			throw new Error(`Instance for sessionId "${sessionId}" not found`)
+		},
+	})
+	ensureInstance(instance)
+
 	return transports.get(sessionId)
 }
