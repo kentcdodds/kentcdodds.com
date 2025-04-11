@@ -4,36 +4,41 @@ import { McpAgent } from 'agents/mcp'
 import { z } from 'zod'
 import app from './app'
 
-type SearchResult = {
-	title: string
-	url: string
-	category: string
-	metadata?: Record<string, unknown>
-}
-
-type BlogFile = {
-	path: string
-	content: string
-}
-
-type EpisodeDetails = {
-	title: string
-	description: string
-	transcript: string | null
-}
-
-type NewsletterResponse = {
-	message?: string
-	error?: string
-}
-
 export class MyMCP extends McpAgent {
-	server = new McpServer({
-		name: 'Demo',
-		version: '1.0.0',
-	})
+	server = new McpServer(
+		{
+			name: 'kentcdodds.com',
+			version: '1.0.0',
+		},
+		{
+			instructions:
+				'You are a helpful assistant that can help with a variety of tasks. You can search for content on kentcdodds.com, get the content of a specific blog post by its slug, get the details (title, description, transcript, etc.) for a specific episode of the Chats with Kent podcast by its season number and episode number, and subscribe to Kent C. Dodds newsletter and get regular updates about new articles, courses, and workshops.',
+		},
+	)
 
 	async init() {
+		type SearchResult = {
+			title: string
+			url: string
+			category: string
+			metadata?: Record<string, unknown>
+		}
+
+		type BlogFile = {
+			path: string
+			content: string
+		}
+
+		type EpisodeDetails = {
+			title: string
+			description: string
+			transcript: string | null
+		}
+
+		type NewsletterResponse = {
+			message?: string
+			error?: string
+		}
 		this.server.tool(
 			'find_content',
 			'Search for content on kentcdodds.com',

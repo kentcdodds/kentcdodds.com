@@ -1,23 +1,23 @@
 // Helper to generate the layout
-import { type AuthRequest } from '@cloudflare/workers-oauth-provider'
-import { env } from 'cloudflare:workers'
-import { html, raw } from 'hono/html'
-import { type HtmlEscapedString } from 'hono/utils/html'
-import { marked } from 'marked'
+import { html, raw } from "hono/html";
+import type { HtmlEscapedString } from "hono/utils/html";
+import { marked } from "marked";
+import type { AuthRequest } from "@cloudflare/workers-oauth-provider";
+import { env } from "cloudflare:workers";
 
 // This file mainly exists as a dumping ground for uninteresting html and CSS
 // to remove clutter and noise from the auth logic. You likely do not need
 // anything from this file.
 
-export const layout = (
-	content: HtmlEscapedString | string,
-	title: string,
-) => html`
-	<!doctype html>
+export const layout = (content: HtmlEscapedString | string, title: string) => html`
+	<!DOCTYPE html>
 	<html lang="en">
 		<head>
 			<meta charset="UTF-8" />
-			<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+			<meta
+				name="viewport"
+				content="width=device-width, initial-scale=1.0"
+			/>
 			<title>${title}</title>
 			<script src="https://cdn.tailwindcss.com"></script>
 			<script>
@@ -25,26 +25,26 @@ export const layout = (
 					theme: {
 						extend: {
 							colors: {
-								primary: '#3498db',
-								secondary: '#2ecc71',
-								accent: '#f39c12',
+								primary: "#3498db",
+								secondary: "#2ecc71",
+								accent: "#f39c12",
 							},
 							fontFamily: {
-								sans: ['Inter', 'system-ui', 'sans-serif'],
-								heading: ['Roboto', 'system-ui', 'sans-serif'],
+								sans: ["Inter", "system-ui", "sans-serif"],
+								heading: ["Roboto", "system-ui", "sans-serif"],
 							},
 						},
 					},
-				}
+				};
 			</script>
 			<style>
-				@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap');
+				@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap");
 
 				/* Custom styling for markdown content */
 				.markdown h1 {
 					font-size: 2.25rem;
 					font-weight: 700;
-					font-family: 'Roboto', system-ui, sans-serif;
+					font-family: "Roboto", system-ui, sans-serif;
 					color: #1a202c;
 					margin-bottom: 1rem;
 					line-height: 1.2;
@@ -53,7 +53,7 @@ export const layout = (
 				.markdown h2 {
 					font-size: 1.5rem;
 					font-weight: 600;
-					font-family: 'Roboto', system-ui, sans-serif;
+					font-family: "Roboto", system-ui, sans-serif;
 					color: #2d3748;
 					margin-top: 1.5rem;
 					margin-bottom: 0.75rem;
@@ -63,7 +63,7 @@ export const layout = (
 				.markdown h3 {
 					font-size: 1.25rem;
 					font-weight: 600;
-					font-family: 'Roboto', system-ui, sans-serif;
+					font-family: "Roboto", system-ui, sans-serif;
 					color: #2d3748;
 					margin-top: 1.25rem;
 					margin-bottom: 0.5rem;
@@ -146,64 +146,73 @@ export const layout = (
 			</style>
 		</head>
 		<body
-			class="bg-gray-50 flex min-h-screen flex-col font-sans leading-relaxed text-gray-800"
+			class="bg-gray-50 text-gray-800 font-sans leading-relaxed flex flex-col min-h-screen"
 		>
-			<header class="mb-8 bg-white shadow-sm">
+			<header class="bg-white shadow-sm mb-8">
 				<div
-					class="container mx-auto flex items-center justify-between px-4 py-4"
+					class="container mx-auto px-4 py-4 flex justify-between items-center"
 				>
 					<a
 						href="/"
-						class="font-heading text-primary hover:text-primary/80 text-xl font-bold transition-colors"
+						class="text-xl font-heading font-bold text-primary hover:text-primary/80 transition-colors"
 						>MCP Remote Auth Demo</a
 					>
 				</div>
 			</header>
-			<main class="container mx-auto flex-grow px-4 pb-12">${content}</main>
-			<footer class="mt-12 bg-gray-100 py-6">
+			<main class="container mx-auto px-4 pb-12 flex-grow">
+				${content}
+			</main>
+			<footer class="bg-gray-100 py-6 mt-12">
 				<div class="container mx-auto px-4 text-center text-gray-600">
 					<p>
-						&copy; ${new Date().getFullYear()} MCP Remote Auth Demo. All rights
-						reserved.
+						&copy; ${new Date().getFullYear()} MCP Remote Auth Demo.
+						All rights reserved.
 					</p>
 				</div>
 			</footer>
 		</body>
 	</html>
-`
+`;
 
 export const homeContent = async (req: Request): Promise<HtmlEscapedString> => {
 	// We have the README symlinked into the static directory, so we can fetch it
 	// and render it into HTML
-	const origin = new URL(req.url).origin
-	const res = await env.ASSETS.fetch(`${origin}/README.md`)
-	const markdown = await res.text()
-	const content = await marked(markdown)
-	return html` <div class="markdown mx-auto max-w-4xl">${raw(content)}</div> `
-}
+	const origin = new URL(req.url).origin;
+	const res = await env.ASSETS.fetch(`${origin}/README.md`);
+	const markdown = await res.text();
+	const content = await marked(markdown);
+	return html`
+		<div class="max-w-4xl mx-auto markdown">${raw(content)}</div>
+	`;
+};
 
 export const renderLoggedInAuthorizeScreen = async (
 	oauthScopes: { name: string; description: string }[],
 	oauthReqInfo: AuthRequest,
 ) => {
 	return html`
-		<div class="mx-auto max-w-md rounded-lg bg-white p-8 shadow-md">
-			<h1 class="font-heading mb-6 text-2xl font-bold text-gray-900">
+		<div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
+			<h1 class="text-2xl font-heading font-bold mb-6 text-gray-900">
 				Authorization Request
 			</h1>
 
 			<div class="mb-8">
-				<h2 class="mb-3 text-lg font-semibold text-gray-800">
+				<h2 class="text-lg font-semibold mb-3 text-gray-800">
 					MCP Remote Auth Demo would like permission to:
 				</h2>
 				<ul class="space-y-2">
 					${oauthScopes.map(
 						(scope) => html`
 							<li class="flex items-start">
-								<span class="text-secondary mr-2 mt-1 inline-block">✓</span>
+								<span
+									class="inline-block mr-2 mt-1 text-secondary"
+									>✓</span
+								>
 								<div>
 									<p class="font-medium">${scope.name}</p>
-									<p class="text-sm text-gray-600">${scope.description}</p>
+									<p class="text-gray-600 text-sm">
+										${scope.description}
+									</p>
 								</div>
 							</li>
 						`,
@@ -221,7 +230,7 @@ export const renderLoggedInAuthorizeScreen = async (
 					type="submit"
 					name="action"
 					value="approve"
-					class="bg-secondary hover:bg-secondary/90 w-full rounded-md px-4 py-3 font-medium text-white transition-colors"
+					class="w-full py-3 px-4 bg-secondary text-white rounded-md font-medium hover:bg-secondary/90 transition-colors"
 				>
 					Approve
 				</button>
@@ -229,37 +238,42 @@ export const renderLoggedInAuthorizeScreen = async (
 					type="submit"
 					name="action"
 					value="reject"
-					class="hover:bg-gray-50 w-full rounded-md border border-gray-300 px-4 py-3 font-medium text-gray-700 transition-colors"
+					class="w-full py-3 px-4 border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-50 transition-colors"
 				>
 					Reject
 				</button>
 			</form>
 		</div>
-	`
-}
+	`;
+};
 
 export const renderLoggedOutAuthorizeScreen = async (
 	oauthScopes: { name: string; description: string }[],
 	oauthReqInfo: AuthRequest,
 ) => {
 	return html`
-		<div class="mx-auto max-w-md rounded-lg bg-white p-8 shadow-md">
-			<h1 class="font-heading mb-6 text-2xl font-bold text-gray-900">
+		<div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
+			<h1 class="text-2xl font-heading font-bold mb-6 text-gray-900">
 				Authorization Request
 			</h1>
 
 			<div class="mb-8">
-				<h2 class="mb-3 text-lg font-semibold text-gray-800">
+				<h2 class="text-lg font-semibold mb-3 text-gray-800">
 					MCP Remote Auth Demo would like permission to:
 				</h2>
 				<ul class="space-y-2">
 					${oauthScopes.map(
 						(scope) => html`
 							<li class="flex items-start">
-								<span class="text-secondary mr-2 mt-1 inline-block">✓</span>
+								<span
+									class="inline-block mr-2 mt-1 text-secondary"
+									>✓</span
+								>
 								<div>
 									<p class="font-medium">${scope.name}</p>
-									<p class="text-sm text-gray-600">${scope.description}</p>
+									<p class="text-gray-600 text-sm">
+										${scope.description}
+									</p>
 								</div>
 							</li>
 						`,
@@ -276,7 +290,7 @@ export const renderLoggedOutAuthorizeScreen = async (
 					<div>
 						<label
 							for="email"
-							class="mb-1 block text-sm font-medium text-gray-700"
+							class="block text-sm font-medium text-gray-700 mb-1"
 							>Email</label
 						>
 						<input
@@ -284,13 +298,13 @@ export const renderLoggedOutAuthorizeScreen = async (
 							id="email"
 							name="email"
 							required
-							class="focus:ring-primary/50 focus:border-primary w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2"
+							class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
 						/>
 					</div>
 					<div>
 						<label
 							for="password"
-							class="mb-1 block text-sm font-medium text-gray-700"
+							class="block text-sm font-medium text-gray-700 mb-1"
 							>Password</label
 						>
 						<input
@@ -298,7 +312,7 @@ export const renderLoggedOutAuthorizeScreen = async (
 							id="password"
 							name="password"
 							required
-							class="focus:ring-primary/50 focus:border-primary w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2"
+							class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
 						/>
 					</div>
 				</div>
@@ -306,7 +320,7 @@ export const renderLoggedOutAuthorizeScreen = async (
 					type="submit"
 					name="action"
 					value="login_approve"
-					class="bg-primary hover:bg-primary/90 w-full rounded-md px-4 py-3 font-medium text-white transition-colors"
+					class="w-full py-3 px-4 bg-primary text-white rounded-md font-medium hover:bg-primary/90 transition-colors"
 				>
 					Log in and Approve
 				</button>
@@ -314,14 +328,14 @@ export const renderLoggedOutAuthorizeScreen = async (
 					type="submit"
 					name="action"
 					value="reject"
-					class="hover:bg-gray-50 w-full rounded-md border border-gray-300 px-4 py-3 font-medium text-gray-700 transition-colors"
+					class="w-full py-3 px-4 border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-50 transition-colors"
 				>
 					Reject
 				</button>
 			</form>
 		</div>
-	`
-}
+	`;
+};
 
 export const renderApproveContent = async (
 	message: string,
@@ -329,17 +343,21 @@ export const renderApproveContent = async (
 	redirectUrl: string,
 ) => {
 	return html`
-		<div class="mx-auto max-w-md rounded-lg bg-white p-8 text-center shadow-md">
+		<div
+			class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md text-center"
+		>
 			<div class="mb-4">
 				<span
-					class="${status === 'success'
-						? 'bg-green-100 text-green-800'
-						: 'bg-red-100 text-red-800'} inline-block rounded-full p-3"
+					class="inline-block p-3 ${
+						status === "success"
+							? "bg-green-100 text-green-800"
+							: "bg-red-100 text-red-800"
+					} rounded-full"
 				>
-					${status === 'success' ? '✓' : '✗'}
+					${status === "success" ? "✓" : "✗"}
 				</span>
 			</div>
-			<h1 class="font-heading mb-4 text-2xl font-bold text-gray-900">
+			<h1 class="text-2xl font-heading font-bold mb-4 text-gray-900">
 				${message}
 			</h1>
 			<p class="mb-8 text-gray-600">
@@ -347,7 +365,7 @@ export const renderApproveContent = async (
 			</p>
 			<a
 				href="/"
-				class="bg-primary hover:bg-primary/90 inline-block rounded-md px-4 py-2 font-medium text-white transition-colors"
+				class="inline-block py-2 px-4 bg-primary text-white rounded-md font-medium hover:bg-primary/90 transition-colors"
 			>
 				Return to Home
 			</a>
@@ -359,33 +377,29 @@ export const renderApproveContent = async (
 				</script>
 			`)}
 		</div>
-	`
-}
+	`;
+};
 
-export const renderAuthorizationApprovedContent = async (
-	redirectUrl: string,
-) => {
-	return renderApproveContent('Authorization approved!', 'success', redirectUrl)
-}
+export const renderAuthorizationApprovedContent = async (redirectUrl: string) => {
+	return renderApproveContent("Authorization approved!", "success", redirectUrl);
+};
 
-export const renderAuthorizationRejectedContent = async (
-	redirectUrl: string,
-) => {
-	return renderApproveContent('Authorization rejected.', 'error', redirectUrl)
-}
+export const renderAuthorizationRejectedContent = async (redirectUrl: string) => {
+	return renderApproveContent("Authorization rejected.", "error", redirectUrl);
+};
 
 export const parseApproveFormBody = async (body: {
-	[x: string]: string | File
+	[x: string]: string | File;
 }) => {
-	const action = body.action as string
-	const email = body.email as string
-	const password = body.password as string
-	let oauthReqInfo: AuthRequest | null = null
+	const action = body.action as string;
+	const email = body.email as string;
+	const password = body.password as string;
+	let oauthReqInfo: AuthRequest | null = null;
 	try {
-		oauthReqInfo = JSON.parse(body.oauthReqInfo as string) as AuthRequest
+		oauthReqInfo = JSON.parse(body.oauthReqInfo as string) as AuthRequest;
 	} catch (e) {
-		oauthReqInfo = null
+		oauthReqInfo = null;
 	}
 
-	return { action, oauthReqInfo, email, password }
-}
+	return { action, oauthReqInfo, email, password };
+};
