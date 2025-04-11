@@ -23,7 +23,9 @@ export async function action({ request }: ActionFunctionArgs) {
 		invariantResponse(sessionId, 'No session ID')
 
 		const transport = await getTransport(sessionId)
-		invariantResponse(transport, 'No transport', { status: 404 })
+		invariantResponse(transport, `No transport for sessionId "${sessionId}"`, {
+			status: 404,
+		})
 
 		return transport.handlePostMessage(request)
 	})
