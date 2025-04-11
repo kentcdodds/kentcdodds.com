@@ -101,19 +101,6 @@ app.use(async (req, res, next) => {
 	next()
 })
 
-app.use(async (req, res, next) => {
-	if (req.get('cf-visitor')) {
-		// console.log(`👺 disallowed cf-visitor`, req.headers) // <-- this can be kinda noisy
-		// make them wait for it... Which should cost them money...
-		await new Promise((resolve) => setTimeout(resolve, 90_000))
-		return res.send(
-			'Please go to https://kcd.dev instead! Ping Kent if you think you should not be seeing this...',
-		)
-	} else {
-		return next()
-	}
-})
-
 app.use((req, res, next) => {
 	const proto = req.get('X-Forwarded-Proto')
 	const host = getHost(req)
