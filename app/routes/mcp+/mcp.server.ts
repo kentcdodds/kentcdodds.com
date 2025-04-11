@@ -244,12 +244,12 @@ export async function connect(sessionId?: string | null) {
 	// we're cheating to get this sessionId into the cache so it's accessible in
 	// every instance.
 	await cachified({
-		key: `mcp-${sessionId}`,
+		key: `mcp-${transport.sessionId}`,
 		cache,
 		ttl: 60 * 60 * 24 * 30,
 		getFreshValue() {
 			return {
-				sessionId,
+				sessionId: transport.sessionId,
 				instance: currentInstance,
 			}
 		},
