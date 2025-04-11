@@ -1,6 +1,7 @@
 {
 	"include": ["**/*.mdx", "**/*.ts", "**/*.tsx"],
 	"extends": ["@epic-web/config/typescript"],
+	"exclude": ["node_modules", "./mcp/**/*"],
 	"compilerOptions": {
 		"typeRoots": ["./types", "./node_modules/@types"],
 		"allowJs": true,
