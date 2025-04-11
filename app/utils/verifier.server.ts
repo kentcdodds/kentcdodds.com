@@ -1,6 +1,8 @@
 // verifier is an email verification service
 
+import { getKitSubscriber } from '#app/kit/kit.server.js'
 import { getErrorMessage, getRequiredServerEnvVar } from './misc.tsx'
+import { prisma } from './prisma.server.ts'
 
 const VERIFIER_API_KEY = getRequiredServerEnvVar('VERIFIER_API_KEY')
 
@@ -39,4 +41,23 @@ export async function verifyEmailAddress(emailAddress: string) {
 			domain: emailAddress.split('@')[1],
 		} as const
 	}
+}
+
+export async function isEmailVerified(
+	email: string,
+): Promise<{ verified: true } | { verified: false; message: string }> {
+	const userExists = Boolean(
+		await prisma.user.findUnique({
+			select: { id: true },
+			where: { email },
+		}),
+	)
+	if (userExists) return { verified: true }
+	const kitSubscriber = await getKitSubscriber(email)
+	if (kitSubscriber) return { verified: true }
+
+	const verifierResult = await verifyEmailAddress(email)
+	if (verifierResult.status) return { verified: true }
+
+	return { verified: false, message: verifierResult.error.message }
 }

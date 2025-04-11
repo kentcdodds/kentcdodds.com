@@ -11,6 +11,7 @@ import { downloadMdxFilesCached } from '#app/utils/mdx.server.js'
 import { getDomainUrl, getErrorMessage } from '#app/utils/misc.js'
 import { searchKCD } from '#app/utils/search.server.js'
 import { getSeasons as getChatsWithKentSeasons } from '#app/utils/simplecast.server.js'
+import { isEmailVerified } from '#app/utils/verifier.server.js'
 import { FetchSSEServerTransport } from './fetch-transport.server'
 
 export const requestStorage = new AsyncLocalStorage<Request>()
@@ -199,6 +200,15 @@ function createServer() {
 					],
 				}
 			}
+
+			const isVerified = await isEmailVerified(email)
+			if (!isVerified.verified) {
+				return {
+					isError: true,
+					content: [{ type: 'text', text: isVerified.message }],
+				}
+			}
+
 			try {
 				await addSubscriberToForm({
 					email,

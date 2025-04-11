@@ -1,7 +1,7 @@
 import {
-	type ActionFunctionArgs,
 	json,
 	redirect,
+	type ActionFunctionArgs,
 	type HeadersFunction,
 	type LoaderFunctionArgs,
 	type MetaFunction,
@@ -26,7 +26,6 @@ import { PasskeyIcon } from '#app/components/icons.js'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { Paragraph } from '#app/components/typography.tsx'
 import { getGenericSocialImage, images } from '#app/images.tsx'
-import { getKitSubscriber } from '#app/kit/kit.server.ts'
 import { type RootLoaderType } from '#app/root.tsx'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
 import {
@@ -37,10 +36,9 @@ import {
 	getUrl,
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc.tsx'
-import { prisma } from '#app/utils/prisma.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { getUser, sendToken } from '#app/utils/session.server.ts'
-import { verifyEmailAddress } from '#app/utils/verifier.server.ts'
+import { isEmailVerified } from '#app/utils/verifier.server.ts'
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const user = await getUser(request)
@@ -142,25 +140,6 @@ export async function action({ request }: ActionFunctionArgs) {
 	}
 }
 
-async function isEmailVerified(
-	email: string,
-): Promise<{ verified: true } | { verified: false; message: string }> {
-	const userExists = Boolean(
-		await prisma.user.findUnique({
-			select: { id: true },
-			where: { email },
-		}),
-	)
-	if (userExists) return { verified: true }
-	const kitSubscriber = await getKitSubscriber(email)
-	if (kitSubscriber) return { verified: true }
-
-	const verifierResult = await verifyEmailAddress(email)
-	if (verifierResult.status) return { verified: true }
-
-	return { verified: false, message: verifierResult.error.message }
-}
-
 const AuthenticationOptionsSchema = z.object({
 	options: z.object({ challenge: z.string() }),
 }) satisfies z.ZodType<{ options: PublicKeyCredentialRequestOptionsJSON }>
@@ -206,7 +185,10 @@ function Login() {
 				},
 			)
 
-			const verificationJson = await verificationResponse.json()
+			const verificationJson = (await verificationResponse.json()) as {
+				status: 'error'
+				error: string
+			}
 			if (verificationJson.status === 'error') {
 				throw new Error(verificationJson.error)
 			}
