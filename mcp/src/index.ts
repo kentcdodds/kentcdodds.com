@@ -1,8 +1,6 @@
-import OAuthProvider from '@cloudflare/workers-oauth-provider'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { McpAgent } from 'agents/mcp'
 import { z } from 'zod'
-import app from './app'
 
 export class MyMCP extends McpAgent {
 	server = new McpServer(
@@ -12,7 +10,7 @@ export class MyMCP extends McpAgent {
 		},
 		{
 			instructions:
-				'You are a helpful assistant that can help with a variety of tasks. You can search for content on kentcdodds.com, get the content of a specific blog post by its slug, get the details (title, description, transcript, etc.) for a specific episode of the Chats with Kent podcast by its season number and episode number, and subscribe to Kent C. Dodds newsletter and get regular updates about new articles, courses, and workshops.',
+				'You know all about kentcdodds.com. You can search for content from Kent C. Dodds on kentcdodds.com, get the content of a specific blog post by its slug, get the details (title, description, transcript, etc.) for a specific episode of the Chats with Kent podcast by its season number and episode number, and subscribe to Kent C. Dodds newsletter and get regular updates about new articles, courses, and workshops.',
 		},
 	)
 
@@ -229,15 +227,7 @@ export class MyMCP extends McpAgent {
 	}
 }
 
-// Export the OAuth handler as the default
-export default new OAuthProvider({
-	apiRoute: '/sse',
-	// TODO: fix these types
-	// @ts-ignore
-	apiHandler: MyMCP.mount('/sse'),
-	// @ts-ignore
-	defaultHandler: app,
-	authorizeEndpoint: '/authorize',
-	tokenEndpoint: '/token',
-	clientRegistrationEndpoint: '/register',
-})
+// Export the mounted MCP handler
+export default {
+	fetch: MyMCP.mount('/sse'),
+}
