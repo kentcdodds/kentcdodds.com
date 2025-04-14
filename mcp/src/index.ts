@@ -228,6 +228,4 @@ export class MyMCP extends McpAgent {
 }
 
 // Export the mounted MCP handler
-export default {
-	fetch: MyMCP.mount('/sse'),
-}
+export default MyMCP.mount('/sse')
