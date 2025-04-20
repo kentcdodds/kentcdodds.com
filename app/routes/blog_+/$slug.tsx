@@ -481,7 +481,9 @@ export default function MdxScreen() {
 							<CourseCard
 								title="Epic React"
 								description="Get Really Good at React"
+								label="React course"
 								imageBuilder={images.courseEpicReact}
+								imageClassName="h-[82%]"
 								courseUrl="https://epicreact.dev"
 							/>
 						</div>
@@ -491,7 +493,9 @@ export default function MdxScreen() {
 							<CourseCard
 								title="Testing JavaScript"
 								description="Ship Apps with Confidence"
+								label="Testing course"
 								imageBuilder={images.courseTestingJS}
+								imageClassName="h-[86%] -translate-y-[13%]"
 								courseUrl="https://testingjavascript.com"
 							/>
 						</div>

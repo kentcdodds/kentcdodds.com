@@ -111,31 +111,37 @@ function CoursesHome() {
 				Courses
 			</h2>
 
-			<Grid className="gap-y-4">
+			<Grid className="gap-y-6">
 				<div className="col-span-full">
 					<CourseCard
 						title="Epic Web"
 						description="The best way to learn how to build Epic, full stack web applications you'll love to work on and your users will love to use."
+						label="Full stack course"
 						// this swap is intentional. The dark looks nicer on light and vice versa
 						darkImageBuilder={images.courseEpicWebLight}
 						lightImageBuilder={images.courseEpicWebDark}
 						courseUrl="https://www.epicweb.dev"
+						horizontal
 					/>
 				</div>
 				<div className="col-span-full lg:col-span-6">
 					<CourseCard
 						title="Epic React"
 						description="The most comprehensive guide for pros."
+						label="React course"
 						imageBuilder={images.courseEpicReact}
+						imageClassName="h-[82%]"
 						courseUrl="https://epicreact.dev"
 					/>
 				</div>
 
-				<div className="col-span-full mt-12 lg:col-span-6 lg:mt-0">
+				<div className="col-span-full lg:col-span-6 lg:mt-0">
 					<CourseCard
 						title="Testing JavaScript"
 						description="Learn smart, efficient testing methods."
+						label="Testing course"
 						imageBuilder={images.courseTestingJS}
+						imageClassName="h-[86%] -translate-y-[13%]"
 						courseUrl="https://testingjavascript.com"
 					/>
 				</div>

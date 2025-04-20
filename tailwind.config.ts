@@ -13,6 +13,7 @@ export default {
 	darkMode: 'class',
 	theme: {
 		screens: {
+			sm: '480px',
 			md: '640px',
 			lg: '1024px',
 			xl: '1500px', // this is the "design resolution"
@@ -64,6 +65,10 @@ export default {
 		},
 
 		extend: {
+			aspectRatio: {
+				'4/3': '4 / 3',
+				'11/6': '11 / 6',
+			},
 			animation: {
 				'spin-slow': 'spin 3s linear infinite',
 				'spin-xslow': 'spin 7s linear infinite',
