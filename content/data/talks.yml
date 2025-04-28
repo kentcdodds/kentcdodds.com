@@ -11,8 +11,7 @@
   deliveries:
     - event: '[Devoxx Greece](https://devoxx.gr/)'
       date: 2025-04-11
-    - event: '[CityJS London](https://london.cityjsconf.org/)'
-      date: 2025-04-23
+      recording: https://www.youtube.com/watch?v=3pxnV8RpUyk&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
   tags:
     - principles
     - life
@@ -32,15 +31,6 @@
     inspired to not only consider the principles shared but also craft their own
     to guide their personal or team development processes.
 
-- title: RenderATL 2025 Talk
-  deliveries:
-    - event: '[Render ATL](https://www.renderatl.com/)'
-      date: 2025-06-11
-  tags:
-    - react
-  description: >-
-    To be announced.
-
 - title: Letting AI Interface with Your App with MCPs
   deliveries:
     - event:
@@ -49,6 +39,11 @@
       date: 2025-04-09
     - event: '[Devoxx Greece](https://devoxx.gr/)'
       date: 2025-04-11
+      recording: https://www.youtube.com/watch?v=7l9cMhQndiY&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
+    - event: '[CityJS London](https://london.cityjsconf.org/)'
+      date: 2025-04-23
+    - event: '[Render ATL](https://www.renderatl.com/)'
+      date: 2025-06-11
   tags:
     - mcp
     - ai

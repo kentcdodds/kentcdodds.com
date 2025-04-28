@@ -43,6 +43,7 @@ const kitHandlers: Array<HttpHandler> = [
 			const body = await request.json()
 			const { formId } = params
 			const { first_name, email, fields } = body
+			console.log('Subscribing to form', { formId, body })
 			return HttpResponse.json({
 				subscription: {
 					id: 1234567890,
@@ -70,6 +71,7 @@ const kitHandlers: Array<HttpHandler> = [
 			const body = await request.json()
 			const { tagId } = params
 			const { first_name, email, fields } = body
+			console.log('Subscribing to tag', { tagId, body })
 			return HttpResponse.json({
 				subscription: {
 					id: 1234567890,

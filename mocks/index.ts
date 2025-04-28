@@ -63,7 +63,7 @@ const miscHandlers = [
 	}),
 	http.get(/http:\/\/localhost:\d+\/.*/, async () => passthrough()),
 	http.post(/http:\/\/localhost:\d+\/.*/, async () => passthrough()),
-	http.get('https://verifier.meetchopra.com/verify/:email', () => {
+	http.get('https://verifyright.co/verify/:email', () => {
 		return HttpResponse.json({ status: true })
 	}),
 ]
