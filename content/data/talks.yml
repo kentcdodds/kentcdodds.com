@@ -1,9 +1,18 @@
+- title: CascadiaJS 2025 Talk
+  deliveries:
+    - event: '[CascadiaJS](https://cascadiajs.com/2025)'
+      date: 2025-09-17
+  tags:
+    - ai
+  description: >-
+    To be announced.
+
 - title: Code Europe 2025 Talk
   deliveries:
     - event: '[Code Europe](https://www.codeeurope.pl/en/)'
       date: 2025-06-30
   tags:
-    - react
+    - ai
   description: >-
     To be announced.
 
@@ -33,6 +42,9 @@
 
 - title: Letting AI Interface with Your App with MCPs
   deliveries:
+    - event: 'Special Recording on EpicAI.pro'
+      date: 2025-04-18
+      recording: https://www.epicai.pro/letting-ai-interface-with-your-app-with-mcps-talk
     - event:
         '[GreeceJS Meetup
         #52](https://www.meetup.com/greecejs/events/307030808/)'
@@ -44,6 +56,8 @@
       date: 2025-04-23
     - event: '[Render ATL](https://www.renderatl.com/)'
       date: 2025-06-11
+    - event: '[UtahJS Conf](https://utahjs.com/conference)'
+      date: 2025-09-12
   tags:
     - mcp
     - ai
