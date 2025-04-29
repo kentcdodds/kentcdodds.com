@@ -42,7 +42,9 @@
 
 - title: Letting AI Interface with Your App with MCPs
   deliveries:
-    - event: 'Special Recording on EpicAI.pro'
+    - event:
+        '[Special Recording on
+        EpicAI.pro](https://www.epicai.pro/letting-ai-interface-with-your-app-with-mcps-talk)'
       date: 2025-04-18
       recording: https://www.epicai.pro/letting-ai-interface-with-your-app-with-mcps-talk
     - event:
