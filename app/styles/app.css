@@ -215,3 +215,19 @@ a {
 .quote-child > *:last-child:after {
 	content: '”';
 }
+
+.course-card-gradient {
+	background-image: radial-gradient(
+		ellipse 80% 80% at 50% -10%,
+		hsla(220, 0%, 100%, 0.5),
+		transparent
+	);
+}
+
+.dark .course-card-gradient {
+	background-image: radial-gradient(
+		ellipse 90% 80% at 50% -20%,
+		hsla(220, 30%, 70%, 0.15),
+		transparent
+	);
+}

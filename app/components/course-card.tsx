@@ -1,19 +1,10 @@
-import { motion, useReducedMotion, type Variants } from 'framer-motion'
+import { clsx } from 'clsx'
 import { getImgProps, type ImageBuilder } from '#app/images.tsx'
 import { Themed } from '#app/utils/theme.tsx'
 import { ArrowLink } from './arrow-button.tsx'
-import { ButtonLink } from './button.tsx'
 import { ArrowIcon } from './icons.tsx'
-import { H2, H3, Paragraph } from './typography.tsx'
-import { clsx } from 'clsx'
+import { H3, Paragraph } from './typography.tsx'
 
-const MotionButtonLink = motion(ButtonLink)
-
-const arrowVariants: Variants = {
-	initial: { x: 0, y: 0 },
-	hover: { x: 8, y: -8 },
-	tap: { x: 24, y: -24 },
-}
 export type CourseCardProps = {
 	title: string
 	description: string
@@ -45,8 +36,6 @@ export function CourseCard({
 	label,
 	horizontal = false,
 }: CourseCardProps) {
-	const shouldReduceMotion = useReducedMotion()
-
 	function getImg(builder: ImageBuilder) {
 		return (
 			<img
@@ -67,7 +56,7 @@ export function CourseCard({
 	return (
 		<div
 			className={clsx(
-				'flex h-full gap-5 rounded-2xl border border-gray-200 bg-gray-100 p-6 dark:border-gray-700 dark:bg-gray-800 sm:p-9 xl:gap-6 xl:p-12',
+				'course-card-gradient flex h-full gap-5 rounded-2xl ring-1 ring-inset ring-[rgba(0,0,0,0.05)] bg-gray-100 p-6 dark:ring-[rgba(255,255,255,0.05)] dark:bg-gray-800 sm:p-9 xl:gap-6 xl:p-12',
 				horizontal ? 'flex-col lg:flex-row' : 'flex-col',
 			)}
 		>
