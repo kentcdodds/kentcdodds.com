@@ -13,8 +13,8 @@ function CourseSection() {
 				ctaUrl="/courses"
 				className="mb-16"
 			/>
-			<Grid className="gap-6">
-				<div className="col-span-full">
+			<Grid className="@container/grid xl:gap-8 gap-6 md:gap-6 !grid-cols-12">
+				<div className="col-span-full @container">
 					<CourseCard
 						title="Epic Web"
 						description="Become a full stack web dev."
@@ -27,7 +27,7 @@ function CourseSection() {
 					/>
 				</div>
 
-				<div className="col-span-full lg:col-span-6">
+				<div className="col-span-full @container @2xl:col-span-6">
 					<CourseCard
 						title="Epic React"
 						description="The most comprehensive guide for pros."
@@ -38,7 +38,7 @@ function CourseSection() {
 					/>
 				</div>
 
-				<div className="col-span-full lg:col-span-6">
+				<div className="col-span-full @container @2xl:col-span-6">
 					<CourseCard
 						title="Testing JavaScript"
 						description="Learn smart, efficient testing methods."

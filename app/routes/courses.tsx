@@ -111,8 +111,8 @@ function CoursesHome() {
 				Courses
 			</h2>
 
-			<Grid className="gap-y-6">
-				<div className="col-span-full">
+			<Grid className="!grid-cols-12 gap-6 @container/grid md:gap-6 xl:gap-8">
+				<div className="col-span-full @container">
 					<CourseCard
 						title="Epic Web"
 						description="The best way to learn how to build Epic, full stack web applications you'll love to work on and your users will love to use."
@@ -124,7 +124,7 @@ function CoursesHome() {
 						horizontal
 					/>
 				</div>
-				<div className="col-span-full lg:col-span-6">
+				<div className="col-span-full @container @2xl:col-span-6">
 					<CourseCard
 						title="Epic React"
 						description="The most comprehensive guide for pros."
@@ -135,7 +135,7 @@ function CoursesHome() {
 					/>
 				</div>
 
-				<div className="col-span-full lg:col-span-6 lg:mt-0">
+				<div className="col-span-full @container @2xl:col-span-6 lg:mt-0">
 					<CourseCard
 						title="Testing JavaScript"
 						description="Learn smart, efficient testing methods."
@@ -145,7 +145,7 @@ function CoursesHome() {
 						courseUrl="https://testingjavascript.com"
 					/>
 				</div>
-
+				
 				<SmallCourseCard
 					title="Advanced Remix"
 					description="Remix is a terrific tool for building simple websites and even better for building complex web applications. Remix solves many problems in modern web development. You don't even think about server cache management or global CSS namespace clashes. It's not that Remix has APIs to avoid these problems; they simply don't exist when you're using Remix!"
