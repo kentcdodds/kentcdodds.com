@@ -1,4 +1,5 @@
 import path from 'path'
+import cqPlugin from '@tailwindcss/container-queries'
 import typography from '@tailwindcss/typography'
 import { type Config } from 'tailwindcss'
 import { heroTextAnimation } from './app/utils/animations.ts'
@@ -342,5 +343,5 @@ export default {
 			},
 		},
 	},
-	plugins: [typography],
+	plugins: [typography, cqPlugin],
 } satisfies Config
