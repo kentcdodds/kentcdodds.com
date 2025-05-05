@@ -434,9 +434,12 @@ const images = createImages({
 		style: square,
 	},
 	courseEpicReact: {
-		id: 'kentcdodds.com/pages/courses/rocket',
+		id: 'v1746462314/kentcdodds.com/pages/courses/v2/rocket',
 		alt: 'Illustration of a Rocket',
-		style: square,
+	},
+	courseEpicReactDark: {
+		id: 'v1746462314/kentcdodds.com/pages/courses/v2/rocket-dark',
+		alt: 'Illustration of a Rocket',
 	},
 	courseEpicWebLight: {
 		id: 'kentcdodds.com/pages/courses/epic-web-light',
@@ -464,9 +467,12 @@ const images = createImages({
 		style: square,
 	},
 	courseTestingJS: {
-		id: 'kentcdodds.com/pages/courses/testing-trophy',
+		id: 'v1746462314/kentcdodds.com/pages/courses/v2/trophy',
 		alt: 'Illustration of a trophy',
-		style: square,
+	},
+	courseTestingJSDark: {
+		id: 'v1746462314/kentcdodds.com/pages/courses/v2/trophy-dark',
+		alt: 'Illustration of a trophy',
 	},
 	courseTestingPrinciples: {
 		id: 'kentcdodds.com/pages/courses/testing-principles',

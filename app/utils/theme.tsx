@@ -60,7 +60,7 @@ function Themed({
 	const [initialTheme] = React.useState(theme)
 	const themeToReference = initialOnly ? initialTheme : theme
 
-	return <>{themeToReference === 'light' ? light : dark}</>
+	return <>{themeToReference === 'l' ? light : dark}</>
 }
 
 function isTheme(value: unknown): value is Theme {
