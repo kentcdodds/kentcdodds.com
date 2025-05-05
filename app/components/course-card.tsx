@@ -56,14 +56,17 @@ export function CourseCard({
 	return (
 		<div
 			className={clsx(
-				'course-card-gradient flex h-full gap-5 rounded-2xl ring-1 ring-inset ring-[rgba(0,0,0,0.05)] bg-gray-100 p-6 dark:ring-[rgba(255,255,255,0.05)] dark:bg-gray-800 @sm:p-9 @sm:gap-6 @2xl/grid:p-9 @2xl/grid:gap-6 @6xl/grid:p-12',
+				'course-card-gradient flex h-full gap-5 rounded-2xl bg-gray-100 p-6 ring-1 ring-inset ring-[rgba(0,0,0,0.05)] @sm:gap-6 @sm:p-9 @2xl/grid:gap-6 @2xl/grid:p-9 @6xl/grid:p-12 dark:bg-gray-800 dark:ring-[rgba(255,255,255,0.05)]',
 				horizontal ? 'flex-col @2xl:flex-row' : 'flex-col',
 			)}
 		>
 			<div
-				className={clsx('relative', horizontal && 'w-full @2xl:w-[64%] @2xl:order-last')}
+				className={clsx(
+					'relative',
+					horizontal && 'w-full @2xl:order-last @2xl:w-[64%]',
+				)}
 			>
-				<div className="absolute right-0 top-0 hidden origin-bottom-right -translate-y-full translate-x-5 -rotate-90 text-right font-mono text-[11px]/none uppercase tracking-widest text-gray-400 opacity-80 dark:text-slate-500 dark:opacity-60 @2xl/grid:block @sm:block @6xl/grid:translate-x-6 @6xl/grid:text-xs/none">
+				<div className="absolute right-0 top-0 hidden origin-bottom-right -translate-y-full translate-x-5 -rotate-90 text-right font-mono text-[11px]/none uppercase tracking-widest text-gray-400 opacity-80 @sm:block @2xl/grid:block @6xl/grid:translate-x-6 @6xl/grid:text-xs/none dark:text-slate-500 dark:opacity-60">
 					{label ?? `${title} course`}
 				</div>
 				<div
@@ -119,27 +122,27 @@ export function CourseCard({
 			<div
 				className={clsx(
 					'flex flex-1 items-start gap-2 @xs:gap-4 @sm:gap-8',
-					horizontal && '@2xl:flex-col @sm:gap-1',
+					horizontal && '@sm:gap-1 @2xl:flex-col',
 				)}
 			>
 				<div className="flex-1">
-					<h2 className="text-xl/6 font-semibold tracking-tight text-gray-800 dark:font-medium dark:text-gray-200 @sm:text-2xl/6 @3xl/grid:text-2xl/6 @2xl/grid:text-xl/6 @6xl/grid:text-3xl/8">
+					<h2 className="text-xl/6 font-semibold tracking-tight text-gray-800 @sm:text-2xl/6 @2xl/grid:text-xl/6 @3xl/grid:text-2xl/6 @6xl/grid:text-3xl/8 dark:font-medium dark:text-gray-200">
 						{title}
 					</h2>
-					<p className="mt-2 text-balance text-base/[22px] text-gray-500 dark:text-gray-400 @6xl/grid:text-xl/7">
+					<p className="mt-2 text-balance text-base/[22px] text-gray-500 @6xl/grid:text-xl/7 dark:text-gray-400">
 						{description}
 					</p>
 				</div>
 				<a
 					className={clsx(
-						'inline-flex h-11 w-11 shrink-0 translate-x-0.5 translate-y-0.5 items-center justify-center gap-0.5 self-end rounded-full border border-gray-300 bg-gray-200 text-gray-900 transition-all duration-200 hover:scale-105 hover:border-gray-300 hover:bg-white dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:border-transparent dark:hover:bg-gray-300 dark:hover:text-gray-900 @lg:h-12 @lg:w-auto @lg:pl-6 @lg:pr-4',
+						'inline-flex h-11 w-11 shrink-0 translate-x-0.5 translate-y-0.5 items-center justify-center gap-0.5 self-end rounded-full border border-gray-300 bg-gray-200 text-gray-900 transition-all duration-200 hover:scale-105 hover:border-gray-300 hover:bg-white @lg:h-12 @lg:w-auto @lg:pl-6 @lg:pr-4 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:border-transparent dark:hover:bg-gray-300 dark:hover:text-gray-900',
 						horizontal && '@2xl:self-auto',
 					)}
 					href={courseUrl}
 				>
 					<span
 						className={clsx(
-							'sr-only text-base -translate-y-px whitespace-nowrap @lg:not-sr-only @6xl/grid:text-lg shrink-0',
+							'sr-only shrink-0 -translate-y-px whitespace-nowrap text-base @lg:not-sr-only @6xl/grid:text-lg',
 						)}
 					>
 						Visit course

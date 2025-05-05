@@ -475,9 +475,9 @@ export default function MdxScreen() {
 
 			{categoriesAndKeywords.includes('react') ||
 			categoriesAndKeywords.includes('testing') ? (
-				<div className="px-10vw mx-auto mb-24 flex max-w-lg flex-col items-center justify-center gap-8 md:max-w-none md:flex-row">
+				<div className="mx-auto mb-24 flex max-w-lg flex-col items-center justify-center gap-8 px-10vw md:max-w-none md:flex-row">
 					{categoriesAndKeywords.includes('react') ? (
-						<div className="max-w-lg w-full @container">
+						<div className="w-full max-w-lg @container">
 							<CourseCard
 								title="Epic React"
 								description="Get Really Good at React"
@@ -489,7 +489,7 @@ export default function MdxScreen() {
 						</div>
 					) : null}
 					{categoriesAndKeywords.includes('testing') ? (
-						<div className="max-w-lg w-full @container">
+						<div className="w-full max-w-lg @container">
 							<CourseCard
 								title="Testing JavaScript"
 								description="Ship Apps with Confidence"

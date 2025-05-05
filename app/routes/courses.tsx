@@ -145,7 +145,7 @@ function CoursesHome() {
 						courseUrl="https://testingjavascript.com"
 					/>
 				</div>
-				
+
 				<SmallCourseCard
 					title="Advanced Remix"
 					description="Remix is a terrific tool for building simple websites and even better for building complex web applications. Remix solves many problems in modern web development. You don't even think about server cache management or global CSS namespace clashes. It's not that Remix has APIs to avoid these problems; they simply don't exist when you're using Remix!"

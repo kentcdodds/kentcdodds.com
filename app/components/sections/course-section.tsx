@@ -13,7 +13,7 @@ function CourseSection() {
 				ctaUrl="/courses"
 				className="mb-16"
 			/>
-			<Grid className="@container/grid xl:gap-8 gap-6 md:gap-6 !grid-cols-12">
+			<Grid className="!grid-cols-12 gap-6 @container/grid md:gap-6 xl:gap-8">
 				<div className="col-span-full @container">
 					<CourseCard
 						title="Epic Web"
