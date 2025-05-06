@@ -442,14 +442,12 @@ const images = createImages({
 		alt: 'Illustration of a Rocket',
 	},
 	courseEpicWebLight: {
-		id: 'kentcdodds.com/pages/courses/epic-web-light',
+		id: 'v1746462310/kentcdodds.com/pages/courses/v2/epic-web',
 		alt: 'The EpicWeb.dev logo',
-		style: square,
 	},
 	courseEpicWebDark: {
-		id: 'kentcdodds.com/pages/courses/epic-web-dark',
+		id: 'v1746462310/kentcdodds.com/pages/courses/v2/epic-web-dark',
 		alt: 'The EpicWeb.dev logo',
-		style: square,
 	},
 	courseHowToContributeToAnOpenSourceProjectOnGitHub: {
 		id: 'kentcdodds.com/pages/courses/how-to-contribute-to-an-open-source-project-on-github',

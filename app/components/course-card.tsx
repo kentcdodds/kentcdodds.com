@@ -63,7 +63,7 @@ export function CourseCard({
 			<div
 				className={clsx(
 					'relative',
-					horizontal && 'w-full @2xl:order-last @2xl:w-[64%]',
+					horizontal && 'w-full @2xl:order-last @2xl:w-[62%]',
 				)}
 			>
 				<div className="absolute right-0 top-0 hidden origin-bottom-right -translate-y-full translate-x-5 -rotate-90 text-right font-mono text-[11px]/none uppercase tracking-widest text-gray-400 opacity-80 @sm:block @2xl/grid:block @6xl/grid:translate-x-6 @6xl/grid:text-xs/none dark:text-slate-500 dark:opacity-60">
@@ -94,7 +94,7 @@ export function CourseCard({
 						)}
 					>
 						<path
-							d="M0 40H440M0 80H440M0 120H440M0 160H440M0 200H440M40 0V240M80 0V240M120 0V240M160 0V160M200 0V160M240 0V160M280 0V160M320 0V240M360 0V240M400 0V240M160 200V240M200 200V240M240 200V240M280 200V240"
+							d="M0 40H440M0 80H440M0 120H440M0 160H440M0 200H440M40 0V240M80 0V240M120 0V240M160 0V240M200 0V240M240 0V240M280 0V240M320 0V240M360 0V240M400 0V240"
 							stroke="currentColor"
 							strokeWidth="1"
 							vectorEffect="non-scaling-stroke"

@@ -22,6 +22,7 @@ function CourseSection() {
 						lightImageBuilder={images.courseEpicWebLight}
 						darkImageBuilder={images.courseEpicWebDark}
 						courseUrl="https://www.epicweb.dev"
+						imageClassName="h-[76%] -translate-y-[9%] @2xl/grid:-translate-x-[0.2%] @2xl/grid:h-[78%]"
 						horizontal
 					/>
 				</div>
