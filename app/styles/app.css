@@ -250,3 +250,12 @@ a {
 	);
 	background-blend-mode: overlay;
 }
+
+.dark .course-card-button-gradient:hover {
+	background-image: radial-gradient(
+		ellipse 60% 50% at 50% 50%,
+		hsla(220, 30%, 6%, 0.5),
+		transparent
+	);
+	background-blend-mode: overlay;
+}

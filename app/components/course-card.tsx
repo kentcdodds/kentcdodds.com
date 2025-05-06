@@ -1,7 +1,23 @@
 import { clsx } from 'clsx'
+import { motion, useReducedMotion, type Variants } from 'framer-motion'
 import { getImgProps, type ImageBuilder } from '#app/images.tsx'
 import { Themed } from '#app/utils/theme.tsx'
 import { ArrowIcon } from './icons.tsx'
+
+const arrowVariants: Variants = {
+	initial: { x: 0, y: 0, opacity: 1, scale: 1 },
+	action: {
+		scale: [1, 1.2, 1.2, 1],
+		x: [2, 10, -10, 0],
+		y: [-2, -10, 10, 0],
+		opacity: [1, 0, 0, 1],
+		transition: {
+			duration: 0.4,
+			times: [0, 0.3, 0.7, 1],
+			ease: ['easeIn', 'easeOut', 'backOut'],
+		},
+	},
+}
 
 export type CourseCardProps = {
 	title: string
@@ -26,6 +42,45 @@ const titleClassName =
 	'text-xl/7 font-semibold text-balance tracking-tight text-gray-800 @sm:text-2xl/7 @2xl/grid:text-xl/7 @3xl/grid:text-2xl/7 @6xl/grid:text-3xl/9 dark:font-medium dark:tracking-normal dark:text-gray-200'
 const descriptionClassName =
 	'mt-2 text-balance text-base/6 text-gray-500 dark:prose-dark @6xl/grid:text-lg/6'
+
+function CourseCardLink({
+	href,
+	className,
+	textClassName,
+}: {
+	href: string
+	className?: string
+	textClassName?: string
+}) {
+	const shouldReduceMotion = useReducedMotion()
+
+	return (
+		<motion.a
+			className={clsx(
+				'course-card-button-gradient inline-flex shrink-0 items-center justify-center gap-0.5 rounded-full border border-gray-300 bg-gray-100 text-gray-900 transition-all duration-300 hover:border-gray-500 hover:bg-white dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:border-slate-500',
+				className,
+			)}
+			href={href}
+			initial="initial"
+			whileHover="action"
+			whileTap="action"
+			animate="initial"
+		>
+			<span
+				className={clsx(
+					'shrink-0 -translate-y-px whitespace-nowrap text-base @6xl/grid:text-lg',
+					textClassName,
+				)}
+			>
+				Visit course
+			</span>
+
+			<motion.span variants={shouldReduceMotion ? {} : arrowVariants}>
+				<ArrowIcon direction="top-right" className="shrink-0" size={24} />
+			</motion.span>
+		</motion.a>
+	)
+}
 
 export function CourseCard({
 	title,
@@ -130,22 +185,15 @@ export function CourseCard({
 					<h2 className={titleClassName}>{title}</h2>
 					<p className={descriptionClassName}>{description}</p>
 				</div>
-				<a
+
+				<CourseCardLink
+					href={courseUrl}
 					className={clsx(
-						'course-card-button-gradient inline-flex h-11 w-11 shrink-0 translate-x-0.5 translate-y-0.5 items-center justify-center gap-0.5 self-end rounded-full border border-gray-300 bg-gray-100 text-gray-900 transition-all duration-200 hover:scale-105 hover:border-gray-300 hover:bg-white @lg:h-12 @lg:w-auto @lg:pl-6 @lg:pr-4 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:border-transparent dark:hover:bg-gray-300 dark:hover:text-gray-900',
+						'h-11 w-11 translate-x-0.5 translate-y-0.5 self-end @lg:h-12 @lg:w-auto @lg:pl-6 @lg:pr-4',
 						horizontal && '@2xl:self-auto',
 					)}
-					href={courseUrl}
-				>
-					<span
-						className={clsx(
-							'sr-only shrink-0 -translate-y-px whitespace-nowrap text-base @lg:not-sr-only @6xl/grid:text-lg',
-						)}
-					>
-						Visit course
-					</span>
-					<ArrowIcon direction="top-right" className="shrink-0" size={24} />
-				</a>
+					textClassName="@lg:not-sr-only sr-only"
+				/>
 			</div>
 		</div>
 	)
@@ -188,16 +236,12 @@ export function SmallCourseCard({
 				{description}
 			</p>
 
-			<a
-				className="course-card-button-gradient mt-auto inline-flex h-12 shrink-0 -translate-x-0.5 items-center justify-center gap-0.5 rounded-full border border-gray-300 bg-gray-100 pl-6 pr-4 text-gray-900 transition-all duration-200 hover:scale-105 hover:border-gray-300 hover:bg-white @lg:w-auto dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:border-transparent dark:hover:bg-gray-300 dark:hover:text-gray-900"
-				href={courseUrl}
-			>
-				<span className="shrink-0 -translate-y-px whitespace-nowrap text-base @6xl/grid:text-lg">
-					Visit course
-				</span>
-
-				<ArrowIcon direction="top-right" className="shrink-0" size={24} />
-			</a>
+			<CourseCardLink
+					href={courseUrl}
+					className={clsx(
+						'-translate-x-0.5 h-12 pl-6 pr-4 mt-auto',
+					)}
+				/>
 		</div>
 	)
 }

@@ -103,7 +103,7 @@
     "express": "^4.19.2",
     "express-async-errors": "^3.1.1",
     "express-http-proxy": "^2.0.0",
-    "framer-motion": "^11.2.5",
+    "framer-motion": "^12.10.0",
     "fs-extra": "^11.2.0",
     "get-port": "^7.1.0",
     "gsap": "^3.12.5",
