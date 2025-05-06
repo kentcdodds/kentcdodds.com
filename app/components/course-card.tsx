@@ -1,9 +1,7 @@
 import { clsx } from 'clsx'
 import { getImgProps, type ImageBuilder } from '#app/images.tsx'
 import { Themed } from '#app/utils/theme.tsx'
-import { ArrowLink } from './arrow-button.tsx'
 import { ArrowIcon } from './icons.tsx'
-import { H3, Paragraph } from './typography.tsx'
 
 export type CourseCardProps = {
 	title: string
@@ -23,6 +21,11 @@ export type CourseCardProps = {
 			darkImageBuilder: ImageBuilder
 	  }
 )
+
+const titleClassName =
+	'text-xl/7 font-semibold text-balance tracking-tight text-gray-800 @sm:text-2xl/7 @2xl/grid:text-xl/7 @3xl/grid:text-2xl/7 @6xl/grid:text-3xl/9 dark:font-medium dark:tracking-normal dark:text-gray-200'
+const descriptionClassName =
+	'mt-2 text-balance text-base/6 text-gray-500 dark:prose-dark @6xl/grid:text-lg/6'
 
 export function CourseCard({
 	title,
@@ -54,7 +57,7 @@ export function CourseCard({
 	return (
 		<div
 			className={clsx(
-				'course-card-gradient flex h-full gap-5 rounded-2xl bg-gray-100 p-6 ring-1 ring-inset ring-[rgba(0,0,0,0.05)] @sm:gap-6 @sm:p-9 @2xl/grid:gap-6 @2xl/grid:p-9 @6xl/grid:p-12 dark:bg-gray-800 dark:ring-[rgba(255,255,255,0.05)]',
+				'course-card-gradient dark:bg-gray-850 relative flex h-full gap-5 overflow-hidden rounded-2xl bg-gray-100 p-6 ring-1 ring-inset ring-[rgba(0,0,0,0.05)] @sm:gap-6 @sm:p-9 @2xl/grid:gap-6 @2xl/grid:p-9 @6xl/grid:p-12 dark:ring-[rgba(255,255,255,0.05)]',
 				horizontal ? 'flex-col @2xl:flex-row' : 'flex-col',
 			)}
 		>
@@ -124,16 +127,12 @@ export function CourseCard({
 				)}
 			>
 				<div className="flex-1">
-					<h2 className="text-xl/6 font-semibold tracking-tight text-gray-800 @sm:text-2xl/6 @2xl/grid:text-xl/6 @3xl/grid:text-2xl/6 @6xl/grid:text-3xl/8 dark:font-medium dark:text-gray-200">
-						{title}
-					</h2>
-					<p className="mt-2 text-balance text-base/[22px] text-gray-500 @6xl/grid:text-xl/7 dark:text-gray-400">
-						{description}
-					</p>
+					<h2 className={titleClassName}>{title}</h2>
+					<p className={descriptionClassName}>{description}</p>
 				</div>
 				<a
 					className={clsx(
-						'inline-flex h-11 w-11 shrink-0 translate-x-0.5 translate-y-0.5 items-center justify-center gap-0.5 self-end rounded-full border border-gray-300 bg-gray-200 text-gray-900 transition-all duration-200 hover:scale-105 hover:border-gray-300 hover:bg-white @lg:h-12 @lg:w-auto @lg:pl-6 @lg:pr-4 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:border-transparent dark:hover:bg-gray-300 dark:hover:text-gray-900',
+						'course-card-button-gradient inline-flex h-11 w-11 shrink-0 translate-x-0.5 translate-y-0.5 items-center justify-center gap-0.5 self-end rounded-full border border-gray-300 bg-gray-100 text-gray-900 transition-all duration-200 hover:scale-105 hover:border-gray-300 hover:bg-white @lg:h-12 @lg:w-auto @lg:pl-6 @lg:pr-4 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:border-transparent dark:hover:bg-gray-300 dark:hover:text-gray-900',
 						horizontal && '@2xl:self-auto',
 					)}
 					href={courseUrl}
@@ -174,7 +173,7 @@ export function SmallCourseCard({
 	}
 
 	return (
-		<div className="bg-secondary relative col-span-full mt-12 flex flex-col items-start rounded-lg px-8 py-12 lg:col-span-4 lg:mt-0 lg:px-12">
+		<div className="course-card-gradient dark:bg-gray-850 relative col-span-full flex flex-col items-start overflow-hidden rounded-2xl bg-gray-100 p-6 ring-1 ring-inset ring-[rgba(0,0,0,0.05)] @sm:p-9 @2xl/grid:col-span-6 @2xl/grid:p-9 @6xl/grid:p-12 dark:ring-[rgba(255,255,255,0.05)] [&:nth-child(3n-2)]:col-span-12">
 			{imageBuilder ? (
 				getImg(imageBuilder)
 			) : (
@@ -183,14 +182,22 @@ export function SmallCourseCard({
 					dark={getImg(darkImageBuilder)}
 				/>
 			)}
-			<div className="mb-4 flex flex-none items-end">
-				<H3>{title}</H3>
-			</div>
-			<Paragraph className="mb-16 max-w-sm flex-auto">{description}</Paragraph>
 
-			<ArrowLink href={courseUrl} className="flex-none">
-				Visit course
-			</ArrowLink>
+			<h2 className={clsx(titleClassName, 'mt-12 pr-10')}>{title}</h2>
+			<p className={clsx(descriptionClassName, 'mb-6 mt-2 max-w-[700px]')}>
+				{description}
+			</p>
+
+			<a
+				className="course-card-button-gradient mt-auto inline-flex h-12 shrink-0 -translate-x-0.5 items-center justify-center gap-0.5 rounded-full border border-gray-300 bg-gray-100 pl-6 pr-4 text-gray-900 transition-all duration-200 hover:scale-105 hover:border-gray-300 hover:bg-white @lg:w-auto dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:border-transparent dark:hover:bg-gray-300 dark:hover:text-gray-900"
+				href={courseUrl}
+			>
+				<span className="shrink-0 -translate-y-px whitespace-nowrap text-base @6xl/grid:text-lg">
+					Visit course
+				</span>
+
+				<ArrowIcon direction="top-right" className="shrink-0" size={24} />
+			</a>
 		</div>
 	)
 }

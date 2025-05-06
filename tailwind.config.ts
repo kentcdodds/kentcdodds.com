@@ -35,6 +35,7 @@ export default {
 				600: 'var(--color-gray-600)',
 				700: 'var(--color-gray-700)',
 				800: 'var(--color-gray-800)',
+				850: 'var(--color-gray-850)',
 				900: 'var(--color-gray-900)',
 			},
 			slate: {
