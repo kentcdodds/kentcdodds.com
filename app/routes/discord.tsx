@@ -136,7 +136,6 @@ function CategoryCardContent({
 				</AccordionButton>
 			</H5>
 
-			{/* @ts-expect-error framer-motion + latest typescript types has issues */}
 			<AccordionPanel
 				as={motion.div}
 				className="block overflow-hidden"
