@@ -48,6 +48,10 @@ function getImageBuilder(
 
 const square = { aspectRatio: '1/1' } satisfies CSSProperties
 
+const epicWebClassName = 'h-[76%] -translate-y-[9%] @2xl/grid:-translate-x-[0.2%] @2xl/grid:h-[78%]'
+const epicReactClassName = 'h-[82%]'
+const testingJSClassName = 'h-[94%] -translate-y-[8%] dark:-translate-x-[0.6%] dark:h-[98%] dark:-translate-y-[6%]'
+
 const images = createImages({
 	kentSignatureDarkMode: {
 		id: 'kent/signature-dark-mode',
@@ -436,18 +440,22 @@ const images = createImages({
 	courseEpicReact: {
 		id: 'v1746462314/kentcdodds.com/pages/courses/v2/rocket',
 		alt: 'Illustration of a Rocket',
+		className: epicReactClassName,
 	},
 	courseEpicReactDark: {
 		id: 'v1746462314/kentcdodds.com/pages/courses/v2/rocket-dark',
 		alt: 'Illustration of a Rocket',
+		className: epicReactClassName,
 	},
 	courseEpicWebLight: {
 		id: 'v1746462310/kentcdodds.com/pages/courses/v2/epic-web',
 		alt: 'The EpicWeb.dev logo',
+		className: epicWebClassName,	
 	},
 	courseEpicWebDark: {
 		id: 'v1746462310/kentcdodds.com/pages/courses/v2/epic-web-dark',
 		alt: 'The EpicWeb.dev logo',
+		className: epicWebClassName,
 	},
 	courseHowToContributeToAnOpenSourceProjectOnGitHub: {
 		id: 'kentcdodds.com/pages/courses/how-to-contribute-to-an-open-source-project-on-github',
@@ -467,10 +475,12 @@ const images = createImages({
 	courseTestingJS: {
 		id: 'v1746462314/kentcdodds.com/pages/courses/v2/trophy',
 		alt: 'Illustration of a trophy',
+		className: testingJSClassName,
 	},
 	courseTestingJSDark: {
 		id: 'v1746462314/kentcdodds.com/pages/courses/v2/trophy-dark',
 		alt: 'Illustration of a trophy',
+		className: testingJSClassName,
 	},
 	courseTestingPrinciples: {
 		id: 'kentcdodds.com/pages/courses/testing-principles',

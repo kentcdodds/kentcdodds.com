@@ -22,7 +22,6 @@ function CourseSection() {
 						lightImageBuilder={images.courseEpicWebLight}
 						darkImageBuilder={images.courseEpicWebDark}
 						courseUrl="https://www.epicweb.dev"
-						imageClassName="h-[76%] -translate-y-[9%] @2xl/grid:-translate-x-[0.2%] @2xl/grid:h-[78%]"
 						horizontal
 					/>
 				</div>
@@ -34,7 +33,6 @@ function CourseSection() {
 						label="React course"
 						lightImageBuilder={images.courseEpicReact}
 						darkImageBuilder={images.courseEpicReactDark}
-						imageClassName="h-[82%]"
 						courseUrl="https://epicreact.dev"
 					/>
 				</div>
@@ -46,7 +44,6 @@ function CourseSection() {
 						label="Testing course"
 						lightImageBuilder={images.courseTestingJS}
 						darkImageBuilder={images.courseTestingJSDark}
-						imageClassName="h-[94%] -translate-y-[8%]"
 						courseUrl="https://testingjavascript.com"
 					/>
 				</div>

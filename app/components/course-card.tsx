@@ -10,7 +10,6 @@ export type CourseCardProps = {
 	description: string
 	courseUrl: string
 	horizontal?: boolean
-	imageClassName?: string
 	label?: string
 } & (
 	| {
@@ -32,7 +31,6 @@ export function CourseCard({
 	darkImageBuilder,
 	lightImageBuilder,
 	courseUrl,
-	imageClassName,
 	label,
 	horizontal = false,
 }: CourseCardProps) {
@@ -41,7 +39,7 @@ export function CourseCard({
 			<img
 				loading="lazy"
 				{...getImgProps(builder, {
-					className: clsx('z-10 h-[70%] w-auto', imageClassName),
+					className: clsx('z-10 h-[70%] w-auto'),
 					widths: [152, 304, 456, 608, 760, 940],
 					sizes: [
 						'(max-width: 375px) 152px',

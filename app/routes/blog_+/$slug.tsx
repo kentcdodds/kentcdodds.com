@@ -484,7 +484,6 @@ export default function MdxScreen() {
 								label="React course"
 								lightImageBuilder={images.courseEpicReact}
 								darkImageBuilder={images.courseEpicReactDark}
-								imageClassName="h-[82%]"
 								courseUrl="https://epicreact.dev"
 							/>
 						</div>
@@ -497,7 +496,6 @@ export default function MdxScreen() {
 								label="Testing course"
 								lightImageBuilder={images.courseTestingJS}
 								darkImageBuilder={images.courseTestingJSDark}
-								imageClassName="h-[94%] -translate-y-[8%]"
 								courseUrl="https://testingjavascript.com"
 							/>
 						</div>
