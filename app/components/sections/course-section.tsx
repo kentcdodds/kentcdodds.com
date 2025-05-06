@@ -13,31 +13,37 @@ function CourseSection() {
 				ctaUrl="/courses"
 				className="mb-16"
 			/>
-			<Grid>
-				<div className="col-span-full">
+			<Grid className="!grid-cols-12 gap-6 @container/grid md:gap-6 xl:gap-8">
+				<div className="col-span-full @container">
 					<CourseCard
 						title="Epic Web"
 						description="Become a full stack web dev."
-						// this swap is intentional. The dark looks nicer on light and vice versa
-						darkImageBuilder={images.courseEpicWebLight}
-						lightImageBuilder={images.courseEpicWebDark}
+						label="Full stack course"
+						lightImageBuilder={images.courseEpicWebLight}
+						darkImageBuilder={images.courseEpicWebDark}
 						courseUrl="https://www.epicweb.dev"
+						horizontal
 					/>
 				</div>
-				<div className="col-span-full lg:col-span-6">
+
+				<div className="col-span-full @container @2xl:col-span-6">
 					<CourseCard
 						title="Epic React"
 						description="The most comprehensive guide for pros."
-						imageBuilder={images.courseEpicReact}
+						label="React course"
+						lightImageBuilder={images.courseEpicReact}
+						darkImageBuilder={images.courseEpicReactDark}
 						courseUrl="https://epicreact.dev"
 					/>
 				</div>
 
-				<div className="col-span-full mt-12 lg:col-span-6 lg:mt-0">
+				<div className="col-span-full @container @2xl:col-span-6">
 					<CourseCard
 						title="Testing JavaScript"
 						description="Learn smart, efficient testing methods."
-						imageBuilder={images.courseTestingJS}
+						label="Testing course"
+						lightImageBuilder={images.courseTestingJS}
+						darkImageBuilder={images.courseTestingJSDark}
 						courseUrl="https://testingjavascript.com"
 					/>
 				</div>

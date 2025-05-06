@@ -89,7 +89,6 @@ function HeroSection({
 					{imageProps ? (
 						<motion.img
 							{...imageProps}
-							// @ts-expect-error framer-motion + latest typescript types has issues
 							className={clsx(
 								'h-auto w-full object-contain',
 								{

@@ -12,6 +12,7 @@
 	--color-gray-600: #4b4c53;
 	--color-gray-700: #3a3d4a;
 	--color-gray-800: #2e3039;
+	--color-gray-850: #282a34;
 	--color-gray-900: #1f2028;
 	--color-green-100: #e7f9ed;
 	--color-green-500: #30c85e;
@@ -214,4 +215,47 @@ a {
 }
 .quote-child > *:last-child:after {
 	content: '”';
+}
+
+.course-card-gradient {
+	background-image: radial-gradient(
+		ellipse 80% 80% at 50% -10%,
+		hsla(220, 0%, 100%, 0.5),
+		transparent
+	);
+}
+
+.dark .course-card-gradient {
+	background-image: radial-gradient(
+		ellipse 80% 80% at 50% 0,
+		hsla(220, 0%, 80%, 0.3),
+		transparent
+	);
+	background-blend-mode: soft-light;
+}
+
+.course-card-button-gradient {
+	background-image: radial-gradient(
+		ellipse 70% 70% at 50% 50%,
+		hsla(220, 0%, 100%, 1),
+		transparent
+	);
+}
+
+.dark .course-card-button-gradient {
+	background-image: radial-gradient(
+		ellipse 60% 50% at 50% 50%,
+		hsla(220, 30%, 6%, 0.2),
+		transparent
+	);
+	background-blend-mode: overlay;
+}
+
+.dark .course-card-button-gradient:hover {
+	background-image: radial-gradient(
+		ellipse 60% 50% at 50% 50%,
+		hsla(220, 30%, 6%, 0.5),
+		transparent
+	);
+	background-blend-mode: overlay;
 }

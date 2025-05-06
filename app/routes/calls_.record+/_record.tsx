@@ -58,7 +58,6 @@ function MaybeOutlet({ open }: { open: boolean }) {
 					animate="expanded"
 					exit="collapsed"
 					transition={{ duration: 0.15 }}
-					// @ts-expect-error framer-motion + latest typescript types has issues
 					className="relative col-span-full"
 				>
 					<Outlet />

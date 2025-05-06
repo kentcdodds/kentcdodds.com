@@ -34,7 +34,6 @@ function Tab({ isSelected, children }: TabProps & { isSelected?: boolean }) {
 			<AnimatePresence>
 				{isSelected ? (
 					<motion.span
-						// @ts-expect-error framer-motion + latest typescript types has issues
 						className="ml-8 mt-4 hidden h-12 items-center lg:flex"
 						initial={{ x: -20, opacity: 0 }}
 						animate={{ x: 0, opacity: 1, transition: { duration: 0.15 } }}

@@ -1,4 +1,5 @@
 import path from 'path'
+import cqPlugin from '@tailwindcss/container-queries'
 import typography from '@tailwindcss/typography'
 import { type Config } from 'tailwindcss'
 import { heroTextAnimation } from './app/utils/animations.ts'
@@ -13,6 +14,7 @@ export default {
 	darkMode: 'class',
 	theme: {
 		screens: {
+			sm: '480px',
 			md: '640px',
 			lg: '1024px',
 			xl: '1500px', // this is the "design resolution"
@@ -33,6 +35,7 @@ export default {
 				600: 'var(--color-gray-600)',
 				700: 'var(--color-gray-700)',
 				800: 'var(--color-gray-800)',
+				850: 'var(--color-gray-850)',
 				900: 'var(--color-gray-900)',
 			},
 			slate: {
@@ -64,6 +67,10 @@ export default {
 		},
 
 		extend: {
+			aspectRatio: {
+				'4/3': '4 / 3',
+				'11/6': '11 / 6',
+			},
 			animation: {
 				'spin-slow': 'spin 3s linear infinite',
 				'spin-xslow': 'spin 7s linear infinite',
@@ -337,5 +344,5 @@ export default {
 			},
 		},
 	},
-	plugins: [typography],
+	plugins: [typography, cqPlugin],
 } satisfies Config

@@ -261,7 +261,6 @@ function ProfileButton({
 			ref={ref}
 		>
 			<motion.div
-				// @ts-expect-error framer-motion + latest typescript types has issues
 				className="absolute"
 				animate={controls}
 			>

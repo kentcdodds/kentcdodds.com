@@ -382,7 +382,6 @@ function PageLoadingMessage() {
 								animate={{ y: 0, opacity: 1 }}
 								exit={{ y: -15, opacity: 0 }}
 								transition={{ duration: 0.25 }}
-								// @ts-expect-error framer-motion + latest typescript types has issues
 								className="flex-none"
 							>
 								{action}

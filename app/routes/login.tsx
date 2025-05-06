@@ -328,7 +328,6 @@ function Login() {
 							<AnimatePresence>
 								{passkeyMessage ? (
 									<motion.div
-										// @ts-expect-error 🤷‍♂️
 										className="absolute inset-0 flex items-center justify-center"
 										initial={{ opacity: 0, y: 10 }}
 										animate={{ opacity: 1, y: 0 }}
@@ -338,7 +337,6 @@ function Login() {
 										<AnimatePresence mode="wait" initial={false}>
 											<motion.div
 												key={passkeyMessage}
-												// @ts-expect-error 🤷‍♂️
 												className="text-center text-lg"
 												initial={{ opacity: 0 }}
 												animate={{ opacity: 1 }}
