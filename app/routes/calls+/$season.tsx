@@ -176,7 +176,6 @@ export default function CallsSeason() {
 								transition={
 									shouldReduceMotion ? { duration: 0 } : { duration: 0.15 }
 								}
-								// @ts-expect-error framer-motion + latest typescript types has issues
 								className="relative col-span-full"
 							>
 								<Outlet />

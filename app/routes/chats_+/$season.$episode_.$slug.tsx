@@ -381,14 +381,12 @@ function PrevNextButton({
 				<motion.img
 					variants={imageVariants}
 					transition={{ duration: 0.2 }}
-					// @ts-expect-error framer-motion + latest typescript types has issues
 					className="h-full w-full object-cover"
 					src={episodeListItem.image}
 					alt={episodeListItem.title}
 				/>
 				<motion.div
 					variants={arrowVariants}
-					// @ts-expect-error framer-motion + latest typescript types has issues
 					className="text-primary absolute inset-0 flex origin-center items-center justify-center"
 				>
 					{direction === 'next' ? <ChevronRightIcon /> : <ChevronLeftIcon />}

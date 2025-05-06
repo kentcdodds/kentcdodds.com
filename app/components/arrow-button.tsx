@@ -168,7 +168,6 @@ function ArrowButton({ onClick, type, ...props }: ArrowButtonProps) {
 
 	return (
 		<motion.button
-			// @ts-expect-error framer-motion + latest typescript types has issues
 			onClick={onClick}
 			type={type}
 			{...getBaseProps(props)}
@@ -190,7 +189,6 @@ function ArrowLink({ to, href, ...props }: ArrowLinkProps) {
 	if (href) {
 		return (
 			<motion.a
-				// @ts-expect-error framer-motion + latest typescript types has issues
 				href={href}
 				{...getBaseProps(props)}
 				ref={ref}

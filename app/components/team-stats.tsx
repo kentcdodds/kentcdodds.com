@@ -48,7 +48,7 @@ function Stat({
 
 	return (
 		<MotionEl
-			// @ts-expect-error framer-motion + latest typescript types has issues
+			
 			tabIndex={0}
 			onClick={onClick}
 			title={
@@ -75,7 +75,6 @@ function Stat({
 					},
 					hover: { height: 48, width: 24 },
 				}}
-				// @ts-expect-error framer-motion + latest typescript types has issues
 				className={clsx(
 					'relative flex justify-center',
 					{
@@ -96,7 +95,6 @@ function Stat({
 							fontSize: '18px',
 						},
 					}}
-					// @ts-expect-error framer-motion + latest typescript types has issues
 					className={clsx('text-primary absolute text-lg font-medium', {
 						'bottom-0': direction === 'down',
 						'top-0': direction === 'up',
@@ -108,7 +106,6 @@ function Stat({
 
 			{isUsersTeam ? (
 				<motion.div
-					// @ts-expect-error framer-motion + latest typescript types has issues
 					className="absolute left-1/2 top-0 rounded-md border-team-current"
 					transition={transition}
 					variants={{
@@ -136,7 +133,6 @@ function Stat({
 							initial: { borderWidth: 2, borderRadius: 4 - 2 },
 							hover: { borderWidth: 4, borderRadius: 8 - 3 },
 						}}
-						// @ts-expect-error framer-motion + latest typescript types has issues
 						className="h-full w-full border-white object-cover dark:border-gray-900"
 						src={avatar.src}
 						alt={avatar.alt}
