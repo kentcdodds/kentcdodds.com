@@ -16,6 +16,32 @@
   description: >-
     To be announced.
 
+- title: "Please Make Jarvis (so I don't have to)"
+  deliveries:
+    - event: '[MCP Developers Summit](https://lu.ma/mcpdevsummit2025)'
+      date: 2025-05-23
+  tags:
+    - mcp
+    - ai
+    - agent
+  description: >-
+    The dream of a seamless AI assistant like Tony Stark's Jarvis – capable of
+    understanding intent and accomplishing tasks across any service, anywhere –
+    is closer than ever, but key infrastructure is missing. While the Model
+    Context Protocol (MCP) provides a crucial foundation for standardized
+    agent-service communication, replacing websites with MCP services, it
+    introduces a critical challenge: tool overloading. How can an AI agent
+    effectively choose the right service when faced with potentially millions of
+    options?
+
+    This talk outlines the requirements for building a true "Jarvis." We need a
+    "Google for MCPs"—an intelligent discovery and ranking engine that leverages
+    not just service descriptions, but user history, task success rates, and
+    deep personalization to overcome tool overload and connect users' intentions
+    to the right MCP service. Join this session to explore the architecture
+    required for this future and understand the call to action: let's build the
+    necessary infrastructure to make Jarvis a reality.
+
 - title: Principles-Based Programming
   deliveries:
     - event: '[Devoxx Greece](https://devoxx.gr/)'
@@ -27,7 +53,7 @@
     - career
   description: >-
     Programming is often thought of as a purely technical endeavor—writing code
-    to solve specific problems. But what if there’s a deeper, more meaningful
+    to solve specific problems. But what if there's a deeper, more meaningful
     way to approach it? Principles-Based Programming explores the foundational
     philosophies that guide our decisions as developers. Using The Epic
     Programming Principles as a starting point, this talk dives into what
@@ -36,7 +62,7 @@
 
 
     Attendees will leave with an understanding of how principles provide a
-    compass for navigating the complexities of software development. They’ll be
+    compass for navigating the complexities of software development. They'll be
     inspired to not only consider the principles shared but also craft their own
     to guide their personal or team development processes.
 
