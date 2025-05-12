@@ -34,6 +34,7 @@
     effectively choose the right service when faced with potentially millions of
     options?
 
+
     This talk outlines the requirements for building a true "Jarvis." We need a
     "Google for MCPs"—an intelligent discovery and ranking engine that leverages
     not just service descriptions, but user history, task success rates, and
