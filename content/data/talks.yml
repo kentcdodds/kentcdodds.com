@@ -97,6 +97,8 @@
       recording: https://www.youtube.com/watch?v=7l9cMhQndiY&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
     - event: '[CityJS London](https://london.cityjsconf.org/)'
       date: 2025-04-23
+    - event: '[Frontend Nation](https://frontendnation.com/)'
+      date: 2025-06-03
     - event: '[Render ATL](https://www.renderatl.com/)'
       date: 2025-06-11
     - event: '[UtahJS Conf](https://utahjs.com/conference)'
