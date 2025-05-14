@@ -444,6 +444,13 @@ function App() {
 			className={clsx(theme, `set-color-team-current-${team.toLowerCase()}`)}
 		>
 			<head>
+				<script
+					nonce={nonce}
+					suppressHydrationWarning
+					dangerouslySetInnerHTML={{
+						__html: `window.ENV = ${JSON.stringify(data.ENV)};`,
+					}}
+				/>
 				<ClientHintCheck nonce={nonce} />
 				<Meta />
 				<meta
@@ -548,13 +555,6 @@ function App() {
 					/>
 				)}
 				<Scripts nonce={nonce} />
-				<script
-					nonce={nonce}
-					suppressHydrationWarning
-					dangerouslySetInnerHTML={{
-						__html: `window.ENV = ${JSON.stringify(data.ENV)};`,
-					}}
-				/>
 				{ENV.NODE_ENV === 'development' ? (
 					<script
 						nonce={nonce}
@@ -582,6 +582,13 @@ function ErrorDoc({ children }: { children: React.ReactNode }) {
 		<html lang="en" className="dark">
 			<head>
 				<title>Oh no...</title>
+				<script
+					nonce={nonce}
+					suppressHydrationWarning
+					dangerouslySetInnerHTML={{
+						__html: `window.ENV = {}`,
+					}}
+				/>
 				<Links />
 			</head>
 			<body className="bg-white transition duration-500 dark:bg-gray-900">

@@ -48,9 +48,11 @@ function getImageBuilder(
 
 const square = { aspectRatio: '1/1' } satisfies CSSProperties
 
-const epicWebClassName = 'h-[76%] -translate-y-[9%] @2xl/grid:-translate-x-[0.2%] @2xl/grid:h-[78%]'
+const epicWebClassName =
+	'h-[76%] -translate-y-[9%] @2xl/grid:-translate-x-[0.2%] @2xl/grid:h-[78%]'
 const epicReactClassName = 'h-[82%]'
-const testingJSClassName = 'h-[94%] -translate-y-[8%] dark:-translate-x-[0.6%] dark:h-[98%] dark:-translate-y-[6%]'
+const testingJSClassName =
+	'h-[94%] -translate-y-[8%] dark:-translate-x-[0.6%] dark:h-[98%] dark:-translate-y-[6%]'
 
 const images = createImages({
 	kentSignatureDarkMode: {
@@ -450,7 +452,7 @@ const images = createImages({
 	courseEpicWebLight: {
 		id: 'v1746462310/kentcdodds.com/pages/courses/v2/epic-web',
 		alt: 'The EpicWeb.dev logo',
-		className: epicWebClassName,	
+		className: epicWebClassName,
 	},
 	courseEpicWebDark: {
 		id: 'v1746462310/kentcdodds.com/pages/courses/v2/epic-web-dark',
@@ -544,6 +546,13 @@ const kodyProfiles: Record<OptionalTeam, { src: string; alt: string }> = {
 		}),
 		alt: images.kodyProfileGray.alt,
 	},
+}
+
+const kodyProfileImages: Record<OptionalTeam, ImageBuilder> = {
+	RED: images.kodyProfileRed,
+	YELLOW: images.kodyProfileYellow,
+	BLUE: images.kodyProfileBlue,
+	UNKNOWN: images.kodyProfileGray,
 }
 
 const kodySnowboardingImages: Record<OptionalTeam, ImageBuilder> = {
@@ -822,9 +831,24 @@ function doubleEncode(s: string) {
 	return encodeURIComponent(encodeURIComponent(s))
 }
 
+const kodyImages = {
+	profile: kodyProfileImages,
+	snowboarding: kodySnowboardingImages,
+	skiing: kodySkiingImages,
+	onewheeling: kodyOnewheelingImages,
+	playingSoccer: kodyPlayingSoccerImages,
+	backFlipping: kodyBackFlippingImages,
+	flyingSnowboarding: kodyFlyingSnowboardingImages,
+	flyingSkiing: kodyFlyingSkiingImages,
+	flyingOnewheeling: kodyFlyingOnewheelingImages,
+	flyingPlayingSoccer: kodyFlyingPlayingSoccerImages,
+	flyingBackFlipping: kodyFlyingBackFlippingImages,
+}
+
 export {
 	images,
 	kodyProfiles,
+	kodyImages,
 	getImgProps,
 	getImageBuilder,
 	getGenericSocialImage,
