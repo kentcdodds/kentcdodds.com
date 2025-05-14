@@ -67,6 +67,20 @@
     inspired to not only consider the principles shared but also craft their own
     to guide their personal or team development processes.
 
+- title: How to Debug Your MCP Server
+  deliveries:
+    - event: 'Pre-Render (meetup before Render ATL)'
+      date: 2025-06-10
+  tags:
+    - mcp
+    - ai
+    - debugging
+  description: >-
+    Building an MCP (Model Context Protocol) server is just the beginning.
+    Making sure it works as expected is where the real challenge begins! In this
+    talk, we'll walk through practical steps for debugging your own MCP server
+    in a variety of contexts (MCP Inspector, Cursor, Claude, etc).
+
 - title: Letting AI Interface with Your App with MCPs
   deliveries:
     - event:
