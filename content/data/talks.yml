@@ -25,23 +25,19 @@
     - ai
     - agent
   description: >-
-    The dream of a seamless AI assistant like Tony Stark's Jarvis – capable of
-    understanding intent and accomplishing tasks across any service, anywhere –
-    is closer than ever, but key infrastructure is missing. While the Model
-    Context Protocol (MCP) provides a crucial foundation for standardized
-    agent-service communication, replacing websites with MCP services, it
-    introduces a critical challenge: tool overloading. How can an AI agent
-    effectively choose the right service when faced with potentially millions of
-    options?
+    The advent of AI signals a "Post-Browser Era," where intelligent "Jarvis
+    clients" will supersede traditional browsers, interacting with a vast
+    network of MCP (Model Context Protocol) services. While MCP provides a
+    standardized communication layer, realizing the true "Jarvis experience"—an
+    AI that understands, anticipates, and acts seamlessly across all facets of
+    our lives—requires building the sophisticated client itself.
 
 
-    This talk outlines the requirements for building a true "Jarvis." We need a
-    "Google for MCPs"—an intelligent discovery and ranking engine that leverages
-    not just service descriptions, but user history, task success rates, and
-    deep personalization to overcome tool overload and connect users' intentions
-    to the right MCP service. Join this session to explore the architecture
-    required for this future and understand the call to action: let's build the
-    necessary infrastructure to make Jarvis a reality.
+    This talk moves beyond MCP infrastructure to define the characteristics of a
+    true Jarvis, illustrate its potential through compelling use-cases, and
+    identify the key challenges. It's a call to action for developers and
+    visionaries to construct this pivotal AI interface, bridging the gap between
+    powerful MCP services and the end-user dream.
 
 - title: Principles-Based Programming
   deliveries:
