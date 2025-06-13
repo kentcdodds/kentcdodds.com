@@ -1,22 +1,24 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
+import { type AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 import { addSubscriberToForm } from '#app/kit/kit.server.js'
-import { cache, cachified } from '#app/utils/cache.server.js'
-import {
-	ensureInstance,
-	getInstanceInfo,
-} from '#app/utils/cjs/litefs-js.server.js'
 import { downloadMdxFilesCached } from '#app/utils/mdx.server.js'
-import { getDomainUrl, getErrorMessage } from '#app/utils/misc.js'
+import {
+	getDomainUrl,
+	getErrorMessage,
+	invariantMCPResponse,
+	invariantResponse,
+} from '#app/utils/misc.js'
+import { prisma } from '#app/utils/prisma.server.js'
 import { searchKCD } from '#app/utils/search.server.js'
 import { getSeasons as getChatsWithKentSeasons } from '#app/utils/simplecast.server.js'
 import { isEmailVerified } from '#app/utils/verifier.server.js'
-import { FetchSSEServerTransport } from './fetch-transport.server'
+import { FetchAPIHTTPServerTransport } from './fetch-stream-transport.server.ts'
 
 export const requestStorage = new AsyncLocalStorage<Request>()
 
-const transports = new Map<string, FetchSSEServerTransport>()
+const transports = new Map<string, FetchAPIHTTPServerTransport>()
 
 function createServer() {
 	const server = new McpServer(
@@ -28,6 +30,16 @@ function createServer() {
 			capabilities: {
 				tools: {},
 			},
+		},
+	)
+
+	server.tool(
+		'whoami',
+		'Get the user ID of the current user',
+		{},
+		async (_, extra) => {
+			const user = await requireUser(extra.authInfo)
+			return { content: [{ type: 'text', text: JSON.stringify(user) }] }
 		},
 	)
 
@@ -243,39 +255,60 @@ function createServer() {
 const server = createServer()
 
 export async function connect(sessionId?: string | null) {
-	const { currentInstance } = await getInstanceInfo()
-	const transport = new FetchSSEServerTransport('/mcp', sessionId)
-	transport.onclose = () => {
-		transports.delete(transport.sessionId)
+	const existingTransport = sessionId ? transports.get(sessionId) : undefined
+	if (existingTransport) {
+		return existingTransport
 	}
-	await server.connect(transport)
-	transports.set(transport.sessionId, transport)
-
-	// we're cheating to get this sessionId into the cache so it's accessible in
-	// every instance.
-	await cachified({
-		key: `mcp-${transport.sessionId}`,
-		cache,
-		ttl: 60 * 60 * 24 * 30,
-		getFreshValue() {
-			return {
-				sessionId: transport.sessionId,
-				instance: currentInstance,
-			}
+	const transport = new FetchAPIHTTPServerTransport({
+		sessionIdGenerator: () => sessionId ?? crypto.randomUUID(),
+		async onsessioninitialized(sessionId) {
+			transports.set(sessionId, transport)
 		},
 	})
+	transport.onclose = () => {
+		if (transport.sessionId) transports.delete(transport.sessionId)
+	}
+	await server.connect(transport)
+
 	return transport
 }
 
-export async function getTransport(sessionId: string) {
-	const { instance } = await cachified({
-		key: `mcp-${sessionId}`,
-		cache,
-		getFreshValue() {
-			throw new Error(`Instance for sessionId "${sessionId}" not found`)
+function getUserId(authInfo?: AuthInfo): string | null {
+	if (authInfo && authInfo.extra && typeof authInfo.extra.userId === 'string') {
+		return authInfo.extra.userId
+	}
+	return null
+}
+
+function requireUserId(authInfo?: AuthInfo): string {
+	const userId = getUserId(authInfo)
+	invariantResponse(userId, 'User ID is required but not found in auth info', {
+		status: 401,
+	})
+	return userId
+}
+
+async function getUser(authInfo?: AuthInfo) {
+	const userId = getUserId(authInfo)
+	if (!userId) return null
+	const user = await prisma.user.findUnique({
+		where: { id: userId },
+		select: {
+			id: true,
+			firstName: true,
+			email: true,
+			team: true,
+			_count: {
+				select: { postReads: true },
+			},
 		},
 	})
-	ensureInstance(instance)
+	if (!user) return null
+	return user
+}
 
-	return transports.get(sessionId)
+async function requireUser(authInfo?: AuthInfo) {
+	const user = await getUser(authInfo)
+	invariantMCPResponse(user, 'User not found', { status: 401 })
+	return user
 }

@@ -3,6 +3,7 @@ import { setupServer } from 'msw/node'
 import { discordHandlers } from './discord.ts'
 import { githubHandlers } from './github.ts'
 import { kitHandlers } from './kit.ts'
+import { oauthHandlers } from './oauth.ts'
 import { oembedHandlers } from './oembed.ts'
 import { simplecastHandlers } from './simplecast.ts'
 import { tiToHandlers } from './tito.ts'
@@ -70,6 +71,7 @@ const miscHandlers = [
 
 const server = setupServer(
 	...githubHandlers,
+	...oauthHandlers,
 	...oembedHandlers,
 	...twitterHandlers,
 	...tiToHandlers,

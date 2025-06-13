@@ -28,3 +28,4 @@ other/postcss.ignored
 *.heapsnapshot
 
 *.db-journal
+.wrangler

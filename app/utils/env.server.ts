@@ -44,6 +44,7 @@ const schema = z.object({
 	TRANSISTOR_API_SECRET: z.string(),
 	TWITTER_BEARER_TOKEN: z.string(),
 	VERIFIER_API_KEY: z.string(),
+	CF_INTERNAL_SECRET: z.string(),
 })
 
 declare global {

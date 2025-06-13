@@ -1,0 +1,30 @@
+{
+  "name": "oauth",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "format": "prettier --write .",
+    "lint": "eslint .",
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev --env local",
+    "start": "wrangler dev --env local",
+    "cf-typegen": "wrangler types"
+  },
+  "keywords": [],
+  "author": "Kent C. Dodds <me@kentcdodds.com> (https://kentcdodds.com/)",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@cloudflare/workers-oauth-provider": "^0.0.5",
+    "zod": "^3.25.57"
+  },
+  "devDependencies": {
+    "@epic-web/config": "^1.21.0",
+    "eslint": "^9.28.0",
+    "prettier": "^3.5.3",
+    "wrangler": "^4.19.1"
+  },
+  "prettier": "@epic-web/config/prettier"
+}
