@@ -2,6 +2,7 @@ import { CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js'
 import {
 	type LoaderFunctionArgs,
 	type ActionFunctionArgs,
+	redirect,
 } from '@remix-run/router'
 import { getAuthInfoFromOAuthFromRequest } from '#app/utils/session.server.js'
 import { connect, requestStorage } from './mcp.server.ts'
@@ -9,6 +10,9 @@ import { connect, requestStorage } from './mcp.server.ts'
 const authTools = ['whoami', 'update_user_info', 'get_recommended_posts']
 
 export async function loader({ request }: LoaderFunctionArgs) {
+	if (request.headers.get('accept')?.includes('text/html')) {
+		throw redirect('/about-mcp')
+	}
 	const response = await requestStorage.run(request, async () => {
 		const sessionId = request.headers.get('mcp-session-id') ?? undefined
 
