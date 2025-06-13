@@ -469,40 +469,6 @@ export function invariantResponse(
 	}
 }
 
-/**
- * Provide a condition and if that condition is falsey, this throws a 400
- * Response with the given message.
- *
- * inspired by invariant from 'tiny-invariant'
- *
- * @example
- * invariantMCPResponse(typeof value === 'string', `value must be a string`)
- *
- * @param condition The condition to check
- * @param message The message to throw (or a callback to generate the message)
- * @param responseInit Additional response init options if a response is thrown
- *
- * @throws {Error} if condition is falsey
- *
- * Note: The thrown error's message is a JSON stringified object which when
- * parsed can be used to create a Response object.
- */
-export function invariantMCPResponse(
-	condition: unknown,
-	message: string | (() => string),
-	responseInit?: ResponseInit,
-): asserts condition {
-	if (!condition) {
-		throw new Error(
-			JSON.stringify({
-				body: typeof message === 'function' ? message() : message,
-				status: 400,
-				...responseInit,
-			}),
-		)
-	}
-}
-
 export function useCapturedRouteError() {
 	const error = useRouteError()
 	captureRemixErrorBoundaryError(error)

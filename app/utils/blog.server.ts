@@ -15,7 +15,7 @@ import {
 	typedBoolean,
 } from './misc.tsx'
 import { prisma } from './prisma.server.ts'
-import { getSession, getUser } from './session.server.ts'
+import { getUser } from './session.server.ts'
 import { teamEmoji } from './team-provider.tsx'
 import { time, type Timings } from './timing.server.ts'
 
@@ -51,8 +51,7 @@ async function getBlogRecommendations({
 		]),
 	)
 	// filter out what they've already read
-	const session = await getSession(request)
-	const user = await session.getUser()
+	const user = await getUser(request)
 	const client = await getClientSession(request, user)
 	const clientId = client.getClientId()
 	const where = user
@@ -130,7 +129,7 @@ async function getBlogRecommendations({
 	return shuffle(recommendations)
 }
 
-async function getMostPopularPostSlugs({
+export async function getMostPopularPostSlugs({
 	limit,
 	exclude,
 	timings,

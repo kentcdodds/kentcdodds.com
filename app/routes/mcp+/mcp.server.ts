@@ -3,13 +3,10 @@ import { type AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 import { addSubscriberToForm } from '#app/kit/kit.server.js'
+import { getBlogRecommendations } from '#app/utils/blog.server.js'
+import { groupBy } from '#app/utils/cjs/lodash.ts'
 import { downloadMdxFilesCached } from '#app/utils/mdx.server.js'
-import {
-	getDomainUrl,
-	getErrorMessage,
-	invariantMCPResponse,
-	invariantResponse,
-} from '#app/utils/misc.js'
+import { getDomainUrl, getErrorMessage, invariant } from '#app/utils/misc.js'
 import { prisma } from '#app/utils/prisma.server.js'
 import { searchKCD } from '#app/utils/search.server.js'
 import { getSeasons as getChatsWithKentSeasons } from '#app/utils/simplecast.server.js'
@@ -40,6 +37,115 @@ function createServer() {
 		async (_, extra) => {
 			const user = await requireUser(extra.authInfo)
 			return { content: [{ type: 'text', text: JSON.stringify(user) }] }
+		},
+	)
+
+	server.tool(
+		'update_user_info',
+		'Update the user info for the current user',
+		{
+			firstName: z.string().optional().describe('The first name of the user'),
+		},
+		async ({ firstName }) => {
+			const user = await requireUser()
+			await prisma.user.update({
+				where: { id: user.id },
+				data: { firstName },
+			})
+			return { content: [{ type: 'text', text: 'User info updated' }] }
+		},
+	)
+
+	server.tool(
+		'get_post_reads',
+		'Get the post reads for the current user',
+		{},
+		async (_, extra) => {
+			const request = requireRequest()
+			const user = await requireUser(extra.authInfo)
+			const postReads = await prisma.postRead.findMany({
+				where: { userId: user.id },
+				select: {
+					postSlug: true,
+					createdAt: true,
+				},
+				orderBy: {
+					createdAt: 'desc',
+				},
+			})
+			const domainUrl = getDomainUrl(request)
+			const groupedBySlug = groupBy(postReads, 'postSlug')
+			const posts = Object.entries(groupedBySlug).map(([postSlug, reads]) => ({
+				url: `${domainUrl}/blog/${postSlug}`,
+				readCount: reads.length,
+				reads: reads.map(({ createdAt }) => createdAt.toISOString()),
+			}))
+
+			return {
+				content: [
+					{
+						type: 'text',
+						text: JSON.stringify(posts),
+					},
+				],
+			}
+		},
+	)
+
+	server.tool(
+		'get_recommended_posts',
+		'Get recommended posts for the current user',
+		{},
+		async () => {
+			const request = requireRequest()
+			const domainUrl = getDomainUrl(request)
+			const recommendations = await getBlogRecommendations({ request })
+			const posts = recommendations.map(
+				({
+					frontmatter: {
+						// remove this because it's not needed and it's kinda big
+						bannerBlurDataUrl: _bannerBlurDataUrl,
+						...frontmatter
+					},
+					...recommendation
+				}) => ({
+					...recommendation,
+					url: `${domainUrl}/blog/${recommendation.slug}`,
+					frontmatter,
+				}),
+			)
+			return {
+				content: [{ type: 'text', text: JSON.stringify(posts) }],
+			}
+		},
+	)
+
+	server.tool(
+		'get_most_popular_posts',
+		'Get the most popular posts on kentcdodds.com',
+		{},
+		async () => {
+			const request = requireRequest()
+			const domainUrl = getDomainUrl(request)
+			const mostPopularPosts = await prisma.postRead.groupBy({
+				by: ['postSlug'],
+				_count: true,
+				orderBy: {
+					_count: {
+						postSlug: 'desc',
+					},
+				},
+				take: 10,
+			})
+
+			const posts = mostPopularPosts.map(({ postSlug, _count }) => ({
+				url: `${domainUrl}/blog/${postSlug}`,
+				readCount: _count,
+			}))
+
+			return {
+				content: [{ type: 'text', text: JSON.stringify(posts) }],
+			}
 		},
 	)
 
@@ -280,14 +386,6 @@ function getUserId(authInfo?: AuthInfo): string | null {
 	return null
 }
 
-function requireUserId(authInfo?: AuthInfo): string {
-	const userId = getUserId(authInfo)
-	invariantResponse(userId, 'User ID is required but not found in auth info', {
-		status: 401,
-	})
-	return userId
-}
-
 async function getUser(authInfo?: AuthInfo) {
 	const userId = getUserId(authInfo)
 	if (!userId) return null
@@ -309,6 +407,12 @@ async function getUser(authInfo?: AuthInfo) {
 
 async function requireUser(authInfo?: AuthInfo) {
 	const user = await getUser(authInfo)
-	invariantMCPResponse(user, 'User not found', { status: 401 })
+	invariant(user, 'User not found')
 	return user
+}
+
+function requireRequest() {
+	const request = requestStorage.getStore()
+	invariant(request, 'No request found')
+	return request
 }

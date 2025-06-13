@@ -1,5 +1,7 @@
+import { type AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js'
 import { type User } from '@prisma/client'
 import { createCookieSessionStorage, redirect } from '@remix-run/node'
+import { z } from 'zod'
 import { ensurePrimary } from '#app/utils/cjs/litefs-js.server.js'
 import { getLoginInfoSession } from './login.server.ts'
 import { getRequiredServerEnvVar } from './misc.tsx'
@@ -12,7 +14,7 @@ import {
 	validateMagicLink,
 } from './prisma.server.ts'
 import { sendMagicLinkEmail } from './send-email.server.ts'
-import { type Timings } from './timing.server.ts'
+import { time, type Timings } from './timing.server.ts'
 
 const sessionIdKey = '__session_id__'
 
@@ -137,10 +139,47 @@ async function deleteOtherSessions(request: Request) {
 	})
 }
 
+export async function getAuthInfoFromOAuthFromRequest(request: Request) {
+	const authHeader = request.headers.get('authorization')
+	if (!authHeader?.startsWith('Bearer ')) return undefined
+	const token = authHeader.slice('Bearer '.length)
+
+	const validateUrl =
+		'https://kcd-oauth-provider.kentcdodds.workers.dev/api/validate-token'
+	const resp = await fetch(validateUrl, {
+		headers: { authorization: `Bearer ${token}` },
+	})
+	if (!resp.ok) return undefined
+	const data = z
+		.object({
+			userId: z.string(),
+			clientId: z.string().default(''),
+			scopes: z.array(z.string()).default([]),
+			expiresAt: z.number().optional(),
+		})
+		.parse(await resp.json())
+	const { userId, clientId, scopes, expiresAt } = data
+
+	return {
+		token,
+		clientId,
+		scopes,
+		expiresAt,
+		extra: { userId },
+	}
+}
+
 async function getUser(
 	request: Request,
 	{ timings }: { timings?: Timings } = {},
 ) {
+	const authInfo = await time(getAuthInfoFromOAuthFromRequest(request), {
+		timings,
+		type: 'getAuthInfoFromOAuthFromRequest',
+	})
+	if (authInfo?.extra.userId) {
+		return prisma.user.findUnique({ where: { id: authInfo.extra.userId } })
+	}
 	const { session } = await getSession(request)
 
 	const token = session.get(sessionIdKey) as string | undefined
