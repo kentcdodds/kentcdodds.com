@@ -49,7 +49,7 @@ async function fetchTransitor<JsonResponse>({
 		}
 	}
 	const res = await fetch(url.toString(), config)
-	const json = await res.json()
+	const json = (await res.json()) as any
 	if (json.errors) {
 		throw new Error(
 			(json as TransistorErrorResponse).errors.map((e) => e.title).join('\n'),

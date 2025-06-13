@@ -203,7 +203,7 @@ function useOnRead({
 		}
 
 		// dirty-up
-		parentEl.append(visibilityEl)
+		parentEl.appendChild(visibilityEl)
 		observer.observe(visibilityEl)
 		startTimer()
 		document.addEventListener('visibilitychange', handleVisibilityChange)

@@ -62,14 +62,17 @@ export async function getTweet(id: string): Promise<Tweet | null> {
 	const data = isJson ? await res.json() : undefined
 
 	if (res.ok) {
-		if (data && Object.keys(data).length) return data
+		if (data && Object.keys(data).length) return data as Tweet
 		console.error('Empty response from Twitter API', data)
 		return null
 	}
 	if (res.status === 404) return null
 
 	throw new TwitterApiError({
-		message: typeof data.error === 'string' ? data.error : 'Bad request.',
+		message:
+			typeof (data as any).error === 'string'
+				? (data as any).error
+				: 'Bad request.',
 		status: res.status,
 		data,
 	})

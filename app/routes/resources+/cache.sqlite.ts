@@ -24,7 +24,7 @@ export async function action({ request }: ActionFunctionArgs) {
 		// rick roll them
 		return redirect('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
 	}
-	const { key, cacheValue } = await request.json()
+	const { key, cacheValue } = (await request.json()) as any
 	if (cacheValue === undefined) {
 		console.log(`Deleting ${key} from the cache from remote`)
 		await cache.delete(key)

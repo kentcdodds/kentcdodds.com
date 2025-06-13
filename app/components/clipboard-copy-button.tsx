@@ -11,7 +11,7 @@ async function copyToClipboard(value: string) {
 
 		const element = document.createElement('textarea')
 		element.value = value
-		document.body.append(element)
+		document.body.appendChild(element)
 		element.select()
 		document.execCommand('copy')
 		element.remove()
