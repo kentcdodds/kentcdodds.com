@@ -1,4 +1,6 @@
-import fs from 'fs'
+import fs from 'node:fs'
+import path from 'node:path'
+import { DatabaseSync } from 'node:sqlite'
 import {
 	type Cache,
 	cachified as baseCachified,
@@ -9,7 +11,6 @@ import {
 	totalTtl,
 } from '@epic-web/cachified'
 import { remember } from '@epic-web/remember'
-import Database, { type default as BetterSqlite3 } from 'better-sqlite3'
 import { getInstanceInfo, getInstanceInfoSync } from 'litefs-js'
 import { LRUCache } from 'lru-cache'
 import { updatePrimaryCacheValue } from '#app/routes/resources+/cache.sqlite.ts'
@@ -21,8 +22,10 @@ const CACHE_DATABASE_PATH = getRequiredServerEnvVar('CACHE_DATABASE_PATH')
 
 const cacheDb = remember('cacheDb', createDatabase)
 
-function createDatabase(tryAgain = true): BetterSqlite3.Database {
-	const db = new Database(CACHE_DATABASE_PATH)
+function createDatabase(tryAgain = true): DatabaseSync {
+	const parentDir = path.dirname(CACHE_DATABASE_PATH)
+	fs.mkdirSync(parentDir, { recursive: true })
+	const db = new DatabaseSync(CACHE_DATABASE_PATH)
 	const { currentIsPrimary } = getInstanceInfoSync()
 	if (!currentIsPrimary) return db
 
@@ -69,32 +72,57 @@ export const lruCache = {
 	},
 } satisfies Cache
 
+const isBuffer = (obj: unknown): obj is Buffer =>
+	Buffer.isBuffer(obj) || obj instanceof Uint8Array
+
+function bufferReplacer(_key: string, value: unknown) {
+	if (isBuffer(value)) {
+		return {
+			__isBuffer: true,
+			data: value.toString('base64'),
+		}
+	}
+	return value
+}
+
+function bufferReviver(_key: string, value: unknown) {
+	if (
+		value &&
+		typeof value === 'object' &&
+		'__isBuffer' in value &&
+		(value as any).data
+	) {
+		return Buffer.from((value as any).data, 'base64')
+	}
+	return value
+}
+
 const preparedGet = cacheDb.prepare(
 	'SELECT value, metadata FROM cache WHERE key = ?',
 )
 const preparedSet = cacheDb.prepare(
-	'INSERT OR REPLACE INTO cache (key, value, metadata) VALUES (@key, @value, @metadata)',
+	'INSERT OR REPLACE INTO cache (key, value, metadata) VALUES (?, ?, ?)',
 )
 const preparedDelete = cacheDb.prepare('DELETE FROM cache WHERE key = ?')
 
 export const cache: CachifiedCache = {
 	name: 'SQLite cache',
 	get(key) {
-		const result = preparedGet.get(key) as any // TODO: fix this with zod or something
+		const result = preparedGet.get(key) as any
 		if (!result) return null
 		return {
 			metadata: JSON.parse(result.metadata),
-			value: JSON.parse(result.value),
+			value: JSON.parse(result.value, bufferReviver),
 		}
 	},
 	async set(key, entry) {
 		const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
 		if (currentIsPrimary) {
-			preparedSet.run({
+			preparedSet.run(
 				key,
-				value: JSON.stringify(entry.value),
-				metadata: JSON.stringify(entry.metadata),
-			})
+				JSON.stringify(entry.value, bufferReplacer),
+				JSON.stringify(entry.metadata),
+			)
 		} else {
 			// fire-and-forget cache update
 			void updatePrimaryCacheValue!({

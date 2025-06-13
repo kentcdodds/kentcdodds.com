@@ -80,7 +80,6 @@ const cloudinaryUrlRegex =
 
 function optimizeCloudinaryImages() {
 	return async function transformer(tree: H.Root) {
-		// @ts-expect-error ugh
 		visit(
 			tree,
 			'mdxJsxFlowElement',

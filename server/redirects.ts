@@ -134,7 +134,7 @@ export const oldImgSocial: RequestHandler = (req, res) => {
 	)
 }
 
-export const rickRollMiddleware: RequestHandler = (req, res) => {
+export const rickRollMiddleware: RequestHandler = (req: any, res: any) => {
 	return res.set('Content-Type', 'text/html').send(`
 <!--
   this page is a joke. It allows me to do a client-side redirect so twitter

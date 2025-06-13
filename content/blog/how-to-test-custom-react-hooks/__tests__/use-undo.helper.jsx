@@ -19,7 +19,7 @@ test('allows you to undo and redo', () => {
 	expect(undoData.canUndo).toBe(false)
 	expect(undoData.canRedo).toBe(false)
 	expect(undoData.past).toEqual([])
-	expect(undoData.present).toEqual('one')
+	expect(undoData.present).toBe('one')
 	expect(undoData.future).toEqual([])
 
 	// add second value
@@ -31,7 +31,7 @@ test('allows you to undo and redo', () => {
 	expect(undoData.canUndo).toBe(true)
 	expect(undoData.canRedo).toBe(false)
 	expect(undoData.past).toEqual(['one'])
-	expect(undoData.present).toEqual('two')
+	expect(undoData.present).toBe('two')
 	expect(undoData.future).toEqual([])
 
 	// add third value
@@ -43,7 +43,7 @@ test('allows you to undo and redo', () => {
 	expect(undoData.canUndo).toBe(true)
 	expect(undoData.canRedo).toBe(false)
 	expect(undoData.past).toEqual(['one', 'two'])
-	expect(undoData.present).toEqual('three')
+	expect(undoData.present).toBe('three')
 	expect(undoData.future).toEqual([])
 
 	// undo
@@ -55,7 +55,7 @@ test('allows you to undo and redo', () => {
 	expect(undoData.canUndo).toBe(true)
 	expect(undoData.canRedo).toBe(true)
 	expect(undoData.past).toEqual(['one'])
-	expect(undoData.present).toEqual('two')
+	expect(undoData.present).toBe('two')
 	expect(undoData.future).toEqual(['three'])
 
 	// undo again
@@ -67,7 +67,7 @@ test('allows you to undo and redo', () => {
 	expect(undoData.canUndo).toBe(false)
 	expect(undoData.canRedo).toBe(true)
 	expect(undoData.past).toEqual([])
-	expect(undoData.present).toEqual('one')
+	expect(undoData.present).toBe('one')
 	expect(undoData.future).toEqual(['two', 'three'])
 
 	// redo
@@ -79,7 +79,7 @@ test('allows you to undo and redo', () => {
 	expect(undoData.canUndo).toBe(true)
 	expect(undoData.canRedo).toBe(true)
 	expect(undoData.past).toEqual(['one'])
-	expect(undoData.present).toEqual('two')
+	expect(undoData.present).toBe('two')
 	expect(undoData.future).toEqual(['three'])
 
 	// add fourth value
@@ -91,7 +91,7 @@ test('allows you to undo and redo', () => {
 	expect(undoData.canUndo).toBe(true)
 	expect(undoData.canRedo).toBe(false)
 	expect(undoData.past).toEqual(['one', 'two'])
-	expect(undoData.present).toEqual('four')
+	expect(undoData.present).toBe('four')
 	expect(undoData.future).toEqual([])
 })
 

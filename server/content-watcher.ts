@@ -11,7 +11,6 @@ async function refreshOnContentChanges(filePath: string) {
 	return postRefreshCache({
 		http,
 		options: {
-			// @ts-expect-error - postRefreshCache is not typed
 			hostname: 'localhost',
 			port: 3000,
 		},

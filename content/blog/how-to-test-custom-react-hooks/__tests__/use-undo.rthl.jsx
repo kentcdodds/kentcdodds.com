@@ -9,7 +9,7 @@ test('allows you to undo and redo', () => {
 	expect(result.current.canUndo).toBe(false)
 	expect(result.current.canRedo).toBe(false)
 	expect(result.current.past).toEqual([])
-	expect(result.current.present).toEqual('one')
+	expect(result.current.present).toBe('one')
 	expect(result.current.future).toEqual([])
 
 	// add second value
@@ -21,7 +21,7 @@ test('allows you to undo and redo', () => {
 	expect(result.current.canUndo).toBe(true)
 	expect(result.current.canRedo).toBe(false)
 	expect(result.current.past).toEqual(['one'])
-	expect(result.current.present).toEqual('two')
+	expect(result.current.present).toBe('two')
 	expect(result.current.future).toEqual([])
 
 	// add third value
@@ -33,7 +33,7 @@ test('allows you to undo and redo', () => {
 	expect(result.current.canUndo).toBe(true)
 	expect(result.current.canRedo).toBe(false)
 	expect(result.current.past).toEqual(['one', 'two'])
-	expect(result.current.present).toEqual('three')
+	expect(result.current.present).toBe('three')
 	expect(result.current.future).toEqual([])
 
 	// undo
@@ -45,7 +45,7 @@ test('allows you to undo and redo', () => {
 	expect(result.current.canUndo).toBe(true)
 	expect(result.current.canRedo).toBe(true)
 	expect(result.current.past).toEqual(['one'])
-	expect(result.current.present).toEqual('two')
+	expect(result.current.present).toBe('two')
 	expect(result.current.future).toEqual(['three'])
 
 	// undo again
@@ -57,7 +57,7 @@ test('allows you to undo and redo', () => {
 	expect(result.current.canUndo).toBe(false)
 	expect(result.current.canRedo).toBe(true)
 	expect(result.current.past).toEqual([])
-	expect(result.current.present).toEqual('one')
+	expect(result.current.present).toBe('one')
 	expect(result.current.future).toEqual(['two', 'three'])
 
 	// redo
@@ -69,7 +69,7 @@ test('allows you to undo and redo', () => {
 	expect(result.current.canUndo).toBe(true)
 	expect(result.current.canRedo).toBe(true)
 	expect(result.current.past).toEqual(['one'])
-	expect(result.current.present).toEqual('two')
+	expect(result.current.present).toBe('two')
 	expect(result.current.future).toEqual(['three'])
 
 	// add fourth value
@@ -81,7 +81,7 @@ test('allows you to undo and redo', () => {
 	expect(result.current.canUndo).toBe(true)
 	expect(result.current.canRedo).toBe(false)
 	expect(result.current.past).toEqual(['one', 'two'])
-	expect(result.current.present).toEqual('four')
+	expect(result.current.present).toBe('four')
 	expect(result.current.future).toEqual([])
 })
 

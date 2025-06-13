@@ -378,7 +378,6 @@ async function parseSummaryMarkdown(
 								homeworkHTMLs.push(
 									listItem.children
 										.map((c) => {
-											// @ts-expect-error not sure...
 											const hastC = mdastToHast(c)
 
 											if (!hastC) {

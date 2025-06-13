@@ -1,4 +1,3 @@
-import { type AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js'
 import { type User } from '@prisma/client'
 import { createCookieSessionStorage, redirect } from '@remix-run/node'
 import { z } from 'zod'

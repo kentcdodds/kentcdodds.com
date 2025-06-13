@@ -132,8 +132,7 @@ async function downloadFileBySha(sha: string) {
 		repo: 'kentcdodds.com',
 		file_sha: sha,
 	})
-	//                                lol
-	const encoding = data.encoding as Parameters<typeof Buffer.from>['1']
+	const encoding = data.encoding as any
 	return Buffer.from(data.content, encoding).toString()
 }
 
@@ -149,7 +148,7 @@ async function downloadFile(path: string) {
 	})
 
 	if ('content' in data && 'encoding' in data) {
-		const encoding = data.encoding as Parameters<typeof Buffer.from>['1']
+		const encoding = data.encoding as any
 		return Buffer.from(data.content, encoding).toString()
 	}
 

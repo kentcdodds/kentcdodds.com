@@ -75,7 +75,7 @@ app.use(serverTiming())
 app.get('/img/social', oldImgSocial)
 
 // TODO: remove this once all clients are updated
-app.post('/__metronome', (req, res) => {
+app.post('/__metronome', (req: any, res: any) => {
 	res.status(503)
 	return res.send('Metronome is deprecated and no longer in use.')
 })
@@ -159,10 +159,13 @@ if (viteDevServer) {
 	)
 }
 
-app.get(['/build/*', '/images/*', '/fonts/*', '/favicons/*'], (req, res) => {
-	// if we made it past the express.static for /build, then we're missing something. No bueno.
-	return res.status(404).send('Not found')
-})
+app.get(
+	['/build/*', '/images/*', '/fonts/*', '/favicons/*'],
+	(req: any, res: any) => {
+		// if we made it past the express.static for /build, then we're missing something. No bueno.
+		return res.status(404).send('Not found')
+	},
+)
 
 // log the referrer for 404s
 app.use((req, res, next) => {
