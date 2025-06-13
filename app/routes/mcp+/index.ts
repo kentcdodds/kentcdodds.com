@@ -32,7 +32,7 @@ export async function action({ request }: ActionFunctionArgs) {
 		const authInfo = await getAuthInfoFromOAuthFromRequest(request)
 
 		const transport = await connect(sessionId)
-		if (!authInfo) {
+		if (!authInfo && request.method === 'POST') {
 			// if it's not a public tool, respond with 401
 			const clonedRequest = request.clone()
 			const coolTooRequestParsedResult = CallToolRequestSchema.safeParse(
