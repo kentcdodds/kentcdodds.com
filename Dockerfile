@@ -1,5 +1,5 @@
 # base node image
-FROM node:20-bookworm-slim as base
+FROM node:24-bookworm-slim as base
 
 # install open ssl and sqlite3 for prisma
 # ffmpeg for the call kent functionality
