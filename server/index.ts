@@ -295,6 +295,22 @@ app.use(
 
 app.get('/redirect.html', rickRollMiddleware)
 
+// CORS support for /.well-known/*
+app.options('/.well-known/*', (req, res) => {
+	res.header('Access-Control-Allow-Origin', '*')
+	res.header('Access-Control-Allow-Methods', 'GET,HEAD,POST,OPTIONS')
+	res.header(
+		'Access-Control-Allow-Headers',
+		req.header('Access-Control-Request-Headers') || '*',
+	)
+	res.sendStatus(204)
+})
+
+app.use('/.well-known/*', (req, res, next) => {
+	res.header('Access-Control-Allow-Origin', '*')
+	next()
+})
+
 async function getRequestHandler(): Promise<RequestHandler> {
 	function getLoadContext(req: any, res: any) {
 		return { cspNonce: res.locals.cspNonce }
