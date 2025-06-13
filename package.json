@@ -23,7 +23,7 @@
   "homepage": "https://github.com/kentcdodds/kentcdodds.com#readme",
   "type": "module",
   "scripts": {
-    "postinstall": "patch-package --patch-dir other/patches && npm --prefix install ./oauth",
+    "postinstall": "patch-package --patch-dir other/patches && npm install --prefix ./oauth",
     "clean": "rimraf ./node_modules/.cache ./server/dist ./build ./public/build",
     "prebuild": "npm run clean && echo All clean ✨",
     "build": "run-s build:*",
