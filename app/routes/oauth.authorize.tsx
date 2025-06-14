@@ -37,6 +37,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	}
 
 	if (decision === 'approve') {
+		const params = Object.fromEntries(url.searchParams)
 		// Call the Cloudflare Worker to complete authorization
 		const response = await fetch(
 			'https://kcd-oauth-provider.kentcdodds.workers.dev/internal/complete-authorization',
@@ -48,9 +49,9 @@ export async function action({ request }: ActionFunctionArgs) {
 				},
 				body: JSON.stringify({
 					requestParams: {
-						scope: [], // No scopes, full access
 						state: '',
-						...Object.fromEntries(url.searchParams),
+						...params,
+						scope: params.scope?.split(' ') ?? [],
 					},
 					userId: user.id,
 					props: { userId: user.id },
