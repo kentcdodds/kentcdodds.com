@@ -1,4 +1,4 @@
-import { remarkCodeBlocksShiki } from '@kentcdodds/md-temp'
+import { rehypeCodeBlocksShiki } from '@kentcdodds/md-temp'
 import remarkEmbedder, { type TransformerInfo } from '@remark-embedder/core'
 import oembedTransformer from '@remark-embedder/transformer-oembed'
 import type * as H from 'hast'
@@ -237,7 +237,7 @@ const remarkPlugins: U.PluggableList = [
 const rehypePlugins: U.PluggableList = [
 	optimizeCloudinaryImages,
 	trimCodeBlocks,
-	remarkCodeBlocksShiki,
+	rehypeCodeBlocksShiki,
 	removePreContainerDivs,
 ]
 

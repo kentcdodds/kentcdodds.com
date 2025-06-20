@@ -58,7 +58,7 @@
     "@epic-web/client-hints": "^1.3.2",
     "@epic-web/config": "^1.11.0",
     "@epic-web/remember": "^1.0.2",
-    "@kentcdodds/md-temp": "^8.0.1",
+    "@kentcdodds/md-temp": "^10.0.1",
     "@modelcontextprotocol/sdk": "^1.12.1",
     "@octokit/plugin-throttling": "^9.3.0",
     "@octokit/rest": "^20.1.1",
