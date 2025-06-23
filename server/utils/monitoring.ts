@@ -7,7 +7,6 @@ export function init() {
 		tunnel: '/lookout',
 		environment: process.env.NODE_ENV,
 		tracesSampleRate: process.env.NODE_ENV === 'production' ? 1 : 0,
-		autoInstrumentRemix: true,
 		denyUrls: [
 			/\/healthcheck/,
 			// TODO: be smarter about the public assets...
