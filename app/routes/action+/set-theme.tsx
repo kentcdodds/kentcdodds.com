@@ -1,7 +1,15 @@
 import { parseWithZod } from '@conform-to/zod'
-import { type ActionFunctionArgs, json } from '@remix-run/server-runtime'
+import {
+	type ActionFunctionArgs,
+	json,
+	redirect,
+} from '@remix-run/server-runtime'
 import { setTheme } from '#app/utils/theme.server.ts'
 import { ThemeFormSchema } from '#app/utils/theme.tsx'
+
+export async function loader() {
+	return redirect('/')
+}
 
 export async function action({ request }: ActionFunctionArgs) {
 	const formData = await request.formData()
