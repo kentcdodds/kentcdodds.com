@@ -13,10 +13,10 @@ import { remember } from '@epic-web/remember'
 import { LRUCache } from 'lru-cache'
 import { DatabaseSync } from 'node:sqlite'
 import { updatePrimaryCacheValue } from '#app/routes/resources+/cache.sqlite.ts'
+import { getInstanceInfo, getInstanceInfoSync } from './cjs/litefs-js.server.js'
 import { getRequiredServerEnvVar } from './misc.tsx'
 import { getUser } from './session.server.ts'
 import { time, type Timings } from './timing.server.ts'
-import { getInstanceInfo, getInstanceInfoSync } from './cjs/litefs-js.server.js'
 
 const CACHE_DATABASE_PATH = getRequiredServerEnvVar('CACHE_DATABASE_PATH')
 
