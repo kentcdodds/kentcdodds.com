@@ -1,2 +1,19 @@
-export * from 'litefs-js'
-export * from 'litefs-js/remix'
+export {
+	getInstanceInfo,
+	getInstanceInfoSync,
+	TXID_NUM_COOKIE_NAME,
+	waitForUpToDateTxNumber,
+	getTxNumber,
+	getTxSetCookieHeader,
+	checkCookieForTransactionalConsistency,
+	getInternalInstanceDomain,
+	getAllInstances,
+} from 'litefs-js'
+
+export {
+	ensurePrimary,
+	ensureInstance,
+	getReplayResponse,
+	handleTransactionalConsistency,
+	appendTxNumberCookie,
+} from 'litefs-js/remix'
