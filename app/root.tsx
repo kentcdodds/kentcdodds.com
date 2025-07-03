@@ -26,7 +26,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import * as React from 'react'
 import { useSpinDelay } from 'spin-delay'
 import { type KCDHandle } from '#app/types.ts'
-import { getInstanceInfo } from '#app/utils/cjs/litefs-js.server.js'
+import { getInstanceInfo } from '#app/utils/litefs-js.server.js'
 import {
 	useCapturedRouteError,
 	getDisplayUrl,

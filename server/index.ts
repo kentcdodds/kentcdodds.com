@@ -21,7 +21,7 @@ import onFinished from 'on-finished'
 import serverTiming from 'server-timing'
 import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
-import { getInstanceInfo } from '../app/utils/cjs/litefs-js.server.js'
+import { getInstanceInfo } from '../app/utils/litefs-js.server.js'
 import {
 	getRedirectsMiddleware,
 	oldImgSocial,

@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client'
 import chalk from 'chalk'
 import pProps from 'p-props'
 import { type Session } from '#app/types.ts'
-import { ensurePrimary } from '#app/utils/cjs/litefs-js.server.js'
+import { ensurePrimary } from '#app/utils/litefs-js.server.js'
 import { decrypt, encrypt } from './encryption.server.ts'
 import { time, type Timings } from './timing.server.ts'
 
