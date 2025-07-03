@@ -30,7 +30,7 @@ import {
 	ensureInstance,
 	getAllInstances,
 	getInstanceInfo,
-} from '#app/utils/litefs-js.server.js'
+} from '#app/utils/litefs-js.server.ts'
 import {
 	useDebounce,
 	useDoubleCheck,

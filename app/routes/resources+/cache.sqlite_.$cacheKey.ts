@@ -5,7 +5,7 @@ import {
 	ensureInstance,
 	getAllInstances,
 	getInstanceInfo,
-} from '#app/utils/litefs-js.server.js'
+} from '#app/utils/litefs-js.server.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
 
 export async function loader({ request, params }: LoaderFunctionArgs) {

@@ -1,7 +1,7 @@
 import { type LoaderFunctionArgs, redirect } from '@remix-run/node'
 import { type KCDHandle } from '#app/types.ts'
 
-import { ensurePrimary } from '#app/utils/litefs-js.server.js'
+import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { getClientSession } from '#app/utils/client.server.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
 import { getErrorMessage, isResponse } from '#app/utils/misc.tsx'

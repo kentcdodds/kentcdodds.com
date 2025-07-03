@@ -1,7 +1,7 @@
 import path from 'path'
 import { type ActionFunctionArgs, json, redirect } from '@remix-run/node'
 import { cache } from '#app/utils/cache.server.ts'
-import { ensurePrimary } from '#app/utils/litefs-js.server.js'
+import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { getPeople } from '#app/utils/credits.server.ts'
 import {
 	getBlogMdxListItems,

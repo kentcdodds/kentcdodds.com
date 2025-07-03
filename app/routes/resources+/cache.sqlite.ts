@@ -4,7 +4,7 @@ import { cache } from '#app/utils/cache.server.ts'
 import {
 	getInstanceInfo,
 	getInternalInstanceDomain,
-} from '#app/utils/litefs-js.server.js'
+} from '#app/utils/litefs-js.server.ts'
 import { getRequiredServerEnvVar } from '#app/utils/misc.tsx'
 
 export async function action({ request }: ActionFunctionArgs) {
