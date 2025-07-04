@@ -1,58 +1,120 @@
-/* Note: overflow: hidden is now managed by JavaScript to avoid race conditions */
-body:has(#mobile-menu:popover-open) [popovertarget='mobile-menu'] {
-	rect:nth-of-type(1) {
-		transform: translateY(7px) rotate(45deg);
-		transform-origin: 16px 10px;
-		transition:
-			transform 0.2s ease,
-			opacity 0.2s ease;
-	}
-	rect:nth-of-type(2) {
-		opacity: 0;
-		transition: opacity 0.2s ease;
-	}
-	rect:nth-of-type(3) {
-		transform: translateY(-5px) rotate(-45deg);
-		transform-origin: 16px 22px;
-		transition:
-			transform 0.2s ease,
-			opacity 0.2s ease;
-	}
-}
+/* CSS-Only Mobile Menu with Progressive Enhancement */
 
-[popovertarget='mobile-menu'] {
-	rect:nth-of-type(1) {
-		transform-origin: 16px 10px;
-		transition:
-			transform 0.2s ease,
-			opacity 0.2s ease;
-	}
-	rect:nth-of-type(2) {
-		transition: opacity 0.2s ease;
-	}
-	rect:nth-of-type(3) {
-		transform-origin: 16px 22px;
-		transition:
-			transform 0.2s ease,
-			opacity 0.2s ease;
-	}
-}
-
-#mobile-menu {
-	&:popover-open {
-		@starting-style {
-			transform: translateY (-20px);
-			opacity: 0;
-		}
-		transform: translateY(0);
-		opacity: 1;
-	}
-	background-color: var(--bg-primary);
-	transform: translateY(-20px);
-	z-index: 10;
+/* Hide the checkbox */
+.mobile-menu-checkbox {
+	position: absolute;
 	opacity: 0;
-	transition:
-		transform 0.2s,
-		opacity 0.2s,
-		display 0.2s allow-discrete;
+	pointer-events: none;
+	width: 0;
+	height: 0;
+}
+
+/* Mobile menu container */
+.mobile-menu-container {
+	position: relative;
+}
+
+/* Base state: Show hamburger, hide close icon */
+.mobile-menu-button .hamburger-icon {
+	display: block;
+	transition: 
+		transform 0.2s ease,
+		opacity 0.2s ease;
+}
+
+.mobile-menu-button .close-icon {
+	display: none;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	transition: 
+		transform 0.2s ease,
+		opacity 0.2s ease;
+}
+
+/* Hide mobile menu by default */
+.mobile-menu {
+	transform: translateX(-100%);
+	transition: transform 0.3s ease;
+	z-index: 1000;
+}
+
+/* Hide backdrop by default */
+.mobile-menu-backdrop {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.5);
+	z-index: 999;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.3s ease;
+}
+
+/* When checkbox is checked - show menu and swap icons */
+.mobile-menu-checkbox:checked ~ .mobile-menu-button .hamburger-icon {
+	display: none;
+}
+
+.mobile-menu-checkbox:checked ~ .mobile-menu-button .close-icon {
+	display: block;
+}
+
+.mobile-menu-checkbox:checked ~ .mobile-menu {
+	transform: translateX(0);
+}
+
+.mobile-menu-checkbox:checked ~ .mobile-menu-backdrop {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+/* Prevent body scroll when menu is open */
+.mobile-menu-checkbox:checked {
+	body {
+		overflow: hidden;
+	}
+}
+
+/* Enhanced version for modern browsers with :has() */
+@supports selector(:has(*)) {
+	/* Body scroll prevention with :has() */
+	body:has(.mobile-menu-checkbox:checked) {
+		overflow: hidden;
+	}
+	
+	/* Enhanced icon animations with :has() */
+	.mobile-menu-container:has(.mobile-menu-checkbox:checked) .hamburger-icon rect:nth-of-type(1) {
+		transform: translateY(6px) rotate(45deg);
+		transform-origin: 50% 50%;
+	}
+	
+	.mobile-menu-container:has(.mobile-menu-checkbox:checked) .hamburger-icon rect:nth-of-type(2) {
+		opacity: 0;
+	}
+	
+	.mobile-menu-container:has(.mobile-menu-checkbox:checked) .hamburger-icon rect:nth-of-type(3) {
+		transform: translateY(-6px) rotate(-45deg);
+		transform-origin: 50% 50%;
+	}
+	
+	/* Smooth transitions for the enhanced version */
+	.mobile-menu-container .hamburger-icon rect {
+		transform-origin: 50% 50%;
+		transition: 
+			transform 0.2s ease,
+			opacity 0.2s ease;
+	}
+	
+	/* Use hamburger icon transformation instead of hiding */
+	.mobile-menu-container:has(.mobile-menu-checkbox:checked) .hamburger-icon {
+		display: block;
+	}
+	
+	.mobile-menu-container:has(.mobile-menu-checkbox:checked) .close-icon {
+		display: none;
+	}
 }

@@ -127,135 +127,74 @@ function DarkModeToggle({
 }
 
 function MobileMenu() {
-	const menuButtonRef = React.useRef<HTMLButtonElement>(null)
-	const popoverRef = React.useRef<HTMLDivElement>(null)
-	const location = useLocation()
-	const [isOpen, setIsOpen] = React.useState(false)
-
-	// Close menu when route changes
-	React.useEffect(() => {
-		const popover = popoverRef.current
-		if (popover && popover.matches(':popover-open')) {
-			popover.hidePopover()
+	// Optional JavaScript enhancement for auto-closing on navigation
+	// The menu works fully without this JavaScript
+	const handleLinkClick = () => {
+		const checkbox = document.getElementById('mobile-menu-toggle') as HTMLInputElement
+		if (checkbox) {
+			checkbox.checked = false
 		}
-		// Reset state when navigation occurs to ensure icon updates
-		setIsOpen(false)
-	}, [location.pathname])
-
-	// Ensure body overflow is reset when component unmounts or popover state changes
-	React.useEffect(() => {
-		const popover = popoverRef.current
-		if (!popover) return
-
-		const handleToggle = (event: Event) => {
-			const target = event.target as HTMLElement
-			const isNowOpen = target.matches(':popover-open')
-			
-			// Update state to track menu open/closed status
-			setIsOpen(isNowOpen)
-			
-			// Ensure body overflow is properly managed
-			if (isNowOpen) {
-				document.body.style.overflow = 'hidden'
-			} else {
-				document.body.style.overflow = ''
-			}
-		}
-
-		popover.addEventListener('toggle', handleToggle)
-
-		// Cleanup function to ensure body overflow is reset
-		return () => {
-			popover.removeEventListener('toggle', handleToggle)
-			document.body.style.overflow = ''
-		}
-	}, [])
-
-	const closeMenu = React.useCallback(() => {
-		if (popoverRef.current) {
-			popoverRef.current.hidePopover()
-			// Force reset body overflow to ensure proper state
-			document.body.style.overflow = ''
-		}
-	}, [])
+	}
 
 	return (
-		<div
-			onBlur={(event) => {
-				if (!popoverRef.current || !menuButtonRef.current) return
-				if (
-					popoverRef.current.matches(':popover-open') &&
-					!event.currentTarget.contains(event.relatedTarget)
-				) {
-					const isRelatedTargetBeforeMenu =
-						event.relatedTarget instanceof Node &&
-						event.currentTarget.compareDocumentPosition(event.relatedTarget) ===
-							Node.DOCUMENT_POSITION_PRECEDING
-					const focusableElements = Array.from(
-						event.currentTarget.querySelectorAll('button,a'),
-					)
-					const elToFocus = isRelatedTargetBeforeMenu
-						? focusableElements.at(-1)
-						: focusableElements.at(0)
-					if (elToFocus instanceof HTMLElement) {
-						elToFocus.focus()
-					} else {
-						menuButtonRef.current.focus()
-					}
-				}
-			}}
-		>
-			<button
-				ref={menuButtonRef}
-				className="focus:border-primary hover:border-primary border-secondary text-primary inline-flex h-14 w-14 items-center justify-center rounded-full border-2 p-1 transition focus:outline-none"
-				popoverTarget="mobile-menu"
-				aria-label={isOpen ? 'Close menu' : 'Open menu'}
+		<div className="mobile-menu-container">
+			{/* Hidden checkbox for state management */}
+			<input 
+				type="checkbox" 
+				id="mobile-menu-toggle" 
+				className="mobile-menu-checkbox"
+				aria-label="Toggle mobile menu"
+			/>
+			
+			{/* Hamburger/X button */}
+			<label 
+				htmlFor="mobile-menu-toggle" 
+				className="mobile-menu-button focus:border-primary hover:border-primary border-secondary text-primary inline-flex h-14 w-14 items-center justify-center rounded-full border-2 p-1 transition focus:outline-none cursor-pointer"
 			>
-				{isOpen ? (
-					// Close icon (X)
-					<svg
-						width="32"
-						height="32"
-						viewBox="0 0 32 32"
-						fill="none"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<path
-							d="M24 8L8 24M8 8l16 16"
-							stroke="currentColor"
-							strokeWidth="2"
-							strokeLinecap="round"
-							strokeLinejoin="round"
-						/>
-					</svg>
-				) : (
-					// Hamburger icon
-					<svg
-						width="32"
-						height="32"
-						viewBox="0 0 32 32"
-						fill="none"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<rect x="6" y="9" width="20" height="2" rx="1" fill="currentColor" />
-						<rect x="6" y="15" width="20" height="2" rx="1" fill="currentColor" />
-						<rect x="6" y="21" width="20" height="2" rx="1" fill="currentColor" />
-					</svg>
-				)}
-			</button>
-			<div
-				id="mobile-menu"
-				ref={popoverRef}
-				popover=""
-				className="fixed bottom-0 left-0 right-0 top-[128px] m-0 h-[calc(100svh-128px)] w-full"
-			>
+				{/* Hamburger icon */}
+				<svg
+					className="hamburger-icon"
+					width="32"
+					height="32"
+					viewBox="0 0 32 32"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+					aria-hidden="true"
+				>
+					<rect x="6" y="9" width="20" height="2" rx="1" fill="currentColor" />
+					<rect x="6" y="15" width="20" height="2" rx="1" fill="currentColor" />
+					<rect x="6" y="21" width="20" height="2" rx="1" fill="currentColor" />
+				</svg>
+				
+				{/* Close icon (X) */}
+				<svg
+					className="close-icon"
+					width="32"
+					height="32"
+					viewBox="0 0 32 32"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+					aria-hidden="true"
+				>
+					<path
+						d="M24 8L8 24M8 8l16 16"
+						stroke="currentColor"
+						strokeWidth="2"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+				</svg>
+			</label>
+			
+			{/* Mobile menu */}
+			<div className="mobile-menu fixed bottom-0 left-0 right-0 top-[128px] m-0 h-[calc(100svh-128px)] w-full">
 				<div className="bg-primary flex h-full flex-col overflow-y-scroll border-t border-gray-200 pb-12 dark:border-gray-600">
 					{MOBILE_LINKS.map((link) => (
 						<Link
 							className="hover:bg-secondary focus:bg-secondary text-primary border-b border-gray-200 px-5vw py-9 hover:text-team-current dark:border-gray-600"
 							key={link.to}
 							to={link.to}
-							onClick={closeMenu}
+							onClick={handleLinkClick}
 						>
 							{link.name}
 						</Link>
@@ -265,6 +204,13 @@ function MobileMenu() {
 					</div>
 				</div>
 			</div>
+			
+			{/* Backdrop - closes menu when clicked */}
+			<label 
+				htmlFor="mobile-menu-toggle" 
+				className="mobile-menu-backdrop"
+				aria-label="Close mobile menu"
+			></label>
 		</div>
 	)
 }
