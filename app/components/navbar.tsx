@@ -130,6 +130,7 @@ function MobileMenu() {
 	const menuButtonRef = React.useRef<HTMLButtonElement>(null)
 	const popoverRef = React.useRef<HTMLDivElement>(null)
 	const location = useLocation()
+	const [isOpen, setIsOpen] = React.useState(false)
 
 	// Close menu when route changes
 	React.useEffect(() => {
@@ -137,6 +138,8 @@ function MobileMenu() {
 		if (popover && popover.matches(':popover-open')) {
 			popover.hidePopover()
 		}
+		// Reset state when navigation occurs to ensure icon updates
+		setIsOpen(false)
 	}, [location.pathname])
 
 	// Ensure body overflow is reset when component unmounts or popover state changes
@@ -146,8 +149,13 @@ function MobileMenu() {
 
 		const handleToggle = (event: Event) => {
 			const target = event.target as HTMLElement
+			const isNowOpen = target.matches(':popover-open')
+			
+			// Update state to track menu open/closed status
+			setIsOpen(isNowOpen)
+			
 			// Ensure body overflow is properly managed
-			if (target.matches(':popover-open')) {
+			if (isNowOpen) {
 				document.body.style.overflow = 'hidden'
 			} else {
 				document.body.style.overflow = ''
@@ -201,18 +209,39 @@ function MobileMenu() {
 				ref={menuButtonRef}
 				className="focus:border-primary hover:border-primary border-secondary text-primary inline-flex h-14 w-14 items-center justify-center rounded-full border-2 p-1 transition focus:outline-none"
 				popoverTarget="mobile-menu"
+				aria-label={isOpen ? 'Close menu' : 'Open menu'}
 			>
-				<svg
-					width="32"
-					height="32"
-					viewBox="0 0 32 32"
-					fill="none"
-					xmlns="http://www.w3.org/2000/svg"
-				>
-					<rect x="6" y="9" width="20" height="2" rx="1" fill="currentColor" />
-					<rect x="6" y="15" width="20" height="2" rx="1" fill="currentColor" />
-					<rect x="6" y="21" width="20" height="2" rx="1" fill="currentColor" />
-				</svg>
+				{isOpen ? (
+					// Close icon (X)
+					<svg
+						width="32"
+						height="32"
+						viewBox="0 0 32 32"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<path
+							d="M24 8L8 24M8 8l16 16"
+							stroke="currentColor"
+							strokeWidth="2"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+					</svg>
+				) : (
+					// Hamburger icon
+					<svg
+						width="32"
+						height="32"
+						viewBox="0 0 32 32"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<rect x="6" y="9" width="20" height="2" rx="1" fill="currentColor" />
+						<rect x="6" y="15" width="20" height="2" rx="1" fill="currentColor" />
+						<rect x="6" y="21" width="20" height="2" rx="1" fill="currentColor" />
+					</svg>
+				)}
 			</button>
 			<div
 				id="mobile-menu"
