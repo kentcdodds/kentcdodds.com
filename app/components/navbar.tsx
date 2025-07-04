@@ -129,6 +129,48 @@ function DarkModeToggle({
 function MobileMenu() {
 	const menuButtonRef = React.useRef<HTMLButtonElement>(null)
 	const popoverRef = React.useRef<HTMLDivElement>(null)
+	const location = useLocation()
+
+	// Close menu when route changes
+	React.useEffect(() => {
+		const popover = popoverRef.current
+		if (popover && popover.matches(':popover-open')) {
+			popover.hidePopover()
+		}
+	}, [location.pathname])
+
+	// Ensure body overflow is reset when component unmounts or popover state changes
+	React.useEffect(() => {
+		const popover = popoverRef.current
+		if (!popover) return
+
+		const handleToggle = (event: Event) => {
+			const target = event.target as HTMLElement
+			// Ensure body overflow is properly managed
+			if (target.matches(':popover-open')) {
+				document.body.style.overflow = 'hidden'
+			} else {
+				document.body.style.overflow = ''
+			}
+		}
+
+		popover.addEventListener('toggle', handleToggle)
+
+		// Cleanup function to ensure body overflow is reset
+		return () => {
+			popover.removeEventListener('toggle', handleToggle)
+			document.body.style.overflow = ''
+		}
+	}, [])
+
+	const closeMenu = React.useCallback(() => {
+		if (popoverRef.current) {
+			popoverRef.current.hidePopover()
+			// Force reset body overflow to ensure proper state
+			document.body.style.overflow = ''
+		}
+	}, [])
+
 	return (
 		<div
 			onBlur={(event) => {
@@ -176,7 +218,6 @@ function MobileMenu() {
 				id="mobile-menu"
 				ref={popoverRef}
 				popover=""
-				onToggle={() => window.scrollTo(0, 0)}
 				className="fixed bottom-0 left-0 right-0 top-[128px] m-0 h-[calc(100svh-128px)] w-full"
 			>
 				<div className="bg-primary flex h-full flex-col overflow-y-scroll border-t border-gray-200 pb-12 dark:border-gray-600">
@@ -185,9 +226,7 @@ function MobileMenu() {
 							className="hover:bg-secondary focus:bg-secondary text-primary border-b border-gray-200 px-5vw py-9 hover:text-team-current dark:border-gray-600"
 							key={link.to}
 							to={link.to}
-							onClick={() => {
-								popoverRef.current?.hidePopover()
-							}}
+							onClick={closeMenu}
 						>
 							{link.name}
 						</Link>
