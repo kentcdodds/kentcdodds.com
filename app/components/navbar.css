@@ -1,25 +1,22 @@
-body:has(#mobile-menu:popover-open) {
-	overflow: hidden;
-
-	[popovertarget='mobile-menu'] {
-		rect:nth-of-type(1) {
-			transform: translateY(7px) rotate(45deg);
-			transform-origin: 16px 10px;
-			transition:
-				transform 0.2s ease,
-				opacity 0.2s ease;
-		}
-		rect:nth-of-type(2) {
-			opacity: 0;
-			transition: opacity 0.2s ease;
-		}
-		rect:nth-of-type(3) {
-			transform: translateY(-5px) rotate(-45deg);
-			transform-origin: 16px 22px;
-			transition:
-				transform 0.2s ease,
-				opacity 0.2s ease;
-		}
+/* Note: overflow: hidden is now managed by JavaScript to avoid race conditions */
+body:has(#mobile-menu:popover-open) [popovertarget='mobile-menu'] {
+	rect:nth-of-type(1) {
+		transform: translateY(7px) rotate(45deg);
+		transform-origin: 16px 10px;
+		transition:
+			transform 0.2s ease,
+			opacity 0.2s ease;
+	}
+	rect:nth-of-type(2) {
+		opacity: 0;
+		transition: opacity 0.2s ease;
+	}
+	rect:nth-of-type(3) {
+		transform: translateY(-5px) rotate(-45deg);
+		transform-origin: 16px 22px;
+		transition:
+			transform 0.2s ease,
+			opacity 0.2s ease;
 	}
 }
 
