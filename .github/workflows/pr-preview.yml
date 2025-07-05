@@ -28,142 +28,53 @@ jobs:
           echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
           echo "url=https://$APP_NAME.fly.dev" >> $GITHUB_OUTPUT
 
-      - name: 📝 Generate PR fly.toml
+      - name: 📝 Setup PR-specific configurations
         run: |
-          # Create a fly.toml file for this PR deployment
-          cat > fly.toml << 'EOF'
-          # fly.toml app configuration file for PR preview
-          app = "${{ steps.app-name.outputs.app_name }}"
-          primary_region = "den"
-          kill_signal = "SIGINT"
-          kill_timeout = "5s"
-          swap_size_mb = 512
+          # Copy and modify fly.toml for PR preview
+          cp fly.toml fly.toml.backup
+          
+          # Update app name for PR
+          sed -i 's/^app = .*/app = "${{ steps.app-name.outputs.app_name }}"/' fly.toml
+          
+          # Remove consul from experimental section (if present)
+          sed -i '/enable_consul = true/d' fly.toml
+          
+          # Add auto-scaling configuration to services section
+          # Find the [[services]] section and add auto-scaling after internal_port
+          awk '
+          /^\[\[services\]\]/ { in_services = 1 }
+          /^  internal_port = / && in_services { 
+            print $0
+            print "  auto_stop_machines = true"
+            print "  auto_start_machines = true" 
+            print "  min_machines_running = 0"
+            print "  processes = [\"app\"]"
+            in_services = 0
+            next
+          }
+          { print }
+          ' fly.toml > fly.toml.tmp && mv fly.toml.tmp fly.toml
+          
+          # Copy and modify litefs.yml for PR preview (standalone, no consul)
+          cp other/litefs.yml other/litefs.yml.backup
+          
+          # Remove the entire lease section to make it standalone
+          # This removes everything from "lease:" to the next top-level section
+          awk '
+          /^lease:/ { in_lease = 1; next }
+          /^[a-zA-Z]/ && in_lease && !/^  / { in_lease = 0 }
+          !in_lease { print }
+          ' other/litefs.yml > other/litefs.yml.tmp && mv other/litefs.yml.tmp other/litefs.yml
+          
+          # Add a comment explaining the isolation
+          sed -i '/^exit-on-error:/a\\n# PR Preview: No lease configuration - standalone instance\n# This prevents syncing with production data' other/litefs.yml
+          
+          echo "=== Modified fly.toml ==="
+          cat fly.toml
+          echo "=== Modified litefs.yml ==="
+          cat other/litefs.yml
 
-          [experimental]
-            auto_rollback = true
-
-          [[mounts]]
-            source = "data_machines"
-            destination = "/data"
-            processes = ["app"]
-
-          [[statics]]
-            guest_path = "/app/build/client/.vite"
-            url_prefix = "/.vite"
-
-          [[statics]]
-            guest_path = "/app/build/client/assets"
-            url_prefix = "/assets"
-
-          [[statics]]
-            guest_path = "/app/build/client/fonts"
-            url_prefix = "/fonts"
-
-          [[statics]]
-            guest_path = "/app/build/client/images"
-            url_prefix = "/images"
-
-          [[statics]]
-            guest_path = "/app/build/client/favicons"
-            url_prefix = "/favicons"
-
-          [[services]]
-            protocol = "tcp"
-            internal_port = 8080
-            auto_stop_machines = true
-            auto_start_machines = true
-            min_machines_running = 0
-            processes = ["app"]
-
-            [[services.ports]]
-              port = 80
-              handlers = ["http"]
-              force_https = true
-
-            [[services.ports]]
-              port = 443
-              handlers = ["tls", "http"]
-            
-            [services.concurrency]
-              type = "requests"
-              hard_limit = 200
-              soft_limit = 150
-
-            [[services.tcp_checks]]
-              interval = "15s"
-              timeout = "2s"
-              grace_period = "10s"
-              restart_limit = 6
-
-            [[services.http_checks]]
-              interval = "10s"
-              timeout = "5s"
-              grace_period = "1m0s"
-              restart_limit = 0
-              method = "get"
-              path = "/healthcheck"
-              protocol = "http"
-
-            [[services.http_checks]]
-              grace_period = "10s"
-              interval = "30s"
-              method = "GET"
-              timeout = "5s"
-              path = "/litefs/health"
-          EOF
-
-      - name: � Generate PR litefs.yml
-        run: |
-          # Create a litefs.yml file for this PR deployment (without consul)
-          cat > other/litefs.yml << 'EOF'
-          # LiteFS configuration for PR preview (standalone, no consul)
-          fuse:
-            dir: '${LITEFS_DIR}'
-            debug: false
-
-          data:
-            dir: '/data/litefs'
-
-          proxy:
-            addr: ':${INTERNAL_PORT}'
-            target: 'localhost:${PORT}'
-            db: '${DATABASE_FILENAME}'
-            debug: false
-            passthrough:
-              - '/build/*'
-              - '/favicons/*'
-              - '/images/*'
-              - '/fonts/*'
-              - '/*.png'
-              - '/*.ico'
-              - '/*.txt'
-              - '/*.webmanifest'
-
-          tracing:
-            enabled: true
-            path: '/var/log/litefs/trace.log'
-            max-size: 64
-            max-count: 3
-            compress: true
-
-          exit-on-error: false
-
-          # No lease configuration - this makes it a standalone instance
-          # No consul, no clustering, isolated from production
-
-          exec:
-            - cmd: npx prisma migrate deploy
-
-            # Set the journal mode for the database to WAL
-            - cmd: sqlite3 $DATABASE_PATH "PRAGMA journal_mode = WAL;"
-
-            # Set the journal mode for the cache to WAL
-            - cmd: sqlite3 $CACHE_DATABASE_PATH "PRAGMA journal_mode = WAL;"
-
-            - cmd: npm start
-          EOF
-
-      - name: �🚀 Deploy PR app
+      - name: � Deploy PR app
         run: |
           flyctl deploy --depot --remote-only --build-arg COMMIT_SHA=${{ github.sha }} --app ${{ steps.app-name.outputs.app_name }}
 
