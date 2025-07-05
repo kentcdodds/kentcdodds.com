@@ -58,8 +58,14 @@ RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
     export SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN) && \
     npm run build
 
+# choose which node_modules to use based on build arg
+FROM production-deps as runtime-deps-prod
+FROM deps as runtime-deps-dev
+
 # build smaller image for running
 FROM base
+
+ARG INSTALL_DEV_DEPS
 
 ENV FLY="true"
 ENV LITEFS_DIR="/litefs"
@@ -81,7 +87,20 @@ RUN echo "#!/bin/sh\nset -x\nsqlite3 \$CACHE_DATABASE_PATH" > /usr/local/bin/cac
 RUN mkdir /app/
 WORKDIR /app/
 
-COPY --from=production-deps /app/node_modules /app/node_modules
+# Copy node_modules - use full deps (including dev) for PR previews, production-deps otherwise
+COPY --from=runtime-deps-prod /app/node_modules /app/node_modules_prod
+COPY --from=runtime-deps-dev /app/node_modules /app/node_modules_dev
+
+RUN if [ "$INSTALL_DEV_DEPS" = "true" ]; then \
+      echo "Using dev dependencies for PR preview" && \
+      mv /app/node_modules_dev /app/node_modules && \
+      rm -rf /app/node_modules_prod; \
+    else \
+      echo "Using production dependencies" && \
+      mv /app/node_modules_prod /app/node_modules && \
+      rm -rf /app/node_modules_dev; \
+    fi
+
 COPY --from=build /app/node_modules/.prisma /app/node_modules/.prisma
 COPY --from=build /app/build /app/build
 COPY --from=build /app/public /app/public

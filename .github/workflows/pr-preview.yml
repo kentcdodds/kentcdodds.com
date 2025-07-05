@@ -83,7 +83,7 @@ jobs:
 
       - name: 🚀 Deploy PR app
         run: |
-          flyctl deploy --depot --remote-only --build-arg COMMIT_SHA=${{ github.sha }} --app ${{ steps.app-name.outputs.app_name }}
+          flyctl deploy --depot --remote-only --build-arg COMMIT_SHA=${{ github.sha }} --build-arg INSTALL_DEV_DEPS=true --app ${{ steps.app-name.outputs.app_name }}
 
       - name: 💬 Comment on PR
         uses: actions/github-script@v7
