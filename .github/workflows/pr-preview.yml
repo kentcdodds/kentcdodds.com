@@ -28,7 +28,11 @@ jobs:
           echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
           echo "url=https://$APP_NAME.fly.dev" >> $GITHUB_OUTPUT
 
-      - name: 📝 Setup PR-specific configurations
+      - name: � Install dependencies for setup script
+        run: |
+          npm install js-yaml
+
+      - name: �📝 Setup PR-specific configurations
         run: |
           # Make script executable and run it
           chmod +x other/setup-pr-preview.js
@@ -104,6 +108,24 @@ jobs:
         run: |
           APP_NAME="kcd-pr-${{ github.event.number }}"
           echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
+
+      - name: 🧹 Cleanup volumes
+        run: |
+          # List and delete all volumes for the PR app
+          echo "Checking for volumes to cleanup..."
+          VOLUMES=$(flyctl volumes list --app ${{ steps.app-name.outputs.app_name }} --json 2>/dev/null || echo "[]")
+          
+          if [ "$VOLUMES" != "[]" ] && [ -n "$VOLUMES" ]; then
+            echo "Found volumes to cleanup"
+            echo "$VOLUMES" | jq -r '.[].id' | while read -r VOLUME_ID; do
+              if [ -n "$VOLUME_ID" ]; then
+                echo "Destroying volume: $VOLUME_ID"
+                flyctl volumes destroy "$VOLUME_ID" --yes || echo "Failed to destroy volume $VOLUME_ID"
+              fi
+            done
+          else
+            echo "No volumes found to cleanup"
+          fi
 
       - name: 🗑️ Delete PR app
         run: |
