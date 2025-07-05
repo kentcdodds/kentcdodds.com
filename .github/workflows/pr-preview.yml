@@ -74,7 +74,11 @@ jobs:
           echo "=== Modified litefs.yml ==="
           cat other/litefs.yml
 
-      - name: � Deploy PR app
+      - name: 🏗️ Create PR app
+        run: |
+          flyctl apps create ${{ steps.app-name.outputs.app_name }} --org personal || echo "App already exists"
+
+      - name: 🚀 Deploy PR app
         run: |
           flyctl deploy --depot --remote-only --build-arg COMMIT_SHA=${{ github.sha }} --app ${{ steps.app-name.outputs.app_name }}
 
