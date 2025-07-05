@@ -60,13 +60,16 @@ jobs:
           
           # Replace consul lease with static lease for PR preview isolation
           # This makes each PR preview a standalone instance
-          sed -i '/^lease:/,/^$/c\
+          sed -i '/^lease:/,/^exec:/c\
 lease:\
-  type: '\''static'\''
-' other/litefs.yml
+  type: static\
+\
+exec:' other/litefs.yml
           
           # Add a comment explaining the isolation
-          sed -i '/^lease:/i\\n# PR Preview: Using static lease type for standalone instance\n# This prevents syncing with production data' other/litefs.yml
+          sed -i '/^lease:/i\
+# PR Preview: Using static lease type for standalone instance\
+# This prevents syncing with production data' other/litefs.yml
           
           echo "=== Modified fly.toml ==="
           cat fly.toml
