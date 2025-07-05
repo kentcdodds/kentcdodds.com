@@ -1,0 +1,198 @@
+name: 🔍 PR Preview Deploy
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+env:
+  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+jobs:
+  deploy-pr:
+    name: 🚀 Deploy PR Preview
+    runs-on: ubuntu-latest
+    if: github.event.action != 'closed'
+    
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 🎈 Setup Fly
+        uses: superfly/flyctl-actions/setup-flyctl@1.5
+
+      - name: 🏷️ Generate app name
+        id: app-name
+        run: |
+          # Create a unique app name for this PR
+          APP_NAME="kcd-pr-${{ github.event.number }}"
+          echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
+          echo "url=https://$APP_NAME.fly.dev" >> $GITHUB_OUTPUT
+
+      - name: 📝 Generate PR fly.toml
+        run: |
+          # Create a fly.toml file for this PR deployment
+          cat > fly.toml << 'EOF'
+          # fly.toml app configuration file for PR preview
+          app = "${{ steps.app-name.outputs.app_name }}"
+          primary_region = "den"
+          kill_signal = "SIGINT"
+          kill_timeout = "5s"
+          swap_size_mb = 512
+
+          [experimental]
+            auto_rollback = true
+            enable_consul = true
+
+          [[mounts]]
+            source = "data_machines"
+            destination = "/data"
+            processes = ["app"]
+
+          [[statics]]
+            guest_path = "/app/build/client/.vite"
+            url_prefix = "/.vite"
+
+          [[statics]]
+            guest_path = "/app/build/client/assets"
+            url_prefix = "/assets"
+
+          [[statics]]
+            guest_path = "/app/build/client/fonts"
+            url_prefix = "/fonts"
+
+          [[statics]]
+            guest_path = "/app/build/client/images"
+            url_prefix = "/images"
+
+          [[statics]]
+            guest_path = "/app/build/client/favicons"
+            url_prefix = "/favicons"
+
+          [[services]]
+            protocol = "tcp"
+            internal_port = 8080
+            auto_stop_machines = true
+            auto_start_machines = true
+            min_machines_running = 0
+            processes = ["app"]
+
+            [[services.ports]]
+              port = 80
+              handlers = ["http"]
+              force_https = true
+
+            [[services.ports]]
+              port = 443
+              handlers = ["tls", "http"]
+            
+            [services.concurrency]
+              type = "requests"
+              hard_limit = 200
+              soft_limit = 150
+
+            [[services.tcp_checks]]
+              interval = "15s"
+              timeout = "2s"
+              grace_period = "10s"
+              restart_limit = 6
+
+            [[services.http_checks]]
+              interval = "10s"
+              timeout = "5s"
+              grace_period = "1m0s"
+              restart_limit = 0
+              method = "get"
+              path = "/healthcheck"
+              protocol = "http"
+
+            [[services.http_checks]]
+              grace_period = "10s"
+              interval = "30s"
+              method = "GET"
+              timeout = "5s"
+              path = "/litefs/health"
+          EOF
+
+      - name: 🚀 Deploy PR app
+        run: |
+          flyctl deploy --depot --remote-only --build-arg COMMIT_SHA=${{ github.sha }} --app ${{ steps.app-name.outputs.app_name }}
+
+      - name: 💬 Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && comment.body.includes('PR Preview')
+            );
+            
+            const commentBody = `🚀 **PR Preview Deployed**
+            
+            Your pull request has been deployed to a temporary Fly machine:
+            
+            🔗 **Preview URL**: ${{ steps.app-name.outputs.url }}
+            📱 **App Name**: \`${{ steps.app-name.outputs.app_name }}\`
+            
+            This preview will automatically scale to zero when not in use to save costs.
+            The app will be automatically deleted when this PR is closed or merged.
+            
+            ---
+            <sub>Updated: ${new Date().toISOString()}</sub>`;
+            
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody
+              });
+            } else {
+              github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
+              });
+            }
+
+  cleanup-pr:
+    name: 🧹 Cleanup PR Preview
+    runs-on: ubuntu-latest
+    if: github.event.action == 'closed'
+    
+    steps:
+      - name: 🎈 Setup Fly
+        uses: superfly/flyctl-actions/setup-flyctl@1.5
+
+      - name: 🏷️ Generate app name
+        id: app-name
+        run: |
+          APP_NAME="kcd-pr-${{ github.event.number }}"
+          echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
+
+      - name: 🗑️ Delete PR app
+        run: |
+          flyctl apps destroy ${{ steps.app-name.outputs.app_name }} --yes || echo "App doesn't exist or already deleted"
+
+      - name: 💬 Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const commentBody = `🧹 **PR Preview Cleaned Up**
+            
+            The temporary Fly machine for this PR has been deleted.
+            
+            ---
+            <sub>Cleaned up: ${new Date().toISOString()}</sub>`;
+            
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: commentBody
+            });
