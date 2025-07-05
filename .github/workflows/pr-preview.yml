@@ -58,16 +58,15 @@ jobs:
           # Copy and modify litefs.yml for PR preview (standalone, no consul)
           cp other/litefs.yml other/litefs.yml.backup
           
-          # Remove the entire lease section to make it standalone
-          # This removes everything from "lease:" to the next top-level section
-          awk '
-          /^lease:/ { in_lease = 1; next }
-          /^[a-zA-Z]/ && in_lease && !/^  / { in_lease = 0 }
-          !in_lease { print }
-          ' other/litefs.yml > other/litefs.yml.tmp && mv other/litefs.yml.tmp other/litefs.yml
+          # Replace consul lease with static lease for PR preview isolation
+          # This makes each PR preview a standalone instance
+          sed -i '/^lease:/,/^$/c\
+lease:\
+  type: '\''static'\''
+' other/litefs.yml
           
           # Add a comment explaining the isolation
-          sed -i '/^exit-on-error:/a\\n# PR Preview: No lease configuration - standalone instance\n# This prevents syncing with production data' other/litefs.yml
+          sed -i '/^lease:/i\\n# PR Preview: Using static lease type for standalone instance\n# This prevents syncing with production data' other/litefs.yml
           
           echo "=== Modified fly.toml ==="
           cat fly.toml
