@@ -20,7 +20,9 @@ function setupPRPreview() {
   setupLitefsYml();
 
   console.log('PR preview configuration complete!');
-  console.log('✓ App will run in mocks mode with environment variables from .env.example');
+  console.log('✓ App will run in mocks mode with production build (much faster than tsx)');
+  console.log('✓ Environment variables loaded from .env.example');
+  console.log('✓ Auto-scaling enabled with extended grace periods for startup');
 }
 
 function setupFlyToml(appName) {
@@ -60,6 +62,16 @@ function setupFlyToml(appName) {
   processes = ["app"]`
       );
     }
+    
+    // Increase health check grace period for slower startup
+    flyToml = flyToml.replace(
+      /grace_period = "1m0s"/g,
+      'grace_period = "5m0s"'
+    );
+    flyToml = flyToml.replace(
+      /grace_period = "10s"/g,
+      'grace_period = "2m0s"'
+    );
     
     // Write modified fly.toml
     fs.writeFileSync(flyTomlPath, flyToml);
@@ -103,14 +115,15 @@ function setupLitefsYml() {
       );
       
       if (startCommand) {
-        startCommand.cmd = 'npm run start:mocks';
-        console.log('✓ Updated startup command to use mocks mode');
+        // Use the faster production start with MOCKS env var instead of tsx
+        startCommand.cmd = 'cross-env MOCKS=true npm start';
+        console.log('✓ Updated startup command to use mocks mode with production build');
       } else {
         // If no start command found, add one
         litefsConfig.exec.push({
-          cmd: 'npm run start:mocks'
+          cmd: 'cross-env MOCKS=true npm start'
         });
-        console.log('✓ Added mocks startup command');
+        console.log('✓ Added mocks startup command with production build');
       }
     }
     

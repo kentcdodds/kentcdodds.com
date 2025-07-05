@@ -7,6 +7,11 @@ on:
 env:
   FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 jobs:
   changes:
     name: 🔎 Determine deployable changes
@@ -83,7 +88,7 @@ jobs:
 
       - name: 🚀 Deploy PR app
         run: |
-          flyctl deploy --depot --remote-only --build-arg COMMIT_SHA=${{ github.sha }} --build-arg INSTALL_DEV_DEPS=true --app ${{ steps.app-name.outputs.app_name }}
+          flyctl deploy --depot --remote-only --build-arg COMMIT_SHA=${{ github.sha }} --app ${{ steps.app-name.outputs.app_name }}
 
       - name: 💬 Comment on PR
         uses: actions/github-script@v7
@@ -96,7 +101,8 @@ jobs:
             });
             
             const botComment = comments.find(comment => 
-              comment.user.type === 'Bot' && comment.body.includes('PR Preview')
+              (comment.user.login === 'github-actions[bot]' || comment.user.type === 'Bot') && 
+              comment.body.includes('PR Preview')
             );
             
             const commentBody = `🚀 **PR Preview Deployed**
@@ -146,7 +152,8 @@ jobs:
             });
             
             const botComment = comments.find(comment => 
-              comment.user.type === 'Bot' && comment.body.includes('PR Preview')
+              (comment.user.login === 'github-actions[bot]' || comment.user.type === 'Bot') && 
+              comment.body.includes('PR Preview')
             );
             
             const commentBody = `🔍 **PR Preview Skipped**
