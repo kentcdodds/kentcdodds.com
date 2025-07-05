@@ -41,7 +41,6 @@ jobs:
 
           [experimental]
             auto_rollback = true
-            enable_consul = true
 
           [[mounts]]
             source = "data_machines"
@@ -113,7 +112,58 @@ jobs:
               path = "/litefs/health"
           EOF
 
-      - name: 🚀 Deploy PR app
+      - name: � Generate PR litefs.yml
+        run: |
+          # Create a litefs.yml file for this PR deployment (without consul)
+          cat > other/litefs.yml << 'EOF'
+          # LiteFS configuration for PR preview (standalone, no consul)
+          fuse:
+            dir: '${LITEFS_DIR}'
+            debug: false
+
+          data:
+            dir: '/data/litefs'
+
+          proxy:
+            addr: ':${INTERNAL_PORT}'
+            target: 'localhost:${PORT}'
+            db: '${DATABASE_FILENAME}'
+            debug: false
+            passthrough:
+              - '/build/*'
+              - '/favicons/*'
+              - '/images/*'
+              - '/fonts/*'
+              - '/*.png'
+              - '/*.ico'
+              - '/*.txt'
+              - '/*.webmanifest'
+
+          tracing:
+            enabled: true
+            path: '/var/log/litefs/trace.log'
+            max-size: 64
+            max-count: 3
+            compress: true
+
+          exit-on-error: false
+
+          # No lease configuration - this makes it a standalone instance
+          # No consul, no clustering, isolated from production
+
+          exec:
+            - cmd: npx prisma migrate deploy
+
+            # Set the journal mode for the database to WAL
+            - cmd: sqlite3 $DATABASE_PATH "PRAGMA journal_mode = WAL;"
+
+            # Set the journal mode for the cache to WAL
+            - cmd: sqlite3 $CACHE_DATABASE_PATH "PRAGMA journal_mode = WAL;"
+
+            - cmd: npm start
+          EOF
+
+      - name: �🚀 Deploy PR app
         run: |
           flyctl deploy --depot --remote-only --build-arg COMMIT_SHA=${{ github.sha }} --app ${{ steps.app-name.outputs.app_name }}
 
