@@ -28,9 +28,15 @@ jobs:
           echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
           echo "url=https://$APP_NAME.fly.dev" >> $GITHUB_OUTPUT
 
-      - name: � Install dependencies for setup script
+      - name: 📦 Install dependencies for setup script
         run: |
           npm install js-yaml
+
+      - name: � Setup environment variables
+        run: |
+          # Copy environment variables for PR preview
+          cp .env.example .env
+          echo "✓ Environment variables copied from .env.example"
 
       - name: �📝 Setup PR-specific configurations
         run: |

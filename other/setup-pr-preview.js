@@ -20,6 +20,7 @@ function setupPRPreview() {
   setupLitefsYml();
 
   console.log('PR preview configuration complete!');
+  console.log('✓ App will run in mocks mode with environment variables from .env.example');
 }
 
 function setupFlyToml(appName) {
@@ -93,6 +94,25 @@ function setupLitefsYml() {
     litefsConfig.lease = {
       type: 'static'
     };
+    
+    // Update the exec section to use mocks mode
+    if (litefsConfig.exec && Array.isArray(litefsConfig.exec)) {
+      // Find the main startup command (usually the last one)
+      const startCommand = litefsConfig.exec.find(cmd => 
+        cmd.cmd && (cmd.cmd.includes('npm start') || cmd.cmd.includes('node'))
+      );
+      
+      if (startCommand) {
+        startCommand.cmd = 'npm run start:mocks';
+        console.log('✓ Updated startup command to use mocks mode');
+      } else {
+        // If no start command found, add one
+        litefsConfig.exec.push({
+          cmd: 'npm run start:mocks'
+        });
+        console.log('✓ Added mocks startup command');
+      }
+    }
     
     // Convert back to YAML
     let modifiedYml = dump(litefsConfig, {
