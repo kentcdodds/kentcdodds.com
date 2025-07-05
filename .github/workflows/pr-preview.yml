@@ -30,46 +30,9 @@ jobs:
 
       - name: 📝 Setup PR-specific configurations
         run: |
-          # Copy and modify fly.toml for PR preview
-          cp fly.toml fly.toml.backup
-          
-          # Update app name for PR
-          sed -i 's/^app = .*/app = "${{ steps.app-name.outputs.app_name }}"/' fly.toml
-          
-          # Remove consul from experimental section (if present)
-          sed -i '/enable_consul = true/d' fly.toml
-          
-          # Add auto-scaling configuration to services section
-          # Find the [[services]] section and add auto-scaling after internal_port
-          awk '
-          /^\[\[services\]\]/ { in_services = 1 }
-          /^  internal_port = / && in_services { 
-            print $0
-            print "  auto_stop_machines = true"
-            print "  auto_start_machines = true" 
-            print "  min_machines_running = 0"
-            print "  processes = [\"app\"]"
-            in_services = 0
-            next
-          }
-          { print }
-          ' fly.toml > fly.toml.tmp && mv fly.toml.tmp fly.toml
-          
-          # Copy and modify litefs.yml for PR preview (standalone, no consul)
-          cp other/litefs.yml other/litefs.yml.backup
-          
-          # Replace consul lease with static lease for PR preview isolation
-          # This makes each PR preview a standalone instance
-          sed -i '/^lease:/,/^exec:/c\
-lease:\
-  type: static\
-\
-exec:' other/litefs.yml
-          
-          # Add a comment explaining the isolation
-          sed -i '/^lease:/i\
-# PR Preview: Using static lease type for standalone instance\
-# This prevents syncing with production data' other/litefs.yml
+          # Make script executable and run it
+          chmod +x other/setup-pr-preview.js
+          node other/setup-pr-preview.js "${{ steps.app-name.outputs.app_name }}"
           
           echo "=== Modified fly.toml ==="
           cat fly.toml
