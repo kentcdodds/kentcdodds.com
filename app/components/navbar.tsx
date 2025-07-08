@@ -170,7 +170,7 @@ function MobileMenu() {
 
 	const closeMenu = React.useCallback(() => {
 		if (popoverRef.current) {
-			popoverRef.current.hidePopover()
+			popoverRef.current.hidePopover?.()
 			// Force reset body overflow to ensure proper state
 			document.body.style.overflow = ''
 		}
