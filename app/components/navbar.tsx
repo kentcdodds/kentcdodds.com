@@ -134,8 +134,12 @@ function MobileMenu() {
 	// Close menu when route changes
 	React.useEffect(() => {
 		const popover = popoverRef.current
-		if (popover && popover.matches(':popover-open')) {
+		if (!popover) return
+		const openState = matchesPopoverOpen(popover)
+		if (openState === 'matches') {
 			popover.hidePopover()
+		} else if (openState === 'old-browser') {
+			window.location.reload()
 		}
 	}, [location.pathname])
 
@@ -146,8 +150,9 @@ function MobileMenu() {
 
 		const handleToggle = (event: Event) => {
 			const target = event.target as HTMLElement
-			// Ensure body overflow is properly managed
-			if (target.matches(':popover-open')) {
+			const popoverOpen = matchesPopoverOpen(target)
+			if (popoverOpen === 'matches') {
+				// Ensure body overflow is properly managed
 				document.body.style.overflow = 'hidden'
 			} else {
 				document.body.style.overflow = ''
@@ -175,8 +180,9 @@ function MobileMenu() {
 		<div
 			onBlur={(event) => {
 				if (!popoverRef.current || !menuButtonRef.current) return
+				const openState = matchesPopoverOpen(popoverRef.current)
 				if (
-					popoverRef.current.matches(':popover-open') &&
+					openState === 'matches' &&
 					!event.currentTarget.contains(event.relatedTarget)
 				) {
 					const isRelatedTargetBeforeMenu =
@@ -299,10 +305,7 @@ function ProfileButton({
 			)}
 			ref={ref}
 		>
-			<motion.div
-				className="absolute"
-				animate={controls}
-			>
+			<motion.div className="absolute" animate={controls}>
 				<TeamCircle size={56} team={team} />
 			</motion.div>
 			<img
@@ -362,3 +365,12 @@ function Navbar() {
 }
 
 export { Navbar }
+
+function matchesPopoverOpen(element: HTMLElement) {
+	try {
+		return element.matches(':popover-open') ? 'matches' : 'no-matches'
+	} catch {
+		// ignore 🤷‍♂️ They probably have a very old browser
+		return 'old-browser'
+	}
+}
