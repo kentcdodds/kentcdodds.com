@@ -145,6 +145,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 			preTitle: 'Check out this Blog',
 			title: `Priceless insights, ideas, and experiences for your dev work`,
 		}),
+		ogType: 'website',
 	})
 }
 
