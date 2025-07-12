@@ -53,7 +53,7 @@ function RecordingForm({
 						headers: flyPrimaryInstance
 							? { 'fly-force-instance-id': flyPrimaryInstance }
 							: undefined,
-					})
+					} as any)
 				}
 			},
 			{ once: true },
