@@ -84,6 +84,7 @@ const mdxPageMeta: MetaFunction<MetaLoader, { root: RootLoaderType }> = ({
 						data.page.frontmatter.socialImagePreTitle ??
 						`Check out this article`,
 				}),
+				ogType: data.page.contentDir === 'blog' ? 'article' : 'website',
 			}),
 			...extraMeta,
 		].filter(typedBoolean)

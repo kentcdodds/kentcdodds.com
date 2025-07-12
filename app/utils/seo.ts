@@ -10,12 +10,14 @@ export function getSocialMetas({
 		featuredImage: images.kodyFlyingSnowboardingBlue.id,
 	}),
 	keywords = '',
+	ogType = 'website',
 }: {
 	image?: string
 	url: string
 	title?: string
 	description?: string
 	keywords?: string
+	ogType?: 'website' | 'article'
 }) {
 	return [
 		{ title },
@@ -26,6 +28,7 @@ export function getSocialMetas({
 		{ name: 'og:title', content: title },
 		{ name: 'og:description', content: description },
 		{ name: 'og:image', content: image },
+		{ name: 'og:type', content: ogType },
 		{
 			name: 'twitter:card',
 			content: image ? 'summary_large_image' : 'summary',
