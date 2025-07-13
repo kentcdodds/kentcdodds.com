@@ -24,6 +24,10 @@ export function init() {
 			if (event.request?.url?.includes('/lookout')) {
 				return null
 			}
+			// Filter out errors related to Google translation service
+			if (event.request?.url?.includes('translate-pa.googleapis.com')) {
+				return null
+			}
 			return event
 		},
 		integrations: [
