@@ -39,7 +39,10 @@ async function getWorkshops({
 		ttl: 1000 * 60 * 60 * 24 * 7,
 		staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
 		getFreshValue: async () => {
-			const dirList = await downloadDirList(`content/workshops`)
+			const dirList = await downloadDirList(`content/workshops`).catch(err => {
+				console.error(`Failed to download workshop list`, err)
+				return []
+			})
 			const workshopFileList = dirList
 				.filter(
 					(listing) => listing.type === 'file' && listing.name.endsWith('.yml'),
