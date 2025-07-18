@@ -1,0 +1,237 @@
+name: 🔍 PR Preview Deploy
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+env:
+  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  changes:
+    name: 🔎 Determine deployable changes
+    runs-on: ubuntu-latest
+    if: github.event.action != 'closed'
+    outputs:
+      DEPLOYABLE: ${{steps.changes.outputs.DEPLOYABLE}}
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: '50'
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: 🔎 Determine deployable changes
+        id: changes
+        run: >-
+          echo ::set-output name=DEPLOYABLE::$(node ./other/is-deployable.js ${{
+          github.sha }})
+
+      - name: ❓ Deployable
+        run: >-
+          echo "DEPLOYABLE: ${{steps.changes.outputs.DEPLOYABLE}}"
+
+  deploy-pr:
+    name: 🚀 Deploy PR Preview
+    runs-on: ubuntu-latest
+    needs: [changes]
+    if: github.event.action != 'closed' && needs.changes.outputs.DEPLOYABLE == 'true'
+    
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 🎈 Setup Fly
+        uses: superfly/flyctl-actions/setup-flyctl@1.5
+
+      - name: 🏷️ Generate app name
+        id: app-name
+        run: |
+          # Create a unique app name for this PR
+          APP_NAME="kcd-pr-${{ github.event.number }}"
+          echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
+          echo "url=https://$APP_NAME.fly.dev" >> $GITHUB_OUTPUT
+
+      - name: 📦 Install dependencies for setup script
+        run: |
+          npm install js-yaml
+
+      - name: � Setup environment variables
+        run: |
+          # Copy environment variables for PR preview
+          cp .env.example .env
+          echo "✓ Environment variables copied from .env.example"
+
+      - name: �� Setup PR-specific configurations
+        run: |
+          # Make script executable and run it
+          chmod +x other/setup-pr-preview.js
+          node other/setup-pr-preview.js "${{ steps.app-name.outputs.app_name }}"
+          
+          echo "=== Modified fly.toml ==="
+          cat fly.toml
+          echo "=== Modified litefs.yml ==="
+          cat other/litefs.yml
+
+      - name: 🏗️ Create PR app
+        run: |
+          flyctl apps create ${{ steps.app-name.outputs.app_name }} --org personal || echo "App already exists"
+
+      - name: 🚀 Deploy PR app
+        run: |
+          flyctl deploy --depot --remote-only --build-arg COMMIT_SHA=${{ github.sha }} --app ${{ steps.app-name.outputs.app_name }}
+
+      - name: 💬 Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              (comment.user.login === 'github-actions[bot]' || comment.user.type === 'Bot') && 
+              comment.body.includes('PR Preview')
+            );
+            
+            const commentBody = `🚀 **PR Preview Deployed**
+            
+            Your pull request has been deployed to a temporary Fly machine:
+            
+            🔗 **Preview URL**: ${{ steps.app-name.outputs.url }}
+            📱 **App Name**: \`${{ steps.app-name.outputs.app_name }}\`
+            
+            This preview will automatically scale to zero when not in use to save costs.
+            The app will be automatically deleted when this PR is closed or merged.
+            
+            ---
+            <sub>Updated: ${new Date().toISOString()}</sub>`;
+            
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody
+              });
+            } else {
+              github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
+              });
+            }
+
+  no-deploy-pr:
+    name: 💬 Comment on non-deployable changes
+    runs-on: ubuntu-latest
+    needs: [changes]
+    if: github.event.action != 'closed' && needs.changes.outputs.DEPLOYABLE == 'false'
+    
+    steps:
+      - name: 💬 Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              (comment.user.login === 'github-actions[bot]' || comment.user.type === 'Bot') && 
+              comment.body.includes('PR Preview')
+            );
+            
+            const commentBody = `🔍 **PR Preview Skipped**
+            
+            No preview deployment was created because this PR only contains content changes.
+            
+            Content-only changes don't require a full deployment preview since they don't affect the application functionality.
+            
+            ---
+            <sub>Updated: ${new Date().toISOString()}</sub>`;
+            
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody
+              });
+            } else {
+              github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
+              });
+            }
+
+  cleanup-pr:
+    name: 🧹 Cleanup PR Preview
+    runs-on: ubuntu-latest
+    if: github.event.action == 'closed'
+    
+    steps:
+      - name: 🎈 Setup Fly
+        uses: superfly/flyctl-actions/setup-flyctl@1.5
+
+      - name: 🏷️ Generate app name
+        id: app-name
+        run: |
+          APP_NAME="kcd-pr-${{ github.event.number }}"
+          echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
+
+      - name: 🧹 Cleanup volumes
+        run: |
+          # List and delete all volumes for the PR app
+          echo "Checking for volumes to cleanup..."
+          VOLUMES=$(flyctl volumes list --app ${{ steps.app-name.outputs.app_name }} --json 2>/dev/null || echo "[]")
+          
+          if [ "$VOLUMES" != "[]" ] && [ -n "$VOLUMES" ]; then
+            echo "Found volumes to cleanup"
+            echo "$VOLUMES" | jq -r '.[].id' | while read -r VOLUME_ID; do
+              if [ -n "$VOLUME_ID" ]; then
+                echo "Destroying volume: $VOLUME_ID"
+                flyctl volumes destroy "$VOLUME_ID" --yes || echo "Failed to destroy volume $VOLUME_ID"
+              fi
+            done
+          else
+            echo "No volumes found to cleanup"
+          fi
+
+      - name: 🗑️ Delete PR app
+        run: |
+          flyctl apps destroy ${{ steps.app-name.outputs.app_name }} --yes || echo "App doesn't exist or already deleted"
+
+      - name: 💬 Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const commentBody = `🧹 **PR Preview Cleaned Up**
+            
+            The temporary Fly machine for this PR has been deleted.
+            
+            ---
+            <sub>Cleaned up: ${new Date().toISOString()}</sub>`;
+            
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: commentBody
+            });
