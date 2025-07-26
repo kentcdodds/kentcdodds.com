@@ -30,21 +30,25 @@ function createServer() {
 		},
 	)
 
-	server.tool(
+	server.registerTool(
 		'whoami',
-		'Get the user ID of the current user',
-		{},
+		{
+			description: 'Get the user ID of the current user',
+			inputSchema: {},
+		},
 		async (_, extra) => {
 			const user = await requireUser(extra.authInfo)
 			return { content: [{ type: 'text', text: JSON.stringify(user) }] }
 		},
 	)
 
-	server.tool(
+	server.registerTool(
 		'update_user_info',
-		'Update the user info for the current user',
 		{
-			firstName: z.string().optional().describe('The first name of the user'),
+			description: 'Update the user info for the current user',
+			inputSchema: {
+				firstName: z.string().optional().describe('The first name of the user'),
+			},
 		},
 		async ({ firstName }) => {
 			const user = await requireUser()
@@ -56,10 +60,12 @@ function createServer() {
 		},
 	)
 
-	server.tool(
+	server.registerTool(
 		'get_post_reads',
-		'Get the post reads for the current user',
-		{},
+		{
+			description: 'Get the post reads for the current user',
+			inputSchema: {},
+		},
 		async (_, extra) => {
 			const request = requireRequest()
 			const user = await requireUser(extra.authInfo)
@@ -92,10 +98,12 @@ function createServer() {
 		},
 	)
 
-	server.tool(
+	server.registerTool(
 		'get_recommended_posts',
-		'Get recommended posts for the current user',
-		{},
+		{
+			description: 'Get recommended posts for the current user',
+			inputSchema: {},
+		},
 		async () => {
 			const request = requireRequest()
 			const domainUrl = getDomainUrl(request)
@@ -120,10 +128,12 @@ function createServer() {
 		},
 	)
 
-	server.tool(
+	server.registerTool(
 		'get_most_popular_posts',
-		'Get the most popular posts on kentcdodds.com',
-		{},
+		{
+			description: 'Get the most popular posts on kentcdodds.com',
+			inputSchema: {},
+		},
 		async () => {
 			const request = requireRequest()
 			const domainUrl = getDomainUrl(request)
@@ -149,27 +159,29 @@ function createServer() {
 		},
 	)
 
-	server.tool(
+	server.registerTool(
 		'find_content',
-		'Search for content on kentcdodds.com',
 		{
-			query: z
-				.string()
-				.describe(
-					`The query to search for. It's not very intelligent, it uses match-sorter to find text matches in titles, descriptions, categories, tags, etc. Simpler and shorter queries are better.`,
-				),
-			category: z
-				.union([
-					z.literal('Blog'),
-					z.literal('Chats with Kent Podcast'),
-					z.literal('Call Kent Podcast'),
-					z.literal('Workshops'),
-					z.literal('Talks'),
-				])
-				.optional()
-				.describe(
-					'The category to search in, if omitted, it will search all categories',
-				),
+			description: 'Search for content on kentcdodds.com',
+			inputSchema: {
+				query: z
+					.string()
+					.describe(
+						`The query to search for. It's not very intelligent, it uses match-sorter to find text matches in titles, descriptions, categories, tags, etc. Simpler and shorter queries are better.`,
+					),
+				category: z
+					.union([
+						z.literal('Blog'),
+						z.literal('Chats with Kent Podcast'),
+						z.literal('Call Kent Podcast'),
+						z.literal('Workshops'),
+						z.literal('Talks'),
+					])
+					.optional()
+					.describe(
+						'The category to search in, if omitted, it will search all categories',
+					),
+			},
 		},
 		async ({ query, category }) => {
 			const request = requestStorage.getStore()
@@ -217,10 +229,14 @@ function createServer() {
 		},
 	)
 
-	server.tool(
+	server.registerTool(
 		'get_blog_post',
-		'Get the content of a specific blog post by its slug',
-		{ slug: z.string().describe('The slug of the blog post to retrieve') },
+		{
+			description: 'Get the content of a specific blog post by its slug',
+			inputSchema: {
+				slug: z.string().describe('The slug of the blog post to retrieve'),
+			},
+		},
 		async ({ slug }) => {
 			const { files } = await downloadMdxFilesCached('blog', slug, {})
 
@@ -244,14 +260,19 @@ function createServer() {
 		},
 	)
 
-	server.tool(
+	server.registerTool(
 		'get_chats_with_kent_episode_details',
-		'Get the details (title, description, transcript, etc.) for a specific episode of the Chats with Kent podcast by its season number and episode number',
 		{
-			seasonNumber: z.number().describe('The number of the season to retrieve'),
-			episodeNumber: z
-				.number()
-				.describe('The number of the episode to retrieve'),
+			description:
+				'Get the details (title, description, transcript, etc.) for a specific episode of the Chats with Kent podcast by its season number and episode number',
+			inputSchema: {
+				seasonNumber: z
+					.number()
+					.describe('The number of the season to retrieve'),
+				episodeNumber: z
+					.number()
+					.describe('The number of the episode to retrieve'),
+			},
 		},
 		async ({ episodeNumber, seasonNumber }) => {
 			const request = requestStorage.getStore()
@@ -293,18 +314,21 @@ function createServer() {
 		},
 	)
 
-	server.tool(
+	server.registerTool(
 		'subscribe_to_newsletter',
-		'Subscribe to Kent C. Dodds newsletter and get regular updates about new articles, courses, and workshops',
 		{
-			email: z
-				.string()
-				.email()
-				.optional()
-				.describe(
-					'The email address to subscribe (make sure to ask the user for their email address before calling this tool. They will receive a confirmation email if not already subscribed)',
-				),
-			firstName: z.string().optional().describe('Your first name (optional)'),
+			description:
+				'Subscribe to Kent C. Dodds newsletter and get regular updates about new articles, courses, and workshops',
+			inputSchema: {
+				email: z
+					.string()
+					.email()
+					.optional()
+					.describe(
+						'The email address to subscribe (make sure to ask the user for their email address before calling this tool. They will receive a confirmation email if not already subscribed)',
+					),
+				firstName: z.string().optional().describe('Your first name (optional)'),
+			},
 		},
 		async ({ email, firstName }) => {
 			if (!email) {

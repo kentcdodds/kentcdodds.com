@@ -100,7 +100,7 @@ export class FetchAPIHTTPServerTransport implements Transport {
 		}
 	> = new Map()
 
-	sessionId?: string | undefined
+	sessionId?: string
 	onclose?: () => void
 	onerror?: (error: Error) => void
 	onmessage?: (message: JSONRPCMessage, extra?: { authInfo?: AuthInfo }) => void
