@@ -84,6 +84,7 @@
     - event: '[Render ATL](https://www.renderatl.com/)'
       date: 2025-06-11
     - event: '[Code Europe](https://www.codeeurope.pl/en/)'
+      recording: https://www.youtube.com/watch?v=KxCDBZ0fKPQ&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
       date: 2025-06-30
     - event: '[UtahJS Conf](https://utahjs.com/conference)'
       date: 2025-09-12
