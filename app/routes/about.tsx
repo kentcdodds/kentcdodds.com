@@ -18,8 +18,11 @@ import {
 	AwardIcon,
 	BadgeIcon,
 	BookIcon,
+	CodeIcon,
 	FastForwardIcon,
 	MugIcon,
+	StarIcon,
+	TrophyIcon,
 	UsersIcon,
 } from '#app/components/icons.tsx'
 import { BlogSection } from '#app/components/sections/blog-section.tsx'
@@ -346,6 +349,57 @@ function AboutIndex() {
 			</Grid>
 
 			<HeaderSection
+				title="I've been recognized for my contributions."
+				subTitle="Here are some of the honors and awards I've received."
+				className="mb-16"
+			/>
+
+			<Grid className="mb-24 lg:mb-64" rowGap>
+				<div className="col-span-full lg:col-span-6">
+					<FeatureCard
+						title="Google Developer Expert (GDE)"
+						description="Recognized by Google as an expert in web technologies, particularly React and testing. I help developers build better applications through education and open source contributions."
+						icon={<TrophyIcon size={48} />}
+					/>
+				</div>
+				<div className="col-span-full lg:col-span-6">
+					<FeatureCard
+						title="Microsoft MVP"
+						description="Awarded Microsoft MVP status for exceptional contributions to the developer community. I'm recognized for my work in JavaScript, React, and developer education."
+						icon={<CodeIcon size={48} />}
+					/>
+				</div>
+				<div className="col-span-full lg:col-span-6">
+					<FeatureCard
+						title="GitHub Star"
+						description="Selected as a GitHub Star for my open source contributions and community leadership. I help developers learn and grow through my projects and educational content."
+						icon={<StarIcon size={48} />}
+					/>
+				</div>
+				<div className="col-span-full lg:col-span-6">
+					<FeatureCard
+						title="TC-39 Committee Member"
+						description="Represented PayPal on the TC-39 committee, which is responsible for standardizing the JavaScript language. Helped shape the future of JavaScript."
+						icon={<BadgeIcon size={48} />}
+					/>
+				</div>
+				<div className="col-span-full lg:col-span-6">
+					<FeatureCard
+						title="GitNation OS Awards"
+						description="The Most Impactful Contribution to the community awarded for my work on Testing Library."
+						icon={<AwardIcon size={48} />}
+					/>
+				</div>
+				<div className="col-span-full lg:col-span-6">
+					<FeatureCard
+						title="Owen Cherrington Scholarship"
+						description="Awarded the Owen Cherrington Scholarship to attend the 2025 Microsoft MVP Summit."
+						icon={<TrophyIcon size={48} />}
+					/>
+				</div>
+			</Grid>
+
+			<HeaderSection
 				title="Here are some random fun facts."
 				subTitle="Some unique things about me."
 				className="mb-16"
@@ -390,7 +444,7 @@ function AboutIndex() {
 				<div className="col-span-full lg:col-span-6">
 					<FeatureCard
 						title="I listen to books and podcasts at 3x"
-						description="I've worked my way up to 3x listening so I could listen to more. So far I've saved ~100 days of listening by doing this 🎧"
+						description="I've worked my way up to 3x listening so I could listen to more. So far I've saved ~300 days of listening by doing this 🎧"
 						icon={<FastForwardIcon size={48} />}
 					/>
 				</div>

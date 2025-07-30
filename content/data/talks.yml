@@ -1,12 +1,3 @@
-- title: CascadiaJS 2025 Talk
-  deliveries:
-    - event: '[CascadiaJS](https://cascadiajs.com/2025)'
-      date: 2025-09-17
-  tags:
-    - ai
-  description: >-
-    To be announced.
-
 - title: "Please Make Jarvis (so I don't have to)"
   deliveries:
     - event: '[MCP Developers Summit](https://lu.ma/mcpdevsummit2025)'
@@ -86,8 +77,14 @@
     - event: '[Code Europe](https://www.codeeurope.pl/en/)'
       recording: https://www.youtube.com/watch?v=KxCDBZ0fKPQ&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
       date: 2025-06-30
+    - event:
+        '[Microsoft MCP Dev
+        Days](https://developer.microsoft.com/en-us/reactor/events/26140/)'
+      date: 2025-07-29
     - event: '[UtahJS Conf](https://utahjs.com/conference)'
       date: 2025-09-12
+    - event: '[CascadiaJS](https://cascadiajs.com/2025)'
+      date: 2025-09-17
   tags:
     - mcp
     - ai
@@ -104,9 +101,9 @@
     where we come in.
 
 
-    In this talk, Kent will live code an MCP server and use it with an AI
-    assistant to help us catch the vision of what this future could look like
-    and our role in it.
+    In this talk, Kent will show how this AI assistant user interaction model is
+    shaping out to be, help us catch the vision of what this future could look
+    like, and our role in it.
 
 - title: Of Things Epic
   deliveries:
