@@ -393,7 +393,7 @@ function AboutIndex() {
 				<div className="col-span-full lg:col-span-6">
 					<FeatureCard
 						title="Owen Cherrington Scholarship"
-						description="Awarded the Owen Cherrington Scholarship to attend the 2025 Microsoft MVP Summit."
+						description="Given to students who exemplify characteristics such as scholarship, hard work, and selfless service in making the Information Systems Jr. Core a better experience for classmates."
 						icon={<TrophyIcon size={48} />}
 					/>
 				</div>
