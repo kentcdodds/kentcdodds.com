@@ -153,3 +153,4 @@ POST,DELETE,PATCH,PUT  /                                                https://
 /blog/unit-vs-integration-vs-e2e-tests                                  /blog/static-vs-unit-vs-integration-vs-e2e-tests
 
 /chats-with-kent-podcast/seasons/01/episodes/creating-successful-mentor-relationships-with-emma-wedekind        /chats-with-kent-podcast/seasons/01/episodes/creating-successful-mentor-relationships-with-emma-bostian
+/talks/letting-ai-interface-with-your-app-with-mcps                     /talks/the-new-user-interaction-model
