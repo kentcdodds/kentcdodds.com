@@ -50,8 +50,8 @@ function createServer() {
 				firstName: z.string().optional().describe('The first name of the user'),
 			},
 		},
-		async ({ firstName }) => {
-			const user = await requireUser()
+		async ({ firstName }, extra) => {
+			const user = await requireUser(extra.authInfo)
 			await prisma.user.update({
 				where: { id: user.id },
 				data: { firstName },
@@ -429,7 +429,7 @@ async function getUser(authInfo?: AuthInfo) {
 	return user
 }
 
-async function requireUser(authInfo?: AuthInfo) {
+async function requireUser(authInfo: AuthInfo | undefined) {
 	const user = await getUser(authInfo)
 	invariant(user, 'User not found')
 	return user
