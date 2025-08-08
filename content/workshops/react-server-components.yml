@@ -9,13 +9,6 @@ meta:
     - server actions
 categories:
   - react
-events:
-  - title: 'React Summit US 2024'
-    quantity: 50
-    remaining: 0
-    url: https://reactsummit.us/react-workshops
-    date: 2024-11-20
-    location: 'New York, USA 🗽'
 kitTag: '5037938'
 problemStatements:
   part1:
