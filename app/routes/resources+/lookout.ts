@@ -10,8 +10,33 @@ export async function action({ request }: ActionFunctionArgs) {
 	const piece = envelope.split('\n')[0]
 	invariantResponse(piece, 'no piece in envelope')
 
-	const header = JSON.parse(piece ?? '{}')
-	const dsn = new URL(header.dsn)
+	// Validate that the first line is valid JSON (required for Sentry envelope format)
+	let header: any
+	try {
+		header = JSON.parse(piece ?? '{}')
+	} catch (error) {
+		// Return 400 for malformed Sentry envelopes instead of crashing
+		throw new Response('Invalid Sentry envelope format: first line must be valid JSON', {
+			status: 400,
+		})
+	}
+
+	// Validate that header contains required dsn field
+	if (!header.dsn || typeof header.dsn !== 'string') {
+		throw new Response('Invalid Sentry envelope format: missing or invalid dsn field', {
+			status: 400,
+		})
+	}
+
+	let dsn: URL
+	try {
+		dsn = new URL(header.dsn)
+	} catch (error) {
+		throw new Response('Invalid Sentry envelope format: invalid dsn URL', {
+			status: 400,
+		})
+	}
+	
 	const projectId = dsn.pathname?.replace('/', '')
 
 	invariantResponse(
