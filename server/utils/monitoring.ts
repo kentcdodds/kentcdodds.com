@@ -1,6 +1,6 @@
 import { nodeProfilingIntegration } from '@sentry/profiling-node'
 import Sentry from '@sentry/remix'
-import { isModernBrowserByUA } from '../../app/utils/browser-support.ts'
+import { isModernBrowserByUA } from './browser-support.ts'
 
 export function init() {
 	Sentry.init({
