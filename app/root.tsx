@@ -262,6 +262,24 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		})
 		.filter(typedBoolean)
 
+	// Safely get client hints, falling back to default values if there's a URI malformed error
+	let hints
+	try {
+		hints = getHints(request)
+	} catch (error) {
+		// If there's a URIError due to malformed cookie values, fall back to defaults
+		if (error instanceof URIError) {
+			console.warn('Failed to parse client hints due to malformed cookie values, using fallbacks')
+			hints = {
+				theme: 'light',
+				timeZone: 'UTC',
+			}
+		} else {
+			// Re-throw other errors
+			throw error
+		}
+	}
+
 	const data = {
 		user,
 		userInfo: user ? await getUserInfo(user, { request, timings }) : null,
@@ -272,7 +290,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 			...manualWorkshopEventPromotifications,
 		],
 		requestInfo: {
-			hints: getHints(request),
+			hints,
 			origin: getDomainUrl(request),
 			path: new URL(request.url).pathname,
 			flyPrimaryInstance: primaryInstance,
