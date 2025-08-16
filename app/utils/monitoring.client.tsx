@@ -19,7 +19,11 @@ export function init() {
 		],
 		beforeSend(event, hint) {
 			// Drop events from unsupported/old browsers
-			if (!isModernBrowserByUA(typeof navigator !== 'undefined' ? navigator.userAgent : undefined)) {
+			if (
+				!isModernBrowserByUA(
+					typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
+				)
+			) {
 				return null
 			}
 			if (isBrowserExtensionError(hint.originalException)) {
@@ -37,7 +41,11 @@ export function init() {
 		},
 		beforeSendTransaction(event) {
 			// Drop transactions from unsupported/old browsers
-			if (!isModernBrowserByUA(typeof navigator !== 'undefined' ? navigator.userAgent : undefined)) {
+			if (
+				!isModernBrowserByUA(
+					typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
+				)
+			) {
 				return null
 			}
 			return event

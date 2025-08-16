@@ -1,6 +1,8 @@
-export function isModernBrowserByUA(userAgentString: string | undefined | null): boolean {
+export function isModernBrowserByUA(
+	userAgentString: string | undefined | null,
+): boolean {
 	if (!userAgentString) return true
-	const ua = userAgentString.toLowerCase()
+	const ua = String(userAgentString).toLowerCase()
 
 	// Block all versions of Internet Explorer
 	if (ua.includes('msie') || ua.includes('trident/')) {
@@ -9,9 +11,11 @@ export function isModernBrowserByUA(userAgentString: string | undefined | null):
 
 	// Helper to extract the first capture group as an integer
 	function getMajor(re: RegExp): number | null {
-		const match = userAgentString.match(re)
+		const match = String(userAgentString).match(re)
 		if (!match) return null
-		const major = parseInt(match[1], 10)
+		const group = match[1]
+		if (typeof group !== 'string') return null
+		const major = Number.parseInt(group, 10)
 		return Number.isFinite(major) ? major : null
 	}
 
@@ -22,9 +26,6 @@ export function isModernBrowserByUA(userAgentString: string | undefined | null):
 	const operaMajor = getMajor(/(?:opr|opios)\/(\d+)/i)
 	const samsungMajor = getMajor(/samsungbrowser\/(\d+)/i)
 	const safariMajor = getMajor(/version\/(\d+)/i) // Safari reports Version/x.y
-
-	// iOS WebKit browsers do not report Chrome engine reliably
-	const isIOS = /iphone|ipad|ipod/.test(ua)
 
 	// Define minimum supported versions
 	const MIN = {
