@@ -1,5 +1,6 @@
 import { nodeProfilingIntegration } from '@sentry/profiling-node'
 import Sentry from '@sentry/remix'
+import { isModernBrowserByUA } from '#app/utils/browser-support.ts'
 
 export function init() {
 	Sentry.init({
@@ -38,6 +39,12 @@ export function init() {
 				return null
 			}
 
+			// Drop transactions from unsupported/old browsers
+			const ua = event.request?.headers?.['user-agent']
+			if (!isModernBrowserByUA(typeof ua === 'string' ? ua : undefined)) {
+				return null
+			}
+
 			return event
 		},
 		ignoreErrors: [
@@ -47,6 +54,12 @@ export function init() {
 		beforeSend(event) {
 			// Ignore events related to the /lookout endpoint
 			if (event.request?.url?.includes('/lookout')) {
+				return null
+			}
+
+			// Drop events from unsupported/old browsers
+			const ua = event.request?.headers?.['user-agent']
+			if (!isModernBrowserByUA(typeof ua === 'string' ? ua : undefined)) {
 				return null
 			}
 			return event
