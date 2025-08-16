@@ -67,7 +67,6 @@ const getCachedSeasons = async ({
 		forceFresh,
 		checkValue: (value: unknown) =>
 			Array.isArray(value) &&
-			value.length > 0 &&
 			value.every(
 				(v) => typeof v.seasonNumber === 'number' && Array.isArray(v.episodes),
 			),
