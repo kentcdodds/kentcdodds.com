@@ -25,7 +25,7 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 24
 
       - name: 🔎 Determine deployable changes
         id: changes
@@ -49,7 +49,7 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 24
 
       - name: 📥 Download deps
         uses: bahmutov/npm-install@v1
@@ -69,7 +69,7 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 24
 
       - name: 📥 Download deps
         uses: bahmutov/npm-install@v1
@@ -94,7 +94,7 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 24
 
       - name: 🎬 Setup ffmpeg
         uses: FedericoCarboni/setup-ffmpeg@v2
