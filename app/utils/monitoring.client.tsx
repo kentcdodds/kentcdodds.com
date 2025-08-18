@@ -6,7 +6,6 @@ import {
 	browserProfilingIntegration,
 } from '@sentry/remix'
 import { useEffect } from 'react'
-import { isModernBrowserByUA } from '#app/utils/browser-support.ts'
 
 export function init() {
 	sentryInit({
@@ -18,14 +17,6 @@ export function init() {
 			'Request to /lookout failed',
 		],
 		beforeSend(event, hint) {
-			// Drop events from unsupported/old browsers
-			if (
-				!isModernBrowserByUA(
-					typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
-				)
-			) {
-				return null
-			}
 			if (isBrowserExtensionError(hint.originalException)) {
 				return null
 			}
@@ -40,14 +31,6 @@ export function init() {
 			return event
 		},
 		beforeSendTransaction(event) {
-			// Drop transactions from unsupported/old browsers
-			if (
-				!isModernBrowserByUA(
-					typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
-				)
-			) {
-				return null
-			}
 			return event
 		},
 		integrations: [
