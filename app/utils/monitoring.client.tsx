@@ -30,6 +30,9 @@ export function init() {
 			}
 			return event
 		},
+		beforeSendTransaction(event) {
+			return event
+		},
 		integrations: [
 			browserTracingIntegration({
 				useEffect,
