@@ -113,7 +113,7 @@ function PodcastHome() {
 		: // we use the first one because the seasons are in reverse order
 			// oh, and this should never happen anyway because we redirect
 			// in the event there's no season param. But it's just to be safe.
-			data.seasons[0]?.seasonNumber ?? 1
+			(data.seasons[0]?.seasonNumber ?? 1)
 
 	const currentSeason = data.seasons.find(
 		(s) => s.seasonNumber === seasonNumber,

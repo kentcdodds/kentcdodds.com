@@ -149,7 +149,7 @@ export default function CallHomeScreen() {
 		: // we use the first one because the seasons are in reverse order
 			// oh, and this should never happen anyway because we redirect
 			// in the event there's no season param. But it's just to be safe.
-			seasons[0]?.seasonNumber ?? 1
+			(seasons[0]?.seasonNumber ?? 1)
 
 	const currentSeason = seasons.find((s) => s.seasonNumber === seasonNumber)
 	const tabIndex = currentSeason ? seasons.indexOf(currentSeason) : 0

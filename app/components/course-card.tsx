@@ -112,7 +112,7 @@ export function CourseCard({
 	return (
 		<div
 			className={clsx(
-				'course-card-gradient dark:bg-gray-850 relative flex h-full gap-5 overflow-hidden rounded-2xl bg-gray-100 p-6 ring-1 ring-inset ring-[rgba(0,0,0,0.05)] @sm:gap-6 @sm:p-9 @2xl/grid:gap-6 @2xl/grid:p-9 @6xl/grid:p-12 dark:ring-[rgba(255,255,255,0.05)]',
+				'course-card-gradient relative flex h-full gap-5 overflow-hidden rounded-2xl bg-gray-100 p-6 ring-1 ring-inset ring-[rgba(0,0,0,0.05)] @sm:gap-6 @sm:p-9 @2xl/grid:gap-6 @2xl/grid:p-9 @6xl/grid:p-12 dark:bg-gray-850 dark:ring-[rgba(255,255,255,0.05)]',
 				horizontal ? 'flex-col @2xl:flex-row' : 'flex-col',
 			)}
 		>
@@ -221,7 +221,7 @@ export function SmallCourseCard({
 	}
 
 	return (
-		<div className="course-card-gradient dark:bg-gray-850 relative col-span-full flex flex-col items-start overflow-hidden rounded-2xl bg-gray-100 p-6 ring-1 ring-inset ring-[rgba(0,0,0,0.05)] @sm:p-9 @2xl/grid:col-span-6 @2xl/grid:p-9 @6xl/grid:p-12 dark:ring-[rgba(255,255,255,0.05)] [&:nth-child(3n-2)]:col-span-12">
+		<div className="course-card-gradient relative col-span-full flex flex-col items-start overflow-hidden rounded-2xl bg-gray-100 p-6 ring-1 ring-inset ring-[rgba(0,0,0,0.05)] @sm:p-9 @2xl/grid:col-span-6 @2xl/grid:p-9 @6xl/grid:p-12 dark:bg-gray-850 dark:ring-[rgba(255,255,255,0.05)] [&:nth-child(3n-2)]:col-span-12">
 			{imageBuilder ? (
 				getImg(imageBuilder)
 			) : (
@@ -237,11 +237,9 @@ export function SmallCourseCard({
 			</p>
 
 			<CourseCardLink
-					href={courseUrl}
-					className={clsx(
-						'-translate-x-0.5 h-12 pl-6 pr-4 mt-auto',
-					)}
-				/>
+				href={courseUrl}
+				className={clsx('mt-auto h-12 -translate-x-0.5 pl-6 pr-4')}
+			/>
 		</div>
 	)
 }

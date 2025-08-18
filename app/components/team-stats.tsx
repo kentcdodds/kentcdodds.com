@@ -48,7 +48,6 @@ function Stat({
 
 	return (
 		<MotionEl
-			
 			tabIndex={0}
 			onClick={onClick}
 			title={

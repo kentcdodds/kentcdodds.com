@@ -16,16 +16,22 @@ export async function action({ request }: ActionFunctionArgs) {
 		header = JSON.parse(piece ?? '{}')
 	} catch (error) {
 		// Return 400 for malformed Sentry envelopes instead of crashing
-		throw new Response('Invalid Sentry envelope format: first line must be valid JSON', {
-			status: 400,
-		})
+		throw new Response(
+			'Invalid Sentry envelope format: first line must be valid JSON',
+			{
+				status: 400,
+			},
+		)
 	}
 
 	// Validate that header contains required dsn field
 	if (!header.dsn || typeof header.dsn !== 'string') {
-		throw new Response('Invalid Sentry envelope format: missing or invalid dsn field', {
-			status: 400,
-		})
+		throw new Response(
+			'Invalid Sentry envelope format: missing or invalid dsn field',
+			{
+				status: 400,
+			},
+		)
 	}
 
 	let dsn: URL
@@ -36,7 +42,7 @@ export async function action({ request }: ActionFunctionArgs) {
 			status: 400,
 		})
 	}
-	
+
 	const projectId = dsn.pathname?.replace('/', '')
 
 	invariantResponse(

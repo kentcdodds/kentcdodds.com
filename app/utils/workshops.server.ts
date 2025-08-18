@@ -51,7 +51,7 @@ async function getWorkshops({
 			return workshops.filter(typedBoolean)
 		},
 		checkValue: (value: unknown) => Array.isArray(value),
-	}).catch(err => {
+	}).catch((err) => {
 		console.error(`Failed to download workshop list`, err)
 		return []
 	})
