@@ -1,3 +1,33 @@
+- title: 'Interactive MCP with React Router'
+  deliveries:
+    - event: '[Remix Jam](https://remix.run/jam/2025)'
+      date: 2025-10-10
+  tags:
+    - mcp
+    - ai
+    - agent
+    - UI
+    - React Router
+  description: >-
+    Model Context Protocol is a powerful way to extend AI with context from the
+    outside world, but right now the interaction with an AI is mostly
+    text-based. Text is fine for answering simple questions, but when it comes
+    to things like "help me find a good shirt for my kid's spider-man themed
+    birthday party" or "get me directions to the nearest taco stand," we need
+    much more. Clients like ChatGPT do have UIs for maps and things, but it's
+    pretty limited and bespoke because it's built case-by-case by ChatGPT
+    engineers.
+
+
+    As we extend the model with more context and capabilities via MCP, we can
+    also extend it with a proper user interface using React Router and MCP UI
+    getting the best of both worlds. A powerful agent + a great UI.
+
+
+    In this talk, Kent will demonstrate how to create an MCP server with React
+    Router and expose great UI capabilities to the model. We're still early days
+    for this, but the future is going to be awesome.
+
 - title: "Please Make Jarvis (so I don't have to)"
   deliveries:
     - event: '[MCP Developers Summit](https://lu.ma/mcpdevsummit2025)'
