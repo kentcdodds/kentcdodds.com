@@ -1,3 +1,26 @@
+- title: "React Router's take on RSC"
+  deliveries:
+    - event: '[React Conf 2025](https://conf.react.dev/)'
+      date: 2025-10-08
+  tags:
+    - react
+    - react router
+    - rsc
+    - server components
+    - lightning
+  description: >-
+    React Server Components have changed how we think about building React
+    applications. In this lightning talk, Kent will explore how React Router is
+    embracing RSC and what this means for the future of routing in React
+    applications. This talk will dive into how RSC has simplified React Router's
+    architecture and enables powerful new patterns for data loading, streaming,
+    and code splitting.
+
+
+    We'll see how React Router has evolved to work seamlessly with React Server
+    Components, making it easier than ever to build full-stack React
+    applications with excellent performance and developer experience.
+
 - title: 'Interactive MCP with React Router'
   deliveries:
     - event: '[Remix Jam](https://remix.run/jam/2025)'
