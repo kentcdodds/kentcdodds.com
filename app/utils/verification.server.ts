@@ -1,7 +1,7 @@
 import { createSessionStorage } from '@remix-run/node'
 import crypto from 'node:crypto'
-import { getRequiredServerEnvVar, getDomainUrl } from './misc.tsx'
-import { prisma } from './prisma.server.ts'
+import { getRequiredServerEnvVar, getDomainUrl } from './misc'
+import { prisma } from './prisma.server'
 
 export const verifySessionStorage = createSessionStorage({
 	cookie: {
@@ -100,10 +100,12 @@ export async function prepareVerification({
 		expiresAt: new Date(Date.now() + period * 1000),
 	}
 	
-	await prisma.verification.upsert({
-		where: { target_type: { target, type } },
-		create: verificationData,
-		update: verificationData,
+	await prisma.verification.deleteMany({
+		where: { target, type },
+	})
+	
+	await prisma.verification.create({
+		data: verificationData,
 	})
 
 	// add the code to the url we'll email the user.
@@ -121,12 +123,14 @@ export async function isCodeValid({
 	type: string
 	target: string
 }) {
-	const verification = await prisma.verification.findUnique({
+	const verification = await prisma.verification.findFirst({
 		where: {
-			target_type: { target, type },
-			OR: [{ expiresAt: { gt: new Date() } }, { expiresAt: null }],
+			target,
+			type,
+			expiresAt: { gt: new Date() },
 		},
 		select: {
+			id: true,
 			secret: true,
 			expiresAt: true,
 		},
@@ -136,7 +140,16 @@ export async function isCodeValid({
 	if (verification.expiresAt && verification.expiresAt < new Date()) return false
 	
 	// Compare the submitted code with the stored code
-	return verification.secret === code
+	const isValid = verification.secret === code
+	
+	if (isValid) {
+		// Delete the verification after successful use
+		await prisma.verification.delete({
+			where: { id: verification.id },
+		})
+	}
+	
+	return isValid
 }
 
 export async function validateRequest(

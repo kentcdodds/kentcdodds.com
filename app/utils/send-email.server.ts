@@ -1,7 +1,7 @@
-import { getRandomFlyingKody } from '#app/images.tsx'
-import { type User } from '#app/types.ts'
-import { markdownToHtmlDocument } from './markdown.server.ts'
-import { getOptionalTeam } from './misc.tsx'
+import { getRandomFlyingKody } from '#app/images'
+import { type User } from '#app/types'
+import { markdownToHtmlDocument } from './markdown.server'
+import { getOptionalTeam } from './misc'
 
 let mailgunDomain = 'mg.example.com'
 if (process.env.MAILGUN_DOMAIN) {

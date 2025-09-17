@@ -2,7 +2,7 @@ import crypto from 'node:crypto'
 import { type Password, type User } from '@prisma/client'
 import bcrypt from 'bcrypt'
 import { redirect } from '@remix-run/node'
-import { createSession, prisma } from './prisma.server.ts'
+import { createSession, prisma } from './prisma.server'
 
 export const SESSION_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 30
 export const getSessionExpirationDate = () =>
@@ -14,25 +14,43 @@ export async function getPasswordHash(password: string) {
 }
 
 export async function verifyUserPassword(
-	where: Pick<User, 'email'> | Pick<User, 'id'>,
-	password: Password['hash'],
+	password: string,
+	hash: string,
 ) {
-	const userWithPassword = await prisma.user.findUnique({
-		where,
-		select: { id: true, password: { select: { hash: true } } },
+	const isValid = await bcrypt.compare(password, hash)
+	return isValid
+}
+
+export async function loginWithPassword({
+	email,
+	password,
+}: {
+	email: string
+	password: string
+}) {
+	const user = await prisma.user.findUnique({
+		where: { email },
+		include: { password: { select: { hash: true } } },
 	})
 
-	if (!userWithPassword || !userWithPassword.password) {
+	if (!user || !user.password) {
 		return null
 	}
 
-	const isValid = await bcrypt.compare(password, userWithPassword.password.hash)
-
+	const isValid = await verifyUserPassword(password, user.password.hash)
 	if (!isValid) {
 		return null
 	}
 
-	return { id: userWithPassword.id }
+	return { user: { id: user.id, email: user.email, firstName: user.firstName } }
+}
+
+export async function getUserById(id: string) {
+	const user = await prisma.user.findUnique({
+		where: { id },
+		select: { id: true, email: true, firstName: true, team: true },
+	})
+	return user
 }
 
 export function getPasswordHashParts(password: string) {
@@ -89,31 +107,17 @@ export async function signup({
 			email: email.toLowerCase(),
 			firstName,
 			team,
-			password: {
-				create: {
-					hash: hashedPassword,
-				},
-			},
 		},
-		select: { id: true },
+		select: { id: true, email: true, firstName: true, team: true },
 	})
 
-	const session = await createSession({ userId: user.id })
-	return { user, session }
-}
+	// Create password separately
+	await prisma.password.create({
+		data: {
+			userId: user.id,
+			hash: hashedPassword,
+		},
+	})
 
-export async function loginWithPassword({
-	email,
-	password,
-}: {
-	email: string
-	password: string
-}) {
-	const user = await verifyUserPassword({ email }, password)
-	if (!user) {
-		return null
-	}
-
-	const session = await createSession({ userId: user.id })
-	return { user, session }
+	return { user }
 }

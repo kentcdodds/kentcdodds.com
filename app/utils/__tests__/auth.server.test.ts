@@ -1,5 +1,5 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest'
-import bcrypt from 'bcryptjs'
+import bcrypt from 'bcrypt'
 import { prisma } from '../prisma.server.ts'
 import {
 	getPasswordHash,

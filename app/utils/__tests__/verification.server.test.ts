@@ -13,6 +13,7 @@ vi.mock('../prisma.server.ts', () => ({
 			create: vi.fn(),
 			findFirst: vi.fn(),
 			delete: vi.fn(),
+			deleteMany: vi.fn(),
 		},
 	},
 }))
@@ -46,6 +47,9 @@ describe('verification.server', () => {
 				expiresAt: new Date(Date.now() + 600000),
 			}
 
+			vi.mocked(prisma.verification.deleteMany).mockResolvedValueOnce({
+				count: 0,
+			} as any)
 			vi.mocked(prisma.verification.create).mockResolvedValueOnce(
 				mockVerification as any,
 			)
@@ -58,6 +62,7 @@ describe('verification.server', () => {
 			})
 
 			expect(result).toEqual({
+				otp: expect.stringMatching(/^\d{6}$/),
 				verifyUrl: expect.any(URL),
 				redirectTo: expect.any(URL),
 			})
@@ -65,15 +70,23 @@ describe('verification.server', () => {
 			// Check that the URL contains the expected parameters
 			const verifyUrl = result.verifyUrl
 			expect(verifyUrl.pathname).toBe('/verify')
-			expect(verifyUrl.searchParams.get('code')).toBe('123456')
+			expect(verifyUrl.searchParams.get('code')).toMatch(/^\d{6}$/)
 			expect(verifyUrl.searchParams.get('type')).toBe('reset-password')
 			expect(verifyUrl.searchParams.get('target')).toBe('test@example.com')
+
+			expect(prisma.verification.deleteMany).toHaveBeenCalledWith({
+				where: { target: 'test@example.com', type: 'reset-password' },
+			})
 
 			expect(prisma.verification.create).toHaveBeenCalledWith({
 				data: {
 					type: 'reset-password',
 					target: 'test@example.com',
 					secret: expect.stringMatching(/^\d{6}$/), // 6-digit code
+					algorithm: 'SHA256',
+					digits: 6,
+					period: 600,
+					charSet: '0123456789',
 					expiresAt: expect.any(Date),
 				},
 			})
@@ -174,10 +187,14 @@ describe('verification.server', () => {
 
 			expect(prisma.verification.findFirst).toHaveBeenCalledWith({
 				where: {
-					type: 'reset-password',
 					target: 'test@example.com',
-					secret: '123456',
+					type: 'reset-password',
 					expiresAt: { gt: expect.any(Date) },
+				},
+				select: {
+					id: true,
+					secret: true,
+					expiresAt: true,
 				},
 			})
 

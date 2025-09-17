@@ -19,15 +19,15 @@ import { AnimatePresence, motion } from 'framer-motion'
 import * as React from 'react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
-import { Button, LinkButton } from '#app/components/button.tsx'
-import { Input, InputError, Label } from '#app/components/form-elements.tsx'
-import { Grid } from '#app/components/grid.tsx'
-import { PasskeyIcon } from '#app/components/icons.js'
-import { HeroSection } from '#app/components/sections/hero-section.tsx'
-import { Paragraph } from '#app/components/typography.tsx'
-import { getGenericSocialImage, images } from '#app/images.tsx'
-import { type RootLoaderType } from '#app/root.tsx'
-import { getLoginInfoSession } from '#app/utils/login.server.ts'
+import { Button, LinkButton } from '#app/components/button'
+import { Input, InputError, Label } from '#app/components/form-elements'
+import { Grid } from '#app/components/grid'
+import { PasskeyIcon } from '#app/components/icons'
+import { HeroSection } from '#app/components/sections/hero-section'
+import { Paragraph } from '#app/components/typography'
+import { getGenericSocialImage, images } from '#app/images'
+import { type RootLoaderType } from '#app/root'
+import { getLoginInfoSession } from '#app/utils/login.server'
 import {
 	getDisplayUrl,
 	getDomainUrl,
@@ -35,10 +35,10 @@ import {
 	getOrigin,
 	getUrl,
 	reuseUsefulLoaderHeaders,
-} from '#app/utils/misc.tsx'
-import { getSocialMetas } from '#app/utils/seo.ts'
-import { getUser, sendToken } from '#app/utils/session.server.ts'
-import { isEmailVerified } from '#app/utils/verifier.server.ts'
+} from '#app/utils/misc'
+import { getSocialMetas } from '#app/utils/seo'
+import { getUser, sendToken } from '#app/utils/session.server'
+import { isEmailVerified } from '#app/utils/verifier.server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const user = await getUser(request)
