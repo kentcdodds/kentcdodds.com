@@ -164,7 +164,104 @@ P.S. If you did not request this email, you can safely ignore it.
 	await sendEmail(message)
 }
 
-export { sendEmail, sendMagicLinkEmail }
+export { sendEmail, sendMagicLinkEmail, sendPasswordResetEmail }
+
+async function sendPasswordResetEmail({
+	emailAddress,
+	resetLink,
+	user,
+	domainUrl,
+}: {
+	emailAddress: string
+	resetLink: string
+	user?: User | null
+	domainUrl: string
+}) {
+	const sender = `"Kent C. Dodds Team" <team+kcd@kentcdodds.com>`
+	const { hostname } = new URL(domainUrl)
+
+	const randomSportyKody = getRandomFlyingKody(
+		user ? getOptionalTeam(user.team) : undefined,
+	)
+
+	const text = `
+We received a request to reset your password for ${hostname}.
+
+Click the link below to reset your password:
+
+${resetLink}
+
+This link will expire in 10 minutes for security reasons.
+
+If you did not request a password reset, you can safely ignore this email. Your password will not be changed.
+
+Thanks!
+
+– The KCD Team
+  `.trim()
+
+	const html = `
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html charset=UTF-8" />
+    <style type="text/css">
+      @font-face {
+        font-family: 'Matter';
+        src: url('https://res.cloudinary.com/kentcdodds-com/raw/upload/v1625515324/kentcdodds.com/fonts/matter-medium.woff2')
+            format('woff2'),
+          url('https://res.cloudinary.com/kentcdodds-com/raw/upload/v1625515324/kentcdodds.com/fonts/matter-medium.woff')
+            format('woff');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+    </style>
+  </head>
+  <body>
+    <div style="font-family: Matter, sans-serif; color: #1f2937">
+      <div style="padding: 40px 20px; background: #f9fafb">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden">
+          <div style="padding: 32px; text-align: center">
+            <img
+              src="${randomSportyKody.src}"
+              alt="${randomSportyKody.alt}"
+              style="width: 120px; height: 120px; border-radius: 50%; margin-bottom: 24px"
+            />
+            <h1 style="margin: 0 0 16px 0; color: #111827; font-size: 24px; font-weight: 500">
+              Password Reset Request
+            </h1>
+            <p style="margin: 0 0 24px 0; color: #6b7280; font-size: 16px; line-height: 1.5">
+              We received a request to reset your password for ${hostname}.
+            </p>
+            <a
+              href="${resetLink}"
+              style="display: inline-block; background: #3b82f6; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 500; font-size: 16px"
+            >
+              Reset Your Password
+            </a>
+            <p style="margin: 24px 0 0 0; color: #9ca3af; font-size: 14px">
+              This link will expire in 10 minutes.<br />
+              If you didn't request this, you can safely ignore this email.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+  `
+
+	const message = {
+		from: sender,
+		to: emailAddress,
+		subject: `Reset your password for kentcdodds.com`,
+		text,
+		html,
+	}
+
+	await sendEmail(message)
+}
 
 /*
 eslint
