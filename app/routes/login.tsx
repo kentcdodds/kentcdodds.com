@@ -24,10 +24,9 @@ import { Input, InputError, Label } from '#app/components/form-elements.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { PasskeyIcon } from '#app/components/icons.js'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
-import { Paragraph, H2 } from '#app/components/typography.tsx'
+import { Paragraph } from '#app/components/typography.tsx'
 import { getGenericSocialImage, images } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
-import { loginWithPassword } from '#app/utils/auth.server.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
 import {
 	getDisplayUrl,
@@ -37,11 +36,8 @@ import {
 	getUrl,
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc.tsx'
-import { prisma } from '#app/utils/prisma.server.ts'
-import { sendPasswordResetEmail } from '#app/utils/send-email.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
-import { getUser, sendToken, getSession } from '#app/utils/session.server.ts'
-import { prepareVerification } from '#app/utils/verification.server.ts'
+import { getUser, sendToken } from '#app/utils/session.server.ts'
 import { isEmailVerified } from '#app/utils/verifier.server.ts'
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -89,9 +85,6 @@ export async function action({ request }: ActionFunctionArgs) {
 	const loginSession = await getLoginInfoSession(request)
 
 	const emailAddress = formData.get('email')
-	const password = formData.get('password')
-	const intent = formData.get('intent')
-
 	invariant(typeof emailAddress === 'string', 'Form submitted incorrectly')
 	if (emailAddress) loginSession.setEmail(emailAddress)
 
@@ -103,133 +96,8 @@ export async function action({ request }: ActionFunctionArgs) {
 		})
 	}
 
-	// Handle password login
-	if (intent === 'password-login' && typeof password === 'string') {
-		if (!password) {
-			loginSession.flashError('Password is required')
-			return redirect(`/login`, {
-				status: 400,
-				headers: await loginSession.getHeaders(),
-			})
-		}
-
-		try {
-			// Check if user exists
-			const existingUser = await prisma.user.findUnique({
-				where: { email: emailAddress },
-				select: { id: true, password: { select: { hash: true } } },
-			})
-
-			if (!existingUser) {
-				loginSession.flashError('No account found with that email address')
-				return redirect(`/login`, {
-					status: 400,
-					headers: await loginSession.getHeaders(),
-				})
-			}
-
-			if (!existingUser.password?.hash) {
-				loginSession.flashError(
-					'This account does not have a password set up yet. Please use "Forgot password?" to set one up.',
-				)
-				return redirect(`/login`, {
-					status: 400,
-					headers: await loginSession.getHeaders(),
-				})
-			}
-
-			const user = await loginWithPassword({ email: emailAddress, password })
-			if (!user) {
-				loginSession.flashError('Invalid email or password')
-				return redirect(`/login`, {
-					status: 400,
-					headers: await loginSession.getHeaders(),
-				})
-			}
-
-			const session = await getSession(request)
-			await session.signIn({ id: user.user.id })
-			loginSession.clean()
-
-			const headers = new Headers()
-			await session.getHeaders(headers)
-			await loginSession.getHeaders(headers)
-
-			return redirect('/me', { headers })
-		} catch (e: unknown) {
-			loginSession.flashError(getErrorMessage(e) || 'Login failed')
-			return redirect(`/login`, {
-				status: 400,
-				headers: await loginSession.getHeaders(),
-			})
-		}
-	}
-
-	// Handle password reset request
-	if (intent === 'reset-password') {
-		try {
-			const user = await prisma.user.findUnique({
-				where: { email: emailAddress },
-				select: { id: true, firstName: true },
-			})
-
-			if (user) {
-				const { verifyUrl } = await prepareVerification({
-					period: 600, // 10 minutes
-					request,
-					type: 'reset-password',
-					target: emailAddress,
-				})
-
-				await sendPasswordResetEmail({
-					emailAddress,
-					resetLink: verifyUrl.toString(),
-					user,
-					domainUrl: getDomainUrl(request),
-				})
-			} else {
-				// New user - send them to onboarding
-				try {
-					const verifiedStatus = await isEmailVerified(emailAddress)
-					if (verifiedStatus.verified) {
-						const { verifyUrl } = await prepareVerification({
-							period: 600, // 10 minutes
-							request,
-							type: 'onboarding',
-							target: emailAddress,
-						})
-
-						await sendPasswordResetEmail({
-							emailAddress,
-							resetLink: verifyUrl.toString(),
-							user: null,
-							domainUrl: getDomainUrl(request),
-						})
-					}
-				} catch (error: unknown) {
-					console.error('Error with email verification:', error)
-				}
-			}
-
-			// Always show success message to prevent user enumeration
-			loginSession.flashError(
-				'If an account with that email exists, we sent you a password reset link. New users will get a link to create an account.',
-			)
-			return redirect(`/login`, {
-				headers: await loginSession.getHeaders(),
-			})
-		} catch (e: unknown) {
-			loginSession.flashError(getErrorMessage(e) || 'Password reset failed')
-			return redirect(`/login`, {
-				status: 400,
-				headers: await loginSession.getHeaders(),
-			})
-		}
-	}
-
-	// Legacy magic link flow (to be deprecated)
 	// this is our honeypot. Our login is passwordless.
-	const failedHoneypot = Boolean(formData.get('honey'))
+	const failedHoneypot = Boolean(formData.get('password'))
 	if (failedHoneypot) {
 		console.info(
 			`FAILED HONEYPOT ON LOGIN`,
@@ -285,18 +153,12 @@ function Login() {
 	const [passkeyMessage, setPasskeyMessage] = React.useState<null | string>(
 		null,
 	)
-	const [loginMode, setLoginMode] = React.useState<'password' | 'magic-link'>(
-		'password',
-	)
 
 	const [formValues, setFormValues] = React.useState({
 		email: data.email ?? '',
-		password: '',
 	})
 
-	const formIsValid =
-		formValues.email.match(/.+@.+/) &&
-		(loginMode === 'magic-link' || formValues.password.length > 0)
+	const formIsValid = formValues.email.match(/.+@.+/)
 
 	async function handlePasskeyLogin() {
 		try {
@@ -383,54 +245,20 @@ function Login() {
 									</div>
 									<div className="relative flex justify-center text-sm">
 										<span className="bg-white px-2 text-gray-500">
-											Or continue with email and password
+											Or continue with email
 										</span>
 									</div>
-								</div>
-
-								<div className="mb-4 flex flex-wrap gap-2">
-									<Button
-										variant={loginMode === 'password' ? 'primary' : 'secondary'}
-										size="sm"
-										onClick={() => setLoginMode('password')}
-										type="button"
-									>
-										Password
-									</Button>
-									<Button
-										variant={
-											loginMode === 'magic-link' ? 'primary' : 'secondary'
-										}
-										size="sm"
-										onClick={() => setLoginMode('magic-link')}
-										type="button"
-									>
-										Magic Link
-									</Button>
 								</div>
 
 								<Form
 									onChange={(event) => {
 										const form = event.currentTarget
-										setFormValues({
-											email: form.email.value,
-											password: form.password?.value || '',
-										})
+										setFormValues({ email: form.email.value })
 									}}
 									action="/login"
 									method="POST"
 									className="mb-10 lg:mb-12"
 								>
-									<input
-										type="hidden"
-										name="intent"
-										value={
-											loginMode === 'password'
-												? 'password-login'
-												: 'magic-link'
-										}
-									/>
-
 									<div className="mb-6">
 										<div className="mb-4 flex flex-wrap items-baseline justify-between">
 											<Label htmlFor="email-address">Email address</Label>
@@ -452,65 +280,23 @@ function Login() {
 										/>
 									</div>
 
-									{loginMode === 'password' ? (
-										<div className="mb-6">
-											<div className="mb-4 flex flex-wrap items-baseline justify-between">
-												<Label htmlFor="password">Password</Label>
-												<Form method="POST" className="inline">
-													<input
-														type="hidden"
-														name="intent"
-														value="reset-password"
-													/>
-													<input
-														type="hidden"
-														name="email"
-														value={formValues.email}
-													/>
-													<Button
-														variant="secondary"
-														size="sm"
-														type="submit"
-														disabled={!formValues.email.match(/.+@.+/)}
-													>
-														Forgot password?
-													</Button>
-												</Form>
-											</div>
-
-											<Input
-												id="password"
-												name="password"
-												type="password"
-												autoComplete="current-password"
-												defaultValue={formValues.password}
-												required={loginMode === 'password'}
-												placeholder="Password"
-											/>
-										</div>
-									) : null}
-
 									<div style={{ position: 'absolute', left: '-9999px' }}>
-										<label htmlFor="honey">Honey</label>
+										<label htmlFor="password-field">Password</label>
 										<input
 											type="password"
-											id="honey"
-											name="honey"
+											id="password-field"
+											name="password"
 											tabIndex={-1}
 											autoComplete="nope"
 										/>
 									</div>
 
 									<div className="flex flex-wrap gap-4">
-										<Button type="submit" disabled={!formIsValid}>
-											{loginMode === 'password'
-												? 'Sign in'
-												: 'Email a login link'}
-										</Button>
+										<Button type="submit">Email a login link</Button>
 										<LinkButton
 											type="reset"
 											onClick={() => {
-												setFormValues({ email: '', password: '' })
+												setFormValues({ email: '' })
 												inputRef.current?.focus()
 											}}
 										>
@@ -527,7 +313,7 @@ function Login() {
 									<div className="mt-2">
 										{data.error ? (
 											<InputError id="error-message">{data.error}</InputError>
-										) : data.email && loginMode === 'magic-link' ? (
+										) : data.email ? (
 											<p
 												id="success-message"
 												className="text-lg text-gray-500 dark:text-slate-500"
@@ -571,25 +357,11 @@ function Login() {
 			<Grid>
 				<Paragraph className="col-span-full mb-10 md:col-span-4">
 					{`
-              To sign in to your account, you can use your password, request a magic link, or use a passkey.
-              If you don't have a password yet, use "Forgot password?" to set one up.
+              To sign in to your account or to create a new one fill in your
+              email above and we'll send you an email with a magic link to get
+              you started.
             `}
 				</Paragraph>
-				
-				<div className="col-span-full mb-10 md:col-span-4">
-					<div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-						<H2 variant="secondary" className="mb-2 text-blue-800">
-							New to passwords?
-						</H2>
-						<Paragraph className="text-blue-700">
-							We're transitioning from magic links to passwords for better reliability.{' '}
-							<a href="/onboarding" className="underline font-medium">
-								Click here for help setting up your password
-							</a>
-							.
-						</Paragraph>
-					</div>
-				</div>
 
 				<Paragraph
 					className="col-span-full mb-10 text-sm md:col-span-4 lg:col-start-7"
