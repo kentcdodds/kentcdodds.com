@@ -24,7 +24,7 @@ import { Input, InputError, Label } from '#app/components/form-elements.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { PasskeyIcon } from '#app/components/icons.js'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
-import { Paragraph } from '#app/components/typography.tsx'
+import { Paragraph, H2 } from '#app/components/typography.tsx'
 import { getGenericSocialImage, images } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
 import { loginWithPassword } from '#app/utils/auth.server.ts'
@@ -114,6 +114,30 @@ export async function action({ request }: ActionFunctionArgs) {
 		}
 
 		try {
+			// Check if user exists
+			const existingUser = await prisma.user.findUnique({
+				where: { email: emailAddress },
+				select: { id: true, password: { select: { hash: true } } },
+			})
+
+			if (!existingUser) {
+				loginSession.flashError('No account found with that email address')
+				return redirect(`/login`, {
+					status: 400,
+					headers: await loginSession.getHeaders(),
+				})
+			}
+
+			if (!existingUser.password?.hash) {
+				loginSession.flashError(
+					'This account does not have a password set up yet. Please use "Forgot password?" to set one up.',
+				)
+				return redirect(`/login`, {
+					status: 400,
+					headers: await loginSession.getHeaders(),
+				})
+			}
+
 			const user = await loginWithPassword({ email: emailAddress, password })
 			if (!user) {
 				loginSession.flashError('Invalid email or password')
@@ -163,11 +187,33 @@ export async function action({ request }: ActionFunctionArgs) {
 					user,
 					domainUrl: getDomainUrl(request),
 				})
+			} else {
+				// New user - send them to onboarding
+				try {
+					const verifiedStatus = await isEmailVerified(emailAddress)
+					if (verifiedStatus.verified) {
+						const { verifyUrl } = await prepareVerification({
+							period: 600, // 10 minutes
+							request,
+							type: 'onboarding',
+							target: emailAddress,
+						})
+
+						await sendPasswordResetEmail({
+							emailAddress,
+							resetLink: verifyUrl.toString(),
+							user: null,
+							domainUrl: getDomainUrl(request),
+						})
+					}
+				} catch (error: unknown) {
+					console.error('Error with email verification:', error)
+				}
 			}
 
 			// Always show success message to prevent user enumeration
 			loginSession.flashError(
-				'If an account with that email exists, we sent you a password reset link.',
+				'If an account with that email exists, we sent you a password reset link. New users will get a link to create an account.',
 			)
 			return redirect(`/login`, {
 				headers: await loginSession.getHeaders(),
@@ -529,6 +575,21 @@ function Login() {
               If you don't have a password yet, use "Forgot password?" to set one up.
             `}
 				</Paragraph>
+				
+				<div className="col-span-full mb-10 md:col-span-4">
+					<div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+						<H2 variant="secondary" className="mb-2 text-blue-800">
+							New to passwords?
+						</H2>
+						<Paragraph className="text-blue-700">
+							We're transitioning from magic links to passwords for better reliability.{' '}
+							<a href="/onboarding" className="underline font-medium">
+								Click here for help setting up your password
+							</a>
+							.
+						</Paragraph>
+					</div>
+				</div>
 
 				<Paragraph
 					className="col-span-full mb-10 text-sm md:col-span-4 lg:col-start-7"

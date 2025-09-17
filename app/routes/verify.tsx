@@ -45,6 +45,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 						'Set-Cookie': await verifySessionStorage.commitSession(verifySession),
 					},
 				})
+			} else if (type === 'onboarding') {
+				return redirect('/signup', {
+					headers: {
+						'Set-Cookie': await verifySessionStorage.commitSession(verifySession),
+					},
+				})
 			}
 			
 			return redirect(redirectTo || '/me', {
@@ -86,6 +92,12 @@ export async function action({ request }: ActionFunctionArgs) {
 
 		if (type === 'reset-password') {
 			return redirect('/reset-password', {
+				headers: {
+					'Set-Cookie': await verifySessionStorage.commitSession(verifySession),
+				},
+			})
+		} else if (type === 'onboarding') {
+			return redirect('/signup', {
 				headers: {
 					'Set-Cookie': await verifySessionStorage.commitSession(verifySession),
 				},

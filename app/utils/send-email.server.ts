@@ -174,26 +174,47 @@ async function sendPasswordResetEmail({
 }: {
 	emailAddress: string
 	resetLink: string
-	user?: User | null
+	user?: User | null | { firstName: string }
 	domainUrl: string
 }) {
 	const sender = `"Kent C. Dodds Team" <team+kcd@kentcdodds.com>`
 	const { hostname } = new URL(domainUrl)
+	const isExistingUser = Boolean(user)
 
 	const randomSportyKody = getRandomFlyingKody(
-		user ? getOptionalTeam(user.team) : undefined,
+		user && 'team' in user ? getOptionalTeam(user.team) : undefined,
 	)
 
-	const text = `
-We received a request to reset your password for ${hostname}.
+	const title = isExistingUser
+		? 'Set up your password'
+		: 'Create your account'
 
-Click the link below to reset your password:
+	const text = isExistingUser
+		? `
+We're updating our authentication system to use passwords instead of magic links for better reliability.
+
+Click the link below to set up your password:
 
 ${resetLink}
 
 This link will expire in 10 minutes for security reasons.
 
-If you did not request a password reset, you can safely ignore this email. Your password will not be changed.
+If you did not request this, you can safely ignore this email.
+
+Thanks!
+
+– The KCD Team
+  `.trim()
+		: `
+Welcome to ${hostname}!
+
+Click the link below to create your account and set up your password:
+
+${resetLink}
+
+This link will expire in 10 minutes for security reasons.
+
+If you did not sign up for an account, you can safely ignore this email.
 
 Thanks!
 
@@ -229,16 +250,20 @@ Thanks!
               style="width: 120px; height: 120px; border-radius: 50%; margin-bottom: 24px"
             />
             <h1 style="margin: 0 0 16px 0; color: #111827; font-size: 24px; font-weight: 500">
-              Password Reset Request
+              ${title}
             </h1>
             <p style="margin: 0 0 24px 0; color: #6b7280; font-size: 16px; line-height: 1.5">
-              We received a request to reset your password for ${hostname}.
+              ${
+								isExistingUser
+									? `We're updating our authentication system to use passwords instead of magic links for better reliability.`
+									: `Welcome to ${hostname}! Click the button below to create your account.`
+							}
             </p>
             <a
               href="${resetLink}"
               style="display: inline-block; background: #3b82f6; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 500; font-size: 16px"
             >
-              Reset Your Password
+              ${isExistingUser ? 'Set Up Your Password' : 'Create Your Account'}
             </a>
             <p style="margin: 24px 0 0 0; color: #9ca3af; font-size: 14px">
               This link will expire in 10 minutes.<br />
@@ -255,7 +280,9 @@ Thanks!
 	const message = {
 		from: sender,
 		to: emailAddress,
-		subject: `Reset your password for kentcdodds.com`,
+		subject: isExistingUser
+			? `Set up your password for kentcdodds.com`
+			: `Create your account on kentcdodds.com`,
 		text,
 		html,
 	}
