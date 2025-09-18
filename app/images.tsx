@@ -53,6 +53,7 @@ const epicWebClassName =
 const epicReactClassName = 'h-[82%]'
 const testingJSClassName =
 	'h-[94%] -translate-y-[8%] dark:-translate-x-[0.6%] dark:h-[98%] dark:-translate-y-[6%]'
+const epicAIClassName = 'h-[80%] -translate-y-[8%]'
 
 const images = createImages({
 	kentSignatureDarkMode: {
@@ -458,6 +459,16 @@ const images = createImages({
 		id: 'v1746462310/kentcdodds.com/pages/courses/v2/epic-web-dark',
 		alt: 'The EpicWeb.dev logo',
 		className: epicWebClassName,
+	},
+	courseEpicAILight: {
+		id: 'kentcdodds.com/pages/courses/v2/epic-ai-light',
+		alt: 'The EpicAI.pro logo',
+		className: epicAIClassName,
+	},
+	courseEpicAIDark: {
+		id: 'kentcdodds.com/pages/courses/v2/epic-ai-dark',
+		alt: 'The EpicAI.pro logo',
+		className: epicAIClassName,
 	},
 	courseHowToContributeToAnOpenSourceProjectOnGitHub: {
 		id: 'kentcdodds.com/pages/courses/how-to-contribute-to-an-open-source-project-on-github',

@@ -16,13 +16,24 @@ function CourseSection() {
 			<Grid className="!grid-cols-12 gap-6 @container/grid md:gap-6 xl:gap-8">
 				<div className="col-span-full @container">
 					<CourseCard
+						title="Epic AI"
+						description="Learn to build AI-powered applications."
+						label="AI development course"
+						lightImageBuilder={images.courseEpicAILight}
+						darkImageBuilder={images.courseEpicAIDark}
+						courseUrl="https://www.epicai.pro"
+						horizontal
+					/>
+				</div>
+
+				<div className="col-span-full @container @2xl:col-span-6">
+					<CourseCard
 						title="Epic Web"
 						description="Become a full stack web dev."
 						label="Full stack course"
 						lightImageBuilder={images.courseEpicWebLight}
 						darkImageBuilder={images.courseEpicWebDark}
 						courseUrl="https://www.epicweb.dev"
-						horizontal
 					/>
 				</div>
 
