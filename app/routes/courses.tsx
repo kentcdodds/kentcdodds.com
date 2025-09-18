@@ -112,7 +112,7 @@ function CoursesHome() {
 			</h2>
 
 			<Grid className="!grid-cols-12 gap-6 @container/grid md:gap-6 xl:gap-8">
-				<div className="col-span-full @container">
+				<div className="col-span-full @container @2xl:col-span-6">
 					<CourseCard
 						title="Epic AI"
 						description="Learn to architect next-generation, AI-powered applications that are adaptive, context-aware, and deeply personalized using the Model Context Protocol (MCP)."
@@ -123,7 +123,7 @@ function CoursesHome() {
 						horizontal
 					/>
 				</div>
-				<div className="col-span-full @container">
+				<div className="col-span-full @container @2xl:col-span-6">
 					<CourseCard
 						title="Epic Web"
 						description="The best way to learn how to build Epic, full stack web applications you'll love to work on and your users will love to use."

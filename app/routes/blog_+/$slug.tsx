@@ -243,7 +243,7 @@ function ArticleFooter({
 				<div className="flex space-x-5">
 					<a
 						className={clsx(
-							'underlined hover:text-black focus:text-black focus:outline-none dark:hover:text-white dark:focus:text-white',
+							'underlined text-black hover:text-black focus:text-black focus:outline-none dark:hover:text-white dark:focus:text-white',
 							{ hidden: isDraft },
 						)}
 						target="_blank"
@@ -260,7 +260,7 @@ function ArticleFooter({
 				<div className="flex">
 					<a
 						className={clsx(
-							'underlined hover:text-black focus:text-black focus:outline-none dark:hover:text-white dark:focus:text-white',
+							'underlined text-black hover:text-black focus:text-black focus:outline-none dark:hover:text-white dark:focus:text-white',
 							{ hidden: isDraft },
 						)}
 						target="_blank"
@@ -277,7 +277,7 @@ function ArticleFooter({
 						•
 					</span>
 					<a
-						className="underlined hover:text-black focus:text-black focus:outline-none dark:hover:text-white dark:focus:text-white"
+						className="underlined text-black hover:text-black focus:text-black focus:outline-none dark:hover:text-white dark:focus:text-white"
 						target="_blank"
 						rel="noreferrer noopener"
 						href={editLink}
@@ -474,7 +474,9 @@ export default function MdxScreen() {
 			</main>
 
 			{categoriesAndKeywords.includes('react') ||
-			categoriesAndKeywords.includes('testing') ? (
+			categoriesAndKeywords.includes('testing') ||
+			categoriesAndKeywords.includes('remix') ||
+			categoriesAndKeywords.includes('ai') ? (
 				<div className="mx-auto mb-24 flex max-w-lg flex-col items-center justify-center gap-8 px-10vw md:max-w-none md:flex-row">
 					{categoriesAndKeywords.includes('react') ? (
 						<div className="w-full max-w-lg @container">
@@ -497,6 +499,31 @@ export default function MdxScreen() {
 								lightImageBuilder={images.courseTestingJS}
 								darkImageBuilder={images.courseTestingJSDark}
 								courseUrl="https://testingjavascript.com"
+							/>
+						</div>
+					) : null}
+					{categoriesAndKeywords.includes('remix') ? (
+						<div className="w-full max-w-lg @container">
+							<CourseCard
+								title="Epic Web"
+								description="Become a full stack web dev."
+								label="Full stack course"
+								lightImageBuilder={images.courseEpicWebLight}
+								darkImageBuilder={images.courseEpicWebDark}
+								courseUrl="https://www.epicweb.dev"
+							/>
+						</div>
+					) : null}
+					{categoriesAndKeywords.includes('ai') ||
+					categoriesAndKeywords.includes('mcp') ? (
+						<div className="w-full max-w-lg @container">
+							<CourseCard
+								title="Epic AI"
+								description="Learn to build AI-powered applications."
+								label="AI development course"
+								lightImageBuilder={images.courseEpicAILight}
+								darkImageBuilder={images.courseEpicAIDark}
+								courseUrl="https://www.epicai.pro"
 							/>
 						</div>
 					) : null}

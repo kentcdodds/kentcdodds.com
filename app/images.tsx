@@ -461,12 +461,12 @@ const images = createImages({
 		className: epicWebClassName,
 	},
 	courseEpicAILight: {
-		id: 'kentcdodds.com/pages/courses/v2/epic-ai-light',
+		id: 'v1746462310/kentcdodds.com/pages/courses/v2/epic-ai-light',
 		alt: 'The EpicAI.pro logo',
 		className: epicAIClassName,
 	},
 	courseEpicAIDark: {
-		id: 'kentcdodds.com/pages/courses/v2/epic-ai-dark',
+		id: 'v1746462310/kentcdodds.com/pages/courses/v2/epic-ai-dark',
 		alt: 'The EpicAI.pro logo',
 		className: epicAIClassName,
 	},
