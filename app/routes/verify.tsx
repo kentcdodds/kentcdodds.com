@@ -117,6 +117,7 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function Verify() {
 	const data = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
+	const codeRef = React.useRef<HTMLInputElement>(null)
 
 	const [code, setCode] = React.useState('')
 
@@ -134,13 +135,15 @@ export default function Verify() {
 						<Form method="POST">
 							<input type="hidden" name="type" value={data.type} />
 							<input type="hidden" name="target" value={data.target} />
-							<input type="hidden" name="redirectTo" value={data.redirectTo} />
+							<input type="hidden" name="redirectTo" value={data.redirectTo || ''} />
 
 							<div className="mb-6">
 								<Label htmlFor="code">Verification Code</Label>
 								<Input
+									ref={codeRef}
 									id="code"
 									name="code"
+									type="text"
 									value={code}
 									onChange={(e) => setCode(e.target.value)}
 									placeholder="Enter 6-digit code"
@@ -149,7 +152,7 @@ export default function Verify() {
 									required
 								/>
 								{actionData?.error ? (
-									<InputError>{actionData.error}</InputError>
+									<InputError id="code-error">{actionData.error}</InputError>
 								) : null}
 							</div>
 

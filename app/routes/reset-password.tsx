@@ -114,6 +114,8 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function ResetPassword() {
 	const data = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
+	const passwordRef = React.useRef<HTMLInputElement>(null)
+	const confirmPasswordRef = React.useRef<HTMLInputElement>(null)
 
 	const [formValues, setFormValues] = React.useState({
 		password: '',
@@ -157,6 +159,7 @@ export default function ResetPassword() {
 							<div className="mb-6">
 								<Label htmlFor="password">New Password</Label>
 								<Input
+									ref={passwordRef}
 									id="password"
 									name="password"
 									type="password"
@@ -166,13 +169,14 @@ export default function ResetPassword() {
 									required
 								/>
 								{passwordError && formValues.password ? (
-									<InputError>{passwordError}</InputError>
+									<InputError id="password-error">{passwordError}</InputError>
 								) : null}
 							</div>
 
 							<div className="mb-6">
 								<Label htmlFor="confirmPassword">Confirm Password</Label>
 								<Input
+									ref={confirmPasswordRef}
 									id="confirmPassword"
 									name="confirmPassword"
 									type="password"
@@ -181,13 +185,13 @@ export default function ResetPassword() {
 									required
 								/>
 								{confirmPasswordError ? (
-									<InputError>{confirmPasswordError}</InputError>
+									<InputError id="confirm-password-error">{confirmPasswordError}</InputError>
 								) : null}
 							</div>
 
 							{actionData?.error ? (
 								<div className="mb-6">
-									<InputError>{actionData.error}</InputError>
+									<InputError id="form-error">{actionData.error}</InputError>
 								</div>
 							) : null}
 

@@ -18,6 +18,7 @@ import { validatePassword } from '#app/utils/user-validation.ts'
 import { requireUser, getUser } from '#app/utils/session.server.ts'
 import { prepareVerification } from '#app/utils/verification.server.ts'
 import { isEmailVerified } from '#app/utils/verifier.server.ts'
+import { sendPasswordResetEmail } from '#app/utils/send-email.server.ts'
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	return json({})
@@ -69,9 +70,9 @@ export async function action({ request }: ActionFunctionArgs) {
 
 			await sendPasswordResetEmail({
 				emailAddress: email,
-				resetLink: verifyUrl.toString(),
+				verificationUrl: verifyUrl.toString(),
+				verificationCode: '000000', // Not used for onboarding
 				user: null,
-				domainUrl: getDomainUrl(request),
 			})
 
 			return json({
@@ -105,9 +106,9 @@ export async function action({ request }: ActionFunctionArgs) {
 
 		await sendPasswordResetEmail({
 			emailAddress: email,
-			resetLink: verifyUrl.toString(),
+			verificationUrl: verifyUrl.toString(),
+			verificationCode: '000000', // Not used for this flow
 			user: { firstName: existingUser.firstName },
-			domainUrl: getDomainUrl(request),
 		})
 
 		return json({
@@ -125,6 +126,7 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function Onboarding() {
 	const actionData = useActionData<typeof action>()
 	const [email, setEmail] = React.useState('')
+	const emailRef = React.useRef<HTMLInputElement>(null)
 
 	return (
 		<div className="mt-24 pt-6">
@@ -157,6 +159,7 @@ export default function Onboarding() {
 							<div className="mb-6">
 								<Label htmlFor="email">Email Address</Label>
 								<Input
+									ref={emailRef}
 									id="email"
 									name="email"
 									type="email"
@@ -167,10 +170,10 @@ export default function Onboarding() {
 									autoFocus
 									required
 								/>
-								{actionData?.error ? (
-									<InputError>{actionData.error}</InputError>
+								{actionData && 'error' in actionData ? (
+									<InputError id="email-error">{actionData.error}</InputError>
 								) : null}
-								{actionData?.success ? (
+								{actionData && 'success' in actionData ? (
 									<div className="mt-2 text-green-600">{actionData.success}</div>
 								) : null}
 							</div>

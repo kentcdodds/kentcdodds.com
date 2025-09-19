@@ -31,6 +31,7 @@ model User {
   calls     Call[]
   sessions  Session[]
   postReads PostRead[]
+  password  Password?
 
   @@index([team])
 }
@@ -84,4 +85,29 @@ model Passkey {
   transports     String? // Stored as comma-separated values
 
   @@index(userId)
+}
+
+model Password {
+  id     String @id @default(uuid())
+  hash   String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
+
+  @@index(userId)
+}
+
+model Verification {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  type      String // 'reset-password', 'onboarding'
+  target    String // email address
+  secret    String
+  algorithm String
+  digits    Int
+  period    Int
+  charSet   String
+  expiresAt DateTime?
+
+  @@index([target, type])
+  @@index([expiresAt])
 }

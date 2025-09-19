@@ -56,3 +56,5 @@ export function getPasswordValidationMessage(password: string) {
 export function isPasswordValid(password: string): boolean {
 	return getPasswordValidationMessage(password) === null
 }
+
+export const validatePassword = getPasswordValidationMessage

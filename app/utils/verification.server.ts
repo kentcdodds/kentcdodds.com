@@ -1,9 +1,9 @@
-import { createSessionStorage } from '@remix-run/node'
+import { createCookieSessionStorage } from '@remix-run/node'
 import crypto from 'node:crypto'
-import { getRequiredServerEnvVar, getDomainUrl } from './misc'
+import { getRequiredServerEnvVar, getDomainUrl } from './misc.tsx'
 import { prisma } from './prisma.server.ts'
 
-export const verifySessionStorage = createSessionStorage({
+export const verifySessionStorage = createCookieSessionStorage({
 	cookie: {
 		name: 'kcd_verification',
 		sameSite: 'lax', // CSRF protection is advised if changing to 'none'

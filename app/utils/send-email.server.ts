@@ -164,6 +164,82 @@ P.S. If you did not request this email, you can safely ignore it.
 	await sendEmail(message)
 }
 
+export async function sendPasswordResetEmail({
+	emailAddress,
+	verificationUrl,
+	verificationCode,
+	user,
+}: {
+	emailAddress: string
+	verificationUrl: string
+	verificationCode: string
+	user?: Pick<User, 'firstName'> | null
+}) {
+	const sender = '"Kent C. Dodds" <kent@kentcdodds.com>'
+
+	const greeting = user ? `Hi ${user.firstName}!` : 'Hi there!'
+	
+	const text = `${greeting}
+
+Someone (hopefully you) has requested to reset your password for kentcdodds.com.
+
+Here's your verification code: ${verificationCode}
+
+Or click this link to verify: ${verificationUrl}
+
+This code will expire in 10 minutes for security.
+
+If you didn't request this, you can safely ignore this email.
+
+Thanks!
+
+Kent C. Dodds
+https://kentcdodds.com
+`
+
+	const html = `
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+      .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+      .code { font-family: monospace; font-size: 24px; letter-spacing: 2px; background: #f3f4f6; padding: 16px; border-radius: 8px; text-align: center; margin: 20px 0; }
+      .button { display: inline-block; padding: 12px 24px; background: #3b82f6; color: white; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Reset Your Password</h1>
+      <p>${greeting}</p>
+      <p>Someone (hopefully you) has requested to reset your password for kentcdodds.com.</p>
+      
+      <p><strong>Your verification code:</strong></p>
+      <div class="code">${verificationCode}</div>
+      
+      <p>Or click this button to verify:</p>
+      <a href="${verificationUrl}" class="button">Reset Password</a>
+      
+      <p><small>This code will expire in 10 minutes for security.</small></p>
+      <p><small>If you didn't request this, you can safely ignore this email.</small></p>
+      
+      <p>Thanks!<br>Kent C. Dodds</p>
+    </div>
+  </body>
+</html>
+  `
+
+	const message = {
+		from: sender,
+		to: emailAddress,
+		subject: `Reset your password for kentcdodds.com`,
+		text,
+		html,
+	}
+
+	await sendEmail(message)
+}
+
 export { sendEmail, sendMagicLinkEmail }
 
 /*

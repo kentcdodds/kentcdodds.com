@@ -127,3 +127,20 @@ export async function signup({
 
 	return { user }
 }
+
+export async function createPasswordForUser({
+	userId,
+	password,
+}: {
+	userId: string
+	password: string
+}) {
+	const hashedPassword = await getPasswordHash(password)
+	
+	await prisma.password.create({
+		data: {
+			userId,
+			hash: hashedPassword,
+		},
+	})
+}
