@@ -1,7 +1,7 @@
 import { createSessionStorage } from '@remix-run/node'
 import crypto from 'node:crypto'
 import { getRequiredServerEnvVar, getDomainUrl } from './misc'
-import { prisma } from './prisma.server'
+import { prisma } from './prisma.server.ts'
 
 export const verifySessionStorage = createSessionStorage({
 	cookie: {

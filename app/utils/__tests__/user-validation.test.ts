@@ -18,11 +18,11 @@ describe('user-validation', () => {
 		})
 
 		test('returns error for password too short', () => {
-			const shortPasswords = ['Pass1!', 'Ab1@', 'Xy3#']
+			const shortPasswords = ['', 'a', 'ab', 'abc', 'abcd', 'abcde']
 
 			shortPasswords.forEach((password) => {
 				const result = getPasswordValidationMessage(password)
-				expect(result).toContain('at least 6 characters')
+				expect(result).toBe('Password must be at least 6 characters')
 			})
 		})
 
@@ -73,19 +73,19 @@ describe('user-validation', () => {
 		test('returns first validation error encountered', () => {
 			// This tests the order of validation checks
 			const result = getPasswordValidationMessage('abc') // short, no uppercase, no number, no special char
-			expect(result).toContain('at least 6 characters')
+			expect(result).toBe('Password must be at least 6 characters')
 		})
 
 		test('handles edge cases', () => {
 			// Empty password
-			expect(getPasswordValidationMessage('')).toContain('at least 6 characters')
+			expect(getPasswordValidationMessage('')).toBe('Password must be at least 6 characters')
 
 			// Null/undefined
-			expect(getPasswordValidationMessage(null as any)).toContain(
-				'at least 6 characters',
+			expect(getPasswordValidationMessage(null as any)).toBe(
+				'Password must be at least 6 characters',
 			)
-			expect(getPasswordValidationMessage(undefined as any)).toContain(
-				'at least 6 characters',
+			expect(getPasswordValidationMessage(undefined as any)).toBe(
+				'Password must be at least 6 characters',
 			)
 		})
 

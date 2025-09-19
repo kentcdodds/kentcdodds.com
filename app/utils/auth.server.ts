@@ -2,7 +2,7 @@ import crypto from 'node:crypto'
 import { type Password, type User } from '@prisma/client'
 import bcrypt from 'bcrypt'
 import { redirect } from '@remix-run/node'
-import { createSession, prisma } from './prisma.server'
+import { createSession, prisma } from './prisma.server.ts'
 
 export const SESSION_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 30
 export const getSessionExpirationDate = () =>
@@ -66,10 +66,16 @@ export async function checkIsCommonPassword(password: string) {
 	const [prefix, suffix] = getPasswordHashParts(password)
 
 	try {
+		// Use AbortController with setTimeout for compatibility
+		const controller = new AbortController()
+		const timeoutId = setTimeout(() => controller.abort(), 1000)
+		
 		const response = await fetch(
 			`https://api.pwnedpasswords.com/range/${prefix}`,
-			{ signal: AbortSignal.timeout(1000) },
+			{ signal: controller.signal },
 		)
+		
+		clearTimeout(timeoutId)
 
 		if (!response.ok) return false
 
@@ -79,7 +85,7 @@ export async function checkIsCommonPassword(password: string) {
 			return hashSuffix === suffix
 		})
 	} catch (error) {
-		if (error instanceof DOMException && error.name === 'TimeoutError') {
+		if (error instanceof DOMException && error.name === 'AbortError') {
 			console.warn('Password check timed out')
 			return false
 		}

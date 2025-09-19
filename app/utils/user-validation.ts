@@ -32,8 +32,8 @@ export const EmailSchema = z
 	.transform((value) => value.toLowerCase())
 
 export function getPasswordValidationMessage(password: string) {
-	if (password.length < 6) {
-		return 'Password is too short'
+	if (!password || password.length < 6) {
+		return 'Password must be at least 6 characters'
 	}
 	if (password.length > 100) {
 		return 'Password is too long'

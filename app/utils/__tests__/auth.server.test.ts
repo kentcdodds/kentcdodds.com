@@ -191,6 +191,12 @@ describe('auth.server', () => {
 					firstName: userData.firstName,
 					team: userData.team,
 				},
+				select: {
+					id: true,
+					email: true,
+					firstName: true,
+					team: true,
+				},
 			})
 
 			expect(prisma.password.create).toHaveBeenCalledWith({
