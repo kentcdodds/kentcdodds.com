@@ -27,7 +27,7 @@ import { HeroSection } from '#app/components/sections/hero-section'
 import { Paragraph } from '#app/components/typography'
 import { getGenericSocialImage, images } from '#app/images'
 import { type RootLoaderType } from '#app/root'
-import { login } from '#app/utils/auth.server.ts'
+import { loginWithPassword } from '#app/utils/auth.server.ts'
 import { getLoginInfoSession } from '#app/utils/login.server'
 import {
 	getDisplayUrl,
@@ -38,8 +38,7 @@ import {
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc'
 import { getSocialMetas } from '#app/utils/seo'
-import { getUser, sendToken } from '#app/utils/session.server'
-import { isEmailVerified } from '#app/utils/verifier.server'
+import { getUser, getSession } from '#app/utils/session.server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const user = await getUser(request)
@@ -87,7 +86,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
 	const emailAddress = formData.get('email')
 	const password = formData.get('password')
-	const loginType = formData.get('loginType') // 'password' or 'magic-link'
 
 	invariant(typeof emailAddress === 'string', 'Form submitted incorrectly')
 	if (emailAddress) loginSession.setEmail(emailAddress)
@@ -100,63 +98,35 @@ export async function action({ request }: ActionFunctionArgs) {
 		})
 	}
 
-	// Handle password login
-	if (loginType === 'password') {
-		if (typeof password !== 'string' || password.length === 0) {
-			loginSession.flashError('Password is required')
-			return redirect(`/login`, {
-				status: 400,
-				headers: await loginSession.getHeaders(),
-			})
-		}
-
-		try {
-			const result = await loginWithPassword({ email: emailAddress, password })
-			if (result?.user) {
-				// TODO: Create session and redirect to /me
-				return redirect('/me')
-			} else {
-				loginSession.flashError('Invalid email or password')
-				return redirect(`/login`, {
-					status: 400,
-					headers: await loginSession.getHeaders(),
-				})
-			}
-		} catch (error: unknown) {
-			loginSession.flashError(getErrorMessage(error))
-			return redirect(`/login`, {
-				status: 400,
-				headers: await loginSession.getHeaders(),
-			})
-		}
+	if (typeof password !== 'string' || password.length === 0) {
+		loginSession.flashError('Password is required')
+		return redirect(`/login`, {
+			status: 400,
+			headers: await loginSession.getHeaders(),
+		})
 	}
 
-	// Handle magic link login (fallback/legacy)
 	try {
-		const verifiedStatus = await isEmailVerified(emailAddress)
-		if (!verifiedStatus.verified) {
-			const errorMessage = `I tried to verify that email and got this error message: "${verifiedStatus.message}". If you think this is wrong, sign up for Kent's mailing list first (using the form on the bottom of the page) and once that's confirmed you'll be able to sign up.`
-			loginSession.flashError(errorMessage)
+		const result = await loginWithPassword({ email: emailAddress, password })
+		if (result?.user) {
+			// Create session and redirect to /me
+			const session = await getSession(request)
+			await session.signIn(result.user)
+			
+			const headers = new Headers()
+			await session.getHeaders(headers)
+			await loginSession.getHeaders(headers)
+			
+			return redirect('/me', { headers })
+		} else {
+			loginSession.flashError('Invalid email or password')
 			return redirect(`/login`, {
 				status: 400,
 				headers: await loginSession.getHeaders(),
 			})
 		}
 	} catch (error: unknown) {
-		console.error(`There was an error verifying an email address:`, error)
-		// continue on... This was probably our fault...
-		// IDEA: notify me of this issue...
-	}
-
-	try {
-		const domainUrl = getDomainUrl(request)
-		const magicLink = await sendToken({ emailAddress, domainUrl })
-		loginSession.setMagicLink(magicLink)
-		return redirect(`/login`, {
-			headers: await loginSession.getHeaders(),
-		})
-	} catch (e: unknown) {
-		loginSession.flashError(getErrorMessage(e))
+		loginSession.flashError(getErrorMessage(error))
 		return redirect(`/login`, {
 			status: 400,
 			headers: await loginSession.getHeaders(),
@@ -182,9 +152,8 @@ function Login() {
 		email: data.email ?? '',
 		password: '',
 	})
-	const [loginMode, setLoginMode] = React.useState<'password' | 'magic-link'>('password')
 
-	const formIsValid = formValues.email.match(/.+@.+/)
+	const formIsValid = formValues.email.match(/.+@.+/) && formValues.password
 
 	async function handlePasskeyLogin() {
 		try {
@@ -271,37 +240,8 @@ function Login() {
 									</div>
 									<div className="relative flex justify-center text-sm">
 										<span className="bg-white px-2 text-gray-500">
-											Or continue with email
+											Or continue with email and password
 										</span>
-									</div>
-								</div>
-
-								<div className="mb-6">
-									<div className="flex gap-4 border-b border-gray-200 mb-4">
-										<button
-											type="button"
-											className={clsx(
-												'pb-2 px-1 border-b-2 text-sm font-medium',
-												loginMode === 'password'
-													? 'border-blue-500 text-blue-600'
-													: 'border-transparent text-gray-500 hover:text-gray-700'
-											)}
-											onClick={() => setLoginMode('password')}
-										>
-											Password
-										</button>
-										<button
-											type="button"
-											className={clsx(
-												'pb-2 px-1 border-b-2 text-sm font-medium',
-												loginMode === 'magic-link'
-													? 'border-blue-500 text-blue-600'
-													: 'border-transparent text-gray-500 hover:text-gray-700'
-											)}
-											onClick={() => setLoginMode('magic-link')}
-										>
-											Magic Link
-										</button>
 									</div>
 								</div>
 
@@ -317,8 +257,6 @@ function Login() {
 									method="POST"
 									className="mb-10 lg:mb-12"
 								>
-									<input type="hidden" name="loginType" value={loginMode} />
-									
 									<div className="mb-6">
 										<div className="mb-4 flex flex-wrap items-baseline justify-between">
 											<Label htmlFor="email-address">Email address</Label>
@@ -328,7 +266,7 @@ function Login() {
 											ref={inputRef}
 											autoFocus
 											aria-describedby={
-												data.error ? 'error-message' : 'success-message'
+												data.error ? 'error-message' : undefined
 											}
 											id="email-address"
 											name="email"
@@ -340,32 +278,30 @@ function Login() {
 										/>
 									</div>
 
-									{loginMode === 'password' ? (
-										<div className="mb-6">
-											<div className="mb-4 flex flex-wrap items-baseline justify-between">
-												<Label htmlFor="password">Password</Label>
-												<LinkButton
-													variant="secondary"
-													onClick={() => navigate('/reset-password')}
-												>
-													Forgot password?
-												</LinkButton>
-											</div>
-
-											<Input
-												id="password"
-												name="password"
-												type="password"
-												autoComplete="current-password"
-												required
-												placeholder="Password"
-											/>
+									<div className="mb-6">
+										<div className="mb-4 flex flex-wrap items-baseline justify-between">
+											<Label htmlFor="password">Password</Label>
+											<LinkButton
+												variant="secondary"
+												onClick={() => navigate('/forgot-password')}
+											>
+												Forgot password?
+											</LinkButton>
 										</div>
-									) : null}
+
+										<Input
+											id="password"
+											name="password"
+											type="password"
+											autoComplete="current-password"
+											required
+											placeholder="Password"
+										/>
+									</div>
 
 									<div className="flex flex-wrap gap-4">
-										<Button type="submit">
-											{loginMode === 'password' ? 'Sign in' : 'Email a login link'}
+										<Button type="submit" disabled={!formIsValid}>
+											Sign in
 										</Button>
 										<LinkButton
 											type="reset"
@@ -387,13 +323,6 @@ function Login() {
 									<div className="mt-2">
 										{data.error ? (
 											<InputError id="error-message">{data.error}</InputError>
-										) : data.email ? (
-											<p
-												id="success-message"
-												className="text-lg text-gray-500 dark:text-slate-500"
-											>
-												{`✨ A magic link has been sent to ${data.email}.`}
-											</p>
 										) : null}
 									</div>
 								</Form>
@@ -432,8 +361,8 @@ function Login() {
 				<Paragraph className="col-span-full mb-10 md:col-span-4">
 					{`
               To sign in to your account, enter your email and password above.
-              If you don't have a password yet, you can use the magic link option
-              to get started and set up a password during onboarding.
+              If you don't have a password yet, click "Forgot password?" to set one up.
+              This will send you an email with instructions to create your password.
             `}
 				</Paragraph>
 
