@@ -27,6 +27,7 @@ import { HeroSection } from '#app/components/sections/hero-section'
 import { Paragraph } from '#app/components/typography'
 import { getGenericSocialImage, images } from '#app/images'
 import { type RootLoaderType } from '#app/root'
+import { login } from '#app/utils/auth.server.ts'
 import { getLoginInfoSession } from '#app/utils/login.server'
 import {
 	getDisplayUrl,
@@ -85,6 +86,9 @@ export async function action({ request }: ActionFunctionArgs) {
 	const loginSession = await getLoginInfoSession(request)
 
 	const emailAddress = formData.get('email')
+	const password = formData.get('password')
+	const loginType = formData.get('loginType') // 'password' or 'magic-link'
+
 	invariant(typeof emailAddress === 'string', 'Form submitted incorrectly')
 	if (emailAddress) loginSession.setEmail(emailAddress)
 
@@ -96,18 +100,38 @@ export async function action({ request }: ActionFunctionArgs) {
 		})
 	}
 
-	// this is our honeypot. Our login is passwordless.
-	const failedHoneypot = Boolean(formData.get('password'))
-	if (failedHoneypot) {
-		console.info(
-			`FAILED HONEYPOT ON LOGIN`,
-			Object.fromEntries(formData.entries()),
-		)
-		return redirect(`/login`, {
-			headers: await loginSession.getHeaders(),
-		})
+	// Handle password login
+	if (loginType === 'password') {
+		if (typeof password !== 'string' || password.length === 0) {
+			loginSession.flashError('Password is required')
+			return redirect(`/login`, {
+				status: 400,
+				headers: await loginSession.getHeaders(),
+			})
+		}
+
+		try {
+			const result = await loginWithPassword({ email: emailAddress, password })
+			if (result?.user) {
+				// TODO: Create session and redirect to /me
+				return redirect('/me')
+			} else {
+				loginSession.flashError('Invalid email or password')
+				return redirect(`/login`, {
+					status: 400,
+					headers: await loginSession.getHeaders(),
+				})
+			}
+		} catch (error: unknown) {
+			loginSession.flashError(getErrorMessage(error))
+			return redirect(`/login`, {
+				status: 400,
+				headers: await loginSession.getHeaders(),
+			})
+		}
 	}
 
+	// Handle magic link login (fallback/legacy)
 	try {
 		const verifiedStatus = await isEmailVerified(emailAddress)
 		if (!verifiedStatus.verified) {
@@ -156,7 +180,9 @@ function Login() {
 
 	const [formValues, setFormValues] = React.useState({
 		email: data.email ?? '',
+		password: '',
 	})
+	const [loginMode, setLoginMode] = React.useState<'password' | 'magic-link'>('password')
 
 	const formIsValid = formValues.email.match(/.+@.+/)
 
@@ -250,15 +276,49 @@ function Login() {
 									</div>
 								</div>
 
+								<div className="mb-6">
+									<div className="flex gap-4 border-b border-gray-200 mb-4">
+										<button
+											type="button"
+											className={clsx(
+												'pb-2 px-1 border-b-2 text-sm font-medium',
+												loginMode === 'password'
+													? 'border-blue-500 text-blue-600'
+													: 'border-transparent text-gray-500 hover:text-gray-700'
+											)}
+											onClick={() => setLoginMode('password')}
+										>
+											Password
+										</button>
+										<button
+											type="button"
+											className={clsx(
+												'pb-2 px-1 border-b-2 text-sm font-medium',
+												loginMode === 'magic-link'
+													? 'border-blue-500 text-blue-600'
+													: 'border-transparent text-gray-500 hover:text-gray-700'
+											)}
+											onClick={() => setLoginMode('magic-link')}
+										>
+											Magic Link
+										</button>
+									</div>
+								</div>
+
 								<Form
 									onChange={(event) => {
 										const form = event.currentTarget
-										setFormValues({ email: form.email.value })
+										setFormValues({ 
+											email: form.email.value,
+											password: form.password?.value || ''
+										})
 									}}
 									action="/login"
 									method="POST"
 									className="mb-10 lg:mb-12"
 								>
+									<input type="hidden" name="loginType" value={loginMode} />
+									
 									<div className="mb-6">
 										<div className="mb-4 flex flex-wrap items-baseline justify-between">
 											<Label htmlFor="email-address">Email address</Label>
@@ -280,23 +340,37 @@ function Login() {
 										/>
 									</div>
 
-									<div style={{ position: 'absolute', left: '-9999px' }}>
-										<label htmlFor="password-field">Password</label>
-										<input
-											type="password"
-											id="password-field"
-											name="password"
-											tabIndex={-1}
-											autoComplete="nope"
-										/>
-									</div>
+									{loginMode === 'password' ? (
+										<div className="mb-6">
+											<div className="mb-4 flex flex-wrap items-baseline justify-between">
+												<Label htmlFor="password">Password</Label>
+												<LinkButton
+													variant="secondary"
+													onClick={() => navigate('/reset-password')}
+												>
+													Forgot password?
+												</LinkButton>
+											</div>
+
+											<Input
+												id="password"
+												name="password"
+												type="password"
+												autoComplete="current-password"
+												required
+												placeholder="Password"
+											/>
+										</div>
+									) : null}
 
 									<div className="flex flex-wrap gap-4">
-										<Button type="submit">Email a login link</Button>
+										<Button type="submit">
+											{loginMode === 'password' ? 'Sign in' : 'Email a login link'}
+										</Button>
 										<LinkButton
 											type="reset"
 											onClick={() => {
-												setFormValues({ email: '' })
+												setFormValues({ email: '', password: '' })
 												inputRef.current?.focus()
 											}}
 										>
@@ -357,9 +431,9 @@ function Login() {
 			<Grid>
 				<Paragraph className="col-span-full mb-10 md:col-span-4">
 					{`
-              To sign in to your account or to create a new one fill in your
-              email above and we'll send you an email with a magic link to get
-              you started.
+              To sign in to your account, enter your email and password above.
+              If you don't have a password yet, you can use the magic link option
+              to get started and set up a password during onboarding.
             `}
 				</Paragraph>
 

@@ -11,14 +11,14 @@ import { Input, InputError, Label } from '#app/components/form-elements.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { HeaderSection } from '#app/components/sections/header-section.tsx'
 import { H2, Paragraph } from '#app/components/typography.tsx'
+import { createPasswordForUser } from '#app/utils/auth.server.ts'
 import { getErrorMessage, getDomainUrl } from '#app/utils/misc.tsx'
 import { prisma } from '#app/utils/prisma.server.ts'
-import { createPasswordForUser } from '#app/utils/auth.server.ts'
-import { validatePassword } from '#app/utils/user-validation.ts'
+import { sendPasswordResetEmail } from '#app/utils/send-email.server.ts'
 import { requireUser, getUser } from '#app/utils/session.server.ts'
+import { validatePassword } from '#app/utils/user-validation.ts'
 import { prepareVerification } from '#app/utils/verification.server.ts'
 import { isEmailVerified } from '#app/utils/verifier.server.ts'
-import { sendPasswordResetEmail } from '#app/utils/send-email.server.ts'
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	return json({})

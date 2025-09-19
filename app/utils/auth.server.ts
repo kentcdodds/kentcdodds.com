@@ -1,7 +1,7 @@
 import crypto from 'node:crypto'
 import { type Password, type User } from '@prisma/client'
-import bcrypt from 'bcrypt'
 import { redirect } from '@remix-run/node'
+import bcrypt from 'bcrypt'
 import { createSession, prisma } from './prisma.server.ts'
 
 export const SESSION_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 30
