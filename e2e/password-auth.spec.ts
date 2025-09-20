@@ -2,26 +2,62 @@ import { test, expect } from '@playwright/test'
 import { readEmail } from '#tests/mocks/utils.ts'
 import { createUser } from '#tests/playwright-utils.ts'
 
-test.describe('Password Authentication', () => {
-	test('should require password for login', async ({ page }) => {
+test.describe('Password Authentication - Tabbed Interface', () => {
+	test.beforeEach(async ({ page }) => {
 		await page.goto('/login')
-		
-		// Should show password field (no tabs)
-		await expect(page.locator('[name="password"]')).toBeVisible()
-		await expect(page.locator('button[type="submit"]:has-text("Sign in")')).toBeVisible()
-		
-		// Should show forgot password link
-		await expect(page.locator('a:has-text("Forgot password?")')).toBeVisible()
 	})
 
-	test('should show error for missing password', async ({ page }) => {
-		await page.goto('/login')
-		
-		// Try to submit with only email
+	test('should display three tabs: Sign In, Sign Up, and Forgot Password', async ({ page }) => {
+		await expect(page.locator('button:has-text("Sign In")')).toBeVisible()
+		await expect(page.locator('button:has-text("Sign Up")')).toBeVisible()
+		await expect(page.locator('button:has-text("Forgot Password")')).toBeVisible()
+	})
+
+	test('should default to Sign In tab', async ({ page }) => {
+		// Sign In tab should be active by default
+		await expect(page.locator('button:has-text("Sign In")').first()).toHaveClass(/border-blue-500/)
+		await expect(page.locator('button[type="submit"]:has-text("Sign In")')).toBeVisible()
+	})
+
+	test('should switch between tabs and show appropriate forms', async ({ page }) => {
+		// Sign In tab (default)
+		await expect(page.locator('[name="email"]')).toBeVisible()
+		await expect(page.locator('[name="password"]')).toBeVisible()
+		await expect(page.locator('[name="firstName"]')).not.toBeVisible()
+
+		// Switch to Sign Up tab
+		await page.locator('button:has-text("Sign Up")').first().click()
+		await expect(page.locator('[name="email"]')).toBeVisible()
+		await expect(page.locator('[name="firstName"]')).toBeVisible()
+		await expect(page.locator('[name="lastName"]')).toBeVisible()
+		await expect(page.locator('[name="password"]')).toBeVisible()
+		await expect(page.locator('[name="confirmPassword"]')).toBeVisible()
+		await expect(page.locator('button[type="submit"]:has-text("Create Account")')).toBeVisible()
+
+		// Switch to Forgot Password tab
+		await page.locator('button:has-text("Forgot Password")').first().click()
+		await expect(page.locator('[name="email"]')).toBeVisible()
+		await expect(page.locator('[name="password"]')).not.toBeVisible()
+		await expect(page.locator('button[type="submit"]:has-text("Send Reset Email")')).toBeVisible()
+	})
+
+	test('should validate sign in form', async ({ page }) => {
+		// Submit button should be disabled without valid inputs
+		await expect(page.locator('button[type="submit"]:has-text("Sign In")')).toBeDisabled()
+
+		// Fill in email
 		await page.fill('[name="email"]', 'test@example.com')
-		await page.click('button[type="submit"]:has-text("Sign in")')
+		await expect(page.locator('button[type="submit"]:has-text("Sign In")')).toBeDisabled()
+
+		// Fill in password
+		await page.fill('[name="password"]', 'password123')
+		await expect(page.locator('button[type="submit"]:has-text("Sign In")')).toBeEnabled()
+	})
+
+	test('should show error for missing password in sign in', async ({ page }) => {
+		await page.fill('[name="email"]', 'test@example.com')
+		await page.locator('button[type="submit"]:has-text("Sign In")').click()
 		
-		// Should stay on login page with error
 		await expect(page).toHaveURL('/login')
 		await expect(page.locator('[id="error-message"]')).toContainText('Password is required')
 	})
@@ -29,104 +65,110 @@ test.describe('Password Authentication', () => {
 	test('should show error for wrong password', async ({ page }) => {
 		const userData = createUser()
 		
-		await page.goto('/login')
 		await page.fill('[name="email"]', userData.email)
 		await page.fill('[name="password"]', 'wrongpassword')
-		await page.click('button[type="submit"]:has-text("Sign in")')
+		await page.locator('button[type="submit"]:has-text("Sign In")').click()
 		
-		// Should stay on login page with error
 		await expect(page).toHaveURL('/login')
 		await expect(page.locator('[id="error-message"]')).toContainText('Invalid email or password')
 	})
 
-	test('forgot password flow should work end-to-end', async ({ page }) => {
-		const userData = createUser()
-		
-		// Go to login and click forgot password
-		await page.goto('/login')
-		await page.click('a:has-text("Forgot password?")')
-		
-		// Should be on forgot password page
-		await expect(page).toHaveURL('/forgot-password')
-		await expect(page.locator('h1:has-text("Forgot your password?")')).toBeVisible()
-		
-		// Enter email
-		await page.fill('[name="email"]', userData.email)
-		await page.click('button[type="submit"]:has-text("Send Reset Email")')
-		
-		// Should show success message
+	test('should validate sign up form', async ({ page }) => {
+		await page.locator('button:has-text("Sign Up")').first().click()
+
+		// Submit button should be disabled without valid inputs
+		await expect(page.locator('button[type="submit"]:has-text("Create Account")')).toBeDisabled()
+
+		// Fill in required fields
+		await page.fill('[name="email"]', 'test@example.com')
+		await page.fill('[name="firstName"]', 'John')
+		await page.fill('[name="password"]', 'Password123!')
+		await page.fill('[name="confirmPassword"]', 'Password123!')
+
+		await expect(page.locator('button[type="submit"]:has-text("Create Account")')).toBeEnabled()
+	})
+
+	test('should show password mismatch error', async ({ page }) => {
+		await page.locator('button:has-text("Sign Up")').first().click()
+
+		await page.fill('[name="password"]', 'password1')
+		await page.fill('[name="confirmPassword"]', 'password2')
+
+		await expect(page.locator('text=Passwords do not match')).toBeVisible()
+	})
+
+	test('should validate forgot password form', async ({ page }) => {
+		await page.locator('button:has-text("Forgot Password")').first().click()
+
+		// Submit button should be disabled without email
+		await expect(page.locator('button[type="submit"]:has-text("Send Reset Email")')).toBeDisabled()
+
+		// Fill in email
+		await page.fill('[name="email"]', 'test@example.com')
+		await expect(page.locator('button[type="submit"]:has-text("Send Reset Email")')).toBeEnabled()
+	})
+
+	test('should handle forgot password submission', async ({ page }) => {
+		await page.locator('button:has-text("Forgot Password")').first().click()
+
+		await page.fill('[name="email"]', 'test@example.com')
+		await page.locator('button[type="submit"]:has-text("Send Reset Email")').click()
+
 		await expect(page.locator('text=Check your email')).toBeVisible()
-		await expect(page.locator(`text=If an account with ${userData.email} exists`)).toBeVisible()
+		await expect(page.locator('text=If an account with test@example.com exists')).toBeVisible()
 	})
 
-	test('should navigate back to login from forgot password', async ({ page }) => {
-		await page.goto('/forgot-password')
-		
-		// Should have back to login button
-		await expect(page.locator('button:has-text("Back to Login")')).toBeVisible()
-		
-		// Or link to login
-		await expect(page.locator('a[href="/login"]')).toBeVisible()
+	test('should show passkey login option', async ({ page }) => {
+		await expect(page.locator('button:has-text("Login with Passkey")')).toBeVisible()
 	})
 
-	test('should show helpful text for users without passwords', async ({ page }) => {
-		await page.goto('/login')
-		
-		// Should have explanatory text about password setup
-		await expect(page.locator('text=If you don\'t have a password yet, click "Forgot password?" to set one up')).toBeVisible()
+	test('should handle form reset', async ({ page }) => {
+		await page.fill('[name="email"]', 'test@example.com')
+		await page.fill('[name="password"]', 'password123')
+
+		await page.locator('button:has-text("Reset")').click()
+
+		await expect(page.locator('[name="email"]')).toHaveValue('')
+		await expect(page.locator('[name="password"]')).toHaveValue('')
 	})
 
-	test('password reset email should contain verification flow', async ({ page }) => {
-		const userData = createUser()
+	test('should be accessible with proper ARIA labels', async ({ page }) => {
+		// Check tab accessibility
+		await expect(page.locator('nav[aria-label="Tabs"]')).toBeVisible()
 		
-		await page.goto('/forgot-password')
-		await page.fill('[name="email"]', userData.email)
-		await page.click('button[type="submit"]:has-text("Send Reset Email")')
-		
-		// Should show success message (always, for security)
-		await expect(page.locator('text=Check your email')).toBeVisible()
-		
-		// In real implementation, email would be sent with verification code
-		// This test verifies the UI flow
-	})
-
-	test('should be accessible with screen readers', async ({ page }) => {
-		await page.goto('/login')
-		
-		// Check proper labeling
+		// Check form labels
 		await expect(page.locator('label[for="email-address"]')).toBeVisible()
 		await expect(page.locator('label[for="password"]')).toBeVisible()
 		
-		// Check ARIA attributes
-		await expect(page.locator('[name="password"]')).toHaveAttribute('autocomplete', 'current-password')
-		
-		// Check form submission accessibility
-		await page.fill('[name="email"]', 'test@example.com')
-		await page.fill('[name="password"]', 'password')
-		
-		// Should have proper submit button text
-		await expect(page.locator('button[type="submit"]:has-text("Sign in")')).toBeVisible()
-		
-		// Should have disabled state when form is invalid
-		await page.fill('[name="email"]', '')
-		await expect(page.locator('button[type="submit"]')).toBeDisabled()
+		// Test keyboard navigation between tabs
+		await page.locator('button:has-text("Sign In")').first().focus()
+		await page.keyboard.press('ArrowRight')
+		await expect(page.locator('button:has-text("Sign Up")').first()).toBeFocused()
 	})
 
-	test('forgot password page should be accessible', async ({ page }) => {
-		await page.goto('/forgot-password')
+	test('should maintain context-appropriate descriptions', async ({ page }) => {
+		// Sign In tab
+		await expect(page.locator('text=To sign in to your account, enter your email and password above')).toBeVisible()
 		
-		// Check proper labeling
-		await expect(page.locator('label[for="email"]')).toBeVisible()
+		// Sign Up tab
+		await page.locator('button:has-text("Sign Up")').first().click()
+		await expect(page.locator('text=Create a new account by filling out the form above')).toBeVisible()
 		
-		// Check form accessibility
-		await expect(page.locator('[name="email"]')).toHaveAttribute('type', 'email')
-		await expect(page.locator('[name="email"]')).toHaveAttribute('autocomplete', 'email')
+		// Forgot Password tab
+		await page.locator('button:has-text("Forgot Password")').first().click()
+		await expect(page.locator('text=Enter your email address and we\'ll send you instructions to reset your password')).toBeVisible()
+	})
+
+	test('should have proper intent values for different forms', async ({ page }) => {
+		// Sign In intent
+		await expect(page.locator('input[name="intent"][value="signin"]')).toBeVisible()
 		
-		// Should have proper button states
-		await expect(page.locator('button[type="submit"]')).toBeDisabled()
+		// Sign Up intent
+		await page.locator('button:has-text("Sign Up")').first().click()
+		await expect(page.locator('input[name="intent"][value="signup"]')).toBeVisible()
 		
-		// Fill valid email should enable button
-		await page.fill('[name="email"]', 'test@example.com')
-		await expect(page.locator('button[type="submit"]')).toBeEnabled()
+		// Forgot Password intent
+		await page.locator('button:has-text("Forgot Password")').first().click()
+		await expect(page.locator('input[name="intent"][value="forgot-password"]')).toBeVisible()
 	})
 })

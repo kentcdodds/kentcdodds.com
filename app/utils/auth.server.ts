@@ -95,6 +95,48 @@ export async function checkIsCommonPassword(password: string) {
 	}
 }
 
+export async function signupWithPassword({
+	email,
+	password,
+	firstName,
+	lastName,
+}: {
+	email: string
+	password: string
+	firstName: string
+	lastName?: string
+}) {
+	// Check if user already exists
+	const existingUser = await prisma.user.findUnique({
+		where: { email: email.toLowerCase() },
+	})
+	
+	if (existingUser) {
+		return null
+	}
+
+	const hashedPassword = await getPasswordHash(password)
+
+	const user = await prisma.user.create({
+		data: {
+			email: email.toLowerCase(),
+			firstName,
+			...(lastName && { lastName }),
+		},
+		select: { id: true, email: true, firstName: true },
+	})
+
+	// Create password separately
+	await prisma.password.create({
+		data: {
+			userId: user.id,
+			hash: hashedPassword,
+		},
+	})
+
+	return { user }
+}
+
 export async function signup({
 	email,
 	password,
