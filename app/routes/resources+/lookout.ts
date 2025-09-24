@@ -14,7 +14,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	let header: any
 	try {
 		header = JSON.parse(piece ?? '{}')
-	} catch (error) {
+	} catch {
 		// Return 400 for malformed Sentry envelopes instead of crashing
 		throw new Response(
 			'Invalid Sentry envelope format: first line must be valid JSON',
@@ -37,7 +37,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	let dsn: URL
 	try {
 		dsn = new URL(header.dsn)
-	} catch (error) {
+	} catch {
 		throw new Response('Invalid Sentry envelope format: invalid dsn URL', {
 			status: 400,
 		})
