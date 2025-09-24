@@ -29,9 +29,9 @@ jobs:
 
       - name: 🔎 Determine deployable changes
         id: changes
-        run: >-
-          echo ::set-output name=DEPLOYABLE::$(node ./other/is-deployable.js ${{
-          github.sha }})
+        run:
+          echo "DEPLOYABLE=$(node ./other/is-deployable.js ${{ github.sha }})"
+          >> "$GITHUB_OUTPUT"
 
       - name: ❓ Deployable
         run: >-
