@@ -20,7 +20,14 @@ type TransistorEpisodeData = {
 		audio_processing: boolean
 	}
 }
-type TransistorEpisodesJson = { data: Array<TransistorEpisodeData> }
+type TransistorEpisodesJson = {
+	data: Array<TransistorEpisodeData>
+	meta?: {
+		currentPage: number
+		totalPages: number
+		totalCount: number
+	}
+}
 
 type TransistorAuthorizedJson = {
 	data: {

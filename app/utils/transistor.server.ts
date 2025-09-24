@@ -10,7 +10,7 @@ import {
 	type TransistorPublishedJson,
 	type TransistorUpdateEpisodeData,
 } from '#app/types.ts'
-import { cache, cachified } from './cache.server.ts'
+import { cache, cachified, shouldForceFresh } from './cache.server.ts'
 import { getEpisodePath } from './call-kent.ts'
 import { stripHtml } from './markdown.server.ts'
 import { getRequiredServerEnvVar, toBase64 } from './misc.tsx'
@@ -48,14 +48,40 @@ async function fetchTransitor<JsonResponse>({
 			'Content-Type': 'application/json',
 		}
 	}
-	const res = await fetch(url.toString(), config)
-	const json = (await res.json()) as any
-	if (json.errors) {
-		throw new Error(
-			(json as TransistorErrorResponse).errors.map((e) => e.title).join('\n'),
-		)
+	// Handle Transistor rate limits: 10 req/10s. Retry on 429 after waiting.
+	const maxRetries = 3
+	let attempt = 0
+	while (true) {
+		const res = await fetch(url.toString(), config)
+		if (res.status === 429 && attempt < maxRetries) {
+			attempt++
+			const retryAfterHeader = res.headers.get('Retry-After')
+			// Retry-After can be seconds or HTTP-date; treat as seconds if numeric
+			const retryAfterSeconds =
+				retryAfterHeader && !Number.isNaN(Number(retryAfterHeader))
+					? Number(retryAfterHeader)
+					: 10
+			await new Promise((r) => setTimeout(r, retryAfterSeconds * 1000))
+			continue
+		}
+
+		const json = (await res.json()) as any
+		if (!res.ok) {
+			// Surface API errors with response text if available
+			const message = json?.errors
+				? (json as TransistorErrorResponse).errors
+						.map((e: any) => e.title)
+						.join('\n')
+				: `HTTP ${res.status}`
+			throw new Error(message)
+		}
+		if (json?.errors) {
+			throw new Error(
+				(json as TransistorErrorResponse).errors.map((e) => e.title).join('\n'),
+			)
+		}
+		return json as JsonResponse
 	}
-	return json as JsonResponse
 }
 
 async function createEpisode({
@@ -203,12 +229,35 @@ async function createEpisode({
 }
 
 async function getEpisodes() {
-	const transistorEpisodes = await fetchTransitor<TransistorEpisodesJson>({
+	// Transistor's API max per-page is 100; fetch all pages sequentially
+	const perPage = 100
+
+	// Fetch first page to learn how many total pages there are
+	const firstPage = await fetchTransitor<TransistorEpisodesJson>({
 		endpoint: `/v1/episodes`,
-		query: { 'pagination[per]': '5000' },
+		query: { 'pagination[per]': String(perPage), 'pagination[page]': '1' },
 	})
+
+	const allEpisodesData = [...firstPage.data]
+	const totalPages = firstPage.meta?.totalPages ?? 1
+
+	// Iterate remaining pages (if any) using a for-of loop
+	for (const page of Array.from(
+		{ length: Math.max(0, totalPages - 1) },
+		(_, i) => i + 2,
+	)) {
+		const pageData = await fetchTransitor<TransistorEpisodesJson>({
+			endpoint: `/v1/episodes`,
+			query: {
+				'pagination[per]': String(perPage),
+				'pagination[page]': String(page),
+			},
+		})
+		allEpisodesData.push(...pageData.data)
+	}
+
 	// sort by episode number
-	const sortedTransistorEpisodes = transistorEpisodes.data.sort((a, b) => {
+	const sortedTransistorEpisodes = allEpisodesData.sort((a, b) => {
 		const aNumber = a.attributes.number ?? 0
 		const bNumber = b.attributes.number ?? 0
 		if (aNumber < bNumber) {
@@ -280,7 +329,11 @@ async function getCachedEpisodes({
 		getFreshValue: getEpisodes,
 		ttl: 1000 * 60 * 60 * 24,
 		staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
-		forceFresh,
+		forceFresh: await shouldForceFresh({
+			key: episodesCacheKey,
+			forceFresh,
+			request,
+		}),
 		checkValue: (value: unknown) =>
 			Array.isArray(value) &&
 			value.every(
