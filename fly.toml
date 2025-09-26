@@ -4,7 +4,7 @@
 #
 
 app = "kcd"
-primary_region = "den"
+primary_region = "dfw"
 kill_signal = "SIGINT"
 kill_timeout = "5s"
 swap_size_mb = 512
