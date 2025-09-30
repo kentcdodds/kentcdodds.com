@@ -1,5 +1,5 @@
-import { PrismaClient } from '@prisma/client'
 import { PrismaBetterSQLite3 } from '@prisma/adapter-better-sqlite3'
+import { PrismaClient } from '@prisma/client'
 import { subMonths } from 'date-fns'
 
 const prisma = new PrismaClient({
