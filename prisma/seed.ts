@@ -1,7 +1,12 @@
 import { PrismaClient } from '@prisma/client'
+import { PrismaBetterSQLite3 } from '@prisma/adapter-better-sqlite3'
 import { subMonths } from 'date-fns'
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient({
+	adapter: new PrismaBetterSQLite3({
+		url: process.env.DATABASE_URL!,
+	}),
+})
 
 async function main() {
 	const kent = await prisma.user.upsert({

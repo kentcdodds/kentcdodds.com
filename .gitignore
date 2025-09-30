@@ -12,6 +12,8 @@ tsconfig.tsbuildinfo
 /prisma/sqlite.db-journal
 /prisma/dev.db
 /prisma/dev.db-journal
+/prisma/*.db*
+/prisma/*-journal
 
 other/postcss.ignored
 
