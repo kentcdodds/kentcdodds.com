@@ -1,9 +1,12 @@
 import path from 'path'
 import { test as base } from '@playwright/test'
-import { PrismaClient, type User } from '@prisma/client'
 import { parse } from 'cookie'
 import fsExtra from 'fs-extra'
 import invariant from 'tiny-invariant'
+import {
+	PrismaClient,
+	type User,
+} from '#app/utils/prisma-generated.server/client.ts'
 import '../app/entry.server.tsx'
 import { getSession } from '../app/utils/session.server.ts'
 import { createUser } from '../prisma/seed-utils.ts'
