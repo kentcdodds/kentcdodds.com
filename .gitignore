@@ -10,6 +10,8 @@ node_modules/
 tsconfig.tsbuildinfo
 /prisma/sqlite.db
 /prisma/sqlite.db-journal
+/prisma/dev.db
+/prisma/dev.db-journal
 
 other/postcss.ignored
 
@@ -22,6 +24,7 @@ other/postcss.ignored
 /playwright-report/
 /playwright/.cache/
 /other/cache.db
+/cache.db
 
 *.bkp.*
 
