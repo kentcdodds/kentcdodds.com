@@ -10,6 +10,7 @@ node_modules/
 tsconfig.tsbuildinfo
 /prisma/sqlite.db
 /prisma/sqlite.db-journal
+/app/utils/prisma-generated.server
 
 other/postcss.ignored
 

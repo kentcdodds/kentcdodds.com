@@ -1,10 +1,11 @@
 import { remember } from '@epic-web/remember'
-import { PrismaClient } from '@prisma/client'
+import { PrismaBetterSQLite3 } from '@prisma/adapter-better-sqlite3'
 import chalk from 'chalk'
 import pProps from 'p-props'
 import { type Session } from '#app/types.ts'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { decrypt, encrypt } from './encryption.server.ts'
+import { PrismaClient } from './prisma-generated.server/client.ts'
 import { time, type Timings } from './timing.server.ts'
 
 const logThreshold = 500
@@ -15,7 +16,14 @@ function getClient(): PrismaClient {
 	// NOTE: during development if you change anything in this function, remember
 	// that this only runs once per server restart and won't automatically be
 	// re-run per request like everything else is.
+	const url = process.env.DATABASE_URL
+	if (!url) {
+		throw new Error(
+			'DATABASE_URL is required (expected a file: URL for SQLite).',
+		)
+	}
 	const client = new PrismaClient({
+		adapter: new PrismaBetterSQLite3({ url }),
 		log: [
 			{ level: 'query', emit: 'event' },
 			{ level: 'error', emit: 'stdout' },

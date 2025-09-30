@@ -16,6 +16,8 @@ WORKDIR /app/
 
 ADD package.json .npmrc package-lock.json ./
 ADD other/patches ./other/patches
+ADD prisma /app/prisma
+ADD prisma.config.ts /app/prisma.config.ts
 RUN npm install
 
 # setup production node_modules
@@ -27,6 +29,7 @@ WORKDIR /app/
 COPY --from=deps /app/node_modules /app/node_modules
 ADD package.json .npmrc package-lock.json /app/
 RUN npm prune --omit=dev
+RUN npm rebuild better-sqlite3
 
 # build app
 FROM base as build
@@ -44,6 +47,7 @@ ADD other/runfile.js /app/other/runfile.js
 
 # schema doesn't change much so these will stay cached
 ADD prisma /app/prisma
+ADD prisma.config.ts /app/prisma.config.ts
 
 RUN npx prisma generate
 
@@ -81,13 +85,13 @@ RUN echo "#!/bin/sh\nset -x\nsqlite3 \$CACHE_DATABASE_PATH" > /usr/local/bin/cac
 RUN mkdir /app/
 WORKDIR /app/
 
+ADD . .
+
 COPY --from=production-deps /app/node_modules /app/node_modules
-COPY --from=build /app/node_modules/.prisma /app/node_modules/.prisma
+COPY --from=build /app/app/utils/prisma-generated.server /app/app/utils/prisma-generated.server
 COPY --from=build /app/build /app/build
 COPY --from=build /app/public /app/public
 COPY --from=build /app/server-build /app/server-build
-
-ADD . .
 
 # prepare for litefs
 COPY --from=flyio/litefs:0.5.11 /usr/local/bin/litefs /usr/local/bin/litefs
