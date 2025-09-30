@@ -1,4 +1,5 @@
 import { remember } from '@epic-web/remember'
+import { PrismaBetterSQLite3 } from '@prisma/adapter-better-sqlite3'
 import { PrismaClient } from '@prisma/client'
 import chalk from 'chalk'
 import pProps from 'p-props'
@@ -16,6 +17,9 @@ function getClient(): PrismaClient {
 	// that this only runs once per server restart and won't automatically be
 	// re-run per request like everything else is.
 	const client = new PrismaClient({
+		adapter: new PrismaBetterSQLite3({
+			url: process.env.DATABASE_URL!.replace('file:', ''),
+		}),
 		log: [
 			{ level: 'query', emit: 'event' },
 			{ level: 'error', emit: 'stdout' },
