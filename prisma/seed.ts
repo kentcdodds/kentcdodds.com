@@ -4,7 +4,7 @@ import { subMonths } from 'date-fns'
 
 const prisma = new PrismaClient({
 	adapter: new PrismaBetterSQLite3({
-		url: process.env.DATABASE_URL!,
+		url: process.env.DATABASE_URL || 'file:./prisma/sqlite.db',
 	}),
 })
 
