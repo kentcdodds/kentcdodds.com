@@ -48,9 +48,6 @@
     "validate": "./other/validate",
     "setup": "npm install && prisma migrate reset --force && npm run validate && npm run prime-cache:mocks && npm run test:e2e:install && npm run test:e2e:run"
   },
-  "prisma": {
-    "seed": "tsx other/runfile prisma/seed.ts"
-  },
   "dependencies": {
     "@conform-to/react": "^1.1.3",
     "@conform-to/zod": "^1.1.3",
