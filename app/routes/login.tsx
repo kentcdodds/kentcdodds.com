@@ -11,6 +11,7 @@ import {
 	useLoaderData,
 	useNavigate,
 	useRevalidator,
+	useActionData,
 } from '@remix-run/react'
 import { startAuthentication } from '@simplewebauthn/browser'
 import { type PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/server'
@@ -19,15 +20,16 @@ import { AnimatePresence, motion } from 'framer-motion'
 import * as React from 'react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
-import { Button, LinkButton } from '#app/components/button.tsx'
-import { Input, InputError, Label } from '#app/components/form-elements.tsx'
-import { Grid } from '#app/components/grid.tsx'
-import { PasskeyIcon } from '#app/components/icons.js'
-import { HeroSection } from '#app/components/sections/hero-section.tsx'
-import { Paragraph } from '#app/components/typography.tsx'
-import { getGenericSocialImage, images } from '#app/images.tsx'
-import { type RootLoaderType } from '#app/root.tsx'
-import { getLoginInfoSession } from '#app/utils/login.server.ts'
+import { Button, LinkButton } from '#app/components/button'
+import { Input, InputError, Label } from '#app/components/form-elements'
+import { Grid } from '#app/components/grid'
+import { PasskeyIcon } from '#app/components/icons'
+import { HeroSection } from '#app/components/sections/hero-section'
+import { Paragraph } from '#app/components/typography'
+import { getGenericSocialImage, images } from '#app/images'
+import { type RootLoaderType } from '#app/root'
+import { loginWithPassword, signupWithPassword } from '#app/utils/auth.server.ts'
+import { getLoginInfoSession } from '#app/utils/login.server'
 import {
 	getDisplayUrl,
 	getDomainUrl,
@@ -35,10 +37,13 @@ import {
 	getOrigin,
 	getUrl,
 	reuseUsefulLoaderHeaders,
-} from '#app/utils/misc.tsx'
-import { getSocialMetas } from '#app/utils/seo.ts'
-import { getUser, sendToken } from '#app/utils/session.server.ts'
-import { isEmailVerified } from '#app/utils/verifier.server.ts'
+} from '#app/utils/misc'
+import { getSocialMetas } from '#app/utils/seo'
+import { getUser, getSession } from '#app/utils/session.server'
+import { validatePassword } from '#app/utils/user-validation.ts'
+import { prisma } from '#app/utils/prisma.server.ts'
+import { sendPasswordResetEmail } from '#app/utils/send-email.server.ts'
+import { prepareVerification } from '#app/utils/verification.server.ts'
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const user = await getUser(request)
@@ -83,8 +88,14 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 export async function action({ request }: ActionFunctionArgs) {
 	const formData = await request.formData()
 	const loginSession = await getLoginInfoSession(request)
+	const intent = formData.get('intent')
 
 	const emailAddress = formData.get('email')
+	const password = formData.get('password')
+	const confirmPassword = formData.get('confirmPassword')
+	const firstName = formData.get('firstName')
+	const lastName = formData.get('lastName')
+
 	invariant(typeof emailAddress === 'string', 'Form submitted incorrectly')
 	if (emailAddress) loginSession.setEmail(emailAddress)
 
@@ -96,56 +107,140 @@ export async function action({ request }: ActionFunctionArgs) {
 		})
 	}
 
-	// this is our honeypot. Our login is passwordless.
-	const failedHoneypot = Boolean(formData.get('password'))
-	if (failedHoneypot) {
-		console.info(
-			`FAILED HONEYPOT ON LOGIN`,
-			Object.fromEntries(formData.entries()),
-		)
-		return redirect(`/login`, {
-			headers: await loginSession.getHeaders(),
-		})
-	}
-
 	try {
-		const verifiedStatus = await isEmailVerified(emailAddress)
-		if (!verifiedStatus.verified) {
-			const errorMessage = `I tried to verify that email and got this error message: "${verifiedStatus.message}". If you think this is wrong, sign up for Kent's mailing list first (using the form on the bottom of the page) and once that's confirmed you'll be able to sign up.`
-			loginSession.flashError(errorMessage)
-			return redirect(`/login`, {
-				status: 400,
-				headers: await loginSession.getHeaders(),
+		if (intent === 'signin') {
+			if (typeof password !== 'string' || password.length === 0) {
+				loginSession.flashError('Password is required')
+				return redirect(`/login`, {
+					status: 400,
+					headers: await loginSession.getHeaders(),
+				})
+			}
+
+			const result = await loginWithPassword({ email: emailAddress, password })
+			if (result?.user) {
+				const session = await getSession(request)
+				await session.signIn(result.user)
+				
+				const headers = new Headers()
+				await session.getHeaders(headers)
+				await loginSession.getHeaders(headers)
+				
+				return redirect('/me', { headers })
+			} else {
+				loginSession.flashError('Invalid email or password')
+				return redirect(`/login`, {
+					status: 400,
+					headers: await loginSession.getHeaders(),
+				})
+			}
+		} else if (intent === 'signup') {
+			if (typeof password !== 'string' || password.length === 0) {
+				loginSession.flashError('Password is required')
+				return redirect(`/login`, {
+					status: 400,
+					headers: await loginSession.getHeaders(),
+				})
+			}
+
+			if (password !== confirmPassword) {
+				loginSession.flashError('Passwords do not match')
+				return redirect(`/login`, {
+					status: 400,
+					headers: await loginSession.getHeaders(),
+				})
+			}
+
+			const passwordValidation = validatePassword(password)
+			if (!passwordValidation.isValid) {
+				loginSession.flashError(passwordValidation.errors[0] || 'Password is not strong enough')
+				return redirect(`/login`, {
+					status: 400,
+					headers: await loginSession.getHeaders(),
+				})
+			}
+
+			if (typeof firstName !== 'string' || !firstName) {
+				loginSession.flashError('First name is required')
+				return redirect(`/login`, {
+					status: 400,
+					headers: await loginSession.getHeaders(),
+				})
+			}
+
+			const result = await signupWithPassword({
+				email: emailAddress,
+				password,
+				firstName,
+				lastName: typeof lastName === 'string' ? lastName : '',
+			})
+
+			if (result?.user) {
+				const session = await getSession(request)
+				await session.signIn(result.user)
+				
+				const headers = new Headers()
+				await session.getHeaders(headers)
+				await loginSession.getHeaders(headers)
+				
+				return redirect('/me', { headers })
+			} else {
+				loginSession.flashError('Email address is already in use')
+				return redirect(`/login`, {
+					status: 400,
+					headers: await loginSession.getHeaders(),
+				})
+			}
+		} else if (intent === 'forgot-password') {
+			// Check if user exists (but don't reveal this information)
+			const user = await prisma.user.findUnique({
+				where: { email: emailAddress },
+				select: { id: true, firstName: true },
+			})
+
+			// Always send a "success" message to prevent user enumeration
+			// but only send an email if the user actually exists
+			if (user) {
+				const { verifyUrl, otp } = await prepareVerification({
+					period: 600, // 10 minutes
+					request,
+					type: 'reset-password',
+					target: emailAddress,
+				})
+
+				await sendPasswordResetEmail({
+					emailAddress,
+					verificationUrl: verifyUrl.toString(),
+					verificationCode: otp,
+					user,
+				})
+			}
+
+			return json({
+				success: true,
+				message: `If an account with ${emailAddress} exists, we've sent a password reset email. Please check your inbox.`,
 			})
 		}
 	} catch (error: unknown) {
-		console.error(`There was an error verifying an email address:`, error)
-		// continue on... This was probably our fault...
-		// IDEA: notify me of this issue...
-	}
-
-	try {
-		const domainUrl = getDomainUrl(request)
-		const magicLink = await sendToken({ emailAddress, domainUrl })
-		loginSession.setMagicLink(magicLink)
-		return redirect(`/login`, {
-			headers: await loginSession.getHeaders(),
-		})
-	} catch (e: unknown) {
-		loginSession.flashError(getErrorMessage(e))
+		loginSession.flashError(getErrorMessage(error))
 		return redirect(`/login`, {
 			status: 400,
 			headers: await loginSession.getHeaders(),
 		})
 	}
+
+	return redirect('/login')
 }
 
 const AuthenticationOptionsSchema = z.object({
 	options: z.object({ challenge: z.string() }),
 }) satisfies z.ZodType<{ options: PublicKeyCredentialRequestOptionsJSON }>
 
+type Tab = 'signin' | 'signup' | 'forgot-password'
+
 function Login() {
 	const data = useLoaderData<typeof loader>()
+	const actionData = useActionData<typeof action>()
 	const inputRef = React.useRef<HTMLInputElement>(null)
 	const navigate = useNavigate()
 	const { revalidate } = useRevalidator()
@@ -154,11 +249,28 @@ function Login() {
 		null,
 	)
 
+	const [activeTab, setActiveTab] = React.useState<Tab>('signin')
 	const [formValues, setFormValues] = React.useState({
 		email: data.email ?? '',
+		password: '',
+		confirmPassword: '',
+		firstName: '',
+		lastName: '',
 	})
 
-	const formIsValid = formValues.email.match(/.+@.+/)
+	const emailIsValid = formValues.email.match(/.+@.+/)
+	const passwordsMatch = formValues.password === formValues.confirmPassword
+	
+	const formIsValid = (() => {
+		switch (activeTab) {
+			case 'signin':
+				return emailIsValid && formValues.password
+			case 'signup':
+				return emailIsValid && formValues.password && passwordsMatch && formValues.firstName
+			case 'forgot-password':
+				return emailIsValid
+		}
+	})()
 
 	async function handlePasskeyLogin() {
 		try {
@@ -206,13 +318,31 @@ function Login() {
 		}
 	}
 
+	const tabConfig = {
+		signin: {
+			label: 'Sign In',
+			description: 'Sign in to your existing account',
+			buttonText: 'Sign In',
+		},
+		signup: {
+			label: 'Sign Up',
+			description: 'Create a new account',
+			buttonText: 'Create Account',
+		},
+		'forgot-password': {
+			label: 'Forgot Password',
+			description: 'Reset your password',
+			buttonText: 'Send Reset Email',
+		},
+	} as const
+
 	return (
 		<>
 			<HeroSection
 				imageBuilder={images.skis}
 				imageSize="medium"
-				title="Log in to your account."
-				subtitle="Or sign up for an account."
+				title="Welcome back!"
+				subtitle="Sign in, create an account, or reset your password."
 				action={
 					<main>
 						<div className="mb-8">
@@ -245,84 +375,173 @@ function Login() {
 									</div>
 									<div className="relative flex justify-center text-sm">
 										<span className="bg-white px-2 text-gray-500">
-											Or continue with email
+											Or continue with email and password
 										</span>
 									</div>
 								</div>
 
-								<Form
-									onChange={(event) => {
-										const form = event.currentTarget
-										setFormValues({ email: form.email.value })
-									}}
-									action="/login"
-									method="POST"
-									className="mb-10 lg:mb-12"
-								>
-									<div className="mb-6">
-										<div className="mb-4 flex flex-wrap items-baseline justify-between">
+								{/* Tabs */}
+								<div className="mb-6">
+									<div className="border-b border-gray-200">
+										<nav className="-mb-px flex space-x-8" aria-label="Tabs">
+											{Object.entries(tabConfig).map(([tab, config]) => (
+												<button
+													key={tab}
+													type="button"
+													onClick={() => setActiveTab(tab as Tab)}
+													className={clsx(
+														'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm',
+														activeTab === tab
+															? 'border-blue-500 text-blue-600'
+															: 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+													)}
+													aria-current={activeTab === tab ? 'page' : undefined}
+												>
+													{config.label}
+												</button>
+											))}
+										</nav>
+									</div>
+								</div>
+
+								{/* Success message for forgot password */}
+								{actionData?.success ? (
+									<div className="mb-6 rounded-md bg-green-50 p-4">
+										<div className="text-green-800">
+											<h3 className="text-sm font-medium">Check your email</h3>
+											<div className="mt-2 text-sm">
+												<p>{actionData.message}</p>
+											</div>
+										</div>
+									</div>
+								) : (
+									<Form
+										onChange={(event) => {
+											const form = event.currentTarget
+											setFormValues({ 
+												email: form.email.value,
+												password: form.password?.value || '',
+												confirmPassword: form.confirmPassword?.value || '',
+												firstName: form.firstName?.value || '',
+												lastName: form.lastName?.value || '',
+											})
+										}}
+										action="/login"
+										method="POST"
+										className="mb-10 lg:mb-12"
+									>
+										<input type="hidden" name="intent" value={activeTab} />
+										
+										<div className="mb-6">
 											<Label htmlFor="email-address">Email address</Label>
+											<Input
+												ref={inputRef}
+												autoFocus
+												aria-describedby={
+													data.error ? 'error-message' : undefined
+												}
+												id="email-address"
+												name="email"
+												type="email"
+												autoComplete="email"
+												defaultValue={formValues.email}
+												required
+												placeholder="Email address"
+											/>
 										</div>
 
-										<Input
-											ref={inputRef}
-											autoFocus
-											aria-describedby={
-												data.error ? 'error-message' : 'success-message'
-											}
-											id="email-address"
-											name="email"
-											type="email"
-											autoComplete="email"
-											defaultValue={formValues.email}
-											required
-											placeholder="Email address"
-										/>
-									</div>
+										{activeTab === 'signup' && (
+											<>
+												<div className="mb-6">
+													<Label htmlFor="firstName">First Name</Label>
+													<Input
+														id="firstName"
+														name="firstName"
+														type="text"
+														autoComplete="given-name"
+														required
+														placeholder="First name"
+													/>
+												</div>
 
-									<div style={{ position: 'absolute', left: '-9999px' }}>
-										<label htmlFor="password-field">Password</label>
-										<input
-											type="password"
-											id="password-field"
-											name="password"
-											tabIndex={-1}
-											autoComplete="nope"
-										/>
-									</div>
+												<div className="mb-6">
+													<Label htmlFor="lastName">Last Name</Label>
+													<Input
+														id="lastName"
+														name="lastName"
+														type="text"
+														autoComplete="family-name"
+														placeholder="Last name (optional)"
+													/>
+												</div>
+											</>
+										)}
 
-									<div className="flex flex-wrap gap-4">
-										<Button type="submit">Email a login link</Button>
-										<LinkButton
-											type="reset"
-											onClick={() => {
-												setFormValues({ email: '' })
-												inputRef.current?.focus()
-											}}
-										>
-											Reset
-										</LinkButton>
-									</div>
+										{(activeTab === 'signin' || activeTab === 'signup') && (
+											<div className="mb-6">
+												<Label htmlFor="password">Password</Label>
+												<Input
+													id="password"
+													name="password"
+													type="password"
+													autoComplete={activeTab === 'signin' ? 'current-password' : 'new-password'}
+													required
+													placeholder="Password"
+												/>
+											</div>
+										)}
 
-									<div className="sr-only" aria-live="polite">
-										{formIsValid
-											? 'Sign in form is now valid and ready to submit'
-											: 'Sign in form is now invalid.'}
-									</div>
+										{activeTab === 'signup' && (
+											<div className="mb-6">
+												<Label htmlFor="confirmPassword">Confirm Password</Label>
+												<Input
+													id="confirmPassword"
+													name="confirmPassword"
+													type="password"
+													autoComplete="new-password"
+													required
+													placeholder="Confirm password"
+												/>
+												{formValues.password && formValues.confirmPassword && !passwordsMatch && (
+													<InputError>Passwords do not match</InputError>
+												)}
+											</div>
+										)}
 
-									<div className="mt-2">
-										{data.error ? (
-											<InputError id="error-message">{data.error}</InputError>
-										) : data.email ? (
-											<p
-												id="success-message"
-												className="text-lg text-gray-500 dark:text-slate-500"
+										<div className="flex flex-wrap gap-4">
+											<Button type="submit" disabled={!formIsValid}>
+												{tabConfig[activeTab].buttonText}
+											</Button>
+											<LinkButton
+												type="reset"
+												onClick={() => {
+													setFormValues({ 
+														email: '', 
+														password: '', 
+														confirmPassword: '', 
+														firstName: '', 
+														lastName: '' 
+													})
+													inputRef.current?.focus()
+												}}
 											>
-												{`✨ A magic link has been sent to ${data.email}.`}
-											</p>
-										) : null}
-									</div>
-								</Form>
+												Reset
+											</LinkButton>
+										</div>
+
+										<div className="sr-only" aria-live="polite">
+											{formIsValid
+												? `${tabConfig[activeTab].description} form is now valid and ready to submit`
+												: `${tabConfig[activeTab].description} form is now invalid.`}
+										</div>
+
+										<div className="mt-2">
+											{data.error ? (
+												<InputError id="error-message">{data.error}</InputError>
+											) : null}
+										</div>
+									</Form>
+								)}
 							</div>
 
 							<AnimatePresence>
@@ -356,11 +575,18 @@ function Login() {
 			/>
 			<Grid>
 				<Paragraph className="col-span-full mb-10 md:col-span-4">
-					{`
-              To sign in to your account or to create a new one fill in your
-              email above and we'll send you an email with a magic link to get
-              you started.
-            `}
+					{activeTab === 'signin' && `
+						To sign in to your account, enter your email and password above.
+						If you don't have a password yet, click the "Forgot Password" tab to set one up.
+					`}
+					{activeTab === 'signup' && `
+						Create a new account by filling out the form above. 
+						You'll need to provide a strong password that includes uppercase, lowercase, numbers, and special characters.
+					`}
+					{activeTab === 'forgot-password' && `
+						Enter your email address and we'll send you instructions to reset your password.
+						This will work even if you've never set a password before.
+					`}
 				</Paragraph>
 
 				<Paragraph
