@@ -18,7 +18,7 @@ function getClient(): PrismaClient {
 	// re-run per request like everything else is.
 	const client = new PrismaClient({
 		adapter: new PrismaBetterSQLite3({
-			url: process.env.DATABASE_URL!.replace('file:', ''),
+			url: new URL(process.env.DATABASE_URL!).pathname,
 		}),
 		log: [
 			{ level: 'query', emit: 'event' },
