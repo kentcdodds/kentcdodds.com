@@ -89,7 +89,7 @@ export async function action({ request }: ActionFunctionArgs) {
 		data: {
 			id: credential.id,
 			aaguid,
-			publicKey: Buffer.from(credential.publicKey),
+			publicKey: new Uint8Array(credential.publicKey),
 			userId: user.id,
 			webauthnUserId,
 			counter: credential.counter,
