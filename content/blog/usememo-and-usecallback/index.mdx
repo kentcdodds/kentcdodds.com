@@ -291,7 +291,7 @@ function Blub() {
 }
 ```
 
-The reason this is problematic is because `useEffect` is going to do a
+The reason this is problematic is `useEffect` is going to do a
 referential equality check on `options` between every render, and thanks to the
 way JavaScript works, `options` will be new every time so when React tests
 whether `options` changed between renders it'll always evaluate to `true`,
@@ -486,7 +486,7 @@ function RenderPrimes({ iterations, multiplier }) {
 }
 ```
 
-The reason this works is because even though you're defining the function to
+The reason this works is even though you're defining the function to
 calculate the primes on every render (which is VERY fast), React is only calling
 that function when the value is needed. On top of that React also stores
 previous values given the inputs and will return the previous value given the
