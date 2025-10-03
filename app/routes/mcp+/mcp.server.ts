@@ -382,8 +382,6 @@ function createServer() {
 	return server
 }
 
-const server = createServer()
-
 export async function connect(sessionId?: string | null) {
 	const existingTransport = sessionId ? transports.get(sessionId) : undefined
 	if (existingTransport) {
@@ -398,6 +396,7 @@ export async function connect(sessionId?: string | null) {
 	transport.onclose = () => {
 		if (transport.sessionId) transports.delete(transport.sessionId)
 	}
+	const server = createServer()
 	await server.connect(transport)
 
 	return transport
