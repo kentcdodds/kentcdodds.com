@@ -139,6 +139,12 @@
       date: 2025-09-12
     - event: '[CascadiaJS](https://cascadiajs.com/2025)'
       date: 2025-09-17
+      recording: https://www.youtube.com/watch?v=bcaurwoNHis&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
+    - event:
+        '[JetBrains JavaScript Day
+        2025](https://lp.jetbrains.com/javascript-day-2025/)'
+      date: 2025-10-02
+      recording: https://www.youtube.com/live/fnyK-xXxVKU?si=c7MBMyQ3NzRkmzH2&t=9086&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
   tags:
     - mcp
     - ai
