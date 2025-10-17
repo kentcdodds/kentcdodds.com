@@ -26,6 +26,7 @@
   deliveries:
     - event: '[Remix Jam](https://remix.run/jam/2025)'
       date: 2025-10-10
+      recording: https://www.youtube.com/watch?v=3cX2Zsr7jBQ&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
   tags:
     - mcp
     - ai
