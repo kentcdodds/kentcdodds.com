@@ -2,6 +2,7 @@
   deliveries:
     - event: '[React Conf 2025](https://conf.react.dev/)'
       date: 2025-10-08
+      recording: https://www.youtube.com/watch?v=p9OcztRyDl0&t=22367s&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
   tags:
     - react
     - react router
