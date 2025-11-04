@@ -17,9 +17,9 @@ Read CONTRIBUTING.md
 
 ### How does `kentcdodds.com` work under the hood?
 
-Check out this interactive walkthrough of the `kentcdodds.com` codebase on CodeCanvas [here](https://www.code-canvas.com/?session=unauthenticatedGithub&repo=kentcdodds.com&owner=kentcdodds&branch=main&OnboardingTutorial=true).
+Check out this [interactive walkthrough of the `kentcdodds.com` codebase on CodeCanvas](https://www.code-canvas.com/?session=unauthenticatedGithub&repo=kentcdodds.com&owner=kentcdodds&branch=main&OnboardingTutorial=true).
 
-To refine existing dataflow simulation or create new ones, follow the quick tutorial [here](https://docs.code-canvas.com/updating-diagram).
+To refine existing dataflow simulation or create new ones, follow the [quick tutorial for updating diagrams](https://docs.code-canvas.com/updating-diagram).
 
 ![Screenshot_2025-11-04_at_12 06 41_PM](https://github.com/user-attachments/assets/084ca4ef-92e2-4422-aa4f-7aae3add1c80)
 
