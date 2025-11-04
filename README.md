@@ -21,4 +21,6 @@ Check out this interactive walkthrough of the `kentcdodds.com` codebase on CodeC
 
 To refine existing dataflow simulation or create new ones, follow the quick tutorial [here](https://docs.code-canvas.com/updating-diagram).
 
-<img width="1916" alt="CodeCanvas Screenshot" src="https://codecanvas-media-public.s3.amazonaws.com/images/codecanvas-readme-screenshot.png" />
+![Screenshot_2025-11-04_at_12 06 41_PM](https://github.com/user-attachments/assets/084ca4ef-92e2-4422-aa4f-7aae3add1c80)
+
+![Screenshot_2025-11-04_at_12 08 03_PM](https://github.com/user-attachments/assets/d468889a-1779-47d4-9b76-da3bc880510b)
