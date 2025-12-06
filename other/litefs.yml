@@ -74,10 +74,10 @@ lease:
 
   consul:
     url: '${FLY_CONSUL_URL}'
-    key: 'litefs/${FLY_APP_NAME}_5'
+    key: 'litefs/${FLY_APP_NAME}_6'
 
 exec:
-  - cmd: npx prisma migrate deploy
+  - cmd: npx prisma@6 migrate deploy
     if-candidate: true
 
   # Set the journal mode for the database to WAL. This reduces concurrency deadlock issues
