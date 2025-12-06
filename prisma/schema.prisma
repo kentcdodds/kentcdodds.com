@@ -10,13 +10,11 @@
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
-  provider   = "prisma-client"
-  engineType = "library"
-  output     = "../app/utils/prisma-generated.server"
+  provider = "prisma-client"
+  output   = "../app/utils/prisma-generated.server"
 }
 
 model User {

@@ -1,5 +1,6 @@
 import path from 'path'
 import { test as base } from '@playwright/test'
+import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 import { parse } from 'cookie'
 import fsExtra from 'fs-extra'
 import invariant from 'tiny-invariant'
@@ -54,7 +55,11 @@ export function extractUrl(text: string) {
 const users = new Set<User>()
 
 export async function insertNewUser(userOverrides?: Partial<User>) {
-	const prisma = new PrismaClient()
+	const url = process.env.DATABASE_URL
+	invariant(url, 'DATABASE_URL is required')
+	const prisma = new PrismaClient({
+		adapter: new PrismaBetterSqlite3({ url }),
+	})
 
 	const user = await prisma.user.create({
 		data: { ...createUser(), ...userOverrides },
@@ -65,7 +70,11 @@ export async function insertNewUser(userOverrides?: Partial<User>) {
 }
 
 export async function deleteUserByEmail(email: string) {
-	const prisma = new PrismaClient()
+	const url = process.env.DATABASE_URL
+	invariant(url, 'DATABASE_URL is required')
+	const prisma = new PrismaClient({
+		adapter: new PrismaBetterSqlite3({ url }),
+	})
 	await prisma.user.delete({ where: { email } })
 	await prisma.$disconnect()
 }
@@ -107,7 +116,11 @@ export const test = base.extend<{
 export const { expect } = test
 
 test.afterEach(async () => {
-	const prisma = new PrismaClient()
+	const url = process.env.DATABASE_URL
+	invariant(url, 'DATABASE_URL is required')
+	const prisma = new PrismaClient({
+		adapter: new PrismaBetterSqlite3({ url }),
+	})
 	await prisma.user.deleteMany({
 		where: { id: { in: [...users].map((u) => u.id) } },
 	})

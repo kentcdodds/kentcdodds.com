@@ -1,4 +1,4 @@
-import { PrismaBetterSQLite3 } from '@prisma/adapter-better-sqlite3'
+import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 import { subMonths } from 'date-fns'
 import { PrismaClient } from '#app/utils/prisma-generated.server/client.ts'
 
@@ -9,7 +9,7 @@ if (!url) {
 	throw new Error('DATABASE_URL is required (expected a file: URL for SQLite).')
 }
 const prisma = new PrismaClient({
-	adapter: new PrismaBetterSQLite3({ url }),
+	adapter: new PrismaBetterSqlite3({ url }),
 })
 
 async function main() {

@@ -184,7 +184,7 @@ what commands you can run in `./prisma/schema.prisma`.
 One common command you might need to run is to re-seed the database:
 
 ```sh
-npx prisma@6 migrate reset --force
+npx prisma@7 migrate reset --force
 ```
 
 In addition to resetting your database to the latest schema, it'll also run the

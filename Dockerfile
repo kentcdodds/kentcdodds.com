@@ -49,7 +49,7 @@ ADD other/runfile.js /app/other/runfile.js
 ADD prisma /app/prisma
 ADD prisma.config.ts /app/prisma.config.ts
 
-RUN npx prisma@6 generate
+RUN npx prisma@7 generate
 
 # app code changes all the time
 ADD . .
