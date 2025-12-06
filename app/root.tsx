@@ -262,12 +262,44 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		})
 		.filter(typedBoolean)
 
+	// Static Epic MCP workshop promotification
+	const epicMcpPromoEndTime = new Date('2025-12-15T23:59:59-08:00')
+	const epicMcpPromoName = 'epic-mcp-promo'
+	const epicMcpPromotification = {
+		title: 'Epic MCP: Go from Scratch to Production',
+		slug: 'epic-mcp-from-scratch-to-production',
+		promoName: epicMcpPromoName,
+		location: null,
+		externalUrl:
+			'https://www.epicai.pro/workshops/epic-mcp-from-scratch-to-production',
+		dismissTimeSeconds: Math.min(
+			Math.max(
+				// one quarter of the time until the promoEndTime (in seconds)
+				(epicMcpPromoEndTime.getTime() - Date.now()) / 4 / 1000,
+				// Minimum of 3 hours (in seconds)
+				60 * 60 * 3,
+			),
+			// Maximum of 1 week (in seconds)
+			60 * 60 * 24 * 7,
+		),
+		cookieValue: getPromoCookieValue({
+			promoName: epicMcpPromoName,
+			request,
+		}),
+		promoEndTime: {
+			type: 'discount' as const,
+			time: epicMcpPromoEndTime.getTime(),
+			url: 'https://www.epicai.pro/workshops/epic-mcp-from-scratch-to-production',
+		},
+	}
+
 	const data = {
 		user,
 		userInfo: user ? await getUserInfo(user, { request, timings }) : null,
 		ENV: getEnv(),
 		randomFooterImageKey,
 		workshopPromotifications: [
+			...(epicMcpPromoEndTime > new Date() ? [epicMcpPromotification] : []),
 			...titoWorkshopEventPromotifications,
 			...manualWorkshopEventPromotifications,
 		],
@@ -471,61 +503,93 @@ function App() {
 			<body className="bg-white transition duration-500 dark:bg-gray-900">
 				<PageLoadingMessage />
 
-				{data.workshopPromotifications.map((e) => (
-					<Promotification
-						key={e.slug + e.title + e.promoEndTime.time}
-						cookieValue={e.cookieValue}
-						promoName={e.promoName}
-						promoEndTime={new Date(e.promoEndTime.time)}
-						dismissTimeSeconds={e.dismissTimeSeconds}
-					>
-						<div className="flex flex-col">
-							<p className="flex items-center gap-1">
-								<LaptopIcon />
-								<span>
-									Join Kent for a{' '}
-									<Link to="/workshops" className="underline">
-										live workshop
+				{data.workshopPromotifications.map((e) => {
+					const isExternal = 'externalUrl' in e && e.externalUrl
+					return (
+						<Promotification
+							key={e.slug + e.title + e.promoEndTime.time}
+							cookieValue={e.cookieValue}
+							promoName={e.promoName}
+							promoEndTime={new Date(e.promoEndTime.time)}
+							dismissTimeSeconds={e.dismissTimeSeconds}
+						>
+							<div className="flex flex-col">
+								<p className="flex items-center gap-1">
+									<LaptopIcon />
+									<span>
+										{isExternal ? (
+											<>
+												Learn{' '}
+												<a
+													href="https://www.epicai.pro"
+													target="_blank"
+													rel="noopener noreferrer"
+													className="underline"
+												>
+													with Epic AI
+												</a>
+											</>
+										) : (
+											<>
+												Join Kent for a{' '}
+												<Link to="/workshops" className="underline">
+													live workshop
+												</Link>
+												{e.location
+													? e.location === 'Remote'
+														? null
+														: ` in ${e.location}`
+													: null}
+											</>
+										)}
+									</span>
+								</p>
+								{isExternal ? (
+									<a
+										href={e.externalUrl}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="mt-3 text-lg underline"
+									>
+										{e.title}
+									</a>
+								) : (
+									<Link
+										className="mt-3 text-lg underline"
+										to={`/workshops/${e.slug}`}
+									>
+										{e.title}
 									</Link>
-									{e.location
-										? e.location === 'Remote'
-											? null
-											: ` in ${e.location}`
-										: null}
-								</span>
-							</p>
-							<Link
-								className="mt-3 text-lg underline"
-								to={`/workshops/${e.slug}`}
-							>
-								{e.title}
-							</Link>
-							{e.promoEndTime.type === 'discount' ? (
-								<p className="mt-1 text-sm text-gray-500">
-									Limited time{' '}
-									<a
-										href={e.promoEndTime.url}
-										className="inline-flex items-center gap-1 underline"
-									>
-										<span>discount available</span>
-										<ArrowIcon direction="top-right" size={16} />
-									</a>
-								</p>
-							) : e.promoEndTime.type === 'sales' ? (
-								<p className="mt-1 text-sm text-gray-500">
-									Limited time{' '}
-									<a
-										href={e.promoEndTime.url}
-										className="inline-flex items-center gap-1 underline"
-									>
-										<span>tickets available</span>
-										<ArrowIcon direction="top-right" size={16} />
-									</a>
-								</p>
-							) : null}
-						</div>
-					</Promotification>
-				))}
+								)}
+								{e.promoEndTime.type === 'discount' ? (
+									<p className="mt-1 text-sm">
+										Limited time{' '}
+										<a
+											href={e.promoEndTime.url}
+											className="inline-flex items-center gap-1 underline"
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											<span>discount available</span>
+											<ArrowIcon direction="top-right" size={16} />
+										</a>
+									</p>
+								) : e.promoEndTime.type === 'sales' ? (
+									<p className="mt-1 text-sm text-gray-500">
+										Limited time{' '}
+										<a
+											href={e.promoEndTime.url}
+											className="inline-flex items-center gap-1 underline"
+										>
+											<span>tickets available</span>
+											<ArrowIcon direction="top-right" size={16} />
+										</a>
+									</p>
+								) : null}
+							</div>
+						</Promotification>
+					)
+				})}
 				<NotificationMessage queryStringKey="message" delay={0.3} />
 				<Navbar />
 				<Outlet />
