@@ -263,7 +263,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		.filter(typedBoolean)
 
 	// Static Epic MCP workshop promotification
-	const epicMcpPromoEndTime = new Date('2025-12-15T23:59:59-08:00')
+	const epicMcpPromoEndTime = new Date('2025-12-22T23:59:59-08:00')
 	const epicMcpPromoName = 'epic-mcp-promo'
 	const epicMcpPromotification = {
 		title: 'Epic MCP: Go from Scratch to Production',
