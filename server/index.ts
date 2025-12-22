@@ -257,6 +257,7 @@ app.use(
 					'image.simplecastcdn.com',
 					'images.transistor.fm',
 					'img.transistor.fm',
+					'img.transistorcdn.com',
 					'i2.wp.com',
 					'i1.wp.com',
 					'og-image-react-egghead.now.sh',
