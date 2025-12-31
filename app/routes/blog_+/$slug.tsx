@@ -243,7 +243,7 @@ function ArticleFooter({
 				<div className="flex space-x-5">
 					<a
 						className={clsx(
-							'underlined text-black hover:text-black focus:text-black focus:outline-none dark:hover:text-white dark:focus:text-white',
+							'underlined text-black hover:text-black focus:text-black focus:outline-none dark:text-white dark:hover:text-white dark:focus:text-white',
 							{ hidden: isDraft },
 						)}
 						target="_blank"
@@ -260,7 +260,7 @@ function ArticleFooter({
 				<div className="flex">
 					<a
 						className={clsx(
-							'underlined text-black hover:text-black focus:text-black focus:outline-none dark:hover:text-white dark:focus:text-white',
+							'underlined text-black hover:text-black focus:text-black focus:outline-none dark:text-white dark:hover:text-white dark:focus:text-white',
 							{ hidden: isDraft },
 						)}
 						target="_blank"
@@ -277,7 +277,7 @@ function ArticleFooter({
 						•
 					</span>
 					<a
-						className="underlined text-black hover:text-black focus:text-black focus:outline-none dark:hover:text-white dark:focus:text-white"
+						className="underlined text-black hover:text-black focus:text-black focus:outline-none dark:text-white dark:hover:text-white dark:focus:text-white"
 						target="_blank"
 						rel="noreferrer noopener"
 						href={editLink}
