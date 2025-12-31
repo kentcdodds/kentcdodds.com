@@ -258,6 +258,7 @@ app.use(
 					'images.transistor.fm',
 					'img.transistor.fm',
 					'img.transistorcdn.com',
+					'https://lh4.googleusercontent.com', // a google form that was embedded in a x post...
 					'i2.wp.com',
 					'i1.wp.com',
 					'og-image-react-egghead.now.sh',
