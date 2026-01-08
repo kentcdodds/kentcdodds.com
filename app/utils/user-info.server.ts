@@ -20,12 +20,19 @@ type UserInfo = {
 	} | null
 }
 
-function abortTimeoutSignal(timeMs: number) {
-	const abortController = new AbortController()
-	void new Promise((resolve) => setTimeout(resolve, timeMs)).then(() => {
-		abortController.abort()
+// Note: We intentionally do NOT use AbortSignal or AbortController here.
+// Node.js v24 has a bug where aborting fetch requests causes a crash:
+// "uv__stream_destroy: Assertion `!uv__io_active...` failed"
+// Instead, we use Promise.race to implement timeouts without aborting.
+async function fetchWithTimeout(
+	url: string,
+	options: RequestInit,
+	timeoutMs: number,
+): Promise<Response> {
+	const timeoutPromise = new Promise<never>((_, reject) => {
+		setTimeout(() => reject(new Error('Request timeout')), timeoutMs)
 	})
-	return abortController.signal
+	return Promise.race([fetch(url, options), timeoutPromise])
 }
 
 export async function gravatarExistsForEmail({
@@ -51,12 +58,12 @@ export async function gravatarExistsForEmail({
 		getFreshValue: async (context) => {
 			const gravatarUrl = getAvatar(email, { fallback: '404' })
 			try {
-				const avatarResponse = await fetch(gravatarUrl, {
-					method: 'HEAD',
-					signal: abortTimeoutSignal(
-						context.background || forceFresh ? 1000 * 10 : 100,
-					),
-				})
+				const timeoutMs = context.background || forceFresh ? 1000 * 10 : 100
+				const avatarResponse = await fetchWithTimeout(
+					gravatarUrl,
+					{ method: 'HEAD' },
+					timeoutMs,
+				)
 				if (avatarResponse.status === 200) {
 					context.metadata.ttl = 1000 * 60 * 60 * 24 * 365
 					return true

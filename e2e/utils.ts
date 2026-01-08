@@ -8,7 +8,6 @@ import {
 	PrismaClient,
 	type User,
 } from '#app/utils/prisma-generated.server/client.ts'
-import '../app/entry.server.tsx'
 import { getSession } from '../app/utils/session.server.ts'
 import { createUser } from '../prisma/seed-utils.ts'
 
@@ -24,26 +23,44 @@ type Email = {
 	html: string
 }
 
+async function sleep(ms: number) {
+	return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
 export async function readEmail(
 	recipientOrFilter: string | ((email: Email) => boolean),
+	{ maxRetries = 5, retryDelay = 200 }: { maxRetries?: number; retryDelay?: number } = {},
 ) {
-	try {
-		const mswOutput = fsExtra.readJsonSync(
-			path.join(process.cwd(), './mocks/msw.local.json'),
-		) as unknown as MSWData
-		const emails = Object.values(mswOutput.email).reverse() // reverse so we get the most recent email first
-		// TODO: add validation
-		if (typeof recipientOrFilter === 'string') {
-			return emails.find(
-				(email: Email) => email.to === recipientOrFilter,
-			) as Email | null
-		} else {
-			return emails.find(recipientOrFilter) as Email | null
+	for (let attempt = 0; attempt < maxRetries; attempt++) {
+		try {
+			const mswOutput = fsExtra.readJsonSync(
+				path.join(process.cwd(), './mocks/msw.local.json'),
+			) as unknown as MSWData
+			const emails = Object.values(mswOutput.email).reverse() // reverse so we get the most recent email first
+			// TODO: add validation
+			let email: Email | undefined
+			if (typeof recipientOrFilter === 'string') {
+				email = emails.find(
+					(email: Email) => email.to === recipientOrFilter,
+				)
+			} else {
+				email = emails.find(recipientOrFilter)
+			}
+			if (email) {
+				return email
+			}
+			// Email not found yet, retry after a delay
+			if (attempt < maxRetries - 1) {
+				await sleep(retryDelay)
+			}
+		} catch (error: unknown) {
+			console.error(`Error reading the email fixture (attempt ${attempt + 1})`, error)
+			if (attempt < maxRetries - 1) {
+				await sleep(retryDelay)
+			}
 		}
-	} catch (error: unknown) {
-		console.error(`Error reading the email fixture`, error)
-		return null
 	}
+	return null
 }
 
 export function extractUrl(text: string) {

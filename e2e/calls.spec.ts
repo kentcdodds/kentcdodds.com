@@ -45,10 +45,15 @@ test('Call Kent recording flow', async ({ page, login }) => {
 		.type(faker.lorem.words(3).split(' ').join(','))
 	await mainContent.getByRole('button', { name: /submit/i }).click()
 
+	// Wait for the redirect to confirm the call was created
+	await expect(page).toHaveURL(/.*calls\/record\/[a-z0-9-]+/, { timeout: 10_000 })
+
 	await login({ role: 'ADMIN' })
 	await page.goto('/calls/admin')
 
-	await page.getByRole('link', { name: new RegExp(title, 'i') }).click()
+	const callLink = page.getByRole('link', { name: new RegExp(title, 'i') })
+	await expect(callLink).toBeVisible({ timeout: 10_000 })
+	await callLink.click()
 
 	await page.getByRole('button', { name: /start/i }).click()
 	await page.waitForTimeout(500) // let the sample.wav file play for a bit more
@@ -65,7 +70,11 @@ test('Call Kent recording flow', async ({ page, login }) => {
 			.getByRole('heading', { level: 2, name: /calls with kent/i }),
 	).toBeVisible({ timeout: 10_000 })
 
-	const email = await readEmail((em) => em.to.includes(user.email))
+	// Email sending is async and may take time to be written to the mock fixture
+	const email = await readEmail((em) => em.to.includes(user.email), {
+		maxRetries: 10,
+		retryDelay: 500,
+	})
 	invariant(email, 'Notification email not found')
 	expect(email.subject).toMatch(/published/i)
 	// NOTE: domain is hard coded for image generation and stuff
