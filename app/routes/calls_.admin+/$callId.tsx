@@ -14,9 +14,8 @@ import {
 	RecordingForm,
 	type RecordingFormData,
 } from '#app/components/calls/submit-recording-form.tsx'
-import { Field } from '#app/components/form-elements.tsx'
-import { Spacer } from '#app/components/spacer.tsx'
-import { Paragraph } from '#app/components/typography.tsx'
+import { MailIcon } from '#app/components/icons.tsx'
+import { H4, H6, Paragraph } from '#app/components/typography.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import {
 	getErrorForAudio,
@@ -191,42 +190,87 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 
 	return (
 		<section
-			className={`set-color-team-current-${call.user.team.toLowerCase()}`}
+			className={`set-color-team-current-${call.user.team.toLowerCase()} rounded-lg bg-gray-100 p-6 dark:bg-gray-800 lg:p-8`}
 		>
-			<strong className="text-team-current">{call.user.firstName}</strong> (
-			<a href={`mailto:${call.user.email}`}>{call.user.email}</a>) asked on{' '}
-			{call.formattedCreatedAt}
-			<br />
-			<strong>{call.title}</strong>
-			<Paragraph>{call.description}</Paragraph>
+			{/* Header */}
+			<div className="mb-6 border-b border-gray-200 pb-6 dark:border-gray-700">
+				<div className="flex flex-wrap items-start justify-between gap-4">
+					<div>
+						<H4 as="h2" className="mb-2">
+							{call.title}
+						</H4>
+						<div className="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-slate-400">
+							<span className="font-medium text-team-current">
+								{call.user.firstName}
+							</span>
+							<span>•</span>
+							<a
+								href={`mailto:${call.user.email}`}
+								className="inline-flex items-center gap-1 hover:underline"
+							>
+								<MailIcon size={14} />
+								{call.user.email}
+							</a>
+							<span>•</span>
+							<span>{call.formattedCreatedAt}</span>
+						</div>
+					</div>
+					<Form method="delete">
+						<Button type="submit" variant="danger" size="small" {...dc.getButtonProps()}>
+							{dc.doubleCheck ? 'You sure?' : 'Delete'}
+						</Button>
+					</Form>
+				</div>
+			</div>
+
+			{/* Description */}
+			<div className="mb-6">
+				<H6 as="h3" className="mb-2">
+					Description
+				</H6>
+				<Paragraph className="whitespace-pre-wrap text-gray-600 dark:text-slate-300">
+					{call.description}
+				</Paragraph>
+			</div>
+
+			{/* Audio Player */}
 			{audioURL ? (
-				<div className="my-6 flex flex-wrap items-center gap-6">
-					<audio
-						className="flex-1"
-						style={{ minWidth: '300px' }}
-						ref={(el) => setAudioEl(el)}
-						src={audioURL}
-						controls
-						preload="metadata"
-					/>
-					<Field
-						value={playbackRate}
-						onChange={(e) => setPlaybackRate(Number(e.target.value))}
-						label="Playback rate"
-						name="playbackRate"
-						type="number"
-						max="3"
-						min="0.5"
-						step="0.1"
-					/>
+				<div className="rounded-lg bg-gray-200 p-4 dark:bg-gray-700">
+					<H6 as="h3" className="mb-3">
+						Listen to Call
+					</H6>
+					<div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+						<audio
+							className="w-full flex-1"
+							ref={(el) => setAudioEl(el)}
+							src={audioURL}
+							controls
+							preload="metadata"
+						/>
+						<div className="flex items-center gap-2 lg:w-auto">
+							<label
+								htmlFor="playbackRate"
+								className="whitespace-nowrap text-sm text-gray-500 dark:text-slate-400"
+							>
+								Speed:
+							</label>
+							<input
+								id="playbackRate"
+								type="range"
+								min="0.5"
+								max="3"
+								step="0.1"
+								value={playbackRate}
+								onChange={(e) => setPlaybackRate(Number(e.target.value))}
+								className="w-20"
+							/>
+							<span className="w-10 text-sm font-medium text-gray-700 dark:text-slate-300">
+								{playbackRate}x
+							</span>
+						</div>
+					</div>
 				</div>
 			) : null}
-			<Form method="delete">
-				<input type="hidden" name="callId" value={call.id} />
-				<Button type="submit" variant="danger" {...dc.getButtonProps()}>
-					{dc.doubleCheck ? 'You sure?' : 'Delete'}
-				</Button>
-			</Form>
 		</section>
 	)
 }
@@ -238,25 +282,35 @@ function RecordingDetailScreen() {
 	const user = useUser()
 
 	return (
-		<div key={data.call.id}>
+		<div key={data.call.id} className="flex flex-col gap-6">
 			<CallListing call={data.call} />
-			<Spacer size="xs" />
-			<strong>Record your response:</strong>
-			<Spacer size="2xs" />
-			{responseAudio ? (
-				<RecordingForm
-					audio={responseAudio}
-					data={{
-						fields: { ...data.call, ...actionData?.fields },
-						errors: { ...actionData?.errors },
-					}}
-				/>
-			) : (
-				<CallRecorder
-					onRecordingComplete={(recording) => setResponseAudio(recording)}
-					team={user.team}
-				/>
-			)}
+
+			{/* Response Recording Section */}
+			<div className="rounded-lg border-2 border-dashed border-gray-300 p-6 dark:border-gray-600 lg:p-8">
+				<H6 as="h3" className="mb-4">
+					Record Your Response
+				</H6>
+				<Paragraph className="mb-6 text-gray-500 dark:text-slate-400">
+					Record your response to this call. Once submitted, the response will
+					be stitched together with the original call and published to the
+					podcast.
+				</Paragraph>
+
+				{responseAudio ? (
+					<RecordingForm
+						audio={responseAudio}
+						data={{
+							fields: { ...data.call, ...actionData?.fields },
+							errors: { ...actionData?.errors },
+						}}
+					/>
+				) : (
+					<CallRecorder
+						onRecordingComplete={(recording) => setResponseAudio(recording)}
+						team={user.team}
+					/>
+				)}
+			</div>
 		</div>
 	)
 }
