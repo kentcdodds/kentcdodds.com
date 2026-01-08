@@ -216,7 +216,6 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 						</div>
 					</div>
 					<Form method="delete">
-						<input type="hidden" name="callId" value={call.id} />
 						<Button type="submit" variant="danger" size="small" {...dc.getButtonProps()}>
 							{dc.doubleCheck ? 'You sure?' : 'Delete'}
 						</Button>
