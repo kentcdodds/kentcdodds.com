@@ -8,7 +8,6 @@ import {
 	PrismaClient,
 	type User,
 } from '#app/utils/prisma-generated.server/client.ts'
-import '../app/entry.server.tsx'
 import { getSession } from '../app/utils/session.server.ts'
 import { createUser } from '../prisma/seed-utils.ts'
 
