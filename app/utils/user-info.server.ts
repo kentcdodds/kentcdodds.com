@@ -21,11 +21,9 @@ type UserInfo = {
 }
 
 function abortTimeoutSignal(timeMs: number) {
-	const abortController = new AbortController()
-	void new Promise((resolve) => setTimeout(resolve, timeMs)).then(() => {
-		abortController.abort()
-	})
-	return abortController.signal
+	// Use the built-in AbortSignal.timeout() for better compatibility
+	// with Node.js stream handling
+	return AbortSignal.timeout(timeMs)
 }
 
 export async function gravatarExistsForEmail({
