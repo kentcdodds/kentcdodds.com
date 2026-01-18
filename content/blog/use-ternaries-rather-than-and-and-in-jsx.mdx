@@ -139,6 +139,11 @@ returning `undefined`. But on top of that layer of protection, how about we be
 more explicit about our intentions. If you want to do something _conditionally_,
 don't abuse the logical AND operator (`&&`).
 
+If you'd like an extra layer of protection, you can also use
+[`eslint-plugin-react`'s `jsx-no-leaked-render` rule](https://github.com/jsx-eslint/eslint-plugin-react/blob/master/docs/rules/jsx-no-leaked-render.md)
+to help catch cases where `&&` might accidentally leak something like `0` into
+your render output.
+
 It actually seems counter-intuitive because we often use `&&` in an `if`
 condition to say: if both of these values are truthy, then do this thing,
 otherwise don't. Unfortunately for our use-case, the `&&` operator also has this
