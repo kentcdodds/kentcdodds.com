@@ -1,3 +1,24 @@
+- title: 'How I Build Web Applications in 2026'
+  deliveries:
+    - event: [Resend DevTools Meetup](https://luma.com/ia00vywi)
+      date: 2026-02-05
+    - event: [Cursor Workshops](https://luma.com/cursor)
+      date: 2026-02-11
+  tags:
+    - ai
+    - cursor
+    - web development
+    - full-stack
+    - workflows
+  description: >-
+    I've never had so much fun developing software than I have in the last few
+    months. And I'm going to show you why. In this talk, I'll share my favorite
+    workflows for building a web application using AI with Cursor. By the end of
+    the experience, we'll have a real-world application that we built using AI
+    along with deep full-stack web expertise. And you'll leave with ideas of
+    ways to integrate your web expertise with the power of AI to build excellent
+    user experiences for the web.
+
 - title: "React Router's take on RSC"
   deliveries:
     - event: '[React Conf 2025](https://conf.react.dev/)'
