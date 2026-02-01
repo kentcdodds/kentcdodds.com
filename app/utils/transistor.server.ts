@@ -114,7 +114,7 @@ async function createEpisode({
 
 	await fetch(upload_url, {
 		method: 'PUT',
-		body: audio,
+		body: new Uint8Array(audio),
 		headers: { 'Content-Type': content_type },
 	})
 

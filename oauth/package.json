@@ -17,14 +17,14 @@
   "license": "MIT",
   "type": "module",
   "dependencies": {
-    "@cloudflare/workers-oauth-provider": "^0.0.5",
-    "zod": "^3.25.57"
+    "@cloudflare/workers-oauth-provider": "^0.2.2",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@epic-web/config": "^1.21.0",
-    "eslint": "^9.28.0",
-    "prettier": "^3.5.3",
-    "wrangler": "^4.19.1"
+    "@epic-web/config": "^1.21.3",
+    "eslint": "^9.39.2",
+    "prettier": "^3.8.1",
+    "wrangler": "^4.61.1"
   },
   "prettier": "@epic-web/config/prettier"
 }
