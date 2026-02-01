@@ -536,7 +536,7 @@ function visualize({
 	let bufferLength: number
 	let source: MediaStreamAudioSourceNode
 	let add: boolean
-	let dataArray: Uint8Array
+	let dataArray: Uint8Array<ArrayBuffer>
 	const padCount = nodes.length
 
 	// Set the time on the animation
