@@ -129,11 +129,12 @@
     "patch-package": "^8.0.1",
     "path-to-regexp": "^6.3.0",
     "postcss-import": "^16.1.1",
+    "prisma": "^7.3.0",
     "qrcode": "^1.5.4",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-error-boundary": "^4.1.2",
-    "react-lite-youtube-embed": "^2.6.0",
+    "react-lite-youtube-embed": "^2.4.0",
     "react-table": "^7.8.0",
     "reading-time": "^1.5.0",
     "rehype-document": "^7.0.3",
@@ -159,8 +160,7 @@
     "ws": "^8.19.0",
     "xstate": "^4.38.3",
     "yaml": "^2.8.2",
-    "zod": "^3.25.76",
-    "prisma": "^7.3.0"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@cld-apis/types": "^0.1.6",
