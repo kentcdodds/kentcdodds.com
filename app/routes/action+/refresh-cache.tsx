@@ -9,6 +9,7 @@ import {
 	getMdxPage,
 } from '#app/utils/mdx.server.ts'
 import { getRequiredServerEnvVar } from '#app/utils/misc.tsx'
+import { getResumeData } from '#app/utils/resume.server.ts'
 import { getTalksAndTags } from '#app/utils/talks.server.ts'
 import { getTestimonials } from '#app/utils/testimonials.server.ts'
 import { getWorkshops } from '#app/utils/workshops.server.ts'
@@ -101,6 +102,10 @@ export async function action({ request }: ActionFunctionArgs) {
 			if (contentPath === 'data/talks.yml') {
 				refreshingContentPaths.push(contentPath)
 				promises.push(getTalksAndTags({ forceFresh: true }))
+			}
+			if (contentPath === 'data/resume.yml') {
+				refreshingContentPaths.push(contentPath)
+				promises.push(getResumeData({ forceFresh: true }))
 			}
 			if (contentPath === 'data/credits.yml') {
 				refreshingContentPaths.push(contentPath)
