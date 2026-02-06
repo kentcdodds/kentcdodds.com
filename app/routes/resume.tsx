@@ -20,8 +20,16 @@ const resumeData = {
 		title: 'Principal Software Engineer & Educator',
 		location: 'Utah, USA',
 		links: [
-			{ label: 'kentcdodds.com', href: 'https://kentcdodds.com' },
-			{ label: 'me@kentcdodds.com', href: 'mailto:me@kentcdodds.com' },
+			{
+				label: 'kentcdodds.com',
+				href: 'https://kentcdodds.com',
+				includeInPrint: true,
+			},
+			{
+				label: 'me@kentcdodds.com',
+				href: 'mailto:me@kentcdodds.com',
+				includeInPrint: true,
+			},
 			{ label: 'GitHub', href: 'https://github.com/kentcdodds' },
 			{ label: 'LinkedIn', href: 'https://www.linkedin.com/in/kentcdodds/' },
 			{ label: '@kentcdodds', href: 'https://x.com/kentcdodds' },
@@ -32,13 +40,13 @@ const resumeData = {
 	},
 	summary: {
 		short: [
-			'Principal engineer who combines platform architecture, developer education, and product operations.',
-			'Runs durable developer products with ecosystem‑scale adoption and sustained commercial success.',
+			'Principal engineer combining platform architecture, developer education, and product operations.',
+			'Runs developer products with ecosystem-scale adoption and sustained commercial success.',
 		],
 		long: [
-			'Principal‑level architect + educator + platform operator: designs tooling, teaches it, and runs the business behind it.',
-			'Testing Library and Epic tooling drive ecosystem‑scale adoption with durable OSS stewardship and enterprise trust.',
-			'Productized education and enterprise licensing deliver sustained commercial success with long‑running curricula and updates.',
+			'Principal-level architect + educator + platform operator: designs tooling, teaches it, and runs the business behind it.',
+			'Testing Library and Epic tooling drive ecosystem-scale adoption with durable OSS stewardship and enterprise trust.',
+			'Productized education and enterprise licensing deliver sustained commercial success with long-running curricula and updates.',
 		],
 	},
 	publicWork: {
@@ -48,7 +56,7 @@ const resumeData = {
 		],
 		long: [
 			'Testing Library patterns are referenced in Playwright’s official migration docs; widely adopted in modern test strategy discussions.',
-			'Curriculum used in corporate training (Trulia, Wix, FamilySearch) and higher‑ed programs (Ensign College, BYU); invited speaker at internal events (Wix, Adobe).',
+			'Curriculum used in corporate training (Trulia, Wix, FamilySearch) and higher-ed programs (Ensign College, BYU); invited speaker at internal events (Wix, Adobe).',
 			'Tools and training used by engineers at major technology companies, including Google, Meta, Microsoft, Amazon, and Apple.',
 		],
 	},
@@ -60,16 +68,16 @@ const resumeData = {
 			context: 'Productized education, open source, and community programs.',
 			bullets: {
 				short: [
-					'Building Epic* training for 49k+ engineers; several‑hundred‑dollar pricing and enterprise licensing; tens of millions in revenue since 2019.',
-					'Standardized user‑centric testing with Testing Library (33m+ weekly downloads); query APIs adopted in Playwright and Vitest.',
-					'Designing Epic Stack as a production-ready reference app (5.5k GitHub stars) with hundreds of OSS projects and significant internal adoption across multiple companies; operating Epic Workshop (epicshop) for hands‑on training at scale.',
+					'Building Epic* training for 49k+ engineers; several-hundred-dollar pricing and enterprise licensing; tens of millions in revenue since 2019.',
+					'Standardized user-centric testing with Testing Library (33m+ weekly downloads); query APIs adopted in Playwright and Vitest.',
+					'Designing Epic Stack as a production-ready reference app (5.5k GitHub stars) with hundreds of OSS projects and significant internal adoption across multiple companies; operating Epic Workshop (epicshop) for hands-on training at scale.',
 				],
 				long: [
-					'Building Epic* training (EpicReact, EpicWeb, TestingJavaScript, EpicAI) serving 49k+ engineers; several‑hundred‑dollar pricing; tens of millions in revenue since 2019 via individual and enterprise licenses.',
-					'Standardized user‑centric testing with Testing Library (33m+ weekly downloads); query APIs adopted in Playwright (18m+ weekly) and Vitest (30m+).',
+					'Building Epic* training (EpicReact, EpicWeb, TestingJavaScript, EpicAI) serving 49k+ engineers; several-hundred-dollar pricing; tens of millions in revenue since 2019 via individual and enterprise licenses.',
+					'Standardized user-centric testing with Testing Library (33m+ weekly downloads); query APIs adopted in Playwright (18m+ weekly) and Vitest (30m+).',
 					'Designing Epic Stack as a production-ready reference app (5.5k GitHub stars) with hundreds of OSS projects and significant internal adoption across multiple companies.',
-					'Operating Epic Workshop (epicshop), enabling hands‑on training at scale across EpicAI, EpicWeb, and EpicReact.',
-					'Focuses on MCP since 2025, launching production‑focused AI tooling training.',
+					'Operating Epic Workshop (epicshop), enabling hands-on training at scale across EpicAI, EpicWeb, and EpicReact.',
+					'Focuses on MCP since 2025, launching production-focused AI tooling training.',
 				],
 			},
 		},
@@ -98,14 +106,14 @@ const resumeData = {
 			bullets: {
 				short: [
 					'Built `paypal-scripts`, the standard web tooling platform still in use and maintained; saved millions in engineering time.',
-					'Led paypal.me rewrite on React; still in use and foundational to a high‑traffic product.',
-					'Represented PayPal on TC‑39.',
+					'Led paypal.me rewrite on React; still in use and foundational to a high-traffic product.',
+					'Represented PayPal on TC-39.',
 				],
 				long: [
 					'Built `paypal-scripts`, standardizing builds and saving millions in engineering time; still in use and maintained.',
 					'Led paypal.me rewrite on React; modernized a product used by millions and still maintained today.',
 					'Started `pp-react`, a foundational component library for the design system that remains in use.',
-					'Represented PayPal on TC‑39 and supported multiple teams via web infra leadership.',
+					'Represented PayPal on TC-39 and supported multiple teams via web infra leadership.',
 				],
 			},
 		},
@@ -158,15 +166,15 @@ const resumeData = {
 			context: 'Productized education, open source, and community programs.',
 			bullets: {
 				short: [
-					'Building Epic* training for 49k+ engineers; several‑hundred‑dollar pricing and enterprise licensing; tens of millions in revenue since 2019.',
-					'Standardized user‑centric testing with Testing Library (33m+ weekly downloads); query APIs adopted in Playwright and Vitest.',
-					'Designing Epic Stack as a production-ready reference app (5.5k GitHub stars) with hundreds of OSS projects and significant internal adoption across multiple companies; operating Epic Workshop (epicshop) for hands‑on training at scale.',
+					'Building Epic* training for 49k+ engineers; several-hundred-dollar pricing and enterprise licensing; tens of millions in revenue since 2019.',
+					'Standardized user-centric testing with Testing Library (33m+ weekly downloads); query APIs adopted in Playwright and Vitest.',
+					'Designing Epic Stack as a production-ready reference app (5.5k GitHub stars) with hundreds of OSS projects and significant internal adoption across multiple companies; operating Epic Workshop (epicshop) for hands-on training at scale.',
 				],
 				long: [
-					'Building Epic* training (EpicReact, EpicWeb, TestingJavaScript, EpicAI) serving 49k+ engineers; several‑hundred‑dollar pricing; tens of millions in revenue since 2019 via individual and enterprise licenses.',
-					'Standardized user‑centric testing with Testing Library (33m+ weekly downloads); query APIs adopted in Playwright and Vitest.',
+					'Building Epic* training (EpicReact, EpicWeb, TestingJavaScript, EpicAI) serving 49k+ engineers; several-hundred-dollar pricing; tens of millions in revenue since 2019 via individual and enterprise licenses.',
+					'Standardized user-centric testing with Testing Library (33m+ weekly downloads); query APIs adopted in Playwright and Vitest.',
 					'Designing Epic Stack as a production-ready reference app (5.5k GitHub stars) with hundreds of OSS projects and significant internal adoption across multiple companies.',
-					'Operating Epic Workshop (epicshop), enabling hands‑on training at scale across EpicAI, EpicWeb, and EpicReact.',
+					'Operating Epic Workshop (epicshop), enabling hands-on training at scale across EpicAI, EpicWeb, and EpicReact.',
 				],
 			},
 		},
@@ -193,12 +201,12 @@ const resumeData = {
 			bullets: {
 				short: [
 					'Built `paypal-scripts`, the standard web tooling platform still in use and maintained; saved millions in engineering time.',
-					'PayPal delegate on TC‑39.',
+					'PayPal delegate on TC-39.',
 				],
 				long: [
 					'Built `paypal-scripts`, standardizing builds and saving millions in engineering time; still in use and maintained.',
 					'Led paypal.me rewrite on React and contributed to `pp-react` design system; both remain in use.',
-					'PayPal delegate on TC‑39.',
+					'PayPal delegate on TC-39.',
 				],
 			},
 		},
@@ -222,7 +230,7 @@ const resumeData = {
 		'Google Developer Expert (GDE)',
 		'Microsoft MVP',
 		'GitHub Star',
-		'TC‑39 delegate (PayPal)',
+		'TC-39 delegate (PayPal)',
 		'GitNation OS Awards',
 	],
 }
@@ -291,6 +299,9 @@ export default function ResumePage() {
 	const view = searchParams.get('view')
 	const isShort = view === 'short'
 	const viewKey = getViewKey(isShort)
+	const printLinks = resumeData.header.links.filter(
+		(link) => link.includeInPrint,
+	)
 
 	function handleCopyMarkdown() {
 		const markdown = formatMarkdown(isShort)
@@ -344,18 +355,33 @@ export default function ResumePage() {
 
 			<main className="resume-main">
 				<header className="resume-header">
-					<div>
-						<h1 className="resume-name">{resumeData.header.name}</h1>
-						<p className="resume-title">{resumeData.header.title}</p>
-						<p className="resume-location">{resumeData.header.location}</p>
+					<div className="resume-header__identity">
+						<img
+							className="resume-photo"
+							src="https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0,h_200,ar_1:1,c_fill/kent/profile"
+							alt="Photo of Kent C. Dodds"
+						/>
+						<div>
+							<h1 className="resume-name">{resumeData.header.name}</h1>
+							<p className="resume-title">{resumeData.header.title}</p>
+							<p className="resume-location">{resumeData.header.location}</p>
+						</div>
 					</div>
-					<div className="resume-links">
+					<div className="resume-links resume-links--screen">
 						{resumeData.header.links.map((link, index) => (
 							<span key={link.href}>
 								<a href={link.href} target="_blank" rel="noreferrer noopener">
 									{link.label}
 								</a>
 								{index < resumeData.header.links.length - 1 ? ' | ' : null}
+							</span>
+						))}
+					</div>
+					<div className="resume-links resume-links--print">
+						{printLinks.map((link, index) => (
+							<span key={link.href}>
+								<a href={link.href}>{link.label}</a>
+								{index < printLinks.length - 1 ? ' | ' : null}
 							</span>
 						))}
 					</div>
