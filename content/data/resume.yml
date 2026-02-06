@@ -229,10 +229,3 @@ recognitionByLength:
     - 'State of JS 2020: highest satisfaction of 97% for Testing Library'
     - 'GitNation OS Awards: Most Impactful Contribution to the community for
       Testing Library'
-# TODO: remove legacy recognition list after next deploy
-recognition:
-  - 'Google Developer Expert (GDE)'
-  - 'Microsoft MVP'
-  - 'GitHub Star'
-  - 'TC-39 delegate (PayPal)'
-  - 'GitNation OS Awards'

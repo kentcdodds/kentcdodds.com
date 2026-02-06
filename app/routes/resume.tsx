@@ -29,17 +29,6 @@ function getViewKey(isShort: boolean) {
 	return isShort ? 'short' : 'long'
 }
 
-function getRecognitionView(resumeData: ResumeData) {
-	if (resumeData.recognitionByLength) {
-		return resumeData.recognitionByLength
-	}
-
-	return {
-		short: resumeData.recognition ?? [],
-		long: resumeData.recognition ?? [],
-	}
-}
-
 function formatMarkdown(resumeData: ResumeData, isShort: boolean) {
 	const viewKey = getViewKey(isShort)
 	const {
@@ -53,7 +42,7 @@ function formatMarkdown(resumeData: ResumeData, isShort: boolean) {
 		education,
 	} = resumeData
 	const experience = isShort ? experienceShort : experienceLong
-	const recognitionView = getRecognitionView(resumeData)
+	const recognitionView = resumeData.recognitionByLength
 
 	const lines = [
 		`# ${header.name}`,
@@ -108,7 +97,7 @@ export default function ResumePage() {
 	const printLinks = resumeData.header.links.filter(
 		(link) => link.includeInPrint,
 	)
-	const recognitionView = getRecognitionView(resumeData)
+	const recognitionView = resumeData.recognitionByLength
 
 	function handleCopyMarkdown() {
 		const markdown = formatMarkdown(resumeData, isShort)
