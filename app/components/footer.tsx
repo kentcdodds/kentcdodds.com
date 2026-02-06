@@ -77,6 +77,7 @@ function SitemapSection() {
 				<FooterLink name="Testimony" href="/testimony" />
 				<FooterLink name="Testimonials" href="/testimonials" />
 				<FooterLink name="About" href="/about" />
+				<FooterLink name="Resume" href="/resume" />
 				<FooterLink name="Credits" href="/credits" />
 				<FooterLink name="Sitemap.xml" reload href="/sitemap.xml" />
 			</ul>
