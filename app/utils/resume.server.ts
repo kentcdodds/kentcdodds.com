@@ -48,7 +48,8 @@ const resumeDataSchema = z.object({
 	projects: z.array(resumeProjectSchema),
 	skills: z.array(z.string()),
 	education: z.array(resumeEducationSchema),
-	recognitionByLength: resumeSectionSchema,
+	recognition: resumeSectionSchema.optional(),
+	recognitionByLength: resumeSectionSchema.optional(),
 })
 
 export type ResumeData = z.infer<typeof resumeDataSchema>
