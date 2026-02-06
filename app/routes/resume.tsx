@@ -3,10 +3,10 @@ import { Link, useSearchParams } from '@remix-run/react'
 import resumeStyles from './resume.css?url'
 
 export const meta: MetaFunction = () => [
-	{ title: `Kent C. Dodds's Resume` },
+	{ title: `Kent C. Dodds' Resume` },
 	{
 		name: 'description',
-		content: `A quick look at Kent C. Dodds's work history.`,
+		content: `A quick look at Kent C. Dodds' work history.`,
 	},
 ]
 
