@@ -29,6 +29,17 @@ function getViewKey(isShort: boolean) {
 	return isShort ? 'short' : 'long'
 }
 
+function getRecognitionView(resumeData: ResumeData) {
+	if (resumeData.recognitionByLength) {
+		return resumeData.recognitionByLength
+	}
+
+	return {
+		short: resumeData.recognition ?? [],
+		long: resumeData.recognition ?? [],
+	}
+}
+
 function formatMarkdown(resumeData: ResumeData, isShort: boolean) {
 	const viewKey = getViewKey(isShort)
 	const {
@@ -42,6 +53,7 @@ function formatMarkdown(resumeData: ResumeData, isShort: boolean) {
 		education,
 	} = resumeData
 	const experience = isShort ? experienceShort : experienceLong
+	const recognitionView = getRecognitionView(resumeData)
 
 	const lines = [
 		`# ${header.name}`,
@@ -64,6 +76,9 @@ function formatMarkdown(resumeData: ResumeData, isShort: boolean) {
 		]),
 		'## Skills',
 		...skills.map((skill) => `- ${skill}`),
+		'',
+		'## Recognition',
+		...recognitionView[viewKey].map((item) => `- ${item}`),
 		'',
 		'## Education',
 		...education.map(
@@ -93,6 +108,7 @@ export default function ResumePage() {
 	const printLinks = resumeData.header.links.filter(
 		(link) => link.includeInPrint,
 	)
+	const recognitionView = getRecognitionView(resumeData)
 
 	function handleCopyMarkdown() {
 		const markdown = formatMarkdown(resumeData, isShort)
@@ -253,12 +269,10 @@ export default function ResumePage() {
 				<section className="resume-section">
 					<h2 className="resume-heading">Recognition</h2>
 					{isShort ? (
-						<p className="resume-inline">
-							{resumeData.recognition.join(' · ')}
-						</p>
+						<p className="resume-inline">{recognitionView.short.join(' · ')}</p>
 					) : (
 						<ul className="resume-bullets">
-							{resumeData.recognition.map((item) => (
+							{recognitionView.long.map((item) => (
 								<li key={item}>{item}</li>
 							))}
 						</ul>
