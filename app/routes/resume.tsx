@@ -17,7 +17,7 @@ export const links: LinksFunction = () => [
 const resumeData = {
 	header: {
 		name: 'Kent C. Dodds',
-		title: 'Principal Software Engineer & Developer Educator',
+		title: 'Principal Software Engineer & Educator',
 		location: 'Utah, USA',
 		links: [
 			{ label: 'kentcdodds.com', href: 'https://kentcdodds.com' },
@@ -32,24 +32,24 @@ const resumeData = {
 	},
 	summary: {
 		short: [
-			'Principal engineer and educator focused on web platforms, developer tooling, and instructional design.',
-			'Builds durable developer products with ecosystem-scale adoption and sustained premium business.',
+			'Principal engineer who combines platform architecture, developer education, and product operations.',
+			'Runs durable developer products with ecosystem‑scale adoption and sustained commercial success.',
 		],
 		long: [
-			'Principal‑level engineer and educator focused on web platforms, developer tooling, and instructional design.',
-			'Builds durable developer products with ecosystem-scale adoption, premium training, and long-term maintenance.',
-			'Track record of ecosystem impact through open source, platform tooling, and developer education at scale.',
+			'Principal‑level architect + educator + platform operator: designs tooling, teaches it, and runs the business behind it.',
+			'Testing Library and Epic tooling drive ecosystem‑scale adoption with durable OSS stewardship and enterprise trust.',
+			'Productized education and enterprise licensing deliver sustained commercial success with long‑running curricula and updates.',
 		],
 	},
 	publicWork: {
 		short: [
-			'Maintain a 33k+ software-professional mailing list with a 46% average open rate.',
-			'Delivered 100+ talks/workshops and long‑running community programs.',
+			'Testing Library patterns are referenced in Playwright’s official migration docs; curriculum used by teams at Trulia, Wix, FamilySearch, and BYU.',
+			'Tools and training used by engineers at major technology companies, including Google, Meta, Microsoft, Amazon, and Apple.',
 		],
 		long: [
-			'Maintain a 33k+ software-professional mailing list with a 46% average open rate.',
-			'Delivered 100+ talks/workshops and organized community programs (Learning Clubs, Office Hours).',
-			'Publish long‑form technical content across blog posts, podcasts, and video.',
+			'Testing Library patterns are referenced in Playwright’s official migration docs; widely adopted in modern test strategy discussions.',
+			'Curriculum used in corporate training (Trulia, Wix, FamilySearch) and higher‑ed programs (Ensign College, BYU); invited speaker at internal events (Wix, Adobe).',
+			'Tools and training used by engineers at major technology companies, including Google, Meta, Microsoft, Amazon, and Apple.',
 		],
 	},
 	experienceLong: [
@@ -60,16 +60,16 @@ const resumeData = {
 			context: 'Productized education, open source, and community programs.',
 			bullets: {
 				short: [
-					'Built premium Epic* training products serving 49k+ engineers; priced in the several‑hundred‑dollar range.',
-					'Created Testing Library: 33m+ weekly downloads; APIs built into Playwright (18m+ weekly) and Vitest (30m+).',
-					'Built Epic Stack (5.5k stars, hundreds of OSS projects) and Epic Workshop app used daily by learners.',
+					'Building Epic* training for 49k+ engineers; several‑hundred‑dollar pricing and enterprise licensing; tens of millions in revenue since 2019.',
+					'Standardized user‑centric testing with Testing Library (33m+ weekly downloads); query APIs adopted in Playwright and Vitest.',
+					'Designing Epic Stack as a production-ready reference app (5.5k GitHub stars) with hundreds of OSS projects and significant internal adoption across multiple companies; operating Epic Workshop (epicshop) for hands‑on training at scale.',
 				],
 				long: [
-					'Built premium Epic* training products (EpicReact, EpicWeb, TestingJavaScript, EpicAI) serving 49k+ engineers; priced in the several‑hundred‑dollar range.',
-					'Created Testing Library: 33m+ weekly downloads; APIs now built into Playwright (18m+ weekly) and Vitest (30m+).',
-					'Built Epic Stack (5.5k GitHub stars) with hundreds of OSS projects based on it (and many more closed source projects).',
-					'Built Epic Workshop app (epicshop), used daily across EpicAI, EpicWeb, and EpicReact workshops.',
-					'Shifted focus to MCP in 2025, launching production‑focused AI tooling training.',
+					'Building Epic* training (EpicReact, EpicWeb, TestingJavaScript, EpicAI) serving 49k+ engineers; several‑hundred‑dollar pricing; tens of millions in revenue since 2019 via individual and enterprise licenses.',
+					'Standardized user‑centric testing with Testing Library (33m+ weekly downloads); query APIs adopted in Playwright (18m+ weekly) and Vitest (30m+).',
+					'Designing Epic Stack as a production-ready reference app (5.5k GitHub stars) with hundreds of OSS projects and significant internal adoption across multiple companies.',
+					'Operating Epic Workshop (epicshop), enabling hands‑on training at scale across EpicAI, EpicWeb, and EpicReact.',
+					'Focuses on MCP since 2025, launching production‑focused AI tooling training.',
 				],
 			},
 		},
@@ -97,14 +97,14 @@ const resumeData = {
 			context: 'Web tooling, platform standards, and product delivery.',
 			bullets: {
 				short: [
-					'Built `paypal-scripts`, the standard web tooling platform; saved millions in engineering time.',
-					'Led paypal.me rewrite on React/GraphQL; foundational to a high‑traffic product.',
+					'Built `paypal-scripts`, the standard web tooling platform still in use and maintained; saved millions in engineering time.',
+					'Led paypal.me rewrite on React; still in use and foundational to a high‑traffic product.',
 					'Represented PayPal on TC‑39.',
 				],
 				long: [
-					'Built `paypal-scripts`, standardizing builds and saving millions in engineering time.',
-					'Led paypal.me rewrite on React/GraphQL; modernized a product used by millions.',
-					'Started `pp-react`, a foundational component library for the design system.',
+					'Built `paypal-scripts`, standardizing builds and saving millions in engineering time; still in use and maintained.',
+					'Led paypal.me rewrite on React; modernized a product used by millions and still maintained today.',
+					'Started `pp-react`, a foundational component library for the design system that remains in use.',
 					'Represented PayPal on TC‑39 and supported multiple teams via web infra leadership.',
 				],
 			},
@@ -158,15 +158,15 @@ const resumeData = {
 			context: 'Productized education, open source, and community programs.',
 			bullets: {
 				short: [
-					'Built premium Epic* training products serving 49k+ engineers; priced in the several‑hundred‑dollar range.',
-					'Created Testing Library: 33m+ weekly downloads; APIs built into Playwright (18m+ weekly) and Vitest (30m+).',
-					'Built Epic Stack (5.5k stars, hundreds of OSS projects) and Epic Workshop app used daily by learners.',
+					'Building Epic* training for 49k+ engineers; several‑hundred‑dollar pricing and enterprise licensing; tens of millions in revenue since 2019.',
+					'Standardized user‑centric testing with Testing Library (33m+ weekly downloads); query APIs adopted in Playwright and Vitest.',
+					'Designing Epic Stack as a production-ready reference app (5.5k GitHub stars) with hundreds of OSS projects and significant internal adoption across multiple companies; operating Epic Workshop (epicshop) for hands‑on training at scale.',
 				],
 				long: [
-					'Built premium Epic* training products (EpicReact, EpicWeb, TestingJavaScript, EpicAI) serving 49k+ engineers; priced in the several‑hundred‑dollar range.',
-					'Created Testing Library: 33m+ weekly downloads; APIs built into Playwright (18m+ weekly) and Vitest (30m+).',
-					'Built Epic Stack (5.5k GitHub stars) with hundreds of OSS projects based on it.',
-					'Built Epic Workshop app (epicshop), used daily across EpicAI, EpicWeb, and EpicReact workshops.',
+					'Building Epic* training (EpicReact, EpicWeb, TestingJavaScript, EpicAI) serving 49k+ engineers; several‑hundred‑dollar pricing; tens of millions in revenue since 2019 via individual and enterprise licenses.',
+					'Standardized user‑centric testing with Testing Library (33m+ weekly downloads); query APIs adopted in Playwright and Vitest.',
+					'Designing Epic Stack as a production-ready reference app (5.5k GitHub stars) with hundreds of OSS projects and significant internal adoption across multiple companies.',
+					'Operating Epic Workshop (epicshop), enabling hands‑on training at scale across EpicAI, EpicWeb, and EpicReact.',
 				],
 			},
 		},
@@ -192,12 +192,12 @@ const resumeData = {
 			context: 'Web tooling, platform standards, and product delivery.',
 			bullets: {
 				short: [
-					'Built `paypal-scripts`, the standard web tooling platform; saved millions in engineering time.',
+					'Built `paypal-scripts`, the standard web tooling platform still in use and maintained; saved millions in engineering time.',
 					'PayPal delegate on TC‑39.',
 				],
 				long: [
-					'Built `paypal-scripts`, standardizing builds and saving millions in engineering time.',
-					'Led paypal.me rewrite on React/GraphQL and contributed to `pp-react` design system.',
+					'Built `paypal-scripts`, standardizing builds and saving millions in engineering time; still in use and maintained.',
+					'Led paypal.me rewrite on React and contributed to `pp-react` design system; both remain in use.',
 					'PayPal delegate on TC‑39.',
 				],
 			},
@@ -264,9 +264,6 @@ function formatMarkdown(isShort: boolean) {
 			...role.bullets[viewKey].map((item) => `- ${item}`),
 			'',
 		]),
-		'## Selected Projects',
-		...projects.map((project) => `- ${project.name} — ${project.description}`),
-		'',
 		'## Skills',
 		...skills.map((skill) => `- ${skill}`),
 		'',
@@ -275,6 +272,16 @@ function formatMarkdown(isShort: boolean) {
 			(item) => `- ${item.degree}, ${item.school} (${item.year})`,
 		),
 	]
+
+	if (projects.length) {
+		lines.push(
+			'## Selected Projects',
+			...projects.map(
+				(project) => `- ${project.name} — ${project.description}`,
+			),
+			'',
+		)
+	}
 
 	return lines.join('\n').trim()
 }
