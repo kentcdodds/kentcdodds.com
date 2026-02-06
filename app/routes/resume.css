@@ -182,6 +182,57 @@
 	}
 }
 
+html.dark .resume-page {
+	color: #e2e8f0;
+}
+
+html.dark .resume-toggle__link,
+html.dark .resume-toggle__button {
+	border-color: #475569;
+}
+
+html.dark .resume-toggle__link.is-active {
+	border-color: #e2e8f0;
+}
+
+html.dark .resume-location,
+html.dark .resume-links,
+html.dark .resume-job__dates,
+html.dark .resume-job__context {
+	color: #cbd5f5;
+}
+
+html.dark .resume-bullets li::marker {
+	color: #94a3b8;
+}
+
+html.light .resume-page {
+	color: #222222;
+}
+
+html.light .resume-toggle__link,
+html.light .resume-toggle__button {
+	border-color: #bdbdbd;
+}
+
+html.light .resume-toggle__link.is-active {
+	border-color: #333333;
+}
+
+html.light .resume-location,
+html.light .resume-job__dates,
+html.light .resume-job__context {
+	color: #555555;
+}
+
+html.light .resume-links {
+	color: #444444;
+}
+
+html.light .resume-bullets li::marker {
+	color: #888888;
+}
+
 @media print {
 	@page {
 		size: Letter;
