@@ -32,28 +32,24 @@ const resumeData = {
 	},
 	summary: {
 		short: [
-			'Principal engineer and educator focused on web platforms, DX, and teaching.',
-			'Creator of Testing Library and EpicReact.dev; former Remix DX lead and PayPal web infra.',
+			'Principal engineer and educator focused on web platforms, developer tooling, and instructional design.',
+			'Builds durable developer products with ecosystem-scale adoption and sustained premium business.',
 		],
 		long: [
 			'Principal‑level engineer and educator focused on web platforms, developer tooling, and instructional design.',
-			'Creator of Testing Library, EpicReact.dev, TestingJavaScript.com, EpicWeb.dev, and EpicAI.pro.',
-			'Former Director of Developer Experience at Remix; led web infrastructure at PayPal.',
-			'Known for ecosystem impact through open source, teaching, and community building.',
+			'Builds durable developer products with ecosystem-scale adoption, premium training, and long-term maintenance.',
+			'Track record of ecosystem impact through open source, platform tooling, and developer education at scale.',
 		],
 	},
 	publicWork: {
 		short: [
-			'EpicReact.dev, TestingJavaScript.com, EpicWeb.dev, and EpicAI.pro: web, testing, and AI courses.',
-			'Testing Library ecosystem: now industry-wide adopted as standard tools and patterns.',
+			'Maintain a 33k+ software-professional mailing list with a 46% average open rate.',
+			'Delivered 100+ talks/workshops and long‑running community programs.',
 		],
 		long: [
-			'EpicReact.dev: 11‑workshop masterclass with 19+ hours of instruction and expert interviews.',
-			'TestingJavaScript.com: testing education platform for beginners through experts.',
-			'EpicWeb.dev + Epic Stack: production‑ready curriculum and open‑source stack.',
-			'EpicAI.pro: MCP workshops and self‑paced training for AI‑native product development.',
-			'Testing Library ecosystem: React Testing Library + DOM Testing Library; patterns now built into standard tools like Playwright and Vitest.',
-			'Large developer audience on X and YouTube.',
+			'Maintain a 33k+ software-professional mailing list with a 46% average open rate.',
+			'Delivered 100+ talks/workshops and organized community programs (Learning Clubs, Office Hours).',
+			'Publish long‑form technical content across blog posts, podcasts, and video.',
 		],
 	},
 	experienceLong: [
@@ -64,14 +60,15 @@ const resumeData = {
 			context: 'Productized education, open source, and community programs.',
 			bullets: {
 				short: [
-					'Built EpicReact.dev, TestingJavaScript.com, EpicWeb.dev, and EpicAI.pro.',
-					'Created Testing Library ecosystem with broad industry adoption.',
-					'Delivered 100+ talks/workshops; recognized for developer education impact.',
+					'Built premium Epic* training products serving 49k+ engineers; priced in the several‑hundred‑dollar range.',
+					'Created Testing Library: 33m+ weekly downloads; APIs built into Playwright (18m+ weekly) and Vitest (30m+).',
+					'Built Epic Stack (5.5k stars, hundreds of OSS projects) and Epic Workshop app used daily by learners.',
 				],
 				long: [
-					'Built EpicReact.dev, TestingJavaScript.com, EpicWeb.dev, and EpicAI.pro.',
-					'Created Testing Library ecosystem with broad industry adoption.',
-					'Delivered 100+ talks/workshops and organized community programs (Learning Clubs, Office Hours).',
+					'Built premium Epic* training products (EpicReact, EpicWeb, TestingJavaScript, EpicAI) serving 49k+ engineers; priced in the several‑hundred‑dollar range.',
+					'Created Testing Library: 33m+ weekly downloads; APIs now built into Playwright (18m+ weekly) and Vitest (30m+).',
+					'Built Epic Stack (5.5k GitHub stars) with hundreds of OSS projects based on it (and many more closed source projects).',
+					'Built Epic Workshop app (epicshop), used daily across EpicAI, EpicWeb, and EpicReact workshops.',
 					'Shifted focus to MCP in 2025, launching production‑focused AI tooling training.',
 				],
 			},
@@ -83,13 +80,13 @@ const resumeData = {
 			context: 'DX strategy, docs, community, and events.',
 			bullets: {
 				short: [
-					'Led DX strategy, documentation, and community engagement.',
-					'Organized Remix Conf and strengthened ecosystem adoption.',
+					'Led DX strategy across docs, community, and events; primary role in Remix CLI and Stacks.',
+					'Grew community to 13k Discord members; Remix Conf 300+ attendees and 31 sponsors (2022).',
 				],
 				long: [
-					'Led DX strategy, documentation, and community engagement.',
-					'Organized Remix Conf and coordinated workshops/speakers.',
-					'Improved developer onboarding and adoption through content and education.',
+					'Led DX strategy, docs, and community; primary role in Remix CLI and Stacks feature design.',
+					'Scaled community and adoption (2022): 13k Discord, 19.4k newsletter, 74k weekly npm downloads.',
+					'Produced Remix Conf (300+ attendees, 31 sponsors) and coordinated workshops/speakers.',
 				],
 			},
 		},
@@ -100,13 +97,13 @@ const resumeData = {
 			context: 'Web tooling, platform standards, and product delivery.',
 			bullets: {
 				short: [
-					'Built `paypal-scripts`, the standard web tooling platform at PayPal.',
-					'Led paypal.me rewrite and contributed to `pp-react` design system.',
+					'Built `paypal-scripts`, the standard web tooling platform; saved millions in engineering time.',
+					'Led paypal.me rewrite on React/GraphQL; foundational to a high‑traffic product.',
 					'Represented PayPal on TC‑39.',
 				],
 				long: [
-					'Built `paypal-scripts`, standardizing builds and reducing tool maintenance across teams.',
-					'Led paypal.me rewrite on React/GraphQL; modernized a high‑traffic product.',
+					'Built `paypal-scripts`, standardizing builds and saving millions in engineering time.',
+					'Led paypal.me rewrite on React/GraphQL; modernized a product used by millions.',
 					'Started `pp-react`, a foundational component library for the design system.',
 					'Represented PayPal on TC‑39 and supported multiple teams via web infra leadership.',
 				],
@@ -161,13 +158,15 @@ const resumeData = {
 			context: 'Productized education, open source, and community programs.',
 			bullets: {
 				short: [
-					'Built EpicReact.dev, TestingJavaScript.com, EpicWeb.dev, and EpicAI.pro.',
-					'Created the Testing Library ecosystem with broad industry adoption.',
+					'Built premium Epic* training products serving 49k+ engineers; priced in the several‑hundred‑dollar range.',
+					'Created Testing Library: 33m+ weekly downloads; APIs built into Playwright (18m+ weekly) and Vitest (30m+).',
+					'Built Epic Stack (5.5k stars, hundreds of OSS projects) and Epic Workshop app used daily by learners.',
 				],
 				long: [
-					'Built EpicReact.dev, TestingJavaScript.com, EpicWeb.dev, and EpicAI.pro.',
-					'Created Testing Library ecosystem with broad industry adoption.',
-					'Delivered 100+ talks/workshops; recognized for developer education impact.',
+					'Built premium Epic* training products (EpicReact, EpicWeb, TestingJavaScript, EpicAI) serving 49k+ engineers; priced in the several‑hundred‑dollar range.',
+					'Created Testing Library: 33m+ weekly downloads; APIs built into Playwright (18m+ weekly) and Vitest (30m+).',
+					'Built Epic Stack (5.5k GitHub stars) with hundreds of OSS projects based on it.',
+					'Built Epic Workshop app (epicshop), used daily across EpicAI, EpicWeb, and EpicReact workshops.',
 				],
 			},
 		},
@@ -177,10 +176,12 @@ const resumeData = {
 			dates: '2021–2022',
 			context: 'DX strategy, docs, community, and events.',
 			bullets: {
-				short: ['Led DX strategy, documentation, and community engagement.'],
+				short: [
+					'Led DX strategy across docs, community, and events; primary role in Remix CLI and Stacks.',
+				],
 				long: [
-					'Led DX strategy, documentation, and community engagement.',
-					'Organized Remix Conf and strengthened ecosystem adoption.',
+					'Led DX strategy, docs, and community; primary role in Remix CLI and Stacks feature design.',
+					'Scaled community and adoption (2022): 13k Discord, 19.4k newsletter, 74k weekly npm downloads.',
 				],
 			},
 		},
@@ -191,33 +192,18 @@ const resumeData = {
 			context: 'Web tooling, platform standards, and product delivery.',
 			bullets: {
 				short: [
-					'Built `paypal-scripts`, the standard web tooling platform at PayPal.',
+					'Built `paypal-scripts`, the standard web tooling platform; saved millions in engineering time.',
 					'PayPal delegate on TC‑39.',
 				],
 				long: [
-					'Built `paypal-scripts`, the standard web tooling platform at PayPal.',
-					'Led paypal.me rewrite and contributed to `pp-react` design system.',
+					'Built `paypal-scripts`, standardizing builds and saving millions in engineering time.',
+					'Led paypal.me rewrite on React/GraphQL and contributed to `pp-react` design system.',
 					'PayPal delegate on TC‑39.',
 				],
 			},
 		},
 	],
-	projects: [
-		{
-			name: 'Epic Workshop (epicshop)',
-			description:
-				'Local-first workshop platform with CLI, React Router app, and MCP integration.',
-		},
-		{
-			name: 'Testing Library',
-			description:
-				'Open‑source testing ecosystem used across the JS community.',
-		},
-		{
-			name: 'Epic Stack',
-			description: 'Production‑ready full‑stack starter with ongoing releases.',
-		},
-	],
+	projects: [] as Array<{ name: string; description: string }>,
 	skills: [
 		'TypeScript, Node.js, Bun, Cloudflare, React, Remix',
 		'Web architecture, DX tooling, build systems',
@@ -311,10 +297,10 @@ export default function ResumePage() {
 	return (
 		<div className="resume-page">
 			<div className="resume-toggle">
-				<div className="resume-toggle__label">Resume view</div>
 				<div className="resume-toggle__links">
 					<Link
 						to="/resume"
+						prefetch="intent"
 						className={
 							isShort ? 'resume-toggle__link' : 'resume-toggle__link is-active'
 						}
@@ -323,6 +309,7 @@ export default function ResumePage() {
 					</Link>
 					<Link
 						to="/resume?view=short"
+						prefetch="intent"
 						className={
 							isShort ? 'resume-toggle__link is-active' : 'resume-toggle__link'
 						}
@@ -413,16 +400,18 @@ export default function ResumePage() {
 					</div>
 				</section>
 
-				<section className="resume-section">
-					<h2 className="resume-heading">Selected Projects</h2>
-					<ul className="resume-bullets">
-						{resumeData.projects.map((project) => (
-							<li key={project.name}>
-								<strong>{project.name}</strong> — {project.description}
-							</li>
-						))}
-					</ul>
-				</section>
+				{resumeData.projects.length ? (
+					<section className="resume-section">
+						<h2 className="resume-heading">Selected Projects</h2>
+						<ul className="resume-bullets">
+							{resumeData.projects.map((project) => (
+								<li key={project.name}>
+									<strong>{project.name}</strong> — {project.description}
+								</li>
+							))}
+						</ul>
+					</section>
+				) : null}
 
 				<section className="resume-section">
 					<h2 className="resume-heading">Skills</h2>

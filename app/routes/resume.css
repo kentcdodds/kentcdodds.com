@@ -14,11 +14,6 @@
 	font-size: 0.9rem;
 }
 
-.resume-toggle__label {
-	font-size: 0.9rem;
-	color: #555555;
-}
-
 .resume-toggle__links {
 	display: flex;
 	gap: 10px;
@@ -146,10 +141,6 @@
 @media (prefers-color-scheme: dark) {
 	.resume-page {
 		color: #e2e8f0;
-	}
-
-	.resume-toggle__label {
-		color: #cbd5f5;
 	}
 
 	.resume-toggle__link,
