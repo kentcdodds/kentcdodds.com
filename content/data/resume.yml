@@ -68,9 +68,9 @@ experienceLong:
           across multiple companies; operating Epic Workshop (epicshop) for
           hands-on training at scale.'
       long:
-        - 'Building Epic* training (EpicReact, EpicWeb, TestingJavaScript,
-          EpicAI) serving 49k+ engineers; several-hundred-dollar pricing; tens
-          of millions in revenue since 2019 via individual and enterprise
+        - 'Building Epic* training: EpicReact, EpicWeb, TestingJavaScript,
+          EpicAI (MCP) serving 49k+ engineers; several-hundred-dollar pricing;
+          tens of millions in revenue since 2019 via individual and enterprise
           licenses.'
         - 'Standardized user-centric testing with Testing Library (33m+ weekly
           downloads); query APIs adopted in Playwright (18m+ weekly) and Vitest
