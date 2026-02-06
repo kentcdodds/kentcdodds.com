@@ -29,7 +29,10 @@ async function sleep(ms: number) {
 
 export async function readEmail(
 	recipientOrFilter: string | ((email: Email) => boolean),
-	{ maxRetries = 5, retryDelay = 200 }: { maxRetries?: number; retryDelay?: number } = {},
+	{
+		maxRetries = 5,
+		retryDelay = 200,
+	}: { maxRetries?: number; retryDelay?: number } = {},
 ) {
 	for (let attempt = 0; attempt < maxRetries; attempt++) {
 		try {
@@ -40,9 +43,7 @@ export async function readEmail(
 			// TODO: add validation
 			let email: Email | undefined
 			if (typeof recipientOrFilter === 'string') {
-				email = emails.find(
-					(email: Email) => email.to === recipientOrFilter,
-				)
+				email = emails.find((email: Email) => email.to === recipientOrFilter)
 			} else {
 				email = emails.find(recipientOrFilter)
 			}
@@ -54,7 +55,10 @@ export async function readEmail(
 				await sleep(retryDelay)
 			}
 		} catch (error: unknown) {
-			console.error(`Error reading the email fixture (attempt ${attempt + 1})`, error)
+			console.error(
+				`Error reading the email fixture (attempt ${attempt + 1})`,
+				error,
+			)
 			if (attempt < maxRetries - 1) {
 				await sleep(retryDelay)
 			}

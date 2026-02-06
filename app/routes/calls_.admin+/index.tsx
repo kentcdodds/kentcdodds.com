@@ -15,7 +15,7 @@ export default function NoCallSelected() {
 			<H4 as="h2" className="mb-2">
 				Select a call
 			</H4>
-			<Paragraph className="max-w-md text-gray-500 dark:text-slate-400">
+			<Paragraph className="dark:text-slate-400 max-w-md text-gray-500">
 				Choose a call from the list to listen, respond, and publish it to the
 				podcast.
 			</Paragraph>

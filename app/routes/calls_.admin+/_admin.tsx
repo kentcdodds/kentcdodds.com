@@ -118,10 +118,10 @@ export default function CallListScreen() {
 														<p className="mt-1 truncate text-sm text-gray-500 dark:text-slate-500">
 															{call.user.firstName} • {call.user.email}
 														</p>
-														<p className="mt-2 line-clamp-2 text-sm text-gray-500 dark:text-slate-400">
+														<p className="dark:text-slate-400 mt-2 line-clamp-2 text-sm text-gray-500">
 															{call.description}
 														</p>
-														<p className="mt-2 text-xs text-gray-400 dark:text-slate-600">
+														<p className="dark:text-slate-600 mt-2 text-xs text-gray-400">
 															{formatDate(call.updatedAt)}
 														</p>
 													</div>

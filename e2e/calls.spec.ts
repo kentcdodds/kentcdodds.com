@@ -46,7 +46,9 @@ test('Call Kent recording flow', async ({ page, login }) => {
 	await mainContent.getByRole('button', { name: /submit/i }).click()
 
 	// Wait for the redirect to confirm the call was created
-	await expect(page).toHaveURL(/.*calls\/record\/[a-z0-9-]+/, { timeout: 10_000 })
+	await expect(page).toHaveURL(/.*calls\/record\/[a-z0-9-]+/, {
+		timeout: 10_000,
+	})
 
 	await login({ role: 'ADMIN' })
 	await page.goto('/calls/admin')

@@ -199,7 +199,7 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 						<H4 as="h2" className="mb-2">
 							{call.title}
 						</H4>
-						<div className="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-slate-400">
+						<div className="dark:text-slate-400 flex flex-wrap items-center gap-2 text-sm text-gray-500">
 							<span className="font-medium text-team-current">
 								{call.user.firstName}
 							</span>
@@ -216,7 +216,12 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 						</div>
 					</div>
 					<Form method="delete">
-						<Button type="submit" variant="danger" size="small" {...dc.getButtonProps()}>
+						<Button
+							type="submit"
+							variant="danger"
+							size="small"
+							{...dc.getButtonProps()}
+						>
 							{dc.doubleCheck ? 'You sure?' : 'Delete'}
 						</Button>
 					</Form>
@@ -228,7 +233,7 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 				<H6 as="h3" className="mb-2">
 					Description
 				</H6>
-				<Paragraph className="whitespace-pre-wrap text-gray-600 dark:text-slate-300">
+				<Paragraph className="dark:text-slate-300 whitespace-pre-wrap text-gray-600">
 					{call.description}
 				</Paragraph>
 			</div>
@@ -250,7 +255,7 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 						<div className="flex items-center gap-2 lg:w-auto">
 							<label
 								htmlFor="playbackRate"
-								className="whitespace-nowrap text-sm text-gray-500 dark:text-slate-400"
+								className="dark:text-slate-400 whitespace-nowrap text-sm text-gray-500"
 							>
 								Speed:
 							</label>
@@ -264,7 +269,7 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 								onChange={(e) => setPlaybackRate(Number(e.target.value))}
 								className="w-20"
 							/>
-							<span className="w-10 text-sm font-medium text-gray-700 dark:text-slate-300">
+							<span className="dark:text-slate-300 w-10 text-sm font-medium text-gray-700">
 								{playbackRate}x
 							</span>
 						</div>
@@ -290,7 +295,7 @@ function RecordingDetailScreen() {
 				<H6 as="h3" className="mb-4">
 					Record Your Response
 				</H6>
-				<Paragraph className="mb-6 text-gray-500 dark:text-slate-400">
+				<Paragraph className="dark:text-slate-400 mb-6 text-gray-500">
 					Record your response to this call. Once submitted, the response will
 					be stitched together with the original call and published to the
 					podcast.

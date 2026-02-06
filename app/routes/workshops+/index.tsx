@@ -207,8 +207,7 @@ function workshopHasEvents(
 ) {
 	return Boolean(
 		workshop.events.length ||
-			titoEvents.filter((e) => e.metadata.workshopSlug === workshop.slug)
-				.length,
+		titoEvents.filter((e) => e.metadata.workshopSlug === workshop.slug).length,
 	)
 }
 
