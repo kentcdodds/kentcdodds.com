@@ -1,0 +1,203 @@
+.resume-page {
+	margin: 0 auto;
+	max-width: 900px;
+	padding: 32px 24px 80px;
+	color: #222222;
+}
+
+.resume-toggle {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 16px;
+	font-size: 0.9rem;
+}
+
+.resume-toggle__label {
+	font-size: 0.9rem;
+	color: #555555;
+}
+
+.resume-toggle__links {
+	display: flex;
+	gap: 10px;
+}
+
+.resume-toggle__actions {
+	display: flex;
+	gap: 8px;
+}
+
+.resume-toggle__link {
+	border: 1px solid #bdbdbd;
+	border-radius: 4px;
+	padding: 4px 10px;
+	text-decoration: none;
+	color: inherit;
+}
+
+.resume-toggle__link.is-active {
+	font-weight: 600;
+	border-color: #333333;
+}
+
+.resume-toggle__button {
+	border: 1px solid #bdbdbd;
+	background: transparent;
+	padding: 4px 10px;
+	border-radius: 4px;
+	font: inherit;
+	cursor: pointer;
+}
+
+.resume-main {
+	font-size: 0.95rem;
+	line-height: 1.25;
+}
+
+.resume-header {
+	display: flex;
+	justify-content: space-between;
+	gap: 24px;
+	align-items: baseline;
+	margin-bottom: 14px;
+}
+
+.resume-name {
+	font-size: 1.6rem;
+	margin: 0;
+}
+
+.resume-title {
+	font-weight: 600;
+	margin: 4px 0;
+}
+
+.resume-location {
+	margin: 0;
+	color: #555555;
+}
+
+.resume-links {
+	text-align: right;
+	font-size: 0.85rem;
+	color: #444444;
+	line-height: 1.3;
+}
+
+.resume-links a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.resume-section {
+	margin-bottom: 14px;
+}
+
+.resume-heading {
+	font-size: 1.05rem;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	margin-bottom: 6px;
+}
+
+.resume-experience {
+	display: grid;
+	gap: 12px;
+}
+
+.resume-job__row {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 12px;
+}
+
+.resume-job__title {
+	font-size: 0.95rem;
+}
+
+.resume-job__dates {
+	font-size: 0.85rem;
+	color: #555555;
+	white-space: nowrap;
+}
+
+.resume-job__context {
+	font-size: 0.85rem;
+	color: #555555;
+	margin-top: 2px;
+}
+
+.resume-bullets {
+	margin: 6px 0 0;
+	padding-left: 18px;
+	display: grid;
+	gap: 4px;
+	list-style: disc;
+}
+
+.resume-bullets li::marker {
+	color: #888888;
+}
+
+@media (prefers-color-scheme: dark) {
+	.resume-page {
+		color: #e2e8f0;
+	}
+
+	.resume-toggle__label {
+		color: #cbd5f5;
+	}
+
+	.resume-toggle__link,
+	.resume-toggle__button {
+		border-color: #475569;
+	}
+
+	.resume-toggle__link.is-active {
+		border-color: #e2e8f0;
+	}
+
+	.resume-location,
+	.resume-links,
+	.resume-job__dates,
+	.resume-job__context {
+		color: #cbd5f5;
+	}
+
+	.resume-bullets li::marker {
+		color: #94a3b8;
+	}
+}
+
+@media print {
+	@page {
+		size: Letter;
+		margin: 0.6in;
+	}
+
+	body * {
+		visibility: hidden;
+	}
+
+	main.resume-main,
+	main.resume-main * {
+		visibility: visible;
+	}
+
+	main.resume-main {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		padding: 0;
+		color: #000000;
+	}
+
+	.resume-toggle {
+		display: none;
+	}
+}
