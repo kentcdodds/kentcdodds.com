@@ -15,9 +15,7 @@ async function refreshOnContentChanges(filePath: string) {
 			port: 3000,
 		},
 		postData: {
-			contentPaths: [
-				safePath(filePath).replace(`${safePath(process.cwd())}/content/`, ''),
-			],
+			contentPaths: [getContentPath(filePath)],
 		},
 	}).then(
 		(response: unknown) =>
@@ -27,25 +25,50 @@ async function refreshOnContentChanges(filePath: string) {
 	)
 }
 
+function getContentPath(filePath: string) {
+	return safePath(filePath).replace(`${safePath(process.cwd())}/content/`, '')
+}
+
+function getReloadPaths({
+	contentDir,
+	filePath,
+}: {
+	contentDir: string
+	filePath: string
+}) {
+	const relativePath = safePath(
+		`/${path.relative(
+			contentDir,
+			filePath.replace(path.extname(filePath), ''),
+		)}`,
+	)
+	const contentPath = getContentPath(filePath)
+	const mappedPaths =
+		contentPath === 'data/resume.yml'
+			? ['/resume']
+			: contentPath === 'data/talks.yml'
+				? ['/talks']
+				: []
+
+	return [...new Set([relativePath, ...mappedPaths])]
+}
+
 function addWatcher(wss: WebSocketServer) {
 	const contentDir = safePath(path.join(process.cwd(), 'content'))
 	const watcher = chokidar.watch(contentDir, { ignoreInitial: true })
 	watcher.on('change', async (filePath) => {
 		await refreshOnContentChanges(filePath)
+		const reloadPaths = getReloadPaths({ contentDir, filePath })
 		for (const client of wss.clients) {
 			if (client.readyState === WebSocket.OPEN) {
-				const relativePath = safePath(
-					`/${path.relative(
-						contentDir,
-						filePath.replace(path.extname(filePath), ''),
-					)}`,
-				)
-				client.send(
-					JSON.stringify({
-						type: 'kentcdodds.com:file-change',
-						data: { filePath, relativePath },
-					}),
-				)
+				for (const relativePath of reloadPaths) {
+					client.send(
+						JSON.stringify({
+							type: 'kentcdodds.com:file-change',
+							data: { filePath, relativePath },
+						}),
+					)
+				}
 			}
 		}
 	})
