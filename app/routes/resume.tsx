@@ -58,6 +58,7 @@ const resumeData = {
 			'Testing Library patterns are referenced in Playwright’s official migration docs; widely adopted in modern test strategy discussions.',
 			'Curriculum used in corporate training (Trulia, Wix, FamilySearch) and higher-ed programs (Ensign College, BYU); invited speaker at internal events (Wix, Adobe).',
 			'Tools and training used by engineers at major technology companies, including Google, Meta, Microsoft, Amazon, and Apple.',
+			'Blog posts with 1M+ completed reads from 500k+ unique readers; 10M+ total views.',
 		],
 	},
 	experienceLong: [
@@ -323,7 +324,7 @@ export default function ResumePage() {
 							isShort ? 'resume-toggle__link' : 'resume-toggle__link is-active'
 						}
 					>
-						Long (default)
+						Full
 					</Link>
 					<Link
 						to="/resume?view=short"
