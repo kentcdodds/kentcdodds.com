@@ -221,7 +221,6 @@ recognition:
     - 'Google Developer Expert (GDE)'
     - 'Microsoft MVP'
     - 'GitHub Star'
-    - 'State of JS 2020: highest satisfaction of 97% for Testing Library'
   long:
     - 'Google Developer Expert (GDE)'
     - 'Microsoft MVP'
@@ -230,18 +229,3 @@ recognition:
     - 'State of JS 2020: highest satisfaction of 97% for Testing Library'
     - 'GitNation OS Awards: Most Impactful Contribution to the community for
       Testing Library'
-recognitionByLength:
-  short:
-    - 'Google Developer Expert (GDE)'
-    - 'Microsoft MVP'
-    - 'GitHub Star'
-    - 'State of JS 2020: highest satisfaction of 97% for Testing Library'
-  long:
-    - 'Google Developer Expert (GDE)'
-    - 'Microsoft MVP'
-    - 'GitHub Star'
-    - 'TC-39 delegate (PayPal)'
-    - 'State of JS 2020: highest satisfaction of 97% for Testing Library'
-    - 'GitNation OS Awards: Most Impactful Contribution to the community for
-      Testing Library'
-# TODO: remove legacy recognitionByLength after next deploy
