@@ -1,6 +1,6 @@
-import { execa } from 'execa'
 import * as readline from 'node:readline'
-import type { Key } from 'node:readline'
+import { type Key } from 'node:readline'
+import { execa } from 'execa'
 
 type ShortcutHandlers = {
 	openApp: () => void | Promise<void>
@@ -74,7 +74,12 @@ const createDefaultHandlers = ({
 		}
 	},
 	restartApp: () => {
-		process.kill(process.pid, 'SIGTERM')
+		if (process.env.NODE_ENV === 'development') {
+			process.kill(process.pid, 'SIGTERM')
+			return
+		}
+
+		console.warn('Restart shortcut is only available in development.')
 	},
 	showHelp: () => {
 		console.log(helpMessage)
