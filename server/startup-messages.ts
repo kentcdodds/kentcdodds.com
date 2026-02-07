@@ -7,18 +7,12 @@ type StartupMessageOptions = {
 	userName?: string
 }
 
-const formatKeyLine = (
-	key: string,
-	label: string,
-	color: (value: string) => string,
-) => `  ${color(key)} - ${label}`
-
 const supportedKeyLines = [
-	formatKeyLine('o', 'open app', chalk.green),
-	formatKeyLine('c', 'copy url', chalk.cyan),
-	formatKeyLine('r', 'restart app', chalk.magenta),
-	formatKeyLine('h', 'help', chalk.yellow),
-	formatKeyLine('q', 'exit (or Ctrl+C)', chalk.red),
+	`  ${chalk.green('o')} - open app`,
+	`  ${chalk.cyan('c')} - copy url`,
+	`  ${chalk.magenta('r')} - restart app`,
+	`  ${chalk.yellow('h')} - help`,
+	`  ${chalk.red('q')} - exit (or Ctrl+C)`,
 ]
 
 const getOsUserName = () => {
