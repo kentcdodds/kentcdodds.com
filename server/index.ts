@@ -1,5 +1,6 @@
 import crypto from 'crypto'
 import fs from 'fs'
+import os from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { createRequestHandler, type RequestHandler } from '@remix-run/express'
@@ -27,6 +28,7 @@ import {
 	oldImgSocial,
 	rickRollMiddleware,
 } from './redirects.js'
+import { registerStartupShortcuts } from './startup-shortcuts.js'
 
 sourceMapSupport.install()
 installGlobals()
@@ -358,13 +360,59 @@ const server = app.listen(portToUse, () => {
 		lanUrl = `http://${localIp}:${portUsed}`
 	}
 
-	console.log(
-		`
-${chalk.bold('Local:')}            ${chalk.cyan(localUrl)}
-${lanUrl ? `${chalk.bold('On Your Network:')}  ${chalk.cyan(lanUrl)}` : ''}
-${chalk.bold('Press Ctrl+C to stop')}
-		`.trim(),
+	const isInteractiveShell =
+		Boolean(process.stdin.isTTY) && Boolean(process.stdout.isTTY)
+	const shortcutsEnabled = MODE !== 'production' && isInteractiveShell
+
+	let userName: string
+	try {
+		userName = os.userInfo().username
+	} catch {
+		userName = process.env.USER ?? process.env.LOGNAME ?? 'there'
+	}
+
+	const supportedKeyLines = shortcutsEnabled
+		? [
+				`  ${chalk.green('o')} - open app`,
+				`  ${chalk.cyan('c')} - copy url`,
+				`  ${chalk.magenta('r')} - restart app`,
+				`  ${chalk.yellow('h')} - help`,
+				`  ${chalk.red('q')} - exit (or Ctrl+C)`,
+			]
+		: []
+
+	const startupMessageLines = [`Welcome to kentcdodds.com, ${userName}!`]
+
+	if (shortcutsEnabled) {
+		startupMessageLines.push(
+			'Supported keys:',
+			...supportedKeyLines,
+			'It also supports hitting <enter> to add a newline to the output.',
+		)
+	}
+
+	startupMessageLines.push(
+		'',
+		[
+			`${chalk.bold('Local:')}            ${chalk.cyan(localUrl)}`,
+			lanUrl
+				? `${chalk.bold('On Your Network:')}  ${chalk.cyan(lanUrl)}`
+				: null,
+			chalk.bold('Press Ctrl+C to stop'),
+		]
+			.filter(Boolean)
+			.join('\n'),
 	)
+
+	const startupMessage = startupMessageLines.join('\n')
+
+	console.log(startupMessage)
+	if (shortcutsEnabled) {
+		registerStartupShortcuts({
+			localUrl,
+			helpMessage: startupMessage,
+		})
+	}
 })
 
 let wss: WebSocketServer | undefined
