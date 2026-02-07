@@ -124,7 +124,11 @@ export const registerStartupShortcuts = ({
 	localUrl,
 	helpMessage,
 }: StartupShortcutOptions) => {
-	if (!process.stdin.isTTY) {
+	if (process.env.NODE_ENV === 'production') {
+		return
+	}
+
+	if (!process.stdin.isTTY || !process.stdout.isTTY) {
 		return
 	}
 

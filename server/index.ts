@@ -360,6 +360,10 @@ const server = app.listen(portToUse, () => {
 		lanUrl = `http://${localIp}:${portUsed}`
 	}
 
+	const isInteractiveShell =
+		Boolean(process.stdin.isTTY) && Boolean(process.stdout.isTTY)
+	const shortcutsEnabled = MODE !== 'production' && isInteractiveShell
+
 	let userName: string
 	try {
 		userName = os.userInfo().username
@@ -367,19 +371,27 @@ const server = app.listen(portToUse, () => {
 		userName = process.env.USER ?? process.env.LOGNAME ?? 'there'
 	}
 
-	const supportedKeyLines = [
-		`  ${chalk.green('o')} - open app`,
-		`  ${chalk.cyan('c')} - copy url`,
-		`  ${chalk.magenta('r')} - restart app`,
-		`  ${chalk.yellow('h')} - help`,
-		`  ${chalk.red('q')} - exit (or Ctrl+C)`,
-	]
+	const supportedKeyLines = shortcutsEnabled
+		? [
+				`  ${chalk.green('o')} - open app`,
+				`  ${chalk.cyan('c')} - copy url`,
+				`  ${chalk.magenta('r')} - restart app`,
+				`  ${chalk.yellow('h')} - help`,
+				`  ${chalk.red('q')} - exit (or Ctrl+C)`,
+			]
+		: []
 
-	const startupMessage = [
-		`Welcome to kentcdodds.com, ${userName}!`,
-		'Supported keys:',
-		...supportedKeyLines,
-		'It also supports hitting <enter> to add a newline to the output.',
+	const startupMessageLines = [`Welcome to kentcdodds.com, ${userName}!`]
+
+	if (shortcutsEnabled) {
+		startupMessageLines.push(
+			'Supported keys:',
+			...supportedKeyLines,
+			'It also supports hitting <enter> to add a newline to the output.',
+		)
+	}
+
+	startupMessageLines.push(
 		'',
 		[
 			`${chalk.bold('Local:')}            ${chalk.cyan(localUrl)}`,
@@ -390,13 +402,17 @@ const server = app.listen(portToUse, () => {
 		]
 			.filter(Boolean)
 			.join('\n'),
-	].join('\n')
+	)
+
+	const startupMessage = startupMessageLines.join('\n')
 
 	console.log(startupMessage)
-	registerStartupShortcuts({
-		localUrl,
-		helpMessage: startupMessage,
-	})
+	if (shortcutsEnabled) {
+		registerStartupShortcuts({
+			localUrl,
+			helpMessage: startupMessage,
+		})
+	}
 })
 
 let wss: WebSocketServer | undefined
