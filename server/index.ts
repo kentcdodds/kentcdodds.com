@@ -27,6 +27,7 @@ import {
 	oldImgSocial,
 	rickRollMiddleware,
 } from './redirects.js'
+import { formatStartupMessage } from './startup-messages.js'
 
 sourceMapSupport.install()
 installGlobals()
@@ -359,11 +360,10 @@ const server = app.listen(portToUse, () => {
 	}
 
 	console.log(
-		`
-${chalk.bold('Local:')}            ${chalk.cyan(localUrl)}
-${lanUrl ? `${chalk.bold('On Your Network:')}  ${chalk.cyan(lanUrl)}` : ''}
-${chalk.bold('Press Ctrl+C to stop')}
-		`.trim(),
+		formatStartupMessage({
+			localUrl,
+			lanUrl,
+		}),
 	)
 })
 
