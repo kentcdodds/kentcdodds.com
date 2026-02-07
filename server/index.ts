@@ -57,14 +57,6 @@ const getHost = (req: { get: (key: string) => string | undefined }) =>
 
 const MODE = process.env.NODE_ENV
 
-const getOsUserName = () => {
-	try {
-		return os.userInfo().username
-	} catch {
-		return process.env.USER ?? process.env.LOGNAME ?? 'there'
-	}
-}
-
 if (MODE === 'production' && process.env.SENTRY_DSN) {
 	void import('./utils/monitoring.js').then(({ init }) => init())
 }
@@ -367,7 +359,12 @@ const server = app.listen(portToUse, () => {
 		lanUrl = `http://${localIp}:${portUsed}`
 	}
 
-	const userName = getOsUserName()
+	let userName = process.env.USER ?? process.env.LOGNAME ?? 'there'
+	try {
+		userName = os.userInfo().username
+	} catch {
+		userName = process.env.USER ?? process.env.LOGNAME ?? 'there'
+	}
 	const urlLines = [
 		`${chalk.bold('Local:')}            ${chalk.cyan(localUrl)}`,
 		lanUrl ? `${chalk.bold('On Your Network:')}  ${chalk.cyan(lanUrl)}` : null,
