@@ -359,25 +359,26 @@ const server = app.listen(portToUse, () => {
 		lanUrl = `http://${localIp}:${portUsed}`
 	}
 
-	let userName = process.env.USER ?? process.env.LOGNAME ?? 'there'
+	let userName: string
 	try {
 		userName = os.userInfo().username
 	} catch {
 		userName = process.env.USER ?? process.env.LOGNAME ?? 'there'
 	}
-	const urlLines = [
-		`${chalk.bold('Local:')}            ${chalk.cyan(localUrl)}`,
-		lanUrl ? `${chalk.bold('On Your Network:')}  ${chalk.cyan(lanUrl)}` : null,
-		chalk.bold('Press Ctrl+C to stop'),
-	]
-		.filter(Boolean)
-		.join('\n')
 
 	console.log(
 		[
 			`Welcome to kentcdodds.com, ${userName}!`,
 			'',
-			urlLines,
+			[
+				`${chalk.bold('Local:')}            ${chalk.cyan(localUrl)}`,
+				lanUrl
+					? `${chalk.bold('On Your Network:')}  ${chalk.cyan(lanUrl)}`
+					: null,
+				chalk.bold('Press Ctrl+C to stop'),
+			]
+				.filter(Boolean)
+				.join('\n'),
 		].join('\n'),
 	)
 })
