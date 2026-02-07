@@ -360,9 +360,9 @@ const server = app.listen(portToUse, () => {
 		lanUrl = `http://${localIp}:${portUsed}`
 	}
 
-	const isInteractiveShell =
-		Boolean(process.stdin.isTTY) && Boolean(process.stdout.isTTY)
+	const isInteractiveShell = Boolean(process.stdout.isTTY)
 	const shortcutsEnabled = MODE !== 'production' && isInteractiveShell
+	const restartEnabled = Boolean(process.stdin.isTTY)
 
 	let userName: string
 	try {
@@ -375,10 +375,10 @@ const server = app.listen(portToUse, () => {
 		? [
 				`  ${chalk.green('o')} - open app`,
 				`  ${chalk.cyan('c')} - copy url`,
-				`  ${chalk.magenta('r')} - restart app`,
+				restartEnabled ? `  ${chalk.magenta('r')} - restart app` : null,
 				`  ${chalk.yellow('h')} - help`,
 				`  ${chalk.red('q')} - exit (or Ctrl+C)`,
-			]
+			].filter(Boolean)
 		: []
 
 	const startupMessageLines = [`Welcome to kentcdodds.com, ${userName}!`]
@@ -411,6 +411,7 @@ const server = app.listen(portToUse, () => {
 		registerStartupShortcuts({
 			localUrl,
 			helpMessage: startupMessage,
+			restartEnabled,
 		})
 	}
 })

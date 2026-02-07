@@ -1,3 +1,5 @@
+import * as fs from 'node:fs'
+import * as tty from 'node:tty'
 import * as readline from 'node:readline'
 import { type Key } from 'node:readline'
 import { execa } from 'execa'
@@ -14,6 +16,7 @@ type ShortcutHandlers = {
 type StartupShortcutOptions = {
 	localUrl: string
 	helpMessage: string
+	restartEnabled?: boolean
 }
 
 const tryRunCommand = async (
@@ -60,6 +63,7 @@ const copyToClipboard = async (value: string) => {
 const createDefaultHandlers = ({
 	localUrl,
 	helpMessage,
+	restartEnabled = false,
 }: StartupShortcutOptions): ShortcutHandlers => ({
 	openApp: async () => {
 		const opened = await openInBrowser(localUrl)
@@ -74,6 +78,11 @@ const createDefaultHandlers = ({
 		}
 	},
 	restartApp: () => {
+		if (!restartEnabled) {
+			console.warn('Restart shortcut is unavailable in this session.')
+			return
+		}
+
 		if (process.env.NODE_ENV === 'development') {
 			process.kill(process.pid, 'SIGTERM')
 			return
@@ -128,22 +137,75 @@ export const handleShortcutKey = (
 export const registerStartupShortcuts = ({
 	localUrl,
 	helpMessage,
+	restartEnabled,
 }: StartupShortcutOptions) => {
+	if (process.env.STARTUP_SHORTCUTS === 'false') {
+		return
+	}
+
 	if (process.env.NODE_ENV === 'production') {
 		return
 	}
 
-	if (!process.stdin.isTTY || !process.stdout.isTTY) {
+	if (!process.stdout.isTTY) {
 		return
 	}
 
-	readline.emitKeypressEvents(process.stdin)
-	process.stdin.setRawMode(true)
-	process.stdin.resume()
+	const inputStream = process.stdin.isTTY
+		? process.stdin
+		: (() => {
+				if (process.platform === 'win32') {
+					return null
+				}
 
-	const handlers = createDefaultHandlers({ localUrl, helpMessage })
+				try {
+					const fd = fs.openSync('/dev/tty', 'r')
+					const stream = new tty.ReadStream(fd)
+					stream.on('close', () => {
+						try {
+							fs.closeSync(fd)
+						} catch {
+							// best effort cleanup
+						}
+					})
+					return stream
+				} catch {
+					return null
+				}
+			})()
 
-	process.stdin.on('keypress', (input: string, key?: Key) => {
+	if (!inputStream) {
+		console.warn(
+			'Unable to enable startup shortcuts because no TTY input is available.',
+		)
+		return
+	}
+
+	if (inputStream !== process.stdin) {
+		console.log('Startup shortcuts using /dev/tty for input.')
+	}
+
+	readline.emitKeypressEvents(inputStream)
+	if (typeof inputStream.setRawMode === 'function') {
+		inputStream.setRawMode(true)
+	}
+	inputStream.resume()
+
+	const handlers = createDefaultHandlers({
+		localUrl,
+		helpMessage,
+		restartEnabled,
+	})
+
+	inputStream.on('error', (error: unknown) => {
+		console.warn('Startup shortcuts input error:', error)
+	})
+
+	inputStream.on('close', () => {
+		console.warn('Startup shortcuts input closed.')
+	})
+
+	inputStream.on('keypress', (input: string, key?: Key) => {
 		if (key?.ctrl && key?.name === 'c') {
 			handlers.exitApp()
 			return
