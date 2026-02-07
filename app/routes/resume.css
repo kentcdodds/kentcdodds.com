@@ -156,6 +156,85 @@
 	color: #888888;
 }
 
+@media (max-width: 720px) {
+	.resume-page {
+		padding: 24px 16px 64px;
+	}
+
+	.resume-toggle {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.resume-toggle__links {
+		flex-wrap: wrap;
+	}
+
+	.resume-toggle__actions {
+		width: 100%;
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.resume-toggle__button {
+		width: 100%;
+		text-align: center;
+	}
+
+	.resume-main {
+		font-size: 0.93rem;
+	}
+
+	.resume-header {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.resume-photo {
+		width: 72px;
+		height: 72px;
+	}
+
+	.resume-links {
+		text-align: left;
+	}
+
+	.resume-job__row {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.resume-job__dates {
+		margin-top: 2px;
+		white-space: normal;
+	}
+
+	.resume-bullets {
+		padding-left: 16px;
+	}
+}
+
+@media (max-width: 520px) {
+	.resume-toggle__link,
+	.resume-toggle__button {
+		width: 100%;
+	}
+
+	.resume-toggle__links {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.resume-header__identity {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.resume-name {
+		font-size: 1.4rem;
+	}
+}
+
 @media (prefers-color-scheme: dark) {
 	.resume-page {
 		color: #e2e8f0;
