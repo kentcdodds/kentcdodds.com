@@ -1,5 +1,6 @@
 import crypto from 'crypto'
 import fs from 'fs'
+import os from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { createRequestHandler, type RequestHandler } from '@remix-run/express'
@@ -27,7 +28,6 @@ import {
 	oldImgSocial,
 	rickRollMiddleware,
 } from './redirects.js'
-import { formatStartupMessage } from './startup-messages.js'
 
 sourceMapSupport.install()
 installGlobals()
@@ -56,6 +56,14 @@ const getHost = (req: { get: (key: string) => string | undefined }) =>
 	req.get('X-Forwarded-Host') ?? req.get('host') ?? ''
 
 const MODE = process.env.NODE_ENV
+
+const getOsUserName = () => {
+	try {
+		return os.userInfo().username
+	} catch {
+		return process.env.USER ?? process.env.LOGNAME ?? 'there'
+	}
+}
 
 if (MODE === 'production' && process.env.SENTRY_DSN) {
 	void import('./utils/monitoring.js').then(({ init }) => init())
@@ -359,11 +367,21 @@ const server = app.listen(portToUse, () => {
 		lanUrl = `http://${localIp}:${portUsed}`
 	}
 
+	const userName = getOsUserName()
+	const urlLines = [
+		`${chalk.bold('Local:')}            ${chalk.cyan(localUrl)}`,
+		lanUrl ? `${chalk.bold('On Your Network:')}  ${chalk.cyan(lanUrl)}` : null,
+		chalk.bold('Press Ctrl+C to stop'),
+	]
+		.filter(Boolean)
+		.join('\n')
+
 	console.log(
-		formatStartupMessage({
-			localUrl,
-			lanUrl,
-		}),
+		[
+			`Welcome to kentcdodds.com, ${userName}!`,
+			'',
+			urlLines,
+		].join('\n'),
 	)
 })
 
