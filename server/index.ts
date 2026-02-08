@@ -371,14 +371,14 @@ const server = app.listen(portToUse, () => {
 		userName = process.env.USER ?? process.env.LOGNAME ?? 'there'
 	}
 
-	const supportedKeyLines: string[] = shortcutsEnabled
+	const supportedKeyLines = shortcutsEnabled
 		? [
 				`  ${chalk.green('o')} - open app`,
 				`  ${chalk.cyan('c')} - copy url`,
 				restartEnabled ? `  ${chalk.magenta('r')} - restart app` : null,
 				`  ${chalk.yellow('h')} - help`,
 				`  ${chalk.red('q')} - exit (or Ctrl+C)`,
-			].filter((line): line is string => Boolean(line))
+			].filter(Boolean)
 		: []
 
 	const startupMessageLines = [`Welcome to kentcdodds.com, ${userName}!`]
