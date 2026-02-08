@@ -378,7 +378,7 @@ const server = app.listen(portToUse, () => {
 				restartEnabled ? `  ${chalk.magenta('r')} - restart app` : null,
 				`  ${chalk.yellow('h')} - help`,
 				`  ${chalk.red('q')} - exit (or Ctrl+C)`,
-			].filter(Boolean)
+			].filter((line): line is string => Boolean(line))
 		: []
 
 	const startupMessageLines = [`Welcome to kentcdodds.com, ${userName}!`]
