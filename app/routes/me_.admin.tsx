@@ -174,16 +174,16 @@ async function getLoaderData({ request }: { request: Request }) {
 		prisma.$queryRaw<DailyCountRow[]>`
 			SELECT DATE("createdAt", 'localtime') AS day, COUNT(*) AS count
 			FROM "User"
-			WHERE "createdAt" >= ${trendStart}
+			WHERE DATE("createdAt", 'localtime') >= DATE(${trendStart}, 'localtime')
 			GROUP BY DATE("createdAt", 'localtime')
-			ORDER BY DATE("createdAt", 'localtime') ASC
+			ORDER BY day ASC
 		`,
 		prisma.$queryRaw<DailyCountRow[]>`
 			SELECT DATE("createdAt", 'localtime') AS day, COUNT(*) AS count
 			FROM "PostRead"
-			WHERE "createdAt" >= ${trendStart}
+			WHERE DATE("createdAt", 'localtime') >= DATE(${trendStart}, 'localtime')
 			GROUP BY DATE("createdAt", 'localtime')
-			ORDER BY DATE("createdAt", 'localtime') ASC
+			ORDER BY day ASC
 		`,
 		prisma.user.groupBy({
 			by: ['team'],
