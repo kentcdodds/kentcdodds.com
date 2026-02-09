@@ -3,7 +3,7 @@ import {
 	json,
 	type HeadersFunction,
 } from '@remix-run/node'
-import { useLoaderData, useParams } from '@remix-run/react'
+import { Link, useLoaderData, useParams } from '@remix-run/react'
 import { clsx } from 'clsx'
 import * as React from 'react'
 import { serverOnly$ } from 'vite-env-only'
@@ -313,19 +313,26 @@ development tools and practices. He lives with his wife and four kids in Utah.
 
 function ArticleQuestionCard() {
 	return (
-		<Grid className="mb-24">
+		<Grid>
 			<div className="col-span-full lg:col-span-8 lg:col-start-3">
 				<div className="bg-secondary border-secondary flex flex-col gap-6 rounded-lg border px-8 py-10 md:flex-row md:items-center md:justify-between md:gap-10 md:px-12">
-					<div className="space-y-3">
+					<div className="flex flex-col gap-3">
 						<H4>Have a question about this article?</H4>
 						<Paragraph prose={false} className="max-w-2xl">
-							Bring it to Call Kent. Ask on{' '}
-							<span className="text-primary font-medium">/calls</span> and I
-							may answer it on the podcast.
+							Bring it to the Call Kent podcast. Ask on{' '}
+							<Link to="/calls" className="text-primary font-medium">
+								/calls
+							</Link>{' '}
+							and I may answer it on the podcast.
 						</Paragraph>
 					</div>
-					<ArrowLink to="/calls" direction="right" prefetch="intent">
-						Go to /calls
+					<ArrowLink
+						className="flex-shrink-0"
+						to="/calls"
+						direction="right"
+						prefetch="intent"
+					>
+						Place a call
 					</ArrowLink>
 				</div>
 			</div>
@@ -570,7 +577,7 @@ export default function MdxScreen() {
 				isDraft={isDraft}
 			/>
 
-			<Spacer size="base" />
+			<Spacer size="sm" />
 
 			{data.workshops.length > 0 ? (
 				<>
@@ -602,9 +609,13 @@ export default function MdxScreen() {
 						</div>
 					</Grid>
 
-					<Spacer size="base" />
+					<Spacer size="sm" />
 				</>
 			) : null}
+
+			<ArticleQuestionCard />
+
+			<Spacer size="sm" />
 
 			<BlogSection
 				articles={data.recommendations}
@@ -612,10 +623,6 @@ export default function MdxScreen() {
 				description="You will love these ones as well."
 				showArrowButton={false}
 			/>
-
-			<Spacer size="base" />
-
-			<ArticleQuestionCard />
 		</div>
 	)
 }
