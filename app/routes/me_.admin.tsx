@@ -49,6 +49,7 @@ const DEFAULT_LIMIT = 100
 const TREND_DAYS = 14
 
 type TrendPoint = { label: string; count: number }
+type DailyCountRow = { day: string | Date; count: number | bigint }
 
 const dayKeyFormat = 'yyyy-MM-dd'
 function buildDailySeries({
@@ -58,12 +59,14 @@ function buildDailySeries({
 }: {
 	start: Date
 	days: number
-	entries: Array<{ createdAt: Date }>
+	entries: Array<DailyCountRow>
 }): Array<TrendPoint> {
 	const counts = new Map<string, number>()
 	for (const entry of entries) {
-		const key = format(entry.createdAt, dayKeyFormat)
-		counts.set(key, (counts.get(key) ?? 0) + 1)
+		const key =
+			typeof entry.day === 'string' ? entry.day : format(entry.day, dayKeyFormat)
+		const count = typeof entry.count === 'bigint' ? Number(entry.count) : entry.count
+		counts.set(key, (counts.get(key) ?? 0) + count)
 	}
 
 	return Array.from({ length: days }, (_, index) => {
@@ -130,8 +133,8 @@ async function getLoaderData({ request }: { request: Request }) {
 		calls30,
 		postReads7,
 		postReads30,
-		signupEvents,
-		readEvents,
+		signupDailyCounts,
+		readDailyCounts,
 		teamCountsRaw,
 		roleCountsRaw,
 		topPostsRaw,
@@ -168,14 +171,20 @@ async function getLoaderData({ request }: { request: Request }) {
 		prisma.call.count({ where: { createdAt: { gte: start30 } } }),
 		prisma.postRead.count({ where: { createdAt: { gte: start7 } } }),
 		prisma.postRead.count({ where: { createdAt: { gte: start30 } } }),
-		prisma.user.findMany({
-			where: { createdAt: { gte: trendStart } },
-			select: { createdAt: true },
-		}),
-		prisma.postRead.findMany({
-			where: { createdAt: { gte: trendStart } },
-			select: { createdAt: true },
-		}),
+		prisma.$queryRaw<DailyCountRow[]>`
+			SELECT DATE("createdAt", 'localtime') AS day, COUNT(*) AS count
+			FROM "User"
+			WHERE DATE("createdAt", 'localtime') >= DATE(${trendStart}, 'localtime')
+			GROUP BY DATE("createdAt", 'localtime')
+			ORDER BY day ASC
+		`,
+		prisma.$queryRaw<DailyCountRow[]>`
+			SELECT DATE("createdAt", 'localtime') AS day, COUNT(*) AS count
+			FROM "PostRead"
+			WHERE DATE("createdAt", 'localtime') >= DATE(${trendStart}, 'localtime')
+			GROUP BY DATE("createdAt", 'localtime')
+			ORDER BY day ASC
+		`,
 		prisma.user.groupBy({
 			by: ['team'],
 			_count: { team: true },
@@ -198,12 +207,12 @@ async function getLoaderData({ request }: { request: Request }) {
 	const signupTrend = buildDailySeries({
 		start: trendStart,
 		days: TREND_DAYS,
-		entries: signupEvents,
+		entries: signupDailyCounts,
 	})
 	const readsTrend = buildDailySeries({
 		start: trendStart,
 		days: TREND_DAYS,
-		entries: readEvents,
+		entries: readDailyCounts,
 	})
 
 	const teamCounts = teamCountsRaw.map((item) => ({
