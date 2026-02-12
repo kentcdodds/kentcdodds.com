@@ -212,7 +212,7 @@
     "vite-env-only": "^3.0.3",
     "vite-plugin-cjs-interop": "^2.4.1",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^1.6.1"
+    "vitest": "^4.0.18"
   },
   "prettier": "@epic-web/config/prettier"
 }
