@@ -22,7 +22,7 @@ index af07007..86a97b4 100644
      formAction,
      formEncType: opts && opts.formEncType || "application/x-www-form-urlencoded",
      formData,
-+    headers: opts.headers,
++    headers: opts && opts.headers,
      json: undefined,
      text: undefined
    };
