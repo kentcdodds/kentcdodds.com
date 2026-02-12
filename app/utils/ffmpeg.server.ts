@@ -1,8 +1,8 @@
 import { spawn } from 'child_process'
 import fs from 'fs'
+import { randomUUID } from 'node:crypto'
 import path from 'path'
 import fsExtra from 'fs-extra'
-import * as uuid from 'uuid'
 
 const asset = (...p: Array<string>) =>
 	path.join(process.cwd(), 'app/assets', ...p)
@@ -10,7 +10,7 @@ const cache = (...p: Array<string>) =>
 	path.join(process.cwd(), '.cache/calls', ...p)
 
 async function createEpisodeAudio(callBase64: string, responseBase64: string) {
-	const id = uuid.v4()
+	const id = randomUUID()
 	const cacheDir = cache(id)
 	fsExtra.ensureDirSync(cacheDir)
 	const callPath = cache(id, 'call.mp3')
@@ -55,7 +55,7 @@ async function createEpisodeAudio(callBase64: string, responseBase64: string) {
 	})
 
 	const buffer = await fs.promises.readFile(outputPath)
-	await fs.promises.rmdir(cacheDir, { recursive: true })
+	await fs.promises.rm(cacheDir, { recursive: true, force: true })
 	return buffer
 }
 

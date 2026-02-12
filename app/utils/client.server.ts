@@ -1,8 +1,8 @@
 // This just allows us to track individual clients so we can keep track of
 // the posts they've read and make useful suggestions even if they're not logged in.
 
+import { randomUUID } from 'node:crypto'
 import { createCookieSessionStorage } from '@remix-run/node'
-import * as uuid from 'uuid'
 import { getRequiredServerEnvVar } from './misc.tsx'
 
 const clientStorage = createCookieSessionStorage({
@@ -44,7 +44,7 @@ async function getClientSession(request: Request, user: {} | null) {
 		if (user) return null
 		let clientId = session.get('clientId') as string | undefined
 		if (typeof clientId === 'string') return clientId
-		clientId = uuid.v4()
+		clientId = randomUUID()
 		session.set('clientId', clientId)
 		return clientId
 	}

@@ -54,7 +54,7 @@ for (const seasonListItem of seasonListItems) {
 				{ length: faker.number.int({ min: 1, max: 3 }) },
 				() => {
 					const name = faker.person.fullName()
-					const username = faker.internet.userName()
+					const username = faker.internet.username()
 					const website = faker.internet.url()
 					const links = [
 						faker.datatype.boolean()

@@ -1,5 +1,5 @@
+import { randomUUID } from 'node:crypto'
 import slugify from '@sindresorhus/slugify'
-import * as uuid from 'uuid'
 import {
 	type CallKentEpisode,
 	type TransistorAuthorizedJson,
@@ -101,7 +101,7 @@ async function createEpisode({
 	user: { firstName: string; email: string; team: string }
 	request: Request
 }) {
-	const id = uuid.v4()
+	const id = randomUUID()
 	const authorized = await fetchTransitor<TransistorAuthorizedJson>({
 		endpoint: 'v1/episodes/authorize_upload',
 		query: { filename: `${id}.mp3` },

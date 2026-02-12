@@ -128,7 +128,7 @@ export const cache: CachifiedCache = {
 			void updatePrimaryCacheValue!({
 				key,
 				cacheValue: entry,
-			}).then((response) => {
+			}).then((response: Response) => {
 				if (!response.ok) {
 					console.error(
 						`Error updating cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
@@ -147,7 +147,7 @@ export const cache: CachifiedCache = {
 			void updatePrimaryCacheValue!({
 				key,
 				cacheValue: undefined,
-			}).then((response) => {
+			}).then((response: Response) => {
 				if (!response.ok) {
 					console.error(
 						`Error deleting cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,

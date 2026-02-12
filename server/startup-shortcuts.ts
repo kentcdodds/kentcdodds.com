@@ -1,7 +1,7 @@
 import * as fs from 'node:fs'
-import * as tty from 'node:tty'
 import * as readline from 'node:readline'
 import { type Key } from 'node:readline'
+import * as tty from 'node:tty'
 import { execa } from 'execa'
 
 type ShortcutHandlers = {

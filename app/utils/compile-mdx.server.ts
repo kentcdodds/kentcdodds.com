@@ -318,7 +318,6 @@ async function getQueue() {
 
 	_queue = new PQueue({
 		concurrency: 1,
-		throwOnTimeout: true,
 		timeout: 1000 * 30,
 	})
 	return _queue

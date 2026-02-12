@@ -1,4 +1,4 @@
-import { render, screen, act } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { test, expect } from 'vitest'
 
@@ -23,7 +23,7 @@ test('allows you to undo and redo', async () => {
 
 	// add second value
 	input.value = 'two'
-	await act(() => userEvent.click(submit))
+	await userEvent.click(submit)
 
 	// assert new state
 	expect(undo).toBeEnabled()
@@ -34,7 +34,7 @@ test('allows you to undo and redo', async () => {
 
 	// add third value
 	input.value = 'three'
-	await act(() => userEvent.click(submit))
+	await userEvent.click(submit)
 
 	// assert new state
 	expect(undo).toBeEnabled()
@@ -44,7 +44,7 @@ test('allows you to undo and redo', async () => {
 	expect(future).toHaveTextContent(`Future:`)
 
 	// undo
-	await act(() => userEvent.click(undo))
+	await userEvent.click(undo)
 
 	// assert "undone" state
 	expect(undo).toBeEnabled()
@@ -54,7 +54,7 @@ test('allows you to undo and redo', async () => {
 	expect(future).toHaveTextContent(`Future: three`)
 
 	// undo again
-	await act(() => userEvent.click(undo))
+	await userEvent.click(undo)
 
 	// assert "double-undone" state
 	expect(undo).toBeDisabled()
@@ -64,7 +64,7 @@ test('allows you to undo and redo', async () => {
 	expect(future).toHaveTextContent(`Future: two, three`)
 
 	// redo
-	await act(() => userEvent.click(redo))
+	await userEvent.click(redo)
 
 	// assert undo + undo + redo state
 	expect(undo).toBeEnabled()
@@ -75,7 +75,7 @@ test('allows you to undo and redo', async () => {
 
 	// add fourth value
 	input.value = 'four'
-	await act(() => userEvent.click(submit))
+	await userEvent.click(submit)
 
 	// assert final state (note the lack of "third")
 	expect(undo).toBeEnabled()
@@ -85,9 +85,3 @@ test('allows you to undo and redo', async () => {
 	expect(future).toHaveTextContent(`Future:`)
 })
 
-// TODO: figure out what happened in the latest version of testing library with
-// this project that requires wrapping things in act
-/*
-eslint
-  testing-library/no-unnecessary-act: "off",
-*/

@@ -79,14 +79,9 @@ function FullScreenYouTubeEmbed({
 }
 
 /**
- *  in order to prevent this error when running native ESM in production
- *  TypeError: Unknown file extension ".jsx" for
- *  kentcdodds.com/node_modules/react-lite-youtube-embed/dist/index.es.jsx
- *
- *  we import it here from 'react-lite-youtube-embed/dist/index.es.jsx' and add
- *  it to serverDependenciesToBundle in remix.config.js
+ * We import from the package root so Vite respects the package "exports" map.
  */
-export { default as LiteYouTubeEmbed } from 'react-lite-youtube-embed/dist/index.es.jsx'
+export { default as LiteYouTubeEmbed } from 'react-lite-youtube-embed'
 export { FullScreenYouTubeEmbed }
 
 export const links = () => {

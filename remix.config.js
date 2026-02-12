@@ -21,5 +21,5 @@ export default {
 			],
 		})
 	},
-	serverDependenciesToBundle: ['react-lite-youtube-embed/dist/index.es.jsx'],
+	serverDependenciesToBundle: ['react-lite-youtube-embed'],
 }
