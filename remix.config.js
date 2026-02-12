@@ -8,9 +8,6 @@ export default {
 	ignoredRouteFiles: ['**/*'],
 	serverModuleFormat: 'esm',
 	serverPlatform: 'node',
-	tailwind: true,
-	postcss: true,
-	watchPaths: ['./tailwind.config.ts'],
 	routes: async (defineRoutes) => {
 		return flatRoutes('routes', defineRoutes, {
 			ignoredRouteFiles: [

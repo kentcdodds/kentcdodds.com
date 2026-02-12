@@ -173,8 +173,8 @@ plugins you have so it should work as you working as well.
 
 ## Styles
 
-We use Tailwind and PostCSS for our styles. That's all configured in the
-`tailwind.config.js` and `postcss.config.js` files.
+We use Tailwind for our styles. Tailwind is configured via `tailwind.config.ts`,
+`app/styles/tailwind.css`, and the Tailwind Vite plugin in `vite.config.ts`.
 
 ## Database
 
