@@ -1,4 +1,4 @@
-import { parseWithZod } from '@conform-to/zod'
+import { parseWithZod } from '@conform-to/zod/v4'
 import { useFetcher } from '@remix-run/react'
 
 import * as React from 'react'
