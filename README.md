@@ -1,4 +1,4 @@
-# Kent C. Dodds' site (Remix)
+# Kent C. Dodds' site
 
 [![Build Status][build-badge]][build]
 [![GPL 3.0 License][license-badge]][license]
