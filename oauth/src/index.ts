@@ -62,16 +62,15 @@ export default new OAuthProvider({
 				const parseResult = z
 					.object({
 						requestParams: z
-							.object({
+							.looseObject({
 								response_type: z.string().default('code'),
 								client_id: z.string(),
 								code_challenge: z.string(),
 								code_challenge_method: z.string(),
 								redirect_uri: z.string(),
-								scope: z.string().array().optional().default([]),
-								state: z.string().optional().default(''),
+								scope: z.string().array().default([]),
+								state: z.string().default(''),
 							})
-							.passthrough()
 							.transform(
 								({
 									response_type: responseType,
@@ -91,7 +90,9 @@ export default new OAuthProvider({
 							),
 						userId: z.string(),
 						props: z.object({ userId: z.string() }),
-						metadata: z.unknown(),
+						metadata: z.unknown().refine((value) => value !== undefined, {
+							message: 'Required',
+						}),
 					})
 					.safeParse(json)
 				if (!parseResult.success) {
