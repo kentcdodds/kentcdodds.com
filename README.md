@@ -8,7 +8,7 @@ built with Remix, React, TypeScript, Vite, and an Express server.
 
 ## Tech stack
 
-- Remix + React + TypeScript
+- React Router + React + TypeScript
 - Vite build pipeline
 - Express runtime server
 - Prisma + SQLite
