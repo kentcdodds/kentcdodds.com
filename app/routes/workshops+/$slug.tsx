@@ -7,7 +7,7 @@ import {
 } from '@remix-run/node'
 import { Link, useLoaderData, useParams } from '@remix-run/react'
 import * as React from 'react'
-import { serverOnly$ } from 'vite-env-only'
+import { serverOnly$ } from 'vite-env-only/macros'
 import { ArrowLink, BackLink } from '#app/components/arrow-button.tsx'
 import { ButtonLink } from '#app/components/button.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'

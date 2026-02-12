@@ -6,7 +6,7 @@ import {
 import { Link, useLoaderData, useParams } from '@remix-run/react'
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { serverOnly$ } from 'vite-env-only'
+import { serverOnly$ } from 'vite-env-only/macros'
 import { ArrowLink, BackLink } from '#app/components/arrow-button.tsx'
 import { BlurrableImage } from '#app/components/blurrable-image.tsx'
 import { CourseCard } from '#app/components/course-card.tsx'

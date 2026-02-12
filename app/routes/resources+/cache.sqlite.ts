@@ -1,5 +1,5 @@
 import { type ActionFunctionArgs, json, redirect } from '@remix-run/node'
-import { serverOnly$ } from 'vite-env-only'
+import { serverOnly$ } from 'vite-env-only/macros'
 import { cache } from '#app/utils/cache.server.ts'
 import {
 	getInstanceInfo,

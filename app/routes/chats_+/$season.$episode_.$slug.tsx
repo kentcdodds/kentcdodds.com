@@ -14,7 +14,7 @@ import {
 import { clsx } from 'clsx'
 import { motion } from 'framer-motion'
 import React, { useState } from 'react'
-import { serverOnly$ } from 'vite-env-only'
+import { serverOnly$ } from 'vite-env-only/macros'
 import { ArrowLink, BackLink } from '#app/components/arrow-button.tsx'
 import { FourOhFour } from '#app/components/errors.tsx'
 import { Grid } from '#app/components/grid.tsx'

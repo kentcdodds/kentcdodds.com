@@ -7,7 +7,7 @@ import {
 	type MetaFunction,
 } from '@remix-run/node'
 import { useParams } from '@remix-run/react'
-import { serverOnly$ } from 'vite-env-only'
+import { serverOnly$ } from 'vite-env-only/macros'
 import { IconLink } from '#app/components/icon-link.tsx'
 import { XIcon } from '#app/components/icons.tsx'
 import { H6, Paragraph } from '#app/components/typography.tsx'

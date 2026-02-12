@@ -9,7 +9,7 @@ import {
 	useLoaderData,
 	useParams,
 } from '@remix-run/react'
-import { serverOnly$ } from 'vite-env-only'
+import { serverOnly$ } from 'vite-env-only/macros'
 import { ServerError } from '#app/components/errors.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { TriangleIcon } from '#app/components/icons.tsx'
