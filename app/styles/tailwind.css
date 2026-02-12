@@ -1,10 +1,7 @@
 /* purgecss start ignore */
-@tailwind base;
-@tailwind components;
+@import "tailwindcss";
+@config "../../tailwind.config.ts";
 /* purgecss end ignore */
-
-@tailwind utilities;
-@tailwind screens;
 
 /* tailwind is configured to prefer this font */
 @font-face {

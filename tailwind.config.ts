@@ -9,7 +9,6 @@ import { heroTextAnimation } from './app/utils/animations.ts'
 const fromRoot = (p: string) => path.join(__dirname, p)
 
 export default {
-	mode: 'jit',
 	content: [fromRoot('./app/**/*.+(js|jsx|ts|tsx|mdx|md)')],
 	darkMode: 'class',
 	theme: {
