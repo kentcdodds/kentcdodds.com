@@ -1,9 +1,21 @@
-import { type TransformerOption } from '@cld-apis/types'
 import { buildImageUrl, setConfig } from 'cloudinary-build-url'
 import clsx from 'clsx'
 import emojiRegex from 'emoji-regex'
 import { type CSSProperties } from 'react'
 import { optionalTeams, toBase64, type OptionalTeam } from './utils/misc.tsx'
+
+type TransformerOption = {
+	resize?: {
+		width?: number
+		height?: number
+		aspectRatio?: string
+		type?: string
+		[key: string]: unknown
+	}
+	quality?: string | number
+	format?: string
+	[key: string]: unknown
+}
 
 setConfig({
 	cloudName: 'kentcdodds-com',
@@ -866,4 +878,4 @@ export {
 	getSocialImageWithPreTitle,
 	illustrationImages,
 }
-export type { ImageBuilder }
+export type { ImageBuilder, TransformerOption }
