@@ -208,7 +208,7 @@
     "start-server-and-test": "^2.1.3",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "vite": "^5.4.21",
+    "vite": "^7.3.1",
     "vite-env-only": "^3.0.3",
     "vite-plugin-cjs-interop": "^2.4.1",
     "vite-tsconfig-paths": "^6.1.1",
