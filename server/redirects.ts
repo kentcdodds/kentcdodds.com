@@ -2,7 +2,6 @@ import { type RequestHandler } from 'express'
 import {
 	compile as compileRedirectPath,
 	pathToRegexp,
-	type Key,
 } from 'path-to-regexp'
 
 function typedBoolean<T>(
@@ -44,15 +43,15 @@ function getRedirectsMiddleware({
 				console.error(`Invalid redirect on line ${lineNumber + 1}: "${line}"`)
 				return null
 			}
-			const keys: Array<Key> = []
 
 			const toUrl = to.includes('//')
 				? new URL(to)
 				: new URL(`https://same_host${to}`)
 			try {
+				const { regexp: fromRegexp, keys } = pathToRegexp(from)
 				return {
 					methods,
-					from: pathToRegexp(from, keys),
+					from: fromRegexp,
 					keys,
 					toPathname: compileRedirectPath(toUrl.pathname, {
 						encode: encodeURIComponent,
