@@ -7,9 +7,9 @@ import type * as MDX from 'mdast-util-mdx-jsx'
 import { bundleMDX } from 'mdx-bundler'
 import PQueue from 'p-queue'
 import calculateReadingTime from 'reading-time'
-import remarkAutolinkHeadings from 'remark-autolink-headings'
+import rehypeAutolinkHeadings from 'rehype-autolink-headings'
+import rehypeSlug from 'rehype-slug'
 import gfm from 'remark-gfm'
-import remarkSlug from 'remark-slug'
 import type * as U from 'unified'
 import { visit } from 'unist-util-visit'
 import { type GitHubFile } from '#app/types.ts'
@@ -268,13 +268,13 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
 			mdxOptions(options) {
 				options.remarkPlugins = [
 					...(options.remarkPlugins ?? []),
-					remarkSlug,
-					[remarkAutolinkHeadings, { behavior: 'wrap' }],
 					gfm,
 					...remarkPlugins,
 				]
 				options.rehypePlugins = [
 					...(options.rehypePlugins ?? []),
+					rehypeSlug,
+					[rehypeAutolinkHeadings, { behavior: 'wrap' }],
 					...rehypePlugins,
 				]
 				return options
