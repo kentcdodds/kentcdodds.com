@@ -1,7 +1,13 @@
 import { useMachine } from '@xstate/react'
 import gsap from 'gsap'
 import * as React from 'react'
-import { assign, createMachine, send as sendUtil } from 'xstate'
+import {
+	assign,
+	createMachine,
+	fromCallback,
+	fromPromise,
+	sendTo,
+} from 'xstate'
 import { type OptionalTeam } from '#app/types.ts'
 import { assertNonNull, getOptionalTeam } from '#app/utils/misc.tsx'
 import { Button, LinkButton } from '../button.tsx'
@@ -59,10 +65,9 @@ interface RecorderContext {
 	audioBlob: Blob | null
 }
 
-const recorderMachine = createMachine<RecorderContext>(
+const recorderMachine = createMachine(
 	{
 		id: 'recorder',
-		predictableActionArguments: true,
 		context: {
 			mediaRecorder: null,
 			audioDevices: [],
@@ -95,7 +100,11 @@ const recorderMachine = createMachine<RecorderContext>(
 				},
 			},
 			recording: {
-				invoke: { src: 'mediaRecorder', id: 'mediaRecorder' },
+				invoke: {
+					src: 'mediaRecorder',
+					id: 'mediaRecorder',
+					input: ({ context }: { context: RecorderContext }) => context,
+				},
 				initial: 'playing',
 				states: {
 					playing: {
@@ -105,7 +114,7 @@ const recorderMachine = createMachine<RecorderContext>(
 							},
 							pause: {
 								target: 'paused',
-								actions: sendUtil('pause', { to: 'mediaRecorder' }),
+								actions: sendTo('mediaRecorder', { type: 'pause' }),
 							},
 							stop: 'stopping',
 						},
@@ -114,13 +123,13 @@ const recorderMachine = createMachine<RecorderContext>(
 						on: {
 							resume: {
 								target: 'playing',
-								actions: sendUtil('resume', { to: 'mediaRecorder' }),
+								actions: sendTo('mediaRecorder', { type: 'resume' }),
 							},
 							stop: 'stopping',
 						},
 					},
 					stopping: {
-						entry: sendUtil('stop', { to: 'mediaRecorder' }),
+						entry: sendTo('mediaRecorder', { type: 'stop' }),
 						on: {
 							chunks: { target: '#recorder.done', actions: 'assignAudioBlob' },
 						},
@@ -135,27 +144,28 @@ const recorderMachine = createMachine<RecorderContext>(
 		},
 	},
 	{
-		services: {
-			getDevices: async () => {
+		actors: {
+			getDevices: fromPromise(async () => {
 				const devices = await navigator.mediaDevices.enumerateDevices()
 				return devices.filter(({ kind }) => kind === 'audioinput')
-			},
-			mediaRecorder: (context) => (sendBack, receive) => {
-				let mediaRecorder: MediaRecorder
+			}),
+			mediaRecorder: fromCallback(({ input, sendBack, receive }) => {
+				let mediaRecorder: MediaRecorder | undefined
 
 				async function go() {
 					const chunks: Array<BlobPart> = []
-					const deviceId = context.selectedAudioDevice?.deviceId
+					const deviceId = (input as RecorderContext).selectedAudioDevice?.deviceId
 					const audio = deviceId ? { deviceId: { exact: deviceId } } : true
 					const mediaStream = await window.navigator.mediaDevices.getUserMedia({
 						audio,
 					})
-					mediaRecorder = new MediaRecorder(mediaStream)
-					sendBack({ type: 'mediaRecorderCreated', mediaRecorder })
+					const recorder = new MediaRecorder(mediaStream)
+					mediaRecorder = recorder
+					sendBack({ type: 'mediaRecorderCreated', mediaRecorder: recorder })
 
-					mediaRecorder.ondataavailable = (event) => {
+					recorder.ondataavailable = (event: BlobEvent) => {
 						chunks.push(event.data)
-						if (mediaRecorder.state === 'inactive') {
+						if (recorder.state === 'inactive') {
 							sendBack({
 								type: 'chunks',
 								blob: new Blob(chunks, {
@@ -165,15 +175,15 @@ const recorderMachine = createMachine<RecorderContext>(
 						}
 					}
 
-					mediaRecorder.start()
+					recorder.start()
 
-					receive((event) => {
+					receive((event: any) => {
 						if (event.type === 'pause') {
-							mediaRecorder.pause()
+							recorder.pause()
 						} else if (event.type === 'resume') {
-							mediaRecorder.resume()
+							recorder.resume()
 						} else if (event.type === 'stop') {
-							mediaRecorder.stop()
+							recorder.stop()
 						}
 					})
 				}
@@ -181,22 +191,22 @@ const recorderMachine = createMachine<RecorderContext>(
 				void go()
 
 				return () => {
-					stopMediaRecorder(mediaRecorder)
+					if (mediaRecorder) stopMediaRecorder(mediaRecorder)
 				}
-			},
+			}),
 		},
 		actions: {
 			assignAudioDevices: assign({
-				audioDevices: (context, event) => event.data,
+				audioDevices: ({ event }: any) => event.output,
 			}),
 			assignSelectedAudioDevice: assign({
-				selectedAudioDevice: (context, event) => event.selectedAudioDevice,
+				selectedAudioDevice: ({ event }: any) => event.selectedAudioDevice,
 			}),
 			assignMediaRecorder: assign({
-				mediaRecorder: (context, event) => event.mediaRecorder,
+				mediaRecorder: ({ event }: any) => event.mediaRecorder,
 			}),
 			assignAudioBlob: assign({
-				audioBlob: (context, event) => event.blob,
+				audioBlob: ({ event }: any) => event.blob,
 			}),
 		},
 	},
@@ -209,7 +219,8 @@ function CallRecorder({
 	onRecordingComplete: (audio: Blob) => void
 	team: string
 }) {
-	const [state, send] = useMachine(recorderMachine)
+	const [state, sendActor] = useMachine(recorderMachine as any)
+	const send = sendActor as (event: any) => void
 	const [timer, setTimer] = React.useState<number>(0)
 	const metadataRef = React.useRef<Array<number>>([])
 	const playbackRef = React.useRef<HTMLAudioElement | null>(null)
@@ -247,7 +258,7 @@ function CallRecorder({
 				<Paragraph className="mb-8">Select your device:</Paragraph>
 				<ul>
 					{state.context.audioDevices.length
-						? state.context.audioDevices.map((device) => (
+						? state.context.audioDevices.map((device: MediaDeviceInfo) => (
 								<li key={device.deviceId}>
 									<Tag
 										onClick={() => {
@@ -273,7 +284,7 @@ function CallRecorder({
 				<Paragraph className="mb-8">
 					An error occurred while loading recording devices.
 				</Paragraph>
-				<Button onClick={() => send('retry')}>Try again</Button>
+				<Button onClick={() => send({ type: 'retry' })}>Try again</Button>
 			</div>
 		)
 	}
