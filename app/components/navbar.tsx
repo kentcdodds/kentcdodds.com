@@ -325,7 +325,7 @@ function Navbar() {
 
 	return (
 		<div className="px-5vw py-9 lg:py-12">
-			<nav className="text-primary mx-auto flex max-w-8xl items-center justify-between">
+			<nav className="text-primary mx-auto flex max-w-[96rem] items-center justify-between">
 				<div className="flex justify-center gap-4 align-middle">
 					<Link
 						prefetch="intent"

@@ -173,8 +173,9 @@ plugins you have so it should work as you working as well.
 
 ## Styles
 
-We use Tailwind for our styles. Tailwind is configured via `tailwind.config.ts`,
-`app/styles/tailwind.css`, and the Tailwind Vite plugin in `vite.config.ts`.
+We use Tailwind for our styles. Tailwind is configured directly in
+`app/styles/tailwind.css` (CSS-first config) and via the Tailwind Vite plugin in
+`vite.config.ts`.
 
 ## Database
 

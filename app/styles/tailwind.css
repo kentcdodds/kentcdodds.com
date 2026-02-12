@@ -1,6 +1,118 @@
 @import 'tailwindcss' source(none);
-@config '../../tailwind.config.ts';
 @source '../**/*.{js,jsx,ts,tsx,mdx,md}';
+@plugin '@tailwindcss/typography';
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+	--breakpoint-sm: 480px;
+	--breakpoint-md: 640px;
+	--breakpoint-lg: 1024px;
+	--breakpoint-xl: 1500px;
+
+	--color-transparent: transparent;
+	--color-current: currentColor;
+	--color-white: #fff;
+	--color-black: #000;
+	--color-gray-100: #f7f7f7;
+	--color-gray-200: #e6e9ee;
+	--color-gray-300: #dde0e4;
+	--color-gray-400: #818890;
+	--color-gray-500: #535661;
+	--color-gray-600: #4b4c53;
+	--color-gray-700: #3a3d4a;
+	--color-gray-800: #2e3039;
+	--color-gray-850: #282a34;
+	--color-gray-900: #1f2028;
+	--color-slate-500: #a9adc1;
+	--color-team-unknown: #818890;
+	--color-team-current: var(--color-team-unknown);
+	--color-team-yellow: #846901;
+	--color-team-blue: #36a3ff;
+	--color-team-red: #ff4545;
+	--color-yellow-500: #846901;
+	--color-yellow-500-inverted: #ffd644;
+	--color-blue-100: #e8f2ff;
+	--color-blue-500: #4b96ff;
+	--color-red-500: #ff4545;
+	--color-green-100: #e7f9ed;
+	--color-green-500: #30c85e;
+	--color-green-600: #68d94a;
+
+	--spacing-5vw: 5vw;
+	--spacing-8vw: 8vw;
+	--spacing-10vw: 10vw;
+
+	--text-xl: 1.375rem;
+	--text-2xl: 1.5625rem;
+	--text-3xl: 1.875rem;
+	--text-4xl: 2.5rem;
+	--text-5xl: 3.125rem;
+	--text-6xl: 3.75rem;
+	--text-7xl: 4.375rem;
+
+	--animate-spin-slow: spin 3s linear infinite;
+	--animate-spin-xslow: spin 7s linear infinite;
+	--animate-reverse-spin: reverse-spin 1s linear infinite;
+	--animate-hero-image-reveal: hero-image-reveal 750ms;
+	--animate-hero-text-reveal: hero-text-reveal 1.3s;
+
+	@keyframes reverse-spin {
+		from {
+			transform: rotate(360deg);
+		}
+	}
+
+	@keyframes hero-image-reveal {
+		from {
+			opacity: 0;
+			transform: scale(1.5);
+		}
+
+		to {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+
+	@keyframes hero-text-reveal {
+		0% {
+			opacity: 0;
+			transform: translate(0, 25px);
+		}
+
+		25% {
+			opacity: var(--hero-text-reveal-opacity-step-0);
+			transform: translate(
+				var(--hero-text-reveal-x-step-0),
+				var(--hero-text-reveal-y-step-0)
+			);
+		}
+
+		50% {
+			opacity: var(--hero-text-reveal-opacity-step-1);
+			transform: translate(
+				var(--hero-text-reveal-x-step-1),
+				var(--hero-text-reveal-y-step-1)
+			);
+		}
+
+		75% {
+			opacity: var(--hero-text-reveal-opacity-step-2);
+			transform: translate(
+				var(--hero-text-reveal-x-step-2),
+				var(--hero-text-reveal-y-step-2)
+			);
+		}
+
+		100% {
+			opacity: var(--hero-text-reveal-opacity-step-3);
+			transform: translate(
+				var(--hero-text-reveal-x-step-3),
+				var(--hero-text-reveal-y-step-3)
+			);
+		}
+	}
+}
 
 /* tailwind is configured to prefer this font */
 @font-face {
