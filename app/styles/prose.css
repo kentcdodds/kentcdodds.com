@@ -1,3 +1,248 @@
+/* prose customization migrated from Tailwind config */
+.prose > * {
+	grid-column: 1 / -1;
+}
+
+.prose p,
+.prose > div {
+	margin-top: 0;
+	margin-bottom: 2rem;
+	font-size: 1.125rem;
+}
+
+.prose a {
+	text-decoration: none;
+}
+
+.prose a:hover,
+.prose a:focus {
+	text-decoration: underline;
+	outline: none;
+}
+
+.prose strong {
+	font-weight: 500;
+	font-size: 1.125rem;
+}
+
+.prose hr {
+	margin-top: 2rem;
+	margin-bottom: 4rem;
+}
+
+.prose pre {
+	color: var(--base05);
+	background-color: var(--base00);
+	margin-top: 0;
+	margin-bottom: 2rem;
+	margin-left: -10vw;
+	margin-right: -10vw;
+	padding: 2rem;
+	border-radius: 0;
+}
+
+.prose .embed {
+	position: relative;
+	margin-left: -10vw;
+	margin-right: -10vw;
+}
+
+.prose .embed > div {
+	height: 0;
+}
+
+.prose .embed > div > iframe {
+	height: 100% !important;
+	width: 100% !important;
+	top: 0;
+	left: 0;
+	position: absolute;
+	border: none;
+	border-radius: 0 !important;
+}
+
+.prose ul,
+.prose ol {
+	margin-top: 0;
+	margin-bottom: 2rem;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+	margin-top: 0;
+	margin-bottom: 0;
+	font-weight: 400;
+}
+
+.prose h1,
+.prose h2 {
+	font-size: 1.5625rem;
+	margin-top: 5rem;
+	margin-bottom: 2.5rem;
+}
+
+.prose h3 {
+	font-size: 1.375rem;
+	margin-top: 4rem;
+	margin-bottom: 2.5rem;
+}
+
+.prose h4,
+.prose h5,
+.prose h6 {
+	font-size: 1.125rem;
+}
+
+.prose img {
+	margin-top: 0;
+	margin-bottom: 0;
+	border-radius: 0.5rem;
+}
+
+.prose blockquote {
+	font-weight: 400;
+	border: none;
+	border-radius: 0.5rem;
+	padding: 2rem;
+	margin-top: 0;
+	margin-bottom: 2.5rem;
+}
+
+.prose blockquote > :last-child {
+	margin-bottom: 0;
+}
+
+.prose.prose-light {
+	color: var(--color-gray-500);
+}
+
+.prose.prose-light a {
+	color: var(--color-team-current);
+}
+
+.prose.prose-light strong {
+	color: var(--color-black);
+}
+
+.prose.prose-light hr {
+	border-color: var(--color-gray-200);
+}
+
+.prose.prose-light code {
+	color: var(--color-gray-800);
+}
+
+.prose.prose-light h1,
+.prose.prose-light h2,
+.prose.prose-light h3,
+.prose.prose-light h4,
+.prose.prose-light h5,
+.prose.prose-light h6,
+.prose.prose-light thead th {
+	color: var(--color-black);
+}
+
+.prose.prose-light blockquote {
+	color: var(--color-gray-500);
+	background-color: var(--color-gray-100);
+}
+
+.prose.prose-light thead,
+.prose.prose-light tbody tr {
+	border-bottom-color: var(--color-gray-200);
+}
+
+.dark .dark\:prose-dark {
+	color: var(--color-slate-500);
+}
+
+.dark .dark\:prose-dark a {
+	color: var(--color-team-current);
+}
+
+.dark .dark\:prose-dark strong {
+	color: var(--color-white);
+}
+
+.dark .dark\:prose-dark hr {
+	border-color: var(--color-gray-600);
+}
+
+.dark .dark\:prose-dark code {
+	color: var(--color-gray-100);
+}
+
+.dark .dark\:prose-dark h1,
+.dark .dark\:prose-dark h2,
+.dark .dark\:prose-dark h3,
+.dark .dark\:prose-dark h4,
+.dark .dark\:prose-dark h5,
+.dark .dark\:prose-dark h6,
+.dark .dark\:prose-dark thead th {
+	color: var(--color-white);
+}
+
+.dark .dark\:prose-dark blockquote {
+	color: var(--color-slate-500);
+	background-color: var(--color-gray-800);
+}
+
+.dark .dark\:prose-dark thead,
+.dark .dark\:prose-dark tbody tr {
+	border-bottom-color: var(--color-gray-600);
+}
+
+@media (min-width: 1024px) {
+	.prose > * {
+		grid-column: 3 / span 8;
+	}
+
+	.prose pre {
+		border-radius: 0.5rem;
+		margin-left: 0;
+		margin-right: 0;
+		grid-column: 2 / span 10;
+	}
+
+	.prose .embed {
+		margin-left: 0;
+		margin-right: 0;
+		grid-column: 2 / span 10;
+	}
+
+	.prose .embed > div > iframe {
+		border-radius: 0.5rem !important;
+	}
+
+	.prose h1,
+	.prose h2,
+	.prose h3,
+	.prose h4,
+	.prose h5,
+	.prose h6 {
+		font-weight: 500;
+	}
+
+	.prose h1,
+	.prose h2 {
+		font-size: 1.875rem;
+	}
+
+	.prose h3 {
+		font-size: 1.5625rem;
+	}
+
+	.prose h4,
+	.prose h5,
+	.prose h6 {
+		font-size: 1.375rem;
+	}
+}
+
 /* code syntax highlighting */
 /* dark is default: */
 pre {

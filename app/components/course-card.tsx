@@ -127,7 +127,7 @@ export function CourseCard({
 				</div>
 				<div
 					className={clsx(
-						'dark:border-gray-950 flex aspect-4/3 items-center justify-center rounded-xl border border-gray-300 dark:border-black',
+						'dark:border-gray-950 flex aspect-[4/3] items-center justify-center rounded-xl border border-gray-300 dark:border-black',
 						horizontal && '@2xl:aspect-[11/6]',
 					)}
 				>

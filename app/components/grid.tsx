@@ -36,7 +36,7 @@ const Grid = function Grid({
 		>
 			{featured ? (
 				<div className="absolute inset-0 -mx-5vw">
-					<div className="bg-secondary mx-auto h-full w-full max-w-8xl rounded-lg" />
+					<div className="bg-secondary mx-auto h-full w-full max-w-[96rem] rounded-lg" />
 				</div>
 			) : null}
 

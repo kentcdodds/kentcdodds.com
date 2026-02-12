@@ -92,8 +92,8 @@ function HeroSection({
 							className={clsx(
 								'h-auto w-full object-contain',
 								{
-									'max-h-50vh': imageSize === 'medium',
-									'max-h-75vh': imageSize === 'giant',
+									'max-h-[50vh]': imageSize === 'medium',
+									'max-h-[75vh]': imageSize === 'giant',
 								},
 								imageProps.className,
 							)}
@@ -107,8 +107,8 @@ function HeroSection({
 								className: clsx(
 									'h-auto w-full object-contain motion-safe:animate-hero-image-reveal',
 									{
-										'max-h-50vh': imageSize === 'medium',
-										'max-h-75vh': imageSize === 'giant',
+										'max-h-[50vh]': imageSize === 'medium',
+										'max-h-[75vh]': imageSize === 'giant',
 									},
 								),
 							})}

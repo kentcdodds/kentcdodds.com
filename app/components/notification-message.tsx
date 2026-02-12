@@ -108,7 +108,7 @@ function NotificationMessage({
 					)}
 				>
 					<div
-						className={clsx('mx-auto flex w-full max-w-8xl', {
+						className={clsx('mx-auto flex w-full max-w-[96rem]', {
 							'justify-end': position === 'bottom-right',
 							'justify-center': position === 'top-center',
 						})}

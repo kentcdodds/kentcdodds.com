@@ -30,7 +30,7 @@ const arrowRotationMap = {
 	right: '-rotate-90',
 	down: 'rotate-0',
 	left: 'rotate-90',
-	'top-right': '-rotate-135',
+	'top-right': '-rotate-[135deg]',
 }
 
 export function ArrowIcon({
