@@ -1,16 +1,8 @@
-import path from 'path'
-import cqPlugin from '@tailwindcss/container-queries'
 import typography from '@tailwindcss/typography'
 import { type Config } from 'tailwindcss'
 import { heroTextAnimation } from './app/utils/animations.ts'
 
-// const __dirname = path.dirname(fileURLToPath(import.meta.url))
-// TODO: check why prettier reports that __dirname already declared
-const fromRoot = (p: string) => path.join(__dirname, p)
-
 export default {
-	mode: 'jit',
-	content: [fromRoot('./app/**/*.+(js|jsx|ts|tsx|mdx|md)')],
 	darkMode: 'class',
 	theme: {
 		screens: {
@@ -344,5 +336,5 @@ export default {
 			},
 		},
 	},
-	plugins: [typography, cqPlugin],
+	plugins: [typography],
 } satisfies Config
