@@ -214,6 +214,7 @@
   "overrides": {
     "hono": "^4.11.7",
     "lodash": "^4.17.23",
+    "esbuild": "^0.27.3",
     "estree-util-value-to-estree": "^3.3.3",
     "tar": "^7.5.7"
   },
