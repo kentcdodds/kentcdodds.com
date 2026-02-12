@@ -121,7 +121,6 @@
     "metascraper-image": "^5.49.21",
     "metascraper-title": "^5.49.21",
     "morgan": "^1.10.1",
-    "node-fetch": "^3.3.2",
     "on-finished": "^2.4.1",
     "p-limit": "^7.3.0",
     "p-props": "^6.1.0",
