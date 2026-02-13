@@ -1,4 +1,3 @@
-import { CustomCheckboxContainer, CustomCheckboxInput } from '@reach/checkbox'
 import { clsx } from 'clsx'
 import { type ChangeEventHandler } from 'react'
 
@@ -11,10 +10,7 @@ interface TagProps {
 
 function Tag({ tag, selected, onClick, disabled }: TagProps) {
 	return (
-		<CustomCheckboxContainer
-			as="label"
-			checked={selected}
-			onChange={onClick}
+		<label
 			className={clsx(
 				'relative mb-4 mr-4 block h-auto w-auto cursor-pointer rounded-full px-6 py-3 transition',
 				{
@@ -24,11 +20,18 @@ function Tag({ tag, selected, onClick, disabled }: TagProps) {
 					'opacity-25': disabled,
 				},
 			)}
-			disabled={disabled}
 		>
-			<CustomCheckboxInput checked={selected} value={tag} className="sr-only" />
+			<input
+				type="checkbox"
+				checked={selected}
+				onChange={onClick}
+				readOnly={!onClick}
+				disabled={disabled}
+				value={tag}
+				className="sr-only"
+			/>
 			<span>{tag}</span>
-		</CustomCheckboxContainer>
+		</label>
 	)
 }
 
