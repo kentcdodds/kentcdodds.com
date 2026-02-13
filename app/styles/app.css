@@ -146,8 +146,49 @@ light-mode {
 	}
 }
 
-a {
-	color: var(--color-team-current);
+/* Reach Tabs defaults are unlayered and can override Tailwind utilities in v4 */
+[data-reach-tab-list].bg-transparent {
+	background: transparent;
+}
+
+[data-reach-tab-list].bg-transparent [data-reach-tab]:active {
+	background: transparent;
+}
+
+[data-reach-tab].border-none {
+	border: 0;
+}
+
+[data-reach-tab].inline-flex {
+	display: inline-flex;
+}
+
+[data-reach-tab].items-center {
+	align-items: center;
+}
+
+[data-reach-tab].p-0 {
+	padding: 0;
+}
+
+[data-reach-tab].text-left {
+	text-align: left;
+}
+
+[data-reach-tab].text-primary {
+	color: var(--color-black);
+}
+
+.dark [data-reach-tab].text-primary {
+	color: var(--color-white);
+}
+
+[data-reach-tab].text-gray-600 {
+	color: var(--color-gray-600);
+}
+
+.dark [data-reach-tab].dark\:text-slate-500 {
+	color: var(--color-slate-500);
 }
 
 .underlined {

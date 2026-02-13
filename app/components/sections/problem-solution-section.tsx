@@ -19,30 +19,15 @@ import { Grid } from '../grid.tsx'
 import { ArrowIcon } from '../icons.tsx'
 import { H2, H3, Paragraph } from '../typography.tsx'
 
-function Tab({ isSelected, children }: TabProps & { isSelected?: boolean }) {
+function Tab({ children }: TabProps & { isSelected?: boolean }) {
 	return (
 		<ReachTab
-			className={clsx(
-				'hover:text-primary inline-flex w-full items-center border-none p-0 transition focus:bg-transparent',
-				{
-					'text-primary': isSelected,
-					'text-gray-600 dark:text-slate-500': !isSelected,
-				},
-			)}
+			className="group hover:text-primary inline-flex w-full items-center border-none p-0 text-left text-gray-600 opacity-60 transition hover:opacity-90 focus:bg-transparent dark:text-slate-500 data-selected:text-primary data-selected:opacity-100"
 		>
 			<span>{children}</span>
-			<AnimatePresence>
-				{isSelected ? (
-					<motion.span
-						className="ml-8 mt-4 hidden h-12 items-center lg:flex"
-						initial={{ x: -20, opacity: 0 }}
-						animate={{ x: 0, opacity: 1, transition: { duration: 0.15 } }}
-						exit={{ x: 20, opacity: 0, transition: { duration: 0.15 } }}
-					>
-						<ArrowIcon size={76} direction="right" />
-					</motion.span>
-				) : null}
-			</AnimatePresence>
+			<span className="ml-6 hidden -translate-x-5 self-center items-center leading-none opacity-0 transition lg:inline-flex group-data-selected:translate-x-0 group-data-selected:opacity-100">
+				<ArrowIcon size={76} direction="right" className="block" />
+			</span>
 		</ReachTab>
 	)
 }
@@ -120,7 +105,7 @@ function ProblemSolutionSection({
 			<hr className="col-span-full mb-10 mt-16 border-gray-200 dark:border-gray-600 lg:mb-20 lg:mt-24" />
 
 			<div className="order-1 col-span-full col-start-1 lg:order-3 lg:col-span-5 lg:mt-52 lg:pt-2">
-				<TabList className="inline-flex flex-row space-x-8 bg-transparent text-xl leading-snug text-white lg:flex-col lg:space-x-0 lg:text-7xl">
+				<TabList className="inline-flex flex-row space-x-8 bg-transparent text-xl leading-snug text-primary lg:flex-col lg:space-x-0 lg:text-7xl">
 					<Tab>blog</Tab>
 					<Tab>courses</Tab>
 					<Tab>podcasts</Tab>

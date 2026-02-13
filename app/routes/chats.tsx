@@ -252,7 +252,7 @@ function PodcastHome() {
 							// Because we have a link right under the tab, we'll keep this off
 							// the tab "tree" and rely on focusing/activating the link.
 							tabIndex={-1}
-							className="border-none p-0 text-4xl leading-tight focus:bg-transparent focus:outline-none"
+							className="border-none p-0 text-left text-4xl leading-tight focus:bg-transparent focus:outline-none"
 						>
 							{/*
                 The link is here for progressive enhancement. Even though this

@@ -497,7 +497,7 @@ function YouScreen() {
 				onDismiss={() => setDeleteModalOpen(false)}
 				isOpen={deleteModalOpen}
 				aria-label="Delete your account"
-				className="w-11/12 rounded-lg border-2 border-black dark:border-white dark:bg-gray-900 lg:max-w-screen-lg lg:px-24 lg:py-14"
+				className="!w-11/12 rounded-lg border-2 border-black dark:border-white dark:!bg-gray-900 lg:!max-w-screen-lg lg:!px-24 lg:!py-14"
 			>
 				<H3>Delete your KCD Account</H3>
 				<Paragraph>
