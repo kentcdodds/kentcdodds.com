@@ -130,7 +130,6 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	matches,
 }) => {
 	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
-	if (!data) return []
 	const { totalBlogReaders, posts } = data as SerializeFrom<typeof loader>
 	return getSocialMetas({
 		title: 'The Kent C. Dodds Blog',

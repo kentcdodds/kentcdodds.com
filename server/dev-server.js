@@ -1,4 +1,3 @@
-import 'dotenv/config'
 import * as readline from 'node:readline'
 import { execa } from 'execa'
 
