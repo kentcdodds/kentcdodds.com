@@ -28,6 +28,7 @@ import {
 	oldImgSocial,
 	rickRollMiddleware,
 } from './redirects.js'
+import { markdownAcceptMiddleware } from './markdown-accept.js'
 import { registerStartupShortcuts } from './startup-shortcuts.js'
 
 sourceMapSupport.install()
@@ -314,6 +315,10 @@ app.use('/.well-known/*', (req, res, next) => {
 	res.header('Access-Control-Allow-Origin', '*')
 	next()
 })
+
+// Content negotiation for MDX-backed pages:
+// `Accept: text/markdown` returns the raw markdown source.
+app.use(markdownAcceptMiddleware)
 
 async function getRequestHandler(): Promise<RequestHandler> {
 	function getLoadContext(req: any, res: any) {
