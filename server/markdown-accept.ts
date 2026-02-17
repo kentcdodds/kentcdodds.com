@@ -1,5 +1,6 @@
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import { type Request, type RequestHandler } from 'express'
-import { downloadMdxFilesCached } from '../app/utils/mdx.server.ts'
 
 type MdxRouteInfo = { contentDir: 'blog' | 'pages'; slug: string }
 
@@ -29,17 +30,42 @@ function getMdxRouteInfoFromPath(pathname: string): MdxRouteInfo | null {
 	return null
 }
 
-function findMdxIndexFileContent(
-	files: Array<{ path: string; content: string }>,
-	slug: string,
-): string | null {
-	// Mirrors the `compileMdx` index-file selection, but without regex pitfalls
-	// when slugs contain "." or other special chars.
-	for (const ext of ['mdx', 'md'] as const) {
-		const suffix = `${slug}/index.${ext}`
-		const found = files.find((f) => f.path.replace(/\\/g, '/').endsWith(suffix))
-		if (found) return found.content
+function isPathInside(parentDir: string, candidatePath: string): boolean {
+	const relative = path.relative(parentDir, candidatePath)
+	return Boolean(relative) && !relative.startsWith('..') && !path.isAbsolute(relative)
+}
+
+async function readMarkdownSourceFromDisk(
+	routeInfo: MdxRouteInfo,
+): Promise<string | null> {
+	const baseDir = path.resolve(process.cwd(), 'content', routeInfo.contentDir)
+
+	const candidates: Array<string> = []
+	if (routeInfo.slug.endsWith('.mdx') || routeInfo.slug.endsWith('.md')) {
+		candidates.push(path.join(baseDir, routeInfo.slug))
+	} else {
+		candidates.push(path.join(baseDir, `${routeInfo.slug}.mdx`))
+		candidates.push(path.join(baseDir, `${routeInfo.slug}.md`))
 	}
+	candidates.push(path.join(baseDir, routeInfo.slug, 'index.mdx'))
+	candidates.push(path.join(baseDir, routeInfo.slug, 'index.md'))
+
+	for (const candidate of candidates) {
+		const resolvedCandidate = path.resolve(candidate)
+		if (!isPathInside(baseDir, resolvedCandidate)) continue
+
+		try {
+			return await fs.readFile(resolvedCandidate, 'utf8')
+		} catch (error: unknown) {
+			// Try the next candidate on "not found" / "not a directory" errors.
+			if (typeof error === 'object' && error && 'code' in error) {
+				const code = String((error as any).code)
+				if (code === 'ENOENT' || code === 'ENOTDIR') continue
+			}
+			throw error
+		}
+	}
+
 	return null
 }
 
@@ -51,17 +77,7 @@ const markdownAcceptMiddleware: RequestHandler = (req, res, next) => {
 	if (!routeInfo) return next()
 
 	void (async () => {
-		const downloaded = await downloadMdxFilesCached(
-			routeInfo.contentDir,
-			routeInfo.slug,
-			{},
-		)
-		if (!downloaded.files.length) return next()
-
-		const markdownSource = findMdxIndexFileContent(
-			downloaded.files,
-			routeInfo.slug,
-		)
+		const markdownSource = await readMarkdownSourceFromDisk(routeInfo)
 		if (!markdownSource) return next()
 
 		res.status(200)
