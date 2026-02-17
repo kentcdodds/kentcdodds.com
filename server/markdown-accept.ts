@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response } from 'express'
+import type { Request, RequestHandler } from 'express'
 import { downloadMdxFilesCached } from '../app/utils/mdx.server.ts'
 
 type MdxRouteInfo = { contentDir: 'blog' | 'pages'; slug: string }
@@ -43,18 +43,14 @@ function findMdxIndexFileContent(
 	return null
 }
 
-async function handleMarkdownAcceptRequest(
-	req: Request,
-	res: Response,
-	next: NextFunction,
-) {
+const markdownAcceptMiddleware: RequestHandler = (req, res, next) => {
 	if (req.method !== 'GET' && req.method !== 'HEAD') return next()
 	if (!requestAcceptsMarkdown(req)) return next()
 
 	const routeInfo = getMdxRouteInfoFromPath(req.path)
 	if (!routeInfo) return next()
 
-	try {
+	void (async () => {
 		const downloaded = await downloadMdxFilesCached(
 			routeInfo.contentDir,
 			routeInfo.slug,
@@ -76,13 +72,10 @@ async function handleMarkdownAcceptRequest(
 		res.append('Vary', 'Cookie')
 		res.setHeader('Cache-Control', 'private, max-age=3600')
 
-		if (req.method === 'HEAD') return res.end()
-		return res.send(markdownSource)
-	} catch {
-		// If anything goes sideways, defer to Remix's normal handling.
-		return next()
-	}
+		if (req.method === 'HEAD') return void res.end()
+		res.send(markdownSource)
+	})().catch(() => next())
 }
 
-export { handleMarkdownAcceptRequest as markdownAcceptMiddleware }
+export { markdownAcceptMiddleware }
 
