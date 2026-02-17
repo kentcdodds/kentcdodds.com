@@ -119,7 +119,10 @@ try {
 	process.exitCode = 1
 } finally {
 	child.kill('SIGTERM')
-	await Promise.race([new Promise((r) => child.once('exit', r)), delay(5_000)])
-	if (!child.killed) child.kill('SIGKILL')
+	const exited = await Promise.race([
+		new Promise((resolve) => child.once('exit', () => resolve(true))),
+		delay(5_000).then(() => false),
+	])
+	if (!exited) child.kill('SIGKILL')
 }
 

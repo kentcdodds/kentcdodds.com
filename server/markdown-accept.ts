@@ -78,7 +78,7 @@ const markdownAcceptMiddleware: RequestHandler = (req, res, next) => {
 
 	void (async () => {
 		const markdownSource = await readMarkdownSourceFromDisk(routeInfo)
-		if (!markdownSource) return next()
+		if (markdownSource === null) return next()
 
 		res.status(200)
 		res.setHeader('Content-Type', 'text/markdown; charset=utf-8')
@@ -90,7 +90,10 @@ const markdownAcceptMiddleware: RequestHandler = (req, res, next) => {
 
 		if (req.method === 'HEAD') return void res.end()
 		res.send(markdownSource)
-	})().catch(() => next())
+	})().catch((error) => {
+		console.error('Failed to read markdown source.', error)
+		next()
+	})
 }
 
 export { markdownAcceptMiddleware }
