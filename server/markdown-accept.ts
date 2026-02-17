@@ -1,4 +1,4 @@
-import type { Request, RequestHandler } from 'express'
+import { type Request, type RequestHandler } from 'express'
 import { downloadMdxFilesCached } from '../app/utils/mdx.server.ts'
 
 type MdxRouteInfo = { contentDir: 'blog' | 'pages'; slug: string }

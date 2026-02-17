@@ -23,12 +23,12 @@ import serverTiming from 'server-timing'
 import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
 import { getInstanceInfo } from '../app/utils/litefs-js.server.ts'
+import { markdownAcceptMiddleware } from './markdown-accept.js'
 import {
 	getRedirectsMiddleware,
 	oldImgSocial,
 	rickRollMiddleware,
 } from './redirects.js'
-import { markdownAcceptMiddleware } from './markdown-accept.js'
 import { registerStartupShortcuts } from './startup-shortcuts.js'
 
 sourceMapSupport.install()
