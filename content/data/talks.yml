@@ -1,3 +1,14 @@
+- title: TBD
+  deliveries:
+    - event: '[MCP Dev Summit North America](https://events.linuxfoundation.org/mcp-dev-summit-north-america/)'
+      date: 2026-04-02
+    - event: '[Laracon 2026](https://laracon.us/)'
+      date: 2026-07-28
+    - event: '[AgentConf 2026](https://agent.sh/)'
+      date: 2026-09-17
+    - event: '[Nerdearla Argentina 2026](https://nerdearla.com/en/argentina/)'
+      date: 2026-09-24
+
 - title: 'How I Build Web Applications in 2026'
   deliveries:
     - event: '[Resend DevTools Meetup](https://luma.com/ia00vywi)'
