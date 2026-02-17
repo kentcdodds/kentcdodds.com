@@ -1,5 +1,5 @@
-import path from 'node:path'
 import { spawn } from 'node:child_process'
+import path from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
 
 const defaultPort = 4789
