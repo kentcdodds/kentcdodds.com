@@ -156,6 +156,62 @@ function batch<T>(items: T[], size: number) {
 	return result
 }
 
+async function embedItemsSafely({
+	accountId,
+	apiToken,
+	model,
+	items,
+}: {
+	accountId: string
+	apiToken: string
+	model: string
+	items: Array<{
+		vectorId: string
+		text: string
+		metadata: Record<string, unknown>
+	}>
+}): Promise<Array<{ id: string; values: number[]; metadata: Record<string, unknown> }>> {
+	try {
+		const embeddings = await getEmbeddings({
+			accountId,
+			apiToken,
+			model,
+			texts: items.map((b) => b.text),
+		})
+		return items.map((item, i) => ({
+			id: item.vectorId,
+			values: embeddings[i]!,
+			metadata: item.metadata,
+		}))
+	} catch (e) {
+		// If a batch fails (e.g. one input too large/invalid), split and retry to
+		// isolate the bad input instead of failing the whole indexing run.
+		if (items.length <= 1) {
+			const item = items[0]
+			console.error('Skipping vector due to embedding failure', {
+				vectorId: item?.vectorId,
+				textLength: item?.text?.length,
+			})
+			console.error(e)
+			return []
+		}
+		const mid = Math.ceil(items.length / 2)
+		const left = await embedItemsSafely({
+			accountId,
+			apiToken,
+			model,
+			items: items.slice(0, mid),
+		})
+		const right = await embedItemsSafely({
+			accountId,
+			apiToken,
+			model,
+			items: items.slice(mid),
+		})
+		return [...left, ...right]
+	}
+}
+
 async function main() {
 	const { before, after, manifestKey, only } = parseArgs()
 	const { accountId, apiToken, vectorizeIndex, embeddingModel } = getCloudflareConfig()
@@ -310,18 +366,13 @@ async function main() {
 	}> = []
 
 	for (const embedBatch of batch(toUpsert, 50)) {
-		const embeddings = await getEmbeddings({
+		const vectors = await embedItemsSafely({
 			accountId,
 			apiToken,
 			model: embeddingModel,
-			texts: embedBatch.map((b) => b.text),
+			items: embedBatch,
 		})
-		for (let i = 0; i < embedBatch.length; i++) {
-			const item = embedBatch[i]
-			const values = embeddings[i]
-			if (!item || !values) continue
-			upsertVectors.push({ id: item.vectorId, values, metadata: item.metadata })
-		}
+		upsertVectors.push(...vectors)
 	}
 
 	for (const vecBatch of batch(upsertVectors, 200)) {
