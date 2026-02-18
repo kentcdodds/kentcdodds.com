@@ -37,3 +37,12 @@ For repo content indexing you can limit which docs get indexed:
 - CLI: `npx tsx other/semantic-search/index-repo-content.ts --only "blog:react-hooks-pitfalls,page:uses"`
 - Env: `SEMANTIC_SEARCH_ONLY="blog:react-hooks-pitfalls,page:uses"`
 
+Indexed sources (via `index-repo-content.ts`):
+
+- `content/blog/**` (blog posts)
+- `content/pages/**` (MDX pages)
+- `content/data/talks.yml` (each talk is indexed as its own doc)
+- `content/data/resume.yml` (resume page)
+- `content/data/credits.yml` (each person is indexed as its own doc)
+- `content/data/testimonials.yml` (each testimonial author is indexed as its own doc)
+
