@@ -170,7 +170,7 @@ function createServer() {
 				query: z
 					.string()
 					.describe(
-						`The query to search for. This uses semantic search across indexed content (blog posts, pages, and podcasts). Simpler and shorter queries are better.`,
+						`The query to search for. This uses semantic search across indexed content (blog posts, pages, podcasts, talks, resume, credits, and testimonials). Simpler and shorter queries are better.`,
 					),
 				category: z
 					.union([
@@ -179,6 +179,9 @@ function createServer() {
 						z.literal('Call Kent Podcast'),
 						z.literal('Workshops'),
 						z.literal('Talks'),
+						z.literal('Resume'),
+						z.literal('Credits'),
+						z.literal('Testimonials'),
 					])
 					.optional()
 					.describe(
@@ -215,7 +218,10 @@ function createServer() {
 				'Call Kent Podcast': ['ck'],
 				// Not currently included in the semantic search index.
 				Workshops: [],
-				Talks: [],
+				Talks: ['talk'],
+				Resume: ['resume'],
+				Credits: ['credit'],
+				Testimonials: ['testimonial'],
 			}
 
 			if (category && allowedTypesByCategory[category].length === 0) {

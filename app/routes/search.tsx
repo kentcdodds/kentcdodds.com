@@ -79,7 +79,7 @@ export default function SearchPage() {
 		<div>
 			<HeroSection
 				title="Search"
-				subtitle="Semantic search across posts, pages, and podcasts."
+				subtitle="Semantic search across posts, pages, podcasts, talks, resume, credits, and testimonials."
 				imageBuilder={images.kodyProfileGray}
 				action={
 					<Form method="get" action="/search" className="w-full">
