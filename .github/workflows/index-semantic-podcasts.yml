@@ -1,0 +1,40 @@
+name: 🔎 Index Semantic Search (podcasts)
+on:
+  workflow_dispatch:
+  schedule:
+    # 3am Mountain Time is 10:00 UTC during standard time.
+    # This will drift by one hour during daylight saving time.
+    - cron: '0 10 * * *'
+
+jobs:
+  index:
+    name: 🔎 Index Semantic Search (podcasts)
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: 📥 Download deps
+        uses: bahmutov/npm-install@v1
+
+      - name: 🔎 Index podcast content
+        run: npx tsx other/semantic-search/index-podcasts.ts
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_VECTORIZE_INDEX: ${{ secrets.CLOUDFLARE_VECTORIZE_INDEX }}
+          CLOUDFLARE_AI_EMBEDDING_MODEL: ${{ secrets.CLOUDFLARE_AI_EMBEDDING_MODEL }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+
+          TRANSISTOR_API_SECRET: ${{ secrets.TRANSISTOR_API_SECRET }}
+          CALL_KENT_PODCAST_ID: ${{ secrets.CALL_KENT_PODCAST_ID }}
+          SIMPLECAST_KEY: ${{ secrets.SIMPLECAST_KEY }}
+          CHATS_WITH_KENT_PODCAST_ID: ${{ secrets.CHATS_WITH_KENT_PODCAST_ID }}
+

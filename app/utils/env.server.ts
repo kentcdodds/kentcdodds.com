@@ -45,6 +45,13 @@ const schema = z.object({
 	TWITTER_BEARER_TOKEN: z.string(),
 	VERIFIER_API_KEY: z.string(),
 	CF_INTERNAL_SECRET: z.string(),
+
+	// Optional: semantic search via Cloudflare Workers AI + Vectorize.
+	// Keep optional so local/dev/staging can run without configuring it.
+	CLOUDFLARE_ACCOUNT_ID: z.string().optional(),
+	CLOUDFLARE_API_TOKEN: z.string().optional(),
+	CLOUDFLARE_VECTORIZE_INDEX: z.string().optional(),
+	CLOUDFLARE_AI_EMBEDDING_MODEL: z.string().optional(),
 })
 
 declare global {

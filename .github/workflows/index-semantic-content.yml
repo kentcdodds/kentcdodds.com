@@ -1,0 +1,39 @@
+name: 🔎 Index Semantic Search (content)
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'content/blog/**'
+      - 'content/pages/**'
+
+jobs:
+  index:
+    name: 🔎 Index Semantic Search (content)
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: 📥 Download deps
+        uses: bahmutov/npm-install@v1
+
+      - name: 🔎 Index changed content
+        run: >-
+          npx tsx other/semantic-search/index-repo-content.ts
+          --before "${{ github.event.before }}"
+          --after "${{ github.sha }}"
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_VECTORIZE_INDEX: ${{ secrets.CLOUDFLARE_VECTORIZE_INDEX }}
+          CLOUDFLARE_AI_EMBEDDING_MODEL: ${{ secrets.CLOUDFLARE_AI_EMBEDDING_MODEL }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+

@@ -3,7 +3,6 @@ import remarkEmbedder, { type TransformerInfo } from '@remark-embedder/core'
 import oembedTransformer from '@remark-embedder/transformer-oembed'
 import type * as H from 'hast'
 import type * as M from 'mdast'
-import type * as MDX from 'mdast-util-mdx-jsx'
 import { bundleMDX } from 'mdx-bundler'
 import PQueue from 'p-queue'
 import calculateReadingTime from 'reading-time'
@@ -80,25 +79,23 @@ const cloudinaryUrlRegex =
 
 function optimizeCloudinaryImages() {
 	return async function transformer(tree: H.Root) {
-		visit(
-			tree,
-			'mdxJsxFlowElement',
-			function visitor(node: MDX.MdxJsxFlowElement) {
-				if (node.name !== 'img') return
-				const srcAttr = node.attributes.find(
-					(attr) => attr.type === 'mdxJsxAttribute' && attr.name === 'src',
-				)
-				const urlString = srcAttr?.value ? String(srcAttr.value) : null
-				if (!srcAttr || !urlString) {
-					console.error('image without url?', node)
-					return
-				}
-				const newUrl = handleImageUrl(urlString)
-				if (newUrl) {
-					srcAttr.value = newUrl
-				}
-			},
-		)
+		// `unist-util-visit` types can differ between mdast/hast; this tree is hast
+		// but can still contain MDX nodes. Use `any` to avoid type churn.
+		visit(tree as any, 'mdxJsxFlowElement' as any, function visitor(node: any) {
+			if (node?.name !== 'img') return
+			const srcAttr = node.attributes?.find(
+				(attr: any) => attr?.type === 'mdxJsxAttribute' && attr?.name === 'src',
+			)
+			const urlString = srcAttr?.value ? String(srcAttr.value) : null
+			if (!srcAttr || !urlString) {
+				console.error('image without url?', node)
+				return
+			}
+			const newUrl = handleImageUrl(urlString)
+			if (newUrl) {
+				srcAttr.value = newUrl
+			}
+		})
 
 		visit(tree, 'element', function visitor(node: H.Element) {
 			if (node.tagName !== 'img') return

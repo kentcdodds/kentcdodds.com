@@ -30,3 +30,4 @@ other/postcss.ignored
 
 *.db-journal
 .wrangler
+other/wrangler-logs/
