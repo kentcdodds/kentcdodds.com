@@ -59,6 +59,74 @@ function batch<T>(items: T[], size: number) {
 	return result
 }
 
+async function mapWithConcurrency<Item, Result>(
+	items: Item[],
+	concurrency: number,
+	mapper: (item: Item, index: number) => Promise<Result>,
+) {
+	const results: Result[] = new Array(items.length)
+	let nextIndex = 0
+	const workers = Array.from({ length: Math.max(1, concurrency) }, async () => {
+		while (nextIndex < items.length) {
+			const current = nextIndex++
+			results[current] = await mapper(items[current]!, current)
+		}
+	})
+	await Promise.all(workers)
+	return results
+}
+
+async function fetchJsonWithRetries<T>(
+	url: string,
+	{
+		headers,
+		maxRetries = 5,
+		baseDelayMs = 750,
+		label,
+		on429,
+	}: {
+		headers?: Record<string, string>
+		maxRetries?: number
+		baseDelayMs?: number
+		label?: string
+		on429?: () => void
+	} = {},
+): Promise<{ ok: true; json: T } | { ok: false; status: number }> {
+	for (let attempt = 0; attempt <= maxRetries; attempt++) {
+		const res = await fetch(url, { headers })
+		if (res.status === 429) {
+			on429?.()
+			const retryAfter = Number(res.headers.get('Retry-After') ?? '0')
+			const delayMs =
+				(retryAfter > 0 ? retryAfter * 1000 : baseDelayMs) * (attempt + 1)
+			console.warn(
+				`${label ?? 'request'}: 429 (attempt ${attempt + 1}/${maxRetries + 1}), waiting ${Math.round(
+					delayMs,
+				)}ms`,
+			)
+			await new Promise((r) => setTimeout(r, delayMs))
+			continue
+		}
+		if (!res.ok) {
+			// Retry 5xx.
+			if (res.status >= 500 && attempt < maxRetries) {
+				const delayMs = baseDelayMs * (attempt + 1)
+				console.warn(
+					`${label ?? 'request'}: ${res.status} (attempt ${attempt + 1}/${
+						maxRetries + 1
+					}), waiting ${Math.round(delayMs)}ms`,
+				)
+				await new Promise((r) => setTimeout(r, delayMs))
+				continue
+			}
+			return { ok: false, status: res.status }
+		}
+		const json = (await res.json()) as T
+		return { ok: true, json }
+	}
+	return { ok: false, status: 429 }
+}
+
 function getDocId(type: DocType, key: string) {
 	return `${type}:${key}`
 }
@@ -187,48 +255,88 @@ async function fetchSimplecastEpisodes() {
 	const SIMPLECAST_KEY = getRequiredEnv('SIMPLECAST_KEY')
 	const PODCAST_ID = getRequiredEnv('CHATS_WITH_KENT_PODCAST_ID')
 	const headers = { authorization: `Bearer ${SIMPLECAST_KEY}` }
+	let tooManyRequestsCount = 0
 
-	const seasonsRes = await fetch(`https://api.simplecast.com/podcasts/${PODCAST_ID}/seasons`, {
+	const seasonsResult = await fetchJsonWithRetries<
+		SimplecastCollectionResponse<SimplecastSeasonListItem> | SimplecastTooManyRequests
+	>(`https://api.simplecast.com/podcasts/${PODCAST_ID}/seasons`, {
 		headers,
+		label: 'simplecast seasons',
+		on429: () => {
+			tooManyRequestsCount++
+		},
 	})
-	if (!seasonsRes.ok) throw new Error(`Simplecast seasons error: ${seasonsRes.status}`)
-	const seasonsJson = (await seasonsRes.json()) as
-		| SimplecastCollectionResponse<SimplecastSeasonListItem>
-		| SimplecastTooManyRequests
+	if (!seasonsResult.ok) {
+		throw new Error(`Simplecast seasons error: ${seasonsResult.status}`)
+	}
+	const seasonsJson = seasonsResult.json
 	if (isTooManyRequests(seasonsJson)) return []
 
 	const seasonItems = seasonsJson.collection
 	const episodes: SimplecastEpisode[] = []
+	let episodeDetail429s = 0
+	let episodeDetailsFailed = 0
 	for (const season of seasonItems) {
 		const seasonId = new URL(season.href).pathname.split('/').slice(-1)[0]
 		if (!seasonId) continue
 		const url = new URL(`https://api.simplecast.com/seasons/${seasonId}/episodes`)
 		url.searchParams.set('limit', '300')
-		const seasonEpisodesRes = await fetch(url.toString(), { headers })
-		if (!seasonEpisodesRes.ok) {
-			console.warn(`Simplecast episodes list error: ${seasonEpisodesRes.status}`)
+		const seasonEpisodesResult = await fetchJsonWithRetries<
+			SimplecastCollectionResponse<SimplecastEpisodeListItem> | SimplecastTooManyRequests
+		>(url.toString(), {
+			headers,
+			label: `simplecast season ${seasonId} episodes list`,
+			on429: () => {
+				tooManyRequestsCount++
+			},
+		})
+		if (!seasonEpisodesResult.ok) {
+			console.warn(`Simplecast episodes list error: ${seasonEpisodesResult.status}`)
 			continue
 		}
-		const seasonEpisodesJson = (await seasonEpisodesRes.json()) as
-			| SimplecastCollectionResponse<SimplecastEpisodeListItem>
-			| SimplecastTooManyRequests
+		const seasonEpisodesJson = seasonEpisodesResult.json
 		if (isTooManyRequests(seasonEpisodesJson)) continue
 
-		for (const e of seasonEpisodesJson.collection.filter(
+		const listItems = seasonEpisodesJson.collection.filter(
 			(e) => e.status === 'published' && !e.is_hidden,
-		)) {
-			const epRes = await fetch(`https://api.simplecast.com/episodes/${e.id}`, {
-				headers,
-			})
-			if (!epRes.ok) {
-				console.warn(`Simplecast episode error: ${epRes.status}`)
-				continue
-			}
-			const epJson = (await epRes.json()) as SimplecastEpisode | SimplecastTooManyRequests
-			if (isTooManyRequests(epJson)) continue
-			if (!epJson.is_published) continue
-			episodes.push(epJson)
-		}
+		)
+
+		// Fetch episode details with limited concurrency to reduce 429s.
+		const details = await mapWithConcurrency(
+			listItems,
+			3,
+			async (e) => {
+				const result = await fetchJsonWithRetries<SimplecastEpisode | SimplecastTooManyRequests>(
+					`https://api.simplecast.com/episodes/${e.id}`,
+					{
+						headers,
+						label: `simplecast episode ${e.id}`,
+						on429: () => {
+							episodeDetail429s++
+						},
+					},
+				)
+				if (!result.ok) {
+					episodeDetailsFailed++
+					console.warn(`Simplecast episode error: ${result.status}`)
+					return null
+				}
+				const epJson = result.json
+				if (isTooManyRequests(epJson)) return null
+				if (!epJson.is_published) return null
+				return epJson
+			},
+		)
+
+		episodes.push(...(details.filter(Boolean) as SimplecastEpisode[]))
+	}
+
+	if (tooManyRequestsCount || episodeDetail429s || episodeDetailsFailed) {
+		console.log('Simplecast fetch summary', {
+			tooManyRequestsCount,
+			episodeDetail429s,
+			episodeDetailsFailed,
+		})
 	}
 
 	return episodes
@@ -399,6 +507,7 @@ async function main() {
 	console.log(`Vectors to delete: ${idsToDelete.length}`)
 	for (const idBatch of batch(idsToDelete, 500)) {
 		if (!idBatch.length) continue
+		console.log(`Deleting ${idBatch.length} vectors...`)
 		await vectorizeDeleteByIds({ accountId, apiToken, indexName: vectorizeIndex, ids: idBatch })
 	}
 
@@ -409,23 +518,52 @@ async function main() {
 		metadata: Record<string, unknown>
 	}> = []
 
-	for (const embedBatch of batch(toUpsert, 50)) {
-		const embeddings = await getEmbeddings({
-			accountId,
-			apiToken,
-			model: embeddingModel,
-			texts: embedBatch.map((b) => b.text),
-		})
-		for (let i = 0; i < embedBatch.length; i++) {
-			const item = embedBatch[i]
-			const values = embeddings[i]
-			if (!item || !values) continue
-			upsertVectors.push({ id: item.vectorId, values, metadata: item.metadata })
+	async function embedItemsSafely(
+		items: typeof toUpsert,
+	): Promise<Array<{ id: string; values: number[]; metadata: Record<string, unknown> }>> {
+		try {
+			const embeddings = await getEmbeddings({
+				accountId,
+				apiToken,
+				model: embeddingModel,
+				texts: items.map((b) => b.text),
+			})
+			return items.map((item, i) => ({
+				id: item.vectorId,
+				values: embeddings[i]!,
+				metadata: item.metadata,
+			}))
+		} catch (e) {
+			if (items.length <= 1) {
+				const item = items[0]
+				console.error('Skipping vector due to embedding failure', {
+					vectorId: item?.vectorId,
+					textLength: item?.text?.length,
+				})
+				console.error(e)
+				return []
+			}
+			const mid = Math.ceil(items.length / 2)
+			const left = await embedItemsSafely(items.slice(0, mid))
+			const right = await embedItemsSafely(items.slice(mid))
+			return [...left, ...right]
 		}
 	}
 
-	for (const vecBatch of batch(upsertVectors, 200)) {
+	const embedBatches = batch(toUpsert, 50)
+	for (let i = 0; i < embedBatches.length; i++) {
+		const embedBatch = embedBatches[i]!
+		console.log(`Embedding batch ${i + 1}/${embedBatches.length} (${embedBatch.length} items)`)
+		const vectors = await embedItemsSafely(embedBatch)
+		console.log(`Embedded batch ${i + 1}/${embedBatches.length} -> ${vectors.length} vectors`)
+		upsertVectors.push(...vectors)
+	}
+
+	const upsertBatches = batch(upsertVectors, 200)
+	for (let i = 0; i < upsertBatches.length; i++) {
+		const vecBatch = upsertBatches[i]!
 		if (!vecBatch.length) continue
+		console.log(`Upserting batch ${i + 1}/${upsertBatches.length} (${vecBatch.length} vectors)`)
 		await vectorizeUpsert({ accountId, apiToken, indexName: vectorizeIndex, vectors: vecBatch })
 	}
 

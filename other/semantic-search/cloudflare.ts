@@ -32,20 +32,72 @@ async function cfFetch(
 	init: RequestInit,
 ) {
 	const url = `${getApiBaseUrl()}/accounts/${accountId}${path}`
-	const res = await fetch(url, {
-		...init,
-		headers: {
-			Authorization: `Bearer ${apiToken}`,
-			...(init.headers ?? {}),
-		},
-	})
-	if (!res.ok) {
-		const text = await res.text().catch(() => '')
-		throw new Error(
-			`Cloudflare API error: ${res.status} ${res.statusText} (${path})${text ? `\n${text}` : ''}`,
-		)
+	const timeoutMs =
+		typeof process.env.CLOUDFLARE_API_TIMEOUT_MS === 'string'
+			? Number(process.env.CLOUDFLARE_API_TIMEOUT_MS)
+			: 90_000
+
+	const maxRetries =
+		typeof process.env.CLOUDFLARE_API_MAX_RETRIES === 'string'
+			? Number(process.env.CLOUDFLARE_API_MAX_RETRIES)
+			: 3
+
+	for (let attempt = 0; attempt <= maxRetries; attempt++) {
+		const timeoutSignal =
+			typeof AbortSignal !== 'undefined' && 'timeout' in AbortSignal
+				? (AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }).timeout(
+						timeoutMs,
+					)
+				: undefined
+		const signal =
+			init.signal && timeoutSignal && 'any' in AbortSignal
+				? (
+						AbortSignal as unknown as {
+							any: (signals: AbortSignal[]) => AbortSignal
+						}
+					).any([init.signal, timeoutSignal])
+				: init.signal ?? timeoutSignal
+
+		const res = await fetch(url, {
+			...init,
+			signal,
+			headers: {
+				Authorization: `Bearer ${apiToken}`,
+				...(init.headers ?? {}),
+			},
+		}).catch((e) => {
+			// network/timeout
+			if (attempt < maxRetries) return null as any
+			throw e
+		})
+
+		if (!res) {
+			// retry
+			await new Promise((r) => setTimeout(r, 500 * (attempt + 1)))
+			continue
+		}
+
+		if (res.status === 429 && attempt < maxRetries) {
+			const retryAfter = Number(res.headers.get('Retry-After') ?? '1')
+			await new Promise((r) => setTimeout(r, Math.max(1, retryAfter) * 1000))
+			continue
+		}
+
+		if (!res.ok) {
+			const text = await res.text().catch(() => '')
+			// Retry transient errors.
+			if (res.status >= 500 && attempt < maxRetries) {
+				await new Promise((r) => setTimeout(r, 500 * (attempt + 1)))
+				continue
+			}
+			throw new Error(
+				`Cloudflare API error: ${res.status} ${res.statusText} (${path})${text ? `\n${text}` : ''}`,
+			)
+		}
+		return res
 	}
-	return res
+
+	throw new Error(`Cloudflare API error: exhausted retries (${path})`)
 }
 
 export async function getEmbeddings({

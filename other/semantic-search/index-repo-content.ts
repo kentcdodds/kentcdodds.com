@@ -298,7 +298,12 @@ async function main() {
 		const title = getTitleFromMdxSource(source) ?? slug
 
 		// Index raw MDX (including frontmatter/JSX/markdown) as requested.
-		const chunkBodies = chunkTextRaw(source)
+		// Use smaller chunks than plaintext since raw MDX/code can be token-dense.
+		const chunkBodies = chunkTextRaw(source, {
+			targetChars: 2500,
+			overlapChars: 250,
+			maxChunkChars: 3500,
+		})
 		const chunkCount = chunkBodies.length
 
 		const chunks: ManifestChunk[] = []
@@ -365,19 +370,29 @@ async function main() {
 		metadata: Record<string, unknown>
 	}> = []
 
-	for (const embedBatch of batch(toUpsert, 50)) {
+	const embedBatches = batch(toUpsert, 50)
+	for (let i = 0; i < embedBatches.length; i++) {
+		const embedBatch = embedBatches[i]!
+		console.log(`Embedding batch ${i + 1}/${embedBatches.length} (${embedBatch.length} items)`)
 		const vectors = await embedItemsSafely({
 			accountId,
 			apiToken,
 			model: embeddingModel,
 			items: embedBatch,
 		})
+		console.log(
+			`Embedded batch ${i + 1}/${embedBatches.length} -> ${vectors.length} vectors`,
+		)
 		upsertVectors.push(...vectors)
 	}
 
-	for (const vecBatch of batch(upsertVectors, 200)) {
+	const upsertBatches = batch(upsertVectors, 200)
+	for (let i = 0; i < upsertBatches.length; i++) {
+		const vecBatch = upsertBatches[i]!
 		if (!vecBatch.length) continue
-		console.log(`Upserting ${vecBatch.length} vectors...`)
+		console.log(
+			`Upserting batch ${i + 1}/${upsertBatches.length} (${vecBatch.length} vectors)`,
+		)
 		await vectorizeUpsert({ accountId, apiToken, indexName: vectorizeIndex, vectors: vecBatch })
 	}
 
