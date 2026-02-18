@@ -92,7 +92,7 @@ type TransistorEpisodesJson = {
 			title: string
 			summary?: string
 			description?: string
-			keywords?: string[]
+			keywords?: string[] | string
 			updated_at?: string
 			published_at?: string
 			media_url?: string
@@ -130,6 +130,16 @@ async function fetchTransistorEpisodes() {
 		if (a.status !== 'published') continue
 		if (!a.number || !a.season) continue
 		if (!a.duration) continue
+		let keywords: string[] = []
+		if (Array.isArray(a.keywords)) {
+			keywords = a.keywords.filter((k) => typeof k === 'string' && k.trim())
+		} else if (typeof a.keywords === 'string') {
+			keywords = a.keywords
+				.split(',')
+				.map((k) => k.trim())
+				.filter(Boolean)
+		}
+
 		episodes.push({
 			seasonNumber: a.season,
 			episodeNumber: a.number,
@@ -137,7 +147,7 @@ async function fetchTransistorEpisodes() {
 			title: a.title,
 			summary: a.summary ?? '',
 			descriptionHtml: a.description ?? '',
-			keywords: a.keywords ?? [],
+			keywords,
 			updatedAt: a.updated_at,
 		})
 	}

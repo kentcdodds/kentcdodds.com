@@ -70,9 +70,19 @@ function getTitleFromMdxSource(source: string) {
 
 async function readMdxDoc(type: DocType, slug: string) {
 	if (type === 'blog') {
-		const filename = path.join('content', 'blog', slug, 'index.mdx')
-		const source = await fs.readFile(filename, 'utf8')
-		return { filename, source }
+		// Blog posts can be either:
+		// - content/blog/<slug>/index.mdx
+		// - content/blog/<slug>.mdx
+		const dirFilename = path.join('content', 'blog', slug, 'index.mdx')
+		try {
+			const source = await fs.readFile(dirFilename, 'utf8')
+			return { filename: dirFilename, source }
+		} catch (e: any) {
+			if (e?.code !== 'ENOENT' && e?.code !== 'ENOTDIR') throw e
+		}
+		const fileFilename = path.join('content', 'blog', `${slug}.mdx`)
+		const source = await fs.readFile(fileFilename, 'utf8')
+		return { filename: fileFilename, source }
 	}
 	const filename = path.join('content', 'pages', `${slug}.mdx`)
 	const source = await fs.readFile(filename, 'utf8')
@@ -85,8 +95,10 @@ function getSlugFromContentPath(filePath: string): { type: DocType; slug: string
 	if (contentDir !== 'content') return null
 	if (typeDir === 'blog') {
 		// content/blog/<slug>/...
-		const slug = parts[2]
-		if (!slug) return null
+		// content/blog/<slug>.mdx
+		const segment = parts[2]
+		if (!segment) return null
+		const slug = segment.replace(/\.mdx$/, '')
 		return { type: 'blog', slug }
 	}
 	if (typeDir === 'pages') {
@@ -174,8 +186,23 @@ async function main() {
 		console.log(`Only indexing explicitly requested docs: ${only}`)
 	} else if (!before || !after || isAllZerosSha(before)) {
 		// Full index.
-		const blogSlugs = await fs.readdir(path.join('content', 'blog'))
-		docsToIndex = blogSlugs.map((slug) => ({ type: 'blog' as const, slug }))
+		const blogEntries = await fs.readdir(path.join('content', 'blog'), {
+			withFileTypes: true,
+		})
+		docsToIndex = blogEntries
+			.map((entry) => {
+				if (entry.isDirectory()) {
+					return { type: 'blog' as const, slug: entry.name }
+				}
+				if (entry.isFile() && entry.name.endsWith('.mdx')) {
+					return {
+						type: 'blog' as const,
+						slug: entry.name.replace(/\.mdx$/, ''),
+					}
+				}
+				return null
+			})
+			.filter(Boolean) as Array<{ type: DocType; slug: string }>
 		const pageFiles = await fs.readdir(path.join('content', 'pages'))
 		docsToIndex.push(
 			...pageFiles
