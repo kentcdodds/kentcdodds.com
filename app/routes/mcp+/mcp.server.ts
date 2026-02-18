@@ -8,7 +8,10 @@ import { groupBy } from '#app/utils/cjs/lodash.ts'
 import { downloadMdxFilesCached } from '#app/utils/mdx.server.js'
 import { getDomainUrl, getErrorMessage, invariant } from '#app/utils/misc.js'
 import { prisma } from '#app/utils/prisma.server.js'
-import { searchKCD } from '#app/utils/search.server.js'
+import {
+	isSemanticSearchConfigured,
+	semanticSearchKCD,
+} from '#app/utils/semantic-search.server.js'
 import { getSeasons as getChatsWithKentSeasons } from '#app/utils/simplecast.server.js'
 import { isEmailVerified } from '#app/utils/verifier.server.js'
 import { FetchAPIHTTPServerTransport } from './fetch-stream-transport.server.ts'
@@ -167,7 +170,7 @@ function createServer() {
 				query: z
 					.string()
 					.describe(
-						`The query to search for. It's not very intelligent, it uses match-sorter to find text matches in titles, descriptions, categories, tags, etc. Simpler and shorter queries are better.`,
+						`The query to search for. This uses semantic search across indexed content (blog posts, pages, and podcasts). Simpler and shorter queries are better.`,
 					),
 				category: z
 					.union([
@@ -190,40 +193,84 @@ function createServer() {
 			}
 			const domainUrl = getDomainUrl(request)
 
-			const categoryMap: Record<NonNullable<typeof category>, string> = {
-				Blog: 'b',
-				'Chats with Kent Podcast': 'cwk',
-				'Call Kent Podcast': 'ckp',
-				Workshops: 'w',
-				Talks: 't',
+			if (!isSemanticSearchConfigured()) {
+				return {
+					isError: true,
+					content: [
+						{
+							type: 'text',
+							text:
+								'Semantic search is not configured on this environment. Set CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN, and CLOUDFLARE_VECTORIZE_INDEX.',
+						},
+					],
+				}
 			}
 
-			const searchResults = await searchKCD({
-				request,
-				query: category ? `${categoryMap[category]}:${query}` : query,
-			})
+			const allowedTypesByCategory: Record<
+				NonNullable<typeof category>,
+				Array<string>
+			> = {
+				Blog: ['blog'],
+				'Chats with Kent Podcast': ['cwk'],
+				'Call Kent Podcast': ['ck'],
+				// Not currently included in the semantic search index.
+				Workshops: [],
+				Talks: [],
+			}
 
-			if (searchResults.length) {
+			if (category && allowedTypesByCategory[category].length === 0) {
 				return {
 					content: [
 						{
 							type: 'text',
-							text: searchResults
-								.map(({ title, route, segment, metadata }) =>
-									JSON.stringify({
-										title,
-										url: `${domainUrl}${route}`,
-										category: segment,
-										...metadata,
-									}),
-								)
+							text: `${category} is not currently included in semantic search.`,
+						},
+					],
+				}
+			}
+
+			const results = await semanticSearchKCD({ query, topK: 15 })
+			const filteredResults =
+				category && allowedTypesByCategory[category].length
+					? results.filter((r) =>
+							r.type ? allowedTypesByCategory[category].includes(r.type) : false,
+						)
+					: results
+
+			if (filteredResults.length) {
+				return {
+					content: [
+						{
+							type: 'text',
+							text: filteredResults
+								.map((r) => {
+									const url = r.url ?? (r.id.startsWith('/') ? r.id : '')
+									const absoluteUrl = url.startsWith('http')
+										? url
+										: url.startsWith('/')
+											? `${domainUrl}${url}`
+											: url
+												? `${domainUrl}/${url}`
+												: domainUrl
+
+									return JSON.stringify({
+										title: r.title ?? url ?? r.id,
+										url: absoluteUrl,
+										category: r.type ?? 'Results',
+									})
+								})
 								.join('\n'),
 						},
 					],
 				}
 			} else {
 				return {
-					content: [{ type: 'text', text: `No content found for ${query}` }],
+					content: [
+						{
+							type: 'text',
+							text: `No content found for ${category ? `${category}: ` : ''}${query}`,
+						},
+					],
 				}
 			}
 		},
