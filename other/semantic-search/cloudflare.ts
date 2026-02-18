@@ -162,8 +162,19 @@ async function vectorizeWriteNdjson({
 			body: form,
 		})
 		return (await res.json()) as any
-	} catch {
-		// Fallback for legacy indexes if needed.
+	} catch (e) {
+		// Only fall back when we strongly suspect this is a legacy (v1) index.
+		// Falling back for transient errors makes v2 indexes fail with
+		// `vectorize.incorrect_api_version`.
+		const message = e instanceof Error ? e.message : String(e)
+		const looksLikeLegacyIndex =
+			/\b404\b/i.test(message) ||
+			/not found/i.test(message) ||
+			/legacy/i.test(message) ||
+			/deprecated-v1/i.test(message)
+
+		if (!looksLikeLegacyIndex) throw e
+
 		const pathLegacy = `/vectorize/indexes/${indexName}/${operation}`
 		const res = await cfFetch({ accountId, apiToken }, pathLegacy, {
 			method: 'POST',
