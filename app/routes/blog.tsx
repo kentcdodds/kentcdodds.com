@@ -421,6 +421,15 @@ function BlogHome() {
 									{matchingPosts.length}
 								</div>
 							</div>
+							<div className="mt-2 pl-14 pr-6 text-sm text-slate-500">
+								<Link
+									to={query ? `/search?q=${encodeURIComponent(query)}` : '/search'}
+									prefetch="intent"
+									className="underlined inline-block hover:text-team-current focus:text-team-current"
+								>
+									Try the full site search
+								</Link>
+							</div>
 						</form>
 					</div>
 				}
