@@ -5,7 +5,11 @@ import {
 import * as YAML from 'yaml'
 import { cache, cachified } from '#app/utils/cache.server.ts'
 import { downloadFile } from '#app/utils/github.server.ts'
-import { markdownToHtml, stripHtml } from '#app/utils/markdown.server.ts'
+import {
+	markdownToHtml,
+	markdownToHtmlUnwrapped,
+	stripHtml,
+} from '#app/utils/markdown.server.ts'
 import { formatDate, typedBoolean } from '#app/utils/misc.tsx'
 import { type Timings } from './timing.server.ts'
 
@@ -50,7 +54,9 @@ async function getTalk(rawTalk: RawTalk, allTags: Array<string>) {
 			? await Promise.all(
 					rawTalk.deliveries.map(async (d) => {
 						return {
-							eventHTML: d.event ? await markdownToHtml(d.event) : undefined,
+							eventHTML: d.event
+								? await markdownToHtmlUnwrapped(d.event)
+								: undefined,
 							date: d.date,
 							recording: d.recording,
 							dateDisplay: d.date ? formatDate(d.date) : 'TBA',
