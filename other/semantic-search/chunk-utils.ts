@@ -1,5 +1,39 @@
 import crypto from 'node:crypto'
 
+function isHighSurrogate(code: number) {
+	return code >= 0xd800 && code <= 0xdbff
+}
+
+function isLowSurrogate(code: number) {
+	return code >= 0xdc00 && code <= 0xdfff
+}
+
+function safeSlice(input: string, start: number, end: number) {
+	let s = Math.max(0, start)
+	let e = Math.min(input.length, end)
+	if (s >= e) return ''
+
+	// Avoid starting on the 2nd half of a surrogate pair.
+	if (s > 0) {
+		const code = input.charCodeAt(s)
+		const prev = input.charCodeAt(s - 1)
+		if (isLowSurrogate(code) && isHighSurrogate(prev)) {
+			s -= 1
+		}
+	}
+
+	// Avoid ending right after the 1st half of a surrogate pair.
+	if (e < input.length) {
+		const prev = input.charCodeAt(e - 1)
+		const next = input.charCodeAt(e)
+		if (isHighSurrogate(prev) && isLowSurrogate(next)) {
+			e += 1
+		}
+	}
+
+	return input.slice(s, e)
+}
+
 export function normalizeText(input: string) {
 	return (
 		input
@@ -24,7 +58,7 @@ export function sha256(input: string) {
 export function makeSnippet(input: string, maxLen = 220) {
 	const text = normalizeText(input)
 	if (text.length <= maxLen) return text
-	return `${text.slice(0, Math.max(0, maxLen - 1))}…`
+	return `${safeSlice(text, 0, Math.max(0, maxLen - 1))}…`
 }
 
 export function chunkText(
@@ -56,12 +90,16 @@ export function chunkText(
 
 		if (current) {
 			chunks.push(current)
-			const overlap = current.slice(Math.max(0, current.length - overlapChars))
+			const overlap = safeSlice(
+				current,
+				Math.max(0, current.length - overlapChars),
+				current.length,
+			)
 			current = overlap ? `${overlap}\n\n${p}` : p
 		} else {
 			// Single paragraph too large; hard-split deterministically.
 			for (let i = 0; i < p.length; i += targetChars) {
-				chunks.push(p.slice(i, i + targetChars))
+				chunks.push(safeSlice(p, i, i + targetChars))
 			}
 			current = ''
 		}
@@ -74,7 +112,7 @@ export function chunkText(
 		if (c.length <= maxChunkChars) return [c]
 		const parts: string[] = []
 		for (let i = 0; i < c.length; i += targetChars) {
-			parts.push(c.slice(i, i + targetChars))
+			parts.push(safeSlice(c, i, i + targetChars))
 		}
 		return parts
 	})
@@ -113,11 +151,15 @@ export function chunkTextRaw(
 
 		if (current) {
 			chunks.push(current)
-			const overlap = current.slice(Math.max(0, current.length - overlapChars))
+			const overlap = safeSlice(
+				current,
+				Math.max(0, current.length - overlapChars),
+				current.length,
+			)
 			current = overlap ? `${overlap}\n\n${p}` : p
 		} else {
 			for (let i = 0; i < p.length; i += targetChars) {
-				chunks.push(p.slice(i, i + targetChars))
+				chunks.push(safeSlice(p, i, i + targetChars))
 			}
 			current = ''
 		}
@@ -129,7 +171,7 @@ export function chunkTextRaw(
 		if (c.length <= maxChunkChars) return [c]
 		const parts: string[] = []
 		for (let i = 0; i < c.length; i += targetChars) {
-			parts.push(c.slice(i, i + targetChars))
+			parts.push(safeSlice(c, i, i + targetChars))
 		}
 		return parts
 	})

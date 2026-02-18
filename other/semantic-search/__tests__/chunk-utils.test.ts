@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { chunkText, normalizeText, sha256 } from '../chunk-utils.ts'
+import { chunkText, chunkTextRaw, normalizeText, sha256 } from '../chunk-utils.ts'
 
 describe('semantic-search chunk utils', () => {
 	test('normalizeText is deterministic', () => {
@@ -21,6 +21,21 @@ describe('semantic-search chunk utils', () => {
 	test('sha256 is stable', () => {
 		expect(sha256('abc')).toBe(sha256('abc'))
 		expect(sha256('abc')).not.toBe(sha256('abcd'))
+	})
+
+	test('chunkTextRaw does not split surrogate pairs', () => {
+		const emoji = '😀' // surrogate pair in UTF-16
+		const input = `${emoji.repeat(2000)}\n\n${emoji.repeat(2000)}`
+		const chunks = chunkTextRaw(input, { targetChars: 2500, overlapChars: 250 })
+		expect(chunks.length).toBeGreaterThan(1)
+
+		for (const c of chunks) {
+			const first = c.charCodeAt(0)
+			const last = c.charCodeAt(Math.max(0, c.length - 1))
+			// Not a low surrogate at the start; not a high surrogate at the end.
+			expect(first >= 0xdc00 && first <= 0xdfff).toBe(false)
+			expect(last >= 0xd800 && last <= 0xdbff).toBe(false)
+		}
 	})
 })
 
