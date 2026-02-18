@@ -52,6 +52,7 @@ const schema = z.object({
 	CLOUDFLARE_API_TOKEN: z.string().optional(),
 	CLOUDFLARE_VECTORIZE_INDEX: z.string().optional(),
 	CLOUDFLARE_AI_EMBEDDING_MODEL: z.string().optional(),
+	CLOUDFLARE_AI_TRANSCRIPTION_MODEL: z.string().optional(),
 })
 
 declare global {

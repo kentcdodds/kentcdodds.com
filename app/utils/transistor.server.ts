@@ -12,6 +12,10 @@ import {
 } from '#app/types.ts'
 import { cache, cachified, shouldForceFresh } from './cache.server.ts'
 import { getEpisodePath } from './call-kent.ts'
+import {
+	isCloudflareTranscriptionConfigured,
+	transcribeMp3WithWorkersAi,
+} from './cloudflare-ai-transcription.server.ts'
 import { stripHtml } from './markdown.server.ts'
 import { getRequiredServerEnvVar, toBase64 } from './misc.tsx'
 import { type Timings } from './timing.server.ts'
@@ -84,6 +88,24 @@ async function fetchTransitor<JsonResponse>({
 	}
 }
 
+async function updateEpisodeTranscriptText({
+	episodeId,
+	transcriptText,
+}: {
+	episodeId: string
+	transcriptText: string
+}) {
+	const updateData: TransistorUpdateEpisodeData = {
+		id: episodeId,
+		episode: { transcript_text: transcriptText },
+	}
+	await fetchTransitor<TransistorPublishedJson>({
+		endpoint: `/v1/episodes/${encodeURIComponent(episodeId)}`,
+		method: 'PATCH',
+		data: updateData,
+	})
+}
+
 async function createEpisode({
 	audio,
 	title,
@@ -101,6 +123,12 @@ async function createEpisode({
 	user: { firstName: string; email: string; team: string }
 	request: Request
 }) {
+	// Start transcription ASAP, but don't block the admin publish flow.
+	// If Workers AI isn't configured, this stays null and we just skip.
+	const transcriptionPromise = isCloudflareTranscriptionConfigured()
+		? transcribeMp3WithWorkersAi({ mp3: audio })
+		: null
+
 	const id = uuid.v4()
 	const authorized = await fetchTransitor<TransistorAuthorizedJson>({
 		endpoint: 'v1/episodes/authorize_upload',
@@ -146,6 +174,23 @@ async function createEpisode({
 			},
 		},
 	})
+
+	if (transcriptionPromise) {
+		void transcriptionPromise
+			.then(async (transcriptText) => {
+				if (!transcriptText) return
+				await updateEpisodeTranscriptText({
+					episodeId: created.data.id,
+					transcriptText,
+				})
+			})
+			.catch((error: unknown) => {
+				console.error(
+					`Workers AI transcription failed for Transistor episode ${created.data.id}`,
+					error,
+				)
+			})
+	}
 
 	const returnValue: { episodeUrl?: string; imageUrl?: string } = {}
 	// set the alternate_url if we have enough info for it.
@@ -342,4 +387,8 @@ async function getCachedEpisodes({
 	})
 }
 
-export { createEpisode, getCachedEpisodes as getEpisodes }
+export {
+	createEpisode,
+	getCachedEpisodes as getEpisodes,
+	updateEpisodeTranscriptText,
+}

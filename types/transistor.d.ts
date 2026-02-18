@@ -18,6 +18,8 @@ type TransistorEpisodeData = {
 		published_at: string
 		updated_at: string
 		audio_processing: boolean
+		transcript_url?: string | null
+		transcripts?: string[]
 	}
 }
 type TransistorEpisodesJson = {
@@ -56,6 +58,8 @@ type TransistorCreateEpisodeData = {
 		title?: string
 		summary?: string
 		description?: string
+		/** Full text of the episode transcript **/
+		transcript_text?: string
 		status?: 'published' | 'scheduled' | 'draft'
 		image_url?: string
 		increment_number?: boolean
