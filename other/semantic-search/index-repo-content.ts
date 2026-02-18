@@ -50,7 +50,12 @@ function getDocId(type: DocType, slug: string) {
 }
 
 function getVectorId(type: DocType, slug: string, chunkIndex: number) {
-	return `${type}:${slug}:chunk:${chunkIndex}`
+	const base = `${type}:${slug}:chunk:${chunkIndex}`
+	// Vectorize enforces id <= 64 bytes. Slugs can exceed this.
+	// Keep readable IDs when possible, but fall back deterministically.
+	if (Buffer.byteLength(base, 'utf8') <= 64) return base
+	const shortSlug = sha256(slug).slice(0, 16)
+	return `${type}:${shortSlug}:chunk:${chunkIndex}`
 }
 
 function getUrlForDoc(type: DocType, slug: string) {
@@ -335,6 +340,7 @@ async function main() {
 				text: chunkTextForEmbedding,
 				metadata: {
 					type,
+					slug,
 					url,
 					title,
 					snippet,
