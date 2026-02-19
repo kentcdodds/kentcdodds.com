@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import type { Page } from '@playwright/test'
+import { type Page } from '@playwright/test'
 import invariant from 'tiny-invariant'
 import { expect, readEmail, test } from './utils.ts'
 
