@@ -18,12 +18,12 @@ jobs:
       DEPLOYABLE: ${{steps.changes.outputs.DEPLOYABLE}}
     steps:
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
         with:
           fetch-depth: '50'
 
       - name: ⎔ Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6.2.0
         with:
           node-version: 24
 
@@ -44,15 +44,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
 
       - name: ⎔ Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6.2.0
         with:
           node-version: 24
 
       - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
+        uses: bahmutov/npm-install@v1.11.2
 
       - name: 🔬 Lint
         run: npm run lint
@@ -64,15 +64,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
 
       - name: ⎔ Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6.2.0
         with:
           node-version: 24
 
       - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
+        uses: bahmutov/npm-install@v1.11.2
 
       - name: 🔎 Type check
         run: npm run typecheck
@@ -89,15 +89,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
 
       - name: ⎔ Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6.2.0
         with:
           node-version: 24
 
       - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
+        uses: bahmutov/npm-install@v1.11.2
 
       - name: 🏄 Copy test env vars
         run: cp .env.example .env
@@ -119,21 +119,21 @@ jobs:
     continue-on-error: true
     steps:
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6.0.2
 
       - name: 🏄 Copy test env vars
         run: cp .env.example .env
 
       - name: ⎔ Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6.2.0
         with:
           node-version: 24
 
       - name: 🎬 Setup ffmpeg
-        uses: FedericoCarboni/setup-ffmpeg@v2
+        uses: FedericoCarboni/setup-ffmpeg@v3.1
 
       - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
+        uses: bahmutov/npm-install@v1.11.2
         with:
           useLockFile: false
 
@@ -148,7 +148,7 @@ jobs:
 
       - name: 🏦 Prime Site Cache
         id: site-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v5.0.3
         with:
           path: other/cache.db
           key: site-cache
@@ -163,7 +163,7 @@ jobs:
           PORT: 8811
 
       - name: 📊 Upload report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6.0.0
         if: always()
         with:
           name: playwright-report
@@ -182,12 +182,12 @@ jobs:
 
     steps:
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
         with:
           fetch-depth: '50'
 
       - name: 👀 Read app name
-        uses: SebRollen/toml-action@v1.0.0
+        uses: SebRollen/toml-action@v1.2.0
         id: app_name
         with:
           file: 'fly.toml'

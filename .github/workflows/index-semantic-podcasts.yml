@@ -13,17 +13,17 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
 
       - name: ⎔ Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6.2.0
         with:
           node-version: 24
 
       - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
+        uses: bahmutov/npm-install@v1.11.2
 
       - name: 🔎 Index podcast content
         run: npx tsx other/semantic-search/index-podcasts.ts
