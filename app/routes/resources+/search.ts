@@ -5,6 +5,14 @@ import {
 	semanticSearchKCD,
 } from '#app/utils/semantic-search.server.ts'
 
+function normalizeSummary(value: unknown) {
+	if (typeof value !== 'string') return undefined
+	const text = value.replace(/\s+/g, ' ').trim()
+	if (!text) return undefined
+	// Keep payloads small for consumers like Discord embeds/autocomplete UIs.
+	return text.length > 220 ? `${text.slice(0, 217)}...` : text
+}
+
 export async function loader({ request }: LoaderFunctionArgs) {
 	const query = new URL(request.url).searchParams.get('query')
 	const domainUrl = getDomainUrl(request)
@@ -39,6 +47,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 				url: absoluteUrl,
 				segment: r.type ?? 'Results',
 				title: r.title ?? url ?? r.id,
+				summary: normalizeSummary(r.summary ?? r.snippet),
+				imageUrl: r.imageUrl,
+				imageAlt: r.imageAlt,
 			}
 		}),
 		{ headers },
