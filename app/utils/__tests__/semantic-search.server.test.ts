@@ -54,8 +54,6 @@ describe('semantic search result normalization', () => {
 			CLOUDFLARE_VECTORIZE_INDEX: process.env.CLOUDFLARE_VECTORIZE_INDEX,
 			CLOUDFLARE_AI_EMBEDDING_MODEL: process.env.CLOUDFLARE_AI_EMBEDDING_MODEL,
 		}
-
-		const originalFetch = globalThis.fetch
 		let vectorizeTopKRequested = 0
 
 		try {
@@ -178,7 +176,7 @@ describe('semantic search result normalization', () => {
 				if (typeof value === 'string') process.env[key] = value
 				else delete process.env[key]
 			}
-			if (originalFetch) vi.stubGlobal('fetch', originalFetch)
+			vi.unstubAllGlobals()
 		}
 	})
 })

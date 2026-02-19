@@ -28,7 +28,13 @@ function normalizeUrlForKey(url: string): string {
 	} catch {
 		// ignore
 	}
-	return url && url !== '/' ? url.replace(/\/+$/, '') : url
+	const cleaned = (url.split(/[?#]/)[0] ?? url).trim()
+	return cleaned && cleaned !== '/' ? cleaned.replace(/\/+$/, '') : cleaned
+}
+
+function normalizeTitleForKey(title: string) {
+	// asNonEmptyString already trims; use lowercase to avoid casing-only duplicates.
+	return title.toLowerCase()
 }
 
 function getCanonicalResultId({
@@ -49,7 +55,7 @@ function getCanonicalResultId({
 	if (type && slug) return `${type}:${slug}`
 	if (type && url) return `${type}:${normalizeUrlForKey(url)}`
 	if (url) return normalizeUrlForKey(url)
-	if (type && title) return `${type}:${title}`
+	if (type && title) return `${type}:${normalizeTitleForKey(title)}`
 	return vectorId
 }
 
