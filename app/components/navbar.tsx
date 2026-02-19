@@ -817,10 +817,7 @@ function Navbar() {
 	}, [])
 
 	const openSearch = React.useCallback(() => {
-		const canUseNavbarSearch =
-			typeof window === 'undefined'
-				? false
-				: window.matchMedia('(min-width: 1024px)').matches
+		const canUseNavbarSearch = window.matchMedia('(min-width: 1024px)').matches
 
 		if (!canUseNavbarSearch) {
 			// On smaller screens the navbar search UI is hidden, so we navigate to the
@@ -830,7 +827,6 @@ function Navbar() {
 		}
 
 		setIsSearchOpen(true)
-		requestAnimationFrame(() => searchInputRef.current?.focus())
 	}, [navigate])
 
 	const searchHotkeyOptions = React.useMemo(
