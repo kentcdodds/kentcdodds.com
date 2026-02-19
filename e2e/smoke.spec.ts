@@ -43,7 +43,9 @@ test('ctrl/cmd+shift+p opens nav search and focuses it', async ({ page }) => {
 	})
 
 	await page.keyboard.press('Control+Shift+P')
-	const searchInput = page.getByPlaceholder('Semantic search...')
+	const searchInput = page.locator(
+		'input[placeholder="Semantic search..."]:visible',
+	)
 	await expect(searchInput).toBeVisible()
 	await expect(searchInput).toBeFocused()
 
