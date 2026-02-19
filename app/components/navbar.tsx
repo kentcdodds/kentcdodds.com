@@ -803,6 +803,7 @@ function ProfileButton({
 }
 
 function Navbar() {
+	const navigate = useNavigate()
 	const [team] = useTeam()
 	const { requestInfo, userInfo } = useRootData()
 	const avatar = userInfo ? userInfo.avatar : kodyProfiles[team]
