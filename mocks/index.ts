@@ -1,5 +1,6 @@
 import { http, passthrough, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
+import { cloudflareHandlers } from './cloudflare.ts'
 import { discordHandlers } from './discord.ts'
 import { githubHandlers } from './github.ts'
 import { kitHandlers } from './kit.ts'
@@ -79,6 +80,7 @@ const server = setupServer(
 	...discordHandlers,
 	...kitHandlers,
 	...simplecastHandlers,
+	...cloudflareHandlers,
 	...miscHandlers,
 )
 
