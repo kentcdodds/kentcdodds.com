@@ -96,15 +96,6 @@ export default function SearchPage() {
 	type Resolved = { q: string; results: Array<SemanticSearchResult> }
 	const [resolved, setResolved] = React.useState<Resolved | null>(null)
 
-	const expectedQueryRef = React.useRef(requestedQuery)
-	React.useEffect(() => {
-		expectedQueryRef.current = requestedQuery
-	}, [requestedQuery])
-	const getExpectedQuery = React.useCallback(
-		() => expectedQueryRef.current,
-		[],
-	)
-
 	React.useEffect(() => {
 		setQuery(loaderData.q)
 		setRequestedQuery(loaderData.q)
@@ -129,7 +120,8 @@ export default function SearchPage() {
 	}, 250)
 
 	React.useEffect(() => {
-		// Clear results immediately when the input is cleared.
+		// Schedule a debounced fetch; calling with '' cancels any pending timer.
+		// Immediate UI clearing happens in the `trimmedQuery` effect above.
 		debouncedRequestSearch(trimmedQuery)
 	}, [debouncedRequestSearch, trimmedQuery])
 
@@ -167,6 +159,7 @@ export default function SearchPage() {
 					<fetcher.Form
 						method="get"
 						action="/search"
+						role="search"
 						className="w-full"
 						onSubmit={(event) => {
 							event.preventDefault()
@@ -236,7 +229,6 @@ export default function SearchPage() {
 												q={requestedQuery}
 												results={results}
 												setResolved={setResolved}
-												getExpectedQuery={getExpectedQuery}
 												renderResults={!resolved}
 												resultsContainerClassName={resultsContainerClassName}
 											/>
@@ -258,7 +250,6 @@ function ResolveResults({
 	q,
 	results,
 	setResolved,
-	getExpectedQuery,
 	renderResults,
 	resultsContainerClassName,
 }: {
@@ -270,14 +261,12 @@ function ResolveResults({
 			| null
 		>
 	>
-	getExpectedQuery: () => string
 	renderResults: boolean
 	resultsContainerClassName: string
 }) {
 	React.useEffect(() => {
-		if (getExpectedQuery() !== q) return
 		setResolved({ q, results })
-	}, [getExpectedQuery, q, results, setResolved])
+	}, [q, results, setResolved])
 
 	if (!renderResults) return null
 
