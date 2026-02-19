@@ -16,17 +16,17 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: ⎔ Setup node
-        uses: actions/setup-node@v6.2.0
+        uses: actions/setup-node@v6
         with:
           node-version: 24
 
       - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1.11.2
+        uses: bahmutov/npm-install@v1
 
       - name: 🔎 Index changed content
         run: >-
