@@ -128,7 +128,6 @@ export default function SearchPage() {
 
 	React.useEffect(() => {
 		// Clear results immediately when the input is cleared.
-		if (!trimmedQuery) return
 		debouncedRequestSearch(trimmedQuery)
 	}, [debouncedRequestSearch, trimmedQuery])
 
