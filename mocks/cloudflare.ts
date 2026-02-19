@@ -585,7 +585,12 @@ function modelFromAiRunPathname(pathname: string) {
 	return decodeURIComponent(raw)
 }
 
-const handleVectorizeQuery = async ({ request, params }) => {
+type VectorizeHandlerArgs = {
+	request: Request
+	params: { accountId: string; indexName: string } & Record<string, string>
+}
+
+const handleVectorizeQuery = async ({ request, params }: VectorizeHandlerArgs) => {
 	requiredHeader(request.headers, 'authorization')
 	const accountId = String(params.accountId)
 	const indexName = String(params.indexName)
@@ -679,7 +684,7 @@ const handleVectorizeQuery = async ({ request, params }) => {
 	})
 }
 
-const handleVectorizeInsert = async ({ request, params }) => {
+const handleVectorizeInsert = async ({ request, params }: VectorizeHandlerArgs) => {
 	requiredHeader(request.headers, 'authorization')
 	const accountId = String(params.accountId)
 	const indexName = String(params.indexName)
@@ -701,7 +706,7 @@ const handleVectorizeInsert = async ({ request, params }) => {
 	return jsonOk({ operation: 'insert', updated })
 }
 
-const handleVectorizeUpsert = async ({ request, params }) => {
+const handleVectorizeUpsert = async ({ request, params }: VectorizeHandlerArgs) => {
 	requiredHeader(request.headers, 'authorization')
 	const accountId = String(params.accountId)
 	const indexName = String(params.indexName)
@@ -723,7 +728,7 @@ const handleVectorizeUpsert = async ({ request, params }) => {
 	return jsonOk({ operation: 'upsert', updated })
 }
 
-const handleVectorizeDeleteByIds = async ({ request, params }) => {
+const handleVectorizeDeleteByIds = async ({ request, params }: VectorizeHandlerArgs) => {
 	requiredHeader(request.headers, 'authorization')
 	const accountId = String(params.accountId)
 	const indexName = String(params.indexName)
