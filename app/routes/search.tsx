@@ -1,9 +1,9 @@
 import { type LoaderFunctionArgs, defer } from '@remix-run/node'
 import {
 	Await,
-	Form,
 	Link,
 	useAsyncError,
+	useFetcher,
 	useLoaderData,
 } from '@remix-run/react'
 import React, { Suspense } from 'react'
@@ -17,12 +17,19 @@ import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { H3, H4, Paragraph } from '#app/components/typography.tsx'
 import { images } from '#app/images.tsx'
-import { getErrorMessage } from '#app/utils/misc.tsx'
+import {
+	getErrorMessage,
+	useDebounce,
+	useUpdateQueryStringValueWithoutNavigation,
+} from '#app/utils/misc.tsx'
 import {
 	isSemanticSearchConfigured,
 	semanticSearchKCD,
 	type SemanticSearchResult,
 } from '#app/utils/semantic-search.server.ts'
+
+const semanticSearchNotConfiguredMessage =
+	'Semantic search is not configured on this environment yet. Try again later.'
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const url = new URL(request.url)
@@ -49,7 +56,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 				configured: false,
 				results: [] as Array<SemanticSearchResult>,
 				error:
-					'Semantic search is not configured on this environment yet. Try again later.',
+					semanticSearchNotConfiguredMessage,
 			},
 			{ headers },
 		)
@@ -73,8 +80,56 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function SearchPage() {
-	const data = useLoaderData<typeof loader>()
+	const loaderData = useLoaderData<typeof loader>()
+	const fetcher = useFetcher<typeof loader>({ key: 'search-page-results' })
 	const inputRef = React.useRef<HTMLInputElement>(null)
+
+	const [query, setQuery] = React.useState(loaderData.q)
+	const trimmedQuery = query.trim()
+
+	// Keep the URL shareable without triggering loader navigations on each keypress.
+	useUpdateQueryStringValueWithoutNavigation('q', trimmedQuery)
+
+	// Track what we are actually searching for (debounced) so we can avoid showing
+	// stale results for a newer input value.
+	const [debouncedQuery, setDebouncedQuery] = React.useState(trimmedQuery)
+	const setDebouncedQueryDeferred = useDebounce((next: string) => {
+		setDebouncedQuery(next)
+	}, 250)
+
+	React.useEffect(() => {
+		if (trimmedQuery === debouncedQuery) return
+		// Clear results immediately when the input is cleared.
+		if (!trimmedQuery) {
+			setDebouncedQuery('')
+			return
+		}
+		setDebouncedQueryDeferred(trimmedQuery)
+	}, [debouncedQuery, setDebouncedQueryDeferred, trimmedQuery])
+
+	React.useEffect(() => {
+		if (!loaderData.configured) return
+		if (!debouncedQuery) return
+		// If the loader already fetched this query (e.g. initial page load), reuse it.
+		if (debouncedQuery === loaderData.q) return
+		fetcher.load(`/search?q=${encodeURIComponent(debouncedQuery)}`)
+	}, [debouncedQuery, fetcher, loaderData.configured, loaderData.q])
+
+	const isQueryPending = trimmedQuery !== debouncedQuery
+	const isFetchingResults = fetcher.state !== 'idle'
+
+	const activeData =
+		debouncedQuery && fetcher.data?.q === debouncedQuery
+			? fetcher.data
+			: loaderData.q === debouncedQuery
+				? loaderData
+				: null
+
+	const error =
+		!loaderData.configured && trimmedQuery
+			? semanticSearchNotConfiguredMessage
+			: activeData?.error
+
 	return (
 		<div>
 			<HeroSection
@@ -82,34 +137,35 @@ export default function SearchPage() {
 				subtitle="Semantic search across posts, pages, podcasts, talks, resume, credits, and testimonials."
 				imageBuilder={images.kodyProfileGray}
 				action={
-					<Form method="get" action="/search" className="w-full">
+					<div className="w-full">
 						<div className="relative">
 							<Input
 								ref={inputRef}
 								type="search"
 								name="q"
-								defaultValue={data.q}
+								value={query}
 								placeholder="Semantic search..."
 								className={inputClassName}
+								onChange={(event) => setQuery(event.currentTarget.value)}
 							/>
 						</div>
-					</Form>
+					</div>
 				}
 			/>
 
 			<Grid as="main">
 				<Spacer size="2xs" className="col-span-full" />
 
-				{data.error ? (
+				{error ? (
 					<div className="col-span-full">
-						<ErrorPanel>{data.error}</ErrorPanel>
+						<ErrorPanel>{error}</ErrorPanel>
 					</div>
 				) : null}
 
-				{data.q ? (
+				{trimmedQuery ? (
 					<div className="col-span-full">
 						<H3>Results</H3>
-						<H4 as="p" variant="secondary">{`For: "${data.q}"`}</H4>
+						<H4 as="p" variant="secondary">{`For: "${trimmedQuery}"`}</H4>
 					</div>
 				) : (
 					<div className="col-span-full">
@@ -122,37 +178,45 @@ export default function SearchPage() {
 				<Spacer size="3xs" className="col-span-full" />
 
 				<div className="col-span-full">
-					{data.q && data.configured && !data.error ? (
-						<Suspense
-							fallback={
-								<div className="space-y-4">
-									<Paragraph textColorClassName="text-secondary">{`Searching...`}</Paragraph>
-									<ul className="space-y-6">
-										{Array.from({ length: 3 }).map((_, i) => (
-											<li
-												key={i}
-												className="rounded-lg bg-gray-100 p-6 dark:bg-gray-800"
-											>
-												<div className="h-4 w-2/3 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
-												<div className="mt-3 h-3 w-1/3 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
-											</li>
-										))}
-									</ul>
-								</div>
-							}
-						>
-							<Await
-								resolve={data.results}
-								errorElement={<SearchResultsError />}
-							>
-								{(results) => <SearchResults q={data.q} results={results} />}
-							</Await>
-						</Suspense>
-					) : data.q && !data.error ? (
-						<Paragraph textColorClassName="text-secondary">{`No matches found.`}</Paragraph>
+					{trimmedQuery && loaderData.configured && !error ? (
+						isQueryPending || isFetchingResults ? (
+							<SearchResultsFallback />
+						) : activeData ? (
+							<Suspense fallback={<SearchResultsFallback />}>
+								<Await
+									resolve={activeData.results}
+									errorElement={<SearchResultsError />}
+								>
+									{(results) => (
+										<SearchResults q={debouncedQuery} results={results} />
+									)}
+								</Await>
+							</Suspense>
+						) : (
+							<SearchResultsFallback />
+						)
 					) : null}
 				</div>
 			</Grid>
+		</div>
+	)
+}
+
+function SearchResultsFallback() {
+	return (
+		<div className="space-y-4">
+			<Paragraph textColorClassName="text-secondary">{`Searching...`}</Paragraph>
+			<ul className="space-y-6">
+				{Array.from({ length: 3 }).map((_, i) => (
+					<li
+						key={i}
+						className="rounded-lg bg-gray-100 p-6 dark:bg-gray-800"
+					>
+						<div className="h-4 w-2/3 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+						<div className="mt-3 h-3 w-1/3 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+					</li>
+				))}
+			</ul>
 		</div>
 	)
 }
