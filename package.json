@@ -40,7 +40,7 @@
     "prime-cache:mocks": "cross-env PORT=4001 npx start-server-and-test start:mocks http-get://localhost:4001 curl:blog && echo cache primed ⚡️",
     "test:e2e:dev": "cross-env PORT=3000 playwright test",
     "pretest:e2e:run": "npm run build",
-    "test:e2e:run": "cross-env PORT=8811 playwright test",
+    "test:e2e:run": "cross-env CI=1 PORT=8811 playwright test",
     "test:e2e:install": "npx playwright install chromium --with-deps",
     "test": "vitest --run",
     "test:watch": "vitest",
