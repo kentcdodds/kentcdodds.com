@@ -9,10 +9,6 @@ function sleep(ms) {
 	return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-async function getAvailablePort() {
-	return await getPort()
-}
-
 async function run(command, args, { env } = {}) {
 	const child = spawn(command, args, {
 		stdio: 'inherit',
