@@ -23,7 +23,7 @@ jobs:
           node-version: 24
 
       - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
+        uses: bahmutov/npm-install@v1.11.2
 
       - name: 🔎 Index podcast content
         run: npx tsx other/semantic-search/index-podcasts.ts

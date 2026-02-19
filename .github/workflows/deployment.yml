@@ -52,7 +52,7 @@ jobs:
           node-version: 24
 
       - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
+        uses: bahmutov/npm-install@v1.11.2
 
       - name: 🔬 Lint
         run: npm run lint
@@ -72,7 +72,7 @@ jobs:
           node-version: 24
 
       - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
+        uses: bahmutov/npm-install@v1.11.2
 
       - name: 🔎 Type check
         run: npm run typecheck
@@ -97,7 +97,7 @@ jobs:
           node-version: 24
 
       - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
+        uses: bahmutov/npm-install@v1.11.2
 
       - name: 🏄 Copy test env vars
         run: cp .env.example .env
@@ -133,7 +133,7 @@ jobs:
         uses: FedericoCarboni/setup-ffmpeg@v3
 
       - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
+        uses: bahmutov/npm-install@v1.11.2
         with:
           useLockFile: false
 
