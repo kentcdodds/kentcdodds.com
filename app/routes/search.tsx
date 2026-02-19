@@ -91,20 +91,15 @@ export default function SearchPage() {
 	// Keep the URL shareable without triggering loader navigations on each keypress.
 	useUpdateQueryStringValueWithoutNavigation('q', trimmedQuery)
 
-	// Track what we are actually searching for (debounced) so we can avoid showing
-	// stale results for a newer input value.
-	const [debouncedQuery, setDebouncedQuery] = React.useState(trimmedQuery)
-	const setDebouncedQueryDeferred = useDebounce((next: string) => {
-		setDebouncedQuery(next)
-	}, 250)
+	const [requestedQuery, setRequestedQuery] = React.useState(trimmedQuery)
 
 	type Resolved = { q: string; results: Array<SemanticSearchResult> }
 	const [resolved, setResolved] = React.useState<Resolved | null>(null)
 
-	const expectedQueryRef = React.useRef(debouncedQuery)
+	const expectedQueryRef = React.useRef(requestedQuery)
 	React.useEffect(() => {
-		expectedQueryRef.current = debouncedQuery
-	}, [debouncedQuery])
+		expectedQueryRef.current = requestedQuery
+	}, [requestedQuery])
 	const getExpectedQuery = React.useCallback(
 		() => expectedQueryRef.current,
 		[],
@@ -112,38 +107,38 @@ export default function SearchPage() {
 
 	React.useEffect(() => {
 		setQuery(loaderData.q)
-		setDebouncedQuery(loaderData.q)
+		setRequestedQuery(loaderData.q)
 	}, [loaderData.q])
 
 	React.useEffect(() => {
-		if (!trimmedQuery) setResolved(null)
+		if (!trimmedQuery) {
+			setResolved(null)
+			setRequestedQuery('')
+		}
 	}, [trimmedQuery])
 
-	React.useEffect(() => {
-		if (trimmedQuery === debouncedQuery) return
-		// Clear results immediately when the input is cleared.
-		if (!trimmedQuery) {
-			setDebouncedQuery('')
-			return
-		}
-		setDebouncedQueryDeferred(trimmedQuery)
-	}, [debouncedQuery, setDebouncedQueryDeferred, trimmedQuery])
-
-	React.useEffect(() => {
+	const debouncedRequestSearch = useDebounce((nextQuery: string) => {
+		setRequestedQuery(nextQuery)
 		if (!loaderData.configured) return
-		if (!debouncedQuery) return
+		if (!nextQuery) return
 		// If the loader already fetched this query (e.g. initial page load), reuse it.
-		if (debouncedQuery === loaderData.q) return
-		load(`/search?q=${encodeURIComponent(debouncedQuery)}`)
-	}, [debouncedQuery, load, loaderData.configured, loaderData.q])
+		if (nextQuery === loaderData.q) return
+		load(`/search?q=${encodeURIComponent(nextQuery)}`)
+	}, 250)
 
-	const isQueryPending = trimmedQuery !== debouncedQuery
+	React.useEffect(() => {
+		// Clear results immediately when the input is cleared.
+		if (!trimmedQuery) return
+		debouncedRequestSearch(trimmedQuery)
+	}, [debouncedRequestSearch, trimmedQuery])
+
+	const isQueryPending = trimmedQuery !== requestedQuery
 
 	const activeData =
-		debouncedQuery && loaderData.q === debouncedQuery
-			? loaderData
-			: fetcher.data?.q === debouncedQuery
-				? fetcher.data
+		requestedQuery && fetcher.data?.q === requestedQuery
+			? fetcher.data
+			: loaderData.q === requestedQuery
+				? loaderData
 				: null
 
 	const error =
@@ -154,12 +149,12 @@ export default function SearchPage() {
 	const showResultsSection = trimmedQuery && loaderData.configured && !error
 	const isPending =
 		Boolean(showResultsSection) &&
-		(isQueryPending || (resolved ? resolved.q !== debouncedQuery : false))
+		(isQueryPending || (resolved ? resolved.q !== requestedQuery : false))
 	const resultsContainerClassName = isPending
 		? 'transition-opacity opacity-60'
 		: 'transition-opacity'
 	const shouldAwaitResults =
-		Boolean(showResultsSection) && Boolean(activeData) && resolved?.q !== debouncedQuery
+		Boolean(showResultsSection) && Boolean(activeData) && resolved?.q !== requestedQuery
 
 	return (
 		<div>
@@ -224,7 +219,7 @@ export default function SearchPage() {
 									>
 										{(results) => (
 											<ResolveResults
-												q={debouncedQuery}
+												q={requestedQuery}
 												results={results}
 												setResolved={setResolved}
 												getExpectedQuery={getExpectedQuery}
