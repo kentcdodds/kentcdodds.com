@@ -160,10 +160,15 @@ async function promiseWithTimeout<T>(
 	promise: Promise<T>,
 	timeoutMs: number,
 ): Promise<T> {
+	let timeoutHandle: ReturnType<typeof setTimeout> | null = null
 	const timeoutPromise = new Promise<never>((_, reject) => {
-		setTimeout(() => reject(new Error('Timeout')), timeoutMs)
+		timeoutHandle = setTimeout(() => reject(new Error('Timeout')), timeoutMs)
 	})
-	return Promise.race([promise, timeoutPromise])
+	try {
+		return await Promise.race([promise, timeoutPromise])
+	} finally {
+		if (timeoutHandle) clearTimeout(timeoutHandle)
+	}
 }
 
 async function getBlogPostReadCounts({

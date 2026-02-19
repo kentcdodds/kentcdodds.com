@@ -284,9 +284,10 @@ function BlogHome() {
 			return value
 		}
 
-		const compareByNewest = (
+		const compareByDate = (
 			a: (typeof searchedPosts)[number],
 			b: (typeof searchedPosts)[number],
+			direction: 'asc' | 'desc',
 		) => {
 			const aTime = getPostDateTime(a)
 			const bTime = getPostDateTime(b)
@@ -294,21 +295,18 @@ function BlogHome() {
 			if (aTime === null) return 1
 			if (bTime === null) return -1
 			if (aTime === bTime) return a.slug.localeCompare(b.slug)
-			return bTime - aTime
+			return direction === 'desc' ? bTime - aTime : aTime - bTime
 		}
+
+		const compareByNewest = (
+			a: (typeof searchedPosts)[number],
+			b: (typeof searchedPosts)[number],
+		) => compareByDate(a, b, 'desc')
 
 		const compareByOldest = (
 			a: (typeof searchedPosts)[number],
 			b: (typeof searchedPosts)[number],
-		) => {
-			const aTime = getPostDateTime(a)
-			const bTime = getPostDateTime(b)
-			if (aTime === null && bTime === null) return a.slug.localeCompare(b.slug)
-			if (aTime === null) return 1
-			if (bTime === null) return -1
-			if (aTime === bTime) return a.slug.localeCompare(b.slug)
-			return aTime - bTime
-		}
+		) => compareByDate(a, b, 'asc')
 
 		const compareByPopular = (
 			a: (typeof searchedPosts)[number],
@@ -328,8 +326,13 @@ function BlogHome() {
 				return postsToSort.sort(compareByOldest)
 			case 'popular':
 				return postsToSort.sort(compareByPopular)
-			default:
+			default: {
+				// If TypeScript ever flags this, a new SortState value was added
+				// without a corresponding sort branch.
+				const _exhaustiveCheck: never = effectiveSort
+				void _exhaustiveCheck
 				return searchedPosts
+			}
 		}
 	}, [
 		allPosts,
@@ -626,7 +629,9 @@ function BlogHome() {
 										? 'auto'
 										: sortState
 								}
-								onChange={(e) => setSortState(e.currentTarget.value as SortState)}
+								onChange={(e) =>
+									setSortState(getSortStateFromParam(e.currentTarget.value))
+								}
 								className="text-primary bg-primary border-secondary focus:bg-secondary rounded-full border px-5 py-2 hover:border-team-current focus:border-team-current focus:outline-none"
 							>
 								<option value="auto">
