@@ -49,7 +49,8 @@ export async function transcribeMp3WithWorkersAi({
 			// Best-effort content-type; CF can infer in many cases, but be explicit.
 			'Content-Type': 'audio/mpeg',
 		},
-		body: mp3,
+		// Wrap in a Blob so `fetch` BodyInit types are satisfied in TS.
+		body: new Blob([mp3], { type: 'audio/mpeg' }),
 	})
 
 	if (!res.ok) {
