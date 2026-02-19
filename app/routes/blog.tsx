@@ -34,6 +34,7 @@ import {
 	getAllBlogPostReadRankings,
 	getBlogReadRankings,
 	getBlogRecommendations,
+	getBlogPostReadCounts,
 	getReaderCount,
 	getSlugReadsByUser,
 	getTotalPostReads,
@@ -82,6 +83,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		totalReads,
 		totalBlogReaders,
 		allPostReadRankings,
+		postReadCounts,
 		userReads,
 	] = await Promise.all([
 		getBlogMdxListItems({ request }).then((allPosts) =>
@@ -92,6 +94,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		getTotalPostReads({ request, timings }),
 		getReaderCount({ request, timings }),
 		getAllBlogPostReadRankings({ request, timings }),
+		getBlogPostReadCounts({ request, timings }),
 		getSlugReadsByUser({ request, timings }),
 	])
 
@@ -107,6 +110,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		recommended,
 		readRankings,
 		allPostReadRankings,
+		postReadCounts,
 		totalReads: formatAbbreviatedNumber(totalReads),
 		totalBlogReaders: formatAbbreviatedNumber(totalBlogReaders),
 		userReads,
@@ -155,6 +159,19 @@ const initialIndexToShow = PAGE_SIZE
 
 const specialQueryRegex = /(?<not>!)?leader:(?<team>\w+)(\s|$)?/g
 
+type SortState = 'auto' | 'newest' | 'oldest' | 'popular'
+
+function getSortStateFromParam(value: string | null): SortState {
+	switch (value) {
+		case 'newest':
+		case 'oldest':
+		case 'popular':
+			return value
+		default:
+			return 'auto'
+	}
+}
+
 function BlogHome() {
 	const { requestInfo } = useRootData()
 	const [searchParams] = useSearchParams()
@@ -176,12 +193,19 @@ function BlogHome() {
 	const [queryValue, setQuery] = React.useState<string>(() => {
 		return searchParams.get('q') ?? ''
 	})
+	const [sortState, setSortState] = React.useState<SortState>(() => {
+		return getSortStateFromParam(searchParams.get('sort'))
+	})
 	const query = queryValue.trim()
 
 	useUpdateQueryStringValueWithoutNavigation('q', query)
+	useUpdateQueryStringValueWithoutNavigation(
+		'sort',
+		sortState === 'auto' ? '' : sortState,
+	)
 
 	const data = useLoaderData<typeof loader>()
-	const { posts: allPosts, userReads } = data
+	const { posts: allPosts, userReads, postReadCounts } = data
 
 	const getLeadingTeamForSlug = React.useCallback(
 		(slug: string) => {
@@ -191,6 +215,12 @@ function BlogHome() {
 	)
 
 	const regularQuery = query.replace(specialQueryRegex, '').trim()
+	const effectiveSort =
+		sortState === 'auto'
+			? regularQuery
+				? 'relevance'
+				: 'newest'
+			: sortState
 
 	const matchingPosts = React.useMemo(() => {
 		const r = new RegExp(specialQueryRegex)
@@ -239,21 +269,82 @@ function BlogHome() {
 					})
 				: filteredPosts
 
-		return filterPosts(filteredPosts, regularQuery)
+		const searchedPosts = filterPosts(filteredPosts, regularQuery)
+		if (effectiveSort === 'relevance') return searchedPosts
+
+		const dateTimeCache = new Map<string, number | null>()
+		const getPostDateTime = (post: (typeof searchedPosts)[number]) => {
+			const cached = dateTimeCache.get(post.slug)
+			if (cached !== undefined) return cached
+			const time = new Date(post.frontmatter.date ?? '').getTime()
+			const value = Number.isFinite(time) ? time : null
+			dateTimeCache.set(post.slug, value)
+			return value
+		}
+
+		const compareByNewest = (
+			a: (typeof searchedPosts)[number],
+			b: (typeof searchedPosts)[number],
+		) => {
+			const aTime = getPostDateTime(a)
+			const bTime = getPostDateTime(b)
+			if (aTime === null && bTime === null) return a.slug.localeCompare(b.slug)
+			if (aTime === null) return 1
+			if (bTime === null) return -1
+			if (aTime === bTime) return a.slug.localeCompare(b.slug)
+			return bTime - aTime
+		}
+
+		const compareByOldest = (
+			a: (typeof searchedPosts)[number],
+			b: (typeof searchedPosts)[number],
+		) => {
+			const aTime = getPostDateTime(a)
+			const bTime = getPostDateTime(b)
+			if (aTime === null && bTime === null) return a.slug.localeCompare(b.slug)
+			if (aTime === null) return 1
+			if (bTime === null) return -1
+			if (aTime === bTime) return a.slug.localeCompare(b.slug)
+			return aTime - bTime
+		}
+
+		const compareByPopular = (
+			a: (typeof searchedPosts)[number],
+			b: (typeof searchedPosts)[number],
+		) => {
+			const aReads = postReadCounts[a.slug] ?? 0
+			const bReads = postReadCounts[b.slug] ?? 0
+			if (aReads !== bReads) return bReads - aReads
+			return compareByNewest(a, b)
+		}
+
+		const postsToSort = [...searchedPosts]
+		switch (effectiveSort) {
+			case 'newest':
+				return postsToSort.sort(compareByNewest)
+			case 'oldest':
+				return postsToSort.sort(compareByOldest)
+			case 'popular':
+				return postsToSort.sort(compareByPopular)
+			default:
+				return searchedPosts
+		}
 	}, [
 		allPosts,
 		query,
 		regularQuery,
+		effectiveSort,
 		getLeadingTeamForSlug,
 		userReadsState,
 		userReads,
+		postReadCounts,
 	])
 
 	const [indexToShow, setIndexToShow] = React.useState(initialIndexToShow)
 	// when the query changes, we want to reset the index
 	React.useEffect(() => {
 		setIndexToShow(initialIndexToShow)
-	}, [query])
+	}, [query, sortState, userReadsState])
 
 	// this bit is very similar to what's on the blogs page.
 	// Next time we need to do work in here, let's make an abstraction for them
@@ -544,6 +635,28 @@ function BlogHome() {
 			) : null}
 
 			<Grid className="mb-64" ref={resultsRef}>
+				<div className="col-span-full mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+					<H6 as="div" className="m-0">
+						Articles
+					</H6>
+					<label className="flex items-center gap-3 text-sm font-medium text-slate-500">
+						<span>Sort by</span>
+						<select
+							value={
+								regularQuery === '' && sortState === 'newest' ? 'auto' : sortState
+							}
+							onChange={(e) => setSortState(e.currentTarget.value as SortState)}
+							className="text-primary bg-primary border-secondary focus:bg-secondary rounded-full border px-5 py-2 hover:border-team-current focus:border-team-current focus:outline-none"
+						>
+							<option value="auto">
+								{regularQuery ? 'Relevance' : 'Newest'}
+							</option>
+							{regularQuery ? <option value="newest">Newest</option> : null}
+							<option value="popular">Most popular</option>
+							<option value="oldest">Oldest</option>
+						</select>
+					</label>
+				</div>
 				{posts.length === 0 ? (
 					<div className="col-span-full flex flex-col items-center">
 						<img

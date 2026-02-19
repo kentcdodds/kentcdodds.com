@@ -171,6 +171,40 @@ export async function getMostPopularPostSlugs({
 		.slice(0, limit)
 }
 
+export async function getBlogPostReadCounts({
+	request,
+	timings,
+}: {
+	request: Request
+	timings?: Timings
+}) {
+	return cachified({
+		key: `blog:post-read-counts`,
+		ttl: 1000 * 60 * 30,
+		staleWhileRevalidate: 1000 * 60 * 60 * 24,
+		cache: lruCache,
+		request,
+		timings,
+		checkValue: (value: unknown) =>
+			typeof value === 'object' &&
+			value !== null &&
+			!Array.isArray(value) &&
+			Object.values(value as Record<string, unknown>).every(
+				(v) => typeof v === 'number',
+			),
+		getFreshValue: async () => {
+			const result = await prisma.postRead.groupBy({
+				by: ['postSlug'],
+				_count: { postSlug: true },
+			})
+
+			return Object.fromEntries(
+				result.map((r) => [r.postSlug, r._count.postSlug]),
+			) as Record<string, number>
+		},
+	})
+}
+
 async function getTotalPostReads({
 	request,
 	slug,
@@ -559,6 +593,7 @@ export {
 	getBlogReadRankings,
 	getAllBlogPostReadRankings,
 	getSlugReadsByUser,
+	getBlogPostReadCounts,
 	getTotalPostReads,
 	getReaderCount,
 	getPostJson,
