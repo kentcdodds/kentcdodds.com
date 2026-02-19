@@ -214,7 +214,8 @@ export async function semanticSearchKCD({
 		typeof topK === 'number' && Number.isFinite(topK) ? Math.max(1, Math.floor(topK)) : 15
 	// Vectorize returns chunk-level matches and overlapping chunks commonly score
 	// highly together. Overfetch and then de-dupe down to unique docs.
-	const rawTopK = Math.min(100, safeTopK * 5)
+	// When requesting metadata, Vectorize caps topK at 20.
+	const rawTopK = Math.min(20, safeTopK * 5)
 
 	const vector = await getEmbedding({
 		accountId,
