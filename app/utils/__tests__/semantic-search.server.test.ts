@@ -1,8 +1,24 @@
-import { describe, expect, test, vi } from 'vitest'
+import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'vitest'
+import { setupServer } from 'msw/node'
+import { cloudflareHandlers, resetCloudflareMockState } from '../../../mocks/cloudflare.ts'
 import {
 	isSemanticSearchConfigured,
 	semanticSearchKCD,
 } from '../semantic-search.server.ts'
+
+const server = setupServer(...cloudflareHandlers)
+
+beforeAll(() => {
+	server.listen({ onUnhandledRequest: 'error' })
+})
+
+beforeEach(() => {
+	resetCloudflareMockState()
+})
+
+afterAll(() => {
+	server.close()
+})
 
 describe('semantic search env gating', () => {
 	test('isSemanticSearchConfigured is false without env vars', () => {
@@ -54,131 +70,132 @@ describe('semantic search result normalization', () => {
 			CLOUDFLARE_VECTORIZE_INDEX: process.env.CLOUDFLARE_VECTORIZE_INDEX,
 			CLOUDFLARE_AI_EMBEDDING_MODEL: process.env.CLOUDFLARE_AI_EMBEDDING_MODEL,
 		}
-		let vectorizeTopKRequested = 0
-
 		try {
-			process.env.CLOUDFLARE_ACCOUNT_ID = 'test-account'
-			process.env.CLOUDFLARE_API_TOKEN = 'test-token'
-			process.env.CLOUDFLARE_VECTORIZE_INDEX = 'test-index'
+			const accountId = 'acc123'
+			const apiToken = 'test-token'
+			const indexName = 'semantic-index'
+
+			process.env.CLOUDFLARE_ACCOUNT_ID = accountId
+			process.env.CLOUDFLARE_API_TOKEN = apiToken
+			process.env.CLOUDFLARE_VECTORIZE_INDEX = indexName
 			delete process.env.CLOUDFLARE_AI_EMBEDDING_MODEL
 
-			const matches = [
+			// Use a query that's unlikely to match any seeded doc titles/snippets,
+			// so the Cloudflare Vectorize mock falls back to cosine similarity rather
+			// than match-sorter ranking.
+			const query = 'zz_semantic_dedupe_test_02157475'
+
+			const embedRes = await fetch(
+				`https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/@cf/google/embeddinggemma-300m`,
 				{
-					id: 'blog:react-hooks-pitfalls:chunk:0',
-					score: 0.99,
+					method: 'POST',
+					headers: {
+						Authorization: `Bearer ${apiToken}`,
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({ text: [query] }),
+				},
+			)
+			expect(embedRes.ok).toBe(true)
+			const embedJson = (await embedRes.json()) as any
+			const vector = embedJson?.result?.data?.[0] as unknown
+			expect(Array.isArray(vector)).toBe(true)
+
+			const vectorsToUpsert = [
+				{
+					id: 'blog:cursor-dup:chunk:0',
+					values: vector as number[],
 					metadata: {
 						type: 'blog',
-						slug: 'react-hooks-pitfalls',
-						url: '/blog/react-hooks-pitfalls',
-						title: 'React Hooks Pitfalls',
-						snippet: 'snippet-0',
-						chunkIndex: 0,
-						chunkCount: 3,
+						slug: 'cursor-dup',
+						url: '/blog/cursor-dup',
+						title: 'Cursor Dup',
+						snippet: 'snippet-best',
 					},
 				},
 				{
-					id: 'blog:react-hooks-pitfalls:chunk:1',
-					score: 0.98,
+					id: 'blog:cursor-dup:chunk:1',
+					values: vector as number[],
 					metadata: {
 						type: 'blog',
-						slug: 'react-hooks-pitfalls',
-						url: '/blog/react-hooks-pitfalls',
-						title: 'React Hooks Pitfalls',
-						snippet: 'snippet-1',
-						chunkIndex: 1,
-						chunkCount: 3,
+						slug: 'cursor-dup',
+						url: '/blog/cursor-dup',
+						title: 'Cursor Dup (chunk 2)',
+						snippet: 'snippet-worse',
+					},
+				},
+				{
+					id: 'blog:cursor-one:chunk:0',
+					values: vector as number[],
+					metadata: {
+						type: 'blog',
+						slug: 'cursor-one',
+						url: '/blog/cursor-one',
+						title: 'Cursor One',
+						snippet: 'one-snippet',
 					},
 				},
 				{
 					id: 'credit:alice:chunk:0',
-					score: 0.97,
+					values: vector as number[],
 					metadata: {
 						type: 'credit',
 						slug: 'alice',
 						url: '/credits',
 						title: 'Alice',
 						snippet: 'alice-snippet',
-						chunkIndex: 0,
-						chunkCount: 1,
 					},
 				},
 				{
 					id: 'credit:bob:chunk:0',
-					score: 0.96,
+					values: vector as number[],
 					metadata: {
 						type: 'credit',
 						slug: 'bob',
 						url: '/credits',
 						title: 'Bob',
 						snippet: 'bob-snippet',
-						chunkIndex: 0,
-						chunkCount: 1,
-					},
-				},
-				{
-					id: 'blog:some-other-post:chunk:0',
-					score: 0.95,
-					metadata: {
-						type: 'blog',
-						slug: 'some-other-post',
-						url: '/blog/some-other-post',
-						title: 'Some Other Post',
-						snippet: 'other-snippet',
-						chunkIndex: 0,
-						chunkCount: 2,
 					},
 				},
 			]
 
-			vi.stubGlobal(
-				'fetch',
-				vi.fn(async (input: any, init?: RequestInit) => {
-					const url = String(input)
-					if (url.includes('/ai/run/')) {
-						return new Response(
-							JSON.stringify({ result: { data: [[0.1, 0.2, 0.3]] } }),
-							{ status: 200, headers: { 'Content-Type': 'application/json' } },
-						)
-					}
-					if (url.includes('/vectorize/v2/indexes/') && url.endsWith('/query')) {
-						const body = typeof init?.body === 'string' ? JSON.parse(init.body) : {}
-						vectorizeTopKRequested =
-							typeof body?.topK === 'number' ? body.topK : vectorizeTopKRequested
-						const requestedTopK =
-							typeof body?.topK === 'number' ? body.topK : matches.length
-						const sliced = matches.slice(0, requestedTopK)
-						return new Response(
-							JSON.stringify({ result: { count: sliced.length, matches: sliced } }),
-							{ status: 200, headers: { 'Content-Type': 'application/json' } },
-						)
-					}
-					return new Response('Not found', { status: 404 })
-				}),
+			const ndjson =
+				vectorsToUpsert.map((v) => JSON.stringify(v)).join('\n') + '\n'
+			const upsertRes = await fetch(
+				`https://api.cloudflare.com/client/v4/accounts/${accountId}/vectorize/v2/indexes/${indexName}/upsert`,
+				{
+					method: 'POST',
+					headers: {
+						Authorization: `Bearer ${apiToken}`,
+						'Content-Type': 'application/x-ndjson',
+					},
+					body: ndjson,
+				},
 			)
+			expect(upsertRes.ok).toBe(true)
 
-			const results = await semanticSearchKCD({ query: 'hooks', topK: 3 })
-			expect(vectorizeTopKRequested).toBeGreaterThan(3)
-			expect(results).toHaveLength(3)
+			const results = await semanticSearchKCD({ query, topK: 4 })
+			expect(results).toHaveLength(4)
 
 			// Chunk-level duplicates collapse into a single doc-level result.
 			const ids = results.map((r) => r.id)
+			const urls = results.map((r) => r.url)
 			expect(new Set(ids).size).toBe(ids.length)
-			expect(ids).toContain('blog:react-hooks-pitfalls')
+			expect(urls.filter((u) => u === '/blog/cursor-dup')).toHaveLength(1)
 
-			const blogResult = results.find((r) => r.id === 'blog:react-hooks-pitfalls')
+			const blogResult = results.find((r) => r.url === '/blog/cursor-dup')
 			expect(blogResult).toBeDefined()
-			expect(blogResult!.snippet).toBe('snippet-0')
-			expect(blogResult!.score).toBe(0.99)
+			expect(blogResult!.snippet).toBe('snippet-best')
 
 			// Credits share the same URL, but should not be collapsed (slug differentiates them).
 			expect(ids).toContain('credit:alice')
 			expect(ids).toContain('credit:bob')
+			expect(urls.filter((u) => u === '/credits')).toHaveLength(2)
 		} finally {
 			for (const [key, value] of Object.entries(originalEnv)) {
 				if (typeof value === 'string') process.env[key] = value
 				else delete process.env[key]
 			}
-			vi.unstubAllGlobals()
 		}
 	})
 })

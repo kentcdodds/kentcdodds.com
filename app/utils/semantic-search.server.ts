@@ -54,6 +54,20 @@ function normalizeSlugForKey(slug: string) {
 	return slug.toLowerCase()
 }
 
+function parseDocRefFromVectorId(
+	vectorId: string,
+): { type: string; slug: string } | null {
+	// Indexers generally use `<type>:<slug>:chunk:<n>` for chunk-level vectors.
+	// When metadata is missing/incomplete, we can still collapse chunk hits into a
+	// doc-level hit using the stable vector id structure.
+	const match =
+		/^(?<type>[^:]+):(?<slug>[^:]+):chunk:(?<chunkIndex>\d+)$/u.exec(vectorId)
+	const type = match?.groups?.type
+	const slug = match?.groups?.slug
+	if (!type || !slug) return null
+	return { type, slug }
+}
+
 /**
  * Compute a doc-level identifier for semantic search results.
  *
@@ -76,6 +90,10 @@ function getCanonicalResultId({
 	// The Vectorize index stores multiple chunk vectors per doc, so we need a
 	// canonical, doc-level identifier to collapse duplicates in query results.
 	if (type && slug) return `${type}:${normalizeSlugForKey(slug)}`
+	const fromVectorId = parseDocRefFromVectorId(vectorId)
+	if (fromVectorId) {
+		return `${fromVectorId.type}:${normalizeSlugForKey(fromVectorId.slug)}`
+	}
 	const normalizedUrl = url ? normalizeUrlForKey(url) : undefined
 	if (type && normalizedUrl) return `${type}:${normalizedUrl}`
 	if (normalizedUrl) return normalizedUrl
