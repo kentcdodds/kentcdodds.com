@@ -97,10 +97,26 @@ export default function SearchPage() {
 		setDebouncedQuery(next)
 	}, 250)
 
+	type Resolved = { q: string; results: Array<SemanticSearchResult> }
+	const [resolved, setResolved] = React.useState<Resolved | null>(null)
+
+	const expectedQueryRef = React.useRef(debouncedQuery)
+	React.useEffect(() => {
+		expectedQueryRef.current = debouncedQuery
+	}, [debouncedQuery])
+	const getExpectedQuery = React.useCallback(
+		() => expectedQueryRef.current,
+		[],
+	)
+
 	React.useEffect(() => {
 		setQuery(loaderData.q)
 		setDebouncedQuery(loaderData.q)
 	}, [loaderData.q])
+
+	React.useEffect(() => {
+		if (!trimmedQuery) setResolved(null)
+	}, [trimmedQuery])
 
 	React.useEffect(() => {
 		if (trimmedQuery === debouncedQuery) return
@@ -121,7 +137,6 @@ export default function SearchPage() {
 	}, [debouncedQuery, fetcher, loaderData.configured, loaderData.q])
 
 	const isQueryPending = trimmedQuery !== debouncedQuery
-	const isFetchingResults = fetcher.state !== 'idle'
 
 	const activeData =
 		debouncedQuery && fetcher.data?.q === debouncedQuery
@@ -134,6 +149,16 @@ export default function SearchPage() {
 		!loaderData.configured && trimmedQuery
 			? semanticSearchNotConfiguredMessage
 			: activeData?.error
+
+	const showResultsSection = trimmedQuery && loaderData.configured && !error
+	const isPending =
+		Boolean(showResultsSection) &&
+		(isQueryPending || (resolved ? resolved.q !== debouncedQuery : false))
+	const resultsContainerClassName = isPending
+		? 'transition-opacity opacity-60'
+		: 'transition-opacity'
+	const shouldAwaitResults =
+		Boolean(showResultsSection) && Boolean(activeData) && resolved?.q !== debouncedQuery
 
 	return (
 		<div>
@@ -183,26 +208,72 @@ export default function SearchPage() {
 				<Spacer size="3xs" className="col-span-full" />
 
 				<div className="col-span-full">
-					{trimmedQuery && loaderData.configured && !error ? (
-						isQueryPending || isFetchingResults ? (
-							<SearchResultsFallback />
-						) : activeData ? (
-							<Suspense fallback={<SearchResultsFallback />}>
-								<Await
-									resolve={activeData.results}
-									errorElement={<SearchResultsError />}
-								>
-									{(results) => (
-										<SearchResults q={debouncedQuery} results={results} />
-									)}
-								</Await>
-							</Suspense>
-						) : (
-							<SearchResultsFallback />
-						)
+					{showResultsSection ? (
+						<>
+							{resolved ? (
+								<div className={resultsContainerClassName}>
+									<SearchResults q={resolved.q} results={resolved.results} />
+								</div>
+							) : null}
+							{activeData && shouldAwaitResults ? (
+								<Suspense fallback={resolved ? null : <SearchResultsFallback />}>
+									<Await
+										resolve={activeData.results}
+										errorElement={<SearchResultsError />}
+									>
+										{(results) => (
+											<ResolveResults
+												q={debouncedQuery}
+												results={results}
+												setResolved={setResolved}
+												getExpectedQuery={getExpectedQuery}
+												renderResults={!resolved}
+												resultsContainerClassName={resultsContainerClassName}
+											/>
+										)}
+									</Await>
+								</Suspense>
+							) : !resolved ? (
+								<SearchResultsFallback />
+							) : null}
+						</>
 					) : null}
 				</div>
 			</Grid>
+		</div>
+	)
+}
+
+function ResolveResults({
+	q,
+	results,
+	setResolved,
+	getExpectedQuery,
+	renderResults,
+	resultsContainerClassName,
+}: {
+	q: string
+	results: Array<SemanticSearchResult>
+	setResolved: React.Dispatch<
+		React.SetStateAction<
+			| { q: string; results: Array<SemanticSearchResult> }
+			| null
+		>
+	>
+	getExpectedQuery: () => string
+	renderResults: boolean
+	resultsContainerClassName: string
+}) {
+	React.useEffect(() => {
+		if (getExpectedQuery() !== q) return
+		setResolved({ q, results })
+	}, [getExpectedQuery, q, results, setResolved])
+
+	if (!renderResults) return null
+
+	return (
+		<div className={resultsContainerClassName}>
+			<SearchResults q={q} results={results} />
 		</div>
 	)
 }
