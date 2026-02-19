@@ -41,6 +41,14 @@ export async function transcribeMp3WithWorkersAi({
 		model,
 	)}`
 
+	// Some TS `fetch` typings only accept `ArrayBufferView` backed by `ArrayBuffer`
+	// (not `ArrayBufferLike`). Convert to an `ArrayBuffer`-backed view without
+	// copying when possible.
+	const mp3Body =
+		mp3.buffer instanceof ArrayBuffer
+			? new Uint8Array(mp3.buffer, mp3.byteOffset, mp3.byteLength)
+			: Uint8Array.from(mp3)
+
 	// For `@cf/openai/whisper`, Cloudflare supports raw binary audio as the body.
 	// Docs: https://developers.cloudflare.com/workers-ai/models/whisper/
 	const res = await fetch(url, {
@@ -50,9 +58,7 @@ export async function transcribeMp3WithWorkersAi({
 			// Best-effort content-type; CF can infer in many cases, but be explicit.
 			'Content-Type': 'audio/mpeg',
 		},
-		// Some fetch/undici TS typings are stricter than runtime and require
-		// `Uint8Array<ArrayBuffer>` rather than `Uint8Array<ArrayBufferLike>`.
-		body: mp3 as unknown as Uint8Array<ArrayBuffer>,
+		body: mp3Body,
 	})
 
 	if (!res.ok) {
