@@ -104,7 +104,7 @@ test('Call Kent recording flow', async ({ page, login }) => {
 	])
 
 	// Confirm the call detail page finished loading before swapping auth/cookies.
-	await expect(page.getByText(description)).toBeVisible({ timeout: 10_000 })
+	await expect(page.locator('audio').first()).toBeVisible({ timeout: 10_000 })
 
 	await login({ role: 'ADMIN' })
 	await gotoWithRetries(page, '/calls/admin')
