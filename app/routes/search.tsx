@@ -140,10 +140,10 @@ export default function SearchPage() {
 	const isQueryPending = trimmedQuery !== debouncedQuery
 
 	const activeData =
-		debouncedQuery && fetcher.data?.q === debouncedQuery
-			? fetcher.data
-			: loaderData.q === debouncedQuery
-				? loaderData
+		debouncedQuery && loaderData.q === debouncedQuery
+			? loaderData
+			: fetcher.data?.q === debouncedQuery
+				? fetcher.data
 				: null
 
 	const error =
