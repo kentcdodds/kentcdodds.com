@@ -14,7 +14,6 @@ import chalk from 'chalk'
 import closeWithGrace from 'close-with-grace'
 import compression from 'compression'
 import express from 'express'
-import 'express-async-errors'
 import getPort, { portNumbers } from 'get-port'
 import helmet from 'helmet'
 import morgan from 'morgan'
@@ -115,7 +114,7 @@ app.use((req, res, next) => {
 })
 
 app.all(
-	'*',
+	'{*splat}',
 	getRedirectsMiddleware({
 		redirectsString: fs.readFileSync(here('./_redirects.txt'), 'utf8'),
 	}),
@@ -162,7 +161,7 @@ if (viteDevServer) {
 }
 
 app.get(
-	['/build/*', '/images/*', '/fonts/*', '/favicons/*'],
+	['/build/{*splat}', '/images/{*splat}', '/fonts/{*splat}', '/favicons/{*splat}'],
 	(req: any, res: any) => {
 		// if we made it past the express.static for /build, then we're missing something. No bueno.
 		return res.status(404).send('Not found')
@@ -300,7 +299,7 @@ app.use(
 app.get('/redirect.html', rickRollMiddleware)
 
 // CORS support for /.well-known/*
-app.options('/.well-known/*', (req, res) => {
+app.options('/.well-known/{*splat}', (req, res) => {
 	res.header('Access-Control-Allow-Origin', '*')
 	res.header('Access-Control-Allow-Methods', 'GET,HEAD,POST,OPTIONS')
 	res.header(
@@ -310,7 +309,7 @@ app.options('/.well-known/*', (req, res) => {
 	res.sendStatus(204)
 })
 
-app.use('/.well-known/*', (req, res, next) => {
+app.use('/.well-known/{*splat}', (req, res, next) => {
 	res.header('Access-Control-Allow-Origin', '*')
 	next()
 })
@@ -326,7 +325,7 @@ async function getRequestHandler(): Promise<RequestHandler> {
 	})
 }
 
-app.all('*', await getRequestHandler())
+app.all('{*splat}', await getRequestHandler())
 
 const desiredPort = Number(process.env.PORT || 3000)
 const portToUse = await getPort({
