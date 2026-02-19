@@ -108,6 +108,7 @@ export default function SearchPage() {
 	React.useEffect(() => {
 		setQuery(loaderData.q)
 		setRequestedQuery(loaderData.q)
+		setResolved(null)
 	}, [loaderData.q])
 
 	React.useEffect(() => {
@@ -118,6 +119,7 @@ export default function SearchPage() {
 	}, [trimmedQuery])
 
 	const debouncedRequestSearch = useDebounce((nextQuery: string) => {
+		if (nextQuery === requestedQuery) return
 		setRequestedQuery(nextQuery)
 		if (!loaderData.configured) return
 		if (!nextQuery) return
@@ -162,7 +164,20 @@ export default function SearchPage() {
 				subtitle="Semantic search across posts, pages, podcasts, talks, resume, credits, and testimonials."
 				imageBuilder={images.kodyProfileGray}
 				action={
-					<fetcher.Form method="get" action="/search" className="w-full">
+					<fetcher.Form
+						method="get"
+						action="/search"
+						className="w-full"
+						onSubmit={(event) => {
+							event.preventDefault()
+							if (!loaderData.configured) return
+							if (!trimmedQuery) return
+							if (trimmedQuery === requestedQuery) return
+							setRequestedQuery(trimmedQuery)
+							if (trimmedQuery === loaderData.q) return
+							load(`/search?q=${encodeURIComponent(trimmedQuery)}`)
+						}}
+					>
 						<div className="relative">
 							<Input
 								ref={inputRef}
