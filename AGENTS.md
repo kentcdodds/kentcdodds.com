@@ -4,7 +4,7 @@
 
 ### Overview
 
-This is Kent C. Dodds' personal website (kentcdodds.com) — a Remix v2 app with Express, SQLite (via Prisma), and extensive MSW mocks for all external APIs.
+This is Kent C. Dodds' personal website (kentcdodds.com) — a React Router v7 app with Express, SQLite (via Prisma), and extensive MSW mocks for all external APIs.
 
 ### Prerequisites
 
