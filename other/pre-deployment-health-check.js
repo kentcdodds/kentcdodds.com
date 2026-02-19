@@ -66,7 +66,7 @@ async function main() {
 		Number.isFinite(parsedTimeoutMs) && parsedTimeoutMs > 0
 			? parsedTimeoutMs
 			: 60_000
-	const port = await getAvailablePort()
+	const port = await getPort()
 	const url = `http://127.0.0.1:${port}/healthcheck`
 
 	// LiteFS is Fly-specific (FUSE + consul lease). For CI we smoke-test the
