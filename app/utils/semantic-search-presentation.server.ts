@@ -337,12 +337,14 @@ export async function getSemanticSearchPresentation(
 	result: ResultLike,
 ): Promise<SemanticSearchPresentation> {
 	const fallback = getFallbackPresentation(result.type)
+	const fallbackImageUrl = fallback.imageUrl
+	const fallbackImageAlt = fallback.imageAlt
 
 	const summaryFromSnippet = result.snippet ? truncate(result.snippet, 220) : undefined
 	const base: SemanticSearchPresentation = {
 		summary: summaryFromSnippet,
-		imageUrl: fallback.imageUrl,
-		imageAlt: fallback.imageAlt,
+		imageUrl: fallbackImageUrl,
+		imageAlt: fallbackImageAlt,
 	}
 
 	const type = result.type
@@ -392,14 +394,14 @@ export async function getSemanticSearchPresentation(
 				: person.role
 					? truncate(person.role, 220)
 					: base.summary
-			const alt = person.name || base.imageAlt
+			const alt = person.name || fallbackImageAlt
 			const imageUrl = person.cloudinaryId
 				? buildThumbFromCloudinaryId({
 						cloudinaryId: person.cloudinaryId,
 						alt,
 						size: 96,
 					})
-				: base.imageUrl
+				: fallbackImageUrl
 			return { summary, imageUrl, imageAlt: alt }
 		} catch {
 			return base
@@ -414,14 +416,14 @@ export async function getSemanticSearchPresentation(
 			const summary = t.testimonial
 				? truncate(t.testimonial, 220)
 				: base.summary
-			const alt = t.author || base.imageAlt
+			const alt = t.author || fallbackImageAlt
 			const imageUrl = t.cloudinaryId
 				? buildThumbFromCloudinaryId({
 						cloudinaryId: t.cloudinaryId,
 						alt,
 						size: 96,
 					})
-				: base.imageUrl
+				: fallbackImageUrl
 			return { summary, imageUrl, imageAlt: alt }
 		} catch {
 			return base
@@ -432,7 +434,7 @@ export async function getSemanticSearchPresentation(
 		try {
 			const resume = await loadResumeMeta()
 			const summary = resume.summary ? truncate(resume.summary, 220) : base.summary
-			const alt = result.title ?? resume.title ?? base.imageAlt
+			const alt = result.title ?? resume.title ?? fallbackImageAlt
 			return { ...base, summary, imageAlt: alt }
 		} catch {
 			return base
