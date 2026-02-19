@@ -377,16 +377,24 @@ function BlogHome() {
 	}
 
 	const isSearching = query.length > 0 || userReadsState !== 'unset'
+	const showFeatured =
+		!isSearching && Boolean(data.recommended) && effectiveSort === 'newest'
+	const shouldOmitRecommendedFromGrid = showFeatured && Boolean(data.recommended)
 
 	const posts = isSearching
 		? matchingPosts.slice(0, indexToShow)
-		: matchingPosts
-				.filter((p) => p.slug !== data.recommended?.slug)
-				.slice(0, indexToShow)
+		: (shouldOmitRecommendedFromGrid
+				? matchingPosts.filter((p) => p.slug !== data.recommended?.slug)
+				: matchingPosts
+			).slice(0, indexToShow)
+
+	const nonSearchingPostsCount = shouldOmitRecommendedFromGrid
+		? Math.max(0, matchingPosts.length - 1)
+		: matchingPosts.length
 
 	const hasMorePosts = isSearching
 		? indexToShow < matchingPosts.length
-		: indexToShow < matchingPosts.length - 1
+		: indexToShow < nonSearchingPostsCount
 
 	const visibleTags = isSearching
 		? new Set(
@@ -606,7 +614,7 @@ function BlogHome() {
 
 			{/* this is a remix bug */}
 			{}
-			{!isSearching && data.recommended ? (
+			{showFeatured && data.recommended ? (
 				<div className="mb-10">
 					<FeaturedSection
 						subTitle={[
