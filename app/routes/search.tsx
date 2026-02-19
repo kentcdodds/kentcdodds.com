@@ -98,6 +98,11 @@ export default function SearchPage() {
 	}, 250)
 
 	React.useEffect(() => {
+		setQuery(loaderData.q)
+		setDebouncedQuery(loaderData.q)
+	}, [loaderData.q])
+
+	React.useEffect(() => {
 		if (trimmedQuery === debouncedQuery) return
 		// Clear results immediately when the input is cleared.
 		if (!trimmedQuery) {
