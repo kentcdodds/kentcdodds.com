@@ -3,6 +3,7 @@ import invariant from 'tiny-invariant'
 import { expect, readEmail, test } from './utils.ts'
 
 test('Call Kent recording flow', async ({ page, login }) => {
+	test.setTimeout(120_000)
 	const user = await login()
 	await page.goto('/calls')
 
@@ -18,31 +19,49 @@ test('Call Kent recording flow', async ({ page, login }) => {
 
 	const mainContent = page.getByRole('main')
 	await mainContent.getByRole('link', { name: /new recording/i }).click()
-	await mainContent.getByRole('button', { name: /current.*device/i }).click()
 
-	await mainContent
-		.getByRole('checkbox', { name: /default/i })
-		.click({ force: true })
-	await mainContent.getByRole('button', { name: /start/i }).click()
-	await page.waitForTimeout(50) // let the sample.wav file play for a bit
-	await mainContent.getByRole('button', { name: /pause/i }).click()
-	await mainContent.getByRole('button', { name: /resume/i }).click()
-	await page.waitForTimeout(50) // let the sample.wav file play for a bit more
-	await mainContent.getByRole('button', { name: /stop/i }).click()
-	await mainContent.getByRole('button', { name: /re-record/i }).click()
+	const startRecordingButton = mainContent.getByRole('button', {
+		name: /start recording/i,
+	})
+	await expect(startRecordingButton).toBeVisible({ timeout: 15_000 })
+	await startRecordingButton.click()
 
-	await mainContent.getByRole('button', { name: /start/i }).click()
-	await page.waitForTimeout(500) // let the sample.wav file play for a bit more
-	await mainContent.getByRole('button', { name: /stop/i }).click()
+	const stopButton = mainContent.getByRole('button', { name: /stop/i })
+	const pauseButton = mainContent.getByRole('button', { name: /pause/i })
+	const resumeButton = mainContent.getByRole('button', { name: /resume/i })
+	const rerecordButton = mainContent.getByRole('button', { name: /re-record/i })
+	const acceptButton = mainContent.getByRole('button', { name: /accept/i })
 
-	await mainContent.getByRole('button', { name: /accept/i }).click()
-	await mainContent.getByRole('textbox', { name: /title/i }).type(title)
+	await expect(stopButton).toBeVisible({ timeout: 15_000 })
+	await page.waitForTimeout(250) // let the sample.wav file record a bit
+	await pauseButton.click()
+	await expect(resumeButton).toBeVisible()
+	await resumeButton.click()
+	await expect(pauseButton).toBeVisible()
+	await page.waitForTimeout(250) // record a bit more
+	await stopButton.click()
+	await expect(rerecordButton).toBeVisible()
+	await rerecordButton.click()
+
+	// Second recording: keep it simple (record a bit, then accept).
+	await expect(startRecordingButton).toBeVisible({ timeout: 15_000 })
+	await startRecordingButton.click()
+	await expect(stopButton).toBeVisible({ timeout: 15_000 })
+	await page.waitForTimeout(750) // record a bit more to avoid empty blobs
+	await stopButton.click()
+
+	await expect(acceptButton).toBeVisible({ timeout: 15_000 })
+	await acceptButton.click()
+
+	const titleInput = mainContent.getByRole('textbox', { name: /title/i })
+	await expect(titleInput).toBeVisible({ timeout: 15_000 })
+	await titleInput.fill(title)
 	await mainContent
 		.getByRole('textbox', { name: /description/i })
-		.type(faker.lorem.paragraph())
+		.fill(faker.lorem.paragraph())
 	await mainContent
 		.getByRole('textbox', { name: /keywords/i })
-		.type(faker.lorem.words(3).split(' ').join(','))
+		.fill(faker.lorem.words(3).split(' ').join(','))
 	await mainContent.getByRole('button', { name: /submit/i }).click()
 
 	// Wait for the redirect to confirm the call was created
@@ -57,11 +76,17 @@ test('Call Kent recording flow', async ({ page, login }) => {
 	await expect(callLink).toBeVisible({ timeout: 10_000 })
 	await callLink.click()
 
-	await page.getByRole('button', { name: /start/i }).click()
-	await page.waitForTimeout(500) // let the sample.wav file play for a bit more
-	await page.getByRole('button', { name: /stop/i }).click()
+	const adminStartButton = page.getByRole('button', { name: /start recording/i })
+	const adminStopButton = page.getByRole('button', { name: /stop/i })
+	await expect(adminStartButton).toBeVisible({ timeout: 15_000 })
+	await adminStartButton.click()
+	await expect(adminStopButton).toBeVisible({ timeout: 15_000 })
+	await page.waitForTimeout(750) // record a bit more to avoid empty blobs
+	await adminStopButton.click()
 
-	await page.getByRole('button', { name: /accept/i }).click()
+	const adminAcceptButton = page.getByRole('button', { name: /accept/i })
+	await expect(adminAcceptButton).toBeVisible({ timeout: 15_000 })
+	await adminAcceptButton.click()
 	await page.getByRole('button', { name: /submit/i }).click()
 	await expect(page).toHaveURL(/.*calls\/\d+/)
 

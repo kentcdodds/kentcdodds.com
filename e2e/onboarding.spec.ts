@@ -11,11 +11,12 @@ test('A new user can create an account', async ({ page }) => {
 		provider: 'example.com',
 	})
 	await page.goto('/')
+	await expect(page.getByRole('navigation')).toBeVisible()
 	await page
 		.getByRole('navigation')
 		.getByRole('link', { name: 'Login' })
 		.click()
-	await expect(page).toHaveURL(/.*login/)
+	await expect(page).toHaveURL(/\/login(\/|$)/, { timeout: 15_000 })
 	await expect(
 		page.getByRole('heading', { level: 2, name: /Log.?in/i }),
 	).toBeVisible()
@@ -44,9 +45,16 @@ test('A new user can create an account', async ({ page }) => {
 	// sign up for an account
 	const mainContent = page.getByRole('main')
 	await expect(page).toHaveURL(/.*signup/)
-	await mainContent.getByRole('textbox', { name: /name/i }).fill(firstName)
-	await mainContent.getByRole('radio', { name: /blue/i }).check({ force: true })
-	await mainContent.getByRole('button', { name: /create account/i }).click()
+	await mainContent.getByRole('textbox', { name: 'First name' }).fill(firstName)
+	await mainContent
+		.getByRole('radio', { name: /blue team/i })
+		.check({ force: true })
+
+	const createAccountButton = mainContent.getByRole('button', {
+		name: /create account/i,
+	})
+	await expect(createAccountButton).toBeEnabled()
+	await createAccountButton.click()
 
 	await expect(page).toHaveURL(/.*me/)
 	await expect(
