@@ -94,6 +94,31 @@ export async function action({ request, params }: ActionFunctionArgs) {
 			keywords,
 		} = getNonNull(formData)
 
+		// In mocks/dev, avoid the expensive/sticky external publish workflow.
+		// This keeps the admin publish flow responsive and prevents E2E hangs.
+		if (process.env.MOCKS === 'true') {
+			const episodeUrl = 'https://kentcdodds.com/calls'
+			const imageUrl = 'https://kentcdodds.com/__mocks__/call-kent-episode.png'
+
+			void sendEmail({
+				to: call.user.email,
+				from: `"Kent C. Dodds" <hello+calls@kentcdodds.com>`,
+				subject: `Your "Call Kent" episode has been published`,
+				text: `
+Hi ${call.user.firstName},
+
+Thanks for your call. Kent just replied and the episode has been published to the podcast!
+
+[![${title}](${imageUrl})](${episodeUrl})
+          `.trim(),
+			}).catch((error: unknown) => {
+				console.error(`Problem sending mock publish email about a call`, error)
+			})
+
+			await prisma.call.delete({ where: { id: call.id } })
+			return redirect('/calls')
+		}
+
 		const episodeAudio = await createEpisodeAudio(call.base64, response)
 
 		const { episodeUrl, imageUrl } = await createEpisode({
