@@ -509,7 +509,7 @@ function NavSearch({
 								className: clsx(
 									'rounded-2xl',
 									inputValue.trim().length >= 2 && suggestions.length
-										? 'bg-primary border-secondary max-h-96 overflow-y-auto border shadow-lg'
+										? 'bg-primary border-secondary max-h-96 overflow-x-hidden overflow-y-auto border shadow-lg'
 										: 'overflow-hidden border-0',
 								),
 							})}
@@ -550,9 +550,11 @@ function NavSearch({
 															<div className="text-primary truncate text-base font-medium">
 																{s.title}
 															</div>
-															<div className="text-secondary mt-1 flex items-baseline justify-between gap-3 text-sm">
-																<span className="truncate">{s.segment}</span>
-																<span className="shrink-0">
+															<div className="text-secondary mt-1 flex min-w-0 items-baseline gap-3 text-sm">
+																<span className="min-w-0 truncate">
+																	{s.segment}
+																</span>
+																<span className="min-w-0 flex-1 truncate text-right">
 																	{(() => {
 																		try {
 																			return new URL(s.url).pathname
