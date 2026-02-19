@@ -420,18 +420,22 @@ export async function getSemanticSearchPresentation(
 	// Blog/page: pull from MDX frontmatter.
 	if (type === 'blog' || type === 'page') {
 		if (!slug) return base
-		const meta = await getMdxDocMeta({ type, slug })
-		if (!meta) return base
-		const summary = meta.summary ? truncate(meta.summary, 220) : base.summary
-		const alt = meta.imageAlt ?? meta.title ?? result.title ?? fallback.imageAlt
-		const imageUrl = meta.cloudinaryId
-			? buildThumbFromCloudinaryId({
-					cloudinaryId: meta.cloudinaryId,
-					alt,
-					size: 96,
-				})
-			: base.imageUrl
-		return { summary, imageUrl, imageAlt: alt }
+		try {
+			const meta = await getMdxDocMeta({ type, slug })
+			if (!meta) return base
+			const summary = meta.summary ? truncate(meta.summary, 220) : base.summary
+			const alt = meta.imageAlt ?? meta.title ?? result.title ?? fallback.imageAlt
+			const imageUrl = meta.cloudinaryId
+				? buildThumbFromCloudinaryId({
+						cloudinaryId: meta.cloudinaryId,
+						alt,
+						size: 96,
+					})
+				: base.imageUrl
+			return { summary, imageUrl, imageAlt: alt }
+		} catch {
+			return base
+		}
 	}
 
 	// YAML-backed repo docs.
