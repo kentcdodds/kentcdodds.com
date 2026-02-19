@@ -1,4 +1,4 @@
-import { Form, useSubmit } from '@remix-run/react'
+import { useNavigate } from '@remix-run/react'
 import * as React from 'react'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import { Button } from '../button.tsx'
@@ -29,31 +29,82 @@ function RecordingForm({
 	audio: Blob
 	data?: RecordingFormData
 }) {
+	const navigate = useNavigate()
 	const {
 		requestInfo: { flyPrimaryInstance },
 	} = useRootData()
 	const audioURL = React.useMemo(() => {
 		return window.URL.createObjectURL(audio)
 	}, [audio])
+	const [submissionData, setSubmissionData] = React.useState(data)
+	const [isSubmitting, setIsSubmitting] = React.useState(false)
+	const [requestError, setRequestError] = React.useState<string | null>(null)
 
-	const submit = useSubmit()
+	React.useEffect(() => {
+		setSubmissionData(data)
+	}, [data])
 
 	function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault()
+		if (isSubmitting) return
+		setRequestError(null)
+		setIsSubmitting(true)
+
 		const form = new FormData(event.currentTarget)
 		const reader = new FileReader()
 		reader.readAsDataURL(audio)
 		reader.addEventListener(
 			'loadend',
-			() => {
+			async () => {
 				if (typeof reader.result === 'string') {
 					form.append('audio', reader.result)
-					submit(form, {
-						method: 'POST',
-						headers: flyPrimaryInstance
-							? { 'fly-force-instance-id': flyPrimaryInstance }
-							: undefined,
-					} as any)
+
+					const body = new URLSearchParams()
+					for (const [key, value] of form.entries()) {
+						if (typeof value === 'string') {
+							body.append(key, value)
+						}
+					}
+
+					const headers = new Headers({
+						'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+					})
+					if (flyPrimaryInstance) {
+						headers.set('fly-force-instance-id', flyPrimaryInstance)
+					}
+
+					try {
+						const response = await fetch(window.location.pathname, {
+							method: 'POST',
+							body,
+							headers,
+						})
+
+						if (response.redirected) {
+							const redirectUrl = new URL(response.url)
+							navigate(`${redirectUrl.pathname}${redirectUrl.search}`)
+							return
+						}
+
+						if (!response.ok) {
+							const actionData = await response.json().catch(() => null)
+							if (actionData && typeof actionData === 'object') {
+								setSubmissionData(actionData as RecordingFormData)
+							} else {
+								setRequestError(
+									'Something went wrong submitting your recording.',
+								)
+							}
+							return
+						}
+
+						setRequestError('Unexpected response from server.')
+					} catch (error: unknown) {
+						console.error('Unable to submit recording', error)
+						setRequestError('Unable to submit recording. Please try again.')
+					} finally {
+						setIsSubmitting(false)
+					}
 				}
 			},
 			{ once: true },
@@ -63,9 +114,9 @@ function RecordingForm({
 	return (
 		<div>
 			<div className="mb-12">
-				{data?.errors.generalError ? (
+				{submissionData?.errors.generalError || requestError ? (
 					<p id="audio-error-message" className="text-center text-red-500">
-						{data.errors.generalError}
+						{submissionData?.errors.generalError ?? requestError}
 					</p>
 				) : null}
 				{audioURL ? (
@@ -78,40 +129,40 @@ function RecordingForm({
 				) : (
 					'loading...'
 				)}
-				{data?.errors.audio ? (
+				{submissionData?.errors.audio ? (
 					<p id="audio-error-message" className="text-center text-red-600">
-						{data.errors.audio}
+						{submissionData.errors.audio}
 					</p>
 				) : null}
 			</div>
 
-			<Form onSubmit={handleSubmit}>
+			<form method="post" onSubmit={handleSubmit}>
 				<Field
 					name="title"
 					label="Title"
-					defaultValue={data?.fields.title ?? ''}
-					error={data?.errors.title}
+					defaultValue={submissionData?.fields.title ?? ''}
+					error={submissionData?.errors.title}
 				/>
 				<Field
-					error={data?.errors.description}
+					error={submissionData?.errors.description}
 					name="description"
 					label="Description"
 					type="textarea"
-					defaultValue={data?.fields.description ?? ''}
+					defaultValue={submissionData?.fields.description ?? ''}
 				/>
 
 				<Field
-					error={data?.errors.keywords}
+					error={submissionData?.errors.keywords}
 					label="Keywords"
 					description="comma separated values"
 					name="keywords"
-					defaultValue={data?.fields.keywords ?? ''}
+					defaultValue={submissionData?.fields.keywords ?? ''}
 				/>
 
-				<Button type="submit" className="mt-8">
-					Submit Recording
+				<Button type="submit" className="mt-8" disabled={isSubmitting}>
+					{isSubmitting ? 'Submitting...' : 'Submit Recording'}
 				</Button>
-			</Form>
+			</form>
 		</div>
 	)
 }
