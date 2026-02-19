@@ -20,49 +20,34 @@ test('ctrl/cmd+shift+p opens nav search and focuses it', async ({ page }) => {
 	await page.goto('/')
 	await expect(page.getByRole('navigation')).toBeVisible()
 
-	await page.evaluate(() => {
-		;(window as any).__navSearchShortcutEvents = []
-		window.addEventListener(
-			'keydown',
-			(event) => {
-				const isModifierPressed = event.metaKey || event.ctrlKey
-				const isPKey =
-					event.code === 'KeyP' || event.key.toLowerCase() === 'p'
-				if (!isModifierPressed || !event.shiftKey || !isPKey) return
-
-				// Capture listener runs before the app handler; queue a microtask so
-				// we can observe whether the app called `preventDefault()`.
-				queueMicrotask(() => {
-					;(window as any).__navSearchShortcutEvents.push({
-						defaultPrevented: event.defaultPrevented,
-					})
-				})
-			},
-			{ capture: true },
-		)
-	})
-
-	await page.keyboard.press('Control+Shift+P')
 	const searchInput = page.locator(
 		'input[placeholder="Semantic search..."]:visible',
 	)
+
+	const dispatchShortcut = () => {
+		return page.evaluate(() => {
+			const event = new KeyboardEvent('keydown', {
+				key: 'P',
+				code: 'KeyP',
+				ctrlKey: true,
+				shiftKey: true,
+				bubbles: true,
+				cancelable: true,
+			})
+			document.dispatchEvent(event)
+			return { cancelable: event.cancelable, defaultPrevented: event.defaultPrevented }
+		})
+	}
+
+	const first = await dispatchShortcut()
+	expect(first.cancelable).toBe(true)
+	expect(first.defaultPrevented).toBe(true)
+
 	await expect(searchInput).toBeVisible()
 	await expect(searchInput).toBeFocused()
 
-	await page.waitForFunction(
-		() => (window as any).__navSearchShortcutEvents?.length >= 1,
-	)
-
-	await page.keyboard.press('Control+Shift+P')
+	const second = await dispatchShortcut()
+	expect(second.cancelable).toBe(true)
+	expect(second.defaultPrevented).toBe(false)
 	await expect(searchInput).toBeFocused()
-
-	await page.waitForFunction(
-		() => (window as any).__navSearchShortcutEvents?.length >= 2,
-	)
-
-	const events = await page.evaluate(
-		() => (window as any).__navSearchShortcutEvents,
-	)
-	expect(events[0]?.defaultPrevented).toBe(true)
-	expect(events[1]?.defaultPrevented).toBe(false)
 })
