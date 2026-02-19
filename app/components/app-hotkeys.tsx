@@ -15,6 +15,13 @@ import {
 } from '#app/utils/hotkeys.ts'
 import { HotkeysHelpDialog } from './hotkeys-help-dialog.tsx'
 
+const navSequenceOptions = {
+	ignoreInputs: true,
+	preventDefault: true,
+	stopPropagation: true,
+	timeout: 800,
+}
+
 function AppHotkeys() {
 	const navigate = useNavigate()
 	const location = useLocation()
@@ -34,16 +41,6 @@ function AppHotkeys() {
 			requireReset: true,
 			stopPropagation: true,
 		},
-	)
-
-	const navSequenceOptions = React.useMemo(
-		() => ({
-			ignoreInputs: true,
-			preventDefault: true,
-			stopPropagation: true,
-			timeout: 800,
-		}),
-		[],
 	)
 
 	useHotkeySequence(

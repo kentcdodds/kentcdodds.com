@@ -34,6 +34,17 @@ const LINKS = [
 ]
 
 const MOBILE_LINKS = [{ name: 'Home', to: '/' }, ...LINKS]
+const searchHotkeyOptions = {
+	ignoreInputs: true,
+	preventDefault: true,
+	requireReset: true,
+	stopPropagation: true,
+}
+const searchHotkeyModifierOptions = {
+	preventDefault: true,
+	requireReset: true,
+	stopPropagation: true,
+}
 
 function NavLink({
 	to,
@@ -828,24 +839,6 @@ function Navbar() {
 
 		setIsSearchOpen(true)
 	}, [navigate])
-
-	const searchHotkeyOptions = React.useMemo(
-		() => ({
-			ignoreInputs: true,
-			preventDefault: true,
-			requireReset: true,
-			stopPropagation: true,
-		}),
-		[],
-	)
-	const searchHotkeyModifierOptions = React.useMemo(
-		() => ({
-			preventDefault: true,
-			requireReset: true,
-			stopPropagation: true,
-		}),
-		[],
-	)
 
 	useHotkey(HOTKEY_OPEN_SEARCH.slash, openSearch, searchHotkeyOptions)
 
