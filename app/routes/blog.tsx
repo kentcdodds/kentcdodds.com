@@ -344,7 +344,7 @@ function BlogHome() {
 	// when the query changes, we want to reset the index
 	React.useEffect(() => {
 		setIndexToShow(initialIndexToShow)
-	}, [query, sortState, userReadsState])
+	}, [query, effectiveSort, userReadsState])
 
 	// this bit is very similar to what's on the blogs page.
 	// Next time we need to do work in here, let's make an abstraction for them
@@ -379,16 +379,15 @@ function BlogHome() {
 	const isSearching = query.length > 0 || userReadsState !== 'unset'
 	const showFeatured =
 		!isSearching && Boolean(data.recommended) && effectiveSort === 'newest'
-	const shouldOmitRecommendedFromGrid = showFeatured && Boolean(data.recommended)
 
 	const posts = isSearching
 		? matchingPosts.slice(0, indexToShow)
-		: (shouldOmitRecommendedFromGrid
+		: (showFeatured
 				? matchingPosts.filter((p) => p.slug !== data.recommended?.slug)
 				: matchingPosts
 			).slice(0, indexToShow)
 
-	const nonSearchingPostsCount = shouldOmitRecommendedFromGrid
+	const nonSearchingPostsCount = showFeatured
 		? Math.max(0, matchingPosts.length - 1)
 		: matchingPosts.length
 

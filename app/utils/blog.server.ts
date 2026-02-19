@@ -140,32 +140,17 @@ export async function getMostPopularPostSlugs({
 	timings?: Timings
 	request: Request
 }) {
-	const postsSortedByMostPopular = await cachified({
-		key: `sorted-most-popular-post-slugs`,
-		ttl: 1000 * 60 * 30,
-		staleWhileRevalidate: 1000 * 60 * 60 * 24,
-		cache: lruCache,
-		request,
-		getFreshValue: async () => {
-			const result = await prisma.postRead.groupBy({
-				by: ['postSlug'],
-				_count: true,
-				orderBy: {
-					_count: {
-						postSlug: 'desc',
-					},
-				},
-			})
+	// NOTE: getBlogPostReadCounts is the canonical cached query; we derive
+	// most-popular ordering from its cached map to avoid duplicate DB queries.
+	const readCounts = await getBlogPostReadCounts({ request, timings })
+	const postsSortedByMostPopular = Object.entries(readCounts)
+		.sort(([aSlug, aCount], [bSlug, bCount]) => {
+			if (bCount !== aCount) return bCount - aCount
+			// deterministic tie-breaker
+			return aSlug.localeCompare(bSlug)
+		})
+		.map(([slug]) => slug)
 
-			return result.map((p) => p.postSlug)
-		},
-		timings,
-		checkValue: (value: unknown) =>
-			Array.isArray(value) && value.every((v) => typeof v === 'string'),
-	})
-	// NOTE: we're not using exclude and limit in the query itself because it's
-	// a slow query and quite hard to cache. It's not a lot of data that's returned
-	// anyway, so we can easily filter it out here.
 	return postsSortedByMostPopular
 		.filter((s) => !exclude.includes(s))
 		.slice(0, limit)
