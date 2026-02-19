@@ -833,26 +833,21 @@ function Navbar() {
 		requestAnimationFrame(() => searchInputRef.current?.focus())
 	}, [navigate])
 
-	useHotkey(HOTKEY_OPEN_SEARCH.slash, openSearch, {
-		ignoreInputs: true,
-		preventDefault: true,
-		requireReset: true,
-		stopPropagation: true,
-	})
+	const searchHotkeyOptions = React.useMemo(
+		() => ({
+			ignoreInputs: true,
+			preventDefault: true,
+			requireReset: true,
+			stopPropagation: true,
+		}),
+		[],
+	)
 
-	useHotkey(HOTKEY_OPEN_SEARCH.modK, openSearch, {
-		ignoreInputs: true,
-		preventDefault: true,
-		requireReset: true,
-		stopPropagation: true,
-	})
+	useHotkey(HOTKEY_OPEN_SEARCH.slash, openSearch, searchHotkeyOptions)
 
-	useHotkey(HOTKEY_OPEN_SEARCH.modShiftP, openSearch, {
-		ignoreInputs: true,
-		preventDefault: true,
-		requireReset: true,
-		stopPropagation: true,
-	})
+	useHotkey(HOTKEY_OPEN_SEARCH.modK, openSearch, searchHotkeyOptions)
+
+	useHotkey(HOTKEY_OPEN_SEARCH.modShiftP, openSearch, searchHotkeyOptions)
 
 	return (
 		<div className="px-5vw relative overflow-visible py-9 lg:py-12">

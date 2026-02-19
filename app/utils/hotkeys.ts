@@ -1,4 +1,7 @@
-import { type HotkeySequence, type RegisterableHotkey } from '@tanstack/hotkeys'
+import {
+	type HotkeySequence,
+	type RegisterableHotkey,
+} from '@tanstack/react-hotkeys'
 
 export const HOTKEY_TOGGLE_HOTKEYS_DIALOG = {
 	key: '?',
@@ -34,6 +37,10 @@ export type HotkeysHelpGroup = {
 	items: Array<HotkeysHelpItem>
 }
 
+function getSequenceDisplayKeys(sequence: ReadonlyArray<string>) {
+	return sequence.map((key) => key.toLowerCase())
+}
+
 export const HOTKEYS_HELP_GROUPS = [
 	{
 		title: 'General',
@@ -66,35 +73,35 @@ export const HOTKEYS_HELP_GROUPS = [
 		items: [
 			{
 				description: 'Go to home',
-				combos: [{ kind: 'sequence', keys: ['g', 'h'] }],
+				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_HOME) }],
 			},
 			{
 				description: 'Go to blog',
-				combos: [{ kind: 'sequence', keys: ['g', 'b'] }],
+				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_BLOG) }],
 			},
 			{
 				description: 'Go to courses',
-				combos: [{ kind: 'sequence', keys: ['g', 'c'] }],
+				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_COURSES) }],
 			},
 			{
 				description: 'Go to Discord',
-				combos: [{ kind: 'sequence', keys: ['g', 'd'] }],
+				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_DISCORD) }],
 			},
 			{
 				description: 'Go to workshops',
-				combos: [{ kind: 'sequence', keys: ['g', 'w'] }],
+				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_WORKSHOPS) }],
 			},
 			{
 				description: 'Go to about',
-				combos: [{ kind: 'sequence', keys: ['g', 'a'] }],
+				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_ABOUT) }],
 			},
 			{
 				description: 'Go to talks',
-				combos: [{ kind: 'sequence', keys: ['g', 't'] }],
+				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_TALKS) }],
 			},
 			{
 				description: 'Go to search page',
-				combos: [{ kind: 'sequence', keys: ['g', 's'] }],
+				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_SEARCH) }],
 			},
 		],
 	},

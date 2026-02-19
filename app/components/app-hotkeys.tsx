@@ -122,7 +122,7 @@ function AppHotkeys() {
 		<HotkeysHelpDialog
 			isOpen={dialogOpen}
 			onDismiss={() => setDialogOpen(false)}
-			groups={[...HOTKEYS_HELP_GROUPS]}
+			groups={HOTKEYS_HELP_GROUPS}
 		/>
 	)
 }

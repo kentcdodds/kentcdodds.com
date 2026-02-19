@@ -1,6 +1,5 @@
 import { Dialog } from '@reach/dialog'
 import { formatForDisplay } from '@tanstack/react-hotkeys'
-import { clsx } from 'clsx'
 import * as React from 'react'
 import { type HotkeysHelpCombo, type HotkeysHelpGroup } from '#app/utils/hotkeys.ts'
 import { CloseIcon } from './icons.tsx'
@@ -9,9 +8,7 @@ import { H3, Paragraph } from './typography.tsx'
 function Kbd({ children }: { children: React.ReactNode }) {
 	return (
 		<kbd
-			className={clsx(
-				'bg-secondary border-secondary text-primary inline-flex items-center rounded-md border px-2 py-1 font-mono text-xs font-semibold sm:text-sm',
-			)}
+			className="bg-secondary border-secondary text-primary inline-flex items-center rounded-md border px-2 py-1 font-mono text-xs font-semibold sm:text-sm"
 		>
 			{children}
 		</kbd>
@@ -40,16 +37,14 @@ function HotkeysHelpDialog({
 }: {
 	isOpen: boolean
 	onDismiss: () => void
-	groups: Array<HotkeysHelpGroup>
+	groups: ReadonlyArray<HotkeysHelpGroup>
 }) {
 	return (
 		<Dialog
 			isOpen={isOpen}
 			onDismiss={onDismiss}
 			aria-label="Keyboard shortcuts"
-			className={clsx(
-				'bg-primary text-primary !w-11/12 !max-w-3xl rounded-xl border-2 border-black px-6 py-6 shadow-xl sm:px-8 sm:py-8 dark:border-white dark:!bg-gray-900',
-			)}
+			className="bg-primary text-primary !w-11/12 !max-w-3xl rounded-xl border-2 border-black px-6 py-6 shadow-xl sm:px-8 sm:py-8 dark:border-white dark:!bg-gray-900"
 		>
 			<div className="flex items-start justify-between gap-6">
 				<div className="min-w-0">
