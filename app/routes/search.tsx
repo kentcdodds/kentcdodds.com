@@ -134,7 +134,7 @@ export default function SearchPage() {
 		// If the loader already fetched this query (e.g. initial page load), reuse it.
 		if (debouncedQuery === loaderData.q) return
 		fetcher.load(`/search?q=${encodeURIComponent(debouncedQuery)}`)
-	}, [debouncedQuery, fetcher, loaderData.configured, loaderData.q])
+	}, [debouncedQuery, fetcher.load, loaderData.configured, loaderData.q])
 
 	const isQueryPending = trimmedQuery !== debouncedQuery
 
