@@ -162,7 +162,7 @@ export default function SearchPage() {
 				subtitle="Semantic search across posts, pages, podcasts, talks, resume, credits, and testimonials."
 				imageBuilder={images.kodyProfileGray}
 				action={
-					<div className="w-full">
+					<fetcher.Form method="get" action="/search" className="w-full">
 						<div className="relative">
 							<Input
 								ref={inputRef}
@@ -174,7 +174,7 @@ export default function SearchPage() {
 								onChange={(event) => setQuery(event.currentTarget.value)}
 							/>
 						</div>
-					</div>
+					</fetcher.Form>
 				}
 			/>
 
