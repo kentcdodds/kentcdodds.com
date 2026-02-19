@@ -11,31 +11,31 @@
 
 ################# lol, nice
 # not a single URL actually ends in .php... or .env
-/(.*).php                                                               https://www.youtube.com/watch?v=dQw4w9WgXcQ
-/(.*).env                                                               https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/*path.php                                                              https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/*path.env                                                              https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /ads.txt                                                                https://www.youtube.com/watch?v=dQw4w9WgXcQ
-/boaform(.*)                                                            https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/boaform*path                                                           https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /setup.cgi                                                              https://www.youtube.com/watch?v=dQw4w9WgXcQ
-/cgi-bin(.*)                                                            https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/cgi-bin*path                                                           https://www.youtube.com/watch?v=dQw4w9WgXcQ
 /s3cmd.ini                                                              https://www.youtube.com/watch?v=dQw4w9WgXcQ
-/HNAP1(.*)                                                              https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/HNAP1*path                                                             https://www.youtube.com/watch?v=dQw4w9WgXcQ
 # this is for phpmyadmin and php-my-admin stuff:
-/php(.*)                                                                https://www.youtube.com/watch?v=dQw4w9WgXcQ
-/db(.*)                                                                 https://www.youtube.com/watch?v=dQw4w9WgXcQ
-/sql(.*)                                                                https://www.youtube.com/watch?v=dQw4w9WgXcQ
-/.git(.*)                                                               https://www.youtube.com/watch?v=dQw4w9WgXcQ
-(.*)/wp-includes/(.*)                                                   https://www.youtube.com/watch?v=dQw4w9WgXcQ
-/api(.*)                                                                https://www.youtube.com/watch?v=dQw4w9WgXcQ
-/Autodiscover(.*)                                                       https://www.youtube.com/watch?v=dQw4w9WgXcQ
-/_ignition(.*)                                                          https://www.youtube.com/watch?v=dQw4w9WgXcQ
-/solr(.*)                                                               https://www.youtube.com/watch?v=dQw4w9WgXcQ
-/wp-content(.*)                                                         https://www.youtube.com/watch?v=dQw4w9WgXcQ
-/ReportServer(.*)                                                       https://www.youtube.com/watch?v=dQw4w9WgXcQ
-/currentsetting(.*)                                                     https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/php*path                                                               https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/db*path                                                                https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/sql*path                                                               https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/.git*path                                                              https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/*path/wp-includes/*rest                                                https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/api*path                                                               https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/Autodiscover*path                                                      https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/_ignition*path                                                         https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/solr*path                                                              https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/wp-content*path                                                        https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/ReportServer*path                                                      https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/currentsetting*path                                                    https://www.youtube.com/watch?v=dQw4w9WgXcQ
 POST,DELETE,PATCH,PUT  /                                                https://www.youtube.com/watch?v=dQw4w9WgXcQ
-/webfig(.*)                                                             https://www.youtube.com/watch?v=dQw4w9WgXcQ
-/config(.*)                                                             https://www.youtube.com/watch?v=dQw4w9WgXcQ
-/console(.*)                                                            https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/webfig*path                                                            https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/config*path                                                            https://www.youtube.com/watch?v=dQw4w9WgXcQ
+/console*path                                                           https://www.youtube.com/watch?v=dQw4w9WgXcQ
 
 ################ old podcast URLs:
 /chats-with-kent-podcast/seasons/01/episodes/growing-your-skills-and-career-through-teaching-with-ali-spittel                   /chats/01/01/growing-your-skills-and-career-through-teaching-with-ali-spittel
@@ -79,13 +79,13 @@ POST,DELETE,PATCH,PUT  /                                                https://
 
 /chats-with-kent-podcast                                                                                                        /chats
 # podcast catch-all
-/chats-with-kent-podcast/seasons/:seasonNumber/:path*       /chats/:seasonNumber
+/chats-with-kent-podcast/seasons/:seasonNumber/*path       /chats/:seasonNumber
 
 /workshops/past                                            /workshops
 /workshops/remix-fundamentals                              /workshops/web-app-fundamentals
 
 # some people go to this page for some reason:
-/post/:slug*                                                             /blog/:slug*
+/post/*slug                                                              /blog/*slug
 /rss.xml                                                                 /blog/rss.xml
 /feed                                                                    /blog/rss.xml
 /rss                                                                     /blog/rss.xml
@@ -102,11 +102,11 @@ POST,DELETE,PATCH,PUT  /                                                https://
 # and I guess we've still got some zombie service workers from the old site 🤷‍♂️
 /sw.js                                                                   /404
 # Gatsby site used to have stuff at this route and we don't anymore so...
-/static(.*)                                                              /404
-/page-data(.*)                                                           /404
+/static*path                                                             /404
+/page-data*path                                                          /404
 
 # I didn't bring over my writing blog
-/writing/:slug*                                                          https://kentcdodds-old.netlify.app/writing/:slug*
+/writing/*slug                                                           https://kentcdodds-old.netlify.app/writing/*slug
 
 ############################## some old redirects we should hang onto...
 /blog/always-use-memo-your-context-value                                /blog/how-to-optimize-your-context-value

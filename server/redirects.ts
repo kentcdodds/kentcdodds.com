@@ -12,6 +12,8 @@ function getRedirectsMiddleware({
 }: {
 	redirectsString: string
 }): RequestHandler {
+	// `redirectsString` is read at server startup; change `server/_redirects.txt`
+	// and restart the server to pick up updates.
 	const possibleMethods = ['HEAD', 'GET', 'POST', 'PUT', 'DELETE', 'PATCH', '*']
 	const redirects = redirectsString
 		.split('\n')
@@ -20,7 +22,7 @@ function getRedirectsMiddleware({
 
 			let methods, from, to
 			const [one, two, three] = line
-				.split(' ')
+				.split(/\s+/)
 				.map((l) => l.trim())
 				.filter(Boolean)
 			if (!one) return null
@@ -57,7 +59,7 @@ function getRedirectsMiddleware({
 			} catch {
 				// if parsing the redirect fails, we'll warn, but we won't crash
 				console.error(
-					`Failed to parse redirect on line ${lineNumber}: "${line}"`,
+					`Failed to parse redirect on line ${lineNumber + 1}: "${line}"`,
 				)
 				return null
 			}
@@ -86,7 +88,7 @@ function getRedirectsMiddleware({
 				const match = redirect.from.exec(req.path)
 				if (!match) continue
 
-				const params: Record<string, string> = {}
+				const params: Record<string, string | string[]> = {}
 				const paramValues = match.slice(1)
 				for (
 					let paramIndex = 0;
@@ -96,7 +98,12 @@ function getRedirectsMiddleware({
 					const paramValue = paramValues[paramIndex]
 					const key = redirect.keys[paramIndex]
 					if (key && paramValue) {
-						params[key.name] = paramValue
+						// `path-to-regexp@8` wildcard params (`*name`) expect an array
+						// of path segments when compiling a destination URL.
+						params[key.name] =
+							key.type === 'wildcard'
+								? paramValue.split('/').filter(Boolean)
+								: paramValue
 					}
 				}
 				const toUrl = new URL(redirect.toUrl)

@@ -84,7 +84,7 @@
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.2.0",
     "@vitejs/plugin-react": "^5.1.4",
-    "@xstate/react": "^3.2.2",
+    "@xstate/react": "^6.0.0",
     "address": "^2.0.3",
     "bcrypt": "^6.0.0",
     "better-sqlite3": "^12.6.2",
@@ -160,7 +160,7 @@
     "uuid": "^13.0.0",
     "vitest": "^4.0.18",
     "ws": "^8.19.0",
-    "xstate": "^4.38.3",
+    "xstate": "^5.28.0",
     "yaml": "^2.8.2",
     "zod": "^4.3.6"
   },
