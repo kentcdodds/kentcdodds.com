@@ -81,25 +81,31 @@ app.post('/__metronome', (req: any, res: any) => {
 	return res.send('Metronome is deprecated and no longer in use.')
 })
 
-app.use(async (req, res, next) => {
-	const { currentInstance, primaryInstance } = await getInstanceInfo()
-	res.set('X-Powered-By', 'Kody the Koala')
-	res.set('X-Fly-Region', process.env.FLY_REGION ?? 'unknown')
-	res.set('X-Fly-App', process.env.FLY_APP_NAME ?? 'unknown')
-	res.set('X-Fly-Instance', currentInstance)
-	res.set('X-Fly-Primary-Instance', primaryInstance)
-	res.set('X-Frame-Options', 'SAMEORIGIN')
-	const proto = req.get('X-Forwarded-Proto') ?? req.protocol
+app.use((req, res, next) => {
+	getInstanceInfo()
+		.then(({ currentInstance, primaryInstance }) => {
+			res.set('X-Powered-By', 'Kody the Koala')
+			res.set('X-Fly-Region', process.env.FLY_REGION ?? 'unknown')
+			res.set('X-Fly-App', process.env.FLY_APP_NAME ?? 'unknown')
+			res.set('X-Fly-Instance', currentInstance)
+			res.set('X-Fly-Primary-Instance', primaryInstance)
+			res.set('X-Frame-Options', 'SAMEORIGIN')
+			const proto = req.get('X-Forwarded-Proto') ?? req.protocol
 
-	const host = getHost(req)
-	if (!host.endsWith(primaryHost)) {
-		res.set('X-Robots-Tag', 'noindex')
-	}
-	res.set('Access-Control-Allow-Origin', `${proto}://${host}`)
+			const host = getHost(req)
+			if (!host.endsWith(primaryHost)) {
+				res.set('X-Robots-Tag', 'noindex')
+			}
+			res.set('Access-Control-Allow-Origin', `${proto}://${host}`)
 
-	// if they connect once with HTTPS, then they'll connect with HTTPS for the next hundred years
-	res.set('Strict-Transport-Security', `max-age=${60 * 60 * 24 * 365 * 100}`)
-	next()
+			// if they connect once with HTTPS, then they'll connect with HTTPS for the next hundred years
+			res.set(
+				'Strict-Transport-Security',
+				`max-age=${60 * 60 * 24 * 365 * 100}`,
+			)
+			next()
+		})
+		.catch(next)
 })
 
 app.use((req, res, next) => {
