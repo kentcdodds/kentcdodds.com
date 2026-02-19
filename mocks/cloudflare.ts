@@ -192,25 +192,55 @@ function ensureSeededIndex(accountId: string, indexName: string) {
 
 async function parseVectorizeNdjsonVectors(request: Request) {
 	const contentType = request.headers.get('content-type') ?? ''
-	if (!contentType.toLowerCase().includes('multipart/form-data')) {
-		return { ok: false as const, error: 'Expected multipart/form-data request.' }
+	const lower = contentType.toLowerCase()
+
+	// Support a simplified body for ad-hoc scripts/tests.
+	if (lower.includes('application/x-ndjson')) {
+		const ndjson = await request.text()
+		return parseNdjsonVectorsText(ndjson)
 	}
 
-	const form = await request.formData()
-	const vectorsPart = form.get('vectors')
-	if (!vectorsPart) {
-		return { ok: false as const, error: 'Missing "vectors" form field.' }
+	if (!lower.includes('multipart/form-data')) {
+		return {
+			ok: false as const,
+			error: 'Expected multipart/form-data (or application/x-ndjson) request.',
+		}
 	}
 
-	let ndjson = ''
-	if (typeof vectorsPart === 'string') {
-		ndjson = vectorsPart
-	} else if (vectorsPart instanceof Blob) {
-		ndjson = await vectorsPart.text()
-	} else {
-		return { ok: false as const, error: 'Unsupported "vectors" form field type.' }
+	const boundaryMatch =
+		/\bboundary=(?:"([^"]+)"|([^;]+))/i.exec(contentType) ?? null
+	const boundary = boundaryMatch?.[1] ?? boundaryMatch?.[2] ?? null
+	if (!boundary) {
+		return { ok: false as const, error: 'Missing multipart boundary.' }
 	}
 
+	const bodyBuf = Buffer.from(await request.arrayBuffer())
+	const bodyText = bodyBuf.toString('utf8')
+	const boundaryDelim = `--${boundary}`
+
+	// Extremely small multipart parser: we only care about one field `vectors`
+	// containing an NDJSON "file" (text).
+	const parts = bodyText.split(boundaryDelim)
+	let vectorsNdjson: string | null = null
+	for (const part of parts) {
+		if (!part.includes('name="vectors"')) continue
+		const sepIdx = part.indexOf('\r\n\r\n')
+		if (sepIdx === -1) continue
+		let content = part.slice(sepIdx + 4)
+		// Remove the trailing CRLF that precedes the next boundary.
+		if (content.endsWith('\r\n')) content = content.slice(0, -2)
+		vectorsNdjson = content
+		break
+	}
+
+	if (!vectorsNdjson) {
+		return { ok: false as const, error: 'Missing "vectors" multipart field.' }
+	}
+
+	return parseNdjsonVectorsText(vectorsNdjson)
+}
+
+function parseNdjsonVectorsText(ndjson: string) {
 	const vectors: VectorizeStoredVector[] = []
 	const lines = ndjson.split('\n').filter(Boolean)
 	for (const line of lines) {
@@ -226,8 +256,7 @@ async function parseVectorizeNdjsonVectors(request: Request) {
 
 		const id = typeof parsed?.id === 'string' ? parsed.id : null
 		const values = Array.isArray(parsed?.values)
-			? (parsed.values as unknown[])
-					.filter((v): v is number => typeof v === 'number')
+			? (parsed.values as unknown[]).filter((v): v is number => typeof v === 'number')
 			: null
 		if (!id || !values || values.length === 0) {
 			return {
@@ -410,16 +439,11 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 		},
 	),
 
-	// Vectorize write operations (v2): insert/upsert
+	// Vectorize write operations (v2): insert
 	http.post<any, DefaultRequestMultipartBody>(
-		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/v2/indexes/:indexName/:operation`,
+		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/v2/indexes/:indexName/insert`,
 		async ({ request, params }) => {
 			requiredHeader(request.headers, 'authorization')
-			const operation = String(params.operation)
-			if (operation !== 'insert' && operation !== 'upsert') {
-				return jsonError(404, `Unknown Vectorize operation: ${operation}`, 10004)
-			}
-
 			const accountId = String(params.accountId)
 			const indexName = String(params.indexName)
 			const parsed = await parseVectorizeNdjsonVectors(request)
@@ -437,23 +461,15 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 				updated++
 			}
 
-			return jsonOk({
-				operation,
-				updated,
-			})
+			return jsonOk({ operation: 'insert', updated })
 		},
 	),
 
-	// Vectorize write operations (legacy): insert/upsert
+	// Vectorize write operations (v2): upsert
 	http.post<any, DefaultRequestMultipartBody>(
-		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/indexes/:indexName/:operation`,
+		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/v2/indexes/:indexName/upsert`,
 		async ({ request, params }) => {
 			requiredHeader(request.headers, 'authorization')
-			const operation = String(params.operation)
-			if (operation !== 'insert' && operation !== 'upsert') {
-				return jsonError(404, `Unknown Vectorize operation: ${operation}`, 10004)
-			}
-
 			const accountId = String(params.accountId)
 			const indexName = String(params.indexName)
 			const parsed = await parseVectorizeNdjsonVectors(request)
@@ -471,10 +487,59 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 				updated++
 			}
 
-			return jsonOk({
-				operation,
-				updated,
-			})
+			return jsonOk({ operation: 'upsert', updated })
+		},
+	),
+
+	// Vectorize write operations (legacy): insert
+	http.post<any, DefaultRequestMultipartBody>(
+		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/indexes/:indexName/insert`,
+		async ({ request, params }) => {
+			requiredHeader(request.headers, 'authorization')
+			const accountId = String(params.accountId)
+			const indexName = String(params.indexName)
+			const parsed = await parseVectorizeNdjsonVectors(request)
+			if (!parsed.ok) return jsonError(400, parsed.error, 10005)
+
+			const store = getOrCreateIndexStore(accountId, indexName)
+			let updated = 0
+			for (const v of parsed.vectors) {
+				let ns = store.get(v.namespace)
+				if (!ns) {
+					ns = new Map()
+					store.set(v.namespace, ns)
+				}
+				ns.set(v.id, v)
+				updated++
+			}
+
+			return jsonOk({ operation: 'insert', updated })
+		},
+	),
+
+	// Vectorize write operations (legacy): upsert
+	http.post<any, DefaultRequestMultipartBody>(
+		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/indexes/:indexName/upsert`,
+		async ({ request, params }) => {
+			requiredHeader(request.headers, 'authorization')
+			const accountId = String(params.accountId)
+			const indexName = String(params.indexName)
+			const parsed = await parseVectorizeNdjsonVectors(request)
+			if (!parsed.ok) return jsonError(400, parsed.error, 10005)
+
+			const store = getOrCreateIndexStore(accountId, indexName)
+			let updated = 0
+			for (const v of parsed.vectors) {
+				let ns = store.get(v.namespace)
+				if (!ns) {
+					ns = new Map()
+					store.set(v.namespace, ns)
+				}
+				ns.set(v.id, v)
+				updated++
+			}
+
+			return jsonOk({ operation: 'upsert', updated })
 		},
 	),
 
