@@ -61,13 +61,13 @@ describe('cloudflare MSW mocks', () => {
 	test('Vectorize query uses match-sorter when embedding text is known', async () => {
 		// Seed the expected doc so the test is independent of the filesystem.
 		const seedNdjson = `${JSON.stringify({
-			id: '/__mock__/about-kcd-mcp',
+			id: '/__mock__/about-mcp',
 			values: [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 			namespace: 'test',
 			metadata: {
 				type: 'page',
 				title: 'About KCD MCP',
-				url: '/__mock__/about-kcd-mcp',
+				url: '/__mock__/about-mcp',
 				snippet: 'About KCD MCP',
 			},
 		})}\n`
