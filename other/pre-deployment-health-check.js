@@ -87,9 +87,12 @@ async function main() {
 		await run('npx', ['prisma@7', 'migrate', 'deploy'], { env })
 	}
 
-	const server = spawn('npm', ['start'], {
+	// Spawn the server directly (not via `npm start`) so we can reliably
+	// terminate the whole process tree at the end of the smoke test.
+	const server = spawn(process.execPath, ['./index.js'], {
 		stdio: 'inherit',
 		env,
+		detached: true,
 	})
 
 	let serverExit = null
@@ -101,13 +104,27 @@ async function main() {
 		await waitForOkResponse(url, { timeoutMs })
 		console.error(`✅ pre-deploy healthcheck OK: ${url}`)
 	} finally {
+		const killTree = (signal) => {
+			if (!server.pid) return
+			try {
+				// Negative PID sends the signal to the entire process group.
+				process.kill(-server.pid, signal)
+			} catch {
+				try {
+					server.kill(signal)
+				} catch {
+					// ignore
+				}
+			}
+		}
+
 		// Try a graceful shutdown first; fall back to SIGKILL if needed.
-		server.kill('SIGINT')
+		killTree('SIGINT')
 		for (let i = 0; i < 40; i++) {
 			if (serverExit) break
 			await sleep(250)
 		}
-		if (!serverExit) server.kill('SIGKILL')
+		if (!serverExit) killTree('SIGKILL')
 	}
 }
 
