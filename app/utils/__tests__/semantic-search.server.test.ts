@@ -1,5 +1,5 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'vitest'
 import { setupServer } from 'msw/node'
+import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'vitest'
 import { cloudflareHandlers, resetCloudflareMockState } from '../../../mocks/cloudflare.ts'
 import {
 	isSemanticSearchConfigured,
