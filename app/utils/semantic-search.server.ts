@@ -12,12 +12,20 @@ type VectorizeQueryResponse = {
 	}>
 }
 
+/**
+ * Parse a value that may be a string, returning a trimmed non-empty string.
+ */
 function asNonEmptyString(value: unknown): string | undefined {
 	if (typeof value !== 'string') return undefined
 	const trimmed = value.trim()
 	return trimmed ? trimmed : undefined
 }
 
+/**
+ * Normalize a URL/path into a stable key:
+ * - absolute URLs -> pathname
+ * - relative paths -> strip query/fragment and trailing slashes
+ */
 function normalizeUrlForKey(url: string): string {
 	// Prefer treating absolute URLs and relative paths as the same canonical key.
 	try {
@@ -32,11 +40,20 @@ function normalizeUrlForKey(url: string): string {
 	return cleaned && cleaned !== '/' ? cleaned.replace(/\/+$/, '') : cleaned
 }
 
+/**
+ * Normalize a title for canonicalization (case-insensitive).
+ */
 function normalizeTitleForKey(title: string) {
 	// asNonEmptyString already trims; use lowercase to avoid casing-only duplicates.
 	return title.toLowerCase()
 }
 
+/**
+ * Compute a doc-level identifier for semantic search results.
+ *
+ * Vectorize stores one vector per chunk; the canonical ID collapses chunk hits
+ * into a single doc hit so search results don't contain duplicates.
+ */
 function getCanonicalResultId({
 	vectorId,
 	type,
