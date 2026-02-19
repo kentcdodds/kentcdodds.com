@@ -1,7 +1,7 @@
 import { useMachine } from '@xstate/react'
 import gsap from 'gsap'
 import * as React from 'react'
-import { assign, createMachine, send as sendUtil } from 'xstate'
+import { assign, fromCallback, fromPromise, sendTo, setup } from 'xstate'
 import { type OptionalTeam } from '#app/types.ts'
 import { assertNonNull, getOptionalTeam } from '#app/utils/misc.tsx'
 import { Button, LinkButton } from '../button.tsx'
@@ -59,103 +59,60 @@ interface RecorderContext {
 	audioBlob: Blob | null
 }
 
-const recorderMachine = createMachine<RecorderContext>(
-	{
-		id: 'recorder',
-		predictableActionArguments: true,
-		context: {
-			mediaRecorder: null,
-			audioDevices: [],
-			selectedAudioDevice: null,
-			audioBlob: null,
-		},
-		initial: 'gettingDevices',
-		states: {
-			gettingDevices: {
-				invoke: {
-					src: 'getDevices',
-					onDone: { target: 'ready', actions: 'assignAudioDevices' },
-					onError: { target: 'error' },
-				},
-			},
-			selecting: {
-				on: {
-					selection: { target: 'ready', actions: 'assignSelectedAudioDevice' },
-				},
-			},
-			error: {
-				on: {
-					retry: 'gettingDevices',
-				},
-			},
-			ready: {
-				on: {
-					changeDevice: 'selecting',
-					start: 'recording',
-				},
-			},
-			recording: {
-				invoke: { src: 'mediaRecorder', id: 'mediaRecorder' },
-				initial: 'playing',
-				states: {
-					playing: {
-						on: {
-							mediaRecorderCreated: {
-								actions: ['assignMediaRecorder'],
-							},
-							pause: {
-								target: 'paused',
-								actions: sendUtil('pause', { to: 'mediaRecorder' }),
-							},
-							stop: 'stopping',
-						},
-					},
-					paused: {
-						on: {
-							resume: {
-								target: 'playing',
-								actions: sendUtil('resume', { to: 'mediaRecorder' }),
-							},
-							stop: 'stopping',
-						},
-					},
-					stopping: {
-						entry: sendUtil('stop', { to: 'mediaRecorder' }),
-						on: {
-							chunks: { target: '#recorder.done', actions: 'assignAudioBlob' },
-						},
-					},
-				},
-			},
-			done: {
-				on: {
-					restart: 'ready',
-				},
-			},
-		},
+type RecorderEvent =
+	| { type: 'selection'; selectedAudioDevice: MediaDeviceInfo }
+	| { type: 'retry' }
+	| { type: 'changeDevice' }
+	| { type: 'start' }
+	| { type: 'pause' }
+	| { type: 'resume' }
+	| { type: 'stop' }
+	| { type: 'restart' }
+	| { type: 'mediaRecorderCreated'; mediaRecorder: MediaRecorder }
+	| { type: 'chunks'; blob: Blob }
+
+const recorderMachine = setup({
+	types: {
+		context: {} as RecorderContext,
+		events: {} as RecorderEvent,
 	},
-	{
-		services: {
-			getDevices: async () => {
-				const devices = await navigator.mediaDevices.enumerateDevices()
-				return devices.filter(({ kind }) => kind === 'audioinput')
-			},
-			mediaRecorder: (context) => (sendBack, receive) => {
-				let mediaRecorder: MediaRecorder
+	actors: {
+		getDevices: fromPromise(async () => {
+			const devices = await navigator.mediaDevices.enumerateDevices()
+			return devices.filter(({ kind }) => kind === 'audioinput')
+		}),
+		mediaRecorder: fromCallback(
+			({
+				sendBack,
+				receive,
+				input,
+			}: {
+				sendBack: (event: RecorderEvent) => void
+				receive: (cb: (event: RecorderEvent) => void) => void
+				input: { selectedAudioDevice: MediaDeviceInfo | null }
+			}) => {
+				let cancelled = false
+				let mediaRecorder: MediaRecorder | undefined
 
 				async function go() {
 					const chunks: Array<BlobPart> = []
-					const deviceId = context.selectedAudioDevice?.deviceId
+					const deviceId = input.selectedAudioDevice?.deviceId
 					const audio = deviceId ? { deviceId: { exact: deviceId } } : true
 					const mediaStream = await window.navigator.mediaDevices.getUserMedia({
 						audio,
 					})
+
+					if (cancelled) {
+						for (const track of mediaStream.getAudioTracks()) track.stop()
+						return
+					}
+
 					mediaRecorder = new MediaRecorder(mediaStream)
 					sendBack({ type: 'mediaRecorderCreated', mediaRecorder })
 
 					mediaRecorder.ondataavailable = (event) => {
 						chunks.push(event.data)
-						if (mediaRecorder.state === 'inactive') {
+						if (mediaRecorder?.state === 'inactive') {
 							sendBack({
 								type: 'chunks',
 								blob: new Blob(chunks, {
@@ -168,6 +125,7 @@ const recorderMachine = createMachine<RecorderContext>(
 					mediaRecorder.start()
 
 					receive((event) => {
+						if (!mediaRecorder) return
 						if (event.type === 'pause') {
 							mediaRecorder.pause()
 						} else if (event.type === 'resume') {
@@ -181,26 +139,115 @@ const recorderMachine = createMachine<RecorderContext>(
 				void go()
 
 				return () => {
-					stopMediaRecorder(mediaRecorder)
+					cancelled = true
+					if (mediaRecorder) stopMediaRecorder(mediaRecorder)
 				}
 			},
+		),
+	},
+	actions: {
+		assignAudioDevices: assign({
+			audioDevices: ({ context, event }) =>
+				'output' in event
+					? (event.output as Array<MediaDeviceInfo>)
+					: context.audioDevices,
+		}),
+		assignSelectedAudioDevice: assign({
+			selectedAudioDevice: ({ context, event }) =>
+				event.type === 'selection'
+					? event.selectedAudioDevice
+					: context.selectedAudioDevice,
+		}),
+		assignMediaRecorder: assign({
+			mediaRecorder: ({ context, event }) =>
+				event.type === 'mediaRecorderCreated'
+					? event.mediaRecorder
+					: context.mediaRecorder,
+		}),
+		assignAudioBlob: assign({
+			audioBlob: ({ context, event }) =>
+				event.type === 'chunks' ? event.blob : context.audioBlob,
+		}),
+	},
+}).createMachine({
+	id: 'recorder',
+	context: {
+		mediaRecorder: null,
+		audioDevices: [],
+		selectedAudioDevice: null,
+		audioBlob: null,
+	},
+	initial: 'gettingDevices',
+	states: {
+		gettingDevices: {
+			invoke: {
+				src: 'getDevices',
+				onDone: { target: 'ready', actions: 'assignAudioDevices' },
+				onError: { target: 'error' },
+			},
 		},
-		actions: {
-			assignAudioDevices: assign({
-				audioDevices: (context, event) => event.data,
-			}),
-			assignSelectedAudioDevice: assign({
-				selectedAudioDevice: (context, event) => event.selectedAudioDevice,
-			}),
-			assignMediaRecorder: assign({
-				mediaRecorder: (context, event) => event.mediaRecorder,
-			}),
-			assignAudioBlob: assign({
-				audioBlob: (context, event) => event.blob,
-			}),
+		selecting: {
+			on: {
+				selection: { target: 'ready', actions: 'assignSelectedAudioDevice' },
+			},
+		},
+		error: {
+			on: {
+				retry: 'gettingDevices',
+			},
+		},
+		ready: {
+			on: {
+				changeDevice: 'selecting',
+				start: 'recording',
+			},
+		},
+		recording: {
+			invoke: {
+				src: 'mediaRecorder',
+				id: 'mediaRecorder',
+				input: ({ context }) => ({
+					selectedAudioDevice: context.selectedAudioDevice,
+				}),
+			},
+			initial: 'playing',
+			states: {
+				playing: {
+					on: {
+						mediaRecorderCreated: {
+							actions: ['assignMediaRecorder'],
+						},
+						pause: {
+							target: 'paused',
+							actions: sendTo('mediaRecorder', { type: 'pause' }),
+						},
+						stop: 'stopping',
+					},
+				},
+				paused: {
+					on: {
+						resume: {
+							target: 'playing',
+							actions: sendTo('mediaRecorder', { type: 'resume' }),
+						},
+						stop: 'stopping',
+					},
+				},
+				stopping: {
+					entry: sendTo('mediaRecorder', { type: 'stop' }),
+					on: {
+						chunks: { target: '#recorder.done', actions: 'assignAudioBlob' },
+					},
+				},
+			},
+		},
+		done: {
+			on: {
+				restart: 'ready',
+			},
 		},
 	},
-)
+})
 
 function CallRecorder({
 	onRecordingComplete,
@@ -227,7 +274,7 @@ function CallRecorder({
 		() => {
 			setTimer(timer + 1)
 		},
-		state.matches('recording.playing') ? 1000 : 0,
+		state.matches({ recording: 'playing' }) ? 1000 : 0,
 	)
 
 	React.useEffect(() => {
@@ -273,7 +320,7 @@ function CallRecorder({
 				<Paragraph className="mb-8">
 					An error occurred while loading recording devices.
 				</Paragraph>
-				<Button onClick={() => send('retry')}>Try again</Button>
+				<Button onClick={() => send({ type: 'retry' })}>Try again</Button>
 			</div>
 		)
 	}
@@ -296,7 +343,7 @@ function CallRecorder({
 				<StreamVis
 					metadata={metadataRef}
 					replay={true}
-					paused={state.matches('recording.paused')}
+					paused={state.matches({ recording: 'paused' })}
 					playbackRef={playbackRef}
 					team={team}
 				/>
@@ -346,7 +393,7 @@ function CallRecorder({
 					<StreamVis
 						metadata={metadataRef}
 						stream={state.context.mediaRecorder.stream}
-						paused={state.matches('recording.paused')}
+						paused={state.matches({ recording: 'paused' })}
 						playbackRef={playbackRef}
 						team={team}
 					/>
@@ -354,7 +401,7 @@ function CallRecorder({
 				</div>
 			) : null}
 
-			{state.matches('recording.playing') ? (
+			{state.matches({ recording: 'playing' }) ? (
 				<div className="flex flex-wrap gap-4">
 					<Button size="medium" onClick={() => send({ type: 'stop' })}>
 						<SquareIcon /> <span>Stop</span>
@@ -367,7 +414,7 @@ function CallRecorder({
 						<PauseIcon /> <span>Pause</span>
 					</Button>
 				</div>
-			) : state.matches('recording.paused') ? (
+			) : state.matches({ recording: 'paused' }) ? (
 				<div className="flex flex-wrap gap-4">
 					<Button size="medium" onClick={() => send({ type: 'stop' })}>
 						<SquareIcon /> <span>Stop</span>
@@ -376,7 +423,7 @@ function CallRecorder({
 						<TriangleIcon /> <span>Resume</span>
 					</Button>
 				</div>
-			) : state.matches('recording.stopping') ? (
+			) : state.matches({ recording: 'stopping' }) ? (
 				<Paragraph>Processing...</Paragraph>
 			) : null}
 
