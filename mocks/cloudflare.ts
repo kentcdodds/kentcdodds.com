@@ -50,7 +50,7 @@ type VectorizeIndexStore = Map<string, Map<string, VectorizeStoredVector>>
 
 // Keyed by `${accountId}:${indexName}`.
 const vectorizeIndexes = new Map<string, VectorizeIndexStore>()
-const seededIndexKeys = new Set<string>()
+const seededIndexPromises = new Map<string, Promise<void>>()
 
 const embeddingVectorToText = new Map<string, { text: string; timestamp: number }>()
 
@@ -60,7 +60,7 @@ const docEmbeddingCache = new Map<string, number[]>()
 // Call this in tests (beforeEach) to avoid cross-test pollution.
 export function resetCloudflareMockState() {
 	vectorizeIndexes.clear()
-	seededIndexKeys.clear()
+	seededIndexPromises.clear()
 	embeddingVectorToText.clear()
 }
 
@@ -462,36 +462,49 @@ async function getSearchCorpus(): Promise<SearchDoc[]> {
 
 async function ensureSeededIndex(accountId: string, indexName: string) {
 	const key = getIndexKey(accountId, indexName)
-	if (seededIndexKeys.has(key)) return
-	seededIndexKeys.add(key)
-
-	const store = getOrCreateIndexStore(accountId, indexName)
-	const namespace = 'default'
-	let nsStore = store.get(namespace)
-	if (!nsStore) {
-		nsStore = new Map<string, VectorizeStoredVector>()
-		store.set(namespace, nsStore)
+	const existing = seededIndexPromises.get(key)
+	if (existing) {
+		await existing
+		return
 	}
 
-	const docs = await getSearchCorpus()
-	for (const doc of docs) {
-		if (nsStore.has(doc.id)) continue
-		let values = docEmbeddingCache.get(doc.id)
-		if (!values) {
-			values = textToEmbedding(`${doc.title}\n${doc.snippet}\n${doc.content}`)
-			docEmbeddingCache.set(doc.id, values)
+	const seedPromise = (async () => {
+		const store = getOrCreateIndexStore(accountId, indexName)
+		const namespace = 'default'
+		let nsStore = store.get(namespace)
+		if (!nsStore) {
+			nsStore = new Map<string, VectorizeStoredVector>()
+			store.set(namespace, nsStore)
 		}
-		nsStore.set(doc.id, {
-			id: doc.id,
-			values,
-			metadata: {
-				type: doc.type,
-				title: doc.title,
-				url: doc.url,
-				snippet: doc.snippet,
-			},
-			namespace,
-		})
+
+		const docs = await getSearchCorpus()
+		for (const doc of docs) {
+			if (nsStore.has(doc.id)) continue
+			let values = docEmbeddingCache.get(doc.id)
+			if (!values) {
+				values = textToEmbedding(`${doc.title}\n${doc.snippet}\n${doc.content}`)
+				docEmbeddingCache.set(doc.id, values)
+			}
+			nsStore.set(doc.id, {
+				id: doc.id,
+				values,
+				metadata: {
+					type: doc.type,
+					title: doc.title,
+					url: doc.url,
+					snippet: doc.snippet,
+				},
+				namespace,
+			})
+		}
+	})()
+
+	seededIndexPromises.set(key, seedPromise)
+	try {
+		await seedPromise
+	} catch (error) {
+		seededIndexPromises.delete(key)
+		throw error
 	}
 }
 
