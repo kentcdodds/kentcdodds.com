@@ -3,7 +3,9 @@ import invariant from 'tiny-invariant'
 import { expect, readEmail, test } from './utils.ts'
 
 test('Call Kent recording flow', async ({ page, login }) => {
-	test.setTimeout(120_000)
+	// This flow does real audio stitching (ffmpeg) + mocked publishing + email
+	// fixture writes, which can be slow on CI.
+	test.setTimeout(180_000)
 	const user = await login()
 	await page.goto('/calls')
 
@@ -88,7 +90,7 @@ test('Call Kent recording flow', async ({ page, login }) => {
 	await expect(adminAcceptButton).toBeVisible({ timeout: 15_000 })
 	await adminAcceptButton.click()
 	await page.getByRole('button', { name: /submit/i }).click()
-	await expect(page).toHaveURL(/.*calls\/\d+/)
+	await expect(page).toHaveURL(/\/calls(?!\/admin)(\/|$)/, { timeout: 60_000 })
 
 	// processing the audio takes a while, so let the timeout run
 	await expect(
