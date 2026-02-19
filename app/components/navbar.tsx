@@ -142,6 +142,9 @@ type SearchSuggestion = {
 	url: string
 	segment: string
 	title: string
+	summary?: string
+	imageUrl?: string
+	imageAlt?: string
 }
 
 function isPlainLeftClick(event: React.MouseEvent) {
@@ -527,14 +530,41 @@ function NavSearch({
 															: 'hover:bg-secondary',
 													)}
 												>
-													<div className="text-primary truncate text-base font-medium">
-														{s.title}
-													</div>
-													<div className="text-secondary mt-1 flex items-baseline justify-between gap-3 text-sm">
-														<span className="truncate">{s.segment}</span>
-														<span className="shrink-0">
-															{new URL(s.url).pathname}
-														</span>
+													<div className="flex items-start gap-3">
+														<div className="shrink-0">
+															{s.imageUrl ? (
+																<img
+																	src={s.imageUrl}
+																	alt={s.imageAlt ?? ''}
+																	className="h-10 w-10 rounded-md object-cover"
+																	loading="lazy"
+																/>
+															) : (
+																<div className="h-10 w-10 rounded-md bg-gray-200 dark:bg-gray-700" />
+															)}
+														</div>
+														<div className="min-w-0 flex-1">
+															<div className="text-primary truncate text-base font-medium">
+																{s.title}
+															</div>
+															<div className="text-secondary mt-1 flex items-baseline justify-between gap-3 text-sm">
+																<span className="truncate">{s.segment}</span>
+																<span className="shrink-0">
+																	{(() => {
+																		try {
+																			return new URL(s.url).pathname
+																		} catch {
+																			return s.url
+																		}
+																	})()}
+																</span>
+															</div>
+															{s.summary ? (
+																<div className="text-secondary mt-2 line-clamp-2 text-sm">
+																	{s.summary}
+																</div>
+															) : null}
+														</div>
 													</div>
 												</div>
 											</li>
