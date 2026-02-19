@@ -384,6 +384,7 @@ function NavSearch({
 										ref: inputRef,
 										type: 'text',
 										name: 'q',
+										'data-nav-search-input': 'true',
 										autoComplete: 'off',
 										placeholder: 'Semantic search...',
 										className:
@@ -469,6 +470,7 @@ function NavSearch({
 										ref: inputRef,
 										type: 'text',
 										name: 'q',
+										'data-nav-search-input': 'true',
 										autoComplete: 'off',
 										placeholder: 'Semantic search...',
 										className:
@@ -844,10 +846,37 @@ function Navbar() {
 
 	useHotkey(HOTKEY_OPEN_SEARCH.modK, openSearch, searchHotkeyModifierOptions)
 
+	const openSearchFromModShiftP = React.useCallback(
+		(event: KeyboardEvent) => {
+			// If the search input already has focus, let the browser handle the shortcut
+			// (e.g. Chrome DevTools command menu).
+			// Prefer a selector-based check here instead of ref identity; production
+			// hydration/re-renders can occasionally swap the node instance.
+			const activeElement = document.activeElement
+			if (
+				activeElement instanceof HTMLInputElement &&
+				activeElement.dataset.navSearchInput === 'true'
+			) {
+				return
+			}
+			if (activeElement === searchInputRef.current) return
+
+			event.preventDefault()
+			openSearch()
+			requestAnimationFrame(() => searchInputRef.current?.focus())
+		},
+		[openSearch],
+	)
+
 	useHotkey(
 		HOTKEY_OPEN_SEARCH.modShiftP,
-		openSearch,
-		searchHotkeyModifierOptions,
+		openSearchFromModShiftP,
+		{
+			...searchHotkeyModifierOptions,
+			// `preventDefault: true` happens before our callback, which would prevent
+			// the browser/devtools shortcut even when we intentionally return early.
+			preventDefault: false,
+		},
 	)
 
 	return (
