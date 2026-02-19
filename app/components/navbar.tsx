@@ -211,7 +211,7 @@ function NavSearch({
 		if (isOpen) {
 			inputRef.current?.focus()
 		}
-	}, [isOpen])
+	}, [isOpen, inputRef])
 
 	const [isClosing, setIsClosing] = React.useState(false)
 
