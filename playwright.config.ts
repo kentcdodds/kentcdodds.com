@@ -65,8 +65,8 @@ export default defineConfig({
 	outputDir: 'test-results/',
 	webServer: {
 		command: process.env.CI
-			? `cross-env PORT=${PORT} npm run start:mocks`
-			: `cross-env PORT=${PORT} npm run dev`,
+			? `cross-env PORT=${PORT} MOCKS=true npm run start:mocks`
+			: `cross-env PORT=${PORT} MOCKS=true npm run dev`,
 		port: Number(PORT),
 		reuseExistingServer: true,
 	},
