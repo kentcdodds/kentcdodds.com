@@ -614,92 +614,99 @@ function BlogHome() {
 
 			{/* this is a remix bug */}
 			{}
-			{showFeatured && data.recommended ? (
-				<div className="mb-10">
-					<FeaturedSection
-						subTitle={[
-							data.recommended.dateDisplay,
-							data.recommended.readTime?.text ?? 'quick read',
-						]
-							.filter(Boolean)
-							.join(' — ')}
-						title={data.recommended.frontmatter.title}
-						blurDataUrl={data.recommended.frontmatter.bannerBlurDataUrl}
-						imageBuilder={
-							data.recommended.frontmatter.bannerCloudinaryId
-								? getImageBuilder(
-										data.recommended.frontmatter.bannerCloudinaryId,
-										getBannerAltProp(data.recommended.frontmatter),
-									)
-								: undefined
-						}
-						caption="Featured article"
-						cta="Read full article"
-						slug={data.recommended.slug}
-						permalink={recommendedPermalink}
-						leadingTeam={getLeadingTeamForSlug(data.recommended.slug)}
-					/>
-				</div>
-			) : null}
-
-			<Grid className="mb-64" ref={resultsRef}>
-				<div className="col-span-full mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-					<H6 as="div" className="m-0">
-						Articles
-					</H6>
-					<label className="flex items-center gap-3 text-sm font-medium text-slate-500">
-						<span>Sort by</span>
-						<select
-							value={
-								regularQuery === '' && sortState === 'newest' ? 'auto' : sortState
-							}
-							onChange={(e) => setSortState(e.currentTarget.value as SortState)}
-							className="text-primary bg-primary border-secondary focus:bg-secondary rounded-full border px-5 py-2 hover:border-team-current focus:border-team-current focus:outline-none"
-						>
-							<option value="auto">
-								{regularQuery ? 'Relevance' : 'Newest'}
-							</option>
-							{regularQuery ? <option value="newest">Newest</option> : null}
-							<option value="popular">Most popular</option>
-							<option value="oldest">Oldest</option>
-						</select>
-					</label>
-				</div>
-				{posts.length === 0 ? (
-					<div className="col-span-full flex flex-col items-center">
-						<img
-							{...getImgProps(images.bustedOnewheel, {
-								className: 'mt-24 h-auto w-full max-w-lg',
-								widths: [350, 512, 1024, 1536],
-								sizes: ['(max-width: 639px) 80vw', '512px'],
-							})}
-						/>
-						<H3 as="p" variant="secondary" className="mt-24 max-w-lg">
-							{`Couldn't find anything to match your criteria. Sorry.`}
-						</H3>
+			<div ref={resultsRef}>
+				<Grid className={showFeatured ? 'mb-6' : 'mb-10'}>
+					<div className="col-span-full flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+						<H6 as="div" className="m-0">
+							Articles
+						</H6>
+						<label className="flex items-center gap-3 text-sm font-medium text-slate-500">
+							<span>Sort by</span>
+							<select
+								value={
+									regularQuery === '' && sortState === 'newest'
+										? 'auto'
+										: sortState
+								}
+								onChange={(e) => setSortState(e.currentTarget.value as SortState)}
+								className="text-primary bg-primary border-secondary focus:bg-secondary rounded-full border px-5 py-2 hover:border-team-current focus:border-team-current focus:outline-none"
+							>
+								<option value="auto">
+									{regularQuery ? 'Relevance' : 'Newest'}
+								</option>
+								{regularQuery ? <option value="newest">Newest</option> : null}
+								<option value="popular">Most popular</option>
+								<option value="oldest">Oldest</option>
+							</select>
+						</label>
 					</div>
-				) : (
-					posts.map((article) => (
-						<div key={article.slug} className="col-span-4 mb-10">
-							<ArticleCard
-								article={article}
-								leadingTeam={getLeadingTeamForSlug(article.slug)}
-							/>
-						</div>
-					))
-				)}
-			</Grid>
+				</Grid>
 
-			{hasMorePosts ? (
-				<div className="mb-64 flex w-full justify-center">
-					<Button
-						variant="secondary"
-						onClick={() => setIndexToShow((i) => i + PAGE_SIZE)}
-					>
-						<span>Load more articles</span> <PlusIcon />
-					</Button>
-				</div>
-			) : null}
+				{showFeatured && data.recommended ? (
+					<div className="mb-10">
+						<FeaturedSection
+							subTitle={[
+								data.recommended.dateDisplay,
+								data.recommended.readTime?.text ?? 'quick read',
+							]
+								.filter(Boolean)
+								.join(' — ')}
+							title={data.recommended.frontmatter.title}
+							blurDataUrl={data.recommended.frontmatter.bannerBlurDataUrl}
+							imageBuilder={
+								data.recommended.frontmatter.bannerCloudinaryId
+									? getImageBuilder(
+											data.recommended.frontmatter.bannerCloudinaryId,
+											getBannerAltProp(data.recommended.frontmatter),
+										)
+									: undefined
+							}
+							caption="Featured article"
+							cta="Read full article"
+							slug={data.recommended.slug}
+							permalink={recommendedPermalink}
+							leadingTeam={getLeadingTeamForSlug(data.recommended.slug)}
+						/>
+					</div>
+				) : null}
+
+				<Grid className="mb-64">
+					{posts.length === 0 ? (
+						<div className="col-span-full flex flex-col items-center">
+							<img
+								{...getImgProps(images.bustedOnewheel, {
+									className: 'mt-24 h-auto w-full max-w-lg',
+									widths: [350, 512, 1024, 1536],
+									sizes: ['(max-width: 639px) 80vw', '512px'],
+								})}
+							/>
+							<H3 as="p" variant="secondary" className="mt-24 max-w-lg">
+								{`Couldn't find anything to match your criteria. Sorry.`}
+							</H3>
+						</div>
+					) : (
+						posts.map((article) => (
+							<div key={article.slug} className="col-span-4 mb-10">
+								<ArticleCard
+									article={article}
+									leadingTeam={getLeadingTeamForSlug(article.slug)}
+								/>
+							</div>
+						))
+					)}
+				</Grid>
+
+				{hasMorePosts ? (
+					<div className="mb-64 flex w-full justify-center">
+						<Button
+							variant="secondary"
+							onClick={() => setIndexToShow((i) => i + PAGE_SIZE)}
+						>
+							<span>Load more articles</span> <PlusIcon />
+						</Button>
+					</div>
+				) : null}
+			</div>
 
 			<Grid>
 				<div className="col-span-full lg:col-span-5">
