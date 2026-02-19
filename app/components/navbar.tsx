@@ -1,10 +1,12 @@
 import './navbar.css'
 import { Link, useFetcher, useLocation, useNavigate } from '@remix-run/react'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { clsx } from 'clsx'
 import { useCombobox } from 'downshift'
 import { motion, useAnimation, useReducedMotion } from 'framer-motion'
 import * as React from 'react'
 import { kodyProfiles } from '#app/images.tsx'
+import { HOTKEY_OPEN_SEARCH } from '#app/utils/hotkeys.ts'
 import { type OptionalTeam, useDebounce } from '#app/utils/misc.tsx'
 import { useRequestInfo } from '#app/utils/request-info.ts'
 import { useTeam } from '#app/utils/team-provider.tsx'
@@ -813,31 +815,43 @@ function Navbar() {
 		requestAnimationFrame(() => searchIconRef.current?.focus())
 	}, [])
 
-	React.useEffect(() => {
-		const handleKeyDown = (event: KeyboardEvent) => {
-			if (event.defaultPrevented) return
-			if (event.isComposing) return
-			if (event.altKey) return
+	const openSearch = React.useCallback(() => {
+		const canUseNavbarSearch =
+			typeof window === 'undefined'
+				? false
+				: window.matchMedia('(min-width: 1024px)').matches
 
-			const isModifierPressed = event.metaKey || event.ctrlKey
-			const isPKey = event.code === 'KeyP' || event.key.toLowerCase() === 'p'
-
-			if (!isModifierPressed || !event.shiftKey || !isPKey) return
-
-			// If the search input already has focus, let the browser handle the shortcut
-			// (e.g. Chrome DevTools command menu).
-			if (document.activeElement === searchInputRef.current) return
-
-			event.preventDefault()
-			setIsSearchOpen(true)
-			requestAnimationFrame(() => searchInputRef.current?.focus())
+		if (!canUseNavbarSearch) {
+			// On smaller screens the navbar search UI is hidden, so we navigate to the
+			// dedicated search page instead.
+			navigate('/search')
+			return
 		}
 
-		document.addEventListener('keydown', handleKeyDown)
-		return () => {
-			document.removeEventListener('keydown', handleKeyDown)
-		}
-	}, [])
+		setIsSearchOpen(true)
+		requestAnimationFrame(() => searchInputRef.current?.focus())
+	}, [navigate])
+
+	useHotkey(HOTKEY_OPEN_SEARCH.slash, openSearch, {
+		ignoreInputs: true,
+		preventDefault: true,
+		requireReset: true,
+		stopPropagation: true,
+	})
+
+	useHotkey(HOTKEY_OPEN_SEARCH.modK, openSearch, {
+		ignoreInputs: true,
+		preventDefault: true,
+		requireReset: true,
+		stopPropagation: true,
+	})
+
+	useHotkey(HOTKEY_OPEN_SEARCH.modShiftP, openSearch, {
+		ignoreInputs: true,
+		preventDefault: true,
+		requireReset: true,
+		stopPropagation: true,
+	})
 
 	return (
 		<div className="px-5vw relative overflow-visible py-9 lg:py-12">

@@ -19,6 +19,7 @@ import {
 	useNavigation,
 } from '@remix-run/react'
 import { withSentry } from '@sentry/remix'
+import { HotkeysProvider } from '@tanstack/react-hotkeys'
 
 import { clsx } from 'clsx'
 import { isFuture } from 'date-fns'
@@ -36,6 +37,7 @@ import {
 	removeTrailingSlash,
 	typedBoolean,
 } from '#app/utils/misc.tsx'
+import { AppHotkeys } from './components/app-hotkeys.tsx'
 import { ArrowLink } from './components/arrow-button.tsx'
 import { ErrorPage, FourHundred } from './components/errors.tsx'
 import { Footer } from './components/footer.tsx'
@@ -592,6 +594,7 @@ function App() {
 				})}
 				<NotificationMessage queryStringKey="message" delay={0.3} />
 				<Navbar />
+				<AppHotkeys />
 				<Outlet />
 				<Spacer size="base" />
 				<Footer image={images[data.randomFooterImageKey]} />
@@ -634,7 +637,9 @@ function App() {
 function AppWithProviders() {
 	return (
 		<TeamProvider>
-			<App />
+			<HotkeysProvider>
+				<App />
+			</HotkeysProvider>
 		</TeamProvider>
 	)
 }
