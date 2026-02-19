@@ -21,6 +21,11 @@ const siteMetadata = read('site-metadata.json') as typeof SiteMetadata
 const tweetsArray = Object.values(tweets)
 const siteMetadataArray = Object.values(siteMetadata)
 
+type TweetLike = { id_str: string }
+function isTweetLike(t: unknown): t is TweetLike {
+	return Boolean(t && typeof t === 'object' && typeof (t as any).id_str === 'string')
+}
+
 function getSiteMetadata(tweetUrlId: string) {
 	const urlIdNumber: number = tweetUrlId
 		.split('')
@@ -50,17 +55,18 @@ const twitterHandlers: Array<HttpHandler> = [
 			) {
 				return
 			}
-			const tweetId = url.searchParams.get('tweet_id')
+			// The real syndication endpoint uses `id`.
+			const tweetId = url.searchParams.get('id')
 			// uncomment this and send whatever tweet you want to work with...
 			// return res(ctx.json(tweets.linkWithMetadata))
 
+			// If no id was provided, return a stable fixture (and avoid noisy warnings).
+			if (!tweetId) return HttpResponse.json(tweetsArray[0])
+
 			let tweet = tweetsArray.find((t) => {
-				if ('data' in t) {
-					return tweetId === t.id_str
-				} else {
-					console.warn(`mock tweet data that does not match!`, t)
-					return false
-				}
+				if (isTweetLike(t)) return tweetId === t.id_str
+				console.warn(`mock tweet data that does not match!`, t)
+				return false
 			})
 			if (!tweet) {
 				const tweetNumber = Number(tweetId)

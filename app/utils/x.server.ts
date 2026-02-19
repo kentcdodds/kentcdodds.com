@@ -113,8 +113,8 @@ const repliesSVG = `<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden=
 const retweetSVG = `<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><g><path d="M23.77 15.67c-.292-.293-.767-.293-1.06 0l-2.22 2.22V7.65c0-2.068-1.683-3.75-3.75-3.75h-5.85c-.414 0-.75.336-.75.75s.336.75.75.75h5.85c1.24 0 2.25 1.01 2.25 2.25v10.24l-2.22-2.22c-.293-.293-.768-.293-1.06 0s-.294.768 0 1.06l3.5 3.5c.145.147.337.22.53.22s.383-.072.53-.22l3.5-3.5c.294-.292.294-.767 0-1.06zm-10.66 3.28H7.26c-1.24 0-2.25-1.01-2.25-2.25V6.46l2.22 2.22c.148.147.34.22.532.22s.384-.073.53-.22c.293-.293.293-.768 0-1.06l-3.5-3.5c-.293-.294-.768-.294-1.06 0l-3.5 3.5c-.294.292-.294.767 0 1.06s.767.293 1.06 0l2.22-2.22V16.7c0 2.068 1.683 3.75 3.75 3.75h5.85c.414 0 .75-.336.75-.75s-.337-.75-.75-.75z"></path></g></svg>`
 const linkSvg = `<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><g><path d="M11.96 14.945c-.067 0-.136-.01-.203-.027-1.13-.318-2.097-.986-2.795-1.932-.832-1.125-1.176-2.508-.968-3.893s.942-2.605 2.068-3.438l3.53-2.608c2.322-1.716 5.61-1.224 7.33 1.1.83 1.127 1.175 2.51.967 3.895s-.943 2.605-2.07 3.438l-1.48 1.094c-.333.246-.804.175-1.05-.158-.246-.334-.176-.804.158-1.05l1.48-1.095c.803-.592 1.327-1.463 1.476-2.45.148-.988-.098-1.975-.69-2.778-1.225-1.656-3.572-2.01-5.23-.784l-3.53 2.608c-.802.593-1.326 1.464-1.475 2.45-.15.99.097 1.975.69 2.778.498.675 1.187 1.15 1.992 1.377.4.114.633.528.52.928-.092.33-.394.547-.722.547z"></path><path d="M7.27 22.054c-1.61 0-3.197-.735-4.225-2.125-.832-1.127-1.176-2.51-.968-3.894s.943-2.605 2.07-3.438l1.478-1.094c.334-.245.805-.175 1.05.158s.177.804-.157 1.05l-1.48 1.095c-.803.593-1.326 1.464-1.475 2.45-.148.99.097 1.975.69 2.778 1.225 1.657 3.57 2.01 5.23.785l3.528-2.608c1.658-1.225 2.01-3.57.785-5.23-.498-.674-1.187-1.15-1.992-1.376-.4-.113-.633-.527-.52-.927.112-.4.528-.63.926-.522 1.13.318 2.096.986 2.794 1.932 1.717 2.324 1.224 5.612-1.1 7.33l-3.53 2.608c-.933.693-2.023 1.026-3.105 1.026z"></path></g></svg>`
 const arrowSvg = `<svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.25 15.25V6.75H8.75"></path>
-  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 7L6.75 17.25"></path>
+	<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.25 15.25V6.75H8.75"></path>
+	<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 7L6.75 17.25"></path>
 </svg>
 `
 
@@ -126,13 +126,13 @@ async function buildTweetHTML(tweet: Tweet, expandQuotedTweet: boolean) {
 	// _bigger is 73x73 which looks better...
 	const authorImg = author.profile_image_url_https.replace('_normal', '_bigger')
 	const authorHTML = `
-    <a class="tweet-author" href="https://x.com/${author.screen_name}" target="_blank" rel="noreferrer noopener">
-      <img src="${authorImg}" loading="lazy" alt="${author.name} avatar" />
-      <div>
-        <span class="tweet-author-name">${author.name}</span>
-        <span class="tweet-author-handle">@${author.screen_name}</span>
-      </div>
-    </a>`
+		<a class="tweet-author" href="https://x.com/${author.screen_name}" target="_blank" rel="noreferrer noopener">
+			<img src="${authorImg}" loading="lazy" alt="${author.name} avatar" />
+			<div>
+				<span class="tweet-author-name">${author.name}</span>
+				<span class="tweet-author-handle">@${author.screen_name}</span>
+			</div>
+		</a>`
 
 	const links = (
 		await Promise.all(
@@ -235,12 +235,12 @@ async function buildTweetHTML(tweet: Tweet, expandQuotedTweet: boolean) {
 			const urlHtml = `<div class="tweet-ref-metadata-domain">${linkSvg}<span>${longUrl.hostname}</span></div>`
 			linkMetadataHTML = `
 <a href="${longLink}" class="tweet-ref-metadata" target="_blank" rel="noreferrer noopener">
-  ${imgHtml}
-  ${titleHtml}
-  ${descHtml}
-  ${urlHtml}
+	${imgHtml}
+	${titleHtml}
+	${descHtml}
+	${urlHtml}
 </a>
-      `.trim()
+			`.trim()
 		}
 	}
 
@@ -257,25 +257,25 @@ async function buildTweetHTML(tweet: Tweet, expandQuotedTweet: boolean) {
 	const likeCount = formatNumber(favorite_count)
 	const replyCount = formatNumber(conversation_count)
 	const statsHTML = `
-    <div class="tweet-stats">
-      <a href="${replyIntent}" class="tweet-reply" target="_blank" rel="noreferrer noopener">${repliesSVG}<span>${replyCount}</span></a>
-      <a href="${retweetIntent}" class="tweet-retweet" target="_blank" rel="noreferrer noopener">${retweetSVG}</a>
-      <a href="${likeIntent}" class="tweet-like" target="_blank" rel="noreferrer noopener">${likesSVG}<span>${likeCount}</span></a>
-      <a href="${postURL}" class="tweet-link" target="_blank" rel="noreferrer noopener">${arrowSvg}<span></span></a>
-    </div>
-  `
+		<div class="tweet-stats">
+			<a href="${replyIntent}" class="tweet-reply" target="_blank" rel="noreferrer noopener">${repliesSVG}<span>${replyCount}</span></a>
+			<a href="${retweetIntent}" class="tweet-retweet" target="_blank" rel="noreferrer noopener">${retweetSVG}</a>
+			<a href="${likeIntent}" class="tweet-like" target="_blank" rel="noreferrer noopener">${likesSVG}<span>${likeCount}</span></a>
+			<a href="${postURL}" class="tweet-link" target="_blank" rel="noreferrer noopener">${arrowSvg}<span></span></a>
+		</div>
+	`
 
 	return `
-    <div class="tweet-embed">
-      ${authorHTML}
-      ${tweetHTML}
-      ${mediaHTML}
-      ${linkMetadataHTML}
-      ${expandedQuoteTweetHTML}
-      ${createdAtHTML}
-      ${statsHTML}
-    </div>
-  `.trim()
+		<div class="tweet-embed">
+			${authorHTML}
+			${tweetHTML}
+			${mediaHTML}
+			${linkMetadataHTML}
+			${expandedQuoteTweetHTML}
+			${createdAtHTML}
+			${statsHTML}
+		</div>
+	`.trim()
 }
 
 async function getTweetEmbedHTML(urlString: string) {
