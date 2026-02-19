@@ -78,15 +78,7 @@ function FullScreenYouTubeEmbed({
 	)
 }
 
-/**
- *  in order to prevent this error when running native ESM in production
- *  TypeError: Unknown file extension ".jsx" for
- *  kentcdodds.com/node_modules/react-lite-youtube-embed/dist/index.es.jsx
- *
- *  we import it here from 'react-lite-youtube-embed/dist/index.es.jsx' and add
- *  it to serverDependenciesToBundle in remix.config.js
- */
-export { default as LiteYouTubeEmbed } from 'react-lite-youtube-embed/dist/index.es.jsx'
+export { default as LiteYouTubeEmbed } from 'react-lite-youtube-embed'
 export { FullScreenYouTubeEmbed }
 
 export const links = () => {
