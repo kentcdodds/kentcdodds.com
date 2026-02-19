@@ -257,6 +257,20 @@ export function ChevronRightIcon() {
 	)
 }
 
+export function CloseIcon({ size = 24 }: { size?: number } = {}) {
+	return (
+		<svg width={size} height={size} fill="none" viewBox="0 0 24 24">
+			<path
+				stroke="currentColor"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				strokeWidth="2"
+				d="M6 18L18 6M6 6l12 12"
+			/>
+		</svg>
+	)
+}
+
 export function ChevronUpIcon({
 	className,
 	title,

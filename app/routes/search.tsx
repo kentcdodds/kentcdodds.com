@@ -89,7 +89,7 @@ export default function SearchPage() {
 								type="search"
 								name="q"
 								defaultValue={data.q}
-								placeholder="Search anything…"
+								placeholder="Semantic search..."
 								className={inputClassName}
 							/>
 						</div>

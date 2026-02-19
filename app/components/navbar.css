@@ -56,3 +56,14 @@ body:has(#mobile-menu:popover-open) [popovertarget='mobile-menu'] {
 		opacity 0.2s,
 		display 0.2s allow-discrete;
 }
+
+.navbar-container {
+	container-type: inline-size;
+}
+
+@container (max-width: 1150px) {
+	.navbar-links [data-nav-item='chats'],
+	.navbar-links [data-nav-item='workshops'] {
+		display: none;
+	}
+}
