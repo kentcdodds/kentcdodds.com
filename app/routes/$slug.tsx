@@ -5,7 +5,7 @@ import {
 } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import * as React from 'react'
-import { serverOnly$ } from 'vite-env-only'
+import { serverOnly$ } from 'vite-env-only/macros'
 import { BackLink } from '#app/components/arrow-button.tsx'
 import { BlurrableImage } from '#app/components/blurrable-image.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary'
@@ -27,7 +27,7 @@ import { requireValidSlug, reuseUsefulLoaderHeaders } from '#app/utils/misc.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 
 export const handle: KCDHandle = {
-	getSitemapEntries: serverOnly$(async (request) => {
+	getSitemapEntries: serverOnly$(async (request: Request) => {
 		const pages = await getMdxPagesInDirectory('pages', { request })
 		return pages
 			.filter((page) => !page.frontmatter.draft)

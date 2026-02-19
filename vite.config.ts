@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { glob } from 'glob'
 import { flatRoutes } from 'remix-flat-routes'
 import { defineConfig } from 'vite'
-import envOnly from 'vite-env-only'
+import { envOnlyMacros } from 'vite-env-only'
 import { cjsInterop } from 'vite-plugin-cjs-interop'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
@@ -21,7 +21,7 @@ export default defineConfig(async () => {
 					'@remark-embedder/transformer-oembed',
 				],
 			}),
-			envOnly(),
+			envOnlyMacros(),
 			tailwindcss(),
 			remix({
 				ignoredRouteFiles: ['**/*'],

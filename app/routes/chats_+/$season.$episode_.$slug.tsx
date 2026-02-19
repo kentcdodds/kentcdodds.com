@@ -14,7 +14,7 @@ import {
 import { clsx } from 'clsx'
 import { motion } from 'framer-motion'
 import React, { useState } from 'react'
-import { serverOnly$ } from 'vite-env-only'
+import { serverOnly$ } from 'vite-env-only/macros'
 import { ArrowLink, BackLink } from '#app/components/arrow-button.tsx'
 import { FourOhFour } from '#app/components/errors.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -60,7 +60,7 @@ import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 
 export const handle: KCDHandle = {
-	getSitemapEntries: serverOnly$(async (request) => {
+	getSitemapEntries: serverOnly$(async (request: Request) => {
 		const seasons = await getSeasons({ request })
 		return seasons.flatMap((season) => {
 			return season.episodes.map((episode) => {

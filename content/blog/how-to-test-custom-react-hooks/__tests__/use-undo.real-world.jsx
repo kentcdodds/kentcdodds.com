@@ -1,3 +1,4 @@
+/* eslint-disable testing-library/no-unnecessary-act -- TODO: figure out act wrapping */
 import { render, screen, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { test, expect } from 'vitest'
@@ -87,7 +88,3 @@ test('allows you to undo and redo', async () => {
 
 // TODO: figure out what happened in the latest version of testing library with
 // this project that requires wrapping things in act
-/*
-eslint
-  testing-library/no-unnecessary-act: "off",
-*/
