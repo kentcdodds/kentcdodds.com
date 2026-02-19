@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { promises as fs } from 'node:fs'
+import { promises as fs, type Dirent } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import slugify from '@sindresorhus/slugify'
@@ -11,8 +11,8 @@ import {
 	type DefaultRequestMultipartBody,
 	type HttpHandler,
 } from 'msw'
-import { requiredHeader } from './utils.ts'
 import { mockTransistorEpisodes } from './transistor.ts'
+import { requiredHeader } from './utils.ts'
 
 const CLOUDFLARE_API_BASE = 'https://api.cloudflare.com/client/v4'
 
@@ -242,7 +242,7 @@ async function listFilesRecursively({
 	const walk = async (current: string, depth: number) => {
 		if (results.length >= maxFiles) return
 		if (depth > maxDepth) return
-		let entries: Array<import('node:fs').Dirent> = []
+		let entries: Dirent[] = []
 		try {
 			entries = await fs.readdir(current, { withFileTypes: true })
 		} catch {
