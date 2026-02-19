@@ -197,11 +197,14 @@ function BlogHome() {
 		return getSortStateFromParam(searchParams.get('sort'))
 	})
 	const query = queryValue.trim()
+	const regularQuery = query.replace(specialQueryRegex, '').trim()
 
 	useUpdateQueryStringValueWithoutNavigation('q', query)
 	useUpdateQueryStringValueWithoutNavigation(
 		'sort',
-		sortState === 'auto' ? '' : sortState,
+		sortState === 'auto' || (sortState === 'newest' && regularQuery === '')
+			? ''
+			: sortState,
 	)
 
 	const data = useLoaderData<typeof loader>()
@@ -214,7 +217,6 @@ function BlogHome() {
 		[data.allPostReadRankings],
 	)
 
-	const regularQuery = query.replace(specialQueryRegex, '').trim()
 	const effectiveSort =
 		sortState === 'auto'
 			? regularQuery
