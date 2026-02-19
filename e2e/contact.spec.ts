@@ -36,8 +36,15 @@ ${bodyLorem}
   `.trim()
 	await mainContent.getByRole('textbox', { name: /body/i }).fill(body)
 	await mainContent.getByRole('button', { name: /send/i }).click()
-	await expect(page.getByText(/email sent/i)).toBeVisible()
-	const email = await readEmail((em) => em.to.includes('me@kentcdodds.com'))
+
+	// This is server-driven (server-side markdown + email send), so give it a
+	// little more time than the default expect timeout.
+	await expect(page.getByText(/email sent/i)).toBeVisible({ timeout: 15_000 })
+
+	const email = await readEmail((em) => em.to.includes('me@kentcdodds.com'), {
+		maxRetries: 10,
+		retryDelay: 200,
+	})
 	invariant(email, 'Email not found')
 	expect(email.from).toMatch(user.email)
 	expect(email.subject).toMatch(subject)

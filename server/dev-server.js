@@ -69,9 +69,10 @@ if (process.env.NODE_ENV === 'production') {
 				FORCE_COLOR: '1',
 				CLICOLOR_FORCE: '1',
 				TERM: process.env.TERM ?? 'xterm-256color',
-				MOCKS: true,
-				STARTUP_SHORTCUTS: 'false',
 				...process.env,
+				// Keep dev predictable: mocks on by default.
+				MOCKS: 'true',
+				STARTUP_SHORTCUTS: 'false',
 			},
 			// https://github.com/sindresorhus/execa/issues/433
 			windowsHide: false,

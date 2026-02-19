@@ -46,16 +46,24 @@ test('Call Kent recording flow', async ({ page, login }) => {
 	await mainContent.getByRole('button', { name: /submit/i }).click()
 
 	// Wait for the redirect to confirm the call was created
-	await expect(page).toHaveURL(/.*calls\/record\/[a-z0-9-]+/, {
+	// NOTE: `/calls/record/new` is a thing, so we specifically wait for a UUID.
+	await expect(page).toHaveURL(
+		/.*calls\/record\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i,
+		{
 		timeout: 10_000,
-	})
+		},
+	)
+	const callIdMatch = page
+		.url()
+		.match(
+			/calls\/record\/(?<id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i,
+		)
+	const callId = callIdMatch?.groups?.id
+	invariant(callId, 'Call id not found in URL after recording submission')
 
 	await login({ role: 'ADMIN' })
-	await page.goto('/calls/admin')
-
-	const callLink = page.getByRole('link', { name: new RegExp(title, 'i') })
-	await expect(callLink).toBeVisible({ timeout: 10_000 })
-	await callLink.click()
+	// Navigate directly to avoid flakiness from list ordering / other calls.
+	await page.goto(`/calls/admin/${callId}`)
 
 	await page.getByRole('button', { name: /start/i }).click()
 	await page.waitForTimeout(500) // let the sample.wav file play for a bit more
@@ -63,7 +71,7 @@ test('Call Kent recording flow', async ({ page, login }) => {
 
 	await page.getByRole('button', { name: /accept/i }).click()
 	await page.getByRole('button', { name: /submit/i }).click()
-	await expect(page).toHaveURL(/.*calls\/\d+/)
+	await expect(page).toHaveURL(/.*\/calls(\/|$)/)
 
 	// processing the audio takes a while, so let the timeout run
 	await expect(

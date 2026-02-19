@@ -66,6 +66,8 @@ export default defineConfig({
 			? `cross-env PORT=${PORT} npm run start:mocks`
 			: `cross-env PORT=${PORT} npm run dev`,
 		port: Number(PORT),
-		reuseExistingServer: true,
+		// Default to a clean, deterministic server per run.
+		// Set `PW_REUSE_EXISTING_SERVER=true` to opt into reuse locally.
+		reuseExistingServer: process.env.PW_REUSE_EXISTING_SERVER === 'true',
 	},
 })
