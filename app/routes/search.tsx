@@ -82,6 +82,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export default function SearchPage() {
 	const loaderData = useLoaderData<typeof loader>()
 	const fetcher = useFetcher<typeof loader>({ key: 'search-page-results' })
+	const { load } = fetcher
 	const inputRef = React.useRef<HTMLInputElement>(null)
 
 	const [query, setQuery] = React.useState(loaderData.q)
@@ -133,8 +134,8 @@ export default function SearchPage() {
 		if (!debouncedQuery) return
 		// If the loader already fetched this query (e.g. initial page load), reuse it.
 		if (debouncedQuery === loaderData.q) return
-		fetcher.load(`/search?q=${encodeURIComponent(debouncedQuery)}`)
-	}, [debouncedQuery, fetcher.load, loaderData.configured, loaderData.q])
+		load(`/search?q=${encodeURIComponent(debouncedQuery)}`)
+	}, [debouncedQuery, load, loaderData.configured, loaderData.q])
 
 	const isQueryPending = trimmedQuery !== debouncedQuery
 
