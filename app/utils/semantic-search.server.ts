@@ -31,13 +31,14 @@ function normalizeUrlForKey(url: string): string {
 	try {
 		if (/^https?:\/\//i.test(url)) {
 			const u = new URL(url)
-			return u.pathname && u.pathname !== '/' ? u.pathname.replace(/\/+$/, '') : u.pathname
+			return u.pathname !== '/' ? u.pathname.replace(/\/+$/, '') : u.pathname
 		}
 	} catch {
 		// ignore
 	}
-	const cleaned = (url.split(/[?#]/)[0] ?? url).trim()
-	return cleaned && cleaned !== '/' ? cleaned.replace(/\/+$/, '') : cleaned
+	const cleaned = (url.split(/[?#]/)[0] ?? '').trim()
+	if (!cleaned) return '/'
+	return cleaned !== '/' ? cleaned.replace(/\/+$/, '') : cleaned
 }
 
 /**
@@ -46,6 +47,11 @@ function normalizeUrlForKey(url: string): string {
 function normalizeTitleForKey(title: string) {
 	// asNonEmptyString already trims; use lowercase to avoid casing-only duplicates.
 	return title.toLowerCase()
+}
+
+function normalizeSlugForKey(slug: string) {
+	// Normalize for case-insensitive dedupe parity with titles.
+	return slug.toLowerCase()
 }
 
 /**
@@ -69,9 +75,10 @@ function getCanonicalResultId({
 }) {
 	// The Vectorize index stores multiple chunk vectors per doc, so we need a
 	// canonical, doc-level identifier to collapse duplicates in query results.
-	if (type && slug) return `${type}:${slug}`
-	if (type && url) return `${type}:${normalizeUrlForKey(url)}`
-	if (url) return normalizeUrlForKey(url)
+	if (type && slug) return `${type}:${normalizeSlugForKey(slug)}`
+	const normalizedUrl = url ? normalizeUrlForKey(url) : undefined
+	if (type && normalizedUrl) return `${type}:${normalizedUrl}`
+	if (normalizedUrl) return normalizedUrl
 	if (type && title) return `${type}:${normalizeTitleForKey(title)}`
 	return vectorId
 }
@@ -222,6 +229,10 @@ export async function semanticSearchKCD({
 	topK = 15,
 }: {
 	query: string
+	/**
+	 * Requested number of unique docs to return.
+	 * Clamped to 20 because Vectorize metadata queries cap `topK` at 20.
+	 */
 	topK?: number
 }): Promise<Array<SemanticSearchResult>> {
 	const { accountId, apiToken, indexName, embeddingModel } =
@@ -234,7 +245,9 @@ export async function semanticSearchKCD({
 	}
 
 	const safeTopK =
-		typeof topK === 'number' && Number.isFinite(topK) ? Math.max(1, Math.floor(topK)) : 15
+		typeof topK === 'number' && Number.isFinite(topK)
+			? Math.max(1, Math.min(20, Math.floor(topK)))
+			: 15
 	// Vectorize returns chunk-level matches and overlapping chunks commonly score
 	// highly together. Overfetch and then de-dupe down to unique docs.
 	// When requesting metadata, Vectorize caps topK at 20.

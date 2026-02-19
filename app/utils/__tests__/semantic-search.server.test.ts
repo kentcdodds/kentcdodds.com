@@ -166,7 +166,9 @@ describe('semantic search result normalization', () => {
 			expect(ids).toContain('blog:react-hooks-pitfalls')
 
 			const blogResult = results.find((r) => r.id === 'blog:react-hooks-pitfalls')
-			expect(blogResult?.snippet).toBe('snippet-0')
+			expect(blogResult).toBeDefined()
+			expect(blogResult!.snippet).toBe('snippet-0')
+			expect(blogResult!.score).toBe(0.99)
 
 			// Credits share the same URL, but should not be collapsed (slug differentiates them).
 			expect(ids).toContain('credit:alice')
