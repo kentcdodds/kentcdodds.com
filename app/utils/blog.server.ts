@@ -171,7 +171,7 @@ export async function getMostPopularPostSlugs({
 		.slice(0, limit)
 }
 
-export async function getBlogPostReadCounts({
+async function getBlogPostReadCounts({
 	request,
 	timings,
 }: {
