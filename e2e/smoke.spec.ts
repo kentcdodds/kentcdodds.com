@@ -39,7 +39,13 @@ test('ctrl/cmd+shift+p opens nav search and focuses it', async ({ page }) => {
 		})
 	}
 
-	const first = await dispatchShortcut()
+	// The shortcut handler is installed in a `useEffect`, so it can be a moment
+	// after the SSR markup becomes visible. Retry until we observe `preventDefault`.
+	let first = await dispatchShortcut()
+	for (let i = 0; i < 40 && !first.defaultPrevented; i++) {
+		await page.waitForTimeout(50)
+		first = await dispatchShortcut()
+	}
 	expect(first.cancelable).toBe(true)
 	expect(first.defaultPrevented).toBe(true)
 
