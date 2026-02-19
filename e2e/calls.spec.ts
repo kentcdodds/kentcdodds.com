@@ -89,8 +89,24 @@ test('Call Kent recording flow', async ({ page, login }) => {
 	const adminAcceptButton = page.getByRole('button', { name: /accept/i })
 	await expect(adminAcceptButton).toBeVisible({ timeout: 15_000 })
 	await adminAcceptButton.click()
-	await page.getByRole('button', { name: /submit/i }).click()
-	await expect(page).toHaveURL(/\/calls(?!\/admin)(\/|$)/, { timeout: 60_000 })
+	const submitRecordingButton = page.getByRole('button', {
+		name: /submit recording/i,
+	})
+	await expect(submitRecordingButton).toBeVisible({ timeout: 15_000 })
+	const publishResponsePromise = page.waitForResponse(
+		(res) =>
+			res.request().method() === 'POST' && res.url().includes('/calls/admin/'),
+		{ timeout: 120_000 },
+	)
+	await submitRecordingButton.click()
+	const publishResponse = await publishResponsePromise
+	expect(publishResponse.status(), 'Expected admin publish to succeed').toBeLessThan(
+		400,
+	)
+
+	// Even if the action returns a redirect, a programmatic submit can follow it
+	// without updating the current URL. Navigate explicitly for deterministic E2E.
+	await page.goto('/calls')
 
 	// processing the audio takes a while, so let the timeout run
 	await expect(
