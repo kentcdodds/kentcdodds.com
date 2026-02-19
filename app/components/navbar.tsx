@@ -163,12 +163,14 @@ function NavSearch({
 	onCloseWithFocusIntent,
 	searchIconRef,
 	alwaysExpanded,
+	searchInputRef,
 }: {
 	isOpen: boolean
 	onOpenChange: (open: boolean) => void
 	onCloseWithFocusIntent?: () => void
 	searchIconRef?: React.RefObject<HTMLAnchorElement | null>
 	alwaysExpanded?: boolean
+	searchInputRef?: React.RefObject<HTMLInputElement | null>
 }) {
 	const navigate = useNavigate()
 	const fetcher = useFetcher<Array<SearchSuggestion> | { error: string }>({
@@ -180,7 +182,8 @@ function NavSearch({
 	const [fetchError, setFetchError] = React.useState<string | null>(null)
 
 	const buttonRef = React.useRef<HTMLAnchorElement>(null)
-	const inputRef = React.useRef<HTMLInputElement>(null)
+	const internalInputRef = React.useRef<HTMLInputElement>(null)
+	const inputRef = searchInputRef ?? internalInputRef
 	const overlayRef = React.useRef<HTMLDivElement>(null)
 	const isClosingRef = React.useRef(false)
 	const shouldFocusIconRef = React.useRef(true)
@@ -211,7 +214,7 @@ function NavSearch({
 		if (isOpen) {
 			inputRef.current?.focus()
 		}
-	}, [isOpen])
+	}, [isOpen, inputRef])
 
 	const [isClosing, setIsClosing] = React.useState(false)
 
@@ -801,10 +804,38 @@ function Navbar() {
 	const avatar = userInfo ? userInfo.avatar : kodyProfiles[team]
 	const navLinksRef = React.useRef<HTMLDivElement>(null)
 	const searchIconRef = React.useRef<HTMLAnchorElement>(null)
+	const searchInputRef = React.useRef<HTMLInputElement>(null)
 	const [isSearchOpen, setIsSearchOpen] = React.useState(false)
 
 	const focusSearchIcon = React.useCallback(() => {
 		requestAnimationFrame(() => searchIconRef.current?.focus())
+	}, [])
+
+	React.useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.defaultPrevented) return
+			if (event.isComposing) return
+			if (event.altKey) return
+
+			const isModifierPressed = event.metaKey || event.ctrlKey
+			const isPKey =
+				event.code === 'KeyP' || event.key.toLowerCase() === 'p'
+
+			if (!isModifierPressed || !event.shiftKey || !isPKey) return
+
+			// If the search input already has focus, let the browser handle the shortcut
+			// (e.g. Chrome DevTools command menu).
+			if (document.activeElement === searchInputRef.current) return
+
+			event.preventDefault()
+			setIsSearchOpen(true)
+			requestAnimationFrame(() => searchInputRef.current?.focus())
+		}
+
+		document.addEventListener('keydown', handleKeyDown)
+		return () => {
+			document.removeEventListener('keydown', handleKeyDown)
+		}
 	}, [])
 
 	return (
@@ -841,6 +872,7 @@ function Navbar() {
 								isOpen={isSearchOpen}
 								onOpenChange={setIsSearchOpen}
 								onCloseWithFocusIntent={focusSearchIcon}
+								searchInputRef={searchInputRef}
 							/>
 						</div>
 					)}
