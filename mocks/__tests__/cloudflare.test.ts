@@ -54,6 +54,42 @@ describe('cloudflare MSW mocks', () => {
 		expect(json.result.text.toLowerCase()).toContain('mock transcription')
 	})
 
+	test('Vectorize query uses match-sorter when embedding text is known', async () => {
+		const embedRes = await fetch(
+			'https://api.cloudflare.com/client/v4/accounts/acc123/ai/run/@cf/google/embeddinggemma-300m',
+			{
+				method: 'POST',
+				headers: {
+					Authorization: 'Bearer test-token',
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ text: ['About KCD MCP'] }),
+			},
+		)
+		expect(embedRes.ok).toBe(true)
+		const embedJson = (await embedRes.json()) as any
+		const vector = embedJson.result.data[0]
+		expect(Array.isArray(vector)).toBe(true)
+
+		const queryRes = await fetch(
+			'https://api.cloudflare.com/client/v4/accounts/acc123/vectorize/v2/indexes/semantic-index/query',
+			{
+				method: 'POST',
+				headers: {
+					Authorization: 'Bearer test-token',
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ vector, topK: 5, returnMetadata: 'all' }),
+			},
+		)
+		expect(queryRes.ok).toBe(true)
+		const queryJson = (await queryRes.json()) as any
+		expect(queryJson.success).toBe(true)
+		expect(queryJson.result.matches.length).toBeGreaterThan(0)
+		expect(queryJson.result.matches[0].metadata.title).toBe('About KCD MCP')
+		expect(String(queryJson.result.matches[0].metadata.url)).toContain('about-mcp')
+	})
+
 	test('Vectorize query returns seeded matches with metadata', async () => {
 		const res = await fetch(
 			'https://api.cloudflare.com/client/v4/accounts/acc123/vectorize/v2/indexes/semantic-index/query',

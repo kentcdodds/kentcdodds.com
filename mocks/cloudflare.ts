@@ -1,4 +1,9 @@
 import { createHash } from 'node:crypto'
+import { promises as fs } from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import slugify from '@sindresorhus/slugify'
+import { matchSorter } from 'match-sorter'
 import {
 	http,
 	HttpResponse,
@@ -7,11 +12,25 @@ import {
 	type HttpHandler,
 } from 'msw'
 import { requiredHeader } from './utils.ts'
+import { mockTransistorEpisodes } from './transistor.ts'
 
 const CLOUDFLARE_API_BASE = 'https://api.cloudflare.com/client/v4'
 
 // Keep vectors small to avoid wasting CPU/memory in local mocks.
 const DEFAULT_EMBEDDING_DIMS = 12
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const repoRoot = path.join(__dirname, '..')
+const contentRoot = path.join(repoRoot, 'content')
+
+type SearchDoc = {
+	id: string
+	type: string
+	title: string
+	url: string
+	snippet: string
+	content: string
+}
 
 type CloudflareApiEnvelope<T> = {
 	success: boolean
@@ -31,6 +50,11 @@ type VectorizeIndexStore = Map<string, Map<string, VectorizeStoredVector>>
 
 // Keyed by `${accountId}:${indexName}`.
 const vectorizeIndexes = new Map<string, VectorizeIndexStore>()
+const seededIndexKeys = new Set<string>()
+
+const embeddingVectorToText = new Map<string, { text: string; timestamp: number }>()
+
+let searchCorpusPromise: Promise<SearchDoc[]> | null = null
 
 function jsonOk<T>(result: T, init?: { status?: number }) {
 	const body: CloudflareApiEnvelope<T> = {
@@ -100,6 +124,38 @@ function textToEmbedding(text: string, dims = DEFAULT_EMBEDDING_DIMS) {
 	return hashToUnitFloats(hash, dims)
 }
 
+function vectorKey(vector: number[]) {
+	// Keep this stable across JSON round-trips.
+	return vector.map((n) => Number(n).toFixed(6)).join(',')
+}
+
+function rememberEmbedding(vector: number[], text: string) {
+	const key = vectorKey(vector)
+	embeddingVectorToText.set(key, { text, timestamp: Date.now() })
+
+	// Best-effort pruning to prevent unbounded growth.
+	const maxEntries = 200
+	if (embeddingVectorToText.size <= maxEntries) return
+	const entries = Array.from(embeddingVectorToText.entries()).sort(
+		(a, b) => a[1].timestamp - b[1].timestamp,
+	)
+	for (const [oldKey] of entries.slice(0, embeddingVectorToText.size - maxEntries)) {
+		embeddingVectorToText.delete(oldKey)
+	}
+}
+
+function getRememberedEmbeddingText(vector: number[]) {
+	const key = vectorKey(vector)
+	const entry = embeddingVectorToText.get(key)
+	if (!entry) return null
+	// Drop entries older than 10 minutes.
+	if (Date.now() - entry.timestamp > 10 * 60 * 1000) {
+		embeddingVectorToText.delete(key)
+		return null
+	}
+	return entry.text
+}
+
 function getIndexKey(accountId: string, indexName: string) {
 	return `${accountId}:${indexName}`
 }
@@ -122,59 +178,297 @@ function allVectors(store: VectorizeIndexStore, namespace?: string) {
 	return Array.from(store.values()).flatMap((ns) => Array.from(ns.values()))
 }
 
-function ensureSeededIndex(accountId: string, indexName: string) {
-	const store = getOrCreateIndexStore(accountId, indexName)
-	if (allVectors(store).length > 0) return
+function stripSurroundingQuotes(value: string) {
+	const trimmed = value.trim()
+	if (
+		(trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+		(trimmed.startsWith("'") && trimmed.endsWith("'"))
+	) {
+		return trimmed.slice(1, -1)
+	}
+	return trimmed
+}
 
-	// Seed a few deterministic "documents" so semantic search is usable in mocks.
-	const seedDocs: Array<{
-		id: string
-		title: string
-		type: string
-		url: string
-		snippet: string
-	}> = [
+function parseSimpleFrontmatter(source: string) {
+	const match = source.match(/^---\s*\n([\s\S]*?)\n---\s*\n/)
+	if (!match) return { body: source, title: null as string | null, description: null as string | null }
+
+	const yaml = match[1] ?? ''
+	let title: string | null = null
+	let description: string | null = null
+	for (const line of yaml.split('\n')) {
+		const trimmed = line.trim()
+		if (trimmed.startsWith('title:') && title === null) {
+			title = stripSurroundingQuotes(trimmed.replace(/^title:\s*/i, ''))
+		}
+		if (trimmed.startsWith('description:') && description === null) {
+			description = stripSurroundingQuotes(trimmed.replace(/^description:\s*/i, ''))
+		}
+	}
+
+	const body = source.slice(match[0].length)
+	return { body, title, description }
+}
+
+function mdxToPlainText(source: string) {
+	let text = source
+	// Remove code blocks
+	text = text.replace(/```[\s\S]*?```/g, ' ')
+	// Remove MDX/HTML tags
+	text = text.replace(/<[^>]+>/g, ' ')
+	// Images: ![alt](url) -> alt
+	text = text.replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
+	// Links: [label](url) -> label
+	text = text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+	// Headings/bullets/emphasis/backticks
+	text = text.replace(/[#>*_`]/g, ' ')
+	// Collapse whitespace
+	text = text.replace(/\s+/g, ' ').trim()
+	return text
+}
+
+async function listFilesRecursively({
+	dir,
+	extensions,
+	maxFiles,
+	maxDepth,
+}: {
+	dir: string
+	extensions: string[]
+	maxFiles: number
+	maxDepth: number
+}) {
+	const results: string[] = []
+	const walk = async (current: string, depth: number) => {
+		if (results.length >= maxFiles) return
+		if (depth > maxDepth) return
+		let entries: Array<import('node:fs').Dirent> = []
+		try {
+			entries = await fs.readdir(current, { withFileTypes: true })
+		} catch {
+			return
+		}
+		entries.sort((a, b) => a.name.localeCompare(b.name))
+		for (const entry of entries) {
+			if (results.length >= maxFiles) return
+			if (entry.name.startsWith('.')) continue
+			const full = path.join(current, entry.name)
+			if (entry.isDirectory()) {
+				await walk(full, depth + 1)
+			} else if (entry.isFile()) {
+				if (extensions.some((ext) => entry.name.toLowerCase().endsWith(ext))) {
+					results.push(full)
+				}
+			}
+		}
+	}
+	await walk(dir, 0)
+	return results
+}
+
+function getStaticDocs(): SearchDoc[] {
+	return [
 		{
 			id: '/search',
 			title: 'Search',
 			type: 'page',
-			url: 'https://kentcdodds.com/search',
+			url: '/search',
 			snippet: 'Semantic search across posts, pages, podcasts, talks, and more.',
-		},
-		{
-			id: '/blog',
-			title: 'Blog',
-			type: 'page',
-			url: 'https://kentcdodds.com/blog',
-			snippet: 'Articles about React, testing, and modern web development.',
+			content:
+				'Search the site for posts, pages, podcasts, talks, resume, credits, and more.',
 		},
 		{
 			id: '/workshops',
 			title: 'Workshops',
 			type: 'page',
-			url: 'https://kentcdodds.com/workshops',
+			url: '/workshops',
 			snippet: 'Hands-on training on React, testing, TypeScript, and more.',
-		},
-		{
-			id: '/call-kent',
-			title: 'Call Kent Podcast',
-			type: 'podcast',
-			url: 'https://kentcdodds.com/call-kent',
-			snippet: 'Short, practical audio answers about React and software engineering.',
+			content: 'Workshops and training.',
 		},
 		{
 			id: '/contact',
 			title: 'Contact',
 			type: 'page',
-			url: 'https://kentcdodds.com/contact',
+			url: '/contact',
 			snippet: 'Get in touch.',
+			content: 'Contact Kent C. Dodds.',
+		},
+		{
+			id: '/calls',
+			title: 'Call Kent Podcast',
+			type: 'podcast',
+			url: '/calls',
+			snippet: 'Short, practical audio answers about React and software engineering.',
+			content: 'Call Kent Podcast episodes.',
 		},
 	]
+}
 
+function getPodcastDocs(): SearchDoc[] {
+	return mockTransistorEpisodes.map((episode) => {
+		const a = episode.attributes
+		const seasonNumber = typeof a.season === 'number' ? a.season : 1
+		const episodeNumber = typeof a.number === 'number' ? a.number : 0
+		const title = typeof a.title === 'string' && a.title ? a.title : 'Podcast episode'
+		const slug = slugify(title)
+		const url = [
+			'/calls',
+			seasonNumber.toString().padStart(2, '0'),
+			episodeNumber.toString().padStart(2, '0'),
+			slug || undefined,
+		]
+			.filter(Boolean)
+			.join('/')
+
+		const snippet =
+			typeof a.summary === 'string' && a.summary
+				? a.summary
+				: typeof a.description === 'string'
+					? a.description.slice(0, 200)
+					: 'Podcast episode'
+
+		const content =
+			typeof a.description === 'string' && a.description
+				? a.description
+				: snippet
+
+		return {
+			id: url,
+			type: 'podcast',
+			title,
+			url,
+			snippet,
+			content,
+		}
+	})
+}
+
+async function docsFromContentDir({
+	dir,
+	type,
+	urlPrefix,
+	maxFiles,
+}: {
+	dir: string
+	type: string
+	urlPrefix: string
+	maxFiles: number
+}): Promise<SearchDoc[]> {
+	const extensions = ['.mdx', '.md']
+	const files = await listFilesRecursively({
+		dir,
+		extensions,
+		maxFiles,
+		maxDepth: 4,
+	})
+
+	const docs: SearchDoc[] = []
+	for (const filePath of files) {
+		let raw = ''
+		try {
+			raw = await fs.readFile(filePath, 'utf8')
+		} catch {
+			continue
+		}
+
+		const relative = path.relative(dir, filePath).replace(/\\/g, '/')
+		const slug = relative.replace(/\.(mdx|md)$/i, '')
+
+		const { body, title, description } = parseSimpleFrontmatter(raw)
+		const contentText = mdxToPlainText(body).slice(0, 20_000)
+
+		const url =
+			urlPrefix === '/'
+				? slug === 'index'
+					? '/'
+					: `/${slug}`
+				: slug === 'index'
+					? urlPrefix
+					: `${urlPrefix}/${slug}`
+
+		const finalTitle = title ?? slug.split('/').pop() ?? url
+		const snippet = (description ?? contentText).slice(0, 240)
+
+		docs.push({
+			id: url,
+			type,
+			title: finalTitle,
+			url,
+			snippet,
+			content: contentText,
+		})
+	}
+
+	return docs
+}
+
+async function getLocalContentDocs(): Promise<SearchDoc[]> {
+	const docs: SearchDoc[] = []
+	docs.push(
+		...(await docsFromContentDir({
+			dir: path.join(contentRoot, 'pages'),
+			type: 'page',
+			urlPrefix: '/',
+			maxFiles: 200,
+		})),
+	)
+	docs.push(
+		...(await docsFromContentDir({
+			dir: path.join(contentRoot, 'blog'),
+			type: 'blog',
+			urlPrefix: '/blog',
+			maxFiles: 200,
+		})),
+	)
+	return docs
+}
+
+async function buildSearchCorpus(): Promise<SearchDoc[]> {
+	const docs: SearchDoc[] = [...getStaticDocs()]
+
+	try {
+		if (await fs.stat(contentRoot).then((s) => s.isDirectory()).catch(() => false)) {
+			docs.push(...(await getLocalContentDocs()))
+		}
+	} catch {
+		// ignore missing content in unusual environments
+	}
+
+	docs.push(...getPodcastDocs())
+
+	const seen = new Set<string>()
+	return docs.filter((d) => {
+		if (!d.id) return false
+		if (seen.has(d.id)) return false
+		seen.add(d.id)
+		return true
+	})
+}
+
+async function getSearchCorpus(): Promise<SearchDoc[]> {
+	if (!searchCorpusPromise) {
+		searchCorpusPromise = buildSearchCorpus()
+	}
+	return searchCorpusPromise
+}
+
+async function ensureSeededIndex(accountId: string, indexName: string) {
+	const key = getIndexKey(accountId, indexName)
+	if (seededIndexKeys.has(key)) return
+	seededIndexKeys.add(key)
+
+	const store = getOrCreateIndexStore(accountId, indexName)
 	const namespace = 'default'
-	const nsStore = new Map<string, VectorizeStoredVector>()
-	for (const doc of seedDocs) {
-		const values = textToEmbedding(`${doc.title}\n${doc.snippet}`)
+	let nsStore = store.get(namespace)
+	if (!nsStore) {
+		nsStore = new Map<string, VectorizeStoredVector>()
+		store.set(namespace, nsStore)
+	}
+
+	const docs = await getSearchCorpus()
+	for (const doc of docs) {
+		if (nsStore.has(doc.id)) continue
+		const values = textToEmbedding(`${doc.title}\n${doc.snippet}\n${doc.content}`)
 		nsStore.set(doc.id, {
 			id: doc.id,
 			values,
@@ -187,7 +481,6 @@ function ensureSeededIndex(accountId: string, indexName: string) {
 			namespace,
 		})
 	}
-	store.set(namespace, nsStore)
 }
 
 async function parseVectorizeNdjsonVectors(request: Request) {
@@ -318,8 +611,57 @@ const handleVectorizeQuery = async ({ request, params }) => {
 		)
 	}
 
-	ensureSeededIndex(accountId, indexName)
+	await ensureSeededIndex(accountId, indexName)
 	const store = getOrCreateIndexStore(accountId, indexName)
+
+	const queryText = getRememberedEmbeddingText(vector)
+	if (queryText) {
+		const storedVectors = allVectors(store, namespace)
+		const storedDocs: SearchDoc[] = storedVectors.map((v) => {
+			const md = (v.metadata ?? {}) as Record<string, unknown>
+			const title = typeof md.title === 'string' ? md.title : v.id
+			const url = typeof md.url === 'string' ? md.url : v.id
+			const snippet = typeof md.snippet === 'string' ? md.snippet : ''
+			const type = typeof md.type === 'string' ? md.type : 'vector'
+			return {
+				id: v.id,
+				type,
+				title,
+				url,
+				snippet,
+				content: `${title} ${snippet}`.trim(),
+			}
+		})
+
+		let searchableDocs: SearchDoc[] = []
+		if (namespace && namespace !== 'default') {
+			searchableDocs = storedDocs
+		} else {
+			const corpus = await getSearchCorpus()
+			const corpusIds = new Set(corpus.map((d) => d.id))
+			const extras = storedDocs.filter((d) => !corpusIds.has(d.id))
+			searchableDocs = [...corpus, ...extras]
+		}
+
+		const ranked = matchSorter(searchableDocs, queryText, {
+			keys: ['title', 'snippet', 'content'],
+		})
+		if (ranked.length) {
+			const limited = ranked.slice(0, clamp(Math.trunc(topK), 1, 100))
+			const matches = limited.map((d, i) => ({
+				id: d.id,
+				score: clamp(0.99 - i * 0.02, 0, 1),
+				metadata: {
+					type: d.type,
+					title: d.title,
+					url: d.url,
+					snippet: d.snippet,
+				},
+			}))
+			return jsonOk({ count: matches.length, matches })
+		}
+	}
+
 	const candidates = allVectors(store, namespace)
 
 	const matches = candidates
@@ -451,7 +793,11 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 				)
 			}
 
-			const data = texts.map((t: string) => textToEmbedding(t))
+			const data = texts.map((t: string) => {
+				const vector = textToEmbedding(t)
+				rememberEmbedding(vector, t)
+				return vector
+			})
 			return jsonOk({
 				shape: [texts.length, DEFAULT_EMBEDDING_DIMS],
 				data,
