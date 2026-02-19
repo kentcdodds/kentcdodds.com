@@ -12,6 +12,47 @@ type VectorizeQueryResponse = {
 	}>
 }
 
+function asNonEmptyString(value: unknown): string | undefined {
+	if (typeof value !== 'string') return undefined
+	const trimmed = value.trim()
+	return trimmed ? trimmed : undefined
+}
+
+function normalizeUrlForKey(url: string): string {
+	// Prefer treating absolute URLs and relative paths as the same canonical key.
+	try {
+		if (/^https?:\/\//i.test(url)) {
+			const u = new URL(url)
+			return u.pathname && u.pathname !== '/' ? u.pathname.replace(/\/+$/, '') : u.pathname
+		}
+	} catch {
+		// ignore
+	}
+	return url && url !== '/' ? url.replace(/\/+$/, '') : url
+}
+
+function getCanonicalResultId({
+	vectorId,
+	type,
+	slug,
+	url,
+	title,
+}: {
+	vectorId: string
+	type: string | undefined
+	slug: string | undefined
+	url: string | undefined
+	title: string | undefined
+}) {
+	// The Vectorize index stores multiple chunk vectors per doc, so we need a
+	// canonical, doc-level identifier to collapse duplicates in query results.
+	if (type && slug) return `${type}:${slug}`
+	if (type && url) return `${type}:${normalizeUrlForKey(url)}`
+	if (url) return normalizeUrlForKey(url)
+	if (type && title) return `${type}:${title}`
+	return vectorId
+}
+
 function getRequiredSemanticSearchEnv() {
 	const accountId = process.env.CLOUDFLARE_ACCOUNT_ID
 	const apiToken = process.env.CLOUDFLARE_API_TOKEN
@@ -169,6 +210,12 @@ export async function semanticSearchKCD({
 		)
 	}
 
+	const safeTopK =
+		typeof topK === 'number' && Number.isFinite(topK) ? Math.max(1, Math.floor(topK)) : 15
+	// Vectorize returns chunk-level matches and overlapping chunks commonly score
+	// highly together. Overfetch and then de-dupe down to unique docs.
+	const rawTopK = Math.min(100, safeTopK * 5)
+
 	const vector = await getEmbedding({
 		accountId,
 		apiToken,
@@ -181,21 +228,71 @@ export async function semanticSearchKCD({
 		apiToken,
 		indexName,
 		vector,
-		topK,
+		topK: rawTopK,
 	})
 	const result = (responseJson as any).result ?? responseJson
 	const matches = (result?.matches ?? []) as VectorizeQueryResponse['matches']
 
-	return matches.map((m) => {
+	type RankedResult = { rank: number; result: SemanticSearchResult }
+	const byCanonicalId = new Map<string, RankedResult>()
+
+	for (let i = 0; i < matches.length; i++) {
+		const m = matches[i]
+		if (!m) continue
 		const md = (m.metadata ?? {}) as Record<string, unknown>
-		return {
-			id: m.id,
+		const type = asNonEmptyString(md.type)
+		const slug = asNonEmptyString(md.slug)
+		const title = asNonEmptyString(md.title)
+		const url = asNonEmptyString(md.url)
+		const snippet = asNonEmptyString(md.snippet)
+
+		const canonicalId = getCanonicalResultId({
+			vectorId: m.id,
+			type,
+			slug,
+			url,
+			title,
+		})
+
+		const next: SemanticSearchResult = {
+			id: canonicalId,
 			score: m.score,
-			type: typeof md.type === 'string' ? md.type : undefined,
-			title: typeof md.title === 'string' ? md.title : undefined,
-			url: typeof md.url === 'string' ? md.url : undefined,
-			snippet: typeof md.snippet === 'string' ? md.snippet : undefined,
+			type,
+			title,
+			url,
+			snippet,
 		}
-	})
+
+		const existing = byCanonicalId.get(canonicalId)
+		if (!existing) {
+			byCanonicalId.set(canonicalId, { rank: i, result: next })
+			continue
+		}
+
+		const prev = existing.result
+		const prevScore = typeof prev.score === 'number' && Number.isFinite(prev.score) ? prev.score : -Infinity
+		const nextScore = typeof next.score === 'number' && Number.isFinite(next.score) ? next.score : -Infinity
+		const bestScore = Math.max(prevScore, nextScore)
+		const nextIsBetter = nextScore > prevScore
+
+		existing.result = {
+			id: canonicalId,
+			score: bestScore,
+			type: prev.type ?? next.type,
+			title: prev.title ?? next.title,
+			url: prev.url ?? next.url,
+			// Prefer the snippet from the highest-scoring chunk, but fall back to any snippet.
+			snippet: nextIsBetter ? next.snippet ?? prev.snippet : prev.snippet ?? next.snippet,
+		}
+	}
+
+	return [...byCanonicalId.values()]
+		.sort((a, b) => {
+			const scoreDiff = (b.result.score ?? 0) - (a.result.score ?? 0)
+			if (scoreDiff) return scoreDiff
+			return a.rank - b.rank
+		})
+		.slice(0, safeTopK)
+		.map((x) => x.result)
 }
 
