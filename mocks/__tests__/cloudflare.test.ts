@@ -1,5 +1,5 @@
-import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { setupServer } from 'msw/node'
+import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { cloudflareHandlers } from '../cloudflare.ts'
 
 const server = setupServer(...cloudflareHandlers)
