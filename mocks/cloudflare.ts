@@ -55,6 +55,14 @@ const seededIndexKeys = new Set<string>()
 const embeddingVectorToText = new Map<string, { text: string; timestamp: number }>()
 
 let searchCorpusPromise: Promise<SearchDoc[]> | null = null
+const docEmbeddingCache = new Map<string, number[]>()
+
+// Call this in tests (beforeEach) to avoid cross-test pollution.
+export function resetCloudflareMockState() {
+	vectorizeIndexes.clear()
+	seededIndexKeys.clear()
+	embeddingVectorToText.clear()
+}
 
 function jsonOk<T>(result: T, init?: { status?: number }) {
 	const body: CloudflareApiEnvelope<T> = {
@@ -468,7 +476,11 @@ async function ensureSeededIndex(accountId: string, indexName: string) {
 	const docs = await getSearchCorpus()
 	for (const doc of docs) {
 		if (nsStore.has(doc.id)) continue
-		const values = textToEmbedding(`${doc.title}\n${doc.snippet}\n${doc.content}`)
+		let values = docEmbeddingCache.get(doc.id)
+		if (!values) {
+			values = textToEmbedding(`${doc.title}\n${doc.snippet}\n${doc.content}`)
+			docEmbeddingCache.set(doc.id, values)
+		}
 		nsStore.set(doc.id, {
 			id: doc.id,
 			values,
@@ -502,7 +514,8 @@ async function parseVectorizeNdjsonVectors(request: Request) {
 
 	const boundaryMatch =
 		/\bboundary=(?:"([^"]+)"|([^;]+))/i.exec(contentType) ?? null
-	const boundary = boundaryMatch?.[1] ?? boundaryMatch?.[2] ?? null
+	const boundaryRaw = boundaryMatch?.[1] ?? boundaryMatch?.[2] ?? ''
+	const boundary = boundaryRaw.trim() || null
 	if (!boundary) {
 		return { ok: false as const, error: 'Missing multipart boundary.' }
 	}
@@ -684,49 +697,38 @@ const handleVectorizeQuery = async ({ request, params }: VectorizeHandlerArgs) =
 	})
 }
 
-const handleVectorizeInsert = async ({ request, params }: VectorizeHandlerArgs) => {
-	requiredHeader(request.headers, 'authorization')
-	const accountId = String(params.accountId)
-	const indexName = String(params.indexName)
-	const parsed = await parseVectorizeNdjsonVectors(request)
-	if (!parsed.ok) return jsonError(400, parsed.error, 10005)
+const makeVectorizeWriteHandler =
+	(operation: 'insert' | 'upsert') =>
+	async ({ request, params }: VectorizeHandlerArgs) => {
+		requiredHeader(request.headers, 'authorization')
+		const accountId = String(params.accountId)
+		const indexName = String(params.indexName)
+		const parsed = await parseVectorizeNdjsonVectors(request)
+		if (!parsed.ok) return jsonError(400, parsed.error, 10005)
 
-	const store = getOrCreateIndexStore(accountId, indexName)
-	let updated = 0
-	for (const v of parsed.vectors) {
-		let ns = store.get(v.namespace)
-		if (!ns) {
-			ns = new Map()
-			store.set(v.namespace, ns)
+		const store = getOrCreateIndexStore(accountId, indexName)
+		let updated = 0
+		for (const v of parsed.vectors) {
+			let ns = store.get(v.namespace)
+			if (!ns) {
+				ns = new Map()
+				store.set(v.namespace, ns)
+			}
+
+			if (operation === 'insert' && ns.has(v.id)) {
+				// Real Vectorize insert semantics should not overwrite existing vectors.
+				return jsonError(409, `Vector already exists: ${v.id}`, 10008)
+			}
+
+			ns.set(v.id, v)
+			updated++
 		}
-		ns.set(v.id, v)
-		updated++
+
+		return jsonOk({ operation, updated })
 	}
 
-	return jsonOk({ operation: 'insert', updated })
-}
-
-const handleVectorizeUpsert = async ({ request, params }: VectorizeHandlerArgs) => {
-	requiredHeader(request.headers, 'authorization')
-	const accountId = String(params.accountId)
-	const indexName = String(params.indexName)
-	const parsed = await parseVectorizeNdjsonVectors(request)
-	if (!parsed.ok) return jsonError(400, parsed.error, 10005)
-
-	const store = getOrCreateIndexStore(accountId, indexName)
-	let updated = 0
-	for (const v of parsed.vectors) {
-		let ns = store.get(v.namespace)
-		if (!ns) {
-			ns = new Map()
-			store.set(v.namespace, ns)
-		}
-		ns.set(v.id, v)
-		updated++
-	}
-
-	return jsonOk({ operation: 'upsert', updated })
-}
+const handleVectorizeInsert = makeVectorizeWriteHandler('insert')
+const handleVectorizeUpsert = makeVectorizeWriteHandler('upsert')
 
 const handleVectorizeDeleteByIds = async ({ request, params }: VectorizeHandlerArgs) => {
 	requiredHeader(request.headers, 'authorization')

@@ -1,11 +1,15 @@
 import { setupServer } from 'msw/node'
-import { afterAll, beforeAll, describe, expect, test } from 'vitest'
-import { cloudflareHandlers } from '../cloudflare.ts'
+import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'vitest'
+import { cloudflareHandlers, resetCloudflareMockState } from '../cloudflare.ts'
 
 const server = setupServer(...cloudflareHandlers)
 
 beforeAll(() => {
 	server.listen({ onUnhandledRequest: 'error' })
+})
+
+beforeEach(() => {
+	resetCloudflareMockState()
 })
 
 afterAll(() => {
