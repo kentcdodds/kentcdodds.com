@@ -80,6 +80,7 @@ jobs:
   pre-deploy-health-check:
     name: 🏥 Pre-deploy health check
     needs: [changes]
+    timeout-minutes: 15
     # Only run when we would actually deploy (keeps PRs fast).
     if:
       ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') &&
@@ -100,12 +101,6 @@ jobs:
 
       - name: 🏄 Copy test env vars
         run: cp .env.example .env
-
-      - name: 🤖 update robots
-        if: ${{ github.ref == 'refs/heads/dev' }}
-        run:
-          # replace "Allow" with "Disallow" in public/robots.txt for staging
-          sed -i 's/Allow/Disallow/g' public/robots.txt
 
       - name: 🏗 Build (production)
         run: npm run build

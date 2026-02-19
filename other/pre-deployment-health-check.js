@@ -1,26 +1,16 @@
 #!/usr/bin/env node
 import 'dotenv/config'
+import path from 'node:path'
 import { spawn } from 'node:child_process'
-import net from 'node:net'
 import process from 'node:process'
+import getPort from 'get-port'
 
 function sleep(ms) {
 	return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 async function getAvailablePort() {
-	return await new Promise((resolve, reject) => {
-		const server = net.createServer()
-		server.once('error', reject)
-		server.listen(0, '127.0.0.1', () => {
-			const address = server.address()
-			if (!address || typeof address === 'string') {
-				reject(new Error('Unable to determine an available port'))
-				return
-			}
-			server.close(() => resolve(address.port))
-		})
-	})
+	return await getPort()
 }
 
 async function run(command, args, { env } = {}) {
@@ -47,9 +37,14 @@ async function waitForOkResponse(url, { timeoutMs }) {
 	const start = Date.now()
 	let lastError = null
 	while (Date.now() - start < timeoutMs) {
+		const remaining = timeoutMs - (Date.now() - start)
+		if (remaining <= 0) break
+
 		try {
 			const res = await fetch(url, {
 				headers: { 'x-healthcheck': 'true' },
+				// Prevent a hung request from bypassing the outer loop's timeout.
+				signal: AbortSignal.timeout(Math.min(remaining, 5_000)),
 			})
 			const text = await res.text().catch(() => '')
 			if (res.ok && text.trim() === 'OK') return
@@ -65,7 +60,12 @@ async function waitForOkResponse(url, { timeoutMs }) {
 }
 
 async function main() {
-	const timeoutMs = Number(process.env.HEALTHCHECK_TIMEOUT_MS ?? 60_000)
+	const rawTimeoutMs = process.env.HEALTHCHECK_TIMEOUT_MS?.trim()
+	const parsedTimeoutMs = rawTimeoutMs ? Number(rawTimeoutMs) : NaN
+	const timeoutMs =
+		Number.isFinite(parsedTimeoutMs) && parsedTimeoutMs > 0
+			? parsedTimeoutMs
+			: 60_000
 	const port = await getAvailablePort()
 	const url = `http://127.0.0.1:${port}/healthcheck`
 
@@ -84,7 +84,13 @@ async function main() {
 	}
 
 	if (process.env.SKIP_MIGRATIONS !== 'true') {
-		await run('npx', ['prisma@7', 'migrate', 'deploy'], { env })
+		const prismaBin = path.join(
+			process.cwd(),
+			'node_modules',
+			'.bin',
+			process.platform === 'win32' ? 'prisma.cmd' : 'prisma',
+		)
+		await run(prismaBin, ['migrate', 'deploy'], { env })
 	}
 
 	// Spawn the server directly (not via `npm start`) so we can reliably
@@ -102,7 +108,7 @@ async function main() {
 
 	try {
 		await waitForOkResponse(url, { timeoutMs })
-		console.error(`✅ pre-deploy healthcheck OK: ${url}`)
+		console.log(`✅ pre-deploy healthcheck OK: ${url}`)
 	} finally {
 		const killTree = (signal) => {
 			if (!server.pid) return
