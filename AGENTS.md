@@ -26,7 +26,6 @@ Standard dev commands are documented in `README.md` and `CONTRIBUTING.md`. Quick
 
 ### Non-obvious caveats
 
-- **Prisma AI guard**: Running `prisma migrate reset` from an AI agent requires the env var `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION` to be set (Prisma detects Cursor and blocks destructive commands otherwise). The value should be the user's consent message.
 - **Dev server is not a TTY**: `server/dev-server.js` detects non-TTY and disables keyboard shortcuts. This is expected in cloud agent terminals.
 - **All external APIs are mocked** via MSW when `MOCKS=true` (the default in dev). No real API keys are needed for local development — the `.env.example` values are sufficient.
 - **SQLite is file-based**: The database file lives at `prisma/sqlite.db`. No external database server is required.
