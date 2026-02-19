@@ -25,6 +25,7 @@ export async function transcribeMp3WithWorkersAi({
 	mp3,
 	model = getRequiredEnv('CLOUDFLARE_AI_TRANSCRIPTION_MODEL'),
 }: {
+	// Accept Buffers and other Uint8Array views.
 	mp3: Uint8Array
 	/**
 	 * Recommended: `@cf/openai/whisper` because it supports raw binary audio via
@@ -49,7 +50,9 @@ export async function transcribeMp3WithWorkersAi({
 			// Best-effort content-type; CF can infer in many cases, but be explicit.
 			'Content-Type': 'audio/mpeg',
 		},
-		body: mp3,
+		// Some fetch/undici TS typings are stricter than runtime and require
+		// `Uint8Array<ArrayBuffer>` rather than `Uint8Array<ArrayBufferLike>`.
+		body: mp3 as unknown as Uint8Array<ArrayBuffer>,
 	})
 
 	if (!res.ok) {

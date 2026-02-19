@@ -191,4 +191,4 @@ const transistorHandlers: Array<HttpHandler> = [
 	),
 ]
 
-export { transistorHandlers }
+export { transistorHandlers, episodes as mockTransistorEpisodes }
