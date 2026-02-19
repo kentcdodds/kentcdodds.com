@@ -112,6 +112,8 @@ jobs:
 
       - name: 🩺 Smoke test /healthcheck (production build)
         run: npm run predeploy:healthcheck
+        env:
+          MOCKS: 'true'
 
   playwright:
     name: 🎭 Playwright
