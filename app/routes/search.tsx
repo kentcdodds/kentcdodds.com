@@ -135,10 +135,10 @@ export default function SearchPage() {
 	const isQueryPending = trimmedQuery !== requestedQuery
 
 	const activeData =
-		requestedQuery && fetcher.data?.q === requestedQuery
-			? fetcher.data
-			: loaderData.q === requestedQuery
-				? loaderData
+		requestedQuery && loaderData.q === requestedQuery
+			? loaderData
+			: fetcher.data?.q === requestedQuery
+				? fetcher.data
 				: null
 
 	const error =
