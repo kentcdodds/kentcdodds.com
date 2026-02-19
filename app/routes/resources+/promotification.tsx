@@ -2,7 +2,7 @@
 // which the user can dismiss for a period of time.
 import { type ActionFunctionArgs, json } from '@remix-run/node'
 import { useFetcher } from '@remix-run/react'
-import { parse, serialize } from 'cookie'
+import * as cookie from 'cookie'
 import * as React from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { useSpinDelay } from 'spin-delay'
@@ -20,7 +20,7 @@ export function getPromoCookieValue({
 	promoName: string
 	request: Request
 }) {
-	const cookies = parse(request.headers.get('Cookie') || '')
+	const cookies = cookie.parse(request.headers.get('Cookie') || '')
 	return cookies[promoName]
 }
 
@@ -30,7 +30,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	const promoName = formData.get('promoName')
 	invariant(typeof promoName === 'string', 'promoName must be a string')
 
-	const cookieHeader = serialize(promoName, 'hidden', {
+	const cookieHeader = cookie.serialize(promoName, 'hidden', {
 		httpOnly: true,
 		secure: true,
 		sameSite: 'lax',
