@@ -1,3 +1,5 @@
+import { getSemanticSearchPresentation } from './semantic-search-presentation.server.ts'
+
 type EmbeddingResponse = {
 	shape?: number[]
 	data?: number[][]
@@ -237,9 +239,16 @@ export type SemanticSearchResult = {
 	id: string
 	score: number
 	type?: string
+	slug?: string
 	title?: string
 	url?: string
 	snippet?: string
+	/**
+	 * A short, display-friendly summary. Prefer this over `snippet` in UIs.
+	 */
+	summary?: string
+	imageUrl?: string
+	imageAlt?: string
 }
 
 export async function semanticSearchKCD({
@@ -313,6 +322,7 @@ export async function semanticSearchKCD({
 			id: canonicalId,
 			score: m.score,
 			type,
+			slug,
 			title,
 			url,
 			snippet,
@@ -334,6 +344,7 @@ export async function semanticSearchKCD({
 			id: canonicalId,
 			score: bestScore,
 			type: prev.type ?? next.type,
+			slug: prev.slug ?? next.slug,
 			title: prev.title ?? next.title,
 			url: prev.url ?? next.url,
 			// Prefer the snippet from the highest-scoring chunk, but fall back to any snippet.
@@ -341,7 +352,7 @@ export async function semanticSearchKCD({
 		}
 	}
 
-	return [...byCanonicalId.values()]
+	const baseResults = [...byCanonicalId.values()]
 		.sort((a, b) => {
 			const scoreDiff = (b.result.score ?? 0) - (a.result.score ?? 0)
 			if (scoreDiff) return scoreDiff
@@ -349,5 +360,17 @@ export async function semanticSearchKCD({
 		})
 		.slice(0, safeTopK)
 		.map((x) => x.result)
+
+	// Add UI-ready presentation fields (summary + image) with graceful fallbacks.
+	// This is derived from local repo content when possible, so it doesn't require
+	// storing additional fields during indexing.
+	const enriched = await Promise.all(
+		baseResults.map(async (r) => {
+			const presentation = await getSemanticSearchPresentation(r)
+			return { ...r, ...presentation }
+		}),
+	)
+
+	return enriched
 }
 

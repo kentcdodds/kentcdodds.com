@@ -181,28 +181,43 @@ function SearchResults({
 								key={r.id}
 								className="rounded-lg bg-gray-100 p-6 dark:bg-gray-800"
 							>
-								<div className="flex items-baseline justify-between gap-4">
-									<div className="min-w-0">
-										<H4 className="truncate">
-											{href ? (
-												<Link to={href}>{r.title ?? r.url ?? r.id}</Link>
+								<div className="flex items-start justify-between gap-4">
+									<div className="flex min-w-0 flex-1 items-start gap-4">
+										<div className="shrink-0">
+											{r.imageUrl ? (
+												<img
+													src={r.imageUrl}
+													alt={r.imageAlt ?? ''}
+													className="h-16 w-16 rounded-lg object-cover"
+													loading="lazy"
+												/>
 											) : (
-												r.id
+												<div className="h-16 w-16 rounded-lg bg-gray-200 dark:bg-gray-700" />
 											)}
-										</H4>
-										{r.type ? (
-											<p className="text-sm text-slate-500">{r.type}</p>
-										) : null}
+										</div>
+										<div className="min-w-0 flex-1">
+											<H4 className="truncate">
+												{href ? (
+													<Link to={href}>{r.title ?? r.url ?? r.id}</Link>
+												) : (
+													r.id
+												)}
+											</H4>
+											<div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm text-slate-500">
+												{r.type ? <span>{r.type}</span> : null}
+												{r.url ? <span className="truncate">{r.url}</span> : null}
+											</div>
+											{r.summary || r.snippet ? (
+												<p className="mt-3 line-clamp-3 text-base text-slate-600 dark:text-slate-400">
+													{r.summary ?? r.snippet}
+												</p>
+											) : null}
+										</div>
 									</div>
 									<p className="shrink-0 text-sm text-slate-500">
 										{Number.isFinite(r.score) ? r.score.toFixed(3) : ''}
 									</p>
 								</div>
-								{r.snippet ? (
-									<p className="mt-3 text-base text-slate-600 dark:text-slate-400">
-										{r.snippet}
-									</p>
-								) : null}
 							</li>
 						)
 					})}

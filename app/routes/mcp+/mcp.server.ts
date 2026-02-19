@@ -263,6 +263,9 @@ function createServer() {
 										title: r.title ?? url ?? r.id,
 										url: absoluteUrl,
 										category: r.type ?? 'Results',
+										summary: r.summary ?? r.snippet ?? null,
+										imageUrl: r.imageUrl ?? null,
+										imageAlt: r.imageAlt ?? null,
 									})
 								})
 								.join('\n'),
