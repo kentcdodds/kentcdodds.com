@@ -52,7 +52,10 @@ type VectorizeIndexStore = Map<string, Map<string, VectorizeStoredVector>>
 const vectorizeIndexes = new Map<string, VectorizeIndexStore>()
 const seededIndexPromises = new Map<string, Promise<void>>()
 
-const embeddingVectorToText = new Map<string, { text: string; timestamp: number }>()
+const embeddingVectorToText = new Map<
+	string,
+	{ text: string; timestamp: number }
+>()
 
 let searchCorpusPromise: Promise<SearchDoc[]> | null = null
 const docEmbeddingCache = new Map<string, number[]>()
@@ -147,7 +150,10 @@ function rememberEmbedding(vector: number[], text: string) {
 	const entries = Array.from(embeddingVectorToText.entries()).sort(
 		(a, b) => a[1].timestamp - b[1].timestamp,
 	)
-	for (const [oldKey] of entries.slice(0, embeddingVectorToText.size - maxEntries)) {
+	for (const [oldKey] of entries.slice(
+		0,
+		embeddingVectorToText.size - maxEntries,
+	)) {
 		embeddingVectorToText.delete(oldKey)
 	}
 }
@@ -168,7 +174,10 @@ function getIndexKey(accountId: string, indexName: string) {
 	return `${accountId}:${indexName}`
 }
 
-function getOrCreateIndexStore(accountId: string, indexName: string): VectorizeIndexStore {
+function getOrCreateIndexStore(
+	accountId: string,
+	indexName: string,
+): VectorizeIndexStore {
 	const key = getIndexKey(accountId, indexName)
 	let store = vectorizeIndexes.get(key)
 	if (!store) {
@@ -199,7 +208,12 @@ function stripSurroundingQuotes(value: string) {
 
 function parseSimpleFrontmatter(source: string) {
 	const match = source.match(/^---\s*\n([\s\S]*?)\n---\s*\n/)
-	if (!match) return { body: source, title: null as string | null, description: null as string | null }
+	if (!match)
+		return {
+			body: source,
+			title: null as string | null,
+			description: null as string | null,
+		}
 
 	const yaml = match[1] ?? ''
 	let title: string | null = null
@@ -210,7 +224,9 @@ function parseSimpleFrontmatter(source: string) {
 			title = stripSurroundingQuotes(trimmed.replace(/^title:\s*/i, ''))
 		}
 		if (trimmed.startsWith('description:') && description === null) {
-			description = stripSurroundingQuotes(trimmed.replace(/^description:\s*/i, ''))
+			description = stripSurroundingQuotes(
+				trimmed.replace(/^description:\s*/i, ''),
+			)
 		}
 	}
 
@@ -281,7 +297,8 @@ function getStaticDocs(): SearchDoc[] {
 			title: 'Search',
 			type: 'page',
 			url: '/search',
-			snippet: 'Semantic search across posts, pages, podcasts, talks, and more.',
+			snippet:
+				'Semantic search across posts, pages, podcasts, talks, and more.',
 			content:
 				'Search the site for posts, pages, podcasts, talks, resume, credits, and more.',
 		},
@@ -306,7 +323,8 @@ function getStaticDocs(): SearchDoc[] {
 			title: 'Call Kent Podcast',
 			type: 'podcast',
 			url: '/calls',
-			snippet: 'Short, practical audio answers about React and software engineering.',
+			snippet:
+				'Short, practical audio answers about React and software engineering.',
 			content: 'Call Kent Podcast episodes.',
 		},
 	]
@@ -317,7 +335,8 @@ function getPodcastDocs(): SearchDoc[] {
 		const a = episode.attributes
 		const seasonNumber = typeof a.season === 'number' ? a.season : 1
 		const episodeNumber = typeof a.number === 'number' ? a.number : 0
-		const title = typeof a.title === 'string' && a.title ? a.title : 'Podcast episode'
+		const title =
+			typeof a.title === 'string' && a.title ? a.title : 'Podcast episode'
 		const slug = slugify(title)
 		const url = [
 			'/calls',
@@ -435,7 +454,12 @@ async function buildSearchCorpus(): Promise<SearchDoc[]> {
 	const docs: SearchDoc[] = [...getStaticDocs()]
 
 	try {
-		if (await fs.stat(contentRoot).then((s) => s.isDirectory()).catch(() => false)) {
+		if (
+			await fs
+				.stat(contentRoot)
+				.then((s) => s.isDirectory())
+				.catch(() => false)
+		) {
 			docs.push(...(await getLocalContentDocs()))
 		}
 	} catch {
@@ -586,7 +610,9 @@ function parseNdjsonVectorsText(ndjson: string) {
 
 		const id = typeof parsed?.id === 'string' ? parsed.id : null
 		const values = Array.isArray(parsed?.values)
-			? (parsed.values as unknown[]).filter((v): v is number => typeof v === 'number')
+			? (parsed.values as unknown[]).filter(
+					(v): v is number => typeof v === 'number',
+				)
 			: null
 		if (!id || !values || values.length === 0) {
 			return {
@@ -627,7 +653,10 @@ type VectorizeHandlerArgs = {
 	params: { accountId: string; indexName: string } & Record<string, string>
 }
 
-const handleVectorizeQuery = async ({ request, params }: VectorizeHandlerArgs) => {
+const handleVectorizeQuery = async ({
+	request,
+	params,
+}: VectorizeHandlerArgs) => {
 	requiredHeader(request.headers, 'authorization')
 	const accountId = String(params.accountId)
 	const indexName = String(params.indexName)
@@ -640,10 +669,13 @@ const handleVectorizeQuery = async ({ request, params }: VectorizeHandlerArgs) =
 	}
 
 	const vector = Array.isArray(body?.vector)
-		? (body.vector as unknown[]).filter((v): v is number => typeof v === 'number')
+		? (body.vector as unknown[]).filter(
+				(v): v is number => typeof v === 'number',
+			)
 		: null
 	const topK = Number.isFinite(body?.topK) ? Number(body.topK) : 10
-	const namespace = typeof body?.namespace === 'string' ? body.namespace : undefined
+	const namespace =
+		typeof body?.namespace === 'string' ? body.namespace : undefined
 
 	if (!vector || vector.length === 0) {
 		return jsonError(
@@ -754,7 +786,10 @@ const makeVectorizeWriteHandler =
 const handleVectorizeInsert = makeVectorizeWriteHandler('insert')
 const handleVectorizeUpsert = makeVectorizeWriteHandler('upsert')
 
-const handleVectorizeDeleteByIds = async ({ request, params }: VectorizeHandlerArgs) => {
+const handleVectorizeDeleteByIds = async ({
+	request,
+	params,
+}: VectorizeHandlerArgs) => {
 	requiredHeader(request.headers, 'authorization')
 	const accountId = String(params.accountId)
 	const indexName = String(params.indexName)
@@ -767,10 +802,16 @@ const handleVectorizeDeleteByIds = async ({ request, params }: VectorizeHandlerA
 	}
 
 	const ids = Array.isArray(body?.ids)
-		? (body.ids as unknown[]).filter((id): id is string => typeof id === 'string')
+		? (body.ids as unknown[]).filter(
+				(id): id is string => typeof id === 'string',
+			)
 		: null
 	if (!ids?.length) {
-		return jsonError(400, 'Mock delete_by_ids expected { ids: string[] }.', 10007)
+		return jsonError(
+			400,
+			'Mock delete_by_ids expected { ids: string[] }.',
+			10007,
+		)
 	}
 
 	const store = getOrCreateIndexStore(accountId, indexName)
@@ -794,7 +835,9 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 
 			const url = new URL(request.url)
 			const model = modelFromAiRunPathname(url.pathname) ?? 'unknown-model'
-			const contentType = (request.headers.get('content-type') ?? '').toLowerCase()
+			const contentType = (
+				request.headers.get('content-type') ?? ''
+			).toLowerCase()
 
 			// Transcription requests in-app are raw MP3 bytes (`audio/mpeg`).
 			if (contentType.includes('audio/')) {
@@ -813,8 +856,9 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 			}
 
 			const textsRaw = body?.text
-			const texts =
-				Array.isArray(textsRaw) ? textsRaw.filter((t: any) => typeof t === 'string') : []
+			const texts = Array.isArray(textsRaw)
+				? textsRaw.filter((t: any) => typeof t === 'string')
+				: []
 
 			if (!texts.length) {
 				return jsonError(
@@ -884,4 +928,3 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 		handleVectorizeDeleteByIds,
 	),
 ]
-

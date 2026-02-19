@@ -55,8 +55,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 				q,
 				configured: false,
 				results: [] as Array<SemanticSearchResult>,
-				error:
-					semanticSearchNotConfiguredMessage,
+				error: semanticSearchNotConfiguredMessage,
 			},
 			{ headers },
 		)
@@ -147,7 +146,9 @@ export default function SearchPage() {
 		? 'transition-opacity opacity-60'
 		: 'transition-opacity'
 	const shouldAwaitResults =
-		Boolean(showResultsSection) && Boolean(activeData) && resolved?.q !== requestedQuery
+		Boolean(showResultsSection) &&
+		Boolean(activeData) &&
+		resolved?.q !== requestedQuery
 
 	return (
 		<div>
@@ -219,7 +220,9 @@ export default function SearchPage() {
 								</div>
 							) : null}
 							{activeData && shouldAwaitResults ? (
-								<Suspense fallback={resolved ? null : <SearchResultsFallback />}>
+								<Suspense
+									fallback={resolved ? null : <SearchResultsFallback />}
+								>
 									<Await
 										resolve={activeData.results}
 										errorElement={<SearchResultsError />}
@@ -256,10 +259,10 @@ function ResolveResults({
 	q: string
 	results: Array<SemanticSearchResult>
 	setResolved: React.Dispatch<
-		React.SetStateAction<
-			| { q: string; results: Array<SemanticSearchResult> }
-			| null
-		>
+		React.SetStateAction<{
+			q: string
+			results: Array<SemanticSearchResult>
+		} | null>
 	>
 	renderResults: boolean
 	resultsContainerClassName: string
@@ -283,10 +286,7 @@ function SearchResultsFallback() {
 			<Paragraph textColorClassName="text-secondary">{`Searching...`}</Paragraph>
 			<ul className="space-y-6">
 				{Array.from({ length: 3 }).map((_, i) => (
-					<li
-						key={i}
-						className="rounded-lg bg-gray-100 p-6 dark:bg-gray-800"
-					>
+					<li key={i} className="rounded-lg bg-gray-100 p-6 dark:bg-gray-800">
 						<div className="h-4 w-2/3 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
 						<div className="mt-3 h-3 w-1/3 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
 					</li>
@@ -344,7 +344,9 @@ function SearchResults({
 											</H4>
 											<div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm text-slate-500">
 												{r.type ? <span>{r.type}</span> : null}
-												{r.url ? <span className="truncate">{r.url}</span> : null}
+												{r.url ? (
+													<span className="truncate">{r.url}</span>
+												) : null}
 											</div>
 											{r.summary || r.snippet ? (
 												<p className="mt-3 line-clamp-3 text-base text-slate-600 dark:text-slate-400">

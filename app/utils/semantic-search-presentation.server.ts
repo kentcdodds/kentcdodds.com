@@ -70,9 +70,9 @@ function buildThumbFromCloudinaryId({
 	})
 }
 
-function getFallbackPresentation(type: string | undefined): Required<
-	Pick<SemanticSearchPresentation, 'imageUrl' | 'imageAlt'>
-> {
+function getFallbackPresentation(
+	type: string | undefined,
+): Required<Pick<SemanticSearchPresentation, 'imageUrl' | 'imageAlt'>> {
 	if (type === 'ck') {
 		return {
 			imageUrl: images.microphone({
@@ -239,9 +239,7 @@ async function getMdxDocMeta({
 		const bannerCloudinaryId = asNonEmptyString(fm?.bannerCloudinaryId)
 		const bannerAltRaw = fm?.bannerAlt
 		const bannerAlt =
-			typeof bannerAltRaw === 'string'
-				? normalizeText(bannerAltRaw)
-				: undefined
+			typeof bannerAltRaw === 'string' ? normalizeText(bannerAltRaw) : undefined
 
 		const meta: RepoDocMeta = {
 			title,
@@ -311,9 +309,13 @@ async function loadCreditsBySlug() {
 			name,
 			role: typeof person?.role === 'string' ? person.role : undefined,
 			description:
-				typeof person?.description === 'string' ? person.description : undefined,
+				typeof person?.description === 'string'
+					? person.description
+					: undefined,
 			cloudinaryId:
-				typeof person?.cloudinaryId === 'string' ? person.cloudinaryId : undefined,
+				typeof person?.cloudinaryId === 'string'
+					? person.cloudinaryId
+					: undefined,
 		})
 	}
 	creditsBySlug = map
@@ -347,7 +349,8 @@ async function loadTestimonialsBySlug() {
 		map.set(slug, {
 			author,
 			company: typeof t?.company === 'string' ? t.company : undefined,
-			testimonial: typeof t?.testimonial === 'string' ? t.testimonial : undefined,
+			testimonial:
+				typeof t?.testimonial === 'string' ? t.testimonial : undefined,
 			cloudinaryId:
 				typeof t?.cloudinaryId === 'string' ? t.cloudinaryId : undefined,
 		})
@@ -396,7 +399,9 @@ export async function getSemanticSearchPresentation(
 	const fallbackImageUrl = fallback.imageUrl
 	const fallbackImageAlt = fallback.imageAlt
 
-	const summaryFromSnippet = result.snippet ? truncate(result.snippet, 220) : undefined
+	const summaryFromSnippet = result.snippet
+		? truncate(result.snippet, 220)
+		: undefined
 	const base: SemanticSearchPresentation = {
 		summary: summaryFromSnippet,
 		imageUrl: fallbackImageUrl,
@@ -409,7 +414,8 @@ export async function getSemanticSearchPresentation(
 		result.slug ??
 		inferSlugFromUrl({
 			type,
-			url: result.url ?? (typeof result.id === 'string' ? result.id : undefined),
+			url:
+				result.url ?? (typeof result.id === 'string' ? result.id : undefined),
 		}) ??
 		undefined
 
@@ -503,7 +509,9 @@ export async function getSemanticSearchPresentation(
 	if (type === 'resume') {
 		try {
 			const resume = await loadResumeMeta()
-			const summary = resume.summary ? truncate(resume.summary, 220) : base.summary
+			const summary = resume.summary
+				? truncate(resume.summary, 220)
+				: base.summary
 			const alt = result.title ?? resume.title ?? fallbackImageAlt
 			return { ...base, summary, imageAlt: alt }
 		} catch {
@@ -513,4 +521,3 @@ export async function getSemanticSearchPresentation(
 
 	return base
 }
-

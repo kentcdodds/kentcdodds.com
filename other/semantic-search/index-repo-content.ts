@@ -4,7 +4,12 @@ import path from 'node:path'
 import { slugifyWithCounter } from '@sindresorhus/slugify'
 import * as YAML from 'yaml'
 import { chunkTextRaw, makeSnippet, sha256 } from './chunk-utils.ts'
-import { getCloudflareConfig, getEmbeddings, vectorizeDeleteByIds, vectorizeUpsert } from './cloudflare.ts'
+import {
+	getCloudflareConfig,
+	getEmbeddings,
+	vectorizeDeleteByIds,
+	vectorizeUpsert,
+} from './cloudflare.ts'
 import { getJsonObject, putJsonObject } from './r2-manifest.ts'
 
 type DocType = 'blog' | 'page' | 'talk' | 'resume' | 'credit' | 'testimonial'
@@ -106,7 +111,9 @@ async function readMdxDoc(type: DocType, slug: string) {
 	return { filename, source }
 }
 
-function getSlugFromContentPath(filePath: string): { type: DocType; slug: string } | null {
+function getSlugFromContentPath(
+	filePath: string,
+): { type: DocType; slug: string } | null {
 	const parts = filePath.replace(/\\/g, '/').split('/')
 	const [contentDir, typeDir] = parts
 	if (contentDir !== 'content') return null
@@ -157,10 +164,17 @@ function getChangedFiles(before: string, after: string) {
 	return { addedOrModified: [...addedOrModified], deleted: [...deleted] }
 }
 
-type SyntheticIndexItem = { slug: string; title: string; url: string; source: string }
+type SyntheticIndexItem = {
+	slug: string
+	title: string
+	url: string
+	source: string
+}
 
-let _talksIndex: { items: SyntheticIndexItem[]; bySlug: Map<string, SyntheticIndexItem> } | null =
-	null
+let _talksIndex: {
+	items: SyntheticIndexItem[]
+	bySlug: Map<string, SyntheticIndexItem>
+} | null = null
 async function loadTalksIndex() {
 	if (_talksIndex) return _talksIndex
 	const talksFilename = path.join('content', 'data', 'talks.yml')
@@ -176,23 +190,29 @@ async function loadTalksIndex() {
 	for (const talk of parsed as Array<any>) {
 		const title = typeof talk?.title === 'string' ? talk.title : 'TBA'
 		const slug = slugify(title || 'tba')
-		const tags = Array.isArray(talk?.tags) ? talk.tags.filter((t: any) => typeof t === 'string') : []
+		const tags = Array.isArray(talk?.tags)
+			? talk.tags.filter((t: any) => typeof t === 'string')
+			: []
 		const deliveries = Array.isArray(talk?.deliveries) ? talk.deliveries : []
 		const resources = Array.isArray(talk?.resources) ? talk.resources : []
-		const description = typeof talk?.description === 'string' ? talk.description : ''
+		const description =
+			typeof talk?.description === 'string' ? talk.description : ''
 
 		const sourceLines = [
 			`# ${title}`,
 			'',
 			tags.length ? `Tags: ${tags.join(', ')}` : '',
 			description ? `Description: ${description}` : '',
-			resources.length ? `Resources:\n${resources.map((r: any) => `- ${String(r)}`).join('\n')}` : '',
+			resources.length
+				? `Resources:\n${resources.map((r: any) => `- ${String(r)}`).join('\n')}`
+				: '',
 			deliveries.length
 				? `Deliveries:\n${deliveries
 						.map((d: any) => {
 							const event = typeof d?.event === 'string' ? d.event : ''
 							const date = typeof d?.date === 'string' ? d.date : ''
-							const recording = typeof d?.recording === 'string' ? d.recording : ''
+							const recording =
+								typeof d?.recording === 'string' ? d.recording : ''
 							return `- ${[date, event, recording].filter(Boolean).join(' | ')}`
 						})
 						.join('\n')}`
@@ -211,9 +231,10 @@ async function loadTalksIndex() {
 	return _talksIndex
 }
 
-let _creditsIndex:
-	| { items: SyntheticIndexItem[]; bySlug: Map<string, SyntheticIndexItem> }
-	| null = null
+let _creditsIndex: {
+	items: SyntheticIndexItem[]
+	bySlug: Map<string, SyntheticIndexItem>
+} | null = null
 async function loadCreditsIndex() {
 	if (_creditsIndex) return _creditsIndex
 	const filename = path.join('content', 'data', 'credits.yml')
@@ -230,16 +251,24 @@ async function loadCreditsIndex() {
 		const name = typeof person?.name === 'string' ? person.name : 'Unnamed'
 		const slug = slugify(name || 'unnamed')
 		const role = typeof person?.role === 'string' ? person.role : ''
-		const description = typeof person?.description === 'string' ? person.description : ''
+		const description =
+			typeof person?.description === 'string' ? person.description : ''
 		const socials = Object.entries(person ?? {})
-			.filter(([key, value]) => typeof value === 'string' && /^(https?:\/\/|mailto:)/.test(value) && key !== 'cloudinaryId')
+			.filter(
+				([key, value]) =>
+					typeof value === 'string' &&
+					/^(https?:\/\/|mailto:)/.test(value) &&
+					key !== 'cloudinaryId',
+			)
 			.map(([key, value]) => `${key}: ${value}`)
 
 		const sourceLines = [
 			`# ${name}`,
 			role ? `Role: ${role}` : '',
 			description ? `Description: ${description}` : '',
-			socials.length ? `Links:\n${socials.map((s) => `- ${s}`).join('\n')}` : '',
+			socials.length
+				? `Links:\n${socials.map((s) => `- ${s}`).join('\n')}`
+				: '',
 		].filter(Boolean)
 
 		items.push({
@@ -254,9 +283,10 @@ async function loadCreditsIndex() {
 	return _creditsIndex
 }
 
-let _testimonialsIndex:
-	| { items: SyntheticIndexItem[]; bySlug: Map<string, SyntheticIndexItem> }
-	| null = null
+let _testimonialsIndex: {
+	items: SyntheticIndexItem[]
+	bySlug: Map<string, SyntheticIndexItem>
+} | null = null
 async function loadTestimonialsIndex() {
 	if (_testimonialsIndex) return _testimonialsIndex
 	const filename = path.join('content', 'data', 'testimonials.yml')
@@ -273,7 +303,9 @@ async function loadTestimonialsIndex() {
 		const author = typeof t?.author === 'string' ? t.author : 'Anonymous'
 		const slug = slugify(author || 'anonymous')
 		const company = typeof t?.company === 'string' ? t.company : ''
-		const subjects = Array.isArray(t?.subjects) ? t.subjects.filter((s: any) => typeof s === 'string') : []
+		const subjects = Array.isArray(t?.subjects)
+			? t.subjects.filter((s: any) => typeof s === 'string')
+			: []
 		const testimonial = typeof t?.testimonial === 'string' ? t.testimonial : ''
 		const link = typeof t?.link === 'string' ? t.link : ''
 
@@ -337,7 +369,9 @@ async function loadResumeIndex() {
 	return _resumeIndex
 }
 
-async function getAllSyntheticDocRefs(): Promise<Array<{ type: DocType; slug: string }>> {
+async function getAllSyntheticDocRefs(): Promise<
+	Array<{ type: DocType; slug: string }>
+> {
 	const talks = await loadTalksIndex()
 	const credits = await loadCreditsIndex()
 	const testimonials = await loadTestimonialsIndex()
@@ -346,11 +380,17 @@ async function getAllSyntheticDocRefs(): Promise<Array<{ type: DocType; slug: st
 		...talks.items.map((t) => ({ type: 'talk' as const, slug: t.slug })),
 		{ type: 'resume' as const, slug: resume.slug },
 		...credits.items.map((c) => ({ type: 'credit' as const, slug: c.slug })),
-		...testimonials.items.map((t) => ({ type: 'testimonial' as const, slug: t.slug })),
+		...testimonials.items.map((t) => ({
+			type: 'testimonial' as const,
+			slug: t.slug,
+		})),
 	]
 }
 
-async function getSyntheticDoc(type: DocType, slug: string): Promise<SyntheticIndexItem> {
+async function getSyntheticDoc(
+	type: DocType,
+	slug: string,
+): Promise<SyntheticIndexItem> {
 	if (type === 'talk') {
 		const talks = await loadTalksIndex()
 		const item = talks.bySlug.get(slug)
@@ -435,10 +475,14 @@ async function getDocsFromChangedPaths({
 			docsToDelete.push(...manifestDocsByType(manifest, 'talk'))
 		} else {
 			const talks = await loadTalksIndex()
-			docsToIndex.push(...talks.items.map((t) => ({ type: 'talk' as const, slug: t.slug })))
+			docsToIndex.push(
+				...talks.items.map((t) => ({ type: 'talk' as const, slug: t.slug })),
+			)
 			const current = new Set(talks.items.map((t) => t.slug))
 			docsToDelete.push(
-				...manifestDocsByType(manifest, 'talk').filter((d) => !current.has(d.slug)),
+				...manifestDocsByType(manifest, 'talk').filter(
+					(d) => !current.has(d.slug),
+				),
 			)
 		}
 	}
@@ -450,11 +494,16 @@ async function getDocsFromChangedPaths({
 		} else {
 			const credits = await loadCreditsIndex()
 			docsToIndex.push(
-				...credits.items.map((c) => ({ type: 'credit' as const, slug: c.slug })),
+				...credits.items.map((c) => ({
+					type: 'credit' as const,
+					slug: c.slug,
+				})),
 			)
 			const current = new Set(credits.items.map((c) => c.slug))
 			docsToDelete.push(
-				...manifestDocsByType(manifest, 'credit').filter((d) => !current.has(d.slug)),
+				...manifestDocsByType(manifest, 'credit').filter(
+					(d) => !current.has(d.slug),
+				),
 			)
 		}
 	}
@@ -466,11 +515,16 @@ async function getDocsFromChangedPaths({
 		} else {
 			const testimonials = await loadTestimonialsIndex()
 			docsToIndex.push(
-				...testimonials.items.map((t) => ({ type: 'testimonial' as const, slug: t.slug })),
+				...testimonials.items.map((t) => ({
+					type: 'testimonial' as const,
+					slug: t.slug,
+				})),
 			)
 			const current = new Set(testimonials.items.map((t) => t.slug))
 			docsToDelete.push(
-				...manifestDocsByType(manifest, 'testimonial').filter((d) => !current.has(d.slug)),
+				...manifestDocsByType(manifest, 'testimonial').filter(
+					(d) => !current.has(d.slug),
+				),
 			)
 		}
 	}
@@ -512,7 +566,9 @@ async function embedItemsSafely({
 		text: string
 		metadata: Record<string, unknown>
 	}>
-}): Promise<Array<{ id: string; values: number[]; metadata: Record<string, unknown> }>> {
+}): Promise<
+	Array<{ id: string; values: number[]; metadata: Record<string, unknown> }>
+> {
 	try {
 		const embeddings = await getEmbeddings({
 			accountId,
@@ -556,14 +612,17 @@ async function embedItemsSafely({
 
 async function main() {
 	const { before, after, manifestKey, only } = parseArgs()
-	const { accountId, apiToken, vectorizeIndex, embeddingModel } = getCloudflareConfig()
+	const { accountId, apiToken, vectorizeIndex, embeddingModel } =
+		getCloudflareConfig()
 	const r2Bucket = process.env.R2_BUCKET ?? 'kcd-semantic-search'
 
-	const manifest =
-		(await getJsonObject<Manifest>({ bucket: r2Bucket, key: manifestKey })) ?? {
-			version: 1,
-			docs: {},
-		}
+	const manifest = (await getJsonObject<Manifest>({
+		bucket: r2Bucket,
+		key: manifestKey,
+	})) ?? {
+		version: 1,
+		docs: {},
+	}
 
 	let docsToIndex: Array<{ type: DocType; slug: string }> = []
 	let docsToDelete: Array<{ type: DocType; slug: string }> = []
@@ -736,7 +795,12 @@ async function main() {
 	for (const idBatch of batch(idsToDelete, 500)) {
 		if (!idBatch.length) continue
 		console.log(`Deleting ${idBatch.length} vectors...`)
-		await vectorizeDeleteByIds({ accountId, apiToken, indexName: vectorizeIndex, ids: idBatch })
+		await vectorizeDeleteByIds({
+			accountId,
+			apiToken,
+			indexName: vectorizeIndex,
+			ids: idBatch,
+		})
 	}
 
 	// Embed + upsert changed chunks
@@ -750,7 +814,9 @@ async function main() {
 	const embedBatches = batch(toUpsert, 50)
 	for (let i = 0; i < embedBatches.length; i++) {
 		const embedBatch = embedBatches[i]!
-		console.log(`Embedding batch ${i + 1}/${embedBatches.length} (${embedBatch.length} items)`)
+		console.log(
+			`Embedding batch ${i + 1}/${embedBatches.length} (${embedBatch.length} items)`,
+		)
 		const vectors = await embedItemsSafely({
 			accountId,
 			apiToken,
@@ -770,7 +836,12 @@ async function main() {
 		console.log(
 			`Upserting batch ${i + 1}/${upsertBatches.length} (${vecBatch.length} vectors)`,
 		)
-		await vectorizeUpsert({ accountId, apiToken, indexName: vectorizeIndex, vectors: vecBatch })
+		await vectorizeUpsert({
+			accountId,
+			apiToken,
+			indexName: vectorizeIndex,
+			vectors: vecBatch,
+		})
 	}
 
 	await putJsonObject({ bucket: r2Bucket, key: manifestKey, value: manifest })
@@ -781,4 +852,3 @@ main().catch((e) => {
 	console.error(e)
 	process.exitCode = 1
 })
-

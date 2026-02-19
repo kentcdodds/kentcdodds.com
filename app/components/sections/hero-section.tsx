@@ -82,7 +82,7 @@ function HeroSection({
 						'px-10 lg:col-span-5 lg:col-start-7': imageSize === 'medium',
 						'flex items-start justify-end pl-10 lg:col-span-6 lg:col-start-6':
 							imageSize === 'large',
-						'flex items-center justify-center lg:col-span-7 lg:col-start-6 lg:-mr-5vw lg:-mt-24 lg:px-0':
+						'lg:-mr-5vw flex items-center justify-center lg:col-span-7 lg:col-start-6 lg:-mt-24 lg:px-0':
 							imageSize === 'giant',
 					})}
 				>
@@ -105,7 +105,7 @@ function HeroSection({
 						<img
 							{...getHeroImageProps(imageBuilder, {
 								className: clsx(
-									'h-auto w-full object-contain motion-safe:animate-hero-image-reveal',
+									'motion-safe:animate-hero-image-reveal h-auto w-full object-contain',
 									{
 										'max-h-[50vh]': imageSize === 'medium',
 										'max-h-[75vh]': imageSize === 'giant',
@@ -140,7 +140,7 @@ function HeroSection({
 						<H2
 							as="p"
 							variant="secondary"
-							className="mt-3 motion-safe:animate-hero-text-reveal"
+							className="motion-safe:animate-hero-text-reveal mt-3"
 							style={heroTextAnimation.getVariables(animationStep++)}
 						>
 							{subtitle}
@@ -148,7 +148,7 @@ function HeroSection({
 					) : null}
 					{action ? (
 						<div
-							className="mt-14 flex flex-col space-y-4 motion-safe:animate-hero-text-reveal"
+							className="motion-safe:animate-hero-text-reveal mt-14 flex flex-col space-y-4"
 							style={heroTextAnimation.getVariables(animationStep++)}
 						>
 							{action}
@@ -157,7 +157,7 @@ function HeroSection({
 				</div>
 				{arrowUrl ? (
 					<div
-						className="hidden pt-12 motion-safe:animate-hero-text-reveal lg:block"
+						className="motion-safe:animate-hero-text-reveal hidden pt-12 lg:block"
 						style={heroTextAnimation.getVariables(animationStep++)}
 					>
 						<ArrowLink to={arrowUrl} direction="down" textSize="small">

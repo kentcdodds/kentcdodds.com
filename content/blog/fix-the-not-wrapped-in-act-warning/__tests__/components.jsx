@@ -1,19 +1,21 @@
 import { render, screen, act } from '@testing-library/react'
 import user from '@testing-library/user-event'
-import { test, expect, vi, beforeEach, afterEach } from 'vitest'
+import { test, expect, vi } from 'vitest'
 import { UsernameForm } from '../components.jsx'
 
 vi.mock('../api')
 
-beforeEach(() => {
-	vi.spyOn(console, 'error').mockImplementation(() => {})
-})
-
-afterEach(() => {
-	console.error.mockRestore()
-})
+function mockConsoleError() {
+	const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+	return {
+		[Symbol.dispose]() {
+			spy.mockRestore()
+		},
+	}
+}
 
 test('calls updateUsername with the new username (with act warning)', async () => {
+	using ignored = mockConsoleError()
 	const handleUpdateUsername = vi.fn()
 	const fakeUsername = 'sonicthehedgehog'
 
@@ -36,6 +38,7 @@ function deferred() {
 }
 
 test('calls updateUsername with the new username', async () => {
+	using ignored = mockConsoleError()
 	const defer = deferred()
 	const handleUpdateUsername = vi.fn(() => defer.promise)
 	const fakeUsername = 'sonicthehedgehog'
@@ -55,6 +58,7 @@ test('calls updateUsername with the new username', async () => {
 })
 
 test('calls updateUsername with the new username (with manual act and promise)', async () => {
+	using ignored = mockConsoleError()
 	const promise = Promise.resolve()
 	const handleUpdateUsername = vi.fn(() => promise)
 	const fakeUsername = 'sonicthehedgehog'

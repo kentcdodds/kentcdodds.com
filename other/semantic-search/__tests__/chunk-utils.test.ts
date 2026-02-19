@@ -1,5 +1,10 @@
 import { describe, expect, test } from 'vitest'
-import { chunkText, chunkTextRaw, normalizeText, sha256 } from '../chunk-utils.ts'
+import {
+	chunkText,
+	chunkTextRaw,
+	normalizeText,
+	sha256,
+} from '../chunk-utils.ts'
 
 describe('semantic-search chunk utils', () => {
 	test('normalizeText is deterministic', () => {
@@ -38,4 +43,3 @@ describe('semantic-search chunk utils', () => {
 		}
 	})
 })
-

@@ -16,8 +16,8 @@ function getCloudflareApiBaseUrl() {
 export function isCloudflareTranscriptionConfigured() {
 	return Boolean(
 		process.env.CLOUDFLARE_ACCOUNT_ID &&
-			process.env.CLOUDFLARE_API_TOKEN &&
-			process.env.CLOUDFLARE_AI_TRANSCRIPTION_MODEL,
+		process.env.CLOUDFLARE_API_TOKEN &&
+		process.env.CLOUDFLARE_AI_TRANSCRIPTION_MODEL,
 	)
 }
 
@@ -77,4 +77,3 @@ export async function transcribeMp3WithWorkersAi({
 
 	return result.text.trim()
 }
-

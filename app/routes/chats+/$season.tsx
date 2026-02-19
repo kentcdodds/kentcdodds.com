@@ -76,7 +76,7 @@ export default function ChatsSeason() {
 		>
 			<Grid
 				nested
-				className="relative border-b border-gray-200 py-10 dark:border-gray-600 lg:py-5"
+				className="relative border-b border-gray-200 py-10 lg:py-5 dark:border-gray-600"
 			>
 				<div className="bg-secondary absolute -inset-px -mx-6 hidden rounded-lg group-hover:block group-focus:block" />
 

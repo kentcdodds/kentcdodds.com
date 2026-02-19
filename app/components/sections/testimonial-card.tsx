@@ -49,7 +49,7 @@ export function TestimonialCard({
 					img
 				)}
 				<div>
-					<p className="text-primary mb-2 text-lg font-medium leading-none">
+					<p className="text-primary mb-2 text-lg leading-none font-medium">
 						{testimonial.link ? (
 							<a
 								className="underline"

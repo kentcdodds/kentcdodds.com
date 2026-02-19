@@ -105,7 +105,7 @@ function Stat({
 
 			{isUsersTeam ? (
 				<motion.div
-					className="absolute left-1/2 top-0 rounded-md border-team-current"
+					className="border-team-current absolute top-0 left-1/2 rounded-md"
 					transition={transition}
 					variants={{
 						initial: {
@@ -195,7 +195,7 @@ function TeamStats({
 		>
 			<div
 				className={clsx(
-					'absolute flex h-8 items-center gap-2 text-sm opacity-0 transition focus-within:opacity-100 group-hover:opacity-100',
+					'absolute flex h-8 items-center gap-2 text-sm opacity-0 transition group-hover:opacity-100 focus-within:opacity-100',
 					{
 						'right-0': pull === 'right',
 						'left-0': pull === 'left',
@@ -218,7 +218,7 @@ function TeamStats({
 			{direction === 'down' ? loginLink : null}
 			<ul
 				className={clsx(
-					'relative flex h-0 overflow-visible border-team-current px-4',
+					'border-team-current relative flex h-0 overflow-visible px-4',
 					{
 						'border-t': direction === 'down',
 						'border-b': direction === 'up',

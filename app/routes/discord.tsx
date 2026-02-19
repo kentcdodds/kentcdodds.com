@@ -106,15 +106,15 @@ function CategoryCardContent({
 		<>
 			<H5 as="div" className="text-primary w-full transition">
 				<AccordionButton className="relative w-full text-left focus:outline-none">
-					<div className="absolute -bottom-12 -left-8 -right-8 -top-12 rounded-lg lg:-left-28 lg:-right-20" />
+					<div className="absolute -top-12 -right-8 -bottom-12 -left-8 rounded-lg lg:-right-20 lg:-left-28" />
 
-					<span className="absolute -left-16 top-0 hidden text-lg lg:block">
+					<span className="absolute top-0 -left-16 hidden text-lg lg:block">
 						{number.toString().padStart(2, '0')}.
 					</span>
 
 					<span>{title}</span>
 
-					<span className="absolute right-0 top-1 lg:-right-8">
+					<span className="absolute top-1 right-0 lg:-right-8">
 						<svg width="24" height="24" fill="none" viewBox="0 0 24 24">
 							<motion.path
 								stroke="currentColor"
@@ -154,7 +154,7 @@ function CategoryCardContent({
 
 function CategoryCard(props: CategoryCardProps) {
 	return (
-		<AccordionItem className="bg-secondary hover:bg-alt focus-within:bg-alt col-span-full flex w-full flex-col items-start rounded-lg px-8 py-12 transition lg:col-span-6 lg:pl-28 lg:pr-20">
+		<AccordionItem className="bg-secondary hover:bg-alt focus-within:bg-alt col-span-full flex w-full flex-col items-start rounded-lg px-8 py-12 transition lg:col-span-6 lg:pr-20 lg:pl-28">
 			<CategoryCardContent {...props} />
 		</AccordionItem>
 	)

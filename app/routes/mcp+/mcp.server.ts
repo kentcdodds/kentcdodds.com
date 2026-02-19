@@ -202,8 +202,7 @@ function createServer() {
 					content: [
 						{
 							type: 'text',
-							text:
-								'Semantic search is not configured on this environment. Set CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN, and CLOUDFLARE_VECTORIZE_INDEX.',
+							text: 'Semantic search is not configured on this environment. Set CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN, and CLOUDFLARE_VECTORIZE_INDEX.',
 						},
 					],
 				}
@@ -239,7 +238,9 @@ function createServer() {
 			const filteredResults =
 				category && allowedTypesByCategory[category].length
 					? results.filter((r) =>
-							r.type ? allowedTypesByCategory[category].includes(r.type) : false,
+							r.type
+								? allowedTypesByCategory[category].includes(r.type)
+								: false,
 						)
 					: results
 

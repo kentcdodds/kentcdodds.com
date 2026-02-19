@@ -100,7 +100,7 @@ function NotificationMessage({
 					exit={{ y: initialY, opacity: 0 }}
 					transition={{ ease: 'easeInOut', duration: 0.3 }}
 					className={clsx(
-						'text-inverse pointer-events-none fixed left-0 right-0 z-50 px-5vw',
+						'text-inverse px-5vw pointer-events-none fixed right-0 left-0 z-50',
 						{
 							'bottom-8': position === 'bottom-right',
 							'top-8': position === 'top-center',
@@ -121,7 +121,7 @@ function NotificationMessage({
 										setIsVisible(false)
 										onDismiss?.()
 									}}
-									className="text-secondary hover:text-inverse focus:text-inverse absolute right-4 top-8 rotate-45 transform"
+									className="text-secondary hover:text-inverse focus:text-inverse absolute top-8 right-4 rotate-45 transform"
 								>
 									<PlusIcon />
 								</button>

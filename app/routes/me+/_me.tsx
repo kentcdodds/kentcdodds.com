@@ -253,7 +253,7 @@ function YouScreen() {
 
 	return (
 		<main>
-			<div className="mb-64 mt-24 pt-6">
+			<div className="mt-24 mb-64 pt-6">
 				<Grid>
 					<div className="col-span-full mb-12 lg:mb-20">
 						<div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
@@ -400,12 +400,12 @@ function YouScreen() {
 							readOnly
 						/>
 
-						<div className="relative col-span-full mb-3 rounded-lg bg-gray-100 ring-2 ring-team-current ring-offset-4 ring-offset-team-current focus-within:outline-none focus-within:ring-2 dark:bg-gray-800 lg:col-span-4 lg:mb-0">
-							<span className="absolute left-9 top-9 text-team-current">
+						<div className="ring-team-current ring-offset-team-current relative col-span-full mb-3 rounded-lg bg-gray-100 ring-2 ring-offset-4 focus-within:ring-2 focus-within:outline-none lg:col-span-4 lg:mb-0 dark:bg-gray-800">
+							<span className="text-team-current absolute top-9 left-9">
 								<CheckCircledIcon />
 							</span>
 
-							<div className="block px-12 pb-12 pt-20 text-center">
+							<div className="block px-12 pt-20 pb-12 text-center">
 								<img
 									className={clsx(
 										'mb-16 block w-full',
@@ -497,7 +497,7 @@ function YouScreen() {
 				onDismiss={() => setDeleteModalOpen(false)}
 				isOpen={deleteModalOpen}
 				aria-label="Delete your account"
-				className="!w-11/12 rounded-lg border-2 border-black dark:border-white dark:!bg-gray-900 lg:!max-w-screen-lg lg:!px-24 lg:!py-14"
+				className="!w-11/12 rounded-lg border-2 border-black lg:!max-w-screen-lg lg:!px-24 lg:!py-14 dark:border-white dark:!bg-gray-900"
 			>
 				<H3>Delete your KCD Account</H3>
 				<Paragraph>

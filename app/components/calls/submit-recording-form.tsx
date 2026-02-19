@@ -79,7 +79,7 @@ function RecordingForm({
 					'loading...'
 				)}
 				{data?.errors.audio ? (
-					<p id="audio-error-message" className="text-red-600 text-center">
+					<p id="audio-error-message" className="text-center text-red-600">
 						{data.errors.audio}
 					</p>
 				) : null}

@@ -68,7 +68,7 @@ export default function CallListScreen() {
 	const selectedCallId = params.callId
 
 	return (
-		<main className="mb-24 mt-12 lg:mb-48 lg:mt-24">
+		<main className="mt-12 mb-24 lg:mt-24 lg:mb-48">
 			<Grid>
 				<div className="col-span-full mb-8 lg:mb-12">
 					<H2>Calls Admin</H2>
@@ -101,7 +101,7 @@ export default function CallListScreen() {
 												className={clsx(
 													'group relative block rounded-lg p-4 transition focus:outline-none',
 													isSelected
-														? 'bg-gray-100 ring-2 ring-team-current dark:bg-gray-800'
+														? 'ring-team-current bg-gray-100 ring-2 dark:bg-gray-800'
 														: 'hover:bg-gray-100 focus:bg-gray-100 dark:hover:bg-gray-800 dark:focus:bg-gray-800',
 												)}
 											>
@@ -109,7 +109,7 @@ export default function CallListScreen() {
 													<img
 														alt={avatar.alt}
 														src={avatar.src}
-														className="h-12 w-12 flex-none rounded-full object-cover ring-2 ring-team-current"
+														className="ring-team-current h-12 w-12 flex-none rounded-full object-cover ring-2"
 													/>
 													<div className="min-w-0 flex-1">
 														<p className="text-primary truncate font-medium">
@@ -118,10 +118,10 @@ export default function CallListScreen() {
 														<p className="mt-1 truncate text-sm text-gray-500 dark:text-slate-500">
 															{call.user.firstName} • {call.user.email}
 														</p>
-														<p className="dark:text-slate-400 mt-2 line-clamp-2 text-sm text-gray-500">
+														<p className="mt-2 line-clamp-2 text-sm text-gray-500 dark:text-slate-400">
 															{call.description}
 														</p>
-														<p className="dark:text-slate-600 mt-2 text-xs text-gray-400">
+														<p className="mt-2 text-xs text-gray-400 dark:text-slate-600">
 															{formatDate(call.updatedAt)}
 														</p>
 													</div>

@@ -108,7 +108,8 @@ function getRequiredSemanticSearchEnv() {
 	const apiToken = process.env.CLOUDFLARE_API_TOKEN
 	const indexName = process.env.CLOUDFLARE_VECTORIZE_INDEX
 	const embeddingModel =
-		process.env.CLOUDFLARE_AI_EMBEDDING_MODEL ?? '@cf/google/embeddinggemma-300m'
+		process.env.CLOUDFLARE_AI_EMBEDDING_MODEL ??
+		'@cf/google/embeddinggemma-300m'
 
 	return { accountId, apiToken, indexName, embeddingModel }
 }
@@ -335,8 +336,14 @@ export async function semanticSearchKCD({
 		}
 
 		const prev = existing.result
-		const prevScore = typeof prev.score === 'number' && Number.isFinite(prev.score) ? prev.score : -Infinity
-		const nextScore = typeof next.score === 'number' && Number.isFinite(next.score) ? next.score : -Infinity
+		const prevScore =
+			typeof prev.score === 'number' && Number.isFinite(prev.score)
+				? prev.score
+				: -Infinity
+		const nextScore =
+			typeof next.score === 'number' && Number.isFinite(next.score)
+				? next.score
+				: -Infinity
 		const bestScore = Math.max(prevScore, nextScore)
 		const nextIsBetter = nextScore > prevScore
 
@@ -348,7 +355,9 @@ export async function semanticSearchKCD({
 			title: prev.title ?? next.title,
 			url: prev.url ?? next.url,
 			// Prefer the snippet from the highest-scoring chunk, but fall back to any snippet.
-			snippet: nextIsBetter ? next.snippet ?? prev.snippet : prev.snippet ?? next.snippet,
+			snippet: nextIsBetter
+				? (next.snippet ?? prev.snippet)
+				: (prev.snippet ?? next.snippet),
 		}
 	}
 
@@ -373,4 +382,3 @@ export async function semanticSearchKCD({
 
 	return enriched
 }
-

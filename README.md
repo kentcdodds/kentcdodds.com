@@ -3,8 +3,9 @@
 [![Build Status][build-badge]][build]
 [![GPL 3.0 License][license-badge]][license]
 
-This repository contains the source code for [kentcdodds.com](https://kentcdodds.com/),
-built with Remix, React, TypeScript, Vite, and an Express server.
+This repository contains the source code for
+[kentcdodds.com](https://kentcdodds.com/), built with Remix, React, TypeScript,
+Vite, and an Express server.
 
 ## Tech stack
 
@@ -29,8 +30,8 @@ built with Remix, React, TypeScript, Vite, and an Express server.
 3. Run the full setup script:
    - `npm run setup -s`
 
-The setup script installs dependencies, resets the local database, validates
-the project, primes local cache data, installs Playwright browsers, and runs
+The setup script installs dependencies, resets the local database, validates the
+project, primes local cache data, installs Playwright browsers, and runs
 end-to-end tests.
 
 ## Local development

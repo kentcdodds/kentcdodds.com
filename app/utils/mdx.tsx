@@ -233,7 +233,7 @@ function SubscribeForm(props: Record<string, unknown>) {
 	}
 
 	return (
-		<div className="mb-12 border-b-2 border-t-2 border-team-current p-5">
+		<div className="border-team-current mb-12 border-t-2 border-b-2 p-5">
 			<KitForm formId={formId} kitFormId={kitFormId} kitTagId={kitTagId} />
 		</div>
 	)

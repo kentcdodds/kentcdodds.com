@@ -108,7 +108,7 @@ function AboutIndex() {
 				arrowLabel="Get to know more about me"
 			/>
 
-			<Grid as="main" className="mb-24 mt-16 lg:mb-48">
+			<Grid as="main" className="mt-16 mb-24 lg:mb-48">
 				<div className="col-span-full">
 					<FullScreenYouTubeEmbed
 						autoplay={searchParams.has('autoplay')}
@@ -152,7 +152,7 @@ function AboutIndex() {
 				</div>
 			</Grid>
 
-			<Grid className="mb-24 mt-16 lg:mb-48">
+			<Grid className="mt-16 mb-24 lg:mb-48">
 				<div className="col-span-full mb-12 lg:col-span-4 lg:mb-0">
 					<H6 as="h2">{`How I got where we are now.`}</H6>
 				</div>
@@ -500,7 +500,7 @@ function TalkCard({
 				<div className="-mr-4 mb-12 flex flex-wrap">
 					{tags.map((tag) => (
 						<div
-							className="text-primary mb-4 mr-4 rounded-full bg-gray-300 px-6 py-1 dark:bg-gray-700"
+							className="text-primary mr-4 mb-4 rounded-full bg-gray-300 px-6 py-1 dark:bg-gray-700"
 							key={tag}
 						>
 							{tag}

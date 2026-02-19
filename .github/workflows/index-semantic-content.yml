@@ -30,13 +30,12 @@ jobs:
 
       - name: 🔎 Index changed content
         run: >-
-          npx tsx other/semantic-search/index-repo-content.ts
-          --before "${{ github.event.before }}"
-          --after "${{ github.sha }}"
+          npx tsx other/semantic-search/index-repo-content.ts --before "${{
+          github.event.before }}" --after "${{ github.sha }}"
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_VECTORIZE_INDEX: ${{ secrets.CLOUDFLARE_VECTORIZE_INDEX }}
-          CLOUDFLARE_AI_EMBEDDING_MODEL: ${{ secrets.CLOUDFLARE_AI_EMBEDDING_MODEL }}
+          CLOUDFLARE_AI_EMBEDDING_MODEL:
+            ${{ secrets.CLOUDFLARE_AI_EMBEDDING_MODEL }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
-

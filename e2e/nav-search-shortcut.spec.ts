@@ -44,4 +44,3 @@ test('ctrl/cmd+shift+p opens nav search and focuses it', async ({ page }) => {
 	expect(second.defaultPrevented).toBe(false)
 	await expect(searchInput).toBeFocused()
 })
-

@@ -134,7 +134,7 @@ interface TopicRowProps {
 
 function TopicRow({ number, topicHTML }: TopicRowProps) {
 	return (
-		<div className="bg-secondary rounded-lg px-10 pb-14 pt-12 lg:py-12 lg:pl-36 lg:pr-56">
+		<div className="bg-secondary rounded-lg px-10 pt-12 pb-14 lg:py-12 lg:pr-56 lg:pl-36">
 			<H5 className="relative">
 				<span className="lg:absolute lg:-left-24 lg:block">
 					{number.toString().padStart(2, '0')}.
@@ -199,14 +199,14 @@ export default function WorkshopScreen() {
 
 	return (
 		<>
-			<Grid as="header" className="mb-24 mt-20 lg:mb-80 lg:mt-24">
+			<Grid as="header" className="mt-20 mb-24 lg:mt-24 lg:mb-80">
 				<div className="col-span-full lg:col-span-8">
 					<BackLink to="/workshops" className="mb-10 lg:mb-24">
 						Back to overview
 					</BackLink>
 					<H2 className="mb-2">{`Join Kent C. Dodds for "${workshop.title}"`}</H2>
 
-					<H6 as="p" className="lg:mb-22 mb-16">
+					<H6 as="p" className="mb-16 lg:mb-22">
 						{workshopEvents.length
 							? listify(workshopEvents.map((w) => w.date))
 							: 'Not currently scheduled'}
@@ -272,8 +272,8 @@ export default function WorkshopScreen() {
 				/>
 			</Grid>
 
-			<div className="mb-24 w-full px-5vw lg:mb-48">
-				<div className="bg-secondary w-full rounded-lg py-24 lg:pb-40 lg:pt-36">
+			<div className="px-5vw mb-24 w-full lg:mb-48">
+				<div className="bg-secondary w-full rounded-lg py-24 lg:pt-36 lg:pb-40">
 					<div className="-mx-5vw">
 						<Grid>
 							<div className="col-span-full mb-40 flex flex-col items-stretch lg:col-span-5 lg:mb-0 lg:items-start">

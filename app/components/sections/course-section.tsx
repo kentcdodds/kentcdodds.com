@@ -13,8 +13,8 @@ function CourseSection() {
 				ctaUrl="/courses"
 				className="mb-16"
 			/>
-			<Grid className="!grid-cols-12 gap-6 @container/grid md:gap-6 xl:gap-8">
-				<div className="col-span-full @container @2xl:col-span-6">
+			<Grid className="@container/grid !grid-cols-12 gap-6 md:gap-6 xl:gap-8">
+				<div className="@container col-span-full @2xl:col-span-6">
 					<CourseCard
 						title="Epic AI"
 						description="Learn to build AI-powered applications."
@@ -25,7 +25,7 @@ function CourseSection() {
 						horizontal
 					/>
 				</div>
-				<div className="col-span-full @container @2xl:col-span-6">
+				<div className="@container col-span-full @2xl:col-span-6">
 					<CourseCard
 						title="Epic Web"
 						description="Become a full stack web dev."
@@ -35,7 +35,7 @@ function CourseSection() {
 						courseUrl="https://www.epicweb.dev"
 					/>
 				</div>
-				<div className="col-span-full @container @2xl:col-span-6">
+				<div className="@container col-span-full @2xl:col-span-6">
 					<CourseCard
 						title="Epic React"
 						description="The most comprehensive guide for pros."
@@ -45,7 +45,7 @@ function CourseSection() {
 						courseUrl="https://epicreact.dev"
 					/>
 				</div>
-				<div className="col-span-full @container @2xl:col-span-6">
+				<div className="@container col-span-full @2xl:col-span-6">
 					<CourseCard
 						title="Testing JavaScript"
 						description="Learn smart, efficient testing methods."

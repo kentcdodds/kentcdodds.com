@@ -224,7 +224,7 @@ function TeamOption({
 	return (
 		<div
 			className={clsx(
-				'focus-ring relative col-span-full mb-3 rounded-lg bg-gray-100 dark:bg-gray-800 lg:col-span-4 lg:mb-0',
+				'focus-ring relative col-span-full mb-3 rounded-lg bg-gray-100 lg:col-span-4 lg:mb-0 dark:bg-gray-800',
 				team.focusClassName,
 				{
 					'ring-2': selected,
@@ -232,12 +232,12 @@ function TeamOption({
 			)}
 		>
 			{selected ? (
-				<span className="absolute left-9 top-9 text-team-current">
+				<span className="text-team-current absolute top-9 left-9">
 					<CheckCircledIcon />
 				</span>
 			) : null}
 
-			<label className="block cursor-pointer px-12 pb-12 pt-20 text-center">
+			<label className="block cursor-pointer px-12 pt-20 pb-12 text-center">
 				<input
 					className="sr-only"
 					type="radio"

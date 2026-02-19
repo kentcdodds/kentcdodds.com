@@ -1,6 +1,7 @@
 # Cloudflare semantic search
 
-This folder contains the GitHub Actions indexers for the site semantic search and shared utilities.
+This folder contains the GitHub Actions indexers for the site semantic search
+and shared utilities.
 
 ## Cloudflare resources (manual)
 
@@ -14,7 +15,8 @@ This folder contains the GitHub Actions indexers for the site semantic search an
 ## R2 resources (manual)
 
 - Create an R2 bucket (example: `kcd-semantic-search`).
-- Ensure the `CLOUDFLARE_API_TOKEN` used in GitHub Actions also has permission to read/write that bucket (these scripts use `wrangler r2 object get/put`).
+- Ensure the `CLOUDFLARE_API_TOKEN` used in GitHub Actions also has permission
+  to read/write that bucket (these scripts use `wrangler r2 object get/put`).
 
 ## GitHub Actions secrets expected
 
@@ -26,6 +28,7 @@ This folder contains the GitHub Actions indexers for the site semantic search an
 - `R2_BUCKET`
 
 For podcast indexing:
+
 - `TRANSISTOR_API_SECRET`
 - `SIMPLECAST_KEY`
 - `CHATS_WITH_KENT_PODCAST_ID`
@@ -34,7 +37,8 @@ For podcast indexing:
 
 For repo content indexing you can limit which docs get indexed:
 
-- CLI: `npx tsx other/semantic-search/index-repo-content.ts --only "blog:react-hooks-pitfalls,page:uses"`
+- CLI:
+  `npx tsx other/semantic-search/index-repo-content.ts --only "blog:react-hooks-pitfalls,page:uses"`
 - Env: `SEMANTIC_SEARCH_ONLY="blog:react-hooks-pitfalls,page:uses"`
 
 Indexed sources (via `index-repo-content.ts`):
@@ -44,5 +48,5 @@ Indexed sources (via `index-repo-content.ts`):
 - `content/data/talks.yml` (each talk is indexed as its own doc)
 - `content/data/resume.yml` (resume page)
 - `content/data/credits.yml` (each person is indexed as its own doc)
-- `content/data/testimonials.yml` (each testimonial author is indexed as its own doc)
-
+- `content/data/testimonials.yml` (each testimonial author is indexed as its own
+  doc)

@@ -19,15 +19,13 @@ export function getCloudflareConfig() {
 		apiToken: getRequiredEnv('CLOUDFLARE_API_TOKEN'),
 		vectorizeIndex: getRequiredEnv('CLOUDFLARE_VECTORIZE_INDEX'),
 		embeddingModel:
-			process.env.CLOUDFLARE_AI_EMBEDDING_MODEL ?? '@cf/google/embeddinggemma-300m',
+			process.env.CLOUDFLARE_AI_EMBEDDING_MODEL ??
+			'@cf/google/embeddinggemma-300m',
 	}
 }
 
 async function cfFetch(
-	{
-		accountId,
-		apiToken,
-	}: { accountId: string; apiToken: string },
+	{ accountId, apiToken }: { accountId: string; apiToken: string },
 	path: string,
 	init: RequestInit,
 ) {
@@ -45,9 +43,9 @@ async function cfFetch(
 	for (let attempt = 0; attempt <= maxRetries; attempt++) {
 		const timeoutSignal =
 			typeof AbortSignal !== 'undefined' && 'timeout' in AbortSignal
-				? (AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }).timeout(
-						timeoutMs,
-					)
+				? (
+						AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }
+					).timeout(timeoutMs)
 				: undefined
 		const signal =
 			init.signal && timeoutSignal && 'any' in AbortSignal
@@ -56,7 +54,7 @@ async function cfFetch(
 							any: (signals: AbortSignal[]) => AbortSignal
 						}
 					).any([init.signal, timeoutSignal])
-				: init.signal ?? timeoutSignal
+				: (init.signal ?? timeoutSignal)
 
 		const res = await fetch(url, {
 			...init,
@@ -153,7 +151,11 @@ async function vectorizeWriteNdjson({
 	// Example: POST /vectorize/v2/indexes/{index}/insert
 	const ndjson = vectorsToNdjson(vectors)
 	const form = new FormData()
-	form.set('vectors', new Blob([ndjson], { type: 'application/x-ndjson' }), 'vectors.ndjson')
+	form.set(
+		'vectors',
+		new Blob([ndjson], { type: 'application/x-ndjson' }),
+		'vectors.ndjson',
+	)
 
 	const pathV2 = `/vectorize/v2/indexes/${indexName}/${operation}`
 	try {
@@ -195,7 +197,13 @@ export async function vectorizeUpsert({
 	indexName: string
 	vectors: VectorizeVector[]
 }) {
-	return vectorizeWriteNdjson({ accountId, apiToken, indexName, operation: 'upsert', vectors })
+	return vectorizeWriteNdjson({
+		accountId,
+		apiToken,
+		indexName,
+		operation: 'upsert',
+		vectors,
+	})
 }
 
 export async function vectorizeDeleteByIds({
@@ -226,4 +234,3 @@ export async function vectorizeDeleteByIds({
 		return (await res.json()) as any
 	}
 }
-

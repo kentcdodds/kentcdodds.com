@@ -301,7 +301,7 @@ export default function CallHomeScreen() {
 								setSortOrder((o) => (o === 'asc' ? 'desc' : 'asc'))
 							}
 						>
-							<div className="bg-secondary absolute -bottom-2 -left-4 -right-4 -top-2 rounded-lg opacity-0 transition group-hover:opacity-100 group-focus:opacity-100" />
+							<div className="bg-secondary absolute -top-2 -right-4 -bottom-2 -left-4 rounded-lg opacity-0 transition group-hover:opacity-100 group-focus:opacity-100" />
 							<span className="relative inline-flex items-center">
 								{sortOrder === 'asc' ? (
 									<>

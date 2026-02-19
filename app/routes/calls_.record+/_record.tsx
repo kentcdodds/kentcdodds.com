@@ -101,7 +101,7 @@ export default function RecordScreen() {
 
 	return (
 		<>
-			<Grid className="mb-10 mt-24 lg:mb-24">
+			<Grid className="mt-24 mb-10 lg:mb-24">
 				<BackLink
 					to="/calls"
 					className="col-span-full lg:col-span-8 lg:col-start-3"

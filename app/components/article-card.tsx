@@ -97,11 +97,11 @@ function ArticleCard({
 			</Link>
 
 			{leadingTeam ? (
-				<div className="absolute right-6 top-6 z-10 h-4 w-4 rounded-full bg-team-current p-1 lg:left-6" />
+				<div className="bg-team-current absolute top-6 right-6 z-10 h-4 w-4 rounded-full p-1 lg:left-6" />
 			) : null}
 			<ClipboardCopyButton
 				value={permalink}
-				className="absolute left-6 top-6 z-10"
+				className="absolute top-6 left-6 z-10"
 			/>
 		</div>
 	)

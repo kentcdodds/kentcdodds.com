@@ -298,7 +298,7 @@ function ArticleFooter({
 			</div>
 			<div className="lg:col-start:5 col-span-full lg:col-span-6">
 				<H6 as="div">Written by Kent C. Dodds</H6>
-				<Paragraph className="mb-12 mt-3">
+				<Paragraph className="mt-3 mb-12">
 					{`
 Kent C. Dodds is a JavaScript software engineer and teacher. Kent's taught hundreds
 of thousands of people how to make the world a better place with quality software
@@ -376,7 +376,7 @@ export default function MdxScreen() {
 					: ''
 			}
 		>
-			<Grid className="mb-10 mt-24 lg:mb-24">
+			<Grid className="mt-24 mb-10 lg:mb-24">
 				<div className="col-span-full flex justify-between lg:col-span-8 lg:col-start-3">
 					<BackLink to="/blog">Back to overview</BackLink>
 					<TeamStats
@@ -391,7 +391,7 @@ export default function MdxScreen() {
 			<Grid as="header" className="mb-12">
 				<div className="col-span-full lg:col-span-8 lg:col-start-3">
 					{isDraft ? (
-						<div className="prose prose-light mb-6 max-w-full dark:prose-dark">
+						<div className="prose prose-light dark:prose-dark mb-6 max-w-full">
 							{React.createElement(
 								'callout-warning',
 								{},
@@ -400,7 +400,7 @@ export default function MdxScreen() {
 						</div>
 					) : null}
 					{isArchived ? (
-						<div className="prose prose-light mb-6 max-w-full dark:prose-dark">
+						<div className="prose prose-light dark:prose-dark mb-6 max-w-full">
 							{React.createElement(
 								'callout-warning',
 								{},
@@ -456,12 +456,12 @@ export default function MdxScreen() {
 						<div className="flex flex-wrap">
 							{frontmatter.translations?.length ? (
 								<>
-									<ul className="col-span-full -mb-4 -mr-4 flex flex-wrap lg:col-span-10 lg:col-start-3">
+									<ul className="col-span-full -mr-4 -mb-4 flex flex-wrap lg:col-span-10 lg:col-start-3">
 										{frontmatter.translations.map(({ language, link }) => (
 											<li key={`${language}:${link}`}>
 												<a
 													href={link}
-													className="focus-ring bg-secondary text-primary relative mb-4 mr-4 block h-auto w-auto whitespace-nowrap rounded-full px-6 py-3"
+													className="focus-ring bg-secondary text-primary relative mr-4 mb-4 block h-auto w-auto rounded-full px-6 py-3 whitespace-nowrap"
 												>
 													{language}
 												</a>
@@ -470,7 +470,7 @@ export default function MdxScreen() {
 									</ul>
 									<a
 										href={externalLinks.translationContributions}
-										className="text-secondary underlined my-3 mb-6 ml-5 block text-lg font-medium hover:text-team-current focus:text-team-current focus:outline-none"
+										className="text-secondary underlined hover:text-team-current focus:text-team-current my-3 mb-6 ml-5 block text-lg font-medium focus:outline-none"
 										target="_blank"
 										rel="noreferrer noopener"
 									>
@@ -485,7 +485,7 @@ export default function MdxScreen() {
 
 									<a
 										href={externalLinks.translationContributions}
-										className="text-secondary underlined ml-5 block text-lg font-medium hover:text-team-current focus:text-team-current focus:outline-none"
+										className="text-secondary underlined hover:text-team-current focus:text-team-current ml-5 block text-lg font-medium focus:outline-none"
 										target="_blank"
 										rel="noreferrer noopener"
 									>
@@ -497,7 +497,7 @@ export default function MdxScreen() {
 					</div>
 				</Grid>
 
-				<Grid className="prose prose-light mb-24 break-words dark:prose-dark">
+				<Grid className="prose prose-light dark:prose-dark mb-24 break-words">
 					<Component />
 				</Grid>
 			</main>
@@ -506,9 +506,9 @@ export default function MdxScreen() {
 			categoriesAndKeywords.includes('testing') ||
 			categoriesAndKeywords.includes('remix') ||
 			categoriesAndKeywords.includes('ai') ? (
-				<div className="mx-auto mb-24 flex max-w-lg flex-col items-center justify-center gap-8 px-10vw md:max-w-none md:flex-row">
+				<div className="px-10vw mx-auto mb-24 flex max-w-lg flex-col items-center justify-center gap-8 md:max-w-none md:flex-row">
 					{categoriesAndKeywords.includes('react') ? (
-						<div className="w-full max-w-lg @container">
+						<div className="@container w-full max-w-lg">
 							<CourseCard
 								title="Epic React"
 								description="Get Really Good at React"
@@ -520,7 +520,7 @@ export default function MdxScreen() {
 						</div>
 					) : null}
 					{categoriesAndKeywords.includes('testing') ? (
-						<div className="w-full max-w-lg @container">
+						<div className="@container w-full max-w-lg">
 							<CourseCard
 								title="Testing JavaScript"
 								description="Ship Apps with Confidence"
@@ -532,7 +532,7 @@ export default function MdxScreen() {
 						</div>
 					) : null}
 					{categoriesAndKeywords.includes('remix') ? (
-						<div className="w-full max-w-lg @container">
+						<div className="@container w-full max-w-lg">
 							<CourseCard
 								title="Epic Web"
 								description="Become a full stack web dev."
@@ -545,7 +545,7 @@ export default function MdxScreen() {
 					) : null}
 					{categoriesAndKeywords.includes('ai') ||
 					categoriesAndKeywords.includes('mcp') ? (
-						<div className="w-full max-w-lg @container">
+						<div className="@container w-full max-w-lg">
 							<CourseCard
 								title="Epic AI"
 								description="Learn to build AI-powered applications."

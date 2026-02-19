@@ -190,7 +190,7 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 
 	return (
 		<section
-			className={`set-color-team-current-${call.user.team.toLowerCase()} rounded-lg bg-gray-100 p-6 dark:bg-gray-800 lg:p-8`}
+			className={`set-color-team-current-${call.user.team.toLowerCase()} rounded-lg bg-gray-100 p-6 lg:p-8 dark:bg-gray-800`}
 		>
 			{/* Header */}
 			<div className="mb-6 border-b border-gray-200 pb-6 dark:border-gray-700">
@@ -199,8 +199,8 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 						<H4 as="h2" className="mb-2">
 							{call.title}
 						</H4>
-						<div className="dark:text-slate-400 flex flex-wrap items-center gap-2 text-sm text-gray-500">
-							<span className="font-medium text-team-current">
+						<div className="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-slate-400">
+							<span className="text-team-current font-medium">
 								{call.user.firstName}
 							</span>
 							<span>•</span>
@@ -233,7 +233,7 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 				<H6 as="h3" className="mb-2">
 					Description
 				</H6>
-				<Paragraph className="dark:text-slate-300 whitespace-pre-wrap text-gray-600">
+				<Paragraph className="whitespace-pre-wrap text-gray-600 dark:text-slate-300">
 					{call.description}
 				</Paragraph>
 			</div>
@@ -255,7 +255,7 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 						<div className="flex items-center gap-2 lg:w-auto">
 							<label
 								htmlFor="playbackRate"
-								className="dark:text-slate-400 whitespace-nowrap text-sm text-gray-500"
+								className="text-sm whitespace-nowrap text-gray-500 dark:text-slate-400"
 							>
 								Speed:
 							</label>
@@ -269,7 +269,7 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 								onChange={(e) => setPlaybackRate(Number(e.target.value))}
 								className="w-20"
 							/>
-							<span className="dark:text-slate-300 w-10 text-sm font-medium text-gray-700">
+							<span className="w-10 text-sm font-medium text-gray-700 dark:text-slate-300">
 								{playbackRate}x
 							</span>
 						</div>
@@ -291,11 +291,11 @@ function RecordingDetailScreen() {
 			<CallListing call={data.call} />
 
 			{/* Response Recording Section */}
-			<div className="rounded-lg border-2 border-dashed border-gray-300 p-6 dark:border-gray-600 lg:p-8">
+			<div className="rounded-lg border-2 border-dashed border-gray-300 p-6 lg:p-8 dark:border-gray-600">
 				<H6 as="h3" className="mb-4">
 					Record Your Response
 				</H6>
-				<Paragraph className="dark:text-slate-400 mb-6 text-gray-500">
+				<Paragraph className="mb-6 text-gray-500 dark:text-slate-400">
 					Record your response to this call. Once submitted, the response will
 					be stitched together with the original call and published to the
 					podcast.

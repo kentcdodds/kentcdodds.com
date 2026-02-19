@@ -114,7 +114,7 @@ function ProfileCard({ person }: { person: Person }) {
 			</div>
 
 			<div className="flex-auto">
-				<div className="mb-4 text-xl font-medium lowercase text-slate-500">
+				<div className="mb-4 text-xl font-medium text-slate-500 lowercase">
 					{person.role}
 				</div>
 				<H3 className="mb-6">{person.name}</H3>
@@ -229,7 +229,7 @@ function CreditsIndex() {
 				subTitle="Some other awesome folks"
 				className="mb-16"
 			/>
-			<Grid className="prose prose-light gap-y-20 dark:prose-dark lg:gap-y-32">
+			<Grid className="prose prose-light dark:prose-dark gap-y-20 lg:gap-y-32">
 				<Paragraph className="col-span-4">
 					<a href="https://x.com/ryanflorence">Ryan Florence</a>
 					{` and other friends at `}

@@ -113,7 +113,7 @@ export default function CacheAdminRoute() {
 					<div className="relative flex-1">
 						<button
 							type="submit"
-							className="absolute left-6 top-0 flex h-full items-center justify-center border-none bg-transparent p-0 text-slate-500"
+							className="absolute top-0 left-6 flex h-full items-center justify-center border-none bg-transparent p-0 text-slate-500"
 						>
 							<SearchIcon />
 						</button>
@@ -122,9 +122,9 @@ export default function CacheAdminRoute() {
 							defaultValue={query}
 							name="query"
 							placeholder="Filter Cache Keys"
-							className="text-primary bg-primary border-secondary focus:bg-secondary w-full rounded-full border py-6 pl-14 pr-6 text-lg font-medium hover:border-team-current focus:border-team-current focus:outline-none md:pr-24"
+							className="text-primary bg-primary border-secondary focus:bg-secondary hover:border-team-current focus:border-team-current w-full rounded-full border py-6 pr-6 pl-14 text-lg font-medium focus:outline-none md:pr-24"
 						/>
-						<div className="absolute right-2 top-0 flex h-full w-14 items-center justify-between text-lg font-medium text-slate-500">
+						<div className="absolute top-0 right-2 flex h-full w-14 items-center justify-between text-lg font-medium text-slate-500">
 							<span title="Total results shown">
 								{data.cacheKeys.sqlite.length + data.cacheKeys.lru.length}
 							</span>

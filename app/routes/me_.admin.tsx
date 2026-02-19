@@ -64,8 +64,11 @@ function buildDailySeries({
 	const counts = new Map<string, number>()
 	for (const entry of entries) {
 		const key =
-			typeof entry.day === 'string' ? entry.day : format(entry.day, dayKeyFormat)
-		const count = typeof entry.count === 'bigint' ? Number(entry.count) : entry.count
+			typeof entry.day === 'string'
+				? entry.day
+				: format(entry.day, dayKeyFormat)
+		const count =
+			typeof entry.count === 'bigint' ? Number(entry.count) : entry.count
 		counts.set(key, (counts.get(key) ?? 0) + count)
 	}
 
@@ -397,13 +400,7 @@ function Card({
 	return <div className={clsx(cardClassName, className)}>{children}</div>
 }
 
-function TrendBadge({
-	value,
-	label,
-}: {
-	value: number | null
-	label: string
-}) {
+function TrendBadge({ value, label }: { value: number | null; label: string }) {
 	const tone =
 		value === null
 			? 'bg-slate-200 text-slate-600 dark:bg-slate-700/60 dark:text-slate-200'
@@ -414,7 +411,9 @@ function TrendBadge({
 					: 'bg-slate-200 text-slate-600 dark:bg-slate-700/60 dark:text-slate-200'
 
 	return (
-		<span className={clsx('rounded-full px-2 py-1 text-xs font-semibold', tone)}>
+		<span
+			className={clsx('rounded-full px-2 py-1 text-xs font-semibold', tone)}
+		>
 			{label}
 		</span>
 	)
@@ -434,7 +433,7 @@ function StatCard({
 	return (
 		<Card className="flex h-full flex-col justify-between gap-3">
 			<div className="flex items-start justify-between gap-3">
-				<p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+				<p className="text-xs font-semibold tracking-[0.2em] text-slate-500 uppercase">
 					{label}
 				</p>
 				{trend ? <TrendBadge value={trend.value} label={trend.label} /> : null}
@@ -617,13 +616,20 @@ export default function MeAdmin() {
 	const stats = data.stats
 	const signupCounts = stats.signupTrend.map((point) => point.count)
 	const readsCounts = stats.readsTrend.map((point) => point.count)
-	const signupTotal = stats.signupTrend.reduce((total, point) => total + point.count, 0)
-	const readsTotal = stats.readsTrend.reduce((total, point) => total + point.count, 0)
+	const signupTotal = stats.signupTrend.reduce(
+		(total, point) => total + point.count,
+		0,
+	)
+	const readsTotal = stats.readsTrend.reduce(
+		(total, point) => total + point.count,
+		0,
+	)
 	const signupFirstLabel = stats.signupTrend[0]?.label ?? ''
 	const signupLastLabel =
 		stats.signupTrend[stats.signupTrend.length - 1]?.label ?? ''
 	const readsFirstLabel = stats.readsTrend[0]?.label ?? ''
-	const readsLastLabel = stats.readsTrend[stats.readsTrend.length - 1]?.label ?? ''
+	const readsLastLabel =
+		stats.readsTrend[stats.readsTrend.length - 1]?.label ?? ''
 	const growthLabel =
 		stats.growth7 === null
 			? 'No prior week'
@@ -724,7 +730,7 @@ export default function MeAdmin() {
 				<Card className="flex h-full flex-col gap-6">
 					<div className="flex flex-wrap items-start justify-between gap-3">
 						<div>
-							<p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+							<p className="text-xs font-semibold tracking-[0.2em] text-slate-500 uppercase">
 								Signups
 							</p>
 							<p className="text-lg font-semibold text-black dark:text-white">
@@ -743,7 +749,7 @@ export default function MeAdmin() {
 			<div className="col-span-full lg:col-span-5">
 				<Card className="flex h-full flex-col gap-6">
 					<div>
-						<p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+						<p className="text-xs font-semibold tracking-[0.2em] text-slate-500 uppercase">
 							Post reads
 						</p>
 						<p className="text-lg font-semibold text-black dark:text-white">
@@ -761,7 +767,7 @@ export default function MeAdmin() {
 			<div className="col-span-full lg:col-span-6">
 				<Card className="flex h-full flex-col gap-6">
 					<div>
-						<p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+						<p className="text-xs font-semibold tracking-[0.2em] text-slate-500 uppercase">
 							Team mix
 						</p>
 						<p className="text-lg font-semibold text-black dark:text-white">
@@ -774,7 +780,7 @@ export default function MeAdmin() {
 			<div className="col-span-full lg:col-span-6">
 				<Card className="flex h-full flex-col gap-6">
 					<div>
-						<p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+						<p className="text-xs font-semibold tracking-[0.2em] text-slate-500 uppercase">
 							Roles
 						</p>
 						<p className="text-lg font-semibold text-black dark:text-white">
@@ -788,7 +794,7 @@ export default function MeAdmin() {
 			<div className="col-span-full">
 				<Card className="flex flex-col gap-6">
 					<div>
-						<p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+						<p className="text-xs font-semibold tracking-[0.2em] text-slate-500 uppercase">
 							Top posts
 						</p>
 						<p className="text-lg font-semibold text-black dark:text-white">
@@ -828,7 +834,7 @@ export default function MeAdmin() {
 											searchInputRef.current?.focus()
 										}}
 										className={clsx(
-											'absolute left-6 top-0 flex h-full items-center justify-center border-none bg-transparent p-0 text-slate-500',
+											'absolute top-0 left-6 flex h-full items-center justify-center border-none bg-transparent p-0 text-slate-500',
 											{
 												'cursor-pointer': query !== '',
 												'cursor-default': query === '',
@@ -844,9 +850,9 @@ export default function MeAdmin() {
 										onChange={(event) => setQuery(event.currentTarget.value)}
 										name="q"
 										placeholder="Filter users"
-										className="text-primary bg-primary border-secondary focus:bg-secondary w-full rounded-full border py-6 pl-14 pr-6 text-lg font-medium hover:border-team-current focus:border-team-current focus:outline-none md:pr-24"
+										className="text-primary bg-primary border-secondary focus:bg-secondary hover:border-team-current focus:border-team-current w-full rounded-full border py-6 pr-6 pl-14 text-lg font-medium focus:outline-none md:pr-24"
 									/>
-									<div className="absolute right-2 top-0 flex h-full w-14 items-center justify-between text-lg font-medium text-slate-500">
+									<div className="absolute top-0 right-2 flex h-full w-14 items-center justify-between text-lg font-medium text-slate-500">
 										<span title="Total results shown">{rows.length}</span>
 									</div>
 								</div>

@@ -133,7 +133,7 @@ function FooterLink({
 			<AnchorOrLink
 				prefetch={href.startsWith('http') ? undefined : 'intent'}
 				href={href}
-				className="text-secondary underlined inline-block whitespace-nowrap text-lg hover:text-team-current focus:text-team-current focus:outline-none"
+				className="text-secondary underlined hover:text-team-current focus:text-team-current inline-block text-lg whitespace-nowrap focus:outline-none"
 				reload={reload}
 			>
 				{name}
@@ -169,8 +169,8 @@ function Footer({ image }: { image: ImageBuilder }) {
 		</div>
 	)
 	return (
-		<footer className="border-t border-gray-200 pb-16 pt-48 dark:border-gray-600">
-			<div className="relative mx-10vw">
+		<footer className="border-t border-gray-200 pt-48 pb-16 dark:border-gray-600">
+			<div className="mx-10vw relative">
 				<div className="relative mx-auto grid max-w-7xl grid-cols-4 grid-rows-[max-content] gap-x-4 md:grid-cols-8 xl:grid-cols-12 xl:gap-x-6">
 					<div className="col-span-full md:col-span-3 xl:row-span-2">
 						<AboutSection />
@@ -188,7 +188,7 @@ function Footer({ image }: { image: ImageBuilder }) {
 						<GeneralSection />
 					</div>
 
-					<div className="col-span-full mt-20 md:col-span-2 md:col-start-7 xl:col-start-5 xl:row-span-2 xl:row-start-1 xl:ml-56 xl:mt-0">
+					<div className="col-span-full mt-20 md:col-span-2 md:col-start-7 xl:col-start-5 xl:row-span-2 xl:row-start-1 xl:mt-0 xl:ml-56">
 						<SitemapSection />
 					</div>
 
@@ -200,7 +200,7 @@ function Footer({ image }: { image: ImageBuilder }) {
 						{subscribedToNewsletter ? featuredImg : <NewsletterSection />}
 					</div>
 
-					<div className="col-span-full mt-24 text-lg text-gray-500 dark:text-slate-500 md:mt-44">
+					<div className="col-span-full mt-24 text-lg text-gray-500 md:mt-44 dark:text-slate-500">
 						<span>All rights reserved</span>{' '}
 						<span className="block md:inline">{`© Kent C. Dodds ${new Date().getFullYear()}`}</span>
 					</div>

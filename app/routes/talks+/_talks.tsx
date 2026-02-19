@@ -92,7 +92,7 @@ function Card({
 	return (
 		<div
 			className={clsx(
-				'relative flex h-full w-full flex-col rounded-lg bg-gray-100 p-6 dark:bg-gray-800 md:p-16',
+				'relative flex h-full w-full flex-col rounded-lg bg-gray-100 p-6 md:p-16 dark:bg-gray-800',
 				{
 					'focus-ring ring-2': active,
 				},
@@ -117,7 +117,7 @@ function Card({
 
 				<div className="mt-8 flex space-x-2 md:mt-0">
 					{tag ? (
-						<div className="-my-4 -mr-8 inline-block self-start whitespace-nowrap rounded-full bg-white px-8 py-4 text-lg text-black dark:bg-gray-600 dark:text-white">
+						<div className="-my-4 -mr-8 inline-block self-start rounded-full bg-white px-8 py-4 text-lg whitespace-nowrap text-black dark:bg-gray-600 dark:text-white">
 							{tag}
 						</div>
 					) : null}
@@ -137,7 +137,7 @@ function Card({
 
 				{tags.length ? (
 					<>
-						<H6 as="div" className="mb-2 mt-10">
+						<H6 as="div" className="mt-10 mb-2">
 							Keywords
 						</H6>
 						<Paragraph className="flex">{tags.join(', ')}</Paragraph>
@@ -146,7 +146,7 @@ function Card({
 
 				{deliveries.length ? (
 					<>
-						<H6 as="div" className="mb-2 mt-10">
+						<H6 as="div" className="mt-10 mb-2">
 							Presentations
 						</H6>
 						<ul className="space-y-1">
@@ -168,7 +168,7 @@ function Card({
 
 										{delivery.recording ? (
 											<a
-												className="text-secondary ml-2 flex-none hover:text-team-current"
+												className="text-secondary hover:text-team-current ml-2 flex-none"
 												href={delivery.recording}
 											>
 												<YoutubeIcon size={32} />
@@ -193,7 +193,7 @@ function Card({
 
 				{resourceHTMLs.length ? (
 					<>
-						<H6 className="mb-2 mt-10" as="div">
+						<H6 className="mt-10 mb-2" as="div">
 							Resources
 						</H6>
 						<ul className="space-y-1">
@@ -280,7 +280,7 @@ export default function TalksScreen() {
 				<H6 as="div" className="col-span-full mb-6">
 					Search talks by topics
 				</H6>
-				<div className="col-span-full -mb-4 -mr-4 flex flex-wrap lg:col-span-10">
+				<div className="col-span-full -mr-4 -mb-4 flex flex-wrap lg:col-span-10">
 					{data.tags.map((tag) => (
 						<Tag
 							key={tag}

@@ -27,7 +27,7 @@ function RedBox({ error }: { error: Error }) {
 				className="absolute inset-0 block h-full w-full bg-black opacity-75"
 				onClick={() => setIsVisible(false)}
 			/>
-			<div className="border-lg text-primary relative mx-5vw my-16 max-h-[75vh] overflow-y-auto rounded-lg bg-red-500 p-12">
+			<div className="border-lg text-primary mx-5vw relative my-16 max-h-[75vh] overflow-y-auto rounded-lg bg-red-500 p-12">
 				<H2>{error.message}</H2>
 				<div>
 					{frames.map((frame) => (

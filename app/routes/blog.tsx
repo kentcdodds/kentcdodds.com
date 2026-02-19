@@ -341,7 +341,7 @@ function BlogHome() {
 						<Link
 							reloadDocument
 							to="rss.xml"
-							className="text-secondary underlined ml-2 inline-block hover:text-team-current focus:text-team-current"
+							className="text-secondary underlined hover:text-team-current focus:text-team-current ml-2 inline-block"
 						>
 							<RssIcon title="Get my blog as RSS" />
 						</Link>
@@ -371,7 +371,7 @@ function BlogHome() {
 										ignoreInputKeyUp.current = false
 									}}
 									className={clsx(
-										'absolute left-6 top-0 flex h-full items-center justify-center border-none bg-transparent p-0 text-slate-500',
+										'absolute top-0 left-6 flex h-full items-center justify-center border-none bg-transparent p-0 text-slate-500',
 										{
 											'cursor-pointer': query !== '',
 											'cursor-default': query === '',
@@ -398,9 +398,9 @@ function BlogHome() {
 									}}
 									name="q"
 									placeholder={searchInputPlaceholder}
-									className="text-primary bg-primary border-secondary focus:bg-secondary w-full appearance-none rounded-full border py-6 pl-14 pr-6 text-lg font-medium hover:border-team-current focus:border-team-current focus:outline-none md:pr-24"
+									className="text-primary bg-primary border-secondary focus:bg-secondary hover:border-team-current focus:border-team-current w-full appearance-none rounded-full border py-6 pr-6 pl-14 text-lg font-medium focus:outline-none md:pr-24"
 								/>
-								<div className="absolute right-6 top-0 hidden h-full w-14 items-center justify-between text-lg font-medium text-slate-500 md:flex">
+								<div className="absolute top-0 right-6 hidden h-full w-14 items-center justify-between text-lg font-medium text-slate-500 md:flex">
 									<MixedCheckbox
 										title={checkboxLabel}
 										aria-label={checkboxLabel}
@@ -421,11 +421,13 @@ function BlogHome() {
 									{matchingPosts.length}
 								</div>
 							</div>
-							<div className="mt-2 pl-14 pr-6 text-sm text-slate-500">
+							<div className="mt-2 pr-6 pl-14 text-sm text-slate-500">
 								<Link
-									to={query ? `/search?q=${encodeURIComponent(query)}` : '/search'}
+									to={
+										query ? `/search?q=${encodeURIComponent(query)}` : '/search'
+									}
 									prefetch="intent"
-									className="underlined inline-block hover:text-team-current focus:text-team-current"
+									className="underlined hover:text-team-current focus:text-team-current inline-block"
 								>
 									Try the full site search
 								</Link>
@@ -493,7 +495,7 @@ function BlogHome() {
 						<H6 as="div" className="col-span-full mb-6">
 							Search blog by topics
 						</H6>
-						<div className="col-span-full -mb-4 -mr-4 flex flex-wrap lg:col-span-10">
+						<div className="col-span-full -mr-4 -mb-4 flex flex-wrap lg:col-span-10">
 							{data.tags.map((tag) => {
 								const selected = regularQuery.includes(tag)
 								return (

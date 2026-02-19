@@ -18,11 +18,11 @@ function YouTubeEmbed({
 	}, [])
 
 	return (
-		<div className="fixed inset-0 bg-black px-5vw">
+		<div className="px-5vw fixed inset-0 bg-black">
 			<button
 				aria-label="close video"
 				onClick={onCloseClick}
-				className="absolute right-4 top-8 z-50 rotate-45 transform text-white hover:scale-150 focus:scale-150 focus:outline-none"
+				className="absolute top-8 right-4 z-50 rotate-45 transform text-white hover:scale-150 focus:scale-150 focus:outline-none"
 			>
 				<PlusIcon />
 			</button>
@@ -65,7 +65,7 @@ function FullScreenYouTubeEmbed({
 					onClick={() => setShowPlayer(true)}
 				>
 					{img}
-					<span className="absolute left-0 top-0 h-full w-full">
+					<span className="absolute top-0 left-0 h-full w-full">
 						<span className="flex h-full w-full items-center justify-center">
 							<span className="transform opacity-70 transition-all group-hover:opacity-100 group-focus:opacity-100 motion-safe:group-hover:scale-110 motion-safe:group-focus:scale-110 motion-safe:group-active:scale-125">
 								<PlayIcon />

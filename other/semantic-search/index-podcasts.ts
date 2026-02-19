@@ -179,14 +179,18 @@ async function fetchTransistorEpisodes() {
 		url.searchParams.set('pagination[per]', String(perPage))
 		url.searchParams.set('pagination[page]', String(page))
 		const res = await fetch(url.toString(), { headers })
-		if (!res.ok) throw new Error(`Transistor error: ${res.status} ${res.statusText}`)
+		if (!res.ok)
+			throw new Error(`Transistor error: ${res.status} ${res.statusText}`)
 		return (await res.json()) as TransistorEpisodesJson
 	}
 
 	const first = await fetchPage(1)
 	const totalPages = first.meta?.totalPages ?? 1
 	const all = [...first.data]
-	for (const page of Array.from({ length: Math.max(0, totalPages - 1) }, (_, i) => i + 2)) {
+	for (const page of Array.from(
+		{ length: Math.max(0, totalPages - 1) },
+		(_, i) => i + 2,
+	)) {
 		const p = await fetchPage(page)
 		all.push(...p.data)
 	}
@@ -226,7 +230,11 @@ async function fetchTransistorEpisodes() {
 type SimplecastTooManyRequests = { too_many_requests: true }
 type SimplecastCollectionResponse<T> = { collection: T[] }
 type SimplecastSeasonListItem = { href: string; number: number }
-type SimplecastEpisodeListItem = { id: string; status: string; is_hidden: boolean }
+type SimplecastEpisodeListItem = {
+	id: string
+	status: string
+	is_hidden: boolean
+}
 type SimplecastEpisode = {
 	id: string
 	is_published: boolean
@@ -245,9 +253,9 @@ type SimplecastEpisode = {
 function isTooManyRequests(json: unknown): json is SimplecastTooManyRequests {
 	return Boolean(
 		json &&
-			typeof json === 'object' &&
-			'too_many_requests' in json &&
-			(json as any).too_many_requests,
+		typeof json === 'object' &&
+		'too_many_requests' in json &&
+		(json as any).too_many_requests,
 	)
 }
 
@@ -258,7 +266,8 @@ async function fetchSimplecastEpisodes() {
 	let tooManyRequestsCount = 0
 
 	const seasonsResult = await fetchJsonWithRetries<
-		SimplecastCollectionResponse<SimplecastSeasonListItem> | SimplecastTooManyRequests
+		| SimplecastCollectionResponse<SimplecastSeasonListItem>
+		| SimplecastTooManyRequests
 	>(`https://api.simplecast.com/podcasts/${PODCAST_ID}/seasons`, {
 		headers,
 		label: 'simplecast seasons',
@@ -279,10 +288,13 @@ async function fetchSimplecastEpisodes() {
 	for (const season of seasonItems) {
 		const seasonId = new URL(season.href).pathname.split('/').slice(-1)[0]
 		if (!seasonId) continue
-		const url = new URL(`https://api.simplecast.com/seasons/${seasonId}/episodes`)
+		const url = new URL(
+			`https://api.simplecast.com/seasons/${seasonId}/episodes`,
+		)
 		url.searchParams.set('limit', '300')
 		const seasonEpisodesResult = await fetchJsonWithRetries<
-			SimplecastCollectionResponse<SimplecastEpisodeListItem> | SimplecastTooManyRequests
+			| SimplecastCollectionResponse<SimplecastEpisodeListItem>
+			| SimplecastTooManyRequests
 		>(url.toString(), {
 			headers,
 			label: `simplecast season ${seasonId} episodes list`,
@@ -291,7 +303,9 @@ async function fetchSimplecastEpisodes() {
 			},
 		})
 		if (!seasonEpisodesResult.ok) {
-			console.warn(`Simplecast episodes list error: ${seasonEpisodesResult.status}`)
+			console.warn(
+				`Simplecast episodes list error: ${seasonEpisodesResult.status}`,
+			)
 			continue
 		}
 		const seasonEpisodesJson = seasonEpisodesResult.json
@@ -302,31 +316,26 @@ async function fetchSimplecastEpisodes() {
 		)
 
 		// Fetch episode details with limited concurrency to reduce 429s.
-		const details = await mapWithConcurrency(
-			listItems,
-			3,
-			async (e) => {
-				const result = await fetchJsonWithRetries<SimplecastEpisode | SimplecastTooManyRequests>(
-					`https://api.simplecast.com/episodes/${e.id}`,
-					{
-						headers,
-						label: `simplecast episode ${e.id}`,
-						on429: () => {
-							episodeDetail429s++
-						},
-					},
-				)
-				if (!result.ok) {
-					episodeDetailsFailed++
-					console.warn(`Simplecast episode error: ${result.status}`)
-					return null
-				}
-				const epJson = result.json
-				if (isTooManyRequests(epJson)) return null
-				if (!epJson.is_published) return null
-				return epJson
-			},
-		)
+		const details = await mapWithConcurrency(listItems, 3, async (e) => {
+			const result = await fetchJsonWithRetries<
+				SimplecastEpisode | SimplecastTooManyRequests
+			>(`https://api.simplecast.com/episodes/${e.id}`, {
+				headers,
+				label: `simplecast episode ${e.id}`,
+				on429: () => {
+					episodeDetail429s++
+				},
+			})
+			if (!result.ok) {
+				episodeDetailsFailed++
+				console.warn(`Simplecast episode error: ${result.status}`)
+				return null
+			}
+			const epJson = result.json
+			if (isTooManyRequests(epJson)) return null
+			if (!epJson.is_published) return null
+			return epJson
+		})
 
 		episodes.push(...(details.filter(Boolean) as SimplecastEpisode[]))
 	}
@@ -344,14 +353,17 @@ async function fetchSimplecastEpisodes() {
 
 async function main() {
 	const { manifestKey } = parseArgs()
-	const { accountId, apiToken, vectorizeIndex, embeddingModel } = getCloudflareConfig()
+	const { accountId, apiToken, vectorizeIndex, embeddingModel } =
+		getCloudflareConfig()
 	const r2Bucket = process.env.R2_BUCKET ?? 'kcd-semantic-search'
 
-	const manifest =
-		(await getJsonObject<Manifest>({ bucket: r2Bucket, key: manifestKey })) ?? {
-			version: 1,
-			docs: {},
-		}
+	const manifest = (await getJsonObject<Manifest>({
+		bucket: r2Bucket,
+		key: manifestKey,
+	})) ?? {
+		version: 1,
+		docs: {},
+	}
 
 	const idsToDelete: string[] = []
 	const toUpsert: Array<{
@@ -397,7 +409,9 @@ async function main() {
 		const chunkBodies = chunkText(text)
 		const chunkCount = chunkBodies.length
 		const docId = getDocId('ck', key)
-		const oldChunksById = new Map((manifest.docs[docId]?.chunks ?? []).map((c) => [c.id, c]))
+		const oldChunksById = new Map(
+			(manifest.docs[docId]?.chunks ?? []).map((c) => [c.id, c]),
+		)
 
 		const chunks: ManifestChunk[] = []
 		for (let i = 0; i < chunkBodies.length; i++) {
@@ -426,7 +440,13 @@ async function main() {
 			if (!chunks.find((c) => c.id === old.id)) idsToDelete.push(old.id)
 		}
 
-		nextDocs[docId] = { type: 'ck', url, title, sourceUpdatedAt: e.updatedAt, chunks }
+		nextDocs[docId] = {
+			type: 'ck',
+			url,
+			title,
+			sourceUpdatedAt: e.updatedAt,
+			chunks,
+		}
 	}
 
 	for (const e of cwkEpisodes) {
@@ -460,7 +480,9 @@ async function main() {
 		const chunkBodies = chunkText(text)
 		const chunkCount = chunkBodies.length
 		const docId = getDocId('cwk', key)
-		const oldChunksById = new Map((manifest.docs[docId]?.chunks ?? []).map((c) => [c.id, c]))
+		const oldChunksById = new Map(
+			(manifest.docs[docId]?.chunks ?? []).map((c) => [c.id, c]),
+		)
 
 		const chunks: ManifestChunk[] = []
 		for (let i = 0; i < chunkBodies.length; i++) {
@@ -508,7 +530,12 @@ async function main() {
 	for (const idBatch of batch(idsToDelete, 500)) {
 		if (!idBatch.length) continue
 		console.log(`Deleting ${idBatch.length} vectors...`)
-		await vectorizeDeleteByIds({ accountId, apiToken, indexName: vectorizeIndex, ids: idBatch })
+		await vectorizeDeleteByIds({
+			accountId,
+			apiToken,
+			indexName: vectorizeIndex,
+			ids: idBatch,
+		})
 	}
 
 	console.log(`Vectors to upsert: ${toUpsert.length}`)
@@ -520,7 +547,9 @@ async function main() {
 
 	async function embedItemsSafely(
 		items: typeof toUpsert,
-	): Promise<Array<{ id: string; values: number[]; metadata: Record<string, unknown> }>> {
+	): Promise<
+		Array<{ id: string; values: number[]; metadata: Record<string, unknown> }>
+	> {
 		try {
 			const embeddings = await getEmbeddings({
 				accountId,
@@ -553,9 +582,13 @@ async function main() {
 	const embedBatches = batch(toUpsert, 50)
 	for (let i = 0; i < embedBatches.length; i++) {
 		const embedBatch = embedBatches[i]!
-		console.log(`Embedding batch ${i + 1}/${embedBatches.length} (${embedBatch.length} items)`)
+		console.log(
+			`Embedding batch ${i + 1}/${embedBatches.length} (${embedBatch.length} items)`,
+		)
 		const vectors = await embedItemsSafely(embedBatch)
-		console.log(`Embedded batch ${i + 1}/${embedBatches.length} -> ${vectors.length} vectors`)
+		console.log(
+			`Embedded batch ${i + 1}/${embedBatches.length} -> ${vectors.length} vectors`,
+		)
 		upsertVectors.push(...vectors)
 	}
 
@@ -563,12 +596,23 @@ async function main() {
 	for (let i = 0; i < upsertBatches.length; i++) {
 		const vecBatch = upsertBatches[i]!
 		if (!vecBatch.length) continue
-		console.log(`Upserting batch ${i + 1}/${upsertBatches.length} (${vecBatch.length} vectors)`)
-		await vectorizeUpsert({ accountId, apiToken, indexName: vectorizeIndex, vectors: vecBatch })
+		console.log(
+			`Upserting batch ${i + 1}/${upsertBatches.length} (${vecBatch.length} vectors)`,
+		)
+		await vectorizeUpsert({
+			accountId,
+			apiToken,
+			indexName: vectorizeIndex,
+			vectors: vecBatch,
+		})
 	}
 
 	const nextManifest: Manifest = { version: 1, docs: nextDocs }
-	await putJsonObject({ bucket: r2Bucket, key: manifestKey, value: nextManifest })
+	await putJsonObject({
+		bucket: r2Bucket,
+		key: manifestKey,
+		value: nextManifest,
+	})
 	console.log(`Updated manifest written to r2://${r2Bucket}/${manifestKey}`)
 }
 
@@ -576,4 +620,3 @@ main().catch((e) => {
 	console.error(e)
 	process.exitCode = 1
 })
-

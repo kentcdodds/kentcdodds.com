@@ -31,11 +31,11 @@ const Grid = function Grid({
 			className={clsx('relative', {
 				'mx-10vw': !nested,
 				'w-full': nested,
-				'py-10 md:py-24 lg:pb-40 lg:pt-36': featured,
+				'py-10 md:py-24 lg:pt-36 lg:pb-40': featured,
 			})}
 		>
 			{featured ? (
-				<div className="absolute inset-0 -mx-5vw">
+				<div className="-mx-5vw absolute inset-0">
 					<div className="bg-secondary mx-auto h-full w-full max-w-[96rem] rounded-lg" />
 				</div>
 			) : null}

@@ -7,7 +7,6 @@ import {
 	type TabProps,
 } from '@reach/tabs'
 import { Link } from '@remix-run/react'
-import { clsx } from 'clsx'
 import { differenceInYears } from 'date-fns'
 import { AnimatePresence, motion } from 'framer-motion'
 import * as React from 'react'
@@ -21,11 +20,9 @@ import { H2, H3, Paragraph } from '../typography.tsx'
 
 function Tab({ children }: TabProps & { isSelected?: boolean }) {
 	return (
-		<ReachTab
-			className="group hover:text-primary inline-flex w-full items-center border-none p-0 text-left text-gray-600 opacity-60 transition hover:opacity-90 focus:bg-transparent dark:text-slate-500 data-selected:text-primary data-selected:opacity-100"
-		>
+		<ReachTab className="group hover:text-primary data-selected:text-primary inline-flex w-full items-center border-none p-0 text-left text-gray-600 opacity-60 transition hover:opacity-90 focus:bg-transparent data-selected:opacity-100 dark:text-slate-500">
 			<span>{children}</span>
-			<span className="ml-6 hidden -translate-x-5 self-center items-center leading-none opacity-0 transition lg:inline-flex group-data-selected:translate-x-0 group-data-selected:opacity-100">
+			<span className="ml-6 hidden -translate-x-5 items-center self-center leading-none opacity-0 transition group-data-selected:translate-x-0 group-data-selected:opacity-100 lg:inline-flex">
 				<ArrowIcon size={76} direction="right" className="block" />
 			</span>
 		</ReachTab>
@@ -102,10 +99,10 @@ function ProblemSolutionSection({
 				</H2>
 			</div>
 
-			<hr className="col-span-full mb-10 mt-16 border-gray-200 dark:border-gray-600 lg:mb-20 lg:mt-24" />
+			<hr className="col-span-full mt-16 mb-10 border-gray-200 lg:mt-24 lg:mb-20 dark:border-gray-600" />
 
 			<div className="order-1 col-span-full col-start-1 lg:order-3 lg:col-span-5 lg:mt-52 lg:pt-2">
-				<TabList className="inline-flex flex-row space-x-8 bg-transparent text-xl leading-snug text-primary lg:flex-col lg:space-x-0 lg:text-7xl">
+				<TabList className="text-primary inline-flex flex-row space-x-8 bg-transparent text-xl leading-snug lg:flex-col lg:space-x-0 lg:text-7xl">
 					<Tab>blog</Tab>
 					<Tab>courses</Tab>
 					<Tab>podcasts</Tab>

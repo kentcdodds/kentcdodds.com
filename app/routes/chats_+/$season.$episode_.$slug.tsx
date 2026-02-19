@@ -186,7 +186,7 @@ function Homework({
 				{homeworkHTMLs.map((homeworkHTML) => (
 					<li
 						key={homeworkHTML}
-						className="border-secondary flex border-t pb-10 pt-8"
+						className="border-secondary flex border-t pt-8 pb-10"
 					>
 						<CheckCircledIcon
 							className="mr-6 flex-none text-gray-400 dark:text-gray-600"
@@ -213,10 +213,10 @@ function Resources({ resources = [] }: { resources: CWKEpisode['resources'] }) {
 					<li key={resource.url}>
 						<a
 							href={resource.url}
-							className="transition hover:text-team-current focus:text-team-current focus:outline-none"
+							className="hover:text-team-current focus:text-team-current transition focus:outline-none"
 						>
 							<span>{resource.name}</span>
-							<span className="ml-4 mt-1 inline-block align-top">
+							<span className="mt-1 ml-4 inline-block align-top">
 								<ArrowIcon size={26} direction="top-right" />
 							</span>
 						</a>
@@ -240,10 +240,10 @@ function Guests({ episode }: { episode: CWKEpisode }) {
 					<img
 						src={episode.image}
 						alt={guest.name}
-						className="mb-6 mr-8 h-20 w-20 flex-none rounded-lg object-cover md:mb-0"
+						className="mr-8 mb-6 h-20 w-20 flex-none rounded-lg object-cover md:mb-0"
 					/>
 					<div className="mb-6 w-full md:mb-0 md:flex-auto">
-						<div className="text-primary mb-2 text-xl font-medium leading-none">
+						<div className="text-primary mb-2 text-xl leading-none font-medium">
 							{guest.name}
 						</div>
 						<p className="text-xl leading-none">{guest.company}</p>
@@ -298,7 +298,7 @@ function Transcript({
 
 			<div
 				className={clsx(
-					'prose prose-light relative overflow-hidden dark:prose-dark',
+					'prose prose-light dark:prose-dark relative overflow-hidden',
 					{
 						'max-h-96': collapsed,
 					},
@@ -417,7 +417,7 @@ export default function PodcastDetail() {
 
 	return (
 		<>
-			<Grid className="mb-10 mt-24 lg:mb-24">
+			<Grid className="mt-24 mb-10 lg:mb-24">
 				<BackLink
 					to="/chats"
 					className="col-span-full lg:col-span-8 lg:col-start-3"

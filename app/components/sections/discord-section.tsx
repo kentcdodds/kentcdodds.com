@@ -53,7 +53,7 @@ function DiscordSection() {
 					/>
 				</div>
 				<div
-					className="absolute -left-12 -top-6 flex flex-col space-y-1"
+					className="absolute -top-6 -left-12 flex flex-col space-y-1"
 					// this shade of blue is much more accessible with the bg-blue-100
 					style={{ color: '#006ece' }}
 				>
@@ -67,7 +67,7 @@ function DiscordSection() {
 				</div>
 
 				<div
-					className="absolute -bottom-6 -right-12 flex flex-col space-y-1 text-right"
+					className="absolute -right-12 -bottom-6 flex flex-col space-y-1 text-right"
 					// this shade of green is much more accessible with the bg-green-100
 					style={{ color: '#008300' }}
 				>

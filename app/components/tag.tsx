@@ -12,7 +12,7 @@ function Tag({ tag, selected, onClick, disabled }: TagProps) {
 	return (
 		<label
 			className={clsx(
-				'relative mb-4 mr-4 block h-auto w-auto cursor-pointer rounded-full px-6 py-3 transition',
+				'relative mr-4 mb-4 block h-auto w-auto cursor-pointer rounded-full px-6 py-3 transition',
 				{
 					'text-primary bg-secondary': !selected,
 					'text-inverse bg-inverse': selected,

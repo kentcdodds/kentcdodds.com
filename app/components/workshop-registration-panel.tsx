@@ -19,7 +19,7 @@ function RegistrationPanel({
 	return (
 		<div
 			id="register"
-			className="bg-secondary flex w-full flex-col items-stretch rounded-lg px-10 pb-10 pt-12 lg:flex-row-reverse lg:items-center lg:justify-end lg:py-8"
+			className="bg-secondary flex w-full flex-col items-stretch rounded-lg px-10 pt-12 pb-10 lg:flex-row-reverse lg:items-center lg:justify-end lg:py-8"
 		>
 			<div className="mb-10 lg:mb-0 lg:ml-16">
 				<div className="mb-10 inline-flex items-baseline lg:mb-2">

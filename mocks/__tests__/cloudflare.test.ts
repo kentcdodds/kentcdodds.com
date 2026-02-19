@@ -121,7 +121,9 @@ describe('cloudflare MSW mocks', () => {
 		expect(queryJson.success).toBe(true)
 		expect(queryJson.result.matches.length).toBeGreaterThan(0)
 		expect(queryJson.result.matches[0].metadata.title).toBe('About KCD MCP')
-		expect(String(queryJson.result.matches[0].metadata.url)).toContain('about-mcp')
+		expect(String(queryJson.result.matches[0].metadata.url)).toContain(
+			'about-mcp',
+		)
 	})
 
 	test('Vectorize query returns seeded matches with metadata', async () => {
@@ -202,7 +204,11 @@ describe('cloudflare MSW mocks', () => {
 					Authorization: 'Bearer test-token',
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify({ vector: values, topK: 5, returnMetadata: 'all' }),
+				body: JSON.stringify({
+					vector: values,
+					topK: 5,
+					returnMetadata: 'all',
+				}),
 			},
 		)
 		expect(queryRes.ok).toBe(true)
@@ -227,4 +233,3 @@ describe('cloudflare MSW mocks', () => {
 		expect(deleteJson.result.deleted).toBeGreaterThan(0)
 	})
 })
-

@@ -820,8 +820,7 @@ function Navbar() {
 			if (event.altKey) return
 
 			const isModifierPressed = event.metaKey || event.ctrlKey
-			const isPKey =
-				event.code === 'KeyP' || event.key.toLowerCase() === 'p'
+			const isPKey = event.code === 'KeyP' || event.key.toLowerCase() === 'p'
 
 			if (!isModifierPressed || !event.shiftKey || !isPKey) return
 

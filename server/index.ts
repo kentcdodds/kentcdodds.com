@@ -161,7 +161,12 @@ if (viteDevServer) {
 }
 
 app.get(
-	['/build/{*splat}', '/images/{*splat}', '/fonts/{*splat}', '/favicons/{*splat}'],
+	[
+		'/build/{*splat}',
+		'/images/{*splat}',
+		'/fonts/{*splat}',
+		'/favicons/{*splat}',
+	],
 	(req: any, res: any) => {
 		// if we made it past the express.static for /build, then we're missing something. No bueno.
 		return res.status(404).send('Not found')

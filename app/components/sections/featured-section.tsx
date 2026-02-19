@@ -73,9 +73,9 @@ function FeaturedSection({
 					: null,
 			)}
 		>
-			<div className="rounded-lg bg-gray-100 dark:bg-gray-800 lg:bg-transparent lg:dark:bg-transparent">
+			<div className="rounded-lg bg-gray-100 lg:bg-transparent dark:bg-gray-800 lg:dark:bg-transparent">
 				<div className="-mx-8 lg:mx-0">
-					<Grid className="group rounded-lg pb-6 pt-14 md:pb-12 lg:bg-gray-100 lg:dark:bg-gray-800">
+					<Grid className="group rounded-lg pt-14 pb-6 md:pb-12 lg:bg-gray-100 lg:dark:bg-gray-800">
 						<div className="col-span-full lg:col-span-5 lg:col-start-2 lg:flex lg:flex-col lg:justify-between">
 							<div>
 								<H6 as="h2">{caption}</H6>
@@ -92,7 +92,7 @@ function FeaturedSection({
 								{}
 								<ArrowLink to={slug ?? href ?? '/'} prefetch="intent">
 									{cta}
-									<div className="focus-ring absolute inset-0 left-0 right-0 z-10 rounded-lg md:-left-12 md:-right-12 lg:left-0 lg:right-0" />
+									<div className="focus-ring absolute inset-0 right-0 left-0 z-10 rounded-lg md:-right-12 md:-left-12 lg:right-0 lg:left-0" />
 								</ArrowLink>
 							</div>
 						</div>
@@ -108,11 +108,11 @@ function FeaturedSection({
 								<div className="aspect-[4/3] lg:aspect-[4/5]">{img}</div>
 							)}
 							{leadingTeam ? (
-								<div className="absolute left-6 top-6 z-20 h-4 w-4 rounded-full bg-team-current p-1" />
+								<div className="bg-team-current absolute top-6 left-6 z-20 h-4 w-4 rounded-full p-1" />
 							) : null}
 							{permalink ? (
 								<ClipboardCopyButton
-									className="absolute left-6 top-6 z-20"
+									className="absolute top-6 left-6 z-20"
 									value={permalink}
 								/>
 							) : null}

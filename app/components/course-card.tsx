@@ -68,7 +68,7 @@ function CourseCardLink({
 		>
 			<span
 				className={clsx(
-					'shrink-0 -translate-y-px whitespace-nowrap text-base @6xl/grid:text-lg',
+					'shrink-0 -translate-y-px text-base whitespace-nowrap @6xl/grid:text-lg',
 					textClassName,
 				)}
 			>
@@ -112,7 +112,7 @@ export function CourseCard({
 	return (
 		<div
 			className={clsx(
-				'course-card-gradient relative flex h-full gap-5 overflow-hidden rounded-2xl bg-gray-100 p-6 ring-1 ring-inset ring-[rgba(0,0,0,0.05)] @sm:gap-6 @sm:p-9 @2xl/grid:gap-6 @2xl/grid:p-9 @6xl/grid:p-12 dark:bg-gray-850 dark:ring-[rgba(255,255,255,0.05)]',
+				'course-card-gradient dark:bg-gray-850 relative flex h-full gap-5 overflow-hidden rounded-2xl bg-gray-100 p-6 ring-1 ring-[rgba(0,0,0,0.05)] ring-inset @sm:gap-6 @sm:p-9 @2xl/grid:gap-6 @2xl/grid:p-9 @6xl/grid:p-12 dark:ring-[rgba(255,255,255,0.05)]',
 				horizontal ? 'flex-col @2xl:flex-row' : 'flex-col',
 			)}
 		>
@@ -122,12 +122,12 @@ export function CourseCard({
 					horizontal && 'w-full @2xl:order-last @2xl:w-[62%]',
 				)}
 			>
-				<div className="absolute right-0 top-0 hidden origin-bottom-right -translate-y-full translate-x-5 -rotate-90 text-right font-mono text-[11px]/none uppercase tracking-widest text-gray-400 opacity-80 @sm:block @2xl/grid:block @6xl/grid:translate-x-6 @6xl/grid:text-xs/none dark:text-slate-500 dark:opacity-60">
+				<div className="absolute top-0 right-0 hidden origin-bottom-right translate-x-5 -translate-y-full -rotate-90 text-right font-mono text-[11px]/none tracking-widest text-gray-400 uppercase opacity-80 @sm:block @2xl/grid:block @6xl/grid:translate-x-6 @6xl/grid:text-xs/none dark:text-slate-500 dark:opacity-60">
 					{label ?? `${title} course`}
 				</div>
 				<div
 					className={clsx(
-						'dark:border-gray-950 flex aspect-[4/3] items-center justify-center rounded-xl border border-gray-300 dark:border-black',
+						'flex aspect-[4/3] items-center justify-center rounded-xl border border-gray-300 dark:border-black dark:border-gray-950',
 						horizontal && '@2xl:aspect-[11/6]',
 					)}
 				>
@@ -189,7 +189,7 @@ export function CourseCard({
 				<CourseCardLink
 					href={courseUrl}
 					className={clsx(
-						'h-11 w-11 translate-x-0.5 translate-y-0.5 self-end @lg:h-12 @lg:w-auto @lg:pl-6 @lg:pr-4',
+						'h-11 w-11 translate-x-0.5 translate-y-0.5 self-end @lg:h-12 @lg:w-auto @lg:pr-4 @lg:pl-6',
 						horizontal && '@2xl:self-auto',
 					)}
 					textClassName="@lg:not-sr-only sr-only"
@@ -221,7 +221,7 @@ export function SmallCourseCard({
 	}
 
 	return (
-		<div className="course-card-gradient relative col-span-full flex flex-col items-start overflow-hidden rounded-2xl bg-gray-100 p-6 ring-1 ring-inset ring-[rgba(0,0,0,0.05)] @sm:p-9 @2xl/grid:col-span-6 @2xl/grid:p-9 @6xl/grid:p-12 dark:bg-gray-850 dark:ring-[rgba(255,255,255,0.05)] [&:nth-child(3n-2)]:col-span-12">
+		<div className="course-card-gradient dark:bg-gray-850 relative col-span-full flex flex-col items-start overflow-hidden rounded-2xl bg-gray-100 p-6 ring-1 ring-[rgba(0,0,0,0.05)] ring-inset @sm:p-9 @2xl/grid:col-span-6 @2xl/grid:p-9 @6xl/grid:p-12 dark:ring-[rgba(255,255,255,0.05)] [&:nth-child(3n-2)]:col-span-12">
 			{imageBuilder ? (
 				getImg(imageBuilder)
 			) : (
@@ -232,13 +232,13 @@ export function SmallCourseCard({
 			)}
 
 			<h2 className={clsx(titleClassName, 'mt-12 pr-10')}>{title}</h2>
-			<p className={clsx(descriptionClassName, 'mb-6 mt-2 max-w-[700px]')}>
+			<p className={clsx(descriptionClassName, 'mt-2 mb-6 max-w-[700px]')}>
 				{description}
 			</p>
 
 			<CourseCardLink
 				href={courseUrl}
-				className={clsx('mt-auto h-12 -translate-x-0.5 pl-6 pr-4')}
+				className={clsx('mt-auto h-12 -translate-x-0.5 pr-4 pl-6')}
 			/>
 		</div>
 	)

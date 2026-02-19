@@ -117,4 +117,3 @@ export async function putJsonObject({
 	const body = JSON.stringify(value, null, 2)
 	putObjectViaWrangler(bucket, key, body)
 }
-
