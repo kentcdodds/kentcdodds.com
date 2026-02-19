@@ -267,8 +267,12 @@ async function createEpisode({
 		})
 	}
 
-	// update the cache with the new episode
-	await getCachedEpisodes({ forceFresh: true })
+	// Refresh the episodes cache in the background so publishing doesn't block.
+	// This can be slow (HTML stripping + cache IO) and makes E2E flaky if we
+	// wait on it before redirecting the admin.
+	void getCachedEpisodes({ forceFresh: true }).catch((error: unknown) => {
+		console.error('transistor-episodes-cache-refresh-failed', error)
+	})
 
 	return returnValue
 }
