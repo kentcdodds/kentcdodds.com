@@ -22,6 +22,7 @@ export type SemanticSearchPresentation = {
 }
 
 type ResultLike = {
+	id?: string
 	type?: string
 	slug?: string
 	title?: string
@@ -92,6 +93,16 @@ function getFallbackPresentation(type: string | undefined): Required<
 			imageAlt: images.kayak.alt,
 		}
 	}
+	if (type === 'podcast') {
+		return {
+			imageUrl: images.microphone({
+				quality: 'auto',
+				format: 'auto',
+				resize: { type: 'pad', width: 96, height: 96 },
+			}),
+			imageAlt: images.microphone.alt,
+		}
+	}
 	if (type === 'talk') {
 		return {
 			imageUrl: images.kentSpeakingAllThingsOpen({
@@ -121,6 +132,51 @@ function getFallbackPresentation(type: string | undefined): Required<
 		}),
 		imageAlt: images.kodyProfileGray.alt,
 	}
+}
+
+function normalizePathname(pathname: string) {
+	const cleaned = pathname.split(/[?#]/)[0] ?? ''
+	if (cleaned === '/') return '/'
+	return cleaned.replace(/\/+$/, '') || '/'
+}
+
+function inferSlugFromUrl({
+	type,
+	url,
+}: {
+	type: string
+	url: string | undefined
+}): string | null {
+	if (!url) return null
+
+	let pathname = url
+	try {
+		if (/^https?:\/\//i.test(url)) pathname = new URL(url).pathname
+	} catch {
+		// ignore invalid URLs
+	}
+	pathname = normalizePathname(pathname)
+
+	if (type === 'blog') {
+		if (!pathname.startsWith('/blog/')) return null
+		const slug = pathname.slice('/blog/'.length)
+		return slug ? slug : null
+	}
+
+	if (type === 'page') {
+		if (pathname === '/') return null
+		if (!pathname.startsWith('/')) return null
+		const slug = pathname.slice(1)
+		return slug ? slug : null
+	}
+
+	if (type === 'talk') {
+		if (!pathname.startsWith('/talks/')) return null
+		const slug = pathname.slice('/talks/'.length)
+		return slug ? slug : null
+	}
+
+	return null
 }
 
 function parseYamlFrontmatter(source: string): Record<string, unknown> | null {
@@ -348,11 +404,22 @@ export async function getSemanticSearchPresentation(
 	}
 
 	const type = result.type
-	const slug = result.slug
-	if (!type || !slug) return base
+	if (!type) return base
+	const slug =
+		result.slug ??
+		inferSlugFromUrl({
+			type,
+			url: result.url ?? (typeof result.id === 'string' ? result.id : undefined),
+		}) ??
+		undefined
+
+	// For most types, enrichment requires a doc slug. Resume is a special case
+	// where we can enrich without a slug.
+	if (!slug && type !== 'resume') return base
 
 	// Blog/page: pull from MDX frontmatter.
 	if (type === 'blog' || type === 'page') {
+		if (!slug) return base
 		const meta = await getMdxDocMeta({ type, slug })
 		if (!meta) return base
 		const summary = meta.summary ? truncate(meta.summary, 220) : base.summary
@@ -371,6 +438,7 @@ export async function getSemanticSearchPresentation(
 	if (!isSupportedRepoDocType(type)) return base
 
 	if (type === 'talk') {
+		if (!slug) return base
 		try {
 			const talks = await loadTalksBySlug()
 			const talk = talks.get(slug)
@@ -385,6 +453,7 @@ export async function getSemanticSearchPresentation(
 	}
 
 	if (type === 'credit') {
+		if (!slug) return base
 		try {
 			const credits = await loadCreditsBySlug()
 			const person = credits.get(slug)
@@ -409,6 +478,7 @@ export async function getSemanticSearchPresentation(
 	}
 
 	if (type === 'testimonial') {
+		if (!slug) return base
 		try {
 			const testimonials = await loadTestimonialsBySlug()
 			const t = testimonials.get(slug)
