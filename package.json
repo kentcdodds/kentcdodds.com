@@ -158,7 +158,7 @@
     "unified": "11.0.5",
     "unist-util-visit": "5.1.0",
     "uuid": "^13.0.0",
-    "vitest": "^1.6.1",
+    "vitest": "^4.0.18",
     "ws": "^8.19.0",
     "xstate": "^4.38.3",
     "yaml": "^2.8.2",
@@ -210,7 +210,7 @@
     "start-server-and-test": "^2.1.3",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "vite": "^5.4.21",
+    "vite": "^7.3.1",
     "vite-env-only": "^3.0.3",
     "vite-plugin-cjs-interop": "^2.4.2",
     "vite-tsconfig-paths": "^6.1.1"
