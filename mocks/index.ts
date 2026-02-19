@@ -63,8 +63,15 @@ const miscHandlers = [
 
 		return HttpResponse.json(null, { status: 404 })
 	}),
-	http.get(/http:\/\/localhost:\d+\/.*/, async () => passthrough()),
-	http.post(/http:\/\/localhost:\d+\/.*/, async () => passthrough()),
+	http.get(/http:\/\/(localhost|127\.0\.0\.1):\d+\/.*/, async () =>
+		passthrough(),
+	),
+	http.head(/http:\/\/(localhost|127\.0\.0\.1):\d+\/.*/, async () =>
+		passthrough(),
+	),
+	http.post(/http:\/\/(localhost|127\.0\.0\.1):\d+\/.*/, async () =>
+		passthrough(),
+	),
 	http.get('https://verifyright.co/verify/:email', () => {
 		return HttpResponse.json({ status: true })
 	}),
