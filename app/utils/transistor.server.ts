@@ -123,6 +123,22 @@ async function createEpisode({
 	user: { firstName: string; email: string; team: string }
 	request: Request
 }) {
+	// In mocks/dev we don't need to exercise the full Transistor API workflow.
+	// Avoiding it keeps the admin publish action fast and prevents E2E hangs when
+	// network requests are slow/unavailable in the test environment.
+	if (process.env.MOCKS === 'true') {
+		const domainUrl = 'https://kentcdodds.com'
+		const slug = slugify(title)
+		return {
+			episodeUrl: `${domainUrl}${getEpisodePath({
+				episodeNumber: 1,
+				seasonNumber: 1,
+				slug,
+			})}`,
+			imageUrl: `${domainUrl}/__mocks__/call-kent-episode.png`,
+		}
+	}
+
 	// Start transcription ASAP, but don't block the admin publish flow.
 	// If Workers AI isn't configured, this stays null and we just skip.
 	const transcriptionPromise = isCloudflareTranscriptionConfigured()
