@@ -292,6 +292,125 @@ function modelFromAiRunPathname(pathname: string) {
 	return decodeURIComponent(raw)
 }
 
+const handleVectorizeQuery = async ({ request, params }) => {
+	requiredHeader(request.headers, 'authorization')
+	const accountId = String(params.accountId)
+	const indexName = String(params.indexName)
+
+	let body: any
+	try {
+		body = await request.json()
+	} catch {
+		return jsonError(400, 'Invalid JSON body for Vectorize query.', 10002)
+	}
+
+	const vector = Array.isArray(body?.vector)
+		? (body.vector as unknown[]).filter((v): v is number => typeof v === 'number')
+		: null
+	const topK = Number.isFinite(body?.topK) ? Number(body.topK) : 10
+	const namespace = typeof body?.namespace === 'string' ? body.namespace : undefined
+
+	if (!vector || vector.length === 0) {
+		return jsonError(
+			400,
+			'Mock Vectorize expected JSON body { vector: number[], topK?: number }.',
+			10003,
+		)
+	}
+
+	ensureSeededIndex(accountId, indexName)
+	const store = getOrCreateIndexStore(accountId, indexName)
+	const candidates = allVectors(store, namespace)
+
+	const matches = candidates
+		.map((v) => ({
+			id: v.id,
+			score: scoreFromSimilarity(cosineSimilarity(vector, v.values)),
+			metadata: v.metadata,
+		}))
+		.sort((a, b) => b.score - a.score)
+		.slice(0, clamp(Math.trunc(topK), 1, 100))
+
+	return jsonOk({
+		count: matches.length,
+		matches,
+	})
+}
+
+const handleVectorizeInsert = async ({ request, params }) => {
+	requiredHeader(request.headers, 'authorization')
+	const accountId = String(params.accountId)
+	const indexName = String(params.indexName)
+	const parsed = await parseVectorizeNdjsonVectors(request)
+	if (!parsed.ok) return jsonError(400, parsed.error, 10005)
+
+	const store = getOrCreateIndexStore(accountId, indexName)
+	let updated = 0
+	for (const v of parsed.vectors) {
+		let ns = store.get(v.namespace)
+		if (!ns) {
+			ns = new Map()
+			store.set(v.namespace, ns)
+		}
+		ns.set(v.id, v)
+		updated++
+	}
+
+	return jsonOk({ operation: 'insert', updated })
+}
+
+const handleVectorizeUpsert = async ({ request, params }) => {
+	requiredHeader(request.headers, 'authorization')
+	const accountId = String(params.accountId)
+	const indexName = String(params.indexName)
+	const parsed = await parseVectorizeNdjsonVectors(request)
+	if (!parsed.ok) return jsonError(400, parsed.error, 10005)
+
+	const store = getOrCreateIndexStore(accountId, indexName)
+	let updated = 0
+	for (const v of parsed.vectors) {
+		let ns = store.get(v.namespace)
+		if (!ns) {
+			ns = new Map()
+			store.set(v.namespace, ns)
+		}
+		ns.set(v.id, v)
+		updated++
+	}
+
+	return jsonOk({ operation: 'upsert', updated })
+}
+
+const handleVectorizeDeleteByIds = async ({ request, params }) => {
+	requiredHeader(request.headers, 'authorization')
+	const accountId = String(params.accountId)
+	const indexName = String(params.indexName)
+
+	let body: any
+	try {
+		body = await request.json()
+	} catch {
+		return jsonError(400, 'Invalid JSON body for delete_by_ids.', 10006)
+	}
+
+	const ids = Array.isArray(body?.ids)
+		? (body.ids as unknown[]).filter((id): id is string => typeof id === 'string')
+		: null
+	if (!ids?.length) {
+		return jsonError(400, 'Mock delete_by_ids expected { ids: string[] }.', 10007)
+	}
+
+	const store = getOrCreateIndexStore(accountId, indexName)
+	let deleted = 0
+	for (const ns of store.values()) {
+		for (const id of ids) {
+			if (ns.delete(id)) deleted++
+		}
+	}
+
+	return jsonOk({ deleted })
+}
+
 export const cloudflareHandlers: Array<HttpHandler> = [
 	// Workers AI (REST): https://api.cloudflare.com/client/v4/accounts/:accountId/ai/run/<model>
 	// Model names commonly contain `/`, so use a regex instead of path params.
@@ -343,272 +462,49 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 	// Vectorize query (v2)
 	http.post<any, DefaultBodyType>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/v2/indexes/:indexName/query`,
-		async ({ request, params }) => {
-			requiredHeader(request.headers, 'authorization')
-			const accountId = String(params.accountId)
-			const indexName = String(params.indexName)
-
-			let body: any
-			try {
-				body = await request.json()
-			} catch {
-				return jsonError(400, 'Invalid JSON body for Vectorize query.', 10002)
-			}
-
-			const vector = Array.isArray(body?.vector)
-				? (body.vector as unknown[]).filter((v): v is number => typeof v === 'number')
-				: null
-			const topK = Number.isFinite(body?.topK) ? Number(body.topK) : 10
-			const namespace = typeof body?.namespace === 'string' ? body.namespace : undefined
-
-			if (!vector || vector.length === 0) {
-				return jsonError(
-					400,
-					'Mock Vectorize expected JSON body { vector: number[], topK?: number }.',
-					10003,
-				)
-			}
-
-			ensureSeededIndex(accountId, indexName)
-			const store = getOrCreateIndexStore(accountId, indexName)
-			const candidates = allVectors(store, namespace)
-
-			const matches = candidates
-				.map((v) => ({
-					id: v.id,
-					score: scoreFromSimilarity(cosineSimilarity(vector, v.values)),
-					metadata: v.metadata,
-				}))
-				.sort((a, b) => b.score - a.score)
-				.slice(0, clamp(Math.trunc(topK), 1, 100))
-
-			return jsonOk({
-				count: matches.length,
-				matches,
-			})
-		},
+		handleVectorizeQuery,
 	),
 
 	// Vectorize query (legacy)
 	http.post<any, DefaultBodyType>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/indexes/:indexName/query`,
-		async ({ request, params }) => {
-			// Same response shape as v2 in our mock.
-			requiredHeader(request.headers, 'authorization')
-			const accountId = String(params.accountId)
-			const indexName = String(params.indexName)
-
-			let body: any
-			try {
-				body = await request.json()
-			} catch {
-				return jsonError(400, 'Invalid JSON body for Vectorize query.', 10002)
-			}
-
-			const vector = Array.isArray(body?.vector)
-				? (body.vector as unknown[]).filter((v): v is number => typeof v === 'number')
-				: null
-			const topK = Number.isFinite(body?.topK) ? Number(body.topK) : 10
-			const namespace = typeof body?.namespace === 'string' ? body.namespace : undefined
-
-			if (!vector || vector.length === 0) {
-				return jsonError(
-					400,
-					'Mock Vectorize expected JSON body { vector: number[], topK?: number }.',
-					10003,
-				)
-			}
-
-			ensureSeededIndex(accountId, indexName)
-			const store = getOrCreateIndexStore(accountId, indexName)
-			const candidates = allVectors(store, namespace)
-
-			const matches = candidates
-				.map((v) => ({
-					id: v.id,
-					score: scoreFromSimilarity(cosineSimilarity(vector, v.values)),
-					metadata: v.metadata,
-				}))
-				.sort((a, b) => b.score - a.score)
-				.slice(0, clamp(Math.trunc(topK), 1, 100))
-
-			return jsonOk({
-				count: matches.length,
-				matches,
-			})
-		},
+		handleVectorizeQuery,
 	),
 
 	// Vectorize write operations (v2): insert
 	http.post<any, DefaultRequestMultipartBody>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/v2/indexes/:indexName/insert`,
-		async ({ request, params }) => {
-			requiredHeader(request.headers, 'authorization')
-			const accountId = String(params.accountId)
-			const indexName = String(params.indexName)
-			const parsed = await parseVectorizeNdjsonVectors(request)
-			if (!parsed.ok) return jsonError(400, parsed.error, 10005)
-
-			const store = getOrCreateIndexStore(accountId, indexName)
-			let updated = 0
-			for (const v of parsed.vectors) {
-				let ns = store.get(v.namespace)
-				if (!ns) {
-					ns = new Map()
-					store.set(v.namespace, ns)
-				}
-				ns.set(v.id, v)
-				updated++
-			}
-
-			return jsonOk({ operation: 'insert', updated })
-		},
+		handleVectorizeInsert,
 	),
 
 	// Vectorize write operations (v2): upsert
 	http.post<any, DefaultRequestMultipartBody>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/v2/indexes/:indexName/upsert`,
-		async ({ request, params }) => {
-			requiredHeader(request.headers, 'authorization')
-			const accountId = String(params.accountId)
-			const indexName = String(params.indexName)
-			const parsed = await parseVectorizeNdjsonVectors(request)
-			if (!parsed.ok) return jsonError(400, parsed.error, 10005)
-
-			const store = getOrCreateIndexStore(accountId, indexName)
-			let updated = 0
-			for (const v of parsed.vectors) {
-				let ns = store.get(v.namespace)
-				if (!ns) {
-					ns = new Map()
-					store.set(v.namespace, ns)
-				}
-				ns.set(v.id, v)
-				updated++
-			}
-
-			return jsonOk({ operation: 'upsert', updated })
-		},
+		handleVectorizeUpsert,
 	),
 
 	// Vectorize write operations (legacy): insert
 	http.post<any, DefaultRequestMultipartBody>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/indexes/:indexName/insert`,
-		async ({ request, params }) => {
-			requiredHeader(request.headers, 'authorization')
-			const accountId = String(params.accountId)
-			const indexName = String(params.indexName)
-			const parsed = await parseVectorizeNdjsonVectors(request)
-			if (!parsed.ok) return jsonError(400, parsed.error, 10005)
-
-			const store = getOrCreateIndexStore(accountId, indexName)
-			let updated = 0
-			for (const v of parsed.vectors) {
-				let ns = store.get(v.namespace)
-				if (!ns) {
-					ns = new Map()
-					store.set(v.namespace, ns)
-				}
-				ns.set(v.id, v)
-				updated++
-			}
-
-			return jsonOk({ operation: 'insert', updated })
-		},
+		handleVectorizeInsert,
 	),
 
 	// Vectorize write operations (legacy): upsert
 	http.post<any, DefaultRequestMultipartBody>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/indexes/:indexName/upsert`,
-		async ({ request, params }) => {
-			requiredHeader(request.headers, 'authorization')
-			const accountId = String(params.accountId)
-			const indexName = String(params.indexName)
-			const parsed = await parseVectorizeNdjsonVectors(request)
-			if (!parsed.ok) return jsonError(400, parsed.error, 10005)
-
-			const store = getOrCreateIndexStore(accountId, indexName)
-			let updated = 0
-			for (const v of parsed.vectors) {
-				let ns = store.get(v.namespace)
-				if (!ns) {
-					ns = new Map()
-					store.set(v.namespace, ns)
-				}
-				ns.set(v.id, v)
-				updated++
-			}
-
-			return jsonOk({ operation: 'upsert', updated })
-		},
+		handleVectorizeUpsert,
 	),
 
 	// Vectorize delete_by_ids (v2)
 	http.post<any, DefaultBodyType>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/v2/indexes/:indexName/delete_by_ids`,
-		async ({ request, params }) => {
-			requiredHeader(request.headers, 'authorization')
-			const accountId = String(params.accountId)
-			const indexName = String(params.indexName)
-
-			let body: any
-			try {
-				body = await request.json()
-			} catch {
-				return jsonError(400, 'Invalid JSON body for delete_by_ids.', 10006)
-			}
-
-			const ids = Array.isArray(body?.ids)
-				? (body.ids as unknown[]).filter((id): id is string => typeof id === 'string')
-				: null
-			if (!ids?.length) {
-				return jsonError(400, 'Mock delete_by_ids expected { ids: string[] }.', 10007)
-			}
-
-			const store = getOrCreateIndexStore(accountId, indexName)
-			let deleted = 0
-			for (const ns of store.values()) {
-				for (const id of ids) {
-					if (ns.delete(id)) deleted++
-				}
-			}
-
-			return jsonOk({ deleted })
-		},
+		handleVectorizeDeleteByIds,
 	),
 
 	// Vectorize delete_by_ids (legacy)
 	http.post<any, DefaultBodyType>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/indexes/:indexName/delete_by_ids`,
-		async ({ request, params }) => {
-			requiredHeader(request.headers, 'authorization')
-			const accountId = String(params.accountId)
-			const indexName = String(params.indexName)
-
-			let body: any
-			try {
-				body = await request.json()
-			} catch {
-				return jsonError(400, 'Invalid JSON body for delete_by_ids.', 10006)
-			}
-
-			const ids = Array.isArray(body?.ids)
-				? (body.ids as unknown[]).filter((id): id is string => typeof id === 'string')
-				: null
-			if (!ids?.length) {
-				return jsonError(400, 'Mock delete_by_ids expected { ids: string[] }.', 10007)
-			}
-
-			const store = getOrCreateIndexStore(accountId, indexName)
-			let deleted = 0
-			for (const ns of store.values()) {
-				for (const id of ids) {
-					if (ns.delete(id)) deleted++
-				}
-			}
-
-			return jsonOk({ deleted })
-		},
+		handleVectorizeDeleteByIds,
 	),
 ]
 
