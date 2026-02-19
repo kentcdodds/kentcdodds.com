@@ -382,20 +382,17 @@ function BlogHome() {
 	const showFeatured =
 		!isSearching && Boolean(data.recommended) && effectiveSort === 'newest'
 
+	const nonSearchingPosts = showFeatured
+		? matchingPosts.filter((p) => p.slug !== data.recommended?.slug)
+		: matchingPosts
+
 	const posts = isSearching
 		? matchingPosts.slice(0, indexToShow)
-		: (showFeatured
-				? matchingPosts.filter((p) => p.slug !== data.recommended?.slug)
-				: matchingPosts
-			).slice(0, indexToShow)
-
-	const nonSearchingPostsCount = showFeatured
-		? Math.max(0, matchingPosts.length - 1)
-		: matchingPosts.length
+		: nonSearchingPosts.slice(0, indexToShow)
 
 	const hasMorePosts = isSearching
 		? indexToShow < matchingPosts.length
-		: indexToShow < nonSearchingPostsCount
+		: indexToShow < nonSearchingPosts.length
 
 	const visibleTags = isSearching
 		? new Set(
