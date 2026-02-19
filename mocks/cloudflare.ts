@@ -442,7 +442,11 @@ async function buildSearchCorpus(): Promise<SearchDoc[]> {
 		// ignore missing content in unusual environments
 	}
 
-	docs.push(...getPodcastDocs())
+	try {
+		docs.push(...getPodcastDocs())
+	} catch {
+		// ignore podcast docs if transistor mock data is unavailable
+	}
 
 	const seen = new Set<string>()
 	return docs.filter((d) => {
@@ -457,16 +461,25 @@ async function getSearchCorpus(): Promise<SearchDoc[]> {
 	if (!searchCorpusPromise) {
 		searchCorpusPromise = buildSearchCorpus()
 	}
-	return searchCorpusPromise
+	try {
+		return await searchCorpusPromise
+	} catch {
+		// If building the corpus ever fails, don't permanently cache the rejection.
+		searchCorpusPromise = null
+		const docs: SearchDoc[] = [...getStaticDocs()]
+		try {
+			docs.push(...getPodcastDocs())
+		} catch {
+			// ignore
+		}
+		return docs
+	}
 }
 
 async function ensureSeededIndex(accountId: string, indexName: string) {
 	const key = getIndexKey(accountId, indexName)
 	const existing = seededIndexPromises.get(key)
-	if (existing) {
-		await existing
-		return
-	}
+	if (existing) return existing
 
 	const seedPromise = (async () => {
 		const store = getOrCreateIndexStore(accountId, indexName)
@@ -497,15 +510,13 @@ async function ensureSeededIndex(accountId: string, indexName: string) {
 				namespace,
 			})
 		}
-	})()
+	})().catch((e) => {
+		seededIndexPromises.delete(key)
+		throw e
+	})
 
 	seededIndexPromises.set(key, seedPromise)
-	try {
-		await seedPromise
-	} catch (error) {
-		seededIndexPromises.delete(key)
-		throw error
-	}
+	return seedPromise
 }
 
 async function parseVectorizeNdjsonVectors(request: Request) {

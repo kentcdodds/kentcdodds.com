@@ -59,6 +59,31 @@ describe('cloudflare MSW mocks', () => {
 	})
 
 	test('Vectorize query uses match-sorter when embedding text is known', async () => {
+		// Seed the expected doc so the test is independent of the filesystem.
+		const seedNdjson = `${JSON.stringify({
+			id: '/__mock__/about-kcd-mcp',
+			values: [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+			namespace: 'test',
+			metadata: {
+				type: 'page',
+				title: 'About KCD MCP',
+				url: '/__mock__/about-kcd-mcp',
+				snippet: 'About KCD MCP',
+			},
+		})}\n`
+		const seedRes = await fetch(
+			'https://api.cloudflare.com/client/v4/accounts/acc123/vectorize/v2/indexes/semantic-index/upsert',
+			{
+				method: 'POST',
+				headers: {
+					Authorization: 'Bearer test-token',
+					'Content-Type': 'application/x-ndjson',
+				},
+				body: seedNdjson,
+			},
+		)
+		expect(seedRes.ok).toBe(true)
+
 		const embedRes = await fetch(
 			'https://api.cloudflare.com/client/v4/accounts/acc123/ai/run/@cf/google/embeddinggemma-300m',
 			{
@@ -83,7 +108,12 @@ describe('cloudflare MSW mocks', () => {
 					Authorization: 'Bearer test-token',
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify({ vector, topK: 5, returnMetadata: 'all' }),
+				body: JSON.stringify({
+					vector,
+					topK: 5,
+					returnMetadata: 'all',
+					namespace: 'test',
+				}),
 			},
 		)
 		expect(queryRes.ok).toBe(true)
