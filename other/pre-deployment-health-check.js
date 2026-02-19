@@ -75,7 +75,6 @@ async function main() {
 		...process.env,
 		NODE_ENV: 'production',
 		PORT: String(port),
-		SENTRY_DSN: '', // keep the smoke test fast and avoid external calls
 	}
 
 	if (!process.env.DATABASE_URL) {
