@@ -46,7 +46,7 @@ if (process.env.NODE_ENV === 'production') {
 	await import('../server-build/index.js')
 } else {
 	const command =
-		'tsx watch --clear-screen=false --ignore ".cache/**" --ignore "app/**" --ignore "vite.config.ts.timestamp-*" --ignore "build/**" --ignore "node_modules/**" --inspect ./index.js'
+		'tsx watch --clear-screen=false --ignore ".cache/**" --ignore "app/**" --ignore "vite.config.ts.timestamp-*" --ignore "build/**" --ignore "node_modules/**" --ignore "mocks/msw.local.json" --ignore "prisma/sqlite.db*" --ignore "other/cache.db*" --inspect ./index.js'
 	let childProcess = null
 	let restarting = false
 	let lastLocalUrl = `http://localhost:${process.env.PORT || 3000}`

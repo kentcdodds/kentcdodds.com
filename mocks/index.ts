@@ -59,8 +59,9 @@ const miscHandlers = [
 		},
 	),
 	http.head('https://www.gravatar.com/avatar/:md5Hash', async () => {
-		if (await isConnectedToTheInternet()) return passthrough()
-
+		// In MOCKS mode we never want to hit the network. CI environments can
+		// allow DNS while blocking outbound HTTP, which turns this into a slow,
+		// flaky timeout. Respond deterministically with "no gravatar".
 		return HttpResponse.json(null, { status: 404 })
 	}),
 	http.get(/http:\/\/localhost:\d+\/.*/, async () => passthrough()),

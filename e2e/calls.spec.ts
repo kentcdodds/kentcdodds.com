@@ -2,6 +2,35 @@ import { faker } from '@faker-js/faker'
 import invariant from 'tiny-invariant'
 import { expect, readEmail, test } from './utils.ts'
 
+async function gotoWithRetries(
+	page: import('@playwright/test').Page,
+	url: string,
+	{
+		retries = 3,
+	}: {
+		/**
+		 * Dev runs use `tsx watch` and can occasionally restart on runtime-file
+		 * updates (sqlite/msw fixtures), which aborts navigations in flight.
+		 */
+		retries?: number
+	} = {},
+) {
+	for (let attempt = 0; attempt <= retries; attempt++) {
+		try {
+			await page.goto(url, { waitUntil: 'domcontentloaded' })
+			return
+		} catch (error: unknown) {
+			const message = error instanceof Error ? error.message : String(error)
+			const isRetriable =
+				message.includes('net::ERR_ABORTED') ||
+				message.includes('net::ERR_CONNECTION_REFUSED') ||
+				message.includes('net::ERR_CONNECTION_RESET')
+			if (!isRetriable || attempt === retries) throw error
+			await page.waitForTimeout(250 * (attempt + 1))
+		}
+	}
+}
+
 test('Call Kent recording flow', async ({ page, login }) => {
 	// This flow does real audio stitching (ffmpeg) + mocked publishing + email
 	// fixture writes, which can be slow on CI.
@@ -64,15 +93,24 @@ test('Call Kent recording flow', async ({ page, login }) => {
 	await mainContent
 		.getByRole('textbox', { name: /keywords/i })
 		.fill(faker.lorem.words(3).split(' ').join(','))
-	await mainContent.getByRole('button', { name: /submit/i }).click()
 
-	// Wait for the redirect to confirm the call was created
-	await expect(page).toHaveURL(/.*calls\/record\/[a-z0-9-]+/, {
+	const submitButton = mainContent.getByRole('button', { name: /submit/i })
+	await expect(submitButton).toBeEnabled()
+	await Promise.all([
+		page.waitForURL(/.*calls\/record\/[a-z0-9-]+/, { timeout: 10_000 }),
+		submitButton.click(),
+	])
+
+	// Confirm the call detail page finished loading before swapping auth/cookies.
+	await expect(page.getByRole('button', { name: /^delete$/i })).toBeVisible({
 		timeout: 10_000,
 	})
 
 	await login({ role: 'ADMIN' })
-	await page.goto('/calls/admin')
+	await gotoWithRetries(page, '/calls/admin')
+	await expect(page.getByRole('heading', { name: /calls admin/i })).toBeVisible({
+		timeout: 15_000,
+	})
 
 	const callLink = page.getByRole('link', { name: new RegExp(title, 'i') })
 	await expect(callLink).toBeVisible({ timeout: 10_000 })
