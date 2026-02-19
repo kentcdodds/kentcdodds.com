@@ -98,19 +98,28 @@ describe('cloudflare MSW mocks', () => {
 			},
 		})}\n`
 
-		const form = new FormData()
-		form.set(
-			'vectors',
-			new Blob([ndjson], { type: 'application/x-ndjson' }),
-			'vectors.ndjson',
-		)
+		// Vitest runs in `jsdom` by default in this repo; the `FormData` impl from
+		// jsdom is not always compatible with Node's `fetch` (undici). Use a tiny,
+		// hand-crafted multipart body to exercise the mock parser reliably.
+		const boundary = '----vitest-multipart-boundary'
+		const multipartBody = [
+			`--${boundary}\r\n`,
+			'Content-Disposition: form-data; name="vectors"; filename="vectors.ndjson"\r\n',
+			'Content-Type: application/x-ndjson\r\n',
+			'\r\n',
+			ndjson,
+			`\r\n--${boundary}--\r\n`,
+		].join('')
 
 		const upsertRes = await fetch(
 			`https://api.cloudflare.com/client/v4/accounts/${accountId}/vectorize/v2/indexes/${indexName}/upsert`,
 			{
 				method: 'POST',
-				headers: { Authorization: 'Bearer test-token' },
-				body: form,
+				headers: {
+					Authorization: 'Bearer test-token',
+					'Content-Type': `multipart/form-data; boundary=${boundary}`,
+				},
+				body: multipartBody,
 			},
 		)
 		expect(upsertRes.ok).toBe(true)
