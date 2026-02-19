@@ -842,12 +842,24 @@ function Navbar() {
 		}),
 		[],
 	)
+	const searchHotkeyModifierOptions = React.useMemo(
+		() => ({
+			preventDefault: true,
+			requireReset: true,
+			stopPropagation: true,
+		}),
+		[],
+	)
 
 	useHotkey(HOTKEY_OPEN_SEARCH.slash, openSearch, searchHotkeyOptions)
 
-	useHotkey(HOTKEY_OPEN_SEARCH.modK, openSearch, searchHotkeyOptions)
+	useHotkey(HOTKEY_OPEN_SEARCH.modK, openSearch, searchHotkeyModifierOptions)
 
-	useHotkey(HOTKEY_OPEN_SEARCH.modShiftP, openSearch, searchHotkeyOptions)
+	useHotkey(
+		HOTKEY_OPEN_SEARCH.modShiftP,
+		openSearch,
+		searchHotkeyModifierOptions,
+	)
 
 	return (
 		<div className="px-5vw relative overflow-visible py-9 lg:py-12">
