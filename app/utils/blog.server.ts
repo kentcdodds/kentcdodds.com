@@ -156,6 +156,16 @@ export async function getMostPopularPostSlugs({
 		.slice(0, limit)
 }
 
+async function promiseWithTimeout<T>(
+	promise: Promise<T>,
+	timeoutMs: number,
+): Promise<T> {
+	const timeoutPromise = new Promise<never>((_, reject) => {
+		setTimeout(() => reject(new Error('Timeout')), timeoutMs)
+	})
+	return Promise.race([promise, timeoutPromise])
+}
+
 async function getBlogPostReadCounts({
 	request,
 	timings,
@@ -177,15 +187,27 @@ async function getBlogPostReadCounts({
 			Object.values(value as Record<string, unknown>).every(
 				(v) => typeof v === 'number',
 			),
-		getFreshValue: async () => {
-			const result = await prisma.postRead.groupBy({
-				by: ['postSlug'],
-				_count: { postSlug: true },
-			})
+		getFreshValue: async (context) => {
+			try {
+				const timeoutMs = context.background ? 1000 * 10 : 1000 * 5
+				const result = await promiseWithTimeout(
+					prisma.postRead.groupBy({
+						by: ['postSlug'],
+						_count: { postSlug: true },
+					}),
+					timeoutMs,
+				)
 
-			return Object.fromEntries(
-				result.map((r) => [r.postSlug, r._count.postSlug]),
-			) as Record<string, number>
+				return Object.fromEntries(
+					result.map((r) => [r.postSlug, r._count.postSlug]),
+				) as Record<string, number>
+			} catch (error: unknown) {
+				// Popularity counts should not take down the whole /blog page.
+				console.error(`Failed to get blog post read counts`, error)
+				// Retry sooner when we hit the fallback.
+				context.metadata.ttl = 1000 * 60
+				return {}
+			}
 		},
 	})
 }
