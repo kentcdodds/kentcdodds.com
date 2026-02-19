@@ -1,4 +1,4 @@
-import type { HotkeySequence, RegisterableHotkey } from '@tanstack/hotkeys'
+import { type HotkeySequence, type RegisterableHotkey } from '@tanstack/hotkeys'
 
 export const HOTKEY_TOGGLE_HOTKEYS_DIALOG = {
 	key: '?',

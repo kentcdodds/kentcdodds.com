@@ -1,8 +1,8 @@
 import { Dialog } from '@reach/dialog'
+import { formatForDisplay } from '@tanstack/react-hotkeys'
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { formatForDisplay } from '@tanstack/react-hotkeys'
-import type { HotkeysHelpCombo, HotkeysHelpGroup } from '#app/utils/hotkeys.ts'
+import { type HotkeysHelpCombo, type HotkeysHelpGroup } from '#app/utils/hotkeys.ts'
 import { CloseIcon } from './icons.tsx'
 import { H3, Paragraph } from './typography.tsx'
 
