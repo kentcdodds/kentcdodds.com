@@ -2,7 +2,7 @@
 // which the user can dismiss for a period of time.
 import { type ActionFunctionArgs, json } from '@remix-run/node'
 import { useFetcher } from '@remix-run/react'
-import cookie from 'cookie'
+import * as cookie from 'cookie'
 import * as React from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { useSpinDelay } from 'spin-delay'

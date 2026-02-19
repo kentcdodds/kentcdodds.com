@@ -34,6 +34,7 @@ import {
 	getAllBlogPostReadRankings,
 	getBlogReadRankings,
 	getBlogRecommendations,
+	getBlogPostReadCounts,
 	getReaderCount,
 	getSlugReadsByUser,
 	getTotalPostReads,
@@ -82,6 +83,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		totalReads,
 		totalBlogReaders,
 		allPostReadRankings,
+		postReadCounts,
 		userReads,
 	] = await Promise.all([
 		getBlogMdxListItems({ request }).then((allPosts) =>
@@ -92,6 +94,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		getTotalPostReads({ request, timings }),
 		getReaderCount({ request, timings }),
 		getAllBlogPostReadRankings({ request, timings }),
+		getBlogPostReadCounts({ request, timings }),
 		getSlugReadsByUser({ request, timings }),
 	])
 
@@ -107,6 +110,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		recommended,
 		readRankings,
 		allPostReadRankings,
+		postReadCounts,
 		totalReads: formatAbbreviatedNumber(totalReads),
 		totalBlogReaders: formatAbbreviatedNumber(totalBlogReaders),
 		userReads,
@@ -155,6 +159,19 @@ const initialIndexToShow = PAGE_SIZE
 
 const specialQueryRegex = /(?<not>!)?leader:(?<team>\w+)(\s|$)?/g
 
+type SortState = 'auto' | 'newest' | 'oldest' | 'popular'
+
+function getSortStateFromParam(value: string | null): SortState {
+	switch (value) {
+		case 'newest':
+		case 'oldest':
+		case 'popular':
+			return value
+		default:
+			return 'auto'
+	}
+}
+
 function BlogHome() {
 	const { requestInfo } = useRootData()
 	const [searchParams] = useSearchParams()
@@ -176,12 +193,22 @@ function BlogHome() {
 	const [queryValue, setQuery] = React.useState<string>(() => {
 		return searchParams.get('q') ?? ''
 	})
+	const [sortState, setSortState] = React.useState<SortState>(() => {
+		return getSortStateFromParam(searchParams.get('sort'))
+	})
 	const query = queryValue.trim()
+	const regularQuery = query.replace(specialQueryRegex, '').trim()
 
 	useUpdateQueryStringValueWithoutNavigation('q', query)
+	useUpdateQueryStringValueWithoutNavigation(
+		'sort',
+		sortState === 'auto' || (sortState === 'newest' && regularQuery === '')
+			? ''
+			: sortState,
+	)
 
 	const data = useLoaderData<typeof loader>()
-	const { posts: allPosts, userReads } = data
+	const { posts: allPosts, userReads, postReadCounts } = data
 
 	const getLeadingTeamForSlug = React.useCallback(
 		(slug: string) => {
@@ -190,7 +217,12 @@ function BlogHome() {
 		[data.allPostReadRankings],
 	)
 
-	const regularQuery = query.replace(specialQueryRegex, '').trim()
+	const effectiveSort =
+		sortState === 'auto'
+			? regularQuery
+				? 'relevance'
+				: 'newest'
+			: sortState
 
 	const matchingPosts = React.useMemo(() => {
 		const r = new RegExp(specialQueryRegex)
@@ -239,21 +271,85 @@ function BlogHome() {
 					})
 				: filteredPosts
 
-		return filterPosts(filteredPosts, regularQuery)
+		const searchedPosts = filterPosts(filteredPosts, regularQuery)
+		if (effectiveSort === 'relevance') return searchedPosts
+
+		const dateTimeCache = new Map<string, number | null>()
+		const getPostDateTime = (post: (typeof searchedPosts)[number]) => {
+			const cached = dateTimeCache.get(post.slug)
+			if (cached !== undefined) return cached
+			const time = new Date(post.frontmatter.date ?? '').getTime()
+			const value = Number.isFinite(time) ? time : null
+			dateTimeCache.set(post.slug, value)
+			return value
+		}
+
+		const compareByDate = (
+			a: (typeof searchedPosts)[number],
+			b: (typeof searchedPosts)[number],
+			direction: 'asc' | 'desc',
+		) => {
+			const aTime = getPostDateTime(a)
+			const bTime = getPostDateTime(b)
+			if (aTime === null && bTime === null) return a.slug.localeCompare(b.slug)
+			if (aTime === null) return 1
+			if (bTime === null) return -1
+			if (aTime === bTime) return a.slug.localeCompare(b.slug)
+			return direction === 'desc' ? bTime - aTime : aTime - bTime
+		}
+
+		const compareByNewest = (
+			a: (typeof searchedPosts)[number],
+			b: (typeof searchedPosts)[number],
+		) => compareByDate(a, b, 'desc')
+
+		const compareByOldest = (
+			a: (typeof searchedPosts)[number],
+			b: (typeof searchedPosts)[number],
+		) => compareByDate(a, b, 'asc')
+
+		const compareByPopular = (
+			a: (typeof searchedPosts)[number],
+			b: (typeof searchedPosts)[number],
+		) => {
+			const aReads = postReadCounts[a.slug] ?? 0
+			const bReads = postReadCounts[b.slug] ?? 0
+			if (aReads !== bReads) return bReads - aReads
+			return compareByNewest(a, b)
+		}
+
+		const postsToSort = [...searchedPosts]
+		switch (effectiveSort) {
+			case 'newest':
+				return postsToSort.sort(compareByNewest)
+			case 'oldest':
+				return postsToSort.sort(compareByOldest)
+			case 'popular':
+				return postsToSort.sort(compareByPopular)
+			default: {
+				// If TypeScript ever flags this, a new SortState value was added
+				// without a corresponding sort branch.
+				const _exhaustiveCheck: never = effectiveSort
+				void _exhaustiveCheck
+				return searchedPosts
+			}
+		}
 	}, [
 		allPosts,
 		query,
 		regularQuery,
+		effectiveSort,
 		getLeadingTeamForSlug,
 		userReadsState,
 		userReads,
+		postReadCounts,
 	])
 
 	const [indexToShow, setIndexToShow] = React.useState(initialIndexToShow)
 	// when the query changes, we want to reset the index
 	React.useEffect(() => {
 		setIndexToShow(initialIndexToShow)
-	}, [query])
+	}, [query, effectiveSort, userReadsState])
 
 	// this bit is very similar to what's on the blogs page.
 	// Next time we need to do work in here, let's make an abstraction for them
@@ -286,16 +382,20 @@ function BlogHome() {
 	}
 
 	const isSearching = query.length > 0 || userReadsState !== 'unset'
+	const showFeatured =
+		!isSearching && Boolean(data.recommended) && effectiveSort === 'newest'
+
+	const nonSearchingPosts = showFeatured
+		? matchingPosts.filter((p) => p.slug !== data.recommended?.slug)
+		: matchingPosts
 
 	const posts = isSearching
 		? matchingPosts.slice(0, indexToShow)
-		: matchingPosts
-				.filter((p) => p.slug !== data.recommended?.slug)
-				.slice(0, indexToShow)
+		: nonSearchingPosts.slice(0, indexToShow)
 
 	const hasMorePosts = isSearching
 		? indexToShow < matchingPosts.length
-		: indexToShow < matchingPosts.length - 1
+		: indexToShow < nonSearchingPosts.length
 
 	const visibleTags = isSearching
 		? new Set(
@@ -517,70 +617,101 @@ function BlogHome() {
 
 			{/* this is a remix bug */}
 			{}
-			{!isSearching && data.recommended ? (
-				<div className="mb-10">
-					<FeaturedSection
-						subTitle={[
-							data.recommended.dateDisplay,
-							data.recommended.readTime?.text ?? 'quick read',
-						]
-							.filter(Boolean)
-							.join(' — ')}
-						title={data.recommended.frontmatter.title}
-						blurDataUrl={data.recommended.frontmatter.bannerBlurDataUrl}
-						imageBuilder={
-							data.recommended.frontmatter.bannerCloudinaryId
-								? getImageBuilder(
-										data.recommended.frontmatter.bannerCloudinaryId,
-										getBannerAltProp(data.recommended.frontmatter),
-									)
-								: undefined
-						}
-						caption="Featured article"
-						cta="Read full article"
-						slug={data.recommended.slug}
-						permalink={recommendedPermalink}
-						leadingTeam={getLeadingTeamForSlug(data.recommended.slug)}
-					/>
-				</div>
-			) : null}
-
-			<Grid className="mb-64" ref={resultsRef}>
-				{posts.length === 0 ? (
-					<div className="col-span-full flex flex-col items-center">
-						<img
-							{...getImgProps(images.bustedOnewheel, {
-								className: 'mt-24 h-auto w-full max-w-lg',
-								widths: [350, 512, 1024, 1536],
-								sizes: ['(max-width: 639px) 80vw', '512px'],
-							})}
-						/>
-						<H3 as="p" variant="secondary" className="mt-24 max-w-lg">
-							{`Couldn't find anything to match your criteria. Sorry.`}
-						</H3>
+			<div ref={resultsRef}>
+				<Grid className={showFeatured ? 'mb-6' : 'mb-10'}>
+					<div className="col-span-full flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+						<H6 as="div" className="m-0">
+							Articles
+						</H6>
+						<label className="flex items-center gap-3 text-sm font-medium text-slate-500">
+							<span>Sort by</span>
+							<select
+								value={
+									regularQuery === '' && sortState === 'newest'
+										? 'auto'
+										: sortState
+								}
+								onChange={(e) =>
+									setSortState(getSortStateFromParam(e.currentTarget.value))
+								}
+								className="text-primary bg-primary border-secondary focus:bg-secondary rounded-full border px-5 py-2 hover:border-team-current focus:border-team-current focus:outline-none"
+							>
+								<option value="auto">
+									{regularQuery ? 'Relevance' : 'Newest'}
+								</option>
+								{regularQuery ? <option value="newest">Newest</option> : null}
+								<option value="popular">Most popular</option>
+								<option value="oldest">Oldest</option>
+							</select>
+						</label>
 					</div>
-				) : (
-					posts.map((article) => (
-						<div key={article.slug} className="col-span-4 mb-10">
-							<ArticleCard
-								article={article}
-								leadingTeam={getLeadingTeamForSlug(article.slug)}
-							/>
-						</div>
-					))
-				)}
-			</Grid>
+				</Grid>
 
-			{hasMorePosts ? (
-				<div className="mb-64 flex w-full justify-center">
-					<Button
-						variant="secondary"
-						onClick={() => setIndexToShow((i) => i + PAGE_SIZE)}
-					>
-						<span>Load more articles</span> <PlusIcon />
-					</Button>
-				</div>
-			) : null}
+				{showFeatured && data.recommended ? (
+					<div className="mb-10">
+						<FeaturedSection
+							subTitle={[
+								data.recommended.dateDisplay,
+								data.recommended.readTime?.text ?? 'quick read',
+							]
+								.filter(Boolean)
+								.join(' — ')}
+							title={data.recommended.frontmatter.title}
+							blurDataUrl={data.recommended.frontmatter.bannerBlurDataUrl}
+							imageBuilder={
+								data.recommended.frontmatter.bannerCloudinaryId
+									? getImageBuilder(
+											data.recommended.frontmatter.bannerCloudinaryId,
+											getBannerAltProp(data.recommended.frontmatter),
+										)
+									: undefined
+							}
+							caption="Featured article"
+							cta="Read full article"
+							slug={data.recommended.slug}
+							permalink={recommendedPermalink}
+							leadingTeam={getLeadingTeamForSlug(data.recommended.slug)}
+						/>
+					</div>
+				) : null}
+
+				<Grid className="mb-64">
+					{posts.length === 0 ? (
+						<div className="col-span-full flex flex-col items-center">
+							<img
+								{...getImgProps(images.bustedOnewheel, {
+									className: 'mt-24 h-auto w-full max-w-lg',
+									widths: [350, 512, 1024, 1536],
+									sizes: ['(max-width: 639px) 80vw', '512px'],
+								})}
+							/>
+							<H3 as="p" variant="secondary" className="mt-24 max-w-lg">
+								{`Couldn't find anything to match your criteria. Sorry.`}
+							</H3>
+						</div>
+					) : (
+						posts.map((article) => (
+							<div key={article.slug} className="col-span-4 mb-10">
+								<ArticleCard
+									article={article}
+									leadingTeam={getLeadingTeamForSlug(article.slug)}
+								/>
+							</div>
+						))
+					)}
+				</Grid>
+
+				{hasMorePosts ? (
+					<div className="mb-64 flex w-full justify-center">
+						<Button
+							variant="secondary"
+							onClick={() => setIndexToShow((i) => i + PAGE_SIZE)}
+						>
+							<span>Load more articles</span> <PlusIcon />
+						</Button>
+					</div>
+				) : null}
+			</div>
 
 			<Grid>
 				<div className="col-span-full lg:col-span-5">

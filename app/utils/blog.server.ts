@@ -140,35 +140,81 @@ export async function getMostPopularPostSlugs({
 	timings?: Timings
 	request: Request
 }) {
-	const postsSortedByMostPopular = await cachified({
-		key: `sorted-most-popular-post-slugs`,
+	// NOTE: getBlogPostReadCounts is the canonical cached query; we derive
+	// most-popular ordering from its cached map to avoid duplicate DB queries.
+	const readCounts = await getBlogPostReadCounts({ request, timings })
+	const postsSortedByMostPopular = Object.entries(readCounts)
+		.sort(([aSlug, aCount], [bSlug, bCount]) => {
+			if (bCount !== aCount) return bCount - aCount
+			// deterministic tie-breaker
+			return aSlug.localeCompare(bSlug)
+		})
+		.map(([slug]) => slug)
+
+	return postsSortedByMostPopular
+		.filter((s) => !exclude.includes(s))
+		.slice(0, limit)
+}
+
+async function promiseWithTimeout<T>(
+	promise: Promise<T>,
+	timeoutMs: number,
+): Promise<T> {
+	let timeoutHandle: ReturnType<typeof setTimeout> | null = null
+	const timeoutPromise = new Promise<never>((_, reject) => {
+		timeoutHandle = setTimeout(() => reject(new Error('Timeout')), timeoutMs)
+	})
+	try {
+		return await Promise.race([promise, timeoutPromise])
+	} finally {
+		if (timeoutHandle) clearTimeout(timeoutHandle)
+	}
+}
+
+async function getBlogPostReadCounts({
+	request,
+	timings,
+}: {
+	request: Request
+	timings?: Timings
+}) {
+	return cachified({
+		key: `blog:post-read-counts`,
 		ttl: 1000 * 60 * 30,
 		staleWhileRevalidate: 1000 * 60 * 60 * 24,
 		cache: lruCache,
 		request,
-		getFreshValue: async () => {
-			const result = await prisma.postRead.groupBy({
-				by: ['postSlug'],
-				_count: true,
-				orderBy: {
-					_count: {
-						postSlug: 'desc',
-					},
-				},
-			})
-
-			return result.map((p) => p.postSlug)
-		},
 		timings,
 		checkValue: (value: unknown) =>
-			Array.isArray(value) && value.every((v) => typeof v === 'string'),
+			typeof value === 'object' &&
+			value !== null &&
+			!Array.isArray(value) &&
+			Object.values(value as Record<string, unknown>).every(
+				(v) => typeof v === 'number',
+			),
+		getFreshValue: async (context) => {
+			try {
+				const timeoutMs = context.background ? 1000 * 10 : 1000 * 5
+				const result = await promiseWithTimeout(
+					prisma.postRead.groupBy({
+						by: ['postSlug'],
+						_count: { postSlug: true },
+					}),
+					timeoutMs,
+				)
+
+				return Object.fromEntries(
+					result.map((r) => [r.postSlug, r._count.postSlug]),
+				) as Record<string, number>
+			} catch (error: unknown) {
+				// Popularity counts should not take down the whole /blog page.
+				console.error(`Failed to get blog post read counts`, error)
+				// Retry sooner when we hit the fallback.
+				context.metadata.ttl = 1000 * 60
+				return {}
+			}
+		},
 	})
-	// NOTE: we're not using exclude and limit in the query itself because it's
-	// a slow query and quite hard to cache. It's not a lot of data that's returned
-	// anyway, so we can easily filter it out here.
-	return postsSortedByMostPopular
-		.filter((s) => !exclude.includes(s))
-		.slice(0, limit)
 }
 
 async function getTotalPostReads({
@@ -559,6 +605,7 @@ export {
 	getBlogReadRankings,
 	getAllBlogPostReadRankings,
 	getSlugReadsByUser,
+	getBlogPostReadCounts,
 	getTotalPostReads,
 	getReaderCount,
 	getPostJson,
