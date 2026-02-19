@@ -87,12 +87,14 @@ test('Call Kent recording flow', async ({ page, login }) => {
 	const titleInput = mainContent.getByRole('textbox', { name: /title/i })
 	await expect(titleInput).toBeVisible({ timeout: 15_000 })
 	await titleInput.fill(title)
+	const description = faker.lorem.paragraph()
+	const keywords = faker.lorem.words(3).split(' ').join(',')
 	await mainContent
 		.getByRole('textbox', { name: /description/i })
-		.fill(faker.lorem.paragraph())
+		.fill(description)
 	await mainContent
 		.getByRole('textbox', { name: /keywords/i })
-		.fill(faker.lorem.words(3).split(' ').join(','))
+		.fill(keywords)
 
 	const submitButton = mainContent.getByRole('button', { name: /submit/i })
 	await expect(submitButton).toBeEnabled()
@@ -102,9 +104,7 @@ test('Call Kent recording flow', async ({ page, login }) => {
 	])
 
 	// Confirm the call detail page finished loading before swapping auth/cookies.
-	await expect(page.getByRole('button', { name: /^delete$/i })).toBeVisible({
-		timeout: 10_000,
-	})
+	await expect(page.getByText(description)).toBeVisible({ timeout: 10_000 })
 
 	await login({ role: 'ADMIN' })
 	await gotoWithRetries(page, '/calls/admin')
