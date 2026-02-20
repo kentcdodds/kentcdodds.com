@@ -868,16 +868,17 @@ function Navbar() {
 		[openSearch],
 	)
 
-	useHotkey(
-		HOTKEY_OPEN_SEARCH.modShiftP,
-		openSearchFromModShiftP,
-		{
-			...searchHotkeyModifierOptions,
-			// `preventDefault: true` happens before our callback, which would prevent
-			// the browser/devtools shortcut even when we intentionally return early.
-			preventDefault: false,
-		},
-	)
+	React.useEffect(() => {
+		const onKeyDown = (event: KeyboardEvent) => {
+			const isMod = event.metaKey || event.ctrlKey
+			if (!isMod || !event.shiftKey) return
+			if (event.key.toLowerCase() !== 'p') return
+			openSearchFromModShiftP(event)
+		}
+
+		document.addEventListener('keydown', onKeyDown)
+		return () => document.removeEventListener('keydown', onKeyDown)
+	}, [openSearchFromModShiftP])
 
 	return (
 		<div className="px-5vw relative overflow-visible py-9 lg:py-12">
