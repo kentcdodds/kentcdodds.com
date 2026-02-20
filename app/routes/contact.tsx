@@ -107,8 +107,8 @@ export default function ContactRoute() {
 	const emailSuccessfullySent = isDone && actionData.status === 'success'
 
 	return (
-        (<div>
-            <HeroSection
+		<div>
+			<HeroSection
 				title="Send me an email."
 				subtitle="Like in the old days."
 				image={
@@ -120,7 +120,7 @@ export default function ContactRoute() {
 					/>
 				}
 			/>
-            <main>
+			<main>
 				<contactFetcher.Form
 					method="POST"
 					noValidate
@@ -185,17 +185,17 @@ export default function ContactRoute() {
 										`Hooray, email sent! 🎉`
 									) : (
 										// IDEA: show a loading state here
-										(<ButtonGroup>
-                                            <Button
+										<ButtonGroup>
+											<Button
 												type="submit"
 												disabled={contactFetcher.state !== 'idle'}
 											>
 												Send message
 											</Button>
-                                            <Button variant="secondary" type="reset">
+											<Button variant="secondary" type="reset">
 												Reset form
 											</Button>
-                                        </ButtonGroup>)
+										</ButtonGroup>
 									)}
 									{actionData?.errors.generalError ? (
 										<ErrorPanel id="contact-form-error">
@@ -218,6 +218,6 @@ export default function ContactRoute() {
 					</Grid>
 				</contactFetcher.Form>
 			</main>
-        </div>)
-    );
+		</div>
+	)
 }
