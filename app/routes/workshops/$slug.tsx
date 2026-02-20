@@ -42,7 +42,7 @@ import { getWorkshops } from '#app/utils/workshops.server.ts'
 import {
 	useWorkshopsData,
 	type loader as WorkshopLoader,
-} from './_workshops.tsx'
+} from './_layout.tsx'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: serverOnly$(async (request: Request) => {
@@ -93,14 +93,14 @@ export const meta: MetaFunction<
 	{},
 	{
 		root: RootLoaderType
-		'routes/workshops/_workshops': typeof WorkshopLoader
+		'routes/workshops/_layout': typeof WorkshopLoader
 	}
 > = ({ matches, params }) => {
 	const { requestInfo } = matches.find((m) => m.id === 'root')
 		?.data as SerializeFrom<RootLoaderType>
 	let workshop: Workshop | undefined
 	const workshopsData = matches.find(
-		(m) => m.id === 'routes/workshops/_workshops',
+		(m) => m.id === 'routes/workshops/_layout',
 	)?.data as SerializeFrom<typeof WorkshopLoader> | undefined
 	if (Array.isArray(workshopsData?.workshops)) {
 		workshop = workshopsData.workshops.find(

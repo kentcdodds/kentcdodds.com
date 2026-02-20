@@ -23,7 +23,7 @@ import { type WorkshopEvent } from '#app/utils/workshop-tickets.server.ts'
 import {
 	useWorkshopsData,
 	type loader as WorkshopLoader,
-} from './_workshops.tsx'
+} from './_layout.tsx'
 
 type RootLoaderData = SerializeFrom<RootLoaderType>
 type WorkshopLoaderData = SerializeFrom<typeof WorkshopLoader>
@@ -32,12 +32,12 @@ export const meta: MetaFunction<
 	{},
 	{
 		root: RootLoaderType
-		'routes/workshops/_workshops': typeof WorkshopLoader
+		'routes/workshops/_layout': typeof WorkshopLoader
 	}
 > = ({ matches }) => {
 	const { requestInfo } = matches.find((m) => m.id === 'root')
 		?.data as RootLoaderData
-	const data = matches.find((m) => m.id === 'routes/workshops/_workshops')
+	const data = matches.find((m) => m.id === 'routes/workshops/_layout')
 		?.data as WorkshopLoaderData
 
 	const tagsSet = new Set<string>()

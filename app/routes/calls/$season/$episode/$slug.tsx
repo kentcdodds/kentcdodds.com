@@ -23,7 +23,7 @@ import { Themed } from '#app/utils/theme.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { getEpisodes } from '#app/utils/transistor.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
-import { useCallsData, type loader as callsLoader } from '../calls.tsx'
+import { useCallsData, type loader as callsLoader } from '../../_layout.tsx'
 
 export const handle: KCDHandle = {
 	id: 'call-player',
@@ -42,23 +42,23 @@ export const handle: KCDHandle = {
 
 export const meta: MetaFunction<
 	typeof loader,
-	{ root: RootLoaderType; 'routes/calls': typeof callsLoader }
+	{ root: RootLoaderType; 'routes/calls/_layout': typeof callsLoader }
 > = ({ matches, params }) => {
 	const { requestInfo } = matches.find((m) => m.id === 'root')
 		?.data as SerializeFrom<typeof rootLoader>
-	const callsData = matches.find((m) => m.id === 'routes/calls')?.data as
+	const callsData = matches.find((m) => m.id === 'routes/calls/_layout')?.data as
 		| SerializeFrom<typeof callsLoader>
 		| undefined
 	if (!callsData) {
 		console.error(
-			`A call was unable to retrieve the parent's data by routes/calls`,
+			`A call was unable to retrieve the parent's data by routes/calls/_layout`,
 		)
 		return [{ title: 'Call not found' }]
 	}
 	const episode = getEpisodeFromParams(callsData.episodes, params as Params)
 	if (!episode) {
 		console.error(
-			`A call was unable to retrieve the parent's data by routes/calls`,
+			`A call was unable to retrieve the parent's data by routes/calls/_layout`,
 		)
 		return [{ title: 'Call not found' }]
 	}

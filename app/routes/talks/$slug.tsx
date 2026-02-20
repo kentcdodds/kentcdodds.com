@@ -1,4 +1,4 @@
-// this is a placeholder to make /routes/talks+/_talks catch nested paths
+// this is a placeholder to make /routes/talks/_layout catch nested paths
 
 import { type MetaFunction } from 'react-router';
 import { getSocialImageWithPreTitle } from '#app/images.tsx'
@@ -6,14 +6,14 @@ import { type RootLoaderType } from '#app/root.tsx'
 import { getDisplayUrl, getUrl } from '#app/utils/misc.tsx'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
-import { type loader as talkLoader } from './_talks.tsx'
+import { type loader as talkLoader } from './_layout.tsx'
 
 export const meta: MetaFunction<
 	{},
-	{ root: RootLoaderType; 'routes/talks/_talks': typeof talkLoader }
+	{ root: RootLoaderType; 'routes/talks/_layout': typeof talkLoader }
 > = ({ matches, params }) => {
 	const { talks = [] } =
-		(matches.find((m) => m.id === 'routes/talks/_talks')?.data as
+		(matches.find((m) => m.id === 'routes/talks/_layout')?.data as
 			| SerializeFrom<typeof talkLoader>
 			| undefined) ?? {}
 	const { requestInfo } = matches.find((m) => m.id === 'root')

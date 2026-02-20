@@ -23,7 +23,7 @@ import {
 import { useCallsEpisodeUIState } from '#app/utils/providers.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { getEpisodes } from '#app/utils/transistor.server.ts'
-import { getEpisodesBySeason } from '../calls.tsx'
+import { getEpisodesBySeason } from '../_layout.tsx'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: serverOnly$(async (request: Request) => {
