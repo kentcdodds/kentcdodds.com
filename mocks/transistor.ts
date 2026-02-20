@@ -59,7 +59,7 @@ function makeEpisode(
 }
 
 const episodes: Array<TransistorEpisodeData> = Array.from(
-	{ length: 99 },
+	{ length: 300 },
 	(item, index) =>
 		makeEpisode({
 			attributes: {
