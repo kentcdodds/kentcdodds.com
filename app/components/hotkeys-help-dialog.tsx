@@ -128,7 +128,7 @@ function HotkeysHelpDialog({
 						type="button"
 						onClick={onDismiss}
 						aria-label="Close keyboard shortcuts dialog"
-						className="text-secondary hover:text-primary inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-md p-1 transition"
+						className="text-secondary hover:text-primary focus-visible:text-primary focus-visible:ring-team-current focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900 inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-md p-1 transition"
 					>
 						<CloseIcon size={18} />
 					</button>
