@@ -2,7 +2,7 @@
 import { execSync } from 'child_process'
 import https from 'https'
 
-export function fetchJson(url, { timoutTime } = {}) {
+export function fetchJson(url, { timeoutTime, timoutTime } = {}) {
 	return new Promise((resolve, reject) => {
 		const request = https
 			.get(url, (res) => {
@@ -22,10 +22,11 @@ export function fetchJson(url, { timoutTime } = {}) {
 			.on('error', (e) => {
 				reject(e)
 			})
-		if (timoutTime) {
+		const effectiveTimeoutTime = timeoutTime ?? timoutTime
+		if (effectiveTimeoutTime) {
 			setTimeout(() => {
 				request.destroy(new Error('Request timed out'))
-			}, timoutTime)
+			}, effectiveTimeoutTime)
 		}
 	})
 }

@@ -3,6 +3,18 @@ const hostname =
 		? 'kcd-staging.fly.dev'
 		: 'kentcdodds.com'
 
+const defaultTimeoutMs = 30_000
+
+function withStatusMessage(statusCode, body) {
+	const message =
+		typeof body === 'string' && body.trim()
+			? body.trim()
+			: '<empty response body>'
+	return new Error(
+		`refresh-cache request failed with status ${statusCode}: ${message}`,
+	)
+}
+
 // try to keep this dep-free so we don't have to install deps
 export async function postRefreshCache({
 	http,
@@ -37,18 +49,45 @@ export async function postRefreshCache({
 					})
 
 					res.on('end', () => {
+						const statusCode = Number(res.statusCode ?? 500)
+						const isOk = statusCode >= 200 && statusCode < 300
 						try {
-							resolve(JSON.parse(data))
+							const parsed = JSON.parse(data)
+							if (!isOk) {
+								reject(
+									new Error(
+										`refresh-cache request failed with status ${statusCode}: ${JSON.stringify(parsed)}`,
+									),
+								)
+								return
+							}
+							resolve(parsed)
 						} catch {
-							reject(data)
+							if (!isOk) {
+								reject(withStatusMessage(statusCode, data))
+								return
+							}
+							reject(
+								new Error(
+									`refresh-cache request returned non-JSON success response: ${data}`,
+								),
+							)
 						}
 					})
 				})
 				.on('error', reject)
+			const timeoutMs =
+				typeof options.timeout === 'number'
+					? options.timeout
+					: defaultTimeoutMs
+			req.setTimeout(timeoutMs, () => {
+				req.destroy(
+					new Error(`refresh-cache request timed out after ${timeoutMs}ms`),
+				)
+			})
 			req.write(postDataString)
 			req.end()
 		} catch (error) {
-			console.log('oh no', error)
 			reject(error)
 		}
 	})
