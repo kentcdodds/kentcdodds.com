@@ -90,7 +90,7 @@ describe('RecordingForm', () => {
 			requestInfo: { flyPrimaryInstance: 'primary-abc123' },
 		})
 
-		let loadEndListener: ((event: ProgressEvent<FileReader>) => void) | null = null
+		let loadEndListener: (() => void) | null = null
 		const readAsDataURL = vi.fn(function (this: SuccessfulFileReader) {
 			this.result = 'data:audio/wav;base64,ZmFrZQ=='
 			loadEndListener?.(new ProgressEvent('loadend'))
@@ -103,7 +103,8 @@ describe('RecordingForm', () => {
 				listener: EventListenerOrEventListenerObject,
 			) {
 				if (eventName === 'loadend') {
-					loadEndListener = listener as (event: ProgressEvent<FileReader>) => void
+					loadEndListener =
+						typeof listener === 'function' ? () => listener(new Event('loadend')) : null
 				}
 			}
 			removeEventListener() {}
