@@ -18,6 +18,17 @@ interface TweetBase {
 	isStaleEdit: boolean
 }
 
+interface NoteTweetResult {
+	text?: string
+}
+
+interface NoteTweet {
+	id: string
+	note_tweet_results?: {
+		result?: NoteTweetResult
+	}
+}
+
 export interface Tweet extends TweetBase {
 	__typename: 'Tweet'
 	favorite_count: number
@@ -32,6 +43,7 @@ export interface Tweet extends TweetBase {
 	in_reply_to_user_id_str?: string
 	parent?: TweetParent
 	possibly_sensitive?: boolean
+	note_tweet?: NoteTweet
 }
 
 export interface TweetParent extends TweetBase {

@@ -118,9 +118,23 @@ const arrowSvg = `<svg width="24" height="24" fill="none" viewBox="0 0 24 24">
 </svg>
 `
 
+function getTweetTextInfo(tweet: Tweet) {
+	const fullNoteTweetText =
+		tweet.note_tweet?.note_tweet_results?.result?.text?.trim()
+	if (fullNoteTweetText) {
+		return { text: fullNoteTweetText, hasMoreContent: false }
+	}
+
+	// X returns an identifier when a post has additional longform text but the
+	// syndication payload does not include the full body.
+	const hasMoreContent = Boolean(tweet.note_tweet?.id)
+	return { text: tweet.text, hasMoreContent }
+}
+
 async function buildTweetHTML(tweet: Tweet, expandQuotedTweet: boolean) {
 	const author = tweet.user
 	const postURL = `https://x.com/${author.screen_name}/status/${tweet.id_str}`
+	const { text: tweetText, hasMoreContent } = getTweetTextInfo(tweet)
 
 	// _normal is only 48x48 which looks bad on high-res displays
 	// _bigger is 73x73 which looks better...
@@ -136,7 +150,7 @@ async function buildTweetHTML(tweet: Tweet, expandQuotedTweet: boolean) {
 
 	const links = (
 		await Promise.all(
-			[...tweet.text.matchAll(/https:\/\/t.co\/\w+/g)].map(
+			[...tweetText.matchAll(/https:\/\/t.co\/\w+/g)].map(
 				async ([shortLink]) => {
 					if (!shortLink) return
 					const longLink = await unshorten(shortLink).catch(() => shortLink)
@@ -184,7 +198,7 @@ async function buildTweetHTML(tweet: Tweet, expandQuotedTweet: boolean) {
 		)
 	).filter(typedBoolean)
 
-	let blockquote = tweet.text
+	let blockquote = tweetText
 	for (let index = 0; index < links.length; index++) {
 		const linkInfo = links[index]
 		if (!linkInfo) continue
@@ -212,6 +226,10 @@ async function buildTweetHTML(tweet: Tweet, expandQuotedTweet: boolean) {
 		/@(\w+)/g,
 		`<a href="https://x.com/$1" target="_blank" rel="noreferrer noopener">$&</a>`,
 	)
+	if (hasMoreContent) {
+		const spacing = /\s$/.test(blockquote) ? '' : ' '
+		blockquote += `${spacing}<a class="tweet-read-more" href="${postURL}" target="_blank" rel="noreferrer noopener">...</a>`
+	}
 
 	const tweetHTML = `<blockquote>${blockquote.trim()}</blockquote>`
 
