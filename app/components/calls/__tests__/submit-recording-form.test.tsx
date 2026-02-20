@@ -83,4 +83,87 @@ describe('RecordingForm', () => {
 			vi.unstubAllGlobals()
 		}
 	})
+
+	it('submits to submitAction and navigates on redirect responses', async () => {
+		vi.clearAllMocks()
+		mockUseRootData.mockReturnValue({
+			requestInfo: { flyPrimaryInstance: 'primary-abc123' },
+		})
+
+		let loadEndListener: ((event: ProgressEvent<FileReader>) => void) | null = null
+		const readAsDataURL = vi.fn(function (this: SuccessfulFileReader) {
+			this.result = 'data:audio/wav;base64,ZmFrZQ=='
+			loadEndListener?.(new ProgressEvent('loadend'))
+		})
+
+		class SuccessfulFileReader {
+			result: string | ArrayBuffer | null = null
+			addEventListener(
+				eventName: string,
+				listener: EventListenerOrEventListenerObject,
+			) {
+				if (eventName === 'loadend') {
+					loadEndListener = listener as (event: ProgressEvent<FileReader>) => void
+				}
+			}
+			removeEventListener() {}
+			readAsDataURL = readAsDataURL
+		}
+
+		const fetchMock = vi.fn().mockResolvedValue({
+			ok: true,
+			redirected: true,
+			url: 'http://localhost/calls/record/fake-call-id?ok=1#done',
+		} as Response)
+
+		vi.stubGlobal(
+			'FileReader',
+			SuccessfulFileReader as unknown as typeof FileReader,
+		)
+		vi.stubGlobal('fetch', fetchMock as unknown as typeof fetch)
+		const createObjectURL = vi
+			.spyOn(URL, 'createObjectURL')
+			.mockReturnValue('blob:recording')
+		const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+
+		try {
+			const { container } = render(
+				<RecordingForm
+					audio={new Blob(['audio'])}
+					submitAction="/resources/calls/save"
+				/>,
+			)
+
+			const titleInput = screen.getByLabelText('Title')
+			fireEvent.change(titleInput, { target: { value: 'My First Call' } })
+			const form = container.querySelector('form')
+			expect(form).not.toBeNull()
+			fireEvent.submit(form as HTMLFormElement)
+
+			await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+			const [requestUrl, requestInit] = fetchMock.mock.calls[0] ?? []
+			expect(requestUrl).toBe('/resources/calls/save')
+			expect(requestInit?.method).toBe('POST')
+			const requestHeaders = requestInit?.headers as Headers
+			expect(requestHeaders.get('Content-Type')).toContain(
+				'application/x-www-form-urlencoded',
+			)
+			expect(requestHeaders.get('fly-force-instance-id')).toBe('primary-abc123')
+
+			const requestBody = requestInit?.body as URLSearchParams
+			expect(requestBody.get('audio')).toBe('data:audio/wav;base64,ZmFrZQ==')
+			expect(requestBody.get('title')).toBe('My First Call')
+
+			await waitFor(() =>
+				expect(mockNavigate).toHaveBeenCalledWith(
+					'/calls/record/fake-call-id?ok=1#done',
+				),
+			)
+			expect(mockRevalidate).not.toHaveBeenCalled()
+		} finally {
+			createObjectURL.mockRestore()
+			revokeObjectURL.mockRestore()
+			vi.unstubAllGlobals()
+		}
+	})
 })

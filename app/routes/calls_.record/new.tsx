@@ -1,104 +1,19 @@
 import * as React from 'react'
-import { data as json, redirect, Link, useActionData } from 'react-router';
+import { Link } from 'react-router'
 import { CallRecorder } from '#app/components/calls/recorder.tsx'
-import {
-	RecordingForm,
-	type RecordingFormData,
-} from '#app/components/calls/submit-recording-form.tsx'
+import { RecordingForm } from '#app/components/calls/submit-recording-form.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { Grimmacing } from '#app/components/kifs.tsx'
 import { H4, Paragraph } from '#app/components/typography.tsx'
 import { type KCDHandle } from '#app/types.ts'
-import {
-	getErrorForAudio,
-	getErrorForDescription,
-	getErrorForKeywords,
-	getErrorForTitle,
-} from '#app/utils/call-kent.ts'
-import { sendMessageFromDiscordBot } from '#app/utils/discord.server.ts'
-import {
-	getDomainUrl,
-	getErrorMessage,
-	getNonNull,
-	getOptionalTeam,
-	getRequiredServerEnvVar,
-	useCapturedRouteError,
-} from '#app/utils/misc.tsx'
-import { prisma } from '#app/utils/prisma.server.ts'
-import { requireUser } from '#app/utils/session.server.ts'
-import { teamEmoji } from '#app/utils/team-provider.tsx'
+import { useCapturedRouteError } from '#app/utils/misc.tsx'
 import { useRootData } from '#app/utils/use-root-data.ts'
-import  { type Route } from './+types/new'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
 }
 
-export async function action({ request }: Route.ActionArgs) {
-	const user = await requireUser(request)
-	const actionData: ActionData = { fields: {}, errors: {} }
-	const domainUrl = getDomainUrl(request)
-	try {
-		const requestText = await request.text()
-		const form = new URLSearchParams(requestText)
-
-		const formData = {
-			audio: form.get('audio'),
-			title: form.get('title'),
-			description: form.get('description'),
-			keywords: form.get('keywords'),
-		}
-		actionData.fields = {
-			title: formData.title,
-			description: formData.description,
-			keywords: formData.keywords,
-		}
-
-		actionData.errors = {
-			audio: getErrorForAudio(formData.audio),
-			title: getErrorForTitle(formData.title),
-			description: getErrorForDescription(formData.description),
-			keywords: getErrorForKeywords(formData.keywords),
-		}
-
-		if (Object.values(actionData.errors).some((err) => err !== null)) {
-			return json(actionData, 401)
-		}
-
-		const { audio, title, description, keywords } = getNonNull(formData)
-
-		const call = {
-			title,
-			description,
-			keywords,
-			userId: user.id,
-			base64: audio,
-		}
-		const createdCall = await prisma.call.create({ data: call })
-
-		try {
-			const channelId = getRequiredServerEnvVar('DISCORD_PRIVATE_BOT_CHANNEL')
-			const adminUserId = getRequiredServerEnvVar('DISCORD_ADMIN_USER_ID')
-			const { firstName, team, discordId } = user
-			const userMention = discordId ? `<@!${discordId}>` : firstName
-			const emoji = teamEmoji[getOptionalTeam(team)]
-			const message = `📳 <@!${adminUserId}> ring ring! New call from ${userMention} ${emoji}: "${title}"\n\n${description}\n\n${domainUrl}/calls/admin/${createdCall.id}`
-			void sendMessageFromDiscordBot(channelId, message)
-		} catch (error: unknown) {
-			console.error('Problem sending a call message', error)
-			// ignore
-		}
-		return redirect(`/calls/record/${createdCall.id}`)
-	} catch (error: unknown) {
-		actionData.errors.generalError = getErrorMessage(error)
-		return json(actionData, 500)
-	}
-}
-
-type ActionData = RecordingFormData
-
 export default function RecordScreen() {
-	const actionData = useActionData<Route.ComponentProps['actionData']>()
 	const [audio, setAudio] = React.useState<Blob | null>(null)
 	const { user, userInfo } = useRootData()
 	// should be impossible...
@@ -106,7 +21,7 @@ export default function RecordScreen() {
 	return (
 		<div>
 			{audio ? (
-				<RecordingForm audio={audio} data={actionData} />
+				<RecordingForm audio={audio} submitAction="/resources/calls/save" />
 			) : (
 				<div>
 					<Paragraph className="mb-4">

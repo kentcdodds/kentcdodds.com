@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { useNavigate, useRevalidator } from 'react-router'
-import { decodeSingleFetchResponse } from '#app/utils/react-router-single-fetch.client.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import { Button } from '../button.tsx'
 import { Field } from '../form-elements.tsx'
@@ -26,9 +25,11 @@ type RecordingFormData = {
 function RecordingForm({
 	audio,
 	data,
+	submitAction,
 }: {
 	audio: Blob
 	data?: RecordingFormData
+	submitAction?: string
 }) {
 	const navigate = useNavigate()
 	const revalidator = useRevalidator()
@@ -87,41 +88,18 @@ function RecordingForm({
 				abortControllerRef.current = abortController
 
 				try {
-					const dataUrl = `${window.location.pathname.replace(/\/$/, '')}.data`
-					const response = await fetch(dataUrl, {
+					const response = await fetch(submitAction ?? window.location.pathname, {
 						method: 'POST',
 						body,
 						headers,
 						signal: abortController.signal,
 					})
 
-					const contentType = response.headers.get('Content-Type') ?? ''
-					if (contentType.includes('text/x-script')) {
-						if (!response.body) {
-							setRequestError('Unexpected response from server.')
-							return
-						}
-						const decoded = await decodeSingleFetchResponse(response.body)
-						if (decoded.type === 'redirect') {
-							const redirectUrl = new URL(decoded.redirect, window.location.origin)
-							await navigate(`${redirectUrl.pathname}${redirectUrl.search}`, {
-								replace: decoded.replace,
-							})
-							return
-						}
-						if (decoded.type === 'data') {
-							if (decoded.data && typeof decoded.data === 'object') {
-								setSubmissionData(decoded.data as RecordingFormData)
-								return
-							}
-							setRequestError('Unexpected response from server.')
-							return
-						}
-						if (decoded.type === 'error') {
-							setRequestError('Something went wrong submitting your recording.')
-							return
-						}
-						setRequestError('Unexpected response from server.')
+					if (response.redirected && response.url) {
+						const redirectUrl = new URL(response.url, window.location.origin)
+						await navigate(
+							`${redirectUrl.pathname}${redirectUrl.search}${redirectUrl.hash}`,
+						)
 						return
 					}
 
