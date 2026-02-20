@@ -1,9 +1,11 @@
-import { Dialog } from '@reach/dialog'
+import { DialogContent, DialogOverlay } from '@reach/dialog'
 import { formatForDisplay } from '@tanstack/react-hotkeys'
 import * as React from 'react'
 import { type HotkeysHelpCombo, type HotkeysHelpGroup } from '#app/utils/hotkeys.ts'
 import { CloseIcon } from './icons.tsx'
 import { H3, Paragraph } from './typography.tsx'
+
+const HOTKEYS_HELP_DIALOG_ANIMATION_DURATION_MS = 200
 
 function Kbd({ children }: { children: React.ReactNode }) {
 	return (
@@ -39,64 +41,126 @@ function HotkeysHelpDialog({
 	onDismiss: () => void
 	groups: ReadonlyArray<HotkeysHelpGroup>
 }) {
-	return (
-		<Dialog
-			isOpen={isOpen}
-			onDismiss={onDismiss}
-			aria-label="Keyboard shortcuts"
-			className="bg-primary text-primary !w-11/12 !max-w-3xl rounded-xl border-2 border-black px-6 py-6 shadow-xl sm:px-8 sm:py-8 dark:border-white dark:!bg-gray-900"
-		>
-			<div className="flex items-start justify-between gap-6">
-				<div className="min-w-0">
-					<H3 className="pr-6">Keyboard shortcuts</H3>
-					<Paragraph prose={false} className="mt-2 text-base">
-						Press <Kbd>?</Kbd> again to close.
-					</Paragraph>
-				</div>
-				<button
-					type="button"
-					onClick={onDismiss}
-					aria-label="Close keyboard shortcuts dialog"
-					className="focus-ring text-secondary hover:text-primary inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md p-1 transition focus:outline-none"
-				>
-					<CloseIcon size={18} />
-				</button>
-			</div>
+	const [isMounted, setIsMounted] = React.useState(isOpen)
+	const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false)
+	const closeTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+	const animationDurationMs = prefersReducedMotion
+		? 0
+		: HOTKEYS_HELP_DIALOG_ANIMATION_DURATION_MS
 
-			<div className="mt-8 space-y-8">
-				{groups.map((group) => (
-					<section key={group.title}>
-						<div className="text-secondary mb-3 text-xs font-semibold tracking-widest uppercase">
-							{group.title}
-						</div>
-						<ul className="space-y-4">
-							{group.items.map((item) => (
-								<li
-									key={`${group.title}-${item.description}`}
-									className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
-								>
-									<div className="flex flex-wrap items-center gap-2">
-										{item.combos.map((combo, index) => (
-											<React.Fragment key={index}>
-												{index === 0 ? null : (
-													<span className="text-secondary px-1 text-sm">
-														or
-													</span>
-												)}
-												{renderCombo(combo)}
-											</React.Fragment>
-										))}
-									</div>
-									<div className="text-secondary text-sm sm:text-base">
-										{item.description}
-									</div>
-								</li>
-							))}
-						</ul>
-					</section>
-				))}
-			</div>
-		</Dialog>
+	React.useEffect(() => {
+		const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+		const updateReducedMotionPreference = () => {
+			setPrefersReducedMotion(mediaQuery.matches)
+		}
+
+		updateReducedMotionPreference()
+		mediaQuery.addEventListener('change', updateReducedMotionPreference)
+
+		return () => {
+			mediaQuery.removeEventListener('change', updateReducedMotionPreference)
+		}
+	}, [])
+
+	React.useEffect(() => {
+		return () => {
+			if (closeTimeoutRef.current) {
+				clearTimeout(closeTimeoutRef.current)
+			}
+		}
+	}, [])
+
+	React.useEffect(() => {
+		if (isOpen) {
+			if (closeTimeoutRef.current) {
+				clearTimeout(closeTimeoutRef.current)
+				closeTimeoutRef.current = null
+			}
+			setIsMounted(true)
+			return
+		}
+
+		if (!isMounted) return
+
+		if (animationDurationMs === 0) {
+			setIsMounted(false)
+			return
+		}
+
+		closeTimeoutRef.current = setTimeout(() => {
+			setIsMounted(false)
+			closeTimeoutRef.current = null
+		}, animationDurationMs)
+	}, [animationDurationMs, isMounted, isOpen])
+
+	if (!isMounted) return null
+
+	const animationState = isOpen ? 'open' : 'closed'
+
+	return (
+		<DialogOverlay
+			isOpen={isMounted}
+			onDismiss={onDismiss}
+			className="hotkeys-help-dialog-overlay"
+			data-animation-state={animationState}
+		>
+			<DialogContent
+				aria-label="Keyboard shortcuts"
+				data-animation-state={animationState}
+				className="hotkeys-help-dialog-content bg-primary text-primary !w-11/12 !max-w-3xl rounded-xl border-2 border-black px-6 py-6 shadow-xl sm:px-8 sm:py-8 dark:border-white dark:!bg-gray-900"
+			>
+				<div className="flex items-start justify-between gap-6">
+					<div className="min-w-0">
+						<H3 className="pr-6">Keyboard shortcuts</H3>
+						<Paragraph prose={false} className="mt-2 text-base">
+							Press <Kbd>?</Kbd> again to close.
+						</Paragraph>
+					</div>
+					<button
+						type="button"
+						onClick={onDismiss}
+						aria-label="Close keyboard shortcuts dialog"
+						className="text-secondary hover:text-primary inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-md p-1 transition"
+					>
+						<CloseIcon size={18} />
+					</button>
+				</div>
+
+				<div className="mt-8 space-y-8">
+					{groups.map((group) => (
+						<section key={group.title}>
+							<div className="text-secondary mb-3 text-xs font-semibold tracking-widest uppercase">
+								{group.title}
+							</div>
+							<ul className="space-y-4">
+								{group.items.map((item) => (
+									<li
+										key={`${group.title}-${item.description}`}
+										className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+									>
+										<div className="flex flex-wrap items-center gap-2">
+											{item.combos.map((combo, index) => (
+												<React.Fragment key={index}>
+													{index === 0 ? null : (
+														<span className="text-secondary px-1 text-sm">
+															or
+														</span>
+													)}
+													{renderCombo(combo)}
+												</React.Fragment>
+											))}
+										</div>
+										<div className="text-secondary text-sm sm:text-base">
+											{item.description}
+										</div>
+									</li>
+								))}
+							</ul>
+						</section>
+					))}
+				</div>
+			</DialogContent>
+		</DialogOverlay>
 	)
 }
 
