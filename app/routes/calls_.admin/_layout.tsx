@@ -1,5 +1,5 @@
 import { clsx } from 'clsx'
-import { data as json, redirect, Link, Outlet, useLoaderData, useParams } from 'react-router';
+import { data as json, Link, Outlet, useLoaderData, useParams } from 'react-router'
 import { Grid } from '#app/components/grid.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { H2, H6, Paragraph } from '#app/components/typography.tsx'
@@ -8,35 +8,10 @@ import { formatDate, getAvatarForUser } from '#app/utils/misc.tsx'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
-import  { type Route } from './+types/_layout'
+import { type Route } from './+types/_layout'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
-}
-
-export async function action({ request }: Route.ActionArgs) {
-	await requireAdminUser(request)
-
-	const requestText = await request.text()
-	const form = new URLSearchParams(requestText)
-	const callId = form.get('callId')
-	if (!callId) {
-		// this should be impossible
-		console.warn(`No callId provided to call delete action.`)
-		return redirect(new URL(request.url).pathname)
-	}
-	const call = await prisma.call.findFirst({
-		// NOTE: since we require an admin user, we don't need to check
-		// whether this user is the creator of the call
-		where: { id: callId },
-	})
-	if (!call) {
-		// Maybe they tried to delete a call they don't own?
-		console.warn(`Failed to get a call to delete by callId: ${callId}`)
-		return redirect(new URL(request.url).pathname)
-	}
-	await prisma.call.delete({ where: { id: callId } })
-	return redirect(new URL(request.url).pathname)
 }
 
 export async function loader({ request }: Route.LoaderArgs) {

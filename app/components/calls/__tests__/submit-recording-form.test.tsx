@@ -20,7 +20,7 @@ vi.mock('#app/utils/use-root-data.ts', () => ({
 	useRootData: () => mockUseRootData(),
 }))
 
-import { RecordingForm } from '../submit-recording-form.tsx'
+import { RecordingForm } from '#app/routes/resources/calls/save.tsx'
 
 describe('RecordingForm', () => {
 	it('recovers when FileReader.readAsDataURL throws synchronously', async () => {
@@ -50,7 +50,9 @@ describe('RecordingForm', () => {
 		const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
 		try {
-			const { container } = render(<RecordingForm audio={new Blob(['audio'])} />)
+			const { container } = render(
+				<RecordingForm audio={new Blob(['audio'])} intent="create-call" />,
+			)
 
 			const submitButton = screen.getByRole('button', { name: 'Submit Recording' })
 			const form = container.querySelector('form')
@@ -84,7 +86,7 @@ describe('RecordingForm', () => {
 		}
 	})
 
-	it('submits to submitAction and navigates on redirect responses', async () => {
+	it('submits to resource route and navigates on redirect responses', async () => {
 		vi.clearAllMocks()
 		mockUseRootData.mockReturnValue({
 			requestInfo: { flyPrimaryInstance: 'primary-abc123' },
@@ -129,10 +131,7 @@ describe('RecordingForm', () => {
 
 		try {
 			const { container } = render(
-				<RecordingForm
-					audio={new Blob(['audio'])}
-					submitAction="/resources/calls/save"
-				/>,
+				<RecordingForm audio={new Blob(['audio'])} intent="create-call" />,
 			)
 
 			const titleInput = screen.getByLabelText('Title')
@@ -152,6 +151,7 @@ describe('RecordingForm', () => {
 			expect(requestHeaders.get('fly-force-instance-id')).toBe('primary-abc123')
 
 			const requestBody = requestInit?.body as URLSearchParams
+			expect(requestBody.get('intent')).toBe('create-call')
 			expect(requestBody.get('audio')).toBe('data:audio/wav;base64,ZmFrZQ==')
 			expect(requestBody.get('title')).toBe('My First Call')
 

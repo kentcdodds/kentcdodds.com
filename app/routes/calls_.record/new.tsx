@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Link } from 'react-router'
 import { CallRecorder } from '#app/components/calls/recorder.tsx'
-import { RecordingForm } from '#app/components/calls/submit-recording-form.tsx'
+import { RecordingForm } from '#app/routes/resources/calls/save.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { Grimmacing } from '#app/components/kifs.tsx'
 import { H4, Paragraph } from '#app/components/typography.tsx'
@@ -21,7 +21,7 @@ export default function RecordScreen() {
 	return (
 		<div>
 			{audio ? (
-				<RecordingForm audio={audio} submitAction="/resources/calls/save" />
+				<RecordingForm audio={audio} intent="create-call" />
 			) : (
 				<div>
 					<Paragraph className="mb-4">

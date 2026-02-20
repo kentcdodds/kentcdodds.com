@@ -1,140 +1,23 @@
-import { format } from 'date-fns'
 import * as React from 'react'
-import { data as json, redirect, Form, useActionData, useLoaderData } from 'react-router';
+import { data as json, redirect, Form, useLoaderData } from 'react-router'
 import { Button } from '#app/components/button.tsx'
 import { CallRecorder } from '#app/components/calls/recorder.tsx'
 import {
 	RecordingForm,
-	type RecordingFormData,
-} from '#app/components/calls/submit-recording-form.tsx'
+	recordingFormActionPath,
+} from '#app/routes/resources/calls/save.tsx'
 import { MailIcon } from '#app/components/icons.tsx'
 import { H4, H6, Paragraph } from '#app/components/typography.tsx'
 import { type KCDHandle } from '#app/types.ts'
-import {
-	getErrorForAudio,
-	getErrorForDescription,
-	getErrorForKeywords,
-	getErrorForTitle,
-} from '#app/utils/call-kent.ts'
-import { createEpisodeAudio } from '#app/utils/ffmpeg.server.ts'
-import { markdownToHtml } from '#app/utils/markdown.server.ts'
-import {
-	formatDate,
-	getErrorMessage,
-	getNonNull,
-	useDoubleCheck,
-} from '#app/utils/misc.tsx'
+import { formatDate, useDoubleCheck } from '#app/utils/misc.tsx'
 import { prisma } from '#app/utils/prisma.server.ts'
-import { sendEmail } from '#app/utils/send-email.server.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
-import { createEpisode } from '#app/utils/transistor.server.ts'
 import { useUser } from '#app/utils/use-root-data.ts'
-import  { type Route } from './+types/$callId'
+import { type Route } from './+types/$callId'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
-}
-
-type ActionData = RecordingFormData
-
-export async function action({ request, params }: Route.ActionArgs) {
-	await requireAdminUser(request)
-
-	if (request.method === 'DELETE') {
-		await prisma.call.delete({ where: { id: params.callId } })
-		return redirect('/calls/admin')
-	}
-	const call = await prisma.call.findFirst({
-		where: { id: params.callId },
-		include: { user: true },
-	})
-	if (!call) {
-		const searchParams = new URLSearchParams()
-		searchParams.set('message', 'Call not found')
-		return redirect(`/calls/admin?${searchParams.toString()}`)
-	}
-	const actionData: ActionData = { fields: {}, errors: {} }
-	try {
-		const requestText = await request.text()
-		const form = new URLSearchParams(requestText)
-
-		const formData = {
-			audio: form.get('audio'),
-			title: form.get('title'),
-			description: form.get('description'),
-			keywords: form.get('keywords'),
-		}
-		actionData.fields = {
-			title: formData.title,
-			description: formData.description,
-			keywords: formData.keywords,
-		}
-
-		actionData.errors = {
-			audio: getErrorForAudio(formData.audio),
-			title: getErrorForTitle(formData.title),
-			description: getErrorForDescription(formData.description),
-			keywords: getErrorForKeywords(formData.keywords),
-		}
-
-		if (Object.values(actionData.errors).some((err) => err !== null)) {
-			return json(actionData, 400)
-		}
-
-		const {
-			audio: response,
-			title,
-			description,
-			keywords,
-		} = getNonNull(formData)
-
-		const episodeAudio = await createEpisodeAudio(call.base64, response)
-
-		const { episodeUrl, imageUrl } = await createEpisode({
-			request,
-			audio: episodeAudio,
-			title,
-			summary: `${call.user.firstName} asked this on ${format(
-				call.createdAt,
-				'yyyy-MM-dd',
-			)}`,
-			description: await markdownToHtml(description),
-			user: call.user,
-			keywords,
-		})
-
-		if (episodeUrl) {
-			try {
-				void sendEmail({
-					to: call.user.email,
-					from: `"Kent C. Dodds" <hello+calls@kentcdodds.com>`,
-					subject: `Your "Call Kent" episode has been published`,
-					text: `
-Hi ${call.user.firstName},
-
-Thanks for your call. Kent just replied and the episode has been published to the podcast!
-
-[![${title}](${imageUrl})](${episodeUrl})
-          `.trim(),
-				})
-			} catch (error: unknown) {
-				console.error(
-					`Problem sending email about a call: ${episodeUrl}`,
-					error,
-				)
-			}
-		}
-
-		await prisma.call.delete({
-			where: { id: call.id },
-		})
-
-		return redirect('/calls')
-	} catch (error: unknown) {
-		actionData.errors.generalError = getErrorMessage(error)
-		return json(actionData, 500)
-	}
 }
 
 export async function loader({ request, params }: Route.LoaderArgs) {
@@ -210,7 +93,9 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 							<span>{call.formattedCreatedAt}</span>
 						</div>
 					</div>
-					<Form method="delete">
+					<Form method="post" action={recordingFormActionPath}>
+						<input type="hidden" name="intent" value="delete-call" />
+						<input type="hidden" name="callId" value={call.id} />
 						<Button
 							type="submit"
 							variant="danger"
@@ -278,7 +163,6 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 function RecordingDetailScreen() {
 	const [responseAudio, setResponseAudio] = React.useState<Blob | null>(null)
 	const data = useLoaderData<Route.ComponentProps['loaderData']>()
-	const actionData = useActionData<Route.ComponentProps['actionData']>()
 	const user = useUser()
 
 	return (
@@ -299,9 +183,15 @@ function RecordingDetailScreen() {
 				{responseAudio ? (
 					<RecordingForm
 						audio={responseAudio}
+						intent="publish-call"
+						callId={data.call.id}
 						data={{
-							fields: { ...data.call, ...actionData?.fields },
-							errors: { ...actionData?.errors },
+							fields: {
+								title: data.call.title,
+								description: data.call.description,
+								keywords: data.call.keywords,
+							},
+							errors: {},
 						}}
 					/>
 				) : (
