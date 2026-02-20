@@ -15,7 +15,6 @@ RUN mkdir /app/
 WORKDIR /app/
 
 ADD package.json .npmrc package-lock.json ./
-ADD other/patches ./other/patches
 ADD prisma /app/prisma
 ADD prisma.config.ts /app/prisma.config.ts
 RUN npm install
