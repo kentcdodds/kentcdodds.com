@@ -175,6 +175,18 @@ light-mode {
 	text-align: left;
 }
 
+[data-reach-tab].text-4xl {
+	font-size: var(--text-4xl, 2.5rem);
+}
+
+[data-reach-tab].leading-tight {
+	line-height: 1.25;
+}
+
+[data-reach-tab].focus\:bg-transparent:focus {
+	background: transparent;
+}
+
 [data-reach-tab].text-primary {
 	color: var(--color-black);
 }
