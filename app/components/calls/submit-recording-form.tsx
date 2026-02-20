@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useRevalidator } from 'react-router'
 import { decodeSingleFetchResponse } from '#app/utils/react-router-single-fetch.client.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import { Button } from '../button.tsx'
@@ -31,6 +31,7 @@ function RecordingForm({
 	data?: RecordingFormData
 }) {
 	const navigate = useNavigate()
+	const revalidator = useRevalidator()
 	const {
 		requestInfo: { flyPrimaryInstance },
 	} = useRootData()
@@ -110,7 +111,7 @@ function RecordingForm({
 									decoded.redirect,
 									window.location.origin,
 								)
-								void navigate(`${redirectUrl.pathname}${redirectUrl.search}`, {
+								await navigate(`${redirectUrl.pathname}${redirectUrl.search}`, {
 									replace: decoded.replace,
 								})
 								return
@@ -131,19 +132,18 @@ function RecordingForm({
 							return
 						}
 
-						if (!response.ok) {
-							const actionData = await response.json().catch(() => null)
-							if (actionData && typeof actionData === 'object') {
-								setSubmissionData(actionData as RecordingFormData)
-							} else {
-								setRequestError(
-									'Something went wrong submitting your recording.',
-								)
-							}
+						if (response.ok) {
+							await revalidator.revalidate()
 							return
 						}
 
-						setRequestError('Unexpected response from server.')
+						const actionData = await response.json().catch(() => null)
+						if (actionData && typeof actionData === 'object') {
+							setSubmissionData(actionData as RecordingFormData)
+						} else {
+							setRequestError('Something went wrong submitting your recording.')
+						}
+						return
 					} catch (error: unknown) {
 						if (error instanceof DOMException && error.name === 'AbortError') {
 							return
