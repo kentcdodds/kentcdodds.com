@@ -102,6 +102,32 @@ describe('jsx page content utils', () => {
 		expect(extracted.text).not.toContain('window.foo')
 	})
 
+	test('extractRenderedPageContent keeps block sections newline separated', () => {
+		const html = `
+      <html>
+        <head><title>Courses</title></head>
+        <body>
+          <main>
+            <h1>Level up as a developer.</h1>
+            <h2>Invest in yourself with a premium dev course.</h2>
+            <h3>Reasons to invest in yourself</h3>
+            <h4>Become a more confident developer</h4>
+          </main>
+        </body>
+      </html>
+    `
+
+		const extracted = extractRenderedPageContent(html)
+		expect(extracted.text).toContain(
+			[
+				'Level up as a developer.',
+				'Invest in yourself with a premium dev course.',
+				'Reasons to invest in yourself',
+				'Become a more confident developer',
+			].join('\n'),
+		)
+	})
+
 	test('extractRenderedPageContent excludes aria-hidden content', () => {
 		const html = `
       <html>

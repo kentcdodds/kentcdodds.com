@@ -39,6 +39,43 @@ const SKIPPED_STATIC_ROUTES = new Set([
 ])
 const SKIPPED_PREFIX_ROUTES = ['/blog/', '/calls/', '/chats/', '/talks/']
 const NON_HTML_EXTENSION_PATTERN = /\.[a-z0-9]+$/i
+const BLOCK_LEVEL_TAG_NAMES = new Set([
+	'address',
+	'article',
+	'aside',
+	'blockquote',
+	'dd',
+	'details',
+	'dialog',
+	'div',
+	'dl',
+	'dt',
+	'fieldset',
+	'figcaption',
+	'figure',
+	'form',
+	'h1',
+	'h2',
+	'h3',
+	'h4',
+	'h5',
+	'h6',
+	'header',
+	'li',
+	'main',
+	'ol',
+	'p',
+	'pre',
+	'section',
+	'table',
+	'tbody',
+	'td',
+	'tfoot',
+	'th',
+	'thead',
+	'tr',
+	'ul',
+])
 
 export type JsxPageIndexItem = {
 	slug: string
@@ -71,6 +108,25 @@ function isJsxPageIndexItem(
 function hasSkippedClass(value: unknown) {
 	const classList = getClassList(value)
 	return classList.some((className) => SKIPPED_CLASS_NAMES.has(className))
+}
+
+function extractReadableText(node: any): string {
+	if (!node || typeof node !== 'object') return ''
+	if (node.type === 'text') return String(node.value ?? '')
+	if (node.type === 'element') {
+		const tagName = String(node.tagName ?? '').toLowerCase()
+		if (tagName === 'br' || tagName === 'hr') return '\n'
+	}
+
+	const children = Array.isArray(node.children) ? node.children : []
+	const childText = children.map((child) => extractReadableText(child)).join('')
+	if (!childText) return ''
+
+	if (node.type !== 'element') return childText
+
+	const tagName = String(node.tagName ?? '').toLowerCase()
+	if (BLOCK_LEVEL_TAG_NAMES.has(tagName)) return `\n${childText}\n`
+	return childText
 }
 
 function shouldSkipElement(node: any) {
@@ -214,7 +270,7 @@ export function extractRenderedPageContent(html: string) {
 
 	const pruned = pruneNode(tree)
 	const bodyNode = findFirstElementByTagName(pruned, 'body')
-	const text = normalizeText(hastToString(bodyNode ?? pruned))
+	const text = normalizeText(extractReadableText(bodyNode ?? pruned))
 
 	return { title, text }
 }
