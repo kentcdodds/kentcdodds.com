@@ -59,108 +59,113 @@ function RecordingForm({
 		event.preventDefault()
 		if (isSubmitting) return
 		setRequestError(null)
-		setIsSubmitting(true)
 
 		const form = new FormData(event.currentTarget)
 		const reader = new FileReader()
-		reader.readAsDataURL(audio)
-		reader.addEventListener(
-			'loadend',
-			async () => {
+		const handleLoadEnd = async () => {
+			try {
+				if (typeof reader.result !== 'string') {
+					setRequestError('Unable to read recording. Please try again.')
+					return
+				}
+				form.append('audio', reader.result)
+
+				const body = new URLSearchParams()
+				for (const [key, value] of form.entries()) {
+					if (typeof value === 'string') {
+						body.append(key, value)
+					}
+				}
+
+				const headers = new Headers({
+					'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+				})
+				if (flyPrimaryInstance) {
+					headers.set('fly-force-instance-id', flyPrimaryInstance)
+				}
+				const abortController = new AbortController()
+				abortControllerRef.current = abortController
+
 				try {
-					if (typeof reader.result !== 'string') {
-						setRequestError('Unable to read recording. Please try again.')
-						return
-					}
-					form.append('audio', reader.result)
-
-					const body = new URLSearchParams()
-					for (const [key, value] of form.entries()) {
-						if (typeof value === 'string') {
-							body.append(key, value)
-						}
-					}
-
-					const headers = new Headers({
-						'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+					const dataUrl = `${window.location.pathname.replace(/\/$/, '')}.data`
+					const response = await fetch(dataUrl, {
+						method: 'POST',
+						body,
+						headers,
+						signal: abortController.signal,
 					})
-					if (flyPrimaryInstance) {
-						headers.set('fly-force-instance-id', flyPrimaryInstance)
-					}
-					const abortController = new AbortController()
-					abortControllerRef.current = abortController
 
-					try {
-						const dataUrl = `${window.location.pathname.replace(/\/$/, '')}.data`
-						const response = await fetch(dataUrl, {
-							method: 'POST',
-							body,
-							headers,
-							signal: abortController.signal,
-						})
-
-						const contentType = response.headers.get('Content-Type') ?? ''
-						if (contentType.includes('text/x-script')) {
-							if (!response.body) {
-								setRequestError('Unexpected response from server.')
-								return
-							}
-							const decoded = await decodeSingleFetchResponse(response.body)
-							if (decoded.type === 'redirect') {
-								const redirectUrl = new URL(
-									decoded.redirect,
-									window.location.origin,
-								)
-								await navigate(`${redirectUrl.pathname}${redirectUrl.search}`, {
-									replace: decoded.replace,
-								})
-								return
-							}
-							if (decoded.type === 'data') {
-								if (decoded.data && typeof decoded.data === 'object') {
-									setSubmissionData(decoded.data as RecordingFormData)
-									return
-								}
-								setRequestError('Unexpected response from server.')
-								return
-							}
-							if (decoded.type === 'error') {
-								setRequestError('Something went wrong submitting your recording.')
+					const contentType = response.headers.get('Content-Type') ?? ''
+					if (contentType.includes('text/x-script')) {
+						if (!response.body) {
+							setRequestError('Unexpected response from server.')
+							return
+						}
+						const decoded = await decodeSingleFetchResponse(response.body)
+						if (decoded.type === 'redirect') {
+							const redirectUrl = new URL(decoded.redirect, window.location.origin)
+							await navigate(`${redirectUrl.pathname}${redirectUrl.search}`, {
+								replace: decoded.replace,
+							})
+							return
+						}
+						if (decoded.type === 'data') {
+							if (decoded.data && typeof decoded.data === 'object') {
+								setSubmissionData(decoded.data as RecordingFormData)
 								return
 							}
 							setRequestError('Unexpected response from server.')
 							return
 						}
-
-						if (response.ok) {
-							await revalidator.revalidate()
-							return
-						}
-
-						const actionData = await response.json().catch(() => null)
-						if (actionData && typeof actionData === 'object') {
-							setSubmissionData(actionData as RecordingFormData)
-						} else {
+						if (decoded.type === 'error') {
 							setRequestError('Something went wrong submitting your recording.')
-						}
-						return
-					} catch (error: unknown) {
-						if (error instanceof DOMException && error.name === 'AbortError') {
 							return
 						}
-						console.error('Unable to submit recording', error)
-						setRequestError('Unable to submit recording. Please try again.')
-					} finally {
-						if (abortControllerRef.current === abortController) {
-							abortControllerRef.current = null
-						}
+						setRequestError('Unexpected response from server.')
+						return
 					}
+
+					if (response.ok) {
+						await revalidator.revalidate()
+						return
+					}
+
+					const actionData = await response.json().catch(() => null)
+					if (actionData && typeof actionData === 'object') {
+						setSubmissionData(actionData as RecordingFormData)
+					} else {
+						setRequestError('Something went wrong submitting your recording.')
+					}
+					return
+				} catch (error: unknown) {
+					if (error instanceof DOMException && error.name === 'AbortError') {
+						return
+					}
+					console.error('Unable to submit recording', error)
+					setRequestError('Unable to submit recording. Please try again.')
 				} finally {
-					setIsSubmitting(false)
+					if (abortControllerRef.current === abortController) {
+						abortControllerRef.current = null
+					}
 				}
-			},
+			} finally {
+				setIsSubmitting(false)
+			}
+		}
+		reader.addEventListener(
+			'loadend',
+			handleLoadEnd,
 			{ once: true },
 		)
+		setIsSubmitting(true)
+		try {
+			reader.readAsDataURL(audio)
+		} catch (error: unknown) {
+			reader.removeEventListener('loadend', handleLoadEnd)
+			console.error('Unable to read recording', error)
+			setRequestError('Unable to read recording. Please try again.')
+			setIsSubmitting(false)
+		}
 	}
 
 	const generalError = submissionData?.errors.generalError || requestError
