@@ -10,7 +10,9 @@ import {
 	Link,
 	isRouteErrorResponse,
 	useRouteError,
-	type LinkProps, type HeadersFunction 
+	type ErrorResponse,
+	type HeadersFunction,
+	type LinkProps,
 } from 'react-router'
 import {
 	type NonNullProperties,
@@ -475,10 +477,30 @@ export function invariantResponse(
 
 export function useCapturedRouteError() {
 	const error = useRouteError()
-	if (!isRouteErrorResponse(error) || error.status >= 500) {
-		Sentry.captureException(error)
+	if (isRouteErrorResponse(error)) {
+		if (error.status < 500) return error
+
+		Sentry.captureException(getRouteErrorResponseException(error), {
+			extra: {
+				route_error_response: {
+					status: error.status,
+					statusText: error.statusText,
+					data: error.data,
+				},
+			},
+		})
+		return error
 	}
+
+	Sentry.captureException(error)
 	return error
+}
+
+function getRouteErrorResponseException(error: ErrorResponse) {
+	const statusText = error.statusText || 'Route Error'
+	const routeErrorResponseError = new Error(`${error.status} ${statusText}`)
+	routeErrorResponseError.name = 'RouteErrorResponse'
+	return routeErrorResponseError
 }
 
 export function requireValidSlug(slug: unknown): asserts slug is string {
