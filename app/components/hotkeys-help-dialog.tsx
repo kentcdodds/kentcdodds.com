@@ -134,7 +134,12 @@ function HotkeysHelpDialog({
 					</button>
 				</div>
 
-				<div className="mt-8 min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+				<div
+					tabIndex={0}
+					role="region"
+					aria-label="Keyboard shortcuts list"
+					className="focus-ring mt-8 min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-md pr-1 focus:outline-none"
+				>
 					<div className="space-y-8">
 						{groups.map((group) => (
 							<section key={group.title}>
