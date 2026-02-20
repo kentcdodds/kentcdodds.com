@@ -40,7 +40,6 @@ const schema = z.object({
 	SENTRY_PROJECT_ID: z.string(),
 	SESSION_SECRET: z.string(),
 	SIMPLECAST_KEY: z.string(),
-	TITO_API_SECRET: z.string(),
 	TRANSISTOR_API_SECRET: z.string(),
 	TWITTER_BEARER_TOKEN: z.string(),
 	VERIFIER_API_KEY: z.string(),
