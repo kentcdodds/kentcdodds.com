@@ -9,10 +9,7 @@ const { mockCaptureException, mockIsRouteErrorResponse, mockUseRouteError } =
 	}))
 
 vi.mock('@sentry/react-router', async () => {
-	const actual =
-		await vi.importActual<typeof import('@sentry/react-router')>(
-			'@sentry/react-router',
-		)
+	const actual = await vi.importActual('@sentry/react-router')
 	return {
 		...actual,
 		captureException: mockCaptureException,
@@ -20,9 +17,7 @@ vi.mock('@sentry/react-router', async () => {
 })
 
 vi.mock('react-router', async () => {
-	const actual = await vi.importActual<typeof import('react-router')>(
-		'react-router',
-	)
+	const actual = await vi.importActual('react-router')
 	return {
 		...actual,
 		isRouteErrorResponse: mockIsRouteErrorResponse,
