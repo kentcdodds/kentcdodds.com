@@ -171,4 +171,111 @@ describe('RecordingForm', () => {
 			vi.unstubAllGlobals()
 		}
 	})
+
+	it('preserves server validation errors across equivalent data prop rerenders', async () => {
+		vi.clearAllMocks()
+		mockUseRootData.mockReturnValue({
+			requestInfo: { flyPrimaryInstance: null },
+		})
+
+		let loadEndListener: (() => void) | null = null
+		const readAsDataURL = vi.fn(function (this: SuccessfulFileReader) {
+			this.result = 'data:audio/wav;base64,ZmFrZQ=='
+			loadEndListener?.()
+		})
+
+		class SuccessfulFileReader {
+			result: string | ArrayBuffer | null = null
+			addEventListener(
+				eventName: string,
+				listener: EventListenerOrEventListenerObject,
+			) {
+				if (eventName === 'loadend') {
+					loadEndListener =
+						typeof listener === 'function' ? () => listener(new Event('loadend')) : null
+				}
+			}
+			removeEventListener() {}
+			readAsDataURL = readAsDataURL
+		}
+
+		const fetchMock = vi.fn().mockResolvedValue({
+			ok: false,
+			redirected: false,
+			json: vi.fn().mockResolvedValue({
+				fields: {
+					title: '',
+					description: 'desc',
+					keywords: 'a,b',
+				},
+				errors: {
+					title: 'Title is required',
+				},
+			}),
+		} as Response)
+
+		vi.stubGlobal(
+			'FileReader',
+			SuccessfulFileReader as unknown as typeof FileReader,
+		)
+		vi.stubGlobal('fetch', fetchMock as unknown as typeof fetch)
+		const createObjectURL = vi
+			.spyOn(URL, 'createObjectURL')
+			.mockReturnValue('blob:recording')
+		const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+
+		const initialData = {
+			fields: {
+				title: 'Original title',
+				description: 'Original description',
+				keywords: 'test,call',
+			},
+			errors: {},
+		}
+		const audio = new Blob(['audio'])
+
+		try {
+			const { container, rerender } = render(
+				<RecordingForm
+					audio={audio}
+					intent="publish-call"
+					callId="call-123"
+					data={{
+						fields: { ...initialData.fields },
+						errors: { ...initialData.errors },
+					}}
+				/>,
+			)
+
+			const form = container.querySelector('form')
+			expect(form).not.toBeNull()
+			fireEvent.submit(form as HTMLFormElement)
+
+			await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+			await waitFor(() =>
+				expect(screen.getByText('Title is required')).toBeInTheDocument(),
+			)
+
+			// Simulate parent rerendering with a fresh but equivalent data object.
+			rerender(
+				<RecordingForm
+					audio={audio}
+					intent="publish-call"
+					callId="call-123"
+					data={{
+						fields: { ...initialData.fields },
+						errors: { ...initialData.errors },
+					}}
+				/>,
+			)
+
+			await waitFor(() =>
+				expect(screen.getByText('Title is required')).toBeInTheDocument(),
+			)
+		} finally {
+			createObjectURL.mockRestore()
+			revokeObjectURL.mockRestore()
+			vi.unstubAllGlobals()
+		}
+	})
 })

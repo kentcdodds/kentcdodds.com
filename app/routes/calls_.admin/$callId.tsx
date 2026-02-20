@@ -164,6 +164,17 @@ function RecordingDetailScreen() {
 	const [responseAudio, setResponseAudio] = React.useState<Blob | null>(null)
 	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const user = useUser()
+	const recordingFormData = React.useMemo(
+		() => ({
+			fields: {
+				title: data.call.title,
+				description: data.call.description,
+				keywords: data.call.keywords,
+			},
+			errors: {},
+		}),
+		[data.call.title, data.call.description, data.call.keywords],
+	)
 
 	return (
 		<div key={data.call.id} className="flex flex-col gap-6">
@@ -185,14 +196,7 @@ function RecordingDetailScreen() {
 						audio={responseAudio}
 						intent="publish-call"
 						callId={data.call.id}
-						data={{
-							fields: {
-								title: data.call.title,
-								description: data.call.description,
-								keywords: data.call.keywords,
-							},
-							errors: {},
-						}}
+						data={recordingFormData}
 					/>
 				) : (
 					<CallRecorder

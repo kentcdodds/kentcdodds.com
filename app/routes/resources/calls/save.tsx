@@ -45,6 +45,24 @@ type ActionData = RecordingFormData
 type RecordingIntent = 'create-call' | 'publish-call' | 'delete-call'
 type RecordingSubmitIntent = Exclude<RecordingIntent, 'delete-call'>
 
+function isRecordingFormDataEqual(
+	first?: RecordingFormData,
+	second?: RecordingFormData,
+) {
+	if (first === second) return true
+	if (!first || !second) return false
+	return (
+		first.fields.title === second.fields.title &&
+		first.fields.description === second.fields.description &&
+		first.fields.keywords === second.fields.keywords &&
+		first.errors.generalError === second.errors.generalError &&
+		first.errors.audio === second.errors.audio &&
+		first.errors.title === second.errors.title &&
+		first.errors.description === second.errors.description &&
+		first.errors.keywords === second.errors.keywords
+	)
+}
+
 function RecordingForm({
 	audio,
 	data,
@@ -67,6 +85,7 @@ function RecordingForm({
 	const [submissionData, setSubmissionData] = React.useState(data)
 	const [isSubmitting, setIsSubmitting] = React.useState(false)
 	const [requestError, setRequestError] = React.useState<string | null>(null)
+	const previousPropData = React.useRef(data)
 	const abortControllerRef = React.useRef<AbortController | null>(null)
 
 	React.useEffect(() => {
@@ -74,6 +93,8 @@ function RecordingForm({
 	}, [audioURL])
 
 	React.useEffect(() => {
+		if (isRecordingFormDataEqual(previousPropData.current, data)) return
+		previousPropData.current = data
 		setSubmissionData(data)
 	}, [data])
 
