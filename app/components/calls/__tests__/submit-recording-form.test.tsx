@@ -202,6 +202,7 @@ describe('RecordingForm', () => {
 		const fetchMock = vi.fn().mockResolvedValue({
 			ok: false,
 			redirected: false,
+			headers: new Headers(),
 			json: vi.fn().mockResolvedValue({
 				fields: {
 					title: '',
@@ -252,9 +253,7 @@ describe('RecordingForm', () => {
 			fireEvent.submit(form as HTMLFormElement)
 
 			await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
-			await waitFor(() =>
-				expect(screen.getByText('Title is required')).toBeInTheDocument(),
-			)
+			await screen.findByText('Title is required')
 
 			// Simulate parent rerendering with a fresh but equivalent data object.
 			rerender(
@@ -269,9 +268,7 @@ describe('RecordingForm', () => {
 				/>,
 			)
 
-			await waitFor(() =>
-				expect(screen.getByText('Title is required')).toBeInTheDocument(),
-			)
+			await screen.findByText('Title is required')
 		} finally {
 			createObjectURL.mockRestore()
 			revokeObjectURL.mockRestore()
