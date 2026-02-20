@@ -538,7 +538,7 @@ function NavSearch({
 											>
 												<div
 													className={clsx(
-														'w-full cursor-pointer px-6 py-4 text-left transition focus:outline-none',
+														'w-full cursor-pointer px-6 py-4 text-left focus:outline-none',
 														index === highlightedIndex
 															? 'bg-secondary'
 															: 'hover:bg-secondary',
