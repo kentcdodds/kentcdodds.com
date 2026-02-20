@@ -100,7 +100,8 @@ export async function getJsonObject<T>({
 	} catch (e: any) {
 		// Missing key is normal on first run. Wrangler exits non-zero.
 		const message = e instanceof Error ? e.message : String(e)
-		if (/NoSuchKey|404|not found/i.test(message)) return null
+		if (/NoSuchKey|404|not found|does not exist|specified key/i.test(message))
+			return null
 		throw e
 	}
 }

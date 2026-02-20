@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises'
+import os from 'node:os'
 import path from 'node:path'
 import { chunkText, makeSnippet, normalizeText, sha256 } from './chunk-utils.ts'
 import {
@@ -65,6 +66,21 @@ function parseArgs() {
 		return i >= 0 ? args[i + 1] : undefined
 	}
 
+	const explicitVideoInputs: string[] = []
+	for (let i = 0; i < args.length; i++) {
+		const arg = args[i]
+		if (arg !== '--video' && arg !== '--videos') continue
+		const value = args[i + 1]
+		if (typeof value === 'string') {
+			explicitVideoInputs.push(value)
+			i++
+		}
+	}
+	const explicitVideos = explicitVideoInputs
+		.flatMap((value) => value.split(','))
+		.map((value) => value.trim())
+		.filter(Boolean)
+
 	const maxVideosRaw = get('--max-videos')
 	const maxVideos =
 		typeof maxVideosRaw === 'string' && /^\d+$/.test(maxVideosRaw)
@@ -76,6 +92,20 @@ function parseArgs() {
 		manifestKey: get('--manifest-key'),
 		maxVideos,
 		includeAutoCaptions: parseBoolean(get('--include-auto-captions'), true),
+		cacheDir: get('--cache-dir') ?? process.env.YOUTUBE_TRANSCRIPT_CACHE_DIR,
+		useCache: parseBoolean(get('--use-cache'), true),
+		refreshCache: parseBoolean(get('--refresh-cache'), false),
+		// Incremental indexing: skip anything already in the manifest unless reindexing.
+		incremental: parseBoolean(get('--incremental'), true),
+		reindex: parseBoolean(get('--reindex'), false),
+		// Force indexing a specific set of videos (IDs or full YouTube URLs). These
+		// will be indexed even if already present in the manifest.
+		explicitVideos,
+		// If true, ONLY index the explicitly provided videos (ignores discovered list).
+		onlyExplicitVideos: parseBoolean(get('--only-videos'), false),
+		// When true, remove docs that are no longer discovered in playlist/appearances.
+		// Default false to avoid accidental deletions (especially when using --max-videos).
+		prune: parseBoolean(get('--prune'), false),
 		dryRun: parseBoolean(get('--dry-run'), false),
 	}
 }
@@ -421,6 +451,34 @@ type YouTubeBrowseConfig = {
 	context: Record<string, unknown>
 }
 
+function parseSignatureTimestamp(html: string) {
+	const fromSts = html.match(/"STS":(?<sts>\d+)/)?.groups?.sts
+	const fromSignatureTimestamp = html.match(
+		/"signatureTimestamp":(?<sts>\d+)/,
+	)?.groups?.sts
+	const raw = fromSts ?? fromSignatureTimestamp
+	if (!raw) return null
+	const n = Number(raw)
+	return Number.isFinite(n) && n > 0 ? n : null
+}
+
+async function fetchYouTubeSignatureTimestamp(videoId: string) {
+	const watchUrl = new URL('https://www.youtube.com/watch')
+	watchUrl.searchParams.set('v', videoId)
+	watchUrl.searchParams.set('hl', 'en')
+	const html = await fetchTextWithRetries(watchUrl.toString(), {
+		label: `youtube watch html (sts) ${videoId}`,
+		init: { headers: getYouTubeRequestHeaders() },
+	})
+	const sts = parseSignatureTimestamp(html)
+	if (!sts) {
+		throw new Error(
+			`Could not parse YouTube signatureTimestamp (STS) from watch page for ${videoId}`,
+		)
+	}
+	return sts
+}
+
 async function getYouTubeBrowseConfig(
 	playlistId: string,
 ): Promise<YouTubeBrowseConfig> {
@@ -604,13 +662,24 @@ async function fetchPlaylistVideos({
 async function fetchYouTubePlayerJson({
 	config,
 	videoId,
+	signatureTimestamp,
 }: {
 	config: YouTubeBrowseConfig
 	videoId: string
+	signatureTimestamp?: number | null
 }) {
 	const url = `https://www.youtube.com/youtubei/v1/player?key=${encodeURIComponent(
 		config.apiKey,
 	)}`
+	const playbackContext =
+		typeof signatureTimestamp === 'number' && Number.isFinite(signatureTimestamp)
+			? {
+					contentPlaybackContext: {
+						// YouTube now often requires STS for a playable response (and captionTracks).
+						signatureTimestamp,
+					},
+				}
+			: undefined
 	return await fetchJsonWithRetries<Record<string, unknown>>(url, {
 		label: `youtube player ${videoId}`,
 		init: {
@@ -623,6 +692,7 @@ async function fetchYouTubePlayerJson({
 				videoId,
 				contentCheckOk: true,
 				racyCheckOk: true,
+				...(playbackContext ? { playbackContext } : {}),
 			}),
 		},
 	})
@@ -692,13 +762,19 @@ async function fetchVideoEnrichedData({
 	config,
 	videoId,
 	includeAutoCaptions,
+	signatureTimestamp,
 }: {
 	config: YouTubeBrowseConfig
 	videoId: string
 	includeAutoCaptions: boolean
+	signatureTimestamp?: number | null
 }): Promise<VideoEnrichedData> {
 	try {
-		const player = await fetchYouTubePlayerJson({ config, videoId })
+		const player = await fetchYouTubePlayerJson({
+			config,
+			videoId,
+			signatureTimestamp,
+		})
 		const playabilityStatus = asRecord(player.playabilityStatus)
 		const playabilityCode = asString(playabilityStatus?.status)
 		const playabilityReason = asString(playabilityStatus?.reason)
@@ -734,9 +810,10 @@ async function fetchVideoEnrichedData({
 			includeAutoCaptions,
 		})
 		if (!chosen) {
-			if (playabilityCode === 'LOGIN_REQUIRED' && playabilityReason) {
+			// This is the most common "why no transcript?" failure mode.
+			if (playabilityCode && playabilityCode !== 'OK') {
 				console.warn(
-					`YouTube transcript unavailable for ${videoId}: ${playabilityReason}`,
+					`YouTube transcript unavailable for ${videoId}: ${playabilityCode}${playabilityReason ? ` (${playabilityReason})` : ''}`,
 				)
 			}
 			return {
@@ -770,6 +847,95 @@ async function fetchVideoEnrichedData({
 			transcriptSource: 'none',
 		}
 	}
+}
+
+type VideoEnrichedDataCacheEntry = {
+	cacheVersion: 1
+	fetchedAt: string
+	videoId: string
+	includeAutoCaptions: boolean
+	data: VideoEnrichedData
+}
+
+function getTranscriptCacheDir(cacheDir?: string) {
+	if (cacheDir && cacheDir.trim()) {
+		return path.isAbsolute(cacheDir)
+			? cacheDir
+			: path.join(process.cwd(), cacheDir)
+	}
+	// Default to OS temp so it’s “throwaway”, but persists between runs.
+	return path.join(os.tmpdir(), 'kcd-youtube-transcript-cache')
+}
+
+function getTranscriptCachePath({
+	cacheDir,
+	videoId,
+	includeAutoCaptions,
+}: {
+	cacheDir: string
+	videoId: string
+	includeAutoCaptions: boolean
+}) {
+	const suffix = includeAutoCaptions ? 'include-auto' : 'no-auto'
+	return path.join(cacheDir, `video-${videoId}-${suffix}.json`)
+}
+
+async function readVideoEnrichedDataCache({
+	cacheDir,
+	videoId,
+	includeAutoCaptions,
+}: {
+	cacheDir: string
+	videoId: string
+	includeAutoCaptions: boolean
+}): Promise<VideoEnrichedData | null> {
+	const cachePath = getTranscriptCachePath({
+		cacheDir,
+		videoId,
+		includeAutoCaptions,
+	})
+	try {
+		const raw = await fs.readFile(cachePath, 'utf8')
+		const parsed = JSON.parse(raw) as VideoEnrichedDataCacheEntry
+		if (parsed?.cacheVersion !== 1) return null
+		if (parsed.videoId !== videoId) return null
+		if (parsed.includeAutoCaptions !== includeAutoCaptions) return null
+		if (!parsed.data || typeof parsed.data !== 'object') return null
+		return parsed.data
+	} catch (error: unknown) {
+		const code = (error as { code?: string })?.code
+		if (code === 'ENOENT') return null
+		return null
+	}
+}
+
+async function writeVideoEnrichedDataCache({
+	cacheDir,
+	videoId,
+	includeAutoCaptions,
+	data,
+}: {
+	cacheDir: string
+	videoId: string
+	includeAutoCaptions: boolean
+	data: VideoEnrichedData
+}) {
+	const cachePath = getTranscriptCachePath({
+		cacheDir,
+		videoId,
+		includeAutoCaptions,
+	})
+	await fs.mkdir(cacheDir, { recursive: true })
+	const entry: VideoEnrichedDataCacheEntry = {
+		cacheVersion: 1,
+		fetchedAt: new Date().toISOString(),
+		videoId,
+		includeAutoCaptions,
+		data,
+	}
+	const tmpPath = `${cachePath}.tmp-${process.pid}-${Date.now()}`
+	await fs.writeFile(tmpPath, JSON.stringify(entry, null, 2), 'utf8')
+	await fs.rename(tmpPath, cachePath)
 }
 
 function batch<T>(items: T[], size: number) {
@@ -859,6 +1025,14 @@ async function main() {
 		manifestKey: manifestKeyArg,
 		maxVideos,
 		includeAutoCaptions,
+		cacheDir: cacheDirArg,
+		useCache,
+		refreshCache,
+		incremental,
+		reindex,
+		explicitVideos: explicitVideoInputs,
+		onlyExplicitVideos,
+		prune,
 		dryRun,
 	} = parseArgs()
 	const playlistInput =
@@ -890,7 +1064,41 @@ async function main() {
 	console.log(
 		`Appearances page YouTube videos discovered: ${appearancesVideos.length}`,
 	)
-	const videos = mergeVideos({ playlistVideos, appearancesVideos, maxVideos })
+	let videos = mergeVideos({ playlistVideos, appearancesVideos, maxVideos })
+
+	const explicitVideoIds = new Set<string>()
+	for (const input of explicitVideoInputs) {
+		const trimmed = input.trim()
+		if (!trimmed) continue
+		const asId = /^[A-Za-z0-9_-]{11}$/.test(trimmed) ? trimmed : null
+		const fromUrl = asId ? null : extractYoutubeVideoId(trimmed)
+		const videoId = asId ?? fromUrl
+		if (!videoId) {
+			throw new Error(
+				`Invalid --video/--videos value "${trimmed}". Expected a YouTube video ID or URL.`,
+			)
+		}
+		explicitVideoIds.add(videoId)
+	}
+
+	if (onlyExplicitVideos) {
+		videos = [...explicitVideoIds].map((videoId) => ({
+			videoId,
+			title: `YouTube video ${videoId}`,
+			sources: ['appearances'] as VideoSource[],
+		}))
+	} else if (explicitVideoIds.size) {
+		const known = new Set(videos.map((v) => v.videoId))
+		for (const videoId of explicitVideoIds) {
+			if (known.has(videoId)) continue
+			videos.push({
+				videoId,
+				title: `YouTube video ${videoId}`,
+				sources: ['appearances'],
+			})
+		}
+	}
+
 	const playlistSourceCount = videos.filter((video) =>
 		video.sources.includes('playlist'),
 	).length
@@ -900,22 +1108,120 @@ async function main() {
 	console.log(
 		`Total unique videos to process: ${videos.length} (playlist: ${playlistSourceCount}, appearances: ${appearancesSourceCount})${maxVideos ? `, capped by --max-videos=${maxVideos}` : ''}`,
 	)
+	if (explicitVideoIds.size) {
+		console.log(
+			`Explicit videos requested: ${explicitVideoIds.size}${onlyExplicitVideos ? ' (only)' : ''}`,
+		)
+	}
+
+	if (prune && maxVideos) {
+		throw new Error(
+			'Refusing to --prune when --max-videos is set (would risk deleting docs you did not discover).',
+		)
+	}
+
+	// Load the existing manifest early so incremental runs can skip already-indexed
+	// videos (avoids talking to YouTube for old content).
+	const r2Bucket = process.env.R2_BUCKET ?? 'kcd-semantic-search'
+	const manifest = (await getJsonObject<Manifest>({
+		bucket: r2Bucket,
+		key: manifestKey,
+	})) ?? {
+		version: 1,
+		docs: {},
+	}
+
+	const discoveredDocIds = new Set(
+		videos.map((v) => getDocId('youtube', v.videoId)),
+	)
+
+	let videosToIndex = videos
+	if (incremental && !reindex) {
+		videosToIndex = videos.filter((video) => {
+			const docId = getDocId('youtube', video.videoId)
+			return !manifest.docs[docId] || explicitVideoIds.has(video.videoId)
+		})
+	}
+	const alreadyIndexedCount = videos.length - videosToIndex.length
+	console.log(
+		`Indexing mode: ${incremental ? 'incremental' : 'full'}${reindex ? ' (reindex)' : ''}${prune ? ' (prune)' : ''}`,
+	)
+	console.log(
+		`Videos already indexed (skipping): ${alreadyIndexedCount}; videos to index: ${videosToIndex.length}`,
+	)
+
+	if (videosToIndex.length === 0) {
+		console.log('No new videos to index.')
+		if (dryRun) {
+			console.log('Dry run complete. Skipping Vectorize/R2 writes.')
+			return
+		}
+		if (!prune) return
+		// If pruning, we still need to update Vectorize + manifest for removals.
+		// (We still had to talk to YouTube to discover the current set.)
+	}
+
+	const transcriptCacheDir = getTranscriptCacheDir(cacheDirArg)
+	if (useCache) {
+		console.log(
+			`Transcript cache: ${transcriptCacheDir}${refreshCache ? ' (refreshing)' : ''}`,
+		)
+	}
+
+	// YouTube player responses (including captions) often require an STS
+	// (signatureTimestamp) in playbackContext. We can fetch it from any watch page.
+	let signatureTimestamp: number | null = null
+	if (videosToIndex.length > 0) {
+		try {
+			const probeVideoId =
+				videosToIndex[0]?.videoId ??
+				videos[0]?.videoId ??
+				playlistVideos[0]?.videoId
+			if (probeVideoId) {
+				signatureTimestamp = await fetchYouTubeSignatureTimestamp(probeVideoId)
+			}
+		} catch (error) {
+			console.warn(
+				'Failed to fetch YouTube signatureTimestamp (STS); transcripts may be unavailable.',
+				error,
+			)
+		}
+	}
 
 	const transcriptConcurrency = Number(
 		process.env.YOUTUBE_TRANSCRIPT_CONCURRENCY ?? '3',
 	)
 	const enriched = await mapWithConcurrency(
-		videos,
+		videosToIndex,
 		Number.isFinite(transcriptConcurrency) ? transcriptConcurrency : 3,
 		async (video, index) => {
+			const cacheKey = {
+				cacheDir: transcriptCacheDir,
+				videoId: video.videoId,
+				includeAutoCaptions,
+			}
+			if (useCache && !refreshCache) {
+				const cached = await readVideoEnrichedDataCache(cacheKey)
+				if (cached) {
+					console.log(`Cache hit (${video.videoId})`)
+					return { video, details: cached }
+				}
+			}
+
 			console.log(
-				`Fetching transcript/metadata ${index + 1}/${videos.length} (${video.videoId})`,
+				`${useCache && refreshCache ? 'Refreshing' : 'Fetching'} transcript/metadata ${index + 1}/${videosToIndex.length} (${video.videoId})`,
 			)
 			const details = await fetchVideoEnrichedData({
 				config: browseConfig,
 				videoId: video.videoId,
 				includeAutoCaptions,
+				signatureTimestamp,
 			})
+			if (useCache) {
+				await writeVideoEnrichedDataCache({ ...cacheKey, data: details }).catch(
+					(error) => console.warn(`Failed to write cache (${video.videoId})`, error),
+				)
+			}
 			return { video, details }
 		},
 	)
@@ -935,15 +1241,6 @@ async function main() {
 
 	const { accountId, apiToken, vectorizeIndex, embeddingModel } =
 		getCloudflareConfig()
-	const r2Bucket = process.env.R2_BUCKET ?? 'kcd-semantic-search'
-
-	const manifest = (await getJsonObject<Manifest>({
-		bucket: r2Bucket,
-		key: manifestKey,
-	})) ?? {
-		version: 1,
-		docs: {},
-	}
 
 	const idsToDelete: string[] = []
 	const toUpsert: Array<{
@@ -951,7 +1248,7 @@ async function main() {
 		text: string
 		metadata: Record<string, unknown>
 	}> = []
-	const nextDocs: Record<string, ManifestDoc> = {}
+	const nextDocs: Record<string, ManifestDoc> = prune ? {} : { ...manifest.docs }
 
 	for (const { video, details } of enriched) {
 		const videoId = video.videoId
@@ -1052,9 +1349,24 @@ async function main() {
 		}
 	}
 
-	for (const [docId, oldDoc] of Object.entries(manifest.docs)) {
-		if (nextDocs[docId]) continue
-		for (const chunk of oldDoc.chunks) idsToDelete.push(chunk.id)
+	// If pruning is enabled, carry over discovered-but-not-reindexed docs and
+	// delete anything no longer discovered.
+	if (prune) {
+		for (const video of videos) {
+			const docId = getDocId('youtube', video.videoId)
+			if (nextDocs[docId]) continue
+			const existing = manifest.docs[docId]
+			if (existing) nextDocs[docId] = existing
+		}
+
+		for (const [docId, oldDoc] of Object.entries(manifest.docs)) {
+			if (nextDocs[docId]) continue
+			// Delete docs we did NOT discover this run (playlist/appearances).
+			// Note: discovery is affected by --max-videos, which is why we refuse
+			// pruning when --max-videos is set.
+			if (discoveredDocIds.has(docId)) continue
+			for (const chunk of oldDoc.chunks) idsToDelete.push(chunk.id)
+		}
 	}
 
 	console.log(`Vectors to delete: ${idsToDelete.length}`)
