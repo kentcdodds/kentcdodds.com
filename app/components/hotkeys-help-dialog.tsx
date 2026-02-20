@@ -114,7 +114,7 @@ function HotkeysHelpDialog({
 			<DialogContent
 				aria-label="Keyboard shortcuts"
 				data-animation-state={animationState}
-				className="hotkeys-help-dialog-content bg-primary text-primary !my-[10vh] !flex !h-[80vh] !w-11/12 !max-w-3xl !flex-col overflow-hidden rounded-xl border-2 border-black px-6 py-6 shadow-xl sm:px-8 sm:py-8 dark:border-white dark:!bg-gray-900"
+				className="hotkeys-help-dialog-content bg-primary text-primary !my-[10svh] !flex !h-[80svh] !w-11/12 !max-w-3xl !flex-col overflow-hidden rounded-xl border-2 border-black px-6 py-6 shadow-xl sm:px-8 sm:py-8 dark:border-white dark:!bg-gray-900"
 				style={animationDurationStyle}
 			>
 				<div className="flex items-start justify-between gap-6">
