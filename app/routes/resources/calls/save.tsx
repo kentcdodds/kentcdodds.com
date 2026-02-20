@@ -229,12 +229,6 @@ function RecordingForm({
 	)
 }
 
-function getActionErrorMessage(error: unknown, fallback = 'Unknown Error') {
-	if (typeof error === 'string') return error
-	if (error instanceof Error) return error.message
-	return fallback
-}
-
 function getStringFormValue(formData: FormData, key: string) {
 	const value = formData.get(key)
 	return typeof value === 'string' ? value : null
@@ -338,7 +332,8 @@ async function createCall({
 
 		return redirect(`/calls/record/${createdCall.id}`)
 	} catch (error: unknown) {
-		actionData.errors.generalError = getActionErrorMessage(error)
+		const { getErrorMessage } = await import('#app/utils/misc.tsx')
+		actionData.errors.generalError = getErrorMessage(error)
 		return json(actionData, 500)
 	}
 }
@@ -433,7 +428,8 @@ Thanks for your call. Kent just replied and the episode has been published to th
 
 		return redirect('/calls')
 	} catch (error: unknown) {
-		actionData.errors.generalError = getActionErrorMessage(error)
+		const { getErrorMessage } = await import('#app/utils/misc.tsx')
+		actionData.errors.generalError = getErrorMessage(error)
 		return json(actionData, 500)
 	}
 }
