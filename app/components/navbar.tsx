@@ -846,40 +846,6 @@ function Navbar() {
 
 	useHotkey(HOTKEY_OPEN_SEARCH.modK, openSearch, searchHotkeyModifierOptions)
 
-	const openSearchFromModShiftP = React.useCallback(
-		(event: KeyboardEvent) => {
-			// If the search input already has focus, let the browser handle the shortcut
-			// (e.g. Chrome DevTools command menu).
-			// Prefer a selector-based check here instead of ref identity; production
-			// hydration/re-renders can occasionally swap the node instance.
-			const activeElement = document.activeElement
-			if (
-				activeElement instanceof HTMLInputElement &&
-				activeElement.dataset.navSearchInput === 'true'
-			) {
-				return
-			}
-			if (activeElement === searchInputRef.current) return
-
-			event.preventDefault()
-			openSearch()
-			requestAnimationFrame(() => searchInputRef.current?.focus())
-		},
-		[openSearch],
-	)
-
-	React.useEffect(() => {
-		const onKeyDown = (event: KeyboardEvent) => {
-			const isMod = event.metaKey || event.ctrlKey
-			if (!isMod || !event.shiftKey) return
-			if (event.key.toLowerCase() !== 'p') return
-			openSearchFromModShiftP(event)
-		}
-
-		document.addEventListener('keydown', onKeyDown)
-		return () => document.removeEventListener('keydown', onKeyDown)
-	}, [openSearchFromModShiftP])
-
 	return (
 		<div className="px-5vw relative overflow-visible py-9 lg:py-12">
 			<nav className="navbar-container text-primary relative mx-auto flex max-w-384 items-center gap-4 overflow-visible">

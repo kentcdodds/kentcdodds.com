@@ -11,7 +11,6 @@ export const HOTKEY_TOGGLE_HOTKEYS_DIALOG = {
 export const HOTKEY_OPEN_SEARCH = {
 	slash: '/',
 	modK: 'Mod+K',
-	modShiftP: 'Mod+Shift+P',
 } as const
 
 export const HOTKEY_GOTO_HOME = ['G', 'H'] as const satisfies HotkeySequence
@@ -63,7 +62,6 @@ export const HOTKEYS_HELP_GROUPS = [
 				combos: [
 					{ kind: 'hotkey', hotkey: HOTKEY_OPEN_SEARCH.slash },
 					{ kind: 'hotkey', hotkey: HOTKEY_OPEN_SEARCH.modK },
-					{ kind: 'hotkey', hotkey: HOTKEY_OPEN_SEARCH.modShiftP },
 				],
 			},
 		],
