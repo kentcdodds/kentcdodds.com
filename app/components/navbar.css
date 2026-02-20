@@ -62,8 +62,7 @@ body:has(#mobile-menu:popover-open) [popovertarget='mobile-menu'] {
 }
 
 @container (max-width: 1150px) {
-	.navbar-links [data-nav-item='chats'],
-	.navbar-links [data-nav-item='workshops'] {
+	.navbar-links [data-nav-item='chats'] {
 		display: none;
 	}
 }

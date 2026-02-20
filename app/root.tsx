@@ -2,11 +2,10 @@
 import { HotkeysProvider } from '@tanstack/react-hotkeys'
 
 import { clsx } from 'clsx'
-import { isFuture } from 'date-fns'
 import { AnimatePresence, motion } from 'framer-motion'
 import * as React from 'react'
 import {
-    isRouteErrorResponse, Link, Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData, useLocation, useNavigation, data as json, type HeadersFunction, type LinksFunction, type MetaFunction } from 'react-router';
+    isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData, useLocation, useNavigation, data as json, type HeadersFunction, type LinksFunction, type MetaFunction } from 'react-router';
 import { useSpinDelay } from 'spin-delay'
 import { type KCDHandle } from '#app/types.ts'
 import { getInstanceInfo } from '#app/utils/litefs-js.server.ts'
@@ -15,26 +14,19 @@ import {
 	getDisplayUrl,
 	getDomainUrl,
 	getUrl,
-	parseDate,
 	removeTrailingSlash,
-	typedBoolean,
 } from '#app/utils/misc.tsx'
 import  { type Route } from './+types/root'
 import { AppHotkeys } from './components/app-hotkeys.tsx'
 import { ArrowLink } from './components/arrow-button.tsx'
 import { ErrorPage, FourHundred } from './components/errors.tsx'
 import { Footer } from './components/footer.tsx'
-import { ArrowIcon, LaptopIcon } from './components/icons.tsx'
 import { Grimmacing, MissingSomething } from './components/kifs.tsx'
 import { Navbar } from './components/navbar.tsx'
 import { NotificationMessage } from './components/notification-message.tsx'
 import { Spacer } from './components/spacer.tsx'
 import { TeamCircle } from './components/team-circle.tsx'
 import { getGenericSocialImage, illustrationImages, images } from './images.tsx'
-import {
-	Promotification,
-	getPromoCookieValue,
-} from './routes/resources/promotification.tsx'
 import appStyles from './styles/app.css?url'
 import noScriptStyles from './styles/no-script.css?url'
 import proseStyles from './styles/prose.css?url'
@@ -52,8 +44,6 @@ import { getTheme } from './utils/theme.server.ts'
 import { useTheme } from './utils/theme.tsx'
 import { getServerTimeHeader } from './utils/timing.server.ts'
 import { getUserInfo } from './utils/user-info.server.ts'
-import { getScheduledEvents } from './utils/workshop-tickets.server.ts'
-import { getWorkshops } from './utils/workshops.server.ts'
 
 export const handle: KCDHandle & { id: string } = {
 	id: 'root',
@@ -72,7 +62,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 		},
 		...getSocialMetas({
 			keywords:
-				'Learn React, React Workshops, Testing JavaScript Training, React Training, Learn JavaScript, Learn TypeScript',
+				'Learn React, Testing JavaScript Training, React Training, Learn JavaScript, Learn TypeScript',
 			url: getUrl(requestInfo),
 			image: getGenericSocialImage({
 				url: getDisplayUrl(requestInfo),
@@ -114,26 +104,14 @@ export const links: LinksFunction = () => {
 	]
 }
 
-const WORKSHOP_PROMO_NAME = 'workshop-promo'
-
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const session = await getSession(request)
-	const [
-		user,
-
-		clientSession,
-		loginInfoSession,
-		primaryInstance,
-		workshops,
-		workshopEvents,
-	] = await Promise.all([
+	const [user, clientSession, loginInfoSession, primaryInstance] = await Promise.all([
 		session.getUser({ timings }),
 		getClientSession(request, session.getUser({ timings })),
 		getLoginInfoSession(request),
 		getInstanceInfo().then((i) => i.primaryInstance),
-		getWorkshops({ request, timings }),
-		getScheduledEvents({ request, timings }),
 	])
 
 	const randomFooterImageKeys = Object.keys(illustrationImages)
@@ -141,153 +119,11 @@ export async function loader({ request }: Route.LoaderArgs) {
 		Math.floor(Math.random() * randomFooterImageKeys.length)
 	] as keyof typeof illustrationImages
 
-	const manualWorkshopEventPromotifications = workshops
-		.filter((w) => w.events.length)
-		.flatMap((workshop) => {
-			return workshop.events
-				.filter((e) => e.remaining == null || e.remaining > 0)
-				.map((event) => {
-					const promoName = `${WORKSHOP_PROMO_NAME}-${event.date}-${workshop.slug}`
-
-					const promoEndTime = {
-						type: 'event' as const,
-						time: parseDate(event.date).getTime(),
-						url: event.url,
-					}
-					return {
-						title: workshop.title,
-						slug: workshop.slug,
-						promoName,
-						location: event.location,
-						dismissTimeSeconds: Math.min(
-							Math.max(
-								// one quarter of the time until the promoEndTime (in seconds)
-								(promoEndTime.time - Date.now()) / 4 / 1000,
-								// Minimum of 3 hours (in seconds)
-								60 * 60 * 3,
-							),
-							// Maximum of 1 week (in seconds)
-							60 * 60 * 24 * 7,
-						),
-						cookieValue: getPromoCookieValue({
-							promoName,
-							request,
-						}),
-						promoEndTime,
-					}
-				})
-		})
-
-	const titoWorkshopEventPromotifications = workshopEvents
-		.map((e) => {
-			const workshop = workshops.find((w) => w.slug === e.metadata.workshopSlug)
-			if (!workshop) return null
-
-			const discounts = Object.entries(e.discounts)
-				.filter(([, discount]) => isFuture(parseDate(discount.ends)))
-				.sort(([, a], [, b]) => {
-					return parseDate(a.ends).getTime() - parseDate(b.ends).getTime()
-				})
-
-			// the promoEndTime should be the earliest of:
-			// 1. earliest discount end
-			// 2. the end of ticket sales
-			// 3. the start of the event
-			const promoEndTime = [
-				discounts[0]
-					? {
-							type: 'discount' as const,
-							time: parseDate(discounts[0][1].ends).getTime(),
-							url: discounts[0][1].url,
-						}
-					: null,
-				e.salesEndTime
-					? {
-							type: 'sales' as const,
-							time: parseDate(e.salesEndTime).getTime(),
-							url: e.url,
-						}
-					: null,
-				e.startTime
-					? {
-							type: 'start' as const,
-							time: parseDate(e.startTime).getTime(),
-							url: e.url,
-						}
-					: null,
-			]
-				.filter(typedBoolean)
-				.sort((a, b) => a.time - b.time)[0]
-
-			if (!promoEndTime) return null
-
-			const promoName = `${WORKSHOP_PROMO_NAME}-${workshop.slug}`
-
-			return {
-				title: e.title,
-				slug: workshop.slug,
-				promoName,
-				location: e.location,
-				dismissTimeSeconds: Math.min(
-					Math.max(
-						// one quarter of the time until the promoEndTime (in seconds)
-						(promoEndTime.time - Date.now()) / 4 / 1000,
-						// Minimum of 3 hours (in seconds)
-						60 * 60 * 3,
-					),
-					// Maximum of 1 week (in seconds)
-					60 * 60 * 24 * 7,
-				),
-				cookieValue: getPromoCookieValue({
-					promoName,
-					request,
-				}),
-				promoEndTime,
-			}
-		})
-		.filter(typedBoolean)
-
-	// Static Epic MCP workshop promotification
-	const epicMcpPromoEndTime = new Date('2025-12-22T23:59:59-08:00')
-	const epicMcpPromoName = 'epic-mcp-promo'
-	const epicMcpPromotification = {
-		title: 'Epic MCP: Go from Scratch to Production',
-		slug: 'epic-mcp-from-scratch-to-production',
-		promoName: epicMcpPromoName,
-		location: null,
-		externalUrl:
-			'https://www.epicai.pro/workshops/epic-mcp-from-scratch-to-production',
-		dismissTimeSeconds: Math.min(
-			Math.max(
-				// one quarter of the time until the promoEndTime (in seconds)
-				(epicMcpPromoEndTime.getTime() - Date.now()) / 4 / 1000,
-				// Minimum of 3 hours (in seconds)
-				60 * 60 * 3,
-			),
-			// Maximum of 1 week (in seconds)
-			60 * 60 * 24 * 7,
-		),
-		cookieValue: getPromoCookieValue({
-			promoName: epicMcpPromoName,
-			request,
-		}),
-		promoEndTime: {
-			type: 'discount' as const,
-			time: epicMcpPromoEndTime.getTime(),
-			url: 'https://www.epicai.pro/workshops/epic-mcp-from-scratch-to-production',
-		},
-	}
-
 	const data = {
 		user,
 		userInfo: user ? await getUserInfo(user, { request, timings }) : null,
 		ENV: getEnv(),
 		randomFooterImageKey,
-		workshopPromotifications: [
-			...(epicMcpPromoEndTime > new Date() ? [epicMcpPromotification] : []),
-			...titoWorkshopEventPromotifications,
-			...manualWorkshopEventPromotifications,
-		],
 		requestInfo: {
 			hints: getHints(request),
 			origin: getDomainUrl(request),
@@ -487,94 +323,6 @@ function App() {
 			</head>
 			<body className="bg-white transition duration-500 dark:bg-gray-900">
 				<PageLoadingMessage />
-
-				{data.workshopPromotifications.map((e) => {
-					const isExternal = 'externalUrl' in e && e.externalUrl
-					return (
-						<Promotification
-							key={e.slug + e.title + e.promoEndTime.time}
-							cookieValue={e.cookieValue}
-							promoName={e.promoName}
-							promoEndTime={new Date(e.promoEndTime.time)}
-							dismissTimeSeconds={e.dismissTimeSeconds}
-						>
-							<div className="flex flex-col">
-								<p className="flex items-center gap-1">
-									<LaptopIcon />
-									<span>
-										{isExternal ? (
-											<>
-												Learn{' '}
-												<a
-													href="https://www.epicai.pro"
-													target="_blank"
-													rel="noopener noreferrer"
-													className="underline"
-												>
-													with Epic AI
-												</a>
-											</>
-										) : (
-											<>
-												Join Kent for a{' '}
-												<Link to="/workshops" className="underline">
-													live workshop
-												</Link>
-												{e.location
-													? e.location === 'Remote'
-														? null
-														: ` in ${e.location}`
-													: null}
-											</>
-										)}
-									</span>
-								</p>
-								{isExternal ? (
-									<a
-										href={e.externalUrl}
-										target="_blank"
-										rel="noopener noreferrer"
-										className="mt-3 text-lg underline"
-									>
-										{e.title}
-									</a>
-								) : (
-									<Link
-										className="mt-3 text-lg underline"
-										to={`/workshops/${e.slug}`}
-									>
-										{e.title}
-									</Link>
-								)}
-								{e.promoEndTime.type === 'discount' ? (
-									<p className="mt-1 text-sm">
-										Limited time{' '}
-										<a
-											href={e.promoEndTime.url}
-											className="inline-flex items-center gap-1 underline"
-											target="_blank"
-											rel="noopener noreferrer"
-										>
-											<span>discount available</span>
-											<ArrowIcon direction="top-right" size={16} />
-										</a>
-									</p>
-								) : e.promoEndTime.type === 'sales' ? (
-									<p className="mt-1 text-sm text-gray-500">
-										Limited time{' '}
-										<a
-											href={e.promoEndTime.url}
-											className="inline-flex items-center gap-1 underline"
-										>
-											<span>tickets available</span>
-											<ArrowIcon direction="top-right" size={16} />
-										</a>
-									</p>
-								) : null}
-							</div>
-						</Promotification>
-					)
-				})}
 				<NotificationMessage queryStringKey="message" delay={0.3} />
 				<Navbar />
 				<AppHotkeys />

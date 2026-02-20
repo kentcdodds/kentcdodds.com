@@ -303,14 +303,6 @@ function getStaticDocs(): SearchDoc[] {
 				'Search the site for posts, pages, podcasts, talks, resume, credits, and more.',
 		},
 		{
-			id: '/workshops',
-			title: 'Workshops',
-			type: 'page',
-			url: '/workshops',
-			snippet: 'Hands-on training on React, testing, TypeScript, and more.',
-			content: 'Workshops and training.',
-		},
-		{
 			id: '/contact',
 			title: 'Contact',
 			type: 'page',

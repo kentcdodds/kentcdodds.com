@@ -18,7 +18,6 @@ const NAVIGATION_HOTKEY_ROUTES = [
 	{ sequence: hk.HOTKEY_GOTO_CALLS, path: '/calls' },
 	{ sequence: hk.HOTKEY_GOTO_COURSES, path: '/courses' },
 	{ sequence: hk.HOTKEY_GOTO_DISCORD, path: '/discord' },
-	{ sequence: hk.HOTKEY_GOTO_WORKSHOPS, path: '/workshops' },
 	{ sequence: hk.HOTKEY_GOTO_ABOUT, path: '/about' },
 	{ sequence: hk.HOTKEY_GOTO_TALKS, path: '/talks' },
 	{ sequence: hk.HOTKEY_GOTO_TESTIMONY, path: '/testimony' },

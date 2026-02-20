@@ -44,8 +44,8 @@ async function downloadFirstMdxFile(
 /**
  *
  * @param relativeMdxFileOrDirectory the path to the content. For example:
- * content/workshops/react-fundamentals.mdx (pass "workshops/react-fudnamentals")
- * content/workshops/react-hooks/index.mdx (pass "workshops/react-hooks")
+ * content/blog/my-post.mdx (pass "blog/my-post")
+ * content/pages/about/index.mdx (pass "pages/about")
  * @returns A promise that resolves to an Array of GitHubFiles for the necessary files
  */
 async function downloadMdxFileOrDirectory(

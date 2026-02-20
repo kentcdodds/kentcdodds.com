@@ -72,7 +72,6 @@ function SitemapSection() {
 				<FooterLink name="Courses" href="/courses" />
 				<FooterLink name="Discord" href="/discord" />
 				<FooterLink name="Chats Podcast" href="/chats" />
-				<FooterLink name="Workshops" href="/workshops" />
 				<FooterLink name="Talks" href="/talks" />
 				<FooterLink name="Testimony" href="/testimony" />
 				<FooterLink name="Testimonials" href="/testimonials" />

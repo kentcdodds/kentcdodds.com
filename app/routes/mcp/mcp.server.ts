@@ -375,7 +375,7 @@ function createServer() {
 		'subscribe_to_newsletter',
 		{
 			description:
-				'Subscribe to Kent C. Dodds newsletter and get regular updates about new articles, courses, and workshops',
+				'Subscribe to Kent C. Dodds newsletter and get regular updates about new articles and courses',
 			inputSchema: {
 				email: z
 					.string()
