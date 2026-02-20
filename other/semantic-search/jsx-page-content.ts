@@ -1,9 +1,11 @@
 import { spawn } from 'node:child_process'
-import { setTimeout as sleep } from 'node:timers/promises'
 import fs from 'node:fs/promises'
+import http from 'node:http'
+import https from 'node:https'
 import path from 'node:path'
-import { toString as hastToString } from 'hast-util-to-string'
+import { setTimeout as sleep } from 'node:timers/promises'
 import getPort, { portNumbers } from 'get-port'
+import { toString as hastToString } from 'hast-util-to-string'
 import rehypeParse from 'rehype-parse'
 import { unified } from 'unified'
 import { normalizeText } from './chunk-utils.ts'
@@ -188,6 +190,52 @@ type RunningDevServer = {
 	close: () => Promise<void>
 }
 
+type TextResponse = {
+	statusCode: number
+	headers: http.IncomingHttpHeaders
+	body: string
+}
+
+async function requestTextDocument({
+	url,
+	accept,
+}: {
+	url: string
+	accept: string
+}): Promise<TextResponse> {
+	const targetUrl = new URL(url)
+	const requestFn = targetUrl.protocol === 'https:' ? https.request : http.request
+
+	return await new Promise<TextResponse>((resolve, reject) => {
+		const req = requestFn(
+			targetUrl,
+			{
+				method: 'GET',
+				maxHeaderSize: 1024 * 1024,
+				headers: { Accept: accept },
+			},
+			(res) => {
+				const chunks: Buffer[] = []
+				res.on('data', (chunk) => {
+					chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+				})
+				res.on('end', () => {
+					resolve({
+						statusCode: res.statusCode ?? 0,
+						headers: res.headers,
+						body: Buffer.concat(chunks).toString('utf8'),
+					})
+				})
+			},
+		)
+		req.on('error', reject)
+		req.setTimeout(30_000, () => {
+			req.destroy(new Error(`Request timed out: ${url}`))
+		})
+		req.end()
+	})
+}
+
 async function waitForSitemap({
 	origin,
 	logs,
@@ -200,10 +248,11 @@ async function waitForSitemap({
 	const start = Date.now()
 	while (Date.now() - start < timeoutMs) {
 		try {
-			const res = await fetch(`${origin}/sitemap.xml`, {
-				headers: { Accept: 'application/xml' },
+			const res = await requestTextDocument({
+				url: `${origin}/sitemap.xml`,
+				accept: 'application/xml',
 			})
-			if (res.ok) return
+			if (res.statusCode >= 200 && res.statusCode < 300) return
 		} catch {
 			// still starting
 		}
@@ -230,6 +279,7 @@ export async function startLocalDevServerForSitemap({
 			STARTUP_SHORTCUTS: 'false',
 			FORCE_COLOR: '0',
 		},
+		detached: process.platform !== 'win32',
 		stdio: ['ignore', 'pipe', 'pipe'],
 	})
 
@@ -243,18 +293,44 @@ export async function startLocalDevServerForSitemap({
 	child.stdout?.on('data', appendOutput)
 	child.stderr?.on('data', appendOutput)
 
+	const waitForExit = () =>
+		new Promise<void>((resolve) => {
+			if (child.exitCode != null) {
+				resolve()
+				return
+			}
+			child.once('exit', () => resolve())
+		})
+	const killDevServer = (signal: NodeJS.Signals) => {
+		if (process.platform !== 'win32' && child.pid) {
+			process.kill(-child.pid, signal)
+			return
+		}
+		child.kill(signal)
+	}
+
 	let settled = false
 	const close = async () => {
 		if (settled) return
 		settled = true
 		if (child.exitCode != null) return
-		child.kill('SIGTERM')
-		const deadline = Date.now() + 10_000
-		while (child.exitCode == null && Date.now() < deadline) {
-			await sleep(100)
+		const exited = waitForExit()
+		try {
+			killDevServer('SIGTERM')
+		} catch {
+			// ignore if it already exited
 		}
-		if (child.exitCode == null) {
-			child.kill('SIGKILL')
+		const timedOut = await Promise.race([
+			exited.then(() => false),
+			sleep(10_000).then(() => true),
+		])
+		if (timedOut && child.exitCode == null) {
+			try {
+				killDevServer('SIGKILL')
+			} catch {
+				// ignore if it already exited
+			}
+			await exited
 		}
 	}
 
@@ -272,36 +348,37 @@ export async function startLocalDevServerForSitemap({
 }
 
 async function fetchHtml(pathname: string, origin: string) {
-	const res = await fetch(`${origin}${pathname}`, {
-		redirect: 'manual',
-		headers: { Accept: 'text/html,application/xhtml+xml' },
+	const res = await requestTextDocument({
+		url: `${origin}${pathname}`,
+		accept: 'text/html,application/xhtml+xml',
 	})
-	if (res.status >= 300 && res.status < 400) return null
-	if (!res.ok) return null
-	const contentType = res.headers.get('content-type') ?? ''
+	if (res.statusCode >= 300 && res.statusCode < 400) return null
+	if (res.statusCode < 200 || res.statusCode >= 300) return null
+	const contentType = String(res.headers['content-type'] ?? '')
 	if (!contentType.includes('text/html')) return null
-	return await res.text()
+	return res.body
 }
 
 export async function loadJsxPageItemsFromRunningSite({
 	origin,
 	mdxRoutes,
-	minimumTextLength = 80,
+	minimumTextLength = 120,
 }: {
 	origin: string
 	mdxRoutes: ReadonlySet<string>
 	minimumTextLength?: number
 }) {
-	const sitemapRes = await fetch(`${origin}/sitemap.xml`, {
-		headers: { Accept: 'application/xml' },
+	const sitemapRes = await requestTextDocument({
+		url: `${origin}/sitemap.xml`,
+		accept: 'application/xml',
 	})
-	if (!sitemapRes.ok) {
+	if (sitemapRes.statusCode < 200 || sitemapRes.statusCode >= 300) {
 		throw new Error(
-			`Failed to fetch sitemap.xml from ${origin}: ${sitemapRes.status}`,
+			`Failed to fetch sitemap.xml from ${origin}: ${sitemapRes.statusCode}`,
 		)
 	}
 
-	const sitemapXml = await sitemapRes.text()
+	const sitemapXml = sitemapRes.body
 	const allPathnames = parseSitemapPathnames(sitemapXml)
 	const pathnamesToIndex = allPathnames.filter((pathname) =>
 		shouldIndexJsxSitemapPath({ pathname, mdxRoutes }),
