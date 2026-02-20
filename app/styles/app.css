@@ -155,6 +155,20 @@ light-mode {
 	background: transparent;
 }
 
+[data-reach-tab-list].space-x-8 {
+	column-gap: calc(var(--spacing, 0.25rem) * 8);
+}
+
+@media (width >= 1024px) {
+	[data-reach-tab-list].lg\:space-x-0 {
+		column-gap: 0;
+	}
+
+	[data-reach-tab-list].lg\:space-x-12 {
+		column-gap: calc(var(--spacing, 0.25rem) * 12);
+	}
+}
+
 [data-reach-tab].border-none {
 	border: 0;
 }
@@ -173,6 +187,18 @@ light-mode {
 
 [data-reach-tab].text-left {
 	text-align: left;
+}
+
+[data-reach-tab].text-4xl {
+	font-size: var(--text-4xl, 2.5rem);
+}
+
+[data-reach-tab].leading-tight {
+	line-height: 1.25;
+}
+
+[data-reach-tab].focus\:bg-transparent:focus {
+	background: transparent;
 }
 
 [data-reach-tab].text-primary {
