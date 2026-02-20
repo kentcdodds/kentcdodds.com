@@ -24,67 +24,96 @@ import {
 // actually needed so dotenv can still override if it loads later.
 const defaultLitefsDir = './prisma'
 
-function ensureLitefsDir() {
-	if (!process.env.LITEFS_DIR) {
-		process.env.LITEFS_DIR = defaultLitefsDir
+const resolveLitefsDir = (litefsDir?: string): string =>
+	litefsDir || process.env.LITEFS_DIR || defaultLitefsDir
+
+function withLitefsDirEnv<T>(litefsDir: string, fn: () => T): T {
+	const existingLitefsDir = process.env.LITEFS_DIR
+	if (existingLitefsDir) {
+		return fn()
+	}
+
+	process.env.LITEFS_DIR = litefsDir
+
+	const restore = () => {
+		if (existingLitefsDir === undefined) {
+			if (process.env.LITEFS_DIR === litefsDir) {
+				delete process.env.LITEFS_DIR
+			}
+			return
+		}
+
+		process.env.LITEFS_DIR = existingLitefsDir
+	}
+
+	try {
+		const result = fn()
+		if (result && typeof (result as Promise<unknown>).finally === 'function') {
+			return (result as Promise<unknown>).finally(restore) as T
+		}
+		restore()
+		return result
+	} catch (error) {
+		restore()
+		throw error
 	}
 }
 
-const getInstanceInfo: typeof baseGetInstanceInfo = (...args) => {
-	if (!args[0]) {
-		ensureLitefsDir()
-	}
-	return baseGetInstanceInfo(...args)
-}
+const getInstanceInfo: typeof baseGetInstanceInfo = litefsDir =>
+	baseGetInstanceInfo(resolveLitefsDir(litefsDir))
 
-const getInstanceInfoSync: typeof baseGetInstanceInfoSync = (...args) => {
-	if (!args[0]) {
-		ensureLitefsDir()
-	}
-	return baseGetInstanceInfoSync(...args)
-}
+const getInstanceInfoSync: typeof baseGetInstanceInfoSync = litefsDir =>
+	baseGetInstanceInfoSync(resolveLitefsDir(litefsDir))
 
 const waitForUpToDateTxNumber: typeof baseWaitForUpToDateTxNumber = (
-	...args
+	clientTxNumber,
+	options,
 ) => {
-	if (!args[1]?.litefsDir) {
-		ensureLitefsDir()
+	const resolvedOptions: NonNullable<
+		Parameters<typeof baseWaitForUpToDateTxNumber>[1]
+	> = {
+		...options,
+		litefsDir: resolveLitefsDir(options?.litefsDir),
 	}
-	return baseWaitForUpToDateTxNumber(...args)
+
+	return withLitefsDirEnv(resolvedOptions.litefsDir, () =>
+		baseWaitForUpToDateTxNumber(clientTxNumber, resolvedOptions),
+	)
 }
 
-const getTxNumber: typeof baseGetTxNumber = (...args) => {
-	if (!args[0]) {
-		ensureLitefsDir()
-	}
-	return baseGetTxNumber(...args)
-}
+const getTxNumber: typeof baseGetTxNumber = (litefsDir, databaseFilename) =>
+	baseGetTxNumber(resolveLitefsDir(litefsDir), databaseFilename)
 
 const checkCookieForTransactionalConsistency: typeof baseCheckCookieForTransactionalConsistency =
 	(...args) => {
-		ensureLitefsDir()
-		return baseCheckCookieForTransactionalConsistency(...args)
+		return withLitefsDirEnv(resolveLitefsDir(), () =>
+			baseCheckCookieForTransactionalConsistency(...args),
+		)
 	}
 
 const ensurePrimary: typeof baseEnsurePrimary = (...args) => {
-	ensureLitefsDir()
-	return baseEnsurePrimary(...args)
+	return withLitefsDirEnv(resolveLitefsDir(), () =>
+		baseEnsurePrimary(...args),
+	)
 }
 
 const ensureInstance: typeof baseEnsureInstance = (...args) => {
-	ensureLitefsDir()
-	return baseEnsureInstance(...args)
+	return withLitefsDirEnv(resolveLitefsDir(), () =>
+		baseEnsureInstance(...args),
+	)
 }
 
 const handleTransactionalConsistency: typeof baseHandleTransactionalConsistency =
 	(...args) => {
-		ensureLitefsDir()
-		return baseHandleTransactionalConsistency(...args)
+		return withLitefsDirEnv(resolveLitefsDir(), () =>
+			baseHandleTransactionalConsistency(...args),
+		)
 	}
 
 const appendTxNumberCookie: typeof baseAppendTxNumberCookie = (...args) => {
-	ensureLitefsDir()
-	return baseAppendTxNumberCookie(...args)
+	return withLitefsDirEnv(resolveLitefsDir(), () =>
+		baseAppendTxNumberCookie(...args),
+	)
 }
 
 export {
