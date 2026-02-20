@@ -1,8 +1,22 @@
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
-import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
 import { getTweetEmbedHTML } from '../x.server.ts'
 import { type Tweet } from '../twitter/types/index.ts'
+
+vi.mock('../cache.server.ts', () => ({
+	cache: {
+		name: 'test-cache',
+		get: () => null,
+		set: async () => {},
+		delete: async () => {},
+	},
+	lruCache: {
+		get: () => undefined,
+		set: () => undefined,
+		delete: () => undefined,
+	},
+}))
 
 const truncatedTweetId = '2024575351259877487'
 const fullNoteTweetId = '2024575351259877488'
