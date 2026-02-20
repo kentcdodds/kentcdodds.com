@@ -114,7 +114,7 @@ function HotkeysHelpDialog({
 			<DialogContent
 				aria-label="Keyboard shortcuts"
 				data-animation-state={animationState}
-				className="hotkeys-help-dialog-content bg-primary text-primary !w-11/12 !max-w-3xl rounded-xl border-2 border-black px-6 py-6 shadow-xl sm:px-8 sm:py-8 dark:border-white dark:!bg-gray-900"
+				className="hotkeys-help-dialog-content bg-primary text-primary !my-[10vh] !flex !h-[80vh] !w-11/12 !max-w-3xl !flex-col overflow-hidden rounded-xl border-2 border-black px-6 py-6 shadow-xl sm:px-8 sm:py-8 dark:border-white dark:!bg-gray-900"
 				style={animationDurationStyle}
 			>
 				<div className="flex items-start justify-between gap-6">
@@ -134,38 +134,47 @@ function HotkeysHelpDialog({
 					</button>
 				</div>
 
-				<div className="mt-8 space-y-8">
-					{groups.map((group) => (
-						<section key={group.title}>
-							<div className="text-secondary mb-3 text-xs font-semibold tracking-widest uppercase">
-								{group.title}
-							</div>
-							<ul className="space-y-4">
-								{group.items.map((item) => (
-									<li
-										key={`${group.title}-${item.description}`}
-										className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
-									>
-										<div className="flex flex-wrap items-center gap-2">
-											{item.combos.map((combo, index) => (
-												<React.Fragment key={index}>
-													{index === 0 ? null : (
-														<span className="text-secondary px-1 text-sm">
-															or
-														</span>
-													)}
-													{renderCombo(combo)}
-												</React.Fragment>
-											))}
-										</div>
-										<div className="text-secondary text-sm sm:text-base">
-											{item.description}
-										</div>
-									</li>
-								))}
-							</ul>
-						</section>
-					))}
+				<div className="mt-8 min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+					<div className="space-y-8">
+						{groups.map((group) => (
+							<section key={group.title}>
+								<div className="text-secondary mb-3 text-xs font-semibold tracking-widest uppercase">
+									{group.title}
+								</div>
+								<ul className="space-y-4">
+									{group.items.map((item) => (
+										<li
+											key={`${group.title}-${item.description}`}
+											className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+										>
+											<div className="flex flex-wrap items-center gap-2">
+												{item.combos.map((combo, index) => {
+													const comboKey =
+														combo.kind === 'hotkey'
+															? `hotkey:${combo.hotkey}`
+															: `sequence:${combo.keys.join('-')}`
+
+													return (
+														<React.Fragment key={comboKey}>
+															{index === 0 ? null : (
+																<span className="text-secondary px-1 text-sm">
+																	or
+																</span>
+															)}
+															{renderCombo(combo)}
+														</React.Fragment>
+													)
+												})}
+											</div>
+											<div className="text-secondary text-sm sm:text-base">
+												{item.description}
+											</div>
+										</li>
+									))}
+								</ul>
+							</section>
+						))}
+					</div>
 				</div>
 			</DialogContent>
 		</DialogOverlay>
