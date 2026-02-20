@@ -508,6 +508,7 @@ async function getDocsFromChangedPaths({
 		(p) =>
 			p.startsWith('app/') ||
 			p.startsWith('content/data/') ||
+			p.startsWith('content/pages/') ||
 			p.startsWith('other/semantic-search/'),
 	)
 
@@ -800,23 +801,17 @@ async function main() {
 
 		// Index raw MDX for MDX-backed docs, and cleaned rendered text for JSX pages.
 		const chunkBodies =
-			type === 'blog' || type === 'page'
-				? chunkTextRaw(source, {
+			type === 'jsx-page'
+				? chunkText(source, {
+						targetChars: 3500,
+						overlapChars: 450,
+						maxChunkChars: 5000,
+					})
+				: chunkTextRaw(source, {
 						targetChars: 2500,
 						overlapChars: 250,
 						maxChunkChars: 3500,
 					})
-				: type === 'jsx-page'
-					? chunkText(source, {
-							targetChars: 3500,
-							overlapChars: 450,
-							maxChunkChars: 5000,
-						})
-					: chunkTextRaw(source, {
-							targetChars: 2500,
-							overlapChars: 250,
-							maxChunkChars: 3500,
-						})
 		const chunkCount = chunkBodies.length
 
 		const chunks: ManifestChunk[] = []
