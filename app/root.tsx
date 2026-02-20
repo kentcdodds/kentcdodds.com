@@ -1,30 +1,12 @@
-import {
-	json,
-	type LoaderFunctionArgs,
-	type HeadersFunction,
-	type LinksFunction,
-	type MetaFunction,
-} from '@remix-run/node'
 
-import {
-	isRouteErrorResponse,
-	Link,
-	Links,
-	Meta,
-	Outlet,
-	Scripts,
-	ScrollRestoration,
-	useLoaderData,
-	useLocation,
-	useNavigation,
-} from '@remix-run/react'
-import { withSentry } from '@sentry/remix'
 import { HotkeysProvider } from '@tanstack/react-hotkeys'
 
 import { clsx } from 'clsx'
 import { isFuture } from 'date-fns'
 import { AnimatePresence, motion } from 'framer-motion'
 import * as React from 'react'
+import {
+    isRouteErrorResponse, Link, Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData, useLocation, useNavigation, data as json, type HeadersFunction, type LinksFunction, type MetaFunction } from 'react-router';
 import { useSpinDelay } from 'spin-delay'
 import { type KCDHandle } from '#app/types.ts'
 import { getInstanceInfo } from '#app/utils/litefs-js.server.ts'
@@ -37,6 +19,7 @@ import {
 	removeTrailingSlash,
 	typedBoolean,
 } from '#app/utils/misc.tsx'
+import  { type Route } from './+types/root'
 import { AppHotkeys } from './components/app-hotkeys.tsx'
 import { ArrowLink } from './components/arrow-button.tsx'
 import { ErrorPage, FourHundred } from './components/errors.tsx'
@@ -51,7 +34,7 @@ import { getGenericSocialImage, illustrationImages, images } from './images.tsx'
 import {
 	Promotification,
 	getPromoCookieValue,
-} from './routes/resources+/promotification.tsx'
+} from './routes/resources/promotification.tsx'
 import appStyles from './styles/app.css?url'
 import noScriptStyles from './styles/no-script.css?url'
 import proseStyles from './styles/prose.css?url'
@@ -133,7 +116,7 @@ export const links: LinksFunction = () => {
 
 const WORKSHOP_PROMO_NAME = 'workshop-promo'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const session = await getSession(request)
 	const [
@@ -467,7 +450,7 @@ function CanonicalLink({
 }
 
 function App() {
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const nonce = useNonce()
 	const [team] = useTeam()
 	const theme = useTheme()
@@ -643,7 +626,7 @@ function AppWithProviders() {
 		</TeamProvider>
 	)
 }
-export default withSentry(AppWithProviders)
+export default AppWithProviders
 
 function ErrorDoc({ children }: { children: React.ReactNode }) {
 	const nonce = useNonce()

@@ -1,15 +1,15 @@
 import { PassThrough, Transform } from 'stream'
-import {
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
-	createReadableStreamFromReadable,
-	type HandleDocumentRequestFunction,
-} from '@remix-run/node'
-import { RemixServer } from '@remix-run/react'
-import * as Sentry from '@sentry/remix'
+
+
+import { createReadableStreamFromReadable } from '@react-router/node';
+import * as Sentry from '@sentry/react-router'
 import chalk from 'chalk'
 import { isbot } from 'isbot'
 import { renderToPipeableStream } from 'react-dom/server'
+import { ServerRouter,
+    type ActionFunctionArgs,
+    type LoaderFunctionArgs,
+    type HandleDocumentRequestFunction } from 'react-router';
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { routes as otherRoutes } from './other-routes.server.ts'
 import { getEnv } from './utils/env.server.ts'
@@ -19,9 +19,6 @@ global.ENV = getEnv()
 
 const ABORT_DELAY = 5000
 
-// NOTE: we've got a patch-package on Remix that adds the loadContext argument
-// so we can access the cspNonce in the entry. Hopefully this gets supported:
-// https://github.com/remix-run/remix/discussions/4603
 type DocRequestArgs = Parameters<HandleDocumentRequestFunction>
 
 export default async function handleDocumentRequest(...args: DocRequestArgs) {
@@ -29,7 +26,7 @@ export default async function handleDocumentRequest(...args: DocRequestArgs) {
 		request,
 		responseStatusCode,
 		responseHeaders,
-		remixContext,
+		reactRouterContext,
 		loadContext,
 	] = args
 	if (responseStatusCode >= 500) {
@@ -39,7 +36,7 @@ export default async function handleDocumentRequest(...args: DocRequestArgs) {
 	}
 
 	for (const handler of otherRoutes) {
-		const otherRouteResponse = await handler(request, remixContext)
+		const otherRouteResponse = await handler(request, reactRouterContext)
 		if (otherRouteResponse) return otherRouteResponse
 	}
 
@@ -64,18 +61,18 @@ export default async function handleDocumentRequest(...args: DocRequestArgs) {
 			request,
 			responseStatusCode,
 			responseHeaders,
-			remixContext,
+			reactRouterContext,
 			loadContext,
-		)
+		);
 	}
 
 	return serveBrowsers(
 		request,
 		responseStatusCode,
 		responseHeaders,
-		remixContext,
+		reactRouterContext,
 		loadContext,
-	)
+	);
 }
 
 function serveTheBots(...args: DocRequestArgs) {
@@ -83,17 +80,17 @@ function serveTheBots(...args: DocRequestArgs) {
 		request,
 		responseStatusCode,
 		responseHeaders,
-		remixContext,
+		reactRouterContext,
 		loadContext,
 	] = args
 	const nonce = loadContext.cspNonce ? String(loadContext.cspNonce) : ''
 	return new Promise((resolve, reject) => {
 		const stream = renderToPipeableStream(
 			<NonceProvider value={nonce}>
-				<RemixServer
-					context={remixContext}
+				<ServerRouter
+					context={reactRouterContext}
 					url={request.url}
-					abortDelay={ABORT_DELAY}
+					nonce={nonce}
 				/>
 			</NonceProvider>,
 			{
@@ -128,7 +125,7 @@ function serveTheBots(...args: DocRequestArgs) {
 			},
 		)
 		setTimeout(() => stream.abort(), ABORT_DELAY)
-	})
+	});
 }
 
 function serveBrowsers(...args: DocRequestArgs) {
@@ -136,7 +133,7 @@ function serveBrowsers(...args: DocRequestArgs) {
 		request,
 		responseStatusCode,
 		responseHeaders,
-		remixContext,
+		reactRouterContext,
 		loadContext,
 	] = args
 	const nonce = loadContext.cspNonce ? String(loadContext.cspNonce) : ''
@@ -144,10 +141,10 @@ function serveBrowsers(...args: DocRequestArgs) {
 		let didError = false
 		const stream = renderToPipeableStream(
 			<NonceProvider value={nonce}>
-				<RemixServer
-					context={remixContext}
+				<ServerRouter
+					context={reactRouterContext}
 					url={request.url}
-					abortDelay={ABORT_DELAY}
+					nonce={nonce}
 				/>
 			</NonceProvider>,
 			{
@@ -186,7 +183,7 @@ function serveBrowsers(...args: DocRequestArgs) {
 			},
 		)
 		setTimeout(() => stream.abort(), ABORT_DELAY)
-	})
+	});
 }
 
 export async function handleDataRequest(response: Response) {

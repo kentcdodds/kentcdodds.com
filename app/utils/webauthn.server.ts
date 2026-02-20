@@ -1,5 +1,5 @@
-import { createCookie } from '@remix-run/node'
 import { type RegistrationResponseJSON } from '@simplewebauthn/server'
+import { createCookie } from 'react-router';
 import { z } from 'zod'
 import { getDomainUrl } from './misc.tsx'
 

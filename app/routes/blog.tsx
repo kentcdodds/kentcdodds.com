@@ -1,15 +1,7 @@
 import { MixedCheckbox } from '@reach/checkbox'
-import {
-	type LoaderFunctionArgs,
-	json,
-	type HeadersFunction,
-	type LinksFunction,
-	type MetaFunction,
-	type SerializeFrom,
-} from '@remix-run/node'
-import { Link, useLoaderData, useSearchParams } from '@remix-run/react'
 import { clsx } from 'clsx'
 import * as React from 'react'
+import { Link, useLoaderData, useSearchParams, data as json, type HeadersFunction, type LinksFunction, type MetaFunction } from 'react-router';
 import { ArrowLink } from '#app/components/arrow-button.tsx'
 import { ArticleCard } from '#app/components/article-card.tsx'
 import { Button } from '#app/components/button.tsx'
@@ -53,9 +45,11 @@ import {
 	useCapturedRouteError,
 } from '#app/utils/misc.tsx'
 import { getSocialMetas } from '#app/utils/seo.ts'
+import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { useTeam } from '#app/utils/team-provider.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
+import  { type Route } from './+types/blog'
 
 const handleId = 'blog'
 export const handle: KCDHandle = {
@@ -74,7 +68,7 @@ export const links: LinksFunction = () => {
 	]
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const [
 		posts,
@@ -207,7 +201,7 @@ function BlogHome() {
 			: sortState,
 	)
 
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const { posts: allPosts, userReads, postReadCounts } = data
 
 	const getLeadingTeamForSlug = React.useCallback(
@@ -364,7 +358,7 @@ function BlogHome() {
 				: `${q} ${tag}`
 
 			// trim and remove subsequent spaces (`react   node ` => `react node`)
-			return newQuery.replace(/\s+/g, ' ').trim()
+			return newQuery.replace(/\s+/g, ' ').trim();
 		})
 	}
 

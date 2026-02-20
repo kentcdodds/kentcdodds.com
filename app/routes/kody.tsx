@@ -1,6 +1,6 @@
-import { type MetaFunction } from '@remix-run/node'
 import * as React from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
+import { type MetaFunction } from 'react-router';
 import {
 	HeroSection,
 	getHeroImageProps,

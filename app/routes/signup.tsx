@@ -1,12 +1,6 @@
-import {
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
-	json,
-	redirect,
-} from '@remix-run/node'
-import { Form, useActionData, useLoaderData } from '@remix-run/react'
 import { clsx } from 'clsx'
 import * as React from 'react'
+import { data as json, redirect, Form, useActionData, useLoaderData } from 'react-router';
 import { Button } from '#app/components/button.tsx'
 import { Field, InputError } from '#app/components/form-elements.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -30,6 +24,7 @@ import {
 import { prisma, validateMagicLink } from '#app/utils/prisma.server.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
 import { useTeam } from '#app/utils/team-provider.tsx'
+import  { type Route } from './+types/signup'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
@@ -65,7 +60,7 @@ const actionIds = {
 	signUp: 'sign up',
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const loginInfoSession = await getLoginInfoSession(request)
 
 	const requestText = await request.text()
@@ -155,7 +150,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	})
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const user = await getUser(request)
 	if (user) return redirect('/me')
 
@@ -263,8 +258,8 @@ function TeamOption({
 }
 
 export default function NewAccount() {
-	const data = useLoaderData<typeof loader>()
-	const actionData = useActionData<typeof action>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+	const actionData = useActionData<Route.ComponentProps['actionData']>()
 	const [, setTeam] = useTeam()
 	const [formValues, setFormValues] = React.useState<{
 		firstName: string
@@ -274,14 +269,12 @@ export default function NewAccount() {
 		team: undefined,
 	})
 
-	const formIsValid =
-		formValues.firstName.trim().length > 0 &&
-		teams.includes(formValues.team as Team)
-
 	const team = formValues.team
 	React.useEffect(() => {
 		if (team && teams.includes(team)) setTeam(team)
 	}, [team, setTeam])
+	const formIsValid =
+		formValues.firstName.trim().length > 0 && formValues.team !== undefined
 
 	return (
 		<div className="mt-24 pt-6">
@@ -295,10 +288,14 @@ export default function NewAccount() {
 				<Form
 					method="POST"
 					onChange={(event) => {
-						const form = event.currentTarget
+						const formData = new FormData(event.currentTarget)
+						const firstName = formData.get('firstName')
+						const team = formData.get('team')
+						const selectedTeam =
+							typeof team === 'string' && isTeam(team) ? team : undefined
 						setFormValues({
-							firstName: form.firstName.value,
-							team: form.team.value,
+							firstName: typeof firstName === 'string' ? firstName : '',
+							team: selectedTeam,
 						})
 					}}
 				>
@@ -370,9 +367,9 @@ export default function NewAccount() {
 						</div>
 
 						<div className="col-span-full">
-							<Button type="submit" disabled={!formIsValid}>
-								{`Create account`}
-							</Button>
+						<Button type="submit" disabled={!formIsValid}>
+							{`Create account`}
+						</Button>
 						</div>
 						<p className="text-primary col-span-4 mt-10 text-xs font-medium tracking-wider">
 							{`

@@ -1,8 +1,9 @@
-import { type LoaderFunctionArgs } from '@remix-run/node'
+
 import { getBlogReadRankings } from '#app/utils/blog.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
+import  { type Route } from './+types/healthcheck'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const host =
 		request.headers.get('X-Forwarded-Host') ?? request.headers.get('host')
 

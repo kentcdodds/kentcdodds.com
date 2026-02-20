@@ -2,14 +2,11 @@ import 'dotenv/config'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { installGlobals } from '@remix-run/node'
 // NOTE: run this with tsx ./mocks/generate/tweets
 import { type Tweet } from '#app/utils/twitter/index.ts'
 import { getTweet } from '../../app/utils/twitter/get-tweet.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-installGlobals()
 
 const tweets = {
 	video: '1420669402932932611',

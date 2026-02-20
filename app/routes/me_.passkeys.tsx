@@ -1,13 +1,13 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import { useLoaderData, Form, useRevalidator } from '@remix-run/react'
 import { startRegistration } from '@simplewebauthn/browser'
 import { type PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/server'
+import { data as json, useLoaderData, Form, useRevalidator } from 'react-router';
 import { z } from 'zod'
 import { Button } from '#app/components/button.tsx'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { requireUser } from '#app/utils/session.server.ts'
+import  { type Route } from './+types/me_.passkeys'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const user = await requireUser(request)
 	const passkeys = await prisma.passkey.findMany({
 		where: { userId: user.id },
@@ -23,7 +23,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return json({ passkeys })
 }
 
-export async function action({ request }: LoaderFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const user = await requireUser(request)
 	const formData = await request.formData()
 	const intent = formData.get('intent')
@@ -63,7 +63,7 @@ const RegistrationResultSchema = z.object({
 
 export default function PasskeysRoute() {
 	const revalidator = useRevalidator()
-	const { passkeys } = useLoaderData<typeof loader>()
+	const { passkeys } = useLoaderData<Route.ComponentProps['loaderData']>()
 
 	async function handleAddPasskey() {
 		const resp = await fetch(
@@ -92,7 +92,7 @@ export default function PasskeysRoute() {
 				throw new Error('Failed to verify registration')
 			}
 
-			revalidator.revalidate()
+			void revalidator.revalidate()
 		} catch (err) {
 			console.error('Failed to create passkey:', err)
 			alert('Failed to create passkey. Please try again.')

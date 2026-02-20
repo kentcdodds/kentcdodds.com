@@ -1,0 +1,58 @@
+import { data as json, redirect } from 'react-router';
+import { serverOnly$ } from 'vite-env-only/macros'
+import { cache } from '#app/utils/cache.server.ts'
+import {
+	getInstanceInfo,
+	getInternalInstanceDomain,
+} from '#app/utils/litefs-js.server.ts'
+import { getRequiredServerEnvVar } from '#app/utils/misc.tsx'
+import  { type Route } from './+types/cache.sqlite'
+
+export async function action({ request }: Route.ActionArgs) {
+	const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
+	if (!currentIsPrimary) {
+		throw new Error(
+			`${request.url} should only be called on the primary instance (${primaryInstance})}`,
+		)
+	}
+	const token = getRequiredServerEnvVar('INTERNAL_COMMAND_TOKEN')
+	const isAuthorized =
+		request.headers.get('Authorization') === `Bearer ${token}`
+	if (!isAuthorized) {
+		console.log(
+			`Unauthorized request to ${request.url}, redirecting to solid tunes 🎶`,
+		)
+		// rick roll them
+		return redirect('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+	}
+	const { key, cacheValue } = (await request.json()) as any
+	if (cacheValue === undefined) {
+		console.log(`Deleting ${key} from the cache from remote`)
+		await cache.delete(key)
+	} else {
+		console.log(`Setting ${key} in the cache from remote`)
+		await cache.set(key, cacheValue)
+	}
+	return json({ success: true })
+}
+
+export const updatePrimaryCacheValue = serverOnly$(
+	async ({ key, cacheValue }: { key: string; cacheValue: any }) => {
+		const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
+		if (currentIsPrimary) {
+			throw new Error(
+				`updatePrimaryCacheValue should not be called on the primary instance (${primaryInstance})}`,
+			)
+		}
+		const domain = getInternalInstanceDomain(primaryInstance)
+		const token = getRequiredServerEnvVar('INTERNAL_COMMAND_TOKEN')
+		return fetch(`${domain}/resources/cache/sqlite`, {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${token}`,
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({ key, cacheValue }),
+		})
+	},
+)

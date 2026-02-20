@@ -1,0 +1,45 @@
+import { data as json, redirect, Form, useLoaderData } from 'react-router';
+import { type KCDHandle } from '#app/types.ts'
+import { useCapturedRouteError } from '#app/utils/misc.tsx'
+import  { type Route } from './+types/guest-info'
+
+export const handle: KCDHandle = {
+	getSitemapEntries: () => null,
+}
+
+export async function loader() {
+	return json({})
+}
+
+export async function action({ request }: Route.ActionArgs) {
+	return redirect(new URL(request.url).pathname)
+}
+
+// TODO: make this a thing...
+export default function GuestInfo() {
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+	return (
+		<div>
+			{`TODO: make this a thing...`}
+			<pre>{JSON.stringify(data, null, 2)}</pre>
+			<Form method="POST" noValidate>
+				<button type="submit">submit</button>
+			</Form>
+		</div>
+	)
+}
+
+export function ErrorBoundary() {
+	const error = useCapturedRouteError()
+	console.error(error)
+	if (error instanceof Error) {
+		return (
+			<div>
+				<h2>Error</h2>
+				<pre>{error.stack}</pre>
+			</div>
+		)
+	} else {
+		return <h2>Unknown Error</h2>
+	}
+}

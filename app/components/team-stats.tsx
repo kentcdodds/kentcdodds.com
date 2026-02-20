@@ -1,7 +1,7 @@
-import { Link } from '@remix-run/react'
 import { clsx } from 'clsx'
 import { motion, useReducedMotion } from 'framer-motion'
 import * as React from 'react'
+import { Link } from 'react-router';
 import { kodyProfiles } from '#app/images.tsx'
 import { type Team } from '#app/types.ts'
 import { formatNumber, getOptionalTeam } from '#app/utils/misc.tsx'

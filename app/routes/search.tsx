@@ -1,12 +1,5 @@
-import { type LoaderFunctionArgs, defer } from '@remix-run/node'
-import {
-	Await,
-	Link,
-	useAsyncError,
-	useFetcher,
-	useLoaderData,
-} from '@remix-run/react'
 import React, { Suspense } from 'react'
+import { data as defer, Await, Link, useAsyncError, useFetcher, useLoaderData } from 'react-router';
 import {
 	ErrorPanel,
 	Input,
@@ -27,11 +20,12 @@ import {
 	semanticSearchKCD,
 	type SemanticSearchResult,
 } from '#app/utils/semantic-search.server.ts'
+import  { type Route } from './+types/search'
 
 const semanticSearchNotConfiguredMessage =
 	'Semantic search is not configured on this environment yet. Try again later.'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const url = new URL(request.url)
 	const q = (url.searchParams.get('q') ?? '').trim()
 	const configured = isSemanticSearchConfigured()
@@ -79,7 +73,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function SearchPage() {
-	const loaderData = useLoaderData<typeof loader>()
+	const loaderData = useLoaderData<Route.ComponentProps['loaderData']>()
 	const fetcher = useFetcher<typeof loader>({ key: 'search-page-results' })
 	const { load } = fetcher
 	const inputRef = React.useRef<HTMLInputElement>(null)
@@ -115,7 +109,7 @@ export default function SearchPage() {
 		if (!nextQuery) return
 		// If the loader already fetched this query (e.g. initial page load), reuse it.
 		if (nextQuery === loaderData.q) return
-		load(`/search?q=${encodeURIComponent(nextQuery)}`)
+		void load(`/search?q=${encodeURIComponent(nextQuery)}`)
 	}, 250)
 
 	React.useEffect(() => {
@@ -169,7 +163,7 @@ export default function SearchPage() {
 							if (trimmedQuery === requestedQuery) return
 							setRequestedQuery(trimmedQuery)
 							if (trimmedQuery === loaderData.q) return
-							load(`/search?q=${encodeURIComponent(trimmedQuery)}`)
+							void load(`/search?q=${encodeURIComponent(trimmedQuery)}`)
 						}}
 					>
 						<div className="relative">

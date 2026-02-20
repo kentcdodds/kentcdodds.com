@@ -1,12 +1,7 @@
-import {
-	json,
-	type LinksFunction,
-	type LoaderFunctionArgs,
-	type MetaFunction,
-} from '@remix-run/node'
-import { Link, useLoaderData, useSearchParams } from '@remix-run/react'
+import { data as json, type LinksFunction, type MetaFunction, Link, useLoaderData, useSearchParams } from 'react-router';
+import resumeStyles from '#app/styles/resume.css?url'
 import { getResumeData, type ResumeData } from '#app/utils/resume.server.ts'
-import resumeStyles from './resume.css?url'
+import  { type Route } from './+types/resume'
 
 export const meta: MetaFunction = () => [
 	{ title: `Kent C. Dodds' Resume` },
@@ -20,7 +15,7 @@ export const links: LinksFunction = () => [
 	{ rel: 'stylesheet', href: resumeStyles },
 ]
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const resumeData = await getResumeData({ request })
 	return json({ resumeData })
 }
@@ -96,7 +91,7 @@ function formatMarkdown(resumeData: ResumeData, isShort: boolean) {
 }
 
 export default function ResumePage() {
-	const { resumeData } = useLoaderData<typeof loader>()
+	const { resumeData } = useLoaderData<Route.ComponentProps['loaderData']>()
 	const [searchParams] = useSearchParams()
 	const view = searchParams.get('view')
 	const isShort = view === 'short'

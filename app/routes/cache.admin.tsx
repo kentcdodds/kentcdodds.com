@@ -1,15 +1,4 @@
-import {
-	type ActionFunctionArgs,
-	json,
-	type LoaderFunctionArgs,
-} from '@remix-run/node'
-import {
-	Form,
-	useFetcher,
-	useLoaderData,
-	useSearchParams,
-	useSubmit,
-} from '@remix-run/react'
+import { data as json, Form, useFetcher, useLoaderData, useSearchParams, useSubmit } from 'react-router';
 import invariant from 'tiny-invariant'
 import { Button } from '#app/components/button.tsx'
 import {
@@ -37,8 +26,9 @@ import {
 	useCapturedRouteError,
 } from '#app/utils/misc.tsx'
 import { requireAdminUser } from '#app/utils/session.server.ts'
+import  { type Route } from './+types/cache.admin'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	await requireAdminUser(request)
 	const searchParams = new URL(request.url).searchParams
 	const query = searchParams.get('query')
@@ -59,7 +49,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return json({ cacheKeys, instance, instances, currentInstanceInfo })
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	await requireAdminUser(request)
 	const formData = await request.formData()
 	const key = formData.get('cacheKey')
@@ -89,7 +79,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function CacheAdminRoute() {
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const [searchParams] = useSearchParams()
 	const submit = useSubmit()
 	const query = searchParams.get('query') ?? ''
@@ -97,7 +87,7 @@ export default function CacheAdminRoute() {
 	const instance = searchParams.get('instance') ?? data.instance
 
 	const handleFormChange = useDebounce((form: HTMLFormElement) => {
-		submit(form)
+		void submit(form)
 	}, 400)
 
 	return (

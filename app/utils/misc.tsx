@@ -1,6 +1,4 @@
-import { type HeadersFunction } from '@remix-run/node'
-import { Link, useRouteError, type LinkProps } from '@remix-run/react'
-import { captureRemixErrorBoundaryError } from '@sentry/remix'
+import * as Sentry from '@sentry/react-router'
 import {
 	format as dateFormat,
 	add as dateAdd,
@@ -8,6 +6,14 @@ import {
 } from 'date-fns'
 import md5 from 'md5-hash'
 import * as React from 'react'
+import {
+	Link,
+	isRouteErrorResponse,
+	useRouteError,
+	type ErrorResponse,
+	type HeadersFunction,
+	type LinkProps,
+} from 'react-router'
 import {
 	type NonNullProperties,
 	type OptionalTeam,
@@ -279,7 +285,7 @@ function removeTrailingSlash(s: string) {
 }
 
 function getDisplayUrl(requestInfo?: { origin: string; path: string }) {
-	return getUrl(requestInfo).replace(/^https?:\/\//, '')
+	return getUrl(requestInfo).replace(/^https?:\/\//, '');
 }
 
 function getOrigin(requestInfo?: { origin?: string; path: string }) {
@@ -471,8 +477,30 @@ export function invariantResponse(
 
 export function useCapturedRouteError() {
 	const error = useRouteError()
-	captureRemixErrorBoundaryError(error)
+	if (isRouteErrorResponse(error)) {
+		if (error.status < 500) return error
+
+		Sentry.captureException(getRouteErrorResponseException(error), {
+			extra: {
+				route_error_response: {
+					status: error.status,
+					statusText: error.statusText,
+					data: error.data,
+				},
+			},
+		})
+		return error
+	}
+
+	Sentry.captureException(error)
 	return error
+}
+
+function getRouteErrorResponseException(error: ErrorResponse) {
+	const statusText = error.statusText || 'Route Error'
+	const routeErrorResponseError = new Error(`${error.status} ${statusText}`)
+	routeErrorResponseError.name = 'RouteErrorResponse'
+	return routeErrorResponseError
 }
 
 export function requireValidSlug(slug: unknown): asserts slug is string {

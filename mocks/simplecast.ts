@@ -12,24 +12,13 @@ import {
 	type SimplecastEpisodeListItem,
 } from '#app/types.ts'
 
-const seasonListItems: Array<SimpelcastSeasonListItem> = [
-	{
+const seasonListItems: Array<SimpelcastSeasonListItem> = Array.from(
+	{ length: 5 },
+	(_, i) => ({
 		href: `https://api.simplecast.com/seasons/${faker.string.uuid()}`,
-		number: 1,
-	},
-	{
-		href: `https://api.simplecast.com/seasons/${faker.string.uuid()}`,
-		number: 2,
-	},
-	{
-		href: `https://api.simplecast.com/seasons/${faker.string.uuid()}`,
-		number: 3,
-	},
-	{
-		href: `https://api.simplecast.com/seasons/${faker.string.uuid()}`,
-		number: 4,
-	},
-]
+		number: i + 1,
+	}),
+)
 
 const episodesById: Record<string, SimplecastEpisode> = {}
 const episodesBySeasonId: Record<string, Array<SimplecastEpisode>> = {}

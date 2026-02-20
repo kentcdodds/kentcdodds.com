@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import { Link, MemoryRouter as Router } from 'react-router-dom'
+import { Link, MemoryRouter as Router } from 'react-router';
 import { getDog, getDogs } from './dogs.jsx'
 
 function DogList() {

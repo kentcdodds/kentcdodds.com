@@ -1,9 +1,4 @@
-import {
-	type LoaderFunctionArgs,
-	json,
-	type MetaFunction,
-} from '@remix-run/node'
-import { Link, useLoaderData } from '@remix-run/react'
+import { data as json, type MetaFunction, Link, useLoaderData } from 'react-router';
 import { ButtonLink } from '#app/components/button.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { MailIcon } from '#app/components/icons.tsx'
@@ -18,6 +13,7 @@ import { getDisplayUrl, getUrl } from '#app/utils/misc.tsx'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
+import  { type Route } from './+types/subscribe'
 
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	matches,
@@ -35,7 +31,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	})
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const blogRecommendations = await getBlogRecommendations({ request, timings })
 
@@ -52,7 +48,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function SubscribeScreen() {
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const { userInfo } = useRootData()
 	const subscribedToNewsletter = userInfo?.kit?.tags.some(
 		({ name }) => name === 'Subscribed: general newsletter',

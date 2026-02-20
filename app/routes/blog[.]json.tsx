@@ -1,7 +1,8 @@
-import { type LoaderFunctionArgs } from '@remix-run/node'
 import { getPostJson } from '#app/utils/blog.server.ts'
+import  { type Route } from './+types/blog[.]json'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+
+export async function loader({ request }: Route.LoaderArgs) {
 	const data = await getPostJson(request)
 	const string = JSON.stringify(data)
 	return new Response(string, {

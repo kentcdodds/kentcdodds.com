@@ -1,22 +1,9 @@
-import {
-	json,
-	redirect,
-	type ActionFunctionArgs,
-	type HeadersFunction,
-	type LoaderFunctionArgs,
-	type MetaFunction,
-} from '@remix-run/node'
-import {
-	Form,
-	useLoaderData,
-	useNavigate,
-	useRevalidator,
-} from '@remix-run/react'
 import { startAuthentication } from '@simplewebauthn/browser'
 import { type PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/server'
 import clsx from 'clsx'
 import { AnimatePresence, motion } from 'framer-motion'
 import * as React from 'react'
+import { Form, useLoaderData, useNavigate, useRevalidator, data as json, redirect, type HeadersFunction, type MetaFunction } from 'react-router';
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
 import { Button, LinkButton } from '#app/components/button.tsx'
@@ -39,8 +26,9 @@ import {
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { getUser, sendToken } from '#app/utils/session.server.ts'
 import { isEmailVerified } from '#app/utils/verifier.server.ts'
+import  { type Route } from './+types/login'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const user = await getUser(request)
 	if (user) return redirect('/me')
 
@@ -80,7 +68,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	})
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData()
 	const loginSession = await getLoginInfoSession(request)
 
@@ -145,7 +133,7 @@ const AuthenticationOptionsSchema = z.object({
 }) satisfies z.ZodType<{ options: PublicKeyCredentialRequestOptionsJSON }>
 
 function Login() {
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const inputRef = React.useRef<HTMLInputElement>(null)
 	const navigate = useNavigate()
 	const { revalidate } = useRevalidator()
@@ -195,8 +183,8 @@ function Login() {
 
 			setPasskeyMessage("You're logged in! Navigating to your account page.")
 
-			revalidate()
-			navigate('/me')
+			void revalidate()
+			void navigate('/me')
 		} catch (e) {
 			setPasskeyMessage(null)
 			console.error(e)

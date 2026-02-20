@@ -16,13 +16,8 @@ import {
 	updateFixture,
 } from './utils.ts'
 
-const remix = process.env.REMIX_DEV_HTTP_ORIGIN as string
-
 // put one-off handlers that don't really need an entire file to themselves here
 const miscHandlers = [
-	http.post(`${remix}/ping`, () => {
-		return passthrough()
-	}),
 	http.get(
 		'https://res.cloudinary.com/kentcdodds-com/image/upload/w_100,q_auto,f_webp,e_blur:1000/unsplash/:photoId',
 		async () => {

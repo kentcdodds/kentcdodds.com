@@ -1,9 +1,4 @@
-import {
-	json,
-	type HeadersFunction,
-	type LoaderFunctionArgs,
-} from '@remix-run/node'
-import { useLoaderData } from '@remix-run/react'
+import { data as json, type HeadersFunction, useLoaderData } from 'react-router';
 import { ButtonLink } from '#app/components/button.tsx'
 import { ServerError } from '#app/components/errors.tsx'
 import { AboutSection } from '#app/components/sections/about-section.tsx'
@@ -32,8 +27,9 @@ import {
 } from '#app/utils/misc.tsx'
 import { getUser } from '#app/utils/session.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
+import  { type Route } from './+types/index'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const [
 		user,
@@ -82,7 +78,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export default function IndexRoute() {
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const kodyFlying = getRandomFlyingKody(data.kodyTeam, data.randomImageNo)
 	return (
 		<div>

@@ -1,7 +1,7 @@
-import { type MetaFunction, type TypedResponse } from '@remix-run/node'
 import { LRUCache } from 'lru-cache'
 import * as mdxBundler from 'mdx-bundler/client/index.js'
 import * as React from 'react'
+import { type MetaFunction } from 'react-router'
 import { CloudinaryVideo } from '#app/components/cloudinary-video.tsx'
 import {
 	getImageBuilder,
@@ -39,18 +39,20 @@ function getBannerTitleProp(frontmatter: MdxPage['frontmatter']) {
 
 type ExtraMeta = Array<{ [key: string]: string }>
 
-type MetaLoader = () => Promise<
-	TypedResponse<{
-		page: MdxPage
-	}>
->
+type MetaLoader = () =>
+	Promise<
+		| {
+				page: MdxPage
+		  }
+		| Response
+	>
 
 const mdxPageMeta: MetaFunction<MetaLoader, { root: RootLoaderType }> = ({
 	data,
 	matches,
 }) => {
 	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
-	if (data?.page) {
+	if (data && 'page' in data) {
 		// NOTE: keyword metadata is not used because it was used and abused by
 		// spammers. We use them for sorting on our own site, but we don't list
 		// it in the meta tags because it's possible to be penalized for doing so.
