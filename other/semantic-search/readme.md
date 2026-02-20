@@ -33,6 +33,11 @@ For podcast indexing:
 - `SIMPLECAST_KEY`
 - `CHATS_WITH_KENT_PODCAST_ID`
 
+For YouTube playlist indexing (optional but recommended as repo variables):
+
+- `YOUTUBE_PLAYLIST_URL` (full URL with `list=...`) **or**
+- `YOUTUBE_PLAYLIST_ID` (playlist ID only)
+
 ## Staged rollout / small index runs
 
 For repo content indexing you can limit which docs get indexed:
@@ -52,3 +57,29 @@ Indexed sources (via `index-repo-content.ts`):
 - `content/data/credits.yml` (each person is indexed as its own doc)
 - `content/data/testimonials.yml` (each testimonial author is indexed as its own
   doc)
+
+## YouTube playlist indexing
+
+Script:
+
+- `npx tsx other/semantic-search/index-youtube-playlist.ts`
+
+Optional flags:
+
+- `--playlist "<url-or-id>"` (defaults to `YOUTUBE_PLAYLIST_URL`,
+  `YOUTUBE_PLAYLIST_ID`, or a built-in default playlist ID)
+- `--max-videos 50` (helpful for staged/backfill runs)
+- `--language en` (caption language preference)
+- `--include-auto-captions false` (manual captions only)
+- `--manifest-key manifests/youtube-my-playlist.json`
+
+Transcript strategy:
+
+1. Prefer creator-provided caption tracks in the requested language.
+2. Fall back to YouTube auto-generated captions (`kind=asr`) when enabled.
+3. If no captions are available, index metadata/description only.
+
+Cost control:
+
+- The script stores chunk hashes in R2 manifest files and only re-embeds changed
+  chunks, so old unchanged videos do not get re-embedded every run.

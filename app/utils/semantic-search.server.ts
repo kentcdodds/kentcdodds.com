@@ -310,6 +310,8 @@ export async function semanticSearchKCD({
 		const title = asNonEmptyString(md.title)
 		const url = asNonEmptyString(md.url)
 		const snippet = asNonEmptyString(md.snippet)
+		const imageUrl = asNonEmptyString(md.imageUrl)
+		const imageAlt = asNonEmptyString(md.imageAlt)
 
 		const canonicalId = getCanonicalResultId({
 			vectorId: m.id,
@@ -327,6 +329,8 @@ export async function semanticSearchKCD({
 			title,
 			url,
 			snippet,
+			imageUrl,
+			imageAlt,
 		}
 
 		const existing = byCanonicalId.get(canonicalId)
@@ -358,6 +362,8 @@ export async function semanticSearchKCD({
 			snippet: nextIsBetter
 				? (next.snippet ?? prev.snippet)
 				: (prev.snippet ?? next.snippet),
+			imageUrl: prev.imageUrl ?? next.imageUrl,
+			imageAlt: prev.imageAlt ?? next.imageAlt,
 		}
 	}
 

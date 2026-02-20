@@ -48,7 +48,10 @@
     "format": "prettier --write \"**/*.+(js|jsx|json|yml|yaml|css|less|scss|ts|tsx|md|gql|graphql|mdx|vue)\"",
     "typecheck": "react-router typegen && tsc -b .",
     "validate": "./other/validate",
-    "setup": "npm install && prisma migrate reset --force && npm run validate && npm run prime-cache:mocks && npm run test:e2e:install && npm run test:e2e:run"
+    "setup": "npm install && prisma migrate reset --force && npm run validate && npm run prime-cache:mocks && npm run test:e2e:install && npm run test:e2e:run",
+    "index:semantic:content": "tsx ./other/semantic-search/index-repo-content.ts",
+    "index:semantic:podcasts": "tsx ./other/semantic-search/index-podcasts.ts",
+    "index:semantic:youtube": "tsx ./other/semantic-search/index-youtube-playlist.ts"
   },
   "dependencies": {
     "@conform-to/react": "^1.17.1",

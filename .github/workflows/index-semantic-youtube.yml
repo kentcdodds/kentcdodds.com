@@ -1,0 +1,41 @@
+name: 🔎 Index Semantic Search (youtube)
+on:
+  workflow_dispatch:
+  schedule:
+    # 4am Mountain Time is 11:00 UTC during standard time.
+    # This drifts by one hour during daylight saving time.
+    - cron: '0 11 * * *'
+
+jobs:
+  index:
+    name: 🔎 Index Semantic Search (youtube)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: 📥 Download deps
+        uses: bahmutov/npm-install@v1.11.2
+
+      - name: 🔎 Index youtube playlist
+        run: npx tsx other/semantic-search/index-youtube-playlist.ts
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_VECTORIZE_INDEX: ${{ secrets.CLOUDFLARE_VECTORIZE_INDEX }}
+          CLOUDFLARE_AI_EMBEDDING_MODEL:
+            ${{ secrets.CLOUDFLARE_AI_EMBEDDING_MODEL }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+
+          # Prefer setting one of these as repository variables.
+          # If neither is set, the script uses a built-in default playlist ID.
+          YOUTUBE_PLAYLIST_URL: ${{ vars.YOUTUBE_PLAYLIST_URL }}
+          YOUTUBE_PLAYLIST_ID: ${{ vars.YOUTUBE_PLAYLIST_ID }}

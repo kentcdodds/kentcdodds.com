@@ -114,6 +114,8 @@ describe('semantic search result normalization', () => {
 						url: '/blog/cursor-dup',
 						title: 'Cursor Dup',
 						snippet: 'snippet-best',
+						imageUrl: 'https://example.com/cursor-dup.png',
+						imageAlt: 'Cursor Dup',
 					},
 				},
 				{
@@ -189,6 +191,8 @@ describe('semantic search result normalization', () => {
 			const blogResult = results.find((r) => r.url === '/blog/cursor-dup')
 			expect(blogResult).toBeDefined()
 			expect(blogResult!.snippet).toBe('snippet-best')
+			expect(blogResult!.imageUrl).toBe('https://example.com/cursor-dup.png')
+			expect(blogResult!.imageAlt).toBe('Cursor Dup')
 
 			// Credits share the same URL, but should not be collapsed (slug differentiates them).
 			expect(ids).toContain('credit:alice')
