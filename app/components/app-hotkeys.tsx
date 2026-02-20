@@ -4,6 +4,24 @@ import { useLocation, useNavigate } from 'react-router'
 import * as hk from '#app/utils/hotkeys.ts'
 import { HotkeysHelpDialog } from './hotkeys-help-dialog.tsx'
 
+function isInputLikeElement(element: EventTarget | null): boolean {
+	if (!element) return false
+
+	if (element instanceof HTMLInputElement) {
+		const type = element.type.toLowerCase()
+		if (type === 'button' || type === 'submit' || type === 'reset') return false
+		return true
+	}
+
+	if (element instanceof HTMLTextAreaElement) return true
+	if (element instanceof HTMLSelectElement) return true
+
+	// Covers `contenteditable` and inherited editability.
+	if (element instanceof HTMLElement && element.isContentEditable) return true
+
+	return false
+}
+
 const navSequenceOptions = {
 	ignoreInputs: true,
 	preventDefault: true,
@@ -58,11 +76,26 @@ function AppHotkeys() {
 
 	React.useEffect(() => {
 		const sequenceManager = getSequenceManager()
+
+		// TanStack Hotkeys SequenceManager (currently) does not honor `ignoreInputs`,
+		// so sequences can progress while typing and complete on the final key.
+		// Work around by resetting sequence progress for key events from inputs.
+		// Upstream issue: https://github.com/TanStack/hotkeys/issues (see repo issue for details)
+		const resetSequencesIfTyping = (event: Event) => {
+			if (isInputLikeElement(event.target)) {
+				sequenceManager.resetAll()
+			}
+		}
+		document.addEventListener('keydown', resetSequencesIfTyping, true)
+		document.addEventListener('focusout', resetSequencesIfTyping, true)
+
 		const unregisterCallbacks = NAVIGATION_HOTKEY_ROUTES.map(({ sequence, path }) =>
 			sequenceManager.register([...sequence], () => navigateToPath(path), navSequenceOptions),
 		)
 
 		return () => {
+			document.removeEventListener('keydown', resetSequencesIfTyping, true)
+			document.removeEventListener('focusout', resetSequencesIfTyping, true)
 			for (const unregister of unregisterCallbacks) unregister()
 		}
 	}, [navigateToPath])
