@@ -4,11 +4,17 @@ import { useLocation, useNavigate } from 'react-router';
 import {
 	HOTKEY_GOTO_ABOUT,
 	HOTKEY_GOTO_BLOG,
+	HOTKEY_GOTO_CALLS,
+	HOTKEY_GOTO_CHATS,
 	HOTKEY_GOTO_COURSES,
 	HOTKEY_GOTO_DISCORD,
 	HOTKEY_GOTO_HOME,
+	HOTKEY_GOTO_KODY,
+	HOTKEY_GOTO_RESUME,
 	HOTKEY_GOTO_SEARCH,
+	HOTKEY_GOTO_TESTIMONY,
 	HOTKEY_GOTO_TALKS,
+	HOTKEY_GOTO_TRANSPARENCY,
 	HOTKEY_GOTO_WORKSHOPS,
 	HOTKEY_TOGGLE_HOTKEYS_DIALOG,
 	HOTKEYS_HELP_GROUPS,
@@ -62,6 +68,24 @@ function AppHotkeys() {
 	)
 
 	useHotkeySequence(
+		HOTKEY_GOTO_CHATS,
+		() => {
+			setDialogOpen(false)
+			navigate('/chats')
+		},
+		navSequenceOptions,
+	)
+
+	useHotkeySequence(
+		HOTKEY_GOTO_CALLS,
+		() => {
+			setDialogOpen(false)
+			navigate('/calls')
+		},
+		navSequenceOptions,
+	)
+
+	useHotkeySequence(
 		HOTKEY_GOTO_COURSES,
 		() => {
 			setDialogOpen(false)
@@ -102,6 +126,42 @@ function AppHotkeys() {
 		() => {
 			setDialogOpen(false)
 			void navigate('/talks')
+		},
+		navSequenceOptions,
+	)
+
+	useHotkeySequence(
+		HOTKEY_GOTO_TESTIMONY,
+		() => {
+			setDialogOpen(false)
+			navigate('/testimony')
+		},
+		navSequenceOptions,
+	)
+
+	useHotkeySequence(
+		HOTKEY_GOTO_TRANSPARENCY,
+		() => {
+			setDialogOpen(false)
+			navigate('/transparency')
+		},
+		navSequenceOptions,
+	)
+
+	useHotkeySequence(
+		HOTKEY_GOTO_RESUME,
+		() => {
+			setDialogOpen(false)
+			navigate('/resume')
+		},
+		navSequenceOptions,
+	)
+
+	useHotkeySequence(
+		HOTKEY_GOTO_KODY,
+		() => {
+			setDialogOpen(false)
+			navigate('/kody')
 		},
 		navSequenceOptions,
 	)

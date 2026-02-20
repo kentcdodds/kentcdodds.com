@@ -15,11 +15,17 @@ export const HOTKEY_OPEN_SEARCH = {
 
 export const HOTKEY_GOTO_HOME = ['G', 'H'] as const satisfies HotkeySequence
 export const HOTKEY_GOTO_BLOG = ['G', 'B'] as const satisfies HotkeySequence
-export const HOTKEY_GOTO_COURSES = ['G', 'C'] as const satisfies HotkeySequence
+export const HOTKEY_GOTO_CHATS = ['G', 'C'] as const satisfies HotkeySequence
+export const HOTKEY_GOTO_CALLS = ['G', 'P'] as const satisfies HotkeySequence
+export const HOTKEY_GOTO_COURSES = ['G', 'U'] as const satisfies HotkeySequence
 export const HOTKEY_GOTO_DISCORD = ['G', 'D'] as const satisfies HotkeySequence
 export const HOTKEY_GOTO_WORKSHOPS = ['G', 'W'] as const satisfies HotkeySequence
 export const HOTKEY_GOTO_ABOUT = ['G', 'A'] as const satisfies HotkeySequence
 export const HOTKEY_GOTO_TALKS = ['G', 'T'] as const satisfies HotkeySequence
+export const HOTKEY_GOTO_TESTIMONY = ['G', 'F'] as const satisfies HotkeySequence
+export const HOTKEY_GOTO_TRANSPARENCY = ['G', 'M'] as const satisfies HotkeySequence
+export const HOTKEY_GOTO_RESUME = ['G', 'R'] as const satisfies HotkeySequence
+export const HOTKEY_GOTO_KODY = ['G', 'K'] as const satisfies HotkeySequence
 export const HOTKEY_GOTO_SEARCH = ['G', 'S'] as const satisfies HotkeySequence
 
 export type HotkeysHelpCombo =
@@ -78,6 +84,14 @@ export const HOTKEYS_HELP_GROUPS = [
 				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_BLOG) }],
 			},
 			{
+				description: 'Go to Chats with Kent podcast',
+				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_CHATS) }],
+			},
+			{
+				description: 'Go to Call Kent podcast',
+				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_CALLS) }],
+			},
+			{
 				description: 'Go to courses',
 				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_COURSES) }],
 			},
@@ -96,6 +110,24 @@ export const HOTKEYS_HELP_GROUPS = [
 			{
 				description: 'Go to talks',
 				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_TALKS) }],
+			},
+			{
+				description: 'Go to testimony',
+				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_TESTIMONY) }],
+			},
+			{
+				description: 'Go to transparency',
+				combos: [
+					{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_TRANSPARENCY) },
+				],
+			},
+			{
+				description: 'Go to resume',
+				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_RESUME) }],
+			},
+			{
+				description: 'Go to kody',
+				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_KODY) }],
 			},
 			{
 				description: 'Go to search page',
