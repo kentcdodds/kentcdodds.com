@@ -120,7 +120,7 @@ describe('RecordingForm', () => {
 			url: 'http://localhost/calls/record/fake-call-id?ok=1#done',
 			headers: new Headers(),
 			json: jsonMock,
-		} as Response)
+		} as unknown as Response)
 
 		vi.stubGlobal(
 			'FileReader',
@@ -214,7 +214,7 @@ describe('RecordingForm', () => {
 					title: 'Title is required',
 				},
 			}),
-		} as Response)
+		} as unknown as Response)
 
 		vi.stubGlobal(
 			'FileReader',
