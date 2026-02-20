@@ -47,6 +47,12 @@ function HotkeysHelpDialog({
 	const animationDurationMs = prefersReducedMotion
 		? 0
 		: HOTKEYS_HELP_DIALOG_ANIMATION_DURATION_MS
+	const clearCloseTimeout = React.useCallback(() => {
+		if (closeTimeoutRef.current) {
+			clearTimeout(closeTimeoutRef.current)
+			closeTimeoutRef.current = null
+		}
+	}, [])
 
 	React.useEffect(() => {
 		const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -63,35 +69,25 @@ function HotkeysHelpDialog({
 	}, [])
 
 	React.useEffect(() => {
-		return () => {
-			if (closeTimeoutRef.current) {
-				clearTimeout(closeTimeoutRef.current)
-			}
-		}
-	}, [])
-
-	React.useEffect(() => {
 		if (isOpen) {
-			if (closeTimeoutRef.current) {
-				clearTimeout(closeTimeoutRef.current)
-				closeTimeoutRef.current = null
-			}
+			clearCloseTimeout()
 			setIsMounted(true)
-			return
+			return clearCloseTimeout
 		}
 
-		if (!isMounted) return
+		if (!isMounted) return clearCloseTimeout
 
 		if (animationDurationMs === 0) {
 			setIsMounted(false)
-			return
+			return clearCloseTimeout
 		}
 
 		closeTimeoutRef.current = setTimeout(() => {
 			setIsMounted(false)
 			closeTimeoutRef.current = null
 		}, animationDurationMs)
-	}, [animationDurationMs, isMounted, isOpen])
+		return clearCloseTimeout
+	}, [animationDurationMs, clearCloseTimeout, isMounted, isOpen])
 
 	if (!isMounted) return null
 
