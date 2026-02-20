@@ -8,7 +8,7 @@
   "imports": {
     "#*": "./*"
   },
-  "description": "A remix version of kentcdodds.com",
+  "description": "A React Router v7 version of kentcdodds.com",
   "main": "index.js",
   "repository": {
     "type": "git",
@@ -27,7 +27,7 @@
     "clean": "rimraf ./node_modules/.cache ./server/dist ./build ./public/build",
     "prebuild": "npm run clean && echo All clean ✨",
     "build": "run-s build:*",
-    "build:remix": "vite build --sourcemap && vite build --ssr --sourcemap",
+    "build:router": "vite build --sourcemap && vite build --ssr --sourcemap",
     "build:server": "tsx ./other/build-server.ts",
     "build:info": "tsx ./other/generate-build-info",
     "dev": "node ./server/dev-server.js",
