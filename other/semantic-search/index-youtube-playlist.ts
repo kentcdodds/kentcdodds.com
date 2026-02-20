@@ -84,6 +84,20 @@ function parseBoolean(value: string | undefined, defaultValue: boolean) {
 	return defaultValue
 }
 
+function getYouTubeRequestHeaders({
+	contentType,
+}: { contentType?: string } = {}) {
+	const headers: Record<string, string> = {
+		'User-Agent':
+			process.env.YOUTUBE_USER_AGENT ??
+			'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36',
+		'Accept-Language': process.env.YOUTUBE_ACCEPT_LANGUAGE ?? 'en-US,en;q=0.9',
+	}
+	if (contentType) headers['Content-Type'] = contentType
+	if (process.env.YOUTUBE_COOKIE) headers.Cookie = process.env.YOUTUBE_COOKIE
+	return headers
+}
+
 function getDocId(type: DocType, key: string) {
 	return `${type}:${key}`
 }
@@ -267,6 +281,9 @@ async function getYouTubeBrowseConfig(
 	playlistUrl.searchParams.set('hl', 'en')
 	const html = await fetchTextWithRetries(playlistUrl.toString(), {
 		label: 'youtube playlist html',
+		init: {
+			headers: getYouTubeRequestHeaders(),
+		},
 	})
 	const { apiKey, clientVersion, visitorData } = parseInnertubeConfig(html)
 	const client: Record<string, unknown> = {
@@ -298,9 +315,9 @@ async function fetchYouTubeBrowseJson({
 		label,
 		init: {
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
+			headers: getYouTubeRequestHeaders({
+				contentType: 'application/json',
+			}),
 			body: JSON.stringify({
 				context: config.context,
 				...body,
@@ -449,9 +466,9 @@ async function fetchYouTubePlayerJson({
 		label: `youtube player ${videoId}`,
 		init: {
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
+			headers: getYouTubeRequestHeaders({
+				contentType: 'application/json',
+			}),
 			body: JSON.stringify({
 				context: config.context,
 				videoId,
@@ -508,6 +525,9 @@ async function fetchTranscriptFromTrack(track: CaptionTrack, label: string) {
 	type Json3 = { events?: Json3Event[] }
 	const json = await fetchJsonWithRetries<Json3>(transcriptUrl.toString(), {
 		label,
+		init: {
+			headers: getYouTubeRequestHeaders(),
+		},
 	})
 	const lines: string[] = []
 	for (const event of json.events ?? []) {
@@ -534,6 +554,9 @@ async function fetchVideoEnrichedData({
 }): Promise<VideoEnrichedData> {
 	try {
 		const player = await fetchYouTubePlayerJson({ config, videoId })
+		const playabilityStatus = asRecord(player.playabilityStatus)
+		const playabilityCode = asString(playabilityStatus?.status)
+		const playabilityReason = asString(playabilityStatus?.reason)
 		const videoDetails = asRecord(player.videoDetails)
 		const microformat = asRecord(
 			asRecord(player.microformat)?.playerMicroformatRenderer,
@@ -566,6 +589,11 @@ async function fetchVideoEnrichedData({
 			includeAutoCaptions,
 		})
 		if (!chosen) {
+			if (playabilityCode === 'LOGIN_REQUIRED' && playabilityReason) {
+				console.warn(
+					`YouTube transcript unavailable for ${videoId}: ${playabilityReason}`,
+				)
+			}
 			return {
 				description,
 				channelTitle,

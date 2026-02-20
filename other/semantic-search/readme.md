@@ -37,6 +37,10 @@ For YouTube playlist indexing (optional but recommended as repo variables):
 
 - `YOUTUBE_PLAYLIST_URL` (full URL with `list=...`) **or**
 - `YOUTUBE_PLAYLIST_ID` (playlist ID only)
+- Optional (helps when YouTube returns anti-bot `LOGIN_REQUIRED`):
+  - `YOUTUBE_COOKIE` (cookie header value from a logged-in browser session)
+  - `YOUTUBE_USER_AGENT`
+  - `YOUTUBE_ACCEPT_LANGUAGE`
 
 ## Staged rollout / small index runs
 
