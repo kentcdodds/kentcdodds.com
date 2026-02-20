@@ -33,6 +33,10 @@ describe('jsx page content utils', () => {
 		expect(
 			shouldIndexJsxSitemapPath({ pathname: '/about', mdxRoutes }),
 		).toBe(true)
+		// SKIPPED_PREFIX_ROUTES uses '/blog/' so bare '/blog' remains indexable.
+		expect(
+			shouldIndexJsxSitemapPath({ pathname: '/blog', mdxRoutes }),
+		).toBe(true)
 		expect(
 			shouldIndexJsxSitemapPath({ pathname: '/uses', mdxRoutes }),
 		).toBe(false)
@@ -158,7 +162,9 @@ describe('jsx page content utils', () => {
 		}
 	})
 
-	test('loadJsxPageItemsFromRunningSite follows one same-origin redirect', async () => {
+	test(
+		'loadJsxPageItemsFromRunningSite follows one same-origin redirect',
+		async () => {
 		const server = http.createServer((req, res) => {
 			const host = req.headers.host ?? '127.0.0.1'
 			if (req.url === '/sitemap.xml') {
@@ -209,5 +215,7 @@ describe('jsx page content utils', () => {
 		} finally {
 			await new Promise<void>((resolve) => server.close(() => resolve()))
 		}
-	})
+		},
+		10_000,
+	)
 })

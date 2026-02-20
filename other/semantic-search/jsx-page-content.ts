@@ -279,13 +279,22 @@ async function mapWithConcurrency<Item, Result>(
 	const safeConcurrency = Math.max(1, Math.min(concurrency, items.length || 1))
 	const results: Result[] = new Array(items.length)
 	let nextIndex = 0
+	let failed = false
+	let firstError: unknown
 	const workers = Array.from({ length: safeConcurrency }, async () => {
-		while (nextIndex < items.length) {
+		while (!failed && nextIndex < items.length) {
 			const currentIndex = nextIndex++
-			results[currentIndex] = await mapper(items[currentIndex]!, currentIndex)
+			try {
+				results[currentIndex] = await mapper(items[currentIndex]!, currentIndex)
+			} catch (error) {
+				failed = true
+				if (firstError === undefined) firstError = error
+				return
+			}
 		}
 	})
 	await Promise.all(workers)
+	if (firstError !== undefined) throw firstError
 	return results
 }
 
@@ -323,7 +332,8 @@ export async function startLocalDevServerForSitemap({
 } = {}): Promise<RunningDevServer> {
 	const port = await getPort({ port: portNumbers(3200, 3999) })
 	const origin = `http://127.0.0.1:${port}`
-	const child = spawn('npm', ['run', 'dev'], {
+	const npmExecutable = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+	const child = spawn(npmExecutable, ['run', 'dev'], {
 		cwd: process.cwd(),
 		env: {
 			...process.env,
@@ -491,22 +501,27 @@ export async function loadJsxPageItemsFromRunningSite({
 		pathnamesToIndex,
 		5,
 		async (pathname): Promise<JsxPageIndexItem | null> => {
+			const normalizedOriginalPath = normalizePathname(pathname)
 			const fetched = await fetchHtml(pathname, origin)
 			if (!fetched) return null
-			const normalizedPathname = normalizePathname(fetched.pathname)
 			const { title, text } = extractRenderedPageContent(fetched.html)
 			if (text.length < minimumTextLength) return null
-			const slug = getJsxPageSlugFromPath(normalizedPathname)
+			const slug = getJsxPageSlugFromPath(normalizedOriginalPath)
 			return {
 				slug,
-				url: normalizedPathname,
-				title: title || (normalizedPathname === '/' ? 'Home' : normalizedPathname),
+				url: normalizedOriginalPath,
+				title:
+					title || (normalizedOriginalPath === '/' ? 'Home' : normalizedOriginalPath),
 				source: text,
 			}
 		},
 	)
 
-	return items.filter(isJsxPageIndexItem)
+	const uniqueBySlug = new Map<string, JsxPageIndexItem>()
+	for (const item of items.filter(isJsxPageIndexItem)) {
+		if (!uniqueBySlug.has(item.slug)) uniqueBySlug.set(item.slug, item)
+	}
+	return [...uniqueBySlug.values()]
 }
 
 export async function loadJsxPageItemsFromLocalApp() {
