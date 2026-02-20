@@ -25,37 +25,50 @@ import {
 const defaultLitefsDir = './prisma'
 
 const resolveLitefsDir = (litefsDir?: string): string =>
-	litefsDir || process.env.LITEFS_DIR || defaultLitefsDir
+	litefsDir ?? process.env.LITEFS_DIR ?? defaultLitefsDir
 
-function withLitefsDirEnv<T>(litefsDir: string, fn: () => T): T {
+let litefsDirEnvOverrideCount = 0
+let litefsDirEnvLock = Promise.resolve()
+
+async function withLitefsDirEnv<T>(
+	litefsDir: string,
+	fn: () => T,
+): Promise<Awaited<T>> {
 	const existingLitefsDir = process.env.LITEFS_DIR
-	if (existingLitefsDir) {
-		return fn()
+	if (existingLitefsDir !== undefined && litefsDirEnvOverrideCount === 0) {
+		return await fn()
 	}
 
+	let releaseLock!: () => void
+	const lock = new Promise<void>(resolve => {
+		releaseLock = resolve
+	})
+	const previousLock = litefsDirEnvLock
+	litefsDirEnvLock = litefsDirEnvLock.then(() => lock)
+
+	await previousLock
+
+	const previousLitefsDir = process.env.LITEFS_DIR
+	litefsDirEnvOverrideCount += 1
 	process.env.LITEFS_DIR = litefsDir
 
 	const restore = () => {
-		if (existingLitefsDir === undefined) {
+		litefsDirEnvOverrideCount -= 1
+		if (previousLitefsDir === undefined) {
 			if (process.env.LITEFS_DIR === litefsDir) {
 				delete process.env.LITEFS_DIR
 			}
 			return
 		}
 
-		process.env.LITEFS_DIR = existingLitefsDir
+		process.env.LITEFS_DIR = previousLitefsDir
 	}
 
 	try {
-		const result = fn()
-		if (result && typeof (result as Promise<unknown>).finally === 'function') {
-			return (result as Promise<unknown>).finally(restore) as T
-		}
+		return await fn()
+	} finally {
 		restore()
-		return result
-	} catch (error) {
-		restore()
-		throw error
+		releaseLock()
 	}
 }
 
