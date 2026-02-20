@@ -146,6 +146,88 @@ light-mode {
 	}
 }
 
+[data-reach-dialog-overlay].hotkeys-help-dialog-overlay[data-animation-state='open'] {
+	opacity: 1;
+	animation: hotkeys-help-dialog-overlay-in
+		var(--hotkeys-help-dialog-animation-duration) ease-out both;
+}
+
+[data-reach-dialog-overlay].hotkeys-help-dialog-overlay[data-animation-state='closed'] {
+	opacity: 0;
+	pointer-events: none;
+	animation: hotkeys-help-dialog-overlay-out
+		var(--hotkeys-help-dialog-animation-duration) ease-in both;
+}
+
+[data-reach-dialog-content].hotkeys-help-dialog-content {
+	will-change: opacity, transform;
+}
+
+[data-reach-dialog-content].hotkeys-help-dialog-content[data-animation-state='open'] {
+	opacity: 1;
+	transform: translateY(0) scale(1);
+	animation: hotkeys-help-dialog-content-in
+		var(--hotkeys-help-dialog-animation-duration) ease-out both;
+}
+
+[data-reach-dialog-content].hotkeys-help-dialog-content[data-animation-state='closed'] {
+	opacity: 0;
+	transform: translateY(10px) scale(0.98);
+	animation: hotkeys-help-dialog-content-out
+		var(--hotkeys-help-dialog-animation-duration) ease-in both;
+}
+
+@keyframes hotkeys-help-dialog-overlay-in {
+	from {
+		opacity: 0;
+	}
+
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes hotkeys-help-dialog-overlay-out {
+	from {
+		opacity: 1;
+	}
+
+	to {
+		opacity: 0;
+	}
+}
+
+@keyframes hotkeys-help-dialog-content-in {
+	from {
+		opacity: 0;
+		transform: translateY(10px) scale(0.98);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
+@keyframes hotkeys-help-dialog-content-out {
+	from {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+
+	to {
+		opacity: 0;
+		transform: translateY(10px) scale(0.98);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	[data-reach-dialog-overlay].hotkeys-help-dialog-overlay,
+	[data-reach-dialog-content].hotkeys-help-dialog-content {
+		animation: none !important;
+	}
+}
+
 /* Reach Tabs defaults are unlayered and can override Tailwind utilities in v4 */
 [data-reach-tab-list].bg-transparent {
 	background: transparent;
