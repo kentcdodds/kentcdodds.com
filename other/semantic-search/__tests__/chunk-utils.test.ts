@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest'
 import {
 	chunkText,
 	chunkTextRaw,
+	mapWithConcurrency,
 	normalizeText,
 	sha256,
 } from '../chunk-utils.ts'
@@ -26,6 +27,15 @@ describe('semantic-search chunk utils', () => {
 	test('sha256 is stable', () => {
 		expect(sha256('abc')).toBe(sha256('abc'))
 		expect(sha256('abc')).not.toBe(sha256('abcd'))
+	})
+
+	test('mapWithConcurrency rejects when mapper throws undefined', async () => {
+		await expect(
+			mapWithConcurrency([1, 2, 3], 1, async (item) => {
+				if (item === 2) throw undefined
+				return item
+			}),
+		).rejects.toBeUndefined()
 	})
 
 	test('chunkTextRaw does not split surrogate pairs', () => {

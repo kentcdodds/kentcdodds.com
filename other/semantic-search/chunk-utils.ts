@@ -186,6 +186,7 @@ export async function mapWithConcurrency<Item, Result>(
 	const results: Result[] = new Array(items.length)
 	let nextIndex = 0
 	let failed = false
+	let hasError = false
 	let firstError: unknown
 	const workers = Array.from({ length: safeConcurrency }, async () => {
 		while (!failed && nextIndex < items.length) {
@@ -194,12 +195,15 @@ export async function mapWithConcurrency<Item, Result>(
 				results[currentIndex] = await mapper(items[currentIndex]!, currentIndex)
 			} catch (error) {
 				failed = true
-				if (firstError === undefined) firstError = error
+				if (!hasError) {
+					hasError = true
+					firstError = error
+				}
 				return
 			}
 		}
 	})
 	await Promise.all(workers)
-	if (firstError !== undefined) throw firstError
+	if (hasError) throw firstError
 	return results
 }
