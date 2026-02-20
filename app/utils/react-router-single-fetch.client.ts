@@ -44,16 +44,15 @@ async function decodeSingleFetchResponse(
 
 	const resultRecord = result as Record<PropertyKey, unknown>
 	const symbolRedirect = resultRecord[UNSAFE_SingleFetchRedirectSymbol]
-	const redirectData =
-		symbolRedirect && typeof symbolRedirect === 'object'
-			? (symbolRedirect as Record<string, unknown>)
-			: resultRecord
-	const redirectTo = redirectData.redirect
-	if (typeof redirectTo === 'string') {
-		return {
-			type: 'redirect',
-			redirect: redirectTo,
-			replace: redirectData.replace === true,
+	if (symbolRedirect && typeof symbolRedirect === 'object') {
+		const redirectData = symbolRedirect as Record<string, unknown>
+		const redirectTo = redirectData.redirect
+		if (typeof redirectTo === 'string') {
+			return {
+				type: 'redirect',
+				redirect: redirectTo,
+				replace: redirectData.replace === true,
+			}
 		}
 	}
 

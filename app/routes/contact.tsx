@@ -101,14 +101,7 @@ export const meta: MetaFunction<{}, { root: RootLoaderType }> = ({
 export default function ContactRoute() {
 	const contactFetcher = useFetcher<typeof action>()
 	const { user } = useRootData()
-	const rawFetcherData = contactFetcher.data as
-		| ActionData
-		| { data: ActionData }
-		| undefined
-	const actionData =
-		rawFetcherData && typeof rawFetcherData === 'object' && 'data' in rawFetcherData
-			? rawFetcherData.data
-			: rawFetcherData
+	const actionData = contactFetcher.data as ActionData | undefined
 	const isDone = contactFetcher.state === 'idle' && actionData != null
 	const emailSuccessfullySent = isDone && actionData.status === 'success'
 
