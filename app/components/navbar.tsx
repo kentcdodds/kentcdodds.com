@@ -4,7 +4,7 @@ import { clsx } from 'clsx'
 import { useCombobox } from 'downshift'
 import { motion, useAnimation, useReducedMotion } from 'framer-motion'
 import * as React from 'react'
-import { Link, useFetcher, useLocation, useNavigate } from 'react-router';
+import { Link, useFetcher, useLocation, useNavigate } from 'react-router'
 import { kodyProfiles } from '#app/images.tsx'
 import { HOTKEY_OPEN_SEARCH } from '#app/utils/hotkeys.ts'
 import { type OptionalTeam, useDebounce } from '#app/utils/misc.tsx'
@@ -538,7 +538,7 @@ function NavSearch({
 											>
 												<div
 													className={clsx(
-														'w-full cursor-pointer px-6 py-4 text-left transition focus:outline-none',
+														'w-full cursor-pointer px-6 py-4 text-left focus:outline-none',
 														index === highlightedIndex
 															? 'bg-secondary'
 															: 'hover:bg-secondary',
