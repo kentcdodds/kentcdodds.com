@@ -129,8 +129,8 @@ POST,DELETE,PATCH,PUT  /                                                https://
 /workshops/remix-fundamentals                                           https://www.epicweb.dev/workshops/full-stack-foundations
 /workshops/advanced-react-component-patterns                            https://www.epicreact.dev/workshops/advanced-react-patterns
 /workshops/hooks                                                        https://www.epicreact.dev/workshops/react-hooks
-/workshops/build-react-apps                                             https://www.epicreact.dev/modules/build-an-epic-react-app/build-an-epic-react-app-welcome/
-/workshops/build-react-apps-advanced                                    https://www.epicreact.dev/modules/build-an-epic-react-app/build-an-epic-react-app-welcome/
+/workshops/build-react-apps                                             https://www.epicreact.dev/modules/build-an-epic-react-app-v1/build-an-epic-react-app-welcome
+/workshops/build-react-apps-advanced                                    https://www.epicreact.dev/modules/build-an-epic-react-app-v1/build-an-epic-react-app-welcome
 /workshops/web-app-fundamentals                                         https://www.epicweb.dev/workshops/full-stack-foundations
 /workshops/advanced-react-apis                                          https://www.epicreact.dev/workshops/advanced-react-apis
 /workshops/advanced-react-patterns                                      https://www.epicreact.dev/workshops/advanced-react-patterns
@@ -149,6 +149,7 @@ POST,DELETE,PATCH,PUT  /                                                https://
 /workshops/testing-fundamentals                                         https://www.epicweb.dev/workshops/web-application-testing
 /workshops/testing-node-apps                                            https://www.epicweb.dev/workshops/web-application-testing
 /workshops/testing-react-apps                                           https://www.epicweb.dev/workshops/web-application-testing
+/workshops                                                              /courses
 /workshops*path                                                         /courses
 
 # Joel whoopsies
