@@ -8,7 +8,7 @@ import getPort, { portNumbers } from 'get-port'
 import { toString as hastToString } from 'hast-util-to-string'
 import rehypeParse from 'rehype-parse'
 import { unified } from 'unified'
-import { normalizeText } from './chunk-utils.ts'
+import { mapWithConcurrency, normalizeText } from './chunk-utils.ts'
 
 export const JSX_HOME_SLUG = '__home__'
 
@@ -269,33 +269,6 @@ async function requestTextDocument({
 		})
 		req.end()
 	})
-}
-
-async function mapWithConcurrency<Item, Result>(
-	items: Item[],
-	concurrency: number,
-	mapper: (item: Item, index: number) => Promise<Result>,
-) {
-	const safeConcurrency = Math.max(1, Math.min(concurrency, items.length || 1))
-	const results: Result[] = new Array(items.length)
-	let nextIndex = 0
-	let failed = false
-	let firstError: unknown
-	const workers = Array.from({ length: safeConcurrency }, async () => {
-		while (!failed && nextIndex < items.length) {
-			const currentIndex = nextIndex++
-			try {
-				results[currentIndex] = await mapper(items[currentIndex]!, currentIndex)
-			} catch (error) {
-				failed = true
-				if (firstError === undefined) firstError = error
-				return
-			}
-		}
-	})
-	await Promise.all(workers)
-	if (firstError !== undefined) throw firstError
-	return results
 }
 
 async function waitForSitemap({
