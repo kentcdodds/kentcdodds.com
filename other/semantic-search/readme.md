@@ -40,7 +40,6 @@ For YouTube playlist indexing (optional but recommended as repo variables):
 - Optional (helps when YouTube returns anti-bot `LOGIN_REQUIRED`):
   - `YOUTUBE_COOKIE` (cookie header value from a logged-in browser session)
   - `YOUTUBE_USER_AGENT`
-  - `YOUTUBE_ACCEPT_LANGUAGE`
 
 ## Staged rollout / small index runs
 
@@ -76,13 +75,12 @@ Optional flags:
 - `--playlist "<url-or-id>"` (defaults to `YOUTUBE_PLAYLIST_URL`,
   `YOUTUBE_PLAYLIST_ID`, or a built-in default playlist ID)
 - `--max-videos 50` (helpful for staged/backfill runs)
-- `--language en` (caption language preference)
 - `--include-auto-captions false` (manual captions only)
 - `--manifest-key manifests/youtube-my-playlist.json`
 
 Transcript strategy:
 
-1. Prefer creator-provided caption tracks in the requested language.
+1. Prefer creator-provided English caption tracks.
 2. Fall back to YouTube auto-generated captions (`kind=asr`) when enabled.
 3. If no captions are available, index metadata/description only.
 

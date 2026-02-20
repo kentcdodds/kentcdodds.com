@@ -75,7 +75,6 @@ function parseArgs() {
 		playlist: get('--playlist'),
 		manifestKey: get('--manifest-key'),
 		maxVideos,
-		language: get('--language') ?? 'en',
 		includeAutoCaptions: parseBoolean(get('--include-auto-captions'), true),
 		dryRun: parseBoolean(get('--dry-run'), false),
 	}
@@ -96,7 +95,7 @@ function getYouTubeRequestHeaders({
 		'User-Agent':
 			process.env.YOUTUBE_USER_AGENT ??
 			'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36',
-		'Accept-Language': process.env.YOUTUBE_ACCEPT_LANGUAGE ?? 'en-US,en;q=0.9',
+		'Accept-Language': 'en-US,en;q=0.9',
 	}
 	if (contentType) headers['Content-Type'] = contentType
 	if (process.env.YOUTUBE_COOKIE) headers.Cookie = process.env.YOUTUBE_COOKIE
@@ -637,14 +636,12 @@ type CaptionTrack = {
 
 function pickCaptionTrack({
 	tracks,
-	language,
 	includeAutoCaptions,
 }: {
 	tracks: CaptionTrack[]
-	language: string
 	includeAutoCaptions: boolean
 }): { track: CaptionTrack; source: Exclude<TranscriptSource, 'none'> } | null {
-	const normalizedLanguage = language.toLowerCase()
+	const normalizedLanguage = 'en'
 	const byLanguage = tracks.filter((track) =>
 		(track.languageCode ?? '').toLowerCase().startsWith(normalizedLanguage),
 	)
@@ -694,12 +691,10 @@ async function fetchTranscriptFromTrack(track: CaptionTrack, label: string) {
 async function fetchVideoEnrichedData({
 	config,
 	videoId,
-	language,
 	includeAutoCaptions,
 }: {
 	config: YouTubeBrowseConfig
 	videoId: string
-	language: string
 	includeAutoCaptions: boolean
 }): Promise<VideoEnrichedData> {
 	try {
@@ -736,7 +731,6 @@ async function fetchVideoEnrichedData({
 
 		const chosen = pickCaptionTrack({
 			tracks,
-			language,
 			includeAutoCaptions,
 		})
 		if (!chosen) {
@@ -864,7 +858,6 @@ async function main() {
 		playlist: playlistArg,
 		manifestKey: manifestKeyArg,
 		maxVideos,
-		language,
 		includeAutoCaptions,
 		dryRun,
 	} = parseArgs()
@@ -921,7 +914,6 @@ async function main() {
 			const details = await fetchVideoEnrichedData({
 				config: browseConfig,
 				videoId: video.videoId,
-				language,
 				includeAutoCaptions,
 			})
 			return { video, details }
