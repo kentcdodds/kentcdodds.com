@@ -105,6 +105,17 @@ jobs:
       - name: 🏗 Build (production)
         run: npm run build
 
+      - name: 🏦 Prime Site Cache
+        id: site-cache
+        uses: actions/cache@v5
+        with:
+          path: other/cache.db
+          key: site-cache
+
+      - name: 😅 Generate Site Cache
+        if: steps.site-cache.outputs.cache-hit != 'true'
+        run: npm run prime-cache:mocks
+
       - name: 🩺 Smoke test /healthcheck (production build)
         run: npm run predeploy:healthcheck
         env:
