@@ -594,7 +594,7 @@ async function fetchVideoEnrichedData({
 			asRecord(asRecord(player.captions)?.playerCaptionsTracklistRenderer),
 		)
 		const tracks = asArray(tracklist?.captionTracks)
-			.map((track) => {
+			.map((track): CaptionTrack | null => {
 				const record = asRecord(track)
 				const baseUrl = asString(record?.baseUrl)
 				if (!baseUrl) return null
@@ -602,9 +602,9 @@ async function fetchVideoEnrichedData({
 					baseUrl,
 					languageCode: asString(record?.languageCode),
 					kind: asString(record?.kind),
-				} satisfies CaptionTrack
+				}
 			})
-			.filter((track): track is CaptionTrack => Boolean(track))
+			.filter((track): track is CaptionTrack => track !== null)
 
 		const chosen = pickCaptionTrack({
 			tracks,
