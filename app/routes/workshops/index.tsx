@@ -32,12 +32,12 @@ export const meta: MetaFunction<
 	{},
 	{
 		root: RootLoaderType
-		'routes/workshops+/_workshops': typeof WorkshopLoader
+		'routes/workshops/_workshops': typeof WorkshopLoader
 	}
 > = ({ matches }) => {
 	const { requestInfo } = matches.find((m) => m.id === 'root')
 		?.data as RootLoaderData
-	const data = matches.find((m) => m.id === 'routes/workshops+/_workshops')
+	const data = matches.find((m) => m.id === 'routes/workshops/_workshops')
 		?.data as WorkshopLoaderData
 
 	const tagsSet = new Set<string>()

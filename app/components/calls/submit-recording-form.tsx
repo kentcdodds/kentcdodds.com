@@ -78,15 +78,19 @@ function RecordingForm({
 					}
 
 					try {
-						const response = await fetch(window.location.pathname, {
+						const dataUrl = `${window.location.pathname.replace(/\/$/, '')}.data`
+						const response = await fetch(dataUrl, {
 							method: 'POST',
 							body,
 							headers,
 						})
 
-						if (response.redirected) {
-							const redirectUrl = new URL(response.url)
-							void navigate(`${redirectUrl.pathname}${redirectUrl.search}`)
+						const redirect = response.headers.get('X-Remix-Redirect')
+						if (redirect) {
+							const redirectUrl = new URL(redirect, window.location.origin)
+							void navigate(`${redirectUrl.pathname}${redirectUrl.search}`, {
+								replace: response.headers.get('X-Remix-Replace') === 'true',
+							})
 							return
 						}
 

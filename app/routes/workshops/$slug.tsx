@@ -93,14 +93,14 @@ export const meta: MetaFunction<
 	{},
 	{
 		root: RootLoaderType
-		'routes/workshops+/_workshops': typeof WorkshopLoader
+		'routes/workshops/_workshops': typeof WorkshopLoader
 	}
 > = ({ matches, params }) => {
 	const { requestInfo } = matches.find((m) => m.id === 'root')
 		?.data as SerializeFrom<RootLoaderType>
 	let workshop: Workshop | undefined
 	const workshopsData = matches.find(
-		(m) => m.id === 'routes/workshops+/_workshops',
+		(m) => m.id === 'routes/workshops/_workshops',
 	)?.data as SerializeFrom<typeof WorkshopLoader> | undefined
 	if (Array.isArray(workshopsData?.workshops)) {
 		workshop = workshopsData.workshops.find(

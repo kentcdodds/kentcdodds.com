@@ -272,6 +272,8 @@ export default function NewAccount() {
 	React.useEffect(() => {
 		if (team && teams.includes(team)) setTeam(team)
 	}, [team, setTeam])
+	const formIsValid =
+		formValues.firstName.trim().length > 0 && formValues.team !== undefined
 
 	return (
 		<div className="mt-24 pt-6">
@@ -362,7 +364,9 @@ export default function NewAccount() {
 						</div>
 
 						<div className="col-span-full">
-							<Button type="submit">{`Create account`}</Button>
+						<Button type="submit" disabled={!formIsValid}>
+							{`Create account`}
+						</Button>
 						</div>
 						<p className="text-primary col-span-4 mt-10 text-xs font-medium tracking-wider">
 							{`

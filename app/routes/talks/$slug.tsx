@@ -10,10 +10,10 @@ import { type loader as talkLoader } from './_talks.tsx'
 
 export const meta: MetaFunction<
 	{},
-	{ root: RootLoaderType; 'routes/talks+/_talks': typeof talkLoader }
+	{ root: RootLoaderType; 'routes/talks/_talks': typeof talkLoader }
 > = ({ matches, params }) => {
 	const { talks = [] } =
-		(matches.find((m) => m.id === 'routes/talks+/_talks')?.data as
+		(matches.find((m) => m.id === 'routes/talks/_talks')?.data as
 			| SerializeFrom<typeof talkLoader>
 			| undefined) ?? {}
 	const { requestInfo } = matches.find((m) => m.id === 'root')
