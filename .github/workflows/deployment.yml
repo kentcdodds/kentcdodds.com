@@ -216,16 +216,17 @@ jobs:
       - name: 🚀 Deploy Staging
         if: ${{ github.ref == 'refs/heads/dev' }}
         run:
-          flyctl deploy --depot --remote-only --build-arg COMMIT_SHA=${{
-          github.sha }} --app ${{ steps.app_name.outputs.value }}-staging
+          bash ./other/flyctl-deploy-with-retry.sh --depot --remote-only
+          --build-arg COMMIT_SHA=${{ github.sha }} --app ${{
+          steps.app_name.outputs.value }}-staging
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
       - name: 🚀 Deploy Production
         if: ${{ github.ref == 'refs/heads/main' }}
         run:
-          flyctl deploy --depot --remote-only --build-arg COMMIT_SHA=${{
-          github.sha }} --build-secret SENTRY_AUTH_TOKEN=${{
-          secrets.SENTRY_AUTH_TOKEN }}
+          bash ./other/flyctl-deploy-with-retry.sh --depot --remote-only
+          --build-arg COMMIT_SHA=${{ github.sha }} --build-secret
+          SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
