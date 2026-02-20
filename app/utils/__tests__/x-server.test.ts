@@ -1,8 +1,8 @@
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
-import { getTweetEmbedHTML } from '../x.server.ts'
 import { type Tweet } from '../twitter/types/index.ts'
+import { getTweetEmbedHTML } from '../x.server.ts'
 
 vi.mock('../cache.server.ts', () => ({
 	cache: {
