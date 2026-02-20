@@ -66,7 +66,7 @@ Indexed sources (via `index-repo-content.ts`):
 
 Script:
 
-- `npx tsx other/semantic-search/index-youtube-playlist.ts`
+- `node other/semantic-search/index-youtube-playlist.ts`
 
 Optional flags:
 
