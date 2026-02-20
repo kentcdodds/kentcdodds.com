@@ -2,7 +2,20 @@
 import { execSync } from 'child_process'
 import https from 'https'
 
+let warnedTimoutTime = false
+
 export function fetchJson(url, { timeoutTime, timoutTime } = {}) {
+	if (
+		typeof timeoutTime === 'undefined' &&
+		typeof timoutTime !== 'undefined' &&
+		!warnedTimoutTime
+	) {
+		warnedTimoutTime = true
+		console.warn(
+			'[fetchJson] `timoutTime` is deprecated; use `timeoutTime` instead.',
+		)
+	}
+
 	return new Promise((resolve, reject) => {
 		const request = https
 			.get(url, (res) => {

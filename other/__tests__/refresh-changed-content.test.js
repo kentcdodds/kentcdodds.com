@@ -1,5 +1,8 @@
 import { describe, expect, test, vi } from 'vitest'
-import { refreshChangedContent } from '../refresh-changed-content.js'
+import {
+	getErrorMessage,
+	refreshChangedContent,
+} from '../refresh-changed-content.js'
 
 function createLogger() {
 	return {
@@ -10,6 +13,36 @@ function createLogger() {
 }
 
 describe('refreshChangedContent', () => {
+	test('returns no-compare-sha when fetch responses do not provide a sha', async () => {
+		const fetchJsonImpl = vi
+			.fn()
+			.mockResolvedValueOnce(null)
+			.mockResolvedValueOnce(undefined)
+		const getChangedFilesImpl = vi.fn()
+		const postRefreshCacheImpl = vi.fn()
+		const log = createLogger()
+
+		const result = await refreshChangedContent({
+			currentCommitSha: 'current-sha',
+			baseUrl: 'https://example.test',
+			fetchJsonImpl,
+			getChangedFilesImpl,
+			postRefreshCacheImpl,
+			log,
+		})
+
+		expect(result).toEqual({ status: 'no-compare-sha' })
+		expect(fetchJsonImpl).toHaveBeenCalledTimes(2)
+		expect(getChangedFilesImpl).not.toHaveBeenCalled()
+		expect(postRefreshCacheImpl).not.toHaveBeenCalled()
+	})
+
+	test('throws when currentCommitSha is missing', async () => {
+		await expect(refreshChangedContent()).rejects.toThrow(
+			'currentCommitSha is required',
+		)
+	})
+
 	test('skips refresh when no content files changed', async () => {
 		const fetchJsonImpl = vi.fn(async () => ({ sha: 'compare-sha' }))
 		const getChangedFilesImpl = vi.fn(async () => [
@@ -27,6 +60,25 @@ describe('refreshChangedContent', () => {
 		})
 
 		expect(result).toEqual({ status: 'no-content-changes' })
+		expect(postRefreshCacheImpl).not.toHaveBeenCalled()
+	})
+
+	test('skips refresh when getChangedFilesImpl resolves to null', async () => {
+		const fetchJsonImpl = vi.fn(async () => ({ sha: 'compare-sha' }))
+		const getChangedFilesImpl = vi.fn(async () => null)
+		const postRefreshCacheImpl = vi.fn()
+		const log = createLogger()
+
+		const result = await refreshChangedContent({
+			currentCommitSha: 'current-sha',
+			fetchJsonImpl,
+			getChangedFilesImpl,
+			postRefreshCacheImpl,
+			log,
+		})
+
+		expect(result).toEqual({ status: 'no-content-changes' })
+		expect(getChangedFilesImpl).toHaveBeenCalledTimes(1)
 		expect(postRefreshCacheImpl).not.toHaveBeenCalled()
 	})
 
@@ -91,5 +143,17 @@ describe('refreshChangedContent', () => {
 		expect(result).toEqual({ status: 'refresh-failed', attempts: 2 })
 		expect(postRefreshCacheImpl).toHaveBeenCalledTimes(2)
 		expect(log.warn).toHaveBeenCalledTimes(2)
+	})
+})
+
+describe('getErrorMessage', () => {
+	test('normalizes string and non-Error values to readable strings', () => {
+		expect(getErrorMessage('Unexpected Server Error')).toBe(
+			'Unexpected Server Error',
+		)
+		expect(getErrorMessage({ reason: 'boom' })).toBe('{"reason":"boom"}')
+		expect(getErrorMessage(123)).toBe('123')
+		expect(getErrorMessage(undefined)).toBe('undefined')
+		expect(getErrorMessage(Symbol.for('boom'))).toBe('Symbol(boom)')
 	})
 })

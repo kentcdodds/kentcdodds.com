@@ -8,14 +8,14 @@ const defaultBaseUrl =
 		? 'https://kcd-staging.fly.dev'
 		: 'https://kentcdodds.com'
 
-const defaultTimeoutMs = 10_000
+const defaultFetchTimeoutMs = 10_000
 
 const defaultRefreshRetryOptions = {
 	maxAttempts: 3,
 	baseDelayMs: 2_000,
 }
 
-function getErrorMessage(error) {
+export function getErrorMessage(error) {
 	if (error instanceof Error) {
 		return error.message
 	}
@@ -23,14 +23,23 @@ function getErrorMessage(error) {
 		return error
 	}
 	try {
-		return JSON.stringify(error)
+		const serialized = JSON.stringify(error)
+		if (typeof serialized === 'string') {
+			return serialized
+		}
+		return String(error)
 	} catch {
 		return String(error)
 	}
 }
 
 const sleep = (durationMs) =>
-	new Promise((resolve) => setTimeout(resolve, durationMs))
+	new Promise((resolve) => {
+		const timer = setTimeout(resolve, durationMs)
+		if (typeof timer?.unref === 'function') {
+			timer.unref()
+		}
+	})
 
 async function postRefreshCacheWithRetry({
 	postRefreshCacheImpl,
@@ -80,12 +89,12 @@ export async function refreshChangedContent({
 	}
 
 	const shaInfo = await fetchJsonImpl(`${baseUrl}/refresh-commit-sha.json`, {
-		timeoutTime: defaultTimeoutMs,
+		timeoutTime: defaultFetchTimeoutMs,
 	})
 	let compareSha = shaInfo?.sha
 	if (!compareSha) {
 		const buildInfo = await fetchJsonImpl(`${baseUrl}/build/info.json`, {
-			timeoutTime: defaultTimeoutMs,
+			timeoutTime: defaultFetchTimeoutMs,
 		})
 		compareSha = buildInfo?.commit?.sha
 		log.log(`No compare sha found, using build sha: ${compareSha}`)

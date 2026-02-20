@@ -19,7 +19,7 @@ function withStatusMessage(statusCode, body) {
 export async function postRefreshCache({
 	http,
 	postData,
-	options: { headers: headersOverrides, ...optionsOverrides } = {},
+	options: { headers: headersOverrides, timeout: timeoutOverride, ...optionsOverrides } = {},
 }) {
 	if (!http) {
 		http = await import('https')
@@ -77,8 +77,8 @@ export async function postRefreshCache({
 				})
 				.on('error', reject)
 			const timeoutMs =
-				typeof options.timeout === 'number'
-					? options.timeout
+				typeof timeoutOverride === 'number'
+					? timeoutOverride
 					: defaultTimeoutMs
 			req.setTimeout(timeoutMs, () => {
 				req.destroy(
