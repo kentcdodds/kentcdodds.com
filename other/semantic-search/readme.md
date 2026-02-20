@@ -67,6 +67,9 @@ Indexed sources (via `index-repo-content.ts`):
 Script:
 
 - `node other/semantic-search/index-youtube-playlist.ts`
+- The script indexes:
+  - videos from the configured YouTube playlist
+  - additional YouTube video links found in `content/pages/appearances.mdx`
 
 Optional flags:
 

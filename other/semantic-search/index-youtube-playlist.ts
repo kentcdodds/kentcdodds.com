@@ -1,3 +1,5 @@
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import { chunkText, makeSnippet, normalizeText, sha256 } from './chunk-utils.ts'
 import {
 	getCloudflareConfig,
@@ -9,6 +11,7 @@ import { getJsonObject, putJsonObject } from './r2-manifest.ts'
 
 type DocType = 'youtube'
 type TranscriptSource = 'manual' | 'auto' | 'none'
+type VideoSource = 'playlist' | 'appearances'
 
 type ManifestChunk = {
 	id: string
@@ -41,9 +44,11 @@ type PlaylistVideo = {
 	publishedText?: string
 	thumbnailUrl?: string
 	position?: number
+	sources: VideoSource[]
 }
 
 type VideoEnrichedData = {
+	title?: string
 	description: string
 	channelTitle?: string
 	publishedAt?: string
@@ -251,6 +256,150 @@ function getPlaylistId(input: string | undefined) {
 	}
 }
 
+function extractYoutubeVideoId(rawUrl: string) {
+	let parsed: URL
+	try {
+		parsed = new URL(rawUrl)
+	} catch {
+		return null
+	}
+	const host = parsed.hostname.toLowerCase()
+	const hostWithoutWww = host.replace(/^www\./, '')
+	const hostWithoutMobile = hostWithoutWww.replace(/^m\./, '')
+	const isYoutubeHost =
+		hostWithoutMobile === 'youtube.com' ||
+		hostWithoutMobile.endsWith('.youtube.com')
+	const isYoutubeNoCookieHost =
+		hostWithoutMobile === 'youtube-nocookie.com' ||
+		hostWithoutMobile.endsWith('.youtube-nocookie.com')
+
+	if (hostWithoutMobile === 'youtu.be') {
+		const candidate = (
+			parsed.pathname.split('/').filter(Boolean)[0] ?? ''
+		).trim()
+		return /^[A-Za-z0-9_-]{11}$/.test(candidate) ? candidate : null
+	}
+
+	if (!isYoutubeHost && !isYoutubeNoCookieHost) return null
+
+	if (parsed.pathname === '/watch') {
+		const candidate = (parsed.searchParams.get('v') ?? '').trim()
+		return /^[A-Za-z0-9_-]{11}$/.test(candidate) ? candidate : null
+	}
+
+	const segments = parsed.pathname.split('/').filter(Boolean)
+	const startsWithVideoIdPath =
+		segments[0] === 'shorts' ||
+		segments[0] === 'embed' ||
+		segments[0] === 'live' ||
+		segments[0] === 'v'
+	if (!startsWithVideoIdPath) return null
+	const candidate = (segments[1] ?? '').trim()
+	return /^[A-Za-z0-9_-]{11}$/.test(candidate) ? candidate : null
+}
+
+function extractMarkdownLinks(source: string) {
+	const links: Array<{ text: string; url: string }> = []
+	const linkRegex = /\[(?<text>[^\]]+)\]\((?<url>https?:\/\/[^)\s]+)\)/g
+	for (const match of source.matchAll(linkRegex)) {
+		const text = (match.groups?.text ?? '').trim()
+		const url = (match.groups?.url ?? '').trim()
+		if (!url) continue
+		links.push({ text, url })
+	}
+	return links
+}
+
+async function fetchAppearancesYouTubeVideos() {
+	const appearancesPath = path.join(
+		process.cwd(),
+		'content',
+		'pages',
+		'appearances.mdx',
+	)
+	let appearancesSource = ''
+	try {
+		appearancesSource = await fs.readFile(appearancesPath, 'utf8')
+	} catch (error: unknown) {
+		const code = (error as { code?: string })?.code
+		if (code === 'ENOENT') return []
+		throw error
+	}
+
+	const byVideoId = new Map<string, PlaylistVideo>()
+	for (const link of extractMarkdownLinks(appearancesSource)) {
+		const videoId = extractYoutubeVideoId(link.url)
+		if (!videoId) continue
+
+		const fallbackTitle = `YouTube video ${videoId}`
+		const nextTitle = link.text || fallbackTitle
+		const existing = byVideoId.get(videoId)
+		if (!existing) {
+			byVideoId.set(videoId, {
+				videoId,
+				title: nextTitle,
+				sources: ['appearances'],
+			})
+			continue
+		}
+		if (existing.title === fallbackTitle && link.text) {
+			existing.title = link.text
+		}
+	}
+	return [...byVideoId.values()]
+}
+
+function mergeVideos({
+	playlistVideos,
+	appearancesVideos,
+	maxVideos,
+}: {
+	playlistVideos: PlaylistVideo[]
+	appearancesVideos: PlaylistVideo[]
+	maxVideos?: number
+}) {
+	const byVideoId = new Map<string, PlaylistVideo>()
+	const upsert = (video: PlaylistVideo) => {
+		const existing = byVideoId.get(video.videoId)
+		if (!existing) {
+			byVideoId.set(video.videoId, {
+				...video,
+				sources: [...video.sources],
+			})
+			return
+		}
+
+		existing.sources = [...new Set([...existing.sources, ...video.sources])]
+		const fallbackTitle = `YouTube video ${existing.videoId}`
+		if (
+			(!existing.title || existing.title === fallbackTitle) &&
+			video.title &&
+			video.title !== fallbackTitle
+		) {
+			existing.title = video.title
+		}
+		existing.channelTitle = existing.channelTitle ?? video.channelTitle
+		existing.description = existing.description ?? video.description
+		existing.durationText = existing.durationText ?? video.durationText
+		existing.publishedText = existing.publishedText ?? video.publishedText
+		existing.thumbnailUrl = existing.thumbnailUrl ?? video.thumbnailUrl
+		existing.position = existing.position ?? video.position
+	}
+
+	for (const video of playlistVideos) upsert(video)
+	for (const video of appearancesVideos) upsert(video)
+
+	const sorted = [...byVideoId.values()].sort((a, b) => {
+		const left = a.position ?? Number.MAX_SAFE_INTEGER
+		const right = b.position ?? Number.MAX_SAFE_INTEGER
+		if (left !== right) return left - right
+		return a.videoId.localeCompare(b.videoId)
+	})
+
+	if (!maxVideos) return sorted
+	return sorted.slice(0, Math.max(1, maxVideos))
+}
+
 function parseInnertubeConfig(html: string) {
 	const apiKeyMatch = html.match(/"INNERTUBE_API_KEY":"(?<key>[^"]+)"/)
 	const clientVersionMatch = html.match(
@@ -366,6 +515,7 @@ function parsePlaylistVideo(
 		publishedText,
 		thumbnailUrl,
 		position,
+		sources: ['playlist'],
 	}
 }
 
@@ -562,6 +712,7 @@ async function fetchVideoEnrichedData({
 			asRecord(player.microformat)?.playerMicroformatRenderer,
 		)
 
+		const title = asString(videoDetails?.title)
 		const description = asString(videoDetails?.shortDescription) ?? ''
 		const channelTitle = asString(videoDetails?.author)
 		const publishedAt =
@@ -595,6 +746,7 @@ async function fetchVideoEnrichedData({
 				)
 			}
 			return {
+				title,
 				description,
 				channelTitle,
 				publishedAt,
@@ -608,6 +760,7 @@ async function fetchVideoEnrichedData({
 			`youtube transcript ${videoId}`,
 		)
 		return {
+			title,
 			description,
 			channelTitle,
 			publishedAt,
@@ -617,6 +770,7 @@ async function fetchVideoEnrichedData({
 	} catch (error) {
 		console.warn(`Failed to fetch transcript/metadata for ${videoId}`, error)
 		return {
+			title: undefined,
 			description: '',
 			transcript: '',
 			transcriptSource: 'none',
@@ -730,13 +884,28 @@ async function main() {
 	const browseConfig = await getYouTubeBrowseConfig(playlistId)
 
 	console.log(`Loading playlist ${playlistId}...`)
-	const { playlistTitle, videos } = await fetchPlaylistVideos({
+	const { playlistTitle, videos: playlistVideos } = await fetchPlaylistVideos({
 		playlistId,
-		maxVideos,
 		config: browseConfig,
 	})
 	console.log(
-		`Playlist "${playlistTitle}" videos discovered: ${videos.length}${maxVideos ? ` (limited by --max-videos=${maxVideos})` : ''}`,
+		`Playlist "${playlistTitle}" videos discovered: ${playlistVideos.length}`,
+	)
+
+	console.log('Loading YouTube links from appearances page...')
+	const appearancesVideos = await fetchAppearancesYouTubeVideos()
+	console.log(
+		`Appearances page YouTube videos discovered: ${appearancesVideos.length}`,
+	)
+	const videos = mergeVideos({ playlistVideos, appearancesVideos, maxVideos })
+	const playlistSourceCount = videos.filter((video) =>
+		video.sources.includes('playlist'),
+	).length
+	const appearancesSourceCount = videos.filter((video) =>
+		video.sources.includes('appearances'),
+	).length
+	console.log(
+		`Total unique videos to process: ${videos.length} (playlist: ${playlistSourceCount}, appearances: ${appearancesSourceCount})${maxVideos ? `, capped by --max-videos=${maxVideos}` : ''}`,
 	)
 
 	const transcriptConcurrency = Number(
@@ -796,7 +965,8 @@ async function main() {
 		const videoId = video.videoId
 		const docId = getDocId('youtube', videoId)
 		const url = `/youtube?video=${encodeURIComponent(videoId)}`
-		const title = video.title
+		const title = details.title || video.title || `YouTube video ${videoId}`
+		const isFromPlaylist = video.sources.includes('playlist')
 		const description = normalizeText(
 			details.description || video.description || '',
 		)
@@ -807,8 +977,9 @@ async function main() {
 				`Title: ${title}`,
 				`Type: youtube`,
 				`URL: ${url}`,
-				`Playlist ID: ${playlistId}`,
-				`Playlist Title: ${playlistTitle}`,
+				`Sources: ${video.sources.join(', ')}`,
+				isFromPlaylist ? `Playlist ID: ${playlistId}` : '',
+				isFromPlaylist ? `Playlist Title: ${playlistTitle}` : '',
 				`Video ID: ${videoId}`,
 				video.channelTitle || details.channelTitle
 					? `Channel: ${video.channelTitle ?? details.channelTitle ?? ''}`
@@ -864,6 +1035,7 @@ async function main() {
 					contentHash: hash,
 					sourceUpdatedAt: details.publishedAt,
 					transcriptSource: details.transcriptSource,
+					sources: video.sources,
 					imageUrl:
 						video.thumbnailUrl ??
 						`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
