@@ -116,6 +116,7 @@ function HotkeysHelpDialog({
 			<DialogContent
 				ref={dialogContentRef}
 				aria-label="Keyboard shortcuts"
+				tabIndex={-1}
 				data-animation-state={animationState}
 				className="hotkeys-help-dialog-content bg-primary text-primary !my-[10svh] !flex !h-[80svh] !w-11/12 !max-w-3xl !flex-col overflow-hidden rounded-xl border-2 border-black px-6 py-6 shadow-xl sm:px-8 sm:py-8 dark:border-white dark:!bg-gray-900"
 				style={animationDurationStyle}
