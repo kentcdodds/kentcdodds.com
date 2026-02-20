@@ -329,6 +329,32 @@ function NavSearch({
 	)
 
 	const showForm = isOpen || alwaysExpanded
+	const labelProps = getLabelProps()
+	const searchInputProps = getInputProps(
+		{
+			ref: inputRef,
+			type: 'text',
+			name: 'q',
+			'data-nav-search-input': 'true',
+			autoComplete: 'off',
+			placeholder: 'Semantic search...',
+			className:
+				'text-primary bg-transparent h-14 w-full py-0 pr-14 pl-3 text-lg font-medium focus:outline-none placeholder:text-secondary',
+			onBlur: alwaysExpanded ? undefined : handleBlurReset,
+			onKeyDown: (event: React.KeyboardEvent) => {
+				if (event.key === 'Escape') {
+					event.preventDefault()
+					if (alwaysExpanded) onOpenChange(false)
+					else close()
+				}
+			},
+		},
+		{
+			// The input is absent in compact icon-only mode, but Downshift still expects
+			// getInputProps to be called each render.
+			suppressRefError: !showForm,
+		},
+	)
 	const shouldShowSuggestions = inputValue.trim().length >= 2
 	const menuProps = getMenuProps(
 		{
@@ -372,7 +398,7 @@ function NavSearch({
 				>
 					{alwaysExpanded ? (
 						<div className="bg-primary pointer-events-auto flex min-h-14 w-full overflow-hidden rounded-full shadow-[inset_0_0_0_2px_var(--border-secondary)] transition-shadow focus-within:shadow-[inset_0_0_0_2px_var(--color-team-current)] hover:shadow-[inset_0_0_0_2px_var(--color-team-current)]">
-							<label {...getLabelProps()} className="sr-only">
+							<label {...labelProps} className="sr-only">
 								Search
 							</label>
 							<Link
@@ -396,26 +422,7 @@ function NavSearch({
 								<SearchIcon />
 							</Link>
 							<div className="relative flex min-w-0 flex-1">
-								<input
-									{...getInputProps({
-										ref: inputRef,
-										type: 'text',
-										name: 'q',
-										'data-nav-search-input': 'true',
-										autoComplete: 'off',
-										placeholder: 'Semantic search...',
-										className:
-											'text-primary bg-transparent h-14 w-full py-0 pr-14 pl-3 text-lg font-medium focus:outline-none placeholder:text-secondary',
-										onBlur: alwaysExpanded ? undefined : handleBlurReset,
-										onKeyDown: (event: React.KeyboardEvent) => {
-											if (event.key === 'Escape') {
-												event.preventDefault()
-												if (alwaysExpanded) onOpenChange(false)
-												else close()
-											}
-										},
-									})}
-								/>
+								<input {...searchInputProps} />
 								<div className="pointer-events-auto absolute top-1/2 right-4 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center">
 									{fetcher.state !== 'idle' ? (
 										<SpinnerIcon size={18} className="animate-spin" />
@@ -459,7 +466,7 @@ function NavSearch({
 								}
 							}}
 						>
-							<label {...getLabelProps()} className="sr-only">
+							<label {...labelProps} className="sr-only">
 								Search
 							</label>
 							<Link
@@ -482,25 +489,7 @@ function NavSearch({
 								<SearchIcon />
 							</Link>
 							<div className="relative flex min-w-0 flex-1">
-								<input
-									{...getInputProps({
-										ref: inputRef,
-										type: 'text',
-										name: 'q',
-										'data-nav-search-input': 'true',
-										autoComplete: 'off',
-										placeholder: 'Semantic search...',
-										className:
-											'text-primary bg-transparent h-14 w-full py-0 pr-14 pl-3 text-lg font-medium focus:outline-none placeholder:text-secondary',
-										onBlur: handleBlurReset,
-										onKeyDown: (event: React.KeyboardEvent) => {
-											if (event.key === 'Escape') {
-												event.preventDefault()
-												close()
-											}
-										},
-									})}
-								/>
+								<input {...searchInputProps} />
 								<div className="pointer-events-auto absolute top-1/2 right-4 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center">
 									{fetcher.state !== 'idle' ? (
 										<SpinnerIcon size={18} className="animate-spin" />
