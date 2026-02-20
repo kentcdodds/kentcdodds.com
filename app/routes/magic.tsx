@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs, redirect } from 'react-router';
+import { redirect } from 'react-router';
 import { type KCDHandle } from '#app/types.ts'
 
 import { getClientSession } from '#app/utils/client.server.ts'
@@ -7,11 +7,12 @@ import { getLoginInfoSession } from '#app/utils/login.server.ts'
 import { getErrorMessage, isResponse } from '#app/utils/misc.tsx'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { getUserSessionFromMagicLink } from '#app/utils/session.server.ts'
+import  { type Route } from './+types/magic'
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	await ensurePrimary()
 	const loginInfoSession = await getLoginInfoSession(request)
 	try {

@@ -1,8 +1,9 @@
-import { type LoaderFunctionArgs, type ActionFunctionArgs, redirect } from 'react-router';
+import { redirect } from 'react-router';
 import { getAuthInfoFromOAuthFromRequest } from '#app/utils/session.server.js'
+import  { type Route } from './+types/index'
 import { connect, requestStorage } from './mcp.server.ts'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	if (request.headers.get('accept')?.includes('text/html')) {
 		throw redirect('/about-mcp')
 	}
@@ -20,7 +21,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return response
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const response = await requestStorage.run(request, async () => {
 		const sessionId = request.headers.get('mcp-session-id') ?? undefined
 

@@ -6,22 +6,7 @@ import { isFuture } from 'date-fns'
 import { AnimatePresence, motion } from 'framer-motion'
 import * as React from 'react'
 import {
-    isRouteErrorResponse,
-    Link,
-    Links,
-    Meta,
-    Outlet,
-    Scripts,
-    ScrollRestoration,
-    useLoaderData,
-    useLocation,
-    useNavigation,
-    data as json,
-    type LoaderFunctionArgs,
-    type HeadersFunction,
-    type LinksFunction,
-    type MetaFunction
-} from 'react-router';
+    isRouteErrorResponse, Link, Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData, useLocation, useNavigation, data as json, type HeadersFunction, type LinksFunction, type MetaFunction } from 'react-router';
 import { useSpinDelay } from 'spin-delay'
 import { type KCDHandle } from '#app/types.ts'
 import { getInstanceInfo } from '#app/utils/litefs-js.server.ts'
@@ -34,6 +19,7 @@ import {
 	removeTrailingSlash,
 	typedBoolean,
 } from '#app/utils/misc.tsx'
+import  { type Route } from './+types/root'
 import { AppHotkeys } from './components/app-hotkeys.tsx'
 import { ArrowLink } from './components/arrow-button.tsx'
 import { ErrorPage, FourHundred } from './components/errors.tsx'
@@ -130,7 +116,7 @@ export const links: LinksFunction = () => {
 
 const WORKSHOP_PROMO_NAME = 'workshop-promo'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const session = await getSession(request)
 	const [
@@ -464,7 +450,7 @@ function CanonicalLink({
 }
 
 function App() {
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const nonce = useNonce()
 	const [team] = useTeam()
 	const theme = useTheme()

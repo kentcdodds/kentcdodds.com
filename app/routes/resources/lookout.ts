@@ -1,11 +1,12 @@
-// this is a Sentry tunnel to proxy sentry requests so we don't get blocked by ad-blockers
-import { type ActionFunctionArgs } from 'react-router';
 import { invariantResponse } from '#app/utils/misc.tsx'
+import  { type Route } from './+types/lookout'
+// this is a Sentry tunnel to proxy sentry requests so we don't get blocked by ad-blockers
+
 
 const SENTRY_HOST = new URL(process.env.SENTRY_DSN).hostname
 const SENTRY_PROJECT_IDS = [process.env.SENTRY_PROJECT_ID]
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const envelope = await request.text()
 	const piece = envelope.split('\n')[0]
 	invariantResponse(piece, 'no piece in envelope')

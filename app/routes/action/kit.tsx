@@ -1,12 +1,13 @@
-import { type ActionFunctionArgs, Link  } from 'react-router';
+import { Link } from 'react-router';
 import { CloudinaryVideo } from '#app/components/cloudinary-video'
 import { Grid } from '#app/components/grid.tsx'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { Paragraph } from '#app/components/typography.tsx'
 import { handleKitFormSubmission } from '#app/kit/remix.server.ts'
+import  { type Route } from './+types/kit'
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	return handleKitFormSubmission(request)
 }
 

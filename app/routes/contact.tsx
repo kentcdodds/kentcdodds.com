@@ -1,4 +1,4 @@
-import { type ActionFunctionArgs, data as json, type HeadersFunction, type MetaFunction, Link, useFetcher  } from 'react-router';
+import { data as json, type HeadersFunction, type MetaFunction, Link, useFetcher } from 'react-router';
 import { Button } from '#app/components/button.tsx'
 import {
 	ButtonGroup,
@@ -19,6 +19,7 @@ import { sendEmail } from '#app/utils/send-email.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { requireUser } from '#app/utils/session.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
+import  { type Route } from './+types/contact'
 
 function getErrorForSubject(subject: string | null) {
 	if (!subject) return `Subject is required`
@@ -47,7 +48,7 @@ type ActionData = {
 	}
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const user = await requireUser(request)
 	return handleFormSubmission<ActionData>({
 		request,

@@ -1,7 +1,7 @@
 import { clsx } from 'clsx'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import * as React from 'react'
-import { isRouteErrorResponse, Link, useLoaderData, Outlet, useMatches, useParams, data as json, type HeadersFunction, type LoaderFunctionArgs  } from 'react-router';
+import { isRouteErrorResponse, Link, useLoaderData, Outlet, useMatches, useParams, data as json, type HeadersFunction } from 'react-router';
 import { serverOnly$ } from 'vite-env-only/macros'
 import { ServerError } from '#app/components/errors.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -24,6 +24,7 @@ import { useCallsEpisodeUIState } from '#app/utils/providers.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { getEpisodes } from '#app/utils/transistor.server.ts'
 import { getEpisodesBySeason } from '../_layout.tsx'
+import  { type Route } from './+types/_layout'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: serverOnly$(async (request: Request) => {
@@ -39,7 +40,7 @@ export const handle: KCDHandle = {
 	}),
 }
 
-export async function loader({ params, request }: LoaderFunctionArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
 	const timings = {}
 	const episodes = await getEpisodes({ request, timings })
 
@@ -66,7 +67,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export default function CallsSeason() {
-	const { season } = useLoaderData<typeof loader>()
+	const { season } = useLoaderData<Route.ComponentProps['loaderData']>()
 	const matches = useMatches()
 	const shouldReduceMotion = useReducedMotion()
 	const { sortOrder } = useCallsEpisodeUIState()

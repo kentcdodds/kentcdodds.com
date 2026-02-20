@@ -3,7 +3,7 @@
 import * as cookie from 'cookie'
 import * as React from 'react'
 import { useEffect, useRef, useState } from 'react'
-import { useFetcher, type ActionFunctionArgs, data as json  } from 'react-router';
+import { useFetcher, data as json } from 'react-router';
 import { useSpinDelay } from 'spin-delay'
 import invariant from 'tiny-invariant'
 
@@ -11,6 +11,7 @@ import { LinkButton } from '#app/components/button.tsx'
 import { AlarmIcon } from '#app/components/icons.tsx'
 import { NotificationMessage } from '#app/components/notification-message.tsx'
 import { Spinner } from '#app/components/spinner.tsx'
+import  { type Route } from './+types/promotification'
 
 export function getPromoCookieValue({
 	promoName,
@@ -23,7 +24,7 @@ export function getPromoCookieValue({
 	return cookies[promoName]
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData()
 	const maxAge = Number(formData.get('maxAge')) || 60 * 60 * 24 * 7 * 2
 	const promoName = formData.get('promoName')

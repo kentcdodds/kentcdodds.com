@@ -1,8 +1,9 @@
-import { type LoaderFunctionArgs } from 'react-router';
+
 import { getBlogMdxListItems } from '#app/utils/mdx.server.ts'
 import { formatDate, getDomainUrl } from '#app/utils/misc.tsx'
+import  { type Route } from './+types/rss[.]xml'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const posts = await getBlogMdxListItems({ request })
 
 	const blogUrl = `${getDomainUrl(request)}/blog`

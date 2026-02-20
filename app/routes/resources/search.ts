@@ -1,9 +1,10 @@
-import { type LoaderFunctionArgs, data as json } from 'react-router';
+import { data as json } from 'react-router';
 import { getDomainUrl } from '#app/utils/misc.tsx'
 import {
 	isSemanticSearchConfigured,
 	semanticSearchKCD,
 } from '#app/utils/semantic-search.server.ts'
+import  { type Route } from './+types/search'
 
 function normalizeSummary(value: unknown) {
 	if (typeof value !== 'string') return undefined
@@ -13,7 +14,7 @@ function normalizeSummary(value: unknown) {
 	return text.length > 220 ? `${text.slice(0, 217)}...` : text
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const query = new URL(request.url).searchParams.get('query')
 	const domainUrl = getDomainUrl(request)
 	if (typeof query !== 'string' || !query) {

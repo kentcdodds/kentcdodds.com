@@ -1,8 +1,4 @@
-import {
-	data as json,
-	type HeadersFunction,
-	type LoaderFunctionArgs, Outlet 
-} from 'react-router'
+import { data as json, type HeadersFunction, Outlet } from 'react-router';
 import { type KCDHandle } from '#app/types.ts'
 import { reuseUsefulLoaderHeaders, typedBoolean } from '#app/utils/misc.tsx'
 import { useMatchLoaderData } from '#app/utils/providers.tsx'
@@ -10,12 +6,13 @@ import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { getScheduledEvents } from '#app/utils/workshop-tickets.server.ts'
 import { getWorkshops } from '#app/utils/workshops.server.ts'
+import  { type Route } from './+types/_layout'
 
 export const handle: KCDHandle & { id: string } = {
 	id: 'workshops',
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const [workshops, workshopEvents] = await Promise.all([
 		getWorkshops({ request, timings }),

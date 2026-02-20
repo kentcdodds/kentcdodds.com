@@ -1,4 +1,4 @@
-import { data as json, type HeadersFunction, type LoaderFunctionArgs, isRouteErrorResponse, Link, useLoaderData, useParams  } from 'react-router';
+import { data as json, type HeadersFunction, isRouteErrorResponse, Link, useLoaderData, useParams } from 'react-router';
 import { serverOnly$ } from 'vite-env-only/macros'
 import { ServerError } from '#app/components/errors.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -16,6 +16,7 @@ import {
 import { useChatsEpisodeUIState } from '#app/utils/providers.tsx'
 import { getSeasonListItems } from '#app/utils/simplecast.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
+import  { type Route } from './+types/$season'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: serverOnly$(async (request: Request) => {
@@ -29,7 +30,7 @@ export const handle: KCDHandle = {
 	}),
 }
 
-export async function loader({ params, request }: LoaderFunctionArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
 	if (!params.season) {
 		throw new Error('params.season is not defined')
 	}
@@ -55,7 +56,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export default function ChatsSeason() {
-	const { season } = useLoaderData<typeof loader>()
+	const { season } = useLoaderData<Route.ComponentProps['loaderData']>()
 	const { sortOrder } = useChatsEpisodeUIState()
 	const episodes = orderBy(season.episodes, 'episodeNumber', sortOrder)
 	return episodes.map((episode) => (

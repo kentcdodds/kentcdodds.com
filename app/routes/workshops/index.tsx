@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { type HeadersFunction, type MetaFunction, useSearchParams  } from 'react-router'
+import { type HeadersFunction, type MetaFunction, useSearchParams } from 'react-router';
 import { Grid } from '#app/components/grid.tsx'
 import { CourseSection } from '#app/components/sections/course-section.tsx'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'

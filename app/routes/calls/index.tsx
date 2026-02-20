@@ -1,8 +1,9 @@
-import { redirect, type LoaderFunctionArgs } from 'react-router'
+import { redirect } from 'react-router';
 import { getEpisodes } from '#app/utils/transistor.server.ts'
+import  { type Route } from './+types/index'
 import { getEpisodesBySeason } from './_layout.tsx'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const episodes = await getEpisodes({ request })
 	const seasons = getEpisodesBySeason(episodes)
 	const seasonNumber = seasons[seasons.length - 1]?.seasonNumber ?? 1

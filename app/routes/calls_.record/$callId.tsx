@@ -1,17 +1,12 @@
 import * as React from 'react'
-import {
-    type ActionFunctionArgs,
-    data as json,
-    redirect,
-    type HeadersFunction,
-    type LoaderFunctionArgs, Form, useLoaderData 
-} from 'react-router';
+import { data as json, redirect, type HeadersFunction, Form, useLoaderData } from 'react-router';
 import { Button } from '#app/components/button.tsx'
 import { Paragraph } from '#app/components/typography.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import { reuseUsefulLoaderHeaders, useDoubleCheck } from '#app/utils/misc.tsx'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { requireUser } from '#app/utils/session.server.ts'
+import  { type Route } from './+types/$callId'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
@@ -21,7 +16,7 @@ const actionTypes = {
 	DELETE_RECORDING: 'delete recording',
 }
 
-export async function action({ params, request }: ActionFunctionArgs) {
+export async function action({ params, request }: Route.ActionArgs) {
 	if (!params.callId) {
 		throw new Error('params.callId is not defined')
 	}
@@ -43,7 +38,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 	return redirect('/calls/record')
 }
 
-export async function loader({ params, request }: LoaderFunctionArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
 	if (!params.callId) {
 		throw new Error('params.callId is not defined')
 	}
@@ -69,7 +64,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export default function Screen() {
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const [audioURL, setAudioURL] = React.useState<string | null>(null)
 	const dc = useDoubleCheck()
 	React.useEffect(() => {

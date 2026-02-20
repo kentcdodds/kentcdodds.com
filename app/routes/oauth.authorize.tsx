@@ -1,8 +1,9 @@
-import { data as json, type LoaderFunctionArgs, type ActionFunctionArgs, redirect, useLoaderData, Form, useActionData  } from 'react-router';
+import { data as json, redirect, useLoaderData, Form, useActionData } from 'react-router';
 import { Button } from '#app/components/button.tsx'
 import { requireUser } from '#app/utils/session.server.ts'
+import  { type Route } from './+types/oauth.authorize'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const user = await requireUser(request)
 	const url = new URL(request.url)
 	const clientId = url.searchParams.get('client_id')
@@ -13,7 +14,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return json({ clientId, user })
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const user = await requireUser(request)
 	const url = new URL(request.url)
 	const requestParams = Object.fromEntries(url.searchParams)
@@ -98,8 +99,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function OAuthAuthorizeRoute() {
-	const { clientId, user } = useLoaderData<typeof loader>()
-	const actionData = useActionData<typeof action>()
+	const { clientId, user } = useLoaderData<Route.ComponentProps['loaderData']>()
+	const actionData = useActionData<Route.ComponentProps['actionData']>()
 
 	return (
 		<div className="mx-auto max-w-md py-8">

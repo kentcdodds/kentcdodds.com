@@ -1,9 +1,5 @@
 import React, { Suspense } from 'react'
-import {
-	type LoaderFunctionArgs,
-	data as defer,
-	redirect, Await, Link, useAsyncError, useLoaderData 
-} from 'react-router'
+import { data as defer, redirect, Await, Link, useAsyncError, useLoaderData } from 'react-router';
 import { ArrowLink } from '#app/components/arrow-button.tsx'
 import { ErrorPanel } from '#app/components/form-elements.tsx'
 import { PartyIcon, RefreshIcon } from '#app/components/icons.tsx'
@@ -21,12 +17,13 @@ import {
 import { requireUser } from '#app/utils/session.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import { deleteDiscordCache } from '#app/utils/user-info.server.ts'
+import  { type Route } from './+types/callback'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	await ensurePrimary()
 	const user = await requireUser(request)
 	const domainUrl = getDomainUrl(request)
@@ -65,7 +62,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function DiscordCallback() {
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 
 	React.useEffect(() => {
 		const newSearchParams = new URLSearchParams(window.location.search)

@@ -1,6 +1,6 @@
 import { format } from 'date-fns'
 import * as React from 'react'
-import { type ActionFunctionArgs, data as json, redirect, Form, useActionData, useLoaderData , type LoaderFunctionArgs  } from 'react-router';
+import { data as json, redirect, Form, useActionData, useLoaderData } from 'react-router';
 import { Button } from '#app/components/button.tsx'
 import { CallRecorder } from '#app/components/calls/recorder.tsx'
 import {
@@ -30,6 +30,7 @@ import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
 import { createEpisode } from '#app/utils/transistor.server.ts'
 import { useUser } from '#app/utils/use-root-data.ts'
+import  { type Route } from './+types/$callId'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
@@ -37,7 +38,7 @@ export const handle: KCDHandle = {
 
 type ActionData = RecordingFormData
 
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({ request, params }: Route.ActionArgs) {
 	await requireAdminUser(request)
 
 	if (request.method === 'DELETE') {
@@ -136,7 +137,7 @@ Thanks for your call. Kent just replied and the episode has been published to th
 	}
 }
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
 	if (!params.callId) {
 		throw new Error('params.callId is not defined')
 	}
@@ -276,8 +277,8 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 
 function RecordingDetailScreen() {
 	const [responseAudio, setResponseAudio] = React.useState<Blob | null>(null)
-	const data = useLoaderData<typeof loader>()
-	const actionData = useActionData<typeof action>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+	const actionData = useActionData<Route.ComponentProps['actionData']>()
 	const user = useUser()
 
 	return (
@@ -315,6 +316,6 @@ function RecordingDetailScreen() {
 }
 
 export default function RecordDetailScreenContainer() {
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	return <RecordingDetailScreen key={data.call.id} />
 }

@@ -1,12 +1,10 @@
-import {
-	verifyAuthenticationResponse,
-	type AuthenticationResponseJSON,
-} from '@simplewebauthn/server'
-import { data as json, type ActionFunctionArgs } from 'react-router';
+import { verifyAuthenticationResponse, type AuthenticationResponseJSON, } from '@simplewebauthn/server'
+import { data as json } from 'react-router';
 import { z } from 'zod'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { getSession } from '#app/utils/session.server.ts'
 import { getWebAuthnConfig, passkeyCookie } from '#app/utils/webauthn.server.ts'
+import  { type Route } from './+types/verify-authentication'
 
 const AuthenticationResponseSchema = z.object({
 	id: z.string(),
@@ -29,7 +27,7 @@ const AuthenticationResponseSchema = z.object({
 	}),
 }) satisfies z.ZodType<AuthenticationResponseJSON>
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const cookieHeader = request.headers.get('Cookie')
 	const cookie = await passkeyCookie.parse(cookieHeader)
 	const deletePasskeyCookie = await passkeyCookie.serialize('', { maxAge: 0 })

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { data as json, type HeadersFunction, type LoaderFunctionArgs, Link, Outlet, useLoaderData, useLocation } from 'react-router';
+import { data as json, type HeadersFunction, Link, Outlet, useLoaderData, useLocation } from 'react-router';
 import { BackLink } from '#app/components/arrow-button.tsx'
 import { ButtonLink } from '#app/components/button.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -8,8 +8,9 @@ import { reuseUsefulLoaderHeaders } from '#app/utils/misc.tsx'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { getUser } from '#app/utils/session.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
+import  { type Route } from './+types/_layout'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const user = await getUser(request)
 	const calls = user
 		? await prisma.call.findMany({
@@ -89,7 +90,7 @@ function Record({
 export default function RecordScreen() {
 	const { pathname } = useLocation()
 	const { user } = useRootData()
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 
 	const [activeSlug] = pathname.split('/').slice(-1)
 	const calls = data.calls

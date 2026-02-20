@@ -1,4 +1,4 @@
-import { data as json, type HeadersFunction, type LoaderFunctionArgs, type MetaFunction, Link, useLoaderData  } from 'react-router';
+import { data as json, type HeadersFunction, type MetaFunction, Link, useLoaderData } from 'react-router';
 import { ArrowLink } from '#app/components/arrow-button.tsx'
 import { CourseCard, SmallCourseCard } from '#app/components/course-card.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -16,8 +16,9 @@ import {
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { getTestimonials } from '#app/utils/testimonials.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
+import  { type Route } from './+types/courses'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const testimonials = await getTestimonials({
 		timings,
@@ -55,7 +56,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 }
 
 function CoursesHome() {
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	return (
 		<>
 			<HeroSection

@@ -4,11 +4,11 @@ import path from 'path'
 import { PassThrough } from 'stream'
 import v8 from 'v8'
 import { createReadableStreamFromReadable } from '@react-router/node';
-import { type LoaderFunctionArgs } from 'react-router';
 import { formatDate } from '#app/utils/misc.tsx'
 import { requireAdminUser } from '#app/utils/session.server.ts'
+import  { type Route } from './+types/heapsnapshot'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	await requireAdminUser(request)
 	const host =
 		request.headers.get('X-Forwarded-Host') ?? request.headers.get('host')

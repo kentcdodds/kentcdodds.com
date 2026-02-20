@@ -1,4 +1,4 @@
-import { type HeadersFunction } from 'react-router'
+import { type HeadersFunction } from 'react-router';
 
 export const headers: HeadersFunction = ({ parentHeaders }) => parentHeaders
 

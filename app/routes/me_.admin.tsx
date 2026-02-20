@@ -1,11 +1,7 @@
 import { clsx } from 'clsx'
 import { addDays, format, startOfDay, subDays } from 'date-fns'
 import * as React from 'react'
-import { Form, useActionData, useLoaderData, useSearchParams,
-    type ActionFunctionArgs,
-    data as json,
-    redirect,
-    type LoaderFunctionArgs } from 'react-router';
+import { Form, useActionData, useLoaderData, useSearchParams, data as json, redirect } from 'react-router';
 import { useTable, type Column } from 'react-table'
 import { Button } from '#app/components/button.tsx'
 import { Field } from '#app/components/form-elements.tsx'
@@ -31,6 +27,7 @@ import {
 import { prisma } from '#app/utils/prisma.server.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
+import  { type Route } from './+types/me_.admin'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
@@ -267,13 +264,13 @@ async function getLoaderData({ request }: { request: Request }) {
 	}
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	await requireAdminUser(request)
 
 	return json(await getLoaderData({ request }))
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	await requireAdminUser(request)
 
 	const requestText = await request.text()
@@ -543,7 +540,7 @@ function BarList({
 }
 
 export default function MeAdmin() {
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const searchInputRef = React.useRef<HTMLInputElement>(null)
 	const [searchParams, setSearchParams] = useSearchParams()
 
@@ -557,7 +554,7 @@ export default function MeAdmin() {
 		order: isSortOrder(spOrder) ? spOrder : 'asc',
 		field: isOrderField(spOrderField) ? spOrderField : 'createdAt',
 	})
-	const actionData = useActionData<typeof action>()
+	const actionData = useActionData<Route.ComponentProps['actionData']>()
 
 	const syncSearchParams = useDebounce(() => {
 		if (

@@ -1,7 +1,8 @@
-import { redirect, type LoaderFunctionArgs } from 'react-router';
+import { redirect } from 'react-router';
 import { getSeasonListItems } from '#app/utils/simplecast.server.ts'
+import  { type Route } from './+types/index'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const seasons = await getSeasonListItems({ request })
 	const seasonNumber = seasons[seasons.length - 1]?.seasonNumber ?? 1
 	const season = seasons.find((s) => s.seasonNumber === seasonNumber)

@@ -1,5 +1,5 @@
 import { clsx } from 'clsx'
-import { type ActionFunctionArgs, data as json, redirect, type LoaderFunctionArgs, Link, Outlet, useLoaderData, useParams } from 'react-router';
+import { data as json, redirect, Link, Outlet, useLoaderData, useParams } from 'react-router';
 import { Grid } from '#app/components/grid.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { H2, H6, Paragraph } from '#app/components/typography.tsx'
@@ -8,12 +8,13 @@ import { formatDate, getAvatarForUser } from '#app/utils/misc.tsx'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
+import  { type Route } from './+types/_layout'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	await requireAdminUser(request)
 
 	const requestText = await request.text()
@@ -38,7 +39,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	return redirect(new URL(request.url).pathname)
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	await requireAdminUser(request)
 
 	const calls = await prisma.call.findMany({
@@ -56,7 +57,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function CallListScreen() {
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const { requestInfo } = useRootData()
 	const params = useParams()
 	const selectedCallId = params.callId

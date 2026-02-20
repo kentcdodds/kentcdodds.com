@@ -1,7 +1,7 @@
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@reach/tabs'
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { data as json, type HeadersFunction, type LoaderFunctionArgs, type MetaFunction, Link, Outlet, useLoaderData, useMatches, useNavigate  } from 'react-router';
+import { data as json, type HeadersFunction, type MetaFunction, Link, Outlet, useLoaderData, useMatches, useNavigate } from 'react-router';
 import { Grid } from '#app/components/grid.tsx'
 import { ChevronDownIcon, ChevronUpIcon } from '#app/components/icons.tsx'
 import { PodcastSubs } from '#app/components/podcast-subs.tsx'
@@ -35,8 +35,9 @@ import { ChatsEpisodeUIStateProvider } from '#app/utils/providers.tsx'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { getSeasonListItems } from '#app/utils/simplecast.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
+import  { type Route } from './+types/_layout'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const blogRecommendations = await getBlogRecommendations({ request, timings })
 
@@ -92,7 +93,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 function PodcastHome() {
 	const [sortOrder, setSortOrder] = React.useState<'desc' | 'asc'>('asc')
 	const navigate = useNavigate()
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const matches = useMatches()
 	const last = matches[matches.length - 1]
 

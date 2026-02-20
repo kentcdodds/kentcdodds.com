@@ -1,6 +1,6 @@
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { type ActionFunctionArgs, type LoaderFunctionArgs, data as json, redirect, Form, useActionData, useLoaderData  } from 'react-router';
+import { data as json, redirect, Form, useActionData, useLoaderData } from 'react-router';
 import { Button } from '#app/components/button.tsx'
 import { Field, InputError } from '#app/components/form-elements.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -24,6 +24,7 @@ import {
 import { prisma, validateMagicLink } from '#app/utils/prisma.server.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
 import { useTeam } from '#app/utils/team-provider.tsx'
+import  { type Route } from './+types/signup'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
@@ -59,7 +60,7 @@ const actionIds = {
 	signUp: 'sign up',
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const loginInfoSession = await getLoginInfoSession(request)
 
 	const requestText = await request.text()
@@ -149,7 +150,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	})
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const user = await getUser(request)
 	if (user) return redirect('/me')
 
@@ -257,8 +258,8 @@ function TeamOption({
 }
 
 export default function NewAccount() {
-	const data = useLoaderData<typeof loader>()
-	const actionData = useActionData<typeof action>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+	const actionData = useActionData<Route.ComponentProps['actionData']>()
 	const [, setTeam] = useTeam()
 	const [formValues, setFormValues] = React.useState<{
 		firstName: string

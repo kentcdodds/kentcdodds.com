@@ -1,15 +1,16 @@
-import { redirect, type HeadersFunction, type LoaderFunctionArgs } from 'react-router';
+import { redirect, type HeadersFunction } from 'react-router';
 import { type KCDHandle } from '#app/types.ts'
 import { getEpisodeFromParams, getEpisodePath } from '#app/utils/call-kent.ts'
 import { reuseUsefulLoaderHeaders } from '#app/utils/misc.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { getEpisodes } from '#app/utils/transistor.server.ts'
+import  { type Route } from './+types/$episode'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
 }
 
-export async function loader({ params, request }: LoaderFunctionArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
 	const timings = {}
 	const { season, episode: episodeParam } = params
 	if (!season || !episodeParam) {

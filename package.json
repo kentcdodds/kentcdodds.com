@@ -46,7 +46,8 @@
     "test:watch": "vitest",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.+(js|jsx|json|yml|yaml|css|less|scss|ts|tsx|md|gql|graphql|mdx|vue)\"",
-    "typecheck": "tsc -b .",
+    "typegen": "react-router typegen",
+    "typecheck": "npm run typegen && tsc -b .",
     "validate": "./other/validate",
     "setup": "npm install && prisma migrate reset --force && npm run validate && npm run prime-cache:mocks && npm run test:e2e:install && npm run test:e2e:run"
   },

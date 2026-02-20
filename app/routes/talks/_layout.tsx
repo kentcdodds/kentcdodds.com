@@ -1,10 +1,6 @@
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { Link, useLoaderData, useLocation, useSearchParams,
-    data as json,
-    type HeadersFunction,
-    type LoaderFunctionArgs,
-    type MetaFunction } from 'react-router';
+import { Link, useLoaderData, useLocation, useSearchParams, data as json, type HeadersFunction, type MetaFunction } from 'react-router';
 import { Grid } from '#app/components/grid.tsx'
 import { YoutubeIcon } from '#app/components/icons.tsx'
 import { CourseSection } from '#app/components/sections/course-section.tsx'
@@ -25,6 +21,7 @@ import {
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { getTalksAndTags } from '#app/utils/talks.server.ts'
+import  { type Route } from './+types/_layout'
 
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	data,
@@ -49,7 +46,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	})
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const talksAndTags = await getTalksAndTags({ request })
 
 	return json(talksAndTags, {
@@ -209,7 +206,7 @@ function Card({
 }
 
 export default function TalksScreen() {
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const { pathname } = useLocation()
 	const [activeSlug] = pathname.split('/').slice(-1)
 

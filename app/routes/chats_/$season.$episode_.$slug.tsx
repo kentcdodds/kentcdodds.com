@@ -1,12 +1,7 @@
 import { clsx } from 'clsx'
 import { motion } from 'framer-motion'
 import React, { useState } from 'react'
-import { isRouteErrorResponse, Link, useLoaderData, useLocation,
-    data as json,
-    redirect,
-    type HeadersFunction,
-    type LoaderFunctionArgs,
-    type MetaFunction } from 'react-router';
+import { isRouteErrorResponse, Link, useLoaderData, useLocation, data as json, redirect, type HeadersFunction } from 'react-router';
 import { serverOnly$ } from 'vite-env-only/macros'
 import { ArrowLink, BackLink } from '#app/components/arrow-button.tsx'
 import { FourOhFour } from '#app/components/errors.tsx'
@@ -47,10 +42,12 @@ import {
 	useCapturedRouteError,
 } from '#app/utils/misc.tsx'
 import { getSocialMetas } from '#app/utils/seo.ts'
+import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { getSeasons } from '#app/utils/simplecast.server.ts'
 import { Themed } from '#app/utils/theme.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
+import  { type Route } from './+types/$season.$episode_.$slug'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: serverOnly$(async (request: Request) => {
@@ -70,13 +67,18 @@ export const handle: KCDHandle = {
 	}),
 }
 
-export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
+export const meta: Route.MetaFunction = ({
 	data,
 	matches,
 }) => {
 	const episode = data?.episode
 
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
+	const rootMatch = matches.find((match) => match?.id === 'root')
+	const requestInfo = (
+		rootMatch?.data as
+			| SerializeFrom<RootLoaderType>
+			| undefined
+	)?.requestInfo
 	if (!episode) {
 		return [{ title: 'Chats with Kent Episode not found' }]
 	}
@@ -117,10 +119,17 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	]
 }
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
 	const timings = {}
 	const seasonNumber = Number(params.season)
-	const episodeNumber = Number(params.episode)
+	const episodeParam =
+		'episode' in params
+			? params.episode
+			: (params as { episode_?: string }).episode_
+	if (!episodeParam) {
+		throw new Response(`Episode param missing`, { status: 404 })
+	}
+	const episodeNumber = Number(episodeParam)
 
 	const seasons = await getSeasons({ request, timings })
 	const season = seasons.find((s) => s.seasonNumber === seasonNumber)
@@ -135,7 +144,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	// we don't actually need the slug, but we'll redirect them to the place
 	// with the slug so the URL looks correct.
 	if (episode.slug !== params.slug) {
-		return redirect(`/chats/${params.season}/${params.episode}/${episode.slug}`)
+		return redirect(`/chats/${params.season}/${episodeParam}/${episode.slug}`)
 	}
 
 	return json(
@@ -405,7 +414,7 @@ function PrevNextButton({
 export default function PodcastDetail() {
 	const { requestInfo } = useRootData()
 	const { episode, featured, nextEpisode, prevEpisode } =
-		useLoaderData<typeof loader>()
+		useLoaderData<Route.ComponentProps['loaderData']>()
 	const permalink = `${requestInfo.origin}${getCWKEpisodePath(episode)}`
 
 	return (

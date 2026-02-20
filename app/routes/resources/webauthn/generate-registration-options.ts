@@ -1,5 +1,5 @@
 import { generateRegistrationOptions } from '@simplewebauthn/server'
-import { data as json, type LoaderFunctionArgs } from 'react-router';
+import { data as json } from 'react-router';
 import { prisma } from '#app/utils/prisma.server.js'
 import { requireUser } from '#app/utils/session.server.js'
 import {
@@ -7,8 +7,9 @@ import {
 	passkeyCookie,
 	getWebAuthnConfig,
 } from '#app/utils/webauthn.server.js'
+import  { type Route } from './+types/generate-registration-options'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const user = await requireUser(request)
 	const passkeys = await prisma.passkey.findMany({
 		where: { userId: user.id },

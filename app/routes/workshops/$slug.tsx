@@ -1,10 +1,5 @@
 import * as React from 'react'
-import {
-    data as json,
-    type HeadersFunction,
-    type LoaderFunctionArgs,
-    type MetaFunction, Link, useLoaderData, useParams 
-} from 'react-router';
+import { data as json, type HeadersFunction, type MetaFunction, Link, useLoaderData, useParams } from 'react-router';
 import { serverOnly$ } from 'vite-env-only/macros'
 import { ArrowLink, BackLink } from '#app/components/arrow-button.tsx'
 import { ButtonLink } from '#app/components/button.tsx'
@@ -39,6 +34,7 @@ import {
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { type WorkshopEvent } from '#app/utils/workshop-tickets.server.ts'
 import { getWorkshops } from '#app/utils/workshops.server.ts'
+import  { type Route } from './+types/$slug'
 import {
 	useWorkshopsData,
 	type loader as WorkshopLoader,
@@ -56,7 +52,7 @@ export const handle: KCDHandle = {
 	}),
 }
 
-export async function loader({ params, request }: LoaderFunctionArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
 	requireValidSlug(params.slug)
 	const timings = {}
 	const [workshops, blogRecommendations] = await Promise.all([
@@ -160,7 +156,7 @@ function restartArray<ArrayType>(array: Array<ArrayType>, startIndex: number) {
 export default function WorkshopScreen() {
 	const params = useParams()
 	const { workshopEvents: titoEvents, workshops } = useWorkshopsData()
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const workshop = workshops.find((w) => w.slug === params.slug)
 
 	if (!workshop) {

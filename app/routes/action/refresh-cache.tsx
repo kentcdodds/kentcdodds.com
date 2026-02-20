@@ -1,5 +1,5 @@
 import path from 'path'
-import { type ActionFunctionArgs, data as json, redirect } from 'react-router';
+import { data as json, redirect } from 'react-router';
 import { cache } from '#app/utils/cache.server.ts'
 import { getPeople } from '#app/utils/credits.server.ts'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
@@ -13,6 +13,7 @@ import { getResumeData } from '#app/utils/resume.server.ts'
 import { getTalksAndTags } from '#app/utils/talks.server.ts'
 import { getTestimonials } from '#app/utils/testimonials.server.ts'
 import { getWorkshops } from '#app/utils/workshops.server.ts'
+import  { type Route } from './+types/refresh-cache'
 
 type Body =
 	| { keys: Array<string>; commitSha?: string }
@@ -36,7 +37,7 @@ export function isRefreshShaInfo(value: any): value is RefreshShaInfo {
 
 export const commitShaKey = 'meta:last-refresh-commit-sha'
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	await ensurePrimary()
 	if (
 		request.headers.get('auth') !==

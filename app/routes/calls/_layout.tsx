@@ -1,11 +1,7 @@
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@reach/tabs'
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { Link, Outlet, useLoaderData, useMatches, useNavigate,
-    data as json,
-    type HeadersFunction,
-    type LoaderFunctionArgs,
-    type MetaFunction } from 'react-router';
+import { Link, Outlet, useLoaderData, useMatches, useNavigate, data as json, type HeadersFunction, type MetaFunction } from 'react-router';
 import { ButtonLink } from '#app/components/button.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { ChevronDownIcon, ChevronUpIcon } from '#app/components/icons.tsx'
@@ -39,6 +35,7 @@ import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { getEpisodes } from '#app/utils/transistor.server.ts'
+import  { type Route } from './+types/_layout'
 
 export const handle: KCDHandle & { id: string } = {
 	id: 'calls',
@@ -58,7 +55,7 @@ export const getEpisodesBySeason = (
 	return seasons
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const [blogRecommendations, episodes] = await Promise.all([
 		getBlogRecommendations({ request, timings }),
@@ -118,7 +115,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 export default function CallHomeScreen() {
 	const [sortOrder, setSortOrder] = React.useState<'desc' | 'asc'>('desc')
 
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const navigate = useNavigate()
 
 	const groupedEpisodeBySeasons = groupBy(data.episodes, 'seasonNumber')

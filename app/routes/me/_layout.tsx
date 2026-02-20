@@ -2,13 +2,7 @@ import { Dialog } from '@reach/dialog'
 import { clsx } from 'clsx'
 import * as React from 'react'
 import {
-    type LoaderFunctionArgs,
-    data as json,
-    redirect,
-    type HeadersFunction,
-    type MetaFunction,
-    type ActionFunctionArgs, Form, useActionData, useLoaderData 
-} from 'react-router';
+    data as json, redirect, type HeadersFunction, type MetaFunction, Form, useActionData, useLoaderData } from 'react-router';
 import { Button, ButtonLink } from '#app/components/button.tsx'
 import { Field, InputError, Label } from '#app/components/form-elements.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -55,6 +49,7 @@ import {
 	deleteDiscordCache,
 	gravatarExistsForEmail,
 } from '#app/utils/user-info.server.ts'
+import  { type Route } from './+types/_layout'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
@@ -77,7 +72,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	})
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const user = await requireUser(request, { timings })
 
@@ -136,7 +131,7 @@ type ActionData = {
 		firstName?: string | null
 	}
 }
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const user = await requireUser(request)
 	const form = new URLSearchParams(await request.text())
 	const actionId = form.get('actionId')
@@ -220,14 +215,14 @@ export async function action({ request }: ActionFunctionArgs) {
 const SHOW_QR_DURATION = 15_000
 
 function YouScreen() {
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const teamMap = {
 		skiing: TEAM_SKIING_MAP,
 		snowboarding: TEAM_SNOWBOARD_MAP,
 		onewheeling: TEAM_ONEWHEELING_MAP,
 	}[data.teamType]
 	const otherSessionsCount = data.sessionCount - 1
-	const actionData = useActionData<typeof action>()
+	const actionData = useActionData<Route.ComponentProps['actionData']>()
 	const { requestInfo, userInfo, user } = useRootData()
 	const team = getTeam(user?.team)
 

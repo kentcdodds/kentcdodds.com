@@ -1,6 +1,6 @@
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { type LoaderFunctionArgs, data as json, type HeadersFunction, Link, useLoaderData, useParams  } from 'react-router';
+import { data as json, type HeadersFunction, Link, useLoaderData, useParams } from 'react-router';
 import { serverOnly$ } from 'vite-env-only/macros'
 import { ArrowLink, BackLink } from '#app/components/arrow-button.tsx'
 import { BlurrableImage } from '#app/components/blurrable-image.tsx'
@@ -43,6 +43,7 @@ import { useRootData } from '#app/utils/use-root-data.ts'
 import { getScheduledEvents } from '#app/utils/workshop-tickets.server.ts'
 import { getWorkshops } from '#app/utils/workshops.server.ts'
 import { markAsRead } from '../action/mark-as-read.tsx'
+import  { type Route } from './+types/$slug'
 
 const handleId = 'blog-post'
 export const handle: KCDHandle = {
@@ -64,7 +65,7 @@ type CatchData = {
 	leadingTeam: Team | null
 }
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
 	requireValidSlug(params.slug)
 	const timings = {}
 
@@ -336,7 +337,7 @@ function ArticleQuestionCard() {
 }
 
 export default function MdxScreen() {
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const { requestInfo } = useRootData()
 
 	const { code, dateDisplay, frontmatter } = data.page

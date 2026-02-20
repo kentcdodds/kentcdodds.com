@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react'
-import { type LoaderFunctionArgs, data as defer, Await, Link, useAsyncError, useFetcher, useLoaderData  } from 'react-router';
+import { data as defer, Await, Link, useAsyncError, useFetcher, useLoaderData } from 'react-router';
 import {
 	ErrorPanel,
 	Input,
@@ -20,11 +20,12 @@ import {
 	semanticSearchKCD,
 	type SemanticSearchResult,
 } from '#app/utils/semantic-search.server.ts'
+import  { type Route } from './+types/search'
 
 const semanticSearchNotConfiguredMessage =
 	'Semantic search is not configured on this environment yet. Try again later.'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const url = new URL(request.url)
 	const q = (url.searchParams.get('q') ?? '').trim()
 	const configured = isSemanticSearchConfigured()
@@ -72,7 +73,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function SearchPage() {
-	const loaderData = useLoaderData<typeof loader>()
+	const loaderData = useLoaderData<Route.ComponentProps['loaderData']>()
 	const fetcher = useFetcher<typeof loader>({ key: 'search-page-results' })
 	const { load } = fetcher
 	const inputRef = React.useRef<HTMLInputElement>(null)

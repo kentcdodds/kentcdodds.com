@@ -1,9 +1,10 @@
-import { redirect, type HeadersFunction, type LoaderFunctionArgs } from 'react-router';
+import { redirect, type HeadersFunction } from 'react-router';
 import { reuseUsefulLoaderHeaders } from '#app/utils/misc.tsx'
 import { getSeasons } from '#app/utils/simplecast.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
+import  { type Route } from './+types/$season_.$episode'
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
 	const timings = {}
 	const seasonNumber = Number(params.season)
 	const episodeNumber = Number(params.episode)

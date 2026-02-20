@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs, data as json, type HeadersFunction, type MetaFunction, useLoaderData  } from 'react-router';
+import { data as json, type HeadersFunction, type MetaFunction, useLoaderData } from 'react-router';
 import { ArrowLink } from '#app/components/arrow-button.tsx'
 import { ButtonLink } from '#app/components/button.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -19,6 +19,7 @@ import {
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { getTestimonials } from '#app/utils/testimonials.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
+import  { type Route } from './+types/testimonials'
 
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	data,
@@ -43,7 +44,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 
 	return json(
@@ -58,7 +59,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function Testimonials() {
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 
 	return (
 		<>

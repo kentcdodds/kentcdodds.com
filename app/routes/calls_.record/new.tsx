@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { type ActionFunctionArgs, data as json, redirect, Link, useActionData  } from 'react-router';
+import { data as json, redirect, Link, useActionData } from 'react-router';
 import { CallRecorder } from '#app/components/calls/recorder.tsx'
 import {
 	RecordingForm,
@@ -28,12 +28,13 @@ import { prisma } from '#app/utils/prisma.server.ts'
 import { requireUser } from '#app/utils/session.server.ts'
 import { teamEmoji } from '#app/utils/team-provider.tsx'
 import { useRootData } from '#app/utils/use-root-data.ts'
+import  { type Route } from './+types/new'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const user = await requireUser(request)
 	const actionData: ActionData = { fields: {}, errors: {} }
 	const domainUrl = getDomainUrl(request)
@@ -97,7 +98,7 @@ export async function action({ request }: ActionFunctionArgs) {
 type ActionData = RecordingFormData
 
 export default function RecordScreen() {
-	const actionData = useActionData<typeof action>()
+	const actionData = useActionData<Route.ComponentProps['actionData']>()
 	const [audio, setAudio] = React.useState<Blob | null>(null)
 	const { user, userInfo } = useRootData()
 	// should be impossible...

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { type LoaderFunctionArgs, data as json, type HeadersFunction, useLoaderData  } from 'react-router';
+import { data as json, type HeadersFunction, useLoaderData } from 'react-router';
 import { serverOnly$ } from 'vite-env-only/macros'
 import { BackLink } from '#app/components/arrow-button.tsx'
 import { BlurrableImage } from '#app/components/blurrable-image.tsx'
@@ -20,6 +20,7 @@ import {
 } from '#app/utils/mdx.tsx'
 import { requireValidSlug, reuseUsefulLoaderHeaders } from '#app/utils/misc.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
+import  { type Route } from './+types/$slug'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: serverOnly$(async (request: Request) => {
@@ -32,7 +33,7 @@ export const handle: KCDHandle = {
 	}),
 }
 
-export async function loader({ params, request }: LoaderFunctionArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
 	requireValidSlug(params.slug)
 	// because this is our catch-all thing, we'll do an early return for anything
 	// that has a other route setup. The response will be handled there.
@@ -66,7 +67,7 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 export const meta = mdxPageMeta
 
 export default function MdxScreen() {
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const { code, frontmatter } = data.page
 	const isDraft = Boolean(frontmatter.draft)
 	const isArchived = Boolean(frontmatter.archived)
