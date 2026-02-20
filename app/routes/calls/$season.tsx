@@ -20,7 +20,6 @@ import {
 	reuseUsefulLoaderHeaders,
 	useCapturedRouteError,
 } from '#app/utils/misc.tsx'
-import { useCallsEpisodeUIState } from '#app/utils/providers.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { getEpisodes } from '#app/utils/transistor.server.ts'
 import { getEpisodesBySeason } from '../calls.tsx'
@@ -69,7 +68,7 @@ export default function CallsSeason() {
 	const { season } = useLoaderData<typeof loader>()
 	const matches = useMatches()
 	const shouldReduceMotion = useReducedMotion()
-	const { sortOrder } = useCallsEpisodeUIState()
+	const sortOrder: 'desc' | 'asc' = 'desc'
 	const episodes = orderBy(season.episodes, 'episodeNumber', sortOrder)
 
 	const callPlayerMatch = matches.find(

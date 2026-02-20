@@ -13,7 +13,6 @@ import {
 	reuseUsefulLoaderHeaders,
 	useCapturedRouteError,
 } from '#app/utils/misc.tsx'
-import { useChatsEpisodeUIState } from '#app/utils/providers.tsx'
 import { getSeasonListItems } from '#app/utils/simplecast.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 
@@ -56,7 +55,7 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export default function ChatsSeason() {
 	const { season } = useLoaderData<typeof loader>()
-	const { sortOrder } = useChatsEpisodeUIState()
+	const sortOrder: 'desc' | 'asc' = 'desc'
 	const episodes = orderBy(season.episodes, 'episodeNumber', sortOrder)
 	return episodes.map((episode) => (
 		<Link
