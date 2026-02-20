@@ -24,12 +24,22 @@ function parseVideoId(value: string | null) {
 function parsePlaylistId(value: string | undefined) {
 	if (!value) return null
 	const trimmed = value.trim()
-	return /^[A-Za-z0-9_-]{10,}$/.test(trimmed) ? trimmed : null
+	if (!trimmed) return null
+	if (/^[A-Za-z0-9_-]{10,}$/.test(trimmed)) return trimmed
+	try {
+		const url = new URL(trimmed)
+		const list = url.searchParams.get('list')
+		return list && /^[A-Za-z0-9_-]{10,}$/.test(list) ? list : null
+	} catch {
+		return null
+	}
 }
 
 export async function loader() {
+	const playlistInput =
+		process.env.YOUTUBE_PLAYLIST_URL ?? process.env.YOUTUBE_PLAYLIST_ID
 	const configuredPlaylistId =
-		parsePlaylistId(process.env.YOUTUBE_PLAYLIST_ID) ?? DEFAULT_PLAYLIST_ID
+		parsePlaylistId(playlistInput) ?? DEFAULT_PLAYLIST_ID
 	return json({
 		playlistId: configuredPlaylistId,
 	})
