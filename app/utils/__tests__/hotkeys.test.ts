@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { assert, describe, expect, test } from 'vitest'
 import {
 	HOTKEY_GOTO_CALLS,
 	HOTKEY_GOTO_CHATS,
@@ -25,10 +25,10 @@ describe('hotkeys navigation mappings', () => {
 		const navigationGroup = HOTKEYS_HELP_GROUPS.find(
 			(group) => group.title === 'Navigation',
 		)
-		expect(navigationGroup).toBeDefined()
+		assert(navigationGroup, 'Expected Navigation hotkeys group to exist')
 
 		const itemByDescription = new Map(
-			navigationGroup!.items.map((item) => [item.description, item]),
+			navigationGroup.items.map((item) => [item.description, item]),
 		)
 
 		expect(itemByDescription.get('Go to Chats with Kent podcast')).toMatchObject({
