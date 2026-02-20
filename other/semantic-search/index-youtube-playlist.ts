@@ -377,11 +377,12 @@ function getContinuationToken(root: unknown) {
 async function fetchPlaylistVideos({
 	playlistId,
 	maxVideos,
+	config,
 }: {
 	playlistId: string
 	maxVideos?: number
+	config: YouTubeBrowseConfig
 }) {
-	const config = await getYouTubeBrowseConfig(playlistId)
 	const videosById = new Map<string, PlaylistVideo>()
 
 	const initial = await fetchYouTubeBrowseJson({
@@ -434,80 +435,31 @@ async function fetchPlaylistVideos({
 	return { playlistTitle, videos }
 }
 
-function extractJsonObjectAfterMarker({
-	source,
-	marker,
+async function fetchYouTubePlayerJson({
+	config,
+	videoId,
 }: {
-	source: string
-	marker: string
+	config: YouTubeBrowseConfig
+	videoId: string
 }) {
-	const markerIndex = source.indexOf(marker)
-	if (markerIndex < 0) return null
-	const start = source.indexOf('{', markerIndex + marker.length)
-	if (start < 0) return null
-	let depth = 0
-	let inString = false
-	let quoteChar = ''
-	let escaped = false
-	for (let i = start; i < source.length; i++) {
-		const char = source[i] ?? ''
-		if (inString) {
-			if (escaped) {
-				escaped = false
-				continue
-			}
-			if (char === '\\') {
-				escaped = true
-				continue
-			}
-			if (char === quoteChar) {
-				inString = false
-				quoteChar = ''
-			}
-			continue
-		}
-		if (char === '"' || char === "'") {
-			inString = true
-			quoteChar = char
-			continue
-		}
-		if (char === '{') {
-			depth++
-			continue
-		}
-		if (char === '}') {
-			depth--
-			if (depth === 0) {
-				return source.slice(start, i + 1)
-			}
-		}
-	}
-	return null
-}
-
-async function getWatchPlayerResponse(videoId: string) {
-	const watchUrl = new URL('https://www.youtube.com/watch')
-	watchUrl.searchParams.set('v', videoId)
-	watchUrl.searchParams.set('hl', 'en')
-	watchUrl.searchParams.set('bpctr', '9999999999')
-	watchUrl.searchParams.set('has_verified', '1')
-
-	const html = await fetchTextWithRetries(watchUrl.toString(), {
-		label: `youtube watch ${videoId}`,
+	const url = `https://www.youtube.com/youtubei/v1/player?key=${encodeURIComponent(
+		config.apiKey,
+	)}`
+	return await fetchJsonWithRetries<Record<string, unknown>>(url, {
+		label: `youtube player ${videoId}`,
+		init: {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				context: config.context,
+				videoId,
+				contentCheckOk: true,
+				racyCheckOk: true,
+			}),
+		},
 	})
-	const raw =
-		extractJsonObjectAfterMarker({
-			source: html,
-			marker: 'var ytInitialPlayerResponse = ',
-		}) ??
-		extractJsonObjectAfterMarker({
-			source: html,
-			marker: 'ytInitialPlayerResponse = ',
-		})
-
-	if (!raw)
-		throw new Error(`Could not locate ytInitialPlayerResponse for ${videoId}`)
-	return JSON.parse(raw) as Record<string, unknown>
 }
 
 type CaptionTrack = {
@@ -570,16 +522,18 @@ async function fetchTranscriptFromTrack(track: CaptionTrack, label: string) {
 }
 
 async function fetchVideoEnrichedData({
+	config,
 	videoId,
 	language,
 	includeAutoCaptions,
 }: {
+	config: YouTubeBrowseConfig
 	videoId: string
 	language: string
 	includeAutoCaptions: boolean
 }): Promise<VideoEnrichedData> {
 	try {
-		const player = await getWatchPlayerResponse(videoId)
+		const player = await fetchYouTubePlayerJson({ config, videoId })
 		const videoDetails = asRecord(player.videoDetails)
 		const microformat = asRecord(
 			asRecord(player.microformat)?.playerMicroformatRenderer,
@@ -745,11 +699,13 @@ async function main() {
 	}
 
 	const manifestKey = manifestKeyArg ?? `manifests/youtube-${playlistId}.json`
+	const browseConfig = await getYouTubeBrowseConfig(playlistId)
 
 	console.log(`Loading playlist ${playlistId}...`)
 	const { playlistTitle, videos } = await fetchPlaylistVideos({
 		playlistId,
 		maxVideos,
+		config: browseConfig,
 	})
 	console.log(
 		`Playlist "${playlistTitle}" videos discovered: ${videos.length}${maxVideos ? ` (limited by --max-videos=${maxVideos})` : ''}`,
@@ -766,6 +722,7 @@ async function main() {
 				`Fetching transcript/metadata ${index + 1}/${videos.length} (${video.videoId})`,
 			)
 			const details = await fetchVideoEnrichedData({
+				config: browseConfig,
 				videoId: video.videoId,
 				language,
 				includeAutoCaptions,
