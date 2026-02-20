@@ -47,6 +47,11 @@ export type JsxPageIndexItem = {
 	source: string
 }
 
+type HtmlFetchResult = {
+	html: string
+	pathname: string
+}
+
 function getClassList(value: unknown) {
 	if (Array.isArray(value)) {
 		return value.flatMap((v) =>
@@ -55,6 +60,12 @@ function getClassList(value: unknown) {
 	}
 	if (typeof value === 'string') return value.split(/\s+/).filter(Boolean)
 	return []
+}
+
+function isJsxPageIndexItem(
+	item: JsxPageIndexItem | null,
+): item is JsxPageIndexItem {
+	return item != null
 }
 
 function hasSkippedClass(value: unknown) {
@@ -139,11 +150,28 @@ export function parseSitemapPathnames(sitemapXml: string) {
 
 export async function getMdxPageRoutes(repoRoot = process.cwd()) {
 	const pagesDir = path.join(repoRoot, 'content', 'pages')
-	const files = await fs.readdir(pagesDir).catch(() => [])
 	const routes = new Set<string>()
-	for (const file of files) {
-		if (!file.endsWith('.mdx')) continue
-		routes.add(`/${file.replace(/\.mdx$/, '')}`)
+
+	const walk = async (dir: string, relativeDir = '') => {
+		const entries = await fs.readdir(dir, { withFileTypes: true })
+		for (const entry of entries) {
+			const nextRelativePath = relativeDir
+				? path.join(relativeDir, entry.name)
+				: entry.name
+			const nextAbsolutePath = path.join(dir, entry.name)
+			if (entry.isDirectory()) {
+				await walk(nextAbsolutePath, nextRelativePath)
+				continue
+			}
+			if (!entry.isFile() || !entry.name.endsWith('.mdx')) continue
+			routes.add(`/${nextRelativePath.replace(/\\/g, '/').replace(/\.mdx$/, '')}`)
+		}
+	}
+
+	try {
+		await walk(pagesDir)
+	} catch {
+		return new Set<string>()
 	}
 	return routes
 }
@@ -241,6 +269,24 @@ async function requestTextDocument({
 		})
 		req.end()
 	})
+}
+
+async function mapWithConcurrency<Item, Result>(
+	items: Item[],
+	concurrency: number,
+	mapper: (item: Item, index: number) => Promise<Result>,
+) {
+	const safeConcurrency = Math.max(1, Math.min(concurrency, items.length || 1))
+	const results: Result[] = new Array(items.length)
+	let nextIndex = 0
+	const workers = Array.from({ length: safeConcurrency }, async () => {
+		while (nextIndex < items.length) {
+			const currentIndex = nextIndex++
+			results[currentIndex] = await mapper(items[currentIndex]!, currentIndex)
+		}
+	})
+	await Promise.all(workers)
+	return results
 }
 
 async function waitForSitemap({
@@ -354,15 +400,66 @@ export async function startLocalDevServerForSitemap({
 	}
 }
 
+function getFirstHeaderValue(value: string | string[] | undefined) {
+	if (Array.isArray(value)) return value[0]
+	return value
+}
+
+function getRedirectPathname({
+	origin,
+	currentPathname,
+	locationHeader,
+}: {
+	origin: string
+	currentPathname: string
+	locationHeader: string
+}) {
+	try {
+		const originUrl = new URL(origin)
+		const currentUrl = new URL(currentPathname, originUrl)
+		const redirectUrl = new URL(locationHeader, currentUrl)
+		if (redirectUrl.origin !== originUrl.origin) return null
+		const redirectPathname = `${redirectUrl.pathname}${redirectUrl.search}`
+		if (!redirectPathname || redirectPathname === currentPathname) return null
+		return redirectPathname
+	} catch {
+		return null
+	}
+}
+
 async function fetchHtml(pathname: string, origin: string) {
-	const res = await requestTextDocument({
-		url: `${origin}${pathname}`,
-		accept: 'text/html,application/xhtml+xml',
-	})
-	if (res.statusCode < 200 || res.statusCode >= 300) return null
-	const contentType = String(res.headers['content-type'] ?? '')
-	if (!contentType.includes('text/html')) return null
-	return res.body
+	let currentPathname = pathname
+	const seenPathnames = new Set<string>()
+
+	for (let hop = 0; hop < 2; hop++) {
+		if (seenPathnames.has(currentPathname)) return null
+		seenPathnames.add(currentPathname)
+
+		const res = await requestTextDocument({
+			url: `${origin}${currentPathname}`,
+			accept: 'text/html,application/xhtml+xml',
+		})
+
+		if (res.statusCode >= 300 && res.statusCode < 400 && hop === 0) {
+			const locationHeader = getFirstHeaderValue(res.headers.location)
+			if (!locationHeader) return null
+			const redirectPathname = getRedirectPathname({
+				origin,
+				currentPathname,
+				locationHeader,
+			})
+			if (!redirectPathname) return null
+			currentPathname = redirectPathname
+			continue
+		}
+
+		if (res.statusCode < 200 || res.statusCode >= 300) return null
+		const contentType = String(res.headers['content-type'] ?? '')
+		if (!contentType.includes('text/html')) return null
+		return { html: res.body, pathname: currentPathname } satisfies HtmlFetchResult
+	}
+
+	return null
 }
 
 export async function loadJsxPageItemsFromRunningSite({
@@ -390,22 +487,26 @@ export async function loadJsxPageItemsFromRunningSite({
 		shouldIndexJsxSitemapPath({ pathname, mdxRoutes }),
 	)
 
-	const items: JsxPageIndexItem[] = []
-	for (const pathname of pathnamesToIndex) {
-		const html = await fetchHtml(pathname, origin)
-		if (!html) continue
-		const { title, text } = extractRenderedPageContent(html)
-		if (text.length < minimumTextLength) continue
-		const slug = getJsxPageSlugFromPath(pathname)
-		items.push({
-			slug,
-			url: pathname,
-			title: title || (pathname === '/' ? 'Home' : pathname),
-			source: text,
-		})
-	}
+	const items = await mapWithConcurrency(
+		pathnamesToIndex,
+		5,
+		async (pathname): Promise<JsxPageIndexItem | null> => {
+			const fetched = await fetchHtml(pathname, origin)
+			if (!fetched) return null
+			const normalizedPathname = normalizePathname(fetched.pathname)
+			const { title, text } = extractRenderedPageContent(fetched.html)
+			if (text.length < minimumTextLength) return null
+			const slug = getJsxPageSlugFromPath(normalizedPathname)
+			return {
+				slug,
+				url: normalizedPathname,
+				title: title || (normalizedPathname === '/' ? 'Home' : normalizedPathname),
+				source: text,
+			}
+		},
+	)
 
-	return items
+	return items.filter(isJsxPageIndexItem)
 }
 
 export async function loadJsxPageItemsFromLocalApp() {

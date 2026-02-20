@@ -1,9 +1,15 @@
+import fs from 'node:fs/promises'
+import http from 'node:http'
+import os from 'node:os'
+import path from 'node:path'
 import { describe, expect, test } from 'vitest'
 import {
 	JSX_HOME_SLUG,
 	extractRenderedPageContent,
+	getMdxPageRoutes,
 	getJsxPagePathFromSlug,
 	getJsxPageSlugFromPath,
+	loadJsxPageItemsFromRunningSite,
 	parseSitemapPathnames,
 	shouldIndexJsxSitemapPath,
 } from '../jsx-page-content.ts'
@@ -112,5 +118,96 @@ describe('jsx page content utils', () => {
 		expect(extracted.text).toContain('This should remain visible.')
 		expect(extracted.text).not.toContain('This text should be excluded')
 		expect(extracted.text).not.toContain('Also excluded text')
+	})
+
+	test('getMdxPageRoutes recursively discovers nested MDX files', async () => {
+		const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jsx-page-routes-'))
+		try {
+			await fs.mkdir(path.join(root, 'content', 'pages', 'nested', 'deep'), {
+				recursive: true,
+			})
+			await fs.writeFile(
+				path.join(root, 'content', 'pages', 'top-level.mdx'),
+				'# Top level',
+				'utf8',
+			)
+			await fs.writeFile(
+				path.join(root, 'content', 'pages', 'nested', 'child-page.mdx'),
+				'# Child page',
+				'utf8',
+			)
+			await fs.writeFile(
+				path.join(root, 'content', 'pages', 'nested', 'deep', 'leaf-page.mdx'),
+				'# Leaf page',
+				'utf8',
+			)
+			await fs.writeFile(
+				path.join(root, 'content', 'pages', 'nested', 'deep', 'ignore.txt'),
+				'ignore me',
+				'utf8',
+			)
+
+			const routes = await getMdxPageRoutes(root)
+			expect([...routes].sort()).toEqual([
+				'/nested/child-page',
+				'/nested/deep/leaf-page',
+				'/top-level',
+			])
+		} finally {
+			await fs.rm(root, { recursive: true, force: true })
+		}
+	})
+
+	test('loadJsxPageItemsFromRunningSite follows one same-origin redirect', async () => {
+		const server = http.createServer((req, res) => {
+			const host = req.headers.host ?? '127.0.0.1'
+			if (req.url === '/sitemap.xml') {
+				res.writeHead(200, { 'Content-Type': 'application/xml' })
+				res.end(
+					`<?xml version="1.0" encoding="UTF-8"?><urlset><url><loc>http://${host}/about</loc></url></urlset>`,
+				)
+				return
+			}
+			if (req.url === '/about') {
+				res.writeHead(302, { Location: '/about/' })
+				res.end()
+				return
+			}
+			if (req.url === '/about/') {
+				res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
+				res.end(`
+          <html>
+            <head><title>About Redirected</title></head>
+            <body><main><h1>About Content</h1><p>Redirect target page content.</p></main></body>
+          </html>
+        `)
+				return
+			}
+			res.writeHead(404, { 'Content-Type': 'text/plain' })
+			res.end('not found')
+		})
+
+		try {
+			await new Promise<void>((resolve) =>
+				server.listen(0, '127.0.0.1', () => resolve()),
+			)
+			const address = server.address()
+			if (!address || typeof address === 'string') {
+				throw new Error('Unexpected server address')
+			}
+			const origin = `http://127.0.0.1:${address.port}`
+			const items = await loadJsxPageItemsFromRunningSite({
+				origin,
+				mdxRoutes: new Set(),
+				minimumTextLength: 1,
+			})
+
+			expect(items).toHaveLength(1)
+			expect(items[0]?.url).toBe('/about')
+			expect(items[0]?.title).toBe('About Redirected')
+			expect(items[0]?.source).toContain('Redirect target page content.')
+		} finally {
+			await new Promise<void>((resolve) => server.close(() => resolve()))
+		}
 	})
 })
