@@ -10,9 +10,7 @@ import {
 	links as youTubeEmbedLinks,
 } from '#app/components/fullscreen-yt-embed.tsx'
 import { Grid } from '#app/components/grid.tsx'
-import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { Paragraph } from '#app/components/typography.tsx'
-import { images } from '#app/images.tsx'
 
 const DEFAULT_PLAYLIST_ID = 'PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf'
 
@@ -72,57 +70,50 @@ export default function YouTubePage() {
 	)}`
 
 	return (
-		<>
-			<HeroSection
-				title="Watch YouTube videos here."
-				subtitle="Use semantic search to jump straight to a specific video."
-				imageBuilder={images.microphoneWithHands}
-			/>
+		<Grid as="main" className="mb-24 lg:mb-48">
+			<div className="col-span-full space-y-4">
+				{selectedVideoId ? (
+					<div className="overflow-hidden rounded-lg bg-black">
+						<LiteYouTubeEmbed
+							id={selectedVideoId}
+							title={`YouTube video ${selectedVideoId}`}
+							announce="Play video"
+							params={new URLSearchParams({
+								rel: '0',
+								modestbranding: '1',
+								list: playlistId,
+							}).toString()}
+						/>
+					</div>
+				) : (
+					<div className="aspect-video overflow-hidden rounded-lg bg-black">
+						<iframe
+							title="YouTube playlist"
+							src={playlistEmbedUrl}
+							className="h-full w-full"
+							allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+							referrerPolicy="strict-origin-when-cross-origin"
+							allowFullScreen
+						/>
+					</div>
+				)}
 
-			<Grid as="main" className="mb-24 lg:mb-48">
-				<div className="col-span-full space-y-4">
-					{selectedVideoId ? (
-						<div className="overflow-hidden rounded-lg bg-black">
-							<LiteYouTubeEmbed
-								id={selectedVideoId}
-								title={`YouTube video ${selectedVideoId}`}
-								announce="Play video"
-								params={new URLSearchParams({
-									rel: '0',
-									modestbranding: '1',
-								}).toString()}
-							/>
-						</div>
-					) : (
-						<div className="aspect-video overflow-hidden rounded-lg bg-black">
-							<iframe
-								title="YouTube playlist"
-								src={playlistEmbedUrl}
-								className="h-full w-full"
-								allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-								referrerPolicy="strict-origin-when-cross-origin"
-								allowFullScreen
-							/>
-						</div>
-					)}
-
-					<Paragraph>
-						{selectedVideoId
-							? 'Showing the selected video from semantic search results.'
-							: 'Showing the configured playlist.'}
-					</Paragraph>
-					<Paragraph>
-						<a
-							href={playlistUrl}
-							className="underlined"
-							target="_blank"
-							rel="noreferrer noopener"
-						>
-							Open this playlist on YouTube
-						</a>
-					</Paragraph>
-				</div>
-			</Grid>
-		</>
+				<Paragraph>
+					{selectedVideoId
+						? 'Showing the selected video from semantic search results.'
+						: 'Showing the configured playlist.'}
+				</Paragraph>
+				<Paragraph>
+					<a
+						href={playlistUrl}
+						className="underlined"
+						target="_blank"
+						rel="noreferrer noopener"
+					>
+						Open this playlist on YouTube
+					</a>
+				</Paragraph>
+			</div>
+		</Grid>
 	)
 }
