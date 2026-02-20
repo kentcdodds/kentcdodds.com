@@ -1,7 +1,10 @@
 import { DialogContent, DialogOverlay } from '@reach/dialog'
 import { formatForDisplay } from '@tanstack/react-hotkeys'
 import * as React from 'react'
-import { type HotkeysHelpCombo, type HotkeysHelpGroup } from '#app/utils/hotkeys.ts'
+import {
+	type HotkeysHelpCombo,
+	type HotkeysHelpGroup,
+} from '#app/utils/hotkeys.ts'
 import { CloseIcon } from './icons.tsx'
 import { H3, Paragraph } from './typography.tsx'
 
@@ -9,9 +12,7 @@ const HOTKEYS_HELP_DIALOG_ANIMATION_DURATION_MS = 200
 
 function Kbd({ children }: { children: React.ReactNode }) {
 	return (
-		<kbd
-			className="bg-secondary border-secondary text-primary inline-flex items-center rounded-md border px-2 py-1 font-mono text-xs font-semibold sm:text-sm"
-		>
+		<kbd className="bg-secondary border-secondary text-primary inline-flex items-center rounded-md border px-2 py-1 font-mono text-xs font-semibold sm:text-sm">
 			{children}
 		</kbd>
 	)
@@ -43,10 +44,19 @@ function HotkeysHelpDialog({
 }) {
 	const [isMounted, setIsMounted] = React.useState(isOpen)
 	const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false)
-	const closeTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+	const closeTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(
+		null,
+	)
 	const animationDurationMs = prefersReducedMotion
 		? 0
 		: HOTKEYS_HELP_DIALOG_ANIMATION_DURATION_MS
+	const animationDurationStyle = React.useMemo(
+		() =>
+			({
+				'--hotkeys-help-dialog-animation-duration': `${animationDurationMs}ms`,
+			}) as React.CSSProperties,
+		[animationDurationMs],
+	)
 	const clearCloseTimeout = React.useCallback(() => {
 		if (closeTimeoutRef.current) {
 			clearTimeout(closeTimeoutRef.current)
@@ -99,11 +109,13 @@ function HotkeysHelpDialog({
 			onDismiss={onDismiss}
 			className="hotkeys-help-dialog-overlay"
 			data-animation-state={animationState}
+			style={animationDurationStyle}
 		>
 			<DialogContent
 				aria-label="Keyboard shortcuts"
 				data-animation-state={animationState}
 				className="hotkeys-help-dialog-content bg-primary text-primary !w-11/12 !max-w-3xl rounded-xl border-2 border-black px-6 py-6 shadow-xl sm:px-8 sm:py-8 dark:border-white dark:!bg-gray-900"
+				style={animationDurationStyle}
 			>
 				<div className="flex items-start justify-between gap-6">
 					<div className="min-w-0">
@@ -161,4 +173,3 @@ function HotkeysHelpDialog({
 }
 
 export { HotkeysHelpDialog }
-

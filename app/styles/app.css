@@ -148,13 +148,15 @@ light-mode {
 
 [data-reach-dialog-overlay].hotkeys-help-dialog-overlay[data-animation-state='open'] {
 	opacity: 1;
-	animation: hotkeys-help-dialog-overlay-in 200ms ease-out both;
+	animation: hotkeys-help-dialog-overlay-in
+		var(--hotkeys-help-dialog-animation-duration) ease-out both;
 }
 
 [data-reach-dialog-overlay].hotkeys-help-dialog-overlay[data-animation-state='closed'] {
 	opacity: 0;
 	pointer-events: none;
-	animation: hotkeys-help-dialog-overlay-out 200ms ease-in both;
+	animation: hotkeys-help-dialog-overlay-out
+		var(--hotkeys-help-dialog-animation-duration) ease-in both;
 }
 
 [data-reach-dialog-content].hotkeys-help-dialog-content {
@@ -164,13 +166,15 @@ light-mode {
 [data-reach-dialog-content].hotkeys-help-dialog-content[data-animation-state='open'] {
 	opacity: 1;
 	transform: translateY(0) scale(1);
-	animation: hotkeys-help-dialog-content-in 200ms ease-out both;
+	animation: hotkeys-help-dialog-content-in
+		var(--hotkeys-help-dialog-animation-duration) ease-out both;
 }
 
 [data-reach-dialog-content].hotkeys-help-dialog-content[data-animation-state='closed'] {
 	opacity: 0;
 	transform: translateY(10px) scale(0.98);
-	animation: hotkeys-help-dialog-content-out 200ms ease-in both;
+	animation: hotkeys-help-dialog-content-out
+		var(--hotkeys-help-dialog-animation-duration) ease-in both;
 }
 
 @keyframes hotkeys-help-dialog-overlay-in {
