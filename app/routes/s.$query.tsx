@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs, redirect } from '@remix-run/node'
+import { type LoaderFunctionArgs, redirect } from 'react-router';
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
 	const q = typeof params.query === 'string' ? params.query.trim() : ''

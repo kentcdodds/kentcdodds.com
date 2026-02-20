@@ -1,12 +1,6 @@
-import {
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
-	json,
-	redirect,
-} from '@remix-run/node'
-import { Form, useActionData, useLoaderData } from '@remix-run/react'
 import { clsx } from 'clsx'
 import * as React from 'react'
+import { type ActionFunctionArgs, type LoaderFunctionArgs, data as json, redirect, Form, useActionData, useLoaderData  } from 'react-router';
 import { Button } from '#app/components/button.tsx'
 import { Field, InputError } from '#app/components/form-elements.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -295,10 +289,12 @@ export default function NewAccount() {
 				<Form
 					method="POST"
 					onChange={(event) => {
-						const form = event.currentTarget
+						const formData = new FormData(event.currentTarget)
+						const firstName = formData.get('firstName')
+						const team = formData.get('team')
 						setFormValues({
-							firstName: form.firstName.value,
-							team: form.team.value,
+							firstName: typeof firstName === 'string' ? firstName : '',
+							team: typeof team === 'string' ? (team as Team) : undefined,
 						})
 					}}
 				>
@@ -370,9 +366,7 @@ export default function NewAccount() {
 						</div>
 
 						<div className="col-span-full">
-							<Button type="submit" disabled={!formIsValid}>
-								{`Create account`}
-							</Button>
+							<Button type="submit">{`Create account`}</Button>
 						</div>
 						<p className="text-primary col-span-4 mt-10 text-xs font-medium tracking-wider">
 							{`

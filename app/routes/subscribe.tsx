@@ -1,9 +1,4 @@
-import {
-	type LoaderFunctionArgs,
-	json,
-	type MetaFunction,
-} from '@remix-run/node'
-import { Link, useLoaderData } from '@remix-run/react'
+import { type LoaderFunctionArgs, data as json, type MetaFunction, Link, useLoaderData  } from 'react-router';
 import { ButtonLink } from '#app/components/button.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { MailIcon } from '#app/components/icons.tsx'

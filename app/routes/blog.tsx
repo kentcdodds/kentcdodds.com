@@ -1,15 +1,12 @@
 import { MixedCheckbox } from '@reach/checkbox'
-import {
-	type LoaderFunctionArgs,
-	json,
-	type HeadersFunction,
-	type LinksFunction,
-	type MetaFunction,
-	type SerializeFrom,
-} from '@remix-run/node'
-import { Link, useLoaderData, useSearchParams } from '@remix-run/react'
 import { clsx } from 'clsx'
 import * as React from 'react'
+import { Link, useLoaderData, useSearchParams,
+    type LoaderFunctionArgs,
+    data as json,
+    type HeadersFunction,
+    type LinksFunction,
+    type MetaFunction } from 'react-router';
 import { ArrowLink } from '#app/components/arrow-button.tsx'
 import { ArticleCard } from '#app/components/article-card.tsx'
 import { Button } from '#app/components/button.tsx'
@@ -53,6 +50,7 @@ import {
 	useCapturedRouteError,
 } from '#app/utils/misc.tsx'
 import { getSocialMetas } from '#app/utils/seo.ts'
+import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { useTeam } from '#app/utils/team-provider.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
@@ -364,7 +362,7 @@ function BlogHome() {
 				: `${q} ${tag}`
 
 			// trim and remove subsequent spaces (`react   node ` => `react node`)
-			return newQuery.replace(/\s+/g, ' ').trim()
+			return newQuery.replace(/\s+/g, ' ').trim();
 		})
 	}
 

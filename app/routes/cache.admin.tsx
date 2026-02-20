@@ -1,15 +1,4 @@
-import {
-	type ActionFunctionArgs,
-	json,
-	type LoaderFunctionArgs,
-} from '@remix-run/node'
-import {
-	Form,
-	useFetcher,
-	useLoaderData,
-	useSearchParams,
-	useSubmit,
-} from '@remix-run/react'
+import { type ActionFunctionArgs, data as json, type LoaderFunctionArgs, Form, useFetcher, useLoaderData, useSearchParams, useSubmit  } from 'react-router';
 import invariant from 'tiny-invariant'
 import { Button } from '#app/components/button.tsx'
 import {
@@ -97,7 +86,7 @@ export default function CacheAdminRoute() {
 	const instance = searchParams.get('instance') ?? data.instance
 
 	const handleFormChange = useDebounce((form: HTMLFormElement) => {
-		submit(form)
+		void submit(form)
 	}, 400)
 
 	return (

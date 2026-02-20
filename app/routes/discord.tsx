@@ -5,14 +5,8 @@ import {
 	AccordionPanel,
 	useAccordionItemContext,
 } from '@reach/accordion'
-import {
-	json,
-	type HeadersFunction,
-	type LoaderFunctionArgs,
-	type MetaFunction,
-} from '@remix-run/node'
-import { Outlet, useLoaderData } from '@remix-run/react'
 import { motion } from 'framer-motion'
+import { data as json, type HeadersFunction, type LoaderFunctionArgs, type MetaFunction, Outlet, useLoaderData  } from 'react-router';
 import { ButtonLink } from '#app/components/button.tsx'
 import { FeatureCard } from '#app/components/feature-card.tsx'
 import { Grid } from '#app/components/grid.tsx'

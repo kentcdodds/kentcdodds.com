@@ -1,30 +1,27 @@
-import {
-	json,
-	type LoaderFunctionArgs,
-	type HeadersFunction,
-	type LinksFunction,
-	type MetaFunction,
-} from '@remix-run/node'
 
-import {
-	isRouteErrorResponse,
-	Link,
-	Links,
-	Meta,
-	Outlet,
-	Scripts,
-	ScrollRestoration,
-	useLoaderData,
-	useLocation,
-	useNavigation,
-} from '@remix-run/react'
-import { withSentry } from '@sentry/remix'
 import { HotkeysProvider } from '@tanstack/react-hotkeys'
 
 import { clsx } from 'clsx'
 import { isFuture } from 'date-fns'
 import { AnimatePresence, motion } from 'framer-motion'
 import * as React from 'react'
+import {
+    isRouteErrorResponse,
+    Link,
+    Links,
+    Meta,
+    Outlet,
+    Scripts,
+    ScrollRestoration,
+    useLoaderData,
+    useLocation,
+    useNavigation,
+    data as json,
+    type LoaderFunctionArgs,
+    type HeadersFunction,
+    type LinksFunction,
+    type MetaFunction
+} from 'react-router';
 import { useSpinDelay } from 'spin-delay'
 import { type KCDHandle } from '#app/types.ts'
 import { getInstanceInfo } from '#app/utils/litefs-js.server.ts'
@@ -51,7 +48,7 @@ import { getGenericSocialImage, illustrationImages, images } from './images.tsx'
 import {
 	Promotification,
 	getPromoCookieValue,
-} from './routes/resources+/promotification.tsx'
+} from './routes/resources/promotification.tsx'
 import appStyles from './styles/app.css?url'
 import noScriptStyles from './styles/no-script.css?url'
 import proseStyles from './styles/prose.css?url'
@@ -643,7 +640,7 @@ function AppWithProviders() {
 		</TeamProvider>
 	)
 }
-export default withSentry(AppWithProviders)
+export default AppWithProviders
 
 function ErrorDoc({ children }: { children: React.ReactNode }) {
 	const nonce = useNonce()

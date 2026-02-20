@@ -12,7 +12,7 @@ import {
 } from '@epic-web/cachified'
 import { remember } from '@epic-web/remember'
 import { LRUCache } from 'lru-cache'
-import { updatePrimaryCacheValue } from '#app/routes/resources+/cache.sqlite.ts'
+import { updatePrimaryCacheValue } from '#app/routes/resources/cache.sqlite.ts'
 import { getInstanceInfo, getInstanceInfoSync } from './litefs-js.server.js'
 import { getRequiredServerEnvVar } from './misc.tsx'
 import { getUser } from './session.server.ts'

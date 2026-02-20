@@ -1,5 +1,5 @@
 import { nodeProfilingIntegration } from '@sentry/profiling-node'
-import Sentry from '@sentry/remix'
+import * as Sentry from '@sentry/react-router'
 import { isModernBrowserByUA } from './browser-support.js'
 
 export function init() {

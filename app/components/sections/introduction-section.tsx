@@ -1,4 +1,4 @@
-import { Link, useSearchParams } from '@remix-run/react'
+import { Link, useSearchParams } from 'react-router';
 import { getImgProps, images } from '#app/images.tsx'
 import { ArrowLink } from '../arrow-button.tsx'
 import {

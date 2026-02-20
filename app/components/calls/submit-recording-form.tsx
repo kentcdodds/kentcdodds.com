@@ -1,5 +1,5 @@
-import { useNavigate } from '@remix-run/react'
 import * as React from 'react'
+import { useNavigate } from 'react-router';
 import { useRootData } from '#app/utils/use-root-data.ts'
 import { Button } from '../button.tsx'
 import { Field } from '../form-elements.tsx'
@@ -82,7 +82,7 @@ function RecordingForm({
 
 						if (response.redirected) {
 							const redirectUrl = new URL(response.url)
-							navigate(`${redirectUrl.pathname}${redirectUrl.search}`)
+							void navigate(`${redirectUrl.pathname}${redirectUrl.search}`)
 							return
 						}
 

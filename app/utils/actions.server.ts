@@ -1,6 +1,11 @@
-import { type TypedResponse, json } from '@remix-run/node'
+import {
+	type UNSAFE_DataWithResponseInit as DataWithResponseInit,
+	data as json,
+} from 'react-router'
 import { type NonNullProperties } from '#app/types.ts'
 import { getErrorMessage, getNonNull } from './misc.tsx'
+
+type TypedResponse<T> = DataWithResponseInit<T> | Response
 
 type ErrorMessage = string
 type NoError = null
@@ -42,8 +47,18 @@ async function handleFormSubmission<
 )): Promise<TypedResponse<ActionData>> {
 	try {
 		if (!form) {
-			const requestText = await request!.text()
-			form = new URLSearchParams(requestText)
+			try {
+				const formData = await request!.formData()
+				form = new URLSearchParams()
+				for (const [key, value] of formData.entries()) {
+					if (typeof value === 'string') {
+						form.append(key, value)
+					}
+				}
+			} catch {
+				const requestText = await request!.text()
+				form = new URLSearchParams(requestText)
+			}
 		}
 
 		// collect all values first because validators can reference them

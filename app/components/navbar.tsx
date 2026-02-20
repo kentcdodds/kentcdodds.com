@@ -1,10 +1,10 @@
 import './navbar.css'
-import { Link, useFetcher, useLocation, useNavigate } from '@remix-run/react'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { clsx } from 'clsx'
 import { useCombobox } from 'downshift'
 import { motion, useAnimation, useReducedMotion } from 'framer-motion'
 import * as React from 'react'
+import { Link, useFetcher, useLocation, useNavigate } from 'react-router';
 import { kodyProfiles } from '#app/images.tsx'
 import { HOTKEY_OPEN_SEARCH } from '#app/utils/hotkeys.ts'
 import { type OptionalTeam, useDebounce } from '#app/utils/misc.tsx'
@@ -203,7 +203,7 @@ function NavSearch({
 	const shouldReduceMotion = useReducedMotion()
 
 	const debouncedLoadSuggestions = useDebounce((nextQuery: string) => {
-		fetcher.load(
+		void fetcher.load(
 			`/resources/search?query=${encodeURIComponent(nextQuery.trim())}`,
 		)
 	}, 200)
@@ -234,7 +234,7 @@ function NavSearch({
 	function navigateToSearch(nextQuery: string) {
 		const q = nextQuery.trim()
 		if (!q) return
-		navigate(`/search?q=${encodeURIComponent(q)}`)
+		void navigate(`/search?q=${encodeURIComponent(q)}`)
 		close({ focusIcon: false })
 	}
 
@@ -243,7 +243,7 @@ function NavSearch({
 			const u = new URL(url, window.location.origin)
 			const isSameOrigin = u.origin === window.location.origin
 			if (isSameOrigin) {
-				navigate(`${u.pathname}${u.search}${u.hash}`)
+				void navigate(`${u.pathname}${u.search}${u.hash}`)
 			} else {
 				window.location.assign(url)
 			}
@@ -835,7 +835,7 @@ function Navbar() {
 		if (!canUseNavbarSearch) {
 			// On smaller screens the navbar search UI is hidden, so we navigate to the
 			// dedicated search page instead.
-			navigate('/search')
+			void navigate('/search')
 			return
 		}
 
@@ -868,16 +868,17 @@ function Navbar() {
 		[openSearch],
 	)
 
-	useHotkey(
-		HOTKEY_OPEN_SEARCH.modShiftP,
-		openSearchFromModShiftP,
-		{
-			...searchHotkeyModifierOptions,
-			// `preventDefault: true` happens before our callback, which would prevent
-			// the browser/devtools shortcut even when we intentionally return early.
-			preventDefault: false,
-		},
-	)
+	React.useLayoutEffect(() => {
+		const onKeyDown = (event: KeyboardEvent) => {
+			const isMod = event.metaKey || event.ctrlKey
+			if (!isMod || !event.shiftKey) return
+			if (event.key.toLowerCase() !== 'p') return
+			openSearchFromModShiftP(event)
+		}
+
+		document.addEventListener('keydown', onKeyDown)
+		return () => document.removeEventListener('keydown', onKeyDown)
+	}, [openSearchFromModShiftP])
 
 	return (
 		<div className="px-5vw relative overflow-visible py-9 lg:py-12">

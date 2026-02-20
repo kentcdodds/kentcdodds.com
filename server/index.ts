@@ -3,12 +3,11 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { createRequestHandler, type RequestHandler } from '@remix-run/express'
-import { installGlobals, type ServerBuild } from '@remix-run/node'
+import { createRequestHandler, type RequestHandler } from '@react-router/express'
 import {
 	init as sentryInit,
 	setContext as sentrySetContext,
-} from '@sentry/remix'
+} from '@sentry/react-router'
 import { ip as ipAddress } from 'address'
 import chalk from 'chalk'
 import closeWithGrace from 'close-with-grace'
@@ -18,6 +17,7 @@ import getPort, { portNumbers } from 'get-port'
 import helmet from 'helmet'
 import morgan from 'morgan'
 import onFinished from 'on-finished'
+import { type ServerBuild } from 'react-router'
 import serverTiming from 'server-timing'
 import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
@@ -30,7 +30,6 @@ import {
 import { registerStartupShortcuts } from './startup-shortcuts.js'
 
 sourceMapSupport.install()
-installGlobals()
 
 const viteDevServer =
 	process.env.NODE_ENV === 'production'
@@ -42,11 +41,17 @@ const viteDevServer =
 			)
 
 const getBuild = async (): Promise<ServerBuild> => {
+	const allowedActionOrigins = ['**']
+
 	if (viteDevServer) {
-		return viteDevServer.ssrLoadModule('virtual:remix/server-build') as any
+		const build = (await viteDevServer.ssrLoadModule(
+			'virtual:react-router/server-build',
+		)) as any
+		return { ...build, allowedActionOrigins }
 	}
 	// @ts-ignore (this file may or may not exist yet)
-	return import('../build/server/index.js') as Promise<ServerBuild>
+	const build = (await import('../build/server/index.js')) as any
+	return { ...build, allowedActionOrigins }
 }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))

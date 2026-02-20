@@ -1,11 +1,10 @@
 import {
-	json,
-	type HeadersFunction,
-	type LinksFunction,
-	type LoaderFunctionArgs,
-	type MetaFunction,
-} from '@remix-run/node'
-import { useLoaderData, useSearchParams } from '@remix-run/react'
+    data as json,
+    type HeadersFunction,
+    type LinksFunction,
+    type LoaderFunctionArgs,
+    type MetaFunction, useLoaderData, useSearchParams 
+} from 'react-router';
 import { ArrowLink } from '#app/components/arrow-button.tsx'
 import { FeatureCard } from '#app/components/feature-card.tsx'
 import {

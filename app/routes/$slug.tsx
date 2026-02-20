@@ -1,10 +1,5 @@
-import {
-	type LoaderFunctionArgs,
-	json,
-	type HeadersFunction,
-} from '@remix-run/node'
-import { useLoaderData } from '@remix-run/react'
 import * as React from 'react'
+import { type LoaderFunctionArgs, data as json, type HeadersFunction, useLoaderData  } from 'react-router';
 import { serverOnly$ } from 'vite-env-only/macros'
 import { BackLink } from '#app/components/arrow-button.tsx'
 import { BlurrableImage } from '#app/components/blurrable-image.tsx'

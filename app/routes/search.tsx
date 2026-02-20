@@ -1,12 +1,5 @@
-import { type LoaderFunctionArgs, defer } from '@remix-run/node'
-import {
-	Await,
-	Link,
-	useAsyncError,
-	useFetcher,
-	useLoaderData,
-} from '@remix-run/react'
 import React, { Suspense } from 'react'
+import { type LoaderFunctionArgs, data as defer, Await, Link, useAsyncError, useFetcher, useLoaderData  } from 'react-router';
 import {
 	ErrorPanel,
 	Input,
@@ -115,7 +108,7 @@ export default function SearchPage() {
 		if (!nextQuery) return
 		// If the loader already fetched this query (e.g. initial page load), reuse it.
 		if (nextQuery === loaderData.q) return
-		load(`/search?q=${encodeURIComponent(nextQuery)}`)
+		void load(`/search?q=${encodeURIComponent(nextQuery)}`)
 	}, 250)
 
 	React.useEffect(() => {
@@ -169,7 +162,7 @@ export default function SearchPage() {
 							if (trimmedQuery === requestedQuery) return
 							setRequestedQuery(trimmedQuery)
 							if (trimmedQuery === loaderData.q) return
-							load(`/search?q=${encodeURIComponent(trimmedQuery)}`)
+							void load(`/search?q=${encodeURIComponent(trimmedQuery)}`)
 						}}
 					>
 						<div className="relative">

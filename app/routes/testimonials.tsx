@@ -1,10 +1,4 @@
-import {
-	type LoaderFunctionArgs,
-	json,
-	type HeadersFunction,
-	type MetaFunction,
-} from '@remix-run/node'
-import { useLoaderData } from '@remix-run/react'
+import { type LoaderFunctionArgs, data as json, type HeadersFunction, type MetaFunction, useLoaderData  } from 'react-router';
 import { ArrowLink } from '#app/components/arrow-button.tsx'
 import { ButtonLink } from '#app/components/button.tsx'
 import { Grid } from '#app/components/grid.tsx'

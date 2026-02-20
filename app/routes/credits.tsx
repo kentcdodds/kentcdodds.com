@@ -1,12 +1,9 @@
-import {
-	type SerializeFrom,
-	json,
-	type HeadersFunction,
-	type LoaderFunctionArgs,
-	type MetaFunction,
-} from '@remix-run/node'
-import { useLoaderData } from '@remix-run/react'
 import * as React from 'react'
+import { useLoaderData,
+    data as json,
+    type HeadersFunction,
+    type LoaderFunctionArgs,
+    type MetaFunction } from 'react-router';
 import { Grid } from '#app/components/grid.tsx'
 import {
 	BehanceIcon,
@@ -42,6 +39,7 @@ import {
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc.tsx'
 import { getSocialMetas } from '#app/utils/seo.ts'
+import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const people = await getPeople({ request })

@@ -1,9 +1,4 @@
-import {
-	json,
-	type HeadersFunction,
-	type LoaderFunctionArgs,
-} from '@remix-run/node'
-import { useLoaderData } from '@remix-run/react'
+import { data as json, type HeadersFunction, type LoaderFunctionArgs, useLoaderData  } from 'react-router';
 import { ButtonLink } from '#app/components/button.tsx'
 import { ServerError } from '#app/components/errors.tsx'
 import { AboutSection } from '#app/components/sections/about-section.tsx'

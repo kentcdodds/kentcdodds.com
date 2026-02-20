@@ -1,4 +1,4 @@
-import { Link } from '@remix-run/react'
+import { Link } from 'react-router';
 import { type Workshop } from '#app/types.ts'
 import { type WorkshopEvent } from '#app/utils/workshop-tickets.server.ts'
 import { Spacer } from './spacer.tsx'

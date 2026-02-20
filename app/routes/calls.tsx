@@ -1,20 +1,11 @@
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@reach/tabs'
-import {
-	type SerializeFrom,
-	json,
-	type HeadersFunction,
-	type LoaderFunctionArgs,
-	type MetaFunction,
-} from '@remix-run/node'
-import {
-	Link,
-	Outlet,
-	useLoaderData,
-	useMatches,
-	useNavigate,
-} from '@remix-run/react'
 import { clsx } from 'clsx'
 import * as React from 'react'
+import { Link, Outlet, useLoaderData, useMatches, useNavigate,
+    data as json,
+    type HeadersFunction,
+    type LoaderFunctionArgs,
+    type MetaFunction } from 'react-router';
 import { ButtonLink } from '#app/components/button.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { ChevronDownIcon, ChevronUpIcon } from '#app/components/icons.tsx'
@@ -45,6 +36,7 @@ import {
 	useMatchLoaderData,
 } from '#app/utils/providers.tsx'
 import { getSocialMetas } from '#app/utils/seo.ts'
+import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { getEpisodes } from '#app/utils/transistor.server.ts'
 
@@ -157,7 +149,7 @@ export default function CallHomeScreen() {
 	function handleTabChange(index: number) {
 		const chosenSeason = seasons[index]
 		if (chosenSeason) {
-			navigate(String(chosenSeason.seasonNumber).padStart(2, '0'), {
+			void navigate(String(chosenSeason.seasonNumber).padStart(2, '0'), {
 				preventScrollReset: true,
 			})
 		}

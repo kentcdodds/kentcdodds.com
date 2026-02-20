@@ -1,12 +1,6 @@
-import {
-	json,
-	type LinksFunction,
-	type LoaderFunctionArgs,
-	type MetaFunction,
-} from '@remix-run/node'
-import { Link, useLoaderData, useSearchParams } from '@remix-run/react'
+import { data as json, type LinksFunction, type LoaderFunctionArgs, type MetaFunction, Link, useLoaderData, useSearchParams  } from 'react-router';
+import resumeStyles from '#app/styles/resume.css?url'
 import { getResumeData, type ResumeData } from '#app/utils/resume.server.ts'
-import resumeStyles from './resume.css?url'
 
 export const meta: MetaFunction = () => [
 	{ title: `Kent C. Dodds' Resume` },

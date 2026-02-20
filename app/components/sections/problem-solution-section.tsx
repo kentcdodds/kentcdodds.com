@@ -6,10 +6,10 @@ import {
 	Tabs,
 	type TabProps,
 } from '@reach/tabs'
-import { Link } from '@remix-run/react'
 import { differenceInYears } from 'date-fns'
 import { AnimatePresence, motion } from 'framer-motion'
 import * as React from 'react'
+import { Link } from 'react-router';
 import { getImgProps, images, type ImageBuilder } from '#app/images.tsx'
 import { type Team } from '#app/types.ts'
 import { teamTextColorClasses } from '#app/utils/misc.tsx'

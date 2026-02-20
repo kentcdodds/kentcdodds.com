@@ -1,4 +1,4 @@
-import { json } from '@remix-run/node'
+import { data as json } from 'react-router';
 import { getErrorMessage } from '#app/utils/misc.tsx'
 import { deleteKitCache } from '#app/utils/user-info.server.ts'
 import * as ck from './kit.server.ts'

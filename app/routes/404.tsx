@@ -1,4 +1,4 @@
-import { type MetaFunction } from '@remix-run/node'
+import { type MetaFunction } from 'react-router';
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { images } from '#app/images.tsx'
 import { type KCDHandle } from '#app/types.ts'

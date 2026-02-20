@@ -1,6 +1,4 @@
-import { type HeadersFunction } from '@remix-run/node'
-import { Link, useRouteError, type LinkProps } from '@remix-run/react'
-import { captureRemixErrorBoundaryError } from '@sentry/remix'
+import * as Sentry from '@sentry/react-router'
 import {
 	format as dateFormat,
 	add as dateAdd,
@@ -8,6 +6,12 @@ import {
 } from 'date-fns'
 import md5 from 'md5-hash'
 import * as React from 'react'
+import {
+	Link,
+	isRouteErrorResponse,
+	useRouteError,
+	type LinkProps, type HeadersFunction 
+} from 'react-router'
 import {
 	type NonNullProperties,
 	type OptionalTeam,
@@ -279,7 +283,7 @@ function removeTrailingSlash(s: string) {
 }
 
 function getDisplayUrl(requestInfo?: { origin: string; path: string }) {
-	return getUrl(requestInfo).replace(/^https?:\/\//, '')
+	return getUrl(requestInfo).replace(/^https?:\/\//, '');
 }
 
 function getOrigin(requestInfo?: { origin?: string; path: string }) {
@@ -471,7 +475,9 @@ export function invariantResponse(
 
 export function useCapturedRouteError() {
 	const error = useRouteError()
-	captureRemixErrorBoundaryError(error)
+	if (!isRouteErrorResponse(error) || error.status >= 500) {
+		Sentry.captureException(error)
+	}
 	return error
 }
 

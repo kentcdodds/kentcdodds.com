@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs, redirect } from '@remix-run/node'
+import { type LoaderFunctionArgs, redirect } from 'react-router';
 import { type KCDHandle } from '#app/types.ts'
 
 import { getClientSession } from '#app/utils/client.server.ts'

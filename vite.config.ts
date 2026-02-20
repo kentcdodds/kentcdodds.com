@@ -1,9 +1,8 @@
 import 'dotenv/config'
-import { vitePlugin as remix } from '@remix-run/dev'
+import { reactRouter } from '@react-router/dev/vite'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 import tailwindcss from '@tailwindcss/vite'
 import { glob } from 'glob'
-import { flatRoutes } from 'remix-flat-routes'
 import { defineConfig } from 'vite'
 import { envOnlyMacros } from 'vite-env-only'
 import { cjsInterop } from 'vite-plugin-cjs-interop'
@@ -23,19 +22,7 @@ export default defineConfig(async () => {
 			}),
 			envOnlyMacros(),
 			tailwindcss(),
-			remix({
-				ignoredRouteFiles: ['**/*'],
-				routes: async (defineRoutes) => {
-					return flatRoutes('routes', defineRoutes, {
-						ignoredRouteFiles: [
-							'.*',
-							'**/*.css',
-							'**/*.test.{js,jsx,ts,tsx}',
-							'**/__*.*',
-						],
-					})
-				},
-			}),
+			reactRouter(),
 			tsconfigPaths(),
 			process.env.SENTRY_UPLOAD
 				? sentryVitePlugin({

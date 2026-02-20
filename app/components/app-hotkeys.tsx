@@ -1,6 +1,6 @@
-import { useLocation, useNavigate } from '@remix-run/react'
 import { useHotkey, useHotkeySequence } from '@tanstack/react-hotkeys'
 import * as React from 'react'
+import { useLocation, useNavigate } from 'react-router';
 import {
 	HOTKEY_GOTO_ABOUT,
 	HOTKEY_GOTO_BLOG,
@@ -47,7 +47,7 @@ function AppHotkeys() {
 		HOTKEY_GOTO_HOME,
 		() => {
 			setDialogOpen(false)
-			navigate('/')
+			void navigate('/')
 		},
 		navSequenceOptions,
 	)
@@ -56,7 +56,7 @@ function AppHotkeys() {
 		HOTKEY_GOTO_BLOG,
 		() => {
 			setDialogOpen(false)
-			navigate('/blog')
+			void navigate('/blog')
 		},
 		navSequenceOptions,
 	)
@@ -65,7 +65,7 @@ function AppHotkeys() {
 		HOTKEY_GOTO_COURSES,
 		() => {
 			setDialogOpen(false)
-			navigate('/courses')
+			void navigate('/courses')
 		},
 		navSequenceOptions,
 	)
@@ -74,7 +74,7 @@ function AppHotkeys() {
 		HOTKEY_GOTO_DISCORD,
 		() => {
 			setDialogOpen(false)
-			navigate('/discord')
+			void navigate('/discord')
 		},
 		navSequenceOptions,
 	)
@@ -83,7 +83,7 @@ function AppHotkeys() {
 		HOTKEY_GOTO_WORKSHOPS,
 		() => {
 			setDialogOpen(false)
-			navigate('/workshops')
+			void navigate('/workshops')
 		},
 		navSequenceOptions,
 	)
@@ -92,7 +92,7 @@ function AppHotkeys() {
 		HOTKEY_GOTO_ABOUT,
 		() => {
 			setDialogOpen(false)
-			navigate('/about')
+			void navigate('/about')
 		},
 		navSequenceOptions,
 	)
@@ -101,7 +101,7 @@ function AppHotkeys() {
 		HOTKEY_GOTO_TALKS,
 		() => {
 			setDialogOpen(false)
-			navigate('/talks')
+			void navigate('/talks')
 		},
 		navSequenceOptions,
 	)
@@ -110,7 +110,7 @@ function AppHotkeys() {
 		HOTKEY_GOTO_SEARCH,
 		() => {
 			setDialogOpen(false)
-			navigate('/search')
+			void navigate('/search')
 		},
 		navSequenceOptions,
 	)

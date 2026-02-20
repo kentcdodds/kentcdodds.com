@@ -1,7 +1,6 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import { useLoaderData, Form, useRevalidator } from '@remix-run/react'
 import { startRegistration } from '@simplewebauthn/browser'
 import { type PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/server'
+import { data as json, type LoaderFunctionArgs, useLoaderData, Form, useRevalidator  } from 'react-router';
 import { z } from 'zod'
 import { Button } from '#app/components/button.tsx'
 import { prisma } from '#app/utils/prisma.server.ts'
@@ -92,7 +91,7 @@ export default function PasskeysRoute() {
 				throw new Error('Failed to verify registration')
 			}
 
-			revalidator.revalidate()
+			void revalidator.revalidate()
 		} catch (err) {
 			console.error('Failed to create passkey:', err)
 			alert('Failed to create passkey. Please try again.')

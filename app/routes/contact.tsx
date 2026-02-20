@@ -1,10 +1,4 @@
-import {
-	type ActionFunctionArgs,
-	json,
-	type HeadersFunction,
-	type MetaFunction,
-} from '@remix-run/node'
-import { Link, useFetcher } from '@remix-run/react'
+import { type ActionFunctionArgs, data as json, type HeadersFunction, type MetaFunction, Link, useFetcher  } from 'react-router';
 import { Button } from '#app/components/button.tsx'
 import {
 	ButtonGroup,
@@ -107,14 +101,20 @@ export const meta: MetaFunction<{}, { root: RootLoaderType }> = ({
 export default function ContactRoute() {
 	const contactFetcher = useFetcher<typeof action>()
 	const { user } = useRootData()
-
-	const isDone = contactFetcher.state === 'idle' && contactFetcher.data != null
-	const emailSuccessfullySent =
-		isDone && (contactFetcher.data as ActionData).status === 'success'
+	const rawFetcherData = contactFetcher.data as
+		| ActionData
+		| { data: ActionData }
+		| undefined
+	const actionData =
+		rawFetcherData && typeof rawFetcherData === 'object' && 'data' in rawFetcherData
+			? rawFetcherData.data
+			: rawFetcherData
+	const isDone = contactFetcher.state === 'idle' && actionData != null
+	const emailSuccessfullySent = isDone && actionData.status === 'success'
 
 	return (
-		<div>
-			<HeroSection
+        (<div>
+            <HeroSection
 				title="Send me an email."
 				subtitle="Like in the old days."
 				image={
@@ -126,8 +126,7 @@ export default function ContactRoute() {
 					/>
 				}
 			/>
-
-			<main>
+            <main>
 				<contactFetcher.Form
 					method="POST"
 					noValidate
@@ -176,8 +175,8 @@ export default function ContactRoute() {
 										name="subject"
 										label="Subject"
 										placeholder="No subject"
-										defaultValue={contactFetcher.data?.fields.subject ?? ''}
-										error={contactFetcher.data?.errors.subject}
+										defaultValue={actionData?.fields.subject ?? ''}
+										error={actionData?.errors.subject}
 									/>
 									<Field
 										name="body"
@@ -185,28 +184,28 @@ export default function ContactRoute() {
 										type="textarea"
 										placeholder="A clear and concise message works wonders."
 										rows={8}
-										defaultValue={contactFetcher.data?.fields.body ?? ''}
-										error={contactFetcher.data?.errors.body}
+										defaultValue={actionData?.fields.body ?? ''}
+										error={actionData?.errors.body}
 									/>
 									{emailSuccessfullySent ? (
 										`Hooray, email sent! 🎉`
 									) : (
 										// IDEA: show a loading state here
-										<ButtonGroup>
-											<Button
+										(<ButtonGroup>
+                                            <Button
 												type="submit"
 												disabled={contactFetcher.state !== 'idle'}
 											>
 												Send message
 											</Button>
-											<Button variant="secondary" type="reset">
+                                            <Button variant="secondary" type="reset">
 												Reset form
 											</Button>
-										</ButtonGroup>
+                                        </ButtonGroup>)
 									)}
-									{contactFetcher.data?.errors.generalError ? (
+									{actionData?.errors.generalError ? (
 										<ErrorPanel id="contact-form-error">
-											{contactFetcher.data.errors.generalError}
+											{actionData.errors.generalError}
 										</ErrorPanel>
 									) : null}
 								</>
@@ -225,6 +224,6 @@ export default function ContactRoute() {
 					</Grid>
 				</contactFetcher.Form>
 			</main>
-		</div>
-	)
+        </div>)
+    );
 }

@@ -1,19 +1,7 @@
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@reach/tabs'
-import {
-	json,
-	type HeadersFunction,
-	type LoaderFunctionArgs,
-	type MetaFunction,
-} from '@remix-run/node'
-import {
-	Link,
-	Outlet,
-	useLoaderData,
-	useMatches,
-	useNavigate,
-} from '@remix-run/react'
 import { clsx } from 'clsx'
 import * as React from 'react'
+import { data as json, type HeadersFunction, type LoaderFunctionArgs, type MetaFunction, Link, Outlet, useLoaderData, useMatches, useNavigate  } from 'react-router';
 import { Grid } from '#app/components/grid.tsx'
 import { ChevronDownIcon, ChevronUpIcon } from '#app/components/icons.tsx'
 import { PodcastSubs } from '#app/components/podcast-subs.tsx'
@@ -123,7 +111,7 @@ function PodcastHome() {
 	function handleTabChange(index: number) {
 		const chosenSeason = data.seasons[index]
 		if (chosenSeason) {
-			navigate(String(chosenSeason.seasonNumber).padStart(2, '0'), {
+			void navigate(String(chosenSeason.seasonNumber).padStart(2, '0'), {
 				preventScrollReset: true,
 			})
 		}
