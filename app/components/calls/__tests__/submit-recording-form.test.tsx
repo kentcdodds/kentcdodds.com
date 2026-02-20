@@ -86,7 +86,7 @@ describe('RecordingForm', () => {
 		}
 	})
 
-	it('submits to resource route and navigates on redirect responses', async () => {
+	it('submits with manual redirects and navigates using Location header', async () => {
 		vi.clearAllMocks()
 		mockUseRootData.mockReturnValue({
 			requestInfo: { flyPrimaryInstance: 'primary-abc123' },
@@ -114,9 +114,12 @@ describe('RecordingForm', () => {
 		}
 
 		const fetchMock = vi.fn().mockResolvedValue({
-			ok: true,
-			redirected: true,
-			url: 'http://localhost/calls/record/fake-call-id?ok=1#done',
+			ok: false,
+			redirected: false,
+			url: 'http://localhost/resources/calls/save',
+			headers: new Headers({
+				Location: '/calls/record/fake-call-id?ok=1#done',
+			}),
 		} as Response)
 
 		vi.stubGlobal(
@@ -144,6 +147,7 @@ describe('RecordingForm', () => {
 			const [requestUrl, requestInit] = fetchMock.mock.calls[0] ?? []
 			expect(requestUrl).toBe('/resources/calls/save')
 			expect(requestInit?.method).toBe('POST')
+			expect(requestInit?.redirect).toBe('manual')
 			const requestHeaders = requestInit?.headers as Headers
 			expect(requestHeaders.get('Content-Type')).toContain(
 				'application/x-www-form-urlencoded',

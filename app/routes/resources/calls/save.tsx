@@ -14,6 +14,15 @@ import { type Route } from './+types/save'
 
 const recordingFormActionPath = '/resources/calls/save'
 
+function getNavigationPathFromRedirectResponse(response: Response) {
+	const redirectTarget =
+		response.headers.get('Location') ||
+		(response.redirected && response.url ? response.url : null)
+	if (!redirectTarget) return null
+	const redirectUrl = new URL(redirectTarget, window.location.origin)
+	return `${redirectUrl.pathname}${redirectUrl.search}${redirectUrl.hash}`
+}
+
 type RecordingFormData = {
 	fields: {
 		// audio is too big to include in the session
@@ -108,14 +117,13 @@ function RecordingForm({
 						method: 'POST',
 						body,
 						headers,
+						redirect: 'manual',
 						signal: abortController.signal,
 					})
 
-					if (response.redirected && response.url) {
-						const redirectUrl = new URL(response.url, window.location.origin)
-						await navigate(
-							`${redirectUrl.pathname}${redirectUrl.search}${redirectUrl.hash}`,
-						)
+					const redirectPath = getNavigationPathFromRedirectResponse(response)
+					if (redirectPath) {
+						await navigate(redirectPath)
 						return
 					}
 
