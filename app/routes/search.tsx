@@ -1,5 +1,12 @@
 import React, { Suspense } from 'react'
-import { data as defer, Await, Link, useAsyncError, useFetcher, useLoaderData } from 'react-router';
+import {
+	data as defer,
+	Await,
+	Link,
+	useAsyncError,
+	useFetcher,
+	useLoaderData,
+} from 'react-router'
 import {
 	ErrorPanel,
 	Input,
@@ -20,7 +27,7 @@ import {
 	semanticSearchKCD,
 	type SemanticSearchResult,
 } from '#app/utils/semantic-search.server.ts'
-import  { type Route } from './+types/search'
+import { type Route } from './+types/search'
 
 const semanticSearchNotConfiguredMessage =
 	'Semantic search is not configured on this environment yet. Try again later.'
@@ -148,7 +155,7 @@ export default function SearchPage() {
 		<div>
 			<HeroSection
 				title="Search"
-				subtitle="Semantic search across posts, pages, podcasts, talks, resume, credits, and testimonials."
+				subtitle="Semantic search across posts, pages, podcasts, talks, YouTube videos, resume, credits, and testimonials."
 				imageBuilder={images.kodyProfileGray}
 				action={
 					<fetcher.Form
@@ -198,7 +205,7 @@ export default function SearchPage() {
 				) : (
 					<div className="col-span-full">
 						<Paragraph textColorClassName="text-secondary">
-							{`Try a query like "react testing library" or "call kent authentication".`}
+							{`Try a query like "react testing library", "call kent authentication", or "youtube closure".`}
 						</Paragraph>
 					</div>
 				)}

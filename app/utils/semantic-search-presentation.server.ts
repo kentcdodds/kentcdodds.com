@@ -28,6 +28,8 @@ type ResultLike = {
 	title?: string
 	url?: string
 	snippet?: string
+	imageUrl?: string
+	imageAlt?: string
 }
 
 function normalizeText(value: string) {
@@ -91,6 +93,16 @@ function getFallbackPresentation(
 				resize: { type: 'pad', width: 96, height: 96 },
 			}),
 			imageAlt: images.kayak.alt,
+		}
+	}
+	if (type === 'youtube') {
+		return {
+			imageUrl: images.microphoneWithHands({
+				quality: 'auto',
+				format: 'auto',
+				resize: { type: 'fill', width: 96, height: 96 },
+			}),
+			imageAlt: images.microphoneWithHands.alt,
 		}
 	}
 	if (type === 'podcast') {
@@ -404,8 +416,8 @@ export async function getSemanticSearchPresentation(
 		: undefined
 	const base: SemanticSearchPresentation = {
 		summary: summaryFromSnippet,
-		imageUrl: fallbackImageUrl,
-		imageAlt: fallbackImageAlt,
+		imageUrl: result.imageUrl ?? fallbackImageUrl,
+		imageAlt: result.imageAlt ?? fallbackImageAlt,
 	}
 
 	const type = result.type
