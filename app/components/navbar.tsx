@@ -329,6 +329,23 @@ function NavSearch({
 	)
 
 	const showForm = isOpen || alwaysExpanded
+	const shouldShowSuggestions = inputValue.trim().length >= 2
+	const menuProps = getMenuProps(
+		{
+			'aria-label': 'Search suggestions',
+			className: clsx(
+				'rounded-2xl',
+				shouldShowSuggestions && suggestions.length
+					? 'bg-primary border-secondary max-h-96 overflow-x-hidden overflow-y-auto border shadow-lg'
+					: 'overflow-hidden border-0',
+			),
+		},
+		{
+			// When the compact icon-only state is rendered there is no menu element.
+			// We still call getMenuProps to satisfy Downshift without requiring a ref.
+			suppressRefError: !showForm,
+		},
+	)
 
 	return (
 		<div
@@ -518,18 +535,8 @@ function NavSearch({
 								{fetchError}
 							</div>
 						) : null}
-						<ul
-							{...getMenuProps({
-								'aria-label': 'Search suggestions',
-								className: clsx(
-									'rounded-2xl',
-									inputValue.trim().length >= 2 && suggestions.length
-										? 'bg-primary border-secondary max-h-96 overflow-x-hidden overflow-y-auto border shadow-lg'
-										: 'overflow-hidden border-0',
-								),
-							})}
-						>
-							{inputValue.trim().length >= 2 ? (
+						<ul {...menuProps}>
+							{shouldShowSuggestions ? (
 								<>
 									{isMenuOpen &&
 										suggestions.map((s, index) => (
