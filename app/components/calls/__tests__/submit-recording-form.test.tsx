@@ -93,7 +93,7 @@ describe('RecordingForm', () => {
 		let loadEndListener: (() => void) | null = null
 		const readAsDataURL = vi.fn(function (this: SuccessfulFileReader) {
 			this.result = 'data:audio/wav;base64,ZmFrZQ=='
-			loadEndListener?.(new ProgressEvent('loadend'))
+			loadEndListener?.()
 		})
 
 		class SuccessfulFileReader {
