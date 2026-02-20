@@ -155,6 +155,20 @@ light-mode {
 	background: transparent;
 }
 
+[data-reach-tab-list].space-x-8 {
+	column-gap: calc(var(--spacing, 0.25rem) * 8);
+}
+
+@media (width >= 1024px) {
+	[data-reach-tab-list].lg\:space-x-0 {
+		column-gap: 0;
+	}
+
+	[data-reach-tab-list].lg\:space-x-12 {
+		column-gap: calc(var(--spacing, 0.25rem) * 12);
+	}
+}
+
 [data-reach-tab].border-none {
 	border: 0;
 }
