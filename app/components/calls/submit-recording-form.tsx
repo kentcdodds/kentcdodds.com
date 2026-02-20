@@ -35,12 +35,16 @@ function RecordingForm({
 		requestInfo: { flyPrimaryInstance },
 	} = useRootData()
 	const audioURL = React.useMemo(() => {
-		return window.URL.createObjectURL(audio)
+		return URL.createObjectURL(audio)
 	}, [audio])
 	const [submissionData, setSubmissionData] = React.useState(data)
 	const [isSubmitting, setIsSubmitting] = React.useState(false)
 	const [requestError, setRequestError] = React.useState<string | null>(null)
 	const abortControllerRef = React.useRef<AbortController | null>(null)
+
+	React.useEffect(() => {
+		return () => URL.revokeObjectURL(audioURL)
+	}, [audioURL])
 
 	React.useEffect(() => {
 		setSubmissionData(data)

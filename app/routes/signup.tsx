@@ -291,9 +291,11 @@ export default function NewAccount() {
 						const formData = new FormData(event.currentTarget)
 						const firstName = formData.get('firstName')
 						const team = formData.get('team')
+						const selectedTeam =
+							typeof team === 'string' && isTeam(team) ? team : undefined
 						setFormValues({
 							firstName: typeof firstName === 'string' ? firstName : '',
-							team: typeof team === 'string' ? (team as Team) : undefined,
+							team: selectedTeam,
 						})
 					}}
 				>

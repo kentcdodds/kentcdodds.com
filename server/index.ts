@@ -40,8 +40,31 @@ const viteDevServer =
 				}),
 			)
 
+function getAllowedActionOrigins() {
+	const configuredOrigins =
+		process.env.ALLOWED_ACTION_ORIGINS
+			?.split(',')
+			.map((origin) => origin.trim())
+			.filter(Boolean) ?? []
+
+	if (configuredOrigins.length > 0) {
+		return configuredOrigins
+	}
+
+	if (process.env.NODE_ENV !== 'production') {
+		return ['**']
+	}
+
+	const productionOrigins = ['kentcdodds.com', '*.kentcdodds.com']
+	if (process.env.FLY_APP_NAME) {
+		productionOrigins.push(`${process.env.FLY_APP_NAME}.fly.dev`)
+	}
+
+	return productionOrigins
+}
+
 const getBuild = async (): Promise<ServerBuild> => {
-	const allowedActionOrigins = ['**']
+	const allowedActionOrigins = getAllowedActionOrigins()
 
 	if (viteDevServer) {
 		const build = (await viteDevServer.ssrLoadModule(

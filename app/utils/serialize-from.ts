@@ -1,8 +1,12 @@
-import { type UNSAFE_DataWithResponseInit as DataWithResponseInit } from 'react-router'
+type DataWithResponseInitLike<Data> = {
+	data: Data
+	init: ResponseInit | null
+	type: string
+}
 
 type SerializeResult<Result> = Result extends Response
 	? never
-	: Result extends DataWithResponseInit<infer Data>
+	: Result extends DataWithResponseInitLike<infer Data>
 		? Data
 		: Result
 
