@@ -23,7 +23,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	return json({ passkeys })
 }
 
-export async function action({ request }: Route.LoaderArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const user = await requireUser(request)
 	const formData = await request.formData()
 	const intent = formData.get('intent')

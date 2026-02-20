@@ -64,6 +64,19 @@ async function decodeSingleFetchResponse(
 		return { type: 'error', error: resultRecord.error }
 	}
 
+	for (const routeResult of Object.values(resultRecord)) {
+		if (!routeResult || typeof routeResult !== 'object') {
+			continue
+		}
+		const routeRecord = routeResult as Record<string, unknown>
+		if ('data' in routeRecord) {
+			return { type: 'data', data: routeRecord.data }
+		}
+		if ('error' in routeRecord) {
+			return { type: 'error', error: routeRecord.error }
+		}
+	}
+
 	return { type: 'unknown' }
 }
 
