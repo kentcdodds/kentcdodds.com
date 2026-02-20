@@ -268,10 +268,6 @@ export default function NewAccount() {
 		team: undefined,
 	})
 
-	const formIsValid =
-		formValues.firstName.trim().length > 0 &&
-		teams.includes(formValues.team as Team)
-
 	const team = formValues.team
 	React.useEffect(() => {
 		if (team && teams.includes(team)) setTeam(team)

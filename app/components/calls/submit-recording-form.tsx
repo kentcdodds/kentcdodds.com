@@ -56,7 +56,11 @@ function RecordingForm({
 		reader.addEventListener(
 			'loadend',
 			async () => {
-				if (typeof reader.result === 'string') {
+			try {
+				if (typeof reader.result !== 'string') {
+					setRequestError('Unable to read recording. Please try again.')
+					return
+				}
 					form.append('audio', reader.result)
 
 					const body = new URLSearchParams()
@@ -102,9 +106,9 @@ function RecordingForm({
 					} catch (error: unknown) {
 						console.error('Unable to submit recording', error)
 						setRequestError('Unable to submit recording. Please try again.')
-					} finally {
-						setIsSubmitting(false)
-					}
+				}
+			} finally {
+				setIsSubmitting(false)
 				}
 			},
 			{ once: true },
