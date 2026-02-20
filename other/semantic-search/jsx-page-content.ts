@@ -119,7 +119,9 @@ function extractReadableText(node: any): string {
 	}
 
 	const children = Array.isArray(node.children) ? node.children : []
-	const childText = children.map((child) => extractReadableText(child)).join('')
+	const childText = children
+		.map((child: unknown) => extractReadableText(child))
+		.join('')
 	if (!childText) return ''
 
 	if (node.type !== 'element') return childText
