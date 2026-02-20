@@ -2,7 +2,13 @@ import slugify from '@sindresorhus/slugify'
 import { getEpisodePath as getCallKentEpisodePath } from '#app/utils/call-kent.ts'
 import { getCWKEpisodePath } from '#app/utils/chats-with-kent.ts'
 import { markdownToHtml, stripHtml } from '#app/utils/markdown.server.ts'
-import { chunkText, makeSnippet, normalizeText, sha256 } from './chunk-utils.ts'
+import {
+	chunkText,
+	makeSnippet,
+	mapWithConcurrency,
+	normalizeText,
+	sha256,
+} from './chunk-utils.ts'
 import {
 	getCloudflareConfig,
 	getEmbeddings,
@@ -57,23 +63,6 @@ function batch<T>(items: T[], size: number) {
 		result.push(items.slice(i, i + size))
 	}
 	return result
-}
-
-async function mapWithConcurrency<Item, Result>(
-	items: Item[],
-	concurrency: number,
-	mapper: (item: Item, index: number) => Promise<Result>,
-) {
-	const results: Result[] = new Array(items.length)
-	let nextIndex = 0
-	const workers = Array.from({ length: Math.max(1, concurrency) }, async () => {
-		while (nextIndex < items.length) {
-			const current = nextIndex++
-			results[current] = await mapper(items[current]!, current)
-		}
-	})
-	await Promise.all(workers)
-	return results
 }
 
 async function fetchJsonWithRetries<T>(

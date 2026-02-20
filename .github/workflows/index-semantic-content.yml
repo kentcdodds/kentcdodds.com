@@ -8,6 +8,12 @@ on:
       - 'content/blog/**'
       - 'content/pages/**'
       - 'content/data/**'
+      - 'app/routes/**'
+      - 'app/components/**'
+      - 'app/root.tsx'
+      - 'app/other-routes.server.ts'
+      - 'app/utils/sitemap.server.ts'
+      - 'other/semantic-search/**'
 
 jobs:
   index:

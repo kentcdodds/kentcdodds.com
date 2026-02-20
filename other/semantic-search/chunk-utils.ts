@@ -176,3 +176,34 @@ export function chunkTextRaw(
 		return parts
 	})
 }
+
+export async function mapWithConcurrency<Item, Result>(
+	items: Item[],
+	concurrency: number,
+	mapper: (item: Item, index: number) => Promise<Result>,
+) {
+	const safeConcurrency = Math.max(1, Math.min(concurrency, items.length || 1))
+	const results: Result[] = new Array(items.length)
+	let nextIndex = 0
+	let failed = false
+	let hasError = false
+	let firstError: unknown
+	const workers = Array.from({ length: safeConcurrency }, async () => {
+		while (!failed && nextIndex < items.length) {
+			const currentIndex = nextIndex++
+			try {
+				results[currentIndex] = await mapper(items[currentIndex]!, currentIndex)
+			} catch (error) {
+				failed = true
+				if (!hasError) {
+					hasError = true
+					firstError = error
+				}
+				return
+			}
+		}
+	})
+	await Promise.all(workers)
+	if (hasError) throw firstError
+	return results
+}
