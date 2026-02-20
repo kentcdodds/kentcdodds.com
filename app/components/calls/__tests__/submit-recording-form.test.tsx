@@ -1,6 +1,5 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
 
 const { mockNavigate, mockRevalidate, mockUseRootData } = vi.hoisted(() => ({
 	mockNavigate: vi.fn(),
@@ -24,14 +23,11 @@ vi.mock('#app/utils/use-root-data.ts', () => ({
 import { RecordingForm } from '../submit-recording-form.tsx'
 
 describe('RecordingForm', () => {
-	beforeEach(() => {
+	it('recovers when FileReader.readAsDataURL throws synchronously', async () => {
 		vi.clearAllMocks()
 		mockUseRootData.mockReturnValue({
 			requestInfo: { flyPrimaryInstance: null },
 		})
-	})
-
-	it('recovers when FileReader.readAsDataURL throws synchronously', async () => {
 		const readAsDataURL = vi.fn(() => {
 			throw new TypeError('Unexpected blob state')
 		})
@@ -54,11 +50,12 @@ describe('RecordingForm', () => {
 		const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
 		try {
-			const user = userEvent.setup()
-			render(<RecordingForm audio={new Blob(['audio'])} />)
+			const { container } = render(<RecordingForm audio={new Blob(['audio'])} />)
 
 			const submitButton = screen.getByRole('button', { name: 'Submit Recording' })
-			await user.click(submitButton)
+			const form = container.querySelector('form')
+			expect(form).not.toBeNull()
+			fireEvent.submit(form as HTMLFormElement)
 
 			await waitFor(() => expect(submitButton).toBeEnabled())
 			expect(submitButton).toHaveTextContent('Submit Recording')
