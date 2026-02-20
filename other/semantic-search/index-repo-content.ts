@@ -504,13 +504,7 @@ async function getDocsFromChangedPaths({
 	const allChanged = [...addedOrModified, ...deleted].map((p) =>
 		p.replace(/\\/g, '/'),
 	)
-	const jsxPagesChanged = allChanged.some(
-		(p) =>
-			p.startsWith('app/') ||
-			p.startsWith('content/data/') ||
-			p.startsWith('content/pages/') ||
-			p.startsWith('other/semantic-search/'),
-	)
+	const jsxPagesChanged = allChanged.some((p) => p.startsWith('app/'))
 
 	const talksFile = 'content/data/talks.yml'
 	const resumeFile = 'content/data/resume.yml'
