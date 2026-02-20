@@ -40,7 +40,13 @@ describe('jsx page content utils', () => {
 			shouldIndexJsxSitemapPath({ pathname: '/calls/season-1', mdxRoutes }),
 		).toBe(false)
 		expect(
+			shouldIndexJsxSitemapPath({ pathname: '/chats/episode-1', mdxRoutes }),
+		).toBe(false)
+		expect(
 			shouldIndexJsxSitemapPath({ pathname: '/sitemap.xml', mdxRoutes }),
+		).toBe(false)
+		expect(
+			shouldIndexJsxSitemapPath({ pathname: '/feed.json', mdxRoutes }),
 		).toBe(false)
 	})
 
@@ -84,5 +90,27 @@ describe('jsx page content utils', () => {
 		expect(extracted.text).not.toContain('Home Blog Search')
 		expect(extracted.text).not.toContain('Footer links and legal')
 		expect(extracted.text).not.toContain('window.foo')
+	})
+
+	test('extractRenderedPageContent excludes aria-hidden content', () => {
+		const html = `
+      <html>
+        <head><title>Hidden bits</title></head>
+        <body>
+          <main>
+            <h1>Visible heading</h1>
+            <p aria-hidden="true">This text should be excluded</p>
+            <p aria-hidden="TRUE">Also excluded text</p>
+            <p>This should remain visible.</p>
+          </main>
+        </body>
+      </html>
+    `
+
+		const extracted = extractRenderedPageContent(html)
+		expect(extracted.text).toContain('Visible heading')
+		expect(extracted.text).toContain('This should remain visible.')
+		expect(extracted.text).not.toContain('This text should be excluded')
+		expect(extracted.text).not.toContain('Also excluded text')
 	})
 })

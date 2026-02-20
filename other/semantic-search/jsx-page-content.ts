@@ -69,9 +69,15 @@ function shouldSkipElement(node: any) {
 
 	const properties = (node.properties ?? {}) as Record<string, unknown>
 	const role = String(properties.role ?? '').toLowerCase()
+	const ariaHidden = properties.ariaHidden
 	if (role && SKIPPED_ROLES.has(role)) return true
 	if (properties.hidden === true) return true
-	if (String(properties['aria-hidden'] ?? '').toLowerCase() === 'true') return true
+	if (
+		ariaHidden === true ||
+		String(ariaHidden ?? '').toLowerCase() === 'true'
+	) {
+		return true
+	}
 	if (hasSkippedClass(properties.className)) return true
 
 	return false
@@ -219,6 +225,7 @@ async function requestTextDocument({
 				res.on('data', (chunk) => {
 					chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
 				})
+				res.on('error', reject)
 				res.on('end', () => {
 					resolve({
 						statusCode: res.statusCode ?? 0,
@@ -352,7 +359,6 @@ async function fetchHtml(pathname: string, origin: string) {
 		url: `${origin}${pathname}`,
 		accept: 'text/html,application/xhtml+xml',
 	})
-	if (res.statusCode >= 300 && res.statusCode < 400) return null
 	if (res.statusCode < 200 || res.statusCode >= 300) return null
 	const contentType = String(res.headers['content-type'] ?? '')
 	if (!contentType.includes('text/html')) return null
