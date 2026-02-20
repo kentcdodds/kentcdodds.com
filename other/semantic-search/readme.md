@@ -45,6 +45,8 @@ Indexed sources (via `index-repo-content.ts`):
 
 - `content/blog/**` (blog posts)
 - `content/pages/**` (MDX pages)
+- Rendered JSX pages discovered from `/sitemap.xml` (excluding MDX-backed pages
+  and docs handled by podcast/YAML indexers)
 - `content/data/talks.yml` (each talk is indexed as its own doc)
 - `content/data/resume.yml` (resume page)
 - `content/data/credits.yml` (each person is indexed as its own doc)

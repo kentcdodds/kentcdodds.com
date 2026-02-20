@@ -3,16 +3,27 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { slugifyWithCounter } from '@sindresorhus/slugify'
 import * as YAML from 'yaml'
-import { chunkTextRaw, makeSnippet, sha256 } from './chunk-utils.ts'
+import { chunkText, chunkTextRaw, makeSnippet, sha256 } from './chunk-utils.ts'
 import {
 	getCloudflareConfig,
 	getEmbeddings,
 	vectorizeDeleteByIds,
 	vectorizeUpsert,
 } from './cloudflare.ts'
+import {
+	getJsxPagePathFromSlug,
+	loadJsxPageItemsFromLocalApp,
+} from './jsx-page-content.ts'
 import { getJsonObject, putJsonObject } from './r2-manifest.ts'
 
-type DocType = 'blog' | 'page' | 'talk' | 'resume' | 'credit' | 'testimonial'
+type DocType =
+	| 'blog'
+	| 'page'
+	| 'talk'
+	| 'resume'
+	| 'credit'
+	| 'testimonial'
+	| 'jsx-page'
 
 type ManifestChunk = {
 	id: string
@@ -72,6 +83,7 @@ function getUrlForDoc(type: DocType, slug: string) {
 	if (type === 'resume') return `/resume`
 	if (type === 'credit') return `/credits`
 	if (type === 'testimonial') return `/testimonials`
+	if (type === 'jsx-page') return getJsxPagePathFromSlug(slug)
 	// exhaustive guard
 	return `/${slug}`
 }
@@ -137,7 +149,7 @@ function getSlugFromContentPath(
 
 function getChangedFiles(before: string, after: string) {
 	const output = execSync(
-		`git diff --name-status ${before} ${after} -- content/blog content/pages content/data`,
+		`git diff --name-status ${before} ${after} -- content/blog content/pages content/data app other/semantic-search`,
 	).toString()
 	const lines = output.split('\n').filter(Boolean)
 	const addedOrModified = new Set<string>()
@@ -369,6 +381,17 @@ async function loadResumeIndex() {
 	return _resumeIndex
 }
 
+let _jsxPageIndex: {
+	items: SyntheticIndexItem[]
+	bySlug: Map<string, SyntheticIndexItem>
+} | null = null
+async function loadJsxPageIndex() {
+	if (_jsxPageIndex) return _jsxPageIndex
+	const items = await loadJsxPageItemsFromLocalApp()
+	_jsxPageIndex = { items, bySlug: new Map(items.map((i) => [i.slug, i])) }
+	return _jsxPageIndex
+}
+
 async function getAllSyntheticDocRefs(): Promise<
 	Array<{ type: DocType; slug: string }>
 > {
@@ -387,10 +410,26 @@ async function getAllSyntheticDocRefs(): Promise<
 	]
 }
 
+async function getAllJsxPageDocRefs(): Promise<
+	Array<{ type: DocType; slug: string }>
+> {
+	const jsxPages = await loadJsxPageIndex()
+	return jsxPages.items.map((item) => ({
+		type: 'jsx-page' as const,
+		slug: item.slug,
+	}))
+}
+
 async function getSyntheticDoc(
 	type: DocType,
 	slug: string,
 ): Promise<SyntheticIndexItem> {
+	if (type === 'jsx-page') {
+		const jsxPages = await loadJsxPageIndex()
+		const item = jsxPages.bySlug.get(slug)
+		if (!item) throw new Error(`Unknown jsx-page slug: ${slug}`)
+		return item
+	}
 	if (type === 'talk') {
 		const talks = await loadTalksIndex()
 		const item = talks.bySlug.get(slug)
@@ -461,6 +500,15 @@ async function getDocsFromChangedPaths({
 		[...addedOrModified, ...deleted].filter((p) =>
 			p.replace(/\\/g, '/')?.startsWith('content/data/'),
 		),
+	)
+	const allChanged = [...addedOrModified, ...deleted].map((p) =>
+		p.replace(/\\/g, '/'),
+	)
+	const jsxPagesChanged = allChanged.some(
+		(p) =>
+			p.startsWith('app/') ||
+			p.startsWith('content/data/') ||
+			p.startsWith('other/semantic-search/'),
 	)
 
 	const talksFile = 'content/data/talks.yml'
@@ -536,6 +584,22 @@ async function getDocsFromChangedPaths({
 		} else {
 			docsToIndex.push({ type: 'resume', slug: 'resume' })
 		}
+	}
+
+	if (jsxPagesChanged) {
+		const jsxPages = await loadJsxPageIndex()
+		docsToIndex.push(
+			...jsxPages.items.map((item) => ({
+				type: 'jsx-page' as const,
+				slug: item.slug,
+			})),
+		)
+		const current = new Set(jsxPages.items.map((item) => item.slug))
+		docsToDelete.push(
+			...manifestDocsByType(manifest, 'jsx-page').filter(
+				(doc) => !current.has(doc.slug),
+			),
+		)
 	}
 
 	return {
@@ -640,7 +704,8 @@ async function main() {
 						type === 'talk' ||
 						type === 'resume' ||
 						type === 'credit' ||
-						type === 'testimonial') &&
+						type === 'testimonial' ||
+						type === 'jsx-page') &&
 					slug
 				) {
 					return { type: type as DocType, slug }
@@ -677,6 +742,7 @@ async function main() {
 
 		// YAML-backed site sections
 		docsToIndex.push(...(await getAllSyntheticDocRefs()))
+		docsToIndex.push(...(await getAllJsxPageDocRefs()))
 
 		// Remove docs that no longer exist (e.g. deleted posts, removed talks).
 		const keep = new Set(docsToIndex.map((d) => getDocId(d.type, d.slug)))
@@ -732,13 +798,25 @@ async function main() {
 			title = synthetic.title
 		}
 
-		// Index raw MDX (including frontmatter/JSX/markdown) as requested.
-		// Use smaller chunks than plaintext since raw MDX/code can be token-dense.
-		const chunkBodies = chunkTextRaw(source, {
-			targetChars: 2500,
-			overlapChars: 250,
-			maxChunkChars: 3500,
-		})
+		// Index raw MDX for MDX-backed docs, and cleaned rendered text for JSX pages.
+		const chunkBodies =
+			type === 'blog' || type === 'page'
+				? chunkTextRaw(source, {
+						targetChars: 2500,
+						overlapChars: 250,
+						maxChunkChars: 3500,
+					})
+				: type === 'jsx-page'
+					? chunkText(source, {
+							targetChars: 3500,
+							overlapChars: 450,
+							maxChunkChars: 5000,
+						})
+					: chunkTextRaw(source, {
+							targetChars: 2500,
+							overlapChars: 250,
+							maxChunkChars: 3500,
+						})
 		const chunkCount = chunkBodies.length
 
 		const chunks: ManifestChunk[] = []
@@ -748,7 +826,8 @@ async function main() {
 
 		for (let i = 0; i < chunkBodies.length; i++) {
 			const chunkBody = chunkBodies[i] ?? ''
-			const preamble = `Title: ${title}\nType: ${type}\nURL: ${url}\n\n`
+			const metadataType = type === 'jsx-page' ? 'page' : type
+			const preamble = `Title: ${title}\nType: ${metadataType}\nURL: ${url}\n\n`
 			const chunkTextForEmbedding = `${preamble}${chunkBody}`
 			const vectorId = getVectorId(type, slug, i)
 			const contentHash = sha256(chunkTextForEmbedding)
@@ -769,7 +848,7 @@ async function main() {
 				vectorId,
 				text: chunkTextForEmbedding,
 				metadata: {
-					type,
+					type: metadataType,
 					slug,
 					url,
 					title,
