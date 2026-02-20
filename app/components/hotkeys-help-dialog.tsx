@@ -22,8 +22,8 @@ function renderCombo(combo: HotkeysHelpCombo) {
 	if (combo.kind === 'sequence') {
 		return (
 			<span className="inline-flex flex-wrap items-center gap-1">
-				{combo.keys.map((k) => (
-					<Kbd key={k}>{k}</Kbd>
+				{combo.keys.map((k, i) => (
+					<Kbd key={`${k}-${i}`}>{k}</Kbd>
 				))}
 			</span>
 		)

@@ -49,7 +49,7 @@ describe('hotkeys navigation mappings', () => {
 		expect(itemByDescription.get('Go to resume')).toMatchObject({
 			combos: [{ kind: 'sequence', keys: ['g', 'r'] }],
 		})
-		expect(itemByDescription.get('Go to kody')).toMatchObject({
+		expect(itemByDescription.get('Go to Kody')).toMatchObject({
 			combos: [{ kind: 'sequence', keys: ['g', 'k'] }],
 		})
 	})

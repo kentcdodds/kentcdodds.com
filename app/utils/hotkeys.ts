@@ -126,7 +126,7 @@ export const HOTKEYS_HELP_GROUPS = [
 				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_RESUME) }],
 			},
 			{
-				description: 'Go to kody',
+				description: 'Go to Kody',
 				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_KODY) }],
 			},
 			{
