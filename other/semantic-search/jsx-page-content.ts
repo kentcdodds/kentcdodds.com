@@ -270,7 +270,10 @@ export function extractRenderedPageContent(html: string) {
 
 	const pruned = pruneNode(tree)
 	const bodyNode = findFirstElementByTagName(pruned, 'body')
-	const text = normalizeText(extractReadableText(bodyNode ?? pruned))
+	const text = normalizeText(extractReadableText(bodyNode ?? pruned)).replace(
+		/\n{2,}/g,
+		'\n',
+	)
 
 	return { title, text }
 }
