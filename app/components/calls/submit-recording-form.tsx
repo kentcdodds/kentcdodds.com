@@ -1,5 +1,9 @@
 import * as React from 'react'
-import { useNavigate } from 'react-router';
+import {
+	UNSAFE_SingleFetchRedirectSymbol,
+	UNSAFE_decodeViaTurboStream,
+	useNavigate,
+} from 'react-router'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import { Button } from '../button.tsx'
 import { Field } from '../form-elements.tsx'
@@ -84,6 +88,57 @@ function RecordingForm({
 							body,
 							headers,
 						})
+
+						const contentType = response.headers.get('Content-Type') ?? ''
+						if (contentType.includes('text/x-script')) {
+							if (!response.body) {
+								setRequestError('Unexpected response from server.')
+								return
+							}
+							const decoded = await UNSAFE_decodeViaTurboStream(
+								response.body,
+								window,
+							)
+							const result = decoded.value
+							if (result && typeof result === 'object') {
+								const resultRecord = result as Record<PropertyKey, unknown>
+								const symbolRedirect =
+									resultRecord[UNSAFE_SingleFetchRedirectSymbol]
+								const redirectData =
+									symbolRedirect && typeof symbolRedirect === 'object'
+										? (symbolRedirect as Record<string, unknown>)
+										: resultRecord
+								const redirectTo = redirectData.redirect
+								if (typeof redirectTo === 'string') {
+									const redirectUrl = new URL(
+										redirectTo,
+										window.location.origin,
+									)
+									void navigate(
+										`${redirectUrl.pathname}${redirectUrl.search}`,
+										{
+											replace: redirectData.replace === true,
+										},
+									)
+									return
+								}
+								if ('data' in resultRecord) {
+									const actionData = resultRecord.data
+									if (actionData && typeof actionData === 'object') {
+										setSubmissionData(actionData as RecordingFormData)
+										return
+									}
+								}
+								if ('error' in resultRecord) {
+									setRequestError(
+										'Something went wrong submitting your recording.',
+									)
+									return
+								}
+							}
+							setRequestError('Unexpected response from server.')
+							return
+						}
 
 						const redirect = response.headers.get('X-Remix-Redirect')
 						if (redirect) {
