@@ -14,12 +14,9 @@ import { type Route } from './+types/save'
 
 const recordingFormActionPath = '/resources/calls/save'
 
-function getNavigationPathFromRedirectResponse(response: Response) {
-	const redirectTarget =
-		response.headers.get('Location') ||
-		(response.redirected && response.url ? response.url : null)
-	if (!redirectTarget) return null
-	const redirectUrl = new URL(redirectTarget, window.location.origin)
+function getNavigationPathFromResponse(response: Response) {
+	if (!response.redirected || !response.url) return null
+	const redirectUrl = new URL(response.url, window.location.origin)
 	return `${redirectUrl.pathname}${redirectUrl.search}${redirectUrl.hash}`
 }
 
@@ -138,11 +135,10 @@ function RecordingForm({
 						method: 'POST',
 						body,
 						headers,
-						redirect: 'manual',
 						signal: abortController.signal,
 					})
 
-					const redirectPath = getNavigationPathFromRedirectResponse(response)
+					const redirectPath = getNavigationPathFromResponse(response)
 					if (redirectPath) {
 						await navigate(redirectPath)
 						return

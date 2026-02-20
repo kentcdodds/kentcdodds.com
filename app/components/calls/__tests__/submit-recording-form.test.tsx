@@ -86,7 +86,7 @@ describe('RecordingForm', () => {
 		}
 	})
 
-	it('submits with manual redirects and navigates using Location header', async () => {
+	it('submits and navigates using the redirected response URL', async () => {
 		vi.clearAllMocks()
 		mockUseRootData.mockReturnValue({
 			requestInfo: { flyPrimaryInstance: 'primary-abc123' },
@@ -113,13 +113,13 @@ describe('RecordingForm', () => {
 			readAsDataURL = readAsDataURL
 		}
 
+		const jsonMock = vi.fn()
 		const fetchMock = vi.fn().mockResolvedValue({
-			ok: false,
-			redirected: false,
-			url: 'http://localhost/resources/calls/save',
-			headers: new Headers({
-				Location: '/calls/record/fake-call-id?ok=1#done',
-			}),
+			ok: true,
+			redirected: true,
+			url: 'http://localhost/calls/record/fake-call-id?ok=1#done',
+			headers: new Headers(),
+			json: jsonMock,
 		} as Response)
 
 		vi.stubGlobal(
@@ -147,7 +147,7 @@ describe('RecordingForm', () => {
 			const [requestUrl, requestInit] = fetchMock.mock.calls[0] ?? []
 			expect(requestUrl).toBe('/resources/calls/save')
 			expect(requestInit?.method).toBe('POST')
-			expect(requestInit?.redirect).toBe('manual')
+			expect(requestInit?.redirect).toBeUndefined()
 			const requestHeaders = requestInit?.headers as Headers
 			expect(requestHeaders.get('Content-Type')).toContain(
 				'application/x-www-form-urlencoded',
@@ -165,6 +165,7 @@ describe('RecordingForm', () => {
 				),
 			)
 			expect(mockRevalidate).not.toHaveBeenCalled()
+			expect(jsonMock).not.toHaveBeenCalled()
 		} finally {
 			createObjectURL.mockRestore()
 			revokeObjectURL.mockRestore()
