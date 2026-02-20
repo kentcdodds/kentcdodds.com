@@ -72,6 +72,7 @@ function parseArgs() {
 		maxVideos,
 		language: get('--language') ?? 'en',
 		includeAutoCaptions: parseBoolean(get('--include-auto-captions'), true),
+		dryRun: parseBoolean(get('--dry-run'), false),
 	}
 }
 
@@ -729,6 +730,7 @@ async function main() {
 		maxVideos,
 		language,
 		includeAutoCaptions,
+		dryRun,
 	} = parseArgs()
 	const playlistInput =
 		playlistArg ??
@@ -743,9 +745,6 @@ async function main() {
 	}
 
 	const manifestKey = manifestKeyArg ?? `manifests/youtube-${playlistId}.json`
-	const { accountId, apiToken, vectorizeIndex, embeddingModel } =
-		getCloudflareConfig()
-	const r2Bucket = process.env.R2_BUCKET ?? 'kcd-semantic-search'
 
 	console.log(`Loading playlist ${playlistId}...`)
 	const { playlistTitle, videos } = await fetchPlaylistVideos({
@@ -783,6 +782,14 @@ async function main() {
 		{ manual: 0, auto: 0, none: 0 } as Record<TranscriptSource, number>,
 	)
 	console.log('Transcript source summary:', transcriptSourceCounts)
+	if (dryRun) {
+		console.log('Dry run complete. Skipping Vectorize/R2 writes.')
+		return
+	}
+
+	const { accountId, apiToken, vectorizeIndex, embeddingModel } =
+		getCloudflareConfig()
+	const r2Bucket = process.env.R2_BUCKET ?? 'kcd-semantic-search'
 
 	const manifest = (await getJsonObject<Manifest>({
 		bucket: r2Bucket,
