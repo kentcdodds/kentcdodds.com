@@ -19,7 +19,6 @@ export const HOTKEY_GOTO_CHATS = ['G', 'C'] as const satisfies HotkeySequence
 export const HOTKEY_GOTO_CALLS = ['G', 'P'] as const satisfies HotkeySequence
 export const HOTKEY_GOTO_COURSES = ['G', 'U'] as const satisfies HotkeySequence
 export const HOTKEY_GOTO_DISCORD = ['G', 'D'] as const satisfies HotkeySequence
-export const HOTKEY_GOTO_WORKSHOPS = ['G', 'W'] as const satisfies HotkeySequence
 export const HOTKEY_GOTO_ABOUT = ['G', 'A'] as const satisfies HotkeySequence
 export const HOTKEY_GOTO_TALKS = ['G', 'T'] as const satisfies HotkeySequence
 export const HOTKEY_GOTO_TESTIMONY = ['G', 'F'] as const satisfies HotkeySequence
@@ -98,10 +97,6 @@ export const HOTKEYS_HELP_GROUPS = [
 			{
 				description: 'Go to Discord',
 				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_DISCORD) }],
-			},
-			{
-				description: 'Go to workshops',
-				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_WORKSHOPS) }],
 			},
 			{
 				description: 'Go to about',

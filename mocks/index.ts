@@ -7,7 +7,6 @@ import { kitHandlers } from './kit.ts'
 import { oauthHandlers } from './oauth.ts'
 import { oembedHandlers } from './oembed.ts'
 import { simplecastHandlers } from './simplecast.ts'
-import { tiToHandlers } from './tito.ts'
 import { transistorHandlers } from './transistor.ts'
 import { twitterHandlers } from './twitter.ts'
 import {
@@ -77,7 +76,6 @@ const server = setupServer(
 	...oauthHandlers,
 	...oembedHandlers,
 	...twitterHandlers,
-	...tiToHandlers,
 	...transistorHandlers,
 	...discordHandlers,
 	...kitHandlers,

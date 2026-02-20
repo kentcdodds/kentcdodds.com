@@ -9,11 +9,9 @@ import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { FourHundred, FourOhFour } from '#app/components/errors.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { BlogSection } from '#app/components/sections/blog-section.tsx'
-import { HeaderSection } from '#app/components/sections/header-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { TeamStats } from '#app/components/team-stats.tsx'
 import { H2, H4, H6, Paragraph } from '#app/components/typography.tsx'
-import { WorkshopCard } from '#app/components/workshop-card.tsx'
 import { externalLinks } from '#app/external-links.tsx'
 import { getImageBuilder, getImgProps, images } from '#app/images.tsx'
 import { type KCDHandle, type MdxListItem, type Team } from '#app/types.ts'
@@ -35,13 +33,10 @@ import {
 	formatNumber,
 	requireValidSlug,
 	reuseUsefulLoaderHeaders,
-	typedBoolean,
 } from '#app/utils/misc.tsx'
 import { teamEmoji, useTeam } from '#app/utils/team-provider.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
-import { getScheduledEvents } from '#app/utils/workshop-tickets.server.ts'
-import { getWorkshops } from '#app/utils/workshops.server.ts'
 import { markAsRead } from '../action/mark-as-read.tsx'
 import  { type Route } from './+types/$slug'
 
@@ -74,23 +69,20 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		{ request, timings },
 	)
 
-	const [recommendations, readRankings, totalReads, workshops, workshopEvents] =
-		await Promise.all([
-			getBlogRecommendations({
-				request,
-				timings,
-				limit: 3,
-				keywords: [
-					...(page?.frontmatter.categories ?? []),
-					...(page?.frontmatter.meta?.keywords ?? []),
-				],
-				exclude: [params.slug],
-			}),
-			getBlogReadRankings({ request, slug: params.slug, timings }),
-			getTotalPostReads({ request, slug: params.slug, timings }),
-			getWorkshops({ request, timings }),
-			getScheduledEvents({ request, timings }),
-		])
+	const [recommendations, readRankings, totalReads] = await Promise.all([
+		getBlogRecommendations({
+			request,
+			timings,
+			limit: 3,
+			keywords: [
+				...(page?.frontmatter.categories ?? []),
+				...(page?.frontmatter.meta?.keywords ?? []),
+			],
+			exclude: [params.slug],
+		}),
+		getBlogReadRankings({ request, slug: params.slug, timings }),
+		getTotalPostReads({ request, slug: params.slug, timings }),
+	])
 
 	const catchData: CatchData = {
 		recommendations,
@@ -107,29 +99,9 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		throw json(catchData, { status: 404, headers })
 	}
 
-	const topics = [
-		...(page.frontmatter.categories ?? []),
-		...(page.frontmatter.meta?.keywords ?? []),
-	]
-	const relevantWorkshops = workshops.filter((workshop) => {
-		const workshopTopics = [
-			...workshop.categories,
-			...(workshop.meta.keywords ?? []),
-		]
-		return (
-			workshopTopics.some((t) => topics.includes(t)) &&
-			(workshop.events.length ||
-				workshopEvents.some(
-					(event) => event.metadata.workshopSlug === workshop.slug,
-				))
-		)
-	})
-
 	return json(
 		{
 			page,
-			workshops: relevantWorkshops,
-			workshopEvents: workshopEvents.filter(typedBoolean),
 			...catchData,
 		},
 		{ status: 200, headers },
@@ -574,40 +546,6 @@ export default function MdxScreen() {
 			/>
 
 			<Spacer size="sm" />
-
-			{data.workshops.length > 0 ? (
-				<>
-					<HeaderSection
-						title="Want to learn more?"
-						subTitle="Join Kent in a live workshop"
-					/>
-					<Spacer size="2xs" />
-
-					<Grid>
-						<div className="col-span-full">
-							<Grid nested rowGap>
-								{data.workshops.map((workshop, idx) => (
-									<div
-										key={idx}
-										className={clsx('col-span-4', {
-											'hidden lg:block': idx >= 2,
-										})}
-									>
-										<WorkshopCard
-											workshop={workshop}
-											titoEvents={data.workshopEvents.filter(
-												(e) => e.metadata.workshopSlug === workshop.slug,
-											)}
-										/>
-									</div>
-								))}
-							</Grid>
-						</div>
-					</Grid>
-
-					<Spacer size="sm" />
-				</>
-			) : null}
 
 			<ArticleQuestionCard />
 

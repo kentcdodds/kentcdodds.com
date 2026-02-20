@@ -12,7 +12,6 @@ import { getRequiredServerEnvVar } from '#app/utils/misc.tsx'
 import { getResumeData } from '#app/utils/resume.server.ts'
 import { getTalksAndTags } from '#app/utils/talks.server.ts'
 import { getTestimonials } from '#app/utils/testimonials.server.ts'
-import { getWorkshops } from '#app/utils/workshops.server.ts'
 import  { type Route } from './+types/refresh-cache'
 
 type Body =
@@ -91,10 +90,6 @@ export async function action({ request }: Route.ActionArgs) {
 
 				refreshingContentPaths.push(contentPath)
 				promises.push(getMdxPage({ contentDir, slug }, { forceFresh: true }))
-			}
-			if (contentPath.startsWith('workshops')) {
-				refreshingContentPaths.push(contentPath)
-				promises.push(getWorkshops({ forceFresh: true }))
 			}
 			if (contentPath === 'data/testimonials.yml') {
 				refreshingContentPaths.push(contentPath)

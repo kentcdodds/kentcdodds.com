@@ -29,7 +29,6 @@ const LINKS = [
 	{ id: 'discord', name: 'Discord', to: '/discord' },
 	{ id: 'chats', name: 'Chats', to: '/chats/05' },
 	{ id: 'calls', name: 'Calls', to: '/calls/05' },
-	{ id: 'workshops', name: 'Workshops', to: '/workshops' },
 	{ id: 'about', name: 'About', to: '/about' },
 ]
 

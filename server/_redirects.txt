@@ -81,9 +81,6 @@ POST,DELETE,PATCH,PUT  /                                                https://
 # podcast catch-all
 /chats-with-kent-podcast/seasons/:seasonNumber/*path       /chats/:seasonNumber
 
-/workshops/past                                            /workshops
-/workshops/remix-fundamentals                              /workshops/web-app-fundamentals
-
 # some people go to this page for some reason:
 /post/*slug                                                              /blog/*slug
 /rss.xml                                                                 /blog/rss.xml
@@ -113,11 +110,6 @@ POST,DELETE,PATCH,PUT  /                                                https://
 /blog/moist-programming                                                 /blog/aha-programming
 /aha                                                                    /blog/aha-programming
 /blog/aha                                                               /blog/aha-programming
-/workshops/advanced-react-component-patterns                            /workshops/advanced-react-patterns
-/workshops/hooks                                                        /workshops/react-hooks
-/workshops/build-react-apps                                             /workshops/build-react-apps-1
-/workshops/build-react-apps-advanced                                    /workshops/build-react-apps-3
-/workshops/web-app-fundamentals                                         /workshops/web-app-fundamentals-part-1
 /blog/make-test-utils-for-your-app                                      /blog/test-utils
 /blog/what-code-comments-can-teach-us-about-scaling-a-codebase          /blog/colocation
 /blog/avoid-nesting-in-tests                                            /blog/avoid-nesting-when-youre-testing
@@ -133,15 +125,32 @@ POST,DELETE,PATCH,PUT  /                                                https://
 /talks/fullstack-components                                             /talks/full-stack-components
 
 # Old workshops
-/workshops/advanced-react-hooks                                         https://epicreact.dev/advanced-hooks
-# /workshops/advanced-react-patterns                                      https://epicreact.dev/patterns
-/workshops/cypress-fundamentals                                         https://testingjavascript.com/playlists/install-configure-and-script-cypress-for-javascript-web-applications-fca9
-/workshops/react-fundamentals                                           https://epicreact.dev/fundamentals
-/workshops/react-hooks                                                  https://epicreact.dev/hooks
-/workshops/react-performance                                            https://epicreact.dev/performance
-/workshops/testing-fundamentals                                         https://testingjavascript.com/playlists/fundamentals-of-testing-in-javascript-2c8a
-/workshops/testing-node-apps                                            https://testingjavascript.com/playlists/test-node-js-backends-1f90
-/workshops/testing-react-apps                                           https://epicreact.dev/testing
+/workshops/past                                                         https://www.epicweb.dev/workshops
+/workshops/remix-fundamentals                                           https://www.epicweb.dev/workshops/full-stack-foundations
+/workshops/advanced-react-component-patterns                            https://www.epicreact.dev/workshops/advanced-react-patterns
+/workshops/hooks                                                        https://www.epicreact.dev/workshops/react-hooks
+/workshops/build-react-apps                                             https://www.epicreact.dev/modules/build-an-epic-react-app-v1/build-an-epic-react-app-welcome
+/workshops/build-react-apps-advanced                                    https://www.epicreact.dev/modules/build-an-epic-react-app-v1/build-an-epic-react-app-welcome
+/workshops/web-app-fundamentals                                         https://www.epicweb.dev/workshops/full-stack-foundations
+/workshops/advanced-react-apis                                          https://www.epicreact.dev/workshops/advanced-react-apis
+/workshops/advanced-react-patterns                                      https://www.epicreact.dev/workshops/advanced-react-patterns
+/workshops/advanced-remix                                               https://www.epicweb.dev/workshops/full-stack-foundations
+/workshops/react-server-components                                      https://www.epicreact.dev/workshops/react-server-components
+/workshops/remix-authentication                                         https://www.epicweb.dev/workshops/authentication-strategies-and-implementation
+/workshops/testing-web-applications                                     https://www.epicweb.dev/workshops/web-application-testing
+/workshops/web-app-fundamentals-part-1                                  https://www.epicweb.dev/workshops/full-stack-foundations
+/workshops/web-app-fundamentals-part-2                                  https://www.epicweb.dev/workshops/full-stack-foundations
+/workshops/web-deep-dive                                                https://www.epicweb.dev/workshops/full-stack-foundations
+/workshops/advanced-react-hooks                                         https://www.epicreact.dev/workshops/advanced-react-apis
+/workshops/cypress-fundamentals                                         https://www.epicweb.dev/workshops/web-application-testing
+/workshops/react-fundamentals                                           https://www.epicreact.dev/workshops/react-fundamentals
+/workshops/react-hooks                                                  https://www.epicreact.dev/workshops/react-hooks
+/workshops/react-performance                                            https://www.epicreact.dev/workshops/react-performance
+/workshops/testing-fundamentals                                         https://www.epicweb.dev/workshops/web-application-testing
+/workshops/testing-node-apps                                            https://www.epicweb.dev/workshops/web-application-testing
+/workshops/testing-react-apps                                           https://www.epicweb.dev/workshops/web-application-testing
+/workshops                                                              /courses
+/workshops*path                                                         /courses
 
 # Joel whoopsies
 /chats-with-kent-podcast/seasons/01/episodes/01                         /chats-with-kent-podcast/seasons/01/episodes/growing-your-skills-and-career-through-teaching-with-ali-spittel

@@ -177,7 +177,6 @@ function createServer() {
 						z.literal('Blog'),
 						z.literal('Chats with Kent Podcast'),
 						z.literal('Call Kent Podcast'),
-						z.literal('Workshops'),
 						z.literal('Talks'),
 						z.literal('Resume'),
 						z.literal('Credits'),
@@ -215,8 +214,6 @@ function createServer() {
 				Blog: ['blog'],
 				'Chats with Kent Podcast': ['cwk'],
 				'Call Kent Podcast': ['ck'],
-				// Not currently included in the semantic search index.
-				Workshops: [],
 				Talks: ['talk'],
 				Resume: ['resume'],
 				Credits: ['credit'],
@@ -375,7 +372,7 @@ function createServer() {
 		'subscribe_to_newsletter',
 		{
 			description:
-				'Subscribe to Kent C. Dodds newsletter and get regular updates about new articles, courses, and workshops',
+				'Subscribe to Kent C. Dodds newsletter and get regular updates about new articles and courses',
 			inputSchema: {
 				email: z
 					.string()

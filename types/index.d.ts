@@ -63,45 +63,6 @@ type MdxPage = {
  */
 type MdxListItem = Omit<MdxPage, 'code'>
 
-type ManualWorkshopEvent = {
-	type: 'manual'
-	title: string
-	url: string
-	quantity?: number
-	remaining?: number
-	location?: string
-	date: string
-}
-
-type KeyTakeaway = {
-	title: string
-	description: string
-}
-
-type ProblemStatements = {
-	part1: string
-	part2: string
-	part3: string
-	part4: string
-}
-
-type Workshop = {
-	slug: string
-	title: string
-	events: Array<ManualWorkshopEvent>
-	description: string
-	categories: Array<string>
-	meta: {
-		keywords?: Array<string>
-		[key as string]: string
-	}
-	kitTag?: string
-	problemStatementHTMLs: ProblemStatements
-	keyTakeawayHTMLs: Array<KeyTakeaway>
-	topicHTMLs: Array<string>
-	prerequisiteHTML: string
-}
-
 type Link = {
 	name: string
 	url: string
@@ -238,7 +199,6 @@ export {
 	OptionalTeam,
 	MdxPage,
 	MdxListItem,
-	Workshop,
 	CWKEpisode,
 	CWKListItem,
 	CWKSeason,
