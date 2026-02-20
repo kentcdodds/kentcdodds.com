@@ -1,24 +1,7 @@
 import { useHotkey, useHotkeySequence } from '@tanstack/react-hotkeys'
 import * as React from 'react'
-import { useLocation, useNavigate } from 'react-router';
-import {
-	HOTKEY_GOTO_ABOUT,
-	HOTKEY_GOTO_BLOG,
-	HOTKEY_GOTO_CALLS,
-	HOTKEY_GOTO_CHATS,
-	HOTKEY_GOTO_COURSES,
-	HOTKEY_GOTO_DISCORD,
-	HOTKEY_GOTO_HOME,
-	HOTKEY_GOTO_KODY,
-	HOTKEY_GOTO_RESUME,
-	HOTKEY_GOTO_SEARCH,
-	HOTKEY_GOTO_TESTIMONY,
-	HOTKEY_GOTO_TALKS,
-	HOTKEY_GOTO_TRANSPARENCY,
-	HOTKEY_GOTO_WORKSHOPS,
-	HOTKEY_TOGGLE_HOTKEYS_DIALOG,
-	HOTKEYS_HELP_GROUPS,
-} from '#app/utils/hotkeys.ts'
+import { useLocation, useNavigate } from 'react-router'
+import * as hk from '#app/utils/hotkeys.ts'
 import { HotkeysHelpDialog } from './hotkeys-help-dialog.tsx'
 
 const navSequenceOptions = {
@@ -39,7 +22,7 @@ function AppHotkeys() {
 	}, [location.pathname])
 
 	useHotkey(
-		HOTKEY_TOGGLE_HOTKEYS_DIALOG,
+		hk.HOTKEY_TOGGLE_HOTKEYS_DIALOG,
 		() => setDialogOpen((o) => !o),
 		{
 			ignoreInputs: true,
@@ -50,7 +33,7 @@ function AppHotkeys() {
 	)
 
 	useHotkeySequence(
-		HOTKEY_GOTO_HOME,
+		hk.HOTKEY_GOTO_HOME,
 		() => {
 			setDialogOpen(false)
 			void navigate('/')
@@ -59,7 +42,7 @@ function AppHotkeys() {
 	)
 
 	useHotkeySequence(
-		HOTKEY_GOTO_BLOG,
+		hk.HOTKEY_GOTO_BLOG,
 		() => {
 			setDialogOpen(false)
 			void navigate('/blog')
@@ -68,25 +51,25 @@ function AppHotkeys() {
 	)
 
 	useHotkeySequence(
-		HOTKEY_GOTO_CHATS,
+		hk.HOTKEY_GOTO_CHATS,
 		() => {
 			setDialogOpen(false)
-			navigate('/chats')
+			void navigate('/chats')
 		},
 		navSequenceOptions,
 	)
 
 	useHotkeySequence(
-		HOTKEY_GOTO_CALLS,
+		hk.HOTKEY_GOTO_CALLS,
 		() => {
 			setDialogOpen(false)
-			navigate('/calls')
+			void navigate('/calls')
 		},
 		navSequenceOptions,
 	)
 
 	useHotkeySequence(
-		HOTKEY_GOTO_COURSES,
+		hk.HOTKEY_GOTO_COURSES,
 		() => {
 			setDialogOpen(false)
 			void navigate('/courses')
@@ -95,7 +78,7 @@ function AppHotkeys() {
 	)
 
 	useHotkeySequence(
-		HOTKEY_GOTO_DISCORD,
+		hk.HOTKEY_GOTO_DISCORD,
 		() => {
 			setDialogOpen(false)
 			void navigate('/discord')
@@ -104,7 +87,7 @@ function AppHotkeys() {
 	)
 
 	useHotkeySequence(
-		HOTKEY_GOTO_WORKSHOPS,
+		hk.HOTKEY_GOTO_WORKSHOPS,
 		() => {
 			setDialogOpen(false)
 			void navigate('/workshops')
@@ -113,7 +96,7 @@ function AppHotkeys() {
 	)
 
 	useHotkeySequence(
-		HOTKEY_GOTO_ABOUT,
+		hk.HOTKEY_GOTO_ABOUT,
 		() => {
 			setDialogOpen(false)
 			void navigate('/about')
@@ -122,7 +105,7 @@ function AppHotkeys() {
 	)
 
 	useHotkeySequence(
-		HOTKEY_GOTO_TALKS,
+		hk.HOTKEY_GOTO_TALKS,
 		() => {
 			setDialogOpen(false)
 			void navigate('/talks')
@@ -131,43 +114,43 @@ function AppHotkeys() {
 	)
 
 	useHotkeySequence(
-		HOTKEY_GOTO_TESTIMONY,
+		hk.HOTKEY_GOTO_TESTIMONY,
 		() => {
 			setDialogOpen(false)
-			navigate('/testimony')
+			void navigate('/testimony')
 		},
 		navSequenceOptions,
 	)
 
 	useHotkeySequence(
-		HOTKEY_GOTO_TRANSPARENCY,
+		hk.HOTKEY_GOTO_TRANSPARENCY,
 		() => {
 			setDialogOpen(false)
-			navigate('/transparency')
+			void navigate('/transparency')
 		},
 		navSequenceOptions,
 	)
 
 	useHotkeySequence(
-		HOTKEY_GOTO_RESUME,
+		hk.HOTKEY_GOTO_RESUME,
 		() => {
 			setDialogOpen(false)
-			navigate('/resume')
+			void navigate('/resume')
 		},
 		navSequenceOptions,
 	)
 
 	useHotkeySequence(
-		HOTKEY_GOTO_KODY,
+		hk.HOTKEY_GOTO_KODY,
 		() => {
 			setDialogOpen(false)
-			navigate('/kody')
+			void navigate('/kody')
 		},
 		navSequenceOptions,
 	)
 
 	useHotkeySequence(
-		HOTKEY_GOTO_SEARCH,
+		hk.HOTKEY_GOTO_SEARCH,
 		() => {
 			setDialogOpen(false)
 			void navigate('/search')
@@ -179,7 +162,7 @@ function AppHotkeys() {
 		<HotkeysHelpDialog
 			isOpen={dialogOpen}
 			onDismiss={() => setDialogOpen(false)}
-			groups={HOTKEYS_HELP_GROUPS}
+			groups={hk.HOTKEYS_HELP_GROUPS}
 		/>
 	)
 }
