@@ -1,9 +1,6 @@
 import * as React from 'react'
-import {
-	UNSAFE_SingleFetchRedirectSymbol,
-	UNSAFE_decodeViaTurboStream,
-	useNavigate,
-} from 'react-router'
+import { useNavigate } from 'react-router'
+import { decodeSingleFetchResponse } from '#app/utils/react-router-single-fetch.client.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import { Button } from '../button.tsx'
 import { Field } from '../form-elements.tsx'
@@ -43,10 +40,15 @@ function RecordingForm({
 	const [submissionData, setSubmissionData] = React.useState(data)
 	const [isSubmitting, setIsSubmitting] = React.useState(false)
 	const [requestError, setRequestError] = React.useState<string | null>(null)
+	const abortControllerRef = React.useRef<AbortController | null>(null)
 
 	React.useEffect(() => {
 		setSubmissionData(data)
 	}, [data])
+
+	React.useEffect(() => {
+		return () => abortControllerRef.current?.abort()
+	}, [])
 
 	function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault()
@@ -60,11 +62,11 @@ function RecordingForm({
 		reader.addEventListener(
 			'loadend',
 			async () => {
-			try {
-				if (typeof reader.result !== 'string') {
-					setRequestError('Unable to read recording. Please try again.')
-					return
-				}
+				try {
+					if (typeof reader.result !== 'string') {
+						setRequestError('Unable to read recording. Please try again.')
+						return
+					}
 					form.append('audio', reader.result)
 
 					const body = new URLSearchParams()
@@ -80,6 +82,8 @@ function RecordingForm({
 					if (flyPrimaryInstance) {
 						headers.set('fly-force-instance-id', flyPrimaryInstance)
 					}
+					const abortController = new AbortController()
+					abortControllerRef.current = abortController
 
 					try {
 						const dataUrl = `${window.location.pathname.replace(/\/$/, '')}.data`
@@ -87,6 +91,7 @@ function RecordingForm({
 							method: 'POST',
 							body,
 							headers,
+							signal: abortController.signal,
 						})
 
 						const contentType = response.headers.get('Content-Type') ?? ''
@@ -95,57 +100,30 @@ function RecordingForm({
 								setRequestError('Unexpected response from server.')
 								return
 							}
-							const decoded = await UNSAFE_decodeViaTurboStream(
-								response.body,
-								window,
-							)
-							const result = decoded.value
-							if (result && typeof result === 'object') {
-								const resultRecord = result as Record<PropertyKey, unknown>
-								const symbolRedirect =
-									resultRecord[UNSAFE_SingleFetchRedirectSymbol]
-								const redirectData =
-									symbolRedirect && typeof symbolRedirect === 'object'
-										? (symbolRedirect as Record<string, unknown>)
-										: resultRecord
-								const redirectTo = redirectData.redirect
-								if (typeof redirectTo === 'string') {
-									const redirectUrl = new URL(
-										redirectTo,
-										window.location.origin,
-									)
-									void navigate(
-										`${redirectUrl.pathname}${redirectUrl.search}`,
-										{
-											replace: redirectData.replace === true,
-										},
-									)
+							const decoded = await decodeSingleFetchResponse(response.body)
+							if (decoded.type === 'redirect') {
+								const redirectUrl = new URL(
+									decoded.redirect,
+									window.location.origin,
+								)
+								void navigate(`${redirectUrl.pathname}${redirectUrl.search}`, {
+									replace: decoded.replace,
+								})
+								return
+							}
+							if (decoded.type === 'data') {
+								if (decoded.data && typeof decoded.data === 'object') {
+									setSubmissionData(decoded.data as RecordingFormData)
 									return
 								}
-								if ('data' in resultRecord) {
-									const actionData = resultRecord.data
-									if (actionData && typeof actionData === 'object') {
-										setSubmissionData(actionData as RecordingFormData)
-										return
-									}
-								}
-								if ('error' in resultRecord) {
-									setRequestError(
-										'Something went wrong submitting your recording.',
-									)
-									return
-								}
+								setRequestError('Unexpected response from server.')
+								return
+							}
+							if (decoded.type === 'error') {
+								setRequestError('Something went wrong submitting your recording.')
+								return
 							}
 							setRequestError('Unexpected response from server.')
-							return
-						}
-
-						const redirect = response.headers.get('X-Remix-Redirect')
-						if (redirect) {
-							const redirectUrl = new URL(redirect, window.location.origin)
-							void navigate(`${redirectUrl.pathname}${redirectUrl.search}`, {
-								replace: response.headers.get('X-Remix-Replace') === 'true',
-							})
 							return
 						}
 
@@ -163,23 +141,39 @@ function RecordingForm({
 
 						setRequestError('Unexpected response from server.')
 					} catch (error: unknown) {
+						if (error instanceof DOMException && error.name === 'AbortError') {
+							return
+						}
 						console.error('Unable to submit recording', error)
 						setRequestError('Unable to submit recording. Please try again.')
-				}
-			} finally {
-				setIsSubmitting(false)
+					} finally {
+						if (abortControllerRef.current === abortController) {
+							abortControllerRef.current = null
+						}
+					}
+				} finally {
+					setIsSubmitting(false)
 				}
 			},
 			{ once: true },
 		)
 	}
 
+	const generalError = submissionData?.errors.generalError || requestError
+	const audioError = submissionData?.errors.audio
+	const audioDescribedBy = [
+		generalError ? 'general-error-message' : null,
+		audioError ? 'audio-error-message' : null,
+	]
+		.filter(Boolean)
+		.join(' ')
+
 	return (
 		<div>
 			<div className="mb-12">
-				{submissionData?.errors.generalError || requestError ? (
-					<p id="audio-error-message" className="text-center text-red-500">
-						{submissionData?.errors.generalError ?? requestError}
+				{generalError ? (
+					<p id="general-error-message" className="text-center text-red-500">
+						{generalError}
 					</p>
 				) : null}
 				{audioURL ? (
@@ -187,14 +181,14 @@ function RecordingForm({
 						src={audioURL}
 						controls
 						preload="metadata"
-						aria-describedby="audio-error-message"
+						aria-describedby={audioDescribedBy || undefined}
 					/>
 				) : (
 					'loading...'
 				)}
-				{submissionData?.errors.audio ? (
+				{audioError ? (
 					<p id="audio-error-message" className="text-center text-red-600">
-						{submissionData.errors.audio}
+						{audioError}
 					</p>
 				) : null}
 			</div>

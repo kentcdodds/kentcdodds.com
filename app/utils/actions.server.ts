@@ -47,7 +47,11 @@ async function handleFormSubmission<
 )): Promise<TypedResponse<ActionData>> {
 	try {
 		if (!form) {
-			try {
+			const contentType = request!.headers.get('content-type') ?? ''
+			if (contentType.includes('application/x-www-form-urlencoded')) {
+				const requestText = await request!.text()
+				form = new URLSearchParams(requestText)
+			} else {
 				const formData = await request!.formData()
 				form = new URLSearchParams()
 				for (const [key, value] of formData.entries()) {
@@ -55,9 +59,6 @@ async function handleFormSubmission<
 						form.append(key, value)
 					}
 				}
-			} catch {
-				const requestText = await request!.text()
-				form = new URLSearchParams(requestText)
 			}
 		}
 
