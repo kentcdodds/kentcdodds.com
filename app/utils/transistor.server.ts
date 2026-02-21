@@ -17,7 +17,7 @@ import {
 	transcribeMp3WithWorkersAi,
 } from './cloudflare-ai-transcription.server.ts'
 import { stripHtml } from './markdown.server.ts'
-import { getRequiredServerEnvVar, toBase64 } from './misc.tsx'
+import { getRequiredServerEnvVar, toBase64 } from './misc.ts'
 import { type Timings } from './timing.server.ts'
 import { getDirectAvatarForUser } from './user-info.server.ts'
 

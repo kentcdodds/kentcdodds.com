@@ -1,20 +1,5 @@
 import crypto from 'crypto'
-
-// NOTE: This module is imported directly by Node during production server
-// startup (for example, the pre-deploy healthcheck). Node can strip types from
-// `.ts`, but it cannot execute `.tsx`, so this file must not depend on
-// `misc.tsx`.
-function getRequiredServerEnvVar(
-	key: string,
-	devValue: string = `${key}-dev-value`,
-) {
-	const envVal = process.env[key]
-	if (envVal) return envVal
-	if (process.env.NODE_ENV === 'production') {
-		throw new Error(`${key} is a required env variable`)
-	}
-	return devValue
-}
+import { getRequiredServerEnvVar } from './misc.ts'
 
 const algorithm = 'aes-256-gcm'
 

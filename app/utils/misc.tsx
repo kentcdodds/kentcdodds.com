@@ -1,9 +1,4 @@
 import * as Sentry from '@sentry/react-router'
-import {
-	format as dateFormat,
-	add as dateAdd,
-	parseISO as dateParseISO,
-} from 'date-fns'
 import md5 from 'md5-hash'
 import * as React from 'react'
 import {
@@ -11,30 +6,17 @@ import {
 	isRouteErrorResponse,
 	useRouteError,
 	type ErrorResponse,
-	type HeadersFunction,
 	type LinkProps,
 } from 'react-router'
-import {
-	type NonNullProperties,
-	type OptionalTeam,
-	type Role,
-	type Team,
-	type User,
-} from '#app/types.ts'
+import { type OptionalTeam, type User } from '#app/types.ts'
 import { images } from '../images.tsx'
-import { type getEnv } from './env.server.ts'
+import { getOptionalTeam } from './misc.ts'
 
-const teams: Array<Team> = ['RED', 'BLUE', 'YELLOW']
-export const optionalTeams: Array<OptionalTeam> = [...teams, 'UNKNOWN']
-const roles: Array<Role> = ['ADMIN', 'MEMBER']
-const isTeam = (team?: string): team is Team => teams.includes(team as Team)
-const isRole = (role?: string): role is Role => roles.includes(role as Role)
-const getTeam = (team?: string): Team | null => (isTeam(team) ? team : null)
-const getOptionalTeam = (team?: string): OptionalTeam =>
-	isTeam(team) ? team : 'UNKNOWN'
+export * from './misc.ts'
 
 const defaultAvatarSize = 128
-function getAvatar(
+
+export function getAvatar(
 	email: string,
 	{
 		size = defaultAvatarSize,
@@ -64,7 +46,7 @@ const avatarFallbacks: Record<OptionalTeam, (width: number) => string> = {
 	UNKNOWN: (width: number) => images.kodyProfileGray({ resize: { width } }),
 }
 
-function getAvatarForUser(
+export function getAvatarForUser(
 	{ email, team, firstName }: Pick<User, 'email' | 'team' | 'firstName'>,
 	{ size = defaultAvatarSize, origin }: { size?: number; origin?: string } = {},
 ) {
@@ -78,20 +60,7 @@ function getAvatarForUser(
 	}
 }
 
-const teamTextColorClasses: Record<OptionalTeam, string> = {
-	YELLOW: 'text-team-yellow',
-	BLUE: 'text-team-blue',
-	RED: 'text-team-red',
-	UNKNOWN: 'text-team-unknown',
-}
-
-const teamDisplay: Record<Team, string> = {
-	RED: 'Red',
-	BLUE: 'Blue',
-	YELLOW: 'Yellow',
-}
-
-const useSSRLayoutEffect =
+export const useSSRLayoutEffect =
 	typeof window === 'undefined' ? () => {} : React.useLayoutEffect
 
 type AnchorProps = React.DetailedHTMLProps<
@@ -99,7 +68,7 @@ type AnchorProps = React.DetailedHTMLProps<
 	HTMLAnchorElement
 >
 
-const AnchorOrLink = function AnchorOrLink({
+export const AnchorOrLink = function AnchorOrLink({
 	ref,
 	...props
 }: AnchorProps & {
@@ -150,163 +119,7 @@ const AnchorOrLink = function AnchorOrLink({
 	}
 }
 
-function formatDuration(seconds: number) {
-	const mins = Math.floor(seconds / 60)
-		.toString()
-		.padStart(2, '0')
-	const secs = (seconds % 60).toFixed().toString().padStart(2, '0')
-	return `${mins}:${secs}`
-}
-
-const formatNumber = (num: number) => new Intl.NumberFormat().format(num)
-
-function formatAbbreviatedNumber(num: number) {
-	return num < 1_000
-		? formatNumber(num)
-		: num < 1_000_000
-			? `${formatNumber(Number((num / 1_000).toFixed(2)))}k`
-			: num < 1_000_000_000
-				? `${formatNumber(Number((num / 1_000_000).toFixed(2)))}m`
-				: num < 1_000_000_000_000
-					? `${formatNumber(Number((num / 1_000_000_000).toFixed(2)))}b`
-					: 'a lot'
-}
-
-function formatDate(dateString: string | Date, format = 'PPP') {
-	if (typeof dateString !== 'string') {
-		dateString = dateString.toISOString()
-	}
-	return dateFormat(parseDate(dateString), format)
-}
-
-function parseDate(dateString: string) {
-	return dateAdd(dateParseISO(dateString), {
-		minutes: new Date().getTimezoneOffset(),
-	})
-}
-
-function getErrorMessage(error: unknown, fallback: string = 'Unknown Error') {
-	if (typeof error === 'string') return error
-	if (error instanceof Error) return error.message
-	return fallback
-}
-
-function getErrorStack(error: unknown, fallback: string = 'Unknown Error') {
-	if (typeof error === 'string') return error
-	if (error instanceof Error) return error.stack
-	return fallback
-}
-
-function getNonNull<Type extends Record<string, null | undefined | unknown>>(
-	obj: Type,
-): NonNullProperties<Type> {
-	for (const [key, val] of Object.entries(obj)) {
-		assertNonNull(val, `The value of ${key} is null but it should not be.`)
-	}
-	return obj as NonNullProperties<Type>
-}
-
-function typedBoolean<T>(
-	value: T,
-): value is Exclude<T, '' | 0 | false | null | undefined> {
-	return Boolean(value)
-}
-
-function assertNonNull<PossibleNullType>(
-	possibleNull: PossibleNullType,
-	errorMessage: string,
-): asserts possibleNull is Exclude<PossibleNullType, null | undefined> {
-	if (possibleNull == null) throw new Error(errorMessage)
-}
-
-function getRequiredEnvVarFromObj(
-	obj: Record<string, string | undefined>,
-	key: string,
-	devValue: string = `${key}-dev-value`,
-) {
-	let value = devValue
-	const envVal = obj[key]
-	if (envVal) {
-		value = envVal
-	} else if (obj.NODE_ENV === 'production') {
-		throw new Error(`${key} is a required env variable`)
-	}
-	return value
-}
-
-function getRequiredServerEnvVar(key: string, devValue?: string) {
-	return getRequiredEnvVarFromObj(process.env, key, devValue)
-}
-
-function getRequiredGlobalEnvVar(
-	key: keyof ReturnType<typeof getEnv>,
-	devValue?: string,
-) {
-	return getRequiredEnvVarFromObj(ENV, key, devValue)
-}
-
-function getDiscordAuthorizeURL(domainUrl: string) {
-	const url = new URL('https://discord.com/api/oauth2/authorize')
-	url.searchParams.set(
-		'client_id',
-		getRequiredGlobalEnvVar('DISCORD_CLIENT_ID'),
-	)
-	url.searchParams.set('redirect_uri', `${domainUrl}/discord/callback`)
-	url.searchParams.set('response_type', 'code')
-	url.searchParams.set('scope', 'identify guilds.join email guilds')
-	return url.toString()
-}
-
-/**
- * @returns domain URL (without a ending slash, like: https://kentcdodds.com)
- */
-function getDomainUrl(request: Request) {
-	const host =
-		request.headers.get('X-Forwarded-Host') ?? request.headers.get('host')
-	if (!host) {
-		throw new Error('Could not determine domain URL.')
-	}
-	const protocol = host.includes('localhost') ? 'http' : 'https'
-	return `${protocol}://${host}`
-}
-
-export function isResponse(response: unknown): response is Response {
-	return (
-		typeof response === 'object' &&
-		response !== null &&
-		'status' in response &&
-		'headers' in response &&
-		'body' in response
-	)
-}
-
-function removeTrailingSlash(s: string) {
-	return s.endsWith('/') ? s.slice(0, -1) : s
-}
-
-function getDisplayUrl(requestInfo?: { origin: string; path: string }) {
-	return getUrl(requestInfo).replace(/^https?:\/\//, '');
-}
-
-function getOrigin(requestInfo?: { origin?: string; path: string }) {
-	return requestInfo?.origin ?? 'https://kentcdodds.com'
-}
-
-function getUrl(requestInfo?: { origin: string; path: string }) {
-	return removeTrailingSlash(
-		`${getOrigin(requestInfo)}${requestInfo?.path ?? ''}`,
-	)
-}
-
-function toBase64(string: string) {
-	if (typeof window === 'undefined') {
-		return Buffer.from(string).toString('base64')
-	} else {
-		return window.btoa(string)
-	}
-}
-
-function useUpdateQueryStringValueWithoutNavigation(
+export function useUpdateQueryStringValueWithoutNavigation(
 	queryKey: string,
 	queryValue: string,
 ) {
@@ -348,7 +161,7 @@ function debounce<Callback extends (...args: Parameters<Callback>) => void>(
 	}
 }
 
-function useDebounce<
+export function useDebounce<
 	Callback extends (...args: Parameters<Callback>) => ReturnType<Callback>,
 >(callback: Callback, delay: number) {
 	const callbackRef = React.useRef(callback)
@@ -365,40 +178,13 @@ function useDebounce<
 	)
 }
 
-const reuseUsefulLoaderHeaders: HeadersFunction = ({
-	loaderHeaders,
-	parentHeaders,
-}) => {
-	const headers = new Headers()
-	const usefulHeaders = ['Cache-Control', 'Vary', 'Server-Timing']
-	for (const headerName of usefulHeaders) {
-		if (loaderHeaders.has(headerName)) {
-			headers.set(headerName, loaderHeaders.get(headerName)!)
-		}
-	}
-	const appendHeaders = ['Server-Timing']
-	for (const headerName of appendHeaders) {
-		if (parentHeaders.has(headerName)) {
-			headers.append(headerName, parentHeaders.get(headerName)!)
-		}
-	}
-	const useIfNotExistsHeaders = ['Cache-Control', 'Vary']
-	for (const headerName of useIfNotExistsHeaders) {
-		if (!headers.has(headerName) && parentHeaders.has(headerName)) {
-			headers.set(headerName, parentHeaders.get(headerName)!)
-		}
-	}
-
-	return headers
-}
-
 function callAll<Args extends Array<unknown>>(
 	...fns: Array<((...args: Args) => unknown) | undefined>
 ) {
 	return (...args: Args) => fns.forEach((fn) => fn?.(...args))
 }
 
-function useDoubleCheck() {
+export function useDoubleCheck() {
 	const [doubleCheck, setDoubleCheck] = React.useState(false)
 
 	function getButtonProps(props?: React.ComponentProps<'button'>) {
@@ -449,48 +235,3 @@ function getRouteErrorResponseException(error: ErrorResponse) {
 	routeErrorResponseError.name = 'RouteErrorResponse'
 	return routeErrorResponseError
 }
-
-export function requireValidSlug(slug: unknown): asserts slug is string {
-	if (typeof slug !== 'string' || !/^[a-zA-Z0-9-_.]+$/.test(slug)) {
-		throw new Response(`This is not a valid slug: "${slug}"`, { status: 400 })
-	}
-}
-
-export { listify } from './listify.ts'
-export {
-	getAvatar,
-	getAvatarForUser,
-	AnchorOrLink,
-	getErrorMessage,
-	getErrorStack,
-	getNonNull,
-	assertNonNull,
-	useUpdateQueryStringValueWithoutNavigation,
-	useSSRLayoutEffect,
-	useDoubleCheck,
-	useDebounce,
-	typedBoolean,
-	getRequiredServerEnvVar,
-	getRequiredGlobalEnvVar,
-	getDiscordAuthorizeURL,
-	getDomainUrl,
-	getUrl,
-	getDisplayUrl,
-	getOrigin,
-	toBase64,
-	removeTrailingSlash,
-	reuseUsefulLoaderHeaders,
-	teams,
-	isTeam,
-	isRole,
-	getTeam,
-	getOptionalTeam,
-	teamDisplay,
-	teamTextColorClasses,
-	parseDate,
-	formatDate,
-	formatDuration,
-	formatNumber,
-	formatAbbreviatedNumber,
-}
-export type { OptionalTeam }

@@ -5,7 +5,7 @@ import {
 	downloadDirList,
 	downloadMdxFileOrDirectory,
 } from '#app/utils/github.server.ts'
-import { formatDate, typedBoolean } from '#app/utils/misc.tsx'
+import { formatDate, typedBoolean } from '#app/utils/misc.ts'
 import { cache, cachified } from './cache.server.ts'
 import { markdownToHtmlUnwrapped, stripHtml } from './markdown.server.ts'
 import { type Timings } from './timing.server.ts'

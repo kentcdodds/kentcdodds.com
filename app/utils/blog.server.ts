@@ -13,7 +13,7 @@ import {
 	getRequiredServerEnvVar,
 	teams,
 	typedBoolean,
-} from './misc.tsx'
+} from './misc.ts'
 import { prisma } from './prisma.server.ts'
 import { getUser } from './session.server.ts'
 import { teamEmoji } from './team-provider.tsx'

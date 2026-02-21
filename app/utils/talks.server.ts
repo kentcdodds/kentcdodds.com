@@ -10,7 +10,7 @@ import {
 	markdownToHtmlUnwrapped,
 	stripHtml,
 } from '#app/utils/markdown.server.ts'
-import { formatDate, typedBoolean } from '#app/utils/misc.tsx'
+import { formatDate, typedBoolean } from '#app/utils/misc.ts'
 import { type Timings } from './timing.server.ts'
 
 type RawTalk = {

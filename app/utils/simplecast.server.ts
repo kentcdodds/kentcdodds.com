@@ -23,7 +23,7 @@ import {
 import { omit, sortBy } from '#app/utils/cjs/lodash.ts'
 import { cache, cachified } from './cache.server.ts'
 import { markdownToHtml, stripHtml } from './markdown.server.ts'
-import { getRequiredServerEnvVar, typedBoolean } from './misc.tsx'
+import { getRequiredServerEnvVar, typedBoolean } from './misc.ts'
 import { type Timings } from './timing.server.ts'
 
 const SIMPLECAST_KEY = getRequiredServerEnvVar('SIMPLECAST_KEY')
