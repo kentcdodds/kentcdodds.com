@@ -9,7 +9,7 @@ test('A new user can create an account', async ({ page }) => {
 		firstName,
 		lastName: faker.person.lastName(),
 		provider: 'example.com',
-	})
+	}).toLowerCase()
 	const password = faker.internet.password({ length: 16 })
 	await page.goto('/')
 	await page
