@@ -643,6 +643,7 @@ function DocCard({ doc }: { doc: DocRow }) {
 	const deleteFetcher = useFetcher<typeof action>()
 	const ignoreFetcher = useFetcher<typeof action>()
 	const deleteDc = useDoubleCheck()
+	const deleteIgnoreDc = useDoubleCheck()
 	const ignoreDc = useDoubleCheck()
 
 	const isDeleting = deleteFetcher.state !== 'idle'
@@ -743,10 +744,15 @@ function DocCard({ doc }: { doc: DocRow }) {
 						<Button
 							size="small"
 							variant="danger"
+							{...deleteIgnoreDc.getButtonProps({ type: 'submit' })}
 							disabled={isDeleting}
 							title="Deletes now and adds this docId to ignore list"
 						>
-							Delete + ignore
+							{isDeleting
+								? 'Deleting...'
+								: deleteIgnoreDc.doubleCheck
+									? 'You sure?'
+									: 'Delete + ignore'}
 						</Button>
 					</deleteFetcher.Form>
 				</div>
