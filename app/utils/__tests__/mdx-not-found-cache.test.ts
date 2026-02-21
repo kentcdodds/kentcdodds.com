@@ -73,6 +73,10 @@ describe('mdx not-found caching', () => {
 		} finally {
 			// Prevent mock/module state leaking if more tests are added later.
 			vi.restoreAllMocks()
+			vi.unmock('../session.server.ts')
+			vi.unmock('#app/routes/resources/cache.sqlite.ts')
+			vi.unmock('#app/utils/compile-mdx.server.ts')
+			vi.unmock('#app/utils/github.server.ts')
 			vi.resetModules()
 
 			for (const [key, value] of Object.entries(originalEnv)) {
