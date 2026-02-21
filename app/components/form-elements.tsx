@@ -71,6 +71,7 @@ function Field({
 	className,
 	description,
 	id,
+	additionalAriaDescribedBy,
 	...props
 }: {
 	defaultValue?: string | null
@@ -79,6 +80,7 @@ function Field({
 	className?: string
 	error?: string | null
 	description?: React.ReactNode
+	additionalAriaDescribedBy?: string
 } & InputProps) {
 	return (
 		<FieldContainer
@@ -87,6 +89,7 @@ function Field({
 			className={className}
 			error={error}
 			description={description}
+			additionalAriaDescribedBy={additionalAriaDescribedBy}
 		>
 			{({ inputProps }) => (
 				<Input
@@ -118,6 +121,7 @@ export function FieldContainer({
 	description,
 	id,
 	children,
+	additionalAriaDescribedBy,
 }: {
 	id?: string
 	label: string
@@ -125,14 +129,20 @@ export function FieldContainer({
 	error?: string | null
 	description?: React.ReactNode
 	children: FieldContainerRenderProp
+	additionalAriaDescribedBy?: string
 }) {
 	const defaultId = React.useId()
 	const inputId = id ?? defaultId
 	const errorId = `${inputId}-error`
 	const descriptionId = `${inputId}-description`
-	const hasMarginBottomClass = className
-		?.split(/\s+/)
-		.some((token) => token.includes('mb-'))
+	const hasMarginBottomClass = className?.includes('mb-')
+	const ariaDescribedBy = [
+		error ? errorId : description ? descriptionId : null,
+		additionalAriaDescribedBy ?? null,
+	]
+		.filter(Boolean)
+		.join(' ')
+		.trim()
 
 	return (
 		<div className={clsx(!hasMarginBottomClass && 'mb-8', className)}>
@@ -150,11 +160,7 @@ export function FieldContainer({
 			{children({
 				inputProps: {
 					id: inputId,
-					'aria-describedby': error
-						? errorId
-						: description
-							? descriptionId
-							: undefined,
+					'aria-describedby': ariaDescribedBy || undefined,
 				},
 			})}
 		</div>

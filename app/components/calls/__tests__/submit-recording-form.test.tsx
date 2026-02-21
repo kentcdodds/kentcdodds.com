@@ -338,6 +338,11 @@ describe('RecordingForm', () => {
 					screen.queryByText('Title must be at least 5 characters'),
 				).not.toBeInTheDocument(),
 			)
+
+			// Submit should surface validation for untouched fields.
+			fireEvent.submit(form as HTMLFormElement)
+			await screen.findByText('Description is required')
+			await screen.findByText('Keywords is required')
 		} finally {
 			createObjectURL.mockRestore()
 			revokeObjectURL.mockRestore()

@@ -63,10 +63,12 @@ function isRecordingFormDataEqual(
 }
 
 function CharacterCountdown({
+	id,
 	value,
 	maxLength,
 	warnAt = 10,
 }: {
+	id?: string
 	value: string
 	maxLength: number
 	warnAt?: number
@@ -79,6 +81,7 @@ function CharacterCountdown({
 
 	return (
 		<p
+			id={id}
 			className={`mt-2 text-right text-sm tabular-nums ${className}`}
 			aria-live="polite"
 		>
@@ -107,6 +110,13 @@ function RecordingForm({
 		return URL.createObjectURL(audio)
 	}, [audio])
 	const [submissionData, setSubmissionData] = React.useState(data)
+	const idBase = React.useId()
+	const titleId = `${idBase}-title`
+	const titleCountdownId = `${titleId}-countdown`
+	const descriptionId = `${idBase}-description`
+	const descriptionCountdownId = `${descriptionId}-countdown`
+	const keywordsId = `${idBase}-keywords`
+	const keywordsCountdownId = `${keywordsId}-countdown`
 	const [fieldValues, setFieldValues] = React.useState(() => ({
 		title: data?.fields.title ?? '',
 		description: data?.fields.description ?? '',
@@ -184,6 +194,8 @@ function RecordingForm({
 		[fieldValues.title, fieldValues.description, fieldValues.keywords],
 	)
 
+	// Prefer client-side errors for the current value, but fall back to server
+	// errors from the last submission attempt when client validation passes.
 	const displayedErrors = {
 		title: clientErrors.title ?? submissionData?.errors.title ?? null,
 		description:
@@ -334,12 +346,14 @@ function RecordingForm({
 				{callId ? <input type="hidden" name="callId" value={callId} /> : null}
 				<div className="mb-8">
 					<Field
+						id={titleId}
 						name="title"
 						label="Title"
-						defaultValue={submissionData?.fields.title ?? ''}
 						maxLength={callKentFieldConstraints.title.maxLength}
 						onChange={handleTextFieldChange('title')}
 						onBlur={handleTextFieldBlur('title')}
+						value={fieldValues.title}
+						additionalAriaDescribedBy={titleCountdownId}
 						aria-invalid={
 							Boolean(displayedErrors.title) &&
 							(hasAttemptedSubmit || fieldInteracted.title)
@@ -352,6 +366,7 @@ function RecordingForm({
 						className="mb-2"
 					/>
 					<CharacterCountdown
+						id={titleCountdownId}
 						value={fieldValues.title}
 						maxLength={callKentFieldConstraints.title.maxLength}
 						warnAt={10}
@@ -359,13 +374,15 @@ function RecordingForm({
 				</div>
 				<div className="mb-8">
 					<Field
+						id={descriptionId}
 						name="description"
 						label="Description"
 						type="textarea"
-						defaultValue={submissionData?.fields.description ?? ''}
 						maxLength={callKentFieldConstraints.description.maxLength}
 						onChange={handleTextFieldChange('description')}
 						onBlur={handleTextFieldBlur('description')}
+						value={fieldValues.description}
+						additionalAriaDescribedBy={descriptionCountdownId}
 						aria-invalid={
 							Boolean(displayedErrors.description) &&
 							(hasAttemptedSubmit || fieldInteracted.description)
@@ -378,6 +395,7 @@ function RecordingForm({
 						className="mb-2"
 					/>
 					<CharacterCountdown
+						id={descriptionCountdownId}
 						value={fieldValues.description}
 						maxLength={callKentFieldConstraints.description.maxLength}
 						warnAt={100}
@@ -386,13 +404,15 @@ function RecordingForm({
 
 				<div className="mb-8">
 					<Field
+						id={keywordsId}
 						label="Keywords"
 						description="comma separated values"
 						name="keywords"
-						defaultValue={submissionData?.fields.keywords ?? ''}
 						maxLength={callKentFieldConstraints.keywords.maxLength}
 						onChange={handleTextFieldChange('keywords')}
 						onBlur={handleTextFieldBlur('keywords')}
+						value={fieldValues.keywords}
+						additionalAriaDescribedBy={keywordsCountdownId}
 						aria-invalid={
 							Boolean(displayedErrors.keywords) &&
 							(hasAttemptedSubmit || fieldInteracted.keywords)
@@ -405,6 +425,7 @@ function RecordingForm({
 						className="mb-2"
 					/>
 					<CharacterCountdown
+						id={keywordsCountdownId}
 						value={fieldValues.keywords}
 						maxLength={callKentFieldConstraints.keywords.maxLength}
 						warnAt={10}
