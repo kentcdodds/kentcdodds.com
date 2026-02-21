@@ -239,7 +239,7 @@ function TeamOption({
 		className: 'mx-auto mb-16 block',
 		widths: [350, 512, 685, 1370, 2055],
 		sizes: [
-			'(min-width:1023px) and (max-width:1620px) 20vw',
+			'(min-width:1024px) and (max-width:1620px) 20vw',
 			'320px',
 		],
 	})
@@ -278,7 +278,7 @@ function TeamOption({
 						{...profileImgProps}
 						alt=""
 						aria-hidden="true"
-						className={clsx(profileClassName)}
+						className={profileClassName}
 					/>
 				</picture>
 				<H6 as="span" className="text-sm leading-none lg:text-lg">
