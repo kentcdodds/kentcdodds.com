@@ -447,8 +447,6 @@ export async function connect(sessionId?: string | null) {
 			return await existingEntry
 		}
 
-		// Reserve the session key atomically so concurrent callers for the same
-		// sessionId share the same transport + server.connect work.
 		const transportPromise = (async () => {
 			const transport = new WebStandardStreamableHTTPServerTransport({
 				sessionIdGenerator: () => sessionId,
@@ -472,22 +470,7 @@ export async function connect(sessionId?: string | null) {
 				throw error
 			}
 		})()
-
-		transports.set(sessionId, transportPromise)
-
-		try {
-			const transport = await transportPromise
-			// Replace the promise with the actual transport so future lookups are direct.
-			if (transports.get(sessionId) === transportPromise) {
-				transports.set(sessionId, transport)
-			}
-			return transport
-		} catch (error) {
-			if (transports.get(sessionId) === transportPromise) {
-				transports.delete(sessionId)
-			}
-			throw error
-		}
+		return await transportPromise
 	}
 
 	const transport = new WebStandardStreamableHTTPServerTransport({
