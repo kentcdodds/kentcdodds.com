@@ -459,6 +459,9 @@ export async function connect(sessionId?: string | null) {
 						transports.delete(closedSessionId)
 					},
 				})
+				transport.onclose = () => {
+					if (transport?.sessionId) transports.delete(transport.sessionId)
+				}
 
 				server = createServer()
 				await server.connect(transport)
@@ -494,6 +497,9 @@ export async function connect(sessionId?: string | null) {
 				transports.delete(closedSessionId)
 			},
 		})
+		transport.onclose = () => {
+			if (transport?.sessionId) transports.delete(transport.sessionId)
+		}
 		server = createServer()
 		await server.connect(transport)
 		return transport
