@@ -10,6 +10,7 @@ test('A new user can create an account', async ({ page }) => {
 		lastName: faker.person.lastName(),
 		provider: 'example.com',
 	})
+	const password = faker.internet.password({ length: 16 })
 	await page.goto('/')
 	await page
 		.getByRole('navigation')
@@ -20,32 +21,31 @@ test('A new user can create an account', async ({ page }) => {
 		page.getByRole('heading', { level: 2, name: /Log.?in/i }),
 	).toBeVisible()
 
-	// submit email to sign up
-	await page
-		.getByRole('banner')
-		.getByRole('textbox', { name: /email/i })
-		.fill(emailAddress)
-	await page
-		.getByRole('banner')
-		.getByRole('textbox', { name: /email/i })
-		.press('Enter')
-	await expect(page.getByText(/magic link has been sent/i)).toBeVisible()
+	await page.getByRole('link', { name: /create one/i }).click()
+	await expect(page).toHaveURL(/.*signup/)
+
+	// request signup verification code
+	await page.getByRole('textbox', { name: /email/i }).fill(emailAddress)
+	await page.getByRole('button', { name: /email me a code/i }).click()
+	await expect(page.getByText(/verification code sent/i)).toBeVisible()
 
 	// read and verify the email
 	const email = await readEmail(emailAddress)
 	invariant(email, 'Email not found')
 	expect(email.to).toBe(emailAddress)
 	expect(email.from).toMatch(/team\+kcd@kentcdodds.com/)
-	expect(email.subject).toMatch(/magic/i)
-	const magicLink = extractUrl(email.text)
-	invariant(magicLink, 'Magic Link not found')
-	await page.goto(magicLink)
+	expect(email.subject).toMatch(/verification/i)
+	const verifyLink = extractUrl(email.text)
+	invariant(verifyLink, 'Verification link not found')
+	await page.goto(verifyLink)
 
 	// sign up for an account
 	const mainContent = page.getByRole('main')
 	await expect(page).toHaveURL(/.*signup/)
 	await mainContent.getByRole('textbox', { name: /name/i }).fill(firstName)
 	await mainContent.getByRole('radio', { name: /blue/i }).check({ force: true })
+	await mainContent.getByLabel(/^password$/i).fill(password)
+	await mainContent.getByLabel(/confirm password/i).fill(password)
 	await mainContent.getByRole('button', { name: /create account/i }).click()
 
 	await expect(page).toHaveURL(/.*me/)
