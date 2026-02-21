@@ -921,14 +921,16 @@ pre {
 	background-color: var(--bg-primary);
 }
 
-.prose :where(form, .demo) :where(button) {
+.prose :where(form, .demo) :where(button):not([type='checkbox']):not(
+		[type='radio']
+	) {
 	background-color: var(--bg-secondary);
 	cursor: pointer;
 	font-weight: 500;
 }
 
 .prose :where(form, .demo) :where(button:hover) {
-	background-color: var(--bg-alt);
+	background-color: var(--bg-primary);
 }
 
 .prose :where(form, .demo)
