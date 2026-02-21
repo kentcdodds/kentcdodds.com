@@ -1,13 +1,9 @@
 function Rendered(props) {
+	const { className, ...rest } = props
 	return (
 		<div
-			style={{
-				padding: 14,
-				backgroundColor: 'rgba(0,0,0,0.05)',
-				borderRadius: 4,
-				marginBottom: 20,
-			}}
-			{...props}
+			className={['demo', className].filter(Boolean).join(' ')}
+			{...rest}
 		/>
 	)
 }
