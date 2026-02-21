@@ -487,7 +487,7 @@ export default function SearchAdminRoute() {
 										type="search"
 										name="q"
 										defaultValue={searchParams.get('q') ?? ''}
-										placeholder="Filter by title, URL, docId, or snippet…"
+										placeholder="Filter by title, URL, docId, or snippet..."
 										className={inputClassName}
 									/>
 								)}
