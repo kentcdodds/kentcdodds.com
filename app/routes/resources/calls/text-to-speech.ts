@@ -7,12 +7,16 @@ import {
 	isCloudflareTextToSpeechConfigured,
 	synthesizeSpeechWithWorkersAi,
 } from '#app/utils/cloudflare-ai-text-to-speech.server.ts'
+import { rateLimit } from '#app/utils/rate-limit.server.ts'
 import { requireUser } from '#app/utils/session.server.ts'
 import  { type Route } from './+types/text-to-speech'
 
+const TTS_RATE_LIMIT_MAX = 20
+const TTS_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000
+
 export async function action({ request }: Route.ActionArgs) {
 	// This is a paid API call; require auth to limit abuse.
-	await requireUser(request)
+	const user = await requireUser(request)
 
 	const headers = { 'Cache-Control': 'no-store' }
 
@@ -44,6 +48,27 @@ export async function action({ request }: Route.ActionArgs) {
 
 	if (voiceRaw && !isCallKentTextToSpeechVoice(voiceRaw)) {
 		return json({ error: 'Invalid voice' }, { status: 400, headers })
+	}
+
+	const limit = rateLimit({
+		key: `call-kent-tts:${user.id}`,
+		max: TTS_RATE_LIMIT_MAX,
+		windowMs: TTS_RATE_LIMIT_WINDOW_MS,
+	})
+	if (!limit.allowed) {
+		const retryAfterSeconds = Math.ceil((limit.retryAfterMs ?? 0) / 1000)
+		return json(
+			{
+				error: `Too many text-to-speech requests. Try again in ${retryAfterSeconds}s.`,
+			},
+			{
+				status: 429,
+				headers: {
+					...headers,
+					'Retry-After': String(retryAfterSeconds),
+				},
+			},
+		)
 	}
 
 	try {

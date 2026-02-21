@@ -109,7 +109,7 @@ function makePcm16SineWaveWav({
 	const safeDuration = clamp(durationSeconds, 0.25, 30)
 	const numSamples = Math.floor(safeDuration * sampleRate)
 	const dataSize = numSamples * 2 // 16-bit mono
-	const buffer = Buffer.allocUnsafe(44 + dataSize)
+	const buffer = Buffer.alloc(44 + dataSize)
 
 	// RIFF header
 	buffer.write('RIFF', 0, 'ascii')

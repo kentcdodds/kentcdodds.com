@@ -20,6 +20,7 @@ export function CharacterCountdown({
 			id={id}
 			className={`mt-2 text-right text-sm tabular-nums ${className}`}
 			aria-live="polite"
+			aria-atomic="true"
 		>
 			{remainingDisplay} characters left
 		</p>

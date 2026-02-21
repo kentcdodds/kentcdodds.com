@@ -23,18 +23,22 @@ async function getErrorMessageFromResponse(response: Response) {
 	const contentType = (response.headers.get('content-type') ?? '').toLowerCase()
 	const bodyText = await response.text().catch(() => '')
 	if (contentType.includes('application/json')) {
-		const json = (() => {
+		const parsed = (() => {
 			try {
-				return JSON.parse(bodyText)
+				return JSON.parse(bodyText) as unknown
 			} catch {
 				return null
 			}
-		})() as any
+		})()
+		const obj =
+			parsed && typeof parsed === 'object'
+				? (parsed as Record<string, unknown>)
+				: null
 		const err =
-			typeof json?.error === 'string'
-				? json.error
-				: typeof json?.message === 'string'
-					? json.message
+			typeof obj?.error === 'string'
+				? obj.error
+				: typeof obj?.message === 'string'
+					? obj.message
 					: null
 		if (err) return err
 	}
@@ -51,7 +55,6 @@ function useFiveSecondPreview(audioRef: React.RefObject<HTMLAudioElement | null>
 	return React.useCallback(() => {
 		const audio = audioRef.current
 		if (!audio) return
-		const audioEl = audio
 
 		// Stop any previous preview listeners.
 		cleanupRef.current?.()
@@ -63,16 +66,16 @@ function useFiveSecondPreview(audioRef: React.RefObject<HTMLAudioElement | null>
 		function cleanup() {
 			if (cleanedUp) return
 			cleanedUp = true
-			audioEl.removeEventListener('timeupdate', onTimeUpdate)
-			audioEl.removeEventListener('ended', cleanup)
+			audio.removeEventListener('timeupdate', onTimeUpdate)
+			audio.removeEventListener('ended', cleanup)
 			cleanupRef.current = null
 		}
 
 		function onTimeUpdate() {
-			if (audioEl.currentTime >= stopAtSeconds) {
-				audioEl.pause()
+			if (audio.currentTime >= stopAtSeconds) {
+				audio.pause()
 				try {
-					audioEl.currentTime = 0
+					audio.currentTime = 0
 				} catch {
 					// ignore
 				}
@@ -80,16 +83,16 @@ function useFiveSecondPreview(audioRef: React.RefObject<HTMLAudioElement | null>
 			}
 		}
 
-		audioEl.addEventListener('timeupdate', onTimeUpdate)
-		audioEl.addEventListener('ended', cleanup)
+		audio.addEventListener('timeupdate', onTimeUpdate)
+		audio.addEventListener('ended', cleanup)
 		cleanupRef.current = cleanup
 
 		try {
-			audioEl.currentTime = 0
+			audio.currentTime = 0
 		} catch {
 			// ignore
 		}
-		void audioEl.play().catch(() => cleanup())
+		void audio.play().catch(() => cleanup())
 	}, [audioRef])
 }
 
@@ -111,9 +114,11 @@ export function CallKentTextToSpeech({
 		'asteria') as CallKentTextToSpeechVoice
 	const [voice, setVoice] = React.useState<CallKentTextToSpeechVoice>(defaultVoice)
 	const [questionText, setQuestionText] = React.useState('')
+	const [questionTouched, setQuestionTouched] = React.useState(false)
+	const [hasAttemptedGenerate, setHasAttemptedGenerate] = React.useState(false)
 
 	const [isGenerating, setIsGenerating] = React.useState(false)
-	const [error, setError] = React.useState<string | null>(null)
+	const [serverError, setServerError] = React.useState<string | null>(null)
 	const [audioBlob, setAudioBlob] = React.useState<Blob | null>(null)
 	const [audioUrl, setAudioUrl] = React.useState<string | null>(null)
 	const [durationSeconds, setDurationSeconds] = React.useState<number | null>(null)
@@ -139,7 +144,7 @@ export function CallKentTextToSpeech({
 		abortControllerRef.current = null
 		requestIdRef.current += 1
 		setIsGenerating(false)
-		setError(null)
+		setServerError(null)
 		setAudioBlob(null)
 		setAudioUrl(null)
 		setDurationSeconds(null)
@@ -156,11 +161,11 @@ export function CallKentTextToSpeech({
 	)
 
 	async function generateAudio() {
-		setError(null)
+		setHasAttemptedGenerate(true)
+		setServerError(null)
 
 		const validationError = getErrorForCallKentQuestionText(questionText)
 		if (validationError) {
-			setError(validationError)
 			return
 		}
 
@@ -183,14 +188,14 @@ export function CallKentTextToSpeech({
 			if (!response.ok || !isProbablyAudioResponse(response)) {
 				const msg = await getErrorMessageFromResponse(response)
 				if (requestIdRef.current !== requestId) return
-				setError(msg)
+				setServerError(msg)
 				return
 			}
 
 			const blob = await response.blob()
 			if (requestIdRef.current !== requestId) return
 			if (!blob.type.startsWith('audio/')) {
-				setError('Unexpected response while generating audio.')
+				setServerError('Unexpected response while generating audio.')
 				return
 			}
 
@@ -205,7 +210,7 @@ export function CallKentTextToSpeech({
 				return
 			}
 			if (requestIdRef.current !== requestId) return
-			setError(e instanceof Error ? e.message : 'Unable to generate audio.')
+			setServerError(e instanceof Error ? e.message : 'Unable to generate audio.')
 		} finally {
 			if (abortControllerRef.current === abortController) {
 				abortControllerRef.current = null
@@ -217,6 +222,8 @@ export function CallKentTextToSpeech({
 	}
 
 	const isTooLong = typeof durationSeconds === 'number' && durationSeconds > 120
+	const showQuestionError = questionTouched || hasAttemptedGenerate
+	const displayedQuestionError = showQuestionError ? questionError : null
 
 	return (
 		<div className="flex flex-col gap-6">
@@ -234,8 +241,10 @@ export function CallKentTextToSpeech({
 					onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
 						setQuestionText(e.currentTarget.value)
 					}
+					onBlur={() => setQuestionTouched(true)}
 					maxLength={callKentTextToSpeechConstraints.questionText.maxLength}
-					aria-invalid={Boolean(questionError)}
+					aria-invalid={showQuestionError && Boolean(questionError)}
+					error={displayedQuestionError}
 					additionalAriaDescribedBy={questionCountdownId}
 					className="mb-2"
 				/>
@@ -275,7 +284,16 @@ export function CallKentTextToSpeech({
 				</div>
 			) : null}
 
-			{error ? <p className="text-red-500">{error}</p> : null}
+			{serverError ? (
+				<p
+					role="alert"
+					aria-live="assertive"
+					aria-atomic="true"
+					className="text-red-500"
+				>
+					{serverError}
+				</p>
+			) : null}
 
 			<div className="flex flex-wrap gap-3">
 				<Button
