@@ -589,6 +589,16 @@ export default function NewAccount({
 				>
 					<input type="hidden" name="actionId" value={actionIds.signUp} />
 					<Grid>
+						{data.error ? (
+							<div className="col-span-full mb-8">
+								<InputError id="signup-error">{data.error}</InputError>
+							</div>
+						) : null}
+						{data.message ? (
+							<p className="text-secondary col-span-full mb-8 text-lg">
+								{data.message}
+							</p>
+						) : null}
 						{actionData?.errors.generalError ? (
 							<div className="col-span-full mb-4">
 								<InputError id="general-error">
