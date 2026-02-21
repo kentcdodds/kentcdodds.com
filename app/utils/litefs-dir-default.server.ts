@@ -1,4 +1,10 @@
-const DEFAULT_LITEFS_DIR = './prisma'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const DEFAULT_LITEFS_DIR = resolve(
+	dirname(fileURLToPath(import.meta.url)),
+	'../../prisma',
+)
 
 /**
  * `litefs-js` throws if `process.env.LITEFS_DIR` is unset.
@@ -8,12 +14,11 @@ const DEFAULT_LITEFS_DIR = './prisma'
  * instance detection since missing `.primary` simply means "this instance is
  * primary".
  *
- * On Fly in production, leaving it unset is a misconfiguration and should fail
- * fast, so we do not apply the default there.
+ * In production, leaving it unset is a misconfiguration and should fail fast,
+ * so we do not apply the default there.
  */
 export function ensureLitefsDirDefault() {
-	const runningOnFly = Boolean(process.env.FLY_APP_NAME)
-	const shouldDefault = !runningOnFly || process.env.NODE_ENV !== 'production'
+	const shouldDefault = process.env.NODE_ENV !== 'production'
 
 	if (!process.env.LITEFS_DIR && shouldDefault) {
 		process.env.LITEFS_DIR = DEFAULT_LITEFS_DIR
@@ -24,4 +29,3 @@ export function ensureLitefsDirDefault() {
 
 // Ensure this is applied as early as possible for any server-only imports.
 ensureLitefsDirDefault()
-
