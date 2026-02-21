@@ -27,14 +27,14 @@ const schema = z.object({
 	DISCORD_SCOPES: z.string(),
 	DISCORD_YELLOW_CHANNEL: z.string(),
 	DISCORD_YELLOW_ROLE: z.string(),
-	FLY_CONSUL_URL: z.string(),
 	INTERNAL_COMMAND_TOKEN: z.string(),
 	MAGIC_LINK_SECRET: z.string(),
 	MAILGUN_DOMAIN: z.string(),
 	MAILGUN_SENDING_KEY: z.string(),
 	REFRESH_CACHE_SECRET: z.string(),
 	SENTRY_AUTH_TOKEN: z.string(),
-	SENTRY_DSN: z.string(),
+	// If you plan on using Sentry, remove the .optional()
+	SENTRY_DSN: z.string().optional(),
 	SENTRY_ORG: z.string(),
 	SENTRY_PROJECT: z.string(),
 	SENTRY_PROJECT_ID: z.string(),
@@ -69,12 +69,21 @@ declare global {
 }
 
 export function init() {
+	// Back-compat: historically we only configured `DATABASE_URL` locally.
+	// Epic Stack expects `DATABASE_PATH` too, and it's useful for tooling.
+	if (!process.env.DATABASE_PATH) {
+		const url = process.env.DATABASE_URL
+		if (typeof url === 'string' && url.startsWith('file:')) {
+			process.env.DATABASE_PATH = url.slice('file:'.length)
+		}
+	}
+
 	const parsed = schema.safeParse(process.env)
 
 	if (parsed.success === false) {
 		console.error(
 			'❌ Invalid environment variables:',
-			z.flattenError(parsed.error).fieldErrors,
+			parsed.error.flatten().fieldErrors,
 		)
 
 		throw new Error('Invalid environment variables')
@@ -92,9 +101,7 @@ export function init() {
  */
 export function getEnv() {
 	return {
-		FLY: process.env.FLY,
 		MODE: process.env.NODE_ENV,
-		NODE_ENV: process.env.NODE_ENV,
 		DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
 		SENTRY_DSN: process.env.SENTRY_DSN,
 	}
