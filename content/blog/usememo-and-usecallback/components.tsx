@@ -65,7 +65,7 @@ function Poll() {
 					type="button"
 					className="usememo-and-usecallback-poll-button"
 					onClick={() => setAnswer('useCallback')}
-					disabled={isWrong}
+					disabled={isWrong || isRight}
 				>
 					useCallback
 				</button>
