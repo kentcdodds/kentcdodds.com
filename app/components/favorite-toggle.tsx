@@ -67,7 +67,7 @@ export function FavoriteToggle({
 			contentType,
 			contentId,
 		})
-		fetcher.load(`/resources/favorite?${searchParams.toString()}`)
+		void fetcher.load(`/resources/favorite?${searchParams.toString()}`)
 	}, [shouldLoadInitial, contentType, contentId, fetcher])
 
 	const nextIntent = isFavorite ? 'remove' : 'add'

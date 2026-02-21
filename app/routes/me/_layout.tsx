@@ -20,6 +20,14 @@ import { getGenericSocialImage, images } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import { handleFormSubmission } from '#app/utils/actions.server.ts'
+import { getEpisodePath } from '#app/utils/call-kent.ts'
+import { getCWKEpisodePath } from '#app/utils/chats-with-kent.ts'
+import {
+	getEpisodeFavoriteContentId,
+	parseEpisodeFavoriteContentId,
+	type FavoriteContentType,
+} from '#app/utils/favorites.ts'
+import { getBlogMdxListItems } from '#app/utils/mdx.server.ts'
 import {
 	getDiscordAuthorizeURL,
 	getDisplayUrl,
@@ -31,16 +39,10 @@ import {
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc.tsx'
 import {
-	getEpisodeFavoriteContentId,
-	parseEpisodeFavoriteContentId,
-	type FavoriteContentType,
-} from '#app/utils/favorites.ts'
-import {
 	TEAM_ONEWHEELING_MAP,
 	TEAM_SKIING_MAP,
 	TEAM_SNOWBOARD_MAP,
 } from '#app/utils/onboarding.ts'
-import { getBlogMdxListItems } from '#app/utils/mdx.server.ts'
 import { getMagicLink, prisma } from '#app/utils/prisma.server.ts'
 import { getQrCodeDataURL } from '#app/utils/qrcode.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
@@ -49,8 +51,6 @@ import {
 	getSession,
 	requireUser,
 } from '#app/utils/session.server.ts'
-import { getEpisodePath } from '#app/utils/call-kent.ts'
-import { getCWKEpisodePath } from '#app/utils/chats-with-kent.ts'
 import { getSeasonListItems } from '#app/utils/simplecast.server.ts'
 import { getTalksAndTags } from '#app/utils/talks.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'

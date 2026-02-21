@@ -230,7 +230,7 @@ export default function TalksScreen() {
 		if (!user) return
 		if (talkFavoritesFetcher.data) return
 		if (talkFavoritesFetcher.state !== 'idle') return
-		talkFavoritesFetcher.load('/resources/favorites?contentType=talk')
+		void talkFavoritesFetcher.load('/resources/favorites?contentType=talk')
 	}, [user, talkFavoritesFetcher])
 
 	const favoriteTalkIds = new Set(talkFavoritesFetcher.data?.contentIds ?? [])
