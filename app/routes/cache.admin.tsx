@@ -255,7 +255,11 @@ export function ErrorBoundary() {
 		)
 	}
 	if (error instanceof Response) {
-		const statusLine = `${error.status} ${error.statusText || String(error)}`.trim()
+		const statusLine = error.statusText
+			? `${error.status} ${error.statusText}`.trim()
+			: error.url
+				? `${error.status} ${error.url}`.trim()
+				: `Response ${error.status}`
 		return <div>{statusLine || 'Unexpected response'}</div>
 	}
 	if (error instanceof Error) {
