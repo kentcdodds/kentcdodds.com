@@ -25,6 +25,7 @@ import { TeamCircle } from './team-circle.tsx'
 
 const LINKS = [
 	{ id: 'blog', name: 'Blog', to: '/blog' },
+	{ id: 'talks', name: 'Talks', to: '/talks' },
 	{ id: 'courses', name: 'Courses', to: '/courses' },
 	{ id: 'discord', name: 'Discord', to: '/discord' },
 	{ id: 'chats', name: 'Chats', to: '/chats/05' },
