@@ -471,13 +471,17 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 closeWithGrace(() => {
-	expiredSessionsCleanup.stop()
 	return Promise.all([
+		expiredSessionsCleanup.stop(),
 		new Promise((resolve, reject) => {
 			server.close((e) => (e ? reject(e) : resolve('ok')))
 		}),
 		new Promise((resolve, reject) => {
-			wss?.close((e) => (e ? reject(e) : resolve('ok')))
+			if (!wss) {
+				resolve('ok')
+				return
+			}
+			wss.close((e) => (e ? reject(e) : resolve('ok')))
 		}),
 	])
 })

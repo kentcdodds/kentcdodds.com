@@ -2,7 +2,7 @@ import { getInstanceInfo } from '../app/utils/litefs-js.server.ts'
 import { deleteExpiredSessions } from '../app/utils/prisma.server.ts'
 
 type CleanupController = {
-	stop: () => void
+	stop: () => Promise<void>
 	runNow: (reason?: string) => Promise<void>
 }
 
@@ -35,57 +35,63 @@ export function scheduleExpiredSessionsCleanup({
 }: CleanupOptions = {}): CleanupController {
 	if (!enabled) {
 		return {
-			stop() {},
+			stop: async () => {},
 			runNow: async () => {},
 		}
 	}
 
 	let running = false
+	let runningPromise: Promise<void> | null = null
 	let timeoutId: NodeJS.Timeout | null = null
 	let intervalId: NodeJS.Timeout | null = null
 
 	const runNow = async (reason = 'interval') => {
-		if (running) return
+		if (runningPromise) return runningPromise
 		running = true
-		try {
-			const { currentIsPrimary, currentInstance, primaryInstance } =
-				await getInstanceInfo()
-			if (!currentIsPrimary) return
+		runningPromise = (async () => {
+			try {
+				const { currentIsPrimary, currentInstance, primaryInstance } =
+					await getInstanceInfo()
+				if (!currentIsPrimary) return
 
-			const deletedCount = await deleteExpiredSessions()
-			if (deletedCount > 0) {
-				console.info(
-					`expired-sessions-cleanup: deleted ${deletedCount} expired sessions (${reason})`,
-					{
-						currentInstance,
-						primaryInstance,
-					},
-				)
+				const deletedCount = await deleteExpiredSessions()
+				if (deletedCount > 0) {
+					console.info(
+						`expired-sessions-cleanup: deleted ${deletedCount} expired sessions (${reason})`,
+						{
+							currentInstance,
+							primaryInstance,
+						},
+					)
+				}
+			} catch (error: unknown) {
+				console.error(`expired-sessions-cleanup: failed (${reason})`, error)
+			} finally {
+				running = false
+				runningPromise = null
 			}
-		} catch (error: unknown) {
-			console.error(`expired-sessions-cleanup: failed (${reason})`, error)
-		} finally {
-			running = false
-		}
+		})()
+		return runningPromise
 	}
 
 	timeoutId = setTimeout(() => {
 		timeoutId = null
 		void runNow('startup')
+
+		intervalId = setInterval(() => {
+			void runNow('interval')
+		}, intervalMs)
+		intervalId.unref?.()
 	}, startupDelayMs)
 	timeoutId.unref?.()
 
-	intervalId = setInterval(() => {
-		void runNow('interval')
-	}, intervalMs)
-	intervalId.unref?.()
-
 	return {
-		stop() {
+		async stop() {
 			if (timeoutId) clearTimeout(timeoutId)
 			if (intervalId) clearInterval(intervalId)
 			timeoutId = null
 			intervalId = null
+			if (runningPromise) await runningPromise
 		},
 		runNow,
 	}
