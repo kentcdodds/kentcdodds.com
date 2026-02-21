@@ -4,6 +4,7 @@ import {
 	data as json,
 	Form,
 	Link,
+	isRouteErrorResponse,
 	useFetcher,
 	useLoaderData,
 	useSearchParams,
@@ -934,6 +935,30 @@ function DocCard({ doc }: { doc: DocRow }) {
 export function ErrorBoundary() {
 	const error = useCapturedRouteError()
 	console.error(error)
+	if (isRouteErrorResponse(error)) {
+		let data = ''
+		if (error.data != null) {
+			if (typeof error.data === 'string') {
+				data = error.data
+			} else {
+				try {
+					data = JSON.stringify(error.data, null, 2)
+				} catch {
+					data = String(error.data)
+				}
+			}
+		}
+		const statusLine = `${error.status} ${error.statusText}`.trim()
+		return (
+			<div className="mx-10vw mt-10">
+				<h2>Search admin error</h2>
+				<pre className="whitespace-pre-wrap">
+					{statusLine}
+					{data ? `\n\n${data}` : ''}
+				</pre>
+			</div>
+		)
+	}
 	return (
 		<div className="mx-10vw mt-10">
 			<h2>Search admin error</h2>

@@ -1,5 +1,5 @@
 import { invariantResponse } from '@epic-web/invariant'
-import { data as json, Form, useFetcher, useLoaderData, useSearchParams, useSubmit } from 'react-router';
+import { data as json, Form, isRouteErrorResponse, useFetcher, useLoaderData, useSearchParams, useSubmit } from 'react-router';
 import { Button } from '#app/components/button.tsx'
 import {
 	Field,
@@ -233,6 +233,31 @@ export function ErrorBoundary() {
 	const error = useCapturedRouteError()
 	console.error(error)
 
+	if (isRouteErrorResponse(error)) {
+		let data = ''
+		if (error.data != null) {
+			if (typeof error.data === 'string') {
+				data = error.data
+			} else {
+				try {
+					data = JSON.stringify(error.data, null, 2)
+				} catch {
+					data = String(error.data)
+				}
+			}
+		}
+		const statusLine = `${error.status} ${error.statusText}`.trim()
+		return (
+			<div>
+				<div>{statusLine || 'Unexpected response'}</div>
+				{data ? <pre className="whitespace-pre-wrap">{data}</pre> : null}
+			</div>
+		)
+	}
+	if (error instanceof Response) {
+		const statusLine = `${error.status} ${error.statusText || String(error)}`.trim()
+		return <div>{statusLine || 'Unexpected response'}</div>
+	}
 	if (error instanceof Error) {
 		return <div>An unexpected error occurred: {error.message}</div>
 	} else {
