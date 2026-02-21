@@ -5,7 +5,7 @@ import {
 	getInstanceInfo,
 	getInternalInstanceDomain,
 } from '#app/utils/litefs-js.server.ts'
-import { getRequiredServerEnvVar } from '#app/utils/misc.tsx'
+import { getRequiredServerEnvVar } from '#app/utils/misc.ts'
 import  { type Route } from './+types/cache.sqlite'
 
 export async function action({ request }: Route.ActionArgs) {

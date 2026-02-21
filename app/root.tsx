@@ -15,7 +15,7 @@ import {
 	getDomainUrl,
 	getUrl,
 	removeTrailingSlash,
-} from '#app/utils/misc.tsx'
+} from '#app/utils/misc-react.tsx'
 import  { type Route } from './+types/root'
 import { AppHotkeys } from './components/app-hotkeys.tsx'
 import { ArrowLink } from './components/arrow-button.tsx'

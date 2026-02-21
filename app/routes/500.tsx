@@ -2,7 +2,7 @@
 
 import { ServerError } from '#app/components/errors.tsx'
 import { type KCDHandle } from '#app/types.ts'
-import { useCapturedRouteError } from '#app/utils/misc.tsx'
+import { useCapturedRouteError } from '#app/utils/misc-react.tsx'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,

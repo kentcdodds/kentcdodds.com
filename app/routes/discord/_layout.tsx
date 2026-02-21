@@ -31,7 +31,7 @@ import {
 	getUrl,
 	reuseUsefulLoaderHeaders,
 	useCapturedRouteError,
-} from '#app/utils/misc.tsx'
+} from '#app/utils/misc-react.tsx'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { getTestimonials } from '#app/utils/testimonials.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'

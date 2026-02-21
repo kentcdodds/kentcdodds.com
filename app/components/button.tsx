@@ -1,6 +1,6 @@
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { AnchorOrLink } from '#app/utils/misc.tsx'
+import { AnchorOrLink } from '#app/utils/misc-react.tsx'
 
 interface ButtonProps {
 	variant?: 'primary' | 'secondary' | 'danger'

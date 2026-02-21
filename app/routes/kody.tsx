@@ -7,7 +7,7 @@ import {
 } from '#app/components/sections/hero-section.tsx'
 import { H2 } from '#app/components/typography.js'
 import { images, kodyImages } from '#app/images.tsx'
-import { optionalTeams, type OptionalTeam } from '#app/utils/misc.tsx'
+import { optionalTeams, type OptionalTeam } from '#app/utils/misc.ts'
 import { useTeam } from '#app/utils/team-provider.tsx'
 
 export const meta: MetaFunction = () => [

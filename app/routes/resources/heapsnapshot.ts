@@ -4,7 +4,7 @@ import path from 'path'
 import { PassThrough } from 'stream'
 import v8 from 'v8'
 import { createReadableStreamFromReadable } from '@react-router/node';
-import { formatDate } from '#app/utils/misc.tsx'
+import { formatDate } from '#app/utils/misc.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
 import  { type Route } from './+types/heapsnapshot'
 

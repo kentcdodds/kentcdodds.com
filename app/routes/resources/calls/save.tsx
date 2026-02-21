@@ -505,7 +505,7 @@ async function createCall({
 			{ teamEmoji },
 		] = await Promise.all([
 			import('#app/utils/discord.server.ts'),
-			import('#app/utils/misc.tsx'),
+			import('#app/utils/misc.ts'),
 			import('#app/utils/prisma.server.ts'),
 			import('#app/utils/session.server.ts'),
 			import('#app/utils/team-provider.tsx'),
@@ -543,7 +543,7 @@ async function createCall({
 
 		return redirect(`/calls/record/${createdCall.id}`)
 	} catch (error: unknown) {
-		const { getErrorMessage } = await import('#app/utils/misc.tsx')
+		const { getErrorMessage } = await import('#app/utils/misc.ts')
 		actionData.errors.generalError = getErrorMessage(error)
 		return json(actionData, 500)
 	}
@@ -578,7 +578,7 @@ async function publishCall({
 		] = await Promise.all([
 			import('#app/utils/ffmpeg.server.ts'),
 			import('#app/utils/markdown.server.ts'),
-			import('#app/utils/misc.tsx'),
+			import('#app/utils/misc.ts'),
 			import('#app/utils/prisma.server.ts'),
 			import('#app/utils/send-email.server.ts'),
 			import('#app/utils/session.server.ts'),
@@ -639,7 +639,7 @@ Thanks for your call. Kent just replied and the episode has been published to th
 
 		return redirect('/calls')
 	} catch (error: unknown) {
-		const { getErrorMessage } = await import('#app/utils/misc.tsx')
+		const { getErrorMessage } = await import('#app/utils/misc.ts')
 		actionData.errors.generalError = getErrorMessage(error)
 		return json(actionData, 500)
 	}

@@ -13,7 +13,7 @@ import {
 	getDomainUrl,
 	getErrorMessage,
 	isResponse,
-} from '#app/utils/misc.tsx'
+} from '#app/utils/misc.ts'
 import { requireUser } from '#app/utils/session.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import { deleteDiscordCache } from '#app/utils/user-info.server.ts'

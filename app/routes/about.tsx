@@ -34,7 +34,7 @@ import {
 	getDisplayUrl,
 	getUrl,
 	reuseUsefulLoaderHeaders,
-} from '#app/utils/misc.tsx'
+} from '#app/utils/misc.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { getTalksAndTags } from '#app/utils/talks.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'

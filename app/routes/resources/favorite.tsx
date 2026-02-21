@@ -9,7 +9,7 @@ import {
 	parseEpisodeFavoriteContentId,
 	type FavoriteContentType,
 } from '#app/utils/favorites.ts'
-import { reuseUsefulLoaderHeaders } from '#app/utils/misc.tsx'
+import { reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
 import { useOptionalUser } from '#app/utils/use-root-data.ts'
 import { type Route } from './+types/favorite'
 

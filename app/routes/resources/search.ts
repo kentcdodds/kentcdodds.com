@@ -1,5 +1,5 @@
 import { data as json } from 'react-router';
-import { getDomainUrl } from '#app/utils/misc.tsx'
+import { getDomainUrl } from '#app/utils/misc.ts'
 import {
 	isSemanticSearchConfigured,
 	semanticSearchKCD,

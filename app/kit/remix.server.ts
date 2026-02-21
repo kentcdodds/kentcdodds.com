@@ -1,5 +1,5 @@
 import { data as json } from 'react-router';
-import { getErrorMessage } from '#app/utils/misc.tsx'
+import { getErrorMessage } from '#app/utils/misc.ts'
 import { deleteKitCache } from '#app/utils/user-info.server.ts'
 import * as ck from './kit.server.ts'
 import { type ActionData, type Errors, type Fields } from './types.ts'

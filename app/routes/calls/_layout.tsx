@@ -26,7 +26,7 @@ import {
 	getOrigin,
 	getUrl,
 	reuseUsefulLoaderHeaders,
-} from '#app/utils/misc.tsx'
+} from '#app/utils/misc.ts'
 import {
 	CallsEpisodeUIStateProvider,
 	useMatchLoaderData,

@@ -3,7 +3,7 @@ import { buildImageUrl, setConfig } from 'cloudinary-build-url'
 import clsx from 'clsx'
 import emojiRegex from 'emoji-regex'
 import { type CSSProperties } from 'react'
-import { optionalTeams, toBase64, type OptionalTeam } from './utils/misc.tsx'
+import { optionalTeams, toBase64, type OptionalTeam } from './utils/misc.ts'
 
 setConfig({
 	cloudName: 'kentcdodds-com',

@@ -21,7 +21,7 @@ import {
 	getErrorMessage,
 	useDebounce,
 	useUpdateQueryStringValueWithoutNavigation,
-} from '#app/utils/misc.tsx'
+} from '#app/utils/misc-react.tsx'
 import {
 	isSemanticSearchConfigured,
 	semanticSearchKCD,

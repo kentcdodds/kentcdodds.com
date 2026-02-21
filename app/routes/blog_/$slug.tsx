@@ -33,7 +33,7 @@ import {
 	formatNumber,
 	requireValidSlug,
 	reuseUsefulLoaderHeaders,
-} from '#app/utils/misc.tsx'
+} from '#app/utils/misc.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { getUser } from '#app/utils/session.server.ts'
 import { teamEmoji, useTeam } from '#app/utils/team-provider.tsx'

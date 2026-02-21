@@ -16,7 +16,7 @@ import {
 	getDisplayUrl,
 	getUrl,
 	typedBoolean,
-} from '#app/utils/misc.tsx'
+} from '#app/utils/misc-react.tsx'
 import { getSocialMetas } from './seo.ts'
 import { Themed } from './theme.tsx'
 import { useOptionalUser } from './use-root-data.ts'

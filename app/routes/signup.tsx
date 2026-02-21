@@ -15,7 +15,7 @@ import { handleFormSubmission } from '#app/utils/actions.server.ts'
 import { shuffle } from '#app/utils/cjs/lodash.ts'
 import { getClientSession } from '#app/utils/client.server.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
-import { getErrorStack, isTeam, teams } from '#app/utils/misc.tsx'
+import { getErrorStack, isTeam, teams } from '#app/utils/misc.ts'
 import {
 	TEAM_ONEWHEELING_MAP,
 	TEAM_SKIING_MAP,

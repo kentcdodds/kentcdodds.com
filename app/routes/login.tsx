@@ -22,7 +22,7 @@ import {
 	getOrigin,
 	getUrl,
 	reuseUsefulLoaderHeaders,
-} from '#app/utils/misc.tsx'
+} from '#app/utils/misc.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { getUser, sendToken } from '#app/utils/session.server.ts'
 import { isEmailVerified } from '#app/utils/verifier.server.ts'

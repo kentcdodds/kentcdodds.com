@@ -24,7 +24,7 @@ import {
 	reuseUsefulLoaderHeaders,
 	teams,
 	useCapturedRouteError,
-} from '#app/utils/misc.tsx'
+} from '#app/utils/misc-react.tsx'
 import { getUser } from '#app/utils/session.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import  { type Route } from './+types/index'
