@@ -225,8 +225,8 @@ function TeamOption({
 				'mx-auto mb-2 block h-16 w-16 object-contain sm:h-20 sm:w-20 lg:mb-16 lg:h-auto lg:w-auto',
 			widths: [64, 80, 96, 128, 160, 256, 320, 350, 512, 685, 1370],
 			sizes: [
-				'(max-width: 639px) 64px',
-				'(min-width: 640px) and (max-width: 1023px) 80px',
+				'(max-width: 479px) 64px',
+				'(min-width: 480px) and (max-width: 1023px) 80px',
 				'(min-width:1024px) and (max-width:1620px) 20vw',
 				'320px',
 			],
@@ -263,13 +263,13 @@ function TeamOption({
 					aria-hidden="true"
 					className={teamImageClassName}
 				/>
-				<H6 as="span" className="text-sm leading-none lg:text-lg">
+				<span className="text-sm font-medium leading-none text-black dark:text-white lg:text-lg">
 					<span className="lg:hidden" aria-hidden="true">
 						{team.label.replace(' Team', '')}
 					</span>
 					<span className="sr-only lg:hidden">{team.label}</span>
 					<span className="hidden lg:inline">{team.label}</span>
-				</H6>
+				</span>
 			</label>
 		</div>
 	)
