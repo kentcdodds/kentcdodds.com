@@ -58,22 +58,18 @@ export function useCountdown(endTimeMs: number, intervalMs = 1000) {
 			scheduleNextTick()
 		}
 
-		function handleFocus() {
-			resync()
-		}
-
 		function handleVisibilityChange() {
 			// When becoming visible again, jump immediately to the correct value.
 			if (!document.hidden) resync()
 		}
 
-		window.addEventListener('focus', handleFocus)
+		window.addEventListener('focus', resync)
 		document.addEventListener('visibilitychange', handleVisibilityChange)
 
 		return () => {
 			cancelled = true
 			clearScheduledTick()
-			window.removeEventListener('focus', handleFocus)
+			window.removeEventListener('focus', resync)
 			document.removeEventListener('visibilitychange', handleVisibilityChange)
 		}
 	}, [endTimeMs, intervalMs])

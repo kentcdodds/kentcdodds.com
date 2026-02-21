@@ -47,7 +47,9 @@ export async function action({ request }: Route.ActionArgs) {
 			? Math.min(Math.floor(rawMaxAge), MAX_MAX_AGE_SECONDS)
 			: DEFAULT_MAX_AGE_SECONDS
 
-	const cookieHeader = cookie.stringifySetCookie(promoName, 'hidden', {
+	const cookieHeader = cookie.stringifySetCookie({
+		name: promoName,
+		value: 'hidden',
 		httpOnly: true,
 		secure: true,
 		sameSite: 'lax',
@@ -92,6 +94,11 @@ export function Promotification({
 			setVisible(false)
 		}
 	}, [fetcher.data])
+
+	const dismissError =
+		fetcher.state === 'idle' && fetcher.data?.success === false
+			? (fetcher.data?.error ?? 'Could not dismiss. Please try again.')
+			: null
 
 	useEffect(() => {
 		// `promoEndTime` can change if a parent swaps promos; keep this derived.
@@ -140,6 +147,11 @@ export function Promotification({
 							<input type="hidden" name="promoName" value={promoName} />
 							<input type="hidden" name="maxAge" value={dismissTimeSeconds} />
 							<div className="mt-4 flex flex-wrap items-center justify-end gap-2">
+								{dismissError ? (
+									<p className="text-sm text-red-500" role="alert">
+										{dismissError}
+									</p>
+								) : null}
 								<LinkButton
 									type="submit"
 									className={`text-inverse flex items-center gap-1 transition-opacity ${
