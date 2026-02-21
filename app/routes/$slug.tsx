@@ -18,7 +18,7 @@ import {
 	mdxPageMeta,
 	useMdxComponent,
 } from '#app/utils/mdx.tsx'
-import { requireValidSlug, reuseUsefulLoaderHeaders } from '#app/utils/misc.tsx'
+import { requireValidSlug, reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import  { type Route } from './+types/$slug'
 

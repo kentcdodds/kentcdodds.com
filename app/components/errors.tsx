@@ -3,7 +3,7 @@ import errorStack from 'error-stack-parser'
 import * as React from 'react'
 import { useMatches } from 'react-router';
 import { type MdxListItem } from '#app/types.ts'
-import { getErrorMessage } from '#app/utils/misc.tsx'
+import { getErrorMessage } from '#app/utils/misc.ts'
 import { ArrowLink } from './arrow-button.tsx'
 import { Facepalm, Grimmacing, MissingSomething } from './kifs.tsx'
 import { BlogSection } from './sections/blog-section.tsx'

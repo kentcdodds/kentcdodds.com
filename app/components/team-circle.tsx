@@ -1,4 +1,4 @@
-import { type OptionalTeam } from '#app/utils/misc.tsx'
+import { type OptionalTeam } from '#app/utils/misc.ts'
 
 function polarToCartesian(x: number, y: number, r: number, degrees: number) {
 	const radians = (degrees * Math.PI) / 180.0

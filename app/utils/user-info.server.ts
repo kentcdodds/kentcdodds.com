@@ -3,7 +3,7 @@ import { getImageBuilder, images } from '../images.tsx'
 import * as k from '../kit/kit.server.ts'
 import { cache, cachified } from './cache.server.ts'
 import * as discord from './discord.server.ts'
-import { getAvatar, getOptionalTeam } from './misc.tsx'
+import { getAvatar, getOptionalTeam } from './misc-react.tsx'
 import { type Timings } from './timing.server.ts'
 
 type UserInfo = {

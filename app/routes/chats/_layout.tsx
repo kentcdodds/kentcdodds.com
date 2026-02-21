@@ -31,7 +31,7 @@ import {
 	getUrl,
 	listify,
 	reuseUsefulLoaderHeaders,
-} from '#app/utils/misc.tsx'
+} from '#app/utils/misc.ts'
 import { ChatsEpisodeUIStateProvider } from '#app/utils/providers.tsx'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { getSeasonListItems } from '#app/utils/simplecast.server.ts'

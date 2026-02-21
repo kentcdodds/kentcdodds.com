@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { getImgProps, type ImageBuilder } from '#app/images.tsx'
-import { AnchorOrLink } from '#app/utils/misc.tsx'
+import { AnchorOrLink } from '#app/utils/misc-react.tsx'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import { externalLinks } from '../external-links.tsx'
 import { KitForm } from '../kit/form.tsx'

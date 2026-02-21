@@ -1,5 +1,5 @@
 import { getBlogMdxListItems } from './mdx.server.ts'
-import { formatDate, getDomainUrl } from './misc.tsx'
+import { formatDate, getDomainUrl } from './misc.ts'
 
 async function getRssFeedXml(request: Request) {
 	const posts = await getBlogMdxListItems({ request })
@@ -25,7 +25,7 @@ async function getRssFeedXml(request: Request) {
 							)}</description>
               <pubDate>${formatDate(
 								post.frontmatter.date ?? new Date(),
-								'yyyy-MM-ii',
+								'yyyy-MM-dd',
 							)}</pubDate>
               <link>${blogUrl}/${post.slug}</link>
               <guid>${blogUrl}/${post.slug}</guid>

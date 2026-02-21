@@ -6,7 +6,7 @@ import { Grimmacing } from '#app/components/kifs.tsx'
 import { H4, Paragraph } from '#app/components/typography.tsx'
 import { RecordingForm } from '#app/routes/resources/calls/save.tsx'
 import { type KCDHandle } from '#app/types.ts'
-import { useCapturedRouteError } from '#app/utils/misc.tsx'
+import { useCapturedRouteError } from '#app/utils/misc-react.tsx'
 import { useRootData } from '#app/utils/use-root-data.ts'
 
 export const handle: KCDHandle = {

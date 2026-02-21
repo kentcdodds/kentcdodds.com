@@ -3,7 +3,7 @@
 import { type MetaFunction } from 'react-router';
 import { getSocialImageWithPreTitle } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
-import { getDisplayUrl, getUrl } from '#app/utils/misc.tsx'
+import { getDisplayUrl, getUrl } from '#app/utils/misc.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { type loader as talkLoader } from './_layout.tsx'

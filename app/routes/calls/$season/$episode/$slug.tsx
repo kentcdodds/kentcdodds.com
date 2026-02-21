@@ -12,7 +12,7 @@ import {
 	type Params,
 } from '#app/utils/call-kent.ts'
 import { getEpisodeFavoriteContentId } from '#app/utils/favorites.ts'
-import { getUrl, reuseUsefulLoaderHeaders } from '#app/utils/misc.tsx'
+import { getUrl, reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'

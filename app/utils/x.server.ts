@@ -6,7 +6,7 @@ import mDescription from 'metascraper-description'
 import mImage from 'metascraper-image'
 import mTitle from 'metascraper-title'
 import { cache, lruCache } from './cache.server.ts'
-import { formatDate, formatNumber, typedBoolean } from './misc.tsx'
+import { formatDate, formatNumber, typedBoolean } from './misc.ts'
 import { getTweet } from './twitter/get-tweet.ts'
 import { type Tweet } from './twitter/types/index.ts'
 

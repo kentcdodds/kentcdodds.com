@@ -3,7 +3,7 @@ import gsap from 'gsap'
 import * as React from 'react'
 import { assign, fromCallback, fromPromise, sendTo, setup } from 'xstate'
 import { type OptionalTeam } from '#app/types.ts'
-import { assertNonNull, getOptionalTeam } from '#app/utils/misc.tsx'
+import { assertNonNull, getOptionalTeam } from '#app/utils/misc.ts'
 import { Button, LinkButton } from '../button.tsx'
 import { useInterval } from '../hooks/use-interval.tsx'
 import {

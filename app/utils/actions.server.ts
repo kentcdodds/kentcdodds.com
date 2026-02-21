@@ -3,7 +3,7 @@ import {
 	data as json,
 } from 'react-router'
 import { type NonNullProperties } from '#app/types.ts'
-import { getErrorMessage, getNonNull } from './misc.tsx'
+import { getErrorMessage, getNonNull } from './misc.ts'
 
 type TypedResponse<T> = DataWithResponseInit<T> | Response
 

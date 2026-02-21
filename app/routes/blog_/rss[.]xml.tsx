@@ -1,6 +1,6 @@
 
 import { getBlogMdxListItems } from '#app/utils/mdx.server.ts'
-import { formatDate, getDomainUrl } from '#app/utils/misc.tsx'
+import { formatDate, getDomainUrl } from '#app/utils/misc.ts'
 import  { type Route } from './+types/rss[.]xml'
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -27,7 +27,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 							)}</description>
               <pubDate>${formatDate(
 								post.frontmatter.date ?? new Date(),
-								'yyyy-MM-ii',
+								'yyyy-MM-dd',
 							)}</pubDate>
               <link>${blogUrl}/${post.slug}</link>
               <guid>${blogUrl}/${post.slug}</guid>

@@ -8,7 +8,7 @@ import {
 	getMdxDirList,
 	getMdxPage,
 } from '#app/utils/mdx.server.ts'
-import { getRequiredServerEnvVar } from '#app/utils/misc.tsx'
+import { getRequiredServerEnvVar } from '#app/utils/misc.ts'
 import { getResumeData } from '#app/utils/resume.server.ts'
 import { getTalksAndTags } from '#app/utils/talks.server.ts'
 import { getTestimonials } from '#app/utils/testimonials.server.ts'

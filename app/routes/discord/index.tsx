@@ -1,6 +1,6 @@
 import { ButtonLink } from '#app/components/button.tsx'
 import { externalLinks } from '#app/external-links.tsx'
-import { getDiscordAuthorizeURL } from '#app/utils/misc.tsx'
+import { getDiscordAuthorizeURL } from '#app/utils/misc.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 
 export default function DiscordIndex() {

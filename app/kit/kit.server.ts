@@ -1,4 +1,4 @@
-import { getRequiredServerEnvVar } from '../utils/misc.tsx'
+import { getRequiredServerEnvVar } from '../utils/misc.ts'
 
 const KIT_API_SECRET = getRequiredServerEnvVar('KIT_API_SECRET')
 const KIT_API_KEY = getRequiredServerEnvVar('KIT_API_KEY')

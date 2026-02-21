@@ -4,7 +4,7 @@ import * as React from 'react'
 import { Link } from 'react-router';
 import { kodyProfiles } from '#app/images.tsx'
 import { type Team } from '#app/types.ts'
-import { formatNumber, getOptionalTeam } from '#app/utils/misc.tsx'
+import { formatNumber, getOptionalTeam } from '#app/utils/misc.ts'
 import { useTeam } from '#app/utils/team-provider.tsx'
 import { useOptionalUser, useRootData } from '#app/utils/use-root-data.ts'
 

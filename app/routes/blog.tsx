@@ -48,7 +48,7 @@ import {
 	reuseUsefulLoaderHeaders,
 	useUpdateQueryStringValueWithoutNavigation,
 	useCapturedRouteError,
-} from '#app/utils/misc.tsx'
+} from '#app/utils/misc-react.tsx'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { useTeam } from '#app/utils/team-provider.tsx'

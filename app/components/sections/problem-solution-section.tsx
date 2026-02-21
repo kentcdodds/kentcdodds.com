@@ -12,7 +12,7 @@ import * as React from 'react'
 import { Link } from 'react-router';
 import { getImgProps, images, type ImageBuilder } from '#app/images.tsx'
 import { type Team } from '#app/types.ts'
-import { teamTextColorClasses } from '#app/utils/misc.tsx'
+import { teamTextColorClasses } from '#app/utils/misc.ts'
 import { ArrowLink } from '../arrow-button.tsx'
 import { Grid } from '../grid.tsx'
 import { ArrowIcon } from '../icons.tsx'

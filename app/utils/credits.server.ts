@@ -2,7 +2,7 @@ import { cachified, verboseReporter } from '@epic-web/cachified'
 import * as YAML from 'yaml'
 import { cache, shouldForceFresh } from './cache.server.ts'
 import { downloadFile } from './github.server.ts'
-import { getErrorMessage, typedBoolean } from './misc.tsx'
+import { getErrorMessage, typedBoolean } from './misc.ts'
 
 export type Person = {
 	name: string

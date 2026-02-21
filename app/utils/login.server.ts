@@ -1,6 +1,6 @@
 import { createCookieSessionStorage } from 'react-router';
 import { decrypt, encrypt } from './encryption.server.ts'
-import { getRequiredServerEnvVar } from './misc.tsx'
+import { getRequiredServerEnvVar } from './misc.ts'
 import { linkExpirationTime } from './prisma.server.ts'
 
 const loginInfoStorage = createCookieSessionStorage({

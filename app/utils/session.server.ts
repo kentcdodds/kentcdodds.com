@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { type User } from '#app/utils/prisma-generated.server/client.ts'
 import { getLoginInfoSession } from './login.server.ts'
-import { getRequiredServerEnvVar } from './misc.tsx'
+import { getRequiredServerEnvVar } from './misc.ts'
 import {
 	createSession,
 	getMagicLink,

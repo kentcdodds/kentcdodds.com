@@ -43,7 +43,7 @@ import {
 	reuseUsefulLoaderHeaders,
 	typedBoolean,
 	useCapturedRouteError,
-} from '#app/utils/misc.tsx'
+} from '#app/utils/misc-react.tsx'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'

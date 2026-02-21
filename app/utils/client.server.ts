@@ -3,7 +3,7 @@
 
 import { createCookieSessionStorage } from 'react-router';
 import * as uuid from 'uuid'
-import { getRequiredServerEnvVar } from './misc.tsx'
+import { getRequiredServerEnvVar } from './misc.ts'
 
 const clientStorage = createCookieSessionStorage({
 	cookie: {
