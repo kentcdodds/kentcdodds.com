@@ -10,6 +10,7 @@ import remark2rehype from 'remark-rehype'
 import { unified } from 'unified'
 import type * as U from 'unist'
 import { visit } from 'unist-util-visit'
+import { z } from 'zod'
 import {
 	type CWKEpisode,
 	type CWKSeason,
@@ -35,6 +36,28 @@ const headers = {
 }
 
 const seasonsCacheKey = `simplecast:seasons:${CHATS_WITH_KENT_PODCAST_ID}`
+
+const cwkCachedListItemSchema = z
+	.object({
+		publishedAt: z.string().min(1),
+	})
+	.passthrough()
+
+const cwkCachedSeasonsSchema = z.array(
+	z
+		.object({
+			seasonNumber: z.number(),
+			episodes: z.array(cwkCachedListItemSchema),
+		})
+		.passthrough(),
+)
+
+const cwkCachedEpisodeSchema = z
+	.object({
+		title: z.string().min(1),
+		publishedAt: z.string().min(1),
+	})
+	.passthrough()
 
 function isTooManyRequests(json: unknown): json is SimplecastTooManyRequests {
 	return (
@@ -65,25 +88,7 @@ const getCachedSeasons = async ({
 		staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
 		getFreshValue: () => getSeasons({ request, forceFresh, timings }),
 		forceFresh,
-		checkValue: (value: unknown) =>
-			Array.isArray(value) &&
-			value.every(
-				(v) =>
-					typeof v === 'object' &&
-					v !== null &&
-					'seasonNumber' in v &&
-					typeof (v as { seasonNumber?: unknown }).seasonNumber === 'number' &&
-					'episodes' in v &&
-					Array.isArray((v as { episodes?: unknown }).episodes) &&
-					(v as { episodes: Array<unknown> }).episodes.every(
-						(e) =>
-							typeof e === 'object' &&
-							e !== null &&
-							'publishedAt' in e &&
-							typeof (e as { publishedAt?: unknown }).publishedAt === 'string' &&
-							(e as { publishedAt: string }).publishedAt.length > 0,
-					),
-			),
+		checkValue: cwkCachedSeasonsSchema,
 	})
 
 async function getCachedEpisode(
@@ -108,13 +113,7 @@ async function getCachedEpisode(
 		staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
 		getFreshValue: () => getEpisode(episodeId),
 		forceFresh,
-		checkValue: (value: unknown) =>
-			typeof value === 'object' &&
-			value !== null &&
-			'title' in value &&
-			'publishedAt' in value &&
-			typeof (value as { publishedAt?: unknown }).publishedAt === 'string' &&
-			(value as { publishedAt: string }).publishedAt.length > 0,
+		checkValue: cwkCachedEpisodeSchema,
 	})
 }
 
