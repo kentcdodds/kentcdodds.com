@@ -1025,6 +1025,11 @@ pre {
 	cursor: not-allowed;
 }
 
+.prose .demo-usememo-and-usecallback .candy-dispenser-button:focus-visible {
+	outline: 2px solid var(--color-team-current);
+	outline-offset: 2px;
+}
+
 .prose .demo-usememo-and-usecallback .candy-dispenser-refill {
 	white-space: nowrap;
 }
@@ -1061,6 +1066,13 @@ pre {
 	.usememo-and-usecallback-poll-button:disabled {
 	opacity: 0.6;
 	cursor: not-allowed;
+}
+
+.prose
+	.demo-usememo-and-usecallback-poll
+	.usememo-and-usecallback-poll-button:focus-visible {
+	outline: 2px solid var(--color-team-current);
+	outline-offset: 2px;
 }
 
 .prose .demo-usememo-and-usecallback-poll .usememo-and-usecallback-poll-feedback {
