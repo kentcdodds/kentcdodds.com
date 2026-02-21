@@ -896,8 +896,11 @@ pre {
 .prose .demo {
 	display: flex;
 	justify-content: center;
-	background-color: var(--bg-alt);
-	padding: 2rem;
+	background-color: var(--bg-secondary);
+	border: 1px solid var(--border-secondary);
+	border-radius: 0.75rem;
+	padding: 1.25rem;
+	font-size: 1rem;
 }
 .prose .demo button,
 .prose .demo input {
@@ -909,4 +912,175 @@ pre {
 	appearance: revert;
 	line-height: revert;
 	color: revert;
+}
+
+.prose .demo :is(h1, h2, h3, h4, h5, h6) {
+	margin-top: 0;
+	margin-bottom: 0.75rem;
+}
+
+@media (min-width: 640px) {
+	.prose .demo {
+		padding: 1.5rem;
+	}
+}
+
+@media (min-width: 1024px) {
+	.prose .demo {
+		grid-column: 2 / span 10;
+	}
+}
+
+/* Specific demo styles: /blog/usememo-and-usecallback */
+.prose .demo-usememo-and-usecallback {
+	width: 100%;
+}
+
+.prose .demo-usememo-and-usecallback .candy-dispenser,
+.prose .demo-usememo-and-usecallback .usememo-and-usecallback-poll {
+	width: 100%;
+	max-width: 32rem;
+}
+
+.prose .demo-usememo-and-usecallback .candy-dispenser {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.prose .demo-usememo-and-usecallback .candy-dispenser-title {
+	font-size: 1.25rem;
+	font-weight: 500;
+	color: var(--text-primary);
+	margin-bottom: 0.25rem;
+}
+
+.prose .demo-usememo-and-usecallback .candy-dispenser-section-title {
+	font-size: 0.95rem;
+	font-weight: 500;
+	color: var(--text-secondary);
+	margin: 0;
+}
+
+.prose .demo-usememo-and-usecallback .candy-dispenser-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: grid;
+	gap: 0.5rem;
+}
+
+.prose .demo-usememo-and-usecallback .candy-dispenser-item {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.75rem;
+	background: var(--bg-primary);
+	border: 1px solid var(--border-secondary);
+	border-radius: 0.625rem;
+}
+
+.prose .demo-usememo-and-usecallback .candy-dispenser-candy-name {
+	color: var(--text-primary);
+	overflow-wrap: anywhere;
+}
+
+.prose .demo-usememo-and-usecallback .candy-dispenser-empty {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	padding: 0.75rem;
+	background: var(--bg-primary);
+	border: 1px dashed var(--border-secondary);
+	border-radius: 0.625rem;
+}
+
+.prose .demo-usememo-and-usecallback .candy-dispenser-empty-message {
+	color: var(--text-secondary);
+}
+
+.prose .demo-usememo-and-usecallback .candy-dispenser-button {
+	font: inherit;
+	font-size: 0.95rem;
+	line-height: 1.2;
+	padding: 0.45rem 0.65rem;
+	border-radius: 0.625rem;
+	border: 1px solid var(--border-secondary);
+	background: var(--bg-secondary);
+	color: var(--text-primary);
+	cursor: pointer;
+}
+
+.prose .demo-usememo-and-usecallback .candy-dispenser-button:hover {
+	background: var(--bg-alt);
+}
+
+.prose .demo-usememo-and-usecallback .candy-dispenser-button:active {
+	transform: translateY(1px);
+}
+
+.prose .demo-usememo-and-usecallback .candy-dispenser-button:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.prose .demo-usememo-and-usecallback .candy-dispenser-refill {
+	white-space: nowrap;
+}
+
+.prose .demo-usememo-and-usecallback-poll .usememo-and-usecallback-poll {
+	max-width: 24rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.prose .demo-usememo-and-usecallback-poll .usememo-and-usecallback-poll-options {
+	display: grid;
+	gap: 0.5rem;
+}
+
+.prose .demo-usememo-and-usecallback-poll .usememo-and-usecallback-poll-button {
+	width: 100%;
+	font: inherit;
+	padding: 0.75rem 1rem;
+	border-radius: 0.75rem;
+	border: 1px solid var(--border-secondary);
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	cursor: pointer;
+}
+
+.prose .demo-usememo-and-usecallback-poll .usememo-and-usecallback-poll-button:hover {
+	background: var(--bg-alt);
+}
+
+.prose
+	.demo-usememo-and-usecallback-poll
+	.usememo-and-usecallback-poll-button:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.prose .demo-usememo-and-usecallback-poll .usememo-and-usecallback-poll-feedback {
+	padding: 0.75rem 1rem;
+	border-radius: 0.75rem;
+	border: 1px solid var(--border-secondary);
+	background: var(--bg-secondary);
+	color: var(--text-secondary);
+}
+
+.prose
+	.demo-usememo-and-usecallback-poll
+	.usememo-and-usecallback-poll-feedback[data-variant='right'] {
+	color: var(--color-green-500);
+	border-color: var(--color-green-500);
+}
+
+.prose
+	.demo-usememo-and-usecallback-poll
+	.usememo-and-usecallback-poll-feedback[data-variant='wrong'] {
+	color: var(--color-red-500);
+	border-color: var(--color-red-500);
 }

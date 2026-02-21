@@ -38,14 +38,7 @@ import { CandyDispenser, Poll } from './components.tsx'
 
 Here's a candy dispenser:
 
-<div
-	style={{
-		padding: 20,
-		border: '2px solid var(--border-secondary)',
-		borderRadius: 5,
-		marginBottom: 20,
-	}}
->
+<div className="demo demo-usememo-and-usecallback">
 	<CandyDispenser />
 </div>
 
@@ -104,7 +97,9 @@ const dispense = (candy) => {
 So here's my question, in this specific case, which of these is better for
 performance? Go ahead and submit your guess (this is not recorded anywhere):
 
-<Poll />
+<div className="demo demo-usememo-and-usecallback demo-usememo-and-usecallback-poll">
+	<Poll />
+</div>
 
 _Let me give you some space to not spoil the answer for you..._
 
