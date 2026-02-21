@@ -286,6 +286,16 @@ export async function action({ request }: Route.ActionArgs) {
 			{ status: 503 },
 		)
 	}
+	if (store.source === 'fixtures') {
+		return json(
+			{
+				ok: false,
+				error:
+					'Fixture semantic-search manifests are read-only. Configure R2 to modify manifests or the ignore list.',
+			},
+			{ status: 503 },
+		)
+	}
 
 	const formData = await request.formData()
 	const intent = formData.get('intent')
@@ -331,12 +341,14 @@ export async function action({ request }: Route.ActionArgs) {
 		if (!docId)
 			return json({ ok: false, error: 'docId is required' }, { status: 400 })
 
+		if (scope !== 'all' && !manifestKey) {
+			return json(
+				{ ok: false, error: 'manifestKey is required unless scope is "all".' },
+				{ status: 400 },
+			)
+		}
 		const manifestKeys =
-			scope === 'all'
-				? await store.listManifestKeys()
-				: manifestKey
-					? [manifestKey]
-					: await store.listManifestKeys()
+			scope === 'all' ? await store.listManifestKeys() : [manifestKey]
 
 		const vectorIdsToDelete: string[] = []
 		const updatedManifests: string[] = []
@@ -358,11 +370,16 @@ export async function action({ request }: Route.ActionArgs) {
 
 		let deletedVectors = 0
 		let vectorDeleteSkipped = false
+		let vectorDeleteError: string | null = null
 		if (vectorIdsToDelete.length) {
 			if (!isSemanticSearchConfigured()) {
 				vectorDeleteSkipped = true
 			} else {
-				deletedVectors = await deleteVectorsInBatches(vectorIdsToDelete)
+				try {
+					deletedVectors = await deleteVectorsInBatches(vectorIdsToDelete)
+				} catch (error) {
+					vectorDeleteError = getErrorMessage(error)
+				}
 			}
 		}
 
@@ -383,6 +400,7 @@ export async function action({ request }: Route.ActionArgs) {
 			vectorIdsRequested: vectorIdsToDelete.length,
 			deletedVectors,
 			vectorDeleteSkipped,
+			vectorDeleteError,
 		})
 	}
 
@@ -403,6 +421,15 @@ export default function SearchAdminRoute() {
 
 	const ignoreAddFetcher = useFetcher<typeof action>()
 	const ignoreAddRef = React.useRef<HTMLInputElement>(null)
+
+	React.useEffect(() => {
+		if (ignoreAddFetcher.state !== 'idle') return
+		const ok = (ignoreAddFetcher.data as any)?.ok
+		if (!ok) return
+		if (!ignoreAddRef.current) return
+		ignoreAddRef.current.value = ''
+		ignoreAddRef.current.focus()
+	}, [ignoreAddFetcher.state, ignoreAddFetcher.data])
 
 	const nextOffset = data.offset + data.limit
 	const prevOffset = Math.max(0, data.offset - data.limit)
@@ -527,9 +554,6 @@ export default function SearchAdminRoute() {
 									/>
 								)}
 							</FieldContainer>
-
-							{/* Reset pagination when filters change */}
-							<input type="hidden" name="offset" value="0" />
 
 							<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:col-span-12">
 								<label className="flex items-center gap-2 text-lg text-gray-500 dark:text-slate-500">
@@ -690,13 +714,16 @@ function IgnorePatternRow({ pattern }: { pattern: string }) {
 
 function DocCard({ doc }: { doc: DocRow }) {
 	const deleteFetcher = useFetcher<typeof action>()
+	const deleteIgnoreFetcher = useFetcher<typeof action>()
 	const ignoreFetcher = useFetcher<typeof action>()
 	const deleteDc = useDoubleCheck()
 	const deleteIgnoreDc = useDoubleCheck()
 	const ignoreDc = useDoubleCheck()
 
 	const isDeleting = deleteFetcher.state !== 'idle'
+	const isDeletingIgnore = deleteIgnoreFetcher.state !== 'idle'
 	const isIgnoring = ignoreFetcher.state !== 'idle'
+	const isDeletingAny = isDeleting || isDeletingIgnore
 
 	// `useFetcher<typeof action>()` does not narrow well when a single action
 	// supports multiple intents with different response shapes.
@@ -714,6 +741,31 @@ function DocCard({ doc }: { doc: DocRow }) {
 					deletedVectors: number
 					vectorDeleteSkipped: boolean
 				})
+			: null
+	const deleteVectorDeleteError =
+		deleteResult && typeof (deleteData?.vectorDeleteError ?? null) === 'string'
+			? String(deleteData.vectorDeleteError)
+			: null
+
+	const deleteIgnoreData = deleteIgnoreFetcher.data as any
+	const deleteIgnoreError =
+		deleteIgnoreData?.ok === false
+			? String(deleteIgnoreData.error ?? 'Delete + ignore failed')
+			: null
+	const deleteIgnoreResult =
+		deleteIgnoreData?.ok === true &&
+		typeof deleteIgnoreData.vectorIdsRequested === 'number' &&
+		typeof deleteIgnoreData.vectorDeleteSkipped === 'boolean'
+			? (deleteIgnoreData as {
+					vectorIdsRequested: number
+					deletedVectors: number
+					vectorDeleteSkipped: boolean
+				})
+			: null
+	const deleteIgnoreVectorDeleteError =
+		deleteIgnoreResult &&
+		typeof (deleteIgnoreData?.vectorDeleteError ?? null) === 'string'
+			? String(deleteIgnoreData.vectorDeleteError)
 			: null
 
 	return (
@@ -775,10 +827,10 @@ function DocCard({ doc }: { doc: DocRow }) {
 							size="medium"
 							variant="danger"
 							{...deleteDc.getButtonProps({ type: 'submit' })}
-							disabled={isDeleting}
+							disabled={isDeletingAny}
 							className="w-full sm:w-auto"
 						>
-							{isDeleting
+							{isDeletingAny
 								? 'Deleting...'
 								: deleteDc.doubleCheck
 									? 'You sure?'
@@ -786,7 +838,7 @@ function DocCard({ doc }: { doc: DocRow }) {
 						</Button>
 					</deleteFetcher.Form>
 
-					<deleteFetcher.Form method="post">
+					<deleteIgnoreFetcher.Form method="post">
 						<input type="hidden" name="intent" value="doc-delete" />
 						<input type="hidden" name="docId" value={doc.docId} />
 						<input type="hidden" name="manifestKey" value={doc.manifestKey} />
@@ -796,23 +848,29 @@ function DocCard({ doc }: { doc: DocRow }) {
 							size="medium"
 							variant="danger"
 							{...deleteIgnoreDc.getButtonProps({ type: 'submit' })}
-							disabled={isDeleting}
+							disabled={isDeletingAny}
 							title="Deletes now and adds this docId to ignore list"
 							className="w-full sm:w-auto"
 						>
-							{isDeleting
+							{isDeletingAny
 								? 'Deleting...'
 								: deleteIgnoreDc.doubleCheck
 									? 'You sure?'
 									: 'Delete + ignore'}
 						</Button>
-					</deleteFetcher.Form>
+					</deleteIgnoreFetcher.Form>
 				</div>
 			</div>
 
 			{deleteError ? (
 				<div className="mt-3">
 					<ErrorPanel>{deleteError}</ErrorPanel>
+				</div>
+			) : null}
+
+			{deleteIgnoreError ? (
+				<div className="mt-3">
+					<ErrorPanel>{deleteIgnoreError}</ErrorPanel>
 				</div>
 			) : null}
 
@@ -825,6 +883,29 @@ function DocCard({ doc }: { doc: DocRow }) {
 							: `deleted ${deleteResult.deletedVectors}`}
 						.
 					</Paragraph>
+					{deleteVectorDeleteError ? (
+						<Paragraph textColorClassName="text-secondary">
+							Vectorize delete error: {deleteVectorDeleteError}
+						</Paragraph>
+					) : null}
+				</div>
+			) : null}
+
+			{deleteIgnoreResult ? (
+				<div className="mt-3">
+					<Paragraph textColorClassName="text-secondary">
+						Delete + ignore result: vectors requested{' '}
+						{deleteIgnoreResult.vectorIdsRequested},{' '}
+						{deleteIgnoreResult.vectorDeleteSkipped
+							? 'Vectorize delete skipped (semantic search env not configured)'
+							: `deleted ${deleteIgnoreResult.deletedVectors}`}
+						.
+					</Paragraph>
+					{deleteIgnoreVectorDeleteError ? (
+						<Paragraph textColorClassName="text-secondary">
+							Vectorize delete error: {deleteIgnoreVectorDeleteError}
+						</Paragraph>
+					) : null}
 				</div>
 			) : null}
 

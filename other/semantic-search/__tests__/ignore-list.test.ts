@@ -17,6 +17,9 @@ describe('semantic search ignore list', () => {
 		expect(matchesIgnorePattern('youtube:dQw4w9WgXcQ', 'youtube:*')).toBe(true)
 		expect(matchesIgnorePattern('blog:react-hooks', 'blog:react*')).toBe(true)
 		expect(matchesIgnorePattern('page:uses', 'blog:*')).toBe(false)
+		// A bare '*' is an empty prefix and therefore matches every doc ID.
+		expect(matchesIgnorePattern('youtube:anything', '*')).toBe(true)
+		expect(matchesIgnorePattern('blog:some-post', '*')).toBe(true)
 	})
 
 	test('isDocIdIgnored checks the ignore list patterns', () => {

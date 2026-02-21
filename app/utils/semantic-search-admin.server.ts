@@ -12,15 +12,15 @@ import {
 	isDocIdIgnored,
 	matchesIgnorePattern,
 	type SemanticSearchIgnoreList,
-} from '../../other/semantic-search/ignore-list.ts'
+} from '#other/semantic-search/ignore-list-patterns.ts'
 
 export {
 	DEFAULT_IGNORE_LIST_KEY,
 	getIgnoreListKey,
 	isDocIdIgnored,
 	matchesIgnorePattern,
-	type SemanticSearchIgnoreList,
 }
+export type { SemanticSearchIgnoreList }
 
 export type SemanticSearchManifestChunk = {
 	id: string
@@ -82,8 +82,16 @@ export function isR2S3Configured() {
 }
 
 let _r2Client: S3Client | null = null
+let _r2ClientConfig:
+	| { endpoint: string; accessKeyId: string; secretAccessKey: string }
+	| null = null
+
+export function invalidateR2Client() {
+	_r2Client = null
+	_r2ClientConfig = null
+}
+
 function getR2Client() {
-	if (_r2Client) return _r2Client
 	const { endpoint, accessKeyId, secretAccessKey } = getR2ConfigFromEnv()
 	if (!isNonEmptyString(endpoint)) throw new Error('R2_ENDPOINT is required')
 	if (!isNonEmptyString(accessKeyId))
@@ -91,6 +99,17 @@ function getR2Client() {
 	if (!isNonEmptyString(secretAccessKey))
 		throw new Error('R2_SECRET_ACCESS_KEY is required')
 
+	if (
+		_r2Client &&
+		_r2ClientConfig &&
+		_r2ClientConfig.endpoint === endpoint &&
+		_r2ClientConfig.accessKeyId === accessKeyId &&
+		_r2ClientConfig.secretAccessKey === secretAccessKey
+	) {
+		return _r2Client
+	}
+
+	_r2ClientConfig = { endpoint, accessKeyId, secretAccessKey }
 	_r2Client = new S3Client({
 		region: 'auto',
 		endpoint,
@@ -211,7 +230,7 @@ async function listKeysFromR2({
 }
 
 function getDefaultIgnoreList(): SemanticSearchIgnoreList {
-	return { version: 1, updatedAt: new Date().toISOString(), patterns: [] }
+	return { version: 1, patterns: [] }
 }
 
 function createR2AdminStore(): SemanticSearchAdminStore {
@@ -362,9 +381,10 @@ const FIXTURE_R2_OBJECTS: Record<string, unknown> = {
 	},
 }
 
+const isProd = process.env.NODE_ENV === 'production'
 let _fixtureStore: SemanticSearchAdminStore | null = null
 function createFixtureAdminStore(): SemanticSearchAdminStore {
-	if (_fixtureStore) return _fixtureStore
+	if (isProd && _fixtureStore) return _fixtureStore
 
 	const bucket = getR2Bucket()
 	const ignoreListKey = getIgnoreListKey()
@@ -372,7 +392,7 @@ function createFixtureAdminStore(): SemanticSearchAdminStore {
 		Object.entries(FIXTURE_R2_OBJECTS).map(([k, v]) => [k, structuredClone(v)]),
 	)
 
-	_fixtureStore = {
+	const store: SemanticSearchAdminStore = {
 		source: 'fixtures',
 		bucket,
 		ignoreListKey,
@@ -400,8 +420,8 @@ function createFixtureAdminStore(): SemanticSearchAdminStore {
 			objects.set(ignoreListKey, structuredClone(value))
 		},
 	}
-
-	return _fixtureStore
+	if (isProd) _fixtureStore = store
+	return store
 }
 
 export function getSemanticSearchAdminStore(): {
@@ -417,7 +437,7 @@ export function getSemanticSearchAdminStore(): {
 			store: createFixtureAdminStore(),
 			configured: true,
 			message:
-				'Using fixture semantic-search manifests (set R2_ENDPOINT/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY to use real R2).',
+				'Using fixture semantic-search manifests (read-only). Set R2_ENDPOINT/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY to use real R2.',
 		}
 	}
 	return {

@@ -1470,15 +1470,12 @@ async function main() {
 			)
 		}
 	}
-	if (prune) {
-		// In prune mode we intentionally rebuild `nextDocs` from discovered videos.
-		// (Ignored docs were filtered out of discovery above.)
-	}
+	// In prune mode we intentionally rebuild `nextDocs` from discovered videos.
+	// (Ignored docs were filtered out of discovery above.)
 
 	for (const { video, details } of enriched) {
 		const videoId = video.videoId
 		const docId = getDocId('youtube', videoId)
-		if (isDocIdIgnored({ docId, ignoreList })) continue
 		const url = `/youtube?video=${encodeURIComponent(videoId)}`
 		const title = details.title || video.title || `YouTube video ${videoId}`
 		const isFromPlaylist = video.sources.includes('playlist')

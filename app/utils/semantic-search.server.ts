@@ -261,31 +261,36 @@ export async function vectorizeDeleteByIds({
 	}
 
 	const body = JSON.stringify({ ids })
-	try {
-		const res = await cloudflareFetch(
-			accountId,
-			apiToken,
-			`/vectorize/v2/indexes/${indexName}/delete_by_ids`,
-			{
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body,
+	const doFetch = (path: string) => {
+		const url = `${getCloudflareApiBaseUrl()}/accounts/${accountId}${path}`
+		return fetch(url, {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${apiToken}`,
+				'Content-Type': 'application/json',
 			},
-		)
-		return (await res.json()) as unknown
-	} catch {
-		const res = await cloudflareFetch(
-			accountId,
-			apiToken,
-			`/vectorize/indexes/${indexName}/delete_by_ids`,
-			{
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body,
-			},
-		)
-		return (await res.json()) as unknown
+			body,
+		})
 	}
+	const throwIfNotOk = async (res: Response, path: string) => {
+		if (res.ok) return
+		const text = await res.text().catch(() => '')
+		throw new Error(
+			`Cloudflare API request failed: ${res.status} ${res.statusText} (${path})${text ? `\n${text}` : ''}`,
+		)
+	}
+
+	const v2Path = `/vectorize/v2/indexes/${indexName}/delete_by_ids`
+	const v2Res = await doFetch(v2Path)
+	if (v2Res.status === 404 || v2Res.status === 405) {
+		const legacyPath = `/vectorize/indexes/${indexName}/delete_by_ids`
+		const legacyRes = await doFetch(legacyPath)
+		await throwIfNotOk(legacyRes, legacyPath)
+		return (await legacyRes.json()) as unknown
+	}
+
+	await throwIfNotOk(v2Res, v2Path)
+	return (await v2Res.json()) as unknown
 }
 
 export type SemanticSearchResult = {
