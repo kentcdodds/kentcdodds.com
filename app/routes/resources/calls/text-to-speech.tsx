@@ -28,7 +28,7 @@ async function getTextToSpeechServerServices() {
 	const [
 		{ isCloudflareTextToSpeechConfigured, synthesizeSpeechWithWorkersAi },
 		{ rateLimit },
-		{ requireUser },
+		{ getUser },
 	] = await Promise.all([
 		import('#app/utils/cloudflare-ai-text-to-speech.server.ts'),
 		import('#app/utils/rate-limit.server.ts'),
@@ -38,17 +38,24 @@ async function getTextToSpeechServerServices() {
 		isCloudflareTextToSpeechConfigured,
 		synthesizeSpeechWithWorkersAi,
 		rateLimit,
-		requireUser,
+		getUser,
 	}
 }
 
 export async function action({ request }: Route.ActionArgs) {
 	// This is a paid API call; require auth to limit abuse.
-	const { isCloudflareTextToSpeechConfigured, synthesizeSpeechWithWorkersAi, rateLimit, requireUser } =
+	const { isCloudflareTextToSpeechConfigured, synthesizeSpeechWithWorkersAi, rateLimit, getUser } =
 		await getTextToSpeechServerServices()
-	const user = await requireUser(request)
 
-	const headers = { 'Cache-Control': 'no-store' }
+	const headers = { 'Cache-Control': 'no-store', Vary: 'Cookie' }
+
+	const user = await getUser(request)
+	if (!user) {
+		return json(
+			{ error: 'Login required to generate audio.' },
+			{ status: 401, headers },
+		)
+	}
 
 	if (!isCloudflareTextToSpeechConfigured()) {
 		return json(
@@ -121,12 +128,7 @@ export async function action({ request }: Route.ActionArgs) {
 	} catch (error: unknown) {
 		console.error('Call Kent TTS failed', error)
 		return json(
-			{
-				error:
-					error instanceof Error
-						? error.message
-						: 'Unable to generate audio. Please try again.',
-			},
+			{ error: 'Unable to generate audio. Please try again.' },
 			{ status: 500, headers },
 		)
 	}
@@ -289,6 +291,16 @@ export function CallKentTextToSpeech({
 			return
 		}
 
+		// Clear any prior audio result so UI can't reflect stale duration state.
+		try {
+			audioRef.current?.pause()
+		} catch {
+			// ignore
+		}
+		setAudioBlob(null)
+		setAudioUrl(null)
+		setDurationSeconds(null)
+
 		abortControllerRef.current?.abort()
 		const requestId = requestIdRef.current + 1
 		requestIdRef.current = requestId
@@ -341,7 +353,9 @@ export function CallKentTextToSpeech({
 		}
 	}
 
-	const isTooLong = typeof durationSeconds === 'number' && durationSeconds > 120
+	const isTooLong =
+		typeof durationSeconds === 'number' &&
+		durationSeconds > callKentTextToSpeechConstraints.maxAudioDurationSeconds
 	const showQuestionError = questionTouched || hasAttemptedGenerate
 	const displayedQuestionError = showQuestionError ? questionError : null
 
@@ -435,6 +449,7 @@ export function CallKentTextToSpeech({
 					<audio
 						ref={audioRef}
 						src={audioUrl}
+						aria-label="Generated audio playback"
 						controls
 						preload="metadata"
 						className="w-full"
@@ -451,7 +466,10 @@ export function CallKentTextToSpeech({
 								'text-red-600 dark:text-red-400': isTooLong,
 							})}
 						>
-							Duration: {Math.round(durationSeconds)}s{isTooLong ? ' (over 120s)' : ''}
+							Duration: {Math.round(durationSeconds)}s
+							{isTooLong
+								? ` (over ${callKentTextToSpeechConstraints.maxAudioDurationSeconds}s)`
+								: ''}
 						</p>
 					) : null}
 

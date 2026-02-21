@@ -4,6 +4,8 @@ export const callKentTextToSpeechConstraints = {
 		// Roughly sized so most questions land under ~2 minutes.
 		maxLength: 2000,
 	},
+	// UI and submission safety limit; actual audio length depends on voice and pacing.
+	maxAudioDurationSeconds: 120,
 } as const
 
 const auraSpeakers = [
