@@ -86,11 +86,6 @@ let _r2ClientConfig:
 	| { endpoint: string; accessKeyId: string; secretAccessKey: string }
 	| null = null
 
-export function invalidateR2Client() {
-	_r2Client = null
-	_r2ClientConfig = null
-}
-
 function getR2Client() {
 	const { endpoint, accessKeyId, secretAccessKey } = getR2ConfigFromEnv()
 	if (!isNonEmptyString(endpoint)) throw new Error('R2_ENDPOINT is required')
