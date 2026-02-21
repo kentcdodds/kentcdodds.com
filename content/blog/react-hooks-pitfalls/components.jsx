@@ -104,16 +104,12 @@ function FixedBugApp() {
 }
 
 function Layout(props) {
+	const { className, style, ...rest } = props
 	return (
 		<div
-			style={{
-				padding: 14,
-				backgroundColor: 'rgba(0,0,0,0.05)',
-				borderRadius: 4,
-				marginBottom: 20,
-				minHeight: 900,
-			}}
-			{...props}
+			className={['demo', className].filter(Boolean).join(' ')}
+			style={{ minHeight: 900, ...style }}
+			{...rest}
 		/>
 	)
 }

@@ -90,14 +90,7 @@ And here's what that renders (it actually works, try it):
 
 import { Login } from './components'
 
-<div
-	style={{
-		padding: 14,
-		backgroundColor: 'rgba(0,0,0,0.05)',
-		borderRadius: 4,
-		marginBottom: 20,
-	}}
->
+<div className="demo">
 	<Login
 		onSubmit={({ username, password }) =>
 			alert(`Username is "${username}" and Password is "${password}"`)

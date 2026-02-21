@@ -903,7 +903,9 @@ pre {
 	font-size: 1rem;
 }
 .prose .demo button,
-.prose .demo input {
+.prose .demo input,
+.prose .demo select,
+.prose .demo textarea {
 	padding: revert;
 	margin: revert;
 	display: revert;
