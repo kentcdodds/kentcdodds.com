@@ -312,10 +312,5 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export default function FavoriteResourceRoute() {
-	// Resource route: only used for loader/action.
-	return null
-}
-
 export { favoriteResourceRoute }
 
