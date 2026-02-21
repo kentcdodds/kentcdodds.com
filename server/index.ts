@@ -27,6 +27,7 @@ import {
 	oldImgSocial,
 	rickRollMiddleware,
 } from './redirects.js'
+import { scheduleExpiredSessionsCleanup } from './expired-sessions-cleanup.js'
 import { registerStartupShortcuts } from './startup-shortcuts.js'
 
 sourceMapSupport.install()
@@ -100,6 +101,8 @@ if (MODE === 'production') {
 
 const app = express()
 app.use(serverTiming())
+
+const expiredSessionsCleanup = scheduleExpiredSessionsCleanup()
 
 app.get('/img/social', oldImgSocial)
 
@@ -468,6 +471,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 closeWithGrace(() => {
+	expiredSessionsCleanup.stop()
 	return Promise.all([
 		new Promise((resolve, reject) => {
 			server.close((e) => (e ? reject(e) : resolve('ok')))
