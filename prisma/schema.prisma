@@ -31,6 +31,7 @@ model User {
   calls     Call[]
   sessions  Session[]
   postReads PostRead[]
+  favorites Favorite[]
 
   @@index([team])
   @@index([createdAt])
@@ -90,4 +91,18 @@ model Passkey {
   transports     String? // Stored as comma-separated values
 
   @@index(userId)
+}
+
+model Favorite {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  contentType String
+  contentId   String
+
+  @@unique([userId, contentType, contentId])
+  @@index([userId, createdAt])
+  @@index([contentType, contentId])
 }
