@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import { CallRecorder } from '#app/components/calls/recorder.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { Grimmacing } from '#app/components/kifs.tsx'
@@ -15,15 +15,34 @@ export const handle: KCDHandle = {
 
 export default function RecordScreen() {
 	const [audio, setAudio] = React.useState<Blob | null>(null)
+	const [searchParams] = useSearchParams()
 	const { user, userInfo } = useRootData()
 	// should be impossible...
 	if (!user || !userInfo) throw new Error('user and userInfo required')
+
+	const shouldUseSampleAudio =
+		process.env.NODE_ENV === 'development' &&
+		searchParams.get('sampleAudio') === '1'
+
+	React.useEffect(() => {
+		if (!shouldUseSampleAudio) return
+		if (audio) return
+		// Dev-only escape hatch for environments without a microphone
+		// (for example: cloud agents / CI / headless VMs).
+		setAudio(new Blob(['audio'], { type: 'audio/wav' }))
+	}, [shouldUseSampleAudio, audio])
+
 	return (
 		<div>
 			{audio ? (
 				<RecordingForm audio={audio} intent="create-call" />
 			) : (
 				<div>
+					{shouldUseSampleAudio ? (
+						<Paragraph className="mb-4">
+							{`Using a sample recording (dev only)...`}
+						</Paragraph>
+					) : null}
 					<Paragraph className="mb-4">
 						{`
               Choose which recording device you would like to use.
@@ -49,10 +68,12 @@ export default function RecordScreen() {
 							{'.'}
 						</Paragraph>
 					)}
-					<CallRecorder
-						onRecordingComplete={(recording) => setAudio(recording)}
-						team={user.team}
-					/>
+					{shouldUseSampleAudio ? null : (
+						<CallRecorder
+							onRecordingComplete={(recording) => setAudio(recording)}
+							team={user.team}
+						/>
+					)}
 				</div>
 			)}
 		</div>
