@@ -26,7 +26,7 @@ export async function action({ request }: Route.ActionArgs) {
 	// Validate that the first line is valid JSON (required for Sentry envelope format)
 	let header: any
 	try {
-		header = JSON.parse(piece ?? '{}')
+		header = JSON.parse(piece)
 	} catch {
 		// Return 400 for malformed Sentry envelopes instead of crashing
 		throw new Response(

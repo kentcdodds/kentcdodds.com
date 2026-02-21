@@ -32,12 +32,12 @@ const schema = z.object({
 	MAILGUN_DOMAIN: z.string(),
 	MAILGUN_SENDING_KEY: z.string(),
 	REFRESH_CACHE_SECRET: z.string(),
-	SENTRY_AUTH_TOKEN: z.string(),
+	SENTRY_AUTH_TOKEN: z.string().optional(),
 	// If you plan on using Sentry, remove the .optional()
 	SENTRY_DSN: z.string().optional(),
-	SENTRY_ORG: z.string(),
-	SENTRY_PROJECT: z.string(),
-	SENTRY_PROJECT_ID: z.string(),
+	SENTRY_ORG: z.string().optional(),
+	SENTRY_PROJECT: z.string().optional(),
+	SENTRY_PROJECT_ID: z.string().optional(),
 	SESSION_SECRET: z.string(),
 	SIMPLECAST_KEY: z.string(),
 	TRANSISTOR_API_SECRET: z.string(),
@@ -60,6 +60,14 @@ const schema = z.object({
 	R2_ACCESS_KEY_ID: z.string().optional(),
 	R2_SECRET_ACCESS_KEY: z.string().optional(),
 	SEMANTIC_SEARCH_IGNORE_LIST_KEY: z.string().optional(),
+}).superRefine((values, ctx) => {
+	if (values.SENTRY_DSN && !values.SENTRY_PROJECT_ID) {
+		ctx.addIssue({
+			code: z.ZodIssueCode.custom,
+			message: 'SENTRY_PROJECT_ID is required when SENTRY_DSN is set',
+			path: ['SENTRY_PROJECT_ID'],
+		})
+	}
 })
 
 declare global {
