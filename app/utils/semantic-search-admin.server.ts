@@ -6,6 +6,21 @@ import {
 	PutObjectCommand,
 	S3Client,
 } from '@aws-sdk/client-s3'
+import {
+	DEFAULT_IGNORE_LIST_KEY,
+	getIgnoreListKey,
+	isDocIdIgnored,
+	matchesIgnorePattern,
+	type SemanticSearchIgnoreList,
+} from '../../other/semantic-search/ignore-list.ts'
+
+export {
+	DEFAULT_IGNORE_LIST_KEY,
+	getIgnoreListKey,
+	isDocIdIgnored,
+	matchesIgnorePattern,
+	type SemanticSearchIgnoreList,
+}
 
 export type SemanticSearchManifestChunk = {
 	id: string
@@ -29,47 +44,10 @@ export type SemanticSearchManifest = {
 	docs: Record<string, SemanticSearchManifestDoc>
 }
 
-export type SemanticSearchIgnoreList = {
-	version: 1
-	updatedAt?: string
-	/**
-	 * Patterns are matched against doc IDs (ex: `youtube:dQw4w9WgXcQ`).
-	 * Supports:
-	 * - exact match: `blog:my-post`
-	 * - prefix match: `youtube:*` (wildcard is supported only at the end)
-	 */
-	patterns: string[]
-}
-
-export const DEFAULT_IGNORE_LIST_KEY = 'manifests/ignore-list.json'
 export const DEFAULT_MANIFEST_PREFIX = 'manifests/'
 
 function isNonEmptyString(value: unknown): value is string {
 	return typeof value === 'string' && value.trim().length > 0
-}
-
-function normalizePattern(pattern: string) {
-	return pattern.trim()
-}
-
-export function matchesIgnorePattern(docId: string, pattern: string) {
-	const normalized = normalizePattern(pattern)
-	if (!normalized) return false
-	if (normalized.endsWith('*')) {
-		const prefix = normalized.slice(0, -1)
-		return docId.startsWith(prefix)
-	}
-	return docId === normalized
-}
-
-export function isDocIdIgnored({
-	docId,
-	ignoreList,
-}: {
-	docId: string
-	ignoreList: SemanticSearchIgnoreList
-}) {
-	return (ignoreList.patterns ?? []).some((p) => matchesIgnorePattern(docId, p))
 }
 
 export type SemanticSearchAdminStore = {
@@ -81,10 +59,6 @@ export type SemanticSearchAdminStore = {
 	putManifest: (key: string, value: SemanticSearchManifest) => Promise<void>
 	getIgnoreList: () => Promise<SemanticSearchIgnoreList>
 	putIgnoreList: (value: SemanticSearchIgnoreList) => Promise<void>
-}
-
-function getIgnoreListKey() {
-	return process.env.SEMANTIC_SEARCH_IGNORE_LIST_KEY ?? DEFAULT_IGNORE_LIST_KEY
 }
 
 function getR2Bucket() {
