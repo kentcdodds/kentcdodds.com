@@ -92,7 +92,7 @@ export function EpisodeArtworkPreview({
 		return getCallKentEpisodeArtworkUrl({
 			title: titleForPreview,
 			url: `${host}/calls/00/00`,
-			name: `- ${firstName}`,
+			name: isAnonymous ? '- Anonymous' : `- ${firstName}`,
 			avatar,
 			avatarIsRound: hasGravatar && !isAnonymous,
 			// 2x for a crisp UI preview (the element is ~260px wide).

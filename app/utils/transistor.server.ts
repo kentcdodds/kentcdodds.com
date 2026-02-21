@@ -258,7 +258,7 @@ async function createEpisode({
 		const imageUrl = getCallKentEpisodeArtworkUrl({
 			title,
 			url: `${shortDomain}${shortEpisodePath}`,
-			name: `- ${user.firstName}`,
+			name: isAnonymous ? '- Anonymous' : `- ${user.firstName}`,
 			avatar,
 			avatarIsRound: hasGravatar,
 			size: 3000,
