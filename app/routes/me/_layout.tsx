@@ -2,8 +2,9 @@ import { Dialog } from '@reach/dialog'
 import { clsx } from 'clsx'
 import * as React from 'react'
 import {
-    data as json, redirect, type HeadersFunction, type MetaFunction, Form, useActionData, useLoaderData } from 'react-router';
+    data as json, redirect, type HeadersFunction, type MetaFunction, Form, Link, useActionData, useLoaderData } from 'react-router';
 import { Button, ButtonLink } from '#app/components/button.tsx'
+import { FavoriteToggle } from '#app/components/favorite-toggle.tsx'
 import { Field, InputError, Label } from '#app/components/form-elements.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import {
@@ -30,10 +31,16 @@ import {
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc.tsx'
 import {
+	getEpisodeFavoriteContentId,
+	parseEpisodeFavoriteContentId,
+	type FavoriteContentType,
+} from '#app/utils/favorites.ts'
+import {
 	TEAM_ONEWHEELING_MAP,
 	TEAM_SKIING_MAP,
 	TEAM_SNOWBOARD_MAP,
 } from '#app/utils/onboarding.ts'
+import { getBlogMdxListItems } from '#app/utils/mdx.server.ts'
 import { getMagicLink, prisma } from '#app/utils/prisma.server.ts'
 import { getQrCodeDataURL } from '#app/utils/qrcode.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
@@ -42,7 +49,12 @@ import {
 	getSession,
 	requireUser,
 } from '#app/utils/session.server.ts'
+import { getEpisodePath } from '#app/utils/call-kent.ts'
+import { getCWKEpisodePath } from '#app/utils/chats-with-kent.ts'
+import { getSeasonListItems } from '#app/utils/simplecast.server.ts'
+import { getTalksAndTags } from '#app/utils/talks.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
+import { getEpisodes } from '#app/utils/transistor.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import {
 	deleteKitCache,
@@ -72,13 +84,28 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	})
 }
 
+type FavoriteDisplayItem = {
+	contentType: FavoriteContentType
+	contentId: string
+	title: string
+	href: string
+	subtitle: string
+}
+
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const user = await requireUser(request, { timings })
 
-	const sessionCount = await prisma.session.count({
-		where: { userId: user.id },
-	})
+	const [sessionCount, rawFavorites] = await Promise.all([
+		prisma.session.count({
+			where: { userId: user.id },
+		}),
+		prisma.favorite.findMany({
+			where: { userId: user.id },
+			select: { contentType: true, contentId: true, createdAt: true },
+			orderBy: { createdAt: 'desc' },
+		}),
+	])
 	const qrLoginCode = await getQrCodeDataURL(
 		getMagicLink({
 			emailAddress: user.email,
@@ -86,6 +113,116 @@ export async function loader({ request }: Route.LoaderArgs) {
 			domainUrl: getDomainUrl(request),
 		}),
 	)
+
+	const wantsBlogPosts = rawFavorites.some((f) => f.contentType === 'blog-post')
+	const wantsTalks = rawFavorites.some((f) => f.contentType === 'talk')
+	const wantsCallEpisodes = rawFavorites.some(
+		(f) => f.contentType === 'call-kent-episode',
+	)
+	const wantsChatEpisodes = rawFavorites.some(
+		(f) => f.contentType === 'chats-with-kent-episode',
+	)
+
+	const [blogPosts, talksAndTags, callEpisodes, chatSeasons] = await Promise.all([
+		wantsBlogPosts ? getBlogMdxListItems({ request, timings }) : [],
+		wantsTalks ? getTalksAndTags({ request, timings }) : { talks: [], tags: [] },
+		wantsCallEpisodes ? getEpisodes({ request, timings }) : [],
+		wantsChatEpisodes ? getSeasonListItems({ request, timings }) : [],
+	])
+
+	const blogTitleBySlug = new Map(
+		blogPosts.map((post) => [post.slug, post.frontmatter.title ?? post.slug]),
+	)
+	const talkTitleBySlug = new Map(
+		talksAndTags.talks.map((talk) => [talk.slug, talk.title]),
+	)
+	const callEpisodeById = new Map(
+		callEpisodes.map((episode) => [
+			getEpisodeFavoriteContentId({
+				seasonNumber: episode.seasonNumber,
+				episodeNumber: episode.episodeNumber,
+			}),
+			episode,
+		]),
+	)
+	const chatEpisodeById = new Map(
+		chatSeasons
+			.flatMap((s) => s.episodes)
+			.map((episode) => [
+				getEpisodeFavoriteContentId({
+					seasonNumber: episode.seasonNumber,
+					episodeNumber: episode.episodeNumber,
+				}),
+				episode,
+			]),
+	)
+
+	const favorites: Array<FavoriteDisplayItem> = rawFavorites
+		.map((favorite): FavoriteDisplayItem | null => {
+			switch (favorite.contentType) {
+				case 'blog-post': {
+					const title = blogTitleBySlug.get(favorite.contentId) ?? favorite.contentId
+					return {
+						contentType: 'blog-post',
+						contentId: favorite.contentId,
+						title,
+						href: `/blog/${favorite.contentId}`,
+						subtitle: 'Blog post',
+					}
+				}
+				case 'talk': {
+					const title = talkTitleBySlug.get(favorite.contentId) ?? favorite.contentId
+					return {
+						contentType: 'talk',
+						contentId: favorite.contentId,
+						title,
+						href: `/talks/${favorite.contentId}`,
+						subtitle: 'Talk',
+					}
+				}
+				case 'call-kent-episode': {
+					const parsed = parseEpisodeFavoriteContentId(favorite.contentId)
+					if (!parsed) return null
+					const episode = callEpisodeById.get(favorite.contentId)
+					const title = episode?.title ?? `Call Kent Episode`
+					return {
+						contentType: 'call-kent-episode',
+						contentId: favorite.contentId,
+						title,
+						href:
+							episode
+								? getEpisodePath(episode)
+								: getEpisodePath({
+										seasonNumber: parsed.seasonNumber,
+										episodeNumber: parsed.episodeNumber,
+									}),
+						subtitle: `Calls — Season ${parsed.seasonNumber} Episode ${parsed.episodeNumber}`,
+					}
+				}
+				case 'chats-with-kent-episode': {
+					const parsed = parseEpisodeFavoriteContentId(favorite.contentId)
+					if (!parsed) return null
+					const episode = chatEpisodeById.get(favorite.contentId)
+					const title = episode?.title ?? `Chats with Kent Episode`
+					return {
+						contentType: 'chats-with-kent-episode',
+						contentId: favorite.contentId,
+						title,
+						href: episode
+							? getCWKEpisodePath(episode)
+							: getCWKEpisodePath({
+									seasonNumber: parsed.seasonNumber,
+									episodeNumber: parsed.episodeNumber,
+								}),
+						subtitle: `Chats — Season ${parsed.seasonNumber} Episode ${parsed.episodeNumber}`,
+					}
+				}
+				default: {
+					return null
+				}
+			}
+		})
+		.filter((v): v is FavoriteDisplayItem => Boolean(v))
 	const activities = ['skiing', 'snowboarding', 'onewheeling'] as const
 	const activity: 'skiing' | 'snowboarding' | 'onewheeling' =
 		activities[Math.floor(Math.random() * activities.length)] ?? 'skiing'
@@ -94,6 +231,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 			qrLoginCode,
 			sessionCount,
 			teamType: activity,
+			favorites,
 		} as const,
 		{
 			headers: {
@@ -444,6 +582,53 @@ function YouScreen() {
 						<span>click to reveal</span>
 					</button>
 				</div>
+			</Grid>
+
+			<Spacer size="sm" />
+
+			<Grid>
+				<div className="col-span-full mb-12">
+					<H2>Your favorites</H2>
+					<H2 variant="secondary" as="p">
+						Save things you want to revisit.
+					</H2>
+				</div>
+				{data.favorites.length ? (
+					<ul className="col-span-full space-y-4">
+						{data.favorites.map((favorite) => (
+							<li
+								key={`${favorite.contentType}:${favorite.contentId}`}
+								className="border-b border-gray-200 pb-4 dark:border-gray-600"
+							>
+								<div className="flex items-start justify-between gap-4">
+									<div className="min-w-0">
+										<Link
+											to={favorite.href}
+											className="underlined text-primary hover:text-team-current focus:text-team-current block truncate text-lg font-medium focus:outline-none"
+										>
+											{favorite.title}
+										</Link>
+										<p className="text-secondary mt-1 text-sm">
+											{favorite.subtitle}
+										</p>
+									</div>
+									<FavoriteToggle
+										mode="icon"
+										contentType={favorite.contentType}
+										contentId={favorite.contentId}
+										initialIsFavorite={true}
+										className="flex-none"
+									/>
+								</div>
+							</li>
+						))}
+					</ul>
+				) : (
+					<Paragraph className="col-span-full">
+						No favorites yet. Open a blog post, talk, or podcast episode and hit
+						the star.
+					</Paragraph>
+				)}
 			</Grid>
 
 			<Spacer size="sm" />

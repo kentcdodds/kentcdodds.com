@@ -7,6 +7,7 @@ import { BlurrableImage } from '#app/components/blurrable-image.tsx'
 import { CourseCard } from '#app/components/course-card.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { FourHundred, FourOhFour } from '#app/components/errors.tsx'
+import { FavoriteToggle } from '#app/components/favorite-toggle.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { BlogSection } from '#app/components/sections/blog-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
@@ -34,6 +35,8 @@ import {
 	requireValidSlug,
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc.tsx'
+import { prisma } from '#app/utils/prisma.server.ts'
+import { getUser } from '#app/utils/session.server.ts'
 import { teamEmoji, useTeam } from '#app/utils/team-provider.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
@@ -63,13 +66,14 @@ type CatchData = {
 export async function loader({ request, params }: Route.LoaderArgs) {
 	requireValidSlug(params.slug)
 	const timings = {}
+	const user = await getUser(request, { timings })
 
 	const page = await getMdxPage(
 		{ contentDir: 'blog', slug: params.slug },
 		{ request, timings },
 	)
 
-	const [recommendations, readRankings, totalReads] = await Promise.all([
+	const [recommendations, readRankings, totalReads, favorite] = await Promise.all([
 		getBlogRecommendations({
 			request,
 			timings,
@@ -82,6 +86,18 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		}),
 		getBlogReadRankings({ request, slug: params.slug, timings }),
 		getTotalPostReads({ request, slug: params.slug, timings }),
+		user
+			? prisma.favorite.findUnique({
+					where: {
+						userId_contentType_contentId: {
+							userId: user.id,
+							contentType: 'blog-post',
+							contentId: params.slug,
+						},
+					},
+					select: { id: true },
+				})
+			: null,
 	])
 
 	const catchData: CatchData = {
@@ -102,6 +118,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	return json(
 		{
 			page,
+			isFavorite: Boolean(favorite),
 			...catchData,
 		},
 		{ status: 200, headers },
@@ -382,6 +399,15 @@ export default function MdxScreen() {
 							.filter(Boolean)
 							.join(' — ')}
 					</H6>
+					{!isDraft && slug ? (
+						<div className="mt-6 flex justify-end">
+							<FavoriteToggle
+								contentType="blog-post"
+								contentId={slug}
+								initialIsFavorite={data.isFavorite}
+							/>
+						</div>
+					) : null}
 				</div>
 				{frontmatter.bannerCloudinaryId ? (
 					<div className="col-span-full mt-10 lg:col-span-10 lg:col-start-2 lg:mt-16">
@@ -537,6 +563,18 @@ export default function MdxScreen() {
 					/>
 				</div>
 			</Grid>
+
+			{!isDraft && slug ? (
+				<Grid className="mb-12">
+					<div className="col-span-full flex justify-end lg:col-span-8 lg:col-start-3">
+						<FavoriteToggle
+							contentType="blog-post"
+							contentId={slug}
+							initialIsFavorite={data.isFavorite}
+						/>
+					</div>
+				</Grid>
+			) : null}
 
 			<ArticleFooter
 				editLink={data.page.editLink}

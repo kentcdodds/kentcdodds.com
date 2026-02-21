@@ -5,6 +5,7 @@ import { isRouteErrorResponse, Link, useLoaderData, useLocation, data as json, r
 import { serverOnly$ } from 'vite-env-only/macros'
 import { ArrowLink, BackLink } from '#app/components/arrow-button.tsx'
 import { FourOhFour } from '#app/components/errors.tsx'
+import { FavoriteToggle } from '#app/components/favorite-toggle.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { IconLink } from '#app/components/icon-link.tsx'
 import {
@@ -31,6 +32,7 @@ import {
 	getCWKEpisodePath,
 	getFeaturedEpisode,
 } from '#app/utils/chats-with-kent.ts'
+import { getEpisodeFavoriteContentId } from '#app/utils/favorites.ts'
 import {
 	formatDate,
 	formatDuration,
@@ -488,22 +490,32 @@ export default function PodcastDetail() {
 				<Spacer size="3xs" className="col-span-full" />
 
 				<div className="col-span-full lg:col-span-8 lg:col-start-3">
-					<IconLink
-						className="flex gap-2"
-						target="_blank"
-						rel="noreferrer noopener"
-						href={`https://x.com/intent/post?${new URLSearchParams({
-							url: permalink,
-							text: `I just listened to "${episode.title}" with ${listify(
-								episode.guests
-									.map((g) => (g.x ? `@${g.x}` : null))
-									.filter(typedBoolean),
-							)} on the Call Kent Podcast 🎙 by @kentcdodds`,
-						})}`}
-					>
-						<XIcon title="Post this" />
-						<span>Post this episode</span>
-					</IconLink>
+					<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+						<FavoriteToggle
+							contentType="chats-with-kent-episode"
+							contentId={getEpisodeFavoriteContentId({
+								seasonNumber: episode.seasonNumber,
+								episodeNumber: episode.episodeNumber,
+							})}
+							label="Favorite episode"
+						/>
+						<IconLink
+							className="flex gap-2"
+							target="_blank"
+							rel="noreferrer noopener"
+							href={`https://x.com/intent/post?${new URLSearchParams({
+								url: permalink,
+								text: `I just listened to "${episode.title}" with ${listify(
+									episode.guests
+										.map((g) => (g.x ? `@${g.x}` : null))
+										.filter(typedBoolean),
+								)} on the Call Kent Podcast 🎙 by @kentcdodds`,
+							})}`}
+						>
+							<XIcon title="Post this" />
+							<span>Post this episode</span>
+						</IconLink>
+					</div>
 				</div>
 
 				<Spacer size="2xs" className="col-span-full" />

@@ -1,5 +1,6 @@
-import { data as json, redirect, type HeadersFunction, type MetaFunction, useParams } from 'react-router';
+import { data as json, redirect, type HeadersFunction, type MetaFunction, useLoaderData, useParams } from 'react-router';
 import { serverOnly$ } from 'vite-env-only/macros'
+import { FavoriteToggle } from '#app/components/favorite-toggle.tsx'
 import { IconLink } from '#app/components/icon-link.tsx'
 import { XIcon } from '#app/components/icons.tsx'
 import { H6, Paragraph } from '#app/components/typography.tsx'
@@ -10,9 +11,12 @@ import {
 	getEpisodePath,
 	type Params,
 } from '#app/utils/call-kent.ts'
+import { getEpisodeFavoriteContentId } from '#app/utils/favorites.ts'
 import { getUrl, reuseUsefulLoaderHeaders } from '#app/utils/misc.tsx'
+import { prisma } from '#app/utils/prisma.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
+import { getUser } from '#app/utils/session.server.ts'
 import { Themed } from '#app/utils/theme.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { getEpisodes } from '#app/utils/transistor.server.ts'
@@ -79,6 +83,7 @@ export const meta: MetaFunction<
 
 export async function loader({ params, request }: Route.LoaderArgs) {
 	const timings = {}
+	const user = await getUser(request, { timings })
 	const { season, episode: episodeParam, slug } = params
 	if (!season || !episodeParam || !slug) {
 		throw new Error(
@@ -103,12 +108,29 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 		return redirect(getEpisodePath(episode))
 	}
 
+	const contentId = getEpisodeFavoriteContentId({
+		seasonNumber: episode.seasonNumber,
+		episodeNumber: episode.episodeNumber,
+	})
+	const favorite = user
+		? await prisma.favorite.findUnique({
+				where: {
+					userId_contentType_contentId: {
+						userId: user.id,
+						contentType: 'call-kent-episode',
+						contentId,
+					},
+				},
+				select: { id: true },
+			})
+		: null
+
 	// we already load all the episodes in the parent route so it would be
 	// wasteful to send it here. The parent sticks all the episodes in context
 	// so we just use it in the component.
 	// This loader is only here for the 404 case we need to handle.
 	return json(
-		{},
+		{ isFavorite: Boolean(favorite) },
 		{
 			headers: {
 				'Server-Timing': getServerTimeHeader(timings),
@@ -120,6 +142,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export default function Screen() {
+	const loaderData = useLoaderData<Route.ComponentProps['loaderData']>()
 	const params = useParams() as Params
 	const { episodes } = useCallsData()
 	const { requestInfo } = useRootData()
@@ -148,7 +171,16 @@ export default function Screen() {
 					</H6>
 					<Paragraph className="mb-8 flex">{keywords.join(', ')}</Paragraph>
 				</div>
-				<div>
+				<div className="flex items-start gap-2">
+					<FavoriteToggle
+						mode="icon"
+						contentType="call-kent-episode"
+						contentId={getEpisodeFavoriteContentId({
+							seasonNumber: episode.seasonNumber,
+							episodeNumber: episode.episodeNumber,
+						})}
+						initialIsFavorite={loaderData.isFavorite}
+					/>
 					<IconLink
 						target="_blank"
 						rel="noreferrer noopener"
