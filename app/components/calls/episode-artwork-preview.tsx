@@ -95,8 +95,8 @@ export function EpisodeArtworkPreview({
 			name: `- ${firstName}`,
 			avatar,
 			avatarIsRound: hasGravatar && !isAnonymous,
-			// Smaller than production; this is only a UI preview.
-			size: 900,
+			// 2x for a crisp UI preview (the element is ~260px wide).
+			size: 520,
 		})
 	}, [titleForPreview, host, firstName, avatar, hasGravatar, isAnonymous])
 

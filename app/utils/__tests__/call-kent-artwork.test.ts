@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest'
 import { getCallKentEpisodeArtworkUrl } from '../call-kent-artwork.ts'
 
 describe('getCallKentEpisodeArtworkUrl', () => {
-	test('double-encodes title and uses size vars', () => {
+	test('double-encodes title and scales to requested output size', () => {
 		const url = getCallKentEpisodeArtworkUrl({
 			title: 'Hello world',
 			url: 'kentcdodds.com/calls/01/01',
@@ -12,7 +12,9 @@ describe('getCallKentEpisodeArtworkUrl', () => {
 			size: 900,
 		})
 
-		expect(url).toContain('$th_900,$tw_900')
+		// Layout is composed at 3000, then scaled for preview sizes.
+		expect(url).toContain('$th_3000,$tw_3000')
+		expect(url).toContain('c_scale,w_900,h_900')
 		// "Hello world" => "Hello%20world" => "Hello%2520world"
 		expect(url).toContain('Hello%2520world')
 	})
