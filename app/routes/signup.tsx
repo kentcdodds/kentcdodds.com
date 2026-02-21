@@ -282,7 +282,10 @@ function TeamOption({
 					/>
 				</picture>
 				<H6 as="span" className="text-sm leading-none lg:text-lg">
-					<span className="lg:hidden">{team.label.replace(' Team', '')}</span>
+					<span className="lg:hidden" aria-hidden="true">
+						{team.label.replace(' Team', '')}
+					</span>
+					<span className="sr-only lg:hidden">{team.label}</span>
 					<span className="hidden lg:inline">{team.label}</span>
 				</H6>
 			</label>
