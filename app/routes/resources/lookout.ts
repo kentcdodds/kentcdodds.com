@@ -12,7 +12,9 @@ const SENTRY_HOST = (() => {
 		return null
 	}
 })()
-const SENTRY_PROJECT_IDS = [process.env.SENTRY_PROJECT_ID]
+const SENTRY_PROJECT_IDS = process.env.SENTRY_PROJECT_ID
+	? [process.env.SENTRY_PROJECT_ID]
+	: []
 
 export async function action({ request }: Route.ActionArgs) {
 	if (!SENTRY_HOST) {
@@ -56,7 +58,7 @@ export async function action({ request }: Route.ActionArgs) {
 		})
 	}
 
-	const projectId = dsn.pathname?.replace('/', '')
+	const projectId = dsn.pathname.replace('/', '')
 
 	invariantResponse(
 		dsn.hostname === SENTRY_HOST,
@@ -68,5 +70,13 @@ export async function action({ request }: Route.ActionArgs) {
 	)
 
 	const upstreamSentryURL = `https://${SENTRY_HOST}/api/${projectId}/envelope/`
-	return fetch(upstreamSentryURL, { method: 'POST', body: envelope })
+	try {
+		return await fetch(upstreamSentryURL, {
+			method: 'POST',
+			body: envelope,
+			signal: AbortSignal.timeout(5_000),
+		})
+	} catch {
+		throw new Response('Failed to proxy request to Sentry', { status: 502 })
+	}
 }

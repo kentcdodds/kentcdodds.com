@@ -33,7 +33,7 @@ const schema = z.object({
 	MAILGUN_SENDING_KEY: z.string(),
 	REFRESH_CACHE_SECRET: z.string(),
 	SENTRY_AUTH_TOKEN: z.string().optional(),
-	// If you plan on using Sentry, remove the .optional()
+	// Sentry is optional; validate required combos in `superRefine`.
 	SENTRY_DSN: z.string().optional(),
 	SENTRY_ORG: z.string().optional(),
 	SENTRY_PROJECT: z.string().optional(),
@@ -63,7 +63,7 @@ const schema = z.object({
 }).superRefine((values, ctx) => {
 	if (values.SENTRY_DSN && !values.SENTRY_PROJECT_ID) {
 		ctx.addIssue({
-			code: z.ZodIssueCode.custom,
+			code: 'custom',
 			message: 'SENTRY_PROJECT_ID is required when SENTRY_DSN is set',
 			path: ['SENTRY_PROJECT_ID'],
 		})
@@ -91,7 +91,7 @@ export function init() {
 	if (parsed.success === false) {
 		console.error(
 			'❌ Invalid environment variables:',
-			parsed.error.flatten().fieldErrors,
+			z.flattenError(parsed.error).fieldErrors,
 		)
 
 		throw new Error('Invalid environment variables')
