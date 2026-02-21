@@ -102,10 +102,10 @@ export async function action({ request }: Route.ActionArgs) {
 	// honeypot
 	const failedHoneypot = Boolean(formData.get('website'))
 	if (failedHoneypot) {
-		console.info(
-			`FAILED HONEYPOT ON LOGIN`,
-			Object.fromEntries(formData.entries()),
-		)
+		console.info(`FAILED HONEYPOT ON LOGIN`, {
+			email,
+			website: formData.get('website'),
+		})
 		return redirect(`/login`, {
 			headers: await loginSession.getHeaders(),
 		})

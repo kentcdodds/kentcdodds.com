@@ -72,23 +72,29 @@ export async function action({ request }: Route.ActionArgs) {
 	})
 
 	if (user) {
-		const { verification, code } = await createVerification({
-			type: 'PASSWORD_RESET',
-			target: email,
-		})
+		void (async () => {
+			try {
+				const { verification, code } = await createVerification({
+					type: 'PASSWORD_RESET',
+					target: email,
+				})
 
-		const domainUrl = getDomainUrl(request)
-		const verificationUrl = new URL('/reset-password', domainUrl)
-		verificationUrl.searchParams.set('verification', verification.id)
-		verificationUrl.searchParams.set('code', code)
+				const domainUrl = getDomainUrl(request)
+				const verificationUrl = new URL('/reset-password', domainUrl)
+				verificationUrl.searchParams.set('verification', verification.id)
+				verificationUrl.searchParams.set('code', code)
 
-		await sendPasswordResetEmail({
-			emailAddress: email,
-			verificationCode: code,
-			verificationUrl: verificationUrl.toString(),
-			domainUrl,
-			team: user.team,
-		})
+				await sendPasswordResetEmail({
+					emailAddress: email,
+					verificationCode: code,
+					verificationUrl: verificationUrl.toString(),
+					domainUrl,
+					team: user.team,
+				})
+			} catch (error) {
+				console.error('Failed to send password reset email', error)
+			}
+		})()
 	}
 
 	// Avoid leaking whether an account exists for the email address.

@@ -118,22 +118,28 @@ export async function action({ request }: Route.ActionArgs) {
 			select: { id: true, team: true },
 		})
 		if (user) {
-			const { verification, code } = await createVerification({
-				type: 'PASSWORD_RESET',
-				target: email,
-			})
-			const domainUrl = getDomainUrl(request)
-			const verificationUrl = new URL('/reset-password', domainUrl)
-			verificationUrl.searchParams.set('verification', verification.id)
-			verificationUrl.searchParams.set('code', code)
+			void (async () => {
+				try {
+					const { verification, code } = await createVerification({
+						type: 'PASSWORD_RESET',
+						target: email,
+					})
+					const domainUrl = getDomainUrl(request)
+					const verificationUrl = new URL('/reset-password', domainUrl)
+					verificationUrl.searchParams.set('verification', verification.id)
+					verificationUrl.searchParams.set('code', code)
 
-			await sendPasswordResetEmail({
-				emailAddress: email,
-				verificationCode: code,
-				verificationUrl: verificationUrl.toString(),
-				domainUrl,
-				team: user.team,
-			})
+					await sendPasswordResetEmail({
+						emailAddress: email,
+						verificationCode: code,
+						verificationUrl: verificationUrl.toString(),
+						domainUrl,
+						team: user.team,
+					})
+				} catch (error) {
+					console.error('Failed to resend password reset email', error)
+				}
+			})()
 		}
 
 		loginSession.flashMessage(

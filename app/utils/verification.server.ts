@@ -98,7 +98,3 @@ export async function consumeVerificationForTarget({
 	return { target: verification.target }
 }
 
-export function getVerificationCodeMaxAgeMs() {
-	return VERIFICATION_CODE_MAX_AGE_MS
-}
-
