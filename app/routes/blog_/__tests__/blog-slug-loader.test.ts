@@ -58,11 +58,17 @@ describe('/blog/:slug loader cache behavior', () => {
 			data: { recommendations: [] },
 			init: {
 				status: 404,
-				headers: { 'Cache-Control': 'private, max-age=3600' },
+				headers: { 'Cache-Control': 'private, max-age=60' },
 			},
 		})
 
 		expect(blogServerMocks.getBlogRecommendations).toHaveBeenCalledTimes(1)
+		expect(blogServerMocks.getBlogRecommendations).toHaveBeenCalledWith(
+			expect.objectContaining({
+				keywords: [],
+				exclude: ['does-not-exist'],
+			}),
+		)
 		expect(blogServerMocks.getBlogReadRankings).not.toHaveBeenCalled()
 		expect(blogServerMocks.getTotalPostReads).not.toHaveBeenCalled()
 	})
