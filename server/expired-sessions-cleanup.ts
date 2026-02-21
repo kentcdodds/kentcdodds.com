@@ -1,5 +1,8 @@
 import { getInstanceInfo } from '../app/utils/litefs-js.server.ts'
-import { deleteExpiredSessions } from '../app/utils/prisma.server.ts'
+import {
+	deleteExpiredSessions,
+	deleteExpiredVerifications,
+} from '../app/utils/prisma.server.ts'
 
 type CleanupController = {
 	stop: () => Promise<void>
@@ -54,10 +57,11 @@ export function scheduleExpiredSessionsCleanup({
 					await getInstanceInfo()
 				if (!currentIsPrimary) return
 
-				const deletedCount = await deleteExpiredSessions()
-				if (deletedCount > 0) {
+				const deletedSessionsCount = await deleteExpiredSessions()
+				const deletedVerificationsCount = await deleteExpiredVerifications()
+				if (deletedSessionsCount > 0 || deletedVerificationsCount > 0) {
 					console.info(
-						`expired-sessions-cleanup: deleted ${deletedCount} expired sessions (${reason})`,
+						`expired-sessions-cleanup: deleted ${deletedSessionsCount} expired sessions and ${deletedVerificationsCount} expired verifications (${reason})`,
 						{
 							currentInstance,
 							primaryInstance,

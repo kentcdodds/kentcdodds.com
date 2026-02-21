@@ -32,7 +32,7 @@ import {
 	getUrl,
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc.ts'
-import { verifyPassword } from '#app/utils/password.server.ts'
+import { DUMMY_PASSWORD_HASH, verifyPassword } from '#app/utils/password.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
@@ -127,22 +127,13 @@ export async function action({ request }: Route.ActionArgs) {
 		},
 	})
 
-	if (!userWithPassword?.password) {
-		loginSession.flashError(
-			'Invalid email or password. If you previously used magic links, use "Reset password" to set one.',
-		)
-		return redirect(`/login`, {
-			status: 400,
-			headers: await loginSession.getHeaders(),
-		})
-	}
-
+	const passwordHash = userWithPassword?.password?.hash ?? DUMMY_PASSWORD_HASH
 	const isValid = await verifyPassword({
 		password,
-		hash: userWithPassword.password.hash,
+		hash: passwordHash,
 	})
 
-	if (!isValid) {
+	if (!userWithPassword?.password || !isValid) {
 		loginSession.flashError(
 			'Invalid email or password. If you previously used magic links, use "Reset password" to set one.',
 		)

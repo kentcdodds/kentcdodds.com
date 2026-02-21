@@ -2,6 +2,9 @@ import crypto from 'node:crypto'
 import bcrypt from 'bcrypt'
 
 const BCRYPT_COST = 10
+// Precomputed bcrypt hash for timing-equal password comparisons.
+export const DUMMY_PASSWORD_HASH =
+	'$2b$10$fvrjcVttSLHkz9k1tjMfqu9ADv42kasEph8Oi2UR0zQNC9h0svQyu'
 const PASSWORD_MIN_LENGTH = 8
 // NOTE: bcrypt only uses the first 72 bytes of the password.
 // Enforcing this avoids giving users a false sense of security.

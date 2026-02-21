@@ -74,6 +74,16 @@ async function deleteExpiredSessions(
 	return result.count
 }
 
+async function deleteExpiredVerifications(
+	{ now = new Date() }: { now?: Date } = {},
+) {
+	await ensurePrimary()
+	const result = await prisma.verification.deleteMany({
+		where: { expiresAt: { lt: now } },
+	})
+	return result.count
+}
+
 async function getUserFromSessionId(
 	sessionId: string,
 	{ timings }: { timings?: Timings } = {},
@@ -151,6 +161,7 @@ export {
 	addPostRead,
 	createSession,
 	deleteExpiredSessions,
+	deleteExpiredVerifications,
 	getAllUserData,
 	getUserFromSessionId,
 	prisma,
