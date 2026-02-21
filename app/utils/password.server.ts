@@ -24,7 +24,7 @@ export async function verifyPassword({
 	return bcrypt.compare(password, hash)
 }
 
-export function getPasswordHashParts(password: string) {
+function getPasswordHashParts(password: string) {
 	const hash = crypto
 		.createHash('sha1')
 		.update(password, 'utf8')
@@ -33,7 +33,7 @@ export function getPasswordHashParts(password: string) {
 	return [hash.slice(0, 5), hash.slice(5)] as const
 }
 
-export async function checkIsCommonPassword(password: string) {
+async function checkIsCommonPassword(password: string) {
 	const [prefix, suffix] = getPasswordHashParts(password)
 	try {
 		const response = await fetch(
@@ -57,7 +57,7 @@ export async function checkIsCommonPassword(password: string) {
 	}
 }
 
-export function getPasswordValidationError(password: string) {
+function getPasswordValidationError(password: string) {
 	if (typeof password !== 'string' || !password.length) {
 		return 'Password is required'
 	}
@@ -65,7 +65,7 @@ export function getPasswordValidationError(password: string) {
 		return `Password must be at least ${PASSWORD_MIN_LENGTH} characters`
 	}
 	if (new TextEncoder().encode(password).length > PASSWORD_MAX_BYTES) {
-		return 'Password is too long'
+		return `Password is too long (max ${PASSWORD_MAX_BYTES} bytes)`
 	}
 	return null
 }
