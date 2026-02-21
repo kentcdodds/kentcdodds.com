@@ -123,7 +123,7 @@ export default function RecordScreen() {
 						</div>
 					) : (
 						<CallKentTextToSpeech
-							onAcceptAudio={({ audio, questionText, suggestedTitle, voice }) => {
+							onAcceptAudio={({ audio, questionText, suggestedTitle }) => {
 								setAudio(audio)
 								setPrefill({
 									fields: {
