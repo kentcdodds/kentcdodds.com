@@ -44,15 +44,15 @@ import {
 	typedBoolean,
 	useCapturedRouteError,
 } from '#app/utils/misc.tsx'
+import { prisma } from '#app/utils/prisma.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
-import { getSeasons } from '#app/utils/simplecast.server.ts'
-import { prisma } from '#app/utils/prisma.server.ts'
 import { getUser } from '#app/utils/session.server.ts'
+import { getSeasons } from '#app/utils/simplecast.server.ts'
 import { Themed } from '#app/utils/theme.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
-import  { type Route } from './+types/$season.$episode_.$slug'
+import { type Route } from './+types/$season.$episode_.$slug'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: serverOnly$(async (request: Request) => {
