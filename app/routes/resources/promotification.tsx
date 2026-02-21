@@ -12,11 +12,8 @@ import { useCountdown } from '#app/components/hooks/use-countdown.ts'
 import { AlarmIcon } from '#app/components/icons.tsx'
 import { NotificationMessage } from '#app/components/notification-message.tsx'
 import { Spinner } from '#app/components/spinner.tsx'
+import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { type Route } from './+types/promotification'
-
-type PromotificationActionData =
-	| { success: true }
-	| { success: false; error: string }
 
 export function getPromoCookieValue({
 	promoName,
@@ -37,10 +34,9 @@ export async function action({ request }: Route.ActionArgs) {
 	// Cookie names must be a valid RFC 6265 token (no whitespace, semicolons, etc).
 	// This is developer-controlled in our forms, but the endpoint is public.
 	if (!/^[a-zA-Z0-9._-]+$/.test(promoName)) {
-		return json<PromotificationActionData>(
-			{ success: false, error: 'Invalid promoName' },
-			{ status: 400 },
-		)
+		return json({ success: false, error: 'Invalid promoName' } as const, {
+			status: 400,
+		})
 	}
 
 	const DEFAULT_MAX_AGE_SECONDS = 60 * 60 * 24 * 7 * 2
@@ -60,10 +56,9 @@ export async function action({ request }: Route.ActionArgs) {
 		path: '/',
 		maxAge,
 	})
-	return json<PromotificationActionData>(
-		{ success: true },
-		{ headers: { 'Set-Cookie': cookieHeader } },
-	)
+	return json({ success: true } as const, {
+		headers: { 'Set-Cookie': cookieHeader },
+	})
 }
 
 type NotificationMessageProps = Parameters<typeof NotificationMessage>[0]
@@ -92,7 +87,7 @@ export function Promotification({
 	)
 
 	const [visible, setVisible] = useState(cookieValue !== 'hidden')
-	const fetcher = useFetcher<PromotificationActionData>()
+	const fetcher = useFetcher<SerializeFrom<typeof action>>()
 	const showSpinner = useSpinDelay(fetcher.state !== 'idle')
 	const disableLink = fetcher.state !== 'idle' || fetcher.data?.success
 
