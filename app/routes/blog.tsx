@@ -7,7 +7,12 @@ import { ArticleCard } from '#app/components/article-card.tsx'
 import { Button } from '#app/components/button.tsx'
 import { ServerError } from '#app/components/errors.tsx'
 import { Grid } from '#app/components/grid.tsx'
-import { PlusIcon, RssIcon, SearchIcon } from '#app/components/icons.tsx'
+import {
+	ChevronDownIcon,
+	PlusIcon,
+	RssIcon,
+	SearchIcon,
+} from '#app/components/icons.tsx'
 import { FeaturedSection } from '#app/components/sections/featured-section.tsx'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
@@ -619,24 +624,27 @@ function BlogHome() {
 						</H6>
 						<label className="flex items-center gap-3 text-sm font-medium text-slate-500">
 							<span>Sort by</span>
-							<select
-								value={
-									regularQuery === '' && sortState === 'newest'
-										? 'auto'
-										: sortState
-								}
-								onChange={(e) =>
-									setSortState(getSortStateFromParam(e.currentTarget.value))
-								}
-								className="text-primary bg-primary border-secondary focus:bg-secondary rounded-full border px-5 py-2 hover:border-team-current focus:border-team-current focus:outline-none"
-							>
-								<option value="auto">
-									{regularQuery ? 'Relevance' : 'Newest'}
-								</option>
-								{regularQuery ? <option value="newest">Newest</option> : null}
-								<option value="popular">Most popular</option>
-								<option value="oldest">Oldest</option>
-							</select>
+							<div className="relative">
+								<select
+									value={
+										regularQuery === '' && sortState === 'newest'
+											? 'auto'
+											: sortState
+									}
+									onChange={(e) =>
+										setSortState(getSortStateFromParam(e.currentTarget.value))
+									}
+									className="peer text-primary bg-primary border-secondary focus:bg-secondary appearance-none rounded-full border pl-5 pr-11 py-2 hover:border-team-current focus:border-team-current focus:outline-none"
+								>
+									<option value="auto">
+										{regularQuery ? 'Relevance' : 'Newest'}
+									</option>
+									{regularQuery ? <option value="newest">Newest</option> : null}
+									<option value="popular">Most popular</option>
+									<option value="oldest">Oldest</option>
+								</select>
+								<ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 peer-hover:text-team-current peer-focus:text-team-current" />
+							</div>
 						</label>
 					</div>
 				</Grid>
