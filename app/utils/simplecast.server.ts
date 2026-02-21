@@ -37,9 +37,49 @@ const headers = {
 
 const seasonsCacheKey = `simplecast:seasons:${CHATS_WITH_KENT_PODCAST_ID}`
 
-const cwkCachedListItemSchema = z
+const cwkCachedLinkSchema = z
 	.object({
+		name: z.string().min(1),
+		url: z.string().min(1),
+	})
+	.passthrough()
+
+const cwkCachedGuestSchema = z
+	.object({
+		name: z.string().min(1),
+		company: z.string().optional(),
+		github: z.string().optional(),
+		x: z.string().optional(),
+	})
+	.passthrough()
+
+const cwkCachedMetaSchema = z
+	.object({
+		keywords: z.array(z.string()).optional(),
+	})
+	.catchall(z.string())
+	.optional()
+
+const cwkCachedEpisodeSchema = z
+	.object({
+		slug: z.string().min(1),
+		title: z.string().min(1),
+		meta: cwkCachedMetaSchema,
+		descriptionHTML: z.string(),
+		description: z.string(),
+		summaryHTML: z.string(),
 		publishedAt: z.string().min(1),
+		updatedAt: z.string().min(1),
+		seasonNumber: z.number(),
+		episodeNumber: z.number(),
+		homeworkHTMLs: z.array(z.string()),
+		resources: z.array(cwkCachedLinkSchema),
+		image: z.string().min(1),
+		guests: z.array(cwkCachedGuestSchema),
+		duration: z.number(),
+		transcriptHTML: z.string(),
+		simpleCastId: z.string().min(1),
+		mediaUrl: z.string().min(1),
 	})
 	.passthrough()
 
@@ -47,17 +87,10 @@ const cwkCachedSeasonsSchema = z.array(
 	z
 		.object({
 			seasonNumber: z.number(),
-			episodes: z.array(cwkCachedListItemSchema),
+			episodes: z.array(cwkCachedEpisodeSchema),
 		})
 		.passthrough(),
 )
-
-const cwkCachedEpisodeSchema = z
-	.object({
-		title: z.string().min(1),
-		publishedAt: z.string().min(1),
-	})
-	.passthrough()
 
 function isTooManyRequests(json: unknown): json is SimplecastTooManyRequests {
 	return (
