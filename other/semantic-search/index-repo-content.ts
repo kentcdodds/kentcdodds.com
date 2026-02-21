@@ -10,6 +10,7 @@ import {
 	vectorizeDeleteByIds,
 	vectorizeUpsert,
 } from './cloudflare.ts'
+import { getSemanticSearchIgnoreList, isDocIdIgnored } from './ignore-list.ts'
 import {
 	getJsxPagePathFromSlug,
 	loadJsxPageItemsFromLocalApp,
@@ -24,6 +25,28 @@ type DocType =
 	| 'credit'
 	| 'testimonial'
 	| 'jsx-page'
+
+function isDocType(value: string): value is DocType {
+	return (
+		value === 'blog' ||
+		value === 'page' ||
+		value === 'talk' ||
+		value === 'resume' ||
+		value === 'credit' ||
+		value === 'testimonial' ||
+		value === 'jsx-page'
+	)
+}
+
+function parseDocId(docId: string): { type: DocType; slug: string } | null {
+	const i = docId.indexOf(':')
+	if (i <= 0) return null
+	const typeRaw = docId.slice(0, i)
+	const slug = docId.slice(i + 1)
+	if (!slug) return null
+	if (!isDocType(typeRaw)) return null
+	return { type: typeRaw, slug }
+}
 
 type ManifestChunk = {
 	id: string
@@ -683,6 +706,10 @@ async function main() {
 		docs: {},
 	}
 
+	const ignoreList = await getSemanticSearchIgnoreList({ bucket: r2Bucket })
+	const isIgnoredDocId = (docId: string) =>
+		isDocIdIgnored({ docId, ignoreList })
+
 	let docsToIndex: Array<{ type: DocType; slug: string }> = []
 	let docsToDelete: Array<{ type: DocType; slug: string }> = []
 
@@ -756,6 +783,32 @@ async function main() {
 		})
 		docsToIndex = updated.docsToIndex
 		docsToDelete = updated.docsToDelete
+	}
+
+	// Apply ignore list:
+	// - never (re)index ignored docs
+	// - always delete ignored docs currently present in the manifest (even on incremental runs)
+	const beforeIgnoredFilterCount = docsToIndex.length
+	docsToIndex = docsToIndex.filter(
+		(d) => !isIgnoredDocId(getDocId(d.type, d.slug)),
+	)
+	const ignoredDocsInManifest = Object.keys(manifest.docs)
+		.filter((docId) => isIgnoredDocId(docId))
+		.map((docId) => parseDocId(docId))
+		.filter(Boolean) as Array<{ type: DocType; slug: string }>
+	if (ignoredDocsInManifest.length) {
+		docsToDelete = uniqDocRefs([...docsToDelete, ...ignoredDocsInManifest])
+	}
+
+	if (docsToIndex.length !== beforeIgnoredFilterCount) {
+		console.log(
+			`Ignore list: skipped ${beforeIgnoredFilterCount - docsToIndex.length} docs from indexing.`,
+		)
+	}
+	if (ignoredDocsInManifest.length) {
+		console.log(
+			`Ignore list: deleting ${ignoredDocsInManifest.length} docs present in manifest.`,
+		)
 	}
 
 	console.log(`Docs to index: ${docsToIndex.length}`)

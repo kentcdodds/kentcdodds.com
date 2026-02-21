@@ -61,6 +61,23 @@ Indexed sources (via `index-repo-content.ts`):
 - `content/data/testimonials.yml` (each testimonial author is indexed as its own
   doc)
 
+## Ignore list (prevent re-indexing)
+
+All indexers support an optional ignore list stored in R2 (JSON):
+
+- Key: `manifests/ignore-list.json` (override with
+  `SEMANTIC_SEARCH_IGNORE_LIST_KEY`)
+- Shape:
+  - `{ "version": 1, "patterns": ["youtube:dQw4w9WgXcQ", "youtube:*", "blog:secret-post"] }`
+
+Patterns match doc IDs (keys in the manifests). A trailing `*` acts as a prefix
+wildcard (only supported at the end of the string).
+
+When a doc is ignored, indexers will:
+
+- skip indexing it, even if it would otherwise be discovered, and
+- delete any existing vectors + manifest entries for it.
+
 ## YouTube playlist indexing
 
 Script:

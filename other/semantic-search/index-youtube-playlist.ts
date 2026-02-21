@@ -9,6 +9,7 @@ import {
 	vectorizeDeleteByIds,
 	vectorizeUpsert,
 } from './cloudflare.ts'
+import { getSemanticSearchIgnoreList, isDocIdIgnored } from './ignore-list.ts'
 import { getJsonObject, putJsonObject } from './r2-manifest.ts'
 
 type DocType = 'youtube'
@@ -524,9 +525,8 @@ type YouTubeBrowseConfig = {
 
 function parseSignatureTimestamp(html: string) {
 	const fromSts = html.match(/"STS":(?<sts>\d+)/)?.groups?.sts
-	const fromSignatureTimestamp = html.match(
-		/"signatureTimestamp":(?<sts>\d+)/,
-	)?.groups?.sts
+	const fromSignatureTimestamp = html.match(/"signatureTimestamp":(?<sts>\d+)/)
+		?.groups?.sts
 	const raw = fromSts ?? fromSignatureTimestamp
 	if (!raw) return null
 	const n = Number(raw)
@@ -743,7 +743,8 @@ async function fetchYouTubePlayerJson({
 		config.apiKey,
 	)}`
 	const playbackContext =
-		typeof signatureTimestamp === 'number' && Number.isFinite(signatureTimestamp)
+		typeof signatureTimestamp === 'number' &&
+		Number.isFinite(signatureTimestamp)
 			? {
 					contentPlaybackContext: {
 						// YouTube now often requires STS for a playable response (and captionTracks).
@@ -1302,6 +1303,32 @@ async function main() {
 		docs: {},
 	}
 
+	const ignoreList = await getSemanticSearchIgnoreList({ bucket: r2Bucket })
+	const isIgnoredVideoId = (videoId: string) =>
+		isDocIdIgnored({
+			docId: getDocId('youtube', videoId),
+			ignoreList,
+		})
+	const ignoredVideos = videos.filter((video) =>
+		isIgnoredVideoId(video.videoId),
+	)
+	if (ignoredVideos.length) {
+		console.log(
+			`Ignore list: skipping ${ignoredVideos.length} videos from discovery/indexing.`,
+		)
+		videos = videos.filter((video) => !isIgnoredVideoId(video.videoId))
+	}
+
+	const ignoredManifestDocIds = Object.keys(manifest.docs).filter((docId) =>
+		isDocIdIgnored({ docId, ignoreList }),
+	)
+	const needsIgnoreRemovals = ignoredManifestDocIds.length > 0
+	if (needsIgnoreRemovals) {
+		console.log(
+			`Ignore list: ${ignoredManifestDocIds.length} docs currently in the manifest will be removed.`,
+		)
+	}
+
 	const discoveredDocIds = new Set(
 		videos.map((v) => getDocId('youtube', v.videoId)),
 	)
@@ -1327,7 +1354,7 @@ async function main() {
 			console.log('Dry run complete. Skipping Vectorize/R2 writes.')
 			return
 		}
-		if (!prune) return
+		if (!prune && !needsIgnoreRemovals) return
 		// If pruning, we still need to update Vectorize + manifest for removals.
 		// (We still had to talk to YouTube to discover the current set.)
 	}
@@ -1390,7 +1417,8 @@ async function main() {
 			})
 			if (useCache) {
 				await writeVideoEnrichedDataCache({ ...cacheKey, data: details }).catch(
-					(error) => console.warn(`Failed to write cache (${video.videoId})`, error),
+					(error) =>
+						console.warn(`Failed to write cache (${video.videoId})`, error),
 				)
 			}
 			return { video, details }
@@ -1419,7 +1447,31 @@ async function main() {
 		text: string
 		metadata: Record<string, unknown>
 	}> = []
-	const nextDocs: Record<string, ManifestDoc> = prune ? {} : { ...manifest.docs }
+	const nextDocs: Record<string, ManifestDoc> = {}
+
+	// In non-prune mode we normally carry forward any existing manifest docs.
+	// The ignore list is an explicit override: ensure ignored docs are removed
+	// from the manifest and their vectors are deleted.
+	if (!prune) {
+		let ignoredFromManifest = 0
+		for (const [docId, oldDoc] of Object.entries(manifest.docs)) {
+			if (isDocIdIgnored({ docId, ignoreList })) {
+				ignoredFromManifest++
+				for (const chunk of oldDoc.chunks ?? []) {
+					if (chunk?.id) idsToDelete.push(String(chunk.id))
+				}
+				continue
+			}
+			nextDocs[docId] = oldDoc
+		}
+		if (ignoredFromManifest) {
+			console.log(
+				`Ignore list: deleting ${ignoredFromManifest} existing manifest docs (non-prune mode).`,
+			)
+		}
+	}
+	// In prune mode we intentionally rebuild `nextDocs` from discovered videos.
+	// (Ignored docs were filtered out of discovery above.)
 
 	for (const { video, details } of enriched) {
 		const videoId = video.videoId

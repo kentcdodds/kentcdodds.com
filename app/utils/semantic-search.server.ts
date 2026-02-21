@@ -245,6 +245,54 @@ async function queryVectorize({
 	}
 }
 
+export async function vectorizeDeleteByIds({
+	ids,
+}: {
+	ids: string[]
+}): Promise<unknown> {
+	const { accountId, apiToken, indexName } = getRequiredSemanticSearchEnv()
+	if (!accountId || !apiToken || !indexName) {
+		throw new Error(
+			'Semantic search is not configured. Set CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN, and CLOUDFLARE_VECTORIZE_INDEX.',
+		)
+	}
+	if (!Array.isArray(ids) || ids.length === 0) {
+		return { result: { deleted: 0 } }
+	}
+
+	const body = JSON.stringify({ ids })
+	const doFetch = (path: string) => {
+		const url = `${getCloudflareApiBaseUrl()}/accounts/${accountId}${path}`
+		return fetch(url, {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${apiToken}`,
+				'Content-Type': 'application/json',
+			},
+			body,
+		})
+	}
+	const throwIfNotOk = async (res: Response, path: string) => {
+		if (res.ok) return
+		const text = await res.text().catch(() => '')
+		throw new Error(
+			`Cloudflare API request failed: ${res.status} ${res.statusText} (${path})${text ? `\n${text}` : ''}`,
+		)
+	}
+
+	const v2Path = `/vectorize/v2/indexes/${indexName}/delete_by_ids`
+	const v2Res = await doFetch(v2Path)
+	if (v2Res.status === 404 || v2Res.status === 405) {
+		const legacyPath = `/vectorize/indexes/${indexName}/delete_by_ids`
+		const legacyRes = await doFetch(legacyPath)
+		await throwIfNotOk(legacyRes, legacyPath)
+		return (await legacyRes.json()) as unknown
+	}
+
+	await throwIfNotOk(v2Res, v2Path)
+	return (await v2Res.json()) as unknown
+}
+
 export type SemanticSearchResult = {
 	id: string
 	score: number
