@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Link, useSearchParams } from 'react-router'
-import { Button } from '#app/components/button.tsx'
+import { Button, LinkButton } from '#app/components/button.tsx'
 import { CallRecorder } from '#app/components/calls/recorder.tsx'
 import { CallKentTextToSpeech } from '#app/components/calls/text-to-speech.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -70,24 +70,6 @@ export default function RecordScreen() {
 							{`Using a sample recording (dev only)...`}
 						</Paragraph>
 					) : null}
-					<div className="flex flex-wrap gap-3">
-						<Button
-							type="button"
-							variant={mode === 'record' ? 'primary' : 'secondary'}
-							size="medium"
-							onClick={() => setMode('record')}
-						>
-							Record your voice
-						</Button>
-						<Button
-							type="button"
-							variant={mode === 'text' ? 'primary' : 'secondary'}
-							size="medium"
-							onClick={() => setMode('text')}
-						>
-							Type your question
-						</Button>
-					</div>
 					{userInfo.avatar.hasGravatar ? null : (
 						<Paragraph>
 							{`
@@ -120,23 +102,45 @@ export default function RecordScreen() {
 									team={user.team}
 								/>
 							)}
+							<Paragraph className="mt-6 text-sm text-gray-500 dark:text-slate-400">
+								{`Prefer not to record? `}
+								<LinkButton
+									type="button"
+									underlined
+									onClick={() => setMode('text')}
+								>
+									Type your question instead
+								</LinkButton>
+								{'.'}
+							</Paragraph>
 						</div>
 					) : (
-						<CallKentTextToSpeech
-							onAcceptAudio={({ audio, questionText, suggestedTitle }) => {
-								setAudio(audio)
-								setPrefill({
-									fields: {
-										title: suggestedTitle || 'Call Kent question',
-										description: questionText,
-										keywords: '',
-									},
-									errors: {},
-								})
-								// Ensure the recording form is visible right away.
-								setMode('text')
-							}}
-						/>
+						<div>
+							<Paragraph className="mb-6 text-sm text-gray-500 dark:text-slate-400">
+								{`Prefer to record your own voice? `}
+								<LinkButton
+									type="button"
+									underlined
+									onClick={() => setMode('record')}
+								>
+									Record instead
+								</LinkButton>
+								{'.'}
+							</Paragraph>
+							<CallKentTextToSpeech
+								onAcceptAudio={({ audio, questionText, suggestedTitle }) => {
+									setAudio(audio)
+									setPrefill({
+										fields: {
+											title: suggestedTitle || 'Call Kent question',
+											description: questionText,
+											keywords: '',
+										},
+										errors: {},
+									})
+								}}
+							/>
+						</div>
 					)}
 				</div>
 			)}

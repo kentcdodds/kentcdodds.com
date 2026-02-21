@@ -107,7 +107,7 @@ export default function RecordScreen({ loaderData: data }: Route.ComponentProps)
 
 			<Grid as="header" className="mb-12">
 				<H2 className="col-span-full lg:col-span-8 lg:col-start-3">
-					{`Record or type your call, and I'll answer.`}
+					{`Record your call, and I'll answer.`}
 				</H2>
 			</Grid>
 
