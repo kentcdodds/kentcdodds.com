@@ -186,7 +186,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		},
 		{
 			headers: {
-				'Cache-Control': 'public, max-age=600',
+				'Cache-Control': 'private, max-age=600',
 				Vary: 'Cookie',
 				'Server-Timing': getServerTimeHeader(timings),
 			},
