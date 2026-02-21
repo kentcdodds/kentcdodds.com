@@ -1,5 +1,5 @@
+import { invariantResponse } from '@epic-web/invariant'
 import { data as json, redirect, Form, useActionData, useLoaderData, type MetaFunction } from 'react-router'
-import invariant from 'tiny-invariant'
 import { Button, ButtonLink } from '#app/components/button.tsx'
 import { Field, InputError } from '#app/components/form-elements.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -101,7 +101,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 	if (actionId === actionIds.resend) {
 		const emailAddress = formData.get('email')
-		invariant(typeof emailAddress === 'string', 'Form submitted incorrectly')
+		invariantResponse(typeof emailAddress === 'string', 'Form submitted incorrectly')
 		const email = emailAddress.toLowerCase()
 		if (email) loginSession.setEmail(email)
 
@@ -145,8 +145,8 @@ export async function action({ request }: Route.ActionArgs) {
 	if (actionId === actionIds.verify) {
 		const emailAddress = formData.get('email')
 		const code = formData.get('code')
-		invariant(typeof emailAddress === 'string', 'Form submitted incorrectly')
-		invariant(typeof code === 'string', 'Form submitted incorrectly')
+		invariantResponse(typeof emailAddress === 'string', 'Form submitted incorrectly')
+		invariantResponse(typeof code === 'string', 'Form submitted incorrectly')
 		const email = emailAddress.toLowerCase()
 		if (email) loginSession.setEmail(email)
 
