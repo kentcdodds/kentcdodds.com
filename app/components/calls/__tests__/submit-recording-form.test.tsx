@@ -298,7 +298,7 @@ describe('RecordingForm', () => {
 		}
 	})
 
-	it('shows validation feedback as the user types (and keeps native validation off)', async () => {
+	it('shows validation feedback on blur or submit (and keeps native validation off)', async () => {
 		vi.clearAllMocks()
 		mockUseRootData.mockReturnValue({
 			requestInfo: { flyPrimaryInstance: null },
@@ -322,10 +322,15 @@ describe('RecordingForm', () => {
 			expect(screen.getByText('80 characters left')).toBeInTheDocument()
 
 			fireEvent.change(titleInput, { target: { value: 'abcd' } })
+			expect(screen.getByText('76 characters left')).toBeInTheDocument()
+			expect(
+				screen.queryByText('Title must be at least 5 characters'),
+			).not.toBeInTheDocument()
+
+			fireEvent.blur(titleInput)
 			expect(
 				screen.getByText('Title must be at least 5 characters'),
 			).toBeInTheDocument()
-			expect(screen.getByText('76 characters left')).toBeInTheDocument()
 
 			fireEvent.change(titleInput, { target: { value: 'abcde' } })
 			await waitFor(() =>

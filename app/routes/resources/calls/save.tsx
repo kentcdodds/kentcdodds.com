@@ -154,8 +154,8 @@ function RecordingForm({
 		) => {
 			const value = event.currentTarget.value
 			setFieldValues((prev) => (prev[field] === value ? prev : { ...prev, [field]: value }))
-			markInteracted(field)
-			// If the user edits after a failed submit, hide stale server errors.
+			// Keep the values in sync for counters + validation, but do not show errors
+			// until the field is blurred or the user attempts to submit.
 			setSubmissionData((prev) =>
 				prev
 					? {
