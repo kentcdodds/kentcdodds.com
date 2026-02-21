@@ -26,6 +26,11 @@ vi.mock('#app/utils/use-root-data.ts', () => ({
 	useRootData: () => ({ requestInfo: { origin: 'http://localhost' } }),
 }))
 
+// In Vitest, the Vite macro plugin isn't installed, so mock the macro helper.
+vi.mock('vite-env-only/macros', () => ({
+	serverOnly$: (fn: unknown) => fn,
+}))
+
 // Import after mocks so the route loader sees the mocked deps.
 import { loader } from '../$slug.tsx'
 
