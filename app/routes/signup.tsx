@@ -91,13 +91,13 @@ export async function action({ request }: Route.ActionArgs) {
 
 	if (actionId === actionIds.requestCode) {
 		const emailAddress = form.get('email')
-		const email = typeof emailAddress === 'string' ? emailAddress.toLowerCase() : ''
+		const email =
+			typeof emailAddress === 'string' ? emailAddress.trim().toLowerCase() : ''
 		if (email) loginInfoSession.setEmail(email)
 
 		if (!email.match(/.+@.+/)) {
 			loginInfoSession.flashError('A valid email is required')
 			return redirect('/signup', {
-				status: 400,
 				headers: await loginInfoSession.getHeaders(),
 			})
 		}
@@ -123,12 +123,30 @@ export async function action({ request }: Route.ActionArgs) {
 		verificationUrl.searchParams.set('verification', verification.id)
 		verificationUrl.searchParams.set('code', code)
 
-		await sendSignupVerificationEmail({
-			emailAddress: email,
-			verificationCode: code,
-			verificationUrl: verificationUrl.toString(),
-			domainUrl,
-		})
+		try {
+			await sendSignupVerificationEmail({
+				emailAddress: email,
+				verificationCode: code,
+				verificationUrl: verificationUrl.toString(),
+				domainUrl,
+			})
+		} catch (error) {
+			// Avoid leaving an unused verification record around if email sending fails.
+			try {
+				await ensurePrimary()
+				await prisma.verification.delete({ where: { id: verification.id } })
+			} catch (cleanupError) {
+				console.error(
+					'Failed to cleanup verification after email send failure',
+					cleanupError,
+				)
+			}
+			console.error('Failed to send signup verification email', error)
+			loginInfoSession.flashError(
+				'Unable to send verification email right now. Please try again.',
+			)
+			return redirect('/signup', { headers: await loginInfoSession.getHeaders() })
+		}
 
 		loginInfoSession.flashMessage(`Verification code sent to ${email}.`)
 		return redirect(`/signup?verification=${verification.id}`, {
@@ -154,6 +172,7 @@ export async function action({ request }: Route.ActionArgs) {
 				: await consumeVerificationForTarget({
 						target: (form.get('email') ?? loginInfoSession.getEmail() ?? '')
 							.toString()
+							.trim()
 							.toLowerCase(),
 						code,
 						type: 'SIGNUP',
@@ -168,8 +187,7 @@ export async function action({ request }: Route.ActionArgs) {
 					? `/signup?verification=${verificationId}`
 					: '/signup',
 				{
-				status: 400,
-				headers: await loginInfoSession.getHeaders(),
+					headers: await loginInfoSession.getHeaders(),
 				},
 			)
 		}
@@ -225,42 +243,69 @@ export async function action({ request }: Route.ActionArgs) {
 
 		const passwordHash = await getPasswordHash(safePassword)
 		await ensurePrimary()
-		const user = await prisma.user.create({
-			data: {
-				email: signupEmail,
-				firstName: safeFirstName,
-				team: safeTeam,
-				password: { create: { hash: passwordHash } },
-			},
-		})
+		let user: { id: string }
+		try {
+			user = await prisma.user.create({
+				data: {
+					email: signupEmail,
+					firstName: safeFirstName,
+					team: safeTeam,
+					password: { create: { hash: passwordHash } },
+				},
+				select: { id: true },
+			})
+		} catch (error: unknown) {
+			// If the account was created in another concurrent attempt, send the user to login.
+			if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
+				loginInfoSession.clean()
+				loginInfoSession.flashMessage(
+					'An account already exists for that email. Log in instead (or reset your password).',
+				)
+				return redirect('/login', { headers: await loginInfoSession.getHeaders() })
+			}
+			throw error
+		}
 
-		// add user to mailing list
-		const sub = await tagKCDSiteSubscriber({
+		// Best-effort: don't block account creation on mailing-list issues.
+		void tagKCDSiteSubscriber({
 			email: signupEmail,
 			firstName: safeFirstName,
 			fields: { kcd_team: safeTeam, kcd_site_id: user.id },
 		})
-		await prisma.user.update({
-			data: { kitId: String(sub.id) },
-			where: { id: user.id },
-		})
+			.then(async (sub) => {
+				await ensurePrimary()
+				await prisma.user.update({
+					data: { kitId: String(sub.id) },
+					where: { id: user.id },
+				})
+			})
+			.catch((error) => {
+				console.error('Failed to tag subscriber on signup', error)
+			})
 
 		const session = await getSession(request)
-		const clientSession = await getClientSession(request, null)
-		const clientId = clientSession.getClientId()
-		// update all PostReads from clientId to userId
-		if (clientId) {
-			await prisma.postRead.updateMany({
-				data: { userId: user.id, clientId: null },
-				where: { clientId },
-			})
+		await session.signIn(user)
+
+		let clientSession: Awaited<ReturnType<typeof getClientSession>> | null = null
+		try {
+			clientSession = await getClientSession(request, null)
+			const clientId = clientSession.getClientId()
+			// update all PostReads from clientId to userId
+			if (clientId) {
+				await ensurePrimary()
+				await prisma.postRead.updateMany({
+					data: { userId: user.id, clientId: null },
+					where: { clientId },
+				})
+			}
+			clientSession.setUser({})
+		} catch (error) {
+			console.error('Failed to migrate client data on signup', error)
 		}
-		clientSession.setUser(user)
 
 		const headers = new Headers()
-		await session.signIn(user)
 		await session.getHeaders(headers)
-		await clientSession.getHeaders(headers)
+		if (clientSession) await clientSession.getHeaders(headers)
 		loginInfoSession.clean()
 		await loginInfoSession.getHeaders(headers)
 		return redirect('/me', { headers })
