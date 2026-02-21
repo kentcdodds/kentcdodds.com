@@ -2,7 +2,7 @@
 // The user can dismiss (snooze) the promo for a period of time via an httpOnly cookie.
 import * as cookie from 'cookie'
 import * as React from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useFetcher, data as json } from 'react-router'
 import { useSpinDelay } from 'spin-delay'
 import invariant from 'tiny-invariant'
@@ -21,7 +21,7 @@ export function getPromoCookieValue({
 	promoName: string
 	request: Request
 }) {
-	const cookies = cookie.parse(request.headers.get('Cookie') || '')
+	const cookies = cookie.parseCookie(request.headers.get('Cookie') || '')
 	return cookies[promoName]
 }
 
@@ -47,7 +47,7 @@ export async function action({ request }: Route.ActionArgs) {
 			? Math.min(Math.floor(rawMaxAge), MAX_MAX_AGE_SECONDS)
 			: DEFAULT_MAX_AGE_SECONDS
 
-	const cookieHeader = cookie.serialize(promoName, 'hidden', {
+	const cookieHeader = cookie.stringifySetCookie(promoName, 'hidden', {
 		httpOnly: true,
 		secure: true,
 		sameSite: 'lax',
@@ -78,7 +78,9 @@ export function Promotification({
 		visibleMs?: never
 	} & Required<Pick<NotificationMessageProps, 'children'>>) {
 	const promoEndTimeMs = promoEndTime.getTime()
-	const isPastEndTime = useRef(promoEndTimeMs <= Date.now())
+	const [isPastEndTime, setIsPastEndTime] = useState(
+		() => promoEndTimeMs <= Date.now(),
+	)
 
 	const [visible, setVisible] = useState(cookieValue !== 'hidden')
 	const fetcher = useFetcher<typeof action>()
@@ -91,6 +93,11 @@ export function Promotification({
 		}
 	}, [fetcher.data])
 
+	useEffect(() => {
+		// `promoEndTime` can change if a parent swaps promos; keep this derived.
+		setIsPastEndTime(promoEndTimeMs <= Date.now())
+	}, [promoEndTimeMs])
+
 	// Key fix for issue #462: compute from absolute end time each tick so we jump
 	// after tab inactivity rather than counting down rapidly to catch up.
 	const timeLeft = useCountdown(promoEndTimeMs, 1000)
@@ -100,7 +107,7 @@ export function Promotification({
 	const minutes = Math.floor((timeLeft / 1000 / 60) % 60)
 	const seconds = Math.floor((timeLeft / 1000) % 60)
 
-	if (isPastEndTime.current) return null
+	if (isPastEndTime) return null
 
 	return (
 		<NotificationMessage
@@ -114,38 +121,40 @@ export function Promotification({
 				{completed ? (
 					<div>{`Time's up. The sale is over`}</div>
 				) : (
-					<div className="flex flex-wrap gap-3 tabular-nums">
-						<span>
-							{days} day{days === 1 ? '' : 's'}
-						</span>
-						<span>
-							{hours} hour{hours === 1 ? '' : 's'}
-						</span>
-						<span>
-							{minutes} min{minutes === 1 ? '' : 's'}
-						</span>
-						<span>
-							{seconds} sec{seconds === 1 ? '' : 's'}
-						</span>
-					</div>
+					<>
+						<div className="flex flex-wrap gap-3 tabular-nums">
+							<span>
+								{days} day{days === 1 ? '' : 's'}
+							</span>
+							<span>
+								{hours} hour{hours === 1 ? '' : 's'}
+							</span>
+							<span>
+								{minutes} min{minutes === 1 ? '' : 's'}
+							</span>
+							<span>
+								{seconds} sec{seconds === 1 ? '' : 's'}
+							</span>
+						</div>
+						<fetcher.Form action="/resources/promotification" method="POST">
+							<input type="hidden" name="promoName" value={promoName} />
+							<input type="hidden" name="maxAge" value={dismissTimeSeconds} />
+							<div className="mt-4 flex flex-wrap items-center justify-end gap-2">
+								<LinkButton
+									type="submit"
+									className={`text-inverse flex items-center gap-1 transition-opacity ${
+										showSpinner ? 'opacity-50' : ''
+									}`}
+									disabled={disableLink}
+								>
+									<span>Remind me later</span>
+									<AlarmIcon />
+								</LinkButton>
+								<Spinner size={16} showSpinner={showSpinner} />
+							</div>
+						</fetcher.Form>
+					</>
 				)}
-				<fetcher.Form action="/resources/promotification" method="POST">
-					<input type="hidden" name="promoName" value={promoName} />
-					<input type="hidden" name="maxAge" value={dismissTimeSeconds} />
-					<div className="mt-4 flex flex-wrap items-center justify-end gap-2">
-						<LinkButton
-							type="submit"
-							className={`text-inverse flex items-center gap-1 transition-opacity ${
-								showSpinner ? 'opacity-50' : ''
-							}`}
-							disabled={disableLink}
-						>
-							<span>Remind me later</span>
-							<AlarmIcon />
-						</LinkButton>
-						<Spinner size={16} showSpinner={showSpinner} />
-					</div>
-				</fetcher.Form>
 			</div>
 		</NotificationMessage>
 	)
