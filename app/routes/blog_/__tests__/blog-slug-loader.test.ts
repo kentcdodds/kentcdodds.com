@@ -98,6 +98,9 @@ describe('/blog/:slug loader cache behavior', () => {
 		})
 
 		expect(blogServerMocks.getBlogRecommendations).toHaveBeenCalledTimes(1)
+		expect(blogServerMocks.getBlogRecommendations).toHaveBeenCalledWith(
+			expect.objectContaining({ keywords: ['react'] }),
+		)
 		expect(blogServerMocks.getBlogReadRankings).toHaveBeenCalledTimes(1)
 		expect(blogServerMocks.getTotalPostReads).toHaveBeenCalledTimes(1)
 	})
