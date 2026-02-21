@@ -9,7 +9,7 @@ import { type KCDHandle } from '#app/types.ts'
 import { getClientSession } from '#app/utils/client.server.ts'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
-import { getDomainUrl } from '#app/utils/misc.tsx'
+import { getDomainUrl } from '#app/utils/misc.ts'
 import { getPasswordStrengthError, getPasswordHash } from '#app/utils/password.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { sendPasswordResetEmail } from '#app/utils/send-email.server.ts'
@@ -102,7 +102,7 @@ export async function action({ request }: Route.ActionArgs) {
 	if (actionId === actionIds.resend) {
 		const emailAddress = formData.get('email')
 		invariantResponse(typeof emailAddress === 'string', 'Form submitted incorrectly')
-		const email = emailAddress.toLowerCase()
+		const email = emailAddress.trim().toLowerCase()
 		if (email) loginSession.setEmail(email)
 
 		if (!email.match(/.+@.+/)) {
@@ -153,7 +153,7 @@ export async function action({ request }: Route.ActionArgs) {
 		const code = formData.get('code')
 		invariantResponse(typeof emailAddress === 'string', 'Form submitted incorrectly')
 		invariantResponse(typeof code === 'string', 'Form submitted incorrectly')
-		const email = emailAddress.toLowerCase()
+		const email = emailAddress.trim().toLowerCase()
 		if (email) loginSession.setEmail(email)
 
 		if (!email.match(/.+@.+/)) {
@@ -201,7 +201,8 @@ export async function action({ request }: Route.ActionArgs) {
 		return redirect('/reset-password', { headers: await loginSession.getHeaders() })
 	}
 
-	const password = typeof formData.get('password') === 'string' ? String(formData.get('password')) : ''
+	const passwordEntry = formData.get('password')
+	const password = typeof passwordEntry === 'string' ? passwordEntry : ''
 	const confirmPassword =
 		typeof formData.get('confirmPassword') === 'string'
 			? String(formData.get('confirmPassword'))
@@ -241,13 +242,15 @@ export async function action({ request }: Route.ActionArgs) {
 	const passwordHash = await getPasswordHash(password)
 
 	await ensurePrimary()
-	await prisma.password.upsert({
-		where: { userId: userRecord.id },
-		update: { hash: passwordHash },
-		create: { userId: userRecord.id, hash: passwordHash },
-	})
-	// Sign out everywhere on password reset.
-	await prisma.session.deleteMany({ where: { userId: userRecord.id } })
+	await prisma.$transaction([
+		prisma.password.upsert({
+			where: { userId: userRecord.id },
+			update: { hash: passwordHash },
+			create: { userId: userRecord.id, hash: passwordHash },
+		}),
+		// Sign out everywhere on password reset.
+		prisma.session.deleteMany({ where: { userId: userRecord.id } }),
+	])
 
 	const session = await getSession(request)
 	await session.signIn({ id: userRecord.id })
@@ -279,7 +282,11 @@ export default function ResetPassword() {
 			<HeaderSection
 				as="header"
 				title="Reset your password."
-				subTitle="Use the code from your email."
+				subTitle={
+					data.step === 'verify'
+						? 'Use the code from your email.'
+						: 'Choose a new password.'
+				}
 				className="mb-16"
 			/>
 			<main>

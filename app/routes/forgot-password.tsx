@@ -7,7 +7,7 @@ import { HeaderSection } from '#app/components/sections/header-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
-import { getDomainUrl } from '#app/utils/misc.tsx'
+import { getDomainUrl } from '#app/utils/misc.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { sendPasswordResetEmail } from '#app/utils/send-email.server.ts'
 import { getUser } from '#app/utils/session.server.ts'
@@ -43,20 +43,20 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const emailAddress = formData.get('email')
 	invariantResponse(typeof emailAddress === 'string', 'Form submitted incorrectly')
-	const email = emailAddress.toLowerCase()
-	if (email) loginSession.setEmail(email)
+	const email = emailAddress.trim().toLowerCase()
 
 	// honeypot
 	const failedHoneypot = Boolean(formData.get('website'))
 	if (failedHoneypot) {
 		console.info(`FAILED HONEYPOT ON FORGOT PASSWORD`, {
-			email,
 			website: formData.get('website'),
 		})
 		return redirect('/forgot-password', {
 			headers: await loginSession.getHeaders(),
 		})
 	}
+
+	if (email) loginSession.setEmail(email)
 
 	if (!email.match(/.+@.+/)) {
 		loginSession.flashError('A valid email is required')
@@ -136,7 +136,10 @@ export default function ForgotPassword() {
 								defaultValue={data.email}
 							/>
 
-							<div style={{ position: 'absolute', left: '-9999px' }}>
+							<div
+								aria-hidden="true"
+								style={{ position: 'absolute', left: '-9999px' }}
+							>
 								<label htmlFor="website-field">Website</label>
 								<input
 									type="text"
