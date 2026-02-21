@@ -1,6 +1,6 @@
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { Link, useLoaderData, useLocation, useSearchParams, data as json, type HeadersFunction, type MetaFunction } from 'react-router';
+import { Link, useFetcher, useLoaderData, useLocation, useSearchParams, data as json, type HeadersFunction, type MetaFunction } from 'react-router';
 import { Grid } from '#app/components/grid.tsx'
 import { YoutubeIcon } from '#app/components/icons.tsx'
 import { CourseSection } from '#app/components/sections/course-section.tsx'
@@ -9,6 +9,7 @@ import { Tag } from '#app/components/tag.tsx'
 import { H3, H6, Paragraph } from '#app/components/typography.tsx'
 import { getGenericSocialImage, images } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
+import { FavoriteToggle, favoriteResourceRoute } from '#app/routes/resources/favorite.tsx'
 import {
 	formatDate,
 	getDisplayUrl,
@@ -21,6 +22,7 @@ import {
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { getTalksAndTags } from '#app/utils/talks.server.ts'
+import { useOptionalUser } from '#app/utils/use-root-data.ts'
 import  { type Route } from './+types/_layout'
 
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
@@ -68,7 +70,11 @@ function Card({
 	descriptionHTML,
 	resourceHTMLs,
 	active,
-}: SerializeFrom<typeof loader>['talks'][0] & { active: boolean }) {
+	isFavorite,
+}: SerializeFrom<typeof loader>['talks'][0] & {
+	active: boolean
+	isFavorite: boolean
+}) {
 	const latestDelivery = deliveries
 		.filter((x) => x.date)
 		.sort(
@@ -105,12 +111,18 @@ function Card({
 					) : null}
 				</div>
 
-				<div className="mt-8 flex space-x-2 md:mt-0">
+				<div className="mt-8 flex items-center space-x-2 md:mt-0">
 					{tag ? (
 						<div className="-my-4 -mr-8 inline-block self-start rounded-full bg-white px-8 py-4 text-lg whitespace-nowrap text-black dark:bg-gray-600 dark:text-white">
 							{tag}
 						</div>
 					) : null}
+					<FavoriteToggle
+						mode="icon"
+						contentType="talk"
+						contentId={slug}
+						initialIsFavorite={isFavorite}
+					/>
 				</div>
 			</div>
 
@@ -209,6 +221,19 @@ export default function TalksScreen() {
 	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const { pathname } = useLocation()
 	const [activeSlug] = pathname.split('/').slice(-1)
+	const user = useOptionalUser()
+	const talkFavoritesFetcher = useFetcher<{ contentIds: Array<string> }>({
+		key: 'favorites:talk',
+	})
+
+	React.useEffect(() => {
+		if (!user) return
+		if (talkFavoritesFetcher.data) return
+		if (talkFavoritesFetcher.state !== 'idle') return
+		void talkFavoritesFetcher.load(`${favoriteResourceRoute}?contentType=talk`)
+	}, [user, talkFavoritesFetcher])
+
+	const favoriteTalkIds = new Set(talkFavoritesFetcher.data?.contentIds ?? [])
 
 	// An effect to scroll to the talk's position when opening a direct link,
 	// use a ref so that it doesn't hijack scroll when the user is browsing talks
@@ -299,7 +324,11 @@ export default function TalksScreen() {
 						{talks.map((talk) => {
 							return (
 								<div key={talk.slug} className="col-span-full lg:col-span-6">
-									<Card active={activeSlug === talk.slug} {...talk} />
+									<Card
+										active={activeSlug === talk.slug}
+										isFavorite={favoriteTalkIds.has(talk.slug)}
+										{...talk}
+									/>
 								</div>
 							)
 						})}

@@ -211,6 +211,7 @@ async function getAllUserData(userId: string) {
 	return pProps({
 		user: prisma.user.findUnique({ where: { id: userId } }),
 		calls: prisma.call.findMany({ where: { userId } }),
+		favorites: prisma.favorite.findMany({ where: { userId } }),
 		postReads: prisma.postRead.findMany({ where: { userId } }),
 		sessions: prisma.session.findMany({ where: { userId } }),
 	})

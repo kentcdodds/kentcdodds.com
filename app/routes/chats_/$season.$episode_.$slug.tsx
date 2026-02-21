@@ -22,6 +22,7 @@ import { Spacer } from '#app/components/spacer.tsx'
 import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
 import { getSocialImageWithPreTitle } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
+import { FavoriteToggle } from '#app/routes/resources/favorite.tsx'
 import {
 	type CWKEpisode,
 	type CWKListItem,
@@ -31,6 +32,7 @@ import {
 	getCWKEpisodePath,
 	getFeaturedEpisode,
 } from '#app/utils/chats-with-kent.ts'
+import { getEpisodeFavoriteContentId } from '#app/utils/favorites.ts'
 import {
 	formatDate,
 	formatDuration,
@@ -42,13 +44,15 @@ import {
 	typedBoolean,
 	useCapturedRouteError,
 } from '#app/utils/misc.tsx'
+import { prisma } from '#app/utils/prisma.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
+import { getUser } from '#app/utils/session.server.ts'
 import { getSeasons } from '#app/utils/simplecast.server.ts'
 import { Themed } from '#app/utils/theme.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
-import  { type Route } from './+types/$season.$episode_.$slug'
+import { type Route } from './+types/$season.$episode_.$slug'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: serverOnly$(async (request: Request) => {
@@ -131,8 +135,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		throw new Response(`Episode param missing`, { status: 404 })
 	}
 	const episodeNumber = Number(episodeParam)
-
-	const seasons = await getSeasons({ request, timings })
+	const [user, seasons] = await Promise.all([
+		getUser(request, { timings }),
+		getSeasons({ request, timings }),
+	])
 	const season = seasons.find((s) => s.seasonNumber === seasonNumber)
 	if (!season) {
 		throw new Response(`Season ${seasonNumber} not found`, { status: 404 })
@@ -148,6 +154,24 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		return redirect(`/chats/${params.season}/${episodeParam}/${episode.slug}`)
 	}
 
+	const favoriteContentType = 'chats-with-kent-episode' as const
+	const favoriteContentId = getEpisodeFavoriteContentId({
+		seasonNumber: episode.seasonNumber,
+		episodeNumber: episode.episodeNumber,
+	})
+	const favorite = user
+		? await prisma.favorite.findUnique({
+				where: {
+					userId_contentType_contentId: {
+						userId: user.id,
+						contentType: favoriteContentType,
+						contentId: favoriteContentId,
+					},
+				},
+				select: { id: true },
+			})
+		: null
+
 	return json(
 		{
 			prevEpisode:
@@ -160,10 +184,13 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 				season.episodes.filter((e) => episode !== e),
 			),
 			episode,
+			favoriteContentType,
+			favoriteContentId,
+			isFavorite: Boolean(favorite),
 		},
 		{
 			headers: {
-				'Cache-Control': 'public, max-age=600',
+				'Cache-Control': user ? 'private, max-age=600' : 'public, max-age=600',
 				Vary: 'Cookie',
 				'Server-Timing': getServerTimeHeader(timings),
 			},
@@ -414,7 +441,15 @@ function PrevNextButton({
 
 export default function PodcastDetail() {
 	const { requestInfo } = useRootData()
-	const { episode, featured, nextEpisode, prevEpisode } =
+	const {
+		episode,
+		featured,
+		nextEpisode,
+		prevEpisode,
+		favoriteContentType,
+		favoriteContentId,
+		isFavorite,
+	} =
 		useLoaderData<Route.ComponentProps['loaderData']>()
 	const permalink = `${requestInfo.origin}${getCWKEpisodePath(episode)}`
 
@@ -488,22 +523,30 @@ export default function PodcastDetail() {
 				<Spacer size="3xs" className="col-span-full" />
 
 				<div className="col-span-full lg:col-span-8 lg:col-start-3">
-					<IconLink
-						className="flex gap-2"
-						target="_blank"
-						rel="noreferrer noopener"
-						href={`https://x.com/intent/post?${new URLSearchParams({
-							url: permalink,
-							text: `I just listened to "${episode.title}" with ${listify(
-								episode.guests
-									.map((g) => (g.x ? `@${g.x}` : null))
-									.filter(typedBoolean),
-							)} on the Call Kent Podcast 🎙 by @kentcdodds`,
-						})}`}
-					>
-						<XIcon title="Post this" />
-						<span>Post this episode</span>
-					</IconLink>
+					<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+						<FavoriteToggle
+							contentType={favoriteContentType}
+							contentId={favoriteContentId}
+							initialIsFavorite={isFavorite}
+							label="Favorite episode"
+						/>
+						<IconLink
+							className="flex gap-2"
+							target="_blank"
+							rel="noreferrer noopener"
+							href={`https://x.com/intent/post?${new URLSearchParams({
+								url: permalink,
+								text: `I just listened to "${episode.title}" with ${listify(
+									episode.guests
+										.map((g) => (g.x ? `@${g.x}` : null))
+										.filter(typedBoolean),
+								)} on the Call Kent Podcast 🎙 by @kentcdodds`,
+							})}`}
+						>
+							<XIcon title="Post this" />
+							<span>Post this episode</span>
+						</IconLink>
+					</div>
 				</div>
 
 				<Spacer size="2xs" className="col-span-full" />
