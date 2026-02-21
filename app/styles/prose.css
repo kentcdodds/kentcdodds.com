@@ -902,48 +902,53 @@ pre {
 
 /* Form controls inside blog content are otherwise left "unstyled" by preflight. */
 .prose :where(form, .demo)
-	:where(input, select, textarea, button):not([type='checkbox']):not(
-		[type='radio']
+	:where(
+		input:not([type='checkbox'], [type='radio']),
+		select,
+		textarea,
+		button
 	) {
 	font: inherit;
 	font-size: 1rem;
-	line-height: 1.25rem;
-
+	line-height: 1.25;
 	border: 1px solid var(--border-secondary);
 	border-radius: 0.5rem;
 	padding: 0.5rem 0.75rem;
 	color: var(--text-primary);
 }
 
-.prose :where(form, .demo) :where(input, select, textarea):not(
-		[type='checkbox']
-	):not([type='radio']) {
+.prose :where(form, .demo)
+	:where(input:not([type='checkbox'], [type='radio']), select, textarea) {
 	background-color: var(--bg-primary);
 }
 
-.prose :where(form, .demo) :where(button):not([type='checkbox']):not(
-		[type='radio']
-	) {
+.prose :where(form, .demo) :where(button) {
 	background-color: var(--bg-secondary);
 	cursor: pointer;
 	font-weight: 500;
 }
 
-.prose :where(form, .demo) :where(button:hover) {
+.prose :where(form, .demo) :where(button):hover {
 	background-color: var(--bg-primary);
 }
 
 .prose :where(form, .demo)
-	:where(input, select, textarea, button):not([type='checkbox']):not(
-		[type='radio']
+	:where(
+		input:not([type='checkbox'], [type='radio']),
+		select,
+		textarea,
+		button
 	):focus-visible {
 	outline: 2px solid var(--color-team-current);
 	outline-offset: 2px;
 }
 
 .prose :where(form, .demo)
-	:where(input, select, textarea, button):not([type='checkbox']):not(
-		[type='radio']
+	:where(
+		input:not([type='checkbox'], [type='radio']),
+		select,
+		textarea,
+		button
 	):disabled {
 	opacity: 0.6;
 	cursor: not-allowed;
