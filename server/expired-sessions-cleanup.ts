@@ -40,14 +40,12 @@ export function scheduleExpiredSessionsCleanup({
 		}
 	}
 
-	let running = false
 	let runningPromise: Promise<void> | null = null
 	let timeoutId: NodeJS.Timeout | null = null
 	let intervalId: NodeJS.Timeout | null = null
 
 	const runNow = async (reason = 'interval') => {
 		if (runningPromise) return runningPromise
-		running = true
 		runningPromise = (async () => {
 			try {
 				const { currentIsPrimary, currentInstance, primaryInstance } =
@@ -67,7 +65,6 @@ export function scheduleExpiredSessionsCleanup({
 			} catch (error: unknown) {
 				console.error(`expired-sessions-cleanup: failed (${reason})`, error)
 			} finally {
-				running = false
 				runningPromise = null
 			}
 		})()
