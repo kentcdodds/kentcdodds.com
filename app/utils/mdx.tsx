@@ -110,8 +110,17 @@ function OptionalUser({
 	return children(user)
 }
 
+function MdxTable(props: React.ComponentPropsWithoutRef<'table'>) {
+	return (
+		<div className="mdx-table-wrapper">
+			<table {...props} />
+		</div>
+	)
+}
+
 const mdxComponents = {
 	a: AnchorOrLink,
+	table: MdxTable,
 	Themed,
 	CloudinaryVideo,
 	ThemedBlogImage,
