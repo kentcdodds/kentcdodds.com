@@ -242,7 +242,7 @@ async function createEpisode({
 			gravatarUrl = result.hasGravatar ? result.avatar : null
 		}
 		const avatar = getCallKentEpisodeArtworkAvatar({
-			isAnonymous,
+			isAnonymous: isAnonymous ?? false,
 			team: user.team,
 			gravatarUrl,
 		})
@@ -253,7 +253,6 @@ async function createEpisode({
 			name: isAnonymous ? '- Anonymous' : `- ${user.firstName}`,
 			avatar,
 			avatarIsRound: hasGravatar,
-			size: 3000,
 		})
 
 		returnValue.episodeUrl = `${domainUrl}${episodePath}`

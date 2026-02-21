@@ -3,7 +3,7 @@ import {
 	getCallKentEpisodeArtworkAvatar,
 	getCallKentEpisodeArtworkUrl,
 } from '#app/utils/call-kent-artwork.ts'
-import { getAvatar } from '#app/utils/misc.tsx'
+import { getAvatar } from '#app/utils/misc-react.tsx'
 
 const AVATAR_SIZE = 1400
 
@@ -71,6 +71,21 @@ export function EpisodeArtworkPreview({
 	const tooltip = isAnonymous
 		? `Anonymous is enabled. Your call still shows up in Kent's admin with your info, but the published episode artwork uses a generic Kody avatar instead of your photo.`
 		: `If you check this, your call still shows up in Kent's admin with your info, but the published episode artwork will use a generic Kody avatar instead of your photo.`
+	const tooltipId = React.useId()
+	const tooltipWrapperRef = React.useRef<HTMLSpanElement>(null)
+	const [isTooltipOpen, setIsTooltipOpen] = React.useState(false)
+
+	React.useEffect(() => {
+		if (!isTooltipOpen) return
+		function onPointerDown(event: PointerEvent) {
+			const wrapper = tooltipWrapperRef.current
+			if (!wrapper) return
+			if (event.target instanceof Node && wrapper.contains(event.target)) return
+			setIsTooltipOpen(false)
+		}
+		document.addEventListener('pointerdown', onPointerDown)
+		return () => document.removeEventListener('pointerdown', onPointerDown)
+	}, [isTooltipOpen])
 
 	return (
 		<section className="mb-10 rounded-lg bg-gray-100 p-6 dark:bg-gray-800">
@@ -113,14 +128,42 @@ export function EpisodeArtworkPreview({
 						<span className="min-w-0">
 							<span className="text-primary inline-flex items-center gap-2 text-sm font-medium">
 								<span>Publish anonymously</span>
-								<button
-									type="button"
-									title={tooltip}
-									aria-label="What does publish anonymously mean?"
-									className="text-primary inline-flex h-5 w-5 items-center justify-center rounded-full border border-gray-300 text-xs leading-none opacity-80 hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600"
+								<span
+									ref={tooltipWrapperRef}
+									className="relative inline-flex"
+									onBlur={(event) => {
+										const wrapper = tooltipWrapperRef.current
+										if (!wrapper) return
+										const nextFocused = event.relatedTarget
+										if (nextFocused instanceof Node && wrapper.contains(nextFocused)) {
+											return
+										}
+										setIsTooltipOpen(false)
+									}}
 								>
-									?
-								</button>
+									<button
+										type="button"
+										aria-label="What does publish anonymously mean?"
+										aria-describedby={isTooltipOpen ? tooltipId : undefined}
+										aria-expanded={isTooltipOpen}
+										onClick={() => setIsTooltipOpen((v) => !v)}
+										onKeyDown={(event) => {
+											if (event.key === 'Escape') setIsTooltipOpen(false)
+										}}
+										className="text-primary inline-flex h-5 w-5 items-center justify-center rounded-full border border-gray-300 text-xs leading-none opacity-80 hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600"
+									>
+										?
+									</button>
+									{isTooltipOpen ? (
+										<span
+											id={tooltipId}
+											role="tooltip"
+											className="absolute left-0 top-full z-20 mt-2 w-72 rounded-md bg-white p-3 text-sm text-gray-700 shadow-lg ring-1 ring-black/5 dark:bg-gray-900 dark:text-slate-200 dark:ring-white/10"
+										>
+											{tooltip}
+										</span>
+									) : null}
+								</span>
 							</span>
 							<span className="mt-1 block text-sm text-gray-600 dark:text-slate-400">
 								{`Recommended: leave this unchecked so we can feature your avatar.`}

@@ -1,5 +1,5 @@
 import { images } from '#app/images.tsx'
-import { getOptionalTeam, toBase64 } from './misc.tsx'
+import { getOptionalTeam, toBase64 } from './misc.ts'
 
 export type CallKentEpisodeArtworkAvatar =
 	| { kind: 'fetch'; url: string }
@@ -89,7 +89,6 @@ export function getCallKentEpisodeArtworkUrl({
 	avatarIsRound,
 	size = DESIGN_SIZE,
 }: CallKentEpisodeArtworkOptions) {
-	const outputSize = size
 	const encodedTitle = doubleEncode(title)
 	const encodedUrl = doubleEncode(url)
 	const encodedName = doubleEncode(name)
@@ -100,7 +99,7 @@ export function getCallKentEpisodeArtworkUrl({
 			: `l_fetch:${encodeURIComponent(toBase64(avatar.url))}`
 	const radius = avatarIsRound ? ',r_max' : ''
 
-	const textLines = Number(Math.ceil(Math.min(title.length, 50) / 18).toFixed())
+	const textLines = Math.ceil(Math.min(title.length, 50) / 18)
 	const avatarYPosition = textLines + 0.6
 	const nameYPosition = -textLines + 5.2
 
@@ -121,7 +120,7 @@ export function getCallKentEpisodeArtworkUrl({
 	]
 
 	// Preserve the exact publish-time URL for production uploads.
-	if (outputSize === DESIGN_SIZE) {
+	if (size === DESIGN_SIZE) {
 		return [
 			...baseTransforms,
 			`c_fill,w_$tw,h_$th/kentcdodds.com/social-background.png`,
@@ -131,7 +130,7 @@ export function getCallKentEpisodeArtworkUrl({
 	return [
 		...baseTransforms,
 		`c_fill,w_$tw,h_$th`,
-		`c_scale,w_${outputSize},h_${outputSize}`,
+		`c_scale,w_${size},h_${size}`,
 		`kentcdodds.com/social-background.png`,
 	].join('/')
 }
