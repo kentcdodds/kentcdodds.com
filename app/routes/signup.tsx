@@ -216,10 +216,27 @@ function TeamOption({
 		onewheeling: TEAM_ONEWHEELING_MAP,
 	}[teamMap][value]
 
+	// Mobile uses the full illustration, but sized down so all three options can
+	// fit in a single row (issue #86).
+	const { className: teamImageClassName, ...teamImageProps } = getImgProps(
+		team.image,
+		{
+			className:
+				'mx-auto mb-2 block h-16 w-16 object-contain sm:h-20 sm:w-20 lg:mb-16 lg:h-auto lg:w-auto',
+			widths: [64, 80, 96, 128, 160, 256, 320, 350, 512, 685, 1370],
+			sizes: [
+				'(max-width: 479px) 64px',
+				'(min-width: 480px) and (max-width: 1023px) 80px',
+				'(min-width:1024px) and (max-width:1620px) 20vw',
+				'320px',
+			],
+		},
+	)
+
 	return (
 		<div
 			className={clsx(
-				'focus-ring relative col-span-full mb-3 rounded-lg bg-gray-100 lg:col-span-4 lg:mb-0 dark:bg-gray-800',
+				'focus-ring relative rounded-lg bg-gray-100 dark:bg-gray-800 lg:col-span-4',
 				team.focusClassName,
 				{
 					'ring-2': selected,
@@ -227,12 +244,12 @@ function TeamOption({
 			)}
 		>
 			{selected ? (
-				<span className="text-team-current absolute top-9 left-9">
-					<CheckCircledIcon />
+				<span className="text-team-current absolute top-2 left-2 lg:top-9 lg:left-9">
+					<CheckCircledIcon size={28} />
 				</span>
 			) : null}
 
-			<label className="block cursor-pointer px-12 pt-20 pb-12 text-center">
+			<label className="flex cursor-pointer flex-col items-center justify-center px-1 py-3 text-center sm:px-2 lg:block lg:px-12 lg:pt-20 lg:pb-12">
 				<input
 					className="sr-only"
 					type="radio"
@@ -241,17 +258,18 @@ function TeamOption({
 					aria-describedby={error ? 'team-error' : undefined}
 				/>
 				<img
-					{...getImgProps(team.image, {
-						className: 'mx-auto mb-16 block',
-						widths: [350, 512, 685, 1370, 2055],
-						sizes: [
-							'(max-width: 1023px) 65vw',
-							'(min-width:1023px) and (max-width:1620px) 20vw',
-							'320px',
-						],
-					})}
+					{...teamImageProps}
+					alt=""
+					aria-hidden="true"
+					className={teamImageClassName}
 				/>
-				<H6 as="span">{team.label}</H6>
+				<span className="text-sm font-medium leading-none text-black dark:text-white lg:text-lg">
+					<span className="lg:hidden" aria-hidden="true">
+						{team.label.replace(' Team', '')}
+					</span>
+					<span className="sr-only lg:hidden">{team.label}</span>
+					<span className="hidden lg:inline">{team.label}</span>
+				</span>
 			</label>
 		</div>
 	)
@@ -309,17 +327,19 @@ export default function NewAccount() {
 							</div>
 						) : null}
 
-						<fieldset className="contents">
+						<fieldset className="col-span-full border-0 p-0">
 							<legend className="sr-only">Team</legend>
-							{data.teamsInOrder.map((teamOption) => (
-								<TeamOption
-									key={teamOption}
-									teamMap={data.teamMap}
-									team={teamOption}
-									error={actionData?.errors.team}
-									selected={formValues.team === teamOption}
-								/>
-							))}
+							<div className="grid grid-cols-3 gap-3 md:gap-4 lg:grid-cols-12 lg:gap-6">
+								{data.teamsInOrder.map((teamOption) => (
+									<TeamOption
+										key={teamOption}
+										teamMap={data.teamMap}
+										team={teamOption}
+										error={actionData?.errors.team}
+										selected={formValues.team === teamOption}
+									/>
+								))}
+							</div>
 						</fieldset>
 
 						<div className="col-span-full h-20 lg:h-24" />
