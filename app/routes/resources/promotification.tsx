@@ -27,9 +27,25 @@ export function getPromoCookieValue({
 
 export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData()
-	const maxAge = Number(formData.get('maxAge')) || 60 * 60 * 24 * 7 * 2
 	const promoName = formData.get('promoName')
 	invariant(typeof promoName === 'string', 'promoName must be a string')
+
+	// Cookie names must be a valid RFC 6265 token (no whitespace, semicolons, etc).
+	// This is developer-controlled in our forms, but the endpoint is public.
+	if (!/^[a-zA-Z0-9._-]+$/.test(promoName)) {
+		return json(
+			{ success: false, error: 'Invalid promoName' },
+			{ status: 400 },
+		)
+	}
+
+	const DEFAULT_MAX_AGE_SECONDS = 60 * 60 * 24 * 7 * 2
+	const MAX_MAX_AGE_SECONDS = 60 * 60 * 24 * 30 // 30 days ceiling
+	const rawMaxAge = Number(formData.get('maxAge'))
+	const maxAge =
+		Number.isFinite(rawMaxAge) && rawMaxAge > 0
+			? Math.min(Math.floor(rawMaxAge), MAX_MAX_AGE_SECONDS)
+			: DEFAULT_MAX_AGE_SECONDS
 
 	const cookieHeader = cookie.serialize(promoName, 'hidden', {
 		httpOnly: true,

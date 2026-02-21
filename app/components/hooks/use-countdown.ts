@@ -21,6 +21,13 @@ export function useCountdown(endTimeMs: number, intervalMs = 1000) {
 		let timeoutId: number | undefined
 		let cancelled = false
 
+		function clearScheduledTick() {
+			if (timeoutId !== undefined) {
+				window.clearTimeout(timeoutId)
+				timeoutId = undefined
+			}
+		}
+
 		function tick() {
 			if (cancelled) return
 			setTimeLeftMs(getTimeLeftMs(endTimeMs))
@@ -44,18 +51,29 @@ export function useCountdown(endTimeMs: number, intervalMs = 1000) {
 		tick()
 		scheduleNextTick()
 
-		function handleVisibilityChange() {
-			// When becoming visible again, jump immediately to the correct value.
-			if (!document.hidden) tick()
+		function resync() {
+			if (cancelled) return
+			clearScheduledTick()
+			tick()
+			scheduleNextTick()
 		}
 
-		window.addEventListener('focus', tick)
+		function handleFocus() {
+			resync()
+		}
+
+		function handleVisibilityChange() {
+			// When becoming visible again, jump immediately to the correct value.
+			if (!document.hidden) resync()
+		}
+
+		window.addEventListener('focus', handleFocus)
 		document.addEventListener('visibilitychange', handleVisibilityChange)
 
 		return () => {
 			cancelled = true
-			if (timeoutId !== undefined) window.clearTimeout(timeoutId)
-			window.removeEventListener('focus', tick)
+			clearScheduledTick()
+			window.removeEventListener('focus', handleFocus)
 			document.removeEventListener('visibilitychange', handleVisibilityChange)
 		}
 	}, [endTimeMs, intervalMs])
