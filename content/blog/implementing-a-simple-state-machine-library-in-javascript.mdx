@@ -462,9 +462,9 @@ function createMachine(stateMachineDefinition) {
 > **By virtue of a transition “happening”, states are exited, and entered and
 > the relevant actions are performed**
 
-Ok, so we'll need to call the `action` for the transition, the `onExit` for the
-current state and the `onEnter` for the next state. To do that, we'll also need
-to get the destination state definition as well. Let's do all of that:
+Ok, so we'll need to call the `onExit` for the current state, the `action` for
+the transition, and then the `onEnter` for the next state. To do that, we'll
+also need to get the destination state definition as well. Let's do all of that:
 
 ```js lines=10-16
 function createMachine(stateMachineDefinition) {
@@ -480,8 +480,8 @@ function createMachine(stateMachineDefinition) {
 			const destinationStateDefinition =
 				stateMachineDefinition[destinationState]
 
-			destinationTransition.action()
 			currentStateDefinition.actions.onExit()
+			destinationTransition.action()
 			destinationStateDefinition.actions.onEnter()
 
 			return machine.value
@@ -513,8 +513,8 @@ function createMachine(stateMachineDefinition) {
 			const destinationStateDefinition =
 				stateMachineDefinition[destinationState]
 
-			destinationTransition.action()
 			currentStateDefinition.actions.onExit()
+			destinationTransition.action()
 			destinationStateDefinition.actions.onEnter()
 
 			machine.value = destinationState
@@ -544,8 +544,8 @@ function createMachine(stateMachineDefinition) {
 			const destinationStateDefinition =
 				stateMachineDefinition[destinationState]
 
-			destinationTransition.action()
 			currentStateDefinition.actions.onExit()
+			destinationTransition.action()
 			destinationStateDefinition.actions.onEnter()
 
 			machine.value = destinationState
@@ -609,12 +609,12 @@ get:
 
 ```
 current state: off
-transition action for "switch" in "off" state
 off: onExit
+transition action for "switch" in "off" state
 on: onEnter
 current state: on
-transition action for "switch" in "on" state
 on: onExit
+transition action for "switch" in "on" state
 off: onEnter
 current state: off
 ```
