@@ -4,7 +4,6 @@ import chalk from 'chalk'
 import pProps from 'p-props'
 import { type Session } from '#app/types.ts'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
-import { decrypt, encrypt } from './encryption.server.ts'
 import { PrismaClient } from './prisma-generated.server/client.ts'
 import { time, type Timings } from './timing.server.ts'
 
@@ -51,104 +50,7 @@ function getClient(): PrismaClient {
 	return client
 }
 
-const linkExpirationTime = 1000 * 60 * 30
 const sessionExpirationTime = 1000 * 60 * 60 * 24 * 365
-const magicLinkSearchParam = 'kodyKey'
-
-type MagicLinkPayload = {
-	emailAddress: string
-	creationDate: string
-	validateSessionMagicLink: boolean
-}
-
-function getMagicLink({
-	emailAddress,
-	validateSessionMagicLink,
-	domainUrl,
-}: {
-	emailAddress: string
-	validateSessionMagicLink: boolean
-	domainUrl: string
-}) {
-	const payload: MagicLinkPayload = {
-		emailAddress,
-		validateSessionMagicLink,
-		creationDate: new Date().toISOString(),
-	}
-	const stringToEncrypt = JSON.stringify(payload)
-	const encryptedString = encrypt(stringToEncrypt)
-	const url = new URL(domainUrl)
-	url.pathname = 'magic'
-	url.searchParams.set(magicLinkSearchParam, encryptedString)
-	return url.toString()
-}
-
-function getMagicLinkCode(link: string) {
-	try {
-		const url = new URL(link)
-		return url.searchParams.get(magicLinkSearchParam) ?? ''
-	} catch {
-		return ''
-	}
-}
-
-async function validateMagicLink(link: string, sessionMagicLink?: string) {
-	const linkCode = getMagicLinkCode(link)
-	const sessionLinkCode = sessionMagicLink
-		? getMagicLinkCode(sessionMagicLink)
-		: null
-	let emailAddress, linkCreationDateString, validateSessionMagicLink
-	try {
-		const decryptedString = decrypt(linkCode)
-		const payload = JSON.parse(decryptedString) as MagicLinkPayload
-		emailAddress = payload.emailAddress
-		linkCreationDateString = payload.creationDate
-		validateSessionMagicLink = payload.validateSessionMagicLink
-	} catch (error: unknown) {
-		console.error(error)
-		throw new Error(
-			'Sign in link invalid (link payload is invalid). Please request a new one.',
-		)
-	}
-
-	if (typeof emailAddress !== 'string') {
-		console.error(`Email is not a string. Maybe wasn't set in the session?`)
-		throw new Error(
-			'Sign in link invalid (email is not a string). Please request a new one.',
-		)
-	}
-
-	if (validateSessionMagicLink) {
-		if (!sessionLinkCode) {
-			console.error(
-				'Must validate session magic link but no session link provided',
-			)
-			throw new Error(
-				'Sign in link invalid. No link validation cookie was found (does your browser block cookies or did you open the link in a different browser?). Please request a new link.',
-			)
-		}
-		if (linkCode !== sessionLinkCode) {
-			console.error(`Magic link does not match sessionMagicLink`)
-			throw new Error(
-				`You must open the magic link on the same device it was created from for security reasons. Please request a new link.`,
-			)
-		}
-	}
-
-	if (typeof linkCreationDateString !== 'string') {
-		console.error('Link expiration is not a string.')
-		throw new Error(
-			'Sign in link invalid (link expiration is not a string). Please request a new one.',
-		)
-	}
-
-	const linkCreationDate = new Date(linkCreationDateString)
-	const expirationTime = linkCreationDate.getTime() + linkExpirationTime
-	if (Date.now() > expirationTime) {
-		throw new Error('Magic link expired. Please request a new one.')
-	}
-	return emailAddress
-}
 
 async function createSession(
 	sessionData: Omit<Session, 'id' | 'expirationDate' | 'createdAt'>,
@@ -190,7 +92,7 @@ async function getUserFromSessionId(
 	if (Date.now() > session.expirationDate.getTime()) {
 		await ensurePrimary()
 		await prisma.session.delete({ where: { id: sessionId } })
-		throw new Error('Session expired. Please request a new magic link.')
+		throw new Error('Session expired. Please log in again.')
 	}
 
 	// if there's less than ~six months left, extend the session
@@ -250,10 +152,7 @@ export {
 	createSession,
 	deleteExpiredSessions,
 	getAllUserData,
-	getMagicLink,
 	getUserFromSessionId,
-	linkExpirationTime,
 	prisma,
 	sessionExpirationTime,
-	validateMagicLink,
 }

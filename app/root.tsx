@@ -134,7 +134,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 			},
 			session: {
 				email: loginInfoSession.getEmail(),
-				magicLinkVerified: loginInfoSession.getMagicLinkVerified(),
+				signupEmail: loginInfoSession.getSignupEmail(),
 			},
 		},
 	}

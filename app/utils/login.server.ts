@@ -1,7 +1,6 @@
 import { createCookieSessionStorage } from 'react-router';
-import { decrypt, encrypt } from './encryption.server.ts'
 import { getRequiredServerEnvVar } from './misc.ts'
-import { linkExpirationTime } from './prisma.server.ts'
+const authFlowExpirationTime = 1000 * 60 * 30
 
 const loginInfoStorage = createCookieSessionStorage({
 	cookie: {
@@ -10,7 +9,7 @@ const loginInfoStorage = createCookieSessionStorage({
 		secrets: [getRequiredServerEnvVar('SESSION_SECRET')],
 		sameSite: 'lax',
 		path: '/',
-		maxAge: linkExpirationTime / 1000,
+		maxAge: authFlowExpirationTime / 1000,
 		httpOnly: true,
 	},
 })
@@ -29,28 +28,25 @@ async function getLoginInfoSession(request: Request) {
 		getEmail: () => session.get('email') as string | undefined,
 		setEmail: (email: string) => session.set('email', email),
 
-		// NOTE: the magic link needs to be encrypted in the session because the
-		// end user can access the cookie and see the plaintext magic link which
-		// would allow them to login as any user 😬
-		getMagicLink: () => {
-			const link = session.get('magicLink') as string | undefined
-			if (link) return decrypt(link)
-		},
-		setMagicLink: (magicLink: string) =>
-			session.set('magicLink', encrypt(magicLink)),
-		unsetMagicLink: () => session.unset('magicLink'),
-		getMagicLinkVerified: () =>
-			session.get('magicLinkVerified') as boolean | undefined,
-		setMagicLinkVerified: (verified: boolean) =>
-			session.set('magicLinkVerified', verified),
-		unsetMagicLinkVerified: () => session.unset('magicLinkVerified'),
+		getSignupEmail: () => session.get('signupEmail') as string | undefined,
+		setSignupEmail: (email: string) => session.set('signupEmail', email),
+		unsetSignupEmail: () => session.unset('signupEmail'),
+
+		getResetPasswordEmail: () =>
+			session.get('resetPasswordEmail') as string | undefined,
+		setResetPasswordEmail: (email: string) => session.set('resetPasswordEmail', email),
+		unsetResetPasswordEmail: () => session.unset('resetPasswordEmail'),
+
 		getError: () => session.get('error') as string | undefined,
 		flashError: (error: string) => session.flash('error', error),
+		getMessage: () => session.get('message') as string | undefined,
+		flashMessage: (message: string) => session.flash('message', message),
 		clean: () => {
 			session.unset('email')
-			session.unset('magicLink')
 			session.unset('error')
-			session.unset('magicLinkVerified')
+			session.unset('message')
+			session.unset('signupEmail')
+			session.unset('resetPasswordEmail')
 		},
 		destroy: () => loginInfoStorage.destroySession(session),
 		commit,
