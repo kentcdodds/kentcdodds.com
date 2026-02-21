@@ -15,12 +15,11 @@ import { H2, H4, H6, Paragraph } from '#app/components/typography.tsx'
 import { externalLinks } from '#app/external-links.tsx'
 import { getImageBuilder, getImgProps, images } from '#app/images.tsx'
 import { FavoriteToggle } from '#app/routes/resources/favorite.tsx'
-import { type KCDHandle, type MdxListItem, type Team } from '#app/types.ts'
+import { type KCDHandle, type MdxListItem } from '#app/types.ts'
 import {
 	getBlogReadRankings,
 	getBlogRecommendations,
 	getTotalPostReads,
-	type ReadRankings,
 } from '#app/utils/blog.server.ts'
 import { getRankingLeader } from '#app/utils/blog.ts'
 import { getBlogMdxListItems, getMdxPage } from '#app/utils/mdx.server.ts'
@@ -58,32 +57,37 @@ export const handle: KCDHandle = {
 
 type CatchData = {
 	recommendations: Array<MdxListItem>
-	readRankings: ReadRankings
-	totalReads: string
-	leadingTeam: Team | null
 }
 
 export async function loader({ request, params }: Route.LoaderArgs) {
 	requireValidSlug(params.slug)
 	const timings = {}
-	const [user, page] = await Promise.all([
-		getUser(request, { timings }),
-		getMdxPage({ contentDir: 'blog', slug: params.slug }, { request, timings }),
-	])
+	const page = await getMdxPage(
+		{ contentDir: 'blog', slug: params.slug },
+		{ request, timings },
+	)
 
-	const [recommendations, readRankings, totalReads, favorite] = await Promise.all([
-		getBlogRecommendations({
+	if (!page) {
+		// Avoid caching/creating per-slug stats entries for random 404 slugs. (issue #461)
+		const recommendations = await getBlogRecommendations({
 			request,
 			timings,
 			limit: 3,
-			keywords: [
-				...(page?.frontmatter.categories ?? []),
-				...(page?.frontmatter.meta?.keywords ?? []),
-			],
+			keywords: [],
 			exclude: [params.slug],
-		}),
-		getBlogReadRankings({ request, slug: params.slug, timings }),
-		getTotalPostReads({ request, slug: params.slug, timings }),
+		})
+		const headers = {
+			// Don't cache speculative 404 slugs for long.
+			'Cache-Control': 'private, max-age=60',
+			Vary: 'Cookie',
+			'Server-Timing': getServerTimeHeader(timings),
+		}
+		const catchData: CatchData = { recommendations }
+		throw json(catchData, { status: 404, headers })
+	}
+
+	const userPromise = getUser(request, { timings })
+	const favoritePromise = userPromise.then((user) =>
 		user
 			? prisma.favorite.findUnique({
 					where: {
@@ -96,28 +100,38 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 					select: { id: true },
 				})
 			: null,
+	)
+
+	const [recommendations, readRankings, totalReads, favorite] = await Promise.all([
+		getBlogRecommendations({
+			request,
+			timings,
+			limit: 3,
+			keywords: [
+				...(page.frontmatter.categories ?? []),
+				...(page.frontmatter.meta?.keywords ?? []),
+			],
+			exclude: [params.slug],
+		}),
+		getBlogReadRankings({ request, slug: params.slug, timings }),
+		getTotalPostReads({ request, slug: params.slug, timings }),
+		favoritePromise,
 	])
 
-	const catchData: CatchData = {
-		recommendations,
-		readRankings,
-		totalReads: formatNumber(totalReads),
-		leadingTeam: getRankingLeader(readRankings)?.team ?? null,
-	}
 	const headers = {
 		'Cache-Control': 'private, max-age=3600',
 		Vary: 'Cookie',
 		'Server-Timing': getServerTimeHeader(timings),
-	}
-	if (!page) {
-		throw json(catchData, { status: 404, headers })
 	}
 
 	return json(
 		{
 			page,
 			isFavorite: Boolean(favorite),
-			...catchData,
+			recommendations,
+			readRankings,
+			totalReads: formatNumber(totalReads),
+			leadingTeam: getRankingLeader(readRankings)?.team ?? null,
 		},
 		{ status: 200, headers },
 	)
