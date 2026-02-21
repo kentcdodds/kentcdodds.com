@@ -63,6 +63,15 @@ async function getSession(request: Request) {
 				prisma.session
 					.delete({ where: { id: sessionId } })
 					.catch((error: unknown) => {
+						// It's possible the session was already deleted (ex: user deleted).
+						if (
+							error &&
+							typeof error === 'object' &&
+							'code' in error &&
+							error.code === 'P2025'
+						) {
+							return
+						}
 						console.error(`Failure deleting user session: `, error)
 					})
 			}
