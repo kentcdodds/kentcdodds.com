@@ -14,6 +14,10 @@ import { NotificationMessage } from '#app/components/notification-message.tsx'
 import { Spinner } from '#app/components/spinner.tsx'
 import { type Route } from './+types/promotification'
 
+type PromotificationActionData =
+	| { success: true }
+	| { success: false; error: string }
+
 export function getPromoCookieValue({
 	promoName,
 	request,
@@ -33,7 +37,7 @@ export async function action({ request }: Route.ActionArgs) {
 	// Cookie names must be a valid RFC 6265 token (no whitespace, semicolons, etc).
 	// This is developer-controlled in our forms, but the endpoint is public.
 	if (!/^[a-zA-Z0-9._-]+$/.test(promoName)) {
-		return json(
+		return json<PromotificationActionData>(
 			{ success: false, error: 'Invalid promoName' },
 			{ status: 400 },
 		)
@@ -56,7 +60,10 @@ export async function action({ request }: Route.ActionArgs) {
 		path: '/',
 		maxAge,
 	})
-	return json({ success: true }, { headers: { 'Set-Cookie': cookieHeader } })
+	return json<PromotificationActionData>(
+		{ success: true },
+		{ headers: { 'Set-Cookie': cookieHeader } },
+	)
 }
 
 type NotificationMessageProps = Parameters<typeof NotificationMessage>[0]
@@ -85,7 +92,7 @@ export function Promotification({
 	)
 
 	const [visible, setVisible] = useState(cookieValue !== 'hidden')
-	const fetcher = useFetcher<typeof action>()
+	const fetcher = useFetcher<PromotificationActionData>()
 	const showSpinner = useSpinDelay(fetcher.state !== 'idle')
 	const disableLink = fetcher.state !== 'idle' || fetcher.data?.success
 
@@ -96,8 +103,8 @@ export function Promotification({
 	}, [fetcher.data])
 
 	const dismissError =
-		fetcher.state === 'idle' && fetcher.data?.success === false
-			? (fetcher.data?.error ?? 'Could not dismiss. Please try again.')
+		fetcher.state === 'idle' && fetcher.data && fetcher.data.success === false
+			? fetcher.data.error
 			: null
 
 	useEffect(() => {
