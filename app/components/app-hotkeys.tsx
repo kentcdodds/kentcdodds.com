@@ -80,7 +80,7 @@ function AppHotkeys() {
 		// TanStack Hotkeys SequenceManager (currently) does not honor `ignoreInputs`,
 		// so sequences can progress while typing and complete on the final key.
 		// Work around by resetting sequence progress for key events from inputs.
-		// Upstream issue: https://github.com/TanStack/hotkeys/issues (see repo issue for details)
+		// Upstream issue: https://github.com/TanStack/hotkeys/issues/34
 		const resetSequencesIfTyping = (event: Event) => {
 			if (isInputLikeElement(event.target)) {
 				sequenceManager.resetAll()
