@@ -25,6 +25,12 @@ describe('mdx not-found caching', () => {
 			process.env.FLY_INSTANCE = 'test'
 
 			vi.resetModules()
+			// `cache.server.ts` imports `updatePrimaryCacheValue` from this route module,
+			// which uses the `vite-env-only` macro. That macro is not processed in the
+			// Vitest environment, so we stub the module for this unit test.
+			vi.doMock('#app/routes/resources/cache.sqlite.ts', () => {
+				return { updatePrimaryCacheValue: undefined }
+			})
 			// Avoid importing `mdx-bundler` (and therefore `esbuild`) in jsdom tests.
 			// For this test we only care about the "missing page -> null" path.
 			vi.doMock('#app/utils/compile-mdx.server.ts', () => {
