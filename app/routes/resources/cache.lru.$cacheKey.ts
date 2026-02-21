@@ -1,5 +1,5 @@
+import { invariantResponse } from '@epic-web/invariant'
 import { data as json } from 'react-router';
-import invariant from 'tiny-invariant'
 import { lruCache } from '#app/utils/cache.server.ts'
 import {
 	ensureInstance,
@@ -19,7 +19,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	await ensureInstance(instance)
 
 	const { cacheKey } = params
-	invariant(cacheKey, 'cacheKey is required')
+	invariantResponse(cacheKey, 'cacheKey is required')
 	return json({
 		instance: {
 			hostname: instance,

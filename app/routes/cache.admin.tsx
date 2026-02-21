@@ -1,5 +1,5 @@
-import { data as json, Form, useFetcher, useLoaderData, useSearchParams, useSubmit } from 'react-router';
-import invariant from 'tiny-invariant'
+import { invariantResponse } from '@epic-web/invariant'
+import { data as json, Form, isRouteErrorResponse, useFetcher, useLoaderData, useSearchParams, useSubmit } from 'react-router';
 import { Button } from '#app/components/button.tsx'
 import {
 	Field,
@@ -57,9 +57,9 @@ export async function action({ request }: Route.ActionArgs) {
 	const instance = formData.get('instance') ?? currentInstance
 	const type = formData.get('type')
 
-	invariant(typeof key === 'string', 'cacheKey must be a string')
-	invariant(typeof type === 'string', 'type must be a string')
-	invariant(typeof instance === 'string', 'instance must be a string')
+	invariantResponse(typeof key === 'string', 'cacheKey must be a string')
+	invariantResponse(typeof type === 'string', 'type must be a string')
+	invariantResponse(typeof instance === 'string', 'instance must be a string')
 	await ensureInstance(instance)
 
 	switch (type) {
@@ -233,6 +233,35 @@ export function ErrorBoundary() {
 	const error = useCapturedRouteError()
 	console.error(error)
 
+	if (isRouteErrorResponse(error)) {
+		let data = ''
+		if (error.data != null) {
+			if (typeof error.data === 'string') {
+				data = error.data
+			} else {
+				try {
+					data = JSON.stringify(error.data, null, 2)
+				} catch {
+					data = String(error.data)
+				}
+			}
+		}
+		const statusLine = `${error.status} ${error.statusText}`.trim()
+		return (
+			<div>
+				<div>{statusLine || 'Unexpected response'}</div>
+				{data ? <pre className="whitespace-pre-wrap">{data}</pre> : null}
+			</div>
+		)
+	}
+	if (error instanceof Response) {
+		const statusLine = error.statusText
+			? `${error.status} ${error.statusText}`.trim()
+			: error.url
+				? `${error.status} ${error.url}`.trim()
+				: `Response ${error.status}`
+		return <div>{statusLine || 'Unexpected response'}</div>
+	}
 	if (error instanceof Error) {
 		return <div>An unexpected error occurred: {error.message}</div>
 	} else {

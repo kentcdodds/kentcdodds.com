@@ -1,14 +1,15 @@
+import { invariantResponse } from '@epic-web/invariant'
 import * as React from 'react'
 import {
 	data as json,
 	Form,
 	Link,
+	isRouteErrorResponse,
 	useFetcher,
 	useLoaderData,
 	useSearchParams,
 	useSubmit,
 } from 'react-router'
-import invariant from 'tiny-invariant'
 import { Button } from '#app/components/button.tsx'
 import {
 	ErrorPanel,
@@ -299,7 +300,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const formData = await request.formData()
 	const intent = formData.get('intent')
-	invariant(typeof intent === 'string', 'intent must be a string')
+	invariantResponse(typeof intent === 'string', 'intent must be a string')
 
 	if (intent === 'ignore-add') {
 		const pattern = String(formData.get('pattern') ?? '').trim()
@@ -934,6 +935,30 @@ function DocCard({ doc }: { doc: DocRow }) {
 export function ErrorBoundary() {
 	const error = useCapturedRouteError()
 	console.error(error)
+	if (isRouteErrorResponse(error)) {
+		let data = ''
+		if (error.data != null) {
+			if (typeof error.data === 'string') {
+				data = error.data
+			} else {
+				try {
+					data = JSON.stringify(error.data, null, 2)
+				} catch {
+					data = String(error.data)
+				}
+			}
+		}
+		const statusLine = `${error.status} ${error.statusText}`.trim()
+		return (
+			<div className="mx-10vw mt-10">
+				<h2>Search admin error</h2>
+				<pre className="whitespace-pre-wrap">
+					{statusLine}
+					{data ? `\n\n${data}` : ''}
+				</pre>
+			</div>
+		)
+	}
 	return (
 		<div className="mx-10vw mt-10">
 			<h2>Search admin error</h2>

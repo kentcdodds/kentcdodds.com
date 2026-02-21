@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
+import { invariant } from '@epic-web/invariant'
 import { type AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js'
@@ -7,7 +8,7 @@ import { addSubscriberToForm } from '#app/kit/kit.server.js'
 import { getBlogRecommendations } from '#app/utils/blog.server.js'
 import { groupBy } from '#app/utils/cjs/lodash.ts'
 import { downloadMdxFilesCached } from '#app/utils/mdx.server.js'
-import { getDomainUrl, getErrorMessage, invariant } from '#app/utils/misc.js'
+import { getDomainUrl, getErrorMessage } from '#app/utils/misc.js'
 import { prisma } from '#app/utils/prisma.server.js'
 import {
 	isSemanticSearchConfigured,
