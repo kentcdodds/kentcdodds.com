@@ -342,6 +342,29 @@ pre {
 	min-width: 100%;
 }
 
+/* MDX tables can get cramped on small screens; make them horizontally scrollable. */
+.prose .mdx-table-wrapper {
+	max-width: 100%;
+	overflow-x: auto;
+}
+
+.prose .mdx-table-wrapper > table {
+	/* Fill the available width, but allow expanding past it for scrolling. */
+	width: max-content;
+	min-width: 100%;
+}
+
+.prose .mdx-table-wrapper :is(th, td) {
+	/* The blog container uses `break-words`; tables look better without it. */
+	overflow-wrap: normal;
+	word-break: normal;
+}
+
+/* Our generic `.prose > div` rule sets a larger font-size; keep tables consistent. */
+.prose > .mdx-table-wrapper {
+	font-size: inherit;
+}
+
 .codeblock-line {
 	display: block;
 	position: relative;
