@@ -15,7 +15,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 		const authInfo = await requireAuth(request)
 
 		const transport = await connect(sessionId)
-		return transport.handleRequest(request, authInfo)
+		return transport.handleRequest(request, { authInfo })
 	})
 
 	return response
@@ -31,7 +31,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 		const transport = await connect(sessionId)
 
-		return transport.handleRequest(request, authInfo)
+		return transport.handleRequest(request, { authInfo })
 	})
 
 	return response
