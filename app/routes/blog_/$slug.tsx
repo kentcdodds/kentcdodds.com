@@ -15,12 +15,11 @@ import { H2, H4, H6, Paragraph } from '#app/components/typography.tsx'
 import { externalLinks } from '#app/external-links.tsx'
 import { getImageBuilder, getImgProps, images } from '#app/images.tsx'
 import { FavoriteToggle } from '#app/routes/resources/favorite.tsx'
-import { type KCDHandle, type MdxListItem, type Team } from '#app/types.ts'
+import { type KCDHandle, type MdxListItem } from '#app/types.ts'
 import {
 	getBlogReadRankings,
 	getBlogRecommendations,
 	getTotalPostReads,
-	type ReadRankings,
 } from '#app/utils/blog.server.ts'
 import { getRankingLeader } from '#app/utils/blog.ts'
 import { getBlogMdxListItems, getMdxPage } from '#app/utils/mdx.server.ts'

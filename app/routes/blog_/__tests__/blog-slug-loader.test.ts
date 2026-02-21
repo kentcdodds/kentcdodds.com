@@ -18,6 +18,11 @@ vi.mock('#app/utils/mdx.server.ts', () => ({
 	getBlogMdxListItems,
 }))
 
+// The route module imports this client helper, which otherwise pulls in Prisma.
+vi.mock('../../action/mark-as-read.tsx', () => ({
+	markAsRead: vi.fn(),
+}))
+
 // Import after mocks so the route loader sees the mocked deps.
 import { loader } from '../$slug.tsx'
 
