@@ -245,6 +245,49 @@ async function queryVectorize({
 	}
 }
 
+export async function vectorizeDeleteByIds({
+	ids,
+}: {
+	ids: string[]
+}): Promise<unknown> {
+	const { accountId, apiToken, indexName } = getRequiredSemanticSearchEnv()
+	if (!accountId || !apiToken || !indexName) {
+		throw new Error(
+			'Semantic search is not configured. Set CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN, and CLOUDFLARE_VECTORIZE_INDEX.',
+		)
+	}
+	if (!Array.isArray(ids) || ids.length === 0) {
+		return { result: { deleted: 0 } }
+	}
+
+	const body = JSON.stringify({ ids })
+	try {
+		const res = await cloudflareFetch(
+			accountId,
+			apiToken,
+			`/vectorize/v2/indexes/${indexName}/delete_by_ids`,
+			{
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body,
+			},
+		)
+		return (await res.json()) as unknown
+	} catch {
+		const res = await cloudflareFetch(
+			accountId,
+			apiToken,
+			`/vectorize/indexes/${indexName}/delete_by_ids`,
+			{
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body,
+			},
+		)
+		return (await res.json()) as unknown
+	}
+}
+
 export type SemanticSearchResult = {
 	id: string
 	score: number

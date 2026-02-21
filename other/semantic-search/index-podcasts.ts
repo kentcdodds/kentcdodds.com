@@ -15,6 +15,7 @@ import {
 	vectorizeDeleteByIds,
 	vectorizeUpsert,
 } from './cloudflare.ts'
+import { getSemanticSearchIgnoreList, isDocIdIgnored } from './ignore-list.ts'
 import { getJsonObject, putJsonObject } from './r2-manifest.ts'
 
 type DocType = 'ck' | 'cwk'
@@ -354,6 +355,10 @@ async function main() {
 		docs: {},
 	}
 
+	const ignoreList = await getSemanticSearchIgnoreList({ bucket: r2Bucket })
+	const isIgnoredDocId = (docId: string) =>
+		isDocIdIgnored({ docId, ignoreList })
+
 	const idsToDelete: string[] = []
 	const toUpsert: Array<{
 		vectorId: string
@@ -374,6 +379,8 @@ async function main() {
 	// Build docs
 	for (const e of ckEpisodes) {
 		const key = episodeKey(e)
+		const docId = getDocId('ck', key)
+		if (isIgnoredDocId(docId)) continue
 		const url = getCallKentEpisodePath({
 			seasonNumber: e.seasonNumber,
 			episodeNumber: e.episodeNumber,
@@ -397,7 +404,6 @@ async function main() {
 		const title = e.title
 		const chunkBodies = chunkText(text)
 		const chunkCount = chunkBodies.length
-		const docId = getDocId('ck', key)
 		const oldChunksById = new Map(
 			(manifest.docs[docId]?.chunks ?? []).map((c) => [c.id, c]),
 		)
@@ -442,6 +448,8 @@ async function main() {
 		const seasonNumber = e.season.number
 		const episodeNumber = e.number
 		const key = episodeKey({ seasonNumber, episodeNumber })
+		const docId = getDocId('cwk', key)
+		if (isIgnoredDocId(docId)) continue
 		const url = getCWKEpisodePath({ seasonNumber, episodeNumber, slug: e.slug })
 		const transcript = await toPlainText(e.transcription ?? '')
 		const summary = await toPlainText(e.long_description ?? '')
@@ -468,7 +476,6 @@ async function main() {
 		const title = e.title
 		const chunkBodies = chunkText(text)
 		const chunkCount = chunkBodies.length
-		const docId = getDocId('cwk', key)
 		const oldChunksById = new Map(
 			(manifest.docs[docId]?.chunks ?? []).map((c) => [c.id, c]),
 		)

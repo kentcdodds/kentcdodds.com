@@ -51,6 +51,7 @@
     "setup": "npm install && prisma migrate reset --force && npm run validate && npm run prime-cache:mocks && npm run test:e2e:install && npm run test:e2e:run"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.995.0",
     "@conform-to/react": "^1.17.1",
     "@conform-to/zod": "^1.17.1",
     "@epic-web/cachified": "^5.6.1",
